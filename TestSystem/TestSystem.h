@@ -10,6 +10,9 @@ namespace Foundation
    class Framework;
 }
 
+//! Contains unit tests
+/*! All Core and Foundation classes should be unit tested.
+*/
 namespace Test
 {
     //! interface for modules
