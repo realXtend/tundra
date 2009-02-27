@@ -9,7 +9,7 @@ class EC_SelectPriority : public Foundation::ComponentInterface
 {
     DECLARE_EC(EC_SelectPriority);
 public:
-   virtual ~EC_SelectPriority();
+    virtual ~EC_SelectPriority();
 
     static std::vector<std::string> getNetworkMessages()
     {

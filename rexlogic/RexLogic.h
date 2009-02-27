@@ -8,15 +8,15 @@
 class RexLogic : public Foundation::ModuleInterface_Impl
 {
 public:
-   RexLogic();
-   virtual ~RexLogic();
+    RexLogic();
+    virtual ~RexLogic();
 
-   virtual void load();
-   virtual void unload();
-   virtual void initialize(Foundation::Framework *framework);
-   virtual void uninitialize(Foundation::Framework *framework);
+    virtual void load();
+    virtual void unload();
+    virtual void initialize(Foundation::Framework *framework);
+    virtual void uninitialize(Foundation::Framework *framework);
 
-   virtual void update();
+    virtual void update();
 
 private:
     Foundation::Framework *mFramework;

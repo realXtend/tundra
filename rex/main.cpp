@@ -73,21 +73,21 @@ int main(int argc, char **argv)
 
 int run(void)
 {
-   int retVal = EXIT_SUCCESS;
+    int retVal = EXIT_SUCCESS;
 
-   // Create application object
-   Foundation::Framework fw;
-   try 
-   {
-      fw.go();
-   } 
-   catch ( std::exception& e )
-   {
-      message("An exception has occurred!", e.what());
-      retVal = EXIT_FAILURE;
-   }
+    // Create application object
+    Foundation::Framework fw;
+    try 
+    {
+        fw.go();
+    } 
+    catch ( std::exception& e )
+    {
+        message("An exception has occurred!", e.what());
+        retVal = EXIT_FAILURE;
+    }
 
-   return retVal;
+    return retVal;
 }
 
 void message(const std::string& title, const std::string& text)
