@@ -1,27 +1,83 @@
-Tabs vs spaces:
+Project
+=======
+All publically visible classes should be declared in their own header file using the .h extension, placed in the folder of the sub-project in question, and named after the class. Only very tightly related classes should be declared in the same header file. 
+Implementations should be placed in a source file called the same name as the class and placed in the folder of the subproject in question.
 
-Spaces, indentation 4
 
-
-Include guards, example:
-
+Header files
+============
+Each .cpp file should have correspondin header file, excluding certain .cpp files such as main.cpp and unit tests.
+All header files should have #define guards to prevent multiple inclusion. The format of the symbol name should be __incl_NameSpaceClassName_h__.
+Example:
 #ifndef __incl_CoreStdIncludes_h__
 #define __incl_CoreStdIncludes_h__
 
-
-Naming of stuff:
-
-Class names in camelcase (ExampleClass)
-Class member variables prefixed with m
-Function names, local variables and parameters should start with lower case, then next words in camelcase, like unregisterService
-Functions that should not be publically called prefixed with underscore
-File names following the class names, using .cpp and .h extensions
+Use forward declarations to minimize use of #include declarations in header files.
 
 
-Documentation:
+Include ordering
+================
+For readability, use ordering: C library, C++ library, other libraries' .h, your project's .h.
 
-Doxygen style, comment headers, not implementation
+
+Function parameters
+===================
+Prefer order: inputs, then outputs.
 
 
+Scoping, namespaces
+===================
+Avoid using the 'using' directive, especially in header files to avoid global name collisions.
 
+
+C++ standards
+=============
+Use STL over custom containers / algorithms.
+Use C++ techniques over C.
+Use PImpl idiom to reduce dependencies between classes.
+Use boost::shared_ptr to implement PImpl idiom: shared_ptr works for undefined classes!
+Be const-correct.
+use boost::shared_ptr and other smart pointers where appropriate to avoid memory leaks.
+Avoid using inheritance except for interfaces.
+When using design patterns, implement it through: singleton classes should have private/protected constructors. If factory is used to construct the class, declare constructor private and set the factory class as friend.
+
+
+Naming Conventions and Documentation
+====================================
+Classes, types and structures must be title case (MyNewClass). 
+Methods and local variables must be camel case (myNewMethod).
+
+Member variables should be titlecase, with lowercase prefix 'm' for member.
+
+All public classes and methods must be fully documented in English using Doxygen-compatible comments. Comment header files and not implementation. Use the \param and \returns directives to define inputs and outputs clearly, \note to indicate points of interest and \todo to indicate a todo item.
+
+Use verbose, descriptive names for classes, methods, variables - everything except trival counters. Code should be self-describing, don't be obtuse.
+
+Functions that are publically declared but should not be publically called prefixed with underscore
+
+
+Tabs vs spaces
+==============
+Spaces, indentation 4
+
+
+Exceptions
+==========
+Use exceptions only in exceptional cases. Do not use them for control flow, do not use them to indicate invalid return value.
+
+
+Asserts
+=======
+use asserts to check for conditions that should never occur and that clearly indicate a programming error.
+
+
+Coding Style
+============
+Use typedefs to declare template-based types that you use to avoid ugliness e.g. typedef std::list<MyType*> MyTypeList;
+Use parenthesis to make the operator precedence unambiguous, even when it is not required ( (x * y) + 1, not x * y + 1 ).
+Prefer inserting a newline before an open brace.
+Add extra newline at the end of file for crossplatform compatibility.
+
+
+When in doubt, observe the existing code.
 
