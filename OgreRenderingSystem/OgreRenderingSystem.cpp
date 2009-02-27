@@ -7,49 +7,53 @@
 #include "Foundation.h"
 #include "ComponentRegistrarInterface.h"
 
-OgreRenderingSystem::OgreRenderingSystem() : ModuleInterface_Impl(Foundation::Module::Type_Renderer)
+namespace OgreRenderer
 {
+    OgreRenderingSystem::OgreRenderingSystem() : ModuleInterface_Impl(Foundation::Module::Type_Renderer)
+    {
+    }
+
+    OgreRenderingSystem::~OgreRenderingSystem()
+    {
+    }
+
+    // virtual
+    void OgreRenderingSystem::load()
+    {
+        using namespace OgreRenderer;
+
+        LOG("System " + name() + " loaded.");
+        DECLARE_MODULE_EC(EC_OgreEntity);
+    }
+
+    // virtual
+    void OgreRenderingSystem::unload()
+    {
+        LOG("System " + name() + " unloaded.");
+    }
+
+    // virtual
+    void OgreRenderingSystem::initialize(Foundation::Framework *framework)
+    {
+        mRenderer = OgreRenderer::RendererPtr(new OgreRenderer::Renderer);
+        framework->getServiceManager()->registerService(Foundation::Service_Renderer, mRenderer.get());
+
+        LOG("System " + name() + " initialized.");
+    }
+
+    // virtual 
+    void OgreRenderingSystem::uninitialize(Foundation::Framework *framework)
+    {
+        framework->getServiceManager()->unregisterService(mRenderer.get());
+        
+        mRenderer.reset();
+
+        LOG("System " + name() + " uninitialized.");
+    }
+
 }
 
-OgreRenderingSystem::~OgreRenderingSystem()
-{
-}
-
-// virtual
-void OgreRenderingSystem::load()
-{
-    using namespace OgreRenderer;
-
-    LOG("System " + name() + " loaded.");
-    DECLARE_MODULE_EC(EC_OgreEntity);
-}
-
-// virtual
-void OgreRenderingSystem::unload()
-{
-    LOG("System " + name() + " unloaded.");
-}
-
-// virtual
-void OgreRenderingSystem::initialize(Foundation::Framework *framework)
-{
-    mRenderer = OgreRenderer::RendererPtr(new OgreRenderer::Renderer);
-    framework->getServiceManager()->registerService(Foundation::Service_Renderer, mRenderer.get());
-
-    LOG("System " + name() + " initialized.");
-}
-
-// virtual 
-void OgreRenderingSystem::uninitialize(Foundation::Framework *framework)
-{
-    framework->getServiceManager()->unregisterService(mRenderer.get());
-    
-    mRenderer.reset();
-
-    LOG("System " + name() + " uninitialized.");
-}
-
-
+using namespace OgreRenderer;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
    POCO_EXPORT_CLASS(OgreRenderingSystem)
