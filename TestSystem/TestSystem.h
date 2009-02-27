@@ -10,7 +10,6 @@ namespace Foundation
    class Framework;
 }
 
-//! \todo Can't use namespace to wrap System class, PoCo sharedlibrary loading fails! (won't find the class)
 namespace Test
 {
     //! interface for modules
