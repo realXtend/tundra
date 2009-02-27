@@ -11,8 +11,8 @@ namespace Foundation
 }
 
 //! \todo Can't use namespace to wrap System class, PoCo sharedlibrary loading fails! (won't find the class)
-//namespace Test
-//{
+namespace Test
+{
     //! interface for modules
     class TestSystem : public Foundation::ModuleInterface_Impl
     {
@@ -30,5 +30,5 @@ namespace Foundation
     private:
         Foundation::Framework *mFramework;
     };
-//}
+}
 #endif

@@ -6,44 +6,45 @@
 #include <Poco/ClassLibrary.h>
 #include "Foundation.h"
 
-
-
-GeometrySystem::GeometrySystem() : ModuleInterface_Impl(Foundation::Module::Type_Geometry)
+namespace Geometry
 {
+    GeometrySystem::GeometrySystem() : ModuleInterface_Impl(Foundation::Module::Type_Geometry)
+    {
+    }
+
+    GeometrySystem::~GeometrySystem()
+    {
+    }
+
+    // virtual
+    void GeometrySystem::load()
+    {
+        using namespace Geometry;
+        DECLARE_MODULE_EC(EC_Geometry);
+
+        LOG("System " + name() + " loaded.");
+    }
+
+    // virtual
+    void GeometrySystem::unload()
+    {
+        LOG("System " + name() + " unloaded.");
+    }
+
+    // virtual
+    void GeometrySystem::initialize(Foundation::Framework *framework)
+    {
+        LOG("System " + name() + " initialized.");
+    }
+
+    // virtual 
+    void GeometrySystem::uninitialize(Foundation::Framework *framework)
+    {
+        LOG("System " + name() + " uninitialized.");
+    }
 }
 
-GeometrySystem::~GeometrySystem()
-{
-}
-
-// virtual
-void GeometrySystem::load()
-{
-    using namespace Geometry;
-    DECLARE_MODULE_EC(EC_Geometry);
-
-    LOG("System " + name() + " loaded.");
-}
-
-// virtual
-void GeometrySystem::unload()
-{
-    LOG("System " + name() + " unloaded.");
-}
-
-// virtual
-void GeometrySystem::initialize(Foundation::Framework *framework)
-{
-    LOG("System " + name() + " initialized.");
-}
-
-// virtual 
-void GeometrySystem::uninitialize(Foundation::Framework *framework)
-{
-    LOG("System " + name() + " uninitialized.");
-}
-
-
+using namespace Geometry;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
    POCO_EXPORT_CLASS(GeometrySystem)

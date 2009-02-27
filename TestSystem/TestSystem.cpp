@@ -8,8 +8,8 @@
 #include <Poco/ClassLibrary.h>
 #include "Foundation.h"
 
-//namespace Test
-//{
+namespace Test
+{
     TestSystem::TestSystem() : ModuleInterface_Impl(Foundation::Module::Type_Test)
     {
     }
@@ -95,7 +95,9 @@
         //Foundation::Change change = mFramework->getChangeManager()->getGlobalChange(Geometry::EC_Geometry::name(), Geometry::EC_Geometry::All); 
         //mFramework->getChangeManager()->change(id, change, boost::any(component));
     }
+}
 
+using namespace Test;
     POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
        POCO_EXPORT_CLASS(TestSystem)
     POCO_END_MANIFEST
