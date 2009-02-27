@@ -1,5 +1,33 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+/*! \mainpage
+ 
+    \section intro_sec Introduction
+ 
+    Welcome to realXtend viewer source code documentation.
+    
+    First of all you might want to get to know coding conventions of the
+    realXtend viewer. A document containing the guidelines can be found
+    from the documentation directory.
+
+    The viewer is divided into several different projects and namespaces.
+
+    - The Core contains functionality common to all projects in the viewer.
+    - The Foundation is the framework around which the viewer is build.
+    - Several modules that create the functionality of the viewer with the
+      help of the framework.
+ 
+    \section install_sec Compiling the Viewer
+
+    See readme.txt for information about compiling the viewer.
+
+    \section license License
+
+    For conditions of distribution and use, see copyright notice in license.txt
+
+ 
+
+*/
 
 #ifndef _WIN32_WINNT		// Allow use of features specific to Windows XP or later.                   
 #define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.
