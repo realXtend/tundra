@@ -1,0 +1,27 @@
+Tabs vs spaces:
+
+Spaces, indentation 4
+
+
+Include guards, example:
+
+#ifndef __incl_CoreStdIncludes_h__
+#define __incl_CoreStdIncludes_h__
+
+
+Naming of stuff:
+
+Class names in camelcase (ExampleClass)
+Class member variables prefixed with m
+Function names, local variables and parameters should start with lower case, then next words in camelcase, like unregisterService
+Functions that should not be publically called prefixed with underscore
+File names following the class names, using .cpp and .h extensions
+
+
+Documentation:
+
+Doxygen style, comment headers, not implementation
+
+
+
+
