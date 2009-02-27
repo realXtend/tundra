@@ -28,6 +28,9 @@ namespace Foundation
         //! Remove the component from this entity
         void removeEntityComponent(const ComponentInterfacePtr &component);
 
+        //! Returns a component with name 'name'
+        ComponentInterfacePtr getComponent(const std::string &name) const;
+
         //! Return the unique id of this component
         Core::entity_id_t getId() const { return mId; }
     protected:

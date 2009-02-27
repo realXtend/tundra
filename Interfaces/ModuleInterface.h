@@ -3,6 +3,7 @@
 #ifndef __incl_Interfaces_ModuleInterface_h__
 #define __incl_Interfaces_ModuleInterface_h__
 
+#include <Poco/ClassLibrary.h>
 #include "ComponentRegistrarInterface.h"
 
 #define DECLARE_MODULE_EC(component) \

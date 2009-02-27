@@ -30,4 +30,13 @@ namespace Foundation
         ComponentVector::iterator iter = std::find(mComponents.begin(), mComponents.end(), component);
         mComponents.erase(iter);
     }
+
+    ComponentInterfacePtr Entity::getComponent(const std::string &name) const
+    {
+        for (size_t i=0 ; i<mComponents.size() ; ++i)
+            if (mComponents[i]->_name() == name)
+                return mComponents[i];
+
+        return ComponentInterfacePtr();
+    }
 }
