@@ -5,12 +5,12 @@
 
 namespace Foundation
 {
-   class ServiceInterface
-   {
-   public:
-      ServiceInterface() {}
-      virtual ~ServiceInterface() {}
-   };
+    class ServiceInterface
+    {
+    public:
+        ServiceInterface() {}
+        virtual ~ServiceInterface() {}
+    };
 }
 
 #endif

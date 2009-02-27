@@ -9,7 +9,7 @@ class EC_SpatialSound : public Foundation::ComponentInterface
 {
     DECLARE_EC(EC_SpatialSound);
 public:
-   virtual ~EC_SpatialSound();
+    virtual ~EC_SpatialSound();
 
 
     virtual void handleNetworkData(std::string data);

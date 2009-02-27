@@ -7,20 +7,20 @@
 
 namespace Foundation
 {
-   class Framework;
+    class Framework;
 }
 
 //! interface for modules
 class OgreRenderingSystem : public Foundation::ModuleInterface_Impl
 {
 public:
-   OgreRenderingSystem();
-   virtual ~OgreRenderingSystem();
+    OgreRenderingSystem();
+    virtual ~OgreRenderingSystem();
 
-   virtual void load();
-   virtual void unload();
-   virtual void initialize(Foundation::Framework *framework);
-   virtual void uninitialize(Foundation::Framework *framework);
+    virtual void load();
+    virtual void unload();
+    virtual void initialize(Foundation::Framework *framework);
+    virtual void uninitialize(Foundation::Framework *framework);
 
 private:
     OgreRenderer::RendererPtr mRenderer;

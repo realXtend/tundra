@@ -5,12 +5,12 @@
 
 namespace Foundation
 {
-   class WorldLogicInterface
-   {
-   public:
-      WorldLogicInterface() {}
-      virtual ~WorldLogicInterface() {}
-   };
+    class WorldLogicInterface
+    {
+    public:
+        WorldLogicInterface() {}
+        virtual ~WorldLogicInterface() {}
+    };
 }
 
 #endif // __incl_Interfaces_WorldLogicInterface_h__

@@ -9,7 +9,7 @@ class EC_ServerScript : public Foundation::ComponentInterface
 {
     DECLARE_EC(EC_ServerScript);
 public:
-   virtual ~EC_ServerScript();
+    virtual ~EC_ServerScript();
 
     static void registerChanges(const Foundation::ChangeManagerPtr &manager) { }
 

@@ -16,15 +16,15 @@ namespace Foundation
     class TestSystem : public Foundation::ModuleInterface_Impl
     {
     public:
-       TestSystem();
-       virtual ~TestSystem();
+        TestSystem();
+        virtual ~TestSystem();
 
-       virtual void load();
-       virtual void unload();
-       virtual void initialize(Foundation::Framework *framework);
-       virtual void uninitialize(Foundation::Framework *framework);
+        virtual void load();
+        virtual void unload();
+        virtual void initialize(Foundation::Framework *framework);
+        virtual void uninitialize(Foundation::Framework *framework);
 
-       virtual void update();
+        virtual void update();
 
     private:
         Foundation::Framework *mFramework;
