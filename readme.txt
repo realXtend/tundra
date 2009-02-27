@@ -8,7 +8,7 @@ Solutions are provided for Visual Studio 8 and 9. Install dependencies and make 
 
 Dependencies
 ------------
-Requires Boost and PoCo C++ libraries.
+Requires Boost and PoCo C++ libraries. See documentation/external libraries.txt for more detailed instructions on dependencies.
 
 Boost:
 http://www.boost.org/
