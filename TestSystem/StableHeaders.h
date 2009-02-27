@@ -1,7 +1,4 @@
-// StableHeaders.h : include file for standard system include files,
-// or project specific include files that are used frequently, but
-// are changed infrequently
-//
+// For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef __incl_TestSystem_StableHeaders_h__
 #define __incl_TestSystem_StableHeaders_h__

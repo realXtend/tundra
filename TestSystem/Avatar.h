@@ -1,4 +1,4 @@
-
+// For conditions of distribution and use, see copyright notice in license.txt
 
 //! Rex avatar base class. Contains all non-renderer, non-protocol specific aspects of the rex avatar
 class Avatar

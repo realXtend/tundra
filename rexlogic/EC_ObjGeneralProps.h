@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #ifndef __incl_EC_ObjGeneralProps_h__
 #define __incl_EC_ObjGeneralProps_h__
 
