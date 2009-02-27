@@ -1,3 +1,4 @@
+// For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef __incl_GeometrySystem_EC_Geometry_h__
 #define __incl_GeometrySystem_EC_Geometry_h__

@@ -1,6 +1,5 @@
-// main.cpp : Defines the entry point for the console application.
-//
-//
+// For conditions of distribution and use, see copyright notice in license.txt
+
 
 #ifndef _WIN32_WINNT		// Allow use of features specific to Windows XP or later.                   
 #define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.

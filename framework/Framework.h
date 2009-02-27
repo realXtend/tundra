@@ -1,3 +1,4 @@
+// For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef __inc_Foundation_Framework_h__
 #define __inc_Foundation_Framework_h__

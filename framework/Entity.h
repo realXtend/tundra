@@ -1,3 +1,4 @@
+// For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef __inc_Entity_h__
 #define __inc_Entity_h__

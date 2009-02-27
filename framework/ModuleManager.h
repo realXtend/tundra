@@ -1,3 +1,4 @@
+// For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef __inc_Foundation_ModuleManager_h__
 #define __inc_Foundation_ModuleManager_h__
