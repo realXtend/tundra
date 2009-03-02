@@ -14,7 +14,9 @@ namespace Foundation
     class Framework
     {
     public:
+        //! default constructor
         Framework();
+        //! destructor
         ~Framework();
 
         //! entry point for the framework
@@ -29,11 +31,16 @@ namespace Foundation
         //! implementation of raycast service, uses internally RenderingSystemInterface for the service
         void raycast();
 
-        //! Signal the framework to exit at first possible moment
+        //! Signal the framework to exit at first possible opportunity
         void _exit() { mExitSignal = true; }
 
+        //! Returns true if framework is in the process of exiting (will exit at next possible opportunity)
+        bool isExiting() { return mExitSignal; }
+
     private:
+        //! Loads all available modules
         void loadModules();
+        //! Unloads all available modules
         void unloadModules();
 
         ModuleManagerPtr mModuleManager;

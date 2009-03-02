@@ -13,9 +13,6 @@ BOOST_AUTO_TEST_CASE( framework_test_module )
 {
     Foundation::Framework fw;
     fw.go();
-
-//    Foundation::EntityPtr entity = fw.getEntityManager()->createEntity();
-//    BOOST_REQUIRE (entity.get() != NULL);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
