@@ -1,7 +1,0 @@
-<config>
-	<module>GeometrySystem</module>
-	<module>RexLogic</module>
-	<module>OgreRenderingSystem</module>
-	<module>TestSystem</module>
-	<module>nonexisting module</module>
-</config>
