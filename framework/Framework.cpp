@@ -11,7 +11,7 @@
 
 namespace Foundation
 {
-    Framework::Framework()
+    Framework::Framework() : mExitSignal(false)
     {
         // create managers
         mModuleManager = ModuleManagerPtr(new ModuleManager(this));
@@ -31,15 +31,15 @@ namespace Foundation
         loadModules();
 
         // main loop
-        for (int i = 0; i < 2 ; ++i)
+        while (mExitSignal == false)
         {
-        // do synchronized update for modules
-        mModuleManager->updateModules();
+            // do synchronized update for modules
+            mModuleManager->updateModules();
 
-        // call asynchronous update on systems / do parallel tasks
+            // call asynchronous update on systems / do parallel tasks
 
-        // synchronize shared data across modules
-            mChangeManager->_propagateChanges();
+            // synchronize shared data across modules
+            //mChangeManager->_propagateChanges();
         }
 
         unloadModules();

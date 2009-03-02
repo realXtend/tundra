@@ -41,13 +41,13 @@ namespace Foundation
 
             \param name name of the component to create
         */
-        ComponentInterfacePtr createComponent(const std::string &componentName) const;
+        ComponentPtr createComponent(const std::string &componentName) const;
 
         //! Create clone of the specified component
-        ComponentInterfacePtr cloneComponent(const ComponentInterfacePtr &component) const;
+        ComponentPtr cloneComponent(const ComponentInterfacePtr &component) const;
         
         //! Get component by entity id and component type
-        ComponentInterfacePtr getComponent(Core::entity_id_t id, const std::string &component);
+        ComponentPtr getComponent(Core::entity_id_t id, const std::string &component);
         
 
     private:

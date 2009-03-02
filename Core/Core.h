@@ -7,6 +7,12 @@
 #include "CoreDefines.h"
 #include "CoreTypes.h"
 
+#include "CoreMath.h"
+#include "Vector3D.h"
+#include "Matrix4.h"
+#include "Quaternion.h"
+
+
 //! Core contains functionality and definitions that are common to all projects in the viewer.
 /*! It contains standard includes so you shouldn't need to include specific
     C++ standard library includes in your own code. It also contains

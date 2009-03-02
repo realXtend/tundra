@@ -10,11 +10,11 @@ namespace Core
     //typedef Ogre::Vector3 Vector3;
     //typedef Ogre::Vector4 Vector4;
     //typedef Ogre::Matrix4 Matrix4;
-    typedef int Vector3;
-    typedef int Vector4;
-    typedef int Matrix3;
-    typedef int Matrix4;
-    typedef int Quaternion;
+//    typedef int Vector3;
+//    typedef int Vector4;
+//    typedef int Matrix3;
+//    typedef int Matrix4;
+//    typedef int Quaternion;
 
     typedef unsigned long ulong;
     typedef unsigned int uint;
@@ -23,6 +23,10 @@ namespace Core
     typedef unsigned char u8;
     typedef float Real;
     typedef unsigned char uchar;
+    typedef Real f32;
+    typedef double f64;
+    typedef int s32;
+    typedef short s16;
     // etc... add more
 
     typedef unsigned int entity_id_t;
