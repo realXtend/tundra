@@ -14,5 +14,6 @@ WorldLogic::WorldLogic(Foundation::Framework *framework)
 
 WorldLogic::~WorldLogic()
 {
+    SAFE_DELETE (mNetworkHandler);
 }
 

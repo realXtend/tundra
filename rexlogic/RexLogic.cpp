@@ -69,7 +69,10 @@ void RexLogic::initialize(Foundation::Framework *framework)
 void RexLogic::uninitialize(Foundation::Framework *framework)
 {
     assert(mFramework);
+    SAFE_DELETE (mWorldLogic);
+
     mFramework = NULL;
+
 
     LOG("System " + name() + " uninitialized.");
 }
