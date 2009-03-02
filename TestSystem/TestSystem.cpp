@@ -72,6 +72,7 @@ namespace Test
         assert (component.get() != 0 && "Failed to get dummy component from entity.");
 
         mFramework->_exit();
+        assert (mFramework->isExiting());
     }
 }
 

@@ -107,7 +107,7 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="CoreStableHeaders.h"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
+				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
 			<Tool
