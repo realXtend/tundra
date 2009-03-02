@@ -350,6 +350,21 @@ namespace Core
 			array[3] = 0;
 		}
 
+        friend std::ostream& operator << ( std::ostream& out, const Vector3D<T>& v )
+        {
+            out << "Vector3D(" << v.x << ", " << v.y << ", " << v.z << ")";
+            return out;
+        }
+
+        static const Vector3D<f32> ZERO;
+        static const Vector3D<f32> UNIT_SCALE_X;
+        static const Vector3D<f32> UNIT_X;
+        static const Vector3D<f32> UNIT_Y;
+        static const Vector3D<f32> UNIT_Z;
+        static const Vector3D<f32> NEGATIVE_UNIT_X;
+        static const Vector3D<f32> NEGATIVE_UNIT_Y;
+        static const Vector3D<f32> NEGATIVE_UNIT_Z;
+
 		//! x coordinate of the vector
 		T x;
 		//! y coordinate of the vector
@@ -357,6 +372,9 @@ namespace Core
 		//! z coordinate of the vector
 		T z;
 	};
+
+ //   template class<T>
+ //   Vector3D<f32> Vector3D<f32>::ZERO(0, 0, 0);
 
 
 	//! Typedef for a f32 3d vector.
@@ -370,6 +388,30 @@ namespace Core
 	//! Function multiplying a scalar and a vector component-wise.
 	template<class S, class T>
 	Vector3D<T> operator*(const S scalar, const Vector3D<T>& vector) { return vector*scalar; }
+
+    template <class T>
+    const Core::Vector3df Core::Vector3D<T>::ZERO;
+
+    template <class T>
+    const Core::Vector3df Core::Vector3D<T>::UNIT_SCALE_X(1, 1, 1);
+
+    template <class T>
+    const Core::Vector3df Core::Vector3D<T>::UNIT_X(1, 0, 0);
+
+    template <class T>
+    const Core::Vector3df Core::Vector3D<T>::UNIT_Y(0, 1, 0);
+
+    template <class T>
+    const Core::Vector3df Core::Vector3D<T>::UNIT_Z(0, 0, 1);
+
+    template <class T>
+    const Core::Vector3df Core::Vector3D<T>::NEGATIVE_UNIT_X(-1, 0, 0);
+
+    template <class T>
+    const Core::Vector3df Core::Vector3D<T>::NEGATIVE_UNIT_Y(0, -1, 0);
+
+    template <class T>
+    const Core::Vector3df Core::Vector3D<T>::NEGATIVE_UNIT_Z(0, 0, -1);
 
 } // end namespace Core
 

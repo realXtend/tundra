@@ -7,6 +7,8 @@
 #include "Foundation.h"
 
 //! Unit test for framework
+BOOST_AUTO_TEST_SUITE(test_suite_foundation)
+
 BOOST_AUTO_TEST_CASE( framework_test_module )
 {
     Foundation::Framework fw;
@@ -16,3 +18,4 @@ BOOST_AUTO_TEST_CASE( framework_test_module )
 //    BOOST_REQUIRE (entity.get() != NULL);
 }
 
+BOOST_AUTO_TEST_SUITE_END()

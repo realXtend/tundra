@@ -48,6 +48,14 @@ class Quaternion
 		//! Equalilty operator
 		bool operator==(const Quaternion& other) const;
 
+        bool equals(const Quaternion other, const f32 tolerance = ROUNDING_ERROR_32 ) const
+		{
+			return Core::equals(x, other.x, tolerance) &&
+				Core::equals(y, other.y, tolerance) &&
+				Core::equals(z, other.z, tolerance) &&
+                Core::equals(w, other.w, tolerance);
+		}
+
 		//! Assignment operator
 		inline Quaternion& operator=(const Quaternion& other);
 
@@ -122,6 +130,15 @@ class Quaternion
 		//! Set Quaternion to represent a rotation from one vector to another.
 		Quaternion& rotationFromTo(const Vector3df& from, const Vector3df& to);
 
+        friend std::ostream& operator << ( std::ostream& out, const Quaternion& q )
+        {
+            out << "Quaternion(" << q.x << ", " << q.y << ", " << q.z << ", " << q.w << ")";
+            return out;
+        }
+
+        static const Quaternion ZERO;
+        static const Quaternion IDENTITY;
+
 		//! Quaternion elements.
 		f32 x, y, z, w;
 };
@@ -151,10 +168,11 @@ inline Quaternion::Quaternion(const Matrix4& mat)
 // equal operator
 inline bool Quaternion::operator==(const Quaternion& other) const
 {
-	return ((x == other.x) &&
-		(y == other.y) &&
-		(z == other.z) &&
-		(w == other.w));
+    return equals(other);
+	//return ((x == other.x) &&
+	//	(y == other.y) &&
+	//	(z == other.z) &&
+	//	(w == other.w));
 }
 
 

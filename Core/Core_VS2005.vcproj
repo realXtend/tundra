@@ -169,6 +169,10 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\Quaternion.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
