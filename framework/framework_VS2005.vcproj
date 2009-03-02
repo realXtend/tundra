@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="framework"
 	ProjectGUID="{3012938B-4009-46C2-B530-BF887FC21AEB}"
 	RootNamespace="framework"
@@ -17,7 +17,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
 			CharacterSet="2"
@@ -63,6 +63,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="PocoFoundationd.lib"
+				OutputFile="$(OutDir)\$(ProjectName)d.lib"
 				AdditionalLibraryDirectories="../external_libs"
 			/>
 			<Tool
@@ -83,7 +84,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
 			CharacterSet="2"

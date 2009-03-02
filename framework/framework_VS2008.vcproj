@@ -18,7 +18,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
 			CharacterSet="1"
@@ -64,6 +64,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="PocoFoundationd.lib"
+				OutputFile="$(OutDir)\$(ProjectName)d.lib"
 				AdditionalLibraryDirectories="../external_libs"
 			/>
 			<Tool
@@ -84,7 +85,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
 			CharacterSet="2"

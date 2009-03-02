@@ -16,7 +16,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/modules/core"
+			OutputDirectory="$(SolutionDir)bin/modules/core"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
@@ -95,7 +95,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/modules/core"
+			OutputDirectory="$(SolutionDir)bin/modules/core"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
