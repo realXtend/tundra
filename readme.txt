@@ -28,3 +28,6 @@ Boost Unit Test Framework is used for unit testing. See boost documentation for 
 The test runner is called UnitTests.exe and it is located in the same directory as the application executable.
 For return values, refer to boost documentation.
 
+Always run unit tests in debug mode, since some tests rely on asserts.
+Also run tests in final release mode.
+
