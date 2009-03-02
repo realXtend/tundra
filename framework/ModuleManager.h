@@ -3,12 +3,14 @@
 #ifndef __inc_Foundation_ModuleManager_h__
 #define __inc_Foundation_ModuleManager_h__
 
+#include <boost/filesystem.hpp>
+
 namespace Foundation
 {
     class ModuleInterface;
     class Framework;
 
-    //! Managers modules or plugins. Modules are loaded runtime.
+    //! Managers modules. Modules are loaded at runtime.
     /*! Assumption is that all modules get loaded when program is started, and unloaded when program exits.
         Modules may get initialized and uninitialized any number of times during the program's life time.
 
@@ -24,9 +26,10 @@ namespace Foundation
             - In the System's load()-function, declare all components the new module offers with DECLARE_MODULE_EC macro.
             - In the System's initialize()-function, register all services the new module offers
             - Also unregister all services in the uninitialize()-function.
-            - Add the module to the modules.xml file so it gets loaded runtime. If the name of the class that
-              inherits from ModuleInterface_Impl is different from the name of the actual module, add attribute
-              'entry="CLASS_NAME".
+            - Copy the module library file to modules-directory. Add a module definition file (xml file) that matches
+              the name of the module and that contains the module entry class name, if the name of the class that
+              inherits from ModuleInterface_Impl is different from the name of the actual module. Otherwise the module
+              definition file can be an empty file.
 
         \todo Track which modules are enabled (initialized) and which are not
         \note Do not use directly!
@@ -57,12 +60,25 @@ namespace Foundation
         void updateModules();
     private:
 
+        //! Loads module
+        /*!
+            \param path path to module definition file (xml)
+        */
+        void loadModule(const boost::filesystem::path &path);
+
+        //! loads module
+        /*!
+            \param moduleName path to the module
+            \param entryPoint name of the entry class
+        */
         void loadModule(const std::string &moduleName, const std::string &entryPoint);
 
         //! Initialize the specified module
         void initializeModule(ModuleInterface *module);
 
         void uninitializeModule(ModuleInterface *module);
+
+        static const char *DEFAULT_MODULES_PATH;
 
         //! list of modules managed by this manager
         std::vector<ModuleInterface*> mModules;

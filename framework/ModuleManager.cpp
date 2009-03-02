@@ -4,53 +4,39 @@
 #include "ModuleManager.h"
 #include "ModuleInterface.h"
 
+namespace fs = boost::filesystem;
+
 
 namespace Foundation
 {
+    const char *ModuleManager::DEFAULT_MODULES_PATH = "./modules";
+
     ModuleManager::~ModuleManager()
     {
-        //uninitializeModules();
-        //unloadModules();
     }
 
     void ModuleManager::loadAvailableModules()
     {
-        Poco::AutoPtr<Poco::Util::XMLConfiguration> config;
+        fs::path full_path = fs::system_complete(fs::path(DEFAULT_MODULES_PATH));
+        if ( !fs::exists( full_path ) || !fs::is_directory( full_path ))
+            throw std::exception("Failed to load modules, modules directory not found."); // can be considered fatal
 
-        std::string moduleconfigfile = Poco::Path::current();
-        moduleconfigfile.append("modules.xml");
-
-        try
+        
+        fs::recursive_directory_iterator iter( full_path );
+        fs::recursive_directory_iterator end_iter;
+        for ( ; iter != end_iter ; ++iter )
         {
-            config = new Poco::Util::XMLConfiguration(moduleconfigfile);
-        }
-        catch(Poco::FileNotFoundException & e)
-        {
-            LOGERROR("Config file not found: " + std::string(e.what()));
-            return;
-        }
-
-        Poco::Util::AbstractConfiguration::Keys keys;
-	    config->keys(keys);
-        for (size_t i=0 ; i<keys.size() ; ++i)
-        {
-            const std::string &moduleName = config->getString(keys[i]);
-            std::string entryPoint = moduleName;
             try
             {
-                entryPoint = config->getString(keys[i] + "[@entry]");
-            } catch (std::exception) {  }
-            try
+                if ( fs::is_regular_file( iter->status() ) )
+                {
+                    loadModule(iter->path());
+                    
+                }
+            } catch (std::exception &e) // may not be fatal, depending on which module failed
             {
-                loadModule(moduleName, entryPoint);
-            } catch (Poco::LibraryAlreadyLoadedException)
-            {
-                assert(false && "Attempting to load a module that is already loaded.");
-            } catch(std::exception & e)
-            {
-                LOGERROR("Exception: " + std::string(e.what()));
-                LOGERROR("Failed to load module: " + moduleName + ".");
-                return;
+                LOG(std::string("Exception: ") + e.what());
+                LOG("Failed to load module.");
             }
         }
     }
@@ -79,6 +65,37 @@ namespace Foundation
         }
     }
 
+    void ModuleManager::loadModule(const fs::path &path)
+    {
+        assert (path.has_filename());
+
+
+        std::string ext = path.extension();
+        boost::algorithm::to_lower(ext);
+        if (ext == ".xml")
+        {
+            fs::path modulePath(path);
+            modulePath.replace_extension("");
+
+            std::string entry = modulePath.filename();
+
+            Poco::AutoPtr<Poco::Util::XMLConfiguration> config;
+            try
+            {
+                config = new Poco::Util::XMLConfiguration(path.native_directory_string());
+                entry = config->getString("entry", entry);
+
+            }
+            catch(Poco::FileNotFoundException &e)
+            {
+                LOGERROR("Module definition file not found: " + std::string(e.what()));
+                return;
+            }
+            catch (std::exception) { /* no need to handle */ }
+
+            loadModule(modulePath.native_directory_string(), entry);
+        }
+    }
 
     void ModuleManager::loadModule(const std::string &moduleName, const std::string &entryPoint)
     {
