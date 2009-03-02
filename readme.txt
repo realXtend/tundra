@@ -21,3 +21,10 @@ License
 -------
 See license.txt file for license information.
 
+
+Unit Testing
+------------
+Boost Unit Test Framework is used for unit testing. See boost documentation for more information.
+The test runner is called UnitTests.exe and it is located in the same directory as the application executable.
+For return values, refer to boost documentation.
+
