@@ -32,8 +32,8 @@ namespace Geometry
         EC_Geometry() { }
         EC_Geometry(const EC_Geometry &other) { mPosition = other.mPosition; mScale = other.mScale; mOrientation = other.mOrientation; }
 
-        Core::Vector3 mPosition;
-        Core::Vector3 mScale;
+        Core::Vector3df mPosition;
+        Core::Vector3df mScale;
         Core::Quaternion mOrientation;
     };
 }

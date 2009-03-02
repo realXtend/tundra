@@ -8,7 +8,6 @@
 
 BOOST_AUTO_TEST_CASE( core_test )
 {
-    BOOST_REQUIRE (false);
-    assert (false);
+
 }
 

@@ -176,6 +176,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CoreMath.h"
+				>
+			</File>
+			<File
 				RelativePath=".\CoreStableHeaders.h"
 				>
 			</File>
@@ -185,6 +189,18 @@
 			</File>
 			<File
 				RelativePath=".\CoreTypes.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Matrix4.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Quaternion.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Vector3D.h"
 				>
 			</File>
 		</Filter>

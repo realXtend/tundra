@@ -62,7 +62,16 @@ namespace Test
         LOG("Constructing entity with component: " + Test::EC_Dummy::name() + ".");
 
         Foundation::EntityPtr entity = mFramework->getEntityManager()->createEntity();
-        entity->addEntityComponent(mFramework->getComponentManager()->createComponent(Test::EC_Dummy::name()));
+        assert (entity.get() != 0 && "Failed to create entity.");
+
+        Foundation::ComponentPtr component = mFramework->getComponentManager()->createComponent(Test::EC_Dummy::name());
+        assert (component.get() != 0 && "Failed to create dummy component.");
+
+        entity->addEntityComponent(component);
+        component = entity->getComponent(component->_name());
+        assert (component.get() != 0 && "Failed to get dummy component from entity.");
+
+        mFramework->_exit();
     }
 }
 

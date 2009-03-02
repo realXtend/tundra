@@ -23,6 +23,7 @@ namespace Foundation
     };
 
     typedef boost::shared_ptr<ComponentInterface> ComponentInterfacePtr;
+    typedef boost::shared_ptr<ComponentInterface> ComponentPtr;
 }
 
 #endif

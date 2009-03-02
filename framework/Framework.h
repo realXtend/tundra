@@ -29,6 +29,9 @@ namespace Foundation
         //! implementation of raycast service, uses internally RenderingSystemInterface for the service
         void raycast();
 
+        //! Signal the framework to exit at first possible moment
+        void _exit() { mExitSignal = true; }
+
     private:
         void loadModules();
         void unloadModules();
@@ -38,6 +41,9 @@ namespace Foundation
         ComponentManagerPtr mComponentManager;
         EntityManagerPtr mEntityManager;
         ServiceManagerPtr mServiceManager;
+
+        //! if true, exit application
+        bool mExitSignal;
     };
 }
 
