@@ -35,8 +35,8 @@ namespace Foundation
                 }
             } catch (std::exception &e) // may not be fatal, depending on which module failed
             {
-                LOG(std::string("Exception: ") + e.what());
-                LOG("Failed to load module.");
+                LOGERROR(std::string("Exception: ") + e.what());
+                LOGERROR("Failed to load module.");
             }
         }
     }

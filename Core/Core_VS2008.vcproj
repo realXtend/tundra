@@ -183,6 +183,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CoreCompileConfig.h"
+				>
+			</File>
+			<File
 				RelativePath=".\CoreDefines.h"
 				>
 			</File>

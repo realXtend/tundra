@@ -4,6 +4,7 @@
 #define __incl_Core_h__
 
 // Add all includes here that contain interfaces for the Core
+#include "CoreCompileConfig.h"
 #include "CoreDefines.h"
 #include "CoreTypes.h"
 

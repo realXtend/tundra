@@ -27,6 +27,7 @@
 #include <map>
 #include <set>
 #include <queue>
+#include <fstream>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/any.hpp>
@@ -38,6 +39,7 @@
 #include <Poco/ClassLibrary.h>
 #include <Poco/ClassLoader.h>
 #include <Poco/Util/XMLConfiguration.h>
+#include <Poco/XML/XMLWriter.h>
 
 
 #endif
