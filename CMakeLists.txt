@@ -10,7 +10,7 @@ set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FOR
 # Set project name
 project (rexNG)
 
-# Recurse subprojects
+# Add subprojects
 add_subdirectory (Core)
 add_subdirectory (framework)
 add_subdirectory (Interfaces)
