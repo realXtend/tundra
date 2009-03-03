@@ -18,3 +18,4 @@ link_directories (
 
 # Define static library
 add_library (${TARGET_NAME} STATIC ${SOURCE_FILES})
+set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
