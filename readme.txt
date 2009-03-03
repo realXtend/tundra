@@ -4,6 +4,7 @@ RexNG Viewer
 Compiling
 ---------
 Solutions are provided for Visual Studio 8 and 9. Install dependencies and make sure Visual Studio can find them. Dependencies can also be installed to external_libs directory.
+CMake build files also exist. See documentation/cmake.txt for more information.
 
 
 Dependencies

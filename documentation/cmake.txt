@@ -1,0 +1,16 @@
+To prepare or update system-specific build files with cmake, execute the command
+	cmake . 
+
+in the viewer root directory, which contains the top-level CMakeLists.txt file.
+
+For Visual Studio 2008, it may be necessary to give the command 
+	cmake -G "Visual Studio 9 2008"
+
+The CMakeLists files for individual subprojects (modules) find source files by wildcards (*.cpp *.h), so when new files are added, cmake only needs to be re-run to update the build files. When adding new subprojects, refer to existing CMakeLists files, and also add a corresponding add_subdirectory command to the top-level CMakeLists file.
+
+For examples of executables, see rex & UnitTests subprojects.
+For examples of static libraries, see Core & framework.
+For examples of dynamic libraries, see GeometrySystem for instance.
+
+Also check http://www.cmake.org/ for documentation & tutorials.
+

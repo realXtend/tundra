@@ -8,6 +8,7 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Define static library
 add_library (${TARGET_NAME} STATIC ${SOURCE_FILES})
+set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 
 # Have to define language, because there are no CPP files in the source directory
 set_target_properties (${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
