@@ -1,3 +1,6 @@
+# Define target name
+set (TARGET_NAME framework)
+
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
@@ -15,6 +18,5 @@ link_directories (
 	../external_libs
 )
 
-# Define library
-set (LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR})
-add_library (framework STATIC ${SOURCE_FILES})
+# Define static library
+add_library (${TARGET_NAME} STATIC ${SOURCE_FILES})

@@ -1,6 +1,11 @@
+# Define target name and output directory
+set (TARGET_NAME OgreRenderingSystem)
+set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/modules/core)
+
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
+file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Include directories
@@ -18,8 +23,20 @@ link_directories (
 )
 
 # Define dynamic library
-set (LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR})
-add_library (OgreRenderingSystem SHARED ${SOURCE_FILES})
+if (NOT MSVC)
+	SET (LIBRARY_OUTPUT_PATH ${TARGET_DIR})
+endif (NOT MSVC)
+
+add_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+
+if (MSVC)
+	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${CMAKE_CFG_INTDIR}/${TARGET_NAME}.dll ${TARGET_DIR})
+endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (OgreRenderingSystem framework)
+target_link_libraries (${TARGET_NAME} framework)
+
+# Copy XML files from source directory to target directory
+foreach (XML_FILE ${XML_FILES})
+	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
+endforeach (XML_FILE)

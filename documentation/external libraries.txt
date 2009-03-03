@@ -49,6 +49,9 @@ Copy Boost includes from the boost -directory to the viewer's external_libs/incl
 Copy the following libraries, both debug & release multithreaded variants, to the viewer's external_libs -directory:
 
 libboost_date_time
+libboost_filesystem
+libboost_system
 libboost_thread
 libboost_unit_test_framework
+
 
