@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="framework"
 	ProjectGUID="{3012938B-4009-46C2-B530-BF887FC21AEB}"
 	RootNamespace="framework"
@@ -164,6 +164,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ConfigurationManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Entity.cpp"
 				>
 			</File>
@@ -215,6 +219,10 @@
 			</File>
 			<File
 				RelativePath=".\ComponentManager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ConfigurationManager.h"
 				>
 			</File>
 			<File

@@ -165,6 +165,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ConfigurationManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Entity.cpp"
 				>
 			</File>
@@ -216,6 +220,10 @@
 			</File>
 			<File
 				RelativePath=".\ComponentManager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ConfigurationManager.h"
 				>
 			</File>
 			<File

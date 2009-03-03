@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="Core"
 	ProjectGUID="{DEAF7724-8D83-4D9E-998D-6934999F1486}"
 	RootNamespace="Core"
@@ -182,6 +182,10 @@
 			>
 			<File
 				RelativePath=".\Core.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CoreCompileConfig.h"
 				>
 			</File>
 			<File
