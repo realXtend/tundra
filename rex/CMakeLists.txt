@@ -1,3 +1,7 @@
+# Define target name and output directory
+set (TARGET_NAME rex)
+set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin)
+
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
@@ -17,8 +21,15 @@ link_directories (
 )
 
 # Define executable
-set (EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
-add_executable (rex ${SOURCE_FILES})
+if (NOT MSVC)
+	SET (EXECUTABLE_OUTPUT_PATH ${TARGET_DIR})
+endif (NOT MSVC)
+
+add_executable (${TARGET_NAME} ${SOURCE_FILES})
+
+if (MSVC)
+	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${CMAKE_CFG_INTDIR}/${TARGET_NAME}.exe ${TARGET_DIR})
+endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (rex Core framework)
+target_link_libraries (${TARGET_NAME} Core framework)
