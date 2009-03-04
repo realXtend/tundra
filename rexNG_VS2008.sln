@@ -2,6 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "framework", "framework\framework_VS2008.vcproj", "{3012938B-4009-46C2-B530-BF887FC21AEB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DEAF7724-8D83-4D9E-998D-6934999F1486} = {DEAF7724-8D83-4D9E-998D-6934999F1486}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rex", "rex\rex_VS2008.vcproj", "{94D659EC-19ED-44A5-939D-22C404B80AE4}"
 	ProjectSection(ProjectDependencies) = postProject

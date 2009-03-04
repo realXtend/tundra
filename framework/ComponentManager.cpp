@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "ComponentManager.h"
-#include "ModuleManager.h"
+//#include "ModuleManager.h"
 #include "Framework.h"
 #include "ComponentFactoryInterface.h"
 #include "ComponentInterface.h"

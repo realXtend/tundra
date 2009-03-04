@@ -9,6 +9,15 @@
 #include "ScriptSystemInterface.h"
 #include "SoundSystemInterface.h"
 #include "WorldLogicInterface.h" //! \todo should this be here?
+#include "TestServiceInterface.h"
+
+namespace Foundation
+{
+    namespace Service
+    {
+        enum Type { ST_Renderer, ST_Physics, ST_Gui, ST_Scripting, ST_Test };
+    }
+}
 
 #endif
 

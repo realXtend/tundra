@@ -5,6 +5,7 @@
 #include "CoreStdIncludes.h"
 #include "Core.h"
 #include "Foundation.h"
+#include "ServiceInterfaces.h"
 
 //! Unit test for framework
 BOOST_AUTO_TEST_SUITE(test_suite_foundation)
@@ -12,6 +13,7 @@ BOOST_AUTO_TEST_SUITE(test_suite_foundation)
 BOOST_AUTO_TEST_CASE( framework_test_module )
 {
     Foundation::Framework fw;
+    
     fw.go();
 }
 
