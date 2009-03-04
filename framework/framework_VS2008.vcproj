@@ -108,6 +108,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="2"
+				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="../Core;../Interfaces;../external_libs/include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
@@ -181,10 +183,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ServiceManager.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\StableHeaders.cpp"
 				>
 				<FileConfiguration
@@ -244,10 +242,6 @@
 			</File>
 			<File
 				RelativePath=".\ModuleManager.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ServiceManager.h"
 				>
 			</File>
 			<File

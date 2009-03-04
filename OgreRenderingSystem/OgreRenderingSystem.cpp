@@ -36,16 +36,13 @@ namespace OgreRenderer
     void OgreRenderingSystem::initialize(Foundation::Framework *framework)
     {
         mRenderer = OgreRenderer::RendererPtr(new OgreRenderer::Renderer);
-        framework->getServiceManager()->registerService(Foundation::Service_Renderer, mRenderer.get());
 
         LOG("System " + name() + " initialized.");
     }
 
     // virtual 
     void OgreRenderingSystem::uninitialize(Foundation::Framework *framework)
-    {
-        framework->getServiceManager()->unregisterService(mRenderer.get());
-        
+    {        
         mRenderer.reset();
 
         LOG("System " + name() + " uninitialized.");

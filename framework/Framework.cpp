@@ -5,7 +5,6 @@
 #include "ModuleManager.h"
 #include "ComponentManager.h"
 #include "EntityManager.h"
-#include "ServiceManager.h"
 #include "ServiceInterfaces.h"
 
 namespace Foundation
@@ -16,7 +15,6 @@ namespace Foundation
         mModuleManager = ModuleManagerPtr(new ModuleManager(this));
         mComponentManager = ComponentManagerPtr(new ComponentManager(this));
         mEntityManager = EntityManagerPtr(new EntityManager(this));
-        mServiceManager = ServiceManagerPtr(new ServiceManager(this));
     }
 
     Framework::~Framework()
@@ -53,11 +51,6 @@ namespace Foundation
     {
         mModuleManager->uninitializeModules();
         mModuleManager->unloadModules();
-    }
-
-    void Framework::raycast()
-    {
-        mServiceManager->_getService<RenderSystemInterface>(Service_Renderer)->raycast();
     }
 }
 

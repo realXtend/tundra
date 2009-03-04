@@ -180,10 +180,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ServiceManager.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\StableHeaders.cpp"
 				>
 				<FileConfiguration
@@ -243,10 +239,6 @@
 			</File>
 			<File
 				RelativePath=".\ModuleManager.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ServiceManager.h"
 				>
 			</File>
 			<File
