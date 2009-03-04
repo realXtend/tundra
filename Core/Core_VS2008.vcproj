@@ -82,7 +82,7 @@
 			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
-			CharacterSet="2"
+			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -198,6 +198,18 @@
 			</File>
 			<File
 				RelativePath=".\CoreMath.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CorePlatform.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CorePlatformNix.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CorePlatformWin.h"
 				>
 			</File>
 			<File

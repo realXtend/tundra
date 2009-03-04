@@ -51,8 +51,7 @@
 #endif
 
 int run(void);
-void message(const std::string& title, const std::string& text);
-void messageU(const std::wstring& title, const std::wstring& text);
+
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
 int generateDump(EXCEPTION_POINTERS* pExceptionPointers);
 #endif
@@ -99,30 +98,13 @@ int run(void)
     } 
     catch ( std::exception& e )
     {
-        message("An exception has occurred!", e.what());
+        Core::Platform::message("An exception has occurred!", e.what());
         retVal = EXIT_FAILURE;
     }
 
     return retVal;
 }
 
-void message(const std::string& title, const std::string& text)
-{
-#  ifdef WIN32
-      MessageBoxA( NULL, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
-#  else
-      std::cerr << title << " " << text;
-#  endif
-}
-
-void messageU(const std::wstring& title, const std::wstring& text)
-{
-#  ifdef WIN32
-      MessageBox( NULL, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
-#  else
-      std::wcerr << title << " " << text;
-#  endif
-}
 
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
 int generateDump(EXCEPTION_POINTERS* pExceptionPointers)
@@ -165,9 +147,9 @@ int generateDump(EXCEPTION_POINTERS* pExceptionPointers)
     message += szFileName;
 
     if (bMiniDumpSuccessful)
-        messageU(L"Minidump generated!", message);
+        Core::Platform::message(L"Minidump generated!", message);
     else
-        messageU(szAppName, L"Un unexpected error was encountred while generating minidump!");
+        Core::Platform::message(szAppName, L"Un unexpected error was encountred while generating minidump!");
 
     return EXCEPTION_EXECUTE_HANDLER;
 }
