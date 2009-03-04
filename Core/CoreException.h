@@ -5,26 +5,77 @@
 
 namespace Core
 {
+    //! Generic exception class.
+    /*! 
+        \note Uses non-safe string manipulation, so do not supply exception parameters from outside source!
+    */
     class Exception : public std::exception
     {
     public:
-        Exception() : std::exception() {}
+        Exception() : std::exception(), what_(0), do_free_(0) {}
 
-        explicit Exception(const char *exception) : std::exception(), exception_(exception) {}
+        explicit Exception(const char * const& what) : std::exception()
+        {
+            do_free_ = 1;
+
+            int len = strlen(what);
+            what_ = static_cast< char* >(malloc(len + 1));
+            strcpy(const_cast< char* >(what_), what);
+        }
 
         Exception(const Exception &other)
         {
-            exception_ = other.exception_;
+            do_free_ = other.do_free_;
+
+            if (do_free_)
+            {
+                int len = strlen(other.what_);
+                what_ = static_cast< char* >(malloc(len + 1));
+                strcpy(const_cast< char* >(what_), other.what_);
+            } else
+            {
+                what_ = other.what_;
+            }
         }
 
-        virtual ~Exception() {}
+        Exception& operator =(const Exception &other)
+        {
+            if (this != &other)
+            {
+                do_free_ = other.do_free_;
+
+                if (do_free_)
+                {
+                    int len = strlen(other.what_);
+                    what_ = static_cast< char* >(malloc(len + 1));
+                    strcpy(const_cast< char* >(what_), other.what_);
+                } else
+                {
+                    what_ = other.what_;
+                }
+            }
+
+            return *this;
+        }
+
+        virtual ~Exception()
+        {
+            if (do_free_)
+            {
+                free(const_cast< char* >(what_));
+            }
+        }
 
         virtual const char *what () const throw ()
         {
-            return exception_;
+            if (what_ != 0)
+                return what_;
+            else
+                return "Unknown exception";
         }
     private:
-        const char *exception_;
+        const char *what_;
+        int do_free_;
     };
 }
 #endif
