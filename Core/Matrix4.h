@@ -639,9 +639,9 @@ namespace Core
 	template <class T>
 	inline CMatrix4<T>& CMatrix4<T>::setTranslation( const Vector3D<T>& translation )
 	{
-		M[12] = translation.X;
-		M[13] = translation.Y;
-		M[14] = translation.Z;
+		M[12] = translation.x;
+		M[13] = translation.y;
+		M[14] = translation.z;
 		definitelyIdentityMatrix=false;
 		return *this;
 	}
@@ -649,9 +649,9 @@ namespace Core
 	template <class T>
 	inline CMatrix4<T>& CMatrix4<T>::setInverseTranslation( const Vector3D<T>& translation )
 	{
-		M[12] = -translation.X;
-		M[13] = -translation.Y;
-		M[14] = -translation.Z;
+		M[12] = -translation.x;
+		M[13] = -translation.y;
+		M[14] = -translation.z;
 		definitelyIdentityMatrix=false;
 		return *this;
 	}
@@ -659,9 +659,9 @@ namespace Core
 	template <class T>
 	inline CMatrix4<T>& CMatrix4<T>::setScale( const Vector3D<T>& scale )
 	{
-		M[0] = scale.X;
-		M[5] = scale.Y;
-		M[10] = scale.Z;
+		M[0] = scale.x;
+		M[5] = scale.y;
+		M[10] = scale.z;
 		definitelyIdentityMatrix=false;
 		return *this;
 	}
@@ -687,12 +687,12 @@ namespace Core
 	template <class T>
 	inline CMatrix4<T>& CMatrix4<T>::setRotationRadians( const Vector3D<T>& rotation )
 	{
-		const f64 cr = cos( rotation.X );
-		const f64 sr = sin( rotation.X );
-		const f64 cp = cos( rotation.Y );
-		const f64 sp = sin( rotation.Y );
-		const f64 cy = cos( rotation.Z );
-		const f64 sy = sin( rotation.Z );
+		const f64 cr = cos( rotation.x );
+		const f64 sr = sin( rotation.x );
+		const f64 cp = cos( rotation.y );
+		const f64 sp = sin( rotation.y );
+		const f64 cy = cos( rotation.z );
+		const f64 sy = sin( rotation.z );
 
 		M[0] = (T)( cp*cy );
 		M[1] = (T)( cp*sy );
@@ -760,12 +760,12 @@ namespace Core
 	template <class T>
 	inline CMatrix4<T>& CMatrix4<T>::setInverseRotationRadians( const Vector3D<T>& rotation )
 	{
-		f64 cr = cos( rotation.X );
-		f64 sr = sin( rotation.X );
-		f64 cp = cos( rotation.Y );
-		f64 sp = sin( rotation.Y );
-		f64 cy = cos( rotation.Z );
-		f64 sy = sin( rotation.Z );
+		f64 cr = cos( rotation.x );
+		f64 sr = sin( rotation.x );
+		f64 cp = cos( rotation.y );
+		f64 sp = sin( rotation.y );
+		f64 cy = cos( rotation.z );
+		f64 sy = sin( rotation.z );
 
 		M[0] = (T)( cp*cy );
 		M[4] = (T)( cp*sy );
@@ -861,36 +861,36 @@ namespace Core
 	inline void CMatrix4<T>::rotateVect( Vector3df& vect ) const
 	{
 		Vector3df tmp = vect;
-		vect.X = tmp.X*M[0] + tmp.Y*M[4] + tmp.Z*M[8];
-		vect.Y = tmp.X*M[1] + tmp.Y*M[5] + tmp.Z*M[9];
-		vect.Z = tmp.X*M[2] + tmp.Y*M[6] + tmp.Z*M[10];
+		vect.x = tmp.x*M[0] + tmp.y*M[4] + tmp.z*M[8];
+		vect.y = tmp.x*M[1] + tmp.y*M[5] + tmp.z*M[9];
+		vect.z = tmp.x*M[2] + tmp.y*M[6] + tmp.z*M[10];
 	}
 
 	//! An alternate transform vector method, writing into a second vector
 	template <class T>
 	inline void CMatrix4<T>::rotateVect(Core::Vector3df& out, const Core::Vector3df& in) const
 	{
-		out.X = in.X*M[0] + in.Y*M[4] + in.Z*M[8];
-		out.Y = in.X*M[1] + in.Y*M[5] + in.Z*M[9];
-		out.Z = in.X*M[2] + in.Y*M[6] + in.Z*M[10];
+		out.x = in.x*M[0] + in.y*M[4] + in.z*M[8];
+		out.y = in.x*M[1] + in.y*M[5] + in.z*M[9];
+		out.z = in.x*M[2] + in.y*M[6] + in.z*M[10];
 	}
 
 	//! An alternate transform vector method, writing into an array of 3 floats
 	template <class T>
 	inline void CMatrix4<T>::rotateVect(T *out, const Core::Vector3df& in) const
 	{
-		out[0] = in.X*M[0] + in.Y*M[4] + in.Z*M[8];
-		out[1] = in.X*M[1] + in.Y*M[5] + in.Z*M[9];
-		out[2] = in.X*M[2] + in.Y*M[6] + in.Z*M[10];
+		out[0] = in.x*M[0] + in.y*M[4] + in.z*M[8];
+		out[1] = in.x*M[1] + in.y*M[5] + in.z*M[9];
+		out[2] = in.x*M[2] + in.y*M[6] + in.z*M[10];
 	}
 
 	template <class T>
 	inline void CMatrix4<T>::inverseRotateVect( Vector3df& vect ) const
 	{
 		Vector3df tmp = vect;
-		vect.X = tmp.X*M[0] + tmp.Y*M[1] + tmp.Z*M[2];
-		vect.Y = tmp.X*M[4] + tmp.Y*M[5] + tmp.Z*M[6];
-		vect.Z = tmp.X*M[8] + tmp.Y*M[9] + tmp.Z*M[10];
+		vect.x = tmp.x*M[0] + tmp.y*M[1] + tmp.z*M[2];
+		vect.y = tmp.x*M[4] + tmp.y*M[5] + tmp.z*M[6];
+		vect.z = tmp.x*M[8] + tmp.y*M[9] + tmp.z*M[10];
 	}
 
 	template <class T>
@@ -898,31 +898,31 @@ namespace Core
 	{
 		f32 vector[3];
 
-		vector[0] = vect.X*M[0] + vect.Y*M[4] + vect.Z*M[8] + M[12];
-		vector[1] = vect.X*M[1] + vect.Y*M[5] + vect.Z*M[9] + M[13];
-		vector[2] = vect.X*M[2] + vect.Y*M[6] + vect.Z*M[10] + M[14];
+		vector[0] = vect.x*M[0] + vect.y*M[4] + vect.z*M[8] + M[12];
+		vector[1] = vect.x*M[1] + vect.y*M[5] + vect.z*M[9] + M[13];
+		vector[2] = vect.x*M[2] + vect.y*M[6] + vect.z*M[10] + M[14];
 
-		vect.X = vector[0];
-		vect.Y = vector[1];
-		vect.Z = vector[2];
+		vect.x = vector[0];
+		vect.y = vector[1];
+		vect.z = vector[2];
 	}
 
 	template <class T>
 	inline void CMatrix4<T>::transformVect( Vector3df& out, const Vector3df& in) const
 	{
-		out.X = in.X*M[0] + in.Y*M[4] + in.Z*M[8] + M[12];
-		out.Y = in.X*M[1] + in.Y*M[5] + in.Z*M[9] + M[13];
-		out.Z = in.X*M[2] + in.Y*M[6] + in.Z*M[10] + M[14];
+		out.x = in.x*M[0] + in.y*M[4] + in.z*M[8] + M[12];
+		out.y = in.x*M[1] + in.y*M[5] + in.z*M[9] + M[13];
+		out.z = in.x*M[2] + in.y*M[6] + in.z*M[10] + M[14];
 	}
 
 
 	template <class T>
 	inline void CMatrix4<T>::transformVect(T *out, const Core::Vector3df &in) const
 	{
-		out[0] = in.X*M[0] + in.Y*M[4] + in.Z*M[8] + M[12];
-		out[1] = in.X*M[1] + in.Y*M[5] + in.Z*M[9] + M[13];
-		out[2] = in.X*M[2] + in.Y*M[6] + in.Z*M[10] + M[14];
-		out[3] = in.X*M[3] + in.Y*M[7] + in.Z*M[11] + M[15];
+		out[0] = in.x*M[0] + in.y*M[4] + in.z*M[8] + M[12];
+		out[1] = in.x*M[1] + in.y*M[5] + in.z*M[9] + M[13];
+		out[2] = in.x*M[2] + in.y*M[6] + in.z*M[10] + M[14];
+		out[3] = in.x*M[3] + in.y*M[7] + in.z*M[11] + M[15];
 	}
 
 
@@ -940,8 +940,8 @@ namespace Core
 	//	// The normal needs to be rotated and inverse scaled, but not translated.
 	//	const Vector3df scale = getScale();
 
-	//	if(!equals(scale.X, 0.f) && !equals(scale.Y, 0.f) && !equals(scale.Z, 0.f)
-	//		&& (!equals(scale.X, 1.f) || !equals(scale.Y, 1.f) || !equals(scale.Z, 1.f)))
+	//	if(!equals(scale.x, 0.f) && !equals(scale.y, 0.f) && !equals(scale.z, 0.f)
+	//		&& (!equals(scale.x, 1.f) || !equals(scale.y, 1.f) || !equals(scale.z, 1.f)))
 	//	{
 	//		// Rotating the vector will also apply the scale, so we have to invert it twice.
 	//		normal /= (scale * scale);
@@ -977,8 +977,8 @@ namespace Core
 	//template <class T>
 	//inline void CMatrix4<T>::transformBoxEx(Core::aabbox3d<f32>& box) const
 	//{
-	//	const f32 Amin[3] = {box.MinEdge.X, box.MinEdge.Y, box.MinEdge.Z};
-	//	const f32 Amax[3] = {box.MaxEdge.X, box.MaxEdge.Y, box.MaxEdge.Z};
+	//	const f32 Amin[3] = {box.MinEdge.x, box.MinEdge.y, box.MinEdge.z};
+	//	const f32 Amax[3] = {box.MaxEdge.x, box.MaxEdge.y, box.MaxEdge.z};
 
 	//	f32 Bmin[3];
 	//	f32 Bmax[3];
@@ -1009,13 +1009,13 @@ namespace Core
 	//		}
 	//	}
 
-	//	box.MinEdge.X = Bmin[0];
-	//	box.MinEdge.Y = Bmin[1];
-	//	box.MinEdge.Z = Bmin[2];
+	//	box.MinEdge.x = Bmin[0];
+	//	box.MinEdge.y = Bmin[1];
+	//	box.MinEdge.z = Bmin[2];
 
-	//	box.MaxEdge.X = Bmax[0];
-	//	box.MaxEdge.Y = Bmax[1];
-	//	box.MaxEdge.Z = Bmax[2];
+	//	box.MaxEdge.x = Bmax[0];
+	//	box.MaxEdge.y = Bmax[1];
+	//	box.MaxEdge.z = Bmax[2];
 	//}
 
 
@@ -1045,17 +1045,17 @@ namespace Core
 	template <class T>
 	inline void CMatrix4<T>::inverseTranslateVect( Vector3df& vect ) const
 	{
-		vect.X = vect.X-M[12];
-		vect.Y = vect.Y-M[13];
-		vect.Z = vect.Z-M[14];
+		vect.x = vect.x-M[12];
+		vect.y = vect.y-M[13];
+		vect.z = vect.z-M[14];
 	}
 
 	template <class T>
 	inline void CMatrix4<T>::translateVect( Vector3df& vect ) const
 	{
-		vect.X = vect.X+M[12];
-		vect.Y = vect.Y+M[13];
-		vect.Z = vect.Z+M[14];
+		vect.x = vect.x+M[12];
+		vect.y = vect.y+M[13];
+		vect.z = vect.z+M[14];
 	}
 
 
@@ -1417,24 +1417,24 @@ namespace Core
 	//	plane.Normal.normalize();
 	//	const f32 d = plane.Normal.dotProduct(light);
 
-	//	M[ 0] = (T)(-plane.Normal.X * light.X + d);
-	//	M[ 1] = (T)(-plane.Normal.X * light.Y);
-	//	M[ 2] = (T)(-plane.Normal.X * light.Z);
-	//	M[ 3] = (T)(-plane.Normal.X * point);
+	//	M[ 0] = (T)(-plane.Normal.x * light.x + d);
+	//	M[ 1] = (T)(-plane.Normal.x * light.y);
+	//	M[ 2] = (T)(-plane.Normal.x * light.z);
+	//	M[ 3] = (T)(-plane.Normal.x * point);
 
-	//	M[ 4] = (T)(-plane.Normal.Y * light.X);
-	//	M[ 5] = (T)(-plane.Normal.Y * light.Y + d);
-	//	M[ 6] = (T)(-plane.Normal.Y * light.Z);
-	//	M[ 7] = (T)(-plane.Normal.Y * point);
+	//	M[ 4] = (T)(-plane.Normal.y * light.x);
+	//	M[ 5] = (T)(-plane.Normal.y * light.y + d);
+	//	M[ 6] = (T)(-plane.Normal.y * light.z);
+	//	M[ 7] = (T)(-plane.Normal.y * point);
 
-	//	M[ 8] = (T)(-plane.Normal.Z * light.X);
-	//	M[ 9] = (T)(-plane.Normal.Z * light.Y);
-	//	M[10] = (T)(-plane.Normal.Z * light.Z + d);
-	//	M[11] = (T)(-plane.Normal.Z * point);
+	//	M[ 8] = (T)(-plane.Normal.z * light.x);
+	//	M[ 9] = (T)(-plane.Normal.z * light.y);
+	//	M[10] = (T)(-plane.Normal.z * light.z + d);
+	//	M[11] = (T)(-plane.Normal.z * point);
 
-	//	M[12] = (T)(-plane.D * light.X);
-	//	M[13] = (T)(-plane.D * light.Y);
-	//	M[14] = (T)(-plane.D * light.Z);
+	//	M[12] = (T)(-plane.D * light.x);
+	//	M[13] = (T)(-plane.D * light.y);
+	//	M[14] = (T)(-plane.D * light.z);
 	//	M[15] = (T)(-plane.D * point + d);
 	//	definitelyIdentityMatrix=false;
 	//	return *this;
@@ -1455,19 +1455,19 @@ namespace Core
 
 		Vector3df yaxis = zaxis.crossProduct(xaxis);
 
-		M[0] = (T)xaxis.X;
-		M[1] = (T)yaxis.X;
-		M[2] = (T)zaxis.X;
+		M[0] = (T)xaxis.x;
+		M[1] = (T)yaxis.x;
+		M[2] = (T)zaxis.x;
 		M[3] = 0;
 
-		M[4] = (T)xaxis.Y;
-		M[5] = (T)yaxis.Y;
-		M[6] = (T)zaxis.Y;
+		M[4] = (T)xaxis.y;
+		M[5] = (T)yaxis.y;
+		M[6] = (T)zaxis.y;
 		M[7] = 0;
 
-		M[8] = (T)xaxis.Z;
-		M[9] = (T)yaxis.Z;
-		M[10] = (T)zaxis.Z;
+		M[8] = (T)xaxis.z;
+		M[9] = (T)yaxis.z;
+		M[10] = (T)zaxis.z;
 		M[11] = 0;
 
 		M[12] = (T)-xaxis.dotProduct(position);
@@ -1494,19 +1494,19 @@ namespace Core
 
 		Vector3df yaxis = zaxis.crossProduct(xaxis);
 
-		M[0] = (T)xaxis.X;
-		M[1] = (T)yaxis.X;
-		M[2] = (T)zaxis.X;
+		M[0] = (T)xaxis.x;
+		M[1] = (T)yaxis.x;
+		M[2] = (T)zaxis.x;
 		M[3] = 0;
 
-		M[4] = (T)xaxis.Y;
-		M[5] = (T)yaxis.Y;
-		M[6] = (T)zaxis.Y;
+		M[4] = (T)xaxis.y;
+		M[5] = (T)yaxis.y;
+		M[6] = (T)zaxis.y;
 		M[7] = 0;
 
-		M[8] = (T)xaxis.Z;
-		M[9] = (T)yaxis.Z;
-		M[10] = (T)zaxis.Z;
+		M[8] = (T)xaxis.z;
+		M[9] = (T)yaxis.z;
+		M[10] = (T)zaxis.z;
 		M[11] = 0;
 
 		M[12] = (T)-xaxis.dotProduct(position);
@@ -1579,8 +1579,8 @@ namespace Core
 	//	const f32 scaleX = (viewport.getWidth() - 0.75f ) / 2.0f;
 	//	const f32 scaleY = -(viewport.getHeight() - 0.75f ) / 2.0f;
 
-	//	const f32 dx = -0.5f + ( (viewport.UpperLeftCorner.X + viewport.LowerRightCorner.X ) / 2.0f );
-	//	const f32 dy = -0.5f + ( (viewport.UpperLeftCorner.Y + viewport.LowerRightCorner.Y ) / 2.0f );
+	//	const f32 dx = -0.5f + ( (viewport.UpperLeftCorner.x + viewport.LowerRightCorner.x ) / 2.0f );
+	//	const f32 dy = -0.5f + ( (viewport.UpperLeftCorner.y + viewport.LowerRightCorner.y ) / 2.0f );
 
 	//	makeIdentity();
 	//	M[12] = (T)dx;
@@ -1609,18 +1609,18 @@ namespace Core
 	//	const f32 c = cosf(rotateRad);
 	//	const f32 s = sinf(rotateRad);
 
-	//	M[0] = (T)(c * scale.X);
-	//	M[1] = (T)(s * scale.Y);
+	//	M[0] = (T)(c * scale.x);
+	//	M[1] = (T)(s * scale.y);
 	//	M[2] = 0;
 	//	M[3] = 0;
 
-	//	M[4] = (T)(-s * scale.X);
-	//	M[5] = (T)(c * scale.Y);
+	//	M[4] = (T)(-s * scale.x);
+	//	M[5] = (T)(c * scale.y);
 	//	M[6] = 0;
 	//	M[7] = 0;
 
-	//	M[8] = (T)(c * scale.X * rotatecenter.X + -s * rotatecenter.Y + translate.X);
-	//	M[9] = (T)(s * scale.Y * rotatecenter.X +  c * rotatecenter.Y + translate.Y);
+	//	M[8] = (T)(c * scale.x * rotatecenter.x + -s * rotatecenter.y + translate.x);
+	//	M[9] = (T)(s * scale.y * rotatecenter.x +  c * rotatecenter.y + translate.y);
 	//	M[10] = 1;
 	//	M[11] = 0;
 
