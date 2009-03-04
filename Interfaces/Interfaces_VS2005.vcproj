@@ -157,11 +157,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\GuiSystemInterface.h"
+				RelativePath=".\GuiServiceInterface.h"
 				>
 			</File>
 			<File
-				RelativePath=".\InputSystemInterface.h"
+				RelativePath=".\InputServiceInterface.h"
 				>
 			</File>
 			<File
@@ -169,15 +169,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\PhysicsSystemInterface.h"
+				RelativePath=".\PhysicsServiceInterface.h"
 				>
 			</File>
 			<File
-				RelativePath=".\RenderSystemInterface.h"
+				RelativePath=".\RenderServiceInterface.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ScriptSystemInterface.h"
+				RelativePath=".\ScriptServiceInterface.h"
 				>
 			</File>
 			<File
@@ -189,7 +189,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SoundSystemInterface.h"
+				RelativePath=".\SoundServiceInterface.h"
 				>
 			</File>
 			<File
