@@ -7,6 +7,7 @@
 #include "CoreCompileConfig.h"
 #include "CoreDefines.h"
 #include "CoreTypes.h"
+#include "CoreException.h"
 
 #include "CoreMath.h"
 #include "Vector3D.h"

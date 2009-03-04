@@ -8,6 +8,18 @@
 
 BOOST_AUTO_TEST_SUITE(test_suite_core)
 
+
+BOOST_AUTO_TEST_CASE( core_exception )
+{
+    try
+    {
+        throw Core::Exception("exception test");
+    } catch (Core::Exception e)
+    {
+        BOOST_CHECK_EQUAL(std::string(e.what()), "exception test");
+    }
+}
+
 BOOST_AUTO_TEST_CASE( core_vector3 )
 {
     Core::Vector3df test;
