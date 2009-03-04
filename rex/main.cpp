@@ -120,7 +120,7 @@ void messageU(const std::wstring& title, const std::wstring& text)
 #  ifdef WIN32
       MessageBox( NULL, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
 #  else
-      std::cerr << title << " " << text;
+      std::wcerr << title << " " << text;
 #  endif
 }
 
