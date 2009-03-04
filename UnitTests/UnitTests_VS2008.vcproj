@@ -115,15 +115,16 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
-				EnableIntrinsicFunctions="true"
+				Optimization="3"
+				EnableIntrinsicFunctions="false"
+				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="../framework;../Interfaces;../Core;../external_libs/include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="false"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				DebugInformationFormat="3"
+				DebugInformationFormat="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -136,6 +137,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalOptions="/LTCG"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="../external_libs"
 				GenerateDebugInformation="true"

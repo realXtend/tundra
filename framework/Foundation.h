@@ -10,7 +10,6 @@
 #include "ModuleManager.h"
 #include "EntityManager.h"
 #include "Entity.h"
-#include "ServiceManager.h"
 #include "ConfigurationManager.h"
 
 //! Foundation is the main helper in your quest to create new or improved functionality for the realXtend viewer.
@@ -30,6 +29,9 @@
     you create yourself.
 
     For creating new components, see ComponentManager.
+
+    - ConfigurationManager provides access to immutable name-value pairs
+    defined in an external file.
 
 
     - Framework class is the entry point for the viewer. It contains the main

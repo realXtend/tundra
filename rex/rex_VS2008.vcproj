@@ -118,6 +118,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="../Core;../framework;../Interfaces;../external_libs/include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_DMEMDUMP;_WINDOWS"
 				RuntimeLibrary="2"
