@@ -37,7 +37,7 @@ namespace Foundation
     class ModuleManager
     {
     public:
-        ModuleManager(Framework *framework) : mFramework(framework) {}
+        ModuleManager(Framework *framework);
         ~ModuleManager();
 
         //! loads all available modules. Does not initialize them.
@@ -78,7 +78,7 @@ namespace Foundation
 
         void uninitializeModule(ModuleInterface *module);
 
-        static const char *DEFAULT_MODULES_PATH;
+        const std::string DEFAULT_MODULES_PATH;
 
         //! list of modules managed by this manager
         std::vector<ModuleInterface*> mModules;

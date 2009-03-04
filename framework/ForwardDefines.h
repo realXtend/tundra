@@ -6,7 +6,6 @@
 namespace Foundation
 {
     class ModuleManager;
-    class ChangeManager;
     class ComponentManager;
     class ComponentFactoryInterface;
     class Entity;
@@ -14,7 +13,6 @@ namespace Foundation
     class ServiceManager;
 
     typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
-    typedef boost::shared_ptr<ChangeManager> ChangeManagerPtr;
     typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
     typedef boost::shared_ptr<ComponentFactoryInterface> ComponentFactoryInterfacePtr;
     typedef boost::shared_ptr<Entity> EntityPtr;

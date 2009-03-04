@@ -6,7 +6,6 @@
 #include "ForwardDefines.h"
 #include "Framework.h"
 #include "Declare_EC.h"
-#include "ChangeManager.h"
 #include "ComponentManager.h"
 #include "ModuleManager.h"
 #include "EntityManager.h"

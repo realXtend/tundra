@@ -4,6 +4,7 @@
 #define __inc_Foundation_Framework_h__
 
 #include "ForwardDefines.h"
+#include "ConfigurationManager.h"
 
 
 namespace Foundation
@@ -22,11 +23,9 @@ namespace Foundation
         //! entry point for the framework
         void go();
 
-        ChangeManagerPtr getChangeManager() const { return mChangeManager; }
         ComponentManagerPtr getComponentManager() const { return mComponentManager; }
         EntityManagerPtr getEntityManager() const { return mEntityManager; }
         ServiceManagerPtr getServiceManager() const { return mServiceManager; }
-
 
         //! implementation of raycast service, uses internally RenderingSystemInterface for the service
         void raycast();
@@ -37,6 +36,13 @@ namespace Foundation
         //! Returns true if framework is in the process of exiting (will exit at next possible opportunity)
         bool isExiting() { return mExitSignal; }
 
+        //! Returns the default configuration manager
+        static ConfigurationManager &getDefaultConfig()
+        {
+            static ConfigurationManager manager(ConfigurationManager::CT_DEFAULT);
+            return manager;
+        }
+
     private:
         //! Loads all available modules
         void loadModules();
@@ -44,7 +50,6 @@ namespace Foundation
         void unloadModules();
 
         ModuleManagerPtr mModuleManager;
-        ChangeManagerPtr mChangeManager;
         ComponentManagerPtr mComponentManager;
         EntityManagerPtr mEntityManager;
         ServiceManagerPtr mServiceManager;

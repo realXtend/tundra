@@ -16,8 +16,6 @@ public:
 
     virtual void handleNetworkData(std::string data);
 
-    static void registerChanges(const Foundation::ChangeManagerPtr &manager) { }
-
     static std::vector<std::string> getNetworkMessages()
     {
         std::vector<std::string> myinterest;

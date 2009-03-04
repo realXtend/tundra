@@ -3,7 +3,6 @@
 #include "StableHeaders.h"
 #include "Framework.h"
 #include "ModuleManager.h"
-#include "ChangeManager.h"
 #include "ComponentManager.h"
 #include "EntityManager.h"
 #include "ServiceManager.h"
@@ -15,7 +14,6 @@ namespace Foundation
     {
         // create managers
         mModuleManager = ModuleManagerPtr(new ModuleManager(this));
-        mChangeManager = ChangeManagerPtr(new ChangeManager);
         mComponentManager = ComponentManagerPtr(new ComponentManager(this));
         mEntityManager = EntityManagerPtr(new EntityManager(this));
         mServiceManager = ServiceManagerPtr(new ServiceManager(this));

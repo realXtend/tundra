@@ -29,20 +29,9 @@
 
 */
 
-#ifndef _WIN32_WINNT		// Allow use of features specific to Windows XP or later.                   
-#define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.
-#endif
-
-#if defined(WIN32)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-
-#include <string>
-#include <boost/shared_ptr.hpp>
-
-//#include "Core.h"
-#include "Framework.h"
+#include "CoreStdIncludes.h"
+#include "Core.h"
+#include "Foundation.h"
 
 
 #if defined(_MSC_VER) && defined(_DMEMORYLEAKS)
@@ -150,7 +139,7 @@ int generateDump(EXCEPTION_POINTERS* pExceptionPointers)
     MINIDUMP_EXCEPTION_INFORMATION ExpParam;
 
     GetLocalTime( &stLocalTime );
-    GetTempPath( dwBufferSize, szPath );
+    GetTempPathW( dwBufferSize, szPath );
 
     StringCchPrintf( szFileName, MAX_PATH, L"%s%s", szPath, szAppName );
     CreateDirectoryW( szFileName, NULL );
@@ -160,7 +149,7 @@ int generateDump(EXCEPTION_POINTERS* pExceptionPointers)
                stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond, 
                GetCurrentProcessId(), GetCurrentThreadId());
 
-    hDumpFile = CreateFile(szFileName, GENERIC_READ|GENERIC_WRITE, 
+    hDumpFile = CreateFileW(szFileName, GENERIC_READ|GENERIC_WRITE, 
                 FILE_SHARE_WRITE|FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
 
     ExpParam.ThreadId = GetCurrentThreadId();

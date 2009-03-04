@@ -3,13 +3,21 @@
 #include "StableHeaders.h"
 #include "ModuleManager.h"
 #include "ModuleInterface.h"
+#include "ConfigurationManager.h"
+#include "Framework.h"
 
 namespace fs = boost::filesystem;
 
 
 namespace Foundation
 {
-    const char *ModuleManager::DEFAULT_MODULES_PATH = "./modules";
+//    const char *ModuleManager::DEFAULT_MODULES_PATH = "./modules";
+
+    ModuleManager::ModuleManager(Framework *framework) : 
+        mFramework(framework)
+      , DEFAULT_MODULES_PATH(Framework::getDefaultConfig().declareSetting("ModuleManager", "Default_Modules_Path", "./modules"))
+    {
+    }
 
     ModuleManager::~ModuleManager()
     {
