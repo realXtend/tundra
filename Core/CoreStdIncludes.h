@@ -8,11 +8,11 @@
 #define _WINDOWS
 #endif
 
-#if defined(_WINDOWS) && !defined(_WIN32_WINNT)		// Allow use of features specific to Windows XP or later.                   
+#if defined(WIN32) && !defined(_WIN32_WINNT)		// Allow use of features specific to Windows XP or later.                   
 #define _WIN32_WINNT 0x0501	                        // Change this to the appropriate value to target other versions of Windows.
 #endif
 
-#if defined(_WINDOWS)
+#if defined(WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif

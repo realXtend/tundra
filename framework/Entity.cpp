@@ -22,7 +22,6 @@ namespace Foundation
     void Entity::addEntityComponent(const ComponentInterfacePtr &component)
     {
         mComponents.push_back(component);
-        component->registerDesiredChanges(mFramework->getChangeManager(), getId());
     }
 
     void Entity::removeEntityComponent(const ComponentInterfacePtr &component)

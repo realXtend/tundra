@@ -1,21 +1,25 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-
-
-
 #include "ConfigurationManager.h"
 
 namespace Foundation
 {
     const char *ConfigurationManager::DEFAULT_CONFIG_PATH = "./data/app_config.xml";
 
-    ConfigurationManager::ConfigurationManager()
+    ConfigurationManager::ConfigurationManager(_Type type) : mType(CT_CUSTOM)
     {
+        assert (type == ConfigurationManager::CT_DEFAULT);
         load(DEFAULT_CONFIG_PATH);
+
+        mType = CT_DEFAULT;
     }
 
-    ConfigurationManager::ConfigurationManager(const std::string &file)
+    ConfigurationManager::ConfigurationManager() : mType(CT_CUSTOM)
+    {
+    }
+
+    ConfigurationManager::ConfigurationManager(const std::string &file) : mType(CT_CUSTOM)
     {
         load(file);
     }
@@ -29,6 +33,8 @@ namespace Foundation
 
     void ConfigurationManager::load(const std::string &file)
     {
+        assert (mType != CT_DEFAULT);
+
         mConfigFile = file;
         try
         {

@@ -17,8 +17,6 @@ namespace Foundation
         
         virtual void handleNetworkData(std::string data) {}
 
-        virtual void registerDesiredChanges(const ChangeManagerPtr&, Core::entity_id_t) {}
-
         virtual const std::string &_name() = 0;
     };
 

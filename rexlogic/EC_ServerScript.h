@@ -13,8 +13,6 @@ class EC_ServerScript : public Foundation::ComponentInterface
 public:
     virtual ~EC_ServerScript();
 
-    static void registerChanges(const Foundation::ChangeManagerPtr &manager) { }
-
     static std::vector<std::string> getNetworkMessages()
     {
         std::vector<std::string> myinterest;

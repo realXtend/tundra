@@ -5,6 +5,8 @@
 
 namespace Foundation
 {
+    class Framework;
+
     //! A configuration manager for immutable name-value pair settings.
     /*! The settings are divided into groups. Groups can be freely
         defined.
@@ -46,6 +48,20 @@ class foo
     */
     class ConfigurationManager
     {
+        friend class Framework;
+
+        //! Special enum for creating default configuration object
+        enum _Type
+        {
+            //! Default configuration created by the framework, uses default config file.
+            CT_DEFAULT,
+            //! Custom configuration, uses custom config file.
+            CT_CUSTOM
+        };
+
+        //! special constructor for creating default configuration object
+        ConfigurationManager(_Type type);
+
     public:
         //! default constructor. Uses default config location
         ConfigurationManager();
@@ -94,7 +110,7 @@ class foo
         
     private:
         //! Export current settings to specified file
-        /*! Does silly trickery in debug mode to export the settings.
+        /*! Does silly trickery when EXPORT_CONFIGURATION in defined to export the settings.
 
             \param file path to file to export settings to
         */
@@ -111,6 +127,9 @@ class foo
 
         //! Current configuration file
         std::string mConfigFile;
+
+        //! Type of this config
+        _Type mType;
 
 #ifdef EXPORT_CONFIGURATION
         //! map of all values, for exporting
