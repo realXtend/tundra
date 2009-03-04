@@ -1,14 +1,16 @@
 # CMake version requirement
 cmake_minimum_required (VERSION 2.4)
 
-# In Visual Studio, use unicode character set
-add_definitions (-DUNICODE -D_UNICODE)
-
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
 
 # Set project name
 project (rexNG)
+
+# In Visual Studio, use unicode character set
+if (MSVC)
+	add_definitions (-DUNICODE -D_UNICODE)
+endif (MSVC)
 
 # Add subprojects
 add_subdirectory (Core)
