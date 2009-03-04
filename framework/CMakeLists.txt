@@ -10,6 +10,7 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 include_directories (
 	../external_libs/include
 	../Core
+	../framework
 	../Interfaces
 )
 
