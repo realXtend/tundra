@@ -27,7 +27,7 @@ namespace Foundation
     {
         fs::path full_path = fs::system_complete(fs::path(DEFAULT_MODULES_PATH));
         if ( !fs::exists( full_path ) || !fs::is_directory( full_path ))
-            throw std::exception("Failed to load modules, modules directory not found."); // can be considered fatal
+            throw Core::Exception("Failed to load modules, modules directory not found."); // can be considered fatal
 
         
         fs::recursive_directory_iterator iter( full_path );
@@ -118,7 +118,7 @@ namespace Foundation
 
         if (cl.findClass(entryPoint) == NULL)
         {
-            throw std::exception("Entry class not found from plugin");
+            throw Core::Exception("Entry class not found from plugin");
         }
 
         ModuleInterface* module = cl.classFor(entryPoint).create();
