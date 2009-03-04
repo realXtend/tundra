@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_Interfaces_InputSystemInterface_h__
-#define __incl_Interfaces_InputSystemInterface_h__
+#ifndef __incl_Interfaces_InputServiceInterface_h__
+#define __incl_Interfaces_InputServiceInterface_h__
 
 #include "ServiceInterface.h"
 
@@ -22,11 +22,11 @@ namespace Foundation
         typedef int InputKey;
    }
 
-    class InputSystemInterface : public ServiceInterface
+    class InputServiceInterface : public ServiceInterface
     {
     public:
-        InputSystemInterface() {}
-        virtual ~InputSystemInterface() {}
+        InputServiceInterface() {}
+        virtual ~InputServiceInterface() {}
 
         //! add input event. The event is triggered when specified input is detected (key down, mouse moved...)
         /*! Because each input can have several events (many systems can be interested in one input event), 
@@ -38,4 +38,4 @@ namespace Foundation
     };
 }
 
-#endif // __incl_Interfaces_InputSystemInterface_h__
+#endif

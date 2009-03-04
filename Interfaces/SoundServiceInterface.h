@@ -1,17 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_Interfaces_SoundSystemInterface_h__
-#define __incl_Interfaces_SoundSystemInterface_h__
+#ifndef __incl_Interfaces_SoundServiceInterface_h__
+#define __incl_Interfaces_SoundServiceInterface_h__
 
 #include "ServiceInterface.h"
 
 namespace Foundation
 {
-    class SoundSystemInterface : public ServiceInterface
+    class SoundServiceInterface : public ServiceInterface
     {
     public:
-        SoundSystemInterface() {}
-        virtual ~SoundSystemInterface() {}
+        SoundServiceInterface() {}
+        virtual ~SoundServiceInterface() {}
 
         //! Plays non-3D sound
         virtual void playsound() = 0;
@@ -21,4 +21,5 @@ namespace Foundation
     };
 }
 
-#endif // __incl_Interfaces_SoundSystemInterface_h__
+#endif
+

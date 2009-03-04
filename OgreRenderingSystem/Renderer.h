@@ -3,13 +3,13 @@
 #ifndef __incl_OgreRenderingSystem_Renderer_h__
 #define __incl_OgreRenderingSystem_Renderer_h__
 
-#include "RenderSystemInterface.h"
+#include "RenderServiceInterface.h"
 #include <boost/shared_ptr.hpp>
 
 namespace OgreRenderer
 {
     //! mockup Ogre renderer
-    class Renderer : public Foundation::RenderSystemInterface
+    class Renderer : public Foundation::RenderServiceInterface
     {
     public:
         Renderer() {};

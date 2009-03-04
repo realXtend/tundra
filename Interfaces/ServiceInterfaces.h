@@ -4,10 +4,12 @@
 #define __incl_Interfaces_ServiceInterfaces_h__
 
 // When adding new service type, add the interface include here too
-#include "PhysicsSystemInterface.h"
-#include "RenderSystemInterface.h"
-#include "ScriptSystemInterface.h"
-#include "SoundSystemInterface.h"
+#include "PhysicsServiceInterface.h"
+#include "RenderServiceInterface.h"
+#include "ScriptServiceInterface.h"
+#include "SoundServiceInterface.h"
+#include "GuiServiceInterface.h"
+#include "InputServiceInterface.h"
 #include "WorldLogicInterface.h" //! \todo should this be here?
 #include "TestServiceInterface.h"
 
