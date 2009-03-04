@@ -197,6 +197,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CorePlatform.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CorePlatformNix.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CorePlatformWin.h"
+				>
+			</File>
+			<File
 				RelativePath=".\CoreStableHeaders.h"
 				>
 			</File>

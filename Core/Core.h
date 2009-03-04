@@ -14,6 +14,8 @@
 #include "Matrix4.h"
 #include "Quaternion.h"
 
+#include "CorePlatform.h"
+
 
 //! Core contains functionality and definitions that are common to all projects in the viewer.
 /*! It contains standard includes so you shouldn't need to include specific
