@@ -193,6 +193,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CoreException.h"
+				>
+			</File>
+			<File
 				RelativePath=".\CoreMath.h"
 				>
 			</File>
