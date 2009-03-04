@@ -64,7 +64,7 @@ namespace Core
         }
 
         //! destructor
-        virtual ~Exception()
+        virtual ~Exception() throw ()
         {
             if (do_free_)
             {
