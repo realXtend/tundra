@@ -4,6 +4,7 @@
 #define __incl_TestSystem_System_h__
 
 #include "ModuleInterface.h"
+#include "TestServiceInterface.h"
 
 namespace Foundation
 {
@@ -16,7 +17,7 @@ namespace Foundation
 namespace Test
 {
     //! interface for modules
-    class TestSystem : public Foundation::ModuleInterface_Impl
+    class TestSystem : public Foundation::ModuleInterface_Impl, public Foundation::TestServiceInterface
     {
     public:
         TestSystem();
@@ -28,6 +29,8 @@ namespace Test
         virtual void uninitialize(Foundation::Framework *framework);
 
         virtual void update();
+
+        virtual bool test() const { return true; }
 
     private:
         Foundation::Framework *mFramework;

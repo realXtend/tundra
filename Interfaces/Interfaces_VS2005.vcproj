@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="Interfaces"
 	ProjectGUID="{2F1401DE-CB67-4B88-BE5E-7B925C40B2C2}"
 	RootNamespace="Interfaces"
@@ -190,6 +190,10 @@
 			</File>
 			<File
 				RelativePath=".\SoundSystemInterface.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TestServiceInterface.h"
 				>
 			</File>
 			<File

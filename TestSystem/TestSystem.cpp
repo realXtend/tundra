@@ -43,6 +43,7 @@ namespace Test
     {
         assert(framework != NULL);
         mFramework = framework;
+        mFramework->getServiceManager()->registerService(Foundation::Service::ST_Test, this);
         
         LOG("System " + name() + " initialized.");
     }
@@ -50,9 +51,11 @@ namespace Test
     // virtual 
     void TestSystem::uninitialize(Foundation::Framework *framework)
     {
+        mFramework->getServiceManager()->unregisterService(this);
+
         assert(mFramework != NULL);
         mFramework = NULL;
-
+        
         LOG("System " + name() + " uninitialized.");
     }
 
@@ -70,6 +73,10 @@ namespace Test
         entity->addEntityComponent(component);
         component = entity->getComponent(component->_name());
         assert (component.get() != 0 && "Failed to get dummy component from entity.");
+
+        Foundation::TestServiceInterface *test_service = mFramework->getServiceManager()->getService<Foundation::TestServiceInterface>(Foundation::Service::ST_Test);
+        assert (test_service != NULL);
+        assert (test_service->test());
 
         mFramework->_exit();
         assert (mFramework->isExiting());

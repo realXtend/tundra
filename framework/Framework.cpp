@@ -2,10 +2,11 @@
 
 #include "StableHeaders.h"
 #include "Framework.h"
-#include "ModuleManager.h"
 #include "ComponentManager.h"
 #include "EntityManager.h"
-#include "ServiceInterfaces.h"
+//#include "ServiceInterfaces.h"
+#include "ServiceManager.h"
+#include "ModuleManager.h"
 
 namespace Foundation
 {
@@ -15,6 +16,7 @@ namespace Foundation
         mModuleManager = ModuleManagerPtr(new ModuleManager(this));
         mComponentManager = ComponentManagerPtr(new ComponentManager(this));
         mEntityManager = EntityManagerPtr(new EntityManager(this));
+        mServiceManager = ServiceManagerPtr(new ServiceManager(this));
     }
 
     Framework::~Framework()
@@ -38,7 +40,7 @@ namespace Foundation
             //mChangeManager->_propagateChanges();
         }
 
-        unloadModules();
+         unloadModules();
     }
 
     void Framework::loadModules()

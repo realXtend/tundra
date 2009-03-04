@@ -25,10 +25,8 @@ namespace Foundation
 
         ComponentManagerPtr getComponentManager() const { return mComponentManager; }
         EntityManagerPtr getEntityManager() const { return mEntityManager; }
+        ModuleManagerPtr getModuleManager() const { return mModuleManager; }
         ServiceManagerPtr getServiceManager() const { return mServiceManager; }
-
-        //! implementation of raycast service, uses internally RenderingSystemInterface for the service
-        void raycast();
 
         //! Signal the framework to exit at first possible opportunity
         void _exit() { mExitSignal = true; }

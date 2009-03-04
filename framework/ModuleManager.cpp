@@ -2,9 +2,9 @@
 
 #include "StableHeaders.h"
 #include "ModuleManager.h"
-#include "ModuleInterface.h"
 #include "ConfigurationManager.h"
 #include "Framework.h"
+#include "ModuleInterface.h"
 
 namespace fs = boost::filesystem;
 

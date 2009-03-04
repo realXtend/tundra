@@ -198,6 +198,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TestServiceInterface.h"
+				>
+			</File>
+			<File
 				RelativePath=".\WorldLogicInterface.h"
 				>
 			</File>

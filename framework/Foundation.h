@@ -11,6 +11,7 @@
 #include "EntityManager.h"
 #include "Entity.h"
 #include "ConfigurationManager.h"
+#include "ServiceManager.h"
 
 //! Foundation is the main helper in your quest to create new or improved functionality for the realXtend viewer.
 /*! To use all the services offered by the foundation, simply include "Foundation.h" in your own module.

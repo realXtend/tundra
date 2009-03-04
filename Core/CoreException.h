@@ -21,7 +21,7 @@ namespace Core
         {
             do_free_ = 1;
 
-            int len = strlen(what);
+            size_t len = strlen(what);
             what_ = static_cast< char* >(malloc(len + 1));
             strcpy(const_cast< char* >(what_), what);
         }
@@ -33,7 +33,7 @@ namespace Core
 
             if (do_free_)
             {
-                int len = strlen(other.what_);
+                size_t len = strlen(other.what_);
                 what_ = static_cast< char* >(malloc(len + 1));
                 strcpy(const_cast< char* >(what_), other.what_);
             } else
@@ -51,7 +51,7 @@ namespace Core
 
                 if (do_free_)
                 {
-                    int len = strlen(other.what_);
+                    size_t len = strlen(other.what_);
                     what_ = static_cast< char* >(malloc(len + 1));
                     strcpy(const_cast< char* >(what_), other.what_);
                 } else
