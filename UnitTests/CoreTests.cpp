@@ -11,9 +11,12 @@ BOOST_AUTO_TEST_SUITE(test_suite_core)
 
 BOOST_AUTO_TEST_CASE( core_exception )
 {
+    Core::Exception e;
     try
     {
-        throw Core::Exception("exception test");
+        e = Core::Exception("exception test");
+        throw e;
+        BOOST_CHECK(false);
     } catch (Core::Exception e)
     {
         BOOST_CHECK_EQUAL(std::string(e.what()), "exception test");
