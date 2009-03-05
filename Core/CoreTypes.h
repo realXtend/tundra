@@ -7,15 +7,6 @@
 
 namespace Core
 {
-    //typedef Ogre::Vector3 Vector3;
-    //typedef Ogre::Vector4 Vector4;
-    //typedef Ogre::Matrix4 Matrix4;
-//    typedef int Vector3;
-//    typedef int Vector4;
-//    typedef int Matrix3;
-//    typedef int Matrix4;
-//    typedef int Quaternion;
-
     typedef unsigned long ulong;
     typedef unsigned int uint;
     typedef unsigned int u32;
@@ -34,7 +25,7 @@ namespace Core
     typedef std::vector<std::string> StringVector;
     typedef boost::shared_ptr<StringVector> StringVectorPtr;
 
-    typedef boost::lock_guard<boost::mutex> mutex_lock;
+    typedef boost::lock_guard<boost::mutex> MutexLock;
 }
 
 #endif // incl_Types_h

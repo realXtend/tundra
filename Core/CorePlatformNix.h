@@ -15,12 +15,12 @@ namespace Core
         //! destructor
         virtual ~PlatformNix() {}
 
-        static void message(const std::string& title, const std::string& text)
+        static void Message(const std::string& title, const std::string& text)
         {
             std::cerr << title << " " << text;
         }
 
-        static void message(const std::wstring& title, const std::wstring& text)
+        static void Message(const std::wstring& title, const std::wstring& text)
         {
             std::wcerr << title << " " << text;
         }
