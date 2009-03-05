@@ -1,6 +1,6 @@
 # Define target name and output directory
-set (TARGET_NAME TestModule)
-set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/modules/test)
+set (TARGET_NAME OpenSimProtocol)
+set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/modules/core)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -10,17 +10,18 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Include directories
 include_directories (
+	../external_libs/xmlrpc-epi/src
+	../external_libs/libcurl/include
 	../external_libs/include
 	../Core
 	../framework
-	../GeometrySystem
 	../Interfaces
-	../OgreRenderingSystem
 )
 
 # Library directories
 link_directories (
-	../external_libs
+	../external_libs/libcurl/lib
+	../external_libs/xmlrpc-epi/Debug
 )
 
 # Define dynamic library
@@ -30,17 +31,18 @@ endif (NOT MSVC)
 
 add_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
-set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 
 if (MSVC)
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
-endif (MSVC)
 
-# Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} framework)
+	target_link_libraries (${TARGET_NAME} ws2_32.lib xmlrpcepi.lib iphlpapi.lib libcurl_imp.lib)
+endif (MSVC)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
 endforeach (XML_FILE)
+
+
+
