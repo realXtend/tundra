@@ -4,7 +4,6 @@
 #include "ModuleManager.h"
 #include "ConfigurationManager.h"
 #include "Framework.h"
-#include "ModuleInterface.h"
 
 namespace fs = boost::filesystem;
 
