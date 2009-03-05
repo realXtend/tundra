@@ -1,0 +1,89 @@
+# Swedish messages for libiconv.
+# Copyright (C) 2002 Free Software Foundation, Inc.
+# Christian Rose <menthos@menthos.com>, 2002.
+# This file is distributed under the same license as the libiconv package.
+# Christian Rose <menthos@menthos.com>, 2002.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: libiconv-1.8\n"
+"Report-Msgid-Bugs-To: bug-gnu-libiconv@gnu.org\n"
+"POT-Creation-Date: 2004-01-22 11:54+0100\n"
+"PO-Revision-Date: 2002-05-30 19:23+0200\n"
+"Last-Translator: Christian Rose <menthos@menthos.com>\n"
+"Language-Team: Swedish <sv@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/iconv.c:54
+msgid "Usage: iconv [-c] [-s] [-f fromcode] [-t tocode] [file ...]"
+msgstr "Användning: iconv [-c] [-s] [-f frånkod] [-t tillkod] [fil ...]"
+
+#: src/iconv.c:56
+msgid "or:    iconv -l"
+msgstr "eller: iconv -l"
+
+#: src/iconv.c:66
+#, c-format
+msgid ""
+"This is free software; see the source for copying conditions.  There is NO\n"
+"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+msgstr ""
+"Detta är fri programvara; se källkoden för kopieringsvillkor. Det finns\n"
+"INGEN garanti; inte ens för SÄLJBARHET eller LÄMPLIGHET FÖR NÅGOT\n"
+"SPECIELLT ÄNDAMÅL.\n"
+
+#: src/iconv.c:69
+#, c-format
+msgid "Written by %s.\n"
+msgstr "Skrivet av %s.\n"
+
+#: src/iconv.c:105 src/iconv.c:137 src/iconv.c:187
+#, c-format
+msgid "iconv: %s: incomplete character or shift sequence\n"
+msgstr "iconv: %s: ofullständigt tecken eller skiftsekvens\n"
+
+#: src/iconv.c:131 src/iconv.c:182
+#, c-format
+msgid "iconv: %s: cannot convert\n"
+msgstr "iconv: %s: kan inte konvertera\n"
+
+#: src/iconv.c:153 src/iconv.c:192 src/iconv.c:310
+#, c-format
+msgid "iconv: %s: "
+msgstr "iconv: %s: "
+
+#: src/iconv.c:201
+#, c-format
+msgid "iconv: %s: I/O error\n"
+msgstr "iconv: %s: in-/utmatningsfel\n"
+
+#: src/iconv.c:294
+#, c-format
+msgid "iconv: conversion from %s unsupported\n"
+msgstr "iconv: konvertering från %s stöds inte\n"
+
+#: src/iconv.c:296
+#, c-format
+msgid "iconv: conversion to %s unsupported\n"
+msgstr "iconv: konvertering till %s stöds inte\n"
+
+#: src/iconv.c:298
+#, c-format
+msgid "iconv: conversion from %s to %s unsupported\n"
+msgstr "iconv: konvertering från %s till %s stöds inte\n"
+
+#: src/iconv.c:302
+msgid "(stdin)"
+msgstr "(standard in)"
+
+#: src/iconv.c:323
+#, c-format
+msgid "iconv: I/O error\n"
+msgstr "iconv: I/O-fel\n"
+
+#~ msgid ""
+#~ "Usage: iconv [--binary] [-c] [-s] [-f fromcode] [-t tocode] [file ...]"
+#~ msgstr ""
+#~ "Användning: iconv [--binary] [-c] [-s] [-f frånkod] [-t tillkod] [fil ...]"

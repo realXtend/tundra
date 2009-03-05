@@ -1,0 +1,88 @@
+# Mesajele în limba românã pentru pachetul libiconv.
+# Copyright (C) 2003 Free Software Foundation, Inc.
+# Eugen Hoanca <eugenh@urban-grafx.ro>, 2003.
+# Acest fiºier este distribuit sub aceeaºi licenþã ca ºi pachetul libiconv
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: libiconv-1.9.1\n"
+"Report-Msgid-Bugs-To: bug-gnu-libiconv@gnu.org\n"
+"POT-Creation-Date: 2004-01-22 11:54+0100\n"
+"PO-Revision-Date: 2003-05-17 15:15+0300\n"
+"Last-Translator: Eugen Hoanca <eugenh@urban-grafx.ro>\n"
+"Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-2\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/iconv.c:54
+msgid "Usage: iconv [-c] [-s] [-f fromcode] [-t tocode] [file ...]"
+msgstr "Folosire: iconv [-c] [-s] [-f din_cod] [-t în_cod] [fiºier ...]"
+
+#: src/iconv.c:56
+msgid "or:    iconv -l"
+msgstr "sau:   iconv -l"
+
+#: src/iconv.c:66
+#, fuzzy, c-format
+msgid ""
+"This is free software; see the source for copying conditions.  There is NO\n"
+"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+msgstr ""
+"Acesta este software free; citiþi surselepentru condiþiile de copiere. NU\n"
+"existã nici o garanþie; nici mãcarVANDABILITATEA sau MODIFICAREA ÎNTR-UN\n"
+"SCOP PRIVAT.\n"
+
+#: src/iconv.c:69
+#, c-format
+msgid "Written by %s.\n"
+msgstr "Scris de %s.\n"
+
+#: src/iconv.c:105 src/iconv.c:137 src/iconv.c:187
+#, c-format
+msgid "iconv: %s: incomplete character or shift sequence\n"
+msgstr "iconv: %s: caracter sau secvenþã de shift incomplete\n"
+
+#: src/iconv.c:131 src/iconv.c:182
+#, c-format
+msgid "iconv: %s: cannot convert\n"
+msgstr "iconv: %s: nu pot converti\n"
+
+#: src/iconv.c:153 src/iconv.c:192 src/iconv.c:310
+#, c-format
+msgid "iconv: %s: "
+msgstr "iconv: %s: "
+
+#: src/iconv.c:201
+#, c-format
+msgid "iconv: %s: I/O error\n"
+msgstr "iconv: %s: erori I/O\n"
+
+#: src/iconv.c:294
+#, c-format
+msgid "iconv: conversion from %s unsupported\n"
+msgstr "iconv: conversia din %s nu este suportatã\n"
+
+#: src/iconv.c:296
+#, c-format
+msgid "iconv: conversion to %s unsupported\n"
+msgstr "iconv: conversia în %s nu este suportatã\n"
+
+#: src/iconv.c:298
+#, c-format
+msgid "iconv: conversion from %s to %s unsupported\n"
+msgstr "iconv: conversia din %s în %s nu este suportatã\n"
+
+#: src/iconv.c:302
+msgid "(stdin)"
+msgstr "(stdin)"
+
+#: src/iconv.c:323
+#, c-format
+msgid "iconv: I/O error\n"
+msgstr "iconv: eroare I/O\n"
+
+#~ msgid ""
+#~ "Usage: iconv [--binary] [-c] [-s] [-f fromcode] [-t tocode] [file ...]"
+#~ msgstr ""
+#~ "Folosire: iconv [--binary] [-c] [-s] [-f din_cod] [-t în_cod] [fiºier ...]"

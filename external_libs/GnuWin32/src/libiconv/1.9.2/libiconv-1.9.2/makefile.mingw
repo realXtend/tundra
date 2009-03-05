@@ -1,0 +1,30 @@
+export DEFSPLUS=-D_MSC_VER 
+export INCLUDESPLUS=
+export CFLAGSPLUS=
+export LDFLAGSPLUS=
+export LIBSPLUS=
+export DLLFLAG=-DBUILDING_DLL -DDLL -DBUILDING_LIBICONV -DBUILDING_LIBCHARSET
+sedfiles=Makefile libtool config.h
+BUILDDIR=$(shell pwd.sh)
+SRCDIR=../$(shell basename $(BUILDDIR)-src)
+export RELOC_LIBRARY_PATH_VALUE=-lgw32c	-luuid -lole32 
+export ac_cv_gnu_library_2_1=no
+
+.PHONY: all 
+all: CONF MFSED
+CONF:
+#	if [ ! -e Makefile.in.sed ]; then \
+#		cp -fp k:/Makefile.in.sed .; \
+#	fi
+#	find.exe $(SRCDIR) -iname Makefile.in -exec sed -i -f Makefile.in.sed '{}' ';'
+	$(SRCDIR)/configure --prefix=c:/progra~1/LibIconv --srcdir="$(SRCDIR)" \
+		--disable-static --enable-shared \
+		--enable-relocatable  --enable-extra-encodings
+
+	
+-include $(DVLDIR)/makefile.chg
+
+#	make all
+#	make check
+#	make install prefix=c:/temp/sed
+                                 
