@@ -15,12 +15,12 @@ namespace Core
         //! destructor
         virtual ~PlatformWin() {}
 
-        static void message(const std::string& title, const std::string& text)
+        static void Message(const std::string& title, const std::string& text)
         {
             MessageBoxA( NULL, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
         }
 
-        static void message(const std::wstring& title, const std::wstring& text)
+        static void Message(const std::wstring& title, const std::wstring& text)
         {
             MessageBoxW( NULL, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
         }

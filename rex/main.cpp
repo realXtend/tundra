@@ -98,7 +98,7 @@ int run(void)
     } 
     catch ( std::exception& e )
     {
-        Core::Platform::message("An exception has occurred!", e.what());
+        Core::Platform::Message("An exception has occurred!", e.what());
         retVal = EXIT_FAILURE;
     }
 
@@ -108,7 +108,7 @@ int run(void)
 
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
 int generateDump(EXCEPTION_POINTERS* pExceptionPointers)
-{
+{f
 #define _CRT_SECURE_NO_WARNINGS
     BOOL bMiniDumpSuccessful;
     WCHAR szPath[MAX_PATH]; 
@@ -147,9 +147,9 @@ int generateDump(EXCEPTION_POINTERS* pExceptionPointers)
     message += szFileName;
 
     if (bMiniDumpSuccessful)
-        Core::Platform::message(L"Minidump generated!", message);
+        Core::Platform::Message(L"Minidump generated!", message);
     else
-        Core::Platform::message(szAppName, L"Un unexpected error was encountred while generating minidump!");
+        Core::Platform::Message(szAppName, L"Un unexpected error was encountred while generating minidump!");
 
     return EXCEPTION_EXECUTE_HANDLER;
 }
