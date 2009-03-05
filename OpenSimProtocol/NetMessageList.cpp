@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <cstring>
 
 #include "NetMessageList.h"
 
@@ -160,7 +161,12 @@ NetVariableType StrToVariableType(const char *str)
 	                       "LLQuaternion", "LLUUID", "BOOL", "IPADDR", "IPPORT", "Fixed", "Variable" };
 
 	for(int i = 0; i < NUMELEMS(data); ++i)
+
+#ifdef _MSC_VER
 		if (!_strcmpi(data[i], str))
+#else
+        if (!strcasecmp(data[i], str))
+#endif
 			return (NetVariableType)i;
 
 	return NetVarInvalid;

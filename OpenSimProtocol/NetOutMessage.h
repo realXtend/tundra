@@ -87,7 +87,7 @@ private: // friend-public:
 	void SetMessageType(const NetMessageInfo *info);
 	
 	// NetMessageManager manages the internal header fields of the message, but this can't all be done ctor-time.
-	friend NetMessageManager;
+	friend class NetMessageManager;
 
 private: // friend-private:
 	/// Contains the buffer of the serialized (incomplete) message.
