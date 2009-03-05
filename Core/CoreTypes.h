@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_CoreTypes_h__
-#define __incl_CoreTypes_h__
+#ifndef incl_CoreTypes_h
+#define incl_CoreTypes_h
 
 // types
 
@@ -37,6 +37,6 @@ namespace Core
     typedef boost::lock_guard<boost::mutex> mutex_lock;
 }
 
-#endif // __incl_Types_h__
+#endif // incl_Types_h
 
 

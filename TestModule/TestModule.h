@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_TestModule_h__
-#define __incl_TestModule_h__
+#ifndef incl_TestModule_h
+#define incl_TestModule_h
 
 #include "ModuleInterface.h"
 #include "TestServiceInterface.h"

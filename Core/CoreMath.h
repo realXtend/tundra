@@ -13,8 +13,8 @@
 // Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 // This notice may not be removed or altered from any source distribution.
 
-#ifndef __incl_Core_Math_h__
-#define __incl_Core_Math_h__
+#ifndef incl_Core_Math_h
+#define incl_Core_Math_h
 
 
 #if defined(_IRR_SOLARIS_PLATFORM_) || defined(__BORLANDC__) || defined (__BCPLUSPLUS__) || defined (_WIN32_WCE)

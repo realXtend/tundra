@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __inc_Foundation_ServiceManager_h__
-#define __inc_Foundation_ServiceManager_h__
+#ifndef incl_Foundation_ServiceManager_h
+#define incl_Foundation_ServiceManager_h
 
 #include "ServiceInterfaces.h"
 

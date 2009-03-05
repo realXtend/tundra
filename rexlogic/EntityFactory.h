@@ -1,5 +1,5 @@
-#ifndef __incl_EntityFactory_h__
-#define __incl_EntityFactory_h__
+#ifndef incl_EntityFactory_h
+#define incl_EntityFactory_h
 
 class EntityFactory
 {

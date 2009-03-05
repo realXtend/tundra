@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_CorePlatformNix_h__
-#define __incl_CorePlatformNix_h__
+#ifndef incl_CorePlatformNix_h
+#define incl_CorePlatformNix_h
 
 #if !defined(WIN32) && !defined(WIN64)
 namespace Core

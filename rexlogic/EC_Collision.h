@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_EC_Collision_h__
-#define __incl_EC_Collision_h__
+#ifndef incl_EC_Collision_h
+#define incl_EC_Collision_h
 
 #include "ComponentInterface.h"
 #include "Foundation.h"

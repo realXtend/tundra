@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_WorldLogic_h__
-#define __incl_WorldLogic_h__
+#ifndef incl_WorldLogic_h
+#define incl_WorldLogic_h
 
 #include "WorldLogicInterface.h"
 #include "NetworkEventHandler.h"

@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_OgreRenderingSystem_EC_OgreEntity_h__
-#define __incl_OgreRenderingSystem_EC_OgreEntity_h__
+#ifndef incl_OgreRenderingSystem_EC_OgreEntity_h
+#define incl_OgreRenderingSystem_EC_OgreEntity_h
 
 #include "ComponentInterface.h"
 #include "Foundation.h"

@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_Framework_ForwardDefines_h__
-#define __incl_Framework_ForwardDefines_h__
+#ifndef incl_Framework_ForwardDefines_h
+#define incl_Framework_ForwardDefines_h
 
 namespace Foundation
 {
