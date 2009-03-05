@@ -87,6 +87,3 @@ using namespace Test;
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
    POCO_EXPORT_CLASS(TestModule)
 POCO_END_MANIFEST
-
-
-
