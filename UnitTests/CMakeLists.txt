@@ -34,3 +34,23 @@ endif (MSVC)
 
 # Define libraries to be linked into target
 target_link_libraries (${TARGET_NAME} Core framework)
+if (MSVC)
+   target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)
+endif (MSVC)
+
+# Define external libraries
+# PoCo & boost autolink on Visual Studio
+if (NOT MSVC)
+	# PoCo
+	target_link_libraries (${TARGET_NAME} 
+		optimized PocoFoundation 
+		debug PocoFoundationd
+		optimized PocoUtil
+		debug PocoUtild
+		optimized PocoXML
+		debug PocoXMLd
+	)
+
+	# Boost
+	target_link_libraries (${TARGET_NAME} ${Boost_LIBRARIES})
+endif (NOT MSVC)
