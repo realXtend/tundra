@@ -1,5 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 #include <sstream>
+#include <cstring>
 
 #include "Poco/DOM/Document.h"
 #include "Poco/DOM/Element.h"

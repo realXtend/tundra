@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <cstring>
 
 #include "Poco/Net/NetException.h"
 #include "NetMessageManager.h"
