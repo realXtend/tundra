@@ -9,11 +9,11 @@
     public:                                                                                 \
         component##Registrar() {}                                                           \
         virtual ~component##Registrar() {}                                                  \
-        virtual void _register(Foundation::Framework *framework) {                          \
-            component::registerComponent(framework);                                        \
+        virtual void Register(Foundation::Framework *framework) {                           \
+            component::RegisterComponent(framework);                                        \
         }                                                                                   \
-        virtual void _unregister(Foundation::Framework *framework) {                        \
-            component::unregisterComponent(framework);                                      \
+        virtual void Unregister(Foundation::Framework *framework) {                         \
+            component::UnregisterComponent(framework);                                      \
         }                                                                                   \
     };                                                                                      \
     private:                                                                                \
@@ -33,22 +33,22 @@
     };                                                                                      \
     friend class component##Factory;                                                        \
     public:                                                                                 \
-    static void registerComponent(const Foundation::Framework *framework)                   \
+    static void RegisterComponent(const Foundation::Framework *framework)                   \
     {                                                                                       \
         Foundation::ComponentFactoryInterfacePtr factory =                                  \
             Foundation::ComponentFactoryInterfacePtr(new component##Factory);               \
-        framework->getComponentManager()->registerFactory(name(), factory);                 \
+        framework->GetComponentManager()->RegisterFactory(Name(), factory);                 \
     }                                                                                       \
-    static void unregisterComponent(const Foundation::Framework *framework) {               \
-        framework->getComponentManager()->unregisterFactory(name());                        \
+    static void UnregisterComponent(const Foundation::Framework *framework) {               \
+        framework->GetComponentManager()->UnregisterFactory(Name());                        \
     }                                                                                       \
-    static const std::string &name()                                                        \
+    static const std::string &Name()                                                        \
     {                                                                                       \
         static const std::string name(#component);                                          \
         return name;                                                                        \
     }                                                                                       \
-    virtual const std::string &_name() {                                                    \
-        return component::name();                                                           \
+    virtual const std::string &_Name() {                                                    \
+        return component::Name();                                                           \
     }                                                                                       \
     private:                                                                                \
 

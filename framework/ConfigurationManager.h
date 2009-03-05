@@ -51,7 +51,7 @@ class foo
         friend class Framework;
 
         //! Special enum for creating default configuration object
-        enum _Type
+        enum Type
         {
             //! Default configuration created by the framework, uses default config file.
             CT_DEFAULT,
@@ -60,7 +60,7 @@ class foo
         };
 
         //! special constructor for creating default configuration object
-        ConfigurationManager(_Type type);
+        ConfigurationManager(Type type);
 
     public:
         //! default constructor. Uses default config location
@@ -77,7 +77,7 @@ class foo
         ~ConfigurationManager();
 
         //! Loads and parses configuration from the specified file.
-        void load(const std::string &file);
+        void Load(const std::string &file);
 
         //! Declares a key-value pair setting.
         /*! This is the standard way of retrieving a value from group and key name.
@@ -86,26 +86,26 @@ class foo
             \param key Name of the key
             \param defaultValue default value for the setting, returned if key was not found
         */
-        int declareSetting(const std::string &group, const std::string &key, int defaultValue);
+        int DeclareSetting(const std::string &group, const std::string &key, int defaultValue);
 
         //! \see declareSetting(const std::string &group, const std::string &name, int defaultValue);
-        std::string declareSetting(const std::string &group, const std::string &key, const std::string &defaultValue);
+        std::string DeclareSetting(const std::string &group, const std::string &key, const std::string &defaultValue);
 
         //! \see declareSetting(const std::string &group, const std::string &name, int defaultValue);
-        std::string declareSetting(const std::string &group, const std::string &key, const char *defaultValue);
+        std::string DeclareSetting(const std::string &group, const std::string &key, const char *defaultValue);
 
         //! \see declareSetting(const std::string &group, const std::string &name, int defaultValue);
-        bool declareSetting(const std::string &group, const std::string &key, bool defaultValue);
+        bool DeclareSetting(const std::string &group, const std::string &key, bool defaultValue);
 
         //! \see declareSetting(const std::string &group, const std::string &name, int defaultValue);
-        Core::Real declareSetting(const std::string &group, const std::string &key, Core::Real defaultValue);
+        Core::Real DeclareSetting(const std::string &group, const std::string &key, Core::Real defaultValue);
 
         //! Returns true is the specified group contains the specified key, false otherwise.
         /*!
             \param group Name of the group
             \param name Name of the key
         */
-        bool hasKey(const std::string &group, const std::string &key);
+        bool HasKey(const std::string &group, const std::string &key);
         
         
     private:
@@ -114,7 +114,7 @@ class foo
 
             \param file path to file to export settings to
         */
-        void exportSettings(const std::string &file);
+        void ExportSettings(const std::string &file);
 
         //! default configuration file path
         static const char *DEFAULT_CONFIG_PATH;
@@ -123,17 +123,17 @@ class foo
         typedef std::map<string_pair_t, std::string> ValueMap;
 
         //! Poco xml configuration reader
-        Poco::AutoPtr<Poco::Util::XMLConfiguration> mConfiguration;
+        Poco::AutoPtr<Poco::Util::XMLConfiguration> configuration_;
 
         //! Current configuration file
-        std::string mConfigFile;
+        std::string config_file_;
 
         //! Type of this config
-        _Type mType;
+        Type type_;
 
 #ifdef EXPORT_CONFIGURATION
         //! map of all values, for exporting
-        ValueMap mValues;
+        ValueMap values_;
 #endif
     };
 }

@@ -36,7 +36,7 @@ void NetworkEventHandler::handleObjectUpdate(std::string &packetdata)
 {
     Core::entity_id_t tempentityid = 0; // fixme, get entity from packetdata
 
-    Foundation::EntityPtr entity = mFramework->getEntityManager()->getEntity(tempentityid);
+    Foundation::EntityPtr entity = mFramework->GetEntityManager()->getEntity(tempentityid);
     if(entity == NULL)
         createEntity(packetdata);
     
@@ -49,7 +49,7 @@ void NetworkEventHandler::handleGenericMessageExtraEntityData(std::string &packe
 
     Core::entity_id_t tempentityid = 0; // fixme, get entity from packetdata
 
-    Foundation::EntityPtr entity = mFramework->getEntityManager()->getEntity(tempentityid);
+    Foundation::EntityPtr entity = mFramework->GetEntityManager()->getEntity(tempentityid);
     if(entity == NULL)
         createEntity(packetdata);
     
@@ -63,7 +63,7 @@ void NetworkEventHandler::createEntity(std::string &packetdata)
 {
     Core::StringVector components;
     
-    Foundation::EntityPtr entity = mFramework->getEntityManager()->createEntity(components);
+    Foundation::EntityPtr entity = mFramework->GetEntityManager()->createEntity(components);
 }
 
 void NetworkEventHandler::updateComponents(const std::string &packetname, const std::string &packetdata)
@@ -93,11 +93,11 @@ void NetworkEventHandler::updateComponents(const std::string &packetname, const 
     std::vector<std::string>::iterator itr;
     for ( itr = componenttypes.begin(); itr < componenttypes.end(); ++itr )
     {
-        tempcomponent = mFramework->getComponentManager()->getComponent(tempentityid,*itr);
+        tempcomponent = mFramework->GetComponentManager()->GetComponent(tempentityid,*itr);
         if(tempcomponent.get() == NULL)
-            tempcomponent = mFramework->getComponentManager()->createComponent(*itr); // fixme, tempentityid is also necessary for component 
+            tempcomponent = mFramework->GetComponentManager()->CreateComponent(*itr); // fixme, tempentityid is also necessary for component 
     
-        tempcomponent->handleNetworkData(packetdata);        
+        tempcomponent->HandleNetworkData(packetdata);        
     }
 }
 

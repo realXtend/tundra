@@ -7,38 +7,38 @@ namespace Foundation
 {
     const char *ConfigurationManager::DEFAULT_CONFIG_PATH = "./data/app_config.xml";
 
-    ConfigurationManager::ConfigurationManager(_Type type) : mType(CT_CUSTOM)
+    ConfigurationManager::ConfigurationManager(Type type) : type_(CT_CUSTOM)
     {
         assert (type == ConfigurationManager::CT_DEFAULT);
-        load(DEFAULT_CONFIG_PATH);
+        Load(DEFAULT_CONFIG_PATH);
 
-        mType = CT_DEFAULT;
+        type_ = CT_DEFAULT;
     }
 
-    ConfigurationManager::ConfigurationManager() : mType(CT_CUSTOM)
+    ConfigurationManager::ConfigurationManager() : type_(CT_CUSTOM)
     {
     }
 
-    ConfigurationManager::ConfigurationManager(const std::string &file) : mType(CT_CUSTOM)
+    ConfigurationManager::ConfigurationManager(const std::string &file) : type_(CT_CUSTOM)
     {
-        load(file);
+        Load(file);
     }
 
     ConfigurationManager::~ConfigurationManager()
     {
 #ifdef EXPORT_CONFIGURATION
-        exportSettings(mConfigFile);
+        ExportSettings(config_file_);
 #endif
     }
 
-    void ConfigurationManager::load(const std::string &file)
+    void ConfigurationManager::Load(const std::string &file)
     {
-        assert (mType != CT_DEFAULT);
+        assert (type_ != CT_DEFAULT);
 
-        mConfigFile = file;
+        config_file_ = file;
         try
         {
-            mConfiguration = new Poco::Util::XMLConfiguration(file);
+            configuration_ = new Poco::Util::XMLConfiguration(file);
         } catch (std::exception &e)
         {
             // not fatal
@@ -48,78 +48,78 @@ namespace Foundation
         }
     }
 
-    int ConfigurationManager::declareSetting(const std::string &group, const std::string &key, int defaultValue)
+    int ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, int defaultValue)
     {
         int value = defaultValue;
-        if (mConfiguration.isNull() == false)
+        if (configuration_.isNull() == false)
         {
             std::string groupKey = group + "." + key;
-            value = mConfiguration->getInt(groupKey, defaultValue);
+            value = configuration_->getInt(groupKey, defaultValue);
         }
 #ifdef EXPORT_CONFIGURATION
-        mValues[std::make_pair(group, key)] = boost::lexical_cast<std::string>(value);
+        values_[std::make_pair(group, key)] = boost::lexical_cast<std::string>(value);
 #endif
         return value;
     }
 
-    std::string ConfigurationManager::declareSetting(const std::string &group, const std::string &key, const std::string &defaultValue)
+    std::string ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, const std::string &defaultValue)
     {
         std::string value = defaultValue;
-        if (mConfiguration.isNull() == false)
+        if (configuration_.isNull() == false)
         {
             std::string groupKey = group + "." + key;
-            value = mConfiguration->getString(groupKey, defaultValue);
+            value = configuration_->getString(groupKey, defaultValue);
         }
 #ifdef EXPORT_CONFIGURATION
-        mValues[std::make_pair(group, key)] = value;
+        values_[std::make_pair(group, key)] = value;
 #endif
         return value;
     }
 
-    std::string ConfigurationManager::declareSetting(const std::string &group, const std::string &key, const char *defaultValue)
+    std::string ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, const char *defaultValue)
     {
-        return declareSetting(group, key, std::string(defaultValue));
+        return DeclareSetting(group, key, std::string(defaultValue));
     }
 
-    bool ConfigurationManager::declareSetting(const std::string &group, const std::string &key, bool defaultValue)
+    bool ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, bool defaultValue)
     {
         bool value = defaultValue;
-        if (mConfiguration.isNull() == false)
+        if (configuration_.isNull() == false)
         {
             std::string groupKey = group + "." + key;
-            value = mConfiguration->getBool(groupKey, defaultValue);
+            value = configuration_->getBool(groupKey, defaultValue);
         }
 #ifdef EXPORT_CONFIGURATION
-        mValues[std::make_pair(group, key)] = boost::lexical_cast<std::string>(value);
+        values_[std::make_pair(group, key)] = boost::lexical_cast<std::string>(value);
 #endif
         return value;
     }
 
-    Core::Real ConfigurationManager::declareSetting(const std::string &group, const std::string &key, Core::Real defaultValue)
+    Core::Real ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, Core::Real defaultValue)
     {
         Core::Real value = defaultValue;
-        if (mConfiguration.isNull() == false)
+        if (configuration_.isNull() == false)
         {
             std::string groupKey = group + "." + key;
-            value = static_cast<Core::Real>(mConfiguration->getDouble(groupKey, defaultValue));
+            value = static_cast<Core::Real>(configuration_->getDouble(groupKey, defaultValue));
         }
 #ifdef EXPORT_CONFIGURATION
-        mValues[std::make_pair(group, key)] = boost::lexical_cast<std::string>(value);
+        values_[std::make_pair(group, key)] = boost::lexical_cast<std::string>(value);
 #endif
         return value;
     }
 
-    bool ConfigurationManager::hasKey(const std::string &group, const std::string &key)
+    bool ConfigurationManager::HasKey(const std::string &group, const std::string &key)
     {
-        if (mConfiguration.isNull() == false)
+        if (configuration_.isNull() == false)
         {
             std::string groupKey = group + "." + key;
-            return mConfiguration->hasProperty(groupKey);
+            return configuration_->hasProperty(groupKey);
         }
         return false;
     }
 
-    void ConfigurationManager::exportSettings(const std::string &file)
+    void ConfigurationManager::ExportSettings(const std::string &file)
     {
 #ifdef EXPORT_CONFIGURATION
         std::fstream file_op(file.c_str(), std::ios::out);
@@ -129,8 +129,8 @@ namespace Foundation
 	    writer.startElement("", "", "config");
 
         std::string currentGroup;
-        ValueMap::const_iterator iter = mValues.begin();
-        for ( ; iter != mValues.end() ; ++iter)
+        ValueMap::const_iterator iter = values_.begin();
+        for ( ; iter != values_.end() ; ++iter)
         {
             if ( currentGroup.empty() == false && 
                  currentGroup != iter->first.first )

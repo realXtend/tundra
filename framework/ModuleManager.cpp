@@ -11,11 +11,9 @@ namespace fs = boost::filesystem;
 
 namespace Foundation
 {
-//    const char *ModuleManager::DEFAULT_MODULES_PATH = "./modules";
-
     ModuleManager::ModuleManager(Framework *framework) : 
-        mFramework(framework)
-      , DEFAULT_MODULES_PATH(Framework::getDefaultConfig().declareSetting("ModuleManager", "Default_Modules_Path", "./modules"))
+        framework_(framework)
+      , DEFAULT_MODULES_PATH(Framework::GetDefaultConfig().DeclareSetting("ModuleManager", "Default_Modules_Path", "./modules"))
     {
     }
 
@@ -23,7 +21,7 @@ namespace Foundation
     {
     }
 
-    void ModuleManager::loadAvailableModules()
+    void ModuleManager::LoadAvailableModules()
     {
         fs::path full_path = fs::system_complete(fs::path(DEFAULT_MODULES_PATH));
         if ( !fs::exists( full_path ) || !fs::is_directory( full_path ))
@@ -38,7 +36,7 @@ namespace Foundation
             {
                 if ( fs::is_regular_file( iter->status() ) )
                 {
-                    loadModule(iter->path());
+                    LoadModule(iter->path());
                     
                 }
             } catch (std::exception &e) // may not be fatal, depending on which module failed
@@ -49,31 +47,31 @@ namespace Foundation
         }
     }
 
-    void ModuleManager::initializeModules()
+    void ModuleManager::InitializeModules()
     {
-        for (size_t i=0 ; i<mModules.size() ; ++i)
+        for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            initializeModule(mModules[i]);
+            InitializeModule(modules_[i]);
         }
     }
 
-    void ModuleManager::uninitializeModules()
+    void ModuleManager::UninitializeModules()
     {
-        for (size_t i=0 ; i<mModules.size() ; ++i)
+        for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            uninitializeModule(mModules[i]);
+            UninitializeModule(modules_[i]);
         }
     }
 
-    void ModuleManager::updateModules()
+    void ModuleManager::UpdateModules()
     {
-        for (size_t i=0 ; i<mModules.size() ; ++i)
+        for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            mModules[i]->update();
+            modules_[i]->update();
         }
     }
 
-    void ModuleManager::loadModule(const fs::path &path)
+    void ModuleManager::LoadModule(const fs::path &path)
     {
         assert (path.has_filename());
 
@@ -101,11 +99,11 @@ namespace Foundation
             }
             catch (std::exception) { /* no need to handle */ }
 
-            loadModule(modulePath.native_directory_string(), entry);
+            LoadModule(modulePath.native_directory_string(), entry);
         }
     }
 
-    void ModuleManager::loadModule(const std::string &moduleName, const std::string &entryPoint)
+    void ModuleManager::LoadModule(const std::string &moduleName, const std::string &entryPoint)
     {
         assert(moduleName.empty() == false);
 
@@ -124,31 +122,31 @@ namespace Foundation
         ModuleInterface* module = cl.classFor(entryPoint).create();
         module->load();
 
-        mModules.push_back(module);
+        modules_.push_back(module);
 
         LOG("Module: " + moduleName + " loaded.");
     }
 
-    void ModuleManager::unloadModules()
+    void ModuleManager::UnloadModules()
     {
-        for (size_t i=0 ; i<mModules.size() ; ++i)
+        for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            assert(mModules[i]);
-            mModules[i]->unload();
-            delete mModules[i];
+            assert(modules_[i]);
+            modules_[i]->unload();
+            delete modules_[i];
         }
-        mModules.clear();
+        modules_.clear();
     }
 
-    void ModuleManager::initializeModule(ModuleInterface *module)
+    void ModuleManager::InitializeModule(ModuleInterface *module)
     {
         assert(module);
-        module->_initialize(mFramework);
+        module->_initialize(framework_);
     }
 
-    void ModuleManager::uninitializeModule(ModuleInterface *module)
+    void ModuleManager::UninitializeModule(ModuleInterface *module)
     {
         assert(module);
-        module->_uninitialize(mFramework);
+        module->_uninitialize(framework_);
     }
 }

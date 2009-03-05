@@ -87,7 +87,7 @@ namespace Foundation
 
             for (size_t n=0 ; n<ComponentRegistrars.size() ; ++n)
             {
-                ComponentRegistrars[n]->_register(framework);
+                ComponentRegistrars[n]->Register(framework);
             }
             initialize(framework);
         }
@@ -99,7 +99,7 @@ namespace Foundation
 
             for (size_t n=0 ; n<ComponentRegistrars.size() ; ++n)
             {
-                ComponentRegistrars[n]->_unregister(framework);
+                ComponentRegistrars[n]->Unregister(framework);
             }
 
             uninitialize(framework);

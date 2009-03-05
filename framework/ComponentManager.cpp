@@ -9,10 +9,10 @@
 
 namespace Foundation
 {
-    ComponentInterfacePtr ComponentManager::createComponent(const std::string &componentName) const
+    ComponentInterfacePtr ComponentManager::CreateComponent(const std::string &componentName) const
     {
-        ComponentFactoryMap::const_iterator iter = mFactories.find(componentName);
-        if (iter == mFactories.end())
+        ComponentFactoryMap::const_iterator iter = factories_.find(componentName);
+        if (iter == factories_.end())
             return ComponentInterfacePtr();
 
         ComponentInterfacePtr component = (*iter->second.get())();
@@ -20,10 +20,10 @@ namespace Foundation
         return component;
     }
 
-    ComponentInterfacePtr ComponentManager::cloneComponent(const ComponentInterfacePtr &component) const
+    ComponentInterfacePtr ComponentManager::CloneComponent(const ComponentInterfacePtr &component) const
     {
-        ComponentFactoryMap::const_iterator iter = mFactories.find(component->_name());
-        if (iter == mFactories.end())
+        ComponentFactoryMap::const_iterator iter = factories_.find(component->_Name());
+        if (iter == factories_.end())
             return ComponentInterfacePtr();
 
         ComponentInterfacePtr newComponent = (*iter->second.get())(component);
@@ -31,7 +31,7 @@ namespace Foundation
         return newComponent;
     }
 
-    ComponentInterfacePtr ComponentManager::getComponent(Core::entity_id_t id, const std::string &component)
+    ComponentInterfacePtr ComponentManager::GetComponent(Core::entity_id_t id, const std::string &component)
     {
         return ComponentInterfacePtr(); //! \todo FIXME
     }

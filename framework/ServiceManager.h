@@ -18,17 +18,17 @@ namespace Foundation
         ~ServiceManager() {}
 
         //! register specified service
-        void registerService(Service::Type type, ServiceInterface *service);
+        void RegisterService(Service::Type type, ServiceInterface *service);
 
         //! Unregister the specified service. The service should be registered before unregistering.
-        void unregisterService(ServiceInterface *service);
+        void UnregisterService(ServiceInterface *service);
 
         //! Returns service from service type.
         template <class T>
-        T *getService(Service::Type type)
+        T *GetService(Service::Type type)
         {
-            ServicesMap::iterator it = mServices.find(type);
-            if (it == mServices.end())
+            ServicesMap::iterator it = services_.find(type);
+            if (it == services_.end())
             {
                 std::string what("Service type ");
                 what += boost::lexical_cast<std::string>(type) + " not registered!";
@@ -40,10 +40,10 @@ namespace Foundation
 
         //! Returns service from service type.
         template <class T>
-        const T *getService(Service::Type type) const
+        const T *GetService(Service::Type type) const
         {
-            ServicesMap::const_iterator it = mServices.find(type);
-            if (it == mServices.end())
+            ServicesMap::const_iterator it = services_.find(type);
+            if (it == services_.end())
             {
                 std::string what("Service type ") + boost::lexical_cast<std::string>(type) + " not registered!";
                 throw Core::Exception(what.c_str());
@@ -55,10 +55,10 @@ namespace Foundation
         typedef std::map<Service::Type, ServiceInterface*> ServicesMap;
         
         //! parent framework
-        Framework *mFramework;
+        Framework *framework_;
 
         //! Contains all registered services
-        ServicesMap mServices;
+        ServicesMap services_;
     };
 }
 

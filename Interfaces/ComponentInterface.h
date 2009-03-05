@@ -15,9 +15,9 @@ namespace Foundation
         ComponentInterface()  {}
         virtual ~ComponentInterface() {}
         
-        virtual void handleNetworkData(std::string data) {}
+        virtual void HandleNetworkData(std::string data) {}
 
-        virtual const std::string &_name() = 0;
+        virtual const std::string &_Name() = 0;
     };
 
     typedef boost::shared_ptr<ComponentInterface> ComponentInterfacePtr;

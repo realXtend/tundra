@@ -27,11 +27,11 @@ namespace Test
 
         virtual ~EC_Dummy() {}
         
-        int getDummyData1() { return mDummyData1; }
-        void setDummyData1(int data) { mDummyData1 = data; }
+        int GetDummyData1() { return mDummyData1; }
+        void SetDummyData1(int data) { mDummyData1 = data; }
 
-        int getDummyData2() { return mDummyData2; }
-        void setDummyData2(int data) { mDummyData2 = data; }
+        int GetDummyData2() { return mDummyData2; }
+        void SetDummyData2(int data) { mDummyData2 = data; }
     private:
         //! default constructor, private since we implicitly use factory
         EC_Dummy() {}
