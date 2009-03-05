@@ -6,8 +6,6 @@
 
 #include "TestModule.h"
 #include "EC_Dummy.h"
-#include "EC_Geometry.h"
-#include "EC_OgreEntity.h"
 #include <Poco/ClassLibrary.h>
 #include "Foundation.h"
 
