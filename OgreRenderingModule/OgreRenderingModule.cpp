@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "OgreRenderingSystem.h"
+#include "OgreRenderingModule.h"
 #include "EC_OgreEntity.h"
 #include <Poco/ClassLibrary.h>
 #include "Foundation.h"
@@ -9,16 +9,16 @@
 
 namespace OgreRenderer
 {
-    OgreRenderingSystem::OgreRenderingSystem() : ModuleInterface_Impl(Foundation::Module::Type_Renderer)
+    OgreRenderingModule::OgreRenderingModule() : ModuleInterface_Impl(Foundation::Module::Type_Renderer)
     {
     }
 
-    OgreRenderingSystem::~OgreRenderingSystem()
+    OgreRenderingModule::~OgreRenderingModule()
     {
     }
 
     // virtual
-    void OgreRenderingSystem::load()
+    void OgreRenderingModule::load()
     {
         using namespace OgreRenderer;
 
@@ -27,13 +27,13 @@ namespace OgreRenderer
     }
 
     // virtual
-    void OgreRenderingSystem::unload()
+    void OgreRenderingModule::unload()
     {
         LOG("System " + name() + " unloaded.");
     }
 
     // virtual
-    void OgreRenderingSystem::initialize(Foundation::Framework *framework)
+    void OgreRenderingModule::initialize(Foundation::Framework *framework)
     {
         mRenderer = OgreRenderer::RendererPtr(new OgreRenderer::Renderer);
 
@@ -41,7 +41,7 @@ namespace OgreRenderer
     }
 
     // virtual 
-    void OgreRenderingSystem::uninitialize(Foundation::Framework *framework)
+    void OgreRenderingModule::uninitialize(Foundation::Framework *framework)
     {        
         mRenderer.reset();
 
@@ -53,6 +53,6 @@ namespace OgreRenderer
 using namespace OgreRenderer;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
-   POCO_EXPORT_CLASS(OgreRenderingSystem)
+   POCO_EXPORT_CLASS(OgreRenderingModule)
 POCO_END_MANIFEST
 
