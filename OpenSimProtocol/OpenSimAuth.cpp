@@ -1,0 +1,68 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+#include <cassert>
+#include <sstream>
+#include <iostream>
+
+#include "OpenSimAuth.h"
+
+#ifdef WIN32
+#include <winsock2.h>
+#include <iphlpapi.h>
+#endif
+
+using namespace std;
+
+///\todo Find a way for other OS's.
+// Fetches the MAC address.
+#ifdef WIN32
+std::string GetMACaddressString()
+{
+	IP_ADAPTER_INFO AdapterInfo[16];
+	
+	DWORD dwBufLen = sizeof(AdapterInfo);
+
+	DWORD dwStatus = GetAdaptersInfo(AdapterInfo, &dwBufLen);
+	if (dwStatus != ERROR_SUCCESS)
+	{
+		///\todo Log error.
+		assert(false && "GetAdaptersInfo failed!");
+		return "";
+	}
+
+	PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;
+	
+	std::stringstream ss;
+	while(pAdapterInfo)
+	{
+		ss << hex << pAdapterInfo->Address[0] <<
+			hex << pAdapterInfo->Address[1] <<
+			hex << pAdapterInfo->Address[2] <<
+			hex << pAdapterInfo->Address[3] <<
+			hex << pAdapterInfo->Address[4] <<
+			hex << pAdapterInfo->Address[5];
+		pAdapterInfo = pAdapterInfo->Next;
+	}
+
+	return ss.str();
+}
+
+///\todo Find a way for other OS's
+/// Returns serial number of the HDD.
+std::string GetId0String()
+{
+	stringstream serial;
+	DWORD dwVolSerial;
+	BOOL bIsRetrieved;
+	bIsRetrieved = GetVolumeInformation(L"C:\\", NULL, NULL, &dwVolSerial, NULL, NULL, NULL, NULL);
+	if (bIsRetrieved)
+	{
+		serial << hex << dwVolSerial;
+		return serial.str();
+	}
+	else
+	{
+		printf("Error: Could not retrieve serial number of the HDD!");
+		return string("");
+	}
+}
+#endif
