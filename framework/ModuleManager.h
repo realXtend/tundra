@@ -4,6 +4,8 @@
 #define incl_Foundation_ModuleManager_h
 
 #include <boost/filesystem.hpp>
+#include "ModuleInterface.h"
+
 
 namespace Foundation
 {
@@ -41,7 +43,6 @@ namespace Foundation
 
 
         \todo Track which modules are enabled (initialized) and which are not
-        \note Do not use directly!
     */
     class ModuleManager
     {
@@ -68,32 +69,32 @@ namespace Foundation
         //! perform synchronized update on all modules
         void UpdateModules();
 
-        ////! Returns module by name
-        //ModuleInterface *getModule(const std::string &name)
-        //{
-        //    ModuleVector::iterator it = mModules.begin();
-        //    for ( ; it != mModules.end() ; ++it)
-        //    {
-        //        if ( (*it)->name() == name )
-        //            return *it;
-        //    }
-        //    return NULL;
-        //}
+        //! Returns module by name
+        ModuleInterface *GetModule(const std::string &name)
+        {
+            ModuleVector::iterator it = modules_.begin();
+            for ( ; it != modules_.end() ; ++it)
+            {
+                if ( (*it)->Name() == name )
+                    return *it;
+            }
+            return NULL;
+        }
 
-        ////! Returns module by type
-        //template <class T>
-        //T *getModule(Foundation::Module::Type type)
-        //{
-        //    assert (type != Module::Type_Unknown);
+        //! Returns module by type
+        template <class T>
+        T *GetModule(Foundation::Module::Type type)
+        {
+            assert (type != Module::Type_Unknown);
 
-        //    ModuleVector::iterator it = mModules.begin();
-        //    for ( ; it != mModules.end() ; ++it)
-        //    {
-        //        if ( (*it)->type() == type )
-        //            return (static_cast<T*>(*it));
-        //    }
-        //    return NULL;
-        //}
+            ModuleVector::iterator it = modules_.begin();
+            for ( ; it != modules_.end() ; ++it)
+            {
+                if ( (*it)->Type() == type )
+                    return (static_cast<T*>(*it));
+            }
+            return NULL;
+        }
 
     private:
 
