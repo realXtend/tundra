@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_TestSystem_System_h__
-#define __incl_TestSystem_System_h__
+#ifndef __incl_TestModule_h__
+#define __incl_TestModule_h__
 
 #include "ModuleInterface.h"
 #include "TestServiceInterface.h"
@@ -17,11 +17,11 @@ namespace Foundation
 namespace Test
 {
     //! interface for modules
-    class TestSystem : public Foundation::ModuleInterface_Impl, public Foundation::TestServiceInterface
+    class TestModule : public Foundation::ModuleInterface_Impl, public Foundation::TestServiceInterface
     {
     public:
-        TestSystem();
-        virtual ~TestSystem();
+        TestModule();
+        virtual ~TestModule();
 
         virtual void load();
         virtual void unload();
