@@ -6,6 +6,8 @@ Compiling
 CMake is used to create the build environment.
 See documentation/cmake.txt for more information.
 
+Quickstart for Windows / Visual Studio: install CMake, then run cmake.bat if not using VS2008, and cmake_vs2008.bat, if using VS2008.
+
 
 Dependencies
 ------------
