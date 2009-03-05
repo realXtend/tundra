@@ -45,7 +45,7 @@ namespace Foundation
             ServicesMap::const_iterator it = services_.find(type);
             if (it == services_.end())
             {
-                std::string what("Service type ") + boost::lexical_cast<std::string>(type) + " not registered!";
+                std::string what("Service type " + boost::lexical_cast<std::string>(type) + " not registered!");
                 throw Core::Exception(what.c_str());
             }
 
