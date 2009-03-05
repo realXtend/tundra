@@ -1,0 +1,497 @@
+diff -ipuwrN -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' libiconv-1.9.2-orig/autoconf/install-reloc libiconv-1.9.2-src/autoconf/install-reloc
+--- libiconv-1.9.2-orig/autoconf/install-reloc	2003-07-01 14:06:57.000000000 +0200
++++ libiconv-1.9.2-src/autoconf/install-reloc	2004-10-05 20:15:07.140625000 +0200
+@@ -109,11 +109,11 @@ IFS="$save_IFS"
+ test -n "$libdirs" || exit 0
+ 
+ # Compile wrapper.
+-installdir=`echo "$destprog" | sed -e 's,/[^/]*$,,'`
+-func_verbose $compile_command -I"$builddir" -I"$srcdir" -I"$config_h_dir" -DHAVE_CONFIG_H -DNO_XMALLOC -D"INSTALLPREFIX=\"$prefix\"" -D"INSTALLDIR=\"$installdir\"" -D"LIBPATHVAR=\"$library_path_var\"" -D"LIBDIRS=$libdirs" "$srcdir"/relocwrapper.c "$srcdir"/progname.c "$srcdir"/progreloc.c "$srcdir"/xreadlink.c "$srcdir"/readlink.c "$srcdir"/canonicalize.c "$srcdir"/relocatable.c "$srcdir"/setenv.c "$srcdir"/strerror.c -o $destprog.wrapper || exit $?
++# installdir=`echo "$destprog" | sed -e 's,/[^/]*$,,'`
++# func_verbose $compile_command -I"$builddir" -I"$srcdir" -I"$config_h_dir" -DHAVE_CONFIG_H -DNO_XMALLOC -D"INSTALLPREFIX=\"$prefix\"" -D"INSTALLDIR=\"$installdir\"" -D"LIBPATHVAR=\"$library_path_var\"" -D"LIBDIRS=$libdirs" "$srcdir"/relocwrapper.c "$srcdir"/progname.c "$srcdir"/progreloc.c "$srcdir"/xreadlink.c "$srcdir"/readlink.c "$srcdir"/canonicalize.c "$srcdir"/relocatable.c "$srcdir"/setenv.c "$srcdir"/strerror.c -o $destprog.wrapper || exit $?
+ 
+ # Rename $destprog.wrapper -> $destprog -> $destprog.bin.
+-ln -f $destprog $destprog.bin || exit 1
+-mv $destprog.wrapper $destprog || exit 1
++# ln -f $destprog $destprog.bin || exit 1
++# mv $destprog.wrapper $destprog || exit 1
+ 
+ exit 0
+diff -ipuwrN -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' libiconv-1.9.2-orig/include/iconv.h.in libiconv-1.9.2-src/include/iconv.h.in
+--- libiconv-1.9.2-orig/include/iconv.h.in	2003-04-14 15:51:06.000000000 +0200
++++ libiconv-1.9.2-src/include/iconv.h.in	2004-10-02 21:16:25.796875000 +0200
+@@ -22,7 +22,17 @@
+ #define _LIBICONV_H
+ 
+ #define _LIBICONV_VERSION 0x0109    /* version number: (major<<8) + minor */
+-extern int _libiconv_version;       /* Likewise */
++
++#ifdef LIBICONV_STATIC
++#define LIBICONV_DLL_EXPORTED
++#else /* LIBICONV_STATIC */
++#ifdef BUILDING_LIBICONV
++#define LIBICONV_DLL_EXPORTED __declspec(dllexport)
++#else
++#define LIBICONV_DLL_EXPORTED __declspec(dllimport)
++#endif
++#endif /* LIBICONV_STATIC */ 
++extern LIBICONV_DLL_EXPORTED int _libiconv_version;       /* Likewise */
+ 
+ /* We would like to #include any system header file which could define
+    iconv_t, 1. in order to eliminate the risk that the user gets compilation
+@@ -69,7 +79,7 @@ extern "C" {
+ #ifndef LIBICONV_PLUG
+ #define iconv_open libiconv_open
+ #endif
+-extern iconv_t iconv_open (const char* tocode, const char* fromcode);
++extern LIBICONV_DLL_EXPORTED iconv_t iconv_open (const char* tocode, const char* fromcode);
+ 
+ /* Converts, using conversion descriptor `cd', at most `*inbytesleft' bytes
+    starting at `*inbuf', writing at most `*outbytesleft' bytes starting at
+@@ -79,13 +89,13 @@ extern iconv_t iconv_open (const char* t
+ #ifndef LIBICONV_PLUG
+ #define iconv libiconv
+ #endif
+-extern size_t iconv (iconv_t cd, @ICONV_CONST@ char* * inbuf, size_t *inbytesleft, char* * outbuf, size_t *outbytesleft);
++extern LIBICONV_DLL_EXPORTED size_t iconv (iconv_t cd, @ICONV_CONST@ char* * inbuf, size_t *inbytesleft, char* * outbuf, size_t *outbytesleft);
+ 
+ /* Frees resources allocated for conversion descriptor `cd'. */
+ #ifndef LIBICONV_PLUG
+ #define iconv_close libiconv_close
+ #endif
+-extern int iconv_close (iconv_t cd);
++extern LIBICONV_DLL_EXPORTED int iconv_close (iconv_t cd);
+ 
+ 
+ #ifndef LIBICONV_PLUG
+@@ -94,7 +104,7 @@ extern int iconv_close (iconv_t cd);
+ 
+ /* Control of attributes. */
+ #define iconvctl libiconvctl
+-extern int iconvctl (iconv_t cd, int request, void* argument);
++extern LIBICONV_DLL_EXPORTED int iconvctl (iconv_t cd, int request, void* argument);
+ 
+ /* Requests for iconvctl. */
+ #define ICONV_TRIVIALP            0  /* int *argument */
+@@ -105,7 +115,7 @@ extern int iconvctl (iconv_t cd, int req
+ 
+ /* Listing of locale independent encodings. */
+ #define iconvlist libiconvlist
+-extern void iconvlist (int (*do_one) (unsigned int namescount,
++extern LIBICONV_DLL_EXPORTED void iconvlist (int (*do_one) (unsigned int namescount,
+                                       const char * const * names,
+                                       void* data),
+                        void* data);
+@@ -117,7 +127,7 @@ extern void iconvlist (int (*do_one) (un
+    by the corresponding pathname with the current prefix instead.  Both
+    prefixes should be directory names without trailing slash (i.e. use ""
+    instead of "/").  */
+-extern void libiconv_set_relocation_prefix (const char *orig_prefix,
++extern LIBICONV_DLL_EXPORTED void libiconv_set_relocation_prefix (const char *orig_prefix,
+ 					    const char *curr_prefix);
+ 
+ #endif
+diff -ipuwrN -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' libiconv-1.9.2-orig/lib/Makefile.in libiconv-1.9.2-src/lib/Makefile.in
+--- libiconv-1.9.2-orig/lib/Makefile.in	2003-05-18 16:19:16.000000000 +0200
++++ libiconv-1.9.2-src/lib/Makefile.in	2004-10-13 23:59:07.421875000 +0200
+@@ -4,6 +4,8 @@
+ 
+ # Directories used by "make":
+ srcdir = @srcdir@
++resdir = @top_builddir@res
++vpath %.rc @top_builddir@res
+ 
+ # Directories used by "make install":
+ prefix = @prefix@
+@@ -15,21 +17,22 @@ libdir = @libdir@
+ CC = @CC@
+ CFLAGS = @CFLAGS@
+ CPPFLAGS = @CPPFLAGS@
+-LDFLAGS = @LDFLAGS@
++LDFLAGS = @LDFLAGS@	 -Wl,--major-image-version=$(MAJOR) -Wl,--minor-image-version=$(MINOR) 
+ INCLUDES = -I. -I$(srcdir) -I../include -I$(srcdir)/../include
+-DEFS = -DLIBDIR=\"$(libdir)\" \
+--DENABLE_RELOCATABLE=1 -DIN_LIBRARY -DINSTALLDIR=\"$(libdir)\" -DNO_XMALLOC \
++DEFS =  -DINSTALLDIR=\"$(prefix)\"  -DLIBDIR=\"$(libdir)\" \
++-DENABLE_RELOCATABLE=1 -DIN_LIBRARY -DNO_XMALLOC \
+ -Dset_relocation_prefix=libiconv_set_relocation_prefix \
+--Drelocate=libiconv_relocate @DEFS@
++-Drelocate=libiconv_relocate @DEFS@	-DINSTALLDIR=\"$(prefix)/bin\" 
+ LIBTOOL = @LIBTOOL@
+ LIBTOOL_COMPILE = $(LIBTOOL) --mode=compile
+ LIBTOOL_LINK = $(LIBTOOL) --mode=link
+ LIBTOOL_INSTALL = $(LIBTOOL) --mode=install
+ LIBTOOL_UNINSTALL = $(LIBTOOL) --mode=uninstall
++RCTOOL_COMPILE = RCTOOL
+ CP = cp
+ MV = mv
+-LN = @LN@
+-LN_S = @LN_S@
++LN = cp -fp
++LN_S = cp -fp
+ RM = rm -f
+ 
+ # Programs used by "make install":
+@@ -38,8 +41,17 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+ INSTALL_DATA = @INSTALL_DATA@
+ mkinstalldirs = $(SHELL) @top_srcdir@/autoconf/mkinstalldirs
+ 
++# Rule to make compiled resource (Windows)
++%-rc.o: %.rc
++	windres --include-dir $(resdir) -i $< -o $@
++
+ #### End of system configuration section. ####
+ 
++PACKAGE = @PACKAGE@
++VERSION = @VERSION@
++MAJOR=$(shell echo $(VERSION) | sed -e "s/\..*$$//")
++MINOR=$(shell echo $(VERSION) | sed -e "s/^[^\.]*\.0*\([^.]*\).*$$/\1/")
++
+ SHELL = /bin/sh
+ 
+ # Before making a release, change this according to the libtool documentation,
+@@ -52,12 +64,19 @@ top_builddir = ..
+ SOURCES = $(srcdir)/iconv.c $(srcdir)/../libcharset/lib/localcharset.c $(srcdir)/relocatable.c
+ 
+ OBJECTS = iconv.lo localcharset.lo relocatable.lo
++libiconv_dll_OBJECTS = $(OBJECTS:.lo=.o) libiconv-dllversion.o libiconv-dll-rc.o
+ 
+-all : @PLUGLIB@ libiconv.la
++all : @PLUGLIB@ libiconv.la	libiconv.dll
+ 
+ libiconv.la : $(OBJECTS)
+ 	$(LIBTOOL_LINK) $(CC) $(LDFLAGS) -o libiconv.la -rpath $(libdir) -version-info $(LIBICONV_VERSION_INFO) -no-undefined $(OBJECTS)
+ 
++libiconv.dll: libiconv.la libiconv-dllversion.lo libiconv-dll-rc.lo
++	cd .libs && o2dll -o libiconv.dll -l libiconv $(libiconv_dll_OBJECTS) $(LIBS)
++	cp -fp libiconv.la libiconv.la.orig
++	sed -e "s/libiconv.a/libiconv.dll.a/" libiconv.la.orig > libiconv.la
++	cp -fp .libs/libiconv*.dll $@
++
+ libiconv_plug.so : libiconv_plug_@OS@.so
+ 	$(RM) libiconv_plug.so
+ 	$(LN_S) libiconv_plug_@OS@.so libiconv_plug.so
+@@ -97,6 +116,12 @@ localcharset.lo : $(srcdir)/../libcharse
+ relocatable.lo : $(srcdir)/relocatable.c $(srcdir)/relocatable.h
+ 	$(LIBTOOL_COMPILE) $(CC) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) $(DEFS) -c $(srcdir)/relocatable.c
+ 
++libiconv-dllversion.lo: $(resdir)/libiconv-dllversion.c
++	$(LIBTOOL_COMPILE) $(CC) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) $(DEFS) -c $(resdir)/libiconv-dllversion.c
++
++libiconv-dll-rc.lo: $(resdir)/libiconv-dll.rc
++	$(RCTOOL_COMPILE) $(resdir)/libiconv-dll.rc
++
+ # Installs the library and include files only. Typically called with only
+ # $(libdir) and $(includedir) - don't use $(prefix) and $(exec_prefix) here.
+ install-lib : all force
+@@ -108,6 +133,9 @@ install : all force
+ 	if [ ! -d $(DESTDIR)$(exec_prefix) ] ; then $(mkinstalldirs) $(DESTDIR)$(exec_prefix) ; fi
+ 	if [ ! -d $(DESTDIR)$(libdir) ] ; then $(mkinstalldirs) $(DESTDIR)$(libdir) ; fi
+ 	$(LIBTOOL_INSTALL) $(INSTALL_DATA) libiconv.la $(DESTDIR)$(libdir)/libiconv.la
++	$(INSTALL_DATA) .libs/libiconv.lib $(DESTDIR)$(libdir)/libiconv.lib
++	$(INSTALL_DATA) .libs/libiconv-bcc.lib $(DESTDIR)$(libdir)/libiconv-bcc.lib
++	$(INSTALL_DATA) .libs/libiconv2.def $(DESTDIR)$(libdir)/libiconv2.def
+ 	if test -n "@PLUGLIB@"; then $(INSTALL_DATA) @PLUGLIB@ $(DESTDIR)$(libdir)/@PLUGLIB@.new && mv $(DESTDIR)$(libdir)/@PLUGLIB@.new $(DESTDIR)$(libdir)/@PLUGLIB@ ; fi
+ 
+ installdirs : force
+diff -ipuwrN -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' libiconv-1.9.2-orig/libcharset/include/libcharset.h.in libiconv-1.9.2-src/libcharset/include/libcharset.h.in
+--- libiconv-1.9.2-orig/libcharset/include/libcharset.h.in	2003-04-05 11:33:32.000000000 +0200
++++ libiconv-1.9.2-src/libcharset/include/libcharset.h.in	2004-10-02 21:17:21.125000000 +0200
+@@ -19,6 +19,16 @@
+ #ifndef _LIBCHARSET_H
+ #define _LIBCHARSET_H
+ 
++#ifdef LIBCHARSET_STATIC
++#define LIBCHARSET_DLL_EXPORTED 
++#else /* LIBCHARSET_STATIC */
++#ifdef BUILDING_LIBCHARSET
++#define LIBCHARSET_DLL_EXPORTED __declspec(dllexport)
++#else
++#define LIBCHARSET_DLL_EXPORTED __declspec(dllimport)
++#endif
++#endif /* LIBCHARSET_STATIC */
++
+ #include <localcharset.h>
+ 
+ 
+@@ -34,7 +44,7 @@ extern "C" {
+    by the corresponding pathname with the current prefix instead.  Both
+    prefixes should be directory names without trailing slash (i.e. use ""
+    instead of "/").  */
+-extern void libcharset_set_relocation_prefix (const char *orig_prefix,
++extern LIBCHARSET_DLL_EXPORTED void libcharset_set_relocation_prefix (const char *orig_prefix,
+ 					      const char *curr_prefix);
+ 
+ 
+diff -ipuwrN -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' libiconv-1.9.2-orig/libcharset/include/localcharset.h.in libiconv-1.9.2-src/libcharset/include/localcharset.h.in
+--- libiconv-1.9.2-orig/libcharset/include/localcharset.h.in	2003-02-26 10:58:43.000000000 +0100
++++ libiconv-1.9.2-src/libcharset/include/localcharset.h.in	2004-10-02 21:17:21.125000000 +0200
+@@ -20,6 +20,15 @@
+ #ifndef _LOCALCHARSET_H
+ #define _LOCALCHARSET_H
+ 
++#ifdef LIBCHARSET_STATIC
++#define LIBCHARSET_DLL_EXPORTED 
++#else /* LIBCHARSET_STATIC */
++#ifdef BUILDING_LIBCHARSET
++#define LIBCHARSET_DLL_EXPORTED __declspec(dllexport)
++#else
++#define LIBCHARSET_DLL_EXPORTED __declspec(dllimport)
++#endif
++#endif /* LIBCHARSET_STATIC */
+ 
+ #ifdef __cplusplus
+ extern "C" {
+@@ -31,7 +40,7 @@ extern "C" {
+    The result must not be freed; it is statically allocated.
+    If the canonical name cannot be determined, the result is a non-canonical
+    name.  */
+-extern const char * locale_charset (void);
++extern LIBCHARSET_DLL_EXPORTED const char * locale_charset (void);
+ 
+ 
+ #ifdef __cplusplus
+diff -ipuwrN -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' libiconv-1.9.2-orig/libcharset/lib/Makefile.in libiconv-1.9.2-src/libcharset/lib/Makefile.in
+--- libiconv-1.9.2-orig/libcharset/lib/Makefile.in	2003-04-14 15:51:06.000000000 +0200
++++ libiconv-1.9.2-src/libcharset/lib/Makefile.in	2004-10-14 00:01:43.546875000 +0200
+@@ -4,6 +4,8 @@
+ 
+ # Directories used by "make":
+ srcdir = @srcdir@
++resdir = ../@top_builddir@res
++vpath %.rc ../@top_builddir@res
+ 
+ # Directories used by "make install":
+ prefix = @prefix@
+@@ -15,17 +17,18 @@ libdir = @libdir@
+ CC = @CC@
+ CFLAGS = @CFLAGS@
+ CPPFLAGS = @CPPFLAGS@
+-LDFLAGS = @LDFLAGS@
++LDFLAGS = @LDFLAGS@	 -Wl,--major-image-version=$(MAJOR) -Wl,--minor-image-version=$(MINOR) 
+ INCLUDES = -I. -I$(srcdir) -I.. -I$(srcdir)/.. -I../include
+ DEFS = -DLIBDIR=\"$(libdir)\" \
+--DENABLE_RELOCATABLE=1 -DIN_LIBRARY -DINSTALLDIR=\"$(libdir)\" -DNO_XMALLOC \
++-DENABLE_RELOCATABLE=1 -DIN_LIBRARY -DNO_XMALLOC \
+ -Dset_relocation_prefix=libcharset_set_relocation_prefix \
+--Drelocate=libcharset_relocate @DEFS@
++-Drelocate=libcharset_relocate @DEFS@ -DINSTALLDIR=\"$(prefix)/bin\" 
+ LIBTOOL = @LIBTOOL@
+ LIBTOOL_COMPILE = $(LIBTOOL) --mode=compile
+ LIBTOOL_LINK = $(LIBTOOL) --mode=link
+ LIBTOOL_INSTALL = $(LIBTOOL) --mode=install
+ LIBTOOL_UNINSTALL = $(LIBTOOL) --mode=uninstall
++RCTOOL_COMPILE = RCTOOL
+ RM = rm -f
+ 
+ # Programs used by "make install":
+@@ -33,10 +36,16 @@ INSTALL = @INSTALL@
+ INSTALL_DATA = @INSTALL_DATA@
+ mkinstalldirs = $(SHELL) @top_srcdir@/autoconf/mkinstalldirs
+ 
++# Rule to make compiled resource (Windows)
++%-rc.o: %.rc
++	windres --include-dir $(resdir) -i $< -o $@
++
+ #### End of system configuration section. ####
+ 
+ PACKAGE = @PACKAGE@
+-VERSION = @VERSION@
++VERSION = 1.9
++MAJOR=$(shell echo $(VERSION) | sed -e "s/\..*$$//")
++MINOR=$(shell echo $(VERSION) | sed -e "s/^[^\.]*\.0*\([^.]*\).*$$/\1/")
+ 
+ SHELL = /bin/sh
+ 
+@@ -50,18 +59,31 @@ top_builddir = ..
+ SOURCES = $(srcdir)/localcharset.c $(srcdir)/relocatable.c
+ 
+ OBJECTS = localcharset.lo relocatable.lo
++libcharset_dll_OBJECTS = $(OBJECTS:.lo=.o) libcharset-dllversion.o libcharset-dll-rc.o
+ 
+-all : libcharset.la charset.alias ref-add.sed ref-del.sed
++all : libcharset.la libcharset.dll charset.alias ref-add.sed ref-del.sed
+ 
+ libcharset.la : $(OBJECTS)
+ 	$(LIBTOOL_LINK) $(CC) $(LDFLAGS) -o libcharset.la -rpath $(libdir) -version-info $(LIBCHARSET_VERSION_INFO) -no-undefined $(OBJECTS)
+ 
++libcharset.dll: libcharset.la libcharset-dllversion.lo libcharset-dll-rc.lo
++	cd .libs && o2dll -o libcharset.dll -l libcharset $(libcharset_dll_OBJECTS) $(LIBS)
++	cp -fp libcharset.la libcharset.la.orig
++	sed -e "s/libcharset.a/libcharset.dll.a/" libcharset.la.orig > libcharset.la
++	cp -fp .libs/libcharset*.dll $@
++
+ localcharset.lo : $(srcdir)/localcharset.c
+ 	$(LIBTOOL_COMPILE) $(CC) $(INCLUDES) $(CFLAGS) $(CPPFLAGS) $(DEFS) -c $(srcdir)/localcharset.c
+ 
+ relocatable.lo : $(srcdir)/relocatable.c $(srcdir)/relocatable.h
+ 	$(LIBTOOL_COMPILE) $(CC) $(INCLUDES) $(CFLAGS) $(CPPFLAGS) $(DEFS) -c $(srcdir)/relocatable.c
+ 
++libcharset-dllversion.lo: $(resdir)/libcharset-dllversion.c
++	$(LIBTOOL_COMPILE) $(CC) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) $(DEFS) -c $(resdir)/libcharset-dllversion.c
++
++libcharset-dll-rc.lo: $(resdir)/libcharset-dll.rc
++	$(RCTOOL_COMPILE) $(resdir)/libcharset-dll.rc
++
+ charset.alias: $(srcdir)/config.charset
+ 	$(SHELL) $(srcdir)/config.charset '@host@' > t-$@
+ 	mv t-$@ $@
+@@ -79,6 +101,9 @@ ref-del.sed : $(srcdir)/ref-del.sin
+ install-lib : all force
+ 	$(mkinstalldirs) $(libdir)
+ 	$(LIBTOOL_INSTALL) $(INSTALL_DATA) libcharset.la $(libdir)/libcharset.la
++	$(INSTALL_DATA) .libs/libcharset.lib $(DESTDIR)$(libdir)/libcharset.lib
++	$(INSTALL_DATA) .libs/libcharset-bcc.lib $(DESTDIR)$(libdir)/libcharset-bcc.lib
++	$(INSTALL_DATA) .libs/libcharset1.def $(DESTDIR)$(libdir)/libcharset1.def
+ 	test -f $(libdir)/charset.alias && orig=$(libdir)/charset.alias \
+ 	                                || orig=charset.alias; \
+ 	sed -f ref-add.sed $$orig > $(libdir)/t-charset.alias; \
+@@ -95,6 +120,9 @@ install-lib : all force
+ install : all force
+ 	$(mkinstalldirs) $(DESTDIR)$(libdir)
+ 	$(LIBTOOL_INSTALL) $(INSTALL_DATA) libcharset.la $(DESTDIR)$(libdir)/libcharset.la
++	$(INSTALL_DATA) .libs/libcharset.lib $(DESTDIR)$(libdir)/libcharset.lib
++	$(INSTALL_DATA) .libs/libcharset-bcc.lib $(DESTDIR)$(libdir)/libcharset-bcc.lib
++	$(INSTALL_DATA) .libs/libcharset1.def $(DESTDIR)$(libdir)/libcharset1.def
+ 	if test -f $(DESTDIR)$(libdir)/charset.alias; then \
+ 	  sed -f ref-add.sed $(DESTDIR)$(libdir)/charset.alias > $(DESTDIR)$(libdir)/t-charset.alias; \
+ 	  $(INSTALL_DATA) $(DESTDIR)$(libdir)/t-charset.alias $(DESTDIR)$(libdir)/charset.alias; \
+diff -ipuwrN -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' libiconv-1.9.2-orig/src/Makefile.in libiconv-1.9.2-src/src/Makefile.in
+--- libiconv-1.9.2-orig/src/Makefile.in	2003-06-24 12:39:55.000000000 +0200
++++ libiconv-1.9.2-src/src/Makefile.in	2004-10-13 23:49:27.015625000 +0200
+@@ -5,6 +5,8 @@
+ # Directories used by "make":
+ srcdir = @srcdir@
+ top_srcdir = @top_srcdir@
++resdir = @top_builddir@res
++vpath %.rc @top_builddir@res
+ 
+ # Directories used by "make install":
+ prefix = @prefix@
+@@ -19,7 +21,7 @@ localedir = $(datadir)/locale
+ CC = @CC@
+ CFLAGS = @CFLAGS@
+ CPPFLAGS = @CPPFLAGS@
+-LDFLAGS = @LDFLAGS@
++LDFLAGS = @LDFLAGS@ -lgw32c
+ INCLUDES = -I. -I$(srcdir) -I.. -I../include -I$(srcdir)/../include -I../srclib -I$(srcdir)/../srclib
+ LIBTOOL = @LIBTOOL@
+ LIBTOOL_COMPILE = $(LIBTOOL) --mode=compile
+@@ -35,6 +37,10 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+ INSTALL_DATA = @INSTALL_DATA@
+ mkinstalldirs = $(SHELL) @top_srcdir@/autoconf/mkinstalldirs
+ 
++# Rule to make compiled resource (Windows)
++%-rc.o: %.rc
++	windres --include-dir $(resdir) -i $< -o $@
++
+ #### End of system configuration section. ####
+ 
+ SHELL = /bin/sh
+@@ -56,8 +62,8 @@ all : iconv_no_i18n iconv.@OBJEXT@
+ 	test `ls -ld . | sed -e 's/^d\(.........\).*/\1/'` = rwxrwxrwx || chmod 777 .
+ 
+ # This is the temporary iconv executable, without internationalization.
+-iconv_no_i18n : iconv_no_i18n.@OBJEXT@ ../lib/libiconv.la
+-	$(LIBTOOL_LINK) $(CC) $(LDFLAGS) iconv_no_i18n.@OBJEXT@ ../srclib/libicrt.a ../lib/libiconv.la -o $@
++iconv_no_i18n : iconv_no_i18n.@OBJEXT@ ../lib/libiconv.la iconv-rc.@OBJEXT@
++	$(LIBTOOL_LINK) $(CC) $(LDFLAGS) iconv_no_i18n.@OBJEXT@ iconv-rc.@OBJEXT@ ../srclib/libicrt.a ../lib/libiconv.la -o $@
+ 
+ iconv_no_i18n.@OBJEXT@ : $(srcdir)/iconv_no_i18n.c $(srcdir)/iconv.c
+ 	$(CC) -c $(INCLUDES) -I../lib $(CFLAGS) $(CPPFLAGS) -DINSTALLDIR=\"$(bindir)\" -DLOCALEDIR=\"$(localedir)\" $(srcdir)/iconv_no_i18n.c
+@@ -92,7 +98,7 @@ install : all force
+ 	if [ ! -d $(DESTDIR)$(bindir) ] ; then $(mkinstalldirs) $(DESTDIR)$(bindir) ; fi
+ 	case "@host_os@" in \
+ 	  hpux*) $(CC) $(LDFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a -L$(libdir) -liconv @LIBINTL@ -o iconv;; \
+-	  *) $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a $(DESTDIR)$(libdir)/libiconv.la @LTLIBINTL@ -o iconv;; \
++	  *) $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ iconv-rc.@OBJEXT@  ../srclib/libicrt.a $(DESTDIR)$(libdir)/libiconv.la @LTLIBINTL@ -lgw32c -o iconv;; \
+ 	esac
+ 	$(INSTALL_PROGRAM_ENV) $(LIBTOOL_INSTALL) $(INSTALL_PROGRAM) iconv $(DESTDIR)$(bindir)/iconv
+ 
+diff -ipuwrN -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' libiconv-1.9.2-orig/srclib/Makefile.in libiconv-1.9.2-src/srclib/Makefile.in
+--- libiconv-1.9.2-orig/srclib/Makefile.in	2003-07-02 12:34:18.000000000 +0200
++++ libiconv-1.9.2-src/srclib/Makefile.in	2004-10-02 21:11:47.890625000 +0200
+@@ -16,6 +16,8 @@
+ 
+ srcdir = @srcdir@
+ top_srcdir = @top_srcdir@
++resdir = @top_builddir@res
++vpath %.rc @top_builddir@res
+ VPATH = @srcdir@
+ pkgdatadir = $(datadir)/@PACKAGE@
+ pkglibdir = $(libdir)/@PACKAGE@
+@@ -60,7 +62,7 @@ CXXDEPMODE = @CXXDEPMODE@
+ CXXFLAGS = @CXXFLAGS@
+ CYGPATH_W = @CYGPATH_W@
+ 
+-DEFS = -DDEPENDS_ON_LIBICONV=1 -DDEPENDS_ON_LIBINTL=1 @DEFS@
++DEFS = -DINSTALLDIR=\"$(prefix)\"  -DINSTALLDIR=\"$(prefix)\"  -DDEPENDS_ON_LIBICONV=1 -DDEPENDS_ON_LIBINTL=1 @DEFS@
+ DEPDIR = @DEPDIR@
+ DLLTOOL = @DLLTOOL@
+ ECHO = @ECHO@
+@@ -81,14 +83,14 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+ INSTALL_SCRIPT = @INSTALL_SCRIPT@
+ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+ INTLLIBS = @INTLLIBS@
+-LDFLAGS = @LDFLAGS@
++LDFLAGS = @LDFLAGS@	-lgw32c
+ LIBICONV = @LIBICONV@
+ LIBINTL = @LIBINTL@
+ LIBOBJS = @LIBOBJS@
+ LIBS = @LIBS@
+ LIBTOOL = @LIBTOOL@
+-LN = @LN@
+-LN_S = @LN_S@
++LN = cp -fp
++LN_S = cp -fp
+ LTLIBICONV = @LTLIBICONV@
+ LTLIBINTL = @LTLIBINTL@
+ LTLIBOBJS = @LTLIBOBJS@
+@@ -120,6 +122,8 @@ STRIP = @STRIP@
+ USE_EXTRA_ENCODINGS = @USE_EXTRA_ENCODINGS@
+ USE_NLS = @USE_NLS@
+ VERSION = @VERSION@
++MAJOR=$(shell echo $(VERSION) | sed -e "s/\..*$$//")
++MINOR=$(shell echo $(VERSION) | sed -e "s/^[^\.]*\.0*\([^.]*\).*$$/\1/")
+ XGETTEXT = @XGETTEXT@
+ ac_ct_AR = @ac_ct_AR@
+ ac_ct_AS = @ac_ct_AS@
+@@ -230,7 +234,7 @@ am_libicrt_a_OBJECTS = error.$(OBJEXT) p
+ 	xreadlink.$(OBJEXT)
+ libicrt_a_OBJECTS = $(am_libicrt_a_OBJECTS)
+ 
+-DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir) -I$(top_builddir)/lib
++DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir) -I$(top_builddir)/include -I$(top_builddir)/lib
+ depcomp =
+ am__depfiles_maybe =
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+@@ -268,6 +272,10 @@ mostlyclean-compile:
+ distclean-compile:
+ 	-rm -f *.tab.c
+ 
++# Rule to make compiled resource (Windows)
++%-rc.o: %.rc
++	windres --include-dir $(resdir) -i $< -o $@
++
+ .c.o:
+ 	$(COMPILE) -c `test -f '$<' || echo '$(srcdir)/'`$<
+ 
+diff -ipuwrN -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' libiconv-1.9.2-orig/srclib/relocwrapper.c libiconv-1.9.2-src/srclib/relocwrapper.c
+--- libiconv-1.9.2-orig/srclib/relocwrapper.c	2003-04-14 16:00:21.000000000 +0200
++++ libiconv-1.9.2-src/srclib/relocwrapper.c	2004-10-02 19:43:50.890625000 +0200
+@@ -148,7 +148,14 @@ main (int argc, char *argv[])
+   full_program_name = get_full_program_name ();
+   if (full_program_name == NULL)
+     full_program_name = argv[0];
+-
++#ifdef __GW32__
++  {
++	char *short_full_program_name;
++	short_full_program_name = getshortpath (full_program_name);
++	free (full_program_name);
++	full_program_name = short_full_program_name;
++  }
++#endif
+   /* Invoke the real program, with suffix ".bin".  */
+   argv[0] = add_dotbin (full_program_name);
+   relocate_libdirs ();

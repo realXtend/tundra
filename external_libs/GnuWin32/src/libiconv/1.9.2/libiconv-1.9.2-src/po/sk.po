@@ -1,0 +1,89 @@
+# Slovak translation of the libiconv.
+# Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+# Marcel Telka <marcel@telka.sk>, 2002, 2003.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: libiconv 1.9.1\n"
+"Report-Msgid-Bugs-To: bug-gnu-libiconv@gnu.org\n"
+"POT-Creation-Date: 2004-01-22 11:54+0100\n"
+"PO-Revision-Date: 2003-09-05 07:05+0200\n"
+"Last-Translator: Marcel Telka <marcel@telka.sk>\n"
+"Language-Team: Slovak <sk-i18n@lists.linux.sk>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/iconv.c:54
+msgid "Usage: iconv [-c] [-s] [-f fromcode] [-t tocode] [file ...]"
+msgstr "Použitie: iconv [-c] [-s] [-f z_kódu] [-t do kódu] [súbor ...]"
+
+#: src/iconv.c:56
+msgid "or:    iconv -l"
+msgstr "alebo:    iconv -l"
+
+#: src/iconv.c:66
+#, c-format
+msgid ""
+"This is free software; see the source for copying conditions.  There is NO\n"
+"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+msgstr ""
+"Toto je voľne šíriteľný softvér; pre podmienky kopírovania pozri zdrojový "
+"kód.\n"
+"Neposkytuje sa ŽIADNA záruka; ani čo sa týka OBCHODOVATEĽNOSTI alebo "
+"VHODNOSTI\n"
+"NA KONKRÉTNY ÚČEL.\n"
+
+#: src/iconv.c:69
+#, c-format
+msgid "Written by %s.\n"
+msgstr "Napísal %s.\n"
+
+#: src/iconv.c:105 src/iconv.c:137 src/iconv.c:187
+#, c-format
+msgid "iconv: %s: incomplete character or shift sequence\n"
+msgstr "iconv: %s: nekompletný znak alebo preraďovacia sekvencia\n"
+
+#: src/iconv.c:131 src/iconv.c:182
+#, c-format
+msgid "iconv: %s: cannot convert\n"
+msgstr "iconv: %s: nemôžem konvertovať\n"
+
+#: src/iconv.c:153 src/iconv.c:192 src/iconv.c:310
+#, c-format
+msgid "iconv: %s: "
+msgstr "iconv: %s: "
+
+#: src/iconv.c:201
+#, c-format
+msgid "iconv: %s: I/O error\n"
+msgstr "iconv: %s: V/V chyba\n"
+
+#: src/iconv.c:294
+#, c-format
+msgid "iconv: conversion from %s unsupported\n"
+msgstr "iconv: konverzia z %s nie je podporovaná\n"
+
+#: src/iconv.c:296
+#, c-format
+msgid "iconv: conversion to %s unsupported\n"
+msgstr "iconv: konverzia do %s nie je podporovaná\n"
+
+#: src/iconv.c:298
+#, c-format
+msgid "iconv: conversion from %s to %s unsupported\n"
+msgstr "iconv: konverzia z %s do %s nie je podporovaná\n"
+
+#: src/iconv.c:302
+msgid "(stdin)"
+msgstr "(štandardný vstup)"
+
+#: src/iconv.c:323
+#, c-format
+msgid "iconv: I/O error\n"
+msgstr "iconv: V/V chyba\n"
+
+#~ msgid ""
+#~ "Usage: iconv [--binary] [-c] [-s] [-f fromcode] [-t tocode] [file ...]"
+#~ msgstr ""
+#~ "Použitie: iconv [--binary] [-c] [-s] [-f z_kódu] [-t do_kódu] [súbor ...]"

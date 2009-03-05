@@ -1,0 +1,35 @@
+Hmm...  Looks like a unified diff to me...
+The text leading up to this was:
+--------------------------
+|diff -ipuwr -x config.log -x config.status -x config.cache -x '*.Po' -x '*.pot' libiconv-1.9.2-orig/include/iconv.h.in libiconv-1.9.2/include/iconv.h.in
+|--- libiconv-1.9.2-orig/include/iconv.h.in	2003-04-14 16:51:06.000000000 +0200
+|+++ libiconv-1.9.2/include/iconv.h.in	2004-02-22 13:51:52.296875000 +0100
+--------------------------
+Patching file include/iconv.h.in using Plan A...
+Hunk #1 succeeded at 22.
+Hunk #2 succeeded at 75.
+Hunk #3 succeeded at 85.
+Hunk #4 succeeded at 100.
+Hunk #5 succeeded at 111.
+Hunk #6 succeeded at 123.
+Hmm...  The next patch looks like a unified diff to me...
+The text leading up to this was:
+--------------------------
+|diff -ipuwr -x config.log -x config.status -x config.cache -x '*.Po' -x '*.pot' libiconv-1.9.2-orig/libcharset/include/libcharset.h.in libiconv-1.9.2/libcharset/include/libcharset.h.in
+|--- libiconv-1.9.2-orig/libcharset/include/libcharset.h.in	2003-04-05 12:33:32.000000000 +0200
+|+++ libiconv-1.9.2/libcharset/include/libcharset.h.in	2004-02-22 13:53:30.015625000 +0100
+--------------------------
+Patching file libcharset/include/libcharset.h.in using Plan A...
+Hunk #1 succeeded at 19.
+Hunk #2 succeeded at 40.
+Hmm...  The next patch looks like a unified diff to me...
+The text leading up to this was:
+--------------------------
+|diff -ipuwr -x config.log -x config.status -x config.cache -x '*.Po' -x '*.pot' libiconv-1.9.2-orig/libcharset/include/localcharset.h.in libiconv-1.9.2/libcharset/include/localcharset.h.in
+|--- libiconv-1.9.2-orig/libcharset/include/localcharset.h.in	2003-02-26 10:58:44.000000000 +0100
+|+++ libiconv-1.9.2/libcharset/include/localcharset.h.in	2004-02-22 13:55:08.531250000 +0100
+--------------------------
+Patching file libcharset/include/localcharset.h.in using Plan A...
+Hunk #1 succeeded at 20.
+Hunk #2 succeeded at 36.
+done
