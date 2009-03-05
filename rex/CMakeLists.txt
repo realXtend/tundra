@@ -20,6 +20,18 @@ link_directories (
 	../external_libs
 )
 
+# Preprocessor defines
+if (MSVC)
+   set_property(
+      DIRECTORY
+      PROPERTY COMPILE_DEFINITIONS_RELEASE _DMEMDUMP
+   )
+      set_property(
+      DIRECTORY
+      PROPERTY COMPILE_DEFINITIONS_DEBUG _DMEMORYLEAKS
+   )
+endif (MSVC)
+
 # Define executable
 if (NOT MSVC)
 	SET (EXECUTABLE_OUTPUT_PATH ${TARGET_DIR})
@@ -34,3 +46,6 @@ endif (MSVC)
 
 # Define libraries to be linked into target
 target_link_libraries (${TARGET_NAME} Core framework)
+if (MSVC)
+   target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)
+endif (MSVC)

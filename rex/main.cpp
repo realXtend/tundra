@@ -108,13 +108,12 @@ int run(void)
 
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
 int generateDump(EXCEPTION_POINTERS* pExceptionPointers)
-{f
-#define _CRT_SECURE_NO_WARNINGS
+{
     BOOL bMiniDumpSuccessful;
     WCHAR szPath[MAX_PATH]; 
     WCHAR szFileName[MAX_PATH]; 
-    WCHAR* szAppName = L"RexNG";
-    WCHAR* szVersion = L"proto_demo";
+    WCHAR* szAppName = L"RexNG Viewer";
+    WCHAR* szVersion = L"alpha";
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
