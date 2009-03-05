@@ -13,16 +13,16 @@
 
 namespace Test
 {
-    TestSystem::TestSystem() : ModuleInterface_Impl(Foundation::Module::Type_Test)
+    TestModule::TestModule() : ModuleInterface_Impl(Foundation::Module::Type_Test)
     {
     }
 
-    TestSystem::~TestSystem()
+    TestModule::~TestModule()
     {
     }
 
     // virtual
-    void TestSystem::load()
+    void TestModule::load()
     {
         using namespace Test;
         DECLARE_MODULE_EC(EC_Dummy);
@@ -31,13 +31,13 @@ namespace Test
     }
 
     // virtual
-    void TestSystem::unload()
+    void TestModule::unload()
     {
         LOG("System " + name() + " unloaded.");
     }
 
     // virtual
-    void TestSystem::initialize(Foundation::Framework *framework)
+    void TestModule::initialize(Foundation::Framework *framework)
     {
         assert(framework != NULL);
         mFramework = framework;
@@ -47,7 +47,7 @@ namespace Test
     }
 
     // virtual 
-    void TestSystem::uninitialize(Foundation::Framework *framework)
+    void TestModule::uninitialize(Foundation::Framework *framework)
     {
         mFramework->getServiceManager()->unregisterService(this);
 
@@ -57,7 +57,8 @@ namespace Test
         LOG("System " + name() + " uninitialized.");
     }
 
-    void TestSystem::update()
+    // virtual
+    void TestModule::update()
     {
         // create new entity
         LOG("Constructing entity with component: " + Test::EC_Dummy::name() + ".");
@@ -84,7 +85,7 @@ namespace Test
 using namespace Test;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
-   POCO_EXPORT_CLASS(TestSystem)
+   POCO_EXPORT_CLASS(TestModule)
 POCO_END_MANIFEST
 
 
