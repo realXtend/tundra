@@ -41,23 +41,23 @@ namespace Foundation
         ~ModuleManager();
 
         //! loads all available modules. Does not initialize them.
-        void loadAvailableModules();
+        void LoadAvailableModules();
 
         //! unloads all available modules. Modules does not get unloaded as such, only the module's unload() function will be called
         /*! Assumptions is that modules only get unloaded once the program exits.
 
             \todo Find a better way to handle unloading of modules / actually unload modules?
         */
-        void unloadModules();
+        void UnloadModules();
 
         //! initialize all modules
-        void initializeModules();
+        void InitializeModules();
 
         //! uninitialize all modules
-        void uninitializeModules();
+        void UninitializeModules();
 
         //! perform synchronized update on all modules
-        void updateModules();
+        void UpdateModules();
 
         ////! Returns module by name
         //ModuleInterface *getModule(const std::string &name)
@@ -92,28 +92,28 @@ namespace Foundation
         /*!
             \param path path to module definition file (xml)
         */
-        void loadModule(const boost::filesystem::path &path);
+        void LoadModule(const boost::filesystem::path &path);
 
         //! loads module
         /*!
             \param moduleName path to the module
             \param entryPoint name of the entry class
         */
-        void loadModule(const std::string &moduleName, const std::string &entryPoint);
+        void LoadModule(const std::string &moduleName, const std::string &entryPoint);
 
         //! Initialize the specified module
-        void initializeModule(ModuleInterface *module);
+        void InitializeModule(ModuleInterface *module);
 
-        void uninitializeModule(ModuleInterface *module);
+        void UninitializeModule(ModuleInterface *module);
 
         typedef std::vector<ModuleInterface*> ModuleVector;
 
         const std::string DEFAULT_MODULES_PATH;
 
         //! list of modules managed by this manager
-        ModuleVector mModules;
+        ModuleVector modules_;
 
-        Framework *mFramework;
+        Framework *framework_;
     };
 }
 

@@ -21,21 +21,21 @@ namespace Foundation
         ~Framework();
 
         //! entry point for the framework
-        void go();
+        void Go();
 
-        ComponentManagerPtr getComponentManager() const { return mComponentManager; }
-        EntityManagerPtr getEntityManager() const { return mEntityManager; }
-        ModuleManagerPtr getModuleManager() const { return mModuleManager; }
-        ServiceManagerPtr getServiceManager() const { return mServiceManager; }
+        ComponentManagerPtr GetComponentManager() const { return component_manager_; }
+        EntityManagerPtr GetEntityManager() const { return entity_manager_; }
+        ModuleManagerPtr GetModuleManager() const { return module_manager_; }
+        ServiceManagerPtr GetServiceManager() const { return service_manager_; }
 
         //! Signal the framework to exit at first possible opportunity
-        void _exit() { mExitSignal = true; }
+        void Exit() { exit_signal_ = true; }
 
         //! Returns true if framework is in the process of exiting (will exit at next possible opportunity)
-        bool isExiting() { return mExitSignal; }
+        bool IsExiting() { return exit_signal_; }
 
         //! Returns the default configuration manager
-        static ConfigurationManager &getDefaultConfig()
+        static ConfigurationManager &GetDefaultConfig()
         {
             static ConfigurationManager manager(ConfigurationManager::CT_DEFAULT);
             return manager;
@@ -43,19 +43,19 @@ namespace Foundation
 
     private:
         //! Loads all available modules
-        void loadModules();
+        void LoadModules();
         //! Unloads all available modules
-        void unloadModules();
+        void UnloadModules();
 
-        ModuleManagerPtr mModuleManager;
-        ComponentManagerPtr mComponentManager;
-        EntityManagerPtr mEntityManager;
-        ServiceManagerPtr mServiceManager;
+        ModuleManagerPtr module_manager_;
+        ComponentManagerPtr component_manager_;
+        EntityManagerPtr entity_manager_;
+        ServiceManagerPtr service_manager_;
 
         //! if true, exit application
-        bool mExitSignal;
+        bool exit_signal_;
     };
 }
 
-#endif // __include_Framework_h
+#endif
 

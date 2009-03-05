@@ -41,7 +41,7 @@ namespace Test
     {
         assert(framework != NULL);
         mFramework = framework;
-        mFramework->getServiceManager()->registerService(Foundation::Service::ST_Test, this);
+        mFramework->GetServiceManager()->RegisterService(Foundation::Service::ST_Test, this);
         
         LOG("System " + name() + " initialized.");
     }
@@ -49,7 +49,7 @@ namespace Test
     // virtual 
     void TestModule::uninitialize(Foundation::Framework *framework)
     {
-        mFramework->getServiceManager()->unregisterService(this);
+        mFramework->GetServiceManager()->UnregisterService(this);
 
         assert(mFramework != NULL);
         mFramework = NULL;
@@ -61,24 +61,24 @@ namespace Test
     void TestModule::update()
     {
         // create new entity
-        LOG("Constructing entity with component: " + Test::EC_Dummy::name() + ".");
+        LOG("Constructing entity with component: " + Test::EC_Dummy::Name() + ".");
 
-        Foundation::EntityPtr entity = mFramework->getEntityManager()->createEntity();
+        Foundation::EntityPtr entity = mFramework->GetEntityManager()->createEntity();
         assert (entity.get() != 0 && "Failed to create entity.");
 
-        Foundation::ComponentPtr component = mFramework->getComponentManager()->createComponent(Test::EC_Dummy::name());
+        Foundation::ComponentPtr component = mFramework->GetComponentManager()->CreateComponent(Test::EC_Dummy::Name());
         assert (component.get() != 0 && "Failed to create dummy component.");
 
         entity->addEntityComponent(component);
-        component = entity->getComponent(component->_name());
+        component = entity->getComponent(component->_Name());
         assert (component.get() != 0 && "Failed to get dummy component from entity.");
 
-        Foundation::TestServiceInterface *test_service = mFramework->getServiceManager()->getService<Foundation::TestServiceInterface>(Foundation::Service::ST_Test);
+        Foundation::TestServiceInterface *test_service = mFramework->GetServiceManager()->GetService<Foundation::TestServiceInterface>(Foundation::Service::ST_Test);
         assert (test_service != NULL);
         assert (test_service->test());
 
-        mFramework->_exit();
-        assert (mFramework->isExiting());
+        mFramework->Exit();
+        assert (mFramework->IsExiting());
     }
 }
 

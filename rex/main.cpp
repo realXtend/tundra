@@ -94,7 +94,7 @@ int run(void)
     Foundation::Framework fw;
     try 
     {
-        fw.go();
+        fw.Go();
     } 
     catch ( std::exception& e )
     {

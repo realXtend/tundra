@@ -6,34 +6,34 @@
 
 namespace Foundation
 {
-    ServiceManager::ServiceManager(Framework *framework) : mFramework(framework)
+    ServiceManager::ServiceManager(Framework *framework) : framework_(framework)
     {
     }
 
-    void ServiceManager::registerService(Service::Type type, ServiceInterface *service)
+    void ServiceManager::RegisterService(Service::Type type, ServiceInterface *service)
     {
         assert(service != NULL);
 
-        if (mServices.find(type) != mServices.end())
+        if (services_.find(type) != services_.end())
         {
             //! \todo how to handle, replace old service provider, throw exception, ignore?
             LOGWARNING("Service provider already registered!");
             //throw Core::Exception("Service provider already registered!");
             return;
         }
-        mServices[type] = service;
+        services_[type] = service;
     }
 
-    void ServiceManager::unregisterService(ServiceInterface *service)
+    void ServiceManager::UnregisterService(ServiceInterface *service)
     {
         assert(service != NULL);
 
-        ServicesMap::iterator iter = mServices.begin();
-        for ( ; iter != mServices.end() ; ++iter)
+        ServicesMap::iterator iter = services_.begin();
+        for ( ; iter != services_.end() ; ++iter)
         {
             if (iter->second == service)
             {
-                mServices.erase(iter);
+                services_.erase(iter);
                 return;
             }
         }

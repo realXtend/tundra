@@ -33,7 +33,7 @@ namespace Foundation
     ComponentInterfacePtr Entity::getComponent(const std::string &name) const
     {
         for (size_t i=0 ; i<mComponents.size() ; ++i)
-            if (mComponents[i]->_name() == name)
+            if (mComponents[i]->_Name() == name)
                 return mComponents[i];
 
         return ComponentInterfacePtr();

@@ -13,7 +13,7 @@ namespace Foundation
         EntityPtr entity = EntityPtr(new Entity(mFramework));
         for (size_t i=0 ; i<components.size() ; ++i)
         {
-            entity->addEntityComponent(mFramework->getComponentManager()->createComponent(components[i]));
+            entity->addEntityComponent(mFramework->GetComponentManager()->CreateComponent(components[i]));
         }
 
         //! \todo figure out entity id

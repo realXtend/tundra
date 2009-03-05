@@ -4,19 +4,18 @@
 #include "Framework.h"
 #include "ComponentManager.h"
 #include "EntityManager.h"
-//#include "ServiceInterfaces.h"
 #include "ServiceManager.h"
 #include "ModuleManager.h"
 
 namespace Foundation
 {
-    Framework::Framework() : mExitSignal(false)
+    Framework::Framework() : exit_signal_(false)
     {
         // create managers
-        mModuleManager = ModuleManagerPtr(new ModuleManager(this));
-        mComponentManager = ComponentManagerPtr(new ComponentManager(this));
-        mEntityManager = EntityManagerPtr(new EntityManager(this));
-        mServiceManager = ServiceManagerPtr(new ServiceManager(this));
+        module_manager_ = ModuleManagerPtr(new ModuleManager(this));
+        component_manager_ = ComponentManagerPtr(new ComponentManager(this));
+        entity_manager_ = EntityManagerPtr(new EntityManager(this));
+        service_manager_ = ServiceManagerPtr(new ServiceManager(this));
     }
 
     Framework::~Framework()
@@ -24,15 +23,15 @@ namespace Foundation
     }
 
 
-    void Framework::go()
+    void Framework::Go()
     {
-        loadModules();
+        LoadModules();
 
         // main loop
-        while (mExitSignal == false)
+        while (exit_signal_ == false)
         {
             // do synchronized update for modules
-            mModuleManager->updateModules();
+            module_manager_->UpdateModules();
 
             // call asynchronous update on systems / do parallel tasks
 
@@ -40,19 +39,19 @@ namespace Foundation
             //mChangeManager->_propagateChanges();
         }
 
-         unloadModules();
+         UnloadModules();
     }
 
-    void Framework::loadModules()
+    void Framework::LoadModules()
     {
-        mModuleManager->loadAvailableModules();
-        mModuleManager->initializeModules();
+        module_manager_->LoadAvailableModules();
+        module_manager_->InitializeModules();
     }
 
-    void Framework::unloadModules()
+    void Framework::UnloadModules()
     {
-        mModuleManager->uninitializeModules();
-        mModuleManager->unloadModules();
+        module_manager_->UninitializeModules();
+        module_manager_->UnloadModules();
     }
 }
 

@@ -15,25 +15,25 @@ namespace Foundation
     {
     public:
         //! default constructor
-        ComponentManager(Framework *framework) : mFramework(framework) {}
+        ComponentManager(Framework *framework) : framework_(framework) {}
         //! destructor
         ~ComponentManager() {}
 
         //! register factory for the component
-        void registerFactory(const std::string &component, const ComponentFactoryInterfacePtr &factory)
+        void RegisterFactory(const std::string &component, const ComponentFactoryInterfacePtr &factory)
         {
-            assert(mFactories.find(component) == mFactories.end());
+            assert(factories_.find(component) == factories_.end());
 
-            mFactories[component] = factory;
+            factories_[component] = factory;
         }
 
         //! Unregister the component. Removes the factory.
-        void unregisterFactory(const std::string &component)
+        void UnregisterFactory(const std::string &component)
         {
-            ComponentFactoryMap::iterator iter = mFactories.find(component);
-            assert(iter != mFactories.end());
+            ComponentFactoryMap::iterator iter = factories_.find(component);
+            assert(iter != factories_.end());
 
-            mFactories.erase(iter);
+            factories_.erase(iter);
         }
 
         //! Create a new component
@@ -41,20 +41,20 @@ namespace Foundation
 
             \param name name of the component to create
         */
-        ComponentPtr createComponent(const std::string &componentName) const;
+        ComponentPtr CreateComponent(const std::string &componentName) const;
 
         //! Create clone of the specified component
-        ComponentPtr cloneComponent(const ComponentInterfacePtr &component) const;
+        ComponentPtr CloneComponent(const ComponentInterfacePtr &component) const;
         
         //! Get component by entity id and component type
-        ComponentPtr getComponent(Core::entity_id_t id, const std::string &component);
+        ComponentPtr GetComponent(Core::entity_id_t id, const std::string &component);
         
 
     private:
         typedef std::map<std::string, ComponentFactoryInterfacePtr> ComponentFactoryMap;
 
-        ComponentFactoryMap mFactories;
-        Framework *mFramework;
+        ComponentFactoryMap factories_;
+        Framework *framework_;
     };
 }
 

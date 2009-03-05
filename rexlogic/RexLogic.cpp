@@ -55,12 +55,12 @@ void RexLogic::initialize(Foundation::Framework *framework)
     mWorldLogic = new WorldLogic(framework);
 
     // Register components for network messages, should be done somewhere else...?
-    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_Collision::name(),EC_Collision::getNetworkMessages());
-    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_ObjFreeData::name(),EC_ObjFreeData::getNetworkMessages());
-    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_ObjGeneralProps::name(),EC_ObjGeneralProps::getNetworkMessages());    
-    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_SelectPriority::name(),EC_SelectPriority::getNetworkMessages());
-    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_ServerScript::name(),EC_ServerScript::getNetworkMessages());
-    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_SpatialSound::name(),EC_SpatialSound::getNetworkMessages()); 
+    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_Collision::Name(),EC_Collision::getNetworkMessages());
+    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_ObjFreeData::Name(),EC_ObjFreeData::getNetworkMessages());
+    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_ObjGeneralProps::Name(),EC_ObjGeneralProps::getNetworkMessages());    
+    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_SelectPriority::Name(),EC_SelectPriority::getNetworkMessages());
+    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_ServerScript::Name(),EC_ServerScript::getNetworkMessages());
+    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_SpatialSound::Name(),EC_SpatialSound::getNetworkMessages()); 
 
     LOG("System " + name() + " initialized.");
 }
