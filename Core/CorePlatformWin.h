@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_CorePlatformWin_h__
-#define __incl_CorePlatformWin_h__
+#ifndef incl_CorePlatformWin_h
+#define incl_CorePlatformWin_h
 
 #if defined(WIN32) || defined(WIN64)
 namespace Core

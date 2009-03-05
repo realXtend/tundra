@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_Interfaces_WorldLogicInterface_h__
-#define __incl_Interfaces_WorldLogicInterface_h__
+#ifndef incl_Interfaces_WorldLogicInterface_h
+#define incl_Interfaces_WorldLogicInterface_h
 
 namespace Foundation
 {
@@ -13,4 +13,4 @@ namespace Foundation
     };
 }
 
-#endif // __incl_Interfaces_WorldLogicInterface_h__
+#endif // incl_Interfaces_WorldLogicInterface_h

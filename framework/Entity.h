@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __inc_Entity_h__
-#define __inc_Entity_h__
+#ifndef incl_Entity_h
+#define incl_Entity_h
 
 #include "ComponentInterface.h"
 
@@ -47,4 +47,4 @@ namespace Foundation
    };
 }
 
-#endif // __include_Entity_h__
+#endif // __include_Entity_h

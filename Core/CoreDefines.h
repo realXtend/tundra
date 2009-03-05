@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_CoreDefines_h__
-#define __incl_CoreDefines_h__
+#ifndef incl_CoreDefines_h
+#define incl_CoreDefines_h
 
 // useful defines
 

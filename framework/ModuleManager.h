@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __inc_Foundation_ModuleManager_h__
-#define __inc_Foundation_ModuleManager_h__
+#ifndef incl_Foundation_ModuleManager_h
+#define incl_Foundation_ModuleManager_h
 
 #include <boost/filesystem.hpp>
 
@@ -117,4 +117,4 @@ namespace Foundation
     };
 }
 
-#endif // __inc_Foundation_ModuleManager_h__
+#endif // incl_Foundation_ModuleManager_h

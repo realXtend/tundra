@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_Interfaces_ComponentInterface_h__
-#define __incl_Interfaces_ComponentInterface_h__
+#ifndef incl_Interfaces_ComponentInterface_h
+#define incl_Interfaces_ComponentInterface_h
 
 #include "ForwardDefines.h"
 #include "ComponentFactoryInterface.h"

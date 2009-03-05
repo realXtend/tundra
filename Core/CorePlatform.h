@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_CorePlatform_h__
-#define __incl_CorePlatform_h__
+#ifndef incl_CorePlatform_h
+#define incl_CorePlatform_h
 
 #include "CorePlatformWin.h"
 #include "CorePlatformNix.h"

@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_GeometrySystem_System_h__
-#define __incl_GeometrySystem_System_h__
+#ifndef incl_GeometrySystem_System_h
+#define incl_GeometrySystem_System_h
 
 #include "ModuleInterface.h"
 

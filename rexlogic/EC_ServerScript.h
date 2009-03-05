@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_EC_ServerScript_h__
-#define __incl_EC_ServerScript_h__
+#ifndef incl_EC_ServerScript_h
+#define incl_EC_ServerScript_h
 
 #include "ComponentInterface.h"
 #include "Foundation.h"

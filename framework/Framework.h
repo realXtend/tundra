@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __inc_Foundation_Framework_h__
-#define __inc_Foundation_Framework_h__
+#ifndef incl_Foundation_Framework_h
+#define incl_Foundation_Framework_h
 
 #include "ForwardDefines.h"
 #include "ConfigurationManager.h"
@@ -57,5 +57,5 @@ namespace Foundation
     };
 }
 
-#endif // __include_Framework_h__
+#endif // __include_Framework_h
 

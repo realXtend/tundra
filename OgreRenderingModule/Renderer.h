@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_OgreRenderingSystem_Renderer_h__
-#define __incl_OgreRenderingSystem_Renderer_h__
+#ifndef incl_OgreRenderingSystem_Renderer_h
+#define incl_OgreRenderingSystem_Renderer_h
 
 #include "RenderServiceInterface.h"
 #include <boost/shared_ptr.hpp>

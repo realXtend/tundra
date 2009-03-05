@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef __incl_Interfaces_ServiceInterfaces_h__
-#define __incl_Interfaces_ServiceInterfaces_h__
+#ifndef incl_Interfaces_ServiceInterfaces_h
+#define incl_Interfaces_ServiceInterfaces_h
 
 // When adding new service type, add the interface include here too
 #include "PhysicsServiceInterface.h"
