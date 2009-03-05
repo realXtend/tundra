@@ -14,22 +14,23 @@ namespace Foundation
 {
     class Framework;
 
-    namespace Module
+    class Module
     {
+    public:
         //! internal module types.
         /*!
             \note if you add new internal module type, don't forget to add it's name to nameFromType()
         */
         enum Type { Type_Geometry = 0, Type_Renderer, Type_Sound, Type_Gui, Type_WorldLogic, Type_Test, Type_Unknown };
 
-        const std::string &NameFromType(Type type)
+        static const std::string &NameFromType(Type type)
         {
             assert(type != Type_Unknown);
 
             static const std::string type_strings[Type_Unknown] = { "Geometry", "Renderer", "Sound", "Gui", "World Logic", "Test" };
             return type_strings[type];
         }
-    }
+    };
 
     //! interface for modules
     /*! See ModuleManager for more info.

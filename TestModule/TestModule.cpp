@@ -2,8 +2,6 @@
 
 #include "StableHeaders.h"
 
-
-
 #include "TestModule.h"
 #include "EC_Dummy.h"
 #include <Poco/ClassLibrary.h>
@@ -41,7 +39,7 @@ namespace Test
     {
         assert(framework != NULL);
         framework_ = framework;
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Test, this);
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Test, &test_service_);
         
         LOG("System " + Name() + " initialized.");
     }
@@ -49,7 +47,7 @@ namespace Test
     // virtual 
     void TestModule::Uninitialize(Foundation::Framework *framework)
     {
-        framework_->GetServiceManager()->UnregisterService(this);
+        framework_->GetServiceManager()->UnregisterService(&test_service_);
 
         assert(framework_ != NULL);
         framework_ = NULL;
@@ -82,8 +80,3 @@ namespace Test
     }
 }
 
-using namespace Test;
-
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
-   POCO_EXPORT_CLASS(TestModule)
-POCO_END_MANIFEST

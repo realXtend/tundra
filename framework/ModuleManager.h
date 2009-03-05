@@ -31,6 +31,15 @@ namespace Foundation
               inherits from ModuleInterface_Impl is different from the name of the actual module. Otherwise the module
               definition file can be an empty file.
 
+        You can define multiple modules in single library file.
+            - Add each new class that defines a new module to Poco export manifest:
+                    POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+                        POCO_EXPORT_CLASS(CLASS_NAME_A)
+                        POCO_EXPORT_CLASS(CLASS_NAME_B)
+                    POCO_END_MANIFEST
+            - Add an entry to the module definition file for each exported class.
+
+
         \todo Track which modules are enabled (initialized) and which are not
         \note Do not use directly!
     */
@@ -99,7 +108,7 @@ namespace Foundation
             \param moduleName path to the module
             \param entryPoint name of the entry class
         */
-        void LoadModule(const std::string &moduleName, const std::string &entryPoint);
+        void LoadModule(const std::string &moduleName,  const Core::StringVector &entries);
 
         //! Initialize the specified module
         void InitializeModule(ModuleInterface *module);
