@@ -13,7 +13,7 @@ namespace Foundation
         RenderServiceInterface() {}
         virtual ~RenderServiceInterface() {}
 
-        virtual void raycast() = 0;
+        virtual void Raycast() = 0;
     };
 }
 

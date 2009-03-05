@@ -13,7 +13,7 @@ namespace Foundation
         ScriptServiceInterface() {}
         virtual ~ScriptServiceInterface() {}
 
-        virtual void runScript() = 0;
+        virtual void RunScript() = 0;
     };
 }
 

@@ -13,17 +13,17 @@ public:
     RexLogic();
     virtual ~RexLogic();
 
-    virtual void load();
-    virtual void unload();
-    virtual void initialize(Foundation::Framework *framework);
-    virtual void uninitialize(Foundation::Framework *framework);
+    virtual void Load();
+    virtual void Unload();
+    virtual void Initialize(Foundation::Framework *framework);
+    virtual void Uninitialize(Foundation::Framework *framework);
 
-    virtual void update();
+    virtual void Update();
 
 private:
-    Foundation::Framework *mFramework;
+    Foundation::Framework *framework_;
     
-    WorldLogic *mWorldLogic;
+    WorldLogic *world_logic_;
     
 };
 

@@ -5,37 +5,37 @@
 
 EC_ObjGeneralProps::EC_ObjGeneralProps()
 {
-    mName = "";
-    mDescription = "";
-    mCreator = "";
-    mOwner = "";
-    mGroup = "";
+    name_ = "";
+    description_ = "";
+    creator_ = "";
+    owner_ = "";
+    group_ = "";
     
-    mbShareWithGroup = false;
-    mbAllowAnyOneToMove = false;
-    mbAllowAnyOneToCopy = false;
-    mbShowInSearch = false;
+    b_share_with_group_ = false;
+    b_allow_any_one_to_move_ = false;
+    b_allow_any_one_to_copy_ = false;
+    b_show_in_search_ = false;
     
-    mbForSale = false;
-    mSalePrice = 0;
-    mSaleType = 0;
+    b_for_sale_ = false;
+    sale_price_ = 0;
+    sale_type_ = 0;
     
-    mbNextOwnerCanModify = false;
-    mbNextOwnerCanCopy = false;
-    mbNextOwnerCanResell = false;
+    b_next_owner_can_modify_ = false;
+    b_next_owner_can_copy_ = false;
+    b_next_owner_can_resell_ = false;
     
-    mLeftClickAction = 0;
+    left_click_action_ = 0;
 }
 
 EC_ObjGeneralProps::~EC_ObjGeneralProps()
 {
 }
 
-void EC_ObjGeneralProps::handleNetworkData(std::string data) 
+void EC_ObjGeneralProps::HandleNetworkData(std::string data) 
 {
     // fixme, implement, set properties based on data
-    mName = data.substr(0,1); // fixme, get name from real data
-    mDescription = data.substr(1,2); // fixme, get description from real data
+    name_ = data.substr(0,1); // fixme, get name from real data
+    description_ = data.substr(1,2); // fixme, get description from real data
     // and so on...
     
 }

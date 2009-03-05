@@ -13,7 +13,7 @@ namespace Foundation
         TestServiceInterface() {}
         virtual ~TestServiceInterface() {}
 
-        virtual bool test() const = 0;
+        virtual bool Test() const = 0;
     };
 }
 

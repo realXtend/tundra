@@ -8,12 +8,12 @@
 
 WorldLogic::WorldLogic(Foundation::Framework *framework)
 {
-    mFramework = framework;
-    mNetworkHandler = new NetworkEventHandler(framework);
+    framework_ = framework;
+    network_handler_ = new NetworkEventHandler(framework);
 }
 
 WorldLogic::~WorldLogic()
 {
-    SAFE_DELETE (mNetworkHandler);
+    SAFE_DELETE (network_handler_);
 }
 

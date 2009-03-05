@@ -18,8 +18,8 @@ namespace Test
         {
             if (this != &other) // No self assignment
             {
-                mDummyData1 = other.mDummyData1;
-                mDummyData2 = other.mDummyData2;
+                dummy_data1_ = other.dummy_data1_;
+                dummy_data2_ = other.dummy_data2_;
             }
 
             return *this;
@@ -27,19 +27,19 @@ namespace Test
 
         virtual ~EC_Dummy() {}
         
-        int GetDummyData1() { return mDummyData1; }
-        void SetDummyData1(int data) { mDummyData1 = data; }
+        int GetDummyData1() { return dummy_data1_; }
+        void SetDummyData1(int data) { dummy_data1_ = data; }
 
-        int GetDummyData2() { return mDummyData2; }
-        void SetDummyData2(int data) { mDummyData2 = data; }
+        int GetDummyData2() { return dummy_data2_; }
+        void SetDummyData2(int data) { dummy_data2_ = data; }
     private:
         //! default constructor, private since we implicitly use factory
         EC_Dummy() {}
         //! copy constructor, private since we implicitly use factory
-        EC_Dummy(const EC_Dummy &rhs) : mDummyData1(rhs.mDummyData1), mDummyData2(rhs.mDummyData2) {}
+        EC_Dummy(const EC_Dummy &rhs) : dummy_data1_(rhs.dummy_data1_), dummy_data2_(rhs.dummy_data2_) {}
 
-        int mDummyData1;
-        int mDummyData2;
+        int dummy_data1_;
+        int dummy_data2_;
     };
 }
 

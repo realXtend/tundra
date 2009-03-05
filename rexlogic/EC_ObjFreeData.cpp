@@ -5,7 +5,7 @@
 
 EC_ObjFreeData::EC_ObjFreeData()
 {
-    mFreeData = ""; 
+    free_data_ = ""; 
 }
 
 EC_ObjFreeData::~EC_ObjFreeData()

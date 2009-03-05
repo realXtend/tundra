@@ -12,10 +12,10 @@ public:
     WorldLogic(Foundation::Framework *framework);
     virtual ~WorldLogic();
     
-    NetworkEventHandler *getNetworkHandler() const { return mNetworkHandler; }
+    NetworkEventHandler *GetNetworkHandler() const { return network_handler_; }
 private:
-    Foundation::Framework *mFramework;
-    NetworkEventHandler *mNetworkHandler;   
+    Foundation::Framework *framework_;
+    NetworkEventHandler *network_handler_;   
 };
 
 #endif

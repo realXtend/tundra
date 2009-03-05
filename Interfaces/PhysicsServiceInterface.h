@@ -13,7 +13,7 @@ namespace Foundation
         PhysicsServiceInterface() {}
         virtual ~PhysicsServiceInterface() {}
 
-        virtual void testCollision() = 0;
+        virtual void TestCollision() = 0;
     };
 }
 

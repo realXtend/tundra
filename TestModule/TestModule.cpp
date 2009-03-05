@@ -22,63 +22,63 @@ namespace Test
     }
 
     // virtual
-    void TestModule::load()
+    void TestModule::Load()
     {
         using namespace Test;
         DECLARE_MODULE_EC(EC_Dummy);
 
-        LOG("System " + name() + " loaded.");
+        LOG("System " + Name() + " loaded.");
     }
 
     // virtual
-    void TestModule::unload()
+    void TestModule::Unload()
     {
-        LOG("System " + name() + " unloaded.");
+        LOG("System " + Name() + " unloaded.");
     }
 
     // virtual
-    void TestModule::initialize(Foundation::Framework *framework)
+    void TestModule::Initialize(Foundation::Framework *framework)
     {
         assert(framework != NULL);
-        mFramework = framework;
-        mFramework->GetServiceManager()->RegisterService(Foundation::Service::ST_Test, this);
+        framework_ = framework;
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Test, this);
         
-        LOG("System " + name() + " initialized.");
+        LOG("System " + Name() + " initialized.");
     }
 
     // virtual 
-    void TestModule::uninitialize(Foundation::Framework *framework)
+    void TestModule::Uninitialize(Foundation::Framework *framework)
     {
-        mFramework->GetServiceManager()->UnregisterService(this);
+        framework_->GetServiceManager()->UnregisterService(this);
 
-        assert(mFramework != NULL);
-        mFramework = NULL;
+        assert(framework_ != NULL);
+        framework_ = NULL;
         
-        LOG("System " + name() + " uninitialized.");
+        LOG("System " + Name() + " uninitialized.");
     }
 
     // virtual
-    void TestModule::update()
+    void TestModule::Update()
     {
         // create new entity
         LOG("Constructing entity with component: " + Test::EC_Dummy::Name() + ".");
 
-        Foundation::EntityPtr entity = mFramework->GetEntityManager()->createEntity();
+        Foundation::EntityPtr entity = framework_->GetEntityManager()->createEntity();
         assert (entity.get() != 0 && "Failed to create entity.");
 
-        Foundation::ComponentPtr component = mFramework->GetComponentManager()->CreateComponent(Test::EC_Dummy::Name());
+        Foundation::ComponentPtr component = framework_->GetComponentManager()->CreateComponent(Test::EC_Dummy::Name());
         assert (component.get() != 0 && "Failed to create dummy component.");
 
         entity->addEntityComponent(component);
         component = entity->getComponent(component->_Name());
         assert (component.get() != 0 && "Failed to get dummy component from entity.");
 
-        Foundation::TestServiceInterface *test_service = mFramework->GetServiceManager()->GetService<Foundation::TestServiceInterface>(Foundation::Service::ST_Test);
+        Foundation::TestServiceInterface *test_service = framework_->GetServiceManager()->GetService<Foundation::TestServiceInterface>(Foundation::Service::ST_Test);
         assert (test_service != NULL);
-        assert (test_service->test());
+        assert (test_service->Test());
 
-        mFramework->Exit();
-        assert (mFramework->IsExiting());
+        framework_->Exit();
+        assert (framework_->IsExiting());
     }
 }
 

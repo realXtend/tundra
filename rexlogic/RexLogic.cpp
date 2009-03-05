@@ -16,17 +16,17 @@
 #include "WorldLogic.h"
 
 
-RexLogic::RexLogic() : ModuleInterface_Impl(Foundation::Module::Type_WorldLogic), mFramework(NULL)
+RexLogic::RexLogic() : ModuleInterface_Impl(Foundation::Module::Type_WorldLogic), framework_(NULL)
 {
 }
 
 RexLogic::~RexLogic()
 {
-    assert(mFramework == NULL);
+    assert(framework_ == NULL);
 }
 
 // virtual
-void RexLogic::load()
+void RexLogic::Load()
 {
     DECLARE_MODULE_EC(EC_Collision);
     DECLARE_MODULE_EC(EC_ObjFreeData);
@@ -35,54 +35,54 @@ void RexLogic::load()
     DECLARE_MODULE_EC(EC_ServerScript);
     DECLARE_MODULE_EC(EC_SpatialSound);
 
-    LOG("System " + name() + " loaded.");
+    LOG("System " + Name() + " loaded.");
 }
 
 // virtual
-void RexLogic::unload()
+void RexLogic::Unload()
 {
-    LOG("System " + name() + " unloaded.");
+    LOG("System " + Name() + " unloaded.");
 }
 
 // virtual
-void RexLogic::initialize(Foundation::Framework *framework)
+void RexLogic::Initialize(Foundation::Framework *framework)
 {
-    assert(mFramework == NULL);
-    mFramework = framework;
+    assert(framework_ == NULL);
+    framework_ = framework;
 
     // fixme, register WorldLogic to the framework as realxtend worldlogicinterface!
     // WorldLogic::registerSystem(framework);
-    mWorldLogic = new WorldLogic(framework);
+    world_logic_ = new WorldLogic(framework);
 
     // Register components for network messages, should be done somewhere else...?
-    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_Collision::Name(),EC_Collision::getNetworkMessages());
-    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_ObjFreeData::Name(),EC_ObjFreeData::getNetworkMessages());
-    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_ObjGeneralProps::Name(),EC_ObjGeneralProps::getNetworkMessages());    
-    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_SelectPriority::Name(),EC_SelectPriority::getNetworkMessages());
-    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_ServerScript::Name(),EC_ServerScript::getNetworkMessages());
-    mWorldLogic->getNetworkHandler()->registerForNetworkMessages(EC_SpatialSound::Name(),EC_SpatialSound::getNetworkMessages()); 
+    world_logic_->GetNetworkHandler()->RegisterForNetworkMessages(EC_Collision::Name(),EC_Collision::GetNetworkMessages());
+    world_logic_->GetNetworkHandler()->RegisterForNetworkMessages(EC_ObjFreeData::Name(),EC_ObjFreeData::GetNetworkMessages());
+    world_logic_->GetNetworkHandler()->RegisterForNetworkMessages(EC_ObjGeneralProps::Name(),EC_ObjGeneralProps::GetNetworkMessages());    
+    world_logic_->GetNetworkHandler()->RegisterForNetworkMessages(EC_SelectPriority::Name(),EC_SelectPriority::GetNetworkMessages());
+    world_logic_->GetNetworkHandler()->RegisterForNetworkMessages(EC_ServerScript::Name(),EC_ServerScript::GetNetworkMessages());
+    world_logic_->GetNetworkHandler()->RegisterForNetworkMessages(EC_SpatialSound::Name(),EC_SpatialSound::GetNetworkMessages()); 
 
-    LOG("System " + name() + " initialized.");
+    LOG("System " + Name() + " initialized.");
 }
 
 // virtual 
-void RexLogic::uninitialize(Foundation::Framework *framework)
+void RexLogic::Uninitialize(Foundation::Framework *framework)
 {
-    assert(mFramework);
-    SAFE_DELETE (mWorldLogic);
+    assert(framework_);
+    SAFE_DELETE (world_logic_);
 
-    mFramework = NULL;
+    framework_ = NULL;
 
 
-    LOG("System " + name() + " uninitialized.");
+    LOG("System " + Name() + " uninitialized.");
 }
 
 // virtual
-void RexLogic::update()
+void RexLogic::Update()
 {    
     // fixme, simulate a network message arriving to networkeventhandler
     std::string tempnetworkmessage = "fixme this_is_networkmessage";
-    mWorldLogic->getNetworkHandler()->handleNetworkMessage(tempnetworkmessage);
+    world_logic_->GetNetworkHandler()->HandleNetworkMessage(tempnetworkmessage);
 }
 
 

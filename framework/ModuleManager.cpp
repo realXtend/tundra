@@ -67,7 +67,7 @@ namespace Foundation
     {
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            modules_[i]->update();
+            modules_[i]->Update();
         }
     }
 
@@ -120,7 +120,7 @@ namespace Foundation
         }
 
         ModuleInterface* module = cl.classFor(entryPoint).create();
-        module->load();
+        module->Load();
 
         modules_.push_back(module);
 
@@ -132,7 +132,7 @@ namespace Foundation
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
             assert(modules_[i]);
-            modules_[i]->unload();
+            modules_[i]->Unload();
             delete modules_[i];
         }
         modules_.clear();
@@ -141,12 +141,12 @@ namespace Foundation
     void ModuleManager::InitializeModule(ModuleInterface *module)
     {
         assert(module);
-        module->_initialize(framework_);
+        module->_Initialize(framework_);
     }
 
     void ModuleManager::UninitializeModule(ModuleInterface *module)
     {
         assert(module);
-        module->_uninitialize(framework_);
+        module->_Uninitialize(framework_);
     }
 }

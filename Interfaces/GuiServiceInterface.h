@@ -14,11 +14,11 @@ namespace Foundation
         virtual ~GuiServiceInterface() {}
 
         //! Creates new window widget
-        virtual void createWindow() = 0;
+        virtual void CreateGuiWindow() = 0;
         //! creates new widget
-        virtual void createWidget() = 0;
+        virtual void CreateWidget() = 0;
         //! add new item to main menu
-        virtual void addMenuItem() = 0;
+        virtual void AddMenuItem() = 0;
     };
 }
 

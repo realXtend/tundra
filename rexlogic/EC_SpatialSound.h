@@ -14,9 +14,9 @@ public:
     virtual ~EC_SpatialSound();
 
 
-    virtual void handleNetworkData(std::string data);
+    virtual void HandleNetworkData(std::string data);
 
-    static std::vector<std::string> getNetworkMessages()
+    static std::vector<std::string> GetNetworkMessages()
     {
         std::vector<std::string> myinterest;
         myinterest.push_back("GeneralMessage_ExtraEntityData");
@@ -26,9 +26,9 @@ public:
 private:
     EC_SpatialSound();
 
-    std::string mSoundId;
-    float mVolume;
-    float mRadius;
+    std::string sound_id_;
+    float volume_;
+    float radius_;
 };
 
 #endif

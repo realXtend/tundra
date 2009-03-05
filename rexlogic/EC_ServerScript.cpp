@@ -5,7 +5,7 @@
 
 EC_ServerScript::EC_ServerScript()
 {
-    mClassName = "";
+    class_name_ = "";
 }
 
 EC_ServerScript::~EC_ServerScript()

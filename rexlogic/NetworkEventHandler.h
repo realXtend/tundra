@@ -14,39 +14,39 @@ public:
     NetworkEventHandler(Foundation::Framework *framework);
     virtual ~NetworkEventHandler();
     
-    void handleNetworkMessage(std::string &packetdata);
+    void HandleNetworkMessage(std::string &packetdata);
     
-    void registerForNetworkMessages(const std::string componentname, std::vector<std::string> networkmessagenames);
-    void unregisterForNetworkMessage(const std::string componentname, std::vector<std::string> networkmessagenames);
+    void RegisterForNetworkMessages(const std::string componentname, std::vector<std::string> networkmessagenames);
+    void UnregisterForNetworkMessage(const std::string componentname, std::vector<std::string> networkmessagenames);
     
 private:
-    void handleRegionHandshake(std::string &packetdata);
-    void handleTeleportStart(std::string &packetdata);
-    void handleTeleportLocal(std::string &packetdata);
-    void handleAgentUpdate(std::string &packetdata);
-    void handleImprovedTerseObjectUpdate(std::string &packetdata);
-    void handleGenericMessage(std::string &packetdata);
-    void handleObjectUpdate(std::string &packetdata);  
-    void handleGenericMessageExtraEntityData(std::string &packetdata);
+    void HandleRegionHandshake(std::string &packetdata);
+    void HandleTeleportStart(std::string &packetdata);
+    void HandleTeleportLocal(std::string &packetdata);
+    void HandleAgentUpdate(std::string &packetdata);
+    void HandleImprovedTerseObjectUpdate(std::string &packetdata);
+    void HandleGenericMessage(std::string &packetdata);
+    void HandleObjectUpdate(std::string &packetdata);  
+    void HandleGenericMessageExtraEntityData(std::string &packetdata);
 
-    void createAvatar(std::string &packetdata);
-    void createEntity(std::string &packetdata);    
-    void createLight(std::string &packetdata);
-    void createSound(std::string &packetdata);
-    void createSkybox(std::string &packetdata);
-    void createTerrain(std::string &packetdata);
+    void CreateAvatar(std::string &packetdata);
+    void CreateEntity(std::string &packetdata);    
+    void CreateLight(std::string &packetdata);
+    void CreateSound(std::string &packetdata);
+    void CreateSkybox(std::string &packetdata);
+    void CreateTerrain(std::string &packetdata);
 
-    void updateComponents(const std::string &packetname, const std::string &packetdata);
+    void UpdateComponents(const std::string &packetname, const std::string &packetdata);
 
-    std::vector<std::string> getRegisteredEntityComponentClasses(const std::string &networkmessageid);
+    std::vector<std::string> GetRegisteredEntityComponentClasses(const std::string &networkmessageid);
 
 
     typedef std::pair<std::string, std::vector<std::string> > NetworkMessagePair;
-    std::map<std::string, std::vector<std::string> > mNetworkMessageMap;
+    std::map<std::string, std::vector<std::string> > network_message_map_;
 
 
-    Foundation::Framework *mFramework;
+    Foundation::Framework *framework_;
 };
- 
+
 
 #endif

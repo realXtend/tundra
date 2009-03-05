@@ -20,9 +20,9 @@ namespace Geometry
         {
             if (this != &other)
             {
-                mPosition = other.mPosition;
-                mScale = other.mScale;
-                mOrientation = other.mOrientation;
+                position_ = other.position_;
+                scale_ = other.scale_;
+                orientation_ = other.orientation_;
             }
 
             return *this;
@@ -30,11 +30,11 @@ namespace Geometry
 
     private:
         EC_Geometry() { }
-        EC_Geometry(const EC_Geometry &other) { mPosition = other.mPosition; mScale = other.mScale; mOrientation = other.mOrientation; }
+        EC_Geometry(const EC_Geometry &other) { position_ = other.position_; scale_ = other.scale_; orientation_ = other.orientation_; }
 
-        Core::Vector3df mPosition;
-        Core::Vector3df mScale;
-        Core::Quaternion mOrientation;
+        Core::Vector3df position_;
+        Core::Vector3df scale_;
+        Core::Quaternion orientation_;
     };
 }
 

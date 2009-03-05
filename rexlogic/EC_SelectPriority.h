@@ -13,7 +13,7 @@ class EC_SelectPriority : public Foundation::ComponentInterface
 public:
     virtual ~EC_SelectPriority();
 
-    static std::vector<std::string> getNetworkMessages()
+    static std::vector<std::string> GetNetworkMessages()
     {
         std::vector<std::string> myinterest;
         myinterest.push_back("GeneralMessage_ExtraEntityData");
@@ -23,7 +23,7 @@ public:
 private:
     EC_SelectPriority();
 
-    int mSelectPriority;
+    int select_priority_;
 };
 
 #endif

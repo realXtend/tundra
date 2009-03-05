@@ -14,10 +14,10 @@ namespace Foundation
         virtual ~SoundServiceInterface() {}
 
         //! Plays non-3D sound
-        virtual void playsound() = 0;
+        virtual void Playsound() = 0;
 
         //! plays ogg vorbis (music) file
-        virtual void playVorbis() = 0;
+        virtual void PlayVorbis() = 0;
     };
 }
 
