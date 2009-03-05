@@ -13,9 +13,9 @@ class EC_ObjGeneralProps : public Foundation::ComponentInterface
 public:
     virtual ~EC_ObjGeneralProps();
 
-    virtual void handleNetworkData(std::string data);
+    virtual void HandleNetworkData(std::string data);
 
-    static std::vector<std::string> getNetworkMessages()
+    static std::vector<std::string> GetNetworkMessages()
     {
         std::vector<std::string> myinterest;
         myinterest.push_back("ObjectUpdate");
@@ -25,26 +25,26 @@ public:
 private:
     EC_ObjGeneralProps();
 
-    std::string mName;
-    std::string mDescription;
-    std::string mCreator;
-    std::string mOwner;
-    std::string mGroup;
+    std::string name_;
+    std::string description_;
+    std::string creator_;
+    std::string owner_;
+    std::string group_;
     
-    bool mbShareWithGroup;
-    bool mbAllowAnyOneToMove;
-    bool mbAllowAnyOneToCopy;
-    bool mbShowInSearch;
+    bool b_share_with_group_;
+    bool b_allow_any_one_to_move_;
+    bool b_allow_any_one_to_copy_;
+    bool b_show_in_search_;
     
-    bool mbForSale;
-    int mSalePrice;
-    int mSaleType;
+    bool b_for_sale_;
+    int sale_price_;
+    int sale_type_;
     
-    bool mbNextOwnerCanModify;
-    bool mbNextOwnerCanCopy;
-    bool mbNextOwnerCanResell;
+    bool b_next_owner_can_modify_;
+    bool b_next_owner_can_copy_;
+    bool b_next_owner_can_resell_;
     
-    Core::uchar mLeftClickAction;
+    Core::uchar left_click_action_;
 };
 
 #endif

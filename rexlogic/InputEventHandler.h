@@ -11,10 +11,10 @@ public:
     InputEventHandler();
     virtual ~InputEventHandler();
     
-    void handleLeftMouseClick();
-    void handleRightMouseClick();
-    void handleMouseMove();
-    void handleKeyboardEvent();
+    void HandleLeftMouseClick();
+    void HandleRightMouseClick();
+    void HandleMouseMove();
+    void HandleKeyboardEvent();
 
 };
  

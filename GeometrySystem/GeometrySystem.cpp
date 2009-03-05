@@ -17,30 +17,30 @@ namespace Geometry
     }
 
     // virtual
-    void GeometrySystem::load()
+    void GeometrySystem::Load()
     {
         using namespace Geometry;
         DECLARE_MODULE_EC(EC_Geometry);
 
-        LOG("System " + name() + " loaded.");
+        LOG("System " + Name() + " loaded.");
     }
 
     // virtual
-    void GeometrySystem::unload()
+    void GeometrySystem::Unload()
     {
-        LOG("System " + name() + " unloaded.");
+        LOG("System " + Name() + " unloaded.");
     }
 
     // virtual
-    void GeometrySystem::initialize(Foundation::Framework *framework)
+    void GeometrySystem::Initialize(Foundation::Framework *framework)
     {
-        LOG("System " + name() + " initialized.");
+        LOG("System " + Name() + " initialized.");
     }
 
     // virtual 
-    void GeometrySystem::uninitialize(Foundation::Framework *framework)
+    void GeometrySystem::Uninitialize(Foundation::Framework *framework)
     {
-        LOG("System " + name() + " uninitialized.");
+        LOG("System " + Name() + " uninitialized.");
     }
 }
 

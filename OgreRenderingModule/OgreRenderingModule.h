@@ -20,13 +20,13 @@ namespace OgreRenderer
         OgreRenderingModule();
         virtual ~OgreRenderingModule();
 
-        virtual void load();
-        virtual void unload();
-        virtual void initialize(Foundation::Framework *framework);
-        virtual void uninitialize(Foundation::Framework *framework);
+        virtual void Load();
+        virtual void Unload();
+        virtual void Initialize(Foundation::Framework *framework);
+        virtual void Uninitialize(Foundation::Framework *framework);
 
     private:
-        OgreRenderer::RendererPtr mRenderer;
+        OgreRenderer::RendererPtr renderer_;
     };
 }
 

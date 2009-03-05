@@ -16,19 +16,19 @@ namespace OgreRenderer
         virtual ~Renderer() {};
 
         //! returns Ogre scenemanager
-        void *getSceneManager() { return NULL; }
+        void *GetSceneManager() { return NULL; }
 
         //! returna Ogre root
-        void *getRoot() { return NULL; }
+        void *GetRoot() { return NULL; }
 
         //! returns active camera
-        void *getCurrentCamera() { return NULL; }
+        void *GetCurrentCamera() { return NULL; }
 
         //! returns current render window
-        void *getCurrentRenderWindow() { return NULL; }
+        void *GetCurrentRenderWindow() { return NULL; }
 
         //! Threadsafe service to framework
-        virtual void raycast()
+        virtual void Raycast()
         {
             // mutex_lock lock(mRenderer);
             // perform raycast (synchronized)
@@ -40,7 +40,7 @@ namespace OgreRenderer
             // after raycast has been performed. (see Smoke demo, collision handling)
         }
 
-        void update()
+        void Update()
         {
             // mutex_lock lock(mRenderer);
             // Ogre::RenderOneFrame();
@@ -48,7 +48,7 @@ namespace OgreRenderer
             // if raycast asynchronous, process all pending raycast requests
         }
     private:
-        boost::mutex mRenderer;
+        boost::mutex renderer_;
     };
 
     typedef boost::shared_ptr<Renderer> RendererPtr;

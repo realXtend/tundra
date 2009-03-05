@@ -13,4 +13,4 @@ namespace Foundation
     };
 }
 
-#endif // incl_Interfaces_WorldLogicInterface_h
+#endif

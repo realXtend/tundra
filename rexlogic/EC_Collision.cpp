@@ -5,7 +5,7 @@
 
 EC_Collision::EC_Collision()
 {
-    mCollisionMesh = "";
+    collision_mesh_ = "";
 }
 
 EC_Collision::~EC_Collision()

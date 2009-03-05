@@ -5,7 +5,7 @@
 
 EC_SelectPriority::EC_SelectPriority()
 {
-    mSelectPriority = 0;
+    select_priority_ = 0;
 }
 
 EC_SelectPriority::~EC_SelectPriority()

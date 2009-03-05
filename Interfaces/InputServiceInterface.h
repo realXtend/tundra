@@ -12,11 +12,11 @@ namespace Foundation
         struct InputEvent
         {
             //! delegate to call
-            void *mPoco_delegate;
+            void *poco_delegate_;
             //! priority of the event
-            Core::uint mPriority;
+            Core::uint priority_;
             //! always triggered, even if some other system with higher priority already handled the event
-            bool mForce;
+            bool force_;
         };
 
         typedef int InputKey;
@@ -34,7 +34,7 @@ namespace Foundation
             If event is handled by one of the system, it won't get propagated to other systems, unless the event is
             specifically overridden to do so.
         */
-        virtual void addInputEvent(Input::InputKey input, const Input::InputEvent &evt) = 0;
+        virtual void AddInputEvent(Input::InputKey input, const Input::InputEvent &evt) = 0;
     };
 }
 

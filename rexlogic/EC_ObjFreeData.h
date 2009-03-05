@@ -14,7 +14,7 @@ class EC_ObjFreeData : public Foundation::ComponentInterface
 public:
     virtual ~EC_ObjFreeData();
 
-    static std::vector<std::string> getNetworkMessages()
+    static std::vector<std::string> GetNetworkMessages()
     {
         std::vector<std::string> myinterest;
         myinterest.push_back("GeneralMessage_EntityMetaData");
@@ -24,7 +24,7 @@ public:
 private:
     EC_ObjFreeData();
 
-    std::string mFreeData;
+    std::string free_data_;
 };
 
 #endif

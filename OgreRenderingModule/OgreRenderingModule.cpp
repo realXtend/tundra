@@ -18,34 +18,34 @@ namespace OgreRenderer
     }
 
     // virtual
-    void OgreRenderingModule::load()
+    void OgreRenderingModule::Load()
     {
         using namespace OgreRenderer;
 
-        LOG("System " + name() + " loaded.");
+        LOG("System " + Name() + " loaded.");
         DECLARE_MODULE_EC(EC_OgreEntity);
     }
 
     // virtual
-    void OgreRenderingModule::unload()
+    void OgreRenderingModule::Unload()
     {
-        LOG("System " + name() + " unloaded.");
+        LOG("System " + Name() + " unloaded.");
     }
 
     // virtual
-    void OgreRenderingModule::initialize(Foundation::Framework *framework)
+    void OgreRenderingModule::Initialize(Foundation::Framework *framework)
     {
-        mRenderer = OgreRenderer::RendererPtr(new OgreRenderer::Renderer);
+        renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer);
 
-        LOG("System " + name() + " initialized.");
+        LOG("System " + Name() + " initialized.");
     }
 
     // virtual 
-    void OgreRenderingModule::uninitialize(Foundation::Framework *framework)
+    void OgreRenderingModule::Uninitialize(Foundation::Framework *framework)
     {        
-        mRenderer.reset();
+        renderer_.reset();
 
-        LOG("System " + name() + " uninitialized.");
+        LOG("System " + Name() + " uninitialized.");
     }
 
 }

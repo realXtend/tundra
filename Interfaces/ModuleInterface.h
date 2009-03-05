@@ -8,7 +8,7 @@
 
 #define DECLARE_MODULE_EC(component) \
     { Foundation::ComponentRegistrarInterfacePtr registrar = Foundation::ComponentRegistrarInterfacePtr(new component::component##Registrar); \
-    declareComponent(registrar); } \
+    DeclareComponent(registrar); } \
 
 namespace Foundation
 {
@@ -22,7 +22,7 @@ namespace Foundation
         */
         enum Type { Type_Geometry = 0, Type_Renderer, Type_Sound, Type_Gui, Type_WorldLogic, Type_Test, Type_Unknown };
 
-        const std::string &nameFromType(Type type)
+        const std::string &NameFromType(Type type)
         {
             assert(type != Type_Unknown);
 
@@ -47,83 +47,84 @@ namespace Foundation
             Components in the module should be declared here by using DECLARE_MODULE_EC(Component) macro, where
             Component is the class of the component.
         */
-        virtual void load() = 0;
+        virtual void Load() = 0;
         //! called when module is unloaded from memory. Do not trust that framework can be used.
-        virtual void unload() = 0;
+        virtual void Unload() = 0;
 
-        //! Initialized the module. Called when module is taken in use. Do not override in child classes.
-        virtual void _initialize(Framework *framework) = 0;
-        //! Uninitialize the module. Called when module is removed from use. Do not override in child classes.
-        virtual void _uninitialize(Foundation::Framework *framework) = 0;
+        //! Initialized the module. Called when module is taken in use. Do not override in child classes. For internal use.
+        virtual void _Initialize(Framework *framework) = 0;
+        //! Uninitialize the module. Called when module is removed from use. Do not override in child classes. For internal use.
+        virtual void _Uninitialize(Foundation::Framework *framework) = 0;
 
-        //! Initialized the module. Called when module is taken in use
-        virtual void initialize(Framework *framework) = 0;
+        //! Initializes the module. Called when module is taken in use
+        virtual void Initialize(Framework *framework) = 0;
         //! Uninitialize the module. Called when module is removed from use
-        virtual void uninitialize(Foundation::Framework *framework) = 0;
+        virtual void Uninitialize(Foundation::Framework *framework) = 0;
 
         //! synchronized update for the module
-        virtual void update() = 0;
+        virtual void Update() = 0;
 
         //! Returns the name of the module
-        virtual const std::string &name() const = 0;
+        virtual const std::string &Name() const = 0;
         //! Returns internal type of the module or Type_Unknown if module is not internal
-        virtual Module::Type type() const = 0;
+        virtual Module::Type Type() const = 0;
 
-        virtual void declareComponent(const ComponentRegistrarInterfacePtr &registrar) = 0;
+        //! Declare a component the module defines. For internal use.
+        virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar) = 0;
     };
 
     //! interface for modules, implementation
     class ModuleInterface_Impl : public ModuleInterface
     {
     public:
-        explicit ModuleInterface_Impl(const std::string &name) : mName(name), mType(Module::Type_Unknown) {}
-        explicit ModuleInterface_Impl(Module::Type type) : mType(type) {}
+        explicit ModuleInterface_Impl(const std::string &name) : name_(name), type_(Module::Type_Unknown) {}
+        explicit ModuleInterface_Impl(Module::Type type) : type_(type) {}
         virtual ~ModuleInterface_Impl() {}
 
         //! Registers all declared components
-        virtual void _initialize(Framework *framework)
+        virtual void _Initialize(Framework *framework)
         {
             assert(framework != NULL);
 
-            for (size_t n=0 ; n<ComponentRegistrars.size() ; ++n)
+            for (size_t n=0 ; n<component_registrars_.size() ; ++n)
             {
-                ComponentRegistrars[n]->Register(framework);
+                component_registrars_[n]->Register(framework);
             }
-            initialize(framework);
+            Initialize(framework);
         }
 
         //! Unregisters all declared components
-        virtual void _uninitialize(Foundation::Framework *framework)
+        virtual void _Uninitialize(Foundation::Framework *framework)
         {
             assert(framework != NULL);
 
-            for (size_t n=0 ; n<ComponentRegistrars.size() ; ++n)
+            for (size_t n=0 ; n<component_registrars_.size() ; ++n)
             {
-                ComponentRegistrars[n]->Unregister(framework);
+                component_registrars_[n]->Unregister(framework);
             }
 
-            uninitialize(framework);
+            Uninitialize(framework);
         }
 
-        virtual void update() {}
+        virtual void Update() {}
 
-        virtual const std::string &name() const { return (mType == Module::Type_Unknown ? mName : Module::nameFromType(mType)); }
-        virtual Module::Type type() const { return mType; }
+        virtual const std::string &Name() const { return (type_ == Module::Type_Unknown ? name_ : Module::NameFromType(type_)); }
+        virtual Module::Type Type() const { return type_; }
 
-        virtual void declareComponent(const ComponentRegistrarInterfacePtr &registrar)
+        virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar)
         {
-            ComponentRegistrars.push_back(registrar);
+            component_registrars_.push_back(registrar);
         }
 
     private:
         typedef std::vector<ComponentRegistrarInterfacePtr> RegistrarVector;
 
-        RegistrarVector ComponentRegistrars;
+        RegistrarVector component_registrars_;
 
         //! name of the module
-        const std::string mName;
+        const std::string name_;
         //! type of the module if inbuild, unknown otherwise
-        const Module::Type mType;
+        const Module::Type type_;
     };
 }
 
