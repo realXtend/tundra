@@ -80,51 +80,72 @@ namespace Foundation
         boost::algorithm::to_lower(ext);
         if (ext == ".xml")
         {
+            LOG("Attempting to load module definition file: " + path.file_string());
             fs::path modulePath(path);
             modulePath.replace_extension("");
 
-            std::string entry = modulePath.filename();
+            Core::StringVector entries;
+            
 
             Poco::AutoPtr<Poco::Util::XMLConfiguration> config;
             try
             {
                 config = new Poco::Util::XMLConfiguration(path.native_directory_string());
-                entry = config->getString("entry", entry);
+                Poco::Util::AbstractConfiguration::Keys keys;
+	            config->keys(keys);
 
+                for ( Poco::Util::AbstractConfiguration::Keys::const_iterator it = keys.begin() ; 
+                      it != keys.end() ;
+                      it++ )
+                {
+                    entries.push_back( config->getString(*it) );
+                }
             }
-            catch(Poco::FileNotFoundException &e)
+            catch(std::exception)
             {
-                LOGERROR("Module definition file not found: " + std::string(e.what()));
-                return;
+                entries.push_back(modulePath.filename());
             }
-            catch (std::exception) { /* no need to handle */ }
 
-            LoadModule(modulePath.native_directory_string(), entry);
+            LoadModule(modulePath.native_directory_string(), entries);
         }
     }
 
-    void ModuleManager::LoadModule(const std::string &moduleName, const std::string &entryPoint)
+    void ModuleManager::LoadModule(const std::string &moduleName, const Core::StringVector &entries)
     {
         assert(moduleName.empty() == false);
 
-        LOG("Attempting to load module: " + moduleName + " with entry point: " + entryPoint + ".");
         std::string path(moduleName);
         path.append(Poco::SharedLibrary::suffix());
 
         Poco::ClassLoader<ModuleInterface> cl;
-        cl.loadLibrary(path);
-
-        if (cl.findClass(entryPoint) == NULL)
+        try
         {
-            throw Core::Exception("Entry class not found from plugin");
+            cl.loadLibrary(path);
+        } catch (std::exception &e)
+        {
+            LOGERROR(e.what());
+            LOGERROR("Failed to load dynamic library: " + moduleName + ".");
         }
 
-        ModuleInterface* module = cl.classFor(entryPoint).create();
-        module->Load();
+        for ( Core::StringVector::const_iterator it = entries.begin() ; 
+              it != entries.end() ; 
+              ++it )
+        {
+            LOG("Attempting to load module: " + *it + ".");
 
-        modules_.push_back(module);
 
-        LOG("Module: " + moduleName + " loaded.");
+            if (cl.findClass(*it) == NULL)
+            {
+                throw Core::Exception("Entry class not found from module.");
+            }
+
+            ModuleInterface* module = cl.classFor(*it).create();
+            module->Load();
+
+            modules_.push_back(module);
+
+            LOG("Module: " + *it + " loaded.");
+        }
     }
 
     void ModuleManager::UnloadModules()

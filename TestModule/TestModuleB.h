@@ -1,28 +1,23 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_TestModule_h
-#define incl_TestModule_h
+#ifndef incl_TestModuleB_h
+#define incl_TestModuleB_h
 
 #include "ModuleInterface.h"
 #include "TestServiceInterface.h"
-#include "TestService.h"
 
 namespace Foundation
 {
    class Framework;
 }
 
-//! Contains unit tests
-/*! All Core and Foundation classes should be unit tested.
-*/
 namespace Test
 {
-    //! interface for modules
-    class TestModule : public Foundation::ModuleInterface_Impl
+    class TestModuleB : public Foundation::ModuleInterface_Impl
     {
     public:
-        TestModule();
-        virtual ~TestModule();
+        TestModuleB();
+        virtual ~TestModuleB();
 
         virtual void Load();
         virtual void Unload();
@@ -33,7 +28,6 @@ namespace Test
 
     private:
         Foundation::Framework *framework_;
-        TestService test_service_;
     };
 }
 #endif
