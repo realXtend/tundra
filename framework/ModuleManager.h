@@ -16,8 +16,16 @@ namespace Foundation
     /*! Assumption is that all modules get loaded when program is started, and unloaded when program exits.
         Modules may get initialized and uninitialized any number of times during the program's life time.
 
-        To create a new module:
+        To create a new static module:
             - Create a class that inherits from ModuleInterface_Impl
+            - In the System's load()-function, declare all components the new module offers with DECLARE_MODULE_EC macro.
+            - In the System's initialize()-function, register all services the new module offers
+            - Also unregister all services in the uninitialize()-function.
+            - Declare the static module with DeclareStaticModule() function.
+
+
+        Additional steps to create a new shared module:
+            - Do not use the DeclareStaticModule() function
             - Copy following to the implementation (cpp file) of the System-class:
 
                     POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
@@ -25,20 +33,23 @@ namespace Foundation
                     POCO_END_MANIFEST
                 
               where CLASS_NAME is the name of the newly created class.
-            - In the System's load()-function, declare all components the new module offers with DECLARE_MODULE_EC macro.
-            - In the System's initialize()-function, register all services the new module offers
-            - Also unregister all services in the uninitialize()-function.
             - Copy the module library file to modules-directory. Add a module definition file (xml file) that matches
               the name of the module and that contains the module entry class name, if the name of the class that
               inherits from ModuleInterface_Impl is different from the name of the actual module. Otherwise the module
               definition file can be an empty file.
 
+
         You can define multiple modules in single library file.
+        With static module, just declare each module to the module manager.
+        With shared module:
             - Add each new class that defines a new module to Poco export manifest:
+
                     POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
                         POCO_EXPORT_CLASS(CLASS_NAME_A)
                         POCO_EXPORT_CLASS(CLASS_NAME_B)
                     POCO_END_MANIFEST
+              
+              There should only be one Poco manifest section per library!
             - Add an entry to the module definition file for each exported class.
 
 
@@ -50,7 +61,14 @@ namespace Foundation
         ModuleManager(Framework *framework);
         ~ModuleManager();
 
+        //! Declare a module from static library
+        void DeclareStaticModule(ModuleInterface *module);
+
         //! loads all available modules. Does not initialize them.
+        /*! All static modules should be declared before calling this.
+
+            \note should only be called once, when firing up the framework
+        */
         void LoadAvailableModules();
 
         //! unloads all available modules. Modules does not get unloaded as such, only the module's unload() function will be called
@@ -61,6 +79,10 @@ namespace Foundation
         void UnloadModules();
 
         //! initialize all modules
+        /*! All static modules should be declared before calling this.
+
+            \note should only be called once, when firing up the framework
+        */
         void InitializeModules();
 
         //! uninitialize all modules

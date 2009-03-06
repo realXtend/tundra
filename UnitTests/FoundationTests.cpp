@@ -6,6 +6,7 @@
 #include "Core.h"
 #include "Foundation.h"
 #include "ServiceInterfaces.h"
+#include "StaticModuleDefinitions.h"
 
 //! Unit test for framework
 BOOST_AUTO_TEST_SUITE(test_suite_foundation)
@@ -14,6 +15,10 @@ BOOST_AUTO_TEST_CASE( framework_test_module )
 {
     Foundation::Framework fw;
     
+    Test::StaticModuleDefinitions static_test;
+    static_test(&fw);
+
+
     fw.Go();
 }
 
