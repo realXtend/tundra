@@ -20,8 +20,22 @@ namespace Foundation
     {
     }
 
+    void ModuleManager::DeclareStaticModule(ModuleInterface *module)
+    {
+        assert (module);
+        modules_.push_back(module);
+    }
+
     void ModuleManager::LoadAvailableModules()
     {
+        // First load all static modules
+        ModuleVector::iterator it = modules_.begin();
+        for ( ; it != modules_.end() ; ++it)
+        {
+            (*it)->Load();
+        }
+
+        // Find all shared modules and load them
         fs::path full_path = fs::system_complete(fs::path(DEFAULT_MODULES_PATH));
         if ( !fs::exists( full_path ) || !fs::is_directory( full_path ))
             throw Core::Exception("Failed to load modules, modules directory not found."); // can be considered fatal
