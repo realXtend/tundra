@@ -11,13 +11,7 @@ Quickstart for Windows / Visual Studio: install CMake, then run cmake.bat if not
 
 Dependencies
 ------------
-Requires Boost and PoCo C++ libraries. See documentation/external libraries.txt for more detailed instructions on dependencies.
-
-Boost:
-http://www.boost.org/
-
-PoCo:
-http://pocoproject.org/
+See external_libs/RexDependencies.txt for more detailed instructions on dependencies.
 
 
 License
