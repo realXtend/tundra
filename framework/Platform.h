@@ -32,6 +32,12 @@ namespace Foundation
             {
                 boost::filesystem::create_directory(path);
             }
+
+            path = boost::filesystem::wpath(GetUserDocumentsDirectoryW());
+            if (boost::filesystem::exists(path) == false)
+            {
+                boost::filesystem::create_directory(path);
+            }
         }
     };
 }

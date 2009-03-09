@@ -9,11 +9,17 @@ namespace Foundation
 {
     struct Application
     {
+        //! Shortcut for returning the name of the application.
+        /*! Same as retrieving it from the application configuration
+            file.
+        */
         static std::string Name()
         {
             ConfigurationManager &config = Framework::GetDefaultConfig();
             return config.DeclareSetting(Framework::ConfigurationGroup(), "application_name", "realXtend");
         }
+
+        //! \copydoc Name()
         static std::wstring NameW()
         {
             std::string name = Name();
