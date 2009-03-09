@@ -11,6 +11,8 @@ macro (INCLUDE_XMLRPCEPI)
 		link_directories (
 			${PROJECT_SOURCE_DIR}/external_libs/xmlrpc-epi/
 		)
+	else (MSVC)
+		include_directories (/usr/include/xmlrpc-epi)
 	endif (MSVC)
 endmacro (INCLUDE_XMLRPCEPI)
 
