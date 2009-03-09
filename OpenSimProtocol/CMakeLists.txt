@@ -10,22 +10,16 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Include directories
 include_directories (
-	../external_libs/xmlrpc-epi/src
-	../external_libs/libcurl/include
-	../external_libs/include
 	../Core
 	../framework
 	../Interfaces
 )
 
-# Library directories
-link_directories (
-	../external_libs
-	../external_libs/libcurl/lib/DLL-Debug
-	../external_libs/libcurl/lib/DLL-Release
-	../external_libs/xmlrpc-epi/Debug
-	../external_libs/xmlrpc-epi/Release
-)
+# External library includes
+INCLUDE_BOOST()
+INCLUDE_POCO()
+INCLUDE_CURL()
+INCLUDE_XMLRPCEPI()
 
 # Define dynamic library
 if (NOT MSVC)
@@ -38,8 +32,13 @@ set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 if (MSVC)
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
-	target_link_libraries (${TARGET_NAME} ws2_32.lib iphlpapi.lib debug libcurld_imp.lib optimized libcurl_imp.lib debug xmlrpcepid.lib optimized xmlrpcepi.lib )
+	target_link_libraries (${TARGET_NAME} ws2_32.lib iphlpapi.lib )
 endif (MSVC)
+
+# External library linkage (needs target defined)
+LINK_POCO()
+LINK_CURL()
+LINK_XMLRPCEPI()
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

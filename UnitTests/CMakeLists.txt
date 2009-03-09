@@ -9,16 +9,14 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Include directories
 include_directories (
-	../external_libs/include
 	../Core
 	../framework
 	../Interfaces
 )
 
-# Library directories
-link_directories (
-	../external_libs
-)
+# External library includes
+INCLUDE_BOOST()
+INCLUDE_POCO()
 
 # Define executable
 if (NOT MSVC)
@@ -38,19 +36,6 @@ if (MSVC)
    target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)
 endif (MSVC)
 
-# Define external libraries
-# PoCo & boost autolink on Visual Studio
-if (NOT MSVC)
-	# PoCo
-	target_link_libraries (${TARGET_NAME} 
-		optimized PocoFoundation 
-		debug PocoFoundationd
-		optimized PocoUtil
-		debug PocoUtild
-		optimized PocoXML
-		debug PocoXMLd
-	)
-
-	# Boost
-	target_link_libraries (${TARGET_NAME} ${Boost_LIBRARIES})
-endif (NOT MSVC)
+# External library linkage (needs target defined)
+LINK_POCO()
+LINK_BOOST()

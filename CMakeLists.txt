@@ -6,6 +6,13 @@ if (COMMAND cmake_policy)
 	cmake_policy (SET CMP0003 NEW)
 endif (COMMAND cmake_policy)
 
+# Set CMake custom module path & include them
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CMakeModules)
+include(Boost)
+include(PoCo)
+include(Curl)
+include(XmlRpcEpi)
+
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
 
@@ -17,13 +24,21 @@ if (MSVC)
 	add_definitions (-DUNICODE -D_UNICODE)
 endif (MSVC)
 
-# Search for external libraries
-# Boost
-if (NOT MSVC)
-	# Static linking needed for UnitTests main
-	set (Boost_USE_STATIC_LIBS ON)
-	find_package (Boost COMPONENTS date_time filesystem system thread unit_test_framework)
-endif (NOT MSVC)
+# Find needed external libraries, abort on error
+FIND_BOOST()
+FIND_POCO()
+FIND_CURL()
+FIND_XMLRPCEPI()
+
+# Default additional include & library directories
+include_directories (
+	${PROJECT_SOURCE_DIR}/external_libs/include
+)
+
+# Library directories
+link_directories (
+	${PROJECT_SOURCE_DIR}/external_libs
+)
 
 # Add subprojects
 add_subdirectory (Core)
