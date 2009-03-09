@@ -51,6 +51,9 @@ BOOST_AUTO_TEST_CASE( framework_platform )
 
     std::wstring appData_unicode = Foundation::Platform::GetApplicationDataDirectoryW();
     BOOST_CHECK (appData_unicode.find(Foundation::Application::NameW()) != std::wstring::npos);
+
+    appData = Foundation::Platform::GetUserDocumentsDirectory();
+    appData_unicode = Foundation::Platform::GetUserDocumentsDirectoryW();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

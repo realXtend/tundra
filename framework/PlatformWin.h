@@ -32,39 +32,35 @@ namespace Foundation
 
         //! Returns user specific application data directory.
         /*! Returns non-unicode path. May throw an expection if folder is not found.
+            
+            Should be used for mutable data the user doesn't need to see / handle directly,
+            such as the cache.
         */
-        static std::string GetApplicationDataDirectory()
-        {
-            PIDLIST_ABSOLUTE pidl;
+        static std::string GetApplicationDataDirectory();
 
-            if (SHGetFolderLocation(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, &pidl) == S_OK)
-            {
-                char cpath[MAX_PATH];
-                SHGetPathFromIDListA( pidl, cpath );
-                CoTaskMemFree(pidl);
-
-                return std::string(cpath) + "\\" + Application::Name();
-            }
-            throw Core::Exception("Failed to access application data directory.");
-        }
-
-        //! Returns user specific application data directory.
+        //! Returns user specific documents directory.
         /*! Returns unicode path. May throw an expection if folder is not found.
+
+            Should be used for mutable data the user doesn't need to see / handle directly,
+            such as the cache.
         */
-        static std::wstring GetApplicationDataDirectoryW()
-        {
-            PIDLIST_ABSOLUTE pidl;
+        static std::wstring GetApplicationDataDirectoryW();
 
-            if (SHGetFolderLocation(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, &pidl) == S_OK)
-            {
-                wchar_t cpath[MAX_PATH];
-                SHGetPathFromIDListW( pidl, cpath );
-                CoTaskMemFree(pidl);
+        //! Returns user specific documents directory.
+        /*! Returns non-unicode path. May throw an expection if folder is not found.
 
-                return std::wstring(cpath) + L"\\" + Application::NameW();
-            }
-            throw Core::Exception("Failed to access application data directory.");
-        }
+            Should be used for mutable data the user may want to access directly
+            at some point, possibly log files, screenshots and so on.
+        */
+        static std::string GetUserDocumentsDirectory();
+
+        //! Returns user specific documents directory.
+        /*! Returns unicode path. May throw an expection if folder is not found.
+
+            Should be used for mutable data the user may want to access directly
+            at some point, possibly log files, screenshots and so on.
+        */
+        static std::wstring GetUserDocumentsDirectoryW();
     };
 }
 #endif
