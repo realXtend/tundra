@@ -3,13 +3,13 @@ This project has the following dependencies:
 
 - Boost 1.36.0 or newer, http://www.boost.org/ . Download a prebuilt Boost package or build it by yourself.
    x Includes and libs: SVN external. In VS2k8, set the global VS environment settings to refer to Boost 
-                        includes and libraries.
+                        includes and libraries, or copy to external_libs/Boost/include & external_libs/Boost/libs
    x Windows DLLs: Copy the necessary Boost DLLs to the SVN bin/ directory.
 
 - poco-1.3.3p1. The PoCo libraries (http://pocoproject.org/) are used as dynamic libraries. T
    x Includes and libs: SVN external. Download PoCo and set the global VS environment settings to refer to 
-                        the PoCo includes and libraries.
-   x Windows DLLs: Prebuilt poco-1.3.3p1 versions are included in bin/.
+                        the PoCo includes and libraries, or copy to external_libs/PoCo/include & external_libs/PoCo/libs
+   x Windows DLLs: Copy the necessary PoCo DLLs to the SVN bin/ directory.
 
 - XMLRPC-EPI 2008-04-16, http://xmlrpc-epi.sourceforge.net/main.php?t=summary is used as a dynamic library.
    XMLRPC-EPI depends on LibIconv and eXpat. To build this, first build the expat project.

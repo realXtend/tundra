@@ -10,7 +10,6 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Include directories
 include_directories (
-	../external_libs/include
 	../Core
 	../framework
 	../GeometrySystem
@@ -18,10 +17,9 @@ include_directories (
 	../OgreRenderingSystem
 )
 
-# Library directories
-link_directories (
-	../external_libs
-)
+# External library includes
+INCLUDE_BOOST()
+INCLUDE_POCO()
 
 # Define dynamic library
 if (NOT MSVC)

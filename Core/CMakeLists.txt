@@ -9,13 +9,11 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 # Include directories
 include_directories (
 	../Core
-	../external_libs/include
 )
 
-# Library directories
-link_directories (
-	../external_libs
-)
+# External library includes
+INCLUDE_BOOST()
+INCLUDE_POCO()
 
 # Define static library
 add_library (${TARGET_NAME} STATIC ${SOURCE_FILES})
