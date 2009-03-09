@@ -30,16 +30,6 @@ namespace Foundation
             MessageBoxW( NULL, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
         }
 
-        //! Creates application data directory, if one doesn't already exist. Should be called before any data is handled.
-        static void PrepareApplicationDataDirectory()
-        {
-            boost::filesystem::wpath path(GetApplicationDataDirectoryW());
-            if (boost::filesystem::exists(path) == false)
-            {
-                boost::filesystem::create_directory(path);
-            }
-        }
-
         //! Returns user specific application data directory.
         /*! Returns non-unicode path. May throw an expection if folder is not found.
         */
@@ -47,11 +37,11 @@ namespace Foundation
         {
             PIDLIST_ABSOLUTE pidl;
 
-            //SHGetSpecialFolderLocation(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, &pidl);
             if (SHGetFolderLocation(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, &pidl) == S_OK)
             {
                 char cpath[MAX_PATH];
                 SHGetPathFromIDListA( pidl, cpath );
+                CoTaskMemFree(pidl);
 
                 return std::string(cpath) + "\\" + Application::Name();
             }
@@ -69,6 +59,7 @@ namespace Foundation
             {
                 wchar_t cpath[MAX_PATH];
                 SHGetPathFromIDListW( pidl, cpath );
+                CoTaskMemFree(pidl);
 
                 return std::wstring(cpath) + L"\\" + Application::NameW();
             }

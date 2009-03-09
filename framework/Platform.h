@@ -21,6 +21,18 @@ namespace Foundation
         Platform() {}
         //! destructor
         virtual ~Platform() {}
+
+        //! Creates application data directory, if one doesn't already exist. Should be called before any data is handled.
+        static void PrepareApplicationDataDirectory()
+        {
+            // exceptions are not handled, since if this fails the application is more or less SOL.
+
+            boost::filesystem::wpath path(GetApplicationDataDirectoryW());
+            if (boost::filesystem::exists(path) == false)
+            {
+                boost::filesystem::create_directory(path);
+            }
+        }
     };
 }
 
