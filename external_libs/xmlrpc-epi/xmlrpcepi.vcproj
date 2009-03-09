@@ -82,7 +82,7 @@
 				OutputFile=".\Release/xmlrpcepi.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;$(ProjectDir)/../GnuWin32/lib&quot;;&quot;$(ProjectDir)/../Expat 2.0.1/win32/bin/Debug&quot;"
+				AdditionalLibraryDirectories="&quot;$(ProjectDir)/../GnuWin32/lib&quot;;&quot;$(ProjectDir)/../Expat 2.0.1/win32/bin/Release&quot;"
 				ModuleDefinitionFile=".\src\xmlrpc.def"
 				ProgramDatabaseFile=".\Release/xmlrpcepi.pdb"
 				RandomizedBaseAddress="1"
