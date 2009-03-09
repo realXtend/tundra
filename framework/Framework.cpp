@@ -1,11 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "Framework.h"
-#include "ComponentManager.h"
-#include "EntityManager.h"
-#include "ServiceManager.h"
-#include "ModuleManager.h"
+#include "Foundation.h"
 
 namespace Foundation
 {
@@ -25,6 +21,8 @@ namespace Foundation
 
     void Framework::Go()
     {
+        Platform::PrepareApplicationDataDirectory();
+
         LoadModules();
 
         // main loop
