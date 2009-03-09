@@ -38,5 +38,4 @@ This project has the following dependencies:
    the HTTP file transfers and the login procedure.
    x Includes and libs: Located in libcurl/. This project is set to refer to this directory for 
      the dependencies.
-   x Windows DLLs: The file libcurl.dll is included in libcurl/lib/.
-   x You can download libcURL for multiple platforms from http://curl.haxx.se/download.html .
+   x Windows DLLs: The file libcurl.dll in libcurl/lib/DLL-Release & libcurld.dll in libcurl/lib/DLL-Debug.

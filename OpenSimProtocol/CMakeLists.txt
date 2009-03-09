@@ -20,10 +20,9 @@ include_directories (
 
 # Library directories
 link_directories (
-	../external_libs
-	../external_libs/libcurl/lib
+	../external_libs/libcurl/lib/DLL-Debug
+	../external_libs/libcurl/lib/DLL-Release
 	../external_libs/xmlrpc-epi/Debug
-	../external_libs/xmlrpc-epi/Release
 )
 
 # Define dynamic library
@@ -37,8 +36,7 @@ set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 if (MSVC)
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
-
-	target_link_libraries (${TARGET_NAME} ws2_32.lib iphlpapi.lib libcurl_imp.lib debug xmlrpcepid.lib optimized xmlrpcepi.lib )
+	target_link_libraries (${TARGET_NAME} ws2_32.lib xmlrpcepi.lib iphlpapi.lib debug libcurld_imp.lib optimized libcurl_imp.lib)
 endif (MSVC)
 
 # Copy XML files from source directory to target directory

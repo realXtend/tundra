@@ -73,8 +73,8 @@ boost::shared_ptr<PocoXMLRPCCall> PocoXMLRPCConnection::StartXMLRPCCall(const ch
 	return call;
 }
 
-/// Blocks to wait for 100-Continue HTTP reply. \todo Replace this shit with curl.
-bool PocoXMLRPCConnection::WaitForHTTP100Continue()
+/// Blocks to wait for 100-Continue HTTP reply. \todo Replace this with curl or remove entirely?
+/*bool PocoXMLRPCConnection::WaitForHTTP100Continue()
 {
 	std::vector<char> reply;
 	reply.resize(512, 0);
@@ -87,7 +87,7 @@ bool PocoXMLRPCConnection::WaitForHTTP100Continue()
 	} while(received == 0);
 	
 	return true;
-}
+}*/
 
 void PocoXMLRPCConnection::ReadXMLRPCReply(PocoXMLRPCCall &call)
 {
@@ -131,14 +131,12 @@ bool PocoXMLRPCConnection::FinishXMLRPCCall(boost::shared_ptr<PocoXMLRPCCall> ca
 	if (!outBuf)
 		return false;
 
-	const size_t requestLength = strlen(outBuf);
-	std::stringstream content_length;
-	content_length << "Content-Length: " << requestLength;
-
 	curl_global_init(CURL_GLOBAL_ALL);
 
-    CURL *curl;
-	curl = curl_easy_init();
+    CURL *curl = curl_easy_init();
+	if (!curl)
+		return false;
+
 	CURLcode result;
 	char curl_error_buffer[CURL_ERROR_SIZE];
 	
@@ -147,9 +145,7 @@ bool PocoXMLRPCConnection::FinishXMLRPCCall(boost::shared_ptr<PocoXMLRPCCall> ca
 	struct curl_slist *headers = NULL;
 	std::vector<char> response_data;
 	
-	char *url = "192.168.1.144:9000"; ///\todo Get the url properly
-	//string url(Poco::Net::DNS::thisHost().addresses()[0].toString());
-	//url.append(":9000"); ///\Todo Use real port instead of the default port.
+	char *url = "192.168.1.144:9000"; ///\todo Use the real url and port.
 
 	headers = curl_slist_append(headers, "Accept-Encoding: deflate, gzip");
 	headers = curl_slist_append(headers, "Content-Type: text/xml"); ///\todo Gets overriden.
@@ -160,7 +156,7 @@ bool PocoXMLRPCConnection::FinishXMLRPCCall(boost::shared_ptr<PocoXMLRPCCall> ca
 	curl_formadd(&post, &last, 	CURLFORM_CONTENTHEADER, headers, CURLFORM_END);
 	curl_easy_setopt(curl, CURLOPT_URL, url);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, &outBuf[0]);
-	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, requestLength);
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(outBuf));
 //	curl_easy_setopt(curl, CURLOPT_HTTPPOST, post);
 	curl_easy_setopt(curl, CURLOPT_POST, 1);
 //	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
@@ -180,34 +176,6 @@ bool PocoXMLRPCConnection::FinishXMLRPCCall(boost::shared_ptr<PocoXMLRPCCall> ca
 		cout << "cURL error: " << curl_error_buffer << "." << endl;
 		return false;
 	}
-
-//	cout << &*response_data.begin() << endl;
-
-	// Write the HTTP header for the XML-RPC request. ///\todo Use a HTTP library for real...
-//	std::stringstream msgStream;
-//	msgStream << "POST / HTTP/1.1" << std::endl;
-//	msgStream << "Host: " << Poco::Net::DNS::thisHost().addresses()[0].toString() << ":9000" << std::endl;
-//	msgStream << "Accept: */*" << std::endl;
-//	msgStream << "Accept-Encoding: deflate, gzip" << std::endl;
-//	msgStream << "Content-Type: text/xml" << std::endl;
-//	msgStream << "Content-Length: " << requestLength << std::endl;
-//	msgStream << "Expect: 100-continue" << std::endl << std::endl;
-//	socket.sendBytes(msgStream.str().c_str(), (int)msgStream.str().length());
-
-//	int32_t http_status;
-//	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_status);
-//	cout << http_status << endl;
-
-	/// Blocks. \todo Deadlocks if socket dead.
-	/*bool success = WaitForHTTP100Continue();
-	if (!success)
-	{
-		std::cout << "XMLRPC server did not reply with HTTP 100!" << std::endl;
-		return false;
-	}*/
-
-	// Write the actual XML-RPC param call data.
-	//socket.sendBytes(outBuf, (int)requestLength);
 
 	XMLRPC_Free(outBuf);
 
