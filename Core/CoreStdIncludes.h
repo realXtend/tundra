@@ -33,6 +33,7 @@
 #include <boost/any.hpp>
 #include <boost/thread.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 
 #include <Poco/Foundation.h>
 #include <Poco/DirectoryIterator.h>

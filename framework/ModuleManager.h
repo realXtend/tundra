@@ -3,7 +3,6 @@
 #ifndef incl_Foundation_ModuleManager_h
 #define incl_Foundation_ModuleManager_h
 
-#include <boost/filesystem.hpp>
 #include "ModuleInterface.h"
 
 

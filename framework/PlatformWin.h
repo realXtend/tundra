@@ -30,6 +30,16 @@ namespace Foundation
             MessageBoxW( NULL, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
         }
 
+        //! Creates application data directory, if one doesn't already exist. Should be called before any data is handled.
+        static void PrepareApplicationDataDirectory()
+        {
+            boost::filesystem::wpath path(GetApplicationDataDirectoryW());
+            if (boost::filesystem::exists(path) == false)
+            {
+                boost::filesystem::create_directory(path);
+            }
+        }
+
         //! Returns user specific application data directory.
         /*! Returns non-unicode path. May throw an expection if folder is not found.
         */
