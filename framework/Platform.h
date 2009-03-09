@@ -1,12 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_CorePlatform_h
-#define incl_CorePlatform_h
+#ifndef incl_FoundationPlatform_h
+#define incl_FoundationPlatform_h
 
-#include "CorePlatformWin.h"
-#include "CorePlatformNix.h"
+#include "PlatformWin.h"
+#include "PlatformNix.h"
 
-namespace Core
+namespace Foundation
 {
     //! Low-level platform specific functionality
     class Platform : 

@@ -98,7 +98,7 @@ int run(void)
     } 
     catch ( std::exception& e )
     {
-        Core::Platform::Message("An exception has occurred!", e.what());
+        Foundation::Platform::Message("An exception has occurred!", e.what());
         retVal = EXIT_FAILURE;
     }
 
@@ -146,9 +146,9 @@ int generateDump(EXCEPTION_POINTERS* pExceptionPointers)
     message += szFileName;
 
     if (bMiniDumpSuccessful)
-        Core::Platform::Message(L"Minidump generated!", message);
+        Foundation::Platform::Message(L"Minidump generated!", message);
     else
-        Core::Platform::Message(szAppName, L"Un unexpected error was encountred while generating minidump!");
+        Foundation::Platform::Message(szAppName, L"Un unexpected error was encountred while generating minidump!");
 
     return EXCEPTION_EXECUTE_HANDLER;
 }

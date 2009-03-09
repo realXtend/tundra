@@ -44,4 +44,13 @@ BOOST_AUTO_TEST_CASE( framework_configuration_manager )
 #endif
 }
 
+BOOST_AUTO_TEST_CASE( framework_platform )
+{
+    std::string appData = Foundation::Platform::GetApplicationDataDirectory();
+    BOOST_CHECK (appData.find(Foundation::Application::Name()) != std::string::npos);
+
+    std::wstring appData_unicode = Foundation::Platform::GetApplicationDataDirectoryW();
+    BOOST_CHECK (appData_unicode.find(Foundation::Application::NameW()) != std::wstring::npos);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

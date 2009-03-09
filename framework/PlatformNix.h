@@ -1,10 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_CorePlatformNix_h
-#define incl_CorePlatformNix_h
+#ifndef incl_FoundationPlatformNix_h
+#define incl_FoundationPlatformNix_h
 
 #if !defined(WIN32) && !defined(WIN64)
-namespace Core
+namespace Foundation
 {
     //! Low-level *nix specific functionality
     class PlatformNix
