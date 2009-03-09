@@ -21,6 +21,8 @@ Copy Poco libraries from the lib -directory to the viewer's external_libs -direc
 
 PocoFoundation.lib
 PocoFoundationd.lib
+PocoNet.lib
+PocoNetd.lib
 PocoUtil.lib
 PocoUtild.lib
 PocoXML.lib
@@ -30,11 +32,13 @@ Copy Poco DLL's from the bin -directory to the viewer's release and debug direct
 
 release:
 PocoFoundation.dll
+PocoNet.dll
 PocoUtil.dll
 PocoXML.dll
 
 debug:
 PocoFoundationd.dll
+PocoNet.dll
 PocoUtild.dll
 PocoXMLd.dll
 
