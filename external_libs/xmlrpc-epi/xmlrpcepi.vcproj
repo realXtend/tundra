@@ -175,7 +175,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libiconv.lib libexpat.lib"
-				OutputFile=".\Debug/xmlrpcepi.dll"
+				OutputFile=".\Debug/xmlrpcepid.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;$(ProjectDir)/../GnuWin32/lib&quot;;&quot;$(ProjectDir)/../Expat 2.0.1/win32/bin/Debug&quot;"
@@ -185,7 +185,7 @@
 				ProgramDatabaseFile=".\Debug/xmlrpcepi.pdb"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\Debug/xmlrpcepi.lib"
+				ImportLibrary=".\Debug/xmlrpcepid.lib"
 				TargetMachine="1"
 			/>
 			<Tool
