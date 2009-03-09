@@ -52,6 +52,20 @@ namespace Foundation
 
             return (pathw);
         }
+
+        //! \copydoc PlatformWin::GetUserDocumentsDirectory()
+        static std::string GetUserDocumentsDirectory()
+        {
+            return GetApplicationDataDirectory();
+        }
+
+        //! \copydoc PlatformWin::GetUserDocumentsDirectoryW()
+        static std::wstring GetUserDocumentsDirectoryW()
+        {
+            return GetApplicationDataDirectoryW();
+        }
+
+
     };
 }
 #endif
