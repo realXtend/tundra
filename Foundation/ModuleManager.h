@@ -91,6 +91,9 @@ namespace Foundation
         void UpdateModules();
 
         //! Returns module by name
+        /*!
+            \note The pointer may invalidate between frames, always reacquire at begin of frame update
+        */
         ModuleInterface *GetModule(const std::string &name)
         {
             ModuleVector::iterator it = modules_.begin();
@@ -103,6 +106,9 @@ namespace Foundation
         }
 
         //! Returns module by type
+        /*!
+            \note The pointer may invalidate between frames, always reacquire at begin of frame update
+        */
         template <class T>
         T *GetModule(Foundation::Module::Type type)
         {
