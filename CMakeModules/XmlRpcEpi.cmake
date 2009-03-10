@@ -22,5 +22,9 @@ macro (LINK_XMLRPCEPI)
 			debug xmlrpcepid
 			optimized xmlrpcepi
 		)
+	else (MSVC)
+		target_link_libraries (${TARGET_NAME}
+			xmlrpc-epi
+		)
 	endif (MSVC)
 endmacro (LINK_XMLRPCEPI)
