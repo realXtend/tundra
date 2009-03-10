@@ -19,11 +19,11 @@ namespace Foundation
     public:
         //! internal module types.
         /*!
-            \note if you add new internal module type, don't forget to add it's name to N ameFromType()
+            \note if you add new internal module type, don't forget to add it's name to NameFromType()
         */
 		enum Type 
 		{
-			Type_Geometry = 0,
+			Type_Scene = 0,
 			Type_Renderer, 
 			Type_Sound, 
 			Type_Gui, 
@@ -36,8 +36,8 @@ namespace Foundation
         static const std::string &NameFromType(Type type)
         {
             assert(type != Type_Unknown);
+            static const std::string type_strings[Type_Unknown] = { "Scene", "Renderer", "Sound", "Gui", "World Logic", "Network", "Test" };
 
-            static const std::string type_strings[Type_Unknown] = { "Geometry", "Renderer", "Sound", "Gui", "World Logic", "Network", "Test" };
             return type_strings[type];
         }
     };
