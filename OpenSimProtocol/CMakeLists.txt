@@ -11,7 +11,7 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 # Include directories
 include_directories (
 	../Core
-	../framework
+	../Foundation
 	../Interfaces
 )
 

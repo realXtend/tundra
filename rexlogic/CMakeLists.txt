@@ -11,7 +11,7 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 # Include directories
 include_directories (
 	../Core
-	../framework
+	../Foundation
 	../GeometrySystem
 	../Interfaces
 	../OgreRenderingSystem
@@ -40,7 +40,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} framework)
+target_link_libraries (${TARGET_NAME} Foundation)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
