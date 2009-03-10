@@ -2,9 +2,7 @@
 
 #include "StableHeaders.h"
 #include "NetworkEventHandler.h"
-//#include "ComponentInterface.h"
-//#include "ComponentManager.h"
-//#include "EntityManager.h"
+#include "EntityInterface.h"
 
 
 NetworkEventHandler::NetworkEventHandler(Foundation::Framework *framework)
@@ -36,7 +34,7 @@ void NetworkEventHandler::HandleObjectUpdate(std::string &packetdata)
 {
     Core::entity_id_t tempentityid = 0; // fixme, get entity from packetdata
 
-    Foundation::EntityPtr entity = framework_->GetEntityManager()->getEntity(tempentityid);
+    Foundation::EntityPtr entity;// MAYHEMFIXME = framework_->GetEntityManager()->getEntity(tempentityid);
     if(entity == NULL)
         CreateEntity(packetdata);
     
@@ -49,7 +47,7 @@ void NetworkEventHandler::HandleGenericMessageExtraEntityData(std::string &packe
 
     Core::entity_id_t tempentityid = 0; // fixme, get entity from packetdata
 
-    Foundation::EntityPtr entity = framework_->GetEntityManager()->getEntity(tempentityid);
+    Foundation::EntityPtr entity; // MAYHEMFIXME = framework_->GetEntityManager()->getEntity(tempentityid);
     if(entity == NULL)
         CreateEntity(packetdata);
     
@@ -63,7 +61,7 @@ void NetworkEventHandler::CreateEntity(std::string &packetdata)
 {
     Core::StringVector components;
     
-    Foundation::EntityPtr entity = framework_->GetEntityManager()->createEntity(components);
+    Foundation::EntityPtr entity; // MAYHEMFIXME = framework_->GetEntityManager()->createEntity(components);
 }
 
 void NetworkEventHandler::UpdateComponents(const std::string &packetname, const std::string &packetdata)

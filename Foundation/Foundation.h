@@ -8,8 +8,6 @@
 #include "Declare_EC.h"
 #include "ComponentManager.h"
 #include "ModuleManager.h"
-#include "EntityManager.h"
-#include "Entity.h"
 #include "ConfigurationManager.h"
 #include "ServiceManager.h"
 #include "ApplicationName.h"

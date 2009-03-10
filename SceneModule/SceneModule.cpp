@@ -6,7 +6,7 @@
 #include <Poco/ClassLibrary.h>
 #include "Foundation.h"
 
-namespace Geometry
+namespace Scene
 {
     SceneModule::SceneModule() : ModuleInterface_Impl(Foundation::Module::Type_Geometry)
     {
@@ -47,10 +47,4 @@ namespace Geometry
         LOG("Module " + Name() + " uninitialized.");
     }
 }
-
-using namespace Geometry;
-
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
-   POCO_EXPORT_CLASS(SceneModule)
-POCO_END_MANIFEST
 
