@@ -10,7 +10,7 @@ namespace Foundation
 {
     std::string PlatformWin::GetApplicationDataDirectory()
     {
-        PIDLIST_ABSOLUTE pidl;
+        LPITEMIDLIST pidl;
 
         if (SHGetFolderLocation(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, &pidl) == S_OK)
         {
@@ -25,7 +25,7 @@ namespace Foundation
 
     std::wstring PlatformWin::GetApplicationDataDirectoryW()
     {
-        PIDLIST_ABSOLUTE pidl;
+        LPITEMIDLIST pidl;
 
         if (SHGetFolderLocation(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, &pidl) == S_OK)
         {
@@ -40,7 +40,7 @@ namespace Foundation
 
     std::string PlatformWin::GetUserDocumentsDirectory()
     {
-        PIDLIST_ABSOLUTE pidl;
+        LPITEMIDLIST pidl;
 
         if (SHGetFolderLocation(NULL, CSIDL_MYDOCUMENTS | CSIDL_FLAG_CREATE, NULL, 0, &pidl) == S_OK)
         {
@@ -56,7 +56,7 @@ namespace Foundation
 
     std::wstring PlatformWin::GetUserDocumentsDirectoryW()
     {
-        PIDLIST_ABSOLUTE pidl;
+        LPITEMIDLIST pidl;
 
         if (SHGetFolderLocation(NULL, CSIDL_MYDOCUMENTS | CSIDL_FLAG_CREATE, NULL, 0, &pidl) == S_OK)
         {
