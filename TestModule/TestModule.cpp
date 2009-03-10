@@ -25,13 +25,13 @@ namespace Test
         using namespace Test;
         DECLARE_MODULE_EC(EC_Dummy);
 
-        LOG("System " + Name() + " loaded.");
+        LOG("Module " + Name() + " loaded.");
     }
 
     // virtual
     void TestModule::Unload()
     {
-        LOG("System " + Name() + " unloaded.");
+        LOG("Module " + Name() + " unloaded.");
     }
 
     // virtual
@@ -41,7 +41,7 @@ namespace Test
         framework_ = framework;
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Test, &test_service_);
         
-        LOG("System " + Name() + " initialized.");
+        LOG("Module " + Name() + " initialized.");
     }
 
     // virtual 
@@ -52,7 +52,7 @@ namespace Test
         assert(framework_ != NULL);
         framework_ = NULL;
         
-        LOG("System " + Name() + " uninitialized.");
+        LOG("Module " + Name() + " uninitialized.");
     }
 
     // virtual
