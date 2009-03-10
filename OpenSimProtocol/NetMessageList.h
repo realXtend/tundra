@@ -2,7 +2,10 @@
 #ifndef incl_Rex_NetMessageList_h
 #define incl_Rex_NetMessageList_h
 
+#pragma warning( push )
+#pragma warning( disable : 4396 )
 #include <boost/unordered_map.hpp>
+#pragma warning( pop )
 
 #include "NetMessage.h"
 
