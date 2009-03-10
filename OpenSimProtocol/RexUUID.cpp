@@ -3,7 +3,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "UUID.h"
+#include "RexUUID.h"
 #include <boost/lexical_cast.hpp>
 
 using namespace std;
@@ -29,12 +29,12 @@ static uint8_t StringToByte(const char *str)
 	return (CharToNibble(str[0]) << 4) | CharToNibble(str[1]);
 }
 
-UUID::UUID()
+RexUUID::RexUUID()
 {
 	SetNull();
 }
 
-UUID::UUID(const char *str)
+RexUUID::RexUUID(const char *str)
 {
 	if (str)
 		FromString(str);
@@ -42,20 +42,20 @@ UUID::UUID(const char *str)
 		SetNull();
 }
 
-UUID::UUID(const std::string &str)
+RexUUID::RexUUID(const std::string &str)
 {
 	FromString(str.c_str());
 }
 
-void UUID::SetNull()
+void RexUUID::SetNull()
 {
 	for(int i = 0; i < cSizeBytes; ++i)
 		data[i] = 0;
 }
 
-/// Converts a C string representing a UUID to a uint8_t array.
+/// Converts a C string representing a RexUUID to a uint8_t array.
 /// Supports either the format "1c1bbda2-304b-4cbf-ba3f-75324b044c73" or "1c1bbda2304b4cbfba3f75324b044c73".
-void UUID::FromString(const char *str)
+void RexUUID::FromString(const char *str)
 {
 	int curIndex = 0;
 	for(int i = 0; i < cSizeBytes; ++i)
@@ -69,7 +69,7 @@ void UUID::FromString(const char *str)
 	}
 }
 
-std::string UUID::ToString() const
+std::string RexUUID::ToString() const
 {
 	stringstream str;
 	int i = 0;
@@ -91,7 +91,7 @@ std::string UUID::ToString() const
 	return str.str();
 }
 
-bool UUID::operator ==(const UUID &rhs) const
+bool RexUUID::operator ==(const RexUUID &rhs) const
 {
 	for(int i = 0; i < cSizeBytes; ++i)
 		if (data[i] != rhs.data[i])
@@ -100,7 +100,7 @@ bool UUID::operator ==(const UUID &rhs) const
 	return true;
 }
 
-bool UUID::operator <(const UUID &rhs) const
+bool RexUUID::operator <(const RexUUID &rhs) const
 {
 	for(int i = 0; i < cSizeBytes; ++i)
 		if (data[i] < rhs.data[i])
