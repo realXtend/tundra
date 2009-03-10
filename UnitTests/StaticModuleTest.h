@@ -15,19 +15,19 @@ namespace Test
 
         virtual void Load()
         {
-            LOG("System " + Name() + " loaded.");
+            LOG("Module " + Name() + " loaded.");
         }
         virtual void Unload()
         {
-            LOG("System " + Name() + " unloaded.");
+            LOG("Module " + Name() + " unloaded.");
         }
         virtual void Initialize(Foundation::Framework *framework)
         {
-            LOG("System " + Name() + " initialized.");
+            LOG("Module " + Name() + " initialized.");
         }
         virtual void Uninitialize(Foundation::Framework *framework)
         {
-            LOG("System " + Name() + " uninitialized.");
+            LOG("Module " + Name() + " uninitialized.");
         }
 
         virtual void Update() {}

@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_SceneModule_System_h
-#define incl_SceneModule_System_h
+#ifndef incl_SceneModule_h
+#define incl_SceneModule_h
 
 #include "ModuleInterface.h"
 
@@ -23,6 +23,8 @@ namespace Geometry
         virtual void Unload();
         virtual void Initialize(Foundation::Framework *framework);
         virtual void Uninitialize(Foundation::Framework *framework);
+
+        virtual void Update();
     };
 }
 

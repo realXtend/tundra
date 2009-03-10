@@ -31,7 +31,7 @@ namespace Foundation
             // do synchronized update for modules
             module_manager_->UpdateModules();
 
-            // call asynchronous update on systems / do parallel tasks
+            // call asynchronous update on modules / do parallel tasks
 
             // synchronize shared data across modules
             //mChangeManager->_propagateChanges();

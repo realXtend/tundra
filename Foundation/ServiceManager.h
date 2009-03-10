@@ -9,7 +9,7 @@ namespace Foundation
 {
     class Framework;
 
-    //! Manages services. All systems offering a service must register with this manager
+    //! Manages services. All modules offering a service must register with this manager
     class ServiceManager
     {
         

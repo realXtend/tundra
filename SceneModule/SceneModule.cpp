@@ -22,25 +22,29 @@ namespace Geometry
         using namespace Geometry;
         DECLARE_MODULE_EC(EC_Geometry);
 
-        LOG("System " + Name() + " loaded.");
+        LOG("Module " + Name() + " loaded.");
     }
 
     // virtual
     void SceneModule::Unload()
     {
-        LOG("System " + Name() + " unloaded.");
+        LOG("Module " + Name() + " unloaded.");
     }
 
     // virtual
     void SceneModule::Initialize(Foundation::Framework *framework)
     {
-        LOG("System " + Name() + " initialized.");
+        LOG("Module " + Name() + " initialized.");
+    }
+
+    void SceneModule::Update()
+    {
     }
 
     // virtual 
     void SceneModule::Uninitialize(Foundation::Framework *framework)
     {
-        LOG("System " + Name() + " uninitialized.");
+        LOG("Module " + Name() + " uninitialized.");
     }
 }
 

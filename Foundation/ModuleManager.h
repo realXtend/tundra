@@ -17,15 +17,15 @@ namespace Foundation
 
         To create a new static module:
             - Create a class that inherits from ModuleInterface_Impl
-            - In the System's load()-function, declare all components the new module offers with DECLARE_MODULE_EC macro.
-            - In the System's initialize()-function, register all services the new module offers
+            - In the Module's load()-function, declare all components the new module offers with DECLARE_MODULE_EC macro.
+            - In the Module's initialize()-function, register all services the new module offers
             - Also unregister all services in the uninitialize()-function.
             - Declare the static module with DeclareStaticModule() function.
 
 
         Additional steps to create a new shared module:
             - Do not use the DeclareStaticModule() function
-            - Copy following to the implementation (cpp file) of the System-class:
+            - Copy following to the implementation (cpp file) of the Module-class:
 
                     POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
                         POCO_EXPORT_CLASS(CLASS_NAME)

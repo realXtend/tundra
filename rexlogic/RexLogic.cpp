@@ -35,13 +35,13 @@ void RexLogic::Load()
     DECLARE_MODULE_EC(EC_ServerScript);
     DECLARE_MODULE_EC(EC_SpatialSound);
 
-    LOG("System " + Name() + " loaded.");
+    LOG("Module " + Name() + " loaded.");
 }
 
 // virtual
 void RexLogic::Unload()
 {
-    LOG("System " + Name() + " unloaded.");
+    LOG("Module " + Name() + " unloaded.");
 }
 
 // virtual
@@ -62,7 +62,7 @@ void RexLogic::Initialize(Foundation::Framework *framework)
     world_logic_->GetNetworkHandler()->RegisterForNetworkMessages(EC_ServerScript::Name(),EC_ServerScript::GetNetworkMessages());
     world_logic_->GetNetworkHandler()->RegisterForNetworkMessages(EC_SpatialSound::Name(),EC_SpatialSound::GetNetworkMessages()); 
 
-    LOG("System " + Name() + " initialized.");
+    LOG("Module " + Name() + " initialized.");
 }
 
 // virtual 
@@ -74,7 +74,7 @@ void RexLogic::Uninitialize(Foundation::Framework *framework)
     framework_ = NULL;
 
 
-    LOG("System " + Name() + " uninitialized.");
+    LOG("Module " + Name() + " uninitialized.");
 }
 
 // virtual
