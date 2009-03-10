@@ -8,7 +8,7 @@
 
 namespace Scene
 {
-    SceneModule::SceneModule() : ModuleInterface_Impl(Foundation::Module::Type_Geometry)
+    SceneModule::SceneModule() : ModuleInterface_Impl(Foundation::Module::Type_Scene)
     {
     }
 
