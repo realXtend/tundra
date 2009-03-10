@@ -24,6 +24,9 @@ namespace Foundation
         void UnregisterService(ServiceInterface *service);
 
         //! Returns service from service type.
+        /*!
+            \note The pointer may invalidate between frames, always reacquire at begin of frame update
+        */
         template <class T>
         T *GetService(Service::Type type)
         {
@@ -39,6 +42,9 @@ namespace Foundation
         }
 
         //! Returns service from service type.
+        /*!
+            \note The pointer may invalidate between frames, always reacquire at begin of frame update
+        */
         template <class T>
         const T *GetService(Service::Type type) const
         {

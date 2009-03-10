@@ -14,7 +14,7 @@ namespace Test
         TestService() {};
         virtual ~TestService() {};
 
-        virtual bool Test() const { return true; }
+        virtual bool Test() const;
     };
 }
 #endif
