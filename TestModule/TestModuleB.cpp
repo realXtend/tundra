@@ -20,13 +20,13 @@ namespace Test
     // virtual
     void TestModuleB::Load()
     {
-        LOG("Module " + Name() + " loaded.");
+        LogInfo("Module " + Name() + " loaded.");
     }
 
     // virtual
     void TestModuleB::Unload()
     {
-        LOG("Module " + Name() + " unloaded.");
+        LogInfo("Module " + Name() + " unloaded.");
     }
 
     // virtual
@@ -35,7 +35,7 @@ namespace Test
         assert(framework != NULL);
         framework_ = framework;
         
-        LOG("Module " + Name() + " initialized.");
+        LogInfo("Module " + Name() + " initialized.");
     }
 
     // virtual 
@@ -44,7 +44,7 @@ namespace Test
         assert(framework_ != NULL);
         framework_ = NULL;
         
-        LOG("Module " + Name() + " uninitialized.");
+        LogInfo("Module " + Name() + " uninitialized.");
     }
 
     // virtual

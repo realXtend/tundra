@@ -93,7 +93,7 @@ namespace Foundation
         boost::algorithm::to_lower(ext);
         if (ext == ".xml")
         {
-            LOG("Attempting to load module definition file: " + path.file_string());
+            framework_->LogInfo("Attempting to load module definition file: " + path.file_string());
             fs::path modulePath(path);
             modulePath.replace_extension("");
 
@@ -144,7 +144,7 @@ namespace Foundation
               it != entries.end() ; 
               ++it )
         {
-            LOG("Attempting to load module: " + *it + ".");
+            framework_->LogInfo("Attempting to load module: " + *it + ".");
 
 
             if (cl.findClass(*it) == NULL)
@@ -157,7 +157,7 @@ namespace Foundation
 
             modules_.push_back(module);
 
-            LOG("Module: " + *it + " loaded.");
+            framework_->LogInfo("Module: " + *it + " loaded.");
         }
     }
 

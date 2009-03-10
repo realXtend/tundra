@@ -25,13 +25,13 @@ namespace Test
         using namespace Test;
         DECLARE_MODULE_EC(EC_Dummy);
 
-        LOG("Module " + Name() + " loaded.");
+        LogInfo("Module " + Name() + " loaded.");
     }
 
     // virtual
     void TestModule::Unload()
     {
-        LOG("Module " + Name() + " unloaded.");
+        LogInfo("Module " + Name() + " unloaded.");
     }
 
     // virtual
@@ -40,8 +40,7 @@ namespace Test
         assert(framework != NULL);
         framework_ = framework;
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Test, &test_service_);
-        
-        LOG("Module " + Name() + " initialized.");
+        LogInfo("Module " + Name() + " initialized.");
     }
 
     // virtual 
@@ -51,15 +50,14 @@ namespace Test
 
         assert(framework_ != NULL);
         framework_ = NULL;
-        
-        LOG("Module " + Name() + " uninitialized.");
+        LogInfo("Module " + Name() + " uninitialized.");
     }
 
     // virtual
     void TestModule::Update()
     {
         // create new entity
-        LOG("Constructing entity with component: " + Test::EC_Dummy::Name() + ".");
+        LogInfo("Constructing entity with component: " + Test::EC_Dummy::Name() + ".");
 
         //Foundation::EntityPtr entity = framework_->GetEntityManager()->createEntity();
         //assert (entity.get() != 0 && "Failed to create entity.");

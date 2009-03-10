@@ -22,19 +22,19 @@ namespace Scene
         using namespace Geometry;
         DECLARE_MODULE_EC(EC_Geometry);
 
-        LOG("Module " + Name() + " loaded.");
+        LogInfo("Module " + Name() + " loaded.");
     }
 
     // virtual
     void SceneModule::Unload()
     {
-        LOG("Module " + Name() + " unloaded.");
+        LogInfo("Module " + Name() + " unloaded.");
     }
 
     // virtual
     void SceneModule::Initialize(Foundation::Framework *framework)
     {
-        LOG("Module " + Name() + " initialized.");
+        LogInfo("Module " + Name() + " initialized.");
     }
 
     void SceneModule::Update()
@@ -44,7 +44,7 @@ namespace Scene
     // virtual 
     void SceneModule::Uninitialize(Foundation::Framework *framework)
     {
-        LOG("Module " + Name() + " uninitialized.");
+        LogInfo("Module " + Name() + " uninitialized.");
     }
 }
 
