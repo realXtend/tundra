@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_GeometrySystem_EC_Geometry_h
-#define incl_GeometrySystem_EC_Geometry_h
+#ifndef incl_SceneModule_EC_Geometry_h
+#define incl_SceneModule_EC_Geometry_h
 
 #include "ComponentInterface.h"
 #include "Foundation.h"
