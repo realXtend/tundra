@@ -4,6 +4,8 @@
 #define incl_Interfaces_ModuleInterface_h
 
 #include <Poco/ClassLibrary.h>
+#include <Poco/Logger.h>
+
 #include "ComponentRegistrarInterface.h"
 
 #define DECLARE_MODULE_EC(component) \
@@ -82,14 +84,34 @@ namespace Foundation
 
         //! Declare a component the module defines. For internal use.
         virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar) = 0;
+        
+        //! Logging
+        virtual void LogFatal(const std::string &msg) = 0;
+        virtual void LogCritical(const std::string &msg) = 0;
+        virtual void LogError(const std::string &msg) = 0;        
+        virtual void LogWarning(const std::string &msg) = 0;
+        virtual void LogNotice(const std::string &msg) = 0;
+        virtual void LogInfo(const std::string &msg) = 0;
+        virtual void LogTrace(const std::string &msg) = 0;
     };
 
     //! interface for modules, implementation
     class ModuleInterface_Impl : public ModuleInterface
     {
     public:
-        explicit ModuleInterface_Impl(const std::string &name) : name_(name), type_(Module::Type_Unknown) {}
-        explicit ModuleInterface_Impl(Module::Type type) : type_(type) {}
+    
+        explicit ModuleInterface_Impl(const std::string &name) : name_(name), type_(Module::Type_Unknown) 
+        { 
+            Poco::Logger *rootlogger = &Poco::Logger::root();
+            module_logger_ = &Poco::Logger::create(Name(),rootlogger->getChannel(),Poco::Message::PRIO_TRACE);        
+        }
+
+        explicit ModuleInterface_Impl(Module::Type type) : type_(type) 
+        { 
+            Poco::Logger *rootlogger = &Poco::Logger::root();
+            module_logger_ = &Poco::Logger::create(Name(),rootlogger->getChannel(),Poco::Message::PRIO_TRACE);           
+        }
+
         virtual ~ModuleInterface_Impl() {}
 
         //! Registers all declared components
@@ -127,6 +149,37 @@ namespace Foundation
             component_registrars_.push_back(registrar);
         }
 
+
+        //! Logging
+        virtual void LogFatal(const std::string &msg)
+        {
+            module_logger_->fatal(msg);
+        }
+        virtual void LogCritical(const std::string &msg)
+        {
+            module_logger_->critical(msg);
+        }
+        virtual void LogError(const std::string &msg)
+        {
+            module_logger_->error(msg);
+        }
+        virtual void LogWarning(const std::string &msg)
+        {
+            module_logger_->warning(msg);
+        }
+        virtual void LogNotice(const std::string &msg)
+        {
+            module_logger_->notice(msg);
+        }
+        virtual void LogInfo(const std::string &msg)
+        {
+            module_logger_->information(msg);
+        }
+        virtual void LogTrace(const std::string &msg)
+        {
+            module_logger_->trace(msg);
+        }
+        
     private:
         typedef std::vector<ComponentRegistrarInterfacePtr> RegistrarVector;
 
@@ -136,6 +189,9 @@ namespace Foundation
         const std::string name_;
         //! type of the module if inbuild, unknown otherwise
         const Module::Type type_;
+        
+        //! logger for this module
+        Poco::Logger *module_logger_;
     };
 }
 

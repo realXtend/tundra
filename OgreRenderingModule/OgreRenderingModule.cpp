@@ -22,14 +22,14 @@ namespace OgreRenderer
     {
         using namespace OgreRenderer;
 
-        LOG("Module " + Name() + " loaded.");
+        LogInfo("Module " + Name() + " loaded.");
         DECLARE_MODULE_EC(EC_OgreEntity);
     }
 
     // virtual
     void OgreRenderingModule::Unload()
     {
-        LOG("Module " + Name() + " unloaded.");
+        LogInfo("Module " + Name() + " unloaded.");
     }
 
     // virtual
@@ -37,7 +37,7 @@ namespace OgreRenderer
     {
         renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer);
 
-        LOG("Module " + Name() + " initialized.");
+        LogInfo("Module " + Name() + " initialized.");
     }
 
     // virtual 
@@ -45,7 +45,7 @@ namespace OgreRenderer
     {        
         renderer_.reset();
 
-        LOG("Module " + Name() + " uninitialized.");
+        LogInfo("Module " + Name() + " uninitialized.");
     }
 
 }
