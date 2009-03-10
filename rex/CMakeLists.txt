@@ -10,7 +10,7 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 # Include directories
 include_directories (
 	../Core
-	../framework
+	../Foundation
 	../Interfaces
 )
 
@@ -48,7 +48,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Core framework)
+target_link_libraries (${TARGET_NAME} Core Foundation)
 if (MSVC)
    target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)
 endif (MSVC)

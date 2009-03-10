@@ -42,7 +42,7 @@ link_directories (
 
 # Add subprojects
 add_subdirectory (Core)
-add_subdirectory (framework)
+add_subdirectory (Foundation)
 add_subdirectory (Interfaces)
 add_subdirectory (GeometrySystem)
 add_subdirectory (OgreRenderingModule)
