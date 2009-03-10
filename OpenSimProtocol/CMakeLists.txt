@@ -15,6 +15,19 @@ include_directories (
 	../Interfaces
 )
 
+# Disable warning
+if (MSVC)
+   set_property(
+      DIRECTORY
+      PROPERTY COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS
+   )
+endif (MSVC)
+
+# In Visual Studio, use unicode character set
+if (MSVC)
+	add_definitions (-DUNICODE -D_UNICODE)
+endif (MSVC)
+
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
