@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include "RexTypes.h"
-#include "UUID.h"
+#include "RexUUID.h"
 
 /// UDP message header flags.
 enum NetHeaderFlag

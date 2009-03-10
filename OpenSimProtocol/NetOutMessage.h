@@ -33,7 +33,7 @@ public:
 	void AddVector3d(const Vector3d &value);
 	void AddVector4(const Vector4 &value);
 	void AddQuaternion(const Quaternion &value);
-	void AddUUID(const UUID &value);
+	void AddUUID(const RexUUID &value);
 	void AddBool(bool value);
 	//void AddIPAddr(IPADDR value); ///\todo
 	//void AddIPPort(IPPORT value); ///\todo

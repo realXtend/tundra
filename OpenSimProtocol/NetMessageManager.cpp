@@ -6,12 +6,14 @@
 #include <cstring>
 
 #include "Poco/Net/NetException.h"
-#include "NetMessageManager.h"
 #include "Poco/Net/DatagramSocket.h" // To get htons etc.
+
+#include "NetMessageManager.h"
 #include "ZeroCode.h"
 #include "RexProtocolMsgIDs.h"
 
 #include "curl/curl.h"
+
 using namespace std;
 
 NetMessageManager::NetMessageManager(const char *messageListFilename)
@@ -206,7 +208,7 @@ void NetMessageManager::DumpNetworkMessage(NetMsgID id, NetInMessage *msg)
 	}
 }
 
-///\todo REMOVE
+///\todo Remove or refactor
 void NetMessageManager::DumpNetworkMessage(const uint8_t *data, size_t numBytes)
 {
 	NetMsgID id = ExtractNetworkMessageNumber(data, numBytes);

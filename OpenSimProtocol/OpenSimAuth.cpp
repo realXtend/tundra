@@ -13,7 +13,7 @@
 using namespace std;
 
 ///\todo Find a way for other OS's.
-// Fetches the MAC address.
+/// Fetches the MAC address.
 #ifdef WIN32
 std::string GetMACaddressString()
 {

@@ -35,7 +35,7 @@ public:
 	Vector4  ReadVector4();
 	Quaternion ReadQuaternion();
 
-	UUID ReadUUID();
+	RexUUID ReadUUID();
 	//IPADDR	ReadIPAddr(IPADDR value);  ///\todo
 	//IPPORT	ReadIPPort(IPPORT value);  ///\todo
 	//void		ReadNetVarFixed ///\todo Is this needed?

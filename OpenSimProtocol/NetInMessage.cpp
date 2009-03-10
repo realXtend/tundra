@@ -265,18 +265,18 @@ bool NetInMessage::ReadBool()
 	}
 }*/
 
-UUID NetInMessage::ReadUUID()
+RexUUID NetInMessage::ReadUUID()
 {
 	if (CheckNextVariableType() == NetVarUUID)
 	{
-		UUID *data = (UUID*)ReadBytesUnchecked(sizeof(UUID));
+		RexUUID *data = (RexUUID*)ReadBytesUnchecked(sizeof(RexUUID));
 		AdvanceToNextVariable();
 		return *data;
 	}
 	else 
 	{	
 		std::cout << "Invalid variable type. Current type is " << CheckNextVariableType() << std::endl;
-		return UUID();
+		return RexUUID();
 	}
 }
 

@@ -73,6 +73,7 @@ boost::shared_ptr<PocoXMLRPCCall> PocoXMLRPCConnection::StartXMLRPCCall(const ch
 	return call;
 }
 
+///\ todo Not used anymore(?) so delete?
 /// Blocks to wait for 100-Continue HTTP reply. \todo Replace this with curl or remove entirely?
 /*bool PocoXMLRPCConnection::WaitForHTTP100Continue()
 {
@@ -89,7 +90,8 @@ boost::shared_ptr<PocoXMLRPCCall> PocoXMLRPCConnection::StartXMLRPCCall(const ch
 	return true;
 }*/
 
-void PocoXMLRPCConnection::ReadXMLRPCReply(PocoXMLRPCCall &call)
+///\ todo Not used anymore(?) so delete?
+/*void PocoXMLRPCConnection::ReadXMLRPCReply(PocoXMLRPCCall &call)
 {
 	std::stringstream replyString;
 
@@ -122,7 +124,7 @@ void PocoXMLRPCConnection::ReadXMLRPCReply(PocoXMLRPCCall &call)
 	// Convert the XML string to a XMLRPC reply structure.
 	call.reply = XMLRPC_REQUEST_FromXML(replyString.str().c_str() + xmlStart, (int)(replyString.str().size() - xmlStart), 0);
 	assert(call.reply);
-}
+}*/
 
 bool PocoXMLRPCConnection::FinishXMLRPCCall(boost::shared_ptr<PocoXMLRPCCall> call)
 {
@@ -139,7 +141,6 @@ bool PocoXMLRPCConnection::FinishXMLRPCCall(boost::shared_ptr<PocoXMLRPCCall> ca
 
 	CURLcode result;
 	char curl_error_buffer[CURL_ERROR_SIZE];
-	
 	struct curl_httppost* post = NULL;
 	struct curl_httppost* last = NULL;
 	struct curl_slist *headers = NULL;
@@ -148,8 +149,7 @@ bool PocoXMLRPCConnection::FinishXMLRPCCall(boost::shared_ptr<PocoXMLRPCCall> ca
 	char *url = "192.168.1.144:9000"; ///\todo Use the real url and port.
 
 	headers = curl_slist_append(headers, "Accept-Encoding: deflate, gzip");
-	headers = curl_slist_append(headers, "Content-Type: text/xml"); ///\todo Gets overriden.
-//	headers = curl_slist_append(headers, content_length.str().c_str());
+	headers = curl_slist_append(headers, "Content-Type: text/xml"); ///\todo Gets overriden with the default value.
 	headers = curl_slist_append(headers, "Expect: 100-continue");
 	headers = curl_slist_append(headers, "");
 
