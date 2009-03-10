@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_GeometrySystem_System_h
-#define incl_GeometrySystem_System_h
+#ifndef incl_SceneModule_System_h
+#define incl_SceneModule_System_h
 
 #include "ModuleInterface.h"
 
@@ -13,11 +13,11 @@ namespace Foundation
 namespace Geometry
 {
     //! interface for modules
-    class GeometrySystem : public Foundation::ModuleInterface_Impl
+    class SceneModule : public Foundation::ModuleInterface_Impl
     {
     public:
-        GeometrySystem();
-        virtual ~GeometrySystem();
+        SceneModule();
+        virtual ~SceneModule();
 
         virtual void Load();
         virtual void Unload();

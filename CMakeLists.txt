@@ -44,7 +44,7 @@ link_directories (
 add_subdirectory (Core)
 add_subdirectory (Foundation)
 add_subdirectory (Interfaces)
-add_subdirectory (GeometrySystem)
+add_subdirectory (SceneModule)
 add_subdirectory (OgreRenderingModule)
 add_subdirectory (rex)
 add_subdirectory (rexlogic)

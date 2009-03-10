@@ -12,7 +12,7 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 include_directories (
 	../Core
 	../Foundation
-	../GeometrySystem
+	../SceneModule
 	../Interfaces
 )
 

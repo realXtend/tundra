@@ -1,23 +1,23 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "GeometrySystem.h"
+#include "SceneModule.h"
 #include "EC_Geometry.h"
 #include <Poco/ClassLibrary.h>
 #include "Foundation.h"
 
 namespace Geometry
 {
-    GeometrySystem::GeometrySystem() : ModuleInterface_Impl(Foundation::Module::Type_Geometry)
+    SceneModule::SceneModule() : ModuleInterface_Impl(Foundation::Module::Type_Geometry)
     {
     }
 
-    GeometrySystem::~GeometrySystem()
+    SceneModule::~SceneModule()
     {
     }
 
     // virtual
-    void GeometrySystem::Load()
+    void SceneModule::Load()
     {
         using namespace Geometry;
         DECLARE_MODULE_EC(EC_Geometry);
@@ -26,19 +26,19 @@ namespace Geometry
     }
 
     // virtual
-    void GeometrySystem::Unload()
+    void SceneModule::Unload()
     {
         LOG("System " + Name() + " unloaded.");
     }
 
     // virtual
-    void GeometrySystem::Initialize(Foundation::Framework *framework)
+    void SceneModule::Initialize(Foundation::Framework *framework)
     {
         LOG("System " + Name() + " initialized.");
     }
 
     // virtual 
-    void GeometrySystem::Uninitialize(Foundation::Framework *framework)
+    void SceneModule::Uninitialize(Foundation::Framework *framework)
     {
         LOG("System " + Name() + " uninitialized.");
     }
@@ -47,6 +47,6 @@ namespace Geometry
 using namespace Geometry;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
-   POCO_EXPORT_CLASS(GeometrySystem)
+   POCO_EXPORT_CLASS(SceneModule)
 POCO_END_MANIFEST
 
