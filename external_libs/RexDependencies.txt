@@ -35,7 +35,7 @@ This project has the following dependencies:
    are located in OpenSimProtocol/.
 
 - libcURL 7.19.4.0 or newer, http://curl.haxx.se/ . libcURL is a multiprotocol file transfer library which is used e.g. for
-   the HTTP file transfers and the login procedure.
+   the HTTP file transfers and the XML-RPC via HTTP login procedure.
    x Includes and libs: Located in libcurl/. This project is set to refer to this directory for 
      the dependencies.
    x Windows DLLs: The file libcurl.dll in libcurl/lib/DLL-Release & libcurld.dll in libcurl/lib/DLL-Debug.

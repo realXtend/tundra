@@ -144,11 +144,11 @@ void NetOutMessage::AddQuaternion(const Quaternion &value)
 	}
 }
 
-void NetOutMessage::AddUUID(const UUID &value)
+void NetOutMessage::AddUUID(const RexUUID &value)
 {
 	if (CheckNextVariable() == NetVarUUID) 
 	{
-		AddBytesUnchecked(sizeof(UUID), &value);
+		AddBytesUnchecked(sizeof(RexUUID), &value);
 		AdvanceToNextVariable();
 	}
 }

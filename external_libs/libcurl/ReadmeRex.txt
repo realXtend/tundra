@@ -1,1 +1,1 @@
-This folder contains the source code of libcURL 7.19.4.0 so that one can compile it for the platform he prefers.
+This folder contains the source code of libcURL 7.19.4.0 so that one can compile it for the platform he prefers. The Win32 binaries are prebuild.
