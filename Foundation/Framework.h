@@ -24,7 +24,6 @@ namespace Foundation
         void Go();
 
         ComponentManagerPtr GetComponentManager() const { return component_manager_; }
-        EntityManagerPtr GetEntityManager() const { return entity_manager_; }
         ModuleManagerPtr GetModuleManager() const { return module_manager_; }
         ServiceManagerPtr GetServiceManager() const { return service_manager_; }
 
@@ -62,7 +61,6 @@ namespace Foundation
 
         ModuleManagerPtr module_manager_;
         ComponentManagerPtr component_manager_;
-        EntityManagerPtr entity_manager_;
         ServiceManagerPtr service_manager_;
 
         //! if true, exit application

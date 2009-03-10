@@ -10,7 +10,7 @@ namespace Foundation
     class Framework;
 }
 
-namespace Geometry
+namespace Scene
 {
     //! interface for modules
     class SceneModule : public Foundation::ModuleInterface_Impl

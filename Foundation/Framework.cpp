@@ -10,7 +10,6 @@ namespace Foundation
         // create managers
         module_manager_ = ModuleManagerPtr(new ModuleManager(this));
         component_manager_ = ComponentManagerPtr(new ComponentManager(this));
-        entity_manager_ = EntityManagerPtr(new EntityManager(this));
         service_manager_ = ServiceManagerPtr(new ServiceManager(this));
     }
 
