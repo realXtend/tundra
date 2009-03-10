@@ -37,6 +37,10 @@ endif (MSVC)
 # Define libraries to be linked into target
 target_link_libraries (${TARGET_NAME} framework)
 
+# External library linkage
+LINK_BOOST()
+LINK_POCO()
+
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})

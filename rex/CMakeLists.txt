@@ -53,6 +53,6 @@ if (MSVC)
    target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)
 endif (MSVC)
 
-# External library linkage (needs target defined)
+# External library linkage
 LINK_POCO()
 LINK_BOOST()
