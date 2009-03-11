@@ -57,7 +57,8 @@ namespace OgreRenderer
         root_->initialise(false);
         
         Ogre::NameValuePairList params;
-        renderwindow_ = root_->createRenderWindow(Application::Name(), width, height, fullscreen, &params);
+        std::string name = framework_->GetDefaultConfig().GetString(Foundation::Framework::ConfigurationGroup(), "application_name");
+        renderwindow_ = root_->createRenderWindow(name, width, height, fullscreen, &params);
         if (!renderwindow_)
         {
             module_->LogError("Could not create rendering window");
