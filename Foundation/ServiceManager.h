@@ -28,7 +28,7 @@ namespace Foundation
             \note The pointer may invalidate between frames, always reacquire at begin of frame update
         */
         template <class T>
-        T *GetService(Service::Type type)
+        __inline T *GetService(Service::Type type)
         {
             ServicesMap::iterator it = services_.find(type);
             if (it == services_.end())
@@ -46,7 +46,7 @@ namespace Foundation
             \note The pointer may invalidate between frames, always reacquire at begin of frame update
         */
         template <class T>
-        const T *GetService(Service::Type type) const
+        __inline const T *GetService(Service::Type type) const
         {
             ServicesMap::const_iterator it = services_.find(type);
             if (it == services_.end())

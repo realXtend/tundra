@@ -34,9 +34,13 @@ void NetworkEventHandler::HandleObjectUpdate(std::string &packetdata)
 {
     Core::entity_id_t tempentityid = 0; // fixme, get entity from packetdata
 
-    Foundation::EntityPtr entity;// MAYHEMFIXME = framework_->GetEntityManager()->getEntity(tempentityid);
-    if(entity == NULL)
+    Foundation::SceneServiceInterface *scene = framework_->GetService<Foundation::SceneServiceInterface>(Foundation::Service::ST_Scene);
+    Foundation::EntityPtr entity;
+
+    if (scene->HasEntity(tempentityid) == false)
         CreateEntity(packetdata);
+    else
+        entity = scene->GetEntity(tempentityid);
     
     UpdateComponents("ObjectUpdate",packetdata);    
 }
@@ -47,9 +51,13 @@ void NetworkEventHandler::HandleGenericMessageExtraEntityData(std::string &packe
 
     Core::entity_id_t tempentityid = 0; // fixme, get entity from packetdata
 
-    Foundation::EntityPtr entity; // MAYHEMFIXME = framework_->GetEntityManager()->getEntity(tempentityid);
-    if(entity == NULL)
+    Foundation::SceneServiceInterface *scene = framework_->GetService<Foundation::SceneServiceInterface>(Foundation::Service::ST_Scene);
+    Foundation::EntityPtr entity;
+
+    if (scene->HasEntity(tempentityid) == false)
         CreateEntity(packetdata);
+    else
+        entity = scene->GetEntity(tempentityid);
     
     UpdateComponents("GeneralMessage_ExtraEntityData",packetdata);
 }
@@ -61,7 +69,8 @@ void NetworkEventHandler::CreateEntity(std::string &packetdata)
 {
     Core::StringVector components;
     
-    Foundation::EntityPtr entity; // MAYHEMFIXME = framework_->GetEntityManager()->createEntity(components);
+    Foundation::SceneServiceInterface *scene = framework_->GetService<Foundation::SceneServiceInterface>(Foundation::Service::ST_Scene);
+    Foundation::EntityPtr entity = scene->CreateEntity(components);
 }
 
 void NetworkEventHandler::UpdateComponents(const std::string &packetname, const std::string &packetdata)

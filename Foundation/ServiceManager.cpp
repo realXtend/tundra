@@ -13,12 +13,11 @@ namespace Foundation
     void ServiceManager::RegisterService(Service::Type type, ServiceInterface *service)
     {
         assert(service != NULL);
+        LOG("Registering service. Service_type: " + boost::lexical_cast<std::string>(type) + ".");
 
         if (services_.find(type) != services_.end())
         {
-            //! \todo how to handle, replace old service provider, throw exception, ignore?
             LOGWARNING("Service provider already registered!");
-            //throw Core::Exception("Service provider already registered!");
             return;
         }
         services_[type] = service;
@@ -27,6 +26,7 @@ namespace Foundation
     void ServiceManager::UnregisterService(ServiceInterface *service)
     {
         assert(service != NULL);
+        LOG("Unregistering service.");
 
         ServicesMap::iterator iter = services_.begin();
         for ( ; iter != services_.end() ; ++iter)
@@ -37,5 +37,6 @@ namespace Foundation
                 return;
             }
         }
+        LOGWARNING("Unregistering service provider that was not registered!");
     }
 }

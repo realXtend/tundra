@@ -2,8 +2,6 @@
 
 #include "StableHeaders.h"
 #include "SceneModule.h"
-#include "EC_Geometry.h"
-#include <Poco/ClassLibrary.h>
 #include "Foundation.h"
 
 namespace Scene
@@ -19,9 +17,6 @@ namespace Scene
     // virtual
     void SceneModule::Load()
     {
-        using namespace Geometry;
-        DECLARE_MODULE_EC(EC_Geometry);
-
         LogInfo("Module " + Name() + " loaded.");
     }
 
@@ -34,6 +29,9 @@ namespace Scene
     // virtual
     void SceneModule::Initialize(Foundation::Framework *framework)
     {
+        scene_manager_ = Foundation::ScenePtr(new SceneManager(framework));
+        framework->GetServiceManager()->RegisterService(Foundation::Service::ST_Scene, scene_manager_.get());
+
         LogInfo("Module " + Name() + " initialized.");
     }
 
@@ -44,6 +42,9 @@ namespace Scene
     // virtual 
     void SceneModule::Uninitialize(Foundation::Framework *framework)
     {
+        framework->GetServiceManager()->UnregisterService(scene_manager_.get());
+        scene_manager_.reset();
+
         LogInfo("Module " + Name() + " uninitialized.");
     }
 }

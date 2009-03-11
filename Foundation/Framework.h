@@ -7,7 +7,7 @@
 
 #include "ForwardDefines.h"
 #include "ConfigurationManager.h"
-
+#include "ServiceInterfaces.h"
 
 namespace Foundation
 {
@@ -41,6 +41,14 @@ namespace Foundation
             static ConfigurationManager manager(ConfigurationManager::CT_DEFAULT);
             return manager;
         }
+
+        //! Shortcut for retrieving a service. See ServiceManager for more info
+        template <class T>
+        __inline T *GetService(Service::Type type) { return service_manager_->GetService<T>(type); }
+
+        //! Shortcut for retrieving a service. See ServiceManager for more info
+        template <class T>
+        __inline const T *GetService(Service::Type type) const { return service_manager_->GetService<T>(type); }
 
         //! Returns name of the configuration group used by the framework
         /*! The group name is used with ConfigurationManager, for framework specific

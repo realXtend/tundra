@@ -3,7 +3,7 @@
 #ifndef incl_SceneSceneManager_h
 #define incl_SceneSceneManager_h
 
-#include "EntityInterface.h"
+#include "SceneServiceInterface.h"
 
 namespace Foundation
 {
@@ -17,23 +17,28 @@ namespace Scene
         Contains all entities in the world in a generic fashion.
         Acts as a factory for all entities.
     */
-    class SceneManager
+    class SceneManager : public Foundation::SceneServiceInterface
     {
     public:
-        SceneManager(Foundation::Framework *framework) : framework_(framework) {}
-        ~SceneManager() {}
+        SceneManager(Foundation::Framework *framework) : SceneServiceInterface(), framework_(framework) {}
+        virtual ~SceneManager() {}
 
         //! Creates new entity that contains the specified components
         /*!
             \param components list of component names the entity will use
         */
-        Foundation::EntityPtr CreateEntity(const Core::StringVector &components);
+        virtual Foundation::EntityPtr CreateEntity(const Core::StringVector &components);
 
         //! Creates an empty entity
-        Foundation::EntityPtr CreateEntity();
+        virtual Foundation::EntityPtr CreateEntity();
         
         //! Returns entity with the specified id
-        Foundation::EntityPtr GetEntity(Core::entity_id_t id) const;
+        virtual Foundation::EntityPtr GetEntity(Core::entity_id_t id) const;
+
+        virtual bool HasEntity(Core::entity_id_t id) const
+        {
+            return (entities_.find(id) != entities_.end());
+        }
     
     private:
         typedef std::map<Core::entity_id_t, Foundation::EntityPtr> EntityMap;
