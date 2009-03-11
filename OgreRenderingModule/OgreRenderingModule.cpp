@@ -48,7 +48,12 @@ namespace OgreRenderer
 
         LogInfo("Module " + Name() + " uninitialized.");
     }
-
+    
+    // virtual
+    void OgreRenderingModule::Update()
+    {
+        renderer_->Update();
+    }
 }
 
 using namespace OgreRenderer;
