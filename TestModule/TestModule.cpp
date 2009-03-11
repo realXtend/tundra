@@ -56,18 +56,20 @@ namespace Test
     // virtual
     void TestModule::Update()
     {
+        LOG("");
         // create new entity
         LogInfo("Constructing entity with component: " + Test::EC_Dummy::Name() + ".");
 
-        //Foundation::EntityPtr entity = framework_->GetEntityManager()->createEntity();
-        //assert (entity.get() != 0 && "Failed to create entity.");
+        Foundation::SceneServiceInterface *scene = framework_->GetService<Foundation::SceneServiceInterface>(Foundation::Service::ST_Scene);
+        Foundation::EntityPtr entity = scene->CreateEntity();
+        assert (entity.get() != 0 && "Failed to create entity.");
 
-        //Foundation::ComponentPtr component = framework_->GetComponentManager()->CreateComponent(Test::EC_Dummy::Name());
-        //assert (component.get() != 0 && "Failed to create dummy component.");
+        Foundation::ComponentPtr component = framework_->GetComponentManager()->CreateComponent(Test::EC_Dummy::Name());
+        assert (component.get() != 0 && "Failed to create dummy component.");
 
-        //entity->addEntityComponent(component);
-        //component = entity->getComponent(component->_Name());
-        //assert (component.get() != 0 && "Failed to get dummy component from entity.");
+        entity->AddEntityComponent(component);
+        component = entity->GetComponent(component->_Name());
+        assert (component.get() != 0 && "Failed to get dummy component from entity.");
 
         Foundation::TestServiceInterface *test_service = framework_->GetServiceManager()->GetService<Foundation::TestServiceInterface>(Foundation::Service::ST_Test);
         assert (test_service != NULL);
@@ -75,6 +77,8 @@ namespace Test
 
         framework_->Exit();
         assert (framework_->IsExiting());
+
+        LOG("");
     }
 }
 

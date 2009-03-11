@@ -4,6 +4,7 @@
 #define incl_SceneModule_h
 
 #include "ModuleInterface.h"
+#include "SceneManager.h"
 
 namespace Foundation
 {
@@ -25,6 +26,9 @@ namespace Scene
         virtual void Uninitialize(Foundation::Framework *framework);
 
         virtual void Update();
+
+    private:
+        Foundation::ScenePtr scene_manager_;
     };
 }
 
