@@ -15,8 +15,9 @@ namespace Foundation
         */
         static std::string Name()
         {
-            ConfigurationManager &config = Framework::GetDefaultConfig();
-            return config.DeclareSetting(Framework::ConfigurationGroup(), "application_name", "realXtend");
+            return "realXtend";
+            //ConfigurationManager &config = Framework::GetDefaultConfig();
+            //return config.DeclareSetting(Framework::ConfigurationGroup(), "application_name", "realXtend");
         }
 
         //! \copydoc Name()

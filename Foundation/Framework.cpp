@@ -11,7 +11,7 @@
 
 namespace Foundation
 {
-    Framework::Framework() : exit_signal_(false)
+    Framework::Framework() : exit_signal_(false), config_(new ConfigurationManager(ConfigurationManager::CT_DEFAULT))
     {
         CreateLoggingSystem();
 

@@ -12,7 +12,7 @@ namespace Foundation
 {
     ModuleManager::ModuleManager(Framework *framework) : 
         framework_(framework)
-      , DEFAULT_MODULES_PATH(Framework::GetDefaultConfig().DeclareSetting("ModuleManager", "Default_Modules_Path", "./modules"))
+      , DEFAULT_MODULES_PATH(framework->GetDefaultConfig().DeclareSetting("ModuleManager", "Default_Modules_Path", "./modules"))
     {
     }
 

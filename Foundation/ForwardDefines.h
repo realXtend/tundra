@@ -11,11 +11,14 @@ namespace Foundation
     class ComponentManager;
     class ComponentFactoryInterface;
     class ServiceManager;
+    class ConfigurationManager;
 
     typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
     typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
     typedef boost::shared_ptr<ComponentFactoryInterface> ComponentFactoryInterfacePtr;
     typedef boost::shared_ptr<ServiceManager> ServiceManagerPtr;
+    typedef boost::shared_ptr<ConfigurationManager> ConfigurationManagerPtr;
+    
     
     //! Use root logging only foundation in classes.
     static void RootLogFatal(const std::string &msg)
