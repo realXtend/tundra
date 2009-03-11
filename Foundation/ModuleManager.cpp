@@ -54,8 +54,8 @@ namespace Foundation
                 }
             } catch (std::exception &e) // may not be fatal, depending on which module failed
             {
-                LOGERROR(std::string("Exception: ") + e.what());
-                LOGERROR("Failed to load module.");
+                Foundation::RootLogError(std::string("Exception: ") + e.what());
+                Foundation::RootLogError("Failed to load module.");
             }
         }
     }
@@ -93,7 +93,7 @@ namespace Foundation
         boost::algorithm::to_lower(ext);
         if (ext == ".xml")
         {
-            framework_->LogInfo("Attempting to load module definition file: " + path.file_string());
+            Foundation::RootLogInfo("Attempting to load module definition file: " + path.file_string());
             fs::path modulePath(path);
             modulePath.replace_extension("");
 
@@ -136,16 +136,15 @@ namespace Foundation
             cl.loadLibrary(path);
         } catch (std::exception &e)
         {
-            LOGERROR(e.what());
-            LOGERROR("Failed to load dynamic library: " + moduleName + ".");
+            Foundation::RootLogError(e.what());
+            Foundation::RootLogError("Failed to load dynamic library: " + moduleName + ".");
         }
 
         for ( Core::StringVector::const_iterator it = entries.begin() ; 
               it != entries.end() ; 
               ++it )
         {
-            framework_->LogInfo("Attempting to load module: " + *it + ".");
-
+            Foundation::RootLogInfo("Attempting to load module: " + *it + ".");
 
             if (cl.findClass(*it) == NULL)
             {
@@ -157,7 +156,7 @@ namespace Foundation
 
             modules_.push_back(module);
 
-            framework_->LogInfo("Module: " + *it + " loaded.");
+            Foundation::RootLogInfo("Module: " + *it + " loaded.");
         }
     }
 

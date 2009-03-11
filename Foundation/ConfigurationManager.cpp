@@ -42,9 +42,8 @@ namespace Foundation
         } catch (std::exception &e)
         {
             // not fatal
-
-            LOGERROR(e.what());
-            LOGERROR("Failed to load application configuration file " + file + ".");
+            Foundation::RootLogError(e.what());
+            Foundation::RootLogError("Failed to load application configuration file " + file + ".");
         }
     }
 

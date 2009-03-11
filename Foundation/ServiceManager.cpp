@@ -3,7 +3,6 @@
 #include "StableHeaders.h"
 #include "ServiceManager.h"
 
-
 namespace Foundation
 {
     ServiceManager::ServiceManager(Framework *framework) : framework_(framework)
@@ -13,11 +12,11 @@ namespace Foundation
     void ServiceManager::RegisterService(Service::Type type, ServiceInterface *service)
     {
         assert(service != NULL);
-        LOG("Registering service. Service_type: " + boost::lexical_cast<std::string>(type) + ".");
+        Foundation::RootLogInfo("Registering service. Service_type: " + boost::lexical_cast<std::string>(type) + ".");
 
         if (services_.find(type) != services_.end())
         {
-            LOGWARNING("Service provider already registered!");
+            Foundation::RootLogWarning("Service provider already registered!");
             return;
         }
         services_[type] = service;
@@ -26,7 +25,7 @@ namespace Foundation
     void ServiceManager::UnregisterService(ServiceInterface *service)
     {
         assert(service != NULL);
-        LOG("Unregistering service.");
+        Foundation::RootLogInfo("Unregistering service.");
 
         ServicesMap::iterator iter = services_.begin();
         for ( ; iter != services_.end() ; ++iter)
@@ -37,6 +36,6 @@ namespace Foundation
                 return;
             }
         }
-        LOGWARNING("Unregistering service provider that was not registered!");
+        Foundation::RootLogWarning("Unregistering service provider that was not registered!");
     }
 }
