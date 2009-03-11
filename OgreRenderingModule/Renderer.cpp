@@ -1,8 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "Renderer.h"
 #include "Foundation.h"
+#include "Renderer.h"
 #include "OgreRenderingModule.h"
 
 #include "Ogre.h"
@@ -11,7 +11,8 @@ using namespace Foundation;
 
 namespace OgreRenderer
 {
-    Renderer::Renderer(OgreRenderingModule* module) :
+    Renderer::Renderer(OgreRenderingModule* module, Framework* framework) :
+        framework_(framework),
         module_(module),
         root_(0),
         scenemanager_(0)
@@ -35,13 +36,13 @@ namespace OgreRenderer
         root_ = new Ogre::Root(plugins_filename);
         
 #ifdef _WINDOWS
-        std::string rendersystem_name = Framework::GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", "Direct3D9 Rendering Subsystem");
+        std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", "Direct3D9 Rendering Subsystem");
 #else
-        std::string rendersystem_name = Framework::GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", "OpenGL Rendering Subsystem");
+        std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", "OpenGL Rendering Subsystem");
 #endif
-        int width = Framework::GetDefaultConfig().DeclareSetting("OgreRenderer", "WindowWidth", 800);
-        int height = Framework::GetDefaultConfig().DeclareSetting("OgreRenderer", "WindowHeight", 600);
-        bool fullscreen = Framework::GetDefaultConfig().DeclareSetting("OgreRenderer", "Fullscreen", false);
+        int width = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "WindowWidth", 800);
+        int height = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "WindowHeight", 600);
+        bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "Fullscreen", false);
         
         Ogre::RenderSystem* rendersystem = root_->getRenderSystemByName(rendersystem_name);
         if (!rendersystem)

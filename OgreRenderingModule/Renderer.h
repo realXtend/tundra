@@ -6,6 +6,11 @@
 #include "RenderServiceInterface.h"
 #include <boost/shared_ptr.hpp>
 
+namespace Foundation
+{
+    class Framework;
+}
+
 namespace Ogre
 {
     class Root;
@@ -22,7 +27,7 @@ namespace OgreRenderer
     class Renderer : public Foundation::RenderServiceInterface
     {
     public:
-        Renderer(OgreRenderingModule* module);
+        Renderer(OgreRenderingModule* module, Foundation::Framework* framework);
         virtual ~Renderer();
 
         //! initializes renderer
@@ -74,6 +79,9 @@ namespace OgreRenderer
         
         //! rendering module we belong to
         OgreRenderingModule* module_;
+        
+        //! framework we belong to
+        Foundation::Framework* framework_;
     };
 
     typedef boost::shared_ptr<Renderer> RendererPtr;
