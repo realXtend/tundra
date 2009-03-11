@@ -10,7 +10,7 @@ namespace Foundation
 {
     //! Low-level platform specific functionality
     class Platform : 
-#if defined(WIN32) || defined(WIN64)
+#if defined(_WINDOWS)
         public PlatformWin
 #else
         public PlatformNix
@@ -18,12 +18,19 @@ namespace Foundation
     {
     public:
         //! default constructor
-        Platform() {}
+        Platform(Framework *framework) :
+#if defined(_WINDOWS)
+        PlatformWin(framework)
+#else
+        PlatformNix(framework)
+#endif
+        {}
+
         //! destructor
         virtual ~Platform() {}
 
         //! Creates application data directory, if one doesn't already exist. Should be called before any data is handled.
-        static void PrepareApplicationDataDirectory()
+        void PrepareApplicationDataDirectory()
         {
             // exceptions are not handled, since if this fails the application is more or less SOL.
 

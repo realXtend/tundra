@@ -11,6 +11,24 @@
 //! Unit test for framework
 BOOST_AUTO_TEST_SUITE(test_suite_foundation)
 
+BOOST_AUTO_TEST_CASE( framework_platform )
+{
+    Foundation::Framework fw;
+
+    std::string appData = fw.GetPlatform()->GetApplicationDataDirectory();
+    BOOST_CHECK (appData.find(fw.GetDefaultConfig().GetString(Foundation::Framework::ConfigurationGroup(), "application_name")) != std::string::npos);
+
+    std::wstring appData_unicode = fw.GetPlatform()->GetApplicationDataDirectoryW();
+    BOOST_CHECK (appData_unicode.find(Core::ToWString(fw.GetDefaultConfig().GetString(Foundation::Framework::ConfigurationGroup(), "application_name"))) != std::wstring::npos);
+
+
+    appData = fw.GetPlatform()->GetUserDocumentsDirectory();
+    BOOST_CHECK (appData.find(fw.GetDefaultConfig().GetString(Foundation::Framework::ConfigurationGroup(), "application_name")) != std::string::npos);
+
+    appData_unicode = fw.GetPlatform()->GetUserDocumentsDirectoryW();
+    BOOST_CHECK (appData_unicode.find(Core::ToWString(fw.GetDefaultConfig().GetString(Foundation::Framework::ConfigurationGroup(), "application_name"))) != std::wstring::npos);
+}
+
 BOOST_AUTO_TEST_CASE( framework_test_module )
 {
     Foundation::Framework fw;
@@ -44,20 +62,5 @@ BOOST_AUTO_TEST_CASE( framework_configuration_manager )
 #endif
 }
 
-BOOST_AUTO_TEST_CASE( framework_platform )
-{
-    std::string appData = Foundation::Platform::GetApplicationDataDirectory();
-    BOOST_CHECK (appData.find(Foundation::Application::Name()) != std::string::npos);
-
-    std::wstring appData_unicode = Foundation::Platform::GetApplicationDataDirectoryW();
-    BOOST_CHECK (appData_unicode.find(Foundation::Application::NameW()) != std::wstring::npos);
-
-
-    appData = Foundation::Platform::GetUserDocumentsDirectory();
-    BOOST_CHECK (appData.find(Foundation::Application::Name()) != std::string::npos);
-
-    appData_unicode = Foundation::Platform::GetUserDocumentsDirectoryW();
-    BOOST_CHECK (appData_unicode.find(Foundation::Application::NameW()) != std::wstring::npos);
-}
 
 BOOST_AUTO_TEST_SUITE_END()

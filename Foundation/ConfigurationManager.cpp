@@ -15,10 +15,6 @@ namespace Foundation
         type_ = CT_DEFAULT;
     }
 
-    ConfigurationManager::ConfigurationManager() : type_(CT_CUSTOM)
-    {
-    }
-
     ConfigurationManager::ConfigurationManager(const std::string &file) : type_(CT_CUSTOM)
     {
         Load(file);
@@ -47,7 +43,7 @@ namespace Foundation
         }
     }
 
-    int ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, int defaultValue)
+    int ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, int defaultValue) const
     {
         int value = defaultValue;
         if (configuration_.isNull() == false)
@@ -56,12 +52,12 @@ namespace Foundation
             value = configuration_->getInt(groupKey, defaultValue);
         }
 #ifdef EXPORT_CONFIGURATION
-        values_[std::make_pair(group, key)] = boost::lexical_cast<std::string>(value);
+        (*const_cast<ValueMap*>(&values_))[std::make_pair(group, key)] = boost::lexical_cast<std::string>(value);
 #endif
         return value;
     }
 
-    std::string ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, const std::string &defaultValue)
+    std::string ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, const std::string &defaultValue) const
     {
         std::string value = defaultValue;
         if (configuration_.isNull() == false)
@@ -70,17 +66,17 @@ namespace Foundation
             value = configuration_->getString(groupKey, defaultValue);
         }
 #ifdef EXPORT_CONFIGURATION
-        values_[std::make_pair(group, key)] = value;
+        (*const_cast<ValueMap*>(&values_))[std::make_pair(group, key)] = value;
 #endif
         return value;
     }
 
-    std::string ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, const char *defaultValue)
+    std::string ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, const char *defaultValue) const
     {
         return DeclareSetting(group, key, std::string(defaultValue));
     }
 
-    bool ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, bool defaultValue)
+    bool ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, bool defaultValue) const
     {
         bool value = defaultValue;
         if (configuration_.isNull() == false)
@@ -89,12 +85,12 @@ namespace Foundation
             value = configuration_->getBool(groupKey, defaultValue);
         }
 #ifdef EXPORT_CONFIGURATION
-        values_[std::make_pair(group, key)] = boost::lexical_cast<std::string>(value);
+        (*const_cast<ValueMap*>(&values_))[std::make_pair(group, key)] = boost::lexical_cast<std::string>(value);
 #endif
         return value;
     }
 
-    Core::Real ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, Core::Real defaultValue)
+    Core::Real ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, Core::Real defaultValue) const
     {
         Core::Real value = defaultValue;
         if (configuration_.isNull() == false)
@@ -103,12 +99,12 @@ namespace Foundation
             value = static_cast<Core::Real>(configuration_->getDouble(groupKey, defaultValue));
         }
 #ifdef EXPORT_CONFIGURATION
-        values_[std::make_pair(group, key)] = boost::lexical_cast<std::string>(value);
+        (*const_cast<ValueMap*>(&values_))[std::make_pair(group, key)] = boost::lexical_cast<std::string>(value);
 #endif
         return value;
     }
 
-    bool ConfigurationManager::HasKey(const std::string &group, const std::string &key)
+    bool ConfigurationManager::HasKey(const std::string &group, const std::string &key) const
     {
         if (configuration_.isNull() == false)
         {

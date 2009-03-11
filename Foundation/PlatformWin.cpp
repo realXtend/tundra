@@ -1,10 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "ApplicationName.h"
 #include "PlatformWin.h"
+#include "Framework.h"
 
-#if defined(WIN32) || defined(WIN64)
+#if defined(_WINDOWS)
 
 namespace Foundation
 {
@@ -18,7 +18,7 @@ namespace Foundation
             SHGetPathFromIDListA( pidl, cpath );
             CoTaskMemFree(pidl);
 
-            return std::string(cpath) + "\\" + Application::Name();
+            return std::string(cpath) + "\\" + framework_->GetDefaultConfig().GetString(Framework::ConfigurationGroup(), "application_name");
         }
         throw Core::Exception("Failed to access application data directory.");
     }
@@ -33,7 +33,7 @@ namespace Foundation
             SHGetPathFromIDListW( pidl, cpath );
             CoTaskMemFree(pidl);
 
-            return std::wstring(cpath) + L"\\" + Application::NameW();
+            return std::wstring(cpath) + L"\\" + Core::ToWString(framework_->GetDefaultConfig().GetString(Framework::ConfigurationGroup(), "application_name"));
         }
         throw Core::Exception("Failed to access application data directory.");
     }
@@ -48,7 +48,7 @@ namespace Foundation
             SHGetPathFromIDListA( pidl, cpath );
             CoTaskMemFree(pidl);
 
-            return std::string(cpath) + "\\" + Application::Name();
+            return std::string(cpath) + "\\" + framework_->GetDefaultConfig().GetString(Framework::ConfigurationGroup(), "application_name");
         }
         throw Core::Exception("Failed to access user documents directory.");
     }
@@ -64,7 +64,7 @@ namespace Foundation
             SHGetPathFromIDListW( pidl, cpath );
             CoTaskMemFree(pidl);
 
-            return std::wstring(cpath) + L"\\" + Application::NameW();
+            return std::wstring(cpath) + L"\\" + Core::ToWString(framework_->GetDefaultConfig().GetString(Framework::ConfigurationGroup(), "application_name"));
         }
         throw Core::Exception("Failed to access user documents directory.");
     }

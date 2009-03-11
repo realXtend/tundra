@@ -3,18 +3,20 @@
 #ifndef incl_FoundationPlatformWin_h
 #define incl_FoundationPlatformWin_h
 
-#if defined(WIN32) || defined(WIN64)
+#if defined(_WINDOWS)
 
 #include <shlobj.h>
 
 namespace Foundation
 {
+    class Framework;
+
     //! Low-level Windows specific functionality
     class PlatformWin 
     {
     public:
         //! default constructor
-        PlatformWin() {}
+        PlatformWin(Framework *framework) : framework_(framework) {}
         //! destructor
         virtual ~PlatformWin() {}
 
@@ -36,7 +38,7 @@ namespace Foundation
             Should be used for mutable data the user doesn't need to see / handle directly,
             such as the cache.
         */
-        static std::string GetApplicationDataDirectory();
+        std::string GetApplicationDataDirectory();
 
         //! Returns user specific documents directory.
         /*! Returns unicode path. May throw an expection if folder is not found.
@@ -44,7 +46,7 @@ namespace Foundation
             Should be used for mutable data the user doesn't need to see / handle directly,
             such as the cache.
         */
-        static std::wstring GetApplicationDataDirectoryW();
+        std::wstring GetApplicationDataDirectoryW();
 
         //! Returns user specific documents directory.
         /*! Returns non-unicode path. May throw an expection if folder is not found.
@@ -52,7 +54,7 @@ namespace Foundation
             Should be used for mutable data the user may want to access directly
             at some point, possibly log files, screenshots and so on.
         */
-        static std::string GetUserDocumentsDirectory();
+        std::string GetUserDocumentsDirectory();
 
         //! Returns user specific documents directory.
         /*! Returns unicode path. May throw an expection if folder is not found.
@@ -60,7 +62,10 @@ namespace Foundation
             Should be used for mutable data the user may want to access directly
             at some point, possibly log files, screenshots and so on.
         */
-        static std::wstring GetUserDocumentsDirectoryW();
+        std::wstring GetUserDocumentsDirectoryW();
+
+    private:
+        Framework *framework_;
     };
 }
 #endif

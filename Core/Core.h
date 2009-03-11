@@ -13,6 +13,7 @@
 #include "Vector3D.h"
 #include "Matrix4.h"
 #include "Quaternion.h"
+#include "CoreStringUtils.h"
 
 
 //! Core contains functionality and definitions that are common to all subprojects in the viewer.

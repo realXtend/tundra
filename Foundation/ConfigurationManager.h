@@ -30,9 +30,7 @@ class foo
     
         These settings are for application constants, they are
         meant to be used by developers and not by the application
-        users. There is no way to set these settings, only read them.
-
-        
+        users. There is no way to set these settings, only read them.        
 
         Uses PoCo's XmlConfiguration and XmlWriter internally.
 
@@ -44,7 +42,7 @@ class foo
               written out with default values after this manager is destroyed.
 
         \note This class makes no assumptions about the type of the stored
-              values, it is assumed the user always knows it.
+              values, it is assumed the programmer always knows it.
     */
     class ConfigurationManager
     {
@@ -60,12 +58,12 @@ class foo
         };
 
         //! special constructor for creating default configuration object
-        ConfigurationManager(Type type);
+        ConfigurationManager(Type type = CT_DEFAULT);
+
+        ConfigurationManager(const ConfigurationManager &other);
+        ConfigurationManager &operator =(const ConfigurationManager &other);
 
     public:
-        //! default constructor. Uses default config location
-        ConfigurationManager();
-
         //! constructor that takes a path to a configuration file. Loads and parses the file.
         ConfigurationManager(const std::string &file);
 
@@ -80,32 +78,92 @@ class foo
         void Load(const std::string &file);
 
         //! Declares a key-value pair setting.
-        /*! This is the standard way of retrieving a value from group and key name.
+        /*! This is the standard way of retrieving a value from group and key name for the first
+            time.
+
+            Postcond: HasKey(group, key)
+
+            For retrieving the value later, use GetSetting((const std::string &group, const std::string &key) const;
 
             \param group Group the key belongs to
             \param key Name of the key
             \param defaultValue default value for the setting, returned if key was not found
         */
-        int DeclareSetting(const std::string &group, const std::string &key, int defaultValue);
+        int DeclareSetting(const std::string &group, const std::string &key, int defaultValue) const;
 
-        //! \see declareSetting(const std::string &group, const std::string &name, int defaultValue);
-        std::string DeclareSetting(const std::string &group, const std::string &key, const std::string &defaultValue);
+        //! \see DeclareSetting(const std::string &group, const std::string &name, int defaultValue);
+        std::string DeclareSetting(const std::string &group, const std::string &key, const std::string &defaultValue) const;
 
-        //! \see declareSetting(const std::string &group, const std::string &name, int defaultValue);
-        std::string DeclareSetting(const std::string &group, const std::string &key, const char *defaultValue);
+        //! \see DeclareSetting(const std::string &group, const std::string &name, int defaultValue);
+        std::string DeclareSetting(const std::string &group, const std::string &key, const char *defaultValue) const;
 
-        //! \see declareSetting(const std::string &group, const std::string &name, int defaultValue);
-        bool DeclareSetting(const std::string &group, const std::string &key, bool defaultValue);
+        //! \see DeclareSetting(const std::string &group, const std::string &name, int defaultValue);
+        bool DeclareSetting(const std::string &group, const std::string &key, bool defaultValue) const;
 
-        //! \see declareSetting(const std::string &group, const std::string &name, int defaultValue);
-        Core::Real DeclareSetting(const std::string &group, const std::string &key, Core::Real defaultValue);
+        //! \see DeclareSetting(const std::string &group, const std::string &name, int defaultValue);
+        Core::Real DeclareSetting(const std::string &group, const std::string &key, Core::Real defaultValue) const;
+
+        //! Retrieves a value from key and group.
+        /*! This is the standard way of retrieving a value from group and key name, after the
+            key has already been declared earlier.
+
+            Precond: HasKey(group, key)
+
+            \note Before using this function, declare the setting with 
+                  DeclareSetting(const std::string &group, const std::string &key, int defaultValue = 0) const
+
+            \param group Group the key belongs to
+            \param key Name of the key
+        */
+        int GetInt(const std::string &group, const std::string &key) const
+        {
+#ifdef _DEBUG
+            return boost::lexical_cast<int>(values_.find(std::make_pair(group, key))->second);
+#else
+            std::string groupKey = group + "." + key;
+            return configuration_->getInt(groupKey);
+#endif
+        }
+
+        //! \see GetInt(const std::string &group, const std::string &name, int defaultValue);
+        std::string GetString(const std::string &group, const std::string &key) const
+        {
+#ifdef _DEBUG
+            return values_.find(std::make_pair(group, key))->second;
+#else
+            std::string groupKey = group + "." + key;
+            return configuration_->getString(groupKey);
+#endif
+        }
+
+        //! \see GetInt(const std::string &group, const std::string &name, int defaultValue);
+        bool GetBool(const std::string &group, const std::string &key) const
+        {
+#ifdef _DEBUG
+            return boost::lexical_cast<bool>(values_.find(std::make_pair(group, key))->second);
+#else
+            std::string groupKey = group + "." + key;
+            return configuration_->getBool(groupKey);
+#endif
+        }
+
+        //! \see GetInt(const std::string &group, const std::string &name, int defaultValue);
+        Core::Real GetReal(const std::string &group, const std::string &key) const
+        {
+#ifdef _DEBUG
+            return boost::lexical_cast<Core::Real>(values_.find(std::make_pair(group, key))->second);
+#else
+            std::string groupKey = group + "." + key;
+            return static_cast<Core::Real>(configuration_->getDouble(groupKey));
+#endif
+        }
 
         //! Returns true is the specified group contains the specified key, false otherwise.
         /*!
             \param group Name of the group
             \param name Name of the key
         */
-        bool HasKey(const std::string &group, const std::string &key);
+        bool HasKey(const std::string &group, const std::string &key) const;
         
         
     private:
