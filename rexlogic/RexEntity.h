@@ -3,11 +3,8 @@
 #ifndef incl_RexEntity_h
 #define incl_RexEntity_h
 
-#include "Entity.h"
 
-
-
-class RexEntity : public Foundation::Entity
+class RexEntity
 {
 public:
     RexEntity();

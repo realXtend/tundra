@@ -1,12 +1,13 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#include "StableHeaders.h"
+
 #include <Poco/Logger.h>
 #include <Poco/LoggingFactory.h>
 #include <Poco/FormattingChannel.h>
 #include <Poco/SplitterChannel.h>
 #include <Poco/LocalDateTime.h>
 
-#include "StableHeaders.h"
 #include "Foundation.h"
 
 namespace Foundation
