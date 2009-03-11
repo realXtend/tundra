@@ -42,6 +42,9 @@
 #include <Poco/Util/XMLConfiguration.h>
 #include <Poco/XML/XMLWriter.h>
 
+#include <Poco/Channel.h>
+#include <Poco/Formatter.h>
+
 
 #endif
 

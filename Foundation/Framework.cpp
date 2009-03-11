@@ -46,8 +46,9 @@ namespace Foundation
         Poco::Channel *consolechannel = loggingfactory->createChannel("ConsoleChannel");
         Poco::Channel *filechannel = loggingfactory->createChannel("FileChannel");
              
-        std::string logfilepath = Poco::Path::current();
-        logfilepath.append("rex.log");
+        std::string logfilepath = platform_->GetUserDocumentsDirectory();
+        logfilepath += "/" + config_.GetString(Framework::ConfigurationGroup(), "application_name") + ".log";
+
         filechannel->setProperty("path",logfilepath);
         filechannel->setProperty("rotation","3M");
         filechannel->setProperty("archive","number");

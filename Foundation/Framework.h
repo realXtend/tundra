@@ -3,10 +3,6 @@
 #ifndef incl_Foundation_Framework_h
 #define incl_Foundation_Framework_h
 
-#include <Poco/Channel.h>
-#include <Poco/Formatter.h>
-
-#include "ForwardDefines.h"
 #include "ConfigurationManager.h"
 #include "ServiceInterfaces.h"
 

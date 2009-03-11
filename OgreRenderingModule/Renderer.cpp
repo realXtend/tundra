@@ -36,7 +36,10 @@ namespace OgreRenderer
         std::string plugins_filename = "plugins.cfg";
 #endif
     
-        root_ = new Ogre::Root(plugins_filename);
+        std::string logfilepath = framework_->GetPlatform()->GetUserDocumentsDirectory();
+        logfilepath += "/Ogre.log";
+
+        root_ = new Ogre::Root(plugins_filename, "ogre.cfg", logfilepath);
         
 #ifdef _WINDOWS
         std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", "Direct3D9 Rendering Subsystem");
@@ -57,8 +60,8 @@ namespace OgreRenderer
         root_->initialise(false);
         
         Ogre::NameValuePairList params;
-        std::string name = framework_->GetDefaultConfig().GetString(Foundation::Framework::ConfigurationGroup(), "application_name");
-        renderwindow_ = root_->createRenderWindow(name, width, height, fullscreen, &params);
+        std::string application_name = framework_->GetDefaultConfig().GetString(Foundation::Framework::ConfigurationGroup(), "application_name");
+        renderwindow_ = root_->createRenderWindow(application_name, width, height, fullscreen, &params);
         if (!renderwindow_)
         {
             module_->LogError("Could not create rendering window");
