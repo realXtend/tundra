@@ -58,8 +58,7 @@ namespace Foundation
     {
         LPITEMIDLIST pidl;
 
-        int res = SHGetFolderLocation(NULL, CSIDL_PERSONAL | CSIDL_FLAG_CREATE, NULL, 0, &pidl);
-        if (res == S_OK)
+        if (SHGetFolderLocation(NULL, CSIDL_PERSONAL | CSIDL_FLAG_CREATE, NULL, 0, &pidl) == S_OK)
         {
             wchar_t cpath[MAX_PATH];
             SHGetPathFromIDListW( pidl, cpath );
@@ -67,10 +66,7 @@ namespace Foundation
 
             return std::wstring(cpath) + L"\\" + Core::ToWString(framework_->GetDefaultConfig().GetString(Framework::ConfigurationGroup(), "application_name"));
         }
-        if (res == E_INVALIDARG)
         throw Core::Exception("Failed to access user documents directory.");
-        else
-           throw Core::Exception("Failed to access user documents directory.");
     }
 }
 
