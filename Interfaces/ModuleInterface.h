@@ -102,14 +102,12 @@ namespace Foundation
     
         explicit ModuleInterface_Impl(const std::string &name) : name_(name), type_(Module::Type_Unknown) 
         { 
-            Poco::Logger *rootlogger = &Poco::Logger::root();
-            module_logger_ = &Poco::Logger::create(Name(),rootlogger->getChannel(),Poco::Message::PRIO_TRACE);        
+            Poco::Logger::create(Name(),Poco::Logger::root().getChannel(),Poco::Message::PRIO_TRACE);     
         }
 
         explicit ModuleInterface_Impl(Module::Type type) : type_(type) 
         { 
-            Poco::Logger *rootlogger = &Poco::Logger::root();
-            module_logger_ = &Poco::Logger::create(Name(),rootlogger->getChannel(),Poco::Message::PRIO_TRACE);           
+            Poco::Logger::create(Name(),Poco::Logger::root().getChannel(),Poco::Message::PRIO_TRACE);           
         }
 
         virtual ~ModuleInterface_Impl() {}
@@ -153,31 +151,31 @@ namespace Foundation
         //! Logging
         virtual void LogFatal(const std::string &msg)
         {
-            module_logger_->fatal(msg);
+            Poco::Logger::get(Name()).fatal(msg);
         }
         virtual void LogCritical(const std::string &msg)
         {
-            module_logger_->critical(msg);
+            Poco::Logger::get(Name()).critical(msg);
         }
         virtual void LogError(const std::string &msg)
         {
-            module_logger_->error(msg);
+            Poco::Logger::get(Name()).error(msg);
         }
         virtual void LogWarning(const std::string &msg)
         {
-            module_logger_->warning(msg);
+            Poco::Logger::get(Name()).warning(msg);
         }
         virtual void LogNotice(const std::string &msg)
         {
-            module_logger_->notice(msg);
+            Poco::Logger::get(Name()).notice(msg);
         }
         virtual void LogInfo(const std::string &msg)
         {
-            module_logger_->information(msg);
+            Poco::Logger::get(Name()).information(msg);
         }
         virtual void LogTrace(const std::string &msg)
         {
-            module_logger_->trace(msg);
+            Poco::Logger::get(Name()).trace(msg);
         }
         
     private:
@@ -189,9 +187,6 @@ namespace Foundation
         const std::string name_;
         //! type of the module if inbuild, unknown otherwise
         const Module::Type type_;
-        
-        //! logger for this module
-        Poco::Logger *module_logger_;
     };
 }
 

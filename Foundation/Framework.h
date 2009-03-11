@@ -3,7 +3,8 @@
 #ifndef incl_Foundation_Framework_h
 #define incl_Foundation_Framework_h
 
-#include <Poco/Logger.h>
+#include <Poco/Channel.h>
+#include <Poco/Formatter.h>
 
 #include "ForwardDefines.h"
 #include "ConfigurationManager.h"
@@ -68,6 +69,8 @@ namespace Foundation
         void LoadModules();
         //! Unloads all available modules
         void UnloadModules();
+        //! Create logging system
+        void CreateLoggingSystem();
 
         ModuleManagerPtr module_manager_;
         ComponentManagerPtr component_manager_;
@@ -76,8 +79,10 @@ namespace Foundation
         //! if true, exit application
         bool exit_signal_;
         
-        //! main logger
-        Poco::Logger *foundation_logger_;
+        //! Logger channels
+        std::vector<Poco::Channel*> log_channels_;
+        //! Logger default formatter
+        Poco::Formatter *log_formatter_;
     };
 }
 
