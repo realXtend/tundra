@@ -11,9 +11,14 @@
 
 namespace Foundation
 {
-    Framework::Framework() : exit_signal_(false), config_(new ConfigurationManager(ConfigurationManager::CT_DEFAULT))
+    Framework::Framework() : exit_signal_(false)
     {
-        CreateLoggingSystem();
+        platform_ = PlatformPtr(new Platform(this));
+
+        config_.DeclareSetting(Framework::ConfigurationGroup(), "application_name", "realXtend");
+        platform_->PrepareApplicationDataDirectory(); // depends on config
+
+        CreateLoggingSystem(); // depends on config and platform
 
         // create managers
         module_manager_ = ModuleManagerPtr(new ModuleManager(this));
@@ -80,8 +85,6 @@ namespace Foundation
 
     void Framework::Go()
     {
-        Platform::PrepareApplicationDataDirectory();
-
         LoadModules();
 
         // main loop

@@ -12,12 +12,14 @@ namespace Foundation
     class ComponentFactoryInterface;
     class ServiceManager;
     class ConfigurationManager;
+    class Platform;
 
     typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
     typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
     typedef boost::shared_ptr<ComponentFactoryInterface> ComponentFactoryInterfacePtr;
     typedef boost::shared_ptr<ServiceManager> ServiceManagerPtr;
     typedef boost::shared_ptr<ConfigurationManager> ConfigurationManagerPtr;
+    typedef boost::shared_ptr<Platform> PlatformPtr;
     
     
     //! Use root logging only foundation in classes.

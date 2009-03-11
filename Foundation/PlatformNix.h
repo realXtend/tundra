@@ -3,15 +3,17 @@
 #ifndef incl_FoundationPlatformNix_h
 #define incl_FoundationPlatformNix_h
 
-#if !defined(WIN32) && !defined(WIN64)
+#if !defined(_WINDOWS)
 namespace Foundation
 {
+    class Framework;
+
     //! Low-level *nix specific functionality
     class PlatformNix
     {
     public:
         //! default constructor
-        PlatformNix() {}
+        PlatformNix(Framework *framework) : framework_(framework) {}
         //! destructor
         virtual ~PlatformNix() {}
 
@@ -28,44 +30,21 @@ namespace Foundation
         //! Returns user specific application data directory.
         /*! Returns non-unicode path. May throw an expection if folder is not found.
         */
-        static std::string GetApplicationDataDirectory()
-        {
-            char *ppath = NULL;
-            ppath = getenv("HOME");
-            if (ppath == NULL)
-                throw Core::Exception("Failed to get HOME environment variable.");
-
-            std::string path(ppath);
-            return path + "/." + Application::Name();
-        }
+        std::string GetApplicationDataDirectory();
 
         //! Returns user specific application data directory.
         /*! Returns unicode path. May throw an expection if folder is not found.
         */
-        static std::wstring GetApplicationDataDirectoryW()
-        {
-            // Unicode not supported on Unix-based platforms
-
-            std::string path = GetApplicationDataDirectory();
-            std::wstring pathw(path.length(), L' ');
-            std::copy(path.begin(), path.end(), pathw.begin());
-
-            return (pathw);
-        }
+        std::wstring GetApplicationDataDirectoryW();
 
         //! \copydoc PlatformWin::GetUserDocumentsDirectory()
-        static std::string GetUserDocumentsDirectory()
-        {
-            return GetApplicationDataDirectory();
-        }
+        std::string GetUserDocumentsDirectory();
 
         //! \copydoc PlatformWin::GetUserDocumentsDirectoryW()
-        static std::wstring GetUserDocumentsDirectoryW()
-        {
-            return GetApplicationDataDirectoryW();
-        }
+        std::wstring GetUserDocumentsDirectoryW();
 
-
+    private:
+        Framework *framework_;
     };
 }
 #endif
