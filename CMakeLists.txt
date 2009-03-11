@@ -12,6 +12,7 @@ include(Boost)
 include(PoCo)
 include(Curl)
 include(XmlRpcEpi)
+include(Ogre)
 
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
@@ -29,6 +30,7 @@ FIND_BOOST()
 FIND_POCO()
 FIND_CURL()
 FIND_XMLRPCEPI()
+FIND_OGRE()
 
 # Default additional include & library directories
 include_directories (

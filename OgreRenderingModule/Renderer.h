@@ -6,20 +6,29 @@
 #include "RenderServiceInterface.h"
 #include <boost/shared_ptr.hpp>
 
+// Forward references
+namespace Ogre
+{
+    class Root;
+    class SceneManager;
+    class Camera;
+    class RenderWindow;
+}
+
 namespace OgreRenderer
 {
-    //! mockup Ogre renderer
+    //! Ogre renderer
     class Renderer : public Foundation::RenderServiceInterface
     {
     public:
-        Renderer() {};
-        virtual ~Renderer() {};
+        Renderer();
+        virtual ~Renderer();
 
         //! returns Ogre scenemanager
-        void *GetSceneManager() { return NULL; }
+        Ogre::SceneManager* GetSceneManager() const { return scenemanager_; }
 
-        //! returna Ogre root
-        void *GetRoot() { return NULL; }
+        //! returns Ogre root
+        Ogre::Root* GetRoot() const { return root_; }
 
         //! returns active camera
         void *GetCurrentCamera() { return NULL; }
@@ -49,6 +58,12 @@ namespace OgreRenderer
         }
     private:
         boost::mutex renderer_;
+        
+        //! Ogre root object
+        Ogre::Root* root_;
+        
+        //! Ogre scene manager
+        Ogre::SceneManager* scenemanager_;
     };
 
     typedef boost::shared_ptr<Renderer> RendererPtr;

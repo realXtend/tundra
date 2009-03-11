@@ -19,6 +19,7 @@ include_directories (
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
+INCLUDE_OGRE()
 
 # Define dynamic library
 if (NOT MSVC)
@@ -40,6 +41,7 @@ target_link_libraries (${TARGET_NAME} Foundation)
 # External library linkage
 LINK_BOOST()
 LINK_POCO()
+LINK_OGRE()
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

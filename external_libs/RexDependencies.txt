@@ -39,3 +39,8 @@ This project has the following dependencies:
    x Includes and libs: Located in libcurl/. This project is set to refer to this directory for 
      the dependencies.
    x Windows DLLs: The file libcurl.dll in libcurl/lib/DLL-Release & libcurld.dll in libcurl/lib/DLL-Debug.
+
+- Ogre 1.6.1 or newer, http://www.ogre3d.org . 
+   x Includes and libs: Copy includes to SVN directory external_libs/Ogre/include and libs to SVN directory external_libs/Ogre/lib (opt libraries not needed)
+   x Windows DLLs: Copy both debug and release DLL's to SVN bin directory
+  
