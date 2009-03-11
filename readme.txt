@@ -8,6 +8,9 @@ See documentation/cmake.txt for more information.
 
 Quickstart for Windows / Visual Studio: install CMake, then run cmake.bat if not using VS2008, and cmake_vs2008.bat, if using VS2008.
 
+N.B. When compiling for the first time, compile in debug mode and run the exe at least once.
+---- Some data files are created in debug mode which are needed when running in release mode.
+
 
 Dependencies
 ------------
