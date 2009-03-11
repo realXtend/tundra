@@ -6,7 +6,6 @@
 #include "RenderServiceInterface.h"
 #include <boost/shared_ptr.hpp>
 
-// Forward references
 namespace Ogre
 {
     class Root;
@@ -17,13 +16,18 @@ namespace Ogre
 
 namespace OgreRenderer
 {
+    class OgreRenderingModule;
+    
     //! Ogre renderer
     class Renderer : public Foundation::RenderServiceInterface
     {
     public:
-        Renderer();
+        Renderer(OgreRenderingModule* module);
         virtual ~Renderer();
 
+        //! initializes renderer
+        bool Initialize();
+        
         //! returns Ogre scenemanager
         Ogre::SceneManager* GetSceneManager() const { return scenemanager_; }
 
@@ -57,6 +61,9 @@ namespace OgreRenderer
             // if raycast asynchronous, process all pending raycast requests
         }
     private:
+        //! sets up Ogre resources based on resources.cfg
+        void Renderer::SetupResources();
+    
         boost::mutex renderer_;
         
         //! Ogre root object
@@ -64,6 +71,9 @@ namespace OgreRenderer
         
         //! Ogre scene manager
         Ogre::SceneManager* scenemanager_;
+        
+        //! rendering module we belong to
+        OgreRenderingModule* module_;
     };
 
     typedef boost::shared_ptr<Renderer> RendererPtr;
