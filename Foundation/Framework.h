@@ -36,12 +36,11 @@ namespace Foundation
         //! Returns true if framework is in the process of exiting (will exit at next possible opportunity)
         bool IsExiting() { return exit_signal_; }
 
-        //! Returns the default configuration manager
-        static ConfigurationManager &GetDefaultConfig()
+        ConfigurationManager &GetDefaultConfig()
         {
-            static ConfigurationManager manager(ConfigurationManager::CT_DEFAULT);
-            return manager;
+            return *config_.get();
         }
+
 
         //! Shortcut for retrieving a service. See ServiceManager for more info
         template <class T>
@@ -83,6 +82,9 @@ namespace Foundation
         std::vector<Poco::Channel*> log_channels_;
         //! Logger default formatter
         Poco::Formatter *log_formatter_;
+
+        //! default configuration
+        ConfigurationManagerPtr config_;
     };
 }
 
