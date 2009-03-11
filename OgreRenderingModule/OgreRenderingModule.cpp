@@ -35,7 +35,7 @@ namespace OgreRenderer
     // virtual
     void OgreRenderingModule::Initialize(Foundation::Framework *framework)
     {
-        renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(this));
+        renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(this, framework));
         renderer_->Initialize();
 
         LogInfo("Module " + Name() + " initialized.");
