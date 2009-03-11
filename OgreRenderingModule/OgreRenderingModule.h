@@ -24,6 +24,7 @@ namespace OgreRenderer
         virtual void Unload();
         virtual void Initialize(Foundation::Framework *framework);
         virtual void Uninitialize(Foundation::Framework *framework);
+        virtual void Update();
 
     private:
         OgreRenderer::RendererPtr renderer_;

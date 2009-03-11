@@ -15,7 +15,10 @@ namespace OgreRenderer
         framework_(framework),
         module_(module),
         root_(0),
-        scenemanager_(0)
+        scenemanager_(0),
+        camera_(0),
+        renderwindow_(0),
+        initialized_(false)
     {
     }
     
@@ -54,10 +57,17 @@ namespace OgreRenderer
         root_->initialise(false);
         
         Ogre::NameValuePairList params;
-        root_->createRenderWindow(Application::Name(), width, height, fullscreen, &params);
+        renderwindow_ = root_->createRenderWindow(Application::Name(), width, height, fullscreen, &params);
+        if (!renderwindow_)
+        {
+            module_->LogError("Could not create rendering window");
+            return false;
+        }
 
         SetupResources();
+        SetupScene();
         
+        initialized_ = true;
         return true;
     }
     
@@ -84,5 +94,27 @@ namespace OgreRenderer
         
         // Initialize resource groups
         Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+    }
+    
+    void Renderer::SetupScene()
+    {
+        // Create scene manager
+        scenemanager_ = root_->createSceneManager(Ogre::ST_GENERIC, "SceneManager");
+
+        // Create the camera
+        camera_ = scenemanager_->createCamera("Camera");
+
+        // Create one viewport, entire window
+        Ogre::Viewport* viewport = renderwindow_->addViewport(camera_);
+
+        // Alter the camera aspect ratio to match the viewport
+        camera_->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
+    }
+    
+    void Renderer::Update()
+    {
+        if (!initialized_) return;
+        
+        root_->renderOneFrame();
     }
 }

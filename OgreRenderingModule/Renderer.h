@@ -40,10 +40,10 @@ namespace OgreRenderer
         Ogre::Root* GetRoot() const { return root_; }
 
         //! returns active camera
-        void *GetCurrentCamera() { return NULL; }
+        Ogre::Camera* GetCurrentCamera() const { return camera_; }
 
         //! returns current render window
-        void *GetCurrentRenderWindow() { return NULL; }
+        Ogre::RenderWindow* GetCurrentRenderWindow() const { return renderwindow_; }
 
         //! Threadsafe service to framework
         virtual void Raycast()
@@ -58,30 +58,38 @@ namespace OgreRenderer
             // after raycast has been performed. (see Smoke demo, collision handling)
         }
 
-        void Update()
-        {
-            // mutex_lock lock(mRenderer);
-            // Ogre::RenderOneFrame();
+        //! renders one frame
+        void Update();
 
-            // if raycast asynchronous, process all pending raycast requests
-        }
     private:
         //! sets up Ogre resources based on resources.cfg
         void Renderer::SetupResources();
+        
+        //! creates scenemanager & camera
+        void Renderer::SetupScene();
     
         boost::mutex renderer_;
         
         //! Ogre root object
         Ogre::Root* root_;
         
-        //! Ogre scene manager
+        //! scene manager
         Ogre::SceneManager* scenemanager_;
+        
+        //! default camera
+        Ogre::Camera* camera_;
+        
+        //! rendering window
+        Ogre::RenderWindow* renderwindow_;
         
         //! rendering module we belong to
         OgreRenderingModule* module_;
         
         //! framework we belong to
         Foundation::Framework* framework_;
+        
+        //! successfully initialized flag
+        bool initialized_;
     };
 
     typedef boost::shared_ptr<Renderer> RendererPtr;
