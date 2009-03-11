@@ -63,37 +63,6 @@ namespace Foundation
             return group;
         }
 
-        //! Logging
-        void LogFatal(const std::string &msg)
-        {
-            main_logger_->fatal(msg);
-        }
-        void LogCritical(const std::string &msg)
-        {
-            main_logger_->critical(msg);
-        }
-        void LogError(const std::string &msg)
-        {
-            main_logger_->error(msg);
-        }
-        void LogWarning(const std::string &msg)
-        {
-            main_logger_->warning(msg);
-        }
-        void LogNotice(const std::string &msg)
-        {
-            main_logger_->notice(msg);
-        }
-        void LogInfo(const std::string &msg)
-        {
-            main_logger_->information(msg);
-        }
-        void LogTrace(const std::string &msg)
-        {
-            main_logger_->trace(msg);
-        }
-
-
     private:
         //! Loads all available modules
         void LoadModules();
@@ -108,7 +77,7 @@ namespace Foundation
         bool exit_signal_;
         
         //! main logger
-        Poco::Logger *main_logger_;
+        Poco::Logger *foundation_logger_;
     };
 }
 

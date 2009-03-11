@@ -10,9 +10,5 @@
 
 #define UNREFERENCED_PARAM(P)               (P)
 
-#define LOG(x) std::cout << x << std::endl;
-#define LOGWARNING(x) std::cout << "Warning: " << x << std::endl;
-#define LOGERROR(x) std::cerr << "Error: " << x << std::endl;
-
 #endif
 

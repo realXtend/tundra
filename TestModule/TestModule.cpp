@@ -56,7 +56,7 @@ namespace Test
     // virtual
     void TestModule::Update()
     {
-        LOG("");
+        LogInfo("");
         // create new entity
         LogInfo("Constructing entity with component: " + Test::EC_Dummy::Name() + ".");
 
@@ -78,7 +78,7 @@ namespace Test
         framework_->Exit();
         assert (framework_->IsExiting());
 
-        LOG("");
+        LogInfo("");
     }
 }
 
