@@ -50,7 +50,14 @@ namespace Test
     // virtual
     void TestModuleB::Update()
     {
-        Foundation::TestServiceInterface *test_service = framework_->GetServiceManager()->GetService<Foundation::TestServiceInterface>(Foundation::Service::ST_Test);
+        Foundation::TestServiceInterface *test_service = NULL;
+        try
+        {
+            test_service = framework_->GetServiceManager()->GetService<Foundation::TestServiceInterface>(Foundation::Service::ST_Test);
+        } catch (std::exception)
+        {
+            return;
+        }
         assert (test_service != NULL);
         assert (test_service->Test());
     }

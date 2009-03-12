@@ -94,6 +94,7 @@ int run(void)
     try 
     {
         Foundation::Framework fw;
+        fw.GetModuleManager()->ExcludeModule(Foundation::Module::Type_Test);
 
         fw.Go();
     } 

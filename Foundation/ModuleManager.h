@@ -65,6 +65,18 @@ namespace Foundation
         //! Declare a module from static library
         void DeclareStaticModule(ModuleInterface *module);
 
+        //! Specify a module that should not be loaded or initialized under any circumstances
+        /*! Only works for core modules.
+
+            \param type Type of the module that should be excluded.
+        */
+        void ExcludeModule(Module::Type type)
+        {
+            exclude_list_.insert(type);
+
+            Foundation::RootLogInfo("Module: " + Module::NameFromType(type) + " added to exclude list.");
+        }
+
         //! loads all available modules. Does not initialize them.
         /*! All static modules should be declared before calling this.
 
@@ -153,15 +165,20 @@ namespace Foundation
         //! Uninitialize the specified module
         void UninitializeModule(ModuleInterface *module);
 
-        //! Returns a vector containing all xml files in the specified directory, scans recursively
+        //! Returns a vector containing all xml files in the specified directory, scans recursively.
         Core::StringVectorPtr GetXmlFiles(const std::string &path);
 
         typedef std::vector<ModuleInterface*> ModuleVector;
 
         const std::string DEFAULT_MODULES_PATH;
 
+        typedef std::set<Module::Type> ModuleTypeSet;
+
         //! list of modules managed by this manager
         ModuleVector modules_;
+
+        //! List of modules that should be excluded
+        ModuleTypeSet exclude_list_;
 
         Framework *framework_;
     };
