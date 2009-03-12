@@ -3,6 +3,8 @@
 #ifndef incl_Interfaces_ComponentRegistrarInterface_h
 #define incl_Interfaces_ComponentRegistrarInterface_h
 
+#include <boost/shared_ptr.hpp>
+
 namespace Foundation
 {
     class Framework;
