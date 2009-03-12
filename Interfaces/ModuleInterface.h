@@ -39,14 +39,15 @@ namespace Foundation
 			Type_Gui, 
 			Type_WorldLogic, 
 			Type_Network,
-			Type_Test, 
+			Type_Test,
+			Type_NetTest,
 			Type_Unknown
 		};
 
         static const std::string &NameFromType(Type type)
         {
             assert(type != Type_Unknown);
-            static const std::string type_strings[Type_Unknown] = { "Scene", "Renderer", "Sound", "Gui", "World Logic", "Network", "Test" };
+            static const std::string type_strings[Type_Unknown] = { "Scene", "Renderer", "Sound", "Gui", "World Logic", "Network", "Test", "NetTest" };
 
             return type_strings[type];
         }

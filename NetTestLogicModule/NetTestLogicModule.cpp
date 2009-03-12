@@ -49,7 +49,7 @@ namespace NetTest
 			return;
 		}
 		
-		//netInterface_->AddListener(this);
+		netInterface_->AddListener(this);
         LogInfo("Module " + Name() + " uninitialized.");
     }
 
@@ -66,6 +66,9 @@ namespace NetTest
     void NetTestLogicModule::Update()
     {
         ++updateCounter;
+        
+        //if(updateCounter == 20)
+        //    netInterface_->ConnectToRexServer();
         /*LogInfo("");
         // create new entity
         LogInfo("Constructing entity with component: " + Test::EC_Dummy::Name() + ".");
