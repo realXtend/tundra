@@ -21,6 +21,8 @@ namespace Foundation
             - In the Module's initialize()-function, register all services the new module offers
             - Also unregister all services in the uninitialize()-function.
             - Declare the static module with DeclareStaticModule() function.
+            - Add the type of the module to both Foundation::Module::Type enumeration and
+              Foundation::Module::NameFromType function, in ModuleInterface.h.
 
 
         Additional steps to create a new shared module:
