@@ -14,7 +14,6 @@ namespace OgreRenderer
     Renderer::Renderer(OgreRenderingModule* module, Framework* framework) :
         framework_(framework),
         module_(module),
-        root_(0),
         scenemanager_(0),
         camera_(0),
         renderwindow_(0),
@@ -24,8 +23,10 @@ namespace OgreRenderer
     
     Renderer::~Renderer()
     {
-        delete root_;
-        root_ = 0;
+        if (initialized_)
+            Ogre::WindowEventUtilities::removeWindowEventListener(renderwindow_, this);
+
+        root_.reset();
     }
     
     bool Renderer::Initialize()
@@ -39,7 +40,7 @@ namespace OgreRenderer
         std::string logfilepath = framework_->GetPlatform()->GetUserDocumentsDirectory();
         logfilepath += "/Ogre.log";
 
-        root_ = new Ogre::Root(plugins_filename, "ogre.cfg", logfilepath);
+        root_ = OgreRootPtr(new Ogre::Root(plugins_filename, "ogre.cfg", logfilepath));
         
 #ifdef _WINDOWS
         std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", "Direct3D9 Rendering Subsystem");
@@ -58,7 +59,7 @@ namespace OgreRenderer
         }
         root_->setRenderSystem(rendersystem);
         root_->initialise(false);
-        
+
         Ogre::NameValuePairList params;
         std::string application_name = framework_->GetDefaultConfig().GetString(Foundation::Framework::ConfigurationGroup(), "application_name");
         renderwindow_ = root_->createRenderWindow(application_name, width, height, fullscreen, &params);
@@ -71,10 +72,12 @@ namespace OgreRenderer
         SetupResources();
         SetupScene();
         
+        Ogre::WindowEventUtilities::addWindowEventListener(renderwindow_, this);
+        
         initialized_ = true;
         return true;
     }
-    
+
     void Renderer::SetupResources()
     {
         Ogre::ConfigFile cf;
@@ -119,6 +122,22 @@ namespace OgreRenderer
     {
         if (!initialized_) return;
         
+        Ogre::WindowEventUtilities::messagePump();
         root_->renderOneFrame();
     }
+    
+    void Renderer::windowResized(Ogre::RenderWindow* rw)
+    {
+        if ((camera_) && (rw == renderwindow_))
+        {
+            camera_->setAspectRatio(Ogre::Real(rw->getWidth() / Ogre::Real(rw->getHeight())));
+        }
+    }
+    
+    void Renderer::windowClosed(Ogre::RenderWindow* rw)
+    {
+        if (rw == renderwindow_)
+            framework_->Exit();
+    }
 }
+
