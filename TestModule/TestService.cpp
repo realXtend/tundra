@@ -5,5 +5,8 @@
 
 namespace Test
 {
-    bool TestService::Test() const { return true; }
+    bool TestService::Test() const
+    {
+        return true;
+    }
 }

@@ -11,7 +11,7 @@
 
 namespace Test
 {
-    TestModule::TestModule() : ModuleInterface_Impl(Foundation::Module::Type_Test)
+    TestModule::TestModule() : ModuleInterface_Impl(type_static_)
     {
     }
 

@@ -12,13 +12,21 @@
     { Foundation::ComponentRegistrarInterfacePtr registrar = Foundation::ComponentRegistrarInterfacePtr(new component::component##Registrar); \
     DeclareComponent(registrar); } \
 
+#define MODULE_LOGGING_FUNCTIONS                                                                              \
+    static void LogFatal(const std::string &msg)    { Poco::Logger::get(NameStatic()).fatal(msg);         }   \
+    static void LogCritical(const std::string &msg) { Poco::Logger::get(NameStatic()).critical(msg);      }   \
+    static void LogError(const std::string &msg)    { Poco::Logger::get(NameStatic()).error(msg);         }   \
+    static void LogWarning(const std::string &msg)  { Poco::Logger::get(NameStatic()).warning(msg);       }   \
+    static void LogNotice(const std::string &msg)   { Poco::Logger::get(NameStatic()).notice(msg);        }   \
+    static void LogInfo(const std::string &msg)     { Poco::Logger::get(NameStatic()).information(msg);   }   \
+    static void LogTrace(const std::string &msg)    { Poco::Logger::get(NameStatic()).trace(msg);         }   
+
 namespace Foundation
 {
     class Framework;
 
-    class Module
+    namespace Module
     {
-    public:
         //! internal module types.
         /*!
             \note if you add new internal module type, don't forget to add it's name to NameFromType()
@@ -42,7 +50,7 @@ namespace Foundation
 
             return type_strings[type];
         }
-    };
+    }
 
     //! interface for modules
     /*! See ModuleManager for more info.
@@ -77,22 +85,13 @@ namespace Foundation
         //! synchronized update for the module
         virtual void Update() = 0;
 
-        //! Returns the name of the module
+        //! Returns the name of the module. Each module also has a static accessor for the name, it's needed by the logger.
         virtual const std::string &Name() const = 0;
         //! Returns internal type of the module or Type_Unknown if module is not internal
         virtual Module::Type Type() const = 0;
 
         //! Declare a component the module defines. For internal use.
         virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar) = 0;
-        
-        //! Logging
-        virtual void LogFatal(const std::string &msg) = 0;
-        virtual void LogCritical(const std::string &msg) = 0;
-        virtual void LogError(const std::string &msg) = 0;        
-        virtual void LogWarning(const std::string &msg) = 0;
-        virtual void LogNotice(const std::string &msg) = 0;
-        virtual void LogInfo(const std::string &msg) = 0;
-        virtual void LogTrace(const std::string &msg) = 0;
     };
 
     //! interface for modules, implementation
@@ -145,37 +144,6 @@ namespace Foundation
         virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar)
         {
             component_registrars_.push_back(registrar);
-        }
-
-
-        //! Logging
-        virtual void LogFatal(const std::string &msg)
-        {
-            Poco::Logger::get(Name()).fatal(msg);
-        }
-        virtual void LogCritical(const std::string &msg)
-        {
-            Poco::Logger::get(Name()).critical(msg);
-        }
-        virtual void LogError(const std::string &msg)
-        {
-            Poco::Logger::get(Name()).error(msg);
-        }
-        virtual void LogWarning(const std::string &msg)
-        {
-            Poco::Logger::get(Name()).warning(msg);
-        }
-        virtual void LogNotice(const std::string &msg)
-        {
-            Poco::Logger::get(Name()).notice(msg);
-        }
-        virtual void LogInfo(const std::string &msg)
-        {
-            Poco::Logger::get(Name()).information(msg);
-        }
-        virtual void LogTrace(const std::string &msg)
-        {
-            Poco::Logger::get(Name()).trace(msg);
         }
         
     private:

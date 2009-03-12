@@ -26,6 +26,14 @@ namespace Test
 
         virtual void Update();
 
+        MODULE_LOGGING_FUNCTIONS
+
+        static const std::string &NameStatic()
+        {
+            static const std::string name("TestModuleB");
+            return name;
+        }
+
     private:
         Foundation::Framework *framework_;
     };

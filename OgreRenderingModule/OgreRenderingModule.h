@@ -26,6 +26,12 @@ namespace OgreRenderer
         virtual void Uninitialize(Foundation::Framework *framework);
         virtual void Update();
 
+        MODULE_LOGGING_FUNCTIONS;
+
+        //! returns name of this module. Needed for logging.
+        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
+
+        static const Foundation::Module::Type type_static_ = Foundation::Module::Type_Renderer;
     private:
         OgreRenderer::RendererPtr renderer_;
     };

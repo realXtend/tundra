@@ -15,7 +15,7 @@
 #include "WorldLogic.h"
 
 
-RexLogic::RexLogic() : ModuleInterface_Impl(Foundation::Module::Type_WorldLogic), framework_(NULL)
+RexLogic::RexLogic() : ModuleInterface_Impl(type_static_), framework_(NULL)
 {
 }
 
