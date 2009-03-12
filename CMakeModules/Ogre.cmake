@@ -6,11 +6,14 @@ endmacro (FIND_OGRE)
 
 macro (INCLUDE_OGRE)
 	if (MSVC)
-		include_directories (${PROJECT_SOURCE_DIR}/external_libs/Ogre/include)
+		if (DEFINED ENV{OGRE_HOME})
+			include_directories ($ENV{OGRE_HOME}/include)
+			link_directories ($ENV{OGRE_HOME}/lib)
+		else ()
+			include_directories (${PROJECT_SOURCE_DIR}/external_libs/Ogre/include)
+			link_directories (${PROJECT_SOURCE_DIR}/external_libs/Ogre/lib)
+		endif ()
 		
-		link_directories (
-			${PROJECT_SOURCE_DIR}/external_libs/Ogre/lib
-		)
 	endif (MSVC)
 endmacro (INCLUDE_OGRE)
 

@@ -44,3 +44,6 @@ This project has the following dependencies:
    x Includes and libs: Copy includes to SVN directory external_libs/Ogre/include and libs to SVN directory external_libs/Ogre/lib (opt libraries not needed)
    x Windows DLLs: Copy both debug and release DLL's to SVN bin directory
   
+- Gtkmm is being used by the GtkmmUI for the UI system. Use versions glibmm: 2.18.x, gtkmm: 2.14.x, libglademm: 2.6.x or newer from http://www.gtkmm.org/
+   x Includes and libs: Set the environment variable GTKMM_HOME to point to the Gtkmm root.
+   x Windows DLLs: These are provided by the Gtkmm package.
