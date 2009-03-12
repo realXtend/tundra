@@ -154,7 +154,7 @@ namespace Foundation
 
         virtual const std::string &Name() const { return (type_ == Module::Type_Unknown ? name_ : Module::NameFromType(type_)); }
         virtual Module::Type Type() const { return type_; }
-		//virtual Module::State State() const { return state_; }
+		virtual Module::State State() const { return state_; }
 
         virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar)
         {
