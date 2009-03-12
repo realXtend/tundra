@@ -7,6 +7,8 @@
 
 #include "NetMessageManager.h"
 #include "NetworkConnection.h"
+#include "INetMessageListener.h"
+#include "PocoXMLRPC.h"
 
 #include <boost/shared_ptr.hpp>
 
@@ -33,16 +35,30 @@ namespace OpenSimProtocol
         virtual void Uninitialize(Foundation::Framework *framework);
         virtual void Update();
 		
+		MODULE_LOGGING_FUNCTIONS;
+
+        //! returns name of this module. Needed for logging.
+        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
+
+        static const Foundation::Module::Type type_static_ = Foundation::Module::Type_Renderer;
+		
 		/// Get state of the network module.
 		const u8 GetNetworkState() const { return networkState_; }
 		
 		/// Get the message template filename from xml configuration file.
 		//const std::string &GetTemplateFilename();
         
-        ///
-        //void AddListener(INetMessageListener *listener);
+        /// Adds listener to the network module.
+        virtual void AddListener(INetMessageListener *listener);
+        //void Removeregister(INetMessageListener *listener);
         
-        //void Unregister(listener);
+        /// Connects to a reX server.
+        void ConnectToRexServer(
+            const char *first_name,
+		    const char *last_name,
+		    const char *password,
+		    const char *address,
+		    int port);
         
 		/// State of the network module.
 		enum NetworkState
@@ -52,11 +68,33 @@ namespace OpenSimProtocol
 		};
 
     private:
+        /// Initializes a login to a reX server that is not using a separate authentication server.
+       	void PerformXMLRPCLogin(
+       	    const char *first_name,
+       	    const char *last_name,
+       	    const char *password,
+       	    const char *address,
+       	    int port);
+        
         Foundation::Framework *framework_;
-        //! Poco xml configuration reader
-        Poco::AutoPtr<Poco::Util::XMLConfiguration> config_;
-		boost::shared_ptr<NetMessageManager> networkManager_;
+        
+	    /// Handles the UDP communications with the reX server.
+	    shared_ptr<NetMessageManager> networkManager_;
+	
+	    /// Handles the initial XMLRPC messaging.
+	    shared_ptr<PocoXMLRPCConnection> rpcConnection_;		
+
+		/// State of the network module.
 		NetworkState networkState_;
+
+	    // Login parameters, received via XMLRPC request.
+	    std::string sessionID;
+	    std::string agentID;
+	    RexUUID     myAgentID;
+	    RexUUID     mySessionID;
+	    RexUUID     myRegionID;
+	    uint32_t    circuitCode;
+
     };
 }
 
