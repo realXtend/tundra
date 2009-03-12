@@ -119,8 +119,8 @@ int generateDump(EXCEPTION_POINTERS* pExceptionPointers)
     BOOL bMiniDumpSuccessful;
     WCHAR szPath[MAX_PATH]; 
     WCHAR szFileName[MAX_PATH]; 
-    WCHAR* szAppName = L"RexNG Viewer";
-    WCHAR* szVersion = L"alpha";
+    WCHAR* szAppName = L"realXtend";
+    WCHAR* szVersion = L"pre-alpha";
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
