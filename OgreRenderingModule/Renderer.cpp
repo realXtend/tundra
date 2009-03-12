@@ -11,9 +11,8 @@ using namespace Foundation;
 
 namespace OgreRenderer
 {
-    Renderer::Renderer(OgreRenderingModule* module, Framework* framework) :
+    Renderer::Renderer(Framework* framework) :
         framework_(framework),
-        module_(module),
         scenemanager_(0),
         camera_(0),
         renderwindow_(0),
@@ -54,7 +53,7 @@ namespace OgreRenderer
         Ogre::RenderSystem* rendersystem = root_->getRenderSystemByName(rendersystem_name);
         if (!rendersystem)
         {
-            module_->LogError("Could not find rendersystem");
+            OgreRenderingModule::LogError("Could not find rendersystem");
             return false;
         }
         root_->setRenderSystem(rendersystem);
@@ -65,7 +64,7 @@ namespace OgreRenderer
         renderwindow_ = root_->createRenderWindow(application_name, width, height, fullscreen, &params);
         if (!renderwindow_)
         {
-            module_->LogError("Could not create rendering window");
+            OgreRenderingModule::LogError("Could not create rendering window");
             return false;
         }
 
