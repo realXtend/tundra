@@ -2,10 +2,10 @@
 
 #include "StableHeaders.h"
 #include "OgreRenderingModule.h"
-#include "EC_OgreEntity.h"
 #include <Poco/ClassLibrary.h>
 #include "Foundation.h"
 #include "ComponentRegistrarInterface.h"
+#include "EC_OgreEntity.h"
 
 namespace OgreRenderer
 {

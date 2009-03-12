@@ -30,7 +30,7 @@ PocoXMLRPCConnection::PocoXMLRPCConnection(const char *address, int port)
 }
 
 /// The writer callback function used by cURL.
-size_t writeCallback(char *data, size_t size, size_t nmemb, std::vector<char> *buffer)  
+size_t PocoXMLRPCConnection::WriteCallback(char *data, size_t size, size_t nmemb, std::vector<char> *buffer)  
 {  
 	if (buffer)
 	{
@@ -157,10 +157,8 @@ bool PocoXMLRPCConnection::FinishXMLRPCCall(boost::shared_ptr<PocoXMLRPCCall> ca
 	curl_easy_setopt(curl, CURLOPT_URL, url);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, &outBuf[0]);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(outBuf));
-//	curl_easy_setopt(curl, CURLOPT_HTTPPOST, post);
 	curl_easy_setopt(curl, CURLOPT_POST, 1);
-//	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &PocoXMLRPCConnection::WriteCallback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_data);
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curl_error_buffer);
 
