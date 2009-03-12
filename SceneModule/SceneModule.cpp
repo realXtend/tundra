@@ -6,7 +6,7 @@
 
 namespace Scene
 {
-    SceneModule::SceneModule() : ModuleInterface_Impl(Foundation::Module::Type_Scene)
+    SceneModule::SceneModule() : ModuleInterface_Impl(type_static_)
     {
     }
 

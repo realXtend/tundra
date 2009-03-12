@@ -10,7 +10,7 @@ namespace Test
     class StaticModuleTest : public Foundation::ModuleInterface_Impl
     {
     public:
-        StaticModuleTest() : ModuleInterface_Impl("Static_Test") {}
+        StaticModuleTest() : ModuleInterface_Impl(NameStatic()) {}
         virtual ~StaticModuleTest() {}
 
         virtual void Load()
@@ -31,6 +31,15 @@ namespace Test
         }
 
         virtual void Update() {}
+
+        MODULE_LOGGING_FUNCTIONS;
+
+        //! returns name of this module. Needed for logging.
+        static const std::string &NameStatic()
+        { 
+            static const std::string name("StaticModuleTest");
+            return name;
+        }
     };
 }
 #endif

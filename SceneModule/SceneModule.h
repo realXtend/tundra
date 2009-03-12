@@ -27,6 +27,13 @@ namespace Scene
 
         virtual void Update();
 
+        MODULE_LOGGING_FUNCTIONS;
+
+        //! returns name of this module. Needed for logging.
+        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
+
+        static const Foundation::Module::Type type_static_ = Foundation::Module::Type_Scene;
+
     private:
         Foundation::ScenePtr scene_manager_;
     };

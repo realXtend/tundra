@@ -9,7 +9,7 @@
 
 namespace Test
 {
-    TestModuleB::TestModuleB() : ModuleInterface_Impl("TestModuleB")
+    TestModuleB::TestModuleB() : ModuleInterface_Impl(NameStatic())
     {
     }
 

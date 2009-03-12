@@ -9,7 +9,7 @@
 
 namespace OgreRenderer
 {
-    OgreRenderingModule::OgreRenderingModule() : ModuleInterface_Impl(Foundation::Module::Type_Renderer)
+    OgreRenderingModule::OgreRenderingModule() : ModuleInterface_Impl(type_static_)
     {
     }
 
