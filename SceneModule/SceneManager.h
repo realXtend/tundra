@@ -3,7 +3,8 @@
 #ifndef incl_SceneSceneManager_h
 #define incl_SceneSceneManager_h
 
-#include "SceneServiceInterface.h"
+//#include "SceneServiceInterface.h"
+#include "SceneManagerServiceInterface.h"
 
 namespace Foundation
 {
@@ -12,40 +13,53 @@ namespace Foundation
 
 namespace Scene
 {
-    //! Acts as a generic scenegraph for all entities in the world
+    //! Manages scenes. 
     /*!
-        Contains all entities in the world in a generic fashion.
-        Acts as a factory for all entities.
+        Contains all scenes in a generic fashion.
+        Acts as a factory for scenes.
     */
-    class SceneManager : public Foundation::SceneServiceInterface
+    class SceneManager : public Foundation::SceneManagerServiceInterface
     {
     public:
-        SceneManager(Foundation::Framework *framework) : SceneServiceInterface(), framework_(framework) {}
+        SceneManager(Foundation::Framework *framework) : SceneManagerServiceInterface(), framework_(framework) {}
         virtual ~SceneManager() {}
 
-        //! Creates new entity that contains the specified components
+        //! Creates new empty scene
         /*!
-            \param components list of component names the entity will use
+            \param name name of the new scene
+            \return empty scene
         */
-        virtual Foundation::EntityPtr CreateEntity(const Core::StringVector &components);
-
-        //! Creates an empty entity
-        virtual Foundation::EntityPtr CreateEntity();
+        virtual Foundation::ScenePtr CreateScene(const std::string &name);
         
-        //! Returns entity with the specified id
-        virtual Foundation::EntityPtr GetEntity(Core::entity_id_t id) const;
+        //! Returns a scene
+        /*!
+            Precondition: HasScene(name)
 
-        virtual bool HasEntity(Core::entity_id_t id) const
+            \param name name of the scene
+        */
+        virtual Foundation::ScenePtr GetScene(const std::string &name) const
         {
-            return (entities_.find(id) != entities_.end());
+            SceneMap::const_iterator it = scenes_.find(name);
+            if (it != scenes_.end())
+                return it->second;
+
+            //const std::string e(std::string("Failed to find scene: " + name);
+            throw Core::Exception((std::string("Failed to find scene: " + name)).c_str());
+        }
+
+        //! Returns true if a scene with the specified name is contained within this manager
+        virtual bool HasScene(const std::string &name) const
+        {
+            return (scenes_.find(name) != scenes_.end());
         }
     
     private:
-        typedef std::map<Core::entity_id_t, Foundation::EntityPtr> EntityMap;
+        typedef std::map<std::string, Foundation::ScenePtr> SceneMap;
 
-        //! Entities in a map
-        EntityMap entities_;
+        //! container for entities managed by this scene manager
+        SceneMap scenes_;
 
+        //! framework
         Foundation::Framework *framework_;
     };
 }

@@ -77,6 +77,12 @@ void RexLogic::Uninitialize(Foundation::Framework *framework)
 // virtual
 void RexLogic::Update()
 {    
+    //! \todo Can't put this to initialize() since SceneModule may not have been initialized yet. Need to figure out a better way.
+    Foundation::SceneManagerServiceInterface *sceneManager = 
+            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+    if (sceneManager->HasScene("World") == false)
+        sceneManager->CreateScene("World");
+
     // fixme, simulate a network message arriving to networkeventhandler
     std::string tempnetworkmessage = "fixme this_is_networkmessage";
     world_logic_->GetNetworkHandler()->HandleNetworkMessage(tempnetworkmessage);

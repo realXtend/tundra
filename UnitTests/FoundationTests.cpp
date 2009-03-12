@@ -29,6 +29,27 @@ BOOST_AUTO_TEST_CASE( framework_platform )
     BOOST_CHECK (appData_unicode.find(Core::ToWString(fw.GetDefaultConfig().GetString(Foundation::Framework::ConfigurationGroup(), "application_name"))) != std::wstring::npos);
 }
 
+BOOST_AUTO_TEST_CASE( framework_scene_module )
+{
+    // There may come time when this test case fails, and making the necessary changes might be too unwieldy.
+    // At such time this test case can be deleted as all of this is practically tested in TestModule anyway.
+    Foundation::Framework fw;
+
+    fw.GetModuleManager()->LoadModuleByName("SceneModule");
+    Foundation::SceneManagerServiceInterface *sceneManager = fw.GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+    BOOST_CHECK(sceneManager);
+
+    Foundation::ScenePtr scene = sceneManager->CreateScene("framework_scene_module_test");
+    BOOST_CHECK(scene.get());
+    BOOST_CHECK(sceneManager->HasScene("framework_scene_module_test"));
+
+    Foundation::EntityPtr entity = scene->CreateEntity();
+    BOOST_CHECK(entity.get());
+    BOOST_CHECK(scene->HasEntity(entity->GetId()));
+
+    fw.GetModuleManager()->UnloadModules();
+}
+
 void frameworkConfigurationManagerTest()
 {
     Foundation::ConfigurationManager manager("./testing/configuration.xml");

@@ -29,8 +29,8 @@ namespace Scene
     // virtual
     void SceneModule::Initialize(Foundation::Framework *framework)
     {
-        scene_manager_ = Foundation::ScenePtr(new SceneManager(framework));
-        framework->GetServiceManager()->RegisterService(Foundation::Service::ST_Scene, scene_manager_.get());
+        scene_manager_ = Foundation::SceneManagerPtr(new SceneManager(framework));
+        framework->GetServiceManager()->RegisterService(Foundation::Service::ST_SceneManager, scene_manager_.get());
 
         LogInfo("Module " + Name() + " initialized.");
     }
