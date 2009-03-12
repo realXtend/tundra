@@ -32,6 +32,7 @@
 #include "CoreStdIncludes.h"
 #include "Core.h"
 #include "Foundation.h"
+#include "PreInit.h"
 
 
 #if defined(_MSC_VER) && defined(_DMEMORYLEAKS)
@@ -94,7 +95,8 @@ int run(void)
     try 
     {
         Foundation::Framework fw;
-        fw.GetModuleManager()->ExcludeModule(Foundation::Module::Type_Test);
+        PreInit init;
+        init(&fw);
 
         fw.Go();
     } 

@@ -76,6 +76,9 @@ namespace Foundation
         ~ModuleManager();
 
         //! Declare a module from static library
+        /*! Use 'new' to create the module. The framework will take responsibility of the
+            declared module and will delete it after unloading it.
+        */
         void DeclareStaticModule(ModuleInterface *module);
 
         //! Specify a module that should not be loaded or initialized under any circumstances

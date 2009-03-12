@@ -12,6 +12,7 @@ include_directories (
 	../Core
 	../Foundation
 	../Interfaces
+	../SceneModule
 )
 
 # External library includes
@@ -48,7 +49,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Core Foundation)
+target_link_libraries (${TARGET_NAME} Core Foundation SceneModule)
 if (MSVC)
    target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)
 endif (MSVC)
