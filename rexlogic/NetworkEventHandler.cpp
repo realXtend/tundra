@@ -34,7 +34,10 @@ void NetworkEventHandler::HandleObjectUpdate(std::string &packetdata)
 {
     Core::entity_id_t tempentityid = 0; // fixme, get entity from packetdata
 
-    Foundation::SceneServiceInterface *scene = framework_->GetService<Foundation::SceneServiceInterface>(Foundation::Service::ST_Scene);
+    Foundation::SceneManagerServiceInterface *sceneManager = 
+            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+    Foundation::ScenePtr scene = sceneManager->GetScene("World");
+
     Foundation::EntityPtr entity;
 
     if (scene->HasEntity(tempentityid) == false)
@@ -51,7 +54,10 @@ void NetworkEventHandler::HandleGenericMessageExtraEntityData(std::string &packe
 
     Core::entity_id_t tempentityid = 0; // fixme, get entity from packetdata
 
-    Foundation::SceneServiceInterface *scene = framework_->GetService<Foundation::SceneServiceInterface>(Foundation::Service::ST_Scene);
+    Foundation::SceneManagerServiceInterface *sceneManager = 
+            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+    Foundation::ScenePtr scene = sceneManager->GetScene("World");
+
     Foundation::EntityPtr entity;
 
     if (scene->HasEntity(tempentityid) == false)
@@ -68,8 +74,11 @@ void NetworkEventHandler::HandleGenericMessageExtraEntityData(std::string &packe
 void NetworkEventHandler::CreateEntity(std::string &packetdata)
 {
     Core::StringVector components;
-    
-    Foundation::SceneServiceInterface *scene = framework_->GetService<Foundation::SceneServiceInterface>(Foundation::Service::ST_Scene);
+  
+    Foundation::SceneManagerServiceInterface *sceneManager = 
+            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+    Foundation::ScenePtr scene = sceneManager->GetScene("World");
+
     Foundation::EntityPtr entity = scene->CreateEntity(components);
 }
 

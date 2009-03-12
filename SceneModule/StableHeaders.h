@@ -5,5 +5,6 @@
 
 #include "CoreStdIncludes.h"
 #include "Core.h"
+#include "Foundation.h"
 
 #endif // incl_SceneModule_StableHeaders_h__

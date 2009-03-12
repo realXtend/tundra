@@ -36,28 +36,50 @@ namespace Foundation
         }
 
         // Find all shared modules and load them
-        fs::path full_path = fs::system_complete(fs::path(DEFAULT_MODULES_PATH));
-        if ( !fs::exists( full_path ) || !fs::is_directory( full_path ))
-            throw Core::Exception("Failed to load modules, modules directory not found."); // can be considered fatal
-
-        
-        fs::recursive_directory_iterator iter( full_path );
-        fs::recursive_directory_iterator end_iter;
-        for ( ; iter != end_iter ; ++iter )
+        Core::StringVectorPtr files;
+        try
         {
+            files = GetXmlFiles(DEFAULT_MODULES_PATH);
+        } catch (Core::Exception)
+        {
+            throw Core::Exception("Failed to load modules, modules directory not found."); // can be considered fatal
+        }
+
+        for (size_t i = 0 ; i < files->size() ; ++i)
+        {
+            const fs::path path((*files)[i]);
+
             try
             {
-                if ( fs::is_regular_file( iter->status() ) )
-                {
-                    LoadModule(iter->path());
-                    
-                }
+                 LoadModule(path);
             } catch (std::exception &e) // may not be fatal, depending on which module failed
             {
                 Foundation::RootLogError(std::string("Exception: ") + e.what());
                 Foundation::RootLogError("Failed to load module.");
             }
         }
+
+        //fs::path full_path = fs::system_complete(fs::path(DEFAULT_MODULES_PATH));
+        //if ( !fs::exists( full_path ) || !fs::is_directory( full_path ))
+        //    throw Core::Exception("Failed to load modules, modules directory not found."); // can be considered fatal
+
+        //
+        //fs::recursive_directory_iterator iter( full_path );
+        //fs::recursive_directory_iterator end_iter;
+        //for ( ; iter != end_iter ; ++iter )
+        //{
+        //    try
+        //    {
+        //        if ( fs::is_regular_file( iter->status() ) )
+        //        {
+        //            LoadModule(iter->path());
+        //        }
+        //    } catch (std::exception &e) // may not be fatal, depending on which module failed
+        //    {
+        //        Foundation::RootLogError(std::string("Exception: ") + e.what());
+        //        Foundation::RootLogError("Failed to load module.");
+        //    }
+        //}
     }
 
     void ModuleManager::InitializeModules()
@@ -81,6 +103,35 @@ namespace Foundation
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
             modules_[i]->Update();
+        }
+    }
+
+    void ModuleManager::LoadModuleByName(const std::string &name)
+    {
+        assert (name.empty() == false);
+
+        Core::StringVectorPtr files = GetXmlFiles(DEFAULT_MODULES_PATH);
+        for (size_t i = 0 ; i < files->size() ; ++i)
+        {
+            fs::path path((*files)[i]);
+            const fs::path orig_path = path;
+
+            path.replace_extension("");
+            std::string filename = path.filename();
+            if (filename == name)
+            {
+                LoadModule(orig_path);
+                break;
+            }
+        }
+
+        for (size_t i = 0 ; i < modules_.size() ; ++i)
+        {
+            if (modules_[i]->Name() == name)
+            {
+                modules_[i]->_Initialize(framework_);
+                break;
+            }
         }
     }
 
@@ -181,5 +232,32 @@ namespace Foundation
     {
         assert(module);
         module->_Uninitialize(framework_);
+    }
+
+    Core::StringVectorPtr ModuleManager::GetXmlFiles(const std::string &path)
+    {
+        Core::StringVectorPtr files(new Core::StringVector);
+
+        // Find all xml files recursively
+        fs::path full_path = fs::system_complete(fs::path(DEFAULT_MODULES_PATH));
+        if ( !fs::exists( full_path ) || !fs::is_directory( full_path ))
+            throw Core::Exception("Path not found!"); // can be considered fatal
+
+        fs::recursive_directory_iterator iter( full_path );
+        fs::recursive_directory_iterator end_iter;
+        for ( ; iter != end_iter ; ++iter )
+        {
+            if ( fs::is_regular_file( iter->status() ) )
+            {
+                std::string ext = iter->path().extension();
+                boost::algorithm::to_lower(ext);
+                if (ext == ".xml")
+                {
+                    files->push_back(iter->path().string());
+                }
+            }
+        }
+
+        return files;
     }
 }

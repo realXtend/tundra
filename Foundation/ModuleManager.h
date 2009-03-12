@@ -123,6 +123,13 @@ namespace Foundation
             return NULL;
         }
 
+        //! Loads and initializes a module with specified name
+        /*! For internal use only!
+
+            \param name name of the module to load
+        */
+        void LoadModuleByName(const std::string &name);
+
     private:
 
         //! Loads module
@@ -141,7 +148,11 @@ namespace Foundation
         //! Initialize the specified module
         void InitializeModule(ModuleInterface *module);
 
+        //! Uninitialize the specified module
         void UninitializeModule(ModuleInterface *module);
+
+        //! Returns a vector containing all xml files in the specified directory, scans recursively
+        Core::StringVectorPtr GetXmlFiles(const std::string &path);
 
         typedef std::vector<ModuleInterface*> ModuleVector;
 

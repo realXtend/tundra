@@ -57,12 +57,22 @@ namespace Test
     void TestModule::Update()
     {
         LogInfo("");
+
         // create new entity
         LogInfo("Constructing entity with component: " + Test::EC_Dummy::Name() + ".");
 
-        Foundation::SceneServiceInterface *scene = framework_->GetService<Foundation::SceneServiceInterface>(Foundation::Service::ST_Scene);
+        Foundation::SceneManagerServiceInterface *sceneManager = 
+            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+        assert(sceneManager != NULL && "Failed to get SceneManager service");
+
+        assert(sceneManager->HasScene("test_scene") == false && "Scene test_scene scene alread exists!");
+        Foundation::ScenePtr scene = sceneManager->CreateScene("test_scene");
+        assert(scene.get() && "Failed to create scene" );
+        assert(sceneManager->HasScene("test_scene") && "Failed to create scene");
+
         Foundation::EntityPtr entity = scene->CreateEntity();
         assert (entity.get() != 0 && "Failed to create entity.");
+        assert (scene->HasEntity(entity->GetId()) && "Failed to add entity to scene properly!");
 
         Foundation::ComponentPtr component = framework_->GetComponentManager()->CreateComponent(Test::EC_Dummy::Name());
         assert (component.get() != 0 && "Failed to create dummy component.");
