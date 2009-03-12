@@ -5,6 +5,7 @@
 
 #include "ConfigurationManager.h"
 #include "ServiceInterfaces.h"
+#include "ServiceManager.h"
 
 namespace Foundation
 {
