@@ -72,10 +72,10 @@ namespace OgreRenderer
         
     private:
         //! sets up Ogre resources based on resources.cfg
-        void Renderer::SetupResources();
+        void SetupResources();
         
         //! creates scenemanager & camera
-        void Renderer::SetupScene();
+        void SetupScene();
     
         boost::mutex renderer_;
         
