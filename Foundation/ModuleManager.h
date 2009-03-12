@@ -17,10 +17,15 @@ namespace Foundation
 
         To create a new static module:
             - Create a class that inherits from ModuleInterface_Impl
+            
             - In the Module's load()-function, declare all components the new module offers with DECLARE_MODULE_EC macro.
+            
             - In the Module's initialize()-function, register all services the new module offers
+            
             - Also unregister all services in the uninitialize()-function.
+            
             - Declare the static module with DeclareStaticModule() function.
+            
             - Add the type of the module to both Foundation::Module::Type enumeration and
               Foundation::Module::NameFromType function, in ModuleInterface.h.
 
@@ -34,10 +39,18 @@ namespace Foundation
                     POCO_END_MANIFEST
                 
               where CLASS_NAME is the name of the newly created class.
-            - Copy the module library file to modules-directory. Add a module definition file (xml file) that matches
-              the name of the module and that contains the module entry class name, if the name of the class that
-              inherits from ModuleInterface_Impl is different from the name of the actual module. Otherwise the module
-              definition file can be an empty file.
+            
+            - Create a module definition file (xml file) that matches the name of the sub-project
+              and that contains the names of the module entry classes (modules that are contained in
+              a single sub-project, often just one),
+
+              With only a single module in the sub-project and whose entry class matches the name of
+              the project, the xml file can be an empty file.
+
+              Place the xml file in the sub-project directory.
+
+            - In a post-build step, both the module and the xml file will get copied to bin/modules
+              directory (or one of it's subdirectories).
 
 
         You can define multiple modules in single library file.
