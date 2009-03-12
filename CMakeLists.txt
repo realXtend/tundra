@@ -13,6 +13,7 @@ include(PoCo)
 include(Curl)
 include(XmlRpcEpi)
 include(Ogre)
+include(Python)
 
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
@@ -59,3 +60,4 @@ add_subdirectory (TestModule)
 add_subdirectory (UnitTests)
 add_subdirectory (OpenSimProtocol)
 add_subdirectory (NetTestLogicModule)
+#add_subdirectory (PythonModule)
