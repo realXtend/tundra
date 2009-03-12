@@ -30,7 +30,7 @@ namespace OgreRenderer
     class Renderer : public Foundation::RenderServiceInterface, public Ogre::WindowEventListener
     {
     public:
-        Renderer(OgreRenderingModule* module, Foundation::Framework* framework);
+        Renderer(Foundation::Framework* framework);
         virtual ~Renderer();
 
         //! initializes renderer
@@ -90,9 +90,6 @@ namespace OgreRenderer
         
         //! rendering window
         Ogre::RenderWindow* renderwindow_;
-        
-        //! rendering module we belong to
-        OgreRenderingModule* module_;
         
         //! framework we belong to
         Foundation::Framework* framework_;
