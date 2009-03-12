@@ -91,10 +91,10 @@ int run(void)
     int retVal = EXIT_SUCCESS;
 
     // Create application object
-    Foundation::Framework fw;
-
     try 
     {
+        Foundation::Framework fw;
+
         fw.Go();
     } 
     catch ( std::exception& e )
