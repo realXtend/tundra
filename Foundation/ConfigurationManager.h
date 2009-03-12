@@ -182,7 +182,7 @@ class foo
 
         //! Poco xml configuration reader
         Poco::AutoPtr<Poco::Util::XMLConfiguration> configuration_;
-
+		
         //! Current configuration file
         std::string config_file_;
 

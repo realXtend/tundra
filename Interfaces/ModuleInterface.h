@@ -12,21 +12,13 @@
     { Foundation::ComponentRegistrarInterfacePtr registrar = Foundation::ComponentRegistrarInterfacePtr(new component::component##Registrar); \
     DeclareComponent(registrar); } \
 
-#define MODULE_LOGGING_FUNCTIONS                                                                              \
-    static void LogFatal(const std::string &msg)    { Poco::Logger::get(NameStatic()).fatal(msg);         }   \
-    static void LogCritical(const std::string &msg) { Poco::Logger::get(NameStatic()).critical(msg);      }   \
-    static void LogError(const std::string &msg)    { Poco::Logger::get(NameStatic()).error(msg);         }   \
-    static void LogWarning(const std::string &msg)  { Poco::Logger::get(NameStatic()).warning(msg);       }   \
-    static void LogNotice(const std::string &msg)   { Poco::Logger::get(NameStatic()).notice(msg);        }   \
-    static void LogInfo(const std::string &msg)     { Poco::Logger::get(NameStatic()).information(msg);   }   \
-    static void LogTrace(const std::string &msg)    { Poco::Logger::get(NameStatic()).trace(msg);         }   
-
 namespace Foundation
 {
     class Framework;
 
-    namespace Module
+    class Module
     {
+    public:
         //! internal module types.
         /*!
             \note if you add new internal module type, don't forget to add it's name to NameFromType()
@@ -34,23 +26,36 @@ namespace Foundation
 		enum Type 
 		{
 			Type_Scene = 0,
-			Type_Renderer, 
-			Type_Sound, 
-			Type_Gui, 
-			Type_WorldLogic, 
+			Type_Renderer,
+			Type_Sound,
+			Type_Gui,
+			Type_WorldLogic,
 			Type_Network,
-			Type_Test, 
+			Type_Test,
+			Type_NetTest,
 			Type_Unknown
 		};
 
         static const std::string &NameFromType(Type type)
         {
             assert(type != Type_Unknown);
-            static const std::string type_strings[Type_Unknown] = { "Scene", "Renderer", "Sound", "Gui", "World Logic", "Network", "Test" };
+            static const std::string type_strings[Type_Unknown] = {
+				"Scene", "Renderer", "Sound", "Gui", "World Logic", "Network", "Test", "NetTest" };
 
             return type_strings[type];
         }
-    }
+		
+		//! State of the module.
+		///\todo Not used yet.
+		enum State
+		{
+			State_Unloaded = 0,
+			State_Loaded,
+			State_Uninitialized,
+			State_Initialized
+		};
+
+    };
 
     //! interface for modules
     /*! See ModuleManager for more info.
@@ -63,13 +68,13 @@ namespace Foundation
         ModuleInterface()  {}
         virtual ~ModuleInterface() {}
 
-        //! called when module is loaded into memory.Do not trust that framework can be used.
+        //! Called when module is loaded into memory.Do not trust that framework can be used.
         /*!
             Components in the module should be declared here by using DECLARE_MODULE_EC(Component) macro, where
             Component is the class of the component.
         */
         virtual void Load() = 0;
-        //! called when module is unloaded from memory. Do not trust that framework can be used.
+        //! Called when module is unloaded from memory. Do not trust that framework can be used.
         virtual void Unload() = 0;
 
         //! Initialized the module. Called when module is taken in use. Do not override in child classes. For internal use.
@@ -77,21 +82,30 @@ namespace Foundation
         //! Uninitialize the module. Called when module is removed from use. Do not override in child classes. For internal use.
         virtual void _Uninitialize(Foundation::Framework *framework) = 0;
 
-        //! Initializes the module. Called when module is taken in use
+        //! Initializes the module. Called when module is taken in use.
         virtual void Initialize(Framework *framework) = 0;
         //! Uninitialize the module. Called when module is removed from use
         virtual void Uninitialize(Foundation::Framework *framework) = 0;
 
-        //! synchronized update for the module
+        //! Synchronized update for the module.
         virtual void Update() = 0;
 
-        //! Returns the name of the module. Each module also has a static accessor for the name, it's needed by the logger.
+        //! Returns the name of the module
         virtual const std::string &Name() const = 0;
         //! Returns internal type of the module or Type_Unknown if module is not internal
         virtual Module::Type Type() const = 0;
 
         //! Declare a component the module defines. For internal use.
         virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar) = 0;
+        
+        //! Logging
+        virtual void LogFatal(const std::string &msg) = 0;
+        virtual void LogCritical(const std::string &msg) = 0;
+        virtual void LogError(const std::string &msg) = 0;        
+        virtual void LogWarning(const std::string &msg) = 0;
+        virtual void LogNotice(const std::string &msg) = 0;
+        virtual void LogInfo(const std::string &msg) = 0;
+        virtual void LogTrace(const std::string &msg) = 0;
     };
 
     //! interface for modules, implementation
@@ -140,10 +154,42 @@ namespace Foundation
 
         virtual const std::string &Name() const { return (type_ == Module::Type_Unknown ? name_ : Module::NameFromType(type_)); }
         virtual Module::Type Type() const { return type_; }
+		//virtual Module::State State() const { return state_; }
 
         virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar)
         {
             component_registrars_.push_back(registrar);
+        }
+
+
+        //! Logging
+        virtual void LogFatal(const std::string &msg)
+        {
+            Poco::Logger::get(Name()).fatal(msg);
+        }
+        virtual void LogCritical(const std::string &msg)
+        {
+            Poco::Logger::get(Name()).critical(msg);
+        }
+        virtual void LogError(const std::string &msg)
+        {
+            Poco::Logger::get(Name()).error(msg);
+        }
+        virtual void LogWarning(const std::string &msg)
+        {
+            Poco::Logger::get(Name()).warning(msg);
+        }
+        virtual void LogNotice(const std::string &msg)
+        {
+            Poco::Logger::get(Name()).notice(msg);
+        }
+        virtual void LogInfo(const std::string &msg)
+        {
+            Poco::Logger::get(Name()).information(msg);
+        }
+        virtual void LogTrace(const std::string &msg)
+        {
+            Poco::Logger::get(Name()).trace(msg);
         }
         
     private:
@@ -151,10 +197,14 @@ namespace Foundation
 
         RegistrarVector component_registrars_;
 
-        //! name of the module
+        //! Name of the module.
         const std::string name_;
-        //! type of the module if inbuild, unknown otherwise
+        //! Type of the module if inbuild, unknown otherwise.
         const Module::Type type_;
+		//! State of the module.
+		Module::State state_;
+        //! Logger for this module.
+        Poco::Logger *module_logger_;
     };
 }
 

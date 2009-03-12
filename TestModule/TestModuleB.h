@@ -6,6 +6,8 @@
 #include "ModuleInterface.h"
 #include "TestServiceInterface.h"
 
+using namespace std;
+
 namespace Foundation
 {
    class Framework;
