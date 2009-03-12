@@ -38,9 +38,13 @@ namespace Foundation
         try
         {
             configuration_ = new Poco::Util::XMLConfiguration(file);
-        } catch (std::exception &e)
+        } catch (std::exception)
         {
-            // not fatal
+            // not fatal in debug mode
+#ifndef _DEBUG
+            std::string what = std::string("Failed to load configuration file: ") + file;
+            throw Core::Exception(what.c_str());
+#endif
         }
     }
 
