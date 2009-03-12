@@ -3,7 +3,7 @@
 #ifndef incl_SceneGeneric_h
 #define incl_SceneGeneric_h
 
-#include "SceneServiceInterface.h"
+#include "SceneInterface.h"
 
 namespace Foundation
 {
@@ -17,13 +17,13 @@ namespace Scene
         Contains all entities in the world in a generic fashion.
         Acts as a factory for all entities.
     */
-    class Generic : public Foundation::SceneServiceInterface
+    class Generic : public Foundation::SceneInterface
     {
         friend class SceneManager;
     private:
         Generic();
         //! constructor that takes a framework
-        Generic(Foundation::Framework *framework) : SceneServiceInterface(), framework_(framework) {}
+        Generic(Foundation::Framework *framework) : SceneInterface(), framework_(framework) {}
 
 
 

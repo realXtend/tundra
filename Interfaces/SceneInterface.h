@@ -1,9 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Interfaces_SceneServiceInterface_h
-#define incl_Interfaces_SceneServiceInterface_h
+#ifndef incl_Interfaces_SceneInterface_h
+#define incl_Interfaces_SceneInterface_h
 
-#include "ServiceInterface.h"
 #include "EntityInterface.h"
 
 namespace Foundation
@@ -13,14 +12,14 @@ namespace Foundation
         Contains all entities in the world in a generic fashion.
         Acts as a factory for all entities.
     */
-    class SceneServiceInterface : public ServiceInterface
+    class SceneInterface
     {
     public:
         //! default constructor
-        SceneServiceInterface() {}
+        SceneInterface() {}
 
         //! destructor
-        virtual ~SceneServiceInterface() {}
+        virtual ~SceneInterface() {}
 
         //! Creates new entity that contains the specified components
         /*!
@@ -38,7 +37,7 @@ namespace Foundation
         virtual bool HasEntity(Core::entity_id_t id) const = 0;
     };
 
-    typedef boost::shared_ptr<SceneServiceInterface> ScenePtr;
+    typedef boost::shared_ptr<SceneInterface> ScenePtr;
 }
 
 #endif
