@@ -17,6 +17,11 @@ include(Ogre)
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
 
+# Create config files from example config files 
+if (NOT EXISTS ./bin/data/app_config.xml)
+	execute_process (COMMAND cmake -E copy ./bin/data/app_config_example.xml ./bin/data/app_config.xml)
+endif (NOT EXISTS ./bin/data/app_config.xml)
+
 # Set project name
 project (rexNG)
 

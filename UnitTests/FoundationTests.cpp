@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE( framework_configuration_manager )
 #endif
 }
 
-// must be last
+// Should be last, so default configuration file gets properly saved in debug mode
 BOOST_AUTO_TEST_CASE( framework_test_module )
 {
     Foundation::Framework fw;

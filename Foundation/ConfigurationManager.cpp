@@ -9,6 +9,7 @@ namespace Foundation
 
     ConfigurationManager::ConfigurationManager(Type type) : type_(CT_CUSTOM)
     {
+        // Do not use logger here - not initialized yet
         assert (type == ConfigurationManager::CT_DEFAULT);
         Load(DEFAULT_CONFIG_PATH);
 
@@ -29,6 +30,8 @@ namespace Foundation
 
     void ConfigurationManager::Load(const std::string &file)
     {
+        // Do not use logger here - not initialized yet
+
         assert (type_ != CT_DEFAULT);
 
         config_file_ = file;
@@ -38,8 +41,6 @@ namespace Foundation
         } catch (std::exception &e)
         {
             // not fatal
-            Foundation::RootLogError(e.what());
-            Foundation::RootLogError("Failed to load application configuration file " + file + ".");
         }
     }
 

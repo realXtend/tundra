@@ -63,8 +63,14 @@ namespace Foundation
         log_formatter_->setProperty("times","local");
         Poco::Channel *formatchannel = new Poco::FormattingChannel(log_formatter_,splitterchannel);
         
-        Poco::Logger::create("",formatchannel,Poco::Message::PRIO_TRACE);    
-        Poco::Logger::create("Foundation",Poco::Logger::root().getChannel() ,Poco::Message::PRIO_TRACE);
+        try
+        {
+            Poco::Logger::create("",formatchannel,Poco::Message::PRIO_TRACE);    
+            Poco::Logger::create("Foundation",Poco::Logger::root().getChannel() ,Poco::Message::PRIO_TRACE);
+        } catch (Poco::ExistsException)
+        {
+            assert (false && "Somewhere, a message is pushed to log before the logger is initialized.");
+        }
 
         Poco::LocalDateTime *currenttime = new Poco::LocalDateTime(); 
         std::string timestring = boost::lexical_cast<std::string>(currenttime->day()) + "/";
