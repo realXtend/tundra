@@ -49,6 +49,11 @@ namespace Foundation
         std::string logfilepath = platform_->GetUserDocumentsDirectory();
         logfilepath += "/" + config_.GetString(Framework::ConfigurationGroup(), "application_name") + ".log";
 
+        std::fstream log(logfilepath.c_str(), std::ios::app | std::ios::out);
+        log << std::endl;
+        log << std::endl;
+        log.close();
+
         filechannel->setProperty("path",logfilepath);
         filechannel->setProperty("rotation","3M");
         filechannel->setProperty("archive","number");
@@ -78,7 +83,7 @@ namespace Foundation
         timestring.append(boost::lexical_cast<std::string>(currenttime->year()) + " ");
         timestring.append(boost::lexical_cast<std::string>(currenttime->hour()) + ":");
         timestring.append(boost::lexical_cast<std::string>(currenttime->minute()) + ":");
-        timestring.append(boost::lexical_cast<std::string>(currenttime->second()));                
+        timestring.append(boost::lexical_cast<std::string>(currenttime->second()));
         Foundation::RootLogInfo("Log file opened on " + timestring);
         
         log_channels_.push_back(consolechannel);
