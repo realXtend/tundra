@@ -41,6 +41,7 @@ namespace Foundation
 			Type_Network,
 			Type_Test,
 			Type_NetTest,
+			Type_Python,
 			Type_Unknown
 		};
 
@@ -48,7 +49,7 @@ namespace Foundation
         {
             assert(type != Type_Unknown);
 
-            static const std::string type_strings[Type_Unknown] = { "SceneModule", "Renderer", "Sound", "Gui", "World Logic", "Network", "Test", "NetTest" };
+            static const std::string type_strings[Type_Unknown] = { "SceneModule", "Renderer", "Sound", "Gui", "World Logic", "Network", "Test", "NetTest", "Python" };
 
             return type_strings[type];
         }
