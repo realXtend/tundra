@@ -28,8 +28,11 @@ namespace OgreRenderer
         root_.reset();
     }
     
-    bool Renderer::Initialize()
+    void Renderer::Initialize()
     {
+        if (initialized_)
+            return;
+            
 #ifdef _DEBUG
         std::string plugins_filename = "pluginsd.cfg";
 #else
@@ -51,21 +54,27 @@ namespace OgreRenderer
         bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "Fullscreen", false);
         
         Ogre::RenderSystem* rendersystem = root_->getRenderSystemByName(rendersystem_name);
+        
         if (!rendersystem)
         {
-            OgreRenderingModule::LogError("Could not find rendersystem");
-            return false;
+            throw Core::Exception("Could not find Ogre rendersystem.");
         }
+        
         root_->setRenderSystem(rendersystem);
         root_->initialise(false);
 
         Ogre::NameValuePairList params;
         std::string application_name = framework_->GetDefaultConfig().GetString(Foundation::Framework::ConfigurationGroup(), "application_name");
-        renderwindow_ = root_->createRenderWindow(application_name, width, height, fullscreen, &params);
+
+        try
+        {
+            renderwindow_ = root_->createRenderWindow(application_name, width, height, fullscreen, &params);
+        }
+        catch (Ogre::Exception& e) {}
+        
         if (!renderwindow_)
         {
-            OgreRenderingModule::LogError("Could not create rendering window");
-            return false;
+            throw Core::Exception("Could not create Ogre rendering window");
         }
 
         SetupResources();
@@ -74,7 +83,6 @@ namespace OgreRenderer
         Ogre::WindowEventUtilities::addWindowEventListener(renderwindow_, this);
         
         initialized_ = true;
-        return true;
     }
 
     void Renderer::SetupResources()

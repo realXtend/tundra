@@ -34,7 +34,7 @@ namespace OgreRenderer
         virtual ~Renderer();
 
         //! initializes renderer
-        bool Initialize();
+        void Initialize();
         
         //! returns Ogre root
         OgreRootPtr GetRoot() const { return root_; }
