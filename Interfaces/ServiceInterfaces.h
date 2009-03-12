@@ -12,14 +12,13 @@
 #include "InputServiceInterface.h"
 #include "WorldLogicInterface.h" //! \todo should this be here?
 #include "TestServiceInterface.h"
-#include "SceneServiceInterface.h"
 #include "SceneManagerServiceInterface.h"
 
 namespace Foundation
 {
     namespace Service
     {
-        enum Type { ST_Scene = 0, ST_SceneManager, ST_Renderer, ST_Physics, ST_Gui, ST_Scripting, ST_Test, ST_Unknown };
+        enum Type {ST_SceneManager = 0, ST_Renderer, ST_Physics, ST_Gui, ST_Scripting, ST_Test, ST_Unknown };
     }
 }
 

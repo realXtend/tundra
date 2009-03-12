@@ -3,7 +3,6 @@
 #ifndef incl_SceneSceneManager_h
 #define incl_SceneSceneManager_h
 
-//#include "SceneServiceInterface.h"
 #include "SceneManagerServiceInterface.h"
 
 namespace Foundation

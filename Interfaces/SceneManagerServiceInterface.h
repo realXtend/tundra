@@ -4,7 +4,7 @@
 #define incl_Interfaces_SceneManagerServiceInterface_h
 
 #include "ServiceInterface.h"
-#include "SceneServiceInterface.h"
+#include "SceneInterface.h"
 
 namespace Foundation
 {
