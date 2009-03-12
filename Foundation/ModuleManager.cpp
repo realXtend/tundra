@@ -23,7 +23,13 @@ namespace Foundation
     void ModuleManager::DeclareStaticModule(ModuleInterface *module)
     {
         assert (module);
-        modules_.push_back(module);
+        if (exclude_list_.find(module->Type()) == exclude_list_.end())
+        {
+            modules_.push_back(module);
+        } else
+        {
+            Foundation::RootLogInfo("Module: " + module->Name() + " is excluded and not loaded.");
+        }
     }
 
     void ModuleManager::LoadAvailableModules()
@@ -203,11 +209,19 @@ namespace Foundation
             }
 
             ModuleInterface* module = cl.classFor(*it).create();
-            module->Load();
 
-            modules_.push_back(module);
+            if (exclude_list_.find(module->Type()) == exclude_list_.end())
+            {
+                module->Load();
 
-            Foundation::RootLogInfo("Module: " + *it + " loaded.");
+                modules_.push_back(module);
+
+                Foundation::RootLogInfo("Module: " + *it + " loaded.");
+            } else
+            {
+                Foundation::RootLogInfo("Module: " + module->Name() + " is excluded and not loaded.");
+                SAFE_DELETE (module);
+            }
         }
     }
 
