@@ -45,7 +45,7 @@ namespace Foundation
 
         Poco::Channel *consolechannel = loggingfactory->createChannel("ConsoleChannel");
         Poco::Channel *filechannel = loggingfactory->createChannel("FileChannel");
-             
+        
         std::string logfilepath = platform_->GetUserDocumentsDirectory();
         logfilepath += "/" + config_.GetString(Framework::ConfigurationGroup(), "application_name") + ".log";
 
@@ -84,7 +84,18 @@ namespace Foundation
         timestring.append(boost::lexical_cast<std::string>(currenttime->hour()) + ":");
         timestring.append(boost::lexical_cast<std::string>(currenttime->minute()) + ":");
         timestring.append(boost::lexical_cast<std::string>(currenttime->second()));
-        Foundation::RootLogInfo("Log file opened on " + timestring);
+        
+        ///\todo FIXME PoCo bug. Cannot handle scandic letters.
+        try        
+        {
+            Foundation::RootLogInfo("Log file opened on " + timestring);
+        } catch(Poco::OpenFileException)
+        {
+            // Do not create the log file.
+            splitterchannel->removeChannel(filechannel);
+            Foundation::RootLogInfo("Poco::OpenFileException. Log file not created.");
+        }
+        
         
         log_channels_.push_back(consolechannel);
         log_channels_.push_back(filechannel);
