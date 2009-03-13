@@ -2,38 +2,38 @@
 # Find is already called in the top-level CMakeLists
 
 macro (FIND_GTKMM)
-	if (NOT DEFINED ENV{GTKMM_HOME})
-		message (FATAL_ERROR "Environment variable GTKMM_HOME not set! Please set it to point to where you installed gtkmm, http://www.gtkmm.org/download.shtml e.g. \"C:\\Program Files\\gtkmm\"")
+	if (NOT DEFINED ENV{GTKMM_BASEPATH})
+		message (FATAL_ERROR "Environment variable GTKMM_BASEPATH not set! Please set it to point to where you installed gtkmm, http://www.gtkmm.org/download.shtml e.g. \"C:\\Program Files\\gtkmm\"")
 	endif ()
 endmacro ()
 
 macro (INCLUDE_GTKMM)
 	include_directories (
-		$ENV{GTKMM_HOME}/include/gtk-2.0/gdk
-		$ENV{GTKMM_HOME}/include/atk-1.0
-		$ENV{GTKMM_HOME}/lib/gtk-2.0/include
-		$ENV{GTKMM_HOME}/include/gdkmm-2.4
-		$ENV{GTKMM_HOME}/include/atkmm-1.6
-		$ENV{GTKMM_HOME}/lib/gdkmm-2.4/include
-		$ENV{GTKMM_HOME}/lib/gtkmm-2.4/include
-		$ENV{GTKMM_HOME}/include/cairomm-1.0
-		$ENV{GTKMM_HOME}/include/cairo
-		$ENV{GTKMM_HOME}/include/pango-1.0
-		$ENV{GTKMM_HOME}/include/gtk-2.0
-		$ENV{GTKMM_HOME}/include/pangomm-1.4
-		$ENV{GTKMM_HOME}/include/sigc++-2.0
-		$ENV{GTKMM_HOME}/lib/glib-2.0/include
-		$ENV{GTKMM_HOME}/include/glib-2.0
-		$ENV{GTKMM_HOME}/lib/glibmm-2.4/include
-		$ENV{GTKMM_HOME}/include/glibmm-2.4
-		$ENV{GTKMM_HOME}/include/gtkmm-2.4
-		$ENV{GTKMM_HOME}/lib/sigc++-2.0/include
-		$ENV{GTKMM_HOME}/include/libglade-2.0
-		$ENV{GTKMM_HOME}/include/libglademm-2.4
+		$ENV{GTKMM_BASEPATH}/include/gtk-2.0/gdk
+		$ENV{GTKMM_BASEPATH}/include/atk-1.0
+		$ENV{GTKMM_BASEPATH}/lib/gtk-2.0/include
+		$ENV{GTKMM_BASEPATH}/include/gdkmm-2.4
+		$ENV{GTKMM_BASEPATH}/include/atkmm-1.6
+		$ENV{GTKMM_BASEPATH}/lib/gdkmm-2.4/include
+		$ENV{GTKMM_BASEPATH}/lib/gtkmm-2.4/include
+		$ENV{GTKMM_BASEPATH}/include/cairomm-1.0
+		$ENV{GTKMM_BASEPATH}/include/cairo
+		$ENV{GTKMM_BASEPATH}/include/pango-1.0
+		$ENV{GTKMM_BASEPATH}/include/gtk-2.0
+		$ENV{GTKMM_BASEPATH}/include/pangomm-1.4
+		$ENV{GTKMM_BASEPATH}/include/sigc++-2.0
+		$ENV{GTKMM_BASEPATH}/lib/glib-2.0/include
+		$ENV{GTKMM_BASEPATH}/include/glib-2.0
+		$ENV{GTKMM_BASEPATH}/lib/glibmm-2.4/include
+		$ENV{GTKMM_BASEPATH}/include/glibmm-2.4
+		$ENV{GTKMM_BASEPATH}/include/gtkmm-2.4
+		$ENV{GTKMM_BASEPATH}/lib/sigc++-2.0/include
+		$ENV{GTKMM_BASEPATH}/include/libglade-2.0
+		$ENV{GTKMM_BASEPATH}/include/libglademm-2.4
 	)
 	
 	link_directories (
-		$ENV{GTKMM_HOME}/lib
+		$ENV{GTKMM_BASEPATH}/lib
 	)
 	
 endmacro ()
