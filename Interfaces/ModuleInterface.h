@@ -60,7 +60,7 @@ namespace Foundation
       
         \note Every module should have a name. Only internal modules have types.
     */
-    class ModuleInterface
+    class REX_API ModuleInterface
     {
     public:
         ModuleInterface()  {}
@@ -98,7 +98,7 @@ namespace Foundation
     };
 
     //! interface for modules, implementation
-    class ModuleInterface_Impl : public ModuleInterface
+    class REX_API ModuleInterface_Impl : public ModuleInterface
     {
     public:
     

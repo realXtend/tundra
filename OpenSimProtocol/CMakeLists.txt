@@ -34,6 +34,8 @@ INCLUDE_POCO()
 INCLUDE_CURL()
 INCLUDE_XMLRPCEPI()
 
+add_definitions (-DMODULE_EXPORTS)
+
 # Define dynamic library
 if (NOT MSVC)
 	SET (LIBRARY_OUTPUT_PATH ${TARGET_DIR})
