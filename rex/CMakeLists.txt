@@ -19,11 +19,6 @@ include_directories (
 INCLUDE_POCO()
 INCLUDE_BOOST()
 
-# Library directories
-link_directories (
-	../external_libs
-)
-
 # Preprocessor defines
 if (MSVC)
    set_property(
