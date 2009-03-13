@@ -5,7 +5,6 @@
 
 #include "RenderServiceInterface.h"
 #include <boost/shared_ptr.hpp>
-#include "OgreWindowEventUtilities.h"
 
 namespace Foundation
 {
@@ -23,12 +22,16 @@ namespace Ogre
 namespace OgreRenderer
 {
     class OgreRenderingModule;
+    class EventListener;
 
     typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
+    typedef boost::shared_ptr<EventListener> EventListenerPtr;
     
     //! Ogre renderer
-    class Renderer : public Foundation::RenderServiceInterface, public Ogre::WindowEventListener
+    class Renderer : public Foundation::RenderServiceInterface
     {
+        friend class EventListener;
+        
     public:
         Renderer(Foundation::Framework* framework);
         virtual ~Renderer();
@@ -71,6 +74,11 @@ namespace OgreRenderer
         void windowResized(Ogre::RenderWindow* rw);
         
     private:
+        //! loads Ogre plugins in a manner which allows individual plugin loading to fail
+        /*! \param plugin_filename path & filename of the Ogre plugins file
+         */
+        void LoadPlugins(const std::string& plugin_filename);
+        
         //! sets up Ogre resources based on resources.cfg
         void SetupResources();
         
@@ -78,6 +86,9 @@ namespace OgreRenderer
         void SetupScene();
     
         boost::mutex renderer_;
+
+        //! successfully initialized flag
+        bool initialized_;
         
         //! Ogre root object
         OgreRootPtr root_;
@@ -94,8 +105,8 @@ namespace OgreRenderer
         //! framework we belong to
         Foundation::Framework* framework_;
         
-        //! successfully initialized flag
-        bool initialized_;
+        //! Ogre event listener
+        EventListenerPtr listener_;
     };
 
     typedef boost::shared_ptr<Renderer> RendererPtr;

@@ -11,19 +11,48 @@ using namespace Foundation;
 
 namespace OgreRenderer
 {
+    class EventListener : public Ogre::WindowEventListener
+    {
+    public:
+        EventListener(Renderer* renderer) :
+            renderer_(renderer)
+        {
+        }
+
+        ~EventListener() 
+        {
+        }
+        
+        void windowResized(Ogre::RenderWindow* rw)
+        {
+            if ((renderer_->camera_) && (rw == renderer_->renderwindow_))
+                renderer_->camera_->setAspectRatio(Ogre::Real(rw->getWidth() / Ogre::Real(rw->getHeight())));
+        }
+    
+        void windowClosed(Ogre::RenderWindow* rw)
+        {
+            if (rw == renderer_->renderwindow_)
+                renderer_->framework_->Exit();
+        }
+        
+    private:
+        Renderer* renderer_;
+    };
+
     Renderer::Renderer(Framework* framework) :
+        initialized_(false),
         framework_(framework),
         scenemanager_(0),
         camera_(0),
         renderwindow_(0),
-        initialized_(false)
+        listener_(EventListenerPtr(new EventListener(this)))
     {
     }
     
     Renderer::~Renderer()
     {
         if (initialized_)
-            Ogre::WindowEventUtilities::removeWindowEventListener(renderwindow_, this);
+            Ogre::WindowEventUtilities::removeWindowEventListener(renderwindow_, listener_.get());
 
         root_.reset();
     }
@@ -42,12 +71,14 @@ namespace OgreRenderer
         std::string logfilepath = framework_->GetPlatform()->GetUserDocumentsDirectory();
         logfilepath += "/Ogre.log";
 
-        root_ = OgreRootPtr(new Ogre::Root(plugins_filename, "ogre.cfg", logfilepath));
+        root_ = OgreRootPtr(new Ogre::Root("", "ogre.cfg", logfilepath));
+        LoadPlugins(plugins_filename);
         
 #ifdef _WINDOWS
         std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", "Direct3D9 Rendering Subsystem");
 #else
-        std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", "OpenGL Rendering Subsystem");
+        std::string rendersystem_name = "OpenGL Rendering Subsystem";
+        framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", rendersystem_name);
 #endif
         int width = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "WindowWidth", 800);
         int height = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "WindowHeight", 600);
@@ -70,7 +101,7 @@ namespace OgreRenderer
         {
             renderwindow_ = root_->createRenderWindow(application_name, width, height, fullscreen, &params);
         }
-        catch (Ogre::Exception& e) {}
+        catch (Ogre::Exception e) {}
         
         if (!renderwindow_)
         {
@@ -80,11 +111,52 @@ namespace OgreRenderer
         SetupResources();
         SetupScene();
         
-        Ogre::WindowEventUtilities::addWindowEventListener(renderwindow_, this);
+        Ogre::WindowEventUtilities::addWindowEventListener(renderwindow_, listener_.get());
         
         initialized_ = true;
     }
 
+    void Renderer::LoadPlugins(const std::string& plugin_filename)
+    {
+        Ogre::ConfigFile file;
+        try
+        {
+            file.load(plugin_filename);
+        }
+        catch (Ogre::Exception e)
+        {
+            OgreRenderingModule::LogError("Could not load Ogre plugins configuration file");
+            return;
+        }
+
+        Ogre::String plugin_dir = file.getSetting("PluginFolder");
+        Ogre::StringVector plugins = file.getMultiSetting("Plugin");
+        
+        if (plugin_dir.length())
+        {
+            if ((plugin_dir[plugin_dir.length() - 1] != '\\') && (plugin_dir[plugin_dir.length() - 1] != '/'))
+            {
+#ifdef _WINDOWS
+                plugin_dir += "\\";
+#else
+                plugin_dir += "/";
+#endif
+            }
+        }
+        
+        for (unsigned i = 0; i < plugins.size(); ++i)
+        {
+            try
+            {
+                root_->loadPlugin(plugin_dir + plugins[i]);
+            }
+            catch (Ogre::Exception e)
+            {
+                OgreRenderingModule::LogError("Plugin " + plugins[i] + " failed to load");
+            }
+        }
+    }
+    
     void Renderer::SetupResources()
     {
         Ogre::ConfigFile cf;
@@ -133,18 +205,6 @@ namespace OgreRenderer
         root_->renderOneFrame();
     }
     
-    void Renderer::windowResized(Ogre::RenderWindow* rw)
-    {
-        if ((camera_) && (rw == renderwindow_))
-        {
-            camera_->setAspectRatio(Ogre::Real(rw->getWidth() / Ogre::Real(rw->getHeight())));
-        }
-    }
-    
-    void Renderer::windowClosed(Ogre::RenderWindow* rw)
-    {
-        if (rw == renderwindow_)
-            framework_->Exit();
-    }
+
 }
 
