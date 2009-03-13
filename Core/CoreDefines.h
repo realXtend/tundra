@@ -10,5 +10,18 @@
 
 #define UNREFERENCED_PARAM(P)               (P)
 
+#undef REX_API
+#if defined (_WINDOWS)
+#if defined(MODULE_EXPORTS) 
+#define REX_API __declspec(dllexport) 
+#else
+#define REX_API __declspec(dllimport) 
+#endif
+#endif
+
+#ifndef REX_API
+#define REX_API
+#endif
+
 #endif
 

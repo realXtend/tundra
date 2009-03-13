@@ -21,6 +21,8 @@ include_directories (
 INCLUDE_BOOST()
 INCLUDE_POCO()
 
+add_definitions (-DMODULE_EXPORTS)
+
 # Define dynamic library
 if (NOT MSVC)
 	SET (LIBRARY_OUTPUT_PATH ${TARGET_DIR})
