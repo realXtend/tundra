@@ -11,7 +11,7 @@ struct PreInit
 {
     void operator()(Foundation::Framework *fw)
     {
-        fw->GetModuleManager()->ExcludeModule(Foundation::Module::Type_Test);
+        fw->GetModuleManager()->ExcludeModule(Foundation::Module::MT_Test);
         
         Foundation::ModuleInterface *module = new Scene::SceneModule;
         fw->GetModuleManager()->DeclareStaticModule(module);

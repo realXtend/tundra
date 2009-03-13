@@ -33,23 +33,23 @@ namespace Foundation
         */
 		enum Type 
 		{
-			Type_Scene = 0,
-			Type_Renderer, 
-			Type_Sound, 
-			Type_Gui, 
-			Type_WorldLogic, 
-			Type_Network,
-			Type_Test,
-			Type_NetTest,
-			Type_Python,
-			Type_Unknown
+			MT_Scene = 0,
+			MT_Renderer, 
+			MT_Sound, 
+			MT_Gui, 
+			MT_WorldLogic, 
+			MT_Network,
+			MT_Test,
+			MT_NetTest,
+			MT_Python,
+			MT_Unknown
 		};
 
         static const std::string &NameFromType(Type type)
         {
-            assert(type != Type_Unknown);
+            assert(type != MT_Unknown);
 
-            static const std::string type_strings[Type_Unknown] = { "SceneModule", "Renderer", "Sound", "Gui", "World Logic", "Network", "Test", "NetTest", "Python" };
+            static const std::string type_strings[MT_Unknown] = { "SceneModule", "Renderer", "Sound", "Gui", "World Logic", "Network", "Test", "NetTest", "Python" };
 
             return type_strings[type];
         }
@@ -90,7 +90,7 @@ namespace Foundation
 
         //! Returns the name of the module. Each module also has a static accessor for the name, it's needed by the logger.
         virtual const std::string &Name() const = 0;
-        //! Returns internal type of the module or Type_Unknown if module is not internal
+        //! Returns internal type of the module or MT_Unknown if module is not internal
         virtual Module::Type Type() const = 0;
 
         //! Declare a component the module defines. For internal use.
@@ -102,7 +102,7 @@ namespace Foundation
     {
     public:
     
-        explicit ModuleInterface_Impl(const std::string &name) : name_(name), type_(Module::Type_Unknown) 
+        explicit ModuleInterface_Impl(const std::string &name) : name_(name), type_(Module::MT_Unknown) 
         { 
             Poco::Logger::create(Name(),Poco::Logger::root().getChannel(),Poco::Message::PRIO_TRACE);     
         }
@@ -141,7 +141,7 @@ namespace Foundation
 
         virtual void Update() {}
 
-        virtual const std::string &Name() const { return (type_ == Module::Type_Unknown ? name_ : Module::NameFromType(type_)); }
+        virtual const std::string &Name() const { return (type_ == Module::MT_Unknown ? name_ : Module::NameFromType(type_)); }
         virtual Module::Type Type() const { return type_; }
 
         virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar)

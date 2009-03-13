@@ -19,6 +19,8 @@ include_directories (
 INCLUDE_POCO()
 INCLUDE_BOOST()
 
+add_definitions (-DMODULE_EXPORTS)
+
 # Preprocessor defines
 if (MSVC)
    set_property(

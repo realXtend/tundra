@@ -81,6 +81,12 @@ namespace Test
         component = entity->GetComponent(component->_Name());
         assert (component.get() != 0 && "Failed to get dummy component from entity.");
 
+        Foundation::ScenePtr cloned_scene = scene->Clone("Test clone scene");
+        assert (sceneManager->HasScene("Test clone scene"));
+        assert (cloned_scene->HasEntity(entity->GetId()));
+
+
+
         Foundation::TestServiceInterface *test_service = framework_->GetServiceManager()->GetService<Foundation::TestServiceInterface>(Foundation::Service::ST_Test);
         assert (test_service != NULL);
         assert (test_service->Test());

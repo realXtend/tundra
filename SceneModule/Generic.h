@@ -5,30 +5,33 @@
 
 #include "SceneInterface.h"
 
-namespace Foundation
-{
-    class Framework;
-}
-
 namespace Scene
 {
+    class SceneModule;
+
     //! Acts as a generic scenegraph for all entities in the world
     /*!
         Contains all entities in the world in a generic fashion.
         Acts as a factory for all entities.
     */
-    class Generic : public Foundation::SceneInterface
+    class REX_API Generic : public Foundation::SceneInterface_Impl
     {
         friend class SceneManager;
     private:
         Generic();
         //! constructor that takes a framework
-        Generic(Foundation::Framework *framework) : SceneInterface(), framework_(framework) {}
-
-
+        Generic(const std::string &name, SceneModule *module) : SceneInterface_Impl(name), module_(module) {}
+        //! copy constructor
+        Generic( const Generic &other, const std::string &name ) : SceneInterface_Impl(name), module_(other.module_), entities_(other.entities_) { }
 
     public:
         virtual ~Generic() {}
+
+        //! Make a soft clone of this scene. The new scene will contain the same entities as the old one.
+        /*! 
+            \param newName Name of the new scene
+        */
+        virtual Foundation::ScenePtr Clone(const std::string &newName) const;
 
         //! Creates new entity that contains the specified components
         /*!
@@ -53,7 +56,8 @@ namespace Scene
         //! Entities in a map
         EntityMap entities_;
 
-        Foundation::Framework *framework_;
+        //! parent module
+        SceneModule *module_;
     };
 }
 

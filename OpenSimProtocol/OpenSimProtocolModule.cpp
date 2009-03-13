@@ -12,7 +12,7 @@
 
 namespace OpenSimProtocol
 {
-	OpenSimProtocolModule::OpenSimProtocolModule() : ModuleInterface_Impl(Foundation::Module::Type_Network)
+	OpenSimProtocolModule::OpenSimProtocolModule() : ModuleInterface_Impl(Foundation::Module::MT_Network)
     {
     }
 

@@ -5,8 +5,6 @@
 
 #include "ComponentInterface.h"
 #include "Foundation.h"
-#include "EC_Geometry.h"
-#include <Poco/Delegate.h>
 
 namespace OgreRenderer
 {

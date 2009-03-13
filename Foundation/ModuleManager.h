@@ -142,7 +142,7 @@ namespace Foundation
         template <class T>
         T *GetModule(Foundation::Module::Type type)
         {
-            assert (type != Module::Type_Unknown);
+            assert (type != Module::MT_Unknown);
 
             ModuleVector::iterator it = modules_.begin();
             for ( ; it != modules_.end() ; ++it)

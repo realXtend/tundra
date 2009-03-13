@@ -7,12 +7,15 @@
 
 namespace Foundation
 {
+    class SceneInterface;
+    typedef boost::shared_ptr<SceneInterface> ScenePtr;
+
     //! Acts as a generic scenegraph for all entities in the world
     /*!
         Contains all entities in the world in a generic fashion.
         Acts as a factory for all entities.
     */
-    class SceneInterface
+    class REX_API SceneInterface
     {
     public:
         //! default constructor
@@ -20,6 +23,15 @@ namespace Foundation
 
         //! destructor
         virtual ~SceneInterface() {}
+
+        //! Returns scene name
+        virtual const std::string &Name() const = 0;
+
+        //! Make a soft clone of this scene. The new scene will contain the same entities as the old one.
+        /*! 
+            \param newName Name of the new scene
+        */
+        virtual ScenePtr Clone(const std::string &newName) const = 0;
 
         //! Creates new entity that contains the specified components
         /*!
@@ -37,7 +49,33 @@ namespace Foundation
         virtual bool HasEntity(Core::entity_id_t id) const = 0;
     };
 
-    typedef boost::shared_ptr<SceneInterface> ScenePtr;
+    //! Acts as a generic scenegraph for all entities in the world
+    /*!
+        Contains all entities in the world in a generic fashion.
+        Acts as a factory for all entities.
+    */
+    class REX_API SceneInterface_Impl : public SceneInterface
+    {
+    public:
+        //! default constructor
+        SceneInterface_Impl() {}
+
+        //! constructor that takes a string as name
+        SceneInterface_Impl(const std::string &name) : name_(name) {}
+
+        //! copy constructor
+        SceneInterface_Impl( const SceneInterface_Impl &other ) : SceneInterface(), name_(other.name_) { }
+
+        //! destructor
+        virtual ~SceneInterface_Impl() {}
+        
+        //! Returns scene name
+        virtual const std::string &Name() const { return name_; }
+
+    private:
+        //! name of the module
+        const std::string name_;
+    };
 }
 
 #endif
