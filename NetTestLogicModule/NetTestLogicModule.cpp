@@ -11,7 +11,7 @@
 
 namespace NetTest
 {
-    NetTestLogicModule::NetTestLogicModule() : ModuleInterface_Impl(Foundation::Module::Type_NetTest), updateCounter(0)
+    NetTestLogicModule::NetTestLogicModule() : ModuleInterface_Impl(Foundation::Module::MT_NetTest), updateCounter(0)
     {
     }
 

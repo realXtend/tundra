@@ -14,7 +14,7 @@ namespace Foundation
 namespace Scene
 {
     //! interface for modules
-    class SceneModule : public Foundation::ModuleInterface_Impl
+    class REX_API SceneModule : public Foundation::ModuleInterface_Impl
     {
     public:
         SceneModule();
@@ -27,15 +27,22 @@ namespace Scene
 
         virtual void Update();
 
+        //! Returns the scene manager
+        Foundation::SceneManagerPtr GetSceneManager() const { return scene_manager_; }
+
+        //! Returns the parent framework
+        Foundation::Framework *GetFramework() const { assert(framework_); return framework_; }
+
         MODULE_LOGGING_FUNCTIONS
 
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
-        static const Foundation::Module::Type type_static_ = Foundation::Module::Type_Scene;
+        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Scene;
 
     private:
         Foundation::SceneManagerPtr scene_manager_;
+        Foundation::Framework *framework_;
     };
 }
 

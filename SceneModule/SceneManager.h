@@ -12,6 +12,8 @@ namespace Foundation
 
 namespace Scene
 {
+    class SceneModule;
+
     //! Manages scenes. 
     /*!
         Contains all scenes in a generic fashion.
@@ -19,8 +21,14 @@ namespace Scene
     */
     class SceneManager : public Foundation::SceneManagerServiceInterface
     {
+        friend class SceneModule;
+    private:
+        //! default constructor not applicable
+        SceneManager();
+        //! constructor that takes a framework
+        SceneManager(SceneModule *module) : SceneManagerServiceInterface(), module_(module) {}
+
     public:
-        SceneManager(Foundation::Framework *framework) : SceneManagerServiceInterface(), framework_(framework) {}
         virtual ~SceneManager() {}
 
         //! Creates new empty scene
@@ -29,6 +37,14 @@ namespace Scene
             \return empty scene
         */
         virtual Foundation::ScenePtr CreateScene(const std::string &name);
+
+        //! Clones a scene. The new scene will contain the same entities as the old one.
+        /*!
+            \param name Name of the scene to clone
+            \param cloneName name of the new scene
+            \return Cloned scene
+        */
+        virtual Foundation::ScenePtr CloneScene(const std::string &name, const std::string &cloneName);
         
         //! Returns a scene
         /*!
@@ -58,8 +74,8 @@ namespace Scene
         //! container for entities managed by this scene manager
         SceneMap scenes_;
 
-        //! framework
-        Foundation::Framework *framework_;
+        //! parent module
+        SceneModule *module_;
     };
 }
 

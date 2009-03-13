@@ -3,15 +3,23 @@
 #include "StableHeaders.h"
 #include "Generic.h"
 #include "Entity.h"
+#include "SceneModule.h"
 
 namespace Scene
 {
+    Foundation::ScenePtr Generic::Clone(const std::string &newName) const
+    {
+        return module_->GetSceneManager()->CloneScene(Name(), newName);
+    }
+
     Foundation::EntityPtr Generic::CreateEntity(const Core::StringVector &components)
     {
+        Foundation::Framework *framework = module_->GetFramework();
+
         Foundation::EntityPtr entity = Foundation::EntityPtr(new Scene::Entity);
         for (size_t i=0 ; i<components.size() ; ++i)
         {
-            entity->AddEntityComponent(framework_->GetComponentManager()->CreateComponent(components[i]));
+            entity->AddEntityComponent(framework->GetComponentManager()->CreateComponent(components[i]));
         }
 
         entities_[entity->GetId()] = entity;

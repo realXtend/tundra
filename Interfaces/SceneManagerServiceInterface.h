@@ -24,6 +24,14 @@ namespace Foundation
             \return empty scene
         */
         virtual Foundation::ScenePtr CreateScene(const std::string &name) = 0;
+
+        //! Clones a scene. The new scene will contain the same entities as the old one.
+        /*!
+            \param name Name of the scene to clone
+            \param cloneName name of the new scene
+            \return Cloned scene
+        */
+        virtual Foundation::ScenePtr CloneScene(const std::string &name, const std::string &cloneName) = 0;
         
         //! Returns a scene
         /*!

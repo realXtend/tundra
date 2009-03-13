@@ -10,7 +10,7 @@
 
 namespace PythonScript
 {
-	PythonScriptModule::PythonScriptModule() : ModuleInterface_Impl(Foundation::Module::Type_Python)
+	PythonScriptModule::PythonScriptModule() : ModuleInterface_Impl(Foundation::Module::MT_Python)
     {
     }
 
