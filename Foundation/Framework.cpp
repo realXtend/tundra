@@ -7,6 +7,7 @@
 #include <Poco/FormattingChannel.h>
 #include <Poco/SplitterChannel.h>
 #include <Poco/LocalDateTime.h>
+#include "Poco/UnicodeConverter.h"
 
 #include "Foundation.h"
 
@@ -46,10 +47,12 @@ namespace Foundation
         Poco::Channel *consolechannel = loggingfactory->createChannel("ConsoleChannel");
         Poco::Channel *filechannel = loggingfactory->createChannel("FileChannel");
         
-        std::string logfilepath = platform_->GetUserDocumentsDirectory();
-        logfilepath += "/" + config_.GetString(Framework::ConfigurationGroup(), "application_name") + ".log";
+        std::wstring logfilepath_w = platform_->GetUserDocumentsDirectoryW();
+        logfilepath_w += L"/" + Core::ToWString(config_.GetString(Framework::ConfigurationGroup(), "application_name")) + L".log";
+        std::string logfilepath;
+        Poco::UnicodeConverter::toUTF8(logfilepath_w, logfilepath);
 
-        std::fstream log(logfilepath.c_str(), std::ios::app | std::ios::out);
+        std::fstream log(logfilepath_w.c_str(), std::ios::app | std::ios::out);
         log << std::endl;
         log << std::endl;
         log.close();
@@ -85,7 +88,6 @@ namespace Foundation
         timestring.append(boost::lexical_cast<std::string>(currenttime->minute()) + ":");
         timestring.append(boost::lexical_cast<std::string>(currenttime->second()));
         
-        ///\todo FIXME PoCo bug. Cannot handle scandic letters.
         try        
         {
             Foundation::RootLogInfo("Log file opened on " + timestring);
