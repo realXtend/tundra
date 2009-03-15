@@ -52,11 +52,6 @@ namespace Foundation
         std::string logfilepath;
         Poco::UnicodeConverter::toUTF8(logfilepath_w, logfilepath);
 
-        std::fstream log(logfilepath_w.c_str(), std::ios::app | std::ios::out);
-        log << std::endl;
-        log << std::endl;
-        log.close();
-
         filechannel->setProperty("path",logfilepath);
         filechannel->setProperty("rotation","3M");
         filechannel->setProperty("archive","number");

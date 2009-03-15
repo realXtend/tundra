@@ -28,6 +28,7 @@
 #include <set>
 #include <queue>
 #include <fstream>
+#include <math.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/any.hpp>
