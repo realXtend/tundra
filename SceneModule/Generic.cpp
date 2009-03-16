@@ -16,7 +16,7 @@ namespace Scene
     {
         Foundation::Framework *framework = module_->GetFramework();
 
-        Foundation::EntityPtr entity = Foundation::EntityPtr(new Scene::Entity);
+        Foundation::EntityPtr entity = Foundation::EntityPtr(new Scene::Entity(module_));
         for (size_t i=0 ; i<components.size() ; ++i)
         {
             entity->AddEntityComponent(framework->GetComponentManager()->CreateComponent(components[i]));
@@ -31,6 +31,16 @@ namespace Scene
     {
         Core::StringVector empty;
         return CreateEntity(empty);
+    }
+
+    Foundation::EntityPtr Generic::CloneEntity(const Foundation::EntityPtr &entity)
+    {
+        assert (entity.get());
+    
+        Foundation::EntityPtr new_entity = Foundation::EntityPtr(new Scene::Entity(*static_cast<Entity*> (entity.get())));
+        entities_[new_entity->GetId()] = new_entity;
+
+        return new_entity;
     }
     
     Foundation::EntityPtr Generic::GetEntity(Core::entity_id_t id) const

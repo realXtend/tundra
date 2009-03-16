@@ -21,11 +21,26 @@ namespace Scene
         Generic();
         //! constructor that takes a framework
         Generic(const std::string &name, SceneModule *module) : SceneInterface_Impl(name), module_(module) {}
-        //! copy constructor
+        //! copy constructor that also takes a name
         Generic( const Generic &other, const std::string &name ) : SceneInterface_Impl(name), module_(other.module_), entities_(other.entities_) { }
+        // copy constuctor
+        Generic( const Generic &other);
 
     public:
         virtual ~Generic() {}
+
+        const Generic &operator =(const Generic &other)
+        {
+            if (&other != this)
+            {
+                entities_ = other.entities_;
+            }
+            return *this;
+        }
+
+        bool operator == (const Generic &other) const { return Name() == other.Name(); }
+        bool operator != (const Generic &other) const { return !(*this == other); }
+        bool operator < (const Generic &other) const { return Name() < other.Name(); }
 
         //! Make a soft clone of this scene. The new scene will contain the same entities as the old one.
         /*! 
@@ -41,6 +56,13 @@ namespace Scene
 
         //! Creates an empty entity
         virtual Foundation::EntityPtr CreateEntity();
+
+        //! Makes a soft clone of the entity. The new entity will be placed in this scene.
+        /*! The entity need not be contained in this scene
+
+            \param entity Entity to be cloned
+        */
+        virtual Foundation::EntityPtr CloneEntity(const Foundation::EntityPtr &entity);
         
         //! Returns entity with the specified id
         virtual Foundation::EntityPtr GetEntity(Core::entity_id_t id) const;

@@ -16,15 +16,29 @@ namespace Scene
         return scene;
     }
 
+    void SceneManager::DeleteScene(const std::string &name)
+    {
+        assert (HasScene(name) == true);
+
+        SceneMap::iterator it = scenes_.find(name);
+        it->second.reset();
+        scenes_.erase(it);
+
+        assert (HasScene(name) == false);
+    }
+
     Foundation::ScenePtr SceneManager::CloneScene(const std::string &name, const std::string &cloneName)
     {
-        assert (scenes_.find(name) != scenes_.end());
+        assert (HasScene(name));
+        assert (HasScene(cloneName) == false);
         
         Generic *oldScene = static_cast<Generic*>(scenes_.find(name)->second.get());
 
         Foundation::ScenePtr scene = Foundation::ScenePtr(new Scene::Generic(*oldScene, cloneName));
 
         scenes_[cloneName] = scene;
+
+        assert (HasScene(cloneName));
 
         return scene;
     }

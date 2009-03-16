@@ -3,22 +3,58 @@
 #ifndef incl_SceneEntity_h
 #define incl_SceneEntity_h
 
-//#include "ComponentInterface.h"
 #include "EntityInterface.h"
 
 namespace Scene
 {
+    class SceneModule;
+
     //! Represents an entity in the world. 
     /*! Entity is just a collection of components, the components define what
         the entity is and what it does.
 
         Use SceneManager to create new entity, do not create directly.
     */
-    class Entity : public Foundation::EntityInterface
-    {    
-    public:
+    class REX_API Entity : public Foundation::EntityInterface
+    {
+        friend class Generic;
+    private:
+        //! default constructor
         Entity();
+
+        //! constructor that takes a module
+        /*!
+            \param module parent module
+        */
+        Entity(SceneModule *module);
+
+        //! copy constructor
+        Entity(const Entity &other) : module_(other.module_), id_(gid_)
+        {
+            gid_ = (gid_ + 1) % static_cast<Core::uint>(-1);
+            components_ = other.components_;
+        }
+
+    public:
         virtual ~Entity();
+
+        const Entity &operator =(const Entity &other)
+        {
+            if (&other != this)
+            {
+                components_ = other.components_;
+            }
+            return *this;
+        }
+        bool operator == (const Entity &other) const { return id_ == other.id_; }
+        bool operator != (const Entity &other) const { return !(*this == other); }
+        bool operator < (const Entity &other) const { return id_ < other.id_; }
+
+        //! Clones the entity. The new entity will contain the same components as the old one.
+        /*!
+            \param scene Name of the scene the new entity should be in
+        */
+        virtual Foundation::EntityPtr Clone(const std::string &scene) const;
  
         //! Add new component to this entity
         virtual void AddEntityComponent(const Foundation::ComponentInterfacePtr &component);
@@ -40,7 +76,10 @@ namespace Scene
 
     private:
         //! Unique id for this entity
-        Core::entity_id_t id_;
+        const Core::entity_id_t id_;
+
+        //! parent module
+        SceneModule *module_;
    };
 }
 

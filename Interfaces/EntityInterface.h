@@ -7,8 +7,12 @@
 
 namespace Foundation
 {
+    class EntityInterface;    
+    typedef boost::shared_ptr<EntityInterface> EntityPtr;
+
+
     //! interface for entities
-    class EntityInterface
+    class REX_API EntityInterface
     {
     public:
         //! default constructor
@@ -16,6 +20,12 @@ namespace Foundation
 
         //! destructor
         virtual ~EntityInterface() {}
+
+        //! Clones the entity. The new entity will contain the same components as the old one.
+        /*!
+            \param scene Name of the scene the new entity should be in
+        */
+        virtual EntityPtr Clone(const std::string &scene) const = 0;
 
         //! Add new component to this entity
         virtual void AddEntityComponent(const Foundation::ComponentInterfacePtr &component) = 0;
@@ -29,8 +39,6 @@ namespace Foundation
         //! Return the unique id of this component
         virtual Core::entity_id_t GetId() const = 0;
     };
-
-    typedef boost::shared_ptr<EntityInterface> EntityPtr;
 }
 
 #endif
