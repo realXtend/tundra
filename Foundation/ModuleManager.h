@@ -67,6 +67,17 @@ namespace Foundation
             - Add an entry to the module definition file for each exported class.
 
 
+        The preferred way to communicate between modules is by using services,
+        see ServiceManager for more information. It is also possible to communicate
+        by accessing modules directly.
+
+        Accessing modules directly using ModuleManager:
+            - All classes that need to be accessed should be declared with REX_API macro.
+            - MODULE_EXPORTS should be defined in both modules.
+            - Add the module's directory to includes
+            - Link against the module library
+           
+
         \todo Track which modules are enabled (initialized) and which are not
     */
     class ModuleManager

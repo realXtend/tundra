@@ -40,6 +40,9 @@ namespace Test
         assert(framework != NULL);
         framework_ = framework;
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Test, &test_service_);
+        assert (framework_->GetServiceManager()->IsRegistered(Foundation::Service::ST_Test) &&
+            "Failed to register test service");
+
         LogInfo("Module " + Name() + " initialized.");
     }
 
@@ -47,6 +50,8 @@ namespace Test
     void TestModule::Uninitialize(Foundation::Framework *framework)
     {
         framework_->GetServiceManager()->UnregisterService(&test_service_);
+        assert (framework_->GetServiceManager()->IsRegistered(Foundation::Service::ST_Test) == false &&
+            "Failed to unregister test service");
 
         assert(framework_ != NULL);
         framework_ = NULL;
