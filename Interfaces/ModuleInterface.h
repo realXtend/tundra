@@ -7,6 +7,7 @@
 #include <Poco/Logger.h>
 
 #include "ComponentRegistrarInterface.h"
+#include "CoreTypes.h"
 
 #define DECLARE_MODULE_EC(component) \
     { Foundation::ComponentRegistrarInterfacePtr registrar = Foundation::ComponentRegistrarInterfacePtr(new component::component##Registrar); \
@@ -24,6 +25,7 @@
 namespace Foundation
 {
     class Framework;
+    class EventDataInterface;
 
     namespace Module
     {
@@ -95,6 +97,11 @@ namespace Foundation
 
         //! Declare a component the module defines. For internal use.
         virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar) = 0;
+        
+        //! Receives an event
+        /*! Should return true if the event was handled and is not to be propagated further
+         */
+        virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) = 0;
     };
 
     //! interface for modules, implementation
@@ -148,6 +155,8 @@ namespace Foundation
         {
             component_registrars_.push_back(registrar);
         }
+        
+        virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) { return false; }
         
     private:
         typedef std::vector<ComponentRegistrarInterfacePtr> RegistrarVector;

@@ -26,6 +26,7 @@ namespace Foundation
         module_manager_ = ModuleManagerPtr(new ModuleManager(this));
         component_manager_ = ComponentManagerPtr(new ComponentManager(this));
         service_manager_ = ServiceManagerPtr(new ServiceManager(this));
+        event_manager_ = EventManagerPtr(new EventManager(this));
     }
 
     Framework::~Framework()

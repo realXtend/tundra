@@ -12,6 +12,7 @@ namespace Foundation
     class ComponentFactoryInterface;
     class ServiceManager;
     class ConfigurationManager;
+    class EventManager;
     class Platform;
 
     typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
@@ -19,10 +20,11 @@ namespace Foundation
     typedef boost::shared_ptr<ComponentFactoryInterface> ComponentFactoryInterfacePtr;
     typedef boost::shared_ptr<ServiceManager> ServiceManagerPtr;
     typedef boost::shared_ptr<ConfigurationManager> ConfigurationManagerPtr;
+    typedef boost::shared_ptr<EventManager> EventManagerPtr;
     typedef boost::shared_ptr<Platform> PlatformPtr;
     
     
-    //! Use root logging only foundation in classes.
+    //! Use root logging only in foundation classes.
     static void RootLogFatal(const std::string &msg)
     {
         Poco::Logger::get("Foundation").fatal(msg);
