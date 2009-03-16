@@ -41,6 +41,13 @@ namespace Foundation
 
         //! Creates an empty entity
         virtual Foundation::EntityPtr CreateEntity() = 0;
+
+        //! Makes a soft clone of the entity. The new entity will be placed in this scene.
+        /*! The entity need not be contained in this scene
+
+            \param entity Entity to be cloned
+        */
+        virtual Foundation::EntityPtr CloneEntity(const EntityPtr &entity) = 0;
         
         //! Returns entity with the specified id
         virtual Foundation::EntityPtr GetEntity(Core::entity_id_t id) const = 0;

@@ -25,8 +25,22 @@ namespace Foundation
         */
         virtual Foundation::ScenePtr CreateScene(const std::string &name) = 0;
 
+        //! Deletes a scene and all entities in it
+        /*! Since entities may be shared between scenes, not all entities may get deleted.
+            
+            Precondition: HasScene(name)
+            Postcondition: !HasScene(name)
+
+            \param name name of the scene to delete
+        */
+        virtual void DeleteScene(const std::string &name) = 0;
+
         //! Clones a scene. The new scene will contain the same entities as the old one.
         /*!
+            Precondition:   HasScene(name)
+                            !HasScene(cloneName)
+            Postcondition:  HasScene(cloneName)
+
             \param name Name of the scene to clone
             \param cloneName name of the new scene
             \return Cloned scene

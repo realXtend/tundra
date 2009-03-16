@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #include "RexLogic.h"
-#include "Entity.h"
 #include "ComponentManager.h"
 #include "Poco/ClassLibrary.h"
 
