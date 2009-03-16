@@ -89,6 +89,8 @@ namespace Foundation
         //! Declare a module from static library
         /*! Use 'new' to create the module. The framework will take responsibility of the
             declared module and will delete it after unloading it.
+
+            Loads the module immediatelly.
         */
         void DeclareStaticModule(ModuleInterface *module);
 
@@ -104,11 +106,13 @@ namespace Foundation
             Foundation::RootLogInfo("Module: " + Module::NameFromType(type) + " added to exclude list.");
         }
 
-        //! loads all available modules. Does not initialize them.
-        /*! All static modules should be declared before calling this.
+        //! Returns true if the specified module type is exluded from being loaded
+        bool IsExcluded(Module::Type type)
+        {
+            return (exclude_list_.find(type) != exclude_list_.end());
+        }
 
-            \note should only be called once, when firing up the framework
-        */
+        //! loads all available modules. Does not initialize them.
         void LoadAvailableModules();
 
         //! unloads all available modules. Modules does not get unloaded as such, only the module's unload() function will be called
@@ -164,6 +168,23 @@ namespace Foundation
             return NULL;
         }
 
+        //! Returns true if module is loaded, false otherwise
+        bool HasModule(Module::Type type) const
+        {
+            return HasModule(Module::NameFromType(type));
+        }
+
+        //! Returns true if module is loaded, false otherwise
+        bool HasModule(const std::string &name) const
+        {
+            for (size_t i = 0 ; i < modules_.size() ; ++i)
+            {
+                if (modules_[i]->Name() == name)
+                    return true;
+            }
+            return false;
+        }
+
         //! Loads and initializes a module with specified name
         /*! For internal use only!
 
@@ -191,6 +212,9 @@ namespace Foundation
 
         //! Uninitialize the specified module
         void UninitializeModule(ModuleInterface *module);
+
+        //! returns true if module is present
+        bool HasModule(ModuleInterface *module);
 
         //! Returns a vector containing all xml files in the specified directory, scans recursively.
         Core::StringVectorPtr GetXmlFiles(const std::string &path);

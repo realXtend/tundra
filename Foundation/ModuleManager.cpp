@@ -23,9 +23,10 @@ namespace Foundation
     void ModuleManager::DeclareStaticModule(ModuleInterface *module)
     {
         assert (module);
-        if (exclude_list_.find(module->Type()) == exclude_list_.end())
+        if (IsExcluded(module->Type()) == false && HasModule(module) == false)
         {
             modules_.push_back(module);
+            module->Load();
         } else
         {
             Foundation::RootLogInfo("Module: " + module->Name() + " is excluded and not loaded.");
@@ -34,13 +35,6 @@ namespace Foundation
 
     void ModuleManager::LoadAvailableModules()
     {
-        // First load all static modules
-        ModuleVector::iterator it = modules_.begin();
-        for ( ; it != modules_.end() ; ++it)
-        {
-            (*it)->Load();
-        }
-
         // Find all shared modules and load them
         Core::StringVectorPtr files;
         try
@@ -64,28 +58,6 @@ namespace Foundation
                 Foundation::RootLogError("Failed to load module.");
             }
         }
-
-        //fs::path full_path = fs::system_complete(fs::path(DEFAULT_MODULES_PATH));
-        //if ( !fs::exists( full_path ) || !fs::is_directory( full_path ))
-        //    throw Core::Exception("Failed to load modules, modules directory not found."); // can be considered fatal
-
-        //
-        //fs::recursive_directory_iterator iter( full_path );
-        //fs::recursive_directory_iterator end_iter;
-        //for ( ; iter != end_iter ; ++iter )
-        //{
-        //    try
-        //    {
-        //        if ( fs::is_regular_file( iter->status() ) )
-        //        {
-        //            LoadModule(iter->path());
-        //        }
-        //    } catch (std::exception &e) // may not be fatal, depending on which module failed
-        //    {
-        //        Foundation::RootLogError(std::string("Exception: ") + e.what());
-        //        Foundation::RootLogError("Failed to load module.");
-        //    }
-        //}
     }
 
     void ModuleManager::InitializeModules()
@@ -210,7 +182,7 @@ namespace Foundation
 
             ModuleInterface* module = cl.classFor(*it).create();
 
-            if (exclude_list_.find(module->Type()) == exclude_list_.end())
+            if (IsExcluded(module->Type()) == false && HasModule(module) == false)
             {
                 module->Load();
 
@@ -246,6 +218,13 @@ namespace Foundation
     {
         assert(module);
         module->_Uninitialize(framework_);
+    }
+
+    bool ModuleManager::HasModule(ModuleInterface *module)
+    {
+        assert (module);
+
+        return (std::find(modules_.begin(), modules_.end(), module) != modules_.end());
     }
 
     Core::StringVectorPtr ModuleManager::GetXmlFiles(const std::string &path)
