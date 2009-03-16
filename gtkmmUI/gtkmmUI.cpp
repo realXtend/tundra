@@ -5,7 +5,7 @@
 #include <libglademm.h>
 #include <glade/glade.h>
 
-#include "CoreDefines.h"
+#include "StableHeaders.h"
 
 #include "gtkmmUI.h"
 

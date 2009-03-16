@@ -26,6 +26,7 @@ namespace Foundation
         ComponentManagerPtr GetComponentManager() const { return component_manager_; }
         ModuleManagerPtr GetModuleManager() const { return module_manager_; }
         ServiceManagerPtr GetServiceManager() const { return service_manager_; }
+        EventManagerPtr GetEventManager() const { return event_manager_; }
         PlatformPtr GetPlatform() const { return platform_; }
 
         //! Signal the framework to exit at first possible opportunity
@@ -72,6 +73,7 @@ namespace Foundation
         ModuleManagerPtr module_manager_;
         ComponentManagerPtr component_manager_;
         ServiceManagerPtr service_manager_;
+        EventManagerPtr event_manager_;
         PlatformPtr platform_;
 
         //! if true, exit application
