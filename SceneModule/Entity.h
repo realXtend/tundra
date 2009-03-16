@@ -46,15 +46,15 @@ namespace Scene
             }
             return *this;
         }
-        bool operator == (const Entity &other) const { return id_ == other.id_; }
-        bool operator != (const Entity &other) const { return !(*this == other); }
-        bool operator < (const Entity &other) const { return id_ < other.id_; }
+        virtual bool operator == (const EntityInterface &other) const { return GetId() == other.GetId(); }
+        virtual bool operator != (const EntityInterface &other) const { return !(*this == other); }
+        virtual bool operator < (const EntityInterface &other) const { return GetId() < other.GetId(); }
 
         //! Clones the entity. The new entity will contain the same components as the old one.
         /*!
             \param scene Name of the scene the new entity should be in
         */
-        virtual Foundation::EntityPtr Clone(const std::string &scene) const;
+        virtual Foundation::EntityPtr Clone(const std::string &scene_name) const;
  
         //! Add new component to this entity
         virtual void AddEntityComponent(const Foundation::ComponentInterfacePtr &component);

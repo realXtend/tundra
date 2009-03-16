@@ -24,6 +24,10 @@ namespace Foundation
         //! destructor
         virtual ~SceneInterface() {}
 
+        virtual bool operator == (const SceneInterface &other) const = 0;
+        virtual bool operator != (const SceneInterface &other) const = 0;
+        virtual bool operator < (const SceneInterface &other) const = 0;
+
         //! Returns scene name
         virtual const std::string &Name() const = 0;
 

@@ -21,11 +21,15 @@ namespace Foundation
         //! destructor
         virtual ~EntityInterface() {}
 
+        virtual bool operator == (const EntityInterface &other) const = 0;
+        virtual bool operator != (const EntityInterface &other) const = 0;
+        virtual bool operator < (const EntityInterface &other) const = 0;
+
         //! Clones the entity. The new entity will contain the same components as the old one.
         /*!
             \param scene Name of the scene the new entity should be in
         */
-        virtual EntityPtr Clone(const std::string &scene) const = 0;
+        virtual EntityPtr Clone(const std::string &scene_name) const = 0;
 
         //! Add new component to this entity
         virtual void AddEntityComponent(const Foundation::ComponentInterfacePtr &component) = 0;

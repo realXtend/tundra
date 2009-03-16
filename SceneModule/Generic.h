@@ -38,9 +38,9 @@ namespace Scene
             return *this;
         }
 
-        bool operator == (const Generic &other) const { return Name() == other.Name(); }
-        bool operator != (const Generic &other) const { return !(*this == other); }
-        bool operator < (const Generic &other) const { return Name() < other.Name(); }
+        virtual bool operator == (const SceneInterface &other) const { return Name() == other.Name(); }
+        virtual bool operator != (const SceneInterface &other) const { return !(*this == other); }
+        virtual bool operator < (const SceneInterface &other) const { return Name() < other.Name(); }
 
         //! Make a soft clone of this scene. The new scene will contain the same entities as the old one.
         /*! 

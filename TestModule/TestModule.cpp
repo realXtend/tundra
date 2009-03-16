@@ -81,9 +81,27 @@ namespace Test
         component = entity->GetComponent(component->_Name());
         assert (component.get() != 0 && "Failed to get dummy component from entity.");
 
+
+
         Foundation::ScenePtr cloned_scene = scene->Clone("Test clone scene");
         assert (sceneManager->HasScene("Test clone scene"));
-        assert (cloned_scene->HasEntity(entity->GetId()));
+        assert (cloned_scene->HasEntity(entity->GetId()) && "Failed to clone a scene");
+
+        Foundation::EntityPtr cloned_entity = entity->Clone("Test clone scene");
+        component = cloned_entity->GetComponent(component->_Name());
+        assert (component.get() != 0 && "Failed to clone an entity.");
+
+        Foundation::EntityPtr cloned_entity2 = cloned_scene->GetEntity(cloned_entity->GetId());
+        Foundation::EntityPtr entity2 = cloned_scene->CreateEntity();
+        assert (*cloned_entity2.get() == *cloned_entity.get() && "EntityInterface operator== failed");
+        assert (*entity.get() != *entity2.get() && "EntityInterface operator!= failed");
+        assert (*cloned_entity.get() < *entity2.get() && "EntityInterface operator< failed");
+
+
+        Foundation::ScenePtr scene2 = sceneManager->GetScene("test_scene");
+        assert(*scene.get() == *scene2.get() && "SceneInterface operator== failed");
+        assert(*scene.get() != *cloned_scene.get() && "SceneInterface operator!= failed");
+        assert(*cloned_scene.get() < *scene.get() && "SceneInterface operator< failed");
 
 
 

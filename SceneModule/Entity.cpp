@@ -20,13 +20,14 @@ namespace Scene
     {
     }
 
-    Foundation::EntityPtr Entity::Clone(const std::string &scene) const
+    Foundation::EntityPtr Entity::Clone(const std::string &scene_name) const
     {
         Foundation::SceneManagerPtr manager = module_->GetSceneManager();
-        assert (manager->HasScene(scene));
+        assert (manager->HasScene(scene_name));
 
-        const Foundation::EntityPtr thisEntity(const_cast<Entity*> (this));
-        Foundation::EntityPtr new_entity = manager->GetScene(scene)->CloneEntity(thisEntity);
+        Foundation::ScenePtr scene = manager->GetScene(scene_name);
+        Foundation::EntityPtr entity = scene->GetEntity(GetId());
+        Foundation::EntityPtr new_entity = scene->CloneEntity(entity);
 
         return new_entity;
     }
