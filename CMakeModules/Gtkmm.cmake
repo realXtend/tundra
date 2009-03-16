@@ -21,6 +21,7 @@ macro (INCLUDE_GTKMM)
 		$ENV{GTKMM_BASEPATH}/include/pango-1.0
 		$ENV{GTKMM_BASEPATH}/include/gtk-2.0
 		$ENV{GTKMM_BASEPATH}/include/pangomm-1.4
+		$ENV{GTKMM_BASEPATH}/include/giomm-2.4
 		$ENV{GTKMM_BASEPATH}/include/sigc++-2.0
 		$ENV{GTKMM_BASEPATH}/lib/glib-2.0/include
 		$ENV{GTKMM_BASEPATH}/include/glib-2.0
