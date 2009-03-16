@@ -90,6 +90,10 @@ namespace OgreRenderer
         {
             throw Core::Exception("Could not find Ogre rendersystem.");
         }
+
+        // GTK's pango/cairo/whatever's font rendering doesn't work if the floating point mode is not set to strict.
+        // This however creates undefined behavior for D3D (refrast + D3DX), but we aren't using those anyway.
+        rendersystem->setConfigOption("Floating-point mode", "Consistent");
         
         root_->setRenderSystem(rendersystem);
         root_->initialise(false);
