@@ -44,6 +44,7 @@ namespace Foundation
 			MT_Test,
 			MT_NetTest,
 			MT_Python,
+            MT_Console,
 			MT_Unknown
 		};
 
@@ -51,7 +52,7 @@ namespace Foundation
         {
             assert(type != MT_Unknown);
 
-            static const std::string type_strings[MT_Unknown] = { "SceneModule", "Renderer", "Sound", "Gui", "World Logic", "Network", "Test", "NetTest", "Python" };
+            static const std::string type_strings[MT_Unknown] = { "SceneModule", "Renderer", "Sound", "Gui", "World Logic", "Network", "Test", "NetTest", "Python", "Console" };
 
             return type_strings[type];
         }
