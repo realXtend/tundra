@@ -10,6 +10,8 @@
 
 #define UNREFERENCED_PARAM(P)               (P)
 
+#define TO_STRING(p) boost::lexical_cast<std::string>(p)
+
 #undef REX_API
 #if defined (_WINDOWS)
 #if defined(MODULE_EXPORTS) 
