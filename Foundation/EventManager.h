@@ -3,8 +3,6 @@
 #ifndef incl_Foundation_EventManager_h
 #define incl_Foundation_EventManager_h
 
-#include <map>
-
 namespace Foundation
 {
     class Framework;
@@ -36,7 +34,8 @@ namespace Foundation
         ~EventManager();
         
         //! registers an event category by name
-        /*! \param name new event category name
+        /*! if event category already registered, will return the existing id
+            \param name new event category name
             \return non-zero id to event category
          */
         Core::event_category_id_t RegisterEventCategory(const std::string& name);

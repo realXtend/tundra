@@ -29,7 +29,7 @@ namespace Foundation
         }
         else
         {
-            throw Core::Exception((std::string("Event category " + name + " already registered.")).c_str());
+            Foundation::RootLogWarning("Event category " + name + " is already registered");
         }
         
         return event_category_map_[name];
