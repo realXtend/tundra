@@ -48,3 +48,19 @@ target_link_libraries (${TARGET_NAME} Foundation)
 foreach (XML_FILE ${XML_FILES})
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
 endforeach (XML_FILE)
+
+# Precompiled headers on MSVC
+if (MSVC)
+	foreach( src_file ${CPP_FILES} )
+        	set_source_files_properties(
+            		${src_file}
+            		PROPERTIES
+            		COMPILE_FLAGS "/YuStableHeaders.h"
+        	)
+	endforeach( src_file ${CPP_FILES} )
+
+	set_source_files_properties(StableHeaders.cpp
+        	PROPERTIES
+        	COMPILE_FLAGS "/YcStableHeaders.h"
+        )
+endif (MSVC)
