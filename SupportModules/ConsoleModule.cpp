@@ -31,6 +31,8 @@ namespace Console
         assert (framework);
         framework_ = framework;
 
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Console, &native_);
+
         LogInfo("Module " + Name() + " initialized.");
     }
 
@@ -41,6 +43,8 @@ namespace Console
     // virtual 
     void ConsoleModule::Uninitialize(Foundation::Framework *framework)
     {
+        framework_->GetServiceManager()->UnregisterService(&native_);
+
         framework_ = NULL;
 
         LogInfo("Module " + Name() + " uninitialized.");

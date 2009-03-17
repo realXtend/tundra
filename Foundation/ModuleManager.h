@@ -190,7 +190,7 @@ namespace Foundation
 
             \param name name of the module to load
         */
-        void LoadModuleByName(const std::string &name);
+        void LoadModuleByName(const std::string &lib, const std::string &module);
 
     private:
 

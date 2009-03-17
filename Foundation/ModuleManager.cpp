@@ -51,7 +51,7 @@ namespace Foundation
 
             try
             {
-                 LoadModule(path);
+                LoadModule(path);
             } catch (std::exception &e) // may not be fatal, depending on which module failed
             {
                 Foundation::RootLogError(std::string("Exception: ") + e.what());
@@ -94,9 +94,10 @@ namespace Foundation
         }
     }
 
-    void ModuleManager::LoadModuleByName(const std::string &name)
+    void ModuleManager::LoadModuleByName(const std::string &lib, const std::string &module)
     {
-        assert (name.empty() == false);
+        assert (lib.empty() == false);
+        assert (module.empty() == false);
 
         Core::StringVectorPtr files = GetXmlFiles(DEFAULT_MODULES_PATH);
         for (size_t i = 0 ; i < files->size() ; ++i)
@@ -106,7 +107,7 @@ namespace Foundation
 
             path.replace_extension("");
             std::string filename = path.filename();
-            if (filename == name)
+            if (filename == lib)
             {
                 LoadModule(orig_path);
                 break;
@@ -115,7 +116,7 @@ namespace Foundation
 
         for (size_t i = 0 ; i < modules_.size() ; ++i)
         {
-            if (modules_[i]->Name() == name)
+            if (modules_[i]->Name() == module)
             {
                 modules_[i]->_Initialize(framework_);
                 break;
