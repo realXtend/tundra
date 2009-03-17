@@ -23,7 +23,7 @@ public:
 	~NetMessageManager();
 
 	/// Connects to the given server.
-	void ConnectTo(const char *serverAddress, int port);
+	bool ConnectTo(const char *serverAddress, int port);
 	
 	/// Disconnets from the current server.
 	void Disconnect();

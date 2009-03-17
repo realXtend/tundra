@@ -22,7 +22,7 @@ This project has the following dependencies:
    and is used as a dynamic library.
    x Includes and libs: Includes are in SVN in the directory GnuWin32\include, and libs are at GnuWin32\lib,
                         This project is set to refer to this directory for the dependencies.
-   x Windows DLLs: The file libiconv2.dll is included in bin/.
+   x Windows DLLs: The file libiconv2.dll is included in GnuWin32/bin/.
 
 - eXpat 2.0.1: http://expat.sourceforge.net/ . This is used as a dynamic library, and is located in the
    directory Expat 2.0.1/ in SVN. 
@@ -45,5 +45,5 @@ This project has the following dependencies:
    x Windows DLLs: Copy both debug and release DLL's to SVN bin directory
   
 - Gtkmm is being used by the GtkmmUI for the UI system. Use versions glibmm: 2.18.x, gtkmm: 2.14.x, libglademm: 2.6.x or newer from http://www.gtkmm.org/
-   x Includes and libs: Set the environment variable GTKMM_HOME to point to the Gtkmm root.
+   x Includes and libs: Set the environment variable GTKMM_BASEPATH to point to the Gtkmm root.
    x Windows DLLs: These are provided by the Gtkmm package.

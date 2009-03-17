@@ -36,10 +36,10 @@ namespace Foundation
 		enum Type 
 		{
 			MT_Scene = 0,
-			MT_Renderer, 
-			MT_Sound, 
-			MT_Gui, 
-			MT_WorldLogic, 
+			MT_Renderer,
+			MT_Sound,
+			MT_Gui,
+			MT_WorldLogic,
 			MT_Network,
 			MT_Test,
 			MT_NetTest,

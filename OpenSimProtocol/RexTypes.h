@@ -2,6 +2,8 @@
 #ifndef incl_RexTypes_h
 #define incl_RexTypes_h
 
+#include "CoreDefines.h"
+
 #include "boost/cstdint.hpp"
 
 ///\todo Move all these to core framework headers.

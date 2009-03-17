@@ -17,7 +17,6 @@
 #include "Poco/DOM/AutoPtr.h"
 
 #include "RexTypes.h"
-
 #include "xmlrpc.h"
 
 /// Represents a XMLRPC function call.
@@ -58,7 +57,7 @@ public:
 	PocoXMLRPCConnection(const char *address, int port);
 	
 	/// Writer callback for cURL.
-	size_t WriteCallback(char *data, size_t size, size_t nmemb, std::vector<char> *buffer);
+	//size_t WriteCallback(char *data, size_t size, size_t nmemb, std::vector<char> *buffer);
 	
 	/// Starts a new request. To actually send the request over, call FinishXMLRPCCall.
 	/// @return A structure that represents the empty request. Call its member functions to fill in the function call

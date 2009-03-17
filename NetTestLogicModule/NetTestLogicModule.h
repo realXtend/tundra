@@ -19,14 +19,32 @@ namespace Foundation
 namespace OpenSimProtocol
 {
 	class OpenSimProtocolModule;
+	class RexUUID;
 }
 
-//! Contains unit tests
-/*! All Core and Foundation classes should be unit tested.
-*/
+/// Object in the sim (prim or avatar)
+struct Object
+{
+	std::string name;
+	uint32_t localID;
+	RexUUID fullID;
+};
+
+/// A unary find predicate that looks for a Object that has the given desired id in a object list container.
+class IDMatchPred
+{
+public:
+	IDMatchPred(RexUUID id):rexid_(id) {}
+	bool operator()(const std::pair<RexUUID, Object*> &elem) const { return elem.second && elem.second->fullID == rexid_; }
+
+private:
+	RexUUID rexid_;
+};
+
+
 namespace NetTest
 {
-    //! interface for modules
+    //! Interface for modules
     class NetTestLogicModule: public Foundation::ModuleInterface_Impl, public INetMessageListener
     {
     public:
@@ -39,24 +57,52 @@ namespace NetTest
         virtual void Uninitialize(Foundation::Framework *framework);
         virtual void Update();
         
-        MODULE_LOGGING_FUNCTIONS;
+        MODULE_LOGGING_FUNCTIONS
 
-        //! returns name of this module. Needed for logging.
+        /// Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
-
+           
+        /// Returns type of this module. Needed for logging.
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_NetTest;
         
+        /// Called for each network message received.
         virtual void OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg);
         
+        typedef std::vector<std::pair<RexUUID, Object*> > ObjectList_t;
+		
+		/// List of objects (prims) in the world.
+		ObjectList_t objectList_;
+		
+		/// List of avatars (prims) in the world.
+		ObjectList_t avatarList_;
+		
+		/// Name of the sim we're connected.
+		std::string simName_;
+	    
     private:
-        void PerformXMLRPCLogin(const char *first_name, const char *last_name, const char *password, const char *address, int port);
-        
+        /// Sends the first UDP packet to open up the circuit with the server.
+        void SendUseCircuitCodePacket();
+
+        /// Signals taht agent is coming into the region. The region should be expecting the agent.
+        /// Server starts to send object updates etc after it has received this packet.
+        void SendCompleteAgentMovementPacket();
+
+        /// Sends a message requesting logout from the server. The server is then going to flood us with some
+    	/// inventory UUIDs after that, but we'll be ignoring those.
+        void SendLogoutRequestPacket();
+            
         Foundation::Framework *framework_;
+
 		OpenSimProtocol::OpenSimProtocolModule *netInterface_;
+
 		/// Temporary counter.
 		u32 updateCounter;
+        
+        /// Server-spesific info for this client.
+		ClientParameters myInfo_;
 		
-		
+		/// Signals that the logout message has sent. Do not send anymore messages.
+		bool bLogoutSent;		
     };
 }
 #endif

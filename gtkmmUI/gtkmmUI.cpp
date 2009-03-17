@@ -22,8 +22,12 @@ public:
     boost::shared_ptr<Gtk::Main> gtk;
     // Handle to a treeview of a listing of currently running modules, for debugging purposes.
     Glib::RefPtr<Gnome::Glade::Xml> debugModules;
+    // Handle to the login window controls.
+    Glib::RefPtr<Gnome::Glade::Xml> loginControls;
     // The window of the treeview control that shows running modules.
     Gtk::Window *debugWindow;
+    // The login window.
+    Gtk::Window *loginWindow;
 
     struct ModelColumns : public Gtk::TreeModelColumnRecord
     {
@@ -64,8 +68,13 @@ void GtkmmUI::Initialize(Foundation::Framework *framework)
     if (!impl_->debugModules)
         return;
 
+    impl_->loginControls = Gnome::Glade::Xml::create("data/loginWindow.glade");
+    if (!impl_->loginControls)
+        return;
+        
     impl_->debugModules->get_widget("windowDebugModules", impl_->debugWindow);
-
+    impl_->loginControls->get_widget("dialog_login", impl_->loginWindow);
+    
     Gtk::TreeView *tv = 0;
     impl_->debugModules->get_widget("treeview1", tv);
 
@@ -93,11 +102,13 @@ void GtkmmUI::Initialize(Foundation::Framework *framework)
         return;
 
     impl_->debugWindow->show();
+    impl_->loginWindow->show();
 }
 
 void GtkmmUI::Uninitialize(Foundation::Framework *framework)
 {
     SAFE_DELETE(impl_->debugWindow);
+    SAFE_DELETE(impl_->loginWindow);
 }
 
 void GtkmmUI::Update()

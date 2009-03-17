@@ -4,10 +4,8 @@
 #include <sstream>
 
 #include "RexUUID.h"
-#include <boost/lexical_cast.hpp>
 
 using namespace std;
-using namespace boost;
 
 /// Converts a single char to a value of 0-15. (4 bits)
 static uint8_t CharToNibble(char c)

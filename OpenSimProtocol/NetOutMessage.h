@@ -11,7 +11,7 @@ class NetMessageManager;
 
 /** Helps building outbound packets by supporting convenient addition of new data to the message. Also
 	tracks that the message is crafted with the right structure. */
-class NetOutMessage
+class REX_API NetOutMessage
 {
 public:
 	NetOutMessage();
