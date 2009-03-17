@@ -94,6 +94,9 @@ BOOST_AUTO_TEST_CASE( core_string_utils )
     BOOST_CHECK_EQUAL (Core::ToString(123),  std::string("123"));
 
     BOOST_CHECK (Core::ToWString("test") == std::wstring(L"test"));
+
+    BOOST_CHECK_EQUAL (Core::ParseString<unsigned int>("543210"),  543210);
+    BOOST_CHECK_EQUAL (Core::ParseString<int>("-1"),  -1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

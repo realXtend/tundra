@@ -14,6 +14,9 @@ namespace Core
 
     template <class T>
     static std::string ToString(const T &val) { return boost::lexical_cast<std::string>(val); }
+
+    template <typename T>
+    static T ParseString(const std::string &val) { return boost::lexical_cast<T>(val); }
 }
  
 #endif
