@@ -83,8 +83,13 @@ namespace Foundation
         //! Uninitialize the module. Called when module is removed from use. Do not override in child classes. For internal use.
         virtual void _Uninitialize(Foundation::Framework *framework) = 0;
 
+        //! Pre-initialization for the module. Called before modules are initializated.
+        virtual void PreInitialize(Framework *framework) = 0;
         //! Initializes the module. Called when module is taken in use
         virtual void Initialize(Framework *framework) = 0;
+        //! Post-initialization for the module. At this point Initialize() has been called for all enabled modules.
+        virtual void PostInitialize(Framework *framework) = 0;
+        
         //! Uninitialize the module. Called when module is removed from use
         virtual void Uninitialize(Foundation::Framework *framework) = 0;
 
@@ -147,6 +152,9 @@ namespace Foundation
             Uninitialize(framework);
         }
 
+        virtual void PreInitialize(Framework *framework) {}
+        virtual void PostInitialize(Framework *framework) {}
+        
         virtual void Update() {}
 
         virtual const std::string &Name() const { return (type_ == Module::MT_Unknown ? name_ : Module::NameFromType(type_)); }

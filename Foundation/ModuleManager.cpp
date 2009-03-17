@@ -64,7 +64,17 @@ namespace Foundation
     {
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
+            PreInitializeModule(modules_[i]);
+        }
+        
+        for (size_t i=0 ; i<modules_.size() ; ++i)
+        {
             InitializeModule(modules_[i]);
+        }
+        
+        for (size_t i=0 ; i<modules_.size() ; ++i)
+        {
+            PostInitializeModule(modules_[i]);
         }
     }
 
@@ -208,10 +218,22 @@ namespace Foundation
         modules_.clear();
     }
 
+    void ModuleManager::PreInitializeModule(ModuleInterface *module)
+    {
+        assert(module);
+        module->PreInitialize(framework_);
+    }
+    
     void ModuleManager::InitializeModule(ModuleInterface *module)
     {
         assert(module);
         module->_Initialize(framework_);
+    }
+
+    void ModuleManager::PostInitializeModule(ModuleInterface *module)
+    {
+        assert(module);
+        module->PostInitialize(framework_);
     }
 
     void ModuleManager::UninitializeModule(ModuleInterface *module)

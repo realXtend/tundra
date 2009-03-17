@@ -207,8 +207,14 @@ namespace Foundation
         */
         void LoadModule(const std::string &moduleName,  const Core::StringVector &entries);
 
+        //! Pre-initialize the specified module
+        void PreInitializeModule(ModuleInterface *module);
+        
         //! Initialize the specified module
         void InitializeModule(ModuleInterface *module);
+
+        //! Post-initialize the specified module
+        void PostInitializeModule(ModuleInterface *module);
 
         //! Uninitialize the specified module
         void UninitializeModule(ModuleInterface *module);
