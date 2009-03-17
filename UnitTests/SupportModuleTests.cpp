@@ -15,6 +15,9 @@ struct TestA
 {
     Foundation::Console::CommandResult TestCallbackSuccess(const Core::StringVector &params)
     {
+        BOOST_CHECK_EQUAL(params[0], "paramA");
+        BOOST_CHECK_EQUAL(params[1], "paramB");
+
         Foundation::Console::CommandResult result = {true, "Success"};
         return result;
     }
@@ -31,9 +34,10 @@ BOOST_AUTO_TEST_CASE( support_modules_console )
         (Foundation::Service::ST_Console);
 
     TestA test_class;
-    Foundation::Console::Command command = {"Test", "Test command", Foundation::Console::Bind(&test_class, TestA::TestCallbackSuccess) };
-    console->AddCommand(command);
-    console->ExecuteCommand("test_command()");
+    Foundation::Console::Command command = {"Test_Command", "Test command", Foundation::Console::Bind(&test_class, TestA::TestCallbackSuccess) };
+    console->RegisterCommand(command);
+
+    console->ExecuteCommand("test_command (paramA, paramB )");
 
     
 

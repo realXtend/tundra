@@ -65,11 +65,11 @@ namespace Foundation
         struct Command
         {
             //! internal name for the command, case insensitive
-            const std::string name_;
+            std::string name_;
             //! short description of the command
-            const std::string description_;
+            std::string description_;
             //! callback for the command
-            const CallbackPtr callback_;
+            CallbackPtr callback_;
         };
 
         template <typename T>
@@ -89,10 +89,17 @@ namespace Foundation
             virtual ~ConsoleServiceInterface() {}
 
             //! Add a command to the debug console
-            virtual void AddCommand(const Command &command) = 0;
+            virtual void RegisterCommand(const Command &command) = 0;
 
             //! Parse and execute command line
-            virtual void ExecuteCommand(const std::string &command_line) = 0;
+            virtual void ExecuteCommand(const std::string &commandline) = 0;
+
+            //! Execute command
+            /*!
+                \param name Name of the command to execute
+                \param params Parameters to pass to the command
+            */
+            virtual void ExecuteCommand(const std::string &name, const Core::StringVector &params) = 0;
         };
     }
 }
