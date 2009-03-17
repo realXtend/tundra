@@ -9,22 +9,35 @@
 
 #include "RexProtocolMsgIDs.h"
 
+/// Login credentials. 
+///\todo Use real ones, not hardcoded.
+const char serverAddress[] = "192.168.1.144";
+const int port = 9000;
+const char firstName[] = "jj";
+const char lastName[] = "jj";
+const char password[] = "jj";
+
 namespace NetTest
 {
-    NetTestLogicModule::NetTestLogicModule() : ModuleInterface_Impl(Foundation::Module::MT_NetTest), updateCounter(0)
+    NetTestLogicModule::NetTestLogicModule() 
+    : ModuleInterface_Impl(Foundation::Module::MT_NetTest), updateCounter(0), bLogoutSent(false)
     {
+        objectList_.clear();
+        avatarList_.clear();
     }
 
     NetTestLogicModule::~NetTestLogicModule()
     {
+    	for(ObjectList_t::iterator iter = objectList_.begin(); iter != objectList_.end(); ++iter)
+		    delete iter->second;
+
+    	for(ObjectList_t::iterator iter = avatarList_.begin(); iter != avatarList_.end(); ++iter)
+		    delete iter->second;
     }
 
     // virtual
     void NetTestLogicModule::Load()
     {
-//        using namespace NetTest;
-//        DECLARE_MODULE_EC(EC_Dummy);
-
         LogInfo("Module " + Name() + " loaded.");
     }
 
@@ -41,7 +54,8 @@ namespace NetTest
         framework_ = framework;
 		
 		using namespace OpenSimProtocol;
-		netInterface_ = dynamic_cast<OpenSimProtocolModule *>(framework->GetModuleManager()->GetModule("Network")); ///\todo weak_pointerize
+		///\todo weak_pointerize
+		netInterface_ = dynamic_cast<OpenSimProtocolModule *>(framework->GetModuleManager()->GetModule("Network"));
 		if (!netInterface_)
 		{
 			LogError("Getting network interface did not succeed.");
@@ -50,7 +64,8 @@ namespace NetTest
 		}
 		
 		netInterface_->AddListener(this);
-        LogInfo("Module " + Name() + " uninitialized.");
+		
+        LogInfo("Module " + Name() + " initialized.");
     }
 
     // virtual 
@@ -58,40 +73,39 @@ namespace NetTest
     {
 		assert(framework_ != NULL);
 		framework_ = NULL;
-
+        
+        ///\todo Unregister from OpenSimProtocolModule.
+        
         LogInfo("Module " + Name() + " uninitialized.");
     }
 
     // virtual
     void NetTestLogicModule::Update()
     {
+        if (bLogoutSent)
+            return;
+        
+        ///\todo Use time/frame count or some other better metric.
         ++updateCounter;
         
-        //if(updateCounter == 20)
-        //    netInterface_->ConnectToRexServer();
-        /*LogInfo("");
-        // create new entity
-        LogInfo("Constructing entity with component: " + Test::EC_Dummy::Name() + ".");
-
-        Foundation::SceneServiceInterface *scene = framework_->GetService<Foundation::SceneServiceInterface>(Foundation::Service::ST_Scene);
-        Foundation::EntityPtr entity = scene->CreateEntity();
-        assert (entity.get() != 0 && "Failed to create entity.");
-
-        Foundation::ComponentPtr component = framework_->GetComponentManager()->CreateComponent(Test::EC_Dummy::Name());
-        assert (component.get() != 0 && "Failed to create dummy component.");
-
-        entity->AddEntityComponent(component);
-        component = entity->GetComponent(component->_Name());
-        assert (component.get() != 0 && "Failed to get dummy component from entity.");
-
-        Foundation::TestServiceInterface *test_service = framework_->GetServiceManager()->GetService<Foundation::TestServiceInterface>(Foundation::Service::ST_Test);
-        assert (test_service != NULL);
-        assert (test_service->Test());
-
-        framework_->Exit();
-        assert (framework_->IsExiting());
-
-        LogInfo("");*/
+        if(updateCounter == 150)
+        {
+            bool success = netInterface_->ConnectToRexServer(firstName, lastName, password, serverAddress, port, &myInfo_);
+            if(success)
+            {
+                SendUseCircuitCodePacket();
+                SendCompleteAgentMovementPacket();
+                LogInfo("Connected to server " + std::string(serverAddress) + ".");
+            }
+            else
+                LogError("Connecting to server " + std::string(serverAddress) + " failed.");
+        }
+        
+        if(updateCounter == 20000)
+        {
+            SendLogoutRequestPacket();
+            bLogoutSent = true;
+        }
     }
     
     //virtual 
@@ -101,83 +115,82 @@ namespace NetTest
 		{
 		case RexNetMsgRegionHandshake:
 			{
-				/*std::cout << "\"RegionHandshake\" received, " << msg->GetDataSize() << " bytes." << std::endl;
+				LogInfo("\"RegionHandshake\" received, " + TO_STRING(msg->GetDataSize()) + " bytes.");
 				msg->SkipToNextVariable(); // RegionFlags U32
 				msg->SkipToNextVariable(); // SimAccess U8
 				size_t bytesRead = 0;
-				const char* simName = (const char* )msg->ReadBuffer(&bytesRead);
-				
-				/*for(size_t i = 0; i < 15; ++i)
-				{
-					std::cout << i << " " << msg->CheckNextVariableType() << std::endl;
-					msg->SkipToNextVariable();
-				}
-				
-				UUID td3 = msg->ReadUUID();
-				std::cout << "\"" << td3.ToString() << "\"" << std::endl;
-
-				for(size_t i = 0; i < 8; ++i)
-				{
-					std::cout << msg->ReadF32() << std::endl;
-				}
-
-				myRegionID = msg->ReadUUID();
-				std::cout << myRegionID.ToString() << std::endl;*/
-				//myRegionID = UUID("0000-0000-0000-0000");
-				break;
+				simName_ = (const char *)msg->ReadBuffer(&bytesRead);
+				LogInfo("Joined to the sim \"" + simName_ + "\".");
+    			break;
 			}
 		case RexNetMsgObjectUpdate:
 			{
-			    
-				/*std::cout << "\"ObjectUpdate\" received, " << msg->GetDataSize() << " bytes." << std::endl;
-				Object obj;
+				LogInfo("\"ObjectUpdate\" received, " + TO_STRING(msg->GetDataSize()) + " bytes.");
+				
+				Object *obj = new Object;
 				msg->SkipToNextVariable();		// RegionHandle U64
 				msg->SkipToNextVariable();		// TimeDilation U16
-				obj.localID = msg->ReadU32(); 
+				obj->localID = msg->ReadU32(); 
 				msg->SkipToNextVariable();		// State U8
-				obj.fullID = msg->ReadUUID();
+				obj->fullID = msg->ReadUUID();
 				msg->SkipToNextVariable();		// CRC U32
 				uint8_t PCode = msg->ReadU8();
-
-				//std::list<Object>::iterator it;
-				//it = std::find(objectList.begin(), objectList.end(), obj);
-				//if (it == objectList.end())
+				
+				ObjectList_t::iterator it;
+    			if (PCode == 0x09)
 				{
-					// If prim, PCode is 0x09;
-					if (PCode == 0x09)
-						objectList.push_back(obj);
-					// If avatar, PCode is 0x2f;
-					else if (PCode == 0x2f)
-					{
-						
-						msg->SkipToFirstVariableByName("NameValue");
-						size_t bytesRead = 0;
-						const char *nameData = (const char *)msg->ReadBuffer(&bytesRead);
-						string name(nameData);
-						string first = "FirstName STRING RW SV ";
-						string last = "LastName STRING RW SV ";
-						size_t pos;
+				    // If prim, PCode is 0x09.
+				    it = std::find_if(objectList_.begin(), objectList_.end(), IDMatchPred(obj->fullID));
+				    if (it != objectList_.end())
+				    {
+				        SAFE_DELETE(obj);
+				        return;
+				    }
+				    else
+				        objectList_.push_back(std::make_pair(obj->fullID, obj));
+                }
+				else if (PCode == 0x2f)
+				{
+				    // If avatar, PCode is 0x2f.
+				    it = std::find_if(avatarList_.begin(), avatarList_.end(), IDMatchPred(obj->fullID));
+				    if (it != avatarList_.end())
+				        return;
+				    
+				    // Read the name of the avatar.
+				    msg->SkipToFirstVariableByName("NameValue");
+					size_t bytesRead = 0;
+					std::string name = (const char *)msg->ReadBuffer(&bytesRead);
+    					
+					// Parse the name.
+					std::string first = "FirstName STRING RW SV ";
+					std::string last = "LastName STRING RW SV ";
+					size_t pos;
 
-						pos = name.find(first);
-						name.replace(pos, strlen(first.c_str()), "");
-						pos = name.find(last);
-						name.replace(pos, strlen(last.c_str()), "");
-						pos = name.find("\n");
-						name.replace(pos, 1, " ");
-						obj.name = name;
-						objectList.push_back(obj);
-						std::cout << "Avatar \"" << name << "\" joined the sim" << std::endl;
-					}
-				}*/
+					pos = name.find(first);
+					name.replace(pos, strlen(first.c_str()), "");
+					pos = name.find(last);
+					name.replace(pos, strlen(last.c_str()), "");
+					pos = name.find("\n");
+					name.replace(pos, 1, " ");
+					obj->name = name;
+					avatarList_.push_back(std::make_pair(obj->fullID, obj));
+					
+					LogInfo("Avatar \"" + name + "\" joined the sim");
+                }
+                else
+                    //We're not interested in any other objects at the moment.
+                    if(obj)
+                        SAFE_DELETE(obj);
+                    
 				break;
 			}
 		case RexNetMsgLogoutReply:
 			{
-				//RexUUID aID = msg->ReadUUID();
-				//RexUUID sID = msg->ReadUUID();
+			    LogInfo("\"LogoutReply\" received, " + TO_STRING(msg->GetDataSize()) + " bytes.");
+				RexUUID aID = msg->ReadUUID();
+				RexUUID sID = msg->ReadUUID();
 	
-				/*
-				size_t blockCount = msg.ReadBlockCount();
+				/*size_t blockCount = msg.ReadBlockCount();
 				for(int i = 0; i < blockCount; ++i)
 				{
 					UUID itemID = msg.ReadUUID();
@@ -189,18 +202,48 @@ namespace NetTest
 				}*/
 				
 				// Logout if the id's match.
-				/*if (aID == myAgentID && sID == mySessionID)
+				if (aID == myInfo_.agentID && sID == myInfo_.sessionID)
 				{
-					cout << "\"LogoutReply\" received with matching IDs. Quitting!" << endl;
-					bRunning = false;
-				}*/
+					LogInfo("\"LogoutReply\" received with matching IDs. Quitting!");
+                    framework_->Exit();
+                    assert (framework_->IsExiting());
+				}
 				break;
 			}
 		default:
-			//netInterface_->DumpNetworkMessage(msgID, msg);
+			netInterface_->DumpNetworkMessage(msgID, msg);
 			break;
 		}        
     }
+    
+	void NetTestLogicModule::SendUseCircuitCodePacket()
+	{
+		NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgUseCircuitCode);
+		assert(m);
+		m->AddU32(myInfo_.circuitCode);
+		m->AddUUID(myInfo_.sessionID);
+		m->AddUUID(myInfo_.agentID);
+		netInterface_->FinishMessageBuilding(m);
+	}
+
+    void NetTestLogicModule::SendCompleteAgentMovementPacket()
+    {
+        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgCompleteAgentMovement);
+	    assert(m);
+	    m->AddUUID(myInfo_.agentID);
+	    m->AddUUID(myInfo_.sessionID);
+	    m->AddU32(myInfo_.circuitCode);
+	    netInterface_->FinishMessageBuilding(m);
+    }
+    
+	void NetTestLogicModule::SendLogoutRequestPacket()
+	{
+		NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgLogoutRequest);
+		assert(m);
+    	m->AddUUID(myInfo_.agentID);
+		m->AddUUID(myInfo_.sessionID);
+	    netInterface_->FinishMessageBuilding(m);
+	}
 }
 
 using namespace NetTest;

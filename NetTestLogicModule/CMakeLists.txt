@@ -16,6 +16,12 @@ include_directories (
 	../OpenSimProtocol
 )
 
+# Library directories
+#link_directories (
+	#../OpenSimProtocol/Debug
+	#../OpenSimProtocol/Release
+#)
+
 # Disable warning
 if (MSVC)
    set_property(
@@ -49,8 +55,11 @@ set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 if (MSVC)
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
-	target_link_libraries (${TARGET_NAME} ws2_32.lib iphlpapi.lib )
+	target_link_libraries (${TARGET_NAME} ws2_32.lib iphlpapi.lib)
 endif (MSVC)
+
+# Define libraries to be linked into target
+target_link_libraries (${TARGET_NAME} Core Foundation OpenSimProtocolModule)
 
 # External library linkage (needs target defined)
 LINK_POCO()

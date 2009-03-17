@@ -16,27 +16,6 @@
 
 using namespace std;
 
-NetMessageManager::NetMessageManager(const char *messageListFilename)
-:messageList(boost::shared_ptr<NetMessageList>(new NetMessageList(messageListFilename)))
-,inboundMessageListener(0), sequenceNumber(1)
-{
-	receivedSequenceNumbers.clear();
-}
-
-NetMessageManager::~NetMessageManager()
-{
-	for(std::list<NetOutMessage*>::iterator iter = unusedMessagePool.begin(); iter != unusedMessagePool.end(); ++iter)
-		delete *iter;
-
-	// We're supposed to free up all of our memory, but someone's using it!
-	assert(usedMessagePool.size() == 0 && "Warning! Unsafe teardown of NetMessageManager detected!");
-	for(std::list<NetOutMessage*>::iterator iter = usedMessagePool.begin(); iter != usedMessagePool.end(); ++iter)
-		delete *iter;
-
-	for(MessageResendList::iterator iter = messageResendQueue.begin(); iter != messageResendQueue.end(); ++iter)
-		delete iter->second;
-}
-
 /* For reference, here's how the message looks:
 struct UDPMessageHeader
 {
@@ -160,6 +139,27 @@ const char *VariableTypeToStr(NetVariableType type)
 	return data[type];
 }
 
+NetMessageManager::NetMessageManager(const char *messageListFilename)
+:messageList(boost::shared_ptr<NetMessageList>(new NetMessageList(messageListFilename)))
+,inboundMessageListener(0), sequenceNumber(1)
+{
+	receivedSequenceNumbers.clear();
+}
+
+NetMessageManager::~NetMessageManager()
+{
+	for(std::list<NetOutMessage*>::iterator iter = unusedMessagePool.begin(); iter != unusedMessagePool.end(); ++iter)
+		delete *iter;
+
+	// We're supposed to free up all of our memory, but someone's using it!
+	assert(usedMessagePool.size() == 0 && "Warning! Unsafe teardown of NetMessageManager detected!");
+	for(std::list<NetOutMessage*>::iterator iter = usedMessagePool.begin(); iter != usedMessagePool.end(); ++iter)
+		delete *iter;
+
+	for(MessageResendList::iterator iter = messageResendQueue.begin(); iter != messageResendQueue.end(); ++iter)
+		delete iter->second;
+}
+
 void NetMessageManager::DumpNetworkMessage(NetMsgID id, NetInMessage *msg)
 {
 	const NetMessageInfo *info = msg->GetMessageType();
@@ -272,9 +272,12 @@ void NetMessageManager::DumpNetworkMessage(const uint8_t *data, size_t numBytes)
 /// Polls the inbound socket until the message queue is empty. Also resends any timed out reliable messages.
 void NetMessageManager::ProcessMessages()
 {
+    if (!connection)
+        return;
+        
 	if (!ResendQueueIsEmpty())
 		ProcessResendQueue();
-
+    
 	while(connection->PacketsAvailable())
 	{
 		const int cMaxPayload = 2048;
@@ -315,7 +318,7 @@ void NetMessageManager::ProcessMessages()
 			SendCompletePingCheck(msg.ReadU8());
 			break;
 		default:
-			// Pass the message to application.
+			// Pass the message to the listener(s).
 			inboundMessageListener->OnNetworkMessageReceived(id, &msg);
 			break;
 		}
@@ -327,14 +330,16 @@ void NetMessageManager::ProcessMessages()
 		receivedSequenceNumbers.erase(receivedSequenceNumbers.begin()); // We remove from the front to guarantee the smallest(oldest) are removed first.
 }
 
-void NetMessageManager::ConnectTo(const char *serverAddress, int port)
+bool NetMessageManager::ConnectTo(const char *serverAddress, int port)
 {
 	try
 	{
 		connection = boost::shared_ptr<NetworkConnection>(new NetworkConnection(serverAddress, port));
+		return true;
 	} catch(Poco::Net::NetException &e)
 	{
 		std::cout << "Failed to connect to " << serverAddress << ":" << port << ". Error: " << e.message() << std::endl;
+		return false;
 	}
 }
 
@@ -407,8 +412,10 @@ void NetMessageManager::FinishMessage(NetOutMessage *message)
 
 	// Push reliable messages to queue to wait ACK from the server.
 	if (message->IsReliable())
-		AddMessageToResendQueue(message);
-
+	    AddMessageToResendQueue(message);
+    else
+        usedMessagePool.pop_front();
+    
 	SendProcessedMessage(message);
 }
 
@@ -418,6 +425,7 @@ void NetMessageManager::SendProcessedMessage(NetOutMessage *msg)
 
 	std::vector<uint8_t> &data = msg->GetData();
 	connection->SendBytes(&data[0], data.size());
+	
 }
 
 ///\todo Send multiple ACKs in one packet?

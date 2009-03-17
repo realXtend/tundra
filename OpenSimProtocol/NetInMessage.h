@@ -3,12 +3,11 @@
 #define incl_Rex_NetInMessage_h
 
 #include "RexTypes.h"
-
 #include "NetMessageList.h"
 
 /** Helps parsing inbound packets by supporting convenient reading of new data from the message. Also
 	tracks that the message is read with the right structure. */
-class NetInMessage
+class REX_API NetInMessage
 {
 public:
 	NetInMessage(const NetMessageInfo *info, const uint8_t *compressedData, size_t numBytes, bool zeroEncoded);

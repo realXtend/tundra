@@ -9,6 +9,7 @@
 #include "NetworkConnection.h"
 #include "INetMessageListener.h"
 #include "PocoXMLRPC.h"
+#include "RexUUID.h"
 
 #include <boost/shared_ptr.hpp>
 
@@ -20,10 +21,18 @@ namespace Foundation
    class Framework;
 }
 
+struct ClientParameters
+{
+    RexUUID     agentID;
+    RexUUID     sessionID;
+    RexUUID     regionID;
+    uint32_t    circuitCode;
+};
+
 namespace OpenSimProtocol
 {
     //! interface for modules
-    class OpenSimProtocolModule : public Foundation::ModuleInterface_Impl
+    class REX_API OpenSimProtocolModule : public Foundation::ModuleInterface_Impl
     {
     public:
         OpenSimProtocolModule();
@@ -35,12 +44,13 @@ namespace OpenSimProtocol
         virtual void Uninitialize(Foundation::Framework *framework);
         virtual void Update();
 		
-		MODULE_LOGGING_FUNCTIONS;
+		MODULE_LOGGING_FUNCTIONS
 
-        //! returns name of this module. Needed for logging.
+        //! Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
-
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Renderer;
+        
+        //! Returns type of this module. Needed for logging.
+        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Network;
 		
 		/// Get state of the network module.
 		const u8 GetNetworkState() const { return networkState_; }
@@ -51,21 +61,34 @@ namespace OpenSimProtocol
         /// Adds listener to the network module.
         virtual void AddListener(INetMessageListener *listener);
         //void Removeregister(INetMessageListener *listener);
-        
+ 
         /// Connects to a reX server.
-        void ConnectToRexServer(
+        bool ConnectToRexServer(
             const char *first_name,
 		    const char *last_name,
 		    const char *password,
 		    const char *address,
-		    int port);
+		    int port,
+		    ClientParameters *params);
         
-		/// State of the network module.
-		enum NetworkState
-		{	
-			State_Connected,
-			State_Disconnected,
-		};
+        /// Disconnects from a reX server.
+       	void DisconnectFromRexServer();
+
+  	    /// State of the network connection.
+        enum NetworkState
+        {	
+	        State_Connected,
+	        State_Disconnected,
+        };
+        
+        void DumpNetworkMessage(NetMsgID id, NetInMessage *msg);
+
+        /// Start building a new outbound message.
+        /// @return An empty message holder where the message can be built.
+        NetOutMessage *StartMessageBuilding(NetMsgID msgId);
+        
+        /// Finish (send) the message.
+        void FinishMessageBuilding(NetOutMessage *msg);
 
     private:
         /// Initializes a login to a reX server that is not using a separate authentication server.
@@ -74,27 +97,19 @@ namespace OpenSimProtocol
        	    const char *last_name,
        	    const char *password,
        	    const char *address,
-       	    int port);
-        
+       	    int port,
+       	    ClientParameters *params);
+       
         Foundation::Framework *framework_;
         
 	    /// Handles the UDP communications with the reX server.
 	    shared_ptr<NetMessageManager> networkManager_;
-	
+	    
 	    /// Handles the initial XMLRPC messaging.
-	    shared_ptr<PocoXMLRPCConnection> rpcConnection_;		
-
-		/// State of the network module.
+	    shared_ptr<PocoXMLRPCConnection> rpcConnection_;
+	    
+		/// State of the network connection.
 		NetworkState networkState_;
-
-	    // Login parameters, received via XMLRPC request.
-	    std::string sessionID;
-	    std::string agentID;
-	    RexUUID     myAgentID;
-	    RexUUID     mySessionID;
-	    RexUUID     myRegionID;
-	    uint32_t    circuitCode;
-
     };
 }
 

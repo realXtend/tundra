@@ -9,10 +9,13 @@
 #include "md5wrapper.h"
 #include "PocoXMLRPC.h"
 #include "OpenSimAuth.h"
+#include "RexProtocolMsgIDs.h"
 
 namespace OpenSimProtocol
 {
-	OpenSimProtocolModule::OpenSimProtocolModule() : ModuleInterface_Impl(Foundation::Module::MT_Network)
+	OpenSimProtocolModule::OpenSimProtocolModule() :
+    ModuleInterface_Impl(Foundation::Module::MT_Network),
+    networkState_(State_Disconnected)
     {
     }
 
@@ -38,9 +41,11 @@ namespace OpenSimProtocol
         assert(framework != NULL);
         framework_ = framework;
         
+        ///\todo Read the template filename from a config file?
 		const char *filename = "./data/message_template.msg";
-		//const std::string &filename = OpenSimProtocolModule::GetTemplateFilename();
+		
 		networkManager_ = shared_ptr<NetMessageManager>(new NetMessageManager(filename));
+		assert(networkManager_);
 		
         LogInfo("System " + Name() + " initialized.");
     }
@@ -51,75 +56,50 @@ namespace OpenSimProtocol
         assert(framework_ != NULL);
         framework_ = NULL;
 		
-		//networkManager_->Disconnect();
-        
+		if(networkState_ == State_Connected)
+		    DisconnectFromRexServer();
+      
 		LogInfo("System " + Name() + " uninitialized.");
     }
 
     // virtual
     void OpenSimProtocolModule::Update()
     {
-        /*LogInfo("Updating " + Name());
-		
-		// create new entity
-        LOG("Constructing entity with component: " + Test::EC_Dummy::Name() + ".");
-		
-        Foundation::EntityPtr entity = framework_->GetEntityManager()->createEntity();
-        assert (entity.get() != 0 && "Failed to create entity.");
-
-        Foundation::ComponentPtr component = framework_->GetComponentManager()->CreateComponent(Test::EC_Dummy::Name());
-        assert (component.get() != 0 && "Failed to create dummy component.");
-
-        entity->addEntityComponent(component);
-        component = entity->getComponent(component->_Name());
-        assert (component.get() != 0 && "Failed to get dummy component from entity.");
-
-        Foundation::TestServiceInterface *test_service = framework_->GetServiceManager()->GetService<Foundation::TestServiceInterface>(Foundation::Service::ST_Test);
-        assert (test_service != NULL);
-        assert (test_service->Test());
-
-        framework_->Exit();
-        assert (framework_->IsExiting());*/
+        networkManager_->ProcessMessages();
     }
 
-	/*const std::string &OpenSimProtocolModule::GetTemplateFilename()
-	{
-        try
-        {
-			config_ = new Poco::Util::XMLConfiguration("./bin/modules/core/OpenSimProtocolModule.xml");
-        } catch (std::exception &e)
-        {
-            // not fatal
-            LogError(e.what());
-            LogError("Failed to load message template filename.");
-        }
-
-		//if (!configuration_.isNull())
-			const std::string &filename = config_->getString("message_template");
-		
-		return filename;
-	}*/
-	
 	void OpenSimProtocolModule::AddListener(INetMessageListener *listener)
 	{
 	    networkManager_->SetNetworkListener(listener);
 	}
 	
-	///\todo ?
-	/*void OpenSimProtocolModule::Removeregister(INetMessageListener *listener)
+	///\todo
+	/*void OpenSimProtocolModule::RemoveListener(INetMessageListener *listener)
 	{
 	    //networkManager_->
 	}*/
 	
-	void OpenSimProtocolModule::ConnectToRexServer(
+	bool OpenSimProtocolModule::ConnectToRexServer(
 	    const char *first_name,
 		const char *last_name,
 		const char *password,
 		const char *address,
-		int port)
+		int port,
+		ClientParameters *params)
 	{
-	    PerformXMLRPCLogin(first_name, last_name, password, address, port);
-	    networkManager_->ConnectTo(address, port);
+	    bool success = false;
+	
+	    PerformXMLRPCLogin(first_name, last_name, password, address, port, params);
+        success = networkManager_->ConnectTo(address, port);
+	    if (success)
+            networkState_ = State_Connected;
+        
+        return success;        
+	}
+	
+	void OpenSimProtocolModule::DisconnectFromRexServer()
+	{
+	    networkManager_->Disconnect();
 	}
 	
     void OpenSimProtocolModule::PerformXMLRPCLogin(
@@ -127,7 +107,8 @@ namespace OpenSimProtocol
         const char *last_name,
         const char *password,
         const char *address,
-        int port)
+        int port,
+        ClientParameters *params)
     {
 		// create a MD5 hash for the password, MAC address and HDD serial number.
 		std::string mac_addr = GetMACaddressString();
@@ -173,13 +154,25 @@ namespace OpenSimProtocol
 
 		rpcConnection_->FinishXMLRPCCall(call);
 
-		sessionID = call->GetReplyString("session_id");
-		mySessionID.FromString(sessionID);
-		agentID = call->GetReplyString("agent_id");
-		myAgentID.FromString(agentID);
-		circuitCode = call->GetReplyInt("circuit_code");
+		params->sessionID.FromString(call->GetReplyString("session_id"));
+		params->agentID.FromString(call->GetReplyString("agent_id"));
+		params->circuitCode = call->GetReplyInt("circuit_code");
 	}
 	
+	void OpenSimProtocolModule::DumpNetworkMessage(NetMsgID id, NetInMessage *msg)
+	{
+	    networkManager_->DumpNetworkMessage(id, msg);
+	}
+	
+	NetOutMessage *OpenSimProtocolModule::StartMessageBuilding(NetMsgID msgId)
+	{
+	    return networkManager_->StartNewMessage(msgId);
+	}
+	
+	void OpenSimProtocolModule::FinishMessageBuilding(NetOutMessage *msg)
+	{
+	    networkManager_->FinishMessage(msg);
+	}
 }
 
 using namespace OpenSimProtocol;

@@ -12,6 +12,8 @@ NetOutMessage::NetOutMessage()
 	currentBlock = 0;
 	currentVariable = 0;
 	blockQuantityCounter = 0;
+	for(size_t i = 0; i < maxMessageSize; ++i)
+	    messageData[i] = 0;
 }
 
 NetOutMessage::~NetOutMessage()
