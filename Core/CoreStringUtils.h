@@ -12,9 +12,11 @@ namespace Core
         return w_str;
     }
 
+    //! Converts value to a string. May throw boost::bad_lexical_cast.
     template <class T>
     static std::string ToString(const T &val) { return boost::lexical_cast<std::string>(val); }
 
+    //! Converts string to a primitive type, such as int or float. May throw boost::bad_lexical_cast.
     template <typename T>
     static T ParseString(const std::string &val) { return boost::lexical_cast<T>(val); }
 }
