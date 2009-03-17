@@ -47,6 +47,7 @@ namespace OgreRenderer
         renderwindow_(0),
         listener_(EventListenerPtr(new EventListener(this)))
     {
+        event_category_ = framework_->GetEventManager()->RegisterEventCategory("Renderer");
     }
     
     Renderer::~Renderer()
@@ -182,22 +183,14 @@ namespace OgreRenderer
             }
         }
         
-        // Initialize resource groups
         Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
     }
     
     void Renderer::SetupScene()
     {
-        // Create scene manager
         scenemanager_ = root_->createSceneManager(Ogre::ST_GENERIC, "SceneManager");
-
-        // Create the camera
         camera_ = scenemanager_->createCamera("Camera");
-
-        // Create one viewport, entire window
         Ogre::Viewport* viewport = renderwindow_->addViewport(camera_);
-
-        // Alter the camera aspect ratio to match the viewport
         camera_->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
     }
     
@@ -206,9 +199,18 @@ namespace OgreRenderer
         if (!initialized_) return;
         
         Ogre::WindowEventUtilities::messagePump();
-        root_->renderOneFrame();
-    }
-    
+        
+        root_->_fireFrameStarted();
+        
+        // Render without swapping buffers first
+        Ogre::RenderSystem* renderer = root_->getRenderSystem();
+        renderer->_updateAllRenderTargets(false);
+        // Send postrender event, so that custom rendering may be added
+        framework_->GetEventManager()->SendEvent(event_category_, event_postrender, NULL);
+        // Swap buffers now
+        renderer->_swapAllRenderTargetBuffers(renderer->getWaitForVerticalBlank());
 
+        root_->_fireFrameEnded();
+    }
 }
 

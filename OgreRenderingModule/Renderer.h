@@ -33,6 +33,9 @@ namespace OgreRenderer
         friend class EventListener;
         
     public:
+        //! postrender event id
+        static const Core::event_id_t event_postrender = 0x1;
+        
         Renderer(Foundation::Framework* framework);
         virtual ~Renderer();
 
@@ -107,6 +110,9 @@ namespace OgreRenderer
         
         //! Ogre event listener
         EventListenerPtr listener_;
+        
+        //! Renderer event category
+        Core::event_category_id_t event_category_;
     };
 
     typedef boost::shared_ptr<Renderer> RendererPtr;
