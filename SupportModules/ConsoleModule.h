@@ -4,6 +4,7 @@
 #define incl_ConsoleModule_h
 
 #include "ModuleInterface.h"
+#include "Native.h"
 
 namespace Foundation
 {
@@ -36,6 +37,9 @@ namespace Console
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Console;
 
     private:
+        //! native debug console
+        Native native_;
+
         Foundation::Framework *framework_;
     };
 }

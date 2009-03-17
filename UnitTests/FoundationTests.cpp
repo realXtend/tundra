@@ -29,15 +29,6 @@ BOOST_AUTO_TEST_CASE( framework_platform )
     BOOST_CHECK (appData_unicode.find(Core::ToWString(fw.GetDefaultConfig().GetString(Foundation::Framework::ConfigurationGroup(), "application_name"))) != std::wstring::npos);
 }
 
-BOOST_AUTO_TEST_CASE( framework_console )
-{
-    Foundation::Framework fw;
-    
-    fw.GetModuleManager()->LoadModuleByName("SupportModules");
-    BOOST_CHECK (fw.GetModuleManager()->HasModule(Foundation::Module::MT_Console));
-    fw.GetModuleManager()->UnloadModules();
-}
-
 void frameworkConfigurationManagerTest()
 {
     Foundation::ConfigurationManager manager("./testing/configuration.xml");
