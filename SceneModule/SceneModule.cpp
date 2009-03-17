@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #include "SceneModule.h"
-#include "Foundation.h"
 
 namespace Scene
 {
@@ -36,10 +35,6 @@ namespace Scene
         framework->GetServiceManager()->RegisterService(Foundation::Service::ST_SceneManager, scene_manager_.get());
 
         LogInfo("Module " + Name() + " initialized.");
-    }
-
-    void SceneModule::Update()
-    {
     }
 
     // virtual 

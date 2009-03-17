@@ -25,8 +25,6 @@ namespace Scene
         virtual void Initialize(Foundation::Framework *framework);
         virtual void Uninitialize(Foundation::Framework *framework);
 
-        virtual void Update();
-
         //! Returns the scene manager
         Foundation::SceneManagerPtr GetSceneManager() const { return scene_manager_; }
 
