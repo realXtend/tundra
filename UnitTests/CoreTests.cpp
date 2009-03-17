@@ -89,4 +89,11 @@ BOOST_AUTO_TEST_CASE( core_quaternion )
     BOOST_CHECK_EQUAL (testVector, Core::Vector3df(1, 2, 3));
 }
 
+BOOST_AUTO_TEST_CASE( core_string_utils )
+{
+    BOOST_CHECK_EQUAL (Core::ToString(123),  std::string("123"));
+
+    BOOST_CHECK (Core::ToWString("test") == std::wstring(L"test"));
+}
+
 BOOST_AUTO_TEST_SUITE_END()
