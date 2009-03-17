@@ -11,6 +11,9 @@ namespace Core
         std::copy(str.begin(), str.end(), w_str.begin());
         return w_str;
     }
+
+    template <class T>
+    static std::string ToString(const T &val) { return boost::lexical_cast<std::string>(val); }
 }
  
 #endif
