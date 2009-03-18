@@ -84,15 +84,20 @@ namespace Console
         std::string low_name = name;
         boost::to_lower(low_name);
 
-        CommandMap::const_iterator iter = commands_.find(low_name);
-        if (iter == commands_.end())
+        Foundation::Console::CallbackPtr callback;
         {
-            ConsoleModule::LogInfo("Command: " + name + " not found.");
-            Foundation::Console::CommandResult result = { false, "" };
-            return result;
+            Core::MutexLock lock(command_mutex_);
+            CommandMap::const_iterator iter = commands_.find(low_name);
+            if (iter == commands_.end())
+            {
+                ConsoleModule::LogInfo("Command: " + name + " not found.");
+                Foundation::Console::CommandResult result = { false, "" };
+                return result;
+            }
+            callback = iter->second.callback_;
         }
 
-        return (*iter->second.callback_)(params);
+        return (*callback)(params);
     }
 }
 

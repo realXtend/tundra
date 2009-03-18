@@ -29,6 +29,7 @@ namespace Core
     typedef boost::shared_ptr<StringVector> StringVectorPtr;
 
     typedef boost::lock_guard<boost::mutex> MutexLock;
+    typedef boost::mutex Mutex;
 }
 
 #endif // incl_Types_h
