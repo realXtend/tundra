@@ -92,14 +92,14 @@ namespace Foundation
             virtual void RegisterCommand(const Command &command) = 0;
 
             //! Parse and execute command line
-            virtual void ExecuteCommand(const std::string &commandline) = 0;
+            virtual CommandResult ExecuteCommand(const std::string &commandline) = 0;
 
             //! Execute command
             /*!
                 \param name Name of the command to execute
                 \param params Parameters to pass to the command
             */
-            virtual void ExecuteCommand(const std::string &name, const Core::StringVector &params) = 0;
+            virtual CommandResult ExecuteCommand(const std::string &name, const Core::StringVector &params) = 0;
         };
     }
 }
