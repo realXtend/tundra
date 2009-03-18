@@ -3,6 +3,14 @@
 #ifndef incl_Foundation_EventManager_h
 #define incl_Foundation_EventManager_h
 
+namespace Poco
+{
+    namespace XML
+    {
+        class Node;
+    }
+}
+
 namespace Foundation
 {
     class Framework;
@@ -10,8 +18,6 @@ namespace Foundation
     class ModuleInterface;
 
     //! Manages event category registering, and event passing between modules.
-    /*! \todo event subscriber hierarchy loading from an xml file
-     */
     class EventManager
     {
     public:
@@ -79,6 +85,11 @@ namespace Foundation
             \return true if is registered
          */
         bool HasEventSubscriber(ModuleInterface* module);
+        
+        //! loads event subscriber tree from an XML file
+        /*! \param filename path/filename of XML file
+         */
+        void LoadEventSubscriberTree(const std::string& filename);
 
     private:
         typedef std::map<std::string, Core::event_category_id_t> EventCategoryMap;
@@ -106,6 +117,12 @@ namespace Foundation
          */
         bool SendEvent(EventSubscriber* node, Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const;
         
+        //! populate subscriber tree from Poco xml document nodes
+        /*! \param node pointer to Poco xml document node
+            \param parent_name current parent module name (empty for root)
+         */
+        void BuildTreeFromNode(Poco::XML::Node* node, const std::string parent_name);
+
         //! next event category id that will be assigned
         Core::event_category_id_t next_category_id_;
         

@@ -63,6 +63,9 @@ namespace Foundation
         }
 
     private:
+        //! default event subscriber tree XML file path
+        static const char *DEFAULT_EVENT_SUBSCRIBER_TREE_PATH;
+        
         //! Loads all available modules
         void LoadModules();
         //! Unloads all available modules

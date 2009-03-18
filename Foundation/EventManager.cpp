@@ -2,7 +2,13 @@
 #include "Framework.h"
 #include "EventDataInterface.h"
 #include "EventManager.h"
-#include "ModuleInterface.h"
+#include "ModuleManager.h"
+
+#include "Poco/DOM/DOMParser.h"
+#include "Poco/DOM/Element.h"
+#include "Poco/DOM/Attr.h"
+#include "Poco/DOM/NamedNodeMap.h"
+#include "Poco/SAX/InputSource.h"
 
 #include <algorithm>
 
@@ -96,7 +102,7 @@ namespace Foundation
         
         if (FindNodeWithModule(event_subscriber_root_.get(), module))
         {
-            Foundation::RootLogError(module->Name() + " is already added as event subscriber");
+            Foundation::RootLogWarning(module->Name() + " is already added as event subscriber");
             return false;
         }
         
@@ -104,7 +110,7 @@ namespace Foundation
         if (!node)
         {
             if (parent)
-                Foundation::RootLogError("Could not add module " + module->Name() + " as event subscriber, parent module " + parent->Name() + " not found");
+                Foundation::RootLogWarning("Could not add module " + module->Name() + " as event subscriber, parent module " + parent->Name() + " not found");
             
             return false;
         }
@@ -124,7 +130,7 @@ namespace Foundation
         EventSubscriber* node = FindNodeWithChild(event_subscriber_root_.get(), module);
         if (!node)
         {
-            Foundation::RootLogError("Could not remove event subscriber " + module->Name() + ", not found");
+            Foundation::RootLogWarning("Could not remove event subscriber " + module->Name() + ", not found");
             return false;
         }
         
@@ -185,5 +191,81 @@ namespace Foundation
         
         return 0;
     }
+
+    void EventManager::LoadEventSubscriberTree(const std::string& filename)
+    {
+        Foundation::RootLogInfo("Loading event subscriber tree from " + filename);
+        
+        try
+        {
+            Poco::XML::InputSource source(filename);
+            Poco::XML::DOMParser parser;
+            Poco::XML::Document* document = parser.parse(&source);
+
+            Poco::XML::Node* node = document->firstChild();
+            if (node)
+            {
+                BuildTreeFromNode(node, "");
+            }
+        }
+        catch (Poco::Exception& e)
+        {
+            Foundation::RootLogError("Could not load event subscriber tree from " + filename + ": " + e.what());
+        }
+    }
     
+    void EventManager::BuildTreeFromNode(Poco::XML::Node* node, const std::string parent_name)
+    {
+        while (node)
+        {
+            std::string new_parent_name = parent_name;
+            
+            Poco::XML::NamedNodeMap* attributes = node->attributes();
+            if (attributes)
+            {
+                Poco::XML::Attr* module_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("module"));
+                Poco::XML::Attr* priority_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("priority"));
+
+                if ((module_attr) && (priority_attr))
+                {
+                    const std::string& module_name = module_attr->getValue();
+                    int priority = boost::lexical_cast<int>(priority_attr->getValue());
+                    
+                    new_parent_name = module_name;
+                    
+                    ModuleInterface* module = framework_->GetModuleManager()->GetModule(module_name);
+                    if (module)
+                    {
+                        if (parent_name.empty())
+                        {
+                            RegisterEventSubscriber(module, priority, NULL);
+                        }
+                        else
+                        {
+                            ModuleInterface* parent = framework_->GetModuleManager()->GetModule(parent_name);
+                            if (parent)
+                            {
+                                RegisterEventSubscriber(module, priority, parent);
+                            }
+                            else
+                            {
+                                Foundation::RootLogWarning("Parent module " + parent_name + " not found for module " + module_name);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Foundation::RootLogWarning("Module " + module_name + " not found");
+                    }
+                }
+            }
+            
+            if (node->firstChild())
+            {
+                BuildTreeFromNode(node->firstChild(), new_parent_name);
+            }
+            
+            node = node->nextSibling();
+        }
+    }
 }
