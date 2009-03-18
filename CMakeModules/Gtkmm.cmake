@@ -9,8 +9,8 @@ endmacro ()
 
 macro (INCLUDE_GTKMM)
     if (MSVC)
-        include_directories 
-            ($ENV{GTKMM_BASEPATH}/include/gtk-2.0/gdk
+        include_directories (
+		    $ENV{GTKMM_BASEPATH}/include/gtk-2.0/gdk
             $ENV{GTKMM_BASEPATH}/include/atk-1.0
             $ENV{GTKMM_BASEPATH}/lib/gtk-2.0/include
             $ENV{GTKMM_BASEPATH}/include/gdkmm-2.4
