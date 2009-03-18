@@ -208,7 +208,7 @@ namespace OgreRenderer
         Ogre::RenderSystem* renderer = root_->getRenderSystem();
         renderer->_updateAllRenderTargets(false);
         // Send postrender event, so that custom rendering may be added
-        framework_->GetEventManager()->SendEvent(event_category_, event_postrender, NULL);
+        framework_->GetEventManager()->SendEvent(event_category_, EVENT_POST_RENDER, NULL);
         // Swap buffers now
         renderer->_swapAllRenderTargetBuffers(renderer->getWaitForVerticalBlank());
 
