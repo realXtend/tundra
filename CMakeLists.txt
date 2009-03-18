@@ -25,7 +25,7 @@ if (NOT EXISTS ./bin/data/app_config.xml)
 endif (NOT EXISTS ./bin/data/app_config.xml)
 
 # Set project name
-project (rexNG)
+project (realXtend-viewer)
 
 # In Visual Studio, use unicode character set
 if (MSVC)
