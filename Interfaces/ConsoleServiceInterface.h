@@ -12,10 +12,18 @@ namespace Foundation
         struct CommandResult
         {
             //! Set to true if command was completed succesfully, false otherwise
-            const bool success_;
+            bool success_;
             //! Print out reason for failure (or success).
-            const std::string why_;
+            std::string why_;
+            //! Set true for delayed execution. Set true if you wish threadsafe execution of the command.
+            bool delayed_;
         };
+        //! Returns a succesful CommandResult
+        __inline static CommandResult ResultSuccess(const std::string &why = std::string()) { CommandResult result = { true, why, false }; return result; }
+        //! Returns a failure CommandResult
+        __inline static CommandResult ResultFailure(const std::string &why = std::string()) { CommandResult result = { false, why, false }; return result; }
+        //! Returns a delayed CommandResult
+        __inline static CommandResult ResultDelayed() { CommandResult result = { false, std::string(), true }; return result; }
 
         //! Interface for console command callback
         class CallbackInterface

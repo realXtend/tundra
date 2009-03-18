@@ -23,7 +23,7 @@ namespace Foundation
     void ModuleManager::DeclareStaticModule(ModuleInterface *module)
     {
         assert (module);
-        if (IsExcluded(module->Type()) == false && HasModule(module) == false)
+        if (IsExcluded(module->Name()) == false && HasModule(module) == false)
         {
             modules_.push_back(module);
             module->Load();
@@ -193,7 +193,7 @@ namespace Foundation
 
             ModuleInterface* module = cl.classFor(*it).create();
 
-            if (IsExcluded(module->Type()) == false && HasModule(module) == false)
+            if (IsExcluded(module->Name()) == false && HasModule(module) == false)
             {
                 module->Load();
 

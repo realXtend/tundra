@@ -6,12 +6,14 @@
 
 #include "Foundation.h"
 #include "SceneModule.h"
+#include "TestModuleB.h"
 
 struct PreInit
 {
     void operator()(Foundation::Framework *fw)
     {
         fw->GetModuleManager()->ExcludeModule(Foundation::Module::MT_Test);
+        fw->GetModuleManager()->ExcludeModule(Test::TestModuleB::NameStatic());
         
         Foundation::ModuleInterface *module = new Scene::SceneModule;
         fw->GetModuleManager()->DeclareStaticModule(module);
