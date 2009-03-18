@@ -40,10 +40,11 @@ BOOST_AUTO_TEST_CASE( support_modules_console )
         (Foundation::Service::ST_Console);
 
     TestA test_class;
-    Foundation::Console::Command commandA = {"Test_CommandA", "Test command Success", Foundation::Console::Bind(&test_class, TestA::TestCallbackSuccess) };
+    Foundation::Console::Command commandA = {"Test_CommandA", "Test command Success", Foundation::Console::Bind(&test_class, &TestA::TestCallbackSuccess) };
     console->RegisterCommand(commandA);
-    Foundation::Console::Command commandB = {"Test_CommandB", "Test command Failure", Foundation::Console::Bind(&test_class, TestA::TestCallbackFailure) };
+    Foundation::Console::Command commandB = {"Test_CommandB", "Test command Failure", Foundation::Console::Bind(&test_class, &TestA::TestCallbackFailure) };
     console->RegisterCommand(commandB);
+    
 
     Foundation::Console::CommandResult result = console->ExecuteCommand("Test_CommandA (paramA, paramB )");
     BOOST_CHECK_EQUAL (result.success_, true);
