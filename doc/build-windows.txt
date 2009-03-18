@@ -1,0 +1,16 @@
+Using the Pre-built Binaries
+----------------------------
+
+Includes the following: Boost, PoCo, Ogre3D, xmlrpcepi, libiconv2, libexpat
+1. Copy the necessary  DLLs to the SVN bin/ directory.
+2. Copy the includes and LIB files in external_dependencies to REX_DEP_PATH.
+
+Configuring the Build
+---------------------
+
+- Boost: Set the global VS environment settings to refer to Boost includes and libraries, or copy to ${REX_DEP_PATH}/Boost/include & ${REX_DEP_PATH}/Boost/libs
+- PoCo: Set the global VS environment settings to refer to the PoCo includes and libraries, or copy to ${REX_DEP_PATH}/PoCo/include & ${REX_DEP_PATH}/PoCo/libs
+- Ogre: Set the global VS environment settings to refer to the Ogre includes and libraries, or copy to ${REX_DEP_PATH}/Ogre/include & ${REX_DEP_PATH}/Ogre/libs
+- Gtkmm: Set the environment variable GTKMM_BASEPATH to point to the Gtkmm root.
+- XMLRPC-EPI: XMLRPC-EPI depends on LibIconv and eXpat. To build this, first build the expat project. 
+

@@ -1,0 +1,7 @@
+Fedora
+------
+1. Compile latest boost from source
+2. Compile Poco from source
+3. Run $ REX_DEP_PATH=/opt/deps cmake .
+* If prefix is /usr/local, run $ BOOST_ROOT=/usr/local cmake .
+
