@@ -9,16 +9,42 @@
 
 namespace Console
 {
+    void NativeInput::operator()()
+    {
+        assert (console_);
+
+        while (true)
+        {
+            boost::this_thread::interruption_point();
+            
+            std::string command_line;
+            std::getline(std::cin, command_line);
+
+            console_->ExecuteCommand(command_line);
+        }
+    }
+
+
+    // ***********************************************************
+
+
     typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
     typedef boost::tokenizer< boost::escaped_list_separator<char> > escape_tokenizer;
 
     Native::Native() : Foundation::Console::ConsoleServiceInterface()
     {
+        input_.SetNative(this);
+        //NativeInput input(this);
+        thread_ = boost::thread(boost::ref(input_));
+
+        Foundation::Console::Command help = {"Help", "Display available commands", Foundation::Console::Bind(this, &Native::Help) };
+        RegisterCommand(help);
     }
 
     Native::~Native()
     {
     }
+
     void Native::RegisterCommand(const Foundation::Console::Command &command)
     {
         if (commands_.find(command.name_) != commands_.end())
@@ -98,6 +124,21 @@ namespace Console
         }
 
         return (*callback)(params);
+    }
+
+    Foundation::Console::CommandResult Native::Help(const Core::StringVector &params)
+    {
+        std::cout << "Available commands with descriptions:" << std::endl;
+        {   
+            Core::MutexLock lock(command_mutex_);
+            CommandMap::const_iterator it = commands_.begin();
+            for ( ; it != commands_.end() ; ++it)
+            {
+                std::cout << it->second.name_ + " - " + it->second.description_ << std::endl;
+            }
+        }
+
+        return Foundation::Console::ResultSuccess();
     }
 }
 

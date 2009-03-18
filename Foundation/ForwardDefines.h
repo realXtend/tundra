@@ -53,6 +53,10 @@ namespace Foundation
     {
         Poco::Logger::get("Foundation").trace(msg);
     }
+    static void RootLogDebug(const std::string &msg)
+    {
+        Poco::Logger::get("Foundation").debug(msg);
+    }
 }
 
 #endif

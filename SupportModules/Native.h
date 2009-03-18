@@ -13,6 +13,24 @@ namespace Foundation
 
 namespace Console
 {
+    class NativeInput
+    {
+    public:
+        //! constructor
+        NativeInput() : console_(NULL) { }
+        //! destructor
+        ~NativeInput() {}
+        //! (thread) entry point
+        void operator()();
+
+        void SetNative(Foundation::Console::ConsoleServiceInterface *console) { console_ = console; }
+
+    public:
+        NativeInput(const NativeInput &other);
+
+        Foundation::Console::ConsoleServiceInterface *console_;
+    };
+
     //! Native debug console
     class Native : public Foundation::Console::ConsoleServiceInterface
     {
@@ -39,13 +57,23 @@ namespace Console
             \param params Parameters to pass to the command
         */
         virtual Foundation::Console::CommandResult ExecuteCommand(const std::string &name, const Core::StringVector &params);
+
+        //! Print out available commands to console
+        Foundation::Console::CommandResult Help(const Core::StringVector &params);
     private:
         typedef std::map<std::string, Foundation::Console::Command> CommandMap;
 
         //! Available commands
         CommandMap commands_;
 
+        //! mutex
         Core::Mutex command_mutex_;
+
+        //! input thread
+        Core::Thread thread_;
+
+        //! Handles input from native console
+        NativeInput input_;
     };
 }
 
