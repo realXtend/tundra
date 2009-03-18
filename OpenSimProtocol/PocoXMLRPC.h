@@ -17,7 +17,7 @@
 #include "Poco/DOM/AutoPtr.h"
 
 #include "RexTypes.h"
-#include "xmlrpc.h"
+#include <xmlrpc.h>
 
 /// Represents a XMLRPC function call.
 class PocoXMLRPCCall
