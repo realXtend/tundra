@@ -40,14 +40,10 @@ FIND_XMLRPCEPI()
 FIND_OGRE()
 
 # Default additional include & library directories
-include_directories (
-	${PROJECT_SOURCE_DIR}/external_libs/include
-)
+include_directories (${PROJECT_SOURCE_DIR}/external_libs/include)
 
 # Library directories
-link_directories (
-	${PROJECT_SOURCE_DIR}/external_libs
-)
+link_directories (${PROJECT_SOURCE_DIR}/external_libs)
 
 # Add subprojects
 add_subdirectory (Core)
