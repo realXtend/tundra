@@ -16,9 +16,12 @@ public:
     virtual void Load();
     virtual void Unload();
     virtual void Initialize(Foundation::Framework *framework);
+    virtual void PostInitialize(Foundation::Framework *framework);
     virtual void Uninitialize(Foundation::Framework *framework);
 
     virtual void Update();
+    
+    virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
     
     MODULE_LOGGING_FUNCTIONS;
 
@@ -31,7 +34,16 @@ private:
     Foundation::Framework *framework_;
     
     WorldLogic *world_logic_;
+
+    typedef boost::function<bool(Core::event_id_t,Foundation::EventDataInterface*)> LogicEventHandlerFunction;
+    typedef std::map<Core::event_category_id_t, LogicEventHandlerFunction> LogicEventHandlerMap;
+    LogicEventHandlerMap event_handlers_;
     
+    // !Handle network events coming from OpenSimProtocolModule
+    bool HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+    
+    bool HandleOSNE_ObjectUpdate(Foundation::EventDataInterface* data);
+    bool HandleOSNE_RexPrimData(Foundation::EventDataInterface* data);
 };
 
 #endif

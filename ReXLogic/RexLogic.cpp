@@ -12,7 +12,7 @@
 #include "EC_ServerScript.h"
 #include "EC_SpatialSound.h"
 #include "WorldLogic.h"
-
+#include "EventDataInterface.h"
 
 RexLogic::RexLogic() : ModuleInterface_Impl(type_static_), framework_(NULL)
 {
@@ -52,15 +52,26 @@ void RexLogic::Initialize(Foundation::Framework *framework)
     // WorldLogic::registerSystem(framework);
     world_logic_ = new WorldLogic(framework);
 
-    // Register components for network messages, should be done somewhere else...?
-    world_logic_->GetNetworkHandler()->RegisterForNetworkMessages(EC_Collision::Name(),EC_Collision::GetNetworkMessages());
-    world_logic_->GetNetworkHandler()->RegisterForNetworkMessages(EC_ObjFreeData::Name(),EC_ObjFreeData::GetNetworkMessages());
-    world_logic_->GetNetworkHandler()->RegisterForNetworkMessages(EC_ObjGeneralProps::Name(),EC_ObjGeneralProps::GetNetworkMessages());    
-    world_logic_->GetNetworkHandler()->RegisterForNetworkMessages(EC_SelectPriority::Name(),EC_SelectPriority::GetNetworkMessages());
-    world_logic_->GetNetworkHandler()->RegisterForNetworkMessages(EC_ServerScript::Name(),EC_ServerScript::GetNetworkMessages());
-    world_logic_->GetNetworkHandler()->RegisterForNetworkMessages(EC_SpatialSound::Name(),EC_SpatialSound::GetNetworkMessages()); 
+    // tucofixme, register event category for testing only
+    // framework_->GetEventManager()->RegisterEventCategory("OpenSimNetwork"); // tucofixme, this registering should be done in network module, it's here for testing purposes only.
 
     LogInfo("Module " + Name() + " initialized.");
+}
+
+// virtual
+void RexLogic::PostInitialize(Foundation::Framework *framework)
+{
+    Foundation::SceneManagerServiceInterface *sceneManager = 
+            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+    if (sceneManager->HasScene("World") == false)
+        sceneManager->CreateScene("World");
+
+    Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("OpenSimNetwork"); // tucofixme, right event category
+    if(eventcategoryid != 0)
+        event_handlers_[eventcategoryid] = boost::bind(&RexLogic::HandleOpenSimNetworkEvent,this,_1,_2);
+    else
+        LogInfo("Unable to find event category for OpenSimNetwork");
+
 }
 
 // virtual 
@@ -76,17 +87,43 @@ void RexLogic::Uninitialize(Foundation::Framework *framework)
 // virtual
 void RexLogic::Update()
 {    
-    //! \todo Can't put this to initialize() since SceneModule may not have been initialized yet. Need to figure out a better way.
-    Foundation::SceneManagerServiceInterface *sceneManager = 
-            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
-    if (sceneManager->HasScene("World") == false)
-        sceneManager->CreateScene("World");
-
-    // fixme, simulate a network message arriving to networkeventhandler
-    std::string tempnetworkmessage = "fixme this_is_networkmessage";
-    world_logic_->GetNetworkHandler()->HandleNetworkMessage(tempnetworkmessage);
+    // tucofixme, test event system
+    // Foundation::EventDataInterface params;
+    
+    // framework_->GetEventManager()->SendEvent(framework_->GetEventManager()->QueryEventCategory("OpenSimNetwork"),0,NULL);
+    // framework_->GetEventManager()->SendEvent(framework_->GetEventManager()->QueryEventCategory("OpenSimNetwork"),1,&params);
 }
 
+// virtual
+bool RexLogic::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+{
+    LogicEventHandlerMap::iterator i = event_handlers_.find(category_id);
+    if (i != event_handlers_.end())
+        return (i->second)(event_id,data);
+    else
+        return false;
+}
+
+bool RexLogic::HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+{
+    // tucofixme, get event_id from opensimprotocol module?
+    switch(event_id)
+    {
+        case 0:  return HandleOSNE_ObjectUpdate(data); break;
+        case 1:  return HandleOSNE_RexPrimData(data); break;
+        default: return false; break;
+    }
+}
+
+bool RexLogic::HandleOSNE_ObjectUpdate(Foundation::EventDataInterface* data)
+{
+    return false; // tucofixme
+}
+
+bool RexLogic::HandleOSNE_RexPrimData(Foundation::EventDataInterface* data)
+{
+    return false; // tucofixme
+}
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
     POCO_EXPORT_CLASS(RexLogic)
