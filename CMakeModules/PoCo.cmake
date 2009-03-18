@@ -6,9 +6,8 @@ endmacro (FIND_POCO)
 
 macro (INCLUDE_POCO)
 	if (MSVC)
-		include_directories (${PROJECT_SOURCE_DIR}/external_libs/PoCo/include)
-
-		link_directories (${PROJECT_SOURCE_DIR}/external_libs/PoCo/lib)
+		include_directories (${REX_DEP_PATH}/PoCo/include)
+		link_directories (${REX_DEP_PATH}/PoCo/lib)
 	endif (MSVC)
 endmacro (INCLUDE_POCO)
 
@@ -22,7 +21,6 @@ macro (LINK_POCO)
 			optimized PocoXML
 			debug PocoXMLd
 			optimized PocoNet
-			debug PocoNetd
-		)
+			debug PocoNetd)
 	endif (NOT MSVC)
 endmacro (LINK_POCO)

@@ -8,16 +8,19 @@ endif (COMMAND cmake_policy)
 
 # Set CMake custom module path & include them
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CMakeModules)
-include(Boost)
-include(PoCo)
-include(Curl)
-include(XmlRpcEpi)
-include(Ogre)
-include(Gtkmm)
-include(Python)
+include (Boost)
+include (PoCo)
+include (Curl)
+include (XmlRpcEpi)
+include (Ogre)
+include (Gtkmm)
+include (Python)
 
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
+
+# Set common directory for installing non-system dependencies
+set (REX_DEP_PATH $ENV{REX_DEP_PATH})
 
 # Create config files from example config files 
 if (NOT EXISTS ./bin/data/app_config.xml)
@@ -40,10 +43,10 @@ FIND_XMLRPCEPI()
 FIND_OGRE()
 
 # Default additional include & library directories
-include_directories (${PROJECT_SOURCE_DIR}/external_libs/include)
+include_directories (${REX_DEP_PATH}/include)
 
 # Library directories
-link_directories (${PROJECT_SOURCE_DIR}/external_libs)
+link_directories (${REX_DEP_PATH}/lib)
 
 # Add subprojects
 add_subdirectory (Core)

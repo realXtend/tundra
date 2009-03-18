@@ -10,7 +10,7 @@ endmacro ()
 macro (INCLUDE_GTKMM)
     if (MSVC)
         include_directories (
-		    $ENV{GTKMM_BASEPATH}/include/gtk-2.0/gdk
+            $ENV{GTKMM_BASEPATH}/include/gtk-2.0/gdk
             $ENV{GTKMM_BASEPATH}/include/atk-1.0
             $ENV{GTKMM_BASEPATH}/lib/gtk-2.0/include
             $ENV{GTKMM_BASEPATH}/include/gdkmm-2.4
@@ -34,7 +34,12 @@ macro (INCLUDE_GTKMM)
             $ENV{GTKMM_BASEPATH}/include/libglademm-2.4)
         
         link_directories ($ENV{GTKMM_BASEPATH}/lib)
+    else (MSVC)
+        pkg_check_modules (GTKMM REQUIRED gtkmm-2.4 libglademm-2.4)
+        include_directories (${GTKMM_INCLUDE_DIRS})
+        link_directories (${GTKMM_LIBRARY_DIRS})
     endif (MSVC)
+
 endmacro ()
 
 macro (LINK_GTKMM)

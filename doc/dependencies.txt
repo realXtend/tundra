@@ -1,0 +1,38 @@
+Dependencies
+============
+
+This project has the following dependencies:
+
+- Boost 1.36.0 or newer, http://www.boost.org/
+
+- poco-1.3.3p1. The PoCo libraries (http://pocoproject.org/) are used as dynamic libraries.
+
+- Ogre 1.6.1 or newer, http://www.ogre3d.org 
+
+- GTK--2.4. Gtkmm is being used by the GtkmmUI for the UI system. Use versions glibmm: 2.18.x, gtkmm: 2.14.x, libglademm: 2.6.x or newer from http://www.gtkmm.org/
+
+- MD5 using C++ 2005-02-15, http://www.md5hashing.com/c++/. This project is used by building the project source files as part of the main project build. Contains the following four files: md5.h, md5.c, md5wrapper.h, md5wrapper.c that are located in OpenSimProtocol/.
+
+- XMLRPC-EPI 2008-04-16, http://xmlrpc-epi.sourceforge.net/main.php?t=summary is used as a dynamic library.  XMLRPC-EPI depends on LibIconv and eXpat. To build this, first build the expat project.
+
+- eXpat 2.0.1: http://expat.sourceforge.net/ . This is used as a dynamic library, and is located in the directory Expat 2.0.1/ in SVN. 
+
+- libcURL 7.19.4.0 or newer, http://curl.haxx.se/ . libcURL is a multiprotocol file transfer library which is used e.g. for the HTTP file transfers and the XML-RPC via HTTP login procedure.
+
+- LibIconv 1.9.2 for Windows: http://gnuwin32.sourceforge.net/packages/libiconv.htm (also see http://gnuwin32.sourceforge.net/packages.html) LibIconv is located in the GnuWin32\ directory, and is used as a dynamic library.
+
+Obtaining Dependencies
+======================
+
+Source of the dependencies can be downloaded from: 
+http://dev.realxtend.org/gf/project/viewerdeps/scmsvn/
+
+Binaries of the dependencies can be downloads from: 
+http://dev.realxtend.org/gf/project/viewerdeps/frs/
+
+Setting the Dependency Path
+===========================
+
+In order for cmake to find the dependencies, you have to specify an environment variable: REX_DEP_PATH; either in your system settings, or within the shell directly.
+
+Example: REX_DEP_PATH=/opt/deps/ cmake .
