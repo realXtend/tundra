@@ -26,10 +26,14 @@ namespace Console
         virtual void RegisterCommand(const Foundation::Console::Command &command);
 
         //! Parse and execute command line
+        /*! 
+            Threadsafe
+        */
         virtual Foundation::Console::CommandResult ExecuteCommand(const std::string &commandline);
 
         //! Execute command
         /*! It is assumed that name and params are trimmed and need no touching
+            Threadsafe
 
             \param name Name of the command to execute
             \param params Parameters to pass to the command
@@ -40,6 +44,8 @@ namespace Console
 
         //! Available commands
         CommandMap commands_;
+
+        Core::Mutex command_mutex_;
     };
 }
 

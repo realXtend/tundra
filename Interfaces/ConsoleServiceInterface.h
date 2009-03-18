@@ -72,6 +72,7 @@ namespace Foundation
             CallbackPtr callback_;
         };
 
+        //! Bind a member function to a command callback
         template <typename T>
         static CallbackPtr Bind(T *object, typename Callback<T>::CallbackFunction function)
         {
@@ -92,10 +93,14 @@ namespace Foundation
             virtual void RegisterCommand(const Command &command) = 0;
 
             //! Parse and execute command line
+            /*! 
+                Threadsafe
+            */
             virtual CommandResult ExecuteCommand(const std::string &commandline) = 0;
 
             //! Execute command
-            /*!
+            /*! Threadsafe
+                
                 \param name Name of the command to execute
                 \param params Parameters to pass to the command
             */
