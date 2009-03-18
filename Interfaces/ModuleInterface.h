@@ -20,7 +20,9 @@
     static void LogWarning(const std::string &msg)  { Poco::Logger::get(NameStatic()).warning(msg);       }   \
     static void LogNotice(const std::string &msg)   { Poco::Logger::get(NameStatic()).notice(msg);        }   \
     static void LogInfo(const std::string &msg)     { Poco::Logger::get(NameStatic()).information(msg);   }   \
-    static void LogTrace(const std::string &msg)    { Poco::Logger::get(NameStatic()).trace(msg);         }   
+    static void LogTrace(const std::string &msg)    { Poco::Logger::get(NameStatic()).trace(msg);         }   \
+    static void LogDebug(const std::string &msg)    { Poco::Logger::get(NameStatic()).debug(msg);         }
+
 
 namespace Foundation
 {

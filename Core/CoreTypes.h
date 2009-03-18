@@ -30,6 +30,8 @@ namespace Core
 
     typedef boost::lock_guard<boost::mutex> MutexLock;
     typedef boost::mutex Mutex;
+
+    typedef boost::thread Thread;
 }
 
 #endif // incl_Types_h
