@@ -13,6 +13,8 @@
 
 namespace Foundation
 {
+   const char *Framework::DEFAULT_EVENT_SUBSCRIBER_TREE_PATH = "./data/event_tree.xml";
+   
     Framework::Framework() : exit_signal_(false)
     {
         platform_ = PlatformPtr(new Platform(this));
@@ -108,6 +110,9 @@ namespace Foundation
     void Framework::Go()
     {
         LoadModules();
+
+        // add event subscribers now, that all modules are loaded/initialized
+        event_manager_->LoadEventSubscriberTree(DEFAULT_EVENT_SUBSCRIBER_TREE_PATH);
 
         // main loop
         while (exit_signal_ == false)
