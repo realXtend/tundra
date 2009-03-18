@@ -34,7 +34,6 @@ namespace Console
     Native::Native() : Foundation::Console::ConsoleServiceInterface()
     {
         input_.SetNative(this);
-        //NativeInput input(this);
         thread_ = boost::thread(boost::ref(input_));
 
         Foundation::Console::Command help = {"Help", "Display available commands", Foundation::Console::Bind(this, &Native::Help) };

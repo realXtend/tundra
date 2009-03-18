@@ -95,6 +95,11 @@ namespace Foundation
             splitterchannel->removeChannel(filechannel);
             Foundation::RootLogInfo("Poco::OpenFileException. Log file not created.");
         }
+
+#ifndef _DEBUG
+        // make it so debug messages are not logged in release mode
+        Poco::Logger::get("Foundation").setLevel("information");
+#endif
         
         
         log_channels_.push_back(consolechannel);

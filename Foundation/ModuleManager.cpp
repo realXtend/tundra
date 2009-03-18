@@ -199,6 +199,11 @@ namespace Foundation
 
                 modules_.push_back(module);
 
+#ifndef _DEBUG
+                // make it so debug messages are not logged in release mode
+                Poco::Logger::get(module->Name()).setLevel("information");
+#endif
+
                 Foundation::RootLogInfo("Module: " + *it + " loaded.");
             } else
             {
