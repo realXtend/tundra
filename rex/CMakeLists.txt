@@ -23,14 +23,8 @@ add_definitions (-DMODULE_EXPORTS)
 
 # Preprocessor defines
 if (MSVC)
-   set_property(
-      DIRECTORY
-      PROPERTY COMPILE_DEFINITIONS_RELEASE _DMEMDUMP
-   )
-      set_property(
-      DIRECTORY
-      PROPERTY COMPILE_DEFINITIONS_DEBUG _DMEMORYLEAKS
-   )
+   set_property (DIRECTORY PROPERTY COMPILE_DEFINITIONS_RELEASE _DMEMDUMP)
+   set_property (DIRECTORY PROPERTY COMPILE_DEFINITIONS_DEBUG _DMEMORYLEAKS)
 endif (MSVC)
 
 # Define executable
