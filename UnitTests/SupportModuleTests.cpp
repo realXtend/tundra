@@ -37,7 +37,9 @@ BOOST_AUTO_TEST_CASE( support_modules_console )
     Foundation::Console::Command command = {"Test_Command", "Test command", Foundation::Console::Bind(&test_class, TestA::TestCallbackSuccess) };
     console->RegisterCommand(command);
 
-    console->ExecuteCommand("test_command (paramA, paramB )");
+    Foundation::Console::CommandResult result = console->ExecuteCommand("test_command (paramA, paramB )");
+    BOOST_CHECK_EQUAL (result.success_, true);
+    BOOST_CHECK_EQUAL (result.why_, "Success");
 
     
 

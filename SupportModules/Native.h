@@ -26,7 +26,7 @@ namespace Console
         virtual void RegisterCommand(const Foundation::Console::Command &command);
 
         //! Parse and execute command line
-        virtual void ExecuteCommand(const std::string &commandline);
+        virtual Foundation::Console::CommandResult ExecuteCommand(const std::string &commandline);
 
         //! Execute command
         /*! It is assumed that name and params are trimmed and need no touching
@@ -34,7 +34,7 @@ namespace Console
             \param name Name of the command to execute
             \param params Parameters to pass to the command
         */
-        virtual void ExecuteCommand(const std::string &name, const Core::StringVector &params);
+        virtual Foundation::Console::CommandResult ExecuteCommand(const std::string &name, const Core::StringVector &params);
     private:
         typedef std::map<std::string, Foundation::Console::Command> CommandMap;
 

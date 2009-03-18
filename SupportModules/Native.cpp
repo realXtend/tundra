@@ -32,7 +32,7 @@ namespace Console
         commands_[name] = command;
     }
 
-    void Native::ExecuteCommand(const std::string &commandline)
+    Foundation::Console::CommandResult Native::ExecuteCommand(const std::string &commandline)
     {
         std::string cl = commandline;
 
@@ -49,7 +49,8 @@ namespace Console
         if (it == commandline_tok.end())
         {
             ConsoleModule::LogInfo("Failed to parse malformed command line: " + commandline);
-            return;
+            Foundation::Console::CommandResult result = { false, "" };
+            return result;
         }
 
         command = *it;
@@ -75,10 +76,10 @@ namespace Console
             }
         }
 
-        ExecuteCommand(command, params);
+        return ExecuteCommand(command, params);
     }
 
-    void Native::ExecuteCommand(const std::string &name, const Core::StringVector &params)
+    Foundation::Console::CommandResult Native::ExecuteCommand(const std::string &name, const Core::StringVector &params)
     {
         std::string low_name = name;
         boost::to_lower(low_name);
@@ -87,10 +88,11 @@ namespace Console
         if (iter == commands_.end())
         {
             ConsoleModule::LogInfo("Command: " + name + " not found.");
-            return;
+            Foundation::Console::CommandResult result = { false, "" };
+            return result;
         }
 
-        (*iter->second.callback_)(params);
+        return (*iter->second.callback_)(params);
     }
 }
 
