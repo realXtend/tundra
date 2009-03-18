@@ -8,6 +8,7 @@
 #include "Poco/DOM/Element.h"
 #include "Poco/DOM/Attr.h"
 #include "Poco/DOM/NamedNodeMap.h"
+#include "Poco/DOM/AutoPtr.h"
 #include "Poco/SAX/InputSource.h"
 
 #include <algorithm>
@@ -200,12 +201,19 @@ namespace Foundation
         {
             Poco::XML::InputSource source(filename);
             Poco::XML::DOMParser parser;
-            Poco::XML::Document* document = parser.parse(&source);
-
-            Poco::XML::Node* node = document->firstChild();
-            if (node)
+            Poco::XML::AutoPtr<Poco::XML::Document> document = parser.parse(&source);
+            
+            if (!document.isNull())
             {
-                BuildTreeFromNode(node, "");
+                Poco::XML::Node* node = document->firstChild();
+                if (node)
+                {
+                    BuildTreeFromNode(node, "");
+                }
+            }
+            else
+            {
+                Foundation::RootLogError("Could not load event subscriber tree from " + filename);
             }
         }
         catch (Poco::Exception& e)
@@ -220,8 +228,8 @@ namespace Foundation
         {
             std::string new_parent_name = parent_name;
             
-            Poco::XML::NamedNodeMap* attributes = node->attributes();
-            if (attributes)
+            Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> attributes = node->attributes();
+            if (!attributes.isNull())
             {
                 Poco::XML::Attr* module_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("module"));
                 Poco::XML::Attr* priority_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("priority"));
