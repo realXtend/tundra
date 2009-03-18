@@ -1,21 +1,29 @@
-RexNG Viewer
-============
+realXtend Viewer
+================
 
 Compiling
 ---------
 CMake is used to create the build environment.
-See documentation/cmake.txt for more information.
+See doc/cmake.txt for more information.
+
+Dependencies
+------------
+See doc/dependencies.txt for more detailed instructions on dependencies.
+
+Windows
+-------
+
+read doc/build-windows.txt
 
 Quickstart for Windows / Visual Studio: install CMake, then run cmake.bat if not using VS2008, and cmake_vs2008.bat, if using VS2008.
 
 N.B. When compiling for the first time, compile in debug mode and run the exe at least once.
 ---- Some data files are created in debug mode which are needed when running in release mode.
 
+Linux
+-----
 
-Dependencies
-------------
-See external_libs/RexDependencies.txt for more detailed instructions on dependencies.
-
+read doc/build-linux.txt
 
 License
 -------
