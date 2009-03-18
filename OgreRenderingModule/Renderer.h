@@ -34,7 +34,7 @@ namespace OgreRenderer
         
     public:
         //! postrender event id
-        static const Core::event_id_t event_postrender = 0x1;
+        static const Core::event_id_t EVENT_POST_RENDER = 0x1;
         
         Renderer(Foundation::Framework* framework);
         virtual ~Renderer();
