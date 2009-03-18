@@ -18,8 +18,14 @@ struct TestA
         BOOST_CHECK_EQUAL(params[0], "paramA");
         BOOST_CHECK_EQUAL(params[1], "paramB");
 
-        Foundation::Console::CommandResult result = {true, "Success"};
-        return result;
+        //Foundation::Console::CommandResult result = {true, "Success"};
+        return Foundation::Console::ResultSuccess("Success");
+    }
+    Foundation::Console::CommandResult TestCallbackFailure(const Core::StringVector &params)
+    {
+        BOOST_CHECK_EQUAL(params.size(), 0);
+
+        return Foundation::Console::ResultFailure();
     }
 };
 
@@ -34,12 +40,18 @@ BOOST_AUTO_TEST_CASE( support_modules_console )
         (Foundation::Service::ST_Console);
 
     TestA test_class;
-    Foundation::Console::Command command = {"Test_Command", "Test command", Foundation::Console::Bind(&test_class, TestA::TestCallbackSuccess) };
-    console->RegisterCommand(command);
+    Foundation::Console::Command commandA = {"Test_CommandA", "Test command Success", Foundation::Console::Bind(&test_class, TestA::TestCallbackSuccess) };
+    console->RegisterCommand(commandA);
+    Foundation::Console::Command commandB = {"Test_CommandB", "Test command Failure", Foundation::Console::Bind(&test_class, TestA::TestCallbackFailure) };
+    console->RegisterCommand(commandB);
 
-    Foundation::Console::CommandResult result = console->ExecuteCommand("test_command (paramA, paramB )");
+    Foundation::Console::CommandResult result = console->ExecuteCommand("Test_CommandA (paramA, paramB )");
     BOOST_CHECK_EQUAL (result.success_, true);
     BOOST_CHECK_EQUAL (result.why_, "Success");
+
+    result = console->ExecuteCommand("Test_CommandB");
+    BOOST_CHECK_EQUAL (result.success_, false);
+    BOOST_CHECK_EQUAL (result.why_.size(), 0);
 
     
 

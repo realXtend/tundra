@@ -94,22 +94,41 @@ namespace Foundation
         */
         void DeclareStaticModule(ModuleInterface *module);
 
-        //! Specify a module that should not be loaded or initialized under any circumstances
-        /*! Only works for core modules.
+        //! Specify a module by type that should not be loaded or initialized under any circumstances
+        /*! 
+            \note Only call during application preinit phase.
 
             \param type Type of the module that should be excluded.
         */
         void ExcludeModule(Module::Type type)
         {
-            exclude_list_.insert(type);
+            ExcludeModule(Module::NameFromType(type));
+        }
 
-            Foundation::RootLogInfo("Module: " + Module::NameFromType(type) + " added to exclude list.");
+        //! Specify a module by name that should not be loaded or initialized under any circumstances
+        /*! 
+            \note Only call during application preinit phase.
+
+            \param module Name of the module that should be excluded.
+        */
+        void ExcludeModule(const std::string &module)
+        {
+            assert (module.empty() == false);
+            exclude_list_.insert(module);
+
+            Foundation::RootLogInfo("Module: " + module + " added to exclude list.");
         }
 
         //! Returns true if the specified module type is exluded from being loaded
-        bool IsExcluded(Module::Type type)
+        bool IsExcluded(Module::Type type) const
         {
-            return (exclude_list_.find(type) != exclude_list_.end());
+            return IsExcluded(Module::NameFromType(type));
+        }
+
+        //! Returns true if the specified module is excluded from being loaded
+        bool IsExcluded(const std::string &module) const
+        {
+            return (exclude_list_.find(module) != exclude_list_.end());
         }
 
         //! loads all available modules. Does not initialize them.
@@ -229,7 +248,7 @@ namespace Foundation
 
         const std::string DEFAULT_MODULES_PATH;
 
-        typedef std::set<Module::Type> ModuleTypeSet;
+        typedef std::set<std::string> ModuleTypeSet;
 
         //! list of modules managed by this manager
         ModuleVector modules_;
