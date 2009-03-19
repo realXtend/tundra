@@ -23,6 +23,9 @@ namespace Console
     {
         RegisterCommand("Help", "Display available commands", Console::Bind(this, &CommandManager::Help));
         RegisterCommand("Exit", "Exit application", Console::Bind(this, &CommandManager::Exit));
+#ifdef _DEBUG
+        RegisterCommand("Test", "Echoes parameters supplied with this command", Console::Bind(this, &CommandManager::Test));
+#endif
     }
 
     CommandManager::~CommandManager()
@@ -198,6 +201,7 @@ namespace Console
         if (params.empty())
         {
             console_->Print("For help with specific command, type help(command).");
+            console_->Print("");
         }
 
         return Console::ResultSuccess();
@@ -207,6 +211,21 @@ namespace Console
     {
         console_->Print("Exiting");
         parent_->GetFramework()->Exit();
+
+        return Console::ResultSuccess();
+    }
+
+    Console::CommandResult CommandManager::Test(const Core::StringVector &params)
+    {
+        std::string all_params;
+        for (size_t i = 0 ; i < params.size() ; ++i)
+        {
+            all_params += params[i];
+            if (i < params.size() - 1)
+                all_params += ", ";
+        }
+
+        console_->Print(all_params);
 
         return Console::ResultSuccess();
     }
