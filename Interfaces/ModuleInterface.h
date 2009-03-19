@@ -65,7 +65,7 @@ namespace Foundation
       
         \note Every module should have a name. Only internal modules have types.
     */
-    class VIEWER_API ModuleInterface
+    class MODULE_API ModuleInterface
     {
         friend class ModuleManager;
     public:
@@ -115,7 +115,7 @@ namespace Foundation
     };
 
     //! interface for modules, implementation
-    class VIEWER_API ModuleInterface_Impl : public ModuleInterface
+    class MODULE_API ModuleInterface_Impl : public ModuleInterface
     {
     public:
     

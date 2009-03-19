@@ -15,7 +15,7 @@ namespace Foundation
         Contains all entities in the world in a generic fashion.
         Acts as a factory for all entities.
     */
-    class VIEWER_API SceneInterface
+    class MODULE_API SceneInterface
     {
     public:
         //! default constructor
@@ -65,7 +65,7 @@ namespace Foundation
         Contains all entities in the world in a generic fashion.
         Acts as a factory for all entities.
     */
-    class VIEWER_API SceneInterface_Impl : public SceneInterface
+    class MODULE_API SceneInterface_Impl : public SceneInterface
     {
     public:
         //! default constructor

@@ -13,7 +13,7 @@ namespace Foundation
 namespace Console
 {
     //! interface for modules
-    class VIEWER_API ConsoleModule : public Foundation::ModuleInterface_Impl
+    class MODULE_API ConsoleModule : public Foundation::ModuleInterface_Impl
     {
     public:
         ConsoleModule();
