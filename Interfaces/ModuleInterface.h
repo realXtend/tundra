@@ -136,7 +136,7 @@ namespace Foundation
 
             for (size_t n=0 ; n<component_registrars_.size() ; ++n)
             {
-                component_registrars_[n]->Register(framework);
+                component_registrars_[n]->Register(framework, this);
             }
             Initialize(framework);
         }

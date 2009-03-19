@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "EC_ObjGeneralProps.h"
 
-EC_ObjGeneralProps::EC_ObjGeneralProps()
+EC_ObjGeneralProps::EC_ObjGeneralProps(Foundation::ModuleInterface* module)
 {
     name_ = "";
     description_ = "";

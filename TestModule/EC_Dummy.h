@@ -33,8 +33,8 @@ namespace Test
         int GetDummyData2() { return dummy_data2_; }
         void SetDummyData2(int data) { dummy_data2_ = data; }
     private:
-        //! default constructor, private since we implicitly use factory
-        EC_Dummy() {}
+        //! constructor, private since we implicitly use factory
+        EC_Dummy(Foundation::ModuleInterface* module) {}
         //! copy constructor, private since we implicitly use factory
         EC_Dummy(const EC_Dummy &rhs) : dummy_data1_(rhs.dummy_data1_), dummy_data2_(rhs.dummy_data2_) {}
 

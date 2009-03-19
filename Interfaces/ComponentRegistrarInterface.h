@@ -8,6 +8,7 @@
 namespace Foundation
 {
     class Framework;
+    class ModuleInterface;
 
     class ComponentRegistrarInterface
     {
@@ -15,7 +16,7 @@ namespace Foundation
         ComponentRegistrarInterface()  {}
         virtual ~ComponentRegistrarInterface() {}
         
-        virtual void Register(Framework *framework) = 0;
+        virtual void Register(Framework *framework, ModuleInterface* module) = 0;
 
         virtual void Unregister(Framework *framework) = 0;
     };

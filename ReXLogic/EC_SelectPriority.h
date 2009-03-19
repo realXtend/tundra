@@ -21,7 +21,7 @@ public:
     } 
 
 private:
-    EC_SelectPriority();
+    EC_SelectPriority(Foundation::ModuleInterface* module);
 
     int select_priority_;
 };

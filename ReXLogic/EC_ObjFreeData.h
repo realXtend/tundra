@@ -22,7 +22,7 @@ public:
     } 
 
 private:
-    EC_ObjFreeData();
+    EC_ObjFreeData(Foundation::ModuleInterface* module);
 
     std::string free_data_;
 };

@@ -16,7 +16,7 @@ namespace OgreRenderer
         virtual ~EC_OgreEntity() {}
 
     private:
-        EC_OgreEntity() : ogre_scene_node_(0) { }
+        EC_OgreEntity(Foundation::ModuleInterface* module) : ogre_scene_node_(0) { }
         //! todo add copy constructor and assignment operator
 
         int ogre_scene_node_;

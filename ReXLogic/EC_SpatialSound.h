@@ -24,7 +24,7 @@ public:
     } 
 
 private:
-    EC_SpatialSound();
+    EC_SpatialSound(Foundation::ModuleInterface* module);
 
     std::string sound_id_;
     float volume_;

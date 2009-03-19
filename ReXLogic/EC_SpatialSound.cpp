@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "EC_SpatialSound.h"
 
-EC_SpatialSound::EC_SpatialSound()
+EC_SpatialSound::EC_SpatialSound(Foundation::ModuleInterface* module)
 {
     sound_id_ = "";
     volume_ = 0;
