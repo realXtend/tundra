@@ -17,7 +17,7 @@ namespace OgreRenderer
     class OgreRenderingModule;
     
     //! Ogre entity component. Stores Ogre scenenode.
-    class VIEWER_API EC_OgreEntity : public Foundation::ComponentInterface
+    class MODULE_API EC_OgreEntity : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_OgreEntity);
     public:

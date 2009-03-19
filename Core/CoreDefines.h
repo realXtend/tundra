@@ -12,17 +12,17 @@
 
 #define TO_STRING(p) boost::lexical_cast<std::string>(p)
 
-#undef VIEWER_API
+#undef MODULE_API
 #if defined (_WINDOWS)
 #if defined(MODULE_EXPORTS) 
-#define VIEWER_API __declspec(dllexport) 
+#define MODULE_API __declspec(dllexport) 
 #else
-#define VIEWER_API __declspec(dllimport) 
+#define MODULE_API __declspec(dllimport) 
 #endif
 #endif
 
-#ifndef VIEWER_API
-#define VIEWER_API
+#ifndef MODULE_API
+#define MODULE_API
 #endif
 
 #endif

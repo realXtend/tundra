@@ -32,7 +32,7 @@ struct ClientParameters
 namespace OpenSimProtocol
 {
     //! interface for modules
-    class VIEWER_API OpenSimProtocolModule : public Foundation::ModuleInterface_Impl
+    class MODULE_API OpenSimProtocolModule : public Foundation::ModuleInterface_Impl
     {
     public:
         OpenSimProtocolModule();

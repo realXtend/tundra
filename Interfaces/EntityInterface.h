@@ -12,7 +12,7 @@ namespace Foundation
 
 
     //! interface for entities
-    class VIEWER_API EntityInterface
+    class MODULE_API EntityInterface
     {
     public:
         //! default constructor
