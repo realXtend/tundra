@@ -167,7 +167,7 @@ namespace Console
                 // ...
             }
 
-        \note All functions should be threadsafe
+        \note All functions should be threadsafe. Commands should be registered in PostInitialize or later.
     */
     class ConsoleCommandServiceInterface : public Foundation::ServiceInterface
     {
