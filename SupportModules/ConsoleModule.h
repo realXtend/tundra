@@ -4,7 +4,6 @@
 #define incl_ConsoleModule_h
 
 #include "ModuleInterface.h"
-#include "Native.h"
 
 namespace Foundation
 {
@@ -27,6 +26,11 @@ namespace Console
 
         virtual void Update();
 
+        //! returns framework
+        Foundation::Framework *GetFramework() { return framework_; }
+
+        //! Returns default console
+        ConsolePtr GetConsole() const { return manager_; };
 
 
         MODULE_LOGGING_FUNCTIONS
@@ -37,8 +41,8 @@ namespace Console
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Console;
 
     private:
-        //! native debug console
-        Native native_;
+        //! debug console manager
+        ConsolePtr manager_;
 
         Foundation::Framework *framework_;
     };
