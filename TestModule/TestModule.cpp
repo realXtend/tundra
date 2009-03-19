@@ -70,7 +70,7 @@ namespace Test
             framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
         assert(sceneManager != NULL && "Failed to get SceneManager service");
 
-        assert(sceneManager->HasScene("test_scene") == false && "Scene test_scene scene alread exists!");
+        assert(sceneManager->HasScene("test_scene") == false && "Scene test_scene scene already exists!");
         Foundation::ScenePtr scene = sceneManager->CreateScene("test_scene");
         assert(scene.get() && "Failed to create scene" );
         assert(sceneManager->HasScene("test_scene") && "Failed to create scene");
@@ -114,8 +114,8 @@ namespace Test
         assert (test_service != NULL);
         assert (test_service->Test());
 
-//        framework_->Exit();
-//        assert (framework_->IsExiting());
+        framework_->Exit();
+        assert (framework_->IsExiting());
 
         LogInfo("");
     }

@@ -7,19 +7,22 @@
 
 namespace Console
 {
+    //! A result from executing a console command.
+    /*! A callback function for console command should return an instance.
+    */
     struct CommandResult
     {
         //! Set to true if command was completed succesfully, false otherwise
         bool success_;
         //! Print out reason for failure (or success).
         std::string why_;
-        //! Set true for delayed execution. Set true if you wish threadsafe execution of the command.
+        //! True for delayed execution. For internal use, this doesn't need to be set normally
         bool delayed_;
     };
     //! Returns a succesful CommandResult
-    __inline static CommandResult ResultSuccess(const std::string &why = std::string()) { CommandResult result = { true, why, false }; return result; }
+    __inline static CommandResult ResultSuccess(const std::string &why = std::string()) { CommandResult result = { true, why, false}; return result; }
     //! Returns a failure CommandResult
-    __inline static CommandResult ResultFailure(const std::string &why = std::string()) { CommandResult result = { false, why, false }; return result; }
+    __inline static CommandResult ResultFailure(const std::string &why = std::string()) { CommandResult result = { false, why, false}; return result; }
     //! Returns a delayed CommandResult
     __inline static CommandResult ResultDelayed() { CommandResult result = { false, std::string(), true }; return result; }
 
@@ -35,37 +38,85 @@ namespace Console
     };
     typedef boost::shared_ptr<CallbackInterface> CallbackPtr;
 
-    //! functor for console commands
+    //! typedef for static callback
+    typedef CommandResult (*StaticCallback)(const Core::StringVector&);
+
+    //! functor for console command callback, member function callback
     template <typename T>
     class Callback : public CallbackInterface
     {
     public:
         typedef CommandResult (T::*CallbackFunction)(const Core::StringVector&);
 
-       //! constructor taking object and member function pointer
-       Callback(T *object, CallbackFunction function) : Object(object), function_(function) { }
+        //! constructor taking object and member function pointer
+        Callback(T *object, CallbackFunction function) : object_(object), function_(function) { }
 
-       //! destructor
-       virtual ~Callback() {}
+        //! destructor
+        virtual ~Callback() {}
 
-       //! copy constructor
-       Callback(const Callback &rhs)
-       {
-          this->Object = rhs.Object;
-          this->FunctionPtr = rhs.FunctionPtr;
-       }
+        //! copy constructor
+        Callback(const Callback &rhs)
+        {
+            this->object_ = rhs.object_;
+            this->function_ = rhs.function_;
+        }
+        Callback &operator=(const Callback &rhs)
+        {
+            if (this != &rhs)
+            {
+                object_ = rhs.object_;
+                function_ = rhs.function_;
+            }
+            return *this;
+        }
 
-       //! Calls the function
-       virtual CommandResult operator()(const Core::StringVector &params)
-       {
-          return (*Object.*function_)(params);
-       }       
+        //! Calls the function
+        virtual CommandResult operator()(const Core::StringVector &params)
+        {
+            return (*object_.*function_)(params);
+        }       
 
     private:
-       //! pointer to the object
-       T *Object;
-       //! pointer to the member function
-       CallbackFunction function_;
+        //! pointer to the object
+        T *object_;
+        //! pointer to the member function
+        CallbackFunction function_;
+    };
+
+    //! functor for console command callback, for static function callback
+    class StaticCallbackFunctor : public CallbackInterface
+    {
+    public:
+        //! constructor taking static function pointer
+        StaticCallbackFunctor(StaticCallback &function) : function_(function) { }
+
+        //! destructor
+        virtual ~StaticCallbackFunctor() {}
+
+        //! copy constructor
+        StaticCallbackFunctor(const StaticCallbackFunctor &rhs)
+        {
+            this->function_ = rhs.function_;
+        }
+
+        StaticCallbackFunctor &operator=(const StaticCallbackFunctor &rhs)
+        {
+            if (this != &rhs)
+            {
+                function_ = rhs.function_;
+            }
+            return *this;
+        }
+
+        //! Calls the function
+        virtual CommandResult operator()(const Core::StringVector &params)
+        {
+            return (*function_)(params);
+        }       
+
+    private:
+        //! pointer to function
+        StaticCallback function_;
     };
 
     //! A console command
@@ -77,6 +128,8 @@ namespace Console
         std::string description_;
         //! callback for the command
         CallbackPtr callback_;
+        //! is the handling of the command immediate, or delayed
+        bool delayed_;
     };
 
     //! Bind a member function to a command callback
@@ -86,7 +139,36 @@ namespace Console
         return CallbackPtr(new Callback<T>(object, function));
     }
 
-    //! Interface for scene managers
+    //! Interface for console command service.
+    /*! One can register and execute registered console commands by using this service.
+        Commands can be parsed and executed from a commandline string, or executed directly.
+
+        One can register new commands with RegisterCommand() - functions.
+        Each command has a name and a small description. Command names are case-insensitive.
+        Each command is associated with C++ callback function, the function can be a static
+        function or a member function, but it should have the signature:
+
+            CommandResult Foo(const Core::StringVector& parameters)
+
+        where parameters contains parameters supplied with the command.
+
+        For threadsafe execution of the callbacks, use QueueCommand() when supplying
+        commandlines from the user (only for Console-type of classes), and register commands
+        with delayed execution and use Poll() to execute the commands in the caller's
+        thread context.
+        F.ex.
+
+            RegisterCommand("MyCommand", "My great command", &MyClass::MyFunction, true); // register command for delayed execution
+
+            then in MyClass' update function
+            void MyClass::Update()
+            {
+                ConsoleCommandService->Poll("MyCommand"); // If MyCommand was queued previously, it now gets executed.
+                // ...
+            }
+
+        \note All functions should be threadsafe
+    */
     class ConsoleCommandServiceInterface : public Foundation::ServiceInterface
     {
     public:
@@ -96,8 +178,32 @@ namespace Console
         //! destructor
         virtual ~ConsoleCommandServiceInterface() {}
 
+        //! add time
+        virtual void Update() {}
+
         //! Add a command to the debug console
         virtual void RegisterCommand(const Command &command) = 0;
+
+        //! Register a command to the debug console
+        /*! For binding a member function.
+            To bind a member function to the command, use Console::Bind()
+
+            \param name name of the command
+            \param description short description of the command
+            \param callback function object that gets called when command is executed
+            \param delayed If true, handle the command in delayed, threadsafe manner
+        */
+        virtual void RegisterCommand(const std::string &name, const std::string &description, const CallbackPtr &callback, bool delayed = false) = 0;
+
+        //! Register a command to the debug console
+        /*! For binding a static function
+
+            \param name name of the command
+            \param description short description of the command
+            \param callback function object that gets called when command is executed
+            \param delayed If true, handle the command in delayed, threadsafe manner
+        */
+        virtual void RegisterCommand(const std::string &name, const std::string &description, StaticCallback &static_callback, bool delayed = false) = 0;
 
         //! Queue console command. The command will be called in the console's thread
         /*!
@@ -105,15 +211,19 @@ namespace Console
         */
         virtual void QueueCommand(const std::string &commandline) = 0;
 
-        //! Parse and execute command line. The command is called in the caller's thread.
-        /*! 
-            Threadsafe
+        //! Poll to see if command has been queued and executes it immediately, in the caller's thread context.
+        /*! For each possible command, this needs to be called exactly once.
+
+            \param command name of the command to poll for.
+            \return Result of executing the command, 
         */
+        virtual boost::optional<CommandResult> Poll(const std::string &command) = 0;
+
+        //! Parse and execute command line. The command is called in the caller's thread.
         virtual CommandResult ExecuteCommand(const std::string &commandline) = 0;
 
         //! Execute command
-        /*! Threadsafe
-            
+        /*!
             \param name Name of the command to execute
             \param params Parameters to pass to the command
         */

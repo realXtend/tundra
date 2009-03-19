@@ -41,7 +41,7 @@ namespace Console
 
     void ConsoleModule::Update()
     {
-       // manager_->Update();
+        manager_->Update();
     }
 
     // virtual 

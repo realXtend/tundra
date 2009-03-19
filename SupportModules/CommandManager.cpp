@@ -21,19 +21,39 @@ namespace Console
         , parent_ (static_cast< ConsoleModule* >(parent))
         , console_(console)
     {
-        Console::Command help = {"Help", "Display available commands", Console::Bind(this, &CommandManager::Help) };
-        RegisterCommand(help);
-
-        Console::Command exit = {"Exit", "Exit application", Console::Bind(this, &CommandManager::Exit) };
-        RegisterCommand(exit);
+        RegisterCommand("Help", "Display available commands", Console::Bind(this, &CommandManager::Help));
+        RegisterCommand("Exit", "Exit application", Console::Bind(this, &CommandManager::Exit));
     }
 
     CommandManager::~CommandManager()
     {
     }
 
+    void CommandManager::Update()
+    {
+        while (commandlines_.empty() == false)
+        {
+            std::string command_line;
+            {
+                Core::MutexLock lock(commandlines_mutex_);
+                command_line = commandlines_.front();
+                commandlines_.pop();
+            }
+
+            ExecuteCommand(command_line);
+        }
+    }
+
+    void CommandManager::QueueCommand(const std::string &commandline)
+    {
+        Core::MutexLock lock(commandlines_mutex_);
+        commandlines_.push(commandline);
+    }
+
     void CommandManager::RegisterCommand(const Console::Command &command)
     {
+        Core::RecursiveMutexLock lock(commands_mutex_);
+
         if (commands_.find(command.name_) != commands_.end())
         {
             ConsoleModule::LogError("Command " + command.name_ + " already registered.");
@@ -43,6 +63,24 @@ namespace Console
         std::string name = command.name_;
         boost::to_lower(name);
         commands_[name] = command;
+    }
+
+    boost::optional<CommandResult> CommandManager::Poll(const std::string &command)
+    {
+        std::string command_l = command;
+        boost::to_lower(command_l);
+
+        Core::RecursiveMutexLock lock(commands_mutex_);
+        
+        CommandParamMap::iterator it = delayed_commands_.find(command_l);
+        if (it != delayed_commands_.end())
+        {
+            CommandResult result = ExecuteCommandAlways(it->first, it->second, true); // Core::MutexLock recursive, no deadlock
+            delayed_commands_.erase(it);
+
+            return boost::optional<CommandResult>(result);
+        }
+        return boost::optional<CommandResult>();
     }
 
     Console::CommandResult CommandManager::ExecuteCommand(const std::string &commandline)
@@ -92,14 +130,15 @@ namespace Console
         return ExecuteCommand(command, params);
     }
 
-    Console::CommandResult CommandManager::ExecuteCommand(const std::string &name, const Core::StringVector &params)
+    Console::CommandResult CommandManager::ExecuteCommandAlways(const std::string &name, const Core::StringVector &params, bool always)
     {
         std::string low_name = name;
         boost::to_lower(low_name);
-
+        
         Console::CallbackPtr callback;
+        bool delayed = false;
         {
-            Core::MutexLock lock(command_mutex_);
+            Core::RecursiveMutexLock lock(commands_mutex_);
             CommandMap::const_iterator iter = commands_.find(low_name);
             if (iter == commands_.end())
             {
@@ -108,6 +147,11 @@ namespace Console
                 return result;
             }
             callback = iter->second.callback_;
+            if (!always && iter->second.delayed_)
+            {
+                delayed_commands_[iter->first] = params;
+                return ResultDelayed();
+            }
         }
 
         Console::CommandResult result = (*callback)(params);
@@ -133,7 +177,7 @@ namespace Console
         bool success = false;
 
         {   
-            Core::MutexLock lock(command_mutex_);
+            Core::RecursiveMutexLock lock(commands_mutex_);
             CommandMap::const_iterator it = commands_.begin();
             for ( ; it != commands_.end() ; ++it)
             {

@@ -20,7 +20,7 @@ namespace Console
             std::string command_line;
             std::getline(std::cin, command_line);
 
-            command_service_->ExecuteCommand(command_line);
+            command_service_->QueueCommand(command_line);
         }
     }
 
