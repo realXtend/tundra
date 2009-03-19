@@ -6,7 +6,7 @@
 #include "Foundation.h"
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
-#include "EC_OgreEntity.h"
+#include "EC_OgrePlaceable.h"
 
 namespace OgreRenderer
 {
@@ -24,7 +24,7 @@ namespace OgreRenderer
         using namespace OgreRenderer;
 
         LogInfo("Module " + Name() + " loaded.");
-        DECLARE_MODULE_EC(EC_OgreEntity);
+        DECLARE_MODULE_EC(EC_OgrePlaceable);
     }
 
     // virtual
