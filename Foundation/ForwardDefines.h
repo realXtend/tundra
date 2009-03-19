@@ -3,6 +3,7 @@
 #ifndef incl_Framework_ForwardDefines_h
 #define incl_Framework_ForwardDefines_h
 
+#include <boost/shared_ptr.hpp>
 #include <Poco/Logger.h>
 
 namespace Foundation
