@@ -100,6 +100,9 @@ namespace Console
 
         //! Exit application
         Console::CommandResult Exit(const Core::StringVector &params);
+
+        //! Test command
+        Console::CommandResult Test(const Core::StringVector &params);
     private:
         Console::CommandResult ExecuteCommandAlways(const std::string &name, const Core::StringVector &params, bool always);
 
