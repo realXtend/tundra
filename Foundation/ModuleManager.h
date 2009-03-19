@@ -187,6 +187,12 @@ namespace Foundation
             return NULL;
         }
 
+        typedef std::vector<ModuleInterface*> ModuleVector;
+
+        //! @return A list of all modules in the system, for reflection purposes. If you need non-const access to
+        //!         a module, call GetModule with the proper name or type.
+        const ModuleVector &GetModuleList() const { return modules_; }
+
         //! Returns true if module is loaded, false otherwise
         bool HasModule(Module::Type type) const
         {
@@ -243,8 +249,6 @@ namespace Foundation
 
         //! Returns a vector containing all xml files in the specified directory, scans recursively.
         Core::StringVectorPtr GetXmlFiles(const std::string &path);
-
-        typedef std::vector<ModuleInterface*> ModuleVector;
 
         const std::string DEFAULT_MODULES_PATH;
 

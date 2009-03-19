@@ -134,8 +134,10 @@ namespace Foundation
          */
         void LoadEventSubscriberTree(const std::string& filename);
 
-    private:
         typedef std::map<std::string, Core::event_category_id_t> EventCategoryMap;
+
+        const EventCategoryMap &GetEventCategoryMap() const { return event_category_map_; }
+    private:
         
         //! find a node with certain module from the tree
         /*! \param node starting node for search
