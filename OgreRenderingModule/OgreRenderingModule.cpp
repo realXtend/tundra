@@ -5,11 +5,12 @@
 #include <Poco/ClassLibrary.h>
 #include "Foundation.h"
 #include "ComponentRegistrarInterface.h"
+#include "ServiceManager.h"
 #include "EC_OgreEntity.h"
 
 namespace OgreRenderer
 {
-    OgreRenderingModule::OgreRenderingModule() : ModuleInterface_Impl(type_static_)
+    OgreRenderingModule::OgreRenderingModule() : ModuleInterface_Impl(type_static_), framework_(NULL)
     {
     }
 
@@ -35,8 +36,12 @@ namespace OgreRenderer
     // virtual
     void OgreRenderingModule::Initialize(Foundation::Framework *framework)
     {
+        framework_  = framework;
+        
         renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework));
         renderer_->Initialize();
+        
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Renderer, renderer_.get());
 
         LogInfo("Module " + Name() + " initialized.");
     }
@@ -44,8 +49,12 @@ namespace OgreRenderer
     // virtual 
     void OgreRenderingModule::Uninitialize(Foundation::Framework *framework)
     {        
+        framework->GetServiceManager()->UnregisterService(renderer_.get());
+    
         renderer_.reset();
 
+        framework_ = NULL;
+        
         LogInfo("Module " + Name() + " uninitialized.");
     }
     

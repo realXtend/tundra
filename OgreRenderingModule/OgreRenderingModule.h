@@ -34,6 +34,7 @@ namespace OgreRenderer
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Renderer;
     private:
         OgreRenderer::RendererPtr renderer_;
+        Foundation::Framework* framework_;
     };
 }
 
