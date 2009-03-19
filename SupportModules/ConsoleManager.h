@@ -29,6 +29,11 @@ namespace Console
         //! destructor
         virtual ~ConsoleManager() {};
 
+        __inline virtual void Update()
+        {
+            command_manager_->Update();
+        }
+
         //! Prints text to the console (all consoles)
         __inline virtual void Print(const std::string &text)
         {

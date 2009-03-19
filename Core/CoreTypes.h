@@ -28,8 +28,15 @@ namespace Core
     typedef std::vector<std::string> StringVector;
     typedef boost::shared_ptr<StringVector> StringVectorPtr;
 
-    typedef boost::lock_guard<boost::mutex> MutexLock;
+
+    //! generic mutex
     typedef boost::mutex Mutex;
+    //! recursive mutex
+    typedef boost::recursive_mutex RecursiveMutex;
+    //! Raii style mutex locking
+    typedef boost::lock_guard<Mutex> MutexLock;
+    //! Raii style recursive mutex locking
+    typedef boost::lock_guard<RecursiveMutex> RecursiveMutexLock;
 
     typedef boost::thread Thread;
 }

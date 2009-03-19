@@ -17,6 +17,9 @@ namespace Console
         //! destructor
         virtual ~ConsoleServiceInterface() {}
 
+        //! add time
+        virtual void Update() {}
+
         //! Prints text to the console
         virtual void Print(const std::string &text) = 0;
     };

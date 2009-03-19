@@ -28,6 +28,33 @@ struct TestA
     }
 };
 
+struct TestB
+{
+    Console::CommandResult TestCallbackThreaded(const Core::StringVector &params)
+    {
+        test_var_ = 1;
+        return Console::ResultSuccess();
+    }
+
+    void operator()()
+    {
+        test_var_ = 0;
+        Console::CommandService *console = fw_->GetService<Console::CommandService>
+            (Foundation::Service::ST_ConsoleCommand);
+
+        console->RegisterCommand("Test CommandC", "Test command threaded", Console::Bind(this, &TestB::TestCallbackThreaded), true);
+
+        console->Update();
+        boost::optional<Console::CommandResult> result;
+        while ( !(result = console->Poll("Test CommandC")) )
+            console->Update();
+        
+        BOOST_CHECK_EQUAL (result->success_, true);
+    }
+    Foundation::Framework *fw_;
+    int test_var_;
+};
+
 BOOST_AUTO_TEST_CASE( support_modules_console )
 {
     Foundation::Framework fw;
@@ -39,10 +66,8 @@ BOOST_AUTO_TEST_CASE( support_modules_console )
         (Foundation::Service::ST_ConsoleCommand);
 
     TestA test_class;
-    Console::Command commandA = {"Test_CommandA", "Test command Success", Console::Bind(&test_class, &TestA::TestCallbackSuccess) };
-    console->RegisterCommand(commandA);
-    Console::Command commandB = {"Test_CommandB", "Test command Failure", Console::Bind(&test_class, &TestA::TestCallbackFailure) };
-    console->RegisterCommand(commandB);
+    console->RegisterCommand("Test_CommandA", "Test command Success", Console::Bind(&test_class, &TestA::TestCallbackSuccess));
+    console->RegisterCommand("Test_CommandB", "Test command Failure", Console::Bind(&test_class, &TestA::TestCallbackFailure));
     
 
     Console::CommandResult result = console->ExecuteCommand("Test_CommandA (paramA, paramB )");
@@ -53,7 +78,14 @@ BOOST_AUTO_TEST_CASE( support_modules_console )
     BOOST_CHECK_EQUAL (result.success_, false);
     BOOST_CHECK_EQUAL (result.why_.size(), 0);
 
+    TestB testb;
+    testb.fw_ = &fw;
+
+    Core::Thread thread(boost::ref(testb));
+    console->QueueCommand("Test CommandC");
+    thread.join();
     
+    BOOST_CHECK_EQUAL (testb.test_var_, 1);
 
     fw.GetModuleManager()->UninitializeModules();
     fw.GetModuleManager()->UnloadModules();
