@@ -67,6 +67,7 @@ namespace Foundation
     */
     class VIEWER_API ModuleInterface
     {
+        friend class ModuleManager;
     public:
         ModuleInterface()  {}
         virtual ~ModuleInterface() {}
@@ -79,11 +80,6 @@ namespace Foundation
         virtual void Load() = 0;
         //! called when module is unloaded from memory. Do not trust that framework can be used.
         virtual void Unload() = 0;
-
-        //! Initialized the module. Called when module is taken in use. Do not override in child classes. For internal use.
-        virtual void _Initialize(Framework *framework) = 0;
-        //! Uninitialize the module. Called when module is removed from use. Do not override in child classes. For internal use.
-        virtual void _Uninitialize(Foundation::Framework *framework) = 0;
 
         //! Pre-initialization for the module. Called before modules are initializated.
         virtual void PreInitialize(Framework *framework) = 0;
@@ -110,6 +106,12 @@ namespace Foundation
         /*! Should return true if the event was handled and is not to be propagated further
          */
         virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) = 0;
+
+    private:
+        //! Initializes the module. Called when module is taken in use. Do not override in child classes. For internal use.
+        virtual void InitializeInternal(Framework *framework) = 0;
+        //! Uninitialize the module. Called when module is removed from use. Do not override in child classes. For internal use.
+        virtual void UninitializeInternal(Foundation::Framework *framework) = 0;
     };
 
     //! interface for modules, implementation
@@ -129,31 +131,6 @@ namespace Foundation
 
         virtual ~ModuleInterface_Impl() {}
 
-        //! Registers all declared components
-        virtual void _Initialize(Framework *framework)
-        {
-            assert(framework != NULL);
-
-            for (size_t n=0 ; n<component_registrars_.size() ; ++n)
-            {
-                component_registrars_[n]->Register(framework, this);
-            }
-            Initialize(framework);
-        }
-
-        //! Unregisters all declared components
-        virtual void _Uninitialize(Foundation::Framework *framework)
-        {
-            assert(framework != NULL);
-
-            for (size_t n=0 ; n<component_registrars_.size() ; ++n)
-            {
-                component_registrars_[n]->Unregister(framework);
-            }
-
-            Uninitialize(framework);
-        }
-
         virtual void PreInitialize(Framework *framework) {}
         virtual void PostInitialize(Framework *framework) {}
         
@@ -170,6 +147,31 @@ namespace Foundation
         virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) { return false; }
         
     private:
+        //! Registers all declared components
+        virtual void InitializeInternal(Framework *framework)
+        {
+            assert(framework != NULL);
+
+            for (size_t n=0 ; n<component_registrars_.size() ; ++n)
+            {
+                component_registrars_[n]->Register(framework, this);
+            }
+            Initialize(framework);
+        }
+
+        //! Unregisters all declared components
+        virtual void UninitializeInternal(Foundation::Framework *framework)
+        {
+            assert(framework != NULL);
+
+            for (size_t n=0 ; n<component_registrars_.size() ; ++n)
+            {
+                component_registrars_[n]->Unregister(framework);
+            }
+
+            Uninitialize(framework);
+        }
+
         typedef std::vector<ComponentRegistrarInterfacePtr> RegistrarVector;
 
         RegistrarVector component_registrars_;

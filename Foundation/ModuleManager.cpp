@@ -118,7 +118,7 @@ namespace Foundation
         {
             if (modules_[i]->Name() == module)
             {
-                modules_[i]->_Initialize(framework_);
+                modules_[i]->InitializeInternal(framework_);
                 break;
             }
         }
@@ -233,7 +233,7 @@ namespace Foundation
     void ModuleManager::InitializeModule(ModuleInterface *module)
     {
         assert(module);
-        module->_Initialize(framework_);
+        module->InitializeInternal(framework_);
     }
 
     void ModuleManager::PostInitializeModule(ModuleInterface *module)
@@ -245,7 +245,7 @@ namespace Foundation
     void ModuleManager::UninitializeModule(ModuleInterface *module)
     {
         assert(module);
-        module->_Uninitialize(framework_);
+        module->UninitializeInternal(framework_);
     }
 
     bool ModuleManager::HasModule(ModuleInterface *module)
