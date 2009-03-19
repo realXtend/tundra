@@ -129,6 +129,15 @@ namespace Foundation
 
             // synchronize shared data across modules
             //mChangeManager->_propagateChanges();
+            
+            // if we have a renderer service, render now
+            if (service_manager_->IsRegistered(Service::ST_Renderer))
+            {
+                Foundation::RenderServiceInterface *renderer = 
+                    service_manager_->GetService<RenderServiceInterface>(Service::ST_Renderer);
+                renderer->Render();
+            }
+            
         }
 
          UnloadModules();

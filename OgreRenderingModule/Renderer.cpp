@@ -198,9 +198,12 @@ namespace OgreRenderer
     
     void Renderer::Update()
     {
-        if (!initialized_) return;
-        
         Ogre::WindowEventUtilities::messagePump();
+    }
+    
+    void Renderer::Render()
+    {
+        if (!initialized_) return;
         
         root_->_fireFrameStarted();
         
