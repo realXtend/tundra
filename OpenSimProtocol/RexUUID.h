@@ -5,7 +5,7 @@
 #include "RexTypes.h"
 
 /// RexUUID is a 16-byte identifier for resources in a virtual world.
-class REX_API RexUUID
+class VIEWER_API RexUUID
 {
 public:
 	/// Constructs an RexUUID from a string in form "1c1bbda2-304b-4cbf-ba3f-75324b044c73" or "1c1bbda2304b4cbfba3f75324b044c73".

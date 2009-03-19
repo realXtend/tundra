@@ -14,7 +14,7 @@ namespace Scene
         Contains all entities in the world in a generic fashion.
         Acts as a factory for all entities.
     */
-    class REX_API Generic : public Foundation::SceneInterface_Impl
+    class VIEWER_API Generic : public Foundation::SceneInterface_Impl
     {
         friend class SceneManager;
     private:

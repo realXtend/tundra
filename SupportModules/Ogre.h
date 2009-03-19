@@ -13,7 +13,7 @@ namespace Foundation
 namespace Console
 {
     //! Ogre debug console
-    class REX_API Ogre
+    class VIEWER_API Ogre
     {
     };
 }

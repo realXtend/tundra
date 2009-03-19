@@ -12,7 +12,7 @@ namespace Foundation
 
 
     //! interface for entities
-    class REX_API EntityInterface
+    class VIEWER_API EntityInterface
     {
     public:
         //! default constructor

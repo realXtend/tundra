@@ -14,7 +14,7 @@ namespace Foundation
 namespace Scene
 {
     //! interface for modules
-    class REX_API SceneModule : public Foundation::ModuleInterface_Impl
+    class VIEWER_API SceneModule : public Foundation::ModuleInterface_Impl
     {
     public:
         SceneModule();

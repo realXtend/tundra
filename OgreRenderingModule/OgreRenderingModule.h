@@ -14,7 +14,7 @@ namespace Foundation
 namespace OgreRenderer
 {
     //! interface for modules
-    class REX_API OgreRenderingModule : public Foundation::ModuleInterface_Impl
+    class VIEWER_API OgreRenderingModule : public Foundation::ModuleInterface_Impl
     {
     public:
         OgreRenderingModule();
