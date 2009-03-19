@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "EC_SelectPriority.h"
 
-EC_SelectPriority::EC_SelectPriority()
+EC_SelectPriority::EC_SelectPriority(Foundation::ModuleInterface* module)
 {
     select_priority_ = 0;
 }

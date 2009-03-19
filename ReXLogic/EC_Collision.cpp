@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "EC_Collision.h"
 
-EC_Collision::EC_Collision()
+EC_Collision::EC_Collision(Foundation::ModuleInterface* module)
 {
     collision_mesh_ = "";
 }

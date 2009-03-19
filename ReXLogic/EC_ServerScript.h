@@ -21,7 +21,7 @@ public:
     } 
 
 private:
-    EC_ServerScript();
+    EC_ServerScript(Foundation::ModuleInterface* module);
 
     std::string class_name_;
 };

@@ -20,7 +20,7 @@ public:
     
     void HandleObjectUpdate(Foundation::EventDataInterface* data);
 private:
-    EC_ObjIdentity();
+    EC_ObjIdentity(Foundation::ModuleInterface* module);
 
 };
 

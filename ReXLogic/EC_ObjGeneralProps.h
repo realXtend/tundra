@@ -23,7 +23,7 @@ public:
     } 
 
 private:
-    EC_ObjGeneralProps();
+    EC_ObjGeneralProps(Foundation::ModuleInterface* module);
 
     std::string name_;
     std::string description_;

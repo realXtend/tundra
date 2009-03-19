@@ -22,7 +22,7 @@ public:
     
 
 private:
-    EC_Collision();
+    EC_Collision(Foundation::ModuleInterface* module);
 
     std::string collision_mesh_;
 };

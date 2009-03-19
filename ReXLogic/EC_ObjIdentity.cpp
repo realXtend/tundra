@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "EC_ObjIdentity.h"
 
-EC_ObjIdentity::EC_ObjIdentity()
+EC_ObjIdentity::EC_ObjIdentity(Foundation::ModuleInterface* module)
 {
     RegionHandle = 0;
     Id = 0;
