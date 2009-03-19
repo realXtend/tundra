@@ -160,7 +160,7 @@ namespace Console
 
             RegisterCommand("MyCommand", "My great command", &MyClass::MyFunction, true); // register command for delayed execution
 
-            then in MyClass' update function
+            then in MyClass' update function, in thread context other than the main thread
             void MyClass::Update()
             {
                 ConsoleCommandService->Poll("MyCommand"); // If MyCommand was queued previously, it now gets executed.
