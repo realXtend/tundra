@@ -67,8 +67,13 @@ namespace OgreRenderer
             // after raycast has been performed. (see Smoke demo, collision handling)
         }
 
-        //! renders one frame
+        //! performs update.
+        /*! pumps Ogre window events.
+         */
         void Update();
+        
+        //! renders the screen
+        void Render();
 
         //! handles Ogre window close event
         void windowClosed(Ogre::RenderWindow* rw);
