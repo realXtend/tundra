@@ -4,15 +4,16 @@
 #include "RexLogic.h"
 #include "ComponentManager.h"
 #include "Poco/ClassLibrary.h"
+#include "NetworkEventHandler.h"
+#include "EventDataInterface.h"
 
+#include "EC_ObjIdentity.h"
 #include "EC_Collision.h"
 #include "EC_ObjFreeData.h"
 #include "EC_ObjGeneralProps.h"
 #include "EC_SelectPriority.h"
 #include "EC_ServerScript.h"
 #include "EC_SpatialSound.h"
-#include "WorldLogic.h"
-#include "EventDataInterface.h"
 
 RexLogic::RexLogic() : ModuleInterface_Impl(type_static_), framework_(NULL)
 {
@@ -26,6 +27,7 @@ RexLogic::~RexLogic()
 // virtual
 void RexLogic::Load()
 {
+    DECLARE_MODULE_EC(EC_ObjIdentity);
     DECLARE_MODULE_EC(EC_Collision);
     DECLARE_MODULE_EC(EC_ObjFreeData);
     DECLARE_MODULE_EC(EC_ObjGeneralProps);    
@@ -50,10 +52,10 @@ void RexLogic::Initialize(Foundation::Framework *framework)
 
     // fixme, register WorldLogic to the framework as realxtend worldlogicinterface!
     // WorldLogic::registerSystem(framework);
-    world_logic_ = new WorldLogic(framework);
+    // world_logic_ = new WorldLogic(framework);
+    network_handler_ = new NetworkEventHandler(framework);
 
-    // tucofixme, register event category for testing only
-    // framework_->GetEventManager()->RegisterEventCategory("OpenSimNetwork"); // tucofixme, this registering should be done in network module, it's here for testing purposes only.
+    // framework_->GetEventManager()->RegisterEventCategory("OpenSimNetwork"); // TODO tucofixme, this registering should be done in network module, it's here for testing purposes only.
 
     LogInfo("Module " + Name() + " initialized.");
 }
@@ -66,9 +68,9 @@ void RexLogic::PostInitialize(Foundation::Framework *framework)
     if (sceneManager->HasScene("World") == false)
         sceneManager->CreateScene("World");
 
-    Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("OpenSimNetwork"); // tucofixme, right event category
+    Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("OpenSimNetwork"); // TODO tucofixme, right event category
     if(eventcategoryid != 0)
-        event_handlers_[eventcategoryid] = boost::bind(&RexLogic::HandleOpenSimNetworkEvent,this,_1,_2);
+        event_handlers_[eventcategoryid] = boost::bind(&NetworkEventHandler::HandleOpenSimNetworkEvent,network_handler_,_1,_2);
     else
         LogInfo("Unable to find event category for OpenSimNetwork");
 
@@ -78,7 +80,7 @@ void RexLogic::PostInitialize(Foundation::Framework *framework)
 void RexLogic::Uninitialize(Foundation::Framework *framework)
 {
     assert(framework_);
-    SAFE_DELETE (world_logic_);
+    SAFE_DELETE (network_handler_);
 
     framework_ = NULL;
     LogInfo("Module " + Name() + " uninitialized.");
@@ -86,10 +88,10 @@ void RexLogic::Uninitialize(Foundation::Framework *framework)
 
 // virtual
 void RexLogic::Update()
-{    
+{
     // tucofixme, test event system
     // Foundation::EventDataInterface params;
-    
+
     // framework_->GetEventManager()->SendEvent(framework_->GetEventManager()->QueryEventCategory("OpenSimNetwork"),0,NULL);
     // framework_->GetEventManager()->SendEvent(framework_->GetEventManager()->QueryEventCategory("OpenSimNetwork"),1,&params);
 }
@@ -102,27 +104,6 @@ bool RexLogic::HandleEvent(Core::event_category_id_t category_id, Core::event_id
         return (i->second)(event_id,data);
     else
         return false;
-}
-
-bool RexLogic::HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
-{
-    // tucofixme, get event_id from opensimprotocol module?
-    switch(event_id)
-    {
-        case 0:  return HandleOSNE_ObjectUpdate(data); break;
-        case 1:  return HandleOSNE_RexPrimData(data); break;
-        default: return false; break;
-    }
-}
-
-bool RexLogic::HandleOSNE_ObjectUpdate(Foundation::EventDataInterface* data)
-{
-    return false; // tucofixme
-}
-
-bool RexLogic::HandleOSNE_RexPrimData(Foundation::EventDataInterface* data)
-{
-    return false; // tucofixme
 }
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
