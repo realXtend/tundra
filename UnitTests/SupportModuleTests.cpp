@@ -18,7 +18,6 @@ struct TestA
         BOOST_CHECK_EQUAL(params[0], "paramA");
         BOOST_CHECK_EQUAL(params[1], "paramB");
 
-        //Console::CommandResult result = {true, "Success"};
         return Console::ResultSuccess("Success");
     }
     Console::CommandResult TestCallbackFailure(const Core::StringVector &params)
