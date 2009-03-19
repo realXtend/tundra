@@ -70,14 +70,13 @@ namespace OpenSimProtocol
 
 	void OpenSimProtocolModule::AddListener(INetMessageListener *listener)
 	{
-	    networkManager_->SetNetworkListener(listener);
+	    networkManager_->RegisterNetworkListener(listener);
 	}
 	
-	///\todo
-	/*void OpenSimProtocolModule::RemoveListener(INetMessageListener *listener)
+	void OpenSimProtocolModule::RemoveListener(INetMessageListener *listener)
 	{
-	    //networkManager_->
-	}*/
+	    networkManager_->UnregisterNetworkListener(listener);
+	}
 	
 	bool OpenSimProtocolModule::ConnectToRexServer(
 	    const char *first_name,
@@ -119,7 +118,14 @@ namespace OpenSimProtocol
 		std::string mac_hash = md5.getHashFromString(mac_addr);
 		std::string id0_hash = md5.getHashFromString(id0);
 
-		rpcConnection_ = shared_ptr<PocoXMLRPCConnection>(new PocoXMLRPCConnection(address, port));
+        try
+        {
+            rpcConnection_ = shared_ptr<PocoXMLRPCConnection>(new PocoXMLRPCConnection(address, port));
+        } catch(std::exception &e)
+        {
+            std::cout << "Could not connect to server: " << e.what() << "." << std::endl;
+            return;
+        }
 
 		boost::shared_ptr<PocoXMLRPCCall> call = rpcConnection_->StartXMLRPCCall("login_to_simulator");
 

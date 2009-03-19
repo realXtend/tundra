@@ -7,7 +7,7 @@
 
 #include "StableHeaders.h"
 
-#include "GtkmmUI.h"
+#include "gtkmmUI.h"
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
    POCO_EXPORT_CLASS(GtkmmUI)
@@ -16,18 +16,14 @@ POCO_END_MANIFEST
 class GtkmmUIImpl
 {
 public:
-    GtkmmUIImpl():debugWindow(0) {}
+    GtkmmUIImpl() : debugWindow(0) {}
 
     // The Gtk main handle - we'll be doing manual iterations of the main loop instead of letting this control the app loop.
     boost::shared_ptr<Gtk::Main> gtk;
     // Handle to a treeview of a listing of currently running modules, for debugging purposes.
     Glib::RefPtr<Gnome::Glade::Xml> debugModules;
-    // Handle to the login window controls.
-    Glib::RefPtr<Gnome::Glade::Xml> loginControls;
     // The window of the treeview control that shows running modules.
     Gtk::Window *debugWindow;
-    // The login window.
-    Gtk::Window *loginWindow;
 
     struct ModelColumns : public Gtk::TreeModelColumnRecord
     {
@@ -61,23 +57,14 @@ void GtkmmUI::Unload()
 void GtkmmUI::Initialize(Foundation::Framework *framework)
 {
     assert(impl_);
-
+    
     // Load up the debug module hierarchy window, and store the main window handle for later use.
-
     impl_->debugModules = Gnome::Glade::Xml::create("data/DbgModules.glade");
     if (!impl_->debugModules)
         return;
-
-    impl_->loginControls = Gnome::Glade::Xml::create("data/loginWindow.glade");
-    if (!impl_->loginControls)
-        return;
-        
-    impl_->debugModules->get_widget("windowDebugModules", impl_->debugWindow);
-    impl_->loginControls->get_widget("dialog_login", impl_->loginWindow);
-    
+       
     Gtk::TreeView *tv = 0;
     impl_->debugModules->get_widget("treeview1", tv);
-
     Glib::RefPtr<Gtk::TreeStore> model = Gtk::TreeStore::create(impl_->moduleModelColumns);
     Gtk::TreeRow row = *model->append();
     row[impl_->moduleModelColumns.moduleName] = Glib::ustring("jee");
@@ -102,18 +89,15 @@ void GtkmmUI::Initialize(Foundation::Framework *framework)
         return;
 
     impl_->debugWindow->show();
-    impl_->loginWindow->show();
-}
+ }
 
 void GtkmmUI::Uninitialize(Foundation::Framework *framework)
 {
     SAFE_DELETE(impl_->debugWindow);
-    SAFE_DELETE(impl_->loginWindow);
 }
 
 void GtkmmUI::Update()
 {
     assert(impl_);
-
     impl_->gtk->iteration(false);
 }

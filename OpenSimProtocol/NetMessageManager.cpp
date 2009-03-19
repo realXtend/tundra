@@ -158,6 +158,8 @@ NetMessageManager::~NetMessageManager()
 
 	for(MessageResendList::iterator iter = messageResendQueue.begin(); iter != messageResendQueue.end(); ++iter)
 		delete iter->second;
+		
+    receivedSequenceNumbers.clear();
 }
 
 void NetMessageManager::DumpNetworkMessage(NetMsgID id, NetInMessage *msg)
@@ -345,7 +347,8 @@ bool NetMessageManager::ConnectTo(const char *serverAddress, int port)
 
 void NetMessageManager::Disconnect()
 {
-	connection.reset();
+    ///\todo reset() crashes.
+//    connection.reset();
 	curl_global_cleanup();
 }
 

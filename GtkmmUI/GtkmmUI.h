@@ -1,5 +1,5 @@
-#ifndef incl_GtkmmUI_h
-#define incl_GtkmmUI_h
+#ifndef incl_gtkmmUI_h
+#define incl_gtkmmUI_h
 
 #include "ModuleInterface.h"
 
@@ -18,6 +18,9 @@ public:
     void Uninitialize(Foundation::Framework *framework);
 
     void Update();
+    
+    void InitLoginWindow();
+    void GetText();
 
 private:
     void operator=(const GtkmmUI &);

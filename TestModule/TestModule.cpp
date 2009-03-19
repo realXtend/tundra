@@ -114,8 +114,8 @@ namespace Test
         assert (test_service != NULL);
         assert (test_service->Test());
 
-        framework_->Exit();
-        assert (framework_->IsExiting());
+//        framework_->Exit();
+//        assert (framework_->IsExiting());
 
         LogInfo("");
     }

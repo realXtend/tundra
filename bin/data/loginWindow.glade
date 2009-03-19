@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Tue Mar 17 16:14:28 2009 -->
+<!--Generated with glade3 3.4.3 on Wed Mar 18 17:16:19 2009 -->
 <glade-interface>
   <widget class="GtkDialog" id="dialog_login">
     <property name="border_width">5</property>
@@ -15,6 +15,9 @@
           <widget class="GtkLabel" id="label1">
             <property name="visible">True</property>
           </widget>
+          <packing>
+            <property name="position">1</property>
+          </packing>
         </child>
         <child>
           <widget class="GtkLabel" id="label_username">
@@ -75,24 +78,36 @@
             <property name="visible">True</property>
             <property name="layout_style">GTK_BUTTONBOX_END</property>
             <child>
-              <widget class="GtkButton" id="button_ok">
+              <widget class="GtkButton" id="button_connect">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="label" translatable="yes">OK</property>
+                <property name="label" translatable="yes">Connect</property>
                 <property name="response_id">0</property>
               </widget>
             </child>
             <child>
-              <widget class="GtkButton" id="button_cancel">
+              <widget class="GtkButton" id="button_logout">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="label" translatable="yes">Cancel</property>
+                <property name="label" translatable="yes">Logout</property>
                 <property name="response_id">0</property>
               </widget>
               <packing>
                 <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkButton" id="button_quit">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="label" translatable="yes">Quit</property>
+                <property name="response_id">0</property>
+              </widget>
+              <packing>
+                <property name="position">2</property>
               </packing>
             </child>
           </widget>
