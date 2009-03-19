@@ -145,6 +145,7 @@ bool PocoXMLRPCConnection::FinishXMLRPCCall(boost::shared_ptr<PocoXMLRPCCall> ca
 	struct curl_httppost* last = NULL;
 	struct curl_slist *headers = NULL;
 	std::vector<char> response_data;
+	const uint8_t cTimeout = 5;
 	
 	char *url = "192.168.1.144:9000"; ///\todo Use the real url and port.
 
@@ -161,8 +162,16 @@ bool PocoXMLRPCConnection::FinishXMLRPCCall(boost::shared_ptr<PocoXMLRPCCall> ca
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_data);
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curl_error_buffer);
-
-	result = curl_easy_perform(curl);
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, cTimeout);
+    
+    try
+    {
+	    result = curl_easy_perform(curl);
+    }
+    catch (std::exception e)
+	{
+	    return false;
+	}
 	
 	// Clean up and free memory.
 	curl_easy_cleanup(curl);

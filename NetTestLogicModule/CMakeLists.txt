@@ -14,6 +14,7 @@ include_directories (
 	../Foundation
 	../Interfaces
 	../OpenSimProtocol
+	../gtkmmUI
 )
 
 # Library directories
@@ -32,11 +33,14 @@ if (MSVC)
 	add_definitions (-DUNICODE -D_UNICODE)
 endif (MSVC)
 
+FIND_GTKMM()
+
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_CURL()
 INCLUDE_XMLRPCEPI()
+INCLUDE_GTKMM()
 
 add_definitions (-DMODULE_EXPORTS)
 
@@ -62,6 +66,7 @@ target_link_libraries (${TARGET_NAME} Core Foundation OpenSimProtocolModule)
 LINK_POCO()
 LINK_CURL()
 LINK_XMLRPCEPI()
+LINK_GTKMM()
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

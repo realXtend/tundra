@@ -50,7 +50,8 @@ public:
 
 	/// Sets the object that receives the network packets. Replaces the old. Currently supports only one listener.
 	/// \todo weakptr'ize. \todo delegate/event \todo pub/sub or something else.
-	void SetNetworkListener(INetMessageListener *listener) { inboundMessageListener = listener; }
+	void RegisterNetworkListener(INetMessageListener *listener) { inboundMessageListener = listener; }
+	void UnregisterNetworkListener(INetMessageListener *listener) { inboundMessageListener = 0; }
 
 private:
 	/// @return A new sequence number for outbound UDP messages.

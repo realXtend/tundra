@@ -3,23 +3,29 @@
 #ifndef incl_NetTestLogicModule_h
 #define incl_NetTestLogicModule_h
 
+#undef max
+#include <gtkmm/main.h>
+#include <gtkmm/window.h>
+#include <gtkmm/treeview.h>
+#include <gtkmm/treestore.h>
+#include <libglademm.h>
+#include <glade/glade.h>
 #include "ModuleInterface.h"
 
 #include "OpenSimProtocolModule.h"
-
 #include "NetInMessage.h"
 #include "INetMessageListener.h"
 #include "NetMessage.h"
 
 namespace Foundation
 {
-   class Framework;
+    class Framework;
 }
 
 namespace OpenSimProtocol
 {
-	class OpenSimProtocolModule;
-	class RexUUID;
+    class OpenSimProtocolModule;
+    class RexUUID;
 }
 
 /// Object in the sim (prim or avatar)
@@ -64,10 +70,23 @@ namespace NetTest
            
         /// Returns type of this module. Needed for logging.
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_NetTest;
-        
+
         /// Called for each network message received.
         virtual void OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg);
         
+        /// Initializes the Login window.
+		void InitLoginWindow();
+
+        /// Connects to server.
+        void OnClickConnect();
+        
+        /// Disconnects from the server.
+        void OnClickLogout();
+        
+        /// Terminates the application.
+        void OnClickQuit();
+        
+        /// Type definition for object lists.
         typedef std::vector<std::pair<RexUUID, Object*> > ObjectList_t;
 		
 		/// List of objects (prims) in the world.
@@ -78,8 +97,23 @@ namespace NetTest
 		
 		/// Name of the sim we're connected.
 		std::string simName_;
+		
+        // Handle to the login window controls.
+        Glib::RefPtr<Gnome::Glade::Xml> loginControls;
+
+        // The GTK login window, entry fields and buttons.
+        Gtk::Window *loginWindow;
+        Gtk::Entry *entryUsername;
+        Gtk::Entry *entryPassword;
+        Gtk::Entry *entryServer;
+        Gtk::Button *buttonConnect;
+        Gtk::Button *buttonLogout;
+        Gtk::Button *buttonQuit;
 	    
     private:
+        void operator=(const NetTestLogicModule &);
+        NetTestLogicModule(const NetTestLogicModule &);
+
         /// Sends the first UDP packet to open up the circuit with the server.
         void SendUseCircuitCodePacket();
 
@@ -90,9 +124,11 @@ namespace NetTest
         /// Sends a message requesting logout from the server. The server is then going to flood us with some
     	/// inventory UUIDs after that, but we'll be ignoring those.
         void SendLogoutRequestPacket();
-            
+        
+        /// Pointer to the main framework.
         Foundation::Framework *framework_;
-
+        
+        /// Pointer to the network interface.
 		OpenSimProtocol::OpenSimProtocolModule *netInterface_;
 
 		/// Temporary counter.
@@ -101,8 +137,11 @@ namespace NetTest
         /// Server-spesific info for this client.
 		ClientParameters myInfo_;
 		
+		/// Signals that NetTestModule running.
+		bool bRunning_;
+
 		/// Signals that the logout message has sent. Do not send anymore messages.
-		bool bLogoutSent;		
+		bool bLogoutSent_;
     };
 }
 #endif

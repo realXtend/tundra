@@ -59,8 +59,8 @@ namespace OpenSimProtocol
 		//const std::string &GetTemplateFilename();
         
         /// Adds listener to the network module.
-        virtual void AddListener(INetMessageListener *listener);
-        //void Removeregister(INetMessageListener *listener);
+        void AddListener(INetMessageListener *listener);
+        void RemoveListener(INetMessageListener *listener);
  
         /// Connects to a reX server.
         bool ConnectToRexServer(
