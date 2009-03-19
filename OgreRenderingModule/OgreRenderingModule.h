@@ -13,6 +13,9 @@ namespace Foundation
 
 namespace OgreRenderer
 {
+    class Renderer;
+    typedef boost::shared_ptr<Renderer> RendererPtr;
+    
     //! interface for modules
     class VIEWER_API OgreRenderingModule : public Foundation::ModuleInterface_Impl
     {
@@ -26,6 +29,12 @@ namespace OgreRenderer
         virtual void Uninitialize(Foundation::Framework *framework);
         virtual void Update();
 
+        //! returns framework
+        Foundation::Framework *GetFramework() { return framework_; }
+        
+        //! returns renderer
+        RendererPtr GetRenderer() const { return renderer_; }
+        
         MODULE_LOGGING_FUNCTIONS;
 
         //! returns name of this module. Needed for logging.
@@ -33,7 +42,7 @@ namespace OgreRenderer
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Renderer;
     private:
-        OgreRenderer::RendererPtr renderer_;
+        RendererPtr renderer_;
         Foundation::Framework* framework_;
     };
 }

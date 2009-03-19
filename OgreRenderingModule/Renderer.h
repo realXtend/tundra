@@ -119,8 +119,6 @@ namespace OgreRenderer
         //! Renderer event category
         Core::event_category_id_t event_category_;
     };
-
-    typedef boost::shared_ptr<Renderer> RendererPtr;
 }
 
 #endif
