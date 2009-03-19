@@ -118,7 +118,9 @@ namespace Foundation
         {
             if (modules_[i]->Name() == module)
             {
+                modules_[i]->PreInitialize(framework_);
                 modules_[i]->InitializeInternal(framework_);
+                modules_[i]->PostInitialize(framework_);
                 break;
             }
         }
