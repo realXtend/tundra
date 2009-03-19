@@ -9,7 +9,7 @@
 
 namespace Foundation
 {
-    class ComponentInterface
+    class MODULE_API ComponentInterface
     {
     public:
         ComponentInterface()  {}

@@ -4,13 +4,13 @@
 #include "Foundation.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
-#include "EC_OgreEntity.h"
+#include "EC_OgrePlaceable.h"
 
 #include "Ogre.h"
 
 namespace OgreRenderer
 {
-    EC_OgreEntity::EC_OgreEntity(Foundation::ModuleInterface* module) :
+    EC_OgrePlaceable::EC_OgrePlaceable(Foundation::ModuleInterface* module) :
         module_(static_cast<OgreRenderingModule*>(module)),
         scene_node_(NULL)
     {
@@ -20,7 +20,7 @@ namespace OgreRenderer
         scene_mgr->getRootSceneNode()->addChild(scene_node_);
     }
     
-    EC_OgreEntity::~EC_OgreEntity()
+    EC_OgrePlaceable::~EC_OgrePlaceable()
     {
         if (scene_node_)
         {
