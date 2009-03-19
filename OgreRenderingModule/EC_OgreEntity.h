@@ -6,20 +6,28 @@
 #include "ComponentInterface.h"
 #include "Foundation.h"
 
+namespace Ogre
+{
+    class SceneNode;
+}
+
 namespace OgreRenderer
 {
+    class Renderer;
+    class OgreRenderingModule;
+    
     //! Ogre entity component. Stores Ogre scenenode.
-    class EC_OgreEntity : public Foundation::ComponentInterface
+    class VIEWER_API EC_OgreEntity : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_OgreEntity);
     public:
-        virtual ~EC_OgreEntity() {}
+        virtual ~EC_OgreEntity();
 
     private:
-        EC_OgreEntity(Foundation::ModuleInterface* module) : ogre_scene_node_(0) { }
-        //! todo add copy constructor and assignment operator
+        EC_OgreEntity(Foundation::ModuleInterface* module);
 
-        int ogre_scene_node_;
+        OgreRenderingModule* module_;
+        Ogre::SceneNode* scene_node_;
     };
 }
 
