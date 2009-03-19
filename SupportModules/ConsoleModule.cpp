@@ -2,11 +2,13 @@
 
 #include "StableHeaders.h"
 #include "ConsoleModule.h"
+#include "ConsoleManager.h"
 
 namespace Console
 {
     ConsoleModule::ConsoleModule() : ModuleInterface_Impl(type_static_), framework_(NULL)
     {
+        manager_ = ConsolePtr(new ConsoleManager(this));
     }
 
     ConsoleModule::~ConsoleModule()
@@ -31,7 +33,8 @@ namespace Console
         assert (framework);
         framework_ = framework;
 
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Console, &native_);
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Console, manager_.get());
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_ConsoleCommand, static_cast<ConsoleManager*>(manager_.get())->GetCommandManager().get());
 
         LogInfo("Module " + Name() + " initialized.");
     }
@@ -43,7 +46,8 @@ namespace Console
     // virtual 
     void ConsoleModule::Uninitialize(Foundation::Framework *framework)
     {
-        framework_->GetServiceManager()->UnregisterService(&native_);
+        framework_->GetServiceManager()->UnregisterService(manager_.get());
+        framework_->GetServiceManager()->UnregisterService(static_cast< ConsoleManager* >(manager_.get())->GetCommandManager().get());
 
         framework_ = NULL;
 

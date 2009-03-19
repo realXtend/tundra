@@ -11,6 +11,8 @@ namespace Foundation
         ServiceInterface() {}
         virtual ~ServiceInterface() {}
     };
+
+    typedef boost::shared_ptr<ServiceInterface> ServicePtr;
 }
 
 #endif

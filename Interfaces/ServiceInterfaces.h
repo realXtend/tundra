@@ -14,12 +14,13 @@
 #include "TestServiceInterface.h"
 #include "SceneManagerServiceInterface.h"
 #include "ConsoleServiceInterface.h"
+#include "ConsoleCommandServiceInterface.h"
 
 namespace Foundation
 {
     namespace Service
     {
-        enum Type {ST_SceneManager = 0, ST_Renderer, ST_Physics, ST_Gui, ST_Scripting, ST_Test, ST_Console, ST_Unknown };
+        enum Type {ST_SceneManager = 0, ST_Renderer, ST_Physics, ST_Gui, ST_Scripting, ST_Test, ST_Console, ST_ConsoleCommand, ST_Unknown };
     }
 }
 

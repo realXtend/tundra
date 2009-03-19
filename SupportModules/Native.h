@@ -17,57 +17,36 @@ namespace Console
     {
     public:
         //! constructor
-        NativeInput() : console_(NULL) { }
+        NativeInput() : command_service_(NULL) { }
         //! destructor
         ~NativeInput() {}
         //! (thread) entry point
         void operator()();
 
-        void SetNative(Foundation::Console::ConsoleServiceInterface *console) { console_ = console; }
+        void SetCommandManager(Console::ConsoleCommandServiceInterface *command_service) { command_service_ = command_service; }
 
-    public:
+    private:
         NativeInput(const NativeInput &other);
 
-        Foundation::Console::ConsoleServiceInterface *console_;
+        Console::ConsoleCommandServiceInterface *command_service_;
     };
 
     //! Native debug console
-    class Native : public Foundation::Console::ConsoleServiceInterface
+    class Native : public Console::ConsoleServiceInterface
     {
+        Native();
+        Native(const Native &other);
     public:
         //! default constructor
-        Native();
+        Native(Console::ConsoleCommandServiceInterface *command_service);
         //! destructor
         virtual ~Native();
 
-        //! Add a command to the debug console
-        virtual void RegisterCommand(const Foundation::Console::Command &command);
-
-        //! Parse and execute command line
-        /*! 
-            Threadsafe
-        */
-        virtual Foundation::Console::CommandResult ExecuteCommand(const std::string &commandline);
-
-        //! Execute command
-        /*! It is assumed that name and params are trimmed and need no touching
-            Threadsafe
-
-            \param name Name of the command to execute
-            \param params Parameters to pass to the command
-        */
-        virtual Foundation::Console::CommandResult ExecuteCommand(const std::string &name, const Core::StringVector &params);
-
-        //! Print out available commands to console
-        Foundation::Console::CommandResult Help(const Core::StringVector &params);
+        __inline virtual void Print(const std::string &text)
+        {
+            std::cout << text << std::endl;
+        }
     private:
-        typedef std::map<std::string, Foundation::Console::Command> CommandMap;
-
-        //! Available commands
-        CommandMap commands_;
-
-        //! mutex
-        Core::Mutex command_mutex_;
 
         //! input thread
         Core::Thread thread_;
