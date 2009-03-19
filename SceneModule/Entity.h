@@ -15,7 +15,7 @@ namespace Scene
 
         Use SceneManager to create new entity, do not create directly.
     */
-    class REX_API Entity : public Foundation::EntityInterface
+    class VIEWER_API Entity : public Foundation::EntityInterface
     {
         friend class Generic;
     private:

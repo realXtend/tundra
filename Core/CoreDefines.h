@@ -5,24 +5,24 @@
 
 // useful defines
 
-#define SAFE_DELETE(p) if (p) { delete p; p=NULL; }
-#define SAFE_DELETE_ARRAY(p) if (p) { delete [] p; p=NULL; }
+#define SAFE_DELETE(p) { delete p; p=NULL; }
+#define SAFE_DELETE_ARRAY(p) { delete [] p; p=NULL; }
 
 #define UNREFERENCED_PARAM(P)               (P)
 
 #define TO_STRING(p) boost::lexical_cast<std::string>(p)
 
-#undef REX_API
+#undef VIEWER_API
 #if defined (_WINDOWS)
 #if defined(MODULE_EXPORTS) 
-#define REX_API __declspec(dllexport) 
+#define VIEWER_API __declspec(dllexport) 
 #else
-#define REX_API __declspec(dllimport) 
+#define VIEWER_API __declspec(dllimport) 
 #endif
 #endif
 
-#ifndef REX_API
-#define REX_API
+#ifndef VIEWER_API
+#define VIEWER_API
 #endif
 
 #endif
