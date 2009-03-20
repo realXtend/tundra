@@ -18,7 +18,11 @@ const char password[] = "jj";*/
 namespace NetTest
 {
     NetTestLogicModule::NetTestLogicModule() 
-    : ModuleInterface_Impl(Foundation::Module::MT_NetTest), updateCounter(0), bRunning_(false), bLogoutSent_(false), loginWindow(0)
+    : ModuleInterface_Impl("NetTest"),
+    bRunning_(false),
+    bLogoutSent_(false),
+    loginWindow(0),
+    netTestWindow(0)
     {
         objectList_.clear();
         avatarList_.clear();
@@ -63,13 +67,18 @@ namespace NetTest
 		
 		netInterface_->AddListener(this);
         
-        InitLoginWindow();
-        if(!loginWindow)
-            return;
-        loginWindow->show();
+        LogInfo("Module " + Name() + " initialized.");        
         
+        InitLoginWindow();
+        InitNetTestWindow();
 
-        LogInfo("Module " + Name() + " initialized.");
+        if(!loginWindow || !netTestWindow)
+        {
+            LogError("Could not initialize UI.");
+            return;
+        }
+        
+        loginWindow->show();
     }
 
     // virtual 
@@ -79,6 +88,8 @@ namespace NetTest
 		framework_ = NULL;
         
         netInterface_->RemoveListener(this);
+        
+        SAFE_DELETE(netTestWindow)
         SAFE_DELETE(loginWindow)
         
         LogInfo("Module " + Name() + " uninitialized.");
@@ -102,7 +113,12 @@ namespace NetTest
 				msg->SkipToNextVariable(); // SimAccess U8
 				size_t bytesRead = 0;
 				simName_ = (const char *)msg->ReadBuffer(&bytesRead);
+				
 				LogInfo("Joined to the sim \"" + simName_ + "\".");
+				
+				std::string title = "Logged in to ";
+				title.append(simName_);
+                netTestWindow->set_title(title);
     			break;
 			}
 		case RexNetMsgObjectUpdate:
@@ -170,6 +186,20 @@ namespace NetTest
                     
 				break;
 			}
+		case RexNetMsgChatFromSimulator:
+		    {
+		        std::stringstream ss;
+		        size_t bytes_read;
+
+		        std::string name = (const char *)msg->ReadBuffer(&bytes_read);
+		        msg->SkipToFirstVariableByName("Message");
+
+		        std::string message = (const char *)msg->ReadBuffer(&bytes_read);
+		        ss << name << ": " << message << std::endl;
+
+    	        WriteToChatWindow(ss.str());
+		        break;
+		    }
 		case RexNetMsgLogoutReply:
 			{
 			    LogInfo("\"LogoutReply\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
@@ -183,6 +213,7 @@ namespace NetTest
                     bRunning_ = false;
                     bLogoutSent_ = false;
                     netInterface_->DisconnectFromRexServer();
+                    SAFE_DELETE(netTestWindow);
 				}
 				break;
 			}
@@ -200,6 +231,14 @@ namespace NetTest
             return;
         }
         
+        // Initialize UI widgets.
+        Gtk::Entry *entryUsername;
+        Gtk::Entry *entryPassword;
+        Gtk::Entry *entryServer;
+        loginControls->get_widget("entry_username", entryUsername);
+        loginControls->get_widget("entry_password", entryPassword);
+        loginControls->get_widget("entry_server", entryServer);
+
         size_t pos;
         bool rex_login = false; ///\todo Implement rex-login.
         std::string username, first_name, last_name, password, server_address;
@@ -229,13 +268,14 @@ namespace NetTest
             LogError("Invalid syntax for server address and port. Use \"server:port\"");
             return;
         }
+        
         server_address = server.substr(0, pos);
         try
         {
             port = boost::lexical_cast<int>(server.substr(pos + 1));
         } catch(std::exception)
         {
-            LogError("Invalid port number.");
+            LogError("Invalid port number, only numbers are allowed.");
             return;
         }
         
@@ -249,6 +289,12 @@ namespace NetTest
             bRunning_ = true;
             SendUseCircuitCodePacket();
             SendCompleteAgentMovementPacket();
+            
+            if (!netTestWindow)
+                InitNetTestWindow();
+            
+            netTestWindow->show();
+            
             LogInfo("Connected to server " + server_address + ".");
         }
         else
@@ -269,8 +315,6 @@ namespace NetTest
     {
         if (bRunning_ && !bLogoutSent_)
         {   
-            // Log out properly before quitting.
-            ///\todo Handle server timeouts.
             SendLogoutRequestPacket();
             bLogoutSent_ = true;        
         }
@@ -279,6 +323,31 @@ namespace NetTest
             framework_->Exit();
             assert(framework_->IsExiting());        
         }
+    }
+    
+    void NetTestLogicModule::OnClickChat()
+    {
+        Gtk::Entry *entryChat = 0;
+        netTestControls->get_widget("entry_chat", entryChat);
+        Glib::ustring text  = entryChat->get_text();
+        SendChatFromViewerPacket(text.c_str());
+        entryChat->set_text("");
+    }
+    
+    void NetTestLogicModule::WriteToChatWindow(const std::string &message)
+    {   
+        // Get the widget controls.
+        Gtk::ScrolledWindow *scrolledwindowChat = 0;
+		netTestControls->get_widget("scrolledwindow_chat", scrolledwindowChat);
+		Gtk::TextView *textviewChat = 0;
+		netTestControls->get_widget("textview_chat", textviewChat);
+		scrolledwindowChat->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
+		
+		// Create text buffer and write data to it.
+		Glib::RefPtr<Gtk::TextBuffer> text_buffer = textviewChat->get_buffer();
+        Gtk::TextBuffer::iterator iter = text_buffer->get_iter_at_offset(0);
+		text_buffer->insert(iter, message);
+        textviewChat->set_buffer(text_buffer);
     }
     
 	void NetTestLogicModule::SendUseCircuitCodePacket()
@@ -300,6 +369,18 @@ namespace NetTest
 	    m->AddU32(myInfo_.circuitCode);
 	    netInterface_->FinishMessageBuilding(m);
     }
+
+	void NetTestLogicModule::SendChatFromViewerPacket(const char *text)
+	{
+		NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgChatFromViewer);
+		assert(m);
+		m->AddUUID(myInfo_.agentID);
+		m->AddUUID(myInfo_.sessionID);
+		m->AddBuffer(strlen(text), (uint8_t*)text);
+		m->AddU8(1);
+		m->AddS32(0);
+		netInterface_->FinishMessageBuilding(m);
+	}
     
 	void NetTestLogicModule::SendLogoutRequestPacket()
 	{
@@ -319,19 +400,29 @@ namespace NetTest
         
         loginControls->get_widget("dialog_login", loginWindow);
         loginWindow->set_title("Login");
-        
-        // Initialize UI widgets.
-        loginControls->get_widget("entry_username", entryUsername);
-        loginControls->get_widget("entry_password", entryPassword);
-        loginControls->get_widget("entry_server", entryServer);
-        loginControls->get_widget("button_connect", buttonConnect);
-        loginControls->get_widget("button_logout", buttonLogout);
-        loginControls->get_widget("button_quit", buttonQuit);
-        
+       
         // Bind callbacks.
         loginControls->connect_clicked("button_connect", sigc::mem_fun(*this, &NetTestLogicModule::OnClickConnect));
         loginControls->connect_clicked("button_logout", sigc::mem_fun(*this, &NetTestLogicModule::OnClickLogout));
         loginControls->connect_clicked("button_quit", sigc::mem_fun(*this, &NetTestLogicModule::OnClickQuit));
+    }
+    
+    void NetTestLogicModule::InitNetTestWindow()
+    {
+        // Create the NetTest UI window from glade (xml) file.
+        netTestControls = Gnome::Glade::Xml::create("data/NetTestWindow.glade");
+        if (!netTestControls)
+            return;
+        
+        netTestControls->get_widget("window_nettest", netTestWindow);
+        netTestWindow->set_title("NetTest");
+        
+        // Initialize UI widgets.
+        Gtk::TextView *textviewLog = 0;
+        netTestControls->get_widget("textview_log", textviewLog);
+        
+        // Bind callbacks.
+        netTestControls->connect_clicked("button_chat", sigc::mem_fun(*this, &NetTestLogicModule::OnClickChat));
     }
 }
 

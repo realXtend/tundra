@@ -3,13 +3,19 @@
 #ifndef incl_NetTestLogicModule_h
 #define incl_NetTestLogicModule_h
 
+#pragma warning( push )
+#pragma warning( disable : 4250 )
 #undef max
 #include <gtkmm/main.h>
 #include <gtkmm/window.h>
 #include <gtkmm/treeview.h>
 #include <gtkmm/treestore.h>
+#include <gtkmm/textview.h>
+#include <gtkmm/scrolledwindow.h>
 #include <libglademm.h>
 #include <glade/glade.h>
+#pragma warning( pop )
+
 #include "ModuleInterface.h"
 
 #include "OpenSimProtocolModule.h"
@@ -76,7 +82,10 @@ namespace NetTest
         
         /// Initializes the Login window.
 		void InitLoginWindow();
-
+        
+        /// Initializes the Login window.
+        void InitNetTestWindow();
+        
         /// Connects to server.
         void OnClickConnect();
         
@@ -85,6 +94,12 @@ namespace NetTest
         
         /// Terminates the application.
         void OnClickQuit();
+        
+        /// Callback for the logging NetTest loggin window.
+        void OnClickChat();
+        
+        /// Writes a message to the chat window.
+        void WriteToChatWindow(const std::string &message);
         
         /// Type definition for object lists.
         typedef std::vector<std::pair<RexUUID, Object*> > ObjectList_t;
@@ -101,15 +116,13 @@ namespace NetTest
         // Handle to the login window controls.
         Glib::RefPtr<Gnome::Glade::Xml> loginControls;
 
-        // The GTK login window, entry fields and buttons.
+        // Handle to the login window controls.
+        Glib::RefPtr<Gnome::Glade::Xml> netTestControls;
+
+        // The GTK windows, entry fields and buttons.
         Gtk::Window *loginWindow;
-        Gtk::Entry *entryUsername;
-        Gtk::Entry *entryPassword;
-        Gtk::Entry *entryServer;
-        Gtk::Button *buttonConnect;
-        Gtk::Button *buttonLogout;
-        Gtk::Button *buttonQuit;
-	    
+        Gtk::Window *netTestWindow;
+
     private:
         void operator=(const NetTestLogicModule &);
         NetTestLogicModule(const NetTestLogicModule &);
@@ -120,7 +133,10 @@ namespace NetTest
         /// Signals taht agent is coming into the region. The region should be expecting the agent.
         /// Server starts to send object updates etc after it has received this packet.
         void SendCompleteAgentMovementPacket();
-
+	    
+	    // Send the UDP chat packet.
+	    void SendChatFromViewerPacket(const char *text);
+        
         /// Sends a message requesting logout from the server. The server is then going to flood us with some
     	/// inventory UUIDs after that, but we'll be ignoring those.
         void SendLogoutRequestPacket();
@@ -131,9 +147,6 @@ namespace NetTest
         /// Pointer to the network interface.
 		OpenSimProtocol::OpenSimProtocolModule *netInterface_;
 
-		/// Temporary counter.
-		u32 updateCounter;
-        
         /// Server-spesific info for this client.
 		ClientParameters myInfo_;
 		

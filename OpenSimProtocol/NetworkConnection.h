@@ -13,8 +13,8 @@ public:
 	NetworkConnection(const char *address, int port);
 	~NetworkConnection();
 
-	/// @return True if there are available UDP packets in the stream. 
-	bool PacketsAvailable() const { return socket.available() != 0; }
+	/// @return True if there are available UDP packets in the stream and the socket is open. 
+	bool PacketsAvailable() const;
 
 	/// Reads bytes from the socket. Doesn't block, but returns 0 if no bytes available.
 	/// @param maxCount The maximum number of bytes to fill into the buffer.
@@ -23,9 +23,18 @@ public:
 
 	/// Pushes out a packet with the given contents.
 	void SendBytes(const uint8_t *bytes, size_t count);
+    
+    /// Closes the socket.
+    void Close();
+    
+    /// @return True if the socket is open.
+    bool Open() const { return bOpen; }
 
 private:
 	Poco::Net::DatagramSocket socket;
+
+    /// Signals that socket is open for use.
+    bool bOpen;
 };
 
 #endif
