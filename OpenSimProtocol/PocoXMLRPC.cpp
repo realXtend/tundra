@@ -24,9 +24,13 @@ using Poco::XML::XMLWriter;
 
 
 PocoXMLRPCConnection::PocoXMLRPCConnection(const char *address, int port)
-:socket(Poco::Net::SocketAddress(address, port))
+: socket(Poco::Net::SocketAddress(address, port))
 {
-	
+	std::ostringstream url_str;
+	url_str << std::string(address);
+	url_str << ":";
+	url_str << port;
+	url_ = url_str.str();
 }
 
 /// The writer callback function used by cURL.
@@ -147,7 +151,8 @@ bool PocoXMLRPCConnection::FinishXMLRPCCall(boost::shared_ptr<PocoXMLRPCCall> ca
 	std::vector<char> response_data;
 	const uint8_t cTimeout = 5;
 	
-	char *url = "192.168.1.144:9000"; ///\todo Use the real url and port.
+	const char *url = url_.c_str(); 
+	//char *url = "192.168.1.144:9000"; ///\todo Use the real url and port.
 
 	headers = curl_slist_append(headers, "Accept-Encoding: deflate, gzip");
 	headers = curl_slist_append(headers, "Content-Type: text/xml"); ///\todo Gets overriden with the default value.
