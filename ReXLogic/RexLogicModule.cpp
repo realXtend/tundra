@@ -8,7 +8,7 @@
 #include "EventDataInterface.h"
 
 #include "EC_ObjIdentity.h"
-#include "EC_Collision.h"
+#include "EC_ObjCollision.h"
 #include "EC_ObjFreeData.h"
 #include "EC_ObjGeneralProps.h"
 #include "EC_SelectPriority.h"
@@ -30,7 +30,7 @@ namespace RexLogic
     void RexLogicModule::Load()
     {
         DECLARE_MODULE_EC(EC_ObjIdentity);
-        DECLARE_MODULE_EC(EC_Collision);
+        DECLARE_MODULE_EC(EC_ObjCollision);
         DECLARE_MODULE_EC(EC_ObjFreeData);
         DECLARE_MODULE_EC(EC_ObjGeneralProps);    
         DECLARE_MODULE_EC(EC_SelectPriority);
