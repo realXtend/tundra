@@ -121,12 +121,20 @@ namespace Foundation
     
         explicit ModuleInterface_Impl(const std::string &name) : name_(name), type_(Module::MT_Unknown) 
         { 
-            Poco::Logger::create(Name(),Poco::Logger::root().getChannel(),Poco::Message::PRIO_TRACE);     
+            try
+            {
+                Poco::Logger::create(Name(),Poco::Logger::root().getChannel(),Poco::Message::PRIO_TRACE);    
+            }
+            catch (...) {}
         }
 
         explicit ModuleInterface_Impl(Module::Type type) : type_(type) 
         { 
-            Poco::Logger::create(Name(),Poco::Logger::root().getChannel(),Poco::Message::PRIO_TRACE);           
+            try
+            {
+                Poco::Logger::create(Name(),Poco::Logger::root().getChannel(),Poco::Message::PRIO_TRACE);           
+            }
+            catch (...) {}
         }
 
         virtual ~ModuleInterface_Impl() {}

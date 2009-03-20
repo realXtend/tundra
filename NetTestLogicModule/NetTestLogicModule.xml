@@ -1,0 +1,4 @@
+<config>
+	<entry>NetTestLogicModule</entry>
+	<dependency>OpenSimProtocolModule</dependency>
+</config>

@@ -65,7 +65,16 @@ namespace Foundation
 
             - In a post-build step, both the module and the xml file will get copied to bin/modules
               directory (or one of it's subdirectories).
-
+              
+            - Module dependencies can also be specified in the module definition file. The dependencies
+              will get loaded/initialized before the module itself. In this case, 
+              the module definition file should look like this
+              \verbatim
+              <config>
+                   <entry>YourEntryClassName</entry>
+                   <dependency>ModuleName</dependency>
+              </config>
+              \endverbatim
 
         You can define multiple modules in single library file.
         With static module, just declare each module to the module manager.
@@ -247,8 +256,9 @@ namespace Foundation
         //! Loads module
         /*!
             \param path path to module definition file (xml)
+            \param all_files stringvector of all module definitions, so that dependencies can be processed
         */
-        void LoadModule(const boost::filesystem::path &path);
+        void LoadModule(const boost::filesystem::path &path, Core::StringVectorPtr all_files);
 
         //! loads module
         /*!
@@ -288,7 +298,7 @@ namespace Foundation
 
         //! List of modules that should be excluded
         ModuleTypeSet exclude_list_;
-
+        
         Framework *framework_;
     };
 }
