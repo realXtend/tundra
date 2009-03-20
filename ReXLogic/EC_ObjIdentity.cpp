@@ -11,7 +11,10 @@ namespace RexLogic
         Id = 0;
         FullId = ""; // TODO: tucofixme, change type to rexuuid?
         OwnerId = ""; // TODO: tucofixme, change type to rexuuid?
-        ParentId = ""; // TODO: tucofixme, change type to rexuuid?     
+        ParentId = ""; // TODO: tucofixme, change type to rexuuid? 
+        
+        ObjectName = "";
+        Description = "";    
     }
 
     EC_ObjIdentity::~EC_ObjIdentity()
@@ -25,6 +28,9 @@ namespace RexLogic
         Id = 0;
         FullId = ""; 
         OwnerId = "";
-        ParentId = ""; 
+        ParentId = "";
+        
+        ObjectName = "";
+        Description = "";
     }
 }

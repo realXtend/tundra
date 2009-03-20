@@ -20,6 +20,9 @@ namespace RexLogic
         std::string OwnerId; // tucofixme, change type to rexuuid?
         std::string ParentId; // tucofixme, change type to rexuuid?
         
+        std::string ObjectName;
+        std::string Description;
+        
         void HandleObjectUpdate(Foundation::EventDataInterface* data);
     private:
         EC_ObjIdentity(Foundation::ModuleInterface* module);
