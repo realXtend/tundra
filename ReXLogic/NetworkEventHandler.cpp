@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #include "NetworkEventHandler.h"
-#include "RexLogic.h"
 
 #include "EC_ObjIdentity.h"
 #include "EC_Collision.h"
