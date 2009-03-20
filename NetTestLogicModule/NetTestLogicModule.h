@@ -95,11 +95,14 @@ namespace NetTest
         /// Terminates the application.
         void OnClickQuit();
         
-        /// Callback for the logging NetTest loggin window.
+        /// Chat.
         void OnClickChat();
         
         /// Writes a message to the chat window.
         void WriteToChatWindow(const std::string &message);
+        
+        /// Writes a message to the log window.
+        void WriteToLogWindow(const std::string &message);
         
         /// Type definition for object lists.
         typedef std::vector<std::pair<RexUUID, Object*> > ObjectList_t;

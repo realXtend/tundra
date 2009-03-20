@@ -109,6 +109,7 @@ namespace NetTest
 		case RexNetMsgRegionHandshake:
 			{
 				LogInfo("\"RegionHandshake\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
+				WriteToLogWindow("\"RegionHandshake\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
 				msg->SkipToNextVariable(); // RegionFlags U32
 				msg->SkipToNextVariable(); // SimAccess U8
 				size_t bytesRead = 0;
@@ -124,7 +125,7 @@ namespace NetTest
 		case RexNetMsgObjectUpdate:
 			{
 				LogInfo("\"ObjectUpdate\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
-				
+				WriteToLogWindow("\"ObjectUpdate\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
 				Object *obj = new Object;
 				msg->SkipToNextVariable();		// RegionHandle U64
 				msg->SkipToNextVariable();		// TimeDilation U16
@@ -193,9 +194,8 @@ namespace NetTest
 
 		        std::string name = (const char *)msg->ReadBuffer(&bytes_read);
 		        msg->SkipToFirstVariableByName("Message");
-
 		        std::string message = (const char *)msg->ReadBuffer(&bytes_read);
-		        ss << name << ": " << message << std::endl;
+		        ss << "[" << Core::GetLocalTimeString << "] " << name << ": " << message << std::endl;
 
     	        WriteToChatWindow(ss.str());
 		        break;
@@ -203,13 +203,14 @@ namespace NetTest
 		case RexNetMsgLogoutReply:
 			{
 			    LogInfo("\"LogoutReply\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
+			    
 				RexUUID aID = msg->ReadUUID();
 				RexUUID sID = msg->ReadUUID();
 	
-				// Logout if the id's match.
+				// Log out if the id's match.
 				if (aID == myInfo_.agentID && sID == myInfo_.sessionID)
 				{
-					LogInfo("\"LogoutReply\" received with matching IDs. Loggin out.");
+					LogInfo("\"LogoutReply\" received with matching IDs. Logging out.");
                     bRunning_ = false;
                     bLogoutSent_ = false;
                     netInterface_->DisconnectFromRexServer();
@@ -284,6 +285,7 @@ namespace NetTest
         
         bool success = netInterface_->ConnectToRexServer(first_name.c_str(), last_name.c_str(),
             password.c_str(), server_address.c_str(), port, &myInfo_);
+            
         if(success)
         {   
             bRunning_ = true;
@@ -350,6 +352,24 @@ namespace NetTest
         textviewChat->set_buffer(text_buffer);
     }
     
+    void NetTestLogicModule::WriteToLogWindow(const std::string &message)
+    {
+        // Get the widget controls.        
+        Gtk::ScrolledWindow *scrolledwindowLog = 0;
+		netTestControls->get_widget("scrolledwindow_log", scrolledwindowLog);
+        Gtk::TextView *textviewLog = 0;
+        netTestControls->get_widget("textview_log", textviewLog);
+        scrolledwindowLog->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
+		
+		// Create text buffer and write data to it.
+		Glib::RefPtr<Gtk::TextBuffer> text_buffer = textviewLog->get_buffer();
+        Gtk::TextBuffer::iterator iter = text_buffer->get_iter_at_offset(0);
+        std::stringstream output;
+        output << Core::GetLocalTimeString() << " " << message << std::endl;
+        text_buffer->insert(iter, output.str());
+        textviewLog->set_buffer(text_buffer);
+    }
+        
 	void NetTestLogicModule::SendUseCircuitCodePacket()
 	{
 		NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgUseCircuitCode);
@@ -416,10 +436,6 @@ namespace NetTest
         
         netTestControls->get_widget("window_nettest", netTestWindow);
         netTestWindow->set_title("NetTest");
-        
-        // Initialize UI widgets.
-        Gtk::TextView *textviewLog = 0;
-        netTestControls->get_widget("textview_log", textviewLog);
         
         // Bind callbacks.
         netTestControls->connect_clicked("button_chat", sigc::mem_fun(*this, &NetTestLogicModule::OnClickChat));

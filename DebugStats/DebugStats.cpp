@@ -1,9 +1,13 @@
+#pragma warning( push )
+#pragma warning( disable : 4250 )
 #include <gtkmm/main.h>
 #include <gtkmm/window.h>
 #include <gtkmm/treeview.h>
 #include <gtkmm/treestore.h>
 #include <libglademm.h>
 #include <glade/glade.h>
+#pragma warning( pop )
+
 #include <sstream>
 
 #include "StableHeaders.h"
