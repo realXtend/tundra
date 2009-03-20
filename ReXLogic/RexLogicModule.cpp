@@ -8,9 +8,9 @@
 #include "EventDataInterface.h"
 
 #include "EC_ObjIdentity.h"
+#include "EC_ObjRights.h"
 #include "EC_ObjCollision.h"
 #include "EC_ObjFreeData.h"
-#include "EC_ObjGeneralProps.h"
 #include "EC_SelectPriority.h"
 #include "EC_ServerScript.h"
 #include "EC_SpatialSound.h"
@@ -30,9 +30,9 @@ namespace RexLogic
     void RexLogicModule::Load()
     {
         DECLARE_MODULE_EC(EC_ObjIdentity);
+        DECLARE_MODULE_EC(EC_ObjRights);
         DECLARE_MODULE_EC(EC_ObjCollision);
-        DECLARE_MODULE_EC(EC_ObjFreeData);
-        DECLARE_MODULE_EC(EC_ObjGeneralProps);    
+        DECLARE_MODULE_EC(EC_ObjFreeData);  
         DECLARE_MODULE_EC(EC_SelectPriority);
         DECLARE_MODULE_EC(EC_ServerScript);
         DECLARE_MODULE_EC(EC_SpatialSound);
