@@ -6,22 +6,25 @@
 #include "ComponentInterface.h"
 #include "Foundation.h"
 
-class NetworkEventHandler
+namespace RexLogic
 {
-public:
-    NetworkEventHandler(Foundation::Framework *framework);
-    virtual ~NetworkEventHandler();
+    class NetworkEventHandler
+    {
+    public:
+        NetworkEventHandler(Foundation::Framework *framework);
+        virtual ~NetworkEventHandler();
 
-    // !Handle network events coming from OpenSimProtocolModule
-    bool HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
-private:
-    bool HandleOSNE_ObjectUpdate(Foundation::EventDataInterface* data);
-    bool HandleOSNE_RexPrimData(Foundation::EventDataInterface* data);
-    
-    Foundation::EntityPtr GetEntitySafe(Core::entity_id_t entityid);
-    Foundation::EntityPtr CreateNewEntity(Core::entity_id_t entityid);
+        // !Handle network events coming from OpenSimProtocolModule
+        bool HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+    private:
+        bool HandleOSNE_ObjectUpdate(Foundation::EventDataInterface* data);
+        bool HandleOSNE_RexPrimData(Foundation::EventDataInterface* data);
+        
+        Foundation::EntityPtr GetEntitySafe(Core::entity_id_t entityid);
+        Foundation::EntityPtr CreateNewEntity(Core::entity_id_t entityid);
 
-    Foundation::Framework *framework_;
-};
+        Foundation::Framework *framework_;
+    };
+}
 
 #endif

@@ -6,25 +6,27 @@
 #include "ComponentInterface.h"
 #include "Foundation.h"
 
-
-class EC_Collision : public Foundation::ComponentInterface
+namespace RexLogic
 {
-    DECLARE_EC(EC_Collision);
-public:
-    virtual ~EC_Collision();
-    
-    static std::vector<std::string> GetNetworkMessages()
+    class EC_Collision : public Foundation::ComponentInterface
     {
-        std::vector<std::string> myinterest;
-        myinterest.push_back("GeneralMessage_ExtraEntityData");
-        return myinterest;
-    }    
-    
+        DECLARE_EC(EC_Collision);
+    public:
+        virtual ~EC_Collision();
+        
+        static std::vector<std::string> GetNetworkMessages()
+        {
+            std::vector<std::string> myinterest;
+            myinterest.push_back("GeneralMessage_ExtraEntityData");
+            return myinterest;
+        }    
+        
 
-private:
-    EC_Collision(Foundation::ModuleInterface* module);
+    private:
+        EC_Collision(Foundation::ModuleInterface* module);
 
-    std::string collision_mesh_;
-};
+        std::string collision_mesh_;
+    };
+}
 
 #endif

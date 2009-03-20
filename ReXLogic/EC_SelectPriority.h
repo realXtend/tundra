@@ -6,24 +6,26 @@
 #include "ComponentInterface.h"
 #include "Foundation.h"
 
-
-class EC_SelectPriority : public Foundation::ComponentInterface
+namespace RexLogic
 {
-    DECLARE_EC(EC_SelectPriority);
-public:
-    virtual ~EC_SelectPriority();
-
-    static std::vector<std::string> GetNetworkMessages()
+    class EC_SelectPriority : public Foundation::ComponentInterface
     {
-        std::vector<std::string> myinterest;
-        myinterest.push_back("GeneralMessage_ExtraEntityData");
-        return myinterest;
-    } 
+        DECLARE_EC(EC_SelectPriority);
+    public:
+        virtual ~EC_SelectPriority();
 
-private:
-    EC_SelectPriority(Foundation::ModuleInterface* module);
+        static std::vector<std::string> GetNetworkMessages()
+        {
+            std::vector<std::string> myinterest;
+            myinterest.push_back("GeneralMessage_ExtraEntityData");
+            return myinterest;
+        } 
 
-    int select_priority_;
-};
+    private:
+        EC_SelectPriority(Foundation::ModuleInterface* module);
+
+        int select_priority_;
+    };
+}
 
 #endif

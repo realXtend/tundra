@@ -7,16 +7,17 @@
 #include "WorldLogic.h"
 #include "NetworkEventHandler.h"
 
-
-
-WorldLogic::WorldLogic(Foundation::Framework *framework)
+namespace RexLogic
 {
-    framework_ = framework;
-    // network_handler_ = new NetworkEventHandler(framework);
-}
+    WorldLogic::WorldLogic(Foundation::Framework *framework)
+    {
+        framework_ = framework;
+        // network_handler_ = new NetworkEventHandler(framework);
+    }
 
-WorldLogic::~WorldLogic()
-{
-    // SAFE_DELETE (network_handler_);
+    WorldLogic::~WorldLogic()
+    {
+        // SAFE_DELETE (network_handler_);
+    }
 }
 */ 

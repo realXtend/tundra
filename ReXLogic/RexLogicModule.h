@@ -6,38 +6,41 @@
 #include "ModuleInterface.h"
 #include "NetworkEventHandler.h"
 
-//! interface for modules
-class RexLogicModule : public Foundation::ModuleInterface_Impl
+namespace RexLogic
 {
-public:
-    RexLogicModule();
-    virtual ~RexLogicModule();
+    //! interface for modules
+    class RexLogicModule : public Foundation::ModuleInterface_Impl
+    {
+    public:
+        RexLogicModule();
+        virtual ~RexLogicModule();
 
-    virtual void Load();
-    virtual void Unload();
-    virtual void Initialize(Foundation::Framework *framework);
-    virtual void PostInitialize(Foundation::Framework *framework);
-    virtual void Uninitialize(Foundation::Framework *framework);
+        virtual void Load();
+        virtual void Unload();
+        virtual void Initialize(Foundation::Framework *framework);
+        virtual void PostInitialize(Foundation::Framework *framework);
+        virtual void Uninitialize(Foundation::Framework *framework);
 
-    virtual void Update();
-    
-    virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
-    
-    MODULE_LOGGING_FUNCTIONS;
+        virtual void Update();
+        
+        virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        
+        MODULE_LOGGING_FUNCTIONS;
 
-    //! returns name of this module. Needed for logging.
-    static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
+        //! returns name of this module. Needed for logging.
+        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
-    static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
+        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
 
-private:
-    Foundation::Framework *framework_;
-    
-    NetworkEventHandler *network_handler_; 
+    private:
+        Foundation::Framework *framework_;
+        
+        NetworkEventHandler *network_handler_; 
 
-    typedef boost::function<bool(Core::event_id_t,Foundation::EventDataInterface*)> LogicEventHandlerFunction;
-    typedef std::map<Core::event_category_id_t, LogicEventHandlerFunction> LogicEventHandlerMap;
-    LogicEventHandlerMap event_handlers_;
-};
+        typedef boost::function<bool(Core::event_id_t,Foundation::EventDataInterface*)> LogicEventHandlerFunction;
+        typedef std::map<Core::event_category_id_t, LogicEventHandlerFunction> LogicEventHandlerMap;
+        LogicEventHandlerMap event_handlers_;
+    };
+}
 
 #endif

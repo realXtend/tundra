@@ -3,13 +3,14 @@
 #ifndef incl_RexEntity_h
 #define incl_RexEntity_h
 
-
-class RexEntity
+namespace RexLogic
 {
-public:
-    RexEntity();
-    virtual ~RexEntity();
-};
- 
+    class RexEntity
+    {
+    public:
+        RexEntity();
+        virtual ~RexEntity();
+    };
+}
 
 #endif

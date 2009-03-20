@@ -3,11 +3,14 @@
 #include "StableHeaders.h"
 #include "EC_Collision.h"
 
-EC_Collision::EC_Collision(Foundation::ModuleInterface* module)
+namespace RexLogic
 {
-    collision_mesh_ = "";
-}
+    EC_Collision::EC_Collision(Foundation::ModuleInterface* module)
+    {
+        collision_mesh_ = "";
+    }
 
-EC_Collision::~EC_Collision()
-{
+    EC_Collision::~EC_Collision()
+    {
+    }
 }
