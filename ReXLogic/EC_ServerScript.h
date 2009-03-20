@@ -6,24 +6,26 @@
 #include "ComponentInterface.h"
 #include "Foundation.h"
 
-
-class EC_ServerScript : public Foundation::ComponentInterface
+namespace RexLogic
 {
-    DECLARE_EC(EC_ServerScript);
-public:
-    virtual ~EC_ServerScript();
-
-    static std::vector<std::string> GetNetworkMessages()
+    class EC_ServerScript : public Foundation::ComponentInterface
     {
-        std::vector<std::string> myinterest;
-        myinterest.push_back("GeneralMessage_ExtraEntityData");
-        return myinterest;
-    } 
+        DECLARE_EC(EC_ServerScript);
+    public:
+        virtual ~EC_ServerScript();
 
-private:
-    EC_ServerScript(Foundation::ModuleInterface* module);
+        static std::vector<std::string> GetNetworkMessages()
+        {
+            std::vector<std::string> myinterest;
+            myinterest.push_back("GeneralMessage_ExtraEntityData");
+            return myinterest;
+        } 
 
-    std::string class_name_;
-};
+    private:
+        EC_ServerScript(Foundation::ModuleInterface* module);
+
+        std::string class_name_;
+    };
+}
 
 #endif

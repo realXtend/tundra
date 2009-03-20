@@ -5,22 +5,23 @@
 #ifndef incl_WorldLogic_h
 #define incl_WorldLogic_h
 
-
 #include "WorldLogicInterface.h"
 #include "NetworkEventHandler.h"
 
-class WorldLogic : public Foundation::WorldLogicInterface
+namespace RexLogic
 {
-public:
-    WorldLogic(Foundation::Framework *framework);
-    virtual ~WorldLogic();
-    
-    // NetworkEventHandler *GetNetworkHandler() const { return network_handler_; }
-private:
-    Foundation::Framework *framework_;
-    // NetworkEventHandler *network_handler_;   
-};
-
+    class WorldLogic : public Foundation::WorldLogicInterface
+    {
+    public:
+        WorldLogic(Foundation::Framework *framework);
+        virtual ~WorldLogic();
+        
+        // NetworkEventHandler *GetNetworkHandler() const { return network_handler_; }
+    private:
+        Foundation::Framework *framework_;
+        // NetworkEventHandler *network_handler_;   
+    };
+}
 
 #endif
 */ 

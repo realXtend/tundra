@@ -6,29 +6,31 @@
 #include "ComponentInterface.h"
 #include "Foundation.h"
 
-
-class EC_SpatialSound : public Foundation::ComponentInterface
+namespace RexLogic
 {
-    DECLARE_EC(EC_SpatialSound);
-public:
-    virtual ~EC_SpatialSound();
-
-
-    virtual void HandleNetworkData(std::string data);
-
-    static std::vector<std::string> GetNetworkMessages()
+    class EC_SpatialSound : public Foundation::ComponentInterface
     {
-        std::vector<std::string> myinterest;
-        myinterest.push_back("GeneralMessage_ExtraEntityData");
-        return myinterest;
-    } 
+        DECLARE_EC(EC_SpatialSound);
+    public:
+        virtual ~EC_SpatialSound();
 
-private:
-    EC_SpatialSound(Foundation::ModuleInterface* module);
 
-    std::string sound_id_;
-    float volume_;
-    float radius_;
-};
+        virtual void HandleNetworkData(std::string data);
+
+        static std::vector<std::string> GetNetworkMessages()
+        {
+            std::vector<std::string> myinterest;
+            myinterest.push_back("GeneralMessage_ExtraEntityData");
+            return myinterest;
+        } 
+
+    private:
+        EC_SpatialSound(Foundation::ModuleInterface* module);
+
+        std::string sound_id_;
+        float volume_;
+        float radius_;
+    };
+}
 
 #endif

@@ -6,25 +6,27 @@
 #include "ComponentInterface.h"
 #include "Foundation.h"
 
-
-class EC_ObjFreeData : public Foundation::ComponentInterface
+namespace RexLogic
 {
-    DECLARE_EC(EC_ObjFreeData);
-   
-public:
-    virtual ~EC_ObjFreeData();
-
-    static std::vector<std::string> GetNetworkMessages()
+    class EC_ObjFreeData : public Foundation::ComponentInterface
     {
-        std::vector<std::string> myinterest;
-        myinterest.push_back("GeneralMessage_EntityMetaData");
-        return myinterest;
-    } 
+        DECLARE_EC(EC_ObjFreeData);
+       
+    public:
+        virtual ~EC_ObjFreeData();
 
-private:
-    EC_ObjFreeData(Foundation::ModuleInterface* module);
+        static std::vector<std::string> GetNetworkMessages()
+        {
+            std::vector<std::string> myinterest;
+            myinterest.push_back("GeneralMessage_EntityMetaData");
+            return myinterest;
+        } 
 
-    std::string free_data_;
-};
+    private:
+        EC_ObjFreeData(Foundation::ModuleInterface* module);
+
+        std::string free_data_;
+    };
+}
 
 #endif

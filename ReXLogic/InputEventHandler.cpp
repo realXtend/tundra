@@ -3,10 +3,13 @@
 #include "StableHeaders.h"
 #include "InputEventHandler.h"
 
-InputEventHandler::InputEventHandler()
+namespace RexLogic
 {
-}
+    InputEventHandler::InputEventHandler()
+    {
+    }
 
-InputEventHandler::~InputEventHandler()
-{
+    InputEventHandler::~InputEventHandler()
+    {
+    }
 }

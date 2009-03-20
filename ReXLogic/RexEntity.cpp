@@ -3,11 +3,14 @@
 #include "StableHeaders.h"
 #include "RexEntity.h"
 
-RexEntity::RexEntity()
+namespace RexLogic
 {
-}
+    RexEntity::RexEntity()
+    {
+    }
 
-RexEntity::~RexEntity()
-{
+    RexEntity::~RexEntity()
+    {
+    }
 }
 

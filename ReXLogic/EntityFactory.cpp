@@ -1,10 +1,13 @@
 #include "StableHeaders.h"
 #include "EntityFactory.h"
 
-EntityFactory::EntityFactory()
+namespace RexLogic
 {
-}
+    EntityFactory::EntityFactory()
+    {
+    }
 
-EntityFactory::~EntityFactory()
-{
+    EntityFactory::~EntityFactory()
+    {
+    }
 }
