@@ -10,7 +10,7 @@ namespace fs = boost::filesystem;
 
 namespace Foundation
 {
-    ModuleManager::ModuleManager(Framework *framework) : 
+    ModuleManager::ModuleManager(Framework *framework) :
         framework_(framework)
       , DEFAULT_MODULES_PATH(framework->GetDefaultConfig().DeclareSetting("ModuleManager", "Default_Modules_Path", "./modules"))
     {
@@ -52,7 +52,7 @@ namespace Foundation
 
             try
             {
-                LoadModule(path);
+                LoadModule(path, files);
             } catch (std::exception &e) // may not be fatal, depending on which module failed
             {
                 Foundation::RootLogError(std::string("Exception: ") + e.what());
@@ -110,7 +110,7 @@ namespace Foundation
             std::string filename = path.filename();
             if (filename == lib)
             {
-                LoadModule(orig_path);
+                LoadModule(orig_path, files);
                 break;
             }
         }
@@ -146,10 +146,9 @@ namespace Foundation
         return false;
     }
 
-    void ModuleManager::LoadModule(const fs::path &path)
+    void ModuleManager::LoadModule(const fs::path &path, Core::StringVectorPtr all_files)
     {
         assert (path.has_filename());
-
 
         std::string ext = path.extension();
         boost::algorithm::to_lower(ext);
@@ -160,7 +159,7 @@ namespace Foundation
             modulePath.replace_extension("");
 
             Core::StringVector entries;
-            
+            Core::StringVector dependencies;
 
             Poco::AutoPtr<Poco::Util::XMLConfiguration> config;
             try
@@ -173,14 +172,37 @@ namespace Foundation
                       it != keys.end() ;
                       it++ )
                 {
-                    entries.push_back( config->getString(*it) );
+                    if ((*it).find("entry") != std::string::npos)
+                        entries.push_back( config->getString(*it) );
+                        
+                   if ((*it).find("dependency") != std::string::npos)
+                        dependencies.push_back( config->getString(*it) );
                 }
             }
             catch(std::exception)
             {
+            }
+            
+            if (entries.empty())
                 entries.push_back(modulePath.filename());
+                
+            // Recurse to load dependencies (if any)
+            for ( Core::StringVector::const_iterator it = dependencies.begin() ; 
+              it != dependencies.end() ; ++it )
+            {
+                // Try to find the dependency from the all module paths list
+                for (Core::StringVector::const_iterator it2 = all_files->begin();
+                    it2 != all_files->end(); ++it2)
+                {
+                    if ((*it2).find((*it)) != std::string::npos)
+                    {
+                        const fs::path path((*it2));
+                        LoadModule(path, all_files);
+                    }
+                }
             }
 
+            // Then load the module itself
             LoadModule(modulePath.native_directory_string(), entries);
         }
     }
@@ -289,7 +311,7 @@ namespace Foundation
               it != modules_.end() ; 
               ++it )
         {
-            if (it->module_ == module)
+            if (it->module_->Name() == module->Name())
                 return true;
         }
         return false;
