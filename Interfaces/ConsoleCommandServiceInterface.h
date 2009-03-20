@@ -23,6 +23,8 @@ namespace Console
     __inline static CommandResult ResultSuccess(const std::string &why = std::string()) { CommandResult result = { true, why, false}; return result; }
     //! Returns a failure CommandResult
     __inline static CommandResult ResultFailure(const std::string &why = std::string()) { CommandResult result = { false, why, false}; return result; }
+    //! Returns a failure CommandResult, with invalid parameters as the reason
+    __inline static CommandResult ResultInvalidParameters() { CommandResult result = { false, "Invalid parameters.", false}; return result; }
     //! Returns a delayed CommandResult
     __inline static CommandResult ResultDelayed() { CommandResult result = { false, std::string(), true }; return result; }
 

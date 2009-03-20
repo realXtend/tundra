@@ -5,6 +5,7 @@
 
 #include "ModuleInterface.h"
 #include "Renderer.h"
+#include "ConsoleCommandServiceInterface.h"
 
 namespace Foundation
 {
@@ -26,6 +27,7 @@ namespace OgreRenderer
         virtual void Load();
         virtual void Unload();
         virtual void Initialize(Foundation::Framework *framework);
+        virtual void PostInitialize(Foundation::Framework *framework);
         virtual void Uninitialize(Foundation::Framework *framework);
         virtual void Update();
 
@@ -34,6 +36,9 @@ namespace OgreRenderer
         
         //! returns renderer
         RendererPtr GetRenderer() const { return renderer_; }
+
+        //! callback for console command
+        Console::CommandResult ConsoleSetViewportColor(const Core::StringVector &params);
         
         MODULE_LOGGING_FUNCTIONS;
 

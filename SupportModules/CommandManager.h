@@ -96,13 +96,13 @@ namespace Console
         }
 
         //! Print out available commands to console
-        Console::CommandResult Help(const Core::StringVector &params);
+        Console::CommandResult ConsoleHelp(const Core::StringVector &params);
 
         //! Exit application
-        Console::CommandResult Exit(const Core::StringVector &params);
+        Console::CommandResult ConsoleExit(const Core::StringVector &params);
 
         //! Test command
-        Console::CommandResult Test(const Core::StringVector &params);
+        Console::CommandResult ConsoleTest(const Core::StringVector &params);
     private:
         Console::CommandResult ExecuteCommandAlways(const std::string &name, const Core::StringVector &params, bool always);
 

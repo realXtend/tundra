@@ -21,10 +21,10 @@ namespace Console
         , parent_ (static_cast< ConsoleModule* >(parent))
         , console_(console)
     {
-        RegisterCommand("Help", "Display available commands", Console::Bind(this, &CommandManager::Help));
-        RegisterCommand("Exit", "Exit application", Console::Bind(this, &CommandManager::Exit));
+        RegisterCommand("Help", "Display available commands", Console::Bind(this, &CommandManager::ConsoleHelp));
+        RegisterCommand("Exit", "Exit application", Console::Bind(this, &CommandManager::ConsoleExit));
 #ifdef _DEBUG
-        RegisterCommand("Test", "Echoes parameters supplied with this command", Console::Bind(this, &CommandManager::Test));
+        RegisterCommand("Test", "Echoes parameters supplied with this command", Console::Bind(this, &CommandManager::ConsoleTest));
 #endif
     }
 
@@ -171,7 +171,7 @@ namespace Console
         return result;
     }
 
-    Console::CommandResult CommandManager::Help(const Core::StringVector &params)
+    Console::CommandResult CommandManager::ConsoleHelp(const Core::StringVector &params)
     {
         if (params.empty())
         {
@@ -207,7 +207,7 @@ namespace Console
         return Console::ResultSuccess();
     }
 
-    Console::CommandResult CommandManager::Exit(const Core::StringVector &params)
+    Console::CommandResult CommandManager::ConsoleExit(const Core::StringVector &params)
     {
         console_->Print("Exiting");
         parent_->GetFramework()->Exit();
@@ -215,7 +215,7 @@ namespace Console
         return Console::ResultSuccess();
     }
 
-    Console::CommandResult CommandManager::Test(const Core::StringVector &params)
+    Console::CommandResult CommandManager::ConsoleTest(const Core::StringVector &params)
     {
         std::string all_params;
         for (size_t i = 0 ; i < params.size() ; ++i)

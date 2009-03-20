@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include <Ogre.h>
 #include "OgreRenderingModule.h"
 #include <Poco/ClassLibrary.h>
 #include "Foundation.h"
@@ -46,6 +47,15 @@ namespace OgreRenderer
         LogInfo("Module " + Name() + " initialized.");
     }
 
+    // virtual
+    void OgreRenderingModule::PostInitialize(Foundation::Framework *framework)
+    {
+        Console::CommandService *console = framework->GetService<Console::CommandService>
+            (Foundation::Service::ST_ConsoleCommand);
+
+        console->RegisterCommand("SetViewportColor", "Set viewport background color. Usage: SetViewportColor(r,g,b)", Console::Bind(this, &OgreRenderingModule::ConsoleSetViewportColor));
+    }
+
     // virtual 
     void OgreRenderingModule::Uninitialize(Foundation::Framework *framework)
     {        
@@ -62,6 +72,31 @@ namespace OgreRenderer
     void OgreRenderingModule::Update()
     {
         renderer_->Update();
+    }
+
+    Console::CommandResult OgreRenderingModule::ConsoleSetViewportColor(const Core::StringVector &params)
+    {
+        
+        if (params.size() != 3)
+        {
+            return Console::ResultFailure("Usage: SetViewportColor(r,g,b)");
+        }
+
+        Ogre::ColourValue color;
+        try
+        {
+            color = Ogre::ColourValue(Core::ParseString<Core::Real>(params[0]), Core::ParseString<Core::Real>(params[1]), Core::ParseString<Core::Real>(params[2]));
+        } catch (std::exception)
+        {
+            return Console::ResultInvalidParameters();
+        }
+
+        Ogre::Camera *camera = renderer_->GetCurrentCamera();
+        if (camera == NULL)
+            return Console::ResultFailure("No camera or viewport");
+
+        camera->getViewport()->setBackgroundColour(color);
+        return Console::ResultSuccess();
     }
 }
 

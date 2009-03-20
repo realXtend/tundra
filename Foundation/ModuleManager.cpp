@@ -25,7 +25,8 @@ namespace Foundation
         assert (module);
         if (IsExcluded(module->Name()) == false && HasModule(module) == false)
         {
-            modules_.push_back(module);
+            Module::Entry entry = { module, module->Name(), std::string() };
+            modules_.push_back(entry);
             module->Load();
         } else
         {
@@ -64,17 +65,17 @@ namespace Foundation
     {
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            PreInitializeModule(modules_[i]);
+            PreInitializeModule(modules_[i].module_);
         }
         
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            InitializeModule(modules_[i]);
+            InitializeModule(modules_[i].module_);
         }
         
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            PostInitializeModule(modules_[i]);
+            PostInitializeModule(modules_[i].module_);
         }
     }
 
@@ -82,7 +83,7 @@ namespace Foundation
     {
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            UninitializeModule(modules_[i]);
+            UninitializeModule(modules_[i].module_);
         }
     }
 
@@ -90,11 +91,11 @@ namespace Foundation
     {
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            modules_[i]->Update();
+            modules_[i].module_->Update();
         }
     }
 
-    void ModuleManager::LoadModuleByName(const std::string &lib, const std::string &module)
+    bool ModuleManager::LoadModuleByName(const std::string &lib, const std::string &module)
     {
         assert (lib.empty() == false);
         assert (module.empty() == false);
@@ -116,14 +117,33 @@ namespace Foundation
 
         for (size_t i = 0 ; i < modules_.size() ; ++i)
         {
-            if (modules_[i]->Name() == module)
+            if (modules_[i].module_->Name() == module)
             {
-                modules_[i]->PreInitialize(framework_);
-                modules_[i]->InitializeInternal(framework_);
-                modules_[i]->PostInitialize(framework_);
-                break;
+                modules_[i].module_->PreInitialize(framework_);
+                modules_[i].module_->InitializeInternal(framework_);
+                modules_[i].module_->PostInitialize(framework_);
+                return true;
             }
         }
+        return false;
+    }
+
+    bool ModuleManager::UnloadModuleByName(const std::string &module)
+    {
+        for ( ModuleVector::iterator it = modules_.begin() ; 
+             it != modules_.end() ; 
+             ++it )
+        {
+            if (it->module_->Name() == module)
+            {
+                UninitializeModule(it->module_);
+                UnloadModule(it->module_);
+                modules_.erase(it);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     void ModuleManager::LoadModule(const fs::path &path)
@@ -199,7 +219,9 @@ namespace Foundation
             {
                 module->Load();
 
-                modules_.push_back(module);
+                Module::Entry entry = { module, *it, moduleName };
+
+                modules_.push_back(entry);
 
 #ifndef _DEBUG
                 // make it so debug messages are not logged in release mode
@@ -219,11 +241,11 @@ namespace Foundation
     {
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            assert(modules_[i]);
-            modules_[i]->Unload();
-            delete modules_[i];
+            UnloadModule(modules_[i].module_);
         }
+
         modules_.clear();
+        assert (modules_.empty());
     }
 
     void ModuleManager::PreInitializeModule(ModuleInterface *module)
@@ -250,11 +272,27 @@ namespace Foundation
         module->UninitializeInternal(framework_);
     }
 
+    void ModuleManager::UnloadModule(ModuleInterface *module)
+    {
+        assert(module);
+
+        module->Unload();
+        delete module;
+    }
+
     bool ModuleManager::HasModule(ModuleInterface *module)
     {
         assert (module);
 
-        return (std::find(modules_.begin(), modules_.end(), module) != modules_.end());
+        
+        for ( ModuleVector::iterator it = modules_.begin() ; 
+              it != modules_.end() ; 
+              ++it )
+        {
+            if (it->module_ == module)
+                return true;
+        }
+        return false;
     }
 
     Core::StringVectorPtr ModuleManager::GetXmlFiles(const std::string &path)
