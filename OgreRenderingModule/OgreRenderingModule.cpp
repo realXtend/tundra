@@ -8,6 +8,7 @@
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
 #include "EC_OgrePlaceable.h"
+#include "EC_OgreMesh.h"
 
 namespace OgreRenderer
 {
@@ -26,6 +27,7 @@ namespace OgreRenderer
 
         LogInfo("Module " + Name() + " loaded.");
         DECLARE_MODULE_EC(EC_OgrePlaceable);
+        DECLARE_MODULE_EC(EC_OgreMesh);
     }
 
     // virtual
@@ -54,6 +56,27 @@ namespace OgreRenderer
             (Foundation::Service::ST_ConsoleCommand);
 
         console->RegisterCommand("SetViewportColor", "Set viewport background color. Usage: SetViewportColor(r,g,b)", Console::Bind(this, &OgreRenderingModule::ConsoleSetViewportColor));
+
+        //Foundation::SceneManagerServiceInterface *scene_manager = 
+        //    framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+        //assert(scene_manager != NULL && "Failed to get SceneManager service");
+        //
+        //if (scene_manager->HasScene("World") == false)
+        //    scene_manager->CreateScene("World");
+        //Foundation::ScenePtr scene = scene_manager->GetScene("World");
+        //
+        //Foundation::EntityPtr entity = scene->CreateEntity();
+        //Foundation::ComponentPtr placeable_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgrePlaceable::Name());
+        //Foundation::ComponentPtr mesh_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreMesh::Name());
+        //entity->AddEntityComponent(placeable_ptr);
+        //entity->AddEntityComponent(mesh_ptr);
+        //
+        //EC_OgrePlaceable* placeable = static_cast<EC_OgrePlaceable*>(placeable_ptr.get());
+        //EC_OgreMesh* mesh = static_cast<EC_OgreMesh*>(mesh_ptr.get());
+        //placeable->SetPosition(Core::Vector3df(0,0,-200));
+        //mesh->SetPlaceable(placeable_ptr);
+        //mesh->SetMesh("ogrehead.mesh");
+        
     }
 
     // virtual 
