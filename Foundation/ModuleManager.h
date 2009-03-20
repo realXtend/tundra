@@ -11,6 +11,20 @@ namespace Foundation
     class ModuleInterface;
     class Framework;
 
+    namespace Module
+    {
+        //! Module entry. Contains information about a module.
+        struct Entry
+        {
+            //! the module
+            ModuleInterface *module_;
+            //! entry class of the module
+            std::string entry_;
+            //! Name of shared library this module was loaded from. Set empty for static library
+            std::string shared_library_;
+        };
+    }
+
     //! Managers modules. Modules are loaded at runtime.
     /*! Assumption is that all modules get loaded when program is started, and unloaded when program exits.
         Modules may get initialized and uninitialized any number of times during the program's life time.
@@ -83,6 +97,8 @@ namespace Foundation
     class ModuleManager
     {
     public:
+        typedef std::vector<Module::Entry> ModuleVector;
+
         ModuleManager(Framework *framework);
         ~ModuleManager();
 
@@ -137,6 +153,8 @@ namespace Foundation
         //! unloads all available modules. Modules does not get unloaded as such, only the module's unload() function will be called
         /*! Assumptions is that modules only get unloaded once the program exits.
 
+            PostCondition: HasModule(module) == false for any module
+
             \todo Find a better way to handle unloading of modules / actually unload modules?
         */
         void UnloadModules();
@@ -163,8 +181,8 @@ namespace Foundation
             ModuleVector::iterator it = modules_.begin();
             for ( ; it != modules_.end() ; ++it)
             {
-                if ( (*it)->Name() == name )
-                    return *it;
+                if ( it->module_->Name() == name )
+                    return it->module_;
             }
             return NULL;
         }
@@ -181,13 +199,11 @@ namespace Foundation
             ModuleVector::iterator it = modules_.begin();
             for ( ; it != modules_.end() ; ++it)
             {
-                if ( (*it)->Type() == type )
+                if ( it->module_->Type() == type )
                     return (static_cast<T*>(*it));
             }
             return NULL;
         }
-
-        typedef std::vector<ModuleInterface*> ModuleVector;
 
         //! @return A list of all modules in the system, for reflection purposes. If you need non-const access to
         //!         a module, call GetModule with the proper name or type.
@@ -204,7 +220,7 @@ namespace Foundation
         {
             for (size_t i = 0 ; i < modules_.size() ; ++i)
             {
-                if (modules_[i]->Name() == name)
+                if (modules_[i].module_->Name() == name)
                     return true;
             }
             return false;
@@ -214,8 +230,17 @@ namespace Foundation
         /*! For internal use only!
 
             \param name name of the module to load
+            \return True if the module was loaded succesfully, false otherwise
         */
-        void LoadModuleByName(const std::string &lib, const std::string &module);
+        bool LoadModuleByName(const std::string &lib, const std::string &module);
+
+        //! Unloads a specific module by name
+        /*! Precondition: HasModule(module)
+            Postcondition: HasModule(module) == false
+
+            \param module name of the module
+        */
+        bool UnloadModuleByName(const std::string &module);
 
     private:
 
@@ -243,6 +268,10 @@ namespace Foundation
 
         //! Uninitialize the specified module
         void UninitializeModule(ModuleInterface *module);
+
+        //! Unloads and deletes the module.
+        //! \note Does not remove from modules_
+        void UnloadModule(ModuleInterface *module);
 
         //! returns true if module is present
         bool HasModule(ModuleInterface *module);

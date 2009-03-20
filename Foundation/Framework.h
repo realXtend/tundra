@@ -49,6 +49,12 @@ namespace Foundation
         template <class T>
         __inline const T *GetService(Service::Type type) const { return service_manager_->GetService<T>(type); }
 
+        //! load and init module
+        Console::CommandResult ConsoleLoadModule(const Core::StringVector &params);
+
+        //! uninit and unload a module
+        Console::CommandResult ConsoleUnloadModule(const Core::StringVector &params);
+
         //! Returns name of the configuration group used by the framework
         /*! The group name is used with ConfigurationManager, for framework specific
             settings. Alternatively a class may use it's own name as the name of the
@@ -63,6 +69,10 @@ namespace Foundation
         }
 
     private:
+        //! Registers framework specific console commands
+        //! Should be called after modules are loaded and initialized
+        void RegisterConsoleCommands();
+
         //! default event subscriber tree XML file path
         static const char *DEFAULT_EVENT_SUBSCRIBER_TREE_PATH;
         

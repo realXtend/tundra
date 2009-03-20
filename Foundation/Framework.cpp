@@ -116,6 +116,9 @@ namespace Foundation
     {
         LoadModules();
 
+        // commands must be registered after modules are loaded and initialized
+        RegisterConsoleCommands();
+
         // add event subscribers now, that all modules are loaded/initialized
         event_manager_->LoadEventSubscriberTree(DEFAULT_EVENT_SUBSCRIBER_TREE_PATH);
 
@@ -153,6 +156,53 @@ namespace Foundation
     {
         module_manager_->UninitializeModules();
         module_manager_->UnloadModules();
+    }
+
+    Console::CommandResult Framework::ConsoleLoadModule(const Core::StringVector &params)
+    {
+        if (params.size() != 2 && params.size() != 1)
+            return Console::ResultInvalidParameters();
+
+        std::string lib = params[0];
+        std::string entry = params[0];
+        if (params.size() == 2)
+            entry = params[1];
+        
+        bool result = module_manager_->LoadModuleByName(lib, entry);
+
+        if (!result)
+            return Console::ResultFailure("Library or module not found.");
+        
+        return Console::ResultSuccess("Module " + params[1] + " loaded.");
+    }
+
+    Console::CommandResult Framework::ConsoleUnloadModule(const Core::StringVector &params)
+    {
+        if (params.size() != 1)
+            return Console::ResultInvalidParameters();
+        
+        bool result = false;
+        if (module_manager_->HasModule(params[0]))
+        {
+            result = module_manager_->UnloadModuleByName(params[0]);
+        }
+
+        if (!result)
+            return Console::ResultFailure("Module not found.");
+        
+        return Console::ResultSuccess("Module " + params[0] + " unloaded.");
+    }
+
+    void Framework::RegisterConsoleCommands()
+    {
+        Console::CommandService *console = GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand);
+        console->RegisterCommand("LoadModule", 
+            "Loads a module from shared library. Usage: LoadModule(lib, entry)", 
+            Console::Bind(this, &Framework::ConsoleLoadModule));
+
+        console->RegisterCommand("UnloadModule", 
+            " Unloads a module. Usage: LoadModule(name)", 
+            Console::Bind(this, &Framework::ConsoleUnloadModule));
     }
 }
 

@@ -79,7 +79,7 @@ void DebugStats::PopulateModulesTreeView()
 
     for(size_t i = 0; i < modules.size(); ++i)
     {
-        Foundation::ModuleInterface *m = modules[i];
+        Foundation::ModuleInterface *m = modules[i].module_;
 
         Gtk::TreeStore::iterator iter = debugModulesModel_->append();
         if (!m)
