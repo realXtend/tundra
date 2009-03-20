@@ -69,6 +69,8 @@ public:
 
 private:
 	Poco::Net::StreamSocket socket;
+	
+	std::string url_;
 
 	/// @return True if the server sent back HTTP 100 code.
 	bool WaitForHTTP100Continue();
