@@ -13,6 +13,20 @@ namespace Foundation
 
     namespace Module
     {
+        //! entry for shared library that may contain module(s)
+        struct SharedLibrary : public boost::noncopyable
+        {
+            SharedLibrary();
+            SharedLibrary(const std::string &path) : path_(path) { cl_.loadLibrary(path_); }
+            ~SharedLibrary() { cl_.unloadLibrary(path_); }
+
+            //! path to the shared library
+            std::string path_;
+            //! class loader
+            Poco::ClassLoader<ModuleInterface> cl_;
+        };
+        typedef boost::shared_ptr<SharedLibrary> SharedLibraryPtr;
+
         //! Module entry. Contains information about a module.
         struct Entry
         {
@@ -20,8 +34,8 @@ namespace Foundation
             ModuleInterface *module_;
             //! entry class of the module
             std::string entry_;
-            //! Name of shared library this module was loaded from. Set empty for static library
-            std::string shared_library_;
+            //! shared library this module was loaded from. Set null for static library
+            SharedLibraryPtr shared_library_;
         };
     }
 
@@ -235,6 +249,16 @@ namespace Foundation
             return false;
         }
 
+        bool HasModuleEntry(const std::string &entry) const
+        {
+            for (size_t i = 0 ; i < modules_.size() ; ++i)
+            {
+                if (modules_[i].entry_ == entry)
+                    return true;
+            }
+            return false;
+        }
+
         //! Loads and initializes a module with specified name
         /*! For internal use only!
 
@@ -281,7 +305,7 @@ namespace Foundation
 
         //! Unloads and deletes the module.
         //! \note Does not remove from modules_
-        void UnloadModule(ModuleInterface *module);
+        void UnloadModule(const Module::Entry &entry);
 
         //! returns true if module is present
         bool HasModule(ModuleInterface *module);

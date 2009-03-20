@@ -8,6 +8,7 @@
 
 #include "ComponentRegistrarInterface.h"
 #include "CoreTypes.h"
+#include "ForwardDefines.h"
 
 #define DECLARE_MODULE_EC(component) \
     { Foundation::ComponentRegistrarInterfacePtr registrar = Foundation::ComponentRegistrarInterfacePtr(new component::component##Registrar); \
@@ -58,6 +59,15 @@ namespace Foundation
 
             return type_strings[type];
         }
+
+        //! Current module state
+        enum State
+        {
+            MS_Unloaded = 0,
+            MS_Loaded,
+            MS_Initialized,
+            MS_Unknown
+        };
     }
 
     //! interface for modules
@@ -107,7 +117,15 @@ namespace Foundation
          */
         virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) = 0;
 
+        //! Returns the state of the module
+        virtual Module::State State() const = 0;
+
     private:
+        //! Called when module is loaded. Do not override in child classes. For internal use.
+        virtual void LoadInternal() = 0;
+        //! Called when module is unloaded. Do not override in child classes. For internal use.
+        virtual void UnloadInternal() = 0;
+
         //! Initializes the module. Called when module is taken in use. Do not override in child classes. For internal use.
         virtual void InitializeInternal(Framework *framework) = 0;
         //! Uninitialize the module. Called when module is removed from use. Do not override in child classes. For internal use.
@@ -119,25 +137,34 @@ namespace Foundation
     {
     public:
     
-        explicit ModuleInterface_Impl(const std::string &name) : name_(name), type_(Module::MT_Unknown) 
+        explicit ModuleInterface_Impl(const std::string &name) : name_(name), type_(Module::MT_Unknown), state_(Module::MS_Unloaded)
         { 
             try
             {
-                Poco::Logger::create(Name(),Poco::Logger::root().getChannel(),Poco::Message::PRIO_TRACE);    
+                Poco::Logger::create(Name(),Poco::Logger::root().getChannel(), Poco::Message::PRIO_TRACE);    
             }
-            catch (...) {}
+            catch (std::exception)
+            {
+                Foundation::RootLogError("Failed to create logger " + Name() + ".");
+            }
         }
 
-        explicit ModuleInterface_Impl(Module::Type type) : type_(type) 
+        explicit ModuleInterface_Impl(Module::Type type) : type_(type), state_(Module::MS_Unloaded)
         { 
             try
             {
                 Poco::Logger::create(Name(),Poco::Logger::root().getChannel(),Poco::Message::PRIO_TRACE);           
             }
-            catch (...) {}
+            catch (std::exception)
+            {
+                Foundation::RootLogError("Failed to create logger " + Name() + ".");
+            }
         }
 
-        virtual ~ModuleInterface_Impl() {}
+        virtual ~ModuleInterface_Impl()
+        {
+            Poco::Logger::destroy(Name());
+        }
 
         virtual void PreInitialize(Framework *framework) {}
         virtual void PostInitialize(Framework *framework) {}
@@ -153,8 +180,13 @@ namespace Foundation
         }
         
         virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) { return false; }
+
+        virtual Module::State State() const { return state_; }
         
     private:
+        virtual void LoadInternal() { Load(); state_ = Module::MS_Loaded; }
+        virtual void UnloadInternal() { Unload(); state_ = Module::MS_Unloaded; }
+
         //! Registers all declared components
         virtual void InitializeInternal(Framework *framework)
         {
@@ -165,6 +197,7 @@ namespace Foundation
                 component_registrars_[n]->Register(framework, this);
             }
             Initialize(framework);
+            state_ = Module::MS_Initialized;
         }
 
         //! Unregisters all declared components
@@ -178,6 +211,8 @@ namespace Foundation
             }
 
             Uninitialize(framework);
+
+            state_ = Module::MS_Loaded;
         }
 
         typedef std::vector<ComponentRegistrarInterfacePtr> RegistrarVector;
@@ -188,6 +223,8 @@ namespace Foundation
         const std::string name_;
         //! type of the module if inbuild, unknown otherwise
         const Module::Type type_;
+        //! Current state of the module
+        Module::State state_;
     };
 }
 
