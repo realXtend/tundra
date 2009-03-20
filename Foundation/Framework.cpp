@@ -173,7 +173,7 @@ namespace Foundation
         if (!result)
             return Console::ResultFailure("Library or module not found.");
         
-        return Console::ResultSuccess("Module " + params[1] + " loaded.");
+        return Console::ResultSuccess("Module " + entry + " loaded.");
     }
 
     Console::CommandResult Framework::ConsoleUnloadModule(const Core::StringVector &params)

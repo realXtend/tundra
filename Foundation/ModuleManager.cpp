@@ -25,9 +25,9 @@ namespace Foundation
         assert (module);
         if (IsExcluded(module->Name()) == false && HasModule(module) == false)
         {
-            Module::Entry entry = { module, module->Name(), std::string() };
+            Module::Entry entry = { module, module->Name(), Module::SharedLibraryPtr() };
             modules_.push_back(entry);
-            module->Load();
+            module->LoadInternal();
         } else
         {
             Foundation::RootLogInfo("Module: " + module->Name() + " is excluded and not loaded.");
@@ -117,7 +117,7 @@ namespace Foundation
 
         for (size_t i = 0 ; i < modules_.size() ; ++i)
         {
-            if (modules_[i].module_->Name() == module)
+            if (modules_[i].entry_ == module && modules_[i].module_->State() == Module::MS_Loaded)
             {
                 modules_[i].module_->PreInitialize(framework_);
                 modules_[i].module_->InitializeInternal(framework_);
@@ -137,7 +137,7 @@ namespace Foundation
             if (it->module_->Name() == module)
             {
                 UninitializeModule(it->module_);
-                UnloadModule(it->module_);
+                UnloadModule(*it);
                 modules_.erase(it);
                 return true;
             }
@@ -203,7 +203,7 @@ namespace Foundation
             }
 
             // Then load the module itself
-            LoadModule(modulePath.native_directory_string(), entries);
+            return LoadModule(modulePath.native_directory_string(), entries);
         }
     }
 
@@ -214,14 +214,30 @@ namespace Foundation
         std::string path(moduleName);
         path.append(Poco::SharedLibrary::suffix());
 
-        Poco::ClassLoader<ModuleInterface> cl;
-        try
+        Module::SharedLibraryPtr library;
+
+        // See if shared library is already loaded, and if it is, use it
+        for ( ModuleVector::const_iterator it = modules_.begin() ; 
+              it != modules_.end() ; 
+              ++it )
         {
-            cl.loadLibrary(path);
-        } catch (std::exception &e)
+            if (it->shared_library_ && it->shared_library_->path_ == path)
+            {
+                library = it->shared_library_;
+            }
+        }
+
+        if (!library)
         {
-            Foundation::RootLogError(e.what());
-            Foundation::RootLogError("Failed to load dynamic library: " + moduleName + ".");
+            try
+            {
+                library = Module::SharedLibraryPtr(new Module::SharedLibrary(path));
+            } catch (std::exception &e)
+            {
+                Foundation::RootLogError(e.what());
+                Foundation::RootLogError("Failed to load dynamic library: " + moduleName + ".");
+                return;
+            }
         }
 
         for ( Core::StringVector::const_iterator it = entries.begin() ; 
@@ -230,18 +246,26 @@ namespace Foundation
         {
             Foundation::RootLogInfo("Attempting to load module: " + *it + ".");
 
-            if (cl.findClass(*it) == NULL)
+            if (HasModuleEntry(*it))
+            {
+                Foundation::RootLogInfo("Module " + *it + " already loaded.");
+                continue;
+            }
+
+            if (library->cl_.findClass(*it) == NULL)
             {
                 throw Core::Exception("Entry class not found from module.");
             }
 
-            ModuleInterface* module = cl.classFor(*it).create();
 
-            if (IsExcluded(module->Name()) == false && HasModule(module) == false)
+            ModuleInterface* module = library->cl_.create(*it);
+
+            if (IsExcluded(module->Name()) == false)
             {
-                module->Load();
+                assert (HasModule(module) == false);
+                module->LoadInternal();
 
-                Module::Entry entry = { module, *it, moduleName };
+                Module::Entry entry = { module, *it, library };
 
                 modules_.push_back(entry);
 
@@ -250,10 +274,10 @@ namespace Foundation
                 Poco::Logger::get(module->Name()).setLevel("information");
 #endif
 
-                Foundation::RootLogInfo("Module: " + *it + " loaded.");
+                Foundation::RootLogInfo("Module " + *it + " loaded. Module name: " + module->Name() + ".");
             } else
             {
-                Foundation::RootLogInfo("Module: " + module->Name() + " is excluded and not loaded.");
+                Foundation::RootLogInfo("Module " + module->Name() + " is excluded and not loaded.");
                 SAFE_DELETE (module);
             }
         }
@@ -263,7 +287,7 @@ namespace Foundation
     {
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            UnloadModule(modules_[i].module_);
+            UnloadModule(modules_[i]);
         }
 
         modules_.clear();
@@ -279,6 +303,7 @@ namespace Foundation
     void ModuleManager::InitializeModule(ModuleInterface *module)
     {
         assert(module);
+        Foundation::RootLogInfo("Initializing module " + module->Name() + ".");
         module->InitializeInternal(framework_);
     }
 
@@ -291,15 +316,24 @@ namespace Foundation
     void ModuleManager::UninitializeModule(ModuleInterface *module)
     {
         assert(module);
+        Foundation::RootLogInfo("Uninitializing module " + module->Name() + ".");
         module->UninitializeInternal(framework_);
     }
 
-    void ModuleManager::UnloadModule(ModuleInterface *module)
+    void ModuleManager::UnloadModule(const Module::Entry &entry)
     {
-        assert(module);
+        assert(entry.module_);
 
-        module->Unload();
-        delete module;
+        entry.module_->UnloadInternal();
+        if (!entry.shared_library_)
+        {
+            delete entry.module_;
+        }
+        else
+        {
+            entry.shared_library_->cl_.destroy(entry.entry_, entry.module_);
+            //delete entry.module_;
+        }
     }
 
     bool ModuleManager::HasModule(ModuleInterface *module)
