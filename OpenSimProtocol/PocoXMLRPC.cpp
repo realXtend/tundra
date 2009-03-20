@@ -152,7 +152,6 @@ bool PocoXMLRPCConnection::FinishXMLRPCCall(boost::shared_ptr<PocoXMLRPCCall> ca
 	const uint8_t cTimeout = 5;
 	
 	const char *url = url_.c_str(); 
-	//char *url = "192.168.1.144:9000"; ///\todo Use the real url and port.
 
 	headers = curl_slist_append(headers, "Accept-Encoding: deflate, gzip");
 	headers = curl_slist_append(headers, "Content-Type: text/xml"); ///\todo Gets overriden with the default value.
@@ -169,14 +168,7 @@ bool PocoXMLRPCConnection::FinishXMLRPCCall(boost::shared_ptr<PocoXMLRPCCall> ca
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curl_error_buffer);
     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, cTimeout);
     
-    try
-    {
-	    result = curl_easy_perform(curl);
-    }
-    catch (std::exception e)
-	{
-	    return false;
-	}
+    result = curl_easy_perform(curl);
 	
 	// Clean up and free memory.
 	curl_easy_cleanup(curl);

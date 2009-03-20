@@ -16,11 +16,7 @@ public:
     void Unload();
     void Initialize(Foundation::Framework *framework);
     void Uninitialize(Foundation::Framework *framework);
-
     void Update();
-    
-    void InitLoginWindow();
-    void GetText();
 
 private:
     void operator=(const GtkmmUI &);

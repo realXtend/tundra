@@ -325,7 +325,10 @@ void NetMessageManager::ProcessMessages()
 			break;
 		}
 	}
-
+    
+    if (!connection->Open())
+        connection.reset();
+        
 	// To keep memory footprint down and to defend against memory attacks, keep the list of seen sequence numbers to a fixed size.
 	const size_t cMaxSeqNumMemorySize = 300;
 	while(receivedSequenceNumbers.size() > cMaxSeqNumMemorySize)
@@ -347,8 +350,8 @@ bool NetMessageManager::ConnectTo(const char *serverAddress, int port)
 
 void NetMessageManager::Disconnect()
 {
-    ///\todo reset() crashes.
-//    connection.reset();
+    connection->Close();
+    receivedSequenceNumbers.clear();
 	curl_global_cleanup();
 }
 
@@ -377,7 +380,6 @@ NetOutMessage *NetMessageManager::StartNewMessage(NetMsgID id)
 void NetMessageManager::FinishMessage(NetOutMessage *message)
 {
 	assert(message);
-	
 	message->SetSequenceNumber(GetNewSequenceNumber());
 
 	// Try to Zero-encode the message if that is desired. If encoding worsens the size, we'll send unencoded.
@@ -428,7 +430,6 @@ void NetMessageManager::SendProcessedMessage(NetOutMessage *msg)
 
 	std::vector<uint8_t> &data = msg->GetData();
 	connection->SendBytes(&data[0], data.size());
-	
 }
 
 ///\todo Send multiple ACKs in one packet?

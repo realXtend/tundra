@@ -65,7 +65,8 @@ namespace OpenSimProtocol
     // virtual
     void OpenSimProtocolModule::Update()
     {
-        networkManager_->ProcessMessages();
+        if (networkState_ == State_Connected)
+            networkManager_->ProcessMessages();
     }
 
 	void OpenSimProtocolModule::AddListener(INetMessageListener *listener)
@@ -99,6 +100,7 @@ namespace OpenSimProtocol
 	void OpenSimProtocolModule::DisconnectFromRexServer()
 	{
 	    networkManager_->Disconnect();
+	    networkState_ = State_Disconnected;
 	}
 	
     void OpenSimProtocolModule::PerformXMLRPCLogin(

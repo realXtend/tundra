@@ -5,13 +5,21 @@
 
 using namespace std;
 
-NetworkConnection::NetworkConnection(const char *address, int port)
+NetworkConnection::NetworkConnection(const char *address, int port): bOpen(true)
 {
 	socket.connect(Poco::Net::SocketAddress(address, port));
 }
 
 NetworkConnection::~NetworkConnection()
 {
+}
+
+bool NetworkConnection::PacketsAvailable() const
+{
+    if (!bOpen)
+        return false;
+    
+    return socket.available() != 0;
 }
 
 int NetworkConnection::ReceiveBytes(uint8_t *bytes, size_t maxCount)
@@ -26,4 +34,10 @@ int NetworkConnection::ReceiveBytes(uint8_t *bytes, size_t maxCount)
 void NetworkConnection::SendBytes(const uint8_t *bytes, size_t count)
 {
 	socket.sendBytes(bytes, (int)count);
+}
+
+void NetworkConnection::Close()
+{
+    socket.close();
+    bOpen = false;
 }
