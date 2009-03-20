@@ -6,7 +6,6 @@
 #include "EC_ObjIdentity.h"
 #include "EC_ObjCollision.h"
 #include "EC_ObjFreeData.h"
-#include "EC_ObjGeneralProps.h"
 #include "EC_SelectPriority.h"
 #include "EC_ServerScript.h"
 #include "EC_SpatialSound.h"
