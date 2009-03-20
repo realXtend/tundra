@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "RexLogic.h"
+#include "RexLogicModule.h"
 #include "ComponentManager.h"
 #include "Poco/ClassLibrary.h"
 #include "NetworkEventHandler.h"
@@ -15,17 +15,17 @@
 #include "EC_ServerScript.h"
 #include "EC_SpatialSound.h"
 
-RexLogic::RexLogic() : ModuleInterface_Impl(type_static_), framework_(NULL)
+RexLogicModule::RexLogicModule() : ModuleInterface_Impl(type_static_), framework_(NULL)
 {
 }
 
-RexLogic::~RexLogic()
+RexLogicModule::~RexLogicModule()
 {
     assert(framework_ == NULL);
 }
 
 // virtual
-void RexLogic::Load()
+void RexLogicModule::Load()
 {
     DECLARE_MODULE_EC(EC_ObjIdentity);
     DECLARE_MODULE_EC(EC_Collision);
@@ -39,13 +39,13 @@ void RexLogic::Load()
 }
 
 // virtual
-void RexLogic::Unload()
+void RexLogicModule::Unload()
 {
     LogInfo("Module " + Name() + " unloaded.");
 }
 
 // virtual
-void RexLogic::Initialize(Foundation::Framework *framework)
+void RexLogicModule::Initialize(Foundation::Framework *framework)
 {
     assert(framework_ == NULL);
     framework_ = framework;
@@ -61,7 +61,7 @@ void RexLogic::Initialize(Foundation::Framework *framework)
 }
 
 // virtual
-void RexLogic::PostInitialize(Foundation::Framework *framework)
+void RexLogicModule::PostInitialize(Foundation::Framework *framework)
 {
     Foundation::SceneManagerServiceInterface *sceneManager = 
             framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
@@ -77,7 +77,7 @@ void RexLogic::PostInitialize(Foundation::Framework *framework)
 }
 
 // virtual 
-void RexLogic::Uninitialize(Foundation::Framework *framework)
+void RexLogicModule::Uninitialize(Foundation::Framework *framework)
 {
     assert(framework_);
     SAFE_DELETE (network_handler_);
@@ -87,7 +87,7 @@ void RexLogic::Uninitialize(Foundation::Framework *framework)
 }
 
 // virtual
-void RexLogic::Update()
+void RexLogicModule::Update()
 {
     // tucofixme, test event system
     // Foundation::EventDataInterface params;
@@ -97,7 +97,7 @@ void RexLogic::Update()
 }
 
 // virtual
-bool RexLogic::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+bool RexLogicModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
 {
     LogicEventHandlerMap::iterator i = event_handlers_.find(category_id);
     if (i != event_handlers_.end())
@@ -107,7 +107,7 @@ bool RexLogic::HandleEvent(Core::event_category_id_t category_id, Core::event_id
 }
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
-    POCO_EXPORT_CLASS(RexLogic)
+    POCO_EXPORT_CLASS(RexLogicModule)
 POCO_END_MANIFEST
 
 

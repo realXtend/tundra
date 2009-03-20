@@ -1,17 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_RexLogic_System_h
-#define incl_RexLogic_System_h
+#ifndef incl_RexLogicModule_h
+#define incl_RexLogicModule_h
 
 #include "ModuleInterface.h"
 #include "NetworkEventHandler.h"
 
 //! interface for modules
-class RexLogic : public Foundation::ModuleInterface_Impl
+class RexLogicModule : public Foundation::ModuleInterface_Impl
 {
 public:
-    RexLogic();
-    virtual ~RexLogic();
+    RexLogicModule();
+    virtual ~RexLogicModule();
 
     virtual void Load();
     virtual void Unload();
