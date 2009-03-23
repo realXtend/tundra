@@ -196,13 +196,13 @@ namespace Foundation
     void Framework::RegisterConsoleCommands()
     {
         Console::CommandService *console = GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand);
-        console->RegisterCommand("LoadModule", 
+        console->RegisterCommand(Console::CreateCommand("LoadModule", 
             "Loads a module from shared library. Usage: LoadModule(lib, entry)", 
-            Console::Bind(this, &Framework::ConsoleLoadModule));
+            Console::Bind(this, &Framework::ConsoleLoadModule)));
 
-        console->RegisterCommand("UnloadModule", 
-            " Unloads a module. Usage: LoadModule(name)", 
-            Console::Bind(this, &Framework::ConsoleUnloadModule));
+        console->RegisterCommand(Console::CreateCommand("UnloadModule", 
+            "Unloads a module. Usage: LoadModule(name)", 
+            Console::Bind(this, &Framework::ConsoleUnloadModule)));
     }
 }
 

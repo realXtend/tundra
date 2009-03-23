@@ -21,10 +21,10 @@ namespace Console
         , parent_ (static_cast< ConsoleModule* >(parent))
         , console_(console)
     {
-        RegisterCommand("Help", "Display available commands", Console::Bind(this, &CommandManager::ConsoleHelp));
-        RegisterCommand("Exit", "Exit application", Console::Bind(this, &CommandManager::ConsoleExit));
+        RegisterCommand(Console::CreateCommand("Help", "Display available commands", Console::Bind(this, &CommandManager::ConsoleHelp)));
+        RegisterCommand(Console::CreateCommand("Exit", "Exit application", Console::Bind(this, &CommandManager::ConsoleExit)));
 #ifdef _DEBUG
-        RegisterCommand("Test", "Echoes parameters supplied with this command", Console::Bind(this, &CommandManager::ConsoleTest));
+        RegisterCommand(Console::CreateCommand("Test", "Echoes parameters supplied with this command", Console::Bind(this, &CommandManager::ConsoleTest)));
 #endif
     }
 

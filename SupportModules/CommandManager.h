@@ -27,37 +27,14 @@ namespace Console
         virtual void Update();
 
         //! Register a command to the debug console
+        /*!
+            Shortcut functions are present to make registering easier, see
+                CreateCommand(const std::string &name, const std::string &description, const CallbackPtr &callback, bool delayed)
+                static Command CreateCommand(const std::string &name, const std::string &description, StaticCallback &static_callback, bool delayed)
+
+            \param command the command to register
+        */
         virtual void RegisterCommand(const Console::Command &command);
-
-        //! Register a command to the debug console
-        /*! For binding a member function.
-            To bind a member function to the command, use Console::Bind()
-
-            \param name name of the command
-            \param description short description of the command
-            \param callback function object that gets called when command is executed
-            \param delayed If true, handle the command in delayed, threadsafe manner
-        */
-        virtual void RegisterCommand(const std::string &name, const std::string &description, const CallbackPtr &callback, bool delayed = false)
-        {
-            Console::Command command = {name, description, callback, delayed};
-            RegisterCommand(command);
-        }
-
-        //! Register a command to the debug console
-        /*! For binding a static function
-
-            \param name name of the command
-            \param description short description of the command
-            \param callback function object that gets called when command is executed
-            \param delayed If true, handle the command in delayed, threadsafe manner
-        */
-        virtual void RegisterCommand(const std::string &name, const std::string &description, StaticCallback &static_callback, bool delayed = false)
-        {
-            CallbackPtr callback(new StaticCallbackFunctor(static_callback));
-            Console::Command command = {name, description, callback, delayed};
-            RegisterCommand(command);
-        }
 
         //! Unregister console command with the specified name
         virtual void UnregisterCommand(const std::string &name);

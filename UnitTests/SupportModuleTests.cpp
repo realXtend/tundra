@@ -42,7 +42,7 @@ struct TestB
         Console::CommandService *console = fw_->GetService<Console::CommandService>
             (Foundation::Service::ST_ConsoleCommand);
 
-        console->RegisterCommand("Test CommandC", "Test command threaded", Console::Bind(this, &TestB::TestCallbackThreaded), true);
+        console->RegisterCommand(Console::CreateCommand("Test CommandC", "Test command threaded", Console::Bind(this, &TestB::TestCallbackThreaded), true));
 
         console->Update();
         boost::optional<Console::CommandResult> result;
@@ -66,8 +66,8 @@ BOOST_AUTO_TEST_CASE( support_modules_console )
         (Foundation::Service::ST_ConsoleCommand);
 
     TestA test_class;
-    console->RegisterCommand("Test_CommandA", "Test command Success", Console::Bind(&test_class, &TestA::TestCallbackSuccess));
-    console->RegisterCommand("Test_CommandB", "Test command Failure", Console::Bind(&test_class, &TestA::TestCallbackFailure));
+    console->RegisterCommand(Console::CreateCommand("Test_CommandA", "Test command Success", Console::Bind(&test_class, &TestA::TestCallbackSuccess)));
+    console->RegisterCommand(Console::CreateCommand("Test_CommandB", "Test command Failure", Console::Bind(&test_class, &TestA::TestCallbackFailure)));
     
 
     Console::CommandResult result = console->ExecuteCommand("Test_CommandA (paramA, paramB )");
