@@ -46,7 +46,10 @@ namespace OgreRenderer
         renderwindow_(0),
         listener_(EventListenerPtr(new EventListener(this)))
     {
-        event_category_ = framework_->GetEventManager()->RegisterEventCategory("Renderer");
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        
+        event_category_ = event_manager->RegisterEventCategory("Renderer");
+        event_manager->RegisterEvent(event_category_, EVENT_POST_RENDER, "PostRender");
     }
     
     Renderer::~Renderer()

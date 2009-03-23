@@ -57,6 +57,8 @@ namespace Foundation
         Modules can also be manually registered/unregistered into the subscriber tree by calling RegisterEventSubscriber()
         and UnregisterEventSubscriber(). Note that during handling of an event (ie. when HandleEvent() for any module is 
         being executed) the subscriber tree should not be attempted to be modified.
+        
+        Additionally (currently only for debugging purposes, not mandatory to send events) event id's can be registered. 
      */
     
     class EventManager
@@ -94,11 +96,22 @@ namespace Foundation
         Core::event_category_id_t QueryEventCategory(const std::string& name) const;
         
        //! queries for an event category name by id
-        /*! \param id event category id
+        /*! \param category_id event category id
             \return event category name, or empty string if event category not recognized
          */
-        const std::string& QueryEventCategoryName(Core::event_category_id_t) const;
+        const std::string& QueryEventCategoryName(Core::event_category_id_t category_id) const;
         
+        //! registers an event
+        /*! currently only for debugging purposes, not necessary to send the event in question
+        /*! \param category_id event category id, should be registered first
+            \param event_id event id
+            \param name event name
+         */
+        void RegisterEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, const std::string& name);
+        
+        //! Queries an event name by category & event id
+        void QueryEventName(Core::event_category_id_t category_id, Core::event_id_t event_id) const;
+         
         //! sends an event
         /*! \param category_id event category id
             \param event_id event id
@@ -136,7 +149,14 @@ namespace Foundation
 
         typedef std::map<std::string, Core::event_category_id_t> EventCategoryMap;
 
+        typedef std::map<Core::event_category_id_t, std::map<Core::event_category_id_t, std::string > > EventMap;
+
+        //! returns event category map
         const EventCategoryMap &GetEventCategoryMap() const { return event_category_map_; }
+        
+        //! returns event map
+        const EventMap &GetEventMap() const { return event_map_; }
+         
     private:
         
         //! find a node with certain module from the tree
@@ -173,6 +193,9 @@ namespace Foundation
         
         //! map for assigned event category id's
         EventCategoryMap event_category_map_;
+
+        //! map for registered events by category
+        EventMap event_map_;
         
         //! event subscriber tree root node
         EventSubscriberPtr event_subscriber_root_;

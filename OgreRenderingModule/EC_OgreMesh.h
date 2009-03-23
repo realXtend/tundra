@@ -19,6 +19,7 @@ namespace OgreRenderer
     
     //! Ogre mesh component. Stores Ogre mesh-based entity.
     /*! Needs knowledge of a placeable (aka scene node) to work properly.
+        An initialized renderer module must exist before these components can be created.
      */
     class MODULE_API EC_OgreMesh : public Foundation::ComponentInterface
     {
@@ -38,7 +39,6 @@ namespace OgreRenderer
             \return true if successful
             \todo use mesh asset reference when assetcache materializes
          */
-        
         bool SetMesh(const std::string& mesh_name);
         
         //! removes mesh
@@ -48,6 +48,9 @@ namespace OgreRenderer
         bool HasMesh() const { return ogre_entity_ != NULL; }
         
     private:
+        //! constructor
+        /*! \param module renderer module
+         */
         EC_OgreMesh(Foundation::ModuleInterface* module);
         
         Foundation::ComponentPtr placeable_;
