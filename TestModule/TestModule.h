@@ -6,6 +6,7 @@
 #include "ModuleInterface.h"
 #include "TestServiceInterface.h"
 #include "TestService.h"
+#include "EventDataInterface.h"
 
 namespace Foundation
 {
@@ -17,6 +18,15 @@ namespace Foundation
 */
 namespace Test
 {
+    class TestEvent : public Foundation::EventDataInterface
+    {
+    public:
+        TestEvent() : Foundation::EventDataInterface() {}
+        virtual ~TestEvent() {}
+
+        int test_value_;
+    };
+
     //! interface for modules
     class TestModule : public Foundation::ModuleInterface_Impl
     {
