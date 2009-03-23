@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Fri Mar 20 16:27:03 2009 -->
+<!--Generated with glade3 3.4.3 on Fri Mar 20 19:22:31 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="window_nettest">
     <child>
@@ -19,6 +19,7 @@
               <widget class="GtkTextView" id="textview_log">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="editable">False</property>
               </widget>
             </child>
           </widget>
@@ -27,12 +28,7 @@
             <property name="bottom_attach">2</property>
           </packing>
         </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
+
         <child>
           <widget class="GtkLabel" id="label_log">
             <property name="visible">True</property>
@@ -84,6 +80,7 @@
                   <widget class="GtkTextView" id="textview_chat">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="editable">False</property>
                   </widget>
                 </child>
               </widget>
@@ -99,6 +96,8 @@
                 </child>
                 <child>
                   <widget class="GtkButton" id="button_chat">
+                    <property name="width_request">30</property>
+                    <property name="height_request">20</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
