@@ -57,35 +57,35 @@ namespace OgreRenderer
     // virtual
     void OgreRenderingModule::PostInitialize(Foundation::Framework *framework)
     {
-        Foundation::SceneManagerServiceInterface *scene_manager = 
-            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
-        assert(scene_manager != NULL && "Failed to get SceneManager service");
-        
-        if (scene_manager->HasScene("World") == false)
-            scene_manager->CreateScene("World");
-        Foundation::ScenePtr scene = scene_manager->GetScene("World");
-        
-        Foundation::EntityPtr entity = scene->CreateEntity();
-        Foundation::ComponentPtr placeable_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgrePlaceable::Name());
-        Foundation::ComponentPtr mesh_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreMesh::Name());
-        entity->AddEntityComponent(placeable_ptr);
-        entity->AddEntityComponent(mesh_ptr);
-        
-        EC_OgrePlaceable* placeable = static_cast<EC_OgrePlaceable*>(placeable_ptr.get());
-        EC_OgreMesh* mesh = static_cast<EC_OgreMesh*>(mesh_ptr.get());
-        placeable->SetPosition(Core::Vector3df(0,0,-200));
-        mesh->SetPlaceable(placeable_ptr);
-        mesh->SetMesh("ogrehead.mesh");
-        
-        Foundation::EntityPtr entity2 = scene->CreateEntity();
-        Foundation::ComponentPtr light_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreLight::Name());
-        entity2->AddEntityComponent(light_ptr);
-        
-        EC_OgreLight* light = static_cast<EC_OgreLight*>(light_ptr.get());
-        light->SetType(EC_OgreLight::LT_Directional);
-        light->SetDirection(Core::Vector3df(-1,-1,-1));
-        
-        renderer_->GetSceneManager()->setAmbientLight(Ogre::ColourValue(0.1,0.1,0.1));
+        //Foundation::SceneManagerServiceInterface *scene_manager = 
+        //    framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+        //assert(scene_manager != NULL && "Failed to get SceneManager service");
+        //
+        //if (scene_manager->HasScene("World") == false)
+        //    scene_manager->CreateScene("World");
+        //Foundation::ScenePtr scene = scene_manager->GetScene("World");
+        //
+        //Foundation::EntityPtr entity = scene->CreateEntity();
+        //Foundation::ComponentPtr placeable_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgrePlaceable::Name());
+        //Foundation::ComponentPtr mesh_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreMesh::Name());
+        //entity->AddEntityComponent(placeable_ptr);
+        //entity->AddEntityComponent(mesh_ptr);
+        //
+        //EC_OgrePlaceable* placeable = static_cast<EC_OgrePlaceable*>(placeable_ptr.get());
+        //EC_OgreMesh* mesh = static_cast<EC_OgreMesh*>(mesh_ptr.get());
+        //placeable->SetPosition(Core::Vector3df(0,0,-200));
+        //mesh->SetPlaceable(placeable_ptr);
+        //mesh->SetMesh("ogrehead.mesh");
+        //
+        //Foundation::EntityPtr entity2 = scene->CreateEntity();
+        //Foundation::ComponentPtr light_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreLight::Name());
+        //entity2->AddEntityComponent(light_ptr);
+        //
+        //EC_OgreLight* light = static_cast<EC_OgreLight*>(light_ptr.get());
+        //light->SetType(EC_OgreLight::LT_Directional);
+        //light->SetDirection(Core::Vector3df(-1,-1,-1));
+        //
+        //renderer_->GetSceneManager()->setAmbientLight(Ogre::ColourValue(0.1,0.1,0.1));
     }
 
     // virtual 
