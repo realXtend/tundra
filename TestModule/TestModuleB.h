@@ -25,8 +25,11 @@ namespace Test
         virtual void Unload();
         virtual void Initialize(Foundation::Framework *framework);
         virtual void Uninitialize(Foundation::Framework *framework);
+        virtual void PostInitialize(Foundation::Framework *framework);
 
         virtual void Update();
+
+        virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
         MODULE_LOGGING_FUNCTIONS
 

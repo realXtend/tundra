@@ -42,6 +42,8 @@ namespace Test
         assert (framework_->GetServiceManager()->IsRegistered(Foundation::Service::ST_Test) &&
             "Failed to register test service");
 
+        framework_->GetEventManager()->RegisterEventCategory("Test");
+
         LogInfo("Module " + Name() + " initialized.");
     }
 
@@ -112,6 +114,12 @@ namespace Test
         Foundation::TestServiceInterface *test_service = framework_->GetServiceManager()->GetService<Foundation::TestServiceInterface>(Foundation::Service::ST_Test);
         assert (test_service != NULL);
         assert (test_service->Test());
+
+
+        TestEvent test_event;
+        test_event.test_value_ = 12345;
+        framework_->GetEventManager()->SendEvent(framework_->GetEventManager()->QueryEventCategory("Test"), 0, NULL);
+        framework_->GetEventManager()->SendEvent(framework_->GetEventManager()->QueryEventCategory("Test"), 1, &test_event);
 
         framework_->Exit();
         assert (framework_->IsExiting());
