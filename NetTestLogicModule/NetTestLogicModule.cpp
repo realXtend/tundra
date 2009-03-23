@@ -103,17 +103,35 @@ namespace NetTest
     {
 
     }
-    
+
+    void NetTestLogicModule::OnNetworkMessageSent(const NetOutMessage *msg)
+    {
+        std::stringstream ss;
+        const NetMessageInfo *info = msg->GetMessageInfo();
+        assert(info);
+
+        ss << info->name << " sent, " << Core::ToString(msg->BytesFilled()) << " bytes.";
+
+		LogInfo(ss.str());
+		WriteToLogWindow(ss.str());
+    }
+
     //virtual 
     void NetTestLogicModule::OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg)
     {
-    	switch(msgID)
+        std::stringstream ss;
+        const NetMessageInfo *info = msg->GetMessageType();
+        assert(info);
+
+        ss << info->name << " received, " << Core::ToString(msg->GetDataSize()) << " bytes.";
+
+		LogInfo(ss.str());
+		WriteToLogWindow(ss.str());
+
+        switch(msgID)
 		{
 		case RexNetMsgRegionHandshake:
 			{
-				LogInfo("\"RegionHandshake\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
-				WriteToLogWindow("\"RegionHandshake\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
-				
 				msg->SkipToNextVariable(); // RegionFlags U32
 				msg->SkipToNextVariable(); // SimAccess U8
 				size_t bytesRead = 0;
@@ -127,10 +145,7 @@ namespace NetTest
     			break;
 			}
 		case RexNetMsgObjectUpdate:
-			{
-				LogInfo("\"ObjectUpdate\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
-				WriteToLogWindow("\"ObjectUpdate\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
-				
+			{				
 				Object *obj = new Object;
 				msg->SkipToNextVariable();		// RegionHandle U64
 				msg->SkipToNextVariable();		// TimeDilation U16
@@ -207,8 +222,6 @@ namespace NetTest
 		    }
 		case RexNetMsgLogoutReply:
 			{
-			    LogInfo("\"LogoutReply\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
-			    
 				RexUUID aID = msg->ReadUUID();
 				RexUUID sID = msg->ReadUUID();
 	
