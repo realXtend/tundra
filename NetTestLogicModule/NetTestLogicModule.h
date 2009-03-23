@@ -108,6 +108,9 @@ namespace NetTest
         /// Writes a message to the log window.
         void WriteToLogWindow(const std::string &message);
         
+        /// Update which messages are shown in the log window.
+        void UpdateLogFilterState();
+        
         /// Type definition for object lists.
         typedef std::vector<std::pair<RexUUID, Object*> > ObjectList_t;
 		
@@ -162,6 +165,12 @@ namespace NetTest
 
 		/// Signals that the logout message has sent. Do not send anymore messages.
 		bool bLogoutSent_;
+		
+		/// Show inbound messages in the log.
+		bool bShowInbound_;
+		
+		/// Show outbound messages in the log.
+		bool bShowOutbound_;
     };
 }
 #endif

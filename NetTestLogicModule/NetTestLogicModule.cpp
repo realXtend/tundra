@@ -103,7 +103,8 @@ namespace NetTest
     {
 
     }
-
+    
+    // virtual
     void NetTestLogicModule::OnNetworkMessageSent(const NetOutMessage *msg)
     {
         std::stringstream ss;
@@ -113,7 +114,8 @@ namespace NetTest
         ss << info->name << " sent, " << Core::ToString(msg->BytesFilled()) << " bytes.";
 
 		LogInfo(ss.str());
-		WriteToLogWindow(ss.str());
+		if(bShowOutbound_)
+		    WriteToLogWindow(ss.str());
     }
 
     //virtual 
@@ -126,13 +128,16 @@ namespace NetTest
         ss << info->name << " received, " << Core::ToString(msg->GetDataSize()) << " bytes.";
 
 		LogInfo(ss.str());
-		WriteToLogWindow(ss.str());
+		if(bShowInbound_)
+		    WriteToLogWindow(ss.str());
 
         switch(msgID)
 		{
 		case RexNetMsgRegionHandshake:
 			{
-				msg->SkipToNextVariable(); // RegionFlags U32
+				LogInfo("\"RegionHandshake\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
+
+                msg->SkipToNextVariable(); // RegionFlags U32
 				msg->SkipToNextVariable(); // SimAccess U8
 				size_t bytesRead = 0;
 				simName_ = (const char *)msg->ReadBuffer(&bytesRead);
@@ -145,8 +150,10 @@ namespace NetTest
     			break;
 			}
 		case RexNetMsgObjectUpdate:
-			{				
-				Object *obj = new Object;
+    	    {
+                LogInfo("\"ObjectUpdate\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
+
+                Object *obj = new Object;
 				msg->SkipToNextVariable();		// RegionHandle U64
 				msg->SkipToNextVariable();		// TimeDilation U16
 				obj->localID = msg->ReadU32(); 
@@ -377,7 +384,7 @@ namespace NetTest
     
     void NetTestLogicModule::WriteToLogWindow(const std::string &message)
     {
-        // Get the widget controls.        
+        // Get the widget controls.
         Gtk::ScrolledWindow *scrolledwindowLog = 0;
 		Gtk::TextView *textviewLog = 0;
 		netTestControls->get_widget("scrolledwindow_log", scrolledwindowLog);
@@ -393,7 +400,15 @@ namespace NetTest
         text_buffer->insert(iter, output.str());
         textviewLog->set_buffer(text_buffer);
     }
-        
+    
+    void NetTestLogicModule::UpdateLogFilterState()
+    {
+        Gtk::CheckButton *checkbutton_inbound = netTestControls->get_widget("checkbutton_inbound", checkbutton_inbound);
+        Gtk::CheckButton *checkbutton_outbound = netTestControls->get_widget("checkbutton_outbound", checkbutton_outbound);
+        bShowInbound_ = checkbutton_inbound->get_active();
+        bShowOutbound_ = checkbutton_outbound->get_active();
+    }
+    
 	void NetTestLogicModule::SendUseCircuitCodePacket()
 	{
 		NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgUseCircuitCode);
@@ -459,13 +474,16 @@ namespace NetTest
         netTestControls = Gnome::Glade::Xml::create("data/NetTestWindow.glade");
         if (!netTestControls)
             return;
-
+        
+        UpdateLogFilterState();
         netTestControls->get_widget("window_nettest", netTestWindow);
         Gtk::Entry *entry_chat = netTestControls->get_widget("entry_chat", entry_chat);        
         netTestWindow->set_title("NetTest");
         
         // Bind callbacks.
         netTestControls->connect_clicked("button_chat", sigc::mem_fun(*this, &NetTestLogicModule::OnClickChat));
+        netTestControls->connect_clicked("checkbutton_inbound", sigc::mem_fun(*this, &NetTestLogicModule::UpdateLogFilterState));
+        netTestControls->connect_clicked("checkbutton_outbound", sigc::mem_fun(*this, &NetTestLogicModule::UpdateLogFilterState));        
         entry_chat->signal_activate().connect(sigc::mem_fun(*this, &NetTestLogicModule::OnClickChat));
     }
 }
