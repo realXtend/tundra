@@ -222,6 +222,9 @@ namespace Foundation
         //! Returns module by type
         /*!
             \note The pointer may invalidate between frames, always reacquire at begin of frame update
+
+            \param type type of the module
+            \return The module, or null if the module of type 'type' was not found, or if dynamic cast fails
         */
         template <class T>
         T *GetModule(Foundation::Module::Type type)
@@ -232,7 +235,7 @@ namespace Foundation
             for ( ; it != modules_.end() ; ++it)
             {
                 if ( it->module_->Type() == type )
-                    return (static_cast<T*>(*it));
+                    return (dynamic_cast<T*>(*it));
             }
             return NULL;
         }
