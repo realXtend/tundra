@@ -1,5 +1,5 @@
 # Define target name and output directory
-set (TARGET_NAME ReXLogic)
+set (TARGET_NAME ReXLogicModule)
 set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/modules/core)
 
 # Define source files
@@ -15,11 +15,20 @@ include_directories (
 	../SceneModule
 	../Interfaces
 	../OgreRenderingSystem
+	../OpenSimProtocol
 )
+
+# Library directories
+#link_directories (
+	#../OpenSimProtocol/Debug
+	#../OpenSimProtocol/Release
+#)
 
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
+INCLUDE_CURL()
+INCLUDE_XMLRPCEPI()
 
 add_definitions (-DMODULE_EXPORTS)
 
@@ -42,7 +51,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation)
+target_link_libraries (${TARGET_NAME} Foundation OpenSimProtocolModule)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
