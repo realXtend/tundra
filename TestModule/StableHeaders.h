@@ -5,5 +5,6 @@
 
 #include "CoreStdIncludes.h"
 #include "Core.h"
+#include "Foundation.h"
 
 #endif // incl_TestSystem_StableHeaders_h

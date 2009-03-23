@@ -3,6 +3,7 @@
 #ifndef incl_OpenSimProtocolModule_h
 #define incl_OpenSimProtocolModule_h
 
+#include "Foundation.h"
 #include "ModuleInterface.h"
 
 #include "NetMessageManager.h"

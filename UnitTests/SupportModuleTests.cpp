@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE( support_modules_console )
 {
     Foundation::Framework fw;
     
-    fw.GetModuleManager()->LoadModuleByName("SupportModules", "Console");
+    fw.GetModuleManager()->LoadModuleByName("SupportModules", "ConsoleModule");
     BOOST_CHECK (fw.GetModuleManager()->HasModule(Foundation::Module::MT_Console));
     
     Console::CommandService *console = fw.GetService<Console::CommandService>

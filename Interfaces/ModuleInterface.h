@@ -9,6 +9,7 @@
 #include "ComponentRegistrarInterface.h"
 #include "CoreTypes.h"
 #include "ForwardDefines.h"
+#include "ServiceInterfaces.h"
 
 #define DECLARE_MODULE_EC(component) \
     { Foundation::ComponentRegistrarInterfacePtr registrar = Foundation::ComponentRegistrarInterfacePtr(new component::component##Registrar); \
@@ -55,7 +56,7 @@ namespace Foundation
         {
             assert(type != MT_Unknown);
 
-            static const std::string type_strings[MT_Unknown] = { "SceneModule", "Renderer", "Sound", "Gui", "World Logic", "Network", "Test", "NetTest", "Python", "Console" };
+            static const std::string type_strings[MT_Unknown] = { "SceneModule", "OgreRenderingModule", "SoundModule", "Gui", "RexLogic", "OpenSimProtocolModule", "TestModule", "NetTestLogicModule", "PythonModule", "ConsoleModule" };
 
             return type_strings[type];
         }
@@ -120,6 +121,10 @@ namespace Foundation
         //! Returns the state of the module
         virtual Module::State State() const = 0;
 
+        //! By using this function for console commands, the command gets automatically
+        //! registered / unregistered with the console when module is initialized / uninitialized
+        virtual void AutoRegisterConsoleCommand(const Console::Command &command) = 0;
+
     private:
         //! Called when module is loaded. Do not override in child classes. For internal use.
         virtual void LoadInternal() = 0;
@@ -135,6 +140,8 @@ namespace Foundation
     //! interface for modules, implementation
     class MODULE_API ModuleInterface_Impl : public ModuleInterface
     {
+    private:
+        typedef std::vector<Console::Command> CommandVector;
     public:
     
         explicit ModuleInterface_Impl(const std::string &name) : name_(name), type_(Module::MT_Unknown), state_(Module::MS_Unloaded)
@@ -182,8 +189,23 @@ namespace Foundation
         virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) { return false; }
 
         virtual Module::State State() const { return state_; }
+
+        virtual void AutoRegisterConsoleCommand(const Console::Command &command)
+        {
+            for ( CommandVector::iterator it = console_commands_.begin() ; 
+                  it != console_commands_.end() ;
+                  ++it )
+            {
+                if (it->name_ == command.name_)
+                    assert (false && "Registering console command twice");
+            }
+
+            console_commands_.push_back(command); 
+        }
         
     private:
+        typedef std::vector<Console::Command> CommandVector;
+
         virtual void LoadInternal() { Load(); state_ = Module::MS_Loaded; }
         virtual void UnloadInternal() { Unload(); state_ = Module::MS_Unloaded; }
 
@@ -192,10 +214,24 @@ namespace Foundation
         {
             assert(framework != NULL);
 
+            //! Register components
             for (size_t n=0 ; n<component_registrars_.size() ; ++n)
             {
                 component_registrars_[n]->Register(framework, this);
             }
+            
+            //! Register commands
+            for ( CommandVector::iterator it = console_commands_.begin() ; 
+                  it != console_commands_.end() ;
+                  ++it )
+            {
+                if (framework->GetServiceManager()->IsRegistered(Service::ST_ConsoleCommand))
+                {
+                    Console::CommandService *console = framework->GetService<Console::CommandService>(Service::ST_ConsoleCommand);
+                    console->RegisterCommand(*it);
+                }
+            }
+
             Initialize(framework);
             state_ = Module::MS_Initialized;
         }
@@ -210,6 +246,18 @@ namespace Foundation
                 component_registrars_[n]->Unregister(framework);
             }
 
+            //! Unregister commands
+            for ( CommandVector::iterator it = console_commands_.begin() ; 
+                  it != console_commands_.end() ;
+                  ++it )
+            {
+                if (framework->GetServiceManager()->IsRegistered(Service::ST_ConsoleCommand))
+                {
+                    Console::CommandService *console = framework->GetService<Console::CommandService>(Service::ST_ConsoleCommand);
+                    console->UnregisterCommand(it->name_);
+                }
+            }
+
             Uninitialize(framework);
 
             state_ = Module::MS_Loaded;
@@ -217,7 +265,11 @@ namespace Foundation
 
         typedef std::vector<ComponentRegistrarInterfacePtr> RegistrarVector;
 
+        //! Component registrars
         RegistrarVector component_registrars_;
+
+        //! list of console commands that should be registered / unregistered automatically
+        CommandVector console_commands_;
 
         //! name of the module
         const std::string name_;

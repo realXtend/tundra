@@ -3,6 +3,7 @@
 #ifndef incl_OgreRenderingModule_h
 #define incl_OgreRenderingModule_h
 
+#include "Foundation.h"
 #include "ModuleInterface.h"
 #include "Renderer.h"
 #include "ConsoleCommandServiceInterface.h"

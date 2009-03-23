@@ -4,7 +4,6 @@
 #include <Ogre.h>
 #include "OgreRenderingModule.h"
 #include <Poco/ClassLibrary.h>
-#include "Foundation.h"
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
 #include "EC_OgrePlaceable.h"
@@ -28,6 +27,10 @@ namespace OgreRenderer
         LogInfo("Module " + Name() + " loaded.");
         DECLARE_MODULE_EC(EC_OgrePlaceable);
         DECLARE_MODULE_EC(EC_OgreMesh);
+
+        AutoRegisterConsoleCommand(Console::CreateCommand(
+            "SetViewportColor", "Set viewport background color. Usage: SetViewportColor(r,g,b)", 
+            Console::Bind(this, &OgreRenderingModule::ConsoleSetViewportColor)));
     }
 
     // virtual
@@ -52,11 +55,6 @@ namespace OgreRenderer
     // virtual
     void OgreRenderingModule::PostInitialize(Foundation::Framework *framework)
     {
-        Console::CommandService *console = framework->GetService<Console::CommandService>
-            (Foundation::Service::ST_ConsoleCommand);
-
-        console->RegisterCommand("SetViewportColor", "Set viewport background color. Usage: SetViewportColor(r,g,b)", Console::Bind(this, &OgreRenderingModule::ConsoleSetViewportColor));
-
         //Foundation::SceneManagerServiceInterface *scene_manager = 
         //    framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
         //assert(scene_manager != NULL && "Failed to get SceneManager service");

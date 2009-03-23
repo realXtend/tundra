@@ -3,7 +3,6 @@
 #include "StableHeaders.h"
 #include "OpenSimProtocolModule.h"
 #include <Poco/ClassLibrary.h>
-#include "Foundation.h"
 #include "ComponentRegistrarInterface.h"
 
 #include "md5wrapper.h"

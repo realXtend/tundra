@@ -1,4 +1,5 @@
 <config>
 	<entry>RexLogicModule</entry>
 	<dependency>OpenSimProtocolModule</dependency>
+	<dependency>SupportModules</dependency>
 </config>

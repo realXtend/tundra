@@ -134,6 +134,31 @@ namespace Console
         bool delayed_;
     };
 
+    //! Creates a console command with member function callback
+    /*!
+        \param name name of the command
+        \param description short description of the command
+        \param C++ function callback. Use Console::Bind().
+    */
+    static Command CreateCommand(const std::string &name, const std::string &description, const CallbackPtr &callback, bool delayed = false)
+    {
+        Command command = { name, description, callback, delayed };
+        return command;
+    }
+
+    //! Creates a console command with static function callback
+    /*!
+        \param name name of the command
+        \param description short description of the command
+        \param C++ function callback. Use Console::Bind().
+    */
+    static Command CreateCommand(const std::string &name, const std::string &description, StaticCallback &static_callback, bool delayed = false)
+    {
+        CallbackPtr callback(new StaticCallbackFunctor(static_callback));
+        Command command = { name, description, callback, delayed };
+        return command;
+    }
+
     //! Bind a member function to a command callback
     template <typename T>
     static CallbackPtr Bind(T *object, typename Callback<T>::CallbackFunction function)
@@ -206,6 +231,9 @@ namespace Console
             \param delayed If true, handle the command in delayed, threadsafe manner
         */
         virtual void RegisterCommand(const std::string &name, const std::string &description, StaticCallback &static_callback, bool delayed = false) = 0;
+
+        //! Unregister console command with the specified name
+        virtual void UnregisterCommand(const std::string &name) = 0;
 
         //! Queue console command. The command will be called in the console's thread
         /*!

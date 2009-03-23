@@ -3,6 +3,7 @@
 #ifndef incl_OgreRenderingModule_Renderer_h
 #define incl_OgreRenderingModule_Renderer_h
 
+#include "Foundation.h"
 #include "RenderServiceInterface.h"
 #include <boost/shared_ptr.hpp>
 

@@ -68,6 +68,22 @@ namespace Console
         commands_[name] = command;
     }
 
+
+    void CommandManager::UnregisterCommand(const std::string &name)
+    {
+        Core::RecursiveMutexLock lock(commands_mutex_);
+
+        std::string name_low = name;
+        boost::to_lower(name_low);
+        CommandMap::iterator it = commands_.find(name_low);
+        if (it == commands_.end())
+        {
+            ConsoleModule::LogWarning("Trying to unregister command " + name + ", but it has not been registered.");
+            return;
+        }
+        commands_.erase(it);
+    }
+
     boost::optional<CommandResult> CommandManager::Poll(const std::string &command)
     {
         std::string command_l = command;
@@ -200,8 +216,8 @@ namespace Console
 
         if (params.empty())
         {
-            console_->Print("For help with specific command, type help(command).");
             console_->Print("");
+            console_->Print("For help with specific command, type help(command).");
         }
 
         return Console::ResultSuccess();

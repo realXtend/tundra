@@ -1,9 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "Framework.h"
 #include "ModuleManager.h"
 #include "ConfigurationManager.h"
-#include "Framework.h"
+
 
 namespace fs = boost::filesystem;
 
@@ -81,9 +82,11 @@ namespace Foundation
 
     void ModuleManager::UninitializeModules()
     {
-        for (size_t i=0 ; i<modules_.size() ; ++i)
+        for (ModuleVector::reverse_iterator it = modules_.rbegin() ; 
+             it != modules_.rend() ; 
+             ++it)
         {
-            UninitializeModule(modules_[i].module_);
+            UninitializeModule(it->module_);
         }
     }
 
@@ -190,6 +193,7 @@ namespace Foundation
             for ( Core::StringVector::const_iterator it = dependencies.begin() ; 
               it != dependencies.end() ; ++it )
             {
+                bool found = false;
                 // Try to find the dependency from the all module paths list
                 for (Core::StringVector::const_iterator it2 = all_files->begin();
                     it2 != all_files->end(); ++it2)
@@ -198,8 +202,12 @@ namespace Foundation
                     {
                         const fs::path path((*it2));
                         LoadModule(path, all_files);
+
+                        found = true;
                     }
                 }
+                if (!found)
+                    Foundation::RootLogWarning("Failed to find dependency " + *it + "."); 
             }
 
             // Then load the module itself
@@ -285,9 +293,11 @@ namespace Foundation
 
     void ModuleManager::UnloadModules()
     {
-        for (size_t i=0 ; i<modules_.size() ; ++i)
+        for (ModuleVector::reverse_iterator it = modules_.rbegin() ; 
+             it != modules_.rend() ; 
+             ++it)
         {
-            UnloadModule(modules_[i]);
+            UnloadModule(*it);
         }
 
         modules_.clear();
@@ -320,7 +330,7 @@ namespace Foundation
         module->UninitializeInternal(framework_);
     }
 
-    void ModuleManager::UnloadModule(const Module::Entry &entry)
+    void ModuleManager::UnloadModule(Module::Entry &entry)
     {
         assert(entry.module_);
 
@@ -332,16 +342,16 @@ namespace Foundation
         else
         {
             entry.shared_library_->cl_.destroy(entry.entry_, entry.module_);
-            //delete entry.module_;
+            SAFE_DELETE(entry.module_);
         }
     }
 
-    bool ModuleManager::HasModule(ModuleInterface *module)
+    bool ModuleManager::HasModule(ModuleInterface *module) const
     {
         assert (module);
 
         
-        for ( ModuleVector::iterator it = modules_.begin() ; 
+        for ( ModuleVector::const_iterator it = modules_.begin() ; 
               it != modules_.end() ; 
               ++it )
         {

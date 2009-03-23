@@ -3,7 +3,6 @@
 
 #include "NetTestLogicModule.h"
 #include <Poco/ClassLibrary.h>
-#include "Foundation.h"
 
 #include "RexProtocolMsgIDs.h"
 
@@ -57,7 +56,7 @@ namespace NetTest
 		
 		using namespace OpenSimProtocol;
 		///\todo weak_pointerize
-		netInterface_ = dynamic_cast<OpenSimProtocolModule *>(framework->GetModuleManager()->GetModule("Network"));
+        netInterface_ = dynamic_cast<OpenSimProtocolModule *>(framework->GetModuleManager()->GetModule(Foundation::Module::MT_Network));
 		if (!netInterface_)
 		{
 			LogError("Getting network interface did not succeed.");

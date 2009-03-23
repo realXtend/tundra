@@ -4,7 +4,6 @@
 
 #include "TestModuleB.h"
 #include <Poco/ClassLibrary.h>
-#include "Foundation.h"
 
 
 namespace Test

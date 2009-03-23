@@ -16,6 +16,7 @@
 #include <glade/glade.h>
 #pragma warning( pop )
 
+#include "Foundation.h"
 #include "ModuleInterface.h"
 
 #include "OpenSimProtocolModule.h"
