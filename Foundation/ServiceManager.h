@@ -52,8 +52,11 @@ namespace Foundation
         void UnregisterService(ServiceInterface *service);
 
         //! Returns service from service type.
-        /*!
-            \note The pointer may invalidate between frames, always reacquire at begin of frame update
+        /*! Throws Core::Exception if the service type is not registered
+
+            \note The pointer may (in theory) invalidate between frames, always reacquire at begin of frame update
+            \param type type of the service to return
+            \return the service, or NULL if the template parameters doesn't match the service 
         */
         template <class T>
         __inline T *GetService(Service::Type type)
@@ -66,12 +69,15 @@ namespace Foundation
                 throw Core::Exception(what.c_str());
             }
 
-            return (static_cast<T*>(it->second));
+            return (dynamic_cast<T*>(it->second));
         }
 
         //! Returns service from service type.
-        /*!
-            \note The pointer may invalidate between frames, always reacquire at begin of frame update
+        /*! Throws Core::Exception if the service type is not registered
+
+            \note The pointer may (in theory) invalidate between frames, always reacquire at begin of frame update
+            \param type type of the service to return
+            \return the service, or NULL if the template parameters doesn't match the service 
         */
         template <class T>
         __inline const T *GetService(Service::Type type) const
@@ -83,7 +89,7 @@ namespace Foundation
                 throw Core::Exception(what.c_str());
             }
 
-            return (static_cast<T*>(it->second));
+            return (dynamic_cast<T*>(it->second));
         }
 
         //! Returns true if service type is already registered, false otherwise
