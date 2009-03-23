@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Wed Mar 18 17:16:19 2009 -->
+<!--Generated with glade3 3.4.3 on Fri Mar 20 19:19:26 2009 -->
 <glade-interface>
   <widget class="GtkDialog" id="dialog_login">
     <property name="border_width">5</property>
@@ -11,14 +11,7 @@
       <widget class="GtkVBox" id="dialog-vbox1">
         <property name="visible">True</property>
         <property name="spacing">2</property>
-        <child>
-          <widget class="GtkLabel" id="label1">
-            <property name="visible">True</property>
-          </widget>
-          <packing>
-            <property name="position">1</property>
-          </packing>
-        </child>
+
         <child>
           <widget class="GtkLabel" id="label_username">
             <property name="visible">True</property>

@@ -78,7 +78,9 @@ namespace NetTest
             return;
         }
         
+        loginWindow->set_position(Gtk::WIN_POS_CENTER);
         loginWindow->show();
+        
     }
 
     // virtual 
@@ -110,6 +112,7 @@ namespace NetTest
 			{
 				LogInfo("\"RegionHandshake\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
 				WriteToLogWindow("\"RegionHandshake\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
+				
 				msg->SkipToNextVariable(); // RegionFlags U32
 				msg->SkipToNextVariable(); // SimAccess U8
 				size_t bytesRead = 0;
@@ -126,6 +129,7 @@ namespace NetTest
 			{
 				LogInfo("\"ObjectUpdate\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
 				WriteToLogWindow("\"ObjectUpdate\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
+				
 				Object *obj = new Object;
 				msg->SkipToNextVariable();		// RegionHandle U64
 				msg->SkipToNextVariable();		// TimeDilation U16
@@ -195,7 +199,7 @@ namespace NetTest
 		        std::string name = (const char *)msg->ReadBuffer(&bytes_read);
 		        msg->SkipToFirstVariableByName("Message");
 		        std::string message = (const char *)msg->ReadBuffer(&bytes_read);
-		        ss << "[" << Core::GetLocalTimeString << "] " << name << ": " << message << std::endl;
+		        ss << "[" << Core::GetLocalTimeString() << "] " << name << ": " << message << std::endl;
 
     	        WriteToChatWindow(ss.str());
 		        break;
@@ -233,12 +237,12 @@ namespace NetTest
         }
         
         // Initialize UI widgets.
-        Gtk::Entry *entryUsername;
-        Gtk::Entry *entryPassword;
-        Gtk::Entry *entryServer;
-        loginControls->get_widget("entry_username", entryUsername);
-        loginControls->get_widget("entry_password", entryPassword);
-        loginControls->get_widget("entry_server", entryServer);
+        Gtk::Entry *entry_username;
+        Gtk::Entry *entry_password;
+        Gtk::Entry *entry_server;
+        loginControls->get_widget("entry_username", entry_username);
+        loginControls->get_widget("entry_password", entry_password);
+        loginControls->get_widget("entry_server", entry_server);
 
         size_t pos;
         bool rex_login = false; ///\todo Implement rex-login.
@@ -248,7 +252,7 @@ namespace NetTest
         // Get username.
         if (!rex_login)
         {
-            username = entryUsername->get_text();
+            username = entry_username->get_text();
             pos = username.find(" ");
             if(pos == std::string::npos)
             {
@@ -259,10 +263,10 @@ namespace NetTest
             last_name = username.substr(pos + 1);
         }
         else
-            username = entryUsername->get_text();
+            username = entry_username->get_text();
         
         // Get server address and port.
-        std::string server = entryServer->get_text();
+        std::string server = entry_server->get_text();
         pos = server.find(":");
         if(pos == std::string::npos)
         {
@@ -281,7 +285,7 @@ namespace NetTest
         }
         
         // Get password.
-        password = entryPassword->get_text();
+        password = entry_password->get_text();
         
         bool success = netInterface_->ConnectToRexServer(first_name.c_str(), last_name.c_str(),
             password.c_str(), server_address.c_str(), port, &myInfo_);
@@ -329,25 +333,30 @@ namespace NetTest
     
     void NetTestLogicModule::OnClickChat()
     {
-        Gtk::Entry *entryChat = 0;
-        netTestControls->get_widget("entry_chat", entryChat);
-        Glib::ustring text  = entryChat->get_text();
+        Gtk::Entry *entry_chat = 0;
+        netTestControls->get_widget("entry_chat", entry_chat);
+        
+        Glib::ustring text  = entry_chat->get_text();
+        if(text == "")
+            return;
+        
         SendChatFromViewerPacket(text.c_str());
-        entryChat->set_text("");
+        entry_chat->set_text("");
     }
     
     void NetTestLogicModule::WriteToChatWindow(const std::string &message)
     {   
         // Get the widget controls.
         Gtk::ScrolledWindow *scrolledwindowChat = 0;
-		netTestControls->get_widget("scrolledwindow_chat", scrolledwindowChat);
 		Gtk::TextView *textviewChat = 0;
+		netTestControls->get_widget("scrolledwindow_chat", scrolledwindowChat);
 		netTestControls->get_widget("textview_chat", textviewChat);
 		scrolledwindowChat->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
 		
 		// Create text buffer and write data to it.
 		Glib::RefPtr<Gtk::TextBuffer> text_buffer = textviewChat->get_buffer();
         Gtk::TextBuffer::iterator iter = text_buffer->get_iter_at_offset(0);
+		
 		text_buffer->insert(iter, message);
         textviewChat->set_buffer(text_buffer);
     }
@@ -356,16 +365,17 @@ namespace NetTest
     {
         // Get the widget controls.        
         Gtk::ScrolledWindow *scrolledwindowLog = 0;
+		Gtk::TextView *textviewLog = 0;
 		netTestControls->get_widget("scrolledwindow_log", scrolledwindowLog);
-        Gtk::TextView *textviewLog = 0;
         netTestControls->get_widget("textview_log", textviewLog);
         scrolledwindowLog->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
 		
 		// Create text buffer and write data to it.
 		Glib::RefPtr<Gtk::TextBuffer> text_buffer = textviewLog->get_buffer();
         Gtk::TextBuffer::iterator iter = text_buffer->get_iter_at_offset(0);
+        
         std::stringstream output;
-        output << Core::GetLocalTimeString() << " " << message << std::endl;
+        output << "[" << Core::GetLocalTimeString() << "] " << message << std::endl;
         text_buffer->insert(iter, output.str());
         textviewLog->set_buffer(text_buffer);
     }
@@ -418,6 +428,7 @@ namespace NetTest
         if (!loginControls)
             return;
         
+        Gtk::Entry *entry_server = loginControls->get_widget("entry_server", entry_server);
         loginControls->get_widget("dialog_login", loginWindow);
         loginWindow->set_title("Login");
        
@@ -425,6 +436,7 @@ namespace NetTest
         loginControls->connect_clicked("button_connect", sigc::mem_fun(*this, &NetTestLogicModule::OnClickConnect));
         loginControls->connect_clicked("button_logout", sigc::mem_fun(*this, &NetTestLogicModule::OnClickLogout));
         loginControls->connect_clicked("button_quit", sigc::mem_fun(*this, &NetTestLogicModule::OnClickQuit));
+        entry_server->signal_activate().connect(sigc::mem_fun(*this, &NetTestLogicModule::OnClickConnect));
     }
     
     void NetTestLogicModule::InitNetTestWindow()
@@ -433,12 +445,14 @@ namespace NetTest
         netTestControls = Gnome::Glade::Xml::create("data/NetTestWindow.glade");
         if (!netTestControls)
             return;
-        
+
         netTestControls->get_widget("window_nettest", netTestWindow);
+        Gtk::Entry *entry_chat = netTestControls->get_widget("entry_chat", entry_chat);        
         netTestWindow->set_title("NetTest");
         
         // Bind callbacks.
         netTestControls->connect_clicked("button_chat", sigc::mem_fun(*this, &NetTestLogicModule::OnClickChat));
+        entry_chat->signal_activate().connect(sigc::mem_fun(*this, &NetTestLogicModule::OnClickChat));
     }
 }
 
