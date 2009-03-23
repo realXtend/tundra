@@ -67,6 +67,7 @@ namespace NetTest
         virtual void Load();
         virtual void Unload();
         virtual void Initialize(Foundation::Framework *framework);
+        virtual void PostInitialize(Foundation::Framework *framework);
         virtual void Uninitialize(Foundation::Framework *framework);
         virtual void Update();
         
@@ -81,6 +82,8 @@ namespace NetTest
         /// Called for each network message received.
         virtual void OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg);
         
+        virtual void OnNetworkMessageSent(const NetOutMessage *msg);
+
         /// Initializes the Login window.
 		void InitLoginWindow();
         

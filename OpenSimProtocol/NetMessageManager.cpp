@@ -141,7 +141,7 @@ const char *VariableTypeToStr(NetVariableType type)
 
 NetMessageManager::NetMessageManager(const char *messageListFilename)
 :messageList(boost::shared_ptr<NetMessageList>(new NetMessageList(messageListFilename)))
-,inboundMessageListener(0), sequenceNumber(1)
+,messageListener(0), sequenceNumber(1)
 {
 	receivedSequenceNumbers.clear();
 }
@@ -286,7 +286,7 @@ void NetMessageManager::ProcessMessages()
 		std::vector<uint8_t> data(cMaxPayload, 0);
 		int numBytes = connection->ReceiveBytes(&data[0], cMaxPayload);
 		
-		if (!inboundMessageListener)
+		if (!messageListener)
 		{
 			cout << "No UDP message listener set! Dropping incoming packet as unhandled:" << endl;
 			DumpNetworkMessage(&data[0], numBytes);
@@ -321,7 +321,7 @@ void NetMessageManager::ProcessMessages()
 			break;
 		default:
 			// Pass the message to the listener(s).
-			inboundMessageListener->OnNetworkMessageReceived(id, &msg);
+			messageListener->OnNetworkMessageReceived(id, &msg);
 			break;
 		}
 	}
@@ -430,6 +430,9 @@ void NetMessageManager::SendProcessedMessage(NetOutMessage *msg)
 
 	std::vector<uint8_t> &data = msg->GetData();
 	connection->SendBytes(&data[0], data.size());
+
+    if (messageListener)
+        messageListener->OnNetworkMessageSent(msg);
 }
 
 ///\todo Send multiple ACKs in one packet?
