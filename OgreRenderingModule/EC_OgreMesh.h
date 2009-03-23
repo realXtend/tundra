@@ -37,15 +37,29 @@ namespace OgreRenderer
         /*! if mesh already sets, removes the old one
             \param mesh_name mesh to use
             \return true if successful
-            \todo use mesh asset reference when assetcache materializes
+            \todo use mesh asset reference when assetcache exists
          */
         bool SetMesh(const std::string& mesh_name);
+        
+        //! gets number of materials (submeshes) in mesh
+        unsigned GetNumMaterials();
+        
+        //! sets material in mesh
+        /*! \param index submesh index
+            \param material_name material name
+            \return true if successful
+            \todo use material asset reference when assetcache exists
+         */
+        bool SetMaterial(unsigned index, const std::string& material_name);
         
         //! removes mesh
         void RemoveMesh();
         
         //! returns if mesh exists
         bool HasMesh() const { return ogre_entity_ != NULL; }
+        
+        //! returns mesh
+        Ogre::Entity* GetMesh() const { return ogre_entity_; }
         
     private:
         //! constructor
