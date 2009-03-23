@@ -14,12 +14,12 @@ namespace Ogre
 namespace OgreRenderer
 {
     class Renderer;
-    class OgreRenderingModule;
     class EC_OgrePlaceable;
     
-    //! Ogre mesh component. Stores Ogre mesh-based entity.
+    typedef boost::shared_ptr<Renderer> RendererPtr;
+    
+    //! Ogre mesh component
     /*! Needs knowledge of a placeable (aka scene node) to work properly.
-        An initialized renderer module must exist before these components can be created.
      */
     class MODULE_API EC_OgreMesh : public Foundation::ComponentInterface
     {
@@ -42,7 +42,7 @@ namespace OgreRenderer
         bool SetMesh(const std::string& mesh_name);
         
         //! gets number of materials (submeshes) in mesh
-        unsigned GetNumMaterials();
+        Core::uint GetNumMaterials();
         
         //! sets material in mesh
         /*! \param index submesh index
@@ -56,10 +56,10 @@ namespace OgreRenderer
         void RemoveMesh();
         
         //! returns if mesh exists
-        bool HasMesh() const { return ogre_entity_ != NULL; }
+        bool HasMesh() const { return entity_ != NULL; }
         
         //! returns mesh
-        Ogre::Entity* GetMesh() const { return ogre_entity_; }
+        Ogre::Entity* GetMesh() const { return entity_; }
         
     private:
         //! constructor
@@ -67,9 +67,11 @@ namespace OgreRenderer
          */
         EC_OgreMesh(Foundation::ModuleInterface* module);
         
+        //! 
         Foundation::ComponentPtr placeable_;
-        OgreRenderingModule* module_;
-        Ogre::Entity* ogre_entity_;
+        RendererPtr renderer_;
+        
+        Ogre::Entity* entity_;
     };
 }
 

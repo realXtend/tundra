@@ -7,13 +7,13 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 
-#include "Ogre.h"
+#include <Ogre.h>
 
 namespace OgreRenderer
 {
     EC_OgreMesh::EC_OgreMesh(Foundation::ModuleInterface* module) :
-        module_(static_cast<OgreRenderingModule*>(module)),
-        ogre_entity_(NULL)
+        renderer_(static_cast<OgreRenderingModule*>(module)->GetRenderer()),
+        entity_(NULL)
     {
     }
     
@@ -29,18 +29,17 @@ namespace OgreRenderer
             OgreRenderingModule::LogError("Could not set mesh: placeable not set");
             return false;
         }
+
+        RemoveMesh();
         
         EC_OgrePlaceable* placeable = static_cast<EC_OgrePlaceable*>(placeable_.get());
         Ogre::SceneNode* node = placeable->GetSceneNode();
-        
-        Ogre::SceneManager* scene_mgr = module_->GetRenderer()->GetSceneManager();
-        
-        RemoveMesh();
+        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
         
         try
         {
-            ogre_entity_ = scene_mgr->createEntity(node->getName() + "mesh", mesh_name);
-            node->attachObject(ogre_entity_);
+            entity_ = scene_mgr->createEntity(renderer_->GetUniqueObjectName(), mesh_name);
+            node->attachObject(entity_);
         }
         catch (Ogre::Exception& e)
         {
@@ -53,36 +52,36 @@ namespace OgreRenderer
     
     void EC_OgreMesh::RemoveMesh()
     {
-        if ((!placeable_) || (!ogre_entity_))
+        if ((!placeable_) || (!entity_))
             return;
 
         EC_OgrePlaceable* placeable = static_cast<EC_OgrePlaceable*>(placeable_.get());
         Ogre::SceneNode* node = placeable->GetSceneNode();
 
-        Ogre::SceneManager* scene_mgr = module_->GetRenderer()->GetSceneManager();
+        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
         
-        node->detachObject(ogre_entity_);
-        scene_mgr->destroyEntity(ogre_entity_);
-        ogre_entity_ = NULL;
+        node->detachObject(entity_);
+        scene_mgr->destroyEntity(entity_);
+        entity_ = NULL;
     }
     
-    unsigned EC_OgreMesh::GetNumMaterials()
+    Core::uint EC_OgreMesh::GetNumMaterials()
     {
-        if (!ogre_entity_)
+        if (!entity_)
             return 0;
             
-        return ogre_entity_->getNumSubEntities();
+        return entity_->getNumSubEntities();
     }
     
     bool EC_OgreMesh::SetMaterial(unsigned index, const std::string& material_name)
     {
-        if (!ogre_entity_)
+        if (!entity_)
         {
             OgreRenderingModule::LogError("Could not set material " + material_name + ": no mesh");
             return false;
         }
         
-        if (index >= ogre_entity_->getNumSubEntities())
+        if (index >= entity_->getNumSubEntities())
         {
             OgreRenderingModule::LogError("Could not set material " + material_name + ": illegal submesh index " + boost::lexical_cast<std::string>(index));
             return false;
@@ -90,7 +89,7 @@ namespace OgreRenderer
         
         try
         {
-            ogre_entity_->getSubEntity(index)->setMaterialName(material_name);
+            entity_->getSubEntity(index)->setMaterialName(material_name);
         }
         catch (Ogre::Exception& e)
         {

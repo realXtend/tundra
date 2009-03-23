@@ -4,7 +4,7 @@
 #include "Renderer.h"
 #include "OgreRenderingModule.h"
 
-#include "Ogre.h"
+#include <Ogre.h>
 
 using namespace Foundation;
 
@@ -41,9 +41,10 @@ namespace OgreRenderer
     Renderer::Renderer(Framework* framework) :
         initialized_(false),
         framework_(framework),
-        scenemanager_(0),
-        camera_(0),
-        renderwindow_(0),
+        scenemanager_(NULL),
+        camera_(NULL),
+        renderwindow_(NULL),
+        object_id_(0),
         listener_(EventListenerPtr(new EventListener(this)))
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
@@ -153,7 +154,7 @@ namespace OgreRenderer
             }
         }
         
-        for (unsigned i = 0; i < plugins.size(); ++i)
+        for (Core::uint i = 0; i < plugins.size(); ++i)
         {
             try
             {
@@ -218,6 +219,11 @@ namespace OgreRenderer
         renderer->_swapAllRenderTargetBuffers(renderer->getWaitForVerticalBlank());
 
         root_->_fireFrameEnded();
+    }
+    
+    std::string Renderer::GetUniqueObjectName()
+    {
+        return "obj" + boost::lexical_cast<std::string>(object_id_++);
     }
 }
 
