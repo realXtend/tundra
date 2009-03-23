@@ -208,29 +208,15 @@ namespace Console
         //! add time
         virtual void Update() {}
 
-        //! Add a command to the debug console
+        //! Register a command to the debug console
+        /*!
+            Shortcut functions are present to make registering easier, see
+                Command CreateCommand(const std::string &name, const std::string &description, const CallbackPtr &callback, bool delayed)
+                Command CreateCommand(const std::string &name, const std::string &description, StaticCallback &static_callback, bool delayed)
+
+            \param command the command to register
+        */
         virtual void RegisterCommand(const Command &command) = 0;
-
-        //! Register a command to the debug console
-        /*! For binding a member function.
-            To bind a member function to the command, use Console::Bind()
-
-            \param name name of the command
-            \param description short description of the command
-            \param callback function object that gets called when command is executed
-            \param delayed If true, handle the command in delayed, threadsafe manner
-        */
-        virtual void RegisterCommand(const std::string &name, const std::string &description, const CallbackPtr &callback, bool delayed = false) = 0;
-
-        //! Register a command to the debug console
-        /*! For binding a static function
-
-            \param name name of the command
-            \param description short description of the command
-            \param callback function object that gets called when command is executed
-            \param delayed If true, handle the command in delayed, threadsafe manner
-        */
-        virtual void RegisterCommand(const std::string &name, const std::string &description, StaticCallback &static_callback, bool delayed = false) = 0;
 
         //! Unregister console command with the specified name
         virtual void UnregisterCommand(const std::string &name) = 0;
