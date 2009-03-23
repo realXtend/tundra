@@ -31,6 +31,7 @@ namespace Foundation
     {
         if (event_category_map_.find(name) == event_category_map_.end())
         {
+            Foundation::RootLogInfo("Registering event category " + name);
             event_category_map_[name] = next_category_id_;
             next_category_id_++;
         }
@@ -51,20 +52,36 @@ namespace Foundation
             return 0;
     }
     
-    const std::string& EventManager::QueryEventCategoryName(Core::event_category_id_t id) const
+    const std::string& EventManager::QueryEventCategoryName(Core::event_category_id_t category_id) const
     {
         EventCategoryMap::const_iterator i = event_category_map_.begin();
         static std::string empty;
         
         while (i != event_category_map_.end())
         {
-            if (i->second == id)
+            if (i->second == category_id)
                 return i->first;
              
             ++i;
         }
         
         return empty;
+    }
+    
+    void EventManager::RegisterEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, const std::string& name)
+    {
+        if (!QueryEventCategoryName(category_id).length())
+        {
+            Foundation::RootLogError("Trying to register an event for yet unregistered category");
+            return;
+        }
+        
+        if (event_map_[category_id].find(event_id) != event_map_[category_id].end())
+            Foundation::RootLogWarning("Overwriting already registered event with " + name);
+        else
+            Foundation::RootLogInfo("Registering event " + name);
+
+        event_map_[category_id][event_id] = name;
     }
     
     void EventManager::SendEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const
