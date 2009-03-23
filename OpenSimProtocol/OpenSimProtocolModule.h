@@ -88,7 +88,9 @@ namespace OpenSimProtocol
         /// @return An empty message holder where the message can be built.
         NetOutMessage *StartMessageBuilding(NetMsgID msgId);
         
-        /// Finish (send) the message.
+        /// Finishes (sends) the message. The passed msg pointer will be invalidated after calling this, so don't
+        /// access it or hold on to it afterwards. The user doesn't have to do any deallocation, it is all managed by
+        /// this class.
         void FinishMessageBuilding(NetOutMessage *msg);
 
     private:

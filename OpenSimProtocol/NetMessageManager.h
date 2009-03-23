@@ -50,8 +50,8 @@ public:
 
 	/// Sets the object that receives the network packets. Replaces the old. Currently supports only one listener.
 	/// \todo weakptr'ize. \todo delegate/event \todo pub/sub or something else.
-	void RegisterNetworkListener(INetMessageListener *listener) { inboundMessageListener = listener; }
-	void UnregisterNetworkListener(INetMessageListener *listener) { inboundMessageListener = 0; }
+	void RegisterNetworkListener(INetMessageListener *listener) { messageListener = listener; }
+	void UnregisterNetworkListener(INetMessageListener *listener) { messageListener = 0; }
 
 private:
 	/// @return A new sequence number for outbound UDP messages.
@@ -85,7 +85,7 @@ private:
 	void operator=(const NetMessageManager &);
 
 	/// All incoming UDP packets are routed to this handler.
-	INetMessageListener *inboundMessageListener;
+	INetMessageListener *messageListener;
 
 	/// The socket for the UDP connection.
 	boost::shared_ptr<NetworkConnection> connection;

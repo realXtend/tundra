@@ -48,8 +48,10 @@ namespace NetTest
         LogInfo("Module " + Name() + " unloaded.");
     }
 
+    void NetTestLogicModule::Initialize(Foundation::Framework *framework) {}
+
     // virtual
-    void NetTestLogicModule::Initialize(Foundation::Framework *framework)
+    void NetTestLogicModule::PostInitialize(Foundation::Framework *framework)
     {
         assert(framework != NULL);
         framework_ = framework;
