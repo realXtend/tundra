@@ -138,7 +138,7 @@ namespace Console
     /*!
         \param name name of the command
         \param description short description of the command
-        \param C++ function callback. Use Console::Bind().
+        \param callback C++ function callback. Use Console::Bind().
     */
     static Command CreateCommand(const std::string &name, const std::string &description, const CallbackPtr &callback, bool delayed = false)
     {
@@ -150,7 +150,7 @@ namespace Console
     /*!
         \param name name of the command
         \param description short description of the command
-        \param C++ function callback. Use Console::Bind().
+        \param static_callback C++ function callback, static function.
     */
     static Command CreateCommand(const std::string &name, const std::string &description, StaticCallback &static_callback, bool delayed = false)
     {
@@ -171,7 +171,7 @@ namespace Console
         Commands can be parsed and executed from a commandline string, or executed directly.
 
         One can register new commands with RegisterCommand() - functions.
-        Each command has a name and a small description. Command names are case-insensitive.
+        Each command has a name and a short description. Command names are case-insensitive.
         Each command is associated with C++ callback function, the function can be a static
         function or a member function, but it should have the signature:
 
@@ -194,7 +194,7 @@ namespace Console
                 // ...
             }
 
-        \note All functions should be threadsafe. Commands should be registered in PostInitialize or later.
+        \note All functions should be threadsafe.
     */
     class ConsoleCommandServiceInterface : public Foundation::ServiceInterface
     {

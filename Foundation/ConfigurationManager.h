@@ -161,7 +161,7 @@ class foo
         //! Returns true is the specified group contains the specified key, false otherwise.
         /*!
             \param group Name of the group
-            \param name Name of the key
+            \param key Name of the key
         */
         bool HasKey(const std::string &group, const std::string &key) const;
         

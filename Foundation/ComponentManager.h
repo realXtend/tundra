@@ -39,7 +39,7 @@ namespace Foundation
         //! Create a new component
         /*! Returns empty ComponentInterfacePtr if component type is not registered
 
-            \param name name of the component to create
+            \param componentName name of the component to create
         */
         ComponentPtr CreateComponent(const std::string &componentName) const;
 

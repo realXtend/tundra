@@ -52,7 +52,7 @@ namespace Scene
 
         //! Clones the entity. The new entity will contain the same components as the old one.
         /*!
-            \param scene Name of the scene the new entity should be in
+            \param scene_name Name of the scene the new entity should be in
         */
         virtual Foundation::EntityPtr Clone(const std::string &scene_name) const;
  
