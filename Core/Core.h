@@ -13,6 +13,7 @@
 #include "Vector3D.h"
 #include "Matrix4.h"
 #include "Quaternion.h"
+#include "Color.h"
 #include "CoreStringUtils.h"
 
 

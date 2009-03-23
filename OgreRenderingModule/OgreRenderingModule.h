@@ -18,7 +18,7 @@ namespace OgreRenderer
     class Renderer;
     typedef boost::shared_ptr<Renderer> RendererPtr;
     
-    //! interface for modules
+    //! A renderer module using Ogre
     class MODULE_API OgreRenderingModule : public Foundation::ModuleInterface_Impl
     {
     public:
@@ -48,7 +48,10 @@ namespace OgreRenderer
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Renderer;
     private:
+        //! renderer
         RendererPtr renderer_;
+        
+        //! framework
         Foundation::Framework* framework_;
     };
 }

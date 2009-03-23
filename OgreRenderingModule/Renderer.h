@@ -29,6 +29,8 @@ namespace OgreRenderer
     typedef boost::shared_ptr<EventListener> EventListenerPtr;
     
     //! Ogre renderer
+    /*! Created by OgreRenderingModule.
+     */
     class Renderer : public Foundation::RenderServiceInterface
     {
         friend class EventListener;
@@ -54,6 +56,9 @@ namespace OgreRenderer
 
         //! returns current render window
         Ogre::RenderWindow* GetCurrentRenderWindow() const { return renderwindow_; }
+
+        //! returns an unique name to create Ogre objects that require a mandatory name
+        std::string GetUniqueObjectName();
 
         //! Threadsafe service to framework
         virtual void Raycast()
@@ -119,6 +124,9 @@ namespace OgreRenderer
         
         //! Renderer event category
         Core::event_category_id_t event_category_;
+        
+        //! counter for unique name creation
+        unsigned object_id_;
     };
 }
 

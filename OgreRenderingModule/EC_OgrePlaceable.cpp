@@ -6,15 +6,15 @@
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 
-#include "Ogre.h"
+#include <Ogre.h>
 
 namespace OgreRenderer
 {
     EC_OgrePlaceable::EC_OgrePlaceable(Foundation::ModuleInterface* module) :
-        module_(static_cast<OgreRenderingModule*>(module)),
+        renderer_(static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         scene_node_(NULL)
     {
-        Ogre::SceneManager* scene_mgr = module_->GetRenderer()->GetSceneManager();
+        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
         
         scene_node_ = scene_mgr->createSceneNode();
         scene_mgr->getRootSceneNode()->addChild(scene_node_);
@@ -24,7 +24,7 @@ namespace OgreRenderer
     {
         if (scene_node_)
         {
-            Ogre::SceneManager* scene_mgr = module_->GetRenderer()->GetSceneManager();
+            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
             
             scene_mgr->getRootSceneNode()->removeChild(scene_node_);
             scene_mgr->destroySceneNode(scene_node_);

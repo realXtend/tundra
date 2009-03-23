@@ -14,11 +14,10 @@ namespace Ogre
 namespace OgreRenderer
 {
     class Renderer;
-    class OgreRenderingModule;
     
-    //! Ogre placeable component. Stores Ogre scenenode.
-    /*! An initialized renderer module must exist before these components can be created.
-     */
+    typedef boost::shared_ptr<Renderer> RendererPtr;
+    
+    //! Ogre placeable (scene node) component
     class MODULE_API EC_OgrePlaceable : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_OgrePlaceable);
@@ -26,7 +25,7 @@ namespace OgreRenderer
         virtual ~EC_OgrePlaceable();
 
         //! sets position
-        /*! \param position new position 
+        /*! \param position new position
          */
         void SetPosition(const Core::Vector3df& position);
         //! sets orientation
@@ -45,7 +44,7 @@ namespace OgreRenderer
         //! returns scale
         Core::Vector3df GetScale() const;
         
-        //! returns scenenode
+        //! returns Ogre scenenode
         Ogre::SceneNode* GetSceneNode() const { return scene_node_; }
 
     private:
@@ -54,7 +53,10 @@ namespace OgreRenderer
          */
         EC_OgrePlaceable(Foundation::ModuleInterface* module);
 
-        OgreRenderingModule* module_;
+        //! renderer
+        RendererPtr renderer_;
+        
+        //! Ogre scene node
         Ogre::SceneNode* scene_node_;
     };
 }
