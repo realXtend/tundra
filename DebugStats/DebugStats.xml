@@ -1,0 +1,4 @@
+<config>
+	<entry>DebugStats</entry>
+	<dependency>SupportModules</dependency>
+</config>

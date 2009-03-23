@@ -59,6 +59,9 @@ namespace Console
             RegisterCommand(command);
         }
 
+        //! Unregister console command with the specified name
+        virtual void UnregisterCommand(const std::string &name);
+
         //! Queue console command. The command will be called in the console's thread
         /*! 
             \note if a commandline containing the same command gets queued multiple times,

@@ -34,7 +34,7 @@ namespace Foundation
             ModuleInterface *module_;
             //! entry class of the module
             std::string entry_;
-            //! shared library this module was loaded from. Set null for static library
+            //! shared library this module was loaded from. Null for static library
             SharedLibraryPtr shared_library_;
         };
     }
@@ -214,6 +214,15 @@ namespace Foundation
         /*!
             \note The pointer may invalidate between frames, always reacquire at begin of frame update
         */
+        ModuleInterface *GetModule(Foundation::Module::Type type)
+        {
+            return GetModule(Module::NameFromType(type));
+        }
+
+        //! Returns module by type
+        /*!
+            \note The pointer may invalidate between frames, always reacquire at begin of frame update
+        */
         template <class T>
         T *GetModule(Foundation::Module::Type type)
         {
@@ -305,10 +314,10 @@ namespace Foundation
 
         //! Unloads and deletes the module.
         //! \note Does not remove from modules_
-        void UnloadModule(const Module::Entry &entry);
+        void UnloadModule(Module::Entry &entry);
 
         //! returns true if module is present
-        bool HasModule(ModuleInterface *module);
+        bool HasModule(ModuleInterface *module) const;
 
         //! Returns a vector containing all xml files in the specified directory, scans recursively.
         Core::StringVectorPtr GetXmlFiles(const std::string &path);

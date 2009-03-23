@@ -1,6 +1,7 @@
 #ifndef incl_gtkmmUI_h
 #define incl_gtkmmUI_h
 
+#include "Foundation.h"
 #include "ModuleInterface.h"
 
 class GtkmmUIImpl;
