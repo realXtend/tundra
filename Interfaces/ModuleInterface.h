@@ -204,8 +204,6 @@ namespace Foundation
         }
         
     private:
-        typedef std::vector<Console::Command> CommandVector;
-
         virtual void LoadInternal() { Load(); state_ = Module::MS_Loaded; }
         virtual void UnloadInternal() { Unload(); state_ = Module::MS_Unloaded; }
 
