@@ -40,6 +40,7 @@ namespace OgreRenderer
         
         //! sets placeable component
         /*! set a null placeable (or do not set a placeable) to have a detached light
+            \param placeable placeable component
          */
         void SetPlaceable(Foundation::ComponentPtr placeable);
         

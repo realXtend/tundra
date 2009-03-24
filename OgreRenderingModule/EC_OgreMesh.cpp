@@ -13,7 +13,8 @@ namespace OgreRenderer
 {
     EC_OgreMesh::EC_OgreMesh(Foundation::ModuleInterface* module) :
         renderer_(static_cast<OgreRenderingModule*>(module)->GetRenderer()),
-        entity_(NULL)
+        entity_(NULL),
+        attached_(false)
     {
     }
     
@@ -22,45 +23,41 @@ namespace OgreRenderer
         RemoveMesh();
     }
     
+    void EC_OgreMesh::SetPlaceable(Foundation::ComponentPtr placeable)
+    {
+        DetachMesh();
+        placeable_ = placeable;
+        AttachMesh();
+    }
+    
     bool EC_OgreMesh::SetMesh(const std::string& mesh_name)
     {
-        if (!placeable_)
-        {
-            OgreRenderingModule::LogError("Could not set mesh: placeable not set");
-            return false;
-        }
-
         RemoveMesh();
         
-        EC_OgrePlaceable* placeable = static_cast<EC_OgrePlaceable*>(placeable_.get());
-        Ogre::SceneNode* node = placeable->GetSceneNode();
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
         
         try
         {
             entity_ = scene_mgr->createEntity(renderer_->GetUniqueObjectName(), mesh_name);
-            node->attachObject(entity_);
         }
         catch (Ogre::Exception& e)
         {
-            OgreRenderingModule::LogError("Could not set mesh " + mesh_name + ": " + e.what());
+            OgreRenderingModule::LogError("Could not set mesh " + mesh_name + ": " + std::string(e.what()));
             return false;
         }
         
+        AttachMesh();
         return true;
     }
     
     void EC_OgreMesh::RemoveMesh()
     {
-        if ((!placeable_) || (!entity_))
+        if (!entity_)
             return;
 
-        EC_OgrePlaceable* placeable = static_cast<EC_OgrePlaceable*>(placeable_.get());
-        Ogre::SceneNode* node = placeable->GetSceneNode();
+        DetachMesh();
 
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
-        
-        node->detachObject(entity_);
         scene_mgr->destroyEntity(entity_);
         entity_ = NULL;
     }
@@ -93,10 +90,34 @@ namespace OgreRenderer
         }
         catch (Ogre::Exception& e)
         {
-            OgreRenderingModule::LogError("Could not set material " + material_name + ": " + e.what());
+            OgreRenderingModule::LogError("Could not set material " + material_name + ": " + std::string(e.what()));
             return false;
         }
         
         return true;
+    }
+    
+    void EC_OgreMesh::DetachMesh()
+    {
+        if ((!attached_) || (!entity_) || (!placeable_))
+            return;
+            
+        EC_OgrePlaceable* placeable = static_cast<EC_OgrePlaceable*>(placeable_.get());
+        Ogre::SceneNode* node = placeable->GetSceneNode();
+        node->detachObject(entity_);
+                
+        attached_ = false;
+    }
+    
+    void EC_OgreMesh::AttachMesh()
+    {
+        if ((attached_) || (!entity_) || (!placeable_))
+            return;
+            
+        EC_OgrePlaceable* placeable = static_cast<EC_OgrePlaceable*>(placeable_.get());
+        Ogre::SceneNode* node = placeable->GetSceneNode();
+        node->attachObject(entity_);
+                
+        attached_ = true;
     }
 }
