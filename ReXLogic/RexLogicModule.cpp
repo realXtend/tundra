@@ -17,13 +17,12 @@
 
 namespace RexLogic
 {
-    RexLogicModule::RexLogicModule() : ModuleInterface_Impl(type_static_), framework_(NULL)
+    RexLogicModule::RexLogicModule() : ModuleInterface_Impl(type_static_)
     {
     }
 
     RexLogicModule::~RexLogicModule()
     {
-        assert(framework_ == NULL);
     }
 
     // virtual
@@ -47,15 +46,12 @@ namespace RexLogic
     }
 
     // virtual
-    void RexLogicModule::Initialize(Foundation::Framework *framework)
+    void RexLogicModule::Initialize()
     {
-        assert(framework_ == NULL);
-        framework_ = framework;
-
         // fixme, register WorldLogic to the framework as realxtend worldlogicinterface!
         // WorldLogic::registerSystem(framework);
         // world_logic_ = new WorldLogic(framework);
-        network_handler_ = new NetworkEventHandler(framework);
+        network_handler_ = new NetworkEventHandler(framework_);
 
         // framework_->GetEventManager()->RegisterEventCategory("OpenSimNetwork"); // TODO tucofixme, this registering should be done in network module, it's here for testing purposes only.
 
@@ -63,7 +59,7 @@ namespace RexLogic
     }
 
     // virtual
-    void RexLogicModule::PostInitialize(Foundation::Framework *framework)
+    void RexLogicModule::PostInitialize()
     {
         Foundation::SceneManagerServiceInterface *sceneManager = 
                 framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
@@ -79,12 +75,10 @@ namespace RexLogic
     }
 
     // virtual 
-    void RexLogicModule::Uninitialize(Foundation::Framework *framework)
+    void RexLogicModule::Uninitialize()
     {
-        assert(framework_);
         SAFE_DELETE (network_handler_);
 
-        framework_ = NULL;
         LogInfo("Module " + Name() + " uninitialized.");
     }
 

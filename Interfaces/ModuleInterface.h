@@ -93,14 +93,14 @@ namespace Foundation
         virtual void Unload() = 0;
 
         //! Pre-initialization for the module. Called before modules are initializated.
-        virtual void PreInitialize(Framework *framework) = 0;
+        virtual void PreInitialize() = 0;
         //! Initializes the module. Called when module is taken in use
-        virtual void Initialize(Framework *framework) = 0;
+        virtual void Initialize() = 0;
         //! Post-initialization for the module. At this point Initialize() has been called for all enabled modules.
-        virtual void PostInitialize(Framework *framework) = 0;
+        virtual void PostInitialize() = 0;
         
         //! Uninitialize the module. Called when module is removed from use
-        virtual void Uninitialize(Foundation::Framework *framework) = 0;
+        virtual void Uninitialize() = 0;
 
         //! synchronized update for the module
         virtual void Update() = 0;
@@ -125,26 +125,32 @@ namespace Foundation
         //! registered / unregistered with the console when module is initialized / uninitialized
         virtual void AutoRegisterConsoleCommand(const Console::Command &command) = 0;
 
+        //! Returns parent framework
+        virtual Framework *GetFramework() const = 0;
+
     private:
+        virtual void SetFramework(Framework *framework) = 0;
+
         //! Called when module is loaded. Do not override in child classes. For internal use.
         virtual void LoadInternal() = 0;
         //! Called when module is unloaded. Do not override in child classes. For internal use.
         virtual void UnloadInternal() = 0;
 
         //! Initializes the module. Called when module is taken in use. Do not override in child classes. For internal use.
-        virtual void InitializeInternal(Framework *framework) = 0;
+        virtual void InitializeInternal() = 0;
         //! Uninitialize the module. Called when module is removed from use. Do not override in child classes. For internal use.
-        virtual void UninitializeInternal(Foundation::Framework *framework) = 0;
+        virtual void UninitializeInternal() = 0;
     };
 
     //! interface for modules, implementation
     class MODULE_API ModuleInterface_Impl : public ModuleInterface
     {
+        friend class ModuleManager;
     private:
         typedef std::vector<Console::Command> CommandVector;
     public:
     
-        explicit ModuleInterface_Impl(const std::string &name) : name_(name), type_(Module::MT_Unknown), state_(Module::MS_Unloaded)
+        explicit ModuleInterface_Impl(const std::string &name) : name_(name), type_(Module::MT_Unknown), state_(Module::MS_Unloaded), framework_(NULL)
         { 
             try
             {
@@ -156,7 +162,7 @@ namespace Foundation
             }
         }
 
-        explicit ModuleInterface_Impl(Module::Type type) : type_(type), state_(Module::MS_Unloaded)
+        explicit ModuleInterface_Impl(Module::Type type) : type_(type), state_(Module::MS_Unloaded), framework_(NULL)
         { 
             try
             {
@@ -173,8 +179,8 @@ namespace Foundation
             Poco::Logger::destroy(Name());
         }
 
-        virtual void PreInitialize(Framework *framework) {}
-        virtual void PostInitialize(Framework *framework) {}
+        virtual void PreInitialize() {}
+        virtual void PostInitialize() {}
         
         virtual void Update() {}
 
@@ -202,20 +208,27 @@ namespace Foundation
 
             console_commands_.push_back(command); 
         }
+
+        virtual Framework *GetFramework() const { return framework_; }
+
+    protected:
+        //! parent framework
+        Framework *framework_;
         
     private:
         virtual void LoadInternal() { Load(); state_ = Module::MS_Loaded; }
         virtual void UnloadInternal() { Unload(); state_ = Module::MS_Unloaded; }
+        virtual void SetFramework(Framework *framework) { framework_ = framework; assert (framework_); }
 
         //! Registers all declared components
-        virtual void InitializeInternal(Framework *framework)
+        virtual void InitializeInternal()
         {
-            assert(framework != NULL);
+            assert(framework_ != NULL);
 
             //! Register components
             for (size_t n=0 ; n<component_registrars_.size() ; ++n)
             {
-                component_registrars_[n]->Register(framework, this);
+                component_registrars_[n]->Register(framework_, this);
             }
             
             //! Register commands
@@ -223,25 +236,25 @@ namespace Foundation
                   it != console_commands_.end() ;
                   ++it )
             {
-                if (framework->GetServiceManager()->IsRegistered(Service::ST_ConsoleCommand))
+                if (framework_->GetServiceManager()->IsRegistered(Service::ST_ConsoleCommand))
                 {
-                    Console::CommandService *console = framework->GetService<Console::CommandService>(Service::ST_ConsoleCommand);
+                    Console::CommandService *console = framework_->GetService<Console::CommandService>(Service::ST_ConsoleCommand);
                     console->RegisterCommand(*it);
                 }
             }
 
-            Initialize(framework);
+            Initialize();
             state_ = Module::MS_Initialized;
         }
 
         //! Unregisters all declared components
-        virtual void UninitializeInternal(Foundation::Framework *framework)
+        virtual void UninitializeInternal()
         {
-            assert(framework != NULL);
+            assert(framework_ != NULL);
 
             for (size_t n=0 ; n<component_registrars_.size() ; ++n)
             {
-                component_registrars_[n]->Unregister(framework);
+                component_registrars_[n]->Unregister(framework_);
             }
 
             //! Unregister commands
@@ -249,14 +262,14 @@ namespace Foundation
                   it != console_commands_.end() ;
                   ++it )
             {
-                if (framework->GetServiceManager()->IsRegistered(Service::ST_ConsoleCommand))
+                if (framework_->GetServiceManager()->IsRegistered(Service::ST_ConsoleCommand))
                 {
-                    Console::CommandService *console = framework->GetService<Console::CommandService>(Service::ST_ConsoleCommand);
+                    Console::CommandService *console = framework_->GetService<Console::CommandService>(Service::ST_ConsoleCommand);
                     console->UnregisterCommand(it->name_);
                 }
             }
 
-            Uninitialize(framework);
+            Uninitialize();
 
             state_ = Module::MS_Loaded;
         }

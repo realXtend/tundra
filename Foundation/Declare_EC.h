@@ -34,7 +34,7 @@ namespace Foundation
         virtual Foundation::ComponentInterfacePtr  operator()(                              \
                 const Foundation::ComponentInterfacePtr &other) {                           \
            return Foundation::ComponentInterfacePtr(                                        \
-                  new component(*static_cast<component*>(other.get())));                    \
+                  new component(*dynamic_cast<component*>(other.get())));                   \
         }                                                                                   \
     private:                                                                                \
         Foundation::ModuleInterface* module_;                                               \
@@ -46,18 +46,18 @@ namespace Foundation
     {                                                                                       \
         Foundation::ComponentFactoryInterfacePtr factory =                                  \
             Foundation::ComponentFactoryInterfacePtr(new component##Factory(module));       \
-        framework->GetComponentManager()->RegisterFactory(Name(), factory);                 \
+        framework->GetComponentManager()->RegisterFactory(NameStatic(), factory);           \
     }                                                                                       \
     static void UnregisterComponent(const Foundation::Framework *framework) {               \
-        framework->GetComponentManager()->UnregisterFactory(Name());                        \
+        framework->GetComponentManager()->UnregisterFactory(NameStatic());                  \
     }                                                                                       \
-    static const std::string &Name()                                                        \
+    static const std::string &NameStatic()                                                  \
     {                                                                                       \
         static const std::string name(#component);                                          \
         return name;                                                                        \
     }                                                                                       \
-    virtual const std::string &_Name() {                                                    \
-        return component::Name();                                                           \
+    virtual const std::string &Name() const {                                               \
+        return component::NameStatic();                                                     \
     }                                                                                       \
     private:                                                                                \
 

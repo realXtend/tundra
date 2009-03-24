@@ -23,9 +23,9 @@ namespace Test
 
         virtual void Load();
         virtual void Unload();
-        virtual void Initialize(Foundation::Framework *framework);
-        virtual void Uninitialize(Foundation::Framework *framework);
-        virtual void PostInitialize(Foundation::Framework *framework);
+        virtual void Initialize();
+        virtual void Uninitialize();
+        virtual void PostInitialize();
 
         virtual void Update();
 
@@ -40,7 +40,6 @@ namespace Test
         }
 
     private:
-        Foundation::Framework *framework_;
     };
 }
 #endif

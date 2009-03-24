@@ -34,10 +34,8 @@ namespace Test
     }
 
     // virtual
-    void TestModule::Initialize(Foundation::Framework *framework)
+    void TestModule::Initialize()
     {
-        assert(framework != NULL);
-        framework_ = framework;
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Test, &test_service_);
         assert (framework_->GetServiceManager()->IsRegistered(Foundation::Service::ST_Test) &&
             "Failed to register test service");
@@ -48,14 +46,12 @@ namespace Test
     }
 
     // virtual 
-    void TestModule::Uninitialize(Foundation::Framework *framework)
+    void TestModule::Uninitialize()
     {
         framework_->GetServiceManager()->UnregisterService(&test_service_);
         assert (framework_->GetServiceManager()->IsRegistered(Foundation::Service::ST_Test) == false &&
             "Failed to unregister test service");
 
-        assert(framework_ != NULL);
-        framework_ = NULL;
         LogInfo("Module " + Name() + " uninitialized.");
     }
 
@@ -65,7 +61,7 @@ namespace Test
         LogInfo("");
 
         // create new entity
-        LogInfo("Constructing entity with component: " + Test::EC_Dummy::Name() + ".");
+        LogInfo("Constructing entity with component: " + Test::EC_Dummy::NameStatic() + ".");
 
         Foundation::SceneManagerServiceInterface *sceneManager = 
             framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
@@ -80,11 +76,11 @@ namespace Test
         assert (entity.get() != 0 && "Failed to create entity.");
         assert (scene->HasEntity(entity->GetId()) && "Failed to add entity to scene properly!");
 
-        Foundation::ComponentPtr component = framework_->GetComponentManager()->CreateComponent(Test::EC_Dummy::Name());
+        Foundation::ComponentPtr component = framework_->GetComponentManager()->CreateComponent(Test::EC_Dummy::NameStatic());
         assert (component.get() != 0 && "Failed to create dummy component.");
 
         entity->AddEntityComponent(component);
-        component = entity->GetComponent(component->_Name());
+        component = entity->GetComponent(component->Name());
         assert (component.get() != 0 && "Failed to get dummy component from entity.");
 
 
@@ -94,7 +90,7 @@ namespace Test
         assert (cloned_scene->HasEntity(entity->GetId()) && "Failed to clone a scene");
 
         Foundation::EntityPtr cloned_entity = entity->Clone("Test clone scene");
-        component = cloned_entity->GetComponent(component->_Name());
+        component = cloned_entity->GetComponent(component->Name());
         assert (component.get() != 0 && "Failed to clone an entity.");
 
         Foundation::EntityPtr cloned_entity2 = cloned_scene->GetEntity(cloned_entity->GetId());

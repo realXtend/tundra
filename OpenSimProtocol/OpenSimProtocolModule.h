@@ -41,8 +41,8 @@ namespace OpenSimProtocol
 
         virtual void Load();
         virtual void Unload();
-        virtual void Initialize(Foundation::Framework *framework);
-        virtual void Uninitialize(Foundation::Framework *framework);
+        virtual void Initialize();
+        virtual void Uninitialize();
         virtual void Update();
 		
 		MODULE_LOGGING_FUNCTIONS
@@ -102,8 +102,6 @@ namespace OpenSimProtocol
        	    const char *address,
        	    int port,
        	    ClientParameters *params);
-       
-        Foundation::Framework *framework_;
         
 	    /// Handles the UDP communications with the reX server.
 	    shared_ptr<NetMessageManager> networkManager_;

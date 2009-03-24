@@ -12,7 +12,7 @@
 
 namespace OgreRenderer
 {
-    OgreRenderingModule::OgreRenderingModule() : ModuleInterface_Impl(type_static_), framework_(NULL)
+    OgreRenderingModule::OgreRenderingModule() : ModuleInterface_Impl(type_static_)
     {
     }
 
@@ -42,11 +42,9 @@ namespace OgreRenderer
     }
 
     // virtual
-    void OgreRenderingModule::Initialize(Foundation::Framework *framework)
-    {
-        framework_  = framework;
-        
-        renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework));
+    void OgreRenderingModule::Initialize()
+    {        
+        renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_));
         renderer_->Initialize();
         
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Renderer, renderer_.get());
@@ -55,7 +53,7 @@ namespace OgreRenderer
     }
 
     // virtual
-    void OgreRenderingModule::PostInitialize(Foundation::Framework *framework)
+    void OgreRenderingModule::PostInitialize()
     {
         //Foundation::SceneManagerServiceInterface *scene_manager = 
         //    framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
@@ -89,13 +87,11 @@ namespace OgreRenderer
     }
 
     // virtual 
-    void OgreRenderingModule::Uninitialize(Foundation::Framework *framework)
+    void OgreRenderingModule::Uninitialize()
     {        
-        framework->GetServiceManager()->UnregisterService(renderer_.get());
+        framework_->GetServiceManager()->UnregisterService(renderer_.get());
     
         renderer_.reset();
-
-        framework_ = NULL;
         
         LogInfo("Module " + Name() + " uninitialized.");
     }

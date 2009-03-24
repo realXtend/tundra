@@ -3,7 +3,7 @@
 #ifndef incl_Foundation_ComponentManager_h
 #define incl_Foundation_ComponentManager_h
 
-#include "ComponentInterface.h"
+//#include "ComponentInterface.h"
 
 namespace Foundation
 {
@@ -14,6 +14,11 @@ namespace Foundation
     class ComponentManager
     {
     public:
+        typedef std::list<WeakComponentPtr> ComponentList;
+        typedef std::map< std::string, ComponentList > ComponentTypeMap;
+        typedef ComponentList::iterator iterator;
+        typedef ComponentList::const_iterator const_iterator;
+
         //! default constructor
         ComponentManager(Framework *framework) : framework_(framework) {}
         //! destructor
@@ -36,24 +41,87 @@ namespace Foundation
             factories_.erase(iter);
         }
 
+        //! Returns true if component can be created (a factory for the component has registered itself)
+        /*!
+            \param name name of the component type
+            \return true if component can be created, false otherwise
+        */
+        bool CanCreate(const std::string &name);
+
         //! Create a new component
         /*! Returns empty ComponentInterfacePtr if component type is not registered
+            Precondition: CanCreate(componentName)
 
-            \param componentName name of the component to create
+            \param type type of the component to create
         */
-        ComponentPtr CreateComponent(const std::string &componentName) const;
+        ComponentPtr CreateComponent(const std::string &type) const;
 
         //! Create clone of the specified component
         ComponentPtr CloneComponent(const ComponentInterfacePtr &component) const;
         
         //! Get component by entity id and component type
         ComponentPtr GetComponent(Core::entity_id_t id, const std::string &component);
+
+        void RemoveComponent(const std::string &name, ComponentInterface *component)
+        {
+        }
+
+        //! Iterator for components
+        /*!
+            \param name component type name for which to return the iterator for
+        */
+        iterator Begin(const std::string &type)
+        {
+            if (components_.find(type) == components_.end())
+                components_[type] = ComponentList();
+
+            return components_[type].begin();
+        }
+        //! Iterator for components
+        /*!
+            \param name component type name for which to return the iterator for
+        */
+        iterator End(const std::string &type)
+        {
+            if (components_.find(type) == components_.end())
+                components_[type] = ComponentList();
+ 
+            return components_[type].end();
+        }
+        //! Iterator for components
+        /*!
+            \param name component type name for which to return the iterator for
+        */
+        const_iterator Begin(const std::string &type) const
+        {
+            if (components_.find(type) == components_.end())
+                (*const_cast<ComponentTypeMap*>(&components_))[type] = ComponentList();
+
+            return components_.find(type)->second.begin();
+        }
+        //! Iterator for components
+        /*!
+            \param name component type name for which to return the iterator for
+        */
+        const_iterator End(const std::string &type) const
+        {
+            if (components_.find(type) == components_.end())
+                (*const_cast<ComponentTypeMap*>(&components_))[type] = ComponentList();
+ 
+            return components_.find(type)->second.end();
+        }
         
 
     private:
         typedef std::map<std::string, ComponentFactoryInterfacePtr> ComponentFactoryMap;
+        
 
+        //! map of component factories
         ComponentFactoryMap factories_;
+
+        //! container for all components
+        ComponentTypeMap components_;
+
         Framework *framework_;
     };
 }

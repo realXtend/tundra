@@ -27,13 +27,10 @@ namespace OgreRenderer
 
         virtual void Load();
         virtual void Unload();
-        virtual void Initialize(Foundation::Framework *framework);
-        virtual void PostInitialize(Foundation::Framework *framework);
-        virtual void Uninitialize(Foundation::Framework *framework);
+        virtual void Initialize();
+        virtual void PostInitialize();
+        virtual void Uninitialize();
         virtual void Update();
-
-        //! returns framework
-        Foundation::Framework *GetFramework() { return framework_; }
         
         //! returns renderer
         RendererPtr GetRenderer() const { return renderer_; }
@@ -50,9 +47,6 @@ namespace OgreRenderer
     private:
         //! renderer
         RendererPtr renderer_;
-        
-        //! framework
-        Foundation::Framework* framework_;
     };
 }
 

@@ -21,11 +21,11 @@ namespace Test
         {
             LogInfo("Module " + Name() + " unloaded.");
         }
-        virtual void Initialize(Foundation::Framework *framework)
+        virtual void Initialize()
         {
             LogInfo("Module " + Name() + " initialized.");
         }
-        virtual void Uninitialize(Foundation::Framework *framework)
+        virtual void Uninitialize()
         {
             LogInfo("Module " + Name() + " uninitialized.");
         }

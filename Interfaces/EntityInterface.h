@@ -3,7 +3,7 @@
 #ifndef incl_Interfaces_EntityInterface_h
 #define incl_Interfaces_EntityInterface_h
 
-#include "ComponentInterface.h"
+//#include "ComponentInterface.h"
 
 namespace Foundation
 {

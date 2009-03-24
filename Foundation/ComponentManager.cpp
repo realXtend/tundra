@@ -9,9 +9,9 @@
 
 namespace Foundation
 {
-    ComponentInterfacePtr ComponentManager::CreateComponent(const std::string &componentName) const
+    ComponentInterfacePtr ComponentManager::CreateComponent(const std::string &type) const
     {
-        ComponentFactoryMap::const_iterator iter = factories_.find(componentName);
+        ComponentFactoryMap::const_iterator iter = factories_.find(type);
         if (iter == factories_.end())
             return ComponentInterfacePtr();
 
@@ -22,7 +22,7 @@ namespace Foundation
 
     ComponentInterfacePtr ComponentManager::CloneComponent(const ComponentInterfacePtr &component) const
     {
-        ComponentFactoryMap::const_iterator iter = factories_.find(component->_Name());
+        ComponentFactoryMap::const_iterator iter = factories_.find(component->Name());
         if (iter == factories_.end())
             return ComponentInterfacePtr();
 
