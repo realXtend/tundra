@@ -15,21 +15,28 @@ namespace OgreRenderer
         scene_node_(NULL)
     {
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
-        
         scene_node_ = scene_mgr->createSceneNode();
-        scene_mgr->getRootSceneNode()->addChild(scene_node_);
+        
+        AttachNode();
     }
     
     EC_OgrePlaceable::~EC_OgrePlaceable()
     {
         if (scene_node_)
         {
-            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+            DetachNode();
             
-            scene_mgr->getRootSceneNode()->removeChild(scene_node_);
+            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
             scene_mgr->destroySceneNode(scene_node_);
             scene_node_ = NULL;
         }
+    }
+    
+    void EC_OgrePlaceable::SetParent(Foundation::ComponentPtr placeable)
+    {
+        DetachNode();
+        parent_ = placeable;
+        AttachNode();
     }
     
     Core::Vector3df EC_OgrePlaceable::GetPosition() const
@@ -63,5 +70,41 @@ namespace OgreRenderer
     void EC_OgrePlaceable::SetScale(const Core::Vector3df& scale)
     {
         scene_node_->setScale(Ogre::Vector3(scale.x, scale.y, scale.z));
+    }
+
+    void EC_OgrePlaceable::AttachNode()
+    {
+        Ogre::SceneNode* parent_node;
+        
+        if (!parent_)
+        {
+            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+            parent_node = scene_mgr->getRootSceneNode();
+        }
+        else
+        {
+            EC_OgrePlaceable* parent = static_cast<EC_OgrePlaceable*>(parent_.get());
+            parent_node = parent->GetSceneNode();
+        }
+        
+        parent_node->addChild(scene_node_);
+    }
+    
+    void EC_OgrePlaceable::DetachNode()
+    {
+        Ogre::SceneNode* parent_node;
+        
+        if (!parent_)
+        {
+            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+            parent_node = scene_mgr->getRootSceneNode();
+        }
+        else
+        {
+            EC_OgrePlaceable* parent = static_cast<EC_OgrePlaceable*>(parent_.get());
+            parent_node = parent->GetSceneNode();
+        }
+        
+        parent_node->removeChild(scene_node_);
     }
 }

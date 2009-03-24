@@ -67,7 +67,7 @@ namespace OgreRenderer
         //    scene_manager->CreateScene("World");
         //Foundation::ScenePtr scene = scene_manager->GetScene("World");
         //
-        //Foundation::EntityPtr entity = scene->CreateEntity();
+        //Foundation::EntityPtr entity = scene->CreateEntity(1);
         //Foundation::ComponentPtr placeable_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgrePlaceable::NameStatic());
         //Foundation::ComponentPtr mesh_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreMesh::NameStatic());
         //entity->AddEntityComponent(placeable_ptr);
@@ -79,7 +79,7 @@ namespace OgreRenderer
         //mesh->SetMesh("ogrehead.mesh");
         //mesh->SetPlaceable(placeable_ptr);
         //
-        //Foundation::EntityPtr entity2 = scene->CreateEntity();
+        //Foundation::EntityPtr entity2 = scene->CreateEntity(2);
         //Foundation::ComponentPtr light_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreLight::NameStatic());
         //entity2->AddEntityComponent(light_ptr);
         //
@@ -87,14 +87,14 @@ namespace OgreRenderer
         //light->SetType(EC_OgreLight::LT_Directional);
         //light->SetDirection(Core::Vector3df(-1,-1,-1));
         //
-        //Foundation::EntityPtr entity3 = scene->CreateEntity();
+        //Foundation::EntityPtr entity3 = scene->CreateEntity(3);
         //Foundation::ComponentPtr sky_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreSky::NameStatic());
         //entity3->AddEntityComponent(sky_ptr);
         //
         //EC_OgreSky* sky = static_cast<EC_OgreSky*>(sky_ptr.get());
         //sky->SetSkyBox("Sky", 1000);
        
-        //Foundation::EntityPtr entity4 = scene->CreateEntity();
+        //Foundation::EntityPtr entity4 = scene->CreateEntity(4);
         //Foundation::ComponentPtr placeable4_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgrePlaceable::NameStatic());
         //Foundation::ComponentPtr custom4_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreCustomObject::NameStatic());
         //entity4->AddEntityComponent(placeable4_ptr);
@@ -104,6 +104,8 @@ namespace OgreRenderer
         //EC_OgreCustomObject* custom4 = static_cast<EC_OgreCustomObject*>(custom4_ptr.get());
         //placeable4->SetPosition(Core::Vector3df(50,0,-200));
         //custom4->SetPlaceable(placeable4_ptr);
+        //
+        //placeable4->SetParent(placeable_ptr);
         //
         //Ogre::ManualObject* manual = custom4->GetObject();
         //manual->begin("BaseWhiteNoLighting");
