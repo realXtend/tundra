@@ -48,17 +48,16 @@ namespace NetTest
         LogInfo("Module " + Name() + " unloaded.");
     }
 
-    void NetTestLogicModule::Initialize(Foundation::Framework *framework) {}
+    void NetTestLogicModule::Initialize() {}
 
     // virtual
-    void NetTestLogicModule::PostInitialize(Foundation::Framework *framework)
+    void NetTestLogicModule::PostInitialize()
     {
-        assert(framework != NULL);
-        framework_ = framework;
+        assert(framework_ != NULL);
 		
 		using namespace OpenSimProtocol;
 		///\todo weak_pointerize
-        netInterface_ = dynamic_cast<OpenSimProtocolModule *>(framework->GetModuleManager()->GetModule(Foundation::Module::MT_Network));
+        netInterface_ = dynamic_cast<OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_Network));
 		if (!netInterface_)
 		{
 			LogError("Getting network interface did not succeed.");
@@ -85,11 +84,8 @@ namespace NetTest
     }
 
     // virtual 
-    void NetTestLogicModule::Uninitialize(Foundation::Framework *framework)
-    {
-		assert(framework_ != NULL);
-		framework_ = NULL;
-        
+    void NetTestLogicModule::Uninitialize()
+    {        
         netInterface_->RemoveListener(this);
         
         SAFE_DELETE(netTestWindow)

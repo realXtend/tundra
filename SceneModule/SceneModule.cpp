@@ -5,7 +5,7 @@
 
 namespace Scene
 {
-    SceneModule::SceneModule() : ModuleInterface_Impl(type_static_), framework_(NULL)
+    SceneModule::SceneModule() : ModuleInterface_Impl(type_static_)
     {
     }
 
@@ -26,24 +26,19 @@ namespace Scene
     }
 
     // virtual
-    void SceneModule::Initialize(Foundation::Framework *framework)
+    void SceneModule::Initialize()
     {
-        assert (framework);
-        framework_ = framework;
-
         scene_manager_ = Foundation::SceneManagerPtr(new SceneManager(this));
-        framework->GetServiceManager()->RegisterService(Foundation::Service::ST_SceneManager, scene_manager_.get());
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_SceneManager, scene_manager_.get());
 
         LogInfo("Module " + Name() + " initialized.");
     }
 
     // virtual 
-    void SceneModule::Uninitialize(Foundation::Framework *framework)
+    void SceneModule::Uninitialize()
     {
-        framework->GetServiceManager()->UnregisterService(scene_manager_.get());
+        framework_->GetServiceManager()->UnregisterService(scene_manager_.get());
         scene_manager_.reset();
-
-        framework_ = NULL;
 
         LogInfo("Module " + Name() + " uninitialized.");
     }

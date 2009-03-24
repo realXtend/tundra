@@ -21,7 +21,7 @@ POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
 POCO_END_MANIFEST
 
 DebugStats::DebugStats()
-:ModuleInterface_Impl("DebugStats"), framework_(0)
+:ModuleInterface_Impl("DebugStats")
 {
 }
 
@@ -37,10 +37,8 @@ void DebugStats::Unload()
 {
 }
 
-void DebugStats::PostInitialize(Foundation::Framework *framework)
+void DebugStats::PostInitialize()
 {
-    framework_ = framework;
-
     InitializeModulesWindow();
     PopulateModulesTreeView();
 
@@ -142,7 +140,7 @@ void DebugStats::PopulateEventsTreeView()
     }
 }
 
-void DebugStats::Uninitialize(Foundation::Framework *framework)
+void DebugStats::Uninitialize()
 {
     Gtk::Window *debugWindow = 0;
     debugModules_->get_widget("windowDebugModules", debugWindow);

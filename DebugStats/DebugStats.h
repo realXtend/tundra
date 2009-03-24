@@ -13,17 +13,15 @@ public:
 
     void Load();
     void Unload();
-    void Initialize(Foundation::Framework *framework) {}
-    void PostInitialize(Foundation::Framework *framework);
-    void Uninitialize(Foundation::Framework *framework);
+    void Initialize() {}
+    void PostInitialize();
+    void Uninitialize();
 
     void Update();
 
 private:
     void operator=(const DebugStats &);
     DebugStats(const DebugStats &);
-
-    Foundation::Framework *framework_;
 
     // Data related to the window that shows currently loaded modules, for debugging purposes.
     

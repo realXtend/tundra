@@ -28,6 +28,7 @@ namespace Foundation
         {
             Module::Entry entry = { module, module->Name(), Module::SharedLibraryPtr() };
             modules_.push_back(entry);
+            module->SetFramework(framework_);
             module->LoadInternal();
         } else
         {
@@ -122,9 +123,9 @@ namespace Foundation
         {
             if (modules_[i].entry_ == module && modules_[i].module_->State() == Module::MS_Loaded)
             {
-                modules_[i].module_->PreInitialize(framework_);
-                modules_[i].module_->InitializeInternal(framework_);
-                modules_[i].module_->PostInitialize(framework_);
+                modules_[i].module_->PreInitialize();
+                modules_[i].module_->InitializeInternal();
+                modules_[i].module_->PostInitialize();
                 return true;
             }
         }
@@ -271,6 +272,8 @@ namespace Foundation
             if (IsExcluded(module->Name()) == false)
             {
                 assert (HasModule(module) == false);
+
+                module->SetFramework(framework_);
                 module->LoadInternal();
 
                 Module::Entry entry = { module, *it, library };
@@ -307,27 +310,27 @@ namespace Foundation
     void ModuleManager::PreInitializeModule(ModuleInterface *module)
     {
         assert(module);
-        module->PreInitialize(framework_);
+        module->PreInitialize();
     }
     
     void ModuleManager::InitializeModule(ModuleInterface *module)
     {
         assert(module);
         Foundation::RootLogInfo("Initializing module " + module->Name() + ".");
-        module->InitializeInternal(framework_);
+        module->InitializeInternal();
     }
 
     void ModuleManager::PostInitializeModule(ModuleInterface *module)
     {
         assert(module);
-        module->PostInitialize(framework_);
+        module->PostInitialize();
     }
 
     void ModuleManager::UninitializeModule(ModuleInterface *module)
     {
         assert(module);
         Foundation::RootLogInfo("Uninitializing module " + module->Name() + ".");
-        module->UninitializeInternal(framework_);
+        module->UninitializeInternal();
     }
 
     void ModuleManager::UnloadModule(Module::Entry &entry)

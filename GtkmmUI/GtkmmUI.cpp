@@ -44,12 +44,12 @@ void GtkmmUI::Unload()
 {
 }
 
-void GtkmmUI::Initialize(Foundation::Framework *framework)
+void GtkmmUI::Initialize()
 {
     assert(impl_);
 }
 
-void GtkmmUI::Uninitialize(Foundation::Framework *framework)
+void GtkmmUI::Uninitialize()
 {
 }
 

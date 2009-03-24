@@ -3,25 +3,25 @@
 #ifndef incl_Interfaces_ComponentInterface_h
 #define incl_Interfaces_ComponentInterface_h
 
-#include "ForwardDefines.h"
 #include "ComponentFactoryInterface.h"
 #include "ComponentRegistrarInterface.h"
 
 namespace Foundation
 {
+    class Framework;
+
     class MODULE_API ComponentInterface
     {
     public:
         ComponentInterface()  {}
-        virtual ~ComponentInterface() {}
+        virtual ~ComponentInterface() { /*framework_->GetComponentManager()->RemoveComponent(Name(), this);*/ }
         
         virtual void HandleNetworkData(std::string data) {}
 
-        virtual const std::string &_Name() = 0;
+        virtual const std::string &Name() const { static std::string empty; return empty; };//= 0;
+    private:
+        Foundation::Framework *framework_;
     };
-
-    typedef boost::shared_ptr<ComponentInterface> ComponentInterfacePtr;
-    typedef boost::shared_ptr<ComponentInterface> ComponentPtr;
 }
 
 #endif

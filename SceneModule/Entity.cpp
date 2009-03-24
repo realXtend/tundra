@@ -4,7 +4,7 @@
 #include "Entity.h"
 #include "Framework.h"
 #include "SceneModule.h"
-
+#include "ComponentInterface.h"
 
 namespace Scene
 {
@@ -46,7 +46,7 @@ namespace Scene
     Foundation::ComponentInterfacePtr Entity::GetComponent(const std::string &name) const
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
-            if (components_[i]->_Name() == name)
+            if (components_[i]->Name() == name)
                 return components_[i];
 
         return Foundation::ComponentInterfacePtr();

@@ -53,7 +53,7 @@ namespace RexLogic
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
         
         Foundation::EntityPtr entity = scene->CreateEntity(); 
-        Foundation::ComponentPtr component = framework_->GetComponentManager()->CreateComponent(EC_ObjIdentity::Name()); 
+        Foundation::ComponentPtr component = framework_->GetComponentManager()->CreateComponent(EC_ObjIdentity::NameStatic()); 
         entity->AddEntityComponent(component);
        
         return entity;

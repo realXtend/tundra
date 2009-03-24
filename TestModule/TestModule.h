@@ -7,6 +7,7 @@
 #include "TestServiceInterface.h"
 #include "TestService.h"
 #include "EventDataInterface.h"
+#include "ComponentInterface.h"
 
 namespace Foundation
 {
@@ -36,8 +37,8 @@ namespace Test
 
         virtual void Load();
         virtual void Unload();
-        virtual void Initialize(Foundation::Framework *framework);
-        virtual void Uninitialize(Foundation::Framework *framework);
+        virtual void Initialize();
+        virtual void Uninitialize();
 
         virtual void Update();
 
@@ -50,7 +51,6 @@ namespace Test
 
 
     private:
-        Foundation::Framework *framework_;
         TestService test_service_;
     };
 }

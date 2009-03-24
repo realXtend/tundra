@@ -15,8 +15,8 @@ public:
 
     void Load();
     void Unload();
-    void Initialize(Foundation::Framework *framework);
-    void Uninitialize(Foundation::Framework *framework);
+    void Initialize();
+    void Uninitialize();
     void Update();
 
 private:

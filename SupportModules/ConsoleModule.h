@@ -34,8 +34,8 @@ namespace Console
 
         virtual void Load();
         virtual void Unload();
-        virtual void Initialize(Foundation::Framework *framework);
-        virtual void Uninitialize(Foundation::Framework *framework);
+        virtual void Initialize();
+        virtual void Uninitialize();
 
         virtual void Update();
 
@@ -56,8 +56,6 @@ namespace Console
     private:
         //! debug console manager
         ConsolePtr manager_;
-
-        Foundation::Framework *framework_;
     };
 }
 

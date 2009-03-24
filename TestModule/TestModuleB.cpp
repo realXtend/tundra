@@ -30,30 +30,24 @@ namespace Test
     }
 
     // virtual
-    void TestModuleB::Initialize(Foundation::Framework *framework)
-    {
-        assert(framework != NULL);
-        framework_ = framework;
-        
+    void TestModuleB::Initialize()
+    {        
         LogInfo("Module " + Name() + " initialized.");
     }
 
 
     // virtual 
-    void TestModuleB::Uninitialize(Foundation::Framework *framework)
+    void TestModuleB::Uninitialize()
     {
-        assert(framework_ != NULL);
-        framework_ = NULL;
-
-        framework->GetEventManager()->UnregisterEventSubscriber(this);
+        framework_->GetEventManager()->UnregisterEventSubscriber(this);
         
         LogInfo("Module " + Name() + " uninitialized.");
     }
 
     // virtual
-    void TestModuleB::PostInitialize(Foundation::Framework *framework)
+    void TestModuleB::PostInitialize()
     {
-        framework->GetEventManager()->RegisterEventSubscriber(this, 0, NULL);
+        framework_->GetEventManager()->RegisterEventSubscriber(this, 0, NULL);
     }
 
     // virtual

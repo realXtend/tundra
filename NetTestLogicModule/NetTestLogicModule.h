@@ -66,9 +66,9 @@ namespace NetTest
 
         virtual void Load();
         virtual void Unload();
-        virtual void Initialize(Foundation::Framework *framework);
-        virtual void PostInitialize(Foundation::Framework *framework);
-        virtual void Uninitialize(Foundation::Framework *framework);
+        virtual void Initialize();
+        virtual void PostInitialize();
+        virtual void Uninitialize();
         virtual void Update();
         
         MODULE_LOGGING_FUNCTIONS
@@ -150,9 +150,6 @@ namespace NetTest
         /// Sends a message requesting logout from the server. The server is then going to flood us with some
     	/// inventory UUIDs after that, but we'll be ignoring those.
         void SendLogoutRequestPacket();
-        
-        /// Pointer to the main framework.
-        Foundation::Framework *framework_;
         
         /// Pointer to the network interface.
 		OpenSimProtocol::OpenSimProtocolModule *netInterface_;

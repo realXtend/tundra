@@ -17,9 +17,9 @@ namespace RexLogic
 
         virtual void Load();
         virtual void Unload();
-        virtual void Initialize(Foundation::Framework *framework);
-        virtual void PostInitialize(Foundation::Framework *framework);
-        virtual void Uninitialize(Foundation::Framework *framework);
+        virtual void Initialize();
+        virtual void PostInitialize();
+        virtual void Uninitialize();
 
         virtual void Update();
         
@@ -32,9 +32,7 @@ namespace RexLogic
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
 
-    private:
-        Foundation::Framework *framework_;
-        
+    private:        
         NetworkEventHandler *network_handler_; 
 
         typedef boost::function<bool(Core::event_id_t,Foundation::EventDataInterface*)> LogicEventHandlerFunction;

@@ -4,7 +4,6 @@
 #define incl_TestSystem_EC_Dummy_h
 
 #include "ComponentInterface.h"
-#include "Foundation.h"
 
 namespace Test
 {

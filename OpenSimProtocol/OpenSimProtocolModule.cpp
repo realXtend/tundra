@@ -35,11 +35,8 @@ namespace OpenSimProtocol
     }
 
     // virtual
-    void OpenSimProtocolModule::Initialize(Foundation::Framework *framework)
-    {
-        assert(framework != NULL);
-        framework_ = framework;
-        
+    void OpenSimProtocolModule::Initialize()
+    {        
         ///\todo Read the template filename from a config file?
 		const char *filename = "./data/message_template.msg";
 		
@@ -50,11 +47,8 @@ namespace OpenSimProtocol
     }
 
     // virtual 
-    void OpenSimProtocolModule::Uninitialize(Foundation::Framework *framework)
-    {
-        assert(framework_ != NULL);
-        framework_ = NULL;
-		
+    void OpenSimProtocolModule::Uninitialize()
+    {		
 		if(networkState_ == State_Connected)
 		    DisconnectFromRexServer();
       

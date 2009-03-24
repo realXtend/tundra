@@ -16,6 +16,8 @@ namespace Foundation
     class EventManager;
     class Platform;
 
+    class ComponentInterface;
+
     typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
     typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
     typedef boost::shared_ptr<ComponentFactoryInterface> ComponentFactoryInterfacePtr;
@@ -23,6 +25,10 @@ namespace Foundation
     typedef boost::shared_ptr<ConfigurationManager> ConfigurationManagerPtr;
     typedef boost::shared_ptr<EventManager> EventManagerPtr;
     typedef boost::shared_ptr<Platform> PlatformPtr;
+
+    typedef boost::shared_ptr<ComponentInterface> ComponentInterfacePtr;
+    typedef boost::shared_ptr<ComponentInterface> ComponentPtr;
+    typedef boost::weak_ptr<ComponentInterface> WeakComponentPtr;
     
     
     //! Use root logging only in foundation classes.
