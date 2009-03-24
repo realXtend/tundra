@@ -52,10 +52,10 @@ namespace Scene
         /*!
             \param components list of component names the entity will use
         */
-        virtual Foundation::EntityPtr CreateEntity(const Core::StringVector &components);
+        virtual Foundation::EntityPtr CreateEntity(Core::entity_id_t id, const Core::StringVector &components);
 
         //! Creates an empty entity
-        virtual Foundation::EntityPtr CreateEntity();
+        virtual Foundation::EntityPtr CreateEntity(Core::entity_id_t id);
 
         //! Makes a soft clone of the entity. The new entity will be placed in this scene.
         /*! The entity need not be contained in this scene

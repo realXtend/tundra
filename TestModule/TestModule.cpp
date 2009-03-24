@@ -72,7 +72,7 @@ namespace Test
         assert(scene.get() && "Failed to create scene" );
         assert(sceneManager->HasScene("test_scene") && "Failed to create scene");
 
-        Foundation::EntityPtr entity = scene->CreateEntity();
+        Foundation::EntityPtr entity = scene->CreateEntity(0);
         assert (entity.get() != 0 && "Failed to create entity.");
         assert (scene->HasEntity(entity->GetId()) && "Failed to add entity to scene properly!");
 
@@ -94,7 +94,7 @@ namespace Test
         assert (component.get() != 0 && "Failed to clone an entity.");
 
         Foundation::EntityPtr cloned_entity2 = cloned_scene->GetEntity(cloned_entity->GetId());
-        Foundation::EntityPtr entity2 = cloned_scene->CreateEntity();
+        Foundation::EntityPtr entity2 = cloned_scene->CreateEntity(0);
         assert (*cloned_entity2.get() == *cloned_entity.get() && "EntityInterface operator== failed");
         assert (*entity.get() != *entity2.get() && "EntityInterface operator!= failed");
         assert (*cloned_entity.get() < *entity2.get() && "EntityInterface operator< failed");

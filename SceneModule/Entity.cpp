@@ -10,10 +10,14 @@ namespace Scene
 {
     Core::uint Entity::gid_ = 0;
 
-    Entity::Entity(SceneModule *module) : EntityInterface(), module_(module), id_(gid_)
+    Entity::Entity(Core::uint id, SceneModule *module) : EntityInterface(), module_(module), id_(id)
     {
-        assert (module_);
-        gid_ = (gid_ + 1) % static_cast<Core::uint>(-1);
+        assert (module_);   
+        if(id == 0)
+        {
+            id = gid_;
+            gid_ = (gid_ + 1) % static_cast<Core::uint>(-1);
+        }
     }
 
     Entity::~Entity()
