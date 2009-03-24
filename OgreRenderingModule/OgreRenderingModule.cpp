@@ -9,6 +9,7 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreLight.h"
+#include "EC_OgreSky.h"
 
 namespace OgreRenderer
 {
@@ -29,6 +30,7 @@ namespace OgreRenderer
         DECLARE_MODULE_EC(EC_OgrePlaceable);
         DECLARE_MODULE_EC(EC_OgreMesh);
         DECLARE_MODULE_EC(EC_OgreLight);
+        DECLARE_MODULE_EC(EC_OgreSky);
         
         AutoRegisterConsoleCommand(Console::CreateCommand(
             "SetViewportColor", "Set viewport background color. Usage: SetViewportColor(r,g,b)", 
@@ -72,8 +74,8 @@ namespace OgreRenderer
         //EC_OgrePlaceable* placeable = static_cast<EC_OgrePlaceable*>(placeable_ptr.get());
         //EC_OgreMesh* mesh = static_cast<EC_OgreMesh*>(mesh_ptr.get());
         //placeable->SetPosition(Core::Vector3df(0,0,-200));
-        //mesh->SetPlaceable(placeable_ptr);
         //mesh->SetMesh("ogrehead.mesh");
+        //mesh->SetPlaceable(placeable_ptr);
         //
         //Foundation::EntityPtr entity2 = scene->CreateEntity();
         //Foundation::ComponentPtr light_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreLight::Name());
@@ -82,6 +84,13 @@ namespace OgreRenderer
         //EC_OgreLight* light = static_cast<EC_OgreLight*>(light_ptr.get());
         //light->SetType(EC_OgreLight::LT_Directional);
         //light->SetDirection(Core::Vector3df(-1,-1,-1));
+        //
+        //Foundation::EntityPtr entity3 = scene->CreateEntity();
+        //Foundation::ComponentPtr sky_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreSky::Name());
+        //entity3->AddEntityComponent(sky_ptr);
+        //
+        //EC_OgreSky* sky = static_cast<EC_OgreSky*>(sky_ptr.get());
+        //sky->SetSkyBox("Sky", 1000);
         //
         //renderer_->GetSceneManager()->setAmbientLight(Ogre::ColourValue(0.1,0.1,0.1));
     }

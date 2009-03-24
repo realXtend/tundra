@@ -19,7 +19,7 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Renderer> RendererPtr;
     
     //! Ogre mesh component
-    /*! Needs knowledge of a placeable (aka scene node) to work properly.
+    /*! Needs to be attached to a placeable (aka scene node) to be visible.
      */
     class MODULE_API EC_OgreMesh : public Foundation::ComponentInterface
     {
@@ -31,13 +31,16 @@ namespace OgreRenderer
         Foundation::ComponentPtr GetPlaceable() const { return placeable_; }
         
         //! sets placeable component
-        void SetPlaceable(Foundation::ComponentPtr placeable) { placeable_ = placeable; }
+        /*! set a null placeable to detach the mesh, otherwise will attach
+            \param placeable placeable component
+         */
+        void SetPlaceable(Foundation::ComponentPtr placeable);
         
         //! sets mesh
         /*! if mesh already sets, removes the old one
             \param mesh_name mesh to use
             \return true if successful
-            \todo use mesh asset reference when assetcache exists
+            \todo use mesh asset reference when asset system exists
          */
         bool SetMesh(const std::string& mesh_name);
         
@@ -48,7 +51,7 @@ namespace OgreRenderer
         /*! \param index submesh index
             \param material_name material name
             \return true if successful
-            \todo use material asset reference when assetcache exists
+            \todo use material asset reference when asset system exists
          */
         bool SetMaterial(unsigned index, const std::string& material_name);
         
@@ -67,11 +70,23 @@ namespace OgreRenderer
          */
         EC_OgreMesh(Foundation::ModuleInterface* module);
         
-        //! 
+        //! attaches mesh to placeable
+        void AttachMesh();
+        
+        //! detaches mesh from placeable
+        void DetachMesh();
+        
+        //! placeable component 
         Foundation::ComponentPtr placeable_;
+        
+        //! renderer
         RendererPtr renderer_;
         
+        //! Ogre mesh entity
         Ogre::Entity* entity_;
+        
+        //! mesh entity attached to placeable -flag
+        bool attached_;
     };
 }
 
