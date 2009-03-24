@@ -10,6 +10,7 @@
 #include "EC_OgreMesh.h"
 #include "EC_OgreLight.h"
 #include "EC_OgreSky.h"
+#include "EC_OgreCustomObject.h"
 
 namespace OgreRenderer
 {
@@ -31,6 +32,7 @@ namespace OgreRenderer
         DECLARE_MODULE_EC(EC_OgreMesh);
         DECLARE_MODULE_EC(EC_OgreLight);
         DECLARE_MODULE_EC(EC_OgreSky);
+        DECLARE_MODULE_EC(EC_OgreCustomObject);
         
         AutoRegisterConsoleCommand(Console::CreateCommand(
             "SetViewportColor", "Set viewport background color. Usage: SetViewportColor(r,g,b)", 
@@ -66,19 +68,19 @@ namespace OgreRenderer
         //Foundation::ScenePtr scene = scene_manager->GetScene("World");
         //
         //Foundation::EntityPtr entity = scene->CreateEntity();
-        //Foundation::ComponentPtr placeable_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgrePlaceable::Name());
-        //Foundation::ComponentPtr mesh_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreMesh::Name());
+        //Foundation::ComponentPtr placeable_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgrePlaceable::NameStatic());
+        //Foundation::ComponentPtr mesh_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreMesh::NameStatic());
         //entity->AddEntityComponent(placeable_ptr);
         //entity->AddEntityComponent(mesh_ptr);
         //
         //EC_OgrePlaceable* placeable = static_cast<EC_OgrePlaceable*>(placeable_ptr.get());
         //EC_OgreMesh* mesh = static_cast<EC_OgreMesh*>(mesh_ptr.get());
-        //placeable->SetPosition(Core::Vector3df(0,0,-200));
+        //placeable->SetPosition(Core::Vector3df(-50,0,-200));
         //mesh->SetMesh("ogrehead.mesh");
         //mesh->SetPlaceable(placeable_ptr);
         //
         //Foundation::EntityPtr entity2 = scene->CreateEntity();
-        //Foundation::ComponentPtr light_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreLight::Name());
+        //Foundation::ComponentPtr light_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreLight::NameStatic());
         //entity2->AddEntityComponent(light_ptr);
         //
         //EC_OgreLight* light = static_cast<EC_OgreLight*>(light_ptr.get());
@@ -86,11 +88,32 @@ namespace OgreRenderer
         //light->SetDirection(Core::Vector3df(-1,-1,-1));
         //
         //Foundation::EntityPtr entity3 = scene->CreateEntity();
-        //Foundation::ComponentPtr sky_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreSky::Name());
+        //Foundation::ComponentPtr sky_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreSky::NameStatic());
         //entity3->AddEntityComponent(sky_ptr);
         //
         //EC_OgreSky* sky = static_cast<EC_OgreSky*>(sky_ptr.get());
         //sky->SetSkyBox("Sky", 1000);
+       
+        //Foundation::EntityPtr entity4 = scene->CreateEntity();
+        //Foundation::ComponentPtr placeable4_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgrePlaceable::NameStatic());
+        //Foundation::ComponentPtr custom4_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreCustomObject::NameStatic());
+        //entity4->AddEntityComponent(placeable4_ptr);
+        //entity4->AddEntityComponent(custom4_ptr);
+        //
+        //EC_OgrePlaceable* placeable4 = static_cast<EC_OgrePlaceable*>(placeable4_ptr.get());
+        //EC_OgreCustomObject* custom4 = static_cast<EC_OgreCustomObject*>(custom4_ptr.get());
+        //placeable4->SetPosition(Core::Vector3df(50,0,-200));
+        //custom4->SetPlaceable(placeable4_ptr);
+        //
+        //Ogre::ManualObject* manual = custom4->GetObject();
+        //manual->begin("BaseWhiteNoLighting");
+        //manual->position(Ogre::Vector3(-50,-50,0));
+        //manual->position(Ogre::Vector3(50,-50,0));
+        //manual->position(Ogre::Vector3(50,50,0));
+        //manual->position(Ogre::Vector3(-50,50,0));
+        //manual->triangle(0,1,2);
+        //manual->triangle(0,2,3);
+        //manual->end();
         //
         //renderer_->GetSceneManager()->setAmbientLight(Ogre::ColourValue(0.1,0.1,0.1));
     }
