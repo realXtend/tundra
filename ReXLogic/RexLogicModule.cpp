@@ -14,6 +14,7 @@
 #include "EC_SelectPriority.h"
 #include "EC_ServerScript.h"
 #include "EC_SpatialSound.h"
+#include "EC_OpenSimPrim.h"
 
 namespace RexLogic
 {
@@ -35,6 +36,7 @@ namespace RexLogic
         DECLARE_MODULE_EC(EC_SelectPriority);
         DECLARE_MODULE_EC(EC_ServerScript);
         DECLARE_MODULE_EC(EC_SpatialSound);
+        DECLARE_MODULE_EC(EC_OpenSimPrim);
 
         LogInfo("Module " + Name() + " loaded.");
     }
@@ -100,7 +102,7 @@ namespace RexLogic
             return (i->second)(event_id,data);
         else
             return false;
-    }
+    }  
 }
 
 using namespace RexLogic;

@@ -12,11 +12,18 @@ namespace Scene
         return module_->GetSceneManager()->CloneScene(Name(), newName);
     }
 
-    Foundation::EntityPtr Generic::CreateEntity(const Core::StringVector &components)
+    Foundation::EntityPtr Generic::CreateEntity(Core::entity_id_t id, const Core::StringVector &components)
     {
         Foundation::Framework *framework = module_->GetFramework();
 
-        Foundation::EntityPtr entity = Foundation::EntityPtr(new Scene::Entity(module_));
+        if(id != 0 && entities_.find(id) != entities_.end())
+        {
+            SceneModule::LogError("Can't create entity with given id because it's already used:" + Core::ToString(id));
+            Foundation::EntityPtr emptyptr;
+            return emptyptr;
+        }
+        
+        Foundation::EntityPtr entity = Foundation::EntityPtr(new Scene::Entity(id, module_));
         for (size_t i=0 ; i<components.size() ; ++i)
         {
             entity->AddEntityComponent(framework->GetComponentManager()->CreateComponent(components[i]));
@@ -27,10 +34,10 @@ namespace Scene
         return entity;
     }
 
-    Foundation::EntityPtr Generic::CreateEntity()
+    Foundation::EntityPtr Generic::CreateEntity(Core::entity_id_t id)
     {
         Core::StringVector empty;
-        return CreateEntity(empty);
+        return CreateEntity(id,empty);
     }
 
     Foundation::EntityPtr Generic::CloneEntity(const Foundation::EntityPtr &entity)

@@ -20,13 +20,13 @@ namespace Scene
         friend class Generic;
     private:
         //! default constructor
-        Entity();
+        Entity(Core::uint id);
 
         //! constructor that takes a module
         /*!
             \param module parent module
         */
-        Entity(SceneModule *module);
+        Entity(Core::uint id, SceneModule *module);
 
         //! copy constructor
         Entity(const Entity &other) : module_(other.module_), id_(gid_)

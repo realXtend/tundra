@@ -5,6 +5,7 @@
 
 #include "ComponentInterface.h"
 #include "Foundation.h"
+#include "RexTypes.h"
 
 namespace RexLogic
 {
@@ -14,8 +15,8 @@ namespace RexLogic
     public:
         virtual ~EC_ObjIdentity();
 
-        unsigned long long int RegionHandle;
-        unsigned long Id;
+        uint64_t RegionHandle;
+        uint32_t Id;
         std::string FullId; // tucofixme, change type to rexuuid?
         std::string OwnerId; // tucofixme, change type to rexuuid?
         std::string ParentId; // tucofixme, change type to rexuuid?
