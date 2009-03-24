@@ -1,4 +1,4 @@
 <subscribers>
-	<subscriber module="World Logic" priority="100" />
+	<subscriber module="RexLogic" priority="100" />
 </subscribers>
 
