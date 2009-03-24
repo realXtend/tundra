@@ -24,6 +24,12 @@ namespace OgreRenderer
     public:
         virtual ~EC_OgrePlaceable();
 
+        //! sets parent placeable
+        /*! set null placeable to attach to scene root (the default)
+            \param placeable new parent
+         */
+        void SetParent(Foundation::ComponentPtr placeable);
+        
         //! sets position
         /*! \param position new position
          */
@@ -37,6 +43,9 @@ namespace OgreRenderer
          */
         void SetScale(const Core::Vector3df& scale);
 
+        //! gets parent placeable
+        Foundation::ComponentPtr GetParent() { return parent_; }
+        
         //! returns position
         Core::Vector3df GetPosition() const;
         //! returns orientation
@@ -52,9 +61,18 @@ namespace OgreRenderer
         /*! \param module renderer module
          */
         EC_OgrePlaceable(Foundation::ModuleInterface* module);
-
+        
+        //! attaches scenenode to parent
+        void AttachNode();
+        
+        //! detaches scenenode from parent
+        void DetachNode();
+        
         //! renderer
         RendererPtr renderer_;
+        
+        //! parent placeable
+        Foundation::ComponentPtr parent_;
         
         //! Ogre scene node
         Ogre::SceneNode* scene_node_;
