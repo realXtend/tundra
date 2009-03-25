@@ -6,8 +6,10 @@
 #include <ctime>
 
 //#include "OpenSimProtocolModule_API.h"
+#include "RexTypes.h"
 #include "NetMessageList.h"
 
+using namespace RexTypes;
 class NetMessageManager;
 
 /** Helps building outbound packets by supporting convenient addition of new data to the message. Also
