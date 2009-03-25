@@ -27,7 +27,7 @@ namespace RexLogic
     
         msg->ResetReading();    
         RegionHandle = msg->ReadU64();
-        msg->SkipToNextVariable(); // TimeDilation U16
+        msg->SkipToNextVariable();      // TimeDilation U16
         LocalId = msg->ReadU32();
         msg->SkipToNextVariable();		// State U8
         FullId = msg->ReadUUID();
@@ -37,7 +37,7 @@ namespace RexLogic
         
         Material = msg->ReadU8();
         ClickAction = msg->ReadU8();
-        Scale =  msg->ReadVector3(); // TODO tucofixme, Scale = msg->ReadVector3();
+        Scale = msg->ReadVector3();
         msg->SkipToNextVariable();      // ObjectData
         
         ParentId = msg->ReadU32();
@@ -50,4 +50,20 @@ namespace RexLogic
         msg->SkipToNextVariable();      // TextColor
         MediaUrl = (const char *)msg->ReadBuffer(&bytes_read);     
     }
+    
+    void EC_OpenSimPrim::HandleObjectName(OpenSimProtocol::NetworkEventInboundData* data)
+    {    
+        size_t bytes_read;
+    
+        data->message->SkipToFirstVariableByName("Name");
+        ObjectName = (const char *)data->message->ReadBuffer(&bytes_read); 
+    }
+    
+    void EC_OpenSimPrim::HandleObjectDescription(OpenSimProtocol::NetworkEventInboundData* data)
+    {    
+        size_t bytes_read;
+    
+        data->message->SkipToFirstVariableByName("Description");
+        Description = (const char *)data->message->ReadBuffer(&bytes_read); 
+    }    
 }
