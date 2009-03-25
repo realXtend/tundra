@@ -44,7 +44,7 @@ namespace Foundation
 			MT_Sound,
 			MT_Gui,
 			MT_WorldLogic,
-			MT_Network,
+			MT_OpenSimProtocol,
 			MT_Test,
 			MT_NetTestLogic,
 			MT_Python,

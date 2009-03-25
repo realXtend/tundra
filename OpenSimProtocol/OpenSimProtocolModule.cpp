@@ -90,17 +90,7 @@ namespace OpenSimProtocol
         eventManager_->SendEvent(networkEventOutCategory_, EVENT_NETWORK_OUT, &data);    
     }
     
-	void OpenSimProtocolModule::AddListener(INetMessageListener *listener)
-	{
-	    networkManager_->RegisterNetworkListener(listener);
-	}
-	
-	void OpenSimProtocolModule::RemoveListener(INetMessageListener *listener)
-	{
-	    networkManager_->UnregisterNetworkListener(listener);
-	}
-	
-	bool OpenSimProtocolModule::ConnectToRexServer(
+    bool OpenSimProtocolModule::ConnectToRexServer(
 	    const char *first_name,
 		const char *last_name,
 		const char *password,
@@ -108,9 +98,12 @@ namespace OpenSimProtocol
 		int port,
 		ClientParameters *params)
 	{
-	    PerformXMLRPCLogin(first_name, last_name, password, address, port, params);
-        bConnected_ = networkManager_->ConnectTo(address, port);
-        return bConnected_;
+	    if (!PerformXMLRPCLogin(first_name, last_name, password, address, port, params))
+	        return false;
+        if (!networkManager_->ConnectTo(address, port))
+            return false;
+        bConnected_ = true;
+        return true;
 	}
 	
 	void OpenSimProtocolModule::DisconnectFromRexServer()
@@ -119,7 +112,7 @@ namespace OpenSimProtocol
 	    bConnected_ = false;
 	}
 	
-    void OpenSimProtocolModule::PerformXMLRPCLogin(
+    bool OpenSimProtocolModule::PerformXMLRPCLogin(
         const char *first_name,
         const char *last_name,
         const char *password,
@@ -141,12 +134,14 @@ namespace OpenSimProtocol
             rpcConnection_ = shared_ptr<PocoXMLRPCConnection>(new PocoXMLRPCConnection(address, port));
         } catch(std::exception &e)
         {
-            std::cout << "Could not connect to server: " << e.what() << "." << std::endl;
-            return;
+            LogError("Could not connect to server. Reason: " + Core::ToString(e.what()) + ".");
+            return false;
         }
 
 		boost::shared_ptr<PocoXMLRPCCall> call = rpcConnection_->StartXMLRPCCall("login_to_simulator");
-
+        if(!call)
+            return false;
+            
 		call->AddStringMember("first", first_name);
 		call->AddStringMember("last", last_name);
 		call->AddStringMember("passwd", password_hash.c_str());
@@ -176,11 +171,14 @@ namespace OpenSimProtocol
 		call->AddStringToArray(arr, "login-flags");
 		call->AddStringToArray(arr, "global-textures");
 
-		rpcConnection_->FinishXMLRPCCall(call);
+		if(!rpcConnection_->FinishXMLRPCCall(call))
+		    return false;
 
 		params->sessionID.FromString(call->GetReplyString("session_id"));
 		params->agentID.FromString(call->GetReplyString("agent_id"));
 		params->circuitCode = call->GetReplyInt("circuit_code");
+		
+		return true;
 	}
 	
 	void OpenSimProtocolModule::DumpNetworkMessage(NetMsgID id, NetInMessage *msg)
