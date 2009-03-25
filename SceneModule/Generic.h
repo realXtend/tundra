@@ -26,6 +26,9 @@ namespace Scene
         // copy constuctor
         Generic( const Generic &other);
 
+        //! Current global id for entities
+        static Core::uint gid_;
+
     public:
         virtual ~Generic() {}
 
@@ -71,6 +74,9 @@ namespace Scene
         {
             return (entities_.find(id) != entities_.end());
         }
+    
+        //! Returns next available id
+        virtual Core::entity_id_t GetNextFreeId();
     
     private:
         typedef std::map<Core::entity_id_t, Foundation::EntityPtr> EntityMap;

@@ -28,12 +28,14 @@ namespace Scene
         */
         Entity(Core::uint id, SceneModule *module);
 
-        //! copy constructor
-        Entity(const Entity &other) : module_(other.module_), id_(gid_)
+        //! Copy constructor
+        Entity(const Entity &other) : module_(other.module_), id_(other.id_)
         {
-            gid_ = (gid_ + 1) % static_cast<Core::uint>(-1);
             components_ = other.components_;
         }
+
+        //! Set new id
+        void SetNewId(Core::entity_id_t id);
 
     public:
         virtual ~Entity();
@@ -71,12 +73,9 @@ namespace Scene
         typedef std::vector<Foundation::ComponentInterfacePtr> ComponentVector;
         ComponentVector components_;
 
-        //! Current global id for entities
-        static Core::uint gid_;
-
     private:
         //! Unique id for this entity
-        const Core::entity_id_t id_;
+        Core::entity_id_t id_;
 
         //! parent module
         SceneModule *module_;

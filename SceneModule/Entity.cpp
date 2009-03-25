@@ -8,16 +8,9 @@
 
 namespace Scene
 {
-    Core::uint Entity::gid_ = 0;
-
     Entity::Entity(Core::uint id, SceneModule *module) : EntityInterface(), module_(module), id_(id)
     {
-        assert (module_);   
-        if(id == 0)
-        {
-            id = gid_;
-            gid_ = (gid_ + 1) % static_cast<Core::uint>(-1);
-        }
+        assert (module_);
     }
 
     Entity::~Entity()
@@ -34,6 +27,11 @@ namespace Scene
         Foundation::EntityPtr new_entity = scene->CloneEntity(entity);
 
         return new_entity;
+    }
+
+    void Entity::SetNewId(Core::entity_id_t id)
+    {
+        id_ = id;
     }
 
     void Entity::AddEntityComponent(const Foundation::ComponentInterfacePtr &component)
