@@ -45,7 +45,7 @@ namespace NetTest
     {
 		using namespace OpenSimProtocol;
 		///\todo weak_pointerize
-        netInterface_ = dynamic_cast<OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_Network));
+        netInterface_ = dynamic_cast<OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol));
 		if (!netInterface_)
 		{
 			LogError("Getting network interface did not succeed.");
