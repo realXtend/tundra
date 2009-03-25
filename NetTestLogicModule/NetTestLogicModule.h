@@ -94,7 +94,7 @@ namespace NetTest
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
            
         /// Returns type of this module. Needed for logging.
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_NetTest;
+        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_NetTestLogic;
 
         /// Called for each network message received.
         //virtual void OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg);
