@@ -388,15 +388,14 @@ namespace NetTest
             password.c_str(), server_address.c_str(), port, &myInfo_);
             
         if(success)
-        {   
-            bRunning_ = true;
-            SendUseCircuitCodePacket();
-            SendCompleteAgentMovementPacket();
-            
+        {
             if (!netTestWindow)
                 InitNetTestWindow();
             
             netTestWindow->show();
+            bRunning_ = true;
+            SendUseCircuitCodePacket();
+            SendCompleteAgentMovementPacket();
             
             LogInfo("Connected to server " + server_address + ".");
         }

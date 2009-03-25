@@ -46,7 +46,7 @@ namespace Foundation
 			MT_WorldLogic,
 			MT_Network,
 			MT_Test,
-			MT_NetTest,
+			MT_NetTestLogic,
 			MT_Python,
             MT_Console,
 			MT_Unknown
