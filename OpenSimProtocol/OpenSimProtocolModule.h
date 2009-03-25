@@ -62,7 +62,7 @@ namespace OpenSimProtocol
     //! interface for modules
     class MODULE_API OpenSimProtocolModule : public Foundation::ModuleInterface_Impl, public INetMessageListener
     {
-    public:
+    public: 
         OpenSimProtocolModule();
         virtual ~OpenSimProtocolModule();
 
@@ -111,6 +111,11 @@ namespace OpenSimProtocol
         /// this class.
         void FinishMessageBuilding(NetOutMessage *msg);
 
+        /// Network event ID.
+        static const Core::event_id_t EVENT_NETWORK_IN = 0x1;
+        /// NetworkOutStats event ID.
+        static const Core::event_id_t EVENT_NETWORK_OUT = 0x2;   
+
     private:
         /// Initializes a login to a reX server that is not using a separate authentication server.
        	void PerformXMLRPCLogin(
@@ -138,12 +143,6 @@ namespace OpenSimProtocol
         
         /// Network event category for outbound messages.
         Core::event_category_id_t networkEventOutCategory_;		
-        
-        /// Network event ID.
-        static const Core::event_id_t EVENT_NETWORK_IN = 0x1;
-        
-        /// NetworkOutStats event ID.
-        static const Core::event_id_t EVENT_NETWORK_OUT = 0x1;
     };
 }
 

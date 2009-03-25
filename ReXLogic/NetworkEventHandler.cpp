@@ -3,6 +3,9 @@
 #include "StableHeaders.h"
 #include "NetworkEventHandler.h"
 #include "NetInMessage.h"
+#include "RexProtocolMsgIDs.h"
+#include "OpenSimProtocolModule.h"
+#include "RexLogicModule.h"
 
 #include "EC_ObjIdentity.h"
 #include "EC_ObjCollision.h"
@@ -26,13 +29,17 @@ namespace RexLogic
 
     bool NetworkEventHandler::HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        // TODO tucofixme, get event_id from opensimprotocol module?
-        switch(event_id)
+        if(event_id == OpenSimProtocol::OpenSimProtocolModule::EVENT_NETWORK_IN)
         {
-            case 0:  return HandleOSNE_ObjectUpdate(data); break;
-            case 1:  return HandleOSNE_RexPrimData(data); break;
-            default: return false; break;
+            OpenSimProtocol::NetworkEventInboundData *netdata = static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
+            switch(netdata->messageID)
+            {
+                case RexNetMsgObjectUpdate:   return HandleOSNE_ObjectUpdate(netdata); break;
+                case RexNetMsgGenericMessage: return HandleOSNE_GenericMessage(netdata); break;
+                default: return false; break;
+            }
         }
+        return false;
     }
 
     Foundation::EntityPtr NetworkEventHandler::GetEntitySafe(Core::entity_id_t entityid)
@@ -63,11 +70,9 @@ namespace RexLogic
         return entity;
     }
 
-    bool NetworkEventHandler::HandleOSNE_ObjectUpdate(Foundation::EventDataInterface* data)
-    {    
-        /*
-        // RexNetworkEventData *rexdata = static_cast<RexLogic::RexNetworkEventData *>(data);
-        NetInMessage *msg = NULL; // todo tucofixme,  = rexdata->Message;
+    bool NetworkEventHandler::HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data)
+    {
+        NetInMessage *msg = data->message;
  
         uint64_t regionhandle = msg->ReadU64();
         msg->SkipToNextVariable(); // TimeDilation U16
@@ -94,11 +99,16 @@ namespace RexLogic
         {
         
         }
-        */ 
+         
         return false;
     }
 
-    bool NetworkEventHandler::HandleOSNE_RexPrimData(Foundation::EventDataInterface* data)
+    bool NetworkEventHandler::HandleOSNE_GenericMessage(OpenSimProtocol::NetworkEventInboundData* data)
+    {
+        return false;    
+    }
+
+    bool NetworkEventHandler::HandleOSNE_RexPrimData(OpenSimProtocol::NetworkEventInboundData* data)
     {
         return false;
     }
