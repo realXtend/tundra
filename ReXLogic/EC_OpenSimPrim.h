@@ -6,6 +6,7 @@
 #include "ComponentInterface.h"
 #include "Foundation.h"
 #include "RexUUID.h"
+#include "OpenSimProtocolModule.h"
 
 namespace RexLogic
 {
@@ -17,15 +18,22 @@ namespace RexLogic
 
         // !ID related
         uint64_t RegionHandle;
-        unsigned long LocalId;
+        uint32_t LocalId;
         RexUUID FullId;
-        RexUUID OwnerId; 
-        RexUUID ParentId; 
+        uint32_t ParentId; 
         
         std::string ObjectName;
         std::string Description;
+        std::string HoveringText;
+        std::string MediaUrl;
 
-        void HandleObjectUpdate(Foundation::EventDataInterface* data);
+        uint8_t Material;
+        uint8_t ClickAction;
+        uint32_t UpdateFlags;
+        
+        Vector3 Scale;
+
+        void HandleObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
 
     private:
         EC_OpenSimPrim(Foundation::ModuleInterface* module);

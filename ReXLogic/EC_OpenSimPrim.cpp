@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "EC_OpenSimPrim.h"
 #include "NetInMessage.h"
+#include "RexLogicModule.h"
 
 namespace RexLogic
 {
@@ -19,19 +20,34 @@ namespace RexLogic
     {
     }
     
-    void EC_OpenSimPrim::HandleObjectUpdate(Foundation::EventDataInterface* data)
+    void EC_OpenSimPrim::HandleObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data)
     {
-        // RexNetworkEventData *rexdata = static_cast<RexLogic::RexNetworkEventData *>(data);
-        NetInMessage *msg = NULL; // // todo tucofixme, rexdata->Message;    
+        size_t bytes_read;
+        NetInMessage *msg = data->message;    
     
-        // TODO: tucofixme set values based on data
-        RegionHandle = 0;
-        LocalId = 0;
-        // TODO: tucofixmeFullId = ""; 
-        // TODO: tucofixmeOwnerId = "";
-        // TODO: tucofixmeParentId = "";
+        msg->ResetReading();    
+        RegionHandle = msg->ReadU64();
+        msg->SkipToNextVariable(); // TimeDilation U16
+        LocalId = msg->ReadU32();
+        msg->SkipToNextVariable();		// State U8
+        FullId = msg->ReadUUID();
         
-        ObjectName = "";
-        Description = "";
+        msg->SkipToNextVariable();		// CRC U32
+        msg->SkipToNextVariable();      // PCode  
+        
+        Material = msg->ReadU8();
+        ClickAction = msg->ReadU8();
+        msg->SkipToNextVariable(); // TODO tucofixme, Scale = msg->ReadVector3();
+        msg->SkipToNextVariable();      // ObjectData
+        
+        ParentId = msg->ReadU32();
+        UpdateFlags = msg->ReadU32();
+        
+        // Skip path related variables
+
+        msg->SkipToFirstVariableByName("Text");
+        HoveringText = (const char *)msg->ReadBuffer(&bytes_read); 
+        msg->SkipToNextVariable();      // TextColor
+        MediaUrl = (const char *)msg->ReadBuffer(&bytes_read);     
     }
 }
