@@ -205,7 +205,7 @@ bool NetInMessage::ReadBool()
 	}
 }
 
-/*Vector3 NetInMessage::ReadVector3()
+Vector3 NetInMessage::ReadVector3()
 {
 	if (CheckNextVariableType() == NetVarVector3)
 	{
@@ -216,11 +216,11 @@ bool NetInMessage::ReadBool()
 	else 
 	{	
 		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return 0;
+		return Vector3();
 	}
-}*/
+}
 
-/*Vector3d NetInMessage::ReadVector3d()
+Vector3d NetInMessage::ReadVector3d()
 {
 	if (CheckNextVariableType() == NetVarVector3d)
 	{
@@ -231,11 +231,11 @@ bool NetInMessage::ReadBool()
 	else 
 	{	
 		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return 0;
+		return Vector3d();
 	}
-}*/
+}
 
-/*Vector4 NetInMessage::ReadVector4()
+Vector4 NetInMessage::ReadVector4()
 {
 	if (CheckNextVariableType() == NetVarVector4)
 	{
@@ -246,11 +246,16 @@ bool NetInMessage::ReadBool()
 	else 
 	{	
 		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return 0;
+		Vector4 temp; ///\todo
+		temp.x = 0;
+		temp.y = 0;
+		temp.z = 0;
+		temp.w = 0;
+		return temp;
 	}
-}*/
+}
 
-/*Quaternion NetInMessage::ReadQuaternion()
+Quaternion NetInMessage::ReadQuaternion()
 {
 	if (CheckNextVariableType() == NetVarQuaternion)
 	{
@@ -261,9 +266,9 @@ bool NetInMessage::ReadBool()
 	else 
 	{	
 		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return 0;
+		return Quaternion();
 	}
-}*/
+}
 
 RexUUID NetInMessage::ReadUUID()
 {
