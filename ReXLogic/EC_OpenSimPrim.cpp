@@ -37,7 +37,7 @@ namespace RexLogic
         
         Material = msg->ReadU8();
         ClickAction = msg->ReadU8();
-        msg->SkipToNextVariable(); // TODO tucofixme, Scale = msg->ReadVector3();
+        Scale =  msg->ReadVector3(); // TODO tucofixme, Scale = msg->ReadVector3();
         msg->SkipToNextVariable();      // ObjectData
         
         ParentId = msg->ReadU32();
