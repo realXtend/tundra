@@ -2,8 +2,7 @@
 #ifndef incl_RexTypes_h
 #define incl_RexTypes_h
 
-#include "CoreDefines.h"
-
+#include "CoreStableHeaders.h"
 #include "boost/cstdint.hpp"
 
 ///\todo Move all these to core framework headers.
@@ -16,21 +15,11 @@ using boost::int16_t;
 using boost::int32_t;
 using boost::int64_t;
 
-///\todo Create own classes/use core classes.
-struct Vector3
-{
-	float x;
-	float y;
-	float z;
-};
-
-struct Vector3d
-{
-	double x;
-	double y;
-	double z;
-};
-
+namespace RexTypes
+{   
+typedef Core::Vector3D<float> Vector3;
+typedef Core::Vector3D<double> Vector3d;
+typedef Core::Quaternion Quaternion;
 struct Vector4
 {
 	float x;
@@ -38,14 +27,6 @@ struct Vector4
 	float z;
 	float w;
 };
-
-struct Quaternion
-{
-	float x;
-	float y;
-	float z;
-	float w;
-};
-
+}
 
 #endif

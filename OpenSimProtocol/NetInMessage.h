@@ -6,6 +6,8 @@
 #include "RexTypes.h"
 #include "NetMessageList.h"
 
+using namespace RexTypes;
+
 /** Helps parsing inbound packets by supporting convenient reading of new data from the message. Also
 	tracks that the message is read with the right structure. */
 class MODULE_API NetInMessage
@@ -30,10 +32,10 @@ public:
 
 	bool ReadBool();
 
-	Vector3  ReadVector3();
-	Vector3d ReadVector3d();
-	Vector4  ReadVector4();
-	Quaternion ReadQuaternion();
+    Vector3 ReadVector3();
+    Vector3d ReadVector3d();
+	Vector4 ReadVector4();
+    Quaternion ReadQuaternion();
 
 	RexUUID ReadUUID();
 	//IPADDR	ReadIPAddr(IPADDR value);  ///\todo
