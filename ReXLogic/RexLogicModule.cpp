@@ -54,9 +54,6 @@ namespace RexLogic
         // WorldLogic::registerSystem(framework);
         // world_logic_ = new WorldLogic(framework);
         network_handler_ = new NetworkEventHandler(framework_);
-
-        // framework_->GetEventManager()->RegisterEventCategory("OpenSimNetwork"); // TODO tucofixme, this registering should be done in network module, it's here for testing purposes only.
-
         LogInfo("Module " + Name() + " initialized.");
     }
 
@@ -68,7 +65,7 @@ namespace RexLogic
         if (sceneManager->HasScene("World") == false)
             sceneManager->CreateScene("World");
 
-        Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("OpenSimNetwork"); // TODO tucofixme, right event category
+        Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
         if(eventcategoryid != 0)
             event_handlers_[eventcategoryid] = boost::bind(&NetworkEventHandler::HandleOpenSimNetworkEvent,network_handler_, _1, _2);
         else
@@ -87,11 +84,7 @@ namespace RexLogic
     // virtual
     void RexLogicModule::Update()
     {
-        // tucofixme, test event system
-        // Foundation::EventDataInterface params;
 
-        // framework_->GetEventManager()->SendEvent(framework_->GetEventManager()->QueryEventCategory("OpenSimNetwork"),0,NULL);
-        // framework_->GetEventManager()->SendEvent(framework_->GetEventManager()->QueryEventCategory("OpenSimNetwork"),1,&params);
     }
 
     // virtual
