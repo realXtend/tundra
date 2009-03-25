@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <ctime>
 
+//#include "OpenSimProtocolModule_API.h"
 #include "NetMessageList.h"
 
 class NetMessageManager;
@@ -84,7 +85,7 @@ private: // friend-public:
 	void SetSequenceNumber(size_t seqNum);
 	
 	/// Set the type of the packet we're building.
-	void SetMessageType(const NetMessageInfo *info);
+	void SetMessageInfo(const NetMessageInfo *info);
 	
 	// NetMessageManager manages the internal header fields of the message, but this can't all be done ctor-time.
 	friend class NetMessageManager;

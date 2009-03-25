@@ -164,7 +164,7 @@ NetMessageManager::~NetMessageManager()
 
 void NetMessageManager::DumpNetworkMessage(NetMsgID id, NetInMessage *msg)
 {
-	const NetMessageInfo *info = msg->GetMessageType();
+	const NetMessageInfo *info = msg->GetMessageInfo();
 	if (!info)
 	{
 		std::cout << "Packet with invalid ID received: 0x" << std::hex << id << "." << std::endl;
@@ -370,7 +370,7 @@ NetOutMessage *NetMessageManager::StartNewMessage(NetMsgID id)
 	else
 		newMsg = new NetOutMessage();
 
-	newMsg->SetMessageType(info);
+	newMsg->SetMessageInfo(info);
 	newMsg->AddMessageHeader();
 	usedMessagePool.push_back(newMsg);
 	

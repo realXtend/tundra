@@ -43,6 +43,7 @@ INCLUDE_XMLRPCEPI()
 INCLUDE_GTKMM()
 
 add_definitions (-DMODULE_EXPORTS)
+#add_definitions (-NETTEST_MODULE_EXPORTS)
 
 # Define dynamic library
 if (NOT MSVC)

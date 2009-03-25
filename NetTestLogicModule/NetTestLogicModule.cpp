@@ -6,18 +6,10 @@
 
 #include "RexProtocolMsgIDs.h"
 
-/// Login credentials. 
-///\todo Use real ones, not hardcoded.
-/*const char serverAddress[] = "192.168.1.144";
-const int port = 9000;
-const char firstName[] = "jj";
-const char lastName[] = "jj";
-const char password[] = "jj";*/
-
 namespace NetTest
 {
     NetTestLogicModule::NetTestLogicModule() 
-    : ModuleInterface_Impl("NetTest"),
+    : ModuleInterface_Impl("NetTestLogicModule"),
     bRunning_(false),
     bLogoutSent_(false),
     loginWindow(0),
@@ -26,7 +18,8 @@ namespace NetTest
         objectList_.clear();
         avatarList_.clear();
     }
-
+    
+    // virtual
     NetTestLogicModule::~NetTestLogicModule()
     {
     	for(ObjectList_t::iterator iter = objectList_.begin(); iter != objectList_.end(); ++iter)
@@ -48,27 +41,31 @@ namespace NetTest
         LogInfo("Module " + Name() + " unloaded.");
     }
 
-    void NetTestLogicModule::Initialize() {}
-
-    // virtual
-    void NetTestLogicModule::PostInitialize()
+    void NetTestLogicModule::Initialize()
     {
-        assert(framework_ != NULL);
-		
 		using namespace OpenSimProtocol;
 		///\todo weak_pointerize
         netInterface_ = dynamic_cast<OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_Network));
 		if (!netInterface_)
 		{
 			LogError("Getting network interface did not succeed.");
-			//framework_->GetModuleManager()->UninitializeModule(this);
+			///\todo Terminate this module.
 			return;
 		}
-		
-		netInterface_->AddListener(this);
+       
+        LogInfo("Module " + Name() + " initialized.");
+    }
+
+    // virtual
+    void NetTestLogicModule::PostInitialize()
+    {
+        //Get event category id's.
+        inboundCategoryID_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
+        outboundCategoryID_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkOut");
         
-        LogInfo("Module " + Name() + " initialized.");        
-        
+        if(inboundCategoryID_ == 0 || outboundCategoryID_ == 0)
+            LogWarning("Unable to find event category for OpenSimNetwork events!");
+            
         InitLoginWindow();
         InitNetTestWindow();
 
@@ -80,13 +77,15 @@ namespace NetTest
         
         loginWindow->set_position(Gtk::WIN_POS_CENTER);
         loginWindow->show();
-        
     }
 
     // virtual 
     void NetTestLogicModule::Uninitialize()
-    {        
-        netInterface_->RemoveListener(this);
+    {
+		assert(framework_ != NULL);
+		framework_ = NULL;
+        
+        //netInterface_->RemoveListener(this);
         
         SAFE_DELETE(netTestWindow)
         SAFE_DELETE(loginWindow)
@@ -99,23 +98,104 @@ namespace NetTest
     {
 
     }
-    
-    // virtual
-    void NetTestLogicModule::OnNetworkMessageSent(const NetOutMessage *msg)
+
+    //virtual 
+    bool NetTestLogicModule::HandleEvent(
+        Core::event_category_id_t category_id,
+        Core::event_id_t event_id, 
+        Foundation::EventDataInterface* data)
     {
-        std::stringstream ss;
-        const NetMessageInfo *info = msg->GetMessageInfo();
-        assert(info);
+        if (category_id == inboundCategoryID_)
+        {
+            OpenSimProtocol::NetworkEventInboundData *event_data = static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
+            const NetMsgID msgID = event_data->messageID;
+            NetInMessage *msg = event_data->message;
+            const NetMessageInfo *info = event_data->message->GetMessageInfo();
+            assert(info);
+            
+            std::stringstream ss;
+            ss << info->name << " received, " << Core::ToString(msg->GetDataSize()) << " bytes.";
 
-        ss << info->name << " sent, " << Core::ToString(msg->BytesFilled()) << " bytes.";
+		    LogInfo(ss.str());
+		    if(bLogInbound_)
+		        WriteToLogWindow(ss.str());
+		        
+            switch(msgID)
+		    {
+		    case RexNetMsgRegionHandshake:
+			    {
+				    LogInfo("\"RegionHandshake\" received, " + Core::ToString(msg->GetDataSize()) + " bytes.");
 
-		LogInfo(ss.str());
-		if(bShowOutbound_)
-		    WriteToLogWindow(ss.str());
+                    msg->SkipToNextVariable(); // RegionFlags U32
+				    msg->SkipToNextVariable(); // SimAccess U8
+				    size_t bytesRead = 0;
+				    simName_ = (const char *)msg->ReadBuffer(&bytesRead);
+    				
+				    LogInfo("Joined to the sim \"" + simName_ + "\".");
+    				
+				    std::string title = "Logged in to ";
+				    title.append(simName_);
+                    netTestWindow->set_title(title);
+    			    break;
+			    }
+		    case RexNetMsgChatFromSimulator:
+		        {
+		            std::stringstream ss;
+		            size_t bytes_read;
+
+		            std::string name = (const char *)msg->ReadBuffer(&bytes_read);
+		            msg->SkipToFirstVariableByName("Message");
+		            std::string message = (const char *)msg->ReadBuffer(&bytes_read);
+		            ss << "[" << Core::GetLocalTimeString() << "] " << name << ": " << message << std::endl;
+
+    	            WriteToChatWindow(ss.str());
+		            break;
+		        }
+            case RexNetMsgLogoutReply:
+			    {
+				    RexUUID aID = msg->ReadUUID();
+				    RexUUID sID = msg->ReadUUID();
+    	
+				    // Log out if the id's match.
+				    if (aID == myInfo_.agentID && sID == myInfo_.sessionID)
+				    {
+					    LogInfo("\"LogoutReply\" received with matching IDs. Logging out.");
+                        bRunning_ = false;
+                        bLogoutSent_ = false;
+                        netInterface_->DisconnectFromRexServer();
+                        SAFE_DELETE(netTestWindow);
+				    }
+				    break;
+			    }
+		    default:
+			    netInterface_->DumpNetworkMessage(msgID, msg);
+			    break;
+            }
+            
+            return true;
+        }
+        else if (category_id == outboundCategoryID_)
+        {
+//            const msgID = event_data->message->messageID;
+//            const NetInMessage *msg = event_data->message->message;
+            OpenSimProtocol::NetworkEventOutboundData *event_data = static_cast<OpenSimProtocol::NetworkEventOutboundData *>(data);
+            const NetMessageInfo *info = event_data->message->GetMessageInfo();
+            assert(info);
+            
+            std::stringstream ss;
+            ss << info->name << " sent, " << Core::ToString(event_data->message->BytesFilled()) << " bytes.";
+
+		    LogInfo(ss.str());
+		    if(bLogOutbound_)
+		        WriteToLogWindow(ss.str());
+	        return true;
+        }
+        else
+            return false;
     }
 
     //virtual 
-    void NetTestLogicModule::OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg)
+    /*void NetTestLogicModule::OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg)
     {
         std::stringstream ss;
         const NetMessageInfo *info = msg->GetMessageType();
@@ -124,7 +204,7 @@ namespace NetTest
         ss << info->name << " received, " << Core::ToString(msg->GetDataSize()) << " bytes.";
 
 		LogInfo(ss.str());
-		if(bShowInbound_)
+		if(bLogInbound_)
 		    WriteToLogWindow(ss.str());
 
         switch(msgID)
@@ -243,7 +323,7 @@ namespace NetTest
 			netInterface_->DumpNetworkMessage(msgID, msg);
 			break;
 		}        
-    }
+    }*/
     
     void NetTestLogicModule::OnClickConnect()
     {
@@ -401,8 +481,8 @@ namespace NetTest
     {
         Gtk::CheckButton *checkbutton_inbound = netTestControls->get_widget("checkbutton_inbound", checkbutton_inbound);
         Gtk::CheckButton *checkbutton_outbound = netTestControls->get_widget("checkbutton_outbound", checkbutton_outbound);
-        bShowInbound_ = checkbutton_inbound->get_active();
-        bShowOutbound_ = checkbutton_outbound->get_active();
+        bLogInbound_ = checkbutton_inbound->get_active();
+        bLogOutbound_ = checkbutton_outbound->get_active();
     }
     
 	void NetTestLogicModule::SendUseCircuitCodePacket()

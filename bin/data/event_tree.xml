@@ -1,4 +1,5 @@
 <subscribers>
 	<subscriber module="RexLogicModule" priority="100" />
+	<subscriber module="NetTestLogicModule" priority="100" />
 </subscribers>
 

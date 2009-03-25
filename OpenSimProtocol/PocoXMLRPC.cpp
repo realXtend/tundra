@@ -175,20 +175,19 @@ bool PocoXMLRPCConnection::FinishXMLRPCCall(boost::shared_ptr<PocoXMLRPCCall> ca
 	curl_slist_free_all(headers);
 	curl_formfree(post);
 
+	///\todo Not sure about XMLRPC-EPI, does it really free all the allocated memory just by calling this? Docs say so,
+	///      but samples tell otherwise.
+	XMLRPC_Free(outBuf);
+	XMLRPC_RequestFree(call->request, 1);
+	call->request = 0;
+	call->xParamList = 0;
+
 	if (result != CURLE_OK)
 	{
 		cout << "cURL error: " << curl_error_buffer << "." << endl;
 		return false;
 	}
 
-	XMLRPC_Free(outBuf);
-
-	///\todo Not sure about XMLRPC-EPI, does it really free all the allocated memory just by calling this? Docs say so,
-	///      but samples tell otherwise.
-	XMLRPC_RequestFree(call->request, 1);
-	call->request = 0;
-	call->xParamList = 0;
-	
 	// Convert the XML string to a XMLRPC reply structure.
 	if (response_data.size() == 0)
 		return false;

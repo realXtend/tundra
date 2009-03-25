@@ -10,14 +10,17 @@
 #include "OpenSimAuth.h"
 #include "RexProtocolMsgIDs.h"
 
+using namespace Foundation;
+
 namespace OpenSimProtocol
 {
 	OpenSimProtocolModule::OpenSimProtocolModule() :
-    ModuleInterface_Impl(Foundation::Module::MT_Network),
-    networkState_(State_Disconnected)
+    ModuleInterface_Impl("OpenSimProtocolModule"),
+    bConnected_(false)
     {
     }
-
+    
+    // virtual
     OpenSimProtocolModule::~OpenSimProtocolModule()
     {
     }
@@ -42,15 +45,24 @@ namespace OpenSimProtocol
 		
 		networkManager_ = shared_ptr<NetMessageManager>(new NetMessageManager(filename));
 		assert(networkManager_);
-		
+		    
+		networkManager_->RegisterNetworkListener(this);
+        
+        // Register event categories.
+        eventManager_ = framework_->GetEventManager();
+        networkEventInCategory_ = eventManager_->RegisterEventCategory("OpenSimNetworkIn");
+        networkEventOutCategory_ = eventManager_->RegisterEventCategory("OpenSimNetworkOut");
+        
         LogInfo("System " + Name() + " initialized.");
     }
 
     // virtual 
     void OpenSimProtocolModule::Uninitialize()
     {		
-		if(networkState_ == State_Connected)
+		if(bConnected_)
 		    DisconnectFromRexServer();
+        
+        networkManager_->UnregisterNetworkListener(this);
       
 		LogInfo("System " + Name() + " uninitialized.");
     }
@@ -58,10 +70,26 @@ namespace OpenSimProtocol
     // virtual
     void OpenSimProtocolModule::Update()
     {
-        if (networkState_ == State_Connected)
+        if (bConnected_)
             networkManager_->ProcessMessages();
     }
-
+    
+    //virtual
+    void OpenSimProtocolModule::OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg)
+    {
+        // Send a Network event.
+        NetworkEventInboundData data(msgID, msg);
+        eventManager_->SendEvent(networkEventInCategory_, EVENT_NETWORK_IN, &data);
+    }
+        
+    //virtual
+    void OpenSimProtocolModule::OnNetworkMessageSent(const NetOutMessage *msg)
+    {
+        // Send a NetworkOutStats event.
+        NetworkEventOutboundData data(msg->GetMessageID(), msg);
+        eventManager_->SendEvent(networkEventOutCategory_, EVENT_NETWORK_OUT, &data);    
+    }
+    
 	void OpenSimProtocolModule::AddListener(INetMessageListener *listener)
 	{
 	    networkManager_->RegisterNetworkListener(listener);
@@ -80,20 +108,15 @@ namespace OpenSimProtocol
 		int port,
 		ClientParameters *params)
 	{
-	    bool success = false;
-	
 	    PerformXMLRPCLogin(first_name, last_name, password, address, port, params);
-        success = networkManager_->ConnectTo(address, port);
-	    if (success)
-            networkState_ = State_Connected;
-        
-        return success;        
+        bConnected_ = networkManager_->ConnectTo(address, port);
+        return bConnected_;
 	}
 	
 	void OpenSimProtocolModule::DisconnectFromRexServer()
 	{
 	    networkManager_->Disconnect();
-	    networkState_ = State_Disconnected;
+	    bConnected_ = false;
 	}
 	
     void OpenSimProtocolModule::PerformXMLRPCLogin(
