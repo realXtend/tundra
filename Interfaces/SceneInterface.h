@@ -58,6 +58,9 @@ namespace Foundation
 
         //! Returns true if entity with the specified id exists in this scene, false otherwise
         virtual bool HasEntity(Core::entity_id_t id) const = 0;
+        
+        //! Get the next free id
+        virtual Core::entity_id_t GetNextFreeId() = 0;
     };
 
     //! Acts as a generic scenegraph for all entities in the world
