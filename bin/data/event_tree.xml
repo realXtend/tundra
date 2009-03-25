@@ -1,4 +1,4 @@
 <subscribers>
-	<subscriber module="RexLogic" priority="100" />
+	<subscriber module="RexLogicModule" priority="100" />
 </subscribers>
 
