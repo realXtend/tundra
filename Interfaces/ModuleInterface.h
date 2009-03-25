@@ -56,7 +56,7 @@ namespace Foundation
         {
             assert(type != MT_Unknown);
 
-            static const std::string type_strings[MT_Unknown] = { "SceneModule", "OgreRenderingModule", "SoundModule", "Gui", "RexLogic", "OpenSimProtocolModule", "TestModule", "NetTestLogicModule", "PythonModule", "ConsoleModule" };
+            static const std::string type_strings[MT_Unknown] = { "SceneModule", "OgreRenderingModule", "SoundModule", "GtkmmUI", "RexLogicModule", "OpenSimProtocolModule", "TestModule", "NetTestLogicModule", "PythonModule", "ConsoleModule" };
 
             return type_strings[type];
         }
