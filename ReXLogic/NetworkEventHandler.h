@@ -19,11 +19,17 @@ namespace RexLogic
         bool HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
     private:
         bool HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleOSNE_ObjectName(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleOSNE_ObjectDescription(OpenSimProtocol::NetworkEventInboundData* data);
+        
         bool HandleOSNE_GenericMessage(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_RexPrimData(OpenSimProtocol::NetworkEventInboundData* data);
         
-        Foundation::EntityPtr GetEntitySafe(Core::entity_id_t entityid);
-        Foundation::EntityPtr CreateNewEntity(Core::entity_id_t entityid);
+        Foundation::EntityPtr GetPrimEntitySafe(Core::entity_id_t entityid);
+        Foundation::EntityPtr CreateNewPrimEntity(Core::entity_id_t entityid);
+
+        Foundation::EntityPtr GetAvatarEntitySafe(Core::entity_id_t entityid);
+        Foundation::EntityPtr CreateNewAvatarEntity(Core::entity_id_t entityid);
 
         Foundation::Framework *framework_;
     };

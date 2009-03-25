@@ -34,41 +34,64 @@ namespace RexLogic
             OpenSimProtocol::NetworkEventInboundData *netdata = static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
             switch(netdata->messageID)
             {
-                case RexNetMsgObjectUpdate:   return HandleOSNE_ObjectUpdate(netdata); break;
-                case RexNetMsgGenericMessage: return HandleOSNE_GenericMessage(netdata); break;
+                case RexNetMsgObjectUpdate:             return HandleOSNE_ObjectUpdate(netdata); break;
+                case RexNetMsgGenericMessage:           return HandleOSNE_GenericMessage(netdata); break;
+                case RexNetMsgObjectName:               return HandleOSNE_ObjectName(netdata); break;
+                case RexNetMsgObjectDescription:        return HandleOSNE_ObjectDescription(netdata); break;                
                 default: return false; break;
             }
         }
         return false;
     }
 
-    Foundation::EntityPtr NetworkEventHandler::GetEntitySafe(Core::entity_id_t entityid)
+    Foundation::EntityPtr NetworkEventHandler::GetPrimEntitySafe(Core::entity_id_t entityid)
     {
-        // TODO tucofixme, use stored pointers to scenemanager and scene instead of always getting them?
         Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
 
-        Foundation::EntityPtr entity;
+        // TODO tucofixme, how to make sure this is a prim entity?
         if (!scene->HasEntity(entityid))
-            return CreateNewEntity(entityid);
+            return CreateNewPrimEntity(entityid);
         else
             return scene->GetEntity(entityid);
     }
-
-    Foundation::EntityPtr NetworkEventHandler::CreateNewEntity(Core::entity_id_t entityid)
+    
+    Foundation::EntityPtr NetworkEventHandler::CreateNewPrimEntity(Core::entity_id_t entityid)
     {
-        // TODO tucofixme, use stored pointers to scenemanager and scene instead of always getting them?
         Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
         
-        Foundation::EntityPtr entity = scene->CreateEntity(entityid);
-        if(entity)
-        {
-            Foundation::ComponentPtr component = framework_->GetComponentManager()->CreateComponent(EC_OpenSimPrim::NameStatic()); 
-            entity->AddEntityComponent(component);
-        }
+        Core::StringVector defaultcomponents;
+        defaultcomponents.push_back(EC_OpenSimPrim::NameStatic());
+        
+        Foundation::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents); 
         return entity;
     }
+    
+    Foundation::EntityPtr NetworkEventHandler::GetAvatarEntitySafe(Core::entity_id_t entityid)
+    {
+        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+        Foundation::ScenePtr scene = sceneManager->GetScene("World");
+
+        // TODO tucofixme, how to make sure this is a avatar entity?
+        if (!scene->HasEntity(entityid))
+            return CreateNewAvatarEntity(entityid);
+        else
+            return scene->GetEntity(entityid);
+    }    
+
+    Foundation::EntityPtr NetworkEventHandler::CreateNewAvatarEntity(Core::entity_id_t entityid)
+    {
+        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+        Foundation::ScenePtr scene = sceneManager->GetScene("World");
+        
+        Core::StringVector defaultcomponents;
+        // TODO tucofixme, add avatar default components
+        
+        Foundation::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents); 
+        return entity;
+    }
+
 
     bool NetworkEventHandler::HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data)
     {
@@ -82,12 +105,12 @@ namespace RexLogic
         msg->SkipToNextVariable();		// State U8
         RexUUID fullid = msg->ReadUUID();
         msg->SkipToNextVariable();		// CRC U32
-        uint8_t pcode = msg->ReadU8();        
-
+        uint8_t pcode = msg->ReadU8();
+        
         // object
         if (pcode == 0x09)
         {
-            Foundation::EntityPtr entity = GetEntitySafe(localid);
+            Foundation::EntityPtr entity = GetPrimEntitySafe(localid);
             if(entity)
             {
                 Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
@@ -97,11 +120,35 @@ namespace RexLogic
         // avatar
         else if (pcode == 0x2f)
         {
-        
+            Foundation::EntityPtr entity = GetAvatarEntitySafe(localid);
+            // TODO tucofixme, set values to component      
         }
          
         return false;
     }
+
+    bool NetworkEventHandler::HandleOSNE_ObjectName(OpenSimProtocol::NetworkEventInboundData* data)
+    {
+        NetInMessage *msg = data->message;
+    
+        msg->ResetReading();
+        msg->SkipToFirstVariableByName("LocalID");
+        uint32_t localid = msg->ReadU32();
+        
+        Foundation::EntityPtr entity = GetPrimEntitySafe(localid);
+        if(entity)
+        {
+            Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
+            static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectDescription(data);        
+        }
+        return false;    
+    }
+
+    bool NetworkEventHandler::HandleOSNE_ObjectDescription(OpenSimProtocol::NetworkEventInboundData* data)
+    {
+        return false;    
+    }
+
 
     bool NetworkEventHandler::HandleOSNE_GenericMessage(OpenSimProtocol::NetworkEventInboundData* data)
     {

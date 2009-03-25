@@ -34,12 +34,11 @@ namespace RexLogic
         Vector3 Scale;
 
         void HandleObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
+        void HandleObjectName(OpenSimProtocol::NetworkEventInboundData* data);
+        void HandleObjectDescription(OpenSimProtocol::NetworkEventInboundData* data);
 
     private:
         EC_OpenSimPrim(Foundation::ModuleInterface* module);
-
-
-
     };
 }
 
