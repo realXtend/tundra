@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Mon Mar 23 11:13:02 2009 -->
+<!--Generated with glade3 3.4.3 on Mon Mar 23 15:27:30 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="window_nettest">
     <child>
@@ -9,6 +9,43 @@
         <property name="n_rows">4</property>
         <property name="n_columns">3</property>
         <property name="column_spacing">1</property>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <widget class="GtkLabel" id="label_object_list">
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">Object List</property>
+          </widget>
+          <packing>
+            <property name="left_attach">2</property>
+            <property name="right_attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="GtkLabel" id="label_avatar_list">
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">Avatar List</property>
+          </widget>
+          <packing>
+            <property name="left_attach">2</property>
+            <property name="right_attach">3</property>
+            <property name="top_attach">2</property>
+            <property name="bottom_attach">3</property>
+          </packing>
+        </child>
         <child>
           <widget class="GtkVBox" id="vbox3">
             <property name="visible">True</property>
@@ -51,21 +88,6 @@
             <property name="top_attach">1</property>
             <property name="bottom_attach">2</property>
           </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
         </child>
         <child>
           <widget class="GtkVBox" id="vbox1">
@@ -120,18 +142,6 @@
           </packing>
         </child>
         <child>
-          <widget class="GtkLabel" id="label_avatar_list">
-            <property name="visible">True</property>
-            <property name="label" translatable="yes">Avatar List</property>
-          </widget>
-          <packing>
-            <property name="left_attach">2</property>
-            <property name="right_attach">3</property>
-            <property name="top_attach">2</property>
-            <property name="bottom_attach">3</property>
-          </packing>
-        </child>
-        <child>
           <widget class="GtkLabel" id="label_chat">
             <property name="visible">True</property>
             <property name="label" translatable="yes">Chat</property>
@@ -139,16 +149,6 @@
           <packing>
             <property name="top_attach">2</property>
             <property name="bottom_attach">3</property>
-          </packing>
-        </child>
-        <child>
-          <widget class="GtkLabel" id="label_object_list">
-            <property name="visible">True</property>
-            <property name="label" translatable="yes">Object List</property>
-          </widget>
-          <packing>
-            <property name="left_attach">2</property>
-            <property name="right_attach">3</property>
           </packing>
         </child>
         <child>

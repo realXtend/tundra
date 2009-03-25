@@ -2,6 +2,7 @@
 #ifndef incl_RexUUID_h
 #define incl_RexUUID_h
 
+//#include "OpenSimProtocolModule_API.h"
 #include "RexTypes.h"
 
 /// RexUUID is a 16-byte identifier for resources in a virtual world.

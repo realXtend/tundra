@@ -10,12 +10,10 @@
 
 #define UNREFERENCED_PARAM(P)               (P)
 
-#define TO_STRING(p) boost::lexical_cast<std::string>(p)
-
 #undef MODULE_API
 #if defined (_WINDOWS)
 #if defined(MODULE_EXPORTS) 
-#define MODULE_API __declspec(dllexport) 
+#define MODULE_API __declspec(dllexport)
 #else
 #define MODULE_API __declspec(dllimport) 
 #endif

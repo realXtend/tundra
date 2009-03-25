@@ -16,7 +16,7 @@ using boost::int16_t;
 using boost::int32_t;
 using boost::int64_t;
 
-///\todo Create own classes.
+///\todo Create own classes/use core classes.
 struct Vector3
 {
 	float x;

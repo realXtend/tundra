@@ -2,6 +2,7 @@
 #ifndef incl_Rex_NetInMessage_h
 #define incl_Rex_NetInMessage_h
 
+//#include "OpenSimProtocolModule_API.h"
 #include "RexTypes.h"
 #include "NetMessageList.h"
 
@@ -77,7 +78,7 @@ public:
 	const NetMsgID GetMessageID() const { return messageInfo->id; }
 
 	/// @return A structure that represents the types and amounts of blocks and variables of this packet. Use it to examine the whole structure of this message type.
-	const NetMessageInfo *GetMessageType() const { return messageInfo; }
+	const NetMessageInfo *GetMessageInfo() const { return messageInfo; }
 
 	/// @return The original message data.
 	const std::vector<uint8_t> &GetData() const { return messageData; }

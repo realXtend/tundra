@@ -5,7 +5,9 @@
 
 #include "Foundation.h"
 #include "ModuleInterface.h"
+#include "EventDataInterface.h"
 
+//#include "OpenSimProtocolModule_API.h"
 #include "NetMessageManager.h"
 #include "NetworkConnection.h"
 #include "INetMessageListener.h"
@@ -20,6 +22,7 @@ using namespace boost;
 namespace Foundation
 {
    class Framework;
+   class EventDataInterface;
 }
 
 struct ClientParameters
@@ -32,8 +35,32 @@ struct ClientParameters
 
 namespace OpenSimProtocol
 {
+    /// Event data interface for inbound messages
+    class NetworkEventInboundData : public Foundation::EventDataInterface
+    {
+    public:
+        NetworkEventInboundData(NetMsgID id, NetInMessage *msg)
+        : message(msg), messageID(id) {}
+        virtual ~NetworkEventInboundData() {}
+        
+        NetMsgID messageID;
+        NetInMessage *message;
+    };
+    
+    /// Event data interface for outbound messages
+    class NetworkEventOutboundData : public Foundation::EventDataInterface
+    {
+    public:
+        NetworkEventOutboundData(NetMsgID id, const NetOutMessage *msg)
+        : message(msg), messageID(id) {}
+        virtual ~NetworkEventOutboundData() {}
+        
+        NetMsgID messageID;
+        const NetOutMessage *message;
+    };
+        
     //! interface for modules
-    class MODULE_API OpenSimProtocolModule : public Foundation::ModuleInterface_Impl
+    class MODULE_API OpenSimProtocolModule : public Foundation::ModuleInterface_Impl, public INetMessageListener
     {
     public:
         OpenSimProtocolModule();
@@ -52,14 +79,12 @@ namespace OpenSimProtocol
         
         //! Returns type of this module. Needed for logging.
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Network;
-		
-		/// Get state of the network module.
-		const u8 GetNetworkState() const { return networkState_; }
-		
-		/// Get the message template filename from xml configuration file.
-		//const std::string &GetTemplateFilename();
         
-        /// Adds listener to the network module.
+        virtual void OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg);
+        
+        virtual void OnNetworkMessageSent(const NetOutMessage *msg);
+		
+        /// Adds listener to the network module. todo Remove
         void AddListener(INetMessageListener *listener);
         void RemoveListener(INetMessageListener *listener);
  
@@ -75,13 +100,6 @@ namespace OpenSimProtocol
         /// Disconnects from a reX server.
        	void DisconnectFromRexServer();
 
-  	    /// State of the network connection.
-        enum NetworkState
-        {	
-	        State_Connected,
-	        State_Disconnected,
-        };
-        
         void DumpNetworkMessage(NetMsgID id, NetInMessage *msg);
 
         /// Start building a new outbound message.
@@ -110,7 +128,22 @@ namespace OpenSimProtocol
 	    shared_ptr<PocoXMLRPCConnection> rpcConnection_;
 	    
 		/// State of the network connection.
-		NetworkState networkState_;
+		bool bConnected_;
+        
+        /// Event manager      
+        Foundation::EventManagerPtr eventManager_;
+        
+        /// Network event category for inbound messages.
+        Core::event_category_id_t networkEventInCategory_;		
+        
+        /// Network event category for outbound messages.
+        Core::event_category_id_t networkEventOutCategory_;		
+        
+        /// Network event ID.
+        static const Core::event_id_t EVENT_NETWORK_IN = 0x1;
+        
+        /// NetworkOutStats event ID.
+        static const Core::event_id_t EVENT_NETWORK_OUT = 0x1;
     };
 }
 

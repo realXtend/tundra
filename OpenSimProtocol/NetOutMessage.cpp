@@ -336,7 +336,7 @@ void NetOutMessage::SetSequenceNumber(size_t seqNum)
     messageData[4] = (uint8_t)(seqNum % 256);
 }
 
-void NetOutMessage::SetMessageType(const NetMessageInfo *info)
+void NetOutMessage::SetMessageInfo(const NetMessageInfo *info)
 {
 	messageInfo = info;
 

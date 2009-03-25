@@ -17,6 +17,9 @@ include_directories (
 INCLUDE_BOOST()
 INCLUDE_POCO()
 
+add_definitions (-DMODULE_EXPORTS)
+#add_definitions (-DOPENSIMPROTOCOL_MODULE_EXPORTS)
+
 # Define static library
 add_library (${TARGET_NAME} STATIC ${SOURCE_FILES})
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)

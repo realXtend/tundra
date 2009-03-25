@@ -32,6 +32,7 @@ INCLUDE_CURL()
 INCLUDE_XMLRPCEPI()
 
 add_definitions (-DMODULE_EXPORTS)
+#add_definitions (-DOPENSIMPROTOCOL_MODULE_EXPORTS)
 
 # Define dynamic library
 if (NOT MSVC)
@@ -47,6 +48,9 @@ if (MSVC)
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
 	target_link_libraries (${TARGET_NAME} ws2_32.lib iphlpapi.lib )
 endif (MSVC)
+
+# Define libraries to be linked into target
+target_link_libraries (${TARGET_NAME} Foundation)
 
 # External library linkage (needs target defined)
 LINK_POCO()

@@ -3,6 +3,19 @@
 #ifndef incl_NetTestLogicModule_h
 #define incl_NetTestLogicModule_h
 
+#undef NETTESTLOGIC_MODULE_API
+#if defined (_WINDOWS)
+#if defined(NETTESTLOGIC_MODULE_EXPORTS) 
+#define NETTESTLOGIC_MODULE_API __declspec(dllexport) 
+#else
+#define NETTESTLOGIC_MODULE_API __declspec(dllimport) 
+#endif
+#endif
+
+#ifndef NETTESTLOGIC_MODULE_API
+#define NETTESTLOGIC_MODULE_API
+#endif
+
 #pragma warning( push )
 #pragma warning( disable : 4250 )
 #undef max
@@ -21,7 +34,6 @@
 
 #include "OpenSimProtocolModule.h"
 #include "NetInMessage.h"
-#include "INetMessageListener.h"
 #include "NetMessage.h"
 
 namespace Foundation
@@ -58,7 +70,7 @@ private:
 namespace NetTest
 {
     //! Interface for modules
-    class NetTestLogicModule: public Foundation::ModuleInterface_Impl, public INetMessageListener
+    class NetTestLogicModule: public Foundation::ModuleInterface_Impl
     {
     public:
         NetTestLogicModule();
@@ -71,6 +83,11 @@ namespace NetTest
         virtual void Uninitialize();
         virtual void Update();
         
+        virtual bool HandleEvent(
+            Core::event_category_id_t category_id,
+            Core::event_id_t event_id, 
+            Foundation::EventDataInterface* data);
+            
         MODULE_LOGGING_FUNCTIONS
 
         /// Returns name of this module. Needed for logging.
@@ -80,9 +97,10 @@ namespace NetTest
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_NetTest;
 
         /// Called for each network message received.
-        virtual void OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg);
+        //virtual void OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg);
         
-        virtual void OnNetworkMessageSent(const NetOutMessage *msg);
+        /// Called for each network message sent.
+        //virtual void OnNetworkMessageSent(const NetOutMessage *msg);
 
         /// Initializes the Login window.
 		void InitLoginWindow();
@@ -129,8 +147,10 @@ namespace NetTest
         // Handle to the login window controls.
         Glib::RefPtr<Gnome::Glade::Xml> netTestControls;
 
-        // The GTK windows, entry fields and buttons.
+        // The GTK window for login UI.
         Gtk::Window *loginWindow;
+        
+        // The GTK window for NetTest UI.
         Gtk::Window *netTestWindow;
 
     private:
@@ -164,10 +184,16 @@ namespace NetTest
 		bool bLogoutSent_;
 		
 		/// Show inbound messages in the log.
-		bool bShowInbound_;
+		bool bLogInbound_;
 		
 		/// Show outbound messages in the log.
-		bool bShowOutbound_;
+		bool bLogOutbound_;
+		
+		/// Category id for incoming messages.
+		Core::event_category_id_t inboundCategoryID_;
+		
+		/// Category id for incoming messages.
+		Core::event_category_id_t outboundCategoryID_;
     };
 }
 #endif
