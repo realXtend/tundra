@@ -16,6 +16,7 @@ include_directories (
 	../Interfaces
 	../OgreRenderingSystem
 	../OpenSimProtocol
+	../RexCommon
 )
 
 # Library directories
@@ -51,7 +52,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation OpenSimProtocolModule)
+target_link_libraries (${TARGET_NAME} Foundation OpenSimProtocolModule RexCommon)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

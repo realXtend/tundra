@@ -11,6 +11,7 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 # Include directories
 include_directories (
 	../Core
+	../RexCommon
 	../Foundation
 	../Interfaces
 )
@@ -50,7 +51,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation)
+target_link_libraries (${TARGET_NAME} Foundation RexCommon)
 
 # External library linkage (needs target defined)
 LINK_POCO()

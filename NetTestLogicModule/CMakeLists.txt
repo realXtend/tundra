@@ -15,6 +15,7 @@ include_directories (
 	../Interfaces
 	../OpenSimProtocol
 	../gtkmmUI
+	../RexCommon
 )
 
 # Library directories
