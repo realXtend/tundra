@@ -69,8 +69,12 @@ namespace Scene
 
         //! Return the unique id of this component
         virtual Core::entity_id_t GetId() const { return id_; }
-    protected:
+
         typedef std::vector<Foundation::ComponentInterfacePtr> ComponentVector;
+
+        const ComponentVector &GetComponentVector() const { return components_; }
+
+    protected:
         ComponentVector components_;
 
     private:
