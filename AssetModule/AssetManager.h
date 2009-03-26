@@ -29,6 +29,8 @@ namespace Asset
         virtual ~AssetManager();
         
         virtual Foundation::AssetPtr GetAsset(const std::string& asset_id);
+
+        void RequestAsset(const RexTypes::RexUUID& asset_id, Core::uint asset_type);
         
         bool AssetManager::Initialize();
         
@@ -37,8 +39,6 @@ namespace Asset
     private:
         //! Pointer to the network interface.
         OpenSimProtocol::OpenSimProtocolModule *net_interface_;
-        
-        void RequestAsset(const RexTypes::RexUUID& asset_id, Core::uint asset_type);
         
         //! framework we belong to
         Foundation::Framework* framework_;

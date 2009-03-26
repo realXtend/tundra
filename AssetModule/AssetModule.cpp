@@ -3,6 +3,10 @@
 #include "StableHeaders.h"
 #include "AssetManager.h"
 #include "AssetModule.h"
+#include "RexUUID.h"
+
+using namespace OpenSimProtocol;
+using namespace RexTypes;
 
 namespace Asset
 {
@@ -18,6 +22,10 @@ namespace Asset
     void AssetModule::Load()
     {
         LogInfo("Module " + Name() + " loaded.");
+        
+        AutoRegisterConsoleCommand(Console::CreateCommand(
+            "RequestAsset", "Request asset from server (testing only so far). Usage: RequestAsset(uuid,assettype)", 
+            Console::Bind(this, &AssetModule::ConsoleRequestAsset)));
     }
 
     // virtual
@@ -47,6 +55,27 @@ namespace Asset
         manager_.reset();
         
         LogInfo("Module " + Name() + " uninitialized.");
+    }
+    
+    Console::CommandResult AssetModule::ConsoleRequestAsset(const Core::StringVector &params)
+    {
+        if (params.size() != 2)
+        {
+            return Console::ResultFailure("Usage: RequestAsset(uuid,assettype)");
+        }
+
+        try
+        {
+            RexUUID asset_id(params[0]);
+            int asset_type = Core::ParseString<int>(params[1]);
+
+            manager_->RequestAsset(asset_id, asset_type);
+        } catch (std::exception)
+        {
+            return Console::ResultInvalidParameters();
+        }
+
+        return Console::ResultSuccess();
     }
 }
 
