@@ -81,10 +81,14 @@ namespace Scene
         {
             return (scenes_.find(name) != scenes_.end());
         }
+
+        virtual iterator Begin() { return scenes_.begin(); }
+        virtual const_iterator Begin() const { return scenes_.begin(); }
+        virtual iterator End() { return scenes_.end(); }
+        virtual const_iterator End() const { return scenes_.end(); }
+
     
     private:
-        typedef std::map<std::string, Foundation::ScenePtr> SceneMap;
-
         //! container for entities managed by this scene manager
         SceneMap scenes_;
 

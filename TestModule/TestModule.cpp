@@ -105,6 +105,18 @@ namespace Test
         assert(*scene.get() != *cloned_scene.get() && "SceneInterface operator!= failed");
         assert(*cloned_scene.get() < *scene.get() && "SceneInterface operator< failed");
 
+        Foundation::SceneManager::iterator it = sceneManager->Begin();
+        int test_scenes = 0;
+        for ( ; it != sceneManager->End() ; ++it)
+        {
+            if (it->second->Name() == "test_scene")
+                test_scenes++;
+
+            if (it->second->Name() == "Test clone scene")
+                test_scenes++;
+        }
+        assert (test_scenes == 2 && "Scene iterator could not find all the scenes!");
+
 
 
         Foundation::TestServiceInterface *test_service = framework_->GetServiceManager()->GetService<Foundation::TestServiceInterface>(Foundation::Service::ST_Test);
