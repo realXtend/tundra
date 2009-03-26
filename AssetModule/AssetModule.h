@@ -4,6 +4,7 @@
 #define incl_AssetModule_h
 
 #include "ModuleInterface.h"
+#include "ConsoleCommandServiceInterface.h"
 
 namespace Foundation
 {
@@ -33,6 +34,9 @@ namespace Asset
 
         MODULE_LOGGING_FUNCTIONS
 
+        //! callback for console command
+        Console::CommandResult ConsoleRequestAsset(const Core::StringVector &params);
+        
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
