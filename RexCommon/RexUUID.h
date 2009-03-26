@@ -4,31 +4,36 @@
 
 #include "RexTypes.h"
 
-/// RexUUID is a 16-byte identifier for resources in a virtual world.
-class RexUUID
+namespace RexTypes
 {
-public:
-	/// Constructs an RexUUID from a string in form "1c1bbda2-304b-4cbf-ba3f-75324b044c73" or "1c1bbda2304b4cbfba3f75324b044c73".
-	explicit RexUUID(const char *str);
-	explicit RexUUID(const std::string &str);
-	
-	/// Constructs a null RexUUID.
-	RexUUID();
 
-	/// Sets all 16 bytes of the ID to '00'.
-	void SetNull();
+    /// RexUUID is a 16-byte identifier for resources in a virtual world.
+    class RexUUID
+    {
+    public:
+        /// Constructs an RexUUID from a string in form "1c1bbda2-304b-4cbf-ba3f-75324b044c73" or "1c1bbda2304b4cbfba3f75324b044c73".
+        explicit RexUUID(const char *str);
+        explicit RexUUID(const std::string &str);
+    
+        /// Constructs a null RexUUID.
+        RexUUID();
 
-	void FromString(const char *str);
-	void FromString(const std::string &str) { FromString(str.c_str()); }
+        /// Sets all 16 bytes of the ID to '00'.
+        void SetNull();
+    
+        void FromString(const char *str);
+        void FromString(const std::string &str) { FromString(str.c_str()); }
 
-	std::string ToString() const;
+        std::string ToString() const;
+    
+        bool operator ==(const RexUUID &rhs) const;
+        bool operator <(const RexUUID &rhs) const;
 
-	bool operator ==(const RexUUID &rhs) const;
-	bool operator <(const RexUUID &rhs) const;
+        static const uint8_t cSizeBytes = 16;
 
-	static const uint8_t cSizeBytes = 16;
+        uint8_t data[cSizeBytes];
+    };
 
-	uint8_t data[cSizeBytes];
-};
+}
 
 #endif

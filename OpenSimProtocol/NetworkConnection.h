@@ -3,7 +3,7 @@
 #define incl_Rex_NetworkConnection_h
 
 #include "Poco/Net/DatagramSocket.h"
-#include "RexTypes.h"
+#include "../RexCommon/RexTypes.h"
 
 /// Represents the socket of a bidirectional UDP connection.
 class NetworkConnection

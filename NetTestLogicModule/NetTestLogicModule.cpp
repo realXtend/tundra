@@ -6,6 +6,8 @@
 
 #include "RexProtocolMsgIDs.h"
 
+using namespace RexTypes;
+
 namespace NetTest
 {
     NetTestLogicModule::NetTestLogicModule() 

@@ -15,6 +15,11 @@ namespace OpenSimProtocol
     class OpenSimProtocolModule;
 }
 
+namespace RexTypes
+{   
+    class RexUUID;
+}
+
 namespace Asset
 {
     class AssetManager : public Foundation::AssetServiceInterface
@@ -32,6 +37,8 @@ namespace Asset
     private:
         //! Pointer to the network interface.
         OpenSimProtocol::OpenSimProtocolModule *net_interface_;
+        
+        void RequestAsset(const RexTypes::RexUUID& asset_id, Core::uint asset_type);
         
         //! framework we belong to
         Foundation::Framework* framework_;

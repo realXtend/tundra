@@ -27,9 +27,9 @@ namespace Foundation
 
 struct ClientParameters
 {
-    RexUUID     agentID;
-    RexUUID     sessionID;
-    RexUUID     regionID;
+    RexTypes::RexUUID     agentID;
+    RexTypes::RexUUID     sessionID;
+    RexTypes::RexUUID     regionID;
     uint32_t    circuitCode;
 };
 
