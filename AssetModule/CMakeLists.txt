@@ -13,6 +13,7 @@ include_directories (
 	../Core
 	../Foundation
 	../Interfaces
+	../RexCommon
 	../OpenSimProtocol
 	../RexCommon
 )

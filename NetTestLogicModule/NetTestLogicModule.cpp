@@ -1,10 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 #include "StableHeaders.h"
 
+#include "RexTypes.h"
 #include "NetTestLogicModule.h"
 #include <Poco/ClassLibrary.h>
 
 #include "RexProtocolMsgIDs.h"
+#include "RexUUID.h"
 
 using namespace RexTypes;
 
@@ -58,13 +60,13 @@ namespace NetTest
         inboundCategoryID_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
         outboundCategoryID_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkOut");
         
-        if(inboundCategoryID_ == 0 || outboundCategoryID_ == 0)
+        if (inboundCategoryID_ == 0 || outboundCategoryID_ == 0)
             LogWarning("Unable to find event category for OpenSimNetwork events!");
             
         InitLoginWindow();
         InitNetTestWindow();
 
-        if(!loginWindow || !netTestWindow)
+        if (!loginWindow || !netTestWindow)
         {
             LogError("Could not initialize UI.");
             return;

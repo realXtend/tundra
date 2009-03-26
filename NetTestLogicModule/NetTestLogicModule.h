@@ -35,8 +35,6 @@
 #include "OpenSimProtocolModule.h"
 #include "NetInMessage.h"
 #include "NetMessage.h"
-#include "RexCommon.h"
-#include "RexUUID.h"
 
 namespace Foundation
 {
@@ -47,26 +45,6 @@ namespace OpenSimProtocol
 {
     class OpenSimProtocolModule;
 }
-
-/// Object in the sim (prim or avatar)
-struct Object
-{
-	std::string name;
-	uint32_t localID;
-	RexTypes::RexUUID fullID;
-};
-
-/// A unary find predicate that looks for a Object that has the given desired id in a object list container.
-class IDMatchPred
-{
-public:
-	IDMatchPred(RexTypes::RexUUID id):rexid_(id) {}
-	bool operator()(const std::pair<RexTypes::RexUUID, Object*> &elem) const { return elem.second && elem.second->fullID == rexid_; }
-
-private:
-	RexTypes::RexUUID rexid_;
-};
-
 
 namespace NetTest
 {
@@ -96,12 +74,6 @@ namespace NetTest
            
         /// Returns type of this module. Needed for logging.
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_NetTestLogic;
-
-        /// Called for each network message received.
-        //virtual void OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg);
-        
-        /// Called for each network message sent.
-        //virtual void OnNetworkMessageSent(const NetOutMessage *msg);
 
         /// Initializes the Login window.
 		void InitLoginWindow();

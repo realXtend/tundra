@@ -177,7 +177,10 @@ namespace OpenSimProtocol
 		params->sessionID.FromString(call->GetReplyString("session_id"));
 		params->agentID.FromString(call->GetReplyString("agent_id"));
 		params->circuitCode = call->GetReplyInt("circuit_code");
-		
+        
+        ///\ Todo free later, if reply is needed.
+		XMLRPC_RequestFree(call->reply, 1);
+
 		return true;
 	}
 	
