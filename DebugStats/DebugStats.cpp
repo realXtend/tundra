@@ -10,9 +10,14 @@
 
 #include <sstream>
 
+#include <Poco/Logger.h>
+
 #include "StableHeaders.h"
 #include "Foundation.h"
 
+#include "../SceneModule/SceneManager.h"
+#include "../SceneModule/Entity.h"
+#include "../Interfaces/SceneInterface.h"
 #include "DebugStats.h"
 #include "GtkmmUI.h"
 
@@ -44,6 +49,50 @@ void DebugStats::PostInitialize()
 
     InitializeEventsWindow();
     PopulateEventsTreeView();
+}
+
+void DebugStats::InitializeObjectsWindow()
+{
+
+}
+
+void DebugStats::Log(const std::string &str)
+{
+    Poco::Logger::get("DebugStats").information(str);
+}
+
+void DebugStats::PopulateObjectsTreeView()
+{
+    using namespace std;
+
+    Scene::SceneManager *sceneManager = dynamic_cast<Scene::SceneManager *>(framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
+    if (!sceneManager)
+        return;
+
+    const Scene::SceneManager::SceneMap &scenes = sceneManager->GetSceneMap();
+    for(Scene::SceneManager::SceneMap::const_iterator iter = scenes.begin(); iter != scenes.end(); ++iter)
+    {
+        // Add scene node.
+        const Foundation::SceneInterface &scene = *iter->second;
+        Log(string("Scene: ") +  scene.Name());
+
+        for(Foundation::SceneInterface::ConstEntityIterator iter = scene.begin(); iter != scene.end(); ++iter)
+        {
+            const Scene::Entity &entity = dynamic_cast<const Scene::Entity &>(*iter); // from Foundation::EntityInterface &
+            // Add entity.
+            stringstream ss;
+            ss << " Entity: " << entity.GetId();
+            Log(ss.str());
+            const Scene::Entity::ComponentVector components = entity.GetComponentVector();
+            for(Scene::Entity::ComponentVector::const_iterator iter = components.begin(); iter != components.end(); ++iter)
+            {
+                // Add component.
+                //const Foundation::ComponentInterface &component = **iter;
+                //Log(string("  Component: ") + component._Name());
+
+            }
+        }
+    }
 }
 
 void DebugStats::InitializeModulesWindow()

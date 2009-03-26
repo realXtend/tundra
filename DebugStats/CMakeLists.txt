@@ -14,6 +14,7 @@ include_directories (
 	../Foundation
 	../Interfaces
 	../GtkmmUI
+	../SceneModule
 )
 
 # Disable warning
@@ -49,6 +50,8 @@ if (MSVC)
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
 	target_link_libraries (${TARGET_NAME} )
 endif (MSVC)
+
+target_link_libraries (${TARGET_NAME} Foundation SceneModule)
 
 # External library linkage (needs target defined)
 LINK_POCO()
