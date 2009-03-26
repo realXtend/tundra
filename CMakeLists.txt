@@ -64,3 +64,5 @@ add_subdirectory (DebugStats)
 add_subdirectory (NetTestLogicModule)
 #add_subdirectory (PythonModule)
 add_subdirectory (SupportModules)
+add_subdirectory (AssetModule)
+

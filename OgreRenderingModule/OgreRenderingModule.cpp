@@ -3,7 +3,6 @@
 #include "StableHeaders.h"
 #include <Ogre.h>
 #include "OgreRenderingModule.h"
-#include <Poco/ClassLibrary.h>
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
 #include "EC_OgrePlaceable.h"
