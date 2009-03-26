@@ -49,6 +49,7 @@ namespace Foundation
 			MT_NetTestLogic,
 			MT_Python,
             MT_Console,
+            MT_Asset,
 			MT_Unknown
 		};
 
@@ -58,7 +59,7 @@ namespace Foundation
 
             static const std::string type_strings[MT_Unknown] = {
                  "SceneModule", "OgreRenderingModule", "SoundModule", "GtkmmUI", "RexLogicModule", "OpenSimProtocolModule",
-                 "TestModule", "NetTestLogicModule", "PythonModule", "ConsoleModule" };
+                 "TestModule", "NetTestLogicModule", "PythonModule", "ConsoleModule", "AssetModule" };
 
             return type_strings[type];
         }

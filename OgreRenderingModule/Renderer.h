@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderingModule_Renderer_h
-#define incl_OgreRenderingModule_Renderer_h
+#ifndef incl_OgreRenderer_Renderer_h
+#define incl_OgreRenderer_Renderer_h
 
 #include "Foundation.h"
 #include "RenderServiceInterface.h"

@@ -1,5 +1,5 @@
 # Define target name and output directory
-set (TARGET_NAME OgreRenderingModule)
+set (TARGET_NAME AssetModule)
 set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/modules/core)
 
 # Define source files
@@ -12,14 +12,15 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 include_directories (
 	../Core
 	../Foundation
-	../SceneModule
 	../Interfaces
+	../OpenSimProtocol
 )
-
+		
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
-INCLUDE_OGRE()
+INCLUDE_CURL()
+INCLUDE_XMLRPCEPI()
 
 add_definitions (-DMODULE_EXPORTS)
 
@@ -32,18 +33,19 @@ add_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 
-if (MSVC)
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
-endif (MSVC)
-
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation)
+target_link_libraries (${TARGET_NAME} Core Foundation OpenSimProtocolModule)
 
 # External library linkage
 LINK_BOOST()
 LINK_POCO()
-LINK_OGRE()
+LINK_CURL()
+LINK_XMLRPCEPI()
+
+if (MSVC)
+	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})
+	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
+endif (MSVC)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

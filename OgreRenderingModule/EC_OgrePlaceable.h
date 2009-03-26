@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderingSystem_EC_OgrePlaceable_h
-#define incl_OgreRenderingSystem_EC_OgrePlaceable_h
+#ifndef incl_OgreRenderer_EC_OgrePlaceable_h
+#define incl_OgreRenderer_EC_OgrePlaceable_h
 
 #include "ComponentInterface.h"
 #include "Foundation.h"
