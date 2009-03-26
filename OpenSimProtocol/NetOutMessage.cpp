@@ -55,45 +55,66 @@ void NetOutMessage::AddU32(uint32_t value)
 ///\todo Advance. hton.
 void NetOutMessage::AddU64(uint64_t value)
 {
-	if (CheckNextVariable() == NetVarU64) 
+	if (CheckNextVariable() == NetVarU64)
+	{
 		AddBytesUnchecked(sizeof(uint64_t), &value);
+		AdvanceToNextVariable();
+    }
 }
 
 ///\todo Advance. hton.
 void NetOutMessage::AddS8(int8_t value)
 {
 	if (CheckNextVariable() == NetVarS8) 
+	{
 		AddBytesUnchecked(sizeof(int8_t), &value);
+		AdvanceToNextVariable();
+    }		
 }
 
 void NetOutMessage::AddS16(int16_t value)
 {
 	if (CheckNextVariable() == NetVarS16) 
+	{
 		AddBytesUnchecked(sizeof(int16_t), &value);
+		AdvanceToNextVariable();
+    }
 }
 
 void NetOutMessage::AddS32(int32_t value)
 {
 	if (CheckNextVariable() == NetVarS32) 
+	{
 		AddBytesUnchecked(sizeof(int32_t), &value);
+		AdvanceToNextVariable();
+    }
 }
 
 void NetOutMessage::AddS64(int64_t value)
 {
-	if (CheckNextVariable() == NetVarS64) 
+	if (CheckNextVariable() == NetVarS64)
+    {	
 		AddBytesUnchecked(sizeof(int64_t), &value);
+		AdvanceToNextVariable();
+    }		
 }
 
 void NetOutMessage::AddF32(float value)
 {
-	if (CheckNextVariable() == NetVarF32) 
+	if (CheckNextVariable() == NetVarF32)
+	{
 		AddBytesUnchecked(sizeof(float), &value);
+		AdvanceToNextVariable();
+    }
 }
 
 void NetOutMessage::AddF64(double value)
 {
-	if (CheckNextVariable() == NetVarF64) 
+	if (CheckNextVariable() == NetVarF64)
+	{
 		AddBytesUnchecked(sizeof(double), &value);
+		AdvanceToNextVariable();
+    }
 }
 
 void NetOutMessage::AddVector3(const Vector3 &value)
