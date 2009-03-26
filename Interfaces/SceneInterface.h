@@ -3,6 +3,7 @@
 #ifndef incl_Interfaces_SceneInterface_h
 #define incl_Interfaces_SceneInterface_h
 
+#include <boost/shared_ptr.hpp>
 #include "EntityInterface.h"
 
 namespace Foundation
@@ -58,9 +59,93 @@ namespace Foundation
 
         //! Returns true if entity with the specified id exists in this scene, false otherwise
         virtual bool HasEntity(Core::entity_id_t id) const = 0;
-        
         //! Get the next free id
         virtual Core::entity_id_t GetNextFreeId() = 0;
+
+    protected:
+        //! Virtual scene entity iterator interface. When implemeting SceneInterface, one must provide the
+        //! following functionality as well. This iterator only supports forward sequential access. Any call to
+        //! a nonconst method of SceneInterface may invalidate any existing iterators.
+        class MODULE_API EntityIterator_Impl
+        {
+        public:
+            virtual ~EntityIterator_Impl() {}
+
+            virtual bool operator <(const EntityIterator_Impl &rhs) const = 0;
+            virtual bool operator ==(const EntityIterator_Impl &rhs) const = 0;
+
+            virtual EntityIterator_Impl &operator ++() = 0;
+
+            virtual EntityInterface &operator *() = 0;
+        };
+
+        class MODULE_API ConstEntityIterator_Impl
+        {
+        public:
+            virtual ~ConstEntityIterator_Impl() {}
+
+            virtual bool operator <(const ConstEntityIterator_Impl &rhs) const = 0;
+            virtual bool operator ==(const ConstEntityIterator_Impl &rhs) const = 0;
+
+            virtual ConstEntityIterator_Impl &operator ++() = 0;
+
+            virtual const EntityInterface &operator *() = 0;
+        };
+
+        typedef boost::shared_ptr<EntityIterator_Impl> SceneIteratorImplPtr;
+        typedef boost::shared_ptr<ConstEntityIterator_Impl> ConstSceneIteratorImplPtr;
+
+        virtual SceneIteratorImplPtr SceneIteratorBegin() = 0;
+        virtual SceneIteratorImplPtr SceneIteratorEnd() = 0;
+
+        virtual ConstSceneIteratorImplPtr SceneIteratorBegin() const = 0;
+        virtual ConstSceneIteratorImplPtr SceneIteratorEnd() const = 0;
+
+    public:
+        class MODULE_API EntityIterator
+        {
+        public:
+            EntityIterator(SceneIteratorImplPtr impl):impl_(impl) {}
+            ~EntityIterator() {}
+
+            bool operator <(const EntityIterator &rhs) const { return impl_ < rhs.impl_; }
+            bool operator ==(const EntityIterator &rhs) const { return impl_ == rhs.impl_; }
+            bool operator !=(const EntityIterator &rhs) const { return !(*this == rhs); } 
+            bool operator <=(const EntityIterator &rhs) const { return *this < rhs || *this == rhs; }
+            bool operator >(const EntityIterator &rhs) const { return !(*this <= rhs); }
+
+            EntityIterator &operator ++() { ++(*impl_); return *this; }
+
+            Foundation::EntityInterface &operator *() { assert(impl_); return **impl_; }
+        private:
+            SceneIteratorImplPtr impl_;
+        };
+
+        class MODULE_API ConstEntityIterator
+        {
+        public:
+            ConstEntityIterator(ConstSceneIteratorImplPtr impl):impl_(impl) {}
+            ~ConstEntityIterator() {}
+
+            bool operator <(const ConstEntityIterator &rhs) const { return impl_ < rhs.impl_; }
+            bool operator ==(const ConstEntityIterator &rhs) const { return impl_ == rhs.impl_; }
+            bool operator !=(const ConstEntityIterator &rhs) const { return !(*this == rhs); } 
+            bool operator <=(const ConstEntityIterator &rhs) const { return *this < rhs || *this == rhs; }
+            bool operator >(const ConstEntityIterator &rhs) const { return !(*this <= rhs); }
+
+            ConstEntityIterator &operator ++() { ++(*impl_); return *this; }
+
+            const Foundation::EntityInterface &operator *() { assert(impl_); return **impl_; }
+        private:
+            ConstSceneIteratorImplPtr impl_;
+        };
+
+        EntityIterator begin() { return EntityIterator(SceneIteratorBegin()); }
+        EntityIterator end() { return EntityIterator(SceneIteratorEnd()); }
+
+        ConstEntityIterator begin() const { return ConstEntityIterator(SceneIteratorBegin()); }
+        ConstEntityIterator end() const { return ConstEntityIterator(SceneIteratorEnd()); }
+
     };
 
     //! Acts as a generic scenegraph for all entities in the world

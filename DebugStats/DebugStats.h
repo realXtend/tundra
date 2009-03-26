@@ -43,6 +43,11 @@ private:
     void InitializeEventsWindow();
     void PopulateEventsTreeView();
 
+    void InitializeObjectsWindow();
+    void PopulateObjectsTreeView();
+
+    static void Log(const std::string &str); 
+
     // Data related to the window that shows the registered event categories.
 
     Glib::RefPtr<Gnome::Glade::Xml> debugEvents_;
