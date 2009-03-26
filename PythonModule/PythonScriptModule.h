@@ -3,9 +3,12 @@
 #ifndef incl_PythonScriptingModule_h
 #define incl_PythonScriptingModule_h
 
+#include "Foundation.h"
 #include "StableHeaders.h"
 #include "ModuleInterface.h"
-#include "Script.h"
+#include "ComponentRegistrarInterface.h"
+#include "ServiceManager.h"
+//#include "Script.h"
 
 namespace Foundation
 {
@@ -14,20 +17,36 @@ namespace Foundation
 
 namespace PythonScript
 {
-    //! interface for modules
-    class PythonScriptModule : public Foundation::ModuleInterface_Impl
+    //! A scripting module using Python
+    class MODULE_API PythonScriptModule : public Foundation::ModuleInterface_Impl
     {
     public:
         PythonScriptModule();
         virtual ~PythonScriptModule();
 
+		//the module interface
         virtual void Load();
         virtual void Unload();
-        virtual void Initialize(Foundation::Framework *framework);
-        virtual void Uninitialize(Foundation::Framework *framework);
+        virtual void Initialize();
+        virtual void Uninitialize();
         virtual void Update();
 
-    /* python interpreter? private:
+
+		//! callback for console command
+        Console::CommandResult ConsoleRunString(const Core::StringVector &params);
+        
+        MODULE_LOGGING_FUNCTIONS
+
+        //! returns name of this module. Needed for logging.
+        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
+        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Asset;
+
+	private:
+		
+		//basic feats
+		void PythonScriptModule::RunString(const char* codestr);
+
+    /* python interpreter? 
         OgreRenderer::RendererPtr renderer_;*/
     };
 }
