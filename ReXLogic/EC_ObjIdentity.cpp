@@ -5,7 +5,7 @@
 
 namespace RexLogic
 {
-    EC_ObjIdentity::EC_ObjIdentity(Foundation::ModuleInterface* module)
+    EC_ObjIdentity::EC_ObjIdentity(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework())
     {
         RegionHandle = 0;
         Id = 0;

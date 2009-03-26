@@ -7,7 +7,7 @@
 
 namespace RexLogic
 {
-    EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module)
+    EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework())
     {
         RegionHandle = 0;
         LocalId = 0;

@@ -13,6 +13,7 @@ include_directories (
 	../Foundation
 	../Interfaces
 	../SceneModule
+	../TestModule
 )
 
 # External library includes

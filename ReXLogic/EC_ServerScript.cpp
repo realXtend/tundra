@@ -5,7 +5,7 @@
 
 namespace RexLogic
 {
-    EC_ServerScript::EC_ServerScript(Foundation::ModuleInterface* module)
+    EC_ServerScript::EC_ServerScript(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework())
     {
         class_name_ = "";
     }

@@ -12,6 +12,7 @@
 namespace OgreRenderer
 {
     EC_OgreCustomObject::EC_OgreCustomObject(Foundation::ModuleInterface* module) :
+        Foundation::ComponentInterface(module->GetFramework()),
         renderer_(static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         object_(NULL),
         attached_(false)

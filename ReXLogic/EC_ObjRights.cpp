@@ -5,7 +5,7 @@
 
 namespace RexLogic
 {
-    EC_ObjRights::EC_ObjRights(Foundation::ModuleInterface* module)
+    EC_ObjRights::EC_ObjRights(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework())
     {
     }
 

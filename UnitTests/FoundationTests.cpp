@@ -7,6 +7,7 @@
 #include "Foundation.h"
 #include "ServiceInterfaces.h"
 #include "StaticModuleDefinitions.h"
+#include "EC_Dummy.h"
 
 //! Unit test for framework
 BOOST_AUTO_TEST_SUITE(test_suite_foundation)
@@ -66,6 +67,8 @@ BOOST_AUTO_TEST_CASE( framework_test_module )
     BOOST_CHECK (fw.GetModuleManager()->HasModule(Foundation::Module::MT_WorldLogic));
 
     fw.Go();
+
+    BOOST_CHECK( fw.GetComponentManager()->Begin(Test::EC_Dummy::NameStatic()) == fw.GetComponentManager()->End(Test::EC_Dummy::NameStatic()));
 }
 
 

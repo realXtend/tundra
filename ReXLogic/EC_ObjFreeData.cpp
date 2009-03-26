@@ -5,7 +5,7 @@
 
 namespace RexLogic
 {
-    EC_ObjFreeData::EC_ObjFreeData(Foundation::ModuleInterface* module)
+    EC_ObjFreeData::EC_ObjFreeData(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework())
     {
         free_data_ = ""; 
     }

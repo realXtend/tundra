@@ -13,12 +13,12 @@ namespace Test
         DECLARE_EC(EC_Dummy);
 
     public:
-        EC_Dummy &operator= (const EC_Dummy &other)
+        EC_Dummy &operator= (const EC_Dummy &rhs)
         {
-            if (this != &other) // No self assignment
+            if (this != &rhs) // No self assignment
             {
-                dummy_data1_ = other.dummy_data1_;
-                dummy_data2_ = other.dummy_data2_;
+                dummy_data1_ = rhs.dummy_data1_;
+                dummy_data2_ = rhs.dummy_data2_;
             }
 
             return *this;
@@ -33,9 +33,9 @@ namespace Test
         void SetDummyData2(int data) { dummy_data2_ = data; }
     private:
         //! constructor, private since we implicitly use factory
-        EC_Dummy(Foundation::ModuleInterface* module) {}
+        EC_Dummy(Foundation::ModuleInterface* module)  : Foundation::ComponentInterface(module->GetFramework()) {}
         //! copy constructor, private since we implicitly use factory
-        EC_Dummy(const EC_Dummy &rhs) : dummy_data1_(rhs.dummy_data1_), dummy_data2_(rhs.dummy_data2_) {}
+        EC_Dummy(const EC_Dummy &rhs) : Foundation::ComponentInterface(rhs), dummy_data1_(rhs.dummy_data1_), dummy_data2_(rhs.dummy_data2_) {}
 
         int dummy_data1_;
         int dummy_data2_;
