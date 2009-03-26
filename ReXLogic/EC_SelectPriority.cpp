@@ -5,7 +5,7 @@
 
 namespace RexLogic
 {
-    EC_SelectPriority::EC_SelectPriority(Foundation::ModuleInterface* module)
+    EC_SelectPriority::EC_SelectPriority(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework())
     {
         select_priority_ = 0;
     }

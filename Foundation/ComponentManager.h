@@ -8,7 +8,7 @@
 namespace Foundation
 {
     class Framework;
-    class ComponentInterface;
+//    class ComponentInterface;
 
     //! Manages components. Also works as a component factory.
     class ComponentManager
@@ -54,17 +54,16 @@ namespace Foundation
 
             \param type type of the component to create
         */
-        ComponentPtr CreateComponent(const std::string &type) const;
+        ComponentPtr CreateComponent(const std::string &type);
 
         //! Create clone of the specified component
-        ComponentPtr CloneComponent(const ComponentInterfacePtr &component) const;
+        ComponentPtr CloneComponent(const ComponentInterfacePtr &component);
         
         //! Get component by entity id and component type
         ComponentPtr GetComponent(Core::entity_id_t id, const std::string &component);
 
-        void RemoveComponent(const std::string &name, ComponentInterface *component)
-        {
-        }
+        //! Removes a single expired component. Should be called once per an expired component.
+        void RemoveExpiredComponents();
 
         //! Iterator for components
         /*!

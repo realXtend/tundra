@@ -5,7 +5,7 @@
 
 namespace RexLogic
 {
-    EC_ObjCollision::EC_ObjCollision(Foundation::ModuleInterface* module)
+    EC_ObjCollision::EC_ObjCollision(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework())
     {
         CollisionMesh = "";
     }

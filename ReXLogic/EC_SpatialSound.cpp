@@ -5,7 +5,7 @@
 
 namespace RexLogic
 {
-    EC_SpatialSound::EC_SpatialSound(Foundation::ModuleInterface* module)
+    EC_SpatialSound::EC_SpatialSound(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework())
     {
         sound_id_ = "";
         volume_ = 0;

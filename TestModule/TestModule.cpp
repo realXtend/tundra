@@ -83,6 +83,16 @@ namespace Test
         component = entity->GetComponent(component->Name());
         assert (component.get() != 0 && "Failed to get dummy component from entity.");
 
+        int num_test_components = 0;
+        for (Foundation::ComponentManager::const_iterator it = 
+             framework_->GetComponentManager()->Begin(Test::EC_Dummy::NameStatic()) ;
+             it != framework_->GetComponentManager()->End(Test::EC_Dummy::NameStatic()) ;
+             ++it)
+        {
+            assert (it->lock()->Name() == Test::EC_Dummy::NameStatic() && "Component iterator returned wrong component type.");
+            num_test_components++;
+        }
+        assert (num_test_components == 1 && "Component iterator failed.");
 
 
         Foundation::ScenePtr cloned_scene = scene->Clone("Test clone scene");

@@ -9,7 +9,7 @@
 
 namespace Foundation
 {
-    ComponentInterfacePtr ComponentManager::CreateComponent(const std::string &type) const
+    ComponentInterfacePtr ComponentManager::CreateComponent(const std::string &type)
     {
         ComponentFactoryMap::const_iterator iter = factories_.find(type);
         if (iter == factories_.end())
@@ -17,10 +17,12 @@ namespace Foundation
 
         ComponentInterfacePtr component = (*iter->second.get())();
 
+        components_[type].push_back(WeakComponentPtr(component));
+
         return component;
     }
 
-    ComponentInterfacePtr ComponentManager::CloneComponent(const ComponentInterfacePtr &component) const
+    ComponentInterfacePtr ComponentManager::CloneComponent(const ComponentInterfacePtr &component)
     {
         ComponentFactoryMap::const_iterator iter = factories_.find(component->Name());
         if (iter == factories_.end())
@@ -28,11 +30,32 @@ namespace Foundation
 
         ComponentInterfacePtr newComponent = (*iter->second.get())(component);
 
+        components_[component->Name()].push_back(WeakComponentPtr(newComponent));
+
         return newComponent;
     }
 
     ComponentInterfacePtr ComponentManager::GetComponent(Core::entity_id_t id, const std::string &component)
     {
         return ComponentInterfacePtr(); //! \todo FIXME
+    }
+
+    void ComponentManager::RemoveExpiredComponents()
+    {
+        for (ComponentTypeMap::iterator type = components_.begin() ; 
+             type != components_.end() ;
+             ++type)
+        {
+            for (ComponentList::iterator component = type->second.begin() ;
+                 component != type->second.end() ;
+                 ++component)
+            {
+                if (component->expired())
+                {
+                    type->second.erase(component);
+                    break;
+                }
+            }
+        }
     }
 }

@@ -5,7 +5,7 @@
 
 namespace Foundation
 {
-    class ComponentInterface;
+    class ComponentInterface_Abstract;
 
     class ComponentFactoryInterface
     {
@@ -13,8 +13,8 @@ namespace Foundation
         ComponentFactoryInterface() {}
         virtual ~ComponentFactoryInterface() {}
 
-        virtual boost::shared_ptr<ComponentInterface> operator()() = 0;
-        virtual boost::shared_ptr<ComponentInterface> operator()(const boost::shared_ptr<ComponentInterface> &) = 0;
+        virtual boost::shared_ptr<ComponentInterface_Abstract> operator()() = 0;
+        virtual boost::shared_ptr<ComponentInterface_Abstract> operator()(const boost::shared_ptr<ComponentInterface_Abstract> &) = 0;
     };
 }
 

@@ -10,18 +10,29 @@ namespace Foundation
 {
     class Framework;
 
-    class MODULE_API ComponentInterface
+    class MODULE_API ComponentInterface_Abstract
     {
     public:
-        ComponentInterface()  {}
-        virtual ~ComponentInterface() { /*framework_->GetComponentManager()->RemoveComponent(Name(), this);*/ }
+        ComponentInterface_Abstract()  {}
+        virtual ~ComponentInterface_Abstract() { }
         
         virtual void HandleNetworkData(std::string data) {}
 
-        virtual const std::string &Name() const { static std::string empty; return empty; };//= 0;
-    private:
-        Foundation::Framework *framework_;
+        virtual const std::string &Name() const = 0;
     };
+
+    class MODULE_API ComponentInterface_Impl : public ComponentInterface_Abstract
+    {
+        ComponentInterface_Impl();
+    public:
+        ComponentInterface_Impl(Foundation::Framework *framework) : ComponentInterface_Abstract(), framework_(framework) {}
+        ComponentInterface_Impl(const ComponentInterface_Impl &rhs) : framework_(rhs.framework_) {}
+        virtual ~ComponentInterface_Impl() { framework_->GetComponentManager()->RemoveExpiredComponents(); }
+        
+    private:
+        const Foundation::Framework * const framework_;
+    };
+    typedef ComponentInterface_Impl ComponentInterface;
 }
 
 #endif
