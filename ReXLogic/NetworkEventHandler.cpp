@@ -34,11 +34,11 @@ namespace RexLogic
             OpenSimProtocol::NetworkEventInboundData *netdata = static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
             switch(netdata->messageID)
             {
-                case RexNetMsgObjectUpdate:             return HandleOSNE_ObjectUpdate(netdata); break;
                 case RexNetMsgGenericMessage:           return HandleOSNE_GenericMessage(netdata); break;
+                case RexNetMsgObjectDescription:        return HandleOSNE_ObjectDescription(netdata); break; 
                 case RexNetMsgObjectName:               return HandleOSNE_ObjectName(netdata); break;
-                case RexNetMsgObjectDescription:        return HandleOSNE_ObjectDescription(netdata); break;                
-                default: return false; break;
+                case RexNetMsgObjectUpdate:             return HandleOSNE_ObjectUpdate(netdata); break;
+                default:                                return false; break;
             }
         }
         return false;
@@ -100,30 +100,30 @@ namespace RexLogic
         uint64_t regionhandle = msg->ReadU64();
         msg->SkipToNextVariable(); // TimeDilation U16
 
-        // todo tucofixme, handle multiple ObjectData in same message
         uint32_t localid = msg->ReadU32(); 
         msg->SkipToNextVariable();		// State U8
         RexUUID fullid = msg->ReadUUID();
         msg->SkipToNextVariable();		// CRC U32
         uint8_t pcode = msg->ReadU8();
         
-        // object
-        if (pcode == 0x09)
+        Foundation::EntityPtr entity;
+        switch(pcode)
         {
-            Foundation::EntityPtr entity = GetPrimEntitySafe(localid);
-            if(entity)
-            {
-                Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
-                static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectUpdate(data);
-            }
+            // Prim
+            case 0x09:
+                entity = GetPrimEntitySafe(localid);
+                if(entity)
+                {
+                    Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
+                    static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectUpdate(data);
+                }
+                break;
+            // Avatar                
+            case 0x2f:
+                entity = GetAvatarEntitySafe(localid);
+                // TODO tucofixme, set values to component      
+                break;
         }
-        // avatar
-        else if (pcode == 0x2f)
-        {
-            Foundation::EntityPtr entity = GetAvatarEntitySafe(localid);
-            // TODO tucofixme, set values to component      
-        }
-         
         return false;
     }
 
@@ -139,14 +139,26 @@ namespace RexLogic
         if(entity)
         {
             Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
-            static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectDescription(data);        
+            static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectName(data);        
         }
         return false;    
     }
 
     bool NetworkEventHandler::HandleOSNE_ObjectDescription(OpenSimProtocol::NetworkEventInboundData* data)
     {
-        return false;    
+        NetInMessage *msg = data->message;
+    
+        msg->ResetReading();
+        msg->SkipToFirstVariableByName("LocalID");
+        uint32_t localid = msg->ReadU32();
+        
+        Foundation::EntityPtr entity = GetPrimEntitySafe(localid);
+        if(entity)
+        {
+            Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
+            static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectDescription(data);        
+        }
+        return false;     
     }
 
 

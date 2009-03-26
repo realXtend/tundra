@@ -38,7 +38,15 @@ namespace RexLogic
         Material = msg->ReadU8();
         ClickAction = msg->ReadU8();
         Scale = msg->ReadVector3();
-        msg->SkipToNextVariable();      // ObjectData
+        
+        const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
+        if(bytes_read == 60)
+        {
+            Position = *(Core::Vector3df*)(&objectdatabytes[0]);
+            Rotation = *(Core::Quaternion*)(&objectdatabytes[36]);
+        }
+        else
+            RexLogicModule::LogError("Error reading ObjectData for prim:" + Core::ToString(LocalId) + ". Bytes read:" + Core::ToString(bytes_read));    
         
         ParentId = msg->ReadU32();
         UpdateFlags = msg->ReadU32();
