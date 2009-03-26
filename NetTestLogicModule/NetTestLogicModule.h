@@ -53,18 +53,18 @@ struct Object
 {
 	std::string name;
 	uint32_t localID;
-	RexUUID fullID;
+	RexTypes::RexUUID fullID;
 };
 
 /// A unary find predicate that looks for a Object that has the given desired id in a object list container.
 class IDMatchPred
 {
 public:
-	IDMatchPred(RexUUID id):rexid_(id) {}
-	bool operator()(const std::pair<RexUUID, Object*> &elem) const { return elem.second && elem.second->fullID == rexid_; }
+	IDMatchPred(RexTypes::RexUUID id):rexid_(id) {}
+	bool operator()(const std::pair<RexTypes::RexUUID, Object*> &elem) const { return elem.second && elem.second->fullID == rexid_; }
 
 private:
-	RexUUID rexid_;
+	RexTypes::RexUUID rexid_;
 };
 
 

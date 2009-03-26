@@ -4,6 +4,8 @@
 #include "OpenSimProtocolModule.h"
 #include "AssetManager.h"
 
+using namespace OpenSimProtocol;
+using namespace RexTypes;
 
 namespace Asset
 {
@@ -22,7 +24,7 @@ namespace Asset
         if (initialized_)
             return true;
             
-        net_interface_ = dynamic_cast<OpenSimProtocol::OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol));
+        net_interface_ = dynamic_cast<OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol));
         if (!net_interface_)
         {
             AssetModule::LogError("Getting network interface did not succeed."); 
@@ -37,5 +39,17 @@ namespace Asset
     {
         Foundation::AssetPtr no_asset;
         return no_asset;
+    }
+    
+    void AssetManager::RequestAsset(const RexUUID& asset_id, Core::uint asset_type)
+    {
+        // image
+        if (asset_type == 0)
+        {
+        }
+        // other assettypes
+        else
+        {
+        }
     }
 }

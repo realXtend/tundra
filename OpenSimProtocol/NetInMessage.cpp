@@ -3,6 +3,8 @@
 #include "NetInMessage.h"
 #include "ZeroCode.h"
 
+using namespace RexTypes;
+
 NetInMessage::NetInMessage(const NetMessageInfo *info, const uint8_t *data, size_t numBytes, bool zeroCoded)
 :messageInfo(info)
 {

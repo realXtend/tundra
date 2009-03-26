@@ -14,6 +14,7 @@ include_directories (
 	../Foundation
 	../Interfaces
 	../OpenSimProtocol
+	../RexCommon
 )
 		
 # External library includes
@@ -34,7 +35,7 @@ set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Core Foundation OpenSimProtocolModule)
+target_link_libraries (${TARGET_NAME} Core Foundation OpenSimProtocolModule RexCommon)
 
 # External library linkage
 LINK_BOOST()

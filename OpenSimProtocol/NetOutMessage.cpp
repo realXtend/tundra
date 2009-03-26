@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cstring>
 
+using namespace RexTypes;
+
 NetOutMessage::NetOutMessage()
 {
 	const size_t maxMessageSize = 2048;
