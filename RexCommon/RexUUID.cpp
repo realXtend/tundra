@@ -49,6 +49,12 @@ namespace RexTypes
             data[i] = 0;
     }
     
+    void RexUUID::Random()
+    {
+        for (int i = 0; i < cSizeBytes; ++i)
+            data[i] = rand() & 0xff;
+    }
+    
     /// Converts a C string representing a RexUUID to a uint8_t array.
     /// Supports either the format "1c1bbda2-304b-4cbf-ba3f-75324b044c73" or "1c1bbda2304b4cbfba3f75324b044c73".
     void RexUUID::FromString(const char *str)

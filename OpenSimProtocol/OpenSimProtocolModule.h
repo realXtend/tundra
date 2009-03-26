@@ -92,8 +92,7 @@ namespace OpenSimProtocol
 		    const char *last_name,
 		    const char *password,
 		    const char *address,
-		    int port,
-		    ClientParameters *params);
+		    int port);
         
         /// Disconnects from a reX server.
        	void DisconnectFromRexServer();
@@ -115,7 +114,10 @@ namespace OpenSimProtocol
         
         /// Outbound network event ID.
         static const Core::event_id_t EVENT_NETWORK_OUT = 0x1;
-
+        
+        /// Returns client parameters of current connection
+        const ClientParameters& GetClientParameters() const { return clientParameters_; }
+        
     private:
         /// Initializes a login to a reX server that is not using a separate authentication server.
        	bool PerformXMLRPCLogin(
@@ -143,6 +145,9 @@ namespace OpenSimProtocol
         
         /// Network event category for outbound messages.
         Core::event_category_id_t networkEventOutCategory_;		
+        
+        /// Current connection client parameters
+        ClientParameters clientParameters_;
     };
 }
 
