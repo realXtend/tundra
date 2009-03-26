@@ -20,6 +20,9 @@ namespace RexTypes
 
         /// Sets all 16 bytes of the ID to '00'.
         void SetNull();
+        
+        /// Random-generates the contents
+        void Random();
     
         void FromString(const char *str);
         void FromString(const std::string &str) { FromString(str.c_str()); }

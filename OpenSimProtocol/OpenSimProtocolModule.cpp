@@ -95,10 +95,9 @@ namespace OpenSimProtocol
 		const char *last_name,
 		const char *password,
 		const char *address,
-		int port,
-		ClientParameters *params)
+		int port)
 	{
-	    if (!PerformXMLRPCLogin(first_name, last_name, password, address, port, params))
+	    if (!PerformXMLRPCLogin(first_name, last_name, password, address, port, &clientParameters_))
 	        return false;
         if (!networkManager_->ConnectTo(address, port))
             return false;

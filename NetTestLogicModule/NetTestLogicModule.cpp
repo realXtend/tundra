@@ -244,10 +244,12 @@ namespace NetTest
         password = entry_password->get_text();
         
         bool success = netInterface_->ConnectToRexServer(first_name.c_str(), last_name.c_str(),
-            password.c_str(), server_address.c_str(), port, &myInfo_);
+            password.c_str(), server_address.c_str(), port);
             
         if(success)
         {
+            myInfo_ = netInterface_->GetClientParameters();
+            
             if (!netTestWindow)
                 InitNetTestWindow();
             
