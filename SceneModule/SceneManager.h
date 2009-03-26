@@ -87,7 +87,8 @@ namespace Scene
         virtual iterator End() { return scenes_.end(); }
         virtual const_iterator End() const { return scenes_.end(); }
 
-    
+        const SceneMap &GetSceneMap() const { return scenes_; }
+
     private:
         //! container for entities managed by this scene manager
         SceneMap scenes_;

@@ -26,6 +26,8 @@ namespace Scene
         // copy constuctor
         Generic( const Generic &other);
 
+        typedef std::map<Core::entity_id_t, Foundation::EntityPtr> EntityMap;
+
         //! Current global id for entities
         static Core::uint gid_;
 
@@ -74,12 +76,51 @@ namespace Scene
         {
             return (entities_.find(id) != entities_.end());
         }
-    
+
+        class MODULE_API EntityIterator : public SceneInterface::EntityIterator_Impl
+        {
+        public:
+            EntityIterator(EntityMap::iterator iter):iter_(iter) {}
+            ~EntityIterator() {}
+
+            bool operator <(const SceneInterface::EntityIterator_Impl &rhs) const { return *this->iter_ < *dynamic_cast<const EntityIterator&>(rhs).iter_; }
+            bool operator ==(const SceneInterface::EntityIterator_Impl &rhs) const { return *this->iter_ == *dynamic_cast<const EntityIterator&>(rhs).iter_; }
+
+            SceneInterface::EntityIterator_Impl &operator ++() { ++iter_; return *this; }
+
+            Foundation::EntityInterface &operator *() { return *iter_->second; }
+
+        private:
+            EntityMap::iterator iter_;
+        };
+
+        SceneIteratorImplPtr SceneIteratorBegin() { return SceneIteratorImplPtr(new EntityIterator(entities_.begin())); }
+        SceneIteratorImplPtr SceneIteratorEnd() { return SceneIteratorImplPtr(new EntityIterator(entities_.end())); }
+
+        class MODULE_API ConstEntityIterator : public SceneInterface::ConstEntityIterator_Impl
+        {
+        public:
+            ConstEntityIterator(EntityMap::const_iterator iter):iter_(iter) {}
+            ~ConstEntityIterator() {}
+
+            bool operator <(const SceneInterface::ConstEntityIterator_Impl &rhs) const { return *this->iter_ < *dynamic_cast<const ConstEntityIterator&>(rhs).iter_; }
+            bool operator ==(const SceneInterface::ConstEntityIterator_Impl &rhs) const { return *this->iter_ == *dynamic_cast<const ConstEntityIterator&>(rhs).iter_; }
+
+            SceneInterface::ConstEntityIterator_Impl &operator ++() { ++iter_; return *this; }
+
+            const Foundation::EntityInterface &operator *() { return *iter_->second; }
+
+        private:
+            EntityMap::const_iterator iter_;
+        };
+
+        ConstSceneIteratorImplPtr SceneIteratorBegin() const { return ConstSceneIteratorImplPtr(new ConstEntityIterator(entities_.begin())); }
+        ConstSceneIteratorImplPtr SceneIteratorEnd() const { return ConstSceneIteratorImplPtr(new ConstEntityIterator(entities_.end())); }
+
         //! Returns next available id
         virtual Core::entity_id_t GetNextFreeId();
     
     private:
-        typedef std::map<Core::entity_id_t, Foundation::EntityPtr> EntityMap;
 
         //! Entities in a map
         EntityMap entities_;
