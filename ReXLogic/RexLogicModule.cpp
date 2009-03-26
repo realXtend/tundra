@@ -69,7 +69,7 @@ namespace RexLogic
         if(eventcategoryid != 0)
             event_handlers_[eventcategoryid] = boost::bind(&NetworkEventHandler::HandleOpenSimNetworkEvent,network_handler_, _1, _2);
         else
-            LogInfo("Unable to find event category for OpenSimNetwork");
+            LogInfo("Unable to find event category for OpenSimNetworkIn");
 
     }
 

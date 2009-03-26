@@ -35,6 +35,8 @@
 #include "OpenSimProtocolModule.h"
 #include "NetInMessage.h"
 #include "NetMessage.h"
+#include "RexCommon.h"
+#include "RexUUID.h"
 
 namespace Foundation
 {
@@ -44,7 +46,6 @@ namespace Foundation
 namespace OpenSimProtocol
 {
     class OpenSimProtocolModule;
-    class RexUUID;
 }
 
 /// Object in the sim (prim or avatar)
@@ -129,15 +130,6 @@ namespace NetTest
         /// Update which messages are shown in the log window.
         void UpdateLogFilterState();
         
-        /// Type definition for object lists.
-        typedef std::vector<std::pair<RexUUID, Object*> > ObjectList_t;
-		
-		/// List of objects (prims) in the world.
-		ObjectList_t objectList_;
-		
-		/// List of avatars (prims) in the world.
-		ObjectList_t avatarList_;
-		
 		/// Name of the sim we're connected.
 		std::string simName_;
 		

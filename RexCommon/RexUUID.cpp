@@ -1,8 +1,4 @@
 // For conditions of distribution and use, see copyright notice in license.txt
-#include <iomanip>
-#include <iostream>
-#include <sstream>
-
 #include "RexUUID.h"
 
 using namespace std;
