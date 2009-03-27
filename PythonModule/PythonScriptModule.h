@@ -28,6 +28,7 @@ namespace PythonScript
         virtual void Load();
         virtual void Unload();
         virtual void Initialize();
+        virtual void PostInitialize();
         virtual void Uninitialize();
         virtual void Update();
 
@@ -39,7 +40,7 @@ namespace PythonScript
 
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Asset;
+        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Script;
 
 	private:
 		

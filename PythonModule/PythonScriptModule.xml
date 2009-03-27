@@ -1,0 +1,4 @@
+<config>
+	<entry>PythonScriptModule</entry>
+	<dependency>SupportModules</dependency>
+</config>
