@@ -94,7 +94,7 @@ namespace Foundation
         const_iterator Begin(const std::string &type) const
         {
             if (components_.find(type) == components_.end())
-                (*const_cast<ComponentTypeMap*>(&components_))[type] = ComponentList();
+                (const_cast<ComponentTypeMap&>(components_))[type] = ComponentList();
 
             return components_.find(type)->second.begin();
         }
@@ -105,7 +105,7 @@ namespace Foundation
         const_iterator End(const std::string &type) const
         {
             if (components_.find(type) == components_.end())
-                (*const_cast<ComponentTypeMap*>(&components_))[type] = ComponentList();
+                (const_cast<ComponentTypeMap&>(components_))[type] = ComponentList();
  
             return components_.find(type)->second.end();
         }

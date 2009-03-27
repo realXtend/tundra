@@ -117,12 +117,12 @@ namespace Test
 
         Foundation::SceneManager::iterator it = sceneManager->Begin();
         int test_scenes = 0;
-        for ( ; it != sceneManager->End() ; ++it)
+        for ( ; it < sceneManager->End() ; ++it)
         {
-            if (it->second->Name() == "test_scene")
+            if ((*it)->Name() == "test_scene")
                 test_scenes++;
 
-            if (it->second->Name() == "Test clone scene")
+            if ((*it)->Name() == "Test clone scene")
                 test_scenes++;
         }
         assert (test_scenes == 2 && "Scene iterator could not find all the scenes!");
