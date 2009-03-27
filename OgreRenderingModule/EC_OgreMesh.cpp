@@ -71,7 +71,7 @@ namespace OgreRenderer
         return entity_->getNumSubEntities();
     }
     
-    bool EC_OgreMesh::SetMaterial(unsigned index, const std::string& material_name)
+    bool EC_OgreMesh::SetMaterial(Core::uint index, const std::string& material_name)
     {
         if (!entity_)
         {
@@ -81,7 +81,7 @@ namespace OgreRenderer
         
         if (index >= entity_->getNumSubEntities())
         {
-            OgreRenderingModule::LogError("Could not set material " + material_name + ": illegal submesh index " + boost::lexical_cast<std::string>(index));
+            OgreRenderingModule::LogError("Could not set material " + material_name + ": illegal submesh index " + Core::ToString<Core::uint>(index));
             return false;
         }
         

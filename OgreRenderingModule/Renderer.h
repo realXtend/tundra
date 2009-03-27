@@ -126,7 +126,7 @@ namespace OgreRenderer
         Core::event_category_id_t event_category_;
         
         //! counter for unique name creation
-        unsigned object_id_;
+        Core::uint object_id_;
     };
 }
 

@@ -223,7 +223,7 @@ namespace OgreRenderer
     
     std::string Renderer::GetUniqueObjectName()
     {
-        return "obj" + boost::lexical_cast<std::string>(object_id_++);
+        return "obj" + Core::ToString<Core::uint>(object_id_++);
     }
 }
 
