@@ -14,7 +14,7 @@
 
 namespace RexLogic
 {
-    RexLogicModule::RexLogicModule() : ModuleInterface_Impl(type_static_)
+    RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_)
     {
     }
 

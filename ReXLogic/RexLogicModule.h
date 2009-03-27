@@ -9,7 +9,7 @@
 namespace RexLogic
 {
     //! interface for modules
-    class RexLogicModule : public Foundation::ModuleInterface_Impl
+    class RexLogicModule : public Foundation::ModuleInterfaceImpl
     {
     public:
         RexLogicModule();

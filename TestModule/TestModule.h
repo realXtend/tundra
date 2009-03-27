@@ -29,7 +29,7 @@ namespace Test
     };
 
     //! interface for modules
-    class TestModule : public Foundation::ModuleInterface_Impl
+    class TestModule : public Foundation::ModuleInterfaceImpl
     {
     public:
         TestModule();

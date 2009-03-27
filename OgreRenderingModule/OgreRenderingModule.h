@@ -19,7 +19,7 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Renderer> RendererPtr;
     
     //! A renderer module using Ogre
-    class MODULE_API OgreRenderingModule : public Foundation::ModuleInterface_Impl
+    class MODULE_API OgreRenderingModule : public Foundation::ModuleInterfaceImpl
     {
     public:
         OgreRenderingModule();

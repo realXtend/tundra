@@ -5,7 +5,7 @@
 
 /// This module shows information about internal core data structures in separate windows. Useful for verifying and understanding
 /// the internal state of the application.
-class DebugStats : public Foundation::ModuleInterface_Impl
+class DebugStats : public Foundation::ModuleInterfaceImpl
 {
 public:
     DebugStats();

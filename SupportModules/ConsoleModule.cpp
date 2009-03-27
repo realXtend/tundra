@@ -6,7 +6,7 @@
 
 namespace Console
 {
-    ConsoleModule::ConsoleModule() : ModuleInterface_Impl(type_static_)
+    ConsoleModule::ConsoleModule() : ModuleInterfaceImpl(type_static_)
     {
         manager_ = ConsolePtr(new ConsoleManager(this));
     }

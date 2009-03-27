@@ -15,7 +15,7 @@ using namespace Foundation;
 namespace OpenSimProtocol
 {
 	OpenSimProtocolModule::OpenSimProtocolModule() :
-    ModuleInterface_Impl("OpenSimProtocolModule"),
+    ModuleInterfaceImpl("OpenSimProtocolModule"),
     bConnected_(false)
     {
     }

@@ -15,7 +15,7 @@ namespace Foundation
 
 namespace Test
 {
-    class TestModuleB : public Foundation::ModuleInterface_Impl
+    class TestModuleB : public Foundation::ModuleInterfaceImpl
     {
     public:
         TestModuleB();

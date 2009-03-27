@@ -16,7 +16,7 @@ namespace Asset
     class AssetManager;
     typedef boost::shared_ptr<AssetManager> AssetManagerPtr;
     
-    class MODULE_API AssetModule : public Foundation::ModuleInterface_Impl
+    class MODULE_API AssetModule : public Foundation::ModuleInterfaceImpl
     {
     public:
         AssetModule();

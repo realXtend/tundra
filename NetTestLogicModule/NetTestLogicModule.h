@@ -49,7 +49,7 @@ namespace OpenSimProtocol
 namespace NetTest
 {
     //! Interface for modules
-    class NetTestLogicModule: public Foundation::ModuleInterface_Impl
+    class NetTestLogicModule: public Foundation::ModuleInterfaceImpl
     {
     public:
         NetTestLogicModule();

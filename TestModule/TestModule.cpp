@@ -10,7 +10,7 @@
 
 namespace Test
 {
-    TestModule::TestModule() : ModuleInterface_Impl(type_static_)
+    TestModule::TestModule() : ModuleInterfaceImpl(type_static_)
     {
     }
 

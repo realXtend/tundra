@@ -87,11 +87,11 @@ namespace Scene
         const SceneMap &GetSceneMap() const { return scenes_; }
 
     private:
-        //class SceneIterator : public Core::AnyIterator_Impl<SceneMap::iterator, Foundation::ScenePtr>
+        //class SceneIterator : public Core::AnyIteratorImpl<SceneMap::iterator, Foundation::ScenePtr>
         //{
         //    SceneIterator();
         //public:
-        //    SceneIterator(SceneMap::iterator iter) : AnyIterator_Impl(iter) {}
+        //    SceneIterator(SceneMap::iterator iter) : AnyIteratorImpl(iter) {}
         //    virtual ~SceneIterator() {}
 
         //    virtual Foundation::ScenePtr &operator *() { return iter_->second; }

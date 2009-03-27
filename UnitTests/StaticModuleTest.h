@@ -7,10 +7,10 @@
 
 namespace Test
 {
-    class StaticModuleTest : public Foundation::ModuleInterface_Impl
+    class StaticModuleTest : public Foundation::ModuleInterfaceImpl
     {
     public:
-        StaticModuleTest() : ModuleInterface_Impl(NameStatic()) {}
+        StaticModuleTest() : ModuleInterfaceImpl(NameStatic()) {}
         virtual ~StaticModuleTest() {}
 
         virtual void Load()
