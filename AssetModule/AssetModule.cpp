@@ -120,6 +120,18 @@ namespace Asset
                 case RexNetMsgImageNotInDatabase:
                 manager_->HandleTextureCancel(msg);
                 return true;
+                
+                case RexNetMsgTransferInfo:
+                manager_->HandleAssetHeader(msg);
+                return true;
+                
+                case RexNetMsgTransferPacket:
+                manager_->HandleAssetData(msg);
+                return true;
+                
+                case RexNetMsgTransferAbort:
+                manager_->HandleAssetCancel(msg);
+                return true;
             }
         }
         return false;

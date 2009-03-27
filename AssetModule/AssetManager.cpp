@@ -24,7 +24,8 @@ namespace Asset
     
     bool AssetManager::AssetTransfer::Ready() const
     {
-        if (!size_) return false; // No header received, size not known yet
+        if (!size_) 
+            return false; // No header received, size not known yet
         
         return received_ >= size_;
     }
@@ -144,6 +145,7 @@ namespace Asset
         }
         
         AssetTransfer new_transfer;
+        new_transfer.SetAssetId(asset_id);
         new_transfer.SetAssetType(RexAT_Texture);
         texture_transfers_[asset_id] = new_transfer;
     
@@ -167,23 +169,30 @@ namespace Asset
     
     void AssetManager::RequestOtherAsset(const RexUUID& asset_id, Core::uint asset_type)
     {
-        if (asset_transfers_.find(asset_id) != asset_transfers_.end())
+        // Asset transfers are keyed by transfer id, not asset id, so have to search in a bit cumbersome way
+        AssetTransferMap::const_iterator i = asset_transfers_.begin();
+        while (i != asset_transfers_.end())
         {
-            AssetModule::LogWarning("Asset " + asset_id.ToString() + " already requested");
-            return;
+            if (i->second.GetAssetId() == asset_id)
+            {
+                AssetModule::LogWarning("Asset " + asset_id.ToString() + " already requested");
+                return;
+            }
+            ++i;
         }
-    
+
+        RexUUID transfer_id;
+        transfer_id.Random();
+        
         AssetTransfer new_transfer;
+        new_transfer.SetAssetId(asset_id);
         new_transfer.SetAssetType(asset_type);
-        asset_transfers_[asset_id] = new_transfer;
+        asset_transfers_[transfer_id] = new_transfer;
         
         AssetModule::LogInfo("Requesting asset " + asset_id.ToString());
         
         NetOutMessage *m = net_interface_->StartMessageBuilding(RexNetMsgTransferRequest);
         assert(m);
-        
-        RexUUID transfer_id;
-        transfer_id.Random();
         
         m->AddUUID(transfer_id); // Transfer ID
         m->AddS32(RexAC_Asset); // Asset channel type
@@ -224,7 +233,7 @@ namespace Asset
         
         if (transfer.Ready())
         {
-            StoreAsset(asset_id, transfer);
+            StoreAsset(transfer);
             texture_transfers_.erase(i);
         }
     }
@@ -251,7 +260,7 @@ namespace Asset
         
         if (transfer.Ready())
         {
-            StoreAsset(asset_id, transfer);
+            StoreAsset(transfer);
             texture_transfers_.erase(i);
         }
     }
@@ -270,8 +279,80 @@ namespace Asset
         texture_transfers_.erase(i);
     }
     
-    void AssetManager::StoreAsset(const RexTypes::RexUUID& asset_id, AssetTransfer& transfer)
+    void AssetManager::HandleAssetHeader(NetInMessage* msg)
     {
+        RexUUID transfer_id = msg->ReadUUID();
+        AssetTransferMap::iterator i = asset_transfers_.find(transfer_id);
+        if (i == asset_transfers_.end())
+        {
+            AssetModule::LogWarning("Data received for nonexisting asset transfer " + transfer_id.ToString());
+            return;
+        }
+        
+        AssetTransfer& transfer = i->second;
+        
+        Core::s32 channel_type = msg->ReadS32();
+        Core::s32 target_type = msg->ReadS32();
+        Core::s32 status = msg->ReadS32();
+        Core::s32 size = msg->ReadS32();
+        
+        transfer.SetSize(size);
+        
+        // We may get data packets before header, so check if all already received
+        if (transfer.Ready())
+        {
+            StoreAsset(transfer);
+            asset_transfers_.erase(i);
+        }
+    }
+    
+    void AssetManager::HandleAssetData(NetInMessage* msg)
+    {
+        RexUUID transfer_id = msg->ReadUUID();
+        AssetTransferMap::iterator i = asset_transfers_.find(transfer_id);
+        if (i == asset_transfers_.end())
+        {
+            AssetModule::LogWarning("Data received for nonexisting asset transfer " + transfer_id.ToString());
+            return;
+        }
+        
+        AssetTransfer& transfer = i->second;
+        
+        Core::s32 channel_type = msg->ReadS32();
+        Core::s32 packet_index = msg->ReadS32();
+        Core::s32 status = msg->ReadS32();
+        
+        Core::uint data_size; 
+        const Core::u8* data = msg->ReadBuffer(&data_size); // Data block
+        transfer.ReceiveData(packet_index, data, data_size);
+        
+        //AssetModule::LogInfo("Packet " + Core::ToString<Core::u16>(packet_index) + " received for " + transfer.GetAssetId().ToString() + ", " + Core::ToString<Core::u16>(data_size) + " bytes");
+        
+        if (transfer.Ready())
+        {
+            StoreAsset(transfer);
+            asset_transfers_.erase(i);
+        }
+    }
+    
+    void AssetManager::HandleAssetCancel(NetInMessage* msg)
+    {
+        RexUUID transfer_id = msg->ReadUUID();
+        AssetTransferMap::iterator i = asset_transfers_.find(transfer_id);
+        if (i == asset_transfers_.end())
+        {
+            AssetModule::LogWarning("Cancel received for nonexisting asset transfer " + transfer_id.ToString());
+            return;
+        }
+        
+        AssetModule::LogInfo("Cancel received for asset transfer " + transfer_id.ToString());
+        asset_transfers_.erase(i);
+    }
+    
+    void AssetManager::StoreAsset(AssetTransfer& transfer)
+    {
+        const RexUUID& asset_id = transfer.GetAssetId();
+        
         AssetModule::LogInfo("Storing complete asset " + asset_id.ToString());
 
         assets_[asset_id].asset_type_ = transfer.GetAssetType();
