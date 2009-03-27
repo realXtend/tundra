@@ -34,6 +34,14 @@ namespace PythonScript
 		/* NOTE: called 'exec' cause is similar to py shell builtin exec() func.
 		 * Also in the IPython shell 'run' refers to running an external file and not the given string
 		 */
+
+        AutoRegisterConsoleCommand(Console::CreateCommand(
+            "PyLoad", "Execute a python file. PyLoad(mypymodule)", 
+            Console::Bind(this, &PythonScriptModule::ConsoleRunFile))); 
+
+		AutoRegisterConsoleCommand(Console::CreateCommand(
+            "PyReset", "Resets the Python interpreter - should free all it's memory, and clear all state.", 
+            Console::Bind(this, &PythonScriptModule::ConsoleReset))); 
     }
 
     // virtual
@@ -45,11 +53,14 @@ namespace PythonScript
     // virtual
     void PythonScriptModule::Initialize()
     {
-        Py_Initialize();
+		if (!Py_IsInitialized())
+	        Py_Initialize();
+		else
+			LogWarning("Python already initialized in PythonScriptModule init!");
 
         LogInfo("Module " + Name() + " initialized.");
 		//LogInfo("Py thinks 1 + 1 = " + Py_Eval("1 + 1"));
-		RunString("print 'Py thinks 1 + 1 = %d' % (1 + 1)");
+		//RunString("print 'Py thinks 1 + 1 = %d' % (1 + 1)");
     }
 
     void PythonScriptModule::PostInitialize()
@@ -62,6 +73,15 @@ namespace PythonScript
 		PyRun_SimpleString(codestr);
 	}
 
+	void PythonScriptModule::RunFile(const std::string &modulename)
+	{
+		/* could get a fp* here and pass it to
+		int PyRun_SimpleFile(FILE *fp, const char *filename)
+		but am unsure whether to use the Poco fs stuff for it an how
+		so trying this, why not? we don't need the file on the c++ side?*/
+		std::string cmd = "import " + modulename;
+		RunString(cmd.c_str());
+	}
 
     Console::CommandResult PythonScriptModule::ConsoleRunString(const Core::StringVector &params)
 	{
@@ -77,8 +97,27 @@ namespace PythonScript
 			RunString(params[0].c_str());
 			return Console::ResultSuccess();
 		}
-
 	}
+
+    Console::CommandResult PythonScriptModule::ConsoleRunFile(const Core::StringVector &params)
+	{		
+		if (params.size() != 1)
+		{			
+			return Console::ResultFailure("Usage: PyLoad(mypymodule) (to run mypymodule.py by importing it)");
+		}
+
+		else
+		{
+			RunFile(params[0]);
+			return Console::ResultSuccess();
+		}
+	}
+
+	Console::CommandResult PythonScriptModule::ConsoleReset(const Core::StringVector &params)
+	{
+		Reset();
+		return Console::ResultSuccess();
+	}	
 
     // virtual 
     void PythonScriptModule::Uninitialize()
@@ -93,6 +132,13 @@ namespace PythonScript
     {
         //renderer_->Update();
     }
+
+	void PythonScriptModule::Reset()
+	{
+		Py_Finalize();
+		Py_Initialize();
+		LogInfo("Python interpreter reseted: all memory and state cleared.");
+	}
 }
 
 using namespace PythonScript;
