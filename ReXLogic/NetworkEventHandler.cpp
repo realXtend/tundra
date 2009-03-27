@@ -26,7 +26,7 @@ namespace RexLogic
 
     bool NetworkEventHandler::HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        if(event_id == OpenSimProtocol::OpenSimProtocolModule::EVENT_NETWORK_IN)
+        if(event_id == OpenSimProtocol::EVENT_NETWORK_IN)
         {
             OpenSimProtocol::NetworkEventInboundData *netdata = static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
             switch(netdata->messageID)

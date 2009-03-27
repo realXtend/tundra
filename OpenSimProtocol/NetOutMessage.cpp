@@ -190,13 +190,19 @@ void NetOutMessage::AddBool(bool value)
 /*void NetOutMessage::AddIPAddr(IPADDR value);
 {
 	if (CheckNextVariable() == NetVarIPADDR) 
+    {	
 		AddBytesUnchecked(NetVariableSizes[17], &value);
+		AdvanceToNextVariable();
+    }		
 }*/
 
 /*void NetOutMessage::AddIPPort(IPPORT value);
 {
-	if (CheckNextVariable() == NetVarIPPORT) 
+	if (CheckNextVariable() == NetVarIPPORT)
+	{
 		AddBytesUnchecked(NetVariableSizes[18], &value);
+		AdvanceToNextVariable();
+    }
 }*/
 
 void NetOutMessage::AddBuffer(size_t count, uint8_t *data)

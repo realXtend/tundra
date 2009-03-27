@@ -35,6 +35,12 @@ struct ClientParameters
 
 namespace OpenSimProtocol
 {
+    /// Inbound network event ID.
+    static const Core::event_id_t EVENT_NETWORK_IN = 0x1;
+        
+    /// Outbound network event ID.
+    static const Core::event_id_t EVENT_NETWORK_OUT = 0x1;
+
     /// Event data interface for inbound messages
     class NetworkEventInboundData : public Foundation::EventDataInterface
     {
@@ -108,12 +114,6 @@ namespace OpenSimProtocol
         /// access it or hold on to it afterwards. The user doesn't have to do any deallocation, it is all managed by
         /// this class.
         void FinishMessageBuilding(NetOutMessage *msg);
-        
-        /// Inbound network event ID.
-        static const Core::event_id_t EVENT_NETWORK_IN = 0x1;
-        
-        /// Outbound network event ID.
-        static const Core::event_id_t EVENT_NETWORK_OUT = 0x1;
         
         /// Returns client parameters of current connection
         const ClientParameters& GetClientParameters() const { return clientParameters_; }

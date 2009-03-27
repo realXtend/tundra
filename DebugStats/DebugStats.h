@@ -36,15 +36,15 @@ private:
     };
 
     const ModelColumns moduleModelColumns_;
-
+   
     void InitializeModulesWindow();
     void PopulateModulesTreeView();
 
     void InitializeEventsWindow();
     void PopulateEventsTreeView();
 
-    void InitializeObjectsWindow();
-    void PopulateObjectsTreeView();
+    void InitializeEntityListWindow();
+    void PopulateEntityListTreeView();
 
     static void Log(const std::string &str); 
 
@@ -52,6 +52,24 @@ private:
 
     Glib::RefPtr<Gnome::Glade::Xml> debugEvents_;
     Glib::RefPtr<Gtk::TreeStore> debugEventsModel_;
+    
+    // Data related to the window that shows the entity list of the scene.
+    Glib::RefPtr<Gnome::Glade::Xml> entityListControls_;
+    Glib::RefPtr<Gtk::TreeStore> entityListModel_;
+
+    struct EntityColumns : public Gtk::TreeModelColumnRecord
+    {
+        Gtk::TreeModelColumn<Glib::ustring>  entityLocalID;
+        //Gtk::TreeModelColumn<Glib::ustring>  entityFullID;
+        //Gtk::TreeModelColumn<Glib::ustring>  entityName;
+
+        EntityColumns() { add(entityLocalID/*, entityFullID, entityName*/); }
+    };
+        
+    const EntityColumns entityModelColumns_;
+    
+    // Temp.
+    int updateCounter;
 };
 
 #endif
