@@ -146,14 +146,14 @@ namespace Foundation
     };
 
     //! interface for modules, implementation
-    class MODULE_API ModuleInterface_Impl : public ModuleInterface
+    class MODULE_API ModuleInterfaceImpl : public ModuleInterface
     {
         friend class ModuleManager;
     private:
         typedef std::vector<Console::Command> CommandVector;
     public:
     
-        explicit ModuleInterface_Impl(const std::string &name) : name_(name), type_(Module::MT_Unknown), state_(Module::MS_Unloaded), framework_(NULL)
+        explicit ModuleInterfaceImpl(const std::string &name) : name_(name), type_(Module::MT_Unknown), state_(Module::MS_Unloaded), framework_(NULL)
         { 
             try
             {
@@ -165,7 +165,7 @@ namespace Foundation
             }
         }
 
-        explicit ModuleInterface_Impl(Module::Type type) : type_(type), state_(Module::MS_Unloaded), framework_(NULL)
+        explicit ModuleInterfaceImpl(Module::Type type) : type_(type), state_(Module::MS_Unloaded), framework_(NULL)
         { 
             try
             {
@@ -177,7 +177,7 @@ namespace Foundation
             }
         }
 
-        virtual ~ModuleInterface_Impl()
+        virtual ~ModuleInterfaceImpl()
         {
             Poco::Logger::destroy(Name());
         }

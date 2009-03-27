@@ -14,15 +14,15 @@ namespace Scene
         Contains all entities in the world in a generic fashion.
         Acts as a factory for all entities.
     */
-    class MODULE_API Generic : public Foundation::SceneInterface_Impl
+    class MODULE_API Generic : public Foundation::SceneInterfaceImpl
     {
         friend class SceneManager;
     private:
         Generic();
-        //! constructor that takes a framework
-        Generic(const std::string &name, SceneModule *module) : SceneInterface_Impl(name), module_(module) {}
+        //! constructor that takes a name and parent module
+        Generic(const std::string &name, SceneModule *module) : SceneInterfaceImpl(name), module_(module) {}
         //! copy constructor that also takes a name
-        Generic( const Generic &other, const std::string &name ) : SceneInterface_Impl(name), module_(other.module_), entities_(other.entities_) { }
+        Generic( const Generic &other, const std::string &name ) : SceneInterfaceImpl(name), module_(other.module_), entities_(other.entities_) { }
         // copy constuctor
         Generic( const Generic &other);
 

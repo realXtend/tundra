@@ -13,7 +13,7 @@
 
 namespace OgreRenderer
 {
-    OgreRenderingModule::OgreRenderingModule() : ModuleInterface_Impl(type_static_)
+    OgreRenderingModule::OgreRenderingModule() : ModuleInterfaceImpl(type_static_)
     {
     }
 

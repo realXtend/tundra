@@ -28,7 +28,7 @@ POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
 POCO_END_MANIFEST
 
 DebugStats::DebugStats()
-:ModuleInterface_Impl("DebugStats"), updateCounter(0)
+:ModuleInterfaceImpl("DebugStats"), updateCounter(0)
 {
 }
 

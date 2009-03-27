@@ -13,7 +13,7 @@ using namespace RexTypes;
 namespace NetTest
 {
     NetTestLogicModule::NetTestLogicModule() 
-    : ModuleInterface_Impl("NetTestLogicModule"),
+    : ModuleInterfaceImpl("NetTestLogicModule"),
     bRunning_(false),
     bLogoutSent_(false),
     loginWindow(0),

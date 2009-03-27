@@ -7,7 +7,7 @@
 class GtkmmUIImpl;
 
 /// GtkmmUI is a module that implements and provides Gtkmm UI for other modules.
-class GtkmmUI : public Foundation::ModuleInterface_Impl
+class GtkmmUI : public Foundation::ModuleInterfaceImpl
 {
 public:
     GtkmmUI();

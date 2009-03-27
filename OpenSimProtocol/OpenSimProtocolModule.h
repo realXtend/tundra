@@ -66,7 +66,7 @@ namespace OpenSimProtocol
     };
         
     /// Interface for modules.
-    class MODULE_API OpenSimProtocolModule : public Foundation::ModuleInterface_Impl, public INetMessageListener
+    class MODULE_API OpenSimProtocolModule : public Foundation::ModuleInterfaceImpl, public INetMessageListener
     {
     public: 
         OpenSimProtocolModule();

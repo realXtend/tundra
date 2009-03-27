@@ -26,7 +26,7 @@ namespace Foundation
 namespace Console
 {
     //! interface for modules
-    class MODULE_API ConsoleModule : public Foundation::ModuleInterface_Impl
+    class MODULE_API ConsoleModule : public Foundation::ModuleInterfaceImpl
     {
     public:
         ConsoleModule();

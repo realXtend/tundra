@@ -143,20 +143,20 @@ namespace Foundation
         Contains all entities in the world in a generic fashion.
         Acts as a factory for all entities.
     */
-    class MODULE_API SceneInterface_Impl : public SceneInterface
+    class MODULE_API SceneInterfaceImpl : public SceneInterface
     {
     public:
         //! default constructor
-        SceneInterface_Impl() {}
+        SceneInterfaceImpl() {}
 
         //! constructor that takes a string as name
-        SceneInterface_Impl(const std::string &name) : name_(name) {}
+        SceneInterfaceImpl(const std::string &name) : name_(name) {}
 
         //! copy constructor
-        SceneInterface_Impl( const SceneInterface_Impl &other ) : SceneInterface(), name_(other.name_) { }
+        SceneInterfaceImpl( const SceneInterfaceImpl &other ) : SceneInterface(), name_(other.name_) { }
 
         //! destructor
-        virtual ~SceneInterface_Impl() {}
+        virtual ~SceneInterfaceImpl() {}
         
         //! Returns scene name
         virtual const std::string &Name() const { return name_; }

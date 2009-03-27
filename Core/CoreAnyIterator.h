@@ -27,22 +27,22 @@ namespace Core
 
     //! Inherit to create your own iterator adaptor
     template <class base_iterator, class base_type>
-    class AnyIterator_Impl : public AnyIteratorInterface<base_type>
+    class AnyIteratorImpl : public AnyIteratorInterface<base_type>
     {
     public:
-        AnyIterator_Impl(base_iterator iter) : iter_(iter) {}
-        AnyIterator_Impl(const AnyIteratorInterface &rhs) : iter_(dynamic_cast<const AnyIterator_Impl&>(rhs).iter_) {}
-        virtual ~AnyIterator_Impl() {}
+        AnyIteratorImpl(base_iterator iter) : iter_(iter) {}
+        AnyIteratorImpl(const AnyIteratorInterface &rhs) : iter_(dynamic_cast<const AnyIteratorImpl&>(rhs).iter_) {}
+        virtual ~AnyIteratorImpl() {}
     
         virtual AnyIteratorInterface &operator =(const AnyIteratorInterface &rhs)
         { 
             if (this != &rhs)
-                iter_ = dynamic_cast<const AnyIterator_Impl&>(rhs).iter_;
+                iter_ = dynamic_cast<const AnyIteratorImpl&>(rhs).iter_;
             return *this;
         }
-        virtual bool operator ==(const AnyIteratorInterface &rhs) const { return iter_ == dynamic_cast<const AnyIterator_Impl&>(rhs).iter_; }
+        virtual bool operator ==(const AnyIteratorInterface &rhs) const { return iter_ == dynamic_cast<const AnyIteratorImpl&>(rhs).iter_; }
 
-        virtual AnyIterator_Impl &operator ++() { ++iter_; return *this; }
+        virtual AnyIteratorImpl &operator ++() { ++iter_; return *this; }
 
     protected:
         base_iterator iter_;
@@ -50,11 +50,11 @@ namespace Core
 
     //! Adaptor for list, set and vector iterators
     template <class base_iterator, class base_type>
-    class ListIterator : public Core::AnyIterator_Impl<base_iterator, base_type>
+    class ListIterator : public Core::AnyIteratorImpl<base_iterator, base_type>
     {
         ListIterator();
     public:
-        ListIterator(base_iterator iter) : AnyIterator_Impl(iter) {}
+        ListIterator(base_iterator iter) : AnyIteratorImpl(iter) {}
         virtual ~ListIterator() {}
 
         virtual base_type &operator *() { return *iter_; }
@@ -62,11 +62,11 @@ namespace Core
 
     //! Adaptor for map iterator
     template <class base_iterator, class base_type>
-    class MapIterator : public Core::AnyIterator_Impl<base_iterator, base_type>
+    class MapIterator : public Core::AnyIteratorImpl<base_iterator, base_type>
     {
         MapIterator();
     public:
-        MapIterator(base_iterator iter) : AnyIterator_Impl(iter) {}
+        MapIterator(base_iterator iter) : AnyIteratorImpl(iter) {}
         virtual ~MapIterator() {}
 
         virtual base_type &operator *() { return iter_->second; }

@@ -44,7 +44,7 @@ namespace Foundation
         Modules may get initialized and uninitialized any number of times during the program's life time.
 
         To create a new static module:
-            - Create a class that inherits from ModuleInterface_Impl
+            - Create a class that inherits from ModuleInterfaceImpl
             
             - In the Module's load()-function, declare all components the new module offers with DECLARE_MODULE_EC macro.
             
