@@ -8,6 +8,7 @@
 #include "CoreDefines.h"
 #include "CoreTypes.h"
 #include "CoreException.h"
+#include "CoreAnyIterator.h"
 
 #include "CoreMath.h"
 #include "Vector3D.h"

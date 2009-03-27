@@ -22,6 +22,8 @@ namespace Scene
     class SceneManager : public Foundation::SceneManagerServiceInterface
     {
         friend class SceneModule;
+    public:
+        typedef std::map<std::string, Foundation::ScenePtr> SceneMap;
     private:
         //! default constructor not applicable
         SceneManager();
@@ -82,12 +84,22 @@ namespace Scene
             return (scenes_.find(name) != scenes_.end());
         }
 
-        virtual iterator Begin() { return scenes_.begin(); }
-        virtual const_iterator Begin() const { return scenes_.begin(); }
-        virtual iterator End() { return scenes_.end(); }
-        virtual const_iterator End() const { return scenes_.end(); }
-
         const SceneMap &GetSceneMap() const { return scenes_; }
+
+    private:
+        class MODULE_API SceneIterator : public Core::AnyIterator_Impl<SceneMap::iterator, Foundation::ScenePtr>
+        {
+            SceneIterator();
+        public:
+            SceneIterator(SceneMap::iterator iter) : AnyIterator_Impl(iter) {}
+            virtual ~SceneIterator() {}
+
+            virtual Foundation::ScenePtr &operator *() { return iter_->second; }
+        };
+
+
+        virtual SceneIteratorImplPtr SceneIteratorBegin() { return SceneIteratorImplPtr(new SceneIterator(scenes_.begin())); }
+        virtual SceneIteratorImplPtr SceneIteratorEnd() { return SceneIteratorImplPtr(new SceneIterator(scenes_.end())); }
 
     private:
         //! container for entities managed by this scene manager

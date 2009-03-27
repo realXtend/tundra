@@ -12,14 +12,8 @@ namespace Foundation
     class SceneManagerServiceInterface : public ServiceInterface
     {
     public:
-        // Implementation details in an abstract interface, ouch. Less work than creating our own iterator though.
-        typedef std::map<std::string, Foundation::ScenePtr> SceneMap;
-        typedef SceneMap::iterator iterator;
-        typedef SceneMap::const_iterator const_iterator;
-        //typedef typename boost::shared_ptr<SceneManagerServiceInterface<iterator>> SceneManagerPtr;
-    //    typedef typename class iterator;
-       // typedef const_iterator;
-    public:
+        typedef Core::AnyIterator<ScenePtr> iterator;
+
         //! default constructor
         SceneManagerServiceInterface() {}
 
@@ -66,10 +60,14 @@ namespace Foundation
         //! Returns true if a scene with the specified name is contained within this manager
         virtual bool HasScene(const std::string &name) const = 0;
 
-        virtual iterator Begin() = 0;
-        virtual const_iterator Begin() const = 0;
-        virtual iterator End() = 0;
-        virtual const_iterator End() const = 0;
+        typedef boost::shared_ptr<Core::AnyIterator_Impl_Abstract <ScenePtr> > SceneIteratorImplPtr;
+
+        iterator Begin() { return iterator(SceneIteratorBegin()); }
+        iterator End() { return iterator(SceneIteratorEnd()); }
+
+    private:
+        virtual SceneIteratorImplPtr SceneIteratorBegin() = 0;
+        virtual SceneIteratorImplPtr SceneIteratorEnd() = 0;
     };
 
     typedef SceneManagerServiceInterface SceneManager;
