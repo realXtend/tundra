@@ -34,7 +34,6 @@ namespace PythonScript
 		/* NOTE: called 'exec' cause is similar to py shell builtin exec() func.
 		 * Also in the IPython shell 'run' refers to running an external file and not the given string
 		 */
-
     }
 
     // virtual
@@ -53,6 +52,11 @@ namespace PythonScript
 		RunString("print 'Py thinks 1 + 1 = %d' % (1 + 1)");
     }
 
+    void PythonScriptModule::PostInitialize()
+    {
+	}
+
+
 	void PythonScriptModule::RunString(const char* codestr)
 	{
 		PyRun_SimpleString(codestr);
@@ -61,9 +65,19 @@ namespace PythonScript
 
     Console::CommandResult PythonScriptModule::ConsoleRunString(const Core::StringVector &params)
 	{
+		if (params.size() != 1)
+		{			
+			return Console::ResultFailure("Usage: PyExec(print 1 + 1)");
+			//how to handle input like this? PyExec(print '1 + 1 = %d' % (1 + 1))");
+			//probably better have separate py shell.
+		}
 
-		RunString(params[0].c_str());
-		return Console::ResultSuccess();
+		else
+		{
+			RunString(params[0].c_str());
+			return Console::ResultSuccess();
+		}
+
 	}
 
     // virtual 
