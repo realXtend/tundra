@@ -7,11 +7,8 @@
 #include "OpenSimProtocolModule.h"
 #include "RexLogicModule.h"
 
-#include "EC_ObjIdentity.h"
-#include "EC_ObjCollision.h"
-#include "EC_ObjFreeData.h"
-#include "EC_SelectPriority.h"
-#include "EC_ServerScript.h"
+#include "EC_Viewable.h"
+#include "EC_FreeData.h"
 #include "EC_SpatialSound.h"
 #include "EC_OpenSimPrim.h"
 
@@ -55,6 +52,38 @@ namespace RexLogic
         else
             return scene->GetEntity(entityid);
     }
+  
+    Foundation::EntityPtr NetworkEventHandler::GetPrimEntitySafe(Core::entity_id_t entityid, RexUUID fullid)
+    {
+        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+        Foundation::ScenePtr scene = sceneManager->GetScene("World");
+
+        // TODO tucofixme, how to make sure this is a prim entity?
+        if (!scene->HasEntity(entityid))
+        {
+            UUIDs_[fullid] = entityid;
+            return CreateNewPrimEntity(entityid);
+        }
+        else
+            return scene->GetEntity(entityid);
+    }  
+   
+    Foundation::EntityPtr NetworkEventHandler::GetPrimEntity(RexUUID entityuuid)
+    {
+        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+        Foundation::ScenePtr scene = sceneManager->GetScene("World");
+        
+        if(UUIDs_.find(entityuuid) != UUIDs_.end())
+        {
+            return scene->GetEntity(UUIDs_[entityuuid]);
+        }
+        else
+        {
+            Foundation::EntityPtr emptyptr;
+            return emptyptr; 
+        }        
+    }    
+    
     
     Foundation::EntityPtr NetworkEventHandler::CreateNewPrimEntity(Core::entity_id_t entityid)
     {
@@ -63,6 +92,7 @@ namespace RexLogic
         
         Core::StringVector defaultcomponents;
         defaultcomponents.push_back(EC_OpenSimPrim::NameStatic());
+        defaultcomponents.push_back(EC_Viewable::NameStatic());
         
         Foundation::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents); 
         return entity;
@@ -111,7 +141,7 @@ namespace RexLogic
         {
             // Prim
             case 0x09:
-                entity = GetPrimEntitySafe(localid);
+                entity = GetPrimEntitySafe(localid,fullid);                
                 if(entity)
                 {
                     Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
@@ -141,7 +171,7 @@ namespace RexLogic
             Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
             static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectName(data);        
         }
-        return false;    
+        return false;
     }
 
     bool NetworkEventHandler::HandleOSNE_ObjectDescription(OpenSimProtocol::NetworkEventInboundData* data)
@@ -164,11 +194,50 @@ namespace RexLogic
 
     bool NetworkEventHandler::HandleOSNE_GenericMessage(OpenSimProtocol::NetworkEventInboundData* data)
     {
+        size_t bytes_read;
+        
+        data->message->ResetReading();    
+        data->message->SkipToNextVariable();      // AgentId
+        data->message->SkipToNextVariable();      // SessionId
+        data->message->SkipToNextVariable();      // TransactionId
+        
+        const uint8_t *methodnamebytes = data->message->ReadBuffer(&bytes_read);
+        if(bytes_read > 0)
+        {
+            std::string methodname = (const char *)methodnamebytes;
+            if(methodname == "RexMediaUrl")
+                return HandleRexGM_RexMediaUrl(data);
+            else if(methodname == "RexPrimData")
+                return HandleRexGM_RexPrimData(data); 
+        }    
         return false;    
     }
 
-    bool NetworkEventHandler::HandleOSNE_RexPrimData(OpenSimProtocol::NetworkEventInboundData* data)
+    bool NetworkEventHandler::HandleRexGM_RexMediaUrl(OpenSimProtocol::NetworkEventInboundData* data)
     {
+        // TODO tucofixme
+        return false;
+    }
+
+    bool NetworkEventHandler::HandleRexGM_RexPrimData(OpenSimProtocol::NetworkEventInboundData* data)
+    {
+        size_t bytes_read;    
+        data->message->ResetReading();
+        data->message->SkipToFirstVariableByName("Parameter");           
+        
+        const uint8_t *readbytedata;      
+        readbytedata = data->message->ReadBuffer(&bytes_read);
+        RexUUID primuuid = *(RexUUID*)(&readbytedata[0]);
+
+        Foundation::EntityPtr entity = GetPrimEntity(primuuid);
+        if(entity)
+        {
+            Foundation::ComponentInterfacePtr oscomponent = entity->GetComponent("EC_OpenSimPrim");
+            static_cast<EC_OpenSimPrim*>(oscomponent.get())->HandleRexPrimData(data);
+
+            Foundation::ComponentInterfacePtr viewcomponent = entity->GetComponent("EC_Viewable");
+            static_cast<EC_Viewable*>(viewcomponent.get())->HandleRexPrimData(data);
+        }
         return false;
     }
 }

@@ -160,7 +160,7 @@ namespace NetTest
 				    break;
 			    }
 		    default:
-			    netInterface_->DumpNetworkMessage(msgID, msg);
+			    // netInterface_->DumpNetworkMessage(msgID, msg);
 			    break;
             }
         }
