@@ -10,7 +10,8 @@ using namespace RexTypes;
 
 namespace Asset
 {
-    AssetModule::AssetModule() : ModuleInterface_Impl(type_static_)
+    AssetModule::AssetModule() : ModuleInterface_Impl(type_static_),
+        inboundcategory_id_(0)
     {
     }
 
@@ -42,6 +43,14 @@ namespace Asset
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Asset, manager_.get());
         
         LogInfo("Module " + Name() + " initialized.");
+    }
+    
+    void AssetModule::PostInitialize()
+    {
+        inboundcategory_id_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
+        
+        if (inboundcategory_id_ == 0 )
+            LogWarning("Unable to find event category for OpenSimNetwork events!");
     }
 
     void AssetModule::Update()

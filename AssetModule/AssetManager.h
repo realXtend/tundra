@@ -32,7 +32,7 @@ namespace Asset
 
         void RequestAsset(const RexTypes::RexUUID& asset_id, Core::uint asset_type);
         
-        bool AssetManager::Initialize();
+        bool Initialize();
         
         bool IsInitialized() const { return initialized_; }
         

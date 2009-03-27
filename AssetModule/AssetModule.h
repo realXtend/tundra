@@ -26,7 +26,8 @@ namespace Asset
         virtual void Unload();
         virtual void Initialize();
         virtual void Uninitialize();
-
+        virtual void PostInitialize();
+        
         virtual void Update();
 
         //! returns framework
@@ -45,6 +46,9 @@ namespace Asset
     private:
         //! asset manager
         AssetManagerPtr manager_;
+        
+        //! category id for incoming messages
+        Core::event_category_id_t inboundcategory_id_;
     };
 }
 
