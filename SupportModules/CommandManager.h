@@ -83,6 +83,9 @@ namespace Console
 
         //! Test command
         Console::CommandResult ConsoleTest(const Core::StringVector &params);
+
+        //! Look command
+        Console::CommandResult ConsoleLook(const Core::StringVector &params) { return Console::ResultSuccess("It's dark."); }
     private:
         Console::CommandResult ExecuteCommandAlways(const std::string &name, const Core::StringVector &params, bool always);
 
