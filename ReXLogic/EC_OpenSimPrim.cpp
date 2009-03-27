@@ -11,9 +11,31 @@ namespace RexLogic
     {
         RegionHandle = 0;
         LocalId = 0;
+        FullId.SetNull();
+        ParentId = 0; 
         
         ObjectName = "";
         Description = "";
+        HoveringText = "";
+        MediaUrl = "";
+
+        Material = 0;
+        ClickAction = 0;
+        UpdateFlags = 0;
+
+        Position = Core::Vector3df(0,0,0);
+        Rotation = Core::Quaternion(0,0,0,0);
+        Scale = Core::Vector3df(0,0,0);
+
+        ServerScriptClass = "";
+        
+        CollisionMesh.SetNull();
+        
+        SoundUUID;
+        SoundVolume = 0;
+        SoundRadius = 0;
+        
+        SelectPriority = 0;
     }
 
     EC_OpenSimPrim::~EC_OpenSimPrim()

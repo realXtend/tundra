@@ -7,7 +7,24 @@ namespace RexLogic
 {
     EC_Viewable::EC_Viewable(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework())
     {
+        DrawType = 0;
+        IsVisible = true;
+        CastShadows = false;
+        LightCreatesShadows = false;
+        DescriptionTexture = false;
+        ScaleToPrim = true;
+        
+        DrawDistance = 0;
+        LOD = 0;
+        
+        MeshUUID.SetNull();
+        ParticleScriptUUID.SetNull();
 
+        AnimationPackageUUID.SetNull();
+        AnimationName = "";
+        AnimationRate = 0;
+
+        Materials.clear();
     }
 
     EC_Viewable::~EC_Viewable()

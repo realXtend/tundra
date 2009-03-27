@@ -5,6 +5,7 @@
 
 #include "ComponentInterface.h"
 #include "Foundation.h"
+#include "RexUUID.h"
 
 namespace RexLogic
 {
@@ -14,22 +15,13 @@ namespace RexLogic
     public:
         virtual ~EC_SpatialSound();
 
-
-        virtual void HandleNetworkData(std::string data);
-
-        static std::vector<std::string> GetNetworkMessages()
-        {
-            std::vector<std::string> myinterest;
-            myinterest.push_back("GeneralMessage_ExtraEntityData");
-            return myinterest;
-        } 
-
+        RexTypes::RexUUID SoundUUID;
+        float Volume;
+        float Radius;
     private:
         EC_SpatialSound(Foundation::ModuleInterface* module);
 
-        std::string sound_id_;
-        float volume_;
-        float radius_;
+
     };
 }
 

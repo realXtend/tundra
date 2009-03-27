@@ -7,7 +7,7 @@ namespace RexLogic
 {
     EC_FreeData::EC_FreeData(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework())
     {
-        free_data_ = ""; 
+        FreeData = ""; 
     }
 
     EC_FreeData::~EC_FreeData()
