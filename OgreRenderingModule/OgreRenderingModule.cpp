@@ -130,7 +130,7 @@ namespace OgreRenderer
     }
     
     // virtual
-    void OgreRenderingModule::Update()
+    void OgreRenderingModule::Update(Core::f64 frametime)
     {
         renderer_->Update();
     }

@@ -60,7 +60,7 @@ namespace NetTest
         virtual void Initialize();
         virtual void PostInitialize();
         virtual void Uninitialize();
-        virtual void Update();
+        virtual void Update(Core::f64 frametime);
         
         virtual bool HandleEvent(
             Core::event_category_id_t category_id,

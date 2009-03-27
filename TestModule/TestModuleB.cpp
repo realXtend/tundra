@@ -51,7 +51,7 @@ namespace Test
     }
 
     // virtual
-    void TestModuleB::Update()
+    void TestModuleB::Update(Core::f64 frametime)
     {
         Foundation::TestServiceInterface *test_service = NULL;
         try

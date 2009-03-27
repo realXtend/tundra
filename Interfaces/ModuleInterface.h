@@ -106,7 +106,10 @@ namespace Foundation
         virtual void Uninitialize() = 0;
 
         //! synchronized update for the module
-        virtual void Update() = 0;
+        /*!
+            \param frametime elapsed time in seconds since last frame
+        */
+        virtual void Update(Core::f64 frametime) = 0;
 
         //! Returns the name of the module. Each module also has a static accessor for the name, it's needed by the logger.
         virtual const std::string &Name() const = 0;
@@ -185,7 +188,7 @@ namespace Foundation
         virtual void PreInitialize() {}
         virtual void PostInitialize() {}
         
-        virtual void Update() {}
+        virtual void Update(Core::f64 frametime) {}
 
         virtual const std::string &Name() const { return (type_ == Module::MT_Unknown ? name_ : Module::NameFromType(type_)); }
         virtual Module::Type Type() const { return type_; }

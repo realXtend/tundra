@@ -30,7 +30,7 @@ namespace Test
             LogInfo("Module " + Name() + " uninitialized.");
         }
 
-        virtual void Update() {}
+        virtual void Update(Core::f64 frametime) {}
 
         MODULE_LOGGING_FUNCTIONS;
 

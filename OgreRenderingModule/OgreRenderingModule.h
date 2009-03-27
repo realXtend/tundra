@@ -30,7 +30,7 @@ namespace OgreRenderer
         virtual void Initialize();
         virtual void PostInitialize();
         virtual void Uninitialize();
-        virtual void Update();
+        virtual void Update(Core::f64 frametime);
         
         //! returns renderer
         RendererPtr GetRenderer() const { return renderer_; }

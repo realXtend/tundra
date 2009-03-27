@@ -56,7 +56,7 @@ namespace Test
     }
 
     // virtual
-    void TestModule::Update()
+    void TestModule::Update(Core::f64 frametime)
     {
         LogInfo("");
 

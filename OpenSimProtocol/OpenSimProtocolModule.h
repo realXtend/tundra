@@ -76,7 +76,7 @@ namespace OpenSimProtocol
         virtual void Unload();
         virtual void Initialize();
         virtual void Uninitialize();
-        virtual void Update();
+        virtual void Update(Core::f64 frametime);
 		
 		MODULE_LOGGING_FUNCTIONS
 

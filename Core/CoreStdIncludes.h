@@ -36,6 +36,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
+#include <boost/timer.hpp>
 
 #include <Poco/Foundation.h>
 #include <Poco/DirectoryIterator.h>

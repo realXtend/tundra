@@ -96,11 +96,11 @@ namespace Foundation
         }
     }
 
-    void ModuleManager::UpdateModules()
+    void ModuleManager::UpdateModules(Core::f64 frametime)
     {
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            modules_[i].module_->Update();
+            modules_[i].module_->Update(frametime);
         }
     }
 
