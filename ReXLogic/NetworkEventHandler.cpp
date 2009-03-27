@@ -68,11 +68,11 @@ namespace RexLogic
             return scene->GetEntity(entityid);
     }  
    
-    Foundation::EntityPtr NetworkEventHandler::GetPrimEntity(RexUUID entityuuid)
+    Foundation::EntityPtr NetworkEventHandler::GetPrimEntity(const RexUUID &entityuuid)
     {
         Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
-        
+
         if(UUIDs_.find(entityuuid) != UUIDs_.end())
         {
             return scene->GetEntity(UUIDs_[entityuuid]);
@@ -224,11 +224,8 @@ namespace RexLogic
         size_t bytes_read;    
         data->message->ResetReading();
         data->message->SkipToFirstVariableByName("Parameter");           
-        
-        const uint8_t *readbytedata;      
-        readbytedata = data->message->ReadBuffer(&bytes_read);
-        RexUUID primuuid = *(RexUUID*)(&readbytedata[0]);
 
+        RexUUID primuuid((const char *)data->message->ReadBuffer(&bytes_read));
         Foundation::EntityPtr entity = GetPrimEntity(primuuid);
         if(entity)
         {

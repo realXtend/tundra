@@ -30,7 +30,7 @@ namespace RexLogic
         
         Foundation::EntityPtr GetPrimEntitySafe(Core::entity_id_t entityid);
         Foundation::EntityPtr GetPrimEntitySafe(Core::entity_id_t entityid, RexUUID fullid);
-        Foundation::EntityPtr GetPrimEntity(RexUUID entityuuid);
+        Foundation::EntityPtr GetPrimEntity(const RexUUID &entityuuid);
         Foundation::EntityPtr CreateNewPrimEntity(Core::entity_id_t entityid);
 
         Foundation::EntityPtr GetAvatarEntitySafe(Core::entity_id_t entityid);
