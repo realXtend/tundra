@@ -253,13 +253,14 @@ namespace Foundation
               it != entries.end() ; 
               ++it )
         {
-            Foundation::RootLogInfo("Attempting to load module: " + *it + ".");
-
             if (HasModuleEntry(*it))
             {
-                Foundation::RootLogInfo("Module " + *it + " already loaded.");
+                Foundation::RootLogDebug("Module " + *it + " already loaded.");
                 continue;
             }
+
+            Foundation::RootLogInfo("Attempting to load module: " + *it + ".");
+
 
             if (library->cl_.findClass(*it) == NULL)
             {
@@ -285,7 +286,7 @@ namespace Foundation
                 Poco::Logger::get(module->Name()).setLevel("information");
 #endif
 
-                Foundation::RootLogInfo("Module " + *it + " loaded. Module name: " + module->Name() + ".");
+                Foundation::RootLogInfo("Module " + *it + " loaded.");
             } else
             {
                 Foundation::RootLogInfo("Module " + module->Name() + " is excluded and not loaded.");

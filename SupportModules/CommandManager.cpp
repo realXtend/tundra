@@ -139,18 +139,18 @@ namespace Console
 
             try
             {
-            for (escape_tokenizer::iterator it = param_tok.begin() ;
-                 it != param_tok.end() ; 
-                 ++it)
-            {
-                std::string param = *it;
-                boost::trim(param);
-                params.push_back(param);
-            }
+                for (escape_tokenizer::iterator it = param_tok.begin() ;
+                     it != param_tok.end() ; 
+                     ++it)
+                {
+                    std::string param = *it;
+                    boost::trim(param);
+                    params.push_back(param);
+                }
             } catch (boost::escaped_list_error e)
             {
                 UNREFERENCED_PARAM(e);
-                console_->Print("Failed to parse malformed command line: " + commandline);
+                console_->Print("Invalid use of escaping.");
                 Console::CommandResult result = { false, "" };
                 return result;
             }
