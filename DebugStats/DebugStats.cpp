@@ -4,6 +4,7 @@
 #include <gtkmm/window.h>
 #include <gtkmm/treeview.h>
 #include <gtkmm/treestore.h>
+#include <gtkmm/scrolledwindow.h>
 #include <libglademm.h>
 #include <glade/glade.h>
 #pragma warning( pop )
@@ -15,9 +16,10 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
 
-#include "../SceneModule/SceneManager.h"
-#include "../SceneModule/Entity.h"
-#include "../Interfaces/SceneInterface.h"
+#include "SceneManager.h"
+#include "Entity.h"
+#include "SceneInterface.h"
+
 #include "DebugStats.h"
 #include "GtkmmUI.h"
 
@@ -26,7 +28,7 @@ POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
 POCO_END_MANIFEST
 
 DebugStats::DebugStats()
-:ModuleInterface_Impl("DebugStats")
+:ModuleInterface_Impl("DebugStats"), updateCounter(0)
 {
 }
 
@@ -49,11 +51,18 @@ void DebugStats::PostInitialize()
 
     InitializeEventsWindow();
     PopulateEventsTreeView();
+    
+//    InitializeEntityListWindow();
+    
+    ///\todo Register for add & remove entity events.
+//    Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");    
 }
 
-void DebugStats::InitializeObjectsWindow()
+void DebugStats::Update()
 {
-
+    /*++updateCounter;
+    if(updateCounter == 50000)
+        PopulateEntityListTreeView();*/
 }
 
 void DebugStats::Log(const std::string &str)
@@ -61,9 +70,43 @@ void DebugStats::Log(const std::string &str)
     Poco::Logger::get("DebugStats").information(str);
 }
 
-void DebugStats::PopulateObjectsTreeView()
+void DebugStats::InitializeEntityListWindow()
+{
+    // Load up the debug module hierarchy window, and store the main window handle for later use.
+    entityListControls_ = Gnome::Glade::Xml::create("data/entityListWindow.glade");
+    if (!entityListControls_)
+        return;
+
+    Gtk::Window *window_entitylist = 0;
+    entityListControls_->get_widget("window_entitylist", window_entitylist);
+    
+    Gtk::ScrolledWindow *scrolledwindow_entitylist = 0;
+    entityListControls_->get_widget("scrolledwindow_entitylist", scrolledwindow_entitylist);
+    // Show scroll bars only when necessary
+    scrolledwindow_entitylist->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+    
+    Gtk::TreeView *treeview_entitylist = 0;
+    entityListControls_->get_widget("treeview_entitylist", treeview_entitylist);
+    
+    entityListModel_ = Gtk::TreeStore::create(entityModelColumns_);
+    treeview_entitylist->set_model(entityListModel_);
+
+    window_entitylist->show();
+    window_entitylist->set_title("Entity List");
+}
+
+void DebugStats::PopulateEntityListTreeView()
 {
     using namespace std;
+    
+    Gtk::Window *window_entitylist = 0;
+    entityListControls_->get_widget("window_entitylist", window_entitylist);
+    
+    Gtk::TreeView *treeview_entitylist = 0;
+    entityListControls_->get_widget("treeview_entitylist", treeview_entitylist);
+    treeview_entitylist->append_column(Glib::ustring("Local ID"), moduleModelColumns_.moduleName);
+
+    entityListModel_->clear();
 
     Scene::SceneManager *sceneManager = dynamic_cast<Scene::SceneManager *>(framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
     if (!sceneManager)
@@ -74,23 +117,32 @@ void DebugStats::PopulateObjectsTreeView()
     {
         // Add scene node.
         const Foundation::SceneInterface &scene = *iter->second;
+        //Gtk::TreeStore::iterator scene_it = entityListModel_->append();
         Log(string("Scene: ") +  scene.Name());
-
+        //scene_it->set_value(0, scene.Name());
+        
         for(Foundation::SceneInterface::ConstEntityIterator iter = scene.begin(); iter != scene.end(); ++iter)
         {
-            const Scene::Entity &entity = dynamic_cast<const Scene::Entity &>(*iter); // from Foundation::EntityInterface &
+            const Scene::Entity &entity = dynamic_cast<const Scene::Entity &>(*iter);
+            Gtk::TreeStore::iterator it = entityListModel_->append();
+            
             // Add entity.
             stringstream ss;
             ss << " Entity: " << entity.GetId();
             Log(ss.str());
-            const Scene::Entity::ComponentVector components = entity.GetComponentVector();
+            
+            if (entity.GetId() == 0)
+                it->set_value(0, Glib::ustring("Null"));
+            else
+                it->set_value(0, Core::ToString(entity.GetId()));
+
+            /*const Scene::Entity::ComponentVector &components = entity.GetComponentVector();
             for(Scene::Entity::ComponentVector::const_iterator iter = components.begin(); iter != components.end(); ++iter)
             {
-                // Add component.
-                //const Foundation::ComponentInterface &component = **iter;
-                //Log(string("  Component: ") + component._Name());
-
-            }
+                // Add component. 
+                const Foundation::ComponentInterfacePtr &component = dynamic_cast<const Foundation::ComponentInterfacePtr &>(*iter); //was **iter
+                //Log(string("  Component: ") + component.Name());
+            }*/
         }
     }
 }
@@ -194,8 +246,4 @@ void DebugStats::Uninitialize()
     Gtk::Window *debugWindow = 0;
     debugModules_->get_widget("windowDebugModules", debugWindow);
     SAFE_DELETE(debugWindow);
-}
-
-void DebugStats::Update()
-{
 }
