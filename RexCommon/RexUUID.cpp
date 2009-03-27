@@ -76,19 +76,19 @@ namespace RexTypes
         stringstream str;
         int i = 0;
     
-        for(int j = 0; j < 4; ++j) str << hex << data[i++];
+        for(int j = 0; j < 4; ++j) str << hex << (int)data[i++];
         str << "-";
     
-        for(int j = 0; j < 2; ++j) str << hex << data[i++];
+        for(int j = 0; j < 2; ++j) str << hex << (int)data[i++];
         str << "-";
     
-        for(int j = 0; j < 2; ++j) str << hex << data[i++];
+        for(int j = 0; j < 2; ++j) str << hex << (int)data[i++];
         str << "-";
     
-        for(int j = 0; j < 2; ++j) str << hex << data[i++];
+        for(int j = 0; j < 2; ++j) str << hex << (int)data[i++];
         str << "-";
     
-        for(int j = 0; j < 6; ++j) str << hex << data[i++];
+        for(int j = 0; j < 6; ++j) str << hex << (int)data[i++];
     
         return str.str();
     }
