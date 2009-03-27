@@ -30,10 +30,10 @@ namespace RexLogic
         uint8_t Material;
         uint8_t ClickAction;
         uint32_t UpdateFlags;
-
-        Core::Vector3df Position;
-        Core::Quaternion Rotation;
-        Core::Vector3df Scale;
+        
+        Vector3 Position;
+        Vector3 Scale;
+        Quaternion Rotation;
 
         std::string ServerScriptClass;
         

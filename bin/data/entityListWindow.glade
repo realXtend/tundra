@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Thu Mar 26 15:43:57 2009 -->
+<!--Generated with glade3 3.4.3 on Fri Mar 27 14:34:28 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="window_entitylist">
+    <property name="skip_taskbar_hint">True</property>
     <child>
       <widget class="GtkScrolledWindow" id="scrolledwindow_entitylist">
         <property name="visible">True</property>

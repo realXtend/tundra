@@ -35,7 +35,7 @@ public:
 	void AddVector3(const Vector3 &value);
 	void AddVector3d(const Vector3d &value);
 	void AddVector4(const Vector4 &value);
-	void AddQuaternion(const Quaternion &value);
+	void AddQuaternion(const Core::Quaternion &value);
 	void AddUUID(const RexUUID &value);
 	void AddBool(bool value);
 	//void AddIPAddr(IPADDR value); ///\todo

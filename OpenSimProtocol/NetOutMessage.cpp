@@ -157,7 +157,7 @@ void NetOutMessage::AddVector4(const Vector4 &value)
 	}
 }
 
-void NetOutMessage::AddQuaternion(const Quaternion &value)
+void NetOutMessage::AddQuaternion(const Core::Quaternion &value)
 {
 	if (CheckNextVariable() == NetVarQuaternion)
 	{

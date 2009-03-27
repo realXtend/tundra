@@ -108,7 +108,7 @@ namespace NetTest
             std::stringstream ss;
             ss << info->name << " received, " << Core::ToString(msg->GetDataSize()) << " bytes.";
 
-		    LogInfo(ss.str());
+//		    LogInfo(ss.str());
 		    if(bLogInbound_)
 		        WriteToLogWindow(ss.str());
 		        
@@ -175,7 +175,7 @@ namespace NetTest
             std::stringstream ss;
             ss << info->name << " sent, " << Core::ToString(event_data->message->BytesFilled()) << " bytes.";
 
-		    LogInfo(ss.str());
+//		    LogInfo(ss.str());
 		    if(bLogOutbound_)
 		        WriteToLogWindow(ss.str());
         }
@@ -415,7 +415,9 @@ namespace NetTest
         netTestControls->get_widget("window_nettest", netTestWindow);
         Gtk::Entry *entry_chat = netTestControls->get_widget("entry_chat", entry_chat);        
         netTestWindow->set_title("NetTest");
-        
+        netTestWindow->set_default_size(700, 350);
+        netTestWindow->set_position(Gtk::WIN_POS_MOUSE);
+                
         // Bind callbacks.
         netTestControls->connect_clicked("button_chat", sigc::mem_fun(*this, &NetTestLogicModule::OnClickChat));
         netTestControls->connect_clicked("checkbutton_inbound", sigc::mem_fun(*this, &NetTestLogicModule::UpdateLogFilterState));
