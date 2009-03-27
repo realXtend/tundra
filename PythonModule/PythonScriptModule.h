@@ -35,6 +35,8 @@ namespace PythonScript
 
 		//! callback for console command
         Console::CommandResult ConsoleRunString(const Core::StringVector &params);
+        Console::CommandResult ConsoleRunFile(const Core::StringVector &params);
+        Console::CommandResult ConsoleReset(const Core::StringVector &params);
         
         MODULE_LOGGING_FUNCTIONS
 
@@ -46,6 +48,8 @@ namespace PythonScript
 		
 		//basic feats
 		void PythonScriptModule::RunString(const char* codestr);
+		void PythonScriptModule::RunFile(const std::string &modulename);
+		void PythonScriptModule::Reset();
 
     /* python interpreter? 
         OgreRenderer::RendererPtr renderer_;*/
