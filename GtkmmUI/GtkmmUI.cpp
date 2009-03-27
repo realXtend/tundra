@@ -53,7 +53,7 @@ void GtkmmUI::Uninitialize()
 {
 }
 
-void GtkmmUI::Update()
+void GtkmmUI::Update(Core::f64 frametime)
 {
     assert(impl_);
 

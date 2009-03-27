@@ -17,7 +17,7 @@ public:
     void PostInitialize();
     void Uninitialize();
 
-    void Update();
+    void Update(Core::f64 frametime);
 
 private:
     void operator=(const DebugStats &);

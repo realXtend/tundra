@@ -74,7 +74,7 @@ namespace RexLogic
     }
 
     // virtual
-    void RexLogicModule::Update()
+    void RexLogicModule::Update(Core::f64 frametime)
     {
 
     }

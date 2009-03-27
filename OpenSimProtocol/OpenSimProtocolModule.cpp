@@ -68,7 +68,7 @@ namespace OpenSimProtocol
     }
 
     // virtual
-    void OpenSimProtocolModule::Update()
+    void OpenSimProtocolModule::Update(Core::f64 frametime)
     {
         if (bConnected_)
             networkManager_->ProcessMessages();

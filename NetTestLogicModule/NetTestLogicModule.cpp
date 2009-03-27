@@ -86,7 +86,7 @@ namespace NetTest
     }
 
     // virtual
-    void NetTestLogicModule::Update()
+    void NetTestLogicModule::Update(Core::f64 frametime)
     {
 
     }

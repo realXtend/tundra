@@ -37,7 +37,7 @@ namespace Console
         virtual void Initialize();
         virtual void Uninitialize();
 
-        virtual void Update();
+        virtual void Update(Core::f64 frametime);
 
         //! returns framework
         Foundation::Framework *GetFramework() { return framework_; }

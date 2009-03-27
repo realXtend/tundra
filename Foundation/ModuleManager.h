@@ -193,7 +193,7 @@ namespace Foundation
         void UninitializeModules();
 
         //! perform synchronized update on all modules
-        void UpdateModules();
+        void UpdateModules(double frametime);
 
         //! Returns module by name
         /*!

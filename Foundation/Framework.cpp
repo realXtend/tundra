@@ -129,11 +129,15 @@ namespace Foundation
         // add event subscribers now, that all modules are loaded/initialized
         event_manager_->LoadEventSubscriberTree(DEFAULT_EVENT_SUBSCRIBER_TREE_PATH);
 
+        boost::timer timer;
+
         // main loop
         while (exit_signal_ == false)
         {
+            double frametime = timer.elapsed();
+            timer.restart();
             // do synchronized update for modules
-            module_manager_->UpdateModules();
+            module_manager_->UpdateModules(frametime);
 
             // call asynchronous update on modules / do parallel tasks
 

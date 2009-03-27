@@ -59,7 +59,7 @@ void DebugStats::PostInitialize()
 //    Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");    
 }
 
-void DebugStats::Update()
+void DebugStats::Update(Core::f64 frametime)
 {
    if (updateCounter % 50000 == 0)
        PopulateEntityListTreeView();

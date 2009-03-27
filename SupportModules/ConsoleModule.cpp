@@ -36,7 +36,7 @@ namespace Console
         LogInfo("Module " + Name() + " initialized.");
     }
 
-    void ConsoleModule::Update()
+    void ConsoleModule::Update(Core::f64 frametime)
     {
         manager_->Update();
     }
