@@ -24,7 +24,6 @@ private:
     DebugStats(const DebugStats &);
 
     // Data related to the window that shows currently loaded modules, for debugging purposes.
-    
     Glib::RefPtr<Gnome::Glade::Xml> debugModules_;
     Glib::RefPtr<Gtk::TreeStore> debugModulesModel_;
 
@@ -56,19 +55,26 @@ private:
     // Data related to the window that shows the entity list of the scene.
     Glib::RefPtr<Gnome::Glade::Xml> entityListControls_;
     Glib::RefPtr<Gtk::TreeStore> entityListModel_;
-
-    struct EntityColumns : public Gtk::TreeModelColumnRecord
-    {
-        Gtk::TreeModelColumn<Glib::ustring>  entityLocalID;
-        //Gtk::TreeModelColumn<Glib::ustring>  entityFullID;
-        //Gtk::TreeModelColumn<Glib::ustring>  entityName;
-
-        EntityColumns() { add(entityLocalID/*, entityFullID, entityName*/); }
-    };
-        
-    const EntityColumns entityModelColumns_;
     
-    // Temp.
+    Gtk::Window *windowEntityList;
+    
+    //Tree model columns for entity list.
+    class EntityModelColumns : public Gtk::TreeModel::ColumnRecord
+    {
+    public:
+      EntityModelColumns()
+      {
+          add(colID);
+          add(colName);
+      }
+
+      Gtk::TreeModelColumn<int> colID;
+      Gtk::TreeModelColumn<Glib::ustring> colName;
+    };
+            
+    const EntityModelColumns entityModelColumns_;
+    
+    // Tempory counter.
     int updateCounter;
 };
 

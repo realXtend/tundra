@@ -20,7 +20,6 @@ namespace RexTypes
 
 typedef Core::Vector3D<float> Vector3;
 typedef Core::Vector3D<double> Vector3d;
-typedef Core::Quaternion Quaternion;
 
 ///\todo Is this needed? Only one message uses Vector4 (CameraConstraint).
 struct Vector4

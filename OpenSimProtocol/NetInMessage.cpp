@@ -257,18 +257,18 @@ Vector4 NetInMessage::ReadVector4()
 	}
 }
 
-Quaternion NetInMessage::ReadQuaternion()
+Core::Quaternion NetInMessage::ReadQuaternion()
 {
 	if (CheckNextVariableType() == NetVarQuaternion)
 	{
-		Quaternion *data = (Quaternion*)ReadBytesUnchecked(sizeof(Quaternion));
+		Core::Quaternion *data = (Core::Quaternion*)ReadBytesUnchecked(sizeof(Core::Quaternion));
 		AdvanceToNextVariable();
 		return *data;
 	}
 	else 
 	{	
 		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return Quaternion();
+		return Core::Quaternion();
 	}
 }
 

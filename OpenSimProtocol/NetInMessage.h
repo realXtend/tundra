@@ -35,7 +35,7 @@ public:
     Vector3 ReadVector3();
     Vector3d ReadVector3d();
 	Vector4 ReadVector4();
-    Quaternion ReadQuaternion();
+    Core::Quaternion ReadQuaternion();
 
 	RexUUID ReadUUID();
 	//IPADDR	ReadIPAddr(IPADDR value);  ///\todo
