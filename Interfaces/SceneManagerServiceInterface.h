@@ -13,6 +13,7 @@ namespace Foundation
     {
     public:
         typedef Core::AnyIterator<ScenePtr> iterator;
+        typedef Core::AnyIterator<const ScenePtr> const_iterator;
 
         //! default constructor
         SceneManagerServiceInterface() {}
@@ -29,6 +30,7 @@ namespace Foundation
 
         //! Deletes a scene and all entities in it
         /*! Since entities may be shared between scenes, not all entities may get deleted.
+            Also because of dangling references the scene may not get deleted immediatelly.
             
             Precondition: HasScene(name)
             Postcondition: !HasScene(name)
@@ -61,13 +63,18 @@ namespace Foundation
         virtual bool HasScene(const std::string &name) const = 0;
 
         typedef boost::shared_ptr<Core::AnyIterator_Impl_Abstract <ScenePtr> > SceneIteratorImplPtr;
+        typedef boost::shared_ptr<Core::AnyIterator_Impl_Abstract <const ScenePtr> > ConstSceneIteratorImplPtr;
 
         iterator Begin() { return iterator(SceneIteratorBegin()); }
         iterator End() { return iterator(SceneIteratorEnd()); }
+        const_iterator Begin() const { return const_iterator(ConstSceneIteratorBegin()); }
+        const_iterator End() const { return const_iterator(ConstSceneIteratorEnd()); }
 
     private:
         virtual SceneIteratorImplPtr SceneIteratorBegin() = 0;
         virtual SceneIteratorImplPtr SceneIteratorEnd() = 0;
+        virtual ConstSceneIteratorImplPtr ConstSceneIteratorBegin() const = 0;
+        virtual ConstSceneIteratorImplPtr ConstSceneIteratorEnd() const = 0;
     };
 
     typedef SceneManagerServiceInterface SceneManager;

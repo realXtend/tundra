@@ -87,19 +87,34 @@ namespace Scene
         const SceneMap &GetSceneMap() const { return scenes_; }
 
     private:
-        class MODULE_API SceneIterator : public Core::AnyIterator_Impl<SceneMap::iterator, Foundation::ScenePtr>
-        {
-            SceneIterator();
-        public:
-            SceneIterator(SceneMap::iterator iter) : AnyIterator_Impl(iter) {}
-            virtual ~SceneIterator() {}
+        //class SceneIterator : public Core::AnyIterator_Impl<SceneMap::iterator, Foundation::ScenePtr>
+        //{
+        //    SceneIterator();
+        //public:
+        //    SceneIterator(SceneMap::iterator iter) : AnyIterator_Impl(iter) {}
+        //    virtual ~SceneIterator() {}
 
-            virtual Foundation::ScenePtr &operator *() { return iter_->second; }
-        };
+        //    virtual Foundation::ScenePtr &operator *() { return iter_->second; }
+        //};
 
 
-        virtual SceneIteratorImplPtr SceneIteratorBegin() { return SceneIteratorImplPtr(new SceneIterator(scenes_.begin())); }
-        virtual SceneIteratorImplPtr SceneIteratorEnd() { return SceneIteratorImplPtr(new SceneIterator(scenes_.end())); }
+        virtual SceneIteratorImplPtr SceneIteratorBegin()
+        { 
+            return SceneIteratorImplPtr(new Core::MapIterator<SceneMap::iterator, Foundation::ScenePtr>(scenes_.begin()));
+        }
+        virtual SceneIteratorImplPtr SceneIteratorEnd()
+        { 
+            return SceneIteratorImplPtr(new Core::MapIterator<SceneMap::iterator, Foundation::ScenePtr>(scenes_.end()));
+        }
+
+        virtual ConstSceneIteratorImplPtr ConstSceneIteratorBegin() const
+        { 
+            return ConstSceneIteratorImplPtr(new Core::MapIterator<SceneMap::const_iterator, const Foundation::ScenePtr>(scenes_.begin()));
+        }
+        virtual ConstSceneIteratorImplPtr ConstSceneIteratorEnd() const
+        { 
+            return ConstSceneIteratorImplPtr(new Core::MapIterator<SceneMap::const_iterator, const Foundation::ScenePtr>(scenes_.end()));
+        }
 
     private:
         //! container for entities managed by this scene manager
