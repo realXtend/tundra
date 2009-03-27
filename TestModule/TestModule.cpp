@@ -116,16 +116,31 @@ namespace Test
         assert(*cloned_scene.get() < *scene.get() && "SceneInterface operator< failed");
 
         Foundation::SceneManager::iterator it = sceneManager->Begin();
+        Foundation::SceneManager::iterator it_copy = it;
         int test_scenes = 0;
-        for ( ; it < sceneManager->End() ; ++it)
+        for ( ; it_copy != sceneManager->End() ; ++it_copy)
         {
-            if ((*it)->Name() == "test_scene")
+            if ((*it_copy)->Name() == "test_scene")
                 test_scenes++;
 
-            if ((*it)->Name() == "Test clone scene")
+            if ((*it_copy)->Name() == "Test clone scene")
                 test_scenes++;
         }
         assert (test_scenes == 2 && "Scene iterator could not find all the scenes!");
+
+        const Foundation::SceneManagerServiceInterface *const_sceneManager = const_cast<const Foundation::SceneManagerServiceInterface*>(sceneManager);
+        Foundation::SceneManager::const_iterator c_it = const_sceneManager->Begin();
+        Foundation::SceneManager::const_iterator c_it_copy = c_it;
+        test_scenes = 0;
+        for ( ; c_it_copy != const_sceneManager->End() ; ++c_it_copy)
+        {
+            if ((*c_it_copy)->Name() == "test_scene")
+                test_scenes++;
+
+            if ((*c_it_copy)->Name() == "Test clone scene")
+                test_scenes++;
+        }
+        assert (test_scenes == 2 && "Const scene iterator could not find all the scenes!");
 
 
 

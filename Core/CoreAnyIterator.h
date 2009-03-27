@@ -11,12 +11,13 @@ namespace Core
         of iterator a derived class uses.
     */
     template <class base_type>
-    class MODULE_API AnyIterator_Impl_Abstract
+    class AnyIterator_Impl_Abstract
     {
     public:
         AnyIterator_Impl_Abstract() {}
         virtual ~AnyIterator_Impl_Abstract() {}
 
+        virtual AnyIterator_Impl_Abstract &operator =(const AnyIterator_Impl_Abstract &rhs) = 0;
         virtual bool operator <(const AnyIterator_Impl_Abstract &rhs) const = 0;
         virtual bool operator ==(const AnyIterator_Impl_Abstract &rhs) const = 0;
 
@@ -27,12 +28,19 @@ namespace Core
 
     //! Inherit to create your own iterator adaptor
     template <class base_iterator, class base_type>
-    class MODULE_API AnyIterator_Impl : public AnyIterator_Impl_Abstract<base_type>
+    class AnyIterator_Impl : public AnyIterator_Impl_Abstract<base_type>
     {
     public:
         AnyIterator_Impl(base_iterator iter) : iter_(iter) {}
+        AnyIterator_Impl(const AnyIterator_Impl_Abstract &rhs) : iter_(dynamic_cast<const AnyIterator_Impl&>(rhs).iter_) {}
         virtual ~AnyIterator_Impl() {}
-
+    
+        virtual AnyIterator_Impl_Abstract &operator =(const AnyIterator_Impl_Abstract &rhs)
+        { 
+            if (this != &rhs)
+                iter_ = dynamic_cast<const AnyIterator_Impl&>(rhs).iter_;
+            return *this;
+        }
         virtual bool operator <(const AnyIterator_Impl_Abstract &rhs) const { return iter_ != dynamic_cast<const AnyIterator_Impl&>(rhs).iter_; }
         virtual bool operator ==(const AnyIterator_Impl_Abstract &rhs) const { return iter_ == dynamic_cast<const AnyIterator_Impl&>(rhs).iter_; }
 
@@ -40,6 +48,30 @@ namespace Core
 
     protected:
         base_iterator iter_;
+    };
+
+    //! Adaptor for list, set and vector iterators
+    template <class base_iterator, class base_type>
+    class ListIterator : public Core::AnyIterator_Impl<base_iterator, base_type>
+    {
+        ListIterator();
+    public:
+        ListIterator(base_iterator iter) : AnyIterator_Impl(iter) {}
+        virtual ~ListIterator() {}
+
+        virtual base_type &operator *() { return *iter_; }
+    };
+
+    //! Adaptor for map iterator
+    template <class base_iterator, class base_type>
+    class MapIterator : public Core::AnyIterator_Impl<base_iterator, base_type>
+    {
+        MapIterator();
+    public:
+        MapIterator(base_iterator iter) : AnyIterator_Impl(iter) {}
+        virtual ~MapIterator() {}
+
+        virtual base_type &operator *() { return iter_->second; }
     };
 
     template <class base_type>
