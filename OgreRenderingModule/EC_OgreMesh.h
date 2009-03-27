@@ -53,7 +53,7 @@ namespace OgreRenderer
             \return true if successful
             \todo use material asset reference when asset system exists
          */
-        bool SetMaterial(unsigned index, const std::string& material_name);
+        bool SetMaterial(Core::uint index, const std::string& material_name);
         
         //! removes mesh
         void RemoveMesh();

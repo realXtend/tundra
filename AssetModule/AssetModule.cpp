@@ -3,6 +3,8 @@
 #include "StableHeaders.h"
 #include "AssetManager.h"
 #include "AssetModule.h"
+#include "OpenSimProtocolModule.h"
+#include "RexProtocolMsgIDs.h"
 #include "RexUUID.h"
 
 using namespace OpenSimProtocol;
@@ -11,7 +13,8 @@ using namespace RexTypes;
 namespace Asset
 {
     AssetModule::AssetModule() : ModuleInterfaceImpl(type_static_),
-        inboundcategory_id_(0)
+        inboundcategory_id_(0),
+        net_interface_(NULL)
     {
     }
 
@@ -25,7 +28,7 @@ namespace Asset
         LogInfo("Module " + Name() + " loaded.");
         
         AutoRegisterConsoleCommand(Console::CreateCommand(
-            "RequestAsset", "Request asset from server (testing only so far). Usage: RequestAsset(uuid,assettype)", 
+            "RequestAsset", "Request asset from server. Usage: RequestAsset(uuid,assettype)", 
             Console::Bind(this, &AssetModule::ConsoleRequestAsset)));
     }
 
@@ -38,8 +41,14 @@ namespace Asset
     // virtual
     void AssetModule::Initialize()
     {
-        manager_ = AssetManagerPtr(new AssetManager(framework_));
-        manager_->Initialize();
+        net_interface_ = dynamic_cast<OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol));
+        if (!net_interface_)
+        {
+            //! \todo something smart, now assetmanager will be in quite zombified state
+            AssetModule::LogError("Getting network interface did not succeed."); 
+        }
+        
+        manager_ = AssetManagerPtr(new AssetManager(framework_, net_interface_));
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Asset, manager_.get());
         
         LogInfo("Module " + Name() + " initialized.");
@@ -85,6 +94,35 @@ namespace Asset
         }
 
         return Console::ResultSuccess();
+    }
+    
+    bool AssetModule::HandleEvent(
+        Core::event_category_id_t category_id,
+        Core::event_id_t event_id, 
+        Foundation::EventDataInterface* data)
+    {
+        if ((category_id == inboundcategory_id_) && (event_id == OpenSimProtocol::EVENT_NETWORK_IN))
+        {
+            NetworkEventInboundData *event_data = static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
+            const NetMsgID msgID = event_data->messageID;
+            NetInMessage *msg = event_data->message;
+                
+            switch(msgID)
+            {
+                case RexNetMsgImageData:
+                manager_->HandleTextureHeader(msg);
+                return true;
+                
+                case RexNetMsgImagePacket:
+                manager_->HandleTextureData(msg);
+                return true;
+                
+                case RexNetMsgImageNotInDatabase:
+                manager_->HandleTextureCancel(msg);
+                return true;
+            }
+        }
+        return false;
     }
 }
 

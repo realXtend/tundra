@@ -11,6 +11,11 @@ namespace Foundation
     class Framework;
 }
 
+namespace OpenSimProtocol
+{
+    class OpenSimProtocolModule;
+}
+
 namespace Asset
 {
     class AssetManager;
@@ -27,8 +32,12 @@ namespace Asset
         virtual void Initialize();
         virtual void Uninitialize();
         virtual void PostInitialize();
-        
         virtual void Update();
+
+        virtual bool HandleEvent(
+            Core::event_category_id_t category_id,
+            Core::event_id_t event_id, 
+            Foundation::EventDataInterface* data);
 
         //! returns framework
         Foundation::Framework *GetFramework() { return framework_; }
@@ -46,6 +55,9 @@ namespace Asset
     private:
         //! asset manager
         AssetManagerPtr manager_;
+        
+         //! network interface
+        OpenSimProtocol::OpenSimProtocolModule *net_interface_;
         
         //! category id for incoming messages
         Core::event_category_id_t inboundcategory_id_;
