@@ -20,6 +20,9 @@ namespace Foundation
         platform_ = PlatformPtr(new Platform(this));
 
         config_.DeclareSetting(Framework::ConfigurationGroup(), "application_name", "realXtend");
+        config_.DeclareSetting(Framework::ConfigurationGroup(), "log_console", true);
+        config_.DeclareSetting(Framework::ConfigurationGroup(), "log_level", "information");
+
         platform_->PrepareApplicationDataDirectory(); // depends on config
 
         CreateLoggingSystem(); // depends on config and platform
@@ -44,10 +47,12 @@ namespace Foundation
 
     void Framework::CreateLoggingSystem()
     {
-
         Poco::LoggingFactory *loggingfactory = new Poco::LoggingFactory();
 
-        Poco::Channel *consolechannel = loggingfactory->createChannel("ConsoleChannel");
+        Poco::Channel *consolechannel = NULL;
+        if (config_.GetBool(Framework::ConfigurationGroup(), "log_console"))
+            consolechannel = loggingfactory->createChannel("ConsoleChannel");
+
         Poco::Channel *filechannel = loggingfactory->createChannel("FileChannel");
         
         std::wstring logfilepath_w = platform_->GetUserDocumentsDirectoryW();
@@ -61,7 +66,8 @@ namespace Foundation
         filechannel->setProperty("compress","false");
 
         Poco::SplitterChannel *splitterchannel = new Poco::SplitterChannel();
-        splitterchannel->addChannel(consolechannel);
+        if (consolechannel)
+            splitterchannel->addChannel(consolechannel);
         splitterchannel->addChannel(filechannel); 
 
         log_formatter_ = loggingfactory->createFormatter("PatternFormatter");
@@ -98,11 +104,12 @@ namespace Foundation
 
 #ifndef _DEBUG
         // make it so debug messages are not logged in release mode
-        Poco::Logger::get("Foundation").setLevel("information");
+        std::string log_level = config_.GetString(Framework::ConfigurationGroup(), "log_level");
+        Poco::Logger::get("Foundation").setLevel(log_level);
 #endif
         
-        
-        log_channels_.push_back(consolechannel);
+        if (consolechannel)
+            log_channels_.push_back(consolechannel);
         log_channels_.push_back(filechannel);
         log_channels_.push_back(splitterchannel);
         log_channels_.push_back(formatchannel);

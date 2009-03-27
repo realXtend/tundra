@@ -28,6 +28,11 @@ namespace Foundation
         {
             Module::Entry entry = { module, module->Name(), Module::SharedLibraryPtr() };
             modules_.push_back(entry);
+#ifndef _DEBUG
+                // make it so debug messages are not logged in release mode
+                std::string log_level = framework_->GetDefaultConfig().GetString(Framework::ConfigurationGroup(), "log_level");
+                Poco::Logger::get(module->Name()).setLevel(log_level);
+#endif
             module->SetFramework(framework_);
             module->LoadInternal();
         } else
@@ -274,17 +279,18 @@ namespace Foundation
             {
                 assert (HasModule(module) == false);
 
+#ifndef _DEBUG
+                // make it so debug messages are not logged in release mode
+                std::string log_level = framework_->GetDefaultConfig().GetString(Framework::ConfigurationGroup(), "log_level");
+                Poco::Logger::get(module->Name()).setLevel(log_level);
+#endif
+
                 module->SetFramework(framework_);
                 module->LoadInternal();
 
                 Module::Entry entry = { module, *it, library };
 
                 modules_.push_back(entry);
-
-#ifndef _DEBUG
-                // make it so debug messages are not logged in release mode
-                Poco::Logger::get(module->Name()).setLevel("information");
-#endif
 
                 Foundation::RootLogInfo("Module " + *it + " loaded.");
             } else
