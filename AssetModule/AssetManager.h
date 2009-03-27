@@ -29,6 +29,7 @@ namespace Asset
     };
     
     //! Asset manager. Initiates transfers based on asset requests and responds to received data.
+    //! \todo cache to disk, handle timeouts, comment code
     class AssetManager : public Foundation::AssetServiceInterface
     {
     public:
@@ -43,6 +44,10 @@ namespace Asset
         void HandleTextureData(NetInMessage* msg);
         void HandleTextureCancel(NetInMessage* msg);
         
+        void HandleAssetHeader(NetInMessage* msg);
+        void HandleAssetData(NetInMessage* msg);
+        void HandleAssetCancel(NetInMessage* msg);
+        
     private:
         class AssetTransfer
         {
@@ -53,9 +58,11 @@ namespace Asset
             void ReceiveData(Core::uint packet_index, const Core::u8* data, Core::uint size);
             void AssembleData(Core::u8* buffer) const;
             
+            void SetAssetId(const RexTypes::RexUUID& asset_id) { asset_id_ = asset_id; }
             void SetAssetType(Core::uint asset_type) { asset_type_ = asset_type; }
             void SetSize(Core::uint size) { size_ = size; }
             
+            const RexTypes::RexUUID& GetAssetId() const { return asset_id_; }
             Core::uint GetAssetType() const { return asset_type_; }
             Core::uint GetSize() const { return size_; }
             Core::uint GetReceived() const { return received_; }
@@ -65,6 +72,7 @@ namespace Asset
         private:
             typedef std::map<Core::uint, std::vector<Core::u8> > DataPacketMap;
             
+            RexTypes::RexUUID asset_id_;
             Core::uint asset_type_;
             Core::uint size_;
             Core::uint received_;
@@ -73,7 +81,7 @@ namespace Asset
         
         void RequestTexture(const RexTypes::RexUUID& asset_id);
         void RequestOtherAsset(const RexTypes::RexUUID& asset_id, Core::uint asset_type);
-        void StoreAsset(const RexTypes::RexUUID& asset_id, AssetTransfer& transfer);
+        void StoreAsset(AssetTransfer& transfer);
     
         //! network interface
         OpenSimProtocol::OpenSimProtocolModule *net_interface_;
@@ -88,10 +96,10 @@ namespace Asset
         //! completely received assets
         AssetMap assets_;
         
-        //! ongoing UDP asset transfers
+        //! ongoing UDP asset transfers, keyed by transfer id
         AssetTransferMap asset_transfers_;
         
-        //! ongoing UDP texture transfers
+        //! ongoing UDP texture transfers, keyed by texture asset id
         AssetTransferMap texture_transfers_;
     };
 }
