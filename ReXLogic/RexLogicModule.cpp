@@ -7,12 +7,8 @@
 #include "NetworkEventHandler.h"
 #include "EventDataInterface.h"
 
-#include "EC_ObjIdentity.h"
-#include "EC_ObjRights.h"
-#include "EC_ObjCollision.h"
-#include "EC_ObjFreeData.h"
-#include "EC_SelectPriority.h"
-#include "EC_ServerScript.h"
+#include "EC_Viewable.h"
+#include "EC_FreeData.h"
 #include "EC_SpatialSound.h"
 #include "EC_OpenSimPrim.h"
 
@@ -29,12 +25,8 @@ namespace RexLogic
     // virtual
     void RexLogicModule::Load()
     {
-        DECLARE_MODULE_EC(EC_ObjIdentity);
-        DECLARE_MODULE_EC(EC_ObjRights);
-        DECLARE_MODULE_EC(EC_ObjCollision);
-        DECLARE_MODULE_EC(EC_ObjFreeData);  
-        DECLARE_MODULE_EC(EC_SelectPriority);
-        DECLARE_MODULE_EC(EC_ServerScript);
+        DECLARE_MODULE_EC(EC_Viewable);
+        DECLARE_MODULE_EC(EC_FreeData);
         DECLARE_MODULE_EC(EC_SpatialSound);
         DECLARE_MODULE_EC(EC_OpenSimPrim);
 

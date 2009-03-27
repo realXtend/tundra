@@ -35,6 +35,17 @@ namespace RexLogic
         Core::Quaternion Rotation;
         Core::Vector3df Scale;
 
+        std::string ServerScriptClass;
+        
+        RexUUID CollisionMesh;
+        
+        RexUUID SoundUUID;
+        float SoundVolume;
+        float SoundRadius;
+        
+        uint32_t SelectPriority;
+
+        void HandleRexPrimData(OpenSimProtocol::NetworkEventInboundData* data);
         void HandleObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
         void HandleObjectName(OpenSimProtocol::NetworkEventInboundData* data);
         void HandleObjectDescription(OpenSimProtocol::NetworkEventInboundData* data);

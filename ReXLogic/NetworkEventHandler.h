@@ -18,20 +18,28 @@ namespace RexLogic
         // !Handle network events coming from OpenSimProtocolModule
         bool HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
     private:
-        bool HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
-        bool HandleOSNE_ObjectName(OpenSimProtocol::NetworkEventInboundData* data);
-        bool HandleOSNE_ObjectDescription(OpenSimProtocol::NetworkEventInboundData* data);
-        
+        // !Handler functions for Opensim network events
         bool HandleOSNE_GenericMessage(OpenSimProtocol::NetworkEventInboundData* data);
-        bool HandleOSNE_RexPrimData(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleOSNE_ObjectDescription(OpenSimProtocol::NetworkEventInboundData* data);        
+        bool HandleOSNE_ObjectName(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
+
+        //! Handler functions for GenericMessages
+        bool HandleRexGM_RexMediaUrl(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleRexGM_RexPrimData(OpenSimProtocol::NetworkEventInboundData* data);
         
         Foundation::EntityPtr GetPrimEntitySafe(Core::entity_id_t entityid);
+        Foundation::EntityPtr GetPrimEntitySafe(Core::entity_id_t entityid, RexUUID fullid);
+        Foundation::EntityPtr GetPrimEntity(RexUUID entityuuid);
         Foundation::EntityPtr CreateNewPrimEntity(Core::entity_id_t entityid);
 
         Foundation::EntityPtr GetAvatarEntitySafe(Core::entity_id_t entityid);
         Foundation::EntityPtr CreateNewAvatarEntity(Core::entity_id_t entityid);
 
         Foundation::Framework *framework_;
+        
+        typedef std::map<RexUUID, Core::entity_id_t> IDMap;
+        IDMap UUIDs_;
     };
 }
 
