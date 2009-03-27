@@ -137,6 +137,8 @@ namespace Console
             boost::escaped_list_separator<char> param_sep;
             escape_tokenizer param_tok(param_line);
 
+            try
+            {
             for (escape_tokenizer::iterator it = param_tok.begin() ;
                  it != param_tok.end() ; 
                  ++it)
@@ -144,6 +146,13 @@ namespace Console
                 std::string param = *it;
                 boost::trim(param);
                 params.push_back(param);
+            }
+            } catch (boost::escaped_list_error e)
+            {
+                UNREFERENCED_PARAM(e);
+                console_->Print("Failed to parse malformed command line: " + commandline);
+                Console::CommandResult result = { false, "" };
+                return result;
             }
         }
 
