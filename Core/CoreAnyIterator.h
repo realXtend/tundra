@@ -5,44 +5,42 @@
 
 namespace Core
 {
-    //! Interface for virtual iterator adaptor
+    //! Interface for virtual forward iterator adaptor
     /*! Abstract iterator that can be used on interface
         classes without knowledge of the exact type
         of iterator a derived class uses.
     */
     template <class base_type>
-    class AnyIterator_Impl_Abstract
+    class AnyIteratorInterface
     {
     public:
-        AnyIterator_Impl_Abstract() {}
-        virtual ~AnyIterator_Impl_Abstract() {}
+        AnyIteratorInterface() {}
+        virtual ~AnyIteratorInterface() {}
 
-        virtual AnyIterator_Impl_Abstract &operator =(const AnyIterator_Impl_Abstract &rhs) = 0;
-        virtual bool operator <(const AnyIterator_Impl_Abstract &rhs) const = 0;
-        virtual bool operator ==(const AnyIterator_Impl_Abstract &rhs) const = 0;
+        virtual AnyIteratorInterface &operator =(const AnyIteratorInterface &rhs) = 0;
+        virtual bool operator ==(const AnyIteratorInterface &rhs) const = 0;
 
-        virtual AnyIterator_Impl_Abstract &operator ++() = 0;
+        virtual AnyIteratorInterface &operator ++() = 0;
 
         virtual base_type &operator *() = 0;
     };
 
     //! Inherit to create your own iterator adaptor
     template <class base_iterator, class base_type>
-    class AnyIterator_Impl : public AnyIterator_Impl_Abstract<base_type>
+    class AnyIterator_Impl : public AnyIteratorInterface<base_type>
     {
     public:
         AnyIterator_Impl(base_iterator iter) : iter_(iter) {}
-        AnyIterator_Impl(const AnyIterator_Impl_Abstract &rhs) : iter_(dynamic_cast<const AnyIterator_Impl&>(rhs).iter_) {}
+        AnyIterator_Impl(const AnyIteratorInterface &rhs) : iter_(dynamic_cast<const AnyIterator_Impl&>(rhs).iter_) {}
         virtual ~AnyIterator_Impl() {}
     
-        virtual AnyIterator_Impl_Abstract &operator =(const AnyIterator_Impl_Abstract &rhs)
+        virtual AnyIteratorInterface &operator =(const AnyIteratorInterface &rhs)
         { 
             if (this != &rhs)
                 iter_ = dynamic_cast<const AnyIterator_Impl&>(rhs).iter_;
             return *this;
         }
-        virtual bool operator <(const AnyIterator_Impl_Abstract &rhs) const { return iter_ != dynamic_cast<const AnyIterator_Impl&>(rhs).iter_; }
-        virtual bool operator ==(const AnyIterator_Impl_Abstract &rhs) const { return iter_ == dynamic_cast<const AnyIterator_Impl&>(rhs).iter_; }
+        virtual bool operator ==(const AnyIteratorInterface &rhs) const { return iter_ == dynamic_cast<const AnyIterator_Impl&>(rhs).iter_; }
 
         virtual AnyIterator_Impl &operator ++() { ++iter_; return *this; }
 
@@ -78,20 +76,17 @@ namespace Core
     class AnyIterator
     {
     public:
-        AnyIterator(boost::shared_ptr< AnyIterator_Impl_Abstract<base_type> > impl) : impl_(impl) {}
+        AnyIterator(boost::shared_ptr< AnyIteratorInterface<base_type> > impl) : impl_(impl) {}
         ~AnyIterator() {}
 
-        bool operator <(const AnyIterator &rhs) const { return *impl_ < *rhs.impl_; }
         bool operator ==(const AnyIterator &rhs) const { return *impl_ == *rhs.impl_; }
-        bool operator !=(const AnyIterator &rhs) const { return !(*this == rhs); } 
-        bool operator <=(const AnyIterator &rhs) const { return *this < rhs || *this == rhs; }
-        bool operator >(const AnyIterator &rhs) const { return !(*this <= rhs); }
+        bool operator !=(const AnyIterator &rhs) const { return !(*this == rhs); }
 
         AnyIterator &operator ++() { ++(*impl_); return *this; }
 
         base_type &operator *() { assert(impl_); return **impl_; }
     private:
-        boost::shared_ptr< AnyIterator_Impl_Abstract<base_type> > impl_;
+        boost::shared_ptr< AnyIteratorInterface<base_type> > impl_;
     };
 }
 #endif

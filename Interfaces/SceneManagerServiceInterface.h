@@ -62,8 +62,8 @@ namespace Foundation
         //! Returns true if a scene with the specified name is contained within this manager
         virtual bool HasScene(const std::string &name) const = 0;
 
-        typedef boost::shared_ptr<Core::AnyIterator_Impl_Abstract <ScenePtr> > SceneIteratorImplPtr;
-        typedef boost::shared_ptr<Core::AnyIterator_Impl_Abstract <const ScenePtr> > ConstSceneIteratorImplPtr;
+        typedef boost::shared_ptr<Core::AnyIteratorInterface <ScenePtr> > SceneIteratorImplPtr;
+        typedef boost::shared_ptr<Core::AnyIteratorInterface <const ScenePtr> > ConstSceneIteratorImplPtr;
 
         iterator Begin() { return iterator(SceneIteratorBegin()); }
         iterator End() { return iterator(SceneIteratorEnd()); }
