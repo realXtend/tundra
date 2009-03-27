@@ -58,9 +58,6 @@ namespace Foundation
 
         //! Create clone of the specified component
         ComponentPtr CloneComponent(const ComponentInterfacePtr &component);
-        
-        //! Get component by entity id and component type
-        ComponentPtr GetComponent(Core::entity_id_t id, const std::string &component);
 
         //! Removes a single expired component. Should be called once per an expired component.
         void RemoveExpiredComponents();
