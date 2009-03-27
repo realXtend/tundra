@@ -15,10 +15,10 @@ namespace RexLogic
     public:
         virtual ~EC_FreeData();
 
+        std::string FreeData;
     private:
         EC_FreeData(Foundation::ModuleInterface* module);
 
-        std::string free_data_;
     };
 }
 
