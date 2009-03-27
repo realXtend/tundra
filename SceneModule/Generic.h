@@ -77,16 +77,15 @@ namespace Scene
             return (entities_.find(id) != entities_.end());
         }
 
-        class MODULE_API EntityIterator : public SceneInterface::EntityIterator_Impl
+        class MODULE_API EntityIteratorImpl : public Foundation::SceneInterface::EntityIteratorInterface
         {
         public:
-            EntityIterator(EntityMap::iterator iter):iter_(iter) {}
-            ~EntityIterator() {}
+            EntityIteratorImpl(EntityMap::iterator iter):iter_(iter) {}
+            ~EntityIteratorImpl() {}
 
-            bool operator <(const SceneInterface::EntityIterator_Impl &rhs) const { return *this->iter_ < *dynamic_cast<const EntityIterator&>(rhs).iter_; }
-            bool operator ==(const SceneInterface::EntityIterator_Impl &rhs) const { return *this->iter_ == *dynamic_cast<const EntityIterator&>(rhs).iter_; }
+            bool operator !=(const Foundation::SceneInterface::EntityIteratorInterface &rhs) const { return this->iter_ != dynamic_cast<const EntityIteratorImpl&>(rhs).iter_; }
 
-            SceneInterface::EntityIterator_Impl &operator ++() { ++iter_; return *this; }
+            SceneInterface::EntityIteratorInterface &operator ++() { ++iter_; return *this; }
 
             Foundation::EntityInterface &operator *() { return *iter_->second; }
 
@@ -94,19 +93,18 @@ namespace Scene
             EntityMap::iterator iter_;
         };
 
-        SceneIteratorImplPtr SceneIteratorBegin() { return SceneIteratorImplPtr(new EntityIterator(entities_.begin())); }
-        SceneIteratorImplPtr SceneIteratorEnd() { return SceneIteratorImplPtr(new EntityIterator(entities_.end())); }
+        SceneIteratorPtr SceneIteratorBegin() { return SceneIteratorPtr(new EntityIteratorImpl(entities_.begin())); }
+        SceneIteratorPtr SceneIteratorEnd() { return SceneIteratorPtr(new EntityIteratorImpl(entities_.end())); }
 
-        class MODULE_API ConstEntityIterator : public SceneInterface::ConstEntityIterator_Impl
+        class MODULE_API ConstEntityIteratorImpl : public SceneInterface::ConstEntityIteratorInterface
         {
         public:
-            ConstEntityIterator(EntityMap::const_iterator iter):iter_(iter) {}
-            ~ConstEntityIterator() {}
+            ConstEntityIteratorImpl(EntityMap::const_iterator iter):iter_(iter) {}
+            ~ConstEntityIteratorImpl() {}
 
-            bool operator <(const SceneInterface::ConstEntityIterator_Impl &rhs) const { return *this->iter_ < *dynamic_cast<const ConstEntityIterator&>(rhs).iter_; }
-            bool operator ==(const SceneInterface::ConstEntityIterator_Impl &rhs) const { return *this->iter_ == *dynamic_cast<const ConstEntityIterator&>(rhs).iter_; }
+            bool operator !=(const SceneInterface::ConstEntityIteratorInterface &rhs) const { return this->iter_ != dynamic_cast<const ConstEntityIteratorImpl&>(rhs).iter_; }
 
-            SceneInterface::ConstEntityIterator_Impl &operator ++() { ++iter_; return *this; }
+            SceneInterface::ConstEntityIteratorInterface &operator ++() { ++iter_; return *this; }
 
             const Foundation::EntityInterface &operator *() { return *iter_->second; }
 
@@ -114,8 +112,8 @@ namespace Scene
             EntityMap::const_iterator iter_;
         };
 
-        ConstSceneIteratorImplPtr SceneIteratorBegin() const { return ConstSceneIteratorImplPtr(new ConstEntityIterator(entities_.begin())); }
-        ConstSceneIteratorImplPtr SceneIteratorEnd() const { return ConstSceneIteratorImplPtr(new ConstEntityIterator(entities_.end())); }
+        ConstSceneIteratorPtr SceneIteratorBegin() const { return ConstSceneIteratorPtr(new ConstEntityIteratorImpl(entities_.begin())); }
+        ConstSceneIteratorPtr SceneIteratorEnd() const { return ConstSceneIteratorPtr(new ConstEntityIteratorImpl(entities_.end())); }
 
         //! Returns next available id
         virtual Core::entity_id_t GetNextFreeId();

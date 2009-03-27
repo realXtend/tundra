@@ -62,82 +62,72 @@ namespace Foundation
         //! Get the next free id
         virtual Core::entity_id_t GetNextFreeId() = 0;
 
-    protected:
+    public:
         //! Virtual scene entity iterator interface. When implemeting SceneInterface, one must provide the
         //! following functionality as well. This iterator only supports forward sequential access. Any call to
         //! a nonconst method of SceneInterface may invalidate any existing iterators.
-        class MODULE_API EntityIterator_Impl
+        class MODULE_API EntityIteratorInterface
         {
         public:
-            virtual ~EntityIterator_Impl() {}
+            virtual ~EntityIteratorInterface() {}
 
-            virtual bool operator <(const EntityIterator_Impl &rhs) const = 0;
-            virtual bool operator ==(const EntityIterator_Impl &rhs) const = 0;
+            virtual bool operator !=(const EntityIteratorInterface &rhs) const = 0;
 
-            virtual EntityIterator_Impl &operator ++() = 0;
+            virtual EntityIteratorInterface &operator ++() = 0;
 
             virtual EntityInterface &operator *() = 0;
         };
 
-        class MODULE_API ConstEntityIterator_Impl
+        class MODULE_API ConstEntityIteratorInterface
         {
         public:
-            virtual ~ConstEntityIterator_Impl() {}
+            virtual ~ConstEntityIteratorInterface() {}
 
-            virtual bool operator <(const ConstEntityIterator_Impl &rhs) const = 0;
-            virtual bool operator ==(const ConstEntityIterator_Impl &rhs) const = 0;
+            virtual bool operator !=(const ConstEntityIteratorInterface &rhs) const = 0;
 
-            virtual ConstEntityIterator_Impl &operator ++() = 0;
+            virtual ConstEntityIteratorInterface &operator ++() = 0;
 
             virtual const EntityInterface &operator *() = 0;
         };
 
-        typedef boost::shared_ptr<EntityIterator_Impl> SceneIteratorImplPtr;
-        typedef boost::shared_ptr<ConstEntityIterator_Impl> ConstSceneIteratorImplPtr;
+        typedef boost::shared_ptr<EntityIteratorInterface> SceneIteratorPtr;
+        typedef boost::shared_ptr<ConstEntityIteratorInterface> ConstSceneIteratorPtr;
 
-        virtual SceneIteratorImplPtr SceneIteratorBegin() = 0;
-        virtual SceneIteratorImplPtr SceneIteratorEnd() = 0;
+        virtual SceneIteratorPtr SceneIteratorBegin() = 0;
+        virtual SceneIteratorPtr SceneIteratorEnd() = 0;
 
-        virtual ConstSceneIteratorImplPtr SceneIteratorBegin() const = 0;
-        virtual ConstSceneIteratorImplPtr SceneIteratorEnd() const = 0;
+        virtual ConstSceneIteratorPtr SceneIteratorBegin() const = 0;
+        virtual ConstSceneIteratorPtr SceneIteratorEnd() const = 0;
 
     public:
         class MODULE_API EntityIterator
         {
         public:
-            EntityIterator(SceneIteratorImplPtr impl):impl_(impl) {}
+            EntityIterator(SceneIteratorPtr impl):impl_(impl) {}
             ~EntityIterator() {}
 
-            bool operator <(const EntityIterator &rhs) const { return impl_ < rhs.impl_; }
-            bool operator ==(const EntityIterator &rhs) const { return impl_ == rhs.impl_; }
-            bool operator !=(const EntityIterator &rhs) const { return !(*this == rhs); } 
-            bool operator <=(const EntityIterator &rhs) const { return *this < rhs || *this == rhs; }
-            bool operator >(const EntityIterator &rhs) const { return !(*this <= rhs); }
+            bool operator !=(const EntityIterator &rhs) const { return *impl_ != *rhs.impl_; }
 
             EntityIterator &operator ++() { ++(*impl_); return *this; }
 
             Foundation::EntityInterface &operator *() { assert(impl_); return **impl_; }
         private:
-            SceneIteratorImplPtr impl_;
+            SceneIteratorPtr impl_;
         };
 
         class MODULE_API ConstEntityIterator
         {
         public:
-            ConstEntityIterator(ConstSceneIteratorImplPtr impl):impl_(impl) {}
+            ConstEntityIterator(ConstSceneIteratorPtr impl):impl_(impl) {}
             ~ConstEntityIterator() {}
 
-            bool operator <(const ConstEntityIterator &rhs) const { return impl_ < rhs.impl_; }
-            bool operator ==(const ConstEntityIterator &rhs) const { return impl_ == rhs.impl_; }
-            bool operator !=(const ConstEntityIterator &rhs) const { return !(*this == rhs); } 
-            bool operator <=(const ConstEntityIterator &rhs) const { return *this < rhs || *this == rhs; }
-            bool operator >(const ConstEntityIterator &rhs) const { return !(*this <= rhs); }
+            bool operator !=(const ConstEntityIterator &rhs) const { return *impl_ != *rhs.impl_; }
 
             ConstEntityIterator &operator ++() { ++(*impl_); return *this; }
 
             const Foundation::EntityInterface &operator *() { assert(impl_); return **impl_; }
         private:
-            ConstSceneIteratorImplPtr impl_;
+            ConstSceneIteratorPtr impl_;
         };
 
         EntityIterator begin() { return EntityIterator(SceneIteratorBegin()); }

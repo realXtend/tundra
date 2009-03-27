@@ -52,7 +52,7 @@ void DebugStats::PostInitialize()
     InitializeEventsWindow();
     PopulateEventsTreeView();
     
-//    InitializeEntityListWindow();
+    InitializeEntityListWindow();
     
     ///\todo Register for add & remove entity events.
 //    Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");    
@@ -60,9 +60,9 @@ void DebugStats::PostInitialize()
 
 void DebugStats::Update()
 {
-    /*++updateCounter;
+    ++updateCounter;
     if(updateCounter == 50000)
-        PopulateEntityListTreeView();*/
+        PopulateEntityListTreeView();
 }
 
 void DebugStats::Log(const std::string &str)
@@ -121,8 +121,11 @@ void DebugStats::PopulateEntityListTreeView()
         Log(string("Scene: ") +  scene.Name());
         //scene_it->set_value(0, scene.Name());
         
-        for(Foundation::SceneInterface::ConstEntityIterator iter = scene.begin(); iter != scene.end(); ++iter)
+        for(Foundation::SceneInterface::ConstEntityIterator iter = scene.begin(); ; ++iter)
         {
+            Foundation::SceneInterface::ConstEntityIterator iter2 = scene.end();
+            if (!(iter != iter2))
+                break;
             const Scene::Entity &entity = dynamic_cast<const Scene::Entity &>(*iter);
             Gtk::TreeStore::iterator it = entityListModel_->append();
             
