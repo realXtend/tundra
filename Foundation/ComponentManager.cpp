@@ -35,11 +35,6 @@ namespace Foundation
         return newComponent;
     }
 
-    ComponentInterfacePtr ComponentManager::GetComponent(Core::entity_id_t id, const std::string &component)
-    {
-        return ComponentInterfacePtr(); //! \todo FIXME
-    }
-
     void ComponentManager::RemoveExpiredComponents()
     {
         for (ComponentTypeMap::iterator type = components_.begin() ; 
