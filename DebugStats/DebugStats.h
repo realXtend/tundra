@@ -13,17 +13,26 @@ public:
 
     void Load();
     void Unload();
-    void Initialize() {}
+    void Initialize();
     void PostInitialize();
     void Uninitialize();
 
     void Update(Core::f64 frametime);
 
+    bool HandleEvent(Core::event_category_id_t category_id,
+        Core::event_id_t event_id, 
+        Foundation::EventDataInterface* data);
+
 private:
     void operator=(const DebugStats &);
     DebugStats(const DebugStats &);
-
-    // Data related to the window that shows currently loaded modules, for debugging purposes.
+    
+    void OnClickRefresh();
+    
+    /// Category id for scene events.
+    Core::event_category_id_t eventCategoryID_ ;
+    
+    /// Data related to the window that shows currently loaded modules, for debugging purposes.
     Glib::RefPtr<Gnome::Glade::Xml> debugModules_;
     Glib::RefPtr<Gtk::TreeStore> debugModulesModel_;
 
@@ -48,7 +57,6 @@ private:
     static void Log(const std::string &str); 
 
     // Data related to the window that shows the registered event categories.
-
     Glib::RefPtr<Gnome::Glade::Xml> debugEvents_;
     Glib::RefPtr<Gtk::TreeStore> debugEventsModel_;
     
@@ -58,7 +66,7 @@ private:
     
     Gtk::Window *windowEntityList;
     
-    //Tree model columns for entity list.
+    /// Tree model columns for entity list.
     class EntityModelColumns : public Gtk::TreeModel::ColumnRecord
     {
     public:
@@ -68,14 +76,11 @@ private:
           add(colName);
       }
 
-      Gtk::TreeModelColumn<int> colID;
+      Gtk::TreeModelColumn<Glib::ustring> colID;
       Gtk::TreeModelColumn<Glib::ustring> colName;
     };
             
     const EntityModelColumns entityModelColumns_;
-    
-    // Tempory counter.
-    int updateCounter;
 };
 
 #endif

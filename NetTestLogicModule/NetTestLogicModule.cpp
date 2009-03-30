@@ -26,13 +26,11 @@ namespace NetTest
     {
     }
 
-    // virtual
     void NetTestLogicModule::Load()
     {
         LogInfo("Module " + Name() + " loaded.");
     }
 
-    // virtual
     void NetTestLogicModule::Unload()
     {
         LogInfo("Module " + Name() + " unloaded.");
@@ -53,7 +51,6 @@ namespace NetTest
         LogInfo("Module " + Name() + " initialized.");
     }
 
-    // virtual
     void NetTestLogicModule::PostInitialize()
     {
         //Get event category id's.
@@ -76,7 +73,6 @@ namespace NetTest
         loginWindow->show();
     }
 
-    // virtual 
     void NetTestLogicModule::Uninitialize()
     {
         SAFE_DELETE(netTestWindow)
@@ -85,13 +81,11 @@ namespace NetTest
         LogInfo("Module " + Name() + " uninitialized.");
     }
 
-    // virtual
     void NetTestLogicModule::Update(Core::f64 frametime)
     {
 
     }
 
-    //virtual 
     bool NetTestLogicModule::HandleEvent(
         Core::event_category_id_t category_id,
         Core::event_id_t event_id, 
@@ -160,7 +154,7 @@ namespace NetTest
 				    break;
 			    }
 		    default:
-			    // netInterface_->DumpNetworkMessage(msgID, msg);
+//			    netInterface_->DumpNetworkMessage(msgID, msg);
 			    break;
             }
         }
