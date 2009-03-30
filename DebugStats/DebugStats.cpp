@@ -29,7 +29,7 @@ POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
 POCO_END_MANIFEST
 
 DebugStats::DebugStats()
-:ModuleInterfaceImpl("DebugStats"), updateCounter(0)
+:ModuleInterfaceImpl("DebugStats")
 {
 }
 
@@ -45,26 +45,43 @@ void DebugStats::Unload()
 {
 }
 
-void DebugStats::PostInitialize()
+void DebugStats::Initialize()
 {
     InitializeModulesWindow();
     PopulateModulesTreeView();
-
+    
     InitializeEventsWindow();
     PopulateEventsTreeView();
     
     InitializeEntityListWindow();
-    
-    ///\todo Register for add & remove entity events.
-//    Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");    
+}
+
+void DebugStats::PostInitialize()
+{
+    /*eventCategoryID_ = framework_->GetEventManager()->QueryEventCategory("Scene");
+        
+    if (eventCategoryID_  == 0)
+        Log("Unable to find event category for Scene events!");*/
+}
+
+void DebugStats::Uninitialize()
+{
+    Gtk::Window *debugWindow = 0;
+    debugModules_->get_widget("windowDebugModules", debugWindow);
+    SAFE_DELETE(debugWindow);
+    SAFE_DELETE(windowEntityList);
 }
 
 void DebugStats::Update(Core::f64 frametime)
 {
-   if (updateCounter % 50000 == 0)
-       PopulateEntityListTreeView();
-   
-   ++updateCounter;
+}
+
+bool DebugStats::HandleEvent(
+    Core::event_category_id_t category_id,
+    Core::event_id_t event_id, 
+    Foundation::EventDataInterface* data)
+{
+    return false;
 }
 
 void DebugStats::Log(const std::string &str)
@@ -97,6 +114,14 @@ void DebugStats::InitializeEntityListWindow()
     treeview_entitylist->append_column(Glib::ustring("ID"), entityModelColumns_.colID);
     treeview_entitylist->append_column(Glib::ustring("Name"), entityModelColumns_.colName);
     
+    // Bind callback for the refresh button.
+    //Gtk::Button *button_refresh = 0;
+    //entityListControls_->get_widget("button_refresh", button_refresh);
+    entityListControls_->connect_clicked("button_refresh", sigc::mem_fun(*this, &DebugStats::OnClickRefresh));
+    /*button_refresh->signal_clicked().connect(sigc::mem_fun(*this, &DebugStats::OnClickRefresh));
+    button_refresh->set_border_width(5);
+    button_refresh->set_layout(Gtk::BUTTONBOX_END);*/
+    
     // Show, set title, set default size.
     windowEntityList->set_default_size(150, 200);
     windowEntityList->show();
@@ -125,7 +150,7 @@ void DebugStats::PopulateEntityListTreeView()
         const Foundation::SceneInterface &scene = *iter->second;
         
         Gtk::TreeModel::Row scene_row = *(entityListModel_->append());
-        scene_row[entityModelColumns_.colID] = 1;
+        scene_row[entityModelColumns_.colID] = "";
         scene_row[entityModelColumns_.colName] = scene.Name();
         
         for(Foundation::SceneInterface::ConstEntityIterator iter = scene.begin(); iter != scene.end(); ++iter)
@@ -134,7 +159,7 @@ void DebugStats::PopulateEntityListTreeView()
             const Scene::Entity &entity = dynamic_cast<const Scene::Entity &>(*iter);
 
             Gtk::TreeModel::Row entity_row = *(entityListModel_->append(scene_row.children()));
-            entity_row[entityModelColumns_.colID] = entity.GetId();
+            entity_row[entityModelColumns_.colID] = Core::ToString(entity.GetId());
             entity_row[entityModelColumns_.colName] = "Entity";
             
             const Scene::Entity::ComponentVector &components = entity.GetComponentVector();
@@ -143,7 +168,7 @@ void DebugStats::PopulateEntityListTreeView()
                 // Add component. 
                 const Foundation::ComponentInterfacePtr &component = dynamic_cast<const Foundation::ComponentInterfacePtr &>(*iter); 
                 Gtk::TreeModel::Row component_row = *(entityListModel_->append(entity_row.children()));
-                component_row[entityModelColumns_.colID] = 1;
+                component_row[entityModelColumns_.colID] = "";
                 component_row[entityModelColumns_.colName] = component->Name();
             }
         }
@@ -244,10 +269,7 @@ void DebugStats::PopulateEventsTreeView()
     }
 }
 
-void DebugStats::Uninitialize()
+void DebugStats::OnClickRefresh()
 {
-    Gtk::Window *debugWindow = 0;
-    debugModules_->get_widget("windowDebugModules", debugWindow);
-    SAFE_DELETE(debugWindow);
-    SAFE_DELETE(windowEntityList);
+    PopulateEntityListTreeView();
 }
