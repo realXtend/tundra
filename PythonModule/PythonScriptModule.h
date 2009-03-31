@@ -8,6 +8,13 @@
 #include "ModuleInterface.h"
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
+
+//testing receiving events, now from the net module 'cause nothing else sends yet
+#include "OpenSimProtocolModule.h"
+#include "NetInMessage.h"
+#include "NetMessage.h"
+
+#include <Python/Python.h>
 //#include "Script.h"
 
 namespace Foundation
@@ -18,7 +25,7 @@ namespace Foundation
 namespace PythonScript
 {
     //! A scripting module using Python
-    class MODULE_API PythonScriptModule : public Foundation::ModuleInterface_Impl
+    class MODULE_API PythonScriptModule : public Foundation::ModuleInterfaceImpl
     {
     public:
         PythonScriptModule();
@@ -32,6 +39,11 @@ namespace PythonScript
         virtual void Uninitialize();
         virtual void Update();
 
+		//handling events
+        virtual bool HandleEvent(
+            Core::event_category_id_t category_id,
+            Core::event_id_t event_id, 
+            Foundation::EventDataInterface* data);
 
 		//! callback for console command
         Console::CommandResult ConsoleRunString(const Core::StringVector &params);
@@ -50,6 +62,16 @@ namespace PythonScript
 		void PythonScriptModule::RunString(const char* codestr);
 		void PythonScriptModule::RunFile(const std::string &modulename);
 		void PythonScriptModule::Reset();
+
+		// Category id for incoming messages.
+		Core::event_category_id_t inboundCategoryID_;
+
+		bool bRunning_;
+
+		// first stab at having a py defined event handler
+		// now just one - eventually could have a list/dict of these?
+		PyObject *pName, *pModule, *pDict, *pFunc;
+	    PyObject *pArgs, *pValue;
 
     /* python interpreter? 
         OgreRenderer::RendererPtr renderer_;*/
