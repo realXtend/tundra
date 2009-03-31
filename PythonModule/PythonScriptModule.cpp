@@ -8,11 +8,15 @@
 #include "ComponentRegistrarInterface.h"
 #include "ConsoleCommandServiceInterface.h"
 
+
+//testing receiving events, now from the net module 'cause nothing else sends yet
+#include "RexProtocolMsgIDs.h"
+
 #include <Python/Python.h>
 
 namespace PythonScript
 {
-	PythonScriptModule::PythonScriptModule() : ModuleInterface_Impl(type_static_)
+	PythonScriptModule::PythonScriptModule() : ModuleInterfaceImpl(type_static_)
     {
     }
 
@@ -65,8 +69,89 @@ namespace PythonScript
 
     void PythonScriptModule::PostInitialize()
     {
+		inboundCategoryID_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
+        if (inboundCategoryID_ == 0)
+            LogWarning("Unable to find event category for incoming OpenSimNetwork events!");
+
+		pName = PyString_FromString("chathandler");
+		/* Error checking of pName left out */
+
+		pModule = PyImport_Import(pName);
+		Py_DECREF(pName);
+
+		if (pModule != NULL) {
+			pFunc = PyObject_GetAttrString(pModule, "onChat");
+	        /* pFunc is a new reference */
+
+			if (pFunc && PyCallable_Check(pFunc)) {
+				LogInfo("Registered callback onChat from chathandler.py");
+			}
+			else {
+				if (PyErr_Occurred())
+					PyErr_Print();
+				LogInfo("Cannot find function");
+			}
+		}
+		else 
+			LogInfo("chathandler.py not found");
 	}
 
+    bool PythonScriptModule::HandleEvent(
+        Core::event_category_id_t category_id,
+        Core::event_id_t event_id, 
+        Foundation::EventDataInterface* data)
+    {
+        if (category_id == inboundCategoryID_)
+        {
+            OpenSimProtocol::NetworkEventInboundData *event_data = static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
+            const NetMsgID msgID = event_data->messageID;
+            NetInMessage *msg = event_data->message;
+            const NetMessageInfo *info = event_data->message->GetMessageInfo();
+            assert(info);
+            
+            std::stringstream ss;
+            //ss << info->name << " received, " << Core::ToString(msg->GetDataSize()) << " bytes.";
+			//LogInfo(ss.str());
+
+            switch(msgID)
+		    {
+		    case RexNetMsgChatFromSimulator:
+		        {
+	            /*std::stringstream ss;
+	            size_t bytes_read;
+
+	            std::string name = (const char *)msg->ReadBuffer(&bytes_read);
+	            msg->SkipToFirstVariableByName("Message");
+	            std::string message = (const char *)msg->ReadBuffer(&bytes_read);
+	            ss << "[" << Core::GetLocalTimeString() << "] " << name << ": " << message << std::endl;
+
+	            WriteToChatWindow(ss.str());*/
+
+	            pArgs = PyTuple_New(1); //takes a single argument
+				pValue = PyInt_FromLong(1); //..which is now just int 1
+				/* pValue reference stolen here: */
+				PyTuple_SetItem(pArgs, 0, pValue);
+
+				pValue = PyObject_CallObject(pFunc, pArgs);
+				Py_DECREF(pArgs);
+				if (pValue != NULL) {
+					printf("Result of call: %ld\n", PyInt_AsLong(pValue));
+					Py_DECREF(pValue);
+				}
+				else {
+					Py_DECREF(pFunc);
+					PyErr_Print();
+					fprintf(stderr,"Call failed\n");
+				}
+
+
+	            break;
+		        }
+			}
+		}
+
+		return false;
+	}
 
 	void PythonScriptModule::RunString(const char* codestr)
 	{
@@ -122,6 +207,9 @@ namespace PythonScript
     // virtual 
     void PythonScriptModule::Uninitialize()
     {        
+        Py_XDECREF(pFunc);
+        Py_DECREF(pModule);
+
 		Py_Finalize();
 
         LogInfo("Module " + Name() + " uninitialized.");
@@ -131,10 +219,12 @@ namespace PythonScript
     void PythonScriptModule::Update()
     {
         //renderer_->Update();
+		RunString("import time; time.sleep(0.01)"); //a hack to save cpu now. didn't seem to help .. some other thread runs in a tight loop?
     }
 
 	void PythonScriptModule::Reset()
 	{
+		/* should probably be module unload & load */
 		Py_Finalize();
 		Py_Initialize();
 		LogInfo("Python interpreter reseted: all memory and state cleared.");

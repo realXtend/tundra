@@ -1,4 +1,4 @@
-# Find, include and link Ogre
+# Find, include and link Python
 # Find is already called in the top-level CMakeLists
 
 macro (FIND_PYTHON)
