@@ -19,8 +19,8 @@ import math
 
 class ChatBot(rxactor.Actor):
     
-    TICKINTERVAL = 10
-    TICKTIMES = 30
+    TICKINTERVAL = 3
+    TICKTIMES = 10000
     
     def GetScriptClassName():
         return "chatbot.ChatBot"
@@ -35,7 +35,9 @@ class ChatBot(rxactor.Actor):
         self.timer = self.CreateRexTimer(self.TICKINTERVAL, self.TICKTIMES) #well, self.TICKINTERVAL interval and self.TICKTIMES amount of ticks
         self.timer.onTimer += self.HandleTimer
         
+        self.timer.Start()
         print "chatbot.ChatBot EventCreated"
+        
 
     def EventDestroyed(self):
         print "chatbot.ChatBot EventDestroyed"
@@ -44,6 +46,7 @@ class ChatBot(rxactor.Actor):
         
         super(self.__class__,self).EventDestroyed()
         
+    """
     def EventTouch(self, vAvatar):
         if(self.tick > 0):
             self.llShout(0,"ChatBot already running...")
@@ -52,28 +55,36 @@ class ChatBot(rxactor.Actor):
         self.llShout(0,"ChatBot starts it's periodic babbling.")
         self.avatarId = vAvatar.AgentId
         self.timer.Start()
-        
+    """    
         
     def HandleTimer(self):
         self.tick += 1
-        choice = random.randrange(0,100)
+        choice = random.randrange(1,100)
+        print "ChatBot:", self.tick, choice,
+
         if 0<choice<33:
             msg = "EQUALITY FOR BOTS! (" + str(self.tick) + ")"
             self.llShout(0, msg)
-        elif 33<choice<70:
+            print "shouted."
+        elif 33<choice<100: #70:
             msg = "Being a chatbot is really hard work... oh and this was the " + str(self.tick) + "th message from me."
             self.llSay(0, msg)
+            print "said."
+
+        """is not touched in the test case
         else:
             if self.MyWorld.AllAvatars.has_key(self.avatarId):
                 avatar = self.MyWorld.AllAvatars[self.avatarId]
                 msg = "I got touched by "+ avatar.GetFullName() + "... -_-;;; (" + str(self.tick) + ")"
-                self.llWhisper(0, msg)
+                self.llWhisper(0, msg)"""
         
         if self.tick >= self.TICKTIMES:
             self.tick = 0
+            
 
     def listen(self, channel, name, id, message):
         self.llSay(0, "HI!")
+        """
         if self.MyWorld.AllAvatars.has_key(id):
             avatar = self.MyWorld.AllAvatars[id]
             if self.avatarId != id:
@@ -86,3 +97,4 @@ class ChatBot(rxactor.Actor):
             self.llShout(0, tmsg)
         else:
             print "No avatar found mathing id:",id
+        """

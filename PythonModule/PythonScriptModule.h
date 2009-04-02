@@ -24,6 +24,9 @@ namespace Foundation
 
 namespace PythonScript
 {
+	//hack to have a ref to framework so can get the module in api funcs
+	static Foundation::Framework *staticframework;
+
     //! A scripting module using Python
     class MODULE_API PythonScriptModule : public Foundation::ModuleInterfaceImpl
     {
@@ -59,12 +62,7 @@ namespace PythonScript
 		//for api test XXX
 		void SendChatFromViewerPacket(const char *msg);
 
-		Foundation::Framework *GetFramework() { return framework_; }
-		/* API calls exposed to py. should be private but testing now here
-		   will probably be wrapping the actual modules in separate files,
-		   but first test now here. also will use boostpy or something, but now first by hand */
-		PyObject* sendChat(PyObject *self, PyObject *args);
-
+		//Foundation::Framework *GetFramework() { return framework_; }
 
 	private:
 		
@@ -90,8 +88,13 @@ namespace PythonScript
     /* python interpreter? 
         OgreRenderer::RendererPtr renderer_;*/
 
-		PyMethodDef EmbMethods[];
 	};
+
+	/* API calls exposed to py. should be private but testing now here
+	   will probably be wrapping the actual modules in separate files,
+	   but first test now here. also will use boostpy or something, but now first by hand */
+	//static PyObject* SendChat(PyObject *self, PyObject *args);
+	static void initpymod();
 }
 
 #endif
