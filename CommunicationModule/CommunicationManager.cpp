@@ -10,8 +10,8 @@
 //POCO_END_MANIFEST
 
 
-//namespace Communication
-//{
+namespace Communication
+{
 
 	CommunicationManager::CommunicationManager(void){}
 	CommunicationManager::~CommunicationManager(void){}
@@ -36,4 +36,4 @@
 		LogInfo("CommunicationManager Disconnect");
 	}
 
-//}
+}
