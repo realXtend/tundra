@@ -43,7 +43,8 @@ namespace RexLogic
         typedef std::map<uint8_t, MaterialData> MaterialMap;
         MaterialMap Materials;
 
-        void HandleRexPrimData(OpenSimProtocol::NetworkEventInboundData* data);
+        void HandleRexPrimData(const uint8_t* primdata);
+        void PrintDebug();
     private:
         EC_Viewable(Foundation::ModuleInterface* module);
     };

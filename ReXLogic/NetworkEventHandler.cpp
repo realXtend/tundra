@@ -225,16 +225,58 @@ namespace RexLogic
         data->message->ResetReading();
         data->message->SkipToFirstVariableByName("Parameter");           
 
-        RexUUID primuuid((const char *)data->message->ReadBuffer(&bytes_read));
+        RexUUID primuuid((const char *)data->message->ReadBuffer(&bytes_read)); // The UUID is in a string
         Foundation::EntityPtr entity = GetPrimEntity(primuuid);
         if(entity)
         {
+            // Calculate full data size
+            size_t fulldatasize = 0;        
+            NetVariableType nextvartype = data->message->CheckNextVariableType();
+            while(nextvartype != NetVarNone)
+            {
+                data->message->ReadBuffer(&bytes_read);
+                fulldatasize += bytes_read;
+                nextvartype = data->message->CheckNextVariableType();
+            }
+           
+            size_t bytes_read;
+            const uint8_t *readbytedata;
+            data->message->ResetReading();
+            data->message->SkipToFirstVariableByName("Parameter");
+            data->message->SkipToNextVariable();            // Prim UUID
+            
+            uint8_t *fulldata = new uint8_t[fulldatasize];
+            int pos = 0;
+            nextvartype = data->message->CheckNextVariableType();
+            while(nextvartype != NetVarNone)
+            {
+                readbytedata = data->message->ReadBuffer(&bytes_read);
+                memcpy(fulldata+pos,readbytedata,bytes_read);
+                pos += bytes_read;
+                nextvartype = data->message->CheckNextVariableType();
+            }
+
             Foundation::ComponentInterfacePtr oscomponent = entity->GetComponent("EC_OpenSimPrim");
-            static_cast<EC_OpenSimPrim*>(oscomponent.get())->HandleRexPrimData(data);
+            static_cast<EC_OpenSimPrim*>(oscomponent.get())->HandleRexPrimData(fulldata);
+            // todo tucofixme, static_cast<EC_OpenSimPrim*>(oscomponent.get())->PrintDebug();
 
             Foundation::ComponentInterfacePtr viewcomponent = entity->GetComponent("EC_Viewable");
-            static_cast<EC_Viewable*>(viewcomponent.get())->HandleRexPrimData(data);
+            static_cast<EC_Viewable*>(viewcomponent.get())->HandleRexPrimData(fulldata);
+            // todo tucofixme, static_cast<EC_Viewable*>(viewcomponent.get())->PrintDebug();
+            
+            delete fulldata;
         }
         return false;
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 }

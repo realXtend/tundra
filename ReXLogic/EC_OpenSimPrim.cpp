@@ -81,40 +81,8 @@ namespace RexLogic
         MediaUrl = (const char *)msg->ReadBuffer(&bytes_read);     
     }
     
-    void EC_OpenSimPrim::HandleRexPrimData(OpenSimProtocol::NetworkEventInboundData* data)
+    void EC_OpenSimPrim::HandleRexPrimData(const uint8_t* primdata)
     {
-        size_t bytes_read;    
-        data->message->ResetReading();
-        data->message->SkipToFirstVariableByName("Parameter");           
-        
-        const uint8_t *readbytedata;      
-        readbytedata = data->message->ReadBuffer(&bytes_read);
-        RexUUID primuuid = *(RexUUID*)(&readbytedata[0]);      
-        
-        size_t fulldatasize = 0;        
-        NetVariableType nextvartype = data->message->CheckNextVariableType();
-        while(nextvartype != NetVarNone)
-        {
-            data->message->ReadBuffer(&bytes_read);
-            fulldatasize += bytes_read;
-            nextvartype = data->message->CheckNextVariableType();
-        }
-        
-        data->message->ResetReading();
-        data->message->SkipToFirstVariableByName("Parameter");
-        data->message->SkipToNextVariable();            // Prim UUID
-        
-        uint8_t *fulldata = new uint8_t[fulldatasize];
-        int pos = 0;
-        nextvartype = data->message->CheckNextVariableType();
-        while(nextvartype != NetVarNone)
-        {
-            readbytedata = data->message->ReadBuffer(&bytes_read);
-            memcpy(fulldata+pos,readbytedata,bytes_read);
-            pos += bytes_read;
-            nextvartype = data->message->CheckNextVariableType();
-        }
-
         // Skip
         int idx = 0;
         idx += sizeof(uint8_t);     // DrawType
@@ -127,20 +95,20 @@ namespace RexLogic
         idx += sizeof(float);       // LOD
         idx += sizeof(RexUUID);     // MeshUUID
         
-        CollisionMesh = *(RexUUID*)(&fulldata[idx]);
+        CollisionMesh = *(RexUUID*)(&primdata[idx]);
         idx += sizeof(RexUUID);        
         
         idx += sizeof(RexUUID);     // ParticleScriptUUID
         idx += sizeof(RexUUID);     // AnimationPackageUUID       
         
-        while(fulldata[idx] != 0)
+        while(primdata[idx] != 0)   // AnimationName
             idx++;    
 
-        idx++;      
+        idx++;                      // AnimationName 0 byte
 
         idx += sizeof(float);       // AnimationRate         
         
-        uint8_t tempmaterialcount = fulldata[idx];
+        uint8_t tempmaterialcount = primdata[idx];
         idx++;        
         for(int i=0;i<tempmaterialcount;i++)
         {
@@ -150,26 +118,24 @@ namespace RexLogic
         } 
 
         ServerScriptClass = "";
-        uint8_t readbyte = fulldata[idx];
+        uint8_t readbyte = primdata[idx];
         idx++;
         while(readbyte != 0)
         {
             ServerScriptClass.push_back((char)readbyte);
-            readbyte = fulldata[idx];
+            readbyte = primdata[idx];
             idx++;    
         }  
   
-        SoundUUID = *(RexUUID*)(&fulldata[idx]);
+        SoundUUID = *(RexUUID*)(&primdata[idx]);
         idx += sizeof(RexUUID);        
-        SoundVolume = *(float*)(&fulldata[idx]);
+        SoundVolume = *(float*)(&primdata[idx]);
         idx += sizeof(float);
-        SoundRadius = *(float*)(&fulldata[idx]);
+        SoundRadius = *(float*)(&primdata[idx]);
         idx += sizeof(float);                 
         
-        SelectPriority = *(uint32_t*)(&fulldata[idx]);
-        idx += sizeof(uint32_t);    
- 
-        delete fulldata;    
+        SelectPriority = *(uint32_t*)(&primdata[idx]);
+        idx += sizeof(uint32_t);
     }    
     
     void EC_OpenSimPrim::HandleObjectName(OpenSimProtocol::NetworkEventInboundData* data)
@@ -186,5 +152,37 @@ namespace RexLogic
     
         data->message->SkipToFirstVariableByName("Description");
         Description = (const char *)data->message->ReadBuffer(&bytes_read); 
-    }    
+    }
+    
+    void EC_OpenSimPrim::PrintDebug()
+    {
+        RexLogicModule::LogInfo("*** EC_OpenSimPrim ***");
+        RexLogicModule::LogInfo("LocalId:" + Core::ToString(LocalId));
+        RexLogicModule::LogInfo("RegionHandle:" + Core::ToString(RegionHandle));    
+        RexLogicModule::LogInfo("LocalId:" + Core::ToString(LocalId));
+        RexLogicModule::LogInfo("FullId:" + FullId.ToString());
+        RexLogicModule::LogInfo("ParentId:" + Core::ToString(ParentId));        
+
+        RexLogicModule::LogInfo("ObjectName:" + ObjectName);
+        RexLogicModule::LogInfo("Description:" + Description);
+        RexLogicModule::LogInfo("HoveringText:" + HoveringText);
+        RexLogicModule::LogInfo("MediaUrl:" + MediaUrl);
+        
+        RexLogicModule::LogInfo("Material:" + Core::ToString((uint)Material));
+        RexLogicModule::LogInfo("ClickAction:" + Core::ToString((uint)ClickAction));
+        RexLogicModule::LogInfo("UpdateFlags:" + Core::ToString(UpdateFlags));
+        
+        RexLogicModule::LogInfo("Position:" + Core::ToString(Position));        
+        RexLogicModule::LogInfo("Rotation:" + Core::ToString(Rotation)); 
+        RexLogicModule::LogInfo("Scale:" + Core::ToString(Scale));
+
+        RexLogicModule::LogInfo("ServerScriptClass:" + ServerScriptClass);        
+        RexLogicModule::LogInfo("CollisionMesh:" + CollisionMesh.ToString());
+
+        RexLogicModule::LogInfo("SoundUUID:" + SoundUUID.ToString());        
+        RexLogicModule::LogInfo("SoundVolume:" + Core::ToString(SoundVolume));
+        RexLogicModule::LogInfo("SoundRadius:" + Core::ToString(SoundRadius));        
+
+        RexLogicModule::LogInfo("SelectPriority:" + Core::ToString(SelectPriority));    
+    }   
 }

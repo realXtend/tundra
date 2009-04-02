@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "EC_Viewable.h"
+#include "RexLogicModule.h"
 
 namespace RexLogic
 {
@@ -31,87 +32,55 @@ namespace RexLogic
     {
     }
     
-    void EC_Viewable::HandleRexPrimData(OpenSimProtocol::NetworkEventInboundData* data)
+    void EC_Viewable::HandleRexPrimData(const uint8_t* primdata)
     {
-        size_t bytes_read;    
-        data->message->ResetReading();
-        data->message->SkipToFirstVariableByName("Parameter");           
-        
-        const uint8_t *readbytedata;      
-        readbytedata = data->message->ReadBuffer(&bytes_read);
-        RexUUID primuuid = *(RexUUID*)(&readbytedata[0]);      
-        
-        size_t fulldatasize = 0;        
-        NetVariableType nextvartype = data->message->CheckNextVariableType();
-        while(nextvartype != NetVarNone)
-        {
-            data->message->ReadBuffer(&bytes_read);
-            fulldatasize += bytes_read;
-            nextvartype = data->message->CheckNextVariableType();
-        }
-        
-        data->message->ResetReading();
-        data->message->SkipToFirstVariableByName("Parameter");
-        data->message->SkipToNextVariable();            // Prim UUID
-        
-        uint8_t *fulldata = new uint8_t[fulldatasize];
-        int pos = 0;
-        nextvartype = data->message->CheckNextVariableType();
-        while(nextvartype != NetVarNone)
-        {
-            readbytedata = data->message->ReadBuffer(&bytes_read);
-            memcpy(fulldata+pos,readbytedata,bytes_read);
-            pos += bytes_read;
-            nextvartype = data->message->CheckNextVariableType();
-        }
-
         int idx = 0;
-        DrawType = fulldata[idx];
+        DrawType = primdata[idx];
         idx += sizeof(uint8_t);
-        IsVisible = *(bool*)(&fulldata[idx]);
+        IsVisible = *(bool*)(&primdata[idx]);
         idx += sizeof(bool);            
-        CastShadows = *(bool*)(&fulldata[idx]);
+        CastShadows = *(bool*)(&primdata[idx]);
         idx += sizeof(bool);  
-        LightCreatesShadows = *(bool*)(&fulldata[idx]);
+        LightCreatesShadows = *(bool*)(&primdata[idx]);
         idx += sizeof(bool);  
-        DescriptionTexture = *(bool*)(&fulldata[idx]);
+        DescriptionTexture = *(bool*)(&primdata[idx]);
         idx += sizeof(bool);      
-        ScaleToPrim = *(bool*)(&fulldata[idx]);
+        ScaleToPrim = *(bool*)(&primdata[idx]);
         idx += sizeof(bool);    
 
-        DrawDistance = *(float*)(&fulldata[idx]);
+        DrawDistance = *(float*)(&primdata[idx]);
         idx += sizeof(float);
-        LOD = *(float*)(&fulldata[idx]);
+        LOD = *(float*)(&primdata[idx]);
         idx += sizeof(float);
 
-        MeshUUID = *(RexUUID*)(&fulldata[idx]);
+        MeshUUID = *(RexUUID*)(&primdata[idx]);
         idx += sizeof(RexUUID);
         
         // Read collisionmesh, but don't use it
-        RexUUID tempcollisionmesh = *(RexUUID*)(&fulldata[idx]);
+        RexUUID tempcollisionmesh = *(RexUUID*)(&primdata[idx]);
         idx += sizeof(RexUUID);        
         
-        ParticleScriptUUID = *(RexUUID*)(&fulldata[idx]);
+        ParticleScriptUUID = *(RexUUID*)(&primdata[idx]);
         idx += sizeof(RexUUID);
-        AnimationPackageUUID = *(RexUUID*)(&fulldata[idx]);
+        AnimationPackageUUID = *(RexUUID*)(&primdata[idx]);
         idx += sizeof(RexUUID);        
         
         std::string AnimationName = "";
-        uint8_t readbyte = fulldata[idx];
+        uint8_t readbyte = primdata[idx];
         idx++;
         while(readbyte != 0)
         {
             AnimationName.push_back((char)readbyte);
-            readbyte = fulldata[idx];
+            readbyte = primdata[idx];
             idx++;    
         }  
          
-        AnimationRate = *(float*)(&fulldata[idx]);
+        AnimationRate = *(float*)(&primdata[idx]);
         idx += sizeof(float);         
         
         // Materials
         Materials.clear();
-        uint8_t tempmaterialcount = fulldata[idx];
+        uint8_t tempmaterialcount = primdata[idx];
         idx++;        
 
         uint8_t tempmaterialindex = 0;        
@@ -119,16 +88,40 @@ namespace RexLogic
         {
             MaterialData newmaterialdata;
 
-            newmaterialdata.Type = fulldata[idx];
+            newmaterialdata.Type = primdata[idx];
             idx++;
-            newmaterialdata.UUID = *(RexUUID*)(&fulldata[idx]);
+            newmaterialdata.UUID = *(RexUUID*)(&primdata[idx]);
             idx += sizeof(RexUUID);
-            tempmaterialindex = fulldata[idx];
+            tempmaterialindex = primdata[idx];
             idx++;
 
             Materials[tempmaterialindex] = newmaterialdata;                           
-        }
+        }   
+    }
+    
+    void EC_Viewable::PrintDebug()
+    {
+        RexLogicModule::LogInfo("*** EC_Viewable ***");
+        RexLogicModule::LogInfo("DrawType:" + Core::ToString((uint)DrawType));  
+        RexLogicModule::LogInfo("IsVisible:" + Core::ToString(IsVisible));  
+        RexLogicModule::LogInfo("CastShadows:" + Core::ToString(CastShadows));      
+        RexLogicModule::LogInfo("LightCreatesShadows:" + Core::ToString(LightCreatesShadows));    
+        RexLogicModule::LogInfo("DescriptionTexture:" + Core::ToString(DescriptionTexture));    
+        RexLogicModule::LogInfo("ScaleToPrim:" + Core::ToString(ScaleToPrim)); 
         
-        delete fulldata;    
+        RexLogicModule::LogInfo("DrawDistance:" + Core::ToString(DrawDistance));         
+        RexLogicModule::LogInfo("LOD:" + Core::ToString(LOD));    
+  
+        RexLogicModule::LogInfo("MeshUUID:" + MeshUUID.ToString());    
+        RexLogicModule::LogInfo("ParticleScriptUUID:" + ParticleScriptUUID.ToString());  
+
+        RexLogicModule::LogInfo("AnimationPackageUUID:" + AnimationPackageUUID.ToString());  
+        RexLogicModule::LogInfo("AnimationName:" + AnimationName);          
+        RexLogicModule::LogInfo("AnimationRate:" + Core::ToString(AnimationRate));   
+
+        RexLogicModule::LogInfo("MaterialCount:" + Core::ToString(Materials.size())); 
+        MaterialMap::iterator it = Materials.begin();
+        for(MaterialMap::const_iterator iter = Materials.begin(); iter != Materials.end(); ++iter)
+            RexLogicModule::LogInfo(Core::ToString((uint)iter->first) + " " + Core::ToString((uint)iter->second.Type) + " " + iter->second.UUID.ToString());
     }
 }
