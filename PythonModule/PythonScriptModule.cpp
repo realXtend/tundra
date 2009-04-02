@@ -11,6 +11,8 @@
 
 //testing receiving events, now from the net module 'cause nothing else sends yet
 #include "RexProtocolMsgIDs.h"
+#include "OpenSimProtocolModule.h" //XXX for login hack
+
 
 #include <Python/Python.h>
 
@@ -57,10 +59,16 @@ namespace PythonScript
     // virtual
     void PythonScriptModule::Initialize()
     {
+        // for the hack that login directly from here XXX
+		using namespace OpenSimProtocol;
+		netInterface_ = dynamic_cast<OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol));
+
 		if (!Py_IsInitialized())
 	        Py_Initialize();
 		else
 			LogWarning("Python already initialized in PythonScriptModule init!");
+
+		Py_InitModule("rexviewer", EmbMethods);
 
         LogInfo("Module " + Name() + " initialized.");
 		//LogInfo("Py thinks 1 + 1 = " + Py_Eval("1 + 1"));
@@ -94,6 +102,35 @@ namespace PythonScript
 		}
 		else 
 			LogInfo("chathandler.py not found");
+
+		/* disabled nettestlogic so can't login via gui so copy-pasted the login procedure here */
+		LogInfo("Py module tries direct logging in");
+		bool success = netInterface_->ConnectToRexServer("Python", "User",
+            "test", "localhost", 9000);
+            
+        if(success)
+        {
+            myInfo_ = netInterface_->GetClientParameters();
+                        
+			NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgUseCircuitCode);
+			assert(m);
+			m->AddU32(myInfo_.circuitCode);
+			m->AddUUID(myInfo_.sessionID);
+			m->AddUUID(myInfo_.agentID);
+			netInterface_->FinishMessageBuilding(m);
+
+	        m = netInterface_->StartMessageBuilding(RexNetMsgCompleteAgentMovement);
+			assert(m);
+			m->AddUUID(myInfo_.agentID);
+			m->AddUUID(myInfo_.sessionID);
+			m->AddU32(myInfo_.circuitCode);
+			netInterface_->FinishMessageBuilding(m);
+            
+            LogInfo("Connected to localhost.");
+        }
+        else
+            LogError("Connecting to localhost failed.");
+
 	}
 
     bool PythonScriptModule::HandleEvent(
@@ -110,32 +147,35 @@ namespace PythonScript
             assert(info);
             
             std::stringstream ss;
-            //ss << info->name << " received, " << Core::ToString(msg->GetDataSize()) << " bytes.";
+            ss << info->name << " received, " << Core::ToString(msg->GetDataSize()) << " bytes.";
 			//LogInfo(ss.str());
 
             switch(msgID)
 		    {
 		    case RexNetMsgChatFromSimulator:
 		        {
-	            /*std::stringstream ss;
-	            size_t bytes_read;
+	            std::stringstream ss;
+	            size_t bytes_read = 0;
 
 	            std::string name = (const char *)msg->ReadBuffer(&bytes_read);
 	            msg->SkipToFirstVariableByName("Message");
 	            std::string message = (const char *)msg->ReadBuffer(&bytes_read);
-	            ss << "[" << Core::GetLocalTimeString() << "] " << name << ": " << message << std::endl;
-
-	            WriteToChatWindow(ss.str());*/
+				
+	            //ss << "[" << Core::GetLocalTimeString() << "] " << name << ": " << message << std::endl;
+	            //WriteToChatWindow(ss.str());*/
+				//can readbuffer ever return null? should be checked if yes. XXX
 
 	            pArgs = PyTuple_New(1); //takes a single argument
-				pValue = PyInt_FromLong(1); //..which is now just int 1
+				//pValue = PyInt_FromLong(1); //..which is now just int 1
+				pValue = PyString_FromString(message.c_str());
 				/* pValue reference stolen here: */
 				PyTuple_SetItem(pArgs, 0, pValue);
 
 				pValue = PyObject_CallObject(pFunc, pArgs);
 				Py_DECREF(pArgs);
 				if (pValue != NULL) {
-					printf("Result of call: %ld\n", PyInt_AsLong(pValue));
+					//printf("Result of call: %ld\n", PyInt_AsLong(pValue));
+					LogInfo("Python chathandler executed ok.");
 					Py_DECREF(pValue);
 				}
 				else {
@@ -143,7 +183,6 @@ namespace PythonScript
 					PyErr_Print();
 					fprintf(stderr,"Call failed\n");
 				}
-
 
 	            break;
 		        }
@@ -216,10 +255,10 @@ namespace PythonScript
     }
     
     // virtual
-    void PythonScriptModule::Update()
+    void PythonScriptModule::Update(Core::f64 frametime)
     {
         //renderer_->Update();
-		RunString("import time; time.sleep(0.01)"); //a hack to save cpu now. didn't seem to help .. some other thread runs in a tight loop?
+		RunString("import time; time.sleep(0.01);"); //a hack to save cpu now. didn't seem to help .. some other thread runs in a tight loop?
     }
 
 	void PythonScriptModule::Reset()
@@ -229,6 +268,46 @@ namespace PythonScript
 		Py_Initialize();
 		LogInfo("Python interpreter reseted: all memory and state cleared.");
 	}
+
+	//stuff for api, copy-paste from nettestlogic, to be moved to logic
+	void PythonScriptModule::SendChatFromViewerPacket(const char *msg)
+	{
+		NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgChatFromViewer);
+		assert(m);
+		m->AddUUID(myInfo_.agentID);
+		m->AddUUID(myInfo_.sessionID);
+		m->AddBuffer(strlen(msg), (uint8_t*)msg);
+		m->AddU8(1);
+		m->AddS32(0);
+		netInterface_->FinishMessageBuilding(m);
+	}
+
+	/* API calls exposed to py. 
+	will probably be wrapping the actual modules in separate files,
+	but first test now here. also will use boostpy or something, but now first by hand */
+	PyObject* PythonScriptModule::sendChat(PyObject *self, PyObject *args)
+	{
+		const char* msg;
+
+		if(!PyArg_ParseTuple(args, "s", &msg))
+			return NULL;
+
+		/*Foundation::Framework *framework_ = Foundation::ComponentInterfacePythonScriptModule::GetFramework();
+		//todo weak_pointerize
+        PythonScriptModule *pyModule_ = dynamic_cast<PythonScriptModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_PythonScript));
+
+		pyModule_->SendChatFromViewerPacket(msg);
+		*/
+		SendChatFromViewerPacket(msg);
+
+		Py_RETURN_TRUE;
+	}
+
+	/*PyMethodDef EmbMethods[] = {
+		{"sendChat", PythonScriptModule::sendChat, METH_VARARGS,
+		"Send the given text as a chat message."},
+		{NULL, NULL, 0, NULL}
+	};*/
 }
 
 using namespace PythonScript;
@@ -236,4 +315,3 @@ using namespace PythonScript;
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
    POCO_EXPORT_CLASS(PythonScriptModule)
 POCO_END_MANIFEST
-
