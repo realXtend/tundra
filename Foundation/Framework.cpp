@@ -180,6 +180,7 @@ namespace Foundation
             entry = params[1];
         
         bool result = module_manager_->LoadModuleByName(lib, entry);
+        event_manager_->ValidateEventSubscriberTree();
 
         if (!result)
             return Console::ResultFailure("Library or module not found.");
@@ -196,6 +197,7 @@ namespace Foundation
         if (module_manager_->HasModule(params[0]))
         {
             result = module_manager_->UnloadModuleByName(params[0]);
+            event_manager_->ValidateEventSubscriberTree();
         }
 
         if (!result)
