@@ -70,12 +70,7 @@ private:
     class EntityModelColumns : public Gtk::TreeModel::ColumnRecord
     {
     public:
-      EntityModelColumns()
-      {
-          add(colID);
-          add(colName);
-      }
-
+      EntityModelColumns() { add(colID); add(colName); }
       Gtk::TreeModelColumn<Glib::ustring> colID;
       Gtk::TreeModelColumn<Glib::ustring> colName;
     };

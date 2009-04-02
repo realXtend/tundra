@@ -5,8 +5,8 @@
 
 using namespace RexTypes;
 
-NetInMessage::NetInMessage(const NetMessageInfo *info, const uint8_t *data, size_t numBytes, bool zeroCoded)
-:messageInfo(info)
+NetInMessage::NetInMessage(size_t seqNum, const NetMessageInfo *info, const uint8_t *data, size_t numBytes, bool zeroCoded)
+:messageInfo(info), sequenceNumber(seqNum)
 {
 	assert(info != 0);
 

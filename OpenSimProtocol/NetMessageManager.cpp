@@ -308,7 +308,7 @@ void NetMessageManager::ProcessMessages()
 	
 		size_t messageLength = 0;
 		const uint8_t *message = ComputeMessageBodyStartAddrAndLength(&data[0], numBytes, &messageLength);
-		NetInMessage msg(messageList->GetMessageInfoByID(id), &message[0], messageLength, (data[0] & NetFlagZeroCode) != 0);
+		NetInMessage msg(seqNum, messageList->GetMessageInfoByID(id), &message[0], messageLength, (data[0] & NetFlagZeroCode) != 0);
 			
 		// NetMessageManager handles all Acks and Pings. Those are not passed to the application.
 		switch(id)

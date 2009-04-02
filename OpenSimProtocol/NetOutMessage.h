@@ -20,6 +20,17 @@ public:
 	NetOutMessage();
 	~NetOutMessage();
 
+    NetOutMessage(const NetOutMessage &rhs)
+    {
+        messageInfo = rhs.messageInfo;
+        messageData = rhs.messageData;
+	    bytesFilled = rhs.bytesFilled;
+	    sequenceNumber = rhs.sequenceNumber;
+	    currentBlock = rhs.currentBlock;
+	    currentVariable = rhs.currentVariable;
+	    blockQuantityCounter = rhs.blockQuantityCounter;        
+    }
+    
 	// The following functions all append data into the message. The way this works is that the application calls the following AddX functions in the order
 	// the protocol specifies the variables to be sent. Internal tracking mechanisms are used to remember which blocks/variables have been filled so far.
 	void AddU8(uint8_t value);
@@ -77,9 +88,11 @@ public:
 
 	/// @return The sequence number for the packet we're building. This method is not meaningful for end users, as the seqNum is created only when the message
 	/// is sent out to the stream.
-	size_t GetSequenceNumber() const { return sequenceNumber; }
+	uint32_t GetSequenceNumber() const { return sequenceNumber; }
 
 private: // friend-public:
+	void operator=(const NetOutMessage &);
+
 	/// Adds the header information to the message data.
 	void AddMessageHeader();
 

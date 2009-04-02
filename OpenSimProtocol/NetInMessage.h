@@ -13,9 +13,22 @@ using namespace RexTypes;
 class MODULE_API NetInMessage
 {
 public:
-	NetInMessage(const NetMessageInfo *info, const uint8_t *compressedData, size_t numBytes, bool zeroEncoded);
+	NetInMessage(size_t seqNum, const NetMessageInfo *info, const uint8_t *compressedData, size_t numBytes, bool zeroEncoded);
 	~NetInMessage();
-
+	
+	NetInMessage(const NetInMessage &rhs)
+	{
+	    sequenceNumber = rhs.sequenceNumber;
+	    messageInfo = rhs.messageInfo;
+	    messageData = rhs.messageData;
+	    currentBlock = rhs.currentBlock;
+	    currentBlockInstanceNumber = rhs.currentBlockInstanceNumber;
+	    currentBlockInstanceCount = rhs.currentBlockInstanceCount;
+	    currentVariable = rhs.currentVariable;
+	    currentVariableSize = rhs.currentVariableSize;
+	    bytesRead = rhs.bytesRead;
+	}
+	
 	// The following functions all read data from the message and advance to the next variable in the message block.
 	uint8_t  ReadU8();
 	uint16_t ReadU16();
@@ -75,7 +88,10 @@ public:
 	/// Returns a pointer to a stream of given amount of bytes in the inbound packet. Doesn't do any validation. Increments the bytesRead pointer, but doesn't
 	/// advance to the next variable. Use this only to do custom raw reading of the packet.
 	void *ReadBytesUnchecked(size_t count);
-
+    
+    /// Get the message's sequence number.
+    uint32_t GetSequenceNumber() const { return sequenceNumber; } 
+    
 	/// Get the message id of this packet.
 	const NetMsgID GetMessageID() const { return messageInfo->id; }
 
@@ -95,7 +111,6 @@ public:
 	void ResetReading();
 
 private:
-	NetInMessage(const NetInMessage &);
 	void operator=(const NetInMessage &);
 	
 	/// Called to start reading the next variable.
@@ -109,6 +124,9 @@ private:
 
 	/// Jumps all internal pointers to denote there is no more packet data to read.
 	void SkipToPacketEnd();
+	
+	/// The sequence number of the message.
+	uint32_t sequenceNumber;
 	
 	/// Identifies what kind of packet we're handling.
 	const NetMessageInfo *messageInfo;

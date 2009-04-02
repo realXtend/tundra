@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Mon Mar 30 14:44:20 2009 -->
+<!--Generated with glade3 3.4.3 on Thu Apr 02 12:25:40 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="window_nettest">
     <property name="skip_taskbar_hint">True</property>
@@ -20,46 +20,39 @@
           <placeholder/>
         </child>
         <child>
-          <widget class="GtkVBox" id="vbox3">
+          <widget class="GtkScrolledWindow" id="scrolledwindow_log">
             <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+            <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
             <child>
-              <widget class="GtkLabel" id="label_show">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">Show</property>
-              </widget>
-            </child>
-            <child>
-              <widget class="GtkCheckButton" id="checkbutton_inbound">
+              <widget class="GtkTreeView" id="treeview_log">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="label" translatable="yes">Inbound messages</property>
-                <property name="response_id">0</property>
-                <property name="active">True</property>
-                <property name="draw_indicator">True</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup">Double-click message to open it in Packet Dump view (works only for inbound packets)</property>
               </widget>
-              <packing>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkCheckButton" id="checkbutton_outbound">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="label" translatable="yes">Outbound messages</property>
-                <property name="response_id">0</property>
-                <property name="active">True</property>
-                <property name="draw_indicator">True</property>
-              </widget>
-              <packing>
-                <property name="position">2</property>
-              </packing>
             </child>
           </widget>
           <packing>
-            <property name="left_attach">1</property>
-            <property name="right_attach">2</property>
             <property name="top_attach">1</property>
             <property name="bottom_attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="GtkLabel" id="label_log">
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">Log</property>
+          </widget>
+        </child>
+        <child>
+          <widget class="GtkLabel" id="label_chat">
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">Chat</property>
+          </widget>
+          <packing>
+            <property name="top_attach">2</property>
+            <property name="bottom_attach">3</property>
           </packing>
         </child>
         <child>
@@ -118,36 +111,44 @@
           </packing>
         </child>
         <child>
-          <widget class="GtkLabel" id="label_chat">
+          <widget class="GtkVBox" id="vbox3">
             <property name="visible">True</property>
-            <property name="label" translatable="yes">Chat</property>
-          </widget>
-          <packing>
-            <property name="top_attach">2</property>
-            <property name="bottom_attach">3</property>
-          </packing>
-        </child>
-        <child>
-          <widget class="GtkLabel" id="label_log">
-            <property name="visible">True</property>
-            <property name="label" translatable="yes">Log</property>
-          </widget>
-        </child>
-        <child>
-          <widget class="GtkScrolledWindow" id="scrolledwindow_log">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-            <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
             <child>
-              <widget class="GtkTextView" id="textview_log">
+              <widget class="GtkLabel" id="label_show">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Show</property>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkCheckButton" id="checkbutton_inbound">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="editable">False</property>
+                <property name="label" translatable="yes">Inbound messages</property>
+                <property name="response_id">0</property>
+                <property name="active">True</property>
+                <property name="draw_indicator">True</property>
               </widget>
+              <packing>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkCheckButton" id="checkbutton_outbound">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="label" translatable="yes">Outbound messages</property>
+                <property name="response_id">0</property>
+                <property name="active">True</property>
+                <property name="draw_indicator">True</property>
+              </widget>
+              <packing>
+                <property name="position">2</property>
+              </packing>
             </child>
           </widget>
           <packing>
+            <property name="left_attach">1</property>
+            <property name="right_attach">2</property>
             <property name="top_attach">1</property>
             <property name="bottom_attach">2</property>
           </packing>
