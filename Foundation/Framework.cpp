@@ -214,7 +214,7 @@ namespace Foundation
             Console::Bind(this, &Framework::ConsoleLoadModule)));
 
         console->RegisterCommand(Console::CreateCommand("UnloadModule", 
-            "Unloads a module. Usage: LoadModule(name)", 
+            "Unloads a module. Usage: UnloadModule(name)", 
             Console::Bind(this, &Framework::ConsoleUnloadModule)));
     }
 }
