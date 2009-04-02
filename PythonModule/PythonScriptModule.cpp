@@ -68,7 +68,14 @@ namespace PythonScript
 		else
 			LogWarning("Python already initialized in PythonScriptModule init!");
 
-		Py_InitModule("rexviewer", EmbMethods);
+		//XXX hack to have a ref to framework for api funcs
+		PythonScript::staticframework = framework_;
+		PythonScript::initpymod();
+
+		//Py_InitModule("rexviewer", PythonScript::EmbMethods);
+		/*PyObject *rexmodule = PyImport_AddModule("rexviewer");
+		PyObject *chatfunc = PyMethod_New(&(PyCFunction)PythonScript::SendChat, NULL, NULL);
+		PyModule_AddObject(rexmodule, "sendChat", chatfunc);*/
 
         LogInfo("Module " + Name() + " initialized.");
 		//LogInfo("Py thinks 1 + 1 = " + Py_Eval("1 + 1"));
@@ -161,7 +168,8 @@ namespace PythonScript
 	            msg->SkipToFirstVariableByName("Message");
 	            std::string message = (const char *)msg->ReadBuffer(&bytes_read);
 				
-	            //ss << "[" << Core::GetLocalTimeString() << "] " << name << ": " << message << std::endl;
+	            ss << "[" << Core::GetLocalTimeString() << "] " << name << ": " << message << std::endl;
+				LogInfo(ss.str());
 	            //WriteToChatWindow(ss.str());*/
 				//can readbuffer ever return null? should be checked if yes. XXX
 
@@ -281,33 +289,6 @@ namespace PythonScript
 		m->AddS32(0);
 		netInterface_->FinishMessageBuilding(m);
 	}
-
-	/* API calls exposed to py. 
-	will probably be wrapping the actual modules in separate files,
-	but first test now here. also will use boostpy or something, but now first by hand */
-	PyObject* PythonScriptModule::sendChat(PyObject *self, PyObject *args)
-	{
-		const char* msg;
-
-		if(!PyArg_ParseTuple(args, "s", &msg))
-			return NULL;
-
-		/*Foundation::Framework *framework_ = Foundation::ComponentInterfacePythonScriptModule::GetFramework();
-		//todo weak_pointerize
-        PythonScriptModule *pyModule_ = dynamic_cast<PythonScriptModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_PythonScript));
-
-		pyModule_->SendChatFromViewerPacket(msg);
-		*/
-		SendChatFromViewerPacket(msg);
-
-		Py_RETURN_TRUE;
-	}
-
-	/*PyMethodDef EmbMethods[] = {
-		{"sendChat", PythonScriptModule::sendChat, METH_VARARGS,
-		"Send the given text as a chat message."},
-		{NULL, NULL, 0, NULL}
-	};*/
 }
 
 using namespace PythonScript;
@@ -315,3 +296,40 @@ using namespace PythonScript;
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
    POCO_EXPORT_CLASS(PythonScriptModule)
 POCO_END_MANIFEST
+
+#ifdef __cplusplus
+extern "C"
+#endif
+
+/* API calls exposed to py. 
+will probably be wrapping the actual modules in separate files,
+but first test now here. also will use boostpy or something, but now first by hand */
+static PyObject* SendChat(PyObject *self, PyObject *args)
+{
+	const char* msg;
+
+	if(!PyArg_ParseTuple(args, "s", &msg))
+		return NULL;
+
+	//Foundation::Framework *framework_ = Foundation::ComponentInterfacePythonScriptModule::GetFramework();
+	Foundation::Framework *framework_ = PythonScript::staticframework;
+	//todo weak_pointerize
+    PythonScriptModule *pyModule_ = dynamic_cast<PythonScriptModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_PythonScript));
+
+	pyModule_->SendChatFromViewerPacket(msg);
+
+	//SendChatFromViewerPacket(msg);
+
+	Py_RETURN_TRUE;
+}
+
+static PyMethodDef EmbMethods[] = {
+	{"sendChat", (PyCFunction)SendChat, METH_VARARGS,
+	"Send the given text as a chat message."},
+	{NULL, NULL, 0, NULL}
+};
+
+static void PythonScript::initpymod()
+{
+	Py_InitModule("rexviewer", EmbMethods);
+}
