@@ -1,0 +1,4 @@
+<config>
+	<entry>CommunicationModule</entry>
+	<dependency>SupportModules</dependency>
+</config>
