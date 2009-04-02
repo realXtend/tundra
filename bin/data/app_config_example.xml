@@ -1,6 +1,8 @@
 <config>
 	<Foundation>
-		<application_name>realXtend</application_name>
+		<application_name>realXtend</application_name>
+		<log_console>1</log_console>
+		<log_level>information</log_level>
 	</Foundation>
 	<ModuleManager>
 		<Default_Modules_Path>./modules</Default_Modules_Path>
