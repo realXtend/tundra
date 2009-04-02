@@ -67,4 +67,5 @@ add_subdirectory (NetTestLogicModule)
 add_subdirectory (SupportModules)
 add_subdirectory (AssetModule)
 add_subdirectory (CommunicationModule)
+#add_subdirectory (CommunicationUIModule)
 
