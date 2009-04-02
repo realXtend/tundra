@@ -1,20 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
-
 #ifndef incl_NetTestLogicModule_h
 #define incl_NetTestLogicModule_h
-
-#undef NETTESTLOGIC_MODULE_API
-#if defined (_WINDOWS)
-#if defined(NETTESTLOGIC_MODULE_EXPORTS) 
-#define NETTESTLOGIC_MODULE_API __declspec(dllexport) 
-#else
-#define NETTESTLOGIC_MODULE_API __declspec(dllimport) 
-#endif
-#endif
-
-#ifndef NETTESTLOGIC_MODULE_API
-#define NETTESTLOGIC_MODULE_API
-#endif
 
 #pragma warning( push )
 #pragma warning( disable : 4250 )
@@ -78,29 +64,39 @@ namespace NetTest
         /// Initializes the Login window.
 		void InitLoginWindow();
         
-        /// Initializes the Login window.
+        /// Initializes the NetTest window.
         void InitNetTestWindow();
         
-        /// Connects to server.
+        /// Initializes the Packet Dump window.
+        void InitPacketDumpWindow();
+        
+        /// Callback funtion for the 'Connect' button. Connects to server.
         void OnClickConnect();
         
-        /// Disconnects from the server.
+        /// Callback function for the 'Disconnect' button. Disconnects from the server.
         void OnClickLogout();
         
-        /// Terminates the application.
+        /// Callback function for the 'Quit' button. Terminates the application.
         void OnClickQuit();
         
-        /// Chat.
+        /// Callback function for the 'Chat' button. Sends UPD chat message.
         void OnClickChat();
+        
+        /// Callback function for double-click on the logging treeview. Opens the activated message in a new window.
+        void OnDoubleClickLog(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn *column);        
         
         /// Writes a message to the chat window.
         void WriteToChatWindow(const std::string &message);
         
         /// Writes a message to the log window.
-        void WriteToLogWindow(const std::string &message);
+        void WriteToLogWindow(uint32_t seq_num, const std::string &name, size_t bytes, bool inbound = true);
         
         /// Update which messages are shown in the log window.
         void UpdateLogFilterState();
+        
+        /// Populates the Packet Dump Tree view window.
+        void PopulatePacketDumpTreeView(NetInMessage msg);
+        void PopulatePacketDumpTreeView(NetOutMessage *msg);
         
 		/// Name of the sim we're connected.
 		std::string simName_;
@@ -111,12 +107,60 @@ namespace NetTest
         // Handle to the login window controls.
         Glib::RefPtr<Gnome::Glade::Xml> netTestControls;
 
+        // Handle to the packet dump window controls.
+        Glib::RefPtr<Gnome::Glade::Xml> packetDumpControls;
+        
         // The GTK window for login UI.
         Gtk::Window *loginWindow;
         
         // The GTK window for NetTest UI.
         Gtk::Window *netTestWindow;
 
+        // The GTK window for packet dump UI.
+        Gtk::Window *packetDumpWindow;
+
+        /// Tree model columns for entity list.
+        Glib::RefPtr<Gtk::TreeStore> logModel;
+        
+        class LogModelColumns : public Gtk::TreeModel::ColumnRecord
+        {
+        public:
+            LogModelColumns()
+            {
+                add(colTime);
+                add(colInOut);
+                add(colSeqNum);
+                add(colName);
+                add(colSize);
+            }
+            Gtk::TreeModelColumn<Glib::ustring> colTime;
+            Gtk::TreeModelColumn<Glib::ustring> colInOut;
+            Gtk::TreeModelColumn<uint32_t> colSeqNum;
+            Gtk::TreeModelColumn<Glib::ustring> colName;
+            Gtk::TreeModelColumn<size_t> colSize;
+        };
+            
+        const LogModelColumns logModelColumns;
+
+        /// Tree model columns for packet dump.
+        Glib::RefPtr<Gtk::TreeStore> packetDumpModel;
+        
+        class PacketDumpModelColumns : public Gtk::TreeModel::ColumnRecord
+        {
+        public:
+            PacketDumpModelColumns()
+            {
+                add(colName);
+                add(colData);
+                add(colDataSize);
+            }
+            Gtk::TreeModelColumn<Glib::ustring> colName;
+            Gtk::TreeModelColumn<Glib::ustring> colData;
+            Gtk::TreeModelColumn<size_t> colDataSize;
+        };
+            
+        const PacketDumpModelColumns packetDumpModelColumns;
+        
     private:
         void operator=(const NetTestLogicModule &);
         NetTestLogicModule(const NetTestLogicModule &);
@@ -124,7 +168,7 @@ namespace NetTest
         /// Sends the first UDP packet to open up the circuit with the server.
         void SendUseCircuitCodePacket();
 
-        /// Signals taht agent is coming into the region. The region should be expecting the agent.
+        /// Signals that agent is coming into the region. The region should be expecting the agent.
         /// Server starts to send object updates etc after it has received this packet.
         void SendCompleteAgentMovementPacket();
 	    
@@ -134,6 +178,9 @@ namespace NetTest
         /// Sends a message requesting logout from the server. The server is then going to flood us with some
     	/// inventory UUIDs after that, but we'll be ignoring those.
         void SendLogoutRequestPacket();
+        
+        /// Clears the message pools after a logout and closes the NetTest window.
+        void LogOut();
         
         /// Pointer to the network interface.
 		OpenSimProtocol::OpenSimProtocolModule *netInterface_;
@@ -158,6 +205,15 @@ namespace NetTest
 		
 		/// Category id for incoming messages.
 		Core::event_category_id_t outboundCategoryID_;
+		
+	    /// A pool of reveceived NetInMessage structures. Used for debugging.
+	    typedef std::list<std::pair<uint32_t, NetInMessage> > ReceivedMessages_t;
+	    ReceivedMessages_t received_messages_pool_;
+	    
+	    /// A pool of sent NetOutMessage structures. Used for debugging.
+	    typedef std::list<std::pair<uint32_t, NetOutMessage> > SentMessages_t;
+	    SentMessages_t sent_messages_pool_;
+
     };
 }
 #endif

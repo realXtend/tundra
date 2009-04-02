@@ -115,12 +115,7 @@ void DebugStats::InitializeEntityListWindow()
     treeview_entitylist->append_column(Glib::ustring("Name"), entityModelColumns_.colName);
     
     // Bind callback for the refresh button.
-    //Gtk::Button *button_refresh = 0;
-    //entityListControls_->get_widget("button_refresh", button_refresh);
     entityListControls_->connect_clicked("button_refresh", sigc::mem_fun(*this, &DebugStats::OnClickRefresh));
-    /*button_refresh->signal_clicked().connect(sigc::mem_fun(*this, &DebugStats::OnClickRefresh));
-    button_refresh->set_border_width(5);
-    button_refresh->set_layout(Gtk::BUTTONBOX_END);*/
     
     // Show, set title, set default size.
     windowEntityList->set_default_size(150, 200);
@@ -135,14 +130,14 @@ void DebugStats::PopulateEntityListTreeView()
     Gtk::TreeView *treeview_entitylist = 0;
     entityListControls_->get_widget("treeview_entitylist", treeview_entitylist);
 
-    entityListModel_->clear();
-
     Scene::SceneManager *sceneManager = dynamic_cast<Scene::SceneManager *>
         (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
     if (!sceneManager)
         return;
 
     //Fill the TreeView's model.
+    entityListModel_->clear();
+    
     const Scene::SceneManager::SceneMap &scenes = sceneManager->GetSceneMap();
     for(Scene::SceneManager::SceneMap::const_iterator iter = scenes.begin(); iter != scenes.end(); ++iter)
     {
