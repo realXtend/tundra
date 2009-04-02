@@ -1,7 +1,5 @@
 
-//#include <Poco/ClassLibrary.h>
 #include <Poco/Logger.h>
-//#include <sstream>
 
 #include "StableHeaders.h"
 #include "Foundation.h"
@@ -10,8 +8,8 @@
 #include "CommunicationManager.h"
 
 
-//namespace Communication
-//{
+namespace Communication
+{
 
 	CommunicationModule::CommunicationModule(void):ModuleInterfaceImpl("CommunicationModule")
 	{
@@ -49,9 +47,9 @@
 	//void CommunicationModule::RemoveListener(ICommunicationListener *listener){}
 	//void CommunicationModule::Connect(){}
 	//void CommunicationModule::Disconnect(){}
-//}
+}
 
-//using namespace Communication;
+using namespace Communication;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
 POCO_EXPORT_CLASS(CommunicationModule)

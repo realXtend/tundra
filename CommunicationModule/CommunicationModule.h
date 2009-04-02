@@ -6,8 +6,8 @@
 
 //#pragma once
 
-//namespace Communication
-//{
+namespace Communication
+{
 	//MODULE_API 
 	class MODULE_API CommunicationModule : public Foundation::ModuleInterfaceImpl
 	{
@@ -44,6 +44,6 @@
 	private:
 		Foundation::CommunicationManagerPtr communication_manager_;
 	};
-//}
+}
 
 #endif

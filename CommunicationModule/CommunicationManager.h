@@ -2,12 +2,11 @@
 #define incl_CommunicationManager_h
 
 
-//#include "CommunicationListener.h"
 #include "CommunicationManagerServiceInterface.h"
 //#pragma once
 
-//namespace Communication
-//{
+namespace Communication
+{
 
 	/* Basicly will be a wrapper for underlying (telepathy) communications manager */
 													
@@ -42,6 +41,6 @@
 		
 	};
 
-//}
+}
 
 #endif
