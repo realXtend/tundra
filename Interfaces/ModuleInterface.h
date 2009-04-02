@@ -47,7 +47,7 @@ namespace Foundation
 			MT_OpenSimProtocol,
 			MT_Test,
 			MT_NetTestLogic,
-			MT_Script,
+			MT_PythonScript,
             MT_Console,
             MT_Asset,
 			MT_Communication,
