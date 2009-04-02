@@ -135,6 +135,7 @@ namespace Foundation
         
         EventSubscriberPtr new_node = EventSubscriberPtr(new EventSubscriber());
         new_node->module_ = module;
+        new_node->module_name_ = module->Name();
         new_node->priority_ = priority;
         node->children_.push_back(new_node);
         std::sort(node->children_.rbegin(), node->children_.rend(), ComparePriority);
@@ -172,6 +173,26 @@ namespace Foundation
         assert (module);
         
         return (FindNodeWithChild(event_subscriber_root_.get(), module) != NULL);
+    }
+
+    void EventManager::ValidateEventSubscriberTree()
+    {
+        ValidateEventSubscriberTree(event_subscriber_root_.get());
+    }
+
+    void EventManager::ValidateEventSubscriberTree(EventSubscriber* node)
+    {
+        if (!node->module_name_.empty())
+            node->module_ = framework_->GetModuleManager()->GetModule(node->module_name_);
+        else
+            node->module_ = NULL;
+            
+        EventSubscriberVector::const_iterator i = node->children_.begin();
+        while (i != node->children_.end())
+        {
+            ValidateEventSubscriberTree((*i).get());
+            ++i;
+        }
     }
 
     EventManager::EventSubscriber* EventManager::FindNodeWithModule(EventSubscriber* node, ModuleInterface* module) const

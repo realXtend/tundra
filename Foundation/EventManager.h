@@ -75,6 +75,7 @@ namespace Foundation
             EventSubscriber() : module_(NULL), priority_(0) {}
             
             ModuleInterface* module_;
+            std::string module_name_;
             int priority_;
             EventSubscriberVector children_;
         };
@@ -142,6 +143,9 @@ namespace Foundation
          */
         bool HasEventSubscriber(ModuleInterface* module);
         
+        //! validates event subscriber tree when modules have been loaded/unloaded
+        void ValidateEventSubscriberTree();
+        
         //! loads event subscriber tree from an XML file
         /*! \param filename path/filename of XML file
          */
@@ -158,6 +162,8 @@ namespace Foundation
         const EventMap &GetEventMap() const { return event_map_; }
          
     private:
+        //! validates event subscriber tree when modules have been loaded/unloaded
+        void ValidateEventSubscriberTree(EventSubscriber* node);
         
         //! find a node with certain module from the tree
         /*! \param node starting node for search
