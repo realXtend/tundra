@@ -16,6 +16,7 @@
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "AssetServiceInterface.h"
+#include "CommunicationManagerServiceInterface.h"
 
 namespace Foundation
 {
