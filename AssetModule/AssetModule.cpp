@@ -54,6 +54,7 @@ namespace Asset
         LogInfo("Module " + Name() + " initialized.");
     }
     
+    // virtual
     void AssetModule::PostInitialize()
     {
         inboundcategory_id_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
@@ -62,7 +63,8 @@ namespace Asset
             LogWarning("Unable to find event category for OpenSimNetwork events!");
     }
 
-    void AssetModule::Update()
+    // virtual
+    void AssetModule::Update(Core::f64 frametime)
     {
     }
 

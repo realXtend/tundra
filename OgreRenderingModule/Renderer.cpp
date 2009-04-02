@@ -199,7 +199,7 @@ namespace OgreRenderer
         camera_->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
     }
     
-    void Renderer::Update()
+    void Renderer::Update(Core::f64 frametime)
     {
         Ogre::WindowEventUtilities::messagePump();
     }
