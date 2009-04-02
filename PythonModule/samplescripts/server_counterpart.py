@@ -1,3 +1,11 @@
+"""
+This is a server-side script,
+to act as a counterpart for testing client side scripts.
+
+Now sends chat message periodically and the client side handler
+is expected to get them (that works), and respond (working on that now).
+"""
+
 import rxactor
 import rxavatar
 import sys
@@ -9,10 +17,6 @@ import random
 import math
 
 
-"""
-This is a server-side script.
-
-"""
 class ChatBot(rxactor.Actor):
     
     TICKINTERVAL = 10
