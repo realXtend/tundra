@@ -76,7 +76,7 @@ namespace OgreRenderer
         //! performs update.
         /*! pumps Ogre window events.
          */
-        void Update();
+        void Update(Core::f64 frametime);
         
         //! renders the screen
         void Render();

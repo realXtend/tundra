@@ -132,7 +132,7 @@ namespace OgreRenderer
     // virtual
     void OgreRenderingModule::Update(Core::f64 frametime)
     {
-        renderer_->Update();
+        renderer_->Update(frametime);
     }
 
     Console::CommandResult OgreRenderingModule::ConsoleSetViewportColor(const Core::StringVector &params)
