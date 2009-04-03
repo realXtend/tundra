@@ -15,6 +15,9 @@ include_directories (
 	../Interfaces
 	../GtkmmUI
 	../SceneModule
+	../RexCommon
+	../ReXLogic
+	../OpenSimProtocol
 )
 
 # Disable warning
@@ -33,6 +36,8 @@ FIND_GTKMM()
 INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_GTKMM()
+INCLUDE_CURL()
+INCLUDE_XMLRPCEPI()
 
 add_definitions (-DMODULE_EXPORTS)
 
@@ -51,7 +56,7 @@ if (MSVC)
 	target_link_libraries (${TARGET_NAME} )
 endif (MSVC)
 
-target_link_libraries (${TARGET_NAME} Foundation SceneModule)
+target_link_libraries (${TARGET_NAME} Foundation SceneModule RexCommon ReXLogicModule OpenSimProtocolModule)
 
 # External library linkage (needs target defined)
 LINK_POCO()

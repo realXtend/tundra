@@ -3,6 +3,11 @@
 
 #include "ModuleInterface.h"
 
+namespace RexLogic
+{
+    class EC_OpenSimPrim;
+}
+
 /// This module shows information about internal core data structures in separate windows. Useful for verifying and understanding
 /// the internal state of the application.
 class DebugStats : public Foundation::ModuleInterfaceImpl
@@ -26,8 +31,25 @@ public:
 private:
     void operator=(const DebugStats &);
     DebugStats(const DebugStats &);
+
+    static void Log(const std::string &str); 
     
+    /// Callback for Entity List refresh button.
     void OnClickRefresh();
+    
+    void OnDoubleClickEntity(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn* column);
+    
+    /// Initialize UI windows.
+    void InitializeModulesWindow();
+    void InitializeEventsWindow();
+    void InitializeEntityListWindow();
+    void InitializePrimPropertiesWindow();
+    
+    /// Fill TreeViews with data.
+    void PopulateModulesTreeView();
+    void PopulateEventsTreeView();
+    void PopulateEntityListTreeView();
+    void PopulatePrimPropertiesTreeView(RexLogic::EC_OpenSimPrim *prim);
     
     /// Category id for scene events.
     Core::event_category_id_t eventCategoryID_ ;
@@ -45,17 +67,6 @@ private:
 
     const ModelColumns moduleModelColumns_;
    
-    void InitializeModulesWindow();
-    void PopulateModulesTreeView();
-
-    void InitializeEventsWindow();
-    void PopulateEventsTreeView();
-
-    void InitializeEntityListWindow();
-    void PopulateEntityListTreeView();
-
-    static void Log(const std::string &str); 
-
     // Data related to the window that shows the registered event categories.
     Glib::RefPtr<Gnome::Glade::Xml> debugEvents_;
     Glib::RefPtr<Gtk::TreeStore> debugEventsModel_;
@@ -70,12 +81,30 @@ private:
     class EntityModelColumns : public Gtk::TreeModel::ColumnRecord
     {
     public:
-      EntityModelColumns() { add(colID); add(colName); }
-      Gtk::TreeModelColumn<Glib::ustring> colID;
-      Gtk::TreeModelColumn<Glib::ustring> colName;
+        EntityModelColumns() { add(colID); add(colName); }
+        Gtk::TreeModelColumn<Glib::ustring> colName;
+        Gtk::TreeModelColumn<std::string> colID;
     };
             
     const EntityModelColumns entityModelColumns_;
+
+    // Data related to the window that shows the entity list of the scene.
+    Glib::RefPtr<Gnome::Glade::Xml> primPropertiesControls_;
+    Glib::RefPtr<Gtk::TreeStore> primPropertiesModel_;
+    
+    Gtk::Window *primPropertiesWindow_;
+    
+    /// Tree model columns for EC_OpenSimPrim properties.
+
+    class PrimPropertiesModelColumns : public Gtk::TreeModel::ColumnRecord
+    {
+    public:
+        PrimPropertiesModelColumns() { add(colName); add(colValue); }
+        Gtk::TreeModelColumn<Glib::ustring> colName;
+        Gtk::TreeModelColumn<Glib::ustring> colValue;
+    };
+            
+    const PrimPropertiesModelColumns primPropertiesColumns_;    
 };
 
 #endif

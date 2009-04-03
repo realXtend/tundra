@@ -15,7 +15,6 @@ include_directories (
 	../Interfaces
 	../RexCommon
 	../OpenSimProtocol
-	../RexCommon
 )
 		
 # External library includes
