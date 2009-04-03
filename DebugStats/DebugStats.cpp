@@ -24,6 +24,11 @@
 #include "DebugStats.h"
 #include "GtkmmUI.h"
 
+#include "EC_Viewable.h"
+#include "EC_FreeData.h"
+#include "EC_SpatialSound.h"
+#include "EC_OpenSimPrim.h"
+
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
    POCO_EXPORT_CLASS(DebugStats)
 POCO_END_MANIFEST
@@ -54,6 +59,8 @@ void DebugStats::Initialize()
     PopulateEventsTreeView();
     
     InitializeEntityListWindow();
+    
+    InitializePrimPropertiesWindow();
 }
 
 void DebugStats::PostInitialize()
@@ -87,87 +94,6 @@ bool DebugStats::HandleEvent(
 void DebugStats::Log(const std::string &str)
 {
     Poco::Logger::get("DebugStats").information(str);
-}
-
-void DebugStats::InitializeEntityListWindow()
-{
-    // Load up the debug module hierarchy window, and store the main window handle for later use.
-    entityListControls_ = Gnome::Glade::Xml::create("data/entityListWindow.glade");
-    if (!entityListControls_)
-        return;
-    
-    // Get the window.
-    entityListControls_->get_widget("window_entitylist", windowEntityList);
-    
-    // Show scroll bars only when necessary
-    Gtk::ScrolledWindow *scrolledwindow_entitylist = 0;
-    entityListControls_->get_widget("scrolledwindow_entitylist", scrolledwindow_entitylist);
-    scrolledwindow_entitylist->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
-
-    // Set up tree view.
-    Gtk::TreeView *treeview_entitylist = 0;
-    entityListControls_->get_widget("treeview_entitylist", treeview_entitylist);
-    
-    // Set data model and column names.
-    entityListModel_ = Gtk::TreeStore::create(entityModelColumns_);
-    treeview_entitylist->set_model(entityListModel_);
-    treeview_entitylist->append_column(Glib::ustring("ID"), entityModelColumns_.colID);
-    treeview_entitylist->append_column(Glib::ustring("Name"), entityModelColumns_.colName);
-    
-    // Bind callback for the refresh button.
-    entityListControls_->connect_clicked("button_refresh", sigc::mem_fun(*this, &DebugStats::OnClickRefresh));
-    
-    // Show, set title, set default size.
-    windowEntityList->set_default_size(150, 200);
-    windowEntityList->show();
-    windowEntityList->set_title("Entity List");
-}
-
-void DebugStats::PopulateEntityListTreeView()
-{
-    using namespace std;
-    
-    Gtk::TreeView *treeview_entitylist = 0;
-    entityListControls_->get_widget("treeview_entitylist", treeview_entitylist);
-
-    Scene::SceneManager *sceneManager = dynamic_cast<Scene::SceneManager *>
-        (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
-    if (!sceneManager)
-        return;
-
-    //Fill the TreeView's model.
-    entityListModel_->clear();
-    
-    const Scene::SceneManager::SceneMap &scenes = sceneManager->GetSceneMap();
-    for(Scene::SceneManager::SceneMap::const_iterator iter = scenes.begin(); iter != scenes.end(); ++iter)
-    {
-        // Add scene node.
-        const Foundation::SceneInterface &scene = *iter->second;
-        
-        Gtk::TreeModel::Row scene_row = *(entityListModel_->append());
-        scene_row[entityModelColumns_.colID] = "";
-        scene_row[entityModelColumns_.colName] = scene.Name();
-        
-        for(Foundation::SceneInterface::ConstEntityIterator iter = scene.begin(); iter != scene.end(); ++iter)
-        {
-            // Add entity.
-            const Scene::Entity &entity = dynamic_cast<const Scene::Entity &>(*iter);
-
-            Gtk::TreeModel::Row entity_row = *(entityListModel_->append(scene_row.children()));
-            entity_row[entityModelColumns_.colID] = Core::ToString(entity.GetId());
-            entity_row[entityModelColumns_.colName] = "Entity";
-            
-            const Scene::Entity::ComponentVector &components = entity.GetComponentVector();
-            for(Scene::Entity::ComponentVector::const_iterator iter = components.begin(); iter != components.end(); ++iter)
-            {
-                // Add component. 
-                const Foundation::ComponentInterfacePtr &component = dynamic_cast<const Foundation::ComponentInterfacePtr &>(*iter); 
-                Gtk::TreeModel::Row component_row = *(entityListModel_->append(entity_row.children()));
-                component_row[entityModelColumns_.colID] = "";
-                component_row[entityModelColumns_.colName] = component->Name();
-            }
-        }
-    }
 }
 
 void DebugStats::InitializeModulesWindow()
@@ -264,7 +190,189 @@ void DebugStats::PopulateEventsTreeView()
     }
 }
 
+void DebugStats::InitializeEntityListWindow()
+{
+    // Load up the debug module hierarchy window, and store the main window handle for later use.
+    entityListControls_ = Gnome::Glade::Xml::create("data/entityListWindow.glade");
+    if (!entityListControls_)
+        return;
+    
+    // Get the window.
+    entityListControls_->get_widget("window_entitylist", windowEntityList);
+    
+    // Set up tree view.
+    Gtk::TreeView *treeview_entitylist = 0;
+    entityListControls_->get_widget("treeview_entitylist", treeview_entitylist);
+    
+    // Set data model and column names.
+    entityListModel_ = Gtk::TreeStore::create(entityModelColumns_);
+    treeview_entitylist->set_model(entityListModel_);
+    treeview_entitylist->append_column(Glib::ustring("Name"), entityModelColumns_.colName);
+    treeview_entitylist->append_column(Glib::ustring("ID"), entityModelColumns_.colID);
+    
+    // Bind callback for the refresh button.
+    entityListControls_->connect_clicked("button_refresh", sigc::mem_fun(*this, &DebugStats::OnClickRefresh));
+    // Bind callback for the double-click on EC.
+    treeview_entitylist->signal_row_activated().connect(sigc::mem_fun(*this, &DebugStats::OnDoubleClickEntity));    
+    
+    // Show, set title, set default size.
+    windowEntityList->set_default_size(250, 300);
+    windowEntityList->show();
+    windowEntityList->set_title("Entity List");
+}
+
+void DebugStats::PopulateEntityListTreeView()
+{
+    using namespace std;
+    
+    Gtk::TreeView *treeview_entitylist = 0;
+    entityListControls_->get_widget("treeview_entitylist", treeview_entitylist);
+
+    Scene::SceneManager *sceneManager = dynamic_cast<Scene::SceneManager *>
+        (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
+    if (!sceneManager)
+        return;
+
+    //Fill the TreeView's model.
+    entityListModel_->clear();
+    
+    const Scene::SceneManager::SceneMap &scenes = sceneManager->GetSceneMap();
+    for(Scene::SceneManager::SceneMap::const_iterator iter = scenes.begin(); iter != scenes.end(); ++iter)
+    {
+        // Add scene node.
+        const Foundation::SceneInterface &scene = *iter->second;
+        
+        Gtk::TreeModel::Row scene_row = *(entityListModel_->append());
+        scene_row[entityModelColumns_.colName] = scene.Name();
+        scene_row[entityModelColumns_.colID] = "";
+        
+        for(Foundation::SceneInterface::ConstEntityIterator iter = scene.begin(); iter != scene.end(); ++iter)
+        {
+            // Add entity.
+            const Scene::Entity &entity = dynamic_cast<const Scene::Entity &>(*iter);
+
+            Gtk::TreeModel::Row entity_row = *(entityListModel_->append(scene_row.children()));
+            entity_row[entityModelColumns_.colName] = "Entity";
+            entity_row[entityModelColumns_.colID] = Core::ToString(entity.GetId());
+            
+            const Scene::Entity::ComponentVector &components = entity.GetComponentVector();
+            for(Scene::Entity::ComponentVector::const_iterator iter = components.begin(); iter != components.end(); ++iter)
+            {
+                // Add component. 
+                const Foundation::ComponentInterfacePtr &component = dynamic_cast<const Foundation::ComponentInterfacePtr &>(*iter); 
+                Gtk::TreeModel::Row component_row = *(entityListModel_->append(entity_row.children()));
+                component_row[entityModelColumns_.colName] = component->Name();
+                component_row[entityModelColumns_.colID] = "";
+            }
+        }
+    }
+}
+
 void DebugStats::OnClickRefresh()
 {
     PopulateEntityListTreeView();
+}
+
+
+void DebugStats::OnDoubleClickEntity(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn* column)
+{
+    Scene::SceneManager *scene_manager = dynamic_cast<Scene::SceneManager *>
+        (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
+    if (!scene_manager)
+        return;
+
+    Gtk::TreeModel::iterator iter = entityListModel_->get_iter(path);
+    if (!iter)
+        return;
+        
+    Gtk::TreeModel::Row row = *iter;
+    if(row[entityModelColumns_.colName] == "Entity")
+    {
+        Core::entity_id_t id;
+        try
+        {
+            id = Core::ParseString<Core::entity_id_t>(row[entityModelColumns_.colID]);
+        } catch(boost::bad_lexical_cast)
+        {
+            return;
+        }
+        
+        ///\todo Get the real scene, not hardcoded
+        const Foundation::ScenePtr &scene = scene_manager->GetScene("World");
+        const Foundation::EntityPtr &entity = scene->GetEntity(id);
+        const Foundation::ComponentInterfacePtr &component = entity->GetComponent("EC_OpenSimPrim");
+        if (!component)
+            return;
+        
+        RexLogic::EC_OpenSimPrim *prim = dynamic_cast<RexLogic::EC_OpenSimPrim *>(component.get());
+        PopulatePrimPropertiesTreeView(prim);
+   }
+}
+
+void DebugStats::InitializePrimPropertiesWindow()
+{
+    // Load up the debug module hierarchy window, and store the main window handle for later use.
+    primPropertiesControls_ = Gnome::Glade::Xml::create("data/primPropertiesWindow.glade");
+    if (!primPropertiesControls_ )
+        return;
+    
+    // Get the window.
+    primPropertiesControls_->get_widget("dialog_prim_properties", primPropertiesWindow_);
+    
+    // Set up tree view.
+    Gtk::TreeView *treeview_prim_properties = 0;
+    primPropertiesControls_->get_widget("treeview_prim_properties", treeview_prim_properties);
+    
+    // Set data model and column names.
+    primPropertiesModel_ = Gtk::TreeStore::create(primPropertiesColumns_);
+    treeview_prim_properties->set_model(primPropertiesModel_);
+    treeview_prim_properties->append_column(Glib::ustring("Name"), primPropertiesColumns_.colName);
+    treeview_prim_properties->append_column(Glib::ustring("Value"), primPropertiesColumns_.colValue);
+    
+    // Set the winow title, set default size.
+    primPropertiesWindow_->set_default_size(350, 300);
+    primPropertiesWindow_->set_title("EC_OpenSimPrim Properties");
+}
+
+void DebugStats::PopulatePrimPropertiesTreeView(RexLogic::EC_OpenSimPrim *prim)
+{
+    primPropertiesWindow_->show();
+    primPropertiesModel_->clear();
+
+    Gtk::TreeModel::Row prim_row = *(primPropertiesModel_->append());
+    prim_row[primPropertiesColumns_.colName] = "RegionHandle";
+    prim_row[primPropertiesColumns_.colValue] = Core::ToString(prim->RegionHandle);
+        
+    prim_row = *(primPropertiesModel_->append());
+    prim_row[primPropertiesColumns_.colName] = "LocalId";
+    prim_row[primPropertiesColumns_.colValue] = Core::ToString(prim->LocalId);
+        
+    prim_row = *(primPropertiesModel_->append());
+    prim_row[primPropertiesColumns_.colName] = "FullID";
+    prim_row[primPropertiesColumns_.colValue] = prim->FullId.ToString();
+
+    prim_row = *(primPropertiesModel_->append());
+    prim_row[primPropertiesColumns_.colName] = "ParentId";
+    prim_row[primPropertiesColumns_.colValue] = Core::ToString(prim->ParentId); 
+        
+    prim_row = *(primPropertiesModel_->append());
+    prim_row[primPropertiesColumns_.colName] = "Material";
+    prim_row[primPropertiesColumns_.colValue] = Core::ToString((uint)prim->Material);
+    
+    prim_row = *(primPropertiesModel_->append());
+    prim_row[primPropertiesColumns_.colName] = "ClickAction";
+    prim_row[primPropertiesColumns_.colValue] = Core::ToString((uint)prim->ClickAction);
+    
+    prim_row = *(primPropertiesModel_->append());
+    prim_row[primPropertiesColumns_.colName] = "UpdateFlags";
+    prim_row[primPropertiesColumns_.colValue] = Core::ToString(prim->UpdateFlags);
+    
+    prim_row = *(primPropertiesModel_->append());
+    prim_row[primPropertiesColumns_.colName] = "ServerScriptClass";
+    prim_row[primPropertiesColumns_.colValue] = prim->ServerScriptClass;
+    
+    prim_row = *(primPropertiesModel_->append());
+    prim_row[primPropertiesColumns_.colName] = "SelectPriority";
+    prim_row[primPropertiesColumns_.colValue] = Core::ToString(prim->SelectPriority);
+
 }

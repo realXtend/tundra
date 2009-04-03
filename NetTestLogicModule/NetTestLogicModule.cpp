@@ -268,7 +268,6 @@ namespace NetTest
         treeview_log->append_column(Glib::ustring("SeqNum"), logModelColumns.colSeqNum);
         treeview_log->append_column(Glib::ustring("Name"), logModelColumns.colName);
         treeview_log->append_column(Glib::ustring("Size (bytes)"), logModelColumns.colSize);
-        treeview_log->signal_row_activated().connect(sigc::mem_fun(*this, &NetTestLogicModule::OnDoubleClickLog));
     
         UpdateLogFilterState();
         
@@ -281,9 +280,10 @@ namespace NetTest
         // Bind callbacks.
         netTestControls->connect_clicked("button_chat", sigc::mem_fun(*this, &NetTestLogicModule::OnClickChat));
         netTestControls->connect_clicked("checkbutton_inbound", sigc::mem_fun(*this, &NetTestLogicModule::UpdateLogFilterState));
-        netTestControls->connect_clicked("checkbutton_outbound", sigc::mem_fun(*this, &NetTestLogicModule::UpdateLogFilterState));        
-        Gtk::Entry *entry_chat = netTestControls->get_widget("entry_chat", entry_chat);     
+        netTestControls->connect_clicked("checkbutton_outbound", sigc::mem_fun(*this, &NetTestLogicModule::UpdateLogFilterState));
+        Gtk::Entry *entry_chat = netTestControls->get_widget("entry_chat", entry_chat);
         entry_chat->signal_activate().connect(sigc::mem_fun(*this, &NetTestLogicModule::OnClickChat));
+        treeview_log->signal_row_activated().connect(sigc::mem_fun(*this, &NetTestLogicModule::OnDoubleClickLog));        
     }
     
     void NetTestLogicModule::InitPacketDumpWindow()
@@ -467,11 +467,8 @@ namespace NetTest
     void NetTestLogicModule::WriteToChatWindow(const std::string &message)
     {   
         // Get the widget controls.
-        Gtk::ScrolledWindow *scrolledwindowChat = 0;
 		Gtk::TextView *textviewChat = 0;
-		netTestControls->get_widget("scrolledwindow_chat", scrolledwindowChat);
 		netTestControls->get_widget("textview_chat", textviewChat);
-		scrolledwindowChat->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
 		
 		// Create text buffer and write data to it.
 		Glib::RefPtr<Gtk::TextBuffer> text_buffer = textviewChat->get_buffer();
@@ -484,13 +481,10 @@ namespace NetTest
     void NetTestLogicModule::WriteToLogWindow(uint32_t seq_num, const std::string &name, size_t bytes, bool inbound)
     {
         // Get the widget controls.
-        Gtk::ScrolledWindow *scrolledwindow_log = 0;
 		Gtk::TreeView *treeview_log = 0;
-		netTestControls->get_widget("scrolledwindow_log", scrolledwindow_log);
         netTestControls->get_widget("treeview_log", treeview_log);
-        scrolledwindow_log->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
 		
-        // Clear the oldest info, if the log window is "full".
+        ///\todo Clear the oldest info, if the log window is "full".
 
         //Fill the TreeView's model.
         Gtk::TreeModel::Row log_row = *(logModel->append());
