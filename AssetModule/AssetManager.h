@@ -4,6 +4,7 @@
 #define incl_Asset_AssetManager_h
 
 #include "AssetServiceInterface.h"
+#include "AssetTransfer.h"
 #include "RexUUID.h"
 
 namespace Foundation
@@ -49,36 +50,7 @@ namespace Asset
         void HandleAssetCancel(NetInMessage* msg);
         
     private:
-        class AssetTransfer
-        {
-        public:
-            AssetTransfer();
-            ~AssetTransfer();
-            
-            void ReceiveData(Core::uint packet_index, const Core::u8* data, Core::uint size);
-            void AssembleData(Core::u8* buffer) const;
-            
-            void SetAssetId(const RexTypes::RexUUID& asset_id) { asset_id_ = asset_id; }
-            void SetAssetType(Core::uint asset_type) { asset_type_ = asset_type; }
-            void SetSize(Core::uint size) { size_ = size; }
-            
-            const RexTypes::RexUUID& GetAssetId() const { return asset_id_; }
-            Core::uint GetAssetType() const { return asset_type_; }
-            Core::uint GetSize() const { return size_; }
-            Core::uint GetReceived() const { return received_; }
-            Core::uint GetReceivedContinuous() const;
-            bool Ready() const;
-            
-        private:
-            typedef std::map<Core::uint, std::vector<Core::u8> > DataPacketMap;
-            
-            RexTypes::RexUUID asset_id_;
-            Core::uint asset_type_;
-            Core::uint size_;
-            Core::uint received_;
-            DataPacketMap data_packets_;
-        };
-        
+        void GetFromCache(const RexTypes::RexUUID& asset_id);
         void RequestTexture(const RexTypes::RexUUID& asset_id);
         void RequestOtherAsset(const RexTypes::RexUUID& asset_id, Core::uint asset_type);
         void StoreAsset(AssetTransfer& transfer);
@@ -102,7 +74,10 @@ namespace Asset
         //! ongoing UDP texture transfers, keyed by texture asset id
         AssetTransferMap texture_transfers_;
         
-        //! asset cache path
+        //! current asset cache path
+        std::string cache_path_;
+        
+        //! default asset cache path
         static const char *AssetManager::DEFAULT_ASSET_CACHE_PATH;
     };
 }

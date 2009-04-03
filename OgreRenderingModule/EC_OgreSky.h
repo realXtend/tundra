@@ -29,7 +29,7 @@ namespace OgreRenderer
         //! enables a skybox
         /*! other sky methods will be disabled
             \param material_name material name
-            \distance distance of skybox from camera
+            \param distance distance of skybox from camera
             \return true if successful
             \todo use material/texture asset reference when asset system exists
          */

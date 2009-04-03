@@ -6,6 +6,7 @@
 #include "RexProtocolMsgIDs.h"
 #include "AssetDefines.h"
 #include "AssetManager.h"
+#include "AssetTransfer.h"
 
 using namespace OpenSimProtocol;
 using namespace RexTypes;
@@ -14,95 +15,15 @@ namespace Asset
 {
     const char *AssetManager::DEFAULT_ASSET_CACHE_PATH = "/assetcache";
 
-    AssetManager::AssetTransfer::AssetTransfer() :
-        size_(0),
-        received_(0)
-    {
-    }
-    
-    AssetManager::AssetTransfer::~AssetTransfer()
-    {
-    }
-    
-    bool AssetManager::AssetTransfer::Ready() const
-    {
-        if (!size_) 
-            return false; // No header received, size not known yet
-        
-        return received_ >= size_;
-    }
-    
-    Core::uint AssetManager::AssetTransfer::GetReceivedContinuous() const
-    {
-        Core::uint size = 0;
-        
-        DataPacketMap::const_iterator i = data_packets_.begin();
-        
-        Core::uint expected_index = 0;
-      
-        while (i != data_packets_.end())
-        {
-            if (i->first != expected_index)
-                break;
-            
-            size += i->second.size();
-            
-            ++expected_index;
-            ++i;
-        }
-        
-        return size;
-    }
-    
-    void AssetManager::AssetTransfer::ReceiveData(Core::uint packet_index, const Core::u8* data, Core::uint size)
-    {
-        if (!size)
-        {
-            AssetModule::LogWarning("Trying to store zero bytes of data");
-            return;
-        }
-        
-        if (!data_packets_[packet_index].size())
-        {
-            data_packets_[packet_index].resize(size);
-            memcpy(&data_packets_[packet_index][0], data, size);
-            received_ += size;
-        }
-        else
-        {
-            AssetModule::LogWarning("Already received asset data packet index " + Core::ToString<Core::uint>(packet_index));
-        }
-    }
-    
-    void AssetManager::AssetTransfer::AssembleData(Core::u8* buffer) const
-    {
-        DataPacketMap::const_iterator i = data_packets_.begin();
-        
-        Core::uint expected_index = 0;
-      
-        while (i != data_packets_.end())
-        {
-            if (i->first != expected_index)
-                break;
-            
-            memcpy(buffer, &i->second[0], i->second.size());
-            buffer += i->second.size();
-            
-            ++expected_index;
-            ++i;
-        }
-    }
-    
     AssetManager::AssetManager(Foundation::Framework* framework, OpenSimProtocolModule* net_interface) : 
         framework_(framework),
         net_interface_(net_interface)
     {
         // Create asset cache directory
-        std::string cache_path = framework_->GetPlatform()->GetApplicationDataDirectory();
-        cache_path += DEFAULT_ASSET_CACHE_PATH;
-        if (boost::filesystem::exists(cache_path) == false)
+        cache_path_ = framework_->GetPlatform()->GetApplicationDataDirectory() + DEFAULT_ASSET_CACHE_PATH;
+        if (boost::filesystem::exists(cache_path_) == false)
         {
-            boost::filesystem::create_directory(cache_path);
+            boost::filesystem::create_directory(cache_path_);
         }
     }
     
@@ -118,6 +39,14 @@ namespace Asset
     
     void AssetManager::RequestAsset(const RexUUID& asset_id, Core::uint asset_type)
     {
+        if (assets_.find(asset_id) != assets_.end())
+        {
+            AssetModule::LogInfo("Asset " + asset_id.ToString() + " already received");
+            return;
+        }
+
+        GetFromCache(asset_id);
+        
         if (assets_.find(asset_id) != assets_.end())
         {
             AssetModule::LogInfo("Asset " + asset_id.ToString() + " already received");
@@ -367,5 +296,51 @@ namespace Asset
         assets_[asset_id].asset_type_ = transfer.GetAssetType();
         assets_[asset_id].data_.resize(transfer.GetReceived());
         transfer.AssembleData(&assets_[asset_id].data_[0]);
+        
+        boost::filesystem::path file_path(cache_path_ + "/" + asset_id.ToString());
+        
+        std::ofstream filestr(file_path.native_directory_string().c_str(), std::ios::out | std::ios::binary);
+        if (filestr.good())
+        {
+            Core::uint type = transfer.GetAssetType();
+            // Store first the asset type, then the actual data
+            filestr.write((const char *)&type, sizeof(type));
+            filestr.write((const char *)&assets_[asset_id].data_[0], assets_[asset_id].data_.size());
+            filestr.close();
+        }
+        else
+        {
+            AssetModule::LogError("Error storing asset " + asset_id.ToString() + " to cache.");
+        }
+    }
+    
+    void AssetManager::GetFromCache(const RexTypes::RexUUID& asset_id)
+    {
+        boost::filesystem::path file_path(cache_path_ + "/" + asset_id.ToString());
+        
+        std::ifstream filestr(file_path.native_directory_string().c_str(), std::ios::in | std::ios::binary);
+        if (filestr.good())
+        {
+            filestr.seekg(0, std::ios::end);
+            Core::uint length = filestr.tellg();
+            filestr.seekg(0, std::ios::beg);
+
+            Core::uint type;
+            if (length > sizeof(type))
+            {
+                length -= sizeof(type);
+                
+                filestr.read((char *)&type, sizeof(type));
+                assets_[asset_id].asset_type_ = type;
+                assets_[asset_id].data_.resize(length);
+                filestr.read((char *)&assets_[asset_id].data_[0], length);
+            }
+            else
+            {
+                AssetModule::LogError("Malformed asset file " + asset_id.ToString() + " found in cache.");
+            }
+            
+            filestr.close();
+        }
     }
 }
