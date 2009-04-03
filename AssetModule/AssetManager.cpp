@@ -12,6 +12,8 @@ using namespace RexTypes;
 
 namespace Asset
 {
+    const char *AssetManager::DEFAULT_ASSET_CACHE_PATH = "/assetcache";
+
     AssetManager::AssetTransfer::AssetTransfer() :
         size_(0),
         received_(0)
@@ -95,6 +97,13 @@ namespace Asset
         framework_(framework),
         net_interface_(net_interface)
     {
+        // Create asset cache directory
+        std::string cache_path = framework_->GetPlatform()->GetApplicationDataDirectory();
+        cache_path += DEFAULT_ASSET_CACHE_PATH;
+        if (boost::filesystem::exists(cache_path) == false)
+        {
+            boost::filesystem::create_directory(cache_path);
+        }
     }
     
     AssetManager::~AssetManager()

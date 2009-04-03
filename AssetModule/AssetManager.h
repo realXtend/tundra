@@ -101,6 +101,9 @@ namespace Asset
         
         //! ongoing UDP texture transfers, keyed by texture asset id
         AssetTransferMap texture_transfers_;
+        
+        //! asset cache path
+        static const char *AssetManager::DEFAULT_ASSET_CACHE_PATH;
     };
 }
 
