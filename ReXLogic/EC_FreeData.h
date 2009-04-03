@@ -8,6 +8,9 @@
 
 namespace RexLogic
 {
+    /// An entity component that attaches to an entity a generic string of data, for quickly doing custom data extension/storage.
+    /// \todo This component is not useful unless there can be several instances of it on a single entity, or unless we make it store a dictionary
+    ///       of string-value pairs.
     class EC_FreeData : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_FreeData);

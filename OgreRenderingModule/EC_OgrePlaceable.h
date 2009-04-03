@@ -77,6 +77,8 @@ namespace OgreRenderer
         //! Ogre scene node
         Ogre::SceneNode* scene_node_;
     };
+
+    typedef EC_OgrePlaceable EC_Placeable;
 }
 
 #endif

@@ -32,7 +32,7 @@ namespace Scene
         assert (HasScene(name));
         assert (HasScene(cloneName) == false);
         
-        Generic *oldScene = static_cast<Generic*>(scenes_.find(name)->second.get());
+        Generic *oldScene = checked_static_cast<Generic*>(scenes_.find(name)->second.get());
 
         Foundation::ScenePtr scene = Foundation::ScenePtr(new Scene::Generic(*oldScene, cloneName));
 

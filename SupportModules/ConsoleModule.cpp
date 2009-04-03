@@ -31,7 +31,7 @@ namespace Console
     void ConsoleModule::Initialize()
     {
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Console, manager_.get());
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_ConsoleCommand, static_cast<ConsoleManager*>(manager_.get())->GetCommandManager().get());
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_ConsoleCommand, checked_static_cast<ConsoleManager*>(manager_.get())->GetCommandManager().get());
 
         LogInfo("Module " + Name() + " initialized.");
     }
@@ -45,7 +45,7 @@ namespace Console
     void ConsoleModule::Uninitialize()
     {
         framework_->GetServiceManager()->UnregisterService(manager_.get());
-        framework_->GetServiceManager()->UnregisterService(static_cast< ConsoleManager* >(manager_.get())->GetCommandManager().get());
+        framework_->GetServiceManager()->UnregisterService(checked_static_cast< ConsoleManager* >(manager_.get())->GetCommandManager().get());
 
         LogInfo("Module " + Name() + " uninitialized.");
     }

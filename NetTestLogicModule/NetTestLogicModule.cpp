@@ -139,7 +139,7 @@ namespace NetTest
     {
         if (category_id == inboundCategoryID_)
         {
-            OpenSimProtocol::NetworkEventInboundData *event_data = dynamic_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
+            OpenSimProtocol::NetworkEventInboundData *event_data = checked_static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
             assert(event_data);
             const NetMessageInfo *info = event_data->message->GetMessageInfo();
             assert(info);
@@ -209,7 +209,7 @@ namespace NetTest
         }
         else if (category_id == outboundCategoryID_)
         {
-            OpenSimProtocol::NetworkEventOutboundData *event_data = dynamic_cast<OpenSimProtocol::NetworkEventOutboundData *>(data);
+            OpenSimProtocol::NetworkEventOutboundData *event_data = checked_static_cast<OpenSimProtocol::NetworkEventOutboundData *>(data);
             assert(event_data);
             const NetMessageInfo *info = event_data->message->GetMessageInfo();
             assert(info);

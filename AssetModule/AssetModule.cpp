@@ -41,7 +41,7 @@ namespace Asset
     // virtual
     void AssetModule::Initialize()
     {
-        net_interface_ = dynamic_cast<OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol));
+        net_interface_ = checked_static_cast<OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol));
         if (!net_interface_)
         {
             //! \todo something smart, now assetmanager will be in quite zombified state
@@ -105,7 +105,7 @@ namespace Asset
     {
         if ((category_id == inboundcategory_id_) && (event_id == OpenSimProtocol::EVENT_NETWORK_IN))
         {
-            NetworkEventInboundData *event_data = static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
+            NetworkEventInboundData *event_data = checked_static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
             const NetMsgID msgID = event_data->messageID;
             NetInMessage *msg = event_data->message;
                 

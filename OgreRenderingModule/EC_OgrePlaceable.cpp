@@ -12,7 +12,7 @@ namespace OgreRenderer
 {
     EC_OgrePlaceable::EC_OgrePlaceable(Foundation::ModuleInterface* module) :
         Foundation::ComponentInterface(module->GetFramework()),
-        renderer_(static_cast<OgreRenderingModule*>(module)->GetRenderer()),
+        renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         scene_node_(NULL)
     {
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
@@ -84,7 +84,7 @@ namespace OgreRenderer
         }
         else
         {
-            EC_OgrePlaceable* parent = static_cast<EC_OgrePlaceable*>(parent_.get());
+            EC_OgrePlaceable* parent = checked_static_cast<EC_OgrePlaceable*>(parent_.get());
             parent_node = parent->GetSceneNode();
         }
         
@@ -102,7 +102,7 @@ namespace OgreRenderer
         }
         else
         {
-            EC_OgrePlaceable* parent = static_cast<EC_OgrePlaceable*>(parent_.get());
+            EC_OgrePlaceable* parent = checked_static_cast<EC_OgrePlaceable*>(parent_.get());
             parent_node = parent->GetSceneNode();
         }
         

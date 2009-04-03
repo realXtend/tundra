@@ -72,8 +72,8 @@ namespace OgreRenderer
         //entity->AddEntityComponent(placeable_ptr);
         //entity->AddEntityComponent(mesh_ptr);
         //
-        //EC_OgrePlaceable* placeable = static_cast<EC_OgrePlaceable*>(placeable_ptr.get());
-        //EC_OgreMesh* mesh = static_cast<EC_OgreMesh*>(mesh_ptr.get());
+        //EC_OgrePlaceable* placeable = checked_static_cast<EC_OgrePlaceable*>(placeable_ptr.get());
+        //EC_OgreMesh* mesh = checked_static_cast<EC_OgreMesh*>(mesh_ptr.get());
         //placeable->SetPosition(Core::Vector3df(-50,0,-200));
         //mesh->SetMesh("ogrehead.mesh");
         //mesh->SetPlaceable(placeable_ptr);
@@ -82,7 +82,7 @@ namespace OgreRenderer
         //Foundation::ComponentPtr light_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreLight::NameStatic());
         //entity2->AddEntityComponent(light_ptr);
         //
-        //EC_OgreLight* light = static_cast<EC_OgreLight*>(light_ptr.get());
+        //EC_OgreLight* light = checked_static_cast<EC_OgreLight*>(light_ptr.get());
         //light->SetType(EC_OgreLight::LT_Directional);
         //light->SetDirection(Core::Vector3df(-1,-1,-1));
         //
@@ -90,7 +90,7 @@ namespace OgreRenderer
         //Foundation::ComponentPtr sky_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreSky::NameStatic());
         //entity3->AddEntityComponent(sky_ptr);
         //
-        //EC_OgreSky* sky = static_cast<EC_OgreSky*>(sky_ptr.get());
+        //EC_OgreSky* sky = checked_static_cast<EC_OgreSky*>(sky_ptr.get());
         //sky->SetSkyBox("Sky", 1000);
        
         //Foundation::EntityPtr entity4 = scene->CreateEntity(4);
@@ -99,8 +99,8 @@ namespace OgreRenderer
         //entity4->AddEntityComponent(placeable4_ptr);
         //entity4->AddEntityComponent(custom4_ptr);
         //
-        //EC_OgrePlaceable* placeable4 = static_cast<EC_OgrePlaceable*>(placeable4_ptr.get());
-        //EC_OgreCustomObject* custom4 = static_cast<EC_OgreCustomObject*>(custom4_ptr.get());
+        //EC_OgrePlaceable* placeable4 = checked_static_cast<EC_OgrePlaceable*>(placeable4_ptr.get());
+        //EC_OgreCustomObject* custom4 = checked_static_cast<EC_OgreCustomObject*>(custom4_ptr.get());
         //placeable4->SetPosition(Core::Vector3df(50,0,-200));
         //custom4->SetPlaceable(placeable4_ptr);
         //

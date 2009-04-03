@@ -18,7 +18,7 @@ namespace Console
 
     CommandManager::CommandManager(Foundation::ModuleInterface *parent, ConsoleServiceInterface *console) : 
     Console::ConsoleCommandServiceInterface()
-        , parent_ (static_cast< ConsoleModule* >(parent))
+        , parent_ (checked_static_cast< ConsoleModule* >(parent))
         , console_(console)
     {
         RegisterCommand(Console::CreateCommand("Help", "Display available commands", Console::Bind(this, &CommandManager::ConsoleHelp)));
