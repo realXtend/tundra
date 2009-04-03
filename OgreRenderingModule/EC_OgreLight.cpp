@@ -13,7 +13,7 @@ namespace OgreRenderer
 {
     EC_OgreLight::EC_OgreLight(Foundation::ModuleInterface* module) :
         Foundation::ComponentInterface(module->GetFramework()),
-        renderer_(static_cast<OgreRenderingModule*>(module)->GetRenderer()),
+        renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         light_(NULL),
         attached_(false)
     {
@@ -74,7 +74,7 @@ namespace OgreRenderer
     {
         if ((placeable_) && (!attached_))
         {
-            EC_OgrePlaceable* placeable = static_cast<EC_OgrePlaceable*>(placeable_.get());
+            EC_OgrePlaceable* placeable = checked_static_cast<EC_OgrePlaceable*>(placeable_.get());
             Ogre::SceneNode* node = placeable->GetSceneNode();
             node->attachObject(light_);
             attached_ = true;
@@ -85,7 +85,7 @@ namespace OgreRenderer
     {
         if ((placeable_) && (attached_))
         {
-            EC_OgrePlaceable* placeable = static_cast<EC_OgrePlaceable*>(placeable_.get());
+            EC_OgrePlaceable* placeable = checked_static_cast<EC_OgrePlaceable*>(placeable_.get());
             Ogre::SceneNode* node = placeable->GetSceneNode();
             node->detachObject(light_);
             attached_ = false;

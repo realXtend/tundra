@@ -10,6 +10,8 @@
 
 namespace RexLogic
 {
+    /// \todo This component will probably not contain even half of the data that is presented here, but keeping this still here to show
+    ///       what kinds of data there will be. Will be refactored to proper positions once the actual component layout is decided. -jj
     class EC_Viewable : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_Viewable);

@@ -54,8 +54,8 @@ namespace Scene
     {
         assert (entity.get());
     
-        Foundation::EntityPtr new_entity = Foundation::EntityPtr(new Scene::Entity(*static_cast<Entity*> (entity.get())));
-        dynamic_cast<Scene::Entity*>(new_entity.get())->SetNewId(GetNextFreeId());
+        Foundation::EntityPtr new_entity = Foundation::EntityPtr(new Scene::Entity(*checked_static_cast<Entity*> (entity.get())));
+        checked_static_cast<Scene::Entity*>(new_entity.get())->SetNewId(GetNextFreeId());
         entities_[new_entity->GetId()] = new_entity;
 
         return new_entity;
@@ -67,8 +67,7 @@ namespace Scene
         if (it != entities_.end())
             return it->second;
 
-        const std::string e(std::string("Failed to find entity with id: " + boost::lexical_cast<std::string>(id)));
-        throw Core::Exception(e.c_str());
+        return Foundation::EntityPtr();
     }
 
     Core::entity_id_t Generic::GetNextFreeId()

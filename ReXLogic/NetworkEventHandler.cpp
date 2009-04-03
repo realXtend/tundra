@@ -28,7 +28,7 @@ namespace RexLogic
     {
         if(event_id == OpenSimProtocol::EVENT_NETWORK_IN)
         {
-            OpenSimProtocol::NetworkEventInboundData *netdata = static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
+            OpenSimProtocol::NetworkEventInboundData *netdata = checked_static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
             switch(netdata->messageID)
             {
                 case RexNetMsgGenericMessage:           return HandleOSNE_GenericMessage(netdata); break;
@@ -41,47 +41,45 @@ namespace RexLogic
         return false;
     }
 
-    Foundation::EntityPtr NetworkEventHandler::GetPrimEntitySafe(Core::entity_id_t entityid)
+    Foundation::EntityPtr NetworkEventHandler::GetOrCreatePrimEntity(Core::entity_id_t entityid)
     {
         Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
 
-        // TODO tucofixme, how to make sure this is a prim entity?
-        if (!scene->HasEntity(entityid))
+        Foundation::EntityPtr entity = scene->GetEntity(entityid);
+        if (!entity)
             return CreateNewPrimEntity(entityid);
-        else
-            return scene->GetEntity(entityid);
+
+        ///\todo Check that the entity has a prim component, if not, add it to the entity. 
+        return entity;
     }
   
-    Foundation::EntityPtr NetworkEventHandler::GetPrimEntitySafe(Core::entity_id_t entityid, RexUUID fullid)
+    Foundation::EntityPtr NetworkEventHandler::GetOrCreatePrimEntity(Core::entity_id_t entityid, const RexUUID &fullid)
     {
         Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
 
-        // TODO tucofixme, how to make sure this is a prim entity?
-        if (!scene->HasEntity(entityid))
+        Foundation::EntityPtr entity = scene->GetEntity(entityid);
+        if (!entity)
         {
             UUIDs_[fullid] = entityid;
             return CreateNewPrimEntity(entityid);
         }
-        else
-            return scene->GetEntity(entityid);
+
+        ///\todo Check that the entity has a prim component, if not, add it to the entity.
+        return entity;
     }  
    
-    Foundation::EntityPtr NetworkEventHandler::GetPrimEntity(const RexUUID &entityuuid)
+    Foundation::EntityPtr NetworkEventHandler::GetOrCreatePrimEntity(const RexUUID &entityuuid)
     {
         Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
 
-        if(UUIDs_.find(entityuuid) != UUIDs_.end())
-        {
-            return scene->GetEntity(UUIDs_[entityuuid]);
-        }
+        IDMap::iterator iter = UUIDs_.find(entityuuid);
+        if (iter == UUIDs_.end())
+            return Foundation::EntityPtr();
         else
-        {
-            Foundation::EntityPtr emptyptr;
-            return emptyptr; 
-        }        
+            return scene->GetEntity(iter->second);
     }    
     
     
@@ -103,7 +101,7 @@ namespace RexLogic
         Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
 
-        // TODO tucofixme, how to make sure this is a avatar entity?
+        /// \todo tucofixme, how to make sure this is a avatar entity?
         if (!scene->HasEntity(entityid))
             return CreateNewAvatarEntity(entityid);
         else
@@ -116,7 +114,7 @@ namespace RexLogic
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
         
         Core::StringVector defaultcomponents;
-        // TODO tucofixme, add avatar default components
+        /// \todo tucofixme, add avatar default components
         
         Foundation::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents); 
         return entity;
@@ -141,17 +139,17 @@ namespace RexLogic
         {
             // Prim
             case 0x09:
-                entity = GetPrimEntitySafe(localid,fullid);                
+                entity = GetOrCreatePrimEntity(localid,fullid);
                 if(entity)
                 {
                     Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
-                    static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectUpdate(data);
+                    checked_static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectUpdate(data);
                 }
                 break;
             // Avatar                
             case 0x2f:
                 entity = GetAvatarEntitySafe(localid);
-                // TODO tucofixme, set values to component      
+                /// \todo tucofixme, set values to component      
                 break;
         }
         return false;
@@ -165,11 +163,11 @@ namespace RexLogic
         msg->SkipToFirstVariableByName("LocalID");
         uint32_t localid = msg->ReadU32();
         
-        Foundation::EntityPtr entity = GetPrimEntitySafe(localid);
+        Foundation::EntityPtr entity = GetOrCreatePrimEntity(localid);
         if(entity)
         {
             Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
-            static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectName(data);        
+            checked_static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectName(data);        
         }
         return false;
     }
@@ -182,11 +180,11 @@ namespace RexLogic
         msg->SkipToFirstVariableByName("LocalID");
         uint32_t localid = msg->ReadU32();
         
-        Foundation::EntityPtr entity = GetPrimEntitySafe(localid);
+        Foundation::EntityPtr entity = GetOrCreatePrimEntity(localid);
         if(entity)
         {
             Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
-            static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectDescription(data);        
+            checked_static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectDescription(data);        
         }
         return false;     
     }
@@ -201,7 +199,7 @@ namespace RexLogic
         data->message->SkipToNextVariable();      // SessionId
         data->message->SkipToNextVariable();      // TransactionId
         
-        const uint8_t *methodnamebytes = data->message->ReadBuffer(&bytes_read);
+        const uint8_t *methodnamebytes = data->message->ReadBuffer(&bytes_read); ///\bug Will crash if passing non-null-terminated strings.
         if(bytes_read > 0)
         {
             std::string methodname = (const char *)methodnamebytes;
@@ -215,7 +213,7 @@ namespace RexLogic
 
     bool NetworkEventHandler::HandleRexGM_RexMediaUrl(OpenSimProtocol::NetworkEventInboundData* data)
     {
-        // TODO tucofixme
+        /// \todo tucofixme
         return false;
     }
 
@@ -225,8 +223,8 @@ namespace RexLogic
         data->message->ResetReading();
         data->message->SkipToFirstVariableByName("Parameter");           
 
-        RexUUID primuuid((const char *)data->message->ReadBuffer(&bytes_read)); // The UUID is in a string
-        Foundation::EntityPtr entity = GetPrimEntity(primuuid);
+        RexUUID primuuid((const char *)data->message->ReadBuffer(&bytes_read));  ///\bug Will crash if passing non-null-terminated strings.
+        Foundation::EntityPtr entity = GetOrCreatePrimEntity(primuuid);
         if(entity)
         {
             // Calculate full data size
@@ -257,12 +255,12 @@ namespace RexLogic
             }
 
             Foundation::ComponentInterfacePtr oscomponent = entity->GetComponent("EC_OpenSimPrim");
-            static_cast<EC_OpenSimPrim*>(oscomponent.get())->HandleRexPrimData(fulldata);
-            // todo tucofixme, static_cast<EC_OpenSimPrim*>(oscomponent.get())->PrintDebug();
+            checked_static_cast<EC_OpenSimPrim*>(oscomponent.get())->HandleRexPrimData(fulldata);
+            // todo tucofixme, checked_static_cast<EC_OpenSimPrim*>(oscomponent.get())->PrintDebug();
 
             Foundation::ComponentInterfacePtr viewcomponent = entity->GetComponent("EC_Viewable");
-            static_cast<EC_Viewable*>(viewcomponent.get())->HandleRexPrimData(fulldata);
-            // todo tucofixme, static_cast<EC_Viewable*>(viewcomponent.get())->PrintDebug();
+            checked_static_cast<EC_Viewable*>(viewcomponent.get())->HandleRexPrimData(fulldata);
+            // todo tucofixme, checked_static_cast<EC_Viewable*>(viewcomponent.get())->PrintDebug();
             
             delete fulldata;
         }

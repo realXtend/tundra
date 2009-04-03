@@ -9,6 +9,8 @@
 
 namespace RexLogic
 {
+    /// This component attached to an entity denotes that the entity is a positional audio source. Requires that the entity
+    /// is also a placeable (has EC_OgrePlaceable component).
     class EC_SpatialSound : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_SpatialSound);

@@ -24,7 +24,7 @@ typedef Core::Vector3D<double> Vector3d;
 ///\todo Is this needed? Only one message uses Vector4 (CameraConstraint).
 struct Vector4
 {
-    void Null() { x = 0; y = 0; z = 0; x = w;}
+    void Null() { x = y = z = w = 0.f; }
 	float x;
 	float y;
 	float z;
