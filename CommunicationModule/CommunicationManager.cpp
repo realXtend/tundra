@@ -4,6 +4,7 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
 #include "CommunicationManager.h"
+#include "CommunicationModule.h"
 
 //POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
 //POCO_EXPORT_CLASS(Communication::CommunicationManager)
@@ -19,21 +20,21 @@ namespace Communication
 	// Communications API	
 	void CommunicationManager::AddListener(Foundation::CommunicationListener *listener)
 	{
-		LogInfo("CommunicationManager AddListener called");
+		CommunicationModule::LogInfo("CommunicationManager AddListener called");
 	}
 
 	void CommunicationManager::RemoveListener(Foundation::CommunicationListener *listener)
 	{
-		LogInfo("CommunicationManager RemoveListener called");
+		CommunicationModule::LogInfo("CommunicationManager RemoveListener called");
 	}
 
 	void CommunicationManager::Connect()
 	{
-		LogInfo("CommunicationManager Connect");
+		CommunicationModule::LogInfo("CommunicationManager Connect");
 	}
 	void CommunicationManager::Disconnect()
 	{
-		LogInfo("CommunicationManager Disconnect");
+		CommunicationModule::LogInfo("CommunicationManager Disconnect");
 	}
 
 }

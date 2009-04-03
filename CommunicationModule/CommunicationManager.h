@@ -16,7 +16,7 @@ namespace Communication
 		CommunicationManager(void);
 		virtual ~CommunicationManager(void);
 
-		MODULE_LOGGING_FUNCTIONS
+		//MODULE_LOGGING_FUNCTIONS
 
 		//! returns name of this module. Needed for logging.
 		static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
