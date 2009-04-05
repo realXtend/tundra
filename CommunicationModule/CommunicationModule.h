@@ -21,7 +21,7 @@ namespace Communication
 		void PostInitialize();
 		void Uninitialize();
 
-		void Update();
+		void Update(Core::f64 frametime);
 
 		MODULE_LOGGING_FUNCTIONS
 

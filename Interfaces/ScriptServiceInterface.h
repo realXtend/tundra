@@ -13,7 +13,8 @@ namespace Foundation
         ScriptServiceInterface() {}
         virtual ~ScriptServiceInterface() {}
 
-        virtual void RunScript() = 0;
+        virtual void RunScript(const std::string& scriptname) = 0;
+		virtual void RunString(const std::string& codestr) = 0;
     };
 }
 
