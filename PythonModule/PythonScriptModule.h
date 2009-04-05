@@ -15,7 +15,6 @@
 #include "NetMessage.h"
 
 #include <Python/Python.h>
-//#include "Script.h"
 
 namespace Foundation
 {
@@ -26,6 +25,9 @@ namespace PythonScript
 {
 	//hack to have a ref to framework so can get the module in api funcs
 	static Foundation::Framework *staticframework;
+
+	class PythonEngine;
+	typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;
 
     //! A scripting module using Python
     class MODULE_API PythonScriptModule : public Foundation::ModuleInterfaceImpl
@@ -43,10 +45,12 @@ namespace PythonScript
         virtual void Update(Core::f64 frametime);
 
 		//handling events
-        virtual bool HandleEvent(
+        /* tested from network, disabled now - to be enabled again later
+		virtual bool HandleEvent(
             Core::event_category_id_t category_id,
             Core::event_id_t event_id, 
             Foundation::EventDataInterface* data);
+			*/
 
 		//! callback for console command
         Console::CommandResult ConsoleRunString(const Core::StringVector &params);
@@ -65,6 +69,7 @@ namespace PythonScript
 		//Foundation::Framework *GetFramework() { return framework_; }
 
 	private:
+        PythonEnginePtr engine_;
 		
 		//basic feats
 		void PythonScriptModule::RunString(const char* codestr);
@@ -84,10 +89,6 @@ namespace PythonScript
 		// now just one - eventually could have a list/dict of these?
 		PyObject *pName, *pModule, *pDict, *pFunc;
 	    PyObject *pArgs, *pValue;
-
-    /* python interpreter? 
-        OgreRenderer::RendererPtr renderer_;*/
-
 	};
 
 	/* API calls exposed to py. should be private but testing now here

@@ -7,6 +7,7 @@
 #include "ServiceManager.h"
 #include "ComponentRegistrarInterface.h"
 #include "ConsoleCommandServiceInterface.h"
+#include "PythonEngine.h" //is this needed here?
 
 
 //testing receiving events, now from the net module 'cause nothing else sends yet
@@ -60,13 +61,14 @@ namespace PythonScript
     void PythonScriptModule::Initialize()
     {
         // for the hack that login directly from here XXX
+		/*
 		using namespace OpenSimProtocol;
 		netInterface_ = dynamic_cast<OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol));
-
-		if (!Py_IsInitialized())
-	        Py_Initialize();
-		else
-			LogWarning("Python already initialized in PythonScriptModule init!");
+		*/
+		engine_ = PythonScript::PythonEnginePtr(new PythonScript::PythonEngine(framework_));
+        engine_->Initialize();
+        
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Scripting, engine_.get());
 
 		//XXX hack to have a ref to framework for api funcs
 		PythonScript::staticframework = framework_;
@@ -84,33 +86,15 @@ namespace PythonScript
 
     void PythonScriptModule::PostInitialize()
     {
+		/*
 		inboundCategoryID_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
         if (inboundCategoryID_ == 0)
             LogWarning("Unable to find event category for incoming OpenSimNetwork events!");
 
 		pName = PyString_FromString("chathandler");
-		/* Error checking of pName left out */
+		//Error checking of pName left out
 
-		pModule = PyImport_Import(pName);
-		Py_DECREF(pName);
-
-		if (pModule != NULL) {
-			pFunc = PyObject_GetAttrString(pModule, "onChat");
-	        /* pFunc is a new reference */
-
-			if (pFunc && PyCallable_Check(pFunc)) {
-				LogInfo("Registered callback onChat from chathandler.py");
-			}
-			else {
-				if (PyErr_Occurred())
-					PyErr_Print();
-				LogInfo("Cannot find function");
-			}
-		}
-		else 
-			LogInfo("chathandler.py not found");
-
-		/* disabled nettestlogic so can't login via gui so copy-pasted the login procedure here */
+		/* disabled nettestlogic so can't login via gui so copy-pasted the login procedure here
 		LogInfo("Py module tries direct logging in");
 		bool success = netInterface_->ConnectToRexServer("Python", "User",
             "test", "localhost", 9000);
@@ -137,10 +121,10 @@ namespace PythonScript
         }
         else
             LogError("Connecting to localhost failed.");
-
+		*/
 	}
 
-    bool PythonScriptModule::HandleEvent(
+    /*bool PythonScriptModule::HandleEvent(
         Core::event_category_id_t category_id,
         Core::event_id_t event_id, 
         Foundation::EventDataInterface* data)
@@ -170,13 +154,13 @@ namespace PythonScript
 				
 	            ss << "[" << Core::GetLocalTimeString() << "] " << name << ": " << message << std::endl;
 				LogInfo(ss.str());
-	            //WriteToChatWindow(ss.str());*/
+	            //WriteToChatWindow(ss.str());
 				//can readbuffer ever return null? should be checked if yes. XXX
 
 	            pArgs = PyTuple_New(1); //takes a single argument
 				//pValue = PyInt_FromLong(1); //..which is now just int 1
 				pValue = PyString_FromString(message.c_str());
-				/* pValue reference stolen here: */
+				//pValue reference stolen here:
 				PyTuple_SetItem(pArgs, 0, pValue);
 
 				pValue = PyObject_CallObject(pFunc, pArgs);
@@ -198,22 +182,7 @@ namespace PythonScript
 		}
 
 		return false;
-	}
-
-	void PythonScriptModule::RunString(const char* codestr)
-	{
-		PyRun_SimpleString(codestr);
-	}
-
-	void PythonScriptModule::RunFile(const std::string &modulename)
-	{
-		/* could get a fp* here and pass it to
-		int PyRun_SimpleFile(FILE *fp, const char *filename)
-		but am unsure whether to use the Poco fs stuff for it an how
-		so trying this, why not? we don't need the file on the c++ side?*/
-		std::string cmd = "import " + modulename;
-		RunString(cmd.c_str());
-	}
+	} */
 
     Console::CommandResult PythonScriptModule::ConsoleRunString(const Core::StringVector &params)
 	{
@@ -226,7 +195,7 @@ namespace PythonScript
 
 		else
 		{
-			RunString(params[0].c_str());
+			engine_->RunString(params[0]);
 			return Console::ResultSuccess();
 		}
 	}
@@ -240,25 +209,21 @@ namespace PythonScript
 
 		else
 		{
-			RunFile(params[0]);
+			engine_->RunScript(params[0]);
 			return Console::ResultSuccess();
 		}
 	}
 
 	Console::CommandResult PythonScriptModule::ConsoleReset(const Core::StringVector &params)
 	{
-		Reset();
+		engine_->Reset();
 		return Console::ResultSuccess();
 	}	
 
     // virtual 
     void PythonScriptModule::Uninitialize()
     {        
-        Py_XDECREF(pFunc);
-        Py_DECREF(pModule);
-
-		Py_Finalize();
-
+		engine_->Uninitialize();
         LogInfo("Module " + Name() + " uninitialized.");
     }
     
@@ -266,16 +231,9 @@ namespace PythonScript
     void PythonScriptModule::Update(Core::f64 frametime)
     {
         //renderer_->Update();
-		RunString("import time; time.sleep(0.01);"); //a hack to save cpu now. didn't seem to help .. some other thread runs in a tight loop?
+		//XXX
+		engine_->RunString("import time; time.sleep(0.01);"); //a hack to save cpu now. didn't seem to help .. some other thread runs in a tight loop?
     }
-
-	void PythonScriptModule::Reset()
-	{
-		/* should probably be module unload & load */
-		Py_Finalize();
-		Py_Initialize();
-		LogInfo("Python interpreter reseted: all memory and state cleared.");
-	}
 
 	//stuff for api, copy-paste from nettestlogic, to be moved to logic
 	void PythonScriptModule::SendChatFromViewerPacket(const char *msg)

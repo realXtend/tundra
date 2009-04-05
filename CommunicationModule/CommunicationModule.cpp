@@ -28,6 +28,15 @@ namespace Communication
 		communication_manager_ = Foundation::CommunicationManagerPtr(new CommunicationManager());
 		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_CommunicationManager, communication_manager_.get());
 		LogInfo("Module " + Name() + " initialized.");
+
+		//testing using py service from here, 'cause had trouble with loading in the unit test
+		/* commented to not bork for ppl without py
+		Foundation::ScriptServiceInterface *pyengine = framework_->GetService<Foundation::ScriptServiceInterface>
+			(Foundation::Service::ST_Scripting);
+		pyengine->RunString("print 'Hello Python from CommunicationModule!'");
+		pyengine->RunScript("communication"); *//* loads the module, 
+		i.e. brings comms module to the global namespace
+		so that the contents of it can be referred to as comms.x */
 	}
 
 	void CommunicationModule::PostInitialize(){}
@@ -39,7 +48,14 @@ namespace Communication
 		LogInfo("Module " + Name() + " uninitialized.");
 	}
 
-	void CommunicationModule::Update(){}
+	void CommunicationModule::Update(Core::f64 frametime)
+	{
+		//if done this way, should keep the ref that got in init
+		/*Foundation::ScriptServiceInterface *pyengine = framework_->GetService<Foundation::ScriptServiceInterface>
+			(Foundation::Service::ST_Scripting);
+
+		pyengine->RunString("communication.update()"); //XXX no way to get return val, w.i.p*/
+	}
 
 
 	// Communications API
