@@ -14,6 +14,7 @@ include_directories (
 	../Foundation
 	../Interfaces
 	../OpenSimProtocol
+	../ReXLogic
 	../gtkmmUI
 	../RexCommon
 )
@@ -22,6 +23,8 @@ include_directories (
 #link_directories (
 	#../OpenSimProtocol/Debug
 	#../OpenSimProtocol/Release
+	#../ReXLogic/Debug
+	#../ReXLogic/Release
 #)
 
 # Disable warning
@@ -57,7 +60,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Core Foundation OpenSimProtocolModule RexCommon)
+target_link_libraries (${TARGET_NAME} Core Foundation OpenSimProtocolModule ReXLogicModule RexCommon)
 
 # External library linkage (needs target defined)
 LINK_POCO()
