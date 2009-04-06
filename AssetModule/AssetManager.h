@@ -25,34 +25,100 @@ namespace Asset
     class Asset
     {
     public:
+        //! asset type
         Core::uint asset_type_;
+        //! asset data
         std::vector<Core::u8> data_;
     };
     
     //! Asset manager. Initiates transfers based on asset requests and responds to received data.
-    //! \todo cache to disk, handle timeouts, comment code
+    /*! \todo handle timeouts, define service interface
+     */
     class AssetManager : public Foundation::AssetServiceInterface
     {
     public:
+        //! constructor
         AssetManager(Foundation::Framework* framework, OpenSimProtocol::OpenSimProtocolModule* net_interface);
+        //! destructor
         virtual ~AssetManager();
         
+        //! get asset
+        /*! \todo implement something that makes sense
+         */
         virtual Foundation::AssetPtr GetAsset(const std::string& asset_id);
 
+        //! performs time-based update
+        /*! uses time to handle timeouts
+         */
+        void Update(Core::f64 frametime);
+
+        //! requests asset
+        /*! \param asset_id asset UUID
+            \param asset_type asset type
+         */
         void RequestAsset(const RexTypes::RexUUID& asset_id, Core::uint asset_type);
         
+        //! set asset transfer timeout
+        void SetTimeout(Core::f64 timeout) { asset_timeout_ = timeout; }
+        
+        //! get asset transfer timeout
+        Core::f64 GetTimeout() const { return asset_timeout_; }
+        
+        //! handles texture header message
+        /*! called by AssetModule
+            \param msg message
+         */
         void HandleTextureHeader(NetInMessage* msg);
+        
+        //! handles texture data message
+        /*! called by AssetModule
+            \param msg message
+         */
         void HandleTextureData(NetInMessage* msg);
+        
+        //! handles texture transfer abort message
+        /*! called by AssetModule
+            \param msg message
+         */
         void HandleTextureCancel(NetInMessage* msg);
         
+        //! handles other asset transfer header message
+        /*! called by AssetModule
+            \param msg message
+         */
         void HandleAssetHeader(NetInMessage* msg);
+        
+        //! handles other asset transfer data message
+        /*! called by AssetModule
+            \param msg message
+         */
         void HandleAssetData(NetInMessage* msg);
+        
+        //! handles other asset transfer abort message
+        /*! called by AssetModule
+            \param msg message
+         */
         void HandleAssetCancel(NetInMessage* msg);
         
     private:
+        //! tries to get asset from disk-based cache
+        /*! \param asset_id asset UUID
+         */
         void GetFromCache(const RexTypes::RexUUID& asset_id);
+        
+        //! requests a texture from network
+        /*! \param asset_id asset UUID
+         */
         void RequestTexture(const RexTypes::RexUUID& asset_id);
+        
+        //! requests an other asset from network
+        /*! \param asset_id asset UUID
+         */
         void RequestOtherAsset(const RexTypes::RexUUID& asset_id, Core::uint asset_type);
+        
+        //! stores asset to memory & disk caches
+        /*! \param transfer finished asset transfer
+         */
         void StoreAsset(AssetTransfer& transfer);
     
         //! network interface
@@ -65,7 +131,7 @@ namespace Asset
         
         typedef std::map<RexTypes::RexUUID, Asset> AssetMap;
         
-        //! completely received assets
+        //! completely received assets (memory cache)
         AssetMap assets_;
         
         //! ongoing UDP asset transfers, keyed by transfer id
@@ -77,8 +143,14 @@ namespace Asset
         //! current asset cache path
         std::string cache_path_;
         
+        //! current asset transfer timeout
+        Core::f64 asset_timeout_;
+        
         //! default asset cache path
         static const char *AssetManager::DEFAULT_ASSET_CACHE_PATH;
+        
+        //! default asset transfer timeout 
+        static const Core::f64 AssetManager::DEFAULT_ASSET_TIMEOUT;
     };
 }
 

@@ -66,6 +66,8 @@ namespace Asset
     // virtual
     void AssetModule::Update(Core::f64 frametime)
     {
+        if (manager_)
+            manager_->Update(frametime);
     }
 
     // virtual 

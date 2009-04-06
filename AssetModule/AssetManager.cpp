@@ -14,10 +14,12 @@ using namespace RexTypes;
 namespace Asset
 {
     const char *AssetManager::DEFAULT_ASSET_CACHE_PATH = "/assetcache";
+    const Core::f64 AssetManager::DEFAULT_ASSET_TIMEOUT = 60.0;
 
     AssetManager::AssetManager(Foundation::Framework* framework, OpenSimProtocolModule* net_interface) : 
         framework_(framework),
-        net_interface_(net_interface)
+        net_interface_(net_interface),
+        asset_timeout_(DEFAULT_ASSET_TIMEOUT)
     {
         // Create asset cache directory
         cache_path_ = framework_->GetPlatform()->GetApplicationDataDirectory() + DEFAULT_ASSET_CACHE_PATH;
@@ -35,6 +37,71 @@ namespace Asset
     {
         Foundation::AssetPtr no_asset;
         return no_asset;
+    }
+    
+    void AssetManager::Update(Core::f64 frametime)
+    {
+        AssetTransferMap::iterator i = texture_transfers_.begin();
+        while (i != texture_transfers_.end())
+        {
+            AssetTransfer& transfer = i->second;
+            if (!transfer.Ready())
+            {
+                transfer.AddTime(frametime);
+                if (transfer.GetTime() > asset_timeout_)
+                {
+                    AssetModule::LogInfo("Texture transfer " + transfer.GetAssetId().ToString() + " timed out.");
+                    if (net_interface_)
+                    {
+                        // Send cancel message
+                        const ClientParameters& client = net_interface_->GetClientParameters();
+                        NetOutMessage *m = net_interface_->StartMessageBuilding(RexNetMsgRequestImage);
+                        assert(m);
+                        
+                        m->AddUUID(client.agentID);
+                        m->AddUUID(client.sessionID);
+        
+                        m->SetVariableBlockCount(1);
+                        m->AddUUID(transfer.GetAssetId()); // Image UUID
+                        m->AddS8(-1); // Discard level, -1 = cancel
+                        m->AddF32(0.0); // Download priority, 0 = cancel
+                        m->AddU32(0); // Starting packet
+                        m->AddU8(RexIT_Normal); // Image type
+        
+                        net_interface_->FinishMessageBuilding(m);
+                    }
+                    
+                    texture_transfers_.erase(i);
+                }
+            }
+            ++i;
+        }
+        
+        AssetTransferMap::iterator j = asset_transfers_.begin();
+        while (j != asset_transfers_.end())
+        {
+            AssetTransfer& transfer = j->second;
+            if (!transfer.Ready())
+            {
+                transfer.AddTime(frametime);
+                if (transfer.GetTime() > asset_timeout_)
+                {
+                    AssetModule::LogInfo("Asset transfer " + transfer.GetAssetId().ToString() + " timed out.");
+                    if (net_interface_)
+                    {
+                        // Send cancel message
+                        NetOutMessage *m = net_interface_->StartMessageBuilding(RexNetMsgTransferAbort);
+                        assert(m);
+                        m->AddUUID(j->first); // Transfer ID
+                        m->AddS32(RexAC_Asset); // Asset channel type
+                        net_interface_->FinishMessageBuilding(m);
+                    }
+                    
+                    asset_transfers_.erase(j);
+                }
+            }
+            ++j;
+        }
     }
     
     void AssetManager::RequestAsset(const RexUUID& asset_id, Core::uint asset_type)
@@ -213,7 +280,7 @@ namespace Asset
             return;
         }
 
-        AssetModule::LogInfo("Cancel received for texture transfer " + asset_id.ToString());
+        AssetModule::LogInfo("Transfer of texture " + asset_id.ToString() + " canceled");
         texture_transfers_.erase(i);
     }
     
@@ -233,6 +300,13 @@ namespace Asset
         Core::s32 target_type = msg->ReadS32();
         Core::s32 status = msg->ReadS32();
         Core::s32 size = msg->ReadS32();
+        
+        if ((status != RexTS_Ok) && (status != RexTS_Done))
+        {
+            AssetModule::LogInfo("Transfer for asset " + transfer.GetAssetId().ToString() + " canceled with code " + Core::ToString<Core::s32>(status));
+            asset_transfers_.erase(i);
+            return;
+        }
         
         transfer.SetSize(size);
         
@@ -260,6 +334,13 @@ namespace Asset
         Core::s32 packet_index = msg->ReadS32();
         Core::s32 status = msg->ReadS32();
         
+        if ((status != RexTS_Ok) && (status != RexTS_Done))
+        {
+            AssetModule::LogInfo("Transfer for asset " + transfer.GetAssetId().ToString() + " canceled with code " + Core::ToString<Core::s32>(status));
+            asset_transfers_.erase(i);
+            return;
+        }
+        
         Core::uint data_size; 
         const Core::u8* data = msg->ReadBuffer(&data_size); // Data block
         transfer.ReceiveData(packet_index, data, data_size);
@@ -283,7 +364,7 @@ namespace Asset
             return;
         }
         
-        AssetModule::LogInfo("Cancel received for asset transfer " + transfer_id.ToString());
+        AssetModule::LogInfo("Transfer for asset " + i->second.GetAssetId().ToString() + " canceled");
         asset_transfers_.erase(i);
     }
     
