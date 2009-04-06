@@ -3,7 +3,6 @@
 #include "StableHeaders.h"
 
 #include "OgreOverlay.h"
-#include "EC_ConsoleInterface.h"
 #include "EC_OgreConsoleOverlay.h"
 
 namespace Console
