@@ -109,6 +109,10 @@ namespace Foundation
         assert (lib.empty() == false);
         assert (module.empty() == false);
 
+        Core::StringVector current_modules;
+        for (size_t i = 0 ; i < modules_.size() ; ++i)
+            current_modules.push_back(modules_[i].entry_);
+
         Core::StringVectorPtr files = GetXmlFiles(DEFAULT_MODULES_PATH);
         for (size_t i = 0 ; i < files->size() ; ++i)
         {
@@ -126,12 +130,14 @@ namespace Foundation
 
         for (size_t i = 0 ; i < modules_.size() ; ++i)
         {
-            if (modules_[i].entry_ == module && modules_[i].module_->State() == Module::MS_Loaded)
+            if (modules_[i].module_->State() == Module::MS_Loaded && std::find(current_modules.begin(), current_modules.end(), modules_[i].entry_) == current_modules.end())
             {
                 modules_[i].module_->PreInitialize();
                 modules_[i].module_->InitializeInternal();
                 modules_[i].module_->PostInitialize();
-                return true;
+
+                if (modules_[i].entry_ == module)
+                    return true;
             }
         }
         return false;
@@ -217,7 +223,7 @@ namespace Foundation
             }
 
             // Then load the module itself
-            return LoadModule(modulePath.native_directory_string(), entries);
+            LoadModule(modulePath.native_directory_string(), entries);
         }
     }
 

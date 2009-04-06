@@ -8,7 +8,7 @@ namespace Console
 {
     ConsoleModule::ConsoleModule() : ModuleInterfaceImpl(type_static_)
     {
-        manager_ = ConsolePtr(new ConsoleManager(this));
+       // manager_ = ConsolePtr(new ConsoleManager(this));
     }
 
     ConsoleModule::~ConsoleModule()
@@ -30,6 +30,8 @@ namespace Console
     // virtual
     void ConsoleModule::Initialize()
     {
+        manager_ = ConsolePtr(new ConsoleManager(this));
+
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Console, manager_.get());
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_ConsoleCommand, checked_static_cast<ConsoleManager*>(manager_.get())->GetCommandManager().get());
 
@@ -46,6 +48,8 @@ namespace Console
     {
         framework_->GetServiceManager()->UnregisterService(manager_.get());
         framework_->GetServiceManager()->UnregisterService(checked_static_cast< ConsoleManager* >(manager_.get())->GetCommandManager().get());
+
+        manager_.reset();
 
         LogInfo("Module " + Name() + " uninitialized.");
     }

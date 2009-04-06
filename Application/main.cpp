@@ -92,7 +92,9 @@ int run(void)
     int retVal = EXIT_SUCCESS;
 
     // Create application object
+#if !defined(_DEBUG)
     try 
+#endif
     {
         Foundation::Framework fw;
         PreInit init;
@@ -100,17 +102,13 @@ int run(void)
 
         fw.Go();
     } 
+#if !defined(_DEBUG)
     catch ( std::exception& e )
     {
-#if defined(_DEBUG) && defined(_MSC_VER)
-        // handling exception in debug mode. Feel free to modify if this doesn't work for you.
-        UNREFERENCED_PARAM(e);
-        __debugbreak();
-#else
         Foundation::Platform::Message("An exception has occurred!", e.what());
         retVal = EXIT_FAILURE;
-#endif
     }
+#endif
 
     return retVal;
 }

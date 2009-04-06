@@ -37,7 +37,7 @@ namespace Console
         Native();
         Native(const Native &other);
     public:
-        //! default constructor
+        //! constructor
         Native(Console::ConsoleCommandServiceInterface *command_service);
         //! destructor
         virtual ~Native();
