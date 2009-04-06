@@ -20,6 +20,16 @@ namespace Asset
     
     // Image types
     const int RexIT_Normal = 0;
+    
+    // Asset transfer status codes
+    const int RexTS_Ok = 0;
+    const int RexTS_Done = 1;
+    const int RexTS_Skip = 2;
+    const int RexTS_Abort = 3;
+    const int RexTS_Error = -1;
+    const int RexTS_UnknownSource = -2;
+    const int RexTS_NoPermission = -3;
+    const int RexTS_UnknownError = -4;
 }
 
 #endif

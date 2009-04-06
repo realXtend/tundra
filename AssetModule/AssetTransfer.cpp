@@ -49,6 +49,8 @@ namespace Asset
     
     void AssetTransfer::ReceiveData(Core::uint packet_index, const Core::u8* data, Core::uint size)
     {
+        time_ = 0.0;
+        
         if (!size)
         {
             AssetModule::LogWarning("Trying to store zero bytes of data");
