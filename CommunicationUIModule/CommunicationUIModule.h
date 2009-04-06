@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ModuleInterface.h"
+//#include "PythonScriptModule.h"
 
 
 //#pragma once
@@ -35,13 +36,17 @@ namespace Communication
 
 	private:
 		void initializeMainCommWindow();
+		void OnAccountMenuSetAccountAndPassword();
 		void OnAccountMenuConnect();
 		void OnAccountMenuDisconnect();
 
-		
 		Glib::RefPtr<Gnome::Glade::Xml> commUI_XML;
+
+		// Widgets
 		Gtk::Window *wndCommMain;
-		Foundation::CommunicationManagerServiceInterface *commManager;
+		Gtk::Window *dlgAccount;
+		Gtk::ActionGroup *actionGroup;
+		Foundation::Comms::CommunicationManagerServiceInterface *commManager;
 		//Foundation::CommunicationUIManagerPtr CommunicationUI_manager_;
 	};
 }
