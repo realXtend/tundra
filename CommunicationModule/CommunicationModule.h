@@ -30,6 +30,7 @@ namespace Communication
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communication;
 
 
+
 		//// Communications API
 		//
 		//// For receiving comm events
@@ -42,7 +43,8 @@ namespace Communication
 
 
 	private:
-		Foundation::CommunicationManagerPtr communication_manager_;
+		Foundation::Comms::CommunicationManagerPtr communication_manager_;
+
 	};
 }
 

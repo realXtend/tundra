@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace Communication
 {
 
@@ -8,6 +10,8 @@ namespace Communication
 	public:
 		JidAccount(void);
 		~JidAccount(void);
+		std::string name;
+		std::string password;
 	};
 
 }
