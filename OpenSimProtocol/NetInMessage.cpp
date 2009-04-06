@@ -287,6 +287,27 @@ RexUUID NetInMessage::ReadUUID()
 	}
 }
 
+void NetInMessage::ReadString(char *dst, size_t maxSize)
+{
+    if (maxSize == 0)
+        return;
+    
+    size_t copyLen = std::min((maxSize-1), ReadVariableSize());
+    
+    size_t read = 0;
+    const uint8_t *buf = ReadBuffer(&read);
+    memcpy(dst, buf, copyLen);
+    dst[copyLen] = '\0';
+}
+
+std::string NetInMessage::ReadString()
+{
+    char tmp[257];
+    ReadString(tmp, 256);
+    
+    return std::string(tmp);
+}
+
 ///\ todo Add the rest of the reading functions (IPPORT, IPADDR).
 
 const uint8_t *NetInMessage::ReadBuffer(size_t *bytesRead)

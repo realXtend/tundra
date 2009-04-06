@@ -76,9 +76,9 @@ namespace RexLogic
         // Skip path related variables
 
         msg->SkipToFirstVariableByName("Text");
-        HoveringText = (const char *)msg->ReadBuffer(&bytes_read); 
+        HoveringText = msg->ReadString();
         msg->SkipToNextVariable();      // TextColor
-        MediaUrl = (const char *)msg->ReadBuffer(&bytes_read);     
+        MediaUrl = msg->ReadString();    
     }
     
     void EC_OpenSimPrim::HandleRexPrimData(const uint8_t* primdata)
@@ -143,7 +143,7 @@ namespace RexLogic
         size_t bytes_read;
     
         data->message->SkipToFirstVariableByName("Name");
-        ObjectName = (const char *)data->message->ReadBuffer(&bytes_read); 
+        ObjectName = data->message->ReadString();
     }
     
     void EC_OpenSimPrim::HandleObjectDescription(OpenSimProtocol::NetworkEventInboundData* data)
@@ -151,7 +151,7 @@ namespace RexLogic
         size_t bytes_read;
     
         data->message->SkipToFirstVariableByName("Description");
-        Description = (const char *)data->message->ReadBuffer(&bytes_read); 
+        Description = data->message->ReadString();
     }
     
     void EC_OpenSimPrim::PrintDebug()
