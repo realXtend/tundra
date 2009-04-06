@@ -13,11 +13,13 @@ include_directories (
 	../Core
 	../Foundation
 	../Interfaces
+	../OgreRenderingModule
 )
 		
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
+INCLUDE_OGRE()
 
 add_definitions (-DMODULE_EXPORTS)
 
@@ -31,11 +33,12 @@ set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Core Foundation)
+target_link_libraries (${TARGET_NAME} Core Foundation OgreRenderingModule)
 
 # External library linkage
 LINK_BOOST()
 LINK_POCO()
+LINK_OGRE()
 
 if (MSVC)
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})

@@ -1,0 +1,14 @@
+/*
+    Basic ambient lighting vertex program usable with overlays
+*/
+void overlay_vp(float4 position : POSITION,
+						  
+						  out float4 oPosition : POSITION,
+						  out float4 oColour : COLOR,
+
+						  uniform float4x4 worldViewProj,
+						  uniform float4 colour)
+{
+	oPosition = mul(worldViewProj, position);
+	oColour = colour;
+}

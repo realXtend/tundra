@@ -6,6 +6,7 @@
 #include "Core.h"
 #include "Foundation.h"
 #include "ServiceInterfaces.h"
+#include "StaticModuleDefinitions.h"
 
 //! Unit test for framework
 BOOST_AUTO_TEST_SUITE(test_suite_support_modules)
@@ -58,7 +59,14 @@ struct TestB
 BOOST_AUTO_TEST_CASE( support_modules_console )
 {
     Foundation::Framework fw;
-    
+    fw.GetModuleManager()->ExcludeModule("StaticModuleTest");
+
+    Test::StaticModuleDefinitions static_test;
+    static_test(&fw);
+    fw.GetModuleManager()->PreInitializeModule(fw.GetModuleManager()->GetModule(Foundation::Module::MT_Scene));
+    fw.GetModuleManager()->InitializeModule(fw.GetModuleManager()->GetModule(Foundation::Module::MT_Scene));
+    fw.GetModuleManager()->PostInitializeModule(fw.GetModuleManager()->GetModule(Foundation::Module::MT_Scene));
+
     fw.GetModuleManager()->LoadModuleByName("SupportModules", "ConsoleModule");
     BOOST_CHECK (fw.GetModuleManager()->HasModule(Foundation::Module::MT_Console));
     

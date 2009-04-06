@@ -34,9 +34,6 @@ namespace OgreRenderer
         
         //! returns renderer
         RendererPtr GetRenderer() const { return renderer_; }
-
-        //! callback for console command
-        Console::CommandResult ConsoleSetViewportColor(const Core::StringVector &params);
         
         MODULE_LOGGING_FUNCTIONS;
 

@@ -1,0 +1,12 @@
+vertex_program OverlayShaderVP cg
+{
+	source overlay.cg
+	entry_point overlay_vp
+	profiles vs_1_1 arbvp1
+
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+		param_named_auto colour surface_diffuse_colour
+	}	
+}

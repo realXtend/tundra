@@ -277,6 +277,8 @@ namespace Foundation
         //! Loads and initializes a module with specified name
         /*! For internal use only!
 
+            \note currently works only if one module is contained in the lib!
+
             \param lib name of the shared library to load from, without extension or d postfix
             \param module name of the module to load from the lib
             \return True if the module was loaded succesfully, false otherwise
@@ -290,22 +292,6 @@ namespace Foundation
             \param module name of the module
         */
         bool UnloadModuleByName(const std::string &module);
-
-    private:
-
-        //! Loads module
-        /*!
-            \param path path to module definition file (xml)
-            \param all_files stringvector of all module definitions, so that dependencies can be processed
-        */
-        void LoadModule(const boost::filesystem::path &path, Core::StringVectorPtr all_files);
-
-        //! loads module
-        /*!
-            \param moduleName path to the shared lib containing the modules
-            \param entries name of the entry classes in the lib
-        */
-        void LoadModule(const std::string &moduleName,  const Core::StringVector &entries);
 
         //! Pre-initialize the specified module
         void PreInitializeModule(ModuleInterface *module);
@@ -322,6 +308,22 @@ namespace Foundation
         //! Unloads and deletes the module.
         //! \note Does not remove from modules_
         void UnloadModule(Module::Entry &entry);
+
+    private:
+
+        //! Loads module
+        /*!
+            \param path path to module definition file (xml)
+            \param all_files stringvector of all module definitions, so that dependencies can be processed
+        */
+        void LoadModule(const boost::filesystem::path &path, Core::StringVectorPtr all_files);
+
+        //! loads module
+        /*!
+            \param moduleName path to the shared lib containing the modules
+            \param entries name of the entry classes in the lib
+        */
+        void LoadModule(const std::string &moduleName,  const Core::StringVector &entries);
 
         //! returns true if module is present
         bool HasModule(ModuleInterface *module) const;

@@ -5,6 +5,7 @@
 
 #include "ConsoleServiceInterface.h"
 #include "Native.h"
+#include "OgreOverlay.h"
 #include "CommandManager.h"
 
 namespace Console
@@ -23,6 +24,7 @@ namespace Console
             parent_ = parent;
             command_manager_ = CommandManagerPtr(new CommandManager(parent_, this));
             native_ = ConsolePtr(new Native(command_manager_.get()));
+            ogre_ = ConsolePtr(new OgreOverlay(parent));
         }
 
     public:
@@ -38,6 +40,7 @@ namespace Console
         __inline virtual void Print(const std::string &text)
         {
             native_->Print(text);
+            ogre_->Print(text);
         }
 
         //! Returns command manager
@@ -46,6 +49,9 @@ namespace Console
     private:
         //! native debug console
         ConsolePtr native_;
+
+        //! Ogre debug console
+        ConsolePtr ogre_;
 
         //! command manager
         CommandManagerPtr command_manager_;

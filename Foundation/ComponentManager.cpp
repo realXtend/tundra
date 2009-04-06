@@ -9,6 +9,11 @@
 
 namespace Foundation
 {
+    bool ComponentManager::CanCreate(const std::string &type)
+    {
+        return (factories_.find(type) != factories_.end());
+    }
+
     ComponentInterfacePtr ComponentManager::CreateComponent(const std::string &type)
     {
         ComponentFactoryMap::const_iterator iter = factories_.find(type);

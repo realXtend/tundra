@@ -258,14 +258,15 @@ namespace Foundation
         Framework *framework_;
         
     private:
-        virtual void LoadInternal() { Load(); state_ = Module::MS_Loaded; }
-        virtual void UnloadInternal() { Unload(); state_ = Module::MS_Unloaded; }
+        virtual void LoadInternal() { assert(state_ == Module::MS_Unloaded); Load(); state_ = Module::MS_Loaded; }
+        virtual void UnloadInternal() { assert(state_ == Module::MS_Loaded); Unload(); state_ = Module::MS_Unloaded; }
         virtual void SetFramework(Framework *framework) { framework_ = framework; assert (framework_); }
 
         //! Registers all declared components
         virtual void InitializeInternal()
         {
             assert(framework_ != NULL);
+            assert (state_ == Module::MS_Loaded);
 
             //! Register components
             for (size_t n=0 ; n<component_registrars_.size() ; ++n)
@@ -293,6 +294,7 @@ namespace Foundation
         virtual void UninitializeInternal()
         {
             assert(framework_ != NULL);
+            assert (state_ == Module::MS_Initialized);
 
             for (size_t n=0 ; n<component_registrars_.size() ; ++n)
             {

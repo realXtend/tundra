@@ -1,0 +1,18 @@
+material Console
+{
+	receive_shadows off
+	technique
+	{
+		pass
+		{
+			depth_check off
+			lighting off
+			scene_blend alpha_blend
+			diffuse 0 1 0 0.6
+			
+			vertex_program_ref OverlayShaderVP
+			{
+			}
+		}
+	}
+}

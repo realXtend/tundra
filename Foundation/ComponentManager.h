@@ -22,7 +22,7 @@ namespace Foundation
         //! default constructor
         ComponentManager(Framework *framework) : framework_(framework) {}
         //! destructor
-        ~ComponentManager() {}
+        ~ComponentManager() { }
 
         //! register factory for the component
         void RegisterFactory(const std::string &component, const ComponentFactoryInterfacePtr &factory)
@@ -46,7 +46,7 @@ namespace Foundation
             \param name name of the component type
             \return true if component can be created, false otherwise
         */
-        bool CanCreate(const std::string &name);
+        bool CanCreate(const std::string &type);
 
         //! Create a new component
         /*! Returns empty ComponentInterfacePtr if component type is not registered
