@@ -46,9 +46,10 @@ When using design patterns, implement it through: singleton classes should have 
 Naming Conventions and Documentation
 ====================================
 Classes, types and structures must be title case. ex: MyNewClass. 
+Interfaces should be postfixed with 'Interface'. ex: MyNewClassInterface.
 Methods must be title case. ex: MyNewMethod. 
-Local variables must be lower case. ex: local_var 
-Private member variables should be lower case, as with local variables, but with underscore appended. ex: member_var_ 
+Local variables must be lower case. ex: local_var.
+Private member variables should be lower case, as with local variables, but with underscore appended. ex: member_var_ .
 All public classes and methods must be fully documented in English using Doxygen-compatible comments. Comment header files and not implementation. Use the \param and \returns directives to define inputs and outputs clearly, \note to indicate points of interest and \todo to indicate a todo item. 
 Use verbose, descriptive names for classes, methods, variables - everything except trivial counters. Code should be self-describing, don't be obtuse.
 
@@ -65,7 +66,7 @@ Use exceptions only in exceptional cases. Do not use them for control flow, do n
 
 Asserts
 =======
-use asserts to check for conditions that should never occur and that clearly indicate a programming error.
+Use asserts to check for conditions that should never occur and that clearly indicate a programming error.
 
 
 Coding Style
