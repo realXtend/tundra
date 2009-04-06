@@ -89,6 +89,9 @@ namespace Foundation
         EventManagerPtr event_manager_;
         PlatformPtr platform_;
 
+        //! application data
+        ApplicationPtr application_;
+
         //! if true, exit application
         bool exit_signal_;
         
