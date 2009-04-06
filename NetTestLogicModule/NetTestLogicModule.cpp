@@ -161,7 +161,7 @@ namespace NetTest
                     event_data->message->SkipToNextVariable(); // RegionFlags U32
 				    event_data->message->SkipToNextVariable(); // SimAccess U8
 				    size_t bytesRead = 0;
-				    simName_ = (const char *)event_data->message->ReadBuffer(&bytesRead);
+				    simName_ = event_data->message->ReadString();
     				
 				    LogInfo("Joined to the sim \"" + simName_ + "\".");
     				
@@ -173,12 +173,11 @@ namespace NetTest
 		    case RexNetMsgChatFromSimulator:
 		        {
 		            std::stringstream ss;
-		            size_t bytes_read;
 		            
                     event_data->message->ResetReading();
-		            const char *name = (const char *)event_data->message->ReadBuffer(&bytes_read);
+		            std::string name = event_data->message->ReadString();
 		            event_data->message->SkipToFirstVariableByName("Message");
-		            const char *message = (const char *)event_data->message->ReadBuffer(&bytes_read);
+		            std::string message = event_data->message->ReadString();
 		            ss << "[" << Core::GetLocalTimeString() << "] " << name << ": " << message << std::endl;
 
     	            WriteToChatWindow(ss.str());

@@ -51,6 +51,10 @@ public:
     Core::Quaternion ReadQuaternion();
 
 	RexUUID ReadUUID();
+
+    void ReadString(char *dst, size_t maxSize);
+    std::string ReadString();
+
 	//IPADDR	ReadIPAddr(IPADDR value);  ///\todo
 	//IPPORT	ReadIPPort(IPPORT value);  ///\todo
 	//void		ReadNetVarFixed ///\todo Is this needed?
@@ -59,7 +63,7 @@ public:
 	/// @param bytesRead [out] The number of bytes the returned buffer holds. Cannot pass in zero.
 	/// @return A pointer to the memory area. The returned memory remains owned by NetInMessage so no need to free it.
 	const uint8_t *ReadBuffer(size_t *bytesRead);
-
+    
 	/// Check the type of the next variable in the message.
 	NetVariableType CheckNextVariableType() const;
 

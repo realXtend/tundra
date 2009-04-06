@@ -194,24 +194,19 @@ namespace RexLogic
 
 
     bool NetworkEventHandler::HandleOSNE_GenericMessage(OpenSimProtocol::NetworkEventInboundData* data)
-    {
-        size_t bytes_read;
-        
+    {        
         data->message->ResetReading();    
         data->message->SkipToNextVariable();      // AgentId
         data->message->SkipToNextVariable();      // SessionId
         data->message->SkipToNextVariable();      // TransactionId
-        
-        const uint8_t *methodnamebytes = data->message->ReadBuffer(&bytes_read); ///\bug Will crash if passing non-null-terminated strings.
-        if(bytes_read > 0)
-        {
-            std::string methodname = (const char *)methodnamebytes;
-            if(methodname == "RexMediaUrl")
-                return HandleRexGM_RexMediaUrl(data);
-            else if(methodname == "RexPrimData")
-                return HandleRexGM_RexPrimData(data); 
-        }    
-        return false;    
+        std::string methodname = data->message->ReadString(); 
+
+        if(methodname == "RexMediaUrl")
+            return HandleRexGM_RexMediaUrl(data);
+        else if(methodname == "RexPrimData")
+            return HandleRexGM_RexPrimData(data); 
+        else
+            return false;    
     }
 
     bool NetworkEventHandler::HandleRexGM_RexMediaUrl(OpenSimProtocol::NetworkEventInboundData* data)
@@ -224,9 +219,9 @@ namespace RexLogic
     {
         size_t bytes_read;    
         data->message->ResetReading();
-        data->message->SkipToFirstVariableByName("Parameter");           
-
-        RexUUID primuuid((const char *)data->message->ReadBuffer(&bytes_read));  ///\bug Will crash if passing non-null-terminated strings.
+        data->message->SkipToFirstVariableByName("Parameter");
+        RexUUID primuuid(data->message->ReadString());
+        
         Foundation::EntityPtr entity = GetOrCreatePrimEntity(primuuid);
         if(entity)
         {
@@ -278,7 +273,7 @@ namespace RexLogic
         data->message->SkipToNextVariable(); // RegionFlags U32
         data->message->SkipToNextVariable(); // SimAccess U8
 
-        std::string simname = (const char *)data->message->ReadBuffer(&bytesRead); // todo Tucofixme
+        std::string simname = data->message->ReadString();
         rexlogicmodule_->GetServerConnection()->simname_ = simname;
         
         RexLogicModule::LogInfo("Joined to the sim \"" + simname + "\".");
