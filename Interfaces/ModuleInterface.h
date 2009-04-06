@@ -79,6 +79,9 @@ namespace Foundation
 
     //! interface for modules
     /*! See ModuleManager for more info.
+        For core modules, version is same as framework. Otherwise each module is
+        responsible for assigning itself a version number by overriding
+        VersionMajor() and VersionMinor() - functions.
       
         \note Every module should have a name. Only internal modules have types.
     */
@@ -89,7 +92,7 @@ namespace Foundation
         ModuleInterface()  {}
         virtual ~ModuleInterface() {}
 
-        //! called when module is loaded into memory.Do not trust that framework can be used.
+        //! Called when module is loaded into memory.Do not trust that framework can be used.
         /*!
             Components in the module should be declared here by using DECLARE_MODULE_EC(Component) macro, where
             Component is the class of the component.
@@ -116,8 +119,12 @@ namespace Foundation
 
         //! Returns the name of the module. Each module also has a static accessor for the name, it's needed by the logger.
         virtual const std::string &Name() const = 0;
+
         //! Returns internal type of the module or MT_Unknown if module is not internal
         virtual Module::Type Type() const = 0;
+
+        //! Returns true if module is internal, false otherwise
+        virtual bool IsInternal() const = 0;
 
         //! Declare a component the module defines. For internal use.
         virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar) = 0;
@@ -136,6 +143,12 @@ namespace Foundation
 
         //! Returns parent framework
         virtual Framework *GetFramework() const = 0;
+
+        //! Returns major version as string. Override is module is not internal.
+        virtual std::string VersionMajor() const = 0;
+
+        //! Returns minor version as string. Override is module is not internal.
+        virtual std::string VersionMinor() const = 0;
 
     private:
         virtual void SetFramework(Framework *framework) = 0;
@@ -195,6 +208,7 @@ namespace Foundation
 
         virtual const std::string &Name() const { return (type_ == Module::MT_Unknown ? name_ : Module::NameFromType(type_)); }
         virtual Module::Type Type() const { return type_; }
+        virtual bool IsInternal() const { return type_ != Module::MT_Unknown; }
 
         virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar)
         {
@@ -220,6 +234,25 @@ namespace Foundation
 
         virtual Framework *GetFramework() const { return framework_; }
 
+        virtual std::string VersionMajor() const
+        {
+            if (IsInternal())
+            {
+                static const std::string version("version_major");
+                return ( GetFramework()->GetDefaultConfig().GetString(Framework::ConfigurationGroup(), version) );
+            }
+            return std::string("0");
+        }
+
+        virtual std::string VersionMinor() const
+        {
+            if (IsInternal())
+            {
+                static const std::string version("version_minor");
+                return ( GetFramework()->GetDefaultConfig().GetString(Framework::ConfigurationGroup(), version) );
+            }
+            return std::string("0");
+        }
     protected:
         //! parent framework
         Framework *framework_;

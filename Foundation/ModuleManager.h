@@ -43,6 +43,9 @@ namespace Foundation
     /*! Assumption is that all modules get loaded when program is started, and unloaded when program exits.
         Modules may get initialized and uninitialized any number of times during the program's life time.
 
+        Module versioning: core modules have the same version as the framework. Other modules are
+                           responsible for handling their own versioning information.
+
         To create a new static module:
             - Create a class that inherits from ModuleInterfaceImpl
             
