@@ -374,6 +374,7 @@ namespace Asset
         
         AssetModule::LogInfo("Storing complete asset " + asset_id.ToString());
 
+        assets_[asset_id].asset_id_ = transfer.GetAssetId();
         assets_[asset_id].asset_type_ = transfer.GetAssetType();
         assets_[asset_id].data_.resize(transfer.GetReceived());
         transfer.AssembleData(&assets_[asset_id].data_[0]);
@@ -412,6 +413,7 @@ namespace Asset
                 length -= sizeof(type);
                 
                 filestr.read((char *)&type, sizeof(type));
+                assets_[asset_id].asset_id_ = asset_id;
                 assets_[asset_id].asset_type_ = type;
                 assets_[asset_id].data_.resize(length);
                 filestr.read((char *)&assets_[asset_id].data_[0], length);

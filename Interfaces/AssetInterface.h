@@ -8,13 +8,18 @@ namespace Foundation
     class AssetInterface;
     typedef boost::shared_ptr<AssetInterface> AssetPtr;
     
-    class AssetInterface
+    class MODULE_API AssetInterface
     {
     public:
-        AssetInterface()  {}
+        AssetInterface() {}
         virtual ~AssetInterface() {}
+        
+        virtual const std::string GetId() = 0;
+        virtual Core::asset_type_t GetType() = 0;
+        virtual const std::string& GetTypeName() = 0;
+        virtual Core::uint GetSize() = 0;
+        virtual const Core::u8* GetData() = 0;
     };
-    
 }
 
 #endif

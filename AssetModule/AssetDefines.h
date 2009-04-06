@@ -6,7 +6,7 @@
 namespace Asset
 {
     // Asset types
-    const int RexAT_Texture = 0;
+    const Core::asset_type_t RexAT_Texture = 0;
     
     // Asset channels
     const int RexAC_Unknown = 0;

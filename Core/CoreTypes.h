@@ -24,6 +24,7 @@ namespace Core
     typedef unsigned int entity_id_t;
     typedef unsigned int event_category_id_t;
     typedef unsigned int event_id_t;
+    typedef unsigned int asset_type_t;
 
     typedef std::vector<std::string> StringVector;
     typedef boost::shared_ptr<StringVector> StringVectorPtr;

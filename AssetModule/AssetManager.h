@@ -6,6 +6,7 @@
 #include "AssetServiceInterface.h"
 #include "AssetTransfer.h"
 #include "RexUUID.h"
+#include "RexAsset.h"
 
 namespace Foundation
 {
@@ -21,16 +22,6 @@ class NetInMessage;
 
 namespace Asset
 {
-    //! ReX asset
-    class Asset
-    {
-    public:
-        //! asset type
-        Core::uint asset_type_;
-        //! asset data
-        std::vector<Core::u8> data_;
-    };
-    
     //! Asset manager. Initiates transfers based on asset requests and responds to received data.
     /*! \todo handle timeouts, define service interface
      */
@@ -129,7 +120,7 @@ namespace Asset
         
         typedef std::map<RexTypes::RexUUID, AssetTransfer> AssetTransferMap;
         
-        typedef std::map<RexTypes::RexUUID, Asset> AssetMap;
+        typedef std::map<RexTypes::RexUUID, RexAsset> AssetMap;
         
         //! completely received assets (memory cache)
         AssetMap assets_;
