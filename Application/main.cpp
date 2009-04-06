@@ -121,9 +121,13 @@ int generateDump(EXCEPTION_POINTERS* pExceptionPointers)
 {
     BOOL bMiniDumpSuccessful;
     WCHAR szPath[MAX_PATH]; 
-    WCHAR szFileName[MAX_PATH]; 
-    WCHAR* szAppName = L"realXtend";
-    WCHAR* szVersion = L"pre-alpha";
+    WCHAR szFileName[MAX_PATH];
+
+    // Can't use Foundation::Application for application name and version,
+    // since it might have not been initialized yet, or it might have caused 
+    // the exception in the first place
+    WCHAR* szAppName = L"RealXtend";
+    WCHAR* szVersion = L"pre-alpha-v-0-1";
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;

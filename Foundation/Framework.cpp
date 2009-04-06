@@ -13,12 +13,15 @@
 
 namespace Foundation
 {
-   const char *Framework::DEFAULT_EVENT_SUBSCRIBER_TREE_PATH = "./data/event_tree.xml";
+    const char *Framework::DEFAULT_EVENT_SUBSCRIBER_TREE_PATH = "./data/event_tree.xml";
    
     Framework::Framework() : exit_signal_(false)
     {
+        application_ = ApplicationPtr(new Application(this));
         platform_ = PlatformPtr(new Platform(this));
 
+        config_.DeclareSetting(Framework::ConfigurationGroup(), "version_major", "0");
+        config_.DeclareSetting(Framework::ConfigurationGroup(), "version_minor", "1");
         config_.DeclareSetting(Framework::ConfigurationGroup(), "application_name", "realXtend");
         config_.DeclareSetting(Framework::ConfigurationGroup(), "log_console", true);
         config_.DeclareSetting(Framework::ConfigurationGroup(), "log_level", "information");

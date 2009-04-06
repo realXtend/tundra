@@ -5,6 +5,7 @@
 
 #include "ForwardDefines.h"
 #include "Framework.h"
+#include "Application.h"
 #include "Declare_EC.h"
 #include "ComponentManager.h"
 #include "ModuleManager.h"
