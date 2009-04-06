@@ -14,9 +14,10 @@
 
 namespace RexLogic
 {
-    NetworkEventHandler::NetworkEventHandler(Foundation::Framework *framework)
+    NetworkEventHandler::NetworkEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule)
     {
         framework_ = framework;
+        rexlogicmodule_ = rexlogicmodule;
     }
 
     NetworkEventHandler::~NetworkEventHandler()
@@ -32,9 +33,11 @@ namespace RexLogic
             switch(netdata->messageID)
             {
                 case RexNetMsgGenericMessage:           return HandleOSNE_GenericMessage(netdata); break;
+                case RexNetMsgLogoutReply:              return HandleOSNE_LogoutReply(netdata); break;
                 case RexNetMsgObjectDescription:        return HandleOSNE_ObjectDescription(netdata); break; 
                 case RexNetMsgObjectName:               return HandleOSNE_ObjectName(netdata); break;
                 case RexNetMsgObjectUpdate:             return HandleOSNE_ObjectUpdate(netdata); break;
+                case RexNetMsgRegionHandshake:          return HandleOSNE_RegionHandshake(netdata); break;
                 default:                                return false; break;
             }
         }
@@ -267,14 +270,32 @@ namespace RexLogic
         return false;
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    bool NetworkEventHandler::HandleOSNE_RegionHandshake(OpenSimProtocol::NetworkEventInboundData* data)    
+    {
+        size_t bytesRead = 0;
+
+        data->message->ResetReading();    
+        data->message->SkipToNextVariable(); // RegionFlags U32
+        data->message->SkipToNextVariable(); // SimAccess U8
+
+        std::string simname = (const char *)data->message->ReadBuffer(&bytesRead); // todo Tucofixme
+        rexlogicmodule_->GetServerConnection()->simname_ = simname;
+        
+        RexLogicModule::LogInfo("Joined to the sim \"" + simname + "\".");
+        return false;  
+    } 
+
+    bool NetworkEventHandler::HandleOSNE_LogoutReply(OpenSimProtocol::NetworkEventInboundData* data)   
+    {
+        data->message->ResetReading();    
+        RexUUID aID = data->message->ReadUUID();
+        RexUUID sID = data->message->ReadUUID();
+
+        if (aID == rexlogicmodule_->GetServerConnection()->GetInfo().agentID && sID == rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
+        {
+            RexLogicModule::LogInfo("LogoutReply received with matching IDs. Logging out.");
+            rexlogicmodule_->GetServerConnection()->CloseServerConnection();
+        } 
+        return false;   
+    } 
 }

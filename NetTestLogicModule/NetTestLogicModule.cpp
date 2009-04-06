@@ -7,6 +7,7 @@
 
 #include "RexProtocolMsgIDs.h"
 #include "RexUUID.h"
+#include "RexLogicModule.h"
 
 #include <iomanip>
 
@@ -56,8 +57,6 @@ namespace NetTest
 {
     NetTestLogicModule::NetTestLogicModule() 
     : ModuleInterfaceImpl("NetTestLogicModule"),
-    bRunning_(false),
-    bLogoutSent_(false),
     loginWindow(0),
     netTestWindow(0),
     packetDumpWindow(0)
@@ -81,17 +80,13 @@ namespace NetTest
     }
 
     void NetTestLogicModule::Initialize()
-    {
-		using namespace OpenSimProtocol;
-		///\todo weak_pointerize
-        netInterface_ = dynamic_cast<OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol));
-		if (!netInterface_)
-		{
-			LogError("Getting network interface did not succeed.");
-			///\todo Terminate this module.
-			return;
-		}
-       
+    {        
+        rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic));
+        if (!rexlogic_)
+        {
+            LogError("Getting rexlogicmodule interface did not succeed.");
+            return;
+        }
         LogInfo("Module " + Name() + " initialized.");
     }
 
@@ -162,6 +157,7 @@ namespace NetTest
 		    {
 		    case RexNetMsgRegionHandshake:
 			    {
+                    event_data->message->ResetReading();
                     event_data->message->SkipToNextVariable(); // RegionFlags U32
 				    event_data->message->SkipToNextVariable(); // SimAccess U8
 				    size_t bytesRead = 0;
@@ -178,7 +174,8 @@ namespace NetTest
 		        {
 		            std::stringstream ss;
 		            size_t bytes_read;
-
+		            
+                    event_data->message->ResetReading();
 		            const char *name = (const char *)event_data->message->ReadBuffer(&bytes_read);
 		            event_data->message->SkipToFirstVariableByName("Message");
 		            const char *message = (const char *)event_data->message->ReadBuffer(&bytes_read);
@@ -189,15 +186,14 @@ namespace NetTest
 		        }
             case RexNetMsgLogoutReply:
 			    {
+                    event_data->message->ResetReading();
 				    RexUUID aID = event_data->message->ReadUUID();
 				    RexUUID sID = event_data->message->ReadUUID();
     	
 				    // Log out if the id's match.
-				    if (aID == myInfo_.agentID && sID == myInfo_.sessionID)
+				    if (aID == rexlogic_->GetServerConnection()->GetInfo().agentID && sID == rexlogic_->GetServerConnection()->GetInfo().sessionID)
 				    {
 					    LogInfo("\"LogoutReply\" received with matching IDs. Logging out.");
-                        bRunning_ = false;
-                        bLogoutSent_ = false;
                         LogOut();
 				    }
 				    break;
@@ -311,108 +307,34 @@ namespace NetTest
     
     void NetTestLogicModule::OnClickConnect()
     {
-        if(bRunning_)
-        {
-            LogError("You are already connected to a server!");
-            return;
-        }
-        
         // Initialize UI widgets.
         Gtk::Entry *entry_username;
         Gtk::Entry *entry_password;
         Gtk::Entry *entry_server;
+
         loginControls->get_widget("entry_username", entry_username);
         loginControls->get_widget("entry_password", entry_password);
-        loginControls->get_widget("entry_server", entry_server);
-
-        size_t pos;
-        bool rex_login = false; ///\todo Implement rex-login.
-        std::string username, first_name, last_name, password, server_address;
-        int port;
-        
-        // Get username.
-        if (!rex_login)
-        {   
-            
-            username = entry_username->get_text();
-            pos = username.find(" ");
-            if(pos == std::string::npos)
-            {
-                LogError("Invalid username.");
-                return;
-            }
-            
-            first_name = username.substr(0, pos);
-            last_name = username.substr(pos + 1);
-        }
-        else
-            username = entry_username->get_text();
-        
-        // Get server address and port.
-        std::string server = entry_server->get_text();
-        pos = server.find(":");
-        if(pos == std::string::npos)
+        loginControls->get_widget("entry_server", entry_server);    
+    
+        if(rexlogic_->GetServerConnection()->ConnectToServer(entry_username->get_text(), entry_password->get_text(), entry_server->get_text()))
         {
-            LogError("Invalid syntax for server address and port. Use \"server:port\"");
-            return;
-        }
-        
-        server_address = server.substr(0, pos);
-        try
-        {
-            port = boost::lexical_cast<int>(server.substr(pos + 1));
-        } catch(std::exception)
-        {
-            LogError("Invalid port number, only numbers are allowed.");
-            return;
-        }
-        
-        // Get password.
-        password = entry_password->get_text();
-        
-        bool success = netInterface_->ConnectToRexServer(first_name.c_str(), last_name.c_str(),
-            password.c_str(), server_address.c_str(), port);
-            
-        if(success)
-        {
-            myInfo_ = netInterface_->GetClientParameters();
-            
             if (!netTestWindow)
                 InitNetTestWindow();
             
             netTestWindow->show();
-            bRunning_ = true;
-            SendUseCircuitCodePacket();
-            SendCompleteAgentMovementPacket();
-            
-            LogInfo("Connected to server " + server_address + ".");
         }
-        else
-            LogInfo("Connecting to server " + server_address + " failed.");
     }
     
     void NetTestLogicModule::OnClickLogout()
     {
-        if (bRunning_ && !bLogoutSent_)
-        {
-            SendLogoutRequestPacket();
-            bLogoutSent_ = true;
-        }
+        rexlogic_->GetServerConnection()->RequestLogout();
         ///\todo Handle server timeouts.
     }
     
     void NetTestLogicModule::OnClickQuit()
-    {
-        if (bRunning_ && !bLogoutSent_)
-        {   
-            SendLogoutRequestPacket();
-            bLogoutSent_ = true;        
-        }
-        else
-        {
-            framework_->Exit();
-            assert(framework_->IsExiting());        
-        }
+    { 
+        framework_->Exit();
+        assert(framework_->IsExiting());
     }
 
     void NetTestLogicModule::OnClickChat()
@@ -424,7 +346,7 @@ namespace NetTest
         if(text == "")
             return;
         
-        SendChatFromViewerPacket(text.c_str());
+        rexlogic_->GetServerConnection()->SendChatFromViewerPacket(text);
         entry_chat->set_text("");
     }
 
@@ -574,54 +496,12 @@ namespace NetTest
 		        return;
 	    }
     }
-    
-	void NetTestLogicModule::SendUseCircuitCodePacket()
-	{
-		NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgUseCircuitCode);
-		assert(m);
-		m->AddU32(myInfo_.circuitCode);
-		m->AddUUID(myInfo_.sessionID);
-		m->AddUUID(myInfo_.agentID);
-		netInterface_->FinishMessageBuilding(m);
-	}
-
-    void NetTestLogicModule::SendCompleteAgentMovementPacket()
-    {
-        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgCompleteAgentMovement);
-	    assert(m);
-	    m->AddUUID(myInfo_.agentID);
-	    m->AddUUID(myInfo_.sessionID);
-	    m->AddU32(myInfo_.circuitCode);
-	    netInterface_->FinishMessageBuilding(m);
-    }
-
-	void NetTestLogicModule::SendChatFromViewerPacket(const char *text)
-	{
-		NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgChatFromViewer);
-		assert(m);
-		m->AddUUID(myInfo_.agentID);
-		m->AddUUID(myInfo_.sessionID);
-		m->AddBuffer(strlen(text), (uint8_t*)text);
-		m->AddU8(1);
-		m->AddS32(0);
-		netInterface_->FinishMessageBuilding(m);
-	}
-    
-	void NetTestLogicModule::SendLogoutRequestPacket()
-	{
-		NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgLogoutRequest);
-		assert(m);
-    	m->AddUUID(myInfo_.agentID);
-		m->AddUUID(myInfo_.sessionID);
-	    netInterface_->FinishMessageBuilding(m);
-	}
-
+     
     void NetTestLogicModule::LogOut()
     {
         received_messages_pool_.clear();
         sent_messages_pool_.clear();
-        netInterface_->DisconnectFromRexServer();
-        SAFE_DELETE(netTestWindow);            
+        SAFE_DELETE(netTestWindow);
     }
 }
 

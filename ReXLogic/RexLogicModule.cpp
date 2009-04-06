@@ -44,8 +44,9 @@ namespace RexLogic
     {
         // fixme, register WorldLogic to the framework as realxtend worldlogicinterface!
         // WorldLogic::registerSystem(framework);
-        // world_logic_ = new WorldLogic(framework);
-        network_handler_ = new NetworkEventHandler(framework_);
+        // world_logic_ = new WorldLogic(framework);        
+        rexserver_connection_ = RexServerConnectionPtr(new RexServerConnection(framework_)); 
+        network_handler_ = new NetworkEventHandler(framework_,this);  
         LogInfo("Module " + Name() + " initialized.");
     }
 
@@ -68,6 +69,12 @@ namespace RexLogic
     // virtual 
     void RexLogicModule::Uninitialize()
     {
+        if(rexserver_connection_->IsConnected())
+        {
+            // todo tucofixme, at the moment don't wait for LogoutReply packet, just close connection.
+            rexserver_connection_->RequestLogout();
+            rexserver_connection_->CloseServerConnection(); 
+        }   
         SAFE_DELETE (network_handler_);
 
         LogInfo("Module " + Name() + " uninitialized.");

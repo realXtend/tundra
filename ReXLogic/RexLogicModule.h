@@ -5,11 +5,14 @@
 
 #include "ModuleInterface.h"
 #include "NetworkEventHandler.h"
+#include "RexServerConnection.h"
 
 namespace RexLogic
 {
+    typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
+
     //! interface for modules
-    class RexLogicModule : public Foundation::ModuleInterfaceImpl
+    class MODULE_API RexLogicModule : public Foundation::ModuleInterfaceImpl
     {
     public:
         RexLogicModule();
@@ -32,8 +35,12 @@ namespace RexLogic
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
 
+        RexServerConnectionPtr GetServerConnection() const { return rexserver_connection_; }
+
     private:        
         NetworkEventHandler *network_handler_; 
+        
+        RexServerConnectionPtr rexserver_connection_;
 
         typedef boost::function<bool(Core::event_id_t,Foundation::EventDataInterface*)> LogicEventHandlerFunction;
         typedef std::map<Core::event_category_id_t, LogicEventHandlerFunction> LogicEventHandlerMap;

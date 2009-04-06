@@ -22,6 +22,11 @@
 #include "NetInMessage.h"
 #include "NetMessage.h"
 
+namespace RexLogic
+{
+    class RexLogicModule;
+}
+
 namespace Foundation
 {
     class Framework;
@@ -164,36 +169,13 @@ namespace NetTest
     private:
         void operator=(const NetTestLogicModule &);
         NetTestLogicModule(const NetTestLogicModule &);
-
-        /// Sends the first UDP packet to open up the circuit with the server.
-        void SendUseCircuitCodePacket();
-
-        /// Signals that agent is coming into the region. The region should be expecting the agent.
-        /// Server starts to send object updates etc after it has received this packet.
-        void SendCompleteAgentMovementPacket();
-	    
-	    // Send the UDP chat packet.
-	    void SendChatFromViewerPacket(const char *text);
-        
-        /// Sends a message requesting logout from the server. The server is then going to flood us with some
-    	/// inventory UUIDs after that, but we'll be ignoring those.
-        void SendLogoutRequestPacket();
-        
+               
         /// Clears the message pools after a logout and closes the NetTest window.
         void LogOut();
         
-        /// Pointer to the network interface.
-		OpenSimProtocol::OpenSimProtocolModule *netInterface_;
+        // Pointer to rexlogic interface
+        RexLogic::RexLogicModule *rexlogic_;
 
-        /// Server-spesific info for this client.
-		ClientParameters myInfo_;
-		
-		/// Signals that NetTestModule running.
-		bool bRunning_;
-
-		/// Signals that the logout message has sent. Do not send anymore messages.
-		bool bLogoutSent_;
-		
 		/// Show inbound messages in the log.
 		bool bLogInbound_;
 		

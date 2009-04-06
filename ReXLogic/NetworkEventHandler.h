@@ -7,12 +7,15 @@
 #include "Foundation.h"
 #include "OpenSimProtocolModule.h"
 
+
 namespace RexLogic
 {
+    class RexLogicModule;
+
     class NetworkEventHandler
     {
     public:
-        NetworkEventHandler(Foundation::Framework *framework);
+        NetworkEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule);
         virtual ~NetworkEventHandler();
 
         // !Handle network events coming from OpenSimProtocolModule
@@ -20,9 +23,11 @@ namespace RexLogic
     private:
         // !Handler functions for Opensim network events
         bool HandleOSNE_GenericMessage(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleOSNE_LogoutReply(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_ObjectDescription(OpenSimProtocol::NetworkEventInboundData* data);        
         bool HandleOSNE_ObjectName(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleOSNE_RegionHandshake(OpenSimProtocol::NetworkEventInboundData* data);
 
         //! Handler functions for GenericMessages
         bool HandleRexGM_RexMediaUrl(OpenSimProtocol::NetworkEventInboundData* data);
@@ -44,6 +49,8 @@ namespace RexLogic
         Foundation::EntityPtr CreateNewAvatarEntity(Core::entity_id_t entityid);
 
         Foundation::Framework *framework_;
+        
+        RexLogicModule *rexlogicmodule_;
         
         typedef std::map<RexUUID, Core::entity_id_t> IDMap;
         IDMap UUIDs_;
