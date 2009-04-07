@@ -3,8 +3,7 @@
 
 #include "ModuleInterface.h"
 #include "CommunicationManagerServiceInterface.h"
-
-//#pragma once
+#include "TelepathyCommunicationManager.h"
 
 namespace Communication
 {
@@ -44,6 +43,7 @@ namespace Communication
 
 	private:
 		Foundation::Comms::CommunicationManagerPtr communication_manager_;
+		CommunicationServicePtr communication_manager;
 
 	};
 }

@@ -9,7 +9,24 @@
 //#include "PythonScriptModule.h"
 
 
-//#pragma once
+// *********************************************'
+// CommunicationViewModel<--->CommunicationView communication:
+// 
+// - Actions:
+//   - ShowContactList(contact_list)
+//   - HideContactList(contact_list)      needed ?
+//   - ShowSessionInvitation(invitation)
+//   - ShowMessageNotification(contact)
+//   - ShowPresenceNotification(contact)
+// 
+// - data objects:
+//   - ContactList
+//   - Contact
+//   - Session
+//   - Participient
+//
+// *********************************************'
+
 
 namespace Communication
 {

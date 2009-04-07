@@ -29,6 +29,10 @@ namespace Communication
 		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_CommunicationManager, communication_manager_.get());
 		LogInfo("Module " + Name() + " initialized.");
 
+
+		communication_manager = CommunicationServicePtr(new TelepathyCommunicationManager());
+		framework_->GetServiceManager();
+
 		//testing using py service from here, 'cause had trouble with loading in the unit test
 		/* commented to not bork for ppl without py
 		Foundation::ScriptServiceInterface *pyengine = framework_->GetService<Foundation::ScriptServiceInterface>
