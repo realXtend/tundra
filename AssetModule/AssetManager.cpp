@@ -22,6 +22,11 @@ namespace Asset
         net_interface_(net_interface),
         asset_timeout_(DEFAULT_ASSET_TIMEOUT)
     {
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        
+        event_category_ = event_manager->RegisterEventCategory("Asset");
+        event_manager->RegisterEvent(event_category_, EVENT_ASSET_READY, "AssetReady");
+        
         // Create asset cache directory
         cache_path_ = framework_->GetPlatform()->GetApplicationDataDirectory() + DEFAULT_ASSET_CACHE_PATH;
         if (boost::filesystem::exists(cache_path_) == false)
@@ -36,24 +41,16 @@ namespace Asset
     
     Foundation::AssetPtr AssetManager::GetAsset(const std::string& asset_id, Core::asset_type_t asset_type)
     {
-        Foundation::AssetPtr no_asset;
-        
         RexUUID asset_uuid(asset_id);
         
-        AssetMap::iterator i = assets_.find(asset_uuid);
-        if (i != assets_.end())
-            return i->second;
-
-        GetFromCache(asset_uuid);
-        
-        i = assets_.find(asset_uuid);
-        if (i != assets_.end())
-            return i->second;
+        Foundation::AssetPtr asset = GetFromCache(asset_uuid);
+        if (asset)
+            return asset;
 
         if (!net_interface_)
         {
             AssetModule::LogError("No netinterface, cannot request assets");
-            return no_asset;
+            return Foundation::AssetPtr();
         }
         
         if (asset_type == RexAT_Texture)
@@ -65,8 +62,7 @@ namespace Asset
             RequestOtherAsset(asset_uuid, asset_type);
         }
         
-
-        return no_asset;
+        return Foundation::AssetPtr();
     }
     
     void AssetManager::Update(Core::f64 frametime)
@@ -374,14 +370,15 @@ namespace Asset
 
         RexAsset* new_asset = new RexAsset();
         
+        // Store to memory cache
         assets_[asset_id] = Foundation::AssetPtr(new_asset);
         new_asset->asset_id_ = transfer.GetAssetId();
         new_asset->asset_type_ = transfer.GetAssetType();
         new_asset->data_.resize(transfer.GetReceived());
         transfer.AssembleData(&new_asset->data_[0]);
         
+        // Store to disk cache
         boost::filesystem::path file_path(cache_path_ + "/" + asset_id.ToString());
-        
         std::ofstream filestr(file_path.native_directory_string().c_str(), std::ios::out | std::ios::binary);
         if (filestr.good())
         {
@@ -395,10 +392,22 @@ namespace Asset
         {
             AssetModule::LogError("Error storing asset " + asset_id.ToString() + " to cache.");
         }
+        
+        // Send asset ready event
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        AssetEventData data(new_asset->asset_id_.ToString(), new_asset->asset_type_);
+        event_manager->SendEvent(event_category_, EVENT_ASSET_READY, &data);
     }
     
-    void AssetManager::GetFromCache(const RexTypes::RexUUID& asset_id)
+    Foundation::AssetPtr AssetManager::GetFromCache(const RexTypes::RexUUID& asset_id)
     {
+        AssetMap::iterator i = assets_.find(asset_id);
+        if (i != assets_.end())
+            return i->second;
+
+        // If transfer in progress, do not check disk cache again
+        if (InProgress(asset_id))
+            return Foundation::AssetPtr();
         boost::filesystem::path file_path(cache_path_ + "/" + asset_id.ToString());
         
         std::ifstream filestr(file_path.native_directory_string().c_str(), std::ios::in | std::ios::binary);
@@ -421,6 +430,9 @@ namespace Asset
                 new_asset->asset_type_ = type;
                 new_asset->data_.resize(length);
                 filestr.read((char *)&new_asset->data_[0], length);
+                filestr.close();
+                
+                return assets_[asset_id];
             }
             else
             {
@@ -429,5 +441,24 @@ namespace Asset
             
             filestr.close();
         }
+        
+        return Foundation::AssetPtr();
+    }
+    
+    bool AssetManager::InProgress(const RexTypes::RexUUID& asset_id)
+    {
+        AssetTransferMap::iterator i = texture_transfers_.find(asset_id);
+        if (i != texture_transfers_.end())
+            return true;
+
+        AssetTransferMap::const_iterator j = asset_transfers_.begin();
+        while (j != asset_transfers_.end())
+        {
+            if (j->second.GetAssetId() == asset_id)
+                return true;
+            ++j;
+        }
+        
+        return false;
     }
 }
