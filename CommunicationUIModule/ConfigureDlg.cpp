@@ -24,7 +24,9 @@
 ConfigureDlg::ConfigureDlg(int count, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes, std::string name,
 							 IConfigureCallBack* aConfCaller)
 : m_Table(count, 2),
-  m_Button_Close("_Close", true)
+  m_Button_Close("C_lose", true),
+  m_Button_Ok("_Ok", true),
+  m_Button_Cancel("_Cancel", true)
 {
 	set_title(name);
 	configName = name;
@@ -32,11 +34,7 @@ ConfigureDlg::ConfigureDlg(int count, std::map<std::string, Foundation::Comms::S
 	set_size_request(300, count*75);
 	
 	configCallback = aConfCaller;
-	//commManager = aCommManager;
-	//this->callbackMethod = callback;
 	
-
-
 	m_ScrolledWindow.set_border_width(10);
 
 	//m_ScrolledWindow.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
@@ -72,23 +70,26 @@ ConfigureDlg::ConfigureDlg(int count, std::map<std::string, Foundation::Comms::S
 		row++;
 	}
 	
-
-
-
-	/* Add a "close" button to the bottom of the dialog */
 	m_Button_Close.signal_clicked().connect( sigc::mem_fun(*this,
-			  &ConfigureDlg::on_button_close));
+			  &ConfigureDlg::onButtonClose));
 
-	/* this makes it so the button is the default. */
-	m_Button_Close.set_flags(Gtk::CAN_DEFAULT);
+	m_Button_Ok.signal_clicked().connect( sigc::mem_fun(*this,
+			  &ConfigureDlg::onButtonOk));
+
+	m_Button_Cancel.signal_clicked().connect( sigc::mem_fun(*this,
+		  &ConfigureDlg::onButtonCancel));
+	
+	m_Button_Ok.set_flags(Gtk::CAN_DEFAULT);
 
 	Gtk::Box* pBox = get_action_area();
 	if(pBox)
 	pBox->pack_start(m_Button_Close);
+	pBox->pack_start(m_Button_Ok);
+	pBox->pack_start(m_Button_Cancel);
 
 	/* This grabs this button to be the default button. Simply hitting
 	* the "Enter" key will cause this button to activate. */
-	m_Button_Close.grab_default();
+	m_Button_Ok.grab_default();
 
 	show_all_children();
 }
@@ -97,7 +98,17 @@ ConfigureDlg::~ConfigureDlg()
 {
 }
 
-void ConfigureDlg::on_button_close()
+void ConfigureDlg::onButtonClose()
+{
+	cleanUp();	
+}
+
+void ConfigureDlg::onButtonCancel()
+{
+	cleanUp();
+}
+
+void ConfigureDlg::onButtonOk()
 {
 	// read values to map:
 	std::map<std::string, Foundation::Comms::SettingsAttribute> attributes;
@@ -154,13 +165,27 @@ void ConfigureDlg::on_button_close()
 	//	attributes[attrName]=attr;
 	//}
 		
-	//delete allocated pairs
+	////delete allocated pairs
+	//for(iter = widgetPairs.begin();iter!=widgetPairs.end();iter++)
+	//{
+	//	accessWidgets* aW = *iter;
+	//	delete aW;
+	//}		
+	//widgetPairs.clear();
+
+	//hide();
+
+	cleanUp();
+}
+
+void ConfigureDlg::cleanUp()
+{
+	std::vector<accessWidgets*>::iterator iter;
 	for(iter = widgetPairs.begin();iter!=widgetPairs.end();iter++)
 	{
 		accessWidgets* aW = *iter;
 		delete aW;
 	}		
 	widgetPairs.clear();
-
 	hide();
 }
