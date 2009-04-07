@@ -32,6 +32,7 @@ namespace Console
     {
         Foundation::Framework *framework = module_->GetFramework();
 
+        console_overlay_.reset();
         if ( framework->GetServiceManager()->IsRegistered(Foundation::Service::ST_SceneManager))
         {
             Foundation::SceneManagerServiceInterface *scene_manager =
