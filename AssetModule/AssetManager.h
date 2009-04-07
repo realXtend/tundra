@@ -140,10 +140,10 @@ namespace Asset
         Core::f64 asset_timeout_;
         
         //! default asset cache path
-        static const char *AssetManager::DEFAULT_ASSET_CACHE_PATH;
+        static const char *DEFAULT_ASSET_CACHE_PATH;
         
         //! default asset transfer timeout 
-        static const Core::f64 AssetManager::DEFAULT_ASSET_TIMEOUT;
+        static const Core::f64 DEFAULT_ASSET_TIMEOUT;
     };
 }
 
