@@ -128,6 +128,7 @@ namespace RexLogic
     {
         NetInMessage *msg = data->message;
  
+        msg->ResetReading();
         uint64_t regionhandle = msg->ReadU64();
         msg->SkipToNextVariable(); // TimeDilation U16
 

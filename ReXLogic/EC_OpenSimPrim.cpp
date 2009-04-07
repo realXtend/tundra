@@ -140,16 +140,12 @@ namespace RexLogic
     
     void EC_OpenSimPrim::HandleObjectName(OpenSimProtocol::NetworkEventInboundData* data)
     {    
-        size_t bytes_read;
-    
         data->message->SkipToFirstVariableByName("Name");
         ObjectName = data->message->ReadString();
     }
     
     void EC_OpenSimPrim::HandleObjectDescription(OpenSimProtocol::NetworkEventInboundData* data)
-    {    
-        size_t bytes_read;
-    
+    {        
         data->message->SkipToFirstVariableByName("Description");
         Description = data->message->ReadString();
     }
