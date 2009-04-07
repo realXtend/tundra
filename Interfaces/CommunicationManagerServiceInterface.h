@@ -18,7 +18,8 @@ namespace Foundation
 		enum CommSettingsType 
 		{
 			String = 0,
-			Int
+			Int,
+			Boolean
 		};
 
 		struct SettingsAttribute
@@ -26,6 +27,7 @@ namespace Foundation
 			//std::string name;
 			CommSettingsType type;
 			std::string value;
+			int length;
 		};
 
 

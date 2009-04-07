@@ -66,6 +66,20 @@ namespace Communication
 		password.value = "";
 		attrs["password"] = password;
 		attrs["name"] = name;
+
+		
+
+		//!!
+		std::map<std::string, int> things;
+		things["this"] = 1;
+		things["that"] = 2;
+		std::map<std::string, int>::iterator p = things.begin();
+		std::cout << p->first << ": " << p->second;
+
+		std::map<std::string, Foundation::Comms::SettingsAttribute>::iterator iter = attrs.find("name");
+		std::cout << iter->first;
+
+		//CommunicationModule::LogInfo(attrs.find("name")->);
 		return attrs;
 	}
 	
