@@ -15,13 +15,13 @@ namespace OgreRenderer
         , overlay_element_(NULL)
         , container_(NULL)
         , overlay_(NULL)
-        , renderer_(static_cast<OgreRenderingModule*>(module)->GetRenderer())
+        , renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer())
         , height_(0.4f)
     {
         // Creating second console overlay component is a programming error in any case,
         // so we let Ogre throw exception if that happens.
 
-        overlay_element_ = static_cast<Ogre::TextAreaOverlayElement*>(Ogre::OverlayManager::getSingleton().createOverlayElement("TextArea", "ConsoleText"));
+        overlay_element_ = checked_static_cast<Ogre::TextAreaOverlayElement*>(Ogre::OverlayManager::getSingleton().createOverlayElement("TextArea", "ConsoleText"));
         overlay_element_->setCaption("Console");
         overlay_element_->setColour(Ogre::ColourValue::Black);
         overlay_element_->setDimensions(0.98f, height_);
@@ -33,7 +33,7 @@ namespace OgreRenderer
 
         overlay_ = Ogre::OverlayManager::getSingleton().create("Console");
 
-        container_ = static_cast<Ogre::OverlayContainer*>(Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "ConsoleContainer"));
+        container_ = checked_static_cast<Ogre::OverlayContainer*>(Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "ConsoleContainer"));
         container_->setPosition(0.f, -height_);
         container_->setPosition(0.f, 0);
         container_->setDimensions(1.f, height_);
