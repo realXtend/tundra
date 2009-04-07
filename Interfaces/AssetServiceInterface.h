@@ -16,7 +16,12 @@ namespace Foundation
         AssetServiceInterface() {}
         virtual ~AssetServiceInterface() {}
 
-        virtual AssetPtr GetAsset(const std::string& asset_id) = 0;
+        //! get asset
+        /*! \param asset_id asset UUID
+            \param asset_type asset type
+            if asset not in cache, will return empty pointer and queue the asset request
+         */
+        virtual AssetPtr GetAsset(const std::string& asset_id, Core::asset_type_t asset_type) = 0;
     };
 }
 

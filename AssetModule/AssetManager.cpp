@@ -7,6 +7,7 @@
 #include "AssetDefines.h"
 #include "AssetManager.h"
 #include "AssetTransfer.h"
+#include "RexAsset.h"
 
 using namespace OpenSimProtocol;
 using namespace RexTypes;
@@ -33,9 +34,38 @@ namespace Asset
     {
     }
     
-    Foundation::AssetPtr AssetManager::GetAsset(const std::string& asset_id)
+    Foundation::AssetPtr AssetManager::GetAsset(const std::string& asset_id, Core::asset_type_t asset_type)
     {
         Foundation::AssetPtr no_asset;
+        
+        RexUUID asset_uuid(asset_id);
+        
+        AssetMap::iterator i = assets_.find(asset_uuid);
+        if (i != assets_.end())
+            return i->second;
+
+        GetFromCache(asset_uuid);
+        
+        i = assets_.find(asset_uuid);
+        if (i != assets_.end())
+            return i->second;
+
+        if (!net_interface_)
+        {
+            AssetModule::LogError("No netinterface, cannot request assets");
+            return no_asset;
+        }
+        
+        if (asset_type == RexAT_Texture)
+        {
+            RequestTexture(asset_uuid);
+        }
+        else
+        {
+            RequestOtherAsset(asset_uuid, asset_type);
+        }
+        
+
         return no_asset;
     }
     
@@ -101,38 +131,6 @@ namespace Asset
                 }
             }
             ++j;
-        }
-    }
-    
-    void AssetManager::RequestAsset(const RexUUID& asset_id, Core::uint asset_type)
-    {
-        if (assets_.find(asset_id) != assets_.end())
-        {
-            AssetModule::LogInfo("Asset " + asset_id.ToString() + " already received");
-            return;
-        }
-
-        GetFromCache(asset_id);
-        
-        if (assets_.find(asset_id) != assets_.end())
-        {
-            AssetModule::LogInfo("Asset " + asset_id.ToString() + " already received");
-            return;
-        }
-        
-        if (!net_interface_)
-        {
-            AssetModule::LogError("No netinterface, cannot request assets");
-            return;
-        }
-        
-        if (asset_type == RexAT_Texture)
-        {
-            RequestTexture(asset_id);
-        }
-        else
-        {
-            RequestOtherAsset(asset_id, asset_type);
         }
     }
     
@@ -374,10 +372,13 @@ namespace Asset
         
         AssetModule::LogInfo("Storing complete asset " + asset_id.ToString());
 
-        assets_[asset_id].asset_id_ = transfer.GetAssetId();
-        assets_[asset_id].asset_type_ = transfer.GetAssetType();
-        assets_[asset_id].data_.resize(transfer.GetReceived());
-        transfer.AssembleData(&assets_[asset_id].data_[0]);
+        RexAsset* new_asset = new RexAsset();
+        
+        assets_[asset_id] = Foundation::AssetPtr(new_asset);
+        new_asset->asset_id_ = transfer.GetAssetId();
+        new_asset->asset_type_ = transfer.GetAssetType();
+        new_asset->data_.resize(transfer.GetReceived());
+        transfer.AssembleData(&new_asset->data_[0]);
         
         boost::filesystem::path file_path(cache_path_ + "/" + asset_id.ToString());
         
@@ -387,7 +388,7 @@ namespace Asset
             Core::uint type = transfer.GetAssetType();
             // Store first the asset type, then the actual data
             filestr.write((const char *)&type, sizeof(type));
-            filestr.write((const char *)&assets_[asset_id].data_[0], assets_[asset_id].data_.size());
+            filestr.write((const char *)&new_asset->data_[0], new_asset->data_.size());
             filestr.close();
         }
         else
@@ -413,10 +414,13 @@ namespace Asset
                 length -= sizeof(type);
                 
                 filestr.read((char *)&type, sizeof(type));
-                assets_[asset_id].asset_id_ = asset_id;
-                assets_[asset_id].asset_type_ = type;
-                assets_[asset_id].data_.resize(length);
-                filestr.read((char *)&assets_[asset_id].data_[0], length);
+        
+                RexAsset* new_asset = new RexAsset();
+        
+                assets_[asset_id] = Foundation::AssetPtr(new_asset);
+                new_asset->asset_type_ = type;
+                new_asset->data_.resize(length);
+                filestr.read((char *)&new_asset->data_[0], length);
             }
             else
             {

@@ -11,13 +11,25 @@ namespace Foundation
     class MODULE_API AssetInterface
     {
     public:
+        //! default constructor
         AssetInterface() {}
+        
+        //! default destructor
         virtual ~AssetInterface() {}
         
+        //! returns asset id. Can be for example UUID in textual form
         virtual const std::string GetId() = 0;
+        
+        //! returns asset type
         virtual Core::asset_type_t GetType() = 0;
+        
+        //! returns asset type in text form
         virtual const std::string& GetTypeName() = 0;
+        
+        //! returns asset data size
         virtual Core::uint GetSize() = 0;
+        
+        //! returns asset data
         virtual const Core::u8* GetData() = 0;
     };
 }
