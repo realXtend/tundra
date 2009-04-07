@@ -1,0 +1,5 @@
+<config>
+	<entry>CommunicationUIModule</entry>
+	<dependency>SupportModules</dependency>
+	<dependency>ScriptModule</dependency>
+</config>
