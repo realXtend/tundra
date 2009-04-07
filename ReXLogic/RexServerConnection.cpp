@@ -11,7 +11,12 @@ namespace RexLogic
     {
         framework_ = framework;    
         connected_ = false;
-    	
+        
+        myInfo_.agentID.SetNull();
+        myInfo_.sessionID.SetNull();
+        myInfo_.regionID.SetNull();
+        myInfo_.circuitCode = 0;
+
         ///\todo weak_pointerize
         netInterface_ = dynamic_cast<OpenSimProtocol::OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol));
         if (!netInterface_)
