@@ -28,6 +28,9 @@ namespace Asset
     class AssetManager : public Foundation::AssetServiceInterface
     {
     public:
+        //! asset ready event id
+        static const Core::event_id_t EVENT_ASSET_READY = 0x1;
+    
         //! constructor
         AssetManager(Foundation::Framework* framework, OpenSimProtocol::OpenSimProtocolModule* net_interface);
         //! destructor
@@ -36,7 +39,7 @@ namespace Asset
         //! get asset
         /*! \param asset_id asset UUID
             \param asset_type asset type
-            if asset not in cache, will return empty pointer and queue the asset request
+            \return asset if found, or null if not (request will be queued)
          */
         virtual Foundation::AssetPtr GetAsset(const std::string& asset_id, Core::asset_type_t asset_type);
 
@@ -88,10 +91,17 @@ namespace Asset
         void HandleAssetCancel(NetInMessage* msg);
         
     private:
-        //! tries to get asset from disk-based cache
+        //! tries to get asset from cache, memory first, then disk
         /*! \param asset_id asset UUID
+            \return asset if found, or null if not
          */
-        void GetFromCache(const RexTypes::RexUUID& asset_id);
+        Foundation::AssetPtr GetFromCache(const RexTypes::RexUUID& asset_id);
+       
+        //! checks if asset transfer in progress
+        /*! \param asset_id asset UUID
+            \return true if in progress
+         */
+        bool InProgress(const RexTypes::RexUUID& asset_id);
         
         //! requests a texture from network
         /*! \param asset_id asset UUID
@@ -132,6 +142,9 @@ namespace Asset
         
         //! current asset transfer timeout
         Core::f64 asset_timeout_;
+        
+        //! asset event category
+        Core::event_category_id_t event_category_;
         
         //! default asset cache path
         static const char *DEFAULT_ASSET_CACHE_PATH;

@@ -5,6 +5,7 @@
 
 #include "ModuleInterface.h"
 #include "ConsoleCommandServiceInterface.h"
+#include "EventDataInterface.h"
 
 namespace Foundation
 {
@@ -21,6 +22,25 @@ namespace Asset
     class AssetManager;
     typedef boost::shared_ptr<AssetManager> AssetManagerPtr;
     
+    /// event data interface for asset messages
+    class AssetEventData : public Foundation::EventDataInterface
+    {
+    public:
+        AssetEventData(const std::string& asset_id, Core::asset_type_t asset_type) :
+            asset_id_(asset_id),
+            asset_type_(asset_type)
+        {
+        }
+        
+        virtual ~AssetEventData() 
+        {
+        }
+        
+        std::string asset_id_;
+        Core::asset_type_t asset_type_;
+    };
+    
+    //! asset module
     class MODULE_API AssetModule : public Foundation::ModuleInterfaceImpl
     {
     public:
