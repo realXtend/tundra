@@ -16,9 +16,11 @@
 
 #include "StableHeaders.h"
 #include "Foundation.h"
+#include "ConfigureDlg.h"
 
 #include "CommunicationUIModule.h"
 //#include "PythonScriptModule.h"
+
 
 
 
@@ -70,13 +72,6 @@ namespace Communication
 		if(!wndCommMain)
 			return;
 
-		//actionGroup = Gtk::ActionGroup::create();
-		//actionGroup->add(Gtk::Action::create("Connect",
-  //          Gtk::Stock::NEW, "_Connect", "Connect to server"),
-		//	sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuConnect));
-
-
-
 	    commUI_XML->connect_clicked("mi_connect", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuConnect));
 		commUI_XML->connect_clicked("mi_disconnect", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuDisconnect));
 		commUI_XML->connect_clicked("mi_setaccount", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuSetAccountAndPassword));
@@ -88,10 +83,15 @@ namespace Communication
 	void CommunicationUIModule::OnAccountMenuSetAccountAndPassword()
 	{
 		LogInfo("Set account");
-		dlgAccount = 0;
-		commUI_XML->get_widget("dlgSetAccount", dlgAccount);
-		if(!dlgAccount)
-			return;
+		std::map<std::string, Foundation::Comms::SettingsAttribute> attributes = commManager->GetAccountAttributes();
+		int count = attributes.size();
+		LogInfo(attributes.find("name")->first);
+
+		
+		//ConfigureDlg accDlg(count, attributes, "account settings", commManager, this);
+		ConfigureDlg accDlg(count, attributes, "account settings", this);
+		Gtk::Main::run(accDlg);
+		//accDlg.
 	}
 
 	void CommunicationUIModule::OnAccountMenuConnect()
@@ -107,6 +107,11 @@ namespace Communication
 	{
 		LogInfo("something clicked");
 		commManager->Disconnect();	
+	}
+
+	void CommunicationUIModule::Callback(std::string aConfigName, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes)
+	{
+		if(aConfigName=="account settings"){ commManager->SetAccountAttributes(attributes); }
 	}
 
 }

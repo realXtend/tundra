@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "ConfigureDlg.h"
 #include "ModuleInterface.h"
 //#include "PythonScriptModule.h"
 
@@ -13,7 +14,7 @@
 namespace Communication
 {
 	//
-	class MODULE_API CommunicationUIModule : public Foundation::ModuleInterfaceImpl
+	class MODULE_API CommunicationUIModule : public Foundation::ModuleInterfaceImpl, public IConfigureCallBack
 	{
 	public:
 		CommunicationUIModule(void);
@@ -27,12 +28,14 @@ namespace Communication
 
 		void Update();
 
-		MODULE_LOGGING_FUNCTIONS
+		virtual void Callback(std::string aConfigName, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes);
 
-			
+		MODULE_LOGGING_FUNCTIONS
 		//! returns name of this module. Needed for logging.
 		static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_CommunicationUI;
+
+		
 
 	private:
 		void initializeMainCommWindow();
