@@ -45,12 +45,6 @@ namespace Asset
          */
         void Update(Core::f64 frametime);
 
-        //! requests asset
-        /*! \param asset_id asset UUID
-            \param asset_type asset type
-         */
-        void RequestAsset(const RexTypes::RexUUID& asset_id, Core::uint asset_type);
-        
         //! set asset transfer timeout
         void SetTimeout(Core::f64 timeout) { asset_timeout_ = timeout; }
         
