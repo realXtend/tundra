@@ -48,6 +48,6 @@ namespace Console
     void OgreOverlay::Print(const std::string &text)
     {
         if (console_overlay_)
-            static_cast<OgreRenderer::EC_OgreConsoleOverlay*>(console_overlay_.get())->Print(text);
+            checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>(console_overlay_.get())->Print(text);
     }
 }
