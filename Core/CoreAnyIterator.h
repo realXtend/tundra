@@ -31,16 +31,16 @@ namespace Core
     {
     public:
         AnyIteratorImpl(base_iterator iter) : iter_(iter) {}
-        AnyIteratorImpl(const AnyIteratorInterface &rhs) : iter_(dynamic_cast<const AnyIteratorImpl&>(rhs).iter_) {}
+        AnyIteratorImpl(const AnyIteratorInterface<base_type> &rhs) : iter_(dynamic_cast<const AnyIteratorImpl&>(rhs).iter_) {}
         virtual ~AnyIteratorImpl() {}
     
-        virtual AnyIteratorInterface &operator =(const AnyIteratorInterface &rhs)
+        virtual AnyIteratorInterface<base_type> &operator =(const AnyIteratorInterface<base_type> &rhs)
         { 
             if (this != &rhs)
                 iter_ = dynamic_cast<const AnyIteratorImpl&>(rhs).iter_;
             return *this;
         }
-        virtual bool operator ==(const AnyIteratorInterface &rhs) const { return iter_ == dynamic_cast<const AnyIteratorImpl&>(rhs).iter_; }
+        virtual bool operator ==(const AnyIteratorInterface<base_type> &rhs) const { return iter_ == dynamic_cast<const AnyIteratorImpl&>(rhs).iter_; }
 
         virtual AnyIteratorImpl &operator ++() { ++iter_; return *this; }
 
@@ -50,26 +50,26 @@ namespace Core
 
     //! Adaptor for list, set and vector iterators
     template <class base_iterator, class base_type>
-    class ListIterator : public Core::AnyIteratorImpl<base_iterator, base_type>
+    class ListIterator : public AnyIteratorImpl<base_iterator, base_type>
     {
         ListIterator();
     public:
-        ListIterator(base_iterator iter) : AnyIteratorImpl(iter) {}
+        ListIterator(base_iterator iter) : AnyIteratorImpl<base_iterator, base_type> (iter) {}
         virtual ~ListIterator() {}
 
-        virtual base_type &operator *() { return *iter_; }
+        virtual base_type &operator *() { return *AnyIteratorImpl<base_iterator, base_type>::iter_; }
     };
 
     //! Adaptor for map iterator
     template <class base_iterator, class base_type>
-    class MapIterator : public Core::AnyIteratorImpl<base_iterator, base_type>
+    class MapIterator : public AnyIteratorImpl<base_iterator, base_type>
     {
         MapIterator();
     public:
-        MapIterator(base_iterator iter) : AnyIteratorImpl(iter) {}
+        MapIterator(base_iterator iter) : AnyIteratorImpl<base_iterator, base_type> (iter) {}
         virtual ~MapIterator() {}
 
-        virtual base_type &operator *() { return iter_->second; }
+        virtual base_type &operator *() { return AnyIteratorImpl<base_iterator, base_type>::iter_->second; }
     };
 
     template <class base_type>
