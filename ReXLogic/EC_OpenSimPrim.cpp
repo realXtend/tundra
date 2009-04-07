@@ -164,8 +164,8 @@ namespace RexLogic
         RexLogicModule::LogInfo("HoveringText:" + HoveringText);
         RexLogicModule::LogInfo("MediaUrl:" + MediaUrl);
         
-        RexLogicModule::LogInfo("Material:" + Core::ToString((uint)Material));
-        RexLogicModule::LogInfo("ClickAction:" + Core::ToString((uint)ClickAction));
+        RexLogicModule::LogInfo("Material:" + Core::ToString((Core::uint)Material));
+        RexLogicModule::LogInfo("ClickAction:" + Core::ToString((Core::uint)ClickAction));
         RexLogicModule::LogInfo("UpdateFlags:" + Core::ToString(UpdateFlags));
         
         RexLogicModule::LogInfo("Position:" + Core::ToString(Position));        

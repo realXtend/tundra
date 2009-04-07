@@ -102,7 +102,7 @@ namespace RexLogic
     void EC_Viewable::PrintDebug()
     {
         RexLogicModule::LogInfo("*** EC_Viewable ***");
-        RexLogicModule::LogInfo("DrawType:" + Core::ToString((uint)DrawType));  
+        RexLogicModule::LogInfo("DrawType:" + Core::ToString((Core::uint)DrawType));  
         RexLogicModule::LogInfo("IsVisible:" + Core::ToString(IsVisible));  
         RexLogicModule::LogInfo("CastShadows:" + Core::ToString(CastShadows));      
         RexLogicModule::LogInfo("LightCreatesShadows:" + Core::ToString(LightCreatesShadows));    
@@ -122,6 +122,6 @@ namespace RexLogic
         RexLogicModule::LogInfo("MaterialCount:" + Core::ToString(Materials.size())); 
         MaterialMap::iterator it = Materials.begin();
         for(MaterialMap::const_iterator iter = Materials.begin(); iter != Materials.end(); ++iter)
-            RexLogicModule::LogInfo(Core::ToString((uint)iter->first) + " " + Core::ToString((uint)iter->second.Type) + " " + iter->second.UUID.ToString());
+            RexLogicModule::LogInfo(Core::ToString((Core::uint)iter->first) + " " + Core::ToString((Core::uint)iter->second.Type) + " " + iter->second.UUID.ToString());
     }
 }
