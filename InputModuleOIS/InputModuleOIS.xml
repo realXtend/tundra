@@ -1,0 +1,3 @@
+<config>
+	<dependency>OgreRenderingModule</dependency>
+</config>
