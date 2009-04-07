@@ -31,28 +31,69 @@ namespace OgreRenderer
          */
         EC_OgreConsoleOverlay(Foundation::ModuleInterface* module);
 
+        //! copy constructor. Should not be used in practice, as only 
+        //! one console overlay is supported
+        EC_OgreConsoleOverlay(const EC_OgreConsoleOverlay &other);
+
     public:
         //! destructor
         virtual ~EC_OgreConsoleOverlay();
 
+        //! assignment operator. See copy constructor
+        EC_OgreConsoleOverlay &operator ==(const EC_OgreConsoleOverlay &other) { assert (false); return *this; }
+
         //! Print out the specified string
-        virtual void Print(const std::string &text);
+        void Print(const std::string &text);
+
+        //! update console
+        __inline void Update(Core::f64 frametime)
+        {
+            if (visible_)
+                UpdateInternal(frametime);
+        }
         
     private:
-       //! Overlay element for the console
-       Ogre::TextAreaOverlayElement *overlay_element_;
+        //! Create the Ogre overlay
+        void CreateOverlay();
 
-       //! container for overlay
-       Ogre::OverlayContainer *container_;
+        //! Displays buffer's content on the overlay. Only displays max_visible_lines_ lines.
+        void DisplayCurrentBuffer();
 
-       //! Overlay for the console
-       Ogre::Overlay *overlay_;
+        //! for blinking cursor and maybe some other stuff
+        void UpdateInternal(Core::f64 frametime);
 
-       //! Ogre renderer
-       const RendererPtr renderer_;
+        //! Overlay element for the console
+        Ogre::TextAreaOverlayElement *overlay_element_;
 
-       //! Height of the console overlay
-       const Core::Real height_;
+        //! container for overlay
+        Ogre::OverlayContainer *container_;
+
+        //! Overlay for the console
+        Ogre::Overlay *overlay_;
+
+        //! Ogre renderer
+        const RendererPtr renderer_;
+
+        //! Height of the console overlay
+        const Core::Real height_;
+
+        //! font height
+        const Core::Real char_height_;
+
+        //! is the console visible
+        bool visible_;
+
+        //! Contains all lines printed to the console
+        Core::StringList message_lines_;
+
+        //! maximum lines the console can display. depends on height and font size
+        const size_t max_visible_lines_;
+
+        //! maximum number of lines the console will buffer
+        const size_t max_lines_;
+
+        //! mutex for the console
+        Core::Mutex mutex_;
     };
 }
 

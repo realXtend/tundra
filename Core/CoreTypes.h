@@ -29,6 +29,9 @@ namespace Core
     typedef std::vector<std::string> StringVector;
     typedef boost::shared_ptr<StringVector> StringVectorPtr;
 
+    typedef std::list<std::string> StringList;
+    typedef boost::shared_ptr<StringList> StringListPtr;
+
 
     //! generic mutex
     typedef boost::mutex Mutex;

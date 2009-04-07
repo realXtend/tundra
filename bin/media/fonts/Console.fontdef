@@ -1,0 +1,7 @@
+Console
+{
+	type 		truetype
+	source 		VeraMono.ttf
+	size 		32
+	resolution 	55
+}
