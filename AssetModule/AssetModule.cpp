@@ -88,10 +88,9 @@ namespace Asset
 
         try
         {
-            RexUUID asset_id(params[0]);
             int asset_type = Core::ParseString<int>(params[1]);
 
-            manager_->RequestAsset(asset_id, asset_type);
+            manager_->GetAsset(params[0], asset_type);
         } catch (std::exception)
         {
             return Console::ResultInvalidParameters();

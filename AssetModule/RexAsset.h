@@ -14,16 +14,26 @@ namespace Asset
     class RexAsset : public Foundation::AssetInterface
     {
     public:
+        //! default constructor
         RexAsset() {};
+        
+        //! destructor
         virtual ~RexAsset() {};
         
+        //! returns asset ID, which is UUID in text form
         virtual const std::string GetId();
-        virtual Core::asset_type_t GetType() { return asset_type_; }
-        virtual const std::string& GetTypeName();
-        virtual Core::uint GetSize() { return data_.size(); }
-        virtual const Core::u8* GetData() { return &data_[0]; }
         
-        void GetDataFromTransfer(AssetTransfer& transfer);
+        //! returns asset type
+        virtual Core::asset_type_t GetType() { return asset_type_; }
+        
+        //! returns asset type in text form
+        virtual const std::string& GetTypeName();
+        
+        //! returns asset data size
+        virtual Core::uint GetSize() { return data_.size(); }
+        
+        //! returns asset data
+        virtual const Core::u8* GetData() { return &data_[0]; }
         
         //! asset id
         RexTypes::RexUUID asset_id_;

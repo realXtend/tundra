@@ -3,10 +3,10 @@
 #ifndef incl_Asset_AssetManager_h
 #define incl_Asset_AssetManager_h
 
+#include "AssetInterface.h"
 #include "AssetServiceInterface.h"
 #include "AssetTransfer.h"
 #include "RexUUID.h"
-#include "RexAsset.h"
 
 namespace Foundation
 {
@@ -34,9 +34,11 @@ namespace Asset
         virtual ~AssetManager();
         
         //! get asset
-        /*! \todo implement something that makes sense
+        /*! \param asset_id asset UUID
+            \param asset_type asset type
+            if asset not in cache, will return empty pointer and queue the asset request
          */
-        virtual Foundation::AssetPtr GetAsset(const std::string& asset_id);
+        virtual Foundation::AssetPtr GetAsset(const std::string& asset_id, Core::asset_type_t asset_type);
 
         //! performs time-based update
         /*! uses time to handle timeouts
@@ -120,7 +122,7 @@ namespace Asset
         
         typedef std::map<RexTypes::RexUUID, AssetTransfer> AssetTransferMap;
         
-        typedef std::map<RexTypes::RexUUID, RexAsset> AssetMap;
+        typedef std::map<RexTypes::RexUUID, Foundation::AssetPtr> AssetMap;
         
         //! completely received assets (memory cache)
         AssetMap assets_;
