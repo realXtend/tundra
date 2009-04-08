@@ -3,6 +3,8 @@
 #include "NetInMessage.h"
 #include "ZeroCode.h"
 
+#include "QuatUtils.h"
+
 using namespace RexTypes;
 
 NetInMessage::NetInMessage(size_t seqNum, const NetMessageInfo *info, const uint8_t *data, size_t numBytes, bool zeroCoded)
@@ -261,9 +263,13 @@ Core::Quaternion NetInMessage::ReadQuaternion()
 {
 	if (CheckNextVariableType() == NetVarQuaternion)
 	{
-		Core::Quaternion *data = (Core::Quaternion*)ReadBytesUnchecked(sizeof(Core::Quaternion));
-		AdvanceToNextVariable();
-		return *data;
+		Vector3 *data = (Vector3*)ReadBytesUnchecked(sizeof(Vector3));
+
+        Core::Quaternion quat = Core::UnpackQuaternionFromFloat3(*data);
+//		Core::Quaternion *data = (Core::Quaternion*)ReadBytesUnchecked(sizeof(Core::Quaternion));
+
+        AdvanceToNextVariable();
+		return quat;
 	}
 	else 
 	{	

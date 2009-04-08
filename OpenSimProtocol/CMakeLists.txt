@@ -50,7 +50,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation RexCommon Interfaces)
+target_link_libraries (${TARGET_NAME} Foundation RexCommon Interfaces Core)
 
 # External library linkage (needs target defined)
 LINK_POCO()
