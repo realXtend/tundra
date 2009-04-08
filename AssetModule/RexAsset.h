@@ -14,8 +14,10 @@ namespace Asset
     class RexAsset : public Foundation::AssetInterface
     {
     public:
-        //! default constructor
-        RexAsset() {};
+        typedef std::vector<Core::u8> AssetDataVector;
+        
+        //! constructor
+        RexAsset(const RexTypes::RexUUID& asset_id, Core::asset_type_t asset_type);
         
         //! destructor
         virtual ~RexAsset() {};
@@ -35,12 +37,16 @@ namespace Asset
         //! returns asset data
         virtual const Core::u8* GetData() { return &data_[0]; }
         
+        //! returns asset data vector, non-const. For internal use
+        AssetDataVector& GetDataInternal() { return data_; }
+        
+    private:
         //! asset id
         RexTypes::RexUUID asset_id_;
         //! asset type
         Core::asset_type_t asset_type_;
         //! asset data
-        std::vector<Core::u8> data_;
+        AssetDataVector data_;
     };
 }
 

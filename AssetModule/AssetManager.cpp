@@ -81,13 +81,12 @@ namespace Asset
         if (transfer->GetReceivedContinuous() >= received)
         {
             // Make new temporary asset for the incomplete data
-            RexAsset* new_asset = new RexAsset();
+            RexAsset* new_asset = new RexAsset(transfer->GetAssetId(), transfer->GetAssetType());
             Foundation::AssetPtr asset_ptr(new_asset);
             
-            new_asset->asset_id_ = transfer->GetAssetId();
-            new_asset->asset_type_ = transfer->GetAssetType();
-            new_asset->data_.resize(transfer->GetReceivedContinuous());
-            transfer->AssembleData(&new_asset->data_[0]);
+            RexAsset::AssetDataVector& data = new_asset->GetDataInternal();
+            data.resize(transfer->GetReceivedContinuous());
+            transfer->AssembleData(&data[0]);
             
             return asset_ptr;
         }
@@ -398,14 +397,13 @@ namespace Asset
         
         AssetModule::LogInfo("Storing complete asset " + asset_id.ToString());
 
-        RexAsset* new_asset = new RexAsset();
-        
         // Store to memory cache
+        RexAsset* new_asset = new RexAsset(transfer.GetAssetId(), transfer.GetAssetType());
         assets_[asset_id] = Foundation::AssetPtr(new_asset);
-        new_asset->asset_id_ = transfer.GetAssetId();
-        new_asset->asset_type_ = transfer.GetAssetType();
-        new_asset->data_.resize(transfer.GetReceived());
-        transfer.AssembleData(&new_asset->data_[0]);
+        
+        RexAsset::AssetDataVector& data = new_asset->GetDataInternal();
+        data.resize(transfer.GetReceived());
+        transfer.AssembleData(&data[0]);
         
         // Store to disk cache
         boost::filesystem::path file_path(cache_path_ + "/" + asset_id.ToString());
@@ -413,9 +411,10 @@ namespace Asset
         if (filestr.good())
         {
             Core::uint type = transfer.GetAssetType();
+            
             // Store first the asset type, then the actual data
             filestr.write((const char *)&type, sizeof(type));
-            filestr.write((const char *)&new_asset->data_[0], new_asset->data_.size());
+            filestr.write((const char *)&data[0],data.size());
             filestr.close();
         }
         else
@@ -425,8 +424,8 @@ namespace Asset
         
         // Send asset ready event
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-        AssetEventData data(new_asset->asset_id_.ToString(), new_asset->asset_type_);
-        event_manager->SendEvent(event_category_, EVENT_ASSET_READY, &data);
+        AssetEventData event_data(new_asset->GetId(), new_asset->GetType());
+        event_manager->SendEvent(event_category_, EVENT_ASSET_READY, &event_data);
     }
     
     Foundation::AssetPtr AssetManager::GetFromCache(const RexTypes::RexUUID& asset_id)
@@ -454,12 +453,12 @@ namespace Asset
                 
                 filestr.read((char *)&type, sizeof(type));
         
-                RexAsset* new_asset = new RexAsset();
-        
+                RexAsset* new_asset = new RexAsset(asset_id, type);
                 assets_[asset_id] = Foundation::AssetPtr(new_asset);
-                new_asset->asset_type_ = type;
-                new_asset->data_.resize(length);
-                filestr.read((char *)&new_asset->data_[0], length);
+                
+                RexAsset::AssetDataVector& data = new_asset->GetDataInternal();
+                data.resize(length);
+                filestr.read((char *)&data[0], length);
                 filestr.close();
                 
                 return assets_[asset_id];
