@@ -36,13 +36,25 @@ namespace Asset
         //! destructor
         virtual ~AssetManager();
         
-        //! get asset
+        //! gets asset
         /*! \param asset_id asset UUID
             \param asset_type asset type
-            \return asset if found, or null if not (request will be queued)
+            \return pointer to asset
+            if asset not in cache, will return empty pointer and queue the asset request. An event will
+            be sent when the asset has been downloaded.
          */
         virtual Foundation::AssetPtr GetAsset(const std::string& asset_id, Core::asset_type_t asset_type);
 
+        //! gets incomplete asset
+        /*! \param asset_id asset UUID
+            \param asset_type asset type
+            \param received minimum continuous bytes received from the start
+            \return pointer to asset
+            if asset not yet requested, will request it and return empty pointer
+            if not enough bytes received, will return empty pointer
+         */
+        virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, Core::asset_type_t asset_type, Core::uint received);
+        
         //! performs time-based update
         /*! uses time to handle timeouts
          */
@@ -97,11 +109,11 @@ namespace Asset
          */
         Foundation::AssetPtr GetFromCache(const RexTypes::RexUUID& asset_id);
        
-        //! checks if asset transfer in progress
+        //! gets asset transfer if it's in progress
         /*! \param asset_id asset UUID
-            \return true if in progress
+            \return pointer to transfer, or NULL if no transfer
          */
-        bool InProgress(const RexTypes::RexUUID& asset_id);
+        AssetTransfer* GetTransfer(const RexTypes::RexUUID& asset_id);
         
         //! requests a texture from network
         /*! \param asset_id asset UUID
