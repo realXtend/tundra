@@ -7,4 +7,8 @@
 #include "Core.h"
 #include "Foundation.h"
 
+#undef OIS_DYNAMIC_LIB
+#define OIS_DYNAMIC_LIB
+#include <OIS.h>
+
 #endif

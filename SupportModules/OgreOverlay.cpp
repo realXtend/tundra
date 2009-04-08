@@ -127,6 +127,25 @@ namespace Console
         DisplayCurrentBuffer();
     }
 
+    void OgreOverlay::SetVisible(bool visible)
+    {
+        if (console_overlay_)
+        {
+            checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>
+                (console_overlay_.get())->SetVisible(visible);
+        }
+    }
+
+    bool OgreOverlay::IsVisible() const
+    {
+        if (console_overlay_)
+        {
+            return checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>
+                (console_overlay_.get())->IsVisible();
+        }
+        return false;
+    }
+
     void OgreOverlay::DisplayCurrentBuffer()
     {
         Core::MutexLock lock(mutex_);

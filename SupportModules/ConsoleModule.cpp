@@ -4,6 +4,7 @@
 #include "ConsoleModule.h"
 #include "ConsoleManager.h"
 #include "InputEvents.h"
+#include "InputEventsOIS.h"
 
 namespace Console
 {
@@ -56,9 +57,22 @@ namespace Console
         {
             if (event_id == Input::Events::SCROLL)
             {
-                int rel = checked_static_cast<Input::Events::MouseWheel*>(data)->rel_;
-                manager_->Scroll(rel);
-                return true;
+                if (manager_->IsVisible())
+                {
+                    int rel = checked_static_cast<Input::Events::MouseWheel*>(data)->rel_;
+                    manager_->Scroll(rel);
+                    return true;
+                }
+            }
+
+            if (event_id == Input::Events::KEY_PRESSED)
+            {
+                OIS::KeyCode code = checked_static_cast<Input::Events::BufferedKey*>(data)->code_;
+                if (code == OIS::KC_TAB)
+                {
+                    manager_->SetVisible(!manager_->IsVisible());
+                    return true;
+                }
             }
         }
 

@@ -84,4 +84,18 @@ namespace OgreRenderer
         //! \todo render mutex
         overlay_element_->setCaption(text);
     }
+
+
+    void EC_OgreConsoleOverlay::SetVisible(bool visible)
+    {
+        if (visible)
+            overlay_->show();
+        else
+            overlay_->hide();
+    }
+
+    bool EC_OgreConsoleOverlay::IsVisible() const
+    {
+        return overlay_->isVisible();
+    }
 }

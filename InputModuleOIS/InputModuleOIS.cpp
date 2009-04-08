@@ -2,11 +2,10 @@
 
 #include "StableHeaders.h"
 
-#include <OIS.h>
-
 #include "Renderer.h"
 #include "InputModuleOIS.h"
 #include "InputEvents.h"
+#include "BufferedKeyboard.h"
 
 namespace Input
 {
@@ -52,7 +51,7 @@ namespace Input
             LogError("Failed to initialize. No open window.");
             return;
         }
-
+        
         event_category_ = framework_->GetEventManager()->RegisterEventCategory("Input");
 
         OIS::ParamList pl;
@@ -66,11 +65,9 @@ namespace Input
         pl.insert(std::make_pair(std::string("x11_mouse_hide"), std::string("false")));
 #endif
 
-        // buffered key input
-        //OIS::InputManager *input_manager = OIS::InputManager::createInputSystem( pl );
-        //OIS::Keyboard *keyboard = static_cast<OIS::Keyboard*>(input_manager->createInputObject( OIS::OISKeyboard, true ));
-
         input_manager_ = OIS::InputManager::createInputSystem( pl );
+
+        buffered_keyboard_ = BufferedKeyboardPtr(new BufferedKeyboard(framework_));
 
         keyboard_ = static_cast<OIS::Keyboard*>(input_manager_->createInputObject( OIS::OISKeyboard, false ));
         LogInfo("Keyboard input initialized.");
@@ -113,6 +110,8 @@ namespace Input
                 framework_->GetEventManager()->SendEvent(event_category_, Events::SCROLL, &mw);
             }
         }
+        if (buffered_keyboard_)
+            buffered_keyboard_->Update();
     }
 
     // virtual
@@ -142,6 +141,8 @@ namespace Input
             mouse_ = 0;
             keyboard_ = 0;
             joy_ = 0;
+
+            buffered_keyboard_.reset();
         }
     }
 }

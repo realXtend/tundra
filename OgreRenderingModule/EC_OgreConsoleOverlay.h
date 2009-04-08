@@ -46,6 +46,12 @@ namespace OgreRenderer
 
         //! Returns the max number of lines that can be visible at ones
         size_t GetMaxVisibleLines() const { return max_visible_lines_; }
+
+        //! hide / show the overlay
+        void SetVisible(bool visible);
+
+        //! Returns true if overlay is visible, false otherwise
+        bool IsVisible() const;
         
     private:
         //! Create the Ogre overlay
