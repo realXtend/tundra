@@ -32,8 +32,7 @@ INCLUDE_POCO()
 INCLUDE_CURL()
 INCLUDE_XMLRPCEPI()
 
-add_definitions (-DMODULE_EXPORTS)
-#add_definitions (-DOPENSIMPROTOCOL_MODULE_EXPORTS)
+add_definitions (-DOSPROTO_MODULE_EXPORTS -DMODULE_EXPORTS)
 
 # Define dynamic library
 if (NOT MSVC)
@@ -51,7 +50,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation RexCommon)
+target_link_libraries (${TARGET_NAME} Foundation RexCommon Interfaces)
 
 # External library linkage (needs target defined)
 LINK_POCO()

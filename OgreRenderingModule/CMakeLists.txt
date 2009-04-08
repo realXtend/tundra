@@ -21,7 +21,7 @@ INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_OGRE()
 
-add_definitions (-DMODULE_EXPORTS)
+add_definitions (-DOGRE_MODULE_EXPORTS -DMODULE_EXPORTS)
 
 # Define dynamic library
 if (NOT MSVC)
@@ -38,7 +38,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation)
+target_link_libraries (${TARGET_NAME} Foundation Interfaces)
 
 # External library linkage
 LINK_BOOST()

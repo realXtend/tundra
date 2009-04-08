@@ -4,6 +4,7 @@
 #define incl_SceneEntity_h
 
 #include "EntityInterface.h"
+#include "SceneModuleApi.h"
 
 namespace Scene
 {
@@ -15,7 +16,7 @@ namespace Scene
 
         Use SceneManager to create new entity, do not create directly.
     */
-    class MODULE_API Entity : public Foundation::EntityInterface
+    class SCENE_MODULE_API Entity : public Foundation::EntityInterface
     {
         friend class Generic;
     private:
@@ -72,7 +73,7 @@ namespace Scene
 
         typedef std::vector<Foundation::ComponentInterfacePtr> ComponentVector;
 
-        const ComponentVector &GetComponentVector() const { return components_; }
+        const ComponentVector &GetComponentVector() const;// { return components_; }
 
     protected:
         ComponentVector components_;

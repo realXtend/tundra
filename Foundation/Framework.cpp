@@ -10,7 +10,10 @@
 #include "Poco/UnicodeConverter.h"
 
 #include "Foundation.h"
-
+/*
+#include <direct.h>
+#include <Windows.h>
+*/
 namespace Foundation
 {
     const char *Framework::DEFAULT_EVENT_SUBSCRIBER_TREE_PATH = "./data/event_tree.xml";
@@ -124,6 +127,16 @@ namespace Foundation
 
     void Framework::Go()
     {
+/*
+#ifdef WIN32
+        wchar_t buffer[_MAX_PATH*2];
+        if (_wgetcwd( buffer, _MAX_PATH ) != NULL)
+        {
+            wcscat(buffer, L"/modules/core");
+            SetDllDirectory(buffer);
+        }
+#endif
+*/
         LoadModules();
 
         // commands must be registered after modules are loaded and initialized

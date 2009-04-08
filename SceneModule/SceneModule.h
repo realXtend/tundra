@@ -5,6 +5,7 @@
 
 #include "ModuleInterface.h"
 #include "SceneManager.h"
+#include "SceneModuleApi.h"
 
 namespace Foundation
 {
@@ -14,7 +15,7 @@ namespace Foundation
 namespace Scene
 {
     //! interface for modules
-    class MODULE_API SceneModule : public Foundation::ModuleInterfaceImpl
+    class SCENE_MODULE_API SceneModule : public Foundation::ModuleInterfaceImpl
     {
     public:
         SceneModule();

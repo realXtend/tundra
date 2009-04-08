@@ -112,8 +112,8 @@ namespace Foundation
         by accessing modules directly.
 
         Accessing modules directly using ModuleManager:
-            - All classes that need to be accessed should be declared with MODULE_API macro.
-            - MODULE_EXPORTS should be defined in both modules.
+            - All classes that need to be accessed should be declared with xxx_MODULE_API macro. (each DLL to be built has their own macro)
+            - xxx_MODULE_EXPORTS should be defined in both modules.
             - Add the module's directory to includes
             - Link against the module library
            

@@ -42,12 +42,15 @@ namespace RexLogic
         Foundation::EntityPtr GetOrCreatePrimEntity(Core::entity_id_t entityid, const RexUUID &fullid);
         //! @return The entity corresponding to given id. This entity is guaranteed to have an existing EC_OpenSimPrim component.
         //!         Does not return null. If the entity doesn't exist, an entity with the given fullid is created and returned.
-        Foundation::EntityPtr GetOrCreatePrimEntity(const RexUUID &fullid);
+        Foundation::EntityPtr GetPrimEntity(const RexUUID &fullid);
 
         Foundation::EntityPtr CreateNewPrimEntity(Core::entity_id_t entityid);
 
         Foundation::EntityPtr GetAvatarEntitySafe(Core::entity_id_t entityid);
         Foundation::EntityPtr CreateNewAvatarEntity(Core::entity_id_t entityid);
+
+        //! Creates an OBB for debug visualization of the extents of the given scene object.
+        void DebugCreateOgreBoundingBox(const Foundation::ComponentInterfacePtr ogrePlaceable);
 
         Foundation::Framework *framework_;
         

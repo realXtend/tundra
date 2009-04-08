@@ -34,7 +34,7 @@ INCLUDE_BOOST()
 INCLUDE_POCO()
 #INCLUDE_GTKMM()
 
-add_definitions (-DMODULE_EXPORTS)
+add_definitions (-DCOMMS_MODULE_EXPORTS -DMODULE_EXPORTS)
 
 # Define dynamic library
 if (NOT MSVC)
@@ -51,7 +51,7 @@ if (MSVC)
 	target_link_libraries (${TARGET_NAME} )
 endif (MSVC)
 
-target_link_libraries (${TARGET_NAME} Foundation SceneModule)
+target_link_libraries (${TARGET_NAME} Interfaces Foundation SceneModule)
 
 # External library linkage (needs target defined)
 LINK_POCO()

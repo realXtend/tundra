@@ -38,6 +38,7 @@ INCLUDE_POCO()
 INCLUDE_GTKMM()
 INCLUDE_CURL()
 INCLUDE_XMLRPCEPI()
+INCLUDE_OGRE()
 
 add_definitions (-DMODULE_EXPORTS)
 
@@ -56,7 +57,7 @@ if (MSVC)
 	target_link_libraries (${TARGET_NAME} )
 endif (MSVC)
 
-target_link_libraries (${TARGET_NAME} Foundation SceneModule RexCommon ReXLogicModule OpenSimProtocolModule)
+target_link_libraries (${TARGET_NAME} Foundation SceneModule RexCommon ReXLogicModule OpenSimProtocolModule Interfaces)
 
 # External library linkage (needs target defined)
 LINK_POCO()

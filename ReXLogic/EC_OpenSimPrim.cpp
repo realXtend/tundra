@@ -43,7 +43,7 @@ namespace RexLogic
     }
     
     void EC_OpenSimPrim::HandleObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data)
-    {
+    {/*
         size_t bytes_read;
         NetInMessage *msg = data->message;    
     
@@ -79,6 +79,7 @@ namespace RexLogic
         HoveringText = msg->ReadString();
         msg->SkipToNextVariable();      // TextColor
         MediaUrl = msg->ReadString();    
+        */
     }
     
     void EC_OpenSimPrim::HandleRexPrimData(const uint8_t* primdata)

@@ -23,6 +23,8 @@ inline Dst checked_static_cast(Src src)
 //! use to suppress warning C4101 (unreferenced local variable)
 #define UNREFERENCED_PARAM(P)               (P)
 
+//#define MODULE_API
+
 #undef MODULE_API
 #if defined (_WINDOWS)
 #if defined(MODULE_EXPORTS) 

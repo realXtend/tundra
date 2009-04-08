@@ -6,6 +6,15 @@ file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
+# Include directories
+include_directories (
+	../Core
+	../Foundation
+	../Interfaces
+)
+
+add_definitions (-DMODULE_EXPORTS)
+
 # Define static library
 add_library (${TARGET_NAME} STATIC ${SOURCE_FILES})
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)

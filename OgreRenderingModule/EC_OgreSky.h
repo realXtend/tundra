@@ -5,6 +5,7 @@
 
 #include "ComponentInterface.h"
 #include "Foundation.h"
+#include "OgreModuleApi.h"
 
 namespace Ogre
 {
@@ -20,7 +21,7 @@ namespace OgreRenderer
     //! Ogre sky component
     /*! \todo other sky methods, like plane or dome
      */
-    class MODULE_API EC_OgreSky : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreSky : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_OgreSky);
     public:

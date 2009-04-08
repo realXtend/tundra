@@ -19,6 +19,7 @@ INCLUDE_BOOST()
 INCLUDE_POCO()
 
 add_definitions (-DMODULE_EXPORTS)
+#add_definitions (-DSCENE_MODULE_EXPORTS -DMODULE_EXPORTS)
 
 # Define static library
 add_library (${TARGET_NAME} STATIC ${SOURCE_FILES})
@@ -26,7 +27,7 @@ set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation)
+target_link_libraries (${TARGET_NAME} Foundation Interfaces)
 
 # External library linkage
 LINK_BOOST()

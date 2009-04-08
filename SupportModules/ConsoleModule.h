@@ -4,6 +4,7 @@
 #define incl_ConsoleModule_h
 
 #include "ModuleInterface.h"
+#include "ConsoleModuleApi.h"
 
 namespace Foundation
 {
@@ -26,7 +27,7 @@ namespace Foundation
 namespace Console
 {
     //! interface for modules
-    class MODULE_API ConsoleModule : public Foundation::ModuleInterfaceImpl
+    class CONSOLE_MODULE_API ConsoleModule : public Foundation::ModuleInterfaceImpl
     {
     public:
         ConsoleModule();
