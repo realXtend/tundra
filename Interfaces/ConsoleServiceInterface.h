@@ -22,6 +22,9 @@ namespace Console
 
         //! Prints text to the console
         virtual void Print(const std::string &text) = 0;
+
+        //! scroll console text rel amount
+        virtual void Scroll(int rel) = 0;
     };
 
     typedef boost::shared_ptr<ConsoleServiceInterface> ConsolePtr;

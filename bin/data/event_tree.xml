@@ -4,5 +4,6 @@
 	<subscriber module="NetTestLogicModule" priority="100" />
     <subscriber module="ScriptModule" priority="100" />
 	<subscriber module="InputModuleOIS" priority="1" />
+	<subscriber module="ConsoleModule" priority="101" />
 </subscribers>
 

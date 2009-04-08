@@ -29,8 +29,9 @@ namespace Console
         Console::ConsoleServiceInterface()
             , module_(module)
             , log_listener_(LogListenerPtr(new LogListener(this)))
-            , max_lines_(40)
+            , max_lines_(256)
             , max_visible_lines(1)
+            , text_position_(0)
     {
         Foundation::Framework *framework = module_->GetFramework();
 
@@ -108,6 +109,24 @@ namespace Console
         DisplayCurrentBuffer();
     }
 
+    // virtual
+    void OgreOverlay::Scroll(int rel)
+    {   
+        {
+            Core::MutexLock lock(mutex_);
+            int lines = rel / 20;
+            if (static_cast<int>(text_position_) + lines < 0)
+                lines = -(lines - (lines - static_cast<int>(text_position_)));
+
+            if (text_position_ + lines > message_lines_.size() - max_visible_lines - 1)
+                lines -= (lines - ((message_lines_.size() - max_visible_lines - 1) - text_position_));
+
+            text_position_ += lines;
+        }
+
+        DisplayCurrentBuffer();
+    }
+
     void OgreOverlay::DisplayCurrentBuffer()
     {
         Core::MutexLock lock(mutex_);
@@ -117,8 +136,12 @@ namespace Console
 
         std::string page;
         size_t num_lines = 0;
-        for (Core::StringList::const_iterator line = message_lines_.begin() ;
-             line != message_lines_.end() ; ++line)
+        Core::StringList::const_iterator line = message_lines_.begin();
+
+        assert (message_lines_.size() > text_position_);
+
+        std::advance(line, text_position_);
+        for ( ; line != message_lines_.end() ; ++line)
         {
             num_lines++;
             page = *line + '\n' + page;

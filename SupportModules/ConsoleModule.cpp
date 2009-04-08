@@ -3,12 +3,12 @@
 #include "StableHeaders.h"
 #include "ConsoleModule.h"
 #include "ConsoleManager.h"
+#include "InputEvents.h"
 
 namespace Console
 {
     ConsoleModule::ConsoleModule() : ModuleInterfaceImpl(type_static_)
     {
-       // manager_ = ConsolePtr(new ConsoleManager(this));
     }
 
     ConsoleModule::~ConsoleModule()
@@ -47,6 +47,22 @@ namespace Console
     {
         assert (manager_);
         manager_->Update();
+    }
+
+    // virtual
+    bool ConsoleModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        if (framework_->GetEventManager()->QueryEventCategory("Input") == category_id)
+        {
+            if (event_id == Input::Events::SCROLL)
+            {
+                int rel = checked_static_cast<Input::Events::MouseWheel*>(data)->rel_;
+                manager_->Scroll(rel);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // virtual 

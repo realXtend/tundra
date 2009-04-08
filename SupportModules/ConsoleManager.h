@@ -47,6 +47,12 @@ namespace Console
             ogre_->Print(text);
         }
 
+        virtual void Scroll(int rel)
+        {
+            native_->Scroll(rel);
+            ogre_->Scroll(rel);
+        }
+
         //! Returns command manager
         CommandManagerPtr GetCommandManager() const {return command_manager_; }
 

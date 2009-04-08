@@ -110,7 +110,7 @@ namespace Input
             if (ms.Z.rel != 0)
             {
                 Events::MouseWheel mw(ms.Z.rel, ms.Z.abs);
-                framework_->GetEventManager()->SendEvent(event_category_, Events::MOUSE_WHEEL, &mw);
+                framework_->GetEventManager()->SendEvent(event_category_, Events::SCROLL, &mw);
             }
         }
     }
@@ -123,11 +123,6 @@ namespace Input
             if (event_id == OgreRenderer::Renderer::EVENT_WINDOW_CLOSED)
                 WindowClosed();
         }
-        //if (framework_->GetEventManager()->QueryEventCategory("Input") == category_id)
-        //{
-        //    if (event_id == Events::MOUSE_WHEEL)
-        //        LogInfo(Core::ToString(checked_static_cast<Events::MouseWheel*>(data)->rel_));
-        //}
 
         // no need to mark events handled
         return false;

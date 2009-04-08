@@ -30,7 +30,7 @@ namespace OgreRenderer
         , char_height_(other.char_height_)
         , max_visible_lines_(other.max_visible_lines_)
     {
-        // not meant to be used
+        // not meant to be used but still needed, since components are generally meant to be copyable
         assert (false);
     }
 

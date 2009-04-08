@@ -35,6 +35,8 @@ namespace Console
         //! print out message to console. thread safe
         virtual void Print(const std::string &text);
 
+        virtual void Scroll(int rel);
+
     private:
         void DisplayCurrentBuffer();
 
@@ -49,6 +51,9 @@ namespace Console
 
         //! Contains all lines printed to the console
         Core::StringList message_lines_;
+
+        //! current offset for text, 0 is bottom.
+        size_t text_position_;
 
         //! maximum number of lines the console will buffer
         const size_t max_lines_;
