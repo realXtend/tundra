@@ -52,10 +52,10 @@ namespace RexLogic
 
     // virtual
     void RexLogicModule::PostInitialize()
-    {
+    {    
         Foundation::SceneManagerServiceInterface *sceneManager = 
                 framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
-        if (sceneManager->HasScene("World") == false)
+        if (!sceneManager->HasScene("World"))
             sceneManager->CreateScene("World");
 
         Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
@@ -64,6 +64,9 @@ namespace RexLogic
         else
             LogInfo("Unable to find event category for OpenSimNetworkIn");
 
+        // todo tucofixme, test code
+        Console::CommandService *console = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand);
+        console->RegisterCommand(Console::CreateCommand("Forward", "Move forward", Console::Bind(this, &RexLogicModule::TestMoveForward)));
     }
 
     // virtual 
@@ -94,7 +97,18 @@ namespace RexLogic
             return (i->second)(event_id,data);
         else
             return false;
-    }  
+    }
+    
+    Console::CommandResult RexLogicModule::TestMoveForward(const Core::StringVector &params)
+    {
+        uint32_t controlflags = 1; // (uint32_t)RexTypes::AGENT_CONTROL_AT_POS;
+        uint8_t flags = 0;
+        Core::Quaternion bodyrot = Core::Quaternion(0.1,0.2,0.3,0.4);
+        Core::Quaternion headrot = Core::Quaternion(0.5,0.6,0.7,0.8);
+    
+        rexserver_connection_->SendAgentUpdatePacket(bodyrot,headrot,0,Vector3(9,10,11),Vector3(12,13,14),Vector3(15,16,17),Vector3(18,19,20),2100.0f,controlflags,flags);
+        return Console::ResultSuccess();
+    }
 }
 
 using namespace RexLogic;

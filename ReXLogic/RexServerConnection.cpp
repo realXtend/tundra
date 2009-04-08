@@ -159,5 +159,28 @@ namespace RexLogic
         netInterface_->FinishMessageBuilding(m);
 	}	
 	
+	void RexServerConnection::SendAgentUpdatePacket(Core::Quaternion bodyrot, Core::Quaternion headrot, uint8_t state, 
+	    RexTypes::Vector3 camcenter, RexTypes::Vector3 camataxis, RexTypes::Vector3 camleftaxis, RexTypes::Vector3 camupaxis,
+	    float fardist, uint32_t controlflags, uint8_t flags)
+    {
+        if(!connected_)
+            return;    
+    
+        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgAgentUpdate);
+        assert(m);
+        m->AddUUID(myInfo_.agentID);
+        m->AddUUID(myInfo_.sessionID);
+        m->AddQuaternion(bodyrot);
+        m->AddQuaternion(headrot);        
+        m->AddU8(state);
+        m->AddVector3(camcenter);
+        m->AddVector3(camataxis);        
+        m->AddVector3(camleftaxis);
+        m->AddVector3(camupaxis);
+        m->AddF32(fardist);
+        m->AddU32(controlflags);
+        m->AddU8(flags);
+        netInterface_->FinishMessageBuilding(m);
+	}
 }
 

@@ -31,6 +31,11 @@ namespace RexLogic
         /// Sends a message requesting logout from the server. The server is then going to flood us with some
         /// inventory UUIDs after that, but we'll be ignoring those.        
         void SendLogoutRequestPacket();
+        // Sends the basic movement message
+	    void RexServerConnection::SendAgentUpdatePacket(Core::Quaternion bodyrot, Core::Quaternion headrot, uint8_t state, 
+	        RexTypes::Vector3 camcenter, RexTypes::Vector3 camataxis, RexTypes::Vector3 camleftaxis, RexTypes::Vector3 camupaxis,
+	        float far, uint32_t controlflags, uint8_t flags);        
+        
         
         // Sim name
         std::string GetSimName() { return simname_; }
