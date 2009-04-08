@@ -4,27 +4,42 @@
 
 #include "OgreOverlay.h"
 #include "EC_OgreConsoleOverlay.h"
+#include "OgreRenderingModule.h"
 
 namespace Console
 {
-    OgreOverlay::OgreOverlay(Foundation::ModuleInterface *module) : Console::ConsoleServiceInterface(), module_(module)
+    class LogListener : public Foundation::LogListenerInterface
+    {
+        LogListener();
+        OgreOverlay *console_;
+
+    public:
+        LogListener(OgreOverlay *console) : Foundation::LogListenerInterface(), console_(console) {}
+        virtual ~LogListener() {}
+
+        virtual void LogMessage(const std::string &message)
+        {
+            console_->Print(message);
+        }
+    };
+
+/////////////////////////////////////////////
+
+    OgreOverlay::OgreOverlay(Foundation::ModuleInterface *module) : 
+        Console::ConsoleServiceInterface()
+            , module_(module)
+            , log_listener_(LogListenerPtr(new LogListener(this)))
+            , max_lines_(40)
+            , max_visible_lines(1)
     {
         Foundation::Framework *framework = module_->GetFramework();
 
-        if ( framework->GetServiceManager()->IsRegistered(Foundation::Service::ST_SceneManager) &&
-             framework->GetComponentManager()->CanCreate("EC_OgreConsoleOverlay") )
+        if ( framework->GetModuleManager()->HasModule(Foundation::Module::MT_Renderer) )
         {
-            Foundation::SceneManagerServiceInterface *scene_manager =
-                framework->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
-
-            if (scene_manager->HasScene("Console"))
-                throw Core::Exception("Scene for console already exists.");
-
-            Foundation::ScenePtr scene = scene_manager->CreateScene("Console");
-            Foundation::EntityPtr entity = scene->CreateEntity(scene->GetNextFreeId());
-
-            console_overlay_ = framework->GetComponentManager()->CreateComponent("EC_OgreConsoleOverlay");
-            entity->AddEntityComponent(console_overlay_);
+            OgreRenderer::OgreRenderingModule *rendering_module = 
+                framework->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer);
+            if (rendering_module)
+                rendering_module->GetRenderer()->SubscribeLogListener(log_listener_);
         }
     }
 
@@ -43,12 +58,75 @@ namespace Console
                 scene_manager->DeleteScene("Console");
             }
         }
+
+        if ( framework->GetModuleManager()->HasModule(Foundation::Module::MT_Renderer) )
+        {
+            OgreRenderer::OgreRenderingModule *rendering_module = 
+                framework->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer);
+            if (rendering_module)
+                rendering_module->GetRenderer()->UnsubscribeLogListener(log_listener_);
+        }
     }
 
+    void OgreOverlay::Create()
+    {
+        Foundation::Framework *framework = module_->GetFramework();
+
+        if ( framework->GetServiceManager()->IsRegistered(Foundation::Service::ST_SceneManager) &&
+             framework->GetComponentManager()->CanCreate("EC_OgreConsoleOverlay") )
+        {
+            Foundation::SceneManagerServiceInterface *scene_manager =
+                framework->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+
+            if (scene_manager->HasScene("Console"))
+                throw Core::Exception("Scene for console already exists.");
+
+            Foundation::ScenePtr scene = scene_manager->CreateScene("Console");
+            Foundation::EntityPtr entity = scene->CreateEntity(scene->GetNextFreeId());
+
+            console_overlay_ = framework->GetComponentManager()->CreateComponent("EC_OgreConsoleOverlay");
+            entity->AddEntityComponent(console_overlay_);
+
+            max_visible_lines = checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>
+                (console_overlay_.get())->GetMaxVisibleLines();
+
+            DisplayCurrentBuffer();
+        }
+    }
+    
     // virtual
     void OgreOverlay::Print(const std::string &text)
     {
-        if (console_overlay_)
-            checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>(console_overlay_.get())->Print(text);
+        {
+            Core::MutexLock lock(mutex_);
+
+            message_lines_.push_front(text);
+            if (message_lines_.size() >= max_lines_)
+                message_lines_.pop_back();
+        }
+
+        DisplayCurrentBuffer();
+    }
+
+    void OgreOverlay::DisplayCurrentBuffer()
+    {
+        Core::MutexLock lock(mutex_);
+
+        if (!console_overlay_)
+            return;
+
+        std::string page;
+        size_t num_lines = 0;
+        for (Core::StringList::const_iterator line = message_lines_.begin() ;
+             line != message_lines_.end() ; ++line)
+        {
+            num_lines++;
+            page = *line + '\n' + page;
+
+            if (num_lines >= max_visible_lines)
+                break;
+        }
+
+        checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>(console_overlay_.get())->Display(page);
     }
 }

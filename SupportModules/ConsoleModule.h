@@ -34,6 +34,7 @@ namespace Console
 
         virtual void Load();
         virtual void Unload();
+        virtual void PreInitialize();
         virtual void Initialize();
         virtual void Uninitialize();
 

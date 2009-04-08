@@ -31,6 +31,10 @@ namespace Console
         //! destructor
         virtual ~ConsoleManager() {};
 
+        //! If console manager gets created in preinit, or at time when not all needed services are present,
+        //! this functions can be used for delayed initialization / creation.
+        void CreateDelayed() { checked_static_cast<OgreOverlay*>(ogre_.get())->Create(); }
+
         __inline virtual void Update()
         {
             command_manager_->Update();

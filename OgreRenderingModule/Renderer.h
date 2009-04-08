@@ -5,6 +5,7 @@
 
 #include "Foundation.h"
 #include "RenderServiceInterface.h"
+#include "LogListenerInterface.h"
 #include <boost/shared_ptr.hpp>
 
 namespace Foundation
@@ -24,9 +25,11 @@ namespace OgreRenderer
 {
     class OgreRenderingModule;
     class EventListener;
+    class LogListener;
 
     typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
     typedef boost::shared_ptr<EventListener> EventListenerPtr;
+    typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;
     
     //! Ogre renderer
     /*! Created by OgreRenderingModule.
@@ -76,6 +79,11 @@ namespace OgreRenderer
 
         size_t GetWindowHandle() const;
 
+        //! subscribe a listener to renderer log. Can be used before renderer is initialized.
+        void SubscribeLogListener(const Foundation::LogListenerPtr &listener);
+        //! unsubsribe a listener to renderer log. Can be used before renderer is initialized.
+        void UnsubscribeLogListener(const Foundation::LogListenerPtr &listener);
+
         //! performs update.
         /*! pumps Ogre window events.
          */
@@ -124,6 +132,9 @@ namespace OgreRenderer
         
         //! Ogre event listener
         EventListenerPtr listener_;
+
+        //! Ogre log listener
+        OgreLogListenerPtr log_listener_;
         
         //! Renderer event category
         Core::event_category_id_t event_category_;

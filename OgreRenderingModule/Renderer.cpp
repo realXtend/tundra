@@ -41,6 +41,45 @@ namespace OgreRenderer
         Renderer* renderer_;
     };
 
+/////////////////////////////////////////////////////////////
+
+    //! Ogre log listener, for passing ogre log messages
+    class LogListener : public Ogre::LogListener
+    {
+    public:
+        LogListener() : Ogre::LogListener() {}
+        virtual ~LogListener() {}
+
+        //! Subscribe new listener for ogre log messages
+        void SubscribeListener(const Foundation::LogListenerPtr &listener)
+        {
+            listeners_.push_back(listener);
+        }
+
+        //! Unsubscribe listener for ogre log messages
+        void UnsubscribeListener(const Foundation::LogListenerPtr &listener)
+        {
+            listeners_.remove(listener);
+        }
+
+        void messageLogged( const std::string& message, Ogre::LogMessageLevel lml, bool maskDebug, const std::string &logName )
+        {
+            for (ListenerList::iterator listener = listeners_.begin() ;
+                  listener != listeners_.end() ; 
+                  ++listener)
+            {
+                (*listener)->LogMessage(message);
+            }
+        }
+    private:
+        typedef std::list<Foundation::LogListenerPtr> ListenerList;
+
+        //! list of subscribed listeners
+        ListenerList listeners_;
+    };
+
+/////////////////////////////////////////////////////////
+
     Renderer::Renderer(Framework* framework) :
         initialized_(false),
         framework_(framework),
@@ -48,7 +87,8 @@ namespace OgreRenderer
         camera_(NULL),
         renderwindow_(NULL),
         object_id_(0),
-        listener_(EventListenerPtr(new EventListener(this)))
+        listener_(EventListenerPtr(new EventListener(this))),
+        log_listener_(OgreLogListenerPtr(new LogListener))
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         
@@ -60,7 +100,10 @@ namespace OgreRenderer
     Renderer::~Renderer()
     {
         if (initialized_)
+        {
             Ogre::WindowEventUtilities::removeWindowEventListener(renderwindow_, listener_.get());
+            //Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
+        }
 
         root_.reset();
     }
@@ -80,6 +123,7 @@ namespace OgreRenderer
         logfilepath += "/Ogre.log";
 
         root_ = OgreRootPtr(new Ogre::Root("", "ogre.cfg", logfilepath));
+        Ogre::LogManager::getSingleton().getDefaultLog()->addListener(log_listener_.get());
         LoadPlugins(plugins_filename);
         
 #ifdef _WINDOWS
@@ -210,6 +254,16 @@ namespace OgreRenderer
             renderwindow_->getCustomAttribute("WINDOW", &window_handle);
         
         return window_handle;
+    }
+
+    void Renderer::SubscribeLogListener(const Foundation::LogListenerPtr &listener)
+    {
+        log_listener_->SubscribeListener(listener);
+    }
+
+    void Renderer::UnsubscribeLogListener(const Foundation::LogListenerPtr &listener)
+    {
+        log_listener_->UnsubscribeListener(listener);
     }
     
     void Renderer::Update(Core::f64 frametime)

@@ -28,10 +28,15 @@ namespace Console
     }
 
     // virtual
-    void ConsoleModule::Initialize()
+    void ConsoleModule::PreInitialize()
     {
         manager_ = ConsolePtr(new ConsoleManager(this));
+    }
 
+    // virtual
+    void ConsoleModule::Initialize()
+    {
+        checked_static_cast<ConsoleManager*>(manager_.get())->CreateDelayed();
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Console, manager_.get());
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_ConsoleCommand, checked_static_cast<ConsoleManager*>(manager_.get())->GetCommandManager().get());
 
@@ -40,6 +45,7 @@ namespace Console
 
     void ConsoleModule::Update(Core::f64 frametime)
     {
+        assert (manager_);
         manager_->Update();
     }
 
@@ -49,6 +55,7 @@ namespace Console
         framework_->GetServiceManager()->UnregisterService(manager_.get());
         framework_->GetServiceManager()->UnregisterService(checked_static_cast< ConsoleManager* >(manager_.get())->GetCommandManager().get());
 
+        assert (manager_);
         manager_.reset();
 
         LogInfo("Module " + Name() + " uninitialized.");

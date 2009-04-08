@@ -238,7 +238,7 @@ namespace Foundation
             for ( ; it != modules_.end() ; ++it)
             {
                 if ( it->module_->Type() == type )
-                    return (dynamic_cast<T*>(*it));
+                    return (dynamic_cast<T*>(it->module_));
             }
             return NULL;
         }
