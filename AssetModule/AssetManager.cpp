@@ -65,6 +65,36 @@ namespace Asset
         return Foundation::AssetPtr();
     }
     
+    Foundation::AssetPtr AssetManager::GetIncompleteAsset(const std::string& asset_id, Core::asset_type_t asset_type, Core::uint received)
+    {
+        if (!received)
+            return Foundation::AssetPtr();
+            
+        RexUUID asset_uuid(asset_id);
+        
+        AssetTransfer* transfer = GetTransfer(asset_uuid);
+        
+        // No transfer, either get complete asset or make request
+        if (!transfer)
+            return GetAsset(asset_id, asset_type);
+            
+        if (transfer->GetReceivedContinuous() >= received)
+        {
+            // Make new temporary asset for the incomplete data
+            RexAsset* new_asset = new RexAsset();
+            Foundation::AssetPtr asset_ptr(new_asset);
+            
+            new_asset->asset_id_ = transfer->GetAssetId();
+            new_asset->asset_type_ = transfer->GetAssetType();
+            new_asset->data_.resize(transfer->GetReceivedContinuous());
+            transfer->AssembleData(&new_asset->data_[0]);
+            
+            return asset_ptr;
+        }
+        
+        return Foundation::AssetPtr();
+    }
+    
     void AssetManager::Update(Core::f64 frametime)
     {
         AssetTransferMap::iterator i = texture_transfers_.begin();
@@ -406,7 +436,7 @@ namespace Asset
             return i->second;
 
         // If transfer in progress, do not check disk cache again
-        if (InProgress(asset_id))
+        if (GetTransfer(asset_id))
             return Foundation::AssetPtr();
         boost::filesystem::path file_path(cache_path_ + "/" + asset_id.ToString());
         
@@ -445,20 +475,20 @@ namespace Asset
         return Foundation::AssetPtr();
     }
     
-    bool AssetManager::InProgress(const RexTypes::RexUUID& asset_id)
+    AssetTransfer* AssetManager::GetTransfer(const RexTypes::RexUUID& asset_id)
     {
         AssetTransferMap::iterator i = texture_transfers_.find(asset_id);
         if (i != texture_transfers_.end())
-            return true;
+            return &i->second;
 
-        AssetTransferMap::const_iterator j = asset_transfers_.begin();
+        AssetTransferMap::iterator j = asset_transfers_.begin();
         while (j != asset_transfers_.end())
         {
             if (j->second.GetAssetId() == asset_id)
-                return true;
+                return &j->second;
             ++j;
         }
         
-        return false;
+        return NULL;
     }
 }

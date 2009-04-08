@@ -16,12 +16,23 @@ namespace Foundation
         AssetServiceInterface() {}
         virtual ~AssetServiceInterface() {}
 
-        //! get asset
+        //! gets asset
         /*! \param asset_id asset UUID
             \param asset_type asset type
-            if asset not in cache, will return empty pointer and queue the asset request
+            \return pointer to asset
+            if asset not in cache, will return empty pointer and queue the asset request.
          */
         virtual AssetPtr GetAsset(const std::string& asset_id, Core::asset_type_t asset_type) = 0;
+        
+        //! gets incomplete asset
+        /*! \param asset_id asset UUID
+            \param asset_type asset type
+            \param received minimum continuous bytes received from the start
+            \return pointer to asset
+            if asset not yet requested, will request it and return empty pointer
+            if not enough bytes received, will return empty pointer
+         */
+        virtual AssetPtr GetIncompleteAsset(const std::string& asset_id, Core::asset_type_t asset_type, Core::uint received) = 0;
     };
 }
 
