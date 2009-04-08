@@ -160,11 +160,37 @@ void NetOutMessage::AddVector4(const Vector4 &value)
 void NetOutMessage::AddQuaternion(const Core::Quaternion &value)
 {
 	if (CheckNextVariable() == NetVarQuaternion)
-	{
-		AddBytesUnchecked(sizeof(float), &value.x);
-		AddBytesUnchecked(sizeof(float), &value.y);
-		AddBytesUnchecked(sizeof(float), &value.z);
-		AddBytesUnchecked(sizeof(float), &value.w);
+	{	
+        float norm = (float)sqrt(value.x * value.x + value.y * value.y + value.z * value.z + value.w * value.w);
+        if (norm != 0.0f)
+        {
+            norm = 1.0f / norm;
+
+            float x, y, z;
+            if (value.w >= 0.0f)
+            {
+                x = value.x; 
+                y = value.y;
+                z = value.z;
+            }
+            else
+            {
+                x = -value.x;
+                y = -value.y;
+                z = -value.z;
+            }
+
+            float networkValue = (norm * x);
+            AddBytesUnchecked(sizeof(float), &networkValue);
+            networkValue = (norm * y);
+            AddBytesUnchecked(sizeof(float), &networkValue);
+            networkValue = (norm * z);
+            AddBytesUnchecked(sizeof(float), &networkValue);
+        }
+        else
+        {
+            //! \todo Do something?
+        }
 		AdvanceToNextVariable();
 	}
 }
