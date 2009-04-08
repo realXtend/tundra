@@ -159,40 +159,42 @@ void NetOutMessage::AddVector4(const Vector4 &value)
 
 void NetOutMessage::AddQuaternion(const Core::Quaternion &value)
 {
-	if (CheckNextVariable() == NetVarQuaternion)
-	{	
-        float norm = (float)sqrt(value.x * value.x + value.y * value.y + value.z * value.z + value.w * value.w);
-        if (norm != 0.0f)
-        {
-            norm = 1.0f / norm;
+	if (CheckNextVariable() != NetVarQuaternion)       
+    {
+        ///\todo Log error - bad variable!
+        return;
+    }
 
-            float x, y, z;
-            if (value.w >= 0.0f)
-            {
-                x = value.x; 
-                y = value.y;
-                z = value.z;
-            }
-            else
-            {
-                x = -value.x;
-                y = -value.y;
-                z = -value.z;
-            }
+    // A quaternion is sent over the stream in a slightly compressed form - the w component is omitted.
+    // The other end can reconstruct the w component because the quat is normed.
+    float norm = (float)sqrt(value.x * value.x + value.y * value.y + value.z * value.z + value.w * value.w);
+    const float epsilon = 1e-6f;
+    if (norm  < epsilon)
+    {
+        float zero = 0.f;
+        AddBytesUnchecked(sizeof(float), &zero);
+        AddBytesUnchecked(sizeof(float), &zero);
+        AddBytesUnchecked(sizeof(float), &zero);
+        ///\todo Log error - singular quaternion! App logic is in bad state here.
+    }
+    else
+    {
+        // Normalize the quaternion. \note For optimization purposes, we could only normalize if the norm is not near to one.
 
-            float networkValue = (norm * x);
-            AddBytesUnchecked(sizeof(float), &networkValue);
-            networkValue = (norm * y);
-            AddBytesUnchecked(sizeof(float), &networkValue);
-            networkValue = (norm * z);
-            AddBytesUnchecked(sizeof(float), &networkValue);
-        }
-        else
-        {
-            //! \todo Do something?
-        }
-		AdvanceToNextVariable();
-	}
+        norm = 1.0f / norm;
+
+        if (value.w < 0.0f) // The server will reconstruct the w component as positive - so negate the whole quat here if w is negative.
+            norm = -norm;
+
+        float networkValue = (norm * value.x);
+        AddBytesUnchecked(sizeof(float), &networkValue);
+        networkValue = (norm * value.y);
+        AddBytesUnchecked(sizeof(float), &networkValue);
+        networkValue = (norm * value.z);
+        AddBytesUnchecked(sizeof(float), &networkValue);
+    }
+
+    AdvanceToNextVariable();
 }
 
 void NetOutMessage::AddUUID(const RexUUID &value)
