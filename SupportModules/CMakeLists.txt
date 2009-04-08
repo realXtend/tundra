@@ -14,6 +14,7 @@ include_directories (
 	../Foundation
 	../Interfaces
 	../OgreRenderingModule
+	../InputModuleOIS
 )
 		
 # External library includes

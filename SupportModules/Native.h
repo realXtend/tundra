@@ -46,6 +46,8 @@ namespace Console
         {
             std::cout << text << std::endl;
         }
+
+        virtual void Scroll(int rel) {}
     private:
 
         //! input thread
