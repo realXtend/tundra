@@ -5,6 +5,7 @@
 
 #include "ComponentInterface.h"
 #include "Foundation.h"
+#include "OgreModuleApi.h"
 
 namespace Ogre
 {
@@ -21,7 +22,7 @@ namespace OgreRenderer
     //! Ogre custom object component
     /*! Needs to be attached to a placeable (aka scene node) to be visible.
      */
-    class MODULE_API EC_OgreCustomObject : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreCustomObject : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_OgreCustomObject);
     public:

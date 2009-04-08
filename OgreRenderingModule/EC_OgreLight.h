@@ -5,6 +5,7 @@
 
 #include "ComponentInterface.h"
 #include "Foundation.h"
+#include "OgreModuleApi.h"
 
 namespace Ogre
 {
@@ -21,7 +22,7 @@ namespace OgreRenderer
     //! Ogre light component
     /*! A light can optionally be attached to a placeable (ie. a scene node) but it can also exist without one.
      */
-    class MODULE_API EC_OgreLight : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreLight : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_OgreLight);
     public:

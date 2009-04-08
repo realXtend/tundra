@@ -5,7 +5,7 @@
 #include <sys/types.h>
 #include <ctime>
 
-//#include "OpenSimProtocolModule_API.h"
+#include "OpenSimProtocolModuleApi.h"
 #include "RexTypes.h"
 #include "NetMessageList.h"
 
@@ -14,7 +14,7 @@ class NetMessageManager;
 
 /** Helps building outbound packets by supporting convenient addition of new data to the message. Also
 	tracks that the message is crafted with the right structure. */
-class MODULE_API NetOutMessage
+class OSPROTO_MODULE_API NetOutMessage
 {
 public:
 	NetOutMessage();

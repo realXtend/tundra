@@ -4,6 +4,7 @@
 #define incl_SceneGeneric_h
 
 #include "SceneInterface.h"
+#include "SceneModuleApi.h"
 
 namespace Scene
 {
@@ -14,7 +15,7 @@ namespace Scene
         Contains all entities in the world in a generic fashion.
         Acts as a factory for all entities.
     */
-    class MODULE_API Generic : public Foundation::SceneInterfaceImpl
+    class SCENE_MODULE_API Generic : public Foundation::SceneInterfaceImpl
     {
         friend class SceneManager;
     private:
@@ -77,7 +78,7 @@ namespace Scene
             return (entities_.find(id) != entities_.end());
         }
 
-        class MODULE_API EntityIteratorImpl : public Foundation::SceneInterface::EntityIteratorInterface
+        class SCENE_MODULE_API EntityIteratorImpl : public Foundation::SceneInterface::EntityIteratorInterface
         {
         public:
             EntityIteratorImpl(EntityMap::iterator iter):iter_(iter) {}
@@ -96,7 +97,7 @@ namespace Scene
         SceneIteratorPtr SceneIteratorBegin() { return SceneIteratorPtr(new EntityIteratorImpl(entities_.begin())); }
         SceneIteratorPtr SceneIteratorEnd() { return SceneIteratorPtr(new EntityIteratorImpl(entities_.end())); }
 
-        class MODULE_API ConstEntityIteratorImpl : public SceneInterface::ConstEntityIteratorInterface
+        class SCENE_MODULE_API ConstEntityIteratorImpl : public SceneInterface::ConstEntityIteratorInterface
         {
         public:
             ConstEntityIteratorImpl(EntityMap::const_iterator iter):iter_(iter) {}

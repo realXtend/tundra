@@ -7,7 +7,7 @@
 #include "ModuleInterface.h"
 #include "EventDataInterface.h"
 
-//#include "OpenSimProtocolModule_API.h"
+#include "OpenSimProtocolModuleApi.h"
 #include "NetMessageManager.h"
 #include "NetworkConnection.h"
 #include "INetMessageListener.h"
@@ -66,7 +66,7 @@ namespace OpenSimProtocol
     };
         
     /// Interface for modules.
-    class MODULE_API OpenSimProtocolModule : public Foundation::ModuleInterfaceImpl, public INetMessageListener
+    class OSPROTO_MODULE_API OpenSimProtocolModule : public Foundation::ModuleInterfaceImpl, public INetMessageListener
     {
     public: 
         OpenSimProtocolModule();

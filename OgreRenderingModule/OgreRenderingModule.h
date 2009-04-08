@@ -7,6 +7,7 @@
 #include "ModuleInterface.h"
 #include "Renderer.h"
 #include "ConsoleCommandServiceInterface.h"
+#include "OgreModuleApi.h"
 
 namespace Foundation
 {
@@ -19,7 +20,7 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Renderer> RendererPtr;
     
     //! A renderer module using Ogre
-    class MODULE_API OgreRenderingModule : public Foundation::ModuleInterfaceImpl
+    class OGRE_MODULE_API OgreRenderingModule : public Foundation::ModuleInterfaceImpl
     {
     public:
         OgreRenderingModule();

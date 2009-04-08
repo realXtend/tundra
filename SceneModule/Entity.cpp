@@ -53,4 +53,7 @@ namespace Scene
 
         return Foundation::ComponentInterfacePtr();
     }
+
+    const Entity::ComponentVector &Entity::GetComponentVector() const { return components_; }
+
 }

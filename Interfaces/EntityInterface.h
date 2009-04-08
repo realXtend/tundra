@@ -3,6 +3,8 @@
 #ifndef incl_Interfaces_EntityInterface_h
 #define incl_Interfaces_EntityInterface_h
 
+#include <boost/shared_ptr.hpp>
+
 //#include "ComponentInterface.h"
 
 namespace Foundation
@@ -16,10 +18,10 @@ namespace Foundation
     {
     public:
         //! default constructor
-        EntityInterface()  {}
+        EntityInterface();//  {}
 
         //! destructor
-        virtual ~EntityInterface() {}
+        virtual ~EntityInterface();// {}
 
         virtual bool operator == (const EntityInterface &other) const = 0;
         virtual bool operator != (const EntityInterface &other) const = 0;

@@ -5,6 +5,7 @@
 
 #include "ComponentInterface.h"
 #include "Foundation.h"
+#include "OgreModuleApi.h"
 
 namespace Ogre
 {
@@ -18,7 +19,7 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Renderer> RendererPtr;
     
     //! Ogre placeable (scene node) component
-    class MODULE_API EC_OgrePlaceable : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgrePlaceable : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_OgrePlaceable);
     public:
@@ -77,8 +78,6 @@ namespace OgreRenderer
         //! Ogre scene node
         Ogre::SceneNode* scene_node_;
     };
-
-    typedef EC_OgrePlaceable EC_Placeable;
 }
 
 #endif

@@ -2,7 +2,7 @@
 #ifndef incl_Rex_NetInMessage_h
 #define incl_Rex_NetInMessage_h
 
-//#include "OpenSimProtocolModule_API.h"
+#include "OpenSimProtocolModuleApi.h"
 #include "RexTypes.h"
 #include "NetMessageList.h"
 
@@ -10,7 +10,7 @@ using namespace RexTypes;
 
 /** Helps parsing inbound packets by supporting convenient reading of new data from the message. Also
 	tracks that the message is read with the right structure. */
-class MODULE_API NetInMessage
+class OSPROTO_MODULE_API NetInMessage
 {
 public:
 	NetInMessage(size_t seqNum, const NetMessageInfo *info, const uint8_t *compressedData, size_t numBytes, bool zeroEncoded);

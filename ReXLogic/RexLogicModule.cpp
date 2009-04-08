@@ -43,7 +43,7 @@ namespace RexLogic
     // virtual
     void RexLogicModule::Initialize()
     {
-        // fixme, register WorldLogic to the framework as realxtend worldlogicinterface!
+        /// \todo fixme, register WorldLogic to the framework as realxtend worldlogicinterface!
         // WorldLogic::registerSystem(framework);
         // world_logic_ = new WorldLogic(framework);        
         rexserver_connection_ = RexServerConnectionPtr(new RexServerConnection(framework_)); 

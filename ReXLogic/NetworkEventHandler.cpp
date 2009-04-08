@@ -12,6 +12,12 @@
 #include "EC_SpatialSound.h"
 #include "EC_OpenSimPrim.h"
 
+// Ogre renderer -specific.
+#include "../OgreRenderingModule/EC_OgrePlaceable.h"
+#include "../OgreRenderingModule/Renderer.h"
+#include <OgreManualObject.h>
+#include <OgreSceneManager.h>
+
 namespace RexLogic
 {
     NetworkEventHandler::NetworkEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule)
@@ -23,6 +29,37 @@ namespace RexLogic
     NetworkEventHandler::~NetworkEventHandler()
     {
 
+    }
+
+    void NetworkEventHandler::DebugCreateOgreBoundingBox(Foundation::ComponentInterfacePtr ogrePlaceable)
+    {
+        OgreRenderer::EC_OgrePlaceable &component = dynamic_cast<OgreRenderer::EC_OgrePlaceable&>(*ogrePlaceable.get());
+        OgreRenderer::Renderer *renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
+
+        static int c = 0;
+        std::stringstream ss;
+        ss << "manual " << c++;
+        Ogre::ManualObject *manual = sceneMgr->createManualObject(ss.str());
+        manual->begin("AmbientWhite", Ogre::RenderOperation::OT_LINE_LIST);
+
+        manual->position(-1.f, -1.f, -1.f);
+        manual->position(1.f, -1.f, -1.f);
+        manual->position(-1.f, -1.f, -1.f);
+        manual->position(-1.f, 1.f, -1.f);
+        manual->position(-1.f, -1.f, -1.f);
+        manual->position(-1.f, -1.f, 1.f);
+
+        manual->end();
+        manual->setBoundingBox(Ogre::AxisAlignedBox(Ogre::Vector3(-100, -100, -100), Ogre::Vector3(100, 100, 100)));
+        manual->setDebugDisplayEnabled(true);
+       
+        Ogre::Camera *cam = renderer->GetCurrentCamera();
+        cam->setPosition(-10, -10, -10);
+        cam->lookAt(0,0,0);
+
+        Ogre::SceneNode *node = component.GetSceneNode();
+        node->attachObject(manual);
     }
 
     bool NetworkEventHandler::HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
@@ -74,7 +111,7 @@ namespace RexLogic
         return entity;
     }  
    
-    Foundation::EntityPtr NetworkEventHandler::GetOrCreatePrimEntity(const RexUUID &entityuuid)
+    Foundation::EntityPtr NetworkEventHandler::GetPrimEntity(const RexUUID &entityuuid)
     {
         Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
@@ -95,8 +132,11 @@ namespace RexLogic
         Core::StringVector defaultcomponents;
         defaultcomponents.push_back(EC_OpenSimPrim::NameStatic());
         defaultcomponents.push_back(EC_Viewable::NameStatic());
+        defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
         
         Foundation::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents); 
+
+        DebugCreateOgreBoundingBox(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
         return entity;
     }
     
@@ -124,6 +164,23 @@ namespace RexLogic
         return entity;
     }
 
+    Core::Quaternion UnpackQuaternionFromFloat3(float x, float y, float z)
+    {
+        float sq = x*x+y*y+z*z;
+        // If the inputted coordinates are already too large in magnitude, renormalize the inputs and just set w = 0.
+        // It can happen in two cases: Either float imprecision gave us a bit too high values, so setting w=0 is the proper action,
+        // or then server sent us values that are bad to begin with. Anything is incorrect in this case, but to preserve at least
+        // some sensibility in computations, renormalize the components and set w=0.
+        if (sq >= 1.f) 
+        {              
+            float invNorm = 1.f / sqrt(sq);
+            return Core::Quaternion(x * invNorm, y * invNorm, z * invNorm, 0.f);
+        }
+        float w = 1.f - sqrt(sq);
+        return Core::Quaternion(x, y, z, w);
+    }
+
+    Core::Quaternion UnpackQuaternionFromFloat3(float *data) { return Core::Quaternion(data[0], data[1], data[2]); }
 
     bool NetworkEventHandler::HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data)
     {
@@ -144,19 +201,55 @@ namespace RexLogic
         {
             // Prim
             case 0x09:
+            {
                 entity = GetOrCreatePrimEntity(localid,fullid);
-                if(entity)
+                EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
+                OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
+
+                prim.Material = msg->ReadU8();
+                prim.ClickAction = msg->ReadU8();
+                prim.Scale = msg->ReadVector3();
+                
+                size_t bytes_read = 0;
+                const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
+                if (bytes_read == 60)
+                {
+                    // The data contents:
+                    // ofs  0 - pos xyz - 3 x float (3x4 bytes)
+                    // ofs 12 - vel xyz - 3 x float (3x4 bytes)
+                    // ofs 24 - acc xyz - 3 x float (3x4 bytes)
+                    // ofs 36 - orientation, quat with last (w) component omitted - 3 x float (3x4 bytes)
+                    // ofs 48 - angular velocity - 3 x float (3x4 bytes)
+                    // total 60 bytes
+                    ogrePos.SetPosition(*(Core::Vector3df*)(&objectdatabytes[0]));
+                    ogrePos.SetOrientation(UnpackQuaternionFromFloat3((float*)&objectdatabytes[36]));
+                }
+                else
+                    RexLogicModule::LogError("Error reading ObjectData for prim:" + Core::ToString(prim.LocalId) + ". Bytes read:" + Core::ToString(bytes_read));
+                
+                prim.ParentId = msg->ReadU32();
+                prim.UpdateFlags = msg->ReadU32();
+                
+                // Skip path related variables
+                msg->SkipToFirstVariableByName("Text");
+                prim.HoveringText = (const char *)msg->ReadBuffer(&bytes_read); 
+                msg->SkipToNextVariable();      // TextColor
+                prim.MediaUrl = (const char *)msg->ReadBuffer(&bytes_read);   
+
+/*                if(entity)
                 {
                     Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
                     checked_static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectUpdate(data);
-                }
-                break;
+                }*/
+            }
+            break;
             // Avatar                
             case 0x2f:
                 entity = GetAvatarEntitySafe(localid);
                 /// \todo tucofixme, set values to component      
                 break;
         }
+
         return false;
     }
 
@@ -224,7 +317,7 @@ namespace RexLogic
         data->message->SkipToFirstVariableByName("Parameter");
         RexUUID primuuid(data->message->ReadString());
         
-        Foundation::EntityPtr entity = GetOrCreatePrimEntity(primuuid);
+        Foundation::EntityPtr entity = GetPrimEntity(primuuid);
         if(entity)
         {
             // Calculate full data size
@@ -256,11 +349,11 @@ namespace RexLogic
 
             Foundation::ComponentInterfacePtr oscomponent = entity->GetComponent("EC_OpenSimPrim");
             checked_static_cast<EC_OpenSimPrim*>(oscomponent.get())->HandleRexPrimData(fulldata);
-            // todo tucofixme, checked_static_cast<EC_OpenSimPrim*>(oscomponent.get())->PrintDebug();
+            /// \todo tucofixme, checked_static_cast<EC_OpenSimPrim*>(oscomponent.get())->PrintDebug();
 
             Foundation::ComponentInterfacePtr viewcomponent = entity->GetComponent("EC_Viewable");
             checked_static_cast<EC_Viewable*>(viewcomponent.get())->HandleRexPrimData(fulldata);
-            // todo tucofixme, checked_static_cast<EC_Viewable*>(viewcomponent.get())->PrintDebug();
+            /// \todo tucofixme, checked_static_cast<EC_Viewable*>(viewcomponent.get())->PrintDebug();
             
             delete fulldata;
         }

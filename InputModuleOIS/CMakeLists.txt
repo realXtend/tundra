@@ -38,7 +38,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Core Foundation)
+target_link_libraries (${TARGET_NAME} Core Foundation Interfaces)
 
 # External library linkage
 LINK_BOOST()

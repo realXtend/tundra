@@ -30,6 +30,7 @@ INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_CURL()
 INCLUDE_XMLRPCEPI()
+INCLUDE_OGRE()
 
 add_definitions (-DMODULE_EXPORTS)
 
@@ -45,6 +46,7 @@ set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 # External library linkage
 LINK_BOOST()
 LINK_POCO()
+LINK_OGRE()
 
 if (MSVC)
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})
@@ -52,7 +54,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation OpenSimProtocolModule RexCommon)
+target_link_libraries (${TARGET_NAME} Foundation Interfaces OpenSimProtocolModule RexCommon OgreRenderingModule)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

@@ -2,11 +2,11 @@
 #ifndef incl_INetMessageListener_h
 #define incl_INetMessageListener_h
 
-//#include "OpenSimProtocolModule_API.h"
+#include "OpenSimProtocolModuleApi.h"
 
 /// Interface that is implemented by an object that is interested in receiving network messages.
 /// Register network listener objects to a NetMessageManager.
-class MODULE_API INetMessageListener
+class OSPROTO_MODULE_API INetMessageListener
 {
 public:
 	INetMessageListener() {}

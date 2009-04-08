@@ -4,11 +4,11 @@
 #include "ModuleInterface.h"
 #include "CommunicationManagerServiceInterface.h"
 #include "TelepathyCommunicationManager.h"
+#include "CommunicationModuleApi.h"
 
 namespace Communication
 {
-	//MODULE_API 
-	class MODULE_API CommunicationModule : public Foundation::ModuleInterfaceImpl
+	class COMMS_MODULE_API CommunicationModule : public Foundation::ModuleInterfaceImpl
 	{
 	public:
 		CommunicationModule(void);

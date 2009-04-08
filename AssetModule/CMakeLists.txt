@@ -23,7 +23,7 @@ INCLUDE_POCO()
 INCLUDE_CURL()
 INCLUDE_XMLRPCEPI()
 
-add_definitions (-DMODULE_EXPORTS)
+add_definitions (-DASSET_MODULE_EXPORTS -DMODULE_EXPORTS)
 
 # Define dynamic library
 if (NOT MSVC)
@@ -35,7 +35,7 @@ set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Core Foundation OpenSimProtocolModule RexCommon)
+target_link_libraries (${TARGET_NAME} Core Foundation Interfaces OpenSimProtocolModule RexCommon)
 
 # External library linkage
 LINK_BOOST()
