@@ -85,14 +85,15 @@ namespace RexLogic
         return false;
     }
 
-    Foundation::EntityPtr NetworkEventHandler::GetOrCreatePrimEntity(Core::entity_id_t entityid)
+    Foundation::EntityPtr NetworkEventHandler::GetPrimEntity(Core::entity_id_t entityid)
     {
         Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
 
+        if (!scene)
+            return Foundation::EntityPtr();
+
         Foundation::EntityPtr entity = scene->GetEntity(entityid);
-        if (!entity)
-            return CreateNewPrimEntity(entityid);
 
         ///\todo Check that the entity has a prim component, if not, add it to the entity. 
         return entity;
@@ -107,7 +108,11 @@ namespace RexLogic
         if (!entity)
         {
             UUIDs_[fullid] = entityid;
-            return CreateNewPrimEntity(entityid);
+            Foundation::EntityPtr entity = CreateNewPrimEntity(entityid);
+            EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
+            prim.LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
+            prim.FullId = fullid;
+            return entity;
         }
 
         ///\todo Check that the entity has a prim component, if not, add it to the entity.
@@ -173,12 +178,12 @@ namespace RexLogic
  
         msg->ResetReading();
         uint64_t regionhandle = msg->ReadU64();
-        msg->SkipToNextVariable(); // TimeDilation U16
+        msg->SkipToNextVariable(); // TimeDilation U16 ///\todo Unhandled inbound variable 'TimeDilation'.
 
         uint32_t localid = msg->ReadU32(); 
-        msg->SkipToNextVariable();		// State U8
+        msg->SkipToNextVariable();		// State U8 ///\todo Unhandled inbound variable 'State'.
         RexUUID fullid = msg->ReadUUID();
-        msg->SkipToNextVariable();		// CRC U32
+        msg->SkipToNextVariable();		// CRC U32 ///\todo Unhandled inbound variable 'CRC'.
         uint8_t pcode = msg->ReadU8();
         
         Foundation::EntityPtr entity;
@@ -190,6 +195,10 @@ namespace RexLogic
                 entity = GetOrCreatePrimEntity(localid,fullid);
                 EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
                 OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
+
+                ///\todo Are we setting the param or looking up by this param? I think the latter, but this is now doing the former. 
+                ///      Will cause problems with multigrid support.
+                prim.RegionHandle = regionhandle; 
 
                 prim.Material = msg->ReadU8();
                 prim.ClickAction = msg->ReadU8();
@@ -246,12 +255,16 @@ namespace RexLogic
         msg->SkipToFirstVariableByName("LocalID");
         uint32_t localid = msg->ReadU32();
         
-        Foundation::EntityPtr entity = GetOrCreatePrimEntity(localid);
-        if(entity)
+        Foundation::EntityPtr entity = GetPrimEntity(localid);
+        if (!entity)
         {
-            Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
-            checked_static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectName(data);        
+            ///\todo Log warning - sending packets related to non-existing prim, or perhaps packets coming out-of-order?
+            return false;
         }
+
+        Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
+        checked_static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectName(data);        
+
         return false;
     }
 
@@ -263,12 +276,16 @@ namespace RexLogic
         msg->SkipToFirstVariableByName("LocalID");
         uint32_t localid = msg->ReadU32();
         
-        Foundation::EntityPtr entity = GetOrCreatePrimEntity(localid);
-        if(entity)
+        Foundation::EntityPtr entity = GetPrimEntity(localid);
+        if (!entity)
         {
-            Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
-            checked_static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectDescription(data);        
+            ///\todo Log warning - sending packets related to non-existing prim, or perhaps packets coming out-of-order?
+            return false;
         }
+
+        Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
+        checked_static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectDescription(data);        
+
         return false;     
     }
 
