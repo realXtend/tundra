@@ -46,7 +46,9 @@ namespace Asset
         virtual Foundation::AssetPtr GetAsset(const std::string& asset_id, Core::asset_type_t asset_type);
 
         //! gets incomplete asset
-        /*! \param asset_id asset UUID
+        /*! note: a new incomplete asset object (with copy of the data) will be created for each call. Please
+            do not store the shared pointer for longer than necessary.
+            \param asset_id asset UUID
             \param asset_type asset type
             \param received minimum continuous bytes received from the start
             \return pointer to asset
