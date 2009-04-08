@@ -32,6 +32,7 @@ namespace RexLogic
             OpenSimProtocol::NetworkEventInboundData *netdata = checked_static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
             switch(netdata->messageID)
             {
+                case RexNetMsgAgentMovementComplete:    return HandleOSNE_AgentMovementComplete(netdata); break;
                 case RexNetMsgGenericMessage:           return HandleOSNE_GenericMessage(netdata); break;
                 case RexNetMsgLogoutReply:              return HandleOSNE_LogoutReply(netdata); break;
                 case RexNetMsgObjectDescription:        return HandleOSNE_ObjectDescription(netdata); break; 
@@ -283,7 +284,7 @@ namespace RexLogic
 
     bool NetworkEventHandler::HandleOSNE_LogoutReply(OpenSimProtocol::NetworkEventInboundData* data)   
     {
-        data->message->ResetReading();    
+        data->message->ResetReading();
         RexUUID aID = data->message->ReadUUID();
         RexUUID sID = data->message->ReadUUID();
 
@@ -294,4 +295,21 @@ namespace RexLogic
         } 
         return false;   
     } 
+  
+    bool NetworkEventHandler::HandleOSNE_AgentMovementComplete(OpenSimProtocol::NetworkEventInboundData* data)
+    {
+        data->message->ResetReading();
+
+        RexUUID agentid = data->message->ReadUUID();
+        RexUUID sessionid = data->message->ReadUUID();
+        
+        if (agentid == rexlogicmodule_->GetServerConnection()->GetInfo().agentID && sessionid == rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
+        {
+            Vector3 position = data->message->ReadVector3(); // todo tucofixme, set position to avatar
+            Vector3 lookat = data->message->ReadVector3(); // todo tucofixme, set lookat direction to avatar
+            uint64_t regionhandle = data->message->ReadU64();
+            uint32_t timestamp = data->message->ReadU32();
+        }
+        return false;
+    }
 }
