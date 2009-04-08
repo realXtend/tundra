@@ -13,6 +13,10 @@ include_directories (
 	../Interfaces
 )
 
+# External library includes
+INCLUDE_BOOST()
+INCLUDE_POCO()
+
 add_definitions (-DMODULE_EXPORTS)
 
 # Define static library
