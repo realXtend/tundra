@@ -47,7 +47,7 @@ namespace Console
     void ConsoleModule::Update(Core::f64 frametime)
     {
         assert (manager_);
-        manager_->Update();
+        manager_->Update(frametime);
     }
 
     // virtual

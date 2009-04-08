@@ -20,6 +20,8 @@ namespace OgreRenderer
         , char_height_(0.018f)
         , visible_(false)
         , max_visible_lines_(21)
+        , position_(0)
+        , speed_(3.0f)
     {
         CreateOverlay();
     }
@@ -29,6 +31,7 @@ namespace OgreRenderer
         , height_(other.height_)
         , char_height_(other.char_height_)
         , max_visible_lines_(other.max_visible_lines_)
+        , speed_(3.0f)
     {
         // not meant to be used but still needed, since components are generally meant to be copyable
         assert (false);
@@ -64,7 +67,6 @@ namespace OgreRenderer
 
         container_ = checked_static_cast<Ogre::OverlayContainer*>(Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "ConsoleContainer"));
         container_->setPosition(0.f, -height_);
-        container_->setPosition(0.f, 0);
         container_->setDimensions(1.f, height_);
         container_->setMaterialName("Console");
         container_->addChild(overlay_element_);
@@ -88,14 +90,36 @@ namespace OgreRenderer
 
     void EC_OgreConsoleOverlay::SetVisible(bool visible)
     {
-        if (visible)
-            overlay_->show();
-        else
-            overlay_->hide();
+        visible_ = visible;
     }
 
     bool EC_OgreConsoleOverlay::IsVisible() const
     {
-        return overlay_->isVisible();
+        return visible_;
+    }
+
+    void EC_OgreConsoleOverlay::Update(Core::f64 frametime)
+    {
+        if (visible_ && position_ < Ogre::Math::HALF_PI)
+        {
+            if (overlay_->isVisible() == false) overlay_->show();
+
+            position_ += frametime * speed_;
+            if (position_ > Ogre::Math::HALF_PI) 
+                position_ = Ogre::Math::HALF_PI;
+
+            container_->setTop( -height_ + Ogre::Math::Sin(position_) * height_);
+        }
+        else if (visible_ == false && abs(position_) > 0.001f)
+        {
+            position_ -= frametime * speed_;
+            if (position_ <= 0.f)
+            {
+                position_ = 0.f;
+                overlay_->hide();
+            }
+
+            container_->setTop( -height_ + Ogre::Math::Sin(position_) * height_);
+        }
     }
 }

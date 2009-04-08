@@ -52,6 +52,9 @@ namespace OgreRenderer
 
         //! Returns true if overlay is visible, false otherwise
         bool IsVisible() const;
+
+        //! visual effects
+        void Update(Core::f64 frametime);
         
     private:
         //! Create the Ogre overlay
@@ -83,6 +86,12 @@ namespace OgreRenderer
 
         //! mutex for the console
         Core::Mutex mutex_;
+
+        //! console position for animation
+        Core::Real position_;
+
+        //! animation speed
+        const Core::Real speed_;
     };
 }
 
