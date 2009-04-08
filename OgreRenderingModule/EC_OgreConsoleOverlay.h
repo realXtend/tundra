@@ -19,9 +19,7 @@ namespace OgreRenderer
     class Renderer;
     typedef boost::shared_ptr<Renderer> RendererPtr;
     
-    //! Ogre mesh component
-    /*! Needs to be attached to a placeable (aka scene node) to be visible.
-     */
+    //! Ogre overlay for debug console
     class MODULE_API EC_OgreConsoleOverlay : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_OgreConsoleOverlay);
@@ -42,25 +40,16 @@ namespace OgreRenderer
         //! assignment operator. See copy constructor
         EC_OgreConsoleOverlay &operator ==(const EC_OgreConsoleOverlay &other) { assert (false); return *this; }
 
-        //! Print out the specified string
-        void Print(const std::string &text);
+        //! displays the text as is in the overlay
+        //! \todo not threadsafe, needs render mutex
+        void Display(const std::string &text);
 
-        //! update console
-        __inline void Update(Core::f64 frametime)
-        {
-            if (visible_)
-                UpdateInternal(frametime);
-        }
+        //! Returns the max number of lines that can be visible at ones
+        size_t GetMaxVisibleLines() const { return max_visible_lines_; }
         
     private:
         //! Create the Ogre overlay
         void CreateOverlay();
-
-        //! Displays buffer's content on the overlay. Only displays max_visible_lines_ lines.
-        void DisplayCurrentBuffer();
-
-        //! for blinking cursor and maybe some other stuff
-        void UpdateInternal(Core::f64 frametime);
 
         //! Overlay element for the console
         Ogre::TextAreaOverlayElement *overlay_element_;
@@ -83,14 +72,8 @@ namespace OgreRenderer
         //! is the console visible
         bool visible_;
 
-        //! Contains all lines printed to the console
-        Core::StringList message_lines_;
-
         //! maximum lines the console can display. depends on height and font size
         const size_t max_visible_lines_;
-
-        //! maximum number of lines the console will buffer
-        const size_t max_lines_;
 
         //! mutex for the console
         Core::Mutex mutex_;

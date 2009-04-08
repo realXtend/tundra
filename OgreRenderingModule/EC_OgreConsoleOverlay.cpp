@@ -19,8 +19,7 @@ namespace OgreRenderer
         , height_(0.4f)
         , char_height_(0.018f)
         , visible_(false)
-        , max_visible_lines_(3)
-        , max_lines_(4)
+        , max_visible_lines_(21)
     {
         CreateOverlay();
     }
@@ -30,7 +29,6 @@ namespace OgreRenderer
         , height_(other.height_)
         , char_height_(other.char_height_)
         , max_visible_lines_(other.max_visible_lines_)
-        , max_lines_(other.max_lines_)
     {
         // not meant to be used
         assert (false);
@@ -38,8 +36,12 @@ namespace OgreRenderer
 
     EC_OgreConsoleOverlay::~EC_OgreConsoleOverlay()
     {
-        //! \todo unsurprisingly causes crash when Ogre Root / renderer is destroyed
-        // Ogre::OverlayManager::getSingleton().destroy("Console");
+        // Funny thing, Ogre manual says not to destroy overlay elements while
+        // they are still contained in some Overlay but doing this in any other
+        // way seems to cause crashes.
+        Ogre::OverlayManager::getSingleton().destroyOverlayElement("ConsoleText");
+        Ogre::OverlayManager::getSingleton().destroyOverlayElement("ConsoleContainer");
+        Ogre::OverlayManager::getSingleton().destroy("Console");
     }
 
 
@@ -77,39 +79,9 @@ namespace OgreRenderer
         overlay_->setZOrder(500);
     }
 
-    void EC_OgreConsoleOverlay::Print(const std::string &text)
+    void EC_OgreConsoleOverlay::Display(const std::string &text)
     {
-        {
-            Core::MutexLock lock(mutex_);
-
-            message_lines_.push_front(text);
-            if (message_lines_.size() >= max_lines_)
-                message_lines_.pop_back();
-        }
-
-        DisplayCurrentBuffer();
-    }
-
-    void EC_OgreConsoleOverlay::DisplayCurrentBuffer()
-    {
-        Core::MutexLock lock(mutex_);
-
-        std::string page;
-        size_t num_lines = 0;
-        for (Core::StringList::const_iterator line = message_lines_.begin() ;
-             line != message_lines_.end() ; ++line)
-        {
-            num_lines++;
-            page = *line + '\n' + page;
-
-            if (num_lines >= max_visible_lines_)
-                break;
-        }
-
-        overlay_element_->setCaption(page);
-    }
-
-    void EC_OgreConsoleOverlay::UpdateInternal(Core::f64 frametime)
-    {
+        //! \todo render mutex
+        overlay_element_->setCaption(text);
     }
 }

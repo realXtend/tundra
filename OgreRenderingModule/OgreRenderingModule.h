@@ -27,6 +27,7 @@ namespace OgreRenderer
 
         virtual void Load();
         virtual void Unload();
+        virtual void PreInitialize();
         virtual void Initialize();
         virtual void PostInitialize();
         virtual void Uninitialize();

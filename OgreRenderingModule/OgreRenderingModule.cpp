@@ -43,9 +43,16 @@ namespace OgreRenderer
     }
 
     // virtual
+    void OgreRenderingModule::PreInitialize()
+    {
+        // create renderer here, so it can be accessed in uninitialized state by other module's PreInitialize()
+        renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_));
+    }
+
+    // virtual
     void OgreRenderingModule::Initialize()
     {        
-        renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_));
+        assert (renderer_);
         renderer_->Initialize();
         
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Renderer, renderer_.get());
