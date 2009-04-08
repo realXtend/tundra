@@ -15,6 +15,7 @@ include (XmlRpcEpi)
 include (Ogre)
 include (Gtkmm)
 include (Python)
+include (OIS)
 
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
@@ -41,6 +42,7 @@ FIND_POCO()
 FIND_CURL()
 FIND_XMLRPCEPI()
 FIND_OGRE()
+FIND_OIS()
 
 # Default additional include & library directories
 include_directories (${REX_DEP_PATH}/include)
@@ -68,4 +70,5 @@ add_subdirectory (SupportModules)
 add_subdirectory (AssetModule)
 add_subdirectory (CommunicationModule)
 #add_subdirectory (CommunicationUIModule)
+add_subdirectory (InputModuleOIS)
 

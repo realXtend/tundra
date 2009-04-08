@@ -52,6 +52,7 @@ namespace Foundation
             MT_Asset,
 			MT_Communication,
 			MT_CommunicationUI,
+            MT_Input,
 			MT_Unknown
 		};
 
@@ -62,7 +63,7 @@ namespace Foundation
             static const std::string type_strings[MT_Unknown] = {
                  "SceneModule", "OgreRenderingModule", "SoundModule", "GtkmmUI", "RexLogicModule", "OpenSimProtocolModule",
                  "TestModule", "NetTestLogicModule", "PythonScriptModule", "ConsoleModule", "AssetModule", "CommunicationModule",
-				 "CommunicationUIModule" };
+				 "CommunicationUIModule", "InputModuleOIS" };
 
             return type_strings[type];
         }

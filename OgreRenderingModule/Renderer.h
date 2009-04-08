@@ -38,6 +38,7 @@ namespace OgreRenderer
     public:
         //! postrender event id
         static const Core::event_id_t EVENT_POST_RENDER = 0x1;
+        static const Core::event_id_t EVENT_WINDOW_CLOSED = 0x2;
         
         Renderer(Foundation::Framework* framework);
         virtual ~Renderer();
@@ -72,6 +73,8 @@ namespace OgreRenderer
             // Return handle to the raycast request. The request is updated with the result
             // after raycast has been performed. (see Smoke demo, collision handling)
         }
+
+        size_t GetWindowHandle() const;
 
         //! performs update.
         /*! pumps Ogre window events.

@@ -4,11 +4,19 @@
 
 #include <OIS.h>
 
+#include "Renderer.h"
 #include "InputModuleOIS.h"
+#include "InputEvents.h"
 
 namespace Input
 {
-    InputModuleOIS::InputModuleOIS() : ModuleInterfaceImpl(type_static_)
+    InputModuleOIS::InputModuleOIS() : 
+        ModuleInterfaceImpl(type_static_)
+        , input_manager_(0)
+        , keyboard_(0)
+        , mouse_(0)
+        , joy_(0)
+        , event_category_(0)
     {
     }
 
@@ -33,13 +41,22 @@ namespace Input
     {
         LogInfo("*** Initializing OIS ***");
 
-        OIS::ParamList pl;
+        if (framework_->GetServiceManager()->IsRegistered(Foundation::Service::ST_Renderer) == false)
+        {
+            LogError("Failed to initialize. No renderer service registered.");
+            return;
+        }
+        size_t window_handle = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer)->GetWindowHandle();
+        if (window_handle == 0)
+        {
+            LogError("Failed to initialize. No open window.");
+            return;
+        }
 
-        //size_t windowHnd = 0;
-        //std::ostringstream windowHndStr;
-        //win->getCustomAttribute("WINDOW", &windowHnd);
-        //windowHndStr << windowHnd;
-        //pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
+        event_category_ = framework_->GetEventManager()->RegisterEventCategory("Input");
+
+        OIS::ParamList pl;
+        pl.insert(std::make_pair(std::string("WINDOW"), Core::ToString(window_handle)));
 
 #if defined OIS_WIN32_PLATFORM
         pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_BACKGROUND" )));
@@ -49,32 +66,88 @@ namespace Input
         pl.insert(std::make_pair(std::string("x11_mouse_hide"), std::string("false")));
 #endif
 
-//        OIS::InputManager *inputManager = OIS::InputManager::createInputSystem( pl );
+        // buffered key input
+        //OIS::InputManager *input_manager = OIS::InputManager::createInputSystem( pl );
+        //OIS::Keyboard *keyboard = static_cast<OIS::Keyboard*>(input_manager->createInputObject( OIS::OISKeyboard, true ));
 
-        OIS::InputManager *inputManager = OIS::InputManager::createInputSystem( 0 );
+        input_manager_ = OIS::InputManager::createInputSystem( pl );
 
-        OIS::Keyboard *Keyboard = static_cast<OIS::Keyboard*>(inputManager->createInputObject( OIS::OISKeyboard, false ));
-        OIS::Mouse *mouse = static_cast<OIS::Mouse*>(inputManager->createInputObject( OIS::OISMouse, false ));
-        //try
-        //{
-        //    Joy = static_cast<OIS::JoyStick*>(InputManager->createInputObject( OIS::OISJoyStick, bufferedJoy ));
-        //}
-        //catch(...)
-        //{
-        //    Joy = 0;
-        //}
+        keyboard_ = static_cast<OIS::Keyboard*>(input_manager_->createInputObject( OIS::OISKeyboard, false ));
+        LogInfo("Keyboard input initialized.");
+        mouse_ = static_cast<OIS::Mouse*>(input_manager_->createInputObject( OIS::OISMouse, false ));
+        LogInfo("Mouse input initialized.");
+        try
+        {
+            joy_ = static_cast<OIS::JoyStick*>(input_manager_->createInputObject( OIS::OISJoyStick, false ));
+            LogInfo("Joystick / gamepad input initialized.");
+        }
+        catch(...)
+        {
+            LogInfo("Joystick / gamepad not found.");
+        }
+
         LogInfo("Module " + Name() + " initialized.");
     }
 
     // virtual 
     void InputModuleOIS::Uninitialize()
     {
+        WindowClosed();
+
         LogInfo("Module " + Name() + " uninitialized.");
     }
 
     // virtual 
     void InputModuleOIS::Update(Core::f64 frametime)
     {
+        if( keyboard_ && mouse_ )
+        {
+            keyboard_->capture();
+	        mouse_->capture();
+    	    if ( joy_ ) joy_->capture();
+
+            const OIS::MouseState &ms = mouse_->getMouseState();
+            if (ms.Z.rel != 0)
+            {
+                Events::MouseWheel mw(ms.Z.rel, ms.Z.abs);
+                framework_->GetEventManager()->SendEvent(event_category_, Events::MOUSE_WHEEL, &mw);
+            }
+        }
+    }
+
+    // virtual
+    bool InputModuleOIS::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        if (framework_->GetEventManager()->QueryEventCategory("Renderer") == category_id)
+        {
+            if (event_id == OgreRenderer::Renderer::EVENT_WINDOW_CLOSED)
+                WindowClosed();
+        }
+        //if (framework_->GetEventManager()->QueryEventCategory("Input") == category_id)
+        //{
+        //    if (event_id == Events::MOUSE_WHEEL)
+        //        LogInfo(Core::ToString(checked_static_cast<Events::MouseWheel*>(data)->rel_));
+        //}
+
+        // no need to mark events handled
+        return false;
+    }
+
+    void InputModuleOIS::WindowClosed()
+    {
+        if( input_manager_ )
+        {
+            input_manager_->destroyInputObject( mouse_ );
+            input_manager_->destroyInputObject( keyboard_ );
+            input_manager_->destroyInputObject( joy_ );
+
+            OIS::InputManager::destroyInputSystem(input_manager_);
+
+            input_manager_ = 0;
+            mouse_ = 0;
+            keyboard_ = 0;
+            joy_ = 0;
+        }
     }
 }
 
