@@ -48,6 +48,8 @@ namespace Console
         }
 
         virtual void Scroll(int rel) {}
+        virtual void SetVisible(bool visible) {}
+        virtual bool IsVisible() const { return true; }
     private:
 
         //! input thread

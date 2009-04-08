@@ -21,6 +21,9 @@ namespace OIS
 // Input related functionality. May be keyboard, mouse, game controllers or anything
 namespace Input
 {
+    class BufferedKeyboard;
+    typedef boost::shared_ptr<BufferedKeyboard> BufferedKeyboardPtr;
+
     //! Input module that uses OIS for input. OIS is used in unbuffered mode, so doesn't work well for UI input.
     class InputModuleOIS : public Foundation::ModuleInterfaceImpl
     {
@@ -52,12 +55,18 @@ namespace Input
         */
         void WindowClosed();
 
+        //! input event category
         Core::event_category_id_t event_category_;
 
+        //! OIS objects
         OIS::InputManager *input_manager_;
         OIS::Keyboard *keyboard_;
+        OIS::Keyboard *keyboard_buffered_;
         OIS::Mouse *mouse_;
         OIS::JoyStick *joy_;
+
+        //! buffered keyboard
+        BufferedKeyboardPtr buffered_keyboard_;
     };
 }
 #endif

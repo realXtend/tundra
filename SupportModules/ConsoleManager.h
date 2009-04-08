@@ -53,6 +53,16 @@ namespace Console
             ogre_->Scroll(rel);
         }
 
+        virtual void SetVisible(bool visible)
+        {
+            ogre_->SetVisible(visible);
+        }
+
+        virtual bool IsVisible() const
+        {
+            return ogre_->IsVisible();
+        }
+
         //! Returns command manager
         CommandManagerPtr GetCommandManager() const {return command_manager_; }
 

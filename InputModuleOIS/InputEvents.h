@@ -10,7 +10,8 @@ namespace Input
     //! Contains all input events in generic fashion. Does not depend on any one input method
     namespace Events
     {
-        static const Core::event_id_t SCROLL = 1;
+        // Event #id must be synced with events in InputEventOIS.h!!
+        static const Core::event_id_t SCROLL = 3;
 
         class MouseWheel : public Foundation::EventDataInterface
         {

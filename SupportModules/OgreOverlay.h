@@ -37,6 +37,9 @@ namespace Console
 
         virtual void Scroll(int rel);
 
+        virtual void SetVisible(bool visible);
+        virtual bool IsVisible() const;
+
     private:
         void DisplayCurrentBuffer();
 

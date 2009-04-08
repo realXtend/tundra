@@ -25,6 +25,12 @@ namespace Console
 
         //! scroll console text rel amount
         virtual void Scroll(int rel) = 0;
+
+        //! Hide / show console
+        virtual void SetVisible(bool visible) = 0;
+
+        //! Returns true if console is visible, false otherwise
+        virtual bool IsVisible() const = 0;
     };
 
     typedef boost::shared_ptr<ConsoleServiceInterface> ConsolePtr;
