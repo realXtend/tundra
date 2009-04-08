@@ -15,6 +15,8 @@ namespace Foundation
 
         virtual void Render() = 0;
         virtual void Raycast() = 0;
+        //! Returns main window handle, or 0 if no window is opened
+        virtual size_t GetWindowHandle() const = 0;
     };
 }
 

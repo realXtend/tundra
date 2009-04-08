@@ -31,7 +31,10 @@ namespace OgreRenderer
         void windowClosed(Ogre::RenderWindow* rw)
         {
             if (rw == renderer_->renderwindow_)
+            {
                 renderer_->framework_->Exit();
+                renderer_->framework_->GetEventManager()->SendEvent(renderer_->event_category_, Renderer::EVENT_WINDOW_CLOSED, NULL);
+            }
         }
         
     private:
@@ -51,6 +54,7 @@ namespace OgreRenderer
         
         event_category_ = event_manager->RegisterEventCategory("Renderer");
         event_manager->RegisterEvent(event_category_, EVENT_POST_RENDER, "PostRender");
+        event_manager->RegisterEvent(event_category_, EVENT_WINDOW_CLOSED, "WindowClosed");
     }
     
     Renderer::~Renderer()
@@ -197,6 +201,15 @@ namespace OgreRenderer
         camera_ = scenemanager_->createCamera("Camera");
         Ogre::Viewport* viewport = renderwindow_->addViewport(camera_);
         camera_->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
+    }
+
+    size_t Renderer::GetWindowHandle() const
+    {
+        size_t window_handle = 0;
+        if (renderwindow_)
+            renderwindow_->getCustomAttribute("WINDOW", &window_handle);
+        
+        return window_handle;
     }
     
     void Renderer::Update(Core::f64 frametime)

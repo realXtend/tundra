@@ -10,10 +10,18 @@ namespace Foundation
    class Framework;
 }
 
+namespace OIS
+{
+    class InputManager;
+    class Keyboard;
+    class Mouse;
+    class JoyStick;
+}
+
 // Input related functionality. May be keyboard, mouse, game controllers or anything
 namespace Input
 {
-    //! Input module that uses OIS for input
+    //! Input module that uses OIS for input. OIS is used in unbuffered mode, so doesn't work well for UI input.
     class InputModuleOIS : public Foundation::ModuleInterfaceImpl
     {
     public:
@@ -27,6 +35,9 @@ namespace Input
 
         virtual void Update(Core::f64 frametime);
 
+        virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, 
+            Foundation::EventDataInterface* data);
+
         MODULE_LOGGING_FUNCTIONS
 
         //! returns name of this module. Needed for logging.
@@ -36,6 +47,17 @@ namespace Input
 
 
     private:
+        //! Handle closing the main window
+        /*! Should only be called when main window gets closed, not f.ex. when additional render windows get closed.
+        */
+        void WindowClosed();
+
+        Core::event_category_id_t event_category_;
+
+        OIS::InputManager *input_manager_;
+        OIS::Keyboard *keyboard_;
+        OIS::Mouse *mouse_;
+        OIS::JoyStick *joy_;
     };
 }
 #endif
