@@ -3,19 +3,24 @@
 #ifndef incl_InputEventHandler_h
 #define incl_InputEventHandler_h
 
+#include "ComponentInterface.h"
+#include "Foundation.h"
+
 namespace RexLogic
 {
+    class RexLogicModule;
+
     class InputEventHandler
     {
     public:
-        InputEventHandler();
+        InputEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule);
         virtual ~InputEventHandler();
         
-        void HandleLeftMouseClick();
-        void HandleRightMouseClick();
-        void HandleMouseMove();
-        void HandleKeyboardEvent();
-
+        bool HandleInputEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+    private:
+        Foundation::Framework *framework_;
+     
+        RexLogicModule *rexlogicmodule_;
     };
 }
 

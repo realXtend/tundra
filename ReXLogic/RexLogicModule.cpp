@@ -5,6 +5,7 @@
 #include "ComponentManager.h"
 #include "Poco/ClassLibrary.h"
 #include "NetworkEventHandler.h"
+#include "InputEventHandler.h"
 #include "EventDataInterface.h"
 
 #include "EC_Viewable.h"
@@ -46,7 +47,8 @@ namespace RexLogic
         // WorldLogic::registerSystem(framework);
         // world_logic_ = new WorldLogic(framework);        
         rexserver_connection_ = RexServerConnectionPtr(new RexServerConnection(framework_)); 
-        network_handler_ = new NetworkEventHandler(framework_,this);  
+        network_handler_ = new NetworkEventHandler(framework_,this);
+        input_handler_ = new InputEventHandler(framework_,this);  
         LogInfo("Module " + Name() + " initialized.");
     }
 
@@ -63,6 +65,14 @@ namespace RexLogic
             event_handlers_[eventcategoryid] = boost::bind(&NetworkEventHandler::HandleOpenSimNetworkEvent,network_handler_, _1, _2);
         else
             LogInfo("Unable to find event category for OpenSimNetworkIn");
+            
+        eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
+        if(eventcategoryid != 0)
+            event_handlers_[eventcategoryid] = boost::bind(&InputEventHandler::HandleInputEvent,input_handler_, _1, _2);
+        else
+            LogInfo("Unable to find event category for Input");            
+   
+            
 
         // todo tucofixme, test code
         Console::CommandService *console = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand);
@@ -79,6 +89,7 @@ namespace RexLogic
             rexserver_connection_->CloseServerConnection(); 
         }   
         SAFE_DELETE (network_handler_);
+        SAFE_DELETE (input_handler_);
 
         LogInfo("Module " + Name() + " uninitialized.");
     }
@@ -103,8 +114,8 @@ namespace RexLogic
     {
         uint32_t controlflags = 1; // (uint32_t)RexTypes::AGENT_CONTROL_AT_POS;
         uint8_t flags = 0;
-        Core::Quaternion bodyrot = Core::Quaternion(0.1,0.2,0.3,0.4);
-        Core::Quaternion headrot = Core::Quaternion(0.5,0.6,0.7,0.8);
+        Core::Quaternion bodyrot = Core::Quaternion(0.1f,0.2f,0.3f,0.4f);
+        Core::Quaternion headrot = Core::Quaternion(0.5f,0.6f,0.7f,0.8f);
     
         rexserver_connection_->SendAgentUpdatePacket(bodyrot,headrot,0,Vector3(9,10,11),Vector3(12,13,14),Vector3(15,16,17),Vector3(18,19,20),2100.0f,controlflags,flags);
         return Console::ResultSuccess();

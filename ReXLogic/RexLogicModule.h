@@ -4,11 +4,13 @@
 #define incl_RexLogicModule_h
 
 #include "ModuleInterface.h"
-#include "NetworkEventHandler.h"
 #include "RexServerConnection.h"
 
 namespace RexLogic
 {
+    class NetworkEventHandler;
+    class InputEventHandler;
+
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
 
     //! interface for modules
@@ -38,7 +40,9 @@ namespace RexLogic
         RexServerConnectionPtr GetServerConnection() const { return rexserver_connection_; }
 
     private:        
-        NetworkEventHandler *network_handler_; 
+        NetworkEventHandler *network_handler_;
+        
+        InputEventHandler *input_handler_; 
         
         RexServerConnectionPtr rexserver_connection_;
 
