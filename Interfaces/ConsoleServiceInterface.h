@@ -18,7 +18,7 @@ namespace Console
         virtual ~ConsoleServiceInterface() {}
 
         //! add time
-        virtual void Update() {}
+        virtual void Update(Core::f64 frametime) {}
 
         //! Prints text to the console
         virtual void Print(const std::string &text) = 0;

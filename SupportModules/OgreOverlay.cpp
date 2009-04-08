@@ -146,6 +146,15 @@ namespace Console
         return false;
     }
 
+    void OgreOverlay::Update(Core::f64 frametime)
+    {
+        //if (IsVisible())
+        {
+            checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>
+                (console_overlay_.get())->Update(frametime);
+        }
+    }
+
     void OgreOverlay::DisplayCurrentBuffer()
     {
         Core::MutexLock lock(mutex_);

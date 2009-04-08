@@ -35,9 +35,10 @@ namespace Console
         //! this functions can be used for delayed initialization / creation.
         void CreateDelayed() { checked_static_cast<OgreOverlay*>(ogre_.get())->Create(); }
 
-        __inline virtual void Update()
+        __inline virtual void Update(Core::f64 frametime)
         {
             command_manager_->Update();
+            ogre_->Update(frametime);
         }
 
         //! Prints text to the console (all consoles)
