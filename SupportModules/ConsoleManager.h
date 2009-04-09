@@ -8,6 +8,11 @@
 #include "OgreOverlay.h"
 #include "CommandManager.h"
 
+namespace OIS
+{
+    enum KeyCode;
+}
+
 namespace Console
 {
     //! Native debug console
@@ -71,6 +76,9 @@ namespace Console
         {
             return ogre_->IsActive();
         }
+
+        //! process key down event
+        bool HandleKeyDown(OIS::KeyCode code, unsigned int text);
 
         //! Returns command manager
         CommandManagerPtr GetCommandManager() const {return command_manager_; }

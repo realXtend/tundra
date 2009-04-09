@@ -11,6 +11,11 @@ namespace Foundation
     class Framework;
 }
 
+namespace OIS
+{
+    enum KeyCode;
+}
+
 namespace Console
 {
     class ConsoleModule;
@@ -44,8 +49,21 @@ namespace Console
         //! update overlay
         virtual void Update(Core::f64 frametime);
 
+        //! process key down event
+        bool HandleKeyDown(OIS::KeyCode code, unsigned int text);
+
     private:
-        void DisplayCurrentBuffer();
+        //! format a page according to overlay properties so it can be displayed on the console
+        /*! Formats the current buffer and outputs it into the parameter
+
+            \param pageOut Formatted page
+        */
+        void FormatPage(std::string &pageOut);
+
+        //! Prints the specified page to the overlay
+        /*! Use FormatPage() to automatically format current buffer contents
+        */
+        void Display(const std::string &page);
 
         //! entity component
         Foundation::ComponentPtr console_overlay_;
@@ -65,7 +83,17 @@ namespace Console
         //! maximum number of lines the console will buffer
         const size_t max_lines_;
 
+        //! max number of visible lines in the console
         size_t max_visible_lines;
+
+        //! timer for displaying prompt
+        Core::f64 prompt_timer_;
+
+        //! if true, show prompt cursor
+        bool show_cursor_;
+
+        //! Update the contents of the overlay with some new input
+        bool update_;
 
         //! mutex for the console
         Core::Mutex mutex_;
