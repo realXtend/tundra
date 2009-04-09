@@ -316,6 +316,9 @@ namespace Foundation
 
             Uninitialize();
 
+            // The module is now uninitialized, but it is still loaded in memory.
+            // The module can now be initialized again, and InitializeInternal()
+            // expects the state to be Module::MS_Loaded.
             state_ = Module::MS_Loaded;
         }
 
