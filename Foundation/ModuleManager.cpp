@@ -19,6 +19,8 @@ namespace Foundation
 
     ModuleManager::~ModuleManager()
     {
+		//Unload all loaded modules if object is truely destroyed. 
+		UnloadModules();
     }
 
     void ModuleManager::DeclareStaticModule(ModuleInterface *module)
