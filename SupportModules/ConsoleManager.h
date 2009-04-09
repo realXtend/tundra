@@ -8,10 +8,10 @@
 #include "OgreOverlay.h"
 #include "CommandManager.h"
 
-namespace OIS
-{
-    enum KeyCode;
-}
+//namespace OIS
+//{
+//    enum KeyCode;
+//}
 
 namespace Console
 {
