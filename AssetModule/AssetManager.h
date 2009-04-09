@@ -28,9 +28,6 @@ namespace Asset
     class AssetManager : public Foundation::AssetServiceInterface
     {
     public:
-        //! asset ready event id
-        static const Core::event_id_t EVENT_ASSET_READY = 0x1;
-    
         //! constructor
         AssetManager(Foundation::Framework* framework, OpenSimProtocol::OpenSimProtocolModule* net_interface);
         //! destructor
@@ -164,7 +161,7 @@ namespace Asset
         static const char *DEFAULT_ASSET_CACHE_PATH;
         
         //! default asset transfer timeout 
-        static const Core::f64 DEFAULT_ASSET_TIMEOUT;
+        static const Core::Real DEFAULT_ASSET_TIMEOUT;
     };
 }
 

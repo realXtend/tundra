@@ -39,10 +39,6 @@ namespace OgreRenderer
         friend class EventListener;
         
     public:
-        //! postrender event id
-        static const Core::event_id_t EVENT_POST_RENDER = 0x1;
-        static const Core::event_id_t EVENT_WINDOW_CLOSED = 0x2;
-        
         Renderer(Foundation::Framework* framework);
         virtual ~Renderer();
 

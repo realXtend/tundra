@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 
-#include "Renderer.h"
+#include "RendererEvents.h"
 #include "InputModuleOIS.h"
 #include "InputEvents.h"
 #include "BufferedKeyboard.h"
@@ -119,7 +119,7 @@ namespace Input
     {
         if (framework_->GetEventManager()->QueryEventCategory("Renderer") == category_id)
         {
-            if (event_id == OgreRenderer::Renderer::EVENT_WINDOW_CLOSED)
+            if (event_id == OgreRenderer::Event::WINDOW_CLOSED)
                 WindowClosed();
         }
 
