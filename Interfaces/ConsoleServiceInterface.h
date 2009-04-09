@@ -24,6 +24,9 @@ namespace Console
         virtual void Print(const std::string &text) = 0;
 
         //! scroll console text rel amount
+        /*!
+            \param rel positive to scroll up, negative to scroll down, 20 is one line.
+        */
         virtual void Scroll(int rel) = 0;
 
         //! Hide / show console

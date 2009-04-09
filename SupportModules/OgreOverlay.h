@@ -4,7 +4,6 @@
 #define incl_ConsoleOgre_h
 
 #include "ModuleInterface.h"
-//#include "EC_OgreConsoleOverlay.h"
 
 namespace Foundation
 {
@@ -65,6 +64,14 @@ namespace Console
         */
         void Display(const std::string &page);
 
+        //! Adds a character to the parameter
+        /*! 
+            \param character character to embed to lineOut
+            \param lineOut string the character should be appended to
+            \return true if 'character' is an allowed char, false otherwise
+        */
+        bool AddCharacter(unsigned int character, std::string &lineOut, size_t offset);
+
         //! entity component
         Foundation::ComponentPtr console_overlay_;
         
@@ -77,11 +84,17 @@ namespace Console
         //! Contains all lines printed to the console
         Core::StringList message_lines_;
 
+        //! current command line
+        std::string command_line_;
+
         //! current offset for text, 0 is bottom.
         size_t text_position_;
 
         //! maximum number of lines the console will buffer
         const size_t max_lines_;
+
+        //! size of one line when scrolling
+        const int scroll_line_size_;
 
         //! max number of visible lines in the console
         size_t max_visible_lines;
@@ -91,6 +104,9 @@ namespace Console
 
         //! if true, show prompt cursor
         bool show_cursor_;
+
+        //! current offset for the cursor in command line
+        size_t cursor_offset_;
 
         //! Update the contents of the overlay with some new input
         bool update_;

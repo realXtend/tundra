@@ -5,6 +5,7 @@
 #include "OgreOverlay.h"
 #include "EC_OgreConsoleOverlay.h"
 #include "OgreRenderingModule.h"
+#include "InputEventsOIS.h"
 
 namespace Console
 {
@@ -34,6 +35,8 @@ namespace Console
             , text_position_(0)
             , prompt_timer_(0)
             , update_(false)
+            , scroll_line_size_(20)
+            , cursor_offset_(0)
     {
         Foundation::Framework *framework = module_->GetFramework();
 
@@ -94,7 +97,6 @@ namespace Console
                 (console_overlay_.get())->GetMaxVisibleLines();
 
             update_ = true;
-            //DisplayCurrentBuffer();
         }
     }
     
@@ -110,7 +112,6 @@ namespace Console
         }
 
         update_ = true;
-//        DisplayCurrentBuffer();
     }
 
     // virtual
@@ -118,7 +119,7 @@ namespace Console
     {   
         {
             Core::MutexLock lock(mutex_);
-            int lines = rel / 20;
+            int lines = rel / scroll_line_size_;
             if (static_cast<int>(text_position_) + lines < 0)
                 lines = -(lines - (lines - static_cast<int>(text_position_)));
 
@@ -129,7 +130,6 @@ namespace Console
         }
 
         update_ = true;
-        //DisplayCurrentBuffer();
     }
 
     void OgreOverlay::SetVisible(bool visible)
@@ -171,7 +171,7 @@ namespace Console
                 (console_overlay_.get())->Update(frametime);
 
 
-        // blick prompt cursor
+        // blink prompt cursor
         static bool show_cursor = false;
         prompt_timer_ += frametime;
         if (prompt_timer_ > 0.5f)
@@ -186,11 +186,13 @@ namespace Console
             std::string page;
             FormatPage(page);
 
-            std::string prompt;
+            std::string prompt(command_line_);
 
             // add cursor
             if (show_cursor)
-                prompt.insert(prompt.size(), "_");
+                prompt.insert(prompt.size() - cursor_offset_, "_");
+            else if (cursor_offset_ > 0)
+                prompt.insert(prompt.size() - cursor_offset_, " ");
 
             //add the prompt
             page += ">" + prompt;
@@ -203,7 +205,47 @@ namespace Console
 
     bool OgreOverlay::HandleKeyDown(OIS::KeyCode code, unsigned int text)
     {
-        return true;
+        bool result = true;
+
+        switch (code)
+        {
+        case OIS::KC_PGUP:
+            Scroll(scroll_line_size_ * max_visible_lines - 2);
+            break;
+        case OIS::KC_PGDOWN:
+            Scroll(-scroll_line_size_ * max_visible_lines - 2);
+            break;
+        case OIS::KC_UP:
+            Scroll(scroll_line_size_);
+            break;
+        case OIS::KC_DOWN:
+            Scroll(-scroll_line_size_);
+            break;
+        case OIS::KC_BACK:
+            {
+                if (command_line_.empty() == false && cursor_offset_ < command_line_.length())
+                {
+                    command_line_ = command_line_.substr(0, command_line_.length() - cursor_offset_ - 1) + command_line_.substr(command_line_.length() - cursor_offset_, cursor_offset_);
+                }
+                break;
+            }
+        case OIS::KC_LEFT:
+            cursor_offset_ = std::min(cursor_offset_ + 1, command_line_.length());
+            break;
+
+        case OIS::KC_RIGHT:
+            if (cursor_offset_ > 0) cursor_offset_--;
+            break;
+
+        default:
+            result = AddCharacter(text, command_line_, cursor_offset_);
+            break;
+        }
+
+        if (result)
+            update_ = true;
+
+        return result;
     }
 
     void OgreOverlay::FormatPage(std::string &pageOut)
@@ -233,5 +275,28 @@ namespace Console
     void OgreOverlay::Display(const std::string &page)
     {
         checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>(console_overlay_.get())->Display(page);
+    }
+
+    bool OgreOverlay::AddCharacter(unsigned int character, std::string &lineOut, size_t offset)
+    {
+        assert (offset >= 0 && offset <= lineOut.size());
+        if (character != 0)
+        {
+            // validate characters. Might no be strictly necessary.
+            static const char legalchars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890+!\"#$§'<>|%&/()=?[]{}\\*-_.:,; ";
+            int c;
+            for (c = 0 ; c<sizeof(legalchars) - 1 ; ++c)
+            {
+                if (legalchars[c] == character)
+                {
+                    std::string s_char;
+                    s_char += character;
+
+                    lineOut.insert(lineOut.size() - offset, std::string(s_char));
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
