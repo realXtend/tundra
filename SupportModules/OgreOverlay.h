@@ -10,11 +10,6 @@ namespace Foundation
     class Framework;
 }
 
-namespace OIS
-{
-    enum KeyCode;
-}
-
 namespace Console
 {
     class ConsoleModule;
@@ -49,7 +44,7 @@ namespace Console
         virtual void Update(Core::f64 frametime);
 
         //! process key down event
-        bool HandleKeyDown(OIS::KeyCode code, unsigned int text);
+        bool HandleKeyDown(int code, unsigned int text);
 
     private:
         //! format a page according to overlay properties so it can be displayed on the console

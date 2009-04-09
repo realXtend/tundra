@@ -203,7 +203,7 @@ namespace Console
         }
     }
 
-    bool OgreOverlay::HandleKeyDown(OIS::KeyCode code, unsigned int text)
+    bool OgreOverlay::HandleKeyDown(int code, unsigned int text)
     {
         bool result = true;
 

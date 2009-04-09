@@ -5,7 +5,7 @@
 
 namespace Console
 {
-    bool ConsoleManager::HandleKeyDown(OIS::KeyCode code, unsigned int text)
+    bool ConsoleManager::HandleKeyDown(int code, unsigned int text)
     {
         return (checked_static_cast<OgreOverlay*>(ogre_.get())->HandleKeyDown(code, text));
     }
