@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "Renderer.h"
+#include "RendererEvents.h"
 #include "OgreRenderingModule.h"
 
 #include <Ogre.h>
@@ -33,7 +34,7 @@ namespace OgreRenderer
             if (rw == renderer_->renderwindow_)
             {
                 renderer_->framework_->Exit();
-                renderer_->framework_->GetEventManager()->SendEvent(renderer_->event_category_, Renderer::EVENT_WINDOW_CLOSED, NULL);
+                renderer_->framework_->GetEventManager()->SendEvent(renderer_->event_category_, Event::WINDOW_CLOSED, NULL);
             }
         }
         
@@ -93,8 +94,8 @@ namespace OgreRenderer
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         
         event_category_ = event_manager->RegisterEventCategory("Renderer");
-        event_manager->RegisterEvent(event_category_, EVENT_POST_RENDER, "PostRender");
-        event_manager->RegisterEvent(event_category_, EVENT_WINDOW_CLOSED, "WindowClosed");
+        event_manager->RegisterEvent(event_category_, Event::POST_RENDER, "PostRender");
+        event_manager->RegisterEvent(event_category_, Event::WINDOW_CLOSED, "WindowClosed");
     }
     
     Renderer::~Renderer()
@@ -283,7 +284,7 @@ namespace OgreRenderer
         Ogre::RenderSystem* renderer = root_->getRenderSystem();
         renderer->_updateAllRenderTargets(false);
         // Send postrender event, so that custom rendering may be added
-        framework_->GetEventManager()->SendEvent(event_category_, EVENT_POST_RENDER, NULL);
+        framework_->GetEventManager()->SendEvent(event_category_, Event::POST_RENDER, NULL);
         // Swap buffers now
         renderer->_swapAllRenderTargetBuffers(renderer->getWaitForVerticalBlank());
 

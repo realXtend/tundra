@@ -5,6 +5,7 @@
 #include "NetInMessage.h"
 #include "RexProtocolMsgIDs.h"
 #include "AssetDefines.h"
+#include "AssetEvents.h"
 #include "AssetManager.h"
 #include "AssetTransfer.h"
 #include "RexAsset.h"
@@ -15,17 +16,17 @@ using namespace RexTypes;
 namespace Asset
 {
     const char *AssetManager::DEFAULT_ASSET_CACHE_PATH = "/assetcache";
-    const Core::f64 AssetManager::DEFAULT_ASSET_TIMEOUT = 60.0;
+    const Core::Real AssetManager::DEFAULT_ASSET_TIMEOUT = 60.0;
 
     AssetManager::AssetManager(Foundation::Framework* framework, OpenSimProtocolModule* net_interface) : 
         framework_(framework),
-        net_interface_(net_interface),
-        asset_timeout_(DEFAULT_ASSET_TIMEOUT)
+        net_interface_(net_interface)
     {
+        asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("AssetManager", "Timeout", DEFAULT_ASSET_TIMEOUT);
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         
         event_category_ = event_manager->RegisterEventCategory("Asset");
-        event_manager->RegisterEvent(event_category_, EVENT_ASSET_READY, "AssetReady");
+        event_manager->RegisterEvent(event_category_, Event::ASSET_READY, "AssetReady");
         
         // Create asset cache directory
         cache_path_ = framework_->GetPlatform()->GetApplicationDataDirectory() + DEFAULT_ASSET_CACHE_PATH;
@@ -424,8 +425,8 @@ namespace Asset
         
         // Send asset ready event
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-        AssetEventData event_data(new_asset->GetId(), new_asset->GetType());
-        event_manager->SendEvent(event_category_, EVENT_ASSET_READY, &event_data);
+        Event::AssetReady event_data(new_asset->GetId(), new_asset->GetType());
+        event_manager->SendEvent(event_category_, Event::ASSET_READY, &event_data);
     }
     
     Foundation::AssetPtr AssetManager::GetFromCache(const RexTypes::RexUUID& asset_id)
