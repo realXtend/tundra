@@ -17,7 +17,7 @@ namespace OgreRenderer
         , overlay_(NULL)
         , renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer())
         , height_(0.4f)
-        , char_height_(0.018f)
+        , char_height_(0.0175f)
         , visible_(false)
         , max_visible_lines_(21)
         , position_(0)

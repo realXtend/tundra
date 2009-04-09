@@ -32,6 +32,8 @@ namespace Console
             , max_lines_(256)
             , max_visible_lines(1)
             , text_position_(0)
+            , prompt_timer_(0)
+            , update_(false)
     {
         Foundation::Framework *framework = module_->GetFramework();
 
@@ -91,7 +93,8 @@ namespace Console
             max_visible_lines = checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>
                 (console_overlay_.get())->GetMaxVisibleLines();
 
-            DisplayCurrentBuffer();
+            update_ = true;
+            //DisplayCurrentBuffer();
         }
     }
     
@@ -106,7 +109,8 @@ namespace Console
                 message_lines_.pop_back();
         }
 
-        DisplayCurrentBuffer();
+        update_ = true;
+//        DisplayCurrentBuffer();
     }
 
     // virtual
@@ -124,7 +128,8 @@ namespace Console
             text_position_ += lines;
         }
 
-        DisplayCurrentBuffer();
+        update_ = true;
+        //DisplayCurrentBuffer();
     }
 
     void OgreOverlay::SetVisible(bool visible)
@@ -133,6 +138,10 @@ namespace Console
         {
             checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>
                 (console_overlay_.get())->SetVisible(visible);
+        }
+        if (visible)
+        {
+            update_ = true;
         }
     }
 
@@ -160,9 +169,44 @@ namespace Console
     {
         checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>
                 (console_overlay_.get())->Update(frametime);
+
+
+        // blick prompt cursor
+        static bool show_cursor = false;
+        prompt_timer_ += frametime;
+        if (prompt_timer_ > 0.5f)
+        {
+            show_cursor = !show_cursor;
+            prompt_timer_ = 0.f;
+            update_ = true;
+        }
+
+        if (update_)
+        {
+            std::string page;
+            FormatPage(page);
+
+            std::string prompt;
+
+            // add cursor
+            if (show_cursor)
+                prompt.insert(prompt.size(), "_");
+
+            //add the prompt
+            page += ">" + prompt;
+
+            Display(page);
+
+            update_ = false;
+        }
     }
 
-    void OgreOverlay::DisplayCurrentBuffer()
+    bool OgreOverlay::HandleKeyDown(OIS::KeyCode code, unsigned int text)
+    {
+        return true;
+    }
+
+    void OgreOverlay::FormatPage(std::string &pageOut)
     {
         Core::MutexLock lock(mutex_);
 
@@ -179,12 +223,15 @@ namespace Console
         for ( ; line != message_lines_.end() ; ++line)
         {
             num_lines++;
-            page = *line + '\n' + page;
+            pageOut = *line + '\n' + pageOut;
 
             if (num_lines >= max_visible_lines)
                 break;
         }
+    }
 
+    void OgreOverlay::Display(const std::string &page)
+    {
         checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>(console_overlay_.get())->Display(page);
     }
 }

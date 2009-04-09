@@ -68,10 +68,16 @@ namespace Console
             if (event_id == Input::Events::KEY_PRESSED)
             {
                 OIS::KeyCode code = checked_static_cast<Input::Events::BufferedKey*>(data)->code_;
+                unsigned int text = checked_static_cast<Input::Events::BufferedKey*>(data)->text_;
                 if (code == OIS::KC_TAB)
                 {
                     manager_->SetVisible(!manager_->IsActive());
                     return true;
+                }
+
+                if (manager_->IsActive())
+                {
+                    return (checked_static_cast<ConsoleManager*>(manager_.get())->HandleKeyDown(code, text));
                 }
             }
         }
