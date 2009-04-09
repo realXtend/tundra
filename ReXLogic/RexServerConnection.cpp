@@ -182,5 +182,83 @@ namespace RexLogic
         m->AddU8(flags);
         netInterface_->FinishMessageBuilding(m);
 	}
+    
+    void RexServerConnection::SendObjectSelectPacket(Core::entity_id_t object_id)
+    {
+        if(!connected_)
+            return;
+    
+        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgObjectSelect);
+        assert(m);
+        
+        // AgentData
+        m->AddUUID(myInfo_.agentID);
+        m->AddUUID(myInfo_.sessionID);
+        
+        // ObjectData
+        m->SetVariableBlockCount(1);
+        m->AddU32(object_id);
+        
+        netInterface_->FinishMessageBuilding(m);
+    }
+    
+    void RexServerConnection::SendObjectSelectPacket(std::vector<Core::entity_id_t> object_id_list)
+    {
+        if(!connected_)
+            return;
+    
+        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgObjectSelect);
+        assert(m);
+        
+        // AgentData
+        m->AddUUID(myInfo_.agentID);
+        m->AddUUID(myInfo_.sessionID);
+        
+        // ObjectData
+        m->SetVariableBlockCount(object_id_list.size());
+        for(size_t i = 0; i < object_id_list.size(); ++i)
+            m->AddU32(object_id_list[i]);
+        
+        netInterface_->FinishMessageBuilding(m);
+    }
+
+    void RexServerConnection::SendObjectDeselectPacket(Core::entity_id_t object_id)
+    {
+        if(!connected_)
+            return;
+    
+        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgObjectDeselect);
+        assert(m);
+        
+        // AgentData
+        m->AddUUID(myInfo_.agentID);
+        m->AddUUID(myInfo_.sessionID);
+        
+        // ObjectData
+        m->SetVariableBlockCount(1);
+        m->AddU32(object_id);
+                        
+        netInterface_->FinishMessageBuilding(m);
+    }    
+    
+    void RexServerConnection::SendObjectDeselectPacket(std::vector<Core::entity_id_t> object_id_list)
+    {
+        if(!connected_)
+            return;
+    
+        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgObjectDeselect);
+        assert(m);
+        
+        // AgentData
+        m->AddUUID(myInfo_.agentID);
+        m->AddUUID(myInfo_.sessionID);
+        
+        // ObjectData
+        m->SetVariableBlockCount(object_id_list.size());
+        for(size_t i = 0; i < object_id_list.size(); ++i)
+            m->AddU32(object_id_list[i]);
+                        
+        netInterface_->FinishMessageBuilding(m);
+    }
 }
 

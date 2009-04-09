@@ -6,6 +6,8 @@
 #include "RexProtocolMsgIDs.h"
 #include "OpenSimProtocolModule.h"
 #include "RexLogicModule.h"
+#include "SceneModule.h"
+#include "Entity.h"
 
 #include "EC_Viewable.h"
 #include "EC_FreeData.h"
@@ -72,13 +74,12 @@ namespace RexLogic
             OpenSimProtocol::NetworkEventInboundData *netdata = checked_static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
             switch(netdata->messageID)
             {
+                case RexNetMsgRegionHandshake:          return HandleOSNE_RegionHandshake(netdata); break;
                 case RexNetMsgAgentMovementComplete:    return HandleOSNE_AgentMovementComplete(netdata); break;
                 case RexNetMsgGenericMessage:           return HandleOSNE_GenericMessage(netdata); break;
                 case RexNetMsgLogoutReply:              return HandleOSNE_LogoutReply(netdata); break;
-                case RexNetMsgObjectDescription:        return HandleOSNE_ObjectDescription(netdata); break; 
-                case RexNetMsgObjectName:               return HandleOSNE_ObjectName(netdata); break;
                 case RexNetMsgObjectUpdate:             return HandleOSNE_ObjectUpdate(netdata); break;
-                case RexNetMsgRegionHandshake:          return HandleOSNE_RegionHandshake(netdata); break;
+                case RexNetMsgObjectProperties:         return HandleOSNE_ObjectProperties(netdata); break;
                 default:                                return false; break;
             }
         }
@@ -87,7 +88,8 @@ namespace RexLogic
 
     Foundation::EntityPtr NetworkEventHandler::GetPrimEntity(Core::entity_id_t entityid)
     {
-        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
+            (Foundation::Service::ST_SceneManager);
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
 
         if (!scene)
@@ -101,14 +103,17 @@ namespace RexLogic
   
     Foundation::EntityPtr NetworkEventHandler::GetOrCreatePrimEntity(Core::entity_id_t entityid, const RexUUID &fullid)
     {
-        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
+            (Foundation::Service::ST_SceneManager);
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
-
+        Core::event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
+        
         Foundation::EntityPtr entity = scene->GetEntity(entityid);
         if (!entity)
         {
-            UUIDs_[fullid] = entityid;
+            // Create a new entity.
             Foundation::EntityPtr entity = CreateNewPrimEntity(entityid);
+            UUIDs_[fullid] = entityid;
             EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
             prim.LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
             prim.FullId = fullid;
@@ -116,12 +121,21 @@ namespace RexLogic
         }
 
         ///\todo Check that the entity has a prim component, if not, add it to the entity.
+
+        // Send the 'Entity Updated' event.
+        /*Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
+        EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(component.get());
+        Scene::SceneEventData entity_event_data(entityid);
+        entity_event_data.sceneName = scene->Name();
+        framework_->GetEventManager()->SendEvent(cat_id, Scene::EVENT_ENTITY_UPDATED, &entity_event_data);*/
+        
         return entity;
     }  
    
     Foundation::EntityPtr NetworkEventHandler::GetPrimEntity(const RexUUID &entityuuid)
     {
-        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
+            (Foundation::Service::ST_SceneManager);
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
 
         IDMap::iterator iter = UUIDs_.find(entityuuid);
@@ -134,7 +148,8 @@ namespace RexLogic
     
     Foundation::EntityPtr NetworkEventHandler::CreateNewPrimEntity(Core::entity_id_t entityid)
     {
-        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
+            (Foundation::Service::ST_SceneManager);
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
         
         Core::StringVector defaultcomponents;
@@ -150,7 +165,8 @@ namespace RexLogic
     
     Foundation::EntityPtr NetworkEventHandler::GetAvatarEntitySafe(Core::entity_id_t entityid)
     {
-        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
+            (Foundation::Service::ST_SceneManager);
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
 
         /// \todo tucofixme, how to make sure this is a avatar entity?
@@ -162,7 +178,8 @@ namespace RexLogic
 
     Foundation::EntityPtr NetworkEventHandler::CreateNewAvatarEntity(Core::entity_id_t entityid)
     {
-        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
+            (Foundation::Service::ST_SceneManager);
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
         
         Core::StringVector defaultcomponents;
@@ -247,49 +264,35 @@ namespace RexLogic
         return false;
     }
 
-    bool NetworkEventHandler::HandleOSNE_ObjectName(OpenSimProtocol::NetworkEventInboundData* data)
+    bool NetworkEventHandler::HandleOSNE_ObjectProperties(OpenSimProtocol::NetworkEventInboundData* data)
     {
         NetInMessage *msg = data->message;
-    
         msg->ResetReading();
-        msg->SkipToFirstVariableByName("LocalID");
-        uint32_t localid = msg->ReadU32();
         
-        Foundation::EntityPtr entity = GetPrimEntity(localid);
-        if (!entity)
+        RexUUID full_id = msg->ReadUUID();
+        msg->SkipToFirstVariableByName("Name");
+        std::string name = msg->ReadString();
+        std::string desc = msg->ReadString();
+        ///\todo Handle rest of the vars.
+        
+        Foundation::EntityPtr entity = GetPrimEntity(full_id);
+        if(entity)
         {
-            ///\todo Log warning - sending packets related to non-existing prim, or perhaps packets coming out-of-order?
-            return false;
+            EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
+            prim.ObjectName = name;
+            prim.Description = desc;
+            
+            // Send the 'Entity Selected' event.
+            Core::event_category_id_t event_category_id = framework_->GetEventManager()->QueryEventCategory("Scene");
+            Scene::SceneEventData event_data(prim.LocalId);
+            framework_->GetEventManager()->SendEvent(event_category_id, Scene::EVENT_ENTITY_SELECTED, &event_data);
         }
-
-        Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
-        checked_static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectName(data);        
-
-        return false;
+        else
+            RexLogicModule::LogInfo("Received 'ObjectProperties' packet for unknown entity (" + full_id.ToString() + ").");
+        
+        return false;        
     }
-
-    bool NetworkEventHandler::HandleOSNE_ObjectDescription(OpenSimProtocol::NetworkEventInboundData* data)
-    {
-        NetInMessage *msg = data->message;
     
-        msg->ResetReading();
-        msg->SkipToFirstVariableByName("LocalID");
-        uint32_t localid = msg->ReadU32();
-        
-        Foundation::EntityPtr entity = GetPrimEntity(localid);
-        if (!entity)
-        {
-            ///\todo Log warning - sending packets related to non-existing prim, or perhaps packets coming out-of-order?
-            return false;
-        }
-
-        Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
-        checked_static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectDescription(data);        
-
-        return false;     
-    }
-
-
     bool NetworkEventHandler::HandleOSNE_GenericMessage(OpenSimProtocol::NetworkEventInboundData* data)
     {        
         data->message->ResetReading();    
@@ -383,7 +386,8 @@ namespace RexLogic
         RexUUID aID = data->message->ReadUUID();
         RexUUID sID = data->message->ReadUUID();
 
-        if (aID == rexlogicmodule_->GetServerConnection()->GetInfo().agentID && sID == rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
+        if (aID == rexlogicmodule_->GetServerConnection()->GetInfo().agentID &&
+            sID == rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
         {
             RexLogicModule::LogInfo("LogoutReply received with matching IDs. Logging out.");
             rexlogicmodule_->GetServerConnection()->CloseServerConnection();

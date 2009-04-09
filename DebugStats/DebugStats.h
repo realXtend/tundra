@@ -2,6 +2,7 @@
 #define incl_DebugStats_h
 
 #include "ModuleInterface.h"
+#include "EventDataInterface.h"
 
 namespace RexLogic
 {
@@ -24,9 +25,11 @@ public:
 
     void Update(Core::f64 frametime);
 
-    bool HandleEvent(Core::event_category_id_t category_id,
-        Core::event_id_t event_id, 
-        Foundation::EventDataInterface* data);
+    bool HandleEvent(
+        Core::event_category_id_t category_id,
+        Core::event_id_t event_id,
+        Foundation::EventDataInterface *data
+        );
 
 private:
     void operator=(const DebugStats &);
@@ -37,6 +40,13 @@ private:
     /// Callback for Entity List refresh button.
     void OnClickRefresh();
     
+    /// Callback for closing PrimProperties window.
+    void OnPrimPropertiesClose();
+    
+    /// Update entity list.
+    void UpdateEntityListTreeView(Core::event_id_t event_id, Scene::SceneEventData *event_data);
+    
+    /// Callback for Entity activation.
     void OnDoubleClickEntity(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn* column);
     
     /// Initialize UI windows.
@@ -52,7 +62,7 @@ private:
     void PopulatePrimPropertiesTreeView(RexLogic::EC_OpenSimPrim *prim);
     
     /// Category id for scene events.
-    Core::event_category_id_t eventCategoryID_ ;
+    Core::event_category_id_t scene_event_category_ ;
     
     /// Data related to the window that shows currently loaded modules, for debugging purposes.
     Glib::RefPtr<Gnome::Glade::Xml> debugModules_;
@@ -95,16 +105,23 @@ private:
     Gtk::Window *primPropertiesWindow_;
     
     /// Tree model columns for EC_OpenSimPrim properties.
-
     class PrimPropertiesModelColumns : public Gtk::TreeModel::ColumnRecord
     {
     public:
-        PrimPropertiesModelColumns() { add(colName); add(colValue); }
+        PrimPropertiesModelColumns()
+        {
+            add(colName);
+            add(colValue);
+        }
         Gtk::TreeModelColumn<Glib::ustring> colName;
         Gtk::TreeModelColumn<Glib::ustring> colValue;
+        Gtk::TreeModelColumn<bool> colEditable;
     };
             
-    const PrimPropertiesModelColumns primPropertiesColumns_;    
+    const PrimPropertiesModelColumns primPropertiesColumns_;
+    
+    /// Currenty selected entity ID on the PrimProperties window.
+    Core::entity_id_t currentEntityID_;
 };
 
 #endif

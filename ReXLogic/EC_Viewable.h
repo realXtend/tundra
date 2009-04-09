@@ -6,7 +6,7 @@
 #include "ComponentInterface.h"
 #include "Foundation.h"
 #include "RexUUID.h"
-#include "OpenSimProtocolModule.h"
+//#include "OpenSimProtocolModule.h"
 
 namespace RexLogic
 {

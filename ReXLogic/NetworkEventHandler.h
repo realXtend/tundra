@@ -25,9 +25,8 @@ namespace RexLogic
         bool HandleOSNE_AgentMovementComplete(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_GenericMessage(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_LogoutReply(OpenSimProtocol::NetworkEventInboundData* data);
-        bool HandleOSNE_ObjectDescription(OpenSimProtocol::NetworkEventInboundData* data);        
-        bool HandleOSNE_ObjectName(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleOSNE_ObjectProperties(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_RegionHandshake(OpenSimProtocol::NetworkEventInboundData* data);
 
         //! Handler functions for GenericMessages

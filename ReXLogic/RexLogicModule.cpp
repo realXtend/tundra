@@ -6,6 +6,7 @@
 #include "Poco/ClassLibrary.h"
 #include "NetworkEventHandler.h"
 #include "InputEventHandler.h"
+#include "SceneEventHandler.h"
 #include "EventDataInterface.h"
 
 #include "EC_Viewable.h"
@@ -47,8 +48,9 @@ namespace RexLogic
         // WorldLogic::registerSystem(framework);
         // world_logic_ = new WorldLogic(framework);        
         rexserver_connection_ = RexServerConnectionPtr(new RexServerConnection(framework_)); 
-        network_handler_ = new NetworkEventHandler(framework_,this);
-        input_handler_ = new InputEventHandler(framework_,this);  
+        network_handler_ = new NetworkEventHandler(framework_, this);
+        input_handler_ = new InputEventHandler(framework_, this);  
+        scene_handler_ = new SceneEventHandler(framework_, this); 
         LogInfo("Module " + Name() + " initialized.");
     }
 
@@ -61,17 +63,22 @@ namespace RexLogic
             sceneManager->CreateScene("World");
 
         Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
-        if(eventcategoryid != 0)
-            event_handlers_[eventcategoryid] = boost::bind(&NetworkEventHandler::HandleOpenSimNetworkEvent,network_handler_, _1, _2);
+        if (eventcategoryid != 0)
+            event_handlers_[eventcategoryid] = boost::bind(&NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2);
         else
             LogInfo("Unable to find event category for OpenSimNetworkIn");
             
         eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
-        if(eventcategoryid != 0)
-            event_handlers_[eventcategoryid] = boost::bind(&InputEventHandler::HandleInputEvent,input_handler_, _1, _2);
+        if (eventcategoryid != 0)
+            event_handlers_[eventcategoryid] = boost::bind(&InputEventHandler::HandleInputEvent, input_handler_, _1, _2);
         else
             LogInfo("Unable to find event category for Input");            
-   
+
+        eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Scene");
+        if (eventcategoryid != 0)
+            event_handlers_[eventcategoryid] = boost::bind(&SceneEventHandler::HandleSceneEvent, scene_handler_, _1, _2);
+        else
+            LogInfo("Unable to find event category for Scene");               
             
 
         // todo tucofixme, test code
@@ -82,7 +89,7 @@ namespace RexLogic
     // virtual 
     void RexLogicModule::Uninitialize()
     {
-        if(rexserver_connection_->IsConnected())
+        if (rexserver_connection_->IsConnected())
         {
             // todo tucofixme, at the moment don't wait for LogoutReply packet, just close connection.
             rexserver_connection_->RequestLogout();

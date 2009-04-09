@@ -19,6 +19,7 @@
 #include "SceneManager.h"
 #include "Entity.h"
 #include "SceneInterface.h"
+#include "SceneModule.h"
 #include "ComponentInterface.h"
 
 #include "DebugStats.h"
@@ -61,14 +62,17 @@ void DebugStats::Initialize()
     InitializeEntityListWindow();
     
     InitializePrimPropertiesWindow();
+
+    scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
+    if (scene_event_category_ == 0)
+        Log("Unable to find event category for Scene events!");
+            
+    Log("Module " + Name() + " initialized.");
 }
 
 void DebugStats::PostInitialize()
 {
-    /*eventCategoryID_ = framework_->GetEventManager()->QueryEventCategory("Scene");
-        
-    if (eventCategoryID_  == 0)
-        Log("Unable to find event category for Scene events!");*/
+    
 }
 
 void DebugStats::Uninitialize()
@@ -77,6 +81,7 @@ void DebugStats::Uninitialize()
     debugModules_->get_widget("windowDebugModules", debugWindow);
     SAFE_DELETE(debugWindow);
     SAFE_DELETE(windowEntityList);
+    SAFE_DELETE(primPropertiesWindow_);
 }
 
 void DebugStats::Update(Core::f64 frametime)
@@ -86,8 +91,27 @@ void DebugStats::Update(Core::f64 frametime)
 bool DebugStats::HandleEvent(
     Core::event_category_id_t category_id,
     Core::event_id_t event_id, 
-    Foundation::EventDataInterface* data)
+    Foundation::EventDataInterface *data
+    )
 {
+    if (category_id == scene_event_category_)
+    {
+        Scene::SceneEventData *event_data = dynamic_cast<Scene::SceneEventData *>(data);    
+        switch(event_id)
+        {
+            case Scene::EVENT_SCENE_ADDED:
+            case Scene::EVENT_SCENE_DELETED:
+            case Scene::EVENT_ENTITY_ADDED:
+            case Scene::EVENT_ENTITY_UPDATED:
+            case Scene::EVENT_ENTITY_DELETED:
+            case Scene::EVENT_ENTITY_SELECTED:
+                UpdateEntityListTreeView(event_id, event_data);
+                break;
+            default:
+                break;
+        }
+    }
+    
     return false;
 }
 
@@ -197,9 +221,6 @@ void DebugStats::InitializeEntityListWindow()
     if (!entityListControls_)
         return;
     
-    // Get the window.
-    entityListControls_->get_widget("window_entitylist", windowEntityList);
-    
     // Set up tree view.
     Gtk::TreeView *treeview_entitylist = 0;
     entityListControls_->get_widget("treeview_entitylist", treeview_entitylist);
@@ -213,9 +234,10 @@ void DebugStats::InitializeEntityListWindow()
     // Bind callback for the refresh button.
     entityListControls_->connect_clicked("button_refresh", sigc::mem_fun(*this, &DebugStats::OnClickRefresh));
     // Bind callback for the double-click on EC.
-    treeview_entitylist->signal_row_activated().connect(sigc::mem_fun(*this, &DebugStats::OnDoubleClickEntity));    
+    treeview_entitylist->signal_row_activated().connect(sigc::mem_fun(*this, &DebugStats::OnDoubleClickEntity));
     
     // Show, set title, set default size.
+    entityListControls_->get_widget("window_entitylist", windowEntityList);
     windowEntityList->set_default_size(250, 300);
     windowEntityList->show();
     windowEntityList->set_title("Entity List");
@@ -258,7 +280,7 @@ void DebugStats::PopulateEntityListTreeView()
             const Scene::Entity::ComponentVector &components = entity.GetComponentVector();
             for(Scene::Entity::ComponentVector::const_iterator iter = components.begin(); iter != components.end(); ++iter)
             {
-                // Add component. 
+                // Add component.
                 const Foundation::ComponentInterfacePtr &component = dynamic_cast<const Foundation::ComponentInterfacePtr &>(*iter); 
                 Gtk::TreeModel::Row component_row = *(entityListModel_->append(entity_row.children()));
                 component_row[entityModelColumns_.colName] = component->Name();
@@ -268,11 +290,137 @@ void DebugStats::PopulateEntityListTreeView()
     }
 }
 
+void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::SceneEventData *event_data)
+{
+    Scene::SceneManager *scene_manager = dynamic_cast<Scene::SceneManager *>
+        (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
+    if (!scene_manager)
+            return;
+            
+    switch(event_id)
+    {
+        case Scene::EVENT_SCENE_ADDED:
+            {
+                ///\todo Test, the events don't make it this far for now...
+                Gtk::TreeModel::Row scene_row;
+                scene_row = *(entityListModel_->append());
+                scene_row[entityModelColumns_.colName] = event_data->sceneName;
+                scene_row[entityModelColumns_.colID] = "";
+                break;
+            }
+        case Scene::EVENT_SCENE_DELETED:
+            {
+                ///\todo Make work & test.
+                /*Gtk::TreeModel::Children rows = entityListModel_->children();
+                Gtk::TreeModel::Children::iterator iter; 
+                if (!rows)
+                    return;
+                                
+                for(iter = rows.begin(); iter != rows.end(); ++iter)
+                {
+                    const Gtk::TreeModel::Row &row = *iter;
+                    if (row[entityModelColumns_.colName] == event_data->sceneName)
+                        break;
+                }
+                
+                entityListModel_->erase(iter);*/
+                break;
+            }
+        case Scene::EVENT_ENTITY_SELECTED:
+            {
+                ///\todo Get the real scene, not hardcoded
+                const Foundation::ScenePtr &scene = scene_manager->GetScene("World");
+                const Foundation::EntityPtr &entity = scene->GetEntity(event_data->localID);
+                const Foundation::ComponentInterfacePtr &component = entity->GetComponent("EC_OpenSimPrim");
+                if (!component)
+                    return;
+                
+                RexLogic::EC_OpenSimPrim *prim = dynamic_cast<RexLogic::EC_OpenSimPrim *>(component.get());
+                PopulatePrimPropertiesTreeView(prim);
+                break;
+            }        
+        case Scene::EVENT_ENTITY_ADDED:            
+            {
+                // Find the scene where this entity belongs to. ///\todo Implemented better?
+                std::string scene_name;
+                const Scene::SceneManager::SceneMap &scenes = scene_manager->GetSceneMap();
+                for(Scene::SceneManager::SceneMap::const_iterator iter = scenes.begin(); iter != scenes.end(); ++iter)
+                {
+                    const Foundation::SceneInterface &scene = *iter->second;
+                    if(scene.HasEntity(event_data->localID))
+                        scene_name = scene.Name();
+                }
+                
+                ///Get the scene for real.
+                const Foundation::ScenePtr &scene_ptr = scene_manager->GetScene(scene_name);
+                if (!scene_ptr)
+                    return;
+                const Foundation::SceneInterface &scene = *scene_ptr.get();
+
+                // Find the scene row or create it if it doesn't exist.                
+                Gtk::TreeModel::Children rows = entityListModel_->children();
+                Gtk::TreeModel::Children::iterator iter;
+                Gtk::TreeModel::Row scene_row;
+                bool found = false;
+                
+                for(iter = rows.begin(); iter != rows.end(); ++iter)
+                {
+                    scene_row = *iter;
+                    if (scene_row[entityModelColumns_.colName] == scene.Name())
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                
+                ///\todo Remove when adding scenes works properly.
+                if (!found)
+                {
+                    scene_row = *(entityListModel_->append());
+                    scene_row[entityModelColumns_.colName] = scene.Name();
+                    scene_row[entityModelColumns_.colID] = "";
+                }
+                    
+                // Add entity.
+                const Foundation::EntityPtr &entity = scene.GetEntity(event_data->localID);
+                const Scene::Entity &ent = dynamic_cast<const Scene::Entity &>(*entity.get());
+
+                Gtk::TreeModel::Row entity_row = *(entityListModel_->append(scene_row.children()));
+                entity_row[entityModelColumns_.colName] = "Entity";
+                entity_row[entityModelColumns_.colID] = Core::ToString(ent.GetId());
+
+                const Scene::Entity::ComponentVector &components = ent.GetComponentVector();
+                for(Scene::Entity::ComponentVector::const_iterator iter = components.begin(); iter != components.end(); ++iter)
+                {
+                    // Add component. 
+                    const Foundation::ComponentInterfacePtr &component = dynamic_cast<const Foundation::ComponentInterfacePtr &>(*iter); 
+                    Gtk::TreeModel::Row component_row = *(entityListModel_->append(entity_row.children()));
+                    component_row[entityModelColumns_.colName] = component->Name();
+                    component_row[entityModelColumns_.colID] = "";
+                }
+            }
+            break;
+        case Scene::EVENT_ENTITY_UPDATED:
+        case Scene::EVENT_ENTITY_DELETED:
+        case Scene::EVENT_COMPONENT_ADDED:
+        case Scene::EVENT_COMPONENT_DELETED:
+        default:
+            break;
+    }
+}
+
 void DebugStats::OnClickRefresh()
 {
     PopulateEntityListTreeView();
 }
 
+void DebugStats::OnPrimPropertiesClose()
+{
+    // Send 'Entity Deselect' event.
+    Scene::SceneEventData event_data(currentEntityID_);
+    framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::EVENT_ENTITY_DESELECT, &event_data);    
+    currentEntityID_ = 0;
+}
 
 void DebugStats::OnDoubleClickEntity(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn* column)
 {
@@ -286,6 +434,7 @@ void DebugStats::OnDoubleClickEntity(const Gtk::TreeModel::Path &path, Gtk::Tree
         return;
         
     Gtk::TreeModel::Row row = *iter;
+    
     if(row[entityModelColumns_.colName] == "Entity")
     {
         Core::entity_id_t id;
@@ -297,6 +446,11 @@ void DebugStats::OnDoubleClickEntity(const Gtk::TreeModel::Path &path, Gtk::Tree
             return;
         }
         
+        currentEntityID_ = id;
+        // Send 'Entity Selected' event.
+        Scene::SceneEventData event_data(id);
+        framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::EVENT_ENTITY_SELECT, &event_data);
+
         ///\todo Get the real scene, not hardcoded
         const Foundation::ScenePtr &scene = scene_manager->GetScene("World");
         const Foundation::EntityPtr &entity = scene->GetEntity(id);
@@ -327,11 +481,13 @@ void DebugStats::InitializePrimPropertiesWindow()
     primPropertiesModel_ = Gtk::TreeStore::create(primPropertiesColumns_);
     treeview_prim_properties->set_model(primPropertiesModel_);
     treeview_prim_properties->append_column(Glib::ustring("Name"), primPropertiesColumns_.colName);
-    treeview_prim_properties->append_column(Glib::ustring("Value"), primPropertiesColumns_.colValue);
+    treeview_prim_properties->append_column_editable(Glib::ustring("Value"), primPropertiesColumns_.colValue);
     
-    // Set the winow title, set default size.
+    // Set the winow title, set default size and callback.
     primPropertiesWindow_->set_default_size(350, 300);
     primPropertiesWindow_->set_title("EC_OpenSimPrim Properties");
+    primPropertiesWindow_->signal_hide().connect(sigc::mem_fun(*this, &DebugStats::OnPrimPropertiesClose));
+    
 }
 
 void DebugStats::PopulatePrimPropertiesTreeView(RexLogic::EC_OpenSimPrim *prim)
@@ -340,6 +496,14 @@ void DebugStats::PopulatePrimPropertiesTreeView(RexLogic::EC_OpenSimPrim *prim)
     primPropertiesModel_->clear();
 
     Gtk::TreeModel::Row prim_row = *(primPropertiesModel_->append());
+    prim_row[primPropertiesColumns_.colName] = "Name";
+    prim_row[primPropertiesColumns_.colValue] = prim->ObjectName;    
+
+    prim_row = *(primPropertiesModel_->append());
+    prim_row[primPropertiesColumns_.colName] = "Description";
+    prim_row[primPropertiesColumns_.colValue] = prim->Description;
+        
+    prim_row = *(primPropertiesModel_->append());        
     prim_row[primPropertiesColumns_.colName] = "RegionHandle";
     prim_row[primPropertiesColumns_.colValue] = Core::ToString(prim->RegionHandle);
         
@@ -374,5 +538,4 @@ void DebugStats::PopulatePrimPropertiesTreeView(RexLogic::EC_OpenSimPrim *prim)
     prim_row = *(primPropertiesModel_->append());
     prim_row[primPropertiesColumns_.colName] = "SelectPriority";
     prim_row[primPropertiesColumns_.colValue] = Core::ToString(prim->SelectPriority);
-
 }

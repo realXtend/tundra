@@ -39,9 +39,15 @@ namespace Scene
         {
             entity->AddEntityComponent(framework->GetComponentManager()->CreateComponent(components[i]));
         }
-
+        
         entities_[entity->GetId()] = entity;
-        return entity;
+        
+        // Send event.
+        SceneEventData event_data(entity->GetId());
+        Core::event_category_id_t cat_id = framework->GetEventManager()->QueryEventCategory("Scene");
+        framework->GetEventManager()->SendEvent(cat_id, EVENT_ENTITY_ADDED, &event_data);
+        
+        return entity;        
     }
 
     Foundation::EntityPtr Generic::CreateEntity(Core::entity_id_t id)

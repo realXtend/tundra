@@ -1,5 +1,6 @@
 <subscribers>
 	<subscriber module="AssetModule" priority="90" />
+	<subscriber module="DebugStats" priority="100" />
 	<subscriber module="RexLogicModule" priority="100" />
 	<subscriber module="NetTestLogicModule" priority="100" />
     <subscriber module="ScriptModule" priority="100" />

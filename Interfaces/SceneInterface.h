@@ -59,6 +59,7 @@ namespace Foundation
 
         //! Returns true if entity with the specified id exists in this scene, false otherwise
         virtual bool HasEntity(Core::entity_id_t id) const { return GetEntity(id).get() != 0; }
+        
         //! Get the next free id
         virtual Core::entity_id_t GetNextFreeId() = 0;
 
