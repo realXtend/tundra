@@ -1,0 +1,28 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#ifndef incl_SceneEventHandler_h
+#define incl_SceneEventHandler_h
+
+#include "ComponentInterface.h"
+#include "Foundation.h"
+
+namespace RexLogic
+{
+    class RexLogicModule;
+
+    class SceneEventHandler
+    {
+    public:
+        SceneEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule);
+        virtual ~SceneEventHandler();
+        
+        bool HandleSceneEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        
+    private:
+        Foundation::Framework *framework_;
+     
+        RexLogicModule *rexlogicmodule_;
+    };
+}
+
+#endif
