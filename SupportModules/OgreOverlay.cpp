@@ -146,13 +146,20 @@ namespace Console
         return false;
     }
 
+    bool OgreOverlay::IsActive() const
+    {
+        if (console_overlay_)
+        {
+            return checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>
+                (console_overlay_.get())->IsActive();
+        }
+        return false;
+    }
+
     void OgreOverlay::Update(Core::f64 frametime)
     {
-        //if (IsVisible())
-        {
-            checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>
+        checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>
                 (console_overlay_.get())->Update(frametime);
-        }
     }
 
     void OgreOverlay::DisplayCurrentBuffer()

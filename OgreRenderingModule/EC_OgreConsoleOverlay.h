@@ -51,7 +51,14 @@ namespace OgreRenderer
         void SetVisible(bool visible);
 
         //! Returns true if overlay is visible, false otherwise
+        /*! \note returns actual visibility of the overlay. May return true shortly after 
+                  calling SetVisible(false), because the overlay might still be animating
+                  and is not hidden immediatelly.
+        */
         bool IsVisible() const;
+
+        //! Returns true if console is accepting input, false otherwise
+        bool IsActive() const { return active_; }
 
         //! visual effects
         void Update(Core::f64 frametime);
@@ -80,6 +87,9 @@ namespace OgreRenderer
 
         //! is the console visible
         bool visible_;
+
+        //! is console active, i.e. accepts input
+        bool active_;
 
         //! maximum lines the console can display. depends on height and font size
         const size_t max_visible_lines_;

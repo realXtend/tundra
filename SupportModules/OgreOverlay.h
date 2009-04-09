@@ -39,6 +39,7 @@ namespace Console
 
         virtual void SetVisible(bool visible);
         virtual bool IsVisible() const;
+        virtual bool IsActive() const;
 
         //! update overlay
         virtual void Update(Core::f64 frametime);
