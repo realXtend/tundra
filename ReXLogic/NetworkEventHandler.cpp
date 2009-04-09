@@ -19,6 +19,8 @@
 #include "../OgreRenderingModule/Renderer.h"
 
 #include "QuatUtils.h"
+#include "BitStream.h"
+#include "Terrain.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -365,6 +367,28 @@ namespace RexLogic
         return false;
     }
     
+    /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
+    void HandleOSNE_LayerData(OpenSimProtocol::NetworkEventInboundData* data)
+    {
+        NetInMessage &msg = *data->message;
+        size_t sizeBytes = msg.GetDataSize();
+        BitStream bits(msg.ReadBytesUnchecked(sizeBytes), sizeBytes);
+        TerrainPatchGroupHeader header;
+        header.stride = bits.ReadBits(16);
+        header.patchSize = bits.ReadBits(8);
+        header.layerType = bits.ReadBits(8);
+
+        switch(header.layerType)
+        {
+        case TPLayerLand:
+            DecompressLand(bits, header);
+            break;
+        default:
+            ///\todo Log out warning - unhandled packet type.
+            break;
+        }
+    }
+
     bool NetworkEventHandler::HandleOSNE_RegionHandshake(OpenSimProtocol::NetworkEventInboundData* data)    
     {
         size_t bytesRead = 0;

@@ -11,7 +11,7 @@
 #else
 #define SCENE_MODULE_API __declspec(dllimport) 
 #endif
-#else ///\todo Linux shared module import/export signatures here.
+#else
 #define SCENE_MODULE_API
 #endif
 */
