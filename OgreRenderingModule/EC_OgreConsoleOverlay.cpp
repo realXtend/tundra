@@ -22,6 +22,7 @@ namespace OgreRenderer
         , max_visible_lines_(21)
         , position_(0)
         , speed_(3.0f)
+        , active_(visible_)
     {
         CreateOverlay();
     }
@@ -91,19 +92,22 @@ namespace OgreRenderer
     void EC_OgreConsoleOverlay::SetVisible(bool visible)
     {
         visible_ = visible;
+        if (visible)
+            overlay_->show();
+
+        active_ = visible;
     }
 
     bool EC_OgreConsoleOverlay::IsVisible() const
     {
-        return visible_;
+//        return visible_;
+        return overlay_->isVisible();
     }
 
     void EC_OgreConsoleOverlay::Update(Core::f64 frametime)
     {
         if (visible_ && position_ < Ogre::Math::HALF_PI)
         {
-            if (overlay_->isVisible() == false) overlay_->show();
-
             position_ += frametime * speed_;
             if (position_ > Ogre::Math::HALF_PI) 
                 position_ = Ogre::Math::HALF_PI;

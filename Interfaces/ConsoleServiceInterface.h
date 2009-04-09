@@ -31,6 +31,9 @@ namespace Console
 
         //! Returns true if console is visible, false otherwise
         virtual bool IsVisible() const = 0;
+
+        //! Is the console accepting input
+        virtual bool IsActive() const = 0;
     };
 
     typedef boost::shared_ptr<ConsoleServiceInterface> ConsolePtr;

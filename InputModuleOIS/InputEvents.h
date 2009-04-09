@@ -7,7 +7,7 @@
 
 namespace Input
 {
-    //! Contains all input events in generic fashion. Does not depend on any one input method
+    //! Contains some fo the input events in generic fashion. Does not depend on any one input method
     namespace Events
     {
         // Event #id must be synced with events in InputEventOIS.h!!

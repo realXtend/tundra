@@ -10,7 +10,7 @@
 
 namespace Input
 {
-    //! Contains all input events in OIS specific fashion.
+    //! Contains some of the input events in OIS specific fashion.
     namespace Events
     {
         static const Core::event_id_t KEY_PRESSED = 1;

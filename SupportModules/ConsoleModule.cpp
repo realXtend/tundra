@@ -70,7 +70,7 @@ namespace Console
                 OIS::KeyCode code = checked_static_cast<Input::Events::BufferedKey*>(data)->code_;
                 if (code == OIS::KC_TAB)
                 {
-                    manager_->SetVisible(!manager_->IsVisible());
+                    manager_->SetVisible(!manager_->IsActive());
                     return true;
                 }
             }

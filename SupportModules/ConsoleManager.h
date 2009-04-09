@@ -38,7 +38,10 @@ namespace Console
         __inline virtual void Update(Core::f64 frametime)
         {
             command_manager_->Update();
-            ogre_->Update(frametime);
+            if (ogre_->IsVisible())
+            {
+                ogre_->Update(frametime);
+            }
         }
 
         //! Prints text to the console (all consoles)
@@ -62,6 +65,11 @@ namespace Console
         virtual bool IsVisible() const
         {
             return ogre_->IsVisible();
+        }
+
+        virtual bool IsActive() const
+        {
+            return ogre_->IsActive();
         }
 
         //! Returns command manager
