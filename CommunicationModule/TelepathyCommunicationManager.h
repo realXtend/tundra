@@ -13,18 +13,25 @@ namespace Communication
 {
 
 // Instant messaging sessionj
-class Session : ISession, IIMSession
+class Session : IIMSession
 {
 
 };
 
 // ICommunicationService implementation using Telepathy library
-class TelepathyCommunicationManager :
-	public ICommunicationService
+class TelepathyCommunicationManager : public ICommunicationService
 {
 public:
 	TelepathyCommunicationManager(void);
 	~TelepathyCommunicationManager(void);
+
+		void OpenConnection(Credentials c);
+		void CloseConnection();
+//		void CloseAllConnections(); // if multiple connection allowed
+		ISession CreateSession();
+
+private:
+//	Conn
 };
 
 } // end of namespace Communication
