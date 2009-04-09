@@ -95,6 +95,31 @@ namespace Asset
         return Foundation::AssetPtr();
     }
     
+    bool AssetManager::QueryAssetStatus(const std::string& asset_id, Core::uint& size, Core::uint& received, Core::uint& received_continuous)
+    {
+        RexUUID asset_uuid(asset_id);
+        
+        AssetTransfer* transfer = GetTransfer(asset_uuid);
+        if (transfer)
+        {
+            size = transfer->GetSize();
+            received = transfer->GetReceived();
+            received_continuous = transfer->GetReceivedContinuous();
+            return true;
+        }
+        
+        Foundation::AssetPtr asset = GetFromCache(asset_uuid);
+        if (asset)
+        {
+            size = asset->GetSize();
+            received = asset->GetSize();
+            received_continuous = asset->GetSize();
+            return true;
+        }
+        
+        return false;
+    }
+    
     void AssetManager::Update(Core::f64 frametime)
     {
         AssetTransferMap::iterator i = texture_transfers_.begin();
