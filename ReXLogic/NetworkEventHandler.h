@@ -33,6 +33,9 @@ namespace RexLogic
         bool HandleRexGM_RexMediaUrl(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleRexGM_RexPrimData(OpenSimProtocol::NetworkEventInboundData* data);
 
+        //! Decodes terrain data from a LayerData packet and generates terrain patches accordingly.
+        void HandleOSNE_LayerData(OpenSimProtocol::NetworkEventInboundData* data);
+
         //! @return The entity corresponding to given scene entityid, or null if not found. 
         //!         This entity is guaranteed to have an existing EC_OpenSimPrim component. \todo Actually force this guarantee.
         Foundation::EntityPtr GetPrimEntity(Core::entity_id_t entityid);
