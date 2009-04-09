@@ -4,6 +4,7 @@
 #include "EC_OpenSimPrim.h"
 #include "NetInMessage.h"
 #include "RexLogicModule.h"
+#include "OpenSimProtocolModule.h"
 
 namespace RexLogic
 {
@@ -137,18 +138,6 @@ namespace RexLogic
         
         SelectPriority = *(uint32_t*)(&primdata[idx]);
         idx += sizeof(uint32_t);
-    }    
-    
-    void EC_OpenSimPrim::HandleObjectName(OpenSimProtocol::NetworkEventInboundData* data)
-    {    
-        data->message->SkipToFirstVariableByName("Name");
-        ObjectName = data->message->ReadString();
-    }
-    
-    void EC_OpenSimPrim::HandleObjectDescription(OpenSimProtocol::NetworkEventInboundData* data)
-    {        
-        data->message->SkipToFirstVariableByName("Description");
-        Description = data->message->ReadString();
     }
     
     void EC_OpenSimPrim::PrintDebug()

@@ -37,12 +37,16 @@ namespace Scene
     void Entity::AddEntityComponent(const Foundation::ComponentInterfacePtr &component)
     {
         components_.push_back(component);
+        
+        ///\todo Ali: send event
     }
 
     void Entity::RemoveEntityComponent(const Foundation::ComponentInterfacePtr &component)
     {
         ComponentVector::iterator iter = std::find(components_.begin(), components_.end(), component);
         components_.erase(iter);
+        
+        ///\todo Ali: send event
     }
 
     Foundation::ComponentInterfacePtr Entity::GetComponent(const std::string &name) const

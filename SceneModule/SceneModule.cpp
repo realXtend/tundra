@@ -31,6 +31,19 @@ namespace Scene
         scene_manager_ = Foundation::SceneManagerPtr(new SceneManager(this));
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_SceneManager, scene_manager_.get());
 
+        // Register 'Scene' event category and events.
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        scene_event_category_ = event_manager->RegisterEventCategory("Scene");
+        event_manager->RegisterEvent(scene_event_category_, EVENT_SCENE_ADDED, "Scene Added");
+        event_manager->RegisterEvent(scene_event_category_, EVENT_SCENE_DELETED, "Scene Deleted");
+//        event_manager->RegisterEvent(scene_event_category_, EVENT_SCENE_CLONED, "Scene Cloned"); ///\todo
+        event_manager->RegisterEvent(scene_event_category_, EVENT_ENTITY_ADDED, "Entity Added");
+        event_manager->RegisterEvent(scene_event_category_, EVENT_ENTITY_UPDATED, "Entity Updated");
+        event_manager->RegisterEvent(scene_event_category_, EVENT_ENTITY_DELETED, "Entity Deleted");
+        event_manager->RegisterEvent(scene_event_category_, EVENT_ENTITY_SELECT, "Entity Select");
+        event_manager->RegisterEvent(scene_event_category_, EVENT_ENTITY_SELECTED, "Entity Selected");
+        event_manager->RegisterEvent(scene_event_category_, EVENT_ENTITY_DESELECT, "Entity Deselect");
+        
         LogInfo("Module " + Name() + " initialized.");
     }
 

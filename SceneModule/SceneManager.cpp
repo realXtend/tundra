@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "SceneManager.h"
 #include "Generic.h"
+#include "SceneModule.h"
 
 namespace Scene
 {
@@ -12,7 +13,12 @@ namespace Scene
         Foundation::ScenePtr scene = Foundation::ScenePtr(new Scene::Generic(name, module_));
         
         scenes_[name] = scene;
-
+        
+        ///\todo Make this work.        
+        SceneEventData event_data(name);
+        Core::event_category_id_t cat_id = module_->GetFramework()->GetEventManager()->QueryEventCategory("Scene");
+        module_->GetFramework()->GetEventManager()->SendEvent(cat_id, EVENT_SCENE_ADDED, &event_data);
+        
         return scene;
     }
 
@@ -23,8 +29,12 @@ namespace Scene
         SceneMap::iterator it = scenes_.find(name);
         it->second.reset();
         scenes_.erase(it);
-
+        
         assert (HasScene(name) == false);
+
+        SceneEventData event_data(name);
+        Core::event_category_id_t cat_id = module_->GetFramework()->GetEventManager()->QueryEventCategory("Scene");
+        module_->GetFramework()->GetEventManager()->SendEvent(cat_id, EVENT_SCENE_DELETED, &event_data);
     }
 
     Foundation::ScenePtr SceneManager::CloneScene(const std::string &name, const std::string &cloneName)
@@ -39,6 +49,10 @@ namespace Scene
         scenes_[cloneName] = scene;
 
         assert (HasScene(cloneName));
+        
+        ///\todo
+//      Core::event_category_id_t cat_id = module_->GetFramework()->GetEventManager()->QueryEventCategory("Scene");
+//      module_->GetFramework()->GetEventManager()->SendEvent(0, EVENT_SCENE_CLONED, NULL);
 
         return scene;
     }

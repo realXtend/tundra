@@ -10,6 +10,7 @@ namespace RexLogic
 {
     class NetworkEventHandler;
     class InputEventHandler;
+    class SceneEventHandler;
 
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
 
@@ -36,18 +37,24 @@ namespace RexLogic
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
-
+        
         RexServerConnectionPtr GetServerConnection() const { return rexserver_connection_; }
 
     private:        
+        //! Event handler for network events.
         NetworkEventHandler *network_handler_;
         
+        //! Event handler for network events.
         InputEventHandler *input_handler_; 
+        
+        //! Event handler for scene events.
+        SceneEventHandler *scene_handler_;
         
         RexServerConnectionPtr rexserver_connection_;
 
         typedef boost::function<bool(Core::event_id_t,Foundation::EventDataInterface*)> LogicEventHandlerFunction;
         typedef std::map<Core::event_category_id_t, LogicEventHandlerFunction> LogicEventHandlerMap;
+        
         LogicEventHandlerMap event_handlers_;
         
         Console::CommandResult TestMoveForward(const Core::StringVector &params);

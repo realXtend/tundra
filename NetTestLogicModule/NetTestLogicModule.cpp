@@ -146,7 +146,6 @@ namespace NetTest
 		            event_data->message->GetDataSize());
             
 		    // Save message for debugging purposes.
-
 		    received_messages_pool_.push_back(std::make_pair(event_data->message->GetSequenceNumber(),  *event_data->message));
             
 		    // Keep the last 300 inbound messages in memory.

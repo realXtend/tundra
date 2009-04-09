@@ -45,12 +45,11 @@ namespace RexLogic
         
         uint32_t SelectPriority;
 
-        void HandleRexPrimData(const uint8_t* primdata);
         void HandleObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
-        void HandleObjectName(OpenSimProtocol::NetworkEventInboundData* data);
-        void HandleObjectDescription(OpenSimProtocol::NetworkEventInboundData* data);
+        void HandleRexPrimData(const uint8_t* primdata);
 
         void PrintDebug();
+        
     private:
         EC_OpenSimPrim(Foundation::ModuleInterface* module);
     };
