@@ -97,8 +97,9 @@ namespace RexLogic
         }   
         SAFE_DELETE (network_handler_);
         SAFE_DELETE (input_handler_);
-
-        LogInfo("Module " + Name() + " uninitialized.");
+		SAFE_DELETE (scene_handler_);
+        
+		LogInfo("Module " + Name() + " uninitialized.");
     }
 
     // virtual
