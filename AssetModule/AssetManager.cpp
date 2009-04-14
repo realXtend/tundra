@@ -53,18 +53,6 @@ namespace Asset
         Foundation::AssetPtr asset = GetFromCache(asset_uuid);
         if (asset)
             return asset;
-
-        if (!net_interface_)
-        {
-            AssetModule::LogError("No netinterface, cannot request assets");
-            return Foundation::AssetPtr();
-        }
-        
-        if (!net_interface_->IsConnected())
-        {
-            AssetModule::LogError("Not connected, cannot request assets");
-            return Foundation::AssetPtr();
-        }
         
         if (asset_type == RexAT_Texture)
         {
@@ -199,16 +187,13 @@ namespace Asset
     
     void AssetManager::RequestTexture(const RexUUID& asset_id)
     {
-        if (!net_interface_)
+        if ((!net_interface_)  || (!net_interface_->IsConnected()))
             return;
         
         const ClientParameters& client = net_interface_->GetClientParameters();
         
         if (texture_transfers_.find(asset_id) != texture_transfers_.end())
-        {
-            AssetModule::LogWarning("Texture " + asset_id.ToString() + " already requested");
             return;
-        }
         
         AssetTransfer new_transfer;
         new_transfer.SetAssetId(asset_id);
@@ -235,15 +220,16 @@ namespace Asset
     
     void AssetManager::RequestOtherAsset(const RexUUID& asset_id, Core::uint asset_type)
     {
+        if ((!net_interface_)  || (!net_interface_->IsConnected()))
+            return;
+            
         // Asset transfers are keyed by transfer id, not asset id, so have to search in a bit cumbersome way
         AssetTransferMap::const_iterator i = asset_transfers_.begin();
         while (i != asset_transfers_.end())
         {
             if (i->second.GetAssetId() == asset_id)
-            {
-                AssetModule::LogWarning("Asset " + asset_id.ToString() + " already requested");
                 return;
-            }
+
             ++i;
         }
 
