@@ -13,6 +13,14 @@ namespace Input
         static const Core::event_id_t KEY_PRESSED = 1;
         static const Core::event_id_t KEY_RELEASED = 2;
         static const Core::event_id_t SCROLL = 3;
+        static const Core::event_id_t MOVE_FORWARD_PRESSED = 4;
+        static const Core::event_id_t MOVE_FORWARD_RELEASED = 5;
+        static const Core::event_id_t MOVE_BACK_PRESSED = 6;
+        static const Core::event_id_t MOVE_BACK_RELEASED = 7;
+        static const Core::event_id_t MOVE_LEFT_PRESSED = 8;
+        static const Core::event_id_t MOVE_LEFT_RELEASED = 9;
+        static const Core::event_id_t MOVE_RIGHT_PRESSED = 10;
+        static const Core::event_id_t MOVE_RIGHT_RELEASED = 11;
 
         class MouseWheel : public Foundation::EventDataInterface
         {

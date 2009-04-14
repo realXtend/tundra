@@ -19,7 +19,7 @@ namespace Input
         , mouse_(0)
         , joy_(0)
         , event_category_(0)
-    {
+    {       
     }
 
     InputModuleOIS::~InputModuleOIS()
@@ -74,9 +74,14 @@ namespace Input
         input_manager_ = OIS::InputManager::createInputSystem( pl );
 
         buffered_keyboard_ = BufferedKeyboardPtr(new BufferedKeyboard(framework_));
-
         keyboard_ = static_cast<OIS::Keyboard*>(input_manager_->createInputObject( OIS::OISKeyboard, false ));
+        
+        AddUnbufferedKeyEvent(OIS::KC_W,Events::MOVE_FORWARD_PRESSED,Events::MOVE_FORWARD_RELEASED);
+        AddUnbufferedKeyEvent(OIS::KC_S,Events::MOVE_BACK_PRESSED,Events::MOVE_BACK_RELEASED);        
+        AddUnbufferedKeyEvent(OIS::KC_A,Events::MOVE_LEFT_PRESSED,Events::MOVE_LEFT_RELEASED); 
+        AddUnbufferedKeyEvent(OIS::KC_D,Events::MOVE_RIGHT_PRESSED,Events::MOVE_RIGHT_RELEASED);         
         LogInfo("Keyboard input initialized.");
+   
         mouse_ = static_cast<OIS::Mouse*>(input_manager_->createInputObject( OIS::OISMouse, false ));
         LogInfo("Mouse input initialized.");
         try
@@ -136,6 +141,24 @@ namespace Input
                 Events::MouseWheel mw(ms.Z.rel, ms.Z.abs);
                 framework_->GetEventManager()->SendEvent(event_category_, Events::SCROLL, &mw);
             }
+            
+            for (size_t i=0 ; i<listened_keys_.size() ; ++i)
+            {
+                if (keyboard_->isKeyDown(listened_keys_[i].Key))
+                {
+                    if(!listened_keys_[i].bPressed)
+                    {
+                        listened_keys_[i].bPressed = true;
+                        framework_->GetEventManager()->SendEvent(event_category_, listened_keys_[i].Pressed_EventId, NULL);
+                    }
+                }
+                else if(listened_keys_[i].bPressed)
+                {
+                    listened_keys_[i].bPressed = false;
+                    framework_->GetEventManager()->SendEvent(event_category_, listened_keys_[i].Released_EventId, NULL);    
+                }    
+            }
+         
         }
         if (buffered_keyboard_)
             buffered_keyboard_->Update();
@@ -190,5 +213,18 @@ namespace Input
             ms.height = height;
         }
     }
+
+    
+    void InputModuleOIS::AddUnbufferedKeyEvent(OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event)
+    {
+        UnBufferedKeyEventInfo keyeventinfo;
+        
+        keyeventinfo.bPressed = false;
+        keyeventinfo.Pressed_EventId = pressed_event;
+        keyeventinfo.Released_EventId = released_event;
+        keyeventinfo.Key = key;
+        listened_keys_.push_back(keyeventinfo);        
+    }    
+
 }
 

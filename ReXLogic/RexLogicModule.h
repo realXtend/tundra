@@ -56,8 +56,6 @@ namespace RexLogic
         typedef std::map<Core::event_category_id_t, LogicEventHandlerFunction> LogicEventHandlerMap;
         
         LogicEventHandlerMap event_handlers_;
-        
-        Console::CommandResult TestMoveForward(const Core::StringVector &params);
     };
 }
 
