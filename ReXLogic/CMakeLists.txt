@@ -17,6 +17,7 @@ include_directories (
 	../OgreRenderingSystem
 	../OpenSimProtocol
 	../RexCommon
+	../InputModuleOIS
 )
 
 # Library directories
@@ -31,6 +32,7 @@ INCLUDE_POCO()
 INCLUDE_CURL()
 INCLUDE_XMLRPCEPI()
 INCLUDE_OGRE()
+INCLUDE_OIS()
 
 add_definitions (-DMODULE_EXPORTS)
 

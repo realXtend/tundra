@@ -3,7 +3,6 @@
 #ifndef incl_InputEventHandler_h
 #define incl_InputEventHandler_h
 
-#include "ComponentInterface.h"
 #include "Foundation.h"
 
 namespace RexLogic

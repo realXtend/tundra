@@ -56,7 +56,7 @@ namespace RexLogic
 
     // virtual
     void RexLogicModule::PostInitialize()
-    {    
+    {
         Foundation::SceneManagerServiceInterface *sceneManager = 
                 framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
         if (!sceneManager->HasScene("World"))
@@ -66,24 +66,19 @@ namespace RexLogic
         if (eventcategoryid != 0)
             event_handlers_[eventcategoryid] = boost::bind(&NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2);
         else
-            LogInfo("Unable to find event category for OpenSimNetworkIn");
+            LogError("Unable to find event category for OpenSimNetworkIn");
             
         eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
         if (eventcategoryid != 0)
             event_handlers_[eventcategoryid] = boost::bind(&InputEventHandler::HandleInputEvent, input_handler_, _1, _2);
         else
-            LogInfo("Unable to find event category for Input");            
+            LogError("Unable to find event category for Input");           
 
         eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Scene");
         if (eventcategoryid != 0)
             event_handlers_[eventcategoryid] = boost::bind(&SceneEventHandler::HandleSceneEvent, scene_handler_, _1, _2);
         else
-            LogInfo("Unable to find event category for Scene");               
-            
-
-        // todo tucofixme, test code
-        Console::CommandService *console = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand);
-        console->RegisterCommand(Console::CreateCommand("Forward", "Move forward", Console::Bind(this, &RexLogicModule::TestMoveForward)));
+            LogError("Unable to find event category for Scene");
     }
 
     // virtual 
@@ -91,10 +86,11 @@ namespace RexLogic
     {
         if (rexserver_connection_->IsConnected())
         {
-            // todo tucofixme, at the moment don't wait for LogoutReply packet, just close connection.
+            //! \todo tucofixme, at the moment don't wait for LogoutReply packet, just close connection.
             rexserver_connection_->RequestLogout();
             rexserver_connection_->CloseServerConnection(); 
-        }   
+        } 
+        rexserver_connection_.reset();
         SAFE_DELETE (network_handler_);
         SAFE_DELETE (input_handler_);
 		SAFE_DELETE (scene_handler_);
@@ -116,17 +112,6 @@ namespace RexLogic
             return (i->second)(event_id,data);
         else
             return false;
-    }
-    
-    Console::CommandResult RexLogicModule::TestMoveForward(const Core::StringVector &params)
-    {
-        uint32_t controlflags = 1; // (uint32_t)RexTypes::AGENT_CONTROL_AT_POS;
-        uint8_t flags = 0;
-        Core::Quaternion bodyrot = Core::Quaternion(0.1f,0.2f,0.3f,0.4f);
-        Core::Quaternion headrot = Core::Quaternion(0.5f,0.6f,0.7f,0.8f);
-    
-        rexserver_connection_->SendAgentUpdatePacket(bodyrot,headrot,0,Vector3(9,10,11),Vector3(12,13,14),Vector3(15,16,17),Vector3(18,19,20),2100.0f,controlflags,flags);
-        return Console::ResultSuccess();
     }
 }
 

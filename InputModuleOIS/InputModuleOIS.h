@@ -24,6 +24,16 @@ namespace Input
     class BufferedKeyboard;
     typedef boost::shared_ptr<BufferedKeyboard> BufferedKeyboardPtr;
 
+
+    struct UnBufferedKeyEventInfo
+    {
+        Core::event_id_t Pressed_EventId;
+        Core::event_id_t Released_EventId;
+        OIS::KeyCode Key;
+        bool bPressed;
+    };
+
+
     //! Input module that uses OIS for input. OIS is used in unbuffered mode, so doesn't work well for UI input.
     class InputModuleOIS : public Foundation::ModuleInterfaceImpl
     {
@@ -70,6 +80,13 @@ namespace Input
 
         //! buffered keyboard
         BufferedKeyboardPtr buffered_keyboard_;
+        
+        //! unbuffered keys for which pressed and released events are created. Good for movement keys, etc.
+        std::vector<UnBufferedKeyEventInfo> listened_keys_;
+        
+        //! add a key for unbuffered listening
+        void AddUnbufferedKeyEvent(OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event);
+
     };
 }
 #endif
