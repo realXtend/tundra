@@ -51,6 +51,7 @@ namespace Console
         virtual void SetVisible(bool visible) {}
         virtual bool IsVisible() const { return true; }
         virtual bool IsActive() const {return true; }
+        virtual bool HandleKeyDown(int code, unsigned int text) { return false; }
     private:
 
         //! input thread

@@ -79,7 +79,7 @@ namespace Console
 
                 if (manager_->IsActive())
                 {
-                    return (checked_static_cast<ConsoleManager*>(manager_.get())->HandleKeyDown(code, text));
+                    return manager_->HandleKeyDown(code, text);
                 }
             }
         }
