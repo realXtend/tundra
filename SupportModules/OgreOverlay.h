@@ -34,16 +34,23 @@ namespace Console
         //! print out message to console. thread safe
         virtual void Print(const std::string &text);
 
+        //! scroll console text rel amount. Thread safe.
+        /*!
+            \param rel positive to scroll up, negative to scroll down, 20 is one line.
+        */
         virtual void Scroll(int rel);
 
+        //! set console visible / invisible, not thread safe. Should be called from rendering thread.
         virtual void SetVisible(bool visible);
+        //! Returns true if console is visible, false otherwise. Not thread safe, should be called from rendering thread.
         virtual bool IsVisible() const;
+        //! Returns true if console is active i.e. it accepts input from keyboard, not thread safe. Should be called from rendering thread.
         virtual bool IsActive() const;
 
-        //! update overlay
+        //! update overlay. Should be called from rendering thread.
         virtual void Update(Core::f64 frametime);
 
-        //! process key down event
+        //! process key down event. Thread safe.
         bool HandleKeyDown(int code, unsigned int text);
 
     private:
@@ -115,6 +122,9 @@ namespace Console
 
         //! mutex for the console
         Core::Mutex mutex_;
+
+        //! Frequency for the cursor blink, in seconds
+        Core::Real cursor_blink_freq_;
     };
 }
 
