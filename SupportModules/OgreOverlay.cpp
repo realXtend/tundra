@@ -42,6 +42,8 @@ namespace Console
     {
         Foundation::Framework *framework = module_->GetFramework();
 
+        cursor_blink_freq_ = framework->GetDefaultConfig().DeclareSetting("DebugConsole", "cursor_blink_frequency", 0.5f);
+
         if ( framework->GetModuleManager()->HasModule(Foundation::Module::MT_Renderer) )
         {
             OgreRenderer::OgreRenderingModule *rendering_module = 
@@ -111,9 +113,9 @@ namespace Console
             message_lines_.push_front(text);
             if (message_lines_.size() >= max_lines_)
                 message_lines_.pop_back();
-        }
 
-        update_ = true;
+            update_ = true;
+        }
     }
 
     // virtual
@@ -129,9 +131,9 @@ namespace Console
                 lines -= (lines - ((message_lines_.size() - max_visible_lines - 1) - text_position_));
 
             text_position_ += lines;
-        }
 
-        update_ = true;
+            update_ = true;
+        }
     }
 
     void OgreOverlay::SetVisible(bool visible)
@@ -172,36 +174,47 @@ namespace Console
         checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>
                 (console_overlay_.get())->Update(frametime);
 
+        bool update = false;
+        {
+            Core::MutexLock lock(mutex_);
+            update = update_;
+        }
 
         // blink prompt cursor
         static bool show_cursor = false;
         prompt_timer_ += frametime;
-        if (prompt_timer_ > 0.5f)
+        if (prompt_timer_ > cursor_blink_freq_)
         {
             show_cursor = !show_cursor;
             prompt_timer_ = 0.f;
-            update_ = true;
+            update = true;
         }
 
-        if (update_)
+        if (update)
         {
             std::string page;
             FormatPage(page);
 
-            std::string prompt(command_line_);
+            std::string prompt;
+            size_t cursor_offset;
+            {
+                Core::MutexLock lock(mutex_);
+
+                prompt = command_line_;
+                cursor_offset = cursor_offset_;
+                update_ = false;
+            }
 
             // add cursor
             if (show_cursor)
-                prompt.insert(prompt.size() - cursor_offset_, "_");
-            else if (cursor_offset_ > 0)
-                prompt.insert(prompt.size() - cursor_offset_, " ");
+                prompt.insert(prompt.size() - cursor_offset, "_");
+            else if (cursor_offset > 0)
+                prompt.insert(prompt.size() - cursor_offset, " ");
 
             //add the prompt
             page += ">" + prompt;
 
             Display(page);
-
-            update_ = false;
         }
     }
 
@@ -225,6 +238,7 @@ namespace Console
             break;
         case OIS::KC_BACK:
             {
+                Core::MutexLock lock(mutex_);
                 if (command_line_.empty() == false && cursor_offset_ < command_line_.length())
                 {
                     command_line_ = command_line_.substr(0, command_line_.length() - cursor_offset_ - 1) + command_line_.substr(command_line_.length() - cursor_offset_, cursor_offset_);
@@ -240,6 +254,7 @@ namespace Console
             break;
 
         default:
+            Core::MutexLock lock(mutex_);
             result = AddCharacter(text, command_line_, cursor_offset_);
             break;
         }
