@@ -118,6 +118,9 @@ namespace OpenSimProtocol
         /// Returns client parameters of current connection
         const ClientParameters& GetClientParameters() const { return clientParameters_; }
         
+        /// Returns whether connected
+        bool IsConnected() const { return bConnected_; }
+        
     private:
         /// Initializes a login to a reX server that is not using a separate authentication server.
        	bool PerformXMLRPCLogin(
