@@ -55,6 +55,9 @@ namespace Input
         */
         void WindowClosed();
 
+        //! Handle window resizing, only for the main render window
+        void WindowResized(int width, int height);
+
         //! input event category
         Core::event_category_id_t event_category_;
 
