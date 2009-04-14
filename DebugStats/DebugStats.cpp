@@ -521,11 +521,11 @@ void DebugStats::PopulatePrimPropertiesTreeView(RexLogic::EC_OpenSimPrim *prim)
         
     prim_row = *(primPropertiesModel_->append());
     prim_row[primPropertiesColumns_.colName] = "Material";
-    prim_row[primPropertiesColumns_.colValue] = Core::ToString((uint)prim->Material);
+    prim_row[primPropertiesColumns_.colValue] = Core::ToString((Core::uint)prim->Material);
     
     prim_row = *(primPropertiesModel_->append());
     prim_row[primPropertiesColumns_.colName] = "ClickAction";
-    prim_row[primPropertiesColumns_.colValue] = Core::ToString((uint)prim->ClickAction);
+    prim_row[primPropertiesColumns_.colValue] = Core::ToString((Core::uint)prim->ClickAction);
     
     prim_row = *(primPropertiesModel_->append());
     prim_row[primPropertiesColumns_.colName] = "UpdateFlags";
