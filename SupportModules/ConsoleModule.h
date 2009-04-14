@@ -48,7 +48,7 @@ namespace Console
         Foundation::Framework *GetFramework() { return framework_; }
 
         //! Returns default console
-        ConsolePtr GetConsole() const { return manager_; };
+        ConsolePtr GetConsole() const { return manager_; }
 
 
         MODULE_LOGGING_FUNCTIONS
