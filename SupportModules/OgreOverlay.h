@@ -125,6 +125,9 @@ namespace Console
 
         //! Frequency for the cursor blink, in seconds
         Core::Real cursor_blink_freq_;
+
+        //! default command manager
+        CommandManagerPtr command_manager_;
     };
 }
 

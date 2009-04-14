@@ -8,6 +8,9 @@
 #include "EC_OgreConsoleOverlay.h"
 #include "OgreRenderingModule.h"
 #include "InputEvents.h"
+#include "ConsoleModule.h"
+#include "ConsoleManager.h"
+#include "CommandManager.h"
 
 namespace Console
 {
@@ -102,6 +105,9 @@ namespace Console
 
             update_ = true;
         }
+
+        ConsolePtr manager = checked_static_cast<ConsoleModule*>(module_)->GetConsole();
+        command_manager_ = checked_static_cast<ConsoleManager*>(manager.get())->GetCommandManager();
     }
     
     // virtual
@@ -251,6 +257,23 @@ namespace Console
 
         case OIS::KC_RIGHT:
             MoveCursor(1);
+            break;
+
+        case OIS::KC_RETURN:
+            {
+                std::string command_line;
+                {
+                    Core::MutexLock lock(mutex_);
+                    command_line = command_line_;
+                    command_line_.clear();
+                    text_position_ = 0;
+                    cursor_offset_ = 0;
+                }
+                if (command_manager_)
+                    command_manager_->QueueCommand(command_line);
+
+                Print(command_line);
+            }
             break;
 
         default:
