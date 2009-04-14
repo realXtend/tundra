@@ -247,7 +247,17 @@ namespace Console
                 Core::MutexLock lock(mutex_);
                 if (command_line_.empty() == false && cursor_offset_ < command_line_.length())
                 {
-                    command_line_ = command_line_.substr(0, command_line_.length() - cursor_offset_ - 1) + command_line_.substr(command_line_.length() - cursor_offset_, cursor_offset_);
+                    command_line_ = command_line_.substr(0, command_line_.length() - cursor_offset_ - 1)  +  command_line_.substr(command_line_.length() - cursor_offset_, cursor_offset_);
+                }
+                break;
+            }
+        case OIS::KC_DELETE:
+            {
+                Core::MutexLock lock(mutex_);
+                if (command_line_.empty() == false && cursor_offset_ != 0)
+                {
+                    command_line_ = command_line_.substr(0, command_line_.length() - cursor_offset_)  +  command_line_.substr(command_line_.length() - cursor_offset_ + 1, cursor_offset_ - 1);
+                    cursor_offset_--;
                 }
                 break;
             }
