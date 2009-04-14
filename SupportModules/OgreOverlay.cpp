@@ -42,6 +42,8 @@ namespace Console
             , update_(false)
             , scroll_line_size_(20)
             , cursor_offset_(0)
+            , max_command_history_(50)
+            , command_history_pos_(command_history_.begin())
     {
         Foundation::Framework *framework = module_->GetFramework();
 
@@ -237,10 +239,33 @@ namespace Console
             Scroll(-scroll_line_size_ * max_visible_lines - 2);
             break;
         case OIS::KC_UP:
-            Scroll(scroll_line_size_);
+            {
+                Core::MutexLock lock(mutex_);
+
+                if (command_history_pos_ != command_history_.begin())
+                {
+                    --command_history_pos_;
+                    command_line_ = *command_history_pos_;
+                    cursor_offset_ = 0;
+                }
+            }
             break;
         case OIS::KC_DOWN:
-            Scroll(-scroll_line_size_);
+            {
+                Core::MutexLock lock(mutex_);
+
+                Core::StringList::const_iterator new_pos = command_history_pos_;
+                if (new_pos != command_history_.end())
+                    ++new_pos;
+
+                if (new_pos != command_history_.end())
+                {
+                    command_history_pos_ = new_pos;
+    
+                    command_line_ = *command_history_pos_;
+                    cursor_offset_ = 0;
+                }
+            }
             break;
         case OIS::KC_BACK:
             {
@@ -278,6 +303,14 @@ namespace Console
                     command_line_.clear();
                     text_position_ = 0;
                     cursor_offset_ = 0;
+
+                    // store command line to history
+                    if (command_history_.size() >= max_command_history_)
+                        command_history_.pop_front();
+
+                    command_history_.push_back(command_line);
+
+                    command_history_pos_ = command_history_.end();
                 }
                 if (command_manager_)
                     command_manager_->QueueCommand(command_line);

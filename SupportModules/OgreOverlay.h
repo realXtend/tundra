@@ -96,6 +96,15 @@ namespace Console
         //! current command line
         std::string command_line_;
 
+        //! buffer for command history
+        Core::StringList command_history_;
+
+        //! current position in command history
+        Core::StringList::const_iterator command_history_pos_;
+
+        //! maximum number of commands the console will store
+        const size_t max_command_history_;
+
         //! current offset for text, 0 is bottom.
         size_t text_position_;
 
