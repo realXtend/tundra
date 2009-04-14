@@ -19,4 +19,32 @@ namespace Core
         float w = 1.f - sqrt(sq);
         return Quaternion(x, y, z, w);
     }
+    
+    Vector3D<float> PackQuaternionToFloat3(float x, float y, float z, float w)
+    {
+        // A quaternion is sent over the stream in a slightly compressed form - the w component is omitted.
+        // The other end can reconstruct the w component because the quat is normed.
+        
+        float norm = (float)sqrt(x * x + y * y + z * z + w * w);
+        const float epsilon = 1e-6f;
+        if (norm  < epsilon)
+        {
+            return Vector3D<float>();
+            ///\todo Log error - singular quaternion! App logic is in bad state here.
+        }
+        else
+        {
+            // Normalize the quaternion. \note For optimization purposes, we could only normalize if the norm is not near to one.
+            norm = 1.0f / norm;
+
+            if (w < 0.0f) // The server will reconstruct the w component as positive - so negate the whole quat here if w is negative.
+                norm = -norm;
+            
+            x *= norm;
+            y *= norm;
+            z *= norm;
+        }
+
+        return Vector3D<float>(x, y, z);
+    }
 }
