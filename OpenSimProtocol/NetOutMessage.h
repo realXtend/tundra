@@ -89,6 +89,9 @@ public:
 	/// @return The sequence number for the packet we're building. This method is not meaningful for end users, as the seqNum is created only when the message
 	/// is sent out to the stream.
 	uint32_t GetSequenceNumber() const { return sequenceNumber; }
+	
+	/// Resets and clears the message stream and jumps back to the first block & variable.
+	void ResetWriting();
 
 private: // friend-public:
 	void operator=(const NetOutMessage &);

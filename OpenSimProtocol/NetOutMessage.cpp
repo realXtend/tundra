@@ -1,21 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 #include "NetOutMessage.h"
 #include "Poco/Net/DatagramSocket.h" // To get htons etc.
+#include "QuatUtils.h"
+
 #include <iostream>
 #include <cstring>
 
 using namespace RexTypes;
 
+
 NetOutMessage::NetOutMessage()
 {
-	const size_t maxMessageSize = 2048;
-	messageData.resize(maxMessageSize);
-	bytesFilled = 0;
-	currentBlock = 0;
-	currentVariable = 0;
-	blockQuantityCounter = 0;
-	for(size_t i = 0; i < maxMessageSize; ++i)
-	    messageData[i] = 0;
+    ResetWriting();
 }
 
 NetOutMessage::~NetOutMessage()
@@ -164,35 +160,12 @@ void NetOutMessage::AddQuaternion(const Core::Quaternion &value)
         ///\todo Log error - bad variable!
         return;
     }
-
-    // A quaternion is sent over the stream in a slightly compressed form - the w component is omitted.
-    // The other end can reconstruct the w component because the quat is normed.
-    float norm = (float)sqrt(value.x * value.x + value.y * value.y + value.z * value.z + value.w * value.w);
-    const float epsilon = 1e-6f;
-    if (norm  < epsilon)
-    {
-        float zero = 0.f;
-        AddBytesUnchecked(sizeof(float), &zero);
-        AddBytesUnchecked(sizeof(float), &zero);
-        AddBytesUnchecked(sizeof(float), &zero);
-        ///\todo Log error - singular quaternion! App logic is in bad state here.
-    }
-    else
-    {
-        // Normalize the quaternion. \note For optimization purposes, we could only normalize if the norm is not near to one.
-
-        norm = 1.0f / norm;
-
-        if (value.w < 0.0f) // The server will reconstruct the w component as positive - so negate the whole quat here if w is negative.
-            norm = -norm;
-
-        float networkValue = (norm * value.x);
-        AddBytesUnchecked(sizeof(float), &networkValue);
-        networkValue = (norm * value.y);
-        AddBytesUnchecked(sizeof(float), &networkValue);
-        networkValue = (norm * value.z);
-        AddBytesUnchecked(sizeof(float), &networkValue);
-    }
+    
+    Vector3 val = Core::PackQuaternionToFloat3(value);
+    
+    AddBytesUnchecked(sizeof(float), &val.x);
+    AddBytesUnchecked(sizeof(float), &val.y);
+    AddBytesUnchecked(sizeof(float), &val.z);
 
     AdvanceToNextVariable();
 }
@@ -306,8 +279,21 @@ void NetOutMessage::AdvanceToNextVariable()
 	}
 }
 
+void NetOutMessage::ResetWriting()
+{
+	const size_t maxMessageSize = 2048;
+	messageData.resize(maxMessageSize);
+	bytesFilled = 0;
+	currentBlock = 0;
+	currentVariable = 0;
+	blockQuantityCounter = 0;
+	for(size_t i = 0; i < maxMessageSize; ++i)
+	    messageData[i] = 0;
+}
+
 void NetOutMessage::SetVariableBlockCount(size_t count)
 {
+    assert(currentBlock <= messageInfo->blocks.size());
 	const NetMessageBlockType &curType = messageInfo->blocks[currentBlock].type;
 	if (curType == NetBlockVariable)
 	{
