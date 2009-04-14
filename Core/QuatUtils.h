@@ -11,11 +11,14 @@
 namespace Core
 {
     Quaternion UnpackQuaternionFromFloat3(float x, float y, float z);
-
+    
     __inline Quaternion UnpackQuaternionFromFloat3(const float *data) { return UnpackQuaternionFromFloat3(data[0], data[1], data[2]); }
     __inline Quaternion UnpackQuaternionFromFloat3(const Vector3D<float> &data) { return UnpackQuaternionFromFloat3(data.x, data.y, data.z); }
 
+    Vector3D<float> PackQuaternionToFloat3(float x, float y, float z, float w);
 
+    __inline Vector3D<float> PackQuaternionToFloat3(const float *data) { return PackQuaternionToFloat3(data[0], data[1], data[2], data[3]); }
+    __inline Vector3D<float> PackQuaternionToFloat3(const Quaternion &data) { return PackQuaternionToFloat3(data.x, data.y, data.z, data.w); }    
 }
 
 #endif
