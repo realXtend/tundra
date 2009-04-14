@@ -362,23 +362,22 @@ NetOutMessage *NetMessageManager::StartNewMessage(NetMsgID id)
 		return 0;
 
 	NetOutMessage *newMsg = 0;
-	if (unusedMessagePool.size() > 0)
-	{
-		// Search if there exist allready created message in pool. 
-		
-		for ( std::list<NetOutMessage*>::iterator iter = unusedMessagePool.begin(); iter != unusedMessagePool.end(); ++iter)
-			if ( (*iter)->GetMessageID() == id ) 
-			{	// If there exist use allready created and remove it from unusedMessagePool. 
-				newMsg = *iter;
-				unusedMessagePool.erase(iter);
-				break;
+    if (unusedMessagePool.size() > 0)
+    {
+        // Search if there exist allready created message in pool. 
+		for(std::list<NetOutMessage*>::iterator iter = unusedMessagePool.begin(); iter != unusedMessagePool.end(); ++iter)
+		    if ((*iter)->GetMessageID() == id) 
+			{	
+			    // If there exist use allready created and remove it from unusedMessagePool. 
+                newMsg = *iter;
+                newMsg->ResetWriting();
+                unusedMessagePool.erase(iter);
+                break;
 			}
-		
+
 	    // If there were any message with current id, create new message.
-
-		if ( newMsg == 0)
-			newMsg = new NetOutMessage();
-
+		if (newMsg == 0)
+            newMsg = new NetOutMessage();
 	}
 	else
 		newMsg = new NetOutMessage();
@@ -396,14 +395,15 @@ void NetMessageManager::FinishMessage(NetOutMessage *message)
 	message->SetSequenceNumber(GetNewSequenceNumber());
 
 	// Find and remove the given message from the usedMessagePool list, it has to be there.
+	for(std::list<NetOutMessage*>::iterator iter = usedMessagePool.begin(); iter != usedMessagePool.end(); ++iter)
+    {
+        if (*iter == message)
+        {
+            usedMessagePool.erase(iter);
+            break;
+        }	
+	}
 	
-	for ( std::list<NetOutMessage*>::iterator iter = usedMessagePool.begin(); iter != usedMessagePool.end(); ++iter)
-		if ( *iter == message )
-		{
-			usedMessagePool.erase(iter);
-			break;
-		}	
-		
 	// Try to Zero-encode the message if that is desired. If encoding worsens the size, we'll send unencoded.
 	if (message->GetMessageInfo()->encoding == NetZeroEncoded)
 	{
@@ -438,12 +438,11 @@ void NetMessageManager::FinishMessage(NetOutMessage *message)
 	}
 
 	// Push reliable messages to queue to wait ACK from the server.
-	if (message->IsReliable())
-	    AddMessageToResendQueue(message);
+    if (message->IsReliable())
+        AddMessageToResendQueue(message);
     else
-	{   
-		unusedMessagePool.push_back(message);
-	}
+	    unusedMessagePool.push_back(message);
+    
 	SendProcessedMessage(message);
 }
 
