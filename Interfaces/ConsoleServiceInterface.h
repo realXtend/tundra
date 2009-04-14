@@ -37,6 +37,8 @@ namespace Console
 
         //! Is the console accepting input
         virtual bool IsActive() const = 0;
+
+        virtual bool HandleKeyDown(int code, unsigned int text) = 0;
     };
 
     typedef boost::shared_ptr<ConsoleServiceInterface> ConsolePtr;

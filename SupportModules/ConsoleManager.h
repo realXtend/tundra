@@ -73,10 +73,19 @@ namespace Console
         }
 
         //! process key down event
-        bool HandleKeyDown(int code, unsigned int text);
+        virtual bool HandleKeyDown(int code, unsigned int text)
+        {
+            return ogre_->HandleKeyDown(code, text);
+        }
 
         //! Returns command manager
         CommandManagerPtr GetCommandManager() const {return command_manager_; }
+
+        //! Returns Ogre console
+        ConsolePtr GetOgre() const { return ogre_; }
+
+        //! Returns native console
+        ConsolePtr GetNative() const { return native_; }
 
     private:
         //! native debug console

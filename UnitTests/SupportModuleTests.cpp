@@ -2,15 +2,30 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <OISKeyboard.h>
+
 #include "CoreStdIncludes.h"
 #include "Core.h"
 #include "Foundation.h"
 #include "ServiceInterfaces.h"
 #include "StaticModuleDefinitions.h"
 
+#include "ConsoleModuleApi.h"
+#include "ConsoleModule.h"
+#include "ConsoleManager.h"
+#include "OgreOverlay.h"
+
+#include "InputEvents.h"
+
 //! Unit test for framework
 BOOST_AUTO_TEST_SUITE(test_suite_support_modules)
 
+
+Foundation::Framework &CreateFramework()
+{
+    static Foundation::Framework fw;
+    return fw;
+}
 
 struct TestA
 {
@@ -56,9 +71,9 @@ struct TestB
     int test_var_;
 };
 
-BOOST_AUTO_TEST_CASE( support_modules_console )
+BOOST_AUTO_TEST_CASE( support_modules_console_commands )
 {
-    Foundation::Framework fw;
+    Foundation::Framework &fw = CreateFramework();
     fw.GetModuleManager()->ExcludeModule("StaticModuleTest");
 
     Test::StaticModuleDefinitions static_test;
@@ -94,7 +109,75 @@ BOOST_AUTO_TEST_CASE( support_modules_console )
     thread.join();
     
     BOOST_CHECK_EQUAL (testb.test_var_, 1);
+}
 
+BOOST_AUTO_TEST_CASE( support_modules_console_ogre )
+{
+    Foundation::Framework &fw = CreateFramework();
+
+    Console::ConsoleManager *console_manager = checked_static_cast<Console::ConsoleManager*>(fw.GetService<Console::ConsoleServiceInterface>
+        (Foundation::Service::ST_Console));
+
+    Console::ConsolePtr ogre_console = console_manager->GetOgre();
+    Console::OgreOverlay *overlay = checked_static_cast<Console::OgreOverlay*>(ogre_console.get());
+    
+    overlay->SetVisible(true);
+    BOOST_CHECK_EQUAL(overlay->IsVisible(), true);
+    overlay->Update(60); // fast-forward one minute
+    BOOST_CHECK_EQUAL(overlay->IsVisible(), true);
+    BOOST_CHECK_EQUAL(overlay->IsActive(), true);
+
+    
+    overlay->Scroll(30000);
+    overlay->Scroll(-30000);
+    overlay->Scroll(300000);
+    overlay->Scroll(-2);
+    overlay->Scroll(1);
+    overlay->Clear();
+    overlay->Scroll(5);
+    overlay->Scroll(-5);
+    overlay->Print("Test message A");
+    overlay->Print("Test message B");
+    overlay->Print("Test message C");
+    BOOST_CHECK_EQUAL(overlay->GetLine(0), std::string("Test message C"));
+    BOOST_CHECK_EQUAL(overlay->GetLine(1), std::string("Test message B"));
+    BOOST_CHECK_EQUAL(overlay->GetLine(2), std::string("Test message A"));
+
+    BOOST_CHECK_EQUAL(overlay->GetCommandLine(), std::string(""));
+
+    overlay->HandleKeyDown(OIS::KC_A, 65);
+    BOOST_CHECK_EQUAL(overlay->GetCommandLine(), std::string("A"));
+    overlay->HandleKeyDown(OIS::KC_B, 66);
+    BOOST_CHECK_EQUAL(overlay->GetCommandLine(), std::string("AB"));
+    overlay->HandleKeyDown(OIS::KC_BACK, 0);
+    BOOST_CHECK_EQUAL(overlay->GetCommandLine(), std::string("A"));
+    overlay->HandleKeyDown(OIS::KC_C, 67);
+    overlay->HandleKeyDown(OIS::KC_RIGHT, 0);
+    overlay->HandleKeyDown(OIS::KC_LEFT, 0);
+    overlay->HandleKeyDown(OIS::KC_BACK, 0);
+    overlay->HandleKeyDown(OIS::KC_DELETE, 0);
+    BOOST_CHECK_EQUAL(overlay->GetCommandLine(), std::string(""));
+
+    overlay->HandleKeyDown(OIS::KC_A, 65);
+    overlay->HandleKeyDown(OIS::KC_RETURN, 0);
+    overlay->HandleKeyDown(OIS::KC_B, 66);
+    overlay->HandleKeyDown(OIS::KC_RETURN, 0);
+    overlay->HandleKeyDown(OIS::KC_C, 67);
+    overlay->HandleKeyDown(OIS::KC_RETURN, 0);
+    BOOST_CHECK_EQUAL(overlay->GetCommandLine(), std::string(""));
+
+    overlay->HandleKeyDown(OIS::KC_DOWN, 0);
+    overlay->HandleKeyDown(OIS::KC_UP, 0);
+    BOOST_CHECK_EQUAL(overlay->GetCommandLine(), std::string("C"));
+    overlay->HandleKeyDown(OIS::KC_UP, 0);
+    overlay->HandleKeyDown(OIS::KC_UP, 0);
+    overlay->HandleKeyDown(OIS::KC_UP, 0);
+    BOOST_CHECK_EQUAL(overlay->GetCommandLine(), std::string("A"));
+    overlay->HandleKeyDown(OIS::KC_DOWN, 0);
+    BOOST_CHECK_EQUAL(overlay->GetCommandLine(), std::string("B"));
+
+
+    ogre_console.reset();
     fw.GetModuleManager()->UninitializeModules();
     fw.GetModuleManager()->UnloadModules();
 }

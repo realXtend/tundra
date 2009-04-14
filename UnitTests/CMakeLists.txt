@@ -14,11 +14,14 @@ include_directories (
 	../Interfaces
 	../SceneModule
 	../TestModule
+	../SupportModules
+	../InputModuleOIS
 )
 
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
+INCLUDE_OIS()
 
 add_definitions (-DMODULE_EXPORTS)
 
@@ -39,6 +42,7 @@ target_link_libraries (${TARGET_NAME} Core Foundation SceneModule Interfaces)
 if (MSVC)
    target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)
 endif (MSVC)
+
 
 # External library linkage
 LINK_POCO()
