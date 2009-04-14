@@ -9,6 +9,9 @@
 
 namespace Input
 {
+    const char *DeviceType[6] = {"OISUnknown", "OISKeyboard", "OISMouse", "OISJoyStick",
+							 "OISTablet", "OISOther"};
+
     InputModuleOIS::InputModuleOIS() : 
         ModuleInterfaceImpl(type_static_)
         , input_manager_(0)
@@ -65,6 +68,7 @@ namespace Input
         pl.insert(std::make_pair(std::string("x11_mouse_hide"), std::string("false")));
 #endif
 
+        // throws exception if fails, not handled since it should be rather fatal
         input_manager_ = OIS::InputManager::createInputSystem( pl );
 
         buffered_keyboard_ = BufferedKeyboardPtr(new BufferedKeyboard(framework_));
@@ -82,6 +86,29 @@ namespace Input
         {
             LogInfo("Joystick / gamepad not found.");
         }
+
+        // set window default width / height as 100 for mouse. Should be updated when windows size changes
+        const OIS::MouseState &ms = mouse_->getMouseState();
+	    ms.width = 100;
+	    ms.height = 100;
+
+        unsigned int v = input_manager_->getVersionNumber();
+
+        std::stringstream ss;
+	    ss << "OIS Version: " << (v>>16 ) << "." << ((v>>8) & 0x000000FF) << "." << (v & 0x000000FF);
+        LogInfo(ss.str());
+
+		LogInfo("Release Name: " + input_manager_->getVersionName());
+		LogInfo("Manager: " + input_manager_->inputSystemName());
+        LogInfo("Total Keyboards: " + Core::ToString(input_manager_->getNumberOfDevices(OIS::OISKeyboard)));
+		LogInfo("Total Mice: " + Core::ToString(input_manager_->getNumberOfDevices(OIS::OISMouse)));
+		LogInfo("Total JoySticks: " + Core::ToString(input_manager_->getNumberOfDevices(OIS::OISJoyStick)));
+        
+
+	    //List all devices
+        OIS::DeviceList list = input_manager_->listFreeDevices();
+        for( OIS::DeviceList::iterator i = list.begin(); i != list.end(); ++i )
+		    std::cout << "\n\tDevice: " << DeviceType[i->first] << " Vendor: " << i->second;
 
         LogInfo("Module " + Name() + " initialized.");
     }
