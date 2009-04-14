@@ -232,11 +232,11 @@ namespace Console
                 break;
             }
         case OIS::KC_LEFT:
-            cursor_offset_ = std::min(cursor_offset_ + 1, command_line_.length());
+            MoveCursor(-1);
             break;
 
         case OIS::KC_RIGHT:
-            if (cursor_offset_ > 0) cursor_offset_--;
+            MoveCursor(1);
             break;
 
         default:
@@ -248,6 +248,20 @@ namespace Console
             update_ = true;
 
         return result;
+    }
+
+    void OgreOverlay::MoveCursor(int offset)
+    {
+        int offset_neg = -offset;
+        if (offset_neg < 0)
+        {
+            Core::MutexLock lock(mutex_);
+            if (cursor_offset_ >= -offset_neg) cursor_offset_ += offset_neg;
+        } else
+        {
+            Core::MutexLock lock(mutex_);
+            cursor_offset_ = std::min(cursor_offset_ + offset_neg, command_line_.length());
+        }
     }
 
     void OgreOverlay::FormatPage(std::string &pageOut)

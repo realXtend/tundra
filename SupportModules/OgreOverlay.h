@@ -47,6 +47,13 @@ namespace Console
         bool HandleKeyDown(int code, unsigned int text);
 
     private:
+        //! move cursor to left or right by offset amounr
+        /*! Offset is constrained by current command line length
+
+            \param offset negative for left movement, positive for right
+        */
+        void MoveCursor(int offset);
+
         //! format a page according to overlay properties so it can be displayed on the console
         /*! Formats the current buffer and outputs it into the parameter
 
