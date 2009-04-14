@@ -29,7 +29,7 @@ namespace Asset
     {
     public:
         //! constructor
-        AssetManager(Foundation::Framework* framework, OpenSimProtocol::OpenSimProtocolModule* net_interface);
+        AssetManager(Foundation::Framework* framework);
         //! destructor
         virtual ~AssetManager();
         

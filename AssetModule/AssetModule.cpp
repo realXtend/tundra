@@ -41,14 +41,7 @@ namespace Asset
     // virtual
     void AssetModule::Initialize()
     {
-        net_interface_ = checked_static_cast<OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol));
-        if (!net_interface_)
-        {
-            //! \todo something smart, now assetmanager will be in quite zombified state
-            AssetModule::LogError("Getting network interface did not succeed."); 
-        }
-        
-        manager_ = AssetManagerPtr(new AssetManager(framework_, net_interface_));
+        manager_ = AssetManagerPtr(new AssetManager(framework_));
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Asset, manager_.get());
         
         LogInfo("Module " + Name() + " initialized.");
