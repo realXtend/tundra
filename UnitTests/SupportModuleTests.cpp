@@ -177,6 +177,10 @@ BOOST_AUTO_TEST_CASE( support_modules_console_ogre )
     BOOST_CHECK_EQUAL(overlay->GetCommandLine(), std::string("B"));
 
 
+    overlay->SetVisible(false);
+    BOOST_CHECK_EQUAL(overlay->IsActive(), false);
+
+
     ogre_console.reset();
     fw.GetModuleManager()->UninitializeModules();
     fw.GetModuleManager()->UnloadModules();
