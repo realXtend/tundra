@@ -364,8 +364,21 @@ NetOutMessage *NetMessageManager::StartNewMessage(NetMsgID id)
 	NetOutMessage *newMsg = 0;
 	if (unusedMessagePool.size() > 0)
 	{
-		newMsg = unusedMessagePool.front();
-		unusedMessagePool.pop_front();
+		// Search if there exist allready created message in pool. 
+		
+		for ( std::list<NetOutMessage*>::iterator iter = unusedMessagePool.begin(); iter != unusedMessagePool.end(); ++iter)
+			if ( (*iter)->GetMessageID() == id ) 
+			{	// If there exist use allready created and remove it from unusedMessagePool. 
+				newMsg = *iter;
+				unusedMessagePool.erase(iter);
+				break;
+			}
+		
+	    // If there were any message with current id, create new message.
+
+		if ( newMsg == 0)
+			newMsg = new NetOutMessage();
+
 	}
 	else
 		newMsg = new NetOutMessage();
@@ -382,6 +395,15 @@ void NetMessageManager::FinishMessage(NetOutMessage *message)
 	assert(message);
 	message->SetSequenceNumber(GetNewSequenceNumber());
 
+	// Find and remove the given message from the usedMessagePool list, it has to be there.
+	
+	for ( std::list<NetOutMessage*>::iterator iter = usedMessagePool.begin(); iter != usedMessagePool.end(); ++iter)
+		if ( *iter == message )
+		{
+			usedMessagePool.erase(iter);
+			break;
+		}	
+		
 	// Try to Zero-encode the message if that is desired. If encoding worsens the size, we'll send unencoded.
 	if (message->GetMessageInfo()->encoding == NetZeroEncoded)
 	{
@@ -419,8 +441,9 @@ void NetMessageManager::FinishMessage(NetOutMessage *message)
 	if (message->IsReliable())
 	    AddMessageToResendQueue(message);
     else
-        usedMessagePool.pop_front();
-    
+	{   
+		unusedMessagePool.push_back(message);
+	}
 	SendProcessedMessage(message);
 }
 
