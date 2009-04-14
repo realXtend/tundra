@@ -75,6 +75,9 @@ namespace OgreRenderer
 
         size_t GetWindowHandle() const;
 
+        int GetWindowWidth() const;
+        int GetWindowHeight() const;
+
         //! subscribe a listener to renderer log. Can be used before renderer is initialized.
         void SubscribeLogListener(const Foundation::LogListenerPtr &listener);
         //! unsubsribe a listener to renderer log. Can be used before renderer is initialized.

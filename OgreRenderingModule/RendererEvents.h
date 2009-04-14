@@ -3,6 +3,8 @@
 #ifndef incl_OgreRenderer_RendererEvents_h
 #define incl_OgreRenderer_RendererEvents_h
 
+#include "EventDataInterface.h"
+
 namespace OgreRenderer
 {
     //! renderer events
@@ -13,6 +15,23 @@ namespace OgreRenderer
         
         //! window closed event id
         static const Core::event_id_t WINDOW_CLOSED = 2;
+
+        //! window resized event id
+        static const Core::event_id_t WINDOW_RESIZED = 3;
+
+        //! Event data for window resize
+        class WindowResized : public Foundation::EventDataInterface
+        {
+            WindowResized();
+        public:
+            WindowResized(int width, int height) : width_(width), height_(height) {}
+            virtual ~WindowResized() {}
+        
+            //! New width of the window
+            const int width_;
+            //! New height of the window
+            const int height_;
+        };
     }
 }
     

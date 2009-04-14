@@ -25,8 +25,14 @@ namespace OgreRenderer
         
         void windowResized(Ogre::RenderWindow* rw)
         {
-            if ((renderer_->camera_) && (rw == renderer_->renderwindow_))
-                renderer_->camera_->setAspectRatio(Ogre::Real(rw->getWidth() / Ogre::Real(rw->getHeight())));
+            if (rw == renderer_->renderwindow_)
+            {
+                if (renderer_->camera_)
+                    renderer_->camera_->setAspectRatio(Ogre::Real(rw->getWidth() / Ogre::Real(rw->getHeight())));
+
+                Event::WindowResized data(rw->getWidth(), rw->getHeight());
+                renderer_->framework_->GetEventManager()->SendEvent(renderer_->event_category_, Event::WINDOW_RESIZED, &data);
+            }
         }
     
         void windowClosed(Ogre::RenderWindow* rw)
@@ -257,6 +263,20 @@ namespace OgreRenderer
             renderwindow_->getCustomAttribute("WINDOW", &window_handle);
         
         return window_handle;
+    }
+    int Renderer::GetWindowWidth() const
+    {
+        int size = 0;
+        if (renderwindow_)
+            size = renderwindow_->getWidth();
+        return size;
+    }
+    int Renderer::GetWindowHeight() const
+    {
+        int size = 0;
+        if (renderwindow_)
+            size = renderwindow_->getHeight();
+        return size;
     }
 
     void Renderer::SubscribeLogListener(const Foundation::LogListenerPtr &listener)

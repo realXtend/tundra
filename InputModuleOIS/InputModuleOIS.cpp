@@ -48,7 +48,8 @@ namespace Input
             LogError("Failed to initialize. No renderer service registered.");
             return;
         }
-        size_t window_handle = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer)->GetWindowHandle();
+        Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer);
+        size_t window_handle = renderer->GetWindowHandle();
         if (window_handle == 0)
         {
             LogError("Failed to initialize. No open window.");
@@ -61,7 +62,8 @@ namespace Input
         pl.insert(std::make_pair(std::string("WINDOW"), Core::ToString(window_handle)));
 
 #if defined OIS_WIN32_PLATFORM
-        pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_BACKGROUND" )));
+//        pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_BACKGROUND" )));
+        pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_FOREGROUND" )));
         pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_NONEXCLUSIVE")));
 #elif defined OIS_LINUX_PLATFORM
         pl.insert(std::make_pair(std::string("x11_mouse_grab"), std::string("false")));
@@ -87,10 +89,8 @@ namespace Input
             LogInfo("Joystick / gamepad not found.");
         }
 
-        // set window default width / height as 100 for mouse. Should be updated when windows size changes
-        const OIS::MouseState &ms = mouse_->getMouseState();
-	    ms.width = 100;
-	    ms.height = 100;
+        // set window default width / height. Should be updated when window size changes
+        WindowResized(renderer->GetWindowWidth(), renderer->GetWindowHeight());
 
         unsigned int v = input_manager_->getVersionNumber();
 
@@ -108,7 +108,7 @@ namespace Input
 	    //List all devices
         OIS::DeviceList list = input_manager_->listFreeDevices();
         for( OIS::DeviceList::iterator i = list.begin(); i != list.end(); ++i )
-		    std::cout << "\n\tDevice: " << DeviceType[i->first] << " Vendor: " << i->second;
+            LogInfo("\tDevice: " + std::string(DeviceType[i->first]) + " Vendor: " + i->second);
 
         LogInfo("Module " + Name() + " initialized.");
     }
@@ -144,14 +144,22 @@ namespace Input
     // virtual
     bool InputModuleOIS::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
+        bool handled = false;
+
         if (framework_->GetEventManager()->QueryEventCategory("Renderer") == category_id)
         {
             if (event_id == OgreRenderer::Event::WINDOW_CLOSED)
                 WindowClosed();
+
+            if (event_id == OgreRenderer::Event::WINDOW_RESIZED)
+            {
+                WindowResized(  checked_static_cast<OgreRenderer::Event::WindowResized*>(data)->width_,
+                                checked_static_cast<OgreRenderer::Event::WindowResized*>(data)->height_ );
+            }
         }
 
         // no need to mark events handled
-        return false;
+        return handled;
     }
 
     void InputModuleOIS::WindowClosed()
@@ -170,6 +178,16 @@ namespace Input
             joy_ = 0;
 
             buffered_keyboard_.reset();
+        }
+    }
+
+    void InputModuleOIS::WindowResized(int width, int height)
+    {
+        if (mouse_)
+        {
+            const OIS::MouseState &ms = mouse_->getMouseState();
+            ms.width = width;
+            ms.height = height;
         }
     }
 }
