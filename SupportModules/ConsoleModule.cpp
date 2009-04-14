@@ -1,10 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
+#include <OISKeyboard.h>
+
 #include "ConsoleModule.h"
 #include "ConsoleManager.h"
 #include "InputEvents.h"
-#include "InputEventsOIS.h"
 
 namespace Console
 {
@@ -67,7 +69,7 @@ namespace Console
 
             if (event_id == Input::Events::KEY_PRESSED)
             {
-                OIS::KeyCode code = checked_static_cast<Input::Events::BufferedKey*>(data)->code_;
+                int code = checked_static_cast<Input::Events::BufferedKey*>(data)->code_;
                 unsigned int text = checked_static_cast<Input::Events::BufferedKey*>(data)->text_;
                 if (code == OIS::KC_TAB)
                 {

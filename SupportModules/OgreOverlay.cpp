@@ -2,10 +2,12 @@
 
 #include "StableHeaders.h"
 
+#include <OISKeyboard.h>
+
 #include "OgreOverlay.h"
 #include "EC_OgreConsoleOverlay.h"
 #include "OgreRenderingModule.h"
-#include "InputEventsOIS.h"
+#include "InputEvents.h"
 
 namespace Console
 {
