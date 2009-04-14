@@ -125,7 +125,7 @@ TerrainPatchHeader DecodePatchHeader(BitStream &bits)
    header.range = bits.ReadBits(16);
    header.x = bits.ReadBits(5);
    header.y = bits.ReadBits(5);
-   header.wordBits = (uint)((header.quantWBits & 0x0f) + 2); // This is a bit odd - apparently this field is not present in the header?
+   header.wordBits = (Core::uint)((header.quantWBits & 0x0f) + 2); // This is a bit odd - apparently this field is not present in the header?
 
    return header;
 }
