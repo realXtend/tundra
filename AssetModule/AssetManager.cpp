@@ -60,6 +60,12 @@ namespace Asset
             return Foundation::AssetPtr();
         }
         
+        if (!net_interface_->IsConnected())
+        {
+            AssetModule::LogError("Not connected, cannot request assets");
+            return Foundation::AssetPtr();
+        }
+        
         if (asset_type == RexAT_Texture)
         {
             RequestTexture(asset_uuid);
