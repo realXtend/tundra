@@ -6,6 +6,7 @@
 #include "ModuleInterface.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "EventDataInterface.h"
+#include "AssetModuleApi.h"
 
 namespace Foundation
 {
@@ -23,7 +24,7 @@ namespace Asset
     typedef boost::shared_ptr<AssetManager> AssetManagerPtr;
     
     //! asset module
-    class MODULE_API AssetModule : public Foundation::ModuleInterfaceImpl
+    class ASSET_MODULE_API AssetModule : public Foundation::ModuleInterfaceImpl
     {
     public:
         AssetModule();

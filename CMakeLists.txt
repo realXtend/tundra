@@ -16,6 +16,7 @@ include (Ogre)
 include (Gtkmm)
 include (Python)
 include (OIS)
+include (OpenJpeg)
 
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
@@ -43,6 +44,7 @@ FIND_CURL()
 FIND_XMLRPCEPI()
 FIND_OGRE()
 FIND_OIS()
+FIND_OPENJPEG()
 
 # Default additional include & library directories
 include_directories (${REX_DEP_PATH}/include)
@@ -71,4 +73,5 @@ add_subdirectory (AssetModule)
 add_subdirectory (CommunicationModule)
 #add_subdirectory (CommunicationUIModule)
 add_subdirectory (InputModuleOIS)
+add_subdirectory (TextureDecoderModule)
 

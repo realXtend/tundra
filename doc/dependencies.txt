@@ -21,6 +21,8 @@ This project has the following dependencies:
 
 - LibIconv 1.9.2 for Windows: http://gnuwin32.sourceforge.net/packages/libiconv.htm (also see http://gnuwin32.sourceforge.net/packages.html) LibIconv is located in the GnuWin32\ directory, and is used as a dynamic library.
 
+- OpenJpeg 1.3: http://www.openjpeg.org/
+
 Obtaining Dependencies
 ======================
 

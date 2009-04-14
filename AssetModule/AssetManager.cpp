@@ -18,10 +18,16 @@ namespace Asset
     const char *AssetManager::DEFAULT_ASSET_CACHE_PATH = "/assetcache";
     const Core::Real AssetManager::DEFAULT_ASSET_TIMEOUT = 60.0;
 
-    AssetManager::AssetManager(Foundation::Framework* framework, OpenSimProtocolModule* net_interface) : 
-        framework_(framework),
-        net_interface_(net_interface)
+    AssetManager::AssetManager(Foundation::Framework* framework) : 
+        framework_(framework)
     {
+        net_interface_ = checked_static_cast<OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol));
+        if (!net_interface_)
+        {
+            //! \todo something smart, now assetmanager will be in quite zombified state
+            AssetModule::LogError("Getting network interface did not succeed."); 
+        }
+        
         asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("AssetManager", "Timeout", DEFAULT_ASSET_TIMEOUT);
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         
