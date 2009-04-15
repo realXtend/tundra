@@ -3,6 +3,8 @@
 #ifndef incl_InputModuleOIS_h
 #define incl_InputModuleOIS_h
 
+#include "OISKeyboard.h"
+
 #include "ModuleInterface.h"
 
 namespace Foundation
@@ -48,6 +50,13 @@ namespace Input
 
         virtual void Update(Core::f64 frametime);
 
+        /// Provides a polling-style method for checking whether a key is down. You can use this if the stateful pressed/released event-based
+        /// system is too unwieldy for your use. Use conservatively, since directly calling this from your logic module will create a 
+        /// hard-to-break dependency to the InputModuleOIS, and will require some state objects to track when the input is valid to read. 
+        /// (i.e. can't move using WSAD when typing into a textbox)
+        /// \todo Make this not inline and properly generate INPUTOIS_MODULE_API etc.. defines for DLL export.
+        bool IsKeyDown(OIS::KeyCode key) { return keyboard_->isKeyDown(key); }
+
         virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, 
             Foundation::EventDataInterface* data);
 
@@ -57,7 +66,6 @@ namespace Input
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Input;
-
 
     private:
         //! Handle closing the main window
