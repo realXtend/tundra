@@ -16,6 +16,7 @@
 #include "Quaternion.h"
 #include "Color.h"
 #include "CoreStringUtils.h"
+#include "IntervalTimer.h"
 
 
 //! Core contains functionality and definitions that are common to all subprojects in the viewer.
