@@ -35,6 +35,9 @@ namespace TextureDecoder
             Core::event_id_t event_id, 
             Foundation::EventDataInterface* data);
 
+        //! callback for console command
+        Console::CommandResult ConsoleDecodeTexture(const Core::StringVector &params);
+        
         //! returns framework
         Foundation::Framework *GetFramework() { return framework_; }
 

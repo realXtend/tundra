@@ -8,7 +8,7 @@ namespace Foundation
     class Framework;
     class AssetServiceInterface;
 }
-    
+
 namespace TextureDecoder
 {
     //! texture decoder worker
@@ -21,6 +21,12 @@ namespace TextureDecoder
         //! destructor
         ~Decoder();
 
+        //! decode a texture
+        /*! \param asset_id asset ID of texture
+            \param reduction quality reduction ("mipmap") level. 0 for full quality
+         */
+        void DecodeTexture(const std::string& asset_id, Core::uint reduction = 0);
+        
         //! framework we belong to
         Foundation::Framework* framework_;
         

@@ -13,6 +13,8 @@ include_directories (
 	../Core
 	../Foundation
 	../Interfaces
+	../RexCommon
+	../AssetModule
 )
 
 # External library includes
@@ -32,7 +34,7 @@ set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Core Foundation Interfaces)
+target_link_libraries (${TARGET_NAME} Core Foundation Interfaces RexCommon)
 
 # External library linkage
 LINK_BOOST()

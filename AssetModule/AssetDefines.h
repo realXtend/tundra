@@ -7,7 +7,12 @@ namespace Asset
 {
     // Asset types
     const Core::asset_type_t RexAT_Texture = 0;
-    
+    const Core::asset_type_t RexAT_Mesh = 43;
+    const Core::asset_type_t RexAT_Skeleton = 44;
+    const Core::asset_type_t RexAT_MaterialScript = 45;
+    const Core::asset_type_t RexAT_ParticleScript = 47;
+    const Core::asset_type_t RexAT_FlashAnimation = 49;
+                
     // Asset channels
     const int RexAC_Unknown = 0;
     const int RexAC_Miscellaneous = 1;
