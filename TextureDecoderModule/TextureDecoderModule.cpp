@@ -1,9 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "ConsoleCommandServiceInterface.h"
 #include "Decoder.h"
 #include "TextureDecoderModule.h"
-
 
 namespace TextureDecoder
 {
@@ -19,6 +19,10 @@ namespace TextureDecoder
     void TextureDecoderModule::Load()
     {
         LogInfo("Module " + Name() + " loaded.");
+        
+        AutoRegisterConsoleCommand(Console::CreateCommand(
+            "DecodeTexture", "Fetch & decode texture. Usage: DecodeTexture(uuid, [reduction])", 
+            Console::Bind(this, &TextureDecoderModule::ConsoleDecodeTexture)));
     }
 
     // virtual
@@ -58,6 +62,30 @@ namespace TextureDecoder
         Foundation::EventDataInterface* data)
     {
         return false;
+    }
+    
+    Console::CommandResult TextureDecoderModule::ConsoleDecodeTexture(const Core::StringVector &params)
+    {
+        if (params.size() < 1)
+        {
+            return Console::ResultFailure("Usage: DecodeTexture(uuid, [reduction])");
+        }
+
+        if (decoder_)
+        {
+            Core::uint reduction = 0;
+            if (params.size() > 1)
+            {
+                try
+                {
+                    reduction = Core::ParseString<int>(params[1]);
+                } catch (std::exception) {}
+            }
+            
+            decoder_->DecodeTexture(params[0], reduction);
+        }
+
+        return Console::ResultSuccess();
     }
 }
 
