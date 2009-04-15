@@ -73,9 +73,15 @@ namespace Console
         }
 
         //! process key down event
-        virtual bool HandleKeyDown(int code, unsigned int text)
+        virtual bool HandleKeyDown(int code, Core::uint text)
         {
             return ogre_->HandleKeyDown(code, text);
+        }
+
+        //! process key up event
+        virtual bool HandleKeyUp(int code, Core::uint text)
+        {
+            return ogre_->HandleKeyUp(code, text);
         }
 
         //! Returns command manager

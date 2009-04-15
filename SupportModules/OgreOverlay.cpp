@@ -44,10 +44,19 @@ namespace Console
             , cursor_offset_(0)
             , max_command_history_(50)
             , command_history_pos_(command_history_.begin())
+            , current_key_(0)
+            , current_code_(0)
     {
         Foundation::Framework *framework = module_->GetFramework();
 
-        cursor_blink_freq_ = framework->GetDefaultConfig().DeclareSetting("DebugConsole", "cursor_blink_frequency", 0.5f);
+        const Foundation::ConfigurationManager &config = framework->GetDefaultConfig();
+        cursor_blink_freq_ = config.DeclareSetting("DebugConsole", "cursor_blink_frequency", 0.5f);
+        
+        
+        Core::f64 slow = config.DeclareSetting("DebugConsole", "key_repeat_slow", 0.5f);
+        Core::f64 fast = config.DeclareSetting("DebugConsole", "key_repeat_fast", 0.045f);
+        Core::f64 change = config.DeclareSetting("DebugConsole", "key_repeat_change", 0.5f);
+        counter_.Reset(slow, fast, change);
 
         if ( framework->GetModuleManager()->HasModule(Foundation::Module::MT_Renderer) )
         {
@@ -183,9 +192,30 @@ namespace Console
                 (console_overlay_.get())->Update(frametime);
 
         bool update = false;
+        bool repeat_key = false;
+        int code = 0;
+        Core::uint text = 0;
         {
             Core::MutexLock lock(mutex_);
             update = update_;
+
+            if (current_key_ || current_code_)
+            {
+                if (frametime == 0)
+                    frametime = 0.0001;
+                if (counter_.Tick(frametime))
+                {
+                    repeat_key = true;
+                    code = current_code_;
+                    text = current_key_;
+                }
+            }
+        }
+
+        if (repeat_key)
+        {
+            HandleKey(code, text);
+            update = true;
         }
 
         // blink prompt cursor
@@ -226,7 +256,24 @@ namespace Console
         }
     }
 
-    bool OgreOverlay::HandleKeyDown(int code, unsigned int text)
+    bool OgreOverlay::HandleKeyDown(int code, Core::uint text)
+    {
+        bool result = HandleKey(code, text);
+
+        if (result)
+        {
+            Core::MutexLock lock(mutex_);
+
+            update_ = true;
+            current_code_ = code;
+            current_key_ = text;
+            counter_.Reset();
+        }
+
+        return result;
+    }
+
+    bool OgreOverlay::HandleKey(int code, Core::uint text)
     {
         bool result = true;
 
@@ -320,15 +367,23 @@ namespace Console
             break;
 
         default:
-            Core::MutexLock lock(mutex_);
-            result = AddCharacter(text, command_line_, cursor_offset_);
+            {
+                Core::MutexLock lock(mutex_);
+                result = AddCharacter(text, command_line_, cursor_offset_);
+            }
             break;
         }
 
-        if (result)
-            update_ = true;
-
         return result;
+    }
+
+    bool OgreOverlay::HandleKeyUp(int code, Core::uint text)
+    {
+        Core::MutexLock lock(mutex_);
+        current_key_ = 0;
+        current_code_ = 0;
+
+        return true;
     }
 
     void OgreOverlay::MoveCursor(int offset)

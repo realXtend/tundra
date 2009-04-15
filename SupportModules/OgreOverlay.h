@@ -41,6 +41,8 @@ namespace Console
             command_history_pos_ = command_history_.begin();
             text_position_ = 0;
             cursor_offset_ = 0;
+            current_code_ = 0;
+            current_key_ = 0;
         }
 
         //! print out message to console. thread safe
@@ -63,7 +65,10 @@ namespace Console
         virtual void Update(Core::f64 frametime);
 
         //! process key down event. Thread safe.
-        virtual bool HandleKeyDown(int code, unsigned int text);
+        virtual bool HandleKeyDown(int code, Core::uint text);
+
+        //! process key up event. Thread safe.
+        virtual bool HandleKeyUp(int code, Core::uint text);
 
         //! Returns the current command line, debug use only!
         const std::string &GetCommandLine() const { return command_line_; }
@@ -84,6 +89,8 @@ namespace Console
         void MoveCursor(int offset);
 
     private:
+        bool HandleKey(int code, Core::uint text);
+
         //! format a page according to overlay properties so it can be displayed on the console
         /*! Formats the current buffer and outputs it into the parameter
 
@@ -160,6 +167,15 @@ namespace Console
 
         //! default command manager
         CommandManagerPtr command_manager_;
+
+        //! counter for key strokes
+        Core::IntervalTimer counter_;
+
+        //! OIS code for the current key held down, or 0 if no key is held down
+        int current_code_;
+
+        //! Ascii code for the current key held down, or 0 if no key is held down
+        Core::uint current_key_;
     };
 }
 

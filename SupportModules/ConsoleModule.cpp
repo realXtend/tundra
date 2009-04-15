@@ -67,11 +67,11 @@ namespace Console
                 }
             }
 
-            if (event_id == Input::Events::KEY_PRESSED)
+            if (event_id == Input::Events::KEY_PRESSED || event_id == Input::Events::KEY_RELEASED)
             {
                 int code = checked_static_cast<Input::Events::BufferedKey*>(data)->code_;
                 unsigned int text = checked_static_cast<Input::Events::BufferedKey*>(data)->text_;
-                if (code == OIS::KC_TAB)
+                if (event_id == Input::Events::KEY_PRESSED && code == OIS::KC_TAB)
                 {
                     manager_->SetVisible(!manager_->IsActive());
                     return true;
@@ -79,7 +79,10 @@ namespace Console
 
                 if (manager_->IsActive())
                 {
-                    return manager_->HandleKeyDown(code, text);
+                    if (event_id == Input::Events::KEY_PRESSED)
+                        return manager_->HandleKeyDown(code, text);
+                    else
+                        return manager_->HandleKeyUp(code, text);
                 }
             }
         }
