@@ -31,6 +31,7 @@ namespace Scene
     //! Component event id's.
     static const Core::event_id_t EVENT_COMPONENT_ADDED =   0x0a;
     static const Core::event_id_t EVENT_COMPONENT_DELETED = 0x0b;
+    static const Core::event_id_t EVENT_COMPONENT_EDITED =  0x0c;
     
     //! Event data interface for entity events.
     class SceneEventData: public Foundation::EventDataInterface
@@ -42,6 +43,7 @@ namespace Scene
         
         Core::entity_id_t localID;
         std::string sceneName;
+        std::vector<Foundation::EntityPtr> entity_ptr_list;
     };
         
     //! interface for modules

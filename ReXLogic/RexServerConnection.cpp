@@ -4,6 +4,9 @@
 #include "RexServerConnection.h"
 #include "RexLogicModule.h"
 #include "RexProtocolMsgIDs.h"
+#include "EC_OgrePlaceable.h"
+#include "EC_OpenSimPrim.h"
+#include "QuatUtils.h"
 
 namespace RexLogic
 {
@@ -185,7 +188,7 @@ namespace RexLogic
     
     void RexServerConnection::SendObjectSelectPacket(Core::entity_id_t object_id)
     {
-        if(!connected_)
+        if (!connected_)
             return;
     
         NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgObjectSelect);
@@ -204,7 +207,7 @@ namespace RexLogic
     
     void RexServerConnection::SendObjectSelectPacket(std::vector<Core::entity_id_t> object_id_list)
     {
-        if(!connected_)
+        if (!connected_)
             return;
     
         NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgObjectSelect);
@@ -224,7 +227,7 @@ namespace RexLogic
 
     void RexServerConnection::SendObjectDeselectPacket(Core::entity_id_t object_id)
     {
-        if(!connected_)
+        if (!connected_)
             return;
     
         NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgObjectDeselect);
@@ -243,7 +246,7 @@ namespace RexLogic
     
     void RexServerConnection::SendObjectDeselectPacket(std::vector<Core::entity_id_t> object_id_list)
     {
-        if(!connected_)
+        if (!connected_)
             return;
     
         NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgObjectDeselect);
@@ -260,5 +263,71 @@ namespace RexLogic
                         
         netInterface_->FinishMessageBuilding(m);
     }
-}
+    
+    void RexServerConnection::SendMultipleObjectUpdatePacket(std::vector<Foundation::EntityPtr> entity_ptr_list)
+    {
+        if (!connected_)
+            return;
+    
+        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgMultipleObjectUpdate);
+        assert(m);
+        
+        // AgentData
+        m->AddUUID(myInfo_.agentID);
+        m->AddUUID(myInfo_.sessionID);
 
+        // ObjectData        
+        ///\todo Update just the necessary parameters (use update flags) & test with multiple objects.
+        size_t offset = 0;
+        uint8_t data[2048]; ///\todo What is the max size?
+
+        m->SetVariableBlockCount(entity_ptr_list.size());
+
+        for(size_t i = 0; i < entity_ptr_list.size(); ++i)
+        {
+            // Scale
+            const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
+            RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
+            
+            const Foundation::ComponentInterfacePtr &ogre_component = entity_ptr_list[i]->GetComponent("EC_OgrePlaceable");
+            OgreRenderer::EC_OgrePlaceable *ogre_pos = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
+        
+            m->AddU32(prim->LocalId);
+            m->AddU8(13);
+
+            // Position
+		    memcpy(&data[offset], &ogre_pos->GetPosition(), sizeof(Vector3));
+		    offset += sizeof(Vector3);
+		                
+            // Scale
+		    memcpy(&data[offset], &ogre_pos->GetScale(), sizeof(Vector3));
+            offset += sizeof(Vector3);
+        }
+        
+        // Add the data.
+        m->AddBuffer(offset, data);        
+        
+        ///\todo Make this work!
+        /*for(size_t i = 0; i < entity_ptr_list.size(); ++i)
+        {
+            const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
+            RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
+            
+            const Foundation::ComponentInterfacePtr &ogre_component = entity_ptr_list[i]->GetComponent("EC_OgrePlaceable");
+            OgreRenderer::EC_OgrePlaceable *ogre_pos = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
+        
+            m->AddU32(prim->LocalId);
+            m->AddU8(2);
+            
+            // Rotation
+            Vector3 val = Core::PackQuaternionToFloat3(ogre_pos->GetOrientation());
+            memcpy(&data[offset], &val, sizeof(Vector3));            
+            offset += sizeof(Vector3);
+        }
+        
+        // Add the data.
+        m->AddBuffer(offset, data);*/
+        
+        netInterface_->FinishMessageBuilding(m);
+    }    
+}

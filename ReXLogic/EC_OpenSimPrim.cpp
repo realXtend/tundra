@@ -24,9 +24,9 @@ namespace RexLogic
         ClickAction = 0;
         UpdateFlags = 0;
 
-        Position = Core::Vector3df(0,0,0);
+/*        Position = Core::Vector3df(0,0,0);
         Rotation = Core::Quaternion(0,0,0,0);
-        Scale = Core::Vector3df(0,0,0);
+        Scale = Core::Vector3df(0,0,0);*/
 
         ServerScriptClass = "";
         
@@ -158,9 +158,9 @@ namespace RexLogic
         RexLogicModule::LogInfo("ClickAction:" + Core::ToString((Core::uint)ClickAction));
         RexLogicModule::LogInfo("UpdateFlags:" + Core::ToString(UpdateFlags));
         
-        RexLogicModule::LogInfo("Position:" + Core::ToString(Position));        
+/*        RexLogicModule::LogInfo("Position:" + Core::ToString(Position));        
         RexLogicModule::LogInfo("Rotation:" + Core::ToString(Rotation)); 
-        RexLogicModule::LogInfo("Scale:" + Core::ToString(Scale));
+        RexLogicModule::LogInfo("Scale:" + Core::ToString(Scale));*/
 
         RexLogicModule::LogInfo("ServerScriptClass:" + ServerScriptClass);        
         RexLogicModule::LogInfo("CollisionMesh:" + CollisionMesh.ToString());

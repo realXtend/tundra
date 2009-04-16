@@ -1,6 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 #include "NetOutMessage.h"
-#include "Poco/Net/DatagramSocket.h" // To get htons etc.
 #include "QuatUtils.h"
 
 #include <iostream>
@@ -20,137 +19,169 @@ NetOutMessage::~NetOutMessage()
 
 void NetOutMessage::AddU8(uint8_t value)
 {
-	if (CheckNextVariable() == NetVarU8)
+	if (CheckNextVariable() != NetVarU8)
 	{
-		AddBytesUnchecked(sizeof(uint8_t), &value);
-		AdvanceToNextVariable();
+        ///\todo Log error - bad variable!
+        return;
 	}
+	
+    AddBytesUnchecked(sizeof(uint8_t), &value);
+    AdvanceToNextVariable();
 }
 
 void NetOutMessage::AddU16(uint16_t value)
 {
-	if (CheckNextVariable() == NetVarU16) 
+	if (CheckNextVariable() != NetVarU16) 
 	{
-		uint16_t networkValue = value; //htons
-		AddBytesUnchecked(NetVariableSizes[2], &networkValue);
-		AdvanceToNextVariable();
+        ///\todo Log error - bad variable!
+        return;
 	}
+    
+	AddBytesUnchecked(sizeof(uint16_t), &value);
+	AdvanceToNextVariable();
 }
 
-///\todo Advance. hton.
 void NetOutMessage::AddU32(uint32_t value)
 {
-	if (CheckNextVariable() == NetVarU32) 
+	if (CheckNextVariable() != NetVarU32) 
 	{
-		uint32_t networkValue = value; //htonl
-		AddBytesUnchecked(sizeof(uint32_t), &networkValue);
-		AdvanceToNextVariable();
+        ///\todo Log error - bad variable!
+        return;
 	}
+
+	AddBytesUnchecked(sizeof(uint32_t), &value);
+	AdvanceToNextVariable();
 }
 
-///\todo Advance. hton.
 void NetOutMessage::AddU64(uint64_t value)
 {
-	if (CheckNextVariable() == NetVarU64)
+	if (CheckNextVariable() != NetVarU64)
 	{
-		AddBytesUnchecked(sizeof(uint64_t), &value);
-		AdvanceToNextVariable();
-    }
+        ///\todo Log error - bad variable!
+        return;
+	}
+
+	AddBytesUnchecked(sizeof(uint64_t), &value);
+	AdvanceToNextVariable();
 }
 
-///\todo Advance. hton.
 void NetOutMessage::AddS8(int8_t value)
 {
-	if (CheckNextVariable() == NetVarS8) 
+	if (CheckNextVariable() != NetVarS8) 
 	{
-		AddBytesUnchecked(sizeof(int8_t), &value);
-		AdvanceToNextVariable();
-    }		
+        ///\todo Log error - bad variable!
+        return;
+	}
+	
+	AddBytesUnchecked(sizeof(int8_t), &value);
+	AdvanceToNextVariable();
 }
 
 void NetOutMessage::AddS16(int16_t value)
 {
-	if (CheckNextVariable() == NetVarS16) 
+	if (CheckNextVariable() != NetVarS16) 
 	{
-		AddBytesUnchecked(sizeof(int16_t), &value);
-		AdvanceToNextVariable();
-    }
+        ///\todo Log error - bad variable!
+        return;
+	}
+    	
+	AddBytesUnchecked(sizeof(int16_t), &value);
+	AdvanceToNextVariable();
 }
 
 void NetOutMessage::AddS32(int32_t value)
 {
-	if (CheckNextVariable() == NetVarS32) 
+	if (CheckNextVariable() != NetVarS32) 
 	{
-		AddBytesUnchecked(sizeof(int32_t), &value);
-		AdvanceToNextVariable();
-    }
+        ///\todo Log error - bad variable!
+        return;
+	}
+	
+	AddBytesUnchecked(sizeof(int32_t), &value);
+	AdvanceToNextVariable();
 }
 
 void NetOutMessage::AddS64(int64_t value)
 {
-	if (CheckNextVariable() == NetVarS64)
-    {	
-		AddBytesUnchecked(sizeof(int64_t), &value);
-		AdvanceToNextVariable();
-    }		
+	if (CheckNextVariable() != NetVarS64)
+    {
+        ///\todo Log error - bad variable!
+        return;
+	}
+
+	AddBytesUnchecked(sizeof(int64_t), &value);
+	AdvanceToNextVariable();
 }
 
 void NetOutMessage::AddF32(float value)
 {
-	if (CheckNextVariable() == NetVarF32)
+	if (CheckNextVariable() != NetVarF32)
 	{
-		AddBytesUnchecked(sizeof(float), &value);
-		AdvanceToNextVariable();
-    }
+        ///\todo Log error - bad variable!
+        return;
+	}
+
+	AddBytesUnchecked(sizeof(float), &value);
+	AdvanceToNextVariable();
 }
 
 void NetOutMessage::AddF64(double value)
 {
-	if (CheckNextVariable() == NetVarF64)
+	if (CheckNextVariable() != NetVarF64)
 	{
-		AddBytesUnchecked(sizeof(double), &value);
-		AdvanceToNextVariable();
-    }
+        ///\todo Log error - bad variable!
+        return;
+	}
+
+	AddBytesUnchecked(sizeof(double), &value);
+	AdvanceToNextVariable();
 }
 
 void NetOutMessage::AddVector3(const Vector3 &value)
 {
-	if (CheckNextVariable() == NetVarVector3)
+	if (CheckNextVariable() != NetVarVector3)
 	{
-		//uint32_t networkValue = htonl(*(uint32_t*)&value.x);
-		AddBytesUnchecked(sizeof(float), &value.x/*&networkValue*/);
-
-		//networkValue = htonl(*(float)&value.y);
-		AddBytesUnchecked(sizeof(float), &value.y/*&networkValue*/);
-
-		//networkValue = htonl(*(float*)&value.z);
-		AddBytesUnchecked(sizeof(float), &value.z/*&networkValue*/);
-
-		AdvanceToNextVariable();
+        ///\todo Log error - bad variable!
+        return;
 	}
+
+	AddBytesUnchecked(sizeof(float), &value.x);
+	AddBytesUnchecked(sizeof(float), &value.y);
+	AddBytesUnchecked(sizeof(float), &value.z);
+
+	AdvanceToNextVariable();
 }
 
 void NetOutMessage::AddVector3d(const Vector3d &value)
 {
-	if (CheckNextVariable() == NetVarVector3d) 
+	if (CheckNextVariable() != NetVarVector3d) 
 	{
-		AddBytesUnchecked(sizeof(double), &value.x);
-		AddBytesUnchecked(sizeof(double), &value.y);
-		AddBytesUnchecked(sizeof(double), &value.z);
-		AdvanceToNextVariable();
-	}
+        ///\todo Log error - bad variable!
+        return;
+    }	
+
+	AddBytesUnchecked(sizeof(double), &value.x);
+	AddBytesUnchecked(sizeof(double), &value.y);
+	AddBytesUnchecked(sizeof(double), &value.z);
+
+	AdvanceToNextVariable();
 }
 
 void NetOutMessage::AddVector4(const Vector4 &value)
 {
-	if (CheckNextVariable() == NetVarVector4)
+	if (CheckNextVariable() != NetVarVector4)
 	{
-		AddBytesUnchecked(sizeof(float), &value.x);
-		AddBytesUnchecked(sizeof(float), &value.y);
-		AddBytesUnchecked(sizeof(float), &value.z);
-		AddBytesUnchecked(sizeof(float), &value.w);
-		AdvanceToNextVariable();
+        ///\todo Log error - bad variable!
+        return;	
 	}
+	
+	AddBytesUnchecked(sizeof(float), &value.x);
+	AddBytesUnchecked(sizeof(float), &value.y);
+	AddBytesUnchecked(sizeof(float), &value.z);
+	AddBytesUnchecked(sizeof(float), &value.w);
+	
+	AdvanceToNextVariable();
+    
 }
 
 void NetOutMessage::AddQuaternion(const Core::Quaternion &value)
@@ -172,31 +203,39 @@ void NetOutMessage::AddQuaternion(const Core::Quaternion &value)
 
 void NetOutMessage::AddUUID(const RexUUID &value)
 {
-	if (CheckNextVariable() == NetVarUUID) 
+	if (CheckNextVariable() != NetVarUUID) 
 	{
-		AddBytesUnchecked(sizeof(RexUUID), &value);
-		AdvanceToNextVariable();
-	}
+        ///\todo Log error - bad variable!
+        return;
+    }	
+
+	AddBytesUnchecked(sizeof(RexUUID), &value);
+	AdvanceToNextVariable();
 }
 
 void NetOutMessage::AddBool(bool value)
 {
-	if (CheckNextVariable() == NetVarBOOL)
+	if (CheckNextVariable() != NetVarBOOL)
 	{
-		AddBytesUnchecked(sizeof(bool), &value);
-		AdvanceToNextVariable();
+        ///\todo Log error - bad variable!
+        return;	
 	}
+
+	AddBytesUnchecked(sizeof(bool), &value);
+	AdvanceToNextVariable();
 }
 
+///\todo
 /*void NetOutMessage::AddIPAddr(IPADDR value);
 {
 	if (CheckNextVariable() == NetVarIPADDR) 
-    {	
+    {
 		AddBytesUnchecked(NetVariableSizes[17], &value);
 		AdvanceToNextVariable();
     }		
 }*/
 
+///\todo
 /*void NetOutMessage::AddIPPort(IPPORT value);
 {
 	if (CheckNextVariable() == NetVarIPPORT)
@@ -251,7 +290,6 @@ NetVariableType NetOutMessage::CheckNextVariable() const
 		std::cout << "MessageInfo not set. Could not check the variable type." << std::endl;
 		return NetVarInvalid;
 	}
-
 }
 
 void NetOutMessage::AdvanceToNextVariable()
@@ -272,10 +310,26 @@ void NetOutMessage::AdvanceToNextVariable()
 		/// Reached the end of this block, proceed to the next block
 		/// or repeat the same block if it's multiple or variable.
 		currentVariable = 0;
-		if (curBlock.repeatCount > 1 && blockQuantityCounter <= curBlock.repeatCount)
+		switch(curBlock.type)
+		{
+            case NetBlockSingle:
+                ++currentBlock;
+                break;
+            case NetBlockMultiple:
+		        if (curBlock.repeatCount > 1 && blockQuantityCounter <= curBlock.repeatCount)
+			        --blockQuantityCounter;
+		        else
+			        ++currentBlock;            
+                break;
+            case NetBlockVariable:
+                if(blockQuantityCounter > 0)
+                    --blockQuantityCounter;
+                break;                        
+		}
+/*		if (curBlock.repeatCount > 1 && blockQuantityCounter <= curBlock.repeatCount)
 			--blockQuantityCounter;
 		else
-			currentBlock++;
+			currentBlock++;*/
 	}
 }
 

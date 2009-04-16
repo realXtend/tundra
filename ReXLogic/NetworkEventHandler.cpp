@@ -229,7 +229,7 @@ namespace RexLogic
 
                 prim.Material = msg->ReadU8();
                 prim.ClickAction = msg->ReadU8();
-                prim.Scale = msg->ReadVector3();
+                ogrePos.SetScale(msg->ReadVector3());
                 
                 size_t bytes_read = 0;
                 const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);

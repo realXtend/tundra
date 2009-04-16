@@ -14,7 +14,7 @@ include_directories (
 	../Foundation
 	../SceneModule
 	../Interfaces
-	../OgreRenderingSystem
+	../OgreRenderingModule
 	../OpenSimProtocol
 	../RexCommon
 	../InputModuleOIS

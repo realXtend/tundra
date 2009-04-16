@@ -27,10 +27,10 @@ namespace Foundation
 
 struct ClientParameters
 {
-    RexTypes::RexUUID     agentID;
-    RexTypes::RexUUID     sessionID;
-    RexTypes::RexUUID     regionID;
-    uint32_t    circuitCode;
+    RexUUID agentID;
+    RexUUID sessionID;
+    RexUUID regionID;
+    uint32_t circuitCode;
 };
 
 namespace OpenSimProtocol
