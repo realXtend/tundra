@@ -14,7 +14,8 @@
 #include "NetInMessage.h"
 #include "NetMessage.h"
 
-#include <Python/Python.h>
+//#include <Python/Python.h>
+#include "Python.h"
 
 namespace Foundation
 {
@@ -28,6 +29,7 @@ namespace PythonScript
 
 	class PythonEngine;
 	typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;
+	
 
     //! A scripting module using Python
     class MODULE_API PythonScriptModule : public Foundation::ModuleInterfaceImpl
@@ -68,6 +70,8 @@ namespace PythonScript
 
 		//Foundation::Framework *GetFramework() { return framework_; }
 
+		static Foundation::ScriptEventInterface* engineAccess;
+		
 	private:
         PythonEnginePtr engine_;
 		

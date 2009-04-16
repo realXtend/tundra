@@ -15,10 +15,13 @@
 #include "OpenSimProtocolModule.h" //XXX for login hack
 
 
-#include <Python/Python.h>
+//#include <Python/Python.h>
+#include <Python.h>
 
 namespace PythonScript
 {
+	Foundation::ScriptEventInterface* PythonScriptModule::engineAccess;// for reaching engine from static method
+
 	PythonScriptModule::PythonScriptModule() : ModuleInterfaceImpl(type_static_)
     {
     }
@@ -67,6 +70,8 @@ namespace PythonScript
 		*/
 		engine_ = PythonScript::PythonEnginePtr(new PythonScript::PythonEngine(framework_));
         engine_->Initialize();
+		
+		PythonScriptModule::engineAccess = dynamic_cast<Foundation::ScriptEventInterface*>(engine_.get());
         
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Scripting, engine_.get());
 
@@ -247,6 +252,7 @@ namespace PythonScript
 		m->AddS32(0);
 		netInterface_->FinishMessageBuilding(m);
 	}
+
 }
 
 using namespace PythonScript;
@@ -275,15 +281,32 @@ static PyObject* SendChat(PyObject *self, PyObject *args)
     PythonScriptModule *pyModule_ = dynamic_cast<PythonScriptModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_PythonScript));
 
 	pyModule_->SendChatFromViewerPacket(msg);
-
+	
 	//SendChatFromViewerPacket(msg);
 
+	Py_RETURN_TRUE;
+}
+
+static PyObject* PyEventCallback(PyObject *self, PyObject *args){
+	std::cout << "PyEventCallback" << std::endl;
+	const char* key;
+	const char* message;
+	if(!PyArg_ParseTuple(args, "ss", &key, &message))
+		Py_RETURN_FALSE;
+	std::cout << key << std::endl;
+	std::cout << message << std::endl;
+	std::string k(key);
+	std::string m(message);
+	PythonScript::PythonScriptModule::engineAccess->NotifyScriptEvent(k, m);
+	//PythonScript::PythonScriptModule::engine->
 	Py_RETURN_TRUE;
 }
 
 static PyMethodDef EmbMethods[] = {
 	{"sendChat", (PyCFunction)SendChat, METH_VARARGS,
 	"Send the given text as a chat message."},
+	{"pyEventCallback", (PyCFunction)PyEventCallback, METH_VARARGS,
+	"Handling callbacks from py scripts. Calling convension: with 2 strings"},
 	{NULL, NULL, 0, NULL}
 };
 
@@ -291,3 +314,6 @@ static void PythonScript::initpymod()
 {
 	Py_InitModule("rexviewer", EmbMethods);
 }
+
+
+
