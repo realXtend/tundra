@@ -13,7 +13,8 @@ namespace Foundation
 {
     ModuleManager::ModuleManager(Framework *framework) :
         framework_(framework)
-      , DEFAULT_MODULES_PATH(framework->GetDefaultConfig().DeclareSetting("ModuleManager", "Default_Modules_Path", "./modules"))
+            , DEFAULT_MODULES_PATH(framework->GetDefaultConfig().DeclareSetting<std::string>("ModuleManager", "Default_Modules_Path",
+            "./modules"))
     {
     }
 
@@ -33,7 +34,7 @@ namespace Foundation
             modules_.push_back(entry);
 #ifndef _DEBUG
                 // make it so debug messages are not logged in release mode
-                std::string log_level = framework_->GetDefaultConfig().GetString(Framework::ConfigurationGroup(), "log_level");
+            std::string log_level = framework_->GetDefaultConfig().GetSettingFromFile<std::string>(Framework::ConfigurationGroup(), "log_level");
                 Poco::Logger::get(module->Name()).setLevel(log_level);
 #endif
             module->SetFramework(framework_);
@@ -292,7 +293,7 @@ namespace Foundation
 
 #ifndef _DEBUG
                 // make it so debug messages are not logged in release mode
-                std::string log_level = framework_->GetDefaultConfig().GetString(Framework::ConfigurationGroup(), "log_level");
+                std::string log_level = framework_->GetDefaultConfig().GetSettingFromFile<std::string>(Framework::ConfigurationGroup(), "log_level");
                 Poco::Logger::get(module->Name()).setLevel(log_level);
 #endif
 

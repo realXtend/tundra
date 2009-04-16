@@ -12,15 +12,15 @@ namespace Foundation
         defined.
 
         Usage:
-            Everytime you define a constant in a class, declare it
+            Everytime you define a constant (or property) in a class, declare it
             in this manager instead of hardcoding it. For example:
 
             \code
-class foo
-{
-    foo() : ConfigurationManager.declareSetting("foo", "var", 0)
-    const int var;
-};
+				class foo
+				{
+				  foo() : ConfigurationManager.declareSetting("foo", "var", 0, true)
+				 const int var;
+				};
             \endcode
         
 
@@ -28,18 +28,18 @@ class foo
         this behaviour comes from PoCo's XmlConfiguration class and can't
         be changed at present time.
     
-        These settings are for application constants, they are
-        meant to be used by developers and not by the application
-        users. There is no way to set these settings, only read them.        
-
+        These settings are application variables, which can be used to define application runtime and static 
+        properties. Depending if setting is set to saved, it will be saved into configuration xml file and it
+        is changeble/readable from there. 
+        
         Uses PoCo's XmlConfiguration and XmlWriter internally.
 
         Currently does exporting in a really silly way, but only
         because Poco doesn't allow for writing of XmlConfiguration,
         only reading.
 
-        \note When EXPORT_CONFIGURATION is defined, the configuration file is
-              written out with default values after this manager is destroyed.
+        \note Settings are saved when ConfigurationManager is destroyed, or if class user calls 
+        @p ExportSettings() method.
 
         \note This class makes no assumptions about the type of the stored
               values, it is assumed the programmer always knows it.
@@ -77,102 +77,74 @@ class foo
         //! Loads and parses configuration from the specified file.
         void Load(const std::string &file);
 
-        //! Declares a key-value pair setting.
+        //! Declares a key-value pair setting
         /*! This is the standard way of retrieving a value from group and key name for the first
             time.
 
             Postcond: HasKey(group, key)
-
-            For retrieving the value later, use GetSetting((const std::string &group, const std::string &key) const;
-
+           
+           @code
+                // Retrieve key 
+                bool myValue = framework_->GetDefaultConfigPtr()->GetSettingFromFile<bool>(std::string("mygroup"), std::string("mykey"));
+            @endcode
+           
             \param group Group the key belongs to
             \param key Name of the key
             \param defaultValue default value for the setting, returned if key was not found
+            \param save Save defines if setting is saved into xml file or not, default value is true
         */
-        int DeclareSetting(const std::string &group, const std::string &key, int defaultValue) const;
+      
+		template <typename T > T DeclareSetting(const std::string& group, const std::string& key, const T& defaultValue, bool save = true) const;
 
-        //! \see DeclareSetting(const std::string &group, const std::string &name, int defaultValue);
-        std::string DeclareSetting(const std::string &group, const std::string &key, const std::string &defaultValue) const;
+        /**
+         * Sets a given value to setting value. If class user wants to change current setting (on runtime) value he/she must use this method to do it.
+         *  
+         * @param group Group the key belongs to
+         * @param key Name of the key
+         * @param value Value which will be set to. 
+         */
+        template <typename T> void SetSetting(const std::string& group, const std::string& key, const T& value);
 
-        //! \see DeclareSetting(const std::string &group, const std::string &name, int defaultValue);
-        std::string DeclareSetting(const std::string &group, const std::string &key, const char *defaultValue) const;
-
-        //! \see DeclareSetting(const std::string &group, const std::string &name, int defaultValue);
-        bool DeclareSetting(const std::string &group, const std::string &key, bool defaultValue) const;
-
-        //! \see DeclareSetting(const std::string &group, const std::string &name, int defaultValue);
-        Core::Real DeclareSetting(const std::string &group, const std::string &key, Core::Real defaultValue) const;
+        /**
+         * Retrieves a value from key and group from in-memory. 
+         * If value is not found empty string or NAN is return. 
+         * 
+         * @param group Group the key belongs to
+         * @param key Name of the key
+         */
+        template <typename T> T GetSetting(const std::string& group, const std::string& key) const;
+        template <> std::string GetSetting(const std::string& group, const std::string& key) const;
 
         //! Retrieves a value from key and group.
         /*! This is the standard way of retrieving a value from group and key name, after the
-            key has already been declared earlier.
-
-            Precond: HasKey(group, key)
-
-            \note Before using this function, declare the setting with 
-                  DeclareSetting(const std::string &group, const std::string &key, int defaultValue = 0) const
-
+          
+            \note if setting is not declared before and there is nothing saved in xml file, function will return NAN value. 
+          
             \param group Group the key belongs to
             \param key Name of the key
         */
-        int GetInt(const std::string &group, const std::string &key) const
-        {
-#ifdef _DEBUG
-            return boost::lexical_cast<int>(values_.find(std::make_pair(group, key))->second);
-#else
-            std::string groupKey = group + "." + key;
-            return configuration_->getInt(groupKey);
-#endif
-        }
 
-        //! \see GetInt(const std::string &group, const std::string &name, int defaultValue);
-        std::string GetString(const std::string &group, const std::string &key) const
-        {
-#ifdef _DEBUG
-            return values_.find(std::make_pair(group, key))->second;
-#else
-            std::string groupKey = group + "." + key;
-            return configuration_->getString(groupKey);
-#endif
-        }
-
-        //! \see GetInt(const std::string &group, const std::string &name, int defaultValue);
-        bool GetBool(const std::string &group, const std::string &key) const
-        {
-#ifdef _DEBUG
-            return boost::lexical_cast<bool>(values_.find(std::make_pair(group, key))->second);
-#else
-            std::string groupKey = group + "." + key;
-            return configuration_->getBool(groupKey);
-#endif
-        }
-
-        //! \see GetInt(const std::string &group, const std::string &name, int defaultValue);
-        Core::Real GetReal(const std::string &group, const std::string &key) const
-        {
-#ifdef _DEBUG
-            return boost::lexical_cast<Core::Real>(values_.find(std::make_pair(group, key))->second);
-#else
-            std::string groupKey = group + "." + key;
-            return static_cast<Core::Real>(configuration_->getDouble(groupKey));
-#endif
-        }
-
+        template <typename T> T GetSettingFromFile(const std::string& group, const std::string& key) const;
+        template <> std::string GetSettingFromFile(const std::string& group, const std::string& key) const;
+       
+        
         //! Returns true is the specified group contains the specified key, false otherwise.
         /*!
             \param group Name of the group
             \param key Name of the key
         */
         bool HasKey(const std::string &group, const std::string &key) const;
-        
-        
-    private:
+            
         //! Export current settings to specified file
-        /*! Does silly trickery when EXPORT_CONFIGURATION in defined to export the settings.
+        /*! Does silly trickery to export the settings.
 
             \param file path to file to export settings to
         */
-        void ExportSettings(const std::string &file);
+        void ExportSettings(const std::string &file = std::string(DEFAULT_CONFIG_PATH));
+
+        
+    private:
+      
 
         //! default configuration file path
         static const char *DEFAULT_CONFIG_PATH;
@@ -189,12 +161,11 @@ class foo
         //! Type of this config
         Type type_;
 
-#ifdef EXPORT_CONFIGURATION
         //! map of all values, for exporting
-        ValueMap values_;
-#endif
+        mutable ValueMap values_;
     };
-}
 
+}
+#include "ConfigurationManager-templates.h"
 #endif
 

@@ -60,8 +60,8 @@ namespace Test
     {
         LogInfo("");
 
-        assert (VersionMajor() == GetFramework()->GetDefaultConfig().GetString(Foundation::Framework::ConfigurationGroup(), "version_major"));
-        assert (VersionMinor() == GetFramework()->GetDefaultConfig().GetString(Foundation::Framework::ConfigurationGroup(), "version_minor"));
+        assert (VersionMajor() == GetFramework()->GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "version_major"));
+        assert (VersionMinor() == GetFramework()->GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "version_minor"));
 
         // create new entity
         LogInfo("Constructing entity with component: " + Test::EC_Dummy::NameStatic() + ".");

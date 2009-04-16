@@ -23,11 +23,11 @@ namespace Foundation
         application_ = ApplicationPtr(new Application(this));
         platform_ = PlatformPtr(new Platform(this));
 
-        config_.DeclareSetting(Framework::ConfigurationGroup(), "version_major", "0");
-        config_.DeclareSetting(Framework::ConfigurationGroup(), "version_minor", "1");
-        config_.DeclareSetting(Framework::ConfigurationGroup(), "application_name", "realXtend");
-        config_.DeclareSetting(Framework::ConfigurationGroup(), "log_console", true);
-        config_.DeclareSetting(Framework::ConfigurationGroup(), "log_level", "information");
+        config_.DeclareSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
+        config_.DeclareSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("1"));
+        config_.DeclareSetting(Framework::ConfigurationGroup(), std::string("application_name"), std::string("realXtend"));
+        config_.DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));
+        config_.DeclareSetting(Framework::ConfigurationGroup(), std::string("log_level"), std::string("information"));
 
         platform_->PrepareApplicationDataDirectory(); // depends on config
 
@@ -56,13 +56,13 @@ namespace Foundation
         Poco::LoggingFactory *loggingfactory = new Poco::LoggingFactory();
 
         Poco::Channel *consolechannel = NULL;
-        if (config_.GetBool(Framework::ConfigurationGroup(), "log_console"))
+        if (config_.GetSetting<bool>(Framework::ConfigurationGroup(), "log_console"))
             consolechannel = loggingfactory->createChannel("ConsoleChannel");
 
         Poco::Channel *filechannel = loggingfactory->createChannel("FileChannel");
         
         std::wstring logfilepath_w = platform_->GetUserDocumentsDirectoryW();
-        logfilepath_w += L"/" + Core::ToWString(config_.GetString(Framework::ConfigurationGroup(), "application_name")) + L".log";
+        logfilepath_w += L"/" + Core::ToWString(config_.GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name")) + L".log";
         std::string logfilepath;
         Poco::UnicodeConverter::toUTF8(logfilepath_w, logfilepath);
 
@@ -110,7 +110,7 @@ namespace Foundation
 
 #ifndef _DEBUG
         // make it so debug messages are not logged in release mode
-        std::string log_level = config_.GetString(Framework::ConfigurationGroup(), "log_level");
+        std::string log_level = config_.GetSettingFromFile<std::string>(Framework::ConfigurationGroup(), "log_level");
         Poco::Logger::get("Foundation").setLevel(log_level);
 #endif
         
@@ -161,6 +161,7 @@ namespace Foundation
             //mChangeManager->_propagateChanges();
             
             // if we have a renderer service, render now
+			
             if (service_manager_->IsRegistered(Service::ST_Renderer))
             {
                 Foundation::RenderServiceInterface *renderer = 
