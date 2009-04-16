@@ -77,13 +77,14 @@ namespace RexLogic
             OpenSimProtocol::NetworkEventInboundData *netdata = checked_static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
             switch(netdata->messageID)
             {
-                case RexNetMsgRegionHandshake:          return HandleOSNE_RegionHandshake(netdata); break;
-                case RexNetMsgAgentMovementComplete:    return HandleOSNE_AgentMovementComplete(netdata); break;
-                case RexNetMsgGenericMessage:           return HandleOSNE_GenericMessage(netdata); break;
-                case RexNetMsgLogoutReply:              return HandleOSNE_LogoutReply(netdata); break;
-                case RexNetMsgObjectUpdate:             return HandleOSNE_ObjectUpdate(netdata); break;
-                case RexNetMsgObjectProperties:         return HandleOSNE_ObjectProperties(netdata); break;
-                default:                                return false; break;
+                case RexNetMsgRegionHandshake:              return HandleOSNE_RegionHandshake(netdata); break;
+                case RexNetMsgAgentMovementComplete:        return HandleOSNE_AgentMovementComplete(netdata); break;
+                case RexNetMsgGenericMessage:               return HandleOSNE_GenericMessage(netdata); break;
+                case RexNetMsgImprovedTerseObjectUpdate:    return HandleOSNE_ImprovedTerseObjectUpdate(netdata); break;                
+                case RexNetMsgLogoutReply:                  return HandleOSNE_LogoutReply(netdata); break;
+                case RexNetMsgObjectUpdate:                 return HandleOSNE_ObjectUpdate(netdata); break;
+                case RexNetMsgObjectProperties:             return HandleOSNE_ObjectProperties(netdata); break;
+                default:                                    return false; break;
             }
         }
         return false;
@@ -198,6 +199,40 @@ namespace RexLogic
  
         return entity;
     }
+
+    Foundation::EntityPtr NetworkEventHandler::GetAvatarEntity(Core::entity_id_t entityid)
+    {
+        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
+            (Foundation::Service::ST_SceneManager);
+        Foundation::ScenePtr scene = sceneManager->GetScene("World");
+
+        if (!scene)
+            return Foundation::EntityPtr();
+
+        Foundation::EntityPtr entity = scene->GetEntity(entityid);
+
+        ///\todo Check that the entity has a avatar component, if not, add it to the entity. 
+        return entity;
+    }
+
+    Foundation::EntityPtr NetworkEventHandler::GetAvatarEntity(const RexUUID &entityuuid)
+    {
+        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
+            (Foundation::Service::ST_SceneManager);
+        Foundation::ScenePtr scene = sceneManager->GetScene("World");
+
+        IDMap::iterator iter = UUIDs_.find(entityuuid);
+        if (iter == UUIDs_.end())
+            return Foundation::EntityPtr();
+        else
+            return scene->GetEntity(iter->second);
+    } 
+
+
+
+
+
+
 
     bool NetworkEventHandler::HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data)
     {
@@ -460,7 +495,53 @@ namespace RexLogic
             Vector3 position = data->message->ReadVector3(); // todo tucofixme, set position to avatar
             Vector3 lookat = data->message->ReadVector3(); // todo tucofixme, set lookat direction to avatar
             uint64_t regionhandle = data->message->ReadU64();
-            uint32_t timestamp = data->message->ReadU32();
+            uint32_t timestamp = data->message->ReadU32(); 
+        }
+        return false;
+    }
+
+    bool NetworkEventHandler::HandleOSNE_ImprovedTerseObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data)
+    {
+        data->message->ResetReading();   
+    
+        uint64_t regionhandle = data->message->ReadU64();    
+        data->message->SkipToNextVariable(); // TimeDilation U16 ///\todo Unhandled inbound variable 'TimeDilation'.
+  
+        NetVariableType nextvartype = data->message->CheckNextVariableType();
+        while(nextvartype != NetVarNone)
+        {
+            size_t bytes_read = 0;
+            const uint8_t *bytes = data->message->ReadBuffer(&bytes_read);
+
+            // 30 is size for rex's own avatarimprovedterseupdate
+            if (bytes_read == 30)
+            {
+                // The data contents:
+                // ofs  0 - localid - packed to 4 bytes
+                // ofs  4 - position xyz - 3 x float (3x4 bytes)
+                // ofs 16 - velocity xyz - packed to 6 bytes
+                // ofs 22 - rotation - packed to 8 bytes
+                
+                //! \todo handle endians
+                int i = 0;
+                uint32_t localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[i]);                
+                i += 4;
+
+                Vector3 position = *reinterpret_cast<Vector3*>((Vector3*)&bytes[i]);
+                i += sizeof(Vector3);
+                
+                //! \todo read velocity & rotation 
+                
+                Foundation::EntityPtr entity = GetAvatarEntity(localid);
+                if(entity)
+                {
+                    OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
+                    ogrePos.SetPosition(position);
+                }
+            }
+            
+            data->message->SkipToNextVariable(); // TextureEntry variable ///\todo Unhandled inbound variable 'TextureEntry'.
+            nextvartype = data->message->CheckNextVariableType();
         }
         return false;
     }
