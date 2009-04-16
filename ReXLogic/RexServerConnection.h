@@ -7,6 +7,11 @@
 #include "NetInMessage.h"
 #include "NetMessage.h"
 
+namespace OgreRenderer
+{
+    class EC_OgrePlaceable;
+}
+
 namespace RexLogic
 {
     class MODULE_API RexServerConnection
@@ -54,6 +59,10 @@ namespace RexLogic
         /// Sends a packet which indicates deselection of a group of prims.
         ///@param List of local ID's of objects which are deselected.
         void SendObjectDeselectPacket(std::vector<Core::entity_id_t> object_id_list);        
+        
+        /// Sends a packet indicating change in Object's position, rotation and scale.
+        ///@param List of updated entity pointers.
+        void SendMultipleObjectUpdatePacket(std::vector<Foundation::EntityPtr> entity_ptr_list);
         
         ///@return Name of the sim we're connected to.
         std::string GetSimName() { return simname_; }

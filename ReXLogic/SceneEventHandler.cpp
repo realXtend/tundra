@@ -21,16 +21,19 @@ namespace RexLogic
     {
         Scene::SceneEventData *event_data = dynamic_cast<Scene::SceneEventData *>(data);        
         
-        if (event_id == Scene::EVENT_ENTITY_SELECT)
+        switch(event_id)
         {
-            rexlogicmodule_->GetServerConnection()->SendObjectSelectPacket(event_data->localID);
-            return false;
-        }
-        
-        if (event_id == Scene::EVENT_ENTITY_DESELECT)
-        {
-            rexlogicmodule_->GetServerConnection()->SendObjectDeselectPacket(event_data->localID);
-            return false;
+            case Scene::EVENT_ENTITY_SELECT:
+                rexlogicmodule_->GetServerConnection()->SendObjectSelectPacket(event_data->localID);
+                break;
+            case Scene::EVENT_ENTITY_DESELECT:
+                rexlogicmodule_->GetServerConnection()->SendObjectDeselectPacket(event_data->localID);
+                break;
+            case Scene::EVENT_ENTITY_UPDATED:
+                rexlogicmodule_->GetServerConnection()->SendMultipleObjectUpdatePacket(event_data->entity_ptr_list);
+                break;                
+            default:
+                break;
         }
         
         return false;

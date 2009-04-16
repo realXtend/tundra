@@ -31,9 +31,9 @@ namespace RexLogic
         uint8_t ClickAction;
         uint32_t UpdateFlags;
         
-        Vector3 Position;
+/*        Vector3 Position;
         Vector3 Scale;
-        Quaternion Rotation;
+        Quaternion Rotation;*/
 
         std::string ServerScriptClass;
         

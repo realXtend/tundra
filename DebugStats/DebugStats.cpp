@@ -5,6 +5,7 @@
 #include <gtkmm/treeview.h>
 #include <gtkmm/treestore.h>
 #include <gtkmm/scrolledwindow.h>
+#include <gtkmm/spinbutton.h>
 #include <libglademm.h>
 #include <glade/glade.h>
 #pragma warning( pop )
@@ -29,6 +30,8 @@
 #include "EC_FreeData.h"
 #include "EC_SpatialSound.h"
 #include "EC_OpenSimPrim.h"
+#include "EC_OgrePlaceable.h"
+#include "QuatUtils.h"
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
    POCO_EXPORT_CLASS(DebugStats)
@@ -63,16 +66,14 @@ void DebugStats::Initialize()
     
     InitializePrimPropertiesWindow();
 
-    scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
-    if (scene_event_category_ == 0)
-        Log("Unable to find event category for Scene events!");
-            
     Log("Module " + Name() + " initialized.");
 }
 
 void DebugStats::PostInitialize()
 {
-    
+    scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
+    if (scene_event_category_ == 0)
+        Log("Unable to find event category for Scene events!");    
 }
 
 void DebugStats::Uninitialize()
@@ -90,7 +91,7 @@ void DebugStats::Update(Core::f64 frametime)
 
 bool DebugStats::HandleEvent(
     Core::event_category_id_t category_id,
-    Core::event_id_t event_id, 
+    Core::event_id_t event_id,
     Foundation::EventDataInterface *data
     )
 {
@@ -331,12 +332,14 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Scen
                 ///\todo Get the real scene, not hardcoded
                 const Foundation::ScenePtr &scene = scene_manager->GetScene("World");
                 const Foundation::EntityPtr &entity = scene->GetEntity(event_data->localID);
-                const Foundation::ComponentInterfacePtr &component = entity->GetComponent("EC_OpenSimPrim");
-                if (!component)
+                const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
+                const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
+                if (!prim_component || !ogre_component)
                     return;
                 
-                RexLogic::EC_OpenSimPrim *prim = dynamic_cast<RexLogic::EC_OpenSimPrim *>(component.get());
-                PopulatePrimPropertiesTreeView(prim);
+                RexLogic::EC_OpenSimPrim *prim = dynamic_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
+                OgreRenderer::EC_OgrePlaceable *ogre_pos = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());        
+                PopulatePrimPropertiesTreeView(prim, ogre_pos);                
                 break;
             }        
         case Scene::EVENT_ENTITY_ADDED:            
@@ -351,7 +354,7 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Scen
                         scene_name = scene.Name();
                 }
                 
-                ///Get the scene for real.
+                // Get the scene for real.
                 const Foundation::ScenePtr &scene_ptr = scene_manager->GetScene(scene_name);
                 if (!scene_ptr)
                     return;
@@ -414,6 +417,52 @@ void DebugStats::OnClickRefresh()
     PopulateEntityListTreeView();
 }
 
+void DebugStats::OnClickSave()
+{
+    Gtk::SpinButton *sb_pos_x, *sb_pos_y, *sb_pos_z, *sb_scale_x, *sb_scale_y,
+        *sb_scale_z, *sb_rot_x, *sb_rot_y, *sb_rot_z;
+    
+    primPropertiesControls_->get_widget("sb_pos_x", sb_pos_x);
+    primPropertiesControls_->get_widget("sb_pos_y", sb_pos_y);
+    primPropertiesControls_->get_widget("sb_pos_z", sb_pos_z);
+    primPropertiesControls_->get_widget("sb_scale_x", sb_scale_x);
+    primPropertiesControls_->get_widget("sb_scale_y", sb_scale_y);
+    primPropertiesControls_->get_widget("sb_scale_z", sb_scale_z);
+    primPropertiesControls_->get_widget("sb_rot_x", sb_rot_x);
+    primPropertiesControls_->get_widget("sb_rot_y", sb_rot_y);
+    primPropertiesControls_->get_widget("sb_rot_z", sb_rot_z);
+    
+    ///\todo Get the real scene, not hardcoded
+    Scene::SceneManager *scene_manager = dynamic_cast<Scene::SceneManager *>
+        (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
+    if (!scene_manager)
+            return;    
+    const Foundation::ScenePtr &scene = scene_manager->GetScene("World");
+    const Foundation::EntityPtr &entity = scene->GetEntity(currentEntityID_);
+    const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
+    OgreRenderer::EC_OgrePlaceable *ogre_pos = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());        
+    
+    // Get the new values.
+    RexTypes::Vector3 pos((float)sb_pos_x->get_value(), (float)sb_pos_y->get_value(), (float)sb_pos_z->get_value());
+    RexTypes::Vector3 scale((float)sb_scale_x->get_value(), (float)sb_scale_y->get_value(), (float)sb_scale_z->get_value());
+    Quaternion quat = Core::UnpackQuaternionFromFloat3((float)sb_rot_x->get_value(), (float)sb_rot_y->get_value(), (float)sb_rot_z->get_value());
+    
+    // Set the new values.
+    ogre_pos->SetPosition(pos);
+    ogre_pos->SetScale(scale);
+    ogre_pos->SetOrientation(quat);
+    
+    //Send event
+    Scene::SceneEventData event_data(currentEntityID_);
+    event_data.entity_ptr_list.push_back(entity);
+    framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::EVENT_ENTITY_UPDATED, &event_data);    
+}
+
+void DebugStats::OnClickCancel()
+{
+
+}
+
 void DebugStats::OnPrimPropertiesClose()
 {
     // Send 'Entity Deselect' event.
@@ -454,12 +503,15 @@ void DebugStats::OnDoubleClickEntity(const Gtk::TreeModel::Path &path, Gtk::Tree
         ///\todo Get the real scene, not hardcoded
         const Foundation::ScenePtr &scene = scene_manager->GetScene("World");
         const Foundation::EntityPtr &entity = scene->GetEntity(id);
-        const Foundation::ComponentInterfacePtr &component = entity->GetComponent("EC_OpenSimPrim");
-        if (!component)
+        const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
+        const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
+        if (!prim_component || !ogre_component)
             return;
         
-        RexLogic::EC_OpenSimPrim *prim = dynamic_cast<RexLogic::EC_OpenSimPrim *>(component.get());
-        PopulatePrimPropertiesTreeView(prim);
+        RexLogic::EC_OpenSimPrim *prim = dynamic_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
+        OgreRenderer::EC_OgrePlaceable *ogre_pos = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());        
+        
+        PopulatePrimPropertiesTreeView(prim, ogre_pos);
    }
 }
 
@@ -467,7 +519,7 @@ void DebugStats::InitializePrimPropertiesWindow()
 {
     // Load up the debug module hierarchy window, and store the main window handle for later use.
     primPropertiesControls_ = Gnome::Glade::Xml::create("data/primPropertiesWindow.glade");
-    if (!primPropertiesControls_ )
+    if (!primPropertiesControls_)
         return;
     
     // Get the window.
@@ -481,61 +533,105 @@ void DebugStats::InitializePrimPropertiesWindow()
     primPropertiesModel_ = Gtk::TreeStore::create(primPropertiesColumns_);
     treeview_prim_properties->set_model(primPropertiesModel_);
     treeview_prim_properties->append_column(Glib::ustring("Name"), primPropertiesColumns_.colName);
+    treeview_prim_properties->append_column(Glib::ustring("Editable"), primPropertiesColumns_.colEditable);
     treeview_prim_properties->append_column_editable(Glib::ustring("Value"), primPropertiesColumns_.colValue);
     
-    // Set the winow title, set default size and callback.
-    primPropertiesWindow_->set_default_size(350, 300);
-    primPropertiesWindow_->set_title("EC_OpenSimPrim Properties");
-    primPropertiesWindow_->signal_hide().connect(sigc::mem_fun(*this, &DebugStats::OnPrimPropertiesClose));
+    // Callbacks for Save and Cancel buttons
+    primPropertiesControls_->connect_clicked("button_save", sigc::mem_fun(*this, &DebugStats::OnClickSave));
+    primPropertiesControls_->connect_clicked("button_cancel", sigc::mem_fun(*this, &DebugStats::OnClickCancel));
     
-}
+    // Set the window title, set default size and callback.
+    primPropertiesWindow_->set_default_size(400, 380);
+    primPropertiesWindow_->set_title("Entity Properties");
+    primPropertiesWindow_->signal_hide().connect(sigc::mem_fun(*this, &DebugStats::OnPrimPropertiesClose));
+ }
 
-void DebugStats::PopulatePrimPropertiesTreeView(RexLogic::EC_OpenSimPrim *prim)
+void DebugStats::PopulatePrimPropertiesTreeView(
+    RexLogic::EC_OpenSimPrim *prim,
+    OgreRenderer::EC_OgrePlaceable *ogre_pos)
 {
     primPropertiesWindow_->show();
     primPropertiesModel_->clear();
+    
+    // Ogre position, scale and orientation
+    Gtk::SpinButton *sb_pos_x, *sb_pos_y, *sb_pos_z, *sb_scale_x,
+        *sb_scale_y, *sb_scale_z, *sb_rot_x, *sb_rot_y, *sb_rot_z;
+    
+    primPropertiesControls_->get_widget("sb_pos_x", sb_pos_x);
+    primPropertiesControls_->get_widget("sb_pos_y", sb_pos_y);
+    primPropertiesControls_->get_widget("sb_pos_z", sb_pos_z);
+    primPropertiesControls_->get_widget("sb_scale_x", sb_scale_x);
+    primPropertiesControls_->get_widget("sb_scale_y", sb_scale_y);
+    primPropertiesControls_->get_widget("sb_scale_z", sb_scale_z);
+    primPropertiesControls_->get_widget("sb_rot_x", sb_rot_x);
+    primPropertiesControls_->get_widget("sb_rot_y", sb_rot_y);
+    primPropertiesControls_->get_widget("sb_rot_z", sb_rot_z);
+    
+    RexTypes::Vector3 pos = ogre_pos->GetPosition();
+    RexTypes::Vector3 scale = ogre_pos->GetScale();
+    RexTypes::Vector3 rot = Core::PackQuaternionToFloat3(ogre_pos->GetOrientation());
+    
+    // Set the values
+    sb_pos_x->set_value((double)pos.x);
+    sb_pos_y->set_value((double)pos.y);
+    sb_pos_z->set_value((double)pos.z);
 
+    sb_scale_x->set_value((double)scale.x);
+    sb_scale_y->set_value((double)scale.y);
+    sb_scale_z->set_value((double)scale.z);
+    
+    sb_rot_x->set_value((double)rot.x);
+    sb_rot_y->set_value((double)rot.y);
+    sb_rot_z->set_value((double)rot.z);
+    
+    // Prim stuff
     Gtk::TreeModel::Row prim_row = *(primPropertiesModel_->append());
     prim_row[primPropertiesColumns_.colName] = "Name";
     prim_row[primPropertiesColumns_.colValue] = prim->ObjectName;    
-
+    prim_row[primPropertiesColumns_.colEditable] = true;
+    
     prim_row = *(primPropertiesModel_->append());
     prim_row[primPropertiesColumns_.colName] = "Description";
     prim_row[primPropertiesColumns_.colValue] = prim->Description;
+    prim_row[primPropertiesColumns_.colEditable] = true;
         
     prim_row = *(primPropertiesModel_->append());        
     prim_row[primPropertiesColumns_.colName] = "RegionHandle";
     prim_row[primPropertiesColumns_.colValue] = Core::ToString(prim->RegionHandle);
+    prim_row[primPropertiesColumns_.colEditable] = false;
         
     prim_row = *(primPropertiesModel_->append());
     prim_row[primPropertiesColumns_.colName] = "LocalId";
     prim_row[primPropertiesColumns_.colValue] = Core::ToString(prim->LocalId);
-        
+    prim_row[primPropertiesColumns_.colEditable] = false;
+    
     prim_row = *(primPropertiesModel_->append());
     prim_row[primPropertiesColumns_.colName] = "FullID";
     prim_row[primPropertiesColumns_.colValue] = prim->FullId.ToString();
-
+    prim_row[primPropertiesColumns_.colEditable] = false;
+    
     prim_row = *(primPropertiesModel_->append());
     prim_row[primPropertiesColumns_.colName] = "ParentId";
-    prim_row[primPropertiesColumns_.colValue] = Core::ToString(prim->ParentId); 
+    prim_row[primPropertiesColumns_.colValue] = Core::ToString(prim->ParentId);
+    prim_row[primPropertiesColumns_.colEditable] = false;
         
     prim_row = *(primPropertiesModel_->append());
     prim_row[primPropertiesColumns_.colName] = "Material";
     prim_row[primPropertiesColumns_.colValue] = Core::ToString((Core::uint)prim->Material);
+    prim_row[primPropertiesColumns_.colEditable] = true;
     
     prim_row = *(primPropertiesModel_->append());
     prim_row[primPropertiesColumns_.colName] = "ClickAction";
     prim_row[primPropertiesColumns_.colValue] = Core::ToString((Core::uint)prim->ClickAction);
+    prim_row[primPropertiesColumns_.colEditable] = true;
     
     prim_row = *(primPropertiesModel_->append());
     prim_row[primPropertiesColumns_.colName] = "UpdateFlags";
     prim_row[primPropertiesColumns_.colValue] = Core::ToString(prim->UpdateFlags);
-    
-    prim_row = *(primPropertiesModel_->append());
-    prim_row[primPropertiesColumns_.colName] = "ServerScriptClass";
-    prim_row[primPropertiesColumns_.colValue] = prim->ServerScriptClass;
-    
+    prim_row[primPropertiesColumns_.colEditable] = false;
+
     prim_row = *(primPropertiesModel_->append());
     prim_row[primPropertiesColumns_.colName] = "SelectPriority";
     prim_row[primPropertiesColumns_.colValue] = Core::ToString(prim->SelectPriority);
+    prim_row[primPropertiesColumns_.colEditable] = true;
 }

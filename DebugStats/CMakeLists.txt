@@ -18,6 +18,7 @@ include_directories (
 	../RexCommon
 	../ReXLogic
 	../OpenSimProtocol
+	../OgreRenderingModule
 )
 
 # Disable warning
@@ -57,7 +58,7 @@ if (MSVC)
 	target_link_libraries (${TARGET_NAME} )
 endif (MSVC)
 
-target_link_libraries (${TARGET_NAME} Foundation SceneModule RexCommon ReXLogicModule OpenSimProtocolModule Interfaces)
+target_link_libraries (${TARGET_NAME} Foundation SceneModule RexCommon ReXLogicModule OpenSimProtocolModule OgreRenderingModule Interfaces)
 
 # External library linkage (needs target defined)
 LINK_POCO()

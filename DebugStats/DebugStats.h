@@ -8,6 +8,10 @@ namespace RexLogic
 {
     class EC_OpenSimPrim;
 }
+namespace OgreRenderer
+{
+    class EC_OgrePlaceable;
+}
 
 /// This module shows information about internal core data structures in separate windows. Useful for verifying and understanding
 /// the internal state of the application.
@@ -40,8 +44,14 @@ private:
     /// Callback for Entity List refresh button.
     void OnClickRefresh();
     
-    /// Callback for closing PrimProperties window.
+    /// Callback for closing Entity Properties window.
     void OnPrimPropertiesClose();
+    
+    /// Callback for Save button of Entity Properties window.
+    void OnClickSave();
+    
+    /// Callback for Cancel button of Entity Properties window.
+    void OnClickCancel();
     
     /// Update entity list.
     void UpdateEntityListTreeView(Core::event_id_t event_id, Scene::SceneEventData *event_data);
@@ -49,6 +59,11 @@ private:
     /// Callback for Entity activation.
     void OnDoubleClickEntity(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn* column);
     
+    /// Callbacks for validating and editing data on PrimProperties window.
+//    void ColumnValidatedOnCellData(Gtk::CellRenderer *renderer, const Gtk::TreeModel::iterator &iter);
+//    void CellrendererValidatedOnEditingStarted(Gtk::CellEditable *cell_editable, const Glib::ustring &path);
+//    void CellrendererValidatedOnEdited(const Glib::ustring &path_string, const Glib::ustring &new_text);
+
     /// Initialize UI windows.
     void InitializeModulesWindow();
     void InitializeEventsWindow();
@@ -59,7 +74,12 @@ private:
     void PopulateModulesTreeView();
     void PopulateEventsTreeView();
     void PopulateEntityListTreeView();
-    void PopulatePrimPropertiesTreeView(RexLogic::EC_OpenSimPrim *prim);
+
+    /// Show EC_OpenSimPrim and EC_OgrePlaceable properties.    
+    void PopulatePrimPropertiesTreeView(
+        RexLogic::EC_OpenSimPrim *prim,
+        OgreRenderer::EC_OgrePlaceable *ogre_pos
+        );
     
     /// Category id for scene events.
     Core::event_category_id_t scene_event_category_ ;
@@ -112,6 +132,7 @@ private:
         {
             add(colName);
             add(colValue);
+            add(colEditable);
         }
         Gtk::TreeModelColumn<Glib::ustring> colName;
         Gtk::TreeModelColumn<Glib::ustring> colValue;
@@ -122,6 +143,12 @@ private:
     
     /// Currenty selected entity ID on the PrimProperties window.
     Core::entity_id_t currentEntityID_;
+    
+    //For the validated column:
+//    Gtk::CellRendererText cellrendererValidated;
+//    Gtk::TreeView::Column columnValidated;
+//    bool validateRetry;
+//    Glib::ustring invalidTextForRetry;        
 };
 
 #endif
