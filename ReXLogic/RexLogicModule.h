@@ -5,6 +5,7 @@
 
 #include "ModuleInterface.h"
 #include "RexServerConnection.h"
+#include "AvatarController.h"
 
 namespace RexLogic
 {
@@ -13,6 +14,7 @@ namespace RexLogic
     class SceneEventHandler;
 
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
+    typedef boost::shared_ptr<AvatarController> AvatarControllerPtr;    
 
     //! interface for modules
     class MODULE_API RexLogicModule : public Foundation::ModuleInterfaceImpl
@@ -40,6 +42,8 @@ namespace RexLogic
         
         RexServerConnectionPtr GetServerConnection() const { return rexserver_connection_; }
 
+        AvatarControllerPtr GetAvatarController() const { return avatar_controller_; }
+
     private:        
         //! Event handler for network events.
         NetworkEventHandler *network_handler_;
@@ -50,7 +54,11 @@ namespace RexLogic
         //! Event handler for scene events.
         SceneEventHandler *scene_handler_;
         
+        //! Server connection
         RexServerConnectionPtr rexserver_connection_;
+
+        //! Local avatar controller for this client
+        AvatarControllerPtr avatar_controller_;
 
         typedef boost::function<bool(Core::event_id_t,Foundation::EventDataInterface*)> LogicEventHandlerFunction;
         typedef std::map<Core::event_category_id_t, LogicEventHandlerFunction> LogicEventHandlerMap;
