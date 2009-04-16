@@ -301,6 +301,10 @@ namespace RexLogic
         
         Foundation::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents);
  
+        OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
+        ogrePos.SetScale(Vector3(0.5,1.5,0.5));
+        DebugCreateOgreBoundingBox(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
+ 
         return entity;
     }
 
@@ -471,6 +475,8 @@ namespace RexLogic
             return HandleRexGM_RexMediaUrl(data);
         else if(methodname == "RexPrimData")
             return HandleRexGM_RexPrimData(data); 
+        else if(methodname == "RexAppearance")
+            return HandleRexGM_RexAppearance(data);
         else
             return false;    
     }
@@ -656,6 +662,7 @@ namespace RexLogic
                 if(entity)
                 {
                     OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
+                    std::swap(position.y, position.z); ///\todo Refactor the flipping of coordinate system to somewhere else so that we have unified access to it, instead of each function doing it by themselves.
                     ogrePos.SetPosition(position);
                 }
             }
@@ -665,4 +672,17 @@ namespace RexLogic
         }
         return false;
     }
+    
+    bool NetworkEventHandler::HandleRexGM_RexAppearance(OpenSimProtocol::NetworkEventInboundData* data)
+    {
+        data->message->ResetReading();    
+        data->message->SkipToFirstVariableByName("Parameter");
+        
+        std::string avataraddress = data->message->ReadString();
+        RexUUID avatarid(data->message->ReadString());
+        bool overrideappearance = Core::ParseString<bool>(data->message->ReadString());
+        return false;
+    }
+        
+    
 }

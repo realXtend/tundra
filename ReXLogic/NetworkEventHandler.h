@@ -36,6 +36,7 @@ namespace RexLogic
         //! Handler functions for GenericMessages
         bool HandleRexGM_RexMediaUrl(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleRexGM_RexPrimData(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleRexGM_RexAppearance(OpenSimProtocol::NetworkEventInboundData* data);
 
         //! Decodes terrain data from a LayerData packet and generates terrain patches accordingly.
         bool HandleOSNE_LayerData(OpenSimProtocol::NetworkEventInboundData* data);
