@@ -23,9 +23,7 @@ namespace Foundation
 
     ConfigurationManager::~ConfigurationManager()
     {
-#ifdef EXPORT_CONFIGURATION
         ExportSettings(config_file_);
-#endif
     }
 
     void ConfigurationManager::Load(const std::string &file)
@@ -48,67 +46,6 @@ namespace Foundation
         }
     }
 
-    int ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, int defaultValue) const
-    {
-        int value = defaultValue;
-        if (configuration_.isNull() == false)
-        {
-            std::string groupKey = group + "." + key;
-            value = configuration_->getInt(groupKey, defaultValue);
-        }
-#ifdef EXPORT_CONFIGURATION
-        (*const_cast<ValueMap*>(&values_))[std::make_pair(group, key)] = boost::lexical_cast<std::string>(value);
-#endif
-        return value;
-    }
-
-    std::string ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, const std::string &defaultValue) const
-    {
-        std::string value = defaultValue;
-        if (configuration_.isNull() == false)
-        {
-            std::string groupKey = group + "." + key;
-            value = configuration_->getString(groupKey, defaultValue);
-        }
-#ifdef EXPORT_CONFIGURATION
-        (*const_cast<ValueMap*>(&values_))[std::make_pair(group, key)] = value;
-#endif
-        return value;
-    }
-
-    std::string ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, const char *defaultValue) const
-    {
-        return DeclareSetting(group, key, std::string(defaultValue));
-    }
-
-    bool ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, bool defaultValue) const
-    {
-        bool value = defaultValue;
-        if (configuration_.isNull() == false)
-        {
-            std::string groupKey = group + "." + key;
-            value = configuration_->getBool(groupKey, defaultValue);
-        }
-#ifdef EXPORT_CONFIGURATION
-        (*const_cast<ValueMap*>(&values_))[std::make_pair(group, key)] = boost::lexical_cast<std::string>(value);
-#endif
-        return value;
-    }
-
-    Core::Real ConfigurationManager::DeclareSetting(const std::string &group, const std::string &key, Core::Real defaultValue) const
-    {
-        Core::Real value = defaultValue;
-        if (configuration_.isNull() == false)
-        {
-            std::string groupKey = group + "." + key;
-            value = static_cast<Core::Real>(configuration_->getDouble(groupKey, defaultValue));
-        }
-#ifdef EXPORT_CONFIGURATION
-        (*const_cast<ValueMap*>(&values_))[std::make_pair(group, key)] = boost::lexical_cast<std::string>(value);
-#endif
-        return value;
-    }
-
     bool ConfigurationManager::HasKey(const std::string &group, const std::string &key) const
     {
         if (configuration_.isNull() == false)
@@ -121,7 +58,6 @@ namespace Foundation
 
     void ConfigurationManager::ExportSettings(const std::string &file)
     {
-#ifdef EXPORT_CONFIGURATION
         std::fstream file_op(file.c_str(), std::ios::out);
 
         Poco::XML::XMLWriter writer(file_op, Poco::XML::XMLWriter::CANONICAL | Poco::XML::XMLWriter::PRETTY_PRINT);
@@ -156,7 +92,6 @@ namespace Foundation
         
 	    writer.endElement("", "", "config");
 	    writer.endDocument();
-#endif
     }
 }
 

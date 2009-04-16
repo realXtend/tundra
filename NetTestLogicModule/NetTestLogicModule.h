@@ -123,6 +123,12 @@ namespace NetTest
 
         // The GTK window for packet dump UI.
         Gtk::Window *packetDumpWindow;
+            
+        // The GTK entries : server entry, server login.
+        Gtk::Entry *entry_server_;
+        Gtk::Entry *entry_username_;
+     
+       
 
         /// Tree model columns for entity list.
         Glib::RefPtr<Gtk::TreeStore> logModel;

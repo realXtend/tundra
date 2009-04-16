@@ -28,6 +28,7 @@ namespace Foundation
         ServiceManagerPtr GetServiceManager() const { return service_manager_; }
         EventManagerPtr GetEventManager() const { return event_manager_; }
         PlatformPtr GetPlatform() const { return platform_; }
+        ConfigurationManager* GetConfigManagerPtr() { return &config_;}
 
         //! Signal the framework to exit at first possible opportunity
         void Exit() { exit_signal_ = true; }

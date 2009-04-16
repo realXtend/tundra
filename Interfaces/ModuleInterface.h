@@ -241,7 +241,7 @@ namespace Foundation
             if (IsInternal())
             {
                 static const std::string version("version_major");
-                return ( GetFramework()->GetDefaultConfig().GetString(Framework::ConfigurationGroup(), version) );
+                return ( GetFramework()->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), version) );
             }
             return std::string("0");
         }
@@ -251,7 +251,7 @@ namespace Foundation
             if (IsInternal())
             {
                 static const std::string version("version_minor");
-                return ( GetFramework()->GetDefaultConfig().GetString(Framework::ConfigurationGroup(), version) );
+                return ( GetFramework()->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), version) );
             }
             return std::string("0");
         }

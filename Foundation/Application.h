@@ -24,7 +24,7 @@ namespace Foundation
             assert (framework_);
             static const std::string app_name("application_name");
 
-            return framework_->GetDefaultConfig().GetString(Framework::ConfigurationGroup(), app_name);
+            return framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), app_name);
         }
 
         //! shortcut for application name, returns wide string
@@ -41,8 +41,8 @@ namespace Foundation
             static const std::string version_minor("version_minor");
             const std::string &group = Framework::ConfigurationGroup();
 
-            return ( framework_->GetDefaultConfig().GetString(group, version_major) + "." +
-                     framework_->GetDefaultConfig().GetString(group, version_minor) );
+            return ( framework_->GetDefaultConfig().GetSetting<std::string>(group, version_major) + "." +
+                    framework_->GetDefaultConfig().GetSetting<std::string>(group, version_minor) );
         }
 
         //! shortcut for application version string, returns wide string

@@ -134,7 +134,7 @@ namespace OgreRenderer
         LoadPlugins(plugins_filename);
         
 #ifdef _WINDOWS
-        std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", "Direct3D9 Rendering Subsystem");
+        std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>("OgreRenderer", "RenderSystem", "Direct3D9 Rendering Subsystem");
 #else
         std::string rendersystem_name = "OpenGL Rendering Subsystem";
         framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", rendersystem_name);
@@ -160,7 +160,7 @@ namespace OgreRenderer
         root_->initialise(false);
 
         Ogre::NameValuePairList params;
-        std::string application_name = framework_->GetDefaultConfig().GetString(Foundation::Framework::ConfigurationGroup(), "application_name");
+        std::string application_name = framework_->GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "application_name");
 
         try
         {

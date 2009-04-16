@@ -44,6 +44,7 @@ DebugStats::DebugStats()
 
 DebugStats::~DebugStats()
 {
+	
 }
 
 void DebugStats::Load()

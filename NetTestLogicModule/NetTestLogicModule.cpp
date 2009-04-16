@@ -10,6 +10,8 @@
 #include "RexLogicModule.h"
 
 #include <iomanip>
+#include <limits>
+#include <boost/math/special_functions/fpclassify.hpp>
 
 using namespace RexTypes;
 
@@ -118,7 +120,8 @@ namespace NetTest
         SAFE_DELETE(netTestWindow)
         SAFE_DELETE(loginWindow)
         SAFE_DELETE(packetDumpWindow)
-        
+         
+
         LogInfo("Module " + Name() + " uninitialized.");
     }
 
@@ -241,8 +244,32 @@ namespace NetTest
         loginControls->connect_clicked("button_connect", sigc::mem_fun(*this, &NetTestLogicModule::OnClickConnect));
         loginControls->connect_clicked("button_logout", sigc::mem_fun(*this, &NetTestLogicModule::OnClickLogout));
         loginControls->connect_clicked("button_quit", sigc::mem_fun(*this, &NetTestLogicModule::OnClickQuit));
-        Gtk::Entry *entry_server = loginControls->get_widget("entry_server", entry_server);
-        entry_server->signal_activate().connect(sigc::mem_fun(*this, &NetTestLogicModule::OnClickConnect));
+        
+        // Read old connection settings from xml configuration file.
+
+        entry_server_ = loginControls->get_widget("entry_server", entry_server_);
+        
+        std::string strText = "";
+        std::string strGroup = "Login";
+        std::string strKey = "server";
+        
+        strText = framework_->GetDefaultConfigPtr()->GetSettingFromFile<std::string>(strGroup, strKey);
+        entry_server_->set_text(Glib::ustring(strText));
+        
+
+        entry_server_->signal_activate().connect(sigc::mem_fun(*this, &NetTestLogicModule::OnClickConnect));        
+    
+        entry_username_ = loginControls->get_widget("entry_username",entry_username_);
+        
+        strKey = "username";
+        strText = "";
+        
+        strText = framework_->GetDefaultConfigPtr()->GetSettingFromFile<std::string>(strGroup, strKey);
+        entry_username_->set_text(Glib::ustring(strText));
+            
+        ///@note Pending : Currently password is not loaded and saved.  
+               
+        
     }
     
     void NetTestLogicModule::InitNetTestWindow()
@@ -306,16 +333,20 @@ namespace NetTest
     void NetTestLogicModule::OnClickConnect()
     {
         // Initialize UI widgets.
-        Gtk::Entry *entry_username;
+        //Gtk::Entry *entry_username;
         Gtk::Entry *entry_password;
-        Gtk::Entry *entry_server;
+        //Gtk::Entry *entry_server;
 
-        loginControls->get_widget("entry_username", entry_username);
+        //loginControls->get_widget("entry_username", entry_username_);
         loginControls->get_widget("entry_password", entry_password);
-        loginControls->get_widget("entry_server", entry_server);    
+        //loginControls->get_widget("entry_server", entry_server_);    
     
-        if(rexlogic_->GetServerConnection()->ConnectToServer(entry_username->get_text(), entry_password->get_text(), entry_server->get_text()))
+        if(rexlogic_->GetServerConnection()->ConnectToServer(entry_username_->get_text(), entry_password->get_text(), entry_server_->get_text()))
         {
+            // Save login and server settings for future use. 
+            framework_->GetConfigManagerPtr()->SetSetting<std::string>(std::string("Login"),std::string("server"), std::string(entry_server_->get_text()));
+            framework_->GetConfigManagerPtr()->SetSetting<std::string>(std::string("Login"),std::string("username"), std::string(entry_username_->get_text()));
+
             if (!netTestWindow)
                 InitNetTestWindow();
             
