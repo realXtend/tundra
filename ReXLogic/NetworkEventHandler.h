@@ -48,7 +48,7 @@ namespace RexLogic
 
         Foundation::EntityPtr CreateNewPrimEntity(Core::entity_id_t entityid);
 
-        Foundation::EntityPtr GetAvatarEntitySafe(Core::entity_id_t entityid);
+        Foundation::EntityPtr GetOrCreateAvatarEntity(Core::entity_id_t entityid, const RexUUID &fullid);
         Foundation::EntityPtr CreateNewAvatarEntity(Core::entity_id_t entityid);
 
         //! Creates an OBB for debug visualization of the extents of the given scene object.
