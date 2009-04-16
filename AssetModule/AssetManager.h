@@ -145,7 +145,7 @@ namespace Asset
         void StoreAsset(AssetTransfer& transfer);
     
         //! network interface
-        OpenSimProtocol::OpenSimProtocolModule *net_interface_;
+        boost::weak_ptr<OpenSimProtocol::OpenSimProtocolModule> net_interface_;
         
         //! framework we belong to
         Foundation::Framework* framework_;

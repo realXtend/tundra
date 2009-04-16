@@ -81,7 +81,7 @@ namespace NetTest
 
     void NetTestLogicModule::Initialize()
     {        
-        rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic));
+        rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
         if (!rexlogic_)
         {
             LogError("Getting rexlogicmodule interface did not succeed.");

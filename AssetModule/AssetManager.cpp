@@ -21,8 +21,8 @@ namespace Asset
     AssetManager::AssetManager(Foundation::Framework* framework) : 
         framework_(framework)
     {
-        net_interface_ = checked_static_cast<OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol));
-        if (!net_interface_)
+        net_interface_ = (framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol));
+        if (!net_interface_.lock().get())
         {
             //! \todo something smart, now assetmanager will be in quite zombified state
             AssetModule::LogError("Getting network interface did not succeed."); 
@@ -132,25 +132,29 @@ namespace Asset
                 if (transfer.GetTime() > asset_timeout_)
                 {
                     AssetModule::LogInfo("Texture transfer " + transfer.GetAssetId().ToString() + " timed out.");
-                    if (net_interface_)
+                    boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = net_interface_.lock();
+                    if (!net)
                     {
-                        // Send cancel message
-                        const ClientParameters& client = net_interface_->GetClientParameters();
-                        NetOutMessage *m = net_interface_->StartMessageBuilding(RexNetMsgRequestImage);
-                        assert(m);
-                        
-                        m->AddUUID(client.agentID);
-                        m->AddUUID(client.sessionID);
-        
-                        m->SetVariableBlockCount(1);
-                        m->AddUUID(transfer.GetAssetId()); // Image UUID
-                        m->AddS8(-1); // Discard level, -1 = cancel
-                        m->AddF32(0.0); // Download priority, 0 = cancel
-                        m->AddU32(0); // Starting packet
-                        m->AddU8(RexIT_Normal); // Image type
-        
-                        net_interface_->FinishMessageBuilding(m);
+                        /// \todo Connection lost! Tear down the whole asset manager.
+                        return;
                     }
+
+                    // Send cancel message
+                    const ClientParameters& client = net->GetClientParameters();
+                    NetOutMessage *m = net->StartMessageBuilding(RexNetMsgRequestImage);
+                    assert(m);
+                    
+                    m->AddUUID(client.agentID);
+                    m->AddUUID(client.sessionID);
+    
+                    m->SetVariableBlockCount(1);
+                    m->AddUUID(transfer.GetAssetId()); // Image UUID
+                    m->AddS8(-1); // Discard level, -1 = cancel
+                    m->AddF32(0.0); // Download priority, 0 = cancel
+                    m->AddU32(0); // Starting packet
+                    m->AddU8(RexIT_Normal); // Image type
+    
+                    net->FinishMessageBuilding(m);
                     
                     texture_transfers_.erase(i);
                 }
@@ -168,15 +172,20 @@ namespace Asset
                 if (transfer.GetTime() > asset_timeout_)
                 {
                     AssetModule::LogInfo("Asset transfer " + transfer.GetAssetId().ToString() + " timed out.");
-                    if (net_interface_)
+
+                    boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = net_interface_.lock();
+                    if (!net)
                     {
-                        // Send cancel message
-                        NetOutMessage *m = net_interface_->StartMessageBuilding(RexNetMsgTransferAbort);
-                        assert(m);
-                        m->AddUUID(j->first); // Transfer ID
-                        m->AddS32(RexAC_Asset); // Asset channel type
-                        net_interface_->FinishMessageBuilding(m);
+                        /// \todo Connection lost! Tear down the whole asset manager.
+                        return;
                     }
+
+                    // Send cancel message
+                    NetOutMessage *m = net->StartMessageBuilding(RexNetMsgTransferAbort);
+                    assert(m);
+                    m->AddUUID(j->first); // Transfer ID
+                    m->AddS32(RexAC_Asset); // Asset channel type
+                    net->FinishMessageBuilding(m);
                     
                     asset_transfers_.erase(j);
                 }
@@ -187,10 +196,14 @@ namespace Asset
     
     void AssetManager::RequestTexture(const RexUUID& asset_id)
     {
-        if ((!net_interface_)  || (!net_interface_->IsConnected()))
+        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = net_interface_.lock();
+        if (!net || !net->IsConnected())
+        {
+            /// \todo Connection lost! Tear down the whole asset manager.
             return;
+        }
         
-        const ClientParameters& client = net_interface_->GetClientParameters();
+        const ClientParameters& client = net->GetClientParameters();
         
         if (texture_transfers_.find(asset_id) != texture_transfers_.end())
             return;
@@ -202,7 +215,7 @@ namespace Asset
     
         AssetModule::LogInfo("Requesting texture " + asset_id.ToString());
 
-        NetOutMessage *m = net_interface_->StartMessageBuilding(RexNetMsgRequestImage);
+        NetOutMessage *m = net->StartMessageBuilding(RexNetMsgRequestImage);
         assert(m);
         
         m->AddUUID(client.agentID);
@@ -215,13 +228,17 @@ namespace Asset
         m->AddU32(0); // Starting packet
         m->AddU8(RexIT_Normal); // Image type
         
-        net_interface_->FinishMessageBuilding(m);
+        net->FinishMessageBuilding(m);
     }
     
     void AssetManager::RequestOtherAsset(const RexUUID& asset_id, Core::uint asset_type)
     {
-        if ((!net_interface_)  || (!net_interface_->IsConnected()))
+        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = net_interface_.lock();
+        if (!net || !net->IsConnected())
+        {
+            /// \todo Connection lost! Tear down the whole asset manager.
             return;
+        }
             
         // Asset transfers are keyed by transfer id, not asset id, so have to search in a bit cumbersome way
         AssetTransferMap::const_iterator i = asset_transfers_.begin();
@@ -243,7 +260,7 @@ namespace Asset
         
         AssetModule::LogInfo("Requesting asset " + asset_id.ToString());
         
-        NetOutMessage *m = net_interface_->StartMessageBuilding(RexNetMsgTransferRequest);
+        NetOutMessage *m = net->StartMessageBuilding(RexNetMsgTransferRequest);
         assert(m);
         
         m->AddUUID(transfer_id); // Transfer ID
@@ -256,7 +273,7 @@ namespace Asset
         memcpy(&asset_info[16], &asset_type, 4);
         m->AddBuffer(20, asset_info);
         
-        net_interface_->FinishMessageBuilding(m);
+        net->FinishMessageBuilding(m);
     }
     
     void AssetManager::HandleTextureHeader(NetInMessage* msg)

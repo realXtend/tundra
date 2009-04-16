@@ -28,7 +28,8 @@ namespace Foundation
         assert (module);
         if (IsExcluded(module->Name()) == false && HasModule(module) == false)
         {
-            Module::Entry entry = { module, module->Name(), Module::SharedLibraryPtr() };
+            ModuleSharedPtr modulePtr = ModuleSharedPtr(module);
+            Module::Entry entry = { modulePtr, module->Name(), Module::SharedLibraryPtr() };
             modules_.push_back(entry);
 #ifndef _DEBUG
                 // make it so debug messages are not logged in release mode
@@ -74,17 +75,17 @@ namespace Foundation
     {
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            PreInitializeModule(modules_[i].module_);
+            PreInitializeModule(modules_[i].module_.get());
         }
         
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            InitializeModule(modules_[i].module_);
+            InitializeModule(modules_[i].module_.get());
         }
         
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            PostInitializeModule(modules_[i].module_);
+            PostInitializeModule(modules_[i].module_.get());
         }
     }
 
@@ -94,7 +95,7 @@ namespace Foundation
              it != modules_.rend() ; 
              ++it)
         {
-            UninitializeModule(it->module_);
+            UninitializeModule(it->module_.get());
         }
     }
 
@@ -153,7 +154,7 @@ namespace Foundation
         {
             if (it->module_->Name() == module)
             {
-                UninitializeModule(it->module_);
+                UninitializeModule(it->module_.get());
                 UnloadModule(*it);
                 modules_.erase(it);
                 return true;
@@ -282,6 +283,8 @@ namespace Foundation
 
 
             ModuleInterface* module = library->cl_.create(*it);
+            Module::ModuleDeletor md(*it, library);
+            ModuleSharedPtr modulePtr(module, md);
 
             if (IsExcluded(module->Name()) == false)
             {
@@ -296,7 +299,7 @@ namespace Foundation
                 module->SetFramework(framework_);
                 module->LoadInternal();
 
-                Module::Entry entry = { module, *it, library };
+                Module::Entry entry = { modulePtr, *it, library };
 
                 modules_.push_back(entry);
 
@@ -304,7 +307,7 @@ namespace Foundation
             } else
             {
                 Foundation::RootLogInfo("Module " + module->Name() + " is excluded and not loaded.");
-                SAFE_DELETE (module);
+//                SAFE_DELETE (module);
             }
         }
     }
@@ -353,15 +356,17 @@ namespace Foundation
         assert(entry.module_);
 
         entry.module_->UnloadInternal();
-        if (!entry.shared_library_)
+        entry.module_.reset(); // Triggers the deletion of the ModuleInterface object. (either causes operator delete or Poco's module free to be called)
+/*
+        if (!entry.shared_library_) // If our module is a static library (and not a dynamic one allocated using Poco), we need to free with delete.
         {
             delete entry.module_;
         }
-        else
+        else // This is a shared library that is owned by Poco, need to use Poco's destroy.
         {
             entry.shared_library_->cl_.destroy(entry.entry_, entry.module_);
             SAFE_DELETE(entry.module_);
-        }
+        }*/
     }
 
     bool ModuleManager::HasModule(ModuleInterface *module) const

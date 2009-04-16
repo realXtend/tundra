@@ -1,6 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
+#include <sstream>
+
 #include "NetworkEventHandler.h"
 #include "NetInMessage.h"
 #include "RexProtocolMsgIDs.h"
@@ -32,6 +35,14 @@ namespace RexLogic
     {
         framework_ = framework;
         rexlogicmodule_ = rexlogicmodule;
+
+        ///\todo weak_pointerize
+        netInterface_ = dynamic_cast<OpenSimProtocol::OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol).lock().get());
+        if (!netInterface_)
+        {
+            RexLogicModule::LogError("NetworkEventHandler: Could not acquire OpenSimProtocolModule!.");
+            return;
+        }
     }
 
     NetworkEventHandler::~NetworkEventHandler()
@@ -45,28 +56,120 @@ namespace RexLogic
         OgreRenderer::Renderer *renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
         Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
 
+        ///\todo Quick W.I.P Ogre object naming, refactor. -jj.
         static int c = 0;
         std::stringstream ss;
         ss << "manual " << c++;
         Ogre::ManualObject *manual = sceneMgr->createManualObject(ss.str());
-        manual->begin("AmbientWhite", Ogre::RenderOperation::OT_LINE_LIST);
+        manual->begin("AmbientRed", Ogre::RenderOperation::OT_LINE_LIST);
 
-        manual->position(-1.f, -1.f, -1.f);
-        manual->position(1.f, -1.f, -1.f);
-        manual->position(-1.f, -1.f, -1.f);
-        manual->position(-1.f, 1.f, -1.f);
-        manual->position(-1.f, -1.f, -1.f);
-        manual->position(-1.f, -1.f, 1.f);
+        const Ogre::Vector3 v[8] = 
+        {
+            Ogre::Vector3(-1,-1,-1), // 0 ---
+            Ogre::Vector3(-1,-1, 1), // 1 --+
+            Ogre::Vector3(-1, 1,-1), // 2 -+-
+            Ogre::Vector3(-1, 1, 1), // 3 -++
+            Ogre::Vector3( 1,-1,-1), // 4 +--
+            Ogre::Vector3( 1,-1, 1), // 5 +-+
+            Ogre::Vector3( 1, 1,-1), // 6 ++-
+            Ogre::Vector3( 1, 1, 1), // 7 +++
+        };
+
+        manual->position(v[0]);
+        manual->position(v[1]);
+        manual->position(v[0]);
+        manual->position(v[2]);
+        manual->position(v[0]);
+        manual->position(v[4]);
+
+        manual->position(v[1]);
+        manual->position(v[3]);
+        manual->position(v[1]);
+        manual->position(v[5]);
+
+        manual->position(v[2]);
+        manual->position(v[6]);
+        manual->position(v[2]);
+        manual->position(v[3]);
+
+        manual->position(v[3]);
+        manual->position(v[7]);
+
+        manual->position(v[4]);
+        manual->position(v[5]);
+        manual->position(v[4]);
+        manual->position(v[6]);
+
+        manual->position(v[5]);
+        manual->position(v[7]);
+
+        manual->position(v[6]);
+        manual->position(v[7]);
 
         manual->end();
-        manual->setBoundingBox(Ogre::AxisAlignedBox(Ogre::Vector3(-100, -100, -100), Ogre::Vector3(100, 100, 100)));
         manual->setDebugDisplayEnabled(true);
        
-        Ogre::Camera *cam = renderer->GetCurrentCamera();
-        cam->setPosition(-10, -10, -10);
-        cam->lookAt(0,0,0);
-
         Ogre::SceneNode *node = component.GetSceneNode();
+        node->attachObject(manual);
+    }
+
+    void NetworkEventHandler::DebugCreateTerrainVisData(const DecodedTerrainPatch &patch, int patchSize)
+    {
+        if (patch.heightData.size() < patchSize * patchSize)
+        {
+            RexLogicModule::LogWarning("Not enough height map data to fill patch points!");
+            return;
+        }
+
+        OgreRenderer::Renderer *renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
+
+        ///\todo Quick W.I.P Ogre object naming, refactor. -jj.
+        static int c = 0;
+        std::stringstream ss;
+        ss.clear();
+        ss << "terrain " << c++;
+        Ogre::ManualObject *manual = sceneMgr->createManualObject(ss.str());
+        manual->begin("AmbientWhite", Ogre::RenderOperation::OT_LINE_LIST);
+
+        const float vertexSpacingX = 1.f;
+        const float vertexSpacingY = 1.f;
+        const float patchSpacingX = 15 * vertexSpacingX;
+        const float patchSpacingY = 15 * vertexSpacingY;
+        const Ogre::Vector3 patchOrigin(patch.header.x * patchSpacingX, 0.f, patch.header.y * patchSpacingY);
+        const float heightScale = 1.f;
+        for(int y = 0; y+1 < patchSize; ++y)
+            for(int x = 0; x+1 < patchSize; ++x)
+            {
+                Ogre::Vector3 a = patchOrigin + Ogre::Vector3(vertexSpacingX * x,     heightScale * patch.heightData[y*patchSize+x],   vertexSpacingY * y);
+                Ogre::Vector3 b = patchOrigin + Ogre::Vector3(vertexSpacingX * (x+1), heightScale * patch.heightData[y*patchSize+x+1], vertexSpacingY * y);
+                Ogre::Vector3 c = patchOrigin + Ogre::Vector3(vertexSpacingX * x,     heightScale * patch.heightData[(y+1)*patchSize+x], vertexSpacingY * (y+1));
+                Ogre::Vector3 d = patchOrigin + Ogre::Vector3(vertexSpacingX * (x+1), heightScale * patch.heightData[(y+1)*patchSize+x+1], vertexSpacingY * (y+1));
+
+                manual->position(a);
+                manual->position(b);
+                manual->position(a);
+                manual->position(c);
+//                manual->position(a);
+//                manual->position(d);
+
+                if (x+2 == patchSize)
+                {
+                    manual->position(b);
+                    manual->position(d);
+                }
+                if (y+2 == patchSize)
+                {
+                    manual->position(c);
+                    manual->position(d);
+                }
+            }
+
+        manual->end();
+        manual->setDebugDisplayEnabled(true);
+       
+        Ogre::SceneNode *node = sceneMgr->createSceneNode();
+        sceneMgr->getRootSceneNode()->addChild(node);
         node->attachObject(manual);
     }
 
@@ -80,10 +183,11 @@ namespace RexLogic
                 case RexNetMsgRegionHandshake:              return HandleOSNE_RegionHandshake(netdata); break;
                 case RexNetMsgAgentMovementComplete:        return HandleOSNE_AgentMovementComplete(netdata); break;
                 case RexNetMsgGenericMessage:               return HandleOSNE_GenericMessage(netdata); break;
-                case RexNetMsgImprovedTerseObjectUpdate:    return HandleOSNE_ImprovedTerseObjectUpdate(netdata); break;                
                 case RexNetMsgLogoutReply:                  return HandleOSNE_LogoutReply(netdata); break;
+                case RexNetMsgImprovedTerseObjectUpdate:    return HandleOSNE_ImprovedTerseObjectUpdate(netdata); break;                
                 case RexNetMsgObjectUpdate:                 return HandleOSNE_ObjectUpdate(netdata); break;
                 case RexNetMsgObjectProperties:             return HandleOSNE_ObjectProperties(netdata); break;
+                case RexNetMsgLayerData:                    return HandleOSNE_LayerData(netdata); break;
                 default:                                    return false; break;
             }
         }
@@ -228,12 +332,6 @@ namespace RexLogic
             return scene->GetEntity(iter->second);
     } 
 
-
-
-
-
-
-
     bool NetworkEventHandler::HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data)
     {
         NetInMessage *msg = data->message;
@@ -277,8 +375,10 @@ namespace RexLogic
                     // ofs 36 - orientation, quat with last (w) component omitted - 3 x float (3x4 bytes)
                     // ofs 48 - angular velocity - 3 x float (3x4 bytes)
                     // total 60 bytes
-                    ogrePos.SetPosition(*(Core::Vector3df*)(&objectdatabytes[0]));
-                    ogrePos.SetOrientation(UnpackQuaternionFromFloat3((float*)&objectdatabytes[36]));
+                    Core::Vector3df pos = *reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[0]);
+                    std::swap(pos.y, pos.z); ///\todo Refactor the flipping of coordinate system to somewhere else so that we have unified access to it, instead of each function doing it by themselves.
+                    ogrePos.SetPosition(pos); 
+                    ogrePos.SetOrientation(UnpackQuaternionFromFloat3((float*)&objectdatabytes[36])); ///\todo Flip the orientation of the quaternion to the proper coordinate system.
                 }
                 else
                     RexLogicModule::LogError("Error reading ObjectData for prim:" + Core::ToString(prim.LocalId) + ". Bytes read:" + Core::ToString(bytes_read));
@@ -432,12 +532,15 @@ namespace RexLogic
     }
     
     /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
-    void HandleOSNE_LayerData(OpenSimProtocol::NetworkEventInboundData* data)
+    bool NetworkEventHandler::HandleOSNE_LayerData(OpenSimProtocol::NetworkEventInboundData* data)
     {
         NetInMessage &msg = *data->message;
-        size_t sizeBytes = msg.GetDataSize();
-        BitStream bits(msg.ReadBytesUnchecked(sizeBytes), sizeBytes);
+        u8 layerID = msg.ReadU8();
+        size_t sizeBytes = 0;
+        const uint8_t *packedData = msg.ReadBuffer(&sizeBytes);
+        BitStream bits(packedData, sizeBytes);
         TerrainPatchGroupHeader header;
+
         header.stride = bits.ReadBits(16);
         header.patchSize = bits.ReadBits(8);
         header.layerType = bits.ReadBits(8);
@@ -445,12 +548,18 @@ namespace RexLogic
         switch(header.layerType)
         {
         case TPLayerLand:
-            DecompressLand(bits, header);
+        {
+            std::vector<DecodedTerrainPatch> patches;
+            DecompressLand(patches, bits, header);
+            for(size_t i = 0; i < patches.size(); ++i)
+                DebugCreateTerrainVisData(patches[i], header.patchSize);
             break;
+        }
         default:
             ///\todo Log out warning - unhandled packet type.
             break;
         }
+        return false;
     }
 
     bool NetworkEventHandler::HandleOSNE_RegionHandshake(OpenSimProtocol::NetworkEventInboundData* data)    
@@ -465,8 +574,19 @@ namespace RexLogic
         rexlogicmodule_->GetServerConnection()->simname_ = simname;
         
         RexLogicModule::LogInfo("Joined to the sim \"" + simname + "\".");
+        SendRegionHandshakeReply();
         return false;  
     } 
+
+    void NetworkEventHandler::SendRegionHandshakeReply()
+    {
+        NetOutMessage *msg = netInterface_->StartMessageBuilding(RexNetMsgRegionHandshakeReply);
+        const ClientParameters& client = netInterface_->GetClientParameters();
+        msg->AddUUID(client.agentID); // AgentID
+        msg->AddUUID(client.sessionID); // SessionID
+        msg->AddU32(0); // Flags
+        netInterface_->FinishMessageBuilding(msg);
+    }
 
     bool NetworkEventHandler::HandleOSNE_LogoutReply(OpenSimProtocol::NetworkEventInboundData* data)   
     {
@@ -492,8 +612,8 @@ namespace RexLogic
         
         if (agentid == rexlogicmodule_->GetServerConnection()->GetInfo().agentID && sessionid == rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
         {
-            Vector3 position = data->message->ReadVector3(); // todo tucofixme, set position to avatar
-            Vector3 lookat = data->message->ReadVector3(); // todo tucofixme, set lookat direction to avatar
+            Vector3 position = data->message->ReadVector3(); /// \todo tucofixme, set position to avatar
+            Vector3 lookat = data->message->ReadVector3(); /// \todo tucofixme, set lookat direction to avatar
             uint64_t regionhandle = data->message->ReadU64();
             uint32_t timestamp = data->message->ReadU32(); 
         }

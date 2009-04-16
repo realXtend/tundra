@@ -77,7 +77,7 @@ namespace RexLogic
         Foundation::Framework *framework_;    
     
         /// Pointer to the network interface.
-        OpenSimProtocol::OpenSimProtocolModule *netInterface_;
+       OpenSimProtocol::OpenSimProtocolModule *netInterface_;
 		
         /// Server-spesific info for this client.
         ClientParameters myInfo_;

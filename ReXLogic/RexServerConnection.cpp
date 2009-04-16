@@ -21,7 +21,7 @@ namespace RexLogic
         myInfo_.circuitCode = 0;
 
         ///\todo weak_pointerize
-        netInterface_ = dynamic_cast<OpenSimProtocol::OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol));
+        netInterface_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol).lock().get();
         if (!netInterface_)
         {
             RexLogicModule::LogError("Getting network interface did not succeed.");
@@ -73,7 +73,7 @@ namespace RexLogic
                 return false;
             }
         }
-                
+
         bool connectresult = netInterface_->ConnectToRexServer(first_name.c_str(), last_name.c_str(),password.c_str(), serveraddress_noport.c_str(), port);   
         if(connectresult)
         {

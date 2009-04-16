@@ -15,6 +15,12 @@
 #include "EC_OpenSimPrim.h"
 #include "EC_OpenSimAvatar.h"
 
+#include "../InputModuleOIS/InputModuleOIS.h"
+#include "../OgreRenderingModule/Renderer.h"
+
+#include <OgreManualObject.h>
+#include <OgreSceneManager.h>
+
 namespace RexLogic
 {
     RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_)
@@ -82,6 +88,10 @@ namespace RexLogic
             event_handlers_[eventcategoryid] = boost::bind(&SceneEventHandler::HandleSceneEvent, scene_handler_, _1, _2);
         else
             LogError("Unable to find event category for Scene");
+        OgreRenderer::Renderer *renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        Ogre::Camera *cam = renderer->GetCurrentCamera();
+        cam->setPosition(-10, -10, -10);
+        cam->lookAt(0,0,0);
     }
 
     // virtual 
@@ -106,7 +116,53 @@ namespace RexLogic
     // virtual
     void RexLogicModule::Update(Core::f64 frametime)
     {
+        GhostCameraFreelook(frametime);
+    }
 
+    void RexLogicModule::GhostCameraFreelook(Core::f64 frametime)
+    {
+        const float keybSensitivity = 20.f;
+        float dt = (float)frametime * keybSensitivity;
+        OgreRenderer::Renderer *renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        Ogre::Camera *cam = renderer->GetCurrentCamera();
+        Ogre::Vector3 pos = cam->getPosition();
+
+        Ogre::Vector3 front = cam->getDirection();
+        Ogre::Vector3 up = cam->getUp();
+        Ogre::Vector3 right = cam->getRight();
+
+        Input::InputModuleOIS *input = dynamic_cast<Input::InputModuleOIS*>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_Input).lock().get());
+
+        if (input)
+        {
+            if (input->IsKeyDown(OIS::KC_W))
+                pos += front * dt;
+            if (input->IsKeyDown(OIS::KC_S))
+                pos -= front * dt;
+            if (input->IsKeyDown(OIS::KC_A))
+                pos -= right * dt;
+            if (input->IsKeyDown(OIS::KC_D))
+                pos += right * dt;
+
+            if (input->IsKeyDown(OIS::KC_Q))
+                pos += up * dt;
+            if (input->IsKeyDown(OIS::KC_Z))
+                pos -= up * dt;
+
+            cam->setAutoTracking(false);
+            cam->setPosition(pos);
+
+            const float mouseSensitivity = 1.f;
+            const float lookAmount = (float)frametime * mouseSensitivity;
+            if (input->IsKeyDown(OIS::KC_J))
+                cam->yaw(Ogre::Radian(lookAmount));
+            if (input->IsKeyDown(OIS::KC_L))
+                cam->yaw(Ogre::Radian(-lookAmount));
+            if (input->IsKeyDown(OIS::KC_K))
+                cam->pitch(Ogre::Radian(-lookAmount));
+            if (input->IsKeyDown(OIS::KC_I))
+                cam->pitch(Ogre::Radian(lookAmount));
+        }
     }
 
     // virtual

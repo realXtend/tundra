@@ -78,9 +78,9 @@ BOOST_AUTO_TEST_CASE( support_modules_console_commands )
 
     Test::StaticModuleDefinitions static_test;
     static_test(&fw);
-    fw.GetModuleManager()->PreInitializeModule(fw.GetModuleManager()->GetModule(Foundation::Module::MT_Scene));
-    fw.GetModuleManager()->InitializeModule(fw.GetModuleManager()->GetModule(Foundation::Module::MT_Scene));
-    fw.GetModuleManager()->PostInitializeModule(fw.GetModuleManager()->GetModule(Foundation::Module::MT_Scene));
+    fw.GetModuleManager()->PreInitializeModule(fw.GetModuleManager()->GetModule(Foundation::Module::MT_Scene).lock().get());
+    fw.GetModuleManager()->InitializeModule(fw.GetModuleManager()->GetModule(Foundation::Module::MT_Scene).lock().get());
+    fw.GetModuleManager()->PostInitializeModule(fw.GetModuleManager()->GetModule(Foundation::Module::MT_Scene).lock().get());
 
     fw.GetModuleManager()->LoadModuleByName("SupportModules", "ConsoleModule");
     BOOST_CHECK (fw.GetModuleManager()->HasModule(Foundation::Module::MT_Console));

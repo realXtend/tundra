@@ -91,9 +91,9 @@ namespace Foundation
     
     bool EventManager::SendEvent(EventSubscriber* node, Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const
     {
-        if (node->module_)
+        if (ModuleSharedPtr module = node->module_.lock())
         {
-            if (node->module_->HandleEvent(category_id, event_id, data))
+            if (module->HandleEvent(category_id, event_id, data))
                 return true;
         }
         
@@ -114,8 +114,12 @@ namespace Foundation
         return e1.get()->priority_ < e2.get()->priority_;
     }
     
-    bool EventManager::RegisterEventSubscriber(ModuleInterface* module, int priority, ModuleInterface* parent)
+    bool EventManager::RegisterEventSubscriber(ModuleWeakPtr module_, int priority, ModuleWeakPtr parent_)
     {
+        ModuleSharedPtr modulePtr = module_.lock();
+        ModuleSharedPtr parentPtr = parent_.lock();
+        ModuleInterface *module = modulePtr.get();
+        ModuleInterface *parent = parentPtr.get();
         assert (module);
         
         if (FindNodeWithModule(event_subscriber_root_.get(), module))
@@ -134,7 +138,7 @@ namespace Foundation
         }
         
         EventSubscriberPtr new_node = EventSubscriberPtr(new EventSubscriber());
-        new_node->module_ = module;
+        new_node->module_ = module_;
         new_node->module_name_ = module->Name();
         new_node->priority_ = priority;
         node->children_.push_back(new_node);
@@ -156,7 +160,7 @@ namespace Foundation
         EventSubscriberVector::iterator i = node->children_.begin();
         while (i != node->children_.end())
         {
-            if ((*i)->module_ == module)
+            if ((*i)->module_.lock().get() == module)
             {
                 node->children_.erase(i);
                 return true;
@@ -185,7 +189,7 @@ namespace Foundation
         if (!node->module_name_.empty())
             node->module_ = framework_->GetModuleManager()->GetModule(node->module_name_);
         else
-            node->module_ = NULL;
+            node->module_ = ModuleWeakPtr();
             
         EventSubscriberVector::const_iterator i = node->children_.begin();
         while (i != node->children_.end())
@@ -197,7 +201,7 @@ namespace Foundation
 
     EventManager::EventSubscriber* EventManager::FindNodeWithModule(EventSubscriber* node, ModuleInterface* module) const
     {
-        if (node->module_ == module)
+        if (node->module_.lock().get() == module)
             return node;
             
         EventSubscriberVector::const_iterator i = node->children_.begin();
@@ -218,7 +222,7 @@ namespace Foundation
         EventSubscriberVector::const_iterator i = node->children_.begin();
         while (i != node->children_.end())
         {
-            if ((*i)->module_ == module)
+            if ((*i)->module_.lock().get() == module)
                 return node;
                 
             EventSubscriber* result = FindNodeWithChild((*i).get(), module);
@@ -272,26 +276,26 @@ namespace Foundation
                 Poco::XML::Attr* module_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("module"));
                 Poco::XML::Attr* priority_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("priority"));
 
-                if ((module_attr) && (priority_attr))
+                if (module_attr && priority_attr)
                 {
                     const std::string& module_name = module_attr->getValue();
                     int priority = boost::lexical_cast<int>(priority_attr->getValue());
                     
                     new_parent_name = module_name;
                     
-                    ModuleInterface* module = framework_->GetModuleManager()->GetModule(module_name);
-                    if (module)
+                    ModuleSharedPtr modulePtr = framework_->GetModuleManager()->GetModule(module_name).lock();
+                    if (modulePtr)
                     {
                         if (parent_name.empty())
                         {
-                            RegisterEventSubscriber(module, priority, NULL);
+                            RegisterEventSubscriber(modulePtr, priority, ModuleWeakPtr());
                         }
                         else
                         {
-                            ModuleInterface* parent = framework_->GetModuleManager()->GetModule(parent_name);
-                            if (parent)
+                            ModuleWeakPtr parent = framework_->GetModuleManager()->GetModule(parent_name);
+                            if (parent.lock().get())
                             {
-                                RegisterEventSubscriber(module, priority, parent);
+                                RegisterEventSubscriber(modulePtr, priority, parent);
                             }
                             else
                             {
