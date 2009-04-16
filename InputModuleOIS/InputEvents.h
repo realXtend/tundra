@@ -22,19 +22,6 @@ namespace Input
         static const Core::event_id_t MOVE_RIGHT_PRESSED = 10;
         static const Core::event_id_t MOVE_RIGHT_RELEASED = 11;
 
-        class MouseWheel : public Foundation::EventDataInterface
-        {
-            MouseWheel();
-        public:
-            MouseWheel(int rel, int abs) : rel_(rel), abs_(abs) {}
-            virtual ~MouseWheel() {}
-        
-            //! relative movement of the mouse
-            const int rel_;
-            //! absolute movement of the mouse, if unsure relative is probably what you want
-            const int abs_;
-        };
-
 
         //! Event for buffered key input. 
         //! Do not use for any continous input such as avatar movement, it will probably cause input lag
@@ -49,6 +36,31 @@ namespace Input
             const int code_;
             //! The key that was pressed as a character
             const Core::uint text_;
+        };
+
+        //! Movement along axis
+        struct Axis
+        {
+            //! relative movement
+            int rel_;
+            //! absolute movement
+            int abs_;
+        };
+
+        //! input position that contains both relative and absolute movement for single axis
+        class SingleAxisMovement : public Foundation::EventDataInterface
+        {
+        public:
+            Axis z_;
+        };
+
+        //! input position that contains both relative and absolute movement for several axis
+        class Movement : public Foundation::EventDataInterface
+        {
+        public:            
+            Axis x_;
+            Axis y_;
+            Axis z_;
         };
     }
 }

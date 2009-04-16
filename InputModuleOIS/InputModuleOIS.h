@@ -6,6 +6,8 @@
 #include "OISKeyboard.h"
 
 #include "ModuleInterface.h"
+#include "InputEvents.h"
+
 
 namespace Foundation
 {
@@ -24,7 +26,9 @@ namespace OIS
 namespace Input
 {
     class BufferedKeyboard;
+    class Mapper;
     typedef boost::shared_ptr<BufferedKeyboard> BufferedKeyboardPtr;
+    typedef boost::shared_ptr<Mapper> MapperPtr;
 
 
     struct UnBufferedKeyEventInfo
@@ -60,6 +64,14 @@ namespace Input
         virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, 
             Foundation::EventDataInterface* data);
 
+        //! Polls the current mouse state for both absolute and relative movement
+        /*! Not thread safe
+        */
+        const Events::Movement &GetMouseMovement() const { return movement_; }
+
+        //! add a key for unbuffered listening
+        void AddUnbufferedKeyEvent(OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event);
+
         MODULE_LOGGING_FUNCTIONS
 
         //! returns name of this module. Needed for logging.
@@ -91,10 +103,12 @@ namespace Input
         
         //! unbuffered keys for which pressed and released events are created. Good for movement keys, etc.
         std::vector<UnBufferedKeyEventInfo> listened_keys_;
-        
-        //! add a key for unbuffered listening
-        void AddUnbufferedKeyEvent(OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event);
 
+        //! mappings for h/w input to generic events
+        MapperPtr key_mapping_;
+
+        //! for GetMouseMovement()
+        Events::Movement movement_;
     };
 }
 #endif

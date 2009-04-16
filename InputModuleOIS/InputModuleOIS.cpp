@@ -4,8 +4,8 @@
 
 #include "RendererEvents.h"
 #include "InputModuleOIS.h"
-#include "InputEvents.h"
 #include "BufferedKeyboard.h"
+#include "Mapper.h"
 
 namespace Input
 {
@@ -74,12 +74,7 @@ namespace Input
         input_manager_ = OIS::InputManager::createInputSystem( pl );
 
         buffered_keyboard_ = BufferedKeyboardPtr(new BufferedKeyboard(framework_));
-        keyboard_ = static_cast<OIS::Keyboard*>(input_manager_->createInputObject( OIS::OISKeyboard, false ));
-        
-        AddUnbufferedKeyEvent(OIS::KC_W,Events::MOVE_FORWARD_PRESSED,Events::MOVE_FORWARD_RELEASED);
-        AddUnbufferedKeyEvent(OIS::KC_S,Events::MOVE_BACK_PRESSED,Events::MOVE_BACK_RELEASED);        
-        AddUnbufferedKeyEvent(OIS::KC_A,Events::MOVE_LEFT_PRESSED,Events::MOVE_LEFT_RELEASED); 
-        AddUnbufferedKeyEvent(OIS::KC_D,Events::MOVE_RIGHT_PRESSED,Events::MOVE_RIGHT_RELEASED);         
+        keyboard_ = static_cast<OIS::Keyboard*>(input_manager_->createInputObject( OIS::OISKeyboard, false ));      
         LogInfo("Keyboard input initialized.");
    
         mouse_ = static_cast<OIS::Mouse*>(input_manager_->createInputObject( OIS::OISMouse, false ));
@@ -115,6 +110,9 @@ namespace Input
         for( OIS::DeviceList::iterator i = list.begin(); i != list.end(); ++i )
             LogInfo("\tDevice: " + std::string(DeviceType[i->first]) + " Vendor: " + i->second);
 
+        key_mapping_ = MapperPtr(new Mapper(this));
+
+
         LogInfo("Module " + Name() + " initialized.");
     }
 
@@ -122,6 +120,8 @@ namespace Input
     void InputModuleOIS::Uninitialize()
     {
         WindowClosed();
+
+        key_mapping_.reset();
 
         LogInfo("Module " + Name() + " uninitialized.");
     }
@@ -138,9 +138,24 @@ namespace Input
             const OIS::MouseState &ms = mouse_->getMouseState();
             if (ms.Z.rel != 0)
             {
-                Events::MouseWheel mw(ms.Z.rel, ms.Z.abs);
+                Events::SingleAxisMovement mw;
+                mw.z_.rel_ = ms.Z.rel;
+                mw.z_.abs_ = ms.Z.abs;
                 framework_->GetEventManager()->SendEvent(event_category_, Events::SCROLL, &mw);
             }
+
+            // we assume GetMouseMovement() will be called several times in one frame
+            // It makes sense then to only query OIS once for the mouse state and then
+            // return the same state per frame.
+            movement_.x_.rel_ = ms.X.rel;
+            movement_.x_.abs_ = ms.X.abs;
+
+            movement_.y_.rel_ = ms.Y.rel;
+            movement_.y_.abs_ = ms.Y.abs;
+
+            movement_.z_.rel_ = ms.Z.rel;
+            movement_.z_.abs_ = ms.Z.abs;
+
             
             for (size_t i=0 ; i<listened_keys_.size() ; ++i)
             {

@@ -61,7 +61,7 @@ namespace Console
             {
                 if (manager_->IsVisible())
                 {
-                    int rel = checked_static_cast<Input::Events::MouseWheel*>(data)->rel_;
+                    int rel = checked_static_cast<Input::Events::SingleAxisMovement*>(data)->z_.rel_;
                     manager_->Scroll(rel);
                     return true;
                 }
