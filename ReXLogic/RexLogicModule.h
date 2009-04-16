@@ -30,6 +30,7 @@ namespace RexLogic
         virtual void Uninitialize();
 
         virtual void Update(Core::f64 frametime);
+        void GhostCameraFreelook(Core::f64 frametime);
         
         virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
         

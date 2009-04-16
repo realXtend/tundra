@@ -4,8 +4,12 @@
 /// For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
+#include "Poco/Net/DatagramSocket.h" // To get htons etc.
+
 #include "BitStream.h"
 #include "Terrain.h"
+#include "RexLogicModule.h"
 
 using namespace Core;
 
@@ -121,10 +125,11 @@ TerrainPatchHeader DecodePatchHeader(BitStream &bits)
        return header;
 
    u32 val = bits.ReadBits(32);
-   header.dcOffset = *reinterpret_cast<float*>(&val);
-   header.range = bits.ReadBits(16);
-   header.x = bits.ReadBits(5);
-   header.y = bits.ReadBits(5);
+   header.dcOffset = *reinterpret_cast<float*>(&val); // Apparently the height coordinate of the lowest patch.
+   header.range = bits.ReadBits(16); // The difference between lowest and highest point on the patch.
+   u32 patchIDs = bits.ReadBits(10);
+   header.x = patchIDs >> 5;
+   header.y = patchIDs & 31;
    header.wordBits = (Core::uint)((header.quantWBits & 0x0f) + 2); // This is a bit odd - apparently this field is not present in the header?
 
    return header;
@@ -137,6 +142,15 @@ void DecodeTerrainPatch(int *patches, BitStream &bits, const TerrainPatchHeader 
 {
     for(int i = 0; i < size * size; ++i)
     {
+        if (bits.BitsLeft() == 0)
+        {
+            std::stringstream ss;
+            ss << "Out of bits when decoding terrain vertex " << i << "!";
+            RexLogicModule::LogInfo(ss.str());
+            for(; i < size * size; ++i)
+                patches[i] = 0;
+            return;
+        }
         bool v = bits.ReadBit(); // 'Patches present' flag?
         if (!v)
         {
@@ -153,8 +167,8 @@ void DecodeTerrainPatch(int *patches, BitStream &bits, const TerrainPatchHeader 
         }
 
         bool signNegative = bits.ReadBit();
-        s32 data = (s32)bits.ReadBits(header.wordBits);
-        patches[i] = signNegative ? -data : data;
+        u32 data = (u32)bits.ReadBits(header.wordBits);
+        patches[i] = signNegative ? -(s32)data : (s32)data;
     }
 }
 
@@ -233,29 +247,32 @@ void DecompressTerrainPatch(std::vector<float> &output, int *patchData, const Te
 } // ~unnamed namespace
 
 /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
-void DecompressLand(BitStream &bits, const TerrainPatchGroupHeader &groupHeader)
+void DecompressLand(std::vector<DecodedTerrainPatch> &patches, BitStream &bits, const TerrainPatchGroupHeader &groupHeader)
 {
     while(bits.BitsLeft() > 0)
     {
-        TerrainPatchHeader patchHeader = DecodePatchHeader(bits);
+        DecodedTerrainPatch patch;
+        patch.header = DecodePatchHeader(bits);
 
-        if (patchHeader.quantWBits == cEndOfPatches)
+        if (patch.header.quantWBits == cEndOfPatches)
             break;
 
         const int cPatchesPerEdge = 16;
 
         // The MSB of header.x and header.y are unused, or used for some other purpose?
-        if (patchHeader.x >= cPatchesPerEdge || patchHeader.y >= cPatchesPerEdge)
+        if (patch.header.x >= cPatchesPerEdge || patch.header.y >= cPatchesPerEdge)
         {
             ///\todo Log out warning - invalid packet?
+            RexLogicModule::LogInfo("Invalid patch data!");
             return;
         }
 
-        int patchData[32*32];
-        DecodeTerrainPatch(patchData, bits, patchHeader, groupHeader.patchSize);
+        int patchData[16*16];
+        DecodeTerrainPatch(patchData, bits, patch.header, groupHeader.patchSize);
 
-        std::vector<float> heightData;
-        DecompressTerrainPatch(heightData, patchData, patchHeader, groupHeader);
+        DecompressTerrainPatch(patch.heightData, patchData, patch.header, groupHeader);
+
+        patches.push_back(patch); ///\todo Can optimize out a copy of heavy struct by push_backing early in the loop.
     }
 }
 

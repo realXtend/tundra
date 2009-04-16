@@ -251,7 +251,7 @@ namespace OgreRenderer
         scenemanager_ = root_->createSceneManager(Ogre::ST_GENERIC, "SceneManager");
         camera_ = scenemanager_->createCamera("Camera");
         camera_->setNearClipDistance(0.1f);
-        camera_->setFarClipDistance(200.f);
+        camera_->setFarClipDistance(2000.f);
         Ogre::Viewport* viewport = renderwindow_->addViewport(camera_);
         camera_->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
     }

@@ -59,7 +59,7 @@ namespace Input
         /// hard-to-break dependency to the InputModuleOIS, and will require some state objects to track when the input is valid to read. 
         /// (i.e. can't move using WSAD when typing into a textbox)
         /// \todo Make this not inline and properly generate INPUTOIS_MODULE_API etc.. defines for DLL export.
-        bool IsKeyDown(OIS::KeyCode key) { return keyboard_->isKeyDown(key); }
+        bool IsKeyDown(OIS::KeyCode key) { return keyboard_ ? keyboard_->isKeyDown(key) : false; }
 
         virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, 
             Foundation::EventDataInterface* data);

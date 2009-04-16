@@ -3,6 +3,8 @@
 #ifndef incl_Foundation_EventManager_h
 #define incl_Foundation_EventManager_h
 
+#include "ModuleReference.h"
+
 namespace Poco
 {
     namespace XML
@@ -72,9 +74,9 @@ namespace Foundation
         class EventSubscriber
         {
         public:
-            EventSubscriber() : module_(NULL), priority_(0) {}
+            EventSubscriber() : priority_(0) {}
             
-            ModuleInterface* module_;
+            ModuleWeakPtr module_;
             std::string module_name_;
             int priority_;
             EventSubscriberVector children_;
@@ -127,7 +129,7 @@ namespace Foundation
             \param parent subscriber module to use as a parent, NULL to place into the tree root
             \return true if successfully subscribed
          */
-        bool RegisterEventSubscriber(ModuleInterface* module, int priority, ModuleInterface* parent);
+        bool RegisterEventSubscriber(ModuleWeakPtr module, int priority, ModuleWeakPtr parent);
 
         //! unregisters a module from the subscriber tree
         /*! do not call while responding to an event!

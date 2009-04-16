@@ -10,6 +10,7 @@
 
 namespace RexLogic
 {
+    struct DecodedTerrainPatch;
     class RexLogicModule;
 
     class NetworkEventHandler
@@ -30,12 +31,14 @@ namespace RexLogic
         bool HandleOSNE_ObjectProperties(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_RegionHandshake(OpenSimProtocol::NetworkEventInboundData* data);
 
+        void SendRegionHandshakeReply();
+
         //! Handler functions for GenericMessages
         bool HandleRexGM_RexMediaUrl(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleRexGM_RexPrimData(OpenSimProtocol::NetworkEventInboundData* data);
 
         //! Decodes terrain data from a LayerData packet and generates terrain patches accordingly.
-        void HandleOSNE_LayerData(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleOSNE_LayerData(OpenSimProtocol::NetworkEventInboundData* data);
 
         //! @return The entity corresponding to given scene entityid, or null if not found. 
         //!         This entity is guaranteed to have an existing EC_OpenSimPrim component. \todo Actually force this guarantee.
@@ -60,7 +63,10 @@ namespace RexLogic
         //! Creates an OBB for debug visualization of the extents of the given scene object.
         void DebugCreateOgreBoundingBox(const Foundation::ComponentInterfacePtr ogrePlaceable);
 
+        void NetworkEventHandler::DebugCreateTerrainVisData(const DecodedTerrainPatch &heightData, int patchSize);
+
         Foundation::Framework *framework_;
+        OpenSimProtocol::OpenSimProtocolModule *netInterface_;
         
         RexLogicModule *rexlogicmodule_;
         

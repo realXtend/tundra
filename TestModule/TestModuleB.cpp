@@ -47,7 +47,7 @@ namespace Test
     // virtual
     void TestModuleB::PostInitialize()
     {
-        framework_->GetEventManager()->RegisterEventSubscriber(this, 0, NULL);
+        framework_->GetEventManager()->RegisterEventSubscriber(framework_->GetModuleManager()->GetModule(this->Name()), 0, Foundation::ModuleWeakPtr());
     }
 
     // virtual

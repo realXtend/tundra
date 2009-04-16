@@ -37,7 +37,17 @@ enum TerrainPatchLayerType
     TPLayerCloud = 0x38
 };
 
-void DecompressLand(BitStream &bits, const TerrainPatchGroupHeader &groupHeader);
+struct DecodedTerrainPatch
+{
+    std::vector<float> heightData;
+    TerrainPatchHeader header;
+};
+
+/// Decompresses a single patch of terrain height data from a LayerData packet.
+/// @param patches [out] The resulting patch data will be output here.
+/// @param bits [in] The LayerData packet, of which the Patch Group Header has already been read.
+/// @param groupHeader 
+void DecompressLand(std::vector<DecodedTerrainPatch> &patches, BitStream &bits, const TerrainPatchGroupHeader &groupHeader);
 
 }
 

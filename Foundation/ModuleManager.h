@@ -4,7 +4,7 @@
 #define incl_Foundation_ModuleManager_h
 
 #include "ModuleInterface.h"
-
+#include "ModuleReference.h"
 
 namespace Foundation
 {
@@ -27,11 +27,31 @@ namespace Foundation
         };
         typedef boost::shared_ptr<SharedLibrary> SharedLibraryPtr;
 
+        class ModuleDeletor
+        {
+            std::string entry_;
+            SharedLibraryPtr shared_library_;
+
+        public:
+            ModuleDeletor(const std::string &entry, SharedLibraryPtr shared_library)
+            :entry_(entry), shared_library_(shared_library)
+            {
+            }
+
+            void operator()(ModuleInterface *module)
+            {
+                if (shared_library_)
+                    shared_library_->cl_.destroy(entry_, module);
+
+                delete module;
+            }
+        };
+
         //! Module entry. Contains information about a module.
         struct Entry
         {
-            //! the module
-            ModuleInterface *module_;
+            //! The module. Memory owned by Poco if a shared library, by us using new/delete if static library.
+            ModuleSharedPtr module_;
             //! entry class of the module
             std::string entry_;
             //! shared library this module was loaded from. Null for static library
@@ -202,22 +222,22 @@ namespace Foundation
         /*!
             \note The pointer may invalidate between frames, always reacquire at begin of frame update
         */
-        ModuleInterface *GetModule(const std::string &name)
+        ModuleWeakPtr GetModule(const std::string &name)
         {
             ModuleVector::iterator it = modules_.begin();
             for ( ; it != modules_.end() ; ++it)
             {
                 if ( it->module_->Name() == name )
-                    return it->module_;
+                    return ModuleWeakPtr(it->module_);
             }
-            return NULL;
+            return ModuleWeakPtr();
         }
 
         //! Returns module by type
         /*!
             \note The pointer may invalidate between frames, always reacquire at begin of frame update
         */
-        ModuleInterface *GetModule(Foundation::Module::Type type)
+        ModuleWeakPtr GetModule(Foundation::Module::Type type)
         {
             return GetModule(Module::NameFromType(type));
         }
@@ -230,17 +250,17 @@ namespace Foundation
             \return The module, or null if the module of type 'type' was not found, or if dynamic cast fails
         */
         template <class T>
-        T *GetModule(Foundation::Module::Type type)
+        boost::weak_ptr<T> GetModule(Foundation::Module::Type type)
         {
             assert (type != Module::MT_Unknown);
 
-            ModuleVector::iterator it = modules_.begin();
-            for ( ; it != modules_.end() ; ++it)
-            {
-                if ( it->module_->Type() == type )
-                    return (dynamic_cast<T*>(it->module_));
-            }
-            return NULL;
+            for(ModuleVector::iterator it = modules_.begin(); it != modules_.end() ; ++it)
+                if (it->module_->Type() == type)
+                    return boost::dynamic_pointer_cast<T>(it->module_);
+//                    return boost::weak_ptr<T>(boost::shared_ptr<T>());//dynamic_cast<T*>(it->module_));
+//                    return boost::weak_ptr<T>(dynamic_cast<T*>(it->module_));
+
+            return boost::weak_ptr<T>();
         }
 
         //! @return A list of all modules in the system, for reflection purposes. If you need non-const access to

@@ -51,8 +51,7 @@ namespace Console
 
         const Foundation::ConfigurationManager &config = framework->GetDefaultConfig();
         cursor_blink_freq_ = config.DeclareSetting("DebugConsole", "cursor_blink_frequency", 0.5f);
-        
-        
+                
         Core::f64 slow = config.DeclareSetting("DebugConsole", "key_repeat_slow", 0.5f);
         Core::f64 fast = config.DeclareSetting("DebugConsole", "key_repeat_fast", 0.045f);
         Core::f64 change = config.DeclareSetting("DebugConsole", "key_repeat_change", 0.5f);
@@ -60,8 +59,9 @@ namespace Console
 
         if ( framework->GetModuleManager()->HasModule(Foundation::Module::MT_Renderer) )
         {
-            OgreRenderer::OgreRenderingModule *rendering_module = 
-                framework->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer);
+            boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = 
+                framework->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock();
+            
             if (rendering_module)
                 rendering_module->GetRenderer()->SubscribeLogListener(log_listener_);
         }
@@ -86,7 +86,7 @@ namespace Console
         if ( framework->GetModuleManager()->HasModule(Foundation::Module::MT_Renderer) )
         {
             OgreRenderer::OgreRenderingModule *rendering_module = 
-                framework->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer);
+                framework->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock().get();
             if (rendering_module)
                 rendering_module->GetRenderer()->UnsubscribeLogListener(log_listener_);
         }
