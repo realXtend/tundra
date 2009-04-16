@@ -52,14 +52,16 @@ namespace Communication
 		static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_CommunicationUI;
 
+	private:
+		static void testCallback(char*);
 		
 
 	private:
 		void initializeMainCommWindow();
+		void OnAccountMenuSettings();
 		void OnAccountMenuSetAccountAndPassword();
 		void OnAccountMenuConnect();
 		void OnAccountMenuDisconnect();
-
 		Glib::RefPtr<Gnome::Glade::Xml> commUI_XML;
 
 		// Widgets
@@ -67,7 +69,11 @@ namespace Communication
 		Gtk::Window *dlgAccount;
 		Gtk::ActionGroup *actionGroup;
 		Foundation::Comms::CommunicationManagerServiceInterface *commManager;
+		Foundation::ScriptServiceInterface *scriptService;
 		//Foundation::CommunicationUIManagerPtr CommunicationUI_manager_;
+		Foundation::ScriptObject* sobj;
+
+		Foundation::ScriptObject* imScriptObject;
 	};
 }
 
