@@ -24,6 +24,7 @@ namespace RexLogic
         // !Handler functions for Opensim network events
         bool HandleOSNE_AgentMovementComplete(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_GenericMessage(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleOSNE_ImprovedTerseObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_LogoutReply(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_ObjectProperties(OpenSimProtocol::NetworkEventInboundData* data);
@@ -50,6 +51,11 @@ namespace RexLogic
 
         Foundation::EntityPtr GetOrCreateAvatarEntity(Core::entity_id_t entityid, const RexUUID &fullid);
         Foundation::EntityPtr CreateNewAvatarEntity(Core::entity_id_t entityid);
+
+        //! @return The entity corresponding to given scene entityid, or null if not found. 
+        //!         This entity is guaranteed to have an existing EC_OpenSimAvatar component. \todo Actually force this guarantee.
+        Foundation::EntityPtr GetAvatarEntity(Core::entity_id_t entityid);
+        Foundation::EntityPtr GetAvatarEntity(const RexUUID &fullid);        
 
         //! Creates an OBB for debug visualization of the extents of the given scene object.
         void DebugCreateOgreBoundingBox(const Foundation::ComponentInterfacePtr ogrePlaceable);
