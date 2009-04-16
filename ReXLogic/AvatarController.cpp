@@ -4,7 +4,7 @@
 #include "AvatarController.h"
 #include "RexLogicModule.h"
 #include "RexServerConnection.h"
-#include "InputEvents.h"
+
 
 namespace RexLogic
 {
@@ -31,36 +31,56 @@ namespace RexLogic
         return Core::Quaternion(0,0,0,1); //! \todo tucofixme    
     }
 
-    void AvatarController::UpdateMovementState(Core::event_id_t input_event_id)
+    void AvatarController::StartMovingForward()
     {
-        switch(input_event_id)
-        {
-            case Input::Events::MOVE_FORWARD_PRESSED:
-                controlflags_ |= RexTypes::AGENT_CONTROL_AT_POS;
-                break;
-            case Input::Events::MOVE_FORWARD_RELEASED:
-                controlflags_ &= ~RexTypes::AGENT_CONTROL_AT_POS;
-                break;
-            case Input::Events::MOVE_BACK_PRESSED:
-                controlflags_ |= RexTypes::AGENT_CONTROL_AT_NEG;
-                break;        
-            case Input::Events::MOVE_BACK_RELEASED:
-                controlflags_ &= ~RexTypes::AGENT_CONTROL_AT_NEG;
-                break;
-            case Input::Events::MOVE_LEFT_PRESSED:
-                controlflags_ |= RexTypes::AGENT_CONTROL_LEFT_POS;
-                break; 
-            case Input::Events::MOVE_LEFT_RELEASED:
-                controlflags_ &= ~RexTypes::AGENT_CONTROL_LEFT_POS;
-                break; 
-            case Input::Events::MOVE_RIGHT_PRESSED:
-                controlflags_ |= RexTypes::AGENT_CONTROL_LEFT_NEG;
-                break;         
-            case Input::Events::MOVE_RIGHT_RELEASED:
-                controlflags_ &= ~RexTypes::AGENT_CONTROL_LEFT_NEG;
-                break;
-        }
-        
+        controlflags_ |= RexTypes::AGENT_CONTROL_AT_POS;
+        UpdateMovementState();
+    }
+
+    void AvatarController::StopMovingForward()
+    {
+        controlflags_ &= ~RexTypes::AGENT_CONTROL_AT_POS;
+        UpdateMovementState();
+    }
+
+    void AvatarController::StartMovingBack()
+    {
+        controlflags_ |= RexTypes::AGENT_CONTROL_AT_NEG;
+        UpdateMovementState();
+    }
+
+    void AvatarController::StopMovingBack()
+    {
+        controlflags_ &= ~RexTypes::AGENT_CONTROL_AT_NEG;
+        UpdateMovementState();
+    }
+
+    void AvatarController::StartMovingLeft()
+    {
+        controlflags_ |= RexTypes::AGENT_CONTROL_LEFT_POS;
+        UpdateMovementState();
+    }
+
+    void AvatarController::StopMovingLeft()
+    {
+        controlflags_ &= ~RexTypes::AGENT_CONTROL_LEFT_POS;
+        UpdateMovementState();
+    }
+
+    void AvatarController::StartMovingRight()
+    {
+        controlflags_ |= RexTypes::AGENT_CONTROL_LEFT_NEG;
+        UpdateMovementState();
+    }
+
+    void AvatarController::StopMovingRight()
+    {
+        controlflags_ &= ~RexTypes::AGENT_CONTROL_LEFT_NEG;
+        UpdateMovementState();
+    }
+
+    void AvatarController::UpdateMovementState()
+    {
         // 0 = walk, 1 = mouselook, 2 = type
         uint8_t flags = 0;
         
