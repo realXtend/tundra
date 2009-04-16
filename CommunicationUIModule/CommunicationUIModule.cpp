@@ -17,12 +17,14 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
 #include "ConfigureDlg.h"
+#include "ScriptServiceInterface.h"
 
 #include "CommunicationUIModule.h"
+
 //#include "PythonScriptModule.h"
 
 
-
+void testCallback(char*);
 
 namespace Communication
 {
@@ -51,6 +53,16 @@ namespace Communication
 	{
 		initializeMainCommWindow();
 		commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager);
+		scriptService = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting);
+		//std::string error;
+		//Foundation::ScriptObject* script = scriptService->LoadScript("IMDemo", error);
+		//if(error=="None")
+		//{
+		//	this->imScriptObject = script->GetObject("IMDemo");
+		//	std::string str = "DoStartUp";
+		//	std::string syntax = "";
+		//	Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
+		//}
 	}
 
 	void CommunicationUIModule::Uninitialize()
@@ -75,9 +87,39 @@ namespace Communication
 	    commUI_XML->connect_clicked("mi_connect", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuConnect));
 		commUI_XML->connect_clicked("mi_disconnect", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuDisconnect));
 		commUI_XML->connect_clicked("mi_setaccount", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuSetAccountAndPassword));
+		commUI_XML->connect_clicked("mi_settings", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuSettings));
 		commUI_XML->connect_clicked("btnTest", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuConnect));
 
 		wndCommMain->show();
+	}
+
+	void CommunicationUIModule::OnAccountMenuSettings()
+	{
+		LogInfo("something clicked");
+		std::string error;
+		
+		//Foundation::ScriptObject* script = scriptService->LoadScript("pymodules/py_class3", error);
+		Foundation::ScriptObject* script = scriptService->LoadScript("py_class3", error);
+		
+		if(error=="None"){
+			LogInfo("got script object");
+			
+			sobj = script->GetObject("Multiply");
+			std::string str = "multiply";
+			std::string syntax = "";
+			Foundation::ScriptObject* ret = sobj->CallMethod(str, syntax, NULL);
+			LogInfo("Received: ");
+			char* cret = ret->ConvertToChar();
+			if(cret!=NULL){
+				LogInfo(cret);
+			} else {
+				LogInfo("NULL");
+			}
+
+		} else {
+			LogInfo("script loading failed");
+		}
+		//scriptService->RunString("Test.Run()");
 	}
 
 	void CommunicationUIModule::OnAccountMenuSetAccountAndPassword()
@@ -87,7 +129,6 @@ namespace Communication
 		int count = attributes.size();
 		LogInfo(attributes.find("name")->first);
 
-		
 		//ConfigureDlg accDlg(count, attributes, "account settings", commManager, this);
 		ConfigureDlg accDlg(count, attributes, "account settings", this);
 		Gtk::Main::run(accDlg);
@@ -97,7 +138,22 @@ namespace Communication
 	void CommunicationUIModule::OnAccountMenuConnect()
 	{
 		LogInfo("something clicked");
-		commManager->Connect();		
+		//commManager->Connect();		
+		std::string meth = "TestCallback2";
+		std::string syntax = "s";
+		char** carr = new char*[2];
+		char* buf1 = new char[10];
+		strcpy(buf1,"blob");
+		carr[0] = buf1;
+
+
+
+		
+		sobj->CallMethod(meth, syntax, carr);
+
+
+		//scriptService->RunScript("Test");
+		
 
 		//PythonScript::PythonScriptModule *pyModule_ = dynamic_cast<PythonScript::PythonScriptModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_PythonScript));
 		//pyModule_->DoConnect();
@@ -106,7 +162,15 @@ namespace Communication
 	void CommunicationUIModule::OnAccountMenuDisconnect()
 	{
 		LogInfo("something clicked");
-		commManager->Disconnect();	
+		//scriptService->RunString("Test.SetTrue()");
+		//sobj->PassFunctionPointerToScript(&testCallback, "setCallback2", "key");
+		
+		Foundation::ScriptEventInterface *eIntf = dynamic_cast<Foundation::ScriptEventInterface*>(this->scriptService);
+		//Foundation::ScriptEventInterface *eIntf = (Foundation::ScriptEventInterface*)scriptService;
+		
+		eIntf->SetCallback(CommunicationUIModule::testCallback, "key");
+		
+		//commManager->Disconnect();	
 	}
 
 	void CommunicationUIModule::Callback(std::string aConfigName, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes)
@@ -114,6 +178,17 @@ namespace Communication
 		if(aConfigName=="account settings"){ commManager->SetAccountAttributes(attributes); }
 	}
 
+	void CommunicationUIModule::testCallback(char* t)
+	{
+		std::cout << "testCallback" << std::endl;
+		std::cout << t << std::endl;
+	}
+
+}
+
+void testCallback(char*)
+{
+	std::cout << "in testCallback" << std::endl;
 }
 
 using namespace Communication;
