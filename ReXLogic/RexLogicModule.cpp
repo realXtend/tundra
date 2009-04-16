@@ -46,11 +46,12 @@ namespace RexLogic
     {
         /// \todo fixme, register WorldLogic to the framework as realxtend worldlogicinterface!
         // WorldLogic::registerSystem(framework);
-        // world_logic_ = new WorldLogic(framework);        
+        // world_logic_ = new WorldLogic(framework);
+        avatar_controller_ = AvatarControllerPtr(new AvatarController(framework_, this));
         rexserver_connection_ = RexServerConnectionPtr(new RexServerConnection(framework_)); 
         network_handler_ = new NetworkEventHandler(framework_, this);
         input_handler_ = new InputEventHandler(framework_, this);  
-        scene_handler_ = new SceneEventHandler(framework_, this); 
+        scene_handler_ = new SceneEventHandler(framework_, this);
         LogInfo("Module " + Name() + " initialized.");
     }
 
@@ -91,6 +92,8 @@ namespace RexLogic
             rexserver_connection_->CloseServerConnection(); 
         } 
         rexserver_connection_.reset();
+        avatar_controller_.reset();
+
         SAFE_DELETE (network_handler_);
         SAFE_DELETE (input_handler_);
 		SAFE_DELETE (scene_handler_);
