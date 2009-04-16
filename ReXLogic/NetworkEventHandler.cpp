@@ -13,6 +13,7 @@
 #include "EC_FreeData.h"
 #include "EC_SpatialSound.h"
 #include "EC_OpenSimPrim.h"
+#include "EC_OpenSimAvatar.h"
 
 // Ogre renderer -specific.
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
@@ -165,17 +166,22 @@ namespace RexLogic
         return entity;
     }
     
-    Foundation::EntityPtr NetworkEventHandler::GetAvatarEntitySafe(Core::entity_id_t entityid)
+    Foundation::EntityPtr NetworkEventHandler::GetOrCreateAvatarEntity(Core::entity_id_t entityid, const RexUUID &fullid)
     {
         Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
             (Foundation::Service::ST_SceneManager);
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
 
-        /// \todo tucofixme, how to make sure this is a avatar entity?
-        if (!scene->HasEntity(entityid))
-            return CreateNewAvatarEntity(entityid);
-        else
-            return scene->GetEntity(entityid);
+        Foundation::EntityPtr entity = scene->GetEntity(entityid);
+        if (!entity)
+        {
+            entity = CreateNewAvatarEntity(entityid);
+            UUIDs_[fullid] = entityid;
+            EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent("EC_OpenSimAvatar").get());
+            avatar.LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
+            avatar.FullId = fullid;
+        }
+        return entity;
     }    
 
     Foundation::EntityPtr NetworkEventHandler::CreateNewAvatarEntity(Core::entity_id_t entityid)
@@ -185,9 +191,11 @@ namespace RexLogic
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
         
         Core::StringVector defaultcomponents;
-        /// \todo tucofixme, add avatar default components
+        defaultcomponents.push_back(EC_OpenSimAvatar::NameStatic());
+        defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());        
         
-        Foundation::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents); 
+        Foundation::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents);
+ 
         return entity;
     }
 
@@ -245,21 +253,42 @@ namespace RexLogic
                 
                 // Skip path related variables
                 msg->SkipToFirstVariableByName("Text");
-                prim.HoveringText = (const char *)msg->ReadBuffer(&bytes_read); 
+                prim.HoveringText = msg->ReadString(); 
                 msg->SkipToNextVariable();      // TextColor
-                prim.MediaUrl = (const char *)msg->ReadBuffer(&bytes_read);   
-
-/*                if(entity)
-                {
-                    Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
-                    checked_static_cast<EC_OpenSimPrim*>(component.get())->HandleObjectUpdate(data);
-                }*/
+                prim.MediaUrl = msg->ReadString();
             }
             break;
             // Avatar                
             case 0x2f:
-                entity = GetAvatarEntitySafe(localid);
-                /// \todo tucofixme, set values to component      
+                entity = GetOrCreateAvatarEntity(localid,fullid);
+                EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent("EC_OpenSimAvatar").get());
+                OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
+
+                avatar.RegionHandle = regionhandle;
+                
+                // Get position from objectdata
+                msg->SkipToFirstVariableByName("ObjectData");
+                size_t bytes_read = 0;
+                const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
+                if (bytes_read >= 28)
+                {
+                    // The data contents:
+                    // ofs 16 - pos xyz - 3 x float (3x4 bytes)
+                    ogrePos.SetPosition(*(Core::Vector3df*)(&objectdatabytes[16]));
+                }                
+                
+                msg->SkipToFirstVariableByName("ParentID");
+                avatar.ParentId = msg->ReadU32();
+                
+                // NameValue contains: FirstName STRING RW SV " + firstName + "\nLastName STRING RW SV " + lastName
+                msg->SkipToFirstVariableByName("NameValue");
+                std::string namevalue = msg->ReadString();
+                size_t pos = namevalue.find("\n");
+                if(pos != std::string::npos)
+                {
+                    avatar.FirstName = namevalue.substr(23,pos-23);
+                    avatar.LastName = namevalue.substr(pos+23);
+                } 
                 break;
         }
 
