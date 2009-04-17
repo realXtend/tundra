@@ -3,6 +3,8 @@
 #ifndef incl_TextureDecoder_Decoder_h
 #define incl_TextureDecoder_Decoder_h
 
+#include "TextureRequest.h"
+
 namespace Foundation
 {
     class Framework;
@@ -20,18 +22,34 @@ namespace TextureDecoder
         
         //! destructor
         ~Decoder();
+        
+        //! updates texture requests
+        void Update(Core::f64 frametime);
 
-        //! decode a texture
+        //! queues a texture request
         /*! \param asset_id asset ID of texture
-            \param reduction quality reduction ("mipmap") level. 0 for full quality
          */
-        void DecodeTexture(const std::string& asset_id, Core::uint reduction = 0);
+        void RequestTexture(const std::string& asset_id);
+        
+    private:
+        //! updates a texture request
+        /*! \return true if highest quality level has been decoded and the request can be erased
+         */
+        bool UpdateRequest(TextureRequest& request);
+        
+        //! decodes next level of a texture request, as enough data has been received
+        bool DecodeNextLevel(TextureRequest& request);
+        
+        typedef std::map<std::string, TextureRequest> TextureRequestMap;
         
         //! framework we belong to
         Foundation::Framework* framework_;
         
         //! asset service
         Foundation::AssetServiceInterface* asset_service_;
+        
+        //! ongoing texture requests
+        TextureRequestMap requests_;
     };
 }
 
