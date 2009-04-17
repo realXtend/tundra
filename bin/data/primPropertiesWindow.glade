@@ -66,7 +66,7 @@
                 <property name="label" translatable="yes">z</property>
               </widget>
               <packing>
-                <property name="position">4</property>
+                <property name="position">5</property>
               </packing>
             </child>
             <child>
