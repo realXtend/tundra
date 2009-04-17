@@ -46,8 +46,7 @@ namespace Foundation
     */
     class ConfigurationManager
     {
-        friend class Framework;
-
+      
         //! Special enum for creating default configuration object
         enum Type
         {
@@ -57,20 +56,17 @@ namespace Foundation
             CT_CUSTOM
         };
 
-        //! special constructor for creating default configuration object
-        ConfigurationManager(Type type = CT_DEFAULT);
-
+       
         ConfigurationManager(const ConfigurationManager &other);
         ConfigurationManager &operator =(const ConfigurationManager &other);
 
     public:
-        //! constructor that takes a path to a configuration file. Loads and parses the file.
-        ConfigurationManager(const std::string &file);
-
-        //! destructor. 
+        //! Constructor that takes a path to a configuration file. Loads and parses the file.
+        ConfigurationManager(Framework* framework, const std::string &file = std::string(DEFAULT_CONFIG_PATH));
+		
+        //! Destructor. 
         /*! 
-            \note When EXPORT_CONFIGURATION is defined, exports the settings to the same
-                  file from where they were originally loaded from.
+           @note when destructor is called, all settings which are saved into value map will be write to the given xml-file. 
         */
         ~ConfigurationManager();
 
@@ -163,6 +159,8 @@ namespace Foundation
 
         //! map of all values, for exporting
         mutable ValueMap values_;
+
+		Framework *framework_;
     };
 
 }

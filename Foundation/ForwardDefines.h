@@ -16,7 +16,7 @@ namespace Foundation
     class EventManager;
     class Platform;
     class Application;
-
+	class ConfigurationManager;
     class ComponentInterfaceAbstract;
 
     typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;

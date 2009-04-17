@@ -28,7 +28,7 @@ namespace Foundation
         ServiceManagerPtr GetServiceManager() const { return service_manager_; }
         EventManagerPtr GetEventManager() const { return event_manager_; }
         PlatformPtr GetPlatform() const { return platform_; }
-        ConfigurationManager* GetConfigManagerPtr() { return &config_;}
+        ConfigurationManagerPtr GetConfigManager() { return config_manager_;}
 
         //! Signal the framework to exit at first possible opportunity
         void Exit() { exit_signal_ = true; }
@@ -37,10 +37,10 @@ namespace Foundation
         bool IsExiting() { return exit_signal_; }
 
         //! Returns the default configuration
-        const ConfigurationManager &GetDefaultConfig() const { return config_; }
+        const ConfigurationManager &GetDefaultConfig() const { return *(config_manager_.get()); }
 
         //! Returns pointer to the default configuration
-        const ConfigurationManager *GetDefaultConfigPtr() const { return &config_; }
+        const ConfigurationManager *GetDefaultConfigPtr() const { return config_manager_.get(); }
 
         //! Shortcut for retrieving a service. See ServiceManager for more info
         template <class T>
@@ -89,6 +89,9 @@ namespace Foundation
         ServiceManagerPtr service_manager_;
         EventManagerPtr event_manager_;
         PlatformPtr platform_;
+		 
+		//! default configuration
+        ConfigurationManagerPtr config_manager_;
 
         //! application data
         ApplicationPtr application_;
@@ -101,8 +104,7 @@ namespace Foundation
         //! Logger default formatter
         Poco::Formatter *log_formatter_;
 
-        //! default configuration
-        ConfigurationManager config_;
+       
     };
 }
 

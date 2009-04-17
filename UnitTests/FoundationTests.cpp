@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE( framework_application )
 
 void frameworkConfigurationManagerTest()
 {
-    Foundation::ConfigurationManager manager("./testing/configuration.xml");
+    Foundation::ConfigurationManager manager(0,"./testing/configuration.xml");
     BOOST_CHECK_EQUAL (manager.DeclareSetting<std::string>("testGroup1", "test_key1", "default_value"), std::string("test_string"));
     BOOST_CHECK_EQUAL (manager.DeclareSetting<std::string>("testGroup1", "test_key1", std::string("default_value")), std::string("test_string"));
     BOOST_CHECK_EQUAL (manager.DeclareSetting("testGroup2", "test_key2", 0), 123456);
