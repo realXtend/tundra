@@ -31,7 +31,45 @@ namespace TextureDecoder
     TextureRequest::~TextureRequest()
     {
     }
-    
+   
+    void UpdateSizeReceived(Core::uint size, Core::uint received)
+    {
+        size_ = size;
+        received_ = received;
+
+        // If has all data, can decode the max. quality level
+        if ((size_) && (received >= size_))
+            next_level_ = 0;
+    }
+     
+    void TextureRequest::SetSize(Core::uint width, Core::uint height, Core::uint components);
+    {
+        width_ = width;
+        height_ = height;
+        components_ = components;
+    }
+
+    void TextureRequest::SetLevels(int levels)
+    {
+        levels_ = levels;
+    }
+
+    void TextureRequest::SetNextLevelToDecode()
+    {
+        if (next_level_ > 0)
+            next_level_--;
+    }
+
+    void TextureRequest::DecodeSuccess()
+    {
+        decoded_level_ = next_level_;
+    }
+
+    bool TextureRequest::HasEnoughData()
+    {
+        return received_ >= EstimateDataSize(next_level_);
+    }
+
     Core::uint TextureRequest::EstimateDataSize(int level)
     {
         if (level < 0) level = 0;
