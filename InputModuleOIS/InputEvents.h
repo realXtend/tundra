@@ -8,11 +8,16 @@
 namespace Input
 {
     //! Contains some fo the input events in generic fashion. Does not depend on any one input method
+    /*!
+        To add new event, first add event id. For continuos events declare a 'start' and 'end' event ids.
+
+    */
     namespace Events
     {
         // Note: Continous events should go in pairs and in sequence; for every
         //       'start' event (MOVE_FORWARD_PRESSED) there should be an
-        //       'end' event (MOVE_FORWARD_RELEASED) and (MOVE_FORWARD_PRESSED == MOVE_FORWARD_RELEASED + 1)
+        //       'end' event (MOVE_FORWARD_RELEASED) and (MOVE_FORWARD_PRESSED == MOVE_FORWARD_RELEASED - 1)
+        //       Yhis is for simplicity, so one can get the 'end' event easily from the 'start' event.
         static const Core::event_id_t KEY_PRESSED = 1;
         static const Core::event_id_t KEY_RELEASED = 2;
         static const Core::event_id_t SCROLL = 3;

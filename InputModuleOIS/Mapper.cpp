@@ -31,8 +31,8 @@ namespace Input
         std::string input_mappings;
         Poco::UnicodeConverter::toUTF8(input_mappings_w, input_mappings);
 
+        SetDefaultMappings();
         LoadInputMappings(input_mappings);
-        //SetDefaultMappings();
     }
 
     Mapper::~Mapper()
@@ -58,13 +58,11 @@ namespace Input
             else
             {
                 InputModuleOIS::LogInfo("Input mappings file not found, using default mappings.");
-                SetDefaultMappings();
             }
         } catch (std::exception &e)
         {
             InputModuleOIS::LogInfo(e.what());
             InputModuleOIS::LogInfo("Failed to parse input mappings file, using default mappings.");
-            SetDefaultMappings();
         }
     }
 

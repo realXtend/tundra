@@ -247,15 +247,25 @@ namespace Input
     
     void InputModuleOIS::RegisterUnbufferedKeyEvent(OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event, int modifier)
     {
+        assert (pressed_event + 1 == released_event);
+
         UnBufferedKeyEventInfo keyeventinfo;
-        
         keyeventinfo.pressed_ = false;
         keyeventinfo.pressed_event_id_ = pressed_event;
         keyeventinfo.released_event_id_ = released_event;
         keyeventinfo.key_ = key;
         keyeventinfo.modifier_ = modifier;
-        listened_keys_.push_back(keyeventinfo);        
-    }    
 
+        KeyEventInfoVector::iterator it = std::find(listened_keys_.begin(), listened_keys_.end(), keyeventinfo);
+        if ( it != listened_keys_.end())
+        {
+            // replace old event
+            *it = keyeventinfo;
+        } else
+        {
+            // register new event
+            listened_keys_.push_back(keyeventinfo);
+        }
+    }    
 }
 

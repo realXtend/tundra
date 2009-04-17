@@ -32,8 +32,15 @@ namespace Input
     typedef boost::shared_ptr<Mapper> MapperPtr;
 
 
+    //! info for key event. Unique by keycode / modifier pair. 
+    //! Different keys can launch the same event, but same key can't launch multiple events.
     struct UnBufferedKeyEventInfo
     {
+        // compiler generated copy constructor apply
+
+        //! comparison
+        bool operator ==(const UnBufferedKeyEventInfo &rhs) const { return (key_ == rhs.key_ && modifier_ == rhs.modifier_ ); }
+
         Core::event_id_t pressed_event_id_;
         Core::event_id_t released_event_id_;
         OIS::KeyCode key_;
@@ -74,6 +81,7 @@ namespace Input
 
         //! add a key for unbuffered listening
         /*! 
+            \note Not efficient.
         */
         void RegisterUnbufferedKeyEvent(OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event, int modifier);
 
@@ -99,6 +107,8 @@ namespace Input
         //! Handle window resizing, only for the main render window
         void WindowResized(int width, int height);
 
+        typedef std::vector<UnBufferedKeyEventInfo> KeyEventInfoVector;
+
         //! input event category
         Core::event_category_id_t event_category_;
 
@@ -113,7 +123,7 @@ namespace Input
         BufferedKeyboardPtr buffered_keyboard_;
         
         //! unbuffered keys for which pressed and released events are created. Good for movement keys, etc.
-        std::vector<UnBufferedKeyEventInfo> listened_keys_;
+        KeyEventInfoVector listened_keys_;
 
         //! mappings for h/w input to generic events
         MapperPtr key_mapping_;
