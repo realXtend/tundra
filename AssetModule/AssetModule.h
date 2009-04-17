@@ -5,7 +5,6 @@
 
 #include "ModuleInterface.h"
 #include "ConsoleCommandServiceInterface.h"
-#include "EventDataInterface.h"
 #include "AssetModuleApi.h"
 
 namespace Foundation

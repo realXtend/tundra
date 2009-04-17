@@ -27,7 +27,6 @@ namespace TextureDecoder
         virtual void Unload();
         virtual void Initialize();
         virtual void Uninitialize();
-        virtual void PostInitialize();
         virtual void Update(Core::f64 frametime);
 
         virtual bool HandleEvent(

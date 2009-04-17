@@ -18,6 +18,7 @@ namespace Foundation
 
         //! gets asset
         /*! if asset not in cache, will return empty pointer and queue the asset request.
+            an event will be sent when the asset has been downloaded.
         
             \param asset_id asset ID, UUID for legacy UDP assets
             \param asset_type asset type

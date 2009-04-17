@@ -4,6 +4,7 @@
 #define incl_TextureDecoder_Decoder_h
 
 #include "TextureRequest.h"
+#include "TextureServiceInterface.h"
 
 namespace Foundation
 {
@@ -14,7 +15,7 @@ namespace Foundation
 namespace TextureDecoder
 {
     //! texture decoder worker
-    class Decoder
+    class Decoder : public Foundation::TextureServiceInterface
     {
     public:
         //! constructor
@@ -29,25 +30,25 @@ namespace TextureDecoder
         //! queues a texture request
         /*! \param asset_id asset ID of texture
          */
-        void RequestTexture(const std::string& asset_id);
+        void QueueTextureRequest(const std::string& asset_id);
         
     private:
         //! updates a texture request
         /*! \return true if highest quality level has been decoded and the request can be erased
          */
-        bool UpdateRequest(TextureRequest& request);
+        bool UpdateRequest(TextureRequest& request, Foundation::AssetServiceInterface* asset_service);
         
         //! decodes next level of a texture request, as enough data has been received
-        bool DecodeNextLevel(TextureRequest& request);
+        bool DecodeNextLevel(TextureRequest& request, Foundation::AssetServiceInterface* asset_service);
         
         typedef std::map<std::string, TextureRequest> TextureRequestMap;
         
         //! framework we belong to
         Foundation::Framework* framework_;
-        
-        //! asset service
-        Foundation::AssetServiceInterface* asset_service_;
-        
+                
+        //! texture event category
+        Core::event_category_id_t event_category_;
+
         //! ongoing texture requests
         TextureRequestMap requests_;
     };

@@ -38,6 +38,8 @@
 #include "AssetDefines.h"
 #include "AssetInterface.h"
 #include "TextureDecoderModule.h"
+#include "TextureEvents.h"
+#include "Texture.h"
 #include "Decoder.h"
 
 #include <openjpeg.h>
@@ -46,34 +48,19 @@ namespace TextureDecoder
 {
 
     Decoder::Decoder(Foundation::Framework* framework) : 
-        framework_(framework),
-        asset_service_(NULL)
+        framework_(framework)
     {
-        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
-        
-        if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
-            asset_service_ = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset);
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+
+        event_category_ = event_manager->RegisterEventCategory("Texture");
+        event_manager->RegisterEvent(event_category_, Event::TEXTURE_READY, "TextureReady");
     }
     
     Decoder::~Decoder()
     {
     }
 
-    void HandleError(const char *msg, void *client_data)
-    {
-        //if (msg)
-        //    TextureDecoderModule::LogError("Texture decode error " + std::string(msg));
-    }
-    
-    void HandleWarning(const char *msg, void *client_data)
-    {
-    }
-
-    void HandleInfo(const char *msg, void *client_data)
-    {
-    }
-
-    void Decoder::RequestTexture(const std::string& asset_id)
+    void Decoder::QueueTextureRequest(const std::string& asset_id)
     {
         if (requests_.find(asset_id) != requests_.end())
             return; // already requested
@@ -84,27 +71,39 @@ namespace TextureDecoder
     
     void Decoder::Update(Core::f64 frametime)
     {
-        if (!asset_service_)
+        Foundation::AssetServiceInterface* asset_service = NULL;
+
+        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
+        if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
+        {
+            asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset);
+        }
+        else
+        {
+            // No asset service, clear any pending requests and do nothing
+            if (requests_.size())
+                requests_.clear();
             return;
+        }
             
         //! todo: check/service only a couple of requests per frame, not all
         TextureRequestMap::iterator i = requests_.begin();
         
         while (i != requests_.end())
         {
-            if (UpdateRequest(i->second))
+            if (UpdateRequest(i->second, asset_service))
                 i = requests_.erase(i);
             else
                 ++i;
         }
     }
     
-    bool Decoder::UpdateRequest(TextureRequest& request)
+    bool Decoder::UpdateRequest(TextureRequest& request, Foundation::AssetServiceInterface* asset_service)
     {
         // If asset not requested yet, get the request running now
         if (!request.requested_)
         {
-            asset_service_->GetAsset(request.asset_id_, Asset::RexAT_Texture);
+            asset_service->GetAsset(request.asset_id_, Asset::RexAT_Texture);
             request.requested_ = true;
         }
         
@@ -112,7 +111,7 @@ namespace TextureDecoder
         Core::uint received_discontinuous = 0;
         Core::uint received = 0;
         
-        if (!asset_service_->QueryAssetStatus(request.asset_id_, size, received_discontinuous, received))
+        if (!asset_service->QueryAssetStatus(request.asset_id_, size, received_discontinuous, received))
         {
             request.requested_ = false; // If cannot query asset status, the asset request wasn't queued (not connected, for example). Request again        
             return false;
@@ -128,7 +127,7 @@ namespace TextureDecoder
             
         if (received >= request.EstimateDataSize(request.next_level_))
         {
-            bool success = DecodeNextLevel(request);
+            bool success = DecodeNextLevel(request, asset_service);
             if (request.next_level_)
                 request.next_level_--;
 
@@ -140,9 +139,26 @@ namespace TextureDecoder
         return false;
     }
     
-    bool Decoder::DecodeNextLevel(TextureRequest& request)
+
+    void HandleError(const char *msg, void *client_data)
     {
-        Foundation::AssetPtr asset = asset_service_->GetIncompleteAsset(request.asset_id_, Asset::RexAT_Texture, request.received_);
+        //if (msg)
+        //    TextureDecoderModule::LogError("Texture decode error " + std::string(msg));
+    }
+    
+    void HandleWarning(const char *msg, void *client_data)
+    {
+    }
+
+    void HandleInfo(const char *msg, void *client_data)
+    {
+    }
+
+    bool Decoder::DecodeNextLevel(TextureRequest& request, Foundation::AssetServiceInterface* asset_service)
+    {
+        bool success = false;
+
+        Foundation::AssetPtr asset = asset_service->GetIncompleteAsset(request.asset_id_, Asset::RexAT_Texture, request.received_);
         if (!asset)
             return false;
         
@@ -174,7 +190,7 @@ namespace TextureDecoder
         opj_cio_close(cio);
         opj_destroy_decompress(dinfo);
         
-        if (image)
+        if ((image) && (image->numcomps))
         {
             request.decoded_level_ = request.next_level_;
             request.width_ = image->x1 - image->x0;
@@ -187,23 +203,41 @@ namespace TextureDecoder
                                           " Height: " + Core::ToString<int>(request.height_ >> request.decoded_level_) + 
                                           " Components: " + Core::ToString<int>(image->numcomps));
 
-            //for (int i = 0; i < image->numcomps; ++i)
-            //{
-            //    TextureDecoderModule::LogInfo("Component " + Core::ToString<int>(i));
-            //    TextureDecoderModule::LogInfo("Data width " + Core::ToString<int>(image->comps[i].w) + 
-            //        " Data height " + Core::ToString<int>(image->comps[i].h) + 
-            //        " Factor " + Core::ToString<int>(image->comps[i].factor));
-            //}
-            
-            opj_image_destroy(image);
-            return true;
+            // Assume all components are same size
+            int actual_width = image->comps[0].w;
+            int actual_height = image->comps[0].h;
+
+            // Create a texture object
+            Foundation::TexturePtr texture(new Texture(request.asset_id_, actual_width, actual_height, image->numcomps));
+            Core::u8* data = texture->GetData();
+            for (int y = 0; y < actual_width; ++y)
+            {
+                for (int x = 0; x < actual_height; ++x)
+                {
+                    for (int c = 0; c < image->numcomps; ++c)
+                    {
+                        *data = image->comps[c].data[y * actual_width + x];
+                        data++;
+                    }
+                }
+            }
+
+            // Send texture ready event
+            Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+            Event::TextureReady event_data(request.asset_id_, request.decoded_level_, texture);
+            event_manager->SendEvent(event_category_, Event::TEXTURE_READY, &event_data);
+
+            success = true;
         }
         else
         {
             TextureDecoderModule::LogInfo("Texture decode failed");
         }
 
-        return false;
+        if (image)
+            opj_image_destroy(image);
+
+        return success;
     }
 }
 
