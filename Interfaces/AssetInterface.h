@@ -8,6 +8,7 @@ namespace Foundation
     class AssetInterface;
     typedef boost::shared_ptr<AssetInterface> AssetPtr;
     
+    //! interface for assets
     class MODULE_API AssetInterface
     {
     public:

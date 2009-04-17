@@ -3,6 +3,8 @@
 #ifndef incl_Asset_AssetEvents_h
 #define incl_Asset_AssetEvents_h
 
+#include "EventDataInterface.h"
+
 namespace Asset
 {
     //! asset events

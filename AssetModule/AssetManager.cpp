@@ -21,13 +21,6 @@ namespace Asset
     AssetManager::AssetManager(Foundation::Framework* framework) : 
         framework_(framework)
     {
-        net_interface_ = (framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol));
-        if (!net_interface_.lock().get())
-        {
-            //! \todo something smart, now assetmanager will be in quite zombified state
-            AssetModule::LogError("Getting network interface did not succeed."); 
-        }
-        
         asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("AssetManager", "Timeout", DEFAULT_ASSET_TIMEOUT);
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         
@@ -121,7 +114,17 @@ namespace Asset
     }
     
     void AssetManager::Update(Core::f64 frametime)
-    {
+    {  
+        // Get network interface
+        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = 
+            (framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol)).lock();
+
+        if (!net)
+        {
+            // Connection lost, do nothing until it returns        
+            return;
+        }
+
         AssetTransferMap::iterator i = texture_transfers_.begin();
         while (i != texture_transfers_.end())
         {
@@ -132,12 +135,6 @@ namespace Asset
                 if (transfer.GetTime() > asset_timeout_)
                 {
                     AssetModule::LogInfo("Texture transfer " + transfer.GetAssetId().ToString() + " timed out.");
-                    boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = net_interface_.lock();
-                    if (!net)
-                    {
-                        /// \todo Connection lost! Tear down the whole asset manager.
-                        return;
-                    }
 
                     // Send cancel message
                     const ClientParameters& client = net->GetClientParameters();
@@ -173,13 +170,6 @@ namespace Asset
                 {
                     AssetModule::LogInfo("Asset transfer " + transfer.GetAssetId().ToString() + " timed out.");
 
-                    boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = net_interface_.lock();
-                    if (!net)
-                    {
-                        /// \todo Connection lost! Tear down the whole asset manager.
-                        return;
-                    }
-
                     // Send cancel message
                     NetOutMessage *m = net->StartMessageBuilding(RexNetMsgTransferAbort);
                     assert(m);
@@ -196,10 +186,13 @@ namespace Asset
     
     void AssetManager::RequestTexture(const RexUUID& asset_id)
     {
-        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = net_interface_.lock();
-        if (!net || !net->IsConnected())
+        // Get network interface
+        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = 
+            (framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol)).lock();
+        
+        if ((!net) || (!net->IsConnected()))
         {
-            /// \todo Connection lost! Tear down the whole asset manager.
+            // Cannot service request now
             return;
         }
         
@@ -233,10 +226,13 @@ namespace Asset
     
     void AssetManager::RequestOtherAsset(const RexUUID& asset_id, Core::uint asset_type)
     {
-        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = net_interface_.lock();
-        if (!net || !net->IsConnected())
+        // Get network interface
+        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = 
+            (framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol)).lock();
+
+        if ((!net) || (!net->IsConnected()))
         {
-            /// \todo Connection lost! Tear down the whole asset manager.
+            // Cannot service request now
             return;
         }
             

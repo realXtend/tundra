@@ -143,10 +143,7 @@ namespace Asset
         /*! \param transfer finished asset transfer
          */
         void StoreAsset(AssetTransfer& transfer);
-    
-        //! network interface
-        boost::weak_ptr<OpenSimProtocol::OpenSimProtocolModule> net_interface_;
-        
+
         //! framework we belong to
         Foundation::Framework* framework_;
         

@@ -21,7 +21,7 @@ namespace TextureDecoder
         LogInfo("Module " + Name() + " loaded.");
         
         AutoRegisterConsoleCommand(Console::CreateCommand(
-            "DecodeTexture", "Fetch & decode texture. Usage: DecodeTexture(uuid, [reduction])", 
+            "DecodeTexture", "Fetch & decode texture. Usage: DecodeTexture(uuid)", 
             Console::Bind(this, &TextureDecoderModule::ConsoleDecodeTexture)));
     }
 
@@ -33,17 +33,13 @@ namespace TextureDecoder
 
     // virtual
     void TextureDecoderModule::Initialize()
-    {        
+    {
+        decoder_ = DecoderPtr(new Decoder(framework_));
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Texture, decoder_.get());
+
         LogInfo("Module " + Name() + " initialized.");
     }
     
-    // virtual
-    void TextureDecoderModule::PostInitialize()
-    {
-        // Decode worker depends on an asset service, at this point it should exist
-        decoder_ = DecoderPtr(new Decoder(framework_));
-    }
-
     // virtual
     void TextureDecoderModule::Update(Core::f64 frametime)
     {
@@ -54,6 +50,8 @@ namespace TextureDecoder
     // virtual 
     void TextureDecoderModule::Uninitialize()
     {
+        framework_->GetServiceManager()->UnregisterService(decoder_.get());
+        decoder_.reset();
         LogInfo("Module " + Name() + " uninitialized.");
     }
     
@@ -69,23 +67,10 @@ namespace TextureDecoder
     Console::CommandResult TextureDecoderModule::ConsoleDecodeTexture(const Core::StringVector &params)
     {
         if (params.size() < 1)
-        {
-            return Console::ResultFailure("Usage: DecodeTexture(uuid, [reduction])");
-        }
+            return Console::ResultFailure("Usage: DecodeTexture(uuid)");
 
         if (decoder_)
-        {
-            Core::uint reduction = 0;
-            if (params.size() > 1)
-            {
-                try
-                {
-                    reduction = Core::ParseString<int>(params[1]);
-                } catch (std::exception) {}
-            }
-            
-            decoder_->RequestTexture(params[0]);
-        }
+            decoder_->QueueTextureRequest(params[0]);
 
         return Console::ResultSuccess();
     }
