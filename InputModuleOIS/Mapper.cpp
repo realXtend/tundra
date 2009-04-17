@@ -9,6 +9,7 @@
 #include <Poco/DOM/NamedNodeMap.h>
 #include <Poco/DOM/AutoPtr.h>
 #include <Poco/SAX/InputSource.h>
+#include <Poco/SAX/AttributesImpl.h>
 
 #include "Mapper.h"
 #include "InputEvents.h"
@@ -41,35 +42,42 @@ namespace Input
 
     void Mapper::LoadInputMappings(const std::string &file)
     {
-        try
+        if (boost::filesystem::exists(file) == false)
         {
-            Poco::XML::InputSource source(file);
-            Poco::XML::DOMParser parser;
-            Poco::XML::AutoPtr<Poco::XML::Document> document = parser.parse(&source);
-            
-            if (!document.isNull())
+            InputModuleOIS::LogInfo("Input mappings file not found, using default mappings.");
+
+            ExportDefaults(file);
+        } else
+        {
+            InputModuleOIS::LogInfo("Loading input mappings from file " + file + "...");
+            try
             {
-                Poco::XML::Node* node = document->firstChild();
-                if (node)
+                Poco::XML::InputSource source(file);
+                Poco::XML::DOMParser parser;
+                Poco::XML::AutoPtr<Poco::XML::Document> document = parser.parse(&source);
+                
+                if (!document.isNull())
                 {
-                    LoadInputMappings(node);
+                    Poco::XML::Node* node = document->firstChild();
+                    if (node)
+                    {
+                        LoadInputMappings(node);
+                    }
                 }
-            }
-            else
+                else
+                {
+                    throw Core::Exception("Failed to parse xml document.");
+                }
+            } catch (std::exception &e)
             {
-                InputModuleOIS::LogInfo("Input mappings file not found, using default mappings.");
+                InputModuleOIS::LogInfo(e.what());
+                InputModuleOIS::LogInfo("Failed to parse input mappings file, using default mappings.");
             }
-        } catch (std::exception &e)
-        {
-            InputModuleOIS::LogInfo(e.what());
-            InputModuleOIS::LogInfo("Failed to parse input mappings file, using default mappings.");
         }
     }
 
     void Mapper::LoadInputMappings(const Poco::XML::Node* node)
     {
-        InputModuleOIS::LogInfo("Loading input mappings from file.");
-
         node = node->firstChild();
         if (!node)
             throw Core::Exception("Child node not found for root node.");
@@ -105,6 +113,31 @@ namespace Input
 
             }
         }
+    }
+
+    void Mapper::ExportDefaults(const std::string &file)
+    {
+        InputModuleOIS::LogInfo("Exporting default input mappings to file " + file + "...");
+
+        std::fstream file_op(file.c_str(), std::ios::out);
+
+        Poco::XML::XMLWriter writer(file_op, Poco::XML::XMLWriter::CANONICAL);
+	    writer.startDocument();
+	    writer.startElement("", "", "input");
+
+        const InputModuleOIS::KeyEventInfoVector &events = module_->GetRegisteredKeyEvents();
+        for ( InputModuleOIS::KeyEventInfoVector::const_iterator info = events.begin() ; 
+              info != events.end() ;
+              ++info )
+        {
+            Poco::XML::AttributesImpl attrs;
+            attrs.addAttribute("", "", "value", "CDATA", Core::ToString(info->pressed_event_id_));
+	        attrs.addAttribute("", "", "modifier", "CDATA", Core::ToString(info->modifier_));
+            attrs.addAttribute("", "", "key", "CDATA", Core::ToString(info->key_));
+	        writer.emptyElement("", "", "action", attrs);
+        }
+        writer.endElement("", "", "input");
+	    writer.endDocument();
     }
 
     void Mapper::SetDefaultMappings()

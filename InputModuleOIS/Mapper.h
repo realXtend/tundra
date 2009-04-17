@@ -50,7 +50,7 @@ namespace Input
 
     private:
         //! Exports default mappings to a file
-        void ExportDefaults();
+        void ExportDefaults(const std::string &file);
 
         //! Sets default mappings, if no mappings file exists
         void SetDefaultMappings();

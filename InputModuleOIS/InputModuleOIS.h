@@ -36,7 +36,7 @@ namespace Input
     //! Different keys can launch the same event, but same key can't launch multiple events.
     struct UnBufferedKeyEventInfo
     {
-        // compiler generated copy constructor apply
+        // compiler generated copy constructor applies
 
         //! comparison
         bool operator ==(const UnBufferedKeyEventInfo &rhs) const { return (key_ == rhs.key_ && modifier_ == rhs.modifier_ ); }
@@ -54,6 +54,8 @@ namespace Input
     class /* INPUTOIS_MODULE_API */ InputModuleOIS : public Foundation::ModuleInterfaceImpl
     {
     public:
+        typedef std::vector<UnBufferedKeyEventInfo> KeyEventInfoVector;
+
         InputModuleOIS();
         virtual ~InputModuleOIS();
 
@@ -91,13 +93,15 @@ namespace Input
         */
         OIS::KeyCode GetKeyFromEvent(Core::event_id_t pressed_event);
 
+        //! Introspection of registered key events
+        const KeyEventInfoVector &GetRegisteredKeyEvents() const { return listened_keys_; }
+
         MODULE_LOGGING_FUNCTIONS
 
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Input;
-
     private:
         //! Handle closing the main window
         /*! Should only be called when main window gets closed, not f.ex. when additional render windows get closed.
@@ -106,8 +110,6 @@ namespace Input
 
         //! Handle window resizing, only for the main render window
         void WindowResized(int width, int height);
-
-        typedef std::vector<UnBufferedKeyEventInfo> KeyEventInfoVector;
 
         //! input event category
         Core::event_category_id_t event_category_;
