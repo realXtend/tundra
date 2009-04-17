@@ -7,6 +7,7 @@
 
 #include "ModuleInterface.h"
 #include "InputEvents.h"
+#include "InputModuleApi.h"
 
 
 namespace Foundation
@@ -41,7 +42,8 @@ namespace Input
 
 
     //! Input module that uses OIS for input. OIS is used in unbuffered mode, so doesn't work well for UI input.
-    class InputModuleOIS : public Foundation::ModuleInterfaceImpl
+    //! \todo INPUTOIS_MODULE_API doesn't work for some reason
+    class /* INPUTOIS_MODULE_API */ InputModuleOIS : public Foundation::ModuleInterfaceImpl
     {
     public:
         InputModuleOIS();
@@ -67,7 +69,7 @@ namespace Input
         //! Polls the current mouse state for both absolute and relative movement
         /*! Not thread safe
         */
-        const Events::Movement &GetMouseMovement() const { return movement_; }
+        __inline const Events::Movement &GetMouseMovement() const { return movement_; }
 
         //! add a key for unbuffered listening
         void AddUnbufferedKeyEvent(OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event);
