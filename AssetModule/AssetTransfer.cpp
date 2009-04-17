@@ -9,7 +9,8 @@ namespace Asset
 {
     AssetTransfer::AssetTransfer() :
         size_(0),
-        received_(0)
+        received_(0),
+        time_(0.0)
     {
     }
     
