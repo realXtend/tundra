@@ -73,5 +73,5 @@ add_subdirectory (AssetModule)
 add_subdirectory (CommunicationModule)
 #add_subdirectory (CommunicationUIModule)
 add_subdirectory (InputModuleOIS)
-add_subdirectory (TextureDecoderModule)
+#add_subdirectory (TextureDecoderModule)
 

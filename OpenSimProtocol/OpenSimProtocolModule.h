@@ -35,11 +35,12 @@ struct ClientParameters
 
 namespace OpenSimProtocol
 {
-    /// Inbound network event ID.
-    static const Core::event_id_t EVENT_NETWORK_IN = 0x1;
-        
-    /// Outbound network event ID.
-    static const Core::event_id_t EVENT_NETWORK_OUT = 0x1;
+    ///\todo These (event id's, ClienParameters struct and event data classes) could be moved somewhere else?
+    namespace Events
+    {
+        static const Core::event_id_t EVENT_SERVER_CONNECTED = 0x02;
+        static const Core::event_id_t EVENT_SERVER_DISCONNECTED = 0x01;
+    }
 
     /// Event data interface for inbound messages
     class NetworkEventInboundData : public Foundation::EventDataInterface
@@ -118,7 +119,7 @@ namespace OpenSimProtocol
         /// Returns client parameters of current connection
         const ClientParameters& GetClientParameters() const { return clientParameters_; }
         
-        /// Returns whether connected
+        ///@return True if connection exists.
         bool IsConnected() const { return bConnected_; }
         
     private:
@@ -142,6 +143,9 @@ namespace OpenSimProtocol
         
         /// Event manager.
         Foundation::EventManagerPtr eventManager_;
+        
+        /// Network state event category.
+        Core::event_category_id_t networkStateEventCategory_;
         
         /// Network event category for inbound messages.
         Core::event_category_id_t networkEventInCategory_;		

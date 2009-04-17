@@ -97,7 +97,7 @@ namespace Asset
         Core::event_id_t event_id, 
         Foundation::EventDataInterface* data)
     {
-        if ((category_id == inboundcategory_id_) && (event_id == OpenSimProtocol::EVENT_NETWORK_IN))
+        if ((category_id == inboundcategory_id_))
         {
             NetworkEventInboundData *event_data = checked_static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
             const NetMsgID msgID = event_data->messageID;

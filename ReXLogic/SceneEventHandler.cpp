@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "SceneEventHandler.h"
-#include "SceneModule.h"
+#include "SceneEvents.h"
 #include "RexLogicModule.h"
 
 namespace RexLogic
@@ -19,17 +19,17 @@ namespace RexLogic
     
     bool SceneEventHandler::HandleSceneEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        Scene::SceneEventData *event_data = dynamic_cast<Scene::SceneEventData *>(data);        
+        Scene::Events::SceneEventData *event_data = dynamic_cast<Scene::Events::SceneEventData *>(data);        
         
         switch(event_id)
         {
-            case Scene::EVENT_ENTITY_SELECT:
+            case Scene::Events::EVENT_ENTITY_SELECT:
                 rexlogicmodule_->GetServerConnection()->SendObjectSelectPacket(event_data->localID);
                 break;
-            case Scene::EVENT_ENTITY_DESELECT:
+            case Scene::Events::EVENT_ENTITY_DESELECT:
                 rexlogicmodule_->GetServerConnection()->SendObjectDeselectPacket(event_data->localID);
                 break;
-            case Scene::EVENT_ENTITY_UPDATED:
+            case Scene::Events::EVENT_ENTITY_UPDATED:
                 rexlogicmodule_->GetServerConnection()->SendMultipleObjectUpdatePacket(event_data->entity_ptr_list);
                 break;                
             default:

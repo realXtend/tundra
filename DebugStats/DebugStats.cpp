@@ -20,7 +20,7 @@
 #include "SceneManager.h"
 #include "Entity.h"
 #include "SceneInterface.h"
-#include "SceneModule.h"
+#include "SceneEvents.h"
 #include "ComponentInterface.h"
 
 #include "DebugStats.h"
@@ -98,15 +98,15 @@ bool DebugStats::HandleEvent(
 {
     if (category_id == scene_event_category_)
     {
-        Scene::SceneEventData *event_data = dynamic_cast<Scene::SceneEventData *>(data);    
+        Scene::Events::SceneEventData *event_data = dynamic_cast<Scene::Events::SceneEventData *>(data);    
         switch(event_id)
         {
-            case Scene::EVENT_SCENE_ADDED:
-            case Scene::EVENT_SCENE_DELETED:
-            case Scene::EVENT_ENTITY_ADDED:
-            case Scene::EVENT_ENTITY_UPDATED:
-            case Scene::EVENT_ENTITY_DELETED:
-            case Scene::EVENT_ENTITY_SELECTED:
+            case Scene::Events::EVENT_SCENE_ADDED:
+            case Scene::Events::EVENT_SCENE_DELETED:
+            case Scene::Events::EVENT_ENTITY_ADDED:
+            case Scene::Events::EVENT_ENTITY_UPDATED:
+            case Scene::Events::EVENT_ENTITY_DELETED:
+            case Scene::Events::EVENT_ENTITY_SELECTED:
                 UpdateEntityListTreeView(event_id, event_data);
                 break;
             default:
@@ -292,7 +292,7 @@ void DebugStats::PopulateEntityListTreeView()
     }
 }
 
-void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::SceneEventData *event_data)
+void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Events::SceneEventData *event_data)
 {
     Scene::SceneManager *scene_manager = dynamic_cast<Scene::SceneManager *>
         (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
@@ -301,7 +301,7 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Scen
             
     switch(event_id)
     {
-        case Scene::EVENT_SCENE_ADDED:
+        case Scene::Events::EVENT_SCENE_ADDED:
             {
                 ///\todo Test, the events don't make it this far for now...
                 Gtk::TreeModel::Row scene_row;
@@ -310,7 +310,7 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Scen
                 scene_row[entityModelColumns_.colID] = "";
                 break;
             }
-        case Scene::EVENT_SCENE_DELETED:
+        case Scene::Events::EVENT_SCENE_DELETED:
             {
                 ///\todo Make work & test.
                 /*Gtk::TreeModel::Children rows = entityListModel_->children();
@@ -328,7 +328,7 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Scen
                 entityListModel_->erase(iter);*/
                 break;
             }
-        case Scene::EVENT_ENTITY_SELECTED:
+        case Scene::Events::EVENT_ENTITY_SELECTED:
             {
                 ///\todo Get the real scene, not hardcoded
                 const Foundation::ScenePtr &scene = scene_manager->GetScene("World");
@@ -343,7 +343,7 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Scen
                 PopulatePrimPropertiesTreeView(prim, ogre_pos);                
                 break;
             }        
-        case Scene::EVENT_ENTITY_ADDED:            
+        case Scene::Events::EVENT_ENTITY_ADDED:            
             {
                 // Find the scene where this entity belongs to. ///\todo Implemented better?
                 std::string scene_name;
@@ -404,10 +404,10 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Scen
                 }
             }
             break;
-        case Scene::EVENT_ENTITY_UPDATED:
-        case Scene::EVENT_ENTITY_DELETED:
-        case Scene::EVENT_COMPONENT_ADDED:
-        case Scene::EVENT_COMPONENT_DELETED:
+        case Scene::Events::EVENT_ENTITY_UPDATED:
+        case Scene::Events::EVENT_ENTITY_DELETED:
+        case Scene::Events::EVENT_COMPONENT_ADDED:
+        case Scene::Events::EVENT_COMPONENT_DELETED:
         default:
             break;
     }
@@ -454,9 +454,10 @@ void DebugStats::OnClickSave()
     ogre_pos->SetOrientation(quat);
     
     //Send event
-    Scene::SceneEventData event_data(currentEntityID_);
+    Scene::Events::SceneEventData event_data(currentEntityID_);
     event_data.entity_ptr_list.push_back(entity);
-    framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::EVENT_ENTITY_UPDATED, &event_data);    
+    framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
+//    framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_COMPONENT_UPDATED, &event_data);
 }
 
 void DebugStats::OnClickCancel()
@@ -467,8 +468,8 @@ void DebugStats::OnClickCancel()
 void DebugStats::OnPrimPropertiesClose()
 {
     // Send 'Entity Deselect' event.
-    Scene::SceneEventData event_data(currentEntityID_);
-    framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::EVENT_ENTITY_DESELECT, &event_data);    
+    Scene::Events::SceneEventData event_data(currentEntityID_);
+    framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_DESELECT, &event_data);    
     currentEntityID_ = 0;
 }
 
@@ -497,9 +498,10 @@ void DebugStats::OnDoubleClickEntity(const Gtk::TreeModel::Path &path, Gtk::Tree
         }
         
         currentEntityID_ = id;
+        
         // Send 'Entity Selected' event.
-        Scene::SceneEventData event_data(id);
-        framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::EVENT_ENTITY_SELECT, &event_data);
+        Scene::Events::SceneEventData event_data(id);
+        framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_SELECT, &event_data);
 
         ///\todo Get the real scene, not hardcoded
         const Foundation::ScenePtr &scene = scene_manager->GetScene("World");

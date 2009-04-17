@@ -12,6 +12,7 @@ namespace RexLogic
     class NetworkEventHandler;
     class InputEventHandler;
     class SceneEventHandler;
+    class NetworkStateEventHandler;
 
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
     typedef boost::shared_ptr<AvatarController> AvatarControllerPtr;    
@@ -51,6 +52,9 @@ namespace RexLogic
         
         //! Event handler for network events.
         InputEventHandler *input_handler_; 
+        
+        //! Event handler for network state events.
+        NetworkStateEventHandler *network_state_handler_;
         
         //! Event handler for scene events.
         SceneEventHandler *scene_handler_;

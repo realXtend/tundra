@@ -50,6 +50,7 @@ namespace OpenSimProtocol
         
         // Register event categories.
         eventManager_ = framework_->GetEventManager();
+        networkStateEventCategory_ = eventManager_->RegisterEventCategory("NetworkState");
         networkEventInCategory_ = eventManager_->RegisterEventCategory("OpenSimNetworkIn");
         networkEventOutCategory_ = eventManager_->RegisterEventCategory("OpenSimNetworkOut");
         
@@ -78,16 +79,18 @@ namespace OpenSimProtocol
     void OpenSimProtocolModule::OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg)
     {
         // Send a Network event.
+        assert(msg);
         NetworkEventInboundData data(msgID, msg);
-        eventManager_->SendEvent(networkEventInCategory_, EVENT_NETWORK_IN, &data);
+        eventManager_->SendEvent(networkEventInCategory_, msgID, &data);
     }
         
     //virtual
     void OpenSimProtocolModule::OnNetworkMessageSent(const NetOutMessage *msg)
     {
         // Send a NetworkOutStats event.
+        assert(msg);
         NetworkEventOutboundData data(msg->GetMessageID(), msg);
-        eventManager_->SendEvent(networkEventOutCategory_, EVENT_NETWORK_OUT, &data);    
+        eventManager_->SendEvent(networkEventOutCategory_, msg->GetMessageID(), &data);
     }
     
     bool OpenSimProtocolModule::ConnectToRexServer(
@@ -97,11 +100,17 @@ namespace OpenSimProtocol
 		const char *address,
 		int port)
 	{
-	    if (!PerformXMLRPCLogin(first_name, last_name, password, address, port, &clientParameters_))
+	    bool xmlrpc_sucess = PerformXMLRPCLogin(first_name, last_name, password, address, port, &clientParameters_);
+	    if (!xmlrpc_sucess)
 	        return false;
-        if (!networkManager_->ConnectTo(address, port))
+
+	    bool network_success = networkManager_->ConnectTo(address, port);
+        if (!network_success)
             return false;
+
+        eventManager_->SendEvent(networkStateEventCategory_, Events::EVENT_SERVER_CONNECTED, NULL);
         bConnected_ = true;
+        
         return true;
 	}
 	

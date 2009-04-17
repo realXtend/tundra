@@ -15,37 +15,6 @@ namespace Foundation
 
 namespace Scene
 {
-    //! Scene event id's.
-    static const Core::event_id_t EVENT_SCENE_ADDED =       0x01;
-    static const Core::event_id_t EVENT_SCENE_DELETED =     0x02;
-    static const Core::event_id_t EVENT_SCENE_CLONED =      0x03;
-    
-    //! Entity event id's.
-    static const Core::event_id_t EVENT_ENTITY_ADDED =      0x04;
-    static const Core::event_id_t EVENT_ENTITY_UPDATED =    0x05;
-    static const Core::event_id_t EVENT_ENTITY_DELETED =    0x06;
-    static const Core::event_id_t EVENT_ENTITY_SELECT =     0x07;
-    static const Core::event_id_t EVENT_ENTITY_SELECTED =   0x08;
-    static const Core::event_id_t EVENT_ENTITY_DESELECT =   0x09;
-    
-    //! Component event id's.
-    static const Core::event_id_t EVENT_COMPONENT_ADDED =   0x0a;
-    static const Core::event_id_t EVENT_COMPONENT_DELETED = 0x0b;
-    static const Core::event_id_t EVENT_COMPONENT_EDITED =  0x0c;
-    
-    //! Event data interface for entity events.
-    class SceneEventData: public Foundation::EventDataInterface
-    {
-    public:
-        SceneEventData(const std::string &scene_name) : sceneName(scene_name) {}
-        SceneEventData(Core::entity_id_t id) : localID(id) {}
-        virtual ~SceneEventData() {}
-        
-        Core::entity_id_t localID;
-        std::string sceneName;
-        std::vector<Foundation::EntityPtr> entity_ptr_list;
-    };
-        
     //! interface for modules
     class SCENE_MODULE_API SceneModule : public Foundation::ModuleInterfaceImpl
     {

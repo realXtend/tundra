@@ -54,7 +54,7 @@ private:
     void OnClickCancel();
     
     /// Update entity list.
-    void UpdateEntityListTreeView(Core::event_id_t event_id, Scene::SceneEventData *event_data);
+    void UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Events::SceneEventData *event_data);
     
     /// Callback for Entity activation.
     void OnDoubleClickEntity(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn* column);

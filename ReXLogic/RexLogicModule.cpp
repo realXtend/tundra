@@ -5,6 +5,7 @@
 #include "ComponentManager.h"
 #include "Poco/ClassLibrary.h"
 #include "NetworkEventHandler.h"
+#include "NetworkStateEventHandler.h"
 #include "InputEventHandler.h"
 #include "SceneEventHandler.h"
 #include "EventDataInterface.h"
@@ -58,6 +59,7 @@ namespace RexLogic
         avatar_controller_ = AvatarControllerPtr(new AvatarController(framework_, this));
         rexserver_connection_ = RexServerConnectionPtr(new RexServerConnection(framework_)); 
         network_handler_ = new NetworkEventHandler(framework_, this);
+        network_state_handler_ = new NetworkStateEventHandler(framework_, this);
         input_handler_ = new InputEventHandler(framework_, this);  
         scene_handler_ = new SceneEventHandler(framework_, this);
         LogInfo("Module " + Name() + " initialized.");
@@ -66,28 +68,35 @@ namespace RexLogic
     // virtual
     void RexLogicModule::PostInitialize()
     {
-        Foundation::SceneManagerServiceInterface *sceneManager = 
-                framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
-        if (!sceneManager->HasScene("World"))
-            sceneManager->CreateScene("World");
+        // Get the event category id's.
+        // NetworkState events.
+        Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkState");
+        if (eventcategoryid != 0)
+            event_handlers_[eventcategoryid] = boost::bind(&NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2);
+        else
+            LogError("Unable to find event category for OpenSimNetworkIn");
 
-        Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
+        // OpenSimNetworkIn events.
+        eventcategoryid = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
         if (eventcategoryid != 0)
             event_handlers_[eventcategoryid] = boost::bind(&NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2);
         else
             LogError("Unable to find event category for OpenSimNetworkIn");
-            
+    
+        // Input events.
         eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
         if (eventcategoryid != 0)
             event_handlers_[eventcategoryid] = boost::bind(&InputEventHandler::HandleInputEvent, input_handler_, _1, _2);
         else
             LogError("Unable to find event category for Input");           
-
+        
+        // Scene events.
         eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Scene");
         if (eventcategoryid != 0)
             event_handlers_[eventcategoryid] = boost::bind(&SceneEventHandler::HandleSceneEvent, scene_handler_, _1, _2);
         else
             LogError("Unable to find event category for Scene");
+        
         OgreRenderer::Renderer *renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
         Ogre::Camera *cam = renderer->GetCurrentCamera();
         cam->setPosition(-10, -10, -10);
@@ -102,13 +111,15 @@ namespace RexLogic
             //! \todo tucofixme, at the moment don't wait for LogoutReply packet, just close connection.
             rexserver_connection_->RequestLogout();
             rexserver_connection_->CloseServerConnection(); 
-        } 
+        }
+        
         rexserver_connection_.reset();
         avatar_controller_.reset();
 
         SAFE_DELETE (network_handler_);
         SAFE_DELETE (input_handler_);
 		SAFE_DELETE (scene_handler_);
+		SAFE_DELETE (network_state_handler_);
         
 		LogInfo("Module " + Name() + " uninitialized.");
     }
