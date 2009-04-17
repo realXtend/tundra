@@ -62,7 +62,7 @@ namespace RexLogic
         Foundation::EntityPtr GetAvatarEntity(const RexUUID &fullid);        
 
         //! Creates an OBB for debug visualization of the extents of the given scene object.
-        void DebugCreateOgreBoundingBox(const Foundation::ComponentInterfacePtr ogrePlaceable);
+        void DebugCreateOgreBoundingBox(const Foundation::ComponentInterfacePtr ogrePlaceable, const std::string &color);
 
         void NetworkEventHandler::DebugCreateTerrainVisData(const DecodedTerrainPatch &heightData, int patchSize);
 
