@@ -6,6 +6,7 @@
 #include "CoreStdIncludes.h"
 #include "Core.h"
 #include "Foundation.h"
+#include "InputModuleApi.h"
 
 #undef OIS_DYNAMIC_LIB
 #define OIS_DYNAMIC_LIB

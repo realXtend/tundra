@@ -29,7 +29,7 @@ namespace Input
         //! destructor
         ~Mapper();
 
-        const Events::Movement &GetMouseMovement() const { return module_->GetMouseMovement(); }
+        __inline const Events::Movement &GetMouseMovement() const { return module_->GetMouseMovement(); }
 
     private:
         //! Exports default mappings to a file

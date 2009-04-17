@@ -21,7 +21,7 @@ INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_OIS()
 
-add_definitions (-DMODULE_EXPORTS)
+add_definitions (-DINPUTOIS_MODULE_EXPORTS -DMODULE_EXPORTS)
 
 # Define dynamic library
 if (NOT MSVC)
