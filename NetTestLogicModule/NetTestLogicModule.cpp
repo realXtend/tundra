@@ -333,19 +333,16 @@ namespace NetTest
     void NetTestLogicModule::OnClickConnect()
     {
         // Initialize UI widgets.
-        //Gtk::Entry *entry_username;
+       
         Gtk::Entry *entry_password;
-        //Gtk::Entry *entry_server;
-
-        //loginControls->get_widget("entry_username", entry_username_);
-        loginControls->get_widget("entry_password", entry_password);
-        //loginControls->get_widget("entry_server", entry_server_);    
+		loginControls->get_widget("entry_password", entry_password);
+      
     
         if(rexlogic_->GetServerConnection()->ConnectToServer(entry_username_->get_text(), entry_password->get_text(), entry_server_->get_text()))
         {
             // Save login and server settings for future use. 
-            framework_->GetConfigManagerPtr()->SetSetting<std::string>(std::string("Login"),std::string("server"), std::string(entry_server_->get_text()));
-            framework_->GetConfigManagerPtr()->SetSetting<std::string>(std::string("Login"),std::string("username"), std::string(entry_username_->get_text()));
+            framework_->GetConfigManager()->SetSetting<std::string>(std::string("Login"),std::string("server"), std::string(entry_server_->get_text()));
+            framework_->GetConfigManager()->SetSetting<std::string>(std::string("Login"),std::string("username"), std::string(entry_username_->get_text()));
 
             if (!netTestWindow)
                 InitNetTestWindow();

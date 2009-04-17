@@ -22,12 +22,14 @@ namespace Foundation
     {
         application_ = ApplicationPtr(new Application(this));
         platform_ = PlatformPtr(new Platform(this));
+		// Create config manager
+		config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
 
-        config_.DeclareSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
-        config_.DeclareSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("1"));
-        config_.DeclareSetting(Framework::ConfigurationGroup(), std::string("application_name"), std::string("realXtend"));
-        config_.DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));
-        config_.DeclareSetting(Framework::ConfigurationGroup(), std::string("log_level"), std::string("information"));
+        config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
+        config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("1"));
+        config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("application_name"), std::string("realXtend"));
+        config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));
+        config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_level"), std::string("information"));
 
         platform_->PrepareApplicationDataDirectory(); // depends on config
 
@@ -56,13 +58,13 @@ namespace Foundation
         Poco::LoggingFactory *loggingfactory = new Poco::LoggingFactory();
 
         Poco::Channel *consolechannel = NULL;
-        if (config_.GetSetting<bool>(Framework::ConfigurationGroup(), "log_console"))
+        if (config_manager_->GetSetting<bool>(Framework::ConfigurationGroup(), "log_console"))
             consolechannel = loggingfactory->createChannel("ConsoleChannel");
 
         Poco::Channel *filechannel = loggingfactory->createChannel("FileChannel");
         
         std::wstring logfilepath_w = platform_->GetUserDocumentsDirectoryW();
-        logfilepath_w += L"/" + Core::ToWString(config_.GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name")) + L".log";
+        logfilepath_w += L"/" + Core::ToWString(config_manager_->GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name")) + L".log";
         std::string logfilepath;
         Poco::UnicodeConverter::toUTF8(logfilepath_w, logfilepath);
 

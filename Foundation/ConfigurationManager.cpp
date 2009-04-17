@@ -7,30 +7,29 @@ namespace Foundation
 {
     const char *ConfigurationManager::DEFAULT_CONFIG_PATH = "./data/app_config.xml";
 
-    ConfigurationManager::ConfigurationManager(Type type) : type_(CT_CUSTOM)
+	
+	ConfigurationManager::ConfigurationManager(Framework *framework, const std::string &file) : config_file_(file), 
+		framework_(framework), type_(CT_DEFAULT)
     {
-        // Do not use logger here - not initialized yet
-        assert (type == ConfigurationManager::CT_DEFAULT);
-        Load(DEFAULT_CONFIG_PATH);
-
-        type_ = CT_DEFAULT;
-    }
-
-    ConfigurationManager::ConfigurationManager(const std::string &file) : type_(CT_CUSTOM)
-    {
-        Load(file);
+		 // Do not use logger here - maybi that it is not initialized yet
+		if ( file == DEFAULT_CONFIG_PATH )
+			type_ = CT_DEFAULT;
+		else
+			type_ = CT_CUSTOM;
+        
+		Load(file);
     }
 
     ConfigurationManager::~ConfigurationManager()
     {
-        ExportSettings(config_file_);
+		ExportSettings(config_file_);
+	    // Does not own.
+		framework_ = 0;
     }
 
     void ConfigurationManager::Load(const std::string &file)
     {
         // Do not use logger here - not initialized yet
-
-        assert (type_ != CT_DEFAULT);
 
         config_file_ = file;
         try
