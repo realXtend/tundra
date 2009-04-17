@@ -104,35 +104,29 @@ namespace TextureDecoder
         if (!request.requested_)
         {
             asset_service->GetAsset(request.asset_id_, Asset::RexAT_Texture);
-            request.requested_ = true;
+            request.SetRequested(true);
         }
         
         Core::uint size = 0;
-        Core::uint received_discontinuous = 0;
         Core::uint received = 0;
+        Core::uint received_continuous = 0;
         
-        if (!asset_service->QueryAssetStatus(request.asset_id_, size, received_discontinuous, received))
+        if (!asset_service->QueryAssetStatus(request.asset_id_, size, received, received_continuous))
         {
-            request.requested_ = false; // If cannot query asset status, the asset request wasn't queued (not connected, for example). Request again        
+            // If cannot query asset status, the asset request wasn't queued (not connected, for example). Request again        
+            request.SetRequested(false);
             return false;
         }
 
-        if (size)
-            request.size_ = size;
-        request.received_ = received;
-        
-        // If all bytes received, can go directly to the max. quality level
-        if ((size) && (received >= size))
-            request.next_level_ = 0;
-            
-        if (received >= request.EstimateDataSize(request.next_level_))
+        request.UpdateSizeReceived(size, received_continuous);
+
+        if (request.HasEnoughData()
         {
             bool success = DecodeNextLevel(request, asset_service);
-            if (request.next_level_)
-                request.next_level_--;
+            request.SetNextLevelToDecode();
 
             // If max level, the request is finished and can be erased
-            if ((success) && (request.decoded_level_ == 0))
+            if ((success) && (request.GetDecodedLevel() == 0))
                 return true;
         }
         
@@ -158,7 +152,7 @@ namespace TextureDecoder
     {
         bool success = false;
 
-        Foundation::AssetPtr asset = asset_service->GetIncompleteAsset(request.asset_id_, Asset::RexAT_Texture, request.received_);
+        Foundation::AssetPtr asset = asset_service->GetIncompleteAsset(request.GetAssetId(), Asset::RexAT_Texture, request.GetReceived());
         if (!asset)
             return false;
         
@@ -176,7 +170,7 @@ namespace TextureDecoder
         //event_mgr.info_handler = HandleInfo;
         
         opj_set_default_decoder_parameters(&parameters);
-        parameters.cp_reduce = request.next_level_;
+        parameters.cp_reduce = request.GetNextLevel();
         
         dinfo = opj_create_decompress(CODEC_J2K);
         opj_setup_decoder(dinfo, &parameters);
@@ -185,17 +179,15 @@ namespace TextureDecoder
         cio = opj_cio_open((opj_common_ptr)dinfo, (unsigned char *)asset->GetData(), asset->GetSize());
         
         image = opj_decode_with_info(dinfo, cio, &cstr_info);
-        request.levels_ = cstr_info.numlayers;
+        request.SetLevels(cstr_info.numlayers);
 
         opj_cio_close(cio);
         opj_destroy_decompress(dinfo);
         
         if ((image) && (image->numcomps))
         {
-            request.decoded_level_ = request.next_level_;
-            request.width_ = image->x1 - image->x0;
-            request.height_ = image->y1 - image->y0;
-            request.components_ = image->numcomps;
+            request.DecodeSuccess();
+            request.SetSize(image->x1 - image->x0, image->y1 - image->y0, image->numcomps);
 
             TextureDecoderModule::LogInfo("Texture decode successful, level " + Core::ToString<int>(request.decoded_level_));
         
@@ -224,7 +216,7 @@ namespace TextureDecoder
 
             // Send texture ready event
             Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-            Event::TextureReady event_data(request.asset_id_, request.decoded_level_, texture);
+            Event::TextureReady event_data(request.asset_id_, request.GetDecodedLevel(), texture);
             event_manager->SendEvent(event_category_, Event::TEXTURE_READY, &event_data);
 
             success = true;
