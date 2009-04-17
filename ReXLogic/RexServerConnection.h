@@ -4,12 +4,11 @@
 #define incl_RexEntity_h
 
 #include "OpenSimProtocolModule.h"
-#include "NetInMessage.h"
-#include "NetMessage.h"
+#include "RexTypes.h"
 
-namespace OgreRenderer
+namespace OpenSimProtocol
 {
-    class EC_OgrePlaceable;
+    class OpenSimProtocolModule;
 }
 
 namespace RexLogic
@@ -63,14 +62,22 @@ namespace RexLogic
         /// Sends a packet indicating change in Object's position, rotation and scale.
         ///@param List of updated entity pointers.
         void SendMultipleObjectUpdatePacket(std::vector<Foundation::EntityPtr> entity_ptr_list);
+
+        /// Sends a packet indicating change in Object's name.
+        ///@param List of updated entity pointers.
+        void SendObjectNamePacket(std::vector<Foundation::EntityPtr> entity_ptr_list);
         
+        /// Sends a packet indicating change in Object's description
+        ///@param List of updated entity pointers.
+        void SendObjectDescriptionPacket(std::vector<Foundation::EntityPtr> entity_ptr_list);
+                        
         ///@return Name of the sim we're connected to.
         std::string GetSimName() { return simname_; }
         
         ///@return A structure of connection spesific information, e.g. AgentID and SessiondID.
         ClientParameters GetInfo() const { return myInfo_; }
         
-        ///@return True if client connected to a server.
+        ///@return True if the client connected to a server.
         bool IsConnected() { return connected_; }
 
     private:
@@ -85,7 +92,7 @@ namespace RexLogic
         /// Name of the sim we're connected.
         std::string simname_;		
         
-        // Connected to server
+        /// Is client connected to a server.
         bool connected_;
     };
 }

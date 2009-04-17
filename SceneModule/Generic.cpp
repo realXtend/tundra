@@ -4,6 +4,7 @@
 #include "Generic.h"
 #include "Entity.h"
 #include "SceneModule.h"
+#include "SceneEvents.h"
 
 namespace Scene
 {
@@ -43,9 +44,9 @@ namespace Scene
         entities_[entity->GetId()] = entity;
         
         // Send event.
-        SceneEventData event_data(entity->GetId());
+        Events::SceneEventData event_data(entity->GetId());
         Core::event_category_id_t cat_id = framework->GetEventManager()->QueryEventCategory("Scene");
-        framework->GetEventManager()->SendEvent(cat_id, EVENT_ENTITY_ADDED, &event_data);
+        framework->GetEventManager()->SendEvent(cat_id, Events::EVENT_ENTITY_ADDED, &event_data);
         
         return entity;        
     }

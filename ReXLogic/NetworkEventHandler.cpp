@@ -9,7 +9,8 @@
 #include "RexProtocolMsgIDs.h"
 #include "OpenSimProtocolModule.h"
 #include "RexLogicModule.h"
-#include "SceneModule.h"
+//#include "SceneModule.h"
+#include "SceneEvents.h"
 #include "Entity.h"
 
 #include "EC_Viewable.h"
@@ -175,22 +176,20 @@ namespace RexLogic
 
     bool NetworkEventHandler::HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        if(event_id == OpenSimProtocol::EVENT_NETWORK_IN)
+        OpenSimProtocol::NetworkEventInboundData *netdata = checked_static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
+        switch(event_id)
         {
-            OpenSimProtocol::NetworkEventInboundData *netdata = checked_static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
-            switch(netdata->messageID)
-            {
-                case RexNetMsgRegionHandshake:              return HandleOSNE_RegionHandshake(netdata); break;
-                case RexNetMsgAgentMovementComplete:        return HandleOSNE_AgentMovementComplete(netdata); break;
-                case RexNetMsgGenericMessage:               return HandleOSNE_GenericMessage(netdata); break;
-                case RexNetMsgLogoutReply:                  return HandleOSNE_LogoutReply(netdata); break;
-                case RexNetMsgImprovedTerseObjectUpdate:    return HandleOSNE_ImprovedTerseObjectUpdate(netdata); break;                
-                case RexNetMsgObjectUpdate:                 return HandleOSNE_ObjectUpdate(netdata); break;
-                case RexNetMsgObjectProperties:             return HandleOSNE_ObjectProperties(netdata); break;
-                case RexNetMsgLayerData:                    return HandleOSNE_LayerData(netdata); break;
-                default:                                    return false; break;
-            }
+            case RexNetMsgRegionHandshake:              return HandleOSNE_RegionHandshake(netdata); break;
+            case RexNetMsgAgentMovementComplete:        return HandleOSNE_AgentMovementComplete(netdata); break;
+            case RexNetMsgGenericMessage:               return HandleOSNE_GenericMessage(netdata); break;
+            case RexNetMsgLogoutReply:                  return HandleOSNE_LogoutReply(netdata); break;
+            case RexNetMsgImprovedTerseObjectUpdate:    return HandleOSNE_ImprovedTerseObjectUpdate(netdata); break;                
+            case RexNetMsgObjectUpdate:                 return HandleOSNE_ObjectUpdate(netdata); break;
+            case RexNetMsgObjectProperties:             return HandleOSNE_ObjectProperties(netdata); break;
+            case RexNetMsgLayerData:                    return HandleOSNE_LayerData(netdata); break;
+            default:                                    return false; break;
         }
+        
         return false;
     }
 
@@ -233,9 +232,9 @@ namespace RexLogic
         // Send the 'Entity Updated' event.
         /*Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
         EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(component.get());
-        Scene::SceneEventData entity_event_data(entityid);
+        Scene::SceneEventData::Events entity_event_data(entityid);
         entity_event_data.sceneName = scene->Name();
-        framework_->GetEventManager()->SendEvent(cat_id, Scene::EVENT_ENTITY_UPDATED, &entity_event_data);*/
+        framework_->GetEventManager()->SendEvent(cat_id, Scene::Events::EVENT_ENTITY_UPDATED, &entity_event_data);*/
         
         return entity;
     }  
@@ -455,8 +454,8 @@ namespace RexLogic
             
             // Send the 'Entity Selected' event.
             Core::event_category_id_t event_category_id = framework_->GetEventManager()->QueryEventCategory("Scene");
-            Scene::SceneEventData event_data(prim.LocalId);
-            framework_->GetEventManager()->SendEvent(event_category_id, Scene::EVENT_ENTITY_SELECTED, &event_data);
+            Scene::Events::SceneEventData event_data(prim.LocalId);
+            framework_->GetEventManager()->SendEvent(event_category_id, Scene::Events::EVENT_ENTITY_SELECTED, &event_data);
         }
         else
             RexLogicModule::LogInfo("Received 'ObjectProperties' packet for unknown entity (" + full_id.ToString() + ").");
@@ -581,7 +580,12 @@ namespace RexLogic
         rexlogicmodule_->GetServerConnection()->simname_ = simname;
         
         RexLogicModule::LogInfo("Joined to the sim \"" + simname + "\".");
+        
+        // Create the "World" scene.
+        
+        
         SendRegionHandshakeReply();
+        
         return false;  
     } 
 
@@ -663,7 +667,8 @@ namespace RexLogic
                 if(entity)
                 {
                     OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
-                    std::swap(position.y, position.z); ///\todo Refactor the flipping of coordinate system to somewhere else so that we have unified access to it, instead of each function doing it by themselves.
+                    ///\todo Refactor the flipping of coordinate system to somewhere else so that we have unified access to it, instead of each function doing it by themselves.
+                    std::swap(position.y, position.z); 
                     ogrePos.SetPosition(position);
                 }
             }

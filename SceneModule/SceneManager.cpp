@@ -4,6 +4,7 @@
 #include "SceneManager.h"
 #include "Generic.h"
 #include "SceneModule.h"
+#include "SceneEvents.h"
 
 namespace Scene
 {
@@ -14,10 +15,10 @@ namespace Scene
         
         scenes_[name] = scene;
         
-        ///\todo Make this work.        
-        SceneEventData event_data(name);
+        ///\todo Make this work.
+        Events::SceneEventData event_data(name);
         Core::event_category_id_t cat_id = module_->GetFramework()->GetEventManager()->QueryEventCategory("Scene");
-        module_->GetFramework()->GetEventManager()->SendEvent(cat_id, EVENT_SCENE_ADDED, &event_data);
+        module_->GetFramework()->GetEventManager()->SendEvent(cat_id, Events::EVENT_SCENE_ADDED, &event_data);
         
         return scene;
     }
@@ -32,9 +33,9 @@ namespace Scene
         
         assert (HasScene(name) == false);
 
-        SceneEventData event_data(name);
+        Events::SceneEventData event_data(name);
         Core::event_category_id_t cat_id = module_->GetFramework()->GetEventManager()->QueryEventCategory("Scene");
-        module_->GetFramework()->GetEventManager()->SendEvent(cat_id, EVENT_SCENE_DELETED, &event_data);
+        module_->GetFramework()->GetEventManager()->SendEvent(cat_id, Events::EVENT_SCENE_DELETED, &event_data);
     }
 
     Foundation::ScenePtr SceneManager::CloneScene(const std::string &name, const std::string &cloneName)

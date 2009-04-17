@@ -7,6 +7,7 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OpenSimPrim.h"
 #include "QuatUtils.h"
+#include "SceneManager.h"
 
 namespace RexLogic
 {
@@ -107,7 +108,21 @@ namespace RexLogic
     
         netInterface_->DisconnectFromRexServer();    
         connected_ = false;
-    }  
+        
+        Scene::SceneManager *scene_manager = dynamic_cast<Scene::SceneManager *>
+            (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
+        
+        if (!scene_manager)
+            return;
+        
+        // Delete the scene
+        if (scene_manager->HasScene("World"))
+        {
+            scene_manager->DeleteScene("World");
+            assert(!scene_manager->HasScene("World"));
+            RexLogicModule::LogInfo("Logged out from server. Scene deleted.");
+        }  
+    }
     
 	void RexServerConnection::SendUseCircuitCodePacket()
 	{
@@ -329,5 +344,53 @@ namespace RexLogic
         m->AddBuffer(offset, data);*/
         
         netInterface_->FinishMessageBuilding(m);
-    }    
+    }
+    
+    void RexServerConnection::SendObjectNamePacket(std::vector<Foundation::EntityPtr> entity_ptr_list)
+    {
+        if (!connected_)
+            return;
+    
+        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgObjectName);
+        assert(m);
+        
+        // AgentData
+        m->AddUUID(myInfo_.agentID);
+        m->AddUUID(myInfo_.sessionID);
+        
+        // ObjectData
+        m->SetVariableBlockCount(entity_ptr_list.size());
+        for(size_t i = 0; i < entity_ptr_list.size(); ++i)
+        {
+            const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
+            RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
+            
+            m->AddU32(prim->LocalId);
+            m->AddBuffer(prim->ObjectName.size(), (uint8_t*)prim->ObjectName.c_str());
+        }
+    }
+    
+    void RexServerConnection::SendObjectDescriptionPacket(std::vector<Foundation::EntityPtr> entity_ptr_list)
+    {
+        if (!connected_)
+            return;
+    
+        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgObjectDescription);
+        assert(m);
+        
+        // AgentData
+        m->AddUUID(myInfo_.agentID);
+        m->AddUUID(myInfo_.sessionID);
+        
+        // ObjectData
+        m->SetVariableBlockCount(entity_ptr_list.size());
+        for(size_t i = 0; i < entity_ptr_list.size(); ++i)
+        {
+            const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
+            RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
+            
+            m->AddU32(prim->LocalId);
+            m->AddBuffer(prim->Description.size(), (uint8_t*)prim->Description.c_str());
+        }
+    }        
 }
