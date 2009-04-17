@@ -50,7 +50,7 @@ namespace RexLogic
 
     }
 
-    void NetworkEventHandler::DebugCreateOgreBoundingBox(Foundation::ComponentInterfacePtr ogrePlaceable)
+    void NetworkEventHandler::DebugCreateOgreBoundingBox(Foundation::ComponentInterfacePtr ogrePlaceable, const std::string &color)
     {
         OgreRenderer::EC_OgrePlaceable &component = dynamic_cast<OgreRenderer::EC_OgrePlaceable&>(*ogrePlaceable.get());
         OgreRenderer::Renderer *renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
@@ -61,7 +61,7 @@ namespace RexLogic
         std::stringstream ss;
         ss << "manual " << c++;
         Ogre::ManualObject *manual = sceneMgr->createManualObject(ss.str());
-        manual->begin("AmbientRed", Ogre::RenderOperation::OT_LINE_LIST);
+        manual->begin(color, Ogre::RenderOperation::OT_LINE_LIST);
 
         const Ogre::Vector3 v[8] = 
         {
@@ -267,7 +267,7 @@ namespace RexLogic
         
         Foundation::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents); 
 
-        DebugCreateOgreBoundingBox(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
+        DebugCreateOgreBoundingBox(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()),"AmbientRed");
         return entity;
     }
     
@@ -303,7 +303,7 @@ namespace RexLogic
  
         OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
         ogrePos.SetScale(Vector3(0.5,1.5,0.5));
-        DebugCreateOgreBoundingBox(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
+        DebugCreateOgreBoundingBox(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()),"AmbientGreen");
  
         return entity;
     }
@@ -381,6 +381,7 @@ namespace RexLogic
                     // total 60 bytes
                     Core::Vector3df pos = *reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[0]);
                     std::swap(pos.y, pos.z); ///\todo Refactor the flipping of coordinate system to somewhere else so that we have unified access to it, instead of each function doing it by themselves.
+
                     ogrePos.SetPosition(pos); 
                     ogrePos.SetOrientation(UnpackQuaternionFromFloat3((float*)&objectdatabytes[36])); ///\todo Flip the orientation of the quaternion to the proper coordinate system.
                 }
