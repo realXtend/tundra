@@ -159,19 +159,34 @@ namespace Input
             
             for (size_t i=0 ; i<listened_keys_.size() ; ++i)
             {
-                if (keyboard_->isKeyDown(listened_keys_[i].Key))
+                bool key_released = false;
+                if (keyboard_->isKeyDown(listened_keys_[i].key_))
                 {
-                    if(!listened_keys_[i].bPressed)
+                    if(!listened_keys_[i].pressed_)
                     {
-                        listened_keys_[i].bPressed = true;
-                        framework_->GetEventManager()->SendEvent(event_category_, listened_keys_[i].Pressed_EventId, NULL);
+                        // check modifiers in a bit convoluted way. All combos of ctrl+a, ctrl+alt+a and ctrl+alt+shift+a must work!
+                        if (((listened_keys_[i].modifier_ & OIS::Keyboard::Alt)   == 0 || keyboard_->isModifierDown(OIS::Keyboard::Alt))  &&
+                            ((listened_keys_[i].modifier_ & OIS::Keyboard::Ctrl)  == 0 || keyboard_->isModifierDown(OIS::Keyboard::Ctrl)) &&
+                            ((listened_keys_[i].modifier_ & OIS::Keyboard::Shift) == 0 || keyboard_->isModifierDown(OIS::Keyboard::Shift))) 
+                        {
+                            listened_keys_[i].pressed_ = true;
+                            framework_->GetEventManager()->SendEvent(event_category_, listened_keys_[i].pressed_event_id_, NULL);
+                        } else
+                        {
+                            key_released = true;
+                        }
                     }
                 }
-                else if(listened_keys_[i].bPressed)
+                else if(listened_keys_[i].pressed_)
                 {
-                    listened_keys_[i].bPressed = false;
-                    framework_->GetEventManager()->SendEvent(event_category_, listened_keys_[i].Released_EventId, NULL);    
-                }    
+                    key_released = true;
+                }
+
+                if (key_released)
+                {
+                    listened_keys_[i].pressed_ = false;
+                    framework_->GetEventManager()->SendEvent(event_category_, listened_keys_[i].released_event_id_, NULL);
+                }
             }
          
         }
@@ -230,14 +245,15 @@ namespace Input
     }
 
     
-    void InputModuleOIS::AddUnbufferedKeyEvent(OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event)
+    void InputModuleOIS::RegisterUnbufferedKeyEvent(OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event, int modifier)
     {
         UnBufferedKeyEventInfo keyeventinfo;
         
-        keyeventinfo.bPressed = false;
-        keyeventinfo.Pressed_EventId = pressed_event;
-        keyeventinfo.Released_EventId = released_event;
-        keyeventinfo.Key = key;
+        keyeventinfo.pressed_ = false;
+        keyeventinfo.pressed_event_id_ = pressed_event;
+        keyeventinfo.released_event_id_ = released_event;
+        keyeventinfo.key_ = key;
+        keyeventinfo.modifier_ = modifier;
         listened_keys_.push_back(keyeventinfo);        
     }    
 

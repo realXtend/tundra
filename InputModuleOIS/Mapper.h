@@ -29,7 +29,22 @@ namespace Input
         //! destructor
         ~Mapper();
 
+        //! Polls the current mouse state for both absolute and relative movement
+        /*! Not thread safe
+        */
         __inline const Events::Movement &GetMouseMovement() const { return module_->GetMouseMovement(); }
+
+        //! Loads input mappings from xml file, or uses default ones if the file is not found
+        /*!
+            \param file full path to the xml file
+        */
+        void LoadInputMappings(const std::string &file);
+
+        //! Loads input mappings from the specified xml node. See LoadInputMappings(const std::string &file) for more information.
+        /*!
+            \param node xml (root) node that contains input mappings
+        */
+        void LoadInputMappings(const Poco::XML::Node* node);
 
     private:
         //! Exports default mappings to a file

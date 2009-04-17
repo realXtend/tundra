@@ -34,10 +34,11 @@ namespace Input
 
     struct UnBufferedKeyEventInfo
     {
-        Core::event_id_t Pressed_EventId;
-        Core::event_id_t Released_EventId;
-        OIS::KeyCode Key;
-        bool bPressed;
+        Core::event_id_t pressed_event_id_;
+        Core::event_id_t released_event_id_;
+        OIS::KeyCode key_;
+        int modifier_;
+        bool pressed_;
     };
 
 
@@ -72,7 +73,15 @@ namespace Input
         __inline const Events::Movement &GetMouseMovement() const { return movement_; }
 
         //! add a key for unbuffered listening
-        void AddUnbufferedKeyEvent(OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event);
+        /*! 
+        */
+        void RegisterUnbufferedKeyEvent(OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event, int modifier);
+
+        //! Returns key code from event
+        /*! The event must have been registered before with RegisterUnbufferedKeyEvent(), otherwise
+            OIS::KC_UNASSIGNED is returned.
+        */
+        OIS::KeyCode GetKeyFromEvent(Core::event_id_t pressed_event);
 
         MODULE_LOGGING_FUNCTIONS
 
