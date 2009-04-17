@@ -12,11 +12,11 @@ namespace Input
         class Movement;
     }
 
-    //! Maps hardware input codes into more generic input events
-    /*!
-        If default mappings file doesn't already exist, exports one. This is
-        important because key strings are locale specific, f.ex. 'Enter' might
-        be something else in other languages.
+    //! Maps hardware input codes into more generic input events.
+    /*! Default map is used always at first, but if a mappings xml file exists,
+        the input mappings are read from that file and they replace the default mappings.
+        If mapping for some event is not found from the xml file, the default one is
+        used instead.
     */
     class Mapper
     {
@@ -34,8 +34,10 @@ namespace Input
         */
         __inline const Events::Movement &GetMouseMovement() const { return module_->GetMouseMovement(); }
 
-        //! Loads input mappings from xml file, or uses default ones if the file is not found
-        /*!
+        //! Loads input mappings from xml file.
+        /*! Replaces the default mappings with ones loaded from the file. In case of an error
+            all or some of the default mappings may not get replaced.
+
             \param file full path to the xml file
         */
         void LoadInputMappings(const std::string &file);
