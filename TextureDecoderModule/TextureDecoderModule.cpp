@@ -47,6 +47,8 @@ namespace TextureDecoder
     // virtual
     void TextureDecoderModule::Update(Core::f64 frametime)
     {
+        if (decoder_)
+            decoder_->Update(frametime);
     }
 
     // virtual 
@@ -82,7 +84,7 @@ namespace TextureDecoder
                 } catch (std::exception) {}
             }
             
-            decoder_->DecodeTexture(params[0], reduction);
+            decoder_->RequestTexture(params[0]);
         }
 
         return Console::ResultSuccess();
