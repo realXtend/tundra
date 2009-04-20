@@ -24,11 +24,32 @@
 #include "../OgreRenderingModule/Renderer.h"
 
 #include "QuatUtils.h"
+#include "ConversionUtils.h"
 #include "BitStream.h"
 #include "Terrain.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
+#include <OgreMaterialManager.h>
+
+namespace
+{
+    /// Clones a new Ogre material that renders using the given ambient color. This function will be removed or refactored later on, once proper material system is present. -jj.
+    void DebugCreateAmbientColorMaterial(const std::string &materialName, float r, float g, float b)
+    {
+        Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
+        Ogre::MaterialPtr material = mm.getByName(materialName);
+        if (material.get())
+            return;
+
+        material = mm.getByName("SolidAmbient");
+        if (!material.get())
+            return;
+
+        Ogre::MaterialPtr newMaterial = material->clone(materialName);
+        newMaterial->setAmbient(r, g, b);
+    }
+}
 
 namespace RexLogic
 {
@@ -44,6 +65,10 @@ namespace RexLogic
             RexLogicModule::LogError("NetworkEventHandler: Could not acquire OpenSimProtocolModule!.");
             return;
         }
+
+        DebugCreateAmbientColorMaterial("AmbientWhite", 1.f, 1.f, 1.f);
+        DebugCreateAmbientColorMaterial("AmbientGreen", 0.f, 1.f, 0.f);
+        DebugCreateAmbientColorMaterial("AmbientRed", 1.f, 0.f, 0.f);
     }
 
     NetworkEventHandler::~NetworkEventHandler()
@@ -51,7 +76,8 @@ namespace RexLogic
 
     }
 
-    void NetworkEventHandler::DebugCreateOgreBoundingBox(Foundation::ComponentInterfacePtr ogrePlaceable, const std::string &color)
+    /// Creates a bounding box (consisting of lines) into the Ogre scene hierarchy. This function will be removed or refactored later on, once proper material system is present. -jj.
+    void NetworkEventHandler::DebugCreateOgreBoundingBox(Foundation::ComponentInterfacePtr ogrePlaceable, const std::string &materialName)
     {
         OgreRenderer::EC_OgrePlaceable &component = dynamic_cast<OgreRenderer::EC_OgrePlaceable&>(*ogrePlaceable.get());
         OgreRenderer::Renderer *renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
@@ -62,7 +88,7 @@ namespace RexLogic
         std::stringstream ss;
         ss << "manual " << c++;
         Ogre::ManualObject *manual = sceneMgr->createManualObject(ss.str());
-        manual->begin(color, Ogre::RenderOperation::OT_LINE_LIST);
+        manual->begin(materialName, Ogre::RenderOperation::OT_LINE_LIST);
 
         const Ogre::Vector3 v[8] = 
         {
@@ -135,8 +161,8 @@ namespace RexLogic
 
         const float vertexSpacingX = 1.f;
         const float vertexSpacingY = 1.f;
-        const float patchSpacingX = 15 * vertexSpacingX;
-        const float patchSpacingY = 15 * vertexSpacingY;
+        const float patchSpacingX = 16 * vertexSpacingX;
+        const float patchSpacingY = 16 * vertexSpacingY;
         const Ogre::Vector3 patchOrigin(patch.header.x * patchSpacingX, 0.f, patch.header.y * patchSpacingY);
         const float heightScale = 1.f;
         for(int y = 0; y+1 < patchSize; ++y)
@@ -365,7 +391,7 @@ namespace RexLogic
 
                 prim.Material = msg->ReadU8();
                 prim.ClickAction = msg->ReadU8();
-                ogrePos.SetScale(msg->ReadVector3());
+                ogrePos.SetScale(Core::OpenSimToOgreCoordinateAxes(msg->ReadVector3()));
                 
                 size_t bytes_read = 0;
                 const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
@@ -379,10 +405,13 @@ namespace RexLogic
                     // ofs 48 - angular velocity - 3 x float (3x4 bytes)
                     // total 60 bytes
                     Core::Vector3df pos = *reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[0]);
-                    std::swap(pos.y, pos.z); ///\todo Refactor the flipping of coordinate system to somewhere else so that we have unified access to it, instead of each function doing it by themselves.
+                    ogrePos.SetPosition(Core::OpenSimToOgreCoordinateAxes(pos));
+                    Core::Quaternion quat = UnpackQuaternionFromFloat3((float*)&objectdatabytes[36]); 
+                    ogrePos.SetOrientation(Core::OpenSimToOgreQuaternion(quat));
 
-                    ogrePos.SetPosition(pos); 
-                    ogrePos.SetOrientation(UnpackQuaternionFromFloat3((float*)&objectdatabytes[36])); ///\todo Flip the orientation of the quaternion to the proper coordinate system.
+                    /// \todo Velocity field unhandled.
+                    /// \todo Acceleration field unhandled.
+                    /// \todo Angular velocity field unhandled.
                 }
                 else
                     RexLogicModule::LogError("Error reading ObjectData for prim:" + Core::ToString(prim.LocalId) + ". Bytes read:" + Core::ToString(bytes_read));
@@ -413,7 +442,8 @@ namespace RexLogic
                 {
                     // The data contents:
                     // ofs 16 - pos xyz - 3 x float (3x4 bytes)
-                    ogrePos.SetPosition(*(Core::Vector3df*)(&objectdatabytes[16]));
+                    Core::Vector3df pos = *reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[16]);
+                    ogrePos.SetPosition(Core::OpenSimToOgreCoordinateAxes(pos));
                 }                
                 
                 msg->SkipToFirstVariableByName("ParentID");
@@ -614,6 +644,7 @@ namespace RexLogic
         {
             Vector3 position = data->message->ReadVector3(); /// \todo tucofixme, set position to avatar
             Vector3 lookat = data->message->ReadVector3(); /// \todo tucofixme, set lookat direction to avatar
+            /// \todo tuco, use OpenSimToOgreCoordinateAxes to convert pos and scale, and OpenSimToOgreQuaternion to convert orientation to our system. 
             uint64_t regionhandle = data->message->ReadU64();
             uint32_t timestamp = data->message->ReadU32(); 
         }
@@ -647,8 +678,8 @@ namespace RexLogic
                 uint32_t localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[i]);                
                 i += 4;
 
-                Vector3 position = *reinterpret_cast<Vector3*>((Vector3*)&bytes[i]);
-                i += sizeof(Vector3);
+                Core::Vector3df position = *reinterpret_cast<Core::Vector3df*>((Core::Vector3df*)&bytes[i]);
+                i += sizeof(Core::Vector3df);
                 
                 //! \todo read velocity & rotation 
                 
@@ -656,9 +687,7 @@ namespace RexLogic
                 if(entity)
                 {
                     OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
-                    ///\todo Refactor the flipping of coordinate system to somewhere else so that we have unified access to it, instead of each function doing it by themselves.
-                    std::swap(position.y, position.z); 
-                    ogrePos.SetPosition(position);
+                    ogrePos.SetPosition(Core::OpenSimToOgreCoordinateAxes(position));
                 }
             }
             

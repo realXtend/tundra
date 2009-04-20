@@ -1,0 +1,20 @@
+// Renders primitives with a single solid color
+material SolidAmbient
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+
+			vertex_program_ref SolidAmbientVP
+			{
+			}
+			fragment_program_ref SolidAmbientFP
+			{
+			}
+		} 
+	}
+}
+ 
