@@ -19,6 +19,12 @@ namespace RexLogic
     
     bool InputEventHandler::HandleInputEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
+        if (event_id == Input::Events::SWITCH_CONTROLLER)
+        {
+            rexlogicmodule_->SwitchController();
+            return true;
+        }
+
         boost::shared_ptr<InputState> state = state_.lock();
 
         if (state)

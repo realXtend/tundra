@@ -46,9 +46,15 @@ namespace Input
         static const Core::event_id_t ROLL_RIGHT_PRESSED = 26;
         static const Core::event_id_t ROLL_RIGHT_RELEASED = 27;
 
+        static const Core::event_id_t SHOW_DEBUG_CONSOLE = 28;
+        static const Core::event_id_t SHOW_DEBUG_CONSOLE_REL = 29;
+        static const Core::event_id_t SWITCH_CONTROLLER = 30;
+        static const Core::event_id_t SWITCH_CONTROLLER_REL = 31;
+
 
         //! Event for buffered key input. 
         //! Do not use for any continous input such as avatar movement, it will probably cause input lag
+        //! General use case is text input.
         class BufferedKey : public Foundation::EventDataInterface
         {
             BufferedKey();

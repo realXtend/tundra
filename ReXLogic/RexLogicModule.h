@@ -13,9 +13,17 @@ namespace RexLogic
     class InputEventHandler;
     class SceneEventHandler;
     class NetworkStateEventHandler;
+    class CameraController;
 
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
-    typedef boost::shared_ptr<AvatarController> AvatarControllerPtr;    
+    typedef boost::shared_ptr<AvatarController> AvatarControllerPtr;
+    typedef boost::shared_ptr<CameraController> CameraControllerPtr;
+
+    enum InputController
+    {
+        Controller_Avatar,
+        Controller_Camera
+    };
 
     //! interface for modules
     class MODULE_API RexLogicModule : public Foundation::ModuleInterfaceImpl
@@ -31,7 +39,6 @@ namespace RexLogic
         virtual void Uninitialize();
 
         virtual void Update(Core::f64 frametime);
-        void GhostCameraFreelook(Core::f64 frametime);
         
         virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
         
@@ -45,6 +52,9 @@ namespace RexLogic
         RexServerConnectionPtr GetServerConnection() const { return rexserver_connection_; }
 
         AvatarControllerPtr GetAvatarController() const { return avatar_controller_; }
+
+        //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
+        void SwitchController();
 
     private:        
         //! Event handler for network events.
@@ -65,10 +75,16 @@ namespace RexLogic
         //! Local avatar controller for this client
         AvatarControllerPtr avatar_controller_;
 
+        //! (local) camera controller for this client
+        CameraControllerPtr camera_controller_;
+
         typedef boost::function<bool(Core::event_id_t,Foundation::EventDataInterface*)> LogicEventHandlerFunction;
         typedef std::map<Core::event_category_id_t, LogicEventHandlerFunction> LogicEventHandlerMap;
         
         LogicEventHandlerMap event_handlers_;
+
+        //! current input controller
+        InputController current_controller_;
     };
 }
 

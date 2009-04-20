@@ -9,6 +9,7 @@
 #include "InputEventHandler.h"
 #include "SceneEventHandler.h"
 #include "EventDataInterface.h"
+#include "CameraController.h"
 
 #include "EC_Viewable.h"
 #include "EC_FreeData.h"
@@ -24,7 +25,7 @@
 
 namespace RexLogic
 {
-    RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_)
+    RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_), current_controller_(Controller_Avatar)
     {
     }
 
@@ -57,12 +58,15 @@ namespace RexLogic
         // WorldLogic::registerSystem(framework);
         // world_logic_ = new WorldLogic(framework);
         avatar_controller_ = AvatarControllerPtr(new AvatarController(framework_, this));
+        camera_controller_ = CameraControllerPtr(new CameraController(this));
         rexserver_connection_ = RexServerConnectionPtr(new RexServerConnection(framework_)); 
         network_handler_ = new NetworkEventHandler(framework_, this);
         network_state_handler_ = new NetworkStateEventHandler(framework_, this);
         input_handler_ = new InputEventHandler(framework_, this);
-        input_handler_->SetState(avatar_controller_);
         scene_handler_ = new SceneEventHandler(framework_, this);
+
+        current_controller_ = Controller_Avatar;
+        input_handler_->SetState(avatar_controller_);
 
         LogInfo("Module " + Name() + " initialized.");
     }
@@ -117,6 +121,7 @@ namespace RexLogic
         
         rexserver_connection_.reset();
         avatar_controller_.reset();
+        camera_controller_.reset();
 
         SAFE_DELETE (network_handler_);
         SAFE_DELETE (input_handler_);
@@ -129,53 +134,7 @@ namespace RexLogic
     // virtual
     void RexLogicModule::Update(Core::f64 frametime)
     {
-        GhostCameraFreelook(frametime);
-    }
-
-    void RexLogicModule::GhostCameraFreelook(Core::f64 frametime)
-    {
-        const float keybSensitivity = 20.f;
-        float dt = (float)frametime * keybSensitivity;
-        OgreRenderer::Renderer *renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
-        Ogre::Camera *cam = renderer->GetCurrentCamera();
-        Ogre::Vector3 pos = cam->getPosition();
-
-        Ogre::Vector3 front = cam->getDirection();
-        Ogre::Vector3 up = cam->getUp();
-        Ogre::Vector3 right = cam->getRight();
-
-        Input::InputModuleOIS *input = dynamic_cast<Input::InputModuleOIS*>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_Input).lock().get());
-
-        if (input)
-        {
-            if (input->IsKeyDown(OIS::KC_W))
-                pos += front * dt;
-            if (input->IsKeyDown(OIS::KC_S))
-                pos -= front * dt;
-            if (input->IsKeyDown(OIS::KC_A))
-                pos -= right * dt;
-            if (input->IsKeyDown(OIS::KC_D))
-                pos += right * dt;
-
-            if (input->IsKeyDown(OIS::KC_Q))
-                pos += up * dt;
-            if (input->IsKeyDown(OIS::KC_Z))
-                pos -= up * dt;
-
-            cam->setAutoTracking(false);
-            cam->setPosition(pos);
-
-            const float mouseSensitivity = 1.f;
-            const float lookAmount = (float)frametime * mouseSensitivity;
-            if (input->IsKeyDown(OIS::KC_J))
-                cam->yaw(Ogre::Radian(lookAmount));
-            if (input->IsKeyDown(OIS::KC_L))
-                cam->yaw(Ogre::Radian(-lookAmount));
-            if (input->IsKeyDown(OIS::KC_K))
-                cam->pitch(Ogre::Radian(-lookAmount));
-            if (input->IsKeyDown(OIS::KC_I))
-                cam->pitch(Ogre::Radian(lookAmount));
-        }
+        camera_controller_->Update(frametime);
     }
 
     // virtual
@@ -186,6 +145,19 @@ namespace RexLogic
             return (i->second)(event_id,data);
         else
             return false;
+    }
+
+    void RexLogicModule::SwitchController()
+    {
+        if (current_controller_ == Controller_Avatar)
+        {
+            current_controller_ = Controller_Camera;
+            input_handler_->SetState(camera_controller_);
+        } else
+        {
+            current_controller_ = Controller_Avatar;
+            input_handler_->SetState(avatar_controller_);
+        }
     }
 }
 
