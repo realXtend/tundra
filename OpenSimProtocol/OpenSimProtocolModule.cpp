@@ -182,14 +182,22 @@ namespace OpenSimProtocol
 		if(!rpcConnection_->FinishXMLRPCCall(call))
 		    return false;
 
-		params->sessionID.FromString(call->GetReplyString("session_id"));
-		params->agentID.FromString(call->GetReplyString("agent_id"));
-		params->circuitCode = call->GetReplyInt("circuit_code");
+        bool loginresult = false;
+        if(Core::ToString(call->GetReplyString("login")) == "false")
+        {
+            LogInfo("Login failed:" + Core::ToString(call->GetReplyString("message")));
+        }
+        else
+        {
+            params->sessionID.FromString(call->GetReplyString("session_id"));
+            params->agentID.FromString(call->GetReplyString("agent_id"));
+            params->circuitCode = call->GetReplyInt("circuit_code");
+            loginresult = true;
+        }
         
         ///\ Todo free later, if reply is needed.
 		XMLRPC_RequestFree(call->reply, 1);
-
-		return true;
+		return loginresult;
 	}
 	
 	void OpenSimProtocolModule::DumpNetworkMessage(NetMsgID id, NetInMessage *msg)
