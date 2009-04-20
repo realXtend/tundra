@@ -85,5 +85,22 @@ namespace Scene
         return gid_;
     }
 
+    void Generic::DestroyEntity(Core::entity_id_t id)
+    {
+        EntityMap::const_iterator it = entities_.find(id);
+        if (it != entities_.end())    
+        {
+            Foundation::EntityPtr del_entity = it->second;    
+            
+            // Send event.
+            Foundation::Framework *framework = module_->GetFramework();           
+            Events::SceneEventData event_data(id);
+            Core::event_category_id_t cat_id = framework->GetEventManager()->QueryEventCategory("Scene");
+            framework->GetEventManager()->SendEvent(cat_id, Events::EVENT_ENTITY_DELETED, &event_data);
+
+            entities_.erase(it); 
+            del_entity.reset();
+        }
+    }
 }
 

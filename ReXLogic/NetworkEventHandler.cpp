@@ -209,7 +209,8 @@ namespace RexLogic
             case RexNetMsgAgentMovementComplete:        return HandleOSNE_AgentMovementComplete(netdata); break;
             case RexNetMsgGenericMessage:               return HandleOSNE_GenericMessage(netdata); break;
             case RexNetMsgLogoutReply:                  return HandleOSNE_LogoutReply(netdata); break;
-            case RexNetMsgImprovedTerseObjectUpdate:    return HandleOSNE_ImprovedTerseObjectUpdate(netdata); break;                
+            case RexNetMsgImprovedTerseObjectUpdate:    return HandleOSNE_ImprovedTerseObjectUpdate(netdata); break;
+            case RexNetMsgKillObject:                   return HandleOSNE_KillObject(netdata); break;               
             case RexNetMsgObjectUpdate:                 return HandleOSNE_ObjectUpdate(netdata); break;
             case RexNetMsgObjectProperties:             return HandleOSNE_ObjectProperties(netdata); break;
             case RexNetMsgLayerData:                    return HandleOSNE_LayerData(netdata); break;
@@ -707,6 +708,45 @@ namespace RexLogic
         bool overrideappearance = Core::ParseString<bool>(data->message->ReadString());
         return false;
     }
+
+    bool NetworkEventHandler::HandleOSNE_KillObject(OpenSimProtocol::NetworkEventInboundData* data)
+    {
+        data->message->ResetReading();
+        uint32_t killedobjectid = data->message->ReadU32();
         
-    
+        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
+            (Foundation::Service::ST_SceneManager);
+        Foundation::ScenePtr scene = sceneManager->GetScene("World");
+        if (!scene)
+            return false;
+
+        RexTypes::RexUUID fullid;
+        fullid.SetNull();
+        Foundation::EntityPtr entity = scene->GetEntity(killedobjectid);
+        if(!entity)
+            return false;
+
+        Foundation::ComponentPtr component = entity->GetComponent("EC_OpenSimAvatar");
+        if(component)
+        {
+            EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(component.get());
+            fullid = avatar.FullId;
+        }
+        else
+        {
+            component = entity->GetComponent("EC_OpenSimPrim");
+            if(component)
+            {
+                EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(component.get());
+                fullid = prim.FullId;
+            }
+        }
+
+        IDMap::iterator iter = UUIDs_.find(fullid);
+        if (iter != UUIDs_.end())
+            UUIDs_.erase(iter);
+
+        scene->DestroyEntity(killedobjectid);
+        return false;
+    }
 }
