@@ -29,6 +29,22 @@ namespace Input
         static const Core::event_id_t MOVE_LEFT_RELEASED = 9;
         static const Core::event_id_t MOVE_RIGHT_PRESSED = 10;
         static const Core::event_id_t MOVE_RIGHT_RELEASED = 11;
+        static const Core::event_id_t MOVE_UP_PRESSED = 12;
+        static const Core::event_id_t MOVE_UP_RELEASED = 13;
+        static const Core::event_id_t MOVE_DOWN_PRESSED = 14;
+        static const Core::event_id_t MOVE_DOWN_RELEASED = 15;
+        static const Core::event_id_t ROTATE_LEFT_PRESSED = 16;
+        static const Core::event_id_t ROTATE_LEFT_RELEASED = 17;
+        static const Core::event_id_t ROTATE_RIGHT_PRESSED = 18;
+        static const Core::event_id_t ROTATE_RIGHT_RELEASED = 19;
+        static const Core::event_id_t ROTATE_UP_PRESSED = 20;
+        static const Core::event_id_t ROTATE_UP_RELEASED = 21;
+        static const Core::event_id_t ROTATE_DOWN_PRESSED = 22;
+        static const Core::event_id_t ROTATE_DOWN_RELEASED = 23;
+        static const Core::event_id_t ROLL_LEFT_PRESSED = 24;
+        static const Core::event_id_t ROLL_LEFT_RELEASED = 25;
+        static const Core::event_id_t ROLL_RIGHT_PRESSED = 26;
+        static const Core::event_id_t ROLL_RIGHT_RELEASED = 27;
 
 
         //! Event for buffered key input. 
