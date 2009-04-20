@@ -58,9 +58,6 @@ namespace Asset
         //! asset manager
         AssetManagerPtr manager_;
         
-         //! network interface
-        OpenSimProtocol::OpenSimProtocolModule *net_interface_;
-        
         //! category id for incoming messages
         Core::event_category_id_t inboundcategory_id_;
     };

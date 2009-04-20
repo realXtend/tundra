@@ -13,8 +13,7 @@ using namespace RexTypes;
 namespace Asset
 {
     AssetModule::AssetModule() : ModuleInterfaceImpl(type_static_),
-        inboundcategory_id_(0),
-        net_interface_(NULL)
+        inboundcategory_id_(0)
     {
     }
 
