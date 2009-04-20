@@ -7,6 +7,7 @@ namespace RexLogic
 {
 
     /// A nice interface for reading individual bits in a stream
+    /// \todo Move into OpenSimProtocol module, -jj.
     class BitStream
     {
     private:

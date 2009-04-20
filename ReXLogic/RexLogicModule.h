@@ -14,10 +14,14 @@ namespace RexLogic
     class SceneEventHandler;
     class NetworkStateEventHandler;
     class CameraController;
+    class Terrain;
 
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
     typedef boost::shared_ptr<AvatarController> AvatarControllerPtr;
     typedef boost::shared_ptr<CameraController> CameraControllerPtr;
+
+    typedef boost::weak_ptr<Terrain> TerrainWeakPtr;
+    typedef boost::shared_ptr<Terrain> TerrainPtr;
 
     enum InputController
     {
@@ -56,6 +60,12 @@ namespace RexLogic
         //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
         void SwitchController();
 
+        //! Recreates the terrain. Called at startup.
+        void CreateTerrain();
+
+        //! @return The current in-scene terrain object. May return 0 if there isn't one.
+        TerrainPtr GetTerrain() { return terrain_; }
+
     private:        
         //! Event handler for network events.
         NetworkEventHandler *network_handler_;
@@ -85,6 +95,8 @@ namespace RexLogic
 
         //! current input controller
         InputController current_controller_;
+
+        TerrainPtr terrain_;
     };
 }
 
