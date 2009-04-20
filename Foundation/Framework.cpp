@@ -112,7 +112,7 @@ namespace Foundation
 
 #ifndef _DEBUG
         // make it so debug messages are not logged in release mode
-        std::string log_level = config_.GetSettingFromFile<std::string>(Framework::ConfigurationGroup(), "log_level");
+        std::string log_level = config_manager_->GetSetting<std::string>(Framework::ConfigurationGroup(), "log_level");
         Poco::Logger::get("Foundation").setLevel(log_level);
 #endif
         
