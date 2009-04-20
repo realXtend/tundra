@@ -43,13 +43,13 @@ namespace RexLogic
         UpdateMovementState();
     }
 
-    void AvatarController::StartMovingBack()
+    void AvatarController::StartMovingBackward()
     {
         controlflags_ |= RexTypes::AGENT_CONTROL_AT_NEG;
         UpdateMovementState();
     }
 
-    void AvatarController::StopMovingBack()
+    void AvatarController::StopMovingBackward()
     {
         controlflags_ &= ~RexTypes::AGENT_CONTROL_AT_NEG;
         UpdateMovementState();

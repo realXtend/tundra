@@ -7,19 +7,30 @@
 
 namespace RexLogic
 {
+    class InputStateInterface;
     class RexLogicModule;
 
     class InputEventHandler
     {
+        typedef boost::weak_ptr<InputStateInterface> InputStatePtr;
     public:
         InputEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule);
         virtual ~InputEventHandler();
         
         bool HandleInputEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+
+        //! Set input state. Input will be handled according to the state.
+        /*!
+            \param state shared or weak ptr to the state object
+        */
+        void SetState(const InputStatePtr &state) { state_ = state; }
     private:
         Foundation::Framework *framework_;
      
         RexLogicModule *rexlogicmodule_;
+
+        //! current state for handling input
+        InputStatePtr state_;
     };
 }
 
