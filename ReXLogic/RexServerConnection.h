@@ -70,6 +70,9 @@ namespace RexLogic
         /// Sends a packet indicating change in Object's description
         ///@param List of updated entity pointers.
         void SendObjectDescriptionPacket(std::vector<Foundation::EntityPtr> entity_ptr_list);
+
+        /// Sends handshake reply packet
+        void SendRegionHandshakeReplyPacket(RexTypes::RexUUID agentid, RexTypes::RexUUID sessionid, uint32_t flags);
                         
         ///@return Name of the sim we're connected to.
         std::string GetSimName() { return simname_; }

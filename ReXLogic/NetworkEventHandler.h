@@ -31,8 +31,6 @@ namespace RexLogic
         bool HandleOSNE_ObjectProperties(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_RegionHandshake(OpenSimProtocol::NetworkEventInboundData* data);
 
-        void SendRegionHandshakeReply();
-
         //! Handler functions for GenericMessages
         bool HandleRexGM_RexMediaUrl(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleRexGM_RexPrimData(OpenSimProtocol::NetworkEventInboundData* data);

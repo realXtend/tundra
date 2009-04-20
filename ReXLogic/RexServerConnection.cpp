@@ -393,4 +393,16 @@ namespace RexLogic
             m->AddBuffer(prim->Description.size(), (uint8_t*)prim->Description.c_str());
         }
     }        
+
+    void RexServerConnection::SendRegionHandshakeReplyPacket(RexTypes::RexUUID agentid, RexTypes::RexUUID sessionid, uint32_t flags)
+    {
+        if (!connected_)
+            return;    
+
+        NetOutMessage *msg = netInterface_->StartMessageBuilding(RexNetMsgRegionHandshakeReply);
+        msg->AddUUID(agentid);
+        msg->AddUUID(sessionid); 
+        msg->AddU32(flags);
+        netInterface_->FinishMessageBuilding(msg);
+    }
 }
