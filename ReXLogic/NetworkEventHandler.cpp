@@ -582,22 +582,11 @@ namespace RexLogic
         RexLogicModule::LogInfo("Joined to the sim \"" + simname + "\".");
         
         // Create the "World" scene.
-        
-        
-        SendRegionHandshakeReply();
-        
+
+        const ClientParameters& client = netInterface_->GetClientParameters();
+        rexlogicmodule_->GetServerConnection()->SendRegionHandshakeReplyPacket(client.agentID, client.sessionID, 0);   
         return false;  
     } 
-
-    void NetworkEventHandler::SendRegionHandshakeReply()
-    {
-        NetOutMessage *msg = netInterface_->StartMessageBuilding(RexNetMsgRegionHandshakeReply);
-        const ClientParameters& client = netInterface_->GetClientParameters();
-        msg->AddUUID(client.agentID); // AgentID
-        msg->AddUUID(client.sessionID); // SessionID
-        msg->AddU32(0); // Flags
-        netInterface_->FinishMessageBuilding(msg);
-    }
 
     bool NetworkEventHandler::HandleOSNE_LogoutReply(OpenSimProtocol::NetworkEventInboundData* data)   
     {
