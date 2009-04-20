@@ -8,13 +8,15 @@ macro (INCLUDE_OPENJPEG)
 	if (MSVC)
 		include_directories (${REX_DEP_PATH}/OpenJpeg/include)
 		link_directories (${REX_DEP_PATH}/OpenJpeg/lib)
+
+		include_directories (${REX_DEP_PATH}/OpenJpeg/libopenjpeg/)
+		link_directories (${REX_DEP_PATH}/OpenJpeg/Debug)
+		link_directories (${REX_DEP_PATH}/OpenJpeg/Release)
 	endif (MSVC)
 endmacro (INCLUDE_OPENJPEG)
 
 macro (LINK_OPENJPEG)
-	if (MSVC)
-		target_link_libraries (${TARGET_NAME} OpenJpeg)
-	else (MSVC)
-		target_link_libraries (${TARGET_NAME} openjpeg)
-	endif (MSVC)
+		target_link_libraries (${TARGET_NAME}
+			debug openjpegd
+			optimized openjpeg)
 endmacro (LINK_OPENJPEG)

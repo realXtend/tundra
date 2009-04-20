@@ -1,0 +1,20 @@
+float4x4 worldViewProj;
+
+void SolidAmbientVP
+(
+    in float4 pos : POSITION,
+    out float4 oPos : POSITION
+)
+{
+    oPos = mul(worldViewProj, pos);
+}
+
+float4 colour;
+
+void SolidAmbientFP
+(
+    out float4 oCol : COLOR
+)
+{
+    oCol = colour;
+}
