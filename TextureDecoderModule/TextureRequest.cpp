@@ -32,7 +32,7 @@ namespace TextureDecoder
     {
     }
    
-    void UpdateSizeReceived(Core::uint size, Core::uint received)
+    void TextureRequest::UpdateSizeReceived(Core::uint size, Core::uint received)
     {
         size_ = size;
         received_ = received;
@@ -42,7 +42,7 @@ namespace TextureDecoder
             next_level_ = 0;
     }
      
-    void TextureRequest::SetSize(Core::uint width, Core::uint height, Core::uint components);
+    void TextureRequest::SetSize(Core::uint width, Core::uint height, Core::uint components)
     {
         width_ = width;
         height_ = height;

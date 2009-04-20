@@ -101,9 +101,9 @@ namespace TextureDecoder
     bool Decoder::UpdateRequest(TextureRequest& request, Foundation::AssetServiceInterface* asset_service)
     {
         // If asset not requested yet, get the request running now
-        if (!request.requested_)
+        if (!request.IsRequested())
         {
-            asset_service->GetAsset(request.asset_id_, Asset::RexAT_Texture);
+            asset_service->GetAsset(request.GetAssetId(), Asset::RexAT_Texture);
             request.SetRequested(true);
         }
         
@@ -111,7 +111,7 @@ namespace TextureDecoder
         Core::uint received = 0;
         Core::uint received_continuous = 0;
         
-        if (!asset_service->QueryAssetStatus(request.asset_id_, size, received, received_continuous))
+        if (!asset_service->QueryAssetStatus(request.GetAssetId(), size, received, received_continuous))
         {
             // If cannot query asset status, the asset request wasn't queued (not connected, for example). Request again        
             request.SetRequested(false);
@@ -120,7 +120,7 @@ namespace TextureDecoder
 
         request.UpdateSizeReceived(size, received_continuous);
 
-        if (request.HasEnoughData()
+        if (request.HasEnoughData())
         {
             bool success = DecodeNextLevel(request, asset_service);
             request.SetNextLevelToDecode();
@@ -189,10 +189,10 @@ namespace TextureDecoder
             request.DecodeSuccess();
             request.SetSize(image->x1 - image->x0, image->y1 - image->y0, image->numcomps);
 
-            TextureDecoderModule::LogInfo("Texture decode successful, level " + Core::ToString<int>(request.decoded_level_));
+            TextureDecoderModule::LogInfo("Texture decode successful, level " + Core::ToString<int>(request.GetDecodedLevel()));
         
-            TextureDecoderModule::LogInfo("Width: " + Core::ToString<int>(request.width_ >> request.decoded_level_) + 
-                                          " Height: " + Core::ToString<int>(request.height_ >> request.decoded_level_) + 
+            TextureDecoderModule::LogInfo("Width: " + Core::ToString<int>(request.GetWidth() >> request.GetDecodedLevel()) + 
+                                          " Height: " + Core::ToString<int>(request.GetHeight() >> request.GetDecodedLevel()) + 
                                           " Components: " + Core::ToString<int>(image->numcomps));
 
             // Assume all components are same size
@@ -200,7 +200,7 @@ namespace TextureDecoder
             int actual_height = image->comps[0].h;
 
             // Create a texture object
-            Foundation::TexturePtr texture(new Texture(request.asset_id_, actual_width, actual_height, image->numcomps));
+            Foundation::TexturePtr texture(new Texture(request.GetAssetId(), actual_width, actual_height, image->numcomps));
             Core::u8* data = texture->GetData();
             for (int y = 0; y < actual_width; ++y)
             {
@@ -216,7 +216,7 @@ namespace TextureDecoder
 
             // Send texture ready event
             Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-            Event::TextureReady event_data(request.asset_id_, request.GetDecodedLevel(), texture);
+            Event::TextureReady event_data(request.GetAssetId(), request.GetDecodedLevel(), texture);
             event_manager->SendEvent(event_category_, Event::TEXTURE_READY, &event_data);
 
             success = true;
