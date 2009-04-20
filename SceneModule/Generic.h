@@ -78,6 +78,9 @@ namespace Scene
             return (entities_.find(id) != entities_.end());
         }
 
+        //! Delete entity with specified id
+        virtual void DestroyEntity(Core::entity_id_t id);
+
         class SCENE_MODULE_API EntityIteratorImpl : public Foundation::SceneInterface::EntityIteratorInterface
         {
         public:
