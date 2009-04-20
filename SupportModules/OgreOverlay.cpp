@@ -380,10 +380,12 @@ namespace Console
     bool OgreOverlay::HandleKeyUp(int code, Core::uint text)
     {
         Core::MutexLock lock(mutex_);
+        bool result = (current_code_ != 0);
+
         current_key_ = 0;
         current_code_ = 0;
 
-        return true;
+        return result;
     }
 
     void OgreOverlay::MoveCursor(int offset)

@@ -37,13 +37,27 @@ namespace Input
         }
     }
 
+    bool BufferedKeyboard::IsKeyHandled(OIS::KeyCode key)
+    {
+        KeyMap::iterator it = handled_.find(key);
+
+        if (it != handled_.end() && it->second)
+        {
+            if (keyboard_->isKeyDown(key) == false)
+                it->second = false;
+
+            return it->second;
+        }
+
+        return false;
+    }
+
     bool BufferedKeyboard::keyPressed( const OIS::KeyEvent &arg )
     {
         Events::BufferedKey key_event(arg.key, arg.text);
         bool handled = framework_->GetEventManager()->SendEvent(event_category_, Events::KEY_PRESSED, &key_event);
 
-        if (handled)
-            module_->SetHandledKey(arg.key);
+        handled_[arg.key] = handled;
 
         return handled;
     }
@@ -52,7 +66,7 @@ namespace Input
         Events::BufferedKey key_event(arg.key, arg.text);
         bool handled = framework_->GetEventManager()->SendEvent(event_category_, Events::KEY_RELEASED, &key_event);
 
-        module_->SetHandledKey(OIS::KC_UNASSIGNED);
+        handled_[arg.key] = false;
 
         return handled;
     }
