@@ -83,8 +83,6 @@ namespace Input
         //! Introspection of registered key events
         const KeyEventInfoVector &GetRegisteredKeyEvents() const { return listened_keys_; }
 
-        void SetHandledKey(OIS::KeyCode key) { handled_ = key; }
-
         MODULE_LOGGING_FUNCTIONS
 
         //! returns name of this module. Needed for logging.
@@ -106,7 +104,7 @@ namespace Input
         //! OIS objects
         OIS::InputManager *input_manager_;
         OIS::Keyboard *keyboard_;
-        OIS::Keyboard *keyboard_buffered_;
+        //OIS::Keyboard *keyboard_buffered_;
         OIS::Mouse *mouse_;
         OIS::JoyStick *joy_;
 
@@ -121,9 +119,6 @@ namespace Input
 
         //! for GetMouseMovement()
         Events::Movement movement_;
-
-        //! handled key, used to make sure buffered keyboard events don't collide with unbuffered keyboard events
-        OIS::KeyCode handled_;
     };
 }
 #endif
