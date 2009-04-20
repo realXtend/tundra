@@ -16,12 +16,17 @@
 #include "EC_SpatialSound.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_OpenSimAvatar.h"
+#include "EC_TerrainPatch.h"
 
 #include "../InputModuleOIS/InputModuleOIS.h"
+
+// Ogre -specific
 #include "../OgreRenderingModule/Renderer.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
+
+#include "Terrain.h"
 
 namespace RexLogic
 {
@@ -41,6 +46,7 @@ namespace RexLogic
         DECLARE_MODULE_EC(EC_SpatialSound);
         DECLARE_MODULE_EC(EC_OpenSimPrim);
         DECLARE_MODULE_EC(EC_OpenSimAvatar);
+        DECLARE_MODULE_EC(EC_TerrainPatch);
 
         LogInfo("Module " + Name() + " loaded.");
     }
@@ -158,6 +164,11 @@ namespace RexLogic
             current_controller_ = Controller_Avatar;
             input_handler_->SetState(avatar_controller_);
         }
+    }
+
+    void RexLogicModule::CreateTerrain()
+    {
+        terrain_ = TerrainPtr(new Terrain(this));
     }
 }
 

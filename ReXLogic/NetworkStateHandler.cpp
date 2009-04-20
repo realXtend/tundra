@@ -27,6 +27,12 @@ namespace RexLogic
                         framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
                     if (!sceneManager->HasScene("World"))
                         sceneManager->CreateScene("World");
+
+                    // Also create a default terrain to RexLogic. This is done here dynamically instead of fixed in RexLogic,
+                    // since we might have 0-N terrains later on, depending on where we actually connect to. Now of course
+                    // we just create one default terrain.
+                    rexlogicmodule_->CreateTerrain();
+
                     break;
                 }
             default:
