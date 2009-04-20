@@ -4,11 +4,13 @@
 
 #include "BufferedKeyboard.h"
 #include "InputEvents.h"
+#include "InputModuleOIS.h"
 
 namespace Input
 {
-    BufferedKeyboard::BufferedKeyboard(Foundation::Framework *framework) : 
-        framework_(framework)
+    BufferedKeyboard::BufferedKeyboard(InputModuleOIS *module) : 
+        module_(module)
+        , framework_(module->GetFramework())
         , input_manager_(0)
         , keyboard_(0)
         , event_category_(0)
@@ -38,15 +40,20 @@ namespace Input
     bool BufferedKeyboard::keyPressed( const OIS::KeyEvent &arg )
     {
         Events::BufferedKey key_event(arg.key, arg.text);
-        framework_->GetEventManager()->SendEvent(event_category_, Events::KEY_PRESSED, &key_event);
+        bool handled = framework_->GetEventManager()->SendEvent(event_category_, Events::KEY_PRESSED, &key_event);
 
-        return true;
+        if (handled)
+            module_->SetHandledKey(arg.key);
+
+        return handled;
     }
     bool BufferedKeyboard::keyReleased( const OIS::KeyEvent &arg )
     {
         Events::BufferedKey key_event(arg.key, arg.text);
-        framework_->GetEventManager()->SendEvent(event_category_, Events::KEY_RELEASED, &key_event);
+        bool handled = framework_->GetEventManager()->SendEvent(event_category_, Events::KEY_RELEASED, &key_event);
 
-        return true;
+        module_->SetHandledKey(OIS::KC_UNASSIGNED);
+
+        return handled;
     }
 }
