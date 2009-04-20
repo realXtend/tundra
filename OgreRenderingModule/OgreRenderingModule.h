@@ -34,6 +34,11 @@ namespace OgreRenderer
         virtual void Uninitialize();
         virtual void Update(Core::f64 frametime);
         
+        virtual bool HandleEvent(
+            Core::event_category_id_t category_id,
+            Core::event_id_t event_id, 
+            Foundation::EventDataInterface* data);
+
         //! returns renderer
         RendererPtr GetRenderer() const { return renderer_; }
         
@@ -46,6 +51,12 @@ namespace OgreRenderer
     private:
         //! renderer
         RendererPtr renderer_;
+
+        //! category id for asset messages
+        Core::event_category_id_t assetcategory_id_;
+
+        //! category id for texture messages
+        Core::event_category_id_t texturecategory_id_;
     };
 }
 

@@ -82,7 +82,7 @@ namespace Asset
         {
             int asset_type = Core::ParseString<int>(params[1]);
 
-            manager_->GetAsset(params[0], asset_type);
+            manager_->RequestAsset(params[0], asset_type);
         } catch (std::exception)
         {
             return Console::ResultInvalidParameters();

@@ -97,6 +97,12 @@ namespace OgreRenderer
         //! handles Ogre window resize event
         void windowResized(Ogre::RenderWindow* rw);
         
+        //! handles an asset system event
+        bool HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+
+        //! handles a texture event
+        bool HandleTextureEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+
     private:
         //! loads Ogre plugins in a manner which allows individual plugin loading to fail
         /*! \param plugin_filename path & filename of the Ogre plugins file

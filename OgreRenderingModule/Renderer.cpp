@@ -315,5 +315,15 @@ namespace OgreRenderer
     {
         return "obj" + Core::ToString<Core::uint>(object_id_++);
     }
+
+    bool Renderer::HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        return false;
+    }
+
+    bool Renderer::HandleTextureEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        return false;
+    }
 }
 

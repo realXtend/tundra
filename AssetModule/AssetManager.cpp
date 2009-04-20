@@ -43,10 +43,16 @@ namespace Asset
     {
         RexUUID asset_uuid(asset_id);
         
-        Foundation::AssetPtr asset = GetFromCache(asset_uuid);
-        if (asset)
-            return asset;
-        
+        return GetFromCache(asset_uuid);
+    }
+  
+    void AssetManager::RequestAsset(const std::string& asset_id, Core::asset_type_t asset_type)
+    {
+        RexUUID asset_uuid(asset_id);
+
+        if (GetFromCache(asset_uuid))
+            return;
+
         if (asset_type == RexAT_Texture)
         {
             RequestTexture(asset_uuid);
@@ -55,8 +61,6 @@ namespace Asset
         {
             RequestOtherAsset(asset_uuid, asset_type);
         }
-        
-        return Foundation::AssetPtr();
     }
     
     Foundation::AssetPtr AssetManager::GetIncompleteAsset(const std::string& asset_id, Core::asset_type_t asset_type, Core::uint received)
@@ -68,8 +72,8 @@ namespace Asset
         
         AssetTransfer* transfer = GetTransfer(asset_uuid);
         
-        // No transfer, either get complete asset or make request
-        if (!transfer)
+        // No transfer, either get complete asset or nothing
+        if (!transfer)       
             return GetAsset(asset_id, asset_type);
             
         if (transfer->GetReceivedContinuous() >= received)
@@ -84,7 +88,8 @@ namespace Asset
             
             return asset_ptr;
         }
-        
+
+        // Not enough bytes
         return Foundation::AssetPtr();
     }
     
@@ -152,7 +157,11 @@ namespace Asset
                     m->AddU8(RexIT_Normal); // Image type
     
                     net->FinishMessageBuilding(m);
-                    
+
+                    Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+                    Event::AssetTimeout event_data(transfer.GetAssetId().ToString(), transfer.GetAssetType());
+                    event_manager->SendEvent(event_category_, Event::ASSET_TIMEOUT, &event_data);
+
                     texture_transfers_.erase(i);
                 }
             }
@@ -176,7 +185,11 @@ namespace Asset
                     m->AddUUID(j->first); // Transfer ID
                     m->AddS32(RexAC_Asset); // Asset channel type
                     net->FinishMessageBuilding(m);
-                    
+             
+                    Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+                    Event::AssetTimeout event_data(transfer.GetAssetId().ToString(), transfer.GetAssetType());
+                    event_manager->SendEvent(event_category_, Event::ASSET_TIMEOUT, &event_data);
+
                     asset_transfers_.erase(j);
                 }
             }
@@ -293,9 +306,9 @@ namespace Asset
         Core::uint data_size; 
         const Core::u8* data = msg->ReadBuffer(&data_size); // ImageData block
         transfer.ReceiveData(0, data, data_size);
-        
-        //AssetModule::LogInfo("First packet received for " + asset_id.ToString() + ", " + Core::ToString<Core::u16>(data_size) + " bytes");
-        
+                
+        SendAssetProgress(transfer);
+
         if (transfer.Ready())
         {
             StoreAsset(transfer);
@@ -320,9 +333,9 @@ namespace Asset
         Core::uint data_size; 
         const Core::u8* data = msg->ReadBuffer(&data_size); // ImageData block
         transfer.ReceiveData(packet_index, data, data_size);
-        
-        //AssetModule::LogInfo("Packet " + Core::ToString<Core::u16>(packet_index) + " received for " + asset_id.ToString() + ", " + Core::ToString<Core::u16>(data_size) + " bytes");
-        
+      
+        SendAssetProgress(transfer);
+
         if (transfer.Ready())
         {
             StoreAsset(transfer);
@@ -370,6 +383,8 @@ namespace Asset
         
         transfer.SetSize(size);
         
+        SendAssetProgress(transfer);
+
         // We may get data packets before header, so check if all already received
         if (transfer.Ready())
         {
@@ -405,8 +420,8 @@ namespace Asset
         const Core::u8* data = msg->ReadBuffer(&data_size); // Data block
         transfer.ReceiveData(packet_index, data, data_size);
         
-        //AssetModule::LogInfo("Packet " + Core::ToString<Core::u16>(packet_index) + " received for " + transfer.GetAssetId().ToString() + ", " + Core::ToString<Core::u16>(data_size) + " bytes");
-        
+        SendAssetProgress(transfer);
+
         if (transfer.Ready())
         {
             StoreAsset(transfer);
@@ -427,7 +442,14 @@ namespace Asset
         AssetModule::LogInfo("Transfer for asset " + i->second.GetAssetId().ToString() + " canceled");
         asset_transfers_.erase(i);
     }
-    
+
+    void AssetManager::SendAssetProgress(AssetTransfer& transfer)
+    {
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        Event::AssetProgress event_data(transfer.GetAssetId().ToString(), transfer.GetAssetType(), transfer.GetSize(), transfer.GetReceived(), transfer.GetReceivedContinuous());
+        event_manager->SendEvent(event_category_, Event::ASSET_PROGRESS, &event_data);
+    }
+
     void AssetManager::StoreAsset(AssetTransfer& transfer)
     {
         const RexUUID& asset_id = transfer.GetAssetId();
