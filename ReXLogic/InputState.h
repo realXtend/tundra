@@ -23,6 +23,8 @@ namespace RexLogic
         virtual void StartRotatingRight() {};
         virtual void StartRotatingUp() {};
         virtual void StartRotatingDown() {};
+        virtual void StartRollingLeft() {};
+        virtual void StartRollingRight() {};
         virtual void StopMovingForward() {};
         virtual void StopMovingBackward() {};
         virtual void StopMovingLeft() {};
@@ -33,6 +35,9 @@ namespace RexLogic
         virtual void StopRotatingRight() {};
         virtual void StopRotatingUp() {};
         virtual void StopRotatingDown() {};
+        virtual void StopRollingLeft() {};
+        virtual void StopRollingRight() {};
+
     };
 
     typedef InputStateInterface InputState;
