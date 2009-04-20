@@ -7,7 +7,9 @@
 
 namespace Asset
 {
-    //! An asset transfer in progress
+    //! Stores data related to an asset transfer that is in progress. AssetManager stores an 
+    //! internal list of these to handle its transfers. Most of the time client modules don't
+    //! need to interact with these.
     class AssetTransfer
     {
     public:

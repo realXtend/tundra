@@ -1,4 +1,4 @@
-/// @file Terrain.cpp
+/// @file TerrainDecoder.cpp
 /// @brief Performs IDCT decompression on terrain height map data.
 ///        Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
 /// For conditions of distribution and use, see copyright notice in license.txt
@@ -8,7 +8,7 @@
 #include "Poco/Net/DatagramSocket.h" // To get htons etc.
 
 #include "BitStream.h"
-#include "Terrain.h"
+#include "TerrainDecoder.h"
 #include "RexLogicModule.h"
 
 using namespace Core;

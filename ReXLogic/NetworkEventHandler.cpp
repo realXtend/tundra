@@ -20,17 +20,17 @@
 #include "EC_OpenSimAvatar.h"
 
 // Ogre renderer -specific.
+#include <OgreManualObject.h>
+#include <OgreSceneManager.h>
+#include <OgreMaterialManager.h>
+
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
 #include "../OgreRenderingModule/Renderer.h"
 
 #include "QuatUtils.h"
 #include "ConversionUtils.h"
 #include "BitStream.h"
-#include "Terrain.h"
-
-#include <OgreManualObject.h>
-#include <OgreSceneManager.h>
-#include <OgreMaterialManager.h>
+#include "TerrainDecoder.h"
 
 namespace
 {
@@ -388,7 +388,7 @@ namespace RexLogic
 
                 ///\todo Are we setting the param or looking up by this param? I think the latter, but this is now doing the former. 
                 ///      Will cause problems with multigrid support.
-                prim.RegionHandle = regionhandle; 
+                prim.RegionHandle = regionhandle;
 
                 prim.Material = msg->ReadU8();
                 prim.ClickAction = msg->ReadU8();

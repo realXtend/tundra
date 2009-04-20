@@ -1,4 +1,4 @@
-/// @file Terrain.h
+/// @file TerrainDecoder.h
 /// @brief Packet structure definitions for terrain LayerData packets.
 ///        Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
 /// For conditions of distribution and use, see copyright notice in license.txt
