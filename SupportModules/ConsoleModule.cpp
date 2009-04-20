@@ -67,18 +67,19 @@ namespace Console
                 }
             }
 
+            if (event_id == Input::Events::SHOW_DEBUG_CONSOLE)
+            {
+                manager_->SetVisible(!manager_->IsActive());
+                return true;
+            }
+
             if (event_id == Input::Events::KEY_PRESSED || event_id == Input::Events::KEY_RELEASED)
             {
-                int code = checked_static_cast<Input::Events::BufferedKey*>(data)->code_;
-                unsigned int text = checked_static_cast<Input::Events::BufferedKey*>(data)->text_;
-                if (event_id == Input::Events::KEY_PRESSED && code == OIS::KC_TAB)
-                {
-                    manager_->SetVisible(!manager_->IsActive());
-                    return true;
-                }
-
                 if (manager_->IsActive())
                 {
+                    int code = checked_static_cast<Input::Events::BufferedKey*>(data)->code_;
+                    unsigned int text = checked_static_cast<Input::Events::BufferedKey*>(data)->text_;
+
                     if (event_id == Input::Events::KEY_PRESSED)
                         return manager_->HandleKeyDown(code, text);
                     else
