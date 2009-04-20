@@ -103,7 +103,7 @@ namespace TextureDecoder
         // If asset not requested yet, get the request running now
         if (!request.IsRequested())
         {
-            asset_service->GetAsset(request.GetAssetId(), Asset::RexAT_Texture);
+            asset_service->RequestAsset(request.GetAssetId(), Asset::RexAT_Texture);
             request.SetRequested(true);
         }
         
@@ -113,7 +113,7 @@ namespace TextureDecoder
         
         if (!asset_service->QueryAssetStatus(request.GetAssetId(), size, received, received_continuous))
         {
-            // If cannot query asset status, the asset request wasn't queued (not connected, for example). Request again        
+            // If cannot query asset status, the asset request wasn't queued (not connected, for example). Request again later       
             request.SetRequested(false);
             return false;
         }

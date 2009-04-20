@@ -63,6 +63,16 @@ namespace OgreRenderer
     // virtual
     void OgreRenderingModule::PostInitialize()
     {
+        assetcategory_id_ = framework_->GetEventManager()->QueryEventCategory("Asset");
+        
+        if (assetcategory_id_ == 0 )
+            LogWarning("Unable to find event category for Asset events!");
+
+        texturecategory_id_ = framework_->GetEventManager()->QueryEventCategory("Texture");
+        
+        if (assetcategory_id_ == 0 )
+            LogWarning("Unable to find event category for Texture events!");
+
         //Foundation::SceneManagerServiceInterface *scene_manager = 
         //    framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
         //assert(scene_manager != NULL && "Failed to get SceneManager service");
@@ -122,6 +132,28 @@ namespace OgreRenderer
         //manual->end();
         //
         //renderer_->GetSceneManager()->setAmbientLight(Ogre::ColourValue(0.1,0.1,0.1));
+    }
+
+    // virtual
+    bool OgreRenderingModule::HandleEvent(
+        Core::event_category_id_t category_id,
+        Core::event_id_t event_id, 
+        Foundation::EventDataInterface* data)
+    {
+        if (!renderer_)
+            return false;
+
+        if (category_id == assetcategory_id_)
+        {
+            return renderer_->HandleAssetEvent(event_id, data);
+        }
+
+        if (category_id == texturecategory_id_)
+        {
+            return renderer_->HandleTextureEvent(event_id, data);
+        }
+
+        return false;
     }
 
     // virtual 

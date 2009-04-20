@@ -17,9 +17,9 @@ namespace Foundation
         virtual ~AssetServiceInterface() {}
 
         //! gets asset
-        /*! if asset not in cache, will return empty pointer and queue the asset request.
-            an event will be sent when the asset has been downloaded.
-        
+        /*! if asset not in cache, will return empty pointer 
+            does not queue an asset download request.
+
             \param asset_id asset ID, UUID for legacy UDP assets
             \param asset_type asset type
             \return pointer to asset
@@ -28,8 +28,8 @@ namespace Foundation
         virtual AssetPtr GetAsset(const std::string& asset_id, Core::asset_type_t asset_type) = 0;
         
         //! gets incomplete asset
-        /*! if asset not yet requested, will request it and return empty pointer
-            if not enough bytes received, will return empty pointer
+        /*! if not enough bytes received, will return empty pointer
+            does not queue an asset download request.
             
             \param asset_id asset ID, UUID for legacy UDP assets
             \param asset_type asset type
@@ -38,6 +38,15 @@ namespace Foundation
          */
         virtual AssetPtr GetIncompleteAsset(const std::string& asset_id, Core::asset_type_t asset_type, Core::uint received) = 0;
         
+        //! requests an asset download
+        /*! if asset already downloaded, does nothing.
+            events will be sent when download progresses, and when asset is ready.
+
+            \param asset_id asset ID, UUID for legacy UDP assets
+            \param asset_type asset type
+         */
+        virtual void RequestAsset(const std::string& asset_id, Core::asset_type_t asset_type) = 0;
+
         //! queries status of asset download
         /*! if asset has been already fully received, size, received & received_continuous will be the same
         

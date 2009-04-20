@@ -23,7 +23,7 @@ class NetInMessage;
 namespace Asset
 {
     //! Asset manager. Initiates transfers based on asset requests and responds to received data.
-    /*! \todo handle timeouts, define service interface
+    /*! \todo split UDP downloader into separate class
      */
     class AssetManager : public Foundation::AssetServiceInterface
     {
@@ -34,30 +34,34 @@ namespace Asset
         virtual ~AssetManager();
         
         //! gets asset
-        /*! if asset not in cache, will return empty pointer and queue the asset request. An event will
-            be sent when the asset has been downloaded.
-            
-            \param asset_id asset UUID
+        /*! \param asset_id asset ID, UUID for legacy UDP assets
             \param asset_type asset type
-            \return pointer to asset
+            \return pointer to asset, NULL if not found
 
          */
         virtual Foundation::AssetPtr GetAsset(const std::string& asset_id, Core::asset_type_t asset_type);
 
         //! gets incomplete asset
-        /*! if asset not yet requested, will request it and return empty pointer
-            if not enough bytes received, will return empty pointer
-            note: a new incomplete asset object (with copy of the data) will be created for each call. Please
+        /*! note: a new incomplete asset object (with copy of the data) will be created for each call. Please
             do not store the shared pointer for longer than necessary.
             
-            \param asset_id asset UUID
+            \param asset_id asset ID, UUID for legacy UDP assets
             \param asset_type asset type
             \param received minimum continuous bytes received from the start
-            \return pointer to asset
+            \return pointer to asset, NULL if not found or not enough bytes
            
          */
         virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, Core::asset_type_t asset_type, Core::uint received);
         
+        //! requests an asset download
+        /*! if asset already downloaded, does nothing.
+            events will be sent when download progresses, and when asset is ready.
+
+            \param asset_id asset ID, UUID for legacy UDP assets
+            \param asset_type asset type
+         */
+        virtual void RequestAsset(const std::string& asset_id, Core::asset_type_t asset_type);
+
         //! queries status of asset download
         /*! if asset has been already fully received, size, received & received_continuous will be the same
         
@@ -139,6 +143,11 @@ namespace Asset
          */
         void RequestOtherAsset(const RexTypes::RexUUID& asset_id, Core::uint asset_type);
         
+        //! sends progress event of asset transfer
+        /*! \param transfer asset transfer
+         */
+        void SendAssetProgress(AssetTransfer& transfer);
+
         //! stores asset to memory & disk caches
         /*! \param transfer finished asset transfer
          */
