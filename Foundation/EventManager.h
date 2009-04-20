@@ -119,8 +119,9 @@ namespace Foundation
         /*! \param category_id event category id
             \param event_id event id
             \param data pointer to event data structure (event-specific)
+            \return true if event was handled by some event handler
          */
-        void SendEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const;
+        bool SendEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const;
         
         //! registers a module to the event subscriber tree
         /*! do not call while responding to an event!

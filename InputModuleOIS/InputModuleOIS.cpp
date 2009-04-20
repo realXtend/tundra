@@ -19,6 +19,7 @@ namespace Input
         , mouse_(0)
         , joy_(0)
         , event_category_(0)
+        , handled_(OIS::KC_UNASSIGNED)
     {       
     }
 
@@ -73,7 +74,7 @@ namespace Input
         // throws exception if fails, not handled since it should be rather fatal
         input_manager_ = OIS::InputManager::createInputSystem( pl );
 
-        buffered_keyboard_ = BufferedKeyboardPtr(new BufferedKeyboard(framework_));
+        buffered_keyboard_ = BufferedKeyboardPtr(new BufferedKeyboard(this));
         keyboard_ = static_cast<OIS::Keyboard*>(input_manager_->createInputObject( OIS::OISKeyboard, false ));      
         LogInfo("Keyboard input initialized.");
    
@@ -129,6 +130,10 @@ namespace Input
     // virtual 
     void InputModuleOIS::Update(Core::f64 frametime)
     {
+        // should be first, so buffered keyboard events get launched first
+        if (buffered_keyboard_)
+            buffered_keyboard_->Update();
+
         if( keyboard_ && mouse_ )
         {
             keyboard_->capture();
@@ -162,7 +167,7 @@ namespace Input
                 bool key_released = false;
                 if (keyboard_->isKeyDown(listened_keys_[i].key_))
                 {
-                    if(!listened_keys_[i].pressed_)
+                    if(!listened_keys_[i].pressed_ && handled_ != listened_keys_[i].key_)
                     {
                         // check modifiers in a bit convoluted way. All combos of ctrl+a, ctrl+alt+a and ctrl+alt+shift+a must work!
                         if (((listened_keys_[i].modifier_ & OIS::Keyboard::Alt)   == 0 || keyboard_->isModifierDown(OIS::Keyboard::Alt))  &&
@@ -190,8 +195,6 @@ namespace Input
             }
          
         }
-        if (buffered_keyboard_)
-            buffered_keyboard_->Update();
     }
 
     // virtual

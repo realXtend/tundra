@@ -84,9 +84,9 @@ namespace Foundation
         event_map_[category_id][event_id] = name;
     }
     
-    void EventManager::SendEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const
+    bool EventManager::SendEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const
     {
-        SendEvent(event_subscriber_root_.get(), category_id, event_id, data);
+        return SendEvent(event_subscriber_root_.get(), category_id, event_id, data);
     }
     
     bool EventManager::SendEvent(EventSubscriber* node, Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const

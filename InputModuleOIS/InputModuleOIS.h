@@ -66,13 +66,6 @@ namespace Input
 
         virtual void Update(Core::f64 frametime);
 
-        /// Provides a polling-style method for checking whether a key is down. You can use this if the stateful pressed/released event-based
-        /// system is too unwieldy for your use. Use conservatively, since directly calling this from your logic module will create a 
-        /// hard-to-break dependency to the InputModuleOIS, and will require some state objects to track when the input is valid to read. 
-        /// (i.e. can't move using WSAD when typing into a textbox)
-        /// \todo Make this not inline and properly generate INPUTOIS_MODULE_API etc.. defines for DLL export.
-        bool IsKeyDown(OIS::KeyCode key) { return keyboard_ ? keyboard_->isKeyDown(key) : false; }
-
         virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, 
             Foundation::EventDataInterface* data);
 
@@ -87,14 +80,10 @@ namespace Input
         */
         void RegisterUnbufferedKeyEvent(OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event, int modifier);
 
-        //! Returns key code from event
-        /*! The event must have been registered before with RegisterUnbufferedKeyEvent(), otherwise
-            OIS::KC_UNASSIGNED is returned.
-        */
-        OIS::KeyCode GetKeyFromEvent(Core::event_id_t pressed_event);
-
         //! Introspection of registered key events
         const KeyEventInfoVector &GetRegisteredKeyEvents() const { return listened_keys_; }
+
+        void SetHandledKey(OIS::KeyCode key) { handled_ = key; }
 
         MODULE_LOGGING_FUNCTIONS
 
@@ -132,6 +121,9 @@ namespace Input
 
         //! for GetMouseMovement()
         Events::Movement movement_;
+
+        //! handled key, used to make sure buffered keyboard events don't collide with unbuffered keyboard events
+        OIS::KeyCode handled_;
     };
 }
 #endif

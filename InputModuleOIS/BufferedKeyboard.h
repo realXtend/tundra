@@ -5,6 +5,8 @@
 
 namespace Input
 {
+    class InputModuleOIS;
+
     //! Propagates buffered keyboard input events.
     /*! Usually input needs to be unbuffered for lag-free movement,
         but for example gui input should be buffered, otherwise
@@ -15,7 +17,7 @@ namespace Input
     {
         BufferedKeyboard();
     public:
-        BufferedKeyboard(Foundation::Framework *framework);
+        BufferedKeyboard(InputModuleOIS *module);
         virtual ~BufferedKeyboard();
 
         void Update()
@@ -30,6 +32,8 @@ namespace Input
 
     private:
         Foundation::Framework *framework_;
+        //! parent module
+        InputModuleOIS *module_;
 
         //! input event category
         Core::event_category_id_t event_category_;
