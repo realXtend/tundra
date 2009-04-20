@@ -133,7 +133,7 @@ namespace OpenSimProtocol
 		std::string id0 = GetId0String();
 
 		md5wrapper md5;
-		std::string password_hash = md5.getHashFromString(password);
+		std::string password_hash = "$1$" + md5.getHashFromString(password);
 		std::string mac_hash = md5.getHashFromString(mac_addr);
 		std::string id0_hash = md5.getHashFromString(id0);
 
