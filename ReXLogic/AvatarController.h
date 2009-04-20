@@ -5,12 +5,13 @@
 
 #include "Foundation.h"
 #include "RexTypes.h"
+#include "InputState.h"
 
 namespace RexLogic
 {
     class RexLogicModule;
 
-    class AvatarController
+    class AvatarController : public InputStateInterface
     {
     public:
         AvatarController(Foundation::Framework *framework, RexLogicModule *rexlogicmodule);
@@ -22,8 +23,8 @@ namespace RexLogic
         
         void StartMovingForward();
         void StopMovingForward();
-        void StartMovingBack();
-        void StopMovingBack(); 
+        void StartMovingBackward();
+        void StopMovingBackward(); 
         void StartMovingLeft();
         void StopMovingLeft();
         void StartMovingRight();

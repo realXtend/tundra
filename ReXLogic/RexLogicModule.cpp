@@ -60,8 +60,10 @@ namespace RexLogic
         rexserver_connection_ = RexServerConnectionPtr(new RexServerConnection(framework_)); 
         network_handler_ = new NetworkEventHandler(framework_, this);
         network_state_handler_ = new NetworkStateEventHandler(framework_, this);
-        input_handler_ = new InputEventHandler(framework_, this);  
+        input_handler_ = new InputEventHandler(framework_, this);
+        input_handler_->SetState(avatar_controller_);
         scene_handler_ = new SceneEventHandler(framework_, this);
+
         LogInfo("Module " + Name() + " initialized.");
     }
 
