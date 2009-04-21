@@ -110,4 +110,10 @@ namespace RexLogic
         }
         return false;
     }
+
+    void InputEventHandler::Update(Core::f64 frametime)
+    {
+        boost::shared_ptr<InputState> state = state_.lock();
+        state->Update(frametime);
+    }
 }

@@ -7,8 +7,7 @@
 #include "RenderServiceInterface.h"
 #include "ScriptServiceInterface.h"
 #include "SoundServiceInterface.h"
-#include "InputServiceInterface.h"
-#include "WorldLogicInterface.h" //! \todo should this be here?
+#include "WorldLogicInterface.h"
 #include "TestServiceInterface.h"
 #include "SceneManagerServiceInterface.h"
 #include "ConsoleServiceInterface.h"
@@ -21,7 +20,7 @@ namespace Foundation
 {
     namespace Service
     {
-        enum Type {ST_SceneManager = 0, ST_Renderer, ST_Physics, ST_Gui, ST_Scripting, ST_Test, ST_Console, ST_ConsoleCommand, ST_Asset, ST_CommunicationManager, ST_Texture, ST_Sound, ST_Unknown };
+        enum Type {ST_SceneManager = 0, ST_Renderer, ST_Physics, ST_Gui, ST_Scripting, ST_Test, ST_Console, ST_ConsoleCommand, ST_Asset, ST_CommunicationManager, ST_Texture, ST_Sound, ST_Input, ST_Unknown };
     }
 }
 

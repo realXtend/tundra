@@ -3,6 +3,14 @@
 #ifndef incl_RexLogicInputState_h
 #define incl_RexLogicInputState_h
 
+namespace Input
+{
+    namespace Events
+    {
+        class Movement;
+    }
+}
+
 namespace RexLogic
 {
     //! abstract interface for input states
@@ -35,6 +43,7 @@ namespace RexLogic
         virtual void StopRotatingDown() {}
         virtual void StopRollingLeft() {}
         virtual void StopRollingRight() {}
+        virtual void Drag(const Input::Events::Movement *movement) {}
 
         virtual void Update(Core::f64 frametime) {}
     };

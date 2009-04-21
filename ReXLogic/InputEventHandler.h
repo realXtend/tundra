@@ -24,6 +24,9 @@ namespace RexLogic
             \param state shared or weak ptr to the state object
         */
         void SetState(const InputStatePtr &state) { state_ = state; }
+
+        void Update(Core::f64 frametime);
+
     private:
         Foundation::Framework *framework_;
      
