@@ -34,6 +34,9 @@ namespace RexLogic
 
         //! current state for handling input
         InputStatePtr state_;
+
+        //! is mouse dragged currently
+        bool dragging_;
     };
 }
 

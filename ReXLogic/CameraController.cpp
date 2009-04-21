@@ -4,8 +4,6 @@
 #include "CameraController.h"
 #include "Renderer.h"
 #include "InputEvents.h"
-#include "RexLogicModule.h"
-#include "InputServiceInterface.h"
 
 namespace RexLogic
 {
@@ -13,6 +11,8 @@ namespace RexLogic
 module_(module)
 , pitch_(0.f)
 , yaw_(0.f)
+, drag_yaw_(0.f)
+, drag_pitch_(0.f)
 , translation_(Ogre::Vector3::ZERO)
     {
         assert (module_);
@@ -122,14 +122,8 @@ module_(module)
 
     void CameraController::Drag(const Input::Events::Movement *movement)
     {
-        //yaw_ = static_cast<float>(movement->x_.rel_) * -0.5f;
-        //pitch_ = static_cast<float>(movement->y_.rel_) * -0.5f;
-
-        //if (movement->x_.abs_ != 0)
-        //{
-        //    RexLogicModule::LogInfo("x mov: " + Core::ToString(movement->x_.abs_));
-        //    RexLogicModule::LogInfo("yaw: " + Core::ToString(yaw_));
-        //}
+        drag_yaw_ = static_cast<float>(movement->x_.rel_) * -0.2f;
+        drag_pitch_ = static_cast<float>(movement->y_.rel_) * -0.2f;
     }
 
     //! update camera position
@@ -148,19 +142,8 @@ module_(module)
 
             float rot_dt = (float)frametime * rot_sensitivity_;
 
-            camera->yaw(Ogre::Radian(yaw_ * rot_dt));
-            camera->pitch(Ogre::Radian(pitch_ * rot_dt));
-
-            Foundation::InputServiceInterface *input = module_->GetFramework()->GetService<Foundation::InputServiceInterface>(Foundation::Service::ST_Input);
-            if (input)
-            {
-                boost::optional<const Input::Events::Movement&> movement = input->GetDragMovement(Input::Events::MOUSELOOK);
-                if (movement)
-                {
-                    camera->yaw(Ogre::Degree(movement->x_.rel_ * -0.2f * rot_sensitivity_));
-                    camera->pitch(Ogre::Degree(movement->y_.rel_ * -0.2f * rot_sensitivity_));
-                }
-            }
+            camera->yaw(Ogre::Radian(yaw_ * rot_dt)     + Ogre::Degree(drag_yaw_ * rot_sensitivity_));
+            camera->pitch(Ogre::Radian(pitch_ * rot_dt) + Ogre::Degree(drag_pitch_ * rot_sensitivity_));
         }
     }
 }
