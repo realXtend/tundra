@@ -39,7 +39,7 @@ namespace
     {
         Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
         Ogre::MaterialPtr material = mm.getByName(materialName);
-        if (material.get())
+        if (material.get()) // The given material already exists, so no need to create it again.
             return;
 
         material = mm.getByName("SolidAmbient");
@@ -153,7 +153,7 @@ namespace RexLogic
             case RexNetMsgKillObject:                   return HandleOSNE_KillObject(netdata); break;               
             case RexNetMsgObjectUpdate:                 return HandleOSNE_ObjectUpdate(netdata); break;
             case RexNetMsgObjectProperties:             return HandleOSNE_ObjectProperties(netdata); break;
-            case RexNetMsgLayerData:                    return rexlogicmodule_->GetTerrain()->HandleOSNE_LayerData(netdata); break;
+            case RexNetMsgLayerData:                    return rexlogicmodule_->GetTerrainHandler()->HandleOSNE_LayerData(netdata); break;
             default:                                    return false; break;
         }
         
@@ -538,7 +538,8 @@ namespace RexLogic
             sID == rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
         {
             RexLogicModule::LogInfo("LogoutReply received with matching IDs. Logging out.");
-            rexlogicmodule_->GetServerConnection()->CloseServerConnection();
+            rexlogicmodule_->GetServerConnection()->ForceServerDisconnect();
+            rexlogicmodule_->DeleteScene("World");
         } 
         return false;   
     } 
@@ -599,6 +600,13 @@ namespace RexLogic
                     OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
                     ogrePos.SetPosition(Core::OpenSimToOgreCoordinateAxes(position));
                 }
+            }
+            else
+            {
+                std::stringstream ss; 
+                ss << "Unhandled ImprovedTerseObjectUpdate block of size ";
+                ss << bytes_read << "!";
+                RexLogicModule::LogInfo(ss.str());
             }
             
             data->message->SkipToNextVariable(); // TextureEntry variable ///\todo Unhandled inbound variable 'TextureEntry'.

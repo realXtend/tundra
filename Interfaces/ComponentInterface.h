@@ -16,8 +16,6 @@ namespace Foundation
         ComponentInterfaceAbstract()  {}
         virtual ~ComponentInterfaceAbstract() { }
         
-        virtual void HandleNetworkData(std::string data) {}
-
         virtual const std::string &Name() const = 0;
     };
 

@@ -10,13 +10,14 @@
 #include "SceneEventHandler.h"
 #include "EventDataInterface.h"
 #include "CameraController.h"
+#include "SceneManager.h"
 
 #include "EC_Viewable.h"
 #include "EC_FreeData.h"
 #include "EC_SpatialSound.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_OpenSimAvatar.h"
-#include "EC_TerrainPatch.h"
+#include "EC_Terrain.h"
 
 #include "../InputModuleOIS/InputModuleOIS.h"
 
@@ -46,7 +47,7 @@ namespace RexLogic
         DECLARE_MODULE_EC(EC_SpatialSound);
         DECLARE_MODULE_EC(EC_OpenSimPrim);
         DECLARE_MODULE_EC(EC_OpenSimAvatar);
-        DECLARE_MODULE_EC(EC_TerrainPatch);
+        DECLARE_MODULE_EC(EC_Terrain);
 
         LogInfo("Module " + Name() + " loaded.");
     }
@@ -65,7 +66,7 @@ namespace RexLogic
         // world_logic_ = new WorldLogic(framework);
         avatar_controller_ = AvatarControllerPtr(new AvatarController(framework_, this));
         camera_controller_ = CameraControllerPtr(new CameraController(this));
-        rexserver_connection_ = RexServerConnectionPtr(new RexServerConnection(framework_)); 
+        rexserver_connection_ = RexServerConnectionPtr(new RexServerConnection(framework_));
         network_handler_ = new NetworkEventHandler(framework_, this);
         network_state_handler_ = new NetworkStateEventHandler(framework_, this);
         input_handler_ = new InputEventHandler(framework_, this);
@@ -115,6 +116,27 @@ namespace RexLogic
         cam->lookAt(0,0,0);
     }
 
+    void RexLogicModule::DeleteScene(const std::string &name)
+    {
+        Scene::SceneManager *scene_manager = dynamic_cast<Scene::SceneManager *>
+            (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
+        
+        if (!scene_manager)
+            return;
+        
+        if (!scene_manager->HasScene(name))
+        {
+            LogWarning("Tried to delete scene, but it didn't exist!");
+            return;
+        }
+
+        if (activeScene_ && activeScene_->Name() == name)
+            activeScene_.reset(); ///\todo Check in SceneManager that scene names surely are unique. -jj.
+
+        scene_manager->DeleteScene(name);
+        assert(!scene_manager->HasScene(name));
+    }
+
     // virtual 
     void RexLogicModule::Uninitialize()
     {
@@ -122,7 +144,7 @@ namespace RexLogic
         {
             //! \todo tucofixme, at the moment don't wait for LogoutReply packet, just close connection.
             rexserver_connection_->RequestLogout();
-            rexserver_connection_->CloseServerConnection(); 
+            rexserver_connection_->ForceServerDisconnect(); 
         }
         
         rexserver_connection_.reset();
@@ -169,7 +191,55 @@ namespace RexLogic
     void RexLogicModule::CreateTerrain()
     {
         terrain_ = TerrainPtr(new Terrain(this));
+
+        // Create a single entity with a EC_Terrain component to the scene.
+        Foundation::SceneManagerServiceInterface *sceneManager = 
+            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+
+        Foundation::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
+        entity->AddEntityComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_Terrain"));
+
+        terrain_->FindCurrentlyActiveTerrain();
     }
+
+    TerrainPtr RexLogicModule::GetTerrainHandler()
+    {
+        return terrain_;
+    }
+
+    void RexLogicModule::SetCurrentActiveScene(Foundation::ScenePtr scene)
+    {
+        activeScene_ = scene;
+    }
+
+    Foundation::ScenePtr RexLogicModule::GetCurrentActiveScene()
+    {
+        return activeScene_;
+    }
+
+    Foundation::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
+    {
+        Foundation::SceneManagerServiceInterface *sceneManager = 
+            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+
+        if (sceneManager->HasScene(name))
+        {
+            LogWarning("Tried to create new active scene, but it already existed!");
+            Foundation::ScenePtr newActiveScene = sceneManager->GetScene(name);
+            SetCurrentActiveScene(newActiveScene);
+            return newActiveScene;
+        }
+
+        activeScene_ = sceneManager->CreateScene(name);
+
+        // Also create a default terrain to the Scene. This is done here dynamically instead of fixed in RexLogic,
+        // since we might have 0-N terrains later on, depending on where we actually connect to. Now of course
+        // we just create one default terrain.
+        CreateTerrain();
+
+        return GetCurrentActiveScene();
+    }
+
 }
 
 using namespace RexLogic;

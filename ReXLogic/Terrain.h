@@ -13,13 +13,25 @@ public:
     Terrain(RexLogicModule *owner_);
     ~Terrain();
 
-    void DebugCreateTerrainVisData(const DecodedTerrainPatch &patch, int patchSize);
-
+    //! Called to handle an OpenSim LayerData packet.
     //! Decodes terrain data from a LayerData packet and generates terrain patches accordingly.
     bool HandleOSNE_LayerData(OpenSimProtocol::NetworkEventInboundData* data);
 
+    //! Looks through all the entities in RexLogic's currently active scene to find the Terrain
+    //! entity. Caches it internally. Use GetTerrainEntity to obtain it afterwards.
+    void FindCurrentlyActiveTerrain();
+
+    Foundation::EntityWeakPtr GetTerrainEntity();
 private:
-    RexLogicModule *owner;
+    RexLogicModule *owner_;
+
+    Foundation::EntityWeakPtr cachedTerrainEntity_;
+
+    void CreateOrUpdateTerrainPatch(const DecodedTerrainPatch &patch, int patchSize);
+
+    void CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY);
+
+    void DebugGenerateTerrainVisData(Ogre::SceneNode *node, const DecodedTerrainPatch &patch, int patchSize);
 
 };
 

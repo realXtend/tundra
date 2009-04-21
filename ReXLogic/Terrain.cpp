@@ -17,10 +17,12 @@
 #include "RexLogicModule.h"
 #include "Terrain.h"
 
+#include "EC_Terrain.h"
+
 namespace RexLogic
 {
-    Terrain::Terrain(RexLogicModule *owner_)
-    :owner(owner_)
+    Terrain::Terrain(RexLogicModule *owner)
+    :owner_(owner)
     {
     }
 
@@ -28,38 +30,28 @@ namespace RexLogic
     {
     }
 
-    void Terrain::DebugCreateTerrainVisData(const DecodedTerrainPatch &patch, int patchSize)
+    void Terrain::DebugGenerateTerrainVisData(Ogre::SceneNode *node, const DecodedTerrainPatch &patch, int patchSize)
     {
-        if (patch.heightData.size() < patchSize * patchSize)
-        {
-            RexLogicModule::LogWarning("Not enough height map data to fill patch points!");
-            return;
-        }
-
-        OgreRenderer::Renderer *renderer = owner->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
-        Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
-
-        ///\todo Quick W.I.P Ogre object naming, refactor. -jj.
-        static int c = 0;
-        std::stringstream ss;
-        ss.clear();
-        ss << "terrain " << c++;
-        Ogre::ManualObject *manual = sceneMgr->createManualObject(ss.str());
+        assert(node->numAttachedObjects() == 1);
+        Ogre::ManualObject *manual = dynamic_cast<Ogre::ManualObject*>(node->getAttachedObject(0));
+        manual->clear(); /// \note For optimization, could use beginUpdate.
         manual->begin("AmbientWhite", Ogre::RenderOperation::OT_LINE_LIST);
 
         const float vertexSpacingX = 1.f;
         const float vertexSpacingY = 1.f;
         const float patchSpacingX = 16 * vertexSpacingX;
         const float patchSpacingY = 16 * vertexSpacingY;
-        const Ogre::Vector3 patchOrigin(patch.header.x * patchSpacingX, 0.f, patch.header.y * patchSpacingY);
+        const Ogre::Vector3 patchOrigin(patch.header.y * patchSpacingY, 0.f, patch.header.x * patchSpacingX);
         const float heightScale = 1.f;
         for(int y = 0; y+1 < patchSize; ++y)
             for(int x = 0; x+1 < patchSize; ++x)
             {
-                Ogre::Vector3 a = patchOrigin + Ogre::Vector3(vertexSpacingX * x,     heightScale * patch.heightData[y*patchSize+x],   vertexSpacingY * y);
-                Ogre::Vector3 b = patchOrigin + Ogre::Vector3(vertexSpacingX * (x+1), heightScale * patch.heightData[y*patchSize+x+1], vertexSpacingY * y);
-                Ogre::Vector3 c = patchOrigin + Ogre::Vector3(vertexSpacingX * x,     heightScale * patch.heightData[(y+1)*patchSize+x], vertexSpacingY * (y+1));
-                Ogre::Vector3 d = patchOrigin + Ogre::Vector3(vertexSpacingX * (x+1), heightScale * patch.heightData[(y+1)*patchSize+x+1], vertexSpacingY * (y+1));
+                // These coordinates are directly generated to our Ogre coordinate system, i.e. are cycled from OpenSim XYZ -> our YZX.
+                // see Core::OpenSimToOgreCoordinateAxes.
+                Ogre::Vector3 a = patchOrigin + Ogre::Vector3(vertexSpacingY * y,     heightScale * patch.heightData[y*patchSize+x], vertexSpacingX * x);
+                Ogre::Vector3 b = patchOrigin + Ogre::Vector3(vertexSpacingY * y, heightScale * patch.heightData[y*patchSize+x+1], vertexSpacingX * (x+1));
+                Ogre::Vector3 c = patchOrigin + Ogre::Vector3(vertexSpacingY * (y+1),     heightScale * patch.heightData[(y+1)*patchSize+x], vertexSpacingX * x);
+                Ogre::Vector3 d = patchOrigin + Ogre::Vector3(vertexSpacingY * (y+1), heightScale * patch.heightData[(y+1)*patchSize+x+1], vertexSpacingX * (x+1));
 
                 manual->position(a);
                 manual->position(b);
@@ -82,10 +74,43 @@ namespace RexLogic
 
         manual->end();
         manual->setDebugDisplayEnabled(true);
-       
-        Ogre::SceneNode *node = sceneMgr->createSceneNode();
+    }
+
+    void Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY)
+    {
+        OgreRenderer::Renderer *renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
+
+        std::stringstream ss;
+        ss.clear();
+        ss << "TerrainPatch " << patchX << ", " << patchY;
+        Ogre::ManualObject *manual = sceneMgr->createManualObject(ss.str());
+
+        node = sceneMgr->createSceneNode();
         sceneMgr->getRootSceneNode()->addChild(node);
         node->attachObject(manual);
+    }
+
+    void Terrain::CreateOrUpdateTerrainPatch(const DecodedTerrainPatch &patch, int patchSize)
+    {
+        if (patch.heightData.size() < patchSize * patchSize)
+        {
+            RexLogicModule::LogWarning("Not enough height map data to fill patch points!");
+            return;
+        }
+
+        Foundation::EntityPtr terrain = GetTerrainEntity().lock();
+        EC_Terrain *terrainComponent = checked_static_cast<EC_Terrain*>(terrain->GetComponent("EC_Terrain").get());
+        assert(terrainComponent);
+        EC_Terrain::Patch &scenePatch = terrainComponent->GetPatch(patch.header.x, patch.header.y);
+        scenePatch.x = patch.header.x;
+        scenePatch.y = patch.header.y;
+        scenePatch.heightData = patch.heightData;
+
+        if (!scenePatch.node)
+            CreateOgreTerrainPatchNode(scenePatch.node, scenePatch.x, scenePatch.y);
+
+        DebugGenerateTerrainVisData(scenePatch.node, patch, patchSize);
     }
 
     /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
@@ -109,7 +134,7 @@ namespace RexLogic
             std::vector<DecodedTerrainPatch> patches;
             DecompressLand(patches, bits, header);
             for(size_t i = 0; i < patches.size(); ++i)
-                DebugCreateTerrainVisData(patches[i], header.patchSize);
+                CreateOrUpdateTerrainPatch(patches[i], header.patchSize);
             break;
         }
         default:
@@ -119,4 +144,23 @@ namespace RexLogic
         return false;
     }
 
+    void Terrain::FindCurrentlyActiveTerrain()
+    {
+        Foundation::ScenePtr scene = owner_->GetCurrentActiveScene();
+        for(Foundation::SceneInterface::EntityIterator iter = scene->begin();
+            iter != scene->end(); ++iter)
+        {
+            Foundation::EntityInterface &entity = *iter;
+            Foundation::ComponentInterfacePtr terrainComponent = entity.GetComponent("EC_Terrain");
+            if (terrainComponent.get())
+            {
+                cachedTerrainEntity_ = scene->GetEntity(entity.GetId());
+            }
+        }
+    }
+
+    Foundation::EntityWeakPtr Terrain::GetTerrainEntity()
+    {
+        return cachedTerrainEntity_;
+    }
 }
