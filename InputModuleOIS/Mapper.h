@@ -35,7 +35,7 @@ namespace Input
         //! Polls the current mouse state for both absolute and relative movement
         /*! Not thread safe
         */
-        boost::optional<const Input::Events::Movement&> GetDragMovement(Core::event_id_t dragged_event) const { return module_->GetDraggedSliderInfo(dragged_event); }
+        boost::optional<const Input::Events::Movement&> GetSliderMovement(Core::event_id_t dragged_event) const { return module_->GetDraggedSliderInfo(dragged_event); }
 
         //! Loads input mappings from xml file.
         /*! Replaces the default mappings with ones loaded from the file. In case of an error

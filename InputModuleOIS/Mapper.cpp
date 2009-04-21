@@ -142,6 +142,7 @@ namespace Input
 
     void Mapper::SetDefaultMappings()
     {
+        // See InputModuleOIS for explanation
         module_->RegisterUnbufferedKeyEvent(OIS::KC_W,       Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED, 0);
         module_->RegisterUnbufferedKeyEvent(OIS::KC_S,       Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,    0);
         module_->RegisterUnbufferedKeyEvent(OIS::KC_A,       Events::MOVE_LEFT_PRESSED,      Events::MOVE_LEFT_RELEASED,    0);
