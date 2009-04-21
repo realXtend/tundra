@@ -48,6 +48,11 @@ namespace RexLogic
         Core::Real pitch_;
         //! relative yaw of the camera for one frame
         Core::Real yaw_;
+
+        //! translation speed of the camera
+        Core::Real sensitivity_;
+        //! rotation speed of the camera
+        Core::Real rot_sensitivity_;
     };
 
 }
