@@ -13,6 +13,9 @@ module_(module)
 , translation_(Ogre::Vector3::ZERO)
     {
         assert (module_);
+
+        sensitivity_ = module_->GetFramework()->GetDefaultConfig().DeclareSetting("Camera", "translation_sensitivity", 25.f);
+        rot_sensitivity_ = module_->GetFramework()->GetDefaultConfig().DeclareSetting("Camera", "rotation_sensitivity", 1.6f);
     }
 
     CameraController::~CameraController()
@@ -97,20 +100,18 @@ module_(module)
     //! update camera position
     void CameraController::Update(Core::f64 frametime)
     {
-        const float move_sensitivity = 25.f;
-        float dt = (float)frametime * move_sensitivity;
+        float trans_dt = (float)frametime * sensitivity_;
 
         OgreRenderer::Renderer *renderer = module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
         Ogre::Camera *camera = renderer->GetCurrentCamera();
         Ogre::Vector3 pos = camera->getPosition();
 
-        pos += camera->getOrientation() * translation_ * dt;
+        pos += camera->getOrientation() * translation_ * trans_dt;
         camera->setPosition(pos);
 
-        const float rotation_sensitivity_ = 1.6f;
-        const float lookAmount = (float)frametime * rotation_sensitivity_;
+        float rot_dt = (float)frametime * rot_sensitivity_;
 
-        camera->yaw(Ogre::Radian(yaw_ * lookAmount));
-        camera->pitch(Ogre::Radian(pitch_ * lookAmount));
+        camera->yaw(Ogre::Radian(yaw_ * rot_dt));
+        camera->pitch(Ogre::Radian(pitch_ * rot_dt));
     }
 }

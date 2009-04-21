@@ -17,7 +17,8 @@ namespace Input
 
         \todo The problem is, we have buffered keyboard which launches
               events directly with OIS keycodes, and then we have
-              unbuffered keyboard that also launches events.
+              unbuffered keyboard that also launches events based on OIS
+              keycodes.
 
               When buffered keyboard launches an event corresponding
               to keycode A, unbuffered keyboard should not launch it's

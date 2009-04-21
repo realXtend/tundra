@@ -20,7 +20,7 @@ namespace Foundation
 			    // Generate search key 
                 std::string groupKey = group + "." + key;
 		        try     
-			    {   
+			    {
 				    value = boost::lexical_cast<T>(configuration_->getString(groupKey));     
 			    }
 		        catch ( Poco::NotFoundException& /*ob*/)
@@ -88,7 +88,8 @@ namespace Foundation
         
         try
         {
-            value =  configuration_->getString(groupKey);
+            if (configuration_)
+                value =  configuration_->getString(groupKey);
         }
         catch ( Poco::NotFoundException& /*ob*/)
         {}
@@ -106,7 +107,8 @@ namespace Foundation
         
         try
         {
-            value =  boost::lexical_cast<T>(configuration_->getString(groupKey));
+            if (configuration_)
+                value =  boost::lexical_cast<T>(configuration_->getString(groupKey));
         }
         catch ( Poco::NotFoundException& /*ob*/)
         {

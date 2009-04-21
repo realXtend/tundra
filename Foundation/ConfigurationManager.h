@@ -75,7 +75,7 @@ namespace Foundation
 
         //! Declares a key-value pair setting
         /*! This is the standard way of retrieving a value from group and key name for the first
-            time.
+            time, and also setting a default value if the setting doesn't exist yet.
 
             Postcond: HasKey(group, key)
            
