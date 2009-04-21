@@ -22,7 +22,7 @@ namespace RexLogic
         
         bool ConnectToServer(std::string username, std::string password, std::string serveraddress);
         void RequestLogout();
-        void CloseServerConnection();
+        void ForceServerDisconnect();
 
         // Send the UDP chat packet.
         void SendChatFromViewerPacket(std::string text);

@@ -60,13 +60,24 @@ namespace RexLogic
         //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
         void SwitchController();
 
-        //! Recreates the terrain. Called at startup.
-        void CreateTerrain();
+        //! @return The terrain handler object that manages Rex terrain logic.
+        TerrainPtr GetTerrainHandler();
 
-        //! @return The current in-scene terrain object. May return 0 if there isn't one.
-        TerrainPtr GetTerrain() { return terrain_; }
+        //! The scene system can store multiple scenes. Only one scene is active at a time, that is the one
+        //! that is currently being rendered. You may pass a null pointer to erase the currently active scene.
+        void SetCurrentActiveScene(Foundation::ScenePtr scene);
 
-    private:        
+        //! @return The currently viewed scene, or 0 if not connected. (Don't use as an indicator of connection state!)
+        Foundation::ScenePtr GetCurrentActiveScene();
+
+        //! Creates a new scene and sets that as active. Also creates the core entities to that scene that 
+        //! are always to be present in an Rex world, like terrain.
+        Foundation::ScenePtr CreateNewActiveScene(const std::string &name);
+
+        //! Deletes the scene with the given name. If that was the current active scene, the active scene will be
+        //! set to null.
+        void DeleteScene(const std::string &name);
+    private:
         //! Event handler for network events.
         NetworkEventHandler *network_handler_;
         
@@ -97,6 +108,11 @@ namespace RexLogic
         InputController current_controller_;
 
         TerrainPtr terrain_;
+
+        Foundation::ScenePtr activeScene_;
+
+        //! Recreates the terrain. Called at startup.
+        void CreateTerrain();
     };
 }
 

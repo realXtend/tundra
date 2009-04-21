@@ -100,28 +100,14 @@ namespace RexLogic
 
         SendLogoutRequestPacket();
     } 
- 
-    void RexServerConnection::CloseServerConnection()
+
+    void RexServerConnection::ForceServerDisconnect()
     {
         if(!connected_)
             return;
     
-        netInterface_->DisconnectFromRexServer();    
+        netInterface_->DisconnectFromRexServer(); 
         connected_ = false;
-        
-        Scene::SceneManager *scene_manager = dynamic_cast<Scene::SceneManager *>
-            (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
-        
-        if (!scene_manager)
-            return;
-        
-        // Delete the scene
-        if (scene_manager->HasScene("World"))
-        {
-            scene_manager->DeleteScene("World");
-            assert(!scene_manager->HasScene("World"));
-            RexLogicModule::LogInfo("Logged out from server. Scene deleted.");
-        }  
     }
     
 	void RexServerConnection::SendUseCircuitCodePacket()

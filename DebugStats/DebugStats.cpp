@@ -134,8 +134,9 @@ void DebugStats::InitializeModulesWindow()
 
     debugModulesModel_ = Gtk::TreeStore::create(moduleModelColumns_);
 
+    /// \bug Profile shows that this most likely causes a memory leak of ~36 bytes. Figure out how to fix. #1
     Gtk::TreeView *tv = 0;
-    debugModules_->get_widget("treeview1", tv);
+    debugModules_->get_widget("treeview1", tv); 
     tv->set_model(debugModulesModel_);
 
     debugWindow->show();
@@ -146,6 +147,7 @@ void DebugStats::PopulateModulesTreeView()
     Gtk::Window *debugWindow = 0;
     debugModules_->get_widget("windowDebugModules", debugWindow);
     
+    /// \bug Profile shows that this most likely causes a memory leak of ~36 bytes. Figure out how to fix. #2
     Gtk::TreeView *tv = 0;
     debugModules_->get_widget("treeview1", tv);
     tv->append_column(Glib::ustring("Name"), moduleModelColumns_.moduleName);
@@ -184,6 +186,7 @@ void DebugStats::InitializeEventsWindow()
     debugEventsModel_ = Gtk::TreeStore::create(moduleModelColumns_);
 
     Gtk::TreeView *tv = 0;
+    /// \bug Profile shows that this most likely causes a memory leak of ~36 bytes. Figure out how to fix. #3
     debugEvents_->get_widget("treeview1", tv);
     tv->set_model(debugEventsModel_);
 
@@ -196,6 +199,7 @@ void DebugStats::PopulateEventsTreeView()
     debugEvents_->get_widget("window1", debugWindow);
     
     Gtk::TreeView *tv = 0;
+    /// \bug Profile shows that this most likely causes a memory leak of ~36 bytes. Figure out how to fix. #4
     debugEvents_->get_widget("treeview1", tv);
     tv->append_column(Glib::ustring("Name"), moduleModelColumns_.moduleName);
 
@@ -225,6 +229,7 @@ void DebugStats::InitializeEntityListWindow()
     
     // Set up tree view.
     Gtk::TreeView *treeview_entitylist = 0;
+    /// \bug Profile shows that this most likely causes a memory leak of ~36 bytes. Figure out how to fix. #5
     entityListControls_->get_widget("treeview_entitylist", treeview_entitylist);
     
     // Set data model and column names.
@@ -250,6 +255,7 @@ void DebugStats::PopulateEntityListTreeView()
     using namespace std;
     
     Gtk::TreeView *treeview_entitylist = 0;
+    /// \bug Profile shows that this most likely causes a memory leak of ~36 bytes. Figure out how to fix. #6
     entityListControls_->get_widget("treeview_entitylist", treeview_entitylist);
 
     Scene::SceneManager *sceneManager = dynamic_cast<Scene::SceneManager *>

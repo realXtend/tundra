@@ -15,6 +15,9 @@
 
 using namespace RexTypes;
 
+namespace 
+{
+
 /// A unary find predicate that looks for a NetOutMessage or a NetInMessage
 /// that has the given desired sequence number in a message pool.
 class InSeqNumMatchPred
@@ -54,6 +57,8 @@ const char *VariableTypeToStr(NetVariableType type)
 
 	return data[type];
 }
+
+} // ~unnamed namespace
 
 namespace NetTest
 {

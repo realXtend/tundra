@@ -10,8 +10,8 @@
 namespace Foundation
 {
     class EntityInterface;    
+    typedef boost::weak_ptr<EntityInterface> EntityWeakPtr;
     typedef boost::shared_ptr<EntityInterface> EntityPtr;
-
 
     //! interface for entities
     class MODULE_API EntityInterface

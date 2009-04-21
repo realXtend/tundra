@@ -22,17 +22,8 @@ namespace RexLogic
         {
             case OpenSimProtocol::Events::EVENT_SERVER_CONNECTED:
                 {   
-                    // The client is connected to the server. Create the "World" scene.
-                    Foundation::SceneManagerServiceInterface *sceneManager = 
-                        framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
-                    if (!sceneManager->HasScene("World"))
-                        sceneManager->CreateScene("World");
-
-                    // Also create a default terrain to RexLogic. This is done here dynamically instead of fixed in RexLogic,
-                    // since we might have 0-N terrains later on, depending on where we actually connect to. Now of course
-                    // we just create one default terrain.
-                    rexlogicmodule_->CreateTerrain();
-
+                    // The client has connected to the server. Create a new scene for that.
+                    rexlogicmodule_->CreateNewActiveScene("World");
                     break;
                 }
             default:
