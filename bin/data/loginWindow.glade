@@ -66,7 +66,44 @@
             <property name="position">7</property>
           </packing>
         </child>
-        <child internal-child="action_area">
+        <child>
+          <widget class="GtkLabel" id="label_auth_login">
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">Authentication login</property>
+          </widget>
+          <packing>
+            <property name="position">8</property>
+          </packing>
+        </child>
+         <child>
+          <widget class="GtkEntry" id="entry_auth_login">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+          </widget>
+          <packing>
+            <property name="position">9</property>
+          </packing>
+        </child>
+ 	 <child>
+          <widget class="GtkLabel" id="label_authentication">
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">Authentication server address and port</property>
+          </widget>
+          <packing>
+            <property name="position">10</property>
+          </packing>
+        </child>
+	  <child>
+          <widget class="GtkEntry" id="entry_authentication">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+          </widget>
+          <packing>
+            <property name="position">11</property>
+          </packing>
+        </child>
+
+	   <child internal-child="action_area">
           <widget class="GtkHButtonBox" id="dialog-action_area1">
             <property name="visible">True</property>
             <property name="layout_style">GTK_BUTTONBOX_END</property>
