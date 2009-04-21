@@ -8,7 +8,7 @@
 #include <gtkmm/actiongroup.h>
 #include <libglademm.h>
 #include <glade/glade.h>
-#pragma warning( pop )
+
 
 #include <Poco/ClassLibrary.h>
 
@@ -57,7 +57,7 @@ ConfigureDlg::ConfigureDlg(int count, std::map<std::string, Foundation::Comms::S
 		strcpy(buffer, iter->first.c_str());
 		strcat(buffer, ":");
 		Gtk::Label* pLabel = Gtk::manage(new Gtk::Label(buffer));
-		pLabel->set_justify(Gtk::Justification::JUSTIFY_RIGHT);
+		pLabel->set_justify(Gtk::JUSTIFY_RIGHT);
 		m_Table.attach(*pLabel, 0, 1, row, row + 1);
 		Gtk::Entry* pEntry = Gtk::manage(new Gtk::Entry());
 		m_Table.attach(*pEntry, 1, 2, row, row + 1);
@@ -189,3 +189,4 @@ void ConfigureDlg::cleanUp()
 	widgetPairs.clear();
 	hide();
 }
+#pragma warning( pop )

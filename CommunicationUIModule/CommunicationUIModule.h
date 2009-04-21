@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "ChatSession.h"
 #include "ConfigureDlg.h"
 #include "ModuleInterface.h"
 //#include "PythonScriptModule.h"
@@ -30,6 +31,8 @@
 
 namespace Communication
 {
+
+	typedef boost::shared_ptr<ChatSession> ChatSessionUIPtr;
 	//
 	class MODULE_API CommunicationUIModule : public Foundation::ModuleInterfaceImpl, public IConfigureCallBack
 	{
@@ -53,8 +56,16 @@ namespace Communication
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_CommunicationUI;
 
 	private:
+		// event handlers
 		static void testCallback(char*);
-		
+		static void connected(char*);
+		static void connecting(char*);
+		static void disconnected(char*);
+		static void channelOpened(char*);
+		static void channelClosed(char*);
+		static void messagReceived(char*);
+
+		void setOnlineStatus(char* status);
 
 	private:
 		void initializeMainCommWindow();
@@ -62,18 +73,38 @@ namespace Communication
 		void OnAccountMenuSetAccountAndPassword();
 		void OnAccountMenuConnect();
 		void OnAccountMenuDisconnect();
+		void OnDirectChatMenuStartChat();
+
+		void OnEntryDlgOk();
+		void OnEntryDlgCancel();
+
 		Glib::RefPtr<Gnome::Glade::Xml> commUI_XML;
 
 		// Widgets
 		Gtk::Window *wndCommMain;
 		Gtk::Window *dlgAccount;
 		Gtk::ActionGroup *actionGroup;
+		Gtk::Dialog* dlgEntry;
+		int entryret_;
+	
+		// Currently just 1 session
+		bool sessionUp_;
+	public:
+		ChatSessionUIPtr session_;
+
+
+	private:
+		// Service References
 		Foundation::Comms::CommunicationManagerServiceInterface *commManager;
 		Foundation::ScriptServiceInterface *scriptService;
-		//Foundation::CommunicationUIManagerPtr CommunicationUI_manager_;
-		Foundation::ScriptObject* sobj;
 
+		// Scripts
+		Foundation::ScriptObject* sobj;
 		Foundation::ScriptObject* imScriptObject;
+
+		// Pointer to ui instance (needed for accessing from static methods, which are needed for event passsing)
+		static CommunicationUIModule* instance_;
+		//Foundation::CommunicationUIManagerPtr CommunicationUI_manager_;
 	};
 }
 

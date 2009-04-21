@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
+<!--Generated with glade3 3.4.3 on Mon Apr 20 10:03:05 2009 -->
+<glade-interface>
+  <widget class="GtkWindow" id="wndChat">
+    <child>
+      <widget class="GtkFixed" id="fixed1">
+        <property name="visible">True</property>
+        <child>
+          <widget class="GtkEntry" id="txtEntrySend">
+            <property name="width_request">336</property>
+            <property name="height_request">33</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+          </widget>
+          <packing>
+            <property name="x">25</property>
+            <property name="y">317</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="GtkButton" id="btnSend">
+            <property name="width_request">62</property>
+            <property name="height_request">34</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="label" translatable="yes">_Send</property>
+            <property name="use_underline">True</property>
+            <property name="response_id">0</property>
+          </widget>
+          <packing>
+            <property name="x">371</property>
+            <property name="y">316</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="GtkButton" id="btnClose">
+            <property name="width_request">64</property>
+            <property name="height_request">34</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="label" translatable="yes">_Close</property>
+            <property name="use_underline">True</property>
+            <property name="response_id">0</property>
+          </widget>
+          <packing>
+            <property name="x">445</property>
+            <property name="y">316</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="GtkScrolledWindow" id="scrolledwindow1">
+            <property name="width_request">482</property>
+            <property name="height_request">267</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+            <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+            <child>
+              <widget class="GtkTextView" id="txtChatView">
+                <property name="width_request">485</property>
+                <property name="height_request">62</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+              </widget>
+            </child>
+          </widget>
+          <packing>
+            <property name="x">26</property>
+            <property name="y">26</property>
+          </packing>
+        </child>
+      </widget>
+    </child>
+  </widget>
+</glade-interface>

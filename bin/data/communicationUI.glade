@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Mon Apr 06 09:19:39 2009 -->
+<!--Generated with glade3 3.4.3 on Fri Apr 17 11:00:27 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="wndCMain">
     <child>
@@ -96,6 +96,25 @@
                 </child>
               </widget>
             </child>
+            <child>
+              <widget class="GtkMenuItem" id="menuitem5">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Direct Chat</property>
+                <property name="use_underline">True</property>
+                <child>
+                  <widget class="GtkMenu" id="menu3">
+                    <property name="visible">True</property>
+                    <child>
+                      <widget class="GtkMenuItem" id="mi_directchat">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Start chat with address</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                  </widget>
+                </child>
+              </widget>
+            </child>
           </widget>
         </child>
         <child>
@@ -139,67 +158,56 @@
             <property name="y">125</property>
           </packing>
         </child>
+        <child>
+          <widget class="GtkLabel" id="lblOnlineStatus">
+            <property name="width_request">229</property>
+            <property name="height_request">34</property>
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">Offline</property>
+          </widget>
+          <packing>
+            <property name="x">17</property>
+            <property name="y">261</property>
+          </packing>
+        </child>
       </widget>
     </child>
   </widget>
-  <widget class="GtkDialog" id="dlgSetAccount">
+  <widget class="GtkDialog" id="dlgEntry">
     <property name="border_width">5</property>
     <property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
     <property name="has_separator">False</property>
     <child internal-child="vbox">
-      <widget class="GtkVBox" id="dialog-vbox1">
+      <widget class="GtkVBox" id="dialog-vbox2">
         <property name="visible">True</property>
         <property name="spacing">2</property>
         <child>
-          <widget class="GtkFixed" id="fixed2">
+          <widget class="GtkFixed" id="fixed3">
             <property name="visible">True</property>
             <child>
-              <widget class="GtkEntry" id="entry1">
-                <property name="width_request">244</property>
-                <property name="height_request">33</property>
+              <widget class="GtkLabel" id="lblEntryDialogInfo">
+                <property name="width_request">246</property>
+                <property name="height_request">67</property>
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Entry info:</property>
+                <property name="wrap">True</property>
+              </widget>
+              <packing>
+                <property name="x">27</property>
+                <property name="y">10</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkEntry" id="entryDialogInputTextArea">
+                <property name="width_request">243</property>
+                <property name="height_request">32</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
               </widget>
               <packing>
-                <property name="x">121</property>
-                <property name="y">23</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkEntry" id="entry2">
-                <property name="width_request">245</property>
-                <property name="height_request">35</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-              </widget>
-              <packing>
-                <property name="x">120</property>
-                <property name="y">91</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkLabel" id="label5">
-                <property name="width_request">100</property>
-                <property name="height_request">37</property>
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">Jid account:</property>
-              </widget>
-              <packing>
-                <property name="x">9</property>
-                <property name="y">22</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkLabel" id="label6">
-                <property name="width_request">100</property>
-                <property name="height_request">44</property>
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">Password:</property>
-              </widget>
-              <packing>
-                <property name="x">8</property>
-                <property name="y">83</property>
+                <property name="x">28</property>
+                <property name="y">81</property>
               </packing>
             </child>
           </widget>
@@ -208,25 +216,26 @@
           </packing>
         </child>
         <child internal-child="action_area">
-          <widget class="GtkHButtonBox" id="dialog-action_area1">
+          <widget class="GtkHButtonBox" id="dialog-action_area2">
             <property name="visible">True</property>
-            <property name="homogeneous">True</property>
             <property name="layout_style">GTK_BUTTONBOX_END</property>
             <child>
-              <widget class="GtkButton" id="button1">
+              <widget class="GtkButton" id="btnEntryCancel">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="label" translatable="yes">button</property>
+                <property name="label" translatable="yes">_Cancel</property>
+                <property name="use_underline">True</property>
                 <property name="response_id">0</property>
               </widget>
             </child>
             <child>
-              <widget class="GtkButton" id="button2">
+              <widget class="GtkButton" id="btnEntryOk">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="label" translatable="yes">button</property>
+                <property name="label" translatable="yes">_OK</property>
+                <property name="use_underline">True</property>
                 <property name="response_id">0</property>
               </widget>
               <packing>

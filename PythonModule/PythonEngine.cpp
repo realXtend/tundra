@@ -166,7 +166,7 @@ namespace PythonScript
 		std::cout << "NotifyScriptEvent" << std::endl;
 		try{
 			std::map<std::string, StdFunctionVectorPtr>::iterator iter = methods_.find(key);
-			if(iter==methods_.end()){std::cout << "no such event declared" << std::endl;} else {
+			if(iter==methods_.end()){std::cout << "no such event declared: " << key << std::endl;} else {
 				StdFunctionVectorPtr vect = iter->second;
 				std::vector<void(*)(char*)>::iterator f_iter;
 				char* m = new char[message.size()+1];

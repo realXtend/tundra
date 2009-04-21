@@ -52,6 +52,7 @@ namespace PythonScript
 		AutoRegisterConsoleCommand(Console::CreateCommand(
             "PyReset", "Resets the Python interpreter - should free all it's memory, and clear all state.", 
             Console::Bind(this, &PythonScriptModule::ConsoleReset))); 
+
     }
 
     // virtual
@@ -278,14 +279,17 @@ static PyObject* SendChat(PyObject *self, PyObject *args)
 	//Foundation::Framework *framework_ = Foundation::ComponentInterfacePythonScriptModule::GetFramework();
 	Foundation::Framework *framework_ = PythonScript::staticframework;
 	//todo weak_pointerize
-    PythonScriptModule *pyModule_ = dynamic_cast<PythonScriptModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_PythonScript));
 
-	pyModule_->SendChatFromViewerPacket(msg);
+	//Foundation::ModuleWeakPtr
+    //PythonScriptModule *pyModule_ = dynamic_cast<PythonScriptModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_PythonScript));
+
+	//pyModule_->SendChatFromViewerPacket(msg);
 	
 	//SendChatFromViewerPacket(msg);
 
 	Py_RETURN_TRUE;
 }
+
 
 static PyObject* PyEventCallback(PyObject *self, PyObject *args){
 	std::cout << "PyEventCallback" << std::endl;
@@ -298,7 +302,6 @@ static PyObject* PyEventCallback(PyObject *self, PyObject *args){
 	std::string k(key);
 	std::string m(message);
 	PythonScript::PythonScriptModule::engineAccess->NotifyScriptEvent(k, m);
-	//PythonScript::PythonScriptModule::engine->
 	Py_RETURN_TRUE;
 }
 

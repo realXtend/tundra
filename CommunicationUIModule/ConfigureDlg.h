@@ -8,7 +8,7 @@
 #pragma warning( push )
 #pragma warning( disable : 4250 )
 #include <gtkmm.h>
-#pragma warning( pop )
+
 
 
 class IConfigureCallBack
@@ -60,5 +60,5 @@ protected:
 	//Foundation::Comms::CommunicationManagerServiceInterface* commManager;
 	void (*callbackMethod)(std::map<std::string, Foundation::Comms::SettingsAttribute>);  
 };
-
+#pragma warning( pop )
 #endif
