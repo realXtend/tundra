@@ -13,7 +13,7 @@ namespace Foundation
         InputServiceInterface() {}
         virtual ~InputServiceInterface() {}
 
-
+        virtual boost::optional<const Input::Events::Movement&> GetDragMovement(Core::event_id_t dragged_event) const = 0;
     };
 }
 

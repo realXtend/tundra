@@ -19,6 +19,7 @@ namespace Input
         , mouse_(0)
         , joy_(0)
         , event_category_(0)
+        , dragged_(false)
     {       
     }
 
@@ -112,6 +113,8 @@ namespace Input
 
         key_mapping_ = MapperPtr(new Mapper(this));
 
+        GetFramework()->GetServiceManager()->RegisterService(Foundation::Service::ST_Input, key_mapping_.get());
+
 
         LogInfo("Module " + Name() + " initialized.");
     }
@@ -121,6 +124,7 @@ namespace Input
     {
         WindowClosed();
 
+        GetFramework()->GetServiceManager()->UnregisterService(key_mapping_.get());
         key_mapping_.reset();
 
         LogInfo("Module " + Name() + " uninitialized.");
@@ -147,6 +151,8 @@ namespace Input
                 mw.z_.abs_ = ms.Z.abs;
                 framework_->GetEventManager()->SendEvent(event_category_, Events::SCROLL, &mw);
             }
+            // previous mouse position
+            const Events::Movement prev_movement = movement_;
 
             // we assume GetMouseMovement() will be called several times in one frame
             // It makes sense then to only query OIS once for the mouse state and then
@@ -159,6 +165,42 @@ namespace Input
 
             movement_.z_.rel_ = ms.Z.rel;
             movement_.z_.abs_ = ms.Z.abs;
+
+            //if (ms.buttonDown(OIS::MB_Right))
+            //{
+            //    //if (movement_ != prev_movement)
+            //    {
+            //        dragged_ = true;
+            //        framework_->GetEventManager()->SendEvent(event_category_, Events::DRAGGING, &movement_);
+            //    }
+            //} else if (dragged_)
+            //{
+            //    dragged_ = false;
+            //    Events::Movement no_rel_movement = movement_;
+            //    no_rel_movement.x_.rel_ = 0;
+            //    no_rel_movement.y_.rel_ = 0;
+            //    no_rel_movement.z_.rel_ = 0;
+            //    framework_->GetEventManager()->SendEvent(event_category_, Events::DRAGGING_STOPPED, &no_rel_movement);
+            //}
+
+            for (size_t i=0 ; i<sliders_.size() ; ++i)
+            {
+                sliders_[i].dragged_ = false;
+                if (sliders_[i].slider_ == SliderMouse)
+                {
+                    if (sliders_[i].button_ == -1 || ms.buttonDown(static_cast<OIS::MouseButtonID>(sliders_[i].button_)))
+                    {
+                        // check modifiers in a bit convoluted way. All combos of ctrl+a, ctrl+alt+a and ctrl+alt+shift+a must work!
+                        if (((sliders_[i].modifier_ & OIS::Keyboard::Alt)   == 0 || keyboard_->isModifierDown(OIS::Keyboard::Alt))  &&
+                            ((sliders_[i].modifier_ & OIS::Keyboard::Ctrl)  == 0 || keyboard_->isModifierDown(OIS::Keyboard::Ctrl)) &&
+                            ((sliders_[i].modifier_ & OIS::Keyboard::Shift) == 0 || keyboard_->isModifierDown(OIS::Keyboard::Shift))) 
+                        {
+                            sliders_[i].dragged_ = true;
+                            sliders_[i].movement_ = movement_;
+                        }
+                    }
+                }
+            }
 
             
             for (size_t i=0 ; i<listened_keys_.size() ; ++i)
@@ -217,6 +259,28 @@ namespace Input
         return handled;
     }
 
+    bool InputModuleOIS::IsKeyDown(OIS::KeyCode keycode) const
+    {
+        return keyboard_ ? keyboard_->isKeyDown(keycode) : false;
+    }
+
+    bool InputModuleOIS::IsButtonDown(OIS::MouseButtonID code) const
+    {
+        return mouse_->getMouseState().buttonDown(code);
+    }
+
+    boost::optional<const Events::Movement&> InputModuleOIS::GetDraggedSliderInfo(Core::event_id_t dragged_event)
+    {
+        for (size_t i=0 ; i<sliders_.size() ; ++i)
+        {
+            if (sliders_[i].dragged_event_ == dragged_event && sliders_[i].dragged_)
+            {
+                return boost::optional<const Events::Movement&>(sliders_[i].movement_);
+            }
+        }
+        return boost::optional<const Events::Movement&>();
+    }
+
     void InputModuleOIS::WindowClosed()
     {
         if( input_manager_ )
@@ -268,6 +332,31 @@ namespace Input
             // register new event
             listened_keys_.push_back(keyeventinfo);
         }
-    }    
+    }
+
+    void InputModuleOIS::RegisterSliderEvent(Slider slider, Core::event_id_t dragged_event, Core::event_id_t stopped_event, int button, int modifier)
+    {
+        assert (dragged_event + 1 == stopped_event);
+
+        SliderEventInfo info;
+        info.dragged_ = false;
+        info.dragged_event_ = dragged_event;
+        info.stopped_event_ = stopped_event;
+        info.slider_ = slider;
+        info.button_ = button;
+        info.modifier_ = modifier;
+
+        SliderInfoVector::iterator it = std::find(sliders_.begin(), sliders_.end(), info);
+        if ( it != sliders_.end())
+        {
+            // replace old event
+            *it = info;
+        } else
+        {
+            // register new event
+            sliders_.push_back(info);
+        }
+    }
+
 }
 

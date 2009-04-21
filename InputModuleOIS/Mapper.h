@@ -4,6 +4,7 @@
 #define incl_InputMapper_h
 
 #include "InputModuleOIS.h"
+#include "InputServiceInterface.h"
 
 namespace Input
 {
@@ -18,7 +19,7 @@ namespace Input
         If mapping for some event is not found from the xml file, the default one is
         used instead.
     */
-    class Mapper
+    class Mapper : public Foundation::InputServiceInterface
     {
         //! default constructor
         Mapper();
@@ -29,10 +30,12 @@ namespace Input
         //! destructor
         ~Mapper();
 
+        //__inline bool IsDragging() const { return module->IsDragging(); }
+
         //! Polls the current mouse state for both absolute and relative movement
         /*! Not thread safe
         */
-        __inline const Events::Movement &GetMouseMovement() const { return module_->GetMouseMovement(); }
+        boost::optional<const Input::Events::Movement&> GetDragMovement(Core::event_id_t dragged_event) const { return module_->GetDraggedSliderInfo(dragged_event); }
 
         //! Loads input mappings from xml file.
         /*! Replaces the default mappings with ones loaded from the file. In case of an error

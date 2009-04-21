@@ -25,6 +25,10 @@ namespace RexLogic
         void StopMovingLeft();
         void StartMovingRight();
         void StopMovingRight();
+        void StartMovingUp();
+        void StopMovingUp();
+        void StartMovingDown();
+        void StopMovingDown();
         void StartRotatingLeft();
         void StopRotatingLeft();
         void StartRotatingRight();
@@ -33,6 +37,8 @@ namespace RexLogic
         void StopRotatingUp();
         void StartRotatingDown();
         void StopRotatingDown();
+
+        void Drag(const Input::Events::Movement *movement);
 
         //! update camera position
         void Update(Core::f64 frametime);

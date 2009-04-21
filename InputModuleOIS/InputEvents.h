@@ -51,6 +51,10 @@ namespace Input
         static const Core::event_id_t SWITCH_CONTROLLER = 30;
         static const Core::event_id_t SWITCH_CONTROLLER_REL = 31;
 
+        //! mouse dragged
+        static const Core::event_id_t MOUSELOOK = 32;
+        static const Core::event_id_t MOUSELOOK_STOPPED = 33;
+
 
         //! Event for buffered key input. 
         //! Do not use for any continous input such as avatar movement, it will probably cause input lag
@@ -71,6 +75,23 @@ namespace Input
         //! Movement along axis
         struct Axis
         {
+            Axis() : rel_(0), abs_(0) {}
+            Axis(const Axis &other) : rel_(other.rel_), abs_(other.abs_) {}
+            ~Axis() {}
+
+            Axis &operator = (const Axis &other)
+            {
+                if (this != &other)
+                {
+                    rel_ = other.rel_;
+                    abs_ = other.abs_;
+                }
+                return *this;
+            }
+            bool operator == (const Axis &other) const { return (rel_ == other.rel_ && abs_ == other.abs_); }
+            bool operator != (const Axis &other) const { return !(*this == other); }
+
+
             //! relative movement
             int rel_;
             //! absolute movement
@@ -81,13 +102,43 @@ namespace Input
         class SingleAxisMovement : public Foundation::EventDataInterface
         {
         public:
+            SingleAxisMovement() {}
+            SingleAxisMovement(const SingleAxisMovement &other) : z_(other.z_) {}
+            ~SingleAxisMovement() {}
+            SingleAxisMovement &operator = (const SingleAxisMovement &other)
+            {
+                if (this != &other)
+                {
+                    z_ = other.z_;
+                }
+                return *this;
+            }
+            bool operator == (const SingleAxisMovement &other) const { return (z_ == other.z_); }
+            bool operator != (const SingleAxisMovement &other) const { return !(*this == other); }
+
             Axis z_;
         };
 
         //! input position that contains both relative and absolute movement for several axis
         class Movement : public Foundation::EventDataInterface
         {
-        public:            
+        public:
+            Movement() {}
+            Movement(const Movement &other) : x_(other.x_), y_(other.y_), z_(other.z_) {}
+            ~Movement() {}
+            Movement &operator = (const Movement &other)
+            {
+                if (this != &other)
+                {
+                    x_ = other.x_;
+                    y_ = other.y_;
+                    z_ = other.z_;
+                }
+                return *this;
+            }
+            bool operator == (const Movement &other) const { return (x_ == other.x_ && y_ == other.y_ && z_ == other.z_); }
+            bool operator != (const Movement &other) const { return !(*this == other); }
+
             Axis x_;
             Axis y_;
             Axis z_;

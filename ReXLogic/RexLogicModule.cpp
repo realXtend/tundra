@@ -140,7 +140,7 @@ namespace RexLogic
     // virtual
     void RexLogicModule::Update(Core::f64 frametime)
     {
-        camera_controller_->Update(frametime);
+        input_handler_->Update(frametime);
     }
 
     // virtual
