@@ -51,9 +51,10 @@ namespace Input
         */
         void LoadInputMappings(const Poco::XML::Node* node);
 
+        //! Exports mappings to a file
+        void Export(const std::string &file);
+
     private:
-        //! Exports default mappings to a file
-        void ExportDefaults(const std::string &file);
 
         //! Sets default mappings, if no mappings file exists
         void SetDefaultMappings();

@@ -14,11 +14,14 @@ namespace Input
 namespace RexLogic
 {
     //! abstract interface for input states
+    /*! Can be used by controller-type of classes, such as avatar controller or camera controller.
+    */
     class InputStateInterface
     {
     public:
         virtual ~InputStateInterface() {}
 
+        // Movement functions
         virtual void StartMovingForward() {}
         virtual void StartMovingBackward() {}
         virtual void StartMovingLeft() {}
@@ -43,8 +46,13 @@ namespace RexLogic
         virtual void StopRotatingDown() {}
         virtual void StopRollingLeft() {}
         virtual void StopRollingRight() {}
+        //! mouselook drag.
+        /*!
+            \param movement contains absolute and relative movement for the drag
+        */
         virtual void Drag(const Input::Events::Movement *movement) {}
 
+        //! update the state, called every frame
         virtual void Update(Core::f64 frametime) {}
     };
 

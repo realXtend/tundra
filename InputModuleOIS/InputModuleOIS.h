@@ -24,7 +24,10 @@ namespace OIS
     class JoyStick;
 }
 
-// Input related functionality. May be keyboard, mouse, game controllers or anything
+//! Input related functionality. May be keyboard, mouse, game controllers or anything
+/*!
+    See InputModuleOIS to see how input events work for keyboard, mouse and joysticks.
+*/
 namespace Input
 {
     class BufferedKeyboard;
@@ -32,7 +35,7 @@ namespace Input
     typedef boost::shared_ptr<BufferedKeyboard> BufferedKeyboardPtr;
     typedef boost::shared_ptr<Mapper> MapperPtr;
 
-    // input sliders
+    // Input slider types
     enum Slider
     {
         //! standard mouse dragging
@@ -50,11 +53,11 @@ namespace Input
         //! comparison
         bool operator ==(const UnBufferedKeyEventInfo &rhs) const { return (key_ == rhs.key_ && modifier_ == rhs.modifier_ ); }
 
-        Core::event_id_t pressed_event_id_;
-        Core::event_id_t released_event_id_;
-        OIS::KeyCode key_;
-        int modifier_;
-        bool pressed_;
+        Core::event_id_t pressed_event_id_; //! event that is launched when the key is pressed down
+        Core::event_id_t released_event_id_; //! event that is launched when the key is released
+        OIS::KeyCode key_; //! ois keycode
+        int modifier_; //! modifier key
+        bool pressed_; //! is the key currently pressed down
     };
 
     //! info for input "sliders" (f.ex. mouse dragging)
@@ -94,6 +97,8 @@ namespace Input
         A slider can be combined with a button press in the same device, such as mouse button, and a modifier key
         (ctrl, alt and/or shift). Slider events are not send as events, but need to be queried from an input service.
         See Foundation::InputServiceInterface for more information.
+
+        See Mapper for default key configuration.
 
         \note OIS is used in unbuffered mode, so doesn't work well for UI input. See BufferedKeyboard for UI input.
 
@@ -165,6 +170,9 @@ namespace Input
 
         //! Introspection of registered key events. Internal use only!
         const KeyEventInfoVector &GetRegisteredKeyEvents() const { return listened_keys_; }
+
+        //! Introspection of registered slider events. Internal use only!
+        const SliderInfoVector &GetRegisteredSliderEvents() const { return sliders_; }
 
         MODULE_LOGGING_FUNCTIONS
 
