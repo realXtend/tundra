@@ -46,7 +46,7 @@ namespace Input
         {
             InputModuleOIS::LogInfo("Input mappings file not found, using default mappings.");
 
-            ExportDefaults(file);
+            Export(file);
         } else
         {
             InputModuleOIS::LogInfo("Loading input mappings from file " + file + "...");
@@ -90,32 +90,60 @@ namespace Input
             int type = current_node->nodeType();
             if (current_node->nodeType() == Poco::XML::Node::ELEMENT_NODE)
             {
-                Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> attributes = current_node->attributes();
-                if (attributes.isNull())
-                    throw Core::Exception("Missing attributes.");
+                if (current_node->nodeName() == "action")
+                {
+                    Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> attributes = current_node->attributes();
+                    if (attributes.isNull())
+                        throw Core::Exception("Missing attributes.");
 
-                Poco::XML::Attr* action_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("value"));
-                Poco::XML::Attr* modifier_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("modifier"));
-                Poco::XML::Attr* key_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("key"));
+                    Poco::XML::Attr* action_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("value"));
+                    Poco::XML::Attr* modifier_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("modifier"));
+                    Poco::XML::Attr* key_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("key"));
 
-                if (!action_attr)
-                    throw Core::Exception("Missing attribute 'value'.");
-                if (!modifier_attr)
-                    throw Core::Exception("Missing attribute 'modifier'.");
-                if (!key_attr)
-                    throw Core::Exception("Missing attribute 'key'.");
+                    if (!action_attr)
+                        throw Core::Exception("Missing attribute 'value'.");
+                    if (!modifier_attr)
+                        throw Core::Exception("Missing attribute 'modifier'.");
+                    if (!key_attr)
+                        throw Core::Exception("Missing attribute 'key'.");
 
-                Core::event_id_t event_id = Core::ParseString<Core::event_id_t>(action_attr->getValue());
-                int modifier = Core::ParseString<int>(modifier_attr->getValue());
-                int key = Core::ParseString<int>(key_attr->getValue());
+                    Core::event_id_t event_id = Core::ParseString<Core::event_id_t>(action_attr->getValue());
+                    int modifier = Core::ParseString<int>(modifier_attr->getValue());
+                    int key = Core::ParseString<int>(key_attr->getValue());
 
-                module_->RegisterUnbufferedKeyEvent(static_cast<OIS::KeyCode>(key), event_id, event_id + 1, modifier);
+                    module_->RegisterUnbufferedKeyEvent(static_cast<OIS::KeyCode>(key), event_id, event_id + 1, modifier);
+                } else if (current_node->nodeName() == "action_slider")
+                {
+                    Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> attributes = current_node->attributes();
+                    if (attributes.isNull())
+                        throw Core::Exception("Missing attributes.");
 
+                    Poco::XML::Attr* action_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("value"));
+                    Poco::XML::Attr* modifier_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("modifier"));
+                    Poco::XML::Attr* key_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("button"));
+                    Poco::XML::Attr* type_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("type"));
+
+                    if (!action_attr)
+                        throw Core::Exception("Missing attribute 'value'.");
+                    if (!modifier_attr)
+                        throw Core::Exception("Missing attribute 'modifier'.");
+                    if (!key_attr)
+                        throw Core::Exception("Missing attribute 'button'.");
+                    if (!type_attr)
+                        throw Core::Exception("Missing attribute 'type'.");
+
+                    Core::event_id_t event_id = Core::ParseString<Core::event_id_t>(action_attr->getValue());
+                    int modifier = Core::ParseString<int>(modifier_attr->getValue());
+                    int button = Core::ParseString<int>(key_attr->getValue());
+                    Input::Slider type = static_cast<Input::Slider>(Core::ParseString<int>(type_attr->getValue()));
+
+                    module_->RegisterSliderEvent(type, event_id, event_id + 1, button, modifier);
+                }
             }
         }
     }
 
-    void Mapper::ExportDefaults(const std::string &file)
+    void Mapper::Export(const std::string &file)
     {
         InputModuleOIS::LogInfo("Exporting default input mappings to file " + file + "...");
 
@@ -125,16 +153,33 @@ namespace Input
 	    writer.startDocument();
 	    writer.startElement("", "", "input");
 
-        const InputModuleOIS::KeyEventInfoVector &events = module_->GetRegisteredKeyEvents();
-        for ( InputModuleOIS::KeyEventInfoVector::const_iterator info = events.begin() ; 
-              info != events.end() ;
-              ++info )
         {
-            Poco::XML::AttributesImpl attrs;
-            attrs.addAttribute("", "", "value", "CDATA", Core::ToString(info->pressed_event_id_));
-	        attrs.addAttribute("", "", "modifier", "CDATA", Core::ToString(info->modifier_));
-            attrs.addAttribute("", "", "key", "CDATA", Core::ToString(info->key_));
-	        writer.emptyElement("", "", "action", attrs);
+            const InputModuleOIS::KeyEventInfoVector &events = module_->GetRegisteredKeyEvents();
+            for ( InputModuleOIS::KeyEventInfoVector::const_iterator info = events.begin() ; 
+                  info != events.end() ;
+                  ++info )
+            {
+                Poco::XML::AttributesImpl attrs;
+                attrs.addAttribute("", "", "value", "CDATA", Core::ToString(info->pressed_event_id_));
+	            attrs.addAttribute("", "", "modifier", "CDATA", Core::ToString(info->modifier_));
+                attrs.addAttribute("", "", "key", "CDATA", Core::ToString(info->key_));
+	            writer.emptyElement("", "", "action", attrs);
+            }
+        }
+
+        {
+            const InputModuleOIS::SliderInfoVector &events = module_->GetRegisteredSliderEvents();
+            for ( InputModuleOIS::SliderInfoVector::const_iterator info = events.begin() ; 
+                  info != events.end() ;
+                  ++info )
+            {
+                Poco::XML::AttributesImpl attrs;
+                attrs.addAttribute("", "", "value", "CDATA", Core::ToString(info->dragged_event_));
+	            attrs.addAttribute("", "", "modifier", "CDATA", Core::ToString(info->modifier_));
+                attrs.addAttribute("", "", "button", "CDATA", Core::ToString(info->button_));
+                attrs.addAttribute("", "", "type", "CDATA", Core::ToString(info->slider_));
+	            writer.emptyElement("", "", "action_slider", attrs);
+            }
         }
         writer.endElement("", "", "input");
 	    writer.endDocument();
@@ -142,6 +187,8 @@ namespace Input
 
     void Mapper::SetDefaultMappings()
     {
+        // Default key config which takes place if key mappings could not be loaded from config file.
+
         // See InputModuleOIS for explanation
         module_->RegisterUnbufferedKeyEvent(OIS::KC_W,       Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED, 0);
         module_->RegisterUnbufferedKeyEvent(OIS::KC_S,       Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,    0);
