@@ -4,6 +4,7 @@
 #include "InputEventHandler.h"
 #include "InputEvents.h"
 #include "RexLogicModule.h"
+#include "InputServiceInterface.h"
 
 namespace RexLogic
 {
@@ -11,6 +12,7 @@ namespace RexLogic
     {
         framework_ = framework;
         rexlogicmodule_ = rexlogicmodule;
+        dragging_ = false;
     }
 
     InputEventHandler::~InputEventHandler()
@@ -114,6 +116,22 @@ namespace RexLogic
     void InputEventHandler::Update(Core::f64 frametime)
     {
         boost::shared_ptr<InputState> state = state_.lock();
+        Foundation::InputServiceInterface *input = framework_->GetService<Foundation::InputServiceInterface>(Foundation::Service::ST_Input);
+        if (input)
+        {
+            boost::optional<const Input::Events::Movement&> movement = input->GetDragMovement(Input::Events::MOUSELOOK);
+            if (movement)
+            {
+                dragging_ = true;
+                state->Drag(&*movement);
+            } else if (dragging_)
+            {
+                dragging_ = false;
+                Input::Events::Movement zero;
+                state->Drag(&zero);
+            }
+        }
+
         state->Update(frametime);
     }
 }
