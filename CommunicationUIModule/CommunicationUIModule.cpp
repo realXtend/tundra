@@ -12,7 +12,6 @@
 #pragma warning( pop )
 
 #include <Poco/ClassLibrary.h>
-//#include <sstream>
 
 #include "StableHeaders.h"
 #include "Foundation.h"
@@ -21,13 +20,11 @@
 
 #include "CommunicationUIModule.h"
 
-//#include "PythonScriptModule.h"
 
-
-void testCallback(char*);
 
 namespace Communication
 {
+	CommunicationUIModule* CommunicationUIModule::instance_;
 
 	CommunicationUIModule::CommunicationUIModule(void):ModuleInterfaceImpl("CommunicationUIModule")
 	{
@@ -54,15 +51,29 @@ namespace Communication
 		initializeMainCommWindow();
 		commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager);
 		scriptService = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting);
-		//std::string error;
-		//Foundation::ScriptObject* script = scriptService->LoadScript("IMDemo", error);
-		//if(error=="None")
-		//{
-		//	this->imScriptObject = script->GetObject("IMDemo");
-		//	std::string str = "DoStartUp";
-		//	std::string syntax = "";
-		//	Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
-		//}
+		std::string error;
+		Foundation::ScriptObject* script = scriptService->LoadScript("IMDemo", error);
+		if(error=="None")
+		{
+			this->imScriptObject = script->GetObject("IMDemo");
+			std::string str = "CDoStartUp";
+			std::string syntax = "";
+			Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
+		}
+		Foundation::ScriptEventInterface *eIntf = dynamic_cast<Foundation::ScriptEventInterface*>(this->scriptService);
+
+		sessionUp_ = false;
+		CommunicationUIModule::instance_= this;
+
+		eIntf->SetCallback(CommunicationUIModule::testCallback, "key");
+		eIntf->SetCallback(CommunicationUIModule::connected, "connected");
+		eIntf->SetCallback(CommunicationUIModule::disconnected, "disconnected");
+		eIntf->SetCallback(CommunicationUIModule::disconnected, "connecting");
+
+		eIntf->SetCallback(CommunicationUIModule::channelOpened, "channel_opened");
+		eIntf->SetCallback(CommunicationUIModule::channelClosed, "channel_closed");
+		eIntf->SetCallback(CommunicationUIModule::messagReceived, "message_received");
+		
 	}
 
 	void CommunicationUIModule::Uninitialize()
@@ -88,14 +99,18 @@ namespace Communication
 		commUI_XML->connect_clicked("mi_disconnect", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuDisconnect));
 		commUI_XML->connect_clicked("mi_setaccount", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuSetAccountAndPassword));
 		commUI_XML->connect_clicked("mi_settings", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuSettings));
+		commUI_XML->connect_clicked("mi_directchat", sigc::mem_fun(*this, &CommunicationUIModule::OnDirectChatMenuStartChat));
 		commUI_XML->connect_clicked("btnTest", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuConnect));
+
+		// entry dialog
+		commUI_XML->connect_clicked("btnEntryOk", sigc::mem_fun(*this, &CommunicationUIModule::OnEntryDlgOk));
+		commUI_XML->connect_clicked("btnEntryCancel", sigc::mem_fun(*this, &CommunicationUIModule::OnEntryDlgCancel));
 
 		wndCommMain->show();
 	}
 
 	void CommunicationUIModule::OnAccountMenuSettings()
 	{
-		LogInfo("something clicked");
 		std::string error;
 		
 		//Foundation::ScriptObject* script = scriptService->LoadScript("pymodules/py_class3", error);
@@ -137,59 +152,125 @@ namespace Communication
 
 	void CommunicationUIModule::OnAccountMenuConnect()
 	{
-		LogInfo("something clicked");
-		//commManager->Connect();		
-		std::string meth = "TestCallback2";
-		std::string syntax = "s";
-		char** carr = new char*[2];
-		char* buf1 = new char[10];
-		strcpy(buf1,"blob");
-		carr[0] = buf1;
-
-
-
-		
-		sobj->CallMethod(meth, syntax, carr);
-
-
-		//scriptService->RunScript("Test");
-		
-
-		//PythonScript::PythonScriptModule *pyModule_ = dynamic_cast<PythonScript::PythonScriptModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_PythonScript));
-		//pyModule_->DoConnect();
+		// TODO: Eventually this code would not be here as it is no UI specific
+		std::string str = "CAccountConnect";
+		std::string syntax = "";
+		Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
 	}
 	
 	void CommunicationUIModule::OnAccountMenuDisconnect()
 	{
-		LogInfo("something clicked");
-		//scriptService->RunString("Test.SetTrue()");
-		//sobj->PassFunctionPointerToScript(&testCallback, "setCallback2", "key");
-		
-		Foundation::ScriptEventInterface *eIntf = dynamic_cast<Foundation::ScriptEventInterface*>(this->scriptService);
-		//Foundation::ScriptEventInterface *eIntf = (Foundation::ScriptEventInterface*)scriptService;
-		
-		eIntf->SetCallback(CommunicationUIModule::testCallback, "key");
-		
-		//commManager->Disconnect();	
+		// TODO: Eventually this code would not be here as it is no UI specific
+		std::string str = "CDisconnect";
+		std::string syntax = "";
+		Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
 	}
+
+	void CommunicationUIModule::OnDirectChatMenuStartChat()
+	{
+		LogInfo("OnDirectChatMenuStartChat");
+		Gtk::Entry* entryBox = (Gtk::Entry*)commUI_XML->get_widget("entryDialogInputTextArea");
+		Gtk::Label* entryLabel = (Gtk::Label*)commUI_XML->get_widget("lblEntryDialogInfo");
+		entryLabel->set_text("Give counter part address:");
+		dlgEntry = (Gtk::Dialog*)commUI_XML->get_widget("dlgEntry");
+		dlgEntry->set_title("Start direct chat");
+		
+		int resp = dlgEntry->run();
+
+		Glib::ustring str = entryBox->get_text();
+		LogInfo(str.c_str());
+		if(entryret_==1){
+			LogInfo("start chat window here");
+
+			char** args = new char*[2];
+			char* buf1 = new char[20];
+			strcpy(buf1,str.c_str());
+			args[0] = buf1;
+
+			std::string str = "CStartChatSession";
+			std::string syntax = "s";
+			Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, args);
+
+			this->session_ = Communication::ChatSessionUIPtr(new Communication::ChatSession(str.c_str(), imScriptObject));
+		}
+	}
+
+	void CommunicationUIModule::OnEntryDlgOk(){
+		entryret_ = 1;
+		dlgEntry->hide();
+	}
+	void CommunicationUIModule::OnEntryDlgCancel(){
+		dlgEntry->hide();
+		entryret_ = 0;
+	}
+
 
 	void CommunicationUIModule::Callback(std::string aConfigName, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes)
 	{
 		if(aConfigName=="account settings"){ commManager->SetAccountAttributes(attributes); }
 	}
 
+	void CommunicationUIModule::setOnlineStatus(char* status)
+	{
+		//LogInfo("setting status");
+		Gtk::Label* label = (Gtk::Label*)instance_->commUI_XML->get_widget("lblOnlineStatus");
+		//if(label==NULL){LogInfo("label null");}
+		label->set_label(status);
+	}
+
 	void CommunicationUIModule::testCallback(char* t)
 	{
-		std::cout << "testCallback" << std::endl;
-		std::cout << t << std::endl;
+		//std::cout << "testCallback" << std::endl;
+		//std::cout << t << std::endl;
+	}
+
+	void CommunicationUIModule::connected(char* t)
+	{
+		LogInfo("connected");
+		instance_->setOnlineStatus("connected");
+	}
+
+	void CommunicationUIModule::connecting(char*)
+	{
+		LogInfo("connecting");
+		instance_->setOnlineStatus("connecting");
+	}
+
+	void CommunicationUIModule::disconnected(char* t)
+	{
+		LogInfo("disconnected");
+		instance_->setOnlineStatus("disconnected");
+	}
+
+	void CommunicationUIModule::channelOpened(char* t)
+	{
+		LogInfo("channelOpened");
+		if(instance_->session_!=NULL&&instance_->sessionUp_!=false){
+			instance_->session_->ChannelOpen();
+		} else {
+			instance_->session_ = Communication::ChatSessionUIPtr(new Communication::ChatSession(t, instance_->imScriptObject));
+		}
+		instance_->sessionUp_ = true;
+	}
+
+	void CommunicationUIModule::channelClosed(char* t)
+	{
+		LogInfo("channelClosed");
+		if(instance_->session_!=NULL){
+			instance_->session_->ChannelClosed();
+		} 
+		instance_->sessionUp_ = false;
+	}
+
+	void CommunicationUIModule::messagReceived(char* t)
+	{
+		if(instance_->session_!=NULL){
+			instance_->session_->ReceivedMessage(t);
+		}
 	}
 
 }
 
-void testCallback(char*)
-{
-	std::cout << "in testCallback" << std::endl;
-}
 
 using namespace Communication;
 

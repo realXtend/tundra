@@ -11,27 +11,27 @@
 
 std::map<std::string, void(*)(char*)> methods2;
 
-static PyObject* ScriptCallbackMethod(PyObject *self, PyObject *args)
-{
-	std::cout << "ScriptCallbackMethod" << std::endl;
-	char *key = NULL;
-	char *arg = NULL;
-
-	if(!PyArg_ParseTuple(args, "ss", &key, &arg)){
-		std::cout << "ScriptCallbackMethod failing" << std::endl;
-		throw "failed";
-	} else {
-		std::cout << key;
-		std::cout << arg;
-		//PythonScriptModule::LogInfo(key);
-		//PythonScriptModule::LogInfo(arg);
-		try{
-			methods2[key](arg);
-		} catch(...){ std::cout << "FAIL"; }
-	}
-	Py_RETURN_TRUE;
-	//return NULL;
-}
+//static PyObject* ScriptCallbackMethod(PyObject *self, PyObject *args)
+//{
+//	std::cout << "ScriptCallbackMethod" << std::endl;
+//	char *key = NULL;
+//	char *arg = NULL;
+//
+//	if(!PyArg_ParseTuple(args, "ss", &key, &arg)){
+//		std::cout << "ScriptCallbackMethod failing" << std::endl;
+//		throw "failed";
+//	} else {
+//		std::cout << key;
+//		std::cout << arg;
+//		//PythonScriptModule::LogInfo(key);
+//		//PythonScriptModule::LogInfo(arg);
+//		try{
+//			methods2[key](arg);
+//		} catch(...){ std::cout << "FAIL"; }
+//	}
+//	Py_RETURN_TRUE;
+//	//return NULL;
+//}
 
 
 namespace PythonScript
@@ -56,61 +56,30 @@ namespace PythonScript
 		}
 	}
 
-	bool PythonScriptObject::PassFunctionPointerToScript(void(*f)(char*), const std::string& methodname, std::string key)
-	{
-		//PyMethodDef cbDef =  { "callback method",
-  //                             (PyCFunction) this->ScriptCallbackMethod,
-  //                              METH_VARARGS };
-		//PyObject* pyCB = PyCFunction_NewEx(&cbDef, NULL, NULL);
-		//char *mname = new char[methodname.size()+1];
-		//strcpy(mname, methodname.c_str()+1);
-		//PythonScriptModule::LogInfo("Trying setting Function Pointer To Script");
-		////PyObject_CallMethod(this->pythonObj, mname, "Ns", pyCB, key.c_str());
-		//PyObject_CallMethod(this->pythonObj, mname, "N", pyCB);
-		PythonScriptModule::LogInfo("************************");
-
-		//PyMethodDef cbDef =  { "callback method",
-  //                             (PyCFunction) PythonScriptObject::ScriptCallbackMethod,
-  //                              METH_VARARGS };
-		PyMethodDef cbDef =  { "callback method",
-			(PyCFunction) ScriptCallbackMethod,
-                                METH_VARARGS };
-		PyObject* pyCB = PyCFunction_NewEx(&cbDef, NULL, NULL);
-		
-		char *arg = new char[5];
-		strcpy(arg, "blob");
-
-
-		//PyObject_CallMethod(this->pythonObj, "setCallback2", "Ns", pyCB, "blob");
-		PyObject_CallMethod(this->pythonObj, "setCallback2", "Ns", pyCB, arg);
-
-
-		PythonScriptModule::LogInfo("Adding to map");
-		//methods[key] = f;
-		methods2[key] = f;
-		return true;
-	}
-
-	//PyObject* PythonScriptObject::ScriptCallbackMethod(PyObject *self, PyObject *args){
-	//	PythonScriptModule::LogInfo("**ScriptCallbackMethod**");
-	//	Py_RETURN_TRUE;
-	//}
-
-
-	//bool PythonScriptObject::PassFunctionPointerToScript(void* methodptr, const std::string& methodname)
+	//bool PythonScriptObject::PassFunctionPointerToScript(void(*f)(char*), const std::string& methodname, std::string key)
 	//{
+	//	PythonScriptModule::LogInfo("************************");
+
 	//	PyMethodDef cbDef =  { "callback method",
- //                              (PyCFunction) methodptr,
+	//		(PyCFunction) ScriptCallbackMethod,
  //                               METH_VARARGS };
 	//	PyObject* pyCB = PyCFunction_NewEx(&cbDef, NULL, NULL);
-	//	PyObject_CallMethod(this->pythonObj, methodname, "N", pyCB);
+	//	char *arg = new char[5];
+	//	strcpy(arg, "blob");
+	//	PyObject_CallMethod(this->pythonObj, "setCallback2", "Ns", pyCB, arg);
+
+	//	PythonScriptModule::LogInfo("Adding to map");
+	//	methods2[key] = f;
 	//	return true;
 	//}
+
 
 	Foundation::ScriptObject* PythonScriptObject::CallMethod(std::string& methodname, 
 															 std::string& syntax, 
 															 char* argv[])
 	{
+		//if(argv[0]!=NULL)
+		//	PythonScriptModule::LogInfo(argv[0]);
 		if(syntax==""){
 			char *m = new char[methodname.size()+1];
 			strcpy(m, methodname.c_str());
@@ -126,12 +95,19 @@ namespace PythonScript
 		} else {
 			char *m = new char[methodname.size()+1];
 			char *s = new char[syntax.size()+1];
+
+
 			strcpy(m, methodname.c_str());
 			strcpy(s, syntax.c_str());
 			PyObject* pRetValue = PyObject_CallMethod(this->pythonObj, 
 													  m, 
 													  s, 
-													  argv);
+													  *argv);
+
+			//PyObject* pRetValue = PyObject_CallMethod(this->pythonObj, 
+			//										  m, 
+			//										  s, 
+			//										  argv[0]);
 			delete m;
 			delete s;
 			PythonScriptObject* obj = new PythonScriptObject();
