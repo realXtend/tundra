@@ -82,7 +82,7 @@ namespace Input
     /*! One should not work with raw OIS key codes or events under any circumstances, as that will cause too many problems.
         Instead, raw OIS events and codes are translated into generic input events which are launched when the corresponding
         input event happens, such as a key is pressed down.
-        These input events can then be handled in the usual way.
+        These input events can then be handled like any other event.
         
         Keyboard events are supported in the following way:
         A single OIS::KeyCode that corresponds to an event, modifiers may be included (ctrl, alt and/or shift) as a bit flag.
@@ -93,6 +93,7 @@ namespace Input
         Input sliders are used for continuous non-uniform input events such as mouse movement.
         A slider can be combined with a button press in the same device, such as mouse button, and a modifier key
         (ctrl, alt and/or shift). Slider events are not send as events, but need to be queried from an input service.
+        See Foundation::InputServiceInterface for more information.
 
         \note OIS is used in unbuffered mode, so doesn't work well for UI input. See BufferedKeyboard for UI input.
 
@@ -152,6 +153,8 @@ namespace Input
 
         //! Register a slider input
         /*! Internal use only!
+
+            \note parameter stopped_event is not currently used for anything, but it's reserved for future use
 
             \param slider Slider type, Mouse, joystick...
             \param button Optional button on the device that needs to be held down
