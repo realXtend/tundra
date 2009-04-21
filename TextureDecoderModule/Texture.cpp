@@ -10,7 +10,8 @@ namespace TextureDecoder
         TextureInterface(id),
         width_(0),
         height_(0),
-        components_(0)
+        components_(0),
+        level_(-1)
     {
     }
 
@@ -18,7 +19,8 @@ namespace TextureDecoder
         TextureInterface(id),
         width_(width),
         height_(height),
-        components_(components)
+        components_(components),
+        level_(-1)
     {
         data_.resize(width * height * components);
     }
@@ -36,7 +38,7 @@ namespace TextureDecoder
         data_.resize(width * height * components);
     }
 
-    const std::string& Texture::GetTypeName()
+    const std::string& Texture::GetTypeName() const
     {
         static const std::string name("Texture");
 

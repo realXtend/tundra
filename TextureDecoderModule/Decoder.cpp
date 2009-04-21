@@ -37,8 +37,8 @@
 #include "StableHeaders.h"
 #include "AssetDefines.h"
 #include "AssetInterface.h"
+#include "ResourceInterface.h"
 #include "TextureDecoderModule.h"
-#include "TextureEvents.h"
 #include "Texture.h"
 #include "Decoder.h"
 
@@ -52,15 +52,19 @@ namespace TextureDecoder
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
 
-        event_category_ = event_manager->RegisterEventCategory("Texture");
-        event_manager->RegisterEvent(event_category_, Event::TEXTURE_READY, "TextureReady");
+        resourcecategory_id_ = event_manager->QueryEventCategory("Resource");
+        if (!resourcecategory_id_)
+        {
+            resourcecategory_id_ = event_manager->RegisterEventCategory("Resource");
+            event_manager->RegisterEvent(resourcecategory_id_, Foundation::Event::RESOURCE_READY, "ResourceReady");
+        }
     }
     
     Decoder::~Decoder()
     {
     }
 
-    void Decoder::QueueTextureRequest(const std::string& asset_id)
+    void Decoder::RequestTexture(const std::string& asset_id)
     {
         if (requests_.find(asset_id) != requests_.end())
             return; // already requested
@@ -199,9 +203,11 @@ namespace TextureDecoder
             int actual_width = image->comps[0].w;
             int actual_height = image->comps[0].h;
 
-            // Create a texture object
-            Foundation::TexturePtr texture(new Texture(request.GetAssetId(), actual_width, actual_height, image->numcomps));
+            // Create a (possibly temporary, if no-one stores the pointer) raw texture resource
+            Foundation::ResourcePtr resource(new Texture(request.GetAssetId(), actual_width, actual_height, image->numcomps));
+            Texture* texture = checked_static_cast<Texture*>(resource.get());
             Core::u8* data = texture->GetData();
+            texture->SetLevel(request.GetDecodedLevel());
             for (int y = 0; y < actual_width; ++y)
             {
                 for (int x = 0; x < actual_height; ++x)
@@ -214,10 +220,10 @@ namespace TextureDecoder
                 }
             }
 
-            // Send texture ready event
+            // Send resource ready event
             Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-            Event::TextureReady event_data(request.GetAssetId(), request.GetDecodedLevel(), texture);
-            event_manager->SendEvent(event_category_, Event::TEXTURE_READY, &event_data);
+            Foundation::Event::ResourceReady event_data(request.GetAssetId(), resource);
+            event_manager->SendEvent(resourcecategory_id_, Foundation::Event::RESOURCE_READY, &event_data);
 
             success = true;
         }

@@ -17,7 +17,7 @@ namespace Foundation
         /*! when texture data becomes available, an event will be sent for each quality level decoded        
             \param asset_id texture ID, UUID for legacy UDP assets            
          */
-        virtual void QueueTextureRequest(const std::string& asset_id) = 0;
+        virtual void RequestTexture(const std::string& asset_id) = 0;
     };
 }
 

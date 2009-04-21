@@ -14,7 +14,9 @@
 
 namespace OgreRenderer
 {
-    OgreRenderingModule::OgreRenderingModule() : ModuleInterfaceImpl(type_static_)
+    OgreRenderingModule::OgreRenderingModule() : ModuleInterfaceImpl(type_static_),
+        assetcategory_id_(0),
+        resourcecategory_id_(0)
     {
     }
 
@@ -28,6 +30,7 @@ namespace OgreRenderer
         using namespace OgreRenderer;
 
         LogInfo("Module " + Name() + " loaded.");
+
         DECLARE_MODULE_EC(EC_OgrePlaceable);
         DECLARE_MODULE_EC(EC_OgreMesh);
         DECLARE_MODULE_EC(EC_OgreLight);
@@ -51,7 +54,7 @@ namespace OgreRenderer
 
     // virtual
     void OgreRenderingModule::Initialize()
-    {        
+    {      
         assert (renderer_);
         renderer_->Initialize();
         
@@ -63,15 +66,30 @@ namespace OgreRenderer
     // virtual
     void OgreRenderingModule::PostInitialize()
     {
-        assetcategory_id_ = framework_->GetEventManager()->QueryEventCategory("Asset");
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+
+        assetcategory_id_ = event_manager->QueryEventCategory("Asset");
         
         if (assetcategory_id_ == 0 )
             LogWarning("Unable to find event category for Asset events!");
 
-        texturecategory_id_ = framework_->GetEventManager()->QueryEventCategory("Texture");
-        
-        if (assetcategory_id_ == 0 )
-            LogWarning("Unable to find event category for Texture events!");
+        resourcecategory_id_ = event_manager->QueryEventCategory("Resource");
+        if (!resourcecategory_id_)
+        {
+            resourcecategory_id_ = event_manager->RegisterEventCategory("Resource");
+            event_manager->RegisterEvent(resourcecategory_id_, Foundation::Event::RESOURCE_READY, "ResourceReady");
+        }
+
+        renderer_->PostInitialize();
+
+        // Hackish way to register renderer debug console commands
+        if (framework_->GetServiceManager()->IsRegistered(Foundation::Service::ST_ConsoleCommand))
+        {
+            Console::CommandService *console = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand);
+            console->RegisterCommand(Console::CreateCommand(
+                "RequestTexture", "Fetch, decode & create Ogre texture. Usage: RequestTexture(uuid)", 
+                Console::Bind(this, &OgreRenderingModule::ConsoleRequestTexture)));
+        }
 
         //Foundation::SceneManagerServiceInterface *scene_manager = 
         //    framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
@@ -148,9 +166,9 @@ namespace OgreRenderer
             return renderer_->HandleAssetEvent(event_id, data);
         }
 
-        if (category_id == texturecategory_id_)
+        if (category_id == resourcecategory_id_)
         {
-            return renderer_->HandleTextureEvent(event_id, data);
+            return renderer_->HandleResourceEvent(event_id, data);
         }
 
         return false;
@@ -170,6 +188,17 @@ namespace OgreRenderer
     void OgreRenderingModule::Update(Core::f64 frametime)
     {
         renderer_->Update(frametime);
+    }
+
+    Console::CommandResult OgreRenderingModule::ConsoleRequestTexture(const Core::StringVector &params)
+    {
+        if (params.size() < 1)
+            return Console::ResultFailure("Usage: RequestTexture(uuid)");
+
+        if (renderer_)
+            renderer_->RequestTexture(params[0]);
+
+        return Console::ResultSuccess();
     }
 }
 

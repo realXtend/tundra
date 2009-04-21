@@ -1,6 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Interfaces_ResourceInterface_h
+#ifndef incl_Interfaces_TextureInterface_h
 #define incl_Interfaces_TextureInterface_h
 
 #include "ResourceInterface.h"
@@ -23,13 +23,16 @@ namespace Foundation
         TextureInterface(const std::string& id) : ResourceInterface(id) {}
 
         //! returns width
-        virtual Core::uint GetWidth() = 0;
+        virtual Core::uint GetWidth() const = 0;
 
         //! returns height
-        virtual Core::uint GetHeight() = 0;
+        virtual Core::uint GetHeight() const = 0;
 
         //! returns number of components
-        virtual Core::uint GetComponents() = 0;
+        virtual Core::uint GetComponents() const = 0;
+
+        //! returns quality level, -1 if not known
+        virtual int GetLevel() const = 0;
 
         //! returns data
         /*! each pixel of each component should be encoded as a u8, so data size should be width * height * components

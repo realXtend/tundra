@@ -6,7 +6,6 @@
 #include "Foundation.h"
 #include "ModuleInterface.h"
 #include "Renderer.h"
-#include "ConsoleCommandServiceInterface.h"
 #include "OgreModuleApi.h"
 
 namespace Foundation
@@ -47,16 +46,19 @@ namespace OgreRenderer
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
+        //! callback for console command
+        Console::CommandResult ConsoleRequestTexture(const Core::StringVector &params);
+
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Renderer;
     private:
         //! renderer
         RendererPtr renderer_;
 
-        //! category id for asset messages
+        //! asset event category
         Core::event_category_id_t assetcategory_id_;
 
-        //! category id for texture messages
-        Core::event_category_id_t texturecategory_id_;
+        //! resource event category
+        Core::event_category_id_t resourcecategory_id_;
     };
 }
 
