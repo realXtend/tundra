@@ -30,7 +30,7 @@ namespace TextureDecoder
         //! queues a texture request
         /*! \param asset_id asset ID of texture
          */
-        void QueueTextureRequest(const std::string& asset_id);
+        void RequestTexture(const std::string& asset_id);
         
     private:
         //! updates a texture request
@@ -46,8 +46,8 @@ namespace TextureDecoder
         //! framework we belong to
         Foundation::Framework* framework_;
                 
-        //! texture event category
-        Core::event_category_id_t event_category_;
+        //! resource event category
+        Core::event_category_id_t resourcecategory_id_;
 
         //! ongoing texture requests
         TextureRequestMap requests_;

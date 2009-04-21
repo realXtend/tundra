@@ -16,8 +16,8 @@ namespace Asset
         //! asset progress event id
         static const Core::event_id_t ASSET_PROGRESS = 2;
 
-        //! asset timeout event id
-        static const Core::event_id_t ASSET_TIMEOUT = 3;
+        //! asset transfer canceled event id
+        static const Core::event_id_t ASSET_CANCELED = 3;
 
         //! asset ready event data
         class AssetReady : public Foundation::EventDataInterface
@@ -61,17 +61,17 @@ namespace Asset
             Core::uint received_continuous_;
         };
 
-        //! asset timeout event data
-        class AssetTimeout : public Foundation::EventDataInterface
+        //! asset transfer canceled event data
+        class AssetCanceled : public Foundation::EventDataInterface
         {
         public:
-            AssetTimeout(const std::string& asset_id, Core::asset_type_t asset_type) :
+            AssetCanceled(const std::string& asset_id, Core::asset_type_t asset_type) :
                 asset_id_(asset_id),
                 asset_type_(asset_type)
             {
             }
             
-            virtual ~AssetTimeout()
+            virtual ~AssetCanceled()
             {
             }
         

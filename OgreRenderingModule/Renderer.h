@@ -6,7 +6,7 @@
 #include "Foundation.h"
 #include "RenderServiceInterface.h"
 #include "LogListenerInterface.h"
-#include <boost/shared_ptr.hpp>
+#include "ResourceInterface.h"
 
 namespace Foundation
 {
@@ -44,7 +44,12 @@ namespace OgreRenderer
 
         //! initializes renderer
         void Initialize();
-        
+
+        //! post-initializes renderer
+        /*! queries event categories it needs
+         */
+        void PostInitialize();
+
         //! returns Ogre root
         OgreRootPtr GetRoot() const { return root_; }
 
@@ -100,8 +105,21 @@ namespace OgreRenderer
         //! handles an asset system event
         bool HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
-        //! handles a texture event
-        bool HandleTextureEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        //! handles a resource event
+        bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+
+        //! returns an Ogre texture resource, null if not found
+        /*! does not automatically make a request to the asset system
+         */
+        Foundation::ResourcePtr GetTexture(const std::string& id);
+
+        //! requests a texture to be downloaded & decoded
+        /*! an event will be sent once each texture quality level is decoded
+         */
+        void RequestTexture(const std::string& id);
+
+        //! deletes an Ogre texture resource
+        void RemoveTexture(const std::string& id);
 
     private:
         //! loads Ogre plugins in a manner which allows individual plugin loading to fail
@@ -115,6 +133,12 @@ namespace OgreRenderer
         //! creates scenemanager & camera
         void SetupScene();
     
+        //! creates or updates a texture, based on a source raw texture resource
+        /*! \param source raw texture
+            \return true if successful
+         */
+        bool UpdateTexture(Foundation::ResourcePtr source);
+
         boost::mutex renderer_;
 
         //! successfully initialized flag
@@ -142,10 +166,16 @@ namespace OgreRenderer
         OgreLogListenerPtr log_listener_;
         
         //! Renderer event category
-        Core::event_category_id_t event_category_;
+        Core::event_category_id_t renderercategory_id_;
         
+        //! Resource event category
+        Core::event_category_id_t resourcecategory_id_;
+
         //! counter for unique name creation
         Core::uint object_id_;
+
+        //! Ogre texture resources
+        Foundation::ResourceMap textures_;
     };
 }
 

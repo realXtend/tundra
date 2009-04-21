@@ -158,9 +158,8 @@ namespace Asset
     
                     net->FinishMessageBuilding(m);
 
-                    Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-                    Event::AssetTimeout event_data(transfer.GetAssetId().ToString(), transfer.GetAssetType());
-                    event_manager->SendEvent(event_category_, Event::ASSET_TIMEOUT, &event_data);
+                    // Send transfer canceled event
+                    SendAssetCanceled(transfer);
 
                     texture_transfers_.erase(i);
                 }
@@ -185,10 +184,9 @@ namespace Asset
                     m->AddUUID(j->first); // Transfer ID
                     m->AddS32(RexAC_Asset); // Asset channel type
                     net->FinishMessageBuilding(m);
-             
-                    Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-                    Event::AssetTimeout event_data(transfer.GetAssetId().ToString(), transfer.GetAssetType());
-                    event_manager->SendEvent(event_category_, Event::ASSET_TIMEOUT, &event_data);
+            
+                    // Send transfer canceled event
+                    SendAssetCanceled(transfer);
 
                     asset_transfers_.erase(j);
                 }
@@ -353,6 +351,11 @@ namespace Asset
             return;
         }
 
+        AssetTransfer& transfer = i->second;
+
+        // Send transfer canceled event
+        SendAssetCanceled(transfer);
+
         AssetModule::LogInfo("Transfer of texture " + asset_id.ToString() + " canceled");
         texture_transfers_.erase(i);
     }
@@ -412,6 +415,10 @@ namespace Asset
         if ((status != RexTS_Ok) && (status != RexTS_Done))
         {
             AssetModule::LogInfo("Transfer for asset " + transfer.GetAssetId().ToString() + " canceled with code " + Core::ToString<Core::s32>(status));
+
+            // Send transfer canceled event
+            SendAssetCanceled(transfer);
+            
             asset_transfers_.erase(i);
             return;
         }
@@ -439,7 +446,12 @@ namespace Asset
             return;
         }
         
-        AssetModule::LogInfo("Transfer for asset " + i->second.GetAssetId().ToString() + " canceled");
+        AssetTransfer& transfer = i->second;
+
+        // Send transfer canceled event
+        SendAssetCanceled(transfer);
+
+        AssetModule::LogInfo("Transfer for asset " + transfer.GetAssetId().ToString() + " canceled");
         asset_transfers_.erase(i);
     }
 
@@ -448,6 +460,13 @@ namespace Asset
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         Event::AssetProgress event_data(transfer.GetAssetId().ToString(), transfer.GetAssetType(), transfer.GetSize(), transfer.GetReceived(), transfer.GetReceivedContinuous());
         event_manager->SendEvent(event_category_, Event::ASSET_PROGRESS, &event_data);
+    }
+
+    void AssetManager::SendAssetCanceled(AssetTransfer& transfer)
+    {
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        Event::AssetCanceled event_data(transfer.GetAssetId().ToString(), transfer.GetAssetType());
+        event_manager->SendEvent(event_category_, Event::ASSET_CANCELED, &event_data);
     }
 
     void AssetManager::StoreAsset(AssetTransfer& transfer)

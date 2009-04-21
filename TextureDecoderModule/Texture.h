@@ -14,18 +14,21 @@ namespace TextureDecoder
         Texture(const std::string& id, Core::uint width, Core::uint height, Core::uint components);
         virtual ~Texture();
 
-        virtual Core::uint GetWidth() { return width_; }
-        virtual Core::uint GetHeight() { return height_; }
-        virtual Core::uint GetComponents() { return components_; }
+        virtual Core::uint GetWidth() const { return width_; }
+        virtual Core::uint GetHeight() const { return height_; }
+        virtual Core::uint GetComponents() const { return components_; }
+        virtual int GetLevel() const { return level_; }
         virtual Core::u8* GetData() { return &data_[0]; }
-        virtual const std::string& GetTypeName();
+        virtual const std::string& GetTypeName() const;
 
         void SetSize(Core::uint width, Core::uint height, Core::uint components);
+        void SetLevel(int level) { level_ = level; }
 
     private:
         Core::uint width_;
         Core::uint height_;
         Core::uint components_;
+        int level_;
         std::vector<Core::u8> data_;
     };
 }

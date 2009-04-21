@@ -19,10 +19,6 @@ namespace TextureDecoder
     void TextureDecoderModule::Load()
     {
         LogInfo("Module " + Name() + " loaded.");
-        
-        AutoRegisterConsoleCommand(Console::CreateCommand(
-            "DecodeTexture", "Fetch & decode texture. Usage: DecodeTexture(uuid)", 
-            Console::Bind(this, &TextureDecoderModule::ConsoleDecodeTexture)));
     }
 
     // virtual
@@ -62,17 +58,6 @@ namespace TextureDecoder
         Foundation::EventDataInterface* data)
     {
         return false;
-    }
-    
-    Console::CommandResult TextureDecoderModule::ConsoleDecodeTexture(const Core::StringVector &params)
-    {
-        if (params.size() < 1)
-            return Console::ResultFailure("Usage: DecodeTexture(uuid)");
-
-        if (decoder_)
-            decoder_->QueueTextureRequest(params[0]);
-
-        return Console::ResultSuccess();
     }
 }
 

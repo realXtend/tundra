@@ -148,6 +148,11 @@ namespace Asset
          */
         void SendAssetProgress(AssetTransfer& transfer);
 
+        //! sends asset transfer canceled event
+        /*! \param transfer asset transfer
+         */
+        void SendAssetCanceled(AssetTransfer& transfer);
+
         //! stores asset to memory & disk caches
         /*! \param transfer finished asset transfer
          */

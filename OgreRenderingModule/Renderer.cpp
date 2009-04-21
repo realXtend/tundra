@@ -4,6 +4,9 @@
 #include "Renderer.h"
 #include "RendererEvents.h"
 #include "OgreRenderingModule.h"
+#include "OgreTexture.h"
+#include "OgreMesh.h"
+#include "ResourceInterface.h"
 
 #include <Ogre.h>
 
@@ -31,7 +34,7 @@ namespace OgreRenderer
                     renderer_->camera_->setAspectRatio(Ogre::Real(rw->getWidth() / Ogre::Real(rw->getHeight())));
 
                 Event::WindowResized data(rw->getWidth(), rw->getHeight());
-                renderer_->framework_->GetEventManager()->SendEvent(renderer_->event_category_, Event::WINDOW_RESIZED, &data);
+                renderer_->framework_->GetEventManager()->SendEvent(renderer_->renderercategory_id_, Event::WINDOW_RESIZED, &data);
             }
         }
     
@@ -40,7 +43,7 @@ namespace OgreRenderer
             if (rw == renderer_->renderwindow_)
             {
                 renderer_->framework_->Exit();
-                renderer_->framework_->GetEventManager()->SendEvent(renderer_->event_category_, Event::WINDOW_CLOSED, NULL);
+                renderer_->framework_->GetEventManager()->SendEvent(renderer_->renderercategory_id_, Event::WINDOW_CLOSED, NULL);
             }
         }
         
@@ -99,9 +102,9 @@ namespace OgreRenderer
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         
-        event_category_ = event_manager->RegisterEventCategory("Renderer");
-        event_manager->RegisterEvent(event_category_, Event::POST_RENDER, "PostRender");
-        event_manager->RegisterEvent(event_category_, Event::WINDOW_CLOSED, "WindowClosed");
+        renderercategory_id_ = event_manager->RegisterEventCategory("Renderer");
+        event_manager->RegisterEvent(renderercategory_id_, Event::POST_RENDER, "PostRender");
+        event_manager->RegisterEvent(renderercategory_id_, Event::WINDOW_CLOSED, "WindowClosed");
     }
     
     Renderer::~Renderer()
@@ -111,6 +114,8 @@ namespace OgreRenderer
             Ogre::WindowEventUtilities::removeWindowEventListener(renderwindow_, listener_.get());
             //Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
         }
+
+        textures_.clear();
 
         root_.reset();
     }
@@ -179,6 +184,13 @@ namespace OgreRenderer
         Ogre::WindowEventUtilities::addWindowEventListener(renderwindow_, listener_.get());
         
         initialized_ = true;
+    }
+
+    void Renderer::PostInitialize()
+    {
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        
+        resourcecategory_id_ = event_manager->QueryEventCategory("Resource");
     }
 
     void Renderer::LoadPlugins(const std::string& plugin_filename)
@@ -304,7 +316,7 @@ namespace OgreRenderer
         Ogre::RenderSystem* renderer = root_->getRenderSystem();
         renderer->_updateAllRenderTargets(false);
         // Send postrender event, so that custom rendering may be added
-        framework_->GetEventManager()->SendEvent(event_category_, Event::POST_RENDER, NULL);
+        framework_->GetEventManager()->SendEvent(renderercategory_id_, Event::POST_RENDER, NULL);
         // Swap buffers now
         renderer->_swapAllRenderTargetBuffers(renderer->getWaitForVerticalBlank());
 
@@ -321,9 +333,81 @@ namespace OgreRenderer
         return false;
     }
 
-    bool Renderer::HandleTextureEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool Renderer::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
+        if (event_id == Foundation::Event::RESOURCE_READY)
+        {     
+            Foundation::Event::ResourceReady *event_data = checked_static_cast<Foundation::Event::ResourceReady*>(data);  
+            if (event_data->resource_)
+            {
+                if (event_data->resource_->GetTypeName() == "Texture")
+                    UpdateTexture(event_data->resource_);
+            }
+        }
+
         return false;
     }
+
+    void Renderer::RequestTexture(const std::string& id)
+    {
+        // See if already have the texture and at maximum quality level
+        Foundation::ResourcePtr tex = GetTexture(id);
+        if (tex)
+        {
+            if (checked_static_cast<OgreTexture*>(tex.get())->GetLevel() == 0)
+                return;
+        }
+
+        // Request from texture decoder
+        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
+        if (service_manager->IsRegistered(Foundation::Service::ST_Texture))
+        {
+            Foundation::TextureServiceInterface* texture_service = service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture);
+            texture_service->RequestTexture(id);
+        }
+    }
+
+
+    Foundation::ResourcePtr Renderer::GetTexture(const std::string& id)
+    {
+        Foundation::ResourceMap::iterator i = textures_.find(id);
+        if (i == textures_.end())
+            return Foundation::ResourcePtr();
+        else
+            return i->second;
+    }
+
+    void Renderer::RemoveTexture(const std::string& id)
+    {
+        Foundation::ResourceMap::iterator i = textures_.find(id);
+        if (i == textures_.end())
+            return;
+        else
+            textures_.erase(i);
+    }
+
+    bool Renderer::UpdateTexture(Foundation::ResourcePtr source)
+    {
+        Foundation::TexturePtr source_tex = boost::shared_dynamic_cast<Foundation::TextureInterface>(source);
+        if (!source_tex) 
+            return false;
+    
+        // If not found, prepare new
+        Foundation::ResourcePtr tex = GetTexture(source_tex->GetId());
+        if (!tex)
+        {
+            tex = textures_[source_tex->GetId()] = Foundation::ResourcePtr(new OgreTexture(source_tex->GetId()));
+        }
+
+        // If success, send Ogre resource ready event
+        if (checked_static_cast<OgreTexture*>(tex.get())->SetData(source_tex))
+        {
+            Foundation::Event::ResourceReady event_data(tex->GetId(), tex);
+            framework_->GetEventManager()->SendEvent(resourcecategory_id_, Foundation::Event::RESOURCE_READY, &event_data);
+            return true;
+        }
+
+        return false;
+    }    
 }
 
