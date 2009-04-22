@@ -220,10 +220,10 @@ namespace Input
         // Default key config which takes place if key mappings could not be loaded from config file.
 
         // See InputModuleOIS for explanation
-        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_W,       Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED, 0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_S,       Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,    0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_A,       Events::ROTATE_LEFT_PRESSED,    Events::ROTATE_LEFT_RELEASED,    0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_D,       Events::ROTATE_RIGHT_PRESSED,   Events::ROTATE_RIGHT_RELEASED,   0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_W,       Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED, 1);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_S,       Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,    17);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_A,       Events::ROTATE_LEFT_PRESSED,    Events::ROTATE_LEFT_RELEASED,  0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_D,       Events::ROTATE_RIGHT_PRESSED,   Events::ROTATE_RIGHT_RELEASED, 0);
         module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_UP,      Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED, 0);
         module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_DOWN,    Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,    0);
         module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_SPACE,   Events::MOVE_UP_PRESSED,        Events::MOVE_UP_RELEASED,      0);
@@ -233,25 +233,25 @@ namespace Input
         module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_LEFT,    Events::ROTATE_LEFT_PRESSED,    Events::ROTATE_LEFT_RELEASED,  0);
         module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_RIGHT,   Events::ROTATE_RIGHT_PRESSED,   Events::ROTATE_RIGHT_RELEASED, 0);
 
-        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_W,       Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED, 0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_S,       Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,    0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_A,       Events::MOVE_LEFT_PRESSED,      Events::MOVE_LEFT_RELEASED,    0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_D,       Events::MOVE_RIGHT_PRESSED,     Events::MOVE_RIGHT_RELEASED,   0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_UP,      Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED, 0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_DOWN,    Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,    0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_SPACE,   Events::MOVE_UP_PRESSED,        Events::MOVE_UP_RELEASED,      0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_C,       Events::MOVE_DOWN_PRESSED,      Events::MOVE_DOWN_RELEASED,    0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_PGUP,    Events::MOVE_UP_PRESSED,        Events::MOVE_UP_RELEASED,      0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_PGDOWN,  Events::MOVE_DOWN_PRESSED,      Events::MOVE_DOWN_RELEASED,    0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_LEFT,    Events::ROTATE_LEFT_PRESSED,    Events::ROTATE_LEFT_RELEASED,  0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_RIGHT,   Events::ROTATE_RIGHT_PRESSED,   Events::ROTATE_RIGHT_RELEASED, 0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_J,       Events::ROTATE_LEFT_PRESSED,    Events::ROTATE_LEFT_RELEASED,  0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_L,       Events::ROTATE_RIGHT_PRESSED,   Events::ROTATE_RIGHT_RELEASED, 0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_I,       Events::ROTATE_UP_PRESSED,      Events::ROTATE_UP_RELEASED,    0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_K,       Events::ROTATE_DOWN_PRESSED,    Events::ROTATE_DOWN_RELEASED,  0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_W,       Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED,  0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_S,       Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,     0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_A,       Events::MOVE_LEFT_PRESSED,      Events::MOVE_LEFT_RELEASED,     0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_D,       Events::MOVE_RIGHT_PRESSED,     Events::MOVE_RIGHT_RELEASED,    0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_UP,      Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED,  0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_DOWN,    Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,     0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_SPACE,   Events::MOVE_UP_PRESSED,        Events::MOVE_UP_RELEASED,       0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_C,       Events::MOVE_DOWN_PRESSED,      Events::MOVE_DOWN_RELEASED,     0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_PGUP,    Events::MOVE_UP_PRESSED,        Events::MOVE_UP_RELEASED,       0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_PGDOWN,  Events::MOVE_DOWN_PRESSED,      Events::MOVE_DOWN_RELEASED,     0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_LEFT,    Events::ROTATE_LEFT_PRESSED,    Events::ROTATE_LEFT_RELEASED,   0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_RIGHT,   Events::ROTATE_RIGHT_PRESSED,   Events::ROTATE_RIGHT_RELEASED,  0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_J,       Events::ROTATE_LEFT_PRESSED,    Events::ROTATE_LEFT_RELEASED,   0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_L,       Events::ROTATE_RIGHT_PRESSED,   Events::ROTATE_RIGHT_RELEASED,  0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_I,       Events::ROTATE_UP_PRESSED,      Events::ROTATE_UP_RELEASED,     0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_K,       Events::ROTATE_DOWN_PRESSED,    Events::ROTATE_DOWN_RELEASED,   0);
 
-        module_->RegisterUnbufferedKeyEvent(Input::State_All, OIS::KC_GRAVE,   Events::SHOW_DEBUG_CONSOLE,     Events::SHOW_DEBUG_CONSOLE_REL, 0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_All, OIS::KC_TAB,     Events::SWITCH_CONTROLLER,      Events::SWITCH_CONTROLLER_REL, 0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_All, OIS::KC_GRAVE,   Events::SHOW_DEBUG_CONSOLE,     Events::SHOW_DEBUG_CONSOLE_REL, 1);
+        module_->RegisterUnbufferedKeyEvent(Input::State_All, OIS::KC_TAB,     Events::SWITCH_CONTROLLER,      Events::SWITCH_CONTROLLER_REL, 17);
 
         module_->RegisterSliderEvent(Input::State_FreeCamera, SliderMouse,    Events::MOUSELOOK,              Events::MOUSELOOK_STOPPED, OIS::MB_Right);
     }
