@@ -7,6 +7,7 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OpenSimPrim.h"
 #include "QuatUtils.h"
+#include "ConversionUtils.h"
 #include "SceneManager.h"
 
 namespace RexLogic
@@ -195,8 +196,8 @@ namespace RexLogic
         assert(m);
         m->AddUUID(myInfo_.agentID);
         m->AddUUID(myInfo_.sessionID);
-        m->AddQuaternion(bodyrot);
-        m->AddQuaternion(headrot);        
+        m->AddQuaternion(Core::OgreToOpenSimQuaternion(bodyrot));
+        m->AddQuaternion(Core::OgreToOpenSimQuaternion(headrot));        
         m->AddU8(state);
         m->AddVector3(camcenter);
         m->AddVector3(camataxis);        

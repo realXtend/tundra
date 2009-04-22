@@ -596,15 +596,44 @@ namespace RexLogic
                 i += 4;
 
                 Core::Vector3df position = *reinterpret_cast<Core::Vector3df*>((Core::Vector3df*)&bytes[i]);
+                position = Core::OpenSimToOgreCoordinateAxes(position);
                 i += sizeof(Core::Vector3df);
                 
-                //! \todo read velocity & rotation 
+                //! \todo read velocity
+                i += 6;
+                
+                // rotation                
+                uint16_t rotx = *reinterpret_cast<uint16_t*>((uint16_t*)&bytes[i]);
+                i += sizeof(uint16_t);
+                uint16_t roty = *reinterpret_cast<uint16_t*>((uint16_t*)&bytes[i]);
+                i += sizeof(uint16_t);
+                uint16_t rotz = *reinterpret_cast<uint16_t*>((uint16_t*)&bytes[i]);
+                i += sizeof(uint16_t);
+                uint16_t rotw = *reinterpret_cast<uint16_t*>((uint16_t*)&bytes[i]);
+                i += sizeof(uint16_t);
+           
+                if(rotx == 32768 && roty == 32768 && rotx == 32768 && rotw == 32768)
+                    rotw = 65535;               
+                
+                Core::Quaternion rotation;
+                rotation.x = (rotx / 32768.0f) - 1.0f;
+                rotation.y = (roty / 32768.0f) - 1.0f;
+                rotation.z = (rotz / 32768.0f) - 1.0f;
+                rotation.w = (rotw / 32768.0f) - 1.0f;
+                rotation.normalize();
+                rotation = Core::OpenSimToOgreQuaternion(rotation);
                 
                 Foundation::EntityPtr entity = GetAvatarEntity(localid);
                 if(entity)
                 {
-                    OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
-                    ogrePos.SetPosition(Core::OpenSimToOgreCoordinateAxes(position));
+                    if(rexlogicmodule_->GetAvatarController()->GetAvatarEntity() && entity->GetId() == rexlogicmodule_->GetAvatarController()->GetAvatarEntity()->GetId())
+                        rexlogicmodule_->GetAvatarController()->HandleServerObjectUpdate(position,rotation);
+                    else
+                    {
+                        OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
+                        ogrePos.SetPosition(position);
+                        ogrePos.SetOrientation(rotation);                    
+                    }
                 }
             }
             else

@@ -7,6 +7,7 @@
 #include "RexTypes.h"
 #include "InputState.h"
 
+
 namespace RexLogic
 {
     class RexLogicModule;
@@ -17,9 +18,8 @@ namespace RexLogic
         AvatarController(Foundation::Framework *framework, RexLogicModule *rexlogicmodule);
         virtual ~AvatarController();
                 
-        Core::Quaternion GetBodyRotation();
-        Core::Quaternion GetHeadRotation();
-        
+        Core::Quaternion GetBodyRotation(){  return bodyrotation_; }
+        Core::Quaternion GetHeadRotation(){  return headrotation_; }    
         
         void StartMovingForward();
         void StopMovingForward();
@@ -30,6 +30,10 @@ namespace RexLogic
         void StartMovingRight();
         void StopMovingRight();
         void Zoom(int value);
+        void StartRotatingLeft();
+        void StopRotatingLeft();
+        void StartRotatingRight();
+        void StopRotatingRight();
          
         //! Gets avatar entity
         Foundation::EntityPtr GetAvatarEntity() const { return avatarentity_; }
@@ -38,7 +42,9 @@ namespace RexLogic
         void SetAvatarEntity(Foundation::EntityPtr avatar);        
 
         //! update camera position
-        void Update(Core::f64 frametime);   
+        void Update(Core::f64 frametime);
+        
+        void HandleServerObjectUpdate(RexTypes::Vector3 position, Core::Quaternion rotation);   
 
     private:
         Foundation::Framework *framework_;
@@ -50,7 +56,7 @@ namespace RexLogic
         //! Own avatar
         Foundation::EntityPtr avatarentity_;
 
-        void UpdateMovementState();
+        void SendMovementToServer();
 
         //! camera distance
         float cameradistance_;
@@ -62,7 +68,19 @@ namespace RexLogic
         float camera_min_distance_;
         
         //! camera max distance
-        float camera_max_distance_;        
+        float camera_max_distance_; 
+
+        //! body rotation
+        Core::Quaternion bodyrotation_;
+
+        //! head rotation
+        Core::Quaternion headrotation_;
+
+        //! relative yaw of the camera for one frame
+        int yaw_;  
+        
+        //! how much time has passed since last rotation movement update
+        float movementupdatetime_;      
     };
 }
 

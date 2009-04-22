@@ -15,4 +15,9 @@ Core::Quaternion OpenSimToOgreQuaternion(const Core::Quaternion &quat)
     return Core::Quaternion(quat.y, quat.z, quat.x, quat.w);
 }
 
+Core::Quaternion OgreToOpenSimQuaternion(const Core::Quaternion &quat)
+{
+    return Core::Quaternion(quat.x, quat.z, quat.y, quat.w);
+}
+
 }
