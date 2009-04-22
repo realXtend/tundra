@@ -9,6 +9,7 @@
 #include "ModuleInterface.h"
 #include "InputEvents.h"
 #include "InputModuleApi.h"
+#include "InputServiceInterface.h"
 
 
 namespace Foundation
@@ -86,6 +87,11 @@ namespace Input
         Instead, raw OIS events and codes are translated into generic input events which are launched when the corresponding
         input event happens, such as a key is pressed down.
         These input events can then be handled like any other event.
+
+        Input has a state. Each state has their own set of h/w input events corresponding to generic input events,
+        f.ex. in State_ThirdPerson 'A' and 'D' may be used to rotate the camera (and avatar) around, while in
+        State_FreeCamera they can be used to slide the camera left or right. In this way keys can launch different
+        events in different states. Input service should be used to set the state.
         
         Keyboard events are supported in the following way:
         A single OIS::KeyCode that corresponds to an event, modifiers may be included (ctrl, alt and/or shift) as a bit flag.
@@ -109,7 +115,10 @@ namespace Input
     {
     public:
         typedef std::vector<UnBufferedKeyEventInfo> KeyEventInfoVector;
+        typedef std::map<Input::State, KeyEventInfoVector> KeyEventInfoMap;
+
         typedef std::vector<SliderEventInfo> SliderInfoVector;
+        typedef std::map<Input::State, SliderInfoVector> SliderInfoMap;
 
         InputModuleOIS();
         virtual ~InputModuleOIS();
@@ -154,7 +163,7 @@ namespace Input
             \param released_event event that is launched when key is released (launched once)
             \param modifier bit flag for modifier keys (ctrl, shift, alt). See OIS for the bit flag values.
         */
-        void RegisterUnbufferedKeyEvent(OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event, int modifier = 0);
+        void RegisterUnbufferedKeyEvent(Input::State state, OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event, int modifier = 0);
 
         //! Register a slider input
         /*! Internal use only!
@@ -166,13 +175,19 @@ namespace Input
             \param dragged_event event for dragging the slider (launches as long as slider is dragged)
             \param stopped_event event that is launched when the slider is no longer dragged (launched once)
         */
-        void RegisterSliderEvent(Slider slider, Core::event_id_t dragged_event, Core::event_id_t stopped_event, int button = -1, int modifier = 0);
+        void RegisterSliderEvent(Input::State state, Slider slider, Core::event_id_t dragged_event, Core::event_id_t stopped_event, int button = -1, int modifier = 0);
+
+        //! Set current input state
+        void SetState(Input::State state) { input_state_ = state; }
+
+        //! Returns current input state
+        Input::State GetState() const { return input_state_; }
 
         //! Introspection of registered key events. Internal use only!
-        const KeyEventInfoVector &GetRegisteredKeyEvents() const { return listened_keys_; }
+        const KeyEventInfoMap &GetRegisteredKeyEvents() const { return listened_keys_; }
 
         //! Introspection of registered slider events. Internal use only!
-        const SliderInfoVector &GetRegisteredSliderEvents() const { return sliders_; }
+        const SliderInfoMap &GetRegisteredSliderEvents() const { return sliders_; }
 
         MODULE_LOGGING_FUNCTIONS
 
@@ -181,6 +196,15 @@ namespace Input
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Input;
     private:
+        //! Check h/w input events and update any events accordingly.
+        /*! Similar to SendKeyEvents, but does not send any actual events,
+            since event handling for sliders is a bit different.
+        */
+        void UpdateSliderEvents(Input::State state);
+
+        //! Checks keyboard input and sends input events based on if any keys are pressed.
+        void SendKeyEvents(Input::State state);
+
         //! Handle closing the main window
         /*! Should only be called when main window gets closed, not f.ex. when additional render windows get closed.
         */
@@ -188,6 +212,12 @@ namespace Input
 
         //! Handle window resizing, only for the main render window
         void WindowResized(int width, int height);
+
+        //! Returns key event info vector for state state
+        KeyEventInfoVector &GetKeyInfo(Input::State state);
+
+        //! Returns key event info vector for state state
+        SliderInfoVector &GetSliderInfo(Input::State state);
 
         //! input event category
         Core::event_category_id_t event_category_;
@@ -203,10 +233,10 @@ namespace Input
         BufferedKeyboardPtr buffered_keyboard_;
         
         //! unbuffered keys for which pressed and released events are created. Good for movement keys, etc.
-        KeyEventInfoVector listened_keys_;
+        KeyEventInfoMap listened_keys_;
 
         //! input sliders
-        SliderInfoVector sliders_;
+        SliderInfoMap sliders_;
 
         //! mappings for h/w input to generic events
         MapperPtr key_mapping_;
@@ -216,6 +246,9 @@ namespace Input
 
         //! is mouse dragged
         bool dragged_;
+
+        //! current input state
+        Input::State input_state_;
     };
 }
 #endif

@@ -96,35 +96,49 @@ namespace Input
                     if (attributes.isNull())
                         throw Core::Exception("Missing attributes.");
 
-                    Poco::XML::Attr* action_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("value"));
+                    Poco::XML::Attr* state_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("state"));
+                    Poco::XML::Attr* event_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("start_event"));
+                    Poco::XML::Attr* end_event_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("end_event"));
                     Poco::XML::Attr* modifier_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("modifier"));
                     Poco::XML::Attr* key_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("key"));
 
-                    if (!action_attr)
-                        throw Core::Exception("Missing attribute 'value'.");
+                    if (!state_attr)
+                        throw Core::Exception("Missing attribute 'state'.");
+                    if (!event_attr)
+                        throw Core::Exception("Missing attribute 'start_event'.");
+                    if (!end_event_attr)
+                        throw Core::Exception("Missing attribute 'end_event'.");
                     if (!modifier_attr)
                         throw Core::Exception("Missing attribute 'modifier'.");
                     if (!key_attr)
                         throw Core::Exception("Missing attribute 'key'.");
 
-                    Core::event_id_t event_id = Core::ParseString<Core::event_id_t>(action_attr->getValue());
+                    Input::State state = static_cast<Input::State>(Core::ParseString<int>(state_attr->getValue()));
+                    Core::event_id_t start_event_id = Core::ParseString<Core::event_id_t>(event_attr->getValue());
+                    Core::event_id_t end_event_id = Core::ParseString<Core::event_id_t>(end_event_attr->getValue());
                     int modifier = Core::ParseString<int>(modifier_attr->getValue());
                     int key = Core::ParseString<int>(key_attr->getValue());
 
-                    module_->RegisterUnbufferedKeyEvent(static_cast<OIS::KeyCode>(key), event_id, event_id + 1, modifier);
+                    module_->RegisterUnbufferedKeyEvent(state, static_cast<OIS::KeyCode>(key), start_event_id, end_event_id, modifier);
                 } else if (current_node->nodeName() == "action_slider")
                 {
                     Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> attributes = current_node->attributes();
                     if (attributes.isNull())
                         throw Core::Exception("Missing attributes.");
 
-                    Poco::XML::Attr* action_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("value"));
+                    Poco::XML::Attr* state_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("state"));
+                    Poco::XML::Attr* event_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("start_event"));
+                    Poco::XML::Attr* end_event_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("end_event"));
                     Poco::XML::Attr* modifier_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("modifier"));
                     Poco::XML::Attr* key_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("button"));
                     Poco::XML::Attr* type_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("type"));
 
-                    if (!action_attr)
-                        throw Core::Exception("Missing attribute 'value'.");
+                    if (!state_attr)
+                        throw Core::Exception("Missing attribute 'state'.");
+                    if (!event_attr)
+                        throw Core::Exception("Missing attribute 'start_event'.");
+                    if (!end_event_attr)
+                        throw Core::Exception("Missing attribute 'end_event'.");
                     if (!modifier_attr)
                         throw Core::Exception("Missing attribute 'modifier'.");
                     if (!key_attr)
@@ -132,12 +146,14 @@ namespace Input
                     if (!type_attr)
                         throw Core::Exception("Missing attribute 'type'.");
 
-                    Core::event_id_t event_id = Core::ParseString<Core::event_id_t>(action_attr->getValue());
+                    Input::State state = static_cast<Input::State>(Core::ParseString<int>(state_attr->getValue()));
+                    Core::event_id_t start_event_id = Core::ParseString<Core::event_id_t>(event_attr->getValue());
+                    Core::event_id_t end_event_id = Core::ParseString<Core::event_id_t>(end_event_attr->getValue());
                     int modifier = Core::ParseString<int>(modifier_attr->getValue());
                     int button = Core::ParseString<int>(key_attr->getValue());
                     Input::Slider type = static_cast<Input::Slider>(Core::ParseString<int>(type_attr->getValue()));
 
-                    module_->RegisterSliderEvent(type, event_id, event_id + 1, button, modifier);
+                    module_->RegisterSliderEvent(state, type, start_event_id, end_event_id, button, modifier);
                 }
             }
         }
@@ -154,31 +170,45 @@ namespace Input
 	    writer.startElement("", "", "input");
 
         {
-            const InputModuleOIS::KeyEventInfoVector &events = module_->GetRegisteredKeyEvents();
-            for ( InputModuleOIS::KeyEventInfoVector::const_iterator info = events.begin() ; 
-                  info != events.end() ;
-                  ++info )
+            const InputModuleOIS::KeyEventInfoMap &events = module_->GetRegisteredKeyEvents();
+            for ( InputModuleOIS::KeyEventInfoMap::const_iterator state = events.begin() ; 
+                  state != events.end() ;
+                  ++state )
             {
-                Poco::XML::AttributesImpl attrs;
-                attrs.addAttribute("", "", "value", "CDATA", Core::ToString(info->pressed_event_id_));
-	            attrs.addAttribute("", "", "modifier", "CDATA", Core::ToString(info->modifier_));
-                attrs.addAttribute("", "", "key", "CDATA", Core::ToString(info->key_));
-	            writer.emptyElement("", "", "action", attrs);
+                for ( InputModuleOIS::KeyEventInfoVector::const_iterator info = state->second.begin() ; 
+                  info != state->second.end() ;
+                  ++info )
+                {
+                    Poco::XML::AttributesImpl attrs;
+                    attrs.addAttribute("", "", "state", "CDATA", Core::ToString(static_cast<int>(state->first)));
+                    attrs.addAttribute("", "", "start_event", "CDATA", Core::ToString(info->pressed_event_id_));
+                    attrs.addAttribute("", "", "end_event", "CDATA", Core::ToString(info->released_event_id_));
+	                attrs.addAttribute("", "", "modifier", "CDATA", Core::ToString(info->modifier_));
+                    attrs.addAttribute("", "", "key", "CDATA", Core::ToString(info->key_));
+	                writer.emptyElement("", "", "action", attrs);
+                }
             }
         }
 
         {
-            const InputModuleOIS::SliderInfoVector &events = module_->GetRegisteredSliderEvents();
-            for ( InputModuleOIS::SliderInfoVector::const_iterator info = events.begin() ; 
-                  info != events.end() ;
-                  ++info )
+            const InputModuleOIS::SliderInfoMap &events = module_->GetRegisteredSliderEvents();
+            for ( InputModuleOIS::SliderInfoMap::const_iterator state = events.begin() ; 
+                  state != events.end() ;
+                  ++state )
             {
-                Poco::XML::AttributesImpl attrs;
-                attrs.addAttribute("", "", "value", "CDATA", Core::ToString(info->dragged_event_));
-	            attrs.addAttribute("", "", "modifier", "CDATA", Core::ToString(info->modifier_));
-                attrs.addAttribute("", "", "button", "CDATA", Core::ToString(info->button_));
-                attrs.addAttribute("", "", "type", "CDATA", Core::ToString(info->slider_));
-	            writer.emptyElement("", "", "action_slider", attrs);
+                for ( InputModuleOIS::SliderInfoVector::const_iterator info = state->second.begin() ; 
+                      info != state->second.end() ;
+                      ++info )
+                {
+                    Poco::XML::AttributesImpl attrs;
+                    attrs.addAttribute("", "", "state", "CDATA", Core::ToString(static_cast<int>(state->first)));
+                    attrs.addAttribute("", "", "start_event", "CDATA", Core::ToString(info->dragged_event_));
+                    attrs.addAttribute("", "", "end_event", "CDATA", Core::ToString(info->stopped_event_));
+	                attrs.addAttribute("", "", "modifier", "CDATA", Core::ToString(info->modifier_));
+                    attrs.addAttribute("", "", "button", "CDATA", Core::ToString(info->button_));
+                    attrs.addAttribute("", "", "type", "CDATA", Core::ToString(info->slider_));
+	                writer.emptyElement("", "", "action_slider", attrs);
+                }
             }
         }
         writer.endElement("", "", "input");
@@ -190,27 +220,40 @@ namespace Input
         // Default key config which takes place if key mappings could not be loaded from config file.
 
         // See InputModuleOIS for explanation
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_W,       Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED, 0);
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_S,       Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,    0);
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_A,       Events::ROTATE_LEFT_PRESSED,    Events::ROTATE_LEFT_RELEASED,  0);
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_D,       Events::ROTATE_RIGHT_PRESSED,   Events::ROTATE_RIGHT_RELEASED, 0);
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_UP,      Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED, 0);
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_DOWN,    Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,    0);
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_SPACE,   Events::MOVE_UP_PRESSED,        Events::MOVE_UP_RELEASED,      0);
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_C,       Events::MOVE_DOWN_PRESSED,      Events::MOVE_DOWN_RELEASED,    0);
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_PGUP,    Events::MOVE_UP_PRESSED,        Events::MOVE_UP_RELEASED,      0);
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_PGDOWN,  Events::MOVE_DOWN_PRESSED,      Events::MOVE_DOWN_RELEASED,    0);
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_LEFT,    Events::ROTATE_LEFT_PRESSED,    Events::ROTATE_LEFT_RELEASED,  0);
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_RIGHT,   Events::ROTATE_RIGHT_PRESSED,   Events::ROTATE_RIGHT_RELEASED, 0);
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_J,       Events::ROTATE_LEFT_PRESSED,    Events::ROTATE_LEFT_RELEASED,  0);
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_L,       Events::ROTATE_RIGHT_PRESSED,   Events::ROTATE_RIGHT_RELEASED, 0);
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_I,       Events::ROTATE_UP_PRESSED,      Events::ROTATE_UP_RELEASED,    0);
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_K,       Events::ROTATE_DOWN_PRESSED,    Events::ROTATE_DOWN_RELEASED,  0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_W,       Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED, 0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_S,       Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,    0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_A,       Events::ROTATE_LEFT_PRESSED,    Events::ROTATE_LEFT_RELEASED,    0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_D,       Events::ROTATE_RIGHT_PRESSED,   Events::ROTATE_RIGHT_RELEASED,   0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_UP,      Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED, 0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_DOWN,    Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,    0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_SPACE,   Events::MOVE_UP_PRESSED,        Events::MOVE_UP_RELEASED,      0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_C,       Events::MOVE_DOWN_PRESSED,      Events::MOVE_DOWN_RELEASED,    0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_PGUP,    Events::MOVE_UP_PRESSED,        Events::MOVE_UP_RELEASED,      0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_PGDOWN,  Events::MOVE_DOWN_PRESSED,      Events::MOVE_DOWN_RELEASED,    0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_LEFT,    Events::ROTATE_LEFT_PRESSED,    Events::ROTATE_LEFT_RELEASED,  0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_RIGHT,   Events::ROTATE_RIGHT_PRESSED,   Events::ROTATE_RIGHT_RELEASED, 0);
 
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_GRAVE,   Events::SHOW_DEBUG_CONSOLE,     Events::SHOW_DEBUG_CONSOLE_REL, 0);
-        module_->RegisterUnbufferedKeyEvent(OIS::KC_TAB,     Events::SWITCH_CONTROLLER,      Events::SWITCH_CONTROLLER_REL, 0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_W,       Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED, 0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_S,       Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,    0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_A,       Events::MOVE_LEFT_PRESSED,      Events::MOVE_LEFT_RELEASED,    0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_D,       Events::MOVE_RIGHT_PRESSED,     Events::MOVE_RIGHT_RELEASED,   0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_UP,      Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED, 0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_DOWN,    Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,    0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_SPACE,   Events::MOVE_UP_PRESSED,        Events::MOVE_UP_RELEASED,      0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_C,       Events::MOVE_DOWN_PRESSED,      Events::MOVE_DOWN_RELEASED,    0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_PGUP,    Events::MOVE_UP_PRESSED,        Events::MOVE_UP_RELEASED,      0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_PGDOWN,  Events::MOVE_DOWN_PRESSED,      Events::MOVE_DOWN_RELEASED,    0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_LEFT,    Events::ROTATE_LEFT_PRESSED,    Events::ROTATE_LEFT_RELEASED,  0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_RIGHT,   Events::ROTATE_RIGHT_PRESSED,   Events::ROTATE_RIGHT_RELEASED, 0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_J,       Events::ROTATE_LEFT_PRESSED,    Events::ROTATE_LEFT_RELEASED,  0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_L,       Events::ROTATE_RIGHT_PRESSED,   Events::ROTATE_RIGHT_RELEASED, 0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_I,       Events::ROTATE_UP_PRESSED,      Events::ROTATE_UP_RELEASED,    0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_K,       Events::ROTATE_DOWN_PRESSED,    Events::ROTATE_DOWN_RELEASED,  0);
 
-        module_->RegisterSliderEvent(SliderMouse,    Events::MOUSELOOK,              Events::MOUSELOOK_STOPPED, OIS::MB_Right);
+        module_->RegisterUnbufferedKeyEvent(Input::State_All, OIS::KC_GRAVE,   Events::SHOW_DEBUG_CONSOLE,     Events::SHOW_DEBUG_CONSOLE_REL, 0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_All, OIS::KC_TAB,     Events::SWITCH_CONTROLLER,      Events::SWITCH_CONTROLLER_REL, 0);
+
+        module_->RegisterSliderEvent(Input::State_FreeCamera, SliderMouse,    Events::MOUSELOOK,              Events::MOUSELOOK_STOPPED, OIS::MB_Right);
     }
 }
 

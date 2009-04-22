@@ -55,6 +55,12 @@ namespace Input
         static const Core::event_id_t MOUSELOOK = 32;
         static const Core::event_id_t MOUSELOOK_STOPPED = 33;
 
+        //! event for changing input state
+        static const Core::event_id_t INPUTSTATE_FIRSTPERSON = 34;
+        static const Core::event_id_t INPUTSTATE_THIRDPERSON = 35;
+        static const Core::event_id_t INPUTSTATE_FREECAMERA = 36;
+        
+
 
         //! Event for buffered key input. 
         //! Do not use for any continous input such as avatar movement, it will probably cause input lag

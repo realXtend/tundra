@@ -9,7 +9,7 @@
 
 namespace Foundation
 {
-    class EntityInterface;    
+    class EntityInterface;
     typedef boost::weak_ptr<EntityInterface> EntityWeakPtr;
     typedef boost::shared_ptr<EntityInterface> EntityPtr;
 
@@ -23,9 +23,9 @@ namespace Foundation
         //! destructor
         virtual ~EntityInterface();// {}
 
-        virtual bool operator == (const EntityInterface &other) const = 0;
-        virtual bool operator != (const EntityInterface &other) const = 0;
-        virtual bool operator < (const EntityInterface &other) const = 0;
+        virtual bool operator == (const EntityInterface &other) const { return GetId() == other.GetId(); }
+        virtual bool operator != (const EntityInterface &other) const { return !(*this == other); }
+        virtual bool operator < (const EntityInterface &other) const { return GetId() < other.GetId(); }
 
         //! Clones the entity. The new entity will contain the same components as the old one.
         /*!

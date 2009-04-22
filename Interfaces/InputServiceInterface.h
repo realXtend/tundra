@@ -5,15 +5,40 @@
 
 #include "ServiceInterface.h"
 
-namespace Foundation
+namespace Input
 {
+    //! input state. See InputModuleOIS for more information
+    enum State
+    {
+        //! unknown state
+        State_Unknown = 0,
+        //! all states, useful if you want a key to correspond the one event on all states
+        State_All,
+        //! 1st person camera
+        State_FirstPerson,
+        //! 3rd person camera
+        State_ThirdPerson,
+        //! Free ghostcamera
+        State_FreeCamera,
+        // add new states here
+
+        //! number of different states
+        State_Count
+    };
+
     //! A service for input events.
     /*! Many input events are launched as actual events, so
         they can be handled as any other events, but it is not
         practical for all input events. This service can be used
         to query the status of such input events.
+
+        Input also has a state. Keys map to different
+        input events in different states, f.ex. in 3rd person
+        state 'A' and 'D' keys may rotate the camera, but
+        in free camera state, the keys may slide the camera
+        left or right.
     */
-    class InputServiceInterface : public ServiceInterface
+    class InputServiceInterface : public Foundation::ServiceInterface
     {
     public:
         InputServiceInterface() {}
@@ -30,6 +55,12 @@ namespace Foundation
             \return Absolute and relative position in 3 dimensions
         */
         virtual boost::optional<const Input::Events::Movement&> GetSliderMovement(Core::event_id_t dragged_event) const = 0;
+
+        //! Sets the current input state. State determines which events are lauched by which h/w input events.
+        virtual void SetState(State state) = 0;
+
+        //! Returns the current input state
+        virtual State GetState() const = 0;
     };
 }
 

@@ -19,7 +19,7 @@ namespace Input
         If mapping for some event is not found from the xml file, the default one is
         used instead.
     */
-    class Mapper : public Foundation::InputServiceInterface
+    class Mapper : public Input::InputServiceInterface
     {
         //! default constructor
         Mapper();
@@ -53,6 +53,12 @@ namespace Input
 
         //! Exports mappings to a file
         void Export(const std::string &file);
+
+        //! set input state
+        void SetState(State state) { module_->SetState(state); }
+
+        //! Returns the current state
+        State GetState() const { return module_->GetState(); }
 
     private:
 

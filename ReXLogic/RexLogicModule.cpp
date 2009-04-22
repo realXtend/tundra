@@ -31,7 +31,7 @@
 
 namespace RexLogic
 {
-    RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_), current_controller_(Controller_Avatar)
+    RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_), current_controller_(Controller_Avatar), send_input_state_(false)
     {
     }
 
@@ -114,6 +114,8 @@ namespace RexLogic
         Ogre::Camera *cam = renderer->GetCurrentCamera();
         cam->setPosition(-10, -10, -10);
         cam->lookAt(0,0,0);
+
+        send_input_state_ = true;
     }
 
     void RexLogicModule::DeleteScene(const std::string &name)
@@ -163,6 +165,18 @@ namespace RexLogic
     void RexLogicModule::Update(Core::f64 frametime)
     {
         input_handler_->Update(frametime);
+
+        if (send_input_state_)
+        {
+            send_input_state_ = false;
+
+            // can't send events during initalization, so workaround
+            Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+            if (current_controller_ == Controller_Avatar)
+                GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
+            else
+                GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
+        }
     }
 
     // virtual
@@ -181,10 +195,16 @@ namespace RexLogic
         {
             current_controller_ = Controller_Camera;
             input_handler_->SetState(camera_controller_);
+
+            Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+            GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
         } else
         {
             current_controller_ = Controller_Avatar;
             input_handler_->SetState(avatar_controller_);
+
+            Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+            GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
         }
     }
 
