@@ -109,7 +109,7 @@ namespace Foundation
          * @param key Name of the key
          */
         template <typename T> T GetSetting(const std::string& group, const std::string& key) const;
-        template <> std::string GetSetting(const std::string& group, const std::string& key) const;
+        std::string GetSetting(const std::string& group, const std::string& key) const;
 
         //! Retrieves a value from key and group.
         /*! This is the standard way of retrieving a value from group and key name, after the
@@ -121,7 +121,7 @@ namespace Foundation
         */
 
         template <typename T> T GetSettingFromFile(const std::string& group, const std::string& key) const;
-        template <> std::string GetSettingFromFile(const std::string& group, const std::string& key) const;
+        std::string GetSettingFromFile(const std::string& group, const std::string& key) const;
        
         
         //! Returns true is the specified group contains the specified key, false otherwise.
