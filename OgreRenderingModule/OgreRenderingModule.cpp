@@ -77,7 +77,7 @@ namespace OgreRenderer
         if (!resourcecategory_id_)
         {
             resourcecategory_id_ = event_manager->RegisterEventCategory("Resource");
-            event_manager->RegisterEvent(resourcecategory_id_, Foundation::Event::RESOURCE_READY, "ResourceReady");
+            event_manager->RegisterEvent(resourcecategory_id_, Resource::Event::RESOURCE_READY, "ResourceReady");
         }
 
         renderer_->PostInitialize();
@@ -87,8 +87,11 @@ namespace OgreRenderer
         {
             Console::CommandService *console = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand);
             console->RegisterCommand(Console::CreateCommand(
-                "RequestTexture", "Fetch, decode & create Ogre texture. Usage: RequestTexture(uuid)", 
+                "RequestTexture", "Download, decode & create Ogre texture. Usage: RequestTexture(uuid)", 
                 Console::Bind(this, &OgreRenderingModule::ConsoleRequestTexture)));
+            console->RegisterCommand(Console::CreateCommand(
+                "RequestMesh", "Download & create Ogre mesh. Usage: RequestMesh(uuid)", 
+                Console::Bind(this, &OgreRenderingModule::ConsoleRequestMesh)));
         }
 
         //Foundation::SceneManagerServiceInterface *scene_manager = 
@@ -200,7 +203,19 @@ namespace OgreRenderer
 
         return Console::ResultSuccess();
     }
+
+    Console::CommandResult OgreRenderingModule::ConsoleRequestMesh(const Core::StringVector &params)
+    {
+        if (params.size() < 1)
+            return Console::ResultFailure("Usage: RequestMesh(uuid)");
+
+        if (renderer_)
+            renderer_->RequestMesh(params[0]);
+
+        return Console::ResultSuccess();
+    }
 }
+
 
 using namespace OgreRenderer;
 

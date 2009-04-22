@@ -4,6 +4,7 @@
 #define incl_Asset_AssetEvents_h
 
 #include "EventDataInterface.h"
+#include "AssetInterface.h"
 
 namespace Asset
 {
@@ -23,9 +24,10 @@ namespace Asset
         class AssetReady : public Foundation::EventDataInterface
         {
         public:
-            AssetReady(const std::string& asset_id, Core::asset_type_t asset_type) :
+            AssetReady(const std::string& asset_id, Core::asset_type_t asset_type, Foundation::AssetPtr asset) :
                 asset_id_(asset_id),
-                asset_type_(asset_type)
+                asset_type_(asset_type),
+                asset_(asset)
             {
             }
             
@@ -35,6 +37,7 @@ namespace Asset
         
             std::string asset_id_;
             Core::asset_type_t asset_type_;
+            Foundation::AssetPtr asset_;
         };
 
         //! asset progress event data

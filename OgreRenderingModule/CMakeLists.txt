@@ -14,6 +14,7 @@ include_directories (
 	../Foundation
 	../SceneModule
 	../Interfaces
+	../AssetModule
 )
 
 # External library includes

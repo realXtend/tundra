@@ -52,8 +52,11 @@ namespace Foundation
         //! references to other resources (resource id's)
         ReferenceVector references_;
     };
+}
 
-    //! resource events
+//! resource events
+namespace Resource
+{
     namespace Event
     {
         //! resource ready event id

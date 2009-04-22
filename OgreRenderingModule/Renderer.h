@@ -108,18 +108,34 @@ namespace OgreRenderer
         //! handles a resource event
         bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
+
         //! returns an Ogre texture resource, null if not found
         /*! does not automatically make a request to the asset system
          */
         Foundation::ResourcePtr GetTexture(const std::string& id);
 
         //! requests a texture to be downloaded & decoded
-        /*! an event will be sent once each texture quality level is decoded
+        /*! a resource event will be sent once each texture quality level is decoded
          */
         void RequestTexture(const std::string& id);
 
         //! deletes an Ogre texture resource
         void RemoveTexture(const std::string& id);
+
+
+        //! returns an Ogre mesh resource, null if not found
+        /*! does not automatically make a request to the asset system
+         */
+        Foundation::ResourcePtr GetMesh(const std::string& id);
+
+        //! requests a mesh to be downloaded
+        /*! a resource event will be sent once the mesh asset is ready
+         */
+        void RequestMesh(const std::string& id);
+
+        //! deletes an Ogre mesh resource
+        void RemoveMesh(const std::string& id);
+
 
     private:
         //! loads Ogre plugins in a manner which allows individual plugin loading to fail
@@ -138,6 +154,13 @@ namespace OgreRenderer
             \return true if successful
          */
         bool UpdateTexture(Foundation::ResourcePtr source);
+
+        //! creates or updates a mesh, based on source asset data
+        /*! \param source asset
+            \return true if successful
+         */
+        bool UpdateMesh(Foundation::AssetPtr source);
+
 
         boost::mutex renderer_;
 
@@ -176,6 +199,9 @@ namespace OgreRenderer
 
         //! Ogre texture resources
         Foundation::ResourceMap textures_;
+
+        //! Ogre mesh resources
+        Foundation::ResourceMap meshes_;
     };
 }
 
