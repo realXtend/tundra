@@ -17,12 +17,20 @@ namespace RexLogic
     {
         friend class NetworkEventHandler;
     public:
+
+		enum ConnectionType { DirectConnection = 0, AuthenticationConnection = 1 };
+
         RexServerConnection(Foundation::Framework *framework);
         virtual ~RexServerConnection();
         
-        bool ConnectToServer(std::string username, std::string password, std::string serveraddress);
-        void RequestLogout();
+        bool ConnectToServer(const std::string& username, const std::string& password, 
+			const std::string& serveraddress, const std::string& auth_server_address = "", const std::string& auth_login = "");
+	
+		void RequestLogout();
         void ForceServerDisconnect();
+
+		void SetConnectionType( ConnectionType type ) { connection_type_ = type; }
+		ConnectionType GetConnectionType() const { return connection_type_; }
 
         // Send the UDP chat packet.
         void SendChatFromViewerPacket(std::string text);
@@ -97,6 +105,9 @@ namespace RexLogic
         
         /// Is client connected to a server.
         bool connected_;
+
+		ConnectionType connection_type_;
+
     };
 }
 

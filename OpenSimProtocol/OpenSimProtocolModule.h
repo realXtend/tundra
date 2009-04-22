@@ -31,6 +31,9 @@ struct ClientParameters
     RexUUID sessionID;
     RexUUID regionID;
     uint32_t circuitCode;
+	std::string sessionHash;
+	std::string gridUrl;
+	std::string avatarStorageUrl;
 };
 
 namespace OpenSimProtocol
@@ -93,14 +96,48 @@ namespace OpenSimProtocol
         /// Passes outbound network events to listeners. Used for stats/Debugging.
         virtual void OnNetworkMessageSent(const NetOutMessage *msg);
 		
-        /// Connects to a reX server.
-        bool ConnectToRexServer(
-            const char *first_name,
-		    const char *last_name,
-		    const char *password,
-		    const char *address,
+        /**
+		 * Connects directly to reX server without authentication procedure. Uses PerformXMLRPC() -function. 
+		 * @return true if login was successful false if not. 
+		 *
+		 */
+        
+		bool ConnectToRexServer(
+			const std::string& first_name,
+			const std::string& last_name,
+			const std::string& password,
+			const std::string& address,
 		    int port);
         
+		
+		/**
+		 * Connects to reX server through authentication procedure. Uses PerformXMLRPC() -function. 
+		 * 
+		 * @param first_name is first part of given username. 
+		 * 
+		 * @param last_name is second part of given username.
+		 *
+		 * @param address is world server ip-address (or dns-name?) does not contain port number.
+		 *
+		 * @param port is a world server port (where connection is done). 
+		 *
+		 * @param auth_server_address is authentication server ip-address (contains port number). 
+		 *
+		 * @param auth_login is a login name which will be used to login authentication server. 
+		 * 
+		 * @return true if login was successfull false if not. 
+		 *
+		 * */
+
+		bool ConnectUsingAuthenticationServer(const std::string& first_name,
+			const std::string& last_name,
+			const std::string& password,
+			const std::string& address,
+			int port,
+			const std::string& auth_server_address, 
+			const std::string& auth_login);
+
+
         /// Disconnects from a reX server.
        	void DisconnectFromRexServer();
         
@@ -123,15 +160,46 @@ namespace OpenSimProtocol
         bool IsConnected() const { return bConnected_; }
         
     private:
-        /// Initializes a login to a reX server that is not using a separate authentication server.
-       	bool PerformXMLRPCLogin(
-       	    const char *first_name,
-       	    const char *last_name,
-       	    const char *password,
-       	    const char *address,
-       	    int port,
-       	    ClientParameters *params);
-        
+        /**
+		 * Perform XMLRPC Login to using authentication server or direct rexserver depending of 
+		 * given @p callMethod param and @p authentication param. All data which will be got from authentication of
+		 * login into world server is saved in @p ClientParameters struct. 
+		 *
+		 *
+		 * @param first_name is username first part
+		 *
+		 * @param last_name is username last part (second name)
+		 *
+		 * @param password is a password which will be used to login into simulator and authentication server.
+		 *
+		 * @param worldAddress is a address of world (sim) server without port value. 
+		 * 
+		 * @param worldPort is a port of world (sim) server. 
+		 *
+		 * @param callMethod is a function which will be "called" through xmlrpc-epi interface. Right now possible values are login_to_simulator 
+		 * or ClientAuthentication.
+		 *
+		 * @param authentication_login is a login name (can be diffrent then a first_name + second_name). 
+		 *
+		 * @param authentication_address is a address to authentication server without port number. 
+		 *
+		 * @param authentication_port is a port of authentication server.
+		 *
+		 * @param authentication is a flag which defines is authentication done. 
+		 * 
+		 * @return true if login (or authentication) was successful.
+		 */
+		bool PerformXMLRPCLogin(const std::string& first_name, 
+			const std::string& last_name, 
+			const std::string& password,
+			const std::string& worldAddress,
+			const std::string& worldPort,
+			const std::string& callMethod,
+			const std::string& authentication_login = "",
+			const std::string& authentication_address = "",
+			const std::string& authentication_port = "",
+			bool authentication = false);
+
 	    /// Handles the UDP communications with the reX server.
 	    shared_ptr<NetMessageManager> networkManager_;
 	    

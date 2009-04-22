@@ -249,6 +249,7 @@ namespace NetTest
         loginControls->connect_clicked("button_connect", sigc::mem_fun(*this, &NetTestLogicModule::OnClickConnect));
         loginControls->connect_clicked("button_logout", sigc::mem_fun(*this, &NetTestLogicModule::OnClickLogout));
         loginControls->connect_clicked("button_quit", sigc::mem_fun(*this, &NetTestLogicModule::OnClickQuit));
+
         
         // Read old connection settings from xml configuration file.
 
@@ -274,7 +275,7 @@ namespace NetTest
             
         ///@note Pending : Currently password is not loaded and saved.  
                
-        
+       
     }
     
     void NetTestLogicModule::InitNetTestWindow()
@@ -338,13 +339,30 @@ namespace NetTest
     void NetTestLogicModule::OnClickConnect()
     {
         // Initialize UI widgets.
-       
-        Gtk::Entry *entry_password;
+        Gtk::Entry *entry_password = 0;
 		loginControls->get_widget("entry_password", entry_password);
-      
-    
-        if(rexlogic_->GetServerConnection()->ConnectToServer(entry_username_->get_text(), entry_password->get_text(), entry_server_->get_text()))
-        {
+		Gtk::Entry *entry_authentication = 0;
+		loginControls->get_widget("entry_authentication", entry_authentication);
+		
+		bool succesful = false;
+		if ( entry_authentication != 0 && std::string(entry_authentication->get_text()) != std::string(""))
+		{
+			// Connect to Authentication server.
+			
+		    //entry_authentication contains authentication server address and port
+			//entry_auth_login contains login username. 
+			
+			Gtk::Entry *entry_auth_login = 0;
+			loginControls->get_widget("entry_auth_login", entry_auth_login);
+			
+			succesful = rexlogic_->GetServerConnection()->ConnectToServer(entry_username_->get_text(), entry_password->get_text(), entry_server_->get_text(), 
+				entry_authentication->get_text(), entry_auth_login->get_text());
+		}
+		else 
+		 succesful = rexlogic_->GetServerConnection()->ConnectToServer(entry_username_->get_text(), entry_password->get_text(), entry_server_->get_text());
+        
+		if ( succesful)
+		{
             // Save login and server settings for future use. 
             framework_->GetConfigManager()->SetSetting<std::string>(std::string("Login"),std::string("server"), std::string(entry_server_->get_text()));
             framework_->GetConfigManager()->SetSetting<std::string>(std::string("Login"),std::string("username"), std::string(entry_username_->get_text()));
