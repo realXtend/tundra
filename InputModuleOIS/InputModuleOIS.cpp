@@ -294,6 +294,7 @@ namespace Input
                 const bool mod_alt   = !((keys[i].modifier_ & OIS::Keyboard::Alt)   == 0);
                 const bool mod_ctrl  = !((keys[i].modifier_ & OIS::Keyboard::Ctrl)  == 0);
                 const bool mod_shift = !((keys[i].modifier_ & OIS::Keyboard::Shift) == 0);
+
                 if(!keys[i].pressed_ && buffered_keyboard_->IsKeyHandled(keys[i].key_) == false)
                 {
                     // check modifiers in a bit convoluted way. All combos of ctrl+a, ctrl+alt+a and ctrl+alt+shift+a must work!
@@ -309,6 +310,7 @@ namespace Input
                     }
                 } else
                 {
+                    // see if any modifiers were released or pressed
                     if ( ((mod_alt   && !alt)   || (!mod_alt   && alt))  ||
                          ((mod_ctrl  && !ctrl)  || (!mod_ctrl  && ctrl)) ||
                          ((mod_shift && !shift) || (!mod_shift && shift)) )
@@ -319,6 +321,7 @@ namespace Input
             }
             else if(keys[i].pressed_)
             {
+                // key no longer held down
                 key_released = true;
             }
 
@@ -371,6 +374,23 @@ namespace Input
         keyeventinfo.key_ = key;
         keyeventinfo.modifier_ = modifier;
 
+#ifdef _DEBUG
+        const bool mod_alt   = !((modifier & OIS::Keyboard::Alt)   == 0);
+        const bool mod_ctrl  = !((modifier & OIS::Keyboard::Ctrl)  == 0);
+        const bool mod_shift = !((modifier & OIS::Keyboard::Shift) == 0);
+        std::string mod_str;
+        if (!mod_alt && !mod_ctrl && !mod_shift)
+            mod_str = " none";
+        if (mod_alt)
+            mod_str += " alt";
+        if (mod_ctrl)
+            mod_str += " ctrl";
+        if (mod_shift)
+            mod_str += " shift";
+
+        LogDebug("Bound key " + keyboard_->getAsString(key) + " to event id: " + Core::ToString(pressed_event) + " with modifiers:" + mod_str + ".");
+#endif
+
         KeyEventInfoMap::iterator key_vector = listened_keys_.find(state);
         if (key_vector == listened_keys_.end())
         {
@@ -382,6 +402,8 @@ namespace Input
             {
                 // replace old event
                 *it = keyeventinfo;
+
+                LogDebug("Replaced previously bound key.");
             } else
             {
                 // register new event
