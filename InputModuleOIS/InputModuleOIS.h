@@ -52,7 +52,12 @@ namespace Input
         // compiler generated copy constructor applies
 
         //! comparison
-        bool operator ==(const UnBufferedKeyEventInfo &rhs) const { return (key_ == rhs.key_ && modifier_ == rhs.modifier_ ); }
+        bool operator ==(const UnBufferedKeyEventInfo &rhs) const
+        { 
+            return (key_ == rhs.key_ && 
+                (modifier_ == rhs.modifier_ || pressed_event_id_ == rhs.pressed_event_id_ || released_event_id_ == rhs.released_event_id_ )  
+                );
+        }
 
         Core::event_id_t pressed_event_id_; //! event that is launched when the key is pressed down
         Core::event_id_t released_event_id_; //! event that is launched when the key is released
@@ -67,7 +72,12 @@ namespace Input
         // compiler generated copy constructor applies
 
         //! comparison
-        bool operator ==(const SliderEventInfo &rhs) const { return (slider_ == rhs.slider_ && modifier_ == rhs.modifier_ ); }
+        bool operator ==(const SliderEventInfo &rhs) const
+        { 
+            return (slider_ == rhs.slider_ && 
+                (modifier_ == rhs.modifier_  || dragged_event_ == rhs.dragged_event_ || stopped_event_ == rhs.stopped_event_)
+                );
+        }
 
         Core::event_id_t dragged_event_;
         Core::event_id_t stopped_event_;
