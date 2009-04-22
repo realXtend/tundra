@@ -20,6 +20,10 @@ Core::Vector3df OpenSimToOgreCoordinateAxes(const Core::Vector3df &pos);
 /// system we're using in Ogre. @see Core::Vector3df OpenSimToOgreCoordinateAxes(const Core::Vector3df &pos);
 Core::Quaternion OpenSimToOgreQuaternion(const Core::Quaternion &quat);
 
+/// Transforms a quaternion from Ogre coordinate system to the coordinate
+/// system we're using in OpenSim.
+Core::Quaternion OgreToOpenSimQuaternion(const Core::Quaternion &quat);
+
 }
 
 #endif
