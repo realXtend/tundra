@@ -113,6 +113,9 @@ namespace RexLogic
 
         //! Recreates the terrain. Called at startup.
         void CreateTerrain();
+
+        //! workaround for not being able to send events during initialization
+        bool send_input_state_;
     };
 }
 

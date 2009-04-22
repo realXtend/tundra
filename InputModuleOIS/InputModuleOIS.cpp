@@ -20,6 +20,7 @@ namespace Input
         , joy_(0)
         , event_category_(0)
         , dragged_(false)
+        , input_state_(State_Unknown)
     {       
     }
 
@@ -127,6 +128,10 @@ namespace Input
         GetFramework()->GetServiceManager()->UnregisterService(key_mapping_.get());
         key_mapping_.reset();
 
+        listened_keys_.clear();
+        sliders_.clear();
+
+
         LogInfo("Module " + Name() + " uninitialized.");
     }
 
@@ -166,6 +171,7 @@ namespace Input
             movement_.z_.rel_ = ms.Z.rel;
             movement_.z_.abs_ = ms.Z.abs;
 
+            // launch event when mouse is dragged. Disabled since launching event every frame is not all that efficient.
             //if (ms.buttonDown(OIS::MB_Right))
             //{
             //    //if (movement_ != prev_movement)
@@ -183,58 +189,11 @@ namespace Input
             //    framework_->GetEventManager()->SendEvent(event_category_, Events::DRAGGING_STOPPED, &no_rel_movement);
             //}
 
-            for (size_t i=0 ; i<sliders_.size() ; ++i)
-            {
-                sliders_[i].dragged_ = false;
-                if (sliders_[i].slider_ == SliderMouse)
-                {
-                    if (sliders_[i].button_ == -1 || ms.buttonDown(static_cast<OIS::MouseButtonID>(sliders_[i].button_)))
-                    {
-                        // check modifiers in a bit convoluted way. All combos of ctrl+a, ctrl+alt+a and ctrl+alt+shift+a must work!
-                        if (((sliders_[i].modifier_ & OIS::Keyboard::Alt)   == 0 || keyboard_->isModifierDown(OIS::Keyboard::Alt))  &&
-                            ((sliders_[i].modifier_ & OIS::Keyboard::Ctrl)  == 0 || keyboard_->isModifierDown(OIS::Keyboard::Ctrl)) &&
-                            ((sliders_[i].modifier_ & OIS::Keyboard::Shift) == 0 || keyboard_->isModifierDown(OIS::Keyboard::Shift))) 
-                        {
-                            sliders_[i].dragged_ = true;
-                            sliders_[i].movement_ = movement_;
-                        }
-                    }
-                }
-            }
-
-            
-            for (size_t i=0 ; i<listened_keys_.size() ; ++i)
-            {
-                bool key_released = false;
-                if (keyboard_->isKeyDown(listened_keys_[i].key_))
-                {
-                    if(!listened_keys_[i].pressed_ && buffered_keyboard_->IsKeyHandled(listened_keys_[i].key_) == false)
-                    {
-                        // check modifiers in a bit convoluted way. All combos of ctrl+a, ctrl+alt+a and ctrl+alt+shift+a must work!
-                        if (((listened_keys_[i].modifier_ & OIS::Keyboard::Alt)   == 0 || keyboard_->isModifierDown(OIS::Keyboard::Alt))  &&
-                            ((listened_keys_[i].modifier_ & OIS::Keyboard::Ctrl)  == 0 || keyboard_->isModifierDown(OIS::Keyboard::Ctrl)) &&
-                            ((listened_keys_[i].modifier_ & OIS::Keyboard::Shift) == 0 || keyboard_->isModifierDown(OIS::Keyboard::Shift))) 
-                        {
-                            listened_keys_[i].pressed_ = true;
-                            framework_->GetEventManager()->SendEvent(event_category_, listened_keys_[i].pressed_event_id_, NULL);
-                        } else
-                        {
-                            key_released = true;
-                        }
-                    }
-                }
-                else if(listened_keys_[i].pressed_)
-                {
-                    key_released = true;
-                }
-
-                if (key_released)
-                {
-                    listened_keys_[i].pressed_ = false;
-                    framework_->GetEventManager()->SendEvent(event_category_, listened_keys_[i].released_event_id_, NULL);
-                }
-            }
-         
+            // first update input events for the current state, then send events for keys that are common to all states
+            UpdateSliderEvents(input_state_);
+            UpdateSliderEvents(Input::State_All);
+            SendKeyEvents(input_state_);
+            SendKeyEvents(Input::State_All);
         }
     }
 
@@ -254,6 +213,19 @@ namespace Input
                                 checked_static_cast<OgreRenderer::Event::WindowResized*>(data)->height_ );
             }
         }
+        if (event_category_ == category_id)
+        {
+            if (event_id == Input::Events::INPUTSTATE_FIRSTPERSON)
+            {
+                SetState(Input::State_FirstPerson);
+            } else if (event_id == Input::Events::INPUTSTATE_THIRDPERSON)
+            {
+                SetState(Input::State_ThirdPerson);
+            } else if (event_id == Input::Events::INPUTSTATE_FREECAMERA)
+            {
+                SetState(Input::State_FreeCamera);
+            }
+        }
 
         // no need to mark events handled
         return handled;
@@ -271,14 +243,77 @@ namespace Input
 
     boost::optional<const Events::Movement&> InputModuleOIS::GetDraggedSliderInfo(Core::event_id_t dragged_event)
     {
-        for (size_t i=0 ; i<sliders_.size() ; ++i)
+        SliderInfoVector &sliders = GetSliderInfo(input_state_);
+        for (size_t i=0 ; i<sliders.size() ; ++i)
         {
-            if (sliders_[i].dragged_event_ == dragged_event && sliders_[i].dragged_)
+            if (sliders[i].dragged_event_ == dragged_event && sliders[i].dragged_)
             {
-                return boost::optional<const Events::Movement&>(sliders_[i].movement_);
+                return boost::optional<const Events::Movement&>(sliders[i].movement_);
             }
         }
         return boost::optional<const Events::Movement&>();
+    }
+
+    void InputModuleOIS::UpdateSliderEvents(Input::State state)
+    {
+        const OIS::MouseState &ms = mouse_->getMouseState();
+        SliderInfoVector &sliders = GetSliderInfo(state);
+
+        for (size_t i=0 ; i<sliders.size() ; ++i)
+        {
+            sliders[i].dragged_ = false;
+            if (sliders[i].slider_ == SliderMouse)
+            {
+                if (sliders[i].button_ == -1 || ms.buttonDown(static_cast<OIS::MouseButtonID>(sliders[i].button_)))
+                {
+                    // check modifiers in a bit convoluted way. All combos of ctrl+a, ctrl+alt+a and ctrl+alt+shift+a must work!
+                    if (((sliders[i].modifier_ & OIS::Keyboard::Alt)   == 0 || keyboard_->isModifierDown(OIS::Keyboard::Alt))  &&
+                        ((sliders[i].modifier_ & OIS::Keyboard::Ctrl)  == 0 || keyboard_->isModifierDown(OIS::Keyboard::Ctrl)) &&
+                        ((sliders[i].modifier_ & OIS::Keyboard::Shift) == 0 || keyboard_->isModifierDown(OIS::Keyboard::Shift))) 
+                    {
+                        sliders[i].dragged_ = true;
+                        sliders[i].movement_ = movement_;
+                    }
+                }
+            }
+        }
+    }
+
+    void InputModuleOIS::SendKeyEvents(Input::State state)
+    {
+        KeyEventInfoVector &keys = GetKeyInfo(state);
+
+        for (size_t i=0 ; i<keys.size() ; ++i)
+        {
+            bool key_released = false;
+            if (keyboard_->isKeyDown(keys[i].key_))
+            {
+                if(!keys[i].pressed_ && buffered_keyboard_->IsKeyHandled(keys[i].key_) == false)
+                {
+                    // check modifiers in a bit convoluted way. All combos of ctrl+a, ctrl+alt+a and ctrl+alt+shift+a must work!
+                    if (((keys[i].modifier_ & OIS::Keyboard::Alt)   == 0 || keyboard_->isModifierDown(OIS::Keyboard::Alt))  &&
+                        ((keys[i].modifier_ & OIS::Keyboard::Ctrl)  == 0 || keyboard_->isModifierDown(OIS::Keyboard::Ctrl)) &&
+                        ((keys[i].modifier_ & OIS::Keyboard::Shift) == 0 || keyboard_->isModifierDown(OIS::Keyboard::Shift))) 
+                    {
+                        keys[i].pressed_ = true;
+                        framework_->GetEventManager()->SendEvent(event_category_, keys[i].pressed_event_id_, NULL);
+                    } else
+                    {
+                        key_released = true;
+                    }
+                }
+            }
+            else if(keys[i].pressed_)
+            {
+                key_released = true;
+            }
+
+            if (key_released)
+            {
+                keys[i].pressed_ = false;
+                framework_->GetEventManager()->SendEvent(event_category_, keys[i].released_event_id_, NULL);
+            }
+        }
     }
 
     void InputModuleOIS::WindowClosed()
@@ -311,7 +346,7 @@ namespace Input
     }
 
     
-    void InputModuleOIS::RegisterUnbufferedKeyEvent(OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event, int modifier)
+    void InputModuleOIS::RegisterUnbufferedKeyEvent(Input::State state, OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event, int modifier)
     {
         assert (pressed_event + 1 == released_event);
 
@@ -322,19 +357,26 @@ namespace Input
         keyeventinfo.key_ = key;
         keyeventinfo.modifier_ = modifier;
 
-        KeyEventInfoVector::iterator it = std::find(listened_keys_.begin(), listened_keys_.end(), keyeventinfo);
-        if ( it != listened_keys_.end())
+        KeyEventInfoMap::iterator key_vector = listened_keys_.find(state);
+        if (key_vector == listened_keys_.end())
         {
-            // replace old event
-            *it = keyeventinfo;
+            listened_keys_[state].push_back(keyeventinfo);
         } else
         {
-            // register new event
-            listened_keys_.push_back(keyeventinfo);
+            KeyEventInfoVector::iterator it = std::find(key_vector->second.begin(), key_vector->second.end(), keyeventinfo);
+            if ( it != key_vector->second.end())
+            {
+                // replace old event
+                *it = keyeventinfo;
+            } else
+            {
+                // register new event
+                key_vector->second.push_back(keyeventinfo);
+            }
         }
     }
 
-    void InputModuleOIS::RegisterSliderEvent(Slider slider, Core::event_id_t dragged_event, Core::event_id_t stopped_event, int button, int modifier)
+    void InputModuleOIS::RegisterSliderEvent(Input::State state, Slider slider, Core::event_id_t dragged_event, Core::event_id_t stopped_event, int button, int modifier)
     {
         assert (dragged_event + 1 == stopped_event);
 
@@ -346,17 +388,45 @@ namespace Input
         info.button_ = button;
         info.modifier_ = modifier;
 
-        SliderInfoVector::iterator it = std::find(sliders_.begin(), sliders_.end(), info);
-        if ( it != sliders_.end())
+        SliderInfoMap::iterator slider_vector = sliders_.find(state);
+        if (slider_vector == sliders_.end())
         {
-            // replace old event
-            *it = info;
+            sliders_[state].push_back(info);
         } else
         {
-            // register new event
-            sliders_.push_back(info);
+            SliderInfoVector::iterator it = std::find(slider_vector->second.begin(), slider_vector->second.end(), info);
+            if ( it != slider_vector->second.end())
+            {
+                // replace old event
+                *it = info;
+            } else
+            {
+                // register new event
+                slider_vector->second.push_back(info);
+            }
         }
     }
 
+    InputModuleOIS::KeyEventInfoVector &InputModuleOIS::GetKeyInfo(Input::State state)
+    {
+        KeyEventInfoMap::iterator it = listened_keys_.find(state);
+        if (it == listened_keys_.end())
+        {
+            listened_keys_[state] = KeyEventInfoVector();
+            return GetKeyInfo(state);
+        }
+        return it->second;
+    }
+
+    InputModuleOIS::SliderInfoVector &InputModuleOIS::GetSliderInfo(Input::State state)
+    {
+        SliderInfoMap::iterator it = sliders_.find(state);
+        if (it == sliders_.end())
+        {
+            sliders_[state] = SliderInfoVector();
+            return GetSliderInfo(state);
+        }
+        return it->second;
+    }
 }
 
