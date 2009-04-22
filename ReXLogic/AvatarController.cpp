@@ -4,7 +4,9 @@
 #include "AvatarController.h"
 #include "RexLogicModule.h"
 #include "RexServerConnection.h"
-
+#include "Renderer.h"
+#include "../OgreRenderingModule/EC_OgrePlaceable.h"
+#include <Ogre.h>
 
 namespace RexLogic
 {
@@ -12,15 +14,26 @@ namespace RexLogic
     {
         framework_ = framework;
         rexlogicmodule_ = rexlogicmodule;
-     
-        controlflags_ = 0; 
+
+        controlflags_ = 0;
+        
+        cameradistance_ = 20.0f;
+        camera_min_distance_ = 1.0f;
+        camera_max_distance_ = 50.0f;
+        cameraoffset_ = RexTypes::Vector3(0,1.8f,0);
     }
 
     AvatarController::~AvatarController()
     {
-    
+        if(avatarentity_)
+            avatarentity_.reset();
     }
     
+    void AvatarController::SetAvatarEntity(Foundation::EntityPtr avatar)    
+    {
+        avatarentity_ = avatar;
+    }
+
     Core::Quaternion AvatarController::GetBodyRotation()
     {
         return Core::Quaternion(0,0,0,1); //! \todo tucofixme
@@ -79,6 +92,13 @@ namespace RexLogic
         UpdateMovementState();
     }
 
+    void AvatarController::Zoom(int value) 
+    {    
+        cameradistance_ -= (value*0.015f);
+        cameradistance_ = std::max(camera_min_distance_, std::min(camera_max_distance_,cameradistance_));
+
+    }
+
     void AvatarController::UpdateMovementState()
     {
         // 0 = walk, 1 = mouselook, 2 = type
@@ -98,5 +118,26 @@ namespace RexLogic
         
         rexlogicmodule_->GetServerConnection()->SendAgentUpdatePacket(bodyrot,headrot,0,camcenter,camataxis,camleftaxis,camupaxis,fardist,controlflags_,flags);            
     }
+    
+    //! update camera position
+    void AvatarController::Update(Core::f64 frametime)
+    {
+        OgreRenderer::Renderer *renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        if (!renderer || !avatarentity_)
+            return;
+
+        Ogre::Camera *camera = renderer->GetCurrentCamera();
+        OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent("EC_OgrePlaceable").get());
+
+        RexTypes::Vector3 campos = ogreplaceable.GetPosition();
+        campos += (ogreplaceable.GetOrientation() * RexTypes::Vector3(0,0,-1) * cameradistance_);
+        campos += (ogreplaceable.GetOrientation() * cameraoffset_);
+        camera->setPosition(campos.x,campos.y,campos.z);
+        
+        RexTypes::Vector3 lookat = ogreplaceable.GetPosition();
+        lookat += (ogreplaceable.GetOrientation() * cameraoffset_);
+        camera->lookAt(lookat.x,lookat.y,lookat.z);
+    }    
+    
 }
 

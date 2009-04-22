@@ -51,6 +51,7 @@ namespace RexLogic
             \param movement contains absolute and relative movement for the drag
         */
         virtual void Drag(const Input::Events::Movement *movement) {}
+        virtual void Zoom(int value) {}
 
         //! update the state, called every frame
         virtual void Update(Core::f64 frametime) {}

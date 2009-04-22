@@ -31,11 +31,32 @@ namespace RexLogic
                 break;
             case Scene::Events::EVENT_ENTITY_UPDATED:
                 rexlogicmodule_->GetServerConnection()->SendMultipleObjectUpdatePacket(event_data->entity_ptr_list);
-                break;                
+                break;
+            case Scene::Events::EVENT_ENTITY_DELETED:
+                HandleEntityDeletedEvent(event_data->localID);
+                break;
             default:
                 break;
         }
-        
+ 
         return false;
     }
+    
+    void SceneEventHandler::HandleEntityDeletedEvent(Core::event_id_t entityid)    
+    {
+        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
+            (Foundation::Service::ST_SceneManager);
+        
+        Foundation::ScenePtr scene = sceneManager->GetScene("World");
+        if (!scene)
+            return;
+
+        Foundation::EntityPtr entity = scene->GetEntity(entityid);
+        if(entity && rexlogicmodule_->GetAvatarController()->GetAvatarEntity() && entity->GetId() == rexlogicmodule_->GetAvatarController()->GetAvatarEntity()->GetId())
+        {
+            Foundation::EntityPtr emptyavatar;
+            rexlogicmodule_->GetAvatarController()->SetAvatarEntity(emptyavatar);
+        }      
+    }    
+    
 }

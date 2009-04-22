@@ -29,7 +29,17 @@ namespace RexLogic
         void StopMovingLeft();
         void StartMovingRight();
         void StopMovingRight();
-                       
+        void Zoom(int value);
+         
+        //! Gets avatar entity
+        Foundation::EntityPtr GetAvatarEntity() const { return avatarentity_; }
+
+        //! Sets avatar entity
+        void SetAvatarEntity(Foundation::EntityPtr avatar);        
+
+        //! update camera position
+        void Update(Core::f64 frametime);   
+
     private:
         Foundation::Framework *framework_;
      
@@ -37,7 +47,22 @@ namespace RexLogic
         
         uint32_t controlflags_;        
 
+        //! Own avatar
+        Foundation::EntityPtr avatarentity_;
+
         void UpdateMovementState();
+
+        //! camera distance
+        float cameradistance_;
+        
+        //! camera offset
+        RexTypes::Vector3 cameraoffset_;
+        
+        //! camera min distance
+        float camera_min_distance_;
+        
+        //! camera max distance
+        float camera_max_distance_;        
     };
 }
 
