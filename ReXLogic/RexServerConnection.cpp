@@ -21,6 +21,7 @@ namespace RexLogic
         myInfo_.regionID.SetNull();
         myInfo_.circuitCode = 0;
 
+		connection_type_ = DirectConnection;
         ///\todo weak_pointerize
         netInterface_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol).lock().get();
         if (!netInterface_)
@@ -33,8 +34,9 @@ namespace RexLogic
     RexServerConnection::~RexServerConnection()
     {
     }
-        
-    bool RexServerConnection::ConnectToServer(std::string username, std::string password, std::string serverurl)
+	bool RexServerConnection::ConnectToServer(const std::string& username, const std::string& password, 
+				const std::string& serveraddress, const std::string& auth_server_address, const std::string& auth_login)
+   
     {
         if(connected_)
         {
@@ -54,45 +56,64 @@ namespace RexLogic
         
         // Get server address and port.
         int port = 9000;
-        pos = serverurl.find(":");
+        pos = serveraddress.find(":");
         std::string serveraddress_noport;
         if(pos == std::string::npos)
         {
-            serveraddress_noport = serverurl;
+            serveraddress_noport = serveraddress;
             RexLogicModule::LogInfo("No port defined in serverurl, using port 9000.");
         }
         else
         {
-            serveraddress_noport = serverurl.substr(0, pos);
+            serveraddress_noport = serveraddress.substr(0, pos);
         
             try
             {
-                port = boost::lexical_cast<int>(serverurl.substr(pos + 1));
+                port = boost::lexical_cast<int>(serveraddress.substr(pos + 1));
             }catch(std::exception)
             {
                 RexLogicModule::LogError("Invalid port number, only numbers are allowed.");
                 return false;
             }
         }
+		
+		bool connectresult = false;
+		if ( auth_server_address != "" ) 
+		{
+			connection_type_ = AuthenticationConnection;
+			connectresult = netInterface_->ConnectUsingAuthenticationServer(first_name, 
+				last_name, password, serveraddress_noport, port,
+				auth_server_address, auth_login);
+	
 
-        bool connectresult = netInterface_->ConnectToRexServer(first_name.c_str(), last_name.c_str(),password.c_str(), serveraddress_noport.c_str(), port);   
-        if(connectresult)
-        {
-            connected_ = true;
-        
-            myInfo_ = netInterface_->GetClientParameters();
-            SendUseCircuitCodePacket();
-            SendCompleteAgentMovementPacket();
-            RexLogicModule::LogInfo("Connected to server " + serveraddress_noport + ".");
-            return true;
-        }
-        else
-        {
-            RexLogicModule::LogInfo("Connecting to server " + serveraddress_noport + " failed.");
-            return false;
-        }
+		}
+
+	
+		if ( connection_type_ == DirectConnection)
+			connectresult = netInterface_->ConnectToRexServer(first_name, last_name,password, serveraddress_noport, port);   
+				
+		if(connectresult)
+		{
+			connected_ = true;
+    
+			myInfo_ = netInterface_->GetClientParameters();
+			SendUseCircuitCodePacket();
+			SendCompleteAgentMovementPacket();
+			RexLogicModule::LogInfo("Connected to server " + serveraddress_noport + ".");
+			return true;
+		}
+		else
+		{
+			RexLogicModule::LogInfo("Connecting to server " + serveraddress_noport + " failed.");
+			return false;
+		}
+	
+		
     }    
     
+	
+
+
     void RexServerConnection::RequestLogout()
     {
         if(!connected_)

@@ -93,18 +93,20 @@ namespace OpenSimProtocol
         eventManager_->SendEvent(networkEventOutCategory_, msg->GetMessageID(), &data);
     }
     
-    bool OpenSimProtocolModule::ConnectToRexServer(
-	    const char *first_name,
-		const char *last_name,
-		const char *password,
-		const char *address,
-		int port)
+   bool OpenSimProtocolModule::ConnectToRexServer(
+				const std::string& first_name,
+				const std::string& last_name,
+				const std::string& password,
+				const std::string& address,
+				int port)
+        
 	{
-	    bool xmlrpc_sucess = PerformXMLRPCLogin(first_name, last_name, password, address, port, &clientParameters_);
-	    if (!xmlrpc_sucess)
+		std::string callMethod = "login_to_simulator";
+		bool xmlrpc_success = PerformXMLRPCLogin(first_name, last_name, password, address, boost::lexical_cast<std::string>(port), callMethod);
+	    if (!xmlrpc_success)
 	        return false;
 
-	    bool network_success = networkManager_->ConnectTo(address, port);
+	    bool network_success = networkManager_->ConnectTo(address.c_str(), port);
         if (!network_success)
             return false;
 
@@ -113,6 +115,59 @@ namespace OpenSimProtocol
         
         return true;
 	}
+
+   bool OpenSimProtocolModule::ConnectUsingAuthenticationServer(const std::string& first_name,
+			const std::string& last_name,
+			const std::string& password,
+			const std::string& address,
+			int port,
+			const std::string& auth_server_address, 
+			const std::string& auth_login)
+	{
+		
+		bool authentication = true;
+		std::string callMethod = "ClientAuthentication";
+		int pos = auth_server_address.find(":");
+		std::string auth_port = "";
+		std::string auth_address = "";
+		
+		if ( pos != std::string::npos)
+		{
+			auth_port = auth_server_address.substr(pos+1);
+			auth_address = auth_server_address.substr(0,pos);
+		}
+		else
+		{
+			LogError("Could not connect to server. Reason: port number was not found from authentication server address." );
+            return false;
+		}
+		bool xmlrpc_success = PerformXMLRPCLogin(first_name, last_name, password, address, boost::lexical_cast<std::string>(port), callMethod, 
+			auth_login, auth_address, auth_port, authentication);
+		
+		
+		if ( !xmlrpc_success)
+			return false;
+		//else
+		//	eventManager_->SendEvent(networkStateEventCategory_, Events::EVENT_AUTHENTICATION_SUCCESS, NULL);
+
+		callMethod = "login_to_simulator";
+
+		xmlrpc_success = PerformXMLRPCLogin(first_name, last_name, password, address, boost::lexical_cast<std::string>(port), callMethod, 
+			auth_login, auth_address, auth_port,authentication);
+	
+		if ( !xmlrpc_success)
+			return false;
+
+		bool network_success = networkManager_->ConnectTo(address.c_str(), port);
+        if (!network_success)
+            return false;
+
+        eventManager_->SendEvent(networkStateEventCategory_, Events::EVENT_SERVER_CONNECTED, NULL);
+        bConnected_ = true;
+
+		
+		return true;
+	}
 	
 	void OpenSimProtocolModule::DisconnectFromRexServer()
 	{
@@ -120,13 +175,16 @@ namespace OpenSimProtocol
 	    bConnected_ = false;
 	}
 	
-    bool OpenSimProtocolModule::PerformXMLRPCLogin(
-        const char *first_name,
-        const char *last_name,
-        const char *password,
-        const char *address,
-        int port,
-        ClientParameters *params)
+   bool OpenSimProtocolModule::PerformXMLRPCLogin(const std::string& first_name, 
+				const std::string& last_name, 
+				const std::string& password,
+				const std::string& worldAddress,
+				const std::string& worldPort,
+				const std::string& callMethod,
+				const std::string& authentication_login,
+				const std::string& authentication_address,
+				const std::string& authentication_port,
+				bool authentication)
     {
 		// create a MD5 hash for the password, MAC address and HDD serial number.
 		std::string mac_addr = GetMACaddressString();
@@ -139,27 +197,62 @@ namespace OpenSimProtocol
 
         try
         {
-            rpcConnection_ = shared_ptr<PocoXMLRPCConnection>(new PocoXMLRPCConnection(address, port));
+			if ( authentication && callMethod != std::string("login_to_simulator") )
+				rpcConnection_ = shared_ptr<PocoXMLRPCConnection>(new PocoXMLRPCConnection(authentication_address.c_str(), boost::lexical_cast<int>(authentication_port)));
+			else if ( callMethod == std::string("login_to_simulator"))
+				rpcConnection_ = shared_ptr<PocoXMLRPCConnection>(new PocoXMLRPCConnection(worldAddress.c_str(), boost::lexical_cast<int>(worldPort)));
         } catch(std::exception &e)
         {
             LogError("Could not connect to server. Reason: " + Core::ToString(e.what()) + ".");
             return false;
         }
 
-		boost::shared_ptr<PocoXMLRPCCall> call = rpcConnection_->StartXMLRPCCall("login_to_simulator");
-        if(!call)
+		boost::shared_ptr<PocoXMLRPCCall> call = rpcConnection_->StartXMLRPCCall(callMethod.c_str());
+		
+		if(!call)
             return false;
             
-		call->AddStringMember("first", first_name);
-		call->AddStringMember("last", last_name);
-		call->AddStringMember("passwd", password_hash.c_str());
+		if ( !authentication && callMethod == std::string("login_to_simulator"))
+		{
+			call->AddStringMember("first", first_name.c_str());
+			call->AddStringMember("last", last_name.c_str());
+			call->AddStringMember("passwd", password_hash.c_str());
+	     }
+		else if ( authentication && callMethod == std::string("ClientAuthentication") )
+		{
+			std::string account = authentication_login + "@" + authentication_address + ":" +authentication_port; 
+			call->AddStringMember("account", account.c_str());
+			call->AddStringMember("passwd", password_hash.c_str());
+			std::string loginuri = "";
+		
+			loginuri = loginuri+worldAddress+":"+ worldPort;
+			call->AddStringMember("loginuri", loginuri.c_str());
+		}
+		else if ( authentication && callMethod == std::string("login_to_simulator"))
+		{
+
+			call->AddStringMember("sessionhash",clientParameters_.sessionHash.c_str());
+			std::string account = authentication_login + "@" + authentication_address + ":" +authentication_port; 
+			call->AddStringMember("account", account.c_str());
+			std::string address = authentication_address + ":" + authentication_port;
+			call->AddStringMember("AuthenticationAddress", address.c_str());
+			std::string loginuri = "";
+			if ( !worldAddress.find("http") != std::string::npos )
+				loginuri = "http://";
+			
+			loginuri = loginuri + worldAddress+":"+ worldPort;
+			call->AddStringMember("loginuri", loginuri.c_str());
+
+		}
+
 		call->AddStringMember("start", "last"); // Starting position perhaps?
-		call->AddStringMember("version", "realXtend 1.20.13.91224");  ///\todo Make build system create versioning information.
+	    call->AddStringMember("version", "realXtend 1.20.13.91224");  ///\todo Make build system create versioning information.
 		call->AddStringMember("channel", "realXtend");
 		call->AddStringMember("platform", "Win"); ///\todo.
 		call->AddStringMember("mac", mac_hash.c_str());
 		call->AddStringMember("id0", id0_hash.c_str());
 		call->AddIntMember("last_exec_event", 0); // ?
+
 
 		// The contents of 'options' array unknown. ///\todo Go through them and identify what they really affect.
 		PocoXMLRPCCall::StringArray arr = call->CreateStringArray("options");
@@ -182,19 +275,30 @@ namespace OpenSimProtocol
 		if(!rpcConnection_->FinishXMLRPCCall(call))
 		    return false;
 
-        bool loginresult = false;
-        if(Core::ToString(call->GetReplyString("login")) == "false")
-        {
-            LogInfo("Login failed:" + Core::ToString(call->GetReplyString("message")));
-        }
-        else
-        {
-            params->sessionID.FromString(call->GetReplyString("session_id"));
-            params->agentID.FromString(call->GetReplyString("agent_id"));
-            params->circuitCode = call->GetReplyInt("circuit_code");
-            loginresult = true;
-        }
-        
+		bool loginresult = false;
+		if ( !authentication )
+		{
+			clientParameters_.sessionID.FromString(call->GetReplyString("session_id"));
+			clientParameters_.agentID.FromString(call->GetReplyString("agent_id"));
+			clientParameters_.circuitCode = call->GetReplyInt("circuit_code");
+			loginresult = true;
+		}
+		else if ( authentication && callMethod != std::string("login_to_simulator")) 
+		{
+			// Authentication results 
+			clientParameters_.sessionHash = call->GetReplyString("sessionHash");
+			clientParameters_.gridUrl = std::string(call->GetReplyString("gridUrl"));
+			clientParameters_.avatarStorageUrl = std::string(call->GetReplyString("avatarStorageUrl"));
+			loginresult = true;
+		}
+		else if ( authentication && callMethod == std::string("login_to_simulator"))
+		{
+			clientParameters_.sessionID.FromString(call->GetReplyString("session_id"));
+			clientParameters_.agentID.FromString(call->GetReplyString("agent_id"));
+			clientParameters_.circuitCode = call->GetReplyInt("circuit_code");
+			loginresult = true;
+		}
+
         ///\ Todo free later, if reply is needed.
 		XMLRPC_RequestFree(call->reply, 1);
 		return loginresult;
