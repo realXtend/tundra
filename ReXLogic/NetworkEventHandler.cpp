@@ -17,6 +17,7 @@
 #include "EC_SpatialSound.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_OpenSimAvatar.h"
+#include "AvatarController.h"
 
 // Ogre renderer -specific.
 #include <OgreManualObject.h>
@@ -398,7 +399,12 @@ namespace RexLogic
                 {
                     avatar.FirstName = namevalue.substr(23,pos-23);
                     avatar.LastName = namevalue.substr(pos+23);
-                } 
+                }
+                
+                // Set own avatar
+                if (avatar.FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
+                    rexlogicmodule_->GetAvatarController()->SetAvatarEntity(entity);              
+
                 break;
         }
 
@@ -659,11 +665,13 @@ namespace RexLogic
             }
         }
 
+        scene->DestroyEntity(killedobjectid);
+
+        // Clear fullid
         IDMap::iterator iter = UUIDs_.find(fullid);
         if (iter != UUIDs_.end())
             UUIDs_.erase(iter);
 
-        scene->DestroyEntity(killedobjectid);
         return false;
     }
 }

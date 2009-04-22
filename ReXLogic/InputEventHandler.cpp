@@ -105,6 +105,10 @@ namespace RexLogic
                 case Input::Events::ROLL_RIGHT_RELEASED:
                     state->StopRollingRight();
                     break;
+                case Input::Events::SCROLL:
+                    int rel = checked_static_cast<Input::Events::SingleAxisMovement*>(data)->z_.rel_;    
+                    state->Zoom(rel);
+                    break;
             }
         } else
         {

@@ -22,6 +22,9 @@ namespace RexLogic
         Foundation::Framework *framework_;
      
         RexLogicModule *rexlogicmodule_;
+        
+        //! handle entity deleted event
+        void HandleEntityDeletedEvent(Core::event_id_t entityid);
     };
 }
 
