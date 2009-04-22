@@ -9,10 +9,10 @@
 
 namespace OgreRenderer
 {
-    //! an Ogre texture resource
     class OgreTexture;
     typedef boost::shared_ptr<OgreTexture> OgreTexturePtr;
 
+    //! an Ogre texture resource
     class OgreTexture : public Foundation::ResourceInterface
     {
     public:
@@ -43,14 +43,15 @@ namespace OgreRenderer
 
         //! sets contents from raw source texture
         /*! \param source source raw texture data
+            \return true if successful
         */
         bool SetData(Foundation::TexturePtr source);
 
     private:
-        // ogre texture
+        //! Ogre texture
         Ogre::TexturePtr ogre_texture_;
 
-        // quality level, 0 = highest, -1 = no content yet
+        //! quality level, 0 = highest, -1 = no content yet
         int level_;
     };
 }

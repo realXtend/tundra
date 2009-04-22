@@ -476,10 +476,10 @@ namespace Asset
         AssetModule::LogInfo("Storing complete asset " + asset_id.ToString());
 
         // Store to memory cache
-        RexAsset* new_asset = new RexAsset(transfer.GetAssetId(), transfer.GetAssetType());
-        assets_[asset_id] = Foundation::AssetPtr(new_asset);
+        Foundation::AssetPtr new_asset = Foundation::AssetPtr(new RexAsset(transfer.GetAssetId(), transfer.GetAssetType()));
+        assets_[asset_id] = new_asset;
         
-        RexAsset::AssetDataVector& data = new_asset->GetDataInternal();
+        RexAsset::AssetDataVector& data = checked_static_cast<RexAsset*>(new_asset.get())->GetDataInternal();
         data.resize(transfer.GetReceived());
         transfer.AssembleData(&data[0]);
         
@@ -502,7 +502,7 @@ namespace Asset
         
         // Send asset ready event
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-        Event::AssetReady event_data(new_asset->GetId(), new_asset->GetType());
+        Event::AssetReady event_data(new_asset->GetId(), new_asset->GetType(), new_asset);
         event_manager->SendEvent(event_category_, Event::ASSET_READY, &event_data);
     }
     

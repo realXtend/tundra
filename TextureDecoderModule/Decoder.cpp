@@ -56,7 +56,7 @@ namespace TextureDecoder
         if (!resourcecategory_id_)
         {
             resourcecategory_id_ = event_manager->RegisterEventCategory("Resource");
-            event_manager->RegisterEvent(resourcecategory_id_, Foundation::Event::RESOURCE_READY, "ResourceReady");
+            event_manager->RegisterEvent(resourcecategory_id_, Resource::Event::RESOURCE_READY, "ResourceReady");
         }
     }
     
@@ -222,8 +222,8 @@ namespace TextureDecoder
 
             // Send resource ready event
             Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-            Foundation::Event::ResourceReady event_data(request.GetAssetId(), resource);
-            event_manager->SendEvent(resourcecategory_id_, Foundation::Event::RESOURCE_READY, &event_data);
+            Resource::Event::ResourceReady event_data(request.GetAssetId(), resource);
+            event_manager->SendEvent(resourcecategory_id_, Resource::Event::RESOURCE_READY, &event_data);
 
             success = true;
         }

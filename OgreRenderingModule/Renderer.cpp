@@ -7,6 +7,8 @@
 #include "OgreTexture.h"
 #include "OgreMesh.h"
 #include "ResourceInterface.h"
+#include "AssetDefines.h"
+#include "AssetEvents.h"
 
 #include <Ogre.h>
 
@@ -116,6 +118,7 @@ namespace OgreRenderer
         }
 
         textures_.clear();
+        meshes_.clear();
 
         root_.reset();
     }
@@ -330,14 +333,23 @@ namespace OgreRenderer
 
     bool Renderer::HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
+        if (event_id == Asset::Event::ASSET_READY)
+        {
+            Asset::Event::AssetReady *event_data = checked_static_cast<Asset::Event::AssetReady*>(data); 
+            if (event_data->asset_type_ == Asset::RexAT_Mesh)
+            {
+                UpdateMesh(event_data->asset_);
+            }
+        }
+
         return false;
     }
 
     bool Renderer::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        if (event_id == Foundation::Event::RESOURCE_READY)
+        if (event_id == Resource::Event::RESOURCE_READY)
         {     
-            Foundation::Event::ResourceReady *event_data = checked_static_cast<Foundation::Event::ResourceReady*>(data);  
+            Resource::Event::ResourceReady *event_data = checked_static_cast<Resource::Event::ResourceReady*>(data);  
             if (event_data->resource_)
             {
                 if (event_data->resource_->GetTypeName() == "Texture")
@@ -347,6 +359,7 @@ namespace OgreRenderer
 
         return false;
     }
+
 
     void Renderer::RequestTexture(const std::string& id)
     {
@@ -402,8 +415,69 @@ namespace OgreRenderer
         // If success, send Ogre resource ready event
         if (checked_static_cast<OgreTexture*>(tex.get())->SetData(source_tex))
         {
-            Foundation::Event::ResourceReady event_data(tex->GetId(), tex);
-            framework_->GetEventManager()->SendEvent(resourcecategory_id_, Foundation::Event::RESOURCE_READY, &event_data);
+            Resource::Event::ResourceReady event_data(tex->GetId(), tex);
+            framework_->GetEventManager()->SendEvent(resourcecategory_id_, Resource::Event::RESOURCE_READY, &event_data);
+            return true;
+        }
+
+        return false;
+    }    
+
+    void Renderer::RequestMesh(const std::string& id)
+    {
+        // See if already have the mesh with data
+        Foundation::ResourcePtr mesh = GetMesh(id);
+        if (mesh)
+        {
+            if (!checked_static_cast<OgreMesh*>(mesh.get())->GetMesh().isNull())
+                return;
+        }
+
+        // Request from asset system
+        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
+        if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
+        {
+            Foundation::AssetServiceInterface* asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset);
+            Foundation::AssetPtr mesh_asset = asset_service->GetAsset(id, Asset::RexAT_Mesh);
+            if (mesh_asset)
+                UpdateMesh(mesh_asset);
+            else
+                asset_service->RequestAsset(id, Asset::RexAT_Mesh);
+        }
+    }
+
+    Foundation::ResourcePtr Renderer::GetMesh(const std::string& id)
+    {
+        Foundation::ResourceMap::iterator i = meshes_.find(id);
+        if (i == meshes_.end())
+            return Foundation::ResourcePtr();
+        else
+            return i->second;
+    }
+
+    void Renderer::RemoveMesh(const std::string& id)
+    {
+        Foundation::ResourceMap::iterator i = meshes_.find(id);
+        if (i == meshes_.end())
+            return;
+        else
+            meshes_.erase(i);
+    }
+
+    bool Renderer::UpdateMesh(Foundation::AssetPtr source)
+    {    
+        // If not found, prepare new
+        Foundation::ResourcePtr mesh = GetMesh(source->GetId());
+        if (!mesh)
+        {
+            mesh = meshes_[source->GetId()] = Foundation::ResourcePtr(new OgreMesh(source->GetId()));
+        }
+
+        // If success, send Ogre resource ready event
+        if (checked_static_cast<OgreMesh*>(mesh.get())->SetData(source))
+        {
+            Resource::Event::ResourceReady event_data(source->GetId(), mesh);
+            framework_->GetEventManager()->SendEvent(resourcecategory_id_, Resource::Event::RESOURCE_READY, &event_data);
             return true;
         }
 
