@@ -283,20 +283,19 @@ namespace Input
     {
         KeyEventInfoVector &keys = GetKeyInfo(state);
 
-        bool alt = keyboard_->isModifierDown(OIS::Keyboard::Alt);
-        bool ctrl = keyboard_->isModifierDown(OIS::Keyboard::Ctrl);
-        bool shift = keyboard_->isModifierDown(OIS::Keyboard::Shift);
+        const bool alt = keyboard_->isModifierDown(OIS::Keyboard::Alt);
+        const bool ctrl = keyboard_->isModifierDown(OIS::Keyboard::Ctrl);
+        const bool shift = keyboard_->isModifierDown(OIS::Keyboard::Shift);
         for (size_t i=0 ; i<keys.size() ; ++i)
         {
             bool key_released = false;
             if (keyboard_->isKeyDown(keys[i].key_))
             {
+                const bool mod_alt   = !((keys[i].modifier_ & OIS::Keyboard::Alt)   == 0);
+                const bool mod_ctrl  = !((keys[i].modifier_ & OIS::Keyboard::Ctrl)  == 0);
+                const bool mod_shift = !((keys[i].modifier_ & OIS::Keyboard::Shift) == 0);
                 if(!keys[i].pressed_ && buffered_keyboard_->IsKeyHandled(keys[i].key_) == false)
-                {         
-                    bool mod_alt   = !((keys[i].modifier_ & OIS::Keyboard::Alt)   == 0);
-                    bool mod_ctrl  = !((keys[i].modifier_ & OIS::Keyboard::Ctrl)  == 0);
-                    bool mod_shift = !((keys[i].modifier_ & OIS::Keyboard::Shift) == 0);
-
+                {
                     // check modifiers in a bit convoluted way. All combos of ctrl+a, ctrl+alt+a and ctrl+alt+shift+a must work!
                     if ( ((mod_alt   && alt)   || (!mod_alt   && !alt))  &&
                          ((mod_ctrl  && ctrl)  || (!mod_ctrl  && !ctrl)) &&
@@ -305,6 +304,14 @@ namespace Input
                         keys[i].pressed_ = true;
                         framework_->GetEventManager()->SendEvent(event_category_, keys[i].pressed_event_id_, NULL);
                     } else
+                    {
+                        key_released = true;
+                    }
+                } else
+                {
+                    if ( ((mod_alt   && !alt)   || (!mod_alt   && alt))  ||
+                         ((mod_ctrl  && !ctrl)  || (!mod_ctrl  && ctrl)) ||
+                         ((mod_shift && !shift) || (!mod_shift && shift)) )
                     {
                         key_released = true;
                     }
