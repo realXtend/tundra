@@ -9,17 +9,17 @@
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
 
-//testing receiving events, now from the net module 'cause nothing else sends yet
-#include "OpenSimProtocolModule.h" //XXX for login hack
-#include "NetInMessage.h"
-#include "NetMessage.h"
-
 //#include <Python/Python.h>
 #include "Python.h"
 
 namespace Foundation
 {
     class Framework;
+}
+
+namespace RexLogic
+{
+    class RexLogicModule;
 }
 
 namespace PythonScript
@@ -47,12 +47,10 @@ namespace PythonScript
         virtual void Update(Core::f64 frametime);
 
 		//handling events
-        /* tested from network, disabled now - to be enabled again later
 		virtual bool HandleEvent(
             Core::event_category_id_t category_id,
             Core::event_id_t event_id, 
             Foundation::EventDataInterface* data);
-			*/
 
 		//! callback for console command
         Console::CommandResult ConsoleRunString(const Core::StringVector &params);
@@ -83,16 +81,12 @@ namespace PythonScript
 		// Category id for incoming messages.
 		Core::event_category_id_t inboundCategoryID_;
 
-        // for the hack that login directly from here XXX Pointer to the network interface.
-		OpenSimProtocol::OpenSimProtocolModule *netInterface_;
-		ClientParameters myInfo_;
-
-		//bool bRunning_;
-
 		// first stab at having a py defined event handler
 		// now just one - eventually could have a list/dict of these?
+		/*
 		PyObject *pName, *pModule, *pDict, *pFunc;
-	    PyObject *pArgs, *pValue;
+	    PyObject *pArgs, *pValue;*/
+		Foundation::ScriptObject* chathandler;
 	};
 
 	/* API calls exposed to py. should be private but testing now here
