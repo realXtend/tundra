@@ -74,7 +74,8 @@ namespace PythonScript
 		//XXX hardcoded loading of the test chat event handler,
 		//the system for defining what to load and how they register to be designed
 		std::string error;
-		chathandler = engine_->LoadScript("chathandler", error);
+		chathandler = engine_->LoadScript("chathandler", error); //the module
+		chathandler = chathandler->GetObject("ChatHandler"); //instanciates a class in this module with the given name
 
         LogInfo("Module " + Name() + " initialized.");
     }
@@ -101,7 +102,7 @@ namespace PythonScript
             
             std::stringstream ss;
             ss << info->name << " received, " << Core::ToString(msg->GetDataSize()) << " bytes.";
-			LogInfo(ss.str());
+			//LogInfo(ss.str());
 
             switch(msgID)
 		    {
@@ -119,9 +120,17 @@ namespace PythonScript
 	            //WriteToChatWindow(ss.str());
 				//can readbuffer ever return null? should be checked if yes. XXX
 
-				/* reusing the PythonScriptObject made for comms */
-				std::string syntax = "";
-				Foundation::ScriptObject* ret = chathandler->CallMethod(message, syntax, NULL);
+				/* reusing the PythonScriptObject made for comms.
+				 * the previous method of doing pArgs and PyString_FromString certainly seems safer,
+				 * we must refactor to get this other solution to use those. */
+				char** args = new char*[2]; //is this 2 'cause the latter terminates?
+				char* buf1 = new char[1000];
+				strcpy(buf1, message.c_str());
+				args[0] = buf1;
+
+				std::string methodname = "onChat";
+				std::string paramtypes = "s";
+				Foundation::ScriptObject* ret = chathandler->CallMethod(methodname, paramtypes, args);
 
 				/* previous method of calling a function with an argument tuple
 	            pArgs = PyTuple_New(1); //takes a single argument
@@ -236,6 +245,36 @@ static PyObject* SendChat(PyObject *self, PyObject *args)
 	Py_RETURN_TRUE;
 }
 
+//now just gives the id back, was to test using a service - w.i.p. code
+static PyObject* GetEntity(PyObject *self, PyObject *args)
+{
+	unsigned int ent_id_int;
+	Core::entity_id_t ent_id;
+	Foundation::EntityPtr entity;
+
+	PyObject* ret;
+
+	if(!PyArg_ParseTuple(args, "i", &ent_id_int))
+		return NULL;
+
+	ent_id = (Core::entity_id_t) ent_id_int;
+
+	Foundation::Framework *framework_ = PythonScript::staticframework;
+	Foundation::SceneInterface* sceneService = framework_->GetService<Foundation::SceneInterface>(Foundation::Service::ST_SceneManager);
+
+	entity = sceneService->GetEntity(ent_id);
+
+	ret = PyInt_FromLong((int)ent_id);
+	return ret;
+    
+	/* just having the entity is not very interesting, so tried reading data from a prim, but didn't complete this yet
+	const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
+    RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
+        
+    //m->AddU32(prim->LocalId);
+    //m->AddBuffer(prim->ObjectName.size(), (uint8_t*)prim->ObjectName.c_str());}
+	*/
+}
 
 static PyObject* PyEventCallback(PyObject *self, PyObject *args){
 	std::cout << "PyEventCallback" << std::endl;
@@ -254,8 +293,13 @@ static PyObject* PyEventCallback(PyObject *self, PyObject *args){
 static PyMethodDef EmbMethods[] = {
 	{"sendChat", (PyCFunction)SendChat, METH_VARARGS,
 	"Send the given text as a chat message."},
+
+	{"getEntity", (PyCFunction)GetEntity, METH_VARARGS,
+	"Gets the entity with the given ID."},
+
 	{"pyEventCallback", (PyCFunction)PyEventCallback, METH_VARARGS,
 	"Handling callbacks from py scripts. Calling convension: with 2 strings"},
+
 	{NULL, NULL, 0, NULL}
 };
 
