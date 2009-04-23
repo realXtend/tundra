@@ -46,8 +46,9 @@ namespace Communication
 		void Initialize();
 		void PostInitialize();
 		void Uninitialize();
-
 		void Update();
+
+        void StartChat(const char* contact);
 
 		virtual void Callback(std::string aConfigName, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes);
 
@@ -97,7 +98,7 @@ namespace Communication
         ContactList lstContacts;
 
 		Glib::RefPtr<Gtk::ListStore> lstBuddiesTreeModel;
-        Glib::RefPtr<Gtk::ListStore> lstContactsTreeModel;
+        //Glib::RefPtr<Gtk::ListStore> lstContactsTreeModel;
 
 
 	protected:
@@ -111,10 +112,10 @@ namespace Communication
 			Gtk::TreeModelColumn<std::string> contact_;
 		};
 		ModelColumns columns_;
-		ModelColumns columns2_;
+		//ModelColumns columns2_;
 
 		int entryret_;
-		Glib::RefPtr<Gtk::TextBuffer> buddyBuffer_;
+		
 	
 		// Currently just 1 session
 		bool sessionUp_;

@@ -98,12 +98,15 @@ namespace Communication
 			return;
 
 		lstBuddiesTreeModel = Gtk::ListStore::create(columns_);
-        lstContactsTreeModel = Gtk::ListStore::create(columns2_);
-        lstContacts.set_model(lstContactsTreeModel);
-		lstContacts.append_column("ID", columns2_.id_);
-		lstContacts.append_column("Contact", columns2_.contact_);
+
+
+  //      lstContactsTreeModel = Gtk::ListStore::create(columns2_);
+  //      lstContacts.set_model(lstContactsTreeModel);
+		//lstContacts.append_column("ID", columns2_.id_);
+		//lstContacts.append_column("Contact", columns2_.contact_);
         lstContacts.set_size_request(219,82);
         fxdContainer->put(lstContacts, 27, 169);
+        lstContacts.SetModule(*this);
 
 		commUI_XML->get_widget("lstBuddies", lstBuddies);
 		lstBuddies->set_model(lstBuddiesTreeModel);
@@ -111,9 +114,6 @@ namespace Communication
 		lstBuddies->append_column("ID", columns_.id_);
 		lstBuddies->append_column("Contact", columns_.contact_);
 
-        Gtk::TreeModel::Row row = *(lstContactsTreeModel->append());
-        row[columns2_.id_] = "test";
-        row[columns2_.contact_] = "test";
 
 
 	    commUI_XML->connect_clicked("mi_connect", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuConnect));
@@ -206,22 +206,42 @@ namespace Communication
 		Glib::ustring str = entryBox->get_text();
 		LogInfo(str.c_str());
 		if(entryret_==1){
-			LogInfo("start chat window here");
+            StartChat(str.c_str());
 
-			// Fix any memory leaks here !!
+			//LogInfo("start chat window here");
 
-			char** args = new char*[2];
-			char* buf1 = new char[20];
-			strcpy(buf1,str.c_str());
-			args[0] = buf1;
+			//// Fix any memory leaks here !!
 
-			std::string str = "CStartChatSession";
-			std::string syntax = "s";
-			Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, args);
-            sessionUp_ = true;
-			this->session_ = Communication::ChatSessionUIPtr(new Communication::ChatSession(str.c_str(), imScriptObject));
+			//char** args = new char*[2];
+			//char* buf1 = new char[20];
+			//strcpy(buf1,str.c_str());
+			//args[0] = buf1;
+
+			//std::string str = "CStartChatSession";
+			//std::string syntax = "s";
+			//Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, args);
+   //         sessionUp_ = true;
+			//this->session_ = Communication::ChatSessionUIPtr(new Communication::ChatSession(str.c_str(), imScriptObject));
 		}
 	}
+
+    void CommunicationUIModule::StartChat(const char* contact)
+    {
+		LogInfo("start chat window here");
+
+		// Fix any memory leaks here !!
+
+		char** args = new char*[2];
+		char* buf1 = new char[20];
+		strcpy(buf1,contact);
+		args[0] = buf1;
+
+		std::string str = "CStartChatSession";
+		std::string syntax = "s";
+		Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, args);
+        sessionUp_ = true;
+		this->session_ = Communication::ChatSessionUIPtr(new Communication::ChatSession(contact, imScriptObject));        
+    }
 
 	void CommunicationUIModule::OnEntryDlgOk(){
 		entryret_ = 1;
@@ -314,12 +334,16 @@ namespace Communication
 
 		Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, args);
 		char* name = ret->ConvertToChar();
-        Gtk::TreeModel::Row row = *(lstBuddiesTreeModel->append());
+
+        //this->lstContacts.columns_
+        Gtk::TreeModel::Row row = *(this->lstContacts.lstContactsTreeModel->append());
+        //Gtk::TreeModel::Row row = *(lstContactsTreeModel->append());
+        //Gtk::TreeModel::Row row = *(lstBuddiesTreeModel->append());
 
         std::string id(contactID);
         std::string contact(name);
-        row[columns_.id_] = id;
-        row[columns_.contact_] = contact;
+        row[this->lstContacts.columns_.id_] = id;
+        row[this->lstContacts.columns_.contact_] = contact;
 		
 	}
 
