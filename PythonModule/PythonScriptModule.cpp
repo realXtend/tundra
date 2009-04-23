@@ -2,20 +2,16 @@
 
 #include "StableHeaders.h"
 #include "PythonScriptModule.h"
-//#include <Poco/ClassLibrary.h>
 //#include "Foundation.h"
 #include "ServiceManager.h"
 #include "ComponentRegistrarInterface.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "PythonEngine.h" //is this needed here?
 
-
-//testing receiving events, now from the net module 'cause nothing else sends yet
+#include "RexLogicModule.h" //now for SendChat, perhaps other stuff for the api will be here too?
+#include "OpenSimProtocolModule.h" //for handling net events
 #include "RexProtocolMsgIDs.h"
-#include "OpenSimProtocolModule.h" //XXX for login hack
 
-
-//#include <Python/Python.h>
 #include <Python.h>
 
 namespace PythonScript
@@ -64,11 +60,6 @@ namespace PythonScript
     // virtual
     void PythonScriptModule::Initialize()
     {
-        // for the hack that login directly from here XXX
-		/*
-		using namespace OpenSimProtocol;
-		netInterface_ = dynamic_cast<OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol));
-		*/
 		engine_ = PythonScript::PythonEnginePtr(new PythonScript::PythonEngine(framework_));
         engine_->Initialize();
 		
@@ -78,59 +69,24 @@ namespace PythonScript
 
 		//XXX hack to have a ref to framework for api funcs
 		PythonScript::staticframework = framework_;
-		PythonScript::initpymod();
+		PythonScript::initpymod(); //initializes the rexviewer module to be imported within py
 
-		//Py_InitModule("rexviewer", PythonScript::EmbMethods);
-		/*PyObject *rexmodule = PyImport_AddModule("rexviewer");
-		PyObject *chatfunc = PyMethod_New(&(PyCFunction)PythonScript::SendChat, NULL, NULL);
-		PyModule_AddObject(rexmodule, "sendChat", chatfunc);*/
+		//XXX hardcoded loading of the test chat event handler,
+		//the system for defining what to load and how they register to be designed
+		std::string error;
+		chathandler = engine_->LoadScript("chathandler", error);
 
         LogInfo("Module " + Name() + " initialized.");
-		//LogInfo("Py thinks 1 + 1 = " + Py_Eval("1 + 1"));
-		//RunString("print 'Py thinks 1 + 1 = %d' % (1 + 1)");
     }
 
     void PythonScriptModule::PostInitialize()
     {
-		/*
 		inboundCategoryID_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
         if (inboundCategoryID_ == 0)
             LogWarning("Unable to find event category for incoming OpenSimNetwork events!");
-
-		pName = PyString_FromString("chathandler");
-		//Error checking of pName left out
-
-		/* disabled nettestlogic so can't login via gui so copy-pasted the login procedure here
-		LogInfo("Py module tries direct logging in");
-		bool success = netInterface_->ConnectToRexServer("Python", "User",
-            "test", "localhost", 9000);
-            
-        if(success)
-        {
-            myInfo_ = netInterface_->GetClientParameters();
-                        
-			NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgUseCircuitCode);
-			assert(m);
-			m->AddU32(myInfo_.circuitCode);
-			m->AddUUID(myInfo_.sessionID);
-			m->AddUUID(myInfo_.agentID);
-			netInterface_->FinishMessageBuilding(m);
-
-	        m = netInterface_->StartMessageBuilding(RexNetMsgCompleteAgentMovement);
-			assert(m);
-			m->AddUUID(myInfo_.agentID);
-			m->AddUUID(myInfo_.sessionID);
-			m->AddU32(myInfo_.circuitCode);
-			netInterface_->FinishMessageBuilding(m);
-            
-            LogInfo("Connected to localhost.");
-        }
-        else
-            LogError("Connecting to localhost failed.");
-		*/
 	}
 
-    /*bool PythonScriptModule::HandleEvent(
+    bool PythonScriptModule::HandleEvent(
         Core::event_category_id_t category_id,
         Core::event_id_t event_id, 
         Foundation::EventDataInterface* data)
@@ -145,7 +101,7 @@ namespace PythonScript
             
             std::stringstream ss;
             ss << info->name << " received, " << Core::ToString(msg->GetDataSize()) << " bytes.";
-			//LogInfo(ss.str());
+			LogInfo(ss.str());
 
             switch(msgID)
 		    {
@@ -163,6 +119,11 @@ namespace PythonScript
 	            //WriteToChatWindow(ss.str());
 				//can readbuffer ever return null? should be checked if yes. XXX
 
+				/* reusing the PythonScriptObject made for comms */
+				std::string syntax = "";
+				Foundation::ScriptObject* ret = chathandler->CallMethod(message, syntax, NULL);
+
+				/* previous method of calling a function with an argument tuple
 	            pArgs = PyTuple_New(1); //takes a single argument
 				//pValue = PyInt_FromLong(1); //..which is now just int 1
 				pValue = PyString_FromString(message.c_str());
@@ -180,7 +141,7 @@ namespace PythonScript
 					Py_DECREF(pFunc);
 					PyErr_Print();
 					fprintf(stderr,"Call failed\n");
-				}
+				}*/
 
 	            break;
 		        }
@@ -188,7 +149,7 @@ namespace PythonScript
 		}
 
 		return false;
-	} */
+	}
 
     Console::CommandResult PythonScriptModule::ConsoleRunString(const Core::StringVector &params)
 	{
@@ -236,24 +197,9 @@ namespace PythonScript
     // virtual
     void PythonScriptModule::Update(Core::f64 frametime)
     {
-        //renderer_->Update();
-		//XXX
-		engine_->RunString("import time; time.sleep(0.01);"); //a hack to save cpu now. didn't seem to help .. some other thread runs in a tight loop?
+		//XXX remove when/as the core has the fps limitter
+		engine_->RunString("import time; time.sleep(0.01);"); //a hack to save cpu now.
     }
-
-	//stuff for api, copy-paste from nettestlogic, to be moved to logic
-	void PythonScriptModule::SendChatFromViewerPacket(const char *msg)
-	{
-		NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgChatFromViewer);
-		assert(m);
-		m->AddUUID(myInfo_.agentID);
-		m->AddUUID(myInfo_.sessionID);
-		m->AddBuffer(strlen(msg), (uint8_t*)msg);
-		m->AddU8(1);
-		m->AddS32(0);
-		netInterface_->FinishMessageBuilding(m);
-	}
-
 }
 
 using namespace PythonScript;
@@ -280,12 +226,12 @@ static PyObject* SendChat(PyObject *self, PyObject *args)
 	Foundation::Framework *framework_ = PythonScript::staticframework;
 	//todo weak_pointerize
 
-	//Foundation::ModuleWeakPtr
-    //PythonScriptModule *pyModule_ = dynamic_cast<PythonScriptModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_PythonScript));
+	//move decl to .h and getting to Initialize (see NetTEstLogicModule::Initialize)
+	//if this kind of usage, i.e. getting the logic module for the api, is to remain.
+	RexLogic::RexLogicModule *rexlogic_;
+	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
-	//pyModule_->SendChatFromViewerPacket(msg);
-	
-	//SendChatFromViewerPacket(msg);
+	rexlogic_->GetServerConnection()->SendChatFromViewerPacket(msg);
 
 	Py_RETURN_TRUE;
 }
