@@ -17,8 +17,12 @@ namespace RexLogic
     public:
         AvatarController(Foundation::Framework *framework, RexLogicModule *rexlogicmodule);
         virtual ~AvatarController();
-                
-        Core::Quaternion GetBodyRotation(){  return bodyrotation_; }
+        
+        //! get rotation of avatar's body        
+        Core::Quaternion GetBodyRotation();
+        //! set rotation of avatar's body
+        void SetBodyRotation(Core::Quaternion rotation);
+        //! get rotation of avatar's head
         Core::Quaternion GetHeadRotation(){  return headrotation_; }    
         
         void StartMovingForward();
@@ -70,17 +74,17 @@ namespace RexLogic
         //! camera max distance
         float camera_max_distance_; 
 
-        //! body rotation
-        Core::Quaternion bodyrotation_;
-
         //! head rotation
         Core::Quaternion headrotation_;
 
         //! relative yaw of the camera for one frame
         int yaw_;  
         
-        //! how much time has passed since last rotation movement update
-        float movementupdatetime_;      
+        //!  flag indicating if this avatar is waiting to send a network movement update
+        bool net_dirtymovement_;
+        
+        //! how much time has been waited for the network movement update
+        float net_movementupdatetime_;      
     };
 }
 
