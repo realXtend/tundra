@@ -16,7 +16,7 @@ namespace OpenSimProtocol
 {
 	OpenSimProtocolModule::OpenSimProtocolModule() :
     ModuleInterfaceImpl(Foundation::Module::MT_OpenSimProtocol),
-    bConnected_(false)
+    connected_(false)
     {
     }
     
@@ -60,7 +60,7 @@ namespace OpenSimProtocol
     // virtual 
     void OpenSimProtocolModule::Uninitialize()
     {		
-		if(bConnected_)
+		if(connected_)
 		    DisconnectFromRexServer();
         
         networkManager_->UnregisterNetworkListener(this);
@@ -80,7 +80,7 @@ namespace OpenSimProtocol
             loginWorker_.SetConnectionState(Connection::STATE_INIT_UDP);
         }
         
-        if (bConnected_)
+        if (connected_)
             networkManager_->ProcessMessages();
     }
     
@@ -100,13 +100,13 @@ namespace OpenSimProtocol
         eventManager_->SendEvent(networkEventOutCategory_, msg->GetMessageID(), &data);
     }
 
-    void OpenSimProtocolModule::ConnectToServer(
-				const std::string& first_name,
-				const std::string& last_name,
-				const std::string& password,
-				const std::string& address,
-				int port,
-				ConnectionThreadState *thread_state)
+    void OpenSimProtocolModule::LoginToServer(
+        const std::string& first_name,
+		const std::string& last_name,
+		const std::string& password,
+		const std::string& address,
+		int port,
+		ConnectionThreadState *thread_state)
      {   
 		std::string callMethod = "login_to_simulator";
 		loginWorker_.SetupXMLRPCLogin(first_name, last_name, password, address, boost::lexical_cast<std::string>(port), callMethod, thread_state);
@@ -115,16 +115,16 @@ namespace OpenSimProtocol
 		boost::thread(boost::ref(loginWorker_));
     }
     
-    bool OpenSimProtocolModule::ConnectUsingRexAuthentication(const std::string& first_name,
-			const std::string& last_name,
-			const std::string& password,
-			const std::string& address,
-			int port,
-			const std::string& auth_server_address, 
-			const std::string& auth_login,
-			ConnectionThreadState *thread_state)
+    bool OpenSimProtocolModule::LoginUsingRexAuthentication(
+        const std::string& first_name,
+		const std::string& last_name,
+		const std::string& password,
+		const std::string& address,
+		int port,
+		const std::string& auth_server_address, 
+		const std::string& auth_login,
+		ConnectionThreadState *thread_state)
 	{
-		
 		bool authentication = true;
 		std::string callMethod = "ClientAuthentication";
 		int pos = auth_server_address.find(":");
@@ -153,7 +153,7 @@ namespace OpenSimProtocol
 
     bool OpenSimProtocolModule::CreateUDPConnection(const char *address, int port)
 	{
-	    loginWorker_.SetConnectionState(Connection::STATE_INIT_UDP);
+        loginWorker_.SetConnectionState(Connection::STATE_INIT_UDP);
 	    
 	    bool udp_success = networkManager_->ConnectTo(address, port);
         if (!udp_success)
@@ -163,7 +163,7 @@ namespace OpenSimProtocol
         
         // Send event indicating a succesfull connection.
         eventManager_->SendEvent(networkStateEventCategory_, Events::EVENT_SERVER_CONNECTED, NULL);
-        bConnected_ = true;
+        connected_ = true;
         
         return true;	
 	}
@@ -171,7 +171,7 @@ namespace OpenSimProtocol
 	void OpenSimProtocolModule::DisconnectFromRexServer()
 	{
 	    networkManager_->Disconnect();
-	    bConnected_ = false;
+	    connected_ = false;
 	}
 
 	void OpenSimProtocolModule::DumpNetworkMessage(NetMsgID id, NetInMessage *msg)

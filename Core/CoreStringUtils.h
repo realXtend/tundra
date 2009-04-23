@@ -3,6 +3,8 @@
 #ifndef incl_Core_StringUtil_h
 #define incl_Core_StringUtil_h
 
+#include <iomanip>
+
 #include <Poco/LocalDateTime.h>
 
 namespace Core
@@ -25,26 +27,34 @@ namespace Core
     //! Get the current time as a string.
     static std::string GetLocalTimeString()
     {
-        Poco::LocalDateTime *currenttime = new Poco::LocalDateTime(); 
-        std::string timestring = ToString(currenttime->hour()) + ":";
-        timestring.append(ToString(currenttime->minute()) + ":");
-        timestring.append(ToString(currenttime->second()));
-        SAFE_DELETE(currenttime);
-        return timestring;
+        Poco::LocalDateTime *time = new Poco::LocalDateTime(); 
+        std::stringstream ss;
+        
+        ss << std::setw(2) << time->hour() << std::setfill('0') << ":" <<
+            std::setw(2) << time->minute() << std::setfill('0') << ":" <<
+            std::setw(2) << time->second() << std::setfill('0');
+            
+        SAFE_DELETE(time);
+        
+        return ss.str();
     }
     
     //! Get the current date and time as a string.
     static std::string GetLocalDateTimeString()
     {
-        Poco::LocalDateTime *currenttime = new Poco::LocalDateTime(); 
-        std::string timestring = ToString(currenttime->day()) + "/";
-        timestring.append(ToString(currenttime->month()) + "/");
-        timestring.append(ToString(currenttime->year()) + " ");
-        timestring.append(ToString(currenttime->hour()) + ":");
-        timestring.append(ToString(currenttime->minute()) + ":");
-        timestring.append(ToString(currenttime->second()));
-        SAFE_DELETE(currenttime);
-        return timestring;
+        Poco::LocalDateTime *time = new Poco::LocalDateTime();
+        std::stringstream ss;
+        
+        ss << std::setw(2) << time->day() << std::setfill('0') << "/" <<
+            std::setw(2) << time->month() << std::setfill('0') << "/" <<
+            std::setw(4) << time->year() << std::setfill('0') << " " <<
+            std::setw(2) << time->hour() << std::setfill('0') << ":" <<
+            std::setw(2) << time->minute() << std::setfill('0') << ":" <<
+            std::setw(2) << time->second() << std::setfill('0');
+        
+        SAFE_DELETE(time);
+        
+        return ss.str();
     }
 }
  

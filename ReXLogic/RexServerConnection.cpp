@@ -87,13 +87,13 @@ namespace RexLogic
 		if (auth_server_address != "") 
 		{
 			connection_type_ = AuthenticationConnection;
-			connect_result = netInterface_->ConnectUsingRexAuthentication(first_name, 
+			connect_result = netInterface_->LoginUsingRexAuthentication(first_name, 
 				last_name, password, serveraddress_noport, port,
 				auth_server_address, auth_login, &threadState_);
 		}
 
 		if (connection_type_ == DirectConnection)
-            netInterface_->ConnectToServer(first_name, last_name,password, serveraddress_noport, port, &threadState_);
+            netInterface_->LoginToServer(first_name, last_name,password, serveraddress_noport, port, &threadState_);
         
         // Save the server address and port for later use.
         serverAddress_ = serveraddress_noport;
@@ -160,9 +160,11 @@ namespace RexLogic
 	
         NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgUseCircuitCode);
         assert(m);
+        
         m->AddU32(myInfo_.circuitCode);
         m->AddUUID(myInfo_.sessionID);
         m->AddUUID(myInfo_.agentID);
+        
         netInterface_->FinishMessageBuilding(m);
 	}
 
@@ -173,9 +175,11 @@ namespace RexLogic
     
         NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgCompleteAgentMovement);
         assert(m);
+        
         m->AddUUID(myInfo_.agentID);
         m->AddUUID(myInfo_.sessionID);
         m->AddU32(myInfo_.circuitCode);
+        
         netInterface_->FinishMessageBuilding(m);
     }
     
@@ -186,6 +190,7 @@ namespace RexLogic
     
         NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgLogoutRequest);
         assert(m);
+        
         m->AddUUID(myInfo_.agentID);
         m->AddUUID(myInfo_.sessionID);
 
@@ -199,11 +204,13 @@ namespace RexLogic
     
         NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgChatFromViewer);
         assert(m);
+        
         m->AddUUID(myInfo_.agentID);
         m->AddUUID(myInfo_.sessionID);
         m->AddBuffer(text.length(), (uint8_t*)text.c_str());
         m->AddU8(1);
         m->AddS32(0);
+        
         netInterface_->FinishMessageBuilding(m);
 	}	
 	
@@ -216,6 +223,7 @@ namespace RexLogic
     
         NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgAgentUpdate);
         assert(m);
+        
         m->AddUUID(myInfo_.agentID);
         m->AddUUID(myInfo_.sessionID);
         m->AddQuaternion(Core::OgreToOpenSimQuaternion(bodyrot));
@@ -228,6 +236,7 @@ namespace RexLogic
         m->AddF32(fardist);
         m->AddU32(controlflags);
         m->AddU8(flags);
+        
         netInterface_->FinishMessageBuilding(m);
 	}
     
@@ -423,15 +432,17 @@ namespace RexLogic
         }
     }        
 
-    void RexServerConnection::SendRegionHandshakeReplyPacket(RexTypes::RexUUID agentid, RexTypes::RexUUID sessionid, uint32_t flags)
+    void RexServerConnection::SendRegionHandshakeReplyPacket(RexTypes::RexUUID agent_id, RexTypes::RexUUID session_id, uint32_t flags)
     {
         if (!connected_)
             return;    
 
-        NetOutMessage *msg = netInterface_->StartMessageBuilding(RexNetMsgRegionHandshakeReply);
-        msg->AddUUID(agentid);
-        msg->AddUUID(sessionid); 
-        msg->AddU32(flags);
-        netInterface_->FinishMessageBuilding(msg);
+        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgRegionHandshakeReply);
+        
+        m->AddUUID(agent_id);
+        m->AddUUID(session_id); 
+        m->AddU32(flags);
+        
+        netInterface_->FinishMessageBuilding(m);
     }
 }

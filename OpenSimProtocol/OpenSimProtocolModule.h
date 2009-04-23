@@ -43,11 +43,17 @@ namespace OpenSimProtocol
         /// Passes outbound network events to listeners. Used for stats/debugging.
         virtual void OnNetworkMessageSent(const NetOutMessage *msg);
         
-        /**
-		 * Logs in to a reX server without authentication procedure. Uses PerformXMLRPC() -function. 
-         *
-		 */
-		void ConnectToServer(
+		/**
+		 * Logs in to a reX server without the authentication procedure.
+		 * 
+		 * @param first_name is first part of given username. 
+		 * @param last_name is second part of given username.
+		 * @param address is world server ip-address (or dns-name?) does not contain port number.
+		 * @param port is a world server port (where connection is done). 
+		 * @return true if login was successfull false if not. 
+		 *
+		 * */
+		void LoginToServer(
 			const std::string& first_name,
 			const std::string& last_name,
 			const std::string& password,
@@ -56,25 +62,19 @@ namespace OpenSimProtocol
 		    ConnectionThreadState *thread_state);
 
 		/**
-		 * Connects to reX server through authentication procedure. Uses PerformXMLRPC() -function. 
+		 * Logs in to a reX server using the authentication procedure.
 		 * 
 		 * @param first_name is first part of given username. 
-		 * 
 		 * @param last_name is second part of given username.
-		 *
 		 * @param address is world server ip-address (or dns-name?) does not contain port number.
-		 *
 		 * @param port is a world server port (where connection is done). 
-		 *
 		 * @param auth_server_address is authentication server ip-address (contains port number). 
-		 *
 		 * @param auth_login is a login name which will be used to login authentication server. 
-		 * 
 		 * @return true if login was successfull false if not. 
 		 *
 		 * */
 
-		bool ConnectUsingRexAuthentication(const std::string& first_name,
+		bool LoginUsingRexAuthentication(const std::string& first_name,
 			const std::string& last_name,
 			const std::string& password,
 			const std::string& address,
@@ -106,7 +106,7 @@ namespace OpenSimProtocol
         const ClientParameters& GetClientParameters() const { return clientParameters_; }
         
         ///@return True if connection exists.
-        bool IsConnected() const { return bConnected_; }
+        bool IsConnected() const { return connected_; }
         
     private:
         /// Thread for the login process.
@@ -119,7 +119,7 @@ namespace OpenSimProtocol
 	    boost::shared_ptr<NetMessageManager> networkManager_;
 	    
 		/// State of the network connection.
-		bool bConnected_;
+		bool connected_;
         
         /// Event manager.
         Foundation::EventManagerPtr eventManager_;
@@ -133,7 +133,7 @@ namespace OpenSimProtocol
         /// Network event category for outbound messages.
         Core::event_category_id_t networkEventOutCategory_;		
         
-        /// Current connection client parameters
+        /// Current connection client parameters.
         ClientParameters clientParameters_;
     };
 }
