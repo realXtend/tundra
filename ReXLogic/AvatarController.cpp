@@ -15,7 +15,6 @@ namespace RexLogic
         framework_ = framework;
         rexlogicmodule_ = rexlogicmodule;
 
-        bodyrotation_ = Core::Quaternion(0,0,0,1);
         headrotation_ = Core::Quaternion(0,0,0,1);
         controlflags_ = 0;
         
@@ -25,7 +24,8 @@ namespace RexLogic
         cameraoffset_ = RexTypes::Vector3(0,1.8f,0);
         
         yaw_ = 0.0f;
-        movementupdatetime_ = 0.0f;
+        net_movementupdatetime_ = 0.0f;
+        net_dirtymovement_ = false;
     }
 
     AvatarController::~AvatarController()
@@ -38,7 +38,7 @@ namespace RexLogic
     {
         avatarentity_ = avatar;
     }
-    
+
     void AvatarController::StartMovingForward()
     {
         controlflags_ |= RexTypes::AGENT_CONTROL_AT_POS;
@@ -118,18 +118,39 @@ namespace RexLogic
         SendMovementToServer();
     }
 
+    Core::Quaternion AvatarController::GetBodyRotation()
+    {
+        if(avatarentity_)
+        {
+            OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent("EC_OgrePlaceable").get());
+            return ogreplaceable.GetOrientation();        
+        }
+        else
+            return Core::Quaternion(0,0,0,1);
+    }
+
+    void AvatarController::SetBodyRotation(Core::Quaternion rotation)
+    {
+        if(avatarentity_)
+        {
+            OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent("EC_OgrePlaceable").get());
+            ogreplaceable.SetOrientation(rotation);
+            net_dirtymovement_ = true;         
+        }
+    }
+
+
     void AvatarController::SendMovementToServer()
     {
         // 0 = walk, 1 = mouselook, 2 = type
         uint8_t flags = 0;
         
-        Core::Quaternion bodyrot;
-        Core::Quaternion headrot;
-        
+        Core::Quaternion bodyrot = Core::Quaternion(0,0,0,1);
+        Core::Quaternion headrot = Core::Quaternion(0,0,0,1);
+
         if(avatarentity_)
         {
-            OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent("EC_OgrePlaceable").get());
-            bodyrot = ogreplaceable.GetOrientation();
+            bodyrot = GetBodyRotation();
             headrot = bodyrot;
         }
         else
@@ -163,16 +184,7 @@ namespace RexLogic
             Core::Quaternion rotchange;
             rotchange.fromAngleAxis((yaw_*frametime*0.5f),RexTypes::Vector3(0,1,0)); 
             Core::Quaternion newrot = rotchange * ogreplaceable.GetOrientation();
-            newrot.normalize();
-            ogreplaceable.SetOrientation(newrot);
-            
-            // Send max 20 updates per second for rotation changes
-            movementupdatetime_ += (float)frametime;
-            if(movementupdatetime_ > 0.05f)
-            {
-                SendMovementToServer();
-                movementupdatetime_ = 0.0f;
-            }
+            SetBodyRotation(newrot.normalize());
         }
 
         // update camera position
@@ -184,6 +196,19 @@ namespace RexLogic
         RexTypes::Vector3 lookat = ogreplaceable.GetPosition();
         lookat += (ogreplaceable.GetOrientation() * cameraoffset_);
         camera->lookAt(lookat.x,lookat.y,lookat.z);
+        
+        // send movement update to server if necessary
+        if(net_dirtymovement_)
+        {
+            // send max 20 updates per second
+            net_movementupdatetime_ += (float)frametime;
+            if(net_movementupdatetime_ > 0.05f)
+            {
+                SendMovementToServer();
+                net_movementupdatetime_ = 0.0f;
+                net_dirtymovement_ = false;
+            }        
+        }        
     }
     
     void AvatarController::HandleServerObjectUpdate(RexTypes::Vector3 position, Core::Quaternion rotation)
@@ -191,9 +216,9 @@ namespace RexLogic
         if(!avatarentity_)
             return;
 
-        // Client is authorative over own avatar rotation for now
+        // client is authorative over own avatar rotation for now
             
-        // Set position according to the value from server
+        // set position according to the value from server
         OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent("EC_OgrePlaceable").get());
         ogreplaceable.SetPosition(position);            
     }    
