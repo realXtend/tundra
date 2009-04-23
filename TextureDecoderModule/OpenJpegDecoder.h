@@ -67,6 +67,9 @@ namespace TextureDecoder
          */
         bool GetResult(DecodeResult& result);  
 
+        //! stops the decode thread
+        void Stop() { running_ = false; }
+
     private:
         //! perform decode, runs in the decode thread
         /*! \param request decode request to serve
@@ -84,6 +87,9 @@ namespace TextureDecoder
 
         //! result queue mutex
         Core::Mutex result_mutex_;
+
+        //! whether should keep running
+        volatile bool running_;
     };
 }
 #endif

@@ -30,6 +30,8 @@ namespace TextureDecoder
     
     TextureService::~TextureService()
     {
+        decoder_.Stop();
+        thread_.join();
     }
 
     void TextureService::RequestTexture(const std::string& asset_id)
