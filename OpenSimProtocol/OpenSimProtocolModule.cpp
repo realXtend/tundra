@@ -142,11 +142,20 @@ namespace OpenSimProtocol
             return false;
 		}
         
+        // First XML-RPC query for receiving session hash, grid url and avatar storage url.
         loginWorker_.SetupXMLRPCLogin(first_name, last_name, password, address, boost::lexical_cast<std::string>(port), callMethod,
             thread_state, auth_login, auth_address, auth_port, authentication);
         
         // Start the thread.
 		boost::thread(boost::ref(loginWorker_));
+        
+        // Second XML-RPC query for receiving session hash, grid url and avatar storage url.
+        /*callMethod = "login_to_server";
+        loginWorker_.SetupXMLRPCLogin(first_name, last_name, password, address, boost::lexical_cast<std::string>(port), callMethod,
+            thread_state, auth_login, auth_address, auth_port, authentication);
+
+        // Start the thread.
+		boost::thread(boost::ref(loginWorker_));*/
 
 		return true;
 	}
