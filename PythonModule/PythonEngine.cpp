@@ -145,7 +145,7 @@ namespace PythonScript
 			std::map<std::string, StdFunctionVectorPtr>::iterator iter = methods_.find(key);
 			if(iter==methods_.end()){
 				//PythonScript::PythonModule::LogInfo("key not found, create new vector");
-				std::cout << "key not found, create new vector" << std::endl;
+				//std::cout << "key not found, create new vector" << std::endl;
 				PythonScript::PythonEnginePtr(new PythonScript::PythonEngine(framework_));
 				methods_[key] = PythonScript::StdFunctionVectorPtr(new std::vector<void(*)(char*)>());
 				methods_[key]->push_back(f);
@@ -154,19 +154,20 @@ namespace PythonScript
 				//methods_[iter]->push_back(f);
 			}
 		} catch(...){
-			//PythonModule::LogInfo("Failed to add callback");
-			std::cout << "Failed to add callback" << std::endl;
+			PythonScriptModule::LogInfo("Failed to add callback");
+			//std::cout << "Failed to add callback" << std::endl;
 		}
-
-
 	}
 
 	void PythonEngine::NotifyScriptEvent(const std::string& key, const std::string& message)
 	{
-		std::cout << "NotifyScriptEvent" << std::endl;
+		//std::cout << "NotifyScriptEvent" << std::endl;
 		try{
 			std::map<std::string, StdFunctionVectorPtr>::iterator iter = methods_.find(key);
-			if(iter==methods_.end()){std::cout << "no such event declared: " << key << std::endl;} else {
+			if(iter==methods_.end()){
+                PythonScriptModule::LogInfo("no such event declared:");
+                PythonScriptModule::LogInfo(key);
+            } else {
 				StdFunctionVectorPtr vect = iter->second;
 				std::vector<void(*)(char*)>::iterator f_iter;
 				char* m = new char[message.size()+1];
@@ -177,7 +178,7 @@ namespace PythonScript
 			}
 		} catch(...){
 			//PythonModule::LogInfo("Failed to notify");
-			std::cout << "Failed to notify" << std::endl;
+            PythonScriptModule::LogInfo("Failed to notify");
 		}
 	}
 

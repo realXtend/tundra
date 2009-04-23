@@ -9,7 +9,7 @@
 
 #include "PythonScriptObject.h"
 
-std::map<std::string, void(*)(char*)> methods2;
+//std::map<std::string, void(*)(char*)> methods2;
 
 //static PyObject* ScriptCallbackMethod(PyObject *self, PyObject *args)
 //{
@@ -36,7 +36,7 @@ std::map<std::string, void(*)(char*)> methods2;
 
 namespace PythonScript
 {
-	std::map<std::string, void(*)(char*)> PythonScriptObject::methods;	
+	//std::map<std::string, void(*)(char*)> PythonScriptObject::methods;	
 	
 
 

@@ -7,6 +7,7 @@
 #include "ChatSession.h"
 #include "ConfigureDlg.h"
 #include "ModuleInterface.h"
+#include "ContactList.h"
 //#include "PythonScriptModule.h"
 
 
@@ -64,6 +65,7 @@ namespace Communication
 		static void channelOpened(char*);
 		static void channelClosed(char*);
 		static void messagReceived(char*);
+		static void friendReceived(char* t);
 
 		void setOnlineStatus(char* status);
 
@@ -74,9 +76,13 @@ namespace Communication
 		void OnAccountMenuConnect();
 		void OnAccountMenuDisconnect();
 		void OnDirectChatMenuStartChat();
+        void OnContactListClicked();
 
 		void OnEntryDlgOk();
 		void OnEntryDlgCancel();
+
+		void addFriendItem(char *);
+
 
 		Glib::RefPtr<Gnome::Glade::Xml> commUI_XML;
 
@@ -85,7 +91,30 @@ namespace Communication
 		Gtk::Window *dlgAccount;
 		Gtk::ActionGroup *actionGroup;
 		Gtk::Dialog* dlgEntry;
+		Gtk::TreeView* lstBuddies;
+        Gtk::Menu* menuContactList;
+        Gtk::Fixed* fxdContainer;
+        ContactList lstContacts;
+
+		Glib::RefPtr<Gtk::ListStore> lstBuddiesTreeModel;
+        Glib::RefPtr<Gtk::ListStore> lstContactsTreeModel;
+
+
+	protected:
+		//inner class For buddy list treeview:
+		class ModelColumns : public Gtk::TreeModel::ColumnRecord
+		{
+		public:
+			ModelColumns(){ add(id_); add(contact_);}
+
+			Gtk::TreeModelColumn<std::string> id_;
+			Gtk::TreeModelColumn<std::string> contact_;
+		};
+		ModelColumns columns_;
+		ModelColumns columns2_;
+
 		int entryret_;
+		Glib::RefPtr<Gtk::TextBuffer> buddyBuffer_;
 	
 		// Currently just 1 session
 		bool sessionUp_;
@@ -105,6 +134,8 @@ namespace Communication
 		// Pointer to ui instance (needed for accessing from static methods, which are needed for event passsing)
 		static CommunicationUIModule* instance_;
 		//Foundation::CommunicationUIManagerPtr CommunicationUI_manager_;
+
+		std::map<std::string, std::string> contactList_;
 	};
 }
 
