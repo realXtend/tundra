@@ -20,6 +20,7 @@ namespace Foundation
 namespace RexLogic
 {
     class RexLogicModule;
+	class EC_OpenSimPrim;
 }
 
 namespace PythonScript
@@ -62,9 +63,6 @@ namespace PythonScript
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_PythonScript;
-
-		//for api test XXX
-		void SendChatFromViewerPacket(const char *msg);
 
 		//Foundation::Framework *GetFramework() { return framework_; }
 
