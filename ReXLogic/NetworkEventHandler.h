@@ -42,24 +42,24 @@ namespace RexLogic
         bool HandleRexGM_RexAppearance(OpenSimProtocol::NetworkEventInboundData* data);
 
         //! @return The entity corresponding to given scene entityid, or null if not found. 
-        //!         This entity is guaranteed to have an existing EC_OpenSimPrim component. \todo Actually force this guarantee.
+        //!         This entity is guaranteed to have an existing EC_OpenSimPrim component.
         Foundation::EntityPtr GetPrimEntity(Core::entity_id_t entityid);
+        Foundation::EntityPtr GetPrimEntity(const RexUUID &fullid);
+
         //! @return The entity corresponding to given id AND uuid. This entity is guaranteed to have an existing EC_OpenSimPrim component.
         //!         Does not return null. If the entity doesn't exist, an entity with the given entityid and fullid is created and returned.
         Foundation::EntityPtr GetOrCreatePrimEntity(Core::entity_id_t entityid, const RexUUID &fullid);
-        //! @return The entity corresponding to given id. This entity is guaranteed to have an existing EC_OpenSimPrim component.
-        //!         Does not return null. If the entity doesn't exist, an entity with the given fullid is created and returned.
-        Foundation::EntityPtr GetPrimEntity(const RexUUID &fullid);
-
         Foundation::EntityPtr CreateNewPrimEntity(Core::entity_id_t entityid);
 
+        //! @return The entity corresponding to given scene entityid, or null if not found. 
+        //!         This entity is guaranteed to have an existing EC_OpenSimAvatar component.
+        Foundation::EntityPtr GetAvatarEntity(Core::entity_id_t entityid);
+        Foundation::EntityPtr GetAvatarEntity(const RexUUID &fullid); 
+
+        //! @return The entity corresponding to given id AND uuid. This entity is guaranteed to have an existing EC_OpenSimAvatar component.
+        //!         Does not return null. If the entity doesn't exist, an entity with the given entityid and fullid is created and returned.
         Foundation::EntityPtr GetOrCreateAvatarEntity(Core::entity_id_t entityid, const RexUUID &fullid);
         Foundation::EntityPtr CreateNewAvatarEntity(Core::entity_id_t entityid);
-
-        //! @return The entity corresponding to given scene entityid, or null if not found. 
-        //!         This entity is guaranteed to have an existing EC_OpenSimAvatar component. \todo Actually force this guarantee.
-        Foundation::EntityPtr GetAvatarEntity(Core::entity_id_t entityid);
-        Foundation::EntityPtr GetAvatarEntity(const RexUUID &fullid);        
 
         //! Creates an OBB for debug visualization of the extents of the given scene object.
         void DebugCreateOgreBoundingBox(const Foundation::ComponentInterfacePtr ogrePlaceable, const std::string &materialName);

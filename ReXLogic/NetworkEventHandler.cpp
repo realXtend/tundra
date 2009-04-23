@@ -174,8 +174,10 @@ namespace RexLogic
 
         Foundation::EntityPtr entity = scene->GetEntity(entityid);
 
-        ///\todo Check that the entity has a prim component, if not, add it to the entity. 
-        return entity;
+        if(entity && entity->GetComponent("EC_OpenSimPrim"))
+            return entity;
+        else
+            return Foundation::EntityPtr();            
     }
   
     Foundation::EntityPtr NetworkEventHandler::GetOrCreatePrimEntity(Core::entity_id_t entityid, const RexUUID &fullid)
@@ -288,8 +290,10 @@ namespace RexLogic
 
         Foundation::EntityPtr entity = scene->GetEntity(entityid);
 
-        ///\todo Check that the entity has a avatar component, if not, add it to the entity. 
-        return entity;
+        if(entity && entity->GetComponent("EC_OpenSimAvatar"))
+            return entity;
+        else
+            return Foundation::EntityPtr();
     }
 
     Foundation::EntityPtr NetworkEventHandler::GetAvatarEntity(const RexUUID &entityuuid)
@@ -603,7 +607,14 @@ namespace RexLogic
                 position = Core::OpenSimToOgreCoordinateAxes(position);
                 i += sizeof(Core::Vector3df);
                 
-                //! \todo read velocity
+                // velocity
+                uint16_t *vel = reinterpret_cast<uint16_t*>((uint16_t*)&bytes[i]);
+                Core::Vector3df velocity;
+                velocity.x = 128.0f * ((vel[0] / 32768.0f) - 1.0f);
+                velocity.y = 128.0f * ((vel[1] / 32768.0f) - 1.0f);
+                velocity.z = 128.0f * ((vel[2] / 32768.0f) - 1.0f);                                
+                velocity = Core::OpenSimToOgreCoordinateAxes(velocity);
+                /// \todo tucofixme what to do with velocity?
                 i += 6;
                 
                 // rotation
