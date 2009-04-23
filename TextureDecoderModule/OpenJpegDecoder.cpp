@@ -43,7 +43,7 @@
 
 namespace TextureDecoder
 {
-    OpenJpegDecoder::OpenJpegDecoder()
+    OpenJpegDecoder::OpenJpegDecoder() : running_(true)
     {
     }
 
@@ -53,7 +53,7 @@ namespace TextureDecoder
 
     void OpenJpegDecoder::operator ()()
     {
-        while (true)
+        while (running_)
         {
             boost::this_thread::interruption_point();
 
