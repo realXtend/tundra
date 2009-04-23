@@ -12,6 +12,8 @@
 #include "OpenSimProtocolModule.h" //for handling net events
 #include "RexProtocolMsgIDs.h"
 
+#include "EC_OpenSimPrim.h"
+
 #include <Python.h>
 
 namespace PythonScript
@@ -199,6 +201,8 @@ namespace PythonScript
     // virtual 
     void PythonScriptModule::Uninitialize()
     {        
+        framework_->GetServiceManager()->UnregisterService(engine_.get());
+
 		engine_->Uninitialize();
         LogInfo("Module " + Name() + " uninitialized.");
     }
@@ -255,25 +259,31 @@ static PyObject* GetEntity(PyObject *self, PyObject *args)
 	PyObject* ret;
 
 	if(!PyArg_ParseTuple(args, "i", &ent_id_int))
-		return NULL;
+		return NULL; //XXX report ArgumentException error
 
 	ent_id = (Core::entity_id_t) ent_id_int;
 
 	Foundation::Framework *framework_ = PythonScript::staticframework;
-	Foundation::SceneInterface* sceneService = framework_->GetService<Foundation::SceneInterface>(Foundation::Service::ST_SceneManager);
 
-	entity = sceneService->GetEntity(ent_id);
+	Foundation::SceneManagerServiceInterface *sceneManagerService = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+	//Foundation::SceneInterface *sceneService;  //= framework_->GetService<Foundation::SceneInterface>(Foundation::Service::ST_SceneManager);
+	//hm there are multiple scenes so that can not be used directly */
 
-	ret = PyInt_FromLong((int)ent_id);
-	return ret;
-    
-	/* just having the entity is not very interesting, so tried reading data from a prim, but didn't complete this yet
-	const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
-    RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
-        
-    //m->AddU32(prim->LocalId);
-    //m->AddBuffer(prim->ObjectName.size(), (uint8_t*)prim->ObjectName.c_str());}
-	*/
+	const Foundation::ScenePtr &scene = sceneManagerService->GetScene("World"); //XXX hardcoded scene name, like in debugstats now
+
+	entity = scene->GetEntity(ent_id);
+	if (entity.get() != 0) //same that scene->HasEntity does, i.e. it first does GetEntity too, so not calling HasEntity here to not do GetEntity twice.
+	{
+		//just having the entity is not very interesting, so reading data from a prim
+		const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
+		RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
+	        
+		//m->AddU32(prim->LocalId);
+		std::string retstr = "local id:" + prim->FullId.ToString() + "- prim name: " + prim->ObjectName;
+		return PyString_FromString(retstr.c_str());
+	}
+
+	Py_RETURN_FALSE; //XXX TODO: raise ValueError
 }
 
 static PyObject* PyEventCallback(PyObject *self, PyObject *args){
