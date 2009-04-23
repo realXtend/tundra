@@ -524,10 +524,10 @@ namespace RexLogic
         data->message->SkipToNextVariable(); // RegionFlags U32
         data->message->SkipToNextVariable(); // SimAccess U8
 
-        std::string simname = data->message->ReadString();
-        rexlogicmodule_->GetServerConnection()->simname_ = simname;
+        std::string sim_name = data->message->ReadString();
+        rexlogicmodule_->GetServerConnection()->simName_ = sim_name;
         
-        RexLogicModule::LogInfo("Joined to the sim \"" + simname + "\".");
+        RexLogicModule::LogInfo("Joined to the sim \"" + sim_name + "\".");
         
         // Create the "World" scene.
 

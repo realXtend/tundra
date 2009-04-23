@@ -92,10 +92,10 @@ namespace RexLogic
         void SendObjectDescriptionPacket(std::vector<Foundation::EntityPtr> entity_ptr_list);
 
         /// Sends handshake reply packet
-        void SendRegionHandshakeReplyPacket(RexTypes::RexUUID agentid, RexTypes::RexUUID sessionid, uint32_t flags);
+        void SendRegionHandshakeReplyPacket(RexTypes::RexUUID agent_id, RexTypes::RexUUID session_id, uint32_t flags);
                         
         ///@return Name of the sim we're connected to.
-        std::string GetSimName() { return simname_; }
+        std::string GetSimName() { return simName_; }
         
         ///@return A structure of connection spesific information, e.g. AgentID and SessiondID.
         OpenSimProtocol::ClientParameters GetInfo() const { return myInfo_; }
@@ -122,7 +122,7 @@ namespace RexLogic
 		int serverPort_;		
 		
         /// Name of the sim we're connected.
-        std::string simname_;		
+        std::string simName_;		
         
         /// Is client connected to a server.
         bool connected_;

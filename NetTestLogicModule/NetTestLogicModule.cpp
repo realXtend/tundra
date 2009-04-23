@@ -169,12 +169,11 @@ namespace NetTest
 				    event_data->message->SkipToNextVariable(); // SimAccess U8
 				    size_t bytesRead = 0;
 				    simName_ = event_data->message->ReadString();
-    				
-				    LogInfo("Joined to the sim \"" + simName_ + "\".");
-    				
+
 				    std::string title = "Logged in to ";
 				    title.append(simName_);
                     netTestWindow->set_title(title);
+
     			    break;
 			    }
 		    case RexNetMsgChatFromSimulator:
@@ -338,9 +337,6 @@ namespace NetTest
     
     void NetTestLogicModule::OnClickConnect()
     {
-///ALI KORJAA        if(rexlogic_->GetServerConnection()->ConnectToServer(entry_username_->get_text(), entry_password->get_text(), entry_server_->get_text()))
-///        {
-
         // Initialize UI widgets.
         Gtk::Entry *entry_password = 0;
 		loginControls->get_widget("entry_password", entry_password);
@@ -461,7 +457,7 @@ namespace NetTest
 
         //Fill the TreeView's model.
         Gtk::TreeModel::Row log_row = *(logModel->append());
-        log_row[logModelColumns.colTime] = (Glib::ustring)Core::GetLocalTimeString();
+        log_row[logModelColumns.colTime] = Core::GetLocalTimeString();
         if(inbound)
             log_row[logModelColumns.colInOut] = "In";
         else
