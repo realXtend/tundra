@@ -87,7 +87,7 @@ namespace Scene
 
     void Generic::DestroyEntity(Core::entity_id_t id)
     {
-        EntityMap::const_iterator it = entities_.find(id);
+        EntityMap::iterator it = entities_.find(id);
         if (it != entities_.end())    
         {
             Foundation::EntityPtr del_entity = it->second;    

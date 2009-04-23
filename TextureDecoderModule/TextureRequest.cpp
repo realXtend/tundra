@@ -5,6 +5,7 @@ namespace TextureDecoder
 {
     TextureRequest::TextureRequest() :
         requested_(false),
+        decode_requested_(false),
         size_(0),
         received_(0),
         width_(0),
@@ -15,9 +16,10 @@ namespace TextureDecoder
     {
     }
     
-    TextureRequest::TextureRequest(const std::string& asset_id) : 
-        asset_id_(asset_id),
+    TextureRequest::TextureRequest(const std::string& id) : 
+        id_(id),
         requested_(false),
+        decode_requested_(false),
         size_(0),
         received_(0),
         width_(0),

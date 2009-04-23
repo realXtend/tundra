@@ -5,7 +5,7 @@
 
 namespace TextureDecoder
 {
-    //! an ongoing texture request, used internally by Decoder.
+    //! an ongoing texture request, used internally by TextureService.
     class TextureRequest
     {
     public:
@@ -13,13 +13,18 @@ namespace TextureDecoder
         TextureRequest();
         
         //! constructor
-        TextureRequest(const std::string& asset_id);
+        /*! \param id asset id
+         */
+        TextureRequest(const std::string& id);
         
         //! destructor
         ~TextureRequest();
 
         //! sets request status
         void SetRequested(bool requested) { requested_ = requested; }
+
+        //! sets decode request status
+        void SetDecodeRequested(bool requested) { decode_requested_ = requested; }
 
         //! updates size & received count
         /*! \param size total size of asset (from asset service)
@@ -54,10 +59,13 @@ namespace TextureDecoder
         Core::uint EstimateDataSize(int level);
 
         //! returns asset id
-        const std::string& GetAssetId() { return asset_id_; }
+        const std::string& GetId() { return id_; }
 
         //! returns request status
         bool IsRequested() { return requested_; }
+
+        //! returns decode request status
+        bool IsDecodeRequested() { return decode_requested_; }
 
         //! returns total data size, 0 if unknown
         Core::uint GetSize() { return size_; }
@@ -85,10 +93,13 @@ namespace TextureDecoder
 
     private:
         //! asset on which this request is based
-        std::string asset_id_;
+        std::string id_;
 
         //! whether asset request has been queued
         bool requested_;
+
+        //! whether decode request has been queued
+        bool decode_requested_;
 
         //! total data size, 0 if unknown
         Core::uint size_;

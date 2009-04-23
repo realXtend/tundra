@@ -5,6 +5,7 @@
 
 #include "TextureRequest.h"
 #include "TextureServiceInterface.h"
+#include "OpenJpegDecoder.h"
 
 namespace Foundation
 {
@@ -14,15 +15,15 @@ namespace Foundation
 
 namespace TextureDecoder
 {
-    //! texture decoder worker
-    class Decoder : public Foundation::TextureServiceInterface
+    //! texture decoder service interface
+    class TextureService : public Foundation::TextureServiceInterface
     {
     public:
         //! constructor
-        Decoder(Foundation::Framework* framework);
+        TextureService(Foundation::Framework* framework);
         
         //! destructor
-        ~Decoder();
+        ~TextureService();
         
         //! updates texture requests
         void Update(Core::f64 frametime);
@@ -34,13 +35,15 @@ namespace TextureDecoder
         
     private:
         //! updates a texture request
-        /*! \return true if highest quality level has been decoded and the request can be erased
+        /*! queues decode requests to the decode thread as necessary
          */
-        bool UpdateRequest(TextureRequest& request, Foundation::AssetServiceInterface* asset_service);
+        void UpdateRequest(TextureRequest& request, Foundation::AssetServiceInterface* asset_service);
         
-        //! decodes next level of a texture request, as enough data has been received
-        bool DecodeNextLevel(TextureRequest& request, Foundation::AssetServiceInterface* asset_service);
-        
+        //! processes a decode result from the decode thread
+        /*! \return true if texture request has reached maximum quality level and can be removed
+         */
+        bool UpdateRequestWithResult(TextureRequest& request, DecodeResult& result);
+
         typedef std::map<std::string, TextureRequest> TextureRequestMap;
         
         //! framework we belong to
@@ -51,6 +54,13 @@ namespace TextureDecoder
 
         //! ongoing texture requests
         TextureRequestMap requests_;
+
+        //! thread for actual decoding work
+        Core::Thread thread_;
+
+        //! openjpeg decoder that's run in a thread
+        OpenJpegDecoder decoder_;
+        
     };
 }
 
