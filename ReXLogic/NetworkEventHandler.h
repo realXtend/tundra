@@ -41,6 +41,11 @@ namespace RexLogic
         bool HandleRexGM_RexPrimData(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleRexGM_RexAppearance(OpenSimProtocol::NetworkEventInboundData* data);
 
+        //! Handler functions for terseobjectupdates
+        void HandleTerseObjectUpdate_30bytes(const uint8_t* bytes);
+        void HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes);
+        void HandleTerseObjectUpdateForAvatar_60bytes(const uint8_t* bytes);
+
         //! @return The entity corresponding to given scene entityid, or null if not found. 
         //!         This entity is guaranteed to have an existing EC_OpenSimPrim component.
         Foundation::EntityPtr GetPrimEntity(Core::entity_id_t entityid);
@@ -65,6 +70,12 @@ namespace RexLogic
         void DebugCreateOgreBoundingBox(const Foundation::ComponentInterfacePtr ogrePlaceable, const std::string &materialName);
 
         void DebugCreateTerrainVisData(const DecodedTerrainPatch &heightData, int patchSize);
+
+        //! Helper functions for getting values from terseupdate packets
+        Core::Quaternion GetProcessedQuaternion(const uint8_t* bytes);
+        Core::Vector3df GetProcessedScaledVectorFromUint16(const uint8_t* bytes, float scale);
+        Core::Vector3df GetProcessedVectorFromUint16(const uint8_t* bytes);
+        Core::Vector3df GetProcessedVector(const uint8_t* bytes);
 
         Foundation::Framework *framework_;
         OpenSimProtocol::OpenSimProtocolModule *netInterface_;
