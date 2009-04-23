@@ -100,17 +100,18 @@ namespace Input
 	    ss << "OIS Version: " << (v>>16 ) << "." << ((v>>8) & 0x000000FF) << "." << (v & 0x000000FF);
         LogInfo(ss.str());
 
-		LogInfo("Release Name: " + input_manager_->getVersionName());
-		LogInfo("Manager: " + input_manager_->inputSystemName());
+#if defined OIS_WIN32_PLATFORM
+        LogInfo("Release Name: " + input_manager_->getVersionName());
+        LogInfo("Manager: " + input_manager_->inputSystemName());
         LogInfo("Total Keyboards: " + Core::ToString(input_manager_->getNumberOfDevices(OIS::OISKeyboard)));
-		LogInfo("Total Mice: " + Core::ToString(input_manager_->getNumberOfDevices(OIS::OISMouse)));
-		LogInfo("Total JoySticks: " + Core::ToString(input_manager_->getNumberOfDevices(OIS::OISJoyStick)));
+        LogInfo("Total Mice: " + Core::ToString(input_manager_->getNumberOfDevices(OIS::OISMouse)));
+        LogInfo("Total JoySticks: " + Core::ToString(input_manager_->getNumberOfDevices(OIS::OISJoyStick)));
         
-
-	    //List all devices
+        //List all devices
         OIS::DeviceList list = input_manager_->listFreeDevices();
         for( OIS::DeviceList::iterator i = list.begin(); i != list.end(); ++i )
-            LogInfo("\tDevice: " + std::string(DeviceType[i->first]) + " Vendor: " + i->second);
+        LogInfo("\tDevice: " + std::string(DeviceType[i->first]) + " Vendor: " + i->second);
+#endif
 
         key_mapping_ = MapperPtr(new Mapper(this));
 
