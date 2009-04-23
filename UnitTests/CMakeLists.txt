@@ -22,6 +22,8 @@ include_directories (
 INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_OIS()
+# This is stupid, but seems to be needed for MSVC because linking to SupportModules pulls in OgreMain
+INCLUDE_OGRE()
 
 add_definitions (-DMODULE_EXPORTS)
 
