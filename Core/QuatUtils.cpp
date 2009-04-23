@@ -47,4 +47,17 @@ namespace Core
 
         return Vector3D<float>(x, y, z);
     }
+    
+    Quaternion UnpackQuaternionFromU16_4(u16 x,u16 y,u16 z,u16 w)
+    {
+        if(x == 32768 && y == 32768 && z == 32768 && w == 32768)
+            w = 65535;               
+        
+        Core::Quaternion rotation;
+        rotation.x = (x / 32768.0f) - 1.0f;
+        rotation.y = (y / 32768.0f) - 1.0f;
+        rotation.z = (z / 32768.0f) - 1.0f;
+        rotation.w = (w / 32768.0f) - 1.0f;
+        return rotation;
+    }
 }

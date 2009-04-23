@@ -559,9 +559,11 @@ namespace RexLogic
         
         if (agentid == rexlogicmodule_->GetServerConnection()->GetInfo().agentID && sessionid == rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
         {
-            Vector3 position = data->message->ReadVector3(); /// \todo tucofixme, set position to avatar
-            Vector3 lookat = data->message->ReadVector3(); /// \todo tucofixme, set lookat direction to avatar
-            /// \todo tuco, use OpenSimToOgreCoordinateAxes to convert pos and scale, and OpenSimToOgreQuaternion to convert orientation to our system. 
+            Vector3 position = data->message->ReadVector3(); 
+            Vector3 lookat = data->message->ReadVector3();
+            rexlogicmodule_->GetAvatarController()->HandleServerObjectUpdate(Core::OpenSimToOgreCoordinateAxes(position),Core::OpenSimToOgreQuaternion(lookat));
+
+            /// \todo tucofixme, what to do with regionhandle & timestamp?
             uint64_t regionhandle = data->message->ReadU64();
             uint32_t timestamp = data->message->ReadU32(); 
         }
@@ -602,27 +604,12 @@ namespace RexLogic
                 //! \todo read velocity
                 i += 6;
                 
-                // rotation                
-                uint16_t rotx = *reinterpret_cast<uint16_t*>((uint16_t*)&bytes[i]);
-                i += sizeof(uint16_t);
-                uint16_t roty = *reinterpret_cast<uint16_t*>((uint16_t*)&bytes[i]);
-                i += sizeof(uint16_t);
-                uint16_t rotz = *reinterpret_cast<uint16_t*>((uint16_t*)&bytes[i]);
-                i += sizeof(uint16_t);
-                uint16_t rotw = *reinterpret_cast<uint16_t*>((uint16_t*)&bytes[i]);
-                i += sizeof(uint16_t);
-           
-                if(rotx == 32768 && roty == 32768 && rotx == 32768 && rotw == 32768)
-                    rotw = 65535;               
-                
-                Core::Quaternion rotation;
-                rotation.x = (rotx / 32768.0f) - 1.0f;
-                rotation.y = (roty / 32768.0f) - 1.0f;
-                rotation.z = (rotz / 32768.0f) - 1.0f;
-                rotation.w = (rotw / 32768.0f) - 1.0f;
+                // rotation
+                uint16_t *rot = reinterpret_cast<uint16_t*>((uint16_t*)&bytes[i]);
+                Core::Quaternion rotation = UnpackQuaternionFromU16_4(rot);
                 rotation.normalize();
                 rotation = Core::OpenSimToOgreQuaternion(rotation);
-                
+
                 Foundation::EntityPtr entity = GetAvatarEntity(localid);
                 if(entity)
                 {

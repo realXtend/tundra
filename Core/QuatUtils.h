@@ -7,6 +7,7 @@
 
 #include "Quaternion.h"
 #include "Vector3D.h"
+#include "CoreTypes.h"
 
 namespace Core
 {
@@ -18,7 +19,11 @@ namespace Core
     Vector3D<float> PackQuaternionToFloat3(float x, float y, float z, float w);
 
     __inline Vector3D<float> PackQuaternionToFloat3(const float *data) { return PackQuaternionToFloat3(data[0], data[1], data[2], data[3]); }
-    __inline Vector3D<float> PackQuaternionToFloat3(const Quaternion &data) { return PackQuaternionToFloat3(data.x, data.y, data.z, data.w); }    
+    __inline Vector3D<float> PackQuaternionToFloat3(const Quaternion &data) { return PackQuaternionToFloat3(data.x, data.y, data.z, data.w); }
+    
+    Quaternion UnpackQuaternionFromU16_4(u16 x,u16 y,u16 z,u16 w);
+    
+    __inline Quaternion UnpackQuaternionFromU16_4(const u16 *data) { return UnpackQuaternionFromU16_4(data[0], data[1], data[2], data[3]); }
 }
 
 #endif
