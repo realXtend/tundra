@@ -60,7 +60,7 @@ namespace RexLogic
         //! Creates an OBB for debug visualization of the extents of the given scene object.
         void DebugCreateOgreBoundingBox(const Foundation::ComponentInterfacePtr ogrePlaceable, const std::string &materialName);
 
-        void NetworkEventHandler::DebugCreateTerrainVisData(const DecodedTerrainPatch &heightData, int patchSize);
+        void DebugCreateTerrainVisData(const DecodedTerrainPatch &heightData, int patchSize);
 
         Foundation::Framework *framework_;
         OpenSimProtocol::OpenSimProtocolModule *netInterface_;
