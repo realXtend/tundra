@@ -50,9 +50,6 @@ namespace Communication
 
 		
 		chatBuffer_ = txtChatView_->get_buffer();
-
-		Gtk::TextBuffer::iterator chatIter = chatBuffer_->end();
-		chatBuffer_->insert(chatIter, "TEST\n blaa");
 		
 		wnd_->show();
 	}

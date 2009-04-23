@@ -73,6 +73,7 @@ namespace Communication
 		eIntf->SetCallback(CommunicationUIModule::channelOpened, "channel_opened");
 		eIntf->SetCallback(CommunicationUIModule::channelClosed, "channel_closed");
 		eIntf->SetCallback(CommunicationUIModule::messagReceived, "message_received");
+		eIntf->SetCallback(CommunicationUIModule::friendReceived, "contact_item");
 		
 	}
 
@@ -92,8 +93,28 @@ namespace Communication
 		wndCommMain = 0;
 		                        
 		commUI_XML->get_widget("wndCMain", wndCommMain);
-		if(!wndCommMain)
+        commUI_XML->get_widget("fxdContainer", fxdContainer);
+        if(!wndCommMain||!fxdContainer)
 			return;
+
+		lstBuddiesTreeModel = Gtk::ListStore::create(columns_);
+        lstContactsTreeModel = Gtk::ListStore::create(columns2_);
+        lstContacts.set_model(lstContactsTreeModel);
+		lstContacts.append_column("ID", columns2_.id_);
+		lstContacts.append_column("Contact", columns2_.contact_);
+        lstContacts.set_size_request(219,82);
+        fxdContainer->put(lstContacts, 27, 169);
+
+		commUI_XML->get_widget("lstBuddies", lstBuddies);
+		lstBuddies->set_model(lstBuddiesTreeModel);
+        
+		lstBuddies->append_column("ID", columns_.id_);
+		lstBuddies->append_column("Contact", columns_.contact_);
+
+        Gtk::TreeModel::Row row = *(lstContactsTreeModel->append());
+        row[columns2_.id_] = "test";
+        row[columns2_.contact_] = "test";
+
 
 	    commUI_XML->connect_clicked("mi_connect", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuConnect));
 		commUI_XML->connect_clicked("mi_disconnect", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuDisconnect));
@@ -101,12 +122,17 @@ namespace Communication
 		commUI_XML->connect_clicked("mi_settings", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuSettings));
 		commUI_XML->connect_clicked("mi_directchat", sigc::mem_fun(*this, &CommunicationUIModule::OnDirectChatMenuStartChat));
 		commUI_XML->connect_clicked("btnTest", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuConnect));
-
+        commUI_XML->connect_clicked("lstBuddies", sigc::mem_fun(*this, &CommunicationUIModule::OnContactListClicked));
+        
 		// entry dialog
 		commUI_XML->connect_clicked("btnEntryOk", sigc::mem_fun(*this, &CommunicationUIModule::OnEntryDlgOk));
 		commUI_XML->connect_clicked("btnEntryCancel", sigc::mem_fun(*this, &CommunicationUIModule::OnEntryDlgCancel));
 
+        
+        
 		wndCommMain->show();
+        lstContacts.show();
+        //wndCommMain->show_all();
 	}
 
 	void CommunicationUIModule::OnAccountMenuSettings()
@@ -139,7 +165,7 @@ namespace Communication
 
 	void CommunicationUIModule::OnAccountMenuSetAccountAndPassword()
 	{
-		LogInfo("Set account");
+		//LogInfo("Set account");
 		std::map<std::string, Foundation::Comms::SettingsAttribute> attributes = commManager->GetAccountAttributes();
 		int count = attributes.size();
 		LogInfo(attributes.find("name")->first);
@@ -182,6 +208,8 @@ namespace Communication
 		if(entryret_==1){
 			LogInfo("start chat window here");
 
+			// Fix any memory leaks here !!
+
 			char** args = new char*[2];
 			char* buf1 = new char[20];
 			strcpy(buf1,str.c_str());
@@ -190,7 +218,7 @@ namespace Communication
 			std::string str = "CStartChatSession";
 			std::string syntax = "s";
 			Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, args);
-
+            sessionUp_ = true;
 			this->session_ = Communication::ChatSessionUIPtr(new Communication::ChatSession(str.c_str(), imScriptObject));
 		}
 	}
@@ -214,7 +242,6 @@ namespace Communication
 	{
 		//LogInfo("setting status");
 		Gtk::Label* label = (Gtk::Label*)instance_->commUI_XML->get_widget("lblOnlineStatus");
-		//if(label==NULL){LogInfo("label null");}
 		label->set_label(status);
 	}
 
@@ -268,6 +295,38 @@ namespace Communication
 			instance_->session_->ReceivedMessage(t);
 		}
 	}
+
+	void CommunicationUIModule::friendReceived(char* t)
+	{
+		LogInfo("contact item");
+		instance_->addFriendItem(t);
+	}
+
+	void CommunicationUIModule::addFriendItem(char *contactID)
+	{
+		std::string str = "CGetFriendWithID";
+		std::string syntax = "s";
+		//!!
+		char** args = new char*[1];
+		char* buf1 = new char[20];
+		strcpy(buf1, contactID);
+		args[0] = buf1;
+
+		Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, args);
+		char* name = ret->ConvertToChar();
+        Gtk::TreeModel::Row row = *(lstBuddiesTreeModel->append());
+
+        std::string id(contactID);
+        std::string contact(name);
+        row[columns_.id_] = id;
+        row[columns_.contact_] = contact;
+		
+	}
+
+    void CommunicationUIModule::OnContactListClicked()
+    {
+        LogInfo("OnContactListClicked");
+    }
 
 }
 
