@@ -6,7 +6,7 @@
 #include "ComponentInterface.h"
 #include "Foundation.h"
 #include "RexUUID.h"
-#include "OpenSimProtocolModule.h"
+#include "NetworkEvents.h"
 
 namespace RexLogic
 {
@@ -19,7 +19,7 @@ namespace RexLogic
         // !ID related
         uint64_t RegionHandle;
         uint32_t LocalId;
-        RexUUID FullId;
+        RexTypes::RexUUID FullId;
         uint32_t ParentId; 
         
         std::string ObjectName;
@@ -37,9 +37,9 @@ namespace RexLogic
 
         std::string ServerScriptClass;
         
-        RexUUID CollisionMesh;
+        RexTypes::RexUUID CollisionMesh;
         
-        RexUUID SoundUUID;
+        RexTypes::RexUUID SoundUUID;
         float SoundVolume;
         float SoundRadius;
         

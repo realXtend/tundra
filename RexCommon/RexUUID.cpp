@@ -51,6 +51,14 @@ namespace RexTypes
             data[i] = 0;
     }
     
+    bool RexUUID::IsNull()
+    {
+        for(int i = 0; i < cSizeBytes; ++i)
+            if (data[i] != 0)
+                return false;
+        return true;
+    }
+        
     void RexUUID::Random()
     {
         for (int i = 0; i < cSizeBytes; ++i)

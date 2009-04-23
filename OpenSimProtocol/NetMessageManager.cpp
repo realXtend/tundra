@@ -144,6 +144,7 @@ NetMessageManager::NetMessageManager(const char *messageListFilename)
 ,messageListener(0), sequenceNumber(1)
 {
 	receivedSequenceNumbers.clear();
+	
 }
 
 NetMessageManager::~NetMessageManager()

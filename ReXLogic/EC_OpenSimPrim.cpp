@@ -4,7 +4,6 @@
 #include "EC_OpenSimPrim.h"
 #include "NetInMessage.h"
 #include "RexLogicModule.h"
-#include "OpenSimProtocolModule.h"
 
 namespace RexLogic
 {

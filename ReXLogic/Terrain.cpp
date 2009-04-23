@@ -19,6 +19,8 @@
 
 #include "EC_Terrain.h"
 
+using namespace Core;
+
 namespace RexLogic
 {
     Terrain::Terrain(RexLogicModule *owner)

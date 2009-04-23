@@ -21,6 +21,9 @@ namespace RexTypes
         /// Sets all 16 bytes of the ID to '00'.
         void SetNull();
         
+        /// Checks is the UUID null.
+        bool IsNull();
+        
         /// Random-generates the contents
         void Random();
     
@@ -39,7 +42,7 @@ namespace RexTypes
         }
 
         static const uint8_t cSizeBytes = 16;
-
+        
         uint8_t data[cSizeBytes];
     };
 

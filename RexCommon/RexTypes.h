@@ -16,7 +16,7 @@ using boost::int32_t;
 using boost::int64_t;
 
 namespace RexTypes
-{   
+{
 
 typedef Core::Vector3D<float> Vector3;
 typedef Core::Vector3D<double> Vector3d;

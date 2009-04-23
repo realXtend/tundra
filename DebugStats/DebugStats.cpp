@@ -1,3 +1,8 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+/// Please note: The code of this module can be pretty fugly from time to time.
+/// This module is just meant for quick testing and debugging stuff.
+
 #pragma warning( push )
 #pragma warning( disable : 4250 )
 #include <gtkmm/main.h>
@@ -36,6 +41,8 @@
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
    POCO_EXPORT_CLASS(DebugStats)
 POCO_END_MANIFEST
+
+using namespace Core;
 
 DebugStats::DebugStats()
 :ModuleInterfaceImpl("DebugStats")
@@ -309,7 +316,6 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Even
     {
         case Scene::Events::EVENT_SCENE_ADDED:
             {
-                ///\todo Test, the events don't make it this far for now...
                 Gtk::TreeModel::Row scene_row;
                 scene_row = *(entityListModel_->append());
                 scene_row[entityModelColumns_.colName] = event_data->sceneName;
@@ -318,26 +324,43 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Even
             }
         case Scene::Events::EVENT_SCENE_DELETED:
             {
-                ///\todo Make work & test.
-                /*Gtk::TreeModel::Children rows = entityListModel_->children();
+                Gtk::TreeModel::Children rows = entityListModel_->children();
                 Gtk::TreeModel::Children::iterator iter; 
                 if (!rows)
                     return;
-                                
+                
+                bool found = false;            
                 for(iter = rows.begin(); iter != rows.end(); ++iter)
                 {
                     const Gtk::TreeModel::Row &row = *iter;
                     if (row[entityModelColumns_.colName] == event_data->sceneName)
+                    {
+                        found = true;
                         break;
+                    }
                 }
                 
-                entityListModel_->erase(iter);*/
+                if (found)
+                    entityListModel_->erase(iter);
+
                 break;
             }
         case Scene::Events::EVENT_ENTITY_SELECTED:
             {
-                ///\todo Get the real scene, not hardcoded
-                const Foundation::ScenePtr &scene = scene_manager->GetScene("World");
+                // Find the scene where this entity belongs to.
+                std::string scene_name("");
+                const Scene::SceneManager::SceneMap &scenes = scene_manager->GetSceneMap();
+                for(Scene::SceneManager::SceneMap::const_iterator iter = scenes.begin(); iter != scenes.end(); ++iter)
+                {
+                    const Foundation::SceneInterface &scene = *iter->second;
+                    if (scene.HasEntity(event_data->localID))
+                        scene_name = scene.Name();
+                }
+                
+                if(scene_name == "")
+                    return;
+                                                
+                const Foundation::ScenePtr &scene = scene_manager->GetScene(scene_name);
                 const Foundation::EntityPtr &entity = scene->GetEntity(event_data->localID);
                 const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
                 const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
@@ -351,15 +374,18 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Even
             }        
         case Scene::Events::EVENT_ENTITY_ADDED:            
             {
-                // Find the scene where this entity belongs to. ///\todo Implemented better?
-                std::string scene_name;
+                // Find the scene where this entity belongs to.
+                std::string scene_name("");
                 const Scene::SceneManager::SceneMap &scenes = scene_manager->GetSceneMap();
                 for(Scene::SceneManager::SceneMap::const_iterator iter = scenes.begin(); iter != scenes.end(); ++iter)
                 {
                     const Foundation::SceneInterface &scene = *iter->second;
-                    if(scene.HasEntity(event_data->localID))
+                    if (scene.HasEntity(event_data->localID))
                         scene_name = scene.Name();
                 }
+                
+                if(scene_name == "")
+                    return;
                 
                 // Get the scene for real.
                 const Foundation::ScenePtr &scene_ptr = scene_manager->GetScene(scene_name);
@@ -367,30 +393,18 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Even
                     return;
                 const Foundation::SceneInterface &scene = *scene_ptr.get();
 
-                // Find the scene row or create it if it doesn't exist.                
+                // Find the scene row.
                 Gtk::TreeModel::Children rows = entityListModel_->children();
                 Gtk::TreeModel::Children::iterator iter;
                 Gtk::TreeModel::Row scene_row;
-                bool found = false;
                 
                 for(iter = rows.begin(); iter != rows.end(); ++iter)
                 {
                     scene_row = *iter;
                     if (scene_row[entityModelColumns_.colName] == scene.Name())
-                    {
-                        found = true;
                         break;
-                    }
                 }
                 
-                ///\todo Remove when adding scenes works properly.
-                if (!found)
-                {
-                    scene_row = *(entityListModel_->append());
-                    scene_row[entityModelColumns_.colName] = scene.Name();
-                    scene_row[entityModelColumns_.colID] = "";
-                }
-                    
                 // Add entity.
                 const Foundation::EntityPtr &entity = scene.GetEntity(event_data->localID);
                 const Scene::Entity &ent = dynamic_cast<const Scene::Entity &>(*entity.get());

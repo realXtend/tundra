@@ -1,3 +1,8 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+/// Please note: The code of this module can be pretty fugly from time to time.
+/// This module is just meant for quick testing and debugging stuff.
+
 #ifndef incl_DebugStats_h
 #define incl_DebugStats_h
 
@@ -59,11 +64,6 @@ private:
     /// Callback for Entity activation.
     void OnDoubleClickEntity(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn* column);
     
-    /// Callbacks for validating and editing data on PrimProperties window.
-//    void ColumnValidatedOnCellData(Gtk::CellRenderer *renderer, const Gtk::TreeModel::iterator &iter);
-//    void CellrendererValidatedOnEditingStarted(Gtk::CellEditable *cell_editable, const Glib::ustring &path);
-//    void CellrendererValidatedOnEdited(const Glib::ustring &path_string, const Glib::ustring &new_text);
-
     /// Initialize UI windows.
     void InitializeModulesWindow();
     void InitializeEventsWindow();
