@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "ConsoleCommandServiceInterface.h"
-#include "Decoder.h"
+#include "TextureService.h"
 #include "TextureDecoderModule.h"
 
 namespace TextureDecoder
@@ -30,8 +30,8 @@ namespace TextureDecoder
     // virtual
     void TextureDecoderModule::Initialize()
     {
-        decoder_ = DecoderPtr(new Decoder(framework_));
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Texture, decoder_.get());
+        texture_service_ = TextureServicePtr(new TextureService(framework_));
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Texture, texture_service_.get());
 
         LogInfo("Module " + Name() + " initialized.");
     }
@@ -39,25 +39,16 @@ namespace TextureDecoder
     // virtual
     void TextureDecoderModule::Update(Core::f64 frametime)
     {
-        if (decoder_)
-            decoder_->Update(frametime);
+        if (texture_service_)
+            texture_service_->Update(frametime);
     }
 
     // virtual 
     void TextureDecoderModule::Uninitialize()
     {
-        framework_->GetServiceManager()->UnregisterService(decoder_.get());
-        decoder_.reset();
+        framework_->GetServiceManager()->UnregisterService(texture_service_.get());
+        texture_service_.reset();
         LogInfo("Module " + Name() + " uninitialized.");
-    }
-    
- 
-    bool TextureDecoderModule::HandleEvent(
-        Core::event_category_id_t category_id,
-        Core::event_id_t event_id, 
-        Foundation::EventDataInterface* data)
-    {
-        return false;
     }
 }
 

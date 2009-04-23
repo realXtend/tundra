@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 #include "RexUUID.h"
 
+#include <iomanip>
+
 using namespace std;
 
 /// Converts a single char to a value of 0-15. (4 bits)
@@ -76,19 +78,19 @@ namespace RexTypes
         stringstream str;
         int i = 0;
     
-        for(int j = 0; j < 4; ++j) str << hex << (int)data[i++];
+        for(int j = 0; j < 4; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
         str << "-";
     
-        for(int j = 0; j < 2; ++j) str << hex << (int)data[i++];
+        for(int j = 0; j < 2; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
         str << "-";
     
-        for(int j = 0; j < 2; ++j) str << hex << (int)data[i++];
+        for(int j = 0; j < 2; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
         str << "-";
     
-        for(int j = 0; j < 2; ++j) str << hex << (int)data[i++];
+        for(int j = 0; j < 2; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
         str << "-";
     
-        for(int j = 0; j < 6; ++j) str << hex << (int)data[i++];
+        for(int j = 0; j < 6; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
     
         return str.str();
     }

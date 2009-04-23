@@ -65,40 +65,6 @@ namespace Foundation
         return value;
     }
 
-    template <> std::string ConfigurationManager::GetSetting(const std::string& group, const std::string& key) const
-    {
-        std::string groupKey = group + "." + key;
-        std::string value = "";
-        std::map<string_pair_t, std::string>::iterator iter = values_.find(std::make_pair(group, key));
-        if ( iter != values_.end() )    
-            value = boost::lexical_cast<std::string>(iter->second);
-        else
-            value ="";
-    
-        return value;
-
-    }
-
-
-    template <> std::string ConfigurationManager::GetSettingFromFile(const std::string& group, const std::string& key) const
-    {
-        std::string groupKey = group + "." + key;
-        
-        std::string value = "";
-        
-        try
-        {
-            if (configuration_)
-                value =  configuration_->getString(groupKey);
-        }
-        catch ( Poco::NotFoundException& /*ob*/)
-        {}
-        
-        return value;
-
-    }
-
-
     template <typename T> T ConfigurationManager::GetSettingFromFile(const std::string& group, const std::string& key) const
     {
         std::string groupKey = group + "." + key;
