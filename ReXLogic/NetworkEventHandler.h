@@ -5,8 +5,12 @@
 
 #include "ComponentInterface.h"
 #include "Foundation.h"
-#include "OpenSimProtocolModule.h"
+#include "NetworkEvents.h"
 
+namespace OpenSimProtocol
+{
+    class OpenSimProtocolModule;
+}
 
 namespace RexLogic
 {

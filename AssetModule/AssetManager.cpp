@@ -1,8 +1,8 @@
 #include "StableHeaders.h"
 #include "AssetModule.h"
 #include "AssetInterface.h"
+#include "NetworkEvents.h"
 #include "OpenSimProtocolModule.h"
-#include "NetInMessage.h"
 #include "RexProtocolMsgIDs.h"
 #include "AssetDefines.h"
 #include "AssetEvents.h"
@@ -142,7 +142,7 @@ namespace Asset
                     AssetModule::LogInfo("Texture transfer " + transfer.GetAssetId().ToString() + " timed out.");
 
                     // Send cancel message
-                    const ClientParameters& client = net->GetClientParameters();
+                    const OpenSimProtocol::ClientParameters& client = net->GetClientParameters();
                     NetOutMessage *m = net->StartMessageBuilding(RexNetMsgRequestImage);
                     assert(m);
                     
@@ -207,7 +207,7 @@ namespace Asset
             return;
         }
         
-        const ClientParameters& client = net->GetClientParameters();
+        const OpenSimProtocol::ClientParameters& client = net->GetClientParameters();
         
         if (texture_transfers_.find(asset_id) != texture_transfers_.end())
             return;

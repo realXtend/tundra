@@ -25,12 +25,6 @@ class PocoXMLRPCCall
 public:
 	PocoXMLRPCCall();
 
-	XMLRPC_REQUEST request;
-	XMLRPC_VALUE xParamList;
-	STRUCT_XMLRPC_REQUEST_OUTPUT_OPTIONS output;
-
-	XMLRPC_REQUEST reply;
-
 	/// Adds a string "name=value" parameter to the function call.
 	void AddStringMember(const char *name, const char *value);
 
@@ -47,6 +41,11 @@ public:
 	const char *GetReplyString(const char *name);
 
 	uint32_t GetReplyInt(const char *name);
+
+	XMLRPC_REQUEST request;
+	XMLRPC_VALUE xParamList;
+	STRUCT_XMLRPC_REQUEST_OUTPUT_OPTIONS output;
+	XMLRPC_REQUEST reply;	
 };
 
 /// Represents a XMLRPC connection. You can do multiple XMLRPC requests/replies using the same connection.
@@ -73,7 +72,7 @@ private:
 	std::string url_;
 
 	/// @return True if the server sent back HTTP 100 code.
-	bool WaitForHTTP100Continue();
+//	bool WaitForHTTP100Continue();
 
 	void ReadXMLRPCReply(PocoXMLRPCCall &call);
 

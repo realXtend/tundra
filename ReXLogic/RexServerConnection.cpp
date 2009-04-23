@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "OpenSimProtocolModule.h"
 #include "RexServerConnection.h"
 #include "RexLogicModule.h"
 #include "RexProtocolMsgIDs.h"
@@ -17,12 +18,16 @@ namespace RexLogic
         framework_ = framework;    
         connected_ = false;
         
+        serverAddress_ = "";
+        serverPort_ = 0;
+        
         myInfo_.agentID.SetNull();
         myInfo_.sessionID.SetNull();
         myInfo_.regionID.SetNull();
         myInfo_.circuitCode = 0;
 
 		connection_type_ = DirectConnection;
+        
         ///\todo weak_pointerize
         netInterface_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol).lock().get();
         if (!netInterface_)
@@ -35,9 +40,9 @@ namespace RexLogic
     RexServerConnection::~RexServerConnection()
     {
     }
+    
 	bool RexServerConnection::ConnectToServer(const std::string& username, const std::string& password, 
 				const std::string& serveraddress, const std::string& auth_server_address, const std::string& auth_login)
-   
     {
         if(connected_)
         {
@@ -48,7 +53,7 @@ namespace RexLogic
         size_t pos = username.find(" ");
         if(pos == std::string::npos)
         {
-            RexLogicModule::LogError("Invalid username, last name not found" + username);
+            RexLogicModule::LogError("Invalid username, last name not found." + username);
             return false;
         }
         
@@ -62,7 +67,7 @@ namespace RexLogic
         if(pos == std::string::npos)
         {
             serveraddress_noport = serveraddress;
-            RexLogicModule::LogInfo("No port defined in serverurl, using port 9000.");
+            RexLogicModule::LogInfo("No port defined for the server, using default port (9000).");
         }
         else
         {
@@ -78,43 +83,59 @@ namespace RexLogic
             }
         }
 		
-		bool connectresult = false;
-		if ( auth_server_address != "" ) 
+		bool connect_result = false;
+		if (auth_server_address != "") 
 		{
 			connection_type_ = AuthenticationConnection;
-			connectresult = netInterface_->ConnectUsingAuthenticationServer(first_name, 
+			connect_result = netInterface_->ConnectUsingRexAuthentication(first_name, 
 				last_name, password, serveraddress_noport, port,
-				auth_server_address, auth_login);
-	
-
+				auth_server_address, auth_login, &threadState_);
 		}
 
-	
-		if ( connection_type_ == DirectConnection)
-			connectresult = netInterface_->ConnectToRexServer(first_name, last_name,password, serveraddress_noport, port);   
-				
-		if(connectresult)
+		if (connection_type_ == DirectConnection)
+            netInterface_->ConnectToServer(first_name, last_name,password, serveraddress_noport, port, &threadState_);
+        
+        // Save the server address and port for later use.
+        serverAddress_ = serveraddress_noport;
+        serverPort_ = port;
+        
+        return true;
+    }
+    
+    bool RexServerConnection::CreateUDPConnection()
+    {
+        bool connect_result = netInterface_->CreateUDPConnection(serverAddress_.c_str(), serverPort_);
+		if(connect_result)
 		{
 			connected_ = true;
-    
+            
+            // Get the client-spesific information.
 			myInfo_ = netInterface_->GetClientParameters();
+			
+			// Check that the parameters are valid.
+			if (myInfo_.agentID.IsNull() || myInfo_.sessionID.IsNull())
+			{
+			    // Client parameters not valid. Disconnect.
+			    netInterface_->DisconnectFromRexServer();
+			    RexLogicModule::LogError("Client parameters are not valid! Disconnecting.");
+			    connected_ = false;
+			    return false;
+            }
+			
+			// Send the necessary UDP packets.
 			SendUseCircuitCodePacket();
 			SendCompleteAgentMovementPacket();
-			RexLogicModule::LogInfo("Connected to server " + serveraddress_noport + ".");
-			return true;
+			
+			RexLogicModule::LogInfo("Connected to server " + serverAddress_ + ".");
 		}
 		else
 		{
-			RexLogicModule::LogInfo("Connecting to server " + serveraddress_noport + " failed.");
-			return false;
-		}
-	
-		
-    }    
+			RexLogicModule::LogInfo("Connecting to server " + serverAddress_ + " failed.");
+        }
+        
+        return connect_result;
+    }
     
-	
-
-
     void RexServerConnection::RequestLogout()
     {
         if(!connected_)
@@ -167,6 +188,7 @@ namespace RexLogic
         assert(m);
         m->AddUUID(myInfo_.agentID);
         m->AddUUID(myInfo_.sessionID);
+
         netInterface_->FinishMessageBuilding(m);
 	}
 	
@@ -308,7 +330,6 @@ namespace RexLogic
 
         for(size_t i = 0; i < entity_ptr_list.size(); ++i)
         {
-            // Scale
             const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
             RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
             

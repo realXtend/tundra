@@ -3,7 +3,7 @@
 #ifndef incl_RexEntity_h
 #define incl_RexEntity_h
 
-#include "OpenSimProtocolModule.h"
+#include "NetworkEvents.h"
 #include "RexTypes.h"
 
 namespace OpenSimProtocol
@@ -23,13 +23,25 @@ namespace RexLogic
         RexServerConnection(Foundation::Framework *framework);
         virtual ~RexServerConnection();
         
-        bool ConnectToServer(const std::string& username, const std::string& password, 
-			const std::string& serveraddress, const std::string& auth_server_address = "", const std::string& auth_login = "");
-	
-		void RequestLogout();
+        ///
+        bool ConnectToServer(const std::string& username,
+            const std::string& password,
+            const std::string& serveraddress,
+            const std::string& auth_server_address = "",
+            const std::string& auth_login = "");
+       
+        /// Creates the UDP connection after a succesfull XML-RPC login.
+        ///@return True, if success.
+        bool CreateUDPConnection();
+        
+        void RequestLogout();
+        
+        void CloseServerConnection();
+        
         void ForceServerDisconnect();
 
 		void SetConnectionType( ConnectionType type ) { connection_type_ = type; }
+		
 		ConnectionType GetConnectionType() const { return connection_type_; }
 
         // Send the UDP chat packet.
@@ -86,11 +98,14 @@ namespace RexLogic
         std::string GetSimName() { return simname_; }
         
         ///@return A structure of connection spesific information, e.g. AgentID and SessiondID.
-        ClientParameters GetInfo() const { return myInfo_; }
+        OpenSimProtocol::ClientParameters GetInfo() const { return myInfo_; }
         
         ///@return True if the client connected to a server.
         bool IsConnected() { return connected_; }
-
+        
+        ///@return The state of the connection.
+        volatile OpenSimProtocol::Connection::State &GetConnectionState() { return threadState_.state; }
+        
     private:
         Foundation::Framework *framework_;    
     
@@ -98,16 +113,27 @@ namespace RexLogic
        OpenSimProtocol::OpenSimProtocolModule *netInterface_;
 		
         /// Server-spesific info for this client.
-        ClientParameters myInfo_;
+        OpenSimProtocol::ClientParameters myInfo_;
+		
+		/// Address of the sim we're connected.
+		std::string serverAddress_;	
+		
+		/// Port of the sim we're connected.
+		int serverPort_;		
 		
         /// Name of the sim we're connected.
         std::string simname_;		
         
         /// Is client connected to a server.
         bool connected_;
-
-		ConnectionType connection_type_;
-
+        /// Type of the connection.
+        ConnectionType connection_type_;
+        
+        /// State of the connection procedure.
+        OpenSimProtocol::Connection::State state_;
+        
+        /// State of the connection procedure thread.
+        OpenSimProtocol::ConnectionThreadState threadState_;
     };
 }
 

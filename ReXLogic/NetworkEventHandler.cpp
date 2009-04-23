@@ -33,6 +33,8 @@
 #include "TerrainDecoder.h"
 #include "Terrain.h"
 
+using namespace Core;
+
 namespace
 {
     /// Clones a new Ogre material that renders using the given ambient color. This function will be removed or refactored later on, once proper material system is present. -jj.
@@ -529,7 +531,7 @@ namespace RexLogic
         
         // Create the "World" scene.
 
-        const ClientParameters& client = netInterface_->GetClientParameters();
+        const OpenSimProtocol::ClientParameters& client = netInterface_->GetClientParameters();
         rexlogicmodule_->GetServerConnection()->SendRegionHandshakeReplyPacket(client.agentID, client.sessionID, 0);   
         return false;  
     } 

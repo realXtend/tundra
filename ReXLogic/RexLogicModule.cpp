@@ -160,10 +160,16 @@ namespace RexLogic
         
 		LogInfo("Module " + Name() + " uninitialized.");
     }
-
     // virtual
     void RexLogicModule::Update(Core::f64 frametime)
     {
+        
+        if (!rexserver_connection_->IsConnected() &&
+            rexserver_connection_->GetConnectionState() == OpenSimProtocol::Connection::STATE_INIT_UDP)
+        {
+            rexserver_connection_->CreateUDPConnection();
+        }
+        
         input_handler_->Update(frametime);
 
         if (send_input_state_)

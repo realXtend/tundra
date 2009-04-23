@@ -196,12 +196,12 @@ namespace NetTest
 				    RexUUID aID = event_data->message->ReadUUID();
 				    RexUUID sID = event_data->message->ReadUUID();
     	
-				    // Log out if the id's match.
-				    if (aID == rexlogic_->GetServerConnection()->GetInfo().agentID && sID == rexlogic_->GetServerConnection()->GetInfo().sessionID)
+				    // Close the NetTest window if id's match.
+				    if (aID == rexlogic_->GetServerConnection()->GetInfo().agentID &&
+				        sID == rexlogic_->GetServerConnection()->GetInfo().sessionID)
 				    {
-					    LogInfo("\"LogoutReply\" received with matching IDs. Logging out.");
                         LogOut();
-				    }
+                    }
 				    break;
 			    }
 		    default:
@@ -338,17 +338,19 @@ namespace NetTest
     
     void NetTestLogicModule::OnClickConnect()
     {
+///ALI KORJAA        if(rexlogic_->GetServerConnection()->ConnectToServer(entry_username_->get_text(), entry_password->get_text(), entry_server_->get_text()))
+///        {
+
         // Initialize UI widgets.
         Gtk::Entry *entry_password = 0;
 		loginControls->get_widget("entry_password", entry_password);
 		Gtk::Entry *entry_authentication = 0;
 		loginControls->get_widget("entry_authentication", entry_authentication);
-		
+
 		bool succesful = false;
-		if ( entry_authentication != 0 && std::string(entry_authentication->get_text()) != std::string(""))
+		if (entry_authentication != 0 && std::string(entry_authentication->get_text()) != std::string(""))
 		{
 			// Connect to Authentication server.
-			
 		    //entry_authentication contains authentication server address and port
 			//entry_auth_login contains login username. 
 			
@@ -356,12 +358,12 @@ namespace NetTest
 			loginControls->get_widget("entry_auth_login", entry_auth_login);
 			
 			succesful = rexlogic_->GetServerConnection()->ConnectToServer(entry_username_->get_text(), entry_password->get_text(), entry_server_->get_text(), 
-				entry_authentication->get_text(), entry_auth_login->get_text());
+                entry_authentication->get_text(), entry_auth_login->get_text());
 		}
 		else 
-		 succesful = rexlogic_->GetServerConnection()->ConnectToServer(entry_username_->get_text(), entry_password->get_text(), entry_server_->get_text());
+		    succesful = rexlogic_->GetServerConnection()->ConnectToServer(entry_username_->get_text(), entry_password->get_text(), entry_server_->get_text());
         
-		if ( succesful)
+		if (succesful)
 		{
             // Save login and server settings for future use. 
             framework_->GetConfigManager()->SetSetting<std::string>(std::string("Login"),std::string("server"), std::string(entry_server_->get_text()));
