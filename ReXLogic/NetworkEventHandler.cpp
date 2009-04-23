@@ -589,66 +589,190 @@ namespace RexLogic
             size_t bytes_read = 0;
             const uint8_t *bytes = data->message->ReadBuffer(&bytes_read);
 
-            // 30 is size for rex's own avatarimprovedterseupdate
-            if (bytes_read == 30)
+            uint32_t localid = 0;
+            switch(bytes_read)
             {
-                // The data contents:
-                // ofs  0 - localid - packed to 4 bytes
-                // ofs  4 - position xyz - 3 x float (3x4 bytes)
-                // ofs 16 - velocity xyz - packed to 6 bytes
-                // ofs 22 - rotation - packed to 8 bytes
-                
-                //! \todo handle endians
-                int i = 0;
-                uint32_t localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[i]);                
-                i += 4;
-
-                Core::Vector3df position = *reinterpret_cast<Core::Vector3df*>((Core::Vector3df*)&bytes[i]);
-                position = Core::OpenSimToOgreCoordinateAxes(position);
-                i += sizeof(Core::Vector3df);
-                
-                // velocity
-                uint16_t *vel = reinterpret_cast<uint16_t*>((uint16_t*)&bytes[i]);
-                Core::Vector3df velocity;
-                velocity.x = 128.0f * ((vel[0] / 32768.0f) - 1.0f);
-                velocity.y = 128.0f * ((vel[1] / 32768.0f) - 1.0f);
-                velocity.z = 128.0f * ((vel[2] / 32768.0f) - 1.0f);                                
-                velocity = Core::OpenSimToOgreCoordinateAxes(velocity);
-                /// \todo tucofixme what to do with velocity?
-                i += 6;
-                
-                // rotation
-                uint16_t *rot = reinterpret_cast<uint16_t*>((uint16_t*)&bytes[i]);
-                Core::Quaternion rotation = UnpackQuaternionFromU16_4(rot);
-                rotation.normalize();
-                rotation = Core::OpenSimToOgreQuaternion(rotation);
-
-                Foundation::EntityPtr entity = GetAvatarEntity(localid);
-                if(entity)
-                {
-                    if(rexlogicmodule_->GetAvatarController()->GetAvatarEntity() && entity->GetId() == rexlogicmodule_->GetAvatarController()->GetAvatarEntity()->GetId())
-                        rexlogicmodule_->GetAvatarController()->HandleServerObjectUpdate(position,rotation);
-                    else
-                    {
-                        OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
-                        ogrePos.SetPosition(position);
-                        ogrePos.SetOrientation(rotation);                    
-                    }
-                }
+                case 30: 
+                    HandleTerseObjectUpdate_30bytes(bytes); 
+                    break;
+                case 60:
+                    localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[0]); 
+                    if(GetPrimEntity(localid)) 
+                        HandleTerseObjectUpdateForPrim_60bytes(bytes); 
+                    else if(GetAvatarEntity(localid))
+                        HandleTerseObjectUpdateForAvatar_60bytes(bytes);                            
+                    break;
+                default:    
+                    std::stringstream ss; 
+                    ss << "Unhandled ImprovedTerseObjectUpdate block of size ";
+                    ss << bytes_read << "!";
+                    RexLogicModule::LogInfo(ss.str());
+                    break;
             }
-            else
-            {
-                std::stringstream ss; 
-                ss << "Unhandled ImprovedTerseObjectUpdate block of size ";
-                ss << bytes_read << "!";
-                RexLogicModule::LogInfo(ss.str());
-            }
-            
             data->message->SkipToNextVariable(); // TextureEntry variable ///\todo Unhandled inbound variable 'TextureEntry'.
             nextvartype = data->message->CheckNextVariableType();
         }
         return false;
     }
+    
+    void NetworkEventHandler::HandleTerseObjectUpdate_30bytes(const uint8_t* bytes)
+    {
+        // The data contents:
+        // ofs  0 - localid - packed to 4 bytes
+        // ofs  4 - position xyz - 3 x float (3x4 bytes)
+        // ofs 16 - velocity xyz - packed to 6 bytes
+        // ofs 22 - rotation - packed to 8 bytes
+        
+        //! \todo handle endians
+        int i = 0;
+        uint32_t localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[i]);                
+        i += 4;
+
+        Core::Vector3df position = GetProcessedVector(&bytes[i]);
+        i += sizeof(Core::Vector3df);
+        
+        Core::Vector3df velocity = GetProcessedScaledVectorFromUint16(&bytes[i],128);
+        i += 6;
+        
+        Core::Quaternion rotation = GetProcessedQuaternion(&bytes[i]);
+
+        Foundation::EntityPtr entity = GetAvatarEntity(localid);
+        if(entity)
+        {
+            /// \todo tucofixme handle velocity        
+            if(rexlogicmodule_->GetAvatarController()->GetAvatarEntity() && entity->GetId() == rexlogicmodule_->GetAvatarController()->GetAvatarEntity()->GetId())
+                rexlogicmodule_->GetAvatarController()->HandleServerObjectUpdate(position,rotation);
+            else
+            {
+                OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
+                ogrePos.SetPosition(position);
+                ogrePos.SetOrientation(rotation);                    
+            }
+        }
+    }
+
+    void NetworkEventHandler::HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes)
+    {
+        // The data contents:
+        // ofs  0 - localid - packed to 4 bytes
+        // ofs  4 - state
+        // ofs  5 - 0
+        // ofs  6 - position xyz - 3 x float (3x4 bytes)
+        // ofs 18 - velocity xyz - packed to 6 bytes        
+        // ofs 24 - acceleration xyz - packed to 6 bytes           
+        // ofs 30 - rotation - packed to 8 bytes 
+        // ofs 38 - rotational vel - packed to 6 bytes
+        
+        //! \todo handle endians
+        int i = 0;
+        uint32_t localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[i]);                
+        i += 6;
+
+        Core::Vector3df position = GetProcessedVector(&bytes[i]);
+        i += sizeof(Core::Vector3df);
+        
+        Core::Vector3df velocity = GetProcessedScaledVectorFromUint16(&bytes[i],128);
+        i += 6;
+        
+        Core::Vector3df accel = GetProcessedVectorFromUint16(&bytes[i]); 
+        i += 6;
+
+        Core::Quaternion rotation = GetProcessedQuaternion(&bytes[i]);
+        i += 8;
+
+        Core::Vector3df rotvel = GetProcessedVectorFromUint16(&bytes[i]);
+        
+        // set values
+        Foundation::EntityPtr entity = GetPrimEntity(localid);
+        if(entity)
+        {
+            OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
+            ogrePos.SetPosition(position);
+            ogrePos.SetOrientation(rotation);                    
+        }
+    }
+
+    void NetworkEventHandler::HandleTerseObjectUpdateForAvatar_60bytes(const uint8_t* bytes)
+    {
+        // The data contents:
+        // ofs  0 - localid - packed to 4 bytes
+        // ofs  4 - 0
+        // ofs  5 - 1
+        // ofs  6 - empty 14 bytes
+        // ofs 20 - 128
+        // ofs 21 - 63
+        // ofs 22 - position xyz - 3 x float (3x4 bytes)
+        // ofs 34 - velocity xyz - packed to 6 bytes        
+        // ofs 40 - acceleration xyz - packed to 6 bytes           
+        // ofs 46 - rotation - packed to 8 bytes 
+        // ofs 54 - rotational vel - packed to 6 bytes
+        
+        //! \todo handle endians
+        int i = 0;
+        uint32_t localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[i]);                
+        i += 22;
+
+        Core::Vector3df position = GetProcessedVector(&bytes[i]);
+        i += sizeof(Core::Vector3df);
+
+        Core::Vector3df velocity = GetProcessedScaledVectorFromUint16(&bytes[i],128);
+        i += 6;
+        
+        Core::Vector3df accel = GetProcessedVectorFromUint16(&bytes[i]);
+        i += 6;
+
+        Core::Quaternion rotation = GetProcessedQuaternion(&bytes[i]);
+        i += 8;        
+
+        Core::Vector3df rotvel = GetProcessedVectorFromUint16(&bytes[i]);
+
+        // set values
+        Foundation::EntityPtr entity = GetPrimEntity(localid);
+        if(entity)
+        {
+            OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
+            ogrePos.SetPosition(position);
+            ogrePos.SetOrientation(rotation);                    
+        }
+    }
+
+    Core::Quaternion NetworkEventHandler::GetProcessedQuaternion(const uint8_t* bytes)
+    {    
+        uint16_t *rot = reinterpret_cast<uint16_t*>((uint16_t*)&bytes[0]);
+        Core::Quaternion rotation = UnpackQuaternionFromU16_4(rot);
+        rotation.normalize();
+
+        return Core::OpenSimToOgreQuaternion(rotation);
+    }
+
+    Core::Vector3df NetworkEventHandler::GetProcessedScaledVectorFromUint16(const uint8_t* bytes, float scale)
+    {
+        uint16_t *vec = reinterpret_cast<uint16_t*>((uint16_t*)&bytes[0]);
+        
+        Core::Vector3df resultvector;
+        resultvector.x = scale * ((vec[0] / 32768.0f) - 1.0f);
+        resultvector.y = scale * ((vec[1] / 32768.0f) - 1.0f);
+        resultvector.z = scale * ((vec[2] / 32768.0f) - 1.0f);
+
+        return Core::OpenSimToOgreCoordinateAxes(resultvector);        
+    }
+
+    Core::Vector3df NetworkEventHandler::GetProcessedVectorFromUint16(const uint8_t* bytes)
+    {
+        uint16_t *vec = reinterpret_cast<uint16_t*>((uint16_t*)&bytes[0]);
+
+        return Core::OpenSimToOgreCoordinateAxes(Core::Vector3df(vec[0],vec[1],vec[2]));    
+    }
+    
+    Core::Vector3df NetworkEventHandler::GetProcessedVector(const uint8_t* bytes)
+    {
+        Core::Vector3df resultvector = *reinterpret_cast<Core::Vector3df*>((Core::Vector3df*)&bytes[0]);
+
+        return Core::OpenSimToOgreCoordinateAxes(resultvector);  
+    }    
+    
+    
+    
     
     bool NetworkEventHandler::HandleRexGM_RexAppearance(OpenSimProtocol::NetworkEventInboundData* data)
     {
