@@ -38,6 +38,7 @@ namespace OpenSimProtocol
             STATE_DISCONNECTED,
             STATE_INIT_XMLRPC,
             STATE_WAITING_FOR_XMLRPC_REPLY,
+            STATE_XMLRPC_AUTH_REPLY_RECEIVED,
             STATE_XMLRPC_REPLY_RECEIVED,
             STATE_INIT_UDP,
             STATE_CONNECTED

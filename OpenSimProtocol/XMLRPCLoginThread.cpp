@@ -31,8 +31,25 @@ void XMLRPCLoginThread::operator()()
         threadState_->state = Connection::STATE_WAITING_FOR_XMLRPC_REPLY;
         
         bool success = PerformXMLRPCLogin();
-        if (success)
+        if (success && !authentication_)
+        {
+            // Login without authentication succeeded.
             threadState_->state = Connection::STATE_XMLRPC_REPLY_RECEIVED;
+        }
+        else if (success && authentication_)
+        {
+            // First round of authentication succeeded; sessions hash, grid & avatar url's reveiced.
+            threadState_->state = Connection::STATE_XMLRPC_AUTH_REPLY_RECEIVED;
+            
+            // Perform second round to received the agent, session & region id's.
+            callMethod_ = "login_to_simulator";
+            
+            bool success2 = PerformXMLRPCLogin();
+            if (success2)
+                threadState_->state = Connection::STATE_XMLRPC_REPLY_RECEIVED;
+            else
+                threadState_->state = Connection::STATE_LOGIN_FAILED;
+        }
         else
             threadState_->state = Connection::STATE_LOGIN_FAILED;
         
@@ -168,12 +185,11 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 		threadState_->parameters.sessionID.FromString(call->GetReplyString("session_id"));
 		threadState_->parameters.agentID.FromString(call->GetReplyString("agent_id"));
 		threadState_->parameters.circuitCode = call->GetReplyInt("circuit_code");
-		std::cout <<threadState_->parameters.sessionID << std::endl;
 		loginresult = true;
 	}
 	else if (authentication_ && callMethod_ != std::string("login_to_simulator")) 
 	{
-		// Authentication results 
+		// Authentication results
 		threadState_->parameters.sessionHash = call->GetReplyString("sessionHash");
 		threadState_->parameters.gridUrl = std::string(call->GetReplyString("gridUrl"));
 		threadState_->parameters.avatarStorageUrl = std::string(call->GetReplyString("avatarStorageUrl"));
@@ -181,6 +197,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 	}
 	else if (authentication_ && callMethod_ == std::string("login_to_simulator"))
 	{
+	    std::cout << call->GetReplyString("session_id") << std::endl;
 		threadState_->parameters.sessionID.FromString(call->GetReplyString("session_id"));
 		threadState_->parameters.agentID.FromString(call->GetReplyString("agent_id"));
 		threadState_->parameters.circuitCode = call->GetReplyInt("circuit_code");
