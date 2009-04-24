@@ -20,6 +20,7 @@
 #include <xmlrpc.h>
 
 /// Represents a XMLRPC function call.
+/// \ingroup OpenSimProtocolClient
 class PocoXMLRPCCall
 {
 public:
@@ -49,6 +50,7 @@ public:
 };
 
 /// Represents a XMLRPC connection. You can do multiple XMLRPC requests/replies using the same connection.
+/// \ingroup OpenSimProtocolClient
 class PocoXMLRPCConnection
 {
 public:

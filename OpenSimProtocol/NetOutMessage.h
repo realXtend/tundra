@@ -13,7 +13,8 @@ using namespace RexTypes;
 class NetMessageManager;
 
 /** Helps building outbound packets by supporting convenient addition of new data to the message. Also
-	tracks that the message is crafted with the right structure. */
+	tracks that the message is crafted with the right structure.
+    \ingroup OpenSimProtocolClient */
 class OSPROTO_MODULE_API NetOutMessage
 {
 public:

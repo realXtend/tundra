@@ -1,0 +1,153 @@
+/**
+
+\page progconv Programming Conventions
+
+This page describes the different conventions for producing code and documentation for the RealXtend project.
+
+\section nameconv Naming Conventions
+
+\subsection nameconvp Code Organization, Naming and Formatting
+
+All publicly visible classes should be declared in their own header file using the <b>.h</b> extension, 
+placed in the folder of the sub-project in question, and named after the class. 
+Small tightly related classes, which are always included together may be declared in the same header file. 
+Internal helper structures or function objects may be declared in a <b>.cpp</b> file.
+<b>Implementations</b> should be placed in a source file called the same name as the class and placed in the folder of the subproject in question.
+Very small bodies of template and inline code may be placed inside the class header, but any larger pieces of code
+should be placed in an .inl file that matches the classes name, for example for a class NetMessage.h, the file NetMessage.inl defines
+the template and inline code that is associated to that class.
+
+\subsection nameconvh Header Files
+Each .cpp file should have corresponding header file, excluding certain .cpp files such as main.cpp and unit tests. 
+All header files should have #define guards to prevent multiple inclusion. The format of the symbol name should be incl_NamespaceClassName_h.
+
+Example:
+\verbatim
+#ifndef incl_CoreStdIncludes_h
+#define incl_CoreStdIncludes_h
+\endverbatim
+Use <b>forward declarations</b> to minimize use of \#include declarations in header files.
+
+In all files, try to order your \#include statements in the following order: C library, C++ library, other libraries' .h, your project's .h.
+
+\subsection nameconvfuncparam Function Parameters
+In functions that pass output variables as parameters to the function, prefer the order <b>Inputs first, outputs last</b>.
+When passing non-const pointers or references to a function, document the parameters in doxygen format using the appropriate <b>[in]</b>,
+<b>[out]</b>, <b>[in,out]</b> tags. If you only intend to read from a pointer or reference passed to a function, mark it const.
+
+\subsection scope Scoping and Namespaces
+Do not place the <b>using namespace</b> directives in .h- or .inl -files. Please use the <b>using namespace</b> directive at a local scope 
+whenever it improves readability.
+
+Use unnamed namespaces over the C-like <b>static</b> keyword.
+
+\subsection Identifier Naming
+The following identifiers are written in <b>title case</b>:
+\verbatim
+class AvatarNode;
+struct TCPConnectionParameters;
+typedef boost::shared_ptr<AvatarNode> AvatarNodePtr;
+void AvatarNode::WalkForward();
+\endverbatim
+Interfaces should be postfixed with 'Interface'. ex: MyNewClassInterface.
+
+Local variables and public/protected member variables are written in lower case with an underscore:
+\verbatim
+int local_var;
+AvatarPtr user_agent = manager->GetUserAgent();
+int AvatarNode::num_friends;
+\endverbatim
+
+Private member variables should be lower case as well, but with an underscore appended:
+\verbatim
+int AvatarNode::private_member_var_;
+\endverbatim
+
+In your editor, set the tab key to produce 4 spaces. Do not use the tab character.
+Parenthesis should use whitespace, and gravitate towards the thing they enclose. ex: if (IsFoo()) Do (bar); not if( IsFoo() ) Do( bar );
+Add extra newline at the end of file for crossplatform compatibility.
+Insert opening braces on a line of their own.
+
+Use verbose, descriptive names for classes, methods, variables - everything except trivial counters. 
+Code should be self-describing, don't be obtuse.
+
+Some of the existing code do not follow these naming conventions, largely due to the reason that the production was started
+before this document was written. Still, when in doubt, observe the existing code. Ambiguities will be resolved here later
+if and when necessary.
+
+\section cppstandard Programming Guidelines
+The RealXtend architecture uses <b>STL</b>, <b>Boost</b> and <b>PoCo</b> as the major frameworks. Please prefer using the containers
+and algorithms found in those wherever it is sensible. Avoid being too smart, there is no need to spend time figuring out how to achieve something
+using a stl back_inserter_iterator combined with a mem_fun_ref and a bind2nd if writing it using a simple loop would only take you
+a moment.
+
+If you need to use code from other dependency libraries, like Gtk, in an unexpected context, make sure to document the dependency
+clearly. Some of the dependencies are evolving and might be changed out later on.
+
+The core architecture uses <b>boost::shared_ptr</b> and <b>boost::weak_ptr</b> extensively. Be sure to understand how to use these and what their
+differences are.
+
+Use <b>assert</b>s to check for conditions that should never occur and that clearly indicate a programming error. Do not use
+assert in code that involves validating input data from an user, a file or from network.
+
+Both <b>exceptions</b> and <b>return values</b> may be used for error propagation. Use the one that makes more sense and try to be
+consistent within the same context. Do not use exceptions to manage normal control flow. When writing a catch block that does no 
+processing on the actual exception value, or when writing a catch(...)-block, document clearly why nothing is done to handle the 
+exception, or describe the not-yet-implemented exception handling using a <b>\\todo</b> block. Avoid writing overly general 
+catch blocks that are not in reality aware of all the exceptions they might receive.
+
+Be <b>const-correct</b> where possible. There are very few places where adding a const is wrong.
+
+For clarity, use <b>typedef</b>s to define template-based types that you use more than once. ex: typedef std::list<MyType*> MyTypeList;
+
+\section doc Documentation Guidelines
+
+All <b>public</b> classes and methods must be fully documented in English using Doxygen-compatible comments.
+Place comments mainly in the header files and not in .cpp -files. Use the <b>\\param</b> and <b>\\return</b> directives to 
+define inputs and outputs clearly and <b>\\note</b> to indicate points of interest. Small comment sections are suitable
+to be documented using the C++-style tags, but for larger sections, use C-style tags. For example:
+
+\verbatim
+    /// A stream reader utility for reading a byte array bit-by-bit.
+    /// \todo Move into OpenSimProtocol module, has nothing RexLogic -specific, -jj.
+    class BitStream
+    {
+    public:
+        /** Constructs a BitStream reader to the given memory area.
+            \param data A pointer to the data to read. \note The memory will not be copied, but the 
+            data will be read from the original buffer, so keep the data alive at least as long as 
+            you're using BitStream to read from it.
+            \param numBytes The number of bytes in the stream. */
+        BitStream(const void *data, size_t num_bytes);
+
+        /** Reads the given amount of bits from the stream and advances the position inside the stream.
+            The bits are read from the byte array most-significant-bit first, i.e. big endian for bits, but
+            if you read u16 or u32 variables, the bytes are reconstructed as LSB -first. This convention 
+            comes directly from the way existing data is stored in the SLUDP protocol.
+            \param count The number of bits to read, 0 <= count <= 32.
+            \return The desired amount of bits packed in an u32, populating bits from the 
+            least-significant-bits-end of the u32. The bits are filled in most-significant-bit first. */
+        Core::u32 ReadBits(int count);
+
+        /// Reads a single bit from the stream and advances the current stream position.
+        /// \return The next bit in the stream, or 0 if there are no bits left in the stream.
+        bool ReadBit();
+    };
+}
+\endverbatim
+
+See RexLogic::BitStream for the actual class in RealXtend documentation pages.
+
+<b>!! Important !!</b>
+
+We're developing under the scrum model (or at least trying), and <b>refactoring</b> happens often. It is not necessarily a
+sign that something failed previously. There is no need to pretend that any piece of code is final and you should use 
+<b>\\todo</b>s <b>extensively</b> to show what the current status and possible future directions are.
+
+Similarly, use <b>\\bug</b> to indicate a programming error you know to exist, but cannot for some reason fix now (time *is*
+a constraint). Don't feel guilty about marking <b>\\bug</b> items into code you have produced, these comments are worth gold 
+when the software evolves.
+
+<b>!! Important !!</b>
+
+*/

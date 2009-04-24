@@ -1,0 +1,14 @@
+/**
+
+\page OpenSimProtocolConnection Managing the OpenSim connection state
+
+This page describes how to manage the OpenSim server connection state using the OpenSimProtocol module.
+To familiarize yourself with the interface that allows this, see \ref OpenSimProtocolClient
+
+	\todo Tuoki, kirjoita.
+	1) Connecting to server (both methods) - description with perhaps example code snippets
+	2) Querying the current connection state from the module.
+	3) Disconnecting.
+	4) Current implementation state -  what is supported
+	   and what is not. (e.g. the XMLRPC missing/unused fields)
+*/

@@ -17,6 +17,7 @@ enum NetHeaderFlag
 };
 
 /// Identifies the type of a variable inside a network message block.
+/// \ingroup OpenSimProtocolClient
 enum NetVariableType
 {
 	NetVarInvalid = 0,
@@ -68,6 +69,7 @@ enum NetEncoding
 };
 
 /// Describes a variable that is present in a message block.
+/// \ingroup OpenSimProtocolClient
 struct NetMessageVariable
 {
 	std::string name;
@@ -78,6 +80,7 @@ struct NetMessageVariable
 };
 
 /// Identifies the type of a message block inside a network message.
+/// \ingroup OpenSimProtocolClient
 enum NetMessageBlockType
 {
 	NetBlockInvalid = 0,
@@ -87,6 +90,7 @@ enum NetMessageBlockType
 };
 
 /// Network messages consist of message blocks. This structure describes a single block.
+/// \ingroup OpenSimProtocolClient
 struct NetMessageBlock
 {
 	std::string name;
@@ -102,6 +106,7 @@ struct NetMessageBlock
 };
 
 /// Identifies different UDP message packets.
+/// \ingroup OpenSimProtocolClient
 typedef uint32_t NetMsgID;
 
 // Probably going to remove this, useless (for now at least).
@@ -115,6 +120,7 @@ typedef uint32_t NetMsgID;
 };*/
 
 /// Describes the format of an UDP network message.
+/// \ingroup OpenSimProtocolClient
 struct NetMessageInfo
 {
 	std::string name;

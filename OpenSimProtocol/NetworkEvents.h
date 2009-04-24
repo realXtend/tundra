@@ -21,6 +21,8 @@ namespace OpenSimProtocol
         std::string avatarStorageUrl;
     };
     
+    /// Defines the events posted by the OpenSimProtocolModule in category <b>NetworkState</b>.
+    /// \ingroup OpenSimProtocolClient @{
     namespace Events
     {
         /// These events belong to the "NetworkState" event category.
@@ -28,6 +30,7 @@ namespace OpenSimProtocol
         static const Core::event_id_t EVENT_SERVER_CONNECTED = 0x02;
         static const Core::event_id_t EVENT_SERVER_CONNECTION_FAILED = 0x03;
     }
+    /// @}
     
     /// Enumeration of the network connection states.
     namespace Connection
@@ -53,6 +56,7 @@ namespace OpenSimProtocol
     };
         
     /// Event data interface for inbound messages.
+    /// \ingroup OpenSimProtocolClient
     class NetworkEventInboundData : public Foundation::EventDataInterface
     {
     public:
@@ -65,6 +69,7 @@ namespace OpenSimProtocol
     };
 
     /// Event data interface for outbound messages.
+    /// \ingroup OpenSimProtocolClient
     class NetworkEventOutboundData : public Foundation::EventDataInterface
     {
     public:

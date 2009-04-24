@@ -5,35 +5,33 @@
 
 namespace RexLogic
 {
-    BitStream::BitStream(const void *data, size_t numBytes)
-        :data_(reinterpret_cast<const Core::u8*>(data)), numBits_(numBytes*8), numElems_((numBytes*8 + cNumBitsInElem - 1) / cNumBitsInElem), elemOfs_(0), bitOfs_(0)
+    BitStream::BitStream(const void *data, size_t num_bytes)
+        :data_(reinterpret_cast<const Core::u8*>(data)), num_elems_((num_bytes*num_bits_in_elem_ + num_bits_in_elem_ - 1) / num_bits_in_elem_), elem_ofs_(0), bit_ofs_(0)
     {
     }
 
     void BitStream::ResetPosition()
     {
-        elemOfs_ = 0;
-        bitOfs_ = 0;
+        elem_ofs_ = 0;
+        bit_ofs_ = 0;
     }
 
-    /** The bits in consecutive bytes are read MSB-first, i.e. the MSB of a byte is read first, and going down to the LSB.
-        But the bytes are read little-endian. */
     Core::u32 BitStream::ReadBits(int count)
     {
         Core::u8 data[4] = { 0 };
-        int curByte = 0;
-        int curBit = 0;
-        assert(cNumBitsInElem == 8);
-        int totalBits = std::min(cNumBitsInElem, count);
+        int cur_byte = 0;
+        int cur_bit = 0;
+        assert(num_bits_in_elem_ == 8);
+        int total_bits = std::min(num_bits_in_elem_, count);
         while(count-- > 0)
         {
             if (ReadBit()) ///\note Can optimize here - read several bits at a time instead of looping bit-per-bit.
-                data[curByte] |= 1 << (totalBits - 1 - curBit);
-            if (++curBit >= cNumBitsInElem)
+                data[cur_byte] |= 1 << (total_bits - 1 - cur_bit);
+            if (++cur_bit >= num_bits_in_elem_)
             {
-                ++curByte;
-                curBit = 0;
-                totalBits = std::min(cNumBitsInElem, count);
+                ++cur_byte;
+                cur_bit = 0;
+                total_bits = std::min(num_bits_in_elem_, count);
             }
         }
         return *reinterpret_cast<Core::u32*>(data);
@@ -44,12 +42,12 @@ namespace RexLogic
         if (BitsLeft() == 0)
             return false;
 
-        bool bit = (data_[elemOfs_] & (1 << (cNumBitsInElem - 1 - bitOfs_))) != 0;
-        ++bitOfs_;
-        if (bitOfs_ >= cNumBitsInElem)
+        bool bit = (data_[elem_ofs_] & (1 << (num_bits_in_elem_ - 1 - bit_ofs_))) != 0;
+        ++bit_ofs_;
+        if (bit_ofs_ >= num_bits_in_elem_)
         {
-            bitOfs_ = 0;
-            ++elemOfs_;
+            bit_ofs_ = 0;
+            ++elem_ofs_;
         }
         return bit;
     }
