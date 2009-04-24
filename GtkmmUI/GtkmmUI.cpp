@@ -33,7 +33,7 @@ GtkmmUI::GtkmmUI()
 }
 
 GtkmmUI::~GtkmmUI()
-{
+{ 
 }
 
 void GtkmmUI::Load()

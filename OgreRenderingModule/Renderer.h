@@ -39,16 +39,27 @@ namespace OgreRenderer
         friend class EventListener;
         
     public:
+        //! constructor
         Renderer(Foundation::Framework* framework);
+
+        //! destructor
         virtual ~Renderer();
 
         //! initializes renderer
+        /*! creates render window. if render window is to be embedded, call SetExternalWindowParameter() before.
+         */
         void Initialize();
 
         //! post-initializes renderer
         /*! queries event categories it needs
          */
         void PostInitialize();
+
+        //! sets external window parameter, for embedding the Ogre renderwindow
+        void SetExternalWindowParameter(const std::string& param) { external_window_parameter_ = param; }
+
+        //! returns initialized state
+        bool IsInitialized() const { return initialized_; }
 
         //! returns Ogre root
         OgreRootPtr GetRoot() const { return root_; }
@@ -83,6 +94,8 @@ namespace OgreRenderer
         int GetWindowWidth() const;
         int GetWindowHeight() const;
 
+        Foundation::Framework* GetFramework() const { return framework_; }
+
         //! subscribe a listener to renderer log. Can be used before renderer is initialized.
         void SubscribeLogListener(const Foundation::LogListenerPtr &listener);
         //! unsubsribe a listener to renderer log. Can be used before renderer is initialized.
@@ -93,14 +106,16 @@ namespace OgreRenderer
          */
         void Update(Core::f64 frametime);
         
+        //! resizes the window
+        void Resize(Core::uint width, Core::uint height);
+
+        //! callback when renderwindow closed
+        /*! sends event and exits the framework main loop
+         */
+        void OnWindowClosed();
+
         //! renders the screen
         void Render();
-
-        //! handles Ogre window close event
-        void windowClosed(Ogre::RenderWindow* rw);
-        
-        //! handles Ogre window resize event
-        void windowResized(Ogre::RenderWindow* rw);
         
         //! handles an asset system event
         bool HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
@@ -202,6 +217,9 @@ namespace OgreRenderer
 
         //! Ogre mesh resources
         Foundation::ResourceMap meshes_;
+
+        //! External window parameter, to be used when embedding the renderwindow
+        std::string external_window_parameter_;
     };
 }
 

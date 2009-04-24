@@ -24,6 +24,7 @@ INCLUDE_POCO()
 INCLUDE_OIS()
 # This is stupid, but seems to be needed for MSVC because linking to SupportModules pulls in OgreMain
 INCLUDE_OGRE()
+INCLUDE_GTKMM()
 
 add_definitions (-DMODULE_EXPORTS)
 
