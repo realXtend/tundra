@@ -10,6 +10,8 @@
 
 namespace RexLogic
 {
+    //! Each scene entity representing a prim in OpenSim sense has
+    //! this component.
     class EC_OpenSimPrim : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_OpenSimPrim);
@@ -29,11 +31,7 @@ namespace RexLogic
 
         uint8_t Material;
         uint8_t ClickAction;
-        uint32_t UpdateFlags;
-        
-/*        Vector3 Position;
-        Vector3 Scale;
-        Quaternion Rotation;*/
+        uint32_t UpdateFlags;        
 
         std::string ServerScriptClass;
         

@@ -5,6 +5,7 @@
 
 namespace Foundation
 {
+    /// Base class for all data that is passed as a parameter of a system-wide event.
     class EventDataInterface
     {
     public:

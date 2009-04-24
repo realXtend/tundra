@@ -10,6 +10,7 @@ namespace Foundation
     class Framework;
     class ModuleInterface;
 
+    //! Base class for all objects that register their entity-component factory services to the framework.
     class ComponentRegistrarInterface
     {
     public:

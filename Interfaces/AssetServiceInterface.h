@@ -10,6 +10,8 @@ namespace Foundation
     class AssetInterface;
     typedef boost::shared_ptr<AssetInterface> AssetPtr;
     
+    //! An asset container service implements this interface to provide client modules
+    //! with asset request and retrieval functionality.
     class AssetServiceInterface : public ServiceInterface
     {
     public:

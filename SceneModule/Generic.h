@@ -81,6 +81,7 @@ namespace Scene
         //! Delete entity with specified id
         virtual void DestroyEntity(Core::entity_id_t id);
 
+        /// Implements a non-const sequential iterator for accessing the entities in the scene.
         class SCENE_MODULE_API EntityIteratorImpl : public Foundation::SceneInterface::EntityIteratorInterface
         {
         public:
@@ -100,6 +101,7 @@ namespace Scene
         SceneIteratorPtr SceneIteratorBegin() { return SceneIteratorPtr(new EntityIteratorImpl(entities_.begin())); }
         SceneIteratorPtr SceneIteratorEnd() { return SceneIteratorPtr(new EntityIteratorImpl(entities_.end())); }
 
+        /// Implements a const sequential iterator for accessing the entities in the scene.
         class SCENE_MODULE_API ConstEntityIteratorImpl : public SceneInterface::ConstEntityIteratorInterface
         {
         public:

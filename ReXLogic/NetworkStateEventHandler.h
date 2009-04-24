@@ -10,6 +10,7 @@ namespace RexLogic
 {
     class RexLogicModule;
 
+    /// Handles events related to changes in server connectivity in a RexLogic-specific way.
     class NetworkStateEventHandler
     {
     public:

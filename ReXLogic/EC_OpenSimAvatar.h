@@ -9,6 +9,8 @@
 
 namespace RexLogic
 {
+    //! This component is present on all avatars when connected to an
+    //! OpenSim world. 
     class EC_OpenSimAvatar : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_OpenSimAvatar);

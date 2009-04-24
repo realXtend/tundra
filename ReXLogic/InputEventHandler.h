@@ -10,6 +10,7 @@ namespace RexLogic
     class InputStateInterface;
     class RexLogicModule;
 
+    //! Performs the keyboard and mouse input handling of RexLogic.
     class InputEventHandler
     {
         typedef boost::weak_ptr<InputStateInterface> InputStatePtr;

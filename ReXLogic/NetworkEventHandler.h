@@ -17,6 +17,7 @@ namespace RexLogic
     struct DecodedTerrainPatch;
     class RexLogicModule;
 
+    /// Handles incoming SLUDP network events in a Rex-specific way. \todo Break down into more logical functions.
     class NetworkEventHandler
     {
     public:

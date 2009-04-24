@@ -12,6 +12,7 @@ namespace RexLogic
 {
     class RexLogicModule;
 
+    //! Implements functionality to move the client's avatar.
     class AvatarController : public InputStateInterface
     {
     public:

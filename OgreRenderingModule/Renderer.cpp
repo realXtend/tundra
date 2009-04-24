@@ -16,6 +16,7 @@ using namespace Foundation;
 
 namespace OgreRenderer
 {
+    //! Responds to Ogre's window events and manages the Realxtend world render window.
     class EventListener : public Ogre::WindowEventListener
     {
     public:

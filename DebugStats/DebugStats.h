@@ -88,6 +88,8 @@ private:
     Glib::RefPtr<Gnome::Glade::Xml> debugModules_;
     Glib::RefPtr<Gtk::TreeStore> debugModulesModel_;
 
+    //! Class that describes the data model used for in a Gtk treeview.
+    //! This model is used for the modules list window.
     struct ModelColumns : public Gtk::TreeModelColumnRecord
     {
         Gtk::TreeModelColumn<Glib::ustring>  moduleName;

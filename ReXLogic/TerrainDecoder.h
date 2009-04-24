@@ -37,6 +37,7 @@ enum TerrainPatchLayerType
     TPLayerCloud = 0x38
 };
 
+/// Data structure to contain the output data from the terrain IDCT decoder.
 struct DecodedTerrainPatch
 {
     std::vector<float> heightData;

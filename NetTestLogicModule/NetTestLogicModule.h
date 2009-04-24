@@ -128,11 +128,10 @@ namespace NetTest
         Gtk::Entry *entry_server_;
         Gtk::Entry *entry_username_;
      
-       
-
         /// Tree model columns for entity list.
         Glib::RefPtr<Gtk::TreeStore> logModel;
         
+        /// Gtk treeview data model for the in/outbound packet log window.
         class LogModelColumns : public Gtk::TreeModel::ColumnRecord
         {
         public:
@@ -156,6 +155,7 @@ namespace NetTest
         /// Tree model columns for packet dump.
         Glib::RefPtr<Gtk::TreeStore> packetDumpModel;
         
+        /// Gtk treeview data model for the packet contents dump window.
         class PacketDumpModelColumns : public Gtk::TreeModel::ColumnRecord
         {
         public:

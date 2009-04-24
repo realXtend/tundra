@@ -27,6 +27,8 @@ namespace Foundation
         };
         typedef boost::shared_ptr<SharedLibrary> SharedLibraryPtr;
 
+        //! A function object that deletes a SharedLibrary object once it is not used.
+        //! Used as a Deletor object for boost::shared_ptr.
         class ModuleDeletor
         {
             std::string entry_;
@@ -284,6 +286,7 @@ namespace Foundation
             return false;
         }
 
+        //! @return True if the given module library entry is present, false otherwise.
         bool HasModuleEntry(const std::string &entry) const
         {
             for (size_t i = 0 ; i < modules_.size() ; ++i)
