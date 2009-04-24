@@ -6,7 +6,7 @@
 #include "ComponentRegistrarInterface.h"
 
 #include "md5wrapper.h"
-#include "PocoXMLRPC.h"
+#include "XMLRPCEPI.h"
 #include "OpenSimAuth.h"
 #include "RexProtocolMsgIDs.h"
 

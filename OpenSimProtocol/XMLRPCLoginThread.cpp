@@ -9,7 +9,7 @@
 
 #include "XMLRPCLoginThread.h"
 #include "OpenSimProtocolModule.h"
-#include "PocoXMLRPC.h"
+#include "XMLRPCEPI.h"
 #include "md5wrapper.h"
 #include "OpenSimAuth.h"
 
@@ -101,66 +101,64 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 	std::string mac_hash = md5.getHashFromString(mac_addr);
 	std::string id0_hash = md5.getHashFromString(id0);
     
-    boost::shared_ptr<PocoXMLRPCConnection> rpcConnection;
-    try
+    XMLRPCEPI* call = 0;
+    if ( authentication_ && callMethod_ == "ClientAuthentication" ) 
+        call = new XMLRPCEPI(callMethod_,authenticationAddress_, authenticationPort_);
+    else
     {
-		if (authentication_ && callMethod_ != std::string("login_to_simulator") )
-			rpcConnection = boost::shared_ptr<PocoXMLRPCConnection>(new PocoXMLRPCConnection(authenticationAddress_.c_str(), boost::lexical_cast<int>(authenticationPort_)));
-		else if (callMethod_ == std::string("login_to_simulator"))
-			rpcConnection = boost::shared_ptr<PocoXMLRPCConnection>(new PocoXMLRPCConnection(worldAddress_.c_str(), boost::lexical_cast<int>(worldPort_)));
-    } catch(std::exception &e)
-    {
-        OpenSimProtocolModule::LogError("Could not connect to server. Reason: " + Core::ToString(e.what()) + ".");
-        return false;
+        call = new XMLRPCEPI;
+        call->Connect(worldAddress_, worldPort_);
+        call->CreateCall(callMethod_);
     }
 
-	boost::shared_ptr<PocoXMLRPCCall> call = rpcConnection->StartXMLRPCCall(callMethod_.c_str());
-	if (!call)
-        return false;
+    
         
 	if (!authentication_ && callMethod_ == std::string("login_to_simulator"))
 	{
-		call->AddStringMember("first", firstName_.c_str());
-		call->AddStringMember("last", lastName_.c_str());
-		call->AddStringMember("passwd", password_hash.c_str());
+		call->AddMember("first", firstName_);
+		call->AddMember("last", lastName_);
+		call->AddMember("passwd", password_hash);
      }
 	else if (authentication_ && callMethod_ == std::string("ClientAuthentication"))
 	{
 		std::string account = authenticationLogin_ + "@" + authenticationAddress_ + ":" +authenticationPort_; 
-		call->AddStringMember("account", account.c_str());
-		call->AddStringMember("passwd", password_hash.c_str());
+		call->AddMember("account", account);
+		call->AddMember("passwd", password_hash);
 		std::string loginuri = "";
 	
 		loginuri = loginuri+worldAddress_+":"+ worldPort_;
-		call->AddStringMember("loginuri", loginuri.c_str());
+		call->AddMember("loginuri", loginuri);
 	}
 	else if (authentication_ && callMethod_ == std::string("login_to_simulator"))
 	{
 
-		call->AddStringMember("sessionhash", threadState_->parameters.sessionHash.c_str());
+		call->AddMember("sessionhash", threadState_->parameters.sessionHash);
 		std::string account = authenticationLogin_ + "@" + authenticationAddress_ + ":" + authenticationPort_; 
-		call->AddStringMember("account", account.c_str());
+		call->AddMember("account", account);
 		std::string address = authenticationAddress_ + ":" + authenticationPort_;
-		call->AddStringMember("AuthenticationAddress", address.c_str());
+		call->AddMember("AuthenticationAddress", address);
 		std::string loginuri = "";
 		if (!worldAddress_.find("http") != std::string::npos )
 			loginuri = "http://";
 		
 		loginuri = loginuri + worldAddress_ + ":" + worldPort_;
-		call->AddStringMember("loginuri", loginuri.c_str());
+		call->AddMember("loginuri", loginuri.c_str());
 	}
 
-	call->AddStringMember("start", "last"); // Starting position perhaps?
-    call->AddStringMember("version", "realXtend 1.20.13.91224");  ///\todo Make build system create versioning information.
-	call->AddStringMember("channel", "realXtend");
-	call->AddStringMember("platform", "Win"); ///\todo.
-	call->AddStringMember("mac", mac_hash.c_str());
-	call->AddStringMember("id0", id0_hash.c_str());
-	call->AddIntMember("last_exec_event", 0); // ?
+    
+
+    call->AddMember("start", std::string("last")); // Starting position perhaps?
+	call->AddMember("version", std::string("realXtend 1.20.13.91224"));  ///\todo Make build system create versioning information.
+	call->AddMember("channel", std::string("realXtend"));
+	call->AddMember("platform", std::string("Win")); ///\todo.
+	call->AddMember("mac", mac_hash);
+	call->AddMember("id0", id0_hash);
+	call->AddMember("last_exec_event", int(0)); // ?
 
 	// The contents of 'options' array unknown. ///\todo Go through them and identify what they really affect.
-	PocoXMLRPCCall::StringArray arr = call->CreateStringArray("options");
-	call->AddStringToArray(arr, "inventory-root");
+	
+    std::string arr = "options";
+    call->AddStringToArray(arr, "inventory-root");
 	call->AddStringToArray(arr, "inventory-skeleton");
 	call->AddStringToArray(arr, "inventory-lib-root");
 	call->AddStringToArray(arr, "inventory-lib-owner");
@@ -176,36 +174,44 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 	call->AddStringToArray(arr, "login-flags");
 	call->AddStringToArray(arr, "global-textures");
 
-	if(!rpcConnection->FinishXMLRPCCall(call))
-	    return false;
+	
+    call->Send();
 
 	bool loginresult = false;
 	if (!authentication_)
 	{
-		threadState_->parameters.sessionID.FromString(call->GetReplyString("session_id"));
-		threadState_->parameters.agentID.FromString(call->GetReplyString("agent_id"));
-		threadState_->parameters.circuitCode = call->GetReplyInt("circuit_code");
+        threadState_->parameters.sessionID.FromString(call->GetReply<std::string>("session_id"));
+        threadState_->parameters.agentID.FromString(call->GetReply<std::string>("agent_id"));
+		threadState_->parameters.circuitCode = call->GetReply<int>("circuit_code");
+        
+        if ( threadState_->parameters.sessionID.ToString() == std::string("") || threadState_->parameters.agentID.ToString() == std::string("") 
+				|| threadState_->parameters.circuitCode == 0 )
+			{
+				//todo collect xml failure message.			
+				loginresult = false;
+			}
+
 		loginresult = true;
 	}
 	else if (authentication_ && callMethod_ != std::string("login_to_simulator")) 
 	{
 		// Authentication results
-		threadState_->parameters.sessionHash = call->GetReplyString("sessionHash");
-		threadState_->parameters.gridUrl = std::string(call->GetReplyString("gridUrl"));
-		threadState_->parameters.avatarStorageUrl = std::string(call->GetReplyString("avatarStorageUrl"));
+        threadState_->parameters.sessionHash = call->GetReply<std::string>("sessionHash");
+        threadState_->parameters.gridUrl = std::string(call->GetReply<std::string>("gridUrl"));
+        threadState_->parameters.avatarStorageUrl = std::string(call->GetReply<std::string>("avatarStorageUrl"));
 		loginresult = true;
 	}
 	else if (authentication_ && callMethod_ == std::string("login_to_simulator"))
 	{
-	    std::cout << call->GetReplyString("session_id") << std::endl;
-		threadState_->parameters.sessionID.FromString(call->GetReplyString("session_id"));
-		threadState_->parameters.agentID.FromString(call->GetReplyString("agent_id"));
-		threadState_->parameters.circuitCode = call->GetReplyInt("circuit_code");
+        std::cout << call->GetReply<std::string>("session_id") << std::endl;
+        threadState_->parameters.sessionID.FromString(call->GetReply<std::string>("session_id"));
+        threadState_->parameters.agentID.FromString(call->GetReply<std::string>("agent_id"));
+		threadState_->parameters.circuitCode = call->GetReply<int>("circuit_code");
 		loginresult = true;
 	}
 
-	XMLRPC_RequestFree(call->reply, 1);
-
+	
+    delete call;
 	return loginresult;
 }
 
