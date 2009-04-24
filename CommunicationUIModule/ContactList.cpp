@@ -39,6 +39,7 @@ namespace Communication
 
         this->append_column("ID", this->columns_.id_);
 		this->append_column("Contact", columns_.contact_);
+        this->append_column("Status", columns_.status_);
 
         //Gtk::TreeModel::Row row = *(lstContactsTreeModel->append());
         //row[columns_.id_] = "test";
@@ -74,9 +75,13 @@ namespace Communication
         switch (event->keyval)
         {
             case GDK_Return:
+            case GDK_KP_Enter:
+            case GDK_ISO_Enter:
+            case GDK_3270_Enter:
                 std::cout << "Enter: " << std::endl;
                 handled = true;
                 break;
+
             //case GDK_3270_Enter:
             //    std::cout << "Enter: " << std::endl;
             //    handled = true;
@@ -107,6 +112,9 @@ namespace Communication
                 std::cout << "  Selected Contact=" << contact << std::endl;
 
                 this->uimodule_->StartChat(contact.c_str());
+
+                
+
                 //std::cout << "  Selected ID=" << id << std::endl;
 			    //char** args = new char*[2];
 			    //char* buf1 = new char[20];
@@ -127,6 +135,21 @@ namespace Communication
     void ContactList::removeContact(){
 
     }
+
+    void ContactList::setContactStatus(char* id, char* status)
+    {
+        Gtk::TreeModel::Children children = ((Glib::RefPtr<Gtk::TreeModel>)get_model())->children();
+        Gtk::TreeNodeChildren::iterator iter = children.begin();
+        
+        //Gtk::TreeViewColumn
+
+        //Glib::RefPtr<TreeModel> model = get_model();
+        //lstContactsTreeModel->get_iter(
+        //lstContactsTreeModel->foreach(
+        
+
+    }
+
 
     //void ContactList::on_menu_file_popup_generic()
     //{

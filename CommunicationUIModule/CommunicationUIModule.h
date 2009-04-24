@@ -67,8 +67,10 @@ namespace Communication
 		static void channelClosed(char*);
 		static void messagReceived(char*);
 		static void friendReceived(char* t);
+        static void contactStatusChanged(char* id);
 
 		void setOnlineStatus(char* status);
+
 
 	private:
 		void initializeMainCommWindow();
@@ -92,7 +94,7 @@ namespace Communication
 		Gtk::Window *dlgAccount;
 		Gtk::ActionGroup *actionGroup;
 		Gtk::Dialog* dlgEntry;
-		Gtk::TreeView* lstBuddies;
+		//Gtk::TreeView* lstBuddies;
         Gtk::Menu* menuContactList;
         Gtk::Fixed* fxdContainer;
         ContactList lstContacts;
