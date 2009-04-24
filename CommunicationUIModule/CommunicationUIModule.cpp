@@ -74,6 +74,9 @@ namespace Communication
 		eIntf->SetCallback(CommunicationUIModule::channelClosed, "channel_closed");
 		eIntf->SetCallback(CommunicationUIModule::messagReceived, "message_received");
 		eIntf->SetCallback(CommunicationUIModule::friendReceived, "contact_item");
+
+        eIntf->SetCallback(CommunicationUIModule::contactStatusChanged, "contact_status_changed");
+
 		
 	}
 
@@ -108,7 +111,7 @@ namespace Communication
 		commUI_XML->connect_clicked("mi_settings", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuSettings));
 		commUI_XML->connect_clicked("mi_directchat", sigc::mem_fun(*this, &CommunicationUIModule::OnDirectChatMenuStartChat));
 		commUI_XML->connect_clicked("btnTest", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuConnect));
-        commUI_XML->connect_clicked("lstBuddies", sigc::mem_fun(*this, &CommunicationUIModule::OnContactListClicked));
+        //commUI_XML->connect_clicked("lstBuddies", sigc::mem_fun(*this, &CommunicationUIModule::OnContactListClicked));
         
 		// entry dialog
 		commUI_XML->connect_clicked("btnEntryOk", sigc::mem_fun(*this, &CommunicationUIModule::OnEntryDlgOk));
@@ -193,21 +196,6 @@ namespace Communication
 		LogInfo(str.c_str());
 		if(entryret_==1){
             StartChat(str.c_str());
-
-			//LogInfo("start chat window here");
-
-			//// Fix any memory leaks here !!
-
-			//char** args = new char*[2];
-			//char* buf1 = new char[20];
-			//strcpy(buf1,str.c_str());
-			//args[0] = buf1;
-
-			//std::string str = "CStartChatSession";
-			//std::string syntax = "s";
-			//Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, args);
-   //         sessionUp_ = true;
-			//this->session_ = Communication::ChatSessionUIPtr(new Communication::ChatSession(str.c_str(), imScriptObject));
 		}
 	}
 
@@ -226,7 +214,8 @@ namespace Communication
 		std::string syntax = "s";
 		Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, args);
         sessionUp_ = true;
-		this->session_ = Communication::ChatSessionUIPtr(new Communication::ChatSession(contact, imScriptObject));        
+		this->session_ = Communication::ChatSessionUIPtr(new Communication::ChatSession(contact, imScriptObject));
+
     }
 
 	void CommunicationUIModule::OnEntryDlgOk(){
@@ -330,14 +319,36 @@ namespace Communication
         std::string contact(name);
         row[this->lstContacts.columns_.id_] = id;
         row[this->lstContacts.columns_.contact_] = contact;
-		
+        row[this->lstContacts.columns_.status_] = "offline";
 	}
+
+    
 
     void CommunicationUIModule::OnContactListClicked()
     {
         LogInfo("OnContactListClicked");
     }
+    
 
+    void CommunicationUIModule::contactStatusChanged(char* id)
+    {
+        LogInfo("status change");
+        // ask status, a bit cumbersome to do it this way
+
+        // Fix any memory leaks here !!
+        char** args = new char*[2];
+		char* buf1 = new char[20];
+		strcpy(buf1,id);
+		args[0] = buf1;
+        
+
+		std::string str = "CGetStatusWithID";
+		std::string syntax = "s";
+		Foundation::ScriptObject* ret = instance_->imScriptObject->CallMethod(str, syntax, args);
+        char* status = ret->ConvertToChar();
+        instance_->lstContacts.setContactStatus(id, status);
+        //instance_->setContactStatus()
+    }
 }
 
 

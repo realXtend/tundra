@@ -29,21 +29,25 @@ namespace Communication
 		//ContactList(CommunicationUIModule& uimodule);
         ContactList();
 		virtual ~ContactList(void);
-    
         void SetModule(CommunicationUIModule& uimodule);
-        
+
+
 		class ModelColumns : public Gtk::TreeModel::ColumnRecord
 		{
 		public:
-            ModelColumns(){ add(id_); add(contact_);}
+            ModelColumns(){ add(id_); add(contact_); add(status_);}
 
 			Gtk::TreeModelColumn<std::string> id_;
 			Gtk::TreeModelColumn<std::string> contact_;
+            Gtk::TreeModelColumn<std::string> status_;
 		};
 
     
         Glib::RefPtr<Gtk::ListStore> lstContactsTreeModel;
         ModelColumns columns_;
+
+
+        void setContactStatus(char* id, char* status);
 
     protected:
         //Signal handlers:
@@ -53,6 +57,7 @@ namespace Communication
         void startChat();
         void startVoip();
         void removeContact();
+
 
 
         //Glib::RefPtr<Gtk::TextBuffer> buddyBuffer_;
