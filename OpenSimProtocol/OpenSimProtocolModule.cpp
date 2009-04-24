@@ -68,7 +68,6 @@ namespace OpenSimProtocol
 		LogInfo("System " + Name() + " uninitialized.");
     }
     
-    bool once = true;
     // virtual
     void OpenSimProtocolModule::Update(Core::f64 frametime)
     {

@@ -16,7 +16,21 @@
 
 namespace OpenSimProtocol
 {
-    /// Interface for modules.
+    /** \defgroup OpenSimProtocolClient OpenSimProtocol Client Interface
+        This page lists the public interface of the OpenSimProtocol module. Use
+        this module to track the server connection state as well as to 
+        communicate with the server using the SLUDP protocol.
+
+        For an introduction to how to work with this module, see
+        \ref OpenSimProtocolConnection "Managing the OpenSim connection state"
+        and \ref SLUDP "Interfacing with the OpenSim world using SLUDP messages."
+
+        @{
+    */
+
+    /// OpenSimProtocolModule exposes other modules with the funtionality of
+    /// communicating with the OpenSim server using the SLUDP protocol. It
+    /// also handles the XMLRPC handshakes with the server.
     class OSPROTO_MODULE_API OpenSimProtocolModule : public Foundation::ModuleInterfaceImpl, public INetMessageListener
     {
     public: 
@@ -136,6 +150,9 @@ namespace OpenSimProtocol
         /// Current connection client parameters.
         ClientParameters clientParameters_;
     };
+
+    /// @}
 }
+
 
 #endif

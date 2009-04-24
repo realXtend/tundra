@@ -9,7 +9,8 @@
 using namespace RexTypes;
 
 /** Helps parsing inbound packets by supporting convenient reading of new data from the message. Also
-	tracks that the message is read with the right structure. */
+	tracks that the message is read with the right structure.
+    \ingroup OpenSimProtocolClient */
 class OSPROTO_MODULE_API NetInMessage
 {
 public:

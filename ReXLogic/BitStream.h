@@ -1,51 +1,62 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef BitStream_h
-#define BitStream_h
+#ifndef RexLogic_BitStream_h
+#define RexLogic_BitStream_h
 
 namespace RexLogic
 {
-
-    /// A nice interface for reading individual bits in a stream
-    /// \todo Move into OpenSimProtocol module, -jj.
+    /// A stream reader utility for reading a byte array bit-by-bit.
+    /// \todo Move into OpenSimProtocol module, has nothing RexLogic -specific, -jj.
     class BitStream
     {
     private:
-        static const int cNumBitsInElem = 8;
+        /// The memory is now accessed per-byte, but for optimization, one could use u32 reads.
+        static const int num_bits_in_elem_ = 8;
     public:
+        /** Constructs a BitStream reader to the given memory area.
+            \param data A pointer to the data to read. \note The memory will not be copied, but the 
+            data will be read from the original buffer, so keep the data alive at least as long as 
+            you're using BitStream to read from it.
+            \param numBytes The number of bytes in the stream. */
+        BitStream(const void *data, size_t num_bytes);
 
-        /// Constructs a BitStream reader. The memory will not be copied, but the data will be read from the original buffer,
-        /// so keep the data alive at least as long as you're using BitStream to read from it.
-        /// \bug If numBits % 8 != 0, reading the last byte from a bit fails (returns MSB's that are bogus, instead of the correct LSB's).
-        BitStream(const void *data, size_t numBytes);
-
-        /// Reads the given amount of bits off the stream (and advances the position inside the stream).
-        /// @param count The number of bits to read, 1 <= count <= 32.
-        /// @return The bits organized in a variable. The bit ordering will be reversed, i.e. the first bit in the stream
-        ///         will be set to be the MSB in the returned variable, and the last bit will be the LSB.
+        /** Reads the given amount of bits from the stream and advances the position inside the stream.
+            The bits are read from the byte array most-significant-bit first, i.e. big endian for bits, but
+            if you read u16 or u32 variables, the bytes are reconstructed as LSB -first. This convention 
+            comes directly from the way existing data is stored in the SLUDP protocol.
+            \param count The number of bits to read, 0 <= count <= 32.
+            \return The desired amount of bits packed in an u32, populating bits from the 
+            least-significant-bits-end of the u32. The bits are filled in most-significant-bit first. */
         Core::u32 ReadBits(int count);
 
-        /// @return The next bit in the stream. Advances the current stream position. If no bits left in the stream, returns 0.
+        /// Reads a single bit from the stream and advances the current stream position.
+        /// \return The next bit in the stream, or 0 if there are no bits left in the stream.
         bool ReadBit();
 
         /// Resets the current stream position to the beginning of the stream.
         void ResetPosition();
 
-        /// @return The current bit position in the stream, [0, Size[.
-        size_t BitPos() const { return elemOfs_ * cNumBitsInElem + bitOfs_; }
+        /// \return The current bit position in the stream, [0, num_elems_*num_bits_in_elem_].
+        size_t BitPos() const { return elem_ofs_ * num_bits_in_elem_ + bit_ofs_; }
 
-        /// @return The number of bits left in this stream.
-        size_t BitsLeft() const { return numBits_ - (elemOfs_ * cNumBitsInElem + bitOfs_); }
+        /// \return The number of bits left in this stream, [0, num_elems_*num_bits_in_elem_].
+        size_t BitsLeft() const { return num_elems_*num_bits_in_elem_ - (elem_ofs_ * num_bits_in_elem_ + bit_ofs_); }
 
-        /// @return The number of total bits in this stream.
-        size_t Size() const { return numBits_; }
+        /// \return num_elems_*num_bits_in_elem_ - the number of total bits in this stream.
+        size_t Size() const { return num_elems_*num_bits_in_elem_; }
 
     private:
+        /// The actual data buffer, not owned by BitStream.
         const Core::u8 *data_;
-        size_t numBits_;
-        size_t numElems_;
-        int elemOfs_;
-        int bitOfs_;
+
+        /// The number of total elements in the buffer.
+        size_t num_elems_;
+
+        /// The element offset the read pointer is currently at.
+        int elem_ofs_;
+
+        /// The bit index of the current element the read pointer is at. Runs up from 0 to num_bits_in_elem_-1.
+        int bit_ofs_;
     };
 }
 

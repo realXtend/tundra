@@ -1,3 +1,5 @@
+/// \cond
+
 /*
  *	This is the C++ implementation of the MD5 Message-Digest
  *	Algorithm desrcipted in RFC 1321.
@@ -84,3 +86,5 @@ class MD5
 /*
  * EOF
  */
+
+/// \endcond

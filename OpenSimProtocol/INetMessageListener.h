@@ -4,16 +4,21 @@
 
 #include "OpenSimProtocolModuleApi.h"
 
-/// Interface that is implemented by an object that is interested in receiving network messages.
-/// Register network listener objects to a NetMessageManager.
+/** \brief Interface that is implemented by an object that is interested in receiving 
+    network messages directly from a NetMessageManager object.
+
+    In Rex architecture, the OpenSimProtocolModule
+    implements this interface and manages the messaging between other modules.
+    Individual module writers should not use this.
+    Use NetMessageManager::RegisterNetworkListener to register the listener. */
 class OSPROTO_MODULE_API INetMessageListener
 {
 public:
 	INetMessageListener() {}
 	virtual ~INetMessageListener() {}
 
-	/// Called for each network message received. The callee can process the inputted message
-    /// any way he wants.
+	/// Called by NetMessageManager for each network message received. 
+    /// The callee can process the inputted message any way he wants.
 	/// @param msgID The type of the message.
 	/// @param msg The actual message contents.
 	virtual void OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg) = 0;

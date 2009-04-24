@@ -13,7 +13,8 @@
 #include "INetMessageListener.h"
 
 /// Manages both in- and outbound UDP communication. Implements a packet queue, packet sequence numbering, ACKing,
-/// pinging, and reliable communications. reX-protocol specific.
+/// pinging, and reliable communications. reX-protocol specific. Used internally by OpenSimProtocolModule, external
+/// module users don't need to work on this.
 class NetMessageManager
 {
 public:
