@@ -48,6 +48,7 @@ macro (LINK_GTKMM)
 
 			glib-2.0.lib
 			gtk-win32-2.0.lib
+			gdk-win32-2.0.lib
 
 			debug atkmm-vc90-d-1_6.lib
 			debug cairomm-vc90-d-1_0.lib

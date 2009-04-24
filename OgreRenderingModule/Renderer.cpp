@@ -45,8 +45,7 @@ namespace OgreRenderer
         {
             if (rw == renderer_->renderwindow_)
             {
-                renderer_->framework_->Exit();
-                renderer_->framework_->GetEventManager()->SendEvent(renderer_->renderercategory_id_, Event::WINDOW_CLOSED, NULL);
+                renderer_->OnWindowClosed();
             }
         }
         
@@ -108,6 +107,7 @@ namespace OgreRenderer
         renderercategory_id_ = event_manager->RegisterEventCategory("Renderer");
         event_manager->RegisterEvent(renderercategory_id_, Event::POST_RENDER, "PostRender");
         event_manager->RegisterEvent(renderercategory_id_, Event::WINDOW_CLOSED, "WindowClosed");
+        event_manager->RegisterEvent(renderercategory_id_, Event::WINDOW_RESIZED, "WindowResized");
     }
     
     Renderer::~Renderer()
@@ -170,6 +170,9 @@ namespace OgreRenderer
 
         Ogre::NameValuePairList params;
         std::string application_name = framework_->GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "application_name");
+
+        if (!external_window_parameter_.empty()) 
+            params["externalWindowHandle"] = external_window_parameter_;
 
         try
         {
@@ -275,9 +278,14 @@ namespace OgreRenderer
     size_t Renderer::GetWindowHandle() const
     {
         size_t window_handle = 0;
-        if (renderwindow_)
-            renderwindow_->getCustomAttribute("WINDOW", &window_handle);
-        
+
+        //! \todo OIS crashes with a GTK external window handle, return 0 to prevent OIS module init
+        if (external_window_parameter_.empty())
+        {
+            if (renderwindow_)
+                renderwindow_->getCustomAttribute("WINDOW", &window_handle);
+        }
+
         return window_handle;
     }
     int Renderer::GetWindowWidth() const
@@ -310,6 +318,20 @@ namespace OgreRenderer
         Ogre::WindowEventUtilities::messagePump();
     }
     
+    void Renderer::Resize(Core::uint width, Core::uint height)
+    {
+        if (renderwindow_)
+        {
+            renderwindow_->resize(width, height);
+        }
+    }
+
+    void Renderer::OnWindowClosed()
+    {
+        framework_->Exit();
+        framework_->GetEventManager()->SendEvent(renderercategory_id_, Event::WINDOW_CLOSED, NULL);
+    }
+
     void Renderer::Render()
     {
         if (!initialized_) return;

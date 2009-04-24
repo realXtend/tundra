@@ -12,11 +12,19 @@
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreConsoleOverlay.h"
 
+#pragma warning( push )
+#pragma warning( disable : 4250 )
+#include <gtkmm/window.h>
+#include "OgreWidget.h"
+#pragma warning( pop )
+
 namespace OgreRenderer
 {
     OgreRenderingModule::OgreRenderingModule() : ModuleInterfaceImpl(type_static_),
         assetcategory_id_(0),
-        resourcecategory_id_(0)
+        resourcecategory_id_(0),
+        ogre_widget_(NULL),
+        ogre_window_(NULL)
     {
     }
 
@@ -56,8 +64,25 @@ namespace OgreRenderer
     void OgreRenderingModule::Initialize()
     {      
         assert (renderer_);
-        renderer_->Initialize();
         
+        bool embed = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "EmbedOgreIntoGtk", false);
+        
+        if (!embed)
+        {
+            renderer_->Initialize();
+        }
+        else
+        {
+            ogre_window_ = new Gtk::Window();
+            ogre_widget_ = new OgreWidget(renderer_);
+            ogre_window_->set_border_width(10);
+            ogre_window_->add(*ogre_widget_);
+            ogre_widget_->show();
+            ogre_window_->show();
+            ogre_window_->signal_hide().connect(sigc::mem_fun(*this, &OgreRenderingModule::OnOgreGtkWindowClosed));
+            assert (renderer_->IsInitialized());
+        }
+
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Renderer, renderer_.get());
 
         LogInfo("Module " + Name() + " initialized.");
@@ -93,66 +118,6 @@ namespace OgreRenderer
                 "RequestMesh", "Download & create Ogre mesh. Usage: RequestMesh(uuid)", 
                 Console::Bind(this, &OgreRenderingModule::ConsoleRequestMesh)));
         }
-
-        //Foundation::SceneManagerServiceInterface *scene_manager = 
-        //    framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
-        //assert(scene_manager != NULL && "Failed to get SceneManager service");
-        //
-        //if (scene_manager->HasScene("World") == false)
-        //    scene_manager->CreateScene("World");
-        //Foundation::ScenePtr scene = scene_manager->GetScene("World");
-        //
-        //Foundation::EntityPtr entity = scene->CreateEntity(1);
-        //Foundation::ComponentPtr placeable_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgrePlaceable::NameStatic());
-        //Foundation::ComponentPtr mesh_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreMesh::NameStatic());
-        //entity->AddEntityComponent(placeable_ptr);
-        //entity->AddEntityComponent(mesh_ptr);
-        //
-        //EC_OgrePlaceable* placeable = checked_static_cast<EC_OgrePlaceable*>(placeable_ptr.get());
-        //EC_OgreMesh* mesh = checked_static_cast<EC_OgreMesh*>(mesh_ptr.get());
-        //placeable->SetPosition(Core::Vector3df(-50,0,-200));
-        //mesh->SetMesh("ogrehead.mesh");
-        //mesh->SetPlaceable(placeable_ptr);
-        //
-        //Foundation::EntityPtr entity2 = scene->CreateEntity(2);
-        //Foundation::ComponentPtr light_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreLight::NameStatic());
-        //entity2->AddEntityComponent(light_ptr);
-        //
-        //EC_OgreLight* light = checked_static_cast<EC_OgreLight*>(light_ptr.get());
-        //light->SetType(EC_OgreLight::LT_Directional);
-        //light->SetDirection(Core::Vector3df(-1,-1,-1));
-        //
-        //Foundation::EntityPtr entity3 = scene->CreateEntity(3);
-        //Foundation::ComponentPtr sky_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreSky::NameStatic());
-        //entity3->AddEntityComponent(sky_ptr);
-        //
-        //EC_OgreSky* sky = checked_static_cast<EC_OgreSky*>(sky_ptr.get());
-        //sky->SetSkyBox("Sky", 1000);
-       
-        //Foundation::EntityPtr entity4 = scene->CreateEntity(4);
-        //Foundation::ComponentPtr placeable4_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgrePlaceable::NameStatic());
-        //Foundation::ComponentPtr custom4_ptr = framework_->GetComponentManager()->CreateComponent(EC_OgreCustomObject::NameStatic());
-        //entity4->AddEntityComponent(placeable4_ptr);
-        //entity4->AddEntityComponent(custom4_ptr);
-        //
-        //EC_OgrePlaceable* placeable4 = checked_static_cast<EC_OgrePlaceable*>(placeable4_ptr.get());
-        //EC_OgreCustomObject* custom4 = checked_static_cast<EC_OgreCustomObject*>(custom4_ptr.get());
-        //placeable4->SetPosition(Core::Vector3df(50,0,-200));
-        //custom4->SetPlaceable(placeable4_ptr);
-        //
-        //placeable4->SetParent(placeable_ptr);
-        //
-        //Ogre::ManualObject* manual = custom4->GetObject();
-        //manual->begin("BaseWhiteNoLighting");
-        //manual->position(Ogre::Vector3(-50,-50,0));
-        //manual->position(Ogre::Vector3(50,-50,0));
-        //manual->position(Ogre::Vector3(50,50,0));
-        //manual->position(Ogre::Vector3(-50,50,0));
-        //manual->triangle(0,1,2);
-        //manual->triangle(0,2,3);
-        //manual->end();
-        //
-        //renderer_->GetSceneManager()->setAmbientLight(Ogre::ColourValue(0.1,0.1,0.1));
     }
 
     // virtual
@@ -182,7 +147,8 @@ namespace OgreRenderer
     {        
         framework_->GetServiceManager()->UnregisterService(renderer_.get());
     
-        renderer_.reset();
+        delete ogre_window_;
+         renderer_.reset();
         
         LogInfo("Module " + Name() + " uninitialized.");
     }
@@ -213,6 +179,12 @@ namespace OgreRenderer
             renderer_->RequestMesh(params[0]);
 
         return Console::ResultSuccess();
+    }
+
+    void OgreRenderingModule::OnOgreGtkWindowClosed()
+    {
+        if (renderer_)
+            renderer_->OnWindowClosed();
     }
 }
 

@@ -1,4 +1,3 @@
 <config>
 	<entry>GtkmmUI</entry>
-	<dependency>SupportModules</dependency>
 </config>

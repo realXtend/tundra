@@ -21,6 +21,7 @@ include_directories (
 INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_OGRE()
+INCLUDE_GTKMM()
 
 add_definitions (-DOGRE_MODULE_EXPORTS -DMODULE_EXPORTS)
 
@@ -45,6 +46,7 @@ target_link_libraries (${TARGET_NAME} Foundation Interfaces)
 LINK_BOOST()
 LINK_POCO()
 LINK_OGRE()
+LINK_GTKMM()
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
