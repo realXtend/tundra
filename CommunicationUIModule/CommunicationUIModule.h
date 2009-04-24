@@ -97,26 +97,14 @@ namespace Communication
         Gtk::Fixed* fxdContainer;
         ContactList lstContacts;
 
-		Glib::RefPtr<Gtk::ListStore> lstBuddiesTreeModel;
+		//Glib::RefPtr<Gtk::ListStore> lstBuddiesTreeModel;
         //Glib::RefPtr<Gtk::ListStore> lstContactsTreeModel;
 
 
 	protected:
-		//inner class For buddy list treeview:
-		class ModelColumns : public Gtk::TreeModel::ColumnRecord
-		{
-		public:
-			ModelColumns(){ add(id_); add(contact_);}
-
-			Gtk::TreeModelColumn<std::string> id_;
-			Gtk::TreeModelColumn<std::string> contact_;
-		};
-		ModelColumns columns_;
-		//ModelColumns columns2_;
 
 		int entryret_;
-		
-	
+			
 		// Currently just 1 session
 		bool sessionUp_;
 	public:

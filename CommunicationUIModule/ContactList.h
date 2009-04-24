@@ -47,7 +47,8 @@ namespace Communication
 
     protected:
         //Signal handlers:
-        virtual bool on_button_press_event(GdkEventButton* event);
+        virtual bool on_button_press_event(GdkEventButton *event);
+        virtual bool on_key_press_event(GdkEventKey *event);
         //virtual void on_menu_file_popup_generic();
         void startChat();
         void startVoip();

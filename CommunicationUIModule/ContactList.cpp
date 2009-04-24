@@ -40,9 +40,9 @@ namespace Communication
         this->append_column("ID", this->columns_.id_);
 		this->append_column("Contact", columns_.contact_);
 
-        Gtk::TreeModel::Row row = *(lstContactsTreeModel->append());
-        row[columns_.id_] = "test";
-        row[columns_.contact_] = "test";
+        //Gtk::TreeModel::Row row = *(lstContactsTreeModel->append());
+        //row[columns_.id_] = "test";
+        //row[columns_.contact_] = "test";
 
     }
 
@@ -63,6 +63,31 @@ namespace Communication
             popContactMenu.popup(event->button, event->time);
         }
         return return_value;
+    }
+
+
+    
+    bool ContactList::on_key_press_event(GdkEventKey *event)
+    {
+        
+        bool handled = false;
+        switch (event->keyval)
+        {
+            case GDK_Return:
+                std::cout << "Enter: " << std::endl;
+                handled = true;
+                break;
+            //case GDK_3270_Enter:
+            //    std::cout << "Enter: " << std::endl;
+            //    handled = true;
+            //    break;
+            case GDK_Tab:
+                std::cout << "TAB: " << std::endl;
+                handled = true;
+                break;
+        }
+        if(!handled){ handled = Gtk::TreeView::on_key_press_event(event); }
+        return handled;
     }
 
     void ContactList::startChat()
@@ -97,7 +122,7 @@ namespace Communication
         }
     }
     void ContactList::startVoip(){
-
+        
     }
     void ContactList::removeContact(){
 

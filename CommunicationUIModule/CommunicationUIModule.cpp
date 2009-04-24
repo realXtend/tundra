@@ -97,23 +97,9 @@ namespace Communication
         if(!wndCommMain||!fxdContainer)
 			return;
 
-		lstBuddiesTreeModel = Gtk::ListStore::create(columns_);
-
-
-  //      lstContactsTreeModel = Gtk::ListStore::create(columns2_);
-  //      lstContacts.set_model(lstContactsTreeModel);
-		//lstContacts.append_column("ID", columns2_.id_);
-		//lstContacts.append_column("Contact", columns2_.contact_);
-        lstContacts.set_size_request(219,82);
-        fxdContainer->put(lstContacts, 27, 169);
+        lstContacts.set_size_request(219,182);
+        fxdContainer->put(lstContacts, 25, 50);
         lstContacts.SetModule(*this);
-
-		commUI_XML->get_widget("lstBuddies", lstBuddies);
-		lstBuddies->set_model(lstBuddiesTreeModel);
-        
-		lstBuddies->append_column("ID", columns_.id_);
-		lstBuddies->append_column("Contact", columns_.contact_);
-
 
 
 	    commUI_XML->connect_clicked("mi_connect", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuConnect));
