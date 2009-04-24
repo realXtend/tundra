@@ -8,8 +8,7 @@ namespace Core
     //! Interface for virtual forward iterator adaptor
     /*! Abstract iterator that can be used on interface
         classes without knowledge of the exact type
-        of iterator a derived class uses.
-    */
+        of iterator a derived class uses. */
     template <class base_type>
     class AnyIteratorInterface
     {
@@ -72,6 +71,7 @@ namespace Core
         virtual base_type &operator *() { return AnyIteratorImpl<base_iterator, base_type>::iter_->second; }
     };
 
+    //! The concrete iterator object used by clients to iterate over a container of base_type objects.
     template <class base_type>
     class AnyIterator
     {

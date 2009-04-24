@@ -7,6 +7,8 @@ namespace Foundation
 {
     class ComponentInterfaceAbstract;
 
+    //! A class implements this interface to provide factory functionality for generating
+    //! one type of entity-components. Each EC has its own factory to
     class ComponentFactoryInterface
     {
     public:

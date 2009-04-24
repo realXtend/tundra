@@ -10,6 +10,7 @@
 
 namespace OpenSimProtocol
 {
+    /// Info structure used to pass messages between the main thread and the XMLRPC connect thread.
     struct ClientParameters
     {
         RexUUID agentID;

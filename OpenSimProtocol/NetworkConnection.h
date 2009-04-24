@@ -33,7 +33,7 @@ public:
 private:
 	Poco::Net::DatagramSocket socket;
 
-    /// Signals that socket is open for use.
+    /// Signals that socket is open for use. ///\todo Remove this boolean altogether. -jj.
     bool bOpen;
 };
 

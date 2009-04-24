@@ -10,6 +10,7 @@
 
 namespace RexLogic
 {
+    //! Implements functionality to move in the world using a ghost freelook camera.
     class CameraController : public InputStateInterface
     {
     public:

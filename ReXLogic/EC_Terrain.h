@@ -21,6 +21,7 @@ namespace RexLogic
     public:
         virtual ~EC_Terrain();
 
+        /// Describes a single patch that is present in the scene.
         struct Patch
         {
             Patch():x(0),y(0), node(0){}
@@ -37,10 +38,11 @@ namespace RexLogic
             Ogre::SceneNode *node;
         };
 
-        //! The OpenSim world has a 16x16 grid of terrain patches. Alter this to change the
-        //! assumption.
+        /// The OpenSim world has a 16x16 grid of terrain patches. Alter this to change the
+        /// assumption.
         static const int cNumPatchesPerEdge = 16;
 
+        /// @return The patch at given (x,y) coordinates. Pass in values in range [0, 15].
         Patch &GetPatch(int x, int y)
         {
             assert(x >= 0);

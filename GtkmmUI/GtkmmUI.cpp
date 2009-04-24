@@ -16,6 +16,7 @@ POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
    POCO_EXPORT_CLASS(GtkmmUI)
 POCO_END_MANIFEST
 
+/// PImpl internals, to hide clients of GtkmmUI of the gtkmm details.
 class GtkmmUIImpl
 {
 public:

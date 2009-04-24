@@ -10,6 +10,7 @@ namespace Foundation
 {
     class Framework;
 
+    //! The abstract topmost level interface common for all components.
     class MODULE_API ComponentInterfaceAbstract
     {
     public:
@@ -19,6 +20,8 @@ namespace Foundation
         virtual const std::string &Name() const = 0;
     };
 
+    //! Base class for all components. Use the ComponentInterface typedef to refer to the
+    //! abstract component type.
     class MODULE_API ComponentInterfaceImpl : public ComponentInterfaceAbstract
     {
         ComponentInterfaceImpl();
