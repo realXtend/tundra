@@ -1,0 +1,7 @@
+/**
+
+\page Platform Platform-specific functionality
+
+	The viewer uses crossplatform architecture, described here
+	is platform-specific functionality of the framework.
+*/

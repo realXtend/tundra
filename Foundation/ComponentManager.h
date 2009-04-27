@@ -43,13 +43,13 @@ namespace Foundation
 
         //! Returns true if component can be created (a factory for the component has registered itself)
         /*!
-            \param name name of the component type
+            \param type name of the component type
             \return true if component can be created, false otherwise
         */
         bool CanCreate(const std::string &type);
 
         //! Create a new component
-        /*! Returns empty ComponentInterfacePtr if component type is not registered
+        /*!
             Precondition: CanCreate(componentName)
 
             \param type type of the component to create
@@ -64,7 +64,7 @@ namespace Foundation
 
         //! Iterator for components
         /*!
-            \param name component type name for which to return the iterator for
+            \param type component type name for which to return the iterator for
         */
         iterator Begin(const std::string &type)
         {
@@ -75,7 +75,7 @@ namespace Foundation
         }
         //! Iterator for components
         /*!
-            \param name component type name for which to return the iterator for
+            \param type component type name for which to return the iterator for
         */
         iterator End(const std::string &type)
         {
@@ -86,7 +86,7 @@ namespace Foundation
         }
         //! Iterator for components
         /*!
-            \param name component type name for which to return the iterator for
+            \param type component type name for which to return the iterator for
         */
         const_iterator Begin(const std::string &type) const
         {
@@ -97,7 +97,7 @@ namespace Foundation
         }
         //! Iterator for components
         /*!
-            \param name component type name for which to return the iterator for
+            \param type component type name for which to return the iterator for
         */
         const_iterator End(const std::string &type) const
         {

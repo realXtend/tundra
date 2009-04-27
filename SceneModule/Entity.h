@@ -62,7 +62,7 @@ namespace Scene
         //! Remove the component from this entity
         virtual void RemoveEntityComponent(const Foundation::ComponentInterfacePtr &component);
 
-        //! Returns a component with name 'name'
+        //! Returns a component with name 'name', or empty pointer if component was not found
         virtual Foundation::ComponentInterfacePtr GetComponent(const std::string &name) const;
 
         //! Return the unique id of this component

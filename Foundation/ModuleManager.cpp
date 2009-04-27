@@ -165,7 +165,7 @@ namespace Foundation
         return false;
     }
 
-    void ModuleManager::LoadModule(const fs::path &path, Core::StringVectorPtr all_files)
+    void ModuleManager::LoadModule(const fs::path &path, const Core::StringVectorPtr &all_files)
     {
         assert (path.has_filename());
 
