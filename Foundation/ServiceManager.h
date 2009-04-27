@@ -56,7 +56,7 @@ namespace Foundation
 
             \note The pointer may (in theory) invalidate between frames, always reacquire at begin of frame update
             \param type type of the service to return
-            \return the service, or NULL if the template parameters doesn't match the service 
+            \return the service, or NULL if the template parameters doesn't match the service or if the service was not registered
         */
         template <class T>
         __inline T *GetService(Service::Type type)
@@ -79,7 +79,7 @@ namespace Foundation
 
             \note The pointer may (in theory) invalidate between frames, always reacquire at begin of frame update
             \param type type of the service to return
-            \return the service, or NULL if the template parameters doesn't match the service 
+            \return the service, or NULL if the template parameters doesn't match the service or if the service was not registered
         */
         template <class T>
         __inline const T *GetService(Service::Type type) const

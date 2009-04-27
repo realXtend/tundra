@@ -42,11 +42,11 @@ namespace Foundation
         //! Returns pointer to the default configuration
         const ConfigurationManager *GetDefaultConfigPtr() const { return config_manager_.get(); }
 
-        //! Shortcut for retrieving a service. See ServiceManager for more info
+        //! Shortcut for retrieving a service. See ServiceManager::GetService() for more info
         template <class T>
         __inline T *GetService(Service::Type type) { return service_manager_->GetService<T>(type); }
 
-        //! Shortcut for retrieving a service. See ServiceManager for more info
+        //! Shortcut for retrieving a service. See ServiceManager::GetService() for more info
         template <class T>
         __inline const T *GetService(Service::Type type) const { return service_manager_->GetService<T>(type); }
 
