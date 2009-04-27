@@ -28,16 +28,16 @@ namespace Foundation
         }
 
         //! Returns user specific application data directory.
-        /*! Returns non-unicode path. May throw an expection if folder is not found.
+        /*! Returns non-unicode path. May throw Core::Expection if folder is not found.
         */
         std::string GetApplicationDataDirectory();
 
         //! Returns user specific application data directory.
-        /*! Returns unicode path. May throw an expection if folder is not found.
+        /*! Returns unicode path. May throw Core::Expection if folder is not found.
         */
         std::wstring GetApplicationDataDirectoryW();
 
-        //! \copydoc PlatformWin::GetUserDocumentsDirectory()
+        //! \copydoc Foundation::PlatformWin::GetUserDocumentsDirectory()
         std::string GetUserDocumentsDirectory();
 
         //! \copydoc PlatformWin::GetUserDocumentsDirectoryW()

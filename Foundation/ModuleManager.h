@@ -6,6 +6,8 @@
 #include "ModuleInterface.h"
 #include "ModuleReference.h"
 
+namespace fs = boost::filesystem;
+
 namespace Foundation
 {
     class ModuleInterface;
@@ -218,7 +220,7 @@ namespace Foundation
         void UninitializeModules();
 
         //! perform synchronized update on all modules
-        void UpdateModules(double frametime);
+        void UpdateModules(Core::f64 frametime);
 
         //! Returns module by name
         /*!
@@ -339,7 +341,7 @@ namespace Foundation
             \param path path to module definition file (xml)
             \param all_files stringvector of all module definitions, so that dependencies can be processed
         */
-        void LoadModule(const boost::filesystem::path &path, Core::StringVectorPtr all_files);
+        void LoadModule(const fs::path &path, const Core::StringVectorPtr &all_files);
 
         //! loads module
         /*!
