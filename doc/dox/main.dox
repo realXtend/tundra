@@ -9,7 +9,7 @@
 
     The viewer is divided into several different projects and namespaces.
 
-    - The Core contains functionality common to all projects in the viewer.
+    - The \ref RexNGCore "Core" contains functionality common to all projects in the viewer.
     - The Foundation is the framework around which the viewer is build.
     - Several modules that create the functionality of the viewer with the
       help of the framework.

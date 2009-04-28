@@ -8,6 +8,8 @@
 #define SAFE_DELETE(p) { delete p; p=NULL; }
 #define SAFE_DELETE_ARRAY(p) { delete [] p; p=NULL; }
 
+#define NUMELEMS(x) (sizeof(x)/sizeof(x[0]))
+
 /// Use this template to downcast from a base class to a derived class when you know by static code analysis what the derived 
 /// type has to be and don't want to pay the runtime performance incurred by dynamic_casting. In debug mode, the proper
 /// derived type will be assert()ed, but in release mode this be just the same as using static_cast.
