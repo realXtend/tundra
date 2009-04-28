@@ -101,115 +101,162 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 	std::string mac_hash = md5.getHashFromString(mac_addr);
 	std::string id0_hash = md5.getHashFromString(id0);
     
+
     XMLRPCEPI* call = 0;
-    if ( authentication_ && callMethod_ == "ClientAuthentication" ) 
-        call = new XMLRPCEPI(callMethod_,authenticationAddress_, authenticationPort_);
-    else
+    try
     {
-        call = new XMLRPCEPI;
-        call->Connect(worldAddress_, worldPort_);
-        call->CreateCall(callMethod_);
+        if ( authentication_ && callMethod_ == "ClientAuthentication" ) 
+            call = new XMLRPCEPI(callMethod_,authenticationAddress_, authenticationPort_);
+        else
+        {
+            call = new XMLRPCEPI;
+            call->Connect(worldAddress_, worldPort_);
+            call->CreateCall(callMethod_);
+        }
+    }
+    catch (XMLRPCException& ex)
+    {
+        delete call;
+        // Initialisation error.
+        OpenSimProtocolModule::LogError(ex.GetMessage());
+        return false;
+    }
+    
+    try
+    {
+
+	    if (!authentication_ && callMethod_ == std::string("login_to_simulator"))
+	    {
+		    call->AddMember("first", firstName_);
+		    call->AddMember("last", lastName_);
+		    call->AddMember("passwd", password_hash);
+         }
+	    else if (authentication_ && callMethod_ == std::string("ClientAuthentication"))
+	    {
+		    std::string account = authenticationLogin_ + "@" + authenticationAddress_ + ":" +authenticationPort_; 
+		    call->AddMember("account", account);
+		    call->AddMember("passwd", password_hash);
+		    std::string loginuri = "";
+    	
+		    loginuri = loginuri+worldAddress_+":"+ worldPort_;
+		    call->AddMember("loginuri", loginuri);
+	    }
+	    else if (authentication_ && callMethod_ == std::string("login_to_simulator"))
+	    {
+
+		    call->AddMember("sessionhash", threadState_->parameters.sessionHash);
+		    std::string account = authenticationLogin_ + "@" + authenticationAddress_ + ":" + authenticationPort_; 
+		    call->AddMember("account", account);
+		    std::string address = authenticationAddress_ + ":" + authenticationPort_;
+		    call->AddMember("AuthenticationAddress", address);
+		    std::string loginuri = "";
+		    if (!worldAddress_.find("http") != std::string::npos )
+			    loginuri = "http://";
+    		
+		    loginuri = loginuri + worldAddress_ + ":" + worldPort_;
+		    call->AddMember("loginuri", loginuri.c_str());
+	    }
+   
+    
+
+        call->AddMember("start", std::string("last")); // Starting position perhaps?
+	    call->AddMember("version", std::string("realXtend 1.20.13.91224"));  ///\todo Make build system create versioning information.
+	    call->AddMember("channel", std::string("realXtend"));
+	    call->AddMember("platform", std::string("Win")); ///\todo.
+	    call->AddMember("mac", mac_hash);
+	    call->AddMember("id0", id0_hash);
+	    call->AddMember("last_exec_event", int(0)); // ?
+
+	    // The contents of 'options' array unknown. ///\todo Go through them and identify what they really affect.
+    	
+        std::string arr = "options";
+        call->AddStringToArray(arr, "inventory-root");
+	    call->AddStringToArray(arr, "inventory-skeleton");
+	    call->AddStringToArray(arr, "inventory-lib-root");
+	    call->AddStringToArray(arr, "inventory-lib-owner");
+	    call->AddStringToArray(arr, "inventory-skel-lib");
+	    call->AddStringToArray(arr, "initial-outfit");
+	    call->AddStringToArray(arr, "gestures");
+	    call->AddStringToArray(arr, "event_categories");
+	    call->AddStringToArray(arr, "event_notifications");
+	    call->AddStringToArray(arr, "classified_categories");
+	    call->AddStringToArray(arr, "buddy-list");
+	    call->AddStringToArray(arr, "ui-config");
+	    call->AddStringToArray(arr, "tutorial_setting");
+	    call->AddStringToArray(arr, "login-flags");
+	    call->AddStringToArray(arr, "global-textures");
+    }
+	 catch ( XMLRPCException& ex)
+    {
+        delete call;
+        // Initialisation error.
+        OpenSimProtocolModule::LogError(ex.GetMessage());
+        return false;
     }
 
-    
-        
-	if (!authentication_ && callMethod_ == std::string("login_to_simulator"))
-	{
-		call->AddMember("first", firstName_);
-		call->AddMember("last", lastName_);
-		call->AddMember("passwd", password_hash);
-     }
-	else if (authentication_ && callMethod_ == std::string("ClientAuthentication"))
-	{
-		std::string account = authenticationLogin_ + "@" + authenticationAddress_ + ":" +authenticationPort_; 
-		call->AddMember("account", account);
-		call->AddMember("passwd", password_hash);
-		std::string loginuri = "";
-	
-		loginuri = loginuri+worldAddress_+":"+ worldPort_;
-		call->AddMember("loginuri", loginuri);
-	}
-	else if (authentication_ && callMethod_ == std::string("login_to_simulator"))
-	{
-
-		call->AddMember("sessionhash", threadState_->parameters.sessionHash);
-		std::string account = authenticationLogin_ + "@" + authenticationAddress_ + ":" + authenticationPort_; 
-		call->AddMember("account", account);
-		std::string address = authenticationAddress_ + ":" + authenticationPort_;
-		call->AddMember("AuthenticationAddress", address);
-		std::string loginuri = "";
-		if (!worldAddress_.find("http") != std::string::npos )
-			loginuri = "http://";
-		
-		loginuri = loginuri + worldAddress_ + ":" + worldPort_;
-		call->AddMember("loginuri", loginuri.c_str());
-	}
-
-    
-
-    call->AddMember("start", std::string("last")); // Starting position perhaps?
-	call->AddMember("version", std::string("realXtend 1.20.13.91224"));  ///\todo Make build system create versioning information.
-	call->AddMember("channel", std::string("realXtend"));
-	call->AddMember("platform", std::string("Win")); ///\todo.
-	call->AddMember("mac", mac_hash);
-	call->AddMember("id0", id0_hash);
-	call->AddMember("last_exec_event", int(0)); // ?
-
-	// The contents of 'options' array unknown. ///\todo Go through them and identify what they really affect.
-	
-    std::string arr = "options";
-    call->AddStringToArray(arr, "inventory-root");
-	call->AddStringToArray(arr, "inventory-skeleton");
-	call->AddStringToArray(arr, "inventory-lib-root");
-	call->AddStringToArray(arr, "inventory-lib-owner");
-	call->AddStringToArray(arr, "inventory-skel-lib");
-	call->AddStringToArray(arr, "initial-outfit");
-	call->AddStringToArray(arr, "gestures");
-	call->AddStringToArray(arr, "event_categories");
-	call->AddStringToArray(arr, "event_notifications");
-	call->AddStringToArray(arr, "classified_categories");
-	call->AddStringToArray(arr, "buddy-list");
-	call->AddStringToArray(arr, "ui-config");
-	call->AddStringToArray(arr, "tutorial_setting");
-	call->AddStringToArray(arr, "login-flags");
-	call->AddStringToArray(arr, "global-textures");
-
-	
-    call->Send();
+    try
+    {
+        call->Send();
+    }
+    catch(XMLRPCException& ex)
+    {
+        delete call;
+        //Send error
+        OpenSimProtocolModule::LogError(ex.GetMessage());
+        return false;
+    }
 
 	bool loginresult = false;
-	if (!authentication_)
-	{
-        threadState_->parameters.sessionID.FromString(call->GetReply<std::string>("session_id"));
-        threadState_->parameters.agentID.FromString(call->GetReply<std::string>("agent_id"));
-		threadState_->parameters.circuitCode = call->GetReply<int>("circuit_code");
+
+    try
+    {
+	    if (!authentication_)
+	    {
+            threadState_->parameters.sessionID.FromString(call->GetReply<std::string>("session_id"));
+            threadState_->parameters.agentID.FromString(call->GetReply<std::string>("agent_id"));
+		    threadState_->parameters.circuitCode = call->GetReply<int>("circuit_code");
+            
+            if ( threadState_->parameters.sessionID.ToString() == std::string("") || threadState_->parameters.agentID.ToString() == std::string("") 
+				    || threadState_->parameters.circuitCode == 0 )
+			    {
+				    //todo collect xml failure message.			
+				    loginresult = false;
+			    }
+
+		    loginresult = true;
+	    }
+	    else if (authentication_ && callMethod_ != std::string("login_to_simulator")) 
+	    {
+		    // Authentication results
+            threadState_->parameters.sessionHash = call->GetReply<std::string>("sessionHash");
+            threadState_->parameters.gridUrl = std::string(call->GetReply<std::string>("gridUrl"));
+            threadState_->parameters.avatarStorageUrl = std::string(call->GetReply<std::string>("avatarStorageUrl"));
+		    loginresult = true;
+	    }
+	    else if (authentication_ && callMethod_ == std::string("login_to_simulator"))
+	    {
+            //std::cout << call->GetReply<std::string>("session_id") << std::endl;
+            threadState_->parameters.sessionID.FromString(call->GetReply<std::string>("session_id"));
+            threadState_->parameters.agentID.FromString(call->GetReply<std::string>("agent_id"));
+		    threadState_->parameters.circuitCode = call->GetReply<int>("circuit_code");
+		    loginresult = true;
+	    }
+    }
+    catch(XMLRPCException& ex)
+    {
+        // Now can be so that login failed for reason that user name or something else was wrong. 
         
-        if ( threadState_->parameters.sessionID.ToString() == std::string("") || threadState_->parameters.agentID.ToString() == std::string("") 
-				|| threadState_->parameters.circuitCode == 0 )
-			{
-				//todo collect xml failure message.			
-				loginresult = false;
-			}
-
-		loginresult = true;
-	}
-	else if (authentication_ && callMethod_ != std::string("login_to_simulator")) 
-	{
-		// Authentication results
-        threadState_->parameters.sessionHash = call->GetReply<std::string>("sessionHash");
-        threadState_->parameters.gridUrl = std::string(call->GetReply<std::string>("gridUrl"));
-        threadState_->parameters.avatarStorageUrl = std::string(call->GetReply<std::string>("avatarStorageUrl"));
-		loginresult = true;
-	}
-	else if (authentication_ && callMethod_ == std::string("login_to_simulator"))
-	{
-        std::cout << call->GetReply<std::string>("session_id") << std::endl;
-        threadState_->parameters.sessionID.FromString(call->GetReply<std::string>("session_id"));
-        threadState_->parameters.agentID.FromString(call->GetReply<std::string>("agent_id"));
-		threadState_->parameters.circuitCode = call->GetReply<int>("circuit_code");
-		loginresult = true;
-	}
-
+        // Log error
+        OpenSimProtocolModule::LogError(ex.GetMessage());
+        
+        // Read error message from reply
+        // todo transfer error message to login screen. 
+        
+        std::string errorMessage = call->GetReply<std::string>("message");
+        std::cout<<"Login procedure returned error message :"<<errorMessage;
+        delete call;
+        return false;
+    }
 	
     delete call;
 	return loginresult;

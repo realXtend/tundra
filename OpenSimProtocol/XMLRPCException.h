@@ -3,10 +3,22 @@
 #ifndef incl_OpenSimProtocolModule_XMLRPCException_h
 #define incl_OpenSimProtocolModule_XMLRPCException_h
 
-#include <exception>
-
-class XMLRPCException : public std::exception
+#include "CoreException.h"
+#include <string>
+class XMLRPCException : public Core::Exception
 {
-//todo fill this shit
+public:
+    XMLRPCException() : Core::Exception(), strMessage_("") {}
+    virtual ~XMLRPCException() {}
+
+    XMLRPCException(const std::string& message ) : Core::Exception(), strMessage_(message) {}
+
+    std::string GetMessage() const { return strMessage_; }
+    void SetMessage(const std::string& message) { strMessage_ = message; }
+
+private:
+
+    std::string strMessage_;
+
 };
 #endif 

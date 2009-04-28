@@ -3,6 +3,8 @@
 #ifndef incl_Core_Exception_h
 #define incl_Core_Exception_h
 
+#include <exception>
+#include <cstring>
 namespace Core
 {
     //! Generic exception class.
