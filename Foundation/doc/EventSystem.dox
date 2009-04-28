@@ -1,0 +1,114 @@
+/**
+
+\page EventSystem Viewer event system
+
+	Below is a description of the viewer's internal event system and
+	and event manager. The event system is one way of for viewer modules to communicate
+	between each other without explicit dependencies.
+
+
+	\par Acquiring the EventManager	
+
+	To use the event system, a reference to the EventManager within the Foundation framework is needed.
+	Use Foundation::Framework::GetEventManager() to acquire.
+
+
+	\par Events
+	
+	When sent, an event in the event system is made up of 3 things: event category ID, event ID, 
+        and a data block. The category ID and event ID identify the event to the receiver, while the
+        data block contains data specific to the event (if necessary.)
+
+	In the current system, Events are not actually queued in any way, an event does not exist 
+	'outside' the time when it is sent and handled.
+
+
+	\par Event category ID's, registering
+
+	Each module that is interested in sending events should register an event category, or possibly 
+	several, using Foundation::EventManager::RegisterEventCategory(). The event categories are identified with 
+	text strings, for example "Renderer" or "Input". When registering a category, the category name 
+	is associated with a numeric category ID for quick access and returned to the caller.
+
+	Typically, event categories should be registered during the module's Initialize() function.
+
+
+	\par Event category ID's, querying
+
+	To be able to identify events sent by other modules, it is necessary to query for 
+	other event category ID's. There are two ways to do this:
+
+	1) When receiving an event, query the event category name from the category ID using
+	   Foundation::EventManager::QueryEventCategoryName() and see if it matches what you were
+	   expecting, for example "Input". This is not performance-optimal, but fine for events that
+	   are not received very often.
+
+	2) Query and store the event category ID's for all categories you are interested of during 
+           your module's PostInitialize() function, using Foundation::EventManager::QueryEventCategory(). 
+	   This should not be done in Initialize() because during that different modules are still
+	   registering their own categories, and what is registered depends on module load order.
+	   This way is better for performance, as when receiving events you can then compare just the
+	   numeric category ID's to see into which category the event belongs to. 
+
+
+	\par Event ID's
+	
+	Within an event category, a module can freely decide how to use event ID's. These are just numbers
+	that are typically defined in an include file.
+
+	For debugging purposes, event ID's within an event category should be registered using 
+	Foundation::EventManager::RegisterEvent().
+
+
+	\par Event data blocks
+
+	A data block object is completely optional; if it is not necessary, the pointer to the data 
+	block can be NULL when sending an event.
+
+	But if a data block is required, it needs to be subclassed from Foundation::EventDataInterface. 
+	For clarity, a certain type of data block should always correspond to a certain event ID of a 
+	certain event category. For example the ASSET_READY event of the AssetModule always contains
+	a pointer to a Asset::Event::AssetReady object.
+
+	The pointer to an event data block object should only assumed to be valid during the handling 
+	of an event; the pointer should never be stored (it is typically a temporary object.)
+
+
+	\par Sending an event
+
+	To send an event, you need to know your event category ID, the event ID, and have a data block
+	object ready if necessary. Then call Foundation::EventManager::SendEvent(). It will return true if some
+	module 'handled' the event, false otherwise.
+
+	
+	\par Receiving events
+
+	Modules receive and handle events through their Foundation::ModuleInterface::HandleEvent() function. This function should return
+	false if the module wants the event to propagate to other recievers, or true if the module 'handled'
+	the event and does not wish for it to propagate further.
+
+        To actually receive events, modules need to be registered as event subscribers. They are organized into a tree-
+        structure which is read from the xml data file /data/event_tree.xml. In the data file, modules are referred to
+        by their names. Additionally, modules need an integer priority number (higher number = higher priority), which
+        decides the order in which HandleEvent() is called for siblings in the tree.
+        
+        An example subscriber tree data file, does not necessarily make sense:
+        
+        \verbatim
+        <subscribers>
+            <subscriber module="Renderer" priority="75" />
+            <subscriber module="World Logic" priority="100" />
+                <subscriber module="Gui" priority="100" />
+            </subscriber>
+        </subscribers>
+        \endverbatim
+        
+        Here, the tree root has two children: Renderer and World Logic. The Renderer will have lower priority than World 
+        Logic, so World Logic (and its child Gui) get the first opportunity to handle events.
+        
+        Modules can also be manually registered/unregistered into the subscriber tree by calling Foundation::EventManager::RegisterEventSubscriber()
+        and Foundation::EventManager::UnregisterEventSubscriber(). Note that during handling of an event (ie. when HandleEvent() for any module is 
+        being executed) the subscriber tree should not be attempted to be modified.
+
+	
+*/
