@@ -22,10 +22,10 @@ Each .cpp file should have corresponding header file, excluding certain .cpp fil
 All header files should have #define guards to prevent multiple inclusion. The format of the symbol name should be incl_NamespaceClassName_h.
 
 Example:
-\code
+\verbatim
 #ifndef incl_CoreStdIncludes_h
 #define incl_CoreStdIncludes_h
-\endcode
+\endverbatim
 Use <b>forward declarations</b> to minimize use of \#include declarations in header files.
 
 In all files, try to order your \#include statements in the following order: C library, C++ library, other libraries' .h, your project's .h.
@@ -43,25 +43,25 @@ Use unnamed namespaces over the C-like <b>static</b> keyword.
 
 \subsection Identifier Naming
 The following identifiers are written in <b>title case</b>:
-\code
+\verbatim
 class AvatarNode;
 struct TCPConnectionParameters;
 typedef boost::shared_ptr<AvatarNode> AvatarNodePtr;
 void AvatarNode::WalkForward();
-\endcode
+\endverbatim
 Interfaces should be postfixed with 'Interface'. ex: MyNewClassInterface.
 
 Local variables and public/protected member variables are written in lower case with an underscore:
-\code
+\verbatim
 int local_var;
 AvatarPtr user_agent = manager->GetUserAgent();
 int AvatarNode::num_friends;
-\endcode
+\endverbatim
 
 Private member variables should be lower case as well, but with an underscore appended:
-\code
+\verbatim
 int AvatarNode::private_member_var_;
-\endcode
+\endverbatim
 
 In your editor, set the tab key to produce 4 spaces. Do not use the tab character.
 Parenthesis should use whitespace, and gravitate towards the thing they enclose. ex: if (IsFoo()) Do (bar); not if( IsFoo() ) Do( bar );
@@ -107,7 +107,7 @@ Place comments mainly in the header files and not in .cpp -files. Use the <b>\\p
 define inputs and outputs clearly and <b>\\note</b> to indicate points of interest. Small comment sections are suitable
 to be documented using the C++-style tags, but for larger sections, use C-style tags. For example:
 
-\code
+\verbatim
     /// A stream reader utility for reading a byte array bit-by-bit.
     /// \todo Move into OpenSimProtocol module, has nothing RexLogic -specific, -jj.
     class BitStream
@@ -134,7 +134,7 @@ to be documented using the C++-style tags, but for larger sections, use C-style 
         bool ReadBit();
     };
 }
-\endcode
+\endverbatim
 
 See RexLogic::BitStream for the actual class in RealXtend documentation pages.
 
