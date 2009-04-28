@@ -31,7 +31,7 @@ ConfigureDlg::ConfigureDlg(int count, std::map<std::string, Foundation::Comms::S
 	set_title(name);
 	configName = name;
 	set_border_width(0);
-	set_size_request(300, count*75);
+	set_size_request(300, count*75 + 40);
 	
 	configCallback = aConfCaller;
 	
@@ -131,49 +131,7 @@ void ConfigureDlg::onButtonOk()
 
 	// set configs
 	configCallback->Callback(configName, attributes);
-	//commManager->SetAccountAttributes(attributes);
 
-
-	//Gtk::Table::TableList::iterator iter;
-	//Gtk::Table::TableList l = m_Table.children();	
-	//
-	//for(iter = l.begin();iter!=l.end();++iter)
-	//{
-	//	//guint left = iter->get_left_attach();
-	//	Gtk::Widget* w = iter->get_widget();
-	//	GtkLabel* label = GTK_LABEL(w);
-	//	gchar* t = label->text;
-	//	std::string attrName(t);
-	//	
-	//	//Gtk::Label* label = GTK::LABEL(w);
-	//	//if(left==0){
-	//	//Gtk::Label *label = dynamic_cast<Gtk::Widget> w;
-	//	//Gtk::Label label = (Gtk::Label)*w;
-	//	//Glib::ustring text = label.get_text();
-	//	//std::string attrName = text.raw();
-	//	++iter;
-	//	w = iter->get_widget();
-	//	GtkEntry* entry = GTK_ENTRY(w);
-	//	t = entry->text;
-	//	std::string attrValue(t);
-	//	//} else {
-	//	//Gtk::Entry *entry = (Gtk::Entry)w;
-	//	//attr.value = entry.get_text().raw();
-	//	//}
-	//	Foundation::Comms::SettingsAttribute attr;
-	//	attr.type = Foundation::Comms::String;
-	//	attributes[attrName]=attr;
-	//}
-		
-	////delete allocated pairs
-	//for(iter = widgetPairs.begin();iter!=widgetPairs.end();iter++)
-	//{
-	//	accessWidgets* aW = *iter;
-	//	delete aW;
-	//}		
-	//widgetPairs.clear();
-
-	//hide();
 
 	cleanUp();
 }

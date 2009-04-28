@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Thu Apr 23 17:07:39 2009 -->
+<!--Generated with glade3 3.4.3 on Tue Apr 28 14:40:34 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="wndCMain">
     <child>
@@ -99,7 +99,7 @@
             <child>
               <widget class="GtkMenuItem" id="menuitem5">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">_Direct Chat</property>
+                <property name="label" translatable="yes">D_irect Chat</property>
                 <property name="use_underline">True</property>
                 <child>
                   <widget class="GtkMenu" id="menu3">
@@ -143,6 +143,38 @@
           <packing>
             <property name="x">17</property>
             <property name="y">282</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="GtkButton" id="btnAddContact">
+            <property name="width_request">69</property>
+            <property name="height_request">29</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="label" translatable="yes">A_dd</property>
+            <property name="use_underline">True</property>
+            <property name="response_id">0</property>
+          </widget>
+          <packing>
+            <property name="x">267</property>
+            <property name="y">100</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="GtkButton" id="btnRemoveContact">
+            <property name="width_request">71</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="label" translatable="yes">_Remove</property>
+            <property name="use_underline">True</property>
+            <property name="response_id">0</property>
+          </widget>
+          <packing>
+            <property name="x">267</property>
+            <property name="y">134</property>
           </packing>
         </child>
       </widget>

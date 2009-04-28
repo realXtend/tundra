@@ -4,6 +4,10 @@
 
 #pragma once
 
+#pragma warning( push )
+#pragma warning( disable : 4275 ) // IConfigureCallBack used only inside CommunicationUIModule 
+
+
 #include "ChatSession.h"
 #include "ConfigureDlg.h"
 #include "ModuleInterface.h"
@@ -84,8 +88,14 @@ namespace Communication
 		void OnEntryDlgOk();
 		void OnEntryDlgCancel();
 
+		void OnContactAdd();
+		void OnContactRemove();
+
+        // adds contact to ui contact list
 		void addFriendItem(char *);
 
+        // could be in python module as utility method (reservers memory)
+        static char** buildOneStringParamArrayFromConstCharArray(const char* prm);
 
 		Glib::RefPtr<Gnome::Glade::Xml> commUI_XML;
 
@@ -98,6 +108,8 @@ namespace Communication
         Gtk::Menu* menuContactList;
         Gtk::Fixed* fxdContainer;
         ContactList lstContacts;
+        Gtk::Button* btnAddContact;
+        Gtk::Button* btnRemoveContact;
 
 		//Glib::RefPtr<Gtk::ListStore> lstBuddiesTreeModel;
         //Glib::RefPtr<Gtk::ListStore> lstContactsTreeModel;
@@ -129,5 +141,5 @@ namespace Communication
 		std::map<std::string, std::string> contactList_;
 	};
 }
-
+#pragma warning( pop )
 #endif
