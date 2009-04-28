@@ -3,8 +3,13 @@
 #ifndef incl_OpenSimProtocolModule_XMLRPCException_h
 #define incl_OpenSimProtocolModule_XMLRPCException_h
 
-#include "CoreException.h"
+#include <cstdlib>
+#include <cstring>
 #include <string>
+
+#include "CoreException.h"
+
+
 /**
  * XMLRPCException is exception type which is throwed in cases if you use XMLRPC-epi interface and problem arises. 
  * @see Core::Exception
@@ -13,7 +18,7 @@ class XMLRPCException : public Core::Exception
 {
 public:
     XMLRPCException() : Core::Exception(), strMessage_("") {}
-    virtual ~XMLRPCException() {}
+    virtual ~XMLRPCException() throw () {} 
 
     /**
      * Override constructor. 

@@ -136,16 +136,5 @@ template <typename T> void XMLRPCEPI::AddMember(const char* name, const T& value
     }
 }
 
-
-template <> void XMLRPCEPI::Add<int>(const char* name, const int& value) 
-{
-    XMLRPC_VectorAppendInt(pCall_->GetParamList(), name, value);
-}
-
-template <> void XMLRPCEPI::Add<std::string>(const char* name, const std::string& value) 
-{
-    XMLRPC_VectorAppendString(pCall_->GetParamList(), name, value.c_str(), 0);
-}
-
 template <typename T> void XMLRPCEPI::Add(const char* name, const T& value) 
 {}
