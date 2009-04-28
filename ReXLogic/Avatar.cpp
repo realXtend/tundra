@@ -200,7 +200,9 @@ namespace RexLogic
         
         std::string avataraddress = data->message->ReadString();
         RexUUID avatarid(data->message->ReadString());
-        bool overrideappearance = Core::ParseString<bool>(data->message->ReadString());
+        
+        //! \todo tucofixme, parse bool
+        // bool overrideappearance = Core::ParseString<bool>(data->message->ReadString());
         return false;
     }
     
