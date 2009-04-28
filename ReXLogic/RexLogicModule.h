@@ -77,6 +77,22 @@ namespace RexLogic
         //! Deletes the scene with the given name. If that was the current active scene, the active scene will be
         //! set to null.
         void DeleteScene(const std::string &name);
+
+        //! @return The entity corresponding to given scene entityid, or null if not found. 
+        //!         This entity is guaranteed to have an existing EC_OpenSimPrim component.
+        __inline Foundation::EntityPtr GetPrimEntity(Core::entity_id_t entityid) { return GetEntityWithComponent(entityid,"EC_OpenSimPrim"); }
+        Foundation::EntityPtr GetPrimEntity(const RexUUID &fullid);
+
+        //! @return The entity corresponding to given scene entityid, or null if not found. 
+        //!         This entity is guaranteed to have an existing EC_OpenSimAvatar component.
+        __inline Foundation::EntityPtr GetAvatarEntity(Core::entity_id_t entityid) { return GetEntityWithComponent(entityid,"EC_OpenSimAvatar"); }
+        Foundation::EntityPtr GetAvatarEntity(const RexUUID &fullid); 
+
+        //! Register uuid - localid pair
+        void RegisterFullId(const RexTypes::RexUUID &fullid, Core::entity_id_t entityid);
+        //! Unregister uuid
+        void UnregisterFullId(const RexTypes::RexUUID &fullid);
+
     private:
         //! Event handler for network events.
         NetworkEventHandler *network_handler_;
@@ -116,6 +132,13 @@ namespace RexLogic
 
         //! workaround for not being able to send events during initialization
         bool send_input_state_;
+
+        //! Get a component with certain entitycomponent in it
+        Foundation::EntityPtr GetEntityWithComponent(Core::entity_id_t entityid, const std::string &requiredcomponent);
+
+        //! Mapping for full uuids - localids
+        typedef std::map<RexUUID, Core::entity_id_t> IDMap;
+        IDMap UUIDs_;
     };
 }
 

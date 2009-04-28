@@ -162,23 +162,6 @@ namespace RexLogic
         
         return false;
     }
-
-    Foundation::EntityPtr NetworkEventHandler::GetPrimEntity(Core::entity_id_t entityid)
-    {
-        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
-            (Foundation::Service::ST_SceneManager);
-        Foundation::ScenePtr scene = sceneManager->GetScene("World");
-
-        if (!scene)
-            return Foundation::EntityPtr();
-
-        Foundation::EntityPtr entity = scene->GetEntity(entityid);
-
-        if(entity && entity->GetComponent("EC_OpenSimPrim"))
-            return entity;
-        else
-            return Foundation::EntityPtr();            
-    }
   
     Foundation::EntityPtr NetworkEventHandler::GetOrCreatePrimEntity(Core::entity_id_t entityid, const RexUUID &fullid)
     {
@@ -192,7 +175,7 @@ namespace RexLogic
         {
             // Create a new entity.
             Foundation::EntityPtr entity = CreateNewPrimEntity(entityid);
-            UUIDs_[fullid] = entityid;
+            rexlogicmodule_->RegisterFullId(fullid,entityid); 
             EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
             prim.LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
             prim.FullId = fullid;
@@ -211,18 +194,7 @@ namespace RexLogic
         return entity;
     }  
    
-    Foundation::EntityPtr NetworkEventHandler::GetPrimEntity(const RexUUID &entityuuid)
-    {
-        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
-            (Foundation::Service::ST_SceneManager);
-        Foundation::ScenePtr scene = sceneManager->GetScene("World");
-
-        IDMap::iterator iter = UUIDs_.find(entityuuid);
-        if (iter == UUIDs_.end())
-            return Foundation::EntityPtr();
-        else
-            return scene->GetEntity(iter->second);
-    }    
+   
     
     
     Foundation::EntityPtr NetworkEventHandler::CreateNewPrimEntity(Core::entity_id_t entityid)
@@ -252,7 +224,7 @@ namespace RexLogic
         if (!entity)
         {
             entity = CreateNewAvatarEntity(entityid);
-            UUIDs_[fullid] = entityid;
+            rexlogicmodule_->RegisterFullId(fullid,entityid); 
             EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent("EC_OpenSimAvatar").get());
             avatar.LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
             avatar.FullId = fullid;
@@ -278,36 +250,6 @@ namespace RexLogic
  
         return entity;
     }
-
-    Foundation::EntityPtr NetworkEventHandler::GetAvatarEntity(Core::entity_id_t entityid)
-    {
-        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
-            (Foundation::Service::ST_SceneManager);
-        Foundation::ScenePtr scene = sceneManager->GetScene("World");
-
-        if (!scene)
-            return Foundation::EntityPtr();
-
-        Foundation::EntityPtr entity = scene->GetEntity(entityid);
-
-        if(entity && entity->GetComponent("EC_OpenSimAvatar"))
-            return entity;
-        else
-            return Foundation::EntityPtr();
-    }
-
-    Foundation::EntityPtr NetworkEventHandler::GetAvatarEntity(const RexUUID &entityuuid)
-    {
-        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
-            (Foundation::Service::ST_SceneManager);
-        Foundation::ScenePtr scene = sceneManager->GetScene("World");
-
-        IDMap::iterator iter = UUIDs_.find(entityuuid);
-        if (iter == UUIDs_.end())
-            return Foundation::EntityPtr();
-        else
-            return scene->GetEntity(iter->second);
-    } 
 
     bool NetworkEventHandler::HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data)
     {
@@ -428,7 +370,7 @@ namespace RexLogic
         std::string desc = msg->ReadString();
         ///\todo Handle rest of the vars.
         
-        Foundation::EntityPtr entity = GetPrimEntity(full_id);
+        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(full_id);
         if(entity)
         {
             EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
@@ -477,7 +419,7 @@ namespace RexLogic
         data->message->SkipToFirstVariableByName("Parameter");
         RexUUID primuuid(data->message->ReadString());
         
-        Foundation::EntityPtr entity = GetPrimEntity(primuuid);
+        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
         if(entity)
         {
             // Calculate full data size
@@ -597,9 +539,9 @@ namespace RexLogic
                     break;
                 case 60:
                     localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[0]); 
-                    if(GetPrimEntity(localid)) 
+                    if(rexlogicmodule_->GetPrimEntity(localid)) 
                         HandleTerseObjectUpdateForPrim_60bytes(bytes); 
-                    else if(GetAvatarEntity(localid))
+                    else if(rexlogicmodule_->GetAvatarEntity(localid))
                         HandleTerseObjectUpdateForAvatar_60bytes(bytes);                            
                     break;
                 default:    
@@ -636,7 +578,7 @@ namespace RexLogic
         
         Core::Quaternion rotation = GetProcessedQuaternion(&bytes[i]);
 
-        Foundation::EntityPtr entity = GetAvatarEntity(localid);
+        Foundation::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(localid);
         if(entity)
         {
             /// \todo tucofixme handle velocity        
@@ -683,7 +625,7 @@ namespace RexLogic
         Core::Vector3df rotvel = GetProcessedVectorFromUint16(&bytes[i]);
         
         // set values
-        Foundation::EntityPtr entity = GetPrimEntity(localid);
+        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(localid);
         if(entity)
         {
             OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
@@ -727,7 +669,7 @@ namespace RexLogic
         Core::Vector3df rotvel = GetProcessedVectorFromUint16(&bytes[i]);
 
         // set values
-        Foundation::EntityPtr entity = GetPrimEntity(localid);
+        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(localid);
         if(entity)
         {
             OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
@@ -770,10 +712,7 @@ namespace RexLogic
 
         return Core::OpenSimToOgreCoordinateAxes(resultvector);  
     }    
-    
-    
-    
-    
+
     bool NetworkEventHandler::HandleRexGM_RexAppearance(OpenSimProtocol::NetworkEventInboundData* data)
     {
         data->message->ResetReading();    
@@ -819,12 +758,7 @@ namespace RexLogic
         }
 
         scene->DestroyEntity(killedobjectid);
-
-        // Clear fullid
-        IDMap::iterator iter = UUIDs_.find(fullid);
-        if (iter != UUIDs_.end())
-            UUIDs_.erase(iter);
-
+        rexlogicmodule_->UnregisterFullId(fullid);
         return false;
     }
 }
