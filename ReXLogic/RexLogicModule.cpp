@@ -28,6 +28,8 @@
 #include <OgreSceneManager.h>
 
 #include "Terrain.h"
+#include "Avatar.h"
+#include "Primitive.h"
 
 namespace RexLogic
 {
@@ -64,6 +66,8 @@ namespace RexLogic
         /// \todo fixme, register WorldLogic to the framework as realxtend worldlogicinterface!
         // WorldLogic::registerSystem(framework);
         // world_logic_ = new WorldLogic(framework);
+        avatar_ = AvatarPtr(new Avatar(this));
+        primitive_ = PrimitivePtr(new Primitive(this));
         avatar_controller_ = AvatarControllerPtr(new AvatarController(framework_, this));
         camera_controller_ = CameraControllerPtr(new CameraController(this));
         rexserver_connection_ = RexServerConnectionPtr(new RexServerConnection(framework_));
@@ -150,6 +154,8 @@ namespace RexLogic
         }
         
         rexserver_connection_.reset();
+        avatar_.reset();
+        primitive_.reset();
         avatar_controller_.reset();
         camera_controller_.reset();
 
@@ -231,6 +237,16 @@ namespace RexLogic
     TerrainPtr RexLogicModule::GetTerrainHandler()
     {
         return terrain_;
+    }
+
+    AvatarPtr RexLogicModule::GetAvatarHandler()
+    {
+        return avatar_;
+    }
+
+    PrimitivePtr RexLogicModule::GetPrimitiveHandler()
+    {
+        return primitive_;
     }
 
     void RexLogicModule::SetCurrentActiveScene(Foundation::ScenePtr scene)
