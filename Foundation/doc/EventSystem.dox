@@ -1,29 +1,29 @@
 /**
 
-\page EventSystem Viewer event system
+\page EventSystem Using the event system
 
-	Below is a description of the viewer's internal event system and
-	and event manager. The event system is one way of for viewer modules to communicate
+	Below is a description on how to use the viewer's internal event system and
+	the event manager. The event system is one way of for viewer modules to communicate
 	between each other without explicit dependencies.
 
 
-	\par Acquiring the EventManager	
+	\section acquiring Acquiring the EventManager	
 
 	To use the event system, a reference to the EventManager within the Foundation framework is needed.
 	Use Foundation::Framework::GetEventManager() to acquire.
 
 
-	\par Events
+	\section events Events
 	
 	When sent, an event in the event system is made up of 3 things: event category ID, event ID, 
         and a data block. The category ID and event ID identify the event to the receiver, while the
         data block contains data specific to the event (if necessary.)
 
-	In the current system, Events are not actually queued in any way, an event does not exist 
+	In the current system, events are not actually queued in any way, an event does not exist 
 	'outside' the time when it is sent and handled.
 
 
-	\par Event category ID's, registering
+	\subsection categoryregistering Event category ID's, registering
 
 	Each module that is interested in sending events should register an event category, or possibly 
 	several, using Foundation::EventManager::RegisterEventCategory(). The event categories are identified with 
@@ -33,7 +33,7 @@
 	Typically, event categories should be registered during the module's Initialize() function.
 
 
-	\par Event category ID's, querying
+	\subsection categoryquerying Event category ID's, querying
 
 	To be able to identify events sent by other modules, it is necessary to query for 
 	other event category ID's. There are two ways to do this:
@@ -51,7 +51,7 @@
 	   numeric category ID's to see into which category the event belongs to. 
 
 
-	\par Event ID's
+	\subsection eventid Event ID's
 	
 	Within an event category, a module can freely decide how to use event ID's. These are just numbers
 	that are typically defined in an include file.
@@ -60,7 +60,7 @@
 	Foundation::EventManager::RegisterEvent().
 
 
-	\par Event data blocks
+	\subsection eventdata Event data blocks
 
 	A data block object is completely optional; if it is not necessary, the pointer to the data 
 	block can be NULL when sending an event.
@@ -74,17 +74,17 @@
 	of an event; the pointer should never be stored (it is typically a temporary object.)
 
 
-	\par Sending an event
+	\section sendingevent Sending an event
 
 	To send an event, you need to know your event category ID, the event ID, and have a data block
 	object ready if necessary. Then call Foundation::EventManager::SendEvent(). It will return true if some
 	module 'handled' the event, false otherwise.
 
 	
-	\par Receiving events
+	\section receivingevent Receiving events
 
 	Modules receive and handle events through their Foundation::ModuleInterface::HandleEvent() function. This function should return
-	false if the module wants the event to propagate to other recievers, or true if the module 'handled'
+	false if the module wants the event to propagate to other receivers, or true if the module 'handled'
 	the event and does not wish for it to propagate further.
 
         To actually receive events, modules need to be registered as event subscribers. They are organized into a tree-

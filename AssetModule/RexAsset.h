@@ -10,7 +10,9 @@ namespace Asset
 {
     class AssetTransfer;
     
-    //! ReX asset
+    //! ReX asset. Implements the AssetInterface.
+    /*! \ingroup AssetModuleClient
+     */ 
     class RexAsset : public Foundation::AssetInterface
     {
     public:

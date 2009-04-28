@@ -8,19 +8,27 @@
 
 namespace Asset
 {
-    //! asset events
+    //! Asset events
     namespace Event
     {
-        //! asset ready event id
+        //! Asset ready event id
+        /*! \ingroup AssetModuleClient
+         */
         static const Core::event_id_t ASSET_READY = 1;
         
-        //! asset progress event id
+        //! Asset progress event id
+        /*! \ingroup AssetModuleClient
+         */
         static const Core::event_id_t ASSET_PROGRESS = 2;
 
-        //! asset transfer canceled event id
+        //! Asset transfer canceled event id
+        /*! \ingroup AssetModuleClient
+         */
         static const Core::event_id_t ASSET_CANCELED = 3;
 
-        //! asset ready event data
+        //! Asset ready event data
+        /*! \ingroup AssetModuleClient
+         */
         class AssetReady : public Foundation::EventDataInterface
         {
         public:
@@ -40,7 +48,9 @@ namespace Asset
             Foundation::AssetPtr asset_;
         };
 
-        //! asset progress event data
+        //! Asset progress event data
+        /*! \ingroup AssetModuleClient
+         */
         class AssetProgress : public Foundation::EventDataInterface
         {
         public:
@@ -64,7 +74,9 @@ namespace Asset
             Core::uint received_continuous_;
         };
 
-        //! asset transfer canceled event data
+        //! Asset transfer canceled event data
+        /*! \ingroup AssetModuleClient
+         */
         class AssetCanceled : public Foundation::EventDataInterface
         {
         public:
