@@ -266,6 +266,54 @@ namespace RexLogic
         return GetCurrentActiveScene();
     }
 
+
+
+    Foundation::EntityPtr RexLogicModule::GetEntityWithComponent(Core::entity_id_t entityid, const std::string &requiredcomponent)
+    {
+        if (!activeScene_)
+            return Foundation::EntityPtr();
+
+        Foundation::EntityPtr entity = activeScene_->GetEntity(entityid);
+        if(entity && entity->GetComponent(requiredcomponent))
+            return entity;
+        else
+            return Foundation::EntityPtr();            
+    }    
+
+    Foundation::EntityPtr RexLogicModule::GetPrimEntity(const RexUUID &entityuuid)
+    {
+        IDMap::iterator iter = UUIDs_.find(entityuuid);
+        if (iter == UUIDs_.end())
+            return Foundation::EntityPtr();
+        else
+            return GetPrimEntity(iter->second);
+    } 
+
+    Foundation::EntityPtr RexLogicModule::GetAvatarEntity(const RexUUID &entityuuid)
+    {
+        IDMap::iterator iter = UUIDs_.find(entityuuid);
+        if (iter == UUIDs_.end())
+            return Foundation::EntityPtr();
+        else
+            return GetAvatarEntity(iter->second);
+    }
+
+    void RexLogicModule::RegisterFullId(const RexUUID &fullid, Core::entity_id_t entityid)
+    {
+        UUIDs_[fullid] = entityid;
+    }
+
+    void RexLogicModule::UnregisterFullId(const RexUUID &fullid)
+    {
+        IDMap::iterator iter = UUIDs_.find(fullid);
+        if (iter != UUIDs_.end())
+            UUIDs_.erase(iter);    
+    } 
+
+
+
+
+
 }
 
 using namespace RexLogic;

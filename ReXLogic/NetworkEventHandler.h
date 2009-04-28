@@ -47,20 +47,14 @@ namespace RexLogic
         void HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes);
         void HandleTerseObjectUpdateForAvatar_60bytes(const uint8_t* bytes);
 
-        //! @return The entity corresponding to given scene entityid, or null if not found. 
-        //!         This entity is guaranteed to have an existing EC_OpenSimPrim component.
-        Foundation::EntityPtr GetPrimEntity(Core::entity_id_t entityid);
-        Foundation::EntityPtr GetPrimEntity(const RexUUID &fullid);
+
 
         //! @return The entity corresponding to given id AND uuid. This entity is guaranteed to have an existing EC_OpenSimPrim component.
         //!         Does not return null. If the entity doesn't exist, an entity with the given entityid and fullid is created and returned.
         Foundation::EntityPtr GetOrCreatePrimEntity(Core::entity_id_t entityid, const RexUUID &fullid);
         Foundation::EntityPtr CreateNewPrimEntity(Core::entity_id_t entityid);
 
-        //! @return The entity corresponding to given scene entityid, or null if not found. 
-        //!         This entity is guaranteed to have an existing EC_OpenSimAvatar component.
-        Foundation::EntityPtr GetAvatarEntity(Core::entity_id_t entityid);
-        Foundation::EntityPtr GetAvatarEntity(const RexUUID &fullid); 
+
 
         //! @return The entity corresponding to given id AND uuid. This entity is guaranteed to have an existing EC_OpenSimAvatar component.
         //!         Does not return null. If the entity doesn't exist, an entity with the given entityid and fullid is created and returned.
@@ -82,9 +76,6 @@ namespace RexLogic
         OpenSimProtocol::OpenSimProtocolModule *netInterface_;
         
         RexLogicModule *rexlogicmodule_;
-        
-        typedef std::map<RexUUID, Core::entity_id_t> IDMap;
-        IDMap UUIDs_;
     };
 }
 
