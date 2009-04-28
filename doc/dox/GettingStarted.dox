@@ -1,0 +1,24 @@
+/**
+
+\page GettingStarted Getting Started
+
+	The viewer is divided into several different projects and namespaces.
+
+    - The \subpage RexNGCore "Core" contains functionality common to all projects in the viewer.
+    - The Foundation is the framework around which the viewer is build.
+    - Several modules that create the functionality of the viewer with the
+      help of the framework.	
+	
+	To get started with modules, information on how to use them, or how to
+	create new ones, see \subpage ModuleArchitecture "Module Architecture".
+	
+	To see how to communicate between modules, see 
+	\subpage EventSystem "Viewer event system" and 
+	\subpage ModuleServices "Module Services".
+	
+	For communicating with the outside world, 
+	\subpage OpenSimProtocolConnection "Managing the OpenSim connection state", 
+    \subpage SLUDP "Interfacing with the OpenSim world using SLUDP messages" and
+    \subpage XMLRPC "Performing custom XMLRPC calls".
+	
+*/

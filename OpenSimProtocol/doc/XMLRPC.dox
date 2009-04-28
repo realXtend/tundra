@@ -32,7 +32,19 @@ An example of a typical XML-RPC request would be:
 An example of a typical XML-RPC response would be:
 
 @code
-<?xml version="1.0"?><methodResponse>    <params>        <param>            <value>                <struct>                    <member>                        <name>sessionHash</name>                        <value>                            <string>3009d90c5e44afabee6a64ed3b70708a86fd06e4</string>                        </value>                    </member>                 </struct>
+<?xml version="1.0"?>
+<methodResponse>
+    <params>
+        <param>
+            <value>
+                <struct>
+                    <member>
+                        <name>sessionHash</name>
+                        <value>
+                            <string>3009d90c5e44afabee6a64ed3b70708a86fd06e4</string>
+                        </value>
+                    </member>
+                 </struct>
             </value>
         </param>
      </params>
