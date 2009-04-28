@@ -47,11 +47,12 @@ namespace Foundation
                 if (shared_library_)
                     shared_library_->cl_.destroy(entry_, module);
 
-                delete module;
+                delete module; // needed for modules not loaded through poco's SharedLibrary (static libs).
             }
         };
 
-        //! Module entry. Contains information about a module.
+        //! Module entry. Contains information about a module. Useful for ModuleManager introspection.
+        //! \ingroup Foundation
         struct Entry
         {
             //! The module. Memory owned by Poco if a shared library, by us using new/delete if static library.
@@ -63,86 +64,10 @@ namespace Foundation
         };
     }
 
-    //! Managers modules. Modules are loaded at runtime.
-    /*! Assumption is that all modules get loaded when program is started, and unloaded when program exits.
-        Modules may get initialized and uninitialized any number of times during the program's life time.
+    //! Manages run-time loadable and unloadable modules.
+    /*! See \ref ModuleArchitecture for details on how to use.  
 
-        Module versioning: core modules have the same version as the framework. Other modules are
-                           responsible for handling their own versioning information.
-
-        To create a new static module:
-            - Create a class that inherits from ModuleInterfaceImpl
-            
-            - In the Module's load()-function, declare all components the new module offers with DECLARE_MODULE_EC macro.
-            
-            - In the Module's initialize()-function, register all services the new module offers
-            
-            - Also unregister all services in the uninitialize()-function.
-            
-            - Declare the static module with DeclareStaticModule() function.
-            
-            - Add the type of the module to both Foundation::Module::Type enumeration and
-              Foundation::Module::NameFromType function, in ModuleInterface.h.
-
-
-        Additional steps to create a new shared module:
-            - Do not use the DeclareStaticModule() function
-            - Copy following to the implementation (cpp file) of the Module-class:
-
-                    POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
-                        POCO_EXPORT_CLASS(CLASS_NAME)
-                    POCO_END_MANIFEST
-                
-              where CLASS_NAME is the name of the newly created class.
-            
-            - Create a module definition file (xml file) that matches the name of the sub-project
-              and that contains the names of the module entry classes (modules that are contained in
-              a single sub-project, often just one),
-
-              With only a single module in the sub-project and whose entry class matches the name of
-              the project, the xml file can be an empty file.
-
-              Place the xml file in the sub-project directory.
-
-            - In a post-build step, both the module and the xml file will get copied to bin/modules
-              directory (or one of it's subdirectories).
-              
-            - Module dependencies can also be specified in the module definition file. The dependencies
-              will get loaded/initialized before the module itself. In this case, 
-              the module definition file should look like this
-              \verbatim
-              <config>
-                   <entry>YourEntryClassName</entry>
-                   <dependency>ModuleName</dependency>
-              </config>
-              \endverbatim
-
-        You can define multiple modules in single library file.
-        With static module, just declare each module to the module manager.
-        With shared module:
-            - Add each new class that defines a new module to Poco export manifest:
-
-                    POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
-                        POCO_EXPORT_CLASS(CLASS_NAME_A)
-                        POCO_EXPORT_CLASS(CLASS_NAME_B)
-                    POCO_END_MANIFEST
-              
-              There should only be one Poco manifest section per library!
-            - Add an entry to the module definition file for each exported class.
-
-
-        The preferred way to communicate between modules is by using services,
-        see ServiceManager for more information. It is also possible to communicate
-        by accessing modules directly.
-
-        Accessing modules directly using ModuleManager:
-            - All classes that need to be accessed should be declared with xxx_MODULE_API macro. (each DLL to be built has their own macro)
-            - xxx_MODULE_EXPORTS should be defined in both modules.
-            - Add the module's directory to includes
-            - Link against the module library
-           
-
-        \todo Track which modules are enabled (initialized) and which are not
+        \ingroup Foundation
     */
     class ModuleManager
     {

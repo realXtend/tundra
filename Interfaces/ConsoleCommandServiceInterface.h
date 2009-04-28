@@ -139,6 +139,7 @@ namespace Console
         \param name name of the command
         \param description short description of the command
         \param callback C++ function callback. Use Console::Bind().
+        \param delayed is the handling of the command immediate, or delayed
     */
     static Command CreateCommand(const std::string &name, const std::string &description, const CallbackPtr &callback, bool delayed = false)
     {
@@ -151,6 +152,7 @@ namespace Console
         \param name name of the command
         \param description short description of the command
         \param static_callback C++ function callback, static function.
+        \param delayed is the handling of the command immediate, or delayed
     */
     static Command CreateCommand(const std::string &name, const std::string &description, StaticCallback &static_callback, bool delayed = false)
     {
