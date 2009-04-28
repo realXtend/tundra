@@ -20,49 +20,8 @@ namespace Foundation
     class ModuleInterface;
 
     //! Manages event passing between modules.
-    /*! To use, you should first register an event category during your module's Initialize() function.
-        To register, pass your event category name to RegisterEventCategory. Name can be similar to your module's name,
-        for example the Ogre rendering module uses the event category name "Renderer". You get back a category
-        ID, which you should store.
-        
-        Then, during your module's PostInitialize(), you can assume that all modules have registered their event 
-        categories, and you can start querying for other categories you care about with QueryEventCategory().
-        
-        To send an event, use the function SendEvent(). You need the category ID and an event ID, which you can come up
-        with yourself, for the event ID only needs to be unique within your event category. Additionally SendEvent()
-        takes a pointer to an event-specific event data object, which has to be a subclass of EventDataInterface. 
-        If no data is required, this pointer can be null.
-        
-        In the ModuleInterface, there is a corresponding HandleEvent() function, which gets the category ID, event ID 
-        and the data pointer as parameters. Return true from HandleEvent() if you handled the event and do not wish 
-        for it to propagate further in the event subscriber hierarchy, false otherwise.
-        
-        To actually receive events, modules need to be registered as event subscribers. They are organized into a tree-
-        structure which is read from the xml data file /data/event_tree.xml. In the data file, modules are referred to
-        by their names. Additionally, modules need an integer priority number (higher number = higher priority), which
-        decides the order in which HandleEvent() is called for siblings in the tree.
-        
-        An example subscriber tree data file, does not necessarily make sense:
-        
-        \verbatim
-        <subscribers>
-            <subscriber module="Renderer" priority="75" />
-            <subscriber module="World Logic" priority="100" />
-                <subscriber module="Gui" priority="100" />
-            </subscriber>
-        </subscribers>
-        \endverbatim
-        
-        Here, the tree root has two children: Renderer and World Logic. The Renderer will have lower priority than World 
-        Logic, so World Logic (and its child Gui) get the first opportunity to handle events.
-        
-        Modules can also be manually registered/unregistered into the subscriber tree by calling RegisterEventSubscriber()
-        and UnregisterEventSubscriber(). Note that during handling of an event (ie. when HandleEvent() for any module is 
-        being executed) the subscriber tree should not be attempted to be modified.
-        
-        Additionally (currently only for debugging purposes, not mandatory to send events) event id's can be registered. 
+    /*! See \ref EventSystem for details on how to use.  
      */
-    
     class EventManager
     {
     public:
@@ -70,7 +29,7 @@ namespace Foundation
         typedef boost::shared_ptr<EventSubscriber> EventSubscriberPtr;
         typedef std::vector<EventSubscriberPtr> EventSubscriberVector;
         
-        //! Event subscriber tree node
+        //! Event subscriber tree node. Used internally by EventManager.
         class EventSubscriber
         {
         public:
