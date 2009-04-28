@@ -1,6 +1,6 @@
 /**
 
-\page SLUDP Interfacing with the OpenSim world using SLUDP messages.
+\page SLUDP Interfacing with the OpenSim world using SLUDP messages
 
 Once the OpenSimProtocolModule has established the server connection, any client modules may use
 the provided packet services to send and respond to SLUDP messages that are transmitted between
