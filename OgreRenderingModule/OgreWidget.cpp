@@ -3,17 +3,21 @@
 #include "StableHeaders.h"
 #include "Renderer.h"
 
+#include <Ogre.h>
+
 #pragma warning( push )
 #pragma warning( disable : 4250 )
 #include "OgreWidget.h"
 #include <gdkmm/drawable.h>
 #include <gdkmm/general.h>  // for cairo helper function
+
 #ifdef WIN32
 #include <gdkwin32.h>
+#else
+#include <gdk/gdkx.h>
 #endif
-#pragma warning( pop )
 
-#include <Ogre.h>
+#pragma warning( pop )
 
 namespace OgreRenderer
 {
