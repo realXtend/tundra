@@ -40,6 +40,7 @@ namespace Foundation
 
         //! Creates new entity that contains the specified components
         /*!
+            \param id Id of the new entity. Use GetNextFreeId().
             \param components list of component names the entity will use
         */
         virtual EntityPtr CreateEntity(Core::entity_id_t id, const Core::StringVector &components) = 0;

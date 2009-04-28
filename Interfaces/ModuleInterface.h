@@ -57,6 +57,7 @@ namespace Foundation
 			MT_Unknown
 		};
 
+        //! Returns string from type enum.
         static const std::string &NameFromType(Type type)
         {
             assert(type != MT_Unknown);
@@ -79,12 +80,9 @@ namespace Foundation
         };
     }
 
-    //! interface for modules
-    /*! See ModuleManager for more info.
-        For core modules, version is same as framework. Otherwise each module is
-        responsible for assigning itself a version number by overriding
-        VersionMajor() and VersionMinor() - functions.
-      
+    //! Interface for modules
+    /*! See \ref ModuleArchitecture for details.
+        
         \note Every module should have a name. Only internal modules have types.
     */
     class MODULE_API ModuleInterface
@@ -94,65 +92,85 @@ namespace Foundation
         ModuleInterface()  {}
         virtual ~ModuleInterface() {}
 
-        //! Called when module is loaded into memory.Do not trust that framework can be used.
-        /*!
+        //! Called when module is loaded into memory. Do not trust that framework can be used.
+        /*! Override in your own module.
+
             Components in the module should be declared here by using DECLARE_MODULE_EC(Component) macro, where
             Component is the class of the component.
         */
         virtual void Load() = 0;
         //! called when module is unloaded from memory. Do not trust that framework can be used.
+        //! Override in your own module.
         virtual void Unload() = 0;
 
         //! Pre-initialization for the module. Called before modules are initializated.
+        //! Only override if you need.
         virtual void PreInitialize() = 0;
-        //! Initializes the module. Called when module is taken in use
+        //! Initializes the module. Called when module is taken in use.
+        //! Override in your own module.
         virtual void Initialize() = 0;
         //! Post-initialization for the module. At this point Initialize() has been called for all enabled modules.
+        //! Only override if you need.
         virtual void PostInitialize() = 0;
         
         //! Uninitialize the module. Called when module is removed from use
+        //! Override in your own module.
         virtual void Uninitialize() = 0;
 
         //! synchronized update for the module
         /*!
+            Override in your own module if you want to perform synchronized update.
             \param frametime elapsed time in seconds since last frame
         */
         virtual void Update(Core::f64 frametime) = 0;
+
+        //! Receives an event
+        /*! Should return true if the event was handled and is not to be propagated further
+            Override in your own module if you want to receive events.
+
+            See \ref EventSystem.
+
+            \param category_id Category id of the event
+            \param event_id Id of the event
+            \param data Event data, or NULL if no data passed.
+         */
+        virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) = 0;
+
+        //! Returns major version as string. Override only if module is not internal.
+        virtual std::string VersionMajor() const = 0;
+
+        //! Returns minor version as string. Override only if module is not internal.
+        virtual std::string VersionMinor() const = 0;
 
         //! Returns the name of the module. Each module also has a static accessor for the name, it's needed by the logger.
         virtual const std::string &Name() const = 0;
 
         //! Returns internal type of the module or MT_Unknown if module is not internal
+        //! do not override
         virtual Module::Type Type() const = 0;
 
         //! Returns true if module is internal, false otherwise
+        //! do not override
         virtual bool IsInternal() const = 0;
 
         //! Declare a component the module defines. For internal use.
         virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar) = 0;
-        
-        //! Receives an event
-        /*! Should return true if the event was handled and is not to be propagated further
-         */
-        virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) = 0;
 
         //! Returns the state of the module
+        //! do not override
         virtual Module::State State() const = 0;
 
         //! By using this function for console commands, the command gets automatically
         //! registered / unregistered with the console when module is initialized / uninitialized
+        //! Do not override.
         virtual void AutoRegisterConsoleCommand(const Console::Command &command) = 0;
 
         //! Returns parent framework
+        //! do not override
         virtual Framework *GetFramework() const = 0;
 
-        //! Returns major version as string. Override is module is not internal.
-        virtual std::string VersionMajor() const = 0;
-
-        //! Returns minor version as string. Override is module is not internal.
-        virtual std::string VersionMinor() const = 0;
-
     private:
+        //! Only for internal use.
         virtual void SetFramework(Framework *framework) = 0;
 
         //! Called when module is loaded. Do not override in child classes. For internal use.
