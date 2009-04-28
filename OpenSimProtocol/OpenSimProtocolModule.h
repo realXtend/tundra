@@ -122,6 +122,9 @@ namespace OpenSimProtocol
         ///@return True if connection exists.
         bool IsConnected() const { return connected_; }
         
+        ///@return Connection::State enum of the connection state.
+        Connection::State GetConnectionState() const { return loginWorker_.GetState(); }
+        
     private:
         /// Thread for the login process.
         Core::Thread thread_;

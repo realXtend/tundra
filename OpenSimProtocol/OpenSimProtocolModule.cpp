@@ -2,15 +2,7 @@
 
 #include "StableHeaders.h"
 #include "OpenSimProtocolModule.h"
-#include <Poco/ClassLibrary.h>
-#include "ComponentRegistrarInterface.h"
-
-#include "md5wrapper.h"
-#include "XMLRPCEPI.h"
-#include "OpenSimAuth.h"
 #include "RexProtocolMsgIDs.h"
-
-using namespace Foundation;
 
 namespace OpenSimProtocol
 {
@@ -39,7 +31,7 @@ namespace OpenSimProtocol
 
     // virtual
     void OpenSimProtocolModule::Initialize()
-    {        
+    {
         ///\todo Read the template filename from a config file?
 		const char *filename = "./data/message_template.msg";
 		
@@ -53,7 +45,7 @@ namespace OpenSimProtocol
         networkStateEventCategory_ = eventManager_->RegisterEventCategory("NetworkState");
         networkEventInCategory_ = eventManager_->RegisterEventCategory("OpenSimNetworkIn");
         networkEventOutCategory_ = eventManager_->RegisterEventCategory("OpenSimNetworkOut");
-        
+
         LogInfo("System " + Name() + " initialized.");
     }
 
@@ -141,21 +133,12 @@ namespace OpenSimProtocol
             return false;
 		}
         
-        // First XML-RPC query for receiving session hash, grid url and avatar storage url.
         loginWorker_.SetupXMLRPCLogin(first_name, last_name, password, address, boost::lexical_cast<std::string>(port), callMethod,
             thread_state, auth_login, auth_address, auth_port, authentication);
         
         // Start the thread.
 		boost::thread(boost::ref(loginWorker_));
         
-        // Second XML-RPC query for receiving session hash, grid url and avatar storage url.
-        /*callMethod = "login_to_server";
-        loginWorker_.SetupXMLRPCLogin(first_name, last_name, password, address, boost::lexical_cast<std::string>(port), callMethod,
-            thread_state, auth_login, auth_address, auth_port, authentication);
-
-        // Start the thread.
-		boost::thread(boost::ref(loginWorker_));*/
-
 		return true;
 	}
 

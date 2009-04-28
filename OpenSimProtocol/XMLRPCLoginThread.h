@@ -8,6 +8,11 @@
 
 #include "NetworkEvents.h"
 
+namespace Foundation
+{
+    class Framework;
+}
+
 namespace OpenSimProtocol
 {
     class XMLRPCLoginThread
@@ -49,11 +54,10 @@ namespace OpenSimProtocol
 	        const std::string& authentication_port = "",
 	        bool authentication = false);
         
-
         /// Performs the actual XML-RPC login procedure.
         ///@return true if login (or authentication) was successful.
         bool PerformXMLRPCLogin();
-        
+
         /// Change the state of the XML-RPC worker.
         void SetConnectionState(Connection::State state) { threadState_->state = state; }
         
@@ -63,17 +67,17 @@ namespace OpenSimProtocol
         ///@return The client parameters retreived from the XML-RPC reply.
         const ClientParameters &GetClientParameters() const { return threadState_->parameters; }
         
-        ///@return True, if the connection is ready.
+        ///@return True, if the XML-RPC worker is ready.
         const bool IsReady() const { return ready_; }
 
     private:
         XMLRPCLoginThread(const XMLRPCLoginThread &);
         void operator=(const XMLRPCLoginThread &);
-        
-        /// Indicates that the XML-RPC worker is initialized.
+
+        /// Triggers the XML-RPC login procedure.
         bool beginLogin_;
         
-        /// Indicates that the XML-RPC is ready to perform.
+        /// Indicates that the XML-RPC worker is ready to perform.
         bool ready_;
         
         /// Information which is received via the XML-RPC reply from the server.

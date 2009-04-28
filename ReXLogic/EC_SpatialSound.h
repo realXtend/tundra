@@ -22,8 +22,6 @@ namespace RexLogic
         float Radius;
     private:
         EC_SpatialSound(Foundation::ModuleInterface* module);
-
-
     };
 }
 

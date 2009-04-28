@@ -15,9 +15,7 @@ namespace RexLogic
     class NetworkStateEventHandler;
     class CameraController;
     class Terrain;
-    class Avatar;
-    class Primitive;
-
+    class Avatar;    class Primitive;    class RexLoginWindow;
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
     typedef boost::shared_ptr<AvatarController> AvatarControllerPtr;
     typedef boost::shared_ptr<CameraController> CameraControllerPtr;
@@ -153,6 +151,9 @@ namespace RexLogic
         //! Mapping for full uuids - localids
         typedef std::map<RexUUID, Core::entity_id_t> IDMap;
         IDMap UUIDs_;
+        
+        //! The login window.
+        RexLoginWindow *loginWindow_;
     };
 }
 

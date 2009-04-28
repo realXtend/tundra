@@ -17,54 +17,51 @@ using namespace RexTypes;
 
 namespace 
 {
+    /// A unary find predicate that looks for a NetOutMessage or a NetInMessage
+    /// that has the given desired sequence number in a message pool.
+    class InSeqNumMatchPred
+    {
+    public:
+	    InSeqNumMatchPred(uint32_t seqNum):seq_num_(seqNum) {}
 
-/// A unary find predicate that looks for a NetOutMessage or a NetInMessage
-/// that has the given desired sequence number in a message pool.
-class InSeqNumMatchPred
-{
-public:
-	InSeqNumMatchPred(uint32_t seqNum):seq_num_(seqNum) {}
+	    bool operator()(const std::pair<size_t, NetInMessage> &elem) const
+	    {
+	        return elem.second.GetSequenceNumber() == seq_num_;
+        }
 
-	bool operator()(const std::pair<size_t, NetInMessage> &elem) const
-	{
-	    return elem.second.GetSequenceNumber() == seq_num_;
+    private:
+	    uint32_t seq_num_;
+    };
+
+    class OutSeqNumMatchPred
+    {
+    public:
+	    OutSeqNumMatchPred(uint32_t seqNum):seq_num_(seqNum) {}
+
+	    bool operator()(const std::pair<size_t, const NetOutMessage> &elem) const
+	    {
+	        return elem.second.GetSequenceNumber() == seq_num_;
+        }
+
+    private:
+	    uint32_t seq_num_;
+    };
+
+    const char *VariableTypeToStr(NetVariableType type)
+    {
+	    const char *data[] = { "Invalid", "U8", "U16", "U32", "U64", "S8", "S16", "S32", "S64", "F32", "F64", "LLVector3", "LLVector3d", "LLVector4",
+	                           "LLQuaternion", "UUID", "BOOL", "IPADDR", "IPPORT", "Fixed", "Variable", "BufferByte", "Buffer2Bytes", "Buffer4Bytes" };
+	    if (type < 0 || type >= NUMELEMS(data))
+		    return data[0];
+
+	    return data[type];
     }
-
-private:
-	uint32_t seq_num_;
-};
-
-class OutSeqNumMatchPred
-{
-public:
-	OutSeqNumMatchPred(uint32_t seqNum):seq_num_(seqNum) {}
-
-	bool operator()(const std::pair<size_t, const NetOutMessage> &elem) const
-	{
-	    return elem.second.GetSequenceNumber() == seq_num_;
-    }
-
-private:
-	uint32_t seq_num_;
-};
-
-const char *VariableTypeToStr(NetVariableType type)
-{
-	const char *data[] = { "Invalid", "U8", "U16", "U32", "U64", "S8", "S16", "S32", "S64", "F32", "F64", "LLVector3", "LLVector3d", "LLVector4",
-	                       "LLQuaternion", "UUID", "BOOL", "IPADDR", "IPPORT", "Fixed", "Variable", "BufferByte", "Buffer2Bytes", "Buffer4Bytes" };
-	if (type < 0 || type >= NUMELEMS(data))
-		return data[0];
-
-	return data[type];
-}
-
 } // ~unnamed namespace
 
 namespace NetTest
 {
     NetTestLogicModule::NetTestLogicModule() 
     : ModuleInterfaceImpl("NetTestLogicModule"),
-    loginWindow(0),
     netTestWindow(0),
     packetDumpWindow(0)
     {
@@ -91,9 +88,10 @@ namespace NetTest
         rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
         if (!rexlogic_)
         {
-            LogError("Getting rexlogicmodule interface did not succeed.");
+            LogError("Getting RexLogicModule interface did not succeed.");
             return;
         }
+        
         LogInfo("Module " + Name() + " initialized.");
     }
 
@@ -102,37 +100,34 @@ namespace NetTest
         //Get event category id's.
         inboundCategoryID_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
         outboundCategoryID_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkOut");
+        networkStateCategoryID_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
         
-        if (inboundCategoryID_ == 0 || outboundCategoryID_ == 0)
+        if (inboundCategoryID_ == 0 || outboundCategoryID_ == 0 || networkStateCategoryID_ == 0)
             LogWarning("Unable to find event category for OpenSimNetwork events!");
             
-        InitLoginWindow();
         InitNetTestWindow();
         InitPacketDumpWindow();
         
-        if (!loginWindow || !netTestWindow || !packetDumpWindow)
+        if (netTestWindow || !packetDumpWindow)
         {
             LogError("Could not initialize UI.");
             return;
         }
-        
-        loginWindow->set_position(Gtk::WIN_POS_CENTER);
-        loginWindow->show();
     }
 
     void NetTestLogicModule::Uninitialize()
     {
+        received_messages_pool_.clear();
+        sent_messages_pool_.clear();
+            
         SAFE_DELETE(netTestWindow)
-        SAFE_DELETE(loginWindow)
         SAFE_DELETE(packetDumpWindow)
-         
 
         LogInfo("Module " + Name() + " uninitialized.");
     }
 
     void NetTestLogicModule::Update(Core::f64 frametime)
     {
-
     }
 
     bool NetTestLogicModule::HandleEvent(
@@ -140,7 +135,21 @@ namespace NetTest
         Core::event_id_t event_id, 
         Foundation::EventDataInterface* data)
     {
-        if (category_id == inboundCategoryID_)
+        if (category_id == networkStateCategoryID_)
+        {
+            if (event_id == OpenSimProtocol::Events::EVENT_SERVER_CONNECTED)
+            {
+                if (!netTestWindow)
+                    InitNetTestWindow();
+                    
+                netTestWindow->show();
+            }
+            if (event_id == OpenSimProtocol::Events::EVENT_SERVER_DISCONNECTED)
+                SAFE_DELETE(netTestWindow);
+            
+            return false;
+        }
+        else if (category_id == inboundCategoryID_)
         {
             OpenSimProtocol::NetworkEventInboundData *event_data = checked_static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
             assert(event_data);
@@ -189,20 +198,6 @@ namespace NetTest
     	            WriteToChatWindow(ss.str());
 		            break;
 		        }
-            case RexNetMsgLogoutReply:
-			    {
-                    event_data->message->ResetReading();
-				    RexUUID aID = event_data->message->ReadUUID();
-				    RexUUID sID = event_data->message->ReadUUID();
-    	
-				    // Close the NetTest window if id's match.
-				    if (aID == rexlogic_->GetServerConnection()->GetInfo().agentID &&
-				        sID == rexlogic_->GetServerConnection()->GetInfo().sessionID)
-				    {
-                        LogOut();
-                    }
-				    break;
-			    }
 		    default:
 //			    netInterface_->DumpNetworkMessage(msgID, msg);
 			    break;
@@ -229,54 +224,25 @@ namespace NetTest
 		    if (sent_messages_pool_.size() > 200)
 		        sent_messages_pool_.pop_front();
         }
-
+        
         return false;
     }
-    
-    void NetTestLogicModule::InitLoginWindow()
+
+/*    const std::string &NetTestLogicModule::NetworkStateEventIDToString(Core::event_id_t id)
     {
-        // Create the login window from glade (xml) file.
-        loginControls = Gnome::Glade::Xml::create("data/loginWindow.glade");
-        if (!loginControls)
-            return;
-        
-        // Set the window title.
-        loginControls->get_widget("dialog_login", loginWindow);
-        loginWindow->set_title("Login");
-       
-        // Bind callbacks.
-        loginControls->connect_clicked("button_connect", sigc::mem_fun(*this, &NetTestLogicModule::OnClickConnect));
-        loginControls->connect_clicked("button_logout", sigc::mem_fun(*this, &NetTestLogicModule::OnClickLogout));
-        loginControls->connect_clicked("button_quit", sigc::mem_fun(*this, &NetTestLogicModule::OnClickQuit));
+         static const std::string connection_strings[10] = {
+             "Disconnected", "Initalizing XML-RPC connection",
+             "Waiting for XML-RPC reply", "Authentication reply received", "XML-RPC login reply received",
+             "XML-PRC login failed", "Initalizing UDP connection", "Connected", "Connection failed"};
 
-        
-        // Read old connection settings from xml configuration file.
-
-        entry_server_ = loginControls->get_widget("entry_server", entry_server_);
-        
-        std::string strText = "";
-        std::string strGroup = "Login";
-        std::string strKey = "server";
-        
-        strText = framework_->GetDefaultConfigPtr()->GetSettingFromFile<std::string>(strGroup, strKey);
-        entry_server_->set_text(Glib::ustring(strText));
-        
-
-        entry_server_->signal_activate().connect(sigc::mem_fun(*this, &NetTestLogicModule::OnClickConnect));        
+        return connection_strings[id];
+    }*/
     
-        entry_username_ = loginControls->get_widget("entry_username",entry_username_);
-        
-        strKey = "username";
-        strText = "";
-        
-        strText = framework_->GetDefaultConfigPtr()->GetSettingFromFile<std::string>(strGroup, strKey);
-        entry_username_->set_text(Glib::ustring(strText));
-            
-        ///@note Pending : Currently password is not loaded and saved.  
-               
-       
-    }
-    
+/*    void NetTestLogicModule::UpdateConnectionStateToUI(Core::event_id_t id)
+    {
+        std::cout << NetworkStateEventIDToString(id) << std::endl;
+    }*/
+
     void NetTestLogicModule::InitNetTestWindow()
     {
         // Create the NetTest UI window from glade (xml) file.
@@ -335,55 +301,6 @@ namespace NetTest
         packetDumpWindow->set_position(Gtk::WIN_POS_MOUSE);        
     }
     
-    void NetTestLogicModule::OnClickConnect()
-    {
-        // Initialize UI widgets.
-        Gtk::Entry *entry_password = 0;
-		loginControls->get_widget("entry_password", entry_password);
-		Gtk::Entry *entry_authentication = 0;
-		loginControls->get_widget("entry_authentication", entry_authentication);
-
-		bool succesful = false;
-		if (entry_authentication != 0 && std::string(entry_authentication->get_text()) != std::string(""))
-		{
-			// Connect to Authentication server.
-		    //entry_authentication contains authentication server address and port
-			//entry_auth_login contains login username. 
-			
-			Gtk::Entry *entry_auth_login = 0;
-			loginControls->get_widget("entry_auth_login", entry_auth_login);
-			
-			succesful = rexlogic_->GetServerConnection()->ConnectToServer(entry_username_->get_text(), entry_password->get_text(), entry_server_->get_text(), 
-                entry_authentication->get_text(), entry_auth_login->get_text());
-		}
-		else 
-		    succesful = rexlogic_->GetServerConnection()->ConnectToServer(entry_username_->get_text(), entry_password->get_text(), entry_server_->get_text());
-        
-		if (succesful)
-		{
-            // Save login and server settings for future use. 
-            framework_->GetConfigManager()->SetSetting<std::string>(std::string("Login"),std::string("server"), std::string(entry_server_->get_text()));
-            framework_->GetConfigManager()->SetSetting<std::string>(std::string("Login"),std::string("username"), std::string(entry_username_->get_text()));
-
-            if (!netTestWindow)
-                InitNetTestWindow();
-            
-            netTestWindow->show();
-        }
-    }
-    
-    void NetTestLogicModule::OnClickLogout()
-    {
-        rexlogic_->GetServerConnection()->RequestLogout();
-        ///\todo Handle server timeouts.
-    }
-    
-    void NetTestLogicModule::OnClickQuit()
-    { 
-        framework_->Exit();
-        assert(framework_->IsExiting());
-    }
-
     void NetTestLogicModule::OnClickChat()
     {
         Gtk::Entry *entry_chat = 0;
@@ -542,13 +459,6 @@ namespace NetTest
 		    if (bMalformed)
 		        return;
 	    }
-    }
-     
-    void NetTestLogicModule::LogOut()
-    {
-        received_messages_pool_.clear();
-        sent_messages_pool_.clear();
-        SAFE_DELETE(netTestWindow);
     }
 }
 

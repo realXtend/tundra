@@ -192,6 +192,9 @@ namespace RexLogic
         
     bool Avatar::HandleRexGM_RexAppearance(OpenSimProtocol::NetworkEventInboundData* data)
     {
+        return false;
+        
+        ///\todo tucofixme, Crashes!
         data->message->ResetReading();    
         data->message->SkipToFirstVariableByName("Parameter");
         

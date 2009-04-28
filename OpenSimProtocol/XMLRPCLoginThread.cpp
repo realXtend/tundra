@@ -105,7 +105,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
     XMLRPCEPI* call = 0;
     try
     {
-        if ( authentication_ && callMethod_ == "ClientAuthentication" ) 
+        if (authentication_ && callMethod_ == "ClientAuthentication" ) 
             call = new XMLRPCEPI(callMethod_,authenticationAddress_, authenticationPort_);
         else
         {
@@ -186,7 +186,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 	    call->AddStringToArray(arr, "login-flags");
 	    call->AddStringToArray(arr, "global-textures");
     }
-	 catch ( XMLRPCException& ex)
+	 catch (XMLRPCException& ex)
     {
         delete call;
         // Initialisation error.
@@ -216,12 +216,12 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
             threadState_->parameters.agentID.FromString(call->GetReply<std::string>("agent_id"));
 		    threadState_->parameters.circuitCode = call->GetReply<int>("circuit_code");
             
-            if ( threadState_->parameters.sessionID.ToString() == std::string("") || threadState_->parameters.agentID.ToString() == std::string("") 
+            if (threadState_->parameters.sessionID.ToString() == std::string("") || threadState_->parameters.agentID.ToString() == std::string("") 
 				    || threadState_->parameters.circuitCode == 0 )
-			    {
-				    //todo collect xml failure message.			
-				    loginresult = false;
-			    }
+            {
+			    threadState_->errorMessage = call->GetReply<std::string>("message");
+				loginresult = false;
+            }
 
 		    loginresult = true;
 	    }
@@ -235,7 +235,6 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 	    }
 	    else if (authentication_ && callMethod_ == std::string("login_to_simulator"))
 	    {
-            //std::cout << call->GetReply<std::string>("session_id") << std::endl;
             threadState_->parameters.sessionID.FromString(call->GetReply<std::string>("session_id"));
             threadState_->parameters.agentID.FromString(call->GetReply<std::string>("agent_id"));
 		    threadState_->parameters.circuitCode = call->GetReply<int>("circuit_code");
@@ -251,7 +250,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
         
         // Read error message from reply
         // todo transfer error message to login screen. 
-        
+        threadState_->errorMessage = call->GetReply<std::string>("message");
         std::string errorMessage = call->GetReply<std::string>("message");
         std::cout<<"Login procedure returned error message :"<<errorMessage;
         delete call;

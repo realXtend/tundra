@@ -65,25 +65,21 @@ namespace NetTest
            
         /// Returns type of this module. Needed for logging.
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_NetTestLogic;
-
-        /// Initializes the Login window.
-		void InitLoginWindow();
         
+        ///Utility function for converting the state enum to string.
+        ///@param The event id.
+        ///@return The login state as a string.
+//        static const std::string &NetworkStateEventIDToString(Core::event_id_t id);
+        
+        ///@param The event id.
+//        static void UpdateConnectionStateToUI(Core::event_id_t id);
+
         /// Initializes the NetTest window.
         void InitNetTestWindow();
         
         /// Initializes the Packet Dump window.
         void InitPacketDumpWindow();
-        
-        /// Callback funtion for the 'Connect' button. Connects to server.
-        void OnClickConnect();
-        
-        /// Callback function for the 'Disconnect' button. Disconnects from the server.
-        void OnClickLogout();
-        
-        /// Callback function for the 'Quit' button. Terminates the application.
-        void OnClickQuit();
-        
+
         /// Callback function for the 'Chat' button. Sends UPD chat message.
         void OnClickChat();
         
@@ -107,27 +103,17 @@ namespace NetTest
 		std::string simName_;
 		
         // Handle to the login window controls.
-        Glib::RefPtr<Gnome::Glade::Xml> loginControls;
-
-        // Handle to the login window controls.
         Glib::RefPtr<Gnome::Glade::Xml> netTestControls;
 
         // Handle to the packet dump window controls.
         Glib::RefPtr<Gnome::Glade::Xml> packetDumpControls;
-        
-        // The GTK window for login UI.
-        Gtk::Window *loginWindow;
-        
+
         // The GTK window for NetTest UI.
         Gtk::Window *netTestWindow;
 
         // The GTK window for packet dump UI.
         Gtk::Window *packetDumpWindow;
             
-        // The GTK entries : server entry, server login.
-        Gtk::Entry *entry_server_;
-        Gtk::Entry *entry_username_;
-     
         /// Tree model columns for entity list.
         Glib::RefPtr<Gtk::TreeStore> logModel;
         
@@ -194,6 +180,9 @@ namespace NetTest
 		/// Category id for incoming messages.
 		Core::event_category_id_t outboundCategoryID_;
 		
+		/// Category id for network state messages.
+		Core::event_category_id_t networkStateCategoryID_;
+	    
 	    /// A pool of reveceived NetInMessage structures. Used for debugging.
 	    typedef std::list<std::pair<uint32_t, NetInMessage> > ReceivedMessages_t;
 	    ReceivedMessages_t received_messages_pool_;

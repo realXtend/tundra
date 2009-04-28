@@ -11,6 +11,7 @@
 #include "EventDataInterface.h"
 #include "CameraController.h"
 #include "SceneManager.h"
+#include "RexLoginWindow.h"
 
 #include "EC_Viewable.h"
 #include "EC_FreeData.h"
@@ -78,7 +79,7 @@ namespace RexLogic
 
         current_controller_ = Controller_Avatar;
         input_handler_->SetState(avatar_controller_);
-
+        
         LogInfo("Module " + Name() + " initialized.");
     }
 
@@ -120,6 +121,8 @@ namespace RexLogic
         cam->lookAt(0,0,0);
 
         send_input_state_ = true;
+        
+        loginWindow_ = new RexLoginWindow(framework_, this);
     }
 
     void RexLogicModule::DeleteScene(const std::string &name)
@@ -163,6 +166,8 @@ namespace RexLogic
         SAFE_DELETE (input_handler_);
 		SAFE_DELETE (scene_handler_);
 		SAFE_DELETE (network_state_handler_);
+		
+		SAFE_DELETE(loginWindow_);
         
 		LogInfo("Module " + Name() + " uninitialized.");
     }
@@ -325,11 +330,6 @@ namespace RexLogic
         if (iter != UUIDs_.end())
             UUIDs_.erase(iter);    
     } 
-
-
-
-
-
 }
 
 using namespace RexLogic;

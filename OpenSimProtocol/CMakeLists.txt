@@ -14,6 +14,7 @@ include_directories (
 	../RexCommon
 	../Foundation
 	../Interfaces
+	../NetTestLogicModule
 )
 
 # Disable warning
