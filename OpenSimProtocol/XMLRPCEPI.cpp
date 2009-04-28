@@ -55,7 +55,8 @@ void XMLRPCEPI::CreateCall(const std::string& method)
         pCall_ = new XMLRPCCall(strCallMethod_);
     else
     {
-        // todo PENDING throw exception.
+        throw XMLRPCException(std::string("XMLRPCEPI exception in XMLRPCEPI::CreateCall() method name was invalid"));	
+      
     }
 }
 
@@ -63,12 +64,12 @@ void XMLRPCEPI::Send()
 {
     if ( pCall_ == 0 ) 
     {
-        // todo PENDING throw exception.
+       throw XMLRPCException(std::string("XMLRPCEPI exception in XMLRPCEPI::Send() Call object was zero pointer"));   
     }
     else if ( pConnection_ == 0 )
     {
         // todo PENDING throw exception.
-       
+       throw XMLRPCException(std::string("XMLRPCEPI exception in XMLRPCEPI::Send() Connection object was zero pointer"));  
     }
     
     // We now own xmlData, remember to deallocate using free();
@@ -76,7 +77,7 @@ void XMLRPCEPI::Send()
     char *pXmlData = XMLRPC_REQUEST_ToXML(pCall_->GetRequest(), 0); 
     if (pXmlData == 0)
     {
-        //todo PENDING throw exception
+        throw XMLRPCException(std::string("XMLRPCEPI exception in XMLRPCEPI::Send() xml data was zero pointer"));  
     }
 
     

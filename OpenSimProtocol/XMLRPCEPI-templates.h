@@ -14,8 +14,7 @@ template <typename T> T XMLRPCEPI::GetReply(const char* name) const
 	
     if ( pCall_ == 0)
     {
-        // Throw...
-        return T();
+        throw XMLRPCException(std::string("XMLRPCEPI exception in GetReply() error: Call object is zero pointer"));
     }
 
 	// I'm probably not understanding the value hierarchy here.. samples use XMLRPC_VectorRewind(XMLRPC_RequestGetData(request))
@@ -24,13 +23,12 @@ template <typename T> T XMLRPCEPI::GetReply(const char* name) const
 	XMLRPC_VALUE result = XMLRPC_RequestGetData(pCall_->GetReply()); //XMLRPC_VectorRewind(XMLRPC_RequestGetData(request));
 	assert(result);
 	
-	T value;
+	T value = T();
 
 	if (!result)
 	{
+		throw XMLRPCException(std::string("XMLRPCEPI exception in GetReply() error: XML reply did not contain any data!"));
 		
-		//LogError("Error! XML reply did not contain any data! (Tried to retrieve int by ID " + Core::ToString(name)+ ".");
-		return value;
 	}
 	
 	XMLRPC_VALUE resultValue = XMLRPC_VectorGetValueWithID(result, name);
@@ -47,19 +45,17 @@ template <typename T> T XMLRPCEPI::GetReply(const char* name) const
 			{
 				case 0:
 					{
-						// None type 
-						//LogError("Error! XML reply containded None type! (Tried to retrieve int by ID " + Core::ToString(name)+ ".");
-                        
-                        //std::string strName(name);
-                        //PocoXMLRPCException ex(std::string("Error! XML reply contain None type! (Tried to retrieve reply by ID ") + strName);
-                        //throw ex;
-						break; 
+					// None type 
+                       std::string strName(name);
+					   throw XMLRPCException(std::string("XMLRPCEPI exception in GetReply() error: XML reply contain NONE data! (Tried to retrieve reply by ID ") + strName);
+                       break; 
 					}
 				case 1: 
 					{
 						//Empty type
-						//LogError("Error! XML reply containded empty type! (Tried to retrieve int by ID " + Core::ToString(name)+ ".");
-						break;
+                        std::string strName(name);
+                        throw XMLRPCException(std::string("XMLRPCEPI exception in GetReply() error: XML reply contain EMPTY data! (Tried to retrieve reply by ID ") + strName);
+					    break;
 					}
 				case 2:
 					{
@@ -100,6 +96,8 @@ template <typename T> T XMLRPCEPI::GetReply(const char* name) const
 				case 8:
 					{
 						//vector, aka list, array 
+                        std::string strName(name);
+                        throw XMLRPCException(std::string("XMLRPCEPI exception in GetReply() error: XML reply contain Vector data! (Tried to retrieve reply by ID ") + strName);
 					    //LogError("Error! XML reply contain vector type data! (Tried to retrieve int by ID " + Core::ToString(name)+ ".");
 						break;
 					}
@@ -111,10 +109,16 @@ template <typename T> T XMLRPCEPI::GetReply(const char* name) const
         }
         catch (boost::bad_lexical_cast&)
 	 	{
-			//LogError("Error! XML reply did not managed to cast reply data to wanted data type (Tried to retrieve data by ID " + Core::ToString(name)+ ".");
+            std::string strName(name);
+            throw XMLRPCException(std::string("XMLRPCEPI exception in GetReply() error: XML reply data was not converted to wanted type! (Tried to retrieve reply by ID ") + strName);
 		}
 	        
 	}
+    else
+    {
+        std::string strName(name);
+        throw XMLRPCException(std::string("XMLRPCEPI exception in GetReply() error: XML reply data was not found! (Tried to retrieve reply by ID ") + strName);
+    }
 	
 	return value;
 
@@ -127,7 +131,8 @@ template <typename T> void XMLRPCEPI::AddMember(const char* name, const T& value
         Add(name, value);
     else
     {
-        // throw exception..
+       std::string strName(name);
+       throw XMLRPCException(std::string("XMLRPCEPI exception in AddMember() error: Call object was zero pointer (Tried to add member ID ") + strName);
     }
 }
 

@@ -30,7 +30,7 @@ XMLRPC_REQUEST XMLRPCConnection::Send(const char* data)
     CURL *pCurl = curl_easy_init();
 	if (pCurl == 0)
     {
-        //todo throw exception
+        throw XMLRPCException(std::string("XMLRPCEPI exception in XMLRPCConnection::Send()() error: Curl object was zero pointer"));
     }
 
 	CURLcode result;
@@ -73,20 +73,15 @@ XMLRPC_REQUEST XMLRPCConnection::Send(const char* data)
 
 	if (result != CURLE_OK)
 	{
-        // todo throw exception.
-
-		//std::cout << "cURL error: " << curl_error_buffer << "." << std::endl;
-		//return false;
+        throw XMLRPCException(std::string("XMLRPCEPI exception in XMLRPCConnection::Send() Curl error: ")+ std::string(curl_error_buffer));		
 	}
 
 	
 	
     if (response_data.size() == 0)
     {
-        // todo throw exception
-
-        //std::cout<<"response data size is zero"<<std::endl;
-		
+       
+        throw XMLRPCException(std::string("XMLRPCEPI exception in XMLRPCConnection::Send() response data size was zero: "));			
     }
 	
     // Convert the XML string to a XMLRPC reply structure.
