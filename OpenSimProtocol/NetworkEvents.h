@@ -14,8 +14,8 @@ namespace OpenSimProtocol
     struct ClientParameters
     {
         RexUUID agentID;
-        RexTypes::RexUUID sessionID;
-        RexTypes::RexUUID regionID;
+        RexUUID sessionID;
+        RexUUID regionID;
         uint32_t circuitCode;
         std::string sessionHash;
         std::string gridUrl;
@@ -26,10 +26,16 @@ namespace OpenSimProtocol
     /// \ingroup OpenSimProtocolClient @{
     namespace Events
     {
-        /// These events belong to the "NetworkState" event category.
+        ///\todo Describe.
         static const Core::event_id_t EVENT_SERVER_DISCONNECTED = 0x01;
-        static const Core::event_id_t EVENT_SERVER_CONNECTED = 0x02;
-        static const Core::event_id_t EVENT_SERVER_CONNECTION_FAILED = 0x03;
+        static const Core::event_id_t EVENT_INIT_XMLRPC = 0x02;
+        static const Core::event_id_t EVENT_WAITING_XMLRPC_REPLY = 0x03;
+        static const Core::event_id_t EVENT_XMLRPC_AUTH_REPLY_RECEIVED = 0x04;
+        static const Core::event_id_t EVENT_XMLRPC_LOGIN_REPLY_RECEIVED = 0x05;
+        static const Core::event_id_t EVENT_XMLRPC_LOGIN_FAILED = 0x06;
+        static const Core::event_id_t EVENT_INIT_UPD_CONNECTION= 0x07;
+        static const Core::event_id_t EVENT_SERVER_CONNECTED = 0x08;
+        static const Core::event_id_t EVENT_CONNECTION_FAILED = 0x09;
     }
     /// @}
     
@@ -45,7 +51,8 @@ namespace OpenSimProtocol
             STATE_XMLRPC_AUTH_REPLY_RECEIVED,
             STATE_XMLRPC_REPLY_RECEIVED,
             STATE_INIT_UDP,
-            STATE_CONNECTED
+            STATE_CONNECTED,
+            STATE_ENUM_COUNT
         };
     }
     
@@ -54,6 +61,7 @@ namespace OpenSimProtocol
     {
         volatile OpenSimProtocol::Connection::State state;
         OpenSimProtocol::ClientParameters parameters;
+        std::string errorMessage;
     };
         
     /// Event data interface for inbound messages.
