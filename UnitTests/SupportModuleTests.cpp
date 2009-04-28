@@ -80,7 +80,8 @@ BOOST_AUTO_TEST_CASE( support_modules_console_commands )
     //! \todo Gtk seems to cause problems with unit tests, so excluded for now
     //! \bug Re-creating Gtk::Main when running unit tests in debug mode causes a crash. 
     //!      It should have been destroyed properly though, and unloading/loading GtkmmUI
-    //!      module at runtime works just fine.
+    //!      module at runtime works just fine. The problem seems to be confined to
+    //!      unit tests in debug mode (run outside of the debugger).
     fw.GetModuleManager()->ExcludeModule("GtkmmUI");
 
     Test::StaticModuleDefinitions static_test;
