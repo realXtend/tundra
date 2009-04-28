@@ -37,9 +37,9 @@ XMLRPC_REQUEST XMLRPCConnection::Send(const char* data)
 	
     char curl_error_buffer[CURL_ERROR_SIZE];
 	
-    struct curl_httppost* post = 0;
-	struct curl_httppost* last = 0;
-	struct curl_slist *headers = 0;
+    curl_httppost* post = 0;
+	curl_httppost* last = 0;
+    curl_slist *headers = 0;
 	
     std::vector<char> response_data;
 	

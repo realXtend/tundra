@@ -43,57 +43,57 @@ template <typename T> T XMLRPCEPI::GetReply(const char* name) const
             
 			switch (type)
 			{
-				case 0:
+            case xmlrpc_none:
 					{
 					// None type 
                        std::string strName(name);
 					   throw XMLRPCException(std::string("XMLRPCEPI exception in GetReply() error: XML reply contain NONE data! (Tried to retrieve reply by ID ") + strName);
                        break; 
 					}
-				case 1: 
+            case xmlrpc_empty:
 					{
 						//Empty type
                         std::string strName(name);
                         throw XMLRPCException(std::string("XMLRPCEPI exception in GetReply() error: XML reply contain EMPTY data! (Tried to retrieve reply by ID ") + strName);
 					    break;
 					}
-				case 2:
+            case xmlrpc_base64:
 					{
 						// base64 value, eg. binary data
 						value = boost::lexical_cast<T>(XMLRPC_GetValueBase64(resultValue));
 						break;
 					}
-				case 3:
+            case xmlrpc_boolean:
 					{
 						// boolean
 						value = boost::lexical_cast<T>(XMLRPC_GetValueBoolean(resultValue));
 						break;
 					}
-				case 4: 
+            case xmlrpc_datetime:
 					{
 						//datetime [ISO8601 | time_t]
 						value = boost::lexical_cast<T>(XMLRPC_GetValueDateTime(resultValue));
 						break;
 					}
-				case 5:
+            case xmlrpc_double:
 					{
 						//double / floating point
 						value = boost::lexical_cast<T>(XMLRPC_GetValueDouble(resultValue));
 						break;
 					}
-				case 6:
+            case xmlrpc_int:
 					{
 						// Integer
 						value = boost::lexical_cast<T>(XMLRPC_GetValueInt(resultValue));
 						break;
 					}
-				case 7:
+            case xmlrpc_string:
 					{
 						//string (const char* actually)
 						value = boost::lexical_cast<T>(XMLRPC_GetValueString(resultValue));
 						break;
 					}
-				case 8:
+            case xmlrpc_vector:
 					{
 						//vector, aka list, array 
                         std::string strName(name);
