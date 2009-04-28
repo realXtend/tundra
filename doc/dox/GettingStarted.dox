@@ -2,6 +2,7 @@
 
 \page GettingStarted Getting Started
 
+\section intro_GS Viewer introduction
 	The viewer is divided into several different projects and namespaces.
 
     - The \subpage RexNGCore "Core" contains functionality common to all projects in the viewer.
@@ -9,16 +10,20 @@
     - Several modules that create the functionality of the viewer with the
       help of the framework.	
 	
+\section modules_GS Modules
 	To get started with modules, information on how to use them, or how to
-	create new ones, see \subpage ModuleArchitecture "Module Architecture".
+	create new ones, see 
+	- \subpage ModuleArchitecture "Module Architecture".
 	
+\section intracomms_GS Communication inside the viewer
 	To see how to communicate between modules, see 
-	\subpage EventSystem "Viewer event system" and 
-	\subpage ModuleServices "Module Services".
+	- \subpage EventSystem "Viewer event system" and 
+	- \subpage ModuleServices "Module Services".
 	
+\section intracomms_GS Communication with outside world
 	For communicating with the outside world, 
-	\subpage OpenSimProtocolConnection "Managing the OpenSim connection state", 
-    \subpage SLUDP "Interfacing with the OpenSim world using SLUDP messages" and
-    \subpage XMLRPC "Performing custom XMLRPC calls".
+	- \subpage OpenSimProtocolConnection "Managing the OpenSim connection state", 
+    - \subpage SLUDP "Interfacing with the OpenSim world using SLUDP messages" and
+    - \subpage XMLRPC "Performing custom XMLRPC calls".
 	
 */
