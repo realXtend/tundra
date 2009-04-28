@@ -1,6 +1,6 @@
 /**
 
-\page Services Services
+\page ModuleServices Module Services
 
 	Each module can offer one or more services to other modules. Services
 	should be used when simple events (see \ref EventSystem) are not
