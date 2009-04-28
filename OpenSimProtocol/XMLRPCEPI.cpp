@@ -80,7 +80,10 @@ void XMLRPCEPI::Send()
         throw XMLRPCException(std::string("XMLRPCEPI exception in XMLRPCEPI::Send() xml data was zero pointer"));  
     }
 
-    
+    // If there exist old reply clear it out. 
+    if (pCall_->GetReply() != 0)
+        XMLRPC_RequestFree(pCall_->GetReply(),1);
+
     pCall_->SetReply(pConnection_->Send(pXmlData));
     
     // Free xmlData
