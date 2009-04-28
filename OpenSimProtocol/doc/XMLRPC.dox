@@ -76,7 +76,7 @@ try
 	//It did not contain? Read error message (and read it also from reply). 
 	std::cout<<" Error: "<<ex.getMessage();
 	
-	// And if u are sure that server responded something read try to read server message (assumption here is that it will reply error message).  
+	// And if u are sure that server responded something try to read server message (assumption here is that it will reply error message).  
 	std::cout<<" Server replied: "<<pCall->GetReply<std::string>("message");
 } 
 
