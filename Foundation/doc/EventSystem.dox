@@ -1,19 +1,19 @@
 /**
 
-\page EventSystem Using the event system
+\page EventSystem Event system
 
 	Below is a description on how to use the viewer's internal event system and
 	the event manager. The event system is one way of for viewer modules to communicate
 	between each other without explicit dependencies.
 
 
-	\section acquiring Acquiring the EventManager	
+	\section acquiringeventmanager Acquiring the EventManager	
 
 	To use the event system, a reference to the EventManager within the Foundation framework is needed.
 	Use Foundation::Framework::GetEventManager() to acquire.
 
 
-	\section events Events
+	\section eventdescription Events
 	
 	When sent, an event in the event system is made up of 3 things: event category ID, event ID, 
         and a data block. The category ID and event ID identify the event to the receiver, while the

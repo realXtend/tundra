@@ -1,12 +1,12 @@
 /**
 
-\page AssetModule Using the asset module
+\page AssetModule Asset module
 
 	Below is a description on how to use the public interface of the AssetModule. It implements Foundation::AssetServiceInterface 
 	and Foundation::AssetInterface for retrieving and using assets. Assets are a way to store in-world content as blobs 
 	of raw binary data, and come in various types (texture, 3D mesh, sound etc.) 
 	
-	\section acquiring Acquiring the AssetService
+	\section acquiringassetservice Acquiring the AssetService
 
 	Clients should not need to get at the AssetModule directly, but get the asset service through 
 	Foundation::ServiceManager::GetService(). Note that theoretically the asset service can get loaded and
