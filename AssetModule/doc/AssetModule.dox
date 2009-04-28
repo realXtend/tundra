@@ -1,0 +1,46 @@
+/**
+
+\page AssetModule Using the asset module
+
+	Below is a description on how to use the public interface of the AssetModule. It implements Foundation::AssetServiceInterface 
+	and Foundation::AssetInterface for retrieving and using assets. Assets are a way to store in-world content as blobs 
+	of raw binary data, and come in various types (texture, 3D mesh, sound etc.) 
+	
+	\section acquiring Acquiring the AssetService
+
+	Clients should not need to get at the AssetModule directly, but get the asset service through 
+	Foundation::ServiceManager::GetService(). Note that theoretically the asset service can get loaded and
+	unloaded at will, so it should perhaps be re-acquired every time you need it.
+
+	\section getasset Getting an asset
+
+	To get a complete asset, call Foundation::AssetServiceInterface::GetAsset() with the asset identifier
+	(UUID for legacy UDP assets) and asset type. If the asset is found in cache, a pointer to the corresponding
+	Foundation::AssetInterface will be returned. If the asset is not found in cache, a null pointer is returned.
+	Note that if the asset is not found, GetAsset() will not automatically queue an asset download request.
+
+	To get an incomplete asset, when it is still a transfer in progress, call Foundation::AssetServiceInterface::GetIncompleteAsset().
+	Compared to GetAsset(), you have to specify how many bytes from the beginning of the asset you require at minimum.
+	If there is enough data, a new temporary asset will be constructed and a pointer returned to it.
+	Like GetAsset(), GetIncompleteAsset() will not queue an asset download request.
+
+	\section requestasset Requesting an asset download
+
+	If an asset was not found in the cache by using GetAsset(), you likely want to initiate a transfer for it. The function
+	Foundation::AssetServiceInterface::RequestAsset() can be used for this. Like GetAsset(), it requires the 
+	asset identifier and type.
+
+	The progress of an asset download can be queried with the function Foundation::AssetServiceInterface::QueryAssetStatus().
+	It takes pointers to 3 unsigned integer variables, which will be filled, in order, with the asset data size
+	(0 if still unknown), total amount of bytes received so far, and continuous bytes received from the asset beginning.
+
+	\section assetevents Asset events
+
+	Events with the category "Asset" will be sent informing of the status of asset downloads. These are defined in AssetEvents.h
+
+	ASSET_READY event with the data block Asset::Event::AssetReady will be sent when a download is complete.
+
+	ASSET_PROGRESS events with the data block Asset::Event::AssetProgress are sent periodically as the asset download progresses.
+
+	If an asset download gets canceled due to for example timeout, the ASSET_CANCELED event with data block Asset::Event::AssetCanceled will be sent.	
+*/

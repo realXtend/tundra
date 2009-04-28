@@ -22,7 +22,15 @@ namespace Asset
     class AssetManager;
     typedef boost::shared_ptr<AssetManager> AssetManagerPtr;
     
-    //! asset module
+    /** \defgroup AssetModuleClient AssetModule Client Interface
+        This page lists the public interface of the AssetModule,
+        which consists of implementing Foundation::AssetServiceInterface and
+        Foundation::AssetInterface
+
+        For details on how to use the public interface, see \ref AssetModule.
+    */
+
+    //! Asset module.
     class ASSET_MODULE_API AssetModule : public Foundation::ModuleInterfaceImpl
     {
     public:
