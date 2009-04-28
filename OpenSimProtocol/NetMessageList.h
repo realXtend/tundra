@@ -9,9 +9,6 @@
 
 #include "NetMessage.h"
 
-///\todo This goes to a PCH or somewhere else.
-#define NUMELEMS(x) (sizeof(x)/sizeof(x[0]))
-
 /// A data structure that contains a list of known network messages.
 class NetMessageList
 {
