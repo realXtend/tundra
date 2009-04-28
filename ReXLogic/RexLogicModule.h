@@ -15,6 +15,8 @@ namespace RexLogic
     class NetworkStateEventHandler;
     class CameraController;
     class Terrain;
+    class Avatar;
+    class Primitive;
 
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
     typedef boost::shared_ptr<AvatarController> AvatarControllerPtr;
@@ -22,6 +24,8 @@ namespace RexLogic
 
     typedef boost::weak_ptr<Terrain> TerrainWeakPtr;
     typedef boost::shared_ptr<Terrain> TerrainPtr;
+    typedef boost::shared_ptr<Avatar> AvatarPtr;
+    typedef boost::shared_ptr<Primitive> PrimitivePtr;
 
     enum InputController
     {
@@ -62,6 +66,12 @@ namespace RexLogic
 
         //! @return The terrain handler object that manages Rex terrain logic.
         TerrainPtr GetTerrainHandler();
+
+        //! @return The avatar handler object that manages Rex avatar logic.
+        AvatarPtr GetAvatarHandler();
+
+        //! @return The primitive handler object that manages Rex primitive logic.        
+        PrimitivePtr GetPrimitiveHandler();
 
         //! The scene system can store multiple scenes. Only one scene is active at a time, that is the one
         //! that is currently being rendered. You may pass a null pointer to erase the currently active scene.
@@ -124,6 +134,10 @@ namespace RexLogic
         InputController current_controller_;
 
         TerrainPtr terrain_;
+        
+        AvatarPtr avatar_;
+        
+        PrimitivePtr primitive_;
 
         Foundation::ScenePtr activeScene_;
 
