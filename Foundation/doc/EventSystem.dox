@@ -3,7 +3,7 @@
 \page EventSystem Event system
 
 	Below is a description on how to use the viewer's internal event system and
-	the event manager. The event system is one way of for viewer modules to communicate
+	the event manager. The event system is one way for viewer modules to communicate
 	between each other without explicit dependencies.
 
 
