@@ -79,13 +79,17 @@ namespace Communication
             case GDK_ISO_Enter:
             case GDK_3270_Enter:
                 std::cout << "Enter: " << std::endl;
+                startChat();
+                //event->time
+                //gtk_main_do_event(
+                //popContactMenu.popup(
+                //Glib::RefPtr<Gtk::TreeView::Selection> refSelection = get_selection();
+                //if(refSelection)
+                //{
+                //    refSelection->
+                //}
                 handled = true;
                 break;
-
-            //case GDK_3270_Enter:
-            //    std::cout << "Enter: " << std::endl;
-            //    handled = true;
-            //    break;
             case GDK_Tab:
                 std::cout << "TAB: " << std::endl;
                 handled = true;
@@ -112,20 +116,6 @@ namespace Communication
                 std::cout << "  Selected Contact=" << contact << std::endl;
 
                 this->uimodule_->StartChat(contact.c_str());
-
-                
-
-                //std::cout << "  Selected ID=" << id << std::endl;
-			    //char** args = new char*[2];
-			    //char* buf1 = new char[20];
-			    //strcpy(buf1,contact.c_str());
-			    //args[0] = buf1;
-
-			    //std::string str = "CStartChatSession";
-			    //std::string syntax = "s";
-			    //Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, args);
-       //         sessionUp_ = true;
-			    //this->session_ = Communication::ChatSessionUIPtr(new Communication::ChatSession(contact.c_str(), imScriptObject));
             }
         }
     }
@@ -138,35 +128,23 @@ namespace Communication
 
     void ContactList::setContactStatus(char* id, char* status)
     {
-        Gtk::TreeModel::Children children = ((Glib::RefPtr<Gtk::TreeModel>)get_model())->children();
-        Gtk::TreeNodeChildren::iterator iter = children.begin();
-        
-        //Gtk::TreeViewColumn
+        //Communication::CommunicationUIModule::LogInfo("ContactList::setContactStatus");
+        Gtk::TreeModel::Children children = lstContactsTreeModel->children();
+        for(Gtk::TreeModel::iterator iter = children.begin(); iter != children.end(); ++iter)
+        {            
+            Gtk::TreeModel::Row row = *iter;
+            std::string val;
+            row.get_value(0, val);
+            if(val==std::string(id))
+            {
+                row.set_value(2, std::string(status));    
+            }
+            //std::cout << val << std::endl;
+        }
 
-        //Glib::RefPtr<TreeModel> model = get_model();
-        //lstContactsTreeModel->get_iter(
-        //lstContactsTreeModel->foreach(
-        
+                
 
     }
 
-
-    //void ContactList::on_menu_file_popup_generic()
-    //{
-    //    Communication::CommunicationUIModule::LogInfo("onPopUpMenuEvent!!");
-    //    Glib::RefPtr<Gtk::TreeView::Selection> refSelection = get_selection();
-    //    if(refSelection)
-    //    {
-    //        Gtk::TreeModel::iterator iter = refSelection->get_selected();
-    //        if(iter)
-    //        {
-    //            //iter->get_value
-    //            std::string id = (*iter)[this->columns_.id_];
-    //            //int id = (*iter)[m_Columns.m_col_id];
-    //            std::cout << "  Selected ID=" << id << std::endl;
-    //            //std::cout << "  Selected ID=" << id << std::endl;
-    //        }
-    //    }
-    //}
 
 }

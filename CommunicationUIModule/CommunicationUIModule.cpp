@@ -97,6 +97,10 @@ namespace Communication
 		                        
 		commUI_XML->get_widget("wndCMain", wndCommMain);
         commUI_XML->get_widget("fxdContainer", fxdContainer);
+
+        commUI_XML->get_widget("btnAddContact", btnAddContact);
+        commUI_XML->get_widget("btnRemoveContact", btnRemoveContact);
+
         if(!wndCommMain||!fxdContainer)
 			return;
 
@@ -111,6 +115,9 @@ namespace Communication
 		commUI_XML->connect_clicked("mi_settings", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuSettings));
 		commUI_XML->connect_clicked("mi_directchat", sigc::mem_fun(*this, &CommunicationUIModule::OnDirectChatMenuStartChat));
 		commUI_XML->connect_clicked("btnTest", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuConnect));
+        commUI_XML->connect_clicked("btnAddContact", sigc::mem_fun(*this, &CommunicationUIModule::OnContactAdd));
+        commUI_XML->connect_clicked("btnRemoveContact", sigc::mem_fun(*this, &CommunicationUIModule::OnContactRemove));
+        
         //commUI_XML->connect_clicked("lstBuddies", sigc::mem_fun(*this, &CommunicationUIModule::OnContactListClicked));
         
 		// entry dialog
@@ -172,7 +179,6 @@ namespace Communication
 		std::string syntax = "";
 		Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
 	}
-	
 	void CommunicationUIModule::OnAccountMenuDisconnect()
 	{
 		// TODO: Eventually this code would not be here as it is no UI specific
@@ -203,9 +209,8 @@ namespace Communication
     {
 		LogInfo("start chat window here");
 
-		// Fix any memory leaks here !!
-
-		char** args = new char*[2];
+		// Memory released in python module !!
+		char** args = new char*[1];
 		char* buf1 = new char[20];
 		strcpy(buf1,contact);
 		args[0] = buf1;
@@ -227,9 +232,41 @@ namespace Communication
 		entryret_ = 0;
 	}
 
+    void CommunicationUIModule::OnContactAdd()
+    {
+        LogInfo("OnContactAdd");
+
+		std::map<std::string, Foundation::Comms::SettingsAttribute> attrs;
+		Foundation::Comms::SettingsAttribute contact_address;
+		contact_address.type = Foundation::Comms::String;
+		contact_address.value = "";
+		attrs["contact address"] = contact_address;
+		//std::map<std::string, Foundation::Comms::SettingsAttribute> attributes = commManager->GetAccountAttributes();
+		int count = attrs.size();
+		//LogInfo(attributes.find("name")->first);
+        ConfigureDlg accDlg(count, attrs, "contact address", this);
+		Gtk::Main::run(accDlg);
+        
+    }
+    void CommunicationUIModule::OnContactRemove()
+    {
+        LogInfo("OnContactRemove");
+
+    }
 
 	void CommunicationUIModule::Callback(std::string aConfigName, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes)
 	{
+        if(aConfigName=="account settings"){
+            commManager->SetAccountAttributes(attributes);
+        } else if(aConfigName=="contact address"){
+            //char** param_array = buildOneStringParamArray(char* prm)
+            Foundation::Comms::SettingsAttribute sattr = attributes["contact address"];
+            char** param_array = buildOneStringParamArrayFromConstCharArray(sattr.value.c_str());
+            std::cout << "blaa blaa blaa" << std::endl;
+		    std::string str = "CAddContact";
+		    std::string syntax = "s";
+		    Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, param_array); // memory freed in pymod
+        }
 		if(aConfigName=="account settings"){ commManager->SetAccountAttributes(attributes); }
 	}
 
@@ -312,8 +349,6 @@ namespace Communication
 
         //this->lstContacts.columns_
         Gtk::TreeModel::Row row = *(this->lstContacts.lstContactsTreeModel->append());
-        //Gtk::TreeModel::Row row = *(lstContactsTreeModel->append());
-        //Gtk::TreeModel::Row row = *(lstBuddiesTreeModel->append());
 
         std::string id(contactID);
         std::string contact(name);
@@ -322,8 +357,7 @@ namespace Communication
         row[this->lstContacts.columns_.status_] = "offline";
 	}
 
-    
-
+   
     void CommunicationUIModule::OnContactListClicked()
     {
         LogInfo("OnContactListClicked");
@@ -333,21 +367,28 @@ namespace Communication
     void CommunicationUIModule::contactStatusChanged(char* id)
     {
         LogInfo("status change");
-        // ask status, a bit cumbersome to do it this way
-
-        // Fix any memory leaks here !!
-        char** args = new char*[2];
+        // Currently memory released in PythonModlule see if its correct place !!
+        char** args = new char*[1];
 		char* buf1 = new char[20];
 		strcpy(buf1,id);
-		args[0] = buf1;
-        
-
+		args[0] = buf1;        
 		std::string str = "CGetStatusWithID";
 		std::string syntax = "s";
 		Foundation::ScriptObject* ret = instance_->imScriptObject->CallMethod(str, syntax, args);
         char* status = ret->ConvertToChar();
+        LogInfo("setContactStatus");
         instance_->lstContacts.setContactStatus(id, status);
-        //instance_->setContactStatus()
+    }
+
+    
+    char** CommunicationUIModule::buildOneStringParamArrayFromConstCharArray(const char* prm)
+    {
+        size_t len = strlen(prm);
+		char* buf1 = new char[20];
+		strcpy(buf1, prm);
+        char** args = new char*[1];
+        args[0] = buf1;        
+		return args;
     }
 }
 

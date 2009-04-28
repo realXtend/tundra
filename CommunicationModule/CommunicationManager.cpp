@@ -57,20 +57,13 @@ namespace Communication
 	{
 		std::map<std::string, Foundation::Comms::SettingsAttribute> attrs;
 		Foundation::Comms::SettingsAttribute name;
-		//name.type = Foundation::Comms::CommSettingsType::String;
 		name.type = Foundation::Comms::String;
 		name.value = "";
 		Foundation::Comms::SettingsAttribute password;
-		//password.type = Foundation::Comms::CommSettingsType::String;
 		password.type = Foundation::Comms::String;
 		password.value = "";
 		attrs["password"] = password;
 		attrs["name"] = name;
-
-		//std::map<std::string, Foundation::Comms::SettingsAttribute>::iterator iter = attrs.find("name");
-		//std::cout << iter->first;
-
-		//CommunicationModule::LogInfo(attrs.find("name")->);
 		return attrs;
 	}
 	

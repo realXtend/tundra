@@ -23,9 +23,6 @@ namespace PythonScript
 		PyObject* pythonObj; // object instance
 	
 	private:
-		//static std::map<std::string, void(*)(char*)> methods;
-		//static std::map<std::string, void*> methods;
-		//void* methodptr;
 		
 
 	};
