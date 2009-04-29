@@ -8,7 +8,10 @@
 
 namespace Foundation
 {
-    //! Interface for scene managers
+    //! Interface for scene manager services
+    /*!
+        \ingroup Services_group
+    */
     class SceneManagerServiceInterface : public ServiceInterface
     {
     public:

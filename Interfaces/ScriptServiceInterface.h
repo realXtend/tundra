@@ -32,6 +32,10 @@ namespace Foundation
 		virtual void NotifyScriptEvent(const std::string& key, const std::string& message) = 0;		
 	};
 
+    //! \todo document -cm
+    /*!
+        \ingroup Services_group
+    */
     class ScriptServiceInterface : public ServiceInterface
     {
     public:

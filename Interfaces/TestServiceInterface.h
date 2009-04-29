@@ -7,6 +7,10 @@
 
 namespace Foundation
 {
+    //! Interface for test service
+    /*!
+        \ingroup Services_group
+    */
     class TestServiceInterface : public ServiceInterface
     {
     public:

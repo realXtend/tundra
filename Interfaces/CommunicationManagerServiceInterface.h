@@ -31,6 +31,10 @@ namespace Foundation
 		};
 
 
+        //! \todo document -cm
+        /*!
+            \ingroup Services_group
+        */
 		class CommunicationManagerServiceInterface : public ServiceInterface
 		{
 		public:

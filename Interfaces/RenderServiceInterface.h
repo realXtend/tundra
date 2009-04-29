@@ -8,6 +8,10 @@
 
 namespace Foundation
 {
+    //! \todo document -cm
+    /*!
+        \ingroup Services_group
+    */
     class RenderServiceInterface : public ServiceInterface
     {
     public:

@@ -7,7 +7,10 @@
 
 namespace Console
 {
-    //! Interface for debug console
+    //! Interface for debug console service
+    /*!
+        \ingroup Services_group
+    */
     class ConsoleServiceInterface : public Foundation::ServiceInterface
     {
     public:

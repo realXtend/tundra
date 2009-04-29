@@ -37,6 +37,8 @@ namespace Input
         state 'A' and 'D' keys may rotate the camera, but
         in free camera state, the keys may slide the camera
         left or right.
+
+        \ingroup Services_group
     */
     class InputServiceInterface : public Foundation::ServiceInterface
     {
