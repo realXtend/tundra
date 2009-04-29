@@ -44,33 +44,10 @@ namespace Scene
             return *this;
         }
 
-        virtual bool operator == (const SceneInterface &other) const { return Name() == other.Name(); }
-        virtual bool operator != (const SceneInterface &other) const { return !(*this == other); }
-        virtual bool operator < (const SceneInterface &other) const { return Name() < other.Name(); }
-
-        //! Make a soft clone of this scene. The new scene will contain the same entities as the old one.
-        /*! 
-            \param newName Name of the new scene
-        */
         virtual Foundation::ScenePtr Clone(const std::string &newName) const;
 
-        //! Creates new entity that contains the specified components
-        /*!
-            \param components list of component names the entity will use
-        */
-        virtual Foundation::EntityPtr CreateEntity(Core::entity_id_t id, const Core::StringVector &components);
-
-        //! Creates an empty entity
-        virtual Foundation::EntityPtr CreateEntity(Core::entity_id_t id);
-
-        //! Makes a soft clone of the entity. The new entity will be placed in this scene.
-        /*! The entity need not be contained in this scene
-
-            \param entity Entity to be cloned
-        */
+        virtual Foundation::EntityPtr CreateEntity(Core::entity_id_t id, const Core::StringVector &components = Core::StringVector());
         virtual Foundation::EntityPtr CloneEntity(const Foundation::EntityPtr &entity);
-        
-        //! Returns entity with the specified id
         virtual Foundation::EntityPtr GetEntity(Core::entity_id_t id) const;
 
         virtual bool HasEntity(Core::entity_id_t id) const
@@ -78,8 +55,10 @@ namespace Scene
             return (entities_.find(id) != entities_.end());
         }
 
-        //! Delete entity with specified id
         virtual void DestroyEntity(Core::entity_id_t id);
+
+        virtual Core::entity_id_t GetNextFreeId();
+
 
         /// Implements a non-const sequential iterator for accessing the entities in the scene.
         class SCENE_MODULE_API EntityIteratorImpl : public Foundation::SceneInterface::EntityIteratorInterface
@@ -120,9 +99,6 @@ namespace Scene
 
         ConstSceneIteratorPtr SceneIteratorBegin() const { return ConstSceneIteratorPtr(new ConstEntityIteratorImpl(entities_.begin())); }
         ConstSceneIteratorPtr SceneIteratorEnd() const { return ConstSceneIteratorPtr(new ConstEntityIteratorImpl(entities_.end())); }
-
-        //! Returns next available id
-        virtual Core::entity_id_t GetNextFreeId();
     
     private:
 

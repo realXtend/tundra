@@ -10,7 +10,13 @@ namespace Foundation
 {
     class Framework;
 
-    //! The abstract topmost level interface common for all components.
+    //! The abstract topmost level interface common for all components. Do not inherit from this when creating new components.
+    /*! The only common thing components currently have is they each have a name.
+        Otherwise each component contains their own data and the data should be accessed via
+        an upcast from this base class.
+
+        \ingroup Scene_group
+    */
     class MODULE_API ComponentInterfaceAbstract
     {
     public:
@@ -20,7 +26,7 @@ namespace Foundation
         virtual const std::string &Name() const = 0;
     };
 
-    //! Base class for all components. 
+    //! Base class for all components. Inherit from this class when creating new components.
     /*! Use the ComponentInterface typedef to refer to the abstract component type.
     */
     class MODULE_API ComponentInterfaceImpl : public ComponentInterfaceAbstract

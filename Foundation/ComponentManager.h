@@ -3,15 +3,19 @@
 #ifndef incl_Foundation_ComponentManager_h
 #define incl_Foundation_ComponentManager_h
 
-//#include "ComponentInterface.h"
-
 namespace Foundation
 {
     class Framework;
-//    class ComponentInterface;
+
+    //! Scenegraph, entity and component model that together form a generic, extendable, lightweight scene model.
+    /*! \defgroup Scene_group Scene model
+        
+    */
+
 
     //! Manages components. Also works as a component factory.
     /*! \ingroup Foundation_group
+        \ingroup Scene_group
     */
     class ComponentManager
     {

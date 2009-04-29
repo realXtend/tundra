@@ -13,9 +13,14 @@ namespace Foundation
     class Framework;
 }
 
+//! Scene model related functionality
+/*! \copydoc Scene_group
+
+    \ingroup Scene_group
+*/
 namespace Scene
 {
-    //! interface for modules
+    //! Scene module
     class SCENE_MODULE_API SceneModule : public Foundation::ModuleInterfaceImpl
     {
     public:

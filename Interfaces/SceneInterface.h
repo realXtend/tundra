@@ -11,10 +11,12 @@ namespace Foundation
     class SceneInterface;
     typedef boost::shared_ptr<SceneInterface> ScenePtr;
 
-    //! Acts as a generic scenegraph for all entities in the world
+    //! Acts as a generic scenegraph for all entities in the scene.
     /*!
-        Contains all entities in the world in a generic fashion.
+        Contains all entities in the scene in a generic fashion.
         Acts as a factory for all entities.
+
+        \ingroup Scene_group
     */
     class MODULE_API SceneInterface
     {
@@ -25,8 +27,11 @@ namespace Foundation
         //! destructor
         virtual ~SceneInterface() {}
 
+        //! Returns true if the two scenes have the same name
         virtual bool operator == (const SceneInterface &other) const = 0;
+        //! Returns true if the two scenes have different names
         virtual bool operator != (const SceneInterface &other) const = 0;
+        //! Order by name
         virtual bool operator < (const SceneInterface &other) const = 0;
 
         //! Returns scene name
@@ -39,14 +44,14 @@ namespace Foundation
         virtual ScenePtr Clone(const std::string &newName) const = 0;
 
         //! Creates new entity that contains the specified components
-        /*!
-            \param id Id of the new entity. Use GetNextFreeId().
-            \param components list of component names the entity will use
-        */
-        virtual EntityPtr CreateEntity(Core::entity_id_t id, const Core::StringVector &components) = 0;
+        /*! Entities should never be created directly, but instead created with this function.
 
-        //! Creates an empty entity
-        virtual Foundation::EntityPtr CreateEntity(Core::entity_id_t id) = 0;
+            To create an empty entity omit components parameter.
+
+            \param id Id of the new entity. Use GetNextFreeId().
+            \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
+        */
+        virtual EntityPtr CreateEntity(Core::entity_id_t id, const Core::StringVector &components = Core::StringVector()) = 0;
 
         //! Makes a soft clone of the entity. The new entity will be placed in this scene.
         /*! The entity need not be contained in this scene
@@ -64,7 +69,7 @@ namespace Foundation
         //! Destroy entity with specified id
         virtual void DestroyEntity(Core::entity_id_t id) = 0;       
         
-        //! Get the next free id
+        //! Get the next free entity id. Can be used with CreateEntity().
         virtual Core::entity_id_t GetNextFreeId() = 0;
 
     public:
@@ -162,8 +167,11 @@ namespace Foundation
 
         //! destructor
         virtual ~SceneInterfaceImpl() {}
+
+        virtual bool operator == (const SceneInterface &other) const { return Name() == other.Name(); }
+        virtual bool operator != (const SceneInterface &other) const { return !(*this == other); }
+        virtual bool operator < (const SceneInterface &other) const { return Name() < other.Name(); }
         
-        //! Returns scene name
         virtual const std::string &Name() const { return name_; }
 
     private:

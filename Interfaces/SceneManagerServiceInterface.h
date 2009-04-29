@@ -8,9 +8,13 @@
 
 namespace Foundation
 {
-    //! Interface for scene manager services
-    /*!
+    //! A manager for scenes, offered as a service.
+    /*! With this service, one can create, delete and clone scenes.
+        Generally scenes are independent from each other, but may contain
+        same entities.
+
         \ingroup Services_group
+        \ingroup Scene_group
     */
     class SceneManagerServiceInterface : public ServiceInterface
     {
@@ -24,8 +28,10 @@ namespace Foundation
         //! destructor
         virtual ~SceneManagerServiceInterface() {}
 
-        //! Creates new empty scene
-        /*!
+        //! Creates new empty scene.
+        /*! If a new scene with the specified name already exists, overrides it. The old scene
+            may get deleted if no references are held to it by other classes.
+
             \param name name of the new scene
             \return empty scene
         */
@@ -56,13 +62,14 @@ namespace Foundation
         
         //! Returns a scene
         /*!
-            Precondition: HasScene(name)
+            \todo Return weak pointer?
 
             \param name name of the scene
+            \return Scene with the specified name, or null pointer if the scene could not be found.
         */
         virtual Foundation::ScenePtr GetScene(const std::string &name) const = 0;
 
-        //! Returns true if a scene with the specified name is contained within this manager
+        //! Returns true if a scene with the specified name is contained within this manager, false otherwise.
         virtual bool HasScene(const std::string &name) const = 0;
 
         typedef boost::shared_ptr<Core::AnyIteratorInterface <ScenePtr> > SceneIteratorImplPtr;

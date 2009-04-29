@@ -8,6 +8,10 @@ namespace Foundation
     class ModuleInterface;
 }
 
+//! Helper macro for creating new entity components
+/*!
+    \ingroup Scene_group
+*/
 #define DECLARE_EC(component)                                                               \
     public:                                                                                 \
     class component##Registrar : public Foundation::ComponentRegistrarInterface {           \

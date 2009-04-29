@@ -31,54 +31,14 @@ namespace Scene
         SceneManager(SceneModule *module) : SceneManagerServiceInterface(), module_(module) {}
 
     public:
+        //! destructor
         virtual ~SceneManager() {}
 
-        //! Creates new empty scene
-        /*!
-            \param name name of the new scene
-            \return empty scene
-        */
         virtual Foundation::ScenePtr CreateScene(const std::string &name);
-
-        //! Deletes a scene and all entities in it
-        /*! Since entities may be shared between scenes, not all entities may get deleted.
-            
-            Precondition: HasScene(name)
-            Postcondition: !HasScene(name)
-
-            \param name name of the scene to delete
-        */
         virtual void DeleteScene(const std::string &name);
-
-        //! Clones a scene. The new scene will contain the same entities as the old one.
-        /*!
-            Precondition:   HasScene(name)
-                            !HasScene(cloneName)
-            Postcondition:  HasScene(cloneName)
-
-            \param name Name of the scene to clone
-            \param cloneName name of the new scene
-            \return Cloned scene
-        */
         virtual Foundation::ScenePtr CloneScene(const std::string &name, const std::string &cloneName);
-        
-        //! Returns a scene
-        /*!
-            Precondition: HasScene(name)
+        virtual Foundation::ScenePtr GetScene(const std::string &name) const;
 
-            \param name name of the scene
-        */
-        virtual Foundation::ScenePtr GetScene(const std::string &name) const
-        {
-            SceneMap::const_iterator it = scenes_.find(name);
-            if (it != scenes_.end())
-                return it->second;
-
-            //const std::string e(std::string("Failed to find scene: " + name);
-            throw Core::Exception((std::string("Failed to find scene: " + name)).c_str());
-        }
-
-        //! Returns true if a scene with the specified name is contained within this manager
         virtual bool HasScene(const std::string &name) const
         {
             return (scenes_.find(name) != scenes_.end());
@@ -87,17 +47,6 @@ namespace Scene
         const SceneMap &GetSceneMap() const { return scenes_; }
 
     private:
-        //class SceneIterator : public Core::AnyIteratorImpl<SceneMap::iterator, Foundation::ScenePtr>
-        //{
-        //    SceneIterator();
-        //public:
-        //    SceneIterator(SceneMap::iterator iter) : AnyIteratorImpl(iter) {}
-        //    virtual ~SceneIterator() {}
-
-        //    virtual Foundation::ScenePtr &operator *() { return iter_->second; }
-        //};
-
-
         virtual SceneIteratorImplPtr SceneIteratorBegin()
         { 
             return SceneIteratorImplPtr(new Core::MapIterator<SceneMap::iterator, Foundation::ScenePtr>(scenes_.begin()));
