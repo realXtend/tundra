@@ -57,7 +57,7 @@ namespace Foundation
 //! resource events
 namespace Resource
 {
-    namespace Event
+    namespace Events
     {
         //! resource ready event id
         static const Core::event_id_t RESOURCE_READY = 1;

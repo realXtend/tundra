@@ -36,8 +36,8 @@ namespace OgreRenderer
                 if (renderer_->camera_)
                     renderer_->camera_->setAspectRatio(Ogre::Real(rw->getWidth() / Ogre::Real(rw->getHeight())));
 
-                Event::WindowResized data(rw->getWidth(), rw->getHeight());
-                renderer_->framework_->GetEventManager()->SendEvent(renderer_->renderercategory_id_, Event::WINDOW_RESIZED, &data);
+                Events::WindowResized data(rw->getWidth(), rw->getHeight());
+                renderer_->framework_->GetEventManager()->SendEvent(renderer_->renderercategory_id_, Events::WINDOW_RESIZED, &data);
             }
         }
     
@@ -105,9 +105,9 @@ namespace OgreRenderer
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         
         renderercategory_id_ = event_manager->RegisterEventCategory("Renderer");
-        event_manager->RegisterEvent(renderercategory_id_, Event::POST_RENDER, "PostRender");
-        event_manager->RegisterEvent(renderercategory_id_, Event::WINDOW_CLOSED, "WindowClosed");
-        event_manager->RegisterEvent(renderercategory_id_, Event::WINDOW_RESIZED, "WindowResized");
+        event_manager->RegisterEvent(renderercategory_id_, Events::POST_RENDER, "PostRender");
+        event_manager->RegisterEvent(renderercategory_id_, Events::WINDOW_CLOSED, "WindowClosed");
+        event_manager->RegisterEvent(renderercategory_id_, Events::WINDOW_RESIZED, "WindowResized");
     }
     
     Renderer::~Renderer()
@@ -329,7 +329,7 @@ namespace OgreRenderer
     void Renderer::OnWindowClosed()
     {
         framework_->Exit();
-        framework_->GetEventManager()->SendEvent(renderercategory_id_, Event::WINDOW_CLOSED, NULL);
+        framework_->GetEventManager()->SendEvent(renderercategory_id_, Events::WINDOW_CLOSED, NULL);
     }
 
     void Renderer::Render()
@@ -342,7 +342,7 @@ namespace OgreRenderer
         Ogre::RenderSystem* renderer = root_->getRenderSystem();
         renderer->_updateAllRenderTargets(false);
         // Send postrender event, so that custom rendering may be added
-        framework_->GetEventManager()->SendEvent(renderercategory_id_, Event::POST_RENDER, NULL);
+        framework_->GetEventManager()->SendEvent(renderercategory_id_, Events::POST_RENDER, NULL);
         // Swap buffers now
         renderer->_swapAllRenderTargetBuffers(renderer->getWaitForVerticalBlank());
 
@@ -356,9 +356,9 @@ namespace OgreRenderer
 
     bool Renderer::HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        if (event_id == Asset::Event::ASSET_READY)
+        if (event_id == Asset::Events::ASSET_READY)
         {
-            Asset::Event::AssetReady *event_data = checked_static_cast<Asset::Event::AssetReady*>(data); 
+            Asset::Events::AssetReady *event_data = checked_static_cast<Asset::Events::AssetReady*>(data); 
             if (event_data->asset_type_ == Asset::RexAT_Mesh)
             {
                 UpdateMesh(event_data->asset_);
@@ -370,9 +370,9 @@ namespace OgreRenderer
 
     bool Renderer::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        if (event_id == Resource::Event::RESOURCE_READY)
+        if (event_id == Resource::Events::RESOURCE_READY)
         {     
-            Resource::Event::ResourceReady *event_data = checked_static_cast<Resource::Event::ResourceReady*>(data);  
+            Resource::Events::ResourceReady *event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);  
             if (event_data->resource_)
             {
                 if (event_data->resource_->GetTypeName() == "Texture")
@@ -438,8 +438,8 @@ namespace OgreRenderer
         // If success, send Ogre resource ready event
         if (checked_static_cast<OgreTexture*>(tex.get())->SetData(source_tex))
         {
-            Resource::Event::ResourceReady event_data(tex->GetId(), tex);
-            framework_->GetEventManager()->SendEvent(resourcecategory_id_, Resource::Event::RESOURCE_READY, &event_data);
+            Resource::Events::ResourceReady event_data(tex->GetId(), tex);
+            framework_->GetEventManager()->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, &event_data);
             return true;
         }
 
@@ -499,8 +499,8 @@ namespace OgreRenderer
         // If success, send Ogre resource ready event
         if (checked_static_cast<OgreMesh*>(mesh.get())->SetData(source))
         {
-            Resource::Event::ResourceReady event_data(source->GetId(), mesh);
-            framework_->GetEventManager()->SendEvent(resourcecategory_id_, Resource::Event::RESOURCE_READY, &event_data);
+            Resource::Events::ResourceReady event_data(source->GetId(), mesh);
+            framework_->GetEventManager()->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, &event_data);
             return true;
         }
 

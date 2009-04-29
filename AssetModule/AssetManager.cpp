@@ -25,8 +25,10 @@ namespace Asset
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         
         event_category_ = event_manager->RegisterEventCategory("Asset");
-        event_manager->RegisterEvent(event_category_, Event::ASSET_READY, "AssetReady");
-        
+        event_manager->RegisterEvent(event_category_, Events::ASSET_READY, "AssetReady");
+        event_manager->RegisterEvent(event_category_, Events::ASSET_PROGRESS, "AssetProgress");
+        event_manager->RegisterEvent(event_category_, Events::ASSET_CANCELED, "AssetCanceled");
+
         // Create asset cache directory
         cache_path_ = framework_->GetPlatform()->GetApplicationDataDirectory() + DEFAULT_ASSET_CACHE_PATH;
         if (boost::filesystem::exists(cache_path_) == false)
@@ -458,15 +460,15 @@ namespace Asset
     void AssetManager::SendAssetProgress(AssetTransfer& transfer)
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-        Event::AssetProgress event_data(transfer.GetAssetId().ToString(), transfer.GetAssetType(), transfer.GetSize(), transfer.GetReceived(), transfer.GetReceivedContinuous());
-        event_manager->SendEvent(event_category_, Event::ASSET_PROGRESS, &event_data);
+        Events::AssetProgress event_data(transfer.GetAssetId().ToString(), transfer.GetAssetType(), transfer.GetSize(), transfer.GetReceived(), transfer.GetReceivedContinuous());
+        event_manager->SendEvent(event_category_, Events::ASSET_PROGRESS, &event_data);
     }
 
     void AssetManager::SendAssetCanceled(AssetTransfer& transfer)
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-        Event::AssetCanceled event_data(transfer.GetAssetId().ToString(), transfer.GetAssetType());
-        event_manager->SendEvent(event_category_, Event::ASSET_CANCELED, &event_data);
+        Events::AssetCanceled event_data(transfer.GetAssetId().ToString(), transfer.GetAssetType());
+        event_manager->SendEvent(event_category_, Events::ASSET_CANCELED, &event_data);
     }
 
     void AssetManager::StoreAsset(AssetTransfer& transfer)
@@ -502,8 +504,8 @@ namespace Asset
         
         // Send asset ready event
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-        Event::AssetReady event_data(new_asset->GetId(), new_asset->GetType(), new_asset);
-        event_manager->SendEvent(event_category_, Event::ASSET_READY, &event_data);
+        Events::AssetReady event_data(new_asset->GetId(), new_asset->GetType(), new_asset);
+        event_manager->SendEvent(event_category_, Events::ASSET_READY, &event_data);
     }
     
     Foundation::AssetPtr AssetManager::GetFromCache(const RexTypes::RexUUID& asset_id)

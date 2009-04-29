@@ -205,13 +205,13 @@ namespace Input
 
         if (framework_->GetEventManager()->QueryEventCategory("Renderer") == category_id)
         {
-            if (event_id == OgreRenderer::Event::WINDOW_CLOSED)
+            if (event_id == OgreRenderer::Events::WINDOW_CLOSED)
                 WindowClosed();
 
-            if (event_id == OgreRenderer::Event::WINDOW_RESIZED)
+            if (event_id == OgreRenderer::Events::WINDOW_RESIZED)
             {
-                WindowResized(  checked_static_cast<OgreRenderer::Event::WindowResized*>(data)->width_,
-                                checked_static_cast<OgreRenderer::Event::WindowResized*>(data)->height_ );
+                WindowResized(  checked_static_cast<OgreRenderer::Events::WindowResized*>(data)->width_,
+                                checked_static_cast<OgreRenderer::Events::WindowResized*>(data)->height_ );
             }
         }
         if (event_category_ == category_id)

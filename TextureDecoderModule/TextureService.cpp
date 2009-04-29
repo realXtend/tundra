@@ -22,7 +22,7 @@ namespace TextureDecoder
         if (!resourcecategory_id_)
         {
             resourcecategory_id_ = event_manager->RegisterEventCategory("Resource");
-            event_manager->RegisterEvent(resourcecategory_id_, Resource::Event::RESOURCE_READY, "ResourceReady");
+            event_manager->RegisterEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, "ResourceReady");
         }
 
         thread_ = boost::thread(boost::ref(decoder_));
@@ -144,8 +144,8 @@ namespace TextureDecoder
 
             // Send resource ready event
             Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-            Resource::Event::ResourceReady event_data(request.GetId(), result.texture_);
-            event_manager->SendEvent(resourcecategory_id_, Resource::Event::RESOURCE_READY, &event_data);
+            Resource::Events::ResourceReady event_data(request.GetId(), result.texture_);
+            event_manager->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, &event_data);
 
             // If max level, the request is finished and can be erased
             if (request.GetDecodedLevel() == 0)

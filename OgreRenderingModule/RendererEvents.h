@@ -8,7 +8,7 @@
 namespace OgreRenderer
 {
     //! renderer events
-    namespace Event
+    namespace Events
     {
         //! postrender event id
         static const Core::event_id_t POST_RENDER = 1;

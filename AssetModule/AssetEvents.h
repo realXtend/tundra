@@ -9,7 +9,7 @@
 namespace Asset
 {
     //! Asset events
-    namespace Event
+    namespace Events
     {
         //! Asset ready event id
         /*! \ingroup AssetModuleClient

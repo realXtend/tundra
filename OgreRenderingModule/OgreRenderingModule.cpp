@@ -102,7 +102,7 @@ namespace OgreRenderer
         if (!resourcecategory_id_)
         {
             resourcecategory_id_ = event_manager->RegisterEventCategory("Resource");
-            event_manager->RegisterEvent(resourcecategory_id_, Resource::Event::RESOURCE_READY, "ResourceReady");
+            event_manager->RegisterEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, "ResourceReady");
         }
 
         renderer_->PostInitialize();
@@ -145,10 +145,18 @@ namespace OgreRenderer
     // virtual 
     void OgreRenderingModule::Uninitialize()
     {        
+        if (framework_->GetServiceManager()->IsRegistered(Foundation::Service::ST_ConsoleCommand))
+        {
+            // Unregister debug commands
+            Console::CommandService *console = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand);
+            console->UnregisterCommand("RequestTexture");
+            console->UnregisterCommand("RequestMesh");
+        }
+
         framework_->GetServiceManager()->UnregisterService(renderer_.get());
     
         delete ogre_window_;
-         renderer_.reset();
+        renderer_.reset();
         
         LogInfo("Module " + Name() + " uninitialized.");
     }

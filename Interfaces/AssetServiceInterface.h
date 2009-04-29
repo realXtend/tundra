@@ -12,7 +12,7 @@ namespace Foundation
     
     /*! An asset container service implements this interface to provide client modules
         with asset request and retrieval functionality.
-        See \ref AssetModule for details on how to use the asset service.
+        See \ref AssetModule "Using the asset module" for details on how to use the asset service.
      */
     class AssetServiceInterface : public ServiceInterface
     {
