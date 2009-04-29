@@ -4,13 +4,12 @@
 #define incl_Primitive_h
 
 #include "NetworkEvents.h"
-#include "RexObject.h"
 
 namespace RexLogic
 {
     class RexLogicModule;
 
-    class Primitive : public RexObject
+    class Primitive
     {
      public:
         Primitive(RexLogicModule *rexlogicmodule);
@@ -26,6 +25,8 @@ namespace RexLogic
         void HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes);
                              
     private:
+        RexLogicModule *rexlogicmodule_;
+    
         //! @return The entity corresponding to given id AND uuid. This entity is guaranteed to have an existing EC_OpenSimPrim component.
         //!         Does not return null. If the entity doesn't exist, an entity with the given entityid and fullid is created and returned.
         Foundation::EntityPtr GetOrCreatePrimEntity(Core::entity_id_t entityid, const RexUUID &fullid);

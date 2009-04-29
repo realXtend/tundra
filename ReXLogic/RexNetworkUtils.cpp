@@ -14,21 +14,12 @@
 #include "../OgreRenderingModule/Renderer.h"
 
 namespace RexLogic
-{
-    RexObject::RexObject(RexLogicModule *rexlogicmodule)
-    {
-        rexlogicmodule_ = rexlogicmodule;
-    }
-
-    RexObject::~RexObject()
-    {
-    }
-    
+{    
     /// Creates a bounding box (consisting of lines) into the Ogre scene hierarchy. This function will be removed or refactored later on, once proper material system is present. -jj.
-    void RexObject::DebugCreateOgreBoundingBox(Foundation::ComponentInterfacePtr ogrePlaceable, const std::string &materialName)
+    void DebugCreateOgreBoundingBox(Foundation::ModuleInterface *module, Foundation::ComponentInterfacePtr ogrePlaceable, const std::string &materialName)
     {
         OgreRenderer::EC_OgrePlaceable &component = dynamic_cast<OgreRenderer::EC_OgrePlaceable&>(*ogrePlaceable.get());
-        OgreRenderer::Renderer *renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        OgreRenderer::Renderer *renderer = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
         Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
 
         ///\todo Quick W.I.P Ogre object naming, refactor. -jj.
@@ -87,8 +78,15 @@ namespace RexLogic
         Ogre::SceneNode *node = component.GetSceneNode();
         node->attachObject(manual);
     }
+
+    bool ParseBool(const std::string &value)
+    {
+        std::string testedvalue = value;
+        boost::algorithm::to_lower(testedvalue);
+        return (boost::algorithm::starts_with(testedvalue,"true") || boost::algorithm::starts_with(testedvalue,"1")); 
+    }
     
-    Core::Quaternion RexObject::GetProcessedQuaternion(const uint8_t* bytes)
+    Core::Quaternion GetProcessedQuaternion(const uint8_t* bytes)
     {    
         uint16_t *rot = reinterpret_cast<uint16_t*>((uint16_t*)&bytes[0]);
         Core::Quaternion rotation = Core::UnpackQuaternionFromU16_4(rot);
@@ -97,7 +95,7 @@ namespace RexLogic
         return Core::OpenSimToOgreQuaternion(rotation);
     }
 
-    Core::Vector3df RexObject::GetProcessedScaledVectorFromUint16(const uint8_t* bytes, float scale)
+    Core::Vector3df GetProcessedScaledVectorFromUint16(const uint8_t* bytes, float scale)
     {
         uint16_t *vec = reinterpret_cast<uint16_t*>((uint16_t*)&bytes[0]);
         
@@ -109,14 +107,14 @@ namespace RexLogic
         return Core::OpenSimToOgreCoordinateAxes(resultvector);        
     }
 
-    Core::Vector3df RexObject::GetProcessedVectorFromUint16(const uint8_t* bytes)
+    Core::Vector3df GetProcessedVectorFromUint16(const uint8_t* bytes)
     {
         uint16_t *vec = reinterpret_cast<uint16_t*>((uint16_t*)&bytes[0]);
 
         return Core::OpenSimToOgreCoordinateAxes(Core::Vector3df(vec[0],vec[1],vec[2]));    
     }
     
-    Core::Vector3df RexObject::GetProcessedVector(const uint8_t* bytes)
+    Core::Vector3df GetProcessedVector(const uint8_t* bytes)
     {
         Core::Vector3df resultvector = *reinterpret_cast<Core::Vector3df*>((Core::Vector3df*)&bytes[0]);
 

@@ -14,9 +14,29 @@ namespace RexLogic
     
         FirstName = "";
         LastName = "";
+        
+        avatar_address_ = "";
+        avatar_override_address_ = "";
     }
 
     EC_OpenSimAvatar::~EC_OpenSimAvatar()
     {
+    }
+    
+    void EC_OpenSimAvatar::SetAppearanceAddress(std::string address, bool overrideappearance)
+    {
+        if(overrideappearance)
+            avatar_override_address_ = address;
+        else
+            avatar_address_ = address;
+                
+    }
+    
+    std::string EC_OpenSimAvatar::GetAppearanceAddress()
+    {
+        if(avatar_override_address_.length() > 0)
+            return avatar_override_address_;
+        else
+            return avatar_address_;   
     }
 }

@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "Primitive.h"
-#include "RexObject.h"
+#include "RexNetworkUtils.h"
 #include "RexLogicModule.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_Viewable.h"
@@ -15,9 +15,9 @@
 namespace RexLogic
 {
 
-    Primitive::Primitive(RexLogicModule *rexlogicmodule) : RexObject(rexlogicmodule)
+    Primitive::Primitive(RexLogicModule *rexlogicmodule)
     {
-
+        rexlogicmodule_ = rexlogicmodule;
     }
 
     Primitive::~Primitive()
@@ -68,7 +68,7 @@ namespace RexLogic
         
         Foundation::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents); 
 
-        DebugCreateOgreBoundingBox(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()),"AmbientRed");
+        DebugCreateOgreBoundingBox(rexlogicmodule_, entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()),"AmbientRed");
         return entity;
     }    
 

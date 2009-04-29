@@ -17,6 +17,13 @@ namespace RexLogic
        
     public:
         virtual ~EC_OpenSimAvatar();
+
+        //! set appearance address 
+        void SetAppearanceAddress(std::string address, bool overrideappearance);
+
+        // get appearance address that is used, return override if that is defined, otherwise the default address
+        std::string GetAppearanceAddress();
+
      
         // !ID related
         uint64_t RegionHandle;
@@ -26,9 +33,18 @@ namespace RexLogic
         
         std::string FirstName;
         std::string LastName;
-
+        
     private:
+        //! appearance address
+        std::string avatar_address_;
+        
+        //! appearance override address
+        std::string avatar_override_address_;
+
         EC_OpenSimAvatar(Foundation::ModuleInterface* module);
+
+
+
 
     };
 }

@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "RexObject.h"
+#include "RexNetworkUtils.h"
 #include "Avatar.h"
 #include "RexLogicModule.h"
 #include "EC_openSimAvatar.h"
@@ -11,9 +11,9 @@
 
 namespace RexLogic
 {
-    Avatar::Avatar(RexLogicModule *rexlogicmodule) : RexObject(rexlogicmodule)
+    Avatar::Avatar(RexLogicModule *rexlogicmodule)
     {
-
+        rexlogicmodule_ = rexlogicmodule;
     }
     
     Avatar::~Avatar()
@@ -53,7 +53,7 @@ namespace RexLogic
  
         OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
         ogrePos.SetScale(Vector3(0.5,1.5,0.5));
-        DebugCreateOgreBoundingBox(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()),"AmbientGreen");
+        DebugCreateOgreBoundingBox(rexlogicmodule_, entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()),"AmbientGreen");
  
         return entity;
     } 
@@ -191,18 +191,20 @@ namespace RexLogic
     }
         
     bool Avatar::HandleRexGM_RexAppearance(OpenSimProtocol::NetworkEventInboundData* data)
-    {
-        return false;
-        
-        ///\todo tucofixme, Crashes!
+    {        
         data->message->ResetReading();    
         data->message->SkipToFirstVariableByName("Parameter");
         
         std::string avataraddress = data->message->ReadString();
         RexUUID avatarid(data->message->ReadString());
+        bool overrideappearance = ParseBool(data->message->ReadString());
         
-        //! \todo tucofixme, parse bool
-        // bool overrideappearance = Core::ParseString<bool>(data->message->ReadString());
+        Foundation::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
+        if(entity)
+        {
+            EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent("EC_OpenSimAvatar").get());        
+            avatar.SetAppearanceAddress(avataraddress,overrideappearance);
+        }
         return false;
     }
     

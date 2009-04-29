@@ -4,13 +4,12 @@
 #define incl_Avatar_h
 
 #include "NetworkEvents.h"
-#include "RexObject.h"
 
 namespace RexLogic
 {
     class RexLogicModule;
 
-    class Avatar : public RexObject
+    class Avatar
     {
      public:
         Avatar(RexLogicModule *rexlogicmodule);
@@ -24,7 +23,9 @@ namespace RexLogic
         void HandleTerseObjectUpdate_30bytes(const uint8_t* bytes);
         void HandleTerseObjectUpdateForAvatar_60bytes(const uint8_t* bytes);
                                    
-    private:        
+    private:
+        RexLogicModule *rexlogicmodule_;
+            
         //! @return The entity corresponding to given id AND uuid. This entity is guaranteed to have an existing EC_OpenSimAvatar component.
         //!         Does not return null. If the entity doesn't exist, an entity with the given entityid and fullid is created and returned.
         Foundation::EntityPtr GetOrCreateAvatarEntity(Core::entity_id_t entityid, const RexUUID &fullid);
