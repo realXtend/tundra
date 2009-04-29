@@ -85,8 +85,15 @@ void XMLRPCEPI::Send()
     if (pCall_->GetReply() != 0)
         XMLRPC_RequestFree(pCall_->GetReply(),1);
 
-    pCall_->SetReply(pConnection_->Send(pXmlData));
-    
+    try
+    {
+        pCall_->SetReply(pConnection_->Send(pXmlData));
+    } catch(XMLRPCException& ex)
+    {
+        // Free xmlData
+        XMLRPC_Free(pXmlData);
+        throw ex;
+    }
     // Free xmlData
     XMLRPC_Free(pXmlData);
 }
