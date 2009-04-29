@@ -21,6 +21,7 @@ namespace OgreRenderer
     
     //! Ogre mesh component
     /*! Needs to be attached to a placeable (aka scene node) to be visible.
+        \ingroup OgreRenderingModuleClient
      */
     class OGRE_MODULE_API EC_OgreMesh : public Foundation::ComponentInterface
     {

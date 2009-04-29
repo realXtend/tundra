@@ -1,0 +1,69 @@
+/**
+
+\page OgreRenderingModule Using the Ogre renderer module
+
+	Below is a description on how to use Foundation::RenderServiceInterface, which the Ogre renderer module implements, as well as the
+	rest of the public interface of the renderer.
+
+	Because abstracting the whole of the Ogre functionality into the RenderService 
+	would be a large and tedious undertaking, the Ogre rendering module gives ways to access the
+	Ogre objects (such as scene manager, rendering window etc.) directly.
+	
+	\section renderservice_ORM Acquiring and using the RenderService
+
+	The RenderService should be available whenever the Ogre renderer module is loaded and initialized. The abstract service interface 
+	itself provides some non-Ogre specific functionality, such as rendering the scene, resizing the rendering window, 
+	querying the window dimensions, and subscribing/unsubscribing to the renderer log.
+
+	The framework itself already uses the service to render the scene after the update loop on each frame, which also serves as an usage example:
+
+	\code	
+        if (service_manager_->IsRegistered(Service::ST_Renderer))
+        {
+            Foundation::RenderServiceInterface *renderer = 
+                service_manager_->GetService<RenderServiceInterface>(Service::ST_Renderer);
+            renderer->Render();
+        }
+	\endcode
+	
+			
+	\section ogrespecific_ORM Using Ogre-specific functionality
+
+	To get deeper into Ogre-related specifics, one must use directly the OgreRenderer::Renderer interface, instead of Foundation::RenderServiceInterface.
+	One can still go through the ServiceManager to get the renderer, but the class name is different.
+	
+	For example:
+
+	\code
+	OgreRenderer::Renderer *renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+     	\endcode
+
+	After this, one can for example get the Ogre scene manager from the renderer.
+
+	
+	\section ogreresources_ORM Using Ogre resources created from in-world asset data
+
+	OgreRenderer::Renderer is also the interface through which Ogre resources can be created from in-world assets (textures, meshes etc.) 
+	Currently there is support for requesting and creating mesh and texture resources. Note that to ensure that the renderer actually creates the resources
+	correctly, one should not ask the assets directly from the AssetService (unless interested of the raw asset data), but rather from the renderer.
+
+	See the functions OgreRenderer::Renderer::GetMesh(), OgreRenderer::Renderer::RequestMesh(), OgreRenderer::Renderer::RemoveMesh() for meshes and
+	OgreRenderer::Renderer::GetTexture(), OgreRenderer::Renderer::RequestTexture(), OgreRenderer::Renderer::RemoveTexture() for textures. They are similar
+	to the AssetService in that the Get... functions will not automatically request download of the asset; Request... functions are needed for that.
+
+
+	\section ogreec_ORM Ogre-related entity components
+
+	There are also several Ogre-related entity components in the OgreRenderingModule; these can be used to populate the scene with Ogre objects.
+	These include for example OgreRenderer::EC_OgrePlaceable, which encapsulates an Ogre scene node, and OgreRenderer::EC_OgreMesh, which encapsulates 
+	a mesh entity.
+
+	Each component has its own interface, which might be subject to change.
+
+
+	\section rendererevents_ORM Renderer events
+
+	See RendererEvents.h for the events the renderer sends. The POST_RENDER event is sent after the scene is rendered, but
+	before the screen buffer is swapped. Responding to this event allows custom rendering outside of the scene to be added.
+	Events are also sent whenever the rendering window is resized or closed.
+*/

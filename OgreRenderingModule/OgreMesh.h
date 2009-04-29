@@ -13,7 +13,9 @@ namespace OgreRenderer
     class OgreMesh;
     typedef boost::shared_ptr<OgreMesh> OgreMeshPtr;
 
-    //! an Ogre mesh resource
+    //! An Ogre mesh resource
+    /*! \ingroup OgreRenderingModuleClient
+     */
     class OgreMesh : public Foundation::ResourceInterface
     {
     public:

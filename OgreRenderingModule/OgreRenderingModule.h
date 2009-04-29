@@ -24,6 +24,12 @@ namespace OgreRenderer
     class Renderer;
     typedef boost::shared_ptr<Renderer> RendererPtr;
     
+    /** \defgroup OgreRenderingModuleClient OgreRenderingModule Client Interface
+        This page lists the public interface of the OgreRenderingModule.
+
+        For details on how to use the public interface, see \ref OgreRenderingModule "Using the Ogre renderer module"
+    */
+
     //! A renderer module using Ogre
     class OGRE_MODULE_API OgreRenderingModule : public Foundation::ModuleInterfaceImpl
     {

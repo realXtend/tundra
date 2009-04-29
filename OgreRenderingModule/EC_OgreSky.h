@@ -20,6 +20,7 @@ namespace OgreRenderer
     
     //! Ogre sky component
     /*! \todo other sky methods, like plane or dome
+        \ingroup OgreRenderingModuleClient
      */
     class OGRE_MODULE_API EC_OgreSky : public Foundation::ComponentInterface
     {

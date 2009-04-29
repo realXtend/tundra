@@ -18,8 +18,14 @@ namespace Foundation
         RenderServiceInterface() {}
         virtual ~RenderServiceInterface() {}
 
+        //! Renders the scene
         virtual void Render() = 0;
         virtual void Raycast() = 0;
+        //! Resizes the rendering window
+        /*! \param width New window width
+            \param height New window height
+         */
+        virtual void Resize(Core::uint width, Core::uint height) = 0;
         //! Returns render window handle, or 0 if no window is opened
         virtual size_t GetWindowHandle() const = 0;
         //! Returns render window width, or 0 if no window is opened
