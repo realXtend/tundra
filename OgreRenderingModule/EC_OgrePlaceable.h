@@ -19,6 +19,8 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Renderer> RendererPtr;
     
     //! Ogre placeable (scene node) component
+    /*! \ingroup OgreRenderingModuleClient
+     */
     class OGRE_MODULE_API EC_OgrePlaceable : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_OgrePlaceable);

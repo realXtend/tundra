@@ -21,6 +21,7 @@ namespace OgreRenderer
     
     //! Ogre custom object component
     /*! Needs to be attached to a placeable (aka scene node) to be visible.
+        \ingroup OgreRenderingModuleClient
      */
     class OGRE_MODULE_API EC_OgreCustomObject : public Foundation::ComponentInterface
     {

@@ -10,16 +10,24 @@ namespace OgreRenderer
     //! renderer events
     namespace Events
     {
-        //! postrender event id
+        //! Postrender event id
+        /*! \ingroup OgreRenderingModuleClient
+         */
         static const Core::event_id_t POST_RENDER = 1;
         
-        //! window closed event id
+        //! Window closed event id
+        /*! \ingroup OgreRenderingModuleClient
+         */
         static const Core::event_id_t WINDOW_CLOSED = 2;
 
-        //! window resized event id
+        //! Window resized event id
+        /*! \ingroup OgreRenderingModuleClient
+         */
         static const Core::event_id_t WINDOW_RESIZED = 3;
 
         //! Event data for window resize
+        /*! \ingroup OgreRenderingModuleClient
+         */
         class WindowResized : public Foundation::EventDataInterface
         {
             WindowResized();

@@ -32,49 +32,19 @@ namespace OgreRenderer
     typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;
     
     //! Ogre renderer
-    /*! Created by OgreRenderingModule.
-     */
+    /*! Created by OgreRenderingModule. Implements the RenderServiceInterface.
+        \ingroup OgreRenderingModuleClient
+    */
     class Renderer : public Foundation::RenderServiceInterface
     {
         friend class EventListener;
         
     public:
-        //! constructor
+        //! Constructor
         Renderer(Foundation::Framework* framework);
 
-        //! destructor
+        //! Destructor
         virtual ~Renderer();
-
-        //! initializes renderer
-        /*! creates render window. if render window is to be embedded, call SetExternalWindowParameter() before.
-         */
-        void Initialize();
-
-        //! post-initializes renderer
-        /*! queries event categories it needs
-         */
-        void PostInitialize();
-
-        //! sets external window parameter, for embedding the Ogre renderwindow
-        void SetExternalWindowParameter(const std::string& param) { external_window_parameter_ = param; }
-
-        //! returns initialized state
-        bool IsInitialized() const { return initialized_; }
-
-        //! returns Ogre root
-        OgreRootPtr GetRoot() const { return root_; }
-
-        //! returns Ogre scenemanager
-        Ogre::SceneManager* GetSceneManager() const { return scenemanager_; }
-        
-        //! returns active camera
-        Ogre::Camera* GetCurrentCamera() const { return camera_; }
-
-        //! returns current render window
-        Ogre::RenderWindow* GetCurrentRenderWindow() const { return renderwindow_; }
-
-        //! returns an unique name to create Ogre objects that require a mandatory name
-        std::string GetUniqueObjectName();
 
         //! Threadsafe service to framework
         virtual void Raycast()
@@ -89,112 +59,146 @@ namespace OgreRenderer
             // after raycast has been performed. (see Smoke demo, collision handling)
         }
 
-        size_t GetWindowHandle() const;
+        //! Resizes the window
+        virtual void Resize(Core::uint width, Core::uint height);
 
-        int GetWindowWidth() const;
-        int GetWindowHeight() const;
+        //! Renders the screen
+        virtual void Render();
 
-        Foundation::Framework* GetFramework() const { return framework_; }
+        //! Returns window handle, or 0 if no render window
+        virtual size_t GetWindowHandle() const;
 
-        //! subscribe a listener to renderer log. Can be used before renderer is initialized.
-        void SubscribeLogListener(const Foundation::LogListenerPtr &listener);
-        //! unsubsribe a listener to renderer log. Can be used before renderer is initialized.
-        void UnsubscribeLogListener(const Foundation::LogListenerPtr &listener);
+        //! Returns window width, or 0 if no render window
+        virtual int GetWindowWidth() const;
 
-        //! performs update.
-        /*! pumps Ogre window events.
-         */
-        void Update(Core::f64 frametime);
+        //! Returns window height, or 0 if no render window
+        virtual int GetWindowHeight() const;
+
+        //! Subscribe a listener to renderer log. Can be used before renderer is initialized.
+        virtual void SubscribeLogListener(const Foundation::LogListenerPtr &listener);
         
-        //! resizes the window
-        void Resize(Core::uint width, Core::uint height);
-
-        //! callback when renderwindow closed
-        /*! sends event and exits the framework main loop
+        //! Unsubsribe a listener to renderer log. Can be used before renderer is initialized.
+        virtual void UnsubscribeLogListener(const Foundation::LogListenerPtr &listener);
+        
+        
+        //! Callback when renderwindow closed
+        /*! Sends event and exits the framework main loop
          */
         void OnWindowClosed();
 
-        //! renders the screen
-        void Render();
+        //! Sets external window parameter, for embedding the Ogre renderwindow
+        void SetExternalWindowParameter(const std::string& param) { external_window_parameter_ = param; }
+
+        //! Returns framework
+        Foundation::Framework* GetFramework() const { return framework_; }
+
+        //! Returns initialized state
+        bool IsInitialized() const { return initialized_; }
+
+        //! Returns Ogre root
+        OgreRootPtr GetRoot() const { return root_; }
+
+        //! Returns Ogre scenemanager
+        Ogre::SceneManager* GetSceneManager() const { return scenemanager_; }
         
-        //! handles an asset system event
-        bool HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        //! Returns active camera
+        Ogre::Camera* GetCurrentCamera() const { return camera_; }
 
-        //! handles a resource event
-        bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        //! Returns current render window
+        Ogre::RenderWindow* GetCurrentRenderWindow() const { return renderwindow_; }
 
+        //! Returns an unique name to create Ogre objects that require a mandatory name
+        std::string GetUniqueObjectName();
 
-        //! returns an Ogre texture resource, null if not found
-        /*! does not automatically make a request to the asset system
+        //! Returns an Ogre texture resource, null if not found
+        /*! Does not automatically make a request to the asset system
          */
         Foundation::ResourcePtr GetTexture(const std::string& id);
 
-        //! requests a texture to be downloaded & decoded
-        /*! a resource event will be sent once each texture quality level is decoded
+        //! Requests a texture to be downloaded & decoded
+        /*! A resource event will be sent once each texture quality level is decoded
          */
         void RequestTexture(const std::string& id);
 
-        //! deletes an Ogre texture resource
+        //! Deletes an Ogre texture resource
         void RemoveTexture(const std::string& id);
 
-
-        //! returns an Ogre mesh resource, null if not found
+        //! Returns an Ogre mesh resource, null if not found
         /*! does not automatically make a request to the asset system
          */
         Foundation::ResourcePtr GetMesh(const std::string& id);
 
-        //! requests a mesh to be downloaded
+        //! Requests a mesh to be downloaded
         /*! a resource event will be sent once the mesh asset is ready
          */
         void RequestMesh(const std::string& id);
 
-        //! deletes an Ogre mesh resource
+        //! Deletes an Ogre mesh resource
         void RemoveMesh(const std::string& id);
 
+        //! Initializes renderer. Called by OgreRenderingModule
+        /*! Creates render window. If render window is to be embedded, call SetExternalWindowParameter() before.
+         */
+        void Initialize();
+
+        //! Post-initializes renderer. Called by OgreRenderingModule
+        /*! Queries event categories it needs
+         */
+        void PostInitialize();
+
+        //! Performs update. Called by OgreRenderingModule
+        /*! Pumps Ogre window events.
+         */
+        void Update(Core::f64 frametime);
+
+        //! Handles an asset system event. Called by OgreRenderingModule
+        bool HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+
+        //! Handles a resource event. Called by OgreRenderingModule
+        bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
     private:
-        //! loads Ogre plugins in a manner which allows individual plugin loading to fail
+        //! Loads Ogre plugins in a manner which allows individual plugin loading to fail
         /*! \param plugin_filename path & filename of the Ogre plugins file
          */
         void LoadPlugins(const std::string& plugin_filename);
         
-        //! sets up Ogre resources based on resources.cfg
+        //! Sets up Ogre resources based on resources.cfg
         void SetupResources();
         
-        //! creates scenemanager & camera
+        //! Creates scenemanager & camera
         void SetupScene();
     
-        //! creates or updates a texture, based on a source raw texture resource
-        /*! \param source raw texture
+        //! Creates or updates a texture, based on a source raw texture resource
+        /*! \param source Raw texture 
             \return true if successful
          */
         bool UpdateTexture(Foundation::ResourcePtr source);
 
-        //! creates or updates a mesh, based on source asset data
-        /*! \param source asset
+        //! Creates or updates a mesh, based on source asset data
+        /*! \param source Asset
             \return true if successful
          */
         bool UpdateMesh(Foundation::AssetPtr source);
 
-
         boost::mutex renderer_;
 
-        //! successfully initialized flag
+        //! Successfully initialized flag
         bool initialized_;
         
         //! Ogre root object
         OgreRootPtr root_;
         
-        //! scene manager
+        //! Scene manager
         Ogre::SceneManager* scenemanager_;
         
-        //! default camera
+        //! Default camera
         Ogre::Camera* camera_;
         
-        //! rendering window
+        //! Rendering window
         Ogre::RenderWindow* renderwindow_;
         
-        //! framework we belong to
+        //! Framework we belong to
         Foundation::Framework* framework_;
         
         //! Ogre event listener
@@ -209,7 +213,7 @@ namespace OgreRenderer
         //! Resource event category
         Core::event_category_id_t resourcecategory_id_;
 
-        //! counter for unique name creation
+        //! Counter for unique name creation
         Core::uint object_id_;
 
         //! Ogre texture resources

@@ -12,7 +12,9 @@ namespace OgreRenderer
     class OgreTexture;
     typedef boost::shared_ptr<OgreTexture> OgreTexturePtr;
 
-    //! an Ogre texture resource
+    //! An Ogre texture resource
+    /*! \ingroup OgreRenderingModuleClient
+     */
     class OgreTexture : public Foundation::ResourceInterface
     {
     public:

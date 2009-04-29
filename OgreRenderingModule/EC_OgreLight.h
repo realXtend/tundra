@@ -21,6 +21,7 @@ namespace OgreRenderer
     
     //! Ogre light component
     /*! A light can optionally be attached to a placeable (ie. a scene node) but it can also exist without one.
+        \ingroup OgreRenderingModuleClient
      */
     class OGRE_MODULE_API EC_OgreLight : public Foundation::ComponentInterface
     {
