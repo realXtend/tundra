@@ -20,6 +20,8 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Renderer> RendererPtr;
     
     //! Ogre overlay for debug console
+    /*! \ingroup OgreRenderingModuleClient
+     */
     class MODULE_API EC_OgreConsoleOverlay : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_OgreConsoleOverlay);
