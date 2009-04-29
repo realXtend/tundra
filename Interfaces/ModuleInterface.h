@@ -41,7 +41,6 @@ namespace Foundation
 
             \note if you add new core module type, don't forget to add its name to NameFromType()
 
-            \ingroup Foundation_group
             \ingroup Module_group
         */
 		enum Type 
@@ -66,7 +65,6 @@ namespace Foundation
 
         //! Returns string from type enum.
         /*!
-            \ingroup Foundation_group
             \ingroup Module_group
         */
         static const std::string &NameFromType(Type type)
@@ -83,7 +81,6 @@ namespace Foundation
 
         //! Possible module states
         /*!
-            \ingroup Foundation_group
             \ingroup Module_group
         */
         enum State
