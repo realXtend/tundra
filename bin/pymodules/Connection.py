@@ -2,7 +2,6 @@
 ## Will hopefully be refactored soon
 ##
 
-
 import sys
 import gobject
 import dbus.glib
@@ -68,8 +67,9 @@ class Connection(gobject.GObject):
 
     def run(self):
         """Need this for catching events"""
-        self.loop = gobject.MainLoop()
-        self.loop.run()
+##        self.loop = gobject.MainLoop() #!!
+##        self.loop.run()
+        pass
 
         
 ##====================================================
@@ -115,8 +115,8 @@ class Connection(gobject.GObject):
 
          
         """Need this for catching events"""
-        self.loop = gobject.MainLoop()
-        self.loop.run()
+##        self.loop = gobject.MainLoop() #!!
+##        self.loop.run()
 
     def _disconnect(self):
         self.conn[CONN_INTERFACE].Disconnect()
