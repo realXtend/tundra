@@ -49,9 +49,14 @@ namespace Scene
         if (component)
         {
             ComponentVector::iterator iter = std::find(components_.begin(), components_.end(), component);
-            components_.erase(iter);
-        
-            ///\todo Ali: send event
+            if (iter != components_.end())
+            {
+                components_.erase(iter);
+                ///\todo Ali: send event
+            } else
+            {
+                SceneModule::LogWarning("Failed to remove component: " + component->Name() + " from entity: " + Core::ToString(GetId()));
+            }
         }
     }
 

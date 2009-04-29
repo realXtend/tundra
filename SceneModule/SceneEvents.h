@@ -7,17 +7,21 @@
 
 namespace Scene
 {
+    //! Events related to scene
+    /*!
+        \ingroup Scene_group
+    */
     namespace Events
     {
-        /// Scene related event id's.
+        // Scene related event id's.
         /// Indicates that a new scene is added. Triggered by Scene::SceneManager.
         static const Core::event_id_t EVENT_SCENE_ADDED =       0x01;
         /// Indicates that a scene is deleted. Triggered by Scene::SceneManager.
         static const Core::event_id_t EVENT_SCENE_DELETED =     0x02;
-        /// Indicates that a scene is cloned. Triggered by Scene::SceneManager. Not uset yet.
+        /// Indicates that a scene is cloned. Triggered by Scene::SceneManager. Not used yet.
         static const Core::event_id_t EVENT_SCENE_CLONED =      0x03;
 
-        /// Entity related event id's.
+        // Entity related event id's.
         /// Indicates that a new entity is added to a scene. Triggered by Scene::Generic.
         static const Core::event_id_t EVENT_ENTITY_ADDED =      0x04;
         /// Triggered to notify that event's component properties has been modified.

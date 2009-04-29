@@ -10,26 +10,22 @@ namespace Scene
 {
     class SceneModule;
 
-    //! Represents an entity in the world. 
-    /*! Entity is just a collection of components, the components define what
-        the entity is and what it does.
-
-        Use SceneManager to create new entity, do not create directly.
-    */
+    /*! \copydoc Foundation::EntityInterface */
     class SCENE_MODULE_API Entity : public Foundation::EntityInterface
     {
         friend class Generic;
     private:
         //! default constructor
-        Entity(Core::uint id);
+        Entity();
 
         //! constructor that takes a module
         /*!
+            \param id unique id for the entity.
             \param module parent module
         */
         Entity(Core::uint id, SceneModule *module);
 
-        //! Copy constructor
+        //! Copy constructor. Shared components between two entities.
         Entity(const Entity &other) : module_(other.module_), id_(other.id_)
         {
             components_ = other.components_;
@@ -39,8 +35,13 @@ namespace Scene
         void SetNewId(Core::entity_id_t id);
 
     public:
+        //! component container
+        typedef std::vector<Foundation::ComponentInterfacePtr> ComponentVector;
+
+        //! destructor
         virtual ~Entity();
 
+        //! Shares components between entities
         const Entity &operator =(const Entity &other)
         {
             if (&other != this)
@@ -50,29 +51,19 @@ namespace Scene
             return *this;
         }
 
-        //! Clones the entity. The new entity will contain the same components as the old one.
-        /*!
-            \param scene_name Name of the scene the new entity should be in
-        */
         virtual Foundation::EntityPtr Clone(const std::string &scene_name) const;
- 
-        //! Add new component to this entity
+
         virtual void AddEntityComponent(const Foundation::ComponentInterfacePtr &component);
-
-        //! Remove the component from this entity
         virtual void RemoveEntityComponent(const Foundation::ComponentInterfacePtr &component);
-
-        //! Returns a component with name 'name', or empty pointer if component was not found
         virtual Foundation::ComponentInterfacePtr GetComponent(const std::string &name) const;
 
-        //! Return the unique id of this component
         virtual Core::entity_id_t GetId() const { return id_; }
 
-        typedef std::vector<Foundation::ComponentInterfacePtr> ComponentVector;
-
-        const ComponentVector &GetComponentVector() const;// { return components_; }
+        //! introspection for the entity, returns all components
+        const ComponentVector &GetComponentVector() const;
 
     protected:
+        //! a list of all components
         ComponentVector components_;
 
     private:

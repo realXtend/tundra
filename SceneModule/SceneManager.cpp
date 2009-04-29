@@ -11,8 +11,15 @@ namespace Scene
     Foundation::ScenePtr SceneManager::CreateScene(const std::string &name)
     {
         assert (module_);
-        Foundation::ScenePtr scene = Foundation::ScenePtr(new Scene::Generic(name, module_));
         
+        if (scenes_.find(name) != scenes_.end())
+        {
+            //! \todo Is warning to log enough, or should we assert? -cm
+            SceneModule::LogWarning("Overriding scene " + name + " with a new empty scene.");
+        }
+
+        Foundation::ScenePtr scene = Foundation::ScenePtr(new Scene::Generic(name, module_));
+
         scenes_[name] = scene;
         
         ///\todo Make this work.
@@ -56,6 +63,17 @@ namespace Scene
 //      module_->GetFramework()->GetEventManager()->SendEvent(0, EVENT_SCENE_CLONED, NULL);
 
         return scene;
+    }
+
+    Foundation::ScenePtr SceneManager::GetScene(const std::string &name) const
+    {
+        SceneMap::const_iterator it = scenes_.find(name);
+        if (it != scenes_.end())
+            return it->second;
+
+        SceneModule::LogDebug("SceneManager::GetScene: Scene " + name + " not found.");
+        
+        return Foundation::ScenePtr();
     }
 }
 

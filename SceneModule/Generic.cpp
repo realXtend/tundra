@@ -51,12 +51,6 @@ namespace Scene
         return entity;        
     }
 
-    Foundation::EntityPtr Generic::CreateEntity(Core::entity_id_t id)
-    {
-        Core::StringVector empty;
-        return CreateEntity(id,empty);
-    }
-
     Foundation::EntityPtr Generic::CloneEntity(const Foundation::EntityPtr &entity)
     {
         assert (entity.get());
