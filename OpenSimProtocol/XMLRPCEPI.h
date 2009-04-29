@@ -123,9 +123,9 @@ public:
 	template <typename T> void AddMember(const char* name, const T& value);
 
 private:
-    
-    template <typename T> void Add(const char* name, const T& value);    void Add(const char* name, const int& value);    void Add(const char* name, const std::string& value);
-
+    // Default implementation does not do anything. 
+    template <typename T> void Add(const char* name, const T& value);
+   
     std::string strCallMethod_;
     XMLRPCConnection* pConnection_;
     XMLRPCCall* pCall_;
