@@ -27,7 +27,7 @@ namespace Asset
         which consists of implementing Foundation::AssetServiceInterface and
         Foundation::AssetInterface
 
-        For details on how to use the public interface, see \ref AssetModule.
+        For details on how to use the public interface, see \ref AssetModule "Using the asset module".
     */
 
     //! Asset module.
