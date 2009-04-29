@@ -103,13 +103,3 @@ void XMLRPCEPI::ClearCall()
     delete pCall_;
     pCall_ = 0;
 }
-
-void XMLRPCEPI::Add(const char* name, const int& value) 
-{
-    XMLRPC_VectorAppendInt(pCall_->GetParamList(), name, value);
-}
-
-void XMLRPCEPI::Add(const char* name, const std::string& value) 
-{
-    XMLRPC_VectorAppendString(pCall_->GetParamList(), name, value.c_str(), 0);
-}
