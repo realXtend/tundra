@@ -197,6 +197,8 @@ namespace Console
             }
 
         \note All functions should be threadsafe.
+
+        \ingroup Services_group
     */
     class ConsoleCommandServiceInterface : public Foundation::ServiceInterface
     {

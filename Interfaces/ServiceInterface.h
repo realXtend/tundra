@@ -5,6 +5,11 @@
 
 namespace Foundation
 {
+    //! Common interface for all services
+    /*!
+        \ingroup Foundation_group
+        \ingroup Services_group
+    */
     class ServiceInterface
     {
     public:

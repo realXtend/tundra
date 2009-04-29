@@ -7,6 +7,10 @@
 
 namespace Foundation
 {    
+    //! \todo document -cm
+    /*!
+        \ingroup Services_group
+    */
     class TextureServiceInterface : public ServiceInterface
     {
     public:

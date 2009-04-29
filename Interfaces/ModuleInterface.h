@@ -11,6 +11,7 @@
 #include "ForwardDefines.h"
 #include "ServiceInterfaces.h"
 
+//! this define can be used to make component declaration automatic when the parent module gets loaded / unloaded.
 #define DECLARE_MODULE_EC(component) \
     { Foundation::ComponentRegistrarInterfacePtr registrar = Foundation::ComponentRegistrarInterfacePtr(new component::component##Registrar); \
     DeclareComponent(registrar); } \
@@ -33,9 +34,15 @@ namespace Foundation
 
     namespace Module
     {
-        //! internal module types.
-        /*!
-            \note if you add new internal module type, don't forget to add it's name to NameFromType()
+        //! Core module types, provided for convenience of accessing modules.
+        /*! Core modules are developed by RealXtend core developers. For modules created by other developers,
+            use string names instead of the enum below. This way modules can be created without the need to
+            touch the Foundation.
+
+            \note if you add new core module type, don't forget to add its name to NameFromType()
+
+            \ingroup Foundation_group
+            \ingroup Module_group
         */
 		enum Type 
 		{
@@ -58,6 +65,10 @@ namespace Foundation
 		};
 
         //! Returns string from type enum.
+        /*!
+            \ingroup Foundation_group
+            \ingroup Module_group
+        */
         static const std::string &NameFromType(Type type)
         {
             assert(type != MT_Unknown);
@@ -70,20 +81,31 @@ namespace Foundation
             return type_strings[type];
         }
 
-        //! Current module state
+        //! Possible module states
+        /*!
+            \ingroup Foundation_group
+            \ingroup Module_group
+        */
         enum State
         {
+            //! Module has been unloaded from memory
             MS_Unloaded = 0,
+            //! Module is loaded into memory, but not yet initialized (and probably not yet usable)
             MS_Loaded,
+            //! Module is initialized and ready for use
             MS_Initialized,
+            //! Module state is unkown
             MS_Unknown
         };
     }
 
-    //! Interface for modules
+    //! Interface for modules. When creating new modules, do not inherit from this class, inherit from ModuleInterfaceImpl instead.
     /*! See \ref ModuleArchitecture for details.
         
         \note Every module should have a name. Only internal modules have types.
+
+        \ingroup Foundation_group
+        \ingroup Module_group
     */
     class MODULE_API ModuleInterface
     {
@@ -184,7 +206,11 @@ namespace Foundation
         virtual void UninitializeInternal() = 0;
     };
 
-    //! interface for modules, implementation
+    //! Interface for modules, implementation. When creating new modules, inherit from this class.
+    /*!
+        \ingroup Foundation_group
+        \ingroup Module_group
+    */
     class MODULE_API ModuleInterfaceImpl : public ModuleInterface
     {
         friend class ModuleManager;

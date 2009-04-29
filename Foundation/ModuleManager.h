@@ -13,6 +13,17 @@ namespace Foundation
     class ModuleInterface;
     class Framework;
 
+    /*! \defgroup Module_group Module
+        \copydoc Module
+    */
+
+    //! Module specific parts of the foundation.
+    /*! Generally module handling is done in the background, so there
+        is little need to access many of the things provided by this
+        namespace.
+
+        For details, see \ref ModuleArchitecture "Module Architecture".
+    */
     namespace Module
     {
         //! entry for shared library that may contain module(s)
@@ -53,6 +64,7 @@ namespace Foundation
 
         //! Module entry. Contains information about a module. Useful for ModuleManager introspection.
         /*! \ingroup Foundation_group
+            \ingroup Module_group
         */
         struct Entry
         {
@@ -69,6 +81,7 @@ namespace Foundation
     /*! See \ref ModuleArchitecture for details on how to use.  
 
         \ingroup Foundation_group
+        \ingroup Module_group
     */
     class ModuleManager
     {
