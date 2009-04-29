@@ -104,7 +104,7 @@ namespace RexLogic
         bool IsConnected() { return connected_; }
         
         ///@return The state of the connection.
-        volatile OpenSimProtocol::Connection::State &GetConnectionState() { return threadState_.state; }
+        volatile OpenSimProtocol::Connection::State GetConnectionState();
         
     private:
         Foundation::Framework *framework_;    

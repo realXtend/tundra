@@ -66,14 +66,6 @@ namespace NetTest
         /// Returns type of this module. Needed for logging.
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_NetTestLogic;
         
-        ///Utility function for converting the state enum to string.
-        ///@param The event id.
-        ///@return The login state as a string.
-//        static const std::string &NetworkStateEventIDToString(Core::event_id_t id);
-        
-        ///@param The event id.
-//        static void UpdateConnectionStateToUI(Core::event_id_t id);
-
         /// Initializes the NetTest window.
         void InitNetTestWindow();
         

@@ -133,7 +133,6 @@ namespace RexLogic
         RexLogicModule::LogInfo("Joined to the sim \"" + sim_name + "\".");
         
         // Create the "World" scene.
-
         const OpenSimProtocol::ClientParameters& client = netInterface_->GetClientParameters();
         rexlogicmodule_->GetServerConnection()->SendRegionHandshakeReplyPacket(client.agentID, client.sessionID, 0);   
         return false;  

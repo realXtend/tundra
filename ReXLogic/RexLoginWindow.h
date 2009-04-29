@@ -16,6 +16,8 @@
 #include <glade/glade.h>
 #pragma warning( pop )
 
+#include "NetworkEvents.h"
+
 namespace RexLogic
 {
     class RexLogicModule;
@@ -37,20 +39,26 @@ namespace RexLogic
         
         /// Callback function for the 'Quit' button. Terminates the application.
         void OnClickQuit();
+
+        /// Updates the UI with
+        ///@param The connection state enum.
+        void UpdateConnectionStateToUI(OpenSimProtocol::Connection::State state);
                 
-        // Handle to the login window controls.
+        /// Handle to the login window controls.
         Glib::RefPtr<Gnome::Glade::Xml> loginControls;
         
-        // The GTK window for login UI.
+        /// The GTK window for login UI.
         Gtk::Window *loginWindow;
         
-        // The GTK entries : server entry, server login.
+        /// The GTK entry box for server address.
         Gtk::Entry *entryServer;
+        
+        /// The GTK entry box for username .
         Gtk::Entry *entryUsername;
         
     private:
         RexLoginWindow(const RexLoginWindow &);
-//        void operator=(const RexLoginWindow &);
+        void operator=(const RexLoginWindow &);
         
         Foundation::Framework *framework_;
         

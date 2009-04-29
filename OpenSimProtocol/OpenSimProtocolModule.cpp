@@ -32,7 +32,7 @@ namespace OpenSimProtocol
     // virtual
     void OpenSimProtocolModule::Initialize()
     {
-        ///\todo Read the template filename from a config file?
+        ///\todo Read the template filename from a config file.
 		const char *filename = "./data/message_template.msg";
 		
 		networkManager_ = boost::shared_ptr<NetMessageManager>(new NetMessageManager(filename));
@@ -162,6 +162,7 @@ namespace OpenSimProtocol
 	void OpenSimProtocolModule::DisconnectFromRexServer()
 	{
 	    networkManager_->Disconnect();
+	    loginWorker_.SetConnectionState(Connection::STATE_DISCONNECTED);
 	    connected_ = false;
 	}
 

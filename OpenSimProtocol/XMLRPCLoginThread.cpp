@@ -57,6 +57,14 @@ void XMLRPCLoginThread::operator()()
     }
 }
 
+volatile Connection::State XMLRPCLoginThread::GetState() const
+{
+    if (!ready_)
+        return Connection::STATE_DISCONNECTED;
+    else 
+        return threadState_->state;
+}
+
 void XMLRPCLoginThread::SetupXMLRPCLogin(
             const std::string& first_name, 
 			const std::string& last_name, 
@@ -101,7 +109,6 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 	std::string mac_hash = md5.getHashFromString(mac_addr);
 	std::string id0_hash = md5.getHashFromString(id0);
     
-
     XMLRPCEPI* call = 0;
     try
     {
@@ -157,8 +164,6 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 		    call->AddMember("loginuri", loginuri.c_str());
 	    }
    
-    
-
         call->AddMember("start", std::string("last")); // Starting position perhaps?
 	    call->AddMember("version", std::string("realXtend 1.20.13.91224"));  ///\todo Make build system create versioning information.
 	    call->AddMember("channel", std::string("realXtend"));
@@ -168,7 +173,6 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 	    call->AddMember("last_exec_event", int(0)); // ?
 
 	    // The contents of 'options' array unknown. ///\todo Go through them and identify what they really affect.
-    	
         std::string arr = "options";
         call->AddStringToArray(arr, "inventory-root");
 	    call->AddStringToArray(arr, "inventory-skeleton");
@@ -216,8 +220,9 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
             threadState_->parameters.agentID.FromString(call->GetReply<std::string>("agent_id"));
 		    threadState_->parameters.circuitCode = call->GetReply<int>("circuit_code");
             
-            if (threadState_->parameters.sessionID.ToString() == std::string("") || threadState_->parameters.agentID.ToString() == std::string("") 
-				    || threadState_->parameters.circuitCode == 0 )
+            if (threadState_->parameters.sessionID.ToString() == std::string("") ||
+                threadState_->parameters.agentID.ToString() == std::string("") ||
+                threadState_->parameters.circuitCode == 0)
             {
 			    threadState_->errorMessage = call->GetReply<std::string>("message");
 				loginresult = false;
@@ -244,8 +249,6 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
     catch(XMLRPCException& ex)
     {
         // Now can be so that login failed for reason that user name or something else was wrong. 
-        
-        // Log error
         OpenSimProtocolModule::LogError(ex.GetMessage());
         
         // Read error message from reply

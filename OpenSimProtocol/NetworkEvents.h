@@ -40,6 +40,7 @@ namespace OpenSimProtocol
     /// @}
     
     /// Enumeration of the network connection states.
+    /// When modified, update also the connection_strings table of the NetworkStateToString function.
     namespace Connection
     {    
         enum State
@@ -54,6 +55,19 @@ namespace OpenSimProtocol
             STATE_CONNECTED,
             STATE_ENUM_COUNT
         };
+        
+        /// Utility function for converting the connection state enum to string.
+        ///@param The connection state enum.
+        ///@return The login state as a string.
+        static const std::string &NetworkStateToString(State state)
+        {
+             static const std::string connection_strings[STATE_ENUM_COUNT] = {
+                 "Login failed", "Disconnected", "Initializing XML-RPC connection", "Waiting for XML-RPC reply",
+                 "XML-RPC authentication reply received", "XML-RPC login reply received", "Initalizing UDP connection",
+                 "Connected" };
+
+            return connection_strings[state];
+        }        
     }
     
     /// Data struct which is passed to the login thread.

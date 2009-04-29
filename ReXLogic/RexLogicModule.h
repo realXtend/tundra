@@ -98,6 +98,7 @@ namespace RexLogic
 
         //! Register uuid - localid pair
         void RegisterFullId(const RexTypes::RexUUID &fullid, Core::entity_id_t entityid);
+        
         //! Unregister uuid
         void UnregisterFullId(const RexTypes::RexUUID &fullid);
 
@@ -154,6 +155,9 @@ namespace RexLogic
         
         //! The login window.
         RexLoginWindow *loginWindow_;
+        
+        //! The connection state which is shown in the login window.
+        OpenSimProtocol::Connection::State connectionState_;
     };
 }
 

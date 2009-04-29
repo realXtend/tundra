@@ -17,6 +17,7 @@ namespace RexLogic
     {
         framework_ = framework;    
         connected_ = false;
+        state_ = OpenSimProtocol::Connection::STATE_DISCONNECTED;
         
         serverAddress_ = "";
         serverPort_ = 0;
@@ -444,5 +445,10 @@ namespace RexLogic
         m->AddU32(flags);
         
         netInterface_->FinishMessageBuilding(m);
+    }
+    
+    volatile OpenSimProtocol::Connection::State RexServerConnection::GetConnectionState()
+    {
+        return netInterface_->GetConnectionState();
     }
 }
