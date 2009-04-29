@@ -33,7 +33,6 @@ namespace Foundation
     {
         //! Service types. When creating a new service, add it here
         /*! 
-            \ingroup Foundation_group
             \ingroup Services_group
         */
         enum Type {ST_SceneManager = 0, ST_Renderer, ST_Physics, ST_Gui, ST_Scripting, ST_Test, ST_Console, ST_ConsoleCommand, ST_Asset, ST_CommunicationManager, ST_Texture, ST_Sound, ST_Input, ST_Unknown };
