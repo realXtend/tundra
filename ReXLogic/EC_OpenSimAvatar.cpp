@@ -12,8 +12,8 @@ namespace RexLogic
         FullId.SetNull();
         ParentId = 0;     
     
-        FirstName = "";
-        LastName = "";
+        first_name_ = "";
+        last_name_ = "";
         
         avatar_address_ = "";
         avatar_override_address_ = "";
@@ -22,14 +22,38 @@ namespace RexLogic
     EC_OpenSimAvatar::~EC_OpenSimAvatar()
     {
     }
+
+    void EC_OpenSimAvatar::SetFirstName(const std::string &name)
+    {
+        first_name_ = name;
+    } 
+
+    std::string EC_OpenSimAvatar::GetFirstName()
+    {
+        return first_name_;
+    }
+
+    void EC_OpenSimAvatar::SetLastName(const std::string &name)
+    {
+        last_name_ = name;
+    }
+
+    std::string EC_OpenSimAvatar::GetLastName()
+    {
+        return last_name_;
+    }
+
+    std::string EC_OpenSimAvatar::GetFullName()
+    {
+        return first_name_ + " " + last_name_;
+    }
     
-    void EC_OpenSimAvatar::SetAppearanceAddress(std::string address, bool overrideappearance)
+    void EC_OpenSimAvatar::SetAppearanceAddress(const std::string &address, bool overrideappearance)
     {
         if(overrideappearance)
             avatar_override_address_ = address;
         else
             avatar_address_ = address;
-                
     }
     
     std::string EC_OpenSimAvatar::GetAppearanceAddress()
