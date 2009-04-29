@@ -5,6 +5,12 @@
 
 namespace RexLogic
 {
+    /*! \todo It's very odd to have to define this here, but otherwise 
+        linking to or loading RexLogicModule fails on Linux because of
+        undefined reference
+     */
+    int BitStream::num_bits_in_elem_ = 8;
+
     BitStream::BitStream(const void *data, size_t num_bytes)
         :data_(reinterpret_cast<const Core::u8*>(data)), num_elems_((num_bytes*num_bits_in_elem_ + num_bits_in_elem_ - 1) / num_bits_in_elem_), elem_ofs_(0), bit_ofs_(0)
     {

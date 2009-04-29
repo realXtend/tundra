@@ -31,8 +31,6 @@ if (MSVC)
 	add_definitions (-DUNICODE -D_UNICODE)
 endif (MSVC)
 
-FIND_GTKMM()
-
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
@@ -58,7 +56,7 @@ if (MSVC)
 	target_link_libraries (${TARGET_NAME} )
 endif (MSVC)
 
-target_link_libraries (${TARGET_NAME} Foundation SceneModule RexCommon ReXLogicModule OpenSimProtocolModule OgreRenderingModule Interfaces)
+target_link_libraries (${TARGET_NAME} Foundation SceneModule RexCommon RexLogicModule OpenSimProtocolModule OgreRenderingModule Interfaces)
 
 # External library linkage (needs target defined)
 LINK_POCO()

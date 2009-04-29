@@ -16,5 +16,7 @@ macro (LINK_CURL)
 		target_link_libraries (${TARGET_NAME}
 			debug libcurld_imp
 			optimized libcurl_imp)
+	else (MSVC)
+		target_link_libraries (${TARGET_NAME} curl)
 	endif (MSVC)
 endmacro (LINK_CURL)

@@ -25,8 +25,6 @@ if (MSVC)
 	add_definitions (-DUNICODE -D_UNICODE)
 endif (MSVC)
 
-FIND_GTKMM()
-
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
@@ -59,6 +57,3 @@ LINK_GTKMM()
 foreach (XML_FILE ${XML_FILES})
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
 endforeach (XML_FILE)
-
-
-

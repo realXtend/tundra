@@ -11,7 +11,7 @@ namespace RexLogic
     {
     private:
         /// The memory is now accessed per-byte, but for optimization, one could use u32 reads.
-        static const int num_bits_in_elem_ = 8;
+        static int num_bits_in_elem_;
     public:
         /** Constructs a BitStream reader to the given memory area.
             \param data A pointer to the data to read. \note The memory will not be copied, but the 

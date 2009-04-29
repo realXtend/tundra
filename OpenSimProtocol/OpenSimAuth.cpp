@@ -14,9 +14,9 @@ using namespace std;
 
 ///\todo Find a way for other OS's.
 /// Fetches the MAC address.
-#ifdef WIN32
 std::string GetMACaddressString()
 {
+#ifdef WIN32
 	IP_ADAPTER_INFO AdapterInfo[16];
 	
 	DWORD dwBufLen = sizeof(AdapterInfo);
@@ -44,12 +44,16 @@ std::string GetMACaddressString()
 	}
 
 	return ss.str();
+#else
+	return "01234567";
+#endif
 }
 
 ///\todo Find a way for other OS's
 /// Returns serial number of the HDD.
 std::string GetId0String()
 {
+#ifdef WIN32
 	stringstream serial;
 	DWORD dwVolSerial;
 	BOOL bIsRetrieved;
@@ -64,5 +68,7 @@ std::string GetId0String()
 		printf("Error: Could not retrieve serial number of the HDD!");
 		return string("");
 	}
-}
+#else
+	return "76543210";
 #endif
+}

@@ -45,6 +45,7 @@ FIND_XMLRPCEPI()
 FIND_OGRE()
 FIND_OIS()
 FIND_OPENJPEG()
+FIND_GTKMM()
 
 # Default additional include & library directories
 include_directories (${REX_DEP_PATH}/include)

@@ -61,7 +61,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Core Interfaces Foundation OpenSimProtocolModule RexCommon ReXLogicModule)
+target_link_libraries (${TARGET_NAME} Core Interfaces Foundation OpenSimProtocolModule RexCommon RexLogicModule)
 
 # External library linkage (needs target defined)
 LINK_POCO()

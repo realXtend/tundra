@@ -2,6 +2,9 @@
 # Find is already called in the top-level CMakeLists
 
 macro (FIND_GTKMM)
+	if (NOT MSVC)
+        	pkg_check_modules (GTKMM REQUIRED gtkmm-2.4 libglademm-2.4)
+	endif (NOT MSVC)	
 	if (MSVC AND NOT DEFINED ENV{GTKMM_BASEPATH})
 		message (FATAL_ERROR "Environment variable GTKMM_BASEPATH not set! Please set it to point to where you installed gtkmm, http://www.gtkmm.org/download.shtml e.g. \"C:\\Program Files\\gtkmm\"")
 	endif ()
@@ -31,11 +34,9 @@ macro (INCLUDE_GTKMM)
             $ENV{GTKMM_BASEPATH}/include/gtkmm-2.4
             $ENV{GTKMM_BASEPATH}/lib/sigc++-2.0/include
             $ENV{GTKMM_BASEPATH}/include/libglade-2.0
-            $ENV{GTKMM_BASEPATH}/include/libglademm-2.4)
-        
+            $ENV{GTKMM_BASEPATH}/include/libglademm-2.4)        
         link_directories ($ENV{GTKMM_BASEPATH}/lib)
     else (MSVC)
-        pkg_check_modules (GTKMM REQUIRED gtkmm-2.4 libglademm-2.4)
         include_directories (${GTKMM_INCLUDE_DIRS})
         link_directories (${GTKMM_LIBRARY_DIRS})
     endif (MSVC)
@@ -67,5 +68,7 @@ macro (LINK_GTKMM)
 			optimized pangomm-vc90-1_4.lib
 			optimized sigc-vc90-2_0.lib
 			optimized glademm-vc90-2_4.lib)
-	endif ()
+	else (MSVC)
+		target_link_libraries (${TARGET_NAME} ${GTKMM_LIBRARIES})		
+	endif (MSVC)
 endmacro ()
