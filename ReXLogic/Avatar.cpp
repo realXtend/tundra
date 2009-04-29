@@ -99,8 +99,8 @@ namespace RexLogic
         size_t pos = namevalue.find("\n");
         if(pos != std::string::npos)
         {
-            avatar.FirstName = namevalue.substr(23,pos-23);
-            avatar.LastName = namevalue.substr(pos+23);
+            avatar.SetFirstName(namevalue.substr(23,pos-23));
+            avatar.SetLastName(namevalue.substr(pos+23));
         }
         
         // Set own avatar
