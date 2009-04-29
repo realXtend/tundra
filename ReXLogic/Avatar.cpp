@@ -4,7 +4,7 @@
 #include "RexNetworkUtils.h"
 #include "Avatar.h"
 #include "RexLogicModule.h"
-#include "EC_openSimAvatar.h"
+#include "EC_OpenSimAvatar.h"
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
 #include "../OgreRenderingModule/Renderer.h"
 #include "ConversionUtils.h"
