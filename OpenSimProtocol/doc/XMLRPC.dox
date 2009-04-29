@@ -2,8 +2,9 @@
 
 \page XMLRPC Performing custom XMLRPC calls.
 
-@p XMLRPCEPI is interface for <a href = "http://xmlrpc-epi.sourceforge.net/api_docs/xmlrpc.c.html" > XMLRPC-epi </a> library which can be used to generate XML-RPC 
-requests and read data from XML-RPC replies. Current implementation uses <a href = "http://curl.haxx.se/" > libcurl </a> to transfer generated XML-RPC request over socket to given server address. 
+@p XMLRPCEPI is an interface for <a href = "http://xmlrpc-epi.sourceforge.net/api_docs/xmlrpc.c.html" > XMLRPC-epi </a> library which can be used to generate XML-RPC 
+requests and read data from XML-RPC replies. Current implementation uses <a href = "http://curl.haxx.se/" > libcURL </a> to transfer the generated XML-RPC request over
+socket to given server address.
 
 An example of a typical XML-RPC request would be:
 @code
@@ -51,8 +52,8 @@ An example of a typical XML-RPC response would be:
 </methodResponse>
 @endcode
 
-If interface user would like to make this kind request/reply conversation with server (which is located at address 192.168.1.11:9000). 
-It could be done as example below:
+If the interface user would like to make this kind of request/reply conversation with a server located at address 192.168.1.11:9000,
+it could be done as follows:
 
 @code
 
@@ -77,7 +78,7 @@ pCall->AddMember("account", "mynick@avatar.realxtend.org:10001");
 
 pCall->Send();
 
-// Here we know that if everything was ok response will contain value "sessionhash"
+// Here we know that if everything was ok the response will contain value "sessionHash"
 
 std::string sessionHash;
 try
@@ -88,7 +89,7 @@ try
 	//It did not contain? Read error message (and read it also from reply). 
 	std::cout<<" Error: "<<ex.getMessage();
 	
-	// And if u are sure that server responded something try to read server message (assumption here is that it will reply error message).  
+	// And if you are sure that the server responded something try to read the server message (assuming that the server has replied with a message).  
 	std::cout<<" Server replied: "<<pCall->GetReply<std::string>("message");
 } 
 

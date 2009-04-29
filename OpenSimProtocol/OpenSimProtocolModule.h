@@ -150,7 +150,7 @@ namespace OpenSimProtocol
         /// Network event category for outbound messages.
         Core::event_category_id_t networkEventOutCategory_;		
         
-        /// Current connection client parameters.
+        /// Current connection client-spesific parameters.
         ClientParameters clientParameters_;
     };
 

@@ -122,7 +122,9 @@ namespace RexLogic
 
         send_input_state_ = true;
         
+        // Create the login window.
         loginWindow_ = new RexLoginWindow(framework_, this);
+        connectionState_ = OpenSimProtocol::Connection::STATE_DISCONNECTED;
     }
 
     void RexLogicModule::DeleteScene(const std::string &name)
@@ -171,9 +173,17 @@ namespace RexLogic
         
 		LogInfo("Module " + Name() + " uninitialized.");
     }
+    
     // virtual
     void RexLogicModule::Update(Core::f64 frametime)
     {
+        // Poll the connection state and update the info to the UI.
+        OpenSimProtocol::Connection::State cur_state = rexserver_connection_->GetConnectionState();
+        if (cur_state != connectionState_)
+        {
+            loginWindow_->UpdateConnectionStateToUI(cur_state);
+            connectionState_ = cur_state;            
+        }
         
         if (!rexserver_connection_->IsConnected() &&
             rexserver_connection_->GetConnectionState() == OpenSimProtocol::Connection::STATE_INIT_UDP)

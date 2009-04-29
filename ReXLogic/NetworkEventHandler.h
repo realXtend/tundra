@@ -41,9 +41,8 @@ namespace RexLogic
 
         void DebugCreateTerrainVisData(const DecodedTerrainPatch &heightData, int patchSize);
 
-
-
         Foundation::Framework *framework_;
+        
         OpenSimProtocol::OpenSimProtocolModule *netInterface_;
         
         RexLogicModule *rexlogicmodule_;

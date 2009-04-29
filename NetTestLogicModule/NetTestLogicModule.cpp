@@ -228,21 +228,6 @@ namespace NetTest
         return false;
     }
 
-/*    const std::string &NetTestLogicModule::NetworkStateEventIDToString(Core::event_id_t id)
-    {
-         static const std::string connection_strings[10] = {
-             "Disconnected", "Initalizing XML-RPC connection",
-             "Waiting for XML-RPC reply", "Authentication reply received", "XML-RPC login reply received",
-             "XML-PRC login failed", "Initalizing UDP connection", "Connected", "Connection failed"};
-
-        return connection_strings[id];
-    }*/
-    
-/*    void NetTestLogicModule::UpdateConnectionStateToUI(Core::event_id_t id)
-    {
-        std::cout << NetworkStateEventIDToString(id) << std::endl;
-    }*/
-
     void NetTestLogicModule::InitNetTestWindow()
     {
         // Create the NetTest UI window from glade (xml) file.

@@ -62,7 +62,7 @@ namespace OpenSimProtocol
         void SetConnectionState(Connection::State state) { threadState_->state = state; }
         
         ///@return State of connection.
-        volatile Connection::State GetState() const { return threadState_->state; }
+        volatile Connection::State GetState() const;
         
         ///@return The client parameters retreived from the XML-RPC reply.
         const ClientParameters &GetClientParameters() const { return threadState_->parameters; }

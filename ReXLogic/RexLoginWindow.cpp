@@ -8,7 +8,7 @@
 namespace RexLogic
 {
     RexLoginWindow::RexLoginWindow(Foundation::Framework *framework, RexLogicModule *module) :
-    framework_(framework), rexLogic_(module), loginWindow(0)
+    framework_(framework), rexLogic_(module), loginWindow(0), entryServer(0), entryUsername(0)
     {
         InitLoginWindow();
     }
@@ -20,14 +20,6 @@ namespace RexLogic
 
     void RexLoginWindow::InitLoginWindow()
     {
-        /*rexLogic_ = dynamic_cast<RexLogic::RexLogicModule *>
-            (framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-        if (!rexLogic_)
-        {
-            RexLogicModule::LogError("Getting RexLogicModule interface did not succeed.");
-            return;
-        }*/
-        
         // Create the login window from glade (xml) file.
         loginControls = Gnome::Glade::Xml::create("data/loginWindow.glade");
         if (!loginControls)
@@ -70,8 +62,8 @@ namespace RexLogic
     {
         // Initialize UI widgets.
         Gtk::Entry *entry_password = 0;
-		loginControls->get_widget("entry_password", entry_password);
 		Gtk::Entry *entry_authentication = 0;
+		loginControls->get_widget("entry_password", entry_password);
 		loginControls->get_widget("entry_authentication", entry_authentication);
 
 		bool succesful = false;
@@ -88,8 +80,10 @@ namespace RexLogic
 			    entryServer->get_text(), entry_authentication->get_text(), entry_auth_login->get_text());
 		}
 		else 
-		    succesful = rexLogic_->GetServerConnection()->ConnectToServer(entryUsername->get_text(), entry_password->get_text(),
-		        entryServer->get_text());
+		{
+		    succesful = rexLogic_->GetServerConnection()->ConnectToServer(entryUsername->get_text(),
+		        entry_password->get_text(), entryServer->get_text());
+        }
         
 		if (succesful)
 		{
@@ -117,5 +111,13 @@ namespace RexLogic
             rexLogic_->GetServerConnection()->RequestLogout();
         
         framework_->Exit();
-    }    
+    }
+
+    void RexLoginWindow::UpdateConnectionStateToUI(OpenSimProtocol::Connection::State state)
+    {
+        Gtk::Label *label_state = 0;
+        loginControls->get_widget("label_state", label_state);
+
+        label_state->set_text(OpenSimProtocol::Connection::NetworkStateToString(state));
+    }
 }
