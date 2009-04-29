@@ -6,10 +6,18 @@
 #include "ComponentInterface.h"
 #include "Foundation.h"
 #include "RexUUID.h"
-#include "NetworkEvents.h"
 
 namespace RexLogic
 {
+    //! Material data structure
+    struct MaterialData
+    {
+        uint8_t Type;
+        RexTypes::RexUUID UUID;
+    }; 
+    // Map for holding materials
+    typedef std::map<uint8_t, MaterialData> MaterialMap;
+
     //! Each scene entity representing a prim in OpenSim sense has
     //! this component.
     class EC_OpenSimPrim : public Foundation::ComponentInterface
@@ -43,8 +51,25 @@ namespace RexLogic
         
         uint32_t SelectPriority;
 
-        void HandleObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
-        void HandleRexPrimData(const uint8_t* primdata);
+        //! Drawing related variables
+        uint8_t DrawType;
+        bool IsVisible;
+        bool CastShadows;
+        bool LightCreatesShadows;
+        bool DescriptionTexture;
+        bool ScaleToPrim;
+        float DrawDistance;
+        float LOD;
+        
+        RexTypes::RexUUID MeshUUID;
+        RexTypes::RexUUID ParticleScriptUUID;
+        
+        //! Animation
+        RexTypes::RexUUID AnimationPackageUUID;
+        std::string AnimationName;
+        float AnimationRate;
+
+        MaterialMap Materials;
 
         void PrintDebug();
         

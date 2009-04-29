@@ -63,7 +63,6 @@ namespace RexLogic
         
         Core::StringVector defaultcomponents;
         defaultcomponents.push_back(EC_OpenSimPrim::NameStatic());
-        defaultcomponents.push_back(EC_Viewable::NameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
         
         Foundation::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents); 
@@ -187,47 +186,92 @@ namespace RexLogic
         data->message->SkipToFirstVariableByName("Parameter");
         RexUUID primuuid(data->message->ReadString());
         
+        //! \todo tucofixme, sometimes rexprimdata might arrive before the objectupdate packet 
         Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
-        if(entity)
+        if(!entity)
+            return false;
+        
+        // Calculate full data size
+        size_t fulldatasize = 0;        
+        NetVariableType nextvartype = data->message->CheckNextVariableType();
+        while(nextvartype != NetVarNone)
         {
-            // Calculate full data size
-            size_t fulldatasize = 0;        
-            NetVariableType nextvartype = data->message->CheckNextVariableType();
-            while(nextvartype != NetVarNone)
-            {
-                data->message->ReadBuffer(&bytes_read);
-                fulldatasize += bytes_read;
-                nextvartype = data->message->CheckNextVariableType();
-            }
-           
-            size_t bytes_read;
-            const uint8_t *readbytedata;
-            data->message->ResetReading();
-            data->message->SkipToFirstVariableByName("Parameter");
-            data->message->SkipToNextVariable();            // Prim UUID
-            
-            uint8_t *fulldata = new uint8_t[fulldatasize];
-            int pos = 0;
+            data->message->ReadBuffer(&bytes_read);
+            fulldatasize += bytes_read;
             nextvartype = data->message->CheckNextVariableType();
-            while(nextvartype != NetVarNone)
-            {
-                readbytedata = data->message->ReadBuffer(&bytes_read);
-                memcpy(fulldata+pos,readbytedata,bytes_read);
-                pos += bytes_read;
-                nextvartype = data->message->CheckNextVariableType();
-            }
-
-            Foundation::ComponentInterfacePtr oscomponent = entity->GetComponent("EC_OpenSimPrim");
-            checked_static_cast<EC_OpenSimPrim*>(oscomponent.get())->HandleRexPrimData(fulldata);
-            /// \todo tucofixme, checked_static_cast<EC_OpenSimPrim*>(oscomponent.get())->PrintDebug();
-
-            Foundation::ComponentInterfacePtr viewcomponent = entity->GetComponent("EC_Viewable");
-            checked_static_cast<EC_Viewable*>(viewcomponent.get())->HandleRexPrimData(fulldata);
-            /// \todo tucofixme, checked_static_cast<EC_Viewable*>(viewcomponent.get())->PrintDebug();
-            
-            delete fulldata;
         }
+       
+        const uint8_t *readbytedata;
+        data->message->ResetReading();
+        data->message->SkipToFirstVariableByName("Parameter");
+        data->message->SkipToNextVariable();            // Prim UUID
+        
+        uint8_t *fulldata = new uint8_t[fulldatasize];
+        int pos = 0;
+        nextvartype = data->message->CheckNextVariableType();
+        while(nextvartype != NetVarNone)
+        {
+            readbytedata = data->message->ReadBuffer(&bytes_read);
+            memcpy(fulldata+pos,readbytedata,bytes_read);
+            pos += bytes_read;
+            nextvartype = data->message->CheckNextVariableType();
+        }
+        
+        HandleRexPrimDataBlob(entity->GetId(), fulldata);
+        delete fulldata;
+
         return false;
+    }
+
+    void Primitive::HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t* primdata)
+    {
+        int idx = 0;
+
+        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
+
+        // graphical values
+        prim.DrawType = ReadUInt8FromBytes(primdata,idx);
+        prim.IsVisible = ReadBoolFromBytes(primdata,idx);
+        prim.CastShadows = ReadBoolFromBytes(primdata,idx);
+        prim.LightCreatesShadows = ReadBoolFromBytes(primdata,idx);
+        prim.DescriptionTexture = ReadBoolFromBytes(primdata,idx);    
+        prim.ScaleToPrim = ReadBoolFromBytes(primdata,idx);
+        prim.DrawDistance = ReadFloatFromBytes(primdata,idx);
+        prim.LOD = ReadFloatFromBytes(primdata,idx);
+
+        prim.MeshUUID = ReadUUIDFromBytes(primdata,idx);
+        prim.CollisionMesh = ReadUUIDFromBytes(primdata,idx);      
+        
+        prim.ParticleScriptUUID = ReadUUIDFromBytes(primdata,idx);
+
+        // animation
+        prim.AnimationPackageUUID = ReadUUIDFromBytes(primdata,idx);        
+        prim.AnimationName = ReadNullTerminatedStringFromBytes(primdata,idx);
+        prim.AnimationRate = ReadFloatFromBytes(primdata,idx);
+
+        MaterialMap materials;
+        uint8_t tempmaterialindex = 0; 
+        uint8_t tempmaterialcount = ReadUInt8FromBytes(primdata,idx);
+        for(int i=0;i<tempmaterialcount;i++)
+        {
+            MaterialData newmaterialdata;
+
+            newmaterialdata.Type = ReadUInt8FromBytes(primdata,idx);
+            newmaterialdata.UUID = ReadUUIDFromBytes(primdata,idx);
+            tempmaterialindex = ReadUInt8FromBytes(primdata,idx);
+            materials[tempmaterialindex] = newmaterialdata;                           
+        }
+        prim.Materials = materials;
+
+        prim.ServerScriptClass = ReadNullTerminatedStringFromBytes(primdata,idx);
+  
+        // sound
+        prim.SoundUUID = ReadUUIDFromBytes(primdata,idx);       
+        prim.SoundVolume = ReadFloatFromBytes(primdata,idx);
+        prim.SoundRadius = ReadFloatFromBytes(primdata,idx);               
+
+        prim.SelectPriority = ReadUInt32FromBytes(primdata,idx);
     }
     
     bool Primitive::HandleOSNE_KillObject(uint32_t objectid)

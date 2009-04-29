@@ -18,6 +18,7 @@ namespace RexLogic
     public:
         virtual ~EC_Viewable();
 
+        /* 
         uint8_t DrawType;
         bool IsVisible;
         bool CastShadows;
@@ -47,6 +48,7 @@ namespace RexLogic
 
         void HandleRexPrimData(const uint8_t* primdata);
         void PrintDebug();
+        */
     private:
         EC_Viewable(Foundation::ModuleInterface* module);
     };

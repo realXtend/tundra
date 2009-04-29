@@ -30,7 +30,10 @@ namespace RexLogic
         //! @return The entity corresponding to given id AND uuid. This entity is guaranteed to have an existing EC_OpenSimPrim component.
         //!         Does not return null. If the entity doesn't exist, an entity with the given entityid and fullid is created and returned.
         Foundation::EntityPtr GetOrCreatePrimEntity(Core::entity_id_t entityid, const RexUUID &fullid);
-        Foundation::EntityPtr CreateNewPrimEntity(Core::entity_id_t entityid);             
+        Foundation::EntityPtr CreateNewPrimEntity(Core::entity_id_t entityid);
+        
+        //! handle rexprimdata blob coming from server in a genericmessage
+        void HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t* primdata);
     };
 }
 #endif
