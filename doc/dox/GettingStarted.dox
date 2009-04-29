@@ -15,6 +15,10 @@
 	create new ones, see 
 	- \subpage ModuleArchitecture "Module Architecture".
 	
+\section scene_GS Scene
+	To learn more about the scene-entity-component model, see
+	- \subpage SceneModelPage "Scenes, entities and components".
+	
 \section intracomms_GS Communication inside the viewer
 	To see how to communicate between modules, see 
 	- \subpage EventSystem "Viewer event system" and 
