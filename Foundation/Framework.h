@@ -11,6 +11,8 @@ namespace Foundation
 {
     //! contains entry point for the framework.
     /*! Allows access to various managers and services
+
+        \ingroup Foundation_group
     */
     class Framework
     {

@@ -12,6 +12,8 @@ namespace Foundation
     class Framework;
 
     //! Low-level Windows specific functionality
+    /*! \ingroup Foundation_group
+    */
     class PlatformWin 
     {
     public:
@@ -40,7 +42,7 @@ namespace Foundation
         */
         std::string GetApplicationDataDirectory();
 
-        //! Returns user specific documents directory.
+        //! Returns user specific documents directory as wide string.
         /*! Returns unicode path. May throw an expection if folder is not found.
 
             Should be used for mutable data the user doesn't need to see / handle directly,
@@ -56,7 +58,7 @@ namespace Foundation
         */
         std::string GetUserDocumentsDirectory();
 
-        //! Returns user specific documents directory.
+        //! Returns user specific documents directory as wide string.
         /*! Returns unicode path. May throw an expection if folder is not found.
 
             Should be used for mutable data the user may want to access directly

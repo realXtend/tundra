@@ -11,6 +11,8 @@ namespace Foundation
 //    class ComponentInterface;
 
     //! Manages components. Also works as a component factory.
+    /*! \ingroup Foundation_group
+    */
     class ComponentManager
     {
     public:

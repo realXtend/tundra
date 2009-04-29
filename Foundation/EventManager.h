@@ -20,7 +20,9 @@ namespace Foundation
     class ModuleInterface;
 
     //! Manages event passing between modules.
-    /*! See \ref EventSystem for details on how to use.  
+    /*! See \ref EventSystem for details on how to use.
+
+        \ingroup Foundation_group
      */
     class EventManager
     {

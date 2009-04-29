@@ -43,6 +43,8 @@ namespace Foundation
 
         \note This class makes no assumptions about the type of the stored
               values, it is assumed the programmer always knows it.
+
+        \ingroup Foundation_group
     */
     class ConfigurationManager
     {

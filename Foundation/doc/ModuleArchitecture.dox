@@ -33,9 +33,9 @@ namespace Foundation
             - Do not use the DeclareStaticModule() function.
             - Copy following to the implementation (cpp file) of the Module-class:
 				\verbatim
-                    POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
-                        POCO_EXPORT_CLASS(CLASS_NAME)
-                    POCO_END_MANIFEST
+POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+    POCO_EXPORT_CLASS(CLASS_NAME)
+POCO_END_MANIFEST
                 \endverbatim
               where CLASS_NAME is the name of the newly created class. The above needs to be outside of any namespace,
               there should only be one manifest section per library!
@@ -66,10 +66,10 @@ namespace Foundation
 		For each module in the library, add &lt;entry&gt; line for the entry class. Entry class
 		is the class that inherits from ModuleInterfaceImpl-class. For example:
 		\verbatim
-              <config>
-                   <entry>MyEntryClassNameA</entry>
-                   <entry>MyEntryClassNameB</entry>
-              </config>
+<config>
+   <entry>MyEntryClassNameA</entry>
+   <entry>MyEntryClassNameB</entry>
+</config>
         \endverbatim
 		
 
@@ -104,11 +104,11 @@ namespace Foundation
 		
 		For example:
               \verbatim
-              <config>
-                   <entry>YourEntryClassName</entry>
-                   <dependency>ModuleName_A</dependency>
-                   <dependency>ModuleName_B</dependency>
-              </config>
+<config>
+   <entry>YourEntryClassName</entry>
+   <dependency>ModuleName_A</dependency>
+   <dependency>ModuleName_B</dependency>
+</config>
               \endverbatim
             
 */

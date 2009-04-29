@@ -52,7 +52,8 @@ namespace Foundation
         };
 
         //! Module entry. Contains information about a module. Useful for ModuleManager introspection.
-        //! \ingroup Foundation
+        /*! \ingroup Foundation_group
+        */
         struct Entry
         {
             //! The module. Memory owned by Poco if a shared library, by us using new/delete if static library.
@@ -67,7 +68,7 @@ namespace Foundation
     //! Manages run-time loadable and unloadable modules.
     /*! See \ref ModuleArchitecture for details on how to use.  
 
-        \ingroup Foundation
+        \ingroup Foundation_group
     */
     class ModuleManager
     {
