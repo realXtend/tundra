@@ -173,7 +173,7 @@ namespace Foundation
         boost::algorithm::to_lower(ext);
         if (ext == ".xml")
         {
-            Foundation::RootLogInfo("Attempting to load module definition file: " + path.file_string());
+            // Foundation::RootLogInfo("Attempting to load module definition file: " + path.file_string());
             fs::path modulePath(path);
             modulePath.replace_extension("");
 

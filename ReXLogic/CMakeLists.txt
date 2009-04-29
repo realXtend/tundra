@@ -1,5 +1,5 @@
 # Define target name and output directory
-set (TARGET_NAME ReXLogicModule)
+set (TARGET_NAME RexLogicModule)
 set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/modules/core)
 
 # Define source files
