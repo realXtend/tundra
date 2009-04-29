@@ -118,5 +118,61 @@ namespace RexLogic
         Core::Vector3df resultvector = *reinterpret_cast<Core::Vector3df*>((Core::Vector3df*)&bytes[0]);
 
         return Core::OpenSimToOgreCoordinateAxes(resultvector);  
+    }
+    
+    bool ReadBoolFromBytes(const uint8_t* bytes, int& idx)
+    {
+        bool result = *(bool*)(&bytes[idx]);
+        idx += sizeof(bool);
+        
+        return result; 
+    }
+    
+    uint8_t ReadUInt8FromBytes(const uint8_t* bytes, int& idx)
+    {
+        uint8_t result = bytes[idx];
+        idx++;
+        
+        return result;
+    }
+
+    uint32_t ReadUInt32FromBytes(const uint8_t* bytes, int& idx)
+    {
+        uint32_t result = *(uint32_t*)(&bytes[idx]);
+        idx += sizeof(uint32_t);
+        
+        return result;
+    }
+    
+    float ReadFloatFromBytes(const uint8_t* bytes, int& idx)
+    {
+        float result = *(float*)(&bytes[idx]);
+        idx += sizeof(float);
+        
+        return result; 
+    }     
+
+    RexTypes::RexUUID ReadUUIDFromBytes(const uint8_t* bytes, int& idx)
+    {
+        RexUUID result = *(RexUUID*)(&bytes[idx]);
+        idx += sizeof(RexUUID);
+        
+        return result; 
+    }
+    
+    std::string ReadNullTerminatedStringFromBytes(const uint8_t* bytes, int& idx)
+    {
+        std::string result = "";
+    
+        uint8_t readbyte = bytes[idx];
+        idx++;
+        while(readbyte != 0)
+        {
+            result.push_back((char)readbyte);
+            readbyte = bytes[idx];
+            idx++;    
+        }
+        
+        return result;
     }    
 }
