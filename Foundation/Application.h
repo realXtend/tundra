@@ -8,6 +8,8 @@
 namespace Foundation
 {
     //! shortcuts for accessing application specific data, such as name and version.
+    /*! \ingroup Foundation_group
+    */
     class Application : public boost::noncopyable
     {
         Application();

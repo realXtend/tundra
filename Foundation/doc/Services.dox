@@ -2,7 +2,7 @@ namespace Foundation
 {
 /**
 
-\page ModuleServices Module Services
+\page ModuleServices Module services
 
 	Each module can offer one or more services to other modules. Services
 	should be used when simple events (see \ref EventSystem "Event system") are not
@@ -12,11 +12,25 @@ namespace Foundation
         The services must be registered when module is initialized and unregistered
         when they are uninitialized. Each module is responsible for managing the actual
         classes behind the service.
+        
+    \section using_services Using services
 
         It is recommended to access other modules through service interfaces, it generally
         leads to less trouble. It is however possible to access modules directly, but it
         leads to a direct dependency between the modules. See \ref ModuleArchitecture 
         "Module Architecture" for more info.
+        
+        If you wish to access another module's services in initalization phase, either
+        access the service in post init (ModuleInterface::PostInitialize()), or make
+        it so your module depends on the service provider's module, so it gets
+        initialized first.
+        
+        <strong>It is assumed most of the core modules are always present, and thusly
+        it is safe to store pointers to those module's services. However not all
+        modules may be present at all times and some modules may get loaded / unloaded
+        at runtime. For this to work, the service must be queried from the ServiceManager
+        each frame when doing synchronized update. Otherwise the service may disappear
+        from under you. </strong>
 
         How modules can access other modules' services? There are two ways:
            - Access the module directly using ModuleManager.
@@ -30,6 +44,25 @@ namespace Foundation
            - Add the service type to Service::Type enumeration.
            - Subclass the service class from the new service interface
            - Add the service registering and unregistering to the parent module.
+          
+    \section registering_services Registering services
+    
+        When module gets initialized, the services it provides should register to the servicemanager.
+		\verbatim
+void TestModule::Initialize()
+{
+	framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Test, &test_service_);
+}
+		\endverbatim
+		
+	    Similarly when module gets uninitialized, the services should unregister, so other modules
+	    won't be able to try to use services that in reality no longer exist.
+		\verbatim
+void TestModule::Uninitialize()
+{
+	framework_->GetServiceManager()->UnregisterService(&test_service_);
+}
+		\endverbatim
 	
 */
 }

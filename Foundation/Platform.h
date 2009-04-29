@@ -9,6 +9,11 @@
 namespace Foundation
 {
     //! Low-level platform specific functionality
+    /*!
+        See slso PlatformWin or PlatformNix.
+
+        \ingroup Foundation_group
+    */
     class Platform : 
 #if defined(_WINDOWS)
         public PlatformWin

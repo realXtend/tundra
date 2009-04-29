@@ -10,27 +10,9 @@ namespace Foundation
     class Framework;
 
     //! Provides access to services provided by modules.
-    /*! All modules offering services to other modules must register with this manager.
-        The services must be registered when module is initialized and unregistered
-        when they are uninitialized. Each module is responsible for managing the actual
-        classes behind the service.
+    /*! See \ref ModuleServices "Module services" -page for details.
 
-        It is recommended to access other modules through service interfaces, it generally
-        leads to less trouble. It is however possible to access modules directly, but it
-        leads to a direct dependency between the modules. See ModuleManager for more info.
-
-        How modules can access other modules' services? There are two ways:
-           - Access the module directly using ModuleManager.
-           - Use service manager to query for registered services. Each service is associated
-             with a type, and only one type of service can be registered at any one time.
-             If two modules attempt to register same type of service, results are undefined.
-        
-        How module can offer a (new) service to other modules?
-           - Create new interface for the service in Interfaces-sub project, subclassing ServiceInterface - class.
-           - Include the new .h file in ServiceInterfaces.h
-           - Add the service type to Foundation::Service::Type enumeration.
-           - Subclass the service class from the new service interface
-           - Add the service registering and unregistering to the parent module.
+       \ingroup Foundation_group
     */
     class ServiceManager
     {

@@ -9,6 +9,8 @@ namespace Foundation
     class Framework;
 
     //! Low-level *nix specific functionality
+    /*! \ingroup Foundation_group
+    */
     class PlatformNix
     {
     public:
