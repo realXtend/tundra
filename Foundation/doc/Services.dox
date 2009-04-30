@@ -33,7 +33,8 @@ Foundation::TestServiceInterface *test_service = framework_->GetServiceManager()
         it so your module depends on the service provider's module, so it gets
         initialized first.
         
-        <strong>It is assumed most of the core modules are always present, and thusly
+        
+\attention <strong>It is assumed most of the core modules are always present, and thusly
         it is safe to store pointers to those module's services. However not all
         modules may be present at all times and some modules may get loaded / unloaded
         at runtime. For this to work, the service must be queried from the ServiceManager

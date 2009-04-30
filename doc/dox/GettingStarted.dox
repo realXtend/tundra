@@ -13,7 +13,7 @@
 \section modules_GS Modules
 	To get started with modules, information on how to use them, or how to
 	create new ones, see 
-	- \subpage ModuleArchitecture "Module Architecture".
+	- \subpage ModuleArchitecture "Module architecture".
 	
 \section scene_GS Scene
 	To learn more about the scene-entity-component model, see
@@ -22,7 +22,7 @@
 \section intracomms_GS Communication inside the viewer
 	To see how to communicate between modules, see 
 	- \subpage EventSystem "Viewer event system" and 
-	- \subpage ModuleServices "Module Services".
+	- \subpage ModuleServices "Module services".
 	
 \section extracomms_GS Communication with outside world
 	For communicating with the outside world, 
@@ -35,4 +35,7 @@
 
 \section renderer_GS Working with the renderer
 	- \subpage OgreRenderingModule "Using the Ogre renderer module"	
+	
+\section debug_GS Development / debug
+	- \subpage DebugConsole "Debug console"
 */

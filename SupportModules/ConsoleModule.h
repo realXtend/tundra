@@ -11,22 +11,18 @@ namespace Foundation
     class Framework;
 }
 
+/*! \defgroup DebugConsole_group Debug console
+    \copydoc Console
+*/
+
 //! Provides services related to a debug console.
-/*! The debug console can be used to output messages or to call C++
-    functions from the Console for debugging purposes.
-    
-    Support for several kinds of consoles are provided, including support
-    for the native console (command line).
-
-    C++ functions can be bound to console commands by using the console
-    command service (see ConsoleCommandServiceInterface).
-
-    By default a generic console is used, which in turn accepts input and 
-    directs output to all other enabled consoles
+/*! See \ref DebugConsole "Using the debug console".
 */
 namespace Console
 {
-    //! interface for modules
+    //! Debug console module
+    /*! See \ref DebugConsole "Using the debug console".
+    */
     class CONSOLE_MODULE_API ConsoleModule : public Foundation::ModuleInterfaceImpl
     {
     public:

@@ -10,6 +10,7 @@ namespace Console
     //! Interface for debug console service
     /*!
         \ingroup Services_group
+        \ingroup DebugConsole_group
     */
     class ConsoleServiceInterface : public Foundation::ServiceInterface
     {
@@ -47,6 +48,7 @@ namespace Console
         virtual bool HandleKeyUp(int code, Core::uint text) = 0;
     };
 
+    //! smart pointer for console services. \ingroup DebugConsole_group
     typedef boost::shared_ptr<ConsoleServiceInterface> ConsolePtr;
 }
 

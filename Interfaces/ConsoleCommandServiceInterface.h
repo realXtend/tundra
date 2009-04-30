@@ -9,6 +9,8 @@ namespace Console
 {
     //! A result from executing a console command.
     /*! A callback function for console command should return an instance.
+        
+        \ingroup DebugConsole_group
     */
     struct CommandResult
     {
@@ -19,13 +21,13 @@ namespace Console
         //! True for delayed execution. For internal use, this doesn't need to be set normally
         bool delayed_;
     };
-    //! Returns a succesful CommandResult
+    //! Returns a succesful CommandResult. \ingroup DebugConsole_group
     __inline static CommandResult ResultSuccess(const std::string &why = std::string()) { CommandResult result = { true, why, false}; return result; }
-    //! Returns a failure CommandResult
+    //! Returns a failure CommandResult. \ingroup DebugConsole_group
     __inline static CommandResult ResultFailure(const std::string &why = std::string()) { CommandResult result = { false, why, false}; return result; }
-    //! Returns a failure CommandResult, with invalid parameters as the reason
+    //! Returns a failure CommandResult, with invalid parameters as the reason. \ingroup DebugConsole_group
     __inline static CommandResult ResultInvalidParameters() { CommandResult result = { false, "Invalid parameters.", false}; return result; }
-    //! Returns a delayed CommandResult
+    //! Returns a delayed CommandResult. \ingroup DebugConsole_group
     __inline static CommandResult ResultDelayed() { CommandResult result = { false, std::string(), true }; return result; }
 
     //! Interface for console command callback
@@ -122,6 +124,9 @@ namespace Console
     };
 
     //! A console command
+    /*!
+        \ingroup DebugConsole_group
+    */
     struct Command
     {
         //! internal name for the command, case insensitive
@@ -136,10 +141,13 @@ namespace Console
 
     //! Creates a console command with member function callback
     /*!
+        \ingroup DebugConsole_group
+
         \param name name of the command
         \param description short description of the command
         \param callback C++ function callback. Use Console::Bind().
         \param delayed is the handling of the command immediate, or delayed
+        \return a command
     */
     static Command CreateCommand(const std::string &name, const std::string &description, const CallbackPtr &callback, bool delayed = false)
     {
@@ -149,6 +157,8 @@ namespace Console
 
     //! Creates a console command with static function callback
     /*!
+        \ingroup DebugConsole_group
+
         \param name name of the command
         \param description short description of the command
         \param static_callback C++ function callback, static function.
@@ -161,7 +171,10 @@ namespace Console
         return command;
     }
 
-    //! Bind a member function to a command callback
+    //! Bind a member function to a command callback.
+    /*!
+        \ingroup DebugConsole_group
+    */
     template <typename T>
     static CallbackPtr Bind(T *object, typename Callback<T>::CallbackFunction function)
     {
@@ -186,19 +199,23 @@ namespace Console
         with delayed execution and use Poll() to execute the commands in the caller's
         thread context.
         F.ex.
-
-            RegisterCommand("MyCommand", "My great command", &MyClass::MyFunction, true); // register command for delayed execution
+            \verbatim
+RegisterCommand("MyCommand", "My great command", &MyClass::MyFunction, true); // register command for delayed execution
+            \endverbatim
 
             then in MyClass' update function, in thread context other than the main thread
-            void MyClass::Update()
-            {
-                ConsoleCommandService->Poll("MyCommand"); // If MyCommand was queued previously, it now gets executed.
-                // ...
-            }
+            \verbatim
+void MyClass::Update()
+{
+    ConsoleCommandService->Poll("MyCommand"); // If MyCommand was queued previously, it now gets executed.
+    // ...
+}
+            \endverbatim
 
         \note All functions should be threadsafe.
 
         \ingroup Services_group
+        \ingroup DebugConsole_group
     */
     class ConsoleCommandServiceInterface : public Foundation::ServiceInterface
     {
@@ -250,7 +267,9 @@ namespace Console
         virtual CommandResult ExecuteCommand(const std::string &name, const Core::StringVector &params) = 0;
     };
 
+    //! \ingroup DebugConsole_group
     typedef ConsoleCommandServiceInterface CommandService;
+    //! Shared pointer for command manager. \ingroup DebugConsole_group
     typedef boost::shared_ptr<CommandService> CommandManagerPtr;
 }
 
