@@ -49,6 +49,12 @@
 #include <Poco/Channel.h>
 #include <Poco/Formatter.h>
 
+//! Portable Component libraries. External library.
+namespace Poco { }
+
+//! Boost libraries. External library.
+namespace boost { }
+
 
 #endif
 

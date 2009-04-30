@@ -9,6 +9,8 @@ namespace Input
 	is not really practical to be handled with events are handled via querying
 	a service for the input state, but still in a generic fashion.
 	
+	See \ref EventSystem "Viewer event system" for handling events.
+	
 \section mapper_input Key mapping
 
 	When dealing with input, you are never dealing with raw keycodes and
@@ -42,8 +44,6 @@ namespace Input
         A slider can be combined with a button press in the same device, such as mouse button, and a modifier key
         (ctrl, alt and/or shift). Slider events are not send as events, but need to be queried from an input service.
         See Foundation::InputServiceInterface for more information.
-
-        
 	
 */
 }
