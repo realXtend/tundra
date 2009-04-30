@@ -8,7 +8,13 @@
 namespace Console
 {
     //! Interface for debug console service
-    /*!
+    /*! Usually it is not necessary to use this service,
+        the only really useful function is Print(), but the
+        preferred way to output text to the console is via the
+        log.
+
+        Most functions are not threadsafe.
+
         \ingroup Services_group
         \ingroup DebugConsole_group
     */

@@ -48,10 +48,7 @@ namespace Console
         //! print out message to console. thread safe
         virtual void Print(const std::string &text);
 
-        //! scroll console text rel amount. Thread safe.
-        /*!
-            \param rel positive to scroll up, negative to scroll down, 20 is one line.
-        */
+
         virtual void Scroll(int rel);
 
         //! set console visible / invisible, not thread safe. Should be called from rendering thread.

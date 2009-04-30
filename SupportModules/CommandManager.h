@@ -23,20 +23,10 @@ namespace Console
         //! destructor
         virtual ~CommandManager();
 
-        //! add time. Should be called in main thread context
         virtual void Update();
 
-        //! Register a command to the debug console
-        /*!
-            Shortcut functions are present to make registering easier, see
-                CreateCommand(const std::string &name, const std::string &description, const CallbackPtr &callback, bool delayed)
-                static Command CreateCommand(const std::string &name, const std::string &description, StaticCallback &static_callback, bool delayed)
 
-            \param command the command to register
-        */
         virtual void RegisterCommand(const Console::Command &command);
-
-        //! Unregister console command with the specified name
         virtual void UnregisterCommand(const std::string &name);
 
         //! Queue console command. The command will be called in the console's thread
@@ -49,19 +39,8 @@ namespace Console
         */
         virtual void QueueCommand(const std::string &commandline);
 
-        //! Poll to see if command has been queued and executes it immediately, in the caller's thread context.
-        /*! For each possible command, this needs to be called exactly once.
-
-            \note if the same command has been queued multiple times,
-                  the most recent command's parameters take precedence and
-                  the command is only executed once.
-
-            \param command name of the command to poll for.
-            \return Result of executing the command, 
-        */
         virtual boost::optional<CommandResult> Poll(const std::string &command);
 
-        //! Parse and execute command line
         virtual Console::CommandResult ExecuteCommand(const std::string &commandline);
 
         //! Execute command
