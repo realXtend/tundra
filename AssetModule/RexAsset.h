@@ -19,13 +19,13 @@ namespace Asset
         typedef std::vector<Core::u8> AssetDataVector;
         
         //! constructor
-        RexAsset(const RexTypes::RexUUID& asset_id, Core::asset_type_t asset_type);
+        RexAsset(const std::string& asset_id, Core::asset_type_t asset_type);
         
         //! destructor
         virtual ~RexAsset() {};
         
-        //! returns asset ID, which is UUID in text form
-        virtual const std::string GetId();
+        //! returns asset ID
+        virtual const std::string GetId() { return asset_id_; }
         
         //! returns asset type
         virtual Core::asset_type_t GetType() { return asset_type_; }
@@ -44,7 +44,7 @@ namespace Asset
         
     private:
         //! asset id
-        RexTypes::RexUUID asset_id_;
+        std::string asset_id_;
         //! asset type
         Core::asset_type_t asset_type_;
         //! asset data

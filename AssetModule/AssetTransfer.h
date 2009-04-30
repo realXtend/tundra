@@ -3,100 +3,96 @@
 #ifndef incl_Asset_AssetTransfer_h
 #define incl_Asset_AssetTransfer_h
 
-#include "RexUUID.h"
-
 namespace Asset
 {
-    //! Stores data related to an asset transfer that is in progress. AssetManager stores an 
-    //! internal list of these to handle its transfers. Most of the time client modules don't
-    //! need to interact with these.
+    //! Stores data related to an asset transfer that is in progress. Not necessary to clients of the AssetModule.
     class AssetTransfer
     {
     public:
-        //! constructor
+        //! Constructor
         AssetTransfer();
-        //! destructor
+        //! Destructor
         ~AssetTransfer();
         
-        //! receives an asset data packet
-        /*! also resets elapsed time
-            \param packet_index packet number starting from 0
-            \param data pointer to data
-            \param size size of data packet
+        //! Receives an asset data packet
+        /*! Also resets elapsed time
+            \param packet_index Packet number, starting from 0
+            \param data Pointer to data
+            \param size Size of data packet
          */
         void ReceiveData(Core::uint packet_index, const Core::u8* data, Core::uint size);
         
-        //! assembles continuous asset data to a buffer
-        /*! call GetReceivedContinuous() (or GetReceived() if you know the transfer is complete)
+        //! Assembles continuous asset data to a buffer
+        /*! Call GetReceivedContinuous() (or GetReceived() if you know the transfer is complete)
             first to know how big the buffer must be
-            \param buffer pointer to buffer that will receive data
+            \param buffer Pointer to buffer that will receive data
          */
         void AssembleData(Core::u8* buffer) const;
         
-        //! sets asset ID
-        /*! \param asset_id asset UUID
+        //! Sets asset ID
+        /*! \param asset_id Asset id
          */
-        void SetAssetId(const RexTypes::RexUUID& asset_id) { asset_id_ = asset_id; }
+        void SetAssetId(const std::string& asset_id) { asset_id_ = asset_id; }
         
-        //! sets asset type
-        /*! \param asset_type asset type
+        //! Sets asset type
+        /*! \param asset_type Asset type
          */
         void SetAssetType(Core::uint asset_type) { asset_type_ = asset_type; }
         
-        //! sets asset size
-        /*! called when asset transfer header received
-            \param size asset size in bytes
+        //! Sets asset size
+        /*! Called when asset transfer header received
+            \param size Asset size in bytes
          */
         void SetSize(Core::uint size) { size_ = size; }
         
-        //! adds elapsed time
-        /*! \param delta_time amount of time to add
+        //! Adds elapsed time
+        /*! \param delta_time Amount of time to add
          */
         void AddTime(Core::f64 delta_time) { time_ += delta_time; }
         
-        //! resets elapsed time
+        //! Resets elapsed time
         void ResetTime() { time_ = 0.0; }
         
-        //! returns asset ID
-        const RexTypes::RexUUID& GetAssetId() const { return asset_id_; }
+        //! Returns asset ID
+        const std::string& GetAssetId() const { return asset_id_; }
         
-        //! returns asset type
+        //! Returns asset type
         Core::uint GetAssetType() const { return asset_type_; }
         
-        //! returns expected asset size
+        //! Returns expected asset size, 0 if unknown
         Core::uint GetSize() const { return size_; }
         
-        //! returns total size of data received so far
+        //! Returns total size of data received so far
         Core::uint GetReceived() const { return received_; }
         
-        //! returns total size of continuous data from the asset beginning received so far
+        //! Returns total size of continuous data from the asset beginning received so far
         Core::uint GetReceivedContinuous() const;
         
-        //! returns elapsed time since last packet
+        //! Returns elapsed time since last packet
         Core::f64 GetTime() const { return time_; }
         
-        //! returns whether transfer is finished (all bytes received)
+        //! Returns whether transfer is finished (all bytes received)
         bool Ready() const;
         
     private:
         typedef std::map<Core::uint, std::vector<Core::u8> > DataPacketMap;
         
-        //! asset ID
-        RexTypes::RexUUID asset_id_;
+        //! Asset ID
+        std::string asset_id_;
         
-        //! asset type
+        //! Asset type
         Core::uint asset_type_;
         
-        //! expected size
+        //! Expected size
         Core::uint size_;
         
-        //! received bytes
+        //! Received bytes
         Core::uint received_;
         
-        //! map of data packets
+        //! Map of data packets
         DataPacketMap data_packets_;
         
-        //! elapsed time since last packet
+        //! Elapsed time since last packet
         Core::f64 time_;
     };
 }
