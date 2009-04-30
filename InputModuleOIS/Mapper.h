@@ -16,12 +16,12 @@ namespace Input
     //! Maps hardware input codes into more generic input events.
     /*! Default map is used always at first, but if a mappings xml file exists,
         the input mappings are read from that file and they replace the default mappings.
-        If mapping for some event is not found from the xml file, the default one is
+        If a mapping for some event is not found from the xml file, the default one is
         used instead.
     */
     class Mapper : public Input::InputServiceInterface
     {
-        //! default constructor
+        //! empty default constructor
         Mapper();
     public:
         //! constructor that takes parent module
@@ -30,11 +30,6 @@ namespace Input
         //! destructor
         ~Mapper();
 
-        //__inline bool IsDragging() const { return module->IsDragging(); }
-
-        //! Polls the current mouse state for both absolute and relative movement
-        /*! Not thread safe
-        */
         boost::optional<const Input::Events::Movement&> GetSliderMovement(Core::event_id_t dragged_event) const { return module_->GetDraggedSliderInfo(dragged_event); }
 
         //! Loads input mappings from xml file.
@@ -54,10 +49,7 @@ namespace Input
         //! Exports mappings to a file
         void Export(const std::string &file);
 
-        //! set input state
         void SetState(State state) { module_->SetState(state); }
-
-        //! Returns the current state
         State GetState() const { return module_->GetState(); }
 
     private:

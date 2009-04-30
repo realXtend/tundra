@@ -17,6 +17,7 @@ namespace Foundation
    class Framework;
 }
 
+//! OIS input library, external.
 namespace OIS
 {
     class InputManager;
@@ -31,7 +32,7 @@ namespace OIS
 
 //! Input related functionality. May be keyboard, mouse, game controllers or anything.
 /*!
-    See InputModuleOIS to see how input events work for keyboard, mouse and joysticks.
+    See \ref Input_page "Handling input", to see how input events work for keyboard, mouse and joysticks.
 */
 namespace Input
 {
@@ -50,7 +51,7 @@ namespace Input
     };
 
     //! info for key event. Unique by keycode / modifier pair. 
-    //! Different keys can launch the same event, but same key can't launch multiple events.
+    /*! Different keys can launch the same event, but same key can't launch multiple events. */
     struct UnBufferedKeyEventInfo
     {
         // compiler generated copy constructor applies
@@ -102,23 +103,7 @@ namespace Input
         input event happens, such as a key is pressed down.
         These input events can then be handled like any other event.
 
-        Input has a state. Each state has their own set of h/w input events corresponding to generic input events,
-        f.ex. in State_ThirdPerson 'A' and 'D' may be used to rotate the camera (and avatar) around, while in
-        State_FreeCamera they can be used to slide the camera left or right. In this way keys can launch different
-        events in different states. Input service should be used to set the state.
-        
-        Keyboard events are supported in the following way:
-        A single OIS::KeyCode that corresponds to an event, modifiers may be included (ctrl, alt and/or shift) as a bit flag.
-        An event is launched when corresponding key is pressed together with any modifier keys.
-        A corresponding event_released is launched when corresponding key or any modifier keys are released.
-
-        Mouse movement is supported in the following way:
-        Input sliders are used for continuous non-uniform input events such as mouse movement.
-        A slider can be combined with a button press in the same device, such as mouse button, and a modifier key
-        (ctrl, alt and/or shift). Slider events are not send as events, but need to be queried from an input service.
-        See Foundation::InputServiceInterface for more information.
-
-        See Mapper for default key configuration.
+        See \ref Input_page "Handling input" for more information.
 
         \note OIS is used in unbuffered mode, so doesn't work well for UI input. See BufferedKeyboard for UI input.
 

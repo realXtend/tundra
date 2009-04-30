@@ -41,6 +41,8 @@ namespace Input
         in free camera state, the keys may slide the camera
         left or right.
 
+        For more info, see \ref Input_page "Handling input".
+
         \ingroup Services_group
         \ingroup Input_group
     */
@@ -56,6 +58,8 @@ namespace Input
 
             Returns both absolute and relative position in 3 dimensions. Not all dimensions are supported in all
             input devices, for example mouse only supports 2 dimensions.
+
+            \note Currently may not be thread safe.
 
             \param dragged_event event corresponding to a slider
             \return Absolute and relative position in 3 dimensions
