@@ -107,6 +107,7 @@ namespace Console
         /*! 
             \param character character to embed to lineOut
             \param lineOut string the character should be appended to
+            \param offset offset where the character should be appended to
             \return true if 'character' is an allowed char, false otherwise
         */
         bool AddCharacter(unsigned int character, std::string &lineOut, size_t offset);
