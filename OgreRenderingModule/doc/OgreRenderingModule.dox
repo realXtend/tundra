@@ -17,14 +17,13 @@
 
 	The framework itself already uses the service to render the scene after the update loop on each frame, which also serves as an usage example:
 
-	\code	
-        if (service_manager_->IsRegistered(Service::ST_Renderer))
-        {
-            Foundation::RenderServiceInterface *renderer = 
-                service_manager_->GetService<RenderServiceInterface>(Service::ST_Renderer);
-            renderer->Render();
-        }
-	\endcode
+\code	
+if (service_manager_->IsRegistered(Service::ST_Renderer))
+{
+	Foundation::RenderServiceInterface *renderer = service_manager_->GetService<RenderServiceInterface>(Service::ST_Renderer);
+	renderer->Render();
+}
+\endcode
 	
 			
 	\section ogrespecific_ORM Using Ogre-specific functionality
@@ -34,9 +33,9 @@
 	
 	For example:
 
-	\code
-	OgreRenderer::Renderer *renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
-     	\endcode
+\code
+OgreRenderer::Renderer *renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+\endcode
 
 	After this, one can for example get the Ogre scene manager from the renderer.
 
@@ -44,13 +43,16 @@
 	\section ogreresources_ORM Using Ogre resources created from in-world asset data
 
 	OgreRenderer::Renderer is also the interface through which Ogre resources can be created from in-world assets (textures, meshes etc.) 
-	Currently there is support for requesting and creating mesh and texture resources. Note that to ensure that the renderer actually creates the resources
-	correctly, one should not ask the assets directly from the AssetService (unless interested of the raw asset data), but rather from the renderer.
+	Currently there is support for requesting and creating mesh (OgreRenderer::OgreMesh) and texture (OgreRenderer::OgreTexture) resources. 
+	The Ogre resources are subclassed from the abstract interface Foundation::ResourceInterface and contain a pointer to the actual Ogre resource object.
 
 	See the functions OgreRenderer::Renderer::GetMesh(), OgreRenderer::Renderer::RequestMesh(), OgreRenderer::Renderer::RemoveMesh() for meshes and
 	OgreRenderer::Renderer::GetTexture(), OgreRenderer::Renderer::RequestTexture(), OgreRenderer::Renderer::RemoveTexture() for textures. They are similar
 	to the AssetService in that the Get... functions will not automatically request download of the asset; Request... functions are needed for that.
-
+	
+	Note that to ensure that the renderer actually creates the resources correctly, one should not ask the assets directly from the 
+	AssetService (unless interested of the raw asset data), but rather from the renderer.
+	
 
 	\section ogreec_ORM Ogre-related entity components
 
@@ -64,6 +66,6 @@
 	\section rendererevents_ORM Renderer events
 
 	See RendererEvents.h for the events the renderer sends. The POST_RENDER event is sent after the scene is rendered, but
-	before the screen buffer is swapped. Responding to this event allows custom rendering outside of the scene to be added.
+	before the screen buffers are swapped. Responding to this event allows custom rendering outside of the scene to be added.
 	Events are also sent whenever the rendering window is resized or closed.
 */

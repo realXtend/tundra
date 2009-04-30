@@ -14,12 +14,12 @@
 
 	Example of acquiring the AssetService:
 
-	\code
-	if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
-        {
-            Foundation::AssetServiceInterface* asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset);
-	    // do something with the asset service...
-	\endcode
+\code
+if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
+{
+    Foundation::AssetServiceInterface* asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset);
+    // do something with the asset service...
+\endcode
 
 	\section getasset_AS Getting an asset
 
@@ -45,13 +45,13 @@
 
 	Example of getting an asset, and requesting its download if not found:
 	
-	\code
-	Foundation::AssetPtr mesh_asset = asset_service->GetAsset(id, Asset::RexAT_Mesh);
-	if (!mesh_asset)
-	{
-	    asset_service->RequestAsset(id, Asset::RexAT_Mesh);
-	}
-	\endcode
+\code
+Foundation::AssetPtr mesh_asset = asset_service->GetAsset(id, Asset::RexAT_Mesh);
+if (!mesh_asset)
+{
+    asset_service->RequestAsset(id, Asset::RexAT_Mesh);
+}
+\endcode
 
 	\section assetevents Asset events
 
