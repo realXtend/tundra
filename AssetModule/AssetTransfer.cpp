@@ -3,8 +3,6 @@
 #include "AssetTransfer.h"
 #include "AssetModule.h"
 
-using namespace RexTypes;
-
 namespace Asset
 {
     AssetTransfer::AssetTransfer() :

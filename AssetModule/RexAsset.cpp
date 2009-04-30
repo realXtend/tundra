@@ -12,7 +12,7 @@ namespace Asset
     static const std::string ASSETTYPE_MATERIAL_SCRIPT("Material script");
     static const std::string ASSETTYPE_UNKNOWN("Unknown");
     
-    RexAsset::RexAsset(const RexTypes::RexUUID& asset_id, Core::asset_type_t asset_type) :
+    RexAsset::RexAsset(const std::string& asset_id, Core::asset_type_t asset_type) :
         asset_id_(asset_id),
         asset_type_(asset_type)
     {
@@ -39,10 +39,5 @@ namespace Asset
         }
         
         return ASSETTYPE_UNKNOWN;
-    }
-    
-    const std::string RexAsset::GetId()
-    {
-        return asset_id_.ToString();
     }
 }

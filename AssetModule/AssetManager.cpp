@@ -7,6 +7,7 @@
 #include "AssetDefines.h"
 #include "AssetEvents.h"
 #include "AssetManager.h"
+#include "AssetCache.h"
 #include "AssetTransfer.h"
 #include "RexAsset.h"
 
@@ -15,7 +16,6 @@ using namespace RexTypes;
 
 namespace Asset
 {
-    const char *AssetManager::DEFAULT_ASSET_CACHE_PATH = "/assetcache";
     const Core::Real AssetManager::DEFAULT_ASSET_TIMEOUT = 60.0;
 
     AssetManager::AssetManager(Foundation::Framework* framework) : 
@@ -28,31 +28,26 @@ namespace Asset
         event_manager->RegisterEvent(event_category_, Events::ASSET_READY, "AssetReady");
         event_manager->RegisterEvent(event_category_, Events::ASSET_PROGRESS, "AssetProgress");
         event_manager->RegisterEvent(event_category_, Events::ASSET_CANCELED, "AssetCanceled");
-
-        // Create asset cache directory
-        cache_path_ = framework_->GetPlatform()->GetApplicationDataDirectory() + DEFAULT_ASSET_CACHE_PATH;
-        if (boost::filesystem::exists(cache_path_) == false)
-        {
-            boost::filesystem::create_directory(cache_path_);
-        }
+        
+        // Create asset cache
+        cache_ = AssetCachePtr(new AssetCache(framework_));
     }
     
     AssetManager::~AssetManager()
     {
+        cache_.reset();
     }
     
     Foundation::AssetPtr AssetManager::GetAsset(const std::string& asset_id, Core::asset_type_t asset_type)
     {
-        RexUUID asset_uuid(asset_id);
-        
-        return GetFromCache(asset_uuid);
+        return GetFromCache(asset_id);
     }
   
     void AssetManager::RequestAsset(const std::string& asset_id, Core::asset_type_t asset_type)
     {
         RexUUID asset_uuid(asset_id);
 
-        if (GetFromCache(asset_uuid))
+        if (GetFromCache(asset_id))
             return;
 
         if (asset_type == RexAT_Texture)
@@ -69,10 +64,8 @@ namespace Asset
     {
         if (!received)
             return Foundation::AssetPtr();
-            
-        RexUUID asset_uuid(asset_id);
-        
-        AssetTransfer* transfer = GetTransfer(asset_uuid);
+                    
+        AssetTransfer* transfer = GetTransfer(asset_id);
         
         // No transfer, either get complete asset or nothing
         if (!transfer)       
@@ -97,9 +90,7 @@ namespace Asset
     
     bool AssetManager::QueryAssetStatus(const std::string& asset_id, Core::uint& size, Core::uint& received, Core::uint& received_continuous)
     {
-        RexUUID asset_uuid(asset_id);
-        
-        AssetTransfer* transfer = GetTransfer(asset_uuid);
+        AssetTransfer* transfer = GetTransfer(asset_id);
         if (transfer)
         {
             size = transfer->GetSize();
@@ -108,7 +99,7 @@ namespace Asset
             return true;
         }
         
-        Foundation::AssetPtr asset = GetFromCache(asset_uuid);
+        Foundation::AssetPtr asset = GetFromCache(asset_id);
         if (asset)
         {
             size = asset->GetSize();
@@ -141,7 +132,9 @@ namespace Asset
                 transfer.AddTime(frametime);
                 if (transfer.GetTime() > asset_timeout_)
                 {
-                    AssetModule::LogInfo("Texture transfer " + transfer.GetAssetId().ToString() + " timed out.");
+                    RexUUID asset_uuid(transfer.GetAssetId());
+                    
+                    AssetModule::LogInfo("Texture transfer " + transfer.GetAssetId() + " timed out.");
 
                     // Send cancel message
                     const OpenSimProtocol::ClientParameters& client = net->GetClientParameters();
@@ -152,7 +145,7 @@ namespace Asset
                     m->AddUUID(client.sessionID);
     
                     m->SetVariableBlockCount(1);
-                    m->AddUUID(transfer.GetAssetId()); // Image UUID
+                    m->AddUUID(asset_uuid); // Image UUID
                     m->AddS8(-1); // Discard level, -1 = cancel
                     m->AddF32(0.0); // Download priority, 0 = cancel
                     m->AddU32(0); // Starting packet
@@ -178,7 +171,7 @@ namespace Asset
                 transfer.AddTime(frametime);
                 if (transfer.GetTime() > asset_timeout_)
                 {
-                    AssetModule::LogInfo("Asset transfer " + transfer.GetAssetId().ToString() + " timed out.");
+                    AssetModule::LogInfo("Asset transfer " + transfer.GetAssetId() + " timed out.");
 
                     // Send cancel message
                     NetOutMessage *m = net->StartMessageBuilding(RexNetMsgTransferAbort);
@@ -215,7 +208,7 @@ namespace Asset
             return;
         
         AssetTransfer new_transfer;
-        new_transfer.SetAssetId(asset_id);
+        new_transfer.SetAssetId(asset_id.ToString());
         new_transfer.SetAssetType(RexAT_Texture);
         texture_transfers_[asset_id] = new_transfer;
     
@@ -251,9 +244,10 @@ namespace Asset
             
         // Asset transfers are keyed by transfer id, not asset id, so have to search in a bit cumbersome way
         AssetTransferMap::const_iterator i = asset_transfers_.begin();
+        std::string asset_id_str = asset_id.ToString();
         while (i != asset_transfers_.end())
         {
-            if (i->second.GetAssetId() == asset_id)
+            if (i->second.GetAssetId() == asset_id_str)
                 return;
 
             ++i;
@@ -263,11 +257,11 @@ namespace Asset
         transfer_id.Random();
         
         AssetTransfer new_transfer;
-        new_transfer.SetAssetId(asset_id);
+        new_transfer.SetAssetId(asset_id_str);
         new_transfer.SetAssetType(asset_type);
         asset_transfers_[transfer_id] = new_transfer;
         
-        AssetModule::LogInfo("Requesting asset " + asset_id.ToString());
+        AssetModule::LogInfo("Requesting asset " + asset_id_str);
         
         NetOutMessage *m = net->StartMessageBuilding(RexNetMsgTransferRequest);
         assert(m);
@@ -311,7 +305,7 @@ namespace Asset
 
         if (transfer.Ready())
         {
-            StoreAsset(transfer);
+            cache_->StoreAsset(transfer);
             texture_transfers_.erase(i);
         }
     }
@@ -338,7 +332,7 @@ namespace Asset
 
         if (transfer.Ready())
         {
-            StoreAsset(transfer);
+            cache_->StoreAsset(transfer);
             texture_transfers_.erase(i);
         }
     }
@@ -381,7 +375,7 @@ namespace Asset
         
         if ((status != RexTS_Ok) && (status != RexTS_Done))
         {
-            AssetModule::LogInfo("Transfer for asset " + transfer.GetAssetId().ToString() + " canceled with code " + Core::ToString<Core::s32>(status));
+            AssetModule::LogInfo("Transfer for asset " + transfer.GetAssetId() + " canceled with code " + Core::ToString<Core::s32>(status));
             asset_transfers_.erase(i);
             return;
         }
@@ -393,7 +387,7 @@ namespace Asset
         // We may get data packets before header, so check if all already received
         if (transfer.Ready())
         {
-            StoreAsset(transfer);
+            cache_->StoreAsset(transfer);
             asset_transfers_.erase(i);
         }
     }
@@ -416,7 +410,7 @@ namespace Asset
         
         if ((status != RexTS_Ok) && (status != RexTS_Done))
         {
-            AssetModule::LogInfo("Transfer for asset " + transfer.GetAssetId().ToString() + " canceled with code " + Core::ToString<Core::s32>(status));
+            AssetModule::LogInfo("Transfer for asset " + transfer.GetAssetId() + " canceled with code " + Core::ToString<Core::s32>(status));
 
             // Send transfer canceled event
             SendAssetCanceled(transfer);
@@ -433,7 +427,7 @@ namespace Asset
 
         if (transfer.Ready())
         {
-            StoreAsset(transfer);
+            cache_->StoreAsset(transfer);
             asset_transfers_.erase(i);
         }
     }
@@ -453,110 +447,45 @@ namespace Asset
         // Send transfer canceled event
         SendAssetCanceled(transfer);
 
-        AssetModule::LogInfo("Transfer for asset " + transfer.GetAssetId().ToString() + " canceled");
+        AssetModule::LogInfo("Transfer for asset " + transfer.GetAssetId() + " canceled");
         asset_transfers_.erase(i);
     }
 
     void AssetManager::SendAssetProgress(AssetTransfer& transfer)
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-        Events::AssetProgress event_data(transfer.GetAssetId().ToString(), transfer.GetAssetType(), transfer.GetSize(), transfer.GetReceived(), transfer.GetReceivedContinuous());
+        Events::AssetProgress event_data(transfer.GetAssetId(), transfer.GetAssetType(), transfer.GetSize(), transfer.GetReceived(), transfer.GetReceivedContinuous());
         event_manager->SendEvent(event_category_, Events::ASSET_PROGRESS, &event_data);
     }
 
     void AssetManager::SendAssetCanceled(AssetTransfer& transfer)
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-        Events::AssetCanceled event_data(transfer.GetAssetId().ToString(), transfer.GetAssetType());
+        Events::AssetCanceled event_data(transfer.GetAssetId(), transfer.GetAssetType());
         event_manager->SendEvent(event_category_, Events::ASSET_CANCELED, &event_data);
     }
-
-    void AssetManager::StoreAsset(AssetTransfer& transfer)
-    {
-        const RexUUID& asset_id = transfer.GetAssetId();
-        
-        AssetModule::LogInfo("Storing complete asset " + asset_id.ToString());
-
-        // Store to memory cache
-        Foundation::AssetPtr new_asset = Foundation::AssetPtr(new RexAsset(transfer.GetAssetId(), transfer.GetAssetType()));
-        assets_[asset_id] = new_asset;
-        
-        RexAsset::AssetDataVector& data = checked_static_cast<RexAsset*>(new_asset.get())->GetDataInternal();
-        data.resize(transfer.GetReceived());
-        transfer.AssembleData(&data[0]);
-        
-        // Store to disk cache
-        boost::filesystem::path file_path(cache_path_ + "/" + asset_id.ToString());
-        std::ofstream filestr(file_path.native_directory_string().c_str(), std::ios::out | std::ios::binary);
-        if (filestr.good())
-        {
-            Core::uint type = transfer.GetAssetType();
-            
-            // Store first the asset type, then the actual data
-            filestr.write((const char *)&type, sizeof(type));
-            filestr.write((const char *)&data[0],data.size());
-            filestr.close();
-        }
-        else
-        {
-            AssetModule::LogError("Error storing asset " + asset_id.ToString() + " to cache.");
-        }
-        
-        // Send asset ready event
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-        Events::AssetReady event_data(new_asset->GetId(), new_asset->GetType(), new_asset);
-        event_manager->SendEvent(event_category_, Events::ASSET_READY, &event_data);
-    }
     
-    Foundation::AssetPtr AssetManager::GetFromCache(const RexTypes::RexUUID& asset_id)
+    Foundation::AssetPtr AssetManager::GetFromCache(const std::string& asset_id)
     {
-        AssetMap::iterator i = assets_.find(asset_id);
-        if (i != assets_.end())
-            return i->second;
+        // First check memory cache
+        Foundation::AssetPtr asset = cache_->GetAsset(asset_id, true, false);
+        if (asset)
+            return asset;
 
         // If transfer in progress, do not check disk cache again
         if (GetTransfer(asset_id))
             return Foundation::AssetPtr();
-        boost::filesystem::path file_path(cache_path_ + "/" + asset_id.ToString());
-        
-        std::ifstream filestr(file_path.native_directory_string().c_str(), std::ios::in | std::ios::binary);
-        if (filestr.good())
-        {
-            filestr.seekg(0, std::ios::end);
-            Core::uint length = filestr.tellg();
-            filestr.seekg(0, std::ios::beg);
-
-            Core::uint type;
-            if (length > sizeof(type))
-            {
-                length -= sizeof(type);
-                
-                filestr.read((char *)&type, sizeof(type));
-        
-                RexAsset* new_asset = new RexAsset(asset_id, type);
-                assets_[asset_id] = Foundation::AssetPtr(new_asset);
-                
-                RexAsset::AssetDataVector& data = new_asset->GetDataInternal();
-                data.resize(length);
-                filestr.read((char *)&data[0], length);
-                filestr.close();
-                
-                return assets_[asset_id];
-            }
-            else
-            {
-                AssetModule::LogError("Malformed asset file " + asset_id.ToString() + " found in cache.");
-            }
             
-            filestr.close();
-        }
-        
-        return Foundation::AssetPtr();
+        // Last check disk cache
+        asset = cache_->GetAsset(asset_id, false, true);    
+        return asset;    
     }
     
-    AssetTransfer* AssetManager::GetTransfer(const RexTypes::RexUUID& asset_id)
+    AssetTransfer* AssetManager::GetTransfer(const std::string& asset_id)
     {
-        AssetTransferMap::iterator i = texture_transfers_.find(asset_id);
+        RexUUID asset_uuid(asset_id);
+        
+        AssetTransferMap::iterator i = texture_transfers_.find(asset_uuid);
         if (i != texture_transfers_.end())
             return &i->second;
 
