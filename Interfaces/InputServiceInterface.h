@@ -8,6 +8,9 @@
 namespace Input
 {
     //! input state. See InputModuleOIS for more information
+    /*!
+        \ingroup Input_group
+    */
     enum State
     {
         //! unknown state
@@ -39,6 +42,7 @@ namespace Input
         left or right.
 
         \ingroup Services_group
+        \ingroup Input_group
     */
     class InputServiceInterface : public Foundation::ServiceInterface
     {

@@ -1,0 +1,49 @@
+namespace Input
+{
+/**
+
+\page Input_page Handling input
+
+	Input is handled in a generic way which allows for support for nearly any
+	kind of input device. Input is handled mostly by events. Some input which
+	is not really practical to be handled with events are handled via querying
+	a service for the input state, but still in a generic fashion.
+	
+\section mapper_input Key mapping
+
+	When dealing with input, you are never dealing with raw keycodes and
+	hardware input events, but rather these are translated into generic input
+	events. Mapper is used to handle the translation, and it can export and
+	import the mappings to a file, so a key map configurations can be loaded
+	and saved.
+	
+	For each input device or library, a module should be created that handles
+	the input for that specific library / device.
+	
+	The Mapper should be usable with any input module.
+	See Mapper for default key configuration.
+	
+\section state_input Input state
+
+	Input has a state. Each state has their own set of h/w input events corresponding to generic input events,
+        f.ex. in State_ThirdPerson 'A' and 'D' may be used to rotate the camera (and avatar) around, while in
+        State_FreeCamera they can be used to slide the camera left or right. In this way keys can launch different
+        events in different states. Input service should be used to set the state.
+        
+\section events_input Input events
+        
+        Keyboard events are supported in the following way:
+        A single key code that corresponds to an event, modifiers may be included (ctrl, alt and/or shift) as a bit flag.
+        An event is launched when corresponding key is pressed together with any modifier keys.
+        A corresponding event_released is launched when corresponding key or any modifier keys are released.
+
+        Mouse movement is supported in the following way:
+        Input sliders are used for continuous non-uniform input events such as mouse movement.
+        A slider can be combined with a button press in the same device, such as mouse button, and a modifier key
+        (ctrl, alt and/or shift). Slider events are not send as events, but need to be queried from an input service.
+        See Foundation::InputServiceInterface for more information.
+
+        
+	
+*/
+}

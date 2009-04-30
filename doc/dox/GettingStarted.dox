@@ -36,6 +36,9 @@
 \section renderer_GS Working with the renderer
 	- \subpage OgreRenderingModule "Using the Ogre renderer module"	
 	
+\section input_GS Working with input
+	- \subpage Input_page "Handling input"
+	
 \section debug_GS Development / debug
 	- \subpage DebugConsole "Debug console"
 */

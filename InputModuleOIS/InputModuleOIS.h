@@ -25,7 +25,11 @@ namespace OIS
     class JoyStick;
 }
 
-//! Input related functionality. May be keyboard, mouse, game controllers or anything
+/*! \defgroup Input_group Input
+    \copydoc Input
+*/
+
+//! Input related functionality. May be keyboard, mouse, game controllers or anything.
 /*!
     See InputModuleOIS to see how input events work for keyboard, mouse and joysticks.
 */
@@ -36,7 +40,7 @@ namespace Input
     typedef boost::shared_ptr<BufferedKeyboard> BufferedKeyboardPtr;
     typedef boost::shared_ptr<Mapper> MapperPtr;
 
-    // Input slider types
+    //! Input slider types. \ingroup Input_group
     enum Slider
     {
         //! standard mouse dragging
@@ -168,6 +172,8 @@ namespace Input
             precond: pressed_event + 1 == released_event
 
             \note Not efficient.
+
+            \param state The state for which to register the event for
             \param key OIS keycode that launches the event. See OIS for the key codes
             \param pressed_event event that is launched when key is pressed (launched once)
             \param released_event event that is launched when key is released (launched once)
@@ -180,6 +186,7 @@ namespace Input
 
             \note parameter stopped_event is not currently used for anything, but it's reserved for future use
 
+            \param state The state for which to register the event for
             \param slider Slider type, Mouse, joystick...
             \param button Optional button on the device that needs to be held down
             \param dragged_event event for dragging the slider (launches as long as slider is dragged)

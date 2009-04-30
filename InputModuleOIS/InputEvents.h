@@ -10,7 +10,8 @@ namespace Input
     //! Contains some fo the input events in generic fashion. Does not depend on any one input method
     /*!
         To add new event, first add event id. For continuos events declare a 'start' and 'end' event ids.
-
+        
+        \ingroup Input_group
     */
     namespace Events
     {
@@ -63,8 +64,11 @@ namespace Input
 
 
         //! Event for buffered key input. 
-        //! Do not use for any continous input such as avatar movement, it will probably cause input lag
-        //! General use case is text input.
+        /*! Do not use for any continous input such as avatar movement, it will probably cause input lag
+            General use case is text input.
+
+            \ingroup Input_group
+        */
         class BufferedKey : public Foundation::EventDataInterface
         {
             BufferedKey();
@@ -78,7 +82,7 @@ namespace Input
             const Core::uint text_;
         };
 
-        //! Movement along axis
+        //! Movement along axis. \ingroup Input_group
         struct Axis
         {
             Axis() : rel_(0), abs_(0) {}
@@ -104,7 +108,7 @@ namespace Input
             int abs_;
         };
 
-        //! input position that contains both relative and absolute movement for single axis
+        //! input position that contains both relative and absolute movement for single axis. \ingroup Input_group
         class SingleAxisMovement : public Foundation::EventDataInterface
         {
         public:
@@ -125,7 +129,7 @@ namespace Input
             Axis z_;
         };
 
-        //! input position that contains both relative and absolute movement for several axis
+        //! input position that contains both relative and absolute movement for several axis. \ingroup Input_group
         class Movement : public Foundation::EventDataInterface
         {
         public:
