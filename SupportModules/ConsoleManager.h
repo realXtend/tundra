@@ -10,7 +10,10 @@
 
 namespace Console
 {
-    //! Native debug console
+    //! Generic debug console manager, directs input and output to available consoles.
+    /*!
+        See \ref DebugConsole "Using the debug console".
+    */
     class ConsoleManager : public Console::ConsoleServiceInterface
     {
         friend class ConsoleModule;
@@ -44,7 +47,6 @@ namespace Console
             }
         }
 
-        //! Prints text to the console (all consoles)
         __inline virtual void Print(const std::string &text)
         {
             native_->Print(text);
@@ -72,13 +74,11 @@ namespace Console
             return ogre_->IsActive();
         }
 
-        //! process key down event
         virtual bool HandleKeyDown(int code, Core::uint text)
         {
             return ogre_->HandleKeyDown(code, text);
         }
 
-        //! process key up event
         virtual bool HandleKeyUp(int code, Core::uint text)
         {
             return ogre_->HandleKeyUp(code, text);

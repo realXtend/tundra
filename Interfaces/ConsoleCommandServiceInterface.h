@@ -226,7 +226,7 @@ void MyClass::Update()
         //! destructor
         virtual ~ConsoleCommandServiceInterface() {}
 
-        //! add time
+        //! Update the service. Should be called in main thread context. For internal use.
         virtual void Update() {}
 
         //! Register a command to the debug console
@@ -235,31 +235,39 @@ void MyClass::Update()
                 Command CreateCommand(const std::string &name, const std::string &description, const CallbackPtr &callback, bool delayed)
                 Command CreateCommand(const std::string &name, const std::string &description, StaticCallback &static_callback, bool delayed)
 
+            When registering commands from a module, use Foundation::ModuleInterface::AutoRegisterConsoleCommand().
+
             \param command the command to register
         */
         virtual void RegisterCommand(const Command &command) = 0;
 
-        //! Unregister console command with the specified name
+        //! Unregister console command
+        /*! See RegisterCommand()
+
+            \param name Name of the command to unregister
+        */
         virtual void UnregisterCommand(const std::string &name) = 0;
 
-        //! Queue console command. The command will be called in the console's thread
-        /*!
+        //! Queue console command. The command will be called in the console's thread.
+        /*! Normally this is for internal use only and need not be called.
+
             \param commandline string that contains the command and any parameters
         */
         virtual void QueueCommand(const std::string &commandline) = 0;
 
         //! Poll to see if command has been queued and executes it immediately, in the caller's thread context.
         /*! For each possible command, this needs to be called exactly once.
+            The command must have been created as 'delayed'.
 
             \param command name of the command to poll for.
             \return Result of executing the command, 
         */
         virtual boost::optional<CommandResult> Poll(const std::string &command) = 0;
 
-        //! Parse and execute command line. The command is called in the caller's thread.
+        //! Parse and execute command line. The command is called in the caller's thread. For internal use.
         virtual CommandResult ExecuteCommand(const std::string &commandline) = 0;
 
-        //! Execute command
+        //! Execute command. For internal use.
         /*!
             \param name Name of the command to execute
             \param params Parameters to pass to the command
