@@ -35,9 +35,9 @@
 
 	Example of registering an event category:
 
-	\code
-	event_category_ = framework_->GetEventManager()->RegisterEventCategory("Input");	
-	\endcode
+\code
+event_category_ = framework_->GetEventManager()->RegisterEventCategory("Input");	
+\endcode
 
 	\subsection categoryquerying_ES Event category ID's, querying
 
@@ -60,12 +60,12 @@
 
 	Example of querying and storing event category, and checking for unknown:
 
-	\code
-        assetcategory_id_ = event_manager->QueryEventCategory("Asset");
+\code
+assetcategory_id_ = event_manager->QueryEventCategory("Asset");
         
-        if (assetcategory_id_ == 0 )
-            LogWarning("Unable to find event category for Asset events!");
-	\endcode
+if (assetcategory_id_ == 0 )
+    LogWarning("Unable to find event category for Asset events!");
+\endcode
 
 	\subsection eventid_ES Event ID's
 	
@@ -100,10 +100,10 @@
 
 	An example of preparing an event data structure (in this case, containing an entity ID) and sending the event:
 	
-	\code
-	Scene::Events::SceneEventData event_data(currentEntityID_);
-	framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
-	\endcode
+\code
+Scene::Events::SceneEventData event_data(currentEntityID_);
+framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
+\endcode
 	
 	\section receivingevent_ES Receiving events
 
@@ -118,14 +118,14 @@
         
         An example subscriber tree data file, does not necessarily make sense:
         
-        \verbatim
-        <subscribers>
-            <subscriber module="Renderer" priority="75" />
-            <subscriber module="World Logic" priority="100" />
-                <subscriber module="Gui" priority="100" />
-            </subscriber>
-        </subscribers>
-        \endverbatim
+\verbatim
+<subscribers>
+    <subscriber module="Renderer" priority="75" />
+    <subscriber module="World Logic" priority="100">
+    	<subscriber module="Gui" priority="100" />
+    </subscriber>
+</subscribers>
+\endverbatim
         
         Here, the tree root has two children: Renderer and World Logic. The Renderer will have lower priority than World 
         Logic, so World Logic (and its child Gui) get the first opportunity to handle events.
@@ -136,26 +136,27 @@
 
 	An example event handler from the OgreRenderingModule, which watches for two distinct event categories and passes event handling to its member object:
 
-	\code
-    	bool OgreRenderingModule::HandleEvent(
-	    Core::event_category_id_t category_id,
-	    Core::event_id_t event_id, 
-	    Foundation::EventDataInterface* data)
-	{
-	    if (!renderer_)
-	        return false;
+\code
+bool OgreRenderingModule::HandleEvent(
+    Core::event_category_id_t category_id,
+    Core::event_id_t event_id, 
+    Foundation::EventDataInterface* data)
+{
+    if (!renderer_)
+        return false;
 
-	    if (category_id == assetcategory_id_)
-	    {
-	        return renderer_->HandleAssetEvent(event_id, data);
-	    }
+    if (category_id == assetcategory_id_)
+    {
+        return renderer_->HandleAssetEvent(event_id, data);
+    }
 
-	    if (category_id == resourcecategory_id_)
-	    {
-	        return renderer_->HandleResourceEvent(event_id, data);
-	    }
+    if (category_id == resourcecategory_id_)
+    {
+        return renderer_->HandleResourceEvent(event_id, data);
+    }
 
-	    return false;
-	}
-	\endcode	
+    return false;
+}
+\endcode	
+
 */
