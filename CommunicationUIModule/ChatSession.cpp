@@ -21,14 +21,14 @@
 #include "ChatSession.h"
 #include "CommunicationUIModule.h"
 
-namespace Communication
+namespace CommunicationUI
 {
 	//ChatSession* ChatSession::instance_;
 
 	ChatSession::ChatSession(const char* counterpart, Foundation::ScriptObject* imScriptObject)
 		: counterpart_(std::string(counterpart)), imScriptObject_(imScriptObject)//: counterpart_(std::string(counterpart)), scriptService_(scriptService), imScriptObject_(imScriptObject)
 	{
-		Communication::CommunicationUIModule::LogInfo("ChatSession");
+		CommunicationUI::CommunicationUIModule::LogInfo("ChatSession");
 		xml_ = Gnome::Glade::Xml::create("data/chatWnd.glade");
 		if (!xml_)
 			return;
@@ -81,7 +81,7 @@ namespace Communication
 
 	void ChatSession::onCloseClicked()
 	{
-		Communication::CommunicationUIModule::LogInfo("Close clicked");
+		CommunicationUI::CommunicationUIModule::LogInfo("Close clicked");
 		std::string str = "CCloseChannel";
 		std::string syntax = "";
 		Foundation::ScriptObject* ret = imScriptObject_->CallMethod(str, syntax, NULL);

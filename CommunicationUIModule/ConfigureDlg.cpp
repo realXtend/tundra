@@ -121,8 +121,8 @@ void ConfigureDlg::onButtonOk()
 		// remove ':'
 		name = name.substr(0, name.size()-1);
 		std::string value = aW->entry->get_text().raw();
-		Communication::CommunicationUIModule::LogInfo(name);
-		Communication::CommunicationUIModule::LogInfo(value);
+		CommunicationUI::CommunicationUIModule::LogInfo(name);
+		CommunicationUI::CommunicationUIModule::LogInfo(value);
 		Foundation::Comms::SettingsAttribute attr;
 		attr.type = Foundation::Comms::String;
 		attr.value = value;

@@ -7,7 +7,7 @@
 #pragma warning( disable : 4250 )
 #include <gtkmm.h>
 
-namespace Communication
+namespace CommunicationUI
 {
 
 	class ChatSession

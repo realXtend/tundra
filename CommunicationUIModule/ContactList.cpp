@@ -17,7 +17,7 @@
 
 #include "ContactList.h"
 
-namespace Communication
+namespace CommunicationUI
 {
 
 
@@ -57,7 +57,7 @@ namespace Communication
 
     bool ContactList::on_button_press_event(GdkEventButton* event)
     {
-        Communication::CommunicationUIModule::LogInfo("ContactList clicked!!");
+        CommunicationUI::CommunicationUIModule::LogInfo("ContactList clicked!!");
         bool return_value = TreeView::on_button_press_event(event);
         if( (event->type == GDK_BUTTON_PRESS) && (event->button == 3) )
         {
@@ -101,7 +101,7 @@ namespace Communication
 
     void ContactList::startChat()
     {
-       Communication::CommunicationUIModule::LogInfo("onPopUpMenuEvent!!");
+       CommunicationUI::CommunicationUIModule::LogInfo("onPopUpMenuEvent!!");
         Glib::RefPtr<Gtk::TreeView::Selection> refSelection = get_selection();
         if(refSelection)
         {

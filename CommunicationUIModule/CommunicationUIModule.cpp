@@ -22,7 +22,7 @@
 
 
 
-namespace Communication
+namespace CommunicationUI
 {
 	CommunicationUIModule* CommunicationUIModule::instance_;
 
@@ -219,7 +219,7 @@ namespace Communication
 		std::string syntax = "s";
 		Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, args);
         sessionUp_ = true;
-		this->session_ = Communication::ChatSessionUIPtr(new Communication::ChatSession(contact, imScriptObject));
+		this->session_ = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(contact, imScriptObject));
 
     }
 
@@ -307,7 +307,7 @@ namespace Communication
 		if(instance_->session_!=NULL&&instance_->sessionUp_!=false){
 			instance_->session_->ChannelOpen();
 		} else {
-			instance_->session_ = Communication::ChatSessionUIPtr(new Communication::ChatSession(t, instance_->imScriptObject));
+			instance_->session_ = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(t, instance_->imScriptObject));
 		}
 		instance_->sessionUp_ = true;
 	}
@@ -393,7 +393,7 @@ namespace Communication
 }
 
 
-using namespace Communication;
+using namespace CommunicationUI;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
 POCO_EXPORT_CLASS(CommunicationUIModule)
