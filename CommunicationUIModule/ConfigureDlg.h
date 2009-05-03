@@ -1,8 +1,6 @@
 #ifndef incl_SetConfigureDlg_h
 #define incl_SetConfigureDlg_h
 
-#pragma once
-
 //#include <stdafx.h>
 
 #pragma warning( push )

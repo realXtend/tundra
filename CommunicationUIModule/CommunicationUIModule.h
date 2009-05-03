@@ -34,7 +34,7 @@
 // *********************************************'
 
 
-namespace Communication
+namespace CommunicationUI
 {
 
 	typedef boost::shared_ptr<ChatSession> ChatSessionUIPtr;

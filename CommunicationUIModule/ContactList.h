@@ -18,7 +18,7 @@
 //	virtual void StartChat(const char* contact) = 0;
 //}
 
-namespace Communication
+namespace CommunicationUI
 {
     class CommunicationUIModule;
 
