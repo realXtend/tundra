@@ -4,7 +4,7 @@
 
 namespace Communication
 {
-
+	/* deprecated */
 	class JidAccount
 	{
 	public:
