@@ -23,6 +23,8 @@ namespace Foundation
 		virtual char* ConvertToChar() = 0;
 	};
 
+	typedef boost::shared_ptr<ScriptObject> ScriptObjectPtr;
+
 	class ScriptEventInterface
 	{
 	public:
