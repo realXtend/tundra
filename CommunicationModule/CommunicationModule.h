@@ -1,9 +1,10 @@
 #ifndef incl_CommunicationModule_h
 #define incl_CommunicationModule_h
 
+//#include <Interfaces/EntityInterface.h>
+#include "Foundation.h"
 #include "ModuleInterface.h"
-#include "CommunicationManagerServiceInterface.h"
-#include "TelepathyCommunicationManager.h"
+
 #include "CommunicationModuleApi.h"
 
 namespace Communication
@@ -28,23 +29,9 @@ namespace Communication
 		static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communication;
 
-
-
-		//// Communications API
-		//
-		//// For receiving comm events
-	 //   void AddListener(ICommunicationListener *listener);
-	 //   void RemoveListener(ICommunicationListener *listener);
-
-		//// Init comm events
-		//void Connect();
-		//void Disconnect();
-
-
 	private:
-		Foundation::Comms::CommunicationManagerPtr communication_manager_;
-		CommunicationServicePtr communication_manager;
-
+		Foundation::Comms::CommunicationManagerPtr communication_manager_old_;
+		CommunicationServicePtr communication_manager_;
 	};
 }
 

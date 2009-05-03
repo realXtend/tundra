@@ -6,6 +6,7 @@
 
 #include "CommunicationModule.h"
 #include "CommunicationManager.h"
+#include "TelepathyCommunication.h"
 
 
 namespace Communication
@@ -25,30 +26,26 @@ namespace Communication
 
 	void CommunicationModule::Initialize() 
 	{
-		communication_manager_ = Foundation::Comms::CommunicationManagerPtr(new CommunicationManager());
-		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_CommunicationManager, communication_manager_.get());
+		// OLD WAY (Still used)
+		communication_manager_old_ = Foundation::Comms::CommunicationManagerPtr(new CommunicationManager());
+		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_CommunicationManager, communication_manager_old_.get());
 		LogInfo("Module " + Name() + " initialized.");
 
-
-		communication_manager = CommunicationServicePtr(new TelepathyCommunicationManager());
-		framework_->GetServiceManager();
-
-		//testing using py service from here, 'cause had trouble with loading in the unit test
-		/* commented to not bork for ppl without py
-		Foundation::ScriptServiceInterface *pyengine = framework_->GetService<Foundation::ScriptServiceInterface>
-			(Foundation::Service::ST_Scripting);
-		pyengine->RunString("print 'Hello Python from CommunicationModule!'");
-		pyengine->RunScript("communication"); *//* loads the module, 
-		i.e. brings comms module to the global namespace
-		so that the contents of it can be referred to as comms.x */
+		// NEW
+		communication_manager_ = CommunicationServicePtr((CommunicationServiceInterface*)new TelepathyCommunication(framework_));
+		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communication, communication_manager_.get());
+		LogInfo("Initialized.");
 	}
 
-	void CommunicationModule::PostInitialize(){}
+	void CommunicationModule::PostInitialize()
+	{
+		// todo: Connect with credential from conf file ?
+	}
 
 	void CommunicationModule::Uninitialize()
 	{
-        framework_->GetServiceManager()->UnregisterService(communication_manager_.get());
-		communication_manager_.reset();
+        framework_->GetServiceManager()->UnregisterService(communication_manager_old_.get());
+		communication_manager_old_.reset();
 		LogInfo("Module " + Name() + " uninitialized.");
 	}
 
@@ -60,13 +57,6 @@ namespace Communication
 
 		pyengine->RunString("communication.update()"); //XXX no way to get return val, w.i.p*/
 	}
-
-
-	// Communications API
-	//void CommunicationModule::AddListener(ICommunicationListener *listener){}
-	//void CommunicationModule::RemoveListener(ICommunicationListener *listener){}
-	//void CommunicationModule::Connect(){}
-	//void CommunicationModule::Disconnect(){}
 }
 
 using namespace Communication;

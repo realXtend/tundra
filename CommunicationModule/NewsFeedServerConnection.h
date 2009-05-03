@@ -1,8 +1,9 @@
 #ifndef incl_NewsFeedServerConnection_h
 #define incl_NewsFeedServerConnection_h
 
-#include "CoreStdIncludes.h"
-#include "CommunicationService.h"
+#include "Foundation.h"
+
+// JUST IDEAS NOW
 
 // OPEN QUESTIONS:  
 // * Where subscribe lists are stored?

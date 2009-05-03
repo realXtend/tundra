@@ -1,3 +1,6 @@
+#include "StableHeaders.h"
+#include "Foundation.h"
+
 #include "NewsFeedServerConnection.h"
 
 namespace Communication
