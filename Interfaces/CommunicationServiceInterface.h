@@ -11,6 +11,7 @@
 
 namespace Communication
 {
+
 	// A single contact information of individual contact.
 	// Eg. jabber id:  "jid": "myjabberid@myjabberprovider.com"
 	class ContactInfo
@@ -20,9 +21,6 @@ namespace Communication
 		virtual std::string GetType();
 		virtual void SetValue(std::string value);
 		virtual std::string GetValue();
-	private:
-		std::string type_;
-		std::string value_;
 	};
 
 	typedef boost::shared_ptr<ContactInfo> ContactInfoPtr;
@@ -38,29 +36,33 @@ namespace Communication
 		virtual bool GetOnlineStatus();
 		virtual void SetOnlineMessage(std::string message);
 		virtual std::string GetOnlineMessage();
-	private:
-		bool online_status_;
-		std::string on_line_message_;
 	};
 
 	typedef boost::shared_ptr<PresenceStatus> PresenceStatusPtr;
 
-	// Individual contact on contact list
+	// Individual contact on contact list 
+	// aka. "Friend"
 	// * name
 	// * presence info
 	class Contact
 	{
 	public:
-		virtual void SetName(std::string name);
-		virtual std::string GetName();
-		virtual PresenceStatusPtr GetPresenceStatus();
-	private:
-		std::string name_;
-		PresenceStatusPtr presence_status_;
-		ContactInfoList contact_infos_;
+		virtual void SetName(std::string name) = 0;
+		virtual std::string GetName() = 0;
+		virtual PresenceStatusPtr GetPresenceStatus() = 0;
+		virtual ContactInfoList GetContactInfos() = 0;
 	};
 
 	typedef boost::shared_ptr<Contact> ContactPtr;
+	typedef std::list<ContactPtr> ContactList;
+
+	//class ContactList
+	//{
+	//public:
+	//	virtual int GetCount() = 0;
+	//	virtual int GetOnlineCount() = 0;
+	//	virtual ContactPtr GetContact() = 0;
+	//}
 
 	// A participiant of session
 	// * contact
@@ -77,12 +79,14 @@ namespace Communication
 
 	// * timestamp
 	// * author
+	// todo: rename to MessageInterface or IMessage ???
 	class Message
 	{
 	public:
-		virtual std::string GetTimeStamp(); // todo: change to proper timestamp type
-		virtual ParticipiantPtr GetAuthor(); 
-		virtual bool IsPrivate();
+		virtual std::string GetTimeStamp() = 0; // todo: change to proper timestamp type
+		virtual ParticipiantPtr GetAuthor() = 0; 
+		virtual int GetSessionId() = 0;
+//		virtual bool IsPrivate();
 	private:
 	};
 
@@ -109,8 +113,9 @@ namespace Communication
 		virtual void SendInvitation(ContactPtr c)= 0;
 		virtual void Kick(Participiant *p) = 0;
 		virtual void Close() = 0;
+		virtual int GetId() = 0;
 	private:
-		std::list<ParticipiantPtr> participients_;
+//		std::list<ParticipiantPtr> participients_;
 	};
 
 	typedef boost::shared_ptr<Session> SessionPtr;
@@ -124,7 +129,7 @@ namespace Communication
 //		virtual void SendPrivateMessage(ParticipiantPtr p, IMMessage m);
 
 	private:
-		std::list<IMMessagePtr> im_message_history_;
+//		std::list<IMMessagePtr> im_message_history_;
 	};
 
 	typedef boost::shared_ptr<IMSession> IMSessionPtr;
@@ -157,7 +162,8 @@ namespace Communication
 
 		virtual void OpenConnection(CredentialsPtr c) = 0;
 		virtual void CloseConnection() = 0;
-		virtual IMSessionPtr CreateIMSession() = 0;
+		virtual IMSessionPtr CreateIMSession(ContactPtr contact) = 0;
+		virtual ContactList GetContactList() = 0;
 	};
 
 	typedef boost::shared_ptr<CommunicationServiceInterface> CommunicationServicePtr;
