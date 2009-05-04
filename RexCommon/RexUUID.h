@@ -31,6 +31,10 @@ namespace RexTypes
         void FromString(const std::string &str) { FromString(str.c_str()); }
 
         std::string ToString() const;
+        
+        /// Tests whether a string contains a valid UUID
+        static bool IsValid(const char *str);
+        static bool IsValid(const std::string &str) { return IsValid(str.c_str()); }
     
         bool operator ==(const RexUUID &rhs) const;
         bool operator <(const RexUUID &rhs) const;

@@ -10,6 +10,9 @@ namespace Foundation
     class AssetInterface;
     typedef boost::shared_ptr<AssetInterface> AssetPtr;
     
+    class AssetProviderInterface;
+    typedef boost::shared_ptr<AssetProviderInterface> AssetProviderPtr;    
+    
     /*! An asset container service implements this interface to provide client modules
         with asset request and retrieval functionality.
         See \ref AssetModule "Using the asset module" for details on how to use the asset service.
@@ -28,8 +31,7 @@ namespace Foundation
 
             \param asset_id Asset ID, UUID for legacy UDP assets
             \param asset_type Asset type
-            \return Pointer to asset
-            
+            \return Pointer to asset           
          */
         virtual AssetPtr GetAsset(const std::string& asset_id, Core::asset_type_t asset_type) = 0;
         
@@ -50,8 +52,9 @@ namespace Foundation
 
             \param asset_id Asset ID, UUID for legacy UDP assets
             \param asset_type Asset type
+            \return true if asset request handled, false if no assetprovider could handle
          */
-        virtual void RequestAsset(const std::string& asset_id, Core::asset_type_t asset_type) = 0;
+        virtual bool RequestAsset(const std::string& asset_id, Core::asset_type_t asset_type) = 0;
 
         //! Queries status of asset download
         /*! If asset has been already fully received, size, received & received_continuous will be the same
@@ -63,6 +66,26 @@ namespace Foundation
             \return true If asset was found either in cache or as a transfer in progress, and variables have been filled, false if not found
          */
         virtual bool QueryAssetStatus(const std::string& asset_id, Core::uint& size, Core::uint& received, Core::uint& received_continuous) = 0;
+
+        //! Registers an asset provider
+        /*! \param asset_provider Provider to register
+            \return true if successfully registered
+         */
+        virtual bool RegisterAssetProvider(AssetProviderPtr asset_provider) = 0;
+        
+        //! Unregisters an asset provider
+        /*! \param asset_provider Provider to unregister
+            \return true if successfully unregistered
+         */       
+        virtual bool UnregisterAssetProvider(AssetProviderPtr asset_provider) = 0;
+                
+        //! Stores an asset to the asset cache
+        /*! Typically called by AssetProviders when they complete a download of an asset. An event will be 
+             sent to notify of the ready asset.
+    
+            \param asset Asset to store
+         */
+        virtual void StoreAsset(AssetPtr asset) = 0;
     };
 }
 

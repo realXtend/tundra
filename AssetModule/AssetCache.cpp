@@ -73,19 +73,7 @@ namespace Asset
         
         return Foundation::AssetPtr();
     }
-   
-    void AssetCache::StoreAsset(AssetTransfer& transfer)
-    {
-        const std::string& asset_id = transfer.GetAssetId();
-        
-        Foundation::AssetPtr new_asset = Foundation::AssetPtr(new RexAsset(asset_id, transfer.GetAssetType()));
-        RexAsset::AssetDataVector& data = checked_static_cast<RexAsset*>(new_asset.get())->GetDataInternal();
-        data.resize(transfer.GetReceived());
-        transfer.AssembleData(&data[0]);
-      
-        StoreAsset(new_asset);
-    }
-        
+           
     void AssetCache::StoreAsset(Foundation::AssetPtr asset)
     {    
         const std::string& asset_id = asset->GetId();

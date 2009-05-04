@@ -65,6 +65,22 @@ namespace RexTypes
             data[i] = rand() & 0xff;
     }
     
+    bool RexUUID::IsValid(const char *str)
+    {
+        if (!str) return false;
+            
+        int valid_nibbles = 0;
+                
+        while (*str)
+        {
+            if (CharToNibble(*str) <= 0xf)
+                valid_nibbles++;           
+            str++;
+        } 
+        
+        return (valid_nibbles == cSizeBytes * 2);
+    }
+    
     /// Converts a C string representing a RexUUID to a uint8_t array.
     /// Supports either the format "1c1bbda2-304b-4cbf-ba3f-75324b044c73" or "1c1bbda2304b4cbfba3f75324b044c73".
     void RexUUID::FromString(const char *str)

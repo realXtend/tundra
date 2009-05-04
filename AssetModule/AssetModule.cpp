@@ -6,6 +6,7 @@
 #include "OpenSimProtocolModule.h"
 #include "RexProtocolMsgIDs.h"
 #include "RexUUID.h"
+#include "UDPAssetProvider.h"
 
 using namespace OpenSimProtocol;
 using namespace RexTypes;
@@ -43,6 +44,9 @@ namespace Asset
         manager_ = AssetManagerPtr(new AssetManager(framework_));
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Asset, manager_.get());
         
+        udp_asset_provider_ = Foundation::AssetProviderPtr(new UDPAssetProvider(framework_));
+        manager_->RegisterAssetProvider(udp_asset_provider_);
+        
         LogInfo("Module " + Name() + " initialized.");
     }
     
@@ -65,6 +69,8 @@ namespace Asset
     // virtual 
     void AssetModule::Uninitialize()
     {
+        manager_->UnregisterAssetProvider(udp_asset_provider_);
+    
         framework_->GetServiceManager()->UnregisterService(manager_.get());
         manager_.reset();
         
@@ -98,39 +104,12 @@ namespace Asset
     {
         if ((category_id == inboundcategory_id_))
         {
-            NetworkEventInboundData *event_data = checked_static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
-            const NetMsgID msgID = event_data->messageID;
-            NetInMessage *msg = event_data->message;
-                
-            switch(msgID)
-            {
-                case RexNetMsgImageData:
-                manager_->HandleTextureHeader(msg);
-                return true;
-                
-                case RexNetMsgImagePacket:
-                manager_->HandleTextureData(msg);
-                return true;
-                
-                case RexNetMsgImageNotInDatabase:
-                manager_->HandleTextureCancel(msg);
-                return true;
-                
-                case RexNetMsgTransferInfo:
-                manager_->HandleAssetHeader(msg);
-                return true;
-                
-                case RexNetMsgTransferPacket:
-                manager_->HandleAssetData(msg);
-                return true;
-                
-                case RexNetMsgTransferAbort:
-                manager_->HandleAssetCancel(msg);
-                return true;
-            }
-        }
+            if (udp_asset_provider_)
+                return checked_static_cast<UDPAssetProvider*>(udp_asset_provider_.get())->HandleNetworkEvent(data);
+        }     
+       
         return false;
-    }
+    }    
 }
 
 using namespace Asset;

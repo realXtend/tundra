@@ -5,6 +5,7 @@
 
 #include "ModuleInterface.h"
 #include "ConsoleCommandServiceInterface.h"
+#include "AssetProviderInterface.h"
 #include "AssetModuleApi.h"
 
 namespace Foundation
@@ -63,6 +64,9 @@ namespace Asset
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Asset;
 
     private:
+        //! UDP asset provider
+        Foundation::AssetProviderPtr udp_asset_provider_;
+        
         //! asset manager
         AssetManagerPtr manager_;
         
