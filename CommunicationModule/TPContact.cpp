@@ -19,10 +19,10 @@ namespace Communication
 
 	PresenceStatusPtr TPContact::GetPresenceStatus()
 	{
-		return presence_status_;
+		return PresenceStatusPtr( (PresenceStatus*)presence_status_.get() );
 	}
 
-	ContactInfoList TPContact::GetContactInfos()
+	ContactInfoList TPContact::GetContactInfoList()
 	{
 		return contact_infos_;
 	}

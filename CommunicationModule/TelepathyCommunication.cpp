@@ -128,9 +128,14 @@ namespace Communication
 		return IMSessionPtr( (IMSession*)session);
 	}
 
-	ContactList TelepathyCommunication::GetContactList()
+	ContactListPtr TelepathyCommunication::GetContactList()
 	{
-		return contact_list_;
+		ContactList* list = new ContactList();
+		for (int i=0; i<contact_list_.size(); i++)
+		{
+			list->push_back(ContactPtr( (Contact*)contact_list_[i].get() ));
+		}
+		return ContactListPtr(list);
 	}
 
 	TelepathyCommunicationPtr TelepathyCommunication::GetInstance()
@@ -257,18 +262,23 @@ namespace Communication
 
 	/*
 	   Called by communication.py via PythonScriptModule
-	   When presence update is received
-	   // todo: What data is received ???
+	   When presence status has updated
+	   param char* id: the id of presence that has updetad
 	*/
 	void TelepathyCommunication::PyCallbackContactStatusChanged(char* id)
 	{
-		// todo: Update presence object
-		//       Create event
-		//       send event
+		TPContactList* contact_list = &TelepathyCommunication::GetInstance()->contact_list_;
 
-//		PresenceStatusUpdateEvent e = PresenceStatusUpdateEvent();
-	//	UpdatePresence
-		
+		for (int i=0; i<contact_list->size(); i++)
+		{
+			TPContactPtr c = (*contact_list)[i];
+			if (c->presence_status_->id_.compare(id)==0)
+			{
+				c->presence_status_->NotifyUpdate(true, "online message"); // todo: Get the real values to notify with
+				PresenceStatusUpdateEvent e = PresenceStatusUpdateEvent(PresenceStatusPtr((PresenceStatus*)c->presence_status_.get()));
+				TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::IM_MESSAGE_RECEIVED, (Foundation::EventDataInterface*)&e);
+			}
+		}
 	}
 
 } // end of namespace: Communication
