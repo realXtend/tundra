@@ -8,8 +8,9 @@ namespace Foundation
     class Framework;
 
     //! Scenegraph, entity and component model that together form a generic, extendable, lightweight scene model.
-    /*! \defgroup Scene_group Scene model
-        
+    /*! See \ref SceneModelPage "Scenes, entities and components" for details about the viewer's scene model.
+    
+        \defgroup Scene_group Scene Model Client Interface
     */
 
 

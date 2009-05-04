@@ -26,7 +26,7 @@ namespace OIS
     class JoyStick;
 }
 
-/*! \defgroup Input_group Input
+/*! \defgroup Input_group Input Client Interface
     \copydoc Input
 */
 

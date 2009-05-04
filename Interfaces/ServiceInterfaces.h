@@ -19,7 +19,7 @@
 
 namespace Foundation
 {
-    /*! \defgroup Services_group Services
+    /*! \defgroup Services_group Services Client Interface
         \copydoc Service
     */
 
