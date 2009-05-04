@@ -9,7 +9,6 @@ import logging
 import telepathy
 import IMDemo
 import time
-#import TextChannel
 from telepathy.client.channel import Channel
 from telepathy.interfaces import CONN_MGR_INTERFACE, CONN_INTERFACE_PRESENCE
 from telepathy.interfaces import CHANNEL_TYPE_TEXT, CONN_INTERFACE, CHANNEL_INTERFACE_GROUP, CHANNEL_TYPE_CONTACT_LIST
@@ -70,6 +69,14 @@ class Connection():
         else:
             return None
 
+    def _getListedContact(self, h):
+        if (self.mapping.__contains__(h)==True):
+            return self.mapping[h]
+        elif (self.requested_contacts.__contains__(h)==True):
+            return self.requested_contacts[h]
+        else:
+            return None
+    
 
     def SetPort(self, p):
         self.port = p;
@@ -481,11 +488,22 @@ class Connection():
         if removed:
             print "removed"
             print removed
-            for contact in removed:
+            print removed.__len__()
+            l = removed.__len__()
+            
+            for i in range(0,l):
+                contact = removed[i]
                 print contact
-                print self._getRequestedContact(str(contact))
-                #self.cb_app.contactRemoved(str(contact))
-                self.cb_app.contactRemoved(self._getRequestedContact(str(contact))) 
+                contact_addr = self._getListedContact(str(contact))
+                self.cb_app.contactRemoved(self._getRequestedContact(contact_addr))
+                
+##            i = 0    
+##            for contact in removed:
+##                print contact
+##                print i
+##                i = i+1
+##                contact_addr = self._getListedContact(str(contact))
+##                self.cb_app.contactRemoved(self._getRequestedContact(contact_addr))
         if local_pending:
             print "local_pending"
             print local_pending
@@ -583,7 +601,7 @@ class Connection():
         print error
 
     def add_contact(self, contact_str):
-        print dir(self.conn[CONN_INTERFACE])
+        #print dir(self.conn[CONN_INTERFACE])
         #print str(self.conn.get_valid_interfaces())
         contact = None
         handle = None
@@ -600,13 +618,37 @@ class Connection():
             channel = Channel(self.conn.service_name, channel_path)
             channel[CHANNEL_INTERFACE_GROUP].AddMembers([contact], 'contact request')
         except:
-            print "h1"
             tb = traceback.format_exception(*sys.exc_info())
             print ''.join(tb)
 
     def remove_contact(self, contact_str):
-        pass
+        contact = None
+        handle = None
+        channel_path = None
+        channel = None
+        try:
+            contact = self.conn[CONN_INTERFACE].RequestHandles(CONNECTION_HANDLE_TYPE_CONTACT, [contact_str])[0]
+            
+            handle2 = self.conn.RequestHandles(CONNECTION_HANDLE_TYPE_LIST, ['publish'])[0]
+            channel_path2 = self.conn.RequestChannel(CHANNEL_TYPE_CONTACT_LIST, 
+                                                     CONNECTION_HANDLE_TYPE_LIST, 
+                                                     handle2, True)
+            channel2 = Channel(self.conn.service_name, channel_path2)
+            channel[CHANNEL_INTERFACE_GROUP].RemoveMembers([contact], 'remove contact')
 
+            
+            handle = self.conn.RequestHandles(CONNECTION_HANDLE_TYPE_LIST, ['subscribe'])[0]
+            channel_path = self.conn.RequestChannel(CHANNEL_TYPE_CONTACT_LIST, 
+                                                     CONNECTION_HANDLE_TYPE_LIST, 
+                                                     handle, True)
+            channel = Channel(self.conn.service_name, channel_path)
+            channel[CHANNEL_INTERFACE_GROUP].RemoveMembers([contact], 'remove contact')
+
+            pass
+        except:
+            tb = traceback.format_exception(*sys.exc_info())
+            print ''.join(tb)
+        pass
 
     def test(self):
         chan = self._request_list_channel('publish')

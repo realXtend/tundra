@@ -5,7 +5,7 @@
 
 import sys
 import time
-import gobject
+#import gobject
 import dbus.glib
 import Connection
 import traceback
@@ -16,12 +16,14 @@ import rexviewer as r
 ##====================================================
 ##    MAIN APPLICATION LOGIC
 ##====================================================
-class IMDemo(gobject.GObject):
+#class IMDemo(gobject.GObject):
+class IMDemo:
     def __init__(self):
         self.chatEndPoint = None        
         self.quit = False
         self.loop = None
-        self.__gobject_init__()
+        #self.__gobject_init__()
+        self.connection = Connection.Connection(self)
         pass
     
     def setConnection(self, _conn):
@@ -169,6 +171,8 @@ class IMDemo(gobject.GObject):
         self.connection.add_contact(contact_str)
 
     def CRemoveContact(self, contact_str):
+        print "CRemoveContact"
+        print contact_str
         self.connection.remove_contact(contact_str)
 
     def CAcceptContactRequest(self, addr): #addr or id?
@@ -193,9 +197,9 @@ class IMDemo(gobject.GObject):
 ##==========================================================================================
 
 
-gobject.type_register(IMDemo)
-gobject.signal_new("disconnect_signal", IMDemo, gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ())
-gobject.signal_new("open_channel_signal", IMDemo, gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ())
+##gobject.type_register(IMDemo)
+##gobject.signal_new("disconnect_signal", IMDemo, gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ())
+##gobject.signal_new("open_channel_signal", IMDemo, gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ())
 
         
 
