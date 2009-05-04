@@ -11,7 +11,7 @@ namespace Foundation
     class Framework;
 }
 
-/*! \defgroup DebugConsole_group Debug console
+/*! \defgroup DebugConsole_group Debug Console Client Interface
     \copydoc Console
 */
 

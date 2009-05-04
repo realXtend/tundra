@@ -67,6 +67,8 @@ namespace Input
 //        pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_BACKGROUND" )));
         pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_FOREGROUND" )));
         pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_NONEXCLUSIVE")));
+//        pl.insert(std::make_pair(std::string("w32_keyboard"), std::string("DISCL_FOREGROUND" )));
+//        pl.insert(std::make_pair(std::string("w32_keyboard"), std::string("DISCL_EXCLUSIVE")));
 #elif defined OIS_LINUX_PLATFORM
         pl.insert(std::make_pair(std::string("x11_mouse_grab"), std::string("false")));
         pl.insert(std::make_pair(std::string("x11_mouse_hide"), std::string("false")));
@@ -126,7 +128,9 @@ namespace Input
     {
         WindowClosed();
 
-        GetFramework()->GetServiceManager()->UnregisterService(key_mapping_.get());
+        if (key_mapping_)
+            GetFramework()->GetServiceManager()->UnregisterService(key_mapping_.get());
+
         key_mapping_.reset();
 
         listened_keys_.clear();
@@ -296,7 +300,7 @@ namespace Input
                 const bool mod_ctrl  = !((keys[i].modifier_ & OIS::Keyboard::Ctrl)  == 0);
                 const bool mod_shift = !((keys[i].modifier_ & OIS::Keyboard::Shift) == 0);
 
-                if(!keys[i].pressed_ && buffered_keyboard_->IsKeyHandled(keys[i].key_) == false)
+                if(!keys[i].pressed_ && (!buffered_keyboard_ || buffered_keyboard_->IsKeyHandled(keys[i].key_) == false))
                 {
                     // check modifiers in a bit convoluted way. All combos of ctrl+a, ctrl+alt+a and ctrl+alt+shift+a must work!
                     if ( ((mod_alt   && alt)   || (!mod_alt   && !alt))  &&

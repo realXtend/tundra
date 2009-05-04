@@ -86,8 +86,11 @@ namespace OgreRenderer
          */
         void OnWindowClosed();
 
-        //! Sets external window parameter, for embedding the Ogre renderwindow
+        //! Sets external window parameter, for embedding the Ogre renderwindow. Usually a child window.
         void SetExternalWindowParameter(const std::string& param) { external_window_parameter_ = param; }
+
+        //! set handle for the main window. This is for the top level window.
+        void SetMainWindowHandle(Core::uint hndl) { main_window_handle_ = hndl; }
 
         //! Returns framework
         Foundation::Framework* GetFramework() const { return framework_; }
@@ -224,6 +227,9 @@ namespace OgreRenderer
 
         //! External window parameter, to be used when embedding the renderwindow
         std::string external_window_parameter_;
+
+        //! handle for the main window
+        Core::uint main_window_handle_;
     };
 }
 

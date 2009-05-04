@@ -99,6 +99,7 @@ namespace OgreRenderer
         camera_(NULL),
         renderwindow_(NULL),
         object_id_(0),
+        main_window_handle_(0),
         listener_(EventListenerPtr(new EventListener(this))),
         log_listener_(OgreLogListenerPtr(new LogListener))
     {
@@ -279,11 +280,13 @@ namespace OgreRenderer
     {
         size_t window_handle = 0;
 
-        //! \todo OIS crashes with a GTK external window handle, return 0 to prevent OIS module init
         if (external_window_parameter_.empty())
         {
             if (renderwindow_)
                 renderwindow_->getCustomAttribute("WINDOW", &window_handle);
+        } else
+        {
+            window_handle = main_window_handle_;
         }
 
         return window_handle;

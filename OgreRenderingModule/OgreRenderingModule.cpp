@@ -18,6 +18,12 @@
 #include "OgreWidget.h"
 #pragma warning( pop )
 
+#ifdef WIN32
+#include <gdkwin32.h>
+#else
+#include <gdk/gdkx.h>
+#endif
+
 namespace OgreRenderer
 {
     OgreRenderingModule::OgreRenderingModule() : ModuleInterfaceImpl(type_static_),
@@ -80,6 +86,13 @@ namespace OgreRenderer
             ogre_widget_->show();
             ogre_window_->show();
             ogre_window_->signal_hide().connect(sigc::mem_fun(*this, &OgreRenderingModule::OnOgreGtkWindowClosed));
+
+            // Must be after ogre_window_->show(), the window is not properly created until then.
+            Core::uint handle = 0;
+            Glib::RefPtr<Gdk::Window> main_gdk_win = ogre_window_->get_window();
+            handle = (Core::uint)(GDK_WINDOW_HWND(main_gdk_win->gobj()));
+            renderer_->SetMainWindowHandle(handle);
+ 
             assert (renderer_->IsInitialized());
         }
 
@@ -156,6 +169,7 @@ namespace OgreRenderer
         framework_->GetServiceManager()->UnregisterService(renderer_.get());
     
         delete ogre_window_;
+        delete ogre_widget_;
         renderer_.reset();
         
         LogInfo("Module " + Name() + " uninitialized.");

@@ -13,7 +13,7 @@ namespace Foundation
     class ModuleInterface;
     class Framework;
 
-    /*! \defgroup Module_group Module
+    /*! \defgroup Module_group Module Architecture Client Interface
         \copydoc Module
     */
 
