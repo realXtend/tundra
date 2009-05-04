@@ -56,12 +56,13 @@ namespace Communication
 
 	typedef boost::shared_ptr<Contact> ContactPtr;
 	typedef std::list<ContactPtr> ContactList;
+	typedef boost::shared_ptr<ContactList> ContactListPtr;
 
 	//class ContactList
 	//{
 	//public:
-	//	virtual int GetCount() = 0;
-	//	virtual int GetOnlineCount() = 0;
+	//	virtual int GetContactCount() = 0;
+	//	virtual int GetOnlineContactCount() = 0;
 	//	virtual ContactPtr GetContact() = 0;
 	//}
 
@@ -152,7 +153,7 @@ namespace Communication
 		virtual void CloseConnection() = 0;
 
 		virtual IMSessionPtr CreateIMSession(ContactPtr contact) = 0;
-		virtual ContactList GetContactList() = 0;
+		virtual ContactListPtr GetContactList() = 0;
 		virtual void PublishPresence(PresenceStatusPtr p) = 0;
 	};
 

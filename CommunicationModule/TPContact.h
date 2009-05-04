@@ -3,6 +3,7 @@
 
 #include "Foundation.h"
 #include "EventDataInterface.h"
+#include "TPPresenceStatus.h"
 
 namespace Communication
 {
@@ -13,17 +14,23 @@ namespace Communication
 		void SetName(std::string name);
 		std::string GetName();
 		PresenceStatusPtr GetPresenceStatus();
-		ContactInfoList GetContactInfos();
-	private:
-		void UpdatePresence(PresenceStatusPtr p); // called by TelepathyCommunication
+		ContactInfoList GetContactInfoList();
+	protected:
+//		void UpdatePresence(PresenceStatusPtr p); // called by TelepathyCommunication
 
 		std::string name_;
-		PresenceStatusPtr presence_status_;
+		TPPresenceStatusPtr presence_status_;
 		ContactInfoList contact_infos_;
 	};
 
-	typedef boost::shared_ptr<Contact> ContactPtr;
-	typedef std::list<ContactPtr> ContactList;
+	typedef boost::shared_ptr<TPContact> TPContactPtr;
+	typedef std::vector<TPContactPtr> TPContactList;
+
+	//class TPContactList
+	//{
+	//public:
+	//protected:
+	//};
 
 } // end of namespace: Communication
 

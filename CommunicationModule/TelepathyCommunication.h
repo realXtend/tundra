@@ -31,20 +31,22 @@ namespace Communication
 		void OpenConnection(CredentialsPtr c);
 		void CloseConnection();
 		IMSessionPtr CreateIMSession(ContactPtr contact);
-		ContactList GetContactList();
+		ContactListPtr GetContactList();
 		void PublishPresence(PresenceStatusPtr p);
 
 		static TelepathyCommunicationPtr GetInstance(); // for python callbacks
 	protected:
-		// member variables
 		static TelepathyCommunicationPtr instance_;
+		
+		// member variables
 		Foundation::Framework* framework_;
 		TPIMSessionList im_sessions_;
+		TPContactList contact_list_;
 		Foundation::ScriptObjectPtr communication_py_script_; 
 		Foundation::ScriptObjectPtr python_communication_object_; 
 		Foundation::EventManagerPtr event_manager_;
-		Core::event_category_id_t comm_event_category_;
-		ContactList contact_list_;
+		Core::event_category_id_t comm_event_category_; // todo: could be static 
+		
 
 		// python event handlers (todo: could these be non-static member functions?)
 		static void PyCallbackTest(char *);
