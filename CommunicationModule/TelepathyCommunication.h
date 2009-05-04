@@ -24,7 +24,7 @@ namespace Communication
 	{
 	//	MODULE_LOGGING_FUNCTIONS
 	public:
-		TelepathyCommunication::TelepathyCommunication();
+		TelepathyCommunication();
 		TelepathyCommunication(Foundation::Framework *f);
 		~TelepathyCommunication(void);
 
