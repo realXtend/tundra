@@ -3,7 +3,7 @@
 ##
 
 import sys
-import gobject
+#import gobject
 import dbus.glib
 import logging
 import telepathy
@@ -26,7 +26,8 @@ import traceback
 
 
 
-class Connection(gobject.GObject):
+#class Connection(gobject.GObject):
+class Connection():
     def __init__(self, app):
 
         self.manager_file = "gabble.manager"
@@ -40,7 +41,7 @@ class Connection(gobject.GObject):
         self.textchannel = None
         self.contactListChannel = None
         self.contactlistInit = False        
-        self.__gobject_init__()
+        #self.__gobject_init__()
 
         # signal match objects for text channel        
         self.match_sent = None
@@ -54,9 +55,22 @@ class Connection(gobject.GObject):
         # contact handle map store dbus uints
         self.mapping = {}
         self.presence = {}
+        self.requested_contacts = {}
+        self.requested_contacts_phase_map = {} # need to be aware of number of added messages
+        
+    def _getRequestedContact(self, h):
+        if (self.requested_contacts.__contains__(h)==True):
+            return self.requested_contacts[h]
+        else:
+            return None
+
+    def _getMappedContact(self, h):
+        if (self.mapping.__contains__(h)==True):
+            return self.mapping[h]
+        else:
+            return None
 
 
-## for setting values other than default
     def SetPort(self, p):
         self.port = p;
     def SetServer(self, s):
@@ -111,7 +125,7 @@ class Connection(gobject.GObject):
 
     def _connect(self):
         self.conn[CONN_INTERFACE].Connect()
-        gobject.io_add_watch(sys.stdin, gobject.IO_IN, self.user_input_handler)
+        #gobject.io_add_watch(sys.stdin, gobject.IO_IN, self.user_input_handler)
 
          
         """Need this for catching events"""
@@ -120,10 +134,6 @@ class Connection(gobject.GObject):
 
     def _disconnect(self):
         self.conn[CONN_INTERFACE].Disconnect()
-##        if self.loop:
-##            time.sleep(1)
-##            self.loop.quit() #gobject.MainLoop() quit
-##            self.loop = None
 
 ##====================================================
 ##    CLOSE CHANNEL
@@ -222,7 +232,6 @@ class Connection(gobject.GObject):
     def cb_channel_reply(self, arg):
         print "cb_channel_reply"
         print str(arg)
-##        print type(arg)
         pass
 
     def cb_request_channel_error(self, exception):
@@ -350,7 +359,6 @@ class Connection(gobject.GObject):
         self.cb_app.receivedMess(other_end + ">" + text)
         self.textchannel[CHANNEL_TYPE_TEXT].AcknowledgePendingMessages(idlist)
         
-
     
     def cb_send_error(self, *args):
         print (args)        
@@ -378,21 +386,49 @@ class Connection(gobject.GObject):
         self.cb_app.channelClosed("")
 
     def SubscribeContactList(self):
+        print 'set subscribe callback'
+        print "====================="
         try:
             chan = self._request_list_channel('subscribe')
+            print 'subscribe: members'
+            self.print_members(self.conn, chan)
+            chan[CHANNEL_INTERFACE_GROUP].connect_to_signal('MembersChanged', self.members_changed_cb)
         except dbus.DBusException:
-            print "'%s' channel is not available" % name
-            return
+            print "subscribe channel is not available *********"
 
-        print 'subscribe: members'
-        self.print_members(self.conn, chan)
+        
+        print 'set publish callback'
+        print "====================="
+        try:
+            chan2 = self._request_list_channel('publish')
+            print 'publish: members'
+            #self.print_members(self.conn, chan2)
+            chan2[CHANNEL_INTERFACE_GROUP].connect_to_signal('MembersChanged', self.members_changed_cb)
+        except dbus.DBusException:
+            print "publish channel is not available ***********"
 
-        #chan[CHANNEL_INTERFACE_GROUP].connect_to_signal('MembersChanged',
-            #lambda *args: self.members_changed_cb(name, *args))
-        chan[CHANNEL_INTERFACE_GROUP].connect_to_signal('MembersChanged', self.members_changed_cb)
-##        chan[CHANNEL_INTERFACE_GROUP].connect_to_signal('MembersChanged',
-##            lambda *args: self.members_changed_cb('some contact', *args))
 
+        print 'set stored callback'
+        print "====================="
+        try:
+            chan3 = self._request_list_channel('stored')
+            print 'stored: members'
+            #self.print_members(self.conn, chan3)
+            chan3[CHANNEL_INTERFACE_GROUP].connect_to_signal('MembersChanged', self.members_changed_cb)
+
+        except dbus.DBusException:
+            print "stored channel is not available ***********"
+
+
+        print 'set known callback'
+        try:
+            chan4 = self._request_list_channel('known')
+            print 'known: members'
+            #self.print_members(self.conn, chan4)
+            chan4[CHANNEL_INTERFACE_GROUP].connect_to_signal('MembersChanged', self.members_changed_cb)
+
+        except dbus.DBusException:
+            print "known channel is not available"
         
         print 'waiting for changes'
         
@@ -418,6 +454,8 @@ class Connection(gobject.GObject):
             handle, True)
 
     def members_changed_cb(self, *args):
+        """Listens contact list changes"""
+        print 'members_changed_cb'
 ##(dbus.String(u''),
 ##        dbus.Array([], signature=dbus.Signature('u')),
 ##        dbus.Array([], signature=dbus.Signature('u')),
@@ -425,8 +463,6 @@ class Connection(gobject.GObject):
 ##        dbus.Array([dbus.UInt32(2L)], signature=dbus.Signature('u')),
 ##        dbus.UInt32(0L), dbus.UInt32(0L))
 ##<type 'tuple'>
-        print str(args)
-        print type(args)
         added = args[1]
         removed = args[2]
         local_pending = args[3]
@@ -435,33 +471,44 @@ class Connection(gobject.GObject):
         if added:
             print "added"
             print added
+            for contact in added:
+                print contact
+                if(self.requested_contacts_phase_map[contact]==0):
+                    self.requested_contacts_phase_map[contact]=1
+                else:                    
+                    print self._getRequestedContact(str(contact))
+                    self.cb_app.contactAdded(self._getRequestedContact(str(contact)))
         if removed:
             print "removed"
             print removed
+            for contact in removed:
+                print contact
+                print self._getRequestedContact(str(contact))
+                #self.cb_app.contactRemoved(str(contact))
+                self.cb_app.contactRemoved(self._getRequestedContact(str(contact))) 
         if local_pending:
             print "local_pending"
             print local_pending
+            for contact in local_pending:
+                print contact
+                print self._getRequestedContact(str(contact))
+                #self.cb_app.localPending(str(contact))
+                self.cb_app.localPending(self._getRequestedContact(str(contact)))
         if remote_pending:
             print "remote_pending"
             print remote_pending
+            for contact in remote_pending:
+                print contact
+                print self._getRequestedContact(str(contact))
+                #self.cb_app.remotePending(str(contact))
+                self.cb_app.remotePending(self._getRequestedContact(str(contact)))
+
+        print args[0] ##!!
 
         
-##    def members_changed_cb(self, reason, added, removed, local_pending, remote_pending):
-##        for member in added:
-##            print "subscribe_members_changed_signal_cb, adding contact:", member
-##        for member in removed:
-##            print "remove_members_changed_signal_cb, removing contact:", member
-            
-##    def members_changed_cb(self, name, message, added, removed, local_pending,
-##            remote_pending, actor, reason):
-##        if added:
-##            for handle in added:
-##                print '%s: added: %d' % (name, added)
-##        if removed:
-##            for handle in removed:
-##                print '%s: removed: %d' % (name, added)
 
     def print_members(self, conn, chan):
+        print "print_members"
         current, local_pending, remote_pending = (
             chan[CHANNEL_INTERFACE_GROUP].GetAllMembers())
 
@@ -476,16 +523,35 @@ class Connection(gobject.GObject):
         if not current:
             print ' (none)'
 
+        print "local_pending"
+        for member in local_pending:
+            print ' - %s' % (
+                conn[CONN_INTERFACE].InspectHandles(
+                    CONNECTION_HANDLE_TYPE_CONTACT, [member])[0])
+        print "remote_pending"
+        for member in remote_pending:
+            print ' - %s' % (
+                conn[CONN_INTERFACE].InspectHandles(
+                    CONNECTION_HANDLE_TYPE_CONTACT, [member])[0])
+            
+            
+
     def get_contact_with_id(self, handle):
         print "get_contact_with_id"
         print str(self.mapping)
         if(str(self.mapping)=='{}'):
             return ""
-        contact = self.mapping[handle]
+        #contact = self.mapping[handle]
+        contact = self._getMappedContact(handle)
+        if(contact!=None):
+            return contact
+        contact = self._getRequestedContact(handle)
+        if(contact!=None):
+            return contact
         if(contact==None):
             print "contact none"
-            return "blob"
-        return contact
+            return "None"
+        return "None"
 
     def presence_update_signal_cb(self, presences):
         print "Got PresenceUpdate:", presences
@@ -509,7 +575,8 @@ class Connection(gobject.GObject):
 
     def get_statuses_reply_cb(self, statuses):
         print "================================"
-        print "GetStatuses replied", statuses
+        print 'get_statuses_reply_cb'
+        #print "GetStatuses replied", statuses
 
     def error_cb(self, error):
         print "Exception received from asynchronous method call:"
@@ -524,6 +591,8 @@ class Connection(gobject.GObject):
         channel = None
         try:
             contact = self.conn[CONN_INTERFACE].RequestHandles(CONNECTION_HANDLE_TYPE_CONTACT, ["matti10@jabber.se"])[0]
+            self.requested_contacts[str(contact)] = "matti10@jabber.se" #!!
+            self.requested_contacts_phase_map[contact] = 0
             handle = self.conn.RequestHandles(CONNECTION_HANDLE_TYPE_LIST, ['subscribe'])[0]
             channel_path = self.conn.RequestChannel(CHANNEL_TYPE_CONTACT_LIST, 
                                                      CONNECTION_HANDLE_TYPE_LIST, 
@@ -533,59 +602,48 @@ class Connection(gobject.GObject):
         except:
             print "h1"
             tb = traceback.format_exception(*sys.exc_info())
-            print ''.join(tb)                
-
-    
-        #print str(self.contactListChannel.get_valid_interfaces())
-##        try:
-##            self.contactListChannel[CHANNEL_INTERFACE_GROUP].AddMembers('matti10@jabber.se', 'contact request')
-##        except:
-##            print "fail1"
-
-
-
-
-##        try:
-##            #self.contactListChannel[CHANNEL_INTERFACE_GROUP].AddMembers(['matti10@jabber.se'], 'contact request')
-##            self.contactListChannel[CHANNEL_INTERFACE_GROUP].AddMembers([contact], 'contact request')            
-##        except:
-##            print "fail2"
-##            tb = traceback.format_exception(*sys.exc_info())
-##            print ''.join(tb)                
-
-        
-
-
-##        try:
-##            self.contactListChannel[CHANNEL_INTERFACE_GROUP].AddMembers([CONNECTION_HANDLE_TYPE_CONTACT],['matti10@jabber.se'], 'contact request')
-##        except:
-##            print "fail3"
-
-
-            
-##        chan = self._request_list_channel('subscribe')
-##        chan.AddMembers([handle], "")        
-        
-##        print "add_contact"
-##        print contact_str
-##        contact = conn.RequestHandles(CONNECTION_HANDLE_TYPE_CONTACT, [contact_str])[0]
-##        print "-"
-##        h = conn.RequestHandles(CONNECTION_HANDLE_TYPE_LIST, ['subscribe'])[0]
-##        print "-"
-##        channelpath = conn.RequestChannel(CHANNEL_TYPE_CONTACT_LIST, 
-##                                          CONNECTION_HANDLE_TYPE_LIST,
-##                                          handle, True)
-##        print "-"
-##        channel = Channel(conn.service_name, channelpath)
-##        print "-"
-##        
-##        channel[CHANNEL_INTERFACE_GROUP].AddMembers([contact], 'contact request')
-        
-##        if CHANNEL_TYPE_CONTACT_LIST in self.conn.get_valid_interfaces():
-##            self.conn[CHANNEL_TYPE_CONTACT_LIST].AddMembers([contact_str])
-##            pass
-##        pass
+            print ''.join(tb)
 
     def remove_contact(self, contact_str):
-        
         pass
+
+
+    def test(self):
+        chan = self._request_list_channel('publish')
+        print 'publish: pending members'
+        list = chan[CHANNEL_INTERFACE_GROUP].GetLocalPendingMembers()
+        #print list
+        for member in list:
+            print ' - %s' % (
+                self.conn[CONN_INTERFACE].InspectHandles(
+                    CONNECTION_HANDLE_TYPE_CONTACT, [member])[0])
+            chan[CHANNEL_INTERFACE_GROUP].AddMembers([member], 'accepted')
+            
+    def acceptLocalPending(self, addr):
+        channel, handle = self._getLocalPendingMemberFromPublishChannel(addr)
+        if(handle!=None):
+            channel[CHANNEL_INTERFACE_GROUP].AddMembers([handle], 'accepted')
+            self.mapping[str(handle)] = self.conn[CONN_INTERFACE].InspectHandles(CONNECTION_HANDLE_TYPE_CONTACT, [handle])[0]
+            self.cb_app.gotFriendlistItem(str(handle))
+        else:
+            print "None"
+        pass
+
+    def denyLocalPending(self, addr):
+        channel, handle = self._getLocalPendingMemberFromPublishChannel(addr)
+        if(handle!=None):
+            channel[CHANNEL_INTERFACE_GROUP].RemoveMembers([handle], 'removed')
+        else:
+            print "None"
+        pass
+
+    def _getLocalPendingMemberFromPublishChannel(self, addr):
+        chan = self._request_list_channel('publish')
+        list = chan[CHANNEL_INTERFACE_GROUP].GetLocalPendingMembers()
+        for member in list:
+            print "addr: ", addr
+            print "inspect: ", self.conn[CONN_INTERFACE].InspectHandles(CONNECTION_HANDLE_TYPE_CONTACT, [member])[0]
+            if(addr==self.conn[CONN_INTERFACE].InspectHandles(CONNECTION_HANDLE_TYPE_CONTACT, [member])[0]):
+                return chan, member
+        return chan, None
+    

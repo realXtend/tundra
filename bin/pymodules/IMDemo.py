@@ -96,7 +96,15 @@ class IMDemo(gobject.GObject):
     def contactStatusChanged(self, id_status):
         r.pyEventCallback("contact_status_changed", id_status)
 
-
+    # contact events
+    def contactAdded(self, id):
+        r.pyEventCallback("contact_added", id)
+    def contactRemoved(self, id):
+        r.pyEventCallback("contact_removed", id)
+    def remotePending(self, id):
+        r.pyEventCallback("remote_pending", id)
+    def localPending(self, id):
+        r.pyEventCallback("local_pending", id)
     
 ##==========================================================================================
         
@@ -119,7 +127,7 @@ class IMDemo(gobject.GObject):
     def CAccountConnect(self):
         #str, d = self.ui.doReadAccountAndConnect()
         str, d = doReadAccountAndConnect()
-        self.accountConnect(d)            
+        self.accountConnect(d)
 
     def CDisconnect(self):
         self.connection.Disconnect()
@@ -142,13 +150,14 @@ class IMDemo(gobject.GObject):
         pass
 
     def CGetFriendWithID(self, id):
+        print "CGetFriendWithID"
         print id
         print type(id)
         contact = str(self.connection.get_contact_with_id(id))
         print "Contact"
         print type(contact)
         print str(contact)
-        return contact
+        return contact        
 
     def CGetStatusWithID(self, id):
         return str(self.connection.get_contact_status(id))
@@ -161,6 +170,24 @@ class IMDemo(gobject.GObject):
 
     def CRemoveContact(self, contact_str):
         self.connection.remove_contact(contact_str)
+
+    def CAcceptContactRequest(self, addr): #addr or id?
+        print "CAcceptContactRequest"
+        print addr
+        self.connection.acceptLocalPending(addr)
+        pass
+
+    def CDenyContactRequest(self, addr):
+        print "CDenyContactRequest"
+        print addr
+        self.connection.denyLocalPending(addr)
+        pass
+
+    def CTest(self):
+        self.connection.test()
+        pass
+    
+    
 
         
 ##==========================================================================================
