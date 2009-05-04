@@ -16,6 +16,8 @@
 
 #include <Python.h>
 
+#include "Entity.h"
+
 namespace PythonScript
 {
 	Foundation::ScriptEventInterface* PythonScriptModule::engineAccess;// for reaching engine from static method
@@ -274,13 +276,14 @@ static PyObject* GetEntity(PyObject *self, PyObject *args)
 	entity = scene->GetEntity(ent_id);
 	if (entity.get() != 0) //same that scene->HasEntity does, i.e. it first does GetEntity too, so not calling HasEntity here to not do GetEntity twice.
 	{
+		return entity_create(entity);
 		//just having the entity is not very interesting, so reading data from a prim
-		const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
+		/*const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
 		RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
 	        
 		//m->AddU32(prim->LocalId);
 		std::string retstr = "local id:" + prim->FullId.ToString() + "- prim name: " + prim->ObjectName;
-		return PyString_FromString(retstr.c_str());
+		return PyString_FromString(retstr.c_str());*/
 	}
 
 	Py_RETURN_FALSE; //XXX TODO: raise ValueError
@@ -315,8 +318,13 @@ static PyMethodDef EmbMethods[] = {
 
 static void PythonScript::initpymod()
 {
-	Py_InitModule("rexviewer", EmbMethods);
+	PyObject* m;
+	
+	m = Py_InitModule("rexviewer", EmbMethods);
+
+	entity_init(m); 
+	/* this is planned to be vice versa: 
+	   the implementing modules, like here scene for Entity,
+	   would call something here to get a ref to the module, or something?
+	*/
 }
-
-
-
