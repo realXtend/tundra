@@ -1,6 +1,7 @@
 # Define target name and output directory
 set (TARGET_NAME PythonScriptModule)
 set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/modules/core)
+#set (PYTHON_FORCE_RELEASE_VERSION 1) # set if you want to use release version of python when building debug version of viever
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -30,6 +31,9 @@ INCLUDE_CURL()
 INCLUDE_OGRE() #'cause of using ReXLogic XXX
 
 add_definitions (-DMODULE_EXPORTS)
+if(PYTHON_FORCE_RELEASE_VERSION)
+    add_definitions(-DPYTHON_FORCE_RELEASE_VERSION) 
+endif(PYTHON_FORCE_RELEASE_VERSION)
 
 # Define dynamic library
 if (NOT MSVC)

@@ -13,8 +13,14 @@ endmacro (INCLUDE_PYTHON)
 
 macro (LINK_PYTHON)
 	if (MSVC)
+    if(PYTHON_FORCE_RELEASE_VERSION)    
 		target_link_libraries (${TARGET_NAME}
-			debug Python26_d
+			debug Python26 
 			optimized Python26)
+    else(PYTHON_FORCE_RELEASE_VERSION)
+		target_link_libraries (${TARGET_NAME}
+			debug Python26_d 
+			optimized Python26)
+    endif(PYTHON_FORCE_RELEASE_VERSION)
 	endif (MSVC)
 endmacro (LINK_PYTHON)
