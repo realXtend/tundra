@@ -9,8 +9,18 @@
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
 
-//#include <Python/Python.h>
-#include "Python.h"
+#ifdef PYTHON_FORCE_RELEASE_VERSION
+  #ifdef _DEBUG
+    #undef _DEBUG
+    #include "Python.h"
+    #define _DEBUG
+  #else
+    #include "Python.h"
+  #endif 
+#else
+    #include "Python.h"
+#endif
+
 
 namespace Foundation
 {
