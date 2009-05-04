@@ -1,8 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#ifndef incl_Asset_AssetCache_h
+#define incl_Asset_AssetCache_h
+
 namespace Asset
 {
-    //! Stores assets to memory and/or disk based cache. Used by AssetManager.
+    //! Stores assets to memory and/or disk based cache. Created and used by AssetManager.
     class AssetCache
     {
     public:
@@ -21,11 +24,6 @@ namespace Asset
             \return Pointer to asset if found, or null if not
          */
         Foundation::AssetPtr GetAsset(const std::string& asset_id, bool check_memory = true, bool check_disk = true);
-
-        //! Stores asset to cache. Posts ASSET_READY event when done.
-        /*! \param transfer Finished asset transfer
-         */
-        void StoreAsset(AssetTransfer& transfer);
 
         //! Stores asset to cache. Posts ASSET_READY event when done.
         /*! \param asset Asset
@@ -48,3 +46,5 @@ namespace Asset
         Foundation::Framework* framework_;
     };
 }
+
+#endif

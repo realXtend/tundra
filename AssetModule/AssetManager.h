@@ -5,6 +5,7 @@
 
 #include "AssetInterface.h"
 #include "AssetServiceInterface.h"
+#include "AssetProviderInterface.h"
 #include "AssetTransfer.h"
 #include "RexUUID.h"
 
@@ -12,13 +13,6 @@ namespace Foundation
 {
     class Framework;
 }
-
-namespace OpenSimProtocol
-{
-    class OpenSimProtocolModule;
-}
-
-class NetInMessage;
 
 namespace Asset
 {
@@ -62,8 +56,9 @@ namespace Asset
 
             \param asset_id Asset ID, UUID for legacy UDP assets
             \param asset_type Asset type
+            \return true if 
          */
-        virtual void RequestAsset(const std::string& asset_id, Core::asset_type_t asset_type);
+        virtual bool RequestAsset(const std::string& asset_id, Core::asset_type_t asset_type);
 
         //! Queries status of asset download
         /*! If asset has been already fully received, size, received & received_continuous will be the same
@@ -76,108 +71,48 @@ namespace Asset
          */
         virtual bool QueryAssetStatus(const std::string& asset_id, Core::uint& size, Core::uint& received, Core::uint& received_continuous);
         
+        //! Registers an asset provider
+        /*! \param asset_provider Provider to register
+            \return true if successfully registered
+         */
+        virtual bool RegisterAssetProvider(Foundation::AssetProviderPtr asset_provider);
+        
+        //! Unregisters an asset provider
+        /*! \param asset_provider Provider to unregister
+            \return true if successfully unregistered
+         */       
+        virtual bool UnregisterAssetProvider(Foundation::AssetProviderPtr asset_provider);
+                
+        //! Stores an asset to the asset cache    
+        /*! \param asset Asset to store
+         */
+        virtual void StoreAsset(Foundation::AssetPtr asset);
+        
         //! Performs time-based update
-        /*! uses time to handle timeouts
+        /*! Calls update function of all registered asset providers
+            \param frametime Seconds since last frame
          */
-        void Update(Core::f64 frametime);
-
-        //! Set asset transfer timeout
-        void SetTimeout(Core::f64 timeout) { asset_timeout_ = timeout; }
-        
-        //! Get asset transfer timeout
-        Core::f64 GetTimeout() const { return asset_timeout_; }
-        
-        //! Handles texture header message
-        /*! Called by AssetModule
-            \param msg Message
-         */
-        void HandleTextureHeader(NetInMessage* msg);
-        
-        //! Handles texture data message
-        /*! Called by AssetModule
-            \param msg Message
-         */
-        void HandleTextureData(NetInMessage* msg);
-        
-        //! Handles texture transfer abort message
-        /*! Called by AssetModule
-            \param msg Message
-         */
-        void HandleTextureCancel(NetInMessage* msg);
-        
-        //! Handles other asset transfer header message
-        /*! Called by AssetModule
-            \param msg Message
-         */
-        void HandleAssetHeader(NetInMessage* msg);
-        
-        //! Handles other asset transfer data message
-        /*! Called by AssetModule
-            \param msg Message
-         */
-        void HandleAssetData(NetInMessage* msg);
-        
-        //! Handles other asset transfer abort message
-        /*! Called by AssetModule
-            \param msg Message
-         */
-        void HandleAssetCancel(NetInMessage* msg);
+        void Update(Core::f64 frametime);            
         
     private:      
        //! Gets asset from cache
        /*! \param asset_id Asset ID
         */
-       Foundation::AssetPtr GetFromCache(const std::string& asset_id);
-         
-        //! Gets asset transfer if it's in progress
-        /*! \param asset_id Asset ID
-            \return Pointer to transfer, or NULL if no transfer
-         */
-        AssetTransfer* GetTransfer(const std::string& asset_id);
-        
-        //! Requests a texture from network
-        /*! \param asset_id Asset UUID
-         */
-        void RequestTexture(const RexTypes::RexUUID& asset_id);
-        
-        //! Requests an other asset from network
-        /*! \param asset_id Asset UUID
-         */
-        void RequestOtherAsset(const RexTypes::RexUUID& asset_id, Core::uint asset_type);
-        
-        //! Sends progress event of asset transfer
-        /*! \param transfer Asset transfer
-         */
-        void SendAssetProgress(AssetTransfer& transfer);
-
-        //! Sends asset transfer canceled event
-        /*! \param transfer Asset transfer
-         */
-        void SendAssetCanceled(AssetTransfer& transfer);
-
+        Foundation::AssetPtr GetFromCache(const std::string& asset_id);
+          
         //! Framework we belong to
         Foundation::Framework* framework_;
-        
-        typedef std::map<RexTypes::RexUUID, AssetTransfer> AssetTransferMap;
-                
-        //! Ongoing UDP asset transfers, keyed by transfer id
-        AssetTransferMap asset_transfers_;
-        
-        //! Ongoing UDP texture transfers, keyed by texture asset id
-        AssetTransferMap texture_transfers_;
-                
-        //! Current asset transfer timeout
-        Core::f64 asset_timeout_;
-        
+                                
         //! Asset event category
         Core::event_category_id_t event_category_;
                 
-        //! Default asset transfer timeout 
-        static const Core::Real DEFAULT_ASSET_TIMEOUT;
-
         //! Asset cache
         typedef boost::shared_ptr<AssetCache> AssetCachePtr;
         AssetCachePtr cache_;
+        
+        //! Asset providers
+        typedef std::vector<Foundation::AssetProviderPtr> AssetProviderVector;
+        AssetProviderVector providers_;
     };
 }
 
