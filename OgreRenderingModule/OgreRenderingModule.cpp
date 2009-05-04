@@ -87,11 +87,13 @@ namespace OgreRenderer
             ogre_window_->show();
             ogre_window_->signal_hide().connect(sigc::mem_fun(*this, &OgreRenderingModule::OnOgreGtkWindowClosed));
 
+#ifdef _WINDOWS
             // Must be after ogre_window_->show(), the window is not properly created until then.
             Core::uint handle = 0;
             Glib::RefPtr<Gdk::Window> main_gdk_win = ogre_window_->get_window();
             handle = (Core::uint)(GDK_WINDOW_HWND(main_gdk_win->gobj()));
             renderer_->SetMainWindowHandle(handle);
+#endif
  
             assert (renderer_->IsInitialized());
         }
