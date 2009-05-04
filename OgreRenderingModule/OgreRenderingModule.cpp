@@ -94,6 +94,7 @@ namespace OgreRenderer
             handle = (Core::uint)(GDK_WINDOW_HWND(main_gdk_win->gobj()));
             renderer_->SetMainWindowHandle(handle);
 #endif
+            //! \todo Retrieve main Gtk window handle for other platforms.
  
             assert (renderer_->IsInitialized());
         }
