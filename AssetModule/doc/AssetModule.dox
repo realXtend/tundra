@@ -53,7 +53,7 @@ if (!mesh_asset)
 }
 \endcode
 
-	\section assetevents Asset events
+	\section assetevents_AS Asset events
 
 	Events with the category "Asset" will be sent informing of the status of asset downloads. These are defined in AssetEvents.h
 
@@ -61,5 +61,15 @@ if (!mesh_asset)
 
 	ASSET_PROGRESS events with the data structure Asset::Event::AssetProgress are sent periodically as the asset download progresses.
 
-	If an asset download gets canceled due to for example timeout, the ASSET_CANCELED event with data structure Asset::Event::AssetCanceled will be sent.	
+	If an asset download gets canceled due to for example timeout, the ASSET_CANCELED event with data structure Asset::Event::AssetCanceled will be sent.
+
+	\section assetproviders_AS Asset providers
+
+	Internally, the asset service uses asset providers (see Foundation::AssetProviderInterface) to perform the actual asset downloading.
+	These can implement different ways to download asset data. For example legacy UDP asset transfers are implemented by Asset::UDPAssetProvider.
+
+	A new asset provider can be registered through Foundation::AssetServiceInterface::RegisterAssetProvider(). 
+
+	Note that asset providers must, upon completing download of an asset, add it by themselves to the asset service's cache, using
+	Foundation::AssetServiceInterface::StoreAsset().	
 */

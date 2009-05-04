@@ -7,8 +7,9 @@
 
 namespace Asset
 {
-    //! UDP asset provider, which handles legacy UDP texture & asset transfers using OpenSimProtocolModule.
-    /*! Created by AssetModule.
+    //! UDP asset provider
+    /*! Handles legacy UDP texture & asset transfers using OpenSimProtocolModule network events.
+        Created by AssetModule.
      */
     class UDPAssetProvider : public Foundation::AssetProviderInterface
     {
