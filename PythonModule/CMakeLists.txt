@@ -19,6 +19,8 @@ include_directories (
     ../OpenSimProtocol #needed 'cause ReXLogic uses it
 )
 
+link_directories (${PROJECT_BINARY_DIR}/RexLogic/Debug ${PROJECT_BINARY_DIR}/RexLogic/Release)
+
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
