@@ -336,7 +336,7 @@ namespace Foundation
     {
         assert(module);
         assert(module->State() == Foundation::Module::MS_Loaded);
-        module->PreInitialize();
+        module->PreInitializeInternal();
     }
     
     void ModuleManager::InitializeModule(ModuleInterface *module)
@@ -350,8 +350,8 @@ namespace Foundation
     void ModuleManager::PostInitializeModule(ModuleInterface *module)
     {
         assert(module);
-        assert(module->State() == Foundation::Module::MS_Initialized);
-        module->PostInitialize();
+        assert(module->State() == Foundation::Module::MS_Loaded);
+        module->PostInitializeInternal();
     }
 
     void ModuleManager::UninitializeModule(ModuleInterface *module)
