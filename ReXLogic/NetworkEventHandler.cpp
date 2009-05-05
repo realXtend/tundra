@@ -50,14 +50,17 @@ namespace RexLogic
         framework_ = framework;
         rexlogicmodule_ = rexlogicmodule;
 
-        ///\todo weak_pointerize
-        netInterface_ = dynamic_cast<OpenSimProtocol::OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol).lock().get());
-        if (!netInterface_)
+        // Get the pointe to the OpenSimModule.
+        netInterface_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>
+            (Foundation::Module::MT_OpenSimProtocol);
+        
+        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
+        if (!sp.get())
         {
-            RexLogicModule::LogError("NetworkEventHandler: Could not acquire OpenSimProtocolModule!.");
+            RexLogicModule::LogError("NetworkEventHandler: Could not acquire OpenSimProtocolModule!");
             return;
         }
-
+        
         DebugCreateAmbientColorMaterial("AmbientWhite", 1.f, 1.f, 1.f);
         DebugCreateAmbientColorMaterial("AmbientGreen", 0.f, 1.f, 0.f);
         DebugCreateAmbientColorMaterial("AmbientRed", 1.f, 0.f, 0.f);
@@ -109,11 +112,11 @@ namespace RexLogic
         data->message->SkipToNextVariable();      // TransactionId
         std::string methodname = data->message->ReadString(); 
 
-        if(methodname == "RexMediaUrl")
+        if (methodname == "RexMediaUrl")
             return rexlogicmodule_->GetPrimitiveHandler()->HandleRexGM_RexMediaUrl(data);
-        else if(methodname == "RexPrimData")
+        else if (methodname == "RexPrimData")
             return rexlogicmodule_->GetPrimitiveHandler()->HandleRexGM_RexPrimData(data); 
-        else if(methodname == "RexAppearance")
+        else if (methodname == "RexAppearance")
             return rexlogicmodule_->GetAvatarHandler()->HandleRexGM_RexAppearance(data);
         else
             return false;    
@@ -133,7 +136,14 @@ namespace RexLogic
         RexLogicModule::LogInfo("Joined to the sim \"" + sim_name + "\".");
         
         // Create the "World" scene.
-        const OpenSimProtocol::ClientParameters& client = netInterface_->GetClientParameters();
+        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
+        if (!sp.get())
+        {
+            RexLogicModule::LogError("NetworkEventHandler: Could not acquire OpenSimProtocolModule!");
+            return false;
+        }
+                
+        const OpenSimProtocol::ClientParameters& client = sp->GetClientParameters();
         rexlogicmodule_->GetServerConnection()->SendRegionHandshakeReplyPacket(client.agentID, client.sessionID, 0);   
         return false;  
     } 
