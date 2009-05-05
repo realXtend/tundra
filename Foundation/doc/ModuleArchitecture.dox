@@ -99,6 +99,11 @@ POCO_END_MANIFEST
 		dependant module can use the dependencies when it is being initialized itself, and can
 		reasonably assume the dependencies are properly initialized.
 		
+		\attention If you link against another module in your own module, then you must add
+		                   dependency to that module, otherwise your module may get loaded before
+		                   the dependency and it will complain about not finding the library
+		                   that contains the dependency.
+		
 		To declare a module dependant on other module, in the module definition file add a
 		&lt;dependency&gt; line for each module. 
 		
