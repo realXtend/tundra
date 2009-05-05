@@ -5,13 +5,10 @@
 
 #pragma warning( push )
 #pragma warning( disable : 4250 )
-#undef max
 #include <gtkmm/main.h>
 #include <gtkmm/window.h>
-#include <gtkmm/treeview.h>
-#include <gtkmm/treestore.h>
-#include <gtkmm/textview.h>
-#include <gtkmm/scrolledwindow.h>
+#include <gtkmm/entry.h>
+#include <gtkmm/messagedialog.h>
 #include <libglademm.h>
 #include <glade/glade.h>
 #pragma warning( pop )
@@ -30,7 +27,10 @@ namespace RexLogic
         
         /// Initializes the Login window.
         void InitLoginWindow();
-
+        
+        /// Shows an error dialog.
+        void ShowErrorDialog(std::string message);
+        
         /// Callback funtion for the 'Connect' button. Connects to server.
         void OnClickConnect();
         

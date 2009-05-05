@@ -53,7 +53,7 @@ namespace RexLogic
         ///@note Pending : Currently password is not loaded and saved.
         
         // Set the window title and position.
-        loginWindow->set_title("Login");   
+        loginWindow->set_title("Login");
         loginWindow->set_position(Gtk::WIN_POS_CENTER);
         loginWindow->show();        
     }

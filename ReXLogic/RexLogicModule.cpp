@@ -182,7 +182,7 @@ namespace RexLogic
         if (cur_state != connectionState_)
         {
             loginWindow_->UpdateConnectionStateToUI(cur_state);
-            connectionState_ = cur_state;            
+            connectionState_ = cur_state;
         }
         
         if (!rexserver_connection_->IsConnected() &&
@@ -297,8 +297,6 @@ namespace RexLogic
         return GetCurrentActiveScene();
     }
 
-
-
     Foundation::EntityPtr RexLogicModule::GetEntityWithComponent(Core::entity_id_t entityid, const std::string &requiredcomponent)
     {
         if (!activeScene_)
@@ -347,5 +345,3 @@ using namespace RexLogic;
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
     POCO_EXPORT_CLASS(RexLogicModule)
 POCO_END_MANIFEST
-
-

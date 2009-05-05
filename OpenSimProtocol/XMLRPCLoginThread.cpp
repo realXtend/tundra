@@ -253,8 +253,8 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
         // Read error message from reply
         // todo transfer error message to login screen. 
         threadState_->errorMessage = call.GetReply<std::string>("message");
-        std::string errorMessage = call.GetReply<std::string>("message");
-        std::cout<<"Login procedure returned error message :"<<errorMessage;
+//        std::string errorMessage = call.GetReply<std::string>("message");
+//        std::cout<<"Login procedure returned error message :"<<errorMessage;
         
         return false;
     }

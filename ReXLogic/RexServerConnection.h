@@ -107,11 +107,19 @@ namespace RexLogic
         volatile OpenSimProtocol::Connection::State GetConnectionState();
         
     private:
-        Foundation::Framework *framework_;    
+        ///
+        NetOutMessage *StartMessageBuilding(NetMsgID message_id);
+        
+        ///
+        void FinishMessageBuilding(NetOutMessage *msg);
+        
+        Foundation::Framework *framework_;
     
         /// Pointer to the network interface.
-       OpenSimProtocol::OpenSimProtocolModule *netInterface_;
+        //OpenSimProtocol::OpenSimProtocolModule *netInterface_;
 		
+		boost::weak_ptr<OpenSimProtocol::OpenSimProtocolModule> netInterface_;
+        
         /// Server-spesific info for this client.
         OpenSimProtocol::ClientParameters myInfo_;
 		
