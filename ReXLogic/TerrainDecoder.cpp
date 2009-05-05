@@ -117,7 +117,7 @@ const IDCTPrecomputationTables precompTables;
 
 /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
 /// Extracts and returns the header for a single terrain patch in the LayerData stream.
-TerrainPatchHeader DecodePatchHeader(BitStream &bits)
+TerrainPatchHeader DecodePatchHeader(OpenSimProtocol::BitStream &bits)
 {
    TerrainPatchHeader header;
    header.quantWBits = bits.ReadBits(8);
@@ -138,7 +138,7 @@ TerrainPatchHeader DecodePatchHeader(BitStream &bits)
 /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
 /// @param patches [out] The resulting patch data will be output here. The size of this buffer must be >= size*size.
 /// @param size The number of points in the patch in one direction (patches are square). 
-void DecodeTerrainPatch(int *patches, BitStream &bits, const TerrainPatchHeader &header, int size)
+void DecodeTerrainPatch(int *patches, OpenSimProtocol::BitStream &bits, const TerrainPatchHeader &header, int size)
 {
     for(int i = 0; i < size * size; ++i)
     {
@@ -247,7 +247,7 @@ void DecompressTerrainPatch(std::vector<float> &output, int *patchData, const Te
 } // ~unnamed namespace
 
 /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
-void DecompressLand(std::vector<DecodedTerrainPatch> &patches, BitStream &bits, const TerrainPatchGroupHeader &groupHeader)
+void DecompressLand(std::vector<DecodedTerrainPatch> &patches, OpenSimProtocol::BitStream &bits, const TerrainPatchGroupHeader &groupHeader)
 {
     while(bits.BitsLeft() > 0)
     {

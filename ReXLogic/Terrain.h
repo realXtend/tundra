@@ -21,6 +21,7 @@ public:
     //! entity. Caches it internally. Use GetTerrainEntity to obtain it afterwards.
     void FindCurrentlyActiveTerrain();
 
+    //! @return The scene entity that represents the terrain in the currently active world.
     Foundation::EntityWeakPtr GetTerrainEntity();
 private:
     RexLogicModule *owner_;

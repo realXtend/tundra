@@ -1,0 +1,13 @@
+/**
+
+\page DebugStatsPage DebugStats module
+
+The DebugStats module is a project intended solely for used as a developing aid. It uses the GtkmmUI module to 
+create windows that just dump various internal structures on screen to ease understanding what is going on.
+For planned stable release builds, this module will most probably be omitted.
+
+As such, almost no time has been spent on designing the code that is present in the class. It just came to exist
+as code naturally does. It does not necessarily show a good example of how things should be done in the framework.
+
+Do not make any non-debug module depend on this module.
+*/
