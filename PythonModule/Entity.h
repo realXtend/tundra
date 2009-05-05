@@ -2,7 +2,6 @@
 //#define incl_PythonEntityType_h
 
 #include "Foundation.h"
-
 #ifdef PYTHON_FORCE_RELEASE_VERSION
   #ifdef _DEBUG
     #undef _DEBUG
@@ -23,6 +22,8 @@ namespace PythonScript
 		Foundation::EntityPtr entity;
 	} rexviewer_EntityObject;
 
+	PyObject* entity_getattro(rexviewer_EntityObject* self, PyObject* name);
+
 	static PyTypeObject rexviewer_EntityType = {
 		PyObject_HEAD_INIT(NULL)
 		0,                         /*ob_size*/
@@ -41,15 +42,11 @@ namespace PythonScript
 		0,                         /*tp_hash */
 		0,                         /*tp_call*/
 		0,                         /*tp_str*/
-		0,                         /*tp_getattro*/
+		(PyCFunction)entity_getattro, /*tp_getattro*/
 		0,                         /*tp_setattro*/
 		0,                         /*tp_as_buffer*/
 		Py_TPFLAGS_DEFAULT,        /*tp_flags*/
 		"Entity object",           /* tp_doc */
-	};
-
-	static PyMethodDef noddy_methods[] = {
-		{NULL}  /* Sentinel */
 	};
 
 	void entity_init(PyObject* m);

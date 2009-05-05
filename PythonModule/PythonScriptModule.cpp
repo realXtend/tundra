@@ -254,7 +254,6 @@ static PyObject* GetEntity(PyObject *self, PyObject *args)
 {
 	unsigned int ent_id_int;
 	Core::entity_id_t ent_id;
-	Foundation::EntityPtr entity;
 
 	PyObject* ret;
 
@@ -270,19 +269,12 @@ static PyObject* GetEntity(PyObject *self, PyObject *args)
 	//hm there are multiple scenes so that can not be used directly */
 
 	const Foundation::ScenePtr &scene = sceneManagerService->GetScene("World"); //XXX hardcoded scene name, like in debugstats now
+	if (scene == 0)
+		return NULL; //XXX return some sensible exception info
 
-	entity = scene->GetEntity(ent_id);
+	const Foundation::EntityPtr entity = scene->GetEntity(ent_id);
 	if (entity.get() != 0) //same that scene->HasEntity does, i.e. it first does GetEntity too, so not calling HasEntity here to not do GetEntity twice.
-	{
 		return entity_create(entity);
-		//just having the entity is not very interesting, so reading data from a prim
-		/*const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
-		RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
-	        
-		//m->AddU32(prim->LocalId);
-		std::string retstr = "local id:" + prim->FullId.ToString() + "- prim name: " + prim->ObjectName;
-		return PyString_FromString(retstr.c_str());*/
-	}
 
 	Py_RETURN_FALSE; //XXX TODO: raise ValueError
 }
