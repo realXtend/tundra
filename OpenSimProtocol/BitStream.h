@@ -3,15 +3,16 @@
 #ifndef RexLogic_BitStream_h
 #define RexLogic_BitStream_h
 
-namespace RexLogic
+#include "OpenSimProtocolModuleApi.h"
+
+namespace OpenSimProtocol
 {
     /// A stream reader utility for reading a byte array bit-by-bit.
-    /// \todo Move into OpenSimProtocol module, has nothing RexLogic -specific, -jj.
-    class BitStream
+    class OSPROTO_MODULE_API BitStream
     {
     private:
         /// The memory is now accessed per-byte, but for optimization, one could use u32 reads.
-        static int num_bits_in_elem_;
+        static const int num_bits_in_elem_ = 8;
     public:
         /** Constructs a BitStream reader to the given memory area.
             \param data A pointer to the data to read. \note The memory will not be copied, but the 

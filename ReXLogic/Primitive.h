@@ -13,7 +13,7 @@ namespace RexLogic
     {
      public:
         Primitive(RexLogicModule *rexlogicmodule);
-        virtual ~Primitive();
+        ~Primitive();
         
         bool HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_KillObject(uint32_t objectid); 

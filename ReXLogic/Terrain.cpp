@@ -122,7 +122,7 @@ namespace RexLogic
         u8 layerID = msg.ReadU8();
         size_t sizeBytes = 0;
         const uint8_t *packedData = msg.ReadBuffer(&sizeBytes);
-        BitStream bits(packedData, sizeBytes);
+        OpenSimProtocol::BitStream bits(packedData, sizeBytes);
         TerrainPatchGroupHeader header;
 
         header.stride = bits.ReadBits(16);
