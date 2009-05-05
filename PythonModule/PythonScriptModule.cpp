@@ -272,11 +272,18 @@ static PyObject* GetEntity(PyObject *self, PyObject *args)
 	if (scene == 0)
 		return NULL; //XXX return some sensible exception info
 
+	//PythonScript::foo(); 
 	const Foundation::EntityPtr entity = scene->GetEntity(ent_id);
 	if (entity.get() != 0) //same that scene->HasEntity does, i.e. it first does GetEntity too, so not calling HasEntity here to not do GetEntity twice.
-		return entity_create(entity);
+		return entity_create(ent_id, entity);
+	//the ptr is stored in a separate map now, so also id needs to passed to entity_create
 
-	Py_RETURN_FALSE; //XXX TODO: raise ValueError
+	/*if would just store the id and always re-get ptr, would do this:
+	if (scene->HasEntity(ent_id))
+		return entity_create(ent_id);*/
+
+	else
+		return NULL; //XXX TODO: raise ValueError
 }
 
 static PyObject* PyEventCallback(PyObject *self, PyObject *args){
