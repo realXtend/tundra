@@ -41,7 +41,7 @@ namespace OgreRenderer
         
     public:
         //! Constructor
-        Renderer(Foundation::Framework* framework);
+        Renderer(Foundation::Framework* framework, const std::string& config, const std::string& plugins);
 
         //! Destructor
         virtual ~Renderer();
@@ -230,6 +230,12 @@ namespace OgreRenderer
 
         //! handle for the main window
         Core::uint main_window_handle_;
+
+        //! filename for the Ogre3D configuration file
+        std::string config_filename_;
+        
+        //! filename for the Ogre3D plugins file
+        std::string plugins_filename_;
     };
 }
 

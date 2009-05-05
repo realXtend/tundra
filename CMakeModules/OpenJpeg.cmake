@@ -16,7 +16,11 @@ macro (INCLUDE_OPENJPEG)
 endmacro (INCLUDE_OPENJPEG)
 
 macro (LINK_OPENJPEG)
+	if (MSVC)
 		target_link_libraries (${TARGET_NAME}
 			debug openjpegd
 			optimized openjpeg)
+    else (MSVC)
+		target_link_libraries (${TARGET_NAME} openjpeg)
+	endif (MSVC)
 endmacro (LINK_OPENJPEG)

@@ -62,8 +62,18 @@ namespace OgreRenderer
     // virtual
     void OgreRenderingModule::PreInitialize()
     {
+        std::string ogre_config_filename = "ogre.cfg";
+
+#if defined (_WINDOWS) && (_DEBUG)
+        std::string plugins_filename = "pluginsd.cfg";
+#elif defined (_WINDOWS)
+        std::string plugins_filename = "plugins.cfg";
+#else
+        std::string plugins_filename = "plugins-unix.cfg";
+#endif 
+    
         // create renderer here, so it can be accessed in uninitialized state by other module's PreInitialize()
-        renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_));
+        renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogre_config_filename, plugins_filename));
     }
 
     // virtual

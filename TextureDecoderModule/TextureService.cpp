@@ -8,7 +8,7 @@
 #include "Texture.h"
 #include "TextureService.h"
 
-#include <openjpeg.h>
+#include <openjpeg/openjpeg.h>
 
 namespace TextureDecoder
 {

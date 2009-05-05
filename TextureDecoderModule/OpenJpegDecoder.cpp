@@ -39,7 +39,7 @@
 #include "TextureDecoderModule.h"
 #include "OpenJpegDecoder.h"
 
-#include <openjpeg.h>
+#include <openjpeg/openjpeg.h>
 
 namespace TextureDecoder
 {
