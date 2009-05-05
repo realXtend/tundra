@@ -14,7 +14,7 @@
 // todo: should this be renamed to TPCommunicatation to hide the implmenetation from namespace of interface?
 namespace Communication
 {
-	#define COMMUNICATION_SCRIPT_NAME "IMDemo" // why not IMDemo.py ???
+	#define COMMUNICATION_SCRIPT_NAME "IMDemo" // why not IMDemo.py ??? todo: "communication.py" etc.
 	#define COMMUNICATION_CLASS_NAME "IMDemo"
 
 	class TelepathyCommunication;
@@ -33,6 +33,18 @@ namespace Communication
 		IMSessionPtr CreateIMSession(ContactPtr contact);
 		ContactListPtr GetContactList();
 		void PublishPresence(PresenceStatusPtr p);
+
+		// callbacks for console commands
+		Console::CommandResult ConsoleInfo(const Core::StringVector &params);
+        Console::CommandResult ConsoleLogin(const Core::StringVector &params);
+		Console::CommandResult ConsoleLogout(const Core::StringVector &params);
+		Console::CommandResult ConsoleCreateSession(const Core::StringVector &params);
+		Console::CommandResult ConsoleListSessions(const Core::StringVector &params);
+		Console::CommandResult ConsoleSendMessage(const Core::StringVector &params);
+		Console::CommandResult ConsoleListContacts(const Core::StringVector &params);
+		Console::CommandResult ConsoleAddContact(const Core::StringVector &params);
+		Console::CommandResult ConsolePublishPresence(const Core::StringVector &params);
+
 
 		static TelepathyCommunicationPtr GetInstance(); // for python callbacks
 	protected:
@@ -62,6 +74,7 @@ namespace Communication
 		// initialization
 		void InitializePythonCommunication();
 		void UninitializePythonCommunication();
+		void RegisterConsoleCommands();
 		void RegisterEvents();
 	};
 

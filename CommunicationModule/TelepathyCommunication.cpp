@@ -18,6 +18,7 @@ namespace Communication
 		TelepathyCommunication::instance_ = TelepathyCommunicationPtr(this);
 		framework_ = f;
 
+		RegisterConsoleCommands();
 		InitializePythonCommunication();
 		RegisterEvents();
 	}
@@ -27,12 +28,27 @@ namespace Communication
 		// todo: Cleanup
 	}
 
+	void TelepathyCommunication::RegisterConsoleCommands()
+	{
+		Console::CommandService *console = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand);
+		console->RegisterCommand(Console::CreateCommand("comminfo", "Open connection to IM server. Usage: commlogin(account password server port)", Console::Bind(this, &TelepathyCommunication::ConsoleInfo)));
+		console->RegisterCommand(Console::CreateCommand("commlogin", "Information about state of communication manager", Console::Bind(this, &TelepathyCommunication::ConsoleLogin)));
+		console->RegisterCommand(Console::CreateCommand("commlogout", "", Console::Bind(this, &TelepathyCommunication::ConsoleLogout)));
+		console->RegisterCommand(Console::CreateCommand("commcreatesession", "", Console::Bind(this, &TelepathyCommunication::ConsoleCreateSession)));
+		console->RegisterCommand(Console::CreateCommand("commlistsessions", "", Console::Bind(this, &TelepathyCommunication::ConsoleListSessions)));
+		console->RegisterCommand(Console::CreateCommand("commsendmessage", "", Console::Bind(this, &TelepathyCommunication::ConsoleSendMessage)));
+		console->RegisterCommand(Console::CreateCommand("commlistcontacts", "", Console::Bind(this, &TelepathyCommunication::ConsoleListContacts)));
+		console->RegisterCommand(Console::CreateCommand("commaddaccount", "", Console::Bind(this, &TelepathyCommunication::ConsoleAddContact)));
+//		console->RegisterCommand(Console::CreateCommand("commpresencestatus", "", Console::Bind(this, &TelepathyCommunication::ConsoleLogout)));
+	}
+
 	// rename to: InitPythonCommunication
 	void TelepathyCommunication::InitializePythonCommunication()
 	{
-		Foundation::ScriptServiceInterface *scriptService = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting);
+		Foundation::ScriptServiceInterface* script_service = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting);
+		Foundation::ScriptEventInterface* script_event_service = dynamic_cast<Foundation::ScriptEventInterface*>(script_service);
 		std::string error;
-		this->communication_py_script_ = Foundation::ScriptObjectPtr(scriptService->LoadScript(COMMUNICATION_SCRIPT_NAME, error));
+		this->communication_py_script_ = Foundation::ScriptObjectPtr(script_service->LoadScript(COMMUNICATION_SCRIPT_NAME, error));
 		if(error=="None")
 		{
 	//		CommunicationModule::LogInfo("ran python script: IMDemo");
@@ -50,15 +66,16 @@ namespace Communication
 		}
 
 		// define python callbacks
-		((Foundation::ScriptEventInterface*)scriptService)->SetCallback( &TelepathyCommunication::PyCallbackTest, "key");
-		((Foundation::ScriptEventInterface*)scriptService)->SetCallback( &TelepathyCommunication::PyCallbackConnected, "connected");
-		((Foundation::ScriptEventInterface*)scriptService)->SetCallback( &TelepathyCommunication::PyCallbackConnecting, "disconnected");
-		((Foundation::ScriptEventInterface*)scriptService)->SetCallback( &TelepathyCommunication::PyCallbackDisconnected, "connecting");
-		((Foundation::ScriptEventInterface*)scriptService)->SetCallback( &TelepathyCommunication::PyCallbackChannelOpened, "channel_opened");
-		((Foundation::ScriptEventInterface*)scriptService)->SetCallback( &TelepathyCommunication::PyCallbackChannelClosed, "channel_closed");
-		((Foundation::ScriptEventInterface*)scriptService)->SetCallback( &TelepathyCommunication::PyCallbackMessagReceived, "message_received");
-		((Foundation::ScriptEventInterface*)scriptService)->SetCallback( &TelepathyCommunication::PycallbackFriendReceived, "contact_item");
-		((Foundation::ScriptEventInterface*)scriptService)->SetCallback( &TelepathyCommunication::PyCallbackContactStatusChanged, "contact_status_changed");
+		
+		script_event_service->SetCallback( TelepathyCommunication::PyCallbackTest, "key");
+		script_event_service->SetCallback( TelepathyCommunication::PyCallbackConnected, "connected");
+		script_event_service->SetCallback( TelepathyCommunication::PyCallbackConnecting, "connecting");
+		script_event_service->SetCallback( TelepathyCommunication::PyCallbackDisconnected, "disconnected");
+		script_event_service->SetCallback( TelepathyCommunication::PyCallbackChannelOpened, "channel_opened");
+		script_event_service->SetCallback( TelepathyCommunication::PyCallbackChannelClosed, "channel_closed");
+		script_event_service->SetCallback( TelepathyCommunication::PyCallbackMessagReceived, "message_received");
+		script_event_service->SetCallback( TelepathyCommunication::PycallbackFriendReceived, "contact_item");
+		script_event_service->SetCallback( TelepathyCommunication::PyCallbackContactStatusChanged, "contact_status_changed");
 	}
 
 	void TelepathyCommunication::UninitializePythonCommunication()
@@ -74,6 +91,7 @@ namespace Communication
 
 	/*
 	  Uses credential from Account.txt
+	  todo: use given credential
 	*/
 	void TelepathyCommunication::OpenConnection(CredentialsPtr c)
 	{
@@ -147,6 +165,84 @@ namespace Communication
 	{
 		// TODO: call python here
 	}
+
+	// DEBUG CONSOLE CALLBACKS
+
+	/*
+	Shows general information on console about communication manager state 
+	*/
+	Console::CommandResult TelepathyCommunication::ConsoleInfo(const Core::StringVector &params)
+	{
+		char buffer[100];
+		std::string text = "CommunicationManager: TelepathyCommunication\n";
+		text.append("---------------------");
+		text.append("\n");
+		text.append("current account status: ");
+		text.append("\n");
+		text.append("current sessions: ");
+		sprintf(buffer, "%d",im_sessions_.size());
+		text.append(buffer);
+		text.append("\n");
+		text.append("current contacts: ");
+		sprintf(buffer, "%d",contact_list_.size());
+		text.append(buffer);
+		text.append("\n");
+		return Console::ResultSuccess(text); 
+	}
+
+	/*
+	Opens a connections to jabber server
+	*/
+	Console::CommandResult TelepathyCommunication::ConsoleLogin(const Core::StringVector &params)
+	{
+		if (params.size() != 4)
+		{	
+			std::string reason = "Wrong number of arguments!\ncommlogin(<address>,<pwd>,<server>,<port>)";
+			return Console::ResultFailure(reason);
+		}
+		else
+		{
+			Credentials* c = new Credentials(); // OpenConnection doesn't use this yet.
+			OpenConnection(CredentialsPtr(c));
+			return Console::ResultSuccess("Ready.");
+		}
+	}
+
+	Console::CommandResult TelepathyCommunication::ConsoleLogout(const Core::StringVector &params)
+	{
+		return Console::ResultFailure("NOT IMPLEMENTED.");
+	}
+
+	Console::CommandResult TelepathyCommunication::ConsoleCreateSession(const Core::StringVector &params)
+	{
+		return Console::ResultFailure("NOT IMPLEMENTED.");
+	}
+
+	Console::CommandResult TelepathyCommunication::ConsoleListSessions(const Core::StringVector &params)
+	{
+		return Console::ResultFailure("NOT IMPLEMENTED.");
+	}
+
+	Console::CommandResult TelepathyCommunication::ConsoleSendMessage(const Core::StringVector &params)
+	{
+		return Console::ResultFailure("NOT IMPLEMENTED.");
+	}
+
+	Console::CommandResult TelepathyCommunication::ConsoleListContacts(const Core::StringVector &params)
+	{
+		return Console::ResultFailure("NOT IMPLEMENTED.");
+	}
+
+	Console::CommandResult TelepathyCommunication::ConsoleAddContact(const Core::StringVector &params)
+	{
+		return Console::ResultFailure("NOT IMPLEMENTED.");
+	}
+
+	Console::CommandResult TelepathyCommunication::ConsolePublishPresence(const Core::StringVector &params)
+	{
+		return Console::ResultFailure("NOT IMPLEMENTED.");
+	}
+
 
 
 	// PYTHON CALLBACK HANDLERS: 
@@ -274,7 +370,9 @@ namespace Communication
 			TPContactPtr c = (*contact_list)[i];
 			if (c->presence_status_->id_.compare(id)==0)
 			{
-				c->presence_status_->NotifyUpdate(true, "online message"); // todo: Get the real values to notify with
+				c->presence_status_->NotifyUpdate(true, "online message");
+				// todo: Get the real values to notify with 
+				// * Call relevant python functions to get this information
 				PresenceStatusUpdateEvent e = PresenceStatusUpdateEvent(PresenceStatusPtr((PresenceStatus*)c->presence_status_.get()));
 				TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::IM_MESSAGE_RECEIVED, (Foundation::EventDataInterface*)&e);
 			}
