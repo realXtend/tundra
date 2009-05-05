@@ -3,11 +3,7 @@
 #include "StableHeaders.h"
 #include "PythonEngine.h"
 #include "PythonScriptModule.h"
-
 #include "PythonScriptObject.h"
-
-//#include "Python/Python.h" //should be <Python.h> or "Python.h" ?
-#include "Python.h" //should be <Python.h> or "Python.h" ?
 
 using namespace Foundation;
 
