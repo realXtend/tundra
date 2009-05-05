@@ -315,7 +315,7 @@ namespace Foundation
         //! Unused
         virtual void PreInitializeInternal()
         {
-            PreInitializeInternal();
+            PreInitialize();
         }
 
         //! Registers all declared components
@@ -348,8 +348,8 @@ namespace Foundation
         //! Sets internal state to "initialized"
         virtual void PostInitializeInternal()
         {
-            PostInitializeInternal();
-            state_ = MS_Initialized;
+            PostInitialize();
+            state_ = Foundation::Module::MS_Initialized;
         }
 
         //! Unregisters all declared components
