@@ -6,7 +6,7 @@ macro (FIND_BOOST)
 	if (NOT MSVC)
 		# Static linking needed for UnitTests main
 		set (Boost_USE_STATIC_LIBS ON)
-		find_package (Boost COMPONENTS date_time filesystem system thread unit_test_framework)
+		find_package (Boost COMPONENTS date_time filesystem system thread program_options unit_test_framework)
 		if (NOT Boost_FOUND)
 			message (FATAL_ERROR "Boost not found")
 		endif (NOT Boost_FOUND)
