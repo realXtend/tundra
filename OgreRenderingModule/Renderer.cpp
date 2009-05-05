@@ -92,7 +92,7 @@ namespace OgreRenderer
 
 /////////////////////////////////////////////////////////
 
-    Renderer::Renderer(Framework* framework) :
+    Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins) :
         initialized_(false),
         framework_(framework),
         scenemanager_(NULL),
@@ -101,7 +101,9 @@ namespace OgreRenderer
         object_id_(0),
         main_window_handle_(0),
         listener_(EventListenerPtr(new EventListener(this))),
-        log_listener_(OgreLogListenerPtr(new LogListener))
+        log_listener_(OgreLogListenerPtr(new LogListener)),
+        config_filename_ (config),
+        plugins_filename_ (plugins)
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         
@@ -130,18 +132,12 @@ namespace OgreRenderer
         if (initialized_)
             return;
             
-#ifdef _DEBUG
-        std::string plugins_filename = "pluginsd.cfg";
-#else
-        std::string plugins_filename = "plugins.cfg";
-#endif
-    
         std::string logfilepath = framework_->GetPlatform()->GetUserDocumentsDirectory();
         logfilepath += "/Ogre.log";
 
-        root_ = OgreRootPtr(new Ogre::Root("", "ogre.cfg", logfilepath));
+        root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
         Ogre::LogManager::getSingleton().getDefaultLog()->addListener(log_listener_.get());
-        LoadPlugins(plugins_filename);
+        LoadPlugins(plugins_filename_);
         
 #ifdef _WINDOWS
         std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>("OgreRenderer", "RenderSystem", "Direct3D9 Rendering Subsystem");
