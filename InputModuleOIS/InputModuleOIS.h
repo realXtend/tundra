@@ -132,6 +132,11 @@ namespace Input
         virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, 
             Foundation::EventDataInterface* data);
 
+        //! Returns if conditions for the event are true.
+        /*! This is alternative method of handling input, instead of handling events,
+            you can use this function to poll the state directly.
+        */
+        bool IsEvent(Core::event_id_t input_event) const;
 
         //! returns true if key with specified keycode is currently held down. Internal use only!
         INPUTOIS_MODULE_API bool IsKeyDown(OIS::KeyCode keycode) const;

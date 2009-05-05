@@ -18,6 +18,9 @@ namespace Input
         the input mappings are read from that file and they replace the default mappings.
         If a mapping for some event is not found from the xml file, the default one is
         used instead.
+
+        \todo We constantly access InputModuleOIS from here for many service functions, 
+              perhaps needs rethinking, maybe even turn InputModuleOIS itself into input service.
     */
     class Mapper : public Input::InputServiceInterface
     {
@@ -30,7 +33,9 @@ namespace Input
         //! destructor
         ~Mapper();
 
-        boost::optional<const Input::Events::Movement&> GetSliderMovement(Core::event_id_t dragged_event) const { return module_->GetDraggedSliderInfo(dragged_event); }
+        bool Poll(Core::event_id_t input_event) const { return module_->IsEvent(input_event); }
+
+        boost::optional<const Input::Events::Movement&> PollSlider(Core::event_id_t dragged_event) const { return module_->GetDraggedSliderInfo(dragged_event); }
 
         //! Loads input mappings from xml file.
         /*! Replaces the default mappings with ones loaded from the file. In case of an error
