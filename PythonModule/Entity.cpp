@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 
-#include <Python.h>
 #include "Entity.h"
 
 /* this is not a module but defines a type for the module created in PythonScriptModule */

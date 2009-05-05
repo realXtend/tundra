@@ -14,8 +14,6 @@
 
 #include "EC_OpenSimPrim.h"
 
-#include <Python.h>
-
 #include "Entity.h"
 
 namespace PythonScript

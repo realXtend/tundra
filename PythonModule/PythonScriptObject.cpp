@@ -2,14 +2,7 @@
 #include "Foundation.h"
 #include "PythonEngine.h"
 #include "PythonScriptModule.h"
-
-//#include "Python/Python.h" //should be <Python.h> or "Python.h" ?
-#include <Python.h> //should be <Python.h> or "Python.h" ?
-
-
 #include "PythonScriptObject.h"
-
-
 
 namespace PythonScript
 {
