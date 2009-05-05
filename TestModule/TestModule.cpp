@@ -8,6 +8,7 @@
 #include "EntityInterface.h"
 
 
+
 namespace Test
 {
     TestModule::TestModule() : ModuleInterfaceImpl(type_static_)
@@ -85,6 +86,13 @@ namespace Test
         entity->AddEntityComponent(component);
         component = entity->GetComponent(component->Name());
         assert (component.get() != 0 && "Failed to get dummy component from entity.");
+
+        Foundation::ComponentPtr component_second = framework_->GetComponentManager()->CreateComponent(Test::EC_Dummy::NameStatic());
+        entity->AddEntityComponent(component_second);
+        component = entity->GetComponent(component_second->Name());
+        assert (component.get() != 0 && "Failed to get dummy component from entity.");
+        entity->RemoveEntityComponent(component_second);
+        component_second.reset();
 
         int num_test_components = 0;
         for (Foundation::ComponentManager::const_iterator it = 
