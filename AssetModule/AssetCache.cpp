@@ -20,12 +20,29 @@ namespace Asset
         {
             boost::filesystem::create_directory(cache_path_);
         }    
+        
+        CheckDiskCache();
     }
 
     AssetCache::~AssetCache()
     {
     }
 
+    void AssetCache::CheckDiskCache()
+    {
+        boost::filesystem::directory_iterator i(cache_path_);
+        boost::filesystem::directory_iterator end_iter;
+        while (i != end_iter)
+        {
+            if (boost::filesystem::is_regular_file(i->status()))
+            {
+                std::string name = i->path().filename();
+                disk_cache_contents_.insert(name);
+            }
+            ++i;
+        }
+    }
+    
     Foundation::AssetPtr AssetCache::GetAsset(const std::string& asset_id, bool check_memory, bool check_disk)
     {
         if (check_memory)
@@ -37,37 +54,48 @@ namespace Asset
         
         if (check_disk)
         {
-            boost::filesystem::path file_path(cache_path_ + "/" + asset_id);      
-            std::ifstream filestr(file_path.native_directory_string().c_str(), std::ios::in | std::ios::binary);
-            if (filestr.good())
-            {
-                filestr.seekg(0, std::ios::end);
-                Core::uint length = filestr.tellg();
-                filestr.seekg(0, std::ios::beg);
-
-                Core::uint type;
-                if (length > sizeof(type))
-                {
-                    length -= sizeof(type);
-                    
-                    filestr.read((char *)&type, sizeof(type));
+            std::set<std::string>::iterator i = disk_cache_contents_.find(asset_id);
             
-                    RexAsset* new_asset = new RexAsset(asset_id, type);
-                    assets_[asset_id] = Foundation::AssetPtr(new_asset);
+            if (i != disk_cache_contents_.end())
+            {               
+                boost::filesystem::path file_path(cache_path_ + "/" + asset_id);      
+                std::ifstream filestr(file_path.native_directory_string().c_str(), std::ios::in | std::ios::binary);
+                if (filestr.good())
+                {
+                    filestr.seekg(0, std::ios::end);
+                    Core::uint length = filestr.tellg();
+                    filestr.seekg(0, std::ios::beg);
+
+                    Core::uint type;
+                    if (length > sizeof(type))
+                    {
+                        length -= sizeof(type);
+                        
+                        filestr.read((char *)&type, sizeof(type));
+                
+                        RexAsset* new_asset = new RexAsset(asset_id, type);
+                        assets_[asset_id] = Foundation::AssetPtr(new_asset);
+                        
+                        RexAsset::AssetDataVector& data = new_asset->GetDataInternal();
+                        data.resize(length);
+                        filestr.read((char *)&data[0], length);
+                        filestr.close();
+                        
+                        return assets_[asset_id];
+                    }
+                    else
+                    {
+                        AssetModule::LogError("Malformed asset file " + asset_id + " found in cache.");
+                        disk_cache_contents_.erase(i);
+                    }
                     
-                    RexAsset::AssetDataVector& data = new_asset->GetDataInternal();
-                    data.resize(length);
-                    filestr.read((char *)&data[0], length);
                     filestr.close();
-                    
-                    return assets_[asset_id];
                 }
                 else
                 {
-                    AssetModule::LogError("Malformed asset file " + asset_id + " found in cache.");
+                    // File got deleted by someone else while program was running, or something, do not re-check
+                    disk_cache_contents_.erase(i);
                 }
-                
-                filestr.close();
             }
         }
         
@@ -96,6 +124,8 @@ namespace Asset
             filestr.write((const char *)&type, sizeof(type));
             filestr.write((const char *)&data[0], size);
             filestr.close();
+            
+            disk_cache_contents_.insert(asset_id);
         }
         else
         {

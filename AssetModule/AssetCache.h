@@ -31,9 +31,11 @@ namespace Asset
         void StoreAsset(Foundation::AssetPtr asset);
 
     private:
-        typedef std::map<std::string, Foundation::AssetPtr> AssetMap;
+        //! Check contents of disk cache
+        void CheckDiskCache();
         
-        //! Completely received assets (memory cache)
+        //! Asset memory cache
+        typedef std::map<std::string, Foundation::AssetPtr> AssetMap;
         AssetMap assets_;
 
         //! Current disk asset cache path
@@ -42,6 +44,9 @@ namespace Asset
         //! Default disk asset cache path
         static const char *DEFAULT_ASSET_CACHE_PATH;
 
+        //! Assets known to be in disk cache
+        std::set<std::string> disk_cache_contents_;
+        
         //! Framework
         Foundation::Framework* framework_;
     };
