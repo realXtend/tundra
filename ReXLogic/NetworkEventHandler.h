@@ -43,7 +43,8 @@ namespace RexLogic
 
         Foundation::Framework *framework_;
         
-        OpenSimProtocol::OpenSimProtocolModule *netInterface_;
+        //OpenSimProtocol::OpenSimProtocolModule *netInterface_;
+        boost::weak_ptr<OpenSimProtocol::OpenSimProtocolModule> netInterface_;
         
         RexLogicModule *rexlogicmodule_;
     };

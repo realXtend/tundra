@@ -211,7 +211,7 @@ namespace RexLogic
     {
         LogicEventHandlerMap::iterator i = event_handlers_.find(category_id);
         if (i != event_handlers_.end())
-            return (i->second)(event_id,data);
+            return (i->second)(event_id, data);
         else
             return false;
     }
