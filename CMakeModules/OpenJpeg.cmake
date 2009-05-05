@@ -12,6 +12,8 @@ macro (INCLUDE_OPENJPEG)
 		include_directories (${REX_DEP_PATH}/OpenJpeg/libopenjpeg/)
 		link_directories (${REX_DEP_PATH}/OpenJpeg/Debug)
 		link_directories (${REX_DEP_PATH}/OpenJpeg/Release)
+	else (MSVC)
+		include_directories (/usr/include/openjpeg /usr/local/include/openjpeg)
 	endif (MSVC)
 endmacro (INCLUDE_OPENJPEG)
 
