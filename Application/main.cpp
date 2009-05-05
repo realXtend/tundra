@@ -3,7 +3,13 @@
 #include "CoreStdIncludes.h"
 #include "Core.h"
 #include "Foundation.h"
-#include "PreInit.h"
+
+#include "CommandManager.h"
+#include "SceneModule.h"
+#include "TestModuleB.h"
+
+#include <boost/program_options.hpp>
+#include <boost/tokenizer.hpp>
 
 
 #if defined(_MSC_VER) && defined(_DMEMORYLEAKS)
@@ -22,15 +28,17 @@
 #pragma warning( pop )
 #endif
 
-int run(void);
+void setup (Foundation::Framework &fw);
+int run (int argc, char **argv);
+void options (int argc, char **argv, Foundation::Framework &fw);
 
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
-int generateDump(EXCEPTION_POINTERS* pExceptionPointers);
+int generate_dump(EXCEPTION_POINTERS* pExceptionPointers);
 #endif
 
-int main(int argc, char **argv)
+int main (int argc, char **argv)
 {
-    int retVal = EXIT_SUCCESS;
+    int return_value = EXIT_SUCCESS;
 
     // set debug flag for memory leaks
 #   if defined(_MSC_VER) && defined(_DMEMORYLEAKS)
@@ -46,47 +54,86 @@ int main(int argc, char **argv)
     {
 #   endif
 
-    retVal = run();
+    return_value = run(argc, argv);
 
 #   if defined(_MSC_VER) && defined(_DMEMDUMP)
     }
-    __except(generateDump(GetExceptionInformation()))
+    __except(generate_dump(GetExceptionInformation()))
     {
     }
 #  endif
 
-   return retVal;
+   return return_value;
 }
 
-int run(void)
+void setup (Foundation::Framework &fw)
 {
-    int retVal = EXIT_SUCCESS;
+    fw.GetModuleManager()->ExcludeModule(Foundation::Module::MT_Test);
+    fw.GetModuleManager()->ExcludeModule(Test::TestModuleB::NameStatic());
+
+    Foundation::ModuleInterface *module = new Scene::SceneModule;
+    fw.GetModuleManager()->DeclareStaticModule(module);
+}
+
+int run (int argc, char **argv)
+{
+    int return_value = EXIT_SUCCESS;
 
     // Create application object
-#if !defined(_DEBUG)
     try 
-#endif
     {
         Foundation::Framework fw;
-        PreInit init;
-        init(&fw);
+        setup (fw);
+
+        // \todo Parse command line options for command loading
+        //options (argc, argv, fw);
 
         fw.Go();
     } 
-#if !defined(_DEBUG)
-    catch ( std::exception& e )
+    catch (std::exception& e)
     {
         Foundation::Platform::Message("An exception has occurred!", e.what());
-        retVal = EXIT_FAILURE;
-    }
+#if defined(_DEBUG)
+        throw;
+#else
+        return_value = EXIT_FAILURE;
 #endif
+    }
 
-    return retVal;
+    return return_value;
 }
 
+void options (int argc, char **argv, Foundation::Framework &fw)
+{
+    using namespace boost::program_options;
+    typedef boost::char_separator <char> separator;
+    typedef boost::tokenizer <separator> tokenizer;
+    
+    options_description desc;
+    variables_map options;
+
+    desc.add_options()
+        ("headless", "run viewer without rendering")
+        ("script", value<std::string>(), "commands to run");
+
+    store (parse_command_line (argc, argv, desc), options);
+    notify (options);
+
+    if (options.count ("script"))
+    {
+        //\todo We can't use the CommandManager until it's (pre)loaded
+        //tokenizer tok ((options["script"].as <std::string> ()), separator (";"));
+        //Console::CommandManager *cm 
+        //    (fw.GetService <Console::CommandManager>
+        //     (Foundation::Service::ST_ConsoleCommand));
+
+        //for (tokenizer::iterator it (tok.begin()); it != tok.end(); ++it)
+        //    cm-> QueueCommand (*it);
+    }
+}
 
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
-int generateDump(EXCEPTION_POINTERS* pExceptionPointers)
+int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
 {
     BOOL bMiniDumpSuccessful;
     WCHAR szPath[MAX_PATH]; 

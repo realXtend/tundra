@@ -74,14 +74,20 @@ namespace Foundation
 
     void ModuleManager::InitializeModules()
     {
+        ModuleInterface *mod;
+
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            PreInitializeModule(modules_[i].module_.get());
+            mod = modules_[i].module_.get();
+            if (mod->State() != Foundation::Module::MS_Initialized)
+                PreInitializeModule(mod);
         }
         
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
-            InitializeModule(modules_[i].module_.get());
+            mod = modules_[i].module_.get();
+            if (mod->State() != Foundation::Module::MS_Initialized)
+                InitializeModule(mod);
         }
         
         for (size_t i=0 ; i<modules_.size() ; ++i)
@@ -231,11 +237,11 @@ namespace Foundation
         }
     }
 
-    void ModuleManager::LoadModule(const std::string &moduleName, const Core::StringVector &entries)
+    void ModuleManager::LoadModule(const std::string &name, const Core::StringVector &entries)
     {
-        assert(moduleName.empty() == false);
+        assert(name.empty() == false);
 
-        std::string path(moduleName);
+        std::string path(name);
         path.append(Poco::SharedLibrary::suffix());
 
         Module::SharedLibraryPtr library;
@@ -259,7 +265,7 @@ namespace Foundation
             } catch (std::exception &e)
             {
                 Foundation::RootLogError(e.what());
-                Foundation::RootLogError("Failed to load dynamic library: " + moduleName + ".");
+                Foundation::RootLogError("Failed to load dynamic library: " + name + ".");
                 return;
             }
         }
@@ -329,12 +335,14 @@ namespace Foundation
     void ModuleManager::PreInitializeModule(ModuleInterface *module)
     {
         assert(module);
+        assert(module->State() == Foundation::Module::MS_Loaded);
         module->PreInitialize();
     }
     
     void ModuleManager::InitializeModule(ModuleInterface *module)
     {
         assert(module);
+        assert(module->State() == Foundation::Module::MS_Loaded);
         Foundation::RootLogInfo("Initializing module " + module->Name() + ".");
         module->InitializeInternal();
     }
@@ -342,6 +350,7 @@ namespace Foundation
     void ModuleManager::PostInitializeModule(ModuleInterface *module)
     {
         assert(module);
+        assert(module->State() == Foundation::Module::MS_Initialized);
         module->PostInitialize();
     }
 

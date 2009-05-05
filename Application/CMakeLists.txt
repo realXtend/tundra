@@ -13,6 +13,7 @@ include_directories (
 	../Foundation
 	../Interfaces
 	../SceneModule
+	../SupportModules
 	../TestModule
 )
 
