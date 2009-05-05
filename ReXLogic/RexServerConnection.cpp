@@ -29,9 +29,12 @@ namespace RexLogic
 
 		connection_type_ = DirectConnection;
         
-        ///\todo weak_pointerize
-        netInterface_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol).lock().get();
-        if (!netInterface_)
+        // Get pointer to the network interface.
+        netInterface_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>
+            (Foundation::Module::MT_OpenSimProtocol);
+        
+        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
+        if (!sp.get())
         {
             RexLogicModule::LogError("Getting network interface did not succeed.");
             return;
@@ -45,6 +48,13 @@ namespace RexLogic
 	bool RexServerConnection::ConnectToServer(const std::string& username, const std::string& password, 
 				const std::string& serveraddress, const std::string& auth_server_address, const std::string& auth_login)
     {
+        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
+        if (!sp.get())
+        {
+            RexLogicModule::LogError("Getting network interface did not succeed.");
+            return false;
+        }
+                
         if(connected_)
         {
             RexLogicModule::LogError("Already connected.");
@@ -88,13 +98,13 @@ namespace RexLogic
 		if (auth_server_address != "") 
 		{
 			connection_type_ = AuthenticationConnection;
-			connect_result = netInterface_->LoginUsingRexAuthentication(first_name, 
+			connect_result = sp->LoginUsingRexAuthentication(first_name,
 				last_name, password, serveraddress_noport, port,
 				auth_server_address, auth_login, &threadState_);
 		}
 
 		if (connection_type_ == DirectConnection)
-            netInterface_->LoginToServer(first_name, last_name,password, serveraddress_noport, port, &threadState_);
+            sp->LoginToServer(first_name, last_name,password, serveraddress_noport, port, &threadState_);
         
         // Save the server address and port for later use.
         serverAddress_ = serveraddress_noport;
@@ -105,19 +115,27 @@ namespace RexLogic
     
     bool RexServerConnection::CreateUDPConnection()
     {
-        bool connect_result = netInterface_->CreateUDPConnection(serverAddress_.c_str(), serverPort_);
+        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
+        if (!sp.get())
+        {
+            RexLogicModule::LogError("Getting network interface did not succeed.");
+            return false;
+        }
+        
+        bool connect_result = sp->CreateUDPConnection(serverAddress_.c_str(), serverPort_);
+
 		if(connect_result)
 		{
 			connected_ = true;
             
             // Get the client-spesific information.
-			myInfo_ = netInterface_->GetClientParameters();
+			myInfo_ = sp->GetClientParameters();
 			
 			// Check that the parameters are valid.
 			if (myInfo_.agentID.IsNull() || myInfo_.sessionID.IsNull())
 			{
 			    // Client parameters not valid. Disconnect.
-			    netInterface_->DisconnectFromRexServer();
+			    sp->DisconnectFromRexServer();
 			    RexLogicModule::LogError("Client parameters are not valid! Disconnecting.");
 			    connected_ = false;
 			    return false;
@@ -149,8 +167,8 @@ namespace RexLogic
     {
         if(!connected_)
             return;
-    
-        netInterface_->DisconnectFromRexServer(); 
+        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
+        sp->DisconnectFromRexServer(); 
         connected_ = false;
     }
     
@@ -158,15 +176,15 @@ namespace RexLogic
 	{
         if(!connected_)
             return;	
-	
-        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgUseCircuitCode);
+
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgUseCircuitCode);
         assert(m);
         
         m->AddU32(myInfo_.circuitCode);
         m->AddUUID(myInfo_.sessionID);
         m->AddUUID(myInfo_.agentID);
         
-        netInterface_->FinishMessageBuilding(m);
+        FinishMessageBuilding(m);
 	}
 
     void RexServerConnection::SendCompleteAgentMovementPacket()
@@ -174,14 +192,14 @@ namespace RexLogic
         if(!connected_)
             return;
     
-        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgCompleteAgentMovement);
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgCompleteAgentMovement);
         assert(m);
         
         m->AddUUID(myInfo_.agentID);
         m->AddUUID(myInfo_.sessionID);
         m->AddU32(myInfo_.circuitCode);
         
-        netInterface_->FinishMessageBuilding(m);
+        FinishMessageBuilding(m);
     }
     
     void RexServerConnection::SendLogoutRequestPacket()
@@ -189,13 +207,13 @@ namespace RexLogic
         if(!connected_)
             return;    
     
-        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgLogoutRequest);
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgLogoutRequest);
         assert(m);
         
         m->AddUUID(myInfo_.agentID);
         m->AddUUID(myInfo_.sessionID);
 
-        netInterface_->FinishMessageBuilding(m);
+        FinishMessageBuilding(m);
 	}
 	
 	void RexServerConnection::SendChatFromViewerPacket(std::string text)
@@ -203,7 +221,7 @@ namespace RexLogic
         if(!connected_)
             return;    
     
-        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgChatFromViewer);
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgChatFromViewer);
         assert(m);
         
         m->AddUUID(myInfo_.agentID);
@@ -212,7 +230,7 @@ namespace RexLogic
         m->AddU8(1);
         m->AddS32(0);
         
-        netInterface_->FinishMessageBuilding(m);
+        FinishMessageBuilding(m);
 	}	
 	
 	void RexServerConnection::SendAgentUpdatePacket(Core::Quaternion bodyrot, Core::Quaternion headrot, uint8_t state, 
@@ -222,7 +240,7 @@ namespace RexLogic
         if(!connected_)
             return;    
     
-        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgAgentUpdate);
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentUpdate);
         assert(m);
         
         m->AddUUID(myInfo_.agentID);
@@ -238,7 +256,7 @@ namespace RexLogic
         m->AddU32(controlflags);
         m->AddU8(flags);
         
-        netInterface_->FinishMessageBuilding(m);
+        FinishMessageBuilding(m);
 	}
     
     void RexServerConnection::SendObjectSelectPacket(Core::entity_id_t object_id)
@@ -246,7 +264,7 @@ namespace RexLogic
         if (!connected_)
             return;
     
-        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgObjectSelect);
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectSelect);
         assert(m);
         
         // AgentData
@@ -257,7 +275,7 @@ namespace RexLogic
         m->SetVariableBlockCount(1);
         m->AddU32(object_id);
         
-        netInterface_->FinishMessageBuilding(m);
+        FinishMessageBuilding(m);
     }
     
     void RexServerConnection::SendObjectSelectPacket(std::vector<Core::entity_id_t> object_id_list)
@@ -265,7 +283,7 @@ namespace RexLogic
         if (!connected_)
             return;
     
-        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgObjectSelect);
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectSelect);
         assert(m);
         
         // AgentData
@@ -277,7 +295,7 @@ namespace RexLogic
         for(size_t i = 0; i < object_id_list.size(); ++i)
             m->AddU32(object_id_list[i]);
         
-        netInterface_->FinishMessageBuilding(m);
+        FinishMessageBuilding(m);
     }
 
     void RexServerConnection::SendObjectDeselectPacket(Core::entity_id_t object_id)
@@ -285,7 +303,7 @@ namespace RexLogic
         if (!connected_)
             return;
     
-        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgObjectDeselect);
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDeselect);
         assert(m);
         
         // AgentData
@@ -296,7 +314,7 @@ namespace RexLogic
         m->SetVariableBlockCount(1);
         m->AddU32(object_id);
                         
-        netInterface_->FinishMessageBuilding(m);
+        FinishMessageBuilding(m);
     }    
     
     void RexServerConnection::SendObjectDeselectPacket(std::vector<Core::entity_id_t> object_id_list)
@@ -304,7 +322,7 @@ namespace RexLogic
         if (!connected_)
             return;
     
-        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgObjectDeselect);
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDeselect);
         assert(m);
         
         // AgentData
@@ -316,7 +334,7 @@ namespace RexLogic
         for(size_t i = 0; i < object_id_list.size(); ++i)
             m->AddU32(object_id_list[i]);
                         
-        netInterface_->FinishMessageBuilding(m);
+        FinishMessageBuilding(m);
     }
     
     void RexServerConnection::SendMultipleObjectUpdatePacket(std::vector<Foundation::EntityPtr> entity_ptr_list)
@@ -324,7 +342,7 @@ namespace RexLogic
         if (!connected_)
             return;
     
-        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgMultipleObjectUpdate);
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgMultipleObjectUpdate);
         assert(m);
         
         // AgentData
@@ -382,7 +400,7 @@ namespace RexLogic
         // Add the data.
         m->AddBuffer(offset, data);*/
         
-        netInterface_->FinishMessageBuilding(m);
+        FinishMessageBuilding(m);
     }
     
     void RexServerConnection::SendObjectNamePacket(std::vector<Foundation::EntityPtr> entity_ptr_list)
@@ -390,7 +408,7 @@ namespace RexLogic
         if (!connected_)
             return;
     
-        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgObjectName);
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectName);
         assert(m);
         
         // AgentData
@@ -414,7 +432,7 @@ namespace RexLogic
         if (!connected_)
             return;
     
-        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgObjectDescription);
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDescription);
         assert(m);
         
         // AgentData
@@ -438,17 +456,48 @@ namespace RexLogic
         if (!connected_)
             return;    
 
-        NetOutMessage *m = netInterface_->StartMessageBuilding(RexNetMsgRegionHandshakeReply);
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgRegionHandshakeReply);
         
         m->AddUUID(agent_id);
         m->AddUUID(session_id); 
         m->AddU32(flags);
         
-        netInterface_->FinishMessageBuilding(m);
+        FinishMessageBuilding(m);
     }
     
     volatile OpenSimProtocol::Connection::State RexServerConnection::GetConnectionState()
     {
-        return netInterface_->GetConnectionState();
+        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
+        if (!sp.get())
+        {
+            RexLogicModule::LogError("Getting network interface did not succeed.");
+            return OpenSimProtocol::Connection::STATE_ENUM_COUNT;
+        }
+        
+        return sp->GetConnectionState();
+    }
+    
+    NetOutMessage *RexServerConnection::StartMessageBuilding(NetMsgID message_id)
+    {
+        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
+        if (!sp.get())
+        {
+            RexLogicModule::LogError("Getting network interface did not succeed.");
+            return 0;
+        }
+        
+        return sp->StartMessageBuilding(message_id);
+    }
+    
+    void RexServerConnection::FinishMessageBuilding(NetOutMessage *msg)
+    {
+        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
+        if (!sp.get())
+        {
+            RexLogicModule::LogError("Getting network interface did not succeed.");
+            return;
+        }
+        
+        sp->FinishMessageBuilding(msg);
     }
 }
