@@ -40,7 +40,7 @@
 #include "OpenJpegDecoder.h"
 
 #if defined(_MSC_VER)
-    #include "OpenJpeg.h"
+    #include <openjpeg.h>
 #else   
     #include <openjpeg/openjpeg.h>
 #endif
