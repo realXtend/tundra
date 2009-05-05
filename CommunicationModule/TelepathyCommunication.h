@@ -34,8 +34,11 @@ namespace Communication
 		ContactListPtr GetContactList();
 		void PublishPresence(PresenceStatusPtr p);
 
+		IMMessagePtr CreateIMMessage(std::string text);
+
 		// callbacks for console commands
 		Console::CommandResult ConsoleInfo(const Core::StringVector &params);
+		Console::CommandResult ConsoleHelp(const Core::StringVector &params);
         Console::CommandResult ConsoleLogin(const Core::StringVector &params);
 		Console::CommandResult ConsoleLogout(const Core::StringVector &params);
 		Console::CommandResult ConsoleCreateSession(const Core::StringVector &params);
@@ -51,6 +54,7 @@ namespace Communication
 		static TelepathyCommunicationPtr instance_;
 		
 		// member variables
+		bool connected_; // todo: replace this with "Connection" object
 		Foundation::Framework* framework_;
 		TPIMSessionList im_sessions_;
 		TPContactList contact_list_;

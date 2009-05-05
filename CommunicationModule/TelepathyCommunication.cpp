@@ -30,16 +30,18 @@ namespace Communication
 
 	void TelepathyCommunication::RegisterConsoleCommands()
 	{
-		Console::CommandService *console = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand);
-		console->RegisterCommand(Console::CreateCommand("comminfo", "Open connection to IM server. Usage: commlogin(account password server port)", Console::Bind(this, &TelepathyCommunication::ConsoleInfo)));
-		console->RegisterCommand(Console::CreateCommand("commlogin", "Information about state of communication manager", Console::Bind(this, &TelepathyCommunication::ConsoleLogin)));
-		console->RegisterCommand(Console::CreateCommand("commlogout", "", Console::Bind(this, &TelepathyCommunication::ConsoleLogout)));
-		console->RegisterCommand(Console::CreateCommand("commcreatesession", "", Console::Bind(this, &TelepathyCommunication::ConsoleCreateSession)));
-		console->RegisterCommand(Console::CreateCommand("commlistsessions", "", Console::Bind(this, &TelepathyCommunication::ConsoleListSessions)));
-		console->RegisterCommand(Console::CreateCommand("commsendmessage", "", Console::Bind(this, &TelepathyCommunication::ConsoleSendMessage)));
-		console->RegisterCommand(Console::CreateCommand("commlistcontacts", "", Console::Bind(this, &TelepathyCommunication::ConsoleListContacts)));
-		console->RegisterCommand(Console::CreateCommand("commaddaccount", "", Console::Bind(this, &TelepathyCommunication::ConsoleAddContact)));
-//		console->RegisterCommand(Console::CreateCommand("commpresencestatus", "", Console::Bind(this, &TelepathyCommunication::ConsoleLogout)));
+		Console::CommandService* console_service = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand);
+
+		console_service->RegisterCommand(Console::CreateCommand("comminfo", "Open connection to IM server. Usage: commlogin(account password server port)", Console::Bind(this, &TelepathyCommunication::ConsoleInfo)));
+		console_service->RegisterCommand(Console::CreateCommand("commhelp", "Prints communication manager debug console commands.", Console::Bind(this, &TelepathyCommunication::ConsoleHelp)));
+		console_service->RegisterCommand(Console::CreateCommand("commlogin", "Information about state of communication manager", Console::Bind(this, &TelepathyCommunication::ConsoleLogin)));
+		console_service->RegisterCommand(Console::CreateCommand("commlogout", "", Console::Bind(this, &TelepathyCommunication::ConsoleLogout)));
+		console_service->RegisterCommand(Console::CreateCommand("commcreatesession", "", Console::Bind(this, &TelepathyCommunication::ConsoleCreateSession)));
+		console_service->RegisterCommand(Console::CreateCommand("commlistsessions", "", Console::Bind(this, &TelepathyCommunication::ConsoleListSessions)));
+		console_service->RegisterCommand(Console::CreateCommand("commsendmessage", "", Console::Bind(this, &TelepathyCommunication::ConsoleSendMessage)));
+		console_service->RegisterCommand(Console::CreateCommand("commlistcontacts", "", Console::Bind(this, &TelepathyCommunication::ConsoleListContacts)));
+		console_service->RegisterCommand(Console::CreateCommand("commaddcontact", "", Console::Bind(this, &TelepathyCommunication::ConsoleAddContact)));
+//		console_service->RegisterCommand(Console::CreateCommand("commpresencestatus", "", Console::Bind(this, &TelepathyCommunication::ConsoleLogout)));
 	}
 
 	// rename to: InitPythonCommunication
@@ -166,6 +168,13 @@ namespace Communication
 		// TODO: call python here
 	}
 
+	IMMessagePtr TelepathyCommunication::CreateIMMessage(std::string text)
+	{
+		TPIMMessage* m = new TPIMMessage(0);
+		m->SetText(text);
+		return IMMessagePtr((IMMessage*)m);
+	}
+
 	// DEBUG CONSOLE CALLBACKS
 
 	/*
@@ -174,10 +183,14 @@ namespace Communication
 	Console::CommandResult TelepathyCommunication::ConsoleInfo(const Core::StringVector &params)
 	{
 		char buffer[100];
-		std::string text = "CommunicationManager: TelepathyCommunication\n";
-		text.append("---------------------");
+		std::string text;
 		text.append("\n");
+		text.append("communication manager: TelepathyCommunication\n");
 		text.append("current account status: ");
+		if (connected_)
+			text.append("online");
+		else
+			text.append("offline");
 		text.append("\n");
 		text.append("current sessions: ");
 		sprintf(buffer, "%d",im_sessions_.size());
@@ -191,6 +204,26 @@ namespace Communication
 	}
 
 	/*
+	Prints debug console commands
+	*/
+	Console::CommandResult TelepathyCommunication::ConsoleHelp(const Core::StringVector &params)
+	{
+		std::string text;
+		text.append("\n");
+		text.append("debug console commands:\n");
+		text.append("comminfo .......... Prints information about communication manager state. ");
+		text.append("commhelp .......... Prints this help.");
+		text.append("commlogin ......... Connects to jabber server.");
+		text.append("commlogout ........ Closes connection to jabber server.");
+		text.append("commcreatesession . Creates IM session.");
+		text.append("commlistsessions .. Prints all sessions.");
+		text.append("commsendmessage ... Send messaga.");
+		text.append("commlistcontacts .. Prints all contacts on contact list.");
+		text.append("commaddcontact..... Sends friend request.");
+		return Console::ResultSuccess(text); 
+	}
+
+	/*
 	Opens a connections to jabber server
 	*/
 	Console::CommandResult TelepathyCommunication::ConsoleLogin(const Core::StringVector &params)
@@ -200,37 +233,111 @@ namespace Communication
 			std::string reason = "Wrong number of arguments!\ncommlogin(<address>,<pwd>,<server>,<port>)";
 			return Console::ResultFailure(reason);
 		}
-		else
-		{
-			Credentials* c = new Credentials(); // OpenConnection doesn't use this yet.
-			OpenConnection(CredentialsPtr(c));
-			return Console::ResultSuccess("Ready.");
-		}
+
+		Credentials* c = new Credentials(); // OpenConnection doesn't use this yet.
+		OpenConnection(CredentialsPtr(c));
+		return Console::ResultSuccess("Ready.");
 	}
 
 	Console::CommandResult TelepathyCommunication::ConsoleLogout(const Core::StringVector &params)
 	{
-		return Console::ResultFailure("NOT IMPLEMENTED.");
+		CloseConnection();
+		return Console::ResultSuccess("Ready.");
 	}
 
 	Console::CommandResult TelepathyCommunication::ConsoleCreateSession(const Core::StringVector &params)
 	{
-		return Console::ResultFailure("NOT IMPLEMENTED.");
+		if (params.size() != 1)
+		{
+			std::string reason = "Wrong number of arguments!\ncommcreatesession(<friend>)";
+			return Console::ResultFailure(reason);
+		}
+
+		TPContact* c = new TPContact(); // todo: Manifacture funtion for these
+		c->SetName(params[0]);
+		
+		CreateIMSession(ContactPtr((Contact*)c));
+		return Console::ResultSuccess("Ready.");
 	}
 
+	// Cannot be implemented before multiple session support is done on python side
 	Console::CommandResult TelepathyCommunication::ConsoleListSessions(const Core::StringVector &params)
 	{
-		return Console::ResultFailure("NOT IMPLEMENTED.");
+		std::string text;
+
+		bool jabber_contact_founded = false;
+		ContactInfoPtr jabber_contact;
+		TPIMSessionList list = im_sessions_;
+		for (int i=0; i<list.size(); i++)
+		{
+			TPIMSessionPtr s = list[i];
+			int id = s->GetId();
+			text.append("session: ");
+			text.append(text);
+			text.append("\n");
+			text.append("Ready.\n");
+		}
+
+		return Console::ResultFailure(text);
 	}
 
+	
 	Console::CommandResult TelepathyCommunication::ConsoleSendMessage(const Core::StringVector &params)
 	{
-		return Console::ResultFailure("NOT IMPLEMENTED.");
+		// if just one argument then the message is sent to first session we have
+		if (params.size() == 1)
+		{
+			std::string text = params[0];
+
+			if (im_sessions_.size() == 0)
+			{
+				std::string reason = "There is no session to sent the message!";
+				return Console::ResultFailure(reason);
+			}
+
+			IMMessagePtr m = CreateIMMessage(text);
+			im_sessions_[0]->SendMessageW(m);
+			return Console::ResultSuccess("Ready.");
+		}
+		// if we have two arguments then first one is session id and second text
+		if (params.size() == 2)
+		{
+			std::string session_id = params[0];
+			std::string text = params[1];
+
+			return Console::ResultFailure("NOT IMPLEMENTED");
+		}
+
+		std::string reason = "Wrong number of arguments!\ncommsendmessage(<text>)\ncommsendmessage(<session id>,<text>)";
+		return Console::ResultFailure(reason);
 	}
 
+	/*
+	Prints information to debug console about all contacts in contact list.
+	*/
 	Console::CommandResult TelepathyCommunication::ConsoleListContacts(const Core::StringVector &params)
 	{
-		return Console::ResultFailure("NOT IMPLEMENTED.");
+		char buffer[100];
+		std::string text;
+
+		text.append("Contacts count: ");
+		sprintf(buffer,"%i",contact_list_.size());
+		text.append(buffer);
+		text.append("\n");
+
+		for (int i=0; i<contact_list_.size(); i++)
+		{
+			TPContactPtr contact = contact_list_[i];
+			std::string name = contact->GetName();
+			std::string online_status;
+			if (contact->GetPresenceStatus()->GetOnlineStatus())
+				online_status = "online ";
+			else
+				online_status = "offline";
+			std::string online_message = contact->GetPresenceStatus()->GetOnlineMessage();
+			text.append( name.append(" ").append(online_status).append(" ").append(online_message) );
+		}
+		return Console::ResultSuccess(text);
 	}
 
 	Console::CommandResult TelepathyCommunication::ConsoleAddContact(const Core::StringVector &params)
