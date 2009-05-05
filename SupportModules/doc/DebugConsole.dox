@@ -50,6 +50,16 @@ AutoRegisterConsoleCommand(Console::CreateCommand(
 	One can also quary the ConsoleCommandService and register / unregister
 	commands manually, see \ref using_services and ConsoleCommandServiceInterface.
 	
+	The C++ callback is automatically called by the CommandManager. For
+	threadsafe calling, see \ref threading_console.
+	
+\subsection threading_console Threadsafe execution of commands
+	
+	This requires a bit more work. First of all when binding a console command,
+	the console command must be created as "delayed", see Console::CreateCommand().
+	
+	Then in your thread's update loop, you must call Console::ConsoleCommandServiceInterface::Poll().
+	
 \subsection command_callback_console The C++ callback
 	Below is the signature of the C++ callback function:
 	\verbatim
@@ -74,6 +84,8 @@ Console::CommandResult CommandManager::ConsoleTest(const Core::StringVector &par
 	whether the command was executed succesfully or not, and
 	to report any potential errors. ResultSuccess() and ResultFailure() as well
 	as others are provided as convenient shortcuts.
+	
+	For threadsafe calling of the callback function, see \ref threading_console.
 	
 */
 }
