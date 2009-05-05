@@ -66,7 +66,7 @@ std::string server_port = 9000;
 
 pCall->Connect(server_address, server_port);
 
-// Create call (same like as above request)
+// Create call (same as above request)
 std::string method = "example";
 pCall->CreateCall(method);
 
@@ -78,7 +78,8 @@ pCall->AddMember("account", "mynick@avatar.realxtend.org:10001");
 
 pCall->Send();
 
-// Here we know that if everything was ok the response will contain value "sessionHash"
+// If everything was ok the response will contain value "sessionHash"
+// else exception is thrown.
 
 std::string sessionHash;
 try
@@ -89,8 +90,9 @@ try
 	//It did not contain? Read error message (and read it also from reply). 
 	std::cout<<" Error: "<<ex.getMessage();
 	
+	// This is valid only for Rex-server: 
 	// And if you are sure that the server responded something try to read the server message (assuming that the server has replied with a message).  
-	std::cout<<" Server replied: "<<pCall->GetReply<std::string>("message");
+	// std::cout<<" Server replied: "<<pCall->GetReply<std::string>("message");
 } 
 
 // Now you can either continue reading or create new call or.. 
