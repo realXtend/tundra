@@ -194,7 +194,7 @@ namespace Asset
             new_request.asset_type_ = i->second.GetAssetType();
             pending_requests_.push_back(new_request);            
         
-            i = texture_transfers_.erase(i);
+            ++i;
         }   
          
         AssetTransferMap::iterator j = asset_transfers_.begin();
@@ -205,8 +205,11 @@ namespace Asset
             new_request.asset_type_ = j->second.GetAssetType();
             pending_requests_.push_back(new_request);            
         
-            j = asset_transfers_.erase(i);
+            ++j;
         }   
+
+	texture_transfers_.clear();
+	asset_transfers_.clear();
     }         
          
     void UDPAssetProvider::SendPendingRequests()
