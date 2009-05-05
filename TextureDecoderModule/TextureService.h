@@ -15,52 +15,55 @@ namespace Foundation
 
 namespace TextureDecoder
 {
-    //! texture decoder service interface
+    //! Texture decoder. Implements TextureServiceInterface.
     class TextureService : public Foundation::TextureServiceInterface
     {
     public:
-        //! constructor
+        //! Constructor
         TextureService(Foundation::Framework* framework);
         
-        //! destructor
-        ~TextureService();
-        
-        //! updates texture requests
-        void Update(Core::f64 frametime);
+        //! Destructor
+        virtual ~TextureService();
 
-        //! queues a texture request
+        //! Queues a texture request
         /*! \param asset_id asset ID of texture
          */
-        void RequestTexture(const std::string& asset_id);
+        virtual void RequestTexture(const std::string& asset_id);
+        
+        //! Updates texture requests. Called by TextureDecoderModule
+        void Update(Core::f64 frametime);
+
+        //! Handles an asset event. Called by TextureDecoderModule
+        bool HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
         
     private:
-        //! updates a texture request
-        /*! queues decode requests to the decode thread as necessary
+        //! Updates a texture request
+        /*! Polls the asset service & queues decode requests to the decode thread as necessary
          */
         void UpdateRequest(TextureRequest& request, Foundation::AssetServiceInterface* asset_service);
-        
-        //! processes a decode result from the decode thread
-        /*! \return true if texture request has reached maximum quality level and can be removed
-         */
-        bool UpdateRequestWithResult(TextureRequest& request, DecodeResult& result);
 
         typedef std::map<std::string, TextureRequest> TextureRequestMap;
         
-        //! framework we belong to
+        //! Framework we belong to
         Foundation::Framework* framework_;
                 
-        //! resource event category
+        //! Resource event category
         Core::event_category_id_t resourcecategory_id_;
 
-        //! ongoing texture requests
+        //! Ongoing texture requests
         TextureRequestMap requests_;
 
-        //! thread for actual decoding work
+        //! Thread for actual decoding work
         Core::Thread thread_;
 
-        //! openjpeg decoder that's run in a thread
+        //! OpenJpeg decoder that's run in a thread
         OpenJpegDecoder decoder_;
         
+        //! Texture asset request retry interval
+        Core::f64 asset_retry_interval_;
+        
+        //! Default asset request retry interval
+        static const Core::Real DEFAULT_ASSET_RETRY_INTERVAL;   
     };
 }
 

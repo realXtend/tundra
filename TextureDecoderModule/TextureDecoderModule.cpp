@@ -36,6 +36,13 @@ namespace TextureDecoder
         LogInfo("Module " + Name() + " initialized.");
     }
     
+     // virtual
+    void TextureDecoderModule::PostInitialize()
+    {   
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        asset_event_category_ = event_manager->QueryEventCategory("Asset");
+    } 
+    
     // virtual
     void TextureDecoderModule::Update(Core::f64 frametime)
     {
@@ -49,6 +56,18 @@ namespace TextureDecoder
         framework_->GetServiceManager()->UnregisterService(texture_service_.get());
         texture_service_.reset();
         LogInfo("Module " + Name() + " uninitialized.");
+    }
+    
+    bool TextureDecoderModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        if (category_id == asset_event_category_)
+        {
+            if (texture_service_)
+                return texture_service_->HandleAssetEvent(event_id, data);
+            else return false;
+        }
+        
+        return false;
     }
 }
 

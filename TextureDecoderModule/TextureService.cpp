@@ -2,20 +2,22 @@
 
 #include "StableHeaders.h"
 #include "AssetDefines.h"
+#include "AssetEvents.h"
 #include "AssetInterface.h"
 #include "ResourceInterface.h"
 #include "TextureDecoderModule.h"
 #include "Texture.h"
 #include "TextureService.h"
 
-#include <openjpeg/openjpeg.h>
-
 namespace TextureDecoder
 {
+    const Core::Real TextureService::DEFAULT_ASSET_RETRY_INTERVAL = 2.0;
 
     TextureService::TextureService(Foundation::Framework* framework) : 
         framework_(framework)
     {
+        asset_retry_interval_ = framework_->GetDefaultConfig().DeclareSetting("TextureDecoder", "AssetRetryInterval", DEFAULT_ASSET_RETRY_INTERVAL); 
+
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
 
         resourcecategory_id_ = event_manager->QueryEventCategory("Resource");
@@ -37,30 +39,30 @@ namespace TextureDecoder
     void TextureService::RequestTexture(const std::string& asset_id)
     {
         if (requests_.find(asset_id) != requests_.end())
-            return; // already requested
-            
-        TextureRequest new_request(asset_id);
+            return; // Already requested
+     
+        TextureRequest new_request(asset_id);                   
         requests_[asset_id] = new_request;
     }
     
     void TextureService::Update(Core::f64 frametime)
     {
-        Foundation::AssetServiceInterface* asset_service = NULL;
-
         Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
-        if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
+        if (!service_manager->IsRegistered(Foundation::Service::ST_Asset))
         {
-            asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset);
-        }
-        else
-        {
-            // No asset service, clear any pending requests and do nothing
-            if (requests_.size())
-                requests_.clear();
+            // No asset service, clear asset request status of requests & do nothing
+            TextureRequestMap::iterator i = requests_.begin();     
+            while (i != requests_.end())
+            {
+                i->second.SetRequested(false);
+                ++i;
+            }            
             return;
         }
-            
-        //! todo: check/service only a couple of requests per frame, not all
+
+        Foundation::AssetServiceInterface* asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset);
+
+        // Check if assets have enough data to queue decode requests
         TextureRequestMap::iterator i = requests_.begin();     
         while (i != requests_.end())
         {
@@ -75,8 +77,23 @@ namespace TextureDecoder
             i = requests_.find(result.id_);
             if (i != requests_.end())
             {
-                if (UpdateRequestWithResult(i->second, result)) 
-                    requests_.erase(i);
+                bool done = i->second.UpdateWithDecodeResult(result);
+      
+                if (result.texture_)
+                {
+                    Texture* texture = checked_static_cast<Texture*>(result.texture_.get());
+                    TextureDecoderModule::LogInfo("Decoded texture w " + Core::ToString<Core::uint>(texture->GetWidth()) + " h " +
+                        Core::ToString<Core::uint>(texture->GetHeight()) + " level " + Core::ToString<int>(result.level_));
+    
+                    // Send resource ready event
+                    Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+                    Resource::Events::ResourceReady event_data(i->second.GetId(), result.texture_);
+                    event_manager->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, &event_data);          
+                }   
+                
+                // Remove request if final quality level was decoded
+                if (done)
+                    requests_.erase(i);                
             }
         }
     }
@@ -87,24 +104,20 @@ namespace TextureDecoder
         if (request.IsDecodeRequested())
             return;
 
-        // If asset not requested yet, get the request running now
+        // If asset not yet requested, request now
         if (!request.IsRequested())
         {
             asset_service->RequestAsset(request.GetId(), Asset::RexAT_Texture);
             request.SetRequested(true);
         }
-        
+
         Core::uint size = 0;
         Core::uint received = 0;
         Core::uint received_continuous = 0;
-        
+             
         if (!asset_service->QueryAssetStatus(request.GetId(), size, received, received_continuous))
-        {
-            // If cannot query asset status, the asset request wasn't queued (not connected, for example). Request again later       
-            request.SetRequested(false);
             return;
-        }
-
+        
         request.UpdateSizeReceived(size, received_continuous);
 
         if (request.HasEnoughData())
@@ -121,39 +134,22 @@ namespace TextureDecoder
                 request.SetDecodeRequested(true);
             }
         }
-    }
+    }  
     
-    bool TextureService::UpdateRequestWithResult(TextureRequest& request, DecodeResult& result)
-    {     
-        request.SetDecodeRequested(false);
-
-        // Update texture amount of quality levels, should now be known
-        request.SetLevels(result.max_levels_);
-
-        // See if successfully decoded data
-        if (result.texture_)
+    bool TextureService::HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        if (event_id == Asset::Events::ASSET_CANCELED)
         {
-            request.DecodeSuccess();     
-
-            // Update texture original dimensions, should now be known
-            request.SetSize(result.original_width_, result.original_height_, result.components_);
-      
-            Texture* texture = checked_static_cast<Texture*>(result.texture_.get());
-            TextureDecoderModule::LogInfo("Decoded texture w " + Core::ToString<Core::uint>(texture->GetWidth()) + " h " +
-                Core::ToString<Core::uint>(texture->GetHeight()) + " level " + Core::ToString<int>(request.GetDecodedLevel()));
-
-            // Send resource ready event
-            Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-            Resource::Events::ResourceReady event_data(request.GetId(), result.texture_);
-            event_manager->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, &event_data);
-
-            // If max level, the request is finished and can be erased
-            if (request.GetDecodedLevel() == 0)
-                return true;
+            Asset::Events::AssetCanceled* event_data = checked_static_cast<Asset::Events::AssetCanceled*>(data);
+            TextureRequestMap::iterator i = requests_.find(event_data->asset_id_);
+            if (i != requests_.end())
+            {
+                TextureDecoderModule::LogInfo("Texture decode request " + i->second.GetId() + " canceled");
+                requests_.erase(i);
+            }
         }
-
-        request.SetNextLevelToDecode();
+                
         return false;
-    }
+    }     
 }
 

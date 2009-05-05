@@ -5,44 +5,10 @@
 
 #include "AssetInterface.h"
 #include "TextureInterface.h"
+#include "TextureRequest.h"
 
 namespace TextureDecoder
 {
-    //! decode request
-    struct DecodeRequest
-    {
-        //! texture asset id
-        std::string id_;
-
-        //! source asset data
-        Foundation::AssetPtr source_;
-
-        //! quality level, 0 = highest
-        int level_;
-    };
-
-    //! decode result
-    struct DecodeResult
-    {
-        //! texture asset id
-        std::string id_;
-        
-        //! pointer to resulting raw texture, NULL if decode failed
-        Foundation::ResourcePtr texture_;
-
-        //! amount of quality levels found
-        int max_levels_;
-
-        //! original texture width 
-        Core::uint original_width_;
-
-        //! original texture height
-        Core::uint original_height_;
-
-        //! amount of components in texture
-        Core::uint components_;
-    };
-
     //! OpenJpeg decoder that runs in a thread and serves decode requests, used internally by TextureService
     class OpenJpegDecoder
     {

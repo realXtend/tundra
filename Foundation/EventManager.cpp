@@ -86,6 +86,12 @@ namespace Foundation
     
     bool EventManager::SendEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const
     {
+        if (category_id == 0)
+        {
+            Foundation::RootLogWarning("Attempted to send event with unknown category");
+            return false;
+        }    
+            
         return SendEvent(event_subscriber_root_.get(), category_id, event_id, data);
     }
     

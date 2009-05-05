@@ -6,7 +6,7 @@
 #include "AssetProviderInterface.h"
 
 namespace Asset
-{
+{    
     //! UDP asset provider
     /*! Handles legacy UDP texture & asset transfers using OpenSimProtocolModule network events.
         Created by AssetModule.
@@ -65,6 +65,25 @@ namespace Asset
         bool HandleNetworkEvent(Foundation::EventDataInterface* data);
         
     private:
+        //! Pending asset request. Used internally by UDPAssetProvider
+        struct AssetRequest
+        {
+            //! Asset ID
+            std::string asset_id_;
+            //! Asset type
+            Core::asset_type_t asset_type_;
+        };
+        
+        //! Sends pending UDP asset requests
+        /*! To only be called when the network interface exists & is connected, otherwise requests will be wasted
+         */
+        void SendPendingRequests();
+        
+        //! Makes current transfers into pending requests & clears transfers.
+        /*! Called when connection lost.
+         */
+        void MakeTransfersPending();
+        
         //! Stores completed asset to asset service's cache
         void StoreAsset(AssetTransfer& transfer);
         
@@ -143,6 +162,10 @@ namespace Asset
                     
         //! Framework
         Foundation::Framework* framework_;    
+        
+        //! Pending asset requests
+        typedef std::vector<AssetRequest> AssetRequestVector;
+        AssetRequestVector pending_requests_;       
     };
 }
 
