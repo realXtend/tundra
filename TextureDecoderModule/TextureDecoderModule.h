@@ -16,7 +16,7 @@ namespace TextureDecoder
     class TextureService;
     typedef boost::shared_ptr<TextureService> TextureServicePtr;
     
-    //! texture decoder module
+    //! Texture decoder module
     class TEXTURE_DECODER_MODULE_API TextureDecoderModule : public Foundation::ModuleInterfaceImpl
     {
     public:
@@ -28,6 +28,7 @@ namespace TextureDecoder
         virtual void Initialize();
         virtual void Uninitialize();
         virtual void Update(Core::f64 frametime);
+        virtual void PostInitialize();
         
         //! returns framework
         Foundation::Framework *GetFramework() { return framework_; }
@@ -39,9 +40,14 @@ namespace TextureDecoder
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_TextureDecoder;
 
+        bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
+
     private:
-        //! texture service
+        //! Texture service
         TextureServicePtr texture_service_;
+        
+        //! Asset event category
+        Core::event_category_id_t asset_event_category_;
     };
 }
 

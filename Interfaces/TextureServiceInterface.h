@@ -17,9 +17,9 @@ namespace Foundation
         TextureServiceInterface() {}
         virtual ~TextureServiceInterface() {}
 
-        //! requests a texture to be received and decoded
-        /*! when texture data becomes available, an event will be sent for each quality level decoded        
-            \param asset_id texture ID, UUID for legacy UDP assets            
+        //! Requests a texture to be received and decoded
+        /*! When texture data becomes available, an event will be sent for each quality level decoded        
+            \param asset_id texture ID, UUID for legacy UDP assets         
          */
         virtual void RequestTexture(const std::string& asset_id) = 0;
     };

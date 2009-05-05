@@ -50,16 +50,10 @@ namespace Asset
         if (!RexUUID::IsValid(asset_id))
             return false;
             
-        RexUUID asset_uuid(asset_id);       
-
-        if (asset_type == RexAT_Texture)
-        {
-            RequestTexture(asset_uuid);
-        }
-        else
-        {
-            RequestOtherAsset(asset_uuid, asset_type);
-        }
+        AssetRequest new_request;
+        new_request.asset_id_ = asset_id;
+        new_request.asset_type_ = asset_type;
+        pending_requests_.push_back(new_request);
         
         return true;
     }
@@ -107,17 +101,22 @@ namespace Asset
     }
     
     void UDPAssetProvider::Update(Core::f64 frametime)
-    {  
+    {          
         // Get network interface
         boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = 
             (framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol)).lock();
 
-        if (!net)
+        if ((!net) || (!net->IsConnected()))
         {
-            // Connection lost, do nothing until it returns        
+            // Connection lost, make any current transfers pending & do nothing until connection returns    
+            MakeTransfersPending();    
             return;
         }
 
+        // Connection exists, send any pending requests
+        SendPendingRequests();
+
+        // Handle timeouts for texture & asset transfers        
         AssetTransferMap::iterator i = texture_transfers_.begin();
         while (i != texture_transfers_.end())
         {
@@ -185,23 +184,60 @@ namespace Asset
         }
     }
     
+    void UDPAssetProvider::MakeTransfersPending()
+    {
+        AssetTransferMap::iterator i = texture_transfers_.begin();
+        while (i != texture_transfers_.end())
+        {
+            AssetRequest new_request;
+            new_request.asset_id_ = i->second.GetAssetId();
+            new_request.asset_type_ = i->second.GetAssetType();
+            pending_requests_.push_back(new_request);            
+        
+            i = texture_transfers_.erase(i);
+        }   
+         
+        AssetTransferMap::iterator j = asset_transfers_.begin();
+        while (j != asset_transfers_.end())
+        {
+            AssetRequest new_request;
+            new_request.asset_id_ = j->second.GetAssetId();
+            new_request.asset_type_ = j->second.GetAssetType();
+            pending_requests_.push_back(new_request);            
+        
+            j = asset_transfers_.erase(i);
+        }   
+    }         
+         
+    void UDPAssetProvider::SendPendingRequests()
+    {    
+        AssetRequestVector::iterator i = pending_requests_.begin();
+        while (i != pending_requests_.end())
+        {                
+            RexUUID asset_uuid(i->asset_id_);
+            if (i->asset_type_ == RexAT_Texture)   
+                RequestTexture(asset_uuid);
+            else
+                RequestOtherAsset(asset_uuid, i->asset_type_);
+                
+            i = pending_requests_.erase(i);
+        }
+    }    
+    
     void UDPAssetProvider::RequestTexture(const RexUUID& asset_id)
     {
+        if (texture_transfers_.find(asset_id) != texture_transfers_.end())
+            return;
+
         // Get network interface
         boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = 
             (framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol)).lock();
         
         if ((!net) || (!net->IsConnected()))
-        {
-            // Cannot service request now
             return;
-        }
         
         const OpenSimProtocol::ClientParameters& client = net->GetClientParameters();
-        
-        if (texture_transfers_.find(asset_id) != texture_transfers_.end())
-            return;
-        
+                
         AssetTransfer new_transfer;
         new_transfer.SetAssetId(asset_id.ToString());
         new_transfer.SetAssetType(RexAT_Texture);
@@ -227,16 +263,6 @@ namespace Asset
     
     void UDPAssetProvider::RequestOtherAsset(const RexUUID& asset_id, Core::uint asset_type)
     {
-        // Get network interface
-        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = 
-            (framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol)).lock();
-
-        if ((!net) || (!net->IsConnected()))
-        {
-            // Cannot service request now
-            return;
-        }
-            
         // Asset transfers are keyed by transfer id, not asset id, so have to search in a bit cumbersome way
         AssetTransferMap::const_iterator i = asset_transfers_.begin();
         std::string asset_id_str = asset_id.ToString();
@@ -247,6 +273,13 @@ namespace Asset
 
             ++i;
         }
+            
+        // Get network interface
+        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = 
+            (framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol)).lock();
+
+        if ((!net) || (!net->IsConnected()))
+            return;
 
         RexUUID transfer_id;
         transfer_id.Random();
@@ -272,6 +305,8 @@ namespace Asset
         m->AddBuffer(20, asset_info);
         
         net->FinishMessageBuilding(m);
+        
+        return;
     }
     
     bool UDPAssetProvider::HandleNetworkEvent(Foundation::EventDataInterface* data)

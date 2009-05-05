@@ -39,7 +39,11 @@
 #include "TextureDecoderModule.h"
 #include "OpenJpegDecoder.h"
 
-#include <openjpeg/openjpeg.h>
+#if defined(_MSC_VER)
+    #include "OpenJpeg.h"
+#else   
+    #include <openjpeg/openjpeg.h>
+#endif
 
 namespace TextureDecoder
 {
@@ -117,6 +121,7 @@ namespace TextureDecoder
         DecodeResult result;
 
         result.id_ = request.id_;
+        result.level_ = -1;
         result.max_levels_ = 5;
         result.original_width_ = 0;
         result.original_height_ = 0;
@@ -155,6 +160,7 @@ namespace TextureDecoder
             result.original_width_ = image->x1 - image->x0;
             result.original_height_ = image->y1 - image->y0;
             result.components_ = image->numcomps;
+            result.level_ = request.level_;
 
             // Assume all components are same size
             int actual_width = image->comps[0].w;

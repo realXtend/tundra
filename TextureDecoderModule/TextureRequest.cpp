@@ -26,7 +26,7 @@ namespace TextureDecoder
         height_(0),
         levels_(-1),
         decoded_level_(-1),
-        next_level_(5)
+        next_level_(5)       
     {
     }
     
@@ -44,35 +44,12 @@ namespace TextureDecoder
             next_level_ = 0;
     }
      
-    void TextureRequest::SetSize(Core::uint width, Core::uint height, Core::uint components)
-    {
-        width_ = width;
-        height_ = height;
-        components_ = components;
-    }
-
-    void TextureRequest::SetLevels(int levels)
-    {
-        levels_ = levels;
-    }
-
-    void TextureRequest::SetNextLevelToDecode()
-    {
-        if (next_level_ > 0)
-            next_level_--;
-    }
-
-    void TextureRequest::DecodeSuccess()
-    {
-        decoded_level_ = next_level_;
-    }
-
-    bool TextureRequest::HasEnoughData()
+    bool TextureRequest::HasEnoughData() const
     {
         return received_ >= EstimateDataSize(next_level_);
     }
 
-    Core::uint TextureRequest::EstimateDataSize(int level)
+    Core::uint TextureRequest::EstimateDataSize(int level) const
     {
         if (level < 0) level = 0;
         
@@ -93,5 +70,32 @@ namespace TextureDecoder
             estimate = 600;
             
         return estimate;
+    }
+    
+    bool TextureRequest::UpdateWithDecodeResult(const DecodeResult& result)
+    {     
+        // Decode no longer pending
+        decode_requested_ = false;
+
+        // Update amount of quality levels, should now be known
+        levels_ = result.max_levels_;
+
+        // See if successfully decoded data
+        if (result.texture_)
+        {
+            // Update texture original dimensions, should now be known
+            width_ = result.original_width_;
+            height_ =  result.original_height_;
+            components_ = result.components_;
+                   
+            decoded_level_ = next_level_;  
+        }
+        
+        // Set next quality level to decode
+        if (next_level_ > 0)
+            next_level_--;
+            
+        // If this was the highest level, request is finished
+        return decoded_level_ == 0;
     }
 }

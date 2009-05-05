@@ -3,96 +3,125 @@
 #ifndef incl_TextureDecoder_TextureRequest_h
 #define incl_TextureDecoder_TextureRequest_h
 
+#include "AssetInterface.h"
+#include "ResourceInterface.h"
+
 namespace TextureDecoder
 {
-    //! an ongoing texture request, used internally by TextureService.
+    //! OpenJpeg decode request, used internally by TextureService
+    struct DecodeRequest
+    {
+        //! Texture asset ID
+        std::string id_;
+
+        //! Source asset data (JPEG2000 stream)
+        Foundation::AssetPtr source_;
+
+        //! Quality level to decode, 0 = highest
+        int level_;
+    };
+
+    //! OpenJpeg decode result, used internally by TextureService
+    struct DecodeResult
+    {
+        //! Texture asset id
+        std::string id_;
+        
+        //! Pointer to resulting raw texture, NULL if decode failed
+        Foundation::ResourcePtr texture_;
+
+        //! Decoded quality level, -1 if decode failed
+        int level_;
+        
+        //! Amount of quality levels found in stream
+        int max_levels_;
+
+        //! Original texture width 
+        Core::uint original_width_;
+
+        //! Original texture height
+        Core::uint original_height_;
+
+        //! Amount of components in texture
+        Core::uint components_;
+    };
+
+    //! An ongoing texture request, used internally by TextureService
     class TextureRequest
     {
     public:
-        //! constructor
+        //! Constructor
         TextureRequest();
         
-        //! constructor
-        /*! \param id asset id
+        //! Constructor
+        /*! \param id Asset ID
          */
         TextureRequest(const std::string& id);
         
-        //! destructor
+        //! Destructor
         ~TextureRequest();
 
-        //! sets request status
+        //! Sets asset request status
         void SetRequested(bool requested) { requested_ = requested; }
 
-        //! sets decode request status
+        //! Sets decode request status
         void SetDecodeRequested(bool requested) { decode_requested_ = requested; }
 
-        //! updates size & received count
-        /*! \param size total size of asset (from asset service)
-            \param received received continuous bytes (from asset service)
+        //! Updates size & received count
+        /*! \param size Total size of asset (from asset service)
+            \param received Received continuous bytes (from asset service)
          */
         void UpdateSizeReceived(Core::uint size, Core::uint received);
 
-        //! sets dimensions & component count (when known)
-        /*! \param width texture width
-            \param height texture height
-            \param components texture components
+        //! Updates request from decode result
+        /*! \param result Decode result
+            \return true if highest quality level was successfully decoded and request can be erased
          */
-        void SetSize(Core::uint width, Core::uint height, Core::uint components);
-
-        //! sets amount of quality levels (when known)
-        /*! \param levels amount of quality levels
-         */
-        void SetLevels(int levels);
-
-        //! sets next level to be decoded
-        void SetNextLevelToDecode();
+        bool UpdateWithDecodeResult(const DecodeResult& result);
         
-        //! sets current level = nextz
-        void DecodeSuccess();
+        //! Checks if enough data to decode next level
+        bool HasEnoughData() const;
 
-        //! checks if enough data to decode next level
-        bool HasEnoughData();
-
-        //! estimates needed data size for a given level
-        /*! \param level quality level
-         */
-        Core::uint EstimateDataSize(int level);
-
-        //! returns asset id
+        //! Returns asset id
         const std::string& GetId() { return id_; }
 
-        //! returns request status
-        bool IsRequested() { return requested_; }
+        //! Returns asset request status
+        bool IsRequested() const { return requested_; }
+        
+        //! Returns decode request status
+        bool IsDecodeRequested() const { return decode_requested_; }
 
-        //! returns decode request status
-        bool IsDecodeRequested() { return decode_requested_; }
-
-        //! returns total data size, 0 if unknown
+        //! Returns total data size, 0 if unknown
         Core::uint GetSize() { return size_; }
         
-        //! returns received bytes
-        Core::uint GetReceived() { return received_; }
+        //! Returns received bytes
+        Core::uint GetReceived() const { return received_; }
 
-        //! returns width, 0 if unknown
-        Core::uint GetWidth() { return width_; }
+        //! Returns width, 0 if unknown
+        Core::uint GetWidth() const { return width_; }
 
-        //! returns height, 0 if unknown
-        Core::uint GetHeight() { return height_; }
+        //! Returns height, 0 if unknown
+        Core::uint GetHeight() const { return height_; }
 
-        //! returns components, 0 if unknown
-        Core::uint GetComponents() { return components_; }
+        //! Returns components, 0 if unknown
+        Core::uint GetComponents() const { return components_; }
 
-        //! returns amount quality levels, -1 if unknown
-        int GetLevels() { return levels_; }
+        //! Returns amount quality levels, -1 if unknown
+        int GetLevels() const { return levels_; }
         
-        //! returns last decoded level, -1 if none so far
-        int GetDecodedLevel() { return decoded_level_; }
+        //! Returns last decoded level, -1 if none so far
+        int GetDecodedLevel() const { return decoded_level_; }
 
-        //! returns next level to decode
-        int GetNextLevel() { return next_level_; }
-
+        //! Returns next level to decode
+        int GetNextLevel() const { return next_level_; }
+        
     private:
-        //! asset on which this request is based
+        //! Estimates needed data size for a given level
+        /*! \param level quality level
+         */
+        Core::uint EstimateDataSize(int level) const;
+        
+        //! Asset on which this request is based
         std::string id_;
 
         //! whether asset request has been queued
@@ -101,29 +130,29 @@ namespace TextureDecoder
         //! whether decode request has been queued
         bool decode_requested_;
 
-        //! total data size, 0 if unknown
+        //! Total data size, 0 if unknown
         Core::uint size_;
 
-        //! last checked size of download progress (continuous received bytes)
+        //! Last checked size of download progress (continuous received bytes)
         Core::uint received_;
 
-        //! texture original width, 0 if unknown
+        //! Texture original width, 0 if unknown
         Core::uint width_;
 
-        //! texture original height, 0 if unknown
+        //! Texture original height, 0 if unknown
         Core::uint height_;
 
-        //! components in image, 0 if unknown
+        //! Components in image, 0 if unknown
         Core::uint components_;
 
-        //! number of quality levels, -1 if unknown
+        //! Number of quality levels, -1 if unknown
         int levels_;
 
-        //! last decoded quality level, 0 = full quality, -1 if none decoded so far
+        //! Last decoded quality level, 0 = full quality, -1 if none decoded so far
         int decoded_level_;
 
-        //! next quality level to decode
-        int next_level_;
+        //! Next quality level to decode
+        int next_level_;     
     };
 }
 #endif
