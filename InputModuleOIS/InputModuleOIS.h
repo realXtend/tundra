@@ -110,7 +110,7 @@ namespace Input
         \todo Joysticks / gamepads not handled yet
         \todo INPUTOIS_MODULE_API doesn't work for some reason
     */
-    class /* INPUTOIS_MODULE_API */ InputModuleOIS : public Foundation::ModuleInterfaceImpl
+    class  InputModuleOIS : public Foundation::ModuleInterfaceImpl
     {
     public:
         typedef std::vector<UnBufferedKeyEventInfo> KeyEventInfoVector;
@@ -132,16 +132,17 @@ namespace Input
         virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, 
             Foundation::EventDataInterface* data);
 
+
         //! returns true if key with specified keycode is currently held down. Internal use only!
-        bool IsKeyDown(OIS::KeyCode keycode) const;
+        INPUTOIS_MODULE_API bool IsKeyDown(OIS::KeyCode keycode) const;
 
         //! returns true if button with specified code is currently held down. Internal use only!
-        bool IsButtonDown(OIS::MouseButtonID code) const;
+        INPUTOIS_MODULE_API bool IsButtonDown(OIS::MouseButtonID code) const;
 
         //! returns slider movement info matching the specified event, but only if the slider is currently being dragged
         /*! If more than one slider matching the event is being dragged, one is chosen arbitrarily.
         */
-        boost::optional<const Events::Movement&> GetDraggedSliderInfo(Core::event_id_t dragged_event);
+        INPUTOIS_MODULE_API boost::optional<const Events::Movement&> GetDraggedSliderInfo(Core::event_id_t dragged_event);
 
         //! returns true if slider corresponding to the event is dragged
         //bool IsDragged(Core::event_id_t slider_event) const;
@@ -149,7 +150,7 @@ namespace Input
         //! Polls the current mouse state for both absolute and relative movement
         /*! Not thread safe. Internal use only!
         */
-        __inline const Events::Movement &GetMouseMovement() const { return movement_; }
+        INPUTOIS_MODULE_API __inline const Events::Movement &GetMouseMovement() const { return movement_; }
 
         //! add a key for unbuffered listening
         /*! Internal use only!
@@ -180,10 +181,10 @@ namespace Input
         void RegisterSliderEvent(Input::State state, Slider slider, Core::event_id_t dragged_event, Core::event_id_t stopped_event, int button = -1, int modifier = 0);
 
         //! Set current input state
-        void SetState(Input::State state) { input_state_ = state; }
+        INPUTOIS_MODULE_API void SetState(Input::State state) { input_state_ = state; }
 
         //! Returns current input state
-        Input::State GetState() const { return input_state_; }
+        INPUTOIS_MODULE_API Input::State GetState() const { return input_state_; }
 
         //! Introspection of registered key events. Internal use only!
         const KeyEventInfoMap &GetRegisteredKeyEvents() const { return listened_keys_; }
@@ -207,6 +208,9 @@ namespace Input
         //! Checks keyboard input and sends input events based on if any keys are pressed.
         void SendKeyEvents(Input::State state);
 
+        //! See if keys corresponding to the event are held down
+        bool IsEvent(const UnBufferedKeyEventInfo &info) const;
+
         //! Handle closing the main window
         /*! Should only be called when main window gets closed, not f.ex. when additional render windows get closed.
         */
@@ -217,6 +221,9 @@ namespace Input
 
         //! Returns key event info vector for state state
         KeyEventInfoVector &GetKeyInfo(Input::State state);
+
+        //! Returns key event info vector for state state
+        const KeyEventInfoVector &GetKeyInfo(Input::State state) const;
 
         //! Returns key event info vector for state state
         SliderInfoVector &GetSliderInfo(Input::State state);

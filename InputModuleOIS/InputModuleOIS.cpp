@@ -236,6 +236,34 @@ namespace Input
         return handled;
     }
 
+    bool InputModuleOIS::IsEvent(const UnBufferedKeyEventInfo &info) const
+    {
+        const bool alt = keyboard_->isModifierDown(OIS::Keyboard::Alt);
+        const bool ctrl = keyboard_->isModifierDown(OIS::Keyboard::Ctrl);
+        const bool shift = keyboard_->isModifierDown(OIS::Keyboard::Shift);
+
+        bool key_pressed = false;
+        if (keyboard_->isKeyDown(info.key_))
+        {
+            const bool mod_alt   = !((info.modifier_ & OIS::Keyboard::Alt)   == 0);
+            const bool mod_ctrl  = !((info.modifier_ & OIS::Keyboard::Ctrl)  == 0);
+            const bool mod_shift = !((info.modifier_ & OIS::Keyboard::Shift) == 0);
+
+            if(!buffered_keyboard_ || buffered_keyboard_->IsKeyHandled(info.key_) == false)
+            {
+                // check modifiers in a bit convoluted way. All combos of ctrl+a, ctrl+alt+a and ctrl+alt+shift+a must work!
+                if ( ((mod_alt   && alt)   || (!mod_alt   && !alt))  &&
+                     ((mod_ctrl  && ctrl)  || (!mod_ctrl  && !ctrl)) &&
+                     ((mod_shift && shift) || (!mod_shift && !shift)) )
+                {
+                    key_pressed = true;
+                }
+            }
+        }
+
+        return key_pressed;
+    }
+
     bool InputModuleOIS::IsKeyDown(OIS::KeyCode keycode) const
     {
         return keyboard_ ? keyboard_->isKeyDown(keycode) : false;
@@ -287,50 +315,16 @@ namespace Input
     void InputModuleOIS::SendKeyEvents(Input::State state)
     {
         KeyEventInfoVector &keys = GetKeyInfo(state);
-
-        const bool alt = keyboard_->isModifierDown(OIS::Keyboard::Alt);
-        const bool ctrl = keyboard_->isModifierDown(OIS::Keyboard::Ctrl);
-        const bool shift = keyboard_->isModifierDown(OIS::Keyboard::Shift);
         for (size_t i=0 ; i<keys.size() ; ++i)
         {
-            bool key_released = false;
-            if (keyboard_->isKeyDown(keys[i].key_))
-            {
-                const bool mod_alt   = !((keys[i].modifier_ & OIS::Keyboard::Alt)   == 0);
-                const bool mod_ctrl  = !((keys[i].modifier_ & OIS::Keyboard::Ctrl)  == 0);
-                const bool mod_shift = !((keys[i].modifier_ & OIS::Keyboard::Shift) == 0);
+            bool pressed = IsEvent(keys[i]);
 
-                if(!keys[i].pressed_ && (!buffered_keyboard_ || buffered_keyboard_->IsKeyHandled(keys[i].key_) == false))
-                {
-                    // check modifiers in a bit convoluted way. All combos of ctrl+a, ctrl+alt+a and ctrl+alt+shift+a must work!
-                    if ( ((mod_alt   && alt)   || (!mod_alt   && !alt))  &&
-                         ((mod_ctrl  && ctrl)  || (!mod_ctrl  && !ctrl)) &&
-                         ((mod_shift && shift) || (!mod_shift && !shift)) )
-                    {
-                        keys[i].pressed_ = true;
-                        framework_->GetEventManager()->SendEvent(event_category_, keys[i].pressed_event_id_, NULL);
-                    } else
-                    {
-                        key_released = true;
-                    }
-                } else
-                {
-                    // see if any modifiers were released or pressed
-                    if ( ((mod_alt   && !alt)   || (!mod_alt   && alt))  ||
-                         ((mod_ctrl  && !ctrl)  || (!mod_ctrl  && ctrl)) ||
-                         ((mod_shift && !shift) || (!mod_shift && shift)) )
-                    {
-                        key_released = true;
-                    }
-                }
-            }
-            else if(keys[i].pressed_)
+            if (keys[i].pressed_ == false && pressed)
             {
-                // key no longer held down
-                key_released = true;
+                keys[i].pressed_ = true;
+                framework_->GetEventManager()->SendEvent(event_category_, keys[i].pressed_event_id_, NULL);
             }
-
-            if (key_released)
+            if (keys[i].pressed_ == true && !pressed)
             {
                 keys[i].pressed_ = false;
                 framework_->GetEventManager()->SendEvent(event_category_, keys[i].released_event_id_, NULL);
@@ -454,6 +448,17 @@ namespace Input
         if (it == listened_keys_.end())
         {
             listened_keys_[state] = KeyEventInfoVector();
+            return GetKeyInfo(state);
+        }
+        return it->second;
+    }
+
+    const InputModuleOIS::KeyEventInfoVector &InputModuleOIS::GetKeyInfo(Input::State state) const
+    {
+        KeyEventInfoMap::const_iterator it = listened_keys_.find(state);
+        if (it == listened_keys_.end())
+        {
+            const_cast<KeyEventInfoMap&>(listened_keys_)[state] = KeyEventInfoVector();
             return GetKeyInfo(state);
         }
         return it->second;
