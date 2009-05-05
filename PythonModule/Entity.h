@@ -16,13 +16,19 @@
 
 namespace PythonScript
 {
+	//the wrapper can't directly keep these 
+	//std::map<Core::entity_id_t, Foundation::EntityPtr> entity_ptrs; //XXX should definitely be weakrefs (right?)
+	//am getting 'already defined' when linking, what's wrong?
+
 	typedef struct {
 		PyObject_HEAD
 		/* Type-specific fields go here. */
-		Foundation::EntityPtr entity;
+		//Foundation::EntityPtr entity;
+		//smart_ptrs can't be just like this in pyobjects, see e.g. http://wiki.python.org/moin/boost.python/PointersAndSmartPointers 
+		Core::entity_id_t ent_id;
 	} rexviewer_EntityObject;
 
-	PyObject* entity_getattro(rexviewer_EntityObject* self, PyObject* name);
+	PyObject* entity_getattro(rexviewer_EntityObject *self, PyObject *name);
 
 	static PyTypeObject rexviewer_EntityType = {
 		PyObject_HEAD_INIT(NULL)
@@ -49,6 +55,9 @@ namespace PythonScript
 		"Entity object",           /* tp_doc */
 	};
 
+	//why can't these be static? doesn't find the definitions in that case..
 	void entity_init(PyObject* m);
-	PyObject* entity_create(Foundation::EntityPtr entity);
+	PyObject* entity_create(Core::entity_id_t ent_id, Foundation::EntityPtr entity);
+
+	static void foo();
 }
