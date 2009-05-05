@@ -123,7 +123,7 @@ namespace RexLogic
         Input::InputServiceInterface *input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input);
         if (input)
         {
-            boost::optional<const Input::Events::Movement&> movement = input->GetSliderMovement(Input::Events::MOUSELOOK);
+            boost::optional<const Input::Events::Movement&> movement = input->PollSlider(Input::Events::MOUSELOOK);
             if (movement)
             {
                 dragging_ = true;

@@ -6,8 +6,11 @@ namespace Input
 
 	Input is handled in a generic way which allows for support for nearly any
 	kind of input device. Input is handled mostly by events. Some input which
-	is not really practical to be handled with events are handled via querying
-	a service for the input state, but still in a generic fashion.
+	is not really practical to be handled with events are handled exclusively 
+	via querying a service for the input state, but still in a generic fashion.
+	
+	Rather than depending on events alone for input handling, 
+	InputServiceInterface can be used to directly poll the input state.
 	
 	See \ref EventSystem "Viewer event system" for handling events.
 	

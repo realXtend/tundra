@@ -236,6 +236,32 @@ namespace Input
         return handled;
     }
 
+    bool InputModuleOIS::IsEvent(Core::event_id_t input_event) const
+    {
+        //!\ This whole function is a bit wtf. This probably needs a better way to map from input events to KeyEventInfo struct.
+        {
+            const KeyEventInfoVector &keys = GetKeyInfo(input_state_);
+            for (size_t i = 0 ; i < keys.size() ; ++i)
+            {
+                if (keys[i].pressed_event_id_ == input_event)
+                    return IsEvent(keys[i]);
+                else if (keys[i].released_event_id_ == input_event)
+                    return !IsEvent(keys[i]);
+            }
+        }
+        {
+            const KeyEventInfoVector &keys = GetKeyInfo(Input::State_All);
+            for (size_t i = 0 ; i < keys.size() ; ++i)
+            {
+                if (keys[i].pressed_event_id_ == input_event)
+                    return IsEvent(keys[i]);
+                else if (keys[i].released_event_id_ == input_event)
+                    return !IsEvent(keys[i]);
+            }
+        }
+        return false;
+    }
+
     bool InputModuleOIS::IsEvent(const UnBufferedKeyEventInfo &info) const
     {
         const bool alt = keyboard_->isModifierDown(OIS::Keyboard::Alt);

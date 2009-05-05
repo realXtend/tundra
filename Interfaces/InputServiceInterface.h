@@ -52,6 +52,18 @@ namespace Input
         InputServiceInterface() {}
         virtual ~InputServiceInterface() {}
 
+        //! Polls input based on the event id, returns true if the event is true
+        /*! Standard way of handling input is with events. There are two issues with this:
+                - Event handling code can get messy if many different types of events are handled.
+                - Event_released - types of events may not always get launched properly, f.ex.
+                  if user holds a key down, then moves the focus away from the Viewer window. In
+                  this case the Event_released is launched only when the window regains the focus.
+
+            Polling presents another way of handling input. This function returns true if conditions
+            specific to the input event are true, false otherwise.
+        */
+        virtual bool Poll(Core::event_id_t input_event) const = 0;
+
         //! Returns a slider movement corresponding to the specified event, but only if the slider is currently being dragged.
         /*! If more than one slider matching the event is being dragged, one is chosen arbitrarily.
             Returns empty optional() if no slider matching the event is being dragged.
@@ -64,7 +76,7 @@ namespace Input
             \param dragged_event event corresponding to a slider
             \return Absolute and relative position in 3 dimensions
         */
-        virtual boost::optional<const Input::Events::Movement&> GetSliderMovement(Core::event_id_t dragged_event) const = 0;
+        virtual boost::optional<const Input::Events::Movement&> PollSlider(Core::event_id_t dragged_event) const = 0;
 
         //! Sets the current input state. State determines which events are lauched by which h/w input events.
         virtual void SetState(State state) = 0;
