@@ -197,8 +197,15 @@ namespace Foundation
         //! Called when module is unloaded. Do not override in child classes. For internal use.
         virtual void UnloadInternal() = 0;
 
+        //! PreInitializes the module. 
+        virtual void PreInitializeInternal() = 0;
+
         //! Initializes the module. Called when module is taken in use. Do not override in child classes. For internal use.
         virtual void InitializeInternal() = 0;
+
+        //! PostInitializes the module.
+        virtual void PostInitializeInternal() = 0;
+
         //! Uninitialize the module. Called when module is removed from use. Do not override in child classes. For internal use.
         virtual void UninitializeInternal() = 0;
     };
@@ -305,6 +312,12 @@ namespace Foundation
         virtual void UnloadInternal() { assert(state_ == Module::MS_Loaded); Unload(); state_ = Module::MS_Unloaded; }
         virtual void SetFramework(Framework *framework) { framework_ = framework; assert (framework_); }
 
+        //! Unused
+        virtual void PreInitializeInternal()
+        {
+            PreInitializeInternal();
+        }
+
         //! Registers all declared components
         virtual void InitializeInternal()
         {
@@ -330,7 +343,13 @@ namespace Foundation
             }
 
             Initialize();
-            state_ = Module::MS_Initialized;
+        }
+
+        //! Sets internal state to "initialized"
+        virtual void PostInitializeInternal()
+        {
+            PostInitializeInternal();
+            state_ = MS_Initialized;
         }
 
         //! Unregisters all declared components
