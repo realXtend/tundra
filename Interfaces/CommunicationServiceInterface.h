@@ -155,6 +155,7 @@ namespace Communication
 		virtual IMSessionPtr CreateIMSession(ContactPtr contact) = 0;
 		virtual ContactListPtr GetContactList() = 0;
 		virtual void PublishPresence(PresenceStatusPtr p) = 0;
+		virtual IMMessagePtr CreateIMMessage(std::string text) = 0;
 	};
 
 	typedef boost::shared_ptr<CommunicationServiceInterface> CommunicationServicePtr;
