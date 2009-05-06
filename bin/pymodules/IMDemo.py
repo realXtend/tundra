@@ -16,54 +16,16 @@ import rexviewer as r
 ##====================================================
 ##    MAIN APPLICATION LOGIC
 ##====================================================
-#class IMDemo(gobject.GObject):
 class IMDemo:
     def __init__(self):
         self.chatEndPoint = None        
         self.quit = False
         self.loop = None
-        #self.__gobject_init__()
         self.connection = Connection.Connection(self)
         pass
     
     def setConnection(self, _conn):
         self.connection = _conn
-
-
-    def quit(self):
-        if self.loop:
-            self.loop.quit()
-            self.loop = None
-        
-    def startChat(self, args):
-        print "start chat"
-        self.chatEndPoint = args
-        self.emit('open_channel_signal')
-        
-    def accountConnect(self, args):
-        print "read account from file and connect"
-        self.connection.ConnectAccount(args)
-
-        
-    def exit(self, args):
-        print "exit"
-        self.emit('disconnect_signal')
-        print "signal send"
-        #time.sleep(100)
-        self.quit = True
-        if self.loop:
-            print "if loop"
-            time.sleep(100)
-            self.loop.quit()
-            self.loop = None
-        print "end exit"
-
-    def sendMess(self, args):
-        self.connection.SendMessage(args)
-        pass
-    def endChat(self, args):
-        self.connection.EndChat()
-        pass
 
 ##    EVENTS
     def disconnected(self, reason):
@@ -99,14 +61,22 @@ class IMDemo:
         r.pyEventCallback("contact_status_changed", id_status)
 
     # contact events
+    def contactAddedToPublishList(self, addr):
+        r.pyEventCallback("contact_added_publish_list", addr)
     def contactAdded(self, id):
         r.pyEventCallback("contact_added", id)
     def contactRemoved(self, id):
         r.pyEventCallback("contact_removed", id)
     def remotePending(self, id):
-        r.pyEventCallback("remote_pending", id)
+        print "remote pending event"
+        pass
+        #r.pyEventCallback("remote_pending", id)
     def localPending(self, id):
         r.pyEventCallback("local_pending", id)
+
+    def incomingRequest(self, addr):
+        r.pyEventCallback("incoming_request", addr)
+        pass
     
 ##==========================================================================================
         
@@ -122,14 +92,13 @@ class IMDemo:
         print "*****     IM STARTUP  SCRIPT           ******"
         print "*********************************************"
         connection = Connection.Connection(self)
-        self.connect('disconnect_signal', connection.RecvDisconnect)
-        self.connect('open_channel_signal', connection.RecvStartChat)
         self.setConnection(connection)
         
     def CAccountConnect(self):
         #str, d = self.ui.doReadAccountAndConnect()
         str, d = doReadAccountAndConnect()
-        self.accountConnect(d)
+        #self.accountConnect(d)
+        self.connection.ConnectAccount(d)
 
     def CDisconnect(self):
         self.connection.Disconnect()
@@ -139,17 +108,14 @@ class IMDemo:
         print jid
         self.chatEndPoint = jid
         self.connection.StartChat(jid)
-        pass
 
     def CCloseChannel(self):
         print "CCloseChannel:"
         print "calling connection.close_channel"
         self.connection.close_channel()
-        pass
 
     def CSendChat(self, txt):
         self.connection.SendMessage(txt)
-        pass
 
     def CGetFriendWithID(self, id):
         print "CGetFriendWithID"
@@ -179,17 +145,22 @@ class IMDemo:
         print "CAcceptContactRequest"
         print addr
         self.connection.acceptLocalPending(addr)
-        pass
 
     def CDenyContactRequest(self, addr):
         print "CDenyContactRequest"
         print addr
         self.connection.denyLocalPending(addr)
-        pass
+
+    def CRefreshContactStatusList(self):
+        print "CRefreshContactStatusList"
+        self.connection.UpdatePresences()
+
+    def CSendSubscription(self, addr):
+        print "CSendSubscription"
+        self.connection.Subscribe(addr)
 
     def CTest(self):
         self.connection.test()
-        pass
     
     
 
