@@ -1,5 +1,5 @@
-//#ifndef incl_PythonEntityType_h
-//#define incl_PythonEntityType_h
+#ifndef incl_PythonEntityType_h
+#define incl_PythonEntityType_h
 
 #include "Foundation.h"
 #ifdef PYTHON_FORCE_RELEASE_VERSION
@@ -17,7 +17,7 @@
 namespace PythonScript
 {
 	//the wrapper can't directly keep these 
-	//std::map<Core::entity_id_t, Foundation::EntityPtr> entity_ptrs; //XXX should definitely be weakrefs (right?)
+	static std::map<Core::entity_id_t, Foundation::EntityPtr> entity_ptrs; //XXX should definitely be weakrefs (right?)
 	//am getting 'already defined' when linking, what's wrong?
 
 	typedef struct {
@@ -57,7 +57,9 @@ namespace PythonScript
 
 	//why can't these be static? doesn't find the definitions in that case..
 	void entity_init(PyObject* m);
-	PyObject* entity_create(Core::entity_id_t ent_id, Foundation::EntityPtr entity);
+	PyObject* entity_create(Core::entity_id_t ent_id); //, Foundation::EntityPtr entity);
 
 	static void foo();
 }
+
+#endif

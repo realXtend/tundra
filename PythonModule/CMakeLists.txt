@@ -18,6 +18,7 @@ include_directories (
     ../RexCommon
     ../ReXLogic
     ../OpenSimProtocol #needed 'cause ReXLogic uses it
+    ../OgreRenderingModule #to be able to get placeable component data
 )
 
 link_directories (${PROJECT_BINARY_DIR}/RexLogic/Debug ${PROJECT_BINARY_DIR}/RexLogic/Release)
@@ -29,6 +30,7 @@ INCLUDE_PYTHON()
 INCLUDE_XMLRPCEPI()
 INCLUDE_CURL()
 INCLUDE_OGRE() #'cause of using ReXLogic XXX
+INCLUDE_GTKMM() #probably also because of ReXLogic
 
 add_definitions (-DMODULE_EXPORTS)
 if(PYTHON_FORCE_RELEASE_VERSION)

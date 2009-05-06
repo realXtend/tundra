@@ -1,6 +1,9 @@
 import rexviewer as r
 
 idnum = 720001
-print "Getting entity id", idnum, ":", r.getEntity(idnum)
+#idnum = 0
 
+print "Getting entity id", idnum,
+e = r.getEntity(idnum)
+print "got:", e
 #print dir(r)
