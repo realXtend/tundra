@@ -9,7 +9,7 @@ namespace Foundation
     {
     }
 
-    void ServiceManager::RegisterService(Service::Type type, ServiceInterface *service)
+    void ServiceManager::RegisterService(Core::service_type_t type, ServiceInterface *service)
     {
         assert(service != NULL);
         Foundation::RootLogInfo("Registering service. Service_type: " + boost::lexical_cast<std::string>(type) + ".");

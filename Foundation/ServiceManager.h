@@ -28,7 +28,7 @@ namespace Foundation
             \param type type of the service
             \param service service to register
         */
-        void RegisterService(Service::Type type, ServiceInterface *service);
+        void RegisterService(Core::service_type_t type, ServiceInterface *service);
 
         //! Unregister the specified service. The service should be registered before unregistering.
         void UnregisterService(ServiceInterface *service);
@@ -41,7 +41,7 @@ namespace Foundation
             \return the service, or NULL if the template parameters doesn't match the service or if the service was not registered
         */
         template <class T>
-        __inline T *GetService(Service::Type type)
+        __inline T *GetService(Core::service_type_t type)
         {
             ServicesMap::iterator it = services_.find(type);
             if (it == services_.end())
@@ -64,7 +64,7 @@ namespace Foundation
             \return the service, or NULL if the template parameters doesn't match the service or if the service was not registered
         */
         template <class T>
-        __inline const T *GetService(Service::Type type) const
+        __inline const T *GetService(Core::service_type_t type) const
         {
             ServicesMap::const_iterator it = services_.find(type);
             if (it == services_.end())
@@ -80,12 +80,12 @@ namespace Foundation
         }
 
         //! Returns true if service type is already registered, false otherwise
-        bool IsRegistered(Service::Type type) const
+        bool IsRegistered(Core::service_type_t type) const
         {
             return (services_.find(type) != services_.end());
         }
     private:
-        typedef std::map<Service::Type, ServiceInterface*> ServicesMap;
+        typedef std::map<Core::service_type_t, ServiceInterface*> ServicesMap;
         
         //! parent framework
         Framework *framework_;

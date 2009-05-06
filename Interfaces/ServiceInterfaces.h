@@ -32,8 +32,10 @@ namespace Foundation
     */
     namespace Service
     {
-        //! Service types. When creating a new service, add it here
-        /*! 
+        //! Service types. When creating a new core service, add it here.
+        /*! If you can't or don't want to alter the framework, an arbitrary
+            int can be used as service type. For details, see \ref creating_services.
+
             \ingroup Services_group
         */
         enum Type {ST_SceneManager = 0, ST_Renderer, ST_Physics, ST_Gui, ST_Scripting, ST_Test, ST_Console, ST_ConsoleCommand, ST_Asset, ST_CommunicationManager, ST_Texture, ST_Sound, ST_Input, ST_Communication, ST_Unknown };
