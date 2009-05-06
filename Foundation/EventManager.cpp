@@ -289,19 +289,23 @@ namespace Foundation
                     
                     new_parent_name = module_name;
                     
-                    ModuleSharedPtr modulePtr = framework_->GetModuleManager()->GetModule(module_name).lock();
-                    if (modulePtr)
+                    ModuleWeakPtr module_weak 
+                        (framework_->
+                        GetModuleManager()->
+                        GetModule(module_name));
+                    ModuleSharedPtr module (module_weak.lock());
+                    if (module)
                     {
                         if (parent_name.empty())
                         {
-                            RegisterEventSubscriber(modulePtr, priority, ModuleWeakPtr());
+                            RegisterEventSubscriber(module, priority, ModuleWeakPtr());
                         }
                         else
                         {
                             ModuleWeakPtr parent = framework_->GetModuleManager()->GetModule(parent_name);
                             if (parent.lock().get())
                             {
-                                RegisterEventSubscriber(modulePtr, priority, parent);
+                                RegisterEventSubscriber(module, priority, parent);
                             }
                             else
                             {

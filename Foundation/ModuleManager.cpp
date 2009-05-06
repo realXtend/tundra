@@ -247,9 +247,9 @@ namespace Foundation
         Module::SharedLibraryPtr library;
 
         // See if shared library is already loaded, and if it is, use it
-        for ( ModuleVector::const_iterator it = modules_.begin() ; 
-              it != modules_.end() ; 
-              ++it )
+        for (ModuleVector::const_iterator it = modules_.begin(); 
+                it != modules_.end(); 
+                ++it)
         {
             if (it->shared_library_ && it->shared_library_->path_ == path)
             {
@@ -262,17 +262,18 @@ namespace Foundation
             try
             {
                 library = Module::SharedLibraryPtr(new Module::SharedLibrary(path));
-            } catch (std::exception &e)
+            } 
+            catch (Poco::Exception &e)
             {
-                Foundation::RootLogError(e.what());
-                Foundation::RootLogError("Failed to load dynamic library: " + name + ".");
+                Foundation::RootLogError(e.displayText());
+                Foundation::RootLogError("Failed to load dynamic library: " + path + ".");
                 return;
             }
         }
 
-        for ( Core::StringVector::const_iterator it = entries.begin() ; 
-              it != entries.end() ; 
-              ++it )
+        for (Core::StringVector::const_iterator it = entries.begin(); 
+                it != entries.end(); 
+                ++it)
         {
             if (HasModuleEntry(*it))
             {
@@ -311,7 +312,8 @@ namespace Foundation
                 modules_.push_back(entry);
 
                 Foundation::RootLogInfo("Module " + *it + " loaded.");
-            } else
+            } 
+            else
             {
                 Foundation::RootLogInfo("Module " + module->Name() + " is excluded and not loaded.");
 //                SAFE_DELETE (module);
