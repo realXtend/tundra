@@ -6,6 +6,8 @@
 #include "EC_Dummy.h"
 #include <Poco/ClassLibrary.h>
 #include "EntityInterface.h"
+#include "TestServiceInterface.h"
+#include "TestService.h"
 
 
 
@@ -37,8 +39,8 @@ namespace Test
     // virtual
     void TestModule::Initialize()
     {
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Test, &test_service_);
-        assert (framework_->GetServiceManager()->IsRegistered(Foundation::Service::ST_Test) &&
+        framework_->GetServiceManager()->RegisterService(TestService::type_, &test_service_);
+        assert (framework_->GetServiceManager()->IsRegistered(TestService::type_) &&
             "Failed to register test service");
 
         framework_->GetEventManager()->RegisterEventCategory("Test");
@@ -50,7 +52,7 @@ namespace Test
     void TestModule::Uninitialize()
     {
         framework_->GetServiceManager()->UnregisterService(&test_service_);
-        assert (framework_->GetServiceManager()->IsRegistered(Foundation::Service::ST_Test) == false &&
+        assert (framework_->GetServiceManager()->IsRegistered(TestService::type_) == false &&
             "Failed to unregister test service");
 
         LogInfo("Module " + Name() + " uninitialized.");
@@ -155,7 +157,7 @@ namespace Test
 
 
 
-        Foundation::TestServiceInterface *test_service = framework_->GetServiceManager()->GetService<Foundation::TestServiceInterface>(Foundation::Service::ST_Test);
+        TestServiceInterface *test_service = framework_->GetServiceManager()->GetService<TestServiceInterface>(TestService::type_);
         assert (test_service != NULL);
         assert (test_service->Test());
 

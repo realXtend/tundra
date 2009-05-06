@@ -8,13 +8,15 @@
 namespace Test
 {
     //! Unit test for service
-    class TestService : public Foundation::TestServiceInterface
+    class TestService : public TestServiceInterface
     {
     public:
         TestService() {};
         virtual ~TestService() {};
 
         virtual bool Test() const;
+
+        static const Core::service_type_t type_;
     };
 }
 #endif

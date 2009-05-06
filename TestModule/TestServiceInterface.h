@@ -1,17 +1,14 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Interfaces_TestServiceInterface_h
-#define incl_Interfaces_TestServiceInterface_h
+#ifndef incl_Test_TestServiceInterface_h
+#define incl_Test_TestServiceInterface_h
 
 #include "ServiceInterface.h"
 
-namespace Foundation
+namespace Test
 {
     //! Interface for test service
-    /*!
-        \ingroup Services_group
-    */
-    class TestServiceInterface : public ServiceInterface
+    class TestServiceInterface : public Foundation::ServiceInterface
     {
     public:
         TestServiceInterface() {}
@@ -21,5 +18,5 @@ namespace Foundation
     };
 }
 
-#endif // incl_Interfaces_TestServiceInterface_h
+#endif
 
