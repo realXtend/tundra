@@ -1,6 +1,9 @@
 #ifndef incl_TelepathyCommunication_h
 #define incl_TelepathyCommunication_h
 
+
+#include "StableHeaders.h"
+
 #include "Foundation.h"
 #include "EventDataInterface.h"
 
@@ -9,6 +12,8 @@
 #include "TPPresenceStatus.h"
 #include "TPIMSession.h"
 #include "CommunicationEvents.h"
+
+// TODO: Make this threadsafe
 
 // todo: should this be renamed to TPCommunicatation to hide the implmenetation from namespace of interface?
 namespace Communication
@@ -21,7 +26,7 @@ namespace Communication
 
 	class TelepathyCommunication : public CommunicationServiceInterface //, public Foundation::ModuleInterfaceImpl
 	{
-	//	MODULE_LOGGING_FUNCTIONS
+		MODULE_LOGGING_FUNCTIONS
 	public:
 		TelepathyCommunication();
 		TelepathyCommunication(Foundation::Framework *f);
@@ -36,6 +41,8 @@ namespace Communication
 		IMMessagePtr CreateIMMessage(std::string text);
 		void SendFriendRequest(ContactInfoPtr contact_info);
 
+		static const std::string NameStatic() { return "ConnectionModule-TelepathyCommunication"; } // for logging functionality
+
 		// callbacks for console commands
 		Console::CommandResult ConsoleInfo(const Core::StringVector &params);
 		Console::CommandResult ConsoleHelp(const Core::StringVector &params);
@@ -47,7 +54,6 @@ namespace Communication
 		Console::CommandResult ConsoleListContacts(const Core::StringVector &params);
 		Console::CommandResult ConsoleAddContact(const Core::StringVector &params);
 		Console::CommandResult ConsolePublishPresence(const Core::StringVector &params);
-
 
 		static TelepathyCommunicationPtr GetInstance(); // for python callbacks
 
