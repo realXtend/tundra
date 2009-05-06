@@ -4,7 +4,6 @@
 
 #include "RendererEvents.h"
 #include "InputModuleOIS.h"
-#include "BufferedKeyboard.h"
 #include "Mapper.h"
 
 namespace Input
@@ -77,8 +76,8 @@ namespace Input
         // throws exception if fails, not handled since it should be rather fatal
         input_manager_ = OIS::InputManager::createInputSystem( pl );
 
-        buffered_keyboard_ = BufferedKeyboardPtr(new BufferedKeyboard(this));
-        keyboard_ = static_cast<OIS::Keyboard*>(input_manager_->createInputObject( OIS::OISKeyboard, false ));      
+        keyboard_ = static_cast<OIS::Keyboard*>(input_manager_->createInputObject( OIS::OISKeyboard, false ));
+        keyboard_->setEventCallback(this);
         LogInfo("Keyboard input initialized.");
    
         mouse_ = static_cast<OIS::Mouse*>(input_manager_->createInputObject( OIS::OISMouse, false ));
@@ -143,10 +142,6 @@ namespace Input
     // virtual 
     void InputModuleOIS::Update(Core::f64 frametime)
     {
-        // should be first, so buffered keyboard events get launched first
-        if (buffered_keyboard_)
-            buffered_keyboard_->Update();
-
         if( keyboard_ && mouse_ )
         {
             keyboard_->capture();
@@ -197,7 +192,11 @@ namespace Input
             // first update input events for the current state, then send events for keys that are common to all states
             UpdateSliderEvents(input_state_);
             UpdateSliderEvents(Input::State_All);
-            SendKeyEvents(input_state_);
+
+            if (keyboard_->buffered() == false)
+            {
+                SendKeyEvents(input_state_);
+            }
             SendKeyEvents(Input::State_All);
         }
     }
@@ -269,21 +268,19 @@ namespace Input
         const bool shift = keyboard_->isModifierDown(OIS::Keyboard::Shift);
 
         bool key_pressed = false;
-        if (keyboard_->isKeyDown(info.key_))
+        OIS::KeyCode code = static_cast<OIS::KeyCode>(info.key_);
+        if (keyboard_->isKeyDown(static_cast<OIS::KeyCode>(code)))
         {
             const bool mod_alt   = !((info.modifier_ & OIS::Keyboard::Alt)   == 0);
             const bool mod_ctrl  = !((info.modifier_ & OIS::Keyboard::Ctrl)  == 0);
             const bool mod_shift = !((info.modifier_ & OIS::Keyboard::Shift) == 0);
 
-            if(!buffered_keyboard_ || buffered_keyboard_->IsKeyHandled(info.key_) == false)
+            // check modifiers in a bit convoluted way. All combos of ctrl+a, ctrl+alt+a and ctrl+alt+shift+a must work!
+            if ( ((mod_alt   && alt)   || (!mod_alt   && !alt))  &&
+                 ((mod_ctrl  && ctrl)  || (!mod_ctrl  && !ctrl)) &&
+                 ((mod_shift && shift) || (!mod_shift && !shift)) )
             {
-                // check modifiers in a bit convoluted way. All combos of ctrl+a, ctrl+alt+a and ctrl+alt+shift+a must work!
-                if ( ((mod_alt   && alt)   || (!mod_alt   && !alt))  &&
-                     ((mod_ctrl  && ctrl)  || (!mod_ctrl  && !ctrl)) &&
-                     ((mod_shift && shift) || (!mod_shift && !shift)) )
-                {
-                    key_pressed = true;
-                }
+                key_pressed = true;
             }
         }
 
@@ -372,8 +369,6 @@ namespace Input
             mouse_ = 0;
             keyboard_ = 0;
             joy_ = 0;
-
-            buffered_keyboard_.reset();
         }
     }
 
@@ -466,6 +461,46 @@ namespace Input
                 slider_vector->second.push_back(info);
             }
         }
+    }
+
+    void InputModuleOIS::SetState(Input::State state)
+    {
+        if (state != Input::State_Unknown && keyboard_->buffered())
+        {
+            LogDebug("Tried to explicitly change input state while in state Input::State_Buffered. Use SetState() instead.");
+            return;
+        }
+
+        if (state != Input::State_Buffered && state != Input::State_Unknown)
+            input_state_ = state;
+
+        // enable / disable buffered keyboard
+        if (state == Input::State_Buffered)
+        {
+            keyboard_->setBuffered(true);            
+        } else if (keyboard_->buffered())
+        {
+            keyboard_->setBuffered(false);
+        }
+    }
+
+    bool InputModuleOIS::keyPressed( const OIS::KeyEvent &arg )
+    {
+        Events::BufferedKey key_event(arg.key, arg.text);
+        bool handled = framework_->GetEventManager()->SendEvent(event_category_, Events::BUFFERED_KEY_PRESSED, &key_event);
+
+        //handled_[arg.key] = handled;
+
+        return handled;
+    }
+    bool InputModuleOIS::keyReleased( const OIS::KeyEvent &arg )
+    {
+        Events::BufferedKey key_event(arg.key, arg.text);
+        bool handled = framework_->GetEventManager()->SendEvent(event_category_, Events::BUFFERED_KEY_RELEASED, &key_event);
+
+        //handled_[arg.key] = false;
+
+        return handled;
     }
 
     InputModuleOIS::KeyEventInfoVector &InputModuleOIS::GetKeyInfo(Input::State state)
