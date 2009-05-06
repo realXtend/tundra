@@ -260,13 +260,8 @@ static PyObject* GetEntity(PyObject *self, PyObject *args)
 
 	ent_id = (Core::entity_id_t) ent_id_int;
 
-	Foundation::Framework *framework_ = PythonScript::staticframework;
+	Foundation::ScenePtr scene = PythonScript::GetScene();
 
-	Foundation::SceneManagerServiceInterface *sceneManagerService = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
-	//Foundation::SceneInterface *sceneService;  //= framework_->GetService<Foundation::SceneInterface>(Foundation::Service::ST_SceneManager);
-	//hm there are multiple scenes so that can not be used directly */
-
-	const Foundation::ScenePtr &scene = sceneManagerService->GetScene("World"); //XXX hardcoded scene name, like in debugstats now
 	if (scene == 0)
 		return NULL; //XXX return some sensible exception info
 
