@@ -15,7 +15,7 @@ namespace Input
     {
         //! unknown state
         State_Unknown = 0,
-        //! all states, useful if you want a key to correspond the one event on all states
+        //! all states, useful if you want a key to correspond to one event on all states
         State_All,
         //! 1st person camera
         State_FirstPerson,
@@ -23,6 +23,8 @@ namespace Input
         State_ThirdPerson,
         //! Free ghostcamera
         State_FreeCamera,
+        //! Buffered state, for direct key input (UI and such)
+        State_Buffered,
         // add new states here
 
         //! number of different states
@@ -79,7 +81,14 @@ namespace Input
         virtual boost::optional<const Input::Events::Movement&> PollSlider(Core::event_id_t dragged_event) const = 0;
 
         //! Sets the current input state. State determines which events are lauched by which h/w input events.
-        virtual void SetState(State state) = 0;
+        /*!
+            if state parameter is omitted, restores the previous unbuffered state. This is useful for
+            temporarily setting the state to buffered with SetState(State_Buffered) and then later restoring
+            the previous state with SetState().
+
+            \param state Optional input state
+        */
+        virtual void SetState(State state = State_Unknown) = 0;
 
         //! Returns the current input state
         virtual State GetState() const = 0;

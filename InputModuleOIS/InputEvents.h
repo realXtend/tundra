@@ -19,8 +19,8 @@ namespace Input
         //       'start' event (MOVE_FORWARD_PRESSED) there should be an
         //       'end' event (MOVE_FORWARD_RELEASED) and (MOVE_FORWARD_PRESSED == MOVE_FORWARD_RELEASED - 1)
         //       Yhis is for simplicity, so one can get the 'end' event easily from the 'start' event.
-        static const Core::event_id_t KEY_PRESSED = 1;
-        static const Core::event_id_t KEY_RELEASED = 2;
+        static const Core::event_id_t BUFFERED_KEY_PRESSED = 1;  // only when input state is buffered
+        static const Core::event_id_t BUFFERED_KEY_RELEASED = 2; // only when input state is buffered
         static const Core::event_id_t SCROLL = 3;
         static const Core::event_id_t MOVE_FORWARD_PRESSED = 4;
         static const Core::event_id_t MOVE_FORWARD_RELEASED = 5;

@@ -66,7 +66,7 @@ namespace Input
 
         Core::event_id_t pressed_event_id_; //! event that is launched when the key is pressed down
         Core::event_id_t released_event_id_; //! event that is launched when the key is released
-        OIS::KeyCode key_; //! ois keycode
+        int key_; //! ois keycode
         int modifier_; //! modifier key
         bool pressed_; //! is the key currently pressed down
     };
@@ -110,7 +110,7 @@ namespace Input
         \todo Joysticks / gamepads not handled yet
         \todo INPUTOIS_MODULE_API doesn't work for some reason
     */
-    class  InputModuleOIS : public Foundation::ModuleInterfaceImpl
+    class  InputModuleOIS : public Foundation::ModuleInterfaceImpl, public OIS::KeyListener
     {
     public:
         typedef std::vector<UnBufferedKeyEventInfo> KeyEventInfoVector;
@@ -186,16 +186,21 @@ namespace Input
         void RegisterSliderEvent(Input::State state, Slider slider, Core::event_id_t dragged_event, Core::event_id_t stopped_event, int button = -1, int modifier = 0);
 
         //! Set current input state
-        INPUTOIS_MODULE_API void SetState(Input::State state) { input_state_ = state; }
+        INPUTOIS_MODULE_API void SetState(Input::State state);
 
         //! Returns current input state
-        INPUTOIS_MODULE_API Input::State GetState() const { return input_state_; }
+        INPUTOIS_MODULE_API Input::State GetState() const { return keyboard_->buffered() ? Input::State_Buffered : input_state_; }
 
         //! Introspection of registered key events. Internal use only!
         const KeyEventInfoMap &GetRegisteredKeyEvents() const { return listened_keys_; }
 
         //! Introspection of registered slider events. Internal use only!
         const SliderInfoMap &GetRegisteredSliderEvents() const { return sliders_; }
+
+        //! OIS callback for buffered keyboard
+        virtual bool keyPressed( const OIS::KeyEvent &arg );
+        //! OIS callback for buffered keyboard
+        virtual bool keyReleased( const OIS::KeyEvent &arg );
 
         MODULE_LOGGING_FUNCTIONS
 
@@ -239,12 +244,8 @@ namespace Input
         //! OIS objects
         OIS::InputManager *input_manager_;
         OIS::Keyboard *keyboard_;
-        //OIS::Keyboard *keyboard_buffered_;
         OIS::Mouse *mouse_;
         OIS::JoyStick *joy_;
-
-        //! buffered keyboard
-        BufferedKeyboardPtr buffered_keyboard_;
         
         //! unbuffered keys for which pressed and released events are created. Good for movement keys, etc.
         KeyEventInfoMap listened_keys_;
