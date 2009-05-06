@@ -168,9 +168,9 @@ namespace Foundation
         ModuleWeakPtr GetModule(const std::string &name)
         {
             ModuleVector::iterator it = modules_.begin();
-            for ( ; it != modules_.end() ; ++it)
+            for (; it != modules_.end() ; ++it)
             {
-                if ( it->module_->Name() == name )
+                if (it->module_->Name() == name)
                     return ModuleWeakPtr(it->module_);
             }
             return ModuleWeakPtr();
