@@ -4,6 +4,11 @@
 
 #include "TPIMSession.h"
 
+// For windows compatibility
+#ifdef SendMessage
+#define SendMessageDefined
+#undef SendMessage
+#endif // SendMessage
 
 namespace Communication
 {
@@ -63,3 +68,10 @@ namespace Communication
 	}
 
 } // end of namespace: Communication
+
+
+
+// For windows compatibility
+#ifdef SendMessageDefined
+#define SendMessage SendMessageW
+#endif // SendMessageDefined

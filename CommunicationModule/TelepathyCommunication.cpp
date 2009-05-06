@@ -320,7 +320,10 @@ namespace Communication
 			}
 
 			IMMessagePtr m = CreateIMMessage(text);
-			im_sessions_[0]->SendMessageW(m);
+#undef SendMessage // temporary hack agains this windows related definition 
+			im_sessions_[0]->SendMessage(m);
+#define SendMessage SendMessageW // temporary hack agains this windows related definition 
+
 			return Console::ResultSuccess("Ready.");
 		}
 		// if we have two arguments then first one is session id and second text

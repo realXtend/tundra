@@ -32,8 +32,8 @@ namespace Communication
 		LogInfo("Module " + Name() + " initialized.");
 
 		// NEW
-//		communication_manager_ = CommunicationServicePtr((CommunicationServiceInterface*)new TelepathyCommunication(framework_));
-//		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communication, communication_manager_.get());
+		communication_manager_ = CommunicationServicePtr((CommunicationServiceInterface*)new TelepathyCommunication(framework_));
+		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communication, communication_manager_.get());
 		LogInfo("Initialized.");
 	}
 
