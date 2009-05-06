@@ -5,7 +5,7 @@
 
 #if defined(_WINDOWS)
 
-#include <shlobj.h>
+
 
 namespace Foundation
 {
@@ -23,16 +23,10 @@ namespace Foundation
         virtual ~PlatformWin() {}
 
         //! Displays a message to the user. Should be used when there is no usable window for displaying messages to the user.
-        static void Message(const std::string& title, const std::string& text)
-        {
-            MessageBoxA( NULL, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
-        }
+        static void Message(const std::string& title, const std::string& text);
 
         //! Displays a message to the user. Should be used when there is no usable window for displaying messages to the user.
-        static void Message(const std::wstring& title, const std::wstring& text)
-        {
-            MessageBoxW( NULL, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
-        }
+        static void Message(const std::wstring& title, const std::wstring& text);
 
         //! Returns user specific application data directory.
         /*! Returns non-unicode path. May throw an expection if folder is not found.

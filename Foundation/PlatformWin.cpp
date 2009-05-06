@@ -6,8 +6,21 @@
 
 #if defined(_WINDOWS)
 
+#include <windows.h>
+#include <shlobj.h>
+
 namespace Foundation
 {
+    void PlatformWin::Message(const std::string& title, const std::string& text)
+    {
+        MessageBoxA( NULL, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
+    }
+
+    void PlatformWin::Message(const std::wstring& title, const std::wstring& text)
+    {
+        MessageBoxW( NULL, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
+    }
+
     std::string PlatformWin::GetApplicationDataDirectory()
     {
         LPITEMIDLIST pidl;
