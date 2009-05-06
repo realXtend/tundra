@@ -74,7 +74,7 @@ namespace PythonScript
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_PythonScript;
 
-		static Foundation::Framework *GetFramework() { return PythonScript::staticframework; } //trying to expose to a non-static func, Entity getattro
+		//static Foundation::Framework *GetFramework() { return PythonScript::staticframework; } //trying to expose to a non-static func, Entity getattro
 		static Foundation::ScriptEventInterface* engineAccess;
 
 		
@@ -98,6 +98,20 @@ namespace PythonScript
 	};
 
 	static void initpymod();
+	//static Foundation::ScenePtr GetScene();
+
+	//a helper and to avoid copy-paste when doing the get in Entity.getattro
+	static Foundation::ScenePtr GetScene() 
+	{
+		Foundation::Framework *framework_ = PythonScript::staticframework;
+
+		Foundation::SceneManagerServiceInterface *sceneManagerService = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+		//Foundation::SceneInterface *sceneService;  //= framework_->GetService<Foundation::SceneInterface>(Foundation::Service::ST_SceneManager);
+		//hm there are multiple scenes so that can not be used directly */
+
+		Foundation::ScenePtr &scene = sceneManagerService->GetScene("World"); //XXX hardcoded scene name, like in debugstats now
+		return scene;
+	}
 }
 
 #endif
