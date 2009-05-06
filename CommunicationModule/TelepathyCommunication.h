@@ -5,7 +5,6 @@
 #include "EventDataInterface.h"
 
 #include "TPIMMessage.h"
-#include "TPContactInfo.h"
 #include "TPContact.h"
 #include "TPPresenceStatus.h"
 #include "TPIMSession.h"
