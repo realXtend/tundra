@@ -53,10 +53,10 @@ namespace Test
     // virtual
     void TestModuleB::Update(Core::f64 frametime)
     {
-        Foundation::TestServiceInterface *test_service = NULL;
+        TestServiceInterface *test_service = NULL;
         try
         {
-            test_service = framework_->GetServiceManager()->GetService<Foundation::TestServiceInterface>(Foundation::Service::ST_Test);
+            test_service = framework_->GetServiceManager()->GetService<TestServiceInterface>(TestService::type_);
         } catch (std::exception)
         {
             return;
