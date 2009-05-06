@@ -142,9 +142,9 @@ namespace Foundation
         {
             if (modules_[i].module_->State() == Module::MS_Loaded && std::find(current_modules.begin(), current_modules.end(), modules_[i].entry_) == current_modules.end())
             {
-                modules_[i].module_->PreInitialize();
+                modules_[i].module_->PreInitializeInternal();
                 modules_[i].module_->InitializeInternal();
-                modules_[i].module_->PostInitialize();
+                modules_[i].module_->PostInitializeInternal();
 
                 if (modules_[i].entry_ == module)
                     return true;
