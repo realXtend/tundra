@@ -18,6 +18,9 @@ namespace Console
     typedef boost::shared_ptr<LogListener> LogListenerPtr;
 
     //! Ogre debug console
+    /*! \todo Set max line length for command line and printed lines
+        \todo Set proper maximum buffer size for commands, printed text and command history.
+    */
     class OgreOverlay : public Console::ConsoleServiceInterface, public boost::noncopyable
     {
         OgreOverlay();
