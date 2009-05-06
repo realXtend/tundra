@@ -58,12 +58,6 @@ namespace TextureDecoder
 
         //! OpenJpeg decoder that's run in a thread
         OpenJpegDecoder decoder_;
-        
-        //! Texture asset request retry interval
-        Core::f64 asset_retry_interval_;
-        
-        //! Default asset request retry interval
-        static const Core::Real DEFAULT_ASSET_RETRY_INTERVAL;   
     };
 }
 

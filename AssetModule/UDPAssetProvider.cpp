@@ -120,6 +120,8 @@ namespace Asset
         AssetTransferMap::iterator i = texture_transfers_.begin();
         while (i != texture_transfers_.end())
         {
+            bool erased = false;
+            
             AssetTransfer& transfer = i->second;
             if (!transfer.Ready())
             {
@@ -150,15 +152,19 @@ namespace Asset
                     // Send transfer canceled event
                     SendAssetCanceled(transfer);
 
-                    texture_transfers_.erase(i);
+                    i = texture_transfers_.erase(i);
+                    erased = true;
                 }
             }
-            ++i;
+            
+            if (!erased) ++i;
         }
         
         AssetTransferMap::iterator j = asset_transfers_.begin();
         while (j != asset_transfers_.end())
         {
+            bool erased = false;
+            
             AssetTransfer& transfer = j->second;
             if (!transfer.Ready())
             {
@@ -177,10 +183,12 @@ namespace Asset
                     // Send transfer canceled event
                     SendAssetCanceled(transfer);
 
-                    asset_transfers_.erase(j);
+                    j = asset_transfers_.erase(j);
+                    erased = true;
                 }
             }
-            ++j;
+            
+            if (!erased) ++j;
         }
     }
     
@@ -208,8 +216,8 @@ namespace Asset
             ++j;
         }   
 
-	texture_transfers_.clear();
-	asset_transfers_.clear();
+        texture_transfers_.clear();
+        asset_transfers_.clear();
     }         
          
     void UDPAssetProvider::SendPendingRequests()

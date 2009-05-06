@@ -11,13 +11,9 @@
 
 namespace TextureDecoder
 {
-    const Core::Real TextureService::DEFAULT_ASSET_RETRY_INTERVAL = 2.0;
-
     TextureService::TextureService(Foundation::Framework* framework) : 
         framework_(framework)
     {
-        asset_retry_interval_ = framework_->GetDefaultConfig().DeclareSetting("TextureDecoder", "AssetRetryInterval", DEFAULT_ASSET_RETRY_INTERVAL); 
-
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
 
         resourcecategory_id_ = event_manager->QueryEventCategory("Resource");
