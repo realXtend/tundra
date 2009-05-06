@@ -74,9 +74,9 @@ namespace PythonScript
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_PythonScript;
 
-		//Foundation::Framework *GetFramework() { return framework_; }
-
+		static Foundation::Framework *GetFramework() { return PythonScript::staticframework; } //trying to expose to a non-static func, Entity getattro
 		static Foundation::ScriptEventInterface* engineAccess;
+
 		
 	private:
         PythonEnginePtr engine_;
@@ -97,10 +97,6 @@ namespace PythonScript
 		Foundation::ScriptObject* chathandler;
 	};
 
-	/* API calls exposed to py. should be private but testing now here
-	   will probably be wrapping the actual modules in separate files,
-	   but first test now here. also will use boostpy or something, but now first by hand */
-	//static PyObject* SendChat(PyObject *self, PyObject *args);
 	static void initpymod();
 }
 
