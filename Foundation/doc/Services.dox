@@ -47,12 +47,22 @@ Foundation::TestServiceInterface *test_service = framework_->GetServiceManager()
              with a type, and only one type of service can be registered at any one time.
              If two modules attempt to register same type of service, results are undefined.
         
-        How module can offer a (new) service to other modules?
+	\section creating_services Creating new services
+        
+        How module can a module offer a (new) service to other modules?
            - Create new interface for the service in Interfaces-sub project, subclassing ServiceInterface -class.
-           - Include the new .h file in ServiceInterfaces.h
-           - Add the service type to Service::Type enumeration.
-           - Subclass the service class from the new service interface
+             Alternatively you can place the interface to any project.
+           - Include the new .h file in ServiceInterfaces.h (optional but recommended).
+           - Add the service type to Service::Type enumeration (optional but recommended).
+             Alternatively you can assign a random integer as the service type.
+           - Subclass the service class from the new service interface.
            - Add the service registering and unregistering to the parent module.
+           
+\attention Note that service type is a plain int and can be arbitrarily
+        assigned, but it is recommended to use Service::Type enumeration to
+        avoid potential conflicts with already existing type ids. If you 
+        choose not to use the enumeration, it is your responsibility to make
+        sure there are no conflicting types between different services.
           
     \section registering_services Registering services
     

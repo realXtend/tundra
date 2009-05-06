@@ -46,11 +46,11 @@ namespace Foundation
 
         //! Shortcut for retrieving a service. See ServiceManager::GetService() for more info
         template <class T>
-        __inline T *GetService(Service::Type type) { return service_manager_->GetService<T>(type); }
+        __inline T *GetService(Core::service_type_t type) { return service_manager_->GetService<T>(type); }
 
         //! Shortcut for retrieving a service. See ServiceManager::GetService() for more info
         template <class T>
-        __inline const T *GetService(Service::Type type) const { return service_manager_->GetService<T>(type); }
+        __inline const T *GetService(Core::service_type_t type) const { return service_manager_->GetService<T>(type); }
 
         //! load and init module
         Console::CommandResult ConsoleLoadModule(const Core::StringVector &params);
