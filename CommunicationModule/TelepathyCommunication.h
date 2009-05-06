@@ -28,13 +28,14 @@ namespace Communication
 		TelepathyCommunication(Foundation::Framework *f);
 		~TelepathyCommunication(void);
 
+		// CommunicationServiceInterface
 		void OpenConnection(CredentialsPtr c);
 		void CloseConnection();
-		IMSessionPtr CreateIMSession(ContactPtr contact);
+		IMSessionPtr CreateIMSession(ContactInfoPtr contact);
 		ContactListPtr GetContactList();
 		void PublishPresence(PresenceStatusPtr p);
-
 		IMMessagePtr CreateIMMessage(std::string text);
+		void SendFriendRequest(ContactInfoPtr contact_info);
 
 		// callbacks for console commands
 		Console::CommandResult ConsoleInfo(const Core::StringVector &params);
@@ -50,6 +51,7 @@ namespace Communication
 
 
 		static TelepathyCommunicationPtr GetInstance(); // for python callbacks
+
 	protected:
 		static TelepathyCommunicationPtr instance_;
 		

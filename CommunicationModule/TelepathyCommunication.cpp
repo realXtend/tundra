@@ -109,43 +109,57 @@ namespace Communication
 		Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, NULL);
 	}
 
-	IMSessionPtr TelepathyCommunication::CreateIMSession(ContactPtr contact)
+	IMSessionPtr TelepathyCommunication::CreateIMSession(ContactInfoPtr contact)
 	{
-		bool jabber_contact_founded = false;
-		ContactInfoPtr jabber_contact;
-		ContactInfoList list = contact->GetContactInfos();
-		for (int i=0; i<list.size(); i++)
+		std::string protocol = contact->GetProperty("protocol");
+		if (protocol.compare("jabber")==0)
 		{
-			if ( ((ContactInfoPtr)(list[i]))->GetType().compare("jabber")==0 )
-			{
-				jabber_contact = (ContactInfoPtr)(list[i]);
-				jabber_contact_founded = true;
-				break;
-			}
+			int session_id = 0; // todo: replace by real id
+			TPIMSession* session = new TPIMSession(python_communication_object_);
+			TPIMSessionPtr session_ptr = TPIMSessionPtr(session);
+			this->im_sessions_.push_back(session_ptr);
+
+			char** args = new char*[1];
+			char* buf1 = new char[100];
+			strcpy(buf1, contact->GetProperty("address").c_str());
+			args[0] = buf1;
+
+			std::string method = "CStartChatSession"; // todo: CCreateIMSessionJabber, CCreateIMSessionSIP, etc.
+			std::string syntax = "s";
+			Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, args);
+			return IMSessionPtr( (IMSession*)session);
+			// TODO: Get session id from python !
+
+			return IMSessionPtr( (IMSession*)session);
 		}
 
-		if (!jabber_contact_founded)
-		{
-			// TODO: Handle error situation
-		}
+		// TODO: Handle error properly
+		std::string error_message;
+		error_message.append("Protocol [");
+		error_message.append(protocol);
+		error_message.append("] is not supported by communication manager.");
 
-		int session_id = 0; // todo replace by real id
-		TPIMSession* session = new TPIMSession(python_communication_object_);
-		TPIMSessionPtr session_ptr = TPIMSessionPtr(session);
-		this->im_sessions_.push_back(session_ptr);
+		throw error_message;
+		//
 
-		char** args = new char*[1];
-		char* buf1 = new char[100];
-		strcpy(buf1,jabber_contact->GetValue().c_str());
-		args[0] = buf1;
+		//bool jabber_contact_founded = false;
+		//ContactInfoPtr jabber_contact;
+		//ContactInfoList list = contact->GetContactInfos();
+		//for (int i=0; i<list.size(); i++)
+		//{
+		//	if ( ((ContactInfoPtr)(list[i]))->GetType().compare("jabber")==0 )
+		//	{
+		//		jabber_contact = (ContactInfoPtr)(list[i]);
+		//		jabber_contact_founded = true;
+		//		break;
+		//	}
+		//}
 
-		std::string method = "CStartChatSession"; // todo: CCreateIMSessionJabber, CCreateIMSessionSIP, etc.
-		std::string syntax = "s";
-		Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, args);
-		return IMSessionPtr( (IMSession*)session);
-		// TODO: Get session id from python !
+		//if (!jabber_contact_founded)
+		//{
+		//	// TODO: Handle error situation
+		//}
 
-		return IMSessionPtr( (IMSession*)session);
 	}
 
 	ContactListPtr TelepathyCommunication::GetContactList()
@@ -173,6 +187,11 @@ namespace Communication
 		TPIMMessage* m = new TPIMMessage(0);
 		m->SetText(text);
 		return IMMessagePtr((IMMessage*)m);
+	}
+
+	void TelepathyCommunication::SendFriendRequest(ContactInfoPtr contact_info)
+	{
+
 	}
 
 	// DEBUG CONSOLE CALLBACKS
@@ -234,7 +253,11 @@ namespace Communication
 			return Console::ResultFailure(reason);
 		}
 
-		Credentials* c = new Credentials(); // OpenConnection doesn't use this yet.
+		Credentials* c = new Credentials(); // OpenConnection method doesn't use this yet.
+		c->SetProperty("account",params[0]);
+		c->SetProperty("password",params[1]);
+		c->SetProperty("server",params[3]);
+		c->SetProperty("server_port",params[4]);
 		OpenConnection(CredentialsPtr(c));
 		return Console::ResultSuccess("Ready.");
 	}
@@ -253,10 +276,11 @@ namespace Communication
 			return Console::ResultFailure(reason);
 		}
 
-		TPContact* c = new TPContact(); // todo: Manifacture funtion for these
-		c->SetName(params[0]);
+		ContactInfo* c = new ContactInfo(); 
+		c->SetProperty("protocol", "jabber");
+		c->SetProperty("account", params[0]);
 		
-		CreateIMSession(ContactPtr((Contact*)c));
+		CreateIMSession( ContactInfoPtr(c) );
 		return Console::ResultSuccess("Ready.");
 	}
 

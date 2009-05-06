@@ -14,14 +14,21 @@ namespace Communication
 
 	// A single contact information of individual contact.
 	// Eg. jabber id:  "jid": "myjabberid@myjabberprovider.com"
-	// todo: should be renamted to ContactAddresd ?
+	// todo: should be renamed to ContactAddress ?
+	// todo: separate interface and implementation
 	class ContactInfo
 	{
-	public:
-		virtual void SetType(std::string type) = 0;
-		virtual std::string GetType() = 0;
-		virtual void SetValue(std::string value) = 0;
-		virtual std::string GetValue() = 0;
+	public: 
+		void SetProperty(std::string key, std::string value);
+		std::string GetProperty(std::string key);
+		std::vector<std::string> GetProperties();
+
+		//virtual void SetType(std::string type) = 0;
+		//virtual std::string GetType() = 0;
+		//virtual void SetValue(std::string value) = 0;
+		//virtual std::string GetValue() = 0;
+	private:
+		std::map<std::string, std::string> properties_;
 	};
 
 	typedef boost::shared_ptr<ContactInfo> ContactInfoPtr;
@@ -55,7 +62,7 @@ namespace Communication
 	};
 
 	typedef boost::shared_ptr<Contact> ContactPtr;
-	typedef std::list<ContactPtr> ContactList;
+	typedef std::vector<ContactPtr> ContactList;
 	typedef boost::shared_ptr<ContactList> ContactListPtr;
 
 	//class ContactList
@@ -125,15 +132,24 @@ namespace Communication
 
 	
 	// Login information for communication server connection
+	// todo: rename to Account ?
+	// todo: separate interface and implementation
+	//
+	// info: properties are communication manager and protocol specific:
+	// eg.
+	//   protocol
+	//   account
+	//   server
+	//   server_port
+	//   password
 	class Credentials
 	{
-		// map of key-value pairs might be better solution ?
-		// Todo: settter/getters
-	public: // todo: write getters & setters
-		std::string type; // eg. "jabber"
-		std::string server; // eg. "jabber.org"
-		std::string account; // eg. "myaccount@jabber.org"
-		std::string password; // eg. "mypassword"
+	public: 
+		void SetProperty(std::string key, std::string value);
+		std::string GetProperty(std::string key);
+		std::vector<std::string> GetProperties();
+	private:
+		std::map<std::string, std::string> properties_;
 	};
 
 	typedef boost::shared_ptr<Credentials> CredentialsPtr;
@@ -152,10 +168,11 @@ namespace Communication
 		virtual void OpenConnection(CredentialsPtr c) = 0;
 		virtual void CloseConnection() = 0;
 
-		virtual IMSessionPtr CreateIMSession(ContactPtr contact) = 0;
+		virtual IMSessionPtr CreateIMSession(ContactInfoPtr contact) = 0;
 		virtual ContactListPtr GetContactList() = 0;
 		virtual void PublishPresence(PresenceStatusPtr p) = 0;
 		virtual IMMessagePtr CreateIMMessage(std::string text) = 0;
+		virtual void SendFriendRequest(ContactInfoPtr contact_info) = 0;
 	};
 
 	typedef boost::shared_ptr<CommunicationServiceInterface> CommunicationServicePtr;

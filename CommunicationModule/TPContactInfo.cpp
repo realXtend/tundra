@@ -8,27 +8,27 @@
 namespace Communication
 {
 
-void TPContactInfo::SetType(std::string type)
-{
-	type_ = type;
-}
+	//void TPContactInfo::SetType(std::string type)
+	//{
+	//	type_ = type;
+	//}
 
 
-std::string TPContactInfo::GetType()
-{
-	return type_;
-}
+	//std::string TPContactInfo::GetType()
+	//{
+	//	return type_;
+	//}
 
-void TPContactInfo::SetValue(std::string value)
-{
-	value_ = value;
-}
+	//void TPContactInfo::SetValue(std::string value)
+	//{
+	//	value_ = value;
+	//}
 
 
-std::string TPContactInfo::GetValue()
-{
-	return value_;
-}
+	//std::string TPContactInfo::GetValue()
+	//{
+	//	return value_;
+	//}
 
 
 } // end of namespace: Communication
