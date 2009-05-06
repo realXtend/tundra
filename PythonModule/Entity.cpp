@@ -43,9 +43,4 @@ namespace PythonScript
 		eob->ent_id = ent_id;
 		return (PyObject*) eob;
 	}
-
-	void foo()
-	{
-		int a = 1 + 1;
-	}
 }
