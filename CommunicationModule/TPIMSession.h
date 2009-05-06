@@ -23,9 +23,10 @@ namespace Communication
 		virtual void Close();
 		virtual void SendInvitation(ContactPtr c);
 		virtual void Kick(Participiant *p);
+		virtual ParticipientListPtr GetParticipients();
 	protected:
 		void NotifyClosedByRemote(); // Called by TelepathyCommunication
-
+		
 		int id_;
 		Foundation::ScriptObjectPtr python_communication_object_; 
 
@@ -43,13 +44,14 @@ namespace Communication
 	{
 		friend class TelepathyCommunication;
 	public:
-		
 		TPIMSession(Foundation::ScriptObjectPtr python_communication_object);
 		virtual void SendMessage(IMMessagePtr m);
+		virtual IMMessageListPtr GetMessageHistory();
 	protected:
 		void NotifyMessageReceived(TPIMMessagePtr m); // called by TelepathyCommunication
 		TPIMMessageList message_history_;
 	};
+	typedef boost::shared_ptr<TPIMSession> TPIMSessionPtr;
 
 } // end of namespace: Communication
 

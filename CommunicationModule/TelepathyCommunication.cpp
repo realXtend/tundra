@@ -230,15 +230,15 @@ namespace Communication
 		std::string text;
 		text.append("\n");
 		text.append("debug console commands:\n");
-		text.append("comminfo .......... Prints information about communication manager state. ");
-		text.append("commhelp .......... Prints this help.");
-		text.append("commlogin ......... Connects to jabber server.");
-		text.append("commlogout ........ Closes connection to jabber server.");
-		text.append("commcreatesession . Creates IM session.");
-		text.append("commlistsessions .. Prints all sessions.");
-		text.append("commsendmessage ... Send messaga.");
-		text.append("commlistcontacts .. Prints all contacts on contact list.");
-		text.append("commaddcontact..... Sends friend request.");
+		text.append("comminfo .......... Prints information about communication manager state.\n");
+		text.append("commhelp .......... Prints this help.\n");
+		text.append("commlogin ......... Connects to jabber server.\n");
+		text.append("commlogout ........ Closes connection to jabber server.\n");
+		text.append("commcreatesession . Creates IM session.\n");
+		text.append("commlistsessions .. Prints all sessions.\n");
+		text.append("commsendmessage ... Send messaga.\n");
+		text.append("commlistcontacts .. Prints all contacts on contact list.\n");
+		text.append("commaddcontact..... Sends friend request.\n\n");
 		return Console::ResultSuccess(text); 
 	}
 
@@ -389,7 +389,7 @@ namespace Communication
 	*/
 	void TelepathyCommunication::PyCallbackTest(char* t)
 	{
-		// do tests here
+		LogInfo("PyCallbackTest()");
 	}
 
 	/*
@@ -398,6 +398,7 @@ namespace Communication
 	*/
 	void TelepathyCommunication::PyCallbackConnected(char*)
 	{
+		LogInfo("Server connection: Connected");
 		// todo : Set own online status to: Online
 	}
 
@@ -407,7 +408,9 @@ namespace Communication
 	*/
 	void TelepathyCommunication::PyCallbackConnecting(char*)
 	{
+		LogInfo("Server connection: Connecing...");
 		// todo : Do we need this? Send notify for UI to be "connecting state"?
+		//        or set online status state to connecting... etc.
 	}
 
 	/*
@@ -416,18 +419,20 @@ namespace Communication
 	*/
 	void TelepathyCommunication::PyCallbackDisconnected(char*)
 	{
+		LogInfo("Server connection: Disconnected");
 		// todo : Set own online status to: Offline
 	}
 
 	/*
 	   Called by communication.py via PythonScriptModule
 	   When new session was opened
-	   todo: session id should be received
+	   todo: session id should be received (now we don't get anything)
 	   todo: IS THIS INCOMING OR OUTGOING ???
 	*/
 	void TelepathyCommunication::PyCallbackChannelOpened(char*)
 	{
-		// todo: create session
+		LogInfo("Session created");
+
 		TPIMSessionPtr s = TPIMSessionPtr( new TPIMSession(TelepathyCommunication::GetInstance()->python_communication_object_) );
 		IMSessionInvitationEvent e = IMSessionInvitationEvent( IMSessionPtr((IMSession*) s.get() ) );
 		TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::IM_SESSION_INVITATION_RECEIVED, (Foundation::EventDataInterface*)&e);
@@ -440,6 +445,7 @@ namespace Communication
 	*/
 	void TelepathyCommunication::PyCallbackChannelClosed(char*)
 	{
+		LogInfo("Session closed");
 		int session_id = 0;
 		for (int i = 0; i < TelepathyCommunication::GetInstance()->im_sessions_.size(); i++)
 		{
@@ -452,9 +458,6 @@ namespace Communication
 				// todo: remove session from im_sessions_
 			}
 		}
-		
-		//IMMessageReceivedEvent e = IMMessageReceivedEvent(IMMessagePtr( (IMMessage*)m.get() ));
-		//TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::IM_MESSAGE_RECEIVED, (Foundation::EventDataInterface*)&e);
 	}
 
 	/*
@@ -464,6 +467,11 @@ namespace Communication
 	*/
 	void TelepathyCommunication::PyCallbackMessagReceived(char* text)
 	{
+		std::string t;
+		t.append("Message received: ");
+		t.append(text);
+		LogInfo(t);
+
 		int session_id = 0; // todo: Get real session id from python
 		TPIMMessagePtr m = TPIMMessagePtr(new TPIMMessage(session_id));
 		m->SetText(text);
@@ -487,6 +495,7 @@ namespace Communication
 	*/
 	void TelepathyCommunication::PycallbackFriendReceived(char* t)
 	{
+		LogInfo("PycallbackFriendReceived");
 		// todo: handle this
 	}
 
@@ -497,6 +506,11 @@ namespace Communication
 	*/
 	void TelepathyCommunication::PyCallbackContactStatusChanged(char* id)
 	{
+		std::string t;
+		t.append("Presence changed: ");
+		t.append(id);
+		LogInfo(t);
+
 		TPContactList* contact_list = &TelepathyCommunication::GetInstance()->contact_list_;
 
 		for (int i=0; i<contact_list->size(); i++)

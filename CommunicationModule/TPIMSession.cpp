@@ -32,6 +32,7 @@ namespace Communication
 
 	void TPSession::NotifyClosedByRemote()
 	{
+		// todo: handle this
 	}
 
 
@@ -43,6 +44,14 @@ namespace Communication
 	void TPSession::Kick(Participiant *p)
 	{
 		// Not implemented in python yet: Multiuser chat
+	}
+
+	ParticipientListPtr TPSession::GetParticipients()
+	{
+		ParticipientList* list = new ParticipientList();
+		// todo: fill the list
+		return ParticipientListPtr(list);
+
 	}
 
 	TPIMSession::TPIMSession(Foundation::ScriptObjectPtr python_communication_object):TPSession(python_communication_object)
@@ -66,6 +75,19 @@ namespace Communication
 	{
 		message_history_.push_back(m);
 	}
+	
+	IMMessageListPtr TPIMSession::GetMessageHistory()
+	{
+		IMMessageList* list = new IMMessageList();
+		for (int i=0; i<message_history_.size(); i++)
+		{
+//			list->push_back(
+//			message_history_[i].get()
+
+		}
+		return IMMessageListPtr(list);
+	}
+
 
 } // end of namespace: Communication
 

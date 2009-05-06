@@ -4,39 +4,37 @@
 #include "CoreStdIncludes.h"
 #include "ServiceInterface.h"
 
-/* ---------------------------------------------
- * Interfaces for CommunicationModule usage.
- * ---------------------------------------------
+/*
+ * ----------------------------------------------------------------------------------
+ * CommunicationServiceInterface : Interfaces for to use CommunicationModule services
+ * ----------------------------------------------------------------------------------
  */
 
 namespace Communication
 {
-
 	// A single contact information of individual contact.
-	// Eg. jabber id:  "jid": "myjabberid@myjabberprovider.com"
 	// todo: should be renamed to ContactAddress ?
 	// todo: separate interface and implementation
+	// keys: 
+	// * protocol
+	// * account
 	class ContactInfo
 	{
 	public: 
 		void SetProperty(std::string key, std::string value);
 		std::string GetProperty(std::string key);
 		std::vector<std::string> GetProperties();
-
-		//virtual void SetType(std::string type) = 0;
-		//virtual std::string GetType() = 0;
-		//virtual void SetValue(std::string value) = 0;
-		//virtual std::string GetValue() = 0;
 	private:
 		std::map<std::string, std::string> properties_;
 	};
-
 	typedef boost::shared_ptr<ContactInfo> ContactInfoPtr;
 	typedef std::vector<ContactInfoPtr> ContactInfoList;
 
-	// Status of one individual presence
-	// * online status
-	// * online message
+	// presence status of one individual contact
+	// todo: online_status {unknow, online, offline}
+	//       online_message string
+	//       something extra?
+	//     * could these be just properties ?
 	class PresenceStatus
 	{
 	public:
@@ -45,13 +43,10 @@ namespace Communication
 		virtual void SetOnlineMessage(std::string message) = 0;
 		virtual std::string GetOnlineMessage() = 0;
 	};
-
 	typedef boost::shared_ptr<PresenceStatus> PresenceStatusPtr;
 
-	// Individual contact on contact list 
-	// aka. "Friend"
-	// * name
-	// * presence info
+	// Individual contact in contact list 
+	// todo: presence status should only exist with friend contact: -> IsFriend() ?
 	class Contact
 	{
 	public:
@@ -60,32 +55,39 @@ namespace Communication
 		virtual PresenceStatusPtr GetPresenceStatus() = 0;
 		virtual ContactInfoList GetContactInfos() = 0;
 	};
-
 	typedef boost::shared_ptr<Contact> ContactPtr;
 	typedef std::vector<ContactPtr> ContactList;
 	typedef boost::shared_ptr<ContactList> ContactListPtr;
 
-	//class ContactList
-	//{
-	//public:
-	//	virtual int GetContactCount() = 0;
-	//	virtual int GetOnlineContactCount() = 0;
-	//	virtual ContactPtr GetContact() = 0;
-	//}
-
 	// A participiant of session
-	// * contact
+	// todo: add information about communication methods available
 	class Participiant
 	{
 	public:
 		virtual std::string GetName() = 0;
 		virtual ContactPtr GetContactData() = 0;
 	};
-
     typedef boost::shared_ptr<Participiant> ParticipiantPtr;
+	typedef std::vector<ParticipiantPtr> ParticipientList;
+	typedef boost::shared_ptr<ParticipientList> ParticipientListPtr;
 
-	// * timestamp
-	// * author
+	// Communication session (IM, voip, video, etc.)
+	// 
+	// Send Events:
+	// * InvitationsResponse(bool)
+	// * ParticipientLeft(Participient)
+	// * ParticipientJoined(Participient)
+	class Session
+	{
+	public:
+		virtual void SendInvitation(ContactPtr c) = 0;
+		virtual void Kick(Participiant *p) = 0;
+		virtual void Close() = 0;
+		virtual int GetId() = 0;
+		virtual ParticipientListPtr GetParticipients() = 0;
+	};
+	typedef boost::shared_ptr<Session> SessionPtr;
+
 	// todo: rename to MessageInterface or IMessage ???
 	class Message
 	{
@@ -93,41 +95,31 @@ namespace Communication
 		virtual std::string GetTimeStamp() = 0; // todo: change to proper timestamp type
 		virtual ParticipiantPtr GetAuthor() = 0; 
 		virtual int GetSessionId() = 0;
+//		virtual bool IsPrivate() = 0;
 	private:
 	};
 
+	// chat message
+	// todo: more components like attachment (link, file, request, etc.)
 	class IMMessage : Message
 	{
 	public:
 		virtual void SetText(std::string text) = 0;
 		virtual std::string GetText() = 0;
 	};
-
 	typedef boost::shared_ptr<IMMessage> IMMessagePtr;
+	typedef std::vector<IMMessagePtr> IMMessageList;
+	typedef boost::shared_ptr<IMMessageList> IMMessageListPtr;
 
-	// Communication session consisting from participients.
-	//
-	// Events:
-	// - InvitationsResponse(bool)
-	// - ParticipientLeft(Participient)
-	// - ParticipientJoined(Participient)
-	class Session
-	{
-	public:
-		virtual void SendInvitation(ContactPtr c)= 0;
-		virtual void Kick(Participiant *p) = 0;
-		virtual void Close() = 0;
-		virtual int GetId() = 0;
-	};
-
-	typedef boost::shared_ptr<Session> SessionPtr;
-
+	// Text chat session
+	// Send Events:
+	// * MessageReceived
 	class IMSession : Session
 	{
 	public:
-		virtual void SendMessage(IMMessagePtr m) =0 ;
+		virtual void SendMessage(IMMessagePtr m) = 0;
+		virtual IMMessageListPtr GetMessageHistory() = 0;
 	};
-
 	typedef boost::shared_ptr<IMSession> IMSessionPtr;
 
 	
@@ -137,11 +129,11 @@ namespace Communication
 	//
 	// info: properties are communication manager and protocol specific:
 	// eg.
-	//   protocol
-	//   account
-	//   server
-	//   server_port
-	//   password
+	// * protocol
+	// * account
+	// * server
+	// * server_port
+	// * password
 	class Credentials
 	{
 	public: 
@@ -151,14 +143,14 @@ namespace Communication
 	private:
 		std::map<std::string, std::string> properties_;
 	};
-
 	typedef boost::shared_ptr<Credentials> CredentialsPtr;
 
-	// todo: events:
-	// -SessionInvitation
-	// -PresenceUpdate
-	// -ConnectionStateUpdate
-	// -IMMessage
+	// todo: possibility to join chat rooms
+	// Send Events:
+	// * SessionInvitation
+	// * PresenceUpdate
+	// * ConnectionStateUpdate
+	// * MessageReceived (maybe we will not allow messages without session? instead we'll always create one)
 	class CommunicationServiceInterface : public Foundation::ServiceInterface
 	{
 	public:
@@ -166,21 +158,17 @@ namespace Communication
 		virtual ~CommunicationServiceInterface() {}
 
 		virtual void OpenConnection(CredentialsPtr c) = 0;
-		virtual void CloseConnection() = 0;
+		virtual void CloseConnection() = 0; 
 
 		virtual IMSessionPtr CreateIMSession(ContactInfoPtr contact) = 0;
 		virtual ContactListPtr GetContactList() = 0;
 		virtual void PublishPresence(PresenceStatusPtr p) = 0;
 		virtual IMMessagePtr CreateIMMessage(std::string text) = 0;
 		virtual void SendFriendRequest(ContactInfoPtr contact_info) = 0;
+//		virtual void AddContact(ContactInfoPtr contact_info) = 0;
 	};
-
 	typedef boost::shared_ptr<CommunicationServiceInterface> CommunicationServicePtr;
 
 } // end of namespace: Communication
 
 #endif // incl_Interfaces_ComminicationServiceInterface_h
-
-
-
-
