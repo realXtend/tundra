@@ -8,6 +8,10 @@ using namespace std;
 NetworkConnection::NetworkConnection(const char *address, int port): bOpen(true)
 {
 	socket.connect(Poco::Net::SocketAddress(address, port));
+	
+	const size_t cBufferSize = 100000;	
+	socket.setReceiveBufferSize(cBufferSize);
+	socket.setSendBufferSize(cBufferSize);
 }
 
 NetworkConnection::~NetworkConnection()
