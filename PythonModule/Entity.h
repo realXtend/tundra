@@ -33,7 +33,8 @@ namespace PythonScript
 	//why can't these be static? doesn't find the definitions in that case..
 	void entity_init(PyObject* m);
 	PyObject* entity_create(Core::entity_id_t ent_id); //, Foundation::EntityPtr entity);
-	PyObject* entity_getattro(rexviewer_EntityObject *self, PyObject *name);
+	PyObject* entity_getattro(PyObject *self, PyObject *name);
+	int entity_setattro(PyObject *self, PyObject *name, PyObject *value);
 
 	static PyTypeObject rexviewer_EntityType = {
 		PyObject_HEAD_INIT(NULL)
@@ -53,8 +54,8 @@ namespace PythonScript
 		0,                         /*tp_hash */
 		0,                         /*tp_call*/
 		0,                         /*tp_str*/
-		(PyCFunction)entity_getattro, /*tp_getattro*/
-		0,                         /*tp_setattro*/
+		entity_getattro,		   /*tp_getattro*/
+		entity_setattro,		  /*tp_setattro*/
 		0,                         /*tp_as_buffer*/
 		Py_TPFLAGS_DEFAULT,        /*tp_flags*/
 		"Entity object",           /* tp_doc */

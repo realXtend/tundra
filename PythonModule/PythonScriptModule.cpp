@@ -12,6 +12,9 @@
 #include "OpenSimProtocolModule.h" //for handling net events
 #include "RexProtocolMsgIDs.h"
 
+#include "SceneEvents.h" //sending scene events after (placeable component) manipulation
+
+
 #include "Entity.h"
 
 namespace PythonScript
@@ -82,9 +85,15 @@ namespace PythonScript
 
     void PythonScriptModule::PostInitialize()
     {
+		//(was) for onChat
 		inboundCategoryID_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
         if (inboundCategoryID_ == 0)
             LogWarning("Unable to find event category for incoming OpenSimNetwork events!");
+
+		//for notifying placeable movement
+		PythonScript::scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
+	    if (PythonScript::scene_event_category_ == 0)
+			LogWarning("Unable to find event category for Scene events!");    
 	}
 
     bool PythonScriptModule::HandleEvent(
@@ -280,73 +289,6 @@ static PyObject* GetEntity(PyObject *self, PyObject *args)
 		return NULL; //XXX TODO: raise ValueError
 }
 
-PyObject* PythonScript::entity_getattro(rexviewer_EntityObject *self, PyObject *name)
-{
-	PyObject* tmp;
-
-	if (!(tmp = PyObject_GenericGetAttr((PyObject*)self, name))) {
-		if (!PyErr_ExceptionMatches(PyExc_AttributeError))
-			return NULL;
-		PyErr_Clear();
-	}
-	else
-		return tmp;
-
-	const char* c_name = PyString_AsString(name);
-	std::string s_name = ""; //new std::string (c_name);
-	s_name.assign(c_name);
-
-	std::cout << "Entity: getting unknown attribute: " << s_name;
-	
-	//entity_ptrs map usage
-	/* this crashes now in boost, 
-	   void add_ref_copy() { BOOST_INTERLOCKED_INCREMENT( &use_count_ );
-	std::map<Core::entity_id_t, Foundation::EntityPtr>::iterator ep_iter = entity_ptrs.find(self->ent_id);
-	Foundation::EntityPtr entity = ep_iter->second;
-	fix.. */
-
-	/* re-getting the EntityPtr as it wasn't stored anywhere yet,
-	   is copy-paste from PythonScriptModule GetEntity 
-	   but to be removed when that map is used above.*/
-	Foundation::ScenePtr scene = PythonScript::GetScene();
-	Foundation::EntityPtr entity = scene->GetEntity(self->ent_id);
-	
-	if (s_name.compare("prim") == 0)
-	{
-		std::cout << ".. getting prim" << std::endl;
-		const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
-		if (!prim_component)
-			return NULL; //XXX report AttributeError
-		RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
-	        
-		//m->AddU32(prim->LocalId);
-		std::string retstr = "local id:" + prim->FullId.ToString() + "- prim name: " + prim->ObjectName;
-		return PyString_FromString(retstr.c_str());
-	}
-
-	else if (s_name.compare("place") == 0)
-	{
-        const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
-		if (!ogre_component)
-            return NULL; //XXX report AttributeError        
-		OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
-		
-		/* this must probably return a new object, a 'Place' instance, that has these.
-		   or do we wanna hide the E-C system in the api and have these directly on entity? 
-		   probably not a good idea to hide the actual system that much. or? */
-		RexTypes::Vector3 pos = placeable->GetPosition();
-		//RexTypes::Vector3 scale = ogre_pos->GetScale();
-		//RexTypes::Vector3 rot = Core::PackQuaternionToFloat3(ogre_pos->GetOrientation());
-		/* .. i guess best to wrap the Rex Vector and other types soon,
-		   the pyrr irrlicht binding project does it for these using swig,
-		   https://opensvn.csie.org/traccgi/pyrr/browser/pyrr/irrlicht.i */
-		return Py_BuildValue("fff", pos.x, pos.y, pos.z);
-	}
-
-	std::cout << "unknown component type."  << std::endl;
-	return NULL;
-}
-
 static PyObject* PyEventCallback(PyObject *self, PyObject *args){
 	std::cout << "PyEventCallback" << std::endl;
 	const char* key;
@@ -386,3 +328,148 @@ static void PythonScript::initpymod()
 	   would call something here to get a ref to the module, or something?
 	*/
 }
+
+/* this belongs to Entity.cpp but when added to the api from there, the staticframework is always null */
+PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
+{
+	PyObject* tmp;
+
+	if (!(tmp = PyObject_GenericGetAttr((PyObject*)self, name))) {
+		if (!PyErr_ExceptionMatches(PyExc_AttributeError))
+			return NULL;
+		PyErr_Clear();
+	}
+	else
+		return tmp;
+
+	const char* c_name = PyString_AsString(name);
+	std::string s_name = std::string(c_name);
+
+	std::cout << "Entity: getting unknown attribute: " << s_name;
+	
+	//entity_ptrs map usage
+	/* this crashes now in boost, 
+	   void add_ref_copy() { BOOST_INTERLOCKED_INCREMENT( &use_count_ );
+	std::map<Core::entity_id_t, Foundation::EntityPtr>::iterator ep_iter = entity_ptrs.find(self->ent_id);
+	Foundation::EntityPtr entity = ep_iter->second;
+	fix.. */
+
+	/* re-getting the EntityPtr as it wasn't stored anywhere yet,
+	   is copy-paste from PythonScriptModule GetEntity 
+	   but to be removed when that map is used above.*/
+	Foundation::ScenePtr scene = PythonScript::GetScene();
+	rexviewer_EntityObject *eob = (rexviewer_EntityObject *)self;
+	Foundation::EntityPtr entity = scene->GetEntity(eob->ent_id);
+	
+	if (s_name.compare("prim") == 0)
+	{
+		std::cout << ".. getting prim" << std::endl;
+		const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
+		if (!prim_component)
+			return NULL; //XXX report AttributeError
+		RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
+	        
+		//m->AddU32(prim->LocalId);
+		std::string retstr = "local id:" + prim->FullId.ToString() + "- prim name: " + prim->ObjectName;
+		return PyString_FromString(retstr.c_str());
+	}
+
+	else if (s_name.compare("place") == 0)
+	{
+        const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
+		if (!ogre_component)
+            return NULL; //XXX report AttributeError        
+		OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
+		
+		/* this must probably return a new object, a 'Place' instance, that has these.
+		   or do we wanna hide the E-C system in the api and have these directly on entity? 
+		   probably not a good idea to hide the actual system that much. or? */
+		RexTypes::Vector3 pos = placeable->GetPosition();
+		//RexTypes::Vector3 scale = ogre_pos->GetScale();
+		//RexTypes::Vector3 rot = Core::PackQuaternionToFloat3(ogre_pos->GetOrientation());
+		/* .. i guess best to wrap the Rex Vector and other types soon,
+		   the pyrr irrlicht binding project does it for these using swig,
+		   https://opensvn.csie.org/traccgi/pyrr/browser/pyrr/irrlicht.i */
+		return Py_BuildValue("fff", pos.x, pos.y, pos.z);
+	}
+
+	std::cout << "unknown component type."  << std::endl;
+	return NULL;
+}
+
+int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *value)
+{
+	/*
+	if (!(tmp = PyObject_GenericSetAttr((PyObject*)self, name, value))) {
+		if (!PyErr_ExceptionMatches(PyExc_AttributeError))
+			return NULL;
+		PyErr_Clear();
+	}*/
+
+	const char* c_name = PyString_AsString(name);
+	std::string s_name = std::string(c_name);
+
+	std::cout << "Entity: setting unknown attribute: " << s_name;
+	rexviewer_EntityObject *eob = (rexviewer_EntityObject *)self;
+
+	//entity_ptrs map usage
+	/* this crashes now in boost, 
+	   void add_ref_copy() { BOOST_INTERLOCKED_INCREMENT( &use_count_ );
+	std::map<Core::entity_id_t, Foundation::EntityPtr>::iterator ep_iter = entity_ptrs.find(self->ent_id);
+	Foundation::EntityPtr entity = ep_iter->second;
+	fix.. */
+
+	/* re-getting the EntityPtr as it wasn't stored anywhere yet,
+	   is copy-paste from PythonScriptModule GetEntity 
+	   but to be removed when that map is used above.*/
+	Foundation::ScenePtr scene = PythonScript::GetScene();
+	Foundation::EntityPtr entity = scene->GetEntity(eob->ent_id);
+	
+	/*if (s_name.compare("prim") == 0)
+	{
+		std::cout << ".. getting prim" << std::endl;
+		const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
+		if (!prim_component)
+			return NULL; //XXX report AttributeError
+		RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
+	        
+		//m->AddU32(prim->LocalId);
+		std::string retstr = "local id:" + prim->FullId.ToString() + "- prim name: " + prim->ObjectName;
+		return PyString_FromString(retstr.c_str());
+	}*/
+
+	//else 
+	if (s_name.compare("place") == 0)
+	{
+        const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
+		if (!ogre_component)
+            return NULL; //XXX report AttributeError        
+		OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
+		
+		/* this must probably return a new object, a 'Place' instance, that has these.
+		   or do we wanna hide the E-C system in the api and have these directly on entity? 
+		   probably not a good idea to hide the actual system that much. or? */
+		float x, y, z;
+		if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
+			return NULL; //XXX report ArgumentException error
+		placeable->SetPosition(Vector3(x, y, z));
+		//RexTypes::Vector3 scale = ogre_pos->GetScale();
+		//RexTypes::Vector3 rot = Core::PackQuaternionToFloat3(ogre_pos->GetOrientation());
+		/* .. i guess best to wrap the Rex Vector and other types soon,
+		   the pyrr irrlicht binding project does it for these using swig,
+		   https://opensvn.csie.org/traccgi/pyrr/browser/pyrr/irrlicht.i */
+
+		/* sending a scene updated event to trigger network synch,
+		   copy-paste from DebugStats, 
+		   perhaps there'll be some MoveEntity thing in logic that can reuse for this? */
+	    Scene::Events::SceneEventData event_data(eob->ent_id);
+		event_data.entity_ptr_list.push_back(entity);
+		PythonScript::staticframework->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
+
+		return 0; //success.
+	}
+
+	std::cout << "unknown component type."  << std::endl;
+	return -1; //the way for setattr to report a failure
+}
+

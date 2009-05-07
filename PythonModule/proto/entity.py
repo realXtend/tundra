@@ -106,6 +106,34 @@ class PythonPlacedEntity:
     def __init__(self):
         self.place = Placeable()
         
+class CurrentCppEntity(object):
+    """mimics what there is now in the actual viewer in c(++),
+    to help debugging errors with setattr there now"""
+    
+    def __init__(self):
+        self.ec_place = Placeable()
+        #print "CppEntity init, place:", self.ec_place
+        
+    def __getattr__(self, name):
+        try:
+            return object.__getattr__(self, name)
+        except AttributeError:
+            pass #print "getting unknown attr"
+            
+        if name == 'place':
+            #print "CppEntity place pos vec:", self.ec_place.pos.vec
+            return self.ec_place.pos.vec
+            
+        raise AttributeError
+            
+    def __setattr__(self, name, val):
+        if name == 'place':
+            self.ec_place.pos.vec = val
+            return
+            
+        object.__setattr__(self, name, val)
+
+        
 def test_move(entity):
     #oldpos = entity.place #or: entity.components["EC_OgrePlaceable"]
     #oops! .. is a ref to the *same* placeable instance
@@ -122,6 +150,19 @@ def test_move(entity):
     ogre_pos->SetPosition(pos);
     """
     
+def test_move_cpp(e):
+    """copy-pasted from pymodules/test_move.py which is executed within viewer,
+    to verify the design against the mockup here now when debugging"""
+    p = e.place #.pos - the w.i.p. api has a shortcut now that instead of a placeable with loc,rot,scale it just gives loc now directly
+    oldx = p[0] #p.x - Vector3 not wrapped (yet), just gives a tuple
+    #p.x += 1 #change the x-coordinate
+    newpos = (p[0] + 1, p[1], p[2])
+    print "TEST MOVE CPP: trying to move to pos:", newpos
+    e.place = newpos
+    
+    assert e.place[0] > (oldx + 0.9) #and ,finally test if it actually did move
+    print "TEST MOVE CPP SUCCEEDED", e.place[0], oldx #if we get this far, the move actually worked! Yay.    
+    
 def runtests():
     #e = viewer.scenes['World'].entities[1] #the id for testdummy, or by name?
     #note: now is directly in viewer as GetEntity, defaulting to 'World' scene
@@ -130,6 +171,9 @@ def runtests():
     e = PlacedEntity()
     #e= PythonPlacedEntity()
     test_move(e)
+    
+    cppe = CurrentCppEntity()
+    test_move_cpp(cppe)
     
 if __name__ == '__main__':
     runtests()

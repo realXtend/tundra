@@ -43,4 +43,6 @@ namespace PythonScript
 		eob->ent_id = ent_id;
 		return (PyObject*) eob;
 	}
+
+	//getattro and setattro should be here but are now in PythonScriptModule as a workaround for staticframework being null here
 }
