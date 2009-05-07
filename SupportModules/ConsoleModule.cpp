@@ -41,8 +41,8 @@ namespace Console
     void ConsoleModule::Initialize()
     {
         checked_static_cast<ConsoleManager*>(manager_.get())->CreateDelayed();
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Console, manager_.get());
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_ConsoleCommand, checked_static_cast<ConsoleManager*>(manager_.get())->GetCommandManager().get());
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Console, manager_);
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_ConsoleCommand, checked_static_cast<ConsoleManager*>(manager_.get())->GetCommandManager());
 
         LogInfo("Module " + Name() + " initialized.");
     }
@@ -77,7 +77,7 @@ namespace Console
 
             if (event_id == Input::Events::SHOW_DEBUG_CONSOLE_REL)
             {
-                Input::InputServiceInterface *input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input);
+                boost::shared_ptr<Input::InputServiceInterface> input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input).lock();
                 if (input)
                 {
                     if (manager_->IsActive())
@@ -110,8 +110,8 @@ namespace Console
     // virtual 
     void ConsoleModule::Uninitialize()
     {
-        framework_->GetServiceManager()->UnregisterService(manager_.get());
-        framework_->GetServiceManager()->UnregisterService(checked_static_cast< ConsoleManager* >(manager_.get())->GetCommandManager().get());
+        framework_->GetServiceManager()->UnregisterService(manager_);
+        framework_->GetServiceManager()->UnregisterService(checked_static_cast< ConsoleManager* >(manager_.get())->GetCommandManager());
 
         assert (manager_);
         manager_.reset();

@@ -397,7 +397,7 @@ namespace OgreRenderer
         Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
         if (service_manager->IsRegistered(Foundation::Service::ST_Texture))
         {
-            Foundation::TextureServiceInterface* texture_service = service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture);
+            boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();
             texture_service->RequestTexture(id);
         }
     }
@@ -459,7 +459,7 @@ namespace OgreRenderer
         Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
         if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
         {
-            Foundation::AssetServiceInterface* asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset);
+            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
             Foundation::AssetPtr mesh_asset = asset_service->GetAsset(id, Asset::RexAT_Mesh);
             if (mesh_asset)
                 UpdateMesh(mesh_asset);

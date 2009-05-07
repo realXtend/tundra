@@ -55,8 +55,8 @@ struct TestB
     void operator()()
     {
         test_var_ = 0;
-        Console::CommandService *console = fw_->GetService<Console::CommandService>
-            (Foundation::Service::ST_ConsoleCommand);
+        boost::shared_ptr<Console::CommandService> console = fw_->GetService<Console::CommandService>
+            (Foundation::Service::ST_ConsoleCommand).lock();
 
         console->RegisterCommand(Console::CreateCommand("Test CommandC", "Test command threaded", Console::Bind(this, &TestB::TestCallbackThreaded), true));
 
@@ -93,8 +93,8 @@ BOOST_AUTO_TEST_CASE( support_modules_console_commands )
     fw.GetModuleManager()->LoadModuleByName("SupportModules", "ConsoleModule");
     BOOST_CHECK (fw.GetModuleManager()->HasModule(Foundation::Module::MT_Console));
     
-    Console::CommandService *console = fw.GetService<Console::CommandService>
-        (Foundation::Service::ST_ConsoleCommand);
+    boost::shared_ptr<Console::CommandService> console = fw.GetService<Console::CommandService>
+        (Foundation::Service::ST_ConsoleCommand).lock();
 
     TestA test_class;
     console->RegisterCommand(Console::CreateCommand("Test_CommandA", "Test command Success", Console::Bind(&test_class, &TestA::TestCallbackSuccess)));
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE( support_modules_console_ogre )
     Foundation::Framework &fw = CreateFramework();
 
     Console::ConsoleManager *console_manager = checked_static_cast<Console::ConsoleManager*>(fw.GetService<Console::ConsoleServiceInterface>
-        (Foundation::Service::ST_Console));
+        (Foundation::Service::ST_Console).lock().get());
 
     Console::ConsolePtr ogre_console = console_manager->GetOgre();
     Console::OgreOverlay *overlay = checked_static_cast<Console::OgreOverlay*>(ogre_console.get());

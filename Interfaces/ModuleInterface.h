@@ -337,8 +337,8 @@ namespace Foundation
             {
                 if (framework_->GetServiceManager()->IsRegistered(Service::ST_ConsoleCommand))
                 {
-                    Console::CommandService *console = framework_->GetService<Console::CommandService>(Service::ST_ConsoleCommand);
-                    console->RegisterCommand(*it);
+                    boost::weak_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>(Service::ST_ConsoleCommand);
+                    console.lock()->RegisterCommand(*it);
                 }
             }
 
@@ -370,8 +370,8 @@ namespace Foundation
             {
                 if (framework_->GetServiceManager()->IsRegistered(Service::ST_ConsoleCommand))
                 {
-                    Console::CommandService *console = framework_->GetService<Console::CommandService>(Service::ST_ConsoleCommand);
-                    console->UnregisterCommand(it->name_);
+                    boost::weak_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>(Service::ST_ConsoleCommand);
+                    console.lock()->UnregisterCommand(it->name_);
                 }
             }
 

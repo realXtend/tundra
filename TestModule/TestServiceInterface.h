@@ -16,6 +16,7 @@ namespace Test
 
         virtual bool Test() const = 0;
     };
+    typedef boost::shared_ptr<TestServiceInterface> TestServicePtr;
 }
 
 #endif

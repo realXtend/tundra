@@ -80,7 +80,7 @@ namespace RexLogic
 
     void Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY)
     {
-        OgreRenderer::Renderer *renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
 
         std::stringstream ss;

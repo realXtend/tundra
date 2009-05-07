@@ -30,7 +30,7 @@ namespace Scene
     void SceneModule::Initialize()
     {
         scene_manager_ = Foundation::SceneManagerPtr(new SceneManager(this));
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_SceneManager, scene_manager_.get());
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_SceneManager, scene_manager_);
 
         // Register 'Scene' event category and events.
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
@@ -51,7 +51,7 @@ namespace Scene
     // virtual 
     void SceneModule::Uninitialize()
     {
-        framework_->GetServiceManager()->UnregisterService(scene_manager_.get());
+        framework_->GetServiceManager()->UnregisterService(scene_manager_);
         scene_manager_.reset();
 
         LogInfo("Module " + Name() + " uninitialized.");

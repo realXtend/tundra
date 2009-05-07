@@ -115,7 +115,7 @@ namespace RexLogic
         else
             LogError("Unable to find event category for Scene");
         
-        OgreRenderer::Renderer *renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         Ogre::Camera *cam = renderer->GetCurrentCamera();
         cam->setPosition(-10, -10, -10);
         cam->lookAt(0,0,0);
@@ -129,8 +129,8 @@ namespace RexLogic
 
     void RexLogicModule::DeleteScene(const std::string &name)
     {
-        Scene::SceneManager *scene_manager = dynamic_cast<Scene::SceneManager *>
-            (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
+        boost::shared_ptr<Foundation::SceneManagerServiceInterface> scene_manager =
+            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager).lock();
         
         if (!scene_manager)
             return;
@@ -240,8 +240,8 @@ namespace RexLogic
         terrain_ = TerrainPtr(new Terrain(this));
 
         // Create a single entity with a EC_Terrain component to the scene.
-        Foundation::SceneManagerServiceInterface *sceneManager = 
-            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+        boost::shared_ptr<Foundation::SceneManagerServiceInterface> sceneManager = 
+            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager).lock();
 
         Foundation::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
         entity->AddEntityComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_Terrain"));
@@ -276,8 +276,8 @@ namespace RexLogic
 
     Foundation::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
     {
-        Foundation::SceneManagerServiceInterface *sceneManager = 
-            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+        boost::shared_ptr<Foundation::SceneManagerServiceInterface> sceneManager = 
+            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager).lock();
 
         if (sceneManager->HasScene(name))
         {

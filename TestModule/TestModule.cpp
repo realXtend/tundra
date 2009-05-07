@@ -15,6 +15,7 @@ namespace Test
 {
     TestModule::TestModule() : ModuleInterfaceImpl(type_static_)
     {
+        test_service_ = TestServicePtr(new TestService);
     }
 
     TestModule::~TestModule()
@@ -39,7 +40,7 @@ namespace Test
     // virtual
     void TestModule::Initialize()
     {
-        framework_->GetServiceManager()->RegisterService(TestService::type_, &test_service_);
+        framework_->GetServiceManager()->RegisterService(TestService::type_, test_service_);
         assert (framework_->GetServiceManager()->IsRegistered(TestService::type_) &&
             "Failed to register test service");
 
@@ -51,7 +52,7 @@ namespace Test
     // virtual 
     void TestModule::Uninitialize()
     {
-        framework_->GetServiceManager()->UnregisterService(&test_service_);
+        framework_->GetServiceManager()->UnregisterService(test_service_);
         assert (framework_->GetServiceManager()->IsRegistered(TestService::type_) == false &&
             "Failed to unregister test service");
 
@@ -69,9 +70,9 @@ namespace Test
         // create new entity
         LogInfo("Constructing entity with component: " + Test::EC_Dummy::NameStatic() + ".");
 
-        Foundation::SceneManagerServiceInterface *sceneManager = 
-            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
-        assert(sceneManager != NULL && "Failed to get SceneManager service");
+        boost::shared_ptr<Foundation::SceneManagerServiceInterface> sceneManager = 
+            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager).lock();
+        assert(sceneManager && "Failed to get SceneManager service");
 
         assert(sceneManager->HasScene("test_scene") == false && "Scene test_scene scene already exists!");
         Foundation::ScenePtr scene = sceneManager->CreateScene("test_scene");
@@ -141,7 +142,7 @@ namespace Test
         }
         assert (test_scenes == 2 && "Scene iterator could not find all the scenes!");
 
-        const Foundation::SceneManagerServiceInterface *const_sceneManager = const_cast<const Foundation::SceneManagerServiceInterface*>(sceneManager);
+        const Foundation::SceneManagerServiceInterface *const_sceneManager = const_cast<const Foundation::SceneManagerServiceInterface*>(sceneManager.get());
         Foundation::SceneManager::const_iterator c_it = const_sceneManager->Begin();
         Foundation::SceneManager::const_iterator c_it_copy = c_it;
         test_scenes = 0;
@@ -157,8 +158,8 @@ namespace Test
 
 
 
-        TestServiceInterface *test_service = framework_->GetServiceManager()->GetService<TestServiceInterface>(TestService::type_);
-        assert (test_service != NULL);
+        boost::shared_ptr<TestServiceInterface> test_service = framework_->GetServiceManager()->GetService<TestServiceInterface>(TestService::type_).lock();
+        assert (test_service);
         assert (test_service->Test());
 
 

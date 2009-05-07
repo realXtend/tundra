@@ -18,6 +18,7 @@ namespace Foundation
     };
 
     typedef boost::shared_ptr<ServiceInterface> ServicePtr;
+    typedef boost::weak_ptr<ServiceInterface> ServiceWeakPtr;
 }
 
 #endif

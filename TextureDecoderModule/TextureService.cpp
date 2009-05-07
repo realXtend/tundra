@@ -56,13 +56,13 @@ namespace TextureDecoder
             return;
         }
 
-        Foundation::AssetServiceInterface* asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset);
+        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
 
         // Check if assets have enough data to queue decode requests
         TextureRequestMap::iterator i = requests_.begin();     
         while (i != requests_.end())
         {
-            UpdateRequest(i->second, asset_service);
+            UpdateRequest(i->second, asset_service.get());
             ++i;
         }
 

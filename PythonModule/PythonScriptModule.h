@@ -111,7 +111,8 @@ namespace PythonScript
 		//this works when GetEntity calls this, but not anymore when entity_getattro does.
 		Foundation::Framework *framework_ = PythonScript::staticframework;
 
-		Foundation::SceneManagerServiceInterface *sceneManagerService = framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+        boost::shared_ptr<Foundation::SceneManagerServiceInterface> sceneManagerService = 
+            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager).lock();
 		Foundation::ScenePtr &scene = sceneManagerService->GetScene("World"); //XXX hardcoded scene name, like in debugstats now
 		return scene;
 	}

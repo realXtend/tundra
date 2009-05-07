@@ -268,8 +268,8 @@ void DebugStats::PopulateEntityListTreeView()
     Gtk::TreeView *treeview_entitylist = 0;
     entityListControls_->get_widget("treeview_entitylist", treeview_entitylist);
 
-    Scene::SceneManager *sceneManager = dynamic_cast<Scene::SceneManager *>
-        (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
+    boost::shared_ptr<Scene::SceneManager> sceneManager = 
+        (framework_->GetService<Scene::SceneManager>(Foundation::Service::ST_SceneManager)).lock();
     if (!sceneManager)
         return;
 
@@ -310,8 +310,8 @@ void DebugStats::PopulateEntityListTreeView()
 
 void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Events::SceneEventData *event_data)
 {
-    Scene::SceneManager *scene_manager = dynamic_cast<Scene::SceneManager *>
-        (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
+    boost::shared_ptr<Scene::SceneManager> scene_manager = 
+        (framework_->GetService<Scene::SceneManager>(Foundation::Service::ST_SceneManager)).lock();
     if (!scene_manager)
             return;
             
@@ -457,8 +457,8 @@ void DebugStats::OnClickSave()
     primPropertiesControls_->get_widget("sb_rot_z", sb_rot_z);
     
     ///\todo Get the real scene, not hardcoded
-    Scene::SceneManager *scene_manager = dynamic_cast<Scene::SceneManager *>
-        (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
+    boost::shared_ptr<Foundation::SceneManagerServiceInterface> scene_manager = 
+        (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager)).lock();
     if (!scene_manager)
             return;    
     const Foundation::ScenePtr &scene = scene_manager->GetScene("World");
@@ -498,8 +498,8 @@ void DebugStats::OnPrimPropertiesClose()
 
 void DebugStats::OnDoubleClickEntity(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn* column)
 {
-    Scene::SceneManager *scene_manager = dynamic_cast<Scene::SceneManager *>
-        (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager));
+    boost::shared_ptr<Foundation::SceneManagerServiceInterface> scene_manager = 
+        (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager)).lock();
     if (!scene_manager)
         return;
 

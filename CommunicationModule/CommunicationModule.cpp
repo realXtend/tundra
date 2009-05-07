@@ -28,7 +28,7 @@ namespace Communication
 	{
 		// OLD WAY (Still used)
 		communication_manager_old_ = Foundation::Comms::CommunicationManagerPtr(new CommunicationManager());
-		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_CommunicationManager, communication_manager_old_.get());
+		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_CommunicationManager, communication_manager_old_);
 		LogInfo("Module " + Name() + " initialized.");
 
 		// NEW
@@ -44,7 +44,7 @@ namespace Communication
 
 	void CommunicationModule::Uninitialize()
 	{
-        framework_->GetServiceManager()->UnregisterService(communication_manager_old_.get());
+        framework_->GetServiceManager()->UnregisterService(communication_manager_old_);
 		communication_manager_old_.reset();
 		LogInfo("Module " + Name() + " uninitialized.");
 	}

@@ -42,7 +42,7 @@ namespace Asset
     void AssetModule::Initialize()
     {
         manager_ = AssetManagerPtr(new AssetManager(framework_));
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Asset, manager_.get());
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Asset, manager_);
         
         udp_asset_provider_ = Foundation::AssetProviderPtr(new UDPAssetProvider(framework_));
         manager_->RegisterAssetProvider(udp_asset_provider_);
@@ -71,7 +71,7 @@ namespace Asset
     {
         manager_->UnregisterAssetProvider(udp_asset_provider_);
     
-        framework_->GetServiceManager()->UnregisterService(manager_.get());
+        framework_->GetServiceManager()->UnregisterService(manager_);
         manager_.reset();
         
         LogInfo("Module " + Name() + " uninitialized.");
