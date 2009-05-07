@@ -410,12 +410,11 @@ namespace OgreRenderer
         Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
         if (service_manager->IsRegistered(Foundation::Service::ST_Texture))
         {
-            request_tags_[id].push_back(tag);
-
             boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();
             Core::request_tag_t source_tag = texture_service->RequestTexture(id);
             if (source_tag)
             {
+                request_tags_[id].push_back(tag);           
                 expected_request_tags_.insert(source_tag);
                 return tag;
             }
@@ -423,7 +422,6 @@ namespace OgreRenderer
         
         return 0;
     }
-
 
     Foundation::ResourcePtr Renderer::GetTexture(const std::string& id)
     {
@@ -501,12 +499,11 @@ namespace OgreRenderer
         Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
         if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
         {
-            request_tags_[id].push_back(tag);
-
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
             Core::request_tag_t source_tag = asset_service->RequestAsset(id, "Mesh");
             if (source_tag) 
             {
+                request_tags_[id].push_back(tag);
                 expected_request_tags_.insert(source_tag);
                 return tag;
             }           
@@ -551,7 +548,7 @@ namespace OgreRenderer
             const Core::RequestTagVector& tags = request_tags_[source->GetId()];            
             for (Core::uint i = 0; i < tags.size(); ++i)
             {        
-                Resource::Events::ResourceReady event_data(source->GetId(), mesh, tags[i]);
+                Resource::Events::ResourceReady event_data(mesh->GetId(), mesh, tags[i]);
                 framework_->GetEventManager()->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, &event_data);
             }
             
