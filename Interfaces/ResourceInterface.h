@@ -66,9 +66,10 @@ namespace Resource
         class ResourceReady : public Foundation::EventDataInterface
         {
         public:
-            ResourceReady(const std::string& id, Foundation::ResourcePtr resource) :
+            ResourceReady(const std::string& id, Foundation::ResourcePtr resource, Core::request_tag_t tag) :
                 id_(id),
-                resource_(resource)
+                resource_(resource),
+                tag_(tag)
             {
             }
             
@@ -78,6 +79,7 @@ namespace Resource
         
             std::string id_;
             Foundation::ResourcePtr resource_;
+            Core::request_tag_t tag_;
         };
     }
 }

@@ -18,14 +18,11 @@ namespace Foundation
         //! Default destructor
         virtual ~AssetInterface() {}
         
-        //! Returns asset id. Can be for example UUID in textual form
-        virtual const std::string GetId() = 0;
-        
-        //! Returns asset type
-        virtual Core::asset_type_t GetType() = 0;
+        //! Returns asset id. Can be for example UUID in text form
+        virtual const std::string& GetId() = 0;
         
         //! Returns asset type in text form
-        virtual const std::string& GetTypeName() = 0;
+        virtual const std::string& GetType() = 0;
         
         //! Returns asset data size
         virtual Core::uint GetSize() = 0;

@@ -24,7 +24,7 @@ if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
 	\section getasset_AS Getting an asset
 
 	To get a complete asset, call Foundation::AssetServiceInterface::GetAsset() with the asset identifier
-	(UUID for legacy UDP assets) and asset type. If the asset is found in cache, a pointer to the corresponding
+	(UUID for legacy UDP assets) and asset type in text form. If the asset is found in cache, a pointer to the corresponding
 	Foundation::AssetInterface will be returned. If the asset is not found in cache, a null pointer is returned.
 	Note that if the asset is not found, GetAsset() will not automatically queue an asset download request.
 
@@ -37,19 +37,26 @@ if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
 
 	If an asset was not found in the cache by using GetAsset(), you likely want to initiate a transfer for it. The function
 	Foundation::AssetServiceInterface::RequestAsset() can be used for this. Like GetAsset(), it requires the 
-	asset identifier and type.
+	asset identifier and type. A request tag will be returned, which will be later used in the ASSET_READY event.
 
 	The progress of an asset download can be queried with the function Foundation::AssetServiceInterface::QueryAssetStatus().
 	It takes pointers to 3 unsigned integer variables, which will be filled, in order, with the asset data size
 	(0 if still unknown), total amount of bytes received so far, and continuous bytes received from the asset beginning.
 
+	Note that textual asset types are used in the asset requests for expandability, though internally the default UDP asset transfer 
+	uses hardcoded number identifiers. See RexTypes.h for definitions of the asset types, and functions to convert between
+	number & textual asset type names.
+	
+	Also, note that if getting an asset immediately is not a concern, it is possible to do a RequestAsset() for an asset that
+	is already in cache and still get an event for it during the next update cycle of the framework.
+
 	Example of getting an asset, and requesting its download if not found:
 	
 \code
-Foundation::AssetPtr mesh_asset = asset_service->GetAsset(id, Asset::RexAT_Mesh);
+Foundation::AssetPtr mesh_asset = asset_service->GetAsset(id, "Mesh");
 if (!mesh_asset)
 {
-    asset_service->RequestAsset(id, Asset::RexAT_Mesh);
+    asset_service->RequestAsset(id, "Mesh");
 }
 \endcode
 

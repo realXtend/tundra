@@ -1,7 +1,6 @@
 #include "StableHeaders.h"
 #include "AssetModule.h"
 #include "AssetInterface.h"
-#include "AssetDefines.h"
 #include "AssetEvents.h"
 #include "AssetManager.h"
 #include "AssetCache.h"
@@ -32,33 +31,39 @@ namespace Asset
         providers_.clear();
     }
     
-    Foundation::AssetPtr AssetManager::GetAsset(const std::string& asset_id, Core::asset_type_t asset_type)
+    Foundation::AssetPtr AssetManager::GetAsset(const std::string& asset_id, const std::string& asset_type)
     {
         return GetFromCache(asset_id);
     }
   
-    bool AssetManager::RequestAsset(const std::string& asset_id, Core::asset_type_t asset_type)
+    Core::request_tag_t AssetManager::RequestAsset(const std::string& asset_id, const std::string& asset_type)
     {
-        RexUUID asset_uuid(asset_id);
-
-        if (GetFromCache(asset_id))
-            return true;
+        Core::request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
+        
+        Foundation::AssetPtr asset = GetFromCache(asset_id);
+        if (asset)
+        {
+            Events::AssetReady* event_data = new Events::AssetReady(asset->GetId(), asset->GetType(), asset, tag);
+            framework_->GetEventManager()->SendDelayedEvent(event_category_, Events::ASSET_READY, Foundation::EventDataPtr(event_data));
+            
+            return tag;
+        }
         
         AssetProviderVector::iterator i = providers_.begin();
         while (i != providers_.end())
         {
             // See if a provider can handle request
-            if ((*i)->RequestAsset(asset_id, asset_type))
-                return true;
+            if ((*i)->RequestAsset(asset_id, asset_type, tag))
+                return tag;
             
             ++i;
         }
         
-        AssetModule::LogWarning("No asset provider would accept request for asset " + asset_id);
-        return false;
+        AssetModule::LogInfo("No asset provider would accept request for asset " + asset_id);
+        return 0;
     }
     
-    Foundation::AssetPtr AssetManager::GetIncompleteAsset(const std::string& asset_id, Core::asset_type_t asset_type, Core::uint received)
+    Foundation::AssetPtr AssetManager::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received)
     {
         if (!received)
             return Foundation::AssetPtr();
@@ -114,7 +119,7 @@ namespace Asset
     {
         if (!asset_provider)
         {
-            AssetModule::LogWarning("Attempted to register asset provider with null pointer");
+            AssetModule::LogError("Attempted to register asset provider with null pointer");
             return false;
         }
         
@@ -138,7 +143,7 @@ namespace Asset
     {
         if (!asset_provider)
         {
-            AssetModule::LogWarning("Attempted to unregister asset provider with null pointer");
+            AssetModule::LogError("Attempted to unregister asset provider with null pointer");
             return false;
         }    
         

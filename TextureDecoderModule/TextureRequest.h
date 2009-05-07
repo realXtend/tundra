@@ -78,12 +78,24 @@ namespace TextureDecoder
             \return true if highest quality level was successfully decoded and request can be erased
          */
         bool UpdateWithDecodeResult(const DecodeResult& result);
+ 
+        //! Inserts a request tag
+        void InsertTag(Core::request_tag_t tag) { tags_.push_back(tag); }
         
+        //! Inserts several request tags
+        void InsertTags(const Core::RequestTagVector tags) { tags_.insert(tags_.end(), tags.begin(), tags.end()); }
+        
+        //! Clears request tags
+        void ClearTags() { tags_.clear(); } 
+             
+        //! Returns associated request tags
+        const Core::RequestTagVector& GetTags() const { return tags_; }
+                
         //! Checks if enough data to decode next level
         bool HasEnoughData() const;
 
         //! Returns asset id
-        const std::string& GetId() { return id_; }
+        const std::string& GetId() const { return id_; }
 
         //! Returns asset request status
         bool IsRequested() const { return requested_; }
@@ -92,7 +104,7 @@ namespace TextureDecoder
         bool IsDecodeRequested() const { return decode_requested_; }
 
         //! Returns total data size, 0 if unknown
-        Core::uint GetSize() { return size_; }
+        Core::uint GetSize() const { return size_; }
         
         //! Returns received bytes
         Core::uint GetReceived() const { return received_; }
@@ -114,6 +126,9 @@ namespace TextureDecoder
 
         //! Returns next level to decode
         int GetNextLevel() const { return next_level_; }
+        
+        //! List of request tags associated with this transfer
+        Core::RequestTagVector tags_;
         
     private:
         //! Estimates needed data size for a given level

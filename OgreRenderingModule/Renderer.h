@@ -113,28 +113,38 @@ namespace OgreRenderer
         //! Returns an unique name to create Ogre objects that require a mandatory name
         std::string GetUniqueObjectName();
 
-        //! Returns an Ogre texture resource, null if not found
+        //! Returns an Ogre texture resource
         /*! Does not automatically make a request to the asset system
+            \param id Resource ID, same as asset ID
+            \return Resource pointer, or null if not found
          */
         Foundation::ResourcePtr GetTexture(const std::string& id);
 
         //! Requests a texture to be downloaded & decoded
-        /*! A resource event will be sent once each texture quality level is decoded
+        /*! A resource event (with the returned request tag) is sent as each quality level is decoded.
+            \param id Resource ID, same as asset ID
+            \return Request tag, 0 if asset ID invalid or asset system fatally non-existent
          */
-        void RequestTexture(const std::string& id);
+        Core::request_tag_t RequestTexture(const std::string& id);
 
         //! Deletes an Ogre texture resource
+        /*! \param id Resource ID, same as asset ID
+         */         
         void RemoveTexture(const std::string& id);
 
-        //! Returns an Ogre mesh resource, null if not found
-        /*! does not automatically make a request to the asset system
+        //! Returns an Ogre mesh resource
+        /*! Does not automatically make a request to the asset system
+            \param id Resource ID, same as asset ID
+            \return Resource pointer, or null if not found
          */
         Foundation::ResourcePtr GetMesh(const std::string& id);
-
-        //! Requests a mesh to be downloaded
-        /*! a resource event will be sent once the mesh asset is ready
+    
+        //! Requests a mesh to be downloaded & decoded
+        /*! A resource event (with the returned request tag) will be sent once download is finished
+            \param id Resource ID, same as asset ID
+            \return Request tag, 0 if asset ID invalid or asset system fatally non-existent
          */
-        void RequestMesh(const std::string& id);
+        Core::request_tag_t RequestMesh(const std::string& id);
 
         //! Deletes an Ogre mesh resource
         void RemoveMesh(const std::string& id);
@@ -174,15 +184,17 @@ namespace OgreRenderer
     
         //! Creates or updates a texture, based on a source raw texture resource
         /*! \param source Raw texture 
+            \param tag Request tag from raw texture resource event
             \return true if successful
          */
-        bool UpdateTexture(Foundation::ResourcePtr source);
+        bool UpdateTexture(Foundation::ResourcePtr source, Core::request_tag_t tag);
 
         //! Creates or updates a mesh, based on source asset data
         /*! \param source Asset
+            \param tag Request tag from asset event        
             \return true if successful
          */
-        bool UpdateMesh(Foundation::AssetPtr source);
+        bool UpdateMesh(Foundation::AssetPtr source, Core::request_tag_t tag);
 
         boost::mutex renderer_;
 
@@ -224,6 +236,12 @@ namespace OgreRenderer
 
         //! Ogre mesh resources
         Foundation::ResourceMap meshes_;
+
+        //! Expected request tags from other subsystems
+        std::set<Core::request_tag_t> expected_request_tags_;
+        
+        //! Map of resource request tags by resource
+        std::map<std::string, Core::RequestTagVector> request_tags_;
 
         //! External window parameter, to be used when embedding the renderwindow
         std::string external_window_parameter_;

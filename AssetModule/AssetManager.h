@@ -6,7 +6,6 @@
 #include "AssetInterface.h"
 #include "AssetServiceInterface.h"
 #include "AssetProviderInterface.h"
-#include "AssetTransfer.h"
 #include "RexUUID.h"
 
 namespace Foundation
@@ -36,7 +35,7 @@ namespace Asset
             \param asset_type Asset type
             \return Pointer to asset, NULL if not found
          */
-        virtual Foundation::AssetPtr GetAsset(const std::string& asset_id, Core::asset_type_t asset_type);
+        virtual Foundation::AssetPtr GetAsset(const std::string& asset_id, const std::string& asset_type);
 
         //! Gets incomplete asset
         /*! Note: a new incomplete asset object (with copy of the data) will be created for each call. Please
@@ -48,17 +47,17 @@ namespace Asset
             \return Pointer to asset, NULL if not found or not enough bytes
            
          */
-        virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, Core::asset_type_t asset_type, Core::uint received);
+        virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received);
         
         //! Requests an asset download
-        /*! If asset already downloaded, does nothing.
-            Events will be sent when download progresses, and when asset is ready.
+        /*! Events will be sent when download progresses, and when asset is ready.
+            Note that this will also send an ASSET_READY event even if the asset already exists in cache.
 
             \param asset_id Asset ID, UUID for legacy UDP assets
             \param asset_type Asset type
-            \return true if 
+            \return non-zero request tag if download queued, 0 if not queued (no assetprovider could serve request) 
          */
-        virtual bool RequestAsset(const std::string& asset_id, Core::asset_type_t asset_type);
+        virtual Core::request_tag_t RequestAsset(const std::string& asset_id, const std::string& asset_type);
 
         //! Queries status of asset download
         /*! If asset has been already fully received, size, received & received_continuous will be the same
@@ -95,9 +94,12 @@ namespace Asset
         void Update(Core::f64 frametime);            
         
     private:      
-       //! Gets asset from cache
-       /*! \param asset_id Asset ID
-        */
+        //! Gets new request tag
+        Core::request_tag_t GetNextTag();
+        
+        //! Gets asset from cache
+        /*! \param asset_id Asset ID
+         */
         Foundation::AssetPtr GetFromCache(const std::string& asset_id);
           
         //! Framework we belong to
@@ -112,7 +114,7 @@ namespace Asset
         
         //! Asset providers
         typedef std::vector<Foundation::AssetProviderPtr> AssetProviderVector;
-        AssetProviderVector providers_;
+        AssetProviderVector providers_;           
     };
 }
 

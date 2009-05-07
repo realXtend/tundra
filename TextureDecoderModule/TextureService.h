@@ -27,8 +27,9 @@ namespace TextureDecoder
 
         //! Queues a texture request
         /*! \param asset_id asset ID of texture
+            \return request tag, will be used in eventual RESOURCE_READY event
          */
-        virtual void RequestTexture(const std::string& asset_id);
+        virtual Core::request_tag_t RequestTexture(const std::string& asset_id);
         
         //! Updates texture requests. Called by TextureDecoderModule
         void Update(Core::f64 frametime);

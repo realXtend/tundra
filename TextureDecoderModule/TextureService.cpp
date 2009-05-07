@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "AssetDefines.h"
 #include "AssetEvents.h"
 #include "AssetInterface.h"
 #include "ResourceInterface.h"
@@ -32,13 +31,22 @@ namespace TextureDecoder
         thread_.join();
     }
 
-    void TextureService::RequestTexture(const std::string& asset_id)
+    Core::request_tag_t TextureService::RequestTexture(const std::string& asset_id)
     {
+        Core::request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
+    
         if (requests_.find(asset_id) != requests_.end())
-            return; // Already requested
+        {
+            // Already requested, just add request tag
+            requests_.find(asset_id)->second.InsertTag(tag);
+            return tag; 
+        }
      
-        TextureRequest new_request(asset_id);                   
+        TextureRequest new_request(asset_id); 
+        new_request.InsertTag(tag);                  
         requests_[asset_id] = new_request;
+        
+        return tag;
     }
     
     void TextureService::Update(Core::f64 frametime)
@@ -81,10 +89,15 @@ namespace TextureDecoder
                     TextureDecoderModule::LogInfo("Decoded texture w " + Core::ToString<Core::uint>(texture->GetWidth()) + " h " +
                         Core::ToString<Core::uint>(texture->GetHeight()) + " level " + Core::ToString<int>(result.level_));
     
-                    // Send resource ready event
-                    Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-                    Resource::Events::ResourceReady event_data(i->second.GetId(), result.texture_);
-                    event_manager->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, &event_data);          
+                    // Send resource ready event for each request tag in the request
+                    const Core::RequestTagVector& tags = i->second.GetTags();
+
+                    Foundation::EventManagerPtr event_manager = framework_->GetEventManager();                    
+                    for (Core::uint j = 0; j < tags.size(); ++j)
+                    { 
+                        Resource::Events::ResourceReady event_data(i->second.GetId(), result.texture_, tags[j]);
+                        event_manager->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, &event_data);    
+                    }      
                 }   
                 
                 // Remove request if final quality level was decoded
@@ -103,7 +116,7 @@ namespace TextureDecoder
         // If asset not yet requested, request now
         if (!request.IsRequested())
         {
-            asset_service->RequestAsset(request.GetId(), Asset::RexAT_Texture);
+            asset_service->RequestAsset(request.GetId(), "Texture");
             request.SetRequested(true);
         }
 
@@ -119,7 +132,7 @@ namespace TextureDecoder
         if (request.HasEnoughData())
         {
             // Queue decode request to decode thread     
-            Foundation::AssetPtr asset = asset_service->GetIncompleteAsset(request.GetId(), Asset::RexAT_Texture, request.GetReceived());
+            Foundation::AssetPtr asset = asset_service->GetIncompleteAsset(request.GetId(), "Texture", request.GetReceived());
             if (asset)
             {
                 DecodeRequest new_request;

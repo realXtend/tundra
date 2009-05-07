@@ -3,7 +3,6 @@
 #include "StableHeaders.h"
 #include "RexAsset.h"
 #include "AssetModule.h"
-#include "AssetTransfer.h"
 #include "AssetEvents.h"
 #include "AssetCache.h"
 
@@ -65,29 +64,39 @@ namespace Asset
                     filestr.seekg(0, std::ios::end);
                     Core::uint length = filestr.tellg();
                     filestr.seekg(0, std::ios::beg);
+                                                            
+                    if (length > 1)
+                    {
+                        std::string type;
+                        char c = 0;
+                        Core::uint name_length = 0;
+                        
+                        do
+                        {
+                            filestr.read(&c, 1);
+                            if (c)
+                            {
+                                type.append(1, c);
+                                name_length++;    
+                            }
+                            length--;     
+                        } while (c && name_length < 256);
+                                
+                        if ((name_length > 2) || (name_length < 256))
+                        {
+                            RexAsset* new_asset = new RexAsset(asset_id, type);
+                            assets_[asset_id] = Foundation::AssetPtr(new_asset);
+                        
+                            RexAsset::AssetDataVector& data = new_asset->GetDataInternal();
+                            data.resize(length);
+                            filestr.read((char *)&data[0], length);
+                            filestr.close();
+                            return assets_[asset_id];
+                        }
+                    }
 
-                    Core::uint type;
-                    if (length > sizeof(type))
-                    {
-                        length -= sizeof(type);
-                        
-                        filestr.read((char *)&type, sizeof(type));
-                
-                        RexAsset* new_asset = new RexAsset(asset_id, type);
-                        assets_[asset_id] = Foundation::AssetPtr(new_asset);
-                        
-                        RexAsset::AssetDataVector& data = new_asset->GetDataInternal();
-                        data.resize(length);
-                        filestr.read((char *)&data[0], length);
-                        filestr.close();
-                        
-                        return assets_[asset_id];
-                    }
-                    else
-                    {
-                        AssetModule::LogError("Malformed asset file " + asset_id + " found in cache.");
-                        disk_cache_contents_.erase(i);
-                    }
+                    AssetModule::LogError("Malformed asset file " + asset_id + " found in cache.");
+                    disk_cache_contents_.erase(i);
                     
                     filestr.close();
                 }
@@ -116,12 +125,14 @@ namespace Asset
         std::ofstream filestr(file_path.native_directory_string().c_str(), std::ios::out | std::ios::binary);
         if (filestr.good())
         {
-            Core::uint type = asset->GetType();
             const Core::u8* data = asset->GetData();
             Core::uint size = asset->GetSize();
             
             // Store first the asset type, then the actual data
-            filestr.write((const char *)&type, sizeof(type));
+            const std::string& type = asset->GetType();
+            const char* type_cstr = type.c_str();
+            
+            filestr.write((const char *)type_cstr, type.size() + 1);
             filestr.write((const char *)&data[0], size);
             filestr.close();
             
@@ -131,10 +142,5 @@ namespace Asset
         {
             AssetModule::LogError("Error storing asset " + asset_id + " to cache.");
         }
-        
-        // Send asset ready event
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-        Events::AssetReady event_data(asset->GetId(), asset->GetType(), asset);
-        event_manager->SendEvent(event_manager->QueryEventCategory("Asset"), Events::ASSET_READY, &event_data);
     }    
 }

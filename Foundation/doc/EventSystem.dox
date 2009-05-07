@@ -157,6 +157,33 @@ bool OgreRenderingModule::HandleEvent(
 
     return false;
 }
+
+	\subsection requesttags_ES Request tags
+
+	Various subsystems which implement handling of delayed requests (asset system, texture decoding)
+	need a way to uniquely identify requests, so that they can pass back the request identification
+	in an event that tells of the request having been fulfilled.
+
+	The EventManager implements a simple way for handling this: it hands out unique 32-bit unsigned 
+        integers which can serve as the request identifiers.
+
+	Use Foundation::EventManager::GetNextRequestTag() when a new request identifier is needed.
+
+
+	\subsection delayedevents_ES Delayed events
+
+	Normally events are responded to immediately. There is also a possibility to send delayed events,
+	using Foundation::EventManager::SendDelayedEvent(). An important difference is that now the
+	event data must be retained for a longer time, so it should be allocated with new and wrapped
+	inside a shared pointer (Foundation::EventDataPtr) that is passed along.
+
+	Delayed events will be processed during the update cycle of the framework, after individual modules
+	have been updated. The delay parameter is seconds; if it is 0, then the event will be sent 
+	at the end of the current update cycle.
+
+	Use delayed events with judgement; convoluted logic could be rather easily created with them!
+	Also note that you will not get to know whether the event was handled by any subscribers.
+
 \endcode	
 
 */
