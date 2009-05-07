@@ -38,9 +38,11 @@ namespace PythonScript
 	//hack to have a ref to framework so can get the module in api funcs
 	static Foundation::Framework *staticframework;
 
+    // Category id for scene events - outside the module class 'cause entity_setattro wants this too
+	static Core::event_category_id_t scene_event_category_ ;
+
 	class PythonEngine;
-	typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;
-	
+	typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;	
 
     //! A scripting module using Python
     class MODULE_API PythonScriptModule : public Foundation::ModuleInterfaceImpl
@@ -76,7 +78,6 @@ namespace PythonScript
 
 		static Foundation::Framework* GetStaticFramework() { return PythonScript::staticframework; }
 		static Foundation::ScriptEventInterface* engineAccess;
-
 		
 	private:
         PythonEnginePtr engine_;
