@@ -120,7 +120,7 @@ namespace RexLogic
     void InputEventHandler::Update(Core::f64 frametime)
     {
         boost::shared_ptr<InputState> state = state_.lock();
-        Input::InputServiceInterface *input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input);
+        boost::shared_ptr<Input::InputServiceInterface> input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input).lock();
         if (input)
         {
             boost::optional<const Input::Events::Movement&> movement = input->PollSlider(Input::Events::MOUSELOOK);

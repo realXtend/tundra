@@ -109,7 +109,7 @@ namespace OgreRenderer
             assert (renderer_->IsInitialized());
         }
 
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Renderer, renderer_.get());
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Renderer, renderer_);
 
         LogInfo("Module " + Name() + " initialized.");
     }
@@ -136,7 +136,7 @@ namespace OgreRenderer
         // Hackish way to register renderer debug console commands
         if (framework_->GetServiceManager()->IsRegistered(Foundation::Service::ST_ConsoleCommand))
         {
-            Console::CommandService *console = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand);
+            boost::shared_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
             console->RegisterCommand(Console::CreateCommand(
                 "RequestTexture", "Download, decode & create Ogre texture. Usage: RequestTexture(uuid)", 
                 Console::Bind(this, &OgreRenderingModule::ConsoleRequestTexture)));
@@ -174,12 +174,12 @@ namespace OgreRenderer
         if (framework_->GetServiceManager()->IsRegistered(Foundation::Service::ST_ConsoleCommand))
         {
             // Unregister debug commands
-            Console::CommandService *console = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand);
+            boost::shared_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
             console->UnregisterCommand("RequestTexture");
             console->UnregisterCommand("RequestMesh");
         }
 
-        framework_->GetServiceManager()->UnregisterService(renderer_.get());
+        framework_->GetServiceManager()->UnregisterService(renderer_);
     
         delete ogre_window_;
         delete ogre_widget_;

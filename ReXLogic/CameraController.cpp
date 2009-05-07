@@ -131,7 +131,7 @@ module_(module)
     {
         float trans_dt = (float)frametime * sensitivity_;
 
-        OgreRenderer::Renderer *renderer = module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (renderer)
         {
             Ogre::Camera *camera = renderer->GetCurrentCamera();

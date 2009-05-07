@@ -44,12 +44,13 @@ namespace Input
     {
         LogInfo("*** Initializing OIS ***");
 
-        if (framework_->GetServiceManager()->IsRegistered(Foundation::Service::ST_Renderer) == false)
+        boost::shared_ptr<Foundation::RenderServiceInterface> renderer = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
         {
             LogError("Failed to initialize. No renderer service registered.");
             return;
         }
-        Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer);
+
         size_t window_handle = renderer->GetWindowHandle();
         if (window_handle == 0)
         {
@@ -116,7 +117,7 @@ namespace Input
 
         key_mapping_ = MapperPtr(new Mapper(this));
 
-        GetFramework()->GetServiceManager()->RegisterService(Foundation::Service::ST_Input, key_mapping_.get());
+        GetFramework()->GetServiceManager()->RegisterService(Foundation::Service::ST_Input, key_mapping_);
 
 
         LogInfo("Module " + Name() + " initialized.");
@@ -128,7 +129,7 @@ namespace Input
         WindowClosed();
 
         if (key_mapping_)
-            GetFramework()->GetServiceManager()->UnregisterService(key_mapping_.get());
+            GetFramework()->GetServiceManager()->UnregisterService(key_mapping_);
 
         key_mapping_.reset();
 

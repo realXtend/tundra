@@ -65,7 +65,7 @@ namespace PythonScript
 		
 		PythonScriptModule::engineAccess = dynamic_cast<Foundation::ScriptEventInterface*>(engine_.get());
         
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Scripting, engine_.get());
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Scripting, engine_);
 
 		//XXX hack to have a ref to framework for api funcs
 		PythonScript::staticframework = framework_;
@@ -199,7 +199,7 @@ namespace PythonScript
     // virtual 
     void PythonScriptModule::Uninitialize()
     {        
-        framework_->GetServiceManager()->UnregisterService(engine_.get());
+        framework_->GetServiceManager()->UnregisterService(engine_);
 
 		engine_->Uninitialize();
         LogInfo("Module " + Name() + " uninitialized.");

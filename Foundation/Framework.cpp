@@ -149,6 +149,10 @@ namespace Foundation
 
         boost::timer timer;
 
+        boost::weak_ptr<Foundation::RenderServiceInterface> renderer = 
+                    service_manager_->GetService<RenderServiceInterface>(Service::ST_Renderer);
+
+
         // main loop
         while (exit_signal_ == false)
         {
@@ -164,11 +168,9 @@ namespace Foundation
             
             // if we have a renderer service, render now
 			
-            if (service_manager_->IsRegistered(Service::ST_Renderer))
+            if (renderer.expired() == false)
             {
-                Foundation::RenderServiceInterface *renderer = 
-                    service_manager_->GetService<RenderServiceInterface>(Service::ST_Renderer);
-                renderer->Render();
+                renderer.lock()->Render();
             }
             
         }
@@ -227,14 +229,17 @@ namespace Foundation
 
     void Framework::RegisterConsoleCommands()
     {
-        Console::CommandService *console = GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand);
-        console->RegisterCommand(Console::CreateCommand("LoadModule", 
-            "Loads a module from shared library. Usage: LoadModule(lib, entry)", 
-            Console::Bind(this, &Framework::ConsoleLoadModule)));
+        boost::shared_ptr<Console::CommandService> console = GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
+        if (console)
+        {
+            console->RegisterCommand(Console::CreateCommand("LoadModule", 
+                "Loads a module from shared library. Usage: LoadModule(lib, entry)", 
+                Console::Bind(this, &Framework::ConsoleLoadModule)));
 
-        console->RegisterCommand(Console::CreateCommand("UnloadModule", 
-            "Unloads a module. Usage: UnloadModule(name)", 
-            Console::Bind(this, &Framework::ConsoleUnloadModule)));
+            console->RegisterCommand(Console::CreateCommand("UnloadModule", 
+                "Unloads a module. Usage: UnloadModule(name)", 
+                Console::Bind(this, &Framework::ConsoleUnloadModule)));
+        }
     }
 }
 

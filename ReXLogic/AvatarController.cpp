@@ -171,7 +171,7 @@ namespace RexLogic
     
     void AvatarController::Update(Core::f64 frametime)
     {
-        OgreRenderer::Renderer *renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (!renderer || !avatarentity_)
             return;
 

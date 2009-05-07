@@ -74,8 +74,8 @@ namespace Console
         console_overlay_.reset();
         if ( framework->GetServiceManager()->IsRegistered(Foundation::Service::ST_SceneManager))
         {
-            Foundation::SceneManagerServiceInterface *scene_manager =
-                framework->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+            boost::shared_ptr<Foundation::SceneManagerServiceInterface> scene_manager =
+                framework->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager).lock();
 
             if (scene_manager->HasScene("Console"))
             {
@@ -99,8 +99,8 @@ namespace Console
         if ( framework->GetServiceManager()->IsRegistered(Foundation::Service::ST_SceneManager) &&
              framework->GetComponentManager()->CanCreate("EC_OgreConsoleOverlay") )
         {
-            Foundation::SceneManagerServiceInterface *scene_manager =
-                framework->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager);
+            boost::shared_ptr<Foundation::SceneManagerServiceInterface> scene_manager =
+                framework->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager).lock();
 
             if (scene_manager->HasScene("Console"))
                 throw Core::Exception("Scene for console already exists.");

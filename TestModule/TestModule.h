@@ -51,7 +51,7 @@ namespace Test
 
 
     private:
-        TestService test_service_;
+        TestServicePtr test_service_;
     };
 }
 #endif

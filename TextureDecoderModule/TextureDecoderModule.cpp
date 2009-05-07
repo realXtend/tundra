@@ -31,7 +31,7 @@ namespace TextureDecoder
     void TextureDecoderModule::Initialize()
     {
         texture_service_ = TextureServicePtr(new TextureService(framework_));
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Texture, texture_service_.get());
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Texture, texture_service_);
 
         LogInfo("Module " + Name() + " initialized.");
     }
@@ -53,7 +53,7 @@ namespace TextureDecoder
     // virtual 
     void TextureDecoderModule::Uninitialize()
     {
-        framework_->GetServiceManager()->UnregisterService(texture_service_.get());
+        framework_->GetServiceManager()->UnregisterService(texture_service_);
         texture_service_.reset();
         LogInfo("Module " + Name() + " uninitialized.");
     }

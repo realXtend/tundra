@@ -28,20 +28,13 @@ namespace Foundation
             \param type type of the service
             \param service service to register
         */
-        void RegisterService(Core::service_type_t type, ServiceInterface *service);
+        void RegisterService(Core::service_type_t type, const ServiceWeakPtr &service);
 
         //! Unregister the specified service. The service should be registered before unregistering.
-        void UnregisterService(ServiceInterface *service);
+        void UnregisterService(const ServiceWeakPtr &service);
 
-        //! Returns service from service type.
-        /*! Throws Core::Exception if the service type is not registered
-
-            \note The pointer may (in theory) invalidate between frames, always reacquire at begin of frame update
-            \param type type of the service to return
-            \return the service, or NULL if the template parameters doesn't match the service or if the service was not registered
-        */
-        template <class T>
-        __inline T *GetService(Core::service_type_t type)
+        //! Returns un-casted service from service type
+        __inline ServiceWeakPtr GetService(Core::service_type_t type)
         {
             ServicesMap::iterator it = services_.find(type);
             if (it == services_.end())
@@ -50,21 +43,44 @@ namespace Foundation
                 what += boost::lexical_cast<std::string>(type) + " not registered!";
                 Foundation::RootLogDebug(what);
 
-                return NULL;
+                return ServiceWeakPtr();
             }
 
-            return (dynamic_cast<T*>(it->second));
+            return it->second;
         }
 
         //! Returns service from service type.
-        /*! Throws Core::Exception if the service type is not registered
+        /*! Returns empty weak pointer if the service is not registered
 
             \note The pointer may (in theory) invalidate between frames, always reacquire at begin of frame update
             \param type type of the service to return
-            \return the service, or NULL if the template parameters doesn't match the service or if the service was not registered
+            \return the service, or empty weak pointer if the template parameters doesn't match the service or if the service was not registered
         */
         template <class T>
-        __inline const T *GetService(Core::service_type_t type) const
+        __inline boost::weak_ptr<T> GetService(Core::service_type_t type)
+        {
+            ServicesMap::iterator it = services_.find(type);
+            if (it == services_.end())
+            {
+                std::string what("Service type ");
+                what += boost::lexical_cast<std::string>(type) + " not registered!";
+                Foundation::RootLogDebug(what);
+
+                return boost::weak_ptr<T>();
+            }
+
+            return boost::dynamic_pointer_cast<T>(it->second.lock());
+        }
+
+        //! Returns service from service type.
+        /*! 
+
+            \note The pointer may (in theory) invalidate between frames, always reacquire at begin of frame update
+            \param type type of the service to return
+            \return the service, or empty weak pointer if the template parameters doesn't match the service or if the service was not registered
+        */
+        template <class T>
+        __inline const boost::weak_ptr<T> GetService(Core::service_type_t type) const
         {
             ServicesMap::const_iterator it = services_.find(type);
             if (it == services_.end())
@@ -73,10 +89,10 @@ namespace Foundation
                     boost::lexical_cast<std::string>(type) + " not registered!");
                 Foundation::RootLogDebug(what);
 
-                return NULL;
+                return boost::weak_ptr<T>();
             }
 
-            return (dynamic_cast<T*>(it->second));
+            return boost::dynamic_pointer_cast<T>(it->second.lock());
         }
 
         //! Returns true if service type is already registered, false otherwise
@@ -85,7 +101,7 @@ namespace Foundation
             return (services_.find(type) != services_.end());
         }
     private:
-        typedef std::map<Core::service_type_t, ServiceInterface*> ServicesMap;
+        typedef std::map<Core::service_type_t, ServiceWeakPtr> ServicesMap;
         
         //! parent framework
         Framework *framework_;

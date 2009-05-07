@@ -18,7 +18,7 @@ namespace RexLogic
     void DebugCreateOgreBoundingBox(Foundation::ModuleInterface *module, Foundation::ComponentInterfacePtr ogrePlaceable, const std::string &materialName)
     {
         OgreRenderer::EC_OgrePlaceable &component = dynamic_cast<OgreRenderer::EC_OgrePlaceable&>(*ogrePlaceable.get());
-        OgreRenderer::Renderer *renderer = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
 
         ///\todo Quick W.I.P Ogre object naming, refactor. -jj.

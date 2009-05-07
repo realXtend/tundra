@@ -56,7 +56,7 @@ namespace Test
         TestServiceInterface *test_service = NULL;
         try
         {
-            test_service = framework_->GetServiceManager()->GetService<TestServiceInterface>(TestService::type_);
+            test_service = framework_->GetServiceManager()->GetService<TestServiceInterface>(TestService::type_).lock().get();
         } catch (std::exception)
         {
             return;

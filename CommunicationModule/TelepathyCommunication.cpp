@@ -30,25 +30,29 @@ namespace Communication
 
 	void TelepathyCommunication::RegisterConsoleCommands()
 	{
-		Console::CommandService* console_service = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand);
+        boost::shared_ptr<Console::CommandService> console_service = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
 
-		console_service->RegisterCommand(Console::CreateCommand("comminfo", "Open connection to IM server. Usage: commlogin(account password server port)", Console::Bind(this, &TelepathyCommunication::ConsoleInfo)));
-		console_service->RegisterCommand(Console::CreateCommand("commhelp", "Prints communication manager debug console commands.", Console::Bind(this, &TelepathyCommunication::ConsoleHelp)));
-		console_service->RegisterCommand(Console::CreateCommand("commlogin", "Information about state of communication manager", Console::Bind(this, &TelepathyCommunication::ConsoleLogin)));
-		console_service->RegisterCommand(Console::CreateCommand("commlogout", "", Console::Bind(this, &TelepathyCommunication::ConsoleLogout)));
-		console_service->RegisterCommand(Console::CreateCommand("commcreatesession", "", Console::Bind(this, &TelepathyCommunication::ConsoleCreateSession)));
-		console_service->RegisterCommand(Console::CreateCommand("commlistsessions", "", Console::Bind(this, &TelepathyCommunication::ConsoleListSessions)));
-		console_service->RegisterCommand(Console::CreateCommand("commsendmessage", "", Console::Bind(this, &TelepathyCommunication::ConsoleSendMessage)));
-		console_service->RegisterCommand(Console::CreateCommand("commlistcontacts", "", Console::Bind(this, &TelepathyCommunication::ConsoleListContacts)));
-		console_service->RegisterCommand(Console::CreateCommand("commaddcontact", "", Console::Bind(this, &TelepathyCommunication::ConsoleAddContact)));
-//		console_service->RegisterCommand(Console::CreateCommand("commpresencestatus", "", Console::Bind(this, &TelepathyCommunication::ConsoleLogout)));
+        if (console_service)
+        {
+		    console_service->RegisterCommand(Console::CreateCommand("comminfo", "Open connection to IM server. Usage: commlogin(account password server port)", Console::Bind(this, &TelepathyCommunication::ConsoleInfo)));
+		    console_service->RegisterCommand(Console::CreateCommand("commhelp", "Prints communication manager debug console commands.", Console::Bind(this, &TelepathyCommunication::ConsoleHelp)));
+		    console_service->RegisterCommand(Console::CreateCommand("commlogin", "Information about state of communication manager", Console::Bind(this, &TelepathyCommunication::ConsoleLogin)));
+		    console_service->RegisterCommand(Console::CreateCommand("commlogout", "", Console::Bind(this, &TelepathyCommunication::ConsoleLogout)));
+		    console_service->RegisterCommand(Console::CreateCommand("commcreatesession", "", Console::Bind(this, &TelepathyCommunication::ConsoleCreateSession)));
+		    console_service->RegisterCommand(Console::CreateCommand("commlistsessions", "", Console::Bind(this, &TelepathyCommunication::ConsoleListSessions)));
+		    console_service->RegisterCommand(Console::CreateCommand("commsendmessage", "", Console::Bind(this, &TelepathyCommunication::ConsoleSendMessage)));
+		    console_service->RegisterCommand(Console::CreateCommand("commlistcontacts", "", Console::Bind(this, &TelepathyCommunication::ConsoleListContacts)));
+		    console_service->RegisterCommand(Console::CreateCommand("commaddcontact", "", Console::Bind(this, &TelepathyCommunication::ConsoleAddContact)));
+    //		console_service->RegisterCommand(Console::CreateCommand("commpresencestatus", "", Console::Bind(this, &TelepathyCommunication::ConsoleLogout)));
+        }
 	}
 
 	// rename to: InitPythonCommunication
 	void TelepathyCommunication::InitializePythonCommunication()
 	{
-		Foundation::ScriptServiceInterface* script_service = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting);
-		Foundation::ScriptEventInterface* script_event_service = dynamic_cast<Foundation::ScriptEventInterface*>(script_service);
+        boost::shared_ptr<Foundation::ScriptServiceInterface> script_service = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting).lock();
+        
+		Foundation::ScriptEventInterface* script_event_service = dynamic_cast<Foundation::ScriptEventInterface*>(script_service.get());
 		std::string error;
 		this->communication_py_script_ = Foundation::ScriptObjectPtr(script_service->LoadScript(COMMUNICATION_SCRIPT_NAME, error));
 		if(error=="None")

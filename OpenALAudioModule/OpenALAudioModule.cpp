@@ -43,7 +43,7 @@ namespace OpenALAudio
     {
         sound_->Initialize();
 
-		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Sound, sound_.get());
+		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Sound, sound_);
 
         LogInfo("Module " + Name() + " initialized.");
     }
@@ -54,7 +54,7 @@ namespace OpenALAudio
 
     void OpenALAudioModule::Uninitialize()
 	{
-		framework_->GetServiceManager()->UnregisterService(sound_.get());
+		framework_->GetServiceManager()->UnregisterService(sound_);
 		sound_.reset();
 
 		LogInfo("Module " + Name() + " uninitialized.");

@@ -12,13 +12,13 @@ namespace RexLogic
     :Foundation::ComponentInterface(module->GetFramework()),
     owner_(module)
     {
-        OgreRenderer::Renderer *renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
     }
 
     EC_Terrain::~EC_Terrain()
     {
-        OgreRenderer::Renderer *renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (!renderer) // Oops! Inconvenient dtor order - can't delete our own stuff since we can't get an instance to the owner.
             return;
         Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();

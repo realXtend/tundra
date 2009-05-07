@@ -44,8 +44,8 @@ namespace RexLogic
     
     void SceneEventHandler::HandleEntityDeletedEvent(Core::event_id_t entityid)    
     {
-        Foundation::SceneManagerServiceInterface *sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
-            (Foundation::Service::ST_SceneManager);
+        boost::shared_ptr<Foundation::SceneManagerServiceInterface> sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
+            (Foundation::Service::ST_SceneManager).lock();
         
         Foundation::ScenePtr scene = sceneManager->GetScene("World");
         if (!scene)

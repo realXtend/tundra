@@ -569,10 +569,9 @@ namespace Asset
     {
         Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
         
-        if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
+        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        if (asset_service)
         {
-            Foundation::AssetServiceInterface* asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset);
-
             const std::string& asset_id = transfer.GetAssetId();
         
             Foundation::AssetPtr new_asset = Foundation::AssetPtr(new RexAsset(asset_id, transfer.GetAssetType()));
