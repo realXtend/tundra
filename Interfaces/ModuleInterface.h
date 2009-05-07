@@ -16,15 +16,15 @@
     { Foundation::ComponentRegistrarInterfacePtr registrar = Foundation::ComponentRegistrarInterfacePtr(new component::component##Registrar); \
     DeclareComponent(registrar); } \
 
-#define MODULE_LOGGING_FUNCTIONS                                                                              \
-    static void LogFatal(const std::string &msg)    { Poco::Logger::get(NameStatic()).fatal(msg);         }   \
-    static void LogCritical(const std::string &msg) { Poco::Logger::get(NameStatic()).critical(msg);      }   \
-    static void LogError(const std::string &msg)    { Poco::Logger::get(NameStatic()).error(msg);         }   \
-    static void LogWarning(const std::string &msg)  { Poco::Logger::get(NameStatic()).warning(msg);       }   \
-    static void LogNotice(const std::string &msg)   { Poco::Logger::get(NameStatic()).notice(msg);        }   \
-    static void LogInfo(const std::string &msg)     { Poco::Logger::get(NameStatic()).information(msg);   }   \
-    static void LogTrace(const std::string &msg)    { Poco::Logger::get(NameStatic()).trace(msg);         }   \
-    static void LogDebug(const std::string &msg)    { Poco::Logger::get(NameStatic()).debug(msg);         }
+#define MODULE_LOGGING_FUNCTIONS                                                                                            \
+    static void LogFatal(const std::string &msg)    { Poco::Logger::get(NameStatic()).fatal("Fatal: " + msg);         }     \
+    static void LogCritical(const std::string &msg) { Poco::Logger::get(NameStatic()).critical("Critical: " + msg);   }     \
+    static void LogError(const std::string &msg)    { Poco::Logger::get(NameStatic()).error("Error: " + msg);         }     \
+    static void LogWarning(const std::string &msg)  { Poco::Logger::get(NameStatic()).warning("Warning: " + msg);     }     \
+    static void LogNotice(const std::string &msg)   { Poco::Logger::get(NameStatic()).notice("Notice: " + msg);       }     \
+    static void LogInfo(const std::string &msg)     { Poco::Logger::get(NameStatic()).information(msg);               }     \
+    static void LogTrace(const std::string &msg)    { Poco::Logger::get(NameStatic()).trace("Trace: " + msg);         }     \
+    static void LogDebug(const std::string &msg)    { Poco::Logger::get(NameStatic()).debug("Debug: " + msg);         }
 
 
 namespace Foundation
