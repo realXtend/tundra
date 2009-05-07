@@ -1,35 +1,19 @@
-##
-## Will hopefully be refactored soon
-##
-
-
 import sys
 import time
-#import gobject
 import dbus.glib
 import Connection
 import traceback
 import rexviewer as r
         
         
-
-##====================================================
-##    MAIN APPLICATION LOGIC
-##====================================================
 class IMDemo:
     def __init__(self):
-        self.chatEndPoint = None        
-        self.quit = False
-        self.loop = None
         self.connection = Connection.Connection(self)
         pass
     
-    def setConnection(self, _conn):
-        self.connection = _conn
 
 ##    EVENTS
     def disconnected(self, reason):
-        #self.ui.status = 0
         r.pyEventCallback("disconnected","")
         
     def connecting(self, reason):
@@ -55,15 +39,17 @@ class IMDemo:
         r.pyEventCallback("message_received",reason)
     def channelClosed(self, reason):
         r.pyEventCallback("channel_closed","")
-    def gotFriendlistItem(self, reason):
+    def gotContactlistItem(self, reason):
+        print "gotContactlistItem"
         r.pyEventCallback("contact_item",reason)
     def contactStatusChanged(self, id_status):
+        print "id_status: ", id_status
         r.pyEventCallback("contact_status_changed", id_status)
-
     # contact events
     def contactAddedToPublishList(self, addr):
         r.pyEventCallback("contact_added_publish_list", addr)
     def contactAdded(self, id):
+        print "contactAdded"
         r.pyEventCallback("contact_added", id)
     def contactRemoved(self, id):
         r.pyEventCallback("contact_removed", id)
@@ -73,15 +59,10 @@ class IMDemo:
         #r.pyEventCallback("remote_pending", id)
     def localPending(self, id):
         r.pyEventCallback("local_pending", id)
-
     def incomingRequest(self, addr):
         r.pyEventCallback("incoming_request", addr)
         pass
-    
-##==========================================================================================
-        
-        
-
+            
 
 ##==========================================================================================
 ##          new api
@@ -91,8 +72,6 @@ class IMDemo:
         print "*********************************************"
         print "*****     IM STARTUP  SCRIPT           ******"
         print "*********************************************"
-        connection = Connection.Connection(self)
-        self.setConnection(connection)
         
     def CAccountConnect(self):
         #str, d = self.ui.doReadAccountAndConnect()
@@ -106,7 +85,7 @@ class IMDemo:
     def CStartChatSession(self, jid):
         print "Got:"
         print jid
-        self.chatEndPoint = jid
+        #self.chatEndPoint = jid
         self.connection.StartChat(jid)
 
     def CCloseChannel(self):
@@ -117,13 +96,11 @@ class IMDemo:
     def CSendChat(self, txt):
         self.connection.SendMessage(txt)
 
-    def CGetFriendWithID(self, id):
+    def CGetContactWithID(self, id):
         print "CGetFriendWithID"
         print id
-        print type(id)
         contact = str(self.connection.get_contact_with_id(id))
         print "Contact"
-        print type(contact)
         print str(contact)
         return contact        
 
@@ -131,9 +108,7 @@ class IMDemo:
         return str(self.connection.get_contact_status(id))
 
     def CAddContact(self, contact_str):
-        print "=============================================="
-        print "in CAddContact"
-        print "=============================================="
+##        print "in CAddContact"
         self.connection.add_contact(contact_str)
 
     def CRemoveContact(self, contact_str):
@@ -162,17 +137,7 @@ class IMDemo:
     def CTest(self):
         self.connection.test()
     
-    
-
-        
-##==========================================================================================
-
-
-##gobject.type_register(IMDemo)
-##gobject.signal_new("disconnect_signal", IMDemo, gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ())
-##gobject.signal_new("open_channel_signal", IMDemo, gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ())
-
-        
+##==========================================================================================        
 
 
 def doReadAccountAndConnect():

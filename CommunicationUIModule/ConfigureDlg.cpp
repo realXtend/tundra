@@ -16,135 +16,139 @@
 #include "Foundation.h"
 #include "CommunicationUIModule.h"
 #include <iterator>
+#include "DialogCallbackInterface.h"
 
 #include "ConfigureDlg.h"
 
 
-
-ConfigureDlg::ConfigureDlg(int count, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes, std::string name,
-							 IConfigureCallBack* aConfCaller)
-: m_Table(count, 2),
-  m_Button_Close("C_lose", true),
-  m_Button_Ok("_Ok", true),
-  m_Button_Cancel("_Cancel", true)
+namespace CommunicationUI
 {
-	set_title(name);
-	configName = name;
-	set_border_width(0);
-	set_size_request(300, count*75 + 40);
-	
-	configCallback = aConfCaller;
-	
-	m_ScrolledWindow.set_border_width(10);
 
-	//m_ScrolledWindow.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
-	m_ScrolledWindow.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+    ConfigureDlg::ConfigureDlg(int count, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes, std::string name,
+							     DialogCallBackInterface* aConfCaller)
+    //ConfigureDlg::ConfigureDlg(int count, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes, std::string name,
+				//			     DialogCallBackInterfacePtr aConfCaller)
+    : m_Table(count, 2),
+      m_Button_Close("C_lose", true),
+      m_Button_Ok("_Ok", true),
+      m_Button_Cancel("_Cancel", true)
+    {
+	    set_title(name);
+	    configName = name;
+	    set_border_width(0);
+	    set_size_request(300, count*75 + 40);
+    	
+	    configCallback = aConfCaller;
+    	
+	    m_ScrolledWindow.set_border_width(10);
 
-	get_vbox()->pack_start(m_ScrolledWindow);
-	m_Table.set_row_spacings(2);
-	m_Table.set_col_spacings(10);
+	    //m_ScrolledWindow.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
+	    m_ScrolledWindow.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 
-	/* pack the table into the scrolled window */
-	m_ScrolledWindow.add(m_Table);
+	    get_vbox()->pack_start(m_ScrolledWindow);
+	    m_Table.set_row_spacings(2);
+	    m_Table.set_col_spacings(10);
 
-	std::map<std::string, Foundation::Comms::SettingsAttribute>::const_iterator iter;	
+	    /* pack the table into the scrolled window */
+	    m_ScrolledWindow.add(m_Table);
 
-	int row = 0;
-	for(iter = attributes.begin(); iter!=attributes.end(); ++iter)
-	{
-		// todo: check for string lenght
-		char buffer[32];
-		strcpy(buffer, iter->first.c_str());
-		strcat(buffer, ":");
-		Gtk::Label* pLabel = Gtk::manage(new Gtk::Label(buffer));
-		pLabel->set_justify(Gtk::JUSTIFY_RIGHT);
-		m_Table.attach(*pLabel, 0, 1, row, row + 1);
-		Gtk::Entry* pEntry = Gtk::manage(new Gtk::Entry());
-		m_Table.attach(*pEntry, 1, 2, row, row + 1);
+	    std::map<std::string, Foundation::Comms::SettingsAttribute>::const_iterator iter;	
 
-		accessWidgets* pair = new accessWidgets();
-		pair->label = pLabel;
-		pair->entry = pEntry;
-		widgetPairs.push_back(pair);
-		
-		row++;
-	}
-	
-	m_Button_Close.signal_clicked().connect( sigc::mem_fun(*this,
-			  &ConfigureDlg::onButtonClose));
+	    int row = 0;
+	    for(iter = attributes.begin(); iter!=attributes.end(); ++iter)
+	    {
+		    // todo: check for string lenght
+		    char buffer[32];
+		    strcpy(buffer, iter->first.c_str());
+		    strcat(buffer, ":");
+		    Gtk::Label* pLabel = Gtk::manage(new Gtk::Label(buffer));
+		    pLabel->set_justify(Gtk::JUSTIFY_RIGHT);
+		    m_Table.attach(*pLabel, 0, 1, row, row + 1);
+		    Gtk::Entry* pEntry = Gtk::manage(new Gtk::Entry());
+		    m_Table.attach(*pEntry, 1, 2, row, row + 1);
 
-	m_Button_Ok.signal_clicked().connect( sigc::mem_fun(*this,
-			  &ConfigureDlg::onButtonOk));
+		    accessWidgets* pair = new accessWidgets();
+		    pair->label = pLabel;
+		    pair->entry = pEntry;
+		    widgetPairs.push_back(pair);
+    		
+		    row++;
+	    }
+    	
+	    m_Button_Close.signal_clicked().connect( sigc::mem_fun(*this,
+			      &ConfigureDlg::onButtonClose));
 
-	m_Button_Cancel.signal_clicked().connect( sigc::mem_fun(*this,
-		  &ConfigureDlg::onButtonCancel));
-	
-	m_Button_Ok.set_flags(Gtk::CAN_DEFAULT);
+	    m_Button_Ok.signal_clicked().connect( sigc::mem_fun(*this,
+			      &ConfigureDlg::onButtonOk));
 
-	Gtk::Box* pBox = get_action_area();
-	if(pBox)
-	pBox->pack_start(m_Button_Close);
-	pBox->pack_start(m_Button_Ok);
-	pBox->pack_start(m_Button_Cancel);
+	    m_Button_Cancel.signal_clicked().connect( sigc::mem_fun(*this,
+		      &ConfigureDlg::onButtonCancel));
+    	
+	    m_Button_Ok.set_flags(Gtk::CAN_DEFAULT);
 
-	/* This grabs this button to be the default button. Simply hitting
-	* the "Enter" key will cause this button to activate. */
-	m_Button_Ok.grab_default();
+	    Gtk::Box* pBox = get_action_area();
+	    if(pBox)
+	    pBox->pack_start(m_Button_Close);
+	    pBox->pack_start(m_Button_Ok);
+	    pBox->pack_start(m_Button_Cancel);
 
-	show_all_children();
-}
+	    /* This grabs this button to be the default button. Simply hitting
+	    * the "Enter" key will cause this button to activate. */
+	    m_Button_Ok.grab_default();
 
-ConfigureDlg::~ConfigureDlg()
-{
-}
+	    show_all_children();
+    }
 
-void ConfigureDlg::onButtonClose()
-{
-	cleanUp();	
-}
+    ConfigureDlg::~ConfigureDlg()
+    {
+    }
 
-void ConfigureDlg::onButtonCancel()
-{
-	cleanUp();
-}
+    void ConfigureDlg::onButtonClose()
+    {
+	    cleanUp();	
+    }
 
-void ConfigureDlg::onButtonOk()
-{
-	// read values to map:
-	std::map<std::string, Foundation::Comms::SettingsAttribute> attributes;
-	
-	std::vector<accessWidgets*>::iterator iter;
-	for(iter = widgetPairs.begin();iter!=widgetPairs.end();iter++)
-	{
-		accessWidgets* aW = *iter;
-		std::string name = aW->label->get_text().raw();
-		// remove ':'
-		name = name.substr(0, name.size()-1);
-		std::string value = aW->entry->get_text().raw();
-		CommunicationUI::CommunicationUIModule::LogInfo(name);
-		CommunicationUI::CommunicationUIModule::LogInfo(value);
-		Foundation::Comms::SettingsAttribute attr;
-		attr.type = Foundation::Comms::String;
-		attr.value = value;
-		attributes[name] = attr;
-	}
+    void ConfigureDlg::onButtonCancel()
+    {
+	    cleanUp();
+    }
 
-	// set configs
-	configCallback->Callback(configName, attributes);
+    void ConfigureDlg::onButtonOk()
+    {
+	    // read values to map:
+	    std::map<std::string, Foundation::Comms::SettingsAttribute> attributes;
+    	
+	    std::vector<accessWidgets*>::iterator iter;
+	    for(iter = widgetPairs.begin();iter!=widgetPairs.end();iter++)
+	    {
+		    accessWidgets* aW = *iter;
+		    std::string name = aW->label->get_text().raw();
+		    // remove ':'
+		    name = name.substr(0, name.size()-1);
+		    std::string value = aW->entry->get_text().raw();
+		    //Communication::CommunicationUIModule::LogInfo(name);
+		    //Communication::CommunicationUIModule::LogInfo(value);
+		    Foundation::Comms::SettingsAttribute attr;
+		    attr.type = Foundation::Comms::String;
+		    attr.value = value;
+		    attributes[name] = attr;
+	    }
 
+	    // set configs
+	    configCallback->Callback(configName, attributes);
+	    cleanUp();
+    }
 
-	cleanUp();
-}
-
-void ConfigureDlg::cleanUp()
-{
-	std::vector<accessWidgets*>::iterator iter;
-	for(iter = widgetPairs.begin();iter!=widgetPairs.end();iter++)
-	{
-		accessWidgets* aW = *iter;
-		delete aW;
-	}		
-	widgetPairs.clear();
-	hide();
+    void ConfigureDlg::cleanUp()
+    {
+	    std::vector<accessWidgets*>::iterator iter;
+	    for(iter = widgetPairs.begin();iter!=widgetPairs.end();iter++)
+	    {
+		    accessWidgets* aW = *iter;
+		    delete aW;
+	    }		
+	    widgetPairs.clear();
+	    hide();
+    }
 }
 #pragma warning( pop )

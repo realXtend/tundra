@@ -41,6 +41,8 @@ namespace CommunicationUI
 		this->append_column("Contact", columns_.contact_);
         this->append_column("Status", columns_.status_);
 
+        notFound = false;
+
         //Gtk::TreeModel::Row row = *(lstContactsTreeModel->append());
         //row[columns_.id_] = "test";
         //row[columns_.contact_] = "test";
@@ -78,7 +80,6 @@ namespace CommunicationUI
             case GDK_KP_Enter:
             case GDK_ISO_Enter:
             case GDK_3270_Enter:
-                std::cout << "Enter: " << std::endl;
                 startChat();
                 //event->time
                 //gtk_main_do_event(
@@ -91,7 +92,7 @@ namespace CommunicationUI
                 handled = true;
                 break;
             case GDK_Tab:
-                std::cout << "TAB: " << std::endl;
+                //Communication::CommunicationUIModule::LogDebug("TAB:");
                 handled = true;
                 break;
         }
@@ -101,7 +102,7 @@ namespace CommunicationUI
 
     void ContactList::startChat()
     {
-       CommunicationUI::CommunicationUIModule::LogInfo("onPopUpMenuEvent!!");
+        //Communication::CommunicationUIModule::LogDebug("onPopUpMenuEvent!!");
         Glib::RefPtr<Gtk::TreeView::Selection> refSelection = get_selection();
         if(refSelection)
         {
@@ -112,23 +113,68 @@ namespace CommunicationUI
                 std::string id = (*iter)[this->columns_.id_];
                 std::string contact = (*iter)[this->columns_.contact_];
                 //int id = (*iter)[m_Columns.m_col_id];
-                std::cout << "  Selected ID=" << id << std::endl;
-                std::cout << "  Selected Contact=" << contact << std::endl;
 
                 this->uimodule_->StartChat(contact.c_str());
             }
         }
     }
+    Gtk::TreeModel::iterator ContactList::GetSelected(){
+        //Communication::CommunicationUIModule::LogDebug("GetSelected");
+        Glib::RefPtr<Gtk::TreeView::Selection> refSelection = get_selection();
+        return refSelection->get_selected();
+        //if(refSelection)
+        //{
+        //    Gtk::TreeModel::iterator iter = 
+        //    return iter;
+        //}
+        //return ;
+    }
+
     void ContactList::startVoip(){
         
     }
     void ContactList::removeContact(){
+        
+    }
+    void ContactList::RemoveContact(char* id){
+        //Communication::CommunicationUIModule::LogInfo("RemoveContact");
+        Gtk::TreeModel::iterator iter = getRowWithId(id);
 
+        if(!notFound){ 
+            //Communication::CommunicationUIModule::LogInfo("row to remove was found");
+            lstContactsTreeModel->erase(iter);
+        } else {
+            notFound = false;
+            //Communication::CommunicationUIModule::LogInfo("row to remove was not found:");
+            //Communication::CommunicationUIModule::LogInfo(id);
+        }
     }
 
     void ContactList::setContactStatus(char* id, char* status)
     {
-        //Communication::CommunicationUIModule::LogInfo("ContactList::setContactStatus");
+        Gtk::TreeModel::iterator iter = getRowWithId(id);
+        if(!notFound){ 
+            Gtk::TreeModel::Row row = *iter;
+            row.set_value(2, std::string(status));    
+        } else {
+            notFound = false;
+        }
+
+        //Gtk::TreeModel::Children children = lstContactsTreeModel->children();
+        //for(Gtk::TreeModel::iterator iter = children.begin(); iter != children.end(); ++iter)
+        //{            
+        //    Gtk::TreeModel::Row row = *iter;
+        //    std::string val;
+        //    row.get_value(0, val);
+        //    if(val==std::string(id))
+        //    {
+        //        row.set_value(2, std::string(status));    
+        //    }
+        //}
+    }
+
+    Gtk::TreeModel::iterator ContactList::getRowWithId(char* id)
+    {
         Gtk::TreeModel::Children children = lstContactsTreeModel->children();
         for(Gtk::TreeModel::iterator iter = children.begin(); iter != children.end(); ++iter)
         {            
@@ -137,14 +183,10 @@ namespace CommunicationUI
             row.get_value(0, val);
             if(val==std::string(id))
             {
-                row.set_value(2, std::string(status));    
+                return iter;
             }
-            //std::cout << val << std::endl;
         }
-
-                
-
+        notFound = true;
+        return children.begin(); // pointing to none?
     }
-
-
 }
