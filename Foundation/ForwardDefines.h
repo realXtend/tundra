@@ -36,23 +36,23 @@ namespace Foundation
     //! Use root logging only in foundation classes.
     static void RootLogFatal(const std::string &msg)
     {
-        Poco::Logger::get("Foundation").fatal(msg);
+        Poco::Logger::get("Foundation").fatal("Fatal: " + msg);
     }
     static void RootLogCritical(const std::string &msg)
     {
-        Poco::Logger::get("Foundation").critical(msg);
+        Poco::Logger::get("Foundation").critical("Critical: " + msg);
     }
     static void RootLogError(const std::string &msg)
     {
-        Poco::Logger::get("Foundation").error(msg);
+        Poco::Logger::get("Foundation").error("Error: " + msg);
     }
     static void RootLogWarning(const std::string &msg)
     {
-        Poco::Logger::get("Foundation").warning(msg);
+        Poco::Logger::get("Foundation").warning("Warning: " + msg);
     }
     static void RootLogNotice(const std::string &msg)
     {
-        Poco::Logger::get("Foundation").notice(msg);
+        Poco::Logger::get("Foundation").notice("Notice: " + msg);
     }
     static void RootLogInfo(const std::string &msg)
     {
@@ -60,11 +60,11 @@ namespace Foundation
     }
     static void RootLogTrace(const std::string &msg)
     {
-        Poco::Logger::get("Foundation").trace(msg);
+        Poco::Logger::get("Foundation").trace("Trace: " + msg);
     }
     static void RootLogDebug(const std::string &msg)
     {
-        Poco::Logger::get("Foundation").debug(msg);
+        Poco::Logger::get("Foundation").debug("Debug: " + msg);
     }
 }
 

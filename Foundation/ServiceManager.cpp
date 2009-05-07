@@ -22,8 +22,6 @@ namespace Foundation
         }
         services_[type] = service;
 
-        Foundation::RootLogWarning("test");
-
 #ifdef _DEBUG
         // for debugging purposes
         ServicePtr upped_service = service.lock();
