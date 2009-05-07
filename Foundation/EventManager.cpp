@@ -110,7 +110,7 @@ namespace Foundation
         new_delayed_event.data_ = data;
         new_delayed_event.delay_ = delay;
         
-        delayed_events_.push_back(new_delayed_event);
+        new_delayed_events_.push_back(new_delayed_event);
     }  
     
     bool EventManager::SendEvent(EventSubscriber* node, Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const
@@ -355,6 +355,9 @@ namespace Foundation
     
     void EventManager::ProcessDelayedEvents(Core::f64 frametime)
     {
+        delayed_events_.insert(delayed_events_.end(), new_delayed_events_.begin(), new_delayed_events_.end());
+        new_delayed_events_.clear();
+        
         DelayedEventVector::iterator i = delayed_events_.begin();
         
         while (i != delayed_events_.end())

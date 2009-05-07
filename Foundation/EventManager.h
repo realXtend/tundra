@@ -204,6 +204,7 @@ namespace Foundation
       
         //! Delayed events
         typedef std::vector<DelayedEvent> DelayedEventVector;
+        DelayedEventVector new_delayed_events_;
         DelayedEventVector delayed_events_;
         
         //! Framework
