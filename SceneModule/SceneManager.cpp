@@ -58,7 +58,7 @@ namespace Scene
 
         assert (HasScene(cloneName));
         
-        ///\todo
+        ///\todo Make this work.
 //      Core::event_category_id_t cat_id = module_->GetFramework()->GetEventManager()->QueryEventCategory("Scene");
 //      module_->GetFramework()->GetEventManager()->SendEvent(0, EVENT_SCENE_CLONED, NULL);
 

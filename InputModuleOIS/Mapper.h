@@ -20,7 +20,7 @@ namespace Input
         used instead.
 
         \todo We constantly access InputModuleOIS from here for many service functions, 
-              perhaps needs rethinking, maybe even turn InputModuleOIS itself into input service.
+              perhaps needs rethinking, maybe even turn InputModuleOIS itself into input service. -cm
     */
     class Mapper : public Input::InputServiceInterface
     {

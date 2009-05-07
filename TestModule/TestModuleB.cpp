@@ -26,6 +26,9 @@ namespace Test
     // virtual
     void TestModuleB::Unload()
     {
+        assert (test_service_);
+        assert (boost::dynamic_pointer_cast<TestServiceInterface>(test_service_)->DoTest());
+
         LogInfo("Module " + Name() + " unloaded.");
     }
 
@@ -53,16 +56,17 @@ namespace Test
     // virtual
     void TestModuleB::Update(Core::f64 frametime)
     {
-        TestServiceInterface *test_service = NULL;
         try
         {
-            test_service = framework_->GetServiceManager()->GetService<TestServiceInterface>(TestService::type_).lock().get();
+            // We purposefully keep reference to test_service pointer alive here, until this module gets deleted
+            // This is a test for keeping a service alive when its parent module gets unloaded
+            test_service_ = framework_->GetServiceManager()->GetService<TestServiceInterface>(TestService::type_).lock();
         } catch (std::exception)
         {
             return;
         }
-        assert (test_service != NULL);
-        assert (test_service->Test());
+        assert (test_service_);
+        assert (boost::dynamic_pointer_cast<TestServiceInterface>(test_service_)->DoTest());
     }
 
     // virtual

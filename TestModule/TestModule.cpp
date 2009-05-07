@@ -160,7 +160,7 @@ namespace Test
 
         boost::shared_ptr<TestServiceInterface> test_service = framework_->GetServiceManager()->GetService<TestServiceInterface>(TestService::type_).lock();
         assert (test_service);
-        assert (test_service->Test());
+        assert (test_service->DoTest());
 
 
         TestEvent test_event;

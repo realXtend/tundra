@@ -31,8 +31,9 @@ namespace OgreRenderer
          */
         EC_OgreConsoleOverlay(Foundation::ModuleInterface* module);
 
-        //! copy constructor. Should not be used in practice, as only 
-        //! one console overlay is supported
+        //! copy constructor. 
+        /*! Should not be used in practice, as only  one console overlay is supported
+        */
         EC_OgreConsoleOverlay(const EC_OgreConsoleOverlay &other);
 
     public:
@@ -43,7 +44,7 @@ namespace OgreRenderer
         EC_OgreConsoleOverlay &operator ==(const EC_OgreConsoleOverlay &other) { assert (false); return *this; }
 
         //! displays the text as is in the overlay
-        //! \todo not threadsafe, needs render mutex
+        //! \todo not threadsafe, needs render mutex -cm
         void Display(const std::string &text);
 
         //! Returns the max number of lines that can be visible at ones

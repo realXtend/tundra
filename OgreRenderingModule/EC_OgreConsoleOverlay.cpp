@@ -84,7 +84,7 @@ namespace OgreRenderer
 
     void EC_OgreConsoleOverlay::Display(const std::string &text)
     {
-        //! \todo render mutex
+        //! \todo render mutex here -cm
         overlay_element_->setCaption(text);
     }
 
