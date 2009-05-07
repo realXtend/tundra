@@ -1,18 +1,18 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_AssetTransfer_h
-#define incl_Asset_AssetTransfer_h
+#ifndef incl_Asset_UDPAssetTransfer_h
+#define incl_Asset_UDPAssetTransfer_h
 
 namespace Asset
 {
-    //! Stores data related to an asset transfer that is in progress. Not necessary to clients of the AssetModule.
-    class AssetTransfer
+    //! Stores data related to an UDP asset transfer that is in progress. Not necessary to clients of the AssetModule.
+    class UDPAssetTransfer
     {
     public:
         //! Constructor
-        AssetTransfer();
+        UDPAssetTransfer();
         //! Destructor
-        ~AssetTransfer();
+        ~UDPAssetTransfer();
         
         //! Receives an asset data packet
         /*! Also resets elapsed time
@@ -53,6 +53,18 @@ namespace Asset
         //! Resets elapsed time
         void ResetTime() { time_ = 0.0; }
         
+        //! Inserts a request tag
+        void InsertTag(Core::request_tag_t tag) { tags_.push_back(tag); }
+        
+        //! Inserts several request tags
+        void InsertTags(const Core::RequestTagVector tags) { tags_.insert(tags_.end(), tags.begin(), tags.end()); }
+        
+        //! Clears request tags
+        void ClearTags() { tags_.clear(); } 
+             
+        //! Returns associated request tags
+        const Core::RequestTagVector& GetTags() const { return tags_; }
+                          
         //! Returns asset ID
         const std::string& GetAssetId() const { return asset_id_; }
         
@@ -70,7 +82,7 @@ namespace Asset
         
         //! Returns elapsed time since last packet
         Core::f64 GetTime() const { return time_; }
-        
+                        
         //! Returns whether transfer is finished (all bytes received)
         bool Ready() const;
         
@@ -94,6 +106,9 @@ namespace Asset
         
         //! Elapsed time since last packet
         Core::f64 time_;
+        
+        //! List of request tags associated with this transfer
+        Core::RequestTagVector tags_;
     };
 }
 

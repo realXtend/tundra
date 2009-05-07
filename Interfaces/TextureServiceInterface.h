@@ -20,8 +20,9 @@ namespace Foundation
         //! Requests a texture to be received and decoded
         /*! When texture data becomes available, an event will be sent for each quality level decoded        
             \param asset_id texture ID, UUID for legacy UDP assets         
+            \return request tag, will be sent back along with RESOURCE_READY event
          */
-        virtual void RequestTexture(const std::string& asset_id) = 0;
+        virtual Core::request_tag_t RequestTexture(const std::string& asset_id) = 0;
     };
 }
 

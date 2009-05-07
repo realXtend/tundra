@@ -4,12 +4,11 @@
 #include "NetworkEvents.h"
 #include "OpenSimProtocolModule.h"
 #include "RexProtocolMsgIDs.h"
-#include "AssetDefines.h"
 #include "AssetEvents.h"
 #include "AssetManager.h"
 #include "AssetModule.h"
-#include "AssetTransfer.h"
 #include "RexAsset.h"
+#include "RexTypes.h"
 #include "UDPAssetProvider.h"
 
 using namespace OpenSimProtocol;
@@ -18,7 +17,7 @@ using namespace RexTypes;
 namespace Asset
 {
     const Core::Real UDPAssetProvider::DEFAULT_ASSET_TIMEOUT = 60.0;
-
+        
     UDPAssetProvider::UDPAssetProvider(Foundation::Framework* framework) :
         framework_(framework)
     {
@@ -45,14 +44,19 @@ namespace Asset
         return name;
     }
     
-    bool UDPAssetProvider::RequestAsset(const std::string& asset_id, Core::asset_type_t asset_type)
+    bool UDPAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, Core::request_tag_t tag)
     {
         if (!RexUUID::IsValid(asset_id))
             return false;
             
+        int asset_type_int = GetAssetTypeFromTypeName(asset_type);
+        if (asset_type_int < 0)      
+            return false;
+        
         AssetRequest new_request;
         new_request.asset_id_ = asset_id;
-        new_request.asset_type_ = asset_type;
+        new_request.asset_type_ = asset_type_int;
+        new_request.tags_.push_back(tag);
         pending_requests_.push_back(new_request);
         
         return true;
@@ -60,18 +64,18 @@ namespace Asset
     
     bool UDPAssetProvider::InProgress(const std::string& asset_id)
     {
-        AssetTransfer* transfer = GetTransfer(asset_id);
+        UDPAssetTransfer* transfer = GetTransfer(asset_id);
         return (transfer != NULL);
     }
     
-    Foundation::AssetPtr UDPAssetProvider::GetIncompleteAsset(const std::string& asset_id, Core::asset_type_t asset_type, Core::uint received)
+    Foundation::AssetPtr UDPAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received)
     {
-        AssetTransfer* transfer = GetTransfer(asset_id);
+        UDPAssetTransfer* transfer = GetTransfer(asset_id);
             
         if ((transfer) && (transfer->GetReceivedContinuous() >= received))
         {
             // Make new temporary asset for the incomplete data
-            RexAsset* new_asset = new RexAsset(transfer->GetAssetId(), transfer->GetAssetType());
+            RexAsset* new_asset = new RexAsset(transfer->GetAssetId(), GetTypeNameFromAssetType(transfer->GetAssetType()));
             Foundation::AssetPtr asset_ptr(new_asset);
             
             RexAsset::AssetDataVector& data = new_asset->GetDataInternal();
@@ -86,7 +90,7 @@ namespace Asset
     
     bool UDPAssetProvider::QueryAssetStatus(const std::string& asset_id, Core::uint& size, Core::uint& received, Core::uint& received_continuous)    
     {
-        AssetTransfer* transfer = GetTransfer(asset_id);
+        UDPAssetTransfer* transfer = GetTransfer(asset_id);
             
         if (transfer)
         {
@@ -117,12 +121,12 @@ namespace Asset
         SendPendingRequests();
 
         // Handle timeouts for texture & asset transfers        
-        AssetTransferMap::iterator i = texture_transfers_.begin();
+        UDPAssetTransferMap::iterator i = texture_transfers_.begin();
         while (i != texture_transfers_.end())
         {
             bool erased = false;
             
-            AssetTransfer& transfer = i->second;
+            UDPAssetTransfer& transfer = i->second;
             if (!transfer.Ready())
             {
                 transfer.AddTime(frametime);
@@ -160,12 +164,12 @@ namespace Asset
             if (!erased) ++i;
         }
         
-        AssetTransferMap::iterator j = asset_transfers_.begin();
+        UDPAssetTransferMap::iterator j = asset_transfers_.begin();
         while (j != asset_transfers_.end())
         {
             bool erased = false;
             
-            AssetTransfer& transfer = j->second;
+            UDPAssetTransfer& transfer = j->second;
             if (!transfer.Ready())
             {
                 transfer.AddTime(frametime);
@@ -194,23 +198,25 @@ namespace Asset
     
     void UDPAssetProvider::MakeTransfersPending()
     {
-        AssetTransferMap::iterator i = texture_transfers_.begin();
+        UDPAssetTransferMap::iterator i = texture_transfers_.begin();
         while (i != texture_transfers_.end())
         {
             AssetRequest new_request;
             new_request.asset_id_ = i->second.GetAssetId();
             new_request.asset_type_ = i->second.GetAssetType();
+            new_request.tags_ = i->second.GetTags();
             pending_requests_.push_back(new_request);            
         
             ++i;
         }   
          
-        AssetTransferMap::iterator j = asset_transfers_.begin();
+        UDPAssetTransferMap::iterator j = asset_transfers_.begin();
         while (j != asset_transfers_.end())
         {
             AssetRequest new_request;
             new_request.asset_id_ = j->second.GetAssetId();
             new_request.asset_type_ = j->second.GetAssetType();
+            new_request.tags_ = j->second.GetTags();
             pending_requests_.push_back(new_request);            
         
             ++j;
@@ -227,19 +233,25 @@ namespace Asset
         {                
             RexUUID asset_uuid(i->asset_id_);
             if (i->asset_type_ == RexAT_Texture)   
-                RequestTexture(asset_uuid);
+                RequestTexture(asset_uuid, i->tags_);
             else
-                RequestOtherAsset(asset_uuid, i->asset_type_);
+                RequestOtherAsset(asset_uuid, i->asset_type_, i->tags_);
                 
             i = pending_requests_.erase(i);
         }
     }    
     
-    void UDPAssetProvider::RequestTexture(const RexUUID& asset_id)
+    void UDPAssetProvider::RequestTexture(const RexUUID& asset_id, const Core::RequestTagVector& tags)
     {
-        if (texture_transfers_.find(asset_id) != texture_transfers_.end())
+        // If request already exists, just append the new tag(s)
+        std::string asset_id_str = asset_id.ToString();
+        UDPAssetTransfer* transfer = GetTransfer(asset_id_str);
+        if (transfer)
+        {
+            transfer->InsertTags(tags);
             return;
-
+        }
+           
         // Get network interface
         boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = 
             (framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol)).lock();
@@ -249,9 +261,10 @@ namespace Asset
         
         const OpenSimProtocol::ClientParameters& client = net->GetClientParameters();
                 
-        AssetTransfer new_transfer;
+        UDPAssetTransfer new_transfer;
         new_transfer.SetAssetId(asset_id.ToString());
         new_transfer.SetAssetType(RexAT_Texture);
+        new_transfer.InsertTags(tags);        
         texture_transfers_[asset_id] = new_transfer;
     
         AssetModule::LogInfo("Requesting texture " + asset_id.ToString());
@@ -272,17 +285,15 @@ namespace Asset
         net->FinishMessageBuilding(m);
     }
     
-    void UDPAssetProvider::RequestOtherAsset(const RexUUID& asset_id, Core::uint asset_type)
+    void UDPAssetProvider::RequestOtherAsset(const RexUUID& asset_id, Core::uint asset_type, const Core::RequestTagVector& tags)
     {
-        // Asset transfers are keyed by transfer id, not asset id, so have to search in a bit cumbersome way
-        AssetTransferMap::const_iterator i = asset_transfers_.begin();
+        // If request already exists, just append the new tag(s)
         std::string asset_id_str = asset_id.ToString();
-        while (i != asset_transfers_.end())
+        UDPAssetTransfer* transfer = GetTransfer(asset_id_str);
+        if (transfer)
         {
-            if (i->second.GetAssetId() == asset_id_str)
-                return;
-
-            ++i;
+            transfer->InsertTags(tags);
+            return;
         }
             
         // Get network interface
@@ -295,9 +306,10 @@ namespace Asset
         RexUUID transfer_id;
         transfer_id.Random();
         
-        AssetTransfer new_transfer;
+        UDPAssetTransfer new_transfer;
         new_transfer.SetAssetId(asset_id_str);
         new_transfer.SetAssetType(asset_type);
+        new_transfer.InsertTags(tags);
         asset_transfers_[transfer_id] = new_transfer;
         
         AssetModule::LogInfo("Requesting asset " + asset_id_str);
@@ -363,14 +375,14 @@ namespace Asset
     void UDPAssetProvider::HandleTextureHeader(NetInMessage* msg)
     {
         RexUUID asset_id = msg->ReadUUID();
-        AssetTransferMap::iterator i = texture_transfers_.find(asset_id);
+        UDPAssetTransferMap::iterator i = texture_transfers_.find(asset_id);
         if (i == texture_transfers_.end())
         {
             AssetModule::LogWarning("Data received for nonexisting texture transfer " + asset_id.ToString());
             return;
         }
         
-        AssetTransfer& transfer = i->second;
+        UDPAssetTransfer& transfer = i->second;
         
         Core::u8 codec = msg->ReadU8();
         Core::u32 size = msg->ReadU32();
@@ -394,14 +406,14 @@ namespace Asset
     void UDPAssetProvider::HandleTextureData(NetInMessage* msg)
     {
         RexUUID asset_id = msg->ReadUUID();
-        AssetTransferMap::iterator i = texture_transfers_.find(asset_id);
+        UDPAssetTransferMap::iterator i = texture_transfers_.find(asset_id);
         if (i == texture_transfers_.end())
         {
             AssetModule::LogWarning("Data received for nonexisting texture transfer " + asset_id.ToString());
             return;
         }
         
-        AssetTransfer& transfer = i->second;
+        UDPAssetTransfer& transfer = i->second;
         
         Core::u16 packet_index = msg->ReadU16();
         
@@ -421,14 +433,14 @@ namespace Asset
     void UDPAssetProvider::HandleTextureCancel(NetInMessage* msg)
     {
         RexUUID asset_id = msg->ReadUUID();
-        AssetTransferMap::iterator i = texture_transfers_.find(asset_id);
+        UDPAssetTransferMap::iterator i = texture_transfers_.find(asset_id);
         if (i == texture_transfers_.end())
         {
             AssetModule::LogWarning("Cancel received for nonexisting texture transfer " + asset_id.ToString());
             return;
         }
 
-        AssetTransfer& transfer = i->second;
+        UDPAssetTransfer& transfer = i->second;
 
         // Send transfer canceled event
         SendAssetCanceled(transfer);
@@ -440,14 +452,14 @@ namespace Asset
     void UDPAssetProvider::HandleAssetHeader(NetInMessage* msg)
     {
         RexUUID transfer_id = msg->ReadUUID();
-        AssetTransferMap::iterator i = asset_transfers_.find(transfer_id);
+        UDPAssetTransferMap::iterator i = asset_transfers_.find(transfer_id);
         if (i == asset_transfers_.end())
         {
             AssetModule::LogWarning("Data received for nonexisting asset transfer " + transfer_id.ToString());
             return;
         }
         
-        AssetTransfer& transfer = i->second;
+        UDPAssetTransfer& transfer = i->second;
         
         Core::s32 channel_type = msg->ReadS32();
         Core::s32 target_type = msg->ReadS32();
@@ -476,14 +488,14 @@ namespace Asset
     void UDPAssetProvider::HandleAssetData(NetInMessage* msg)
     {
         RexUUID transfer_id = msg->ReadUUID();
-        AssetTransferMap::iterator i = asset_transfers_.find(transfer_id);
+        UDPAssetTransferMap::iterator i = asset_transfers_.find(transfer_id);
         if (i == asset_transfers_.end())
         {
             AssetModule::LogWarning("Data received for nonexisting asset transfer " + transfer_id.ToString());
             return;
         }
         
-        AssetTransfer& transfer = i->second;
+        UDPAssetTransfer& transfer = i->second;
         
         Core::s32 channel_type = msg->ReadS32();
         Core::s32 packet_index = msg->ReadS32();
@@ -516,14 +528,14 @@ namespace Asset
     void UDPAssetProvider::HandleAssetCancel(NetInMessage* msg)
     {
         RexUUID transfer_id = msg->ReadUUID();
-        AssetTransferMap::iterator i = asset_transfers_.find(transfer_id);
+        UDPAssetTransferMap::iterator i = asset_transfers_.find(transfer_id);
         if (i == asset_transfers_.end())
         {
             AssetModule::LogWarning("Cancel received for nonexisting asset transfer " + transfer_id.ToString());
             return;
         }
         
-        AssetTransfer& transfer = i->second;
+        UDPAssetTransfer& transfer = i->second;
 
         // Send transfer canceled event
         SendAssetCanceled(transfer);
@@ -532,29 +544,29 @@ namespace Asset
         asset_transfers_.erase(i);
     }
 
-    void UDPAssetProvider::SendAssetProgress(AssetTransfer& transfer)
+    void UDPAssetProvider::SendAssetProgress(UDPAssetTransfer& transfer)
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-        Events::AssetProgress event_data(transfer.GetAssetId(), transfer.GetAssetType(), transfer.GetSize(), transfer.GetReceived(), transfer.GetReceivedContinuous());
+        Events::AssetProgress event_data(transfer.GetAssetId(), GetTypeNameFromAssetType(transfer.GetAssetType()), transfer.GetSize(), transfer.GetReceived(), transfer.GetReceivedContinuous());
         event_manager->SendEvent(event_category_, Events::ASSET_PROGRESS, &event_data);
     }
 
-    void UDPAssetProvider::SendAssetCanceled(AssetTransfer& transfer)
+    void UDPAssetProvider::SendAssetCanceled(UDPAssetTransfer& transfer)
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-        Events::AssetCanceled event_data(transfer.GetAssetId(), transfer.GetAssetType());
+        Events::AssetCanceled event_data(transfer.GetAssetId(), GetTypeNameFromAssetType(transfer.GetAssetType()));
         event_manager->SendEvent(event_category_, Events::ASSET_CANCELED, &event_data);
     }
     
-    AssetTransfer* UDPAssetProvider::GetTransfer(const std::string& asset_id)
+    UDPAssetTransfer* UDPAssetProvider::GetTransfer(const std::string& asset_id)
     {
         RexUUID asset_uuid(asset_id);
         
-        AssetTransferMap::iterator i = texture_transfers_.find(asset_uuid);
+        UDPAssetTransferMap::iterator i = texture_transfers_.find(asset_uuid);
         if (i != texture_transfers_.end())
             return &i->second;
 
-        AssetTransferMap::iterator j = asset_transfers_.begin();
+        UDPAssetTransferMap::iterator j = asset_transfers_.begin();
         while (j != asset_transfers_.end())
         {
             if (j->second.GetAssetId() == asset_id)
@@ -565,7 +577,7 @@ namespace Asset
         return NULL;
     }       
     
-    void UDPAssetProvider::StoreAsset(AssetTransfer& transfer)
+    void UDPAssetProvider::StoreAsset(UDPAssetTransfer& transfer)
     {
         Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
         
@@ -574,16 +586,25 @@ namespace Asset
         {
             const std::string& asset_id = transfer.GetAssetId();
         
-            Foundation::AssetPtr new_asset = Foundation::AssetPtr(new RexAsset(asset_id, transfer.GetAssetType()));
+            Foundation::AssetPtr new_asset = Foundation::AssetPtr(new RexAsset(asset_id, GetTypeNameFromAssetType(transfer.GetAssetType())));
             RexAsset::AssetDataVector& data = checked_static_cast<RexAsset*>(new_asset.get())->GetDataInternal();
             data.resize(transfer.GetReceived());
             transfer.AssembleData(&data[0]);
       
             asset_service->StoreAsset(new_asset);
+            
+            // Send asset ready event for each request tag
+            Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+            const Core::RequestTagVector& tags = transfer.GetTags();
+            for (Core::uint i = 0; i < tags.size(); ++i)
+            {          
+                Asset::Events::AssetReady event_data(new_asset->GetId(), new_asset->GetType(), new_asset, tags[i]);
+                event_manager->SendEvent(event_category_, Events::ASSET_READY, &event_data);                
+            }
         }
         else
         {
             AssetModule::LogError("Asset service not found, could not store asset to cache");
         }
-    }
+    }    
 }

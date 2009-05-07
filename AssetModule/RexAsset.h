@@ -19,19 +19,16 @@ namespace Asset
         typedef std::vector<Core::u8> AssetDataVector;
         
         //! constructor
-        RexAsset(const std::string& asset_id, Core::asset_type_t asset_type);
+        RexAsset(const std::string& asset_id, const std::string& asset_type);
         
         //! destructor
         virtual ~RexAsset() {};
         
         //! returns asset ID
-        virtual const std::string GetId() { return asset_id_; }
+        virtual const std::string& GetId() { return asset_id_; }
         
         //! returns asset type
-        virtual Core::asset_type_t GetType() { return asset_type_; }
-        
-        //! returns asset type in text form
-        virtual const std::string& GetTypeName();
+        virtual const std::string& GetType() { return asset_type_; }
         
         //! returns asset data size
         virtual Core::uint GetSize() { return data_.size(); }
@@ -46,7 +43,7 @@ namespace Asset
         //! asset id
         std::string asset_id_;
         //! asset type
-        Core::asset_type_t asset_type_;
+        std::string asset_type_;
         //! asset data
         AssetDataVector data_;
     };

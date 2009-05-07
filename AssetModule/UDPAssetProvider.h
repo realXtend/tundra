@@ -3,6 +3,7 @@
 #ifndef incl_Asset_UDPAssetProvider_h
 #define incl_Asset_UDPAssetProvider_h
 
+#include "UDPAssetTransfer.h"
 #include "AssetProviderInterface.h"
 
 namespace Asset
@@ -28,9 +29,10 @@ namespace Asset
         //! Requests an asset for download
         /*! \param asset_id Asset UUID
             \param asset_type Asset type        
+            \param tag Asset request tag, allocated by AssetService
             \return true if asset ID was valid and download could be queued, false if not 
          */
-        virtual bool RequestAsset(const std::string& asset_id, Core::asset_type_t asset_type);
+        virtual bool RequestAsset(const std::string& asset_id, const std::string& asset_type, Core::request_tag_t tag);
         
         //! Returns whether a certain asset is already being downloaded
         virtual bool InProgress(const std::string& asset_id);
@@ -52,7 +54,7 @@ namespace Asset
             \param received Minimum continuous bytes received from the start
             \return Pointer to asset
          */
-        virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, Core::asset_type_t asset_type, Core::uint received);   
+        virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received);   
         
         //! Performs time-based update 
         /*! \param frametime Seconds since last frame
@@ -71,7 +73,9 @@ namespace Asset
             //! Asset ID
             std::string asset_id_;
             //! Asset type
-            Core::asset_type_t asset_type_;
+            int asset_type_;
+            //! Associated request tags
+            Core::RequestTagVector tags_;
         };
         
         //! Sends pending UDP asset requests
@@ -83,9 +87,9 @@ namespace Asset
         /*! Called when connection lost.
          */
         void MakeTransfersPending();
-        
+               
         //! Stores completed asset to asset service's cache
-        void StoreAsset(AssetTransfer& transfer);
+        void StoreAsset(UDPAssetTransfer& transfer);
         
         //! Handles texture header message
         /*! \param msg Message
@@ -121,35 +125,37 @@ namespace Asset
         /*! \param asset_id Asset ID
             \return Pointer to transfer, or NULL if no transfer
          */
-        AssetTransfer* GetTransfer(const std::string& asset_id);
+        UDPAssetTransfer* GetTransfer(const std::string& asset_id);
         
         //! Requests a texture from network
         /*! \param asset_id Asset UUID
+            \param tags Asset request tag(s)
          */
-        void RequestTexture(const RexTypes::RexUUID& asset_id);
+        void RequestTexture(const RexTypes::RexUUID& asset_id, const Core::RequestTagVector& tags);
         
         //! Requests an other asset from network
         /*! \param asset_id Asset UUID
+            \param tags Asset request tag(s)        
          */
-        void RequestOtherAsset(const RexTypes::RexUUID& asset_id, Core::uint asset_type);
+        void RequestOtherAsset(const RexTypes::RexUUID& asset_id, Core::uint asset_type, const Core::RequestTagVector& tags);
         
         //! Sends progress event of asset transfer
         /*! \param transfer Asset transfer
          */
-        void SendAssetProgress(AssetTransfer& transfer);
+        void SendAssetProgress(UDPAssetTransfer& transfer);
 
         //! Sends asset transfer canceled event
         /*! \param transfer Asset transfer
          */
-        void SendAssetCanceled(AssetTransfer& transfer);    
+        void SendAssetCanceled(UDPAssetTransfer& transfer);    
            
-        typedef std::map<RexTypes::RexUUID, AssetTransfer> AssetTransferMap;
+        typedef std::map<RexTypes::RexUUID, UDPAssetTransfer> UDPAssetTransferMap;
                 
         //! Ongoing UDP asset transfers, keyed by transfer id
-        AssetTransferMap asset_transfers_;
+        UDPAssetTransferMap asset_transfers_;
         
         //! Ongoing UDP texture transfers, keyed by texture asset id
-        AssetTransferMap texture_transfers_;
+        UDPAssetTransferMap texture_transfers_;
                         
         //! Asset event category
         Core::event_category_id_t event_category_;
@@ -165,7 +171,7 @@ namespace Asset
         
         //! Pending asset requests
         typedef std::vector<AssetRequest> AssetRequestVector;
-        AssetRequestVector pending_requests_;       
+        AssetRequestVector pending_requests_;              
     };
 }
 

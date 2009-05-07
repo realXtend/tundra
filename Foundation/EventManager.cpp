@@ -18,6 +18,7 @@ namespace Foundation
     EventManager::EventManager(Framework *framework) : 
         framework_(framework),
         next_category_id_(1),
+        next_request_tag_(1),
         event_subscriber_root_(EventSubscriberPtr(new EventSubscriber()))
     {
     }
@@ -94,6 +95,23 @@ namespace Foundation
             
         return SendEvent(event_subscriber_root_.get(), category_id, event_id, data);
     }
+    
+    void EventManager::SendDelayedEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataPtr data, Core::f64 delay)
+    {
+        if (category_id == 0)
+        {
+            Foundation::RootLogWarning("Attempted to send delayed event with unknown category");
+            return;
+        }    
+           
+        DelayedEvent new_delayed_event;
+        new_delayed_event.category_id_ = category_id;
+        new_delayed_event.event_id_ = event_id;
+        new_delayed_event.data_ = data;
+        new_delayed_event.delay_ = delay;
+        
+        delayed_events_.push_back(new_delayed_event);
+    }  
     
     bool EventManager::SendEvent(EventSubscriber* node, Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const
     {
@@ -326,6 +344,31 @@ namespace Foundation
             }
             
             node = node->nextSibling();
+        }
+    }
+    
+    Core::request_tag_t EventManager::GetNextRequestTag()
+    {
+        if (next_request_tag_ == 0) next_request_tag_++; // Never use 0
+        return next_request_tag_++;
+    }    
+    
+    void EventManager::ProcessDelayedEvents(Core::f64 frametime)
+    {
+        DelayedEventVector::iterator i = delayed_events_.begin();
+        
+        while (i != delayed_events_.end())
+        {
+            if (i->delay_ <= 0.0)
+            {
+                SendEvent(i->category_id_, i->event_id_, i->data_.get());
+                i = delayed_events_.erase(i);
+            }
+            else
+            {   
+                i->delay_ -= frametime;
+                ++i;
+            }
         }
     }
 }

@@ -1,22 +1,21 @@
 #include "StableHeaders.h"
-#include "AssetDefines.h"
-#include "AssetTransfer.h"
+#include "UDPAssetTransfer.h"
 #include "AssetModule.h"
 
 namespace Asset
 {
-    AssetTransfer::AssetTransfer() :
+    UDPAssetTransfer::UDPAssetTransfer() :
         size_(0),
         received_(0),
         time_(0.0)
     {
     }
     
-    AssetTransfer::~AssetTransfer()
+    UDPAssetTransfer::~UDPAssetTransfer()
     {
     }
     
-    bool AssetTransfer::Ready() const
+    bool UDPAssetTransfer::Ready() const
     {
         if (!size_) 
             return false; // No header received, size not known yet
@@ -24,7 +23,7 @@ namespace Asset
         return received_ >= size_;
     }
     
-    Core::uint AssetTransfer::GetReceivedContinuous() const
+    Core::uint UDPAssetTransfer::GetReceivedContinuous() const
     {
         Core::uint size = 0;
         
@@ -46,7 +45,7 @@ namespace Asset
         return size;
     }
     
-    void AssetTransfer::ReceiveData(Core::uint packet_index, const Core::u8* data, Core::uint size)
+    void UDPAssetTransfer::ReceiveData(Core::uint packet_index, const Core::u8* data, Core::uint size)
     {
         time_ = 0.0;
         
@@ -68,7 +67,7 @@ namespace Asset
         }
     }
     
-    void AssetTransfer::AssembleData(Core::u8* buffer) const
+    void UDPAssetTransfer::AssembleData(Core::u8* buffer) const
     {
         DataPacketMap::const_iterator i = data_packets_.begin();
         

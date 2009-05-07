@@ -137,6 +137,50 @@ enum ControlFlags
     AGENT_CONTROL_ML_LBUTTON_UP = 0x1 << CONTROL_ML_LBUTTON_UP_INDEX
 };
 
+
+// UDP Asset types
+const int RexAT_Texture = 0;
+const int RexAT_Mesh = 43;
+const int RexAT_Skeleton = 44;
+const int RexAT_MaterialScript = 45;
+const int RexAT_ParticleScript = 47;
+const int RexAT_FlashAnimation = 49;
+            
+// UDP Asset channels
+const int RexAC_Unknown = 0;
+const int RexAC_Miscellaneous = 1;
+const int RexAC_Asset = 2;
+
+// Asset sources
+const int RexAS_Unknown = 0;
+const int RexAS_Asset = 2;
+const int RexAS_Inventory = 3;
+
+// Image types
+const int RexIT_Normal = 0;
+
+// Asset transfer status codes
+const int RexTS_Ok = 0;
+const int RexTS_Done = 1;
+const int RexTS_Skip = 2;
+const int RexTS_Abort = 3;
+const int RexTS_Error = -1;
+const int RexTS_UnknownSource = -2;
+const int RexTS_NoPermission = -3;
+const int RexTS_UnknownError = -4;
+
+//! Returns ReX/OpenSim asset type from text asset type.
+/*! \param asset_type Asset type name
+    \return non-negative asset type, or -1 if unknown
+ */
+int GetAssetTypeFromTypeName(const std::string& asset_type);
+
+//! Returns asset type name from ReX/OpenSim asset type
+/*! \param asset_type Asset type
+    \return asset type name
+ */
+const std::string& GetTypeNameFromAssetType(int asset_type);
+
 }
 
 #endif

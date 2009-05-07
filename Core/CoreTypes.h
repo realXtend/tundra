@@ -26,14 +26,15 @@ namespace Core
     typedef unsigned int entity_id_t;
     typedef unsigned int event_category_id_t;
     typedef unsigned int event_id_t;
-    typedef unsigned int asset_type_t;
+    
+    typedef unsigned int request_tag_t;
+    typedef std::vector<request_tag_t> RequestTagVector;    
 
     typedef std::vector<std::string> StringVector;
     typedef boost::shared_ptr<StringVector> StringVectorPtr;
 
     typedef std::list<std::string> StringList;
     typedef boost::shared_ptr<StringList> StringListPtr;
-
 
     //! generic mutex
     typedef boost::mutex Mutex;

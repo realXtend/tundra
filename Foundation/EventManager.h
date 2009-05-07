@@ -4,6 +4,7 @@
 #define incl_Foundation_EventManager_h
 
 #include "ModuleReference.h"
+#include "EventDataInterface.h"
 
 namespace Poco
 {
@@ -16,7 +17,6 @@ namespace Poco
 namespace Foundation
 {
     class Framework;
-    class EventDataInterface;
     class ModuleInterface;
 
     //! Manages event passing between modules.
@@ -27,20 +27,28 @@ namespace Foundation
     class EventManager
     {
     public:
-        class EventSubscriber;
+        struct EventSubscriber;
         typedef boost::shared_ptr<EventSubscriber> EventSubscriberPtr;
         typedef std::vector<EventSubscriberPtr> EventSubscriberVector;
         
         //! Event subscriber tree node. Used internally by EventManager.
-        class EventSubscriber
+        struct EventSubscriber
         {
-        public:
             EventSubscriber() : priority_(0) {}
             
             ModuleWeakPtr module_;
             std::string module_name_;
             int priority_;
             EventSubscriberVector children_;
+        };
+        
+        //! Delayed event. Used internally by EventManager.
+        struct DelayedEvent
+        {
+            Core::event_category_id_t category_id_;
+            Core::event_id_t event_id_;
+            EventDataPtr data_;
+            Core::f64 delay_;
         };
         
         EventManager(Framework *framework);
@@ -84,6 +92,16 @@ namespace Foundation
          */
         bool SendEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const;
         
+       //! Sends a delayed event
+        /*! Use with judgement. Note that you will not get to know whether event was handled. The event data object
+            will be retained until event sent, so it should be allocated with new and wrapped inside a shared pointer.
+            \param category_id Event category ID
+            \param event_id Event ID
+            \param data Shared pointer to event data structure (event-specific), can be NULL if not needed
+            \param delay Delay in seconds until sending event, 0 to send during next framework update
+         */
+        void SendDelayedEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataPtr data, Core::f64 delay = 0.0);
+
         //! Registers a module to the event subscriber tree
         /*! Do not call while responding to an event!
             \param module Module to register
@@ -107,8 +125,13 @@ namespace Foundation
          */
         bool HasEventSubscriber(ModuleInterface* module);
         
-        //! Validates event subscriber tree when modules have been loaded/unloaded
+        //! Validates event subscriber tree when modules have been loaded/unloaded. Called by ModuleManager.
         void ValidateEventSubscriberTree();
+        
+        //! Processes delayed events. Called by the framework.
+        /*! \param frametime Time since last frame
+         */ 
+        void ProcessDelayedEvents(Core::f64 frametime);
         
         //! Loads event subscriber tree from an XML file
         /*! \param filename Path/filename of XML file
@@ -125,6 +148,12 @@ namespace Foundation
         //! Returns event map
         const EventMap &GetEventMap() const { return event_map_; }
          
+        //! Returns next unused non-zero request tag for asset/resource request events
+        /*! By having a global source for the tags there is no risk for collisions between
+            different modules/subsystems.
+         */
+        Core::request_tag_t GetNextRequestTag();
+        
     private:
         //! Validates event subscriber tree when modules have been loaded/unloaded
         void ValidateEventSubscriberTree(EventSubscriber* node);
@@ -161,6 +190,9 @@ namespace Foundation
         //! Next event category ID that will be assigned
         Core::event_category_id_t next_category_id_;
         
+        //! Next free request tag to be used
+        Core::request_tag_t next_request_tag_;    
+                
         //! Map for assigned event category id's
         EventCategoryMap event_category_map_;
 
@@ -170,6 +202,10 @@ namespace Foundation
         //! Event subscriber tree root node
         EventSubscriberPtr event_subscriber_root_;
       
+        //! Delayed events
+        typedef std::vector<DelayedEvent> DelayedEventVector;
+        DelayedEventVector delayed_events_;
+        
         //! Framework
         Framework *framework_;
     };

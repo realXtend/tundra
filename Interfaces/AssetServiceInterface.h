@@ -33,7 +33,7 @@ namespace Foundation
             \param asset_type Asset type
             \return Pointer to asset           
          */
-        virtual AssetPtr GetAsset(const std::string& asset_id, Core::asset_type_t asset_type) = 0;
+        virtual AssetPtr GetAsset(const std::string& asset_id, const std::string& asset_type) = 0;
         
         //! Gets incomplete asset
         /*! If not enough bytes received, will return empty pointer
@@ -44,17 +44,17 @@ namespace Foundation
             \param received Minimum continuous bytes received from the start
             \return Pointer to asset
          */
-        virtual AssetPtr GetIncompleteAsset(const std::string& asset_id, Core::asset_type_t asset_type, Core::uint received) = 0;
+        virtual AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received) = 0;
         
         //! Requests an asset download
-        /*! If asset already downloaded, does nothing.
-            Events will be sent when download progresses, and when asset is ready.
+        /*! Events will be sent when download progresses, and when asset is ready.
+            Note that this will also send an ASSET_READY event even if the asset already exists in cache.
 
             \param asset_id Asset ID, UUID for legacy UDP assets
             \param asset_type Asset type
-            \return true if asset request handled, false if no assetprovider could handle
+            \return non-zero request tag if download queued, 0 if not queued (no assetprovider could serve request) 
          */
-        virtual bool RequestAsset(const std::string& asset_id, Core::asset_type_t asset_type) = 0;
+        virtual Core::request_tag_t RequestAsset(const std::string& asset_id, const std::string& asset_type) = 0;
 
         //! Queries status of asset download
         /*! If asset has been already fully received, size, received & received_continuous will be the same

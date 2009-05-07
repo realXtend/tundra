@@ -166,6 +166,10 @@ namespace Foundation
             // synchronize shared data across modules
             //mChangeManager->_propagateChanges();
             
+            // process delayed events
+            
+            event_manager_->ProcessDelayedEvents(frametime);
+            
             // if we have a renderer service, render now
 			
             if (renderer.expired() == false)

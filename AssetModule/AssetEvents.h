@@ -32,10 +32,11 @@ namespace Asset
         class AssetReady : public Foundation::EventDataInterface
         {
         public:
-            AssetReady(const std::string& asset_id, Core::asset_type_t asset_type, Foundation::AssetPtr asset) :
+            AssetReady(const std::string& asset_id, const std::string& asset_type, Foundation::AssetPtr asset, Core::request_tag_t tag) :
                 asset_id_(asset_id),
                 asset_type_(asset_type),
-                asset_(asset)
+                asset_(asset),
+                tag_(tag)
             {
             }
             
@@ -44,8 +45,9 @@ namespace Asset
             }
         
             std::string asset_id_;
-            Core::asset_type_t asset_type_;
+            std::string asset_type_;
             Foundation::AssetPtr asset_;
+            Core::request_tag_t tag_;
         };
 
         //! Asset progress event data
@@ -54,7 +56,7 @@ namespace Asset
         class AssetProgress : public Foundation::EventDataInterface
         {
         public:
-            AssetProgress(const std::string& asset_id, Core::asset_type_t asset_type, Core::uint size, Core::uint received, Core::uint received_continuous) :
+            AssetProgress(const std::string& asset_id, const std::string& asset_type, Core::uint size, Core::uint received, Core::uint received_continuous) :
                 asset_id_(asset_id),
                 asset_type_(asset_type),
                 size_(size),
@@ -68,7 +70,7 @@ namespace Asset
             }
         
             std::string asset_id_;
-            Core::asset_type_t asset_type_;
+            std::string asset_type_;
             Core::uint size_;
             Core::uint received_;
             Core::uint received_continuous_;
@@ -80,7 +82,7 @@ namespace Asset
         class AssetCanceled : public Foundation::EventDataInterface
         {
         public:
-            AssetCanceled(const std::string& asset_id, Core::asset_type_t asset_type) :
+            AssetCanceled(const std::string& asset_id, const std::string& asset_type) :
                 asset_id_(asset_id),
                 asset_type_(asset_type)
             {
@@ -91,7 +93,7 @@ namespace Asset
             }
         
             std::string asset_id_;
-            Core::asset_type_t asset_type_;
+            std::string asset_type_;
         };
     }
 }

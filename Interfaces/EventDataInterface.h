@@ -12,6 +12,8 @@ namespace Foundation
         EventDataInterface()  {}
         virtual ~EventDataInterface() {}
     };
+    
+    typedef boost::shared_ptr<EventDataInterface> EventDataPtr;
 }
 
 #endif

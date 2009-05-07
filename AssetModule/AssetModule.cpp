@@ -84,16 +84,7 @@ namespace Asset
             return Console::ResultFailure("Usage: RequestAsset(uuid,assettype)");
         }
 
-        try
-        {
-            int asset_type = Core::ParseString<int>(params[1]);
-
-            manager_->RequestAsset(params[0], asset_type);
-        } catch (std::exception)
-        {
-            return Console::ResultInvalidParameters();
-        }
-
+        manager_->RequestAsset(params[0], params[1]);
         return Console::ResultSuccess();
     }
     

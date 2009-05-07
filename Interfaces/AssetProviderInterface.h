@@ -33,13 +33,15 @@ namespace Foundation
         
         //! Requests an asset for download
         /*! Note: implementation should not queue multiple transfers if for some reason RequestAsset gets called
-            multiple times for the same asset.
+            multiple times for the same asset. However, they should store all the tags associated with the same
+            transfer, and then send an ASSET_READY event for each tag (if multiple), when that transfer finishes. 
         
             \param asset_id Asset ID
             \param asset_type Asset type        
+            \param tag Asset request tag, allocated by AssetService. To be sent back along with ASSET_READY event
             \return true if asset ID was valid and download could be queued, false if not 
          */
-        virtual bool RequestAsset(const std::string& asset_id, Core::asset_type_t asset_type) = 0;
+        virtual bool RequestAsset(const std::string& asset_id, const std::string& asset_type, Core::request_tag_t tag) = 0;
         
         //! Returns whether a certain asset is already being downloaded
         /*! \param asset_id Asset ID
@@ -66,7 +68,7 @@ namespace Foundation
             \param received Minimum continuous bytes received from the start
             \return Pointer to asset
          */
-        virtual AssetPtr GetIncompleteAsset(const std::string& asset_id, Core::asset_type_t asset_type, Core::uint received) = 0;   
+        virtual AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received) = 0;   
         
         //! Performs time-based update of asset provider, to for example handle timeouts
         /*! The asset service will call this periodically for all registered asset providers, so
