@@ -21,13 +21,20 @@ namespace Foundation
             return;
         }
         services_[type] = service;
+
+        Foundation::RootLogWarning("test");
+
+#ifdef _DEBUG
+        // for debugging purposes
+        ServicePtr upped_service = service.lock();
+        Foundation::RootLogDebug("Registering service type " + Core::ToString(type) + " with usage count " + Core::ToString(upped_service.use_count()));
+        services_usage_[type] = upped_service.use_count();
+#endif
     }
 
     void ServiceManager::UnregisterService(const ServiceWeakPtr &service)
     {
         assert(service.expired() == false);
-
-        Foundation::RootLogInfo("Unregistering service.");
 
         ServicePtr upped_service = service.lock();
 
@@ -37,11 +44,28 @@ namespace Foundation
             assert (iter->second.expired() == false);
             if (iter->second.lock().get() == upped_service.get())
             {
+                Foundation::RootLogInfo("Unregistering service type " + Core::ToString(iter->first) + ".");
+
+#ifdef _DEBUG
+            if (upped_service.use_count() > services_usage_[iter->first]) // not efficient according to boost doc, so use only in debug
+            {
+                // Somewhere, outside the module that contains this service, a reference to the service
+                // is maintained. This is an error because usually services rely on their parent modules, and
+                // services usually get unregistered when module gets unloaded, thus leaving a service hanging
+                // without it's parent module. Crash is a likely result.
+                //! \todo It might be worth considering, if services should hold a shared pointer to their parent
+                //!       modules. In that way when module gets unloaded, if one of it's services is still in use
+                //!       it could keep the module alive. This would take some refactoring of the module system
+                //!       thought. -cm
+                RootLogError("Unregistering a service type " + Core::ToString(iter->first) + " that is probably still in use!");
+            }
+#endif
+
                 services_.erase(iter);
                 return;
             }
         }
-        //! \todo Any possibility to have the service type here nicely, so it can be included with the log warning?
+        //! \todo Any possibility to have the service type here nicely, so it can be included with the log warning? -cm
         Foundation::RootLogWarning("Unregistering service provider type that was not registered!");
     }
 }

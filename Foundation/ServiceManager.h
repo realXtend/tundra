@@ -102,12 +102,16 @@ namespace Foundation
         }
     private:
         typedef std::map<Core::service_type_t, ServiceWeakPtr> ServicesMap;
+        typedef std::map<Core::service_type_t, int> ServicesUsageMap;
         
         //! parent framework
         Framework *framework_;
 
         //! Contains all registered services
         ServicesMap services_;
+
+        //! Number of shared ptr uses when registering a service, for debug purposes only!
+        ServicesUsageMap services_usage_;
     };
 }
 

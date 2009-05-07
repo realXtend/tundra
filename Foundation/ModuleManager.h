@@ -143,8 +143,6 @@ namespace Foundation
         /*! Assumptions is that modules only get unloaded once the program exits.
 
             PostCondition: HasModule(module) == false for any module
-
-            \todo Find a better way to handle unloading of modules / actually unload modules?
         */
         void UnloadModules();
 

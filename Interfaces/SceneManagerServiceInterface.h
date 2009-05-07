@@ -62,7 +62,7 @@ namespace Foundation
         
         //! Returns a scene
         /*!
-            \todo Return weak pointer?
+            \todo Return weak pointer? -cm
 
             \param name name of the scene
             \return Scene with the specified name, or null pointer if the scene could not be found.

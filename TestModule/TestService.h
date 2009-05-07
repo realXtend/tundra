@@ -14,7 +14,7 @@ namespace Test
         TestService() {};
         virtual ~TestService() {};
 
-        virtual bool Test() const;
+        virtual bool DoTest() const;
 
         static const Core::service_type_t type_;
     };

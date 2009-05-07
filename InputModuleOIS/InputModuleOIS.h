@@ -107,8 +107,7 @@ namespace Input
 
         \note OIS is used in unbuffered mode, so doesn't work well for UI input. See BufferedKeyboard for UI input.
 
-        \todo Joysticks / gamepads not handled yet
-        \todo INPUTOIS_MODULE_API doesn't work for some reason
+        \todo Joysticks / gamepads not handled yet -cm
     */
     class  InputModuleOIS : public Foundation::ModuleInterfaceImpl, public OIS::KeyListener
     {

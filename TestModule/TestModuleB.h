@@ -40,6 +40,7 @@ namespace Test
         }
 
     private:
+        Foundation::ServicePtr test_service_;
     };
 }
 #endif
