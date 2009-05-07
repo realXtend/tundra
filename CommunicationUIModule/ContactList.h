@@ -10,14 +10,6 @@
 
 
 
-//class IChatStartCallBack
-//{
-//public:
-//    IChatStartCallBack()  {}
-//    virtual ~IChatStartCallBack() {}
-//	virtual void StartChat(const char* contact) = 0;
-//}
-
 namespace CommunicationUI
 {
     class CommunicationUIModule;
@@ -42,10 +34,13 @@ namespace CommunicationUI
             Gtk::TreeModelColumn<std::string> status_;
 		};
 
-    
         Glib::RefPtr<Gtk::ListStore> lstContactsTreeModel;
         ModelColumns columns_;
 
+
+        Gtk::TreeModel::iterator GetSelected();
+        void RemoveContact(char* id);
+        Gtk::TreeModel::iterator getRowWithId(char* id);
 
         void setContactStatus(char* id, char* status);
 
@@ -56,10 +51,7 @@ namespace CommunicationUI
         void startChat();
         void startVoip();
         void removeContact();
-
-
-
-        //Glib::RefPtr<Gtk::TextBuffer> buddyBuffer_;
+        bool notFound;
 
         Gtk::Menu popContactMenu;
         

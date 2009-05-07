@@ -10,6 +10,8 @@
 
 #include "ChatSession.h"
 #include "ConfigureDlg.h"
+#include "DialogCallbackInterface.h"
+
 #include "ModuleInterface.h"
 #include "ContactList.h"
 //#include "PythonScriptModule.h"
@@ -39,7 +41,8 @@ namespace CommunicationUI
 
 	typedef boost::shared_ptr<ChatSession> ChatSessionUIPtr;
 	//
-	class MODULE_API CommunicationUIModule : public Foundation::ModuleInterfaceImpl, public IConfigureCallBack
+	//class MODULE_API CommunicationUIModule : public Foundation::ModuleInterfaceImpl, public IConfigureCallBack
+    class MODULE_API CommunicationUIModule : public Foundation::ModuleInterfaceImpl, public CommunicationUI::DialogCallBackInterface
 	{
 	public:
 		CommunicationUIModule(void);
@@ -70,10 +73,24 @@ namespace CommunicationUI
 		static void channelOpened(char*);
 		static void channelClosed(char*);
 		static void messagReceived(char*);
-		static void friendReceived(char* t);
-        static void contactStatusChanged(char* id);
+		static void contactReceived(char* t);
+        static void contactStatusChanged(char*);
+
+        static void contactAdded(char*);
+        static void contactAddedToPublishList(char*);
+        static void contactRemoved(char*);
+        static void remotePending(char*);
+        static void localPending(char*);
+
+        static void incomingRequest(char*);
+
+        
 
 		void setOnlineStatus(char* status);
+
+        static Foundation::ScriptObject* CallIMPyMethod(char* method, char* syntax, std::string& param);
+
+        static std::vector<std::string> SplitString(const std::string &inString, const std::string &separator, const int &splitAmount);
 
 
 	private:
@@ -90,9 +107,16 @@ namespace CommunicationUI
 
 		void OnContactAdd();
 		void OnContactRemove();
+        void OnRefresh();
+
+        void reloadIMScript();
+        void setupSciptInterface();
+        void clearContactList();
+
+        void testDialog();
 
         // adds contact to ui contact list
-		void addFriendItem(char *);
+		void addContactItem(char *);
 
         // could be in python module as utility method (reservers memory)
         static char** buildOneStringParamArrayFromConstCharArray(const char* prm);
@@ -111,10 +135,6 @@ namespace CommunicationUI
         Gtk::Button* btnAddContact;
         Gtk::Button* btnRemoveContact;
 
-		//Glib::RefPtr<Gtk::ListStore> lstBuddiesTreeModel;
-        //Glib::RefPtr<Gtk::ListStore> lstContactsTreeModel;
-
-
 	protected:
 
 		int entryret_;
@@ -123,7 +143,7 @@ namespace CommunicationUI
 		bool sessionUp_;
 	public:
 		ChatSessionUIPtr session_;
-
+	    std::map<std::string, ChatSessionUIPtr> chatSessions_;
 
 	private:
 		// Service References
