@@ -3,6 +3,8 @@
 #ifndef incl_Foundation_ConfigurationManager_h
 #define incl_Foundation_ConfigurationManager_h
 
+#include "boost/filesystem.hpp" 
+
 namespace Foundation
 {
     class Framework;
@@ -15,84 +17,102 @@ namespace Foundation
             Everytime you define a constant (or property) in a class, declare it
             in this manager instead of hardcoding it. For example:
 
-            \code
-				class foo
-				{
-				  foo() : ConfigurationManager.declareSetting("foo", "var", 0, true)
-				 const int var;
-				};
-            \endcode
+            @code
+            foo::foo(FrameWork* framework) 
+            {
+                int myValue = 42;
+                myValue = framework->GetConfigManager()->DeclareSetting(std::string("myGroup"), std::string("myKey"), myValue));
+
+                //Another way 
+
+                if ( framework->GetConfigManager()->HasKey(std::string("myGroup"), std::string("myKey"))
+                    myValue = framework->GetConfigManager()->GetSetting<int>(std::string("myGroup"), std::string("myKey"));
+                else
+                    framework->GetConfigManager()->SetSetting(std::string("myGroup"), std::string("myKey"), myValue);
+
+
+            }
+            @endcode
         
 
-        The settings are cached as soon as a configuration file is opened,
-        this behaviour comes from PoCo's XmlConfiguration class and can't
-        be changed at present time.
-    
+        The settings are cached as soon as a configuration file is opened (in manager constructor). New settings from arbitary 
+        location can be loaded by using @p Load() method. 
+       
         These settings are application variables, which can be used to define application runtime and static 
-        properties. Depending if setting is set to saved, it will be saved into configuration xml file and it
-        is changeble/readable from there. 
+        properties.
         
-        Uses PoCo's XmlConfiguration and XmlWriter internally.
+        Uses PoCo's XmlConfiguration internally.
 
-        Currently does exporting in a really silly way, but only
-        because Poco doesn't allow for writing of XmlConfiguration,
-        only reading.
 
-        \note Settings are saved when ConfigurationManager is destroyed, or if class user calls 
-        @p ExportSettings() method.
+        @note Settings are saved when ConfigurationManager is destroyed, or if class user calls 
+        @p Export() method.
 
-        \note This class makes no assumptions about the type of the stored
+        @note This class makes no assumptions about the type of the stored
               values, it is assumed the programmer always knows it.
 
-        \ingroup Foundation_group
+        @ingroup Foundation_group
     */
+
     class ConfigurationManager
     {
-      
-        //! Special enum for creating default configuration object
-        enum Type
-        {
-            //! Default configuration created by the framework, uses default config file.
-            CT_DEFAULT,
-            //! Custom configuration, uses custom config file.
-            CT_CUSTOM
-        };
-
-       
-        ConfigurationManager(const ConfigurationManager &other);
-        ConfigurationManager &operator =(const ConfigurationManager &other);
-
     public:
-        //! Constructor that takes a path to a configuration file. Loads and parses the file.
-        ConfigurationManager(Framework* framework, const std::string &file = std::string(DEFAULT_CONFIG_PATH));
+        
+        /**
+         * Default constructor. 
+         * @param framework is pointer to current framework. 
+         * @param path is value which represents path to location where configuration xml files are found. 
+         * @note param path is platform independ (means that it can be given with M$ -style or Unix-style separator)
+         */
+        
+        ConfigurationManager(Framework* framework = 0, const std::string& path = std::string(DEFAULT_CONFIG_PATH));
 		
-        //! Destructor. 
-        /*! 
-           @note when destructor is called, all settings which are saved into value map will be write to the given xml-file. 
-        */
+        /**
+         * Destructor. 
+         * @note when destructor is called, all settings which are saved into runtime value map will be write into corresponding configuration xml files. Files can 
+         * be found from location which is defined in path variable. Default path is /data/configuration/. 
+         */
         ~ConfigurationManager();
 
-        //! Loads and parses configuration from the specified file.
-        void Load(const std::string &file);
+        /**
+         *  Loads xml files from given path and sets found group-key value pairs into configuration manager memory for futher use.  
+         *  @note Load() will only read those files which name encoding match to defined file encoding. See @p SetFileEncoding().
+         *  @note Load() will always replace existing group-key value pairs, with new value which are found from xml files. 
+         *  @param path is path to folder where configuration files are. 
+         *  @throw CoreException if problem arises. 
+         */
 
-        //! Declares a key-value pair setting
-        /*! This is the standard way of retrieving a value from group and key name for the first
-            time, and also setting a default value if the setting doesn't exist yet.
+        void Load(const std::string& path);
 
-            Postcond: HasKey(group, key)
-           
-           @code
-                // Retrieve key 
-                bool myValue = framework_->GetDefaultConfigPtr()->GetSettingFromFile<bool>(std::string("mygroup"), std::string("mykey"));
-            @endcode
-           
-            \param group Group the key belongs to
-            \param key Name of the key
-            \param defaultValue default value for the setting, returned if key was not found
-            \param save Save defines if setting is saved into xml file or not, default value is true
-        */
-      
-		template <typename T > T DeclareSetting(const std::string& group, const std::string& key, const T& defaultValue, bool save = true) const;
+        /**
+         * Exports settings into xml data files. XML-files are created in given path. If param group is other then empty string, 
+         * only that group values are exported (into corresponding xml-file). See below how xml files are generated.
+         * 
+         * Files are which are generated are created so that their name starts with given encoding and second part of their name is
+         * same as group name. Example for group "AssetManager" generated xml file name is RexAssetManager.xml
+         * 
+         * @param path where xml files will be stored (folder). 
+         * @param group is group which will be exported. If empty string is given method will export all setting from value map to given path. 
+         */
+        void Export(const std::string& path = std::string(DEFAULT_CONFIG_PATH), const std::string& group = std::string(""));
+
+        /**
+         * Sets a new path. 
+         * @param path is a path to folder where settings are exported.
+         */
+        void SetPath(const std::string& path) { path_ = boost::filesystem::system_complete(boost::filesystem::path(path)); }
+        std::string GetPath() const { return path_.file_string(); }
+
+        void SetFileNameEncoding(const std::string& encoding) { file_name_encoding_ = encoding; }
+        std::string GetFileNameEncoding() const { return file_name_encoding_; }
+
+        /**
+         * Declares setting. If setting is found from xml file it will be returned else default value will be set into runtime value map, and stored afterwords in 
+         * xml-file. 
+         * @return given default value if group and key are not found from runtime map else value which is saved into runtime map. 
+         * @param group is the name of Group. 
+         * @param key is the name of Key.
+         */
+        template <typename T > T DeclareSetting(const std::string& group, const std::string& key, const T& defaultValue) const;      
 
         /**
          * Sets a given value to setting value. If class user wants to change current setting (on runtime) value he/she must use this method to do it.
@@ -110,61 +130,50 @@ namespace Foundation
          * @param group Group the key belongs to
          * @param key Name of the key
          */
+
         template <typename T> T GetSetting(const std::string& group, const std::string& key) const;
-        std::string GetSetting(const std::string& group, const std::string& key) const;
 
-        //! Retrieves a value from key and group.
-        /*! This is the standard way of retrieving a value from group and key name, after the
-          
-            \note if setting is not declared before and there is nothing saved in xml file, function will return NAN value. 
-          
-            \param group Group the key belongs to
-            \param key Name of the key
-        */
+         /**
+          * Returns true is the specified group contains the specified key, false otherwise.
+          * 
+          * @param group Name of the group
+          * @param key Name of the key
+          *
+          */
 
-        template <typename T> T GetSettingFromFile(const std::string& group, const std::string& key) const;
-        std::string GetSettingFromFile(const std::string& group, const std::string& key) const;
-        
-        //! Returns true is the specified group contains the specified key, false otherwise.
-        /*!
-            \param group Name of the group
-            \param key Name of the key
-        */
-        bool HasKey(const std::string &group, const std::string &key) const;
-            
-        //! Export current settings to specified file
-        /*! Does silly trickery to export the settings.
+        bool HasKey(const std::string& group, const std::string& key) const; 
 
-            \param file path to file to export settings to
-        */
-        void ExportSettings(const std::string &file = std::string(DEFAULT_CONFIG_PATH));
-
-        
     private:
-      
+            
+    
+        /**
+         * Finds all xml files from given directory. Does not search xml files from leaf directories. 
+         * @param path is path to directory where xml files are are found. 
+         * @return list of file paths. 
+         *
+         */
+        
+        std::list<std::string> GetFiles(const boost::filesystem::path& path) const;
 
-        //! default configuration file path
-        static const char *DEFAULT_CONFIG_PATH;
+        void AddValues(Poco::Util::XMLConfiguration* pConfiguration, const std::string& group);
 
+        // Default configuration file path
+        static const char* DEFAULT_CONFIG_PATH;
+        
         typedef std::pair<std::string, std::string> string_pair_t;
         typedef std::map<string_pair_t, std::string> ValueMap;
 
-        //! Poco xml configuration reader
-        Poco::AutoPtr<Poco::Util::XMLConfiguration> configuration_;
-		
-        //! Current configuration file
-        std::string config_file_;
-
-        //! Type of this config
-        Type type_;
-
-        //! map of all values, for exporting
+         // map of all values, for exporting
         mutable ValueMap values_;
 
-		Framework *framework_;
+        boost::filesystem::path path_;
+        Framework *framework_;
+        std::string file_name_encoding_;
+
+
     };
 
-}
+} // namespace
 #include "ConfigurationManager-templates.h"
 #endif
 
