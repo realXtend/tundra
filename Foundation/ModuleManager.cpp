@@ -33,9 +33,16 @@ namespace Foundation
             Module::Entry entry = { modulePtr, module->Name(), Module::SharedLibraryPtr() };
             modules_.push_back(entry);
 #ifndef _DEBUG
-                // make it so debug messages are not logged in release mode
-            std::string log_level = framework_->GetDefaultConfig().GetSettingFromFile<std::string>(Framework::ConfigurationGroup(), "log_level");
-                Poco::Logger::get(module->Name()).setLevel(log_level);
+             
+            // make it so debug messages are not logged in release mode
+
+            std::string log_level = "information";
+            if ( framework_->GetDefaultConfig().HasKey(Framework::ConfigurationGroup(), "log_level") )
+                log_level = framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "log_level");
+            else
+                framework_->GetConfigManager()->SetSetting(Framework::ConfigurationGroup(), "log_level", log_level);
+       
+            Poco::Logger::get(module->Name()).setLevel(log_level);
 #endif
             module->SetFramework(framework_);
             module->LoadInternal();
@@ -300,7 +307,13 @@ namespace Foundation
 
 #ifndef _DEBUG
                 // make it so debug messages are not logged in release mode
-                std::string log_level = framework_->GetDefaultConfig().GetSettingFromFile<std::string>(Framework::ConfigurationGroup(), "log_level");
+                
+                std::string log_level = "information";
+                if ( framework_->GetDefaultConfig().HasKey(Framework::ConfigurationGroup(), "log_level") )
+                    log_level = framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "log_level");
+                else
+                    framework_->GetConfigManager()->SetSetting(Framework::ConfigurationGroup(), "log_level", log_level);
+                
                 Poco::Logger::get(module->Name()).setLevel(log_level);
 #endif
 
