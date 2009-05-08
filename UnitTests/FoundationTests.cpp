@@ -43,13 +43,13 @@ BOOST_AUTO_TEST_CASE( framework_application )
 
 void frameworkConfigurationManagerTest()
 {
-    Foundation::ConfigurationManager manager(0,"./testing/configuration.xml");
-    BOOST_CHECK_EQUAL (manager.DeclareSetting<std::string>("testGroup1", "test_key1", "default_value"), std::string("test_string"));
-    BOOST_CHECK_EQUAL (manager.DeclareSetting<std::string>("testGroup1", "test_key1", std::string("default_value")), std::string("test_string"));
-    BOOST_CHECK_EQUAL (manager.DeclareSetting("testGroup2", "test_key2", 0), 123456);
-    BOOST_CHECK_EQUAL (manager.DeclareSetting("testGroup2", "test_key3", false), true);
-    BOOST_CHECK (Core::equals(manager.DeclareSetting("testGroup2", "test_key4", 0.f), 3.2f));
-    BOOST_CHECK (manager.HasKey("testGroup1", "test_key1"));
+    Foundation::ConfigurationManager manager(0, "./testing/");
+    BOOST_CHECK_EQUAL (manager.DeclareSetting<std::string>("Configuration", "test_key1", "default_value"), std::string("test_string"));
+    BOOST_CHECK_EQUAL (manager.DeclareSetting<std::string>("Configuration", "test_key1", std::string("default_value")), std::string("test_string"));
+    BOOST_CHECK_EQUAL (manager.DeclareSetting("TestGroup2", "test_key2", 0), 123456);
+    BOOST_CHECK_EQUAL (manager.DeclareSetting("TestGroup2", "test_key3", false), true);
+    BOOST_CHECK (Core::equals(manager.DeclareSetting("TestGroup2", "test_key4", 0.f), 3.2f));
+    BOOST_CHECK (manager.HasKey("Configuration", "test_key1"));
     BOOST_CHECK (manager.HasKey("NoGroup", "no_key") == false);
 }
 

@@ -1,0 +1,5 @@
+<config>
+	<Configuration>
+		<test_key1>test_string</test_key1>
+	</Configuration>
+</config>
