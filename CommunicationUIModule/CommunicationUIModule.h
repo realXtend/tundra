@@ -87,8 +87,9 @@ namespace CommunicationUI
         
 
 		void setOnlineStatus(char* status);
-
+    public:
         static Foundation::ScriptObject* CallIMPyMethod(char* method, char* syntax, std::string& param);
+    private:
 
         static std::vector<std::string> SplitString(const std::string &inString, const std::string &separator, const int &splitAmount);
 
