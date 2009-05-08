@@ -14,8 +14,8 @@ namespace Foundation
         defined.
 
         Usage:
-            Everytime you define a constant (or property) in a class, declare it
-            in this manager instead of hardcoding it. For example:
+            Everytime you define a property which is used as a setting variable in a class (or anywhere), declare it
+            in this manager instead of hardcoding it. Example:
 
             @code
             foo::foo(FrameWork* framework) 
@@ -35,7 +35,7 @@ namespace Foundation
             @endcode
         
 
-        The settings are cached as soon as a configuration file is opened (in manager constructor). New settings from arbitary 
+        The settings are cached as soon as a configuration files are readed (this is done by default in manager constructor). New settings from arbitary 
         location can be loaded by using @p Load() method. 
        
         These settings are application variables, which can be used to define application runtime and static 
@@ -59,9 +59,10 @@ namespace Foundation
         
         /**
          * Default constructor. 
-         * @param framework is pointer to current framework. 
+         * 
+         * @param framework is pointer to current framework (currently not used). 
          * @param path is value which represents path to location where configuration xml files are found. 
-         * @note param path is platform independ (means that it can be given with M$ -style or Unix-style separator)
+         * @note @p path is platform independ (means that it can be given with M$ -style or Unix-style separator)
          */
         
         ConfigurationManager(Framework* framework = 0, const std::string& path = std::string(DEFAULT_CONFIG_PATH));
@@ -69,14 +70,17 @@ namespace Foundation
         /**
          * Destructor. 
          * @note when destructor is called, all settings which are saved into runtime value map will be write into corresponding configuration xml files. Files can 
-         * be found from location which is defined in path variable. Default path is /data/configuration/. 
+         * be found from location which is defined in path variable. Default path is viewer/data/configuration/. 
          */
         ~ConfigurationManager();
 
         /**
-         *  Loads xml files from given path and sets found group-key value pairs into configuration manager memory for futher use.  
+         *  Loads xml files from given path and sets found group-key value pairs into configuration manager memory for futher use. If given path is a file
+         *  file data will be loaded into runtime memory map, file encoding must match current name encoding see @p SetFileNameEncoding() 
+         *  
          *  @note Load() will only read those files which name encoding match to defined file encoding. See @p SetFileEncoding().
          *  @note Load() will always replace existing group-key value pairs, with new value which are found from xml files. 
+         *  
          *  @param path is path to folder where configuration files are. 
          *  @throw CoreException if problem arises. 
          */
@@ -84,11 +88,22 @@ namespace Foundation
         void Load(const std::string& path);
 
         /**
-         * Exports settings into xml data files. XML-files are created in given path. If param group is other then empty string, 
+         * Exports settings into xml data files. XML-files are created in given path. If @p group is other then empty string, 
          * only that group values are exported (into corresponding xml-file). See below how xml files are generated.
          * 
-         * Files are which are generated are created so that their name starts with given encoding and second part of their name is
-         * same as group name. Example for group "AssetManager" generated xml file name is RexAssetManager.xml
+         * Xml configuration files are created so that their name starts with given encoding and right after that second part of their name is
+         * same as group name. Example for group "AssetManager" corresponding xml file is RexAssetManager.xml where "Rex" is file encoding variable and 
+         * can be changed using @p SetFileNameEncoding().  
+         *
+         * @note if given path points to file and group is empty string @p Export() function does not export anything. If given path points to file and group 
+         * is something else then empty string only that group data will be stored to given file (now file can be arbitary). 
+         * @note if given path is a folder and group is diffrent then empty string that group will be only which is exported to given folder.
+         *
+         * @code
+         * std::string myFolderPath="/path/to/folder" // can be unix style or m$-style. 
+         * // Exports now only keys which are defined in myGroup.
+         * config_manager_->Export(myFolderPath, std::string("myGroup")); 
+         * @endcode
          * 
          * @param path where xml files will be stored (folder). 
          * @param group is group which will be exported. If empty string is given method will export all setting from value map to given path. 
@@ -102,13 +117,26 @@ namespace Foundation
         void SetPath(const std::string& path) { path_ = boost::filesystem::system_complete(boost::filesystem::path(path)); }
         std::string GetPath() const { return path_.file_string(); }
 
+        /**
+         * Sets a file name encoding. Default encoding is "Rex", so created configuration files starts with letters "Rex". This setting also
+         * affects of how @p Load and @p Export searches configuration files from given file path (default case).   
+         * @param encoding is encoding which defines what files are valid xml configuration files. 
+         *
+         **/
         void SetFileNameEncoding(const std::string& encoding) { file_name_encoding_ = encoding; }
         std::string GetFileNameEncoding() const { return file_name_encoding_; }
 
         /**
-         * Declares setting. If setting is found from xml file it will be returned else default value will be set into runtime value map, and stored afterwords in 
-         * xml-file. 
-         * @return given default value if group and key are not found from runtime map else value which is saved into runtime map. 
+         * Declares setting. If searched setting is found from xml file it will be returned 
+         * else default value will be set into runtime value map, and stored afterwords in xml-file. 
+         * @code
+         * 
+         *  int myVariable = 42;
+         *  // I want to use this again in future or changed directly from xml configuration file (or i want to read newer value from configuration file) 
+         *  myVariable = config_manager_.DeclareSetting(std::string("myGroup"), std::string("myValueKey"), myVariable);
+         * 
+         * @endcode
+         * @return given default value if group and key are not found from runtime map. Else returns value which is saved into runtime map. 
          * @param group is the name of Group. 
          * @param key is the name of Key.
          */
@@ -126,15 +154,30 @@ namespace Foundation
         /**
          * Retrieves a value from key and group from in-memory. 
          * If value is not found empty string or NAN is return. 
+         * @code
+         *  // I want to get current setting from runtime-map. 
+         *  bool all_knowing_truth = config_manager_.GetSetting<bool>(std::string("myGroup"), std::string("myKey"));
          * 
+         * @endcode
          * @param group Group the key belongs to
          * @param key Name of the key
+         * @throw In very special cases can throw boost::bad_lexical_cast. 
          */
 
         template <typename T> T GetSetting(const std::string& group, const std::string& key) const;
 
          /**
           * Returns true is the specified group contains the specified key, false otherwise.
+          * @code
+          *  // I want to assure that group and key value exist. 
+          *  if ( config_manager_.HasKey(std::string("myGroup"), std::string("myKey") )
+          *    {
+          *      int value = config_manager_.GetSetting<int>(std::string("myGroup"), std::string("myKey"));
+          *      // Do something
+          *    }
+          *   else
+          *     // Do something example config_manager_.SetSettting(..);
+          * @endcode
           * 
           * @param group Name of the group
           * @param key Name of the key
