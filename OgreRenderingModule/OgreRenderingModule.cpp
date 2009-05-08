@@ -179,10 +179,10 @@ namespace OgreRenderer
             console->UnregisterCommand("RequestMesh");
         }
 
-        framework_->GetServiceManager()->UnregisterService(renderer_);
-    
         delete ogre_window_;
         delete ogre_widget_;
+
+        framework_->GetServiceManager()->UnregisterService(renderer_);
         renderer_.reset();
         
         LogInfo("Module " + Name() + " uninitialized.");

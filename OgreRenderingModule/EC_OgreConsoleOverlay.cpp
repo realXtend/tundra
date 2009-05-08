@@ -43,9 +43,12 @@ namespace OgreRenderer
         // Funny thing, Ogre manual says not to destroy overlay elements while
         // they are still contained in some Overlay but doing this in any other
         // way seems to cause crashes.
-        Ogre::OverlayManager::getSingleton().destroyOverlayElement("ConsoleText");
-        Ogre::OverlayManager::getSingleton().destroyOverlayElement("ConsoleContainer");
-        Ogre::OverlayManager::getSingleton().destroy("Console");
+        if (renderer_.expired() == false)
+        {
+            Ogre::OverlayManager::getSingleton().destroyOverlayElement("ConsoleText");
+            Ogre::OverlayManager::getSingleton().destroyOverlayElement("ConsoleContainer");
+            Ogre::OverlayManager::getSingleton().destroy("Console");
+        }
     }
 
 
@@ -53,6 +56,9 @@ namespace OgreRenderer
     {
         // Creating second console overlay component is a programming error in any case,
         // so we let Ogre throw exception if that happens.
+
+        if (renderer_.expired())
+            return;
 
         overlay_element_ = checked_static_cast<Ogre::TextAreaOverlayElement*>(Ogre::OverlayManager::getSingleton().createOverlayElement("TextArea", "ConsoleText"));
         overlay_element_->setCaption("Console");
@@ -85,6 +91,9 @@ namespace OgreRenderer
     void EC_OgreConsoleOverlay::Display(const std::string &text)
     {
         //! \todo render mutex here -cm
+
+        if (renderer_.expired())
+            return;
         overlay_element_->setCaption(text);
     }
 
@@ -92,7 +101,7 @@ namespace OgreRenderer
     void EC_OgreConsoleOverlay::SetVisible(bool visible)
     {
         visible_ = visible;
-        if (visible)
+        if (visible && !renderer_.expired())
             overlay_->show();
 
         active_ = visible;
@@ -100,12 +109,17 @@ namespace OgreRenderer
 
     bool EC_OgreConsoleOverlay::IsVisible() const
     {
-//        return visible_;
+        if (renderer_.expired())
+            return false;
+
         return overlay_->isVisible();
     }
 
     void EC_OgreConsoleOverlay::Update(Core::f64 frametime)
     {
+        if (renderer_.expired())
+            return;
+
         if (visible_ && position_ < Ogre::Math::HALF_PI)
         {
             position_ += frametime * speed_;
