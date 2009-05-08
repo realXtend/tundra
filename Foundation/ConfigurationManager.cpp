@@ -365,7 +365,6 @@ namespace Foundation
          }
          else if (group != "" && fs::is_directory(filePath))
          {
-            
             ///todo Export only values from given param group into folder .
          }
          else if (group != "")

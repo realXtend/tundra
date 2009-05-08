@@ -46,7 +46,7 @@ namespace Foundation
     }
    
     
-    template <typename T> T ConfigurationManager::GetSetting(const std::string& group, const std::string& key) const
+    template <typename T> inline T ConfigurationManager::GetSetting(const std::string& group, const std::string& key) const
     {
         T value;
         std::map<string_pair_t, std::string>::iterator iter = values_.find(std::make_pair(group, key));
