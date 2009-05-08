@@ -17,14 +17,14 @@ namespace Communication
 		return message_;
 	}
 
-	PresenceStatusUpdateEvent::PresenceStatusUpdateEvent(PresenceStatusPtr s)
+	PresenceStatusUpdateEvent::PresenceStatusUpdateEvent(ContactPtr c)
 	{
-		status_ = s;
+		contact_ = c;
 	}
 
-	PresenceStatusPtr PresenceStatusUpdateEvent::GetPresenceStatus()
+	ContactPtr PresenceStatusUpdateEvent::GetContact()
 	{
-		return status_;
+		return contact_;
 	}
 
 	IMSessionInvitationEvent::IMSessionInvitationEvent(IMSessionPtr s)

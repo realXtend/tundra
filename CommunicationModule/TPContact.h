@@ -19,12 +19,12 @@ namespace Communication
 //		void UpdatePresence(PresenceStatusPtr p); // called by TelepathyCommunication
 
 		std::string name_;
-		TPPresenceStatusPtr presence_status_;
+		PresenceStatusPtr presence_status_;
 		ContactInfoList contact_infos_;
 	};
 
-	typedef boost::shared_ptr<TPContact> TPContactPtr;
-	typedef std::vector<TPContactPtr> TPContactList;
+//	typedef boost::shared_ptr<TPContact> TPContactPtr;
+//	typedef std::vector<TPContactPtr> TPContactList;
 
 	//class TPContactList
 	//{

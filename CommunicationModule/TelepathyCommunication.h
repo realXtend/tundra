@@ -44,11 +44,12 @@ namespace Communication
 		static const std::string NameStatic() { return "ConnectionModule-TelepathyCommunication"; } // for logging functionality
 
 		// callbacks for console commands
-		Console::CommandResult ConsoleInfo(const Core::StringVector &params);
 		Console::CommandResult ConsoleHelp(const Core::StringVector &params);
+		Console::CommandResult ConsoleState(const Core::StringVector &params);
         Console::CommandResult ConsoleLogin(const Core::StringVector &params);
 		Console::CommandResult ConsoleLogout(const Core::StringVector &params);
 		Console::CommandResult ConsoleCreateSession(const Core::StringVector &params);
+		Console::CommandResult ConsoleCloseSession(const Core::StringVector &params);
 		Console::CommandResult ConsoleListSessions(const Core::StringVector &params);
 		Console::CommandResult ConsoleSendMessage(const Core::StringVector &params);
 		Console::CommandResult ConsoleListContacts(const Core::StringVector &params);
@@ -61,10 +62,10 @@ namespace Communication
 		static TelepathyCommunicationPtr instance_;
 		
 		// member variables
-		bool connected_; // todo: replace this with "Connection" object
+		bool connected_; // todo: replace this with "Connection" or "ConnectionStatus" object
 		Foundation::Framework* framework_;
-		TPIMSessionList im_sessions_;
-		TPContactList contact_list_;
+		IMSessionList im_sessions_;
+		ContactList contact_list_;
 		Foundation::ScriptObjectPtr communication_py_script_; 
 		Foundation::ScriptObjectPtr python_communication_object_; 
 		Foundation::EventManagerPtr event_manager_;
@@ -81,6 +82,7 @@ namespace Communication
 		static void PyCallbackMessagReceived(char*);
 		static void PycallbackFriendReceived(char* t);
 		static void PyCallbackContactStatusChanged(char* id);
+		static void PyCallbackMessageSent(char* id);
 		
 		// initialization
 		void InitializePythonCommunication();

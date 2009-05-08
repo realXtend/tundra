@@ -45,10 +45,10 @@ namespace Communication
 	class PresenceStatusUpdateEvent : public Foundation::EventDataInterface
 	{
 	public:
-		PresenceStatusUpdateEvent(PresenceStatusPtr s);
-		PresenceStatusPtr GetPresenceStatus();
+		PresenceStatusUpdateEvent(ContactPtr );
+		ContactPtr GetContact();
 	private:
-		PresenceStatusPtr status_;
+		ContactPtr contact_;
 	};
 
 	/*
