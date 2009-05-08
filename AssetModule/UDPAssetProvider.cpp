@@ -118,84 +118,13 @@ namespace Asset
         }
 
         // Connection exists, send any pending requests
-        SendPendingRequests();
+        SendPendingRequests(net);
 
         // Handle timeouts for texture & asset transfers        
-        UDPAssetTransferMap::iterator i = texture_transfers_.begin();
-        while (i != texture_transfers_.end())
-        {
-            bool erased = false;
-            
-            UDPAssetTransfer& transfer = i->second;
-            if (!transfer.Ready())
-            {
-                transfer.AddTime(frametime);
-                if (transfer.GetTime() > asset_timeout_)
-                {
-                    RexUUID asset_uuid(transfer.GetAssetId());
-                    
-                    AssetModule::LogInfo("Texture transfer " + transfer.GetAssetId() + " timed out.");
-
-                    // Send cancel message
-                    const OpenSimProtocol::ClientParameters& client = net->GetClientParameters();
-                    NetOutMessage *m = net->StartMessageBuilding(RexNetMsgRequestImage);
-                    assert(m);
-                    
-                    m->AddUUID(client.agentID);
-                    m->AddUUID(client.sessionID);
-    
-                    m->SetVariableBlockCount(1);
-                    m->AddUUID(asset_uuid); // Image UUID
-                    m->AddS8(-1); // Discard level, -1 = cancel
-                    m->AddF32(0.0); // Download priority, 0 = cancel
-                    m->AddU32(0); // Starting packet
-                    m->AddU8(RexIT_Normal); // Image type
-    
-                    net->FinishMessageBuilding(m);
-
-                    // Send transfer canceled event
-                    SendAssetCanceled(transfer);
-
-                    i = texture_transfers_.erase(i);
-                    erased = true;
-                }
-            }
-            
-            if (!erased) ++i;
-        }
-        
-        UDPAssetTransferMap::iterator j = asset_transfers_.begin();
-        while (j != asset_transfers_.end())
-        {
-            bool erased = false;
-            
-            UDPAssetTransfer& transfer = j->second;
-            if (!transfer.Ready())
-            {
-                transfer.AddTime(frametime);
-                if (transfer.GetTime() > asset_timeout_)
-                {
-                    AssetModule::LogInfo("Asset transfer " + transfer.GetAssetId() + " timed out.");
-
-                    // Send cancel message
-                    NetOutMessage *m = net->StartMessageBuilding(RexNetMsgTransferAbort);
-                    assert(m);
-                    m->AddUUID(j->first); // Transfer ID
-                    m->AddS32(RexAC_Asset); // Asset channel type
-                    net->FinishMessageBuilding(m);
-            
-                    // Send transfer canceled event
-                    SendAssetCanceled(transfer);
-
-                    j = asset_transfers_.erase(j);
-                    erased = true;
-                }
-            }
-            
-            if (!erased) ++j;
-        }
+        HandleTextureTimeouts(net, frametime);
+        HandleAssetTimeouts(net, frametime);        
     }
-    
+
     void UDPAssetProvider::MakeTransfersPending()
     {
         UDPAssetTransferMap::iterator i = texture_transfers_.begin();
@@ -224,24 +153,106 @@ namespace Asset
 
         texture_transfers_.clear();
         asset_transfers_.clear();
-    }         
-         
-    void UDPAssetProvider::SendPendingRequests()
+    }       
+
+    void UDPAssetProvider::HandleTextureTimeouts(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net, Core::f64 frametime)
+    {
+        UDPAssetTransferMap::iterator i = texture_transfers_.begin();
+        std::vector<RexUUID> erase_tex;       
+        while (i != texture_transfers_.end())
+        {            UDPAssetTransfer& transfer = i->second;
+            if (!transfer.Ready())
+            {
+                transfer.AddTime(frametime);
+                if (transfer.GetTime() > asset_timeout_)
+                {
+                    RexUUID asset_uuid(transfer.GetAssetId());
+                    
+                    AssetModule::LogInfo("Texture transfer " + transfer.GetAssetId() + " timed out.");
+
+                    // Send cancel message
+                    const OpenSimProtocol::ClientParameters& client = net->GetClientParameters();
+                    NetOutMessage *m = net->StartMessageBuilding(RexNetMsgRequestImage);
+                    assert(m);
+                    
+                    m->AddUUID(client.agentID);
+                    m->AddUUID(client.sessionID);
+    
+                    m->SetVariableBlockCount(1);
+                    m->AddUUID(asset_uuid); // Image UUID
+                    m->AddS8(-1); // Discard level, -1 = cancel
+                    m->AddF32(0.0); // Download priority, 0 = cancel
+                    m->AddU32(0); // Starting packet
+                    m->AddU8(RexIT_Normal); // Image type                        net->FinishMessageBuilding(m);
+
+                    // Send transfer canceled event
+                    SendAssetCanceled(transfer);
+
+                    erase_tex.push_back(i->first);
+                }
+            }            
+	            
+            ++i;
+        }
+
+        for (int j = 0; j < erase_tex.size(); ++j)
+            texture_transfers_.erase(erase_tex[j]);
+    }
+
+    void UDPAssetProvider::HandleAssetTimeouts(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net, Core::f64 frametime)
+    {        
+        UDPAssetTransferMap::iterator i = asset_transfers_.begin();
+        std::vector<RexUUID> erase_asset;   
+        while (i != asset_transfers_.end())
+        {
+            bool erased = false;
+            
+            UDPAssetTransfer& transfer = i->second;
+            if (!transfer.Ready())
+            {
+                transfer.AddTime(frametime);
+                if (transfer.GetTime() > asset_timeout_)
+                {
+                    AssetModule::LogInfo("Asset transfer " + transfer.GetAssetId() + " timed out.");
+
+                    // Send cancel message
+                    NetOutMessage *m = net->StartMessageBuilding(RexNetMsgTransferAbort);
+                    assert(m);
+                    m->AddUUID(i->first); // Transfer ID
+                    m->AddS32(RexAC_Asset); // Asset channel type
+
+                    net->FinishMessageBuilding(m);
+            
+                    // Send transfer canceled event
+                    SendAssetCanceled(transfer);
+
+                    erase_asset.push_back(i->first);                  
+                }
+            }
+            
+            ++i;
+        }
+
+        for (int j = 0; j < erase_asset.size(); ++j)
+            asset_transfers_.erase(erase_asset[j]);        
+    }
+                 void UDPAssetProvider::SendPendingRequests(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net)
     {    
         AssetRequestVector::iterator i = pending_requests_.begin();
         while (i != pending_requests_.end())
         {                
             RexUUID asset_uuid(i->asset_id_);
             if (i->asset_type_ == RexAT_Texture)   
-                RequestTexture(asset_uuid, i->tags_);
+                RequestTexture(net, asset_uuid, i->tags_);
             else
-                RequestOtherAsset(asset_uuid, i->asset_type_, i->tags_);
+                RequestOtherAsset(net, asset_uuid, i->asset_type_, i->tags_);
                 
             i = pending_requests_.erase(i);
         }
     }    
     
-    void UDPAssetProvider::RequestTexture(const RexUUID& asset_id, const Core::RequestTagVector& tags)
+    void UDPAssetProvider::RequestTexture(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net, 
+        const RexUUID& asset_id, const Core::RequestTagVector& tags)
     {
         // If request already exists, just append the new tag(s)
         std::string asset_id_str = asset_id.ToString();
@@ -251,14 +262,7 @@ namespace Asset
             transfer->InsertTags(tags);
             return;
         }
-           
-        // Get network interface
-        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = 
-            (framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol)).lock();
-        
-        if ((!net) || (!net->IsConnected()))
-            return;
-        
+                   
         const OpenSimProtocol::ClientParameters& client = net->GetClientParameters();
                 
         UDPAssetTransfer new_transfer;
@@ -285,7 +289,8 @@ namespace Asset
         net->FinishMessageBuilding(m);
     }
     
-    void UDPAssetProvider::RequestOtherAsset(const RexUUID& asset_id, Core::uint asset_type, const Core::RequestTagVector& tags)
+    void UDPAssetProvider::RequestOtherAsset(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net,
+        const RexUUID& asset_id, Core::uint asset_type, const Core::RequestTagVector& tags)
     {
         // If request already exists, just append the new tag(s)
         std::string asset_id_str = asset_id.ToString();
@@ -296,13 +301,6 @@ namespace Asset
             return;
         }
             
-        // Get network interface
-        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = 
-            (framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol)).lock();
-
-        if ((!net) || (!net->IsConnected()))
-            return;
-
         RexUUID transfer_id;
         transfer_id.Random();
         

@@ -6,6 +6,11 @@
 #include "UDPAssetTransfer.h"
 #include "AssetProviderInterface.h"
 
+namespace OpensimProtocol
+{
+    class OpenSimProtocolModule;
+}
+
 namespace Asset
 {    
     //! UDP asset provider
@@ -79,9 +84,21 @@ namespace Asset
         };
         
         //! Sends pending UDP asset requests
-        /*! To only be called when the network interface exists & is connected, otherwise requests will be wasted
+        /*! \param net Connected network interface
          */
-        void SendPendingRequests();
+        void SendPendingRequests(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net);
+
+        //! Handles texture timeouts
+        /*! \param net Connected network interface
+            \param frametime Time since last frame
+         */
+        void HandleTextureTimeouts(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net, Core::f64 frametime);
+
+        //! Handles other asset timeouts
+        /*! \param net Connected network interface
+            \param frametime Time since last frame
+         */
+        void HandleAssetTimeouts(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net, Core::f64 frametime);
         
         //! Makes current transfers into pending requests & clears transfers.
         /*! Called when connection lost.
@@ -128,16 +145,20 @@ namespace Asset
         UDPAssetTransfer* GetTransfer(const std::string& asset_id);
         
         //! Requests a texture from network
-        /*! \param asset_id Asset UUID
+        /*! \param net Connected network interface
+            \param asset_id Asset UUID
             \param tags Asset request tag(s)
          */
-        void RequestTexture(const RexTypes::RexUUID& asset_id, const Core::RequestTagVector& tags);
+        void RequestTexture(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net, 
+            const RexTypes::RexUUID& asset_id, const Core::RequestTagVector& tags);
         
         //! Requests an other asset from network
-        /*! \param asset_id Asset UUID
+        /*! \param net Connected network interface
+            \param asset_id Asset UUID
             \param tags Asset request tag(s)        
          */
-        void RequestOtherAsset(const RexTypes::RexUUID& asset_id, Core::uint asset_type, const Core::RequestTagVector& tags);
+        void RequestOtherAsset(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net,
+            const RexTypes::RexUUID& asset_id, Core::uint asset_type, const Core::RequestTagVector& tags);
         
         //! Sends progress event of asset transfer
         /*! \param transfer Asset transfer
