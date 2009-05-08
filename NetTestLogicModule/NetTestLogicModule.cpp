@@ -50,7 +50,7 @@ namespace
     const char *VariableTypeToStr(NetVariableType type)
     {
 	    const char *data[] = { "Invalid", "U8", "U16", "U32", "U64", "S8", "S16", "S32", "S64", "F32", "F64", "LLVector3", "LLVector3d", "LLVector4",
-	                           "LLQuaternion", "UUID", "BOOL", "IPADDR", "IPPORT", "Fixed", "Variable", "BufferByte", "Buffer2Bytes", "Buffer4Bytes" };
+	                           "LLQuaternion", "UUID", "BOOL", "IPADDR", "IPPORT", "Fixed", "BufferByte", "Buffer2Bytes", "Buffer4Bytes" };
 	    if (type < 0 || type >= NUMELEMS(data))
 		    return data[0];
 
@@ -277,7 +277,7 @@ namespace NetTest
         treeview_packetdump->set_model(packetDumpModel);
         treeview_packetdump->append_column(Glib::ustring("Name"), packetDumpModelColumns.colName);
         treeview_packetdump->append_column(Glib::ustring("Data"), packetDumpModelColumns.colData);
-        treeview_packetdump->append_column(Glib::ustring("Data Size"), packetDumpModelColumns.colDataSize);
+        treeview_packetdump->append_column(Glib::ustring("Data Size (Bytes)"), packetDumpModelColumns.colDataSize);
         
         // Set window title, size and position.
         packetDumpControls->get_widget("dialog_packetdump", packetDumpWindow);
@@ -382,8 +382,10 @@ namespace NetTest
     {
         Gtk::TreeModel::Row row_packet, row_block, row_var; 
         
-        const NetMessageInfo *info = msg.GetMessageInfo();
+        msg.ResetReading();        
         
+        const NetMessageInfo *info = msg.GetMessageInfo();
+
         packetDumpModel->clear();
         row_packet = *(packetDumpModel->append());
         
@@ -391,59 +393,65 @@ namespace NetTest
         row_packet[packetDumpModelColumns.colName] = msg.GetMessageInfo()->name;
         row_packet[packetDumpModelColumns.colDataSize] = msg.GetDataSize();
         
-	    int prevBlock = msg.GetCurrentBlock();
-	    while(msg.GetCurrentBlock() < msg.GetBlockCount())
-	    {
-	        // Block
-		    size_t curBlock = msg.GetCurrentBlock();
-		    const NetMessageBlock &block = info->blocks[curBlock];
-		    size_t blockInstanceCount = msg.ReadCurrentBlockInstanceCount();
-	        
-	        size_t curVar = msg.GetCurrentVariable();
-		    const NetMessageVariable &var = block.variables[curVar];
-            
-            // Add new block row if variable is the first of the block.
-            if(curVar == 0)
-            {
-                row_block = *(packetDumpModel->append(row_packet.children()));
-                row_block[packetDumpModelColumns.colName] = block.name;
-            }
-            
-		    prevBlock = curBlock;
+        // Blocks
+        for(size_t block_it = 0; block_it < msg.GetBlockCount(); ++block_it)
+        {
+            const NetMessageBlock &block = info->blocks[block_it];
+            // Block instances ///\todo Test when block instance count is 0 
+            size_t block_instance_count = msg.ReadCurrentBlockInstanceCount();
+            for(size_t instance_it = 0; instance_it < block_instance_count; ++instance_it)
+	        {
+                // Variables
+	            for(size_t var_it = 0; var_it < block.variables.size(); ++var_it)
+	            {
+		            const NetMessageVariable &var = block.variables[var_it];
+                    // Add new block row if variable is the first of the block.
+                    if (var_it == 0)
+                    {
+                        row_block = *(packetDumpModel->append(row_packet.children()));
+                        row_block[packetDumpModelColumns.colName] = block.name;
+                    }
+                    
+		            // Read the variable data.
+		            size_t varSize = msg.ReadVariableSize();
+		            const uint8_t* data = (const uint8_t*)msg.ReadBytesUnchecked(varSize);
+		            msg.SkipToNextVariable(true);
 
-		    // Read the variable data.
-		    size_t varSize = msg.ReadVariableSize();
-		    const uint8_t* data = (const uint8_t*)msg.ReadBytesUnchecked(varSize);
-		    msg.SkipToNextVariable(true);
-            
-            std::stringstream var_data_ss;
-		    bool bMalformed = false;
-		    if (data && varSize > 0)
-		    {
-			    for(size_t k = 0; k < varSize && k < 15; ++k) // Print only first 15 bytes of data.
-				    var_data_ss << std::hex << (int)data[k] << " ";
-                if (varSize > 16)
-                    var_data_ss << " ...";
-            }
-            else
-		    {
-		        var_data_ss << "Malformed data field!";
-			    bMalformed = true;
-            }
-            
-            row_var = *(packetDumpModel->append(row_block.children()));
-		    
-		    std::stringstream var_ss;
-            var_ss << var.name << " (" << VariableTypeToStr(var.type)<< ")";
-            row_var[packetDumpModelColumns.colName] = var_ss.str();
-                
-            // Data and data size.
-		    row_var[packetDumpModelColumns.colData] = var_data_ss.str();
-		    row_var[packetDumpModelColumns.colDataSize] = varSize;
+                    std::stringstream var_data_ss;
+		            bool bMalformed = false;
+		            if (data && varSize > 0)
+		            {
+			            for(size_t k = 0; k < varSize && k < 15; ++k) // Print only first 16 bytes of data.
+				            var_data_ss << std::setw(2) << std::hex << (int)data[k] << std::setfill('0') << " ";
 
-		    if (bMalformed)
-		        return;
-	    }
+                        if (varSize > 16)
+                            var_data_ss << " ...";
+                    }
+                    else if ((var.type == NetVarBufferByte || NetVarBuffer2Bytes) && varSize == 0)
+		            {
+		                // Variable-length variables can be empty.
+		                var_data_ss << "";
+                    }
+                    else
+		            {
+		                var_data_ss << "Malformed data field!";
+			            bMalformed = true;
+                    }            
+                    row_var = *(packetDumpModel->append(row_block.children()));
+        		    
+		            std::stringstream var_ss;
+                    var_ss << var.name << " (" << VariableTypeToStr(var.type)<< ")";
+                    row_var[packetDumpModelColumns.colName] = var_ss.str();
+                        
+                    // Data and data size.
+		            row_var[packetDumpModelColumns.colData] = var_data_ss.str();
+		            row_var[packetDumpModelColumns.colDataSize] = varSize;
+
+		            if (bMalformed)
+		                return;
+	            }
+            }
+        }            
     }
 }
 

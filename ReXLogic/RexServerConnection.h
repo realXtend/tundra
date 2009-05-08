@@ -107,17 +107,16 @@ namespace RexLogic
         volatile OpenSimProtocol::Connection::State GetConnectionState();
         
     private:
-        ///
+        /// Convenience function to get the weak pointer when building messages.
         NetOutMessage *StartMessageBuilding(NetMsgID message_id);
         
-        ///
+        /// Convenience function to get the weak pointer when sending messages.
         void FinishMessageBuilding(NetOutMessage *msg);
         
+        /// The framework we belong to.        
         Foundation::Framework *framework_;
     
         /// Pointer to the network interface.
-        //OpenSimProtocol::OpenSimProtocolModule *netInterface_;
-		
 		boost::weak_ptr<OpenSimProtocol::OpenSimProtocolModule> netInterface_;
         
         /// Server-spesific info for this client.

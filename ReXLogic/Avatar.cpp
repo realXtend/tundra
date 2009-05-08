@@ -65,48 +65,53 @@ namespace RexLogic
         msg->ResetReading();
         uint64_t regionhandle = msg->ReadU64();
         msg->SkipToNextVariable(); // TimeDilation U16 ///\todo Unhandled inbound variable 'TimeDilation'.
-
-        uint32_t localid = msg->ReadU32(); 
-        msg->SkipToNextVariable();		// State U8 ///\todo Unhandled inbound variable 'State'.
-        RexUUID fullid = msg->ReadUUID();
-        msg->SkipToNextVariable();		// CRC U32 ///\todo Unhandled inbound variable 'CRC'.
-        uint8_t pcode = msg->ReadU8();
-
-        Foundation::EntityPtr entity = GetOrCreateAvatarEntity(localid,fullid);
-        EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent("EC_OpenSimAvatar").get());
-        OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
-
-        avatar.RegionHandle = regionhandle;
         
-        // Get position from objectdata
-        msg->SkipToFirstVariableByName("ObjectData");
-        size_t bytes_read = 0;
-        const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
-        if (bytes_read >= 28)
+        // Variable block: Object Data
+        size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+        for(size_t i = 0; i < instance_count; ++i)
         {
-            // The data contents:
-            // ofs 16 - pos xyz - 3 x float (3x4 bytes)
-            Core::Vector3df pos = *reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[16]);
-            ogrePos.SetPosition(Core::OpenSimToOgreCoordinateAxes(pos));
-        }                
-        
-        msg->SkipToFirstVariableByName("ParentID");
-        avatar.ParentId = msg->ReadU32();
-        
-        // NameValue contains: FirstName STRING RW SV " + firstName + "\nLastName STRING RW SV " + lastName
-        msg->SkipToFirstVariableByName("NameValue");
-        std::string namevalue = msg->ReadString();
-        size_t pos = namevalue.find("\n");
-        if(pos != std::string::npos)
-        {
-            avatar.SetFirstName(namevalue.substr(23,pos-23));
-            avatar.SetLastName(namevalue.substr(pos+23));
+            uint32_t localid = msg->ReadU32(); 
+            msg->SkipToNextVariable();		// State U8 ///\todo Unhandled inbound variable 'State'.
+            RexUUID fullid = msg->ReadUUID();
+            msg->SkipToNextVariable();		// CRC U32 ///\todo Unhandled inbound variable 'CRC'.
+            uint8_t pcode = msg->ReadU8();
+
+            Foundation::EntityPtr entity = GetOrCreateAvatarEntity(localid,fullid);
+            EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent("EC_OpenSimAvatar").get());
+            OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
+
+            avatar.RegionHandle = regionhandle;
+            
+            // Get position from objectdata
+            msg->SkipToFirstVariableByName("ObjectData");
+            size_t bytes_read = 0;
+            const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
+            if (bytes_read >= 28)
+            {
+                // The data contents:
+                // ofs 16 - pos xyz - 3 x float (3x4 bytes)
+                Core::Vector3df pos = *reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[16]);
+                ogrePos.SetPosition(Core::OpenSimToOgreCoordinateAxes(pos));
+            }                
+            
+            msg->SkipToFirstVariableByName("ParentID");
+            avatar.ParentId = msg->ReadU32();
+            
+            // NameValue contains: FirstName STRING RW SV " + firstName + "\nLastName STRING RW SV " + lastName
+            msg->SkipToFirstVariableByName("NameValue");
+            std::string namevalue = msg->ReadString();
+            size_t pos = namevalue.find("\n");
+            if(pos != std::string::npos)
+            {
+                avatar.SetFirstName(namevalue.substr(23,pos-23));
+                avatar.SetLastName(namevalue.substr(pos+23));
+            }
+            
+            // Set own avatar
+            if (avatar.FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
+                rexlogicmodule_->GetAvatarController()->SetAvatarEntity(entity);
         }
         
-        // Set own avatar
-        if (avatar.FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
-            rexlogicmodule_->GetAvatarController()->SetAvatarEntity(entity);              
-
         return false;
     }
     

@@ -278,7 +278,6 @@ namespace Foundation
                 
                 // Now save it into file.
                 pConfiguration->save(file.file_string());
-
             }
 
             Poco::AutoPtr<Poco::Util::XMLConfiguration> pConfiguration;

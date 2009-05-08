@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Fri Apr 17 17:11:28 2009 -->
+<!--Generated with glade3 3.4.3 on Fri May 08 11:18:25 2009 -->
 <glade-interface>
   <widget class="GtkDialog" id="dialog_prim_properties">
     <property name="border_width">5</property>

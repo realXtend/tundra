@@ -11,6 +11,7 @@ using namespace RexTypes;
 /** Helps parsing inbound packets by supporting convenient reading of new data from the message. Also
 	tracks that the message is read with the right structure.
     \ingroup OpenSimProtocolClient */
+    
 class OSPROTO_MODULE_API NetInMessage
 {
 public:
@@ -78,7 +79,7 @@ public:
 	size_t GetBlockCount() const { return messageInfo->blocks.size(); }
 
 	/// @return The number of instances of the current block we're reading.
-	size_t ReadCurrentBlockInstanceCount() const { return currentBlockInstanceCount; }
+	size_t ReadCurrentBlockInstanceCount();
 
 	/// @return The number of bytes the next variable to-be-read takes.
 	size_t ReadVariableSize() const { return currentVariableSize; }
@@ -88,7 +89,7 @@ public:
 	void SkipToNextVariable(bool bytesAlreadyRead = false);
 	
 	/// Skips to the first variable with the specified name.
-	void SkipToFirstVariableByName(std::string variableName);
+	void SkipToFirstVariableByName(const std::string &variableName);
 
 	/// Returns a pointer to a stream of given amount of bytes in the inbound packet. Doesn't do any validation. Increments the bytesRead pointer, but doesn't
 	/// advance to the next variable. Use this only to do custom raw reading of the packet.
@@ -107,14 +108,14 @@ public:
 	const std::vector<uint8_t> &GetData() const { return messageData; }
 
 	/// Get the size of the data (message body). 
-	size_t GetDataSize() { return messageData.size(); }
+	size_t GetDataSize() const { return messageData.size(); }
 
 	/// Get the amount of read bytes.
 	uint32_t BytesRead() const { return (uint32_t)bytesRead; }
 
 	/// Resets the reading of the message stream and jumps back to the first block & variable.
 	void ResetReading();
-
+    
 private:
 	void operator=(const NetInMessage &);
 	
@@ -129,6 +130,9 @@ private:
 
 	/// Jumps all internal pointers to denote there is no more packet data to read.
 	void SkipToPacketEnd();
+	
+	/// Checks the unrestrictedness of the reading operation.
+	void RequireNextVariableType(NetVariableType type);
 	
 	/// The sequence number of the message.
 	uint32_t sequenceNumber;
@@ -156,6 +160,9 @@ private:
 	
 	/// How many bytes of the packet we have read.
 	size_t bytesRead;
+	
+	/// If true, the next block to-be-come has variable count of instances.
+	bool variableCountBlockNext;
 };
 
 #endif

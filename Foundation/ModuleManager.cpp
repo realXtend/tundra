@@ -281,7 +281,7 @@ namespace Foundation
         for (Core::StringVector::const_iterator it = entries.begin(); 
                 it != entries.end(); 
                 ++it)
-        {
+        {   
             if (HasModuleEntry(*it))
             {
                 Foundation::RootLogDebug("Module " + *it + " already loaded.");

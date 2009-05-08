@@ -94,13 +94,22 @@ namespace RexLogic
     bool NetworkEventHandler::HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data)
     {
         data->message->ResetReading();
-        data->message->SkipToFirstVariableByName("PCode");
-        uint8_t pcode = data->message->ReadU8();
-        switch(pcode)
-        {
-            case 0x09: return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_ObjectUpdate(data); break;
-            case 0x2f: return rexlogicmodule_->GetAvatarHandler()->HandleOSNE_ObjectUpdate(data); break;
+        data->message->SkipToNextVariable();
+        data->message->SkipToNextVariable();
+        
+        // Variable block: Object Data
+        size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+        for(size_t i = 0; i < instance_count; ++i)
+        {    
+            data->message->SkipToFirstVariableByName("PCode");
+            uint8_t pcode = data->message->ReadU8();
+            switch(pcode)
+            {
+                case 0x09: return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_ObjectUpdate(data); break;
+                case 0x2f: return rexlogicmodule_->GetAvatarHandler()->HandleOSNE_ObjectUpdate(data); break;
+            }
         }
+        
         return false;
     }
     
@@ -190,9 +199,10 @@ namespace RexLogic
     
         uint64_t regionhandle = data->message->ReadU64();    
         data->message->SkipToNextVariable(); // TimeDilation U16 ///\todo Unhandled inbound variable 'TimeDilation'.
-  
-        NetVariableType nextvartype = data->message->CheckNextVariableType();
-        while(nextvartype != NetVarNone)
+        
+        // Variable block
+        size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+        for(size_t i = 0; i < instance_count; i++)
         {
             size_t bytes_read = 0;
             const uint8_t *bytes = data->message->ReadBuffer(&bytes_read);
@@ -205,20 +215,19 @@ namespace RexLogic
                     break;
                 case 60:
                     localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[0]); 
-                    if(rexlogicmodule_->GetPrimEntity(localid)) 
+                    if (rexlogicmodule_->GetPrimEntity(localid)) 
                         rexlogicmodule_->GetPrimitiveHandler()->HandleTerseObjectUpdateForPrim_60bytes(bytes); 
-                    else if(rexlogicmodule_->GetAvatarEntity(localid))
+                    else if (rexlogicmodule_->GetAvatarEntity(localid))
                         rexlogicmodule_->GetAvatarHandler()->HandleTerseObjectUpdateForAvatar_60bytes(bytes);                            
                     break;
                 default:    
                     std::stringstream ss; 
-                    ss << "Unhandled ImprovedTerseObjectUpdate block of size ";
-                    ss << bytes_read << "!";
+                    ss << "Unhandled ImprovedTerseObjectUpdate block of size " << bytes_read << "!";
                     RexLogicModule::LogInfo(ss.str());
                     break;
             }
-            data->message->SkipToNextVariable(); // TextureEntry variable ///\todo Unhandled inbound variable 'TextureEntry'.
-            nextvartype = data->message->CheckNextVariableType();
+            
+            ///\todo Unhandled inbound variable 'TextureEntry'.
         }
         return false;
     }
@@ -226,13 +235,19 @@ namespace RexLogic
     bool NetworkEventHandler::HandleOSNE_KillObject(OpenSimProtocol::NetworkEventInboundData* data)
     {
         data->message->ResetReading();
-        uint32_t killedobjectid = data->message->ReadU32();
+        
+        // Variable block
+        size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+        for(size_t i = 0; i < instance_count; ++i)
+        {
+            uint32_t killedobjectid = data->message->ReadU32();
 
-        if(rexlogicmodule_->GetPrimEntity(killedobjectid))
-            return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_KillObject(killedobjectid);
-        else if(rexlogicmodule_->GetAvatarEntity(killedobjectid))    
-            return rexlogicmodule_->GetAvatarHandler()->HandleOSNE_KillObject(killedobjectid);            
-
+            if(rexlogicmodule_->GetPrimEntity(killedobjectid))
+                return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_KillObject(killedobjectid);
+            else if(rexlogicmodule_->GetAvatarEntity(killedobjectid))    
+                return rexlogicmodule_->GetAvatarHandler()->HandleOSNE_KillObject(killedobjectid);            
+        }
+        
         return false;
     }
 }
