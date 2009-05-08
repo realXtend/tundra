@@ -199,7 +199,10 @@ namespace RexLogic
     {        
         data->message->ResetReading();    
         data->message->SkipToFirstVariableByName("Parameter");
-        
+
+        // Variable block begins
+        size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+
         std::string avataraddress = data->message->ReadString();
         RexUUID avatarid(data->message->ReadString());
         bool overrideappearance = ParseBool(data->message->ReadString());
@@ -210,6 +213,7 @@ namespace RexLogic
             EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent("EC_OpenSimAvatar").get());        
             avatar.SetAppearanceAddress(avataraddress,overrideappearance);
         }
+        
         return false;
     }
     

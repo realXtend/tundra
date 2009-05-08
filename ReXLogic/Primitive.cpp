@@ -29,7 +29,7 @@ namespace RexLogic
         // Make sure scene exists
         Foundation::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
         if (!scene)
-            return Foundation::EntityPtr();    
+            return Foundation::EntityPtr();
           
         Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         if (!entity)
