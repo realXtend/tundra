@@ -94,9 +94,6 @@ namespace OgreRenderer
         //! Overlay for the console
         Ogre::Overlay *overlay_;
 
-        //! Ogre renderer
-        const RendererPtr renderer_;
-
         //! Height of the console overlay
         const Core::Real height_;
 
@@ -120,6 +117,9 @@ namespace OgreRenderer
 
         //! animation speed
         const Core::Real speed_;
+
+        //! the renderer, need reference to check if renderer is still alive
+        boost::weak_ptr<Renderer> renderer_;
     };
 }
 
