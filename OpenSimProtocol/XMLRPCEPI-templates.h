@@ -148,5 +148,3 @@ template <> inline void XMLRPCEPI::Add<std::string>(const char* name, const std:
 
 template <typename T> void XMLRPCEPI::Add(const char* name, const T& value) 
 {}
-
-

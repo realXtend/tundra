@@ -189,52 +189,44 @@ namespace RexLogic
 
     bool Primitive::HandleRexGM_RexPrimData(OpenSimProtocol::NetworkEventInboundData* data)
     {
-        size_t bytes_read;    
         data->message->ResetReading();
-        
         data->message->SkipToFirstVariableByName("Parameter");
-        //Variable block
+        
+        // Variable block begins
         size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
-        if (instance_count)
+        
+        // First instance contains the UUID.
+        RexUUID primuuid(data->message->ReadString());
+        
+        //! \todo tucofixme, sometimes rexprimdata might arrive before the objectupdate packet 
+        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
+        if(!entity)
+            return false;
+        
+        // Calculate full data size
+        size_t fulldatasize = data->message->GetDataSize();
+        size_t bytes_read = data->message->BytesRead();
+        fulldatasize -= bytes_read;
+        
+       // Allocate memory block
+        const uint8_t *readbytedata;
+        uint8_t *fulldata = new uint8_t[fulldatasize];
+        int offset = 0;
+        
+        // Read the binary data.
+        // The first instance contains always the UUID and rest of instances contain only binary data.
+        // Data for multiple objects are never sent in the same message. All of the necessary data fits in one message.
+        // Read the data:
+        while(data->message->BytesRead() < data->message->GetDataSize())
         {
-            RexUUID primuuid(data->message->ReadString());
-            instance_count--;
-            
-            //! \todo tucofixme, sometimes rexprimdata might arrive before the objectupdate packet 
-            Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
-            if(!entity)
-                return false;
-            
-            // Calculate full data size
-            size_t fulldatasize = 0;        
-            while(instance_count)
-            {
-                data->message->ReadBuffer(&bytes_read);
-                fulldatasize += bytes_read;
-                instance_count--;
-            }
-           
-            const uint8_t *readbytedata;
-            data->message->ResetReading();
-            data->message->SkipToFirstVariableByName("Parameter");
-            
-            instance_count = data->message->ReadCurrentBlockInstanceCount();            
-            data->message->ReadString(); // skip prim UUID
-            instance_count--;
-            
-            uint8_t *fulldata = new uint8_t[fulldatasize];
-            int pos = 0;
-            while(instance_count)
-            {
-                readbytedata = data->message->ReadBuffer(&bytes_read);
-                memcpy(fulldata+pos,readbytedata,bytes_read);
-                pos += bytes_read;
-                instance_count--;
-            }
-            
-            HandleRexPrimDataBlob(entity->GetId(), fulldata);
-            delete fulldata;
+            readbytedata = data->message->ReadBuffer(&bytes_read);
+            memcpy(fulldata + offset, readbytedata, bytes_read);
+            offset += bytes_read;
         }
+        
+        HandleRexPrimDataBlob(entity->GetId(), fulldata);
+        delete fulldata;
+
         return false;
     }
 

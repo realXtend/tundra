@@ -20,7 +20,7 @@ size_t WriteCallback(char *data, size_t size, size_t nmemb, std::vector<char> *b
 		return size * nmemb;
 	}
 	else
-		return 0;
+        return 0;
 }
 
 XMLRPC_REQUEST XMLRPCConnection::Send(const char* data)
@@ -86,7 +86,4 @@ XMLRPC_REQUEST XMLRPCConnection::Send(const char* data)
 	
     // Convert the XML string to a XMLRPC reply structure.
     return XMLRPC_REQUEST_FromXML(&response_data[0], (int)(response_data.size()), 0);
-	
-
-
 }

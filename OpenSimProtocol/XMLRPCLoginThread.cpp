@@ -153,8 +153,16 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 	    {
 
 		    call.AddMember("sessionhash", threadState_->parameters.sessionHash);
+
 		    std::string account = authenticationLogin_ + "@" + authenticationAddress_ + ":" + authenticationPort_; 
 		    call.AddMember("account", account);
+            
+            // It seems that when connecting to a local authentication grid, firstname, lastname and password are
+            // needed, even though they were not supposed to.
+		    call.AddMember("first", firstName_);
+		    call.AddMember("last", lastName_);
+		    call.AddMember("passwd", password_hash);
+
 		    std::string address = authenticationAddress_ + ":" + authenticationPort_;
 		    call.AddMember("AuthenticationAddress", address);
 		    std::string loginuri = "";
@@ -165,7 +173,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 		    call.AddMember("loginuri", loginuri.c_str());
 	    }
    
-        call.AddMember("start", std::string("last")); // Starting position perhaps?
+        call.AddMember("start", std::string("last")); // Starting position: last/home
 	    call.AddMember("version", std::string("realXtend 1.20.13.91224"));  ///\todo Make build system create versioning information.
 	    call.AddMember("channel", std::string("realXtend"));
 	    call.AddMember("platform", std::string("Win")); ///\todo.
