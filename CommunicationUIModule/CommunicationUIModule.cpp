@@ -54,7 +54,7 @@ namespace CommunicationUI
 	void CommunicationUIModule::PostInitialize()
 	{
 		initializeMainCommWindow();
-		commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager);
+		commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager).lock();
 		CommunicationUIModule::instance_= this;		
         
         setupSciptInterface();		
@@ -127,8 +127,9 @@ namespace CommunicationUI
 
     void CommunicationUIModule::setupSciptInterface()
     {
-        scriptService = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting);
+		scriptService = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting).lock();
 		std::string error;
+		
 		Foundation::ScriptObject* script = scriptService->LoadScript("IMDemo", error);
 		if(error=="None")
 		{
@@ -138,7 +139,7 @@ namespace CommunicationUI
 			Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
             //Foundation::ScriptObject* ret = CallIMPyMethod("CDoStartUp", "s", NULL);
 		}
-		Foundation::ScriptEventInterface *eIntf = dynamic_cast<Foundation::ScriptEventInterface*>(this->scriptService);
+		Foundation::ScriptEventInterface *eIntf = dynamic_cast<Foundation::ScriptEventInterface*>(this->scriptService.get());
 
 		sessionUp_ = false;
 
