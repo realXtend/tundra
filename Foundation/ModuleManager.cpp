@@ -20,8 +20,10 @@ namespace Foundation
 
     ModuleManager::~ModuleManager()
     {
+        //! \todo This might cause problems, investigate.
 		//Unload all loaded modules if object is truely destroyed. 
-		UnloadModules();
+        UninitializeModules();
+        UnloadModules();
     }
 
     void ModuleManager::DeclareStaticModule(ModuleInterface *module)
@@ -126,6 +128,16 @@ namespace Foundation
         assert (lib.empty() == false);
         assert (module.empty() == false);
 
+        for (size_t i = 0 ; i < modules_.size() ; ++i)
+        {
+            if (modules_[i].entry_ == module)
+            {
+                RootLogWarning("Attempting to load module " + module + " manually, but module already loaded.");
+                return true;
+            }
+        }
+
+
         Core::StringVector current_modules;
         for (size_t i = 0 ; i < modules_.size() ; ++i)
             current_modules.push_back(modules_[i].entry_);
@@ -145,18 +157,58 @@ namespace Foundation
             }
         }
 
+        //! \todo Dependencies are not handled properly still, modules need to be initialized in dependency order here.
+        //!       ModuleA <- ModuleB (A <- B == B depends on A) works, but
+        //!       ModuleA <- ModuleB <- ModuleC may not work, ModuleB may get initialized before ModuleA which is error.
+        // first initialize dependencies
         for (size_t i = 0 ; i < modules_.size() ; ++i)
         {
-            if (modules_[i].module_->State() == Module::MS_Loaded && std::find(current_modules.begin(), current_modules.end(), modules_[i].entry_) == current_modules.end())
+            if (modules_[i].module_->State() == Module::MS_Loaded && std::find(current_modules.begin(), current_modules.end(), modules_[i].entry_) == current_modules.end()
+                && modules_[i].entry_ != module)
             {
                 modules_[i].module_->PreInitializeInternal();
-                modules_[i].module_->InitializeInternal();
-                modules_[i].module_->PostInitializeInternal();
-
-                if (modules_[i].entry_ == module)
-                    return true;
             }
         }
+        for (size_t i = 0 ; i < modules_.size() ; ++i)
+        {
+            if (modules_[i].entry_ == module)
+            {
+                modules_[i].module_->PreInitializeInternal();
+            }
+        }
+        for (size_t i = 0 ; i < modules_.size() ; ++i)
+        {
+            if (modules_[i].module_->State() == Module::MS_Loaded && std::find(current_modules.begin(), current_modules.end(), modules_[i].entry_) == current_modules.end()
+                && modules_[i].entry_ != module)
+            {
+                modules_[i].module_->InitializeInternal();
+            }
+        }
+        for (size_t i = 0 ; i < modules_.size() ; ++i)
+        {
+            if (modules_[i].entry_ == module)
+            {
+                modules_[i].module_->InitializeInternal();
+            }
+        }
+        for (size_t i = 0 ; i < modules_.size() ; ++i)
+        {
+            if (modules_[i].module_->State() == Module::MS_Loaded && std::find(current_modules.begin(), current_modules.end(), modules_[i].entry_) == current_modules.end()
+                && modules_[i].entry_ != module)
+            {
+                modules_[i].module_->PostInitializeInternal();
+            }
+        }
+        for (size_t i = 0 ; i < modules_.size() ; ++i)
+        {
+            if (modules_[i].entry_ == module)
+            {
+                modules_[i].module_->PostInitializeInternal();
+                return true;
+            }
+        }
+
+
         return false;
     }
 

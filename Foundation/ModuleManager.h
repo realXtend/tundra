@@ -243,7 +243,7 @@ namespace Foundation
 
             \param lib name of the shared library to load from, without extension or d postfix
             \param module name of the module to load from the lib
-            \return True if the module was loaded succesfully, false otherwise
+            \return True if the module was loaded succesfully or if it already has been loaded, false otherwise
         */
         bool LoadModuleByName(const std::string &lib, const std::string &module);
 

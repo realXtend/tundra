@@ -116,9 +116,10 @@ namespace OgreRenderer
     {
         if (initialized_)
         {
+            Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
             Ogre::WindowEventUtilities::removeWindowEventListener(renderwindow_, listener_.get());
-            //Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
         }
+        log_listener_.reset();
 
         textures_.clear();
         meshes_.clear();

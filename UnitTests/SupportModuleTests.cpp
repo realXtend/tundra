@@ -75,6 +75,7 @@ BOOST_AUTO_TEST_CASE( support_modules_console_commands )
 {
     Foundation::Framework &fw = CreateFramework();
 
+
     fw.GetModuleManager()->ExcludeModule("StaticModuleTest");
 
     //! \todo Gtk seems to cause problems with unit tests, so excluded for now
@@ -90,8 +91,10 @@ BOOST_AUTO_TEST_CASE( support_modules_console_commands )
     fw.GetModuleManager()->InitializeModule(fw.GetModuleManager()->GetModule(Foundation::Module::MT_Scene).lock().get());
     fw.GetModuleManager()->PostInitializeModule(fw.GetModuleManager()->GetModule(Foundation::Module::MT_Scene).lock().get());
 
+    fw.GetModuleManager()->LoadModuleByName("OgreRenderingModule", "OgreRenderingModule");
     fw.GetModuleManager()->LoadModuleByName("SupportModules", "ConsoleModule");
     BOOST_CHECK (fw.GetModuleManager()->HasModule(Foundation::Module::MT_Console));
+    BOOST_CHECK (fw.GetModuleManager()->HasModule(Foundation::Module::MT_Renderer));
     
     boost::shared_ptr<Console::CommandService> console = fw.GetService<Console::CommandService>
         (Foundation::Service::ST_ConsoleCommand).lock();
@@ -137,16 +140,31 @@ BOOST_AUTO_TEST_CASE( support_modules_console_ogre )
 
     
     overlay->Scroll(30000);
+    overlay->Update(60);
     overlay->Scroll(-30000);
+    overlay->Update(60);
     overlay->Scroll(300000);
+    overlay->Update(60);
     overlay->Scroll(-2);
+    overlay->Update(60);
     overlay->Scroll(1);
+    overlay->Update(60);
     overlay->Clear();
+    overlay->Update(60);
     overlay->Scroll(5);
+    overlay->Update(60);
     overlay->Scroll(-5);
+    overlay->Update(60);
     overlay->Print("Test message A");
     overlay->Print("Test message B");
     overlay->Print("Test message C");
+    overlay->Update(60);
+    overlay->Scroll(1);
+    overlay->Update(60);
+    overlay->Scroll(6);
+    overlay->Update(60);
+    overlay->Scroll(-6);
+    overlay->Update(60);
     BOOST_CHECK_EQUAL(overlay->GetLine(0), std::string("Test message C"));
     BOOST_CHECK_EQUAL(overlay->GetLine(1), std::string("Test message B"));
     BOOST_CHECK_EQUAL(overlay->GetLine(2), std::string("Test message A"));
