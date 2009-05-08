@@ -167,8 +167,10 @@ namespace RexLogic
     {
         if(!connected_)
             return;
+            
         boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
         sp->DisconnectFromRexServer(); 
+        
         connected_ = false;
     }
     

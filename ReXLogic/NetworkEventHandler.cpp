@@ -180,7 +180,7 @@ namespace RexLogic
         RexUUID agentid = data->message->ReadUUID();
         RexUUID sessionid = data->message->ReadUUID();
         
-        if (agentid == rexlogicmodule_->GetServerConnection()->GetInfo().agentID && sessionid == rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
+        //if (agentid == rexlogicmodule_->GetServerConnection()->GetInfo().agentID && sessionid == rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
         {
             Vector3 position = data->message->ReadVector3(); 
             Vector3 lookat = data->message->ReadVector3();

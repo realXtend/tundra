@@ -18,33 +18,44 @@ namespace RexLogic
         friend class NetworkEventHandler;
     public:
 
-		enum ConnectionType { DirectConnection = 0, AuthenticationConnection = 1 };
+		enum ConnectionType { DirectConnection = 0, AuthenticationConnection };
 
         RexServerConnection(Foundation::Framework *framework);
         virtual ~RexServerConnection();
         
-        ///
+        /// Connects to a reX server.
+        /**@param username Username (Firstname Lastname).
+          *@param password Password.
+          *@param serveraddress Simulator server address and port.
+          *@param auth_server_address Authentication server address and port.
+          *@param auth_login Authentication server username.
+          *@return True if the connection was succesfull. False otherwise.
+          */
         bool ConnectToServer(const std::string& username,
             const std::string& password,
             const std::string& serveraddress,
             const std::string& auth_server_address = "",
             const std::string& auth_login = "");
-       
+        
         /// Creates the UDP connection after a succesfull XML-RPC login.
         ///@return True, if success.
         bool CreateUDPConnection();
         
+        /// Request logout from the server.
         void RequestLogout();
         
-        void CloseServerConnection();
-        
+        /// Disconnects from the server. Doesn't send the LogOutRequest packet.
         void ForceServerDisconnect();
-
+        
+        /// Set the connection type.
+        ///@param ConnectionType enum.
 		void SetConnectionType( ConnectionType type ) { connection_type_ = type; }
-		
+        
+        /// Get the connection type.
+        ///@return ConnectionType enum.
 		ConnectionType GetConnectionType() const { return connection_type_; }
 
-        // Send the UDP chat packet.
+        /// Send the UDP chat packet.
         void SendChatFromViewerPacket(std::string text);
         
         /// Sends the first UDP packet to open up the circuit with the server.             
