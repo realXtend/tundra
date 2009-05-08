@@ -598,7 +598,7 @@ namespace Asset
             const Core::RequestTagVector& tags = transfer.GetTags();
             for (Core::uint i = 0; i < tags.size(); ++i)
             {          
-                Asset::Events::AssetReady event_data(new_asset->GetId(), new_asset->GetType(), new_asset, tags[i]);
+                Events::AssetReady event_data(new_asset->GetId(), new_asset->GetType(), new_asset, tags[i]);
                 event_manager->SendEvent(event_category_, Events::ASSET_READY, &event_data);                
             }
         }
