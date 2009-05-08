@@ -1,10 +1,7 @@
 <config>
-	<testGroup1>
-		<test_key1>test_string</test_key1>
-	</testGroup1>
-	<testGroup2>
+	<TestGroup2>
 		<test_key2>123456</test_key2>
 		<test_key3>1</test_key3>
 		<test_key4>3.20000005</test_key4>
-	</testGroup2>
+	</TestGroup2>
 </config>
