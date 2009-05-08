@@ -22,7 +22,7 @@ namespace Communication
 		std::string online_message_;
 	};
 
-	typedef boost::shared_ptr<TPPresenceStatus> TPPresenceStatusPtr;
+//	typedef boost::shared_ptr<TPPresenceStatus> TPPresenceStatusPtr;
 }
 
 #endif // incl_TPPresenceStatus_h

@@ -4,6 +4,9 @@
 #include "CoreStdIncludes.h"
 #include "ServiceInterface.h"
 
+// TODO: rename all interface like. ContactInterface
+// TODO: Consider use of weak pointers instead smartpointers
+
 /*
  * ----------------------------------------------------------------------------------
  * CommunicationServiceInterface : Interfaces for to use CommunicationModule services
@@ -21,10 +24,11 @@ namespace Communication
 	class ContactInfo
 	{
 	public: 
-		void SetProperty(std::string key, std::string value);
-		std::string GetProperty(std::string key);
-		std::vector<std::string> GetProperties();
-	private:
+		virtual ~ContactInfo() {};
+		virtual void SetProperty(std::string key, std::string value);
+		virtual std::string GetProperty(std::string key);
+		virtual std::vector<std::string> GetProperties();
+	protected:
 		std::map<std::string, std::string> properties_;
 	};
 	typedef boost::shared_ptr<ContactInfo> ContactInfoPtr;
@@ -38,6 +42,7 @@ namespace Communication
 	class PresenceStatus
 	{
 	public:
+		virtual ~PresenceStatus() {};
 		virtual void SetOnlineStatus(bool status) = 0;
 		virtual bool GetOnlineStatus() = 0;
 		virtual void SetOnlineMessage(std::string message) = 0;
@@ -50,6 +55,7 @@ namespace Communication
 	class Contact
 	{
 	public:
+		virtual ~Contact() {};
 		virtual void SetName(std::string name) = 0;
 		virtual std::string GetName() = 0;
 		virtual PresenceStatusPtr GetPresenceStatus() = 0;
@@ -64,6 +70,7 @@ namespace Communication
 	class Participiant
 	{
 	public:
+		virtual ~Participiant() {};
 		virtual std::string GetName() = 0;
 		virtual ContactPtr GetContactData() = 0;
 	};
@@ -80,10 +87,10 @@ namespace Communication
 	class Session
 	{
 	public:
+		virtual ~Session() {};
 		virtual void SendInvitation(ContactPtr c) = 0;
-		virtual void Kick(Participiant *p) = 0;
+		virtual void Kick(Participiant *p) = 0; // TODO: -> ParticipiantPtr
 		virtual void Close() = 0;
-		virtual int GetId() = 0;
 		virtual ParticipientListPtr GetParticipients() = 0;
 	};
 	typedef boost::shared_ptr<Session> SessionPtr;
@@ -92,18 +99,20 @@ namespace Communication
 	class Message
 	{
 	public:
+		virtual ~Message() {};
 		virtual std::string GetTimeStamp() = 0; // todo: change to proper timestamp type
 		virtual ParticipiantPtr GetAuthor() = 0; 
-		virtual int GetSessionId() = 0;
+		virtual std::string GetSessionId() = 0; // todo: Do we need this ??
 //		virtual bool IsPrivate() = 0;
 	private:
 	};
 
 	// chat message
 	// todo: more components like attachment (link, file, request, etc.)
-	class IMMessage : Message
+	class IMMessage
 	{
 	public:
+		virtual ~IMMessage() {};
 		virtual void SetText(std::string text) = 0;
 		virtual std::string GetText() = 0;
 	};
@@ -114,14 +123,16 @@ namespace Communication
 	// Text chat session
 	// Send Events:
 	// * MessageReceived
-	class IMSession : Session
+	class IMSession
 	{
 	public:
-		virtual void SendMessage(IMMessagePtr m) = 0;
+		virtual ~IMSession() {};
+		virtual void SendIMMessage(IMMessagePtr m) = 0;
 		virtual IMMessageListPtr GetMessageHistory() = 0;
 	};
 	typedef boost::shared_ptr<IMSession> IMSessionPtr;
-
+	typedef std::vector<IMSessionPtr> IMSessionList;
+	typedef std::vector<IMSessionList> IMSessionListPtr;
 	
 	// Login information for communication server connection
 	// todo: rename to Account ?
@@ -137,10 +148,11 @@ namespace Communication
 	class Credentials
 	{
 	public: 
-		void SetProperty(std::string key, std::string value);
-		std::string GetProperty(std::string key);
-		std::vector<std::string> GetProperties();
-	private:
+		virtual ~Credentials() {};
+		virtual void SetProperty(std::string key, std::string value);
+		virtual std::string GetProperty(std::string key);
+		virtual std::vector<std::string> GetProperties();
+	protected:
 		std::map<std::string, std::string> properties_;
 	};
 	typedef boost::shared_ptr<Credentials> CredentialsPtr;
@@ -154,18 +166,14 @@ namespace Communication
 	class CommunicationServiceInterface : public Foundation::ServiceInterface
 	{
 	public:
-		CommunicationServiceInterface() {}
 		virtual ~CommunicationServiceInterface() {}
-
 		virtual void OpenConnection(CredentialsPtr c) = 0;
 		virtual void CloseConnection() = 0; 
-
 		virtual IMSessionPtr CreateIMSession(ContactInfoPtr contact) = 0;
 		virtual ContactListPtr GetContactList() = 0;
 		virtual void PublishPresence(PresenceStatusPtr p) = 0;
 		virtual IMMessagePtr CreateIMMessage(std::string text) = 0;
 		virtual void SendFriendRequest(ContactInfoPtr contact_info) = 0;
-//		virtual void AddContact(ContactInfoPtr contact_info) = 0;
 	};
 	typedef boost::shared_ptr<CommunicationServiceInterface> CommunicationServicePtr;
 

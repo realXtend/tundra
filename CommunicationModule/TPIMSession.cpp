@@ -1,23 +1,17 @@
-
 #include "StableHeaders.h"
 #include "Foundation.h"
 
 #include "TPIMSession.h"
-
-// For windows compatibility
-#ifdef SendMessage
-#define SendMessageDefined
-#undef SendMessage
-#endif // SendMessage
 
 namespace Communication
 {
 	TPSession::TPSession(Foundation::ScriptObjectPtr python_communication_object)
 	{
 		python_communication_object_ = python_communication_object;		
+		participients_ = ParticipientListPtr( new ParticipientList() );
 	}
 
-	int TPSession::GetId()
+	std::string TPSession::GetId()
 	{
 		return id_;
 	}
@@ -28,6 +22,7 @@ namespace Communication
 		std::string syntax = "";
 		Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, NULL);
 		// todo: inform TelepathyCommunication about end of session
+		// todo: where to remove session from list ???
 	}
 
 	void TPSession::NotifyClosedByRemote()
@@ -43,57 +38,47 @@ namespace Communication
 
 	void TPSession::Kick(Participiant *p)
 	{
-		// Not implemented in python yet: Multiuser chat
+		// Not implemented in python yet:
 	}
 
 	ParticipientListPtr TPSession::GetParticipients()
 	{
-		ParticipientList* list = new ParticipientList();
-		// todo: fill the list
-		return ParticipientListPtr(list);
-
+		return participients_;
 	}
 
 	TPIMSession::TPIMSession(Foundation::ScriptObjectPtr python_communication_object):TPSession(python_communication_object)
 	{
 	}
 
-	void TPIMSession::SendMessage(IMMessagePtr m)
+	void TPIMSession::SendIMMessage(IMMessagePtr m)
 	{
 		char** args = new char*[1];
 		char* buf1 = new char[1000];
-		strcpy(buf1,m->GetText().c_str()); // todo: remove overflow danger
+		std::string text = m->GetText();
+		((TPIMMessage*)m.get())->session_id_ = id_;
+		strcpy(buf1, text.c_str() ); // todo: remove overflow danger
 		args[0] = buf1;
 
 		std::string method = "CSendChat";
 		std::string syntax = "s";
 		Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, args);
-		//todo: Update message history
+		im_messages_.push_back(m);
 	}
 
-	void TPIMSession::NotifyMessageReceived(TPIMMessagePtr m)
+	void TPIMSession::NotifyMessageReceived(IMMessagePtr m)
 	{
-		message_history_.push_back(m);
+		im_messages_.push_back(m);
 	}
 	
 	IMMessageListPtr TPIMSession::GetMessageHistory()
 	{
 		IMMessageList* list = new IMMessageList();
-		for (int i=0; i<message_history_.size(); i++)
+		for (int i = 0; i < im_messages_.size(); i++)
 		{
-//			list->push_back(
-//			message_history_[i].get()
-
+			list->push_back(im_messages_[i]);
 		}
 		return IMMessageListPtr(list);
 	}
 
 
 } // end of namespace: Communication
-
-
-
-// For windows compatibility
-#ifdef SendMessageDefined
-#define SendMessage SendMessageW
-#endif // SendMessageDefined

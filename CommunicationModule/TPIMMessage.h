@@ -4,33 +4,41 @@
 #include "Foundation.h"
 #include "EventDataInterface.h"
 
+// todo: implement author
+
 namespace Communication
 {
-	// MessageImpl
+	/*
+	 *
+	 */
 	class TPMessage: public Message
 	{
+		friend class TelepathyCommunication;
 	public:
-		TPMessage(int session_id);
+		TPMessage(std::string session_id);
 		Communication::ParticipiantPtr GetAuthor();
 		std::string GetTimeStamp();
-		int GetSessionId();
-	private:
+	protected:
+		std::string GetSessionId(); // called by TelepathyCommunication
+
 		Communication::ParticipiantPtr author_;
-		int session_id_;
+		std::string session_id_;
 	};
 
-	class TPIMMessage: public TPMessage
+	/*
+	 *
+	 */
+	class TPIMMessage: public TPMessage, public IMMessage
 	{
+		friend class TelepathyCommunication;
+		friend class TPIMSession;
 	public:
-		TPIMMessage(int session_id);
+		TPIMMessage(std::string session_id);
 		void SetText(std::string t);
 		std::string GetText();
-	private:
+	protected:
 		std::string text_;
 	};
-
-	typedef boost::shared_ptr<TPIMMessage> TPIMMessagePtr;
-	typedef std::vector<TPIMMessagePtr> TPIMMessageList;
 
 } // end of namespace: Communication
 
