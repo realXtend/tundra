@@ -84,7 +84,7 @@ namespace CommunicationUI
         if(!wndCommMain||!fxdContainer)//||!wndSelection)
 			return;
 
-        lstContacts.set_size_request(219,182);
+        lstContacts.set_size_request(240,182);
         fxdContainer->put(lstContacts, 25, 50);
         lstContacts.SetModule(*this);
 
@@ -136,6 +136,7 @@ namespace CommunicationUI
 			std::string str = "CDoStartUp";
 			std::string syntax = "";
 			Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
+            //Foundation::ScriptObject* ret = CallIMPyMethod("CDoStartUp", "s", NULL);
 		}
 		Foundation::ScriptEventInterface *eIntf = dynamic_cast<Foundation::ScriptEventInterface*>(this->scriptService);
 
@@ -215,19 +216,10 @@ namespace CommunicationUI
     void CommunicationUIModule::StartChat(const char* contact)
     {
 		LogInfo("start chat window here");
-
-		// Memory released in python module !!
-		char** args = new char*[1];
-		char* buf1 = new char[20];
-		strcpy(buf1,contact);
-		args[0] = buf1;
-
-		std::string str = "CStartChatSession";
-		std::string syntax = "s";
-		Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, args);
-        sessionUp_ = true;
-		this->session_ = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(contact, imScriptObject));
-
+        Foundation::ScriptObject* ret = CallIMPyMethod("CStartChatSession", "s", std::string(contact));
+        //sessionUp_ = true;
+		//this->session_ = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(contact, imScriptObject));
+        chatSessions_[std::string(contact)] = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(contact, imScriptObject));
     }
 
 	void CommunicationUIModule::OnEntryDlgOk(){
@@ -377,15 +369,20 @@ namespace CommunicationUI
         instance_->clearContactList();
 	}
 
-	void CommunicationUIModule::channelOpened(char* t)
+	void CommunicationUIModule::channelOpened(char* addr)
 	{
 		LogInfo("channelOpened");
-		if(instance_->session_!=NULL&&instance_->sessionUp_!=false){
-			instance_->session_->ChannelOpen();
-		} else {
-			instance_->session_ = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(t, instance_->imScriptObject));
-		}
-		instance_->sessionUp_ = true;
+		//if(instance_->session_!=NULL&&instance_->sessionUp_!=false){
+		//	instance_->session_->ChannelOpen();
+		//} else {
+		//	instance_->session_ = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(addr, instance_->imScriptObject));
+		//}
+		//instance_->sessionUp_ = true;
+        std::map<std::string, ChatSessionUIPtr>::iterator iter = instance_->chatSessions_.find(std::string(addr));
+        if(iter == instance_->chatSessions_.end()){
+            instance_->chatSessions_[std::string(addr)] = ChatSessionUIPtr(new ChatSession(addr, instance_->imScriptObject));
+        } 
+        instance_->chatSessions_[std::string(addr)]->ChannelOpen();
 	}
 
 	void CommunicationUIModule::channelClosed(char* t)
@@ -397,11 +394,21 @@ namespace CommunicationUI
 		instance_->sessionUp_ = false;
 	}
 
-	void CommunicationUIModule::messagReceived(char* t)
+	void CommunicationUIModule::messagReceived(char* addr_mess)
 	{
 		if(instance_->session_!=NULL){
-			instance_->session_->ReceivedMessage(t);
+			instance_->session_->ReceivedMessage(addr_mess);
 		}
+        std::vector<std::string> split = SplitString(std::string(addr_mess), std::string(":"), 2);
+	    char *addr = new char[split[0].size()+1];
+        char *mess = new char[split[1].size()+1];
+	    std::strcpy(addr, split[0].c_str());
+        std::strcpy(mess, split[1].c_str());        
+
+        instance_->chatSessions_[std::string(addr)]->ReceivedMessage(mess);
+
+        delete[] addr;
+        delete[] mess;
 	}
 
     void CommunicationUIModule::clearContactList()
@@ -444,6 +451,7 @@ namespace CommunicationUI
         row[this->lstContacts.columns_.id_] = std::string(id);
         row[this->lstContacts.columns_.contact_] = std::string(contact);
         row[this->lstContacts.columns_.status_] = "offline";
+        row[this->lstContacts.columns_.message_] = "-";
 
         delete[] id;
         delete[] contact;
@@ -461,7 +469,7 @@ namespace CommunicationUI
         LogInfo(id_n_status);
 		//Foundation::ScriptObject* ret = instance_->imScriptObject->CallMethod(str, syntax, args);
         
-        std::vector<std::string> split = SplitString(std::string(id_n_status), std::string(":"), 2);
+        std::vector<std::string> split = SplitString(std::string(id_n_status), std::string(":"), 3);
         ////const char* id = split[0].c_str();
         //std::string id_str = split[0];
         //const char* status = split[1].c_str();
@@ -469,11 +477,14 @@ namespace CommunicationUI
 	    // allocate space for a zero-terminated copy of the string
 	    char *id = new char[split[0].size()+1];
         char *status = new char[split[1].size()+1];
+        char *status_string = new char[split[2].size()+1];
 	    std::strcpy(id, split[0].c_str());
         std::strcpy(status, split[1].c_str());
-    	instance_->lstContacts.setContactStatus(id, status);
+        std::strcpy(status_string, split[2].c_str());
+    	instance_->lstContacts.setContactStatus(id, status, status_string);
 	    delete[] id;
         delete[] status;
+        delete[] status_string;
 
         //Foundation::ScriptObject* ret = CallIMPyMethod("CGetStatusWithID", "s", std::string(id));
 
@@ -550,7 +561,7 @@ namespace CommunicationUI
     char** CommunicationUIModule::buildOneStringParamArrayFromConstCharArray(const char* prm)
     {
         size_t len = strlen(prm);
-		char* buf1 = new char[20];
+		char* buf1 = new char[strlen(prm)+1];
 		strcpy(buf1, prm);
         char** args = new char*[1];
         args[0] = buf1;
@@ -559,7 +570,6 @@ namespace CommunicationUI
 
     Foundation::ScriptObject* CommunicationUIModule::CallIMPyMethod(char* method, char* syntax, std::string& param)
     {
-        //if(syntax!=""){
         if(strcmp(syntax, "")!=0){
             char** args = buildOneStringParamArrayFromConstCharArray(param.c_str());
             return instance_->imScriptObject->CallMethod(std::string(method), std::string(syntax), args); // memory freed in pymod
