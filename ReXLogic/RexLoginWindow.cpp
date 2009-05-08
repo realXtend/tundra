@@ -41,13 +41,14 @@ namespace RexLogic
         std::string strGroup = "Login";
         std::string strKey = "server";
         
-        strText = framework_->GetDefaultConfigPtr()->GetSettingFromFile<std::string>(strGroup, strKey);
+      
+        strText = framework_->GetDefaultConfigPtr()->GetSetting<std::string>(strGroup, strKey);
         entryServer->set_text(Glib::ustring(strText));
    
         strKey = "username";
         strText = "";
         
-        strText = framework_->GetDefaultConfigPtr()->GetSettingFromFile<std::string>(strGroup, strKey);
+        strText = framework_->GetDefaultConfigPtr()->GetSetting<std::string>(strGroup, strKey);
         entryUsername->set_text(Glib::ustring(strText));
         
         ///@note Pending : Currently password is not loaded and saved.
