@@ -365,11 +365,218 @@ namespace Foundation
          }
          else if (group != "" && fs::is_directory(filePath))
          {
-            ///todo Export only values from given param group into folder .
+            //Export only values from given param group into folder.
+            
+            // Search first that is there all ready file which match encoding. 
+            
+            // Create temporary map which contains all data.
+
+            std::map<string_pair_t, std::string> tmp_values = values_;
+
+            // Get all xml files which are located in given path (does there exist earlier configurations)
+            
+            std::list<std::string> files = GetFiles(filePath);
+
+            bool found_file = false;
+
+            for ( std::list<std::string>::iterator file_iter = files.begin(); file_iter != files.end(); ++file_iter)
+            {
+                // Check that xml file match our encoding. 
+                
+                fs::path file = fs::system_complete(*file_iter);
+                std::string fileName = file.filename();
+                
+                std::string::size_type bPos = fileName.find(file_name_encoding_);
+               
+                std::string search_group = "";
+
+                if (bPos != std::string::npos)
+                {
+                    std::string::size_type ePos = fileName.find(".xml");
+                    bPos += file_name_encoding_.size();
+                    search_group = fileName.substr(bPos, ePos - bPos);
+                } 
+                else
+                    continue;
+
+                if ( search_group != group )
+                    continue;
+
+                Poco::AutoPtr<Poco::Util::XMLConfiguration> pConfiguration;
+                found_file = true;
+
+                try
+                {
+                    pConfiguration = new Poco::Util::XMLConfiguration(file.file_string());
+                } catch ( std::exception& /*ex*/)
+                {
+                    // XML file was not valid (not so beatiful way to check it validity)
+                    
+                    ///todo What to do if loading failed. 
+                    continue;
+                }
+
+
+                // Go through all runtime map values and set all values which match to group into file.
+                
+                std::map<string_pair_t, std::string>::iterator val_iter = values_.begin();
+                while(val_iter != values_.end())
+                {
+                    std::map<string_pair_t, std::string>::iterator next = val_iter;
+                    ++next;
+                    
+                    if ( val_iter->first.first == search_group)
+                    {
+                        // Save key. 
+                        std::string key = search_group + "." + val_iter->first.second;
+                 
+                        // Corresponding value 
+                        std::string value = val_iter->second;
+                        pConfiguration->setString(key, value);
+                        // Remove old value. 
+                        values_.erase(val_iter);
+                    }
+                    val_iter = next;
+                }
+                
+                // Now save it into file.
+                pConfiguration->save(file.file_string());
+                
+                // Break because we found a file.
+                break;
+            }
+
+         
+            if ( !found_file ) 
+            {
+                // There is not old configuration file.
+                
+                std::map<string_pair_t, std::string>::iterator val_iter = values_.begin();
+                
+                if(val_iter != values_.end() )
+                {
+                 
+
+                    std::string search_group = group;
+                    
+                    
+                    // HACK assure that path end has separator.
+
+                    std::string c = path.substr(path.size()-1);
+                    if ( c != std::string("/") && c != std::string("\\"))
+                    {
+#ifdef _UNIX
+                        filePath = fs::path(filePath.directory_string() + "\\");
+#else
+                        filePath = fs::path(filePath.directory_string() + "/");
+#endif
+                        
+                    }
+                    // END HACK
+                    
+                    fs::path new_configuration_file = filePath.directory_string() + file_name_encoding_ + search_group + ".xml";
+                    
+                    Poco::AutoPtr<Poco::Util::XMLConfiguration> pConfiguration;
+
+                    try
+                    {
+                        pConfiguration = new Poco::Util::XMLConfiguration;
+                        pConfiguration->loadEmpty(std::string("config"));
+                    } catch ( std::exception& /*ex*/)
+                    {
+                        ///todo What to do if loading failed. 
+                        values_ = tmp_values;
+                        return;
+                    }
+
+                    
+                    // Go through all values which are still left and find all keys which belongs to given group. 
+
+                    std::map<string_pair_t, std::string>::iterator val_key = values_.begin();
+                    while(val_key != values_.end())
+                    {
+                        std::map<string_pair_t, std::string>::iterator next = val_key;
+                        ++next;
+
+                        if ( val_key->first.first == search_group)
+                        {
+                            // Save key
+                            std::string key = search_group + "." + val_key->first.second;
+                            // Corresponding value 
+                            std::string value = val_key->second;
+                            pConfiguration->setString(key, value);
+                            // Remove old value. 
+                            values_.erase(val_key);
+                        }
+                        val_key = next;
+                    }
+                  
+                    pConfiguration->save(new_configuration_file.file_string());
+                                    
+                }
+
+            }
+
+            values_ = tmp_values;
+
          }
          else if (group != "")
          {
-            ///todo Export data when given path is a file and group is diffrent then empty string.
+            // Export data when given path is a file and group is diffrent then empty string.
+            
+            // Create temporary map which contains all data.
+
+            std::map<string_pair_t, std::string> tmp_values = values_;
+         
+            std::map<string_pair_t, std::string>::iterator val_iter = values_.begin();
+            
+            if(val_iter != values_.end() )
+            { 
+
+                std::string search_group = group;
+                                 
+                fs::path new_configuration_file = filePath.directory_string() + file_name_encoding_ + search_group + ".xml";
+                
+                Poco::AutoPtr<Poco::Util::XMLConfiguration> pConfiguration;
+
+                try
+                {
+                    pConfiguration = new Poco::Util::XMLConfiguration;
+                    pConfiguration->loadEmpty(std::string("config"));
+                } catch ( std::exception& /*ex*/)
+                {
+                    ///todo What to do if loading failed. 
+                    values_ = tmp_values;
+                    return;
+                }
+
+                
+                // Go through all values which are still left and find all keys which belongs to given group. 
+
+                std::map<string_pair_t, std::string>::iterator val_key = values_.begin();
+                while(val_key != values_.end())
+                {
+                    std::map<string_pair_t, std::string>::iterator next = val_key;
+                    ++next;
+
+                    if ( val_key->first.first == search_group)
+                    {
+                        // Save key
+                        std::string key = search_group + "." + val_key->first.second;
+                        // Corresponding value 
+                        std::string value = val_key->second;
+                        pConfiguration->setString(key, value);
+                        // Remove old value. 
+                        values_.erase(val_key);
+                    }
+                    val_key = next;
+                }
+              
+                pConfiguration->save(new_configuration_file.file_string());
+                                
+            }
+
+            values_ = tmp_values;
          }
     }
 
