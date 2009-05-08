@@ -64,11 +64,11 @@ if (!mesh_asset)
 
 	Events with the category "Asset" will be sent informing of the status of asset downloads. These are defined in AssetEvents.h
 
-	ASSET_READY event with the data structure Asset::Event::AssetReady will be sent when a download is complete.
+	ASSET_READY event with the data structure Asset::Events::AssetReady will be sent when a download is complete.
 
-	ASSET_PROGRESS events with the data structure Asset::Event::AssetProgress are sent periodically as the asset download progresses.
+	ASSET_PROGRESS events with the data structure Asset::Events::AssetProgress are sent periodically as the asset download progresses.
 
-	If an asset download gets canceled due to for example timeout, the ASSET_CANCELED event with data structure Asset::Event::AssetCanceled will be sent.
+	If an asset download gets canceled due to for example timeout, the ASSET_CANCELED event with data structure Asset::Events::AssetCanceled will be sent.
 
 	\section assetproviders_AS Asset providers
 
