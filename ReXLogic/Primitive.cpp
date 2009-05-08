@@ -191,43 +191,48 @@ namespace RexLogic
     {
         size_t bytes_read;    
         data->message->ResetReading();
+        
         data->message->SkipToFirstVariableByName("Parameter");
-        RexUUID primuuid(data->message->ReadString());
-        
-        //! \todo tucofixme, sometimes rexprimdata might arrive before the objectupdate packet 
-        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
-        if(!entity)
-            return false;
-        
-        // Calculate full data size
-        size_t fulldatasize = 0;        
-        NetVariableType nextvartype = data->message->CheckNextVariableType();
-        while(nextvartype != NetVarNone)
+        //Variable block
+        size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+        for(size_t i = 0; i < instance_count; ++i)
         {
-            data->message->ReadBuffer(&bytes_read);
-            fulldatasize += bytes_read;
+            RexUUID primuuid(data->message->ReadString());
+            
+            //! \todo tucofixme, sometimes rexprimdata might arrive before the objectupdate packet 
+            Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
+            if(!entity)
+                return false;
+            
+            // Calculate full data size
+            size_t fulldatasize = 0;        
+            NetVariableType nextvartype = data->message->CheckNextVariableType();
+            while(nextvartype != NetVarNone)
+            {
+                data->message->ReadBuffer(&bytes_read);
+                fulldatasize += bytes_read;
+                nextvartype = data->message->CheckNextVariableType();
+            }
+           
+            const uint8_t *readbytedata;
+            data->message->ResetReading();
+            data->message->SkipToFirstVariableByName("Parameter");
+            data->message->SkipToNextVariable();            // Prim UUID
+            
+            uint8_t *fulldata = new uint8_t[fulldatasize];
+            int pos = 0;
             nextvartype = data->message->CheckNextVariableType();
+            while(nextvartype != NetVarNone)
+            {
+                readbytedata = data->message->ReadBuffer(&bytes_read);
+                memcpy(fulldata+pos,readbytedata,bytes_read);
+                pos += bytes_read;
+                nextvartype = data->message->CheckNextVariableType();
+            }
+            
+            HandleRexPrimDataBlob(entity->GetId(), fulldata);
+            delete fulldata;
         }
-       
-        const uint8_t *readbytedata;
-        data->message->ResetReading();
-        data->message->SkipToFirstVariableByName("Parameter");
-        data->message->SkipToNextVariable();            // Prim UUID
-        
-        uint8_t *fulldata = new uint8_t[fulldatasize];
-        int pos = 0;
-        nextvartype = data->message->CheckNextVariableType();
-        while(nextvartype != NetVarNone)
-        {
-            readbytedata = data->message->ReadBuffer(&bytes_read);
-            memcpy(fulldata+pos,readbytedata,bytes_read);
-            pos += bytes_read;
-            nextvartype = data->message->CheckNextVariableType();
-        }
-        
-        HandleRexPrimDataBlob(entity->GetId(), fulldata);
-        delete fulldata;
-
         return false;
     }
 
