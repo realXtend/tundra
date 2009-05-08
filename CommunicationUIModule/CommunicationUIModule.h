@@ -148,8 +148,8 @@ namespace CommunicationUI
 
 	private:
 		// Service References
-		Foundation::Comms::CommunicationManagerServiceInterface *commManager;
-		Foundation::ScriptServiceInterface *scriptService;
+		boost::shared_ptr<Foundation::Comms::CommunicationManagerServiceInterface> commManager;
+		boost::shared_ptr<Foundation::ScriptServiceInterface> scriptService;
 
 		// Scripts
 		Foundation::ScriptObject* sobj;
