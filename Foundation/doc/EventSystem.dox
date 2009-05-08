@@ -157,6 +157,7 @@ bool OgreRenderingModule::HandleEvent(
 
     return false;
 }
+\endcode
 
 	\subsection requesttags_ES Request tags
 
@@ -183,7 +184,5 @@ bool OgreRenderingModule::HandleEvent(
 
 	Use delayed events with judgement; convoluted logic could be rather easily created with them!
 	Also note that you will not get to know whether the event was handled by any subscribers.
-
-\endcode	
 
 */
