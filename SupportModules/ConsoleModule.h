@@ -33,6 +33,7 @@ namespace Console
         virtual void Unload();
         virtual void PreInitialize();
         virtual void Initialize();
+        virtual void PostInitialize();
         virtual void Uninitialize();
 
         virtual void Update(Core::f64 frametime);

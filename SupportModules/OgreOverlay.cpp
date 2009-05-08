@@ -17,16 +17,18 @@ namespace Console
     class LogListener : public Foundation::LogListenerInterface
     {
         LogListener();
-        OgreOverlay *console_;
-
+        
     public:
         LogListener(OgreOverlay *console) : Foundation::LogListenerInterface(), console_(console) {}
         virtual ~LogListener() {}
 
         virtual void LogMessage(const std::string &message)
         {
-            console_->Print(message);
+            if (console_)
+                console_->Print(message);
         }
+
+        OgreOverlay *console_;
     };
 
 /////////////////////////////////////////////
@@ -56,15 +58,6 @@ namespace Console
         Core::f64 fast = config.DeclareSetting("DebugConsole", "key_repeat_fast", 0.045f);
         Core::f64 change = config.DeclareSetting("DebugConsole", "key_repeat_change", 0.5f);
         counter_.Reset(slow, fast, change);
-
-        if ( framework->GetModuleManager()->HasModule(Foundation::Module::MT_Renderer) )
-        {
-            boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = 
-                framework->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock();
-            
-            if (rendering_module)
-                rendering_module->GetRenderer()->SubscribeLogListener(log_listener_);
-        }
     }
 
     OgreOverlay::~OgreOverlay()
@@ -83,18 +76,25 @@ namespace Console
             }
         }
 
-        if ( framework->GetModuleManager()->HasModule(Foundation::Module::MT_Renderer) )
+        boost::shared_ptr<Foundation::RenderServiceInterface> renderer = 
+            framework->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+        if (renderer)
         {
-            OgreRenderer::OgreRenderingModule *rendering_module = 
-                framework->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock().get();
-            if (rendering_module)
-                rendering_module->GetRenderer()->UnsubscribeLogListener(log_listener_);
+            renderer->UnsubscribeLogListener(log_listener_);
         }
     }
 
     void OgreOverlay::Create()
     {
         Foundation::Framework *framework = module_->GetFramework();
+
+        boost::shared_ptr<Foundation::RenderServiceInterface> renderer = 
+            framework->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+        if (renderer)
+        {
+            renderer->SubscribeLogListener(log_listener_);
+        }
+
 
         if ( framework->GetServiceManager()->IsRegistered(Foundation::Service::ST_SceneManager) &&
              framework->GetComponentManager()->CanCreate("EC_OgreConsoleOverlay") )
@@ -143,10 +143,11 @@ namespace Console
             int lines = rel / scroll_line_size_;
             if (static_cast<int>(text_position_) + lines < 0)
                 lines = -(lines - (lines - static_cast<int>(text_position_)));
-
-            if (text_position_ + lines > message_lines_.size() - max_visible_lines - 1)
-                lines -= (lines - ((message_lines_.size() - max_visible_lines - 1) - text_position_));
-
+            else if (text_position_ + lines > static_cast<int>(message_lines_.size()) - static_cast<int>(max_visible_lines) - 1)
+                lines -= (lines - ((message_lines_.size() - max_visible_lines) - text_position_));
+            else if (static_cast<int>(message_lines_.size()) - static_cast<int>(max_visible_lines) <= 0)
+                lines = 0;
+            
             text_position_ += lines;
 
             update_ = true;
@@ -188,8 +189,11 @@ namespace Console
 
     void OgreOverlay::Update(Core::f64 frametime)
     {
-        checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>
-                (console_overlay_.get())->Update(frametime);
+        if (console_overlay_)
+        {
+            checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>
+                    (console_overlay_.get())->Update(frametime);
+        }
 
         bool update = false;
         bool repeat_key = false;
@@ -406,14 +410,11 @@ namespace Console
     {
         Core::MutexLock lock(mutex_);
 
-        if (!console_overlay_)
-            return;
-
         std::string page;
         size_t num_lines = 0;
         Core::StringList::const_iterator line = message_lines_.begin();
 
-        assert (message_lines_.size() > text_position_);
+        assert (message_lines_.size() >= text_position_);
 
         std::advance(line, text_position_);
         for ( ; line != message_lines_.end() ; ++line)
@@ -428,7 +429,8 @@ namespace Console
 
     void OgreOverlay::Display(const std::string &page)
     {
-        checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>(console_overlay_.get())->Display(page);
+        if (console_overlay_)
+            checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>(console_overlay_.get())->Display(page);
     }
 
     bool OgreOverlay::AddCharacter(unsigned int character, std::string &lineOut, size_t offset)

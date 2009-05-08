@@ -44,6 +44,8 @@ namespace Foundation
 
     Framework::~Framework()
     {
+        module_manager_.reset();
+
         Poco::Logger::shutdown();
  
         for (size_t i=0 ; i<log_channels_.size() ; ++i)

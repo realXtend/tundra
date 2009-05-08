@@ -40,11 +40,15 @@ namespace Console
     // virtual
     void ConsoleModule::Initialize()
     {
-        checked_static_cast<ConsoleManager*>(manager_.get())->CreateDelayed();
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Console, manager_);
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_ConsoleCommand, checked_static_cast<ConsoleManager*>(manager_.get())->GetCommandManager());
 
         LogInfo("Module " + Name() + " initialized.");
+    }
+
+    void ConsoleModule::PostInitialize()
+    {
+        checked_static_cast<ConsoleManager*>(manager_.get())->CreateDelayed();
     }
 
     void ConsoleModule::Update(Core::f64 frametime)

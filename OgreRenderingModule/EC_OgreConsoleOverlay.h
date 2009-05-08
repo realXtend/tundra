@@ -18,11 +18,26 @@ namespace OgreRenderer
 {
     class Renderer;
     typedef boost::shared_ptr<Renderer> RendererPtr;
+
+    //! Interface for the console overlay, so in SupportModules we don't need to link against OgreRenderingModule.
+    class EC_OgreConsoleOverlayInterface : public Foundation::ComponentInterface
+    {
+    public:
+        EC_OgreConsoleOverlayInterface(Foundation::Framework *framework) : Foundation::ComponentInterface(framework) {}
+        virtual ~EC_OgreConsoleOverlayInterface() {}
+
+        virtual void Display(const std::string &text) = 0;
+        virtual size_t GetMaxVisibleLines() const = 0;
+        virtual void SetVisible(bool visible) = 0;
+        virtual bool IsVisible() const = 0;
+        virtual bool IsActive() const = 0;
+        virtual void Update(Core::f64 frametime) = 0;
+    };
     
     //! Ogre overlay for debug console
     /*! \ingroup OgreRenderingModuleClient
      */
-    class MODULE_API EC_OgreConsoleOverlay : public Foundation::ComponentInterface
+    class EC_OgreConsoleOverlay : public EC_OgreConsoleOverlayInterface
     {
         DECLARE_EC(EC_OgreConsoleOverlay);
     private:

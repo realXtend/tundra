@@ -11,7 +11,7 @@
 namespace OgreRenderer
 {
     EC_OgreConsoleOverlay::EC_OgreConsoleOverlay(Foundation::ModuleInterface* module) : 
-        Foundation::ComponentInterface(module->GetFramework())
+        EC_OgreConsoleOverlayInterface(module->GetFramework())
         , overlay_element_(NULL)
         , container_(NULL)
         , overlay_(NULL)
@@ -28,7 +28,7 @@ namespace OgreRenderer
     }
 
     EC_OgreConsoleOverlay::EC_OgreConsoleOverlay(const EC_OgreConsoleOverlay &other) : 
-        Foundation::ComponentInterface(other)
+        EC_OgreConsoleOverlayInterface(other)
         , height_(other.height_)
         , char_height_(other.char_height_)
         , max_visible_lines_(other.max_visible_lines_)
