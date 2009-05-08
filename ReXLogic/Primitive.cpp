@@ -195,9 +195,10 @@ namespace RexLogic
         data->message->SkipToFirstVariableByName("Parameter");
         //Variable block
         size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
-        for(size_t i = 0; i < instance_count; ++i)
+        if (instance_count)
         {
             RexUUID primuuid(data->message->ReadString());
+            instance_count--;
             
             //! \todo tucofixme, sometimes rexprimdata might arrive before the objectupdate packet 
             Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
@@ -206,28 +207,29 @@ namespace RexLogic
             
             // Calculate full data size
             size_t fulldatasize = 0;        
-            NetVariableType nextvartype = data->message->CheckNextVariableType();
-            while(nextvartype != NetVarNone)
+            while(instance_count)
             {
                 data->message->ReadBuffer(&bytes_read);
                 fulldatasize += bytes_read;
-                nextvartype = data->message->CheckNextVariableType();
+                instance_count--;
             }
            
             const uint8_t *readbytedata;
             data->message->ResetReading();
             data->message->SkipToFirstVariableByName("Parameter");
-            data->message->SkipToNextVariable();            // Prim UUID
+            
+            instance_count = data->message->ReadCurrentBlockInstanceCount();            
+            data->message->ReadString(); // skip prim UUID
+            instance_count--;
             
             uint8_t *fulldata = new uint8_t[fulldatasize];
             int pos = 0;
-            nextvartype = data->message->CheckNextVariableType();
-            while(nextvartype != NetVarNone)
+            while(instance_count)
             {
                 readbytedata = data->message->ReadBuffer(&bytes_read);
                 memcpy(fulldata+pos,readbytedata,bytes_read);
                 pos += bytes_read;
-                nextvartype = data->message->CheckNextVariableType();
+                instance_count--;
             }
             
             HandleRexPrimDataBlob(entity->GetId(), fulldata);
