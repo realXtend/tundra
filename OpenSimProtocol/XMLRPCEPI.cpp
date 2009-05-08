@@ -75,7 +75,7 @@ void XMLRPCEPI::Send()
     
     // We now own xmlData, remember to deallocate using free();
 
-    char *pXmlData = XMLRPC_REQUEST_ToXML(pCall_->GetRequest(), 0); 
+    char *pXmlData = XMLRPC_REQUEST_ToXML(pCall_->GetRequest(), 0);
     if (pXmlData == 0)
     {
         throw XMLRPCException(std::string("XMLRPCEPI exception in XMLRPCEPI::Send() xml data was zero pointer"));  

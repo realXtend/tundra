@@ -37,6 +37,7 @@
 #include "EC_OpenSimPrim.h"
 #include "EC_OgrePlaceable.h"
 #include "QuatUtils.h"
+#include "ConversionUtils.h"
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
    POCO_EXPORT_CLASS(DebugStats)
@@ -465,16 +466,16 @@ void DebugStats::OnClickSave()
     const Foundation::EntityPtr &entity = scene->GetEntity(currentEntityID_);
     const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
     OgreRenderer::EC_OgrePlaceable *ogre_pos = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());        
-    
+
     // Get the new values.
     RexTypes::Vector3 pos((float)sb_pos_x->get_value(), (float)sb_pos_y->get_value(), (float)sb_pos_z->get_value());
     RexTypes::Vector3 scale((float)sb_scale_x->get_value(), (float)sb_scale_y->get_value(), (float)sb_scale_z->get_value());
     Quaternion quat = Core::UnpackQuaternionFromFloat3((float)sb_rot_x->get_value(), (float)sb_rot_y->get_value(), (float)sb_rot_z->get_value());
     
     // Set the new values.
-    ogre_pos->SetPosition(pos);
-    ogre_pos->SetScale(scale);
-    ogre_pos->SetOrientation(quat);
+    ogre_pos->SetPosition(Core::OpenSimToOgreCoordinateAxes(pos));
+    ogre_pos->SetScale(Core::OpenSimToOgreCoordinateAxes(scale));
+    ogre_pos->SetOrientation(Core::OpenSimToOgreQuaternion(quat));
     
     //Send event
     Scene::Events::SceneEventData event_data(currentEntityID_);
@@ -579,6 +580,7 @@ void DebugStats::PopulatePrimPropertiesTreeView(
     primPropertiesWindow_->show();
     primPropertiesModel_->clear();
     
+       
     // Ogre position, scale and orientation
     Gtk::SpinButton *sb_pos_x, *sb_pos_y, *sb_pos_z, *sb_scale_x,
         *sb_scale_y, *sb_scale_z, *sb_rot_x, *sb_rot_y, *sb_rot_z;
@@ -593,9 +595,9 @@ void DebugStats::PopulatePrimPropertiesTreeView(
     primPropertiesControls_->get_widget("sb_rot_y", sb_rot_y);
     primPropertiesControls_->get_widget("sb_rot_z", sb_rot_z);
     
-    RexTypes::Vector3 pos = ogre_pos->GetPosition();
-    RexTypes::Vector3 scale = ogre_pos->GetScale();
-    RexTypes::Vector3 rot = Core::PackQuaternionToFloat3(ogre_pos->GetOrientation());
+    RexTypes::Vector3 pos = Core::OgreToOpenSimCoordinateAxes(ogre_pos->GetPosition());
+    RexTypes::Vector3 scale = Core::OgreToOpenSimCoordinateAxes(ogre_pos->GetScale());
+    RexTypes::Vector3 rot = Core::PackQuaternionToFloat3(Core::OpenSimToOgreQuaternion(ogre_pos->GetOrientation()));
     
     // Set the values
     sb_pos_x->set_value((double)pos.x);

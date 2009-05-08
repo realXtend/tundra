@@ -39,262 +39,184 @@ void NetInMessage::ResetReading()
 	currentVariable = 0;
 	currentVariableSize = 0;
 	bytesRead = 0;
-
+	
+	// If first block's type is variable, prevent the user proceeding before he has read the block instance count
+	// by setting the variableCountBlockNext true.
+	const NetMessageBlock &firstBlock = messageInfo->blocks[currentBlock];
+	if (firstBlock.type == NetBlockVariable)
+        variableCountBlockNext = true;
+    else
+        variableCountBlockNext = false;
+    
 	StartReadingNextBlock();
 	ReadNextVariableSize();
 }
 
 uint8_t NetInMessage::ReadU8()
-{
-	if (CheckNextVariableType() == NetVarU8)
-	{
-		uint8_t *data = (uint8_t*)ReadBytesUnchecked(sizeof(uint8_t));
-		AdvanceToNextVariable();
-		return *data;
-	}
-	else 
-	{	
-		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return 0;
-	}
+{   
+    RequireNextVariableType(NetVarU8);
+    
+    uint8_t *data = (uint8_t*)ReadBytesUnchecked(sizeof(uint8_t));
+    AdvanceToNextVariable();
+    
+    return *data;
 }
 
 uint16_t NetInMessage::ReadU16()
 {
-	if (CheckNextVariableType() == NetVarU16)
-	{
-		uint16_t *data = (uint16_t*)ReadBytesUnchecked(sizeof(uint16_t));
-		AdvanceToNextVariable();
-		return *data;
-	}
-	else 
-	{	
-		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return 0;
-	}
+    RequireNextVariableType(NetVarU16);
+	
+	uint16_t *data = (uint16_t*)ReadBytesUnchecked(sizeof(uint16_t));
+	AdvanceToNextVariable();
+
+	return *data;
 }
 
 uint32_t NetInMessage::ReadU32()
 {
-	if (CheckNextVariableType() == NetVarU32)
-	{
-		uint32_t *data = (uint32_t*)ReadBytesUnchecked(sizeof(uint32_t));
-		AdvanceToNextVariable();
-		return *data;
-	}
-	else 
-	{	
-		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return 0;
-	}
+    RequireNextVariableType(NetVarU32);
+
+    uint32_t *data = (uint32_t*)ReadBytesUnchecked(sizeof(uint32_t));
+    AdvanceToNextVariable();
+    return *data;
 }
 
 uint64_t NetInMessage::ReadU64()
 {
-	if (CheckNextVariableType() == NetVarU64)
-	{
-		uint64_t *data = (uint64_t*)ReadBytesUnchecked(sizeof(uint64_t));
-		AdvanceToNextVariable();
-		return *data;
-	}
-	else 
-	{	
-		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return 0;
-	}
+    RequireNextVariableType(NetVarU64);
+    
+	uint64_t *data = (uint64_t*)ReadBytesUnchecked(sizeof(uint64_t));
+	AdvanceToNextVariable();
+
+	return *data;
 }
 
 int8_t NetInMessage::ReadS8()
 {
-	if (CheckNextVariableType() == NetVarS8)
-	{
-		uint8_t *data = (uint8_t*)ReadBytesUnchecked(sizeof(int8_t));
-		AdvanceToNextVariable();
-		return *data;
-	}
-	else 
-	{	
-		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return 0;
-	}
+    RequireNextVariableType(NetVarS8);
+
+    uint8_t *data = (uint8_t*)ReadBytesUnchecked(sizeof(int8_t));
+    AdvanceToNextVariable();
+
+    return *data;
 }
 
 int16_t NetInMessage::ReadS16()
 {
-	if (CheckNextVariableType() == NetVarS16)
-	{
-		int16_t *data = (int16_t*)ReadBytesUnchecked(sizeof(int16_t));
-		AdvanceToNextVariable();
-		return *data;
-	}
-	else 
-	{	
-		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return 0;
-	}
+    RequireNextVariableType(NetVarS16);
+    
+    int16_t *data = (int16_t*)ReadBytesUnchecked(sizeof(int16_t));
+    AdvanceToNextVariable();
+
+    return *data;
 }
 
 int32_t NetInMessage::ReadS32()
 {
-	if (CheckNextVariableType() == NetVarS32)
-	{
-		int32_t *data = (int32_t*)ReadBytesUnchecked(sizeof(int32_t));
-		AdvanceToNextVariable();
-		return *data;
-	}
-	else 
-	{	
-		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return 0;
-	}
+    RequireNextVariableType(NetVarS32);
+    
+    int32_t *data = (int32_t*)ReadBytesUnchecked(sizeof(int32_t));
+    AdvanceToNextVariable();
+
+    return *data;
 }
 
 int64_t NetInMessage::ReadS64()
 {
-	if (CheckNextVariableType() == NetVarS64)
-	{
-		int64_t *data = (int64_t*)ReadBytesUnchecked(sizeof(int64_t));
-		AdvanceToNextVariable();
-		return *data;
-	}
-	else 
-	{	
-		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return 0;
-	}
+    RequireNextVariableType(NetVarS64);
+    
+    int64_t *data = (int64_t*)ReadBytesUnchecked(sizeof(int64_t));
+    AdvanceToNextVariable();
+
+    return *data;
 }
 
 float NetInMessage::ReadF32()
 {
-	if (CheckNextVariableType() == NetVarF32)
-	{
-		float *data = (float*)ReadBytesUnchecked(sizeof(float));
-		AdvanceToNextVariable();
-		return *data;
-	}
-	else 
-	{	
-		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return 0;
-	}
+    RequireNextVariableType(NetVarF32);
+    
+    float *data = (float*)ReadBytesUnchecked(sizeof(float));
+    AdvanceToNextVariable();
+    
+    return *data;
 }
 
 double NetInMessage::ReadF64()
 {
-	if (CheckNextVariableType() == NetVarF64)
-	{
-		double *data = (double*)ReadBytesUnchecked(sizeof(double));
-		AdvanceToNextVariable();
-		return *data;
-	}
-	else 
-	{	
-		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return 0;
-	}
+    RequireNextVariableType(NetVarF64);
+    
+    double *data = (double*)ReadBytesUnchecked(sizeof(double));
+    AdvanceToNextVariable();
+
+    return *data;
 }
 
 bool NetInMessage::ReadBool()
 {
-	if (CheckNextVariableType() == NetVarBufferByte)
-	{
-		bool *data = (bool*)ReadBytesUnchecked(sizeof(bool));
-		AdvanceToNextVariable();
-		return *data;
-	}
-	else 
-	{	
-		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return 0;
-	}
+    RequireNextVariableType(NetVarBOOL);
+    
+    bool *data = (bool*)ReadBytesUnchecked(sizeof(bool));
+    AdvanceToNextVariable();
+
+    return *data;
 }
 
 Vector3 NetInMessage::ReadVector3()
 {
-	if (CheckNextVariableType() == NetVarVector3)
-	{
-		Vector3 *data = (Vector3*)ReadBytesUnchecked(sizeof(Vector3));
-		AdvanceToNextVariable();
-		return *data;
-	}
-	else 
-	{	
-		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return Vector3();
-	}
+    RequireNextVariableType(NetVarVector3);
+
+    Vector3 *data = (Vector3*)ReadBytesUnchecked(sizeof(Vector3));
+    AdvanceToNextVariable();
+
+    return *data;
 }
 
 Vector3d NetInMessage::ReadVector3d()
 {
-	if (CheckNextVariableType() == NetVarVector3d)
-	{
-		Vector3d *data = (Vector3d*)ReadBytesUnchecked(sizeof(Vector3d));
-		AdvanceToNextVariable();
-		return *data;
-	}
-	else 
-	{	
-		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return Vector3d();
-	}
+    RequireNextVariableType(NetVarVector3d);
+    
+    Vector3d *data = (Vector3d*)ReadBytesUnchecked(sizeof(Vector3d));
+    AdvanceToNextVariable();
+
+    return *data;
 }
 
 Vector4 NetInMessage::ReadVector4()
 {
-	if (CheckNextVariableType() == NetVarVector4)
-	{
-		Vector4 *data = (Vector4*)ReadBytesUnchecked(sizeof(Vector4));
-		AdvanceToNextVariable();
-		return *data;
-	}
-	else 
-	{	
-		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		Vector4 temp; ///\todo
-		temp.x = 0;
-		temp.y = 0;
-		temp.z = 0;
-		temp.w = 0;
-		return temp;
-	}
+    RequireNextVariableType(NetVarVector4);
+
+    Vector4 *data = (Vector4*)ReadBytesUnchecked(sizeof(Vector4));
+    AdvanceToNextVariable();
+
+    return *data;
 }
 
 Core::Quaternion NetInMessage::ReadQuaternion()
 {
-	if (CheckNextVariableType() == NetVarQuaternion)
-	{
-		Vector3 *data = (Vector3*)ReadBytesUnchecked(sizeof(Vector3));
+	RequireNextVariableType(NetVarQuaternion);
 
-        Core::Quaternion quat = Core::UnpackQuaternionFromFloat3(*data);
-//		Core::Quaternion *data = (Core::Quaternion*)ReadBytesUnchecked(sizeof(Core::Quaternion));
-
-        AdvanceToNextVariable();
-		return quat;
-	}
-	else 
-	{	
-		std::cout << "Error: Tried to read wrong variable type." << std::endl;
-		return Core::Quaternion();
-	}
+	Vector3 *data = (Vector3*)ReadBytesUnchecked(sizeof(Vector3));
+    Core::Quaternion quat = Core::UnpackQuaternionFromFloat3(*data);
+    AdvanceToNextVariable();
+	
+	return quat;
 }
 
 RexUUID NetInMessage::ReadUUID()
 {
-	if (CheckNextVariableType() == NetVarUUID)
-	{
-		RexUUID *data = (RexUUID*)ReadBytesUnchecked(sizeof(RexUUID));
-		AdvanceToNextVariable();
-		return *data;
-	}
-	else 
-	{	
-		std::cout << "Invalid variable type. Current type is " << CheckNextVariableType() << std::endl;
-		return RexUUID();
-	}
+    RequireNextVariableType(NetVarUUID);
+    
+    RexUUID *data = (RexUUID*)ReadBytesUnchecked(sizeof(RexUUID));
+    AdvanceToNextVariable();
+    
+    return *data;
 }
 
 void NetInMessage::ReadString(char *dst, size_t maxSize)
 {
+    // The OpenSim protocol doesn't spesify variable type for strings so use "NetVarNone".
+    RequireNextVariableType(NetVarNone);
+    
     if (maxSize == 0)
         return;
     
@@ -308,6 +230,9 @@ void NetInMessage::ReadString(char *dst, size_t maxSize)
 
 std::string NetInMessage::ReadString()
 {
+    // The OpenSim protocol doesn't spesify variable type for strings so use "NetVarNone".
+    RequireNextVariableType(NetVarNone);
+    
     char tmp[257];
     ReadString(tmp, 256);
     
@@ -318,22 +243,23 @@ std::string NetInMessage::ReadString()
 
 const uint8_t *NetInMessage::ReadBuffer(size_t *bytesRead)
 {
-	if (CheckNextVariableType() == NetVarBufferByte ||
-		CheckNextVariableType() == NetVarBuffer2Bytes)
+	if (CheckNextVariableType() < NetVarBufferByte ||
+	    CheckNextVariableType() > NetVarBuffer4Bytes)
 	{
-		if (bytesRead)
-			*bytesRead = currentVariableSize;
-		const uint8_t *data = (const uint8_t *)ReadBytesUnchecked(currentVariableSize);
-		AdvanceToNextVariable();
-		return data;
-	}
-	else 
-	{	
-		std::cout << "Invalid variable type. Current type is " << CheckNextVariableType() << std::endl;
-		return 0;
-	}
-}
+	    throw std::exception("Tried to read wrong variable type.");
+    }
+    
+	RequireNextVariableType(NetVarNone);
+   
+    if (bytesRead)
+	    *bytesRead = currentVariableSize;
 
+    const uint8_t *data = (const uint8_t *)ReadBytesUnchecked(currentVariableSize);
+    AdvanceToNextVariable();
+
+    return data;
+}
+		
 NetVariableType NetInMessage::CheckNextVariableType() const
 {
 	assert(messageInfo);
@@ -357,7 +283,7 @@ void NetInMessage::AdvanceToNextVariable()
 		return;
 
 	const NetMessageBlock &curBlock = messageInfo->blocks[currentBlock];
-
+    
 	assert(currentVariable < curBlock.variables.size());
 	assert(currentBlockInstanceNumber < currentBlockInstanceCount);
 
@@ -378,6 +304,27 @@ void NetInMessage::AdvanceToNextVariable()
 	}
 
 	ReadNextVariableSize();
+}
+
+size_t NetInMessage::ReadCurrentBlockInstanceCount()
+{
+    const NetMessageBlock &curBlock = messageInfo->blocks[currentBlock];
+	switch(curBlock.type)
+	{
+    case NetBlockSingle:
+    case NetBlockMultiple:
+        variableCountBlockNext = false;
+        break;
+    case NetBlockVariable:
+        //if (variableCountBlockNext)
+        //    throw std::exception("You can read block instance count for a variable block only once per block!");	            
+        variableCountBlockNext = true;
+        break;
+    default:
+        break;
+	}
+    
+    return currentBlockInstanceCount;
 }
 
 void NetInMessage::SkipToNextVariable(bool bytesAlreadyRead)
@@ -428,14 +375,18 @@ void NetInMessage::SkipToNextVariable(bool bytesAlreadyRead)
 	ReadNextVariableSize();
 }
 
-void NetInMessage::SkipToFirstVariableByName(std::string variableName)
+void NetInMessage::SkipToFirstVariableByName(const std::string &variableName)
 {
 	assert(messageInfo);
-	
-	size_t skip_count = 0;
 
-	// Check out that the variable really exists.
+    //\Todo Make sure that one can't skip to inside variab count block.
+    //const NetMessageBlock &startingBlock = messageInfo->blocks[currentBlock];
+    //startingBlock.type != curBlock.type
+	//If (curBlock.type == NetBlockVariable) blalblalbal
+
+    // Check out that the variable really exists.
 	bool bFound = false;
+	size_t skip_count = 0;
 	for(size_t block_it = currentBlock; block_it <  messageInfo->blocks.size(); ++block_it)
 	{
 		const NetMessageBlock &curBlock = messageInfo->blocks[block_it];
@@ -443,7 +394,7 @@ void NetInMessage::SkipToFirstVariableByName(std::string variableName)
 		{
 			const NetMessageVariable &curVar = curBlock.variables[var_it];
 			if(variableName == curVar.name)
-			{				
+			{
 				bFound = true;
 				break;
 			}
@@ -451,7 +402,7 @@ void NetInMessage::SkipToFirstVariableByName(std::string variableName)
 			++skip_count;
 		}
 	}
-
+  
 	if (!bFound)
 	{
 		std::cout << "Variable \"" << variableName << "\" not found in the message info!" << std::endl;
@@ -596,4 +547,21 @@ void NetInMessage::SkipToPacketEnd()
 	currentVariable = 0;
 	currentVariableSize = 0;
 	bytesRead = messageData.size();
+}
+
+void NetInMessage::RequireNextVariableType(NetVariableType type)
+{
+    const NetMessageBlock &curBlock = messageInfo->blocks[currentBlock];
+    
+    // Current block is variable, but user hasn't called ReadCurrentBlockInstanceCount().
+    if (curBlock.type == NetBlockVariable && !variableCountBlockNext)
+        throw std::exception("Current block is variable: use ReadCurrentBlockInstanceCount first in order to proceed.");
+
+    // In case of string or buffer:
+    if (type == NetVarNone)
+        return;
+    
+    // Check that the variable type matches.
+    if (CheckNextVariableType() != type)
+        throw std::exception("Tried to read wrong variable type.");
 }

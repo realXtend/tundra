@@ -368,11 +368,11 @@ namespace RexLogic
             m->AddU8(13);
 
             // Position
-		    memcpy(&data[offset], &ogre_pos->GetPosition(), sizeof(Vector3));
+		    memcpy(&data[offset], &Core::OgreToOpenSimCoordinateAxes(ogre_pos->GetPosition()), sizeof(Vector3));
 		    offset += sizeof(Vector3);
 		                
             // Scale
-		    memcpy(&data[offset], &ogre_pos->GetScale(), sizeof(Vector3));
+		    memcpy(&data[offset], &Core::OgreToOpenSimCoordinateAxes(ogre_pos->GetScale()), sizeof(Vector3));
             offset += sizeof(Vector3);
         }
         

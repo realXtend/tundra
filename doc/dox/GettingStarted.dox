@@ -27,7 +27,7 @@
 \section extracomms_GS Communication with outside world
 	For communicating with the outside world, 
 	- \subpage OpenSimProtocolConnection "Managing the OpenSim connection state", 
-	- \subpage SLUDP "Interfacing with the OpenSim world using SLUDP messages" and
+	- \subpage OSUDP "Interfacing with the OpenSim world using OSUDP messages" and
 	- \subpage XMLRPC "Performing custom XMLRPC calls".
     
 \section assets_GS Working with assets

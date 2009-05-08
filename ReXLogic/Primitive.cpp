@@ -78,57 +78,65 @@ namespace RexLogic
         msg->ResetReading();
         uint64_t regionhandle = msg->ReadU64();
         msg->SkipToNextVariable(); // TimeDilation U16 ///\todo Unhandled inbound variable 'TimeDilation'.
-
-        uint32_t localid = msg->ReadU32(); 
-        msg->SkipToNextVariable();		// State U8 ///\todo Unhandled inbound variable 'State'.
-        RexUUID fullid = msg->ReadUUID();
-        msg->SkipToNextVariable();		// CRC U32 ///\todo Unhandled inbound variable 'CRC'.
-        uint8_t pcode = msg->ReadU8();
-
-        Foundation::EntityPtr entity = GetOrCreatePrimEntity(localid,fullid);
-        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
-        OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
-
-        ///\todo Are we setting the param or looking up by this param? I think the latter, but this is now doing the former. 
-        ///      Will cause problems with multigrid support.
-        prim.RegionHandle = regionhandle;
-
-        prim.Material = msg->ReadU8();
-        prim.ClickAction = msg->ReadU8();
-        ogrePos.SetScale(Core::OpenSimToOgreCoordinateAxes(msg->ReadVector3()));
         
-        size_t bytes_read = 0;
-        const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
-        if (bytes_read == 60)
+        // Variable block: Object Data
+        size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+        for(size_t i = 0; i < instance_count; ++i)
         {
-            // The data contents:
-            // ofs  0 - pos xyz - 3 x float (3x4 bytes)
-            // ofs 12 - vel xyz - 3 x float (3x4 bytes)
-            // ofs 24 - acc xyz - 3 x float (3x4 bytes)
-            // ofs 36 - orientation, quat with last (w) component omitted - 3 x float (3x4 bytes)
-            // ofs 48 - angular velocity - 3 x float (3x4 bytes)
-            // total 60 bytes
-            Core::Vector3df pos = *reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[0]);
-            ogrePos.SetPosition(Core::OpenSimToOgreCoordinateAxes(pos));
-            Core::Quaternion quat = Core::UnpackQuaternionFromFloat3((float*)&objectdatabytes[36]); 
-            ogrePos.SetOrientation(Core::OpenSimToOgreQuaternion(quat));
+            uint32_t localid = msg->ReadU32(); 
+            msg->SkipToNextVariable();		// State U8 ///\todo Unhandled inbound variable 'State'.
+            RexUUID fullid = msg->ReadUUID();
+            msg->SkipToNextVariable();		// CRC U32 ///\todo Unhandled inbound variable 'CRC'.
+            uint8_t pcode = msg->ReadU8();
 
-            /// \todo Velocity field unhandled.
-            /// \todo Acceleration field unhandled.
-            /// \todo Angular velocity field unhandled.
+            Foundation::EntityPtr entity = GetOrCreatePrimEntity(localid,fullid);
+            EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
+            OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
+
+            ///\todo Are we setting the param or looking up by this param? I think the latter, but this is now doing the former. 
+            ///      Will cause problems with multigrid support.
+            prim.RegionHandle = regionhandle;
+
+            prim.Material = msg->ReadU8();
+            prim.ClickAction = msg->ReadU8();
+            ogrePos.SetScale(Core::OpenSimToOgreCoordinateAxes(msg->ReadVector3()));
+            
+            size_t bytes_read = 0;
+            const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
+            if (bytes_read == 60)
+            {
+                // The data contents:
+                // ofs  0 - pos xyz - 3 x float (3x4 bytes)
+                // ofs 12 - vel xyz - 3 x float (3x4 bytes)
+                // ofs 24 - acc xyz - 3 x float (3x4 bytes)
+                // ofs 36 - orientation, quat with last (w) component omitted - 3 x float (3x4 bytes)
+                // ofs 48 - angular velocity - 3 x float (3x4 bytes)
+                // total 60 bytes
+                Core::Vector3df pos = *reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[0]);
+                std::cout << "1   " << pos << std::endl;
+                
+                ogrePos.SetPosition(Core::OpenSimToOgreCoordinateAxes(pos));
+                
+                std::cout << "2   " << Core::OpenSimToOgreCoordinateAxes(pos) << std::endl;
+                Core::Quaternion quat = Core::UnpackQuaternionFromFloat3((float*)&objectdatabytes[36]); 
+                ogrePos.SetOrientation(Core::OpenSimToOgreQuaternion(quat));
+
+                /// \todo Velocity field unhandled.
+                /// \todo Acceleration field unhandled.
+                /// \todo Angular velocity field unhandled.
+            }
+            else
+                RexLogicModule::LogError("Error reading ObjectData for prim:" + Core::ToString(prim.LocalId) + ". Bytes read:" + Core::ToString(bytes_read));
+            
+            prim.ParentId = msg->ReadU32();
+            prim.UpdateFlags = msg->ReadU32();
+            
+            // Skip path related variables
+            msg->SkipToFirstVariableByName("Text");
+            prim.HoveringText = msg->ReadString(); 
+            msg->SkipToNextVariable();      // TextColor
+            prim.MediaUrl = msg->ReadString();
         }
-        else
-            RexLogicModule::LogError("Error reading ObjectData for prim:" + Core::ToString(prim.LocalId) + ". Bytes read:" + Core::ToString(bytes_read));
-        
-        prim.ParentId = msg->ReadU32();
-        prim.UpdateFlags = msg->ReadU32();
-        
-        // Skip path related variables
-        msg->SkipToFirstVariableByName("Text");
-        prim.HoveringText = msg->ReadString(); 
-        msg->SkipToNextVariable();      // TextColor
-        prim.MediaUrl = msg->ReadString();
-
         return false;
     }
     
