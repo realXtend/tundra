@@ -141,17 +141,6 @@ namespace CommunicationUI
 
 		std::string error;
 
-        //Foundation::ScriptObject* 
-        Foundation::ScriptObjectPtr test_script = Foundation::ScriptObjectPtr (scriptService->LoadScript("TestClass", error) );
-        Foundation::ScriptObjectPtr test = Foundation::ScriptObjectPtr (test_script->GetObject("TestClass"));
-		//Foundation::ScriptObject* chathandler = scriptService->LoadScript("chathandler", error); //the module
-		//chathandler = chathandler->GetObject("ChatHandler"); //instanciates a class in this module with the given name
-
-
-
-		//std::string meth = "blob";
-		//std::string syn = "";
-  //      Foundation::ScriptObject* ret2 = test->CallMethod(meth, syn, NULL);
         
 
 		Foundation::ScriptObject* script = scriptService->LoadScript("IMDemo", error);
