@@ -31,17 +31,17 @@ class IMDemo:
 ##==========================================================================================
 ##          new events
 ##==========================================================================================
-    def channelOpened(self, reason):
-        r.pyEventCallback("channel_opened","")
+    def channelOpened(self, addr):
+        r.pyEventCallback("channel_opened",addr)
     def sendMess(self, reason):
         r.pyEventCallback("message_sent","")
-    def receivedMess(self, reason):
-        r.pyEventCallback("message_received",reason)
+    def receivedMess(self, addr_mess):
+        r.pyEventCallback("message_received",addr_mess)
     def channelClosed(self, reason):
         r.pyEventCallback("channel_closed","")
-    def gotContactlistItem(self, reason):
+    def gotContactlistItem(self, id_addr):
         print "gotContactlistItem"
-        r.pyEventCallback("contact_item",reason)
+        r.pyEventCallback("contact_item",id_addr)
     def contactStatusChanged(self, id_status):
         print "id_status: ", id_status
         r.pyEventCallback("contact_status_changed", id_status)
@@ -91,10 +91,20 @@ class IMDemo:
     def CCloseChannel(self):
         print "CCloseChannel:"
         print "calling connection.close_channel"
-        self.connection.close_channel()
+        self.connection.close_channel("addr")
 
-    def CSendChat(self, txt):
-        self.connection.SendMessage(txt)
+    def CSendChat(self, addr_mess):
+        print "p0"
+        spl = addr_mess.split(':')
+        print "p1"
+        addr = spl[0]
+        spl2 = spl[1:]
+        print "p2"
+        sep = ':'
+        mess = sep.join(spl2)
+        print addr
+        print mess
+        self.connection.SendMessage(addr, mess)
 
     def CGetContactWithID(self, id):
         print "CGetFriendWithID"

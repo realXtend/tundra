@@ -27,11 +27,12 @@ namespace CommunicationUI
 		class ModelColumns : public Gtk::TreeModel::ColumnRecord
 		{
 		public:
-            ModelColumns(){ add(id_); add(contact_); add(status_);}
+            ModelColumns(){ add(id_); add(contact_); add(status_); add(message_);}
 
 			Gtk::TreeModelColumn<std::string> id_;
 			Gtk::TreeModelColumn<std::string> contact_;
             Gtk::TreeModelColumn<std::string> status_;
+            Gtk::TreeModelColumn<std::string> message_;
 		};
 
         Glib::RefPtr<Gtk::ListStore> lstContactsTreeModel;
@@ -42,7 +43,7 @@ namespace CommunicationUI
         void RemoveContact(char* id);
         Gtk::TreeModel::iterator getRowWithId(char* id);
 
-        void setContactStatus(char* id, char* status);
+        void setContactStatus(char* id, char* status, char* status_string);
 
     protected:
         //Signal handlers:

@@ -54,7 +54,13 @@ namespace CommunicationUI
 	void CommunicationUIModule::PostInitialize()
 	{
 		initializeMainCommWindow();
-		commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager).lock();
+		//commManager = (framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager)).lock();
+        //commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager);
+//                      (framework_->GetService<Scene::SceneManager>(Foundation::Service::ST_SceneManager)).lock();
+		//commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager).lock();
+
+        commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager).lock();
+
 		CommunicationUIModule::instance_= this;		
         
         setupSciptInterface();		
@@ -127,10 +133,29 @@ namespace CommunicationUI
 
     void CommunicationUIModule::setupSciptInterface()
     {
-		scriptService = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting).lock();
+        //scriptService = (framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting)).lock();
+        //scriptService = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting);
+		//scriptService = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting).lock();
+        scriptService = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting).lock();
+        BOOST_ASSERT(scriptService!=NULL);
+
 		std::string error;
-		
+
+        //Foundation::ScriptObject* 
+        Foundation::ScriptObjectPtr test_script = Foundation::ScriptObjectPtr (scriptService->LoadScript("TestClass", error) );
+        Foundation::ScriptObjectPtr test = Foundation::ScriptObjectPtr (test_script->GetObject("TestClass"));
+		//Foundation::ScriptObject* chathandler = scriptService->LoadScript("chathandler", error); //the module
+		//chathandler = chathandler->GetObject("ChatHandler"); //instanciates a class in this module with the given name
+
+
+
+		//std::string meth = "blob";
+		//std::string syn = "";
+  //      Foundation::ScriptObject* ret2 = test->CallMethod(meth, syn, NULL);
+        
+
 		Foundation::ScriptObject* script = scriptService->LoadScript("IMDemo", error);
+
 		if(error=="None")
 		{
 			this->imScriptObject = script->GetObject("IMDemo");
@@ -139,7 +164,13 @@ namespace CommunicationUI
 			Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
             //Foundation::ScriptObject* ret = CallIMPyMethod("CDoStartUp", "s", NULL);
 		}
+        //boost::shared_ptr<Foundation::ScriptEventInterface> eIntf 
+        //    = dynamic_cast<boost::shared_ptr<Foundation::ScriptEventInterface>>(this->scriptService);
+        //boost::shared_ptr<Foundation::ScriptEventInterface> eIntf = (boost::shared_ptr<Foundation::ScriptEventInterface)(this->scriptService);
+		//Foundation::ScriptEventInterface *eIntf = dynamic_cast<Foundation::ScriptEventInterface*>(this->scriptService);
 		Foundation::ScriptEventInterface *eIntf = dynamic_cast<Foundation::ScriptEventInterface*>(this->scriptService.get());
+
+        //Foundation::ScriptEventInterface* eIntf = dynamic_cast<Foundation::ScriptEventInterface*>(scriptService.get());
 
 		sessionUp_ = false;
 

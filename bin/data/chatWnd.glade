@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Mon Apr 20 10:03:05 2009 -->
+<!--Generated with glade3 3.4.3 on Fri May 08 10:53:53 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="wndChat">
     <child>
@@ -14,8 +14,8 @@
             <property name="can_focus">True</property>
           </widget>
           <packing>
-            <property name="x">25</property>
-            <property name="y">317</property>
+            <property name="x">29</property>
+            <property name="y">165</property>
           </packing>
         </child>
         <child>
@@ -30,8 +30,8 @@
             <property name="response_id">0</property>
           </widget>
           <packing>
-            <property name="x">371</property>
-            <property name="y">316</property>
+            <property name="x">372</property>
+            <property name="y">166</property>
           </packing>
         </child>
         <child>
@@ -46,14 +46,14 @@
             <property name="response_id">0</property>
           </widget>
           <packing>
-            <property name="x">445</property>
-            <property name="y">316</property>
+            <property name="x">439</property>
+            <property name="y">165</property>
           </packing>
         </child>
         <child>
           <widget class="GtkScrolledWindow" id="scrolledwindow1">
             <property name="width_request">482</property>
-            <property name="height_request">267</property>
+            <property name="height_request">79</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
@@ -61,7 +61,7 @@
             <child>
               <widget class="GtkTextView" id="txtChatView">
                 <property name="width_request">485</property>
-                <property name="height_request">62</property>
+                <property name="height_request">57</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
               </widget>

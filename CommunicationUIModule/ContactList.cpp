@@ -40,7 +40,7 @@ namespace CommunicationUI
         this->append_column("ID", this->columns_.id_);
 		this->append_column("Contact", columns_.contact_);
         this->append_column("Status", columns_.status_);
-
+        this->append_column("Message", columns_.message_);
         notFound = false;
 
         //Gtk::TreeModel::Row row = *(lstContactsTreeModel->append());
@@ -150,12 +150,14 @@ namespace CommunicationUI
         }
     }
 
-    void ContactList::setContactStatus(char* id, char* status)
+    void ContactList::setContactStatus(char* id, char* status, char* status_string)
     {
         Gtk::TreeModel::iterator iter = getRowWithId(id);
         if(!notFound){ 
             Gtk::TreeModel::Row row = *iter;
-            row.set_value(2, std::string(status));    
+            row.set_value(2, std::string(status));
+            row.set_value(3, std::string(status_string));
+            //row.get_value(
         } else {
             notFound = false;
         }
