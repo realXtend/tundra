@@ -5,14 +5,9 @@
 #include "EventDataInterface.h"
 #include "TPIMMessage.h"
 
-// For windows compatibility
-#ifdef SendMessage
-#define SendMessageDefined
-#undef SendMessage
-#endif // SendMessage
-
 namespace Communication
 {
+
 
 	class TPSession : public Session
 	{
@@ -21,21 +16,20 @@ namespace Communication
 		TPSession(Foundation::ScriptObjectPtr python_communication_object);
 		virtual void Close();
 		virtual void SendInvitation(ContactPtr c);
-		virtual void Kick(Participiant *p);
-		virtual ParticipientListPtr GetParticipients();
+		virtual void Kick(ParticipantPtr p);
+		virtual ParticipantListPtr GetParticipants();
+		virtual std::string GetProtocol();
 	protected:
 		virtual void NotifyClosedByRemote(); // Called by TelepathyCommunication
 		virtual std::string GetId(); // called by TelepathyCommunication
 		
+		
 		std::string id_;
+		std::string protocol_;
 		Foundation::ScriptObjectPtr python_communication_object_; 
-		ParticipientListPtr participients_;
+		ParticipantListPtr participants_;
 	};
 
-
-//	class TPIMSession;
-//	typedef boost::shared_ptr<TPIMSession> TPIMSessionPtr;
-//	typedef std::vector<TPIMSessionPtr> TPIMSessionList;
 
 	// Instant messaging session
 	class TPIMSession : public TPSession, public IMSession
@@ -51,18 +45,8 @@ namespace Communication
 
 		IMMessageList im_messages_;
 	};
-	//typedef boost::shared_ptr<TPIMSession> TPIMSessionPtr;
 
 } // end of namespace: Communication
-
-
-
-
-
-// For windows compatibility
-#ifdef SendMessageDefined
-#define SendMessage SendMessageW
-#endif // SendMessageDefined
 
 
 #endif // incl_TPIMSession_h
