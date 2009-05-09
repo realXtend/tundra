@@ -101,10 +101,12 @@ namespace CommunicationUI
 
 	void ChatSession::onCloseClicked()
 	{
-		CommunicationUI::CommunicationUIModule::LogInfo("Close clicked");
-		std::string str = "CCloseChannel";
-		std::string syntax = "";
-		Foundation::ScriptObject* ret = imScriptObject_->CallMethod(str, syntax, NULL);
+		//CommunicationUI::CommunicationUIModule::LogInfo("Close clicked");
+		//std::string str = "CCloseChannel";
+		//std::string syntax = "";
+		//Foundation::ScriptObject* ret = imScriptObject_->CallMethod(str, syntax, NULL);        
+        
+        Foundation::ScriptObject* ret = CommunicationUIModule::CallIMPyMethod("CCloseChannel", "s", this->counterpart_);
 		
 	}
 

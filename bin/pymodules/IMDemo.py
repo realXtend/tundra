@@ -62,7 +62,8 @@ class IMDemo:
     def incomingRequest(self, addr):
         r.pyEventCallback("incoming_request", addr)
         pass
-            
+    def gotAvailableStatuses(self, slist_N):
+        r.pyEventCallback("got_available_status_list", slist_N)
 
 ##==========================================================================================
 ##          new api
@@ -88,18 +89,15 @@ class IMDemo:
         #self.chatEndPoint = jid
         self.connection.StartChat(jid)
 
-    def CCloseChannel(self):
+    def CCloseChannel(self, addr):
         print "CCloseChannel:"
         print "calling connection.close_channel"
         self.connection.close_channel("addr")
 
     def CSendChat(self, addr_mess):
-        print "p0"
         spl = addr_mess.split(':')
-        print "p1"
         addr = spl[0]
         spl2 = spl[1:]
-        print "p2"
         sep = ':'
         mess = sep.join(spl2)
         print addr
@@ -116,6 +114,17 @@ class IMDemo:
 
     def CGetStatusWithID(self, id):
         return str(self.connection.get_contact_status(id))
+    def CSetStatus(self, status_message):
+        spl = status_message.split(':')
+        if len(spl)==1:
+            self.connection.SetStatus(status_message, "")
+        else:
+            try:
+                self.connection.SetStatus(spl[0], spl[1])
+            except:
+                print "status failure"
+                tb = traceback.format_exception(*sys.exc_info())
+                print ''.join(tb)                
 
     def CAddContact(self, contact_str):
 ##        print "in CAddContact"

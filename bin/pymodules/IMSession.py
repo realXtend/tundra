@@ -22,9 +22,7 @@ class IMSession:
     def __init__(self, app, aConn, aChannel, aContact):
         self.cb_app = app
         self.connection = aConn
-
         self.contactAddr = aContact
-
         self.textchannel = aChannel        
         self.match_sent = None
         self.match_received = None

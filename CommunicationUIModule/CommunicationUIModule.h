@@ -75,6 +75,7 @@ namespace CommunicationUI
 		static void messagReceived(char*);
 		static void contactReceived(char* t);
         static void contactStatusChanged(char*);
+        static void handleAvailableStatusList(char*);
 
         static void contactAdded(char*);
         static void contactAddedToPublishList(char*);
@@ -101,7 +102,14 @@ namespace CommunicationUI
 		void OnAccountMenuConnect();
 		void OnAccountMenuDisconnect();
 		void OnDirectChatMenuStartChat();
+
+        void OnSetStatusOnline();
+        void OnSetStatusAway();
+        void OnSetStatusBusy();
+        void OnSetStatusOffline();
+
         void OnContactListClicked();
+        void OnSetPresenceMessage();
 
 		void OnEntryDlgOk();
 		void OnEntryDlgCancel();
@@ -109,6 +117,7 @@ namespace CommunicationUI
 		void OnContactAdd();
 		void OnContactRemove();
         void OnRefresh();
+        void OnComboChange();
 
         void reloadIMScript();
         void setupSciptInterface();
@@ -135,6 +144,27 @@ namespace CommunicationUI
         ContactList lstContacts;
         Gtk::Button* btnAddContact;
         Gtk::Button* btnRemoveContact;
+        Gtk::Button* btnSetPresenceMessage;
+        Gtk::Entry* entryPresenceMessage;
+
+        //Gtk::ComboBox* cmbPresence;
+        Gtk::ComboBoxText cmbPresence;
+        Gtk::Label* lblPresenceStatus;
+        
+
+        //class PresenceColumns : public Gtk::TreeModel::ColumnRecord
+        //{
+        //    public:
+        //    PresenceColumns()
+        //    { add(presence_); add(message_); }
+
+        //    Gtk::TreeModelColumn<Glib::ustring> presence_;
+        //    Gtk::TreeModelColumn<Glib::ustring> message_;
+        //};
+        //PresenceColumns presenceCols_;
+
+        //Glib::RefPtr<Gtk::ListStore> presenceModel_;
+
 
 	protected:
 

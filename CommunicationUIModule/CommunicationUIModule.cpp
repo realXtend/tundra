@@ -86,12 +86,22 @@ namespace CommunicationUI
         commUI_XML->get_widget("fxdContainer", fxdContainer);
         commUI_XML->get_widget("btnAddContact", btnAddContact);
         commUI_XML->get_widget("btnRemoveContact", btnRemoveContact);
-    
+        commUI_XML->get_widget("btnSetPresenceMessage", btnSetPresenceMessage);
+        commUI_XML->get_widget("entryPresenceMessage", entryPresenceMessage);
+        commUI_XML->get_widget("lblPresenceStatus", lblPresenceStatus);
+
+
+
+        cmbPresence.set_size_request(240, 25);
+        fxdContainer->put(cmbPresence, 25, 40);
+        
+
+
         if(!wndCommMain||!fxdContainer)//||!wndSelection)
 			return;
 
         lstContacts.set_size_request(240,182);
-        fxdContainer->put(lstContacts, 25, 50);
+        fxdContainer->put(lstContacts, 25, 80);
         lstContacts.SetModule(*this);
 
 	    commUI_XML->connect_clicked("mi_connect", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuConnect));
@@ -99,11 +109,22 @@ namespace CommunicationUI
 		commUI_XML->connect_clicked("mi_setaccount", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuSetAccountAndPassword));
 		commUI_XML->connect_clicked("mi_settings", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuSettings));
 		commUI_XML->connect_clicked("mi_directchat", sigc::mem_fun(*this, &CommunicationUIModule::OnDirectChatMenuStartChat));
+        
+        commUI_XML->connect_clicked("mi_online", sigc::mem_fun(*this, &CommunicationUIModule::OnSetStatusOnline));
+        commUI_XML->connect_clicked("mi_away", sigc::mem_fun(*this, &CommunicationUIModule::OnSetStatusAway));
+        commUI_XML->connect_clicked("mi_busy", sigc::mem_fun(*this, &CommunicationUIModule::OnSetStatusBusy));
+        commUI_XML->connect_clicked("mi_offline", sigc::mem_fun(*this, &CommunicationUIModule::OnSetStatusOffline));
 		//commUI_XML->connect_clicked("btnTest", sigc::mem_fun(*this, &CommunicationUIModule::reloadIMScript));
         commUI_XML->connect_clicked("btnTest", sigc::mem_fun(*this, &CommunicationUIModule::testDialog));
         commUI_XML->connect_clicked("btnAddContact", sigc::mem_fun(*this, &CommunicationUIModule::OnContactAdd));
         commUI_XML->connect_clicked("btnRemoveContact", sigc::mem_fun(*this, &CommunicationUIModule::OnContactRemove));
         commUI_XML->connect_clicked("btnRefresh", sigc::mem_fun(*this, &CommunicationUIModule::OnRefresh));
+        commUI_XML->connect_clicked("btnSetPresenceMessage", sigc::mem_fun(*this, &CommunicationUIModule::OnSetPresenceMessage));
+
+
+        //commUI_XML->connect_property_changed("cmbPresence", sigc::mem_fun(*this, &CommunicationUIModule::OnComboChange));
+        cmbPresence.signal_changed().connect(sigc::mem_fun(*this, &CommunicationUIModule::OnComboChange) );
+
 
 		// entry dialog
 		commUI_XML->connect_clicked("btnEntryOk", sigc::mem_fun(*this, &CommunicationUIModule::OnEntryDlgOk));
@@ -113,6 +134,7 @@ namespace CommunicationUI
         wndCommMain->set_title("Comms UI");
 		wndCommMain->show();
         lstContacts.show();
+        cmbPresence.show();
 	}
 
     void CommunicationUIModule::testDialog()
@@ -182,6 +204,7 @@ namespace CommunicationUI
         eIntf->SetCallback(CommunicationUIModule::incomingRequest, "incoming_request");
 
         eIntf->SetCallback(CommunicationUIModule::contactStatusChanged, "contact_status_changed");
+        eIntf->SetCallback(CommunicationUIModule::handleAvailableStatusList, "got_available_status_list");
     }
 
 	void CommunicationUIModule::OnAccountMenuSettings()
@@ -232,7 +255,29 @@ namespace CommunicationUI
 		if(entryret_==1){
             StartChat(str.c_str());
 		}
+        
 	}
+
+    void CommunicationUIModule::OnSetStatusOnline()
+    {
+        std::cout << "OnSetStatusOnline" << std::endl;
+        this->CallIMPyMethod("CSetStatus", "s", std::string("available"));
+    }
+    void CommunicationUIModule::OnSetStatusAway()
+    {
+        std::cout << "OnSetStatusAway" << std::endl;
+        this->CallIMPyMethod("CSetStatus", "s", std::string("away"));
+    }
+    void CommunicationUIModule::OnSetStatusBusy()
+    {
+        std::cout << "OnSetStatusBusy" << std::endl;
+        this->CallIMPyMethod("CSetStatus", "s", std::string("busy"));
+    }
+    void CommunicationUIModule::OnSetStatusOffline()
+    {
+        std::cout << "OnSetStatusOffline" << std::endl;
+        this->CallIMPyMethod("CSetStatus", "s", std::string("offline"));
+    }
 
     void CommunicationUIModule::StartChat(const char* contact)
     {
@@ -281,6 +326,34 @@ namespace CommunicationUI
     {
         LogInfo("OnRefresh");
         Foundation::ScriptObject* ret = CallIMPyMethod("CRefreshContactStatusList", "", std::string(""));
+    }
+
+    void CommunicationUIModule::OnSetPresenceMessage()
+    {
+        LogInfo("OnSetPresenceMessage");
+        //Gtk::Entry* entrySetPresenceMessage;
+        //Gtk::ComboBoxText cmbPresence;
+        std::string status = cmbPresence.get_active_text();
+        LogInfo("1");
+
+        Glib::ustring pmessage = entryPresenceMessage->get_text();
+        //std::string pmessage = entrySetPresenceMessage->get_text();
+
+        LogInfo("2");
+        status.append(":");
+        LogInfo("3");
+        status.append(pmessage);
+        LogInfo("call py");
+        this->CallIMPyMethod("CSetStatus", "s", status);
+    }
+
+    void CommunicationUIModule::OnComboChange()
+    {
+        LogInfo("OnComboChange");
+        std::string status = cmbPresence.get_active_text();
+        LogInfo(status);
+        this->CallIMPyMethod("CSetStatus", "s", status);
+
     }
 
 	void CommunicationUIModule::Callback(std::string aConfigName, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes)
@@ -363,6 +436,7 @@ namespace CommunicationUI
 
 	void CommunicationUIModule::setOnlineStatus(char* status)
 	{
+
 		Gtk::Label* label = (Gtk::Label*)instance_->commUI_XML->get_widget("lblOnlineStatus");
 		label->set_label(status);
 	}
@@ -502,16 +576,41 @@ namespace CommunicationUI
 	    std::strcpy(id, split[0].c_str());
         std::strcpy(status, split[1].c_str());
         std::strcpy(status_string, split[2].c_str());
-    	instance_->lstContacts.setContactStatus(id, status, status_string);
+        LogInfo(id);
+        
+        if(strcmp(id, "1")==0){
+            LogInfo("set on status");
+            Glib::ustring title("Comms UI | (");
+            title.append(status);
+            title.append(" - ");
+            title.append(status_string);
+            title.append(")");
+            // does not work
+            LogInfo("set title");
+            instance_->wndCommMain->set_title(title);
+            //lblOnlineStatus
+            //Gtk::Label* lblPresenceStatus;
+            LogInfo("set label");
+            instance_->lblPresenceStatus->set_text(title);
+        } else {
+    	    instance_->lstContacts.setContactStatus(id, status, status_string);
+        }
 	    delete[] id;
         delete[] status;
         delete[] status_string;
+    }
 
-        //Foundation::ScriptObject* ret = CallIMPyMethod("CGetStatusWithID", "s", std::string(id));
-
-        //char* status = ret->ConvertToChar();
-        //LogInfo("setContactStatus");
-        //instance_->lstContacts.setContactStatus(id, status);
+    void CommunicationUIModule::handleAvailableStatusList(char* statuslist_N)
+    {
+        LogInfo("handleAvailableStatusList");
+        LogInfo(statuslist_N);
+        std::vector<std::string> split = SplitString(std::string(statuslist_N), std::string(":"), 0);
+        for(std::vector<std::string>::iterator iter = split.begin();iter < split.end(); iter++){
+            if(*iter!="unknown"&&*iter!="offline"){
+                instance_->cmbPresence.append_text(*iter);
+            }
+        }
+        
     }
 
     void CommunicationUIModule::contactAdded(char* addr)
@@ -607,13 +706,21 @@ namespace CommunicationUI
        std::string::size_type start = 0;
        std::string::size_type end = 0;
        int round = 0;
-       while ((end=inString.find (separator, start)) != std::string::npos && round < splitAmount)
-       {
-          returnVector.push_back (inString.substr (start, end-start));
-          start = end+separator.size();
-          round++;
+       if(splitAmount!=0){
+           while ((end=inString.find (separator, start)) != std::string::npos && round < splitAmount)
+           {
+              returnVector.push_back (inString.substr (start, end-start));
+              start = end+separator.size();
+              round++;
+           }
+       } else {
+           while ((end=inString.find (separator, start)) != std::string::npos)
+           {
+              returnVector.push_back (inString.substr (start, end-start));
+              start = end+separator.size();
+              round++;
+           }       
        }
-
        returnVector.push_back (inString.substr (start));
 
        return returnVector;
