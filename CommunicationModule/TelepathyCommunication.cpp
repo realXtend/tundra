@@ -8,7 +8,23 @@
 
 namespace Communication
 {
-	using namespace Communication;
+
+	// Split given text with given separator and return substring of given index
+	// * Not very optimal, but works
+	std::string GetSplitString(std::string text, std::string separator, int index)
+	{
+		std::string res = "";
+		for (int i=0; i<=index; i++)
+		{
+			int separator_index = text.find(separator);
+			if (separator_index == -1)
+				return std::string("");
+			res = text.substr(0, separator_index);
+			text = text.substr(separator_index + 1, text.size() - separator_index - 1);
+			if (i == index)
+				return res;
+		}
+	}
 
 	TelepathyCommunicationPtr TelepathyCommunication::instance_;
 	void (TelepathyCommunication::*testCallbackPtr)(char*) = NULL;  
@@ -18,6 +34,8 @@ namespace Communication
 		TelepathyCommunication::instance_ = TelepathyCommunicationPtr(this);
 		framework_ = f;
 
+		friend_requests_ = FriendRequestListPtr( new FriendRequestList() );
+		im_sessions_ = IMSessionListPtr( new IMSessionList() );
 		RegisterConsoleCommands();
 		InitializePythonCommunication();
 		RegisterEvents();
@@ -28,6 +46,7 @@ namespace Communication
 		// todo: Cleanup
 	}
 
+	// todo: Add description fields 
 	void TelepathyCommunication::RegisterConsoleCommands()
 	{
         boost::shared_ptr<Console::CommandService> console_service = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
@@ -44,7 +63,8 @@ namespace Communication
 			console_service->RegisterCommand(Console::CreateCommand("commlistsessions", "", Console::Bind(this, &TelepathyCommunication::ConsoleListSessions)));
 			console_service->RegisterCommand(Console::CreateCommand("commsendmessage", "", Console::Bind(this, &TelepathyCommunication::ConsoleSendMessage)));
 			console_service->RegisterCommand(Console::CreateCommand("commlistcontacts", "", Console::Bind(this, &TelepathyCommunication::ConsoleListContacts)));
-			console_service->RegisterCommand(Console::CreateCommand("commaddcontact", "", Console::Bind(this, &TelepathyCommunication::ConsoleAddContact)));
+			console_service->RegisterCommand(Console::CreateCommand("commsendfriendrequest", "", Console::Bind(this, &TelepathyCommunication::ConsoleSendFriendRequest)));
+			console_service->RegisterCommand(Console::CreateCommand("commremovefriend", "", Console::Bind(this, &TelepathyCommunication::ConsoleRemoveFriend)));
 		}
 	}
 
@@ -105,11 +125,16 @@ namespace Communication
 
 	/*
 	  Currently uses credential from Account.txt
-	  todo: use given credential
+	  todo: use given credential instead
 	*/
 	void TelepathyCommunication::OpenConnection(CredentialsPtr c)
 	{
-		// todo: check if there is existing connection
+		if (connected_)
+		{
+			LogError("Connection to IM server already exist!");
+			return;
+		}
+
 		std::string method = "CAccountConnect";
 		std::string syntax = "";
 		Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, NULL);
@@ -120,35 +145,56 @@ namespace Communication
 	 */
 	void TelepathyCommunication::CloseConnection()
 	{
+		if (!connected_)
+		{
+			LogError("Connection to IM server doesn't exist!");
+			return;
+		}
+
 		std::string method = "CDisconnect";
 		std::string syntax = "";
 		Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, NULL);
+	}
+
+	// Not implemented yet: We allow sessions only with contacts at this point of development
+	IMSessionPtr TelepathyCommunication::CreateIMSession(ContactInfoPtr contact_info)
+	{
+		std::string error_message;
+		error_message.append("NOT IMPELEMENTED: CreateIMSession(ContactPtr contact)");
+
+		throw error_message;
 	}
 
 	/*
 	 * Creates a new IM session with given contact.
 	 * /todo: in future it's possible to add participients to existing session
 	 */
-	IMSessionPtr TelepathyCommunication::CreateIMSession(ContactInfoPtr contact)
+	IMSessionPtr TelepathyCommunication::CreateIMSession(ContactPtr contact)
 	{
-		std::string protocol = contact->GetProperty("protocol");
-		if (protocol.compare("jabber")==0)
+		std::string protocol = "jabber";
+
+		// Currently we only support jabber
+		if ( protocol.compare("jabber") == 0)
 		{
-			int session_id = 0; // todo: replace by real id
+//			int session_id = 0; // todo: replace by real id
 			TPIMSession* session = new TPIMSession(python_communication_object_);
+			session->protocol_ = protocol;
+			TPParticipant* participant = new TPParticipant(contact);
+			ParticipantPtr participant_ptr = ParticipantPtr((Participant*)participant);
+			session->participants_->push_back(participant_ptr);
+
 			IMSessionPtr session_ptr = IMSessionPtr((IMSession*)session);
-			this->im_sessions_.push_back(session_ptr);
+			this->im_sessions_->push_back(session_ptr);
 
 			char** args = new char*[1];
-			char* buf1 = new char[100];
-			strcpy(buf1, contact->GetProperty("address").c_str());
+			char* buf1 = new char[1000];
+			strcpy(buf1, contact->GetContactInfo(protocol)->GetProperty("address").c_str());
 			args[0] = buf1;
-
 			std::string method = "CStartChatSession"; // todo: CCreateIMSessionJabber, CCreateIMSessionSIP, etc.
 			std::string syntax = "s";
 			Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, args);
 			return session_ptr;
-			// TODO: Get session id from python !
+			// TODO: Get session id from python ?
 		}
 
 		// TODO: Handle error properly
@@ -158,6 +204,17 @@ namespace Communication
 		error_message.append("] is not supported by communication manager.");
 
 		throw error_message;
+	}
+
+	// Removes session with given id from im_sessions_ list
+	void TelepathyCommunication::RemoveIMSession(std::string session_id)
+	{
+		for (IMSessionList::iterator i; i < im_sessions_->end(); i++)
+		{
+			TPIMSession* session =  (TPIMSession*)i->get();
+			if ( session->GetId().compare(session_id) == 0)
+				im_sessions_->erase(i);
+		}
 	}
 
 	ContactListPtr TelepathyCommunication::GetContactList()
@@ -191,7 +248,32 @@ namespace Communication
 
 	void TelepathyCommunication::SendFriendRequest(ContactInfoPtr contact_info)
 	{
-		// todo: call python here
+		std::string name = "CAddContact";
+		std::string syntax = "s";
+		char** args = new char*[1];
+		char* buf1 = new char[1000];
+		strcpy(buf1, contact_info->GetProperty("address").c_str());
+		args[0] = buf1;
+		this->python_communication_object_->CallMethod(name, syntax, args); // todo: get return value
+	}
+
+	void TelepathyCommunication::RemoveContact(ContactPtr contact)
+	{
+		std::string name = "CRemoveContact";
+		std::string syntax = "s";
+		char** args = new char*[1];
+		char* buf1 = new char[1000];
+		strcpy(buf1, contact->GetContactInfo("jabber")->GetProperty("address").c_str());
+		args[0] = buf1;
+		this->python_communication_object_->CallMethod(name, syntax, args); // todo: get return value
+
+		// TODO: Move this to propier python callback function...
+		//for (ContactList::iterator i = contact_list_.begin(); i < contact_list_.end(); i++)
+		//{
+		//	if ( (*i).get() == contact.get() )
+		//	{
+		//	}
+		//}
 	}
 
 	// DEBUG CONSOLE CALLBACKS:
@@ -216,7 +298,7 @@ namespace Communication
 			text.append("offline");
 		text.append("\n");
 		text.append("* sessions: ");
-		sprintf(buffer, "%d",im_sessions_.size());
+		sprintf(buffer, "%d",im_sessions_->size());
 		text.append("  ");
 		text.append(buffer);
 		text.append("\n");
@@ -236,17 +318,18 @@ namespace Communication
 		std::string text;
 		text.append("\n");
 		text.append("Console commands:\n");
-		text.append("comm .............. Prints this help.\n");
-		text.append("commhelp .......... Prints this help.\n");
-		text.append("commstate ......... Prints information about communication manager state.\n");
-		text.append("commlogin ......... Connects to jabber server.\n");
-		text.append("commlogout ........ Closes connection to jabber server.\n");
-		text.append("commcreatesession . Creates IM session.\n");
-		text.append("commclosesession .. Closes IM session.\n");
-		text.append("commlistsessions .. Prints all sessions.\n");
-		text.append("commsendmessage ... Send messaga.\n");
-		text.append("commlistcontacts .. Prints all contacts on contact list.\n");
-		text.append("commaddcontact .... Sends friend request.\n");
+		text.append("comm .................. Prints this help.\n");
+		text.append("commhelp .............. Prints this help.\n");
+		text.append("commstate ............. Prints information about communication manager state.\n");
+		text.append("commlogin ............. Connects to jabber server.\n");
+		text.append("commlogout ............ Closes connection to jabber server.\n");
+		text.append("commcreatesession ..... Creates IM session.\n");
+		text.append("commclosesession ...... Closes IM session.\n");
+		text.append("commlistsessions ...... Prints all sessions.\n");
+		text.append("commsendmessage ....... Send messaga.\n");
+		text.append("commlistcontacts ...... Prints all contacts on contact list.\n");
+		text.append("commsendfriendrequest . Sends friend request.\n");
+		text.append("commremovefriend ...... Sends friend request.\n");
 		return Console::ResultSuccess(text); 
 	}
 
@@ -287,27 +370,30 @@ namespace Communication
 			return Console::ResultFailure(reason);
 		}
 
-		ContactInfo* c = new ContactInfo(); 
-		c->SetProperty("protocol", "jabber");
-		c->SetProperty("address", params[0]);
+		ContactInfo* info = new ContactInfo(); 
+		info->SetProperty("protocol", "jabber");
+		info->SetProperty("address", params[0]);
+		ContactInfoPtr info_ptr = ContactInfoPtr(info);
+
+		TPContact* c = new TPContact();
+		c->contact_infos_->push_back( info_ptr );
+		ContactPtr c_ptr = ContactPtr((Contact*)c);
 		
-		IMSessionPtr session = CreateIMSession( ContactInfoPtr(c) );
-//		TPIMSession*  s = (TPIMSession*)session.get();
-//		s->id_ = "mysession (created from console)";
+		IMSessionPtr session = CreateIMSession( c_ptr );
 		((TPIMSession*)session.get())->id_ = "mysession (created from console)";
-		// we dont' need our newborn session object nowhere inthis case ...
+		// we dont' need our newborn session object nowhere in this case ...
 
 		return Console::ResultSuccess("Ready.");
 	}
 
 	Console::CommandResult TelepathyCommunication::ConsoleCloseSession(const Core::StringVector &params)
 	{
-		if (TelepathyCommunication::GetInstance()->im_sessions_.size() == 0)
+		if (TelepathyCommunication::GetInstance()->im_sessions_->size() == 0)
 		{
 			return Console::ResultFailure("There is no session to be closed.");
 		}
 
-		((TPIMSession*)im_sessions_[0].get())->Close();
+		((TPIMSession*)(*im_sessions_)[0].get())->Close();
 
 		return Console::ResultSuccess("Ready.");
 	}
@@ -316,21 +402,21 @@ namespace Communication
 	Console::CommandResult TelepathyCommunication::ConsoleListSessions(const Core::StringVector &params)
 	{
 		std::string text;
-		if (im_sessions_.size() == 0)
+		if (im_sessions_->size() == 0)
 		{
 			text.append("No sessions.");
 			return Console::ResultSuccess(text);
 		}
 		text.append("Sessions: (");
 		char buffer[1000]; // TODO: clean this up!
-		itoa(im_sessions_.size(), buffer, 10);
+		itoa(im_sessions_->size(), buffer, 10);
 		text.append(buffer);
 		text.append(")\n");
 
 		ContactInfoPtr jabber_contact;
-		for (int i=0; i<im_sessions_.size(); i++)
+		for (int i=0; i<im_sessions_->size(); i++)
 		{
-			IMSessionPtr s = im_sessions_[i];
+			IMSessionPtr s = (*im_sessions_)[i];
 			std::string id = ((TPIMSession*)s.get())->GetId();
 			text.append("* session: ");
 			text.append(id);
@@ -352,14 +438,14 @@ namespace Communication
 		{
 			std::string text = params[0];
 
-			if (im_sessions_.size() == 0)
+			if (im_sessions_->size() == 0)
 			{
 				std::string reason = "There is no session to sent the message!";
 				return Console::ResultFailure(reason);
 			}
 
 			IMMessagePtr m = CreateIMMessage(text);
-			im_sessions_.at(0)->SendIMMessage(m);
+			(*im_sessions_).at(0)->SendIMMessage(m);
 
 			return Console::ResultSuccess("Ready.");
 		}
@@ -404,16 +490,40 @@ namespace Communication
 		return Console::ResultSuccess(text);
 	}
 
-	Console::CommandResult TelepathyCommunication::ConsoleAddContact(const Core::StringVector &params)
+	Console::CommandResult TelepathyCommunication::ConsolePublishPresence(const Core::StringVector &params)
 	{
 		// todo: call python
 		return Console::ResultFailure("NOT IMPLEMENTED.");
 	}
 
-	Console::CommandResult TelepathyCommunication::ConsolePublishPresence(const Core::StringVector &params)
+	Console::CommandResult TelepathyCommunication::ConsoleSendFriendRequest(const Core::StringVector &params)
 	{
-		// todo: call python
-		return Console::ResultFailure("NOT IMPLEMENTED.");
+		if (params.size() != 1)
+		{
+			return Console::ResultFailure("Error: Wrong number of parameters. commsendfriendrequest(<address>)");
+		}
+
+		ContactInfo* info = new ContactInfo();
+		info->SetProperty("protocol", "jabber");
+		info->SetProperty("address", params[0]);
+		SendFriendRequest( ContactInfoPtr(info) );
+		return Console::ResultSuccess("Ready.");
+	}
+
+	Console::CommandResult TelepathyCommunication::ConsoleRemoveFriend(const Core::StringVector &params)
+	{
+		if (params.size() != 1)
+		{
+			return Console::ResultFailure("Error: Wrong number of parameters. commremovefriend(<address>)");
+		}
+
+		ContactInfo* info = new ContactInfo();
+		info->SetProperty("protocol", "jabber");
+		info->SetProperty("address", params[0]);
+		ContactPtr contact = ContactPtr( (Contact*)new TPContact() );
+		contact->AddContactInfo(ContactInfoPtr(info));
+		RemoveContact(contact);
+		return Console::ResultSuccess("Ready.");
 	}
 
 	// PYTHON CALLBACK HANDLERS: 
@@ -462,12 +572,43 @@ namespace Communication
 
 	/*
 	   Called by communication.py via PythonScriptModule
-	   When new session was opened
+	   When new session (telepathy-text-channel) is opened
 	   todo: session id should be received (now we don't get anything)
-	   todo: IS THIS INCOMING OR OUTGOING ???
+	   todo: This is called both with incoming and outgoing sessions. These should be separedted.
 	*/
-	void TelepathyCommunication::PyCallbackChannelOpened(char*)
+	void TelepathyCommunication::PyCallbackChannelOpened(char* addr)
 	{
+		// Find the right session (with given address)
+		IMSessionListPtr sessions = TelepathyCommunication::GetInstance()->im_sessions_;
+		for (IMSessionList::iterator i = sessions->begin() ; i < sessions->end(); i++)
+		{
+			IMSessionPtr s = *i;
+			ParticipantListPtr participants = ((TPIMSession*)s.get())->GetParticipants();
+			for (ParticipantList::iterator j = participants->begin(); j < participants->end(); j++)
+			{
+				if ( (*j)->GetContact()->GetContactInfo("jabber")->GetProperty("address").compare(addr) == 0)
+				{
+					// We find the right session and so we can be sure that this session already exist
+					return;
+				}
+			}
+		}
+
+		// There was not session with this address, we have to create one
+		// * this happens when session is created by remote partner
+
+		ContactInfo* info = new ContactInfo(); 
+		info->SetProperty("protocol", "jabber");
+		info->SetProperty("address", addr);
+		ContactInfoPtr info_ptr = ContactInfoPtr(info);
+
+		TPContact* c = new TPContact();
+		c->contact_infos_->push_back( info_ptr );
+		ContactPtr c_ptr = ContactPtr((Contact*)c);
+		
+		IMSessionPtr session = TelepathyCommunication::GetInstance()->CreateIMSession( c_ptr );
+		((TPIMSession*)session.get())->id_ = "mysession (incoming session)";
+
 		LogInfo("Session created");
 
 //		IMSessionPtr s = IMSessionPtr( (IMSession*) new TPIMSession(TelepathyCommunication::GetInstance()->python_communication_object_) );
@@ -485,9 +626,9 @@ namespace Communication
 	{
 		LogInfo("Session closed");
 		std::string session_id = "";
-		for (int i = 0; i < TelepathyCommunication::GetInstance()->im_sessions_.size(); i++)
+		for (int i = 0; i < TelepathyCommunication::GetInstance()->im_sessions_->size(); i++)
 		{
-			IMSessionPtr s = TelepathyCommunication::GetInstance()->im_sessions_[i];
+			IMSessionPtr s = TelepathyCommunication::GetInstance()->im_sessions_->at(i);
 			TPIMSession* im_session = (TPIMSession*)s.get();
 			if ( im_session->GetId().compare(session_id) == 0 )
 			{
@@ -502,36 +643,53 @@ namespace Communication
 	/*
 	   Called by communication.py via PythonScriptModule
 	   When message is received
-	   todo: session id
+	   /param text "<address>:<message>"
 	*/
-	void TelepathyCommunication::PyCallbackMessagReceived(char* text)
+	void TelepathyCommunication::PyCallbackMessagReceived(char* address_text)
 	{
+		std::string address = GetSplitString(address_text,":",0);
+		std::string text = GetSplitString(address_text,":",1);
+		if (address.length() == 0)
+		{
+			std::string error;
+			error.append("Message received syntax error: ");
+			error.append(address_text);
+			LogError(error);
+			return;
+		}
+
+		if (TelepathyCommunication::GetInstance()->im_sessions_->size() == 0)
+		{
+			std::string t = "";
+			t.append("Message received but there is no sessions!");
+			LogInfo(t);
+			return;
+		}
+
 		std::string t;
 		t.append("Message received: ");
 		t.append(text);
 		LogInfo(t);
 
-		if (TelepathyCommunication::GetInstance()->im_sessions_.size() == 0)
-		{
-			t = "";
-			t.append("Message was received but there is no sessions!");
-			LogInfo(t);
-		}
-		std::string session_id = ((TPIMSession*)TelepathyCommunication::GetInstance()->im_sessions_[0].get())->id_; // todo: Get real session id from python
+//		std::string session_id = ((TPIMSession*)TelepathyCommunication::GetInstance()->im_sessions_[0].get())->id_; // todo: Get real session id from python
 		IMMessagePtr m = TelepathyCommunication::GetInstance()->CreateIMMessage(text);
-		//m->SetText(text);
-		//IMMessagePtr m = IMMessagePtr((IMMessage*)new TPIMMessage(session_id));
-		//m->SetText(text);
 
-		for (int i = 0; i < TelepathyCommunication::GetInstance()->im_sessions_.size(); i++)
+		// Find the right session (with given address)
+		IMSessionListPtr sessions = TelepathyCommunication::GetInstance()->im_sessions_;
+		for (IMSessionList::iterator i = sessions->begin() ; i < sessions->end(); i++)
 		{
-			IMSessionPtr s = TelepathyCommunication::GetInstance()->im_sessions_[i];
-			if ( ((TPIMSession*)s.get())->GetId().compare(session_id) == 0)
+			IMSessionPtr s = *i;
+			ParticipantListPtr participants = ((TPIMSession*)s.get())->GetParticipants();
+			for (ParticipantList::iterator j = participants->begin(); j < participants->end(); j++)
 			{
-				((TPIMSession*)s.get())->NotifyMessageReceived(m);
+				if ( (*j)->GetContact()->GetContactInfo("jabber")->GetProperty("address").compare(address) == 0)
+				{
+					((TPIMSession*)s.get())->NotifyMessageReceived(m);
+				}
 			}
 		}
-		
+
+		// TODO: Shoud we send the session too ?
 		IMMessageReceivedEvent e = IMMessageReceivedEvent(m);
 		TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::IM_MESSAGE_RECEIVED, (Foundation::EventDataInterface*)&e);
 	}
@@ -540,24 +698,50 @@ namespace Communication
 	   Called by communication.py via PythonScriptModule
 	   When ???
 	*/
-	void TelepathyCommunication::PycallbackFriendReceived(char* t)
+	void TelepathyCommunication::PycallbackFriendReceived(char* id_address)
 	{
 		LogInfo("PycallbackFriendReceived");
+
+		std::string id = GetSplitString(id_address,":",0);
+		std::string address = GetSplitString(id_address,":",1);
+		if (id.length() == 0)
+		{
+			std::string error;
+			error.append("Friend act received syntax error: ");
+			error.append(id_address);
+			LogError(error);
+			return;
+		}
+
 		// todo: handle this
 	}
+
 
 	/*
 	   Called by communication.py via PythonScriptModule
 	   When presence status has updated
-	   param char* id: the id of presence that has updetad
+	   /param id <id>:<online status>:<online message>
 	*/
-	void TelepathyCommunication::PyCallbackContactStatusChanged(char* id)
+	void TelepathyCommunication::PyCallbackContactStatusChanged(char* id_status_message)
 	{
+		std::string id = GetSplitString(id_status_message, ":", 0);
+		std::string status = GetSplitString(id_status_message, ":", 1);
+		std::string message = GetSplitString(id_status_message, ":", 2);
+		if (id.length() == 0)
+		{
+			std::string error;
+			error.append("Presence update received: Syntax error: ");
+			error.append(id_status_message);
+			LogError(error);
+			return;
+		}
+
 		std::string t;
 		t.append("Presence changed: ");
 		t.append(id);
 		LogInfo(t);
 
+		//ContactList* contact_list = &(TelepathyCommunication::GetInstance()->contact_list_);
 		ContactList* contact_list = &TelepathyCommunication::GetInstance()->contact_list_;
 		for (int i=0; i<contact_list->size(); i++)
 		{

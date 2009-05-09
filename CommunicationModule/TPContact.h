@@ -7,30 +7,26 @@
 
 namespace Communication
 {
-	class TPContact
+	class TPContact : Contact
 	{
 		friend class TelepathyCommunication;
 	public:
-		void SetName(std::string name);
-		std::string GetName();
-		PresenceStatusPtr GetPresenceStatus();
-		ContactInfoList GetContactInfoList();
+		TPContact();
+		virtual void SetName(std::string name);
+		virtual std::string GetName();
+		virtual PresenceStatusPtr GetPresenceStatus();
+		virtual ContactInfoListPtr GetContactInfoList();
+		virtual ContactInfoPtr GetContactInfo(std::string protocol);
+		virtual void AddContactInfo(ContactInfoPtr contact_info);
+
+
 	protected:
 //		void UpdatePresence(PresenceStatusPtr p); // called by TelepathyCommunication
 
 		std::string name_;
 		PresenceStatusPtr presence_status_;
-		ContactInfoList contact_infos_;
+		ContactInfoListPtr contact_infos_;
 	};
-
-//	typedef boost::shared_ptr<TPContact> TPContactPtr;
-//	typedef std::vector<TPContactPtr> TPContactList;
-
-	//class TPContactList
-	//{
-	//public:
-	//protected:
-	//};
 
 } // end of namespace: Communication
 

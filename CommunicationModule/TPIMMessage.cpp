@@ -12,7 +12,7 @@ namespace Communication
 
 	}
 
-	ParticipiantPtr TPMessage::GetAuthor()
+	ParticipantPtr TPMessage::GetAuthor()
 	{
 		return author_;
 	}

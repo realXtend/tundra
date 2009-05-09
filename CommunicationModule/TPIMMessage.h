@@ -16,12 +16,12 @@ namespace Communication
 		friend class TelepathyCommunication;
 	public:
 		TPMessage(std::string session_id);
-		Communication::ParticipiantPtr GetAuthor();
+		Communication::ParticipantPtr GetAuthor();
 		std::string GetTimeStamp();
 	protected:
 		std::string GetSessionId(); // called by TelepathyCommunication
 
-		Communication::ParticipiantPtr author_;
+		Communication::ParticipantPtr author_;
 		std::string session_id_;
 	};
 
