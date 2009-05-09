@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Thu May 07 13:09:16 2009 -->
+<!--Generated with glade3 3.4.3 on Sat May 09 19:43:18 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="wndCMain">
     <child>
@@ -8,8 +8,8 @@
         <property name="visible">True</property>
         <child>
           <widget class="GtkMenuBar" id="menubar1">
-            <property name="width_request">440</property>
-            <property name="height_request">27</property>
+            <property name="width_request">548</property>
+            <property name="height_request">29</property>
             <property name="visible">True</property>
             <child>
               <widget class="GtkMenuItem" id="menuitem1">
@@ -55,41 +55,37 @@
             <child>
               <widget class="GtkMenuItem" id="menuitem2">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">Connection _Status</property>
+                <property name="label" translatable="yes">Connection Status</property>
                 <property name="use_underline">True</property>
                 <child>
                   <widget class="GtkMenu" id="menu2">
                     <property name="visible">True</property>
                     <child>
-                      <widget class="GtkCheckMenuItem" id="imagemenuitem6">
+                      <widget class="GtkMenuItem" id="mi_online">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Online</property>
                         <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkCheckMenuItem" id="mi_addfriend">
+                      <widget class="GtkMenuItem" id="mi_away">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Away</property>
                         <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkCheckMenuItem" id="menuitem3">
+                      <widget class="GtkMenuItem" id="mi_busy">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Busy</property>
                         <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkCheckMenuItem" id="menuitem4">
+                      <widget class="GtkMenuItem" id="mi_offline">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Appear offline</property>
                         <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
                       </widget>
                     </child>
                   </widget>
@@ -129,8 +125,8 @@
             <property name="response_id">0</property>
           </widget>
           <packing>
-            <property name="x">319</property>
-            <property name="y">64</property>
+            <property name="x">320</property>
+            <property name="y">118</property>
           </packing>
         </child>
         <child>
@@ -158,7 +154,7 @@
           </widget>
           <packing>
             <property name="x">318</property>
-            <property name="y">98</property>
+            <property name="y">153</property>
           </packing>
         </child>
         <child>
@@ -174,13 +170,13 @@
           </widget>
           <packing>
             <property name="x">318</property>
-            <property name="y">131</property>
+            <property name="y">188</property>
           </packing>
         </child>
         <child>
           <widget class="GtkButton" id="btnRefresh">
             <property name="width_request">71</property>
-            <property name="height_request">36</property>
+            <property name="height_request">28</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
@@ -190,7 +186,47 @@
           </widget>
           <packing>
             <property name="x">317</property>
-            <property name="y">166</property>
+            <property name="y">225</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="GtkEntry" id="entryPresenceMessage">
+            <property name="width_request">183</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+          </widget>
+          <packing>
+            <property name="x">293</property>
+            <property name="y">53</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="GtkButton" id="btnSetPresenceMessage">
+            <property name="width_request">50</property>
+            <property name="height_request">28</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="label" translatable="yes">_Set</property>
+            <property name="use_underline">True</property>
+            <property name="response_id">0</property>
+          </widget>
+          <packing>
+            <property name="x">483</property>
+            <property name="y">54</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="GtkLabel" id="lblPresenceStatus">
+            <property name="width_request">248</property>
+            <property name="height_request">34</property>
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">:</property>
+          </widget>
+          <packing>
+            <property name="x">294</property>
+            <property name="y">282</property>
           </packing>
         </child>
       </widget>

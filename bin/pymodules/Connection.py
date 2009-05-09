@@ -13,7 +13,7 @@ import IMSession
 
 import time
 from telepathy.client.channel import Channel
-from telepathy.interfaces import CONN_MGR_INTERFACE, CONN_INTERFACE_PRESENCE, CONNECTION_INTERFACE_SIMPLE_PRESENCE
+from telepathy.interfaces import CONN_MGR_INTERFACE, CONN_INTERFACE_PRESENCE, CONNECTION_INTERFACE_SIMPLE_PRESENCE, CHANNEL
 from telepathy.interfaces import CHANNEL_TYPE_TEXT, CONN_INTERFACE, CHANNEL_INTERFACE_GROUP, CHANNEL_TYPE_CONTACT_LIST
 from telepathy.constants import (
     CONNECTION_HANDLE_TYPE_CONTACT, CONNECTION_STATUS_CONNECTED,
@@ -37,10 +37,6 @@ class Connection():
         self.chat_address = None
         self.textchannel = None
         self.contactlistInit = False
-##        self.match_sent = None
-##        self.match_received = None
-##        self.match_senderror = None
-##        self.match_closed = None
         self.current_precenses = None        
         self.precenseCallBackSet = False
 
@@ -110,19 +106,27 @@ class Connection():
         print "try"
         try:
             print "close_channel"
-            messages = self.textchannel[CHANNEL_TYPE_TEXT].ListPendingMessages(True)
+            im_session = self.sessions[addr]
+            
+            messages = im_session.textchannel[CHANNEL_TYPE_TEXT].ListPendingMessages(True)
+            #messages = self.textchannel[CHANNEL_TYPE_TEXT].ListPendingMessages(True)
+            
             print type(messages)
 
-            if(messages!=None):                
+            if(messages!=None):
                 for message in messages:
                     (i0, l0, i1, i2, i3, message0) = message
                     sender = i1
                     print str(message0)
-                    addr = self.get_contact_with_id(sender)
-                    print addr
+                    #addr = self.get_contact_with_id(sender)
+                    #print addr
                     self.cb_app.receivedMess(addr + ":" + str(message0))
                     
-            self.textchannel['org.freedesktop.Telepathy.Channel'].Close()
+            #self.textchannel['org.freedesktop.Telepathy.Channel'].Close()
+            #im_session.textchannel['org.freedesktop.Telepathy.Channel'].Close()
+            im_session.textchannel[CHANNEL].Close()
+            del self.sessions[addr]
+            
             
         except:
             print "fail"
@@ -191,8 +195,8 @@ class Connection():
                         'PresencesChanged', self.presences_changed)
                     #self.conn[CONN_INTERFACE_PRESENCE].connect_to_signal('PresenceUpdate', self.presence_update_signal_cb)
 
-##                    self.conn[CONN_INTERFACE_PRESENCE].GetStatuses(reply_handler=self.get_statuses_reply_cb,
-##                                                                   error_handler=self.error_cb)                    
+                    self.conn[CONN_INTERFACE_PRESENCE].GetStatuses(reply_handler=self.get_statuses_reply_cb,
+                                                                   error_handler=self.error_cb)                    
 #!!                    
                     if(self.current_precenses!=None):
                         #\bug using old way to retreave precences on startup, did not know how the new way works
@@ -270,8 +274,17 @@ class Connection():
         
         print 'waiting for changes'
         
-                
+    def SetStatus(self, status, message):
+        
+        self.conn[CONN_INTERFACE_PRESENCE].SetStatus(
+            {status: dbus.Dictionary({"message": message}, signature = "sv")},
+            reply_handler=lambda: None,
+            # We can ignore errors here. Presence will just not be set.
+            error_handler=self.ignore_error_handler)
+        pass
 
+    def ignore_error_handler(self, *args):
+        pass
 
     def _request_list_channel(self, name):
         handle = self.conn[CONN_INTERFACE].RequestHandles(
@@ -283,13 +296,6 @@ class Connection():
     def members_changed_subscribe_cb(self, *args):
         """Listens contact list changes"""
         print 'members_changed_subscribe_cb'
-##(dbus.String(u''),
-##        dbus.Array([], signature=dbus.Signature('u')),
-##        dbus.Array([], signature=dbus.Signature('u')),
-##        dbus.Array([], signature=dbus.Signature('u')),
-##        dbus.Array([dbus.UInt32(2L)], signature=dbus.Signature('u')),
-##        dbus.UInt32(0L), dbus.UInt32(0L))
-##<type 'tuple'>
         added = args[1]
         removed = args[2]
         local_pending = args[3]
@@ -466,7 +472,14 @@ class Connection():
     def get_statuses_reply_cb(self, statuses):
         print "================================"
         print 'get_statuses_reply_cb'
-        #print "GetStatuses replied", statuses
+        print "GetStatuses replied", statuses
+        statuslist = ""
+        for key in statuses.iterkeys():
+            print key
+            statuslist = statuslist + key + ":"
+        statuslist = statuslist[0:len(statuslist)-1]
+        self.cb_app.gotAvailableStatuses(statuslist)
+            #someid, status, status_string = statuses[key]
 
     def error_cb(self, error):
         print "Exception received from asynchronous method call:"
