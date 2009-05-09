@@ -9,6 +9,7 @@ import telepathy
 
 import IMDemo
 import ContactList
+import IMSession
 
 import time
 from telepathy.client.channel import Channel
@@ -19,12 +20,9 @@ from telepathy.constants import (
     CHANNEL_TEXT_MESSAGE_TYPE_NORMAL, CONNECTION_STATUS_DISCONNECTED, CONNECTION_HANDLE_TYPE_LIST)
 
 
-
 from threading import Thread
 from Queue import Queue
 import traceback
-
-
 
 class Connection():
     
@@ -39,10 +37,10 @@ class Connection():
         self.chat_address = None
         self.textchannel = None
         self.contactlistInit = False
-        self.match_sent = None
-        self.match_received = None
-        self.match_senderror = None
-        self.match_closed = None
+##        self.match_sent = None
+##        self.match_received = None
+##        self.match_senderror = None
+##        self.match_closed = None
         self.current_precenses = None        
         self.precenseCallBackSet = False
 
@@ -51,13 +49,14 @@ class Connection():
         self.requested_contacts = {}
         self.requested_contacts_phase_map = {} # need to be aware of number of added messages
 
+        self.sessions = {} # map of IM sessions (address & IMSession class)
+
         
     def _getRequestedContact(self, h):
         if (self.requested_contacts.__contains__(h)==True):
             return self.requested_contacts[h]
         else:
             return "None contact"
-
 
         
 ##====================================================
@@ -107,7 +106,7 @@ class Connection():
 ##====================================================
 ##    CLOSE CHANNEL
 ##====================================================
-    def close_channel(self):
+    def close_channel(self, addr):
         print "try"
         try:
             print "close_channel"
@@ -117,8 +116,11 @@ class Connection():
             if(messages!=None):                
                 for message in messages:
                     (i0, l0, i1, i2, i3, message0) = message
+                    sender = i1
                     print str(message0)
-                    self.cb_app.receivedMess(str(message0))
+                    addr = self.get_contact_with_id(sender)
+                    print addr
+                    self.cb_app.receivedMess(addr + ":" + str(message0))
                     
             self.textchannel['org.freedesktop.Telepathy.Channel'].Close()
             
@@ -153,9 +155,11 @@ class Connection():
         print "Channel creation failed" + exception
         pass
 
-    def SendMessage(self, mess):
+    def SendMessage(self, addr, mess):
         print "sending message"
-        self.textchannel[CHANNEL_TYPE_TEXT].Send(CHANNEL_TEXT_MESSAGE_TYPE_NORMAL, mess)
+        
+        self.sessions[addr].textchannel[CHANNEL_TYPE_TEXT].Send(CHANNEL_TEXT_MESSAGE_TYPE_NORMAL, mess)
+        #self.textchannel[CHANNEL_TYPE_TEXT].Send(CHANNEL_TEXT_MESSAGE_TYPE_NORMAL, mess)
         pass
 
     def EndChat(self):
@@ -188,8 +192,7 @@ class Connection():
                     #self.conn[CONN_INTERFACE_PRESENCE].connect_to_signal('PresenceUpdate', self.presence_update_signal_cb)
 
 ##                    self.conn[CONN_INTERFACE_PRESENCE].GetStatuses(reply_handler=self.get_statuses_reply_cb,
-##                                                                   error_handler=self.error_cb)
-                    
+##                                                                   error_handler=self.error_cb)                    
 #!!                    
                     if(self.current_precenses!=None):
                         #\bug using old way to retreave precences on startup, did not know how the new way works
@@ -197,107 +200,28 @@ class Connection():
                         #self.conn[CONNECTION_INTERFACE_SIMPLE_PRESENCE].GetPresences(self.current_precenses)
 
                     self.precenseCallBackSet = True
-
                     
         if channel_type == CHANNEL_TYPE_TEXT:
-            self.cb_app.channelOpened("")
+
             print "TEXT CHANNEL OPENED"
             print str(handle)
             print str(object_path)
-            print str(handle)
             print str(suppress_handler)
-            
-            print "enter quit_chat to end chat"
+
+            #print "enter quit_chat to end chat"
             self.textchannel = Channel(self.conn.service_name, object_path)
 
-            ifaces = self.textchannel.GetInterfaces()
-            print str(ifaces)            
-            
-            self.match_sent = self.textchannel[CHANNEL_TYPE_TEXT].connect_to_signal('Sent', self.cb_sent)
-            self.match_received = self.textchannel[CHANNEL_TYPE_TEXT].connect_to_signal('Received', self.cb_received)
-            self.match_senderror = self.textchannel[CHANNEL_TYPE_TEXT].connect_to_signal('SendError', self.cb_send_error)
-            #self.textchannel[CHANNEL_TYPE_TEXT].connect_to_signal('Closed', self.cb_closed)
-            self.match_closed = self.textchannel["org.freedesktop.Telepathy.Channel"].connect_to_signal('Closed', self.cb_closed)
-            self.cb_app.channelOpened("")
+##            ifaces = self.textchannel.GetInterfaces()
+##            print str(ifaces)
 
-            if(self.match_sent==None):
-                print "----------------------------"
-                print "sent signal match == None!!!"
-                print "----------------------------"
-            
-            messages = self.textchannel[CHANNEL_TYPE_TEXT].ListPendingMessages(True)
-
-            if(messages!=None):                
-                for message in messages:
-                    print str(message)
-                    #dbus.Struct((dbus.UInt32(0L), dbus.UInt32(1240230767L), dbus.UInt32(2L), dbus.UInt32(0L), dbus.UInt32(0L), dbus.String(u'faweef')), signature=None)
-                    #                1               2                       3                   4               5               6                           7
-                    #((i0, l0, i1, i2, i3, message0), signature0) = message
-                    #  1   2    3   4   5    6        7
-                    #self.cb_app.receivedMess(str(message))
-                    print dir(message)
-                    
-                    #self.cb_app.receivedMess(str(message))
-                    try:
-                        (i0, l0, i1, i2, i3, message0) = message
-                        print str(message0)
-                        self.cb_app.receivedMess(str(message0))
-                    except:
-                        print "fail 3"
-                    try:
-                        i0, l0, i1, i2, i3, message0 = message
-                        print str(message0)
-                    except:
-                        print "fail 4"
-                    
-                    
-            #print 
-        pass
+            addr = self.get_contact_with_id(handle)
+            print addr
+            self.sessions[addr] = IMSession.IMSession(self.cb_app, self, Channel(self.conn.service_name, object_path), addr)
+            self.sessions[addr].Initialize()
 
 
-    def cb_sent(self, timestamp, type, text):
-        print "mess sent:" + text
-        self.cb_app.sendMess(text)
-        pass
-
-    
-    def cb_received(self, *args):
-        id, timestamp, sender, type, flags, text = args
-
-        other_end = self.get_contact_with_id(str(sender))
-        print "The other one> " + other_end
-        #print other_end                            
-        print text
-        idlist = [id]
-        self.cb_app.receivedMess(other_end + ">" + text)
-        self.textchannel[CHANNEL_TYPE_TEXT].AcknowledgePendingMessages(idlist)
-        
-    
-    def cb_send_error(self, *args):
-        print (args)        
-        pass
-
-
-    def cb_closed(self, *args):
-        print "CHANNEL CLOSED!!!"
-        print (args)
-        if(self.match_sent!=None):
-            self.match_sent.remove()
-            self.match_sent=None
-            print "match sent None"
-        if(self.match_received!=None):
-            self.match_received.remove()
-            self.match_received=None
-        if(self.match_senderror!=None):
-            self.match_senderror.remove()
-            self.match_senderror=None
-        if(self.match_closed!=None):
-            self.match_closed.remove()
-            self.match_closed=None
-
-        self.textchannel = None
-        self.cb_app.channelClosed("")
-
+    def CloseMe(self, contactAddr):
+        del self.sessions[contactAddr]
 
     def SubscribeContactList(self):
         print 'set subscribe callback'
@@ -457,7 +381,6 @@ class Connection():
                 else:
                     addr = self.conn[CONN_INTERFACE].InspectHandles(CONNECTION_HANDLE_TYPE_CONTACT, [contact])[0]
                     self.cb_app.contactAddedToPublishList(addr)
-                    #self.cb_app.contactAddedToPublishList(str(contact) + ":" + addr)
                     pass
                     
         if removed:
@@ -716,7 +639,7 @@ class Connection():
             someid, status, status_string = args[key]
             #print someid, status, status_string
             #print key, status
-            id_n_status = str(key) + ":" + status
+            id_n_status = str(key) + ":" + status + ":" + status_string
             print id_n_status
             self.presence[str(key)]=status
             #self.cb_app.contactStatusChanged(str(key))

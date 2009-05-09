@@ -76,7 +76,7 @@ class ContactList:
         for key in args.iterkeys():
             print key, args[key]
             someid, status, status_string = args[key]
-            id_n_status = str(key) + ":" + status
+            id_n_status = str(key) + ":" + status + ":" + status_string
             self.cb_app.contactStatusChanged(id_n_status)
     
     

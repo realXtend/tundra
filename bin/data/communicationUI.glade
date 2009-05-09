@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Tue May 05 09:28:33 2009 -->
+<!--Generated with glade3 3.4.3 on Thu May 07 13:09:16 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="wndCMain">
     <child>
@@ -8,7 +8,7 @@
         <property name="visible">True</property>
         <child>
           <widget class="GtkMenuBar" id="menubar1">
-            <property name="width_request">316</property>
+            <property name="width_request">440</property>
             <property name="height_request">27</property>
             <property name="visible">True</property>
             <child>
@@ -129,8 +129,8 @@
             <property name="response_id">0</property>
           </widget>
           <packing>
-            <property name="x">266</property>
-            <property name="y">66</property>
+            <property name="x">319</property>
+            <property name="y">64</property>
           </packing>
         </child>
         <child>
@@ -157,8 +157,8 @@
             <property name="response_id">0</property>
           </widget>
           <packing>
-            <property name="x">267</property>
-            <property name="y">100</property>
+            <property name="x">318</property>
+            <property name="y">98</property>
           </packing>
         </child>
         <child>
@@ -173,14 +173,14 @@
             <property name="response_id">0</property>
           </widget>
           <packing>
-            <property name="x">267</property>
-            <property name="y">134</property>
+            <property name="x">318</property>
+            <property name="y">131</property>
           </packing>
         </child>
         <child>
           <widget class="GtkButton" id="btnRefresh">
             <property name="width_request">71</property>
-            <property name="height_request">34</property>
+            <property name="height_request">36</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
@@ -189,8 +189,8 @@
             <property name="response_id">0</property>
           </widget>
           <packing>
-            <property name="x">267</property>
-            <property name="y">169</property>
+            <property name="x">317</property>
+            <property name="y">166</property>
           </packing>
         </child>
       </widget>

@@ -47,11 +47,11 @@ namespace CommunicationUI
 		Glib::ustring title(counterpart);
 		
 		wnd_->set_title(title);
-
 		
 		chatBuffer_ = txtChatView_->get_buffer();
 		
 		wnd_->show();
+        txtEntrySend_->grab_focus();
 	}
 
 	ChatSession::~ChatSession(void)
@@ -61,22 +61,42 @@ namespace CommunicationUI
 	void ChatSession::onSendClicked()
 	{
 		Glib::ustring sendTxt = txtEntrySend_->get_text();
+        std::cout << "0" << std::endl;
 		txtEntrySend_->set_text("");
 		
-		// pack message
-		char** args = new char*[1];
-		char* buf1 = new char[30];
-		strcpy(buf1,sendTxt.c_str());
-		args[0] = buf1;
+		//// pack message
+		//char** args = new char*[3];
+  //      //Glib::ustring::size_type = sendTxt.length();
+  //      char* addr = new char[counterpart_.length()];
+		//char* mess = new char[sendTxt.length()];
+  //      
+		//strcpy(mess,sendTxt.c_str());
+  //      strcpy(addr,counterpart_.c_str());
+		//args[0] = addr;
+  //      args[1] = mess;
 
-		std::string str = "CSendChat";
-		std::string syntax = "s";
-		Foundation::ScriptObject* ret = imScriptObject_->CallMethod(str, syntax, args);
+		//std::string str = "CSendChat";
+		//std::string syntax = "ss";
+  //      //SIZE_T t = counterpart_.length();
+  //      Foundation::ScriptObject* ret = imScriptObject_->CallMethod(str, syntax, args);
+
+        std::cout << "1" << std::endl;
+        std::string addr_mess(counterpart_);
+        addr_mess.append(":");
+        addr_mess.append(sendTxt.c_str());
+        std::cout << addr_mess << std::endl;
+        CommunicationUI::CommunicationUIModule::CallIMPyMethod("CSendChat", "s", addr_mess);
+        
 
 		Gtk::TextBuffer::iterator chatIter = chatBuffer_->end();
-		chatBuffer_->insert(chatIter, "\n");
+		chatBuffer_->insert(chatIter, "\nYou> ");
 		chatIter = chatBuffer_->end();
 		chatBuffer_->insert(chatIter, sendTxt);
+        chatBuffer_->insert(chatIter, "\n ..");
+        chatIter = chatBuffer_->end();
+        txtChatView_->scroll_to(chatIter, 0.0, 1.0, 0.0);
+        //txtChatView_->scroll_to_iter(chatIter);
+        //delete[] args;
 	}
 
 	void ChatSession::onCloseClicked()
@@ -104,7 +124,15 @@ namespace CommunicationUI
 		Gtk::TextBuffer::iterator chatIter = chatBuffer_->end();
 		chatBuffer_->insert(chatIter, "\n");
 		chatIter = chatBuffer_->end();
+        chatBuffer_->insert(chatIter, counterpart_.c_str());
+        chatIter = chatBuffer_->end();
+        chatBuffer_->insert(chatIter, "> ");
+        chatIter = chatBuffer_->end();
 		chatBuffer_->insert(chatIter, mess);
+        chatBuffer_->insert(chatIter, "\n ..");
+        chatIter = chatBuffer_->end();
+        txtChatView_->scroll_to(chatIter, 0.0, 1.0, 0.5);
+        //txtChatView_->scroll_to_iter(chatIter);
 	}
 
 }
