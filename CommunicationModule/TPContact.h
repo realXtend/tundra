@@ -11,18 +11,15 @@ namespace Communication
 	{
 		friend class TelepathyCommunication;
 	public:
-		TPContact();
+		TPContact(std::string id);
 		virtual void SetName(std::string name);
 		virtual std::string GetName();
 		virtual PresenceStatusPtr GetPresenceStatus();
 		virtual ContactInfoListPtr GetContactInfoList();
 		virtual ContactInfoPtr GetContactInfo(std::string protocol);
 		virtual void AddContactInfo(ContactInfoPtr contact_info);
-
-
 	protected:
-//		void UpdatePresence(PresenceStatusPtr p); // called by TelepathyCommunication
-
+		std::string id_; // presence id on python side
 		std::string name_;
 		PresenceStatusPtr presence_status_;
 		ContactInfoListPtr contact_infos_;

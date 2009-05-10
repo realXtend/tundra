@@ -7,14 +7,19 @@
 
 namespace Communication
 {
-	IMMessageReceivedEvent::IMMessageReceivedEvent(IMMessagePtr m): message_(m)
+	IMMessageEvent::IMMessageEvent(IMSessionPtr s, IMMessagePtr m): session_(s), message_(m)
 	{
 
 	}
 
-	IMMessagePtr IMMessageReceivedEvent::GetMessage()
+	IMMessagePtr IMMessageEvent::GetMessage()
 	{
 		return message_;
+	}
+
+	IMSessionPtr IMMessageEvent::GetSession()
+	{
+		return session_;
 	}
 
 	PresenceStatusUpdateEvent::PresenceStatusUpdateEvent(ContactPtr c)
@@ -27,25 +32,34 @@ namespace Communication
 		return contact_;
 	}
 
-	IMSessionInvitationEvent::IMSessionInvitationEvent(IMSessionPtr s)
+	IMSessionRequestEvent::IMSessionRequestEvent(IMSessionPtr s)
 	{
 		session_ = s;
 	}
 
-	IMSessionPtr IMSessionInvitationEvent::GetSession()
+	IMSessionPtr IMSessionRequestEvent::GetSession()
 	{
 		return session_;
 	}
 
-	IMSessionClosedEvent::IMSessionClosedEvent(IMSessionPtr s)
+	IMSessionEndEvent::IMSessionEndEvent(IMSessionPtr s)
 	{
 		session_ = s;
 	}
 
-	IMSessionPtr IMSessionClosedEvent::GetSession()
+	IMSessionPtr IMSessionEndEvent::GetSession()
 	{
 		return session_;
 	}
 
+	FriendRequestEvent::FriendRequestEvent(FriendRequestPtr r): friend_request_(r)
+	{
+
+	}
+
+	FriendRequestPtr FriendRequestEvent::GetFriendRequest()
+	{
+		return friend_request_;
+	}
 
 } // end of namespace: Communication

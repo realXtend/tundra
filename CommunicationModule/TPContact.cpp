@@ -7,7 +7,7 @@
 
 namespace Communication
 {
-	TPContact::TPContact(): name_("")
+	TPContact::TPContact(std::string id): name_(""), id_(id)
 	{
 		contact_infos_ = ContactInfoListPtr( new ContactInfoList() );
 		presence_status_ = PresenceStatusPtr( (PresenceStatus*) new TPPresenceStatus() );

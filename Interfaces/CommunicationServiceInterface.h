@@ -44,8 +44,8 @@ namespace Communication
 	{
 	public:
 		virtual ~PresenceStatus() {};
-		virtual void SetOnlineStatus(bool status) = 0;
-		virtual bool GetOnlineStatus() = 0;
+		virtual void SetOnlineStatus(std::string status) = 0;
+		virtual std::string GetOnlineStatus() = 0;
 		virtual void SetOnlineMessage(std::string message) = 0;
 		virtual std::string GetOnlineMessage() = 0;
 	};
