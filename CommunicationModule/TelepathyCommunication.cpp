@@ -88,7 +88,6 @@ namespace Communication
 		this->communication_py_script_ = Foundation::ScriptObjectPtr(script_service->LoadScript(COMMUNICATION_SCRIPT_NAME, error));
 		if(error=="None")
 		{
-	//		CommunicationModule::LogInfo("ran python script: IMDemo");
 			this->python_communication_object_ = Foundation::ScriptObjectPtr ( this->communication_py_script_->GetObject(COMMUNICATION_CLASS_NAME) );
 			std::string name = "CDoStartUp";
 			std::string syntax = "";
@@ -97,13 +96,13 @@ namespace Communication
 		}
 		else
 		{
-			// todo: Report about error
-	//		CommunicationModule::LogInfo("ERROR: Cannot run python script: IMDemo");
+			std::string text = "Cannot run python script: ";
+			text.append(COMMUNICATION_SCRIPT_NAME);
+			LogError(text);
 			return;
 		}
 
 		// define python callbacks
-		
 		script_event_service->SetCallback( TelepathyCommunication::PyCallbackTest, "key");
 		script_event_service->SetCallback( TelepathyCommunication::PyCallbackConnected, "connected");
 		script_event_service->SetCallback( TelepathyCommunication::PyCallbackConnecting, "connecting");
@@ -114,6 +113,13 @@ namespace Communication
 		script_event_service->SetCallback( TelepathyCommunication::PycallbackFriendReceived, "contact_item");
 		script_event_service->SetCallback( TelepathyCommunication::PyCallbackContactStatusChanged, "contact_status_changed");
 		script_event_service->SetCallback( TelepathyCommunication::PyCallbackMessageSent, "message_sent");
+		script_event_service->SetCallback( TelepathyCommunication::PyCallbackFriendRequest, "incoming_request");
+		script_event_service->SetCallback( TelepathyCommunication::PyCallbackContactRemoved, "contact_removed");
+		script_event_service->SetCallback( TelepathyCommunication::PyCallbackContactAdded, "contact_added");
+		script_event_service->SetCallback( TelepathyCommunication::PyCallbackFriendRequestLocalPending, "local_pending");
+		script_event_service->SetCallback( TelepathyCommunication::PyCallbackFriendRequestRemotePending, "remote_pending");
+		script_event_service->SetCallback( TelepathyCommunication::PyCallbackFriendAdded, "contact_added_publish_list");
+		script_event_service->SetCallback( TelepathyCommunication::PyCallbackPresenceStatusTypes, "got_available_status_list");
 	}
 
 	void TelepathyCommunication::UninitializePythonCommunication()
@@ -268,6 +274,7 @@ namespace Communication
 		this->python_communication_object_->CallMethod(name, syntax, args); // todo: get return value
 	}
 
+	// send remove friend command to IM server
 	void TelepathyCommunication::RemoveContact(ContactPtr contact)
 	{
 		std::string name = "CRemoveContact";
@@ -277,14 +284,6 @@ namespace Communication
 		strcpy(buf1, contact->GetContactInfo("jabber")->GetProperty("address").c_str());
 		args[0] = buf1;
 		this->python_communication_object_->CallMethod(name, syntax, args); // todo: get return value
-
-		// TODO: Move this to propier python callback function...
-		//for (ContactList::iterator i = contact_list_.begin(); i < contact_list_.end(); i++)
-		//{
-		//	if ( (*i).get() == contact.get() )
-		//	{
-		//	}
-		//}
 	}
 
 
@@ -322,19 +321,27 @@ namespace Communication
 		std::string text;
 		text.append("\n");
 		text.append("communication manager: TelepathyCommunication\n");
+
 		text.append("* connection status: ");
 		if (connected_)
-			text.append("online");
+			text.append("open");
 		else
-			text.append("offline");
+			text.append("closed");
 		text.append("\n");
 		text.append("* sessions: ");
 		sprintf(buffer, "%d",im_sessions_->size());
 		text.append("  ");
 		text.append(buffer);
 		text.append("\n");
+
 		text.append("* contacts: ");
 		sprintf(buffer, "%d",contact_list_.size());
+		text.append("  ");
+		text.append(buffer);
+		text.append("\n");
+
+		text.append("* friend requests: ");
+		sprintf(buffer, "%d", friend_requests_->size());
 		text.append("  ");
 		text.append(buffer);
 		text.append("\n");
@@ -369,18 +376,22 @@ namespace Communication
 	*/
 	Console::CommandResult TelepathyCommunication::ConsoleLogin(const Core::StringVector &params)
 	{
-		if (params.size() != 4)
+		if ( params.size() != 4 && params.size() != 0 )
 		{	
 			std::string reason = "Wrong number of arguments!\ncommlogin(<address>,<pwd>,<server>,<port>)";
 			return Console::ResultFailure(reason);
 		}
 
 		Credentials* c = new Credentials(); // OpenConnection method doesn't use this yet.
-		c->SetProperty("account",params[0]);
-		c->SetProperty("password",params[1]);
-		c->SetProperty("server",params[2]);
-		c->SetProperty("server_port",params[3]);
-		OpenConnection(CredentialsPtr(c));
+		if ( params.size() == 4)
+		{
+			c->SetProperty("account",params[0]);
+			c->SetProperty("password",params[1]);
+			c->SetProperty("server",params[2]);
+			c->SetProperty("server_port",params[3]);
+		}
+		OpenConnection( CredentialsPtr(c) );
+
 		std::string text;
 		text.append("NOTE: Current version uses credential from Account.txt file.");
 		text.append("Ready.");
@@ -396,7 +407,7 @@ namespace Communication
 	// /param params the contact id of contact with we want to start a session
 	Console::CommandResult TelepathyCommunication::ConsoleCreateSession(const Core::StringVector &params)
 	{
-		if (params.size() != 1)
+		if ( params.size() != 1 )
 		{
 			std::string reason = "Wrong number of arguments!\ncommcreatesession(<friend>)";
 			return Console::ResultFailure(reason);
@@ -804,6 +815,119 @@ namespace Communication
 		LogInfo("PycallbackMessageSent");
 		// todo: handle this (maybe IMMessage should have status flag for this ?)
 	}
+
+	/*
+	   Called by communication.py via PythonScriptModule
+	   When friend request (permission to subscripe users presence status) was received
+	*/
+	// TODO: Remove hard coded "jabber" protocol
+	void TelepathyCommunication::PyCallbackFriendRequest(char* address)
+	{
+		std::string text;
+		text.append("PyCallbackFriendRequest: ");
+		text.append(address);
+		LogInfo("text");
+
+		ContactInfo* info = new ContactInfo();
+		info->SetProperty("protocol", "jabber");
+		info->SetProperty("address", address);
+		TPFriendRequest* request = new TPFriendRequest( ContactInfoPtr(info) );
+		FriendRequestPtr r = FriendRequestPtr((FriendRequest*)request);
+		TelepathyCommunication::GetInstance()->friend_requests_->push_back(r);
+		FriendRequestEvent* e = new FriendRequestEvent(r);
+		FriendRequestEventPtr e_ptr = FriendRequestEventPtr(e);
+		TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::FRIEND_REQUEST, (Foundation::EventDataInterface*)&e_ptr);
+	}
+
+
+	/*
+	   Called by communication.py via PythonScriptModule
+	   When contact is removed from contact list
+	*/
+	void TelepathyCommunication::PyCallbackContactRemoved(char* id)
+	{
+		TelepathyCommunicationPtr comm = TelepathyCommunication::GetInstance();
+
+		for (ContactList::iterator i = comm->contact_list_.begin(); i < comm->contact_list_.end(); i++)
+		{
+			TPContact* contact = (TPContact*)((*i).get());
+			if (contact->id_.compare(id) == 0)
+			{
+				comm->contact_list_.erase(i);
+				return;
+			}
+		}
+
+		std::string text;
+		text.append("ERROR: Cannot remove contact: ");
+		text.append(id);
+		LogError(text);
+	}
+
+	/*
+	   Called by communication.py via PythonScriptModule
+	   When contact is added to contact list
+	*/
+	void TelepathyCommunication::PyCallbackContactAdded(char* id)
+	{
+		std::string text;
+		text.append("PyCallbackContactAdded: ");
+		text.append(id);
+		LogDebug(text);
+	}
+
+	/*
+	   Called by communication.py via PythonScriptModule
+	   When friend request id pending locally
+	*/
+	void TelepathyCommunication::PyCallbackFriendRequestLocalPending(char* id)
+	{
+
+	}
+
+	/*
+	   Called by communication.py via PythonScriptModule
+	   When friend request id pending on remote side
+	*/
+	void TelepathyCommunication::PyCallbackFriendRequestRemotePending(char* id)
+	{
+
+	}
+
+	/*
+	   Called by communication.py via PythonScriptModule
+	   When friend request id pending on remote side
+	   // TODO: This should be renamed better
+	*/
+	void TelepathyCommunication::PyCallbackFriendAdded(char* id)
+	{
+
+	}
+
+	/*
+	   Called by communication.py via PythonScriptModule
+	   After successfully login.
+
+	   /param type_list list of available presence status options (<optio1>:<option2>:<option3>...)
+	*/
+	void TelepathyCommunication::PyCallbackPresenceStatusTypes(char* type_list)
+	{
+		std::string option;
+		int i = 0;
+		do
+		{
+			option = GetSplitString(type_list, ":", i);
+			if ( option.length() > 0 )
+			{
+				// We don't allow these
+				if ( option.compare("unknown") != 0 && option.compare("offline") != 0 )
+					TelepathyCommunication::GetInstance()->presence_status_options_.push_back(option);
+			}
+			i++;
+		}
+		while (option.length() > 0);
+	}
+
 
 
 } // end of namespace: Communication

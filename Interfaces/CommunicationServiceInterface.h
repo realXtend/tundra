@@ -48,6 +48,7 @@ namespace Communication
 		virtual std::string GetOnlineStatus() = 0;
 		virtual void SetOnlineMessage(std::string message) = 0;
 		virtual std::string GetOnlineMessage() = 0;
+		virtual std::vector<std::string> GetOnlineStatusOptions() = 0;
 	};
 	typedef boost::shared_ptr<PresenceStatus> PresenceStatusPtr;
 

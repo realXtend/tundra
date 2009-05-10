@@ -37,9 +37,11 @@ namespace Communication
 	 */
 	class TelepathyCommunication : public CommunicationServiceInterface
 	{
+		// TODO: Might be a better way to do communicatio between these classes
 		friend class TPIMSession;
 		friend class TPSession;
 		friend class TPFriendRequest;
+		friend class TPPresenceStatus;
 
 		MODULE_LOGGING_FUNCTIONS
 			
@@ -92,9 +94,11 @@ namespace Communication
 		Foundation::EventManagerPtr event_manager_;
 		Core::event_category_id_t comm_event_category_; // todo: could be static 
 		FriendRequestListPtr friend_requests_;
-		
+		std::vector<std::string> presence_status_options_;
 
-		// python event handlers (todo: could these be non-static member functions?)
+		// python event handlers
+		// * todo: could these be non-static member functions?
+		// * todo: could we handle memory allocation in some another way with these function parameters?
 		static void PyCallbackTest(char *);
 		static void PyCallbackConnected(char*);
 		static void PyCallbackConnecting(char*);
@@ -105,7 +109,14 @@ namespace Communication
 		static void PycallbackFriendReceived(char* t);
 		static void PyCallbackContactStatusChanged(char* id);
 		static void PyCallbackMessageSent(char* id);
-		
+		static void PyCallbackFriendRequest(char* id);
+		static void PyCallbackContactRemoved(char* id);
+		static void PyCallbackContactAdded(char* id);
+		static void PyCallbackFriendRequestLocalPending(char* id);
+		static void PyCallbackFriendRequestRemotePending(char* id);
+		static void PyCallbackFriendAdded(char* id);
+		static void PyCallbackPresenceStatusTypes(char* id);
+
 		// initialization
 		void InitializePythonCommunication();
 		void UninitializePythonCommunication();
