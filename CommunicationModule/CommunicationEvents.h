@@ -8,35 +8,36 @@ namespace Communication
 {
     namespace Events
     {
-        static const Core::event_id_t PRESENCE_STATUS_UPDATED = 1;
-        static const Core::event_id_t IM_MESSAGE_RECEIVED = 2;
-        static const Core::event_id_t IM_SESSION_INVITATION_RECEIVED = 3;
-		static const Core::event_id_t SESSION_CLOSED = 4;
+        static const Core::event_id_t PRESENCE_STATUS_UPDATE = 1;
+        static const Core::event_id_t IM_MESSAGE = 2;
+        static const Core::event_id_t IM_SESSION_REQUEST = 3;
+		static const Core::event_id_t IM_SESSION_END = 4;
+		static const Core::event_id_t FRIEND_REQUEST = 5;
+		static const Core::event_id_t FRIEND_RESPONSE = 6;
 
-		// future events
-//        static const Core::event_id_t IM_SESSION_STATE_CHANGED = 4;
+		// future events ?
+//      static const Core::event_id_t IM_SESSION_STATE_CHANGED = 4;
 //		static const Core::event_id_t SESSION_INVITATION_RESPONSE_RECEIVED = 5;
-//        static const Core::event_id_t PARTICIPIENT_LEFT = 6;
+//      static const Core::event_id_t PARTICIPIENT_LEFT = 6;
 //		static const Core::event_id_t PARTICIPIENT_JOINED = 7;
-//		static const Core::event_id_t FRIENDSHIP_REQUEST_RECEIVED = 8;
-//        static const Core::event_id_t FRIENDSHIP_RESPONSE_RECEIVED = 9;
-//        static const Core::event_id_t CONNECTION_STATUS_CHANGED = 10;
-		//SESSION_JOIN_REQUEST_RECEIVED
+//      static const Core::event_id_t FRIENDSHIP_RESPONSE_RECEIVED = 9;
+//      static const Core::event_id_t CONNECTION_STATUS_CHANGED = 10;
+//      static const Core::event_id_t SESSION_JOIN_REQUEST_RECEIVED = 11;
 	}
 
 	/*
-
 	*/
-	class IMMessageReceivedEvent : public Foundation::EventDataInterface
+	class IMMessageEvent : public Foundation::EventDataInterface
 	{
 	public:
-		IMMessageReceivedEvent(IMMessagePtr m);
+		IMMessageEvent(IMSessionPtr s, IMMessagePtr m);
 		IMMessagePtr GetMessage();
+		IMSessionPtr GetSession();
 	private:
+		IMSessionPtr session_;
 		IMMessagePtr message_;
 	};
-
-	typedef boost::shared_ptr<IMMessageReceivedEvent> IMMessageReceivedPtr;
+	typedef boost::shared_ptr<IMMessageEvent> IMMessageEventPtr;
 
 
 	/*
@@ -50,32 +51,45 @@ namespace Communication
 	private:
 		ContactPtr contact_;
 	};
-
-	/*
-
-	*/
 	typedef boost::shared_ptr<PresenceStatusUpdateEvent> PresenceStatusUpdateEventPtr;
 
-	class IMSessionInvitationEvent : public Foundation::EventDataInterface
+	/*
+
+	*/
+	
+	class IMSessionRequestEvent : public Foundation::EventDataInterface
 	{
 	public:
-		IMSessionInvitationEvent(IMSessionPtr s);
+		IMSessionRequestEvent(IMSessionPtr s);
 		IMSessionPtr GetSession();
 	private:
 		IMSessionPtr session_;
 	};
+	typedef boost::shared_ptr<IMSessionRequestEvent> IMSessionRequestEventPtr;
 
 	/*
 
 	*/
-	class IMSessionClosedEvent : public Foundation::EventDataInterface
+	class IMSessionEndEvent : public Foundation::EventDataInterface
 	{
 	public:
-		IMSessionClosedEvent(IMSessionPtr s);
+		IMSessionEndEvent(IMSessionPtr s);
 		IMSessionPtr GetSession();
 	private:
 		IMSessionPtr session_;
 	};
+	typedef boost::shared_ptr<IMSessionEndEvent> IMSessionEndEventPtr;
+
+	class FriendRequestEvent : public Foundation::EventDataInterface
+	{
+	public:
+		FriendRequestEvent(FriendRequestPtr r);
+		FriendRequestPtr GetFriendRequest();
+	private:
+		FriendRequestPtr friend_request_;
+	};
+	typedef boost::shared_ptr<FriendRequestEvent> FriendRequestEventPtr;
+
 
 } // end of namespace: Communication
 

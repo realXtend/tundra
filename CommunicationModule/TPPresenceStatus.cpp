@@ -8,12 +8,12 @@
 namespace Communication
 {
 
-	void TPPresenceStatus::SetOnlineStatus(bool status)
+	void TPPresenceStatus::SetOnlineStatus(std::string status)
 	{
 		this->online_status_ = status;	
 	}
 
-	bool TPPresenceStatus::GetOnlineStatus()
+	std::string TPPresenceStatus::GetOnlineStatus()
 	{
 		return this->online_status_;
 	}
@@ -28,7 +28,7 @@ namespace Communication
 		return this->online_message_;
 	}
 
-	void TPPresenceStatus::NotifyUpdate(bool online_status, std::string online_message)
+	void TPPresenceStatus::NotifyUpdate(std::string online_status, std::string online_message)
 	{
 		online_status_ = online_status;
 		online_message_ = online_message;

@@ -91,6 +91,7 @@ namespace Communication
 		im_messages_.push_back(m);
 	}
 
+	// Update message history 
 	void TPIMSession::NotifyMessageReceived(IMMessagePtr m)
 	{
 		im_messages_.push_back(m);

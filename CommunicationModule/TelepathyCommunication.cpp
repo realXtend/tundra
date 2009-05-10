@@ -18,12 +18,16 @@ namespace Communication
 		{
 			int separator_index = text.find(separator);
 			if (separator_index == -1)
-				return std::string("");
+				if (i == index)
+					return text;
+				else
+					return std::string("");
 			res = text.substr(0, separator_index);
 			text = text.substr(separator_index + 1, text.size() - separator_index - 1);
 			if (i == index)
 				return res;
 		}
+		return "";
 	}
 
 	TelepathyCommunicationPtr TelepathyCommunication::instance_;
@@ -375,7 +379,7 @@ namespace Communication
 		info->SetProperty("address", params[0]);
 		ContactInfoPtr info_ptr = ContactInfoPtr(info);
 
-		TPContact* c = new TPContact();
+		TPContact* c = new TPContact("test_id");
 		c->contact_infos_->push_back( info_ptr );
 		ContactPtr c_ptr = ContactPtr((Contact*)c);
 		
@@ -470,22 +474,21 @@ namespace Communication
 		char buffer[100];
 		std::string text;
 
-		text.append("Contacts count: ");
+		text.append("Contacts (");
 		sprintf(buffer,"%i",contact_list_.size());
 		text.append(buffer);
-		text.append("\n");
+		text.append("):\n");
 
 		for (int i=0; i<contact_list_.size(); i++)
 		{
-			ContactPtr contact = contact_list_[i];
+			ContactPtr c = contact_list_[i];
+			TPContact* contact = (TPContact*) c.get();
+			std::string id = contact->id_;
 			std::string name = contact->GetName();
-			std::string online_status;
-			if (contact->GetPresenceStatus()->GetOnlineStatus())
-				online_status = "online ";
-			else
-				online_status = "offline";
+			std::string address = contact->GetContactInfo("jabber")->GetProperty("address");
+			std::string online_status = contact->GetPresenceStatus()->GetOnlineStatus();
 			std::string online_message = contact->GetPresenceStatus()->GetOnlineMessage();
-			text.append( name.append(" ").append(online_status).append(" ").append(online_message) );
+			text.append( id.append(" ").append(address).append(" ").append(online_status).append(" ").append(online_message) );
 		}
 		return Console::ResultSuccess(text);
 	}
@@ -520,7 +523,7 @@ namespace Communication
 		ContactInfo* info = new ContactInfo();
 		info->SetProperty("protocol", "jabber");
 		info->SetProperty("address", params[0]);
-		ContactPtr contact = ContactPtr( (Contact*)new TPContact() );
+		ContactPtr contact = ContactPtr( (Contact*)new TPContact("test2") );
 		contact->AddContactInfo(ContactInfoPtr(info));
 		RemoveContact(contact);
 		return Console::ResultSuccess("Ready.");
@@ -602,7 +605,7 @@ namespace Communication
 		info->SetProperty("address", addr);
 		ContactInfoPtr info_ptr = ContactInfoPtr(info);
 
-		TPContact* c = new TPContact();
+		TPContact* c = new TPContact("");
 		c->contact_infos_->push_back( info_ptr );
 		ContactPtr c_ptr = ContactPtr((Contact*)c);
 		
@@ -633,8 +636,8 @@ namespace Communication
 			if ( im_session->GetId().compare(session_id) == 0 )
 			{
 				im_session->NotifyClosedByRemote();
-				IMSessionClosedEvent e = IMSessionClosedEvent(s);
-				TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::SESSION_CLOSED, (Foundation::EventDataInterface*)&e);
+				IMSessionEndEvent e = IMSessionEndEvent(s);
+				TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::IM_SESSION_END, (Foundation::EventDataInterface*)&e);
 				// todo: remove session from im_sessions_
 			}
 		}
@@ -671,7 +674,6 @@ namespace Communication
 		t.append(text);
 		LogInfo(t);
 
-//		std::string session_id = ((TPIMSession*)TelepathyCommunication::GetInstance()->im_sessions_[0].get())->id_; // todo: Get real session id from python
 		IMMessagePtr m = TelepathyCommunication::GetInstance()->CreateIMMessage(text);
 
 		// Find the right session (with given address)
@@ -685,18 +687,22 @@ namespace Communication
 				if ( (*j)->GetContact()->GetContactInfo("jabber")->GetProperty("address").compare(address) == 0)
 				{
 					((TPIMSession*)s.get())->NotifyMessageReceived(m);
+					IMMessageEvent e = IMMessageEvent(s,m);
+					TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::IM_MESSAGE, (Foundation::EventDataInterface*)&e);
+					return;
 				}
 			}
 		}
 
-		// TODO: Shoud we send the session too ?
-		IMMessageReceivedEvent e = IMMessageReceivedEvent(m);
-		TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::IM_MESSAGE_RECEIVED, (Foundation::EventDataInterface*)&e);
+		// error
+		t = "Error: Message from someone out side any sessions";
+		LogError(t);
 	}
 
 	/*
 	   Called by communication.py via PythonScriptModule
-	   When ???
+	   When we get a contact from our contact list from IM server
+	   * We build our contact info list here!
 	*/
 	void TelepathyCommunication::PycallbackFriendReceived(char* id_address)
 	{
@@ -713,7 +719,15 @@ namespace Communication
 			return;
 		}
 
-		// todo: handle this
+		ContactInfo* info = new ContactInfo();
+		info->SetProperty("protocol", "jabber");
+		info->SetProperty("address", address);
+
+		TPContact* c = new TPContact(id);
+		c->SetName(address);
+		c->AddContactInfo(ContactInfoPtr(info));
+		ContactPtr ptr = ContactPtr( (Contact*)c );
+		TelepathyCommunication::GetInstance()->contact_list_.push_back(ptr);
 	}
 
 
@@ -739,6 +753,10 @@ namespace Communication
 		std::string t;
 		t.append("Presence changed: ");
 		t.append(id);
+		t.append("  ");
+		t.append(status);
+		t.append("  ");
+		t.append(message);
 		LogInfo(t);
 
 		//ContactList* contact_list = &(TelepathyCommunication::GetInstance()->contact_list_);
@@ -746,13 +764,11 @@ namespace Communication
 		for (int i=0; i<contact_list->size(); i++)
 		{
 			ContactPtr c = (*contact_list)[i];
-			if (((TPPresenceStatus*)c->GetPresenceStatus().get())->id_.compare(id)==0)
+			if ( ((TPContact*)c.get())->id_.compare(id) == 0 )
 			{
-				((TPPresenceStatus*)c->GetPresenceStatus().get())->NotifyUpdate(true, "online message"); 
-				// todo: Get the real values to notify with 
-				// todo: Call relevant python functions to get actual presence state
+				((TPPresenceStatus*)c->GetPresenceStatus().get())->NotifyUpdate(status, message); 
 				PresenceStatusUpdateEvent e = PresenceStatusUpdateEvent( c );
-				TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::IM_MESSAGE_RECEIVED, (Foundation::EventDataInterface*)&e);
+				TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::IM_MESSAGE, (Foundation::EventDataInterface*)&e);
 			}
 		}
 	}
