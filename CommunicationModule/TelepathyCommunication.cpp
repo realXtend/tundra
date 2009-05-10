@@ -68,7 +68,10 @@ namespace Communication
 			console_service->RegisterCommand(Console::CreateCommand("commsendmessage", "", Console::Bind(this, &TelepathyCommunication::ConsoleSendMessage)));
 			console_service->RegisterCommand(Console::CreateCommand("commlistcontacts", "", Console::Bind(this, &TelepathyCommunication::ConsoleListContacts)));
 			console_service->RegisterCommand(Console::CreateCommand("commsendfriendrequest", "", Console::Bind(this, &TelepathyCommunication::ConsoleSendFriendRequest)));
-			console_service->RegisterCommand(Console::CreateCommand("commremovefriend", "", Console::Bind(this, &TelepathyCommunication::ConsoleRemoveFriend)));
+			console_service->RegisterCommand(Console::CreateCommand("commremovecontact", "", Console::Bind(this, &TelepathyCommunication::ConsoleRemoveFriend)));
+			console_service->RegisterCommand(Console::CreateCommand("commlistfriendrequests", "", Console::Bind(this, &TelepathyCommunication::ConsoleListFriendRequests)));
+			console_service->RegisterCommand(Console::CreateCommand("commaccept", "", Console::Bind(this, &TelepathyCommunication::ConsoleAcceptFriendRequest)));
+			console_service->RegisterCommand(Console::CreateCommand("commdeny", "", Console::Bind(this, &TelepathyCommunication::ConsoleDenyFriendRequest)));
 		}
 	}
 
@@ -275,13 +278,24 @@ namespace Communication
 	}
 
 	// send remove friend command to IM server
+	// todo: remove hardcoded protocol 
 	void TelepathyCommunication::RemoveContact(ContactPtr contact)
 	{
 		std::string name = "CRemoveContact";
 		std::string syntax = "s";
 		char** args = new char*[1];
 		char* buf1 = new char[1000];
-		strcpy(buf1, contact->GetContactInfo("jabber")->GetProperty("address").c_str());
+		std::string address = contact->GetContactInfo("jabber")->GetProperty("address");
+		if ( address.size() == 0)
+		{
+			std::string text;
+			text = "Try to remove nonexist contact (";
+			text.append( ((TPContact*)contact.get())->id_ );
+			text.append(") from contact list!");
+			LogError(text);
+			return;
+		}
+		strcpy(buf1, address.c_str());
 		args[0] = buf1;
 		this->python_communication_object_->CallMethod(name, syntax, args); // todo: get return value
 	}
@@ -367,7 +381,9 @@ namespace Communication
 		text.append("commsendmessage ....... Send messaga.\n");
 		text.append("commlistcontacts ...... Prints all contacts on contact list.\n");
 		text.append("commsendfriendrequest . Sends friend request.\n");
-		text.append("commremovefriend ...... Sends friend request.\n");
+		text.append("commremovecontact ..... Sends friend request.\n");
+		text.append("commaccept ............ Accpect friend request.\n");
+		text.append("commdeny .............. Deny friend request.\n");
 		return Console::ResultSuccess(text); 
 	}
 
@@ -546,20 +562,98 @@ namespace Communication
 		return Console::ResultSuccess("Ready.");
 	}
 
+	// /param params id of friens on friend list
 	Console::CommandResult TelepathyCommunication::ConsoleRemoveFriend(const Core::StringVector &params)
 	{
 		if (params.size() != 1)
 		{
-			return Console::ResultFailure("Error: Wrong number of parameters. commremovefriend(<address>)");
+			return Console::ResultFailure("Error: Wrong number of parameters. commremovefriend( <id> )");
 		}
 
-		ContactInfo* info = new ContactInfo();
-		info->SetProperty("protocol", "jabber");
-		info->SetProperty("address", params[0]);
-		ContactPtr contact = ContactPtr( (Contact*)new TPContact("test2") );
-		contact->AddContactInfo(ContactInfoPtr(info));
-		RemoveContact(contact);
+		std::string id = params[0];
+		ContactPtr c = GetContact(id);
+		RemoveContact(c);
 		return Console::ResultSuccess("Ready.");
+	}
+
+	// returns contect of friend request list
+	// params Not used
+	Console::CommandResult TelepathyCommunication::ConsoleListFriendRequests(const Core::StringVector &params)
+	{
+		std::string text;
+		text = "Friend requests (";
+		char buffer[1000];
+		itoa(friend_requests_->size(), buffer, 10);
+		text.append(buffer);
+		text.append("):\n");
+
+		for ( FriendRequestList::iterator i = friend_requests_->begin(); i < friend_requests_->end(); i++)
+		{
+			FriendRequestPtr r = (*i);
+			ContactInfoPtr info = r->GetContactInfo();
+			if ( info->GetProperty("protocol").compare("jabber") == 0 )
+			{
+				std::string address = info->GetProperty("address");
+				text.append("* ");
+				text.append(address);
+				text.append("\n");
+			}
+		}
+		return Console::ResultSuccess(text);
+	}
+
+	// params address of friend
+	Console::CommandResult TelepathyCommunication::ConsoleAcceptFriendRequest(const Core::StringVector &params)
+	{
+		if (params.size() != 1)
+			return Console::ResultFailure("Wrong number of arguments.\n>> commaccept( <address> )");
+		std::string address = params[0];
+
+		for ( FriendRequestList::iterator i = friend_requests_->begin(); i < friend_requests_->end(); i++)
+		{
+			FriendRequestPtr r = (*i);
+			ContactInfoPtr info = r->GetContactInfo();
+			if ( info->GetProperty("protocol").compare("jabber") == 0 )
+			{
+				if ( info->GetProperty("address").compare(address) == 0)
+				{
+					r->Accept();
+					std::string text = "Friend request accepted: ";
+					text.append(address);
+					return Console::ResultSuccess(text);
+				}
+			}
+		}
+		std::string text = "Cannot find friend request: ";
+		text.append(address);
+		return Console::ResultFailure(text);
+	}
+
+	// params address of friend
+	Console::CommandResult TelepathyCommunication::ConsoleDenyFriendRequest(const Core::StringVector &params)
+	{
+		if (params.size() != 1)
+			return Console::ResultFailure("Wrong number of arguments.\n>> commadeny( <address> )");
+		std::string address = params[0];
+
+		for ( FriendRequestList::iterator i = friend_requests_->begin(); i < friend_requests_->end(); i++)
+		{
+			FriendRequestPtr r = (*i);
+			ContactInfoPtr info = r->GetContactInfo();
+			if ( info->GetProperty("protocol").compare("jabber") == 0 )
+			{
+				if ( info->GetProperty("address").compare(address) == 0)
+				{
+					r->Deny();
+					std::string text = "Friend request accepted: ";
+					text.append(address);
+					return Console::ResultSuccess(text);
+				}
+			}
+		}
+		std::string text = "Cannot find friend request: ";
+		text.append(address);
+		return Console::ResultFailure(text);
 	}
 
 	// PYTHON CALLBACK HANDLERS: 
@@ -630,7 +724,7 @@ namespace Communication
 			}
 		}
 
-		// There was not session with this address, we have to create one
+		// There was not session with this address, we have to create one and send proper event
 		// * this happens when session is created by remote partner
 
 		ContactInfo* info = new ContactInfo(); 
@@ -828,15 +922,15 @@ namespace Communication
 		text.append(address);
 		LogInfo("text");
 
-		ContactInfo* info = new ContactInfo();
-		info->SetProperty("protocol", "jabber");
-		info->SetProperty("address", address);
-		TPFriendRequest* request = new TPFriendRequest( ContactInfoPtr(info) );
-		FriendRequestPtr r = FriendRequestPtr((FriendRequest*)request);
-		TelepathyCommunication::GetInstance()->friend_requests_->push_back(r);
-		FriendRequestEvent* e = new FriendRequestEvent(r);
-		FriendRequestEventPtr e_ptr = FriendRequestEventPtr(e);
-		TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::FRIEND_REQUEST, (Foundation::EventDataInterface*)&e_ptr);
+		//ContactInfo* info = new ContactInfo();
+		//info->SetProperty("protocol", "jabber");
+		//info->SetProperty("address", address);
+		//TPFriendRequest* request = new TPFriendRequest( ContactInfoPtr(info) );
+		//FriendRequestPtr r = FriendRequestPtr((FriendRequest*)request);
+		//TelepathyCommunication::GetInstance()->friend_requests_->push_back(r);
+		//FriendRequestEvent* e = new FriendRequestEvent(r);
+		//FriendRequestEventPtr e_ptr = FriendRequestEventPtr(e);
+		//TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::FRIEND_REQUEST, (Foundation::EventDataInterface*)&e_ptr);
 	}
 
 
@@ -866,7 +960,7 @@ namespace Communication
 
 	/*
 	   Called by communication.py via PythonScriptModule
-	   When contact is added to contact list
+	   When contact is added to contact list on IM server
 	*/
 	void TelepathyCommunication::PyCallbackContactAdded(char* id)
 	{
@@ -880,9 +974,17 @@ namespace Communication
 	   Called by communication.py via PythonScriptModule
 	   When friend request id pending locally
 	*/
-	void TelepathyCommunication::PyCallbackFriendRequestLocalPending(char* id)
+	void TelepathyCommunication::PyCallbackFriendRequestLocalPending(char* address)
 	{
-
+		ContactInfo* info = new ContactInfo();
+		info->SetProperty("protocol", "jabber");
+		info->SetProperty("address", address);
+		TPFriendRequest* request = new TPFriendRequest( ContactInfoPtr(info) );
+		FriendRequestPtr r = FriendRequestPtr((FriendRequest*)request);
+		TelepathyCommunication::GetInstance()->friend_requests_->push_back(r);
+		FriendRequestEvent* e = new FriendRequestEvent(r);
+		FriendRequestEventPtr e_ptr = FriendRequestEventPtr(e);
+		TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::FRIEND_REQUEST, (Foundation::EventDataInterface*)&e_ptr);
 	}
 
 	/*
@@ -897,7 +999,7 @@ namespace Communication
 	/*
 	   Called by communication.py via PythonScriptModule
 	   When friend request id pending on remote side
-	   // TODO: This should be renamed better
+	   // TODO: This should be renamed better ?
 	*/
 	void TelepathyCommunication::PyCallbackFriendAdded(char* id)
 	{
@@ -927,7 +1029,5 @@ namespace Communication
 		}
 		while (option.length() > 0);
 	}
-
-
 
 } // end of namespace: Communication
