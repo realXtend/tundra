@@ -192,7 +192,14 @@ namespace Communication
 
 			char** args = new char*[1];
 			char* buf1 = new char[1000];
-			strcpy(buf1, contact->GetContactInfo(protocol)->GetProperty("address").c_str());
+			std::string address = contact->GetContactInfo(protocol)->GetProperty("address");
+			if (address.length() == 0)
+			{
+				LogError("Given contact has no address");
+				// TODO: We must handle error in better way
+				return IMSessionPtr((IMSession*)new TPIMSession(python_communication_object_));
+			}
+			strcpy(buf1, address.c_str());
 			args[0] = buf1;
 			std::string method = "CStartChatSession"; // todo: CCreateIMSessionJabber, CCreateIMSessionSIP, etc.
 			std::string syntax = "s";
@@ -206,7 +213,7 @@ namespace Communication
 		error_message.append("Protocol [");
 		error_message.append(protocol);
 		error_message.append("] is not supported by communication manager.");
-
+		LogError(error_message);
 		throw error_message;
 	}
 
@@ -278,6 +285,26 @@ namespace Communication
 		//	{
 		//	}
 		//}
+	}
+
+
+	ContactPtr TelepathyCommunication::GetContact(std::string id)
+	{
+		for (ContactList::iterator i = contact_list_.begin(); i < contact_list_.end(); i++)
+		{
+			ContactPtr c = (*i);
+			TPContact* ptr = (TPContact*)c.get();
+			if ( ptr->id_.compare(id) == 0)
+				return c;
+		}
+
+		// ERROR: The given contact does not exist
+		std::string error;
+		error.append("Requested contact (");
+		error.append(id);
+		error.append(") wich doesn't exist!");
+		LogError(error);
+		return ContactPtr((Contact*)new TPContact("")); // todo: handle error better way (we now return empty contact) 
 	}
 
 	// DEBUG CONSOLE CALLBACKS:
@@ -366,6 +393,7 @@ namespace Communication
 		return Console::ResultSuccess("Ready.");
 	}
 
+	// /param params the contact id of contact with we want to start a session
 	Console::CommandResult TelepathyCommunication::ConsoleCreateSession(const Core::StringVector &params)
 	{
 		if (params.size() != 1)
@@ -374,16 +402,10 @@ namespace Communication
 			return Console::ResultFailure(reason);
 		}
 
-		ContactInfo* info = new ContactInfo(); 
-		info->SetProperty("protocol", "jabber");
-		info->SetProperty("address", params[0]);
-		ContactInfoPtr info_ptr = ContactInfoPtr(info);
+		std::string contact_id = params[0];
+		ContactPtr c = GetContact(contact_id);
 
-		TPContact* c = new TPContact("test_id");
-		c->contact_infos_->push_back( info_ptr );
-		ContactPtr c_ptr = ContactPtr((Contact*)c);
-		
-		IMSessionPtr session = CreateIMSession( c_ptr );
+		IMSessionPtr session = CreateIMSession( c );
 		((TPIMSession*)session.get())->id_ = "mysession (created from console)";
 		// we dont' need our newborn session object nowhere in this case ...
 

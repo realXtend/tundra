@@ -20,6 +20,7 @@
 // TODO: rename all classes to be like: "TPIMSession : IMSession" -> "IMSession : IMSessionInterface"
 // todo: should this be renamed to TPCommunicatation to hide the implementation from namespace of service interface
 // todo: Call this python function: ("CSendSubscription", "s", user.value);
+// TODO: Move console commands to separate class: ConsoleUI
 
 namespace Communication
 {
@@ -79,6 +80,7 @@ namespace Communication
 		static TelepathyCommunicationPtr instance_;
 
 		void RemoveIMSession(std::string session_id); 
+		ContactPtr GetContact(std::string id);
 		
 		// member variables
 		bool connected_; // todo: replace this with "Connection" or "ConnectionStatus" object
