@@ -60,7 +60,7 @@ namespace Communication
 		void SendFriendRequest(ContactInfoPtr contact_info);
 		void RemoveContact(ContactPtr contact); // todo: move to ContactList class
 
-		static const std::string NameStatic() { return "ConnectionModule-TelepathyCommunication"; } // for logging functionality
+		static const std::string NameStatic() { return "CommunicationManager"; } // for logging functionality
 
 		// callbacks for console commands
 		Console::CommandResult ConsoleHelp(const Core::StringVector &params);
@@ -75,6 +75,9 @@ namespace Communication
 		Console::CommandResult ConsolePublishPresence(const Core::StringVector &params);
 		Console::CommandResult ConsoleSendFriendRequest(const Core::StringVector &params);
 		Console::CommandResult ConsoleRemoveFriend(const Core::StringVector &params);
+		Console::CommandResult ConsoleListFriendRequests(const Core::StringVector &params);
+		Console::CommandResult ConsoleAcceptFriendRequest(const Core::StringVector &params);
+		Console::CommandResult ConsoleDenyFriendRequest(const Core::StringVector &params);
 
 		static TelepathyCommunicationPtr GetInstance(); // for python callbacks
 
