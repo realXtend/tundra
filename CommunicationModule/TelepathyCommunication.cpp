@@ -708,7 +708,7 @@ namespace Communication
 	*/
 	void TelepathyCommunication::PyCallbackChannelOpened(char* addr)
 	{
-		// Find the right session (with given address)
+		// Find the right session (with participant with given address)
 		IMSessionListPtr sessions = TelepathyCommunication::GetInstance()->im_sessions_;
 		for (IMSessionList::iterator i = sessions->begin() ; i < sessions->end(); i++)
 		{
@@ -719,31 +719,40 @@ namespace Communication
 				if ( (*j)->GetContact()->GetContactInfo("jabber")->GetProperty("address").compare(addr) == 0)
 				{
 					// We find the right session and so we can be sure that this session already exist
+					// we don't have to do anything
+					LogDebug("Channel opened for exist session");
 					return;
 				}
 			}
 		}
 
-		// There was not session with this address, we have to create one and send proper event
+		// There was no session with this address, we have to create one and send proper event
 		// * this happens when session is created by remote partner
 
-		ContactInfo* info = new ContactInfo(); 
-		info->SetProperty("protocol", "jabber");
-		info->SetProperty("address", addr);
-		ContactInfoPtr info_ptr = ContactInfoPtr(info);
+		TelepathyCommunicationPtr comm = TelepathyCommunication::GetInstance();
+		for (ContactList::iterator i = comm->contact_list_.begin(); i < comm->contact_list_.end(); i++)
+		{
+			ContactPtr c = *i;
+			if ( c->GetContactInfo("jabber")->GetProperty("address").compare(addr) == 0)
+			{
+				IMSessionPtr s = comm->CreateIMSession(c);
+				IMSessionRequestEvent* e = new IMSessionRequestEvent(s);
+				IMSessionRequestEventPtr e_ptr = IMSessionRequestEventPtr(e);
+				comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::IM_SESSION_REQUEST, (Foundation::EventDataInterface*)&e_ptr);
+				std::string text = "Session created for: ";
+				text.append(addr);
+				LogInfo(text);
+				return;
+			}
+		}
 
-		TPContact* c = new TPContact("");
-		c->contact_infos_->push_back( info_ptr );
-		ContactPtr c_ptr = ContactPtr((ContactInterface*)c);
-		
-		IMSessionPtr session = TelepathyCommunication::GetInstance()->CreateIMSession( c_ptr );
-		((TPIMSession*)session.get())->id_ = "mysession (incoming session)";
-
-		LogInfo("Session created");
-
-//		IMSessionPtr s = IMSessionPtr( (IMSession*) new TPIMSession(TelepathyCommunication::GetInstance()->python_communication_object_) );
-//		IMSessionInvitationEvent e = IMSessionInvitationEvent(s);
-//		TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::IM_SESSION_INVITATION_RECEIVED, (Foundation::EventDataInterface*)&e);
+		// The incoming session is from someone who is unknow to us
+		// * We do nothin
+		// TODO: We can ask user if he wants to allow these messages..
+		std::string text = "Session from unknow address: ";
+		text.append(addr);
+		LogError(text);
+		return;
 	}
 
 	/*
