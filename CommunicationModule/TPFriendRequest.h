@@ -6,7 +6,7 @@
 
 namespace Communication
 {
-	class TPFriendRequest : FriendRequest
+	class TPFriendRequest : FriendRequestInterface
 	{
 	public:
 		TPFriendRequest(ContactInfoPtr contact_info);

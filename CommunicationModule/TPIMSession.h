@@ -9,7 +9,7 @@ namespace Communication
 {
 
 
-	class TPSession : public Session
+	class TPSession : public SessionInterface
 	{
 		friend class TelepathyCommunication;
 	public:
@@ -32,7 +32,7 @@ namespace Communication
 
 
 	// Instant messaging session
-	class TPIMSession : public TPSession, public IMSession
+	class TPIMSession : public TPSession, public IMSessionInterface
 	{
 		friend class TelepathyCommunication;
 	public:

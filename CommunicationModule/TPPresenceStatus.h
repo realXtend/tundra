@@ -6,7 +6,7 @@
 
 namespace Communication
 {
-	class TPPresenceStatus: PresenceStatus
+	class TPPresenceStatus: PresenceStatusInterface
 	{
 		friend class TelepathyCommunication;
 	public:

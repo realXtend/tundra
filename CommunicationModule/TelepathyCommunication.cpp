@@ -193,10 +193,10 @@ namespace Communication
 			TPIMSession* session = new TPIMSession(python_communication_object_);
 			session->protocol_ = protocol;
 			TPParticipant* participant = new TPParticipant(contact);
-			ParticipantPtr participant_ptr = ParticipantPtr((Participant*)participant);
+			ParticipantPtr participant_ptr = ParticipantPtr((ParticipantInterface*)participant);
 			session->participants_->push_back(participant_ptr);
 
-			IMSessionPtr session_ptr = IMSessionPtr((IMSession*)session);
+			IMSessionPtr session_ptr = IMSessionPtr((IMSessionInterface*)session);
 			this->im_sessions_->push_back(session_ptr);
 
 			char** args = new char*[1];
@@ -206,7 +206,7 @@ namespace Communication
 			{
 				LogError("Given contact has no address");
 				// TODO: We must handle error in better way
-				return IMSessionPtr((IMSession*)new TPIMSession(python_communication_object_));
+				return IMSessionPtr((IMSessionInterface*)new TPIMSession(python_communication_object_));
 			}
 			strcpy(buf1, address.c_str());
 			args[0] = buf1;
@@ -263,7 +263,7 @@ namespace Communication
 	{
 		TPIMMessage* m = new TPIMMessage("");
 		m->SetText(text);
-		return IMMessagePtr((IMMessage*)m);
+		return IMMessagePtr((IMMessageInterface*)m);
 	}
 
 	void TelepathyCommunication::SendFriendRequest(ContactInfoPtr contact_info)
@@ -317,7 +317,7 @@ namespace Communication
 		error.append(id);
 		error.append(") wich doesn't exist!");
 		LogError(error);
-		return ContactPtr((Contact*)new TPContact("")); // todo: handle error better way (we now return empty contact) 
+		return ContactPtr((ContactInterface*)new TPContact("")); // todo: handle error better way (we now return empty contact) 
 	}
 
 	// DEBUG CONSOLE CALLBACKS:
@@ -734,7 +734,7 @@ namespace Communication
 
 		TPContact* c = new TPContact("");
 		c->contact_infos_->push_back( info_ptr );
-		ContactPtr c_ptr = ContactPtr((Contact*)c);
+		ContactPtr c_ptr = ContactPtr((ContactInterface*)c);
 		
 		IMSessionPtr session = TelepathyCommunication::GetInstance()->CreateIMSession( c_ptr );
 		((TPIMSession*)session.get())->id_ = "mysession (incoming session)";
@@ -853,7 +853,7 @@ namespace Communication
 		TPContact* c = new TPContact(id);
 		c->SetName(address);
 		c->AddContactInfo(ContactInfoPtr(info));
-		ContactPtr ptr = ContactPtr( (Contact*)c );
+		ContactPtr ptr = ContactPtr( (ContactInterface*)c );
 		TelepathyCommunication::GetInstance()->contact_list_.push_back(ptr);
 	}
 
@@ -980,7 +980,7 @@ namespace Communication
 		info->SetProperty("protocol", "jabber");
 		info->SetProperty("address", address);
 		TPFriendRequest* request = new TPFriendRequest( ContactInfoPtr(info) );
-		FriendRequestPtr r = FriendRequestPtr((FriendRequest*)request);
+		FriendRequestPtr r = FriendRequestPtr((FriendRequestInterface*)request);
 		TelepathyCommunication::GetInstance()->friend_requests_->push_back(r);
 		FriendRequestEvent* e = new FriendRequestEvent(r);
 		FriendRequestEventPtr e_ptr = FriendRequestEventPtr(e);

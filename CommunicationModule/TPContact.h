@@ -7,7 +7,7 @@
 
 namespace Communication
 {
-	class TPContact : Contact
+	class TPContact : ContactInterface
 	{
 		friend class TelepathyCommunication;
 	public:
