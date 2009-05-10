@@ -7,7 +7,7 @@
 
 namespace Communication
 {
-	class TPParticipant : public Participant
+	class TPParticipant : public ParticipantInterface
 	{
 	public:
 		TPParticipant(ContactPtr contact);

@@ -40,24 +40,24 @@ namespace Communication
 	//       online_message string
 	//       something extra?
 	//     * could these be just properties ?
-	class PresenceStatus
+	class PresenceStatusInterface
 	{
 	public:
-		virtual ~PresenceStatus() {};
+		virtual ~PresenceStatusInterface() {};
 		virtual void SetOnlineStatus(std::string status) = 0;
 		virtual std::string GetOnlineStatus() = 0;
 		virtual void SetOnlineMessage(std::string message) = 0;
 		virtual std::string GetOnlineMessage() = 0;
 		virtual std::vector<std::string> GetOnlineStatusOptions() = 0;
 	};
-	typedef boost::shared_ptr<PresenceStatus> PresenceStatusPtr;
+	typedef boost::shared_ptr<PresenceStatusInterface> PresenceStatusPtr;
 
 	// Individual contact in contact list 
 	// todo: presence status should only exist with friend contact: -> IsFriend() ?
-	class Contact
+	class ContactInterface
 	{
 	public:
-		virtual ~Contact() {};
+		virtual ~ContactInterface() {};
 		virtual void SetName(std::string name) = 0;
 		virtual std::string GetName() = 0;
 		virtual void AddContactInfo(ContactInfoPtr contact_info) = 0;
@@ -65,39 +65,39 @@ namespace Communication
 		virtual ContactInfoListPtr GetContactInfoList() = 0;
 		virtual ContactInfoPtr GetContactInfo(std::string protocol) = 0;
 	};
-	typedef boost::shared_ptr<Contact> ContactPtr;
+	typedef boost::shared_ptr<ContactInterface> ContactPtr;
 	typedef std::vector<ContactPtr> ContactList;
 	typedef boost::shared_ptr<ContactList> ContactListPtr;
 
 	// A participiant of session
 	// todo: add information about communication methods available ?
-	class Participant
+	class ParticipantInterface
 	{
 	public:
-		virtual ~Participant() {};
+		virtual ~ParticipantInterface() {};
 		virtual ContactPtr GetContact() = 0;
 //		virtual IMMessageListPtr GetIMMessages() = 0;
 //		virtual std::string GetLastMessageTimeStamp() = 0;
 //		virtual int GetMessageCount() = 0;
 	};
-    typedef boost::shared_ptr<Participant> ParticipantPtr;
+    typedef boost::shared_ptr<ParticipantInterface> ParticipantPtr;
 	typedef std::vector<ParticipantPtr> ParticipantList;
 	typedef boost::shared_ptr<ParticipantList> ParticipantListPtr;
 
 	/*
 	 * Friend request from IM server
 	 */
-	class FriendRequest
+	class FriendRequestInterface
 	{
 	public:
-		virtual ~FriendRequest() {};
+		virtual ~FriendRequestInterface() {};
 		virtual ContactInfoPtr GetContactInfo() = 0;
 		virtual void Accept() = 0;
 		virtual void Deny() = 0;
 		// virtual std::string GetTimeStamp() = 0;
 	};
 
-	typedef boost::shared_ptr<FriendRequest> FriendRequestPtr;
+	typedef boost::shared_ptr<FriendRequestInterface> FriendRequestPtr;
 	typedef std::vector<FriendRequestPtr> FriendRequestList;
 	typedef boost::shared_ptr<FriendRequestList> FriendRequestListPtr;
 
@@ -107,23 +107,23 @@ namespace Communication
 	// * InvitationsResponse(bool)
 	// * ParticipientLeft(Participient)
 	// * ParticipientJoined(Participient)
-	class Session
+	class SessionInterface
 	{
 	public:
-		virtual ~Session() {};
+		virtual ~SessionInterface() {};
 		virtual void SendInvitation(ContactPtr c) = 0;
 		virtual void Kick(ParticipantPtr p) = 0;
 		virtual void Close() = 0;
 		virtual ParticipantListPtr GetParticipants() = 0;
 		virtual std::string GetProtocol() = 0;
 	};
-	typedef boost::shared_ptr<Session> SessionPtr;
+	typedef boost::shared_ptr<SessionInterface> SessionPtr;
 
 	// todo: rename to MessageInterface or IMessage ???
-	class Message
+	class MessageInterface
 	{
 	public:
-		virtual ~Message() {};
+		virtual ~MessageInterface() {};
 		virtual std::string GetTimeStamp() = 0; // todo: change to proper timestamp type
 		virtual ParticipantPtr GetAuthor() = 0; // todo: or would ContactPtr be better ?
 		virtual std::string GetSessionId() = 0; // todo: Do we need this ??
@@ -133,28 +133,28 @@ namespace Communication
 
 	// chat message
 	// todo: more components like attachment (link, file, request, etc.)
-	class IMMessage
+	class IMMessageInterface
 	{
 	public:
-		virtual ~IMMessage() {};
+		virtual ~IMMessageInterface() {};
 		virtual void SetText(std::string text) = 0;
 		virtual std::string GetText() = 0;
 	};
-	typedef boost::shared_ptr<IMMessage> IMMessagePtr;
+	typedef boost::shared_ptr<IMMessageInterface> IMMessagePtr;
 	typedef std::vector<IMMessagePtr> IMMessageList;
 	typedef boost::shared_ptr<IMMessageList> IMMessageListPtr;
 
 	// Text chat session
 	// Send Events:
 	// * MessageReceived
-	class IMSession
+	class IMSessionInterface
 	{
 	public:
-		virtual ~IMSession() {};
+		virtual ~IMSessionInterface() {};
 		virtual void SendIMMessage(IMMessagePtr m) = 0;
 		virtual IMMessageListPtr GetMessageHistory() = 0;
 	};
-	typedef boost::shared_ptr<IMSession> IMSessionPtr;
+	typedef boost::shared_ptr<IMSessionInterface> IMSessionPtr;
 	typedef std::vector<IMSessionPtr> IMSessionList;
 	typedef boost::shared_ptr<IMSessionList> IMSessionListPtr;
 	

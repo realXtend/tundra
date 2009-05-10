@@ -11,7 +11,7 @@ namespace Communication
 	/*
 	 *
 	 */
-	class TPMessage: public Message
+	class TPMessage: public MessageInterface
 	{
 		friend class TelepathyCommunication;
 	public:
@@ -28,7 +28,7 @@ namespace Communication
 	/*
 	 *
 	 */
-	class TPIMMessage: public TPMessage, public IMMessage
+	class TPIMMessage: public TPMessage, public IMMessageInterface
 	{
 		friend class TelepathyCommunication;
 		friend class TPIMSession;
