@@ -281,13 +281,19 @@ namespace CommunicationUI
     }
     void CommunicationUIModule::OnSetStatusBusy()
     {
-        std::cout << "OnSetStatusBusy" << std::endl;
-        this->CallIMPyMethod("CSetStatus", "s", std::string("busy"));
+		Communication::PresenceStatusPtr s = communication_service_->GetPresenceStatus();
+		s->SetOnlineStatus("busy");
+		communication_service_->SetPresenceStatus( s );
+        //std::cout << "OnSetStatusBusy" << std::endl;
+        //this->CallIMPyMethod("CSetStatus", "s", std::string("busy"));
     }
     void CommunicationUIModule::OnSetStatusOffline()
     {
-        std::cout << "OnSetStatusOffline" << std::endl;
-        this->CallIMPyMethod("CSetStatus", "s", std::string("offline"));
+		Communication::PresenceStatusPtr s = communication_service_->GetPresenceStatus();
+		s->SetOnlineStatus("offline");
+		communication_service_->SetPresenceStatus( s );
+        //std::cout << "OnSetStatusOffline" << std::endl;
+        //this->CallIMPyMethod("CSetStatus", "s", std::string("offline"));
     }
 
     void CommunicationUIModule::StartChat(const char* contact)
