@@ -373,8 +373,11 @@ namespace CommunicationUI
         LogInfo("OnComboChange");
         std::string status = cmbPresence.get_active_text();
         LogInfo(status);
-        this->CallIMPyMethod("CSetStatus", "s", status);
 
+		Communication::PresenceStatusPtr s = communication_service_->GetPresenceStatus();
+		s->SetOnlineStatus(status);
+		communication_service_->SetPresenceStatus( s );
+//        this->CallIMPyMethod("CSetStatus", "s", status);
     }
 
 	void CommunicationUIModule::Callback(std::string aConfigName, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes)
