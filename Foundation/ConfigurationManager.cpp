@@ -296,7 +296,7 @@ namespace Foundation
                     std::string search_group = val_iter->first.first;
                     
                     
-                    // HACK assure that path end has separator.
+                    /// \todo HACK assure that path end has separator.
 
                     std::string c = path.substr(path.size()-1);
                     if ( c != std::string("/") && c != std::string("\\"))

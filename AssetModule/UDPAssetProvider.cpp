@@ -160,7 +160,8 @@ namespace Asset
         UDPAssetTransferMap::iterator i = texture_transfers_.begin();
         std::vector<RexUUID> erase_tex;       
         while (i != texture_transfers_.end())
-        {            UDPAssetTransfer& transfer = i->second;
+        {
+            UDPAssetTransfer& transfer = i->second;
             if (!transfer.Ready())
             {
                 transfer.AddTime(frametime);
@@ -183,7 +184,9 @@ namespace Asset
                     m->AddS8(-1); // Discard level, -1 = cancel
                     m->AddF32(0.0); // Download priority, 0 = cancel
                     m->AddU32(0); // Starting packet
-                    m->AddU8(RexIT_Normal); // Image type                        net->FinishMessageBuilding(m);
+                    m->AddU8(RexIT_Normal); // Image type
+    
+                    net->FinishMessageBuilding(m);
 
                     // Send transfer canceled event
                     SendAssetCanceled(transfer);
@@ -236,7 +239,8 @@ namespace Asset
         for (int j = 0; j < erase_asset.size(); ++j)
             asset_transfers_.erase(erase_asset[j]);        
     }
-                 void UDPAssetProvider::SendPendingRequests(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net)
+             
+    void UDPAssetProvider::SendPendingRequests(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net)
     {    
         AssetRequestVector::iterator i = pending_requests_.begin();
         while (i != pending_requests_.end())

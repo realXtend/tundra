@@ -9,6 +9,7 @@
 #include "InputEventHandler.h"
 #include "SceneEventHandler.h"
 #include "EventDataInterface.h"
+#include "TextureInterface.h"
 #include "CameraController.h"
 #include "SceneManager.h"
 #include "RexLoginWindow.h"
@@ -24,6 +25,7 @@
 
 // Ogre -specific
 #include "../OgreRenderingModule/Renderer.h"
+#include "../OgreRenderingModule/OgreTextureResource.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -92,7 +94,7 @@ namespace RexLogic
         if (eventcategoryid != 0)
             event_handlers_[eventcategoryid] = boost::bind(&NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2);
         else
-            LogError("Unable to find event category for OpenSimNetworkIn");
+            LogError("Unable to find event category for NetworkState");
 
         // OpenSimNetworkIn events.
         eventcategoryid = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
@@ -114,7 +116,14 @@ namespace RexLogic
             event_handlers_[eventcategoryid] = boost::bind(&SceneEventHandler::HandleSceneEvent, scene_handler_, _1, _2);
         else
             LogError("Unable to find event category for Scene");
-        
+
+        // Resource events.
+        eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Resource");
+        if (eventcategoryid != 0)
+            event_handlers_[eventcategoryid] = boost::bind(&RexLogicModule::OnResourceReadyEvent, this, _1, _2);
+        else
+            LogError("Unable to find event category for Resource");
+
         // Resource events
         eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Resource");
         if (eventcategoryid != 0)
@@ -226,6 +235,28 @@ namespace RexLogic
     bool RexLogicModule::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
         primitive_->HandleResourceEvent(event_id, data);
+        return false;
+    }
+
+    bool RexLogicModule::OnResourceReadyEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        if (event_id == Resource::Events::RESOURCE_READY)
+        {
+            Resource::Events::ResourceReady *res = dynamic_cast<Resource::Events::ResourceReady*>(data);
+            assert(res);
+            if (!res)
+                return false;
+            
+            // Pass the texture asset to the terrain manager - the texture might be in the terrain.
+            OgreRenderer::OgreTextureResource *tex = dynamic_cast<OgreRenderer::OgreTextureResource *>(res->resource_.get());
+            if (tex)
+                terrain_->OnTextureReadyEvent(res);
+
+            // Pass the texture asset to the mesh manager.
+            ///\todo Perhaps maintain a map of request tag -> destination so that we don't have to propagate the
+            /// resourceready events to all places.
+        }
+
         return false;
     }
 

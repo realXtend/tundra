@@ -1,0 +1,21 @@
+// Renders primitives with a single solid color
+material UnlitTextured
+{
+	technique
+	{
+		pass
+		{
+			vertex_program_ref UnlitTexturedVP
+			{
+			}
+			fragment_program_ref UnlitTexturedFP
+			{
+			}
+			texture_unit diffuseMap
+			{
+				texture TextureMissing.png
+			}
+		} 
+	}
+}
+ 

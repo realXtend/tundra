@@ -114,6 +114,15 @@ namespace TextureDecoder
 
     void OpenJpegDecoder::PerformDecode(DecodeRequest& request)
     {
+        unsigned char *data = (unsigned char *)request.source_->GetData();
+        if (data[1] != 0xFF)
+        {
+            TextureDecoderModule::LogError("Error! Invalid data passed to PerformDecode!");
+
+            ///\todo Write out a result that failed.
+            return;
+        }
+
         DecodeResult result;
 
         result.id_ = request.id_;

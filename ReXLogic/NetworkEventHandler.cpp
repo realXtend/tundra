@@ -139,9 +139,22 @@ namespace RexLogic
         data->message->SkipToNextVariable(); // RegionFlags U32
         data->message->SkipToNextVariable(); // SimAccess U8
 
-        std::string sim_name = data->message->ReadString();
+        std::string sim_name = data->message->ReadString(); // SimName
         rexlogicmodule_->GetServerConnection()->simName_ = sim_name;
         
+        data->message->SkipToNextVariable(); // SimOwner
+        data->message->SkipToNextVariable(); // IsEstateManager
+        data->message->SkipToNextVariable(); // WaterHeight
+        data->message->SkipToNextVariable(); // BillableFactor
+        data->message->SkipToNextVariable(); // CacheID
+        for(int i = 0; i < 4; ++i)
+            data->message->SkipToNextVariable(); // TerrainBase0..3
+        RexUUID terrain[4];
+        terrain[0] = data->message->ReadUUID();
+        terrain[1] = data->message->ReadUUID();
+        terrain[2] = data->message->ReadUUID();
+        terrain[3] = data->message->ReadUUID();        
+
         RexLogicModule::LogInfo("Joined to the sim \"" + sim_name + "\".");
         
         // Create the "World" scene.
@@ -151,7 +164,10 @@ namespace RexLogic
             RexLogicModule::LogError("NetworkEventHandler: Could not acquire OpenSimProtocolModule!");
             return false;
         }
-                
+
+        RexLogic::TerrainPtr terrainHandler = rexlogicmodule_->GetTerrainHandler();
+        terrainHandler->SetTerrainTextures(terrain);
+
         const OpenSimProtocol::ClientParameters& client = sp->GetClientParameters();
         rexlogicmodule_->GetServerConnection()->SendRegionHandshakeReplyPacket(client.agentID, client.sessionID, 0);   
         return false;  

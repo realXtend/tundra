@@ -51,6 +51,18 @@ namespace RexLogic
             assert(y < cNumPatchesPerEdge);
             return patches[y][x];
         }
+
+        /// @return True if all the patches of the terrain are loaded.
+        bool AllPatchesLoaded() const
+        {
+            for(int i = 0; i < cNumPatchesPerEdge; ++i)
+                for(int j = 0; j < cNumPatchesPerEdge; ++j)
+                    if (patches[i][j].heightData.size() == 0 || patches[i][j].node == 0)
+                        return false;
+
+            return true;
+        }
+
     private:
         EC_Terrain(Foundation::ModuleInterface* module);
 
