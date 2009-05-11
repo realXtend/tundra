@@ -114,23 +114,28 @@ namespace TextureDecoder
 
     void OpenJpegDecoder::PerformDecode(DecodeRequest& request)
     {
-        unsigned char *data = (unsigned char *)request.source_->GetData();
-        if (data[1] != 0xFF)
-        {
-            TextureDecoderModule::LogError("Error! Invalid data passed to PerformDecode!");
-
-            ///\todo Write out a result that failed.
-            return;
-        }
-
         DecodeResult result;
 
         result.id_ = request.id_;
-        result.level_ = -1;
+        result.level_ = -1; // no level decoded yet
         result.max_levels_ = 5;
         result.original_width_ = 0;
         result.original_height_ = 0;
         result.components_ = 0;
+
+        // Guard against OpenJpeg crash on illegal data at an early phase
+        unsigned char *data = (unsigned char *)request.source_->GetData();
+        if (data[0] != 0xFF)
+        {
+            TextureDecoderModule::LogError("Invalid data passed to PerformDecode!");
+
+            {
+                Core::MutexLock lock(result_mutex_);
+                results_.push_back(result);
+            }
+            
+            return;
+        }
 
         opj_dinfo_t* dinfo = NULL; // decoder
         opj_image_t *image = NULL; // decoded image
