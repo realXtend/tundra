@@ -15,6 +15,7 @@
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
 #include "../OgreRenderingModule/Renderer.h"
 #include "../OgreRenderingModule/OgreTextureResource.h"
+#include "../OgreRenderingModule/OgreMaterialUtils.h"
 
 #include "BitStream.h"
 #include "TerrainDecoder.h"
@@ -53,23 +54,7 @@ namespace
         RexLogicModule::LogInfo(ss.str());
     }
 
-    const char baseMaterialName[] = "UnlitTextured";
     const char terrainMaterialName[] = "TerrainMaterial";
-
-    Ogre::MaterialPtr GetOrCreateTerrainMaterial()
-    {
-        Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
-        Ogre::MaterialPtr terrainMaterial = mm.getByName(terrainMaterialName);
-
-        if (!terrainMaterial.get())
-        {
-            Ogre::MaterialPtr baseMaterial = mm.getByName(baseMaterialName);
-            terrainMaterial = baseMaterial->clone(terrainMaterialName);
-        }
-
-        assert(terrainMaterial.get());
-        return terrainMaterial;
-    }
 }
 
     /// Sets the texture of the material used to render terrain.
@@ -84,7 +69,7 @@ namespace
 
         DebugDumpOgreTextureInfo(textureName);
 
-        Ogre::MaterialPtr terrainMaterial = GetOrCreateTerrainMaterial();
+        Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateUnlitTexturedMaterial(terrainMaterialName);
         assert(terrainMaterial.get());
 
         Ogre::Material::TechniqueIterator iter = terrainMaterial->getTechniqueIterator();
@@ -161,7 +146,7 @@ namespace
         Ogre::SceneNode *node = patch.node;
         assert(node);
         assert(node->numAttachedObjects() == 1);
-        Ogre::MaterialPtr terrainMaterial = GetOrCreateTerrainMaterial();
+        Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateUnlitTexturedMaterial(terrainMaterialName);
 
         Ogre::ManualObject *manual = dynamic_cast<Ogre::ManualObject*>(node->getAttachedObject(0));
         manual->clear(); /// \note For optimization, could use beginUpdate.
@@ -179,8 +164,8 @@ namespace
 
         const int patchSize = 16;
 
-        const float uScale = 0.953f;//5e-3f;
-        const float vScale = 0.642f;//5e-3f;
+        const float uScale = 1e-2f;
+        const float vScale = 1e-2f;
 
         for(int y = 0; y <= patchSize; ++y)
             for(int x = 0; x <= patchSize; ++x)
