@@ -71,8 +71,8 @@ namespace RexLogic
 		if (entry_authentication != 0 && std::string(entry_authentication->get_text()) != std::string(""))
 		{
 			// Connect to Authentication server.
-		    //entry_authentication contains authentication server address and port
-			//entry_auth_login contains login username. 
+		    // entry_authentication contains authentication server address and port
+			// entry_auth_login contains login username. 
 			
 			Gtk::Entry *entry_auth_login = 0;
 			loginControls->get_widget("entry_auth_login", entry_auth_login);

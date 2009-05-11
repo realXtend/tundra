@@ -54,12 +54,12 @@ public:
 
 	RexUUID ReadUUID();
 
-    void ReadString(char *dst, size_t maxSize);
-    std::string ReadString();
-
 	//IPADDR	ReadIPAddr(IPADDR value);  ///\todo
 	//IPPORT	ReadIPPort(IPPORT value);  ///\todo
 	//void		ReadNetVarFixed ///\todo Is this needed?
+
+    void ReadString(char *dst, size_t maxSize);
+    std::string ReadString();
 
 	/// Use to read a generic buffer of bytes from the stream. Use this to read a VarBufferXX variable.
 	/// @param bytesRead [out] The number of bytes the returned buffer holds. Cannot pass in zero.
@@ -67,6 +67,7 @@ public:
 	const uint8_t *ReadBuffer(size_t *bytesRead);
     
 	/// Check the type of the next variable in the message.
+    /// @return NetVariableType enum.
 	NetVariableType CheckNextVariableType() const;
 
 	/// @return The index of the current block we're reading, or >= this->GetBlockCount() if there are no more variables to read.
@@ -93,12 +94,13 @@ public:
 
 	/// Returns a pointer to a stream of given amount of bytes in the inbound packet. Doesn't do any validation. Increments the bytesRead pointer, but doesn't
 	/// advance to the next variable. Use this only to do custom raw reading of the packet.
+	/// @param Amount of bytes to be read.
 	void *ReadBytesUnchecked(size_t count);
     
-    /// Get the message's sequence number.
+    /// @return The message's sequence number.
     uint32_t GetSequenceNumber() const { return sequenceNumber; } 
     
-	/// Get the message id of this packet.
+	/// @return Message id of this packet.
 	const NetMsgID GetMessageID() const { return messageInfo->id; }
 
 	/// @return A structure that represents the types and amounts of blocks and variables of this packet. Use it to examine the whole structure of this message type.
@@ -107,10 +109,10 @@ public:
 	/// @return The original message data.
 	const std::vector<uint8_t> &GetData() const { return messageData; }
 
-	/// Get the size of the data (message body). 
+	/// @return The size of the data (message body, the header is excluded). 
 	size_t GetDataSize() const { return messageData.size(); }
 
-	/// Get the amount of read bytes.
+	/// @return The amount of read bytes.
 	uint32_t BytesRead() const { return (uint32_t)bytesRead; }
 
 	/// Resets the reading of the message stream and jumps back to the first block & variable.

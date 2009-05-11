@@ -39,6 +39,7 @@ void NetInMessage::ResetReading()
 	currentVariable = 0;
 	currentVariableSize = 0;
 	bytesRead = 0;
+	//variableCountBlockNext = false;
 	
 	// If first block's type is variable, prevent the user proceeding before he has read the block instance count
 	// by setting the variableCountBlockNext true.
@@ -316,8 +317,9 @@ size_t NetInMessage::ReadCurrentBlockInstanceCount()
         variableCountBlockNext = false;
         break;
     case NetBlockVariable:
-        //if (variableCountBlockNext)
-        //    throw std::exception("You can read block instance count for a variable block only once per block!");	            
+        //if (currentBlock == currentVariableCountBlock)
+            //throw std::exception("You can read block instance count for a variable block only once per block!");	            
+            //ET_BlockInstanceCountAlreadyRead
         variableCountBlockNext = true;
         break;
     default:
@@ -379,10 +381,7 @@ void NetInMessage::SkipToFirstVariableByName(const std::string &variableName)
 {
 	assert(messageInfo);
 
-    //\Todo Make sure that one can't skip to inside variab count block.
-    //const NetMessageBlock &startingBlock = messageInfo->blocks[currentBlock];
-    //startingBlock.type != curBlock.type
-	//If (curBlock.type == NetBlockVariable) blalblalbal
+    //\Todo Make sure that one can't skip to inside variable-count block.
 
     // Check out that the variable really exists.
 	bool bFound = false;
@@ -556,12 +555,13 @@ void NetInMessage::RequireNextVariableType(NetVariableType type)
     // Current block is variable, but user hasn't called ReadCurrentBlockInstanceCount().
     if (curBlock.type == NetBlockVariable && !variableCountBlockNext)
         throw std::exception("Current block is variable: use ReadCurrentBlockInstanceCount first in order to proceed.");
+        //NetMessageException(ET_BlockInstanceCountNotRead)
 
-    // In case of string or buffer:
+    // In case of string or buffer just return.
     if (type == NetVarNone)
         return;
     
     // Check that the variable type matches.
     if (CheckNextVariableType() != type)
-        throw std::exception("Tried to read wrong variable type.");
+        throw std::exception("Tried to read wrong variable type."); //ET_VariableTypeMismatch
 }

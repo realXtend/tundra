@@ -24,12 +24,12 @@ namespace RexLogic
         virtual ~RexServerConnection();
         
         /// Connects to a reX server.
-        /**@param username Username (Firstname Lastname).
-          *@param password Password.
-          *@param serveraddress Simulator server address and port.
-          *@param auth_server_address Authentication server address and port.
-          *@param auth_login Authentication server username.
-          *@return True if the connection was succesfull. False otherwise.
+        /** @param username Username (Firstname Lastname).
+          * @param password Password.
+          * @param serveraddress Simulator server address and port.
+          * @param auth_server_address Authentication server address and port.
+          * @param auth_login Authentication server username.
+          * @return True if the connection was succesfull. False otherwise.
           */
         bool ConnectToServer(const std::string& username,
             const std::string& password,
@@ -38,7 +38,7 @@ namespace RexLogic
             const std::string& auth_login = "");
         
         /// Creates the UDP connection after a succesfull XML-RPC login.
-        ///@return True, if success.
+        /// @return True, if success.
         bool CreateUDPConnection();
         
         /// Request logout from the server.
@@ -48,11 +48,11 @@ namespace RexLogic
         void ForceServerDisconnect();
         
         /// Set the connection type.
-        ///@param ConnectionType enum.
+        /// @param ConnectionType enum.
 		void SetConnectionType( ConnectionType type ) { connection_type_ = type; }
         
         /// Get the connection type.
-        ///@return ConnectionType enum.
+        /// @return ConnectionType enum.
 		ConnectionType GetConnectionType() const { return connection_type_; }
 
         /// Send the UDP chat packet.
@@ -75,46 +75,46 @@ namespace RexLogic
 	        float far, uint32_t controlflags, uint8_t flags);        
         
         /// Sends a packet which indicates selection of a group of prims.
-        ///@param Local ID of the object which is selected.
+        /// @param Local ID of the object which is selected.
         void SendObjectSelectPacket(Core::entity_id_t object_id);
         
         /// Sends a packet which indicates selection of a prim.
-        ///@param List of local ID's of objects which are selected.        
+        /// @param List of local ID's of objects which are selected.        
         void SendObjectSelectPacket(std::vector<Core::entity_id_t> object_id_list);
 
         /// Sends a packet which indicates deselection of prim(s).
-        ///@param Local ID of the object which is deselected.
+        /// @param Local ID of the object which is deselected.
         void SendObjectDeselectPacket(Core::entity_id_t object_id);        
 
         /// Sends a packet which indicates deselection of a group of prims.
-        ///@param List of local ID's of objects which are deselected.
+        /// @param List of local ID's of objects which are deselected.
         void SendObjectDeselectPacket(std::vector<Core::entity_id_t> object_id_list);        
         
         /// Sends a packet indicating change in Object's position, rotation and scale.
-        ///@param List of updated entity pointers.
+        /// @param List of updated entity pointers.
         void SendMultipleObjectUpdatePacket(std::vector<Foundation::EntityPtr> entity_ptr_list);
 
         /// Sends a packet indicating change in Object's name.
-        ///@param List of updated entity pointers.
+        /// @param List of updated entity pointers.
         void SendObjectNamePacket(std::vector<Foundation::EntityPtr> entity_ptr_list);
         
         /// Sends a packet indicating change in Object's description
-        ///@param List of updated entity pointers.
+        /// @param List of updated entity pointers.
         void SendObjectDescriptionPacket(std::vector<Foundation::EntityPtr> entity_ptr_list);
 
         /// Sends handshake reply packet
         void SendRegionHandshakeReplyPacket(RexTypes::RexUUID agent_id, RexTypes::RexUUID session_id, uint32_t flags);
                         
-        ///@return Name of the sim we're connected to.
+        /// @return Name of the sim we're connected to.
         std::string GetSimName() { return simName_; }
         
-        ///@return A structure of connection spesific information, e.g. AgentID and SessiondID.
+        /// @return A structure of connection spesific information, e.g. AgentID and SessiondID.
         OpenSimProtocol::ClientParameters GetInfo() const { return myInfo_; }
         
-        ///@return True if the client connected to a server.
+        /// @return True if the client connected to a server.
         bool IsConnected() { return connected_; }
         
-        ///@return The state of the connection.
+        /// @return The state of the connection.
         volatile OpenSimProtocol::Connection::State GetConnectionState();
         
     private:

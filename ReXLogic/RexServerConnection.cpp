@@ -64,7 +64,7 @@ namespace RexLogic
         size_t pos = username.find(" ");
         if(pos == std::string::npos)
         {
-            RexLogicModule::LogError("Invalid username, last name not found." + username);
+            RexLogicModule::LogError("Invalid username, last name not found: " + username);
             return false;
         }
         
@@ -94,17 +94,19 @@ namespace RexLogic
             }
         }
 		
-		bool connect_result = false;
-		if (auth_server_address != "") 
+		if (auth_server_address != "")
 		{
-			connection_type_ = AuthenticationConnection;
-			connect_result = sp->LoginUsingRexAuthentication(first_name,
+		    connection_type_ = AuthenticationConnection;
+		    sp->LoginUsingRexAuthentication(first_name,
 				last_name, password, serveraddress_noport, port,
 				auth_server_address, auth_login, &threadState_);
-		}
-
-		if (connection_type_ == DirectConnection)
+        }   
+        else
+        {
+            connection_type_ = DirectConnection;
             sp->LoginToServer(first_name, last_name,password, serveraddress_noport, port, &threadState_);
+        
+        }
         
         // Save the server address and port for later use.
         serverAddress_ = serveraddress_noport;

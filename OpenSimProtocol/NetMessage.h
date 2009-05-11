@@ -6,6 +6,8 @@
 #include <vector>
 #include "RexTypes.h"
 #include "RexUUID.h"
+#include "NetMessageException.h"
+
 
 /// UDP message header flags.
 enum NetHeaderFlag
