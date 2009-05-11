@@ -198,7 +198,8 @@ namespace Communication
 		virtual IMSessionPtr CreateIMSession(ContactPtr contact) = 0;
 		virtual IMSessionPtr CreateIMSession(ContactInfoPtr contact) = 0;
 		virtual ContactListPtr GetContactList() = 0;
-		virtual void PublishPresence(PresenceStatusPtr p) = 0;
+		virtual void SetPresenceStatus(PresenceStatusPtr p) = 0; 
+		virtual PresenceStatusPtr GetPresenceStatus() = 0;
 		virtual IMMessagePtr CreateIMMessage(std::string text) = 0;
 		virtual void SendFriendRequest(ContactInfoPtr contact_info) = 0;  // todo: move to ContactList class
 		virtual void RemoveContact(ContactPtr contact) = 0; // todo: move to ContactList class

@@ -60,6 +60,7 @@ namespace CommunicationUI
 		//commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager).lock();
 
         commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager).lock();
+		communication_service_ = framework_->GetService<Communication::CommunicationServiceInterface>(Foundation::Service::ST_Communication).lock();
 
 		CommunicationUIModule::instance_= this;		
         
@@ -185,26 +186,28 @@ namespace CommunicationUI
 
 		sessionUp_ = false;
 
-		eIntf->SetCallback(CommunicationUIModule::testCallback, "key");
-		eIntf->SetCallback(CommunicationUIModule::connected, "connected");
-		eIntf->SetCallback(CommunicationUIModule::disconnected, "disconnected");
-		eIntf->SetCallback(CommunicationUIModule::disconnected, "connecting");
+		//eIntf->SetCallback(CommunicationUIModule::testCallback, "key");
+		//eIntf->SetCallback(CommunicationUIModule::connected, "connected");
+		//eIntf->SetCallback(CommunicationUIModule::disconnected, "disconnected");
+		//eIntf->SetCallback(CommunicationUIModule::disconnected, "connecting");
 
-		eIntf->SetCallback(CommunicationUIModule::channelOpened, "channel_opened");
-		eIntf->SetCallback(CommunicationUIModule::channelClosed, "channel_closed");
-		eIntf->SetCallback(CommunicationUIModule::messagReceived, "message_received");
-		eIntf->SetCallback(CommunicationUIModule::contactReceived, "contact_item");
+		//eIntf->SetCallback(CommunicationUIModule::channelOpened, "channel_opened");
+		//eIntf->SetCallback(CommunicationUIModule::channelClosed, "channel_closed");
+		//eIntf->SetCallback(CommunicationUIModule::messagReceived, "message_received");
+		//eIntf->SetCallback(CommunicationUIModule::contactReceived, "contact_item");
 
-        eIntf->SetCallback(CommunicationUIModule::contactAdded, "contact_added");
-        eIntf->SetCallback(CommunicationUIModule::contactAddedToPublishList, "contact_added_publish_list");
-        eIntf->SetCallback(CommunicationUIModule::contactRemoved, "contact_removed");
-        eIntf->SetCallback(CommunicationUIModule::remotePending, "remote_pending");
-        eIntf->SetCallback(CommunicationUIModule::localPending, "local_pending");
+  //      eIntf->SetCallback(CommunicationUIModule::contactAdded, "contact_added");
+  //      eIntf->SetCallback(CommunicationUIModule::contactAddedToPublishList, "contact_added_publish_list");
+  //      eIntf->SetCallback(CommunicationUIModule::contactRemoved, "contact_removed");
+  //      eIntf->SetCallback(CommunicationUIModule::remotePending, "remote_pending");
+  //      eIntf->SetCallback(CommunicationUIModule::localPending, "local_pending");
 
-        eIntf->SetCallback(CommunicationUIModule::incomingRequest, "incoming_request");
+  //      eIntf->SetCallback(CommunicationUIModule::incomingRequest, "incoming_request");
 
-        eIntf->SetCallback(CommunicationUIModule::contactStatusChanged, "contact_status_changed");
-        eIntf->SetCallback(CommunicationUIModule::handleAvailableStatusList, "got_available_status_list");
+  //      eIntf->SetCallback(CommunicationUIModule::contactStatusChanged, "contact_status_changed");
+  //      eIntf->SetCallback(CommunicationUIModule::handleAvailableStatusList, "got_available_status_list");
+
+		// TODO: (MattiKu) Register events from EventManager 
     }
 
 	void CommunicationUIModule::OnAccountMenuSettings()
@@ -226,17 +229,19 @@ namespace CommunicationUI
 
 	void CommunicationUIModule::OnAccountMenuConnect()
 	{
-		// TODO: Eventually this code would not be here as it is no UI specific
-		std::string str = "CAccountConnect";
-		std::string syntax = "";
-		Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
+		// TODO: use user defines credential 
+		Communication::Credentials* c = new Communication::Credentials();
+		communication_service_->OpenConnection(Communication::CredentialsPtr(c));
+		//std::string str = "CAccountConnect";
+		//std::string syntax = "";
+		//Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
 	}
 	void CommunicationUIModule::OnAccountMenuDisconnect()
 	{
-		// TODO: Eventually this code would not be here as it is no UI specific
-		std::string str = "CDisconnect";
-		std::string syntax = "";
-		Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
+		//std::string str = "CDisconnect";
+		//std::string syntax = "";
+		//Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
+		communication_service_->CloseConnection();
 	}
 
 	void CommunicationUIModule::OnDirectChatMenuStartChat()
@@ -258,15 +263,21 @@ namespace CommunicationUI
         
 	}
 
+	// todo: Use user defines values
     void CommunicationUIModule::OnSetStatusOnline()
     {
-        std::cout << "OnSetStatusOnline" << std::endl;
-        this->CallIMPyMethod("CSetStatus", "s", std::string("available"));
+		Communication::PresenceStatusPtr s = communication_service_->GetPresenceStatus();
+		s->SetOnlineStatus("available");
+		communication_service_->SetPresenceStatus( s );
+        //std::cout << "OnSetStatusOnline" << std::endl;
+        //this->CallIMPyMethod("CSetStatus", "s", std::string("available"));
     }
     void CommunicationUIModule::OnSetStatusAway()
     {
-        std::cout << "OnSetStatusAway" << std::endl;
-        this->CallIMPyMethod("CSetStatus", "s", std::string("away"));
+		Communication::PresenceStatusPtr s = communication_service_->GetPresenceStatus();
+		s->SetOnlineStatus("away");
+		communication_service_->SetPresenceStatus( s );
+//        this->CallIMPyMethod("CSetStatus", "s", std::string("away"));
     }
     void CommunicationUIModule::OnSetStatusBusy()
     {

@@ -254,9 +254,15 @@ namespace Communication
 		return TelepathyCommunication::instance_;
 	}
 
-	void TelepathyCommunication::PublishPresence(PresenceStatusPtr p)
+	void TelepathyCommunication::SetPresenceStatus(PresenceStatusPtr p)
 	{
-		// TODO: call python here
+		presence_status_ = p;
+		((TPPresenceStatus*)presence_status_.get())->UpdateToServer();
+	}
+
+	PresenceStatusPtr TelepathyCommunication::GetPresenceStatus()
+	{
+		return presence_status_;
 	}
 
 	IMMessagePtr TelepathyCommunication::CreateIMMessage(std::string text)
@@ -1002,7 +1008,7 @@ namespace Communication
 	*/
 	void TelepathyCommunication::PyCallbackFriendRequestRemotePending(char* id)
 	{
-
+		// todo: ???
 	}
 
 	/*
@@ -1012,7 +1018,9 @@ namespace Communication
 	*/
 	void TelepathyCommunication::PyCallbackFriendAdded(char* id)
 	{
-
+		// todo: We have to call either of these:
+		// 1) Accept
+		// 2) send subscription
 	}
 
 	/*

@@ -6,7 +6,7 @@
 
 #pragma warning( push )
 #pragma warning( disable : 4275 ) // IConfigureCallBack used only inside CommunicationUIModule 
-
+#include "Foundation.h"
 
 #include "ChatSession.h"
 #include "ConfigureDlg.h"
@@ -15,26 +15,6 @@
 #include "ModuleInterface.h"
 #include "ContactList.h"
 //#include "PythonScriptModule.h"
-
-
-// *********************************************'
-// CommunicationViewModel<--->CommunicationView communication:
-// 
-// - Actions:
-//   - ShowContactList(contact_list)
-//   - HideContactList(contact_list)      needed ?
-//   - ShowSessionInvitation(invitation)
-//   - ShowMessageNotification(contact)
-//   - ShowPresenceNotification(contact)
-// 
-// - data objects:
-//   - ContactList
-//   - Contact
-//   - Session
-//   - Participient
-//
-// *********************************************'
-
 
 namespace CommunicationUI
 {
@@ -179,7 +159,9 @@ namespace CommunicationUI
 	private:
 		// Service References
 		boost::shared_ptr<Foundation::Comms::CommunicationManagerServiceInterface> commManager;
+		Communication::CommunicationServicePtr communication_service_;
         //boost::weak_ptr<Foundation::Comms::CommunicationManagerServiceInterface> commManager;
+		
 
 		boost::shared_ptr<Foundation::ScriptServiceInterface> scriptService;
         //boost::weak_ptr<Foundation::ScriptServiceInterface> scriptService;
@@ -193,6 +175,7 @@ namespace CommunicationUI
 		//Foundation::CommunicationUIManagerPtr CommunicationUI_manager_;
 
 		std::map<std::string, std::string> contactList_;
+
 	};
 }
 #pragma warning( pop )

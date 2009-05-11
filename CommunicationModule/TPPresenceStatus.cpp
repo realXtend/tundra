@@ -48,4 +48,15 @@ namespace Communication
 		return options;
 	}
 
+	void TPPresenceStatus::UpdateToServer()
+	{
+		char** args = new char*[1];
+		char* buf1 = new char[1000];
+		strcpy(buf1, online_status_.c_str());
+		args[0] = buf1;
+		std::string method = "CSetStatus"; 
+		std::string syntax = "s";
+		Foundation::ScriptObject* ret = TelepathyCommunication::GetInstance()->python_communication_object_->CallMethod(method, syntax, args);
+	}
+
 } // end of namespace: Communication
