@@ -127,6 +127,15 @@ namespace Foundation
         std::string GetFileNameEncoding() const { return file_name_encoding_; }
 
         /**
+         * Removes declared setting from runtime map. 
+         * 
+         * @param group is the name of the Group. 
+         * @param key is the name of the Key. 
+         * @note Method does not remove setting from a file. 
+         */
+        void Remove(const std::string& group, const std::string key);
+
+        /**
          * Declares setting. If searched setting is found from xml file it will be returned 
          * else default value will be set into runtime value map, and stored afterwords in xml-file. 
          * @code

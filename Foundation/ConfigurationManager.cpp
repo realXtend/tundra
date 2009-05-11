@@ -591,4 +591,11 @@ namespace Foundation
 
    }
 
+   void ConfigurationManager::Remove(const std::string& group, const std::string key)
+   {
+        std::map<string_pair_t, std::string>::iterator iter = values_.find(std::make_pair(group, key));
+        if ( iter != values_.end() )    
+            values_.erase(iter);
+       
+   }
 }
