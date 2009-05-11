@@ -79,7 +79,7 @@ namespace OgreRenderer
             {   
                 ogre_texture_ = Ogre::TextureManager::getSingleton().createManual(
                     id_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
-                    source->GetWidth(), source->GetHeight(), Ogre::MIP_DEFAULT, pixel_format, Ogre::TU_DYNAMIC_WRITE_ONLY); 
+                    source->GetWidth(), source->GetHeight(), Ogre::MIP_DEFAULT, pixel_format, Ogre::TU_DEFAULT); 
 
                 if (ogre_texture_.isNull())
                 {
