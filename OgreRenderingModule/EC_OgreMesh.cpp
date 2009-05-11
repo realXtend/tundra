@@ -15,13 +15,24 @@ namespace OgreRenderer
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         entity_(NULL),
-        attached_(false)
+        adjustment_node_(NULL),
+        attached_(false),
+        scale_to_unity_(false)
     {
+        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+        adjustment_node_ = scene_mgr->createSceneNode();        
     }
     
     EC_OgreMesh::~EC_OgreMesh()
     {
         RemoveMesh();
+        
+        if (adjustment_node_)
+        {            
+            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+            scene_mgr->destroySceneNode(adjustment_node_);
+            adjustment_node_ = NULL;
+        }        
     }
     
     void EC_OgreMesh::SetPlaceable(Foundation::ComponentPtr placeable)
@@ -29,6 +40,12 @@ namespace OgreRenderer
         DetachEntity();
         placeable_ = placeable;
         AttachEntity();
+    }
+    
+    void EC_OgreMesh::SetScaleToUnity(bool enable)
+    {
+        scale_to_unity_ = enable;
+        ScaleEntity();
     }
     
     bool EC_OgreMesh::SetMesh(const std::string& mesh_name)
@@ -48,6 +65,7 @@ namespace OgreRenderer
         }
         
         AttachEntity();
+        ScaleEntity();
         return true;
     }
     
@@ -105,7 +123,8 @@ namespace OgreRenderer
             
         EC_OgrePlaceable* placeable = checked_static_cast<EC_OgrePlaceable*>(placeable_.get());
         Ogre::SceneNode* node = placeable->GetSceneNode();
-        node->detachObject(entity_);
+        adjustment_node_->detachObject(entity_);
+        node->removeChild(adjustment_node_);
                 
         attached_ = false;
     }
@@ -117,7 +136,8 @@ namespace OgreRenderer
             
         EC_OgrePlaceable* placeable = checked_static_cast<EC_OgrePlaceable*>(placeable_.get());
         Ogre::SceneNode* node = placeable->GetSceneNode();
-        node->attachObject(entity_);
+        node->addChild(adjustment_node_);
+        adjustment_node_->attachObject(entity_);
                 
         attached_ = true;
     }
@@ -130,5 +150,25 @@ namespace OgreRenderer
             return empty_name;
         else
             return entity_->getMesh()->getName();
+    }
+    
+    void EC_OgreMesh::ScaleEntity()
+    {
+        if (!entity_)
+            return;
+     
+        Ogre::Vector3 scale(1.0, 1.0, 1.0);
+        
+        if (scale_to_unity_)
+        {
+            const Ogre::AxisAlignedBox& bbox = entity_->getBoundingBox();
+        
+            Ogre::Vector3 size = bbox.getMaximum() - bbox.getMinimum();
+            if (size.x != 0.0) scale.x /= size.x;
+            if (size.y != 0.0) scale.y /= size.y;
+	        if (size.z != 0.0) scale.z /= size.z;                 
+        }
+        
+        adjustment_node_->setScale(scale);
     }
 }

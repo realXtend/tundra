@@ -55,6 +55,11 @@ namespace OgreRenderer
          */
         bool SetMaterial(Core::uint index, const std::string& material_name);
         
+        //! sets scale to unity-mode
+        /*! \param enable Whether to enable or disable scaling
+         */
+        void SetScaleToUnity(bool enable);
+
         //! removes mesh
         void RemoveMesh();
         
@@ -67,6 +72,9 @@ namespace OgreRenderer
         //! returns Ogre mesh entity
         Ogre::Entity* GetEntity() const { return entity_; }
         
+        //! returns whether scale to unity mode is on
+        bool GetScaleToUnity() const { return scale_to_unity_; }
+        
     private:
         //! constructor
         /*! \param module renderer module
@@ -76,8 +84,11 @@ namespace OgreRenderer
         //! attaches entity to placeable
         void AttachEntity();
         
-        //! detaches mesh from placeable
+        //! detaches entity from placeable
         void DetachEntity();
+        
+        //! scales entity, using adjustment node, according to "scale to unity" setting
+        void ScaleEntity();
         
         //! placeable component 
         Foundation::ComponentPtr placeable_;
@@ -88,8 +99,14 @@ namespace OgreRenderer
         //! Ogre mesh entity
         Ogre::Entity* entity_;
         
+        //! Adjustment scene node (scaling/offset modifications)
+        Ogre::SceneNode* adjustment_node_;
+        
         //! mesh entity attached to placeable -flag
         bool attached_;
+        
+        //! scale entity to unity size -flag
+        bool scale_to_unity_;
     };
 }
 
