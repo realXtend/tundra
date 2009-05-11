@@ -89,6 +89,19 @@ namespace OgreRenderer
         return entity_->getNumSubEntities();
     }
     
+    const std::string& EC_OgreMesh::GetMaterialName(Core::uint index)
+    {
+        const static std::string empty;
+        
+        if (!entity_)
+            return empty;
+        
+        if (index >= entity_->getNumSubEntities())
+            return empty;
+        
+        return entity_->getSubEntity(index)->getMaterialName();
+    }
+    
     bool EC_OgreMesh::SetMaterial(Core::uint index, const std::string& material_name)
     {
         if (!entity_)

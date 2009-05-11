@@ -28,6 +28,8 @@ namespace RexLogic
         bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
              
     private:
+        typedef std::map<Core::request_tag_t, Core::entity_id_t> EntityResourceRequestMap; 
+            
         RexLogicModule *rexlogicmodule_;
     
         //! @return The entity corresponding to given id AND uuid. This entity is guaranteed to have an existing EC_OpenSimPrim component.
@@ -43,13 +45,21 @@ namespace RexLogic
         
         //! handles mesh resource being ready
         void HandleMeshReady(Core::entity_id_t entity, Foundation::ResourcePtr resource);
+
+        //! handles mesh texture resource being ready
+        void HandleMeshTextureReady(Core::entity_id_t entity, Foundation::ResourcePtr resource);
         
+        //! updates mesh textures if mesh & textures exist, optionally makes requests for the textures
+        void HandleMeshTextures(Core::entity_id_t entityid, bool make_new_requests = false);
+                
         //! discards request tags for certain entity
-        typedef std::map<Core::request_tag_t, Core::entity_id_t> EntityResourceRequestMap; 
         void DiscardRequestTags(Core::entity_id_t, EntityResourceRequestMap& map);
         
         //! resource request tags for meshes
         std::map<Core::request_tag_t, Core::entity_id_t> mesh_request_tags_;    
+     
+        //! resource request tags for mesh textures
+        std::map<Core::request_tag_t, Core::entity_id_t> mesh_texture_request_tags_; 
     };
 }
 #endif

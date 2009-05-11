@@ -47,7 +47,13 @@ namespace OgreRenderer
         
         //! gets number of materials (submeshes) in mesh entity
         Core::uint GetNumMaterials();
-        
+    
+        //! gets material name from mesh
+        /*! \param index submesh index           
+            \return name if successful, empty if no entity / illegal index
+         */
+        const std::string& GetMaterialName(Core::uint index);
+                
         //! sets material in mesh
         /*! \param index submesh index
             \param material_name material name
@@ -59,7 +65,7 @@ namespace OgreRenderer
         /*! \param enable Whether to enable or disable scaling
          */
         void SetScaleToUnity(bool enable);
-
+        
         //! removes mesh
         void RemoveMesh();
         
