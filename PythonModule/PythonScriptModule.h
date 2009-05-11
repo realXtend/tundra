@@ -99,10 +99,10 @@ namespace PythonScript
 	};
 
 	static void initpymod();
-	//static Foundation::ScenePtr GetScene();
+	//static Scene::ScenePtr GetScene();
 
 	//a helper and to avoid copy-paste when doing the get in Entity.getattro
-	static Foundation::ScenePtr GetScene() 
+	static Scene::ScenePtr GetScene() 
 	{
 		PythonScript::PythonScriptModule::LogDebug("Getting scene..");
 
@@ -112,9 +112,7 @@ namespace PythonScript
 		//this works when GetEntity calls this, but not anymore when entity_getattro does.
 		Foundation::Framework *framework_ = PythonScript::staticframework;
 
-        boost::shared_ptr<Foundation::SceneManagerServiceInterface> sceneManagerService = 
-            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager).lock();
-		Foundation::ScenePtr &scene = sceneManagerService->GetScene("World"); //XXX hardcoded scene name, like in debugstats now
+		Scene::ScenePtr &scene = framework_->GetScene("World"); //XXX hardcoded scene name, like in debugstats now
 		return scene;
 	}
 }

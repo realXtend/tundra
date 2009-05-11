@@ -41,7 +41,7 @@ public:
     void FindCurrentlyActiveTerrain();
 
     //! @return The scene entity that represents the terrain in the currently active world.
-    Foundation::EntityWeakPtr GetTerrainEntity();
+    Scene::EntityWeakPtr GetTerrainEntity();
 
     //! Called whenever a texture is loaded so it can be attached to the terrain.
     void OnTextureReadyEvent(Resource::Events::ResourceReady *tex);
@@ -53,7 +53,7 @@ private:
     //! UUID's of the texture assets the terrain uses for rendering. Should be stored per-scene.
     RexUUID terrain_textures_[num_terrain_textures];
 
-    Foundation::EntityWeakPtr cachedTerrainEntity_;
+    Scene::EntityWeakPtr cachedTerrainEntity_;
 
     void CreateOrUpdateTerrainPatch(const DecodedTerrainPatch &patch, int patchSize);
 

@@ -14,7 +14,7 @@ include_directories (
 	../Foundation
 	../Interfaces
 	../GtkmmUI
-	../SceneModule
+	../SceneManager
 	../RexCommon
 	../ReXLogic
 	../OpenSimProtocol
@@ -56,7 +56,7 @@ if (MSVC)
 	target_link_libraries (${TARGET_NAME} )
 endif (MSVC)
 
-target_link_libraries (${TARGET_NAME} Foundation SceneModule RexCommon RexLogicModule OpenSimProtocolModule OgreRenderingModule Interfaces)
+target_link_libraries (${TARGET_NAME} Foundation RexCommon RexLogicModule OpenSimProtocolModule OgreRenderingModule Interfaces)
 
 # External library linkage (needs target defined)
 LINK_POCO()

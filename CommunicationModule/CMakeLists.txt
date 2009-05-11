@@ -14,7 +14,7 @@ include_directories (
 	../Foundation
 	../Interfaces
 #	../GtkmmUI
-	../SceneModule
+	../SceneManager
 )
 
 # Disable warning
@@ -51,7 +51,7 @@ if (MSVC)
 	target_link_libraries (${TARGET_NAME} )
 endif (MSVC)
 
-target_link_libraries (${TARGET_NAME} Interfaces Foundation SceneModule)
+target_link_libraries (${TARGET_NAME} Interfaces Foundation)
 
 # External library linkage (needs target defined)
 LINK_POCO()

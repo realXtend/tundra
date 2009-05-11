@@ -27,18 +27,18 @@ namespace RexLogic
     {
     }
 
-    Foundation::EntityPtr Primitive::GetOrCreatePrimEntity(Core::entity_id_t entityid, const RexUUID &fullid)
+    Scene::EntityPtr Primitive::GetOrCreatePrimEntity(Core::entity_id_t entityid, const RexUUID &fullid)
     {
         // Make sure scene exists
-        Foundation::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+        Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
         if (!scene)
-            return Foundation::EntityPtr();
+            return Scene::EntityPtr();
           
-        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         if (!entity)
         {
             // Create a new entity.
-            Foundation::EntityPtr entity = CreateNewPrimEntity(entityid);
+            Scene::EntityPtr entity = CreateNewPrimEntity(entityid);
             rexlogicmodule_->RegisterFullId(fullid,entityid); 
             EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
             prim.LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
@@ -58,17 +58,17 @@ namespace RexLogic
         return entity;
     }  
 
-    Foundation::EntityPtr Primitive::CreateNewPrimEntity(Core::entity_id_t entityid)
+    Scene::EntityPtr Primitive::CreateNewPrimEntity(Core::entity_id_t entityid)
     {
-        Foundation::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+        Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
         if (!scene)
-            return Foundation::EntityPtr();
+            return Scene::EntityPtr();
         
         Core::StringVector defaultcomponents;
         defaultcomponents.push_back(EC_OpenSimPrim::NameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
         
-        Foundation::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents); 
+        Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents); 
 
         DebugCreateOgreBoundingBox(rexlogicmodule_, entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()),"AmbientRed");
         return entity;
@@ -92,7 +92,7 @@ namespace RexLogic
             msg->SkipToNextVariable();		// CRC U32 ///\todo Unhandled inbound variable 'CRC'.
             uint8_t pcode = msg->ReadU8();
 
-            Foundation::EntityPtr entity = GetOrCreatePrimEntity(localid,fullid);
+            Scene::EntityPtr entity = GetOrCreatePrimEntity(localid,fullid);
             EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
             OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
 
@@ -171,7 +171,7 @@ namespace RexLogic
         Core::Vector3df rotvel = GetProcessedVectorFromUint16(&bytes[i]);
         
         // set values
-        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(localid);
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(localid);
         if(entity)
         {
             OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
@@ -198,7 +198,7 @@ namespace RexLogic
         RexUUID primuuid(data->message->ReadString());
         
         //! \todo tucofixme, sometimes rexprimdata might arrive before the objectupdate packet 
-        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
         if(!entity)
             return false;
         
@@ -233,7 +233,7 @@ namespace RexLogic
     {
         int idx = 0;
 
-        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
 
         // graphical values
@@ -284,13 +284,13 @@ namespace RexLogic
     
     bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
     {
-        Foundation::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+        Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
         if (!scene)
             return false;
 
         RexTypes::RexUUID fullid;
         fullid.SetNull();
-        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(objectid);
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(objectid);
         if(!entity)
             return false;
 
@@ -301,7 +301,7 @@ namespace RexLogic
             fullid = prim.FullId;
         }
         
-        scene->DestroyEntity(objectid);
+        scene->RemoveEntity(objectid);
         rexlogicmodule_->UnregisterFullId(fullid);        
         return false;
     }    
@@ -317,7 +317,7 @@ namespace RexLogic
         std::string desc = msg->ReadString();
         ///\todo Handle rest of the vars.
         
-        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(full_id);
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(full_id);
         if(entity)
         {
             EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
@@ -337,7 +337,7 @@ namespace RexLogic
 
     void Primitive::HandleDrawType(Core::entity_id_t entityid)
     {
-        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
 
         //RexLogicModule::LogInfo("Entity " + Core::ToString<Core::entity_id_t>(entityid) + 
@@ -400,7 +400,7 @@ namespace RexLogic
     
     void Primitive::HandleMeshReady(Core::entity_id_t entityid, Foundation::ResourcePtr resource)
     {     
-        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         if (!entity)
             return;
            

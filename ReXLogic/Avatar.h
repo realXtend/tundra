@@ -28,8 +28,8 @@ namespace RexLogic
 
         //! @return The entity corresponding to given id AND uuid. This entity is guaranteed to have an existing EC_OpenSimAvatar component.
         //!         Does not return null. If the entity doesn't exist, an entity with the given entityid and fullid is created and returned.
-        Foundation::EntityPtr GetOrCreateAvatarEntity(Core::entity_id_t entityid, const RexUUID &fullid);
-        Foundation::EntityPtr CreateNewAvatarEntity(Core::entity_id_t entityid);
+        Scene::EntityPtr GetOrCreateAvatarEntity(Core::entity_id_t entityid, const RexUUID &fullid);
+        Scene::EntityPtr CreateNewAvatarEntity(Core::entity_id_t entityid);
     };
 }
 #endif

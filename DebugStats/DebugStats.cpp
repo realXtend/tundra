@@ -22,9 +22,8 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
 
-#include "SceneManager.h"
 #include "Entity.h"
-#include "SceneInterface.h"
+#include "SceneManagerInterface.h"
 #include "SceneEvents.h"
 #include "ComponentInterface.h"
 
@@ -269,25 +268,20 @@ void DebugStats::PopulateEntityListTreeView()
     Gtk::TreeView *treeview_entitylist = 0;
     entityListControls_->get_widget("treeview_entitylist", treeview_entitylist);
 
-    boost::shared_ptr<Scene::SceneManager> sceneManager = 
-        (framework_->GetService<Scene::SceneManager>(Foundation::Service::ST_SceneManager)).lock();
-    if (!sceneManager)
-        return;
-
     //Fill the TreeView's model.
     entityListModel_->clear();
     
-    const Scene::SceneManager::SceneMap &scenes = sceneManager->GetSceneMap();
-    for(Scene::SceneManager::SceneMap::const_iterator iter = scenes.begin(); iter != scenes.end(); ++iter)
+    const Foundation::Framework::SceneMap &scenes = framework_->GetSceneMap();
+    for(Foundation::Framework::SceneMap::const_iterator iter = scenes.begin(); iter != scenes.end(); ++iter)
     {
         // Add scene node.
-        const Foundation::SceneInterface &scene = *iter->second;
+        const Scene::SceneManagerInterface &scene = *iter->second;
         
         Gtk::TreeModel::Row scene_row = *(entityListModel_->append());
         scene_row[entityModelColumns_.colName] = scene.Name();
         scene_row[entityModelColumns_.colID] = "";
         
-        for(Foundation::SceneInterface::ConstEntityIterator iter = scene.begin(); iter != scene.end(); ++iter)
+        for(Scene::SceneManagerInterface::ConstEntityIterator iter = scene.begin(); iter != scene.end(); ++iter)
         {
             // Add entity.
             const Scene::Entity &entity = dynamic_cast<const Scene::Entity &>(*iter);
@@ -310,12 +304,7 @@ void DebugStats::PopulateEntityListTreeView()
 }
 
 void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Events::SceneEventData *event_data)
-{
-    boost::shared_ptr<Scene::SceneManager> scene_manager = 
-        (framework_->GetService<Scene::SceneManager>(Foundation::Service::ST_SceneManager)).lock();
-    if (!scene_manager)
-            return;
-            
+{            
     switch(event_id)
     {
         case Scene::Events::EVENT_SCENE_ADDED:
@@ -353,10 +342,10 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Even
             {
                 // Find the scene where this entity belongs to.
                 std::string scene_name("");
-                const Scene::SceneManager::SceneMap &scenes = scene_manager->GetSceneMap();
-                for(Scene::SceneManager::SceneMap::const_iterator iter = scenes.begin(); iter != scenes.end(); ++iter)
+                const Foundation::Framework::SceneMap &scenes = framework_->GetSceneMap();
+                for(Foundation::Framework::SceneMap::const_iterator iter = scenes.begin(); iter != scenes.end(); ++iter)
                 {
-                    const Foundation::SceneInterface &scene = *iter->second;
+                    const Scene::SceneManagerInterface &scene = *iter->second;
                     if (scene.HasEntity(event_data->localID))
                         scene_name = scene.Name();
                 }
@@ -364,8 +353,8 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Even
                 if(scene_name == "")
                     return;
                                                 
-                const Foundation::ScenePtr &scene = scene_manager->GetScene(scene_name);
-                const Foundation::EntityPtr &entity = scene->GetEntity(event_data->localID);
+                const Scene::ScenePtr &scene = framework_->GetScene(scene_name);
+                const Scene::EntityPtr &entity = scene->GetEntity(event_data->localID);
                 const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
                 const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
                 if (!prim_component || !ogre_component)
@@ -380,10 +369,10 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Even
             {
                 // Find the scene where this entity belongs to.
                 std::string scene_name("");
-                const Scene::SceneManager::SceneMap &scenes = scene_manager->GetSceneMap();
-                for(Scene::SceneManager::SceneMap::const_iterator iter = scenes.begin(); iter != scenes.end(); ++iter)
+                const Foundation::Framework::SceneMap &scenes = framework_->GetSceneMap();
+                for(Foundation::Framework::SceneMap::const_iterator iter = scenes.begin(); iter != scenes.end(); ++iter)
                 {
-                    const Foundation::SceneInterface &scene = *iter->second;
+                    const Scene::SceneManagerInterface &scene = *iter->second;
                     if (scene.HasEntity(event_data->localID))
                         scene_name = scene.Name();
                 }
@@ -392,10 +381,10 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Even
                     return;
                 
                 // Get the scene for real.
-                const Foundation::ScenePtr &scene_ptr = scene_manager->GetScene(scene_name);
+                const Scene::ScenePtr &scene_ptr = framework_->GetScene(scene_name);
                 if (!scene_ptr)
                     return;
-                const Foundation::SceneInterface &scene = *scene_ptr.get();
+                const Scene::SceneManagerInterface &scene = *scene_ptr.get();
 
                 // Find the scene row.
                 Gtk::TreeModel::Children rows = entityListModel_->children();
@@ -410,7 +399,7 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Even
                 }
                 
                 // Add entity.
-                const Foundation::EntityPtr &entity = scene.GetEntity(event_data->localID);
+                const Scene::EntityPtr &entity = scene.GetEntity(event_data->localID);
                 const Scene::Entity &ent = dynamic_cast<const Scene::Entity &>(*entity.get());
 
                 Gtk::TreeModel::Row entity_row = *(entityListModel_->append(scene_row.children()));
@@ -457,13 +446,9 @@ void DebugStats::OnClickSave()
     primPropertiesControls_->get_widget("sb_rot_y", sb_rot_y);
     primPropertiesControls_->get_widget("sb_rot_z", sb_rot_z);
     
-    ///\todo Get the real scene, not hardcoded
-    boost::shared_ptr<Foundation::SceneManagerServiceInterface> scene_manager = 
-        (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager)).lock();
-    if (!scene_manager)
-            return;    
-    const Foundation::ScenePtr &scene = scene_manager->GetScene("World");
-    const Foundation::EntityPtr &entity = scene->GetEntity(currentEntityID_);
+    ///\todo Get the real scene, not hardcoded   
+    const Scene::ScenePtr &scene = framework_->GetScene("World");
+    const Scene::EntityPtr &entity = scene->GetEntity(currentEntityID_);
     const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
     OgreRenderer::EC_OgrePlaceable *ogre_pos = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());        
 
@@ -499,11 +484,6 @@ void DebugStats::OnPrimPropertiesClose()
 
 void DebugStats::OnDoubleClickEntity(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn* column)
 {
-    boost::shared_ptr<Foundation::SceneManagerServiceInterface> scene_manager = 
-        (framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager)).lock();
-    if (!scene_manager)
-        return;
-
     Gtk::TreeModel::iterator iter = entityListModel_->get_iter(path);
     if (!iter)
         return;
@@ -528,8 +508,8 @@ void DebugStats::OnDoubleClickEntity(const Gtk::TreeModel::Path &path, Gtk::Tree
         framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_SELECT, &event_data);
 
         ///\todo Get the real scene, not hardcoded
-        const Foundation::ScenePtr &scene = scene_manager->GetScene("World");
-        const Foundation::EntityPtr &entity = scene->GetEntity(id);
+        const Scene::ScenePtr &scene = framework_->GetScene("World");
+        const Scene::EntityPtr &entity = scene->GetEntity(id);
         const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
         const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
         if (!prim_component || !ogre_component)

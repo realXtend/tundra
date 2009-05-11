@@ -43,18 +43,15 @@ namespace RexLogic
     }
     
     void SceneEventHandler::HandleEntityDeletedEvent(Core::event_id_t entityid)    
-    {
-        boost::shared_ptr<Foundation::SceneManagerServiceInterface> sceneManager = framework_->GetService<Foundation::SceneManagerServiceInterface>
-            (Foundation::Service::ST_SceneManager).lock();
-        
-        Foundation::ScenePtr scene = sceneManager->GetScene("World");
+    {        
+        Scene::ScenePtr scene = framework_->GetScene("World");
         if (!scene)
             return;
 
-        Foundation::EntityPtr entity = scene->GetEntity(entityid);
+        Scene::EntityPtr entity = scene->GetEntity(entityid);
         if(entity && rexlogicmodule_->GetAvatarController()->GetAvatarEntity() && entity->GetId() == rexlogicmodule_->GetAvatarController()->GetAvatarEntity()->GetId())
         {
-            Foundation::EntityPtr emptyavatar;
+            Scene::EntityPtr emptyavatar;
             rexlogicmodule_->GetAvatarController()->SetAvatarEntity(emptyavatar);
         }      
     }    

@@ -36,7 +36,7 @@ set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Core Foundation SceneModule)
+target_link_libraries (${TARGET_NAME} Core Foundation)
 
 # External library linkage
 LINK_BOOST()

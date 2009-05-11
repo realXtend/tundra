@@ -34,7 +34,7 @@ namespace RexLogic
             avatarentity_.reset();
     }
     
-    void AvatarController::SetAvatarEntity(Foundation::EntityPtr avatar)    
+    void AvatarController::SetAvatarEntity(Scene::EntityPtr avatar)    
     {
         avatarentity_ = avatar;
     }

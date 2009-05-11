@@ -10,14 +10,13 @@
 #include "Poco/UnicodeConverter.h"
 
 #include "Foundation.h"
-/*
-#include <direct.h>
-#include <Windows.h>
-*/
+#include "SceneManager.h"
+#include "SceneEvents.h"
+
 namespace Foundation
 {
     const char *Framework::DEFAULT_EVENT_SUBSCRIBER_TREE_PATH = "./data/event_tree.xml";
-   
+    
     Framework::Framework() : exit_signal_(false)
     {
         application_ = ApplicationPtr(new Application(this));
@@ -40,6 +39,8 @@ namespace Foundation
         component_manager_ = ComponentManagerPtr(new ComponentManager(this));
         service_manager_ = ServiceManagerPtr(new ServiceManager(this));
         event_manager_ = EventManagerPtr(new EventManager(this));
+
+        Scene::Events::RegisterSceneEvents(event_manager_);
     }
 
     Framework::~Framework()
@@ -193,7 +194,36 @@ namespace Foundation
     void Framework::UnloadModules()
     {
         module_manager_->UninitializeModules();
+        scenes_.clear();
         module_manager_->UnloadModules();
+    }
+
+    Scene::ScenePtr Framework::CreateScene(const std::string &name)
+    {
+        if (HasScene(name))
+            return Scene::ScenePtr();
+
+        Scene::ScenePtr new_scene = Scene::ScenePtr(new Scene::SceneManager(name, this));
+        scenes_[name] = new_scene;
+
+        return new_scene;
+    }
+
+    void Framework::RemoveScene(const std::string &name)
+    {
+        SceneMap::iterator scene = scenes_.find(name);
+        if (scene != scenes_.end())
+        {
+            scenes_.erase(scene);
+        }
+    }
+    Scene::ScenePtr Framework::GetScene(const std::string &name) const
+    {
+        SceneMap::const_iterator scene = scenes_.find(name);
+        if (scene != scenes_.end())
+            return scene->second;
+
+        return Scene::ScenePtr();
     }
 
     Console::CommandResult Framework::ConsoleLoadModule(const Core::StringVector &params)
