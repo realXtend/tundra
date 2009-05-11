@@ -51,7 +51,7 @@ namespace RexTypes
             data[i] = 0;
     }
     
-    bool RexUUID::IsNull()
+    bool RexUUID::IsNull() const
     {
         for(int i = 0; i < cSizeBytes; ++i)
             if (data[i] != 0)

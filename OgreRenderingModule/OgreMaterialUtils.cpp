@@ -24,4 +24,29 @@ namespace OgreRenderer
         assert(material.get());
         return material;
     }
+    
+    void SetTextureUnitOnMaterial(Ogre::MaterialPtr material, Core::uint index, const char *textureName)
+    {
+        Ogre::Material::TechniqueIterator iter = material->getTechniqueIterator();
+        while(iter.hasMoreElements())
+        {
+            Ogre::Technique *tech = iter.getNext();
+            assert(tech);
+            Ogre::Technique::PassIterator passIter = tech->getPassIterator();
+            while(passIter.hasMoreElements())
+            {
+                Ogre::Pass *pass = passIter.getNext();
+                Ogre::Pass::TextureUnitStateIterator texIter = pass->getTextureUnitStateIterator();
+                Core::uint cmp_index = 0;
+                
+                while(texIter.hasMoreElements())
+                {                
+                    Ogre::TextureUnitState *texUnit = texIter.getNext();
+                    if ((index == cmp_index) || (index == SET_ALL_UNITS))
+                        texUnit->setTextureName(textureName);
+                    cmp_index++;
+                }
+            }
+        }
+    }
 }

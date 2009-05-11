@@ -22,7 +22,7 @@ namespace RexTypes
         void SetNull();
         
         /// Checks is the UUID null.
-        bool IsNull();
+        bool IsNull() const;
         
         /// Random-generates the contents
         void Random();
