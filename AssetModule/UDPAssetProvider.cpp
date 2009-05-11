@@ -16,7 +16,7 @@ using namespace RexTypes;
 
 namespace Asset
 {
-    const Core::Real UDPAssetProvider::DEFAULT_ASSET_TIMEOUT = 60.0;
+    const Core::Real UDPAssetProvider::DEFAULT_ASSET_TIMEOUT = 120.0;
         
     UDPAssetProvider::UDPAssetProvider(Foundation::Framework* framework) :
         framework_(framework)
@@ -122,7 +122,9 @@ namespace Asset
 
         // Handle timeouts for texture & asset transfers        
         HandleTextureTimeouts(net, frametime);
-        HandleAssetTimeouts(net, frametime);        
+        
+        // Disable asset timeouts for now, a long transfer may stall all others on the server
+        // HandleAssetTimeouts(net, frametime);        
     }
 
     void UDPAssetProvider::MakeTransfersPending()

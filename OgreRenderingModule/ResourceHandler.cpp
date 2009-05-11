@@ -60,16 +60,28 @@ namespace OgreRenderer
     
     bool ResourceHandler::HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        if (event_id == Asset::Events::ASSET_READY)
+        switch (event_id)
         {
-            Asset::Events::AssetReady *event_data = checked_static_cast<Asset::Events::AssetReady*>(data); 
-            if (event_data->asset_type_ == "Mesh")
+            case Asset::Events::ASSET_READY:
             {
-                // Check that the request tag matches our request, so we do not (possibly) update unnecessarily many times
-                // because of others' requests     
-                if (expected_request_tags_.find(event_data->tag_) != expected_request_tags_.end())                      
-                    UpdateMesh(event_data->asset_, event_data->tag_);
+                Asset::Events::AssetReady *event_data = checked_static_cast<Asset::Events::AssetReady*>(data); 
+                if (event_data->asset_type_ == "Mesh")
+                {
+                    // Check that the request tag matches our request, so we do not (possibly) update unnecessarily many times
+                    // because of others' requests     
+                    if (expected_request_tags_.find(event_data->tag_) != expected_request_tags_.end())                      
+                        UpdateMesh(event_data->asset_, event_data->tag_);
+                }
             }
+            break;
+            
+            case Asset::Events::ASSET_CANCELED:
+            {
+                Asset::Events::AssetCanceled *event_data = checked_static_cast<Asset::Events::AssetCanceled*>(data);   
+                // Remove client request tags related to this asset, we're not going to get it
+                request_tags_.erase(event_data->asset_id_);
+            }
+            break;
         }
 
         return false;

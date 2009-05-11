@@ -79,7 +79,7 @@ namespace TextureDecoder
 
         // Update amount of quality levels, should now be known
         levels_ = result.max_levels_;
-
+        
         // See if successfully decoded data
         if (result.texture_)
         {
@@ -92,10 +92,13 @@ namespace TextureDecoder
         }
         
         // Set next quality level to decode
+        // We do this regardless of success or failure, so that illegal texture data will
+        // not cause endless re-decoding attempts
         if (next_level_ > 0)
+        {
             next_level_--;
-            
-        // If this was the highest level, request is finished
-        return decoded_level_ == 0;
+            return false;
+        }
+        return true;
     }
 }
