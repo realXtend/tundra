@@ -8,7 +8,7 @@ namespace Communication
 {
 	/*
 	*/
-	class IMMessageEvent : public Foundation::EventDataInterface
+	class IMMessageEvent : public Events::IMMessageEventInterface
 	{
 	public:
 		IMMessageEvent(IMSessionPtr s, IMMessagePtr m);
@@ -18,13 +18,13 @@ namespace Communication
 		IMSessionPtr session_;
 		IMMessagePtr message_;
 	};
-	typedef boost::shared_ptr<IMMessageEvent> IMMessageEventPtr;
+//	typedef boost::shared_ptr<IMMessageEvent> IMMessageEventPtr;
 
 
 	/*
 
 	*/
-	class PresenceStatusUpdateEvent : public Foundation::EventDataInterface
+	class PresenceStatusUpdateEvent : public Events::PresenceStatusUpdateEventInterface
 	{
 	public:
 		PresenceStatusUpdateEvent(ContactPtr );
@@ -32,26 +32,27 @@ namespace Communication
 	private:
 		ContactPtr contact_;
 	};
-	typedef boost::shared_ptr<PresenceStatusUpdateEvent> PresenceStatusUpdateEventPtr;
+	
+
 
 	/*
 
 	*/
-	
-	class IMSessionRequestEvent : public Foundation::EventDataInterface
+	class IMSessionRequestEvent : public Events::IMSessionRequestEventInterface
 	{
 	public:
-		IMSessionRequestEvent(IMSessionPtr s);
+		IMSessionRequestEvent(IMSessionPtr s, ContactPtr c);
+		virtual ContactPtr GetContact();
 		IMSessionPtr GetSession();
 	private:
 		IMSessionPtr session_;
+		ContactPtr contact_;
 	};
-	typedef boost::shared_ptr<IMSessionRequestEvent> IMSessionRequestEventPtr;
 
 	/*
 
 	*/
-	class IMSessionEndEvent : public Foundation::EventDataInterface
+	class IMSessionEndEvent : public Events::IMSessionEndEventInterface
 	{
 	public:
 		IMSessionEndEvent(IMSessionPtr s);
@@ -59,9 +60,9 @@ namespace Communication
 	private:
 		IMSessionPtr session_;
 	};
-	typedef boost::shared_ptr<IMSessionEndEvent> IMSessionEndEventPtr;
+//	typedef boost::shared_ptr<IMSessionEndEvent> IMSessionEndEventPtr;
 
-	class FriendRequestEvent : public Foundation::EventDataInterface
+	class FriendRequestEvent : public Events::FriendRequestEventInterface
 	{
 	public:
 		FriendRequestEvent(FriendRequestPtr r);
@@ -69,7 +70,7 @@ namespace Communication
 	private:
 		FriendRequestPtr friend_request_;
 	};
-	typedef boost::shared_ptr<FriendRequestEvent> FriendRequestEventPtr;
+//	typedef boost::shared_ptr<FriendRequestEvent> FriendRequestEventPtr;
 
 
 } // end of namespace: Communication

@@ -32,14 +32,20 @@ namespace Communication
 		return contact_;
 	}
 
-	IMSessionRequestEvent::IMSessionRequestEvent(IMSessionPtr s)
+	IMSessionRequestEvent::IMSessionRequestEvent(IMSessionPtr s, ContactPtr c)
 	{
+		contact_ = c;
 		session_ = s;
 	}
 
 	IMSessionPtr IMSessionRequestEvent::GetSession()
 	{
 		return session_;
+	}
+	
+	ContactPtr IMSessionRequestEvent::GetContact()
+	{
+		return contact_;
 	}
 
 	IMSessionEndEvent::IMSessionEndEvent(IMSessionPtr s)

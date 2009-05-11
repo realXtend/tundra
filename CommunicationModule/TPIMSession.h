@@ -40,6 +40,14 @@ namespace Communication
 		virtual void SendIMMessage(IMMessagePtr m);
 		virtual IMMessageListPtr GetMessageHistory();
 
+		// /note: These should not be here but because interface heritance (Session, IMSessio) problems we declarate these here too.
+		virtual void Close();
+		virtual void SendInvitation(ContactPtr c);
+		virtual void Kick(ParticipantPtr p);
+		virtual ParticipantListPtr GetParticipants();
+		virtual std::string GetProtocol();
+
+
 	protected:
 		void NotifyMessageReceived(IMMessagePtr m); // called by TelepathyCommunication
 
