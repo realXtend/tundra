@@ -55,7 +55,8 @@ namespace Communication
 		IMSessionPtr CreateIMSession(ContactPtr contact);
 		IMSessionPtr CreateIMSession(ContactInfoPtr contact);
 		ContactListPtr GetContactList();
-		void PublishPresence(PresenceStatusPtr p);
+		void SetPresenceStatus(PresenceStatusPtr p);
+		PresenceStatusPtr GetPresenceStatus();
 		IMMessagePtr CreateIMMessage(std::string text);
 		void SendFriendRequest(ContactInfoPtr contact_info);
 		void RemoveContact(ContactPtr contact); // todo: move to ContactList class
@@ -92,12 +93,13 @@ namespace Communication
 		Foundation::Framework* framework_;
 		IMSessionListPtr im_sessions_;
 		ContactList contact_list_;
+		PresenceStatusPtr presence_status_;
+		std::vector<std::string> presence_status_options_;
+		FriendRequestListPtr friend_requests_;
 		Foundation::ScriptObjectPtr communication_py_script_; 
 		Foundation::ScriptObjectPtr python_communication_object_; 
 		Foundation::EventManagerPtr event_manager_;
 		Core::event_category_id_t comm_event_category_; // todo: could be static 
-		FriendRequestListPtr friend_requests_;
-		std::vector<std::string> presence_status_options_;
 
 		// python event handlers
 		// * todo: could these be non-static member functions?

@@ -18,6 +18,7 @@ namespace Communication
 		std::vector<std::string> GetOnlineStatusOptions();
 	protected:
 		void NotifyUpdate(std::string online_status, std::string online_message);
+		void UpdateToServer();
 
 		std::string id_; // contact id on python side -> do we need it here ?
 		std::string online_status_;
