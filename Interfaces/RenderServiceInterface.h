@@ -13,7 +13,7 @@ namespace Foundation
     /*!
         \ingroup Services_group
     */
-    class RenderServiceInterface : public ServiceInterface
+    class MODULE_API RenderServiceInterface : public ServiceInterface
     {
     public:
         RenderServiceInterface() {}

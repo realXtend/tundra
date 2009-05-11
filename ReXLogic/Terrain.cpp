@@ -8,16 +8,18 @@
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
 #include <OgreMaterialManager.h>
+#include <OgreTextureManager.h>
+#include <OgreIteratorWrappers.h>
+#include <OgreTechnique.h>
 
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
 #include "../OgreRenderingModule/Renderer.h"
+#include "../OgreRenderingModule/OgreTextureResource.h"
 
 #include "BitStream.h"
 #include "TerrainDecoder.h"
 #include "RexLogicModule.h"
 #include "Terrain.h"
-
-#include "EC_Terrain.h"
 
 using namespace Core;
 
@@ -30,6 +32,82 @@ namespace RexLogic
 
     Terrain::~Terrain()
     {
+    }
+
+namespace
+{
+    void DebugDumpOgreTextureInfo(const char *texName)
+    {
+        Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
+        Ogre::Texture *tex = dynamic_cast<Ogre::Texture *>(manager.getByName(texName).get());
+        if (!tex)
+        {
+            std::stringstream ss;
+            ss << "Ogre Texture \"" << texName << "\" not found!";
+            RexLogicModule::LogWarning(ss.str());
+            return;
+        }
+
+        std::stringstream ss;
+        ss << "Texture \"" << texName << "\": width: " << tex->getWidth() << ", height: " << tex->getHeight() << ", mips: " << tex->getNumMipmaps();
+        RexLogicModule::LogInfo(ss.str());
+    }
+
+    const char baseMaterialName[] = "UnlitTextured";
+    const char terrainMaterialName[] = "TerrainMaterial";
+
+    Ogre::MaterialPtr GetOrCreateTerrainMaterial()
+    {
+        Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
+        Ogre::MaterialPtr terrainMaterial = mm.getByName(terrainMaterialName);
+
+        if (!terrainMaterial.get())
+        {
+            Ogre::MaterialPtr baseMaterial = mm.getByName(baseMaterialName);
+            terrainMaterial = baseMaterial->clone(terrainMaterialName);
+        }
+
+        assert(terrainMaterial.get());
+        return terrainMaterial;
+    }
+}
+
+    /// Sets the texture of the material used to render terrain.
+    void Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
+    {
+        /// \todo Create a material that uses several terrain textures - for now only the first one is used.
+        if (index != 0)
+            return;
+
+        Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
+        Ogre::Texture *tex = dynamic_cast<Ogre::Texture *>(manager.getByName(textureName).get());
+
+        DebugDumpOgreTextureInfo(textureName);
+
+        Ogre::MaterialPtr terrainMaterial = GetOrCreateTerrainMaterial();
+        assert(terrainMaterial.get());
+
+        Ogre::Material::TechniqueIterator iter = terrainMaterial->getTechniqueIterator();
+        while(iter.hasMoreElements())
+        {
+            Ogre::Technique *tech = iter.getNext();
+            assert(tech);
+            Ogre::Technique::PassIterator passIter = tech->getPassIterator();
+            while(passIter.hasMoreElements())
+            {
+                Ogre::Pass *pass = passIter.getNext();
+                Ogre::Pass::TextureUnitStateIterator texIter = pass->getTextureUnitStateIterator();
+                while(texIter.hasMoreElements())
+                {
+                    Ogre::TextureUnitState *texUnit = texIter.getNext();
+                    texUnit->setTextureName(textureName);
+                }
+            }
+        }
+//        while(iter->
+//        terrainMaterial->
+//        Ogre::MaterialPtr newMaterial = material->clone(materialName);
+//        newMaterial->setAmbient(r, g, b);
     }
 
     void Terrain::DebugGenerateTerrainVisData(Ogre::SceneNode *node, const DecodedTerrainPatch &patch, int patchSize)
@@ -78,6 +156,105 @@ namespace RexLogic
         manual->setDebugDisplayEnabled(true);
     }
 
+    void Terrain::GenerateTerrainGeometryForOnePatch(EC_Terrain &terrain, EC_Terrain::Patch &patch)
+    {
+        Ogre::SceneNode *node = patch.node;
+        assert(node);
+        assert(node->numAttachedObjects() == 1);
+        Ogre::MaterialPtr terrainMaterial = GetOrCreateTerrainMaterial();
+
+        Ogre::ManualObject *manual = dynamic_cast<Ogre::ManualObject*>(node->getAttachedObject(0));
+        manual->clear(); /// \note For optimization, could use beginUpdate.
+        manual->begin(terrainMaterial->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
+
+        const float vertexSpacingX = 1.f;
+        const float vertexSpacingY = 1.f;
+        const float patchSpacingX = 16 * vertexSpacingX;
+        const float patchSpacingY = 16 * vertexSpacingY;
+        const Ogre::Vector3 patchOrigin(patch.y * patchSpacingY, 0.f, patch.x * patchSpacingX);
+
+        int curIndex = 0;
+
+        int stride = (patch.x + 1 >= terrain.cNumPatchesPerEdge) ? 16 : 17;
+
+        const int patchSize = 16;
+
+        const float uScale = 0.953f;//5e-3f;
+        const float vScale = 0.642f;//5e-3f;
+
+        for(int y = 0; y <= patchSize; ++y)
+            for(int x = 0; x <= patchSize; ++x)
+            {
+                if ((patch.x + 1 >= terrain.cNumPatchesPerEdge && x == patchSize) ||
+                    (patch.y + 1 >= terrain.cNumPatchesPerEdge && y == patchSize))
+                    continue;
+                // These coordinates are directly generated to our Ogre coordinate system, i.e. are cycled from OpenSim XYZ -> our YZX.
+                // see Core::OpenSimToOgreCoordinateAxes.
+                Ogre::Vector3 pos;
+                pos.x = vertexSpacingY * y;
+                pos.z = vertexSpacingX * x;
+
+                EC_Terrain::Patch *thisPatch;
+                int X = x;
+                int Y = y;
+                if (x < patchSize && y < patchSize)
+                {
+                    thisPatch = &patch;
+
+                    if ((patch.x + 1 < terrain.cNumPatchesPerEdge || x+1 < patchSize) &&
+                        (patch.y + 1 < terrain.cNumPatchesPerEdge || y+1 < patchSize))
+                    {
+                        manual->index(curIndex);
+                        manual->index(curIndex+1);
+                        manual->index(curIndex+stride);
+
+                        manual->index(curIndex+1);
+                        manual->index(curIndex+stride+1);
+                        manual->index(curIndex+stride);
+                    }
+                }
+                else if (x == patchSize && y == patchSize)
+                {
+                    thisPatch = &terrain.GetPatch(patch.x + 1, patch.y + 1);
+                    X = 0;
+                    Y = 0;
+                }
+                else if (x == patchSize)
+                {
+                    thisPatch = &terrain.GetPatch(patch.x + 1, patch.y);
+                    X = 0;
+                }
+                else // (y == patchSize)
+                {
+                    thisPatch = &terrain.GetPatch(patch.x, patch.y + 1);
+                    Y = 0;
+                }
+
+                pos.y = thisPatch->heightData[Y*patchSize+X];
+
+                manual->position(patchOrigin + pos);
+                manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.z + pos.z) * vScale);
+                ++curIndex;
+            }
+
+        manual->end();
+//        manual->setDebugDisplayEnabled(true);
+    }
+
+    void Terrain::GenerateTerrainGeometry(EC_Terrain &terrain) 
+    {
+        for(int y = 0; y < terrain.cNumPatchesPerEdge; ++y)
+            for(int x = 0; x < terrain.cNumPatchesPerEdge; ++x)
+            {
+                EC_Terrain::Patch &patch = terrain.GetPatch(x, y);
+
+                if (!patch.node)
+                    CreateOgreTerrainPatchNode(patch.node, x, y);
+
+                GenerateTerrainGeometryForOnePatch(terrain, patch);
+            }
+    }
+
     void Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY)
     {
         boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -112,7 +289,31 @@ namespace RexLogic
         if (!scenePatch.node)
             CreateOgreTerrainPatchNode(scenePatch.node, scenePatch.x, scenePatch.y);
 
-        DebugGenerateTerrainVisData(scenePatch.node, patch, patchSize);
+//        DebugGenerateTerrainVisData(scenePatch.node, patch, patchSize);
+
+        if (terrainComponent->AllPatchesLoaded())
+        {
+            RequestTerrainTextures();
+            GenerateTerrainGeometry(*terrainComponent);
+        }
+    }
+
+    void Terrain::RequestTerrainTextures()
+    {
+        boost::weak_ptr<OgreRenderer::Renderer> w_renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = w_renderer.lock();
+
+        for(int i = 0; i < num_terrain_textures; ++i)
+            terrain_texture_requests_[i] = renderer->RequestResource(terrain_textures_[i].ToString(), OgreRenderer::OgreTextureResource::GetTypeStatic());
+    }
+
+    void Terrain::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
+    {
+        assert(tex);
+
+        for(int i = 0; i < num_terrain_textures; ++i)
+            if (tex->tag_ == terrain_texture_requests_[i])
+                SetTerrainMaterialTexture(i, tex->id_.c_str());
     }
 
     /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
@@ -144,6 +345,12 @@ namespace RexLogic
             break;
         }
         return false;
+    }
+
+    void Terrain::SetTerrainTextures(const RexUUID textures[num_terrain_textures])
+    {
+        for(int i = 0; i < num_terrain_textures; ++i)
+            terrain_textures_[i] = textures[i];
     }
 
     void Terrain::FindCurrentlyActiveTerrain()

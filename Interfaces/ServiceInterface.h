@@ -10,7 +10,7 @@ namespace Foundation
         \ingroup Foundation_group
         \ingroup Services_group
     */
-    class ServiceInterface
+    class MODULE_API ServiceInterface
     {
     public:
         ServiceInterface() {}

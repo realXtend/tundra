@@ -395,24 +395,19 @@ void NetMessageManager::FinishMessage(NetOutMessage *message)
 	assert(message);
 	message->SetSequenceNumber(GetNewSequenceNumber());
 
+	std::vector<uint8_t> &data = message->GetData();
+	if (data.size() == 0)
+		return;
+	assert(data.size() >= message->BytesFilled());
+	data.resize(message->BytesFilled());
+
 	// Find and remove the given message from the usedMessagePool list, it has to be there.
-	for(std::list<NetOutMessage*>::iterator iter = usedMessagePool.begin(); iter != usedMessagePool.end(); ++iter)
-    {
-        if (*iter == message)
-        {
-            usedMessagePool.erase(iter);
-            break;
-        }	
-	}
+    std::list<NetOutMessage*>::iterator newEnd = std::remove(usedMessagePool.begin(), usedMessagePool.end(), message);
+    usedMessagePool.erase(newEnd, usedMessagePool.end());
 	
 	// Try to Zero-encode the message if that is desired. If encoding worsens the size, we'll send unencoded.
 	if (message->GetMessageInfo()->encoding == NetZeroEncoded)
 	{
-		std::vector<uint8_t> &data = message->GetData();
-		if (data.size() == 0)
-			return;
-		assert(data.size() >= message->BytesFilled());
-		data.resize(message->BytesFilled());
 
 		size_t bodyLength = 0;
 		const uint8_t *bodyData = ComputeMessageBodyStartAddrAndLength(&data[0], message->BytesFilled(), &bodyLength);

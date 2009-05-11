@@ -38,7 +38,7 @@ namespace OgreRenderer
     /*! Created by OgreRenderingModule. Implements the RenderServiceInterface.
         \ingroup OgreRenderingModuleClient
     */
-    class Renderer : public Foundation::RenderServiceInterface
+    class OGRE_MODULE_API Renderer : public Foundation::RenderServiceInterface
     {
         friend class EventListener;
         
