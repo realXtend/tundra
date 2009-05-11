@@ -32,7 +32,7 @@ if (service_manager_->IsRegistered(Service::ST_Renderer))
 	Currently there is support for requesting and creating mesh (OgreRenderer::OgreMeshResource) and texture (OgreRenderer::OgreTextureResource) resources. 
 	The Ogre resources are subclassed from the abstract interface Foundation::ResourceInterface and contain a pointer to the actual Ogre resource object.
 
-	See the functions Foundation::RenderService::GetResource(), Foundation::RenderService::RequestResource() and Foundation::RenderService::RemoveResource().
+	See the functions Foundation::RenderServiceInterface::GetResource(), Foundation::RenderServiceInterface::RequestResource() and Foundation::RenderServiceInterface::RemoveResource().
 	They are similar to the AssetService in that GetResource() will not automatically request download of the asset; RequestResource() is needed for that.
 	
 	Note that to ensure that the renderer actually creates the resources correctly, one should not ask the assets directly from the 

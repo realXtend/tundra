@@ -83,13 +83,26 @@ namespace OgreRenderer
         //! Unsubsribe a listener to renderer log. Can be used before renderer is initialized.
         virtual void UnsubscribeLogListener(const Foundation::LogListenerPtr &listener);
         
-        //! Get a renderer-specific resource
+        //! Gets a renderer-specific resource
+        /*! Does not automatically queue a download request
+            \param id Resource id
+            \param type Resource type
+            \return pointer to resource, or null if not found
+         */
         virtual Foundation::ResourcePtr GetResource(const std::string& id, const std::string& type);   
         
-        //! Request a renderer-specific resource
+        //! Requests a renderer-specific resource to be downloaded from the asset system
+        /*! A RESOURCE_READY event will be sent when the resource is ready to use
+            \param id Resource id
+            \param type Resource type
+            \return Request tag, or 0 if request could not be queued
+         */        
         virtual Core::request_tag_t RequestResource(const std::string& id, const std::string& type);   
         
-        //! Remove a renderer-specific resource
+        //! Removes a renderer-specific resource
+        /*! \param id Resource id
+            \param type Resource type
+         */
         virtual void RemoveResource(const std::string& id, const std::string& type);          
                 
         
