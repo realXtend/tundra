@@ -107,5 +107,31 @@ namespace Communication
 		return IMMessageListPtr(list);
 	}
 
+	void TPIMSession::Close()
+	{
+		TPSession::Close();
+	}
+
+	void TPIMSession::SendInvitation(ContactPtr c)
+	{
+		TPSession::SendInvitation(c);
+	}
+
+	void TPIMSession::Kick(ParticipantPtr p)
+	{
+		TPSession::Kick(p);
+	}
+
+	ParticipantListPtr TPIMSession::GetParticipants()
+	{
+		return TPSession::GetParticipants();
+	}
+
+	std::string TPIMSession::GetProtocol()
+	{
+		return TPSession::GetProtocol();
+	}
+
+
 
 } // end of namespace: Communication

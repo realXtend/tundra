@@ -768,20 +768,62 @@ namespace CommunicationUI
 		switch( event_id )
 		{
 		case Communication::Events::IM_MESSAGE:
-			LogInfo("Got event: IM_MESSAGE");
+			{
+				Communication::Events::IMMessageEventInterface* e = (Communication::Events::IMMessageEventInterface*)(data);
+				Communication::IMMessagePtr m = e->GetMessage();
+				std::string message_text = m->GetText();
+				std::string text;
+				text = "Got event IM_MESSAGE: ";
+				text.append(message_text);
+				LogInfo(text);
+			}
 			break;
+
 		case Communication::Events::IM_SESSION_REQUEST:
+			{
+				Communication::Events::IMSessionRequestEventInterface* e = (Communication::Events::IMSessionRequestEventInterface*)(data);
+				Communication::IMSessionPtr s = e->GetSession();
+				Communication::ContactPtr c = e->GetContact();
+				std::string protocol = s->GetProtocol();
+				std::string address = c->GetContactInfo(protocol)->GetProperty("address");
+				std::string text;
+				text = "Got event IM_SESSION_REQUEST: ";
+				text.append(address);
+				LogInfo(text);
+			}
+
 			LogInfo("Got event: IM_SESSION_REQUEST");
 			break;
+
 		case Communication::Events::PRESENCE_STATUS_UPDATE:
-			LogInfo("Got event: PRESENCE_STATUS_UPDATE");
+			{
+				Communication::Events::PresenceStatusUpdateEventInterface* e = (Communication::Events::PresenceStatusUpdateEventInterface*)(data);
+				Communication::ContactPtr c = e->GetContact();
+				std::string status = c->GetPresenceStatus()->GetOnlineStatus();
+				std::string text;
+				text = "Got event PRESENCE_STATUS_UPDATE: ";
+				text.append(status);
+				LogInfo(text);
+			}
 			break;
+
 		case Communication::Events::IM_SESSION_END:
 			LogInfo("Got event: IM_SESSION_END");
 			break;
+
 		case Communication::Events::FRIEND_REQUEST:
-			LogInfo("Got event: FRIEND_REQUEST");
+			{
+				Communication::Events::FriendRequestEventInterface* e = (Communication::Events::FriendRequestEventInterface*)(data);
+				Communication::FriendRequestPtr r = e->GetFriendRequest();
+				Communication::ContactInfoPtr info = r->GetContactInfo();
+				std::string address = info->GetProperty("address");
+				std::string text;
+				text = "Got event FRIEND_REQUEST: ";
+				text.append(address);
+				LogInfo(text);
+			}
 			break;
+
 		case Communication::Events::FRIEND_RESPONSE:
 			LogInfo("Got event: FRIEND_RESPONSE");
 			break;

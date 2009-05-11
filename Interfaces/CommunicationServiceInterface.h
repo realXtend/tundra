@@ -4,9 +4,12 @@
 #include "CoreStdIncludes.h"
 #include "ServiceInterface.h"
 
-// TODO: rename all interface like. ContactInterface
-// TODO: Consider use of weak pointers instead smartpointers
-// TODO: Add ContactList class with 
+// TODO: Add ContactListInterface class 
+// TODO: Add ConnectionStateEventInterface 
+// TODO: Add SessionStateEventInterface
+// TODO: Add ContactInfoInterface
+// TODO: Add CredentialsInterface
+
 /*
  * ----------------------------------------------------------------------------------
  * CommunicationServiceInterface : Interfaces for to use CommunicationModule services
@@ -15,24 +18,6 @@
 
 namespace Communication
 {
-    namespace Events
-    {
-        static const Core::event_id_t PRESENCE_STATUS_UPDATE = 1;
-        static const Core::event_id_t IM_MESSAGE = 2;
-        static const Core::event_id_t IM_SESSION_REQUEST = 3;
-		static const Core::event_id_t IM_SESSION_END = 4;
-		static const Core::event_id_t FRIEND_REQUEST = 5;
-		static const Core::event_id_t FRIEND_RESPONSE = 6;
-
-		// future events ?
-//      static const Core::event_id_t IM_SESSION_STATE_CHANGED = 4;
-//		static const Core::event_id_t SESSION_INVITATION_RESPONSE_RECEIVED = 5;
-//      static const Core::event_id_t PARTICIPIENT_LEFT = 6;
-//		static const Core::event_id_t PARTICIPIENT_JOINED = 7;
-//      static const Core::event_id_t FRIENDSHIP_RESPONSE_RECEIVED = 9;
-//      static const Core::event_id_t CONNECTION_STATUS_CHANGED = 10;
-//      static const Core::event_id_t SESSION_JOIN_REQUEST_RECEIVED = 11;
-	}
 
 	// A single contact information of individual contact.
 	// todo: should be renamed to ContactAddress ?
@@ -138,7 +123,6 @@ namespace Communication
 	};
 	typedef boost::shared_ptr<SessionInterface> SessionPtr;
 
-	// todo: rename to MessageInterface or IMessage ???
 	class MessageInterface
 	{
 	public:
@@ -152,7 +136,7 @@ namespace Communication
 
 	// chat message
 	// todo: more components like attachment (link, file, request, etc.)
-	class IMMessageInterface
+	class IMMessageInterface //: public SessionInterface
 	{
 	public:
 		virtual ~IMMessageInterface() {};
@@ -172,6 +156,13 @@ namespace Communication
 		virtual ~IMSessionInterface() {};
 		virtual void SendIMMessage(IMMessagePtr m) = 0;
 		virtual IMMessageListPtr GetMessageHistory() = 0;
+
+		// from SessionInterface
+		virtual void SendInvitation(ContactPtr c) = 0;
+		virtual void Kick(ParticipantPtr p) = 0;
+		virtual void Close() = 0;
+		virtual ParticipantListPtr GetParticipants() = 0;
+		virtual std::string GetProtocol() = 0;
 	};
 	typedef boost::shared_ptr<IMSessionInterface> IMSessionPtr;
 	typedef std::vector<IMSessionPtr> IMSessionList;
@@ -224,6 +215,80 @@ namespace Communication
 		virtual void RemoveContact(ContactPtr contact) = 0; // todo: move to ContactList class
 	};
 	typedef boost::shared_ptr<CommunicationServiceInterface> CommunicationServicePtr;
+
+
+    namespace Events
+    {
+        static const Core::event_id_t PRESENCE_STATUS_UPDATE = 1;
+        static const Core::event_id_t IM_MESSAGE = 2;
+        static const Core::event_id_t IM_SESSION_REQUEST = 3;
+		static const Core::event_id_t IM_SESSION_END = 4;
+		static const Core::event_id_t FRIEND_REQUEST = 5;
+		static const Core::event_id_t FRIEND_RESPONSE = 6;
+
+		// future events ?
+//      static const Core::event_id_t IM_SESSION_STATE_CHANGED = 4;
+//		static const Core::event_id_t SESSION_INVITATION_RESPONSE_RECEIVED = 5;
+//      static const Core::event_id_t PARTICIPIENT_LEFT = 6;
+//		static const Core::event_id_t PARTICIPIENT_JOINED = 7;
+//      static const Core::event_id_t FRIENDSHIP_RESPONSE_RECEIVED = 9;
+//      static const Core::event_id_t CONNECTION_STATUS_CHANGED = 10;
+//      static const Core::event_id_t SESSION_JOIN_REQUEST_RECEIVED = 11;
+
+		/*
+		 *
+		 */
+		class PresenceStatusUpdateEventInterface
+		{
+		public:
+			virtual ~PresenceStatusUpdateEventInterface() {};
+			virtual ContactPtr GetContact() = 0;
+		};
+		typedef boost::shared_ptr<PresenceStatusUpdateEventInterface> PresenceStatusUpdateEventPtr;
+
+		/*
+		 *
+		 */
+		class IMMessageEventInterface //  : public Foundation::EventDataInterface  // PROBLEM: EventDataInterface is not declared yet ?
+		{
+		public:
+			virtual IMMessagePtr GetMessage() = 0;
+			virtual IMSessionPtr GetSession() = 0;
+		};
+		typedef boost::shared_ptr<IMMessageEventInterface> IMMessageEventPtr;
+
+		/*
+		 *
+		 */
+		class IMSessionRequestEventInterface // : public Foundation::EventDataInterface
+		{
+		public:
+			virtual ContactPtr GetContact() = 0;
+			virtual IMSessionPtr GetSession() = 0;
+		};
+		typedef boost::shared_ptr<IMSessionRequestEventInterface> IMSessionRequestEventPtr;
+
+		/*
+		 *
+		 */
+		class IMSessionEndEventInterface // : public Foundation::EventDataInterface
+		{
+		public:
+			virtual IMSessionPtr GetSession() = 0;
+		};
+		typedef boost::shared_ptr<IMSessionEndEventInterface> IMSessionEndEventPtr;
+
+		/*
+		 *
+		 */
+		class FriendRequestEventInterface  //: public Foundation::EventDataInterface
+		{
+		public:
+			virtual FriendRequestPtr GetFriendRequest() = 0;
+		};
+		typedef boost::shared_ptr<FriendRequestEventInterface> FriendRequestEventPtr;
+
+	}
 
 } // end of namespace: Communication
 

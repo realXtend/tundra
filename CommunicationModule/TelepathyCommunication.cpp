@@ -742,8 +742,8 @@ namespace Communication
 			if ( c->GetContactInfo("jabber")->GetProperty("address").compare(addr) == 0)
 			{
 				IMSessionPtr s = comm->CreateIMSession(c);
-				IMSessionRequestEvent* e = new IMSessionRequestEvent(s);
-				IMSessionRequestEventPtr e_ptr = IMSessionRequestEventPtr(e);
+				IMSessionRequestEvent* e = new IMSessionRequestEvent(s, c);
+				Events::IMSessionRequestEventPtr e_ptr = Events::IMSessionRequestEventPtr(e);
 				comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::IM_SESSION_REQUEST, (Foundation::EventDataInterface*)&e_ptr);
 				std::string text = "Session created for: ";
 				text.append(addr);
@@ -998,7 +998,7 @@ namespace Communication
 		FriendRequestPtr r = FriendRequestPtr((FriendRequestInterface*)request);
 		TelepathyCommunication::GetInstance()->friend_requests_->push_back(r);
 		FriendRequestEvent* e = new FriendRequestEvent(r);
-		FriendRequestEventPtr e_ptr = FriendRequestEventPtr(e);
+		Events::FriendRequestEventPtr e_ptr = Events::FriendRequestEventPtr(e);
 		TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::FRIEND_REQUEST, (Foundation::EventDataInterface*)&e_ptr);
 	}
 
