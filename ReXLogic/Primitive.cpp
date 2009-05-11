@@ -340,8 +340,8 @@ namespace RexLogic
         Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
 
-        RexLogicModule::LogInfo("Entity " + Core::ToString<Core::entity_id_t>(entityid) + 
-            " has drawtype " + Core::ToString<int>(prim.DrawType) + " meshid " + prim.MeshUUID.ToString());
+        //RexLogicModule::LogInfo("Entity " + Core::ToString<Core::entity_id_t>(entityid) + 
+        //    " has drawtype " + Core::ToString<int>(prim.DrawType) + " meshid " + prim.MeshUUID.ToString());
             
         if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
         {
@@ -349,13 +349,13 @@ namespace RexLogic
             Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
             if (!mesh)
                 entity->AddEntityComponent(mesh = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreMesh::NameStatic()));
-            
+                            
             OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
             
             // Attach to placeable if not yet attached
             if (!meshptr->GetPlaceable())
                 meshptr->SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
-                
+                             
             // Change mesh if yet nonexistent/changed
             // assume name to be UUID of mesh asset, which should be true of OgreRenderer resources
             std::string mesh_name = prim.MeshUUID.ToString();
@@ -368,10 +368,14 @@ namespace RexLogic
                 // Remember that we are going to get a resource event for this entity
                 if (tag)
                 {
+                    // Discard old tags for this entity
                     DiscardRequestTags(entityid, mesh_request_tags_);
                     mesh_request_tags_[tag] = entityid;
                 }                
             }
+            
+            // Handle scale mesh to prim-setting
+            meshptr->SetScaleToUnity(prim.ScaleToPrim); 
         }
     } 
 

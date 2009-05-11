@@ -30,14 +30,14 @@ namespace RexLogic
 
         const Ogre::Vector3 v[8] = 
         {
-            Ogre::Vector3(-1,-1,-1), // 0 ---
-            Ogre::Vector3(-1,-1, 1), // 1 --+
-            Ogre::Vector3(-1, 1,-1), // 2 -+-
-            Ogre::Vector3(-1, 1, 1), // 3 -++
-            Ogre::Vector3( 1,-1,-1), // 4 +--
-            Ogre::Vector3( 1,-1, 1), // 5 +-+
-            Ogre::Vector3( 1, 1,-1), // 6 ++-
-            Ogre::Vector3( 1, 1, 1), // 7 +++
+            Ogre::Vector3(-0.5,-0.5,-0.5), // 0 ---
+            Ogre::Vector3(-0.5,-0.5, 0.5), // 1 --+
+            Ogre::Vector3(-0.5, 0.5,-0.5), // 2 -+-
+            Ogre::Vector3(-0.5, 0.5, 0.5), // 3 -++
+            Ogre::Vector3( 0.5,-0.5,-0.5), // 4 +--
+            Ogre::Vector3( 0.5,-0.5, 0.5), // 5 +-+
+            Ogre::Vector3( 0.5, 0.5,-0.5), // 6 ++-
+            Ogre::Vector3( 0.5, 0.5, 0.5), // 7 +++
         };
 
         manual->position(v[0]);
