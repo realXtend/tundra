@@ -677,13 +677,20 @@ namespace Communication
 
 	/*
 	   Called by communication.py via PythonScriptModule
-	   When request connection is opened
+	   When request connection to IM server was opened
 	*/
 	void TelepathyCommunication::PyCallbackConnected(char*)
 	{
 		TelepathyCommunication::GetInstance()->connected_ = true;
 		LogInfo("Server connection: Connected");
-		// todo : Set own online status to: Online
+		
+		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_OPEN);
+//		Events::ConnectionStateEventPtr e_ptr = Events::ConnectionStateEventPtr((Events::ConnectionStateEventInterface*)e);
+
+		TelepathyCommunicationPtr comm = TelepathyCommunication::GetInstance();
+		comm->presence_status_->SetOnlineStatus("online");
+
+		comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
 	}
 
 	/*
@@ -699,18 +706,26 @@ namespace Communication
 
 	/*
 	   Called by communication.py via PythonScriptModule
-	   When connection is closed
+	   When connection to IM server was closed
 	*/
 	void TelepathyCommunication::PyCallbackDisconnected(char*)
 	{
 		TelepathyCommunication::GetInstance()->connected_ = false;
 		LogInfo("Server connection: Disconnected");
+
+		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_CLOSE);
+//		Events::ConnectionStateEventPtr e_ptr = Events::ConnectionStateEventPtr(e);
+
+		TelepathyCommunicationPtr comm = TelepathyCommunication::GetInstance();
+		//comm->presence_status_->SetOnlineStatus("offline"); Gabble doesn't like this
+
+		comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
 	}
 
 	/*
 	   Called by communication.py via PythonScriptModule
 	   When new session (telepathy-text-channel) is opened
-	   todo: session id should be received (now we don't get anything)
+	   todo: session id should be received (we get jabber address)
 	   todo: This is called both with incoming and outgoing sessions. These should be separedted.
 	*/
 	void TelepathyCommunication::PyCallbackChannelOpened(char* addr)

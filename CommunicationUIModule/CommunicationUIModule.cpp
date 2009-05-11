@@ -60,18 +60,11 @@ namespace CommunicationUI
 		//commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager).lock();
 
         commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager).lock();
-		communication_service_ = framework_->GetService<Communication::CommunicationServiceInterface>(Foundation::Service::ST_Communication).lock();
 
 		CommunicationUIModule::instance_= this;		
         
-        setupSciptInterface();		
-
-		// todo: move to own method
-		framework_->GetEventManager()->RegisterEventSubscriber( framework_->GetModuleManager()->GetModule(this->Name()), 0, Foundation::ModuleWeakPtr() );
-        communication_event_category_id_ = framework_->GetEventManager()->QueryEventCategory("Communication");
-        
-        if (communication_event_category_id_ == 0 )
-            LogWarning("Unable to find event category for Communication events!");
+        //setupSciptInterface();		
+		SetupCommunicationServiceUsage();
 	}
 
 	void CommunicationUIModule::Uninitialize()
@@ -161,7 +154,21 @@ namespace CommunicationUI
         setupSciptInterface();
     }
 
-//	void CommunicationUIModule
+	
+		
+	/*
+	 * Fetches communication service object and subscriber communication events
+	 */
+	void CommunicationUIModule::SetupCommunicationServiceUsage()
+	{
+		communication_service_ = framework_->GetService<Communication::CommunicationServiceInterface>(Foundation::Service::ST_Communication).lock();
+
+		framework_->GetEventManager()->RegisterEventSubscriber( framework_->GetModuleManager()->GetModule(this->Name()), 0, Foundation::ModuleWeakPtr() );
+        communication_event_category_id_ = framework_->GetEventManager()->QueryEventCategory("Communication");
+        
+        if (communication_event_category_id_ == 0 )
+            LogWarning("Unable to find event category for Communication events!");
+	}
 
     void CommunicationUIModule::setupSciptInterface()
     {
@@ -215,8 +222,6 @@ namespace CommunicationUI
 
         eIntf->SetCallback(CommunicationUIModule::contactStatusChanged, "contact_status_changed");
         eIntf->SetCallback(CommunicationUIModule::handleAvailableStatusList, "got_available_status_list");
-
-		// TODO: (MattiKu) Register events from EventManager 
     }
 
 	void CommunicationUIModule::OnAccountMenuSettings()
@@ -830,6 +835,27 @@ namespace CommunicationUI
 
 		case Communication::Events::FRIEND_RESPONSE:
 			LogInfo("Got event: FRIEND_RESPONSE");
+			break;
+
+		case Communication::Events::CONNECTION_STATE:
+			{
+				Communication::Events::ConnectionStateEventInterface* e = (Communication::Events::ConnectionStateEventInterface*)(data);
+				std::string type_text;
+				switch(e->GetType())
+				{
+				case Communication::Events::ConnectionStateEventInterface::CONNECTION_OPEN:
+					type_text = "CONNECTION_OPEN";
+					break;
+
+				case Communication::Events::ConnectionStateEventInterface::CONNECTION_CLOSE:
+					type_text = "CONNECTION_CLOSE";
+					break;
+				}
+				std::string text;
+				text = "Got event SESSION_STATE: ";
+				text.append(type_text);
+				LogInfo(text);
+			}
 			break;
 		}
        

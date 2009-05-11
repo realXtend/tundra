@@ -83,6 +83,7 @@ namespace CommunicationUI
 
 	private:
 		void initializeMainCommWindow();
+		void SetupCommunicationServiceUsage();
 		void OnAccountMenuSettings();
 		void OnAccountMenuSetAccountAndPassword();
 		void OnAccountMenuConnect();
