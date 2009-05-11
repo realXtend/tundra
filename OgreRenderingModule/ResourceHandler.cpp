@@ -127,14 +127,23 @@ namespace OgreRenderer
         Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
         if (service_manager->IsRegistered(Foundation::Service::ST_Texture))
         {
-            boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();
-            Core::request_tag_t source_tag = texture_service->RequestTexture(id);
-            if (source_tag)
+            boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();            
+            // Perform the actual decode request only once, for the first request
+            if (request_tags_.find(id) == request_tags_.end())
             {
-                request_tags_[id].push_back(tag);           
-                expected_request_tags_.insert(source_tag);
-                return tag;
+                Core::request_tag_t source_tag = texture_service->RequestTexture(id);
+                if (source_tag)
+                {          
+                    expected_request_tags_.insert(source_tag);
+                    request_tags_[id].push_back(tag); 
+                    return tag;
+                }
             }
+            else
+            {
+                request_tags_[id].push_back(tag); 
+                return tag;
+            }                   
         }
         
         return 0;

@@ -117,19 +117,12 @@ namespace RexLogic
         else
             LogError("Unable to find event category for Scene");
 
-        // Resource events.
-        eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Resource");
-        if (eventcategoryid != 0)
-            event_handlers_[eventcategoryid] = boost::bind(&RexLogicModule::OnResourceReadyEvent, this, _1, _2);
-        else
-            LogError("Unable to find event category for Resource");
-
         // Resource events
         eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Resource");
         if (eventcategoryid != 0)
             event_handlers_[eventcategoryid] = boost::bind(&RexLogicModule::HandleResourceEvent, this, _1, _2);
         else
-            LogError("Unable to find event category for Scene");        
+            LogError("Unable to find event category for Resource");        
                             
         boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         Ogre::Camera *cam = renderer->GetCurrentCamera();
@@ -228,12 +221,9 @@ namespace RexLogic
     
     bool RexLogicModule::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
+        // Pass the event to the mesh manager.
         primitive_->HandleResourceEvent(event_id, data);
-        return false;
-    }
-
-    bool RexLogicModule::OnResourceReadyEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
-    {
+                
         if (event_id == Resource::Events::RESOURCE_READY)
         {
             Resource::Events::ResourceReady *res = dynamic_cast<Resource::Events::ResourceReady*>(data);
@@ -245,12 +235,8 @@ namespace RexLogic
             OgreRenderer::OgreTextureResource *tex = dynamic_cast<OgreRenderer::OgreTextureResource *>(res->resource_.get());
             if (tex)
                 terrain_->OnTextureReadyEvent(res);
-
-            // Pass the texture asset to the mesh manager.
-            ///\todo Perhaps maintain a map of request tag -> destination so that we don't have to propagate the
-            /// resourceready events to all places.
         }
-
+        
         return false;
     }
 
