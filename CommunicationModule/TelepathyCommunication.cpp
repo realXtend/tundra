@@ -40,6 +40,7 @@ namespace Communication
 
 		friend_requests_ = FriendRequestListPtr( new FriendRequestList() );
 		im_sessions_ = IMSessionListPtr( new IMSessionList() );
+		presence_status_ = PresenceStatusPtr( (PresenceStatusInterface*) new TPPresenceStatus() );
 		RegisterConsoleCommands();
 		InitializePythonCommunication();
 		RegisterEvents();

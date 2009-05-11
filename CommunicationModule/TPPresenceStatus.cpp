@@ -7,7 +7,7 @@
 
 namespace Communication
 {
-	TPPresenceStatus::TPPresenceStatus()
+	TPPresenceStatus::TPPresenceStatus(): online_status_("offline"), online_message_("")
 	{
 		online_status_options_ = TelepathyCommunication::GetInstance()->presence_status_options_;
 	}
