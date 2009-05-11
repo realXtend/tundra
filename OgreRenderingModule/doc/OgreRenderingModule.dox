@@ -25,7 +25,22 @@ if (service_manager_->IsRegistered(Service::ST_Renderer))
 }
 \endcode
 	
-			
+
+	\section ogreresources_ORM Using renderer resources created from in-world asset data
+
+	Through the RenderService one can also request renderer-specific resources created from in-world assets (textures, meshes etc.) 
+	Currently there is support for requesting and creating mesh (OgreRenderer::OgreMeshResource) and texture (OgreRenderer::OgreTextureResource) resources. 
+	The Ogre resources are subclassed from the abstract interface Foundation::ResourceInterface and contain a pointer to the actual Ogre resource object.
+
+	See the functions Foundation::RenderService::GetResource(), Foundation::RenderService::RequestResource() and Foundation::RenderService::RemoveResource().
+	They are similar to the AssetService in that GetResource() will not automatically request download of the asset; RequestResource() is needed for that.
+	
+	Note that to ensure that the renderer actually creates the resources correctly, one should not ask the assets directly from the 
+	AssetService (unless interested of the raw asset data), but rather the resources from the RenderService.
+	
+	The RESOURCE_READY event will be sent when a renderer resource request has been completed.
+	
+		
 	\section ogrespecific_ORM Using Ogre-specific functionality
 
 	To get deeper into Ogre-related specifics, one must use directly the OgreRenderer::Renderer interface, instead of Foundation::RenderServiceInterface.
@@ -40,19 +55,7 @@ OgreRenderer::Renderer *renderer = owner_->GetFramework()->GetServiceManager()->
 	After this, one can for example get the Ogre scene manager from the renderer.
 
 	
-	\section ogreresources_ORM Using Ogre resources created from in-world asset data
 
-	OgreRenderer::Renderer is also the interface through which Ogre resources can be created from in-world assets (textures, meshes etc.) 
-	Currently there is support for requesting and creating mesh (OgreRenderer::OgreMesh) and texture (OgreRenderer::OgreTexture) resources. 
-	The Ogre resources are subclassed from the abstract interface Foundation::ResourceInterface and contain a pointer to the actual Ogre resource object.
-
-	See the functions OgreRenderer::Renderer::GetMesh(), OgreRenderer::Renderer::RequestMesh(), OgreRenderer::Renderer::RemoveMesh() for meshes and
-	OgreRenderer::Renderer::GetTexture(), OgreRenderer::Renderer::RequestTexture(), OgreRenderer::Renderer::RemoveTexture() for textures. They are similar
-	to the AssetService in that the Get... functions will not automatically request download of the asset; Request... functions are needed for that.
-	
-	Note that to ensure that the renderer actually creates the resources correctly, one should not ask the assets directly from the 
-	AssetService (unless interested of the raw asset data), but rather from the renderer.
-	
 
 	\section ogreec_ORM Ogre-related entity components
 

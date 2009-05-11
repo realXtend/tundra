@@ -102,6 +102,9 @@ namespace RexLogic
         //! Unregister uuid
         void UnregisterFullId(const RexTypes::RexUUID &fullid);
 
+        //! Handle a resource event. Needs to be passed to several receivers (Prim, Terrain etc.)
+        bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        
     private:
         //! Event handler for network events.
         NetworkEventHandler *network_handler_;

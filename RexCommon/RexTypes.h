@@ -181,6 +181,10 @@ int GetAssetTypeFromTypeName(const std::string& asset_type);
  */
 const std::string& GetTypeNameFromAssetType(int asset_type);
 
+// Prim drawtypes
+const int DRAWTYPE_PRIM = 0;
+const int DRAWTYPE_MESH = 1;
+
 }
 
 #endif

@@ -35,7 +35,7 @@
  */
 
 #include "StableHeaders.h"
-#include "Texture.h"
+#include "TextureResource.h"
 #include "TextureDecoderModule.h"
 #include "OpenJpegDecoder.h"
 
@@ -163,8 +163,8 @@ namespace TextureDecoder
             int actual_height = image->comps[0].h;
 
             // Create a (possibly temporary, if no-one stores the pointer) raw texture resource
-            Foundation::ResourcePtr resource(new Texture(request.source_->GetId(), actual_width, actual_height, image->numcomps));
-            Texture* texture = checked_static_cast<Texture*>(resource.get());
+            Foundation::ResourcePtr resource(new TextureResource(request.source_->GetId(), actual_width, actual_height, image->numcomps));
+            TextureResource* texture = checked_static_cast<TextureResource*>(resource.get());
             Core::u8* data = texture->GetData();
             texture->SetLevel(request.level_);
             for (int y = 0; y < actual_width; ++y)

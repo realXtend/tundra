@@ -4,6 +4,7 @@
 #define incl_Interfaces_RenderServiceInterface_h
 
 #include "ServiceInterface.h"
+#include "ResourceInterface.h"
 #include "LogListenerInterface.h"
 
 namespace Foundation
@@ -36,6 +37,13 @@ namespace Foundation
         virtual void SubscribeLogListener(const LogListenerPtr &listener) = 0;
         //! unsubsribe a listener to renderer log
         virtual void UnsubscribeLogListener(const LogListenerPtr &listener) = 0;
+             
+        //! get a renderer-specific resource
+        virtual ResourcePtr GetResource(const std::string& id, const std::string& type) = 0;   
+        //! request a renderer-specific resource
+        virtual Core::request_tag_t RequestResource(const std::string& id, const std::string& type) = 0;   
+        //! remove a renderer-specific resource
+        virtual void RemoveResource(const std::string& id, const std::string& type) = 0;  
     };
 }
 

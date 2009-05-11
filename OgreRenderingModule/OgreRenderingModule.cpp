@@ -5,6 +5,9 @@
 #include "OgreRenderingModule.h"
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
+#include "ResourceHandler.h"
+#include "OgreMeshResource.h"
+#include "OgreTextureResource.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreLight.h"
@@ -157,12 +160,12 @@ namespace OgreRenderer
 
         if (category_id == assetcategory_id_)
         {
-            return renderer_->HandleAssetEvent(event_id, data);
+            return renderer_->GetResourceHandler()->HandleAssetEvent(event_id, data);
         }
 
         if (category_id == resourcecategory_id_)
         {
-            return renderer_->HandleResourceEvent(event_id, data);
+            return renderer_->GetResourceHandler()->HandleResourceEvent(event_id, data);
         }
 
         return false;
@@ -200,7 +203,7 @@ namespace OgreRenderer
             return Console::ResultFailure("Usage: RequestTexture(uuid)");
 
         if (renderer_)
-            renderer_->RequestTexture(params[0]);
+            renderer_->RequestResource(params[0], OgreTextureResource::GetTypeStatic());
 
         return Console::ResultSuccess();
     }
@@ -211,7 +214,7 @@ namespace OgreRenderer
             return Console::ResultFailure("Usage: RequestMesh(uuid)");
 
         if (renderer_)
-            renderer_->RequestMesh(params[0]);
+            renderer_->RequestResource(params[0], OgreMeshResource::GetTypeStatic());
 
         return Console::ResultSuccess();
     }

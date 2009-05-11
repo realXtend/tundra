@@ -115,6 +115,13 @@ namespace RexLogic
         else
             LogError("Unable to find event category for Scene");
         
+        // Resource events
+        eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Resource");
+        if (eventcategoryid != 0)
+            event_handlers_[eventcategoryid] = boost::bind(&RexLogicModule::HandleResourceEvent, this, _1, _2);
+        else
+            LogError("Unable to find event category for Scene");        
+                            
         boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         Ogre::Camera *cam = renderer->GetCurrentCamera();
         cam->setPosition(-10, -10, -10);
@@ -214,6 +221,12 @@ namespace RexLogic
             return (i->second)(event_id, data);
         else
             return false;
+    }
+    
+    bool RexLogicModule::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        primitive_->HandleResourceEvent(event_id, data);
+        return false;
     }
 
     void RexLogicModule::SwitchController()

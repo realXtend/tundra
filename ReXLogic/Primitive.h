@@ -4,6 +4,7 @@
 #define incl_Primitive_h
 
 #include "NetworkEvents.h"
+#include "ResourceInterface.h"
 
 namespace RexLogic
 {
@@ -23,7 +24,9 @@ namespace RexLogic
         bool HandleRexGM_RexPrimData(OpenSimProtocol::NetworkEventInboundData* data);
         
         void HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes);
-                             
+                        
+        bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+             
     private:
         RexLogicModule *rexlogicmodule_;
     
@@ -34,6 +37,19 @@ namespace RexLogic
         
         //! handle rexprimdata blob coming from server in a genericmessage
         void HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t* primdata);
+        
+        //! handles changes in drawtype. sets/removes mesh as necessary
+        void HandleDrawType(Core::entity_id_t entityid);   
+        
+        //! handles mesh resource being ready
+        void HandleMeshReady(Core::entity_id_t entity, Foundation::ResourcePtr resource);
+        
+        //! discards request tags for certain entity
+        typedef std::map<Core::request_tag_t, Core::entity_id_t> EntityResourceRequestMap; 
+        void DiscardRequestTags(Core::entity_id_t, EntityResourceRequestMap& map);
+        
+        //! resource request tags for meshes
+        std::map<Core::request_tag_t, Core::entity_id_t> mesh_request_tags_;    
     };
 }
 #endif
