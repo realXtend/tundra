@@ -15,6 +15,25 @@
 
 namespace Communication
 {
+    namespace Events
+    {
+        static const Core::event_id_t PRESENCE_STATUS_UPDATE = 1;
+        static const Core::event_id_t IM_MESSAGE = 2;
+        static const Core::event_id_t IM_SESSION_REQUEST = 3;
+		static const Core::event_id_t IM_SESSION_END = 4;
+		static const Core::event_id_t FRIEND_REQUEST = 5;
+		static const Core::event_id_t FRIEND_RESPONSE = 6;
+
+		// future events ?
+//      static const Core::event_id_t IM_SESSION_STATE_CHANGED = 4;
+//		static const Core::event_id_t SESSION_INVITATION_RESPONSE_RECEIVED = 5;
+//      static const Core::event_id_t PARTICIPIENT_LEFT = 6;
+//		static const Core::event_id_t PARTICIPIENT_JOINED = 7;
+//      static const Core::event_id_t FRIENDSHIP_RESPONSE_RECEIVED = 9;
+//      static const Core::event_id_t CONNECTION_STATUS_CHANGED = 10;
+//      static const Core::event_id_t SESSION_JOIN_REQUEST_RECEIVED = 11;
+	}
+
 	// A single contact information of individual contact.
 	// todo: should be renamed to ContactAddress ?
 	// todo: separate interface and implementation

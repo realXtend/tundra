@@ -65,6 +65,13 @@ namespace CommunicationUI
 		CommunicationUIModule::instance_= this;		
         
         setupSciptInterface();		
+
+		// todo: move to own method
+		framework_->GetEventManager()->RegisterEventSubscriber( framework_->GetModuleManager()->GetModule(this->Name()), 0, Foundation::ModuleWeakPtr() );
+        communication_event_category_id_ = framework_->GetEventManager()->QueryEventCategory("Communication");
+        
+        if (communication_event_category_id_ == 0 )
+            LogWarning("Unable to find event category for Communication events!");
 	}
 
 	void CommunicationUIModule::Uninitialize()
@@ -749,6 +756,40 @@ namespace CommunicationUI
 
        return returnVector;
     } 
+
+	/*
+ 	 * Handles all communication events
+     */
+    bool CommunicationUIModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        if ( category_id != communication_event_category_id_)
+			return false;
+
+		switch( event_id )
+		{
+		case Communication::Events::IM_MESSAGE:
+			LogInfo("Got event: IM_MESSAGE");
+			break;
+		case Communication::Events::IM_SESSION_REQUEST:
+			LogInfo("Got event: IM_SESSION_REQUEST");
+			break;
+		case Communication::Events::PRESENCE_STATUS_UPDATE:
+			LogInfo("Got event: PRESENCE_STATUS_UPDATE");
+			break;
+		case Communication::Events::IM_SESSION_END:
+			LogInfo("Got event: IM_SESSION_END");
+			break;
+		case Communication::Events::FRIEND_REQUEST:
+			LogInfo("Got event: FRIEND_REQUEST");
+			break;
+		case Communication::Events::FRIEND_RESPONSE:
+			LogInfo("Got event: FRIEND_RESPONSE");
+			break;
+		}
+       
+        return false;
+    }    
+
 }
 
 
