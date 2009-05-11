@@ -161,6 +161,8 @@ namespace CommunicationUI
         setupSciptInterface();
     }
 
+//	void CommunicationUIModule
+
     void CommunicationUIModule::setupSciptInterface()
     {
         //scriptService = (framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting)).lock();
@@ -296,6 +298,8 @@ namespace CommunicationUI
     }
     void CommunicationUIModule::OnSetStatusOffline()
     {
+		return; // Gabble connection manager will crash if we send this online status !!!
+
 		Communication::PresenceStatusPtr s = communication_service_->GetPresenceStatus();
 		s->SetOnlineStatus("offline");
 		communication_service_->SetPresenceStatus( s );
