@@ -29,10 +29,7 @@ include_directories (
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
-INCLUDE_CURL()
-INCLUDE_XMLRPCEPI()
 INCLUDE_OGRE()
-INCLUDE_OIS()
 INCLUDE_GTKMM()
 
 add_definitions (-DMODULE_EXPORTS)
@@ -45,11 +42,13 @@ endif (NOT MSVC)
 add_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
+set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
 
 # External library linkage
 LINK_BOOST()
 LINK_POCO()
 LINK_OGRE()
+LINK_GTKMM()
 
 if (MSVC)
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})

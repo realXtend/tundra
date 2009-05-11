@@ -20,8 +20,6 @@ include_directories (
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
-INCLUDE_CURL()
-INCLUDE_XMLRPCEPI()
 
 add_definitions (-DASSET_MODULE_EXPORTS -DMODULE_EXPORTS)
 
@@ -40,8 +38,6 @@ target_link_libraries (${TARGET_NAME} Core Foundation Interfaces OpenSimProtocol
 # External library linkage
 LINK_BOOST()
 LINK_POCO()
-LINK_CURL()
-LINK_XMLRPCEPI()
 
 if (MSVC)
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})

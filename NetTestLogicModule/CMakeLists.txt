@@ -37,10 +37,7 @@ FIND_GTKMM()
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
-INCLUDE_CURL()
-INCLUDE_XMLRPCEPI()
 INCLUDE_GTKMM()
-INCLUDE_OGRE()
 
 add_definitions (-DMODULE_EXPORTS)
 #add_definitions (-NETTEST_MODULE_EXPORTS)
@@ -65,10 +62,7 @@ target_link_libraries (${TARGET_NAME} Core Interfaces Foundation OpenSimProtocol
 
 # External library linkage (needs target defined)
 LINK_POCO()
-LINK_CURL()
-LINK_XMLRPCEPI()
 LINK_GTKMM()
-LINK_OGRE()
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

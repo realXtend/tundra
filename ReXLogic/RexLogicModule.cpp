@@ -21,7 +21,7 @@
 #include "EC_OpenSimAvatar.h"
 #include "EC_Terrain.h"
 
-#include "../InputModuleOIS/InputModuleOIS.h"
+#include "InputEvents.h"
 
 // Ogre -specific
 #include "../OgreRenderingModule/Renderer.h"
