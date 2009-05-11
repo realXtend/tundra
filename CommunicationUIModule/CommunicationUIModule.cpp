@@ -193,26 +193,26 @@ namespace CommunicationUI
 
 		sessionUp_ = false;
 
-		//eIntf->SetCallback(CommunicationUIModule::testCallback, "key");
-		//eIntf->SetCallback(CommunicationUIModule::connected, "connected");
-		//eIntf->SetCallback(CommunicationUIModule::disconnected, "disconnected");
-		//eIntf->SetCallback(CommunicationUIModule::disconnected, "connecting");
+		eIntf->SetCallback(CommunicationUIModule::testCallback, "key");
+		eIntf->SetCallback(CommunicationUIModule::connected, "connected");
+		eIntf->SetCallback(CommunicationUIModule::disconnected, "disconnected");
+		eIntf->SetCallback(CommunicationUIModule::disconnected, "connecting");
 
-		//eIntf->SetCallback(CommunicationUIModule::channelOpened, "channel_opened");
-		//eIntf->SetCallback(CommunicationUIModule::channelClosed, "channel_closed");
-		//eIntf->SetCallback(CommunicationUIModule::messagReceived, "message_received");
-		//eIntf->SetCallback(CommunicationUIModule::contactReceived, "contact_item");
+		eIntf->SetCallback(CommunicationUIModule::channelOpened, "channel_opened");
+		eIntf->SetCallback(CommunicationUIModule::channelClosed, "channel_closed");
+		eIntf->SetCallback(CommunicationUIModule::messagReceived, "message_received");
+		eIntf->SetCallback(CommunicationUIModule::contactReceived, "contact_item");
 
-  //      eIntf->SetCallback(CommunicationUIModule::contactAdded, "contact_added");
-  //      eIntf->SetCallback(CommunicationUIModule::contactAddedToPublishList, "contact_added_publish_list");
-  //      eIntf->SetCallback(CommunicationUIModule::contactRemoved, "contact_removed");
-  //      eIntf->SetCallback(CommunicationUIModule::remotePending, "remote_pending");
-  //      eIntf->SetCallback(CommunicationUIModule::localPending, "local_pending");
+        eIntf->SetCallback(CommunicationUIModule::contactAdded, "contact_added");
+        eIntf->SetCallback(CommunicationUIModule::contactAddedToPublishList, "contact_added_publish_list");
+        eIntf->SetCallback(CommunicationUIModule::contactRemoved, "contact_removed");
+        eIntf->SetCallback(CommunicationUIModule::remotePending, "remote_pending");
+        eIntf->SetCallback(CommunicationUIModule::localPending, "local_pending");
 
-  //      eIntf->SetCallback(CommunicationUIModule::incomingRequest, "incoming_request");
+        eIntf->SetCallback(CommunicationUIModule::incomingRequest, "incoming_request");
 
-  //      eIntf->SetCallback(CommunicationUIModule::contactStatusChanged, "contact_status_changed");
-  //      eIntf->SetCallback(CommunicationUIModule::handleAvailableStatusList, "got_available_status_list");
+        eIntf->SetCallback(CommunicationUIModule::contactStatusChanged, "contact_status_changed");
+        eIntf->SetCallback(CommunicationUIModule::handleAvailableStatusList, "got_available_status_list");
 
 		// TODO: (MattiKu) Register events from EventManager 
     }
