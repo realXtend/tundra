@@ -6,7 +6,6 @@
 
 // TODO: Add ContactListInterface class 
 // TODO: Add ConnectionStateEventInterface 
-// TODO: Add SessionStateEventInterface
 // TODO: Add ContactInfoInterface
 // TODO: Add CredentialsInterface
 
@@ -222,23 +221,21 @@ namespace Communication
         static const Core::event_id_t PRESENCE_STATUS_UPDATE = 1;
         static const Core::event_id_t IM_MESSAGE = 2;
         static const Core::event_id_t IM_SESSION_REQUEST = 3;
-		static const Core::event_id_t IM_SESSION_END = 4;
+		static const Core::event_id_t IM_SESSION_END = 4; // won't need this anymore ?
 		static const Core::event_id_t FRIEND_REQUEST = 5;
 		static const Core::event_id_t FRIEND_RESPONSE = 6;
+		static const Core::event_id_t CONNECTION_STATE = 7; 
+		static const Core::event_id_t SESSION_STATE = 8; 
 
 		// future events ?
-//      static const Core::event_id_t IM_SESSION_STATE_CHANGED = 4;
 //		static const Core::event_id_t SESSION_INVITATION_RESPONSE_RECEIVED = 5;
-//      static const Core::event_id_t PARTICIPIENT_LEFT = 6;
-//		static const Core::event_id_t PARTICIPIENT_JOINED = 7;
 //      static const Core::event_id_t FRIENDSHIP_RESPONSE_RECEIVED = 9;
-//      static const Core::event_id_t CONNECTION_STATUS_CHANGED = 10;
 //      static const Core::event_id_t SESSION_JOIN_REQUEST_RECEIVED = 11;
 
 		/*
 		 *
 		 */
-		class PresenceStatusUpdateEventInterface
+		class PresenceStatusUpdateEventInterface  // : public Foundation::EventDataInterface
 		{
 		public:
 			virtual ~PresenceStatusUpdateEventInterface() {};
@@ -287,6 +284,34 @@ namespace Communication
 			virtual FriendRequestPtr GetFriendRequest() = 0;
 		};
 		typedef boost::shared_ptr<FriendRequestEventInterface> FriendRequestEventPtr;
+
+		/*
+		 *
+		 */
+		class SessionStateEventInterface
+		{
+		public:
+			static const int SESSION_BEGIN = 1;
+			static const int SESSION_END = 2;
+			static const int PARTICIPANT_JOINED = 3;
+			static const int PARTICIPANT_LEFT = 4;
+
+			virtual int GetType() = 0;
+		};
+		typedef boost::shared_ptr<SessionStateEventInterface> SessionStateEventPtr;
+
+		/*
+		 *
+		 */
+		class ConnectionStateEventInterface
+		{
+		public:
+			static const int CONNECTION_OPEN = 1;
+			static const int CONNECTION_CLOSE = 2;
+
+			virtual int GetType() = 0;
+		};
+		typedef boost::shared_ptr<ConnectionStateEventInterface> ConnectionStateEventPtr;
 
 	}
 

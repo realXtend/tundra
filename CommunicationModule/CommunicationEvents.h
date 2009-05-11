@@ -7,7 +7,8 @@
 namespace Communication
 {
 	/*
-	*/
+	 *
+	 */
 	class IMMessageEvent : public Events::IMMessageEventInterface
 	{
 	public:
@@ -18,12 +19,11 @@ namespace Communication
 		IMSessionPtr session_;
 		IMMessagePtr message_;
 	};
-//	typedef boost::shared_ptr<IMMessageEvent> IMMessageEventPtr;
 
 
 	/*
-
-	*/
+	 *
+	 */
 	class PresenceStatusUpdateEvent : public Events::PresenceStatusUpdateEventInterface
 	{
 	public:
@@ -36,8 +36,8 @@ namespace Communication
 
 
 	/*
-
-	*/
+	 *
+	 */
 	class IMSessionRequestEvent : public Events::IMSessionRequestEventInterface
 	{
 	public:
@@ -50,8 +50,8 @@ namespace Communication
 	};
 
 	/*
-
-	*/
+	 *
+	 */
 	class IMSessionEndEvent : public Events::IMSessionEndEventInterface
 	{
 	public:
@@ -60,7 +60,6 @@ namespace Communication
 	private:
 		IMSessionPtr session_;
 	};
-//	typedef boost::shared_ptr<IMSessionEndEvent> IMSessionEndEventPtr;
 
 	class FriendRequestEvent : public Events::FriendRequestEventInterface
 	{
@@ -70,7 +69,32 @@ namespace Communication
 	private:
 		FriendRequestPtr friend_request_;
 	};
-//	typedef boost::shared_ptr<FriendRequestEvent> FriendRequestEventPtr;
+
+	/*
+	 *
+	 */
+	class SessionStateEvent : public  Events::SessionStateEventInterface
+	{
+	public:
+		SessionStateEvent(int type);
+		virtual int GetType();
+	private:
+		static const int UNKNOW = 0;
+		int type_;
+	};
+
+	/*
+	 *
+	 */
+	class ConnectionStateEvent: public Events::ConnectionStateEventInterface
+	{
+	public:
+		ConnectionStateEvent(int type);
+		virtual int GetType();
+	private:
+		static const int UNKNOW = 0;
+		int type_;
+	};
 
 
 } // end of namespace: Communication
