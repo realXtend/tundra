@@ -361,7 +361,11 @@ namespace CommunicationUI
         LogInfo("3");
         status.append(pmessage);
         LogInfo("call py");
-        this->CallIMPyMethod("CSetStatus", "s", status);
+
+		Communication::PresenceStatusPtr s = communication_service_->GetPresenceStatus();
+		s->SetOnlineMessage(status);
+		communication_service_->SetPresenceStatus( s );
+//        this->CallIMPyMethod("CSetStatus", "s", status);
     }
 
     void CommunicationUIModule::OnComboChange()
