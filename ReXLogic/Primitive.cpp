@@ -116,11 +116,7 @@ namespace RexLogic
                 // ofs 48 - angular velocity - 3 x float (3x4 bytes)
                 // total 60 bytes
                 Core::Vector3df pos = *reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[0]);
-                std::cout << "1   " << pos << std::endl;
-                
                 ogrePos.SetPosition(Core::OpenSimToOgreCoordinateAxes(pos));
-                
-                std::cout << "2   " << Core::OpenSimToOgreCoordinateAxes(pos) << std::endl;
                 Core::Quaternion quat = Core::UnpackQuaternionFromFloat3((float*)&objectdatabytes[36]); 
                 ogrePos.SetOrientation(Core::OpenSimToOgreQuaternion(quat));
 
