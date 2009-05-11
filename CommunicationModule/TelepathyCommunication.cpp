@@ -910,7 +910,7 @@ namespace Communication
 			{
 				((TPPresenceStatus*)c->GetPresenceStatus().get())->NotifyUpdate(status, message); 
 				PresenceStatusUpdateEvent e = PresenceStatusUpdateEvent( c );
-				TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::IM_MESSAGE, (Foundation::EventDataInterface*)&e);
+				TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::PRESENCE_STATUS_UPDATE, (Foundation::EventDataInterface*)&e);
 			}
 		}
 	}

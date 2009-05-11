@@ -44,6 +44,12 @@ namespace CommunicationUI
 		static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_CommunicationUI;
 
+        virtual bool HandleEvent(
+            Core::event_category_id_t category_id,
+            Core::event_id_t event_id, 
+            Foundation::EventDataInterface* data);
+		Core::event_category_id_t communication_event_category_id_;
+
 	private:
 		// event handlers
 		static void testCallback(char*);
