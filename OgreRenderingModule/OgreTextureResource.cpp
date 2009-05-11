@@ -1,27 +1,27 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "OgreTexture.h"
+#include "OgreTextureResource.h"
 #include "OgreRenderingModule.h"
 
 #include <Ogre.h>
 
 namespace OgreRenderer
 {
-    OgreTexture::OgreTexture(const std::string& id) : 
+    OgreTextureResource::OgreTextureResource(const std::string& id) : 
         ResourceInterface(id),
         level_(-1)
     {
     }
 
-    OgreTexture::OgreTexture(const std::string& id, Foundation::TexturePtr source) : 
+    OgreTextureResource::OgreTextureResource(const std::string& id, Foundation::TexturePtr source) : 
         ResourceInterface(id),
         level_(-1)
     {
         SetData(source);
     }
 
-    OgreTexture::~OgreTexture()
+    OgreTextureResource::~OgreTextureResource()
     {
         if (!ogre_texture_.isNull())
         {
@@ -36,7 +36,7 @@ namespace OgreRenderer
         }
     }
 
-    bool OgreTexture::SetData(Foundation::TexturePtr source)
+    bool OgreTextureResource::SetData(Foundation::TexturePtr source)
     {
         if (!source)
         {
@@ -117,10 +117,15 @@ namespace OgreRenderer
         return true;
     }
 
-    const std::string& OgreTexture::GetTypeName() const
+    static const std::string type_name("OgreTexture");
+        
+    const std::string& OgreTextureResource::GetType() const
     {
-        static const std::string name("OgreTexture");
-
-        return name;
+        return type_name;
     }
+    
+    const std::string& OgreTextureResource::GetTypeStatic()
+    {
+        return type_name;
+    }    
 }

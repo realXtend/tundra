@@ -26,9 +26,9 @@ namespace OgreRenderer
     
     void EC_OgreMesh::SetPlaceable(Foundation::ComponentPtr placeable)
     {
-        DetachMesh();
+        DetachEntity();
         placeable_ = placeable;
-        AttachMesh();
+        AttachEntity();
     }
     
     bool EC_OgreMesh::SetMesh(const std::string& mesh_name)
@@ -47,7 +47,7 @@ namespace OgreRenderer
             return false;
         }
         
-        AttachMesh();
+        AttachEntity();
         return true;
     }
     
@@ -56,7 +56,7 @@ namespace OgreRenderer
         if (!entity_)
             return;
 
-        DetachMesh();
+        DetachEntity();
 
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
         scene_mgr->destroyEntity(entity_);
@@ -98,7 +98,7 @@ namespace OgreRenderer
         return true;
     }
     
-    void EC_OgreMesh::DetachMesh()
+    void EC_OgreMesh::DetachEntity()
     {
         if ((!attached_) || (!entity_) || (!placeable_))
             return;
@@ -110,7 +110,7 @@ namespace OgreRenderer
         attached_ = false;
     }
     
-    void EC_OgreMesh::AttachMesh()
+    void EC_OgreMesh::AttachEntity()
     {
         if ((attached_) || (!entity_) || (!placeable_))
             return;
@@ -120,5 +120,15 @@ namespace OgreRenderer
         node->attachObject(entity_);
                 
         attached_ = true;
+    }
+    
+    const std::string& EC_OgreMesh::GetMeshName() const
+    {
+        static std::string empty_name;
+        
+        if (!entity_)
+            return empty_name;
+        else
+            return entity_->getMesh()->getName();
     }
 }

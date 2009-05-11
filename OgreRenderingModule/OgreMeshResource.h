@@ -1,40 +1,41 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_OgreMesh_h
-#define incl_OgreRenderer_OgreMesh_h
+#ifndef incl_OgreRenderer_OgreMeshResource_h
+#define incl_OgreRenderer_OgreMeshResource_h
 
 #include "AssetInterface.h"
 #include "ResourceInterface.h"
+#include "OgreModuleApi.h"
 
 #include <OgreMesh.h>
 
 namespace OgreRenderer
 {
-    class OgreMesh;
-    typedef boost::shared_ptr<OgreMesh> OgreMeshPtr;
+    class OgreMeshResource;
+    typedef boost::shared_ptr<OgreMeshResource> OgreMeshResourcePtr;
 
-    //! An Ogre mesh resource
+    //! An Ogre-specific mesh resource
     /*! \ingroup OgreRenderingModuleClient
      */
-    class OgreMesh : public Foundation::ResourceInterface
+    class OGRE_MODULE_API OgreMeshResource : public Foundation::ResourceInterface
     {
     public:
         //! constructor
         /*! \param id mesh id
          */
-        OgreMesh(const std::string& id);
+        OgreMeshResource(const std::string& id);
         
         //! constructor
         /*! \param id mesh id
             \param source asset data to construct mesh from
         */
-        OgreMesh(const std::string& id, Foundation::AssetPtr source);
+        OgreMeshResource(const std::string& id, Foundation::AssetPtr source);
 
         //! destructor
-        virtual ~OgreMesh();
+        virtual ~OgreMeshResource();
 
         //! returns resource type in text form
-        virtual const std::string& GetTypeName() const;
+        virtual const std::string& GetType() const;
 
         //! returns Ogre mesh
         /*! may be null if no data successfully set yet
@@ -46,6 +47,9 @@ namespace OgreRenderer
             \return true if successful
         */
         bool SetData(Foundation::AssetPtr source);
+
+        //! returns resource type in text form (static)
+        static const std::string& GetTypeStatic();
 
     private:
         //! Ogre mesh

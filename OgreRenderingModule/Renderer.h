@@ -7,6 +7,7 @@
 #include "RenderServiceInterface.h"
 #include "LogListenerInterface.h"
 #include "ResourceInterface.h"
+#include "OgreModuleApi.h"
 
 namespace Foundation
 {
@@ -26,10 +27,12 @@ namespace OgreRenderer
     class OgreRenderingModule;
     class EventListener;
     class LogListener;
+    class ResourceHandler;
 
     typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
     typedef boost::shared_ptr<EventListener> EventListenerPtr;
     typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;
+    typedef boost::shared_ptr<ResourceHandler> ResourceHandlerPtr;
     
     //! Ogre renderer
     /*! Created by OgreRenderingModule. Implements the RenderServiceInterface.
@@ -80,6 +83,15 @@ namespace OgreRenderer
         //! Unsubsribe a listener to renderer log. Can be used before renderer is initialized.
         virtual void UnsubscribeLogListener(const Foundation::LogListenerPtr &listener);
         
+        //! Get a renderer-specific resource
+        virtual Foundation::ResourcePtr GetResource(const std::string& id, const std::string& type);   
+        
+        //! Request a renderer-specific resource
+        virtual Core::request_tag_t RequestResource(const std::string& id, const std::string& type);   
+        
+        //! Remove a renderer-specific resource
+        virtual void RemoveResource(const std::string& id, const std::string& type);          
+                
         
         //! Callback when renderwindow closed
         /*! Sends event and exits the framework main loop
@@ -113,42 +125,9 @@ namespace OgreRenderer
         //! Returns an unique name to create Ogre objects that require a mandatory name
         std::string GetUniqueObjectName();
 
-        //! Returns an Ogre texture resource
-        /*! Does not automatically make a request to the asset system
-            \param id Resource ID, same as asset ID
-            \return Resource pointer, or null if not found
-         */
-        Foundation::ResourcePtr GetTexture(const std::string& id);
-
-        //! Requests a texture to be downloaded & decoded
-        /*! A resource event (with the returned request tag) is sent as each quality level is decoded.
-            \param id Resource ID, same as asset ID
-            \return Request tag, 0 if asset ID invalid or asset system fatally non-existent
-         */
-        Core::request_tag_t RequestTexture(const std::string& id);
-
-        //! Deletes an Ogre texture resource
-        /*! \param id Resource ID, same as asset ID
-         */         
-        void RemoveTexture(const std::string& id);
-
-        //! Returns an Ogre mesh resource
-        /*! Does not automatically make a request to the asset system
-            \param id Resource ID, same as asset ID
-            \return Resource pointer, or null if not found
-         */
-        Foundation::ResourcePtr GetMesh(const std::string& id);
-    
-        //! Requests a mesh to be downloaded & decoded
-        /*! A resource event (with the returned request tag) will be sent once download is finished
-            \param id Resource ID, same as asset ID
-            \return Request tag, 0 if asset ID invalid or asset system fatally non-existent
-         */
-        Core::request_tag_t RequestMesh(const std::string& id);
-
-        //! Deletes an Ogre mesh resource
-        void RemoveMesh(const std::string& id);
-
+        //! Returns resource handler
+        ResourceHandlerPtr GetResourceHandler() const { return resource_handler_; }
+        
         //! Initializes renderer. Called by OgreRenderingModule
         /*! Creates render window. If render window is to be embedded, call SetExternalWindowParameter() before.
          */
@@ -164,12 +143,6 @@ namespace OgreRenderer
          */
         void Update(Core::f64 frametime);
 
-        //! Handles an asset system event. Called by OgreRenderingModule
-        bool HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
-
-        //! Handles a resource event. Called by OgreRenderingModule
-        bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
-
     private:
         //! Loads Ogre plugins in a manner which allows individual plugin loading to fail
         /*! \param plugin_filename path & filename of the Ogre plugins file
@@ -182,20 +155,6 @@ namespace OgreRenderer
         //! Creates scenemanager & camera
         void SetupScene();
     
-        //! Creates or updates a texture, based on a source raw texture resource
-        /*! \param source Raw texture 
-            \param tag Request tag from raw texture resource event
-            \return true if successful
-         */
-        bool UpdateTexture(Foundation::ResourcePtr source, Core::request_tag_t tag);
-
-        //! Creates or updates a mesh, based on source asset data
-        /*! \param source Asset
-            \param tag Request tag from asset event        
-            \return true if successful
-         */
-        bool UpdateMesh(Foundation::AssetPtr source, Core::request_tag_t tag);
-
         boost::mutex renderer_;
 
         //! Successfully initialized flag
@@ -222,26 +181,14 @@ namespace OgreRenderer
         //! Ogre log listener
         OgreLogListenerPtr log_listener_;
         
+        //! Resource handler
+        ResourceHandlerPtr resource_handler_;
+        
         //! Renderer event category
         Core::event_category_id_t renderercategory_id_;
-        
-        //! Resource event category
-        Core::event_category_id_t resourcecategory_id_;
 
         //! Counter for unique name creation
         Core::uint object_id_;
-
-        //! Ogre texture resources
-        Foundation::ResourceMap textures_;
-
-        //! Ogre mesh resources
-        Foundation::ResourceMap meshes_;
-
-        //! Expected request tags from other subsystems
-        std::set<Core::request_tag_t> expected_request_tags_;
-        
-        //! Map of resource request tags by resource
-        std::map<std::string, Core::RequestTagVector> request_tags_;
 
         //! External window parameter, to be used when embedding the renderwindow
         std::string external_window_parameter_;

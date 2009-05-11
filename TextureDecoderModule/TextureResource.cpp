@@ -2,11 +2,11 @@
 
 #include "StableHeaders.h"
 
-#include "Texture.h"
+#include "TextureResource.h"
 
 namespace TextureDecoder
 {
-    Texture::Texture(const std::string& id) : 
+    TextureResource::TextureResource(const std::string& id) : 
         TextureInterface(id),
         width_(0),
         height_(0),
@@ -15,7 +15,7 @@ namespace TextureDecoder
     {
     }
 
-    Texture::Texture(const std::string& id, Core::uint width, Core::uint height, Core::uint components) : 
+    TextureResource::TextureResource(const std::string& id, Core::uint width, Core::uint height, Core::uint components) : 
         TextureInterface(id),
         width_(width),
         height_(height),
@@ -25,11 +25,11 @@ namespace TextureDecoder
         data_.resize(width * height * components);
     }
 
-    Texture::~Texture()
+    TextureResource::~TextureResource()
     {
     }
 
-    void Texture::SetSize(Core::uint width, Core::uint height, Core::uint components)
+    void TextureResource::SetSize(Core::uint width, Core::uint height, Core::uint components)
     {
         width_ = width;
         height_ = height;
@@ -38,7 +38,7 @@ namespace TextureDecoder
         data_.resize(width * height * components);
     }
 
-    const std::string& Texture::GetTypeName() const
+    const std::string& TextureResource::GetType() const
     {
         static const std::string name("Texture");
 

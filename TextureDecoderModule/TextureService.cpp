@@ -5,7 +5,7 @@
 #include "AssetInterface.h"
 #include "ResourceInterface.h"
 #include "TextureDecoderModule.h"
-#include "Texture.h"
+#include "TextureResource.h"
 #include "TextureService.h"
 
 namespace TextureDecoder
@@ -85,7 +85,7 @@ namespace TextureDecoder
       
                 if (result.texture_)
                 {
-                    Texture* texture = checked_static_cast<Texture*>(result.texture_.get());
+                    TextureResource* texture = checked_static_cast<TextureResource*>(result.texture_.get());
                     TextureDecoderModule::LogInfo("Decoded texture w " + Core::ToString<Core::uint>(texture->GetWidth()) + " h " +
                         Core::ToString<Core::uint>(texture->GetHeight()) + " level " + Core::ToString<int>(result.level_));
     

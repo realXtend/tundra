@@ -1,25 +1,25 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "OgreMesh.h"
+#include "OgreMeshResource.h"
 #include "OgreRenderingModule.h"
 
 #include <Ogre.h>
 
 namespace OgreRenderer
 {
-    OgreMesh::OgreMesh(const std::string& id) : 
+    OgreMeshResource::OgreMeshResource(const std::string& id) : 
         ResourceInterface(id)
     {
     }
 
-    OgreMesh::OgreMesh(const std::string& id, Foundation::AssetPtr source) : 
+    OgreMeshResource::OgreMeshResource(const std::string& id, Foundation::AssetPtr source) : 
         ResourceInterface(id)
     {
         SetData(source);
     }
 
-    OgreMesh::~OgreMesh()
+    OgreMeshResource::~OgreMeshResource()
     {
         if (!ogre_mesh_.isNull())
         {
@@ -34,7 +34,7 @@ namespace OgreRenderer
         }
     }
 
-    bool OgreMesh::SetData(Foundation::AssetPtr source)
+    bool OgreMeshResource::SetData(Foundation::AssetPtr source)
     {
         if (!source)
         {
@@ -84,10 +84,15 @@ namespace OgreRenderer
         return true;
     }
 
-    const std::string& OgreMesh::GetTypeName() const
+    static const std::string type_name("OgreMesh");
+        
+    const std::string& OgreMeshResource::GetType() const
     {
-        static const std::string name("OgreMesh");
-
-        return name;
+        return type_name;
     }
+    
+    const std::string& OgreMeshResource::GetTypeStatic()
+    {
+        return type_name;
+    }    
 }

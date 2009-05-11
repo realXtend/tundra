@@ -19,7 +19,7 @@ namespace OgreRenderer
     
     typedef boost::shared_ptr<Renderer> RendererPtr;
     
-    //! Ogre mesh component
+    //! Ogre mesh entity component
     /*! Needs to be attached to a placeable (aka scene node) to be visible.
         \ingroup OgreRenderingModuleClient
      */
@@ -42,18 +42,16 @@ namespace OgreRenderer
         /*! if mesh already sets, removes the old one
             \param mesh_name mesh to use
             \return true if successful
-            \todo use mesh asset reference when asset system exists
          */
         bool SetMesh(const std::string& mesh_name);
         
-        //! gets number of materials (submeshes) in mesh
+        //! gets number of materials (submeshes) in mesh entity
         Core::uint GetNumMaterials();
         
         //! sets material in mesh
         /*! \param index submesh index
             \param material_name material name
             \return true if successful
-            \todo use material asset reference when asset system exists
          */
         bool SetMaterial(Core::uint index, const std::string& material_name);
         
@@ -63,8 +61,11 @@ namespace OgreRenderer
         //! returns if mesh exists
         bool HasMesh() const { return entity_ != NULL; }
         
-        //! returns mesh
-        Ogre::Entity* GetMesh() const { return entity_; }
+        //! returns mesh name
+        const std::string& GetMeshName() const;
+        
+        //! returns Ogre mesh entity
+        Ogre::Entity* GetEntity() const { return entity_; }
         
     private:
         //! constructor
@@ -72,11 +73,11 @@ namespace OgreRenderer
          */
         EC_OgreMesh(Foundation::ModuleInterface* module);
         
-        //! attaches mesh to placeable
-        void AttachMesh();
+        //! attaches entity to placeable
+        void AttachEntity();
         
         //! detaches mesh from placeable
-        void DetachMesh();
+        void DetachEntity();
         
         //! placeable component 
         Foundation::ComponentPtr placeable_;

@@ -7,10 +7,13 @@
 #include "EC_OpenSimPrim.h"
 #include "EC_Viewable.h"
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
+#include "../OgreRenderingModule/EC_OgreMesh.h"
+#include "../OgreRenderingModule/OgreMeshResource.h"
 #include "../OgreRenderingModule/Renderer.h"
 #include "ConversionUtils.h"
 #include "QuatUtils.h"
 #include "SceneEvents.h"
+#include "ResourceInterface.h"
 
 namespace RexLogic
 {
@@ -279,6 +282,8 @@ namespace RexLogic
         prim.SoundRadius = ReadFloatFromBytes(primdata,idx);               
 
         prim.SelectPriority = ReadUInt32FromBytes(primdata,idx);
+        
+        HandleDrawType(entityid);
     }
     
     bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
@@ -333,5 +338,94 @@ namespace RexLogic
         
         return false;        
     }
+
+    void Primitive::HandleDrawType(Core::entity_id_t entityid)
+    {
+        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
+
+        RexLogicModule::LogInfo("Entity " + Core::ToString<Core::entity_id_t>(entityid) + 
+            " has drawtype " + Core::ToString<int>(prim.DrawType) + " meshid " + prim.MeshUUID.ToString());
+            
+        if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
+        {
+            // Get/create mesh component 
+            Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+            if (!mesh)
+                entity->AddEntityComponent(mesh = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreMesh::NameStatic()));
+            
+            OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+            
+            // Attach to placeable if not yet attached
+            if (!meshptr->GetPlaceable())
+                meshptr->SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
+                
+            // Change mesh if yet nonexistent/changed
+            // assume name to be UUID of mesh asset, which should be true of OgreRenderer resources
+            std::string mesh_name = prim.MeshUUID.ToString();
+            if (meshptr->GetMeshName() != mesh_name)
+            {
+                boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+                    GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+                Core::request_tag_t tag = renderer->RequestResource(mesh_name, OgreRenderer::OgreMeshResource::GetTypeStatic());
+
+                // Remember that we are going to get a resource event for this entity
+                if (tag)
+                {
+                    DiscardRequestTags(entityid, mesh_request_tags_);
+                    mesh_request_tags_[tag] = entityid;
+                }                
+            }
+        }
+    } 
+
+    bool Primitive::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        if (event_id == Resource::Events::RESOURCE_READY)
+        {
+            Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
+            
+            EntityResourceRequestMap::iterator i = mesh_request_tags_.find(event_data->tag_);
+            Foundation::ResourcePtr res = event_data->resource_;
+            if (i != mesh_request_tags_.end())
+            {
+                HandleMeshReady(i->second, res);
+                mesh_request_tags_.erase(i);
+                return true;
+            }
+        }
         
+        return false;
+    }
+    
+    void Primitive::HandleMeshReady(Core::entity_id_t entityid, Foundation::ResourcePtr resource)
+    {     
+        Foundation::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+        if (!entity)
+            return;
+           
+        Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+        if (!mesh)
+           return;
+        
+        if (resource->GetType() == "OgreMesh")
+        {                  
+            OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());             
+            meshptr->SetMesh(resource->GetId());   
+        }                   
+    }
+    
+    void Primitive::DiscardRequestTags(Core::entity_id_t entityid, EntityResourceRequestMap& map)
+    {
+        Core::RequestTagVector tags_to_remove;
+        EntityResourceRequestMap::iterator i = map.begin();
+        while (i != map.end())
+        {
+            if (i->second == entityid)
+                tags_to_remove.push_back(i->first);
+            ++i;
+        }
+        for (int j = 0; j < tags_to_remove.size(); ++j)
+            map.erase(tags_to_remove[j]);
+    }                
 }

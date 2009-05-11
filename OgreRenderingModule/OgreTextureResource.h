@@ -1,39 +1,40 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_OgreTexture_h
-#define incl_OgreRenderer_OgreTexture_h
+#ifndef incl_OgreRenderer_OgreTextureResource_h
+#define incl_OgreRenderer_OgreTextureResource_h
 
 #include "TextureInterface.h"
-
+#include "OgreModuleApi.h"
+ 
 #include <OgreTexture.h>
 
 namespace OgreRenderer
 {
-    class OgreTexture;
-    typedef boost::shared_ptr<OgreTexture> OgreTexturePtr;
+    class OgreTextureResource;
+    typedef boost::shared_ptr<OgreTextureResource> OgreTextureResourcePtr;
 
-    //! An Ogre texture resource
+    //! An Ogre-specific texture resource
     /*! \ingroup OgreRenderingModuleClient
      */
-    class OgreTexture : public Foundation::ResourceInterface
+    class OGRE_MODULE_API OgreTextureResource : public Foundation::ResourceInterface
     {
     public:
         //! constructor
         /*! \param id texture id
          */
-        OgreTexture(const std::string& id);
+        OgreTextureResource(const std::string& id);
         
         //! constructor
         /*! \param id texture id
             \param source source raw texture data
         */
-        OgreTexture(const std::string& id, Foundation::TexturePtr source);
+        OgreTextureResource(const std::string& id, Foundation::TexturePtr source);
 
         //! destructor
-        virtual ~OgreTexture();
+        virtual ~OgreTextureResource();
 
         //! returns resource type in text form
-        virtual const std::string& GetTypeName() const;
+        virtual const std::string& GetType() const;
 
         //! returns Ogre texture
         /*! may be null if no data successfully set yet
@@ -48,6 +49,9 @@ namespace OgreRenderer
             \return true if successful
         */
         bool SetData(Foundation::TexturePtr source);
+
+        //! returns resource type in text form (static)
+        static const std::string& GetTypeStatic();
 
     private:
         //! Ogre texture
