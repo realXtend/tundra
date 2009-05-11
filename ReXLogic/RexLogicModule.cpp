@@ -144,14 +144,8 @@ namespace RexLogic
     }
 
     void RexLogicModule::DeleteScene(const std::string &name)
-    {
-        boost::shared_ptr<Foundation::SceneManagerServiceInterface> scene_manager =
-            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager).lock();
-        
-        if (!scene_manager)
-            return;
-        
-        if (!scene_manager->HasScene(name))
+    {        
+        if (!framework_->HasScene(name))
         {
             LogWarning("Tried to delete scene, but it didn't exist!");
             return;
@@ -160,8 +154,8 @@ namespace RexLogic
         if (activeScene_ && activeScene_->Name() == name)
             activeScene_.reset(); ///\todo Check in SceneManager that scene names surely are unique. -jj.
 
-        scene_manager->DeleteScene(name);
-        assert(!scene_manager->HasScene(name));
+        framework_->RemoveScene(name);
+        assert(!framework_->HasScene(name));
     }
 
     // virtual 
@@ -283,11 +277,7 @@ namespace RexLogic
     {
         terrain_ = TerrainPtr(new Terrain(this));
 
-        // Create a single entity with a EC_Terrain component to the scene.
-        boost::shared_ptr<Foundation::SceneManagerServiceInterface> sceneManager = 
-            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager).lock();
-
-        Foundation::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
+        Scene::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
         entity->AddEntityComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_Terrain"));
 
         terrain_->FindCurrentlyActiveTerrain();
@@ -308,30 +298,27 @@ namespace RexLogic
         return primitive_;
     }
 
-    void RexLogicModule::SetCurrentActiveScene(Foundation::ScenePtr scene)
+    void RexLogicModule::SetCurrentActiveScene(Scene::ScenePtr scene)
     {
         activeScene_ = scene;
     }
 
-    Foundation::ScenePtr RexLogicModule::GetCurrentActiveScene()
+    Scene::ScenePtr RexLogicModule::GetCurrentActiveScene()
     {
         return activeScene_;
     }
 
-    Foundation::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
+    Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
     {
-        boost::shared_ptr<Foundation::SceneManagerServiceInterface> sceneManager = 
-            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager).lock();
-
-        if (sceneManager->HasScene(name))
+        if (framework_->HasScene(name))
         {
             LogWarning("Tried to create new active scene, but it already existed!");
-            Foundation::ScenePtr newActiveScene = sceneManager->GetScene(name);
+            Scene::ScenePtr newActiveScene = framework_->GetScene(name);
             SetCurrentActiveScene(newActiveScene);
             return newActiveScene;
         }
 
-        activeScene_ = sceneManager->CreateScene(name);
+        activeScene_ = framework_->CreateScene(name);
 
         // Also create a default terrain to the Scene. This is done here dynamically instead of fixed in RexLogic,
         // since we might have 0-N terrains later on, depending on where we actually connect to. Now of course
@@ -341,32 +328,32 @@ namespace RexLogic
         return GetCurrentActiveScene();
     }
 
-    Foundation::EntityPtr RexLogicModule::GetEntityWithComponent(Core::entity_id_t entityid, const std::string &requiredcomponent)
+    Scene::EntityPtr RexLogicModule::GetEntityWithComponent(Core::entity_id_t entityid, const std::string &requiredcomponent)
     {
         if (!activeScene_)
-            return Foundation::EntityPtr();
+            return Scene::EntityPtr();
 
-        Foundation::EntityPtr entity = activeScene_->GetEntity(entityid);
+        Scene::EntityPtr entity = activeScene_->GetEntity(entityid);
         if(entity && entity->GetComponent(requiredcomponent))
             return entity;
         else
-            return Foundation::EntityPtr();            
+            return Scene::EntityPtr();            
     }    
 
-    Foundation::EntityPtr RexLogicModule::GetPrimEntity(const RexUUID &entityuuid)
+    Scene::EntityPtr RexLogicModule::GetPrimEntity(const RexUUID &entityuuid)
     {
         IDMap::iterator iter = UUIDs_.find(entityuuid);
         if (iter == UUIDs_.end())
-            return Foundation::EntityPtr();
+            return Scene::EntityPtr();
         else
             return GetPrimEntity(iter->second);
     } 
 
-    Foundation::EntityPtr RexLogicModule::GetAvatarEntity(const RexUUID &entityuuid)
+    Scene::EntityPtr RexLogicModule::GetAvatarEntity(const RexUUID &entityuuid)
     {
         IDMap::iterator iter = UUIDs_.find(entityuuid);
         if (iter == UUIDs_.end())
-            return Foundation::EntityPtr();
+            return Scene::EntityPtr();
         else
             return GetAvatarEntity(iter->second);
     }

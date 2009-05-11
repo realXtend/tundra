@@ -92,15 +92,15 @@ namespace RexLogic
         
         /// Sends a packet indicating change in Object's position, rotation and scale.
         /// @param List of updated entity pointers.
-        void SendMultipleObjectUpdatePacket(std::vector<Foundation::EntityPtr> entity_ptr_list);
+        void SendMultipleObjectUpdatePacket(std::vector<Scene::EntityPtr> entity_ptr_list);
 
         /// Sends a packet indicating change in Object's name.
         /// @param List of updated entity pointers.
-        void SendObjectNamePacket(std::vector<Foundation::EntityPtr> entity_ptr_list);
+        void SendObjectNamePacket(std::vector<Scene::EntityPtr> entity_ptr_list);
         
         /// Sends a packet indicating change in Object's description
         /// @param List of updated entity pointers.
-        void SendObjectDescriptionPacket(std::vector<Foundation::EntityPtr> entity_ptr_list);
+        void SendObjectDescriptionPacket(std::vector<Scene::EntityPtr> entity_ptr_list);
 
         /// Sends handshake reply packet
         void SendRegionHandshakeReplyPacket(RexTypes::RexUUID agent_id, RexTypes::RexUUID session_id, uint32_t flags);

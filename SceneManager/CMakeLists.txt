@@ -1,5 +1,5 @@
-# Define target name
-set (TARGET_NAME Foundation)
+# Define target name and output directory
+set (TARGET_NAME SceneManager)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -11,21 +11,22 @@ include_directories (
 	../Core
 	../Foundation
 	../Interfaces
-	../SceneManager
 )
-
+		
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
-
-add_definitions (-DMODULE_EXPORTS)
-#add_definitions (-DOPENSIMPROTOCOL_MODULE_EXPORTS)
 
 # Define static library
 add_library (${TARGET_NAME} STATIC ${SOURCE_FILES})
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 
-target_link_libraries (${TARGET_NAME} Core Interfaces SceneManager)
+# Define libraries to be linked into target
+target_link_libraries (${TARGET_NAME} Foundation Interfaces)
+
+# External library linkage
+LINK_BOOST()
+LINK_POCO()
 
 # Precompiled headers on MSVC
 if (MSVC)

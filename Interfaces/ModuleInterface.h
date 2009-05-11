@@ -45,8 +45,7 @@ namespace Foundation
         */
 		enum Type 
 		{
-			MT_Scene = 0,
-			MT_Renderer,
+			MT_Renderer = 0,
 			MT_Sound,
 			MT_Gui,
 			MT_WorldLogic,
@@ -72,7 +71,7 @@ namespace Foundation
             assert(type != MT_Unknown);
 
             static const std::string type_strings[MT_Unknown] = {
-                 "SceneModule", "OgreRenderingModule", "SoundModule", "GtkmmUI", "RexLogicModule", "OpenSimProtocolModule",
+                 "OgreRenderingModule", "SoundModule", "GtkmmUI", "RexLogicModule", "OpenSimProtocolModule",
                  "TestModule", "NetTestLogicModule", "PythonScriptModule", "ConsoleModule", "AssetModule", "CommunicationModule",
 				 "CommunicationUIModule", "InputModuleOIS", "TextureDecoderModule" };
 

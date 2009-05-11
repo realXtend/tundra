@@ -65,15 +65,10 @@ namespace Console
         Foundation::Framework *framework = module_->GetFramework();
 
         console_overlay_.reset();
-        if ( framework->GetServiceManager()->IsRegistered(Foundation::Service::ST_SceneManager))
-        {
-            boost::shared_ptr<Foundation::SceneManagerServiceInterface> scene_manager =
-                framework->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager).lock();
 
-            if (scene_manager->HasScene("Console"))
-            {
-                scene_manager->DeleteScene("Console");
-            }
+        if (framework->HasScene("Console"))
+        {
+            framework->RemoveScene("Console");
         }
 
         boost::shared_ptr<Foundation::RenderServiceInterface> renderer = 
@@ -95,27 +90,19 @@ namespace Console
             renderer->SubscribeLogListener(log_listener_);
         }
 
+        if (framework->HasScene("Console"))
+            throw Core::Exception("Scene for console already exists."); // could be assert also
 
-        if ( framework->GetServiceManager()->IsRegistered(Foundation::Service::ST_SceneManager) &&
-             framework->GetComponentManager()->CanCreate("EC_OgreConsoleOverlay") )
-        {
-            boost::shared_ptr<Foundation::SceneManagerServiceInterface> scene_manager =
-                framework->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager).lock();
+        Scene::ScenePtr scene = framework->CreateScene("Console");
+        Scene::EntityPtr entity = scene->CreateEntity(scene->GetNextFreeId());
 
-            if (scene_manager->HasScene("Console"))
-                throw Core::Exception("Scene for console already exists.");
+        console_overlay_ = framework->GetComponentManager()->CreateComponent("EC_OgreConsoleOverlay");
+        entity->AddEntityComponent(console_overlay_);
 
-            Foundation::ScenePtr scene = scene_manager->CreateScene("Console");
-            Foundation::EntityPtr entity = scene->CreateEntity(scene->GetNextFreeId());
+        max_visible_lines = checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>
+            (console_overlay_.get())->GetMaxVisibleLines();
 
-            console_overlay_ = framework->GetComponentManager()->CreateComponent("EC_OgreConsoleOverlay");
-            entity->AddEntityComponent(console_overlay_);
-
-            max_visible_lines = checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>
-                (console_overlay_.get())->GetMaxVisibleLines();
-
-            update_ = true;
-        }
+        update_ = true;
 
         ConsolePtr manager = checked_static_cast<ConsoleModule*>(module_)->GetConsole();
         command_manager_ = checked_static_cast<ConsoleManager*>(manager.get())->GetCommandManager();

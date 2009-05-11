@@ -5,11 +5,13 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace Foundation
+namespace Scene
 {
+    class SceneManagerInterface;
     class EntityInterface;
     typedef boost::weak_ptr<EntityInterface> EntityWeakPtr;
     typedef boost::shared_ptr<EntityInterface> EntityPtr;
+    typedef boost::shared_ptr<SceneManagerInterface> ScenePtr;
 
     //! Represents an entity in the world. 
     /*! An entity is just a collection of components, the components define what
@@ -18,7 +20,7 @@ namespace Foundation
 
         \ingroup Scene_group
     */
-    class MODULE_API EntityInterface
+    class EntityInterface
     {
     public:
         //! default constructor
@@ -27,6 +29,7 @@ namespace Foundation
         //! destructor
         virtual ~EntityInterface();
 
+        virtual EntityInterface &operator = (const EntityInterface &other) = 0;
         virtual bool operator == (const EntityInterface &other) const { return GetId() == other.GetId(); }
         virtual bool operator != (const EntityInterface &other) const { return !(*this == other); }
         virtual bool operator < (const EntityInterface &other) const { return GetId() < other.GetId(); }
@@ -36,7 +39,7 @@ namespace Foundation
 
             \param scene_name Name of the scene the new entity should be in
         */
-        virtual EntityPtr Clone(const std::string &scene_name) const = 0;
+        virtual EntityPtr Clone(const ScenePtr &scene) const = 0;
 
         //! Add a new component to this entity.
         /*! Entities can contain any number of components of any type.

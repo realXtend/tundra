@@ -27,7 +27,7 @@ namespace PythonScript
 		PyModule_AddObject(m, "Entity", (PyObject *)&rexviewer_EntityType);
 	}
 
-	PyObject* PythonScript::entity_create(Core::entity_id_t ent_id) //, Foundation::EntityPtr entity)
+	PyObject* PythonScript::entity_create(Core::entity_id_t ent_id) //, Scene::EntityPtr entity)
 	{
 		rexviewer_EntityObject* eob;
 		std::cout << "Entity: creating a wrapper pyobject ..";

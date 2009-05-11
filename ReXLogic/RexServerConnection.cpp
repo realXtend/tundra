@@ -341,7 +341,7 @@ namespace RexLogic
         FinishMessageBuilding(m);
     }
     
-    void RexServerConnection::SendMultipleObjectUpdatePacket(std::vector<Foundation::EntityPtr> entity_ptr_list)
+    void RexServerConnection::SendMultipleObjectUpdatePacket(std::vector<Scene::EntityPtr> entity_ptr_list)
     {
         if (!connected_)
             return;
@@ -407,7 +407,7 @@ namespace RexLogic
         FinishMessageBuilding(m);
     }
     
-    void RexServerConnection::SendObjectNamePacket(std::vector<Foundation::EntityPtr> entity_ptr_list)
+    void RexServerConnection::SendObjectNamePacket(std::vector<Scene::EntityPtr> entity_ptr_list)
     {
         if (!connected_)
             return;
@@ -431,7 +431,7 @@ namespace RexLogic
         }
     }
     
-    void RexServerConnection::SendObjectDescriptionPacket(std::vector<Foundation::EntityPtr> entity_ptr_list)
+    void RexServerConnection::SendObjectDescriptionPacket(std::vector<Scene::EntityPtr> entity_ptr_list)
     {
         if (!connected_)
             return;

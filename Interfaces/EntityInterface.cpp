@@ -4,7 +4,7 @@
 
 #include "EntityInterface.h"
 
-namespace Foundation
+namespace Scene
 {
     EntityInterface::EntityInterface() {}
 

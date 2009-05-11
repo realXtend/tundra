@@ -5,7 +5,6 @@
 
 #include "Foundation.h"
 #include "StaticModuleTest.h"
-#include "SceneModule.h"
 
 namespace Test
 {
@@ -18,9 +17,6 @@ namespace Test
         {
             assert (framework);
             Foundation::ModuleInterface *module = new StaticModuleTest;
-            framework->GetModuleManager()->DeclareStaticModule(module);
-
-            module = new Scene::SceneModule;
             framework->GetModuleManager()->DeclareStaticModule(module);
         }
     };

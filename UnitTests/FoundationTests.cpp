@@ -72,7 +72,6 @@ BOOST_AUTO_TEST_CASE( framework_test_module )
     static_test(&fw);
 
     fw.GetModuleManager()->LoadAvailableModules();
-    BOOST_CHECK (fw.GetModuleManager()->HasModule(Foundation::Module::MT_Scene));
 //    BOOST_CHECK (fw.GetModuleManager()->HasModule(Foundation::Module::MT_Renderer));
     BOOST_CHECK (fw.GetModuleManager()->HasModule(Foundation::Module::MT_Test));
 //    BOOST_CHECK (fw.GetModuleManager()->HasModule(Foundation::Module::MT_WorldLogic));

@@ -263,7 +263,7 @@ namespace
             return;
         }
 
-        Foundation::EntityPtr terrain = GetTerrainEntity().lock();
+        Scene::EntityPtr terrain = GetTerrainEntity().lock();
         EC_Terrain *terrainComponent = checked_static_cast<EC_Terrain*>(terrain->GetComponent("EC_Terrain").get());
         assert(terrainComponent);
         EC_Terrain::Patch &scenePatch = terrainComponent->GetPatch(patch.header.x, patch.header.y);
@@ -340,11 +340,11 @@ namespace
 
     void Terrain::FindCurrentlyActiveTerrain()
     {
-        Foundation::ScenePtr scene = owner_->GetCurrentActiveScene();
-        for(Foundation::SceneInterface::EntityIterator iter = scene->begin();
+        Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
+        for(Scene::SceneManagerInterface::EntityIterator iter = scene->begin();
             iter != scene->end(); ++iter)
         {
-            Foundation::EntityInterface &entity = *iter;
+            Scene::EntityInterface &entity = *iter;
             Foundation::ComponentInterfacePtr terrainComponent = entity.GetComponent("EC_Terrain");
             if (terrainComponent.get())
             {
@@ -353,7 +353,7 @@ namespace
         }
     }
 
-    Foundation::EntityWeakPtr Terrain::GetTerrainEntity()
+    Scene::EntityWeakPtr Terrain::GetTerrainEntity()
     {
         return cachedTerrainEntity_;
     }

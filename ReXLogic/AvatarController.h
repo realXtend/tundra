@@ -41,10 +41,10 @@ namespace RexLogic
         void StopRotatingRight();
          
         //! Gets avatar entity
-        Foundation::EntityPtr GetAvatarEntity() const { return avatarentity_; }
+        Scene::EntityPtr GetAvatarEntity() const { return avatarentity_; }
 
         //! Sets avatar entity
-        void SetAvatarEntity(Foundation::EntityPtr avatar);        
+        void SetAvatarEntity(Scene::EntityPtr avatar);        
 
         //! update camera position
         void Update(Core::f64 frametime);
@@ -59,7 +59,7 @@ namespace RexLogic
         uint32_t controlflags_;        
 
         //! Own avatar
-        Foundation::EntityPtr avatarentity_;
+        Scene::EntityPtr avatarentity_;
 
         void SendMovementToServer();
 

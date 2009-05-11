@@ -6,6 +6,7 @@
 #include "ConfigurationManager.h"
 #include "ServiceInterfaces.h"
 #include "ServiceManager.h"
+#include "SceneManagerInterface.h"
 
 namespace Foundation
 {
@@ -17,6 +18,8 @@ namespace Foundation
     class Framework
     {
     public:
+        typedef std::map<std::string, Scene::ScenePtr> SceneMap;
+
         //! default constructor
         Framework();
         //! destructor
@@ -51,6 +54,49 @@ namespace Foundation
         //! Shortcut for retrieving a service. See ServiceManager::GetService() for more info
         template <class T>
         __inline const boost::weak_ptr<T> GetService(Core::service_type_t type) const { return service_manager_->GetService<T>(type); }
+
+        //! Creates new empty scene.
+        /*! 
+            \param name name of the new scene
+            \return The new scene, or empty pointer if scene with the specified name already exists.
+        */
+        Scene::ScenePtr CreateScene(const std::string &name);
+
+        //! Removes a scene with the specified name.
+        /*! The scene may not get deleted since there may be dangling references to it.
+            If the scene does get deleted, removes all entities which are not shared with
+            another existing scene.
+
+            Does nothing if scene with the specified name doesn't exist.
+
+            \param name name of the scene to delete
+        */
+        void RemoveScene(const std::string &name);
+
+        //! Returns a pointer to a scene
+        /*! Manage the pointer carefully, as scenes may not get deleted properly if
+            references to the pointer are left alive.
+
+            \note Returns a shared pointer, but it is preferable to use a weak pointer, Scene::SceneWeakPtr,
+                  to avoid dangling references that prevent scenes from being properly destroyed.
+
+            \param name Name of the scene to return
+            \return The scene, or empty pointer if the scene with the specified name could not be found
+        */
+        Scene::ScenePtr GetScene(const std::string &name) const;
+
+        //! Returns true if specified scene exists, false otherwise
+        bool HasScene(const std::string &name) const { return scenes_.find(name) != scenes_.end(); }
+
+        //! Returns the currently set default world scene, for convinience
+        const Scene::ScenePtr &GetDefaultWorldScene() const { return default_scene_; }
+
+        //! Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
+        void SetDefaultWorldScene(const Scene::ScenePtr &scene) { default_scene_ = scene; }
+
+        //! Returns the scene map for self reflection / introspection.
+        const SceneMap &GetSceneMap() const { return scenes_; }
+
 
         //! load and init module
         Console::CommandResult ConsoleLoadModule(const Core::StringVector &params);
@@ -106,7 +152,11 @@ namespace Foundation
         //! Logger default formatter
         Poco::Formatter *log_formatter_;
 
-       
+        //! map of scenes
+        SceneMap scenes_;
+
+        //! Current 'default' scene
+        Scene::ScenePtr default_scene_;
     };
 }
 

@@ -20,14 +20,14 @@ namespace RexLogic
     {
     }
     
-    Foundation::EntityPtr Avatar::GetOrCreateAvatarEntity(Core::entity_id_t entityid, const RexUUID &fullid)
+    Scene::EntityPtr Avatar::GetOrCreateAvatarEntity(Core::entity_id_t entityid, const RexUUID &fullid)
     {
         // Make sure scene exists
-        Foundation::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+        Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
         if (!scene)
-            return Foundation::EntityPtr();
+            return Scene::EntityPtr();
 
-        Foundation::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(entityid);
+        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(entityid);
         if (!entity)
         {
             entity = CreateNewAvatarEntity(entityid);
@@ -39,17 +39,17 @@ namespace RexLogic
         return entity;
     }    
 
-    Foundation::EntityPtr Avatar::CreateNewAvatarEntity(Core::entity_id_t entityid)
+    Scene::EntityPtr Avatar::CreateNewAvatarEntity(Core::entity_id_t entityid)
     {
-        Foundation::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+        Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
         if (!scene)
-            return Foundation::EntityPtr();
+            return Scene::EntityPtr();
         
         Core::StringVector defaultcomponents;
         defaultcomponents.push_back(EC_OpenSimAvatar::NameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());        
         
-        Foundation::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents);
+        Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents);
  
         OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
         ogrePos.SetScale(Vector3(0.5,1.5,0.5));
@@ -76,7 +76,7 @@ namespace RexLogic
             msg->SkipToNextVariable();		// CRC U32 ///\todo Unhandled inbound variable 'CRC'.
             uint8_t pcode = msg->ReadU8();
 
-            Foundation::EntityPtr entity = GetOrCreateAvatarEntity(localid,fullid);
+            Scene::EntityPtr entity = GetOrCreateAvatarEntity(localid,fullid);
             EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent("EC_OpenSimAvatar").get());
             OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
 
@@ -136,7 +136,7 @@ namespace RexLogic
         
         Core::Quaternion rotation = GetProcessedQuaternion(&bytes[i]);
 
-        Foundation::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(localid);
+        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(localid);
         if(entity)
         {
             /// \todo tucofixme handle velocity        
@@ -186,7 +186,7 @@ namespace RexLogic
         Core::Vector3df rotvel = GetProcessedVectorFromUint16(&bytes[i]);
 
         // set values
-        Foundation::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(localid);
+        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(localid);
         if(entity)
         {
             OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
@@ -207,7 +207,7 @@ namespace RexLogic
         RexUUID avatarid(data->message->ReadString());
         bool overrideappearance = ParseBool(data->message->ReadString());
         
-        Foundation::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
+        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
         if(entity)
         {
             EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent("EC_OpenSimAvatar").get());        
@@ -219,13 +219,13 @@ namespace RexLogic
     
     bool Avatar::HandleOSNE_KillObject(uint32_t objectid)
     {
-        Foundation::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+        Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
         if (!scene)
             return false;
 
         RexTypes::RexUUID fullid;
         fullid.SetNull();
-        Foundation::EntityPtr entity = scene->GetEntity(objectid);
+        Scene::EntityPtr entity = scene->GetEntity(objectid);
         if(!entity)
             return false;
 
@@ -236,7 +236,7 @@ namespace RexLogic
             fullid = avatar.FullId;
         }
         
-        scene->DestroyEntity(objectid);
+        scene->RemoveEntity(objectid);
         rexlogicmodule_->UnregisterFullId(fullid);
         return false;
     }     

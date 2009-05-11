@@ -269,14 +269,14 @@ static PyObject* GetEntity(PyObject *self, PyObject *args)
 
 	ent_id = (Core::entity_id_t) ent_id_int;
 
-	Foundation::ScenePtr scene = PythonScript::GetScene();
+	Scene::ScenePtr scene = PythonScript::GetScene();
 
 	if (scene == 0)
 		return NULL; //XXX return some sensible exception info
 
 	//PythonScript::foo(); 
 	/*
-	const Foundation::EntityPtr entity = scene->GetEntity(ent_id);
+	const Scene::EntityPtr entity = scene->GetEntity(ent_id);
 	if (entity.get() != 0) //same that scene->HasEntity does, i.e. it first does GetEntity too, so not calling HasEntity here to not do GetEntity twice.
 		return entity_create(ent_id, entity);
 	//the ptr is stored in a separate map now, so also id needs to passed to entity_create
@@ -350,16 +350,16 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 	//entity_ptrs map usage
 	/* this crashes now in boost, 
 	   void add_ref_copy() { BOOST_INTERLOCKED_INCREMENT( &use_count_ );
-	std::map<Core::entity_id_t, Foundation::EntityPtr>::iterator ep_iter = entity_ptrs.find(self->ent_id);
-	Foundation::EntityPtr entity = ep_iter->second;
+	std::map<Core::entity_id_t, Scene::EntityPtr>::iterator ep_iter = entity_ptrs.find(self->ent_id);
+	Scene::EntityPtr entity = ep_iter->second;
 	fix.. */
 
 	/* re-getting the EntityPtr as it wasn't stored anywhere yet,
 	   is copy-paste from PythonScriptModule GetEntity 
 	   but to be removed when that map is used above.*/
-	Foundation::ScenePtr scene = PythonScript::GetScene();
+	Scene::ScenePtr scene = PythonScript::GetScene();
 	rexviewer_EntityObject *eob = (rexviewer_EntityObject *)self;
-	Foundation::EntityPtr entity = scene->GetEntity(eob->ent_id);
+	Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
 	
 	if (s_name.compare("prim") == 0)
 	{
@@ -415,15 +415,15 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 	//entity_ptrs map usage
 	/* this crashes now in boost, 
 	   void add_ref_copy() { BOOST_INTERLOCKED_INCREMENT( &use_count_ );
-	std::map<Core::entity_id_t, Foundation::EntityPtr>::iterator ep_iter = entity_ptrs.find(self->ent_id);
-	Foundation::EntityPtr entity = ep_iter->second;
+	std::map<Core::entity_id_t, Scene::EntityPtr>::iterator ep_iter = entity_ptrs.find(self->ent_id);
+	Scene::EntityPtr entity = ep_iter->second;
 	fix.. */
 
 	/* re-getting the EntityPtr as it wasn't stored anywhere yet,
 	   is copy-paste from PythonScriptModule GetEntity 
 	   but to be removed when that map is used above.*/
-	Foundation::ScenePtr scene = PythonScript::GetScene();
-	Foundation::EntityPtr entity = scene->GetEntity(eob->ent_id);
+	Scene::ScenePtr scene = PythonScript::GetScene();
+	Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
 	
 	/*if (s_name.compare("prim") == 0)
 	{

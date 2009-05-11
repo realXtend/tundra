@@ -70,16 +70,14 @@ namespace Test
         // create new entity
         LogInfo("Constructing entity with component: " + Test::EC_Dummy::NameStatic() + ".");
 
-        boost::shared_ptr<Foundation::SceneManagerServiceInterface> sceneManager = 
-            framework_->GetService<Foundation::SceneManagerServiceInterface>(Foundation::Service::ST_SceneManager).lock();
-        assert(sceneManager && "Failed to get SceneManager service");
+        Foundation::Framework *sceneManager = framework_;
 
         assert(sceneManager->HasScene("test_scene") == false && "Scene test_scene scene already exists!");
-        Foundation::ScenePtr scene = sceneManager->CreateScene("test_scene");
+        Scene::ScenePtr scene = sceneManager->CreateScene("test_scene");
         assert(scene.get() && "Failed to create scene" );
         assert(sceneManager->HasScene("test_scene") && "Failed to create scene");
 
-        Foundation::EntityPtr entity = scene->CreateEntity(0);
+        Scene::EntityPtr entity = scene->CreateEntity(0);
         assert (entity.get() != 0 && "Failed to create entity.");
         assert (scene->HasEntity(entity->GetId()) && "Failed to add entity to scene properly!");
 
@@ -109,53 +107,25 @@ namespace Test
         assert (num_test_components == 1 && "Component iterator failed.");
 
 
-        Foundation::ScenePtr cloned_scene = scene->Clone("Test clone scene");
+        Scene::ScenePtr cloned_scene = scene->Clone("Test clone scene");
         assert (sceneManager->HasScene("Test clone scene"));
         assert (cloned_scene->HasEntity(entity->GetId()) && "Failed to clone a scene");
 
-        Foundation::EntityPtr cloned_entity = entity->Clone("Test clone scene");
+        Scene::EntityPtr cloned_entity = entity->Clone(cloned_scene);
         component = cloned_entity->GetComponent(component->Name());
         assert (component.get() != 0 && "Failed to clone an entity.");
 
-        Foundation::EntityPtr cloned_entity2 = cloned_scene->GetEntity(cloned_entity->GetId());
-        Foundation::EntityPtr entity2 = cloned_scene->CreateEntity(0);
+        Scene::EntityPtr cloned_entity2 = cloned_scene->GetEntity(cloned_entity->GetId());
+        Scene::EntityPtr entity2 = cloned_scene->CreateEntity(0);
         assert (*cloned_entity2.get() == *cloned_entity.get() && "EntityInterface operator== failed");
         assert (*entity.get() != *entity2.get() && "EntityInterface operator!= failed");
         assert (*cloned_entity.get() < *entity2.get() && "EntityInterface operator< failed");
 
 
-        Foundation::ScenePtr scene2 = sceneManager->GetScene("test_scene");
+        Scene::ScenePtr scene2 = sceneManager->GetScene("test_scene");
         assert(*scene.get() == *scene2.get() && "SceneInterface operator== failed");
         assert(*scene.get() != *cloned_scene.get() && "SceneInterface operator!= failed");
         assert(*cloned_scene.get() < *scene.get() && "SceneInterface operator< failed");
-
-        Foundation::SceneManager::iterator it = sceneManager->Begin();
-        Foundation::SceneManager::iterator it_copy = it;
-        int test_scenes = 0;
-        for ( ; it_copy != sceneManager->End() ; ++it_copy)
-        {
-            if ((*it_copy)->Name() == "test_scene")
-                test_scenes++;
-
-            if ((*it_copy)->Name() == "Test clone scene")
-                test_scenes++;
-        }
-        assert (test_scenes == 2 && "Scene iterator could not find all the scenes!");
-
-        const Foundation::SceneManagerServiceInterface *const_sceneManager = const_cast<const Foundation::SceneManagerServiceInterface*>(sceneManager.get());
-        Foundation::SceneManager::const_iterator c_it = const_sceneManager->Begin();
-        Foundation::SceneManager::const_iterator c_it_copy = c_it;
-        test_scenes = 0;
-        for ( ; c_it_copy != const_sceneManager->End() ; ++c_it_copy)
-        {
-            if ((*c_it_copy)->Name() == "test_scene")
-                test_scenes++;
-
-            if ((*c_it_copy)->Name() == "Test clone scene")
-                test_scenes++;
-        }
-        assert (test_scenes == 2 && "Const scene iterator could not find all the scenes!");
-
 
 
         boost::shared_ptr<TestServiceInterface> test_service = framework_->GetServiceManager()->GetService<TestServiceInterface>(TestService::type_).lock();
