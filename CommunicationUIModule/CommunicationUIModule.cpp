@@ -161,7 +161,9 @@ namespace CommunicationUI
 	
 		
 	/*
-	 * Fetches communication service object and subscriber communication events
+	 *  - Fetches communication service object
+	 *  - Subscribes communication events
+	 *  - Get contact list 
 	 */
 	void CommunicationUIModule::SetupCommunicationServiceUsage()
 	{
@@ -172,6 +174,9 @@ namespace CommunicationUI
         
         if (communication_event_category_id_ == 0 )
             LogWarning("Unable to find event category for Communication events!");
+
+		contact_list_ = communication_service_->GetContactList();
+
 	}
 
     void CommunicationUIModule::setupSciptInterface()
@@ -349,13 +354,47 @@ namespace CommunicationUI
         //this->CallIMPyMethod("CSetStatus", "s", std::string("offline"));
     }
 
-    void CommunicationUIModule::StartChat(const char* contact)
+	/*
+	 * NOTE: This sould not be needed when using contact list directly
+	 *       But if we know just the address we need this to find actual contat
+	 *       object
+	 */
+	Communication::ContactPtr CommunicationUIModule::FindContact(std::string address)
+	{
+		std::string protocol = "jabber"; // todo remove fixed definition
+		for (Communication::ContactList::iterator i = contact_list_->begin(); i < contact_list_->end(); i++)
+		{
+			Communication::ContactPtr c = (*i);
+			if (c->GetContactInfo(protocol)->GetProperty("address").compare(address) == 0)
+			{
+				return c;
+			}
+		}
+
+		// we didn't find given contact
+		// todo: better error handling
+		throw "Cannot find contact";
+	}
+
+    void CommunicationUIModule::StartChat(const char* contact_address)
     {
 		LogInfo("start chat window here");
-        Foundation::ScriptObject* ret = CallIMPyMethod("CStartChatSession", "s", std::string(contact));
+//        Foundation::ScriptObject* ret = CallIMPyMethod("CStartChatSession", "s", std::string(contact));
         //sessionUp_ = true;
 		//this->session_ = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(contact, imScriptObject));
-        chatSessions_[std::string(contact)] = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(contact, imScriptObject));
+		try
+		{
+			Communication::ContactPtr contact = FindContact(contact_address);	
+			Communication::IMSessionPtr session = communication_service_->CreateIMSession(contact);
+			chatSessions_[std::string(contact_address)] = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(session, communication_service_));
+//			chatSessions_[std::string(contact)] = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(contact, imScriptObject));
+		}
+		catch(...)
+		{
+			std::string text = "Cannot start IM session because cannot find contact: ";
+			text.append(contact_address);
+			LogError(text);
+		}
     }
 
 	void CommunicationUIModule::OnEntryDlgOk(){
@@ -567,7 +606,9 @@ namespace CommunicationUI
 		//}
 		//instance_->sessionUp_ = true;
         std::map<std::string, ChatSessionUIPtr>::iterator iter = instance_->chatSessions_.find(std::string(addr));
-        if(iter == instance_->chatSessions_.end()){
+        if(iter == instance_->chatSessions_.end())
+		{
+//			Communication::IMSessionPtr session = communication_service_->CreateIMSession(
             instance_->chatSessions_[std::string(addr)] = ChatSessionUIPtr(new ChatSession(addr, instance_->imScriptObject));
         } 
         instance_->chatSessions_[std::string(addr)]->ChannelOpen();
@@ -644,6 +685,7 @@ namespace CommunicationUI
         delete[] id;
         delete[] contact;
 	}
+
 
    
     void CommunicationUIModule::OnContactListClicked()
@@ -850,7 +892,12 @@ namespace CommunicationUI
 		case Communication::Events::IM_MESSAGE:
 			{
 				Communication::Events::IMMessageEventInterface* e = (Communication::Events::IMMessageEventInterface*)(data);
-				Communication::IMMessagePtr m = e->GetMessage();
+				Communication::IMMessagePtr m = e->GetIMMessage();
+				Communication::IMSessionPtr s = e->GetSession();
+
+				std::string map_key = m->GetAuthor()->GetContact()->GetContactInfo("jabber")->GetProperty("address"); // <--- THIS WORKS ONLY IF THERE IS ONLY ONE PARTICIPANT PER SESSION !!!!
+				chatSessions_[map_key]->OnMessageReceived(m);
+
 				std::string message_text = m->GetText();
 				std::string text;
 				text = "Got event IM_MESSAGE: ";
@@ -871,6 +918,8 @@ namespace CommunicationUI
 				text = "Got event IM_SESSION_REQUEST: ";
 				text.append(address);
 				LogInfo(text);
+
+				HandleIncomingIMSession(s);
 			}
 			return true;
 			break;
@@ -884,6 +933,7 @@ namespace CommunicationUI
 				text = "Got event PRESENCE_STATUS_UPDATE: ";
 				text.append(status);
 				LogInfo(text);
+				UpdateContactList();
 			}
 			return true;
 			break;
@@ -923,6 +973,7 @@ namespace CommunicationUI
 
 				case Communication::Events::ConnectionStateEventInterface::CONNECTION_STATE_UPDATE:
 					UpdateOnlineStatusList();
+					UpdateContactList();
 					type_text = "CONNECTION_STATE_UPDATE";
 					break;
 				}
@@ -933,6 +984,26 @@ namespace CommunicationUI
 			}
 			return true;
 			break;
+
+		case Communication::Events::SESSION_STATE:
+			{
+				Communication::Events::SessionStateEventInterface* e = (Communication::Events::SessionStateEventInterface*)(data);
+				Communication::IMSessionPtr s =  e->GetIMSession();
+
+				
+				int event_type = e->GetType();
+				switch(event_type)
+				{
+				case Communication::Events::SessionStateEventInterface::SESSION_END:
+					{
+						// TODO: FIX THIS!!! We have to have an another way to select right session!
+						std::string map_key = s->GetParticipants()->at(0)->GetContact()->GetContactInfo("jabber")->GetProperty("address");
+						chatSessions_[map_key]->OnStateChanged();
+					}
+					break;
+				}
+
+			}
 		}
        
         return false;
@@ -950,6 +1021,35 @@ namespace CommunicationUI
 				continue;
             instance_->cmbPresence.append_text(option);
         }
+	}
+
+	/*
+	 * Refresh contact list element
+	 */
+	void CommunicationUIModule::UpdateContactList()
+	{
+		// todo fill ui contact list with content of this->contact_list_
+		std::string protocol = "jabber"; // todo: remove this fixed definition
+
+		contact_list_ = communication_service_->GetContactList();
+		this->lstContacts.lstContactsTreeModel->clear();
+		for(Communication::ContactList::iterator i = contact_list_->begin(); i < contact_list_->end(); i++)
+		{
+			Gtk::TreeModel::Row row = *(this->lstContacts.lstContactsTreeModel->append());
+			Communication::ContactPtr c = (*i);
+			//std::string id(contactID);
+			//std::string contact(name);
+
+			row[this->lstContacts.columns_.id_] = ""; // std::string(id);
+			row[this->lstContacts.columns_.contact_] = c->GetContactInfo(protocol)->GetProperty("address");
+			row[this->lstContacts.columns_.status_] = c->GetPresenceStatus()->GetOnlineStatus();
+			row[this->lstContacts.columns_.message_] = c->GetPresenceStatus()->GetOnlineMessage();
+		}
+	}
+
+	void CommunicationUIModule::HandleIncomingIMSession(Communication::IMSessionPtr session)
+	{
+
 	}
 
 }

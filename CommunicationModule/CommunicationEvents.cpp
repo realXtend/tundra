@@ -12,7 +12,7 @@ namespace Communication
 
 	}
 
-	IMMessagePtr IMMessageEvent::GetMessage()
+	IMMessagePtr IMMessageEvent::GetIMMessage()
 	{
 		return message_;
 	}

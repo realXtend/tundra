@@ -28,6 +28,32 @@ namespace CommunicationUI
 	ChatSession::ChatSession(const char* counterpart, Foundation::ScriptObject* imScriptObject)
 		: counterpart_(std::string(counterpart)), imScriptObject_(imScriptObject)//: counterpart_(std::string(counterpart)), scriptService_(scriptService), imScriptObject_(imScriptObject)
 	{
+		SetupUI();
+	}
+
+	// Find out participants (currently just one)
+	ChatSession::ChatSession(Communication::IMSessionPtr session, Communication::CommunicationServicePtr comm_service)
+	{
+		communication_service_ = comm_service;
+		std::string protocol = "jabber"; // todo: remove this fixed definition
+		session_ = session;
+		Communication::ParticipantListPtr list = session->GetParticipants();
+		for ( Communication::ParticipantList::iterator i = list->begin(); i < list->end(); i++)
+		{
+			Communication::ParticipantPtr p = (*i);
+			std::string address = p->GetContact()->GetContactInfo(protocol)->GetProperty("address");
+			counterpart_ = address;
+		}
+
+		SetupUI();
+	}
+
+	ChatSession::~ChatSession(void)
+	{
+	}
+
+	void ChatSession::SetupUI()
+	{
 		CommunicationUI::CommunicationUIModule::LogInfo("ChatSession");
 		xml_ = Gnome::Glade::Xml::create("data/chatWnd.glade");
 		if (!xml_)
@@ -44,7 +70,7 @@ namespace CommunicationUI
 
 	    xml_->connect_clicked("btnSend", sigc::mem_fun(*this, &ChatSession::onSendClicked));
 		xml_->connect_clicked("btnClose", sigc::mem_fun(*this, &ChatSession::onCloseClicked));
-		Glib::ustring title(counterpart);
+		Glib::ustring title(counterpart_);
 		
 		wnd_->set_title(title);
 		
@@ -52,10 +78,6 @@ namespace CommunicationUI
 		
 		wnd_->show();
         txtEntrySend_->grab_focus();
-	}
-
-	ChatSession::~ChatSession(void)
-	{
 	}
 
 	void ChatSession::onSendClicked()
@@ -80,12 +102,16 @@ namespace CommunicationUI
   //      //SIZE_T t = counterpart_.length();
   //      Foundation::ScriptObject* ret = imScriptObject_->CallMethod(str, syntax, args);
 
-        std::cout << "1" << std::endl;
-        std::string addr_mess(counterpart_);
-        addr_mess.append(":");
-        addr_mess.append(sendTxt.c_str());
-        std::cout << addr_mess << std::endl;
-        CommunicationUI::CommunicationUIModule::CallIMPyMethod("CSendChat", "s", addr_mess);
+        //std::cout << "1" << std::endl;
+        //std::string addr_mess(counterpart_);
+        //addr_mess.append(":");
+        //addr_mess.append(sendTxt.c_str());
+        //std::cout << addr_mess << std::endl;
+
+		std::string text = sendTxt.c_str();
+		Communication::IMMessagePtr message = communication_service_->CreateIMMessage(text);
+		session_->SendIMMessage(message);
+//        CommunicationUI::CommunicationUIModule::CallIMPyMethod("CSendChat", "s", addr_mess);
         
 
 		Gtk::TextBuffer::iterator chatIter = chatBuffer_->end();
@@ -105,8 +131,10 @@ namespace CommunicationUI
 		//std::string str = "CCloseChannel";
 		//std::string syntax = "";
 		//Foundation::ScriptObject* ret = imScriptObject_->CallMethod(str, syntax, NULL);        
+
+		session_->Close();
         
-        Foundation::ScriptObject* ret = CommunicationUIModule::CallIMPyMethod("CCloseChannel", "s", this->counterpart_);
+//        Foundation::ScriptObject* ret = CommunicationUIModule::CallIMPyMethod("CCloseChannel", "s", this->counterpart_);
 		
 	}
 
@@ -121,7 +149,7 @@ namespace CommunicationUI
 		chatBuffer_->insert(chatIter, "\nText channel closed");
 	}
 	
-	void ChatSession::ReceivedMessage(char* mess)
+	void ChatSession::ReceivedMessage(std::string text)
 	{
 		Gtk::TextBuffer::iterator chatIter = chatBuffer_->end();
 		chatBuffer_->insert(chatIter, "\n");
@@ -130,12 +158,30 @@ namespace CommunicationUI
         chatIter = chatBuffer_->end();
         chatBuffer_->insert(chatIter, "> ");
         chatIter = chatBuffer_->end();
-		chatBuffer_->insert(chatIter, mess);
+		chatBuffer_->insert(chatIter, text);
         chatBuffer_->insert(chatIter, "\n ..");
         chatIter = chatBuffer_->end();
         txtChatView_->scroll_to(chatIter, 0.0, 1.0, 0.5);
         //txtChatView_->scroll_to_iter(chatIter);
 	}
+
+	void ChatSession::OnMessageReceived(Communication::IMMessagePtr m)
+	{
+		std::string text;
+		text.append(m->GetTimeStamp());
+		text.append(" ");
+		text.append(m->GetAuthor()->GetContact()->GetName());
+		text.append(" >> ");
+		text.append(m->GetText());
+		ReceivedMessage( text );
+	}
+
+	void ChatSession::OnStateChanged()
+	{
+
+	}
+
+
 
 }
 

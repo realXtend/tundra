@@ -57,6 +57,7 @@ namespace CommunicationUI
         Gtk::Menu popContactMenu;
         
         CommunicationUIModule* uimodule_;
+		Communication::ContactInfoListPtr contact_list_;
 	};
 }
 

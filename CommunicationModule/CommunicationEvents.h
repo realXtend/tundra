@@ -13,7 +13,7 @@ namespace Communication
 	{
 	public:
 		IMMessageEvent(IMSessionPtr s, IMMessagePtr m);
-		IMMessagePtr GetMessage();
+		IMMessagePtr GetIMMessage();
 		IMSessionPtr GetSession();
 	private:
 		IMSessionPtr session_;
