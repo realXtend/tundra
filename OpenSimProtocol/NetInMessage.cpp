@@ -318,8 +318,7 @@ size_t NetInMessage::ReadCurrentBlockInstanceCount()
         break;
     case NetBlockVariable:
         //if (currentBlock == currentVariableCountBlock)
-            //throw std::exception("You can read block instance count for a variable block only once per block!");	            
-            //ET_BlockInstanceCountAlreadyRead
+            //throw NetMessageException(ET_BlockInstanceCountAlreadyRead);
         variableCountBlockNext = true;
         break;
     default:
@@ -554,8 +553,9 @@ void NetInMessage::RequireNextVariableType(NetVariableType type)
     
     // Current block is variable, but user hasn't called ReadCurrentBlockInstanceCount().
     if (curBlock.type == NetBlockVariable && !variableCountBlockNext)
-        throw std::exception("Current block is variable: use ReadCurrentBlockInstanceCount first in order to proceed.");
-        //NetMessageException(ET_BlockInstanceCountNotRead)
+        throw NetMessageException(NetMessageException::ET_BlockInstanceCountNotRead);
+        //NetMessageException("Current block is variable: use ReadCurrentBlockInstanceCount first in order to proceed.");
+        
 
     // In case of string or buffer just return.
     if (type == NetVarNone)
@@ -563,5 +563,6 @@ void NetInMessage::RequireNextVariableType(NetVariableType type)
     
     // Check that the variable type matches.
     if (CheckNextVariableType() != type)
-        throw std::exception("Tried to read wrong variable type."); //ET_VariableTypeMismatch
+        throw NetMessageException(NetMessageException::ET_VariableTypeMismatch);
+        //"Tried to read wrong variable type."
 }

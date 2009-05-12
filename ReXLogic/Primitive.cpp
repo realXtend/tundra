@@ -94,7 +94,7 @@ namespace RexLogic
             msg->SkipToNextVariable();		// CRC U32 ///\todo Unhandled inbound variable 'CRC'.
             uint8_t pcode = msg->ReadU8();
 
-            Scene::EntityPtr entity = GetOrCreatePrimEntity(localid,fullid);
+            Scene::EntityPtr entity = GetOrCreatePrimEntity(localid, fullid);
             EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
             OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
 
@@ -201,7 +201,7 @@ namespace RexLogic
         
         //! \todo tucofixme, sometimes rexprimdata might arrive before the objectupdate packet 
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
-        if(!entity)
+        if (!entity)
             return false;
         
         // Calculate full data size

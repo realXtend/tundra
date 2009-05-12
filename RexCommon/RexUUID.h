@@ -36,7 +36,10 @@ namespace RexTypes
         static bool IsValid(const char *str);
         static bool IsValid(const std::string &str) { return IsValid(str.c_str()); }
     
+//        void operator =(const RexUUID &rhs);
+        
         bool operator ==(const RexUUID &rhs) const;
+        
         bool operator <(const RexUUID &rhs) const;
 
         friend std::ostream& operator << ( std::ostream &out, const RexUUID &r )

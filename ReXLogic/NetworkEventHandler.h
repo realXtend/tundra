@@ -17,7 +17,7 @@ namespace RexLogic
     struct DecodedTerrainPatch;
     class RexLogicModule;
 
-    /// Handles incoming SLUDP network events in a Rex-specific way. \todo Break down into more logical functions.
+    /// Handles incoming SLUDP network events in a reX-specific way. \todo Break down into more logical functions.
     class NetworkEventHandler
     {
     public:
@@ -43,7 +43,6 @@ namespace RexLogic
 
         Foundation::Framework *framework_;
         
-        //OpenSimProtocol::OpenSimProtocolModule *netInterface_;
         boost::weak_ptr<OpenSimProtocol::OpenSimProtocolModule> netInterface_;
         
         RexLogicModule *rexlogicmodule_;

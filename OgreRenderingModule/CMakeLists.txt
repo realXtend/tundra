@@ -15,6 +15,7 @@ include_directories (
 	../SceneModule
 	../Interfaces
 	../AssetModule
+	../RexCommon
 )
 
 # External library includes
@@ -41,7 +42,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation Interfaces)
+target_link_libraries (${TARGET_NAME} Foundation Interfaces RexCommon)
 
 # External library linkage
 LINK_BOOST()

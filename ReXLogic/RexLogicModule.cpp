@@ -21,7 +21,7 @@
 #include "EC_OpenSimAvatar.h"
 #include "EC_Terrain.h"
 #include "EC_Water.h"
-
+#include "EC_OgreSky.h"
 #include "InputEvents.h"
 
 // Ogre -specific
@@ -35,6 +35,7 @@
 #include "Water.h"
 #include "Avatar.h"
 #include "Primitive.h"
+#include "Sky.h"
 
 namespace RexLogic
 {
@@ -234,10 +235,14 @@ namespace RexLogic
             if (!res)
                 return false;
             
-            // Pass the texture asset to the terrain manager - the texture might be in the terrain.
             OgreRenderer::OgreTextureResource *tex = dynamic_cast<OgreRenderer::OgreTextureResource *>(res->resource_.get());
             if (tex)
+            {
+                // Pass the texture asset to the terrain manager - the texture might be in the terrain.
                 terrain_->OnTextureReadyEvent(res);
+                // Pass the texture asset to the sky manager - the texture might be in the sky.
+//                sky_->OnTextureReadyEvent(res);
+            }
         }
         
         return false;
@@ -275,10 +280,19 @@ namespace RexLogic
     void RexLogicModule::CreateWater()
     {
         water_ = WaterPtr(new Water(this));
-
         water_->CreateWaterGeometry();
     }
-
+    
+    void RexLogicModule::CreateSky()
+    {
+        sky_ = SkyPtr(new Sky(this));
+        Scene::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
+        entity->AddEntityComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_OgreSky"));
+        
+        sky_->FindCurrentlyActiveSky();
+        sky_->CreateDefaultSky(true);
+    }
+    
     TerrainPtr RexLogicModule::GetTerrainHandler()
     {
         return terrain_;
@@ -298,6 +312,11 @@ namespace RexLogic
     {
         return primitive_;
     }
+    
+    SkyPtr RexLogicModule::GetSkyHandler()
+    {
+        return sky_;
+    }    
 
     void RexLogicModule::SetCurrentActiveScene(Scene::ScenePtr scene)
     {
@@ -325,7 +344,10 @@ namespace RexLogic
         // since we might have 0-N terrains later on, depending on where we actually connect to. Now of course
         // we just create one default terrain.
         CreateTerrain();
-
+        
+        // Also create a default sky to the scene.
+        CreateSky();
+        
         // Create a water handler.
         CreateWater();
 
