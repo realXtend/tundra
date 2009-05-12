@@ -34,7 +34,7 @@ class Quaternion
 		Quaternion() : x(0.0f), y(0.0f), z(0.0f), w(1.0f) {}
 
 		//! Constructor
-		Quaternion(f32 x, f32 y, f32 z, f32 w) : x(x), y(y), z(z), w(w) { }
+		Quaternion(f32 xx, f32 yy, f32 zz, f32 ww) : x(xx), y(yy), z(zz), w(ww) { }
 
 		//! Constructor which converts euler angles (radians) to a Quaternion
 		Quaternion(f32 x, f32 y, f32 z);
@@ -84,10 +84,10 @@ class Quaternion
 		inline f32 dotProduct(const Quaternion& other) const;
 
 		//! Sets new Quaternion
-		inline Quaternion& set(f32 x, f32 y, f32 z, f32 w);
+		inline Quaternion& set(f32 xx, f32 yy, f32 zz, f32 ww);
 
 		//! Sets new Quaternion based on euler angles (radians)
-		inline Quaternion& set(f32 x, f32 y, f32 z);
+		inline Quaternion& set(f32 xx, f32 yy, f32 zz);
 
 		//! Sets new Quaternion based on euler angles (radians)
 		inline Quaternion& set(const Core::Vector3df& vec);
@@ -169,10 +169,6 @@ inline Quaternion::Quaternion(const Matrix4& mat)
 inline bool Quaternion::operator==(const Quaternion& other) const
 {
     return equals(other);
-	//return ((x == other.x) &&
-	//	(y == other.y) &&
-	//	(z == other.z) &&
-	//	(w == other.w));
 }
 
 
@@ -356,30 +352,30 @@ inline Quaternion& Quaternion::makeInverse()
 }
 
 // sets new Quaternion
-inline Quaternion& Quaternion::set(f32 x, f32 y, f32 z, f32 w)
+inline Quaternion& Quaternion::set(f32 xx, f32 yy, f32 zz, f32 ww)
 {
-	x = x;
-	y = y;
-	z = z;
-	w = w;
+	x = xx;
+	y = yy;
+	z = zz;
+	w = ww;
 	return *this;
 }
 
 
 // sets new Quaternion based on euler angles
-inline Quaternion& Quaternion::set(f32 x, f32 y, f32 z)
+inline Quaternion& Quaternion::set(f32 xx, f32 yy, f32 zz)
 {
 	f64 angle;
 
-	angle = x * 0.5;
+	angle = xx * 0.5;
 	const f64 sr = sin(angle);
 	const f64 cr = cos(angle);
 
-	angle = y * 0.5;
+	angle = yy * 0.5;
 	const f64 sp = sin(angle);
 	const f64 cp = cos(angle);
 
-	angle = z * 0.5;
+	angle = zz * 0.5;
 	const f64 sy = sin(angle);
 	const f64 cy = cos(angle);
 
