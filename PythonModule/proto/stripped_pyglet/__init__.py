@@ -35,6 +35,9 @@
 '''pyglet is a cross-platform games and multimedia package.
 
 Detailed documentation is available at http://www.pyglet.org
+
+stripped down to minimals by <antont> / Toni Alatalo,
+to have the event handling only, when prototyping the realxtend event system.
 '''
 
 __docformat__ = 'restructuredtext'
@@ -327,18 +330,18 @@ class _ModuleProxy(object):
 if not _is_epydoc:
     app = _ModuleProxy('app')
     clock = _ModuleProxy('clock')
-    com = _ModuleProxy('com')
+    #com = _ModuleProxy('com')
     event = _ModuleProxy('event')
-    font = _ModuleProxy('font')
-    gl = _ModuleProxy('gl')
-    graphics = _ModuleProxy('graphics')
-    image = _ModuleProxy('image')
-    lib = _ModuleProxy('lib')
-    media = _ModuleProxy('media')
-    resource = _ModuleProxy('resource')
-    sprite = _ModuleProxy('sprite')
-    text = _ModuleProxy('text')
-    window = _ModuleProxy('window')
+    #font = _ModuleProxy('font')
+    #gl = _ModuleProxy('gl')
+    #graphics = _ModuleProxy('graphics')
+    #image = _ModuleProxy('image')
+    #lib = _ModuleProxy('lib')
+    #media = _ModuleProxy('media')
+    #resource = _ModuleProxy('resource')
+    #sprite = _ModuleProxy('sprite')
+    #text = _ModuleProxy('text')
+    #window = _ModuleProxy('window')
 
 # Fool py2exe, py2app into including all top-level modules (doesn't understand
 # lazy loading)
