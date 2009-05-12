@@ -15,13 +15,17 @@ namespace RexLogic
     class NetworkStateEventHandler;
     class CameraController;
     class Terrain;
-    class Avatar;    class Primitive;    class RexLoginWindow;
+    class Avatar;
+    class Primitive;
+    class RexLoginWindow;
+    class Water;
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
     typedef boost::shared_ptr<AvatarController> AvatarControllerPtr;
     typedef boost::shared_ptr<CameraController> CameraControllerPtr;
 
     typedef boost::weak_ptr<Terrain> TerrainWeakPtr;
     typedef boost::shared_ptr<Terrain> TerrainPtr;
+    typedef boost::shared_ptr<Water> WaterPtr;
     typedef boost::shared_ptr<Avatar> AvatarPtr;
     typedef boost::shared_ptr<Primitive> PrimitivePtr;
 
@@ -61,6 +65,9 @@ namespace RexLogic
 
         //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
         void SwitchController();
+
+        //! @return The logic object that manages the water-related parts of the scene.
+        WaterPtr GetWaterHandler();
 
         //! @return The terrain handler object that manages Rex terrain logic.
         TerrainPtr GetTerrainHandler();
@@ -135,6 +142,8 @@ namespace RexLogic
         //! current input controller
         InputController current_controller_;
 
+        WaterPtr water_;
+
         TerrainPtr terrain_;
         
         AvatarPtr avatar_;
@@ -142,6 +151,8 @@ namespace RexLogic
         PrimitivePtr primitive_;
 
         Scene::ScenePtr activeScene_;
+
+        void CreateWater();
 
         //! Recreates the terrain. Called at startup.
         void CreateTerrain();
