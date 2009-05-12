@@ -87,9 +87,9 @@ namespace Foundation
     
     bool EventManager::SendEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const
     {
-        if (category_id == 0)
+        if (category_id == Core::IllegalEventCategory)
         {
-            Foundation::RootLogWarning("Attempted to send event with unknown category");
+            Foundation::RootLogWarning("Attempted to send event with illegal category");
             return false;
         }    
             
@@ -98,9 +98,9 @@ namespace Foundation
     
     void EventManager::SendDelayedEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataPtr data, Core::f64 delay)
     {
-        if (category_id == 0)
+        if (category_id == Core::IllegalEventCategory)
         {
-            Foundation::RootLogWarning("Attempted to send delayed event with unknown category");
+            Foundation::RootLogWarning("Attempted to send delayed event with illegal category");
             return;
         }    
            
