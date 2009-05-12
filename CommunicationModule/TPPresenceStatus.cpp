@@ -7,9 +7,11 @@
 
 namespace Communication
 {
+	std::vector<std::string> TPPresenceStatus::online_status_options_;
+
 	TPPresenceStatus::TPPresenceStatus(): online_status_("offline"), online_message_("")
 	{
-		online_status_options_ = TelepathyCommunication::GetInstance()->presence_status_options_;
+
 	}
 
 	void TPPresenceStatus::SetOnlineStatus(std::string status)

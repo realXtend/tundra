@@ -111,6 +111,7 @@ namespace CommunicationUI
         void clearContactList();
 
         void testDialog();
+		void UpdateOnlineStatusList();
 
         // adds contact to ui contact list
 		void addContactItem(char *);

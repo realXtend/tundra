@@ -23,7 +23,7 @@ namespace Communication
 		std::string id_; // contact id on python side -> do we need it here ?
 		std::string online_status_;
 		std::string online_message_;
-		std::vector<std::string> online_status_options_;
+		static std::vector<std::string> online_status_options_;
 	};
 }
 

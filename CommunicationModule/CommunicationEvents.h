@@ -49,18 +49,6 @@ namespace Communication
 		ContactPtr contact_;
 	};
 
-	/*
-	 *
-	 */
-	class IMSessionEndEvent : public Events::IMSessionEndEventInterface
-	{
-	public:
-		IMSessionEndEvent(IMSessionPtr s);
-		IMSessionPtr GetSession();
-	private:
-		IMSessionPtr session_;
-	};
-
 	class FriendRequestEvent : public Events::FriendRequestEventInterface
 	{
 	public:
@@ -76,11 +64,13 @@ namespace Communication
 	class SessionStateEvent : public  Events::SessionStateEventInterface
 	{
 	public:
-		SessionStateEvent(int type);
+		SessionStateEvent(IMSessionPtr s, int type);
 		virtual int GetType();
+		virtual IMSessionPtr GetIMSession();
 	private:
 		static const int UNKNOW = 0;
 		int type_;
+		IMSessionPtr session_;
 	};
 
 	/*

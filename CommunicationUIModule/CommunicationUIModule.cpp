@@ -786,6 +786,7 @@ namespace CommunicationUI
 				text.append(message_text);
 				LogInfo(text);
 			}
+			return true;
 			break;
 
 		case Communication::Events::IM_SESSION_REQUEST:
@@ -800,8 +801,7 @@ namespace CommunicationUI
 				text.append(address);
 				LogInfo(text);
 			}
-
-			LogInfo("Got event: IM_SESSION_REQUEST");
+			return true;
 			break;
 
 		case Communication::Events::PRESENCE_STATUS_UPDATE:
@@ -814,10 +814,7 @@ namespace CommunicationUI
 				text.append(status);
 				LogInfo(text);
 			}
-			break;
-
-		case Communication::Events::IM_SESSION_END:
-			LogInfo("Got event: IM_SESSION_END");
+			return true;
 			break;
 
 		case Communication::Events::FRIEND_REQUEST:
@@ -831,10 +828,12 @@ namespace CommunicationUI
 				text.append(address);
 				LogInfo(text);
 			}
+			return true;
 			break;
 
 		case Communication::Events::FRIEND_RESPONSE:
 			LogInfo("Got event: FRIEND_RESPONSE");
+			return true;
 			break;
 
 		case Communication::Events::CONNECTION_STATE:
@@ -850,17 +849,37 @@ namespace CommunicationUI
 				case Communication::Events::ConnectionStateEventInterface::CONNECTION_CLOSE:
 					type_text = "CONNECTION_CLOSE";
 					break;
+
+				case Communication::Events::ConnectionStateEventInterface::CONNECTION_STATE_UPDATE:
+					UpdateOnlineStatusList();
+					type_text = "CONNECTION_STATE_UPDATE";
+					break;
 				}
 				std::string text;
 				text = "Got event SESSION_STATE: ";
 				text.append(type_text);
 				LogInfo(text);
 			}
+			return true;
 			break;
 		}
        
         return false;
     }    
+
+
+	void CommunicationUIModule::UpdateOnlineStatusList()
+	{
+		std::vector<std::string> options = communication_service_->GetPresenceStatus()->GetOnlineStatusOptions();
+//        std::vector<std::string> split = SplitString(std::string(statuslist_N), std::string(":"), 0);
+        for(std::vector<std::string>::iterator iter = options.begin(); iter < options.end(); iter++)
+		{
+			std::string option = (*iter);
+			if ( option.compare("unknown") == 0 || option.compare("offline") == 0)
+				continue;
+            instance_->cmbPresence.append_text(option);
+        }
+	}
 
 }
 
