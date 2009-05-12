@@ -306,6 +306,7 @@ namespace Communication
 			static const int CONNECTION_OPEN = 1;
 			static const int CONNECTION_CLOSE = 2;
 			static const int CONNECTION_STATE_UPDATE = 3;
+            static const int CONNECTION_CONNECTING = 4;
 
 			virtual int GetType() = 0;
 		};

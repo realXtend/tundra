@@ -711,7 +711,10 @@ namespace Communication
 	void TelepathyCommunication::PyCallbackConnecting(char*)
 	{
 		TelepathyCommunication::GetInstance()->connected_ = false;
-		LogInfo("Server connection: Connecing...");
+		LogInfo("Server connection: Connecting...");
+		TelepathyCommunicationPtr comm = TelepathyCommunication::GetInstance();
+        ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_CONNECTING);
+        comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);		
 		// todo : Do we need this? Send notify for UI to be "connecting state"?
 	}
 
