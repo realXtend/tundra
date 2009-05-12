@@ -63,7 +63,7 @@ namespace CommunicationUI
 
 		CommunicationUIModule::instance_= this;		
         
-        //setupSciptInterface();		
+        setupSciptInterface();		
 		SetupCommunicationServiceUsage();
 	}
 
@@ -966,14 +966,17 @@ namespace CommunicationUI
 			{
 				Communication::Events::ConnectionStateEventInterface* e = (Communication::Events::ConnectionStateEventInterface*)(data);
 				std::string type_text;
+                Gtk::Label* label = (Gtk::Label*)instance_->commUI_XML->get_widget("lblOnlineStatus");
 				switch(e->GetType())
 				{
 				case Communication::Events::ConnectionStateEventInterface::CONNECTION_OPEN:
 					type_text = "CONNECTION_OPEN";
+		            label->set_label("Connected");
 					break;
 
 				case Communication::Events::ConnectionStateEventInterface::CONNECTION_CLOSE:
 					type_text = "CONNECTION_CLOSE";
+		            label->set_label("Disconnected");
 					break;
 
 				case Communication::Events::ConnectionStateEventInterface::CONNECTION_STATE_UPDATE:
@@ -981,6 +984,11 @@ namespace CommunicationUI
 					UpdateContactList();
 					type_text = "CONNECTION_STATE_UPDATE";
 					break;
+
+                case Communication::Events::ConnectionStateEventInterface::CONNECTION_CONNECTING:
+                    type_text = "CONNECTING";
+		            label->set_label("Connecting");
+                    break;
 				}
 				std::string text;
 				text = "Got event SESSION_STATE: ";
