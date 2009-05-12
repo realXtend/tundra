@@ -189,9 +189,15 @@ namespace RexLogic
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(localid);
         if(entity)
         {
-            OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
-            ogrePos.SetPosition(position);
-            ogrePos.SetOrientation(rotation);                    
+            /// \todo tucofixme handle velocity        
+            if(rexlogicmodule_->GetAvatarController()->GetAvatarEntity() && entity->GetId() == rexlogicmodule_->GetAvatarController()->GetAvatarEntity()->GetId())
+                rexlogicmodule_->GetAvatarController()->HandleServerObjectUpdate(position,rotation);
+            else
+            {
+                OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
+                ogrePos.SetPosition(position);
+                ogrePos.SetOrientation(rotation);                    
+            }                  
         }
     }
         

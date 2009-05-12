@@ -61,6 +61,16 @@ namespace OgreRenderer
          */
         bool SetMaterial(Core::uint index, const std::string& material_name);
         
+        //! sets adjustment (offset) position
+        /*! \param position new position
+         */
+        void SetAdjustPosition(const Core::Vector3df& position);
+        
+        //! sets adjustment orientation
+        /*! \param orientation new orientation
+         */
+        void SetAdjustOrientation(const Core::Quaternion& orientation);
+                
         //! sets scale to unity-mode
         /*! \param enable Whether to enable or disable scaling
          */
@@ -78,6 +88,10 @@ namespace OgreRenderer
         //! returns Ogre mesh entity
         Ogre::Entity* GetEntity() const { return entity_; }
         
+        //! returns adjustment position
+        Core::Vector3df GetAdjustPosition() const;
+        //! returns adjustment orientation
+        Core::Quaternion GetAdjustOrientation() const;        
         //! returns whether scale to unity mode is on
         bool GetScaleToUnity() const { return scale_to_unity_; }
         
@@ -105,7 +119,7 @@ namespace OgreRenderer
         //! Ogre mesh entity
         Ogre::Entity* entity_;
         
-        //! Adjustment scene node (scaling/offset modifications)
+        //! Adjustment scene node (scaling/offset/orientation modifications)
         Ogre::SceneNode* adjustment_node_;
         
         //! mesh entity attached to placeable -flag

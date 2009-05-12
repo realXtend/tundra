@@ -73,10 +73,20 @@ namespace OgreRenderer
                     ogre_mesh_->buildTangentVectors(Ogre::VES_TANGENT, src, dest);
             }
             catch (...) {}
+            
+            // Assign default materials that won't complain
+            for (Core::uint i = 0; i < ogre_mesh_->getNumSubMeshes(); ++i)
+            {
+                Ogre::SubMesh* submesh = ogre_mesh_->getSubMesh(i);
+                if (submesh)
+                    submesh->setMaterialName("BaseWhite");
+            }
+            
         }
         catch (Ogre::Exception &e)
         {
             OgreRenderingModule::LogError("Failed to create mesh " + id_ + ": " + std::string(e.what()));
+            ogre_mesh_.setNull();            
             return false;
         }
 

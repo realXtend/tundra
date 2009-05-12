@@ -226,13 +226,23 @@ namespace OgreRenderer
         if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
         {
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
-            Core::request_tag_t source_tag = asset_service->RequestAsset(id, "Mesh");
-            if (source_tag) 
+
+            // Perform the actual asset request only once, for the first request
+            if (request_tags_.find(id) == request_tags_.end())
             {
-                request_tags_[id].push_back(tag);
-                expected_request_tags_.insert(source_tag);
+                Core::request_tag_t source_tag = asset_service->RequestAsset(id, "Mesh");
+                if (source_tag) 
+                {
+                    request_tags_[id].push_back(tag);
+                    expected_request_tags_.insert(source_tag);
+                    return tag;
+                }                
+            }     
+            else
+            {
+                request_tags_[id].push_back(tag); 
                 return tag;
-            }           
+            }                     
         }
 
         return 0;
@@ -267,9 +277,11 @@ namespace OgreRenderer
             mesh = meshes_[source->GetId()] = Foundation::ResourcePtr(new OgreMeshResource(source->GetId()));
         }
 
-        // If success, send Ogre resource ready event
         bool success = false;
-        if (checked_static_cast<OgreMeshResource*>(mesh.get())->SetData(source))
+        OgreMeshResource* mesh_res = checked_static_cast<OgreMeshResource*>(mesh.get());
+
+        // If data successfully set, or already have valid data, success (send RESOURCE_READY_EVENT)
+        if ((!mesh_res->GetMesh().isNull()) || (mesh_res->SetData(source)))
         {
             const Core::RequestTagVector& tags = request_tags_[source->GetId()];            
             for (Core::uint i = 0; i < tags.size(); ++i)
