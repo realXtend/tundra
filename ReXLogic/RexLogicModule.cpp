@@ -20,6 +20,7 @@
 #include "EC_OpenSimPrim.h"
 #include "EC_OpenSimAvatar.h"
 #include "EC_Terrain.h"
+#include "EC_Water.h"
 
 #include "InputEvents.h"
 
@@ -31,6 +32,7 @@
 #include <OgreSceneManager.h>
 
 #include "Terrain.h"
+#include "Water.h"
 #include "Avatar.h"
 #include "Primitive.h"
 
@@ -53,6 +55,7 @@ namespace RexLogic
         DECLARE_MODULE_EC(EC_OpenSimPrim);
         DECLARE_MODULE_EC(EC_OpenSimAvatar);
         DECLARE_MODULE_EC(EC_Terrain);
+        DECLARE_MODULE_EC(EC_Water);
 
         LogInfo("Module " + Name() + " loaded.");
     }
@@ -269,9 +272,21 @@ namespace RexLogic
         terrain_->FindCurrentlyActiveTerrain();
     }
 
+    void RexLogicModule::CreateWater()
+    {
+        water_ = WaterPtr(new Water(this));
+
+        water_->CreateWaterGeometry();
+    }
+
     TerrainPtr RexLogicModule::GetTerrainHandler()
     {
         return terrain_;
+    }
+
+    WaterPtr RexLogicModule::GetWaterHandler()
+    {
+        return water_;
     }
 
     AvatarPtr RexLogicModule::GetAvatarHandler()
@@ -310,6 +325,9 @@ namespace RexLogic
         // since we might have 0-N terrains later on, depending on where we actually connect to. Now of course
         // we just create one default terrain.
         CreateTerrain();
+
+        // Create a water handler.
+        CreateWater();
 
         return GetCurrentActiveScene();
     }

@@ -1,3 +1,27 @@
+vertex_program SolidAmbientVP cg
+{
+	source SolidAmbient.cg
+	entry_point SolidAmbientVP
+	profiles vs_2_0 arbvp1
+
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+	}	
+}
+
+fragment_program SolidAmbientFP cg
+{
+	source SolidAmbient.cg
+	entry_point SolidAmbientFP
+	profiles ps_2_0 arbfp1
+
+	default_params
+	{
+		param_named_auto colour surface_ambient_colour
+	}	
+}
+
 // Renders primitives with a single solid color
 material SolidAmbient
 {

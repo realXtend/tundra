@@ -1,4 +1,23 @@
-// Renders primitives with a single solid color
+vertex_program UnlitTexturedVP cg
+{
+	source UnlitTextured.cg
+	entry_point UnlitTexturedVP
+	profiles vs_2_0 arbvp1
+
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+	}	
+}
+
+fragment_program UnlitTexturedFP cg
+{
+	source UnlitTextured.cg
+	entry_point UnlitTexturedFP
+	profiles ps_2_0 arbfp1
+}
+
+// Renders primitives with a single unlit texture
 material UnlitTextured
 {
 	technique
