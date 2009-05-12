@@ -129,19 +129,8 @@ namespace Foundation
         delete loggingfactory;
     }
 
-
-    void Framework::Go()
+    void Framework::PostInitialize()
     {
-/*
-#ifdef WIN32
-        wchar_t buffer[_MAX_PATH*2];
-        if (_wgetcwd( buffer, _MAX_PATH ) != NULL)
-        {
-            wcscat(buffer, L"/modules/core");
-            SetDllDirectory(buffer);
-        }
-#endif
-*/
         LoadModules();
 
         // commands must be registered after modules are loaded and initialized
@@ -149,12 +138,16 @@ namespace Foundation
 
         // add event subscribers now, that all modules are loaded/initialized
         event_manager_->LoadEventSubscriberTree(DEFAULT_EVENT_SUBSCRIBER_TREE_PATH);
+    }
+
+    void Framework::Go()
+    {
+        PostInitialize();
 
         boost::timer timer;
 
         boost::weak_ptr<Foundation::RenderServiceInterface> renderer = 
                     service_manager_->GetService<RenderServiceInterface>(Service::ST_Renderer);
-
 
         // main loop
         while (exit_signal_ == false)
