@@ -227,6 +227,21 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
             threadState_->parameters.agentID.FromString(call.GetReply<std::string>("agent_id"));
 		    threadState_->parameters.circuitCode = call.GetReply<int>("circuit_code");
             
+			std::string gridUrl = call.GetReply<std::string>("sim_ip");
+			if (gridUrl.size() != 0)
+			{
+				int port = call.GetReply<int>("sim_port");
+				if (port > 0)
+				{
+					std::string s;
+					std::stringstream out;
+					out << port;
+					gridUrl += ":"+out.str();
+
+					threadState_->parameters.gridUrl = gridUrl;
+				}
+			}			
+
             if (threadState_->parameters.sessionID.ToString() == std::string("") ||
                 threadState_->parameters.agentID.ToString() == std::string("") ||
                 threadState_->parameters.circuitCode == 0)

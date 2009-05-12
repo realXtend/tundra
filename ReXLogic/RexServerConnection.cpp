@@ -124,14 +124,45 @@ namespace RexLogic
             return false;
         }
         
-        bool connect_result = sp->CreateUDPConnection(serverAddress_.c_str(), serverPort_);
+        // Get the client-spesific information.
+		myInfo_ = sp->GetClientParameters();
+
+		//Get the udp server and port from login response
+		bool connect_result;
+		if (myInfo_.gridUrl.size() != 0)
+		{
+			int port = 9000;
+			size_t pos = myInfo_.gridUrl.find(":");
+			std::string serveraddress_noport;
+			if(pos == std::string::npos)
+			{
+				serveraddress_noport = myInfo_.gridUrl;				
+			}
+			else
+			{
+				serveraddress_noport = myInfo_.gridUrl.substr(0, pos);
+        
+				try
+				{
+					port = boost::lexical_cast<int>(myInfo_.gridUrl.substr(pos + 1));
+				} 
+				catch(std::exception)
+				{
+					RexLogicModule::LogError("Invalid port number, only numbers are allowed.");
+					return false;
+				}
+			}
+			connect_result = sp->CreateUDPConnection(serveraddress_noport.c_str(), port);
+		}
+		else
+		{
+			connect_result = sp->CreateUDPConnection(serverAddress_.c_str(), serverPort_);
+		}
+        
 
 		if(connect_result)
 		{
 			connected_ = true;
-            
-            // Get the client-spesific information.
-			myInfo_ = sp->GetClientParameters();
 			
 			// Check that the parameters are valid.
 			if (myInfo_.agentID.IsNull() || myInfo_.sessionID.IsNull())
