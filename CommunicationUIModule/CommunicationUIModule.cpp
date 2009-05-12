@@ -168,6 +168,11 @@ namespace CommunicationUI
 	void CommunicationUIModule::SetupCommunicationServiceUsage()
 	{
 		communication_service_ = framework_->GetService<Communication::CommunicationServiceInterface>(Foundation::Service::ST_Communication).lock();
+		if (communication_service_.get() == NULL)
+		{
+			LogError("Cannot find communication service!");
+			return;
+		}
 
 		framework_->GetEventManager()->RegisterEventSubscriber( framework_->GetModuleManager()->GetModule(this->Name()), 0, Foundation::ModuleWeakPtr() );
         communication_event_category_id_ = framework_->GetEventManager()->QueryEventCategory("Communication");
