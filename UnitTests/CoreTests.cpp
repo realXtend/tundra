@@ -87,6 +87,11 @@ BOOST_AUTO_TEST_CASE( core_quaternion )
     Core::Vector3df testVector(1, 2, 3);
     testVector = test * testVector;
     BOOST_CHECK_EQUAL (testVector, Core::Vector3df(1, 2, 3));
+
+    test = Core::Quaternion(-Core::PI, 0, 0);
+    BOOST_CHECK_EQUAL (test, Core::Quaternion(-1, 0, 0, 0));
+    test = Core::Quaternion(0, Core::HALF_PI, 0);
+    BOOST_CHECK_EQUAL (test, Core::Quaternion(0, 0.70710683f, 0, 0.70710683f));
 }
 
 BOOST_AUTO_TEST_CASE( core_string_utils )
