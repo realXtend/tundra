@@ -684,12 +684,11 @@ namespace Communication
 		TelepathyCommunication::GetInstance()->connected_ = true;
 		LogInfo("Server connection: Connected");
 		
-		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_OPEN);
-//		Events::ConnectionStateEventPtr e_ptr = Events::ConnectionStateEventPtr((Events::ConnectionStateEventInterface*)e);
 
 		TelepathyCommunicationPtr comm = TelepathyCommunication::GetInstance();
 		comm->presence_status_->SetOnlineStatus("online");
 
+		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_OPEN);
 		comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
 	}
 
@@ -794,8 +793,9 @@ namespace Communication
 			if ( im_session->GetId().compare(session_id) == 0 )
 			{
 				im_session->NotifyClosedByRemote();
-				IMSessionEndEvent e = IMSessionEndEvent(s);
-				TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::IM_SESSION_END, (Foundation::EventDataInterface*)&e);
+				SessionStateEvent e = SessionStateEvent(s,Events::SessionStateEventInterface::SESSION_END);
+				TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::SESSION_STATE, (Foundation::EventDataInterface*)&e);
+
 				// todo: remove session from im_sessions_
 			}
 		}
@@ -1047,6 +1047,7 @@ namespace Communication
 	*/
 	void TelepathyCommunication::PyCallbackPresenceStatusTypes(char* type_list)
 	{
+		TelepathyCommunicationPtr comm = TelepathyCommunication::GetInstance();
 		std::string option;
 		int i = 0;
 		do
@@ -1056,11 +1057,15 @@ namespace Communication
 			{
 				// We don't allow these
 				if ( option.compare("unknown") != 0 && option.compare("offline") != 0 )
-					TelepathyCommunication::GetInstance()->presence_status_options_.push_back(option);
+					comm->presence_status_options_.push_back(option);
 			}
 			i++;
 		}
 		while (option.length() > 0);
+
+		TPPresenceStatus::online_status_options_ = comm->presence_status_options_;
+		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_STATE_UPDATE);
+		comm->event_manager_->SendEvent(comm->comm_event_category_, Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
 	}
 
 } // end of namespace: Communication

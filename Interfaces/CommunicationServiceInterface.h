@@ -221,7 +221,6 @@ namespace Communication
         static const Core::event_id_t PRESENCE_STATUS_UPDATE = 1;
         static const Core::event_id_t IM_MESSAGE = 2;
         static const Core::event_id_t IM_SESSION_REQUEST = 3;
-		static const Core::event_id_t IM_SESSION_END = 4; // won't need this anymore ?
 		static const Core::event_id_t FRIEND_REQUEST = 5;
 		static const Core::event_id_t FRIEND_RESPONSE = 6;
 		static const Core::event_id_t CONNECTION_STATE = 7; 
@@ -268,16 +267,6 @@ namespace Communication
 		/*
 		 *
 		 */
-		class IMSessionEndEventInterface // : public Foundation::EventDataInterface
-		{
-		public:
-			virtual IMSessionPtr GetSession() = 0;
-		};
-		typedef boost::shared_ptr<IMSessionEndEventInterface> IMSessionEndEventPtr;
-
-		/*
-		 *
-		 */
 		class FriendRequestEventInterface  //: public Foundation::EventDataInterface
 		{
 		public:
@@ -297,6 +286,7 @@ namespace Communication
 			static const int PARTICIPANT_LEFT = 4;
 
 			virtual int GetType() = 0;
+			virtual IMSessionPtr GetIMSession() = 0;
 		};
 		typedef boost::shared_ptr<SessionStateEventInterface> SessionStateEventPtr;
 
@@ -308,6 +298,7 @@ namespace Communication
 		public:
 			static const int CONNECTION_OPEN = 1;
 			static const int CONNECTION_CLOSE = 2;
+			static const int CONNECTION_STATE_UPDATE = 3;
 
 			virtual int GetType() = 0;
 		};

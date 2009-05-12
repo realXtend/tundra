@@ -48,16 +48,6 @@ namespace Communication
 		return contact_;
 	}
 
-	IMSessionEndEvent::IMSessionEndEvent(IMSessionPtr s)
-	{
-		session_ = s;
-	}
-
-	IMSessionPtr IMSessionEndEvent::GetSession()
-	{
-		return session_;
-	}
-
 	FriendRequestEvent::FriendRequestEvent(FriendRequestPtr r): friend_request_(r)
 	{
 
@@ -68,7 +58,7 @@ namespace Communication
 		return friend_request_;
 	}
 
-	SessionStateEvent::SessionStateEvent(int type): type_(type)
+	SessionStateEvent::SessionStateEvent(IMSessionPtr s, int type): session_(s), type_(type)
 	{
 
 	}
@@ -76,6 +66,11 @@ namespace Communication
 	int SessionStateEvent::GetType()
 	{
 		return type_;
+	}
+
+	IMSessionPtr SessionStateEvent::GetIMSession()
+	{
+		return session_;
 	}
 
 	ConnectionStateEvent::ConnectionStateEvent(int type): type_(type)
