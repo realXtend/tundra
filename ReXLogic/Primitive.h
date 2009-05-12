@@ -29,6 +29,7 @@ namespace RexLogic
              
     private:
         typedef std::map<Core::request_tag_t, Core::entity_id_t> EntityResourceRequestMap; 
+        typedef std::map<RexTypes::RexUUID, std::vector<Core::u8> > RexPrimDataMap;    
             
         RexLogicModule *rexlogicmodule_;
     
@@ -37,29 +38,35 @@ namespace RexLogic
         Scene::EntityPtr GetOrCreatePrimEntity(Core::entity_id_t entityid, const RexUUID &fullid);
         Scene::EntityPtr CreateNewPrimEntity(Core::entity_id_t entityid);
         
+        //! checks if stored pending rexdata exists for prim and handles it
+        void CheckPendingRexPrimData(Core::entity_id_t entityid);
+        
         //! handle rexprimdata blob coming from server in a genericmessage
         void HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t* primdata);
         
         //! handles changes in drawtype. sets/removes mesh as necessary
         void HandleDrawType(Core::entity_id_t entityid);   
+
+        //! handles mesh texture changes
+        void HandleMeshTextures(Core::entity_id_t entityid);
         
         //! handles mesh resource being ready
-        void HandleMeshReady(Core::entity_id_t entity, Foundation::ResourcePtr resource);
+        void HandleMeshReady(Core::entity_id_t entity, Foundation::ResourcePtr res);
 
         //! handles mesh texture resource being ready
-        void HandleMeshTextureReady(Core::entity_id_t entity, Foundation::ResourcePtr resource);
-        
-        //! updates mesh textures if mesh & textures exist, optionally makes requests for the textures
-        void HandleMeshTextures(Core::entity_id_t entityid, bool make_new_requests = false);
+        void HandleMeshTextureReady(Core::entity_id_t entity, Foundation::ResourcePtr res);
                 
         //! discards request tags for certain entity
         void DiscardRequestTags(Core::entity_id_t, EntityResourceRequestMap& map);
         
         //! resource request tags for meshes
-        std::map<Core::request_tag_t, Core::entity_id_t> mesh_request_tags_;    
+        EntityResourceRequestMap mesh_request_tags_;    
      
         //! resource request tags for mesh textures
-        std::map<Core::request_tag_t, Core::entity_id_t> mesh_texture_request_tags_; 
+        EntityResourceRequestMap mesh_texture_request_tags_; 
+        
+        //! pending rexprimdatas
+        RexPrimDataMap pending_rexprimdata_;
     };
 }
 #endif

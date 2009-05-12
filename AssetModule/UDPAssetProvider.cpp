@@ -121,9 +121,8 @@ namespace Asset
         SendPendingRequests(net);
 
         // Handle timeouts for texture & asset transfers        
-        HandleTextureTimeouts(net, frametime);
-        
         // Disable asset timeouts for now, a long transfer may stall all others on the server
+        // HandleTextureTimeouts(net, frametime);       
         // HandleAssetTimeouts(net, frametime);        
     }
 

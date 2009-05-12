@@ -48,6 +48,28 @@ namespace OgreRenderer
         ScaleEntity();
     }
     
+    void EC_OgreMesh::SetAdjustPosition(const Core::Vector3df& position)
+    {
+        adjustment_node_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
+    }
+
+    void EC_OgreMesh::SetAdjustOrientation(const Core::Quaternion& orientation)
+    {
+        adjustment_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
+    }   
+    
+    Core::Vector3df EC_OgreMesh::GetAdjustPosition() const
+    {
+        const Ogre::Vector3& pos = adjustment_node_->getPosition();
+        return Core::Vector3df(pos.x, pos.y, pos.z);
+    }
+    
+    Core::Quaternion EC_OgreMesh::GetAdjustOrientation() const
+    {
+        const Ogre::Quaternion& orientation = adjustment_node_->getOrientation();
+        return Core::Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
+    }     
+    
     bool EC_OgreMesh::SetMesh(const std::string& mesh_name)
     {
         RemoveMesh();
