@@ -62,6 +62,10 @@ namespace CommunicationUI
 		static void contactReceived(char* t);
         static void contactStatusChanged(char*);
         static void handleAvailableStatusList(char*);
+        static void handleRegisteringSuccess(char*);
+        static void handleRegisteringFailure(char*);
+
+
 
         static void contactAdded(char*);
         static void contactAddedToPublishList(char*);
@@ -85,6 +89,7 @@ namespace CommunicationUI
 		void initializeMainCommWindow();
 		void SetupCommunicationServiceUsage();
 		void OnAccountMenuSettings();
+        void OnCreateAccount();
 		void OnAccountMenuSetAccountAndPassword();
 		void OnAccountMenuConnect();
 		void OnAccountMenuDisconnect();

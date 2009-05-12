@@ -109,18 +109,22 @@ namespace CommunicationUI
 		commUI_XML->connect_clicked("mi_disconnect", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuDisconnect));
 		commUI_XML->connect_clicked("mi_setaccount", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuSetAccountAndPassword));
 		commUI_XML->connect_clicked("mi_settings", sigc::mem_fun(*this, &CommunicationUIModule::OnAccountMenuSettings));
+        commUI_XML->connect_clicked("mi_createaccount", sigc::mem_fun(*this, &CommunicationUIModule::OnCreateAccount));
+
 		commUI_XML->connect_clicked("mi_directchat", sigc::mem_fun(*this, &CommunicationUIModule::OnDirectChatMenuStartChat));
         
         commUI_XML->connect_clicked("mi_online", sigc::mem_fun(*this, &CommunicationUIModule::OnSetStatusOnline));
         commUI_XML->connect_clicked("mi_away", sigc::mem_fun(*this, &CommunicationUIModule::OnSetStatusAway));
         commUI_XML->connect_clicked("mi_busy", sigc::mem_fun(*this, &CommunicationUIModule::OnSetStatusBusy));
         commUI_XML->connect_clicked("mi_offline", sigc::mem_fun(*this, &CommunicationUIModule::OnSetStatusOffline));
+
 		//commUI_XML->connect_clicked("btnTest", sigc::mem_fun(*this, &CommunicationUIModule::reloadIMScript));
         commUI_XML->connect_clicked("btnTest", sigc::mem_fun(*this, &CommunicationUIModule::testDialog));
         commUI_XML->connect_clicked("btnAddContact", sigc::mem_fun(*this, &CommunicationUIModule::OnContactAdd));
         commUI_XML->connect_clicked("btnRemoveContact", sigc::mem_fun(*this, &CommunicationUIModule::OnContactRemove));
         commUI_XML->connect_clicked("btnRefresh", sigc::mem_fun(*this, &CommunicationUIModule::OnRefresh));
         commUI_XML->connect_clicked("btnSetPresenceMessage", sigc::mem_fun(*this, &CommunicationUIModule::OnSetPresenceMessage));
+
 
 
         //commUI_XML->connect_property_changed("cmbPresence", sigc::mem_fun(*this, &CommunicationUIModule::OnComboChange));
@@ -222,12 +226,42 @@ namespace CommunicationUI
 
         eIntf->SetCallback(CommunicationUIModule::contactStatusChanged, "contact_status_changed");
         eIntf->SetCallback(CommunicationUIModule::handleAvailableStatusList, "got_available_status_list");
+
+        eIntf->SetCallback(CommunicationUIModule::handleRegisteringSuccess, "account_registering_succeeded");
+        eIntf->SetCallback(CommunicationUIModule::handleRegisteringFailure, "account_registering_failed");
     }
 
 	void CommunicationUIModule::OnAccountMenuSettings()
 	{
-		std::string error;
+        LogInfo("OnAccountMenuSettings");
+        Foundation::ScriptObject* so = this->CallIMPyMethod("CGetSettings", "", std::string(""));
+        char* retVal = so->ConvertToChar();
+        std::string settingsStr(retVal);
+        LogInfo(settingsStr);
+        std::vector<std::string> settingsVect = this->SplitString(settingsStr, ":", 0);
+        // code the vector into a map that config dialog understands
+        std::map<std::string, Foundation::Comms::SettingsAttribute> attrs;
+		
+        for(std::vector<std::string>::iterator iter = settingsVect.begin(); iter<settingsVect.end()-1; iter+=2)
+        {
+            Foundation::Comms::SettingsAttribute attr;
+		    attr.type = Foundation::Comms::String;
+		    attr.value = *(iter+1);
+            std::string key = *iter;
+            attrs[key] = attr;
+        }
+
+        ConfigureDlg accDlg(attrs.size(), attrs, "connection settings", this);
+        Gtk::Main::run(accDlg);
 	}
+
+    void CommunicationUIModule::OnCreateAccount()
+    {
+        LogInfo("OnCreateAccount");
+        std::string infoText = "Register account according to your connection settings";
+        SelectionDialog sd("Register account", infoText , "_Ok", "_Cancel", this);
+        Gtk::Main::run(sd);        
+    }
 
 	void CommunicationUIModule::OnAccountMenuSetAccountAndPassword()
 	{
@@ -238,17 +272,20 @@ namespace CommunicationUI
 
 		ConfigureDlg accDlg(count, attributes, "account settings", this);
 		Gtk::Main::run(accDlg);
-
 	}
 
 	void CommunicationUIModule::OnAccountMenuConnect()
 	{
 		// TODO: use user defines credential 
+        LogInfo("OnAccountMenuConnect");
+        //
 		Communication::Credentials* c = new Communication::Credentials();
 		communication_service_->OpenConnection(Communication::CredentialsPtr(c));
-		//std::string str = "CAccountConnect";
-		//std::string syntax = "";
-		//Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
+        /*/
+		std::string str = "CAccountConnect";
+		std::string syntax = "";
+		Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
+        //*/
 	}
 	void CommunicationUIModule::OnAccountMenuDisconnect()
 	{
@@ -400,6 +437,22 @@ namespace CommunicationUI
 	{
         if(aConfigName=="account settings"){
             commManager->SetAccountAttributes(attributes);
+        } else if(aConfigName=="connection settings") {
+            LogInfo("Callback from settings dlg");
+            //commManager->SetAccountAttributes(attributes);
+            // code to attributes into one string and call save
+            std::string saveString;
+            std::map<std::string, Foundation::Comms::SettingsAttribute>::const_iterator iter;	
+            //for(iter = attributes.begin(); iter!=attributes.end(); iter++){
+            for(iter = attributes.begin(); iter!=attributes.end(); ++iter){
+                std::string key = iter->first;
+                Foundation::Comms::SettingsAttribute attr = iter->second;
+                saveString.append(key + ":" + attr.value + ":");                
+            }
+            // remove the last ":"
+            saveString = saveString.substr(0, saveString.size()-1);
+            LogInfo(saveString);
+            this->CallIMPyMethod("CSaveSettings", "s", saveString);
         } else if(aConfigName=="contact address") {
             Foundation::Comms::SettingsAttribute sattr = attributes["contact address"];
             CallIMPyMethod("CAddContact", "s", sattr.value);
@@ -415,8 +468,6 @@ namespace CommunicationUI
             } else {
                 CallIMPyMethod("CDenyContactRequest", "s", user.value);
             }
-        } else if(aConfigName==""){
-
         } else if(aConfigName=="Presence request"){
             LogInfo("Presence request callback");
             // send responce to other end
@@ -465,6 +516,8 @@ namespace CommunicationUI
             }
         } else if(aConfigName=="Contact removed"){
             LogInfo("Contact removed");
+        } else if(aConfigName=="Register account"){
+            CallIMPyMethod("CCreateAccount", "", std::string(""));
         } else {
             LogInfo("Unknown callback");
             LogInfo(aConfigName);
@@ -651,6 +704,24 @@ namespace CommunicationUI
             }
         }
         
+    }
+    
+    void CommunicationUIModule::handleRegisteringSuccess(char* reason)
+    {
+        LogInfo("handleRegisteringSuccess");
+        std::string infoText = "Registering succeeded: ";
+        infoText.append(reason);
+        SelectionDialog sd("Registering succeeded", infoText , "_Ok", "_Cancel", instance_, false);
+        Gtk::Main::run(sd);
+    }
+
+    void CommunicationUIModule::handleRegisteringFailure(char* reason)
+    {
+        LogInfo("handleRegisteringFailure");
+        std::string infoText = "Registering failed: ";
+        infoText.append(reason);
+        SelectionDialog sd("Registering failed", infoText , "_Ok", "_Cancel", instance_, false);
+        Gtk::Main::run(sd);        
     }
 
     void CommunicationUIModule::contactAdded(char* addr)

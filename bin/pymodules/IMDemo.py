@@ -4,7 +4,7 @@ import dbus.glib
 import Connection
 import traceback
 import rexviewer as r
-        
+import os        
         
 class IMDemo:
     def __init__(self):
@@ -65,6 +65,14 @@ class IMDemo:
     def gotAvailableStatuses(self, slist_N):
         r.pyEventCallback("got_available_status_list", slist_N)
 
+    def registeringAccountSucceeded(self, reason):
+        r.pyEventCallback("account_registering_succeeded", str(reason))
+        pass
+    def registeringAccountFailed(self, reason):
+        r.pyEventCallback("account_registering_failed", str(reason))
+        pass
+    
+
 ##==========================================================================================
 ##          new api
 ##==========================================================================================
@@ -75,8 +83,9 @@ class IMDemo:
         print "*********************************************"
         
     def CAccountConnect(self):
-        #str, d = self.ui.doReadAccountAndConnect()
-        str, d = doReadAccountAndConnect()
+        print "CAccountConnect"
+        #str, d = doReadAccountAndConnect()
+        d = self.connection.GetConnectionSettings()
         #self.accountConnect(d)
         self.connection.ConnectAccount(d)
 
@@ -126,9 +135,9 @@ class IMDemo:
                 tb = traceback.format_exception(*sys.exc_info())
                 print ''.join(tb)                
 
-    def CAddContact(self, contact_str):
+    def CAddContact(self, contact):
 ##        print "in CAddContact"
-        self.connection.add_contact(contact_str)
+        self.connection.add_contact(contact)
 
     def CRemoveContact(self, contact_str):
         print "CRemoveContact"
@@ -152,61 +161,17 @@ class IMDemo:
     def CSendSubscription(self, addr):
         print "CSendSubscription"
         self.connection.Subscribe(addr)
-
+    def CGetSettings(self):
+        print "CGetSettings"
+        settings = self.connection.GetUISettings()
+        return settings
+    def CSaveSettings(self, attr_N):
+        print "CSaveSettings"
+        settings = self.connection.SaveSettings(attr_N)
+    def CCreateAccount(self):
+        print "CCreateAccount"
+        ret = self.connection.CreateAccount()
+        
     def CTest(self):
         self.connection.test()
     
-##==========================================================================================        
-
-
-def doReadAccountAndConnect():
-    d = loadAccountFile()
-    return "accountconnect", d
-
-def loadAccountFile():
-    print "loading account.txt file"
-    #accoutFileStr = file("Account.txt").read()
-    accoutFileStr = file("pymodules/Account.txt").read()
-    d = parse_account(accoutFileStr)
-    return d
-
-# copied from telep example
-def parse_account(s):
-    lines = s.splitlines()
-    pairs = []
-    
-    manager = None
-    protocol = None
-
-    for line in lines:
-        if not line.strip():
-            continue
-
-        k, v = line.split(':', 1)
-        k = k.strip()
-        v = v.strip()
-
-        if k == 'manager':
-            manager = v
-        elif k == 'protocol':
-            protocol = v
-        else:
-            if k not in ("account", "password"):
-                if v.lower() == "false":
-                    v = False
-                elif v.lower() == "true":
-                    v = True
-                else:
-                    try:
-                        v = dbus.UInt32(int(v))
-                    except:
-                        pass
-            pairs.append((k, v))
-
-    d = dict(pairs)
-    
-
-    a = d['account']
-    print a
-    return d
-        

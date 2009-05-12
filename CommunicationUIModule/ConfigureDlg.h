@@ -55,6 +55,7 @@ namespace CommunicationUI
 	    // MVC model part
 	    // did not know how to read widgets from table, so adding references to all entries for reading
 	    std::vector<accessWidgets*> widgetPairs;
+        //std::vector<char*>  widgetText;
 
 	    std::string configName;
 	    //IConfigureCallBack* configCallback;
