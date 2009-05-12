@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Sat May 09 19:43:18 2009 -->
+<!--Generated with glade3 3.4.3 on Tue May 12 14:30:26 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="wndCMain">
     <child>
@@ -45,6 +45,13 @@
                       <widget class="GtkMenuItem" id="mi_settings">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Settings</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="mi_createaccount">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Create account</property>
                         <property name="use_underline">True</property>
                       </widget>
                     </child>
@@ -109,6 +116,13 @@
                     </child>
                   </widget>
                 </child>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkMenuItem" id="mi_help">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Help</property>
+                <property name="use_underline">True</property>
               </widget>
             </child>
           </widget>

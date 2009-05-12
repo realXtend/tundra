@@ -36,7 +36,8 @@ namespace CommunicationUI
 	    set_title(name);
 	    configName = name;
 	    set_border_width(0);
-	    set_size_request(300, count*75 + 40);
+        //set_size_request(300, count*50 + 75);
+	    set_size_request(400, count*50 + 40);
     	
 	    configCallback = aConfCaller;
     	
@@ -58,10 +59,13 @@ namespace CommunicationUI
 	    for(iter = attributes.begin(); iter!=attributes.end(); ++iter)
 	    {
 		    // todo: check for string lenght
-		    char buffer[32];
+		    //char buffer[32];
+            //char buffer[iter->first.size()+1];
+            char* buffer = new char[iter->first.size()+1];
 		    strcpy(buffer, iter->first.c_str());
 		    strcat(buffer, ":");
 		    Gtk::Label* pLabel = Gtk::manage(new Gtk::Label(buffer));
+            //this->widgetText.push_back(buffer); //Gtk::manages?
 		    pLabel->set_justify(Gtk::JUSTIFY_RIGHT);
 		    m_Table.attach(*pLabel, 0, 1, row, row + 1);
 		    Gtk::Entry* pEntry = Gtk::manage(new Gtk::Entry());
@@ -71,6 +75,9 @@ namespace CommunicationUI
 		    pair->label = pLabel;
 		    pair->entry = pEntry;
 		    widgetPairs.push_back(pair);
+
+            Foundation::Comms::SettingsAttribute attr = iter->second;            
+            pEntry->set_text(Glib::ustring(attr.value));
     		
 		    row++;
 	    }
@@ -148,6 +155,15 @@ namespace CommunicationUI
 		    delete aW;
 	    }		
 	    widgetPairs.clear();
+
+	    //std::vector<char*>::iterator iter2;
+	    //for(iter2 = widgetText.begin();iter2!=widgetText.end();iter2++)
+	    //{
+		   // char* ch = *iter2;
+		   // delete ch;
+	    //}		
+	    //widgetText.clear();
+
 	    hide();
     }
 }

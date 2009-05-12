@@ -10,6 +10,8 @@ import telepathy
 import IMDemo
 import ContactList
 import IMSession
+import Settings
+import AccountRegister
 
 import time
 from telepathy.client.channel import Channel
@@ -19,10 +21,10 @@ from telepathy.constants import (
     CONNECTION_HANDLE_TYPE_CONTACT, CONNECTION_STATUS_CONNECTED,
     CHANNEL_TEXT_MESSAGE_TYPE_NORMAL, CONNECTION_STATUS_DISCONNECTED, CONNECTION_HANDLE_TYPE_LIST)
 
-
 from threading import Thread
 from Queue import Queue
 import traceback
+
 
 class Connection():
     
@@ -33,7 +35,6 @@ class Connection():
         self.conn = None
         self.cb_app = app
         self.contactlist = ContactList.ContactList(None, app)
-
         self.chat_address = None
         self.textchannel = None
         self.contactlistInit = False
@@ -44,8 +45,9 @@ class Connection():
         self.presence = {}
         self.requested_contacts = {}
         self.requested_contacts_phase_map = {} # need to be aware of number of added messages
-
         self.sessions = {} # map of IM sessions (address & IMSession class)
+        self.settings = Settings.Settings()
+        self.register = AccountRegister.AccountRegister(app)
 
         
     def _getRequestedContact(self, h):
@@ -65,6 +67,11 @@ class Connection():
         self.port = d["port"]
         self.old_ssl = d["old-ssl"]
         self.ignore_ssl_errors = d["ignore-ssl-errors"]
+        self.manager = d["manager"]
+        self.protocol = d["protocol"]
+        del d["manager"]
+        del d["protocol"]
+        
         reg = telepathy.client.ManagerRegistry()
         reg.LoadManager(self.manager_file)
         mgr = reg.GetManager(self.manager)
@@ -211,13 +218,10 @@ class Connection():
             print str(handle)
             print str(object_path)
             print str(suppress_handler)
-
             #print "enter quit_chat to end chat"
             self.textchannel = Channel(self.conn.service_name, object_path)
-
 ##            ifaces = self.textchannel.GetInterfaces()
 ##            print str(ifaces)
-
             addr = self.get_contact_with_id(handle)
             print addr
             self.sessions[addr] = IMSession.IMSession(self.cb_app, self, Channel(self.conn.service_name, object_path), addr)
@@ -226,6 +230,7 @@ class Connection():
 
     def CloseMe(self, contactAddr):
         del self.sessions[contactAddr]
+
 
     def SubscribeContactList(self):
         print 'set subscribe callback'
@@ -415,8 +420,6 @@ class Connection():
                 print self._getRequestedContact(str(contact))
                 self.cb_app.remotePending(self._getRequestedContact(str(contact)))
         
-
-
 
 
     def print_members(self, conn, chan):        
@@ -658,4 +661,31 @@ class Connection():
             #self.cb_app.contactStatusChanged(str(key))
             self.cb_app.contactStatusChanged(id_n_status)
         pass
+
+##====================================================
+##    Settings
+##====================================================
+
+    def GetConnectionSettings(self):
+        self.settings.LoadSettings()
+        return self.settings.GetSettingsForConnecting()
+        #return settings
+    
+    def GetUISettings(self):
+        return self.settings.GetSettingsForUI()
+
+    def SaveSettings(self, attr_N):
+        self.settings.SaveSettings(attr_N)
+
+##====================================================
+##    Account handling
+##====================================================
+##ACCOUNT_MANAGER = 'org.freedesktop.Telepathy.AccountManager'
+##ACCOUNT = 'org.freedesktop.Telepathy.Account'
+
+    def CreateAccount(self):
+        #org.freedesktop.Telepathy.AccountManager
+        self.register.Register()
+        pass
+
     
