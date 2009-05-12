@@ -67,7 +67,7 @@ namespace OpenSimProtocol
                  "Connected" };
 
             return connection_strings[state];
-        }        
+        }
     }
     
     /// Data struct which is passed to the login thread.

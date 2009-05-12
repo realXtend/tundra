@@ -15,11 +15,7 @@ namespace RexLogic
     class NetworkStateEventHandler;
     class CameraController;
     class Terrain;
-    class Avatar;
-    class Primitive;
-    class RexLoginWindow;
-    class Water;
-    typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
+    class Avatar;    class Primitive;    class Sky;    class Water;    class RexLoginWindow;    typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
     typedef boost::shared_ptr<AvatarController> AvatarControllerPtr;
     typedef boost::shared_ptr<CameraController> CameraControllerPtr;
 
@@ -28,6 +24,7 @@ namespace RexLogic
     typedef boost::shared_ptr<Water> WaterPtr;
     typedef boost::shared_ptr<Avatar> AvatarPtr;
     typedef boost::shared_ptr<Primitive> PrimitivePtr;
+    typedef boost::shared_ptr<Sky> SkyPtr;
 
     enum InputController
     {
@@ -68,16 +65,19 @@ namespace RexLogic
 
         //! @return The logic object that manages the water-related parts of the scene.
         WaterPtr GetWaterHandler();
-
-        //! @return The terrain handler object that manages Rex terrain logic.
+        
+        //! @return The terrain handler object that manages reX terrain logic.
         TerrainPtr GetTerrainHandler();
 
-        //! @return The avatar handler object that manages Rex avatar logic.
+        //! @return The avatar handler object that manages reX avatar logic.
         AvatarPtr GetAvatarHandler();
 
-        //! @return The primitive handler object that manages Rex primitive logic.        
+        //! @return The primitive handler object that manages reX primitive logic.        
         PrimitivePtr GetPrimitiveHandler();
-
+        
+        //! @return The sky handler object that manages reX sky logic.
+        SkyPtr GetSkyHandler();
+        
         //! The scene system can store multiple scenes. Only one scene is active at a time, that is the one
         //! that is currently being rendered. You may pass a null pointer to erase the currently active scene.
         void SetCurrentActiveScene(Scene::ScenePtr scene);
@@ -86,7 +86,7 @@ namespace RexLogic
         Scene::ScenePtr GetCurrentActiveScene();
 
         //! Creates a new scene and sets that as active. Also creates the core entities to that scene that 
-        //! are always to be present in an Rex world, like terrain.
+        //! are always to be present in an reX world, like terrain.
         Scene::ScenePtr CreateNewActiveScene(const std::string &name);
 
         //! Deletes the scene with the given name. If that was the current active scene, the active scene will be
@@ -149,6 +149,8 @@ namespace RexLogic
         AvatarPtr avatar_;
         
         PrimitivePtr primitive_;
+        
+        SkyPtr sky_;
 
         Scene::ScenePtr activeScene_;
 
@@ -156,7 +158,10 @@ namespace RexLogic
 
         //! Recreates the terrain. Called at startup.
         void CreateTerrain();
-
+        
+        //! Recreates the sky. Called at startup.
+        void CreateSky();
+        
         //! workaround for not being able to send events during initialization
         bool send_input_state_;
 

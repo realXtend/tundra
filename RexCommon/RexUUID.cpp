@@ -119,6 +119,13 @@ namespace RexTypes
         return str.str();
     }
     
+/*    void RexUUID::operator =(const RexUUID &rhs)
+    {
+        if (this != &rhs)
+            for(int i = 0; i < cSizeBytes; ++i)
+                data[i] = rhs.data[i];
+    }*/
+    
     bool RexUUID::operator ==(const RexUUID &rhs) const
     {
         for(int i = 0; i < cSizeBytes; ++i)

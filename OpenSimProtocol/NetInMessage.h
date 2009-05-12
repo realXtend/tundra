@@ -5,6 +5,7 @@
 #include "OpenSimProtocolModuleApi.h"
 #include "RexTypes.h"
 #include "NetMessageList.h"
+#include "NetMessageException.h"
 
 using namespace RexTypes;
 

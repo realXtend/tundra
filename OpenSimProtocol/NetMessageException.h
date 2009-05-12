@@ -23,7 +23,7 @@ public:
     enum ExceptionType 
     {
         ET_None = 0,
-        ET_VariableTypeMismatch = 0,
+        ET_VariableTypeMismatch,
         ET_BlockInstanceCountNotRead,
         ET_BlockInstanceCountAlreadyRead,
         ET_EnumCount
@@ -57,7 +57,23 @@ public:
      * Sets error message. 
      * @return Exception type enum.
      */
-    const ExceptionType GetExectionType() const  { return type_; }
+    const ExceptionType GetType() const  { return type_; }
+
+    /** Utility function for converting the connection state enum to string.
+     * @param The connection state enum.
+     * @return The login state as a string.
+     */
+    const std::string &What() const
+    {
+        static const std::string exception_strings[ET_EnumCount] = {
+            "None"
+            "Tried to read wrong variable type",
+            "Current block is variable: use ReadCurrentBlockInstanceCount first in order to proceed"
+            "This block's instance count is already read",
+            };
+
+        return exception_strings[type_];
+    }
 
 private:
     /// Exception error message.
