@@ -128,19 +128,23 @@ namespace Communication
 		virtual ~MessageInterface() {};
 		virtual std::string GetTimeStamp() = 0; // todo: change to proper timestamp type
 		virtual ParticipantPtr GetAuthor() = 0; // todo: or would ContactPtr be better ?
-		virtual std::string GetSessionId() = 0; // todo: Do we need this ??
+//		virtual std::string GetSessionId() = 0; // todo: Do we need this ??
 //		virtual bool IsPrivate() = 0;
 	private:
 	};
 
 	// chat message
 	// todo: more components like attachment (link, file, request, etc.)
-	class IMMessageInterface //: public SessionInterface
+	class IMMessageInterface //: public SessionInterface // Would be nice to inherit from MessageInterfa but that causes problems on implementation side
 	{
 	public:
 		virtual ~IMMessageInterface() {};
 		virtual void SetText(std::string text) = 0;
 		virtual std::string GetText() = 0;
+
+		// These are from MessageInterface class
+		virtual std::string GetTimeStamp() = 0; // todo: change to proper timestamp type
+		virtual ParticipantPtr GetAuthor() = 0; // todo: or would ContactPtr be better ?
 	};
 	typedef boost::shared_ptr<IMMessageInterface> IMMessagePtr;
 	typedef std::vector<IMMessagePtr> IMMessageList;
@@ -216,6 +220,9 @@ namespace Communication
 	typedef boost::shared_ptr<CommunicationServiceInterface> CommunicationServicePtr;
 
 
+	/*
+	 * All events of COMMUNICATION event group
+	 */
     namespace Events
     {
         static const Core::event_id_t PRESENCE_STATUS_UPDATE = 1;
@@ -248,7 +255,7 @@ namespace Communication
 		class IMMessageEventInterface //  : public Foundation::EventDataInterface  // PROBLEM: EventDataInterface is not declared yet ?
 		{
 		public:
-			virtual IMMessagePtr GetMessage() = 0;
+			virtual IMMessagePtr GetIMMessage() = 0;
 			virtual IMSessionPtr GetSession() = 0;
 		};
 		typedef boost::shared_ptr<IMMessageEventInterface> IMMessageEventPtr;

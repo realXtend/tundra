@@ -117,6 +117,10 @@ namespace CommunicationUI
 
         void testDialog();
 		void UpdateOnlineStatusList();
+		void UpdateContactList();
+		Communication::ContactPtr FindContact(std::string address);
+		void HandleIncomingIMSession(Communication::IMSessionPtr session);
+
 
         // adds contact to ui contact list
 		void addContactItem(char *);
@@ -188,6 +192,8 @@ namespace CommunicationUI
 		//Foundation::CommunicationUIManagerPtr CommunicationUI_manager_;
 
 		std::map<std::string, std::string> contactList_;
+		Communication::ContactListPtr contact_list_;
+
 
 	};
 }

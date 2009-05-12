@@ -100,6 +100,7 @@ namespace Communication
 		Foundation::ScriptObjectPtr python_communication_object_; 
 		Foundation::EventManagerPtr event_manager_;
 		Core::event_category_id_t comm_event_category_; // todo: could be static 
+		ContactPtr user_;
 
 		// python event handlers
 		// * todo: could these be non-static member functions?
@@ -111,7 +112,7 @@ namespace Communication
 		static void PyCallbackChannelOpened(char*);
 		static void PyCallbackChannelClosed(char*);
 		static void PyCallbackMessagReceived(char*);
-		static void PycallbackFriendReceived(char* t);
+		static void PycallbackContactReceived(char* contact);
 		static void PyCallbackContactStatusChanged(char* id);
 		static void PyCallbackMessageSent(char* id);
 		static void PyCallbackFriendRequest(char* id);

@@ -7,9 +7,14 @@
 namespace Communication
 {
 
-	TPMessage::TPMessage(std::string session_id): session_id_(session_id)
+	TPMessage::TPMessage()
 	{
 
+	}
+
+	TPMessage::TPMessage(ParticipantPtr author): author_(author)
+	{
+		// TODO: get timestamp 
 	}
 
 	ParticipantPtr TPMessage::GetAuthor()
@@ -22,15 +27,38 @@ namespace Communication
 		return "00:00"; // todo: set real time to variable at constructor
 	}
 
-	std::string TPMessage::GetSessionId()
+	//std::string TPMessage::GetSessionId()
+	//{
+	//	return session_id_;
+	//}
+
+
+	//
+	// TPIMMessage ----------------------------------->
+	// 
+
+
+	TPIMMessage::TPIMMessage()
 	{
-		return session_id_;
+
 	}
 
-	TPIMMessage::TPIMMessage(std::string session_id): TPMessage(session_id), text_("")
+	TPIMMessage::TPIMMessage(ParticipantPtr author, std::string text): TPMessage(author), text_(text)
 	{
 		
 	}
+
+	TPIMMessage::TPIMMessage(std::string text): text_(text)
+	{
+		
+	}
+	
+	void TPIMMessage::SetSession(SessionPtr s)
+	{
+		session_ = s;
+	}
+
+
 
 	void TPIMMessage::SetText(std::string text)
 	{
@@ -41,4 +69,15 @@ namespace Communication
 	{
 		return this->text_;
 	}
+
+	std::string TPIMMessage::GetTimeStamp()
+	{
+		return "00:00"; // todo: set real time to variable at constructor
+	}
+
+	ParticipantPtr TPIMMessage::GetAuthor()
+	{
+		return author_;
+	}
+
 }

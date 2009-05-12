@@ -114,7 +114,7 @@ namespace Communication
 		script_event_service->SetCallback( TelepathyCommunication::PyCallbackChannelOpened, "channel_opened");
 		script_event_service->SetCallback( TelepathyCommunication::PyCallbackChannelClosed, "channel_closed");
 		script_event_service->SetCallback( TelepathyCommunication::PyCallbackMessagReceived, "message_received");
-		script_event_service->SetCallback( TelepathyCommunication::PycallbackFriendReceived, "contact_item");
+		script_event_service->SetCallback( TelepathyCommunication::PycallbackContactReceived, "contact_item");
 		script_event_service->SetCallback( TelepathyCommunication::PyCallbackContactStatusChanged, "contact_status_changed");
 		script_event_service->SetCallback( TelepathyCommunication::PyCallbackMessageSent, "message_sent");
 		script_event_service->SetCallback( TelepathyCommunication::PyCallbackFriendRequest, "incoming_request");
@@ -148,6 +148,13 @@ namespace Communication
 			LogError("Connection to IM server already exist!");
 			return;
 		}
+		TPContact* user_contact = new TPContact("user");
+		ContactInfo* info = new ContactInfo();
+		
+		info->SetProperty("protocol", c->GetProperty("protocol") );
+		info->SetProperty("address", c->GetProperty("address") );
+		user_contact->AddContactInfo(ContactInfoPtr(info));
+		user_ = ContactPtr((ContactInterface*)user_contact);
 
 		std::string method = "CAccountConnect";
 		std::string syntax = "";
@@ -193,8 +200,13 @@ namespace Communication
 //			int session_id = 0; // todo: replace by real id
 			TPIMSession* session = new TPIMSession(python_communication_object_);
 			session->protocol_ = protocol;
+
+			// Add participants: user and the contact
 			TPParticipant* participant = new TPParticipant(contact);
 			ParticipantPtr participant_ptr = ParticipantPtr((ParticipantInterface*)participant);
+			session->participants_->push_back(participant_ptr);
+			participant = new TPParticipant(user_);
+			participant_ptr = ParticipantPtr((ParticipantInterface*)participant);
 			session->participants_->push_back(participant_ptr);
 
 			IMSessionPtr session_ptr = IMSessionPtr((IMSessionInterface*)session);
@@ -268,8 +280,8 @@ namespace Communication
 
 	IMMessagePtr TelepathyCommunication::CreateIMMessage(std::string text)
 	{
-		TPIMMessage* m = new TPIMMessage("");
-		m->SetText(text);
+		ParticipantPtr p = ParticipantPtr();
+		TPIMMessage* m = new TPIMMessage(p, text);
 		return IMMessagePtr((IMMessageInterface*)m);
 	}
 
@@ -712,12 +724,9 @@ namespace Communication
 		TelepathyCommunication::GetInstance()->connected_ = false;
 		LogInfo("Server connection: Disconnected");
 
-		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_CLOSE);
-//		Events::ConnectionStateEventPtr e_ptr = Events::ConnectionStateEventPtr(e);
-
 		TelepathyCommunicationPtr comm = TelepathyCommunication::GetInstance();
-		//comm->presence_status_->SetOnlineStatus("offline"); Gabble doesn't like this
 
+		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_CLOSE);
 		comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
 	}
 
@@ -844,6 +853,9 @@ namespace Communication
 			{
 				if ( (*j)->GetContact()->GetContactInfo("jabber")->GetProperty("address").compare(address) == 0)
 				{
+					// Found the author of message
+					((TPIMMessage*)m.get())->author_ = *j;
+
 					((TPIMSession*)s.get())->NotifyMessageReceived(m);
 					IMMessageEvent e = IMMessageEvent(s,m);
 					TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::IM_MESSAGE, (Foundation::EventDataInterface*)&e);
@@ -861,8 +873,9 @@ namespace Communication
 	   Called by communication.py via PythonScriptModule
 	   When we get a contact from our contact list from IM server
 	   * We build our contact info list here!
+	   * Send CONNECTION_STATE - CONNECTION_STATE_UPDATE event becouse we have now new information from IM server
 	*/
-	void TelepathyCommunication::PycallbackFriendReceived(char* id_address)
+	void TelepathyCommunication::PycallbackContactReceived(char* id_address)
 	{
 		LogInfo("PycallbackFriendReceived");
 
@@ -886,6 +899,10 @@ namespace Communication
 		c->AddContactInfo(ContactInfoPtr(info));
 		ContactPtr ptr = ContactPtr( (ContactInterface*)c );
 		TelepathyCommunication::GetInstance()->contact_list_.push_back(ptr);
+
+		TelepathyCommunicationPtr comm = TelepathyCommunication::GetInstance();
+		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_STATE_UPDATE);
+		comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
 	}
 
 
@@ -991,7 +1008,7 @@ namespace Communication
 
 	/*
 	   Called by communication.py via PythonScriptModule
-	   When contact is added to contact list on IM server
+	   When contact is added to contact list on IM server (friend request is accepted)
 	*/
 	void TelepathyCommunication::PyCallbackContactAdded(char* id)
 	{
@@ -999,11 +1016,17 @@ namespace Communication
 		text.append("PyCallbackContactAdded: ");
 		text.append(id);
 		LogDebug(text);
+
+		// TODO: Send ContactListUpdateEvent ?
 	}
 
 	/*
 	   Called by communication.py via PythonScriptModule
-	   When friend request id pending locally
+	   When friend request (subscribe request) is received and is waiting for reply
+
+	   Send FriendRequestEvent
+
+	   TODO: if we have request friendship first, we should automatically accept this.
 	*/
 	void TelepathyCommunication::PyCallbackFriendRequestLocalPending(char* address)
 	{
@@ -1013,30 +1036,34 @@ namespace Communication
 		TPFriendRequest* request = new TPFriendRequest( ContactInfoPtr(info) );
 		FriendRequestPtr r = FriendRequestPtr((FriendRequestInterface*)request);
 		TelepathyCommunication::GetInstance()->friend_requests_->push_back(r);
-		FriendRequestEvent* e = new FriendRequestEvent(r);
-		Events::FriendRequestEventPtr e_ptr = Events::FriendRequestEventPtr(e);
-		TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::FRIEND_REQUEST, (Foundation::EventDataInterface*)&e_ptr);
+
+		FriendRequestEvent e = FriendRequestEvent(r);
+		TelepathyCommunication::GetInstance()->event_manager_->SendEvent(TelepathyCommunication::GetInstance()->comm_event_category_, Communication::Events::FRIEND_REQUEST, (Foundation::EventDataInterface*)&e);
 	}
 
 	/*
 	   Called by communication.py via PythonScriptModule
-	   When friend request id pending on remote side
+	   When friend request id pending on remote side (waiting for accept/deny)
 	*/
 	void TelepathyCommunication::PyCallbackFriendRequestRemotePending(char* id)
 	{
-		// todo: ???
 	}
 
 	/*
 	   Called by communication.py via PythonScriptModule
-	   When friend request id pending on remote side
-	   // TODO: This should be renamed better ?
+	   When friend request was accpeted by user and now contact wants to subscribe the user
+
+	   We have to subscribe this contact too
 	*/
 	void TelepathyCommunication::PyCallbackFriendAdded(char* id)
 	{
-		// todo: We have to call either of these:
-		// 1) Accept
-		// 2) send subscription
+		char** args = new char*[1];
+		char* buf1 = new char[1000];
+		strcpy(buf1, id);
+		std::string method = "CSendSubscription";
+		std::string syntax = "s";
+		Foundation::ScriptObject* ret = TelepathyCommunication::GetInstance()->python_communication_object_->CallMethod(method, syntax, args);
+
 	}
 
 	/*
