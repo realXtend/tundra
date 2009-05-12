@@ -20,8 +20,13 @@ namespace RexLogic
 
     void RexLoginWindow::InitLoginWindow()
     {
-        // Create the login window from glade (xml) file.
-        loginControls = Gnome::Glade::Xml::create("data/loginWindow.glade");
+        Foundation::ModuleWeakPtr gtkmmui_module = framework_->GetModuleManager()->GetModule("GtkmmUI");
+        if (gtkmmui_module.expired() == false)
+        {
+            // Create the login window from glade (xml) file.
+            loginControls = Gnome::Glade::Xml::create("data/loginWindow.glade");
+        }
+
         if (!loginControls)
             return;
         
@@ -117,8 +122,10 @@ namespace RexLogic
     void RexLoginWindow::UpdateConnectionStateToUI(OpenSimProtocol::Connection::State state)
     {
         Gtk::Label *label_state = 0;
-        loginControls->get_widget("label_state", label_state);
+        if (loginControls)
+            loginControls->get_widget("label_state", label_state);
 
-        label_state->set_text(OpenSimProtocol::Connection::NetworkStateToString(state));
+        if (label_state)
+            label_state->set_text(OpenSimProtocol::Connection::NetworkStateToString(state));
     }
 }

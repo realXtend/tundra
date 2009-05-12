@@ -26,6 +26,11 @@ namespace Core
     typedef unsigned int entity_id_t;
     typedef unsigned int event_category_id_t;
     typedef unsigned int event_id_t;
+
+    namespace
+    {
+        event_category_id_t IllegalEventCategory = 0;
+    }
     
     typedef unsigned int request_tag_t;
     typedef std::vector<request_tag_t> RequestTagVector;    

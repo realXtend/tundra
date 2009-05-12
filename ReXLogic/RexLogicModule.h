@@ -111,6 +111,12 @@ namespace RexLogic
 
         //! Handle a resource event. Needs to be passed to several receivers (Prim, Terrain etc.)
         bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+
+        //! login through console
+        Console::CommandResult ConsoleLogin(const Core::StringVector &params);
+
+        //! logout through console
+        Console::CommandResult ConsoleLogout(const Core::StringVector &params);
         
     private:
         //! Event handler for network events.

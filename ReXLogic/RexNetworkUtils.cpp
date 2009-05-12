@@ -19,6 +19,9 @@ namespace RexLogic
     {
         OgreRenderer::EC_OgrePlaceable &component = dynamic_cast<OgreRenderer::EC_OgrePlaceable&>(*ogrePlaceable.get());
         boost::shared_ptr<OgreRenderer::Renderer> renderer = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
+            return;
+
         Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
 
         ///\todo Quick W.I.P Ogre object naming, refactor. -jj.

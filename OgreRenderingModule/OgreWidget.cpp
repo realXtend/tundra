@@ -115,7 +115,6 @@ namespace OgreRenderer
     #endif
 
             renderer_->SetExternalWindowParameter(external_param);
-            renderer_->Initialize();
           
             unset_flags(Gtk::NO_WINDOW);
             set_window(refgdkwindow_);

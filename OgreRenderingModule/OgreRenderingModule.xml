@@ -1,4 +1,6 @@
 <config>
 	<entry>OgreRenderingModule</entry>
+	<entry>OgreGtkWindowModule</entry>
 	<dependency>SupportModules</dependency>
+	<dependency>GtkmmUI</dependency>
 </config>

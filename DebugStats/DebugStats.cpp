@@ -64,15 +64,19 @@ void DebugStats::Unload()
 
 void DebugStats::Initialize()
 {
-    InitializeModulesWindow();
-    PopulateModulesTreeView();
-    
-    InitializeEventsWindow();
-    PopulateEventsTreeView();
+    gtkmmui_module_ = framework_->GetModuleManager()->GetModule("GtkmmUI");
+    if (gtkmmui_module_.expired() == false)
+    {
+        InitializeModulesWindow();
+        PopulateModulesTreeView();
+        
+        InitializeEventsWindow();
+        PopulateEventsTreeView();
 
-    InitializeEntityListWindow();
-    
-    InitializePrimPropertiesWindow();
+        InitializeEntityListWindow();
+        
+        InitializePrimPropertiesWindow();
+    }
 
     Log("Module " + Name() + " initialized.");
 }
@@ -86,17 +90,21 @@ void DebugStats::PostInitialize()
 
 void DebugStats::Uninitialize()
 {
-    Gtk::Window *debugWindow = 0;
-    debugModules_->get_widget("windowDebugModules", debugWindow);
+    if (gtkmmui_module_.expired() == false)
+    {
+        Gtk::Window *debugWindow = 0;
+        debugModules_->get_widget("windowDebugModules", debugWindow);
 
-    Gtk::Window *debug_events_window = 0;
-    debugEvents_->get_widget("window1", debug_events_window);
+        Gtk::Window *debug_events_window = 0;
+        debugEvents_->get_widget("window1", debug_events_window);
+        
 
 
-    SAFE_DELETE(debugWindow);
-    SAFE_DELETE(debug_events_window);
-    SAFE_DELETE(windowEntityList);
-    SAFE_DELETE(primPropertiesWindow_);
+        SAFE_DELETE(debugWindow);
+        SAFE_DELETE(debug_events_window);
+        SAFE_DELETE(windowEntityList);
+        SAFE_DELETE(primPropertiesWindow_);
+    }
 }
 
 void DebugStats::Update(Core::f64 frametime)
@@ -109,7 +117,7 @@ bool DebugStats::HandleEvent(
     Foundation::EventDataInterface *data
     )
 {
-    if (category_id == scene_event_category_)
+    if (category_id == scene_event_category_ && gtkmmui_module_.expired() == false)
     {
         Scene::Events::SceneEventData *event_data = dynamic_cast<Scene::Events::SceneEventData *>(data);    
         switch(event_id)

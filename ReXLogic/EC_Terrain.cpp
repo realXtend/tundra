@@ -14,7 +14,8 @@ namespace RexLogic
     {
         boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService
             <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
+        if (renderer)
+            Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
     }
 
     EC_Terrain::~EC_Terrain()

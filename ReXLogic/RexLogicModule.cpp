@@ -58,6 +58,14 @@ namespace RexLogic
         DECLARE_MODULE_EC(EC_Terrain);
         DECLARE_MODULE_EC(EC_Water);
 
+        AutoRegisterConsoleCommand(Console::CreateCommand("Login", 
+            "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
+            Console::Bind(this, &RexLogicModule::ConsoleLogin)));
+
+        AutoRegisterConsoleCommand(Console::CreateCommand("Logout", 
+            "Logout from server.",
+            Console::Bind(this, &RexLogicModule::ConsoleLogout)));
+
         LogInfo("Module " + Name() + " loaded.");
     }
 
@@ -129,9 +137,12 @@ namespace RexLogic
             LogError("Unable to find event category for Resource");        
                             
         boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        Ogre::Camera *cam = renderer->GetCurrentCamera();
-        cam->setPosition(-10, -10, -10);
-        cam->lookAt(0,0,0);
+        if (renderer)
+        {
+            Ogre::Camera *cam = renderer->GetCurrentCamera();
+            cam->setPosition(-10, -10, -10);
+            cam->lookAt(0,0,0);
+        }
 
         send_input_state_ = true;
         
@@ -247,6 +258,51 @@ namespace RexLogic
         
         return false;
     }
+
+    Console::CommandResult RexLogicModule::ConsoleLogin(const Core::StringVector &params)
+    {
+        std::string name = "Test User";
+        std::string passwd = "test";
+        std::string server = "localhost";
+
+        if (params.size() > 0)
+            name = params[0];
+        if (params.size() > 1)
+        {
+            passwd = params[1];
+            const std::string &param_pass = params[1];
+            
+            // overwrite the password so it won't stay in-memory
+            const_cast<std::string&>(param_pass).erase();
+        } if (params.size() > 2)
+            server = params[2];
+
+        bool success = rexserver_connection_->ConnectToServer(name,
+		        passwd, server);
+
+        // overwrite the password so it won't stay in-memory
+        //!\ todo does this overwrite the string properly? Probably not.
+        passwd.erase();
+        
+
+        if (success)
+            return Console::ResultSuccess();
+        else
+            return Console::ResultFailure("Failed to connect to server.");
+    }
+
+    Console::CommandResult RexLogicModule::ConsoleLogout(const Core::StringVector &params)
+    {
+        if (rexserver_connection_->IsConnected())
+        {
+            rexserver_connection_->RequestLogout();
+            return Console::ResultSuccess();
+        } else
+        {
+            return Console::ResultFailure("Not connected to server.");
+        }
+    }
+        
 
     void RexLogicModule::SwitchController()
     {

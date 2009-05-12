@@ -50,7 +50,7 @@ namespace Foundation
         if (i != event_category_map_.end())
             return i->second;
         else 
-            return 0;
+            return Core::IllegalEventCategory;
     }
     
     const std::string& EventManager::QueryEventCategoryName(Core::event_category_id_t category_id) const

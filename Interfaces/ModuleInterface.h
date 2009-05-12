@@ -46,6 +46,7 @@ namespace Foundation
 		enum Type 
 		{
 			MT_Renderer = 0,
+            MT_RendererWindow,
 			MT_Sound,
 			MT_Gui,
 			MT_WorldLogic,
@@ -71,7 +72,7 @@ namespace Foundation
             assert(type != MT_Unknown);
 
             static const std::string type_strings[MT_Unknown] = {
-                 "OgreRenderingModule", "SoundModule", "GtkmmUI", "RexLogicModule", "OpenSimProtocolModule",
+                 "OgreRenderingModule", "OgreGtkWindowModule", "SoundModule", "GtkmmUI", "RexLogicModule", "OpenSimProtocolModule",
                  "TestModule", "NetTestLogicModule", "PythonScriptModule", "ConsoleModule", "AssetModule", "CommunicationModule",
 				 "CommunicationUIModule", "InputModuleOIS", "TextureDecoderModule" };
 
@@ -270,6 +271,8 @@ namespace Foundation
 
         virtual void AutoRegisterConsoleCommand(const Console::Command &command)
         {
+            assert (State() == Module::MS_Unloaded && "AutoRegisterConsoleCommand function can only be used when loading the module.");
+
             for ( CommandVector::iterator it = console_commands_.begin() ; 
                   it != console_commands_.end() ;
                   ++it )

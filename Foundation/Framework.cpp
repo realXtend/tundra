@@ -263,6 +263,42 @@ namespace Foundation
         return Console::ResultSuccess("Module " + params[0] + " unloaded.");
     }
 
+    Console::CommandResult Framework::ConsoleListModules(const Core::StringVector &params)
+    {
+        boost::shared_ptr<Console::ConsoleServiceInterface> console = GetService<Console::ConsoleServiceInterface>(Foundation::Service::ST_Console).lock();
+        if (console)
+        {
+            console->Print("Loaded modules:");
+            const ModuleManager::ModuleVector &modules = module_manager_->GetModuleList();
+            for (size_t i = 0 ; i < modules.size() ; ++i)
+            {
+                console->Print(modules[i].module_->Name());
+            }
+        }
+
+        return Console::ResultSuccess();
+    }
+
+    Console::CommandResult Framework::ConsoleSendEvent(const Core::StringVector &params)
+    {
+        if (params.size() != 2)
+            return Console::ResultInvalidParameters();
+
+        Core::event_category_id_t event_category = event_manager_->QueryEventCategory(params[0]);
+        if (event_category == Core::IllegalEventCategory)
+        {
+            return Console::ResultFailure("Event category not found.");
+        } else
+        {
+            event_manager_->SendEvent(
+                event_category,
+                Core::ParseString<Core::event_id_t>(params[1]),
+                NULL);
+
+            return Console::ResultSuccess();
+        }
+    }
+
     void Framework::RegisterConsoleCommands()
     {
         boost::shared_ptr<Console::CommandService> console = GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
@@ -275,6 +311,14 @@ namespace Foundation
             console->RegisterCommand(Console::CreateCommand("UnloadModule", 
                 "Unloads a module. Usage: UnloadModule(name)", 
                 Console::Bind(this, &Framework::ConsoleUnloadModule)));
+
+            console->RegisterCommand(Console::CreateCommand("ListModules", 
+                "Lists all loaded modules.", 
+                Console::Bind(this, &Framework::ConsoleListModules)));
+
+            console->RegisterCommand(Console::CreateCommand("SendEvent", 
+                "Sends an internal event. Only for events that contain no data. Usage: SendEvent(event category name, event id)", 
+                Console::Bind(this, &Framework::ConsoleSendEvent)));
         }
     }
 }

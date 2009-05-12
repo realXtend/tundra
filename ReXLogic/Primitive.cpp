@@ -97,7 +97,6 @@ namespace RexLogic
 
             Scene::EntityPtr entity = GetOrCreatePrimEntity(localid, fullid);
             EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
-            OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
 
             ///\todo Are we setting the param or looking up by this param? I think the latter, but this is now doing the former. 
             ///      Will cause problems with multigrid support.
@@ -105,7 +104,9 @@ namespace RexLogic
 
             prim.Material = msg->ReadU8();
             prim.ClickAction = msg->ReadU8();
-            ogrePos.SetScale(Core::OpenSimToOgreCoordinateAxes(msg->ReadVector3()));
+
+            Core::Vector3Df ogre_pos = Core::OpenSimToOgreCoordinateAxes(msg->ReadVector3());
+            Core::Quaternion ogre_quat;
             
             size_t bytes_read = 0;
             const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
@@ -119,9 +120,9 @@ namespace RexLogic
                 // ofs 48 - angular velocity - 3 x float (3x4 bytes)
                 // total 60 bytes
                 Core::Vector3df pos = *reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[0]);
-                ogrePos.SetPosition(Core::OpenSimToOgreCoordinateAxes(pos));
+                ogre_pos = Core::OpenSimToOgreCoordinateAxes(pos);
                 Core::Quaternion quat = Core::UnpackQuaternionFromFloat3((float*)&objectdatabytes[36]); 
-                ogrePos.SetOrientation(Core::OpenSimToOgreQuaternion(quat));
+                ogre_quat = Core::OpenSimToOgreQuaternion(quat);
 
                 /// \todo Velocity field unhandled.
                 /// \todo Acceleration field unhandled.
@@ -129,6 +130,14 @@ namespace RexLogic
             }
             else
                 RexLogicModule::LogError("Error reading ObjectData for prim:" + Core::ToString(prim.LocalId) + ". Bytes read:" + Core::ToString(bytes_read));
+
+            Foundation::ComponentPtr placeable = entity->GetComponent("EC_OgrePlaceable");
+            if (placeable)
+            {
+                OgreRenderer::EC_OgrePlaceable* ec_ogrepos = checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
+                ec_ogrepos->SetPosition(ogre_pos);
+                ec_ogrepos->SetOrientation(ogre_quat);
+            }
             
             prim.ParentId = msg->ReadU32();
             prim.UpdateFlags = msg->ReadU32();
