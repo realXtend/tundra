@@ -25,6 +25,9 @@ namespace Foundation
         //! destructor
         ~Framework();
 
+        //! Do post-initialization steps. No need to call if using Framework::Go().
+        void PostInitialize();
+
         //! entry point for the framework
         void Go();
 
@@ -123,6 +126,11 @@ namespace Foundation
             return group;
         }
 
+        //! Loads all available modules. Do not call normally.
+        void LoadModules();
+        //! Unloads all available modules. Do not call normally.
+        void UnloadModules();
+
     private:
         //! Registers framework specific console commands
         //! Should be called after modules are loaded and initialized
@@ -131,10 +139,6 @@ namespace Foundation
         //! default event subscriber tree XML file path
         static const char *DEFAULT_EVENT_SUBSCRIBER_TREE_PATH;
         
-        //! Loads all available modules
-        void LoadModules();
-        //! Unloads all available modules
-        void UnloadModules();
         //! Create logging system
         void CreateLoggingSystem();
 
