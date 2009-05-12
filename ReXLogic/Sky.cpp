@@ -26,12 +26,14 @@ Sky::~Sky()
 void Sky::CreateDefaultSky(bool show)
 {
     Scene::EntityPtr sky = GetSkyEntity().lock();
-    OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
-    assert(sky_component);
+    if (sky)
+    {
+        OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
+        assert(sky_component);
     
-    ///\todo change to CreateDefaultSky()
-    sky_component->CreateDefaultSkybox();
-
+        ///\todo change to CreateDefaultSky()
+        sky_component->CreateDefaultSkybox();
+    }
 }
 
 void Sky::RequestSkyboxTextures()

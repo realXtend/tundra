@@ -31,10 +31,15 @@ namespace RexLogic
         if (!entity)
         {
             entity = CreateNewAvatarEntity(entityid);
-            rexlogicmodule_->RegisterFullId(fullid,entityid); 
-            EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent("EC_OpenSimAvatar").get());
-            avatar.LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
-            avatar.FullId = fullid;
+            
+            if (entity)
+            {
+                rexlogicmodule_->RegisterFullId(fullid,entityid);
+            
+                EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent("EC_OpenSimAvatar").get());
+                avatar.LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
+                avatar.FullId = fullid;
+            }
         }
         return entity;
     }    
@@ -42,7 +47,7 @@ namespace RexLogic
     Scene::EntityPtr Avatar::CreateNewAvatarEntity(Core::entity_id_t entityid)
     {
         Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
-        if (!scene)
+        if (!scene || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate("EC_OgrePlaceable"))
             return Scene::EntityPtr();
         
         Core::StringVector defaultcomponents;
@@ -77,6 +82,8 @@ namespace RexLogic
             uint8_t pcode = msg->ReadU8();
 
             Scene::EntityPtr entity = GetOrCreateAvatarEntity(localid,fullid);
+            if (!entity)
+                return false;
             EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent("EC_OpenSimAvatar").get());
             OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
 

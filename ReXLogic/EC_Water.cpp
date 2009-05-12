@@ -53,21 +53,24 @@ namespace RexLogic
     void EC_Water::CreateOgreWaterObject()
     {
         boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
-        assert(sceneMgr);
-
-        if (!scene_node_)
+        if (renderer)
         {
-            const char water_mesh[] = "WaterMesh";
-            Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createPlane(water_mesh, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
-                Ogre::Plane(Ogre::Vector3::UNIT_Y, 0), 5000, 5000, 10, 10, true, 1, 1, 1, Ogre::Vector3::UNIT_X);
+            Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
+            assert(sceneMgr);
 
-            entity_ = sceneMgr->createEntity("WaterEntity", water_mesh);
-            entity_->setMaterialName("Ocean");
-            entity_->setCastShadows(false);
+            if (!scene_node_)
+            {
+                const char water_mesh[] = "WaterMesh";
+                Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createPlane(water_mesh, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
+                    Ogre::Plane(Ogre::Vector3::UNIT_Y, 0), 5000, 5000, 10, 10, true, 1, 1, 1, Ogre::Vector3::UNIT_X);
 
-            scene_node_ = sceneMgr->getRootSceneNode()->createChildSceneNode("WaterNode");
-            scene_node_->attachObject(entity_);           
+                entity_ = sceneMgr->createEntity("WaterEntity", water_mesh);
+                entity_->setMaterialName("Ocean");
+                entity_->setCastShadows(false);
+
+                scene_node_ = sceneMgr->getRootSceneNode()->createChildSceneNode("WaterNode");
+                scene_node_->attachObject(entity_);           
+            }
         }
     }
 }

@@ -243,16 +243,19 @@ namespace
     void Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY)
     {
         boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
+        if (renderer)
+        {
+            Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
 
-        std::stringstream ss;
-        ss.clear();
-        ss << "TerrainPatch " << patchX << ", " << patchY;
-        Ogre::ManualObject *manual = sceneMgr->createManualObject(ss.str());
+            std::stringstream ss;
+            ss.clear();
+            ss << "TerrainPatch " << patchX << ", " << patchY;
+            Ogre::ManualObject *manual = sceneMgr->createManualObject(ss.str());
 
-        node = sceneMgr->createSceneNode();
-        sceneMgr->getRootSceneNode()->addChild(node);
-        node->attachObject(manual);
+            node = sceneMgr->createSceneNode();
+            sceneMgr->getRootSceneNode()->addChild(node);
+            node->attachObject(manual);
+        }
     }
 
     void Terrain::CreateOrUpdateTerrainPatch(const DecodedTerrainPatch &patch, int patchSize)

@@ -104,6 +104,12 @@ namespace Foundation
         //! uninit and unload a module
         Console::CommandResult ConsoleUnloadModule(const Core::StringVector &params);
 
+        //! List all loaded modules
+        Console::CommandResult ConsoleListModules(const Core::StringVector &params);
+
+        //! send event
+        Console::CommandResult ConsoleSendEvent(const Core::StringVector &params);
+
         //! Returns name of the configuration group used by the framework
         /*! The group name is used with ConfigurationManager, for framework specific
             settings. Alternatively a class may use it's own name as the name of the

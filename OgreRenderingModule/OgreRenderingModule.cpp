@@ -14,26 +14,14 @@
 #include "EC_OgreSky.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreConsoleOverlay.h"
+#include "OgreGtkWindowModule.h"
 
-#pragma warning( push )
-#pragma warning( disable : 4250 )
-#include <gtkmm/window.h>
-#include "OgreWidget.h"
-#pragma warning( pop )
-
-#ifdef WIN32
-#include <gdkwin32.h>
-#else
-#include <gdk/gdkx.h>
-#endif
 
 namespace OgreRenderer
 {
     OgreRenderingModule::OgreRenderingModule() : ModuleInterfaceImpl(type_static_),
         assetcategory_id_(0),
-        resourcecategory_id_(0),
-        ogre_widget_(NULL),
-        ogre_window_(NULL)
+        resourcecategory_id_(0)
     {
     }
 
@@ -83,35 +71,11 @@ namespace OgreRenderer
     void OgreRenderingModule::Initialize()
     {      
         assert (renderer_);
-        
-        bool embed = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "EmbedOgreIntoGtk", false);
-        
-        if (!embed)
-        {
-            renderer_->Initialize();
-        }
-        else
-        {
-            ogre_window_ = new Gtk::Window();
-            ogre_widget_ = new OgreWidget(renderer_);
-            ogre_window_->set_border_width(10);
-            ogre_window_->add(*ogre_widget_);
-            ogre_widget_->show();
-            ogre_window_->show();
-            ogre_window_->signal_hide().connect(sigc::mem_fun(*this, &OgreRenderingModule::OnOgreGtkWindowClosed));
 
-#ifdef _WINDOWS
-            // Must be after ogre_window_->show(), the window is not properly created until then.
-            Core::uint handle = 0;
-            Glib::RefPtr<Gdk::Window> main_gdk_win = ogre_window_->get_window();
-            handle = (Core::uint)(GDK_WINDOW_HWND(main_gdk_win->gobj()));
-            renderer_->SetMainWindowHandle(handle);
-#endif
-            //! \todo Retrieve main Gtk window handle for other platforms.
- 
-            assert (renderer_->IsInitialized());
-        }
 
+        assert (!renderer_->IsInitialized());
+        renderer_->Initialize();
+        
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Renderer, renderer_);
 
         LogInfo("Module " + Name() + " initialized.");
@@ -182,9 +146,6 @@ namespace OgreRenderer
             console->UnregisterCommand("RequestMesh");
         }
 
-        delete ogre_window_;
-        delete ogre_widget_;
-
         framework_->GetServiceManager()->UnregisterService(renderer_);
         renderer_.reset();
         
@@ -218,12 +179,6 @@ namespace OgreRenderer
 
         return Console::ResultSuccess();
     }
-
-    void OgreRenderingModule::OnOgreGtkWindowClosed()
-    {
-        if (renderer_)
-            renderer_->OnWindowClosed();
-    }
 }
 
 
@@ -231,5 +186,6 @@ using namespace OgreRenderer;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
    POCO_EXPORT_CLASS(OgreRenderingModule)
+   POCO_EXPORT_CLASS(OgreGtkWindowModule)
 POCO_END_MANIFEST
 

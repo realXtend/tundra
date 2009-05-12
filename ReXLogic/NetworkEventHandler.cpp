@@ -62,9 +62,13 @@ namespace RexLogic
             return;
         }
         
-        DebugCreateAmbientColorMaterial("AmbientWhite", 1.f, 1.f, 1.f);
-        DebugCreateAmbientColorMaterial("AmbientGreen", 0.f, 1.f, 0.f);
-        DebugCreateAmbientColorMaterial("AmbientRed", 1.f, 0.f, 0.f);
+        Foundation::ModuleWeakPtr renderer = framework->GetModuleManager()->GetModule(Foundation::Module::MT_Renderer);
+        if (renderer.expired() == false)
+        {
+            DebugCreateAmbientColorMaterial("AmbientWhite", 1.f, 1.f, 1.f);
+            DebugCreateAmbientColorMaterial("AmbientGreen", 0.f, 1.f, 0.f);
+            DebugCreateAmbientColorMaterial("AmbientRed", 1.f, 0.f, 0.f);
+        }
     }
 
     NetworkEventHandler::~NetworkEventHandler()

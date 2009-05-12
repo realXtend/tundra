@@ -13,14 +13,8 @@ namespace Foundation
     class Framework;
 }
 
-namespace Gtk
-{
-    class Window;
-}
-
 namespace OgreRenderer
 {
-    class OgreWidget;
     class Renderer;
     typedef boost::shared_ptr<Renderer> RendererPtr;
     
@@ -66,16 +60,9 @@ namespace OgreRenderer
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Renderer;
 
-        void OnOgreGtkWindowClosed();
-
     private:
         //! renderer
         RendererPtr renderer_;
-
-        //! widget for embedding the renderer
-        OgreWidget* ogre_widget_;
-        //! window for embedding the renderer
-        Gtk::Window* ogre_window_;
 
         //! asset event category
         Core::event_category_id_t assetcategory_id_;

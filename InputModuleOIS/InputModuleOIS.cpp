@@ -44,21 +44,27 @@ namespace Input
     {
         LogInfo("*** Initializing OIS ***");
 
+ 
+        
+        event_category_ = framework_->GetEventManager()->RegisterEventCategory("Input");
+
+        key_mapping_ = MapperPtr(new Mapper(this));
+
+        GetFramework()->GetServiceManager()->RegisterService(Foundation::Service::ST_Input, key_mapping_);
+
         boost::shared_ptr<Foundation::RenderServiceInterface> renderer = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
         if (!renderer)
         {
-            LogError("Failed to initialize. No renderer service registered.");
+            LogError("Failed to initialize properly. No renderer service registered. Won't be able to receive input from input devices.");
             return;
         }
 
         size_t window_handle = renderer->GetWindowHandle();
         if (window_handle == 0)
         {
-            LogError("Failed to initialize. No open window.");
+            LogError("Failed to initialize properly. No open window. Won't be able to receive input from input devices.");
             return;
         }
-        
-        event_category_ = framework_->GetEventManager()->RegisterEventCategory("Input");
 
         OIS::ParamList pl;
         pl.insert(std::make_pair(std::string("WINDOW"), Core::ToString(window_handle)));
@@ -114,10 +120,6 @@ namespace Input
         for( OIS::DeviceList::iterator i = list.begin(); i != list.end(); ++i )
         LogInfo("\tDevice: " + std::string(DeviceType[i->first]) + " Vendor: " + i->second);
 #endif
-
-        key_mapping_ = MapperPtr(new Mapper(this));
-
-        GetFramework()->GetServiceManager()->RegisterService(Foundation::Service::ST_Input, key_mapping_);
 
 
         LogInfo("Module " + Name() + " initialized.");
@@ -409,7 +411,8 @@ namespace Input
         if (mod_shift)
             mod_str += " shift";
 
-        LogDebug("Bound key " + keyboard_->getAsString(key) + " to event id: " + Core::ToString(pressed_event) + " with modifiers:" + mod_str + ".");
+        if (keyboard_)
+            LogDebug("Bound key " + keyboard_->getAsString(key) + " to event id: " + Core::ToString(pressed_event) + " with modifiers:" + mod_str + ".");
 #endif
 
         KeyEventInfoMap::iterator key_vector = listened_keys_.find(state);
@@ -466,7 +469,7 @@ namespace Input
 
     void InputModuleOIS::SetState(Input::State state)
     {
-        if (state != Input::State_Unknown && keyboard_->buffered())
+        if (state != Input::State_Unknown && (keyboard_ && keyboard_->buffered()))
         {
             LogDebug("Tried to explicitly change input state while in state Input::State_Buffered. Use SetState() instead.");
             return;
@@ -476,12 +479,15 @@ namespace Input
             input_state_ = state;
 
         // enable / disable buffered keyboard
-        if (state == Input::State_Buffered)
+        if (keyboard_)
         {
-            keyboard_->setBuffered(true);            
-        } else if (keyboard_->buffered())
-        {
-            keyboard_->setBuffered(false);
+            if (state == Input::State_Buffered)
+            {
+                keyboard_->setBuffered(true);            
+            } else if (keyboard_->buffered())
+            {
+                keyboard_->setBuffered(false);
+            }
         }
     }
 

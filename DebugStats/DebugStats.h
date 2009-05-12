@@ -145,6 +145,9 @@ private:
     
     /// Currenty selected entity ID on the PrimProperties window.
     Core::entity_id_t currentEntityID_;
+
+    //! for checking existance of gtkmmui module
+    Foundation::ModuleWeakPtr gtkmmui_module_;
     
     //For the validated column:
 //    Gtk::CellRendererText cellrendererValidated;

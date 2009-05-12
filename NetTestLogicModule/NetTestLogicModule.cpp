@@ -135,6 +135,9 @@ namespace NetTest
         Core::event_id_t event_id, 
         Foundation::EventDataInterface* data)
     {
+        if (!netTestWindow)
+            return false;
+
         if (category_id == networkStateCategoryID_)
         {
             if (event_id == OpenSimProtocol::Events::EVENT_SERVER_CONNECTED)
@@ -142,7 +145,8 @@ namespace NetTest
                 if (!netTestWindow)
                     InitNetTestWindow();
                     
-                netTestWindow->show();
+                if (netTestWindow)
+                    netTestWindow->show();
             }
             if (event_id == OpenSimProtocol::Events::EVENT_SERVER_DISCONNECTED)
                 SAFE_DELETE(netTestWindow);
@@ -231,7 +235,11 @@ namespace NetTest
     void NetTestLogicModule::InitNetTestWindow()
     {
         // Create the NetTest UI window from glade (xml) file.
-        netTestControls = Gnome::Glade::Xml::create("data/netTestWindow.glade");
+        Foundation::ModuleWeakPtr gtkmmui_module = framework_->GetModuleManager()->GetModule("GtkmmUI");
+        if (gtkmmui_module.expired() == false)
+        {
+            netTestControls = Gnome::Glade::Xml::create("data/netTestWindow.glade");
+        }
         if (!netTestControls)
             return;
 
@@ -266,7 +274,11 @@ namespace NetTest
     void NetTestLogicModule::InitPacketDumpWindow()
     {
         // Create the NetTest UI window from glade (xml) file.
-        packetDumpControls = Gnome::Glade::Xml::create("data/packetDumpWindow.glade");
+        Foundation::ModuleWeakPtr gtkmmui_module = framework_->GetModuleManager()->GetModule("GtkmmUI");
+        if (gtkmmui_module.expired() == false)
+        {
+            packetDumpControls = Gnome::Glade::Xml::create("data/packetDumpWindow.glade");
+        }
         if (!packetDumpControls)
             return;
         
@@ -351,6 +363,9 @@ namespace NetTest
     
     void NetTestLogicModule::WriteToLogWindow(uint32_t seq_num, const std::string &name, size_t bytes, bool inbound)
     {
+        if (!netTestControls)
+            return;
+
         // Get the widget controls.
 		Gtk::TreeView *treeview_log = 0;
         netTestControls->get_widget("treeview_log", treeview_log);
