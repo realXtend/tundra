@@ -87,6 +87,8 @@ namespace Communication
 
 		void RemoveIMSession(std::string session_id); 
 		ContactPtr GetContact(std::string id);
+		IMSessionPtr CreateIMSession(ContactPtr contact, ContactPtr originator);
+		
 		
 		// member variables
 		bool connected_; // todo: replace this with "Connection" or "ConnectionStatus" object

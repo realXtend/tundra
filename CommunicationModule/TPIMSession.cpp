@@ -6,7 +6,7 @@
 namespace Communication
 {
 
-	TPSession::TPSession(Foundation::ScriptObjectPtr python_communication_object):protocol_("")
+	TPSession::TPSession(ParticipantPtr originator, Foundation::ScriptObjectPtr python_communication_object) : originator_(originator), protocol_("")
 	{
 		python_communication_object_ = python_communication_object;		
 		participants_ = ParticipantListPtr( new ParticipantList() );
@@ -20,6 +20,11 @@ namespace Communication
 	std::string TPSession::GetProtocol()
 	{
 		return protocol_;
+	}
+
+	ParticipantPtr TPSession::GetOriginator()
+	{
+		return originator_;
 	}
 
 	void TPSession::Close()
@@ -53,9 +58,10 @@ namespace Communication
 		return participants_;
 	}
 
-	TPIMSession::TPIMSession(Foundation::ScriptObjectPtr python_communication_object):TPSession(python_communication_object)
+	// TPIMSession ---------------------------->
+
+	TPIMSession::TPIMSession(ParticipantPtr originator, Foundation::ScriptObjectPtr python_communication_object) : TPSession(originator, python_communication_object)
 	{
-//		participants_ = ParticipantListPtr
 	}
 
 	/*
@@ -79,7 +85,6 @@ namespace Communication
 			arg_text.append(address);
 			arg_text.append(":");
 			arg_text.append(m->GetText());
-		//		((TPIMMessage*)m.get())->session_id_ = id_; // we don't need the session id yet, but might be handy in future
 			strcpy(buf1, arg_text.c_str() ); 
 			args[0] = buf1;
 
@@ -131,6 +136,12 @@ namespace Communication
 	{
 		return TPSession::GetProtocol();
 	}
+	
+	ParticipantPtr TPIMSession::GetOriginator()
+	{
+		return TPSession::GetOriginator();
+	}
+
 
 
 

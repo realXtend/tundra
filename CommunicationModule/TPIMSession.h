@@ -8,17 +8,19 @@
 namespace Communication
 {
 
+	// TODO: ScriptObjectPtr doesn't should not be given to constructor...
 
 	class TPSession : public SessionInterface
 	{
 		friend class TelepathyCommunication;
 	public:
-		TPSession(Foundation::ScriptObjectPtr python_communication_object);
+		TPSession(ParticipantPtr originator, Foundation::ScriptObjectPtr python_communication_object);
 		virtual void Close();
 		virtual void SendInvitation(ContactPtr c);
 		virtual void Kick(ParticipantPtr p);
 		virtual ParticipantListPtr GetParticipants();
 		virtual std::string GetProtocol();
+		virtual ParticipantPtr GetOriginator();
 	protected:
 		virtual void NotifyClosedByRemote(); // Called by TelepathyCommunication
 		virtual std::string GetId(); // called by TelepathyCommunication
@@ -28,15 +30,18 @@ namespace Communication
 		std::string protocol_;
 		Foundation::ScriptObjectPtr python_communication_object_; 
 		ParticipantListPtr participants_;
+		ParticipantPtr originator_;
 	};
 
 
-	// Instant messaging session
+	/**
+	 * Instant message session. Capable to send IMMessagePtr objects
+	 **/ 
 	class TPIMSession : public TPSession, public IMSessionInterface
 	{
 		friend class TelepathyCommunication;
 	public:
-		TPIMSession(Foundation::ScriptObjectPtr python_communication_object);
+		TPIMSession(ParticipantPtr originator, Foundation::ScriptObjectPtr python_communication_object);
 		virtual void SendIMMessage(IMMessagePtr m);
 		virtual IMMessageListPtr GetMessageHistory();
 
@@ -46,6 +51,8 @@ namespace Communication
 		virtual void Kick(ParticipantPtr p);
 		virtual ParticipantListPtr GetParticipants();
 		virtual std::string GetProtocol();
+		virtual ParticipantPtr GetOriginator();
+
 
 
 	protected:

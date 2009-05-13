@@ -15,7 +15,7 @@ namespace CommunicationUI
 	{
 	public:
 		ChatSession(const char* counterpart, Foundation::ScriptObject* imScriptObject);
-		ChatSession(Communication::IMSessionPtr contact, Communication::CommunicationServicePtr communication_service);
+		ChatSession(Communication::IMSessionPtr session, Communication::CommunicationServicePtr communication_service);
 		~ChatSession(void);
 		
 		void ChannelOpen();

@@ -119,6 +119,7 @@ namespace Communication
 		virtual void Close() = 0;
 		virtual ParticipantListPtr GetParticipants() = 0;
 		virtual std::string GetProtocol() = 0;
+		virtual ParticipantPtr GetOriginator() = 0;
 	};
 	typedef boost::shared_ptr<SessionInterface> SessionPtr;
 
@@ -166,6 +167,8 @@ namespace Communication
 		virtual void Close() = 0;
 		virtual ParticipantListPtr GetParticipants() = 0;
 		virtual std::string GetProtocol() = 0;
+		virtual ParticipantPtr GetOriginator() = 0;
+
 	};
 	typedef boost::shared_ptr<IMSessionInterface> IMSessionPtr;
 	typedef std::vector<IMSessionPtr> IMSessionList;

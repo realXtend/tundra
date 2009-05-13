@@ -45,6 +45,7 @@ namespace CommunicationUI
 			counterpart_ = address;
 		}
 
+		counterpart_ = session->GetOriginator()->GetContact()->GetName();
 		SetupUI();
 	}
 
