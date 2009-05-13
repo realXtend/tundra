@@ -4,7 +4,7 @@
 
 #include "CommunicationServiceInterface.h"
 
-// todo: Move this implementation to Communication module
+// todo: Move this implementation to CommunicationModule
 
 namespace Communication
 {

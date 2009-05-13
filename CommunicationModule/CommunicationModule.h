@@ -29,7 +29,6 @@ namespace Communication
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communication;
 
 	private:
-		Foundation::Comms::CommunicationManagerPtr communication_manager_old_;
 		CommunicationServicePtr communication_manager_;
 	};
 }

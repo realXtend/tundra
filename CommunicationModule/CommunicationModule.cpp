@@ -26,12 +26,6 @@ namespace Communication
 
 	void CommunicationModule::Initialize() 
 	{
-		// OLD WAY (Still used)
-		//communication_manager_old_ = Foundation::Comms::CommunicationManagerPtr(new CommunicationManager());
-		//framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_CommunicationManager, communication_manager_old_);
-		//LogInfo("Module " + Name() + " initialized.");
-
-		// NEW
 		communication_manager_ = CommunicationServicePtr((CommunicationServiceInterface*)new CommunicationManager(framework_));
 		LogInfo("Initialized.");
 	}

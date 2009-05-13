@@ -114,16 +114,16 @@ namespace Communication
 		Foundation::ScriptEventInterface* script_event_service = dynamic_cast<Foundation::ScriptEventInterface*>(script_service.get());
 
 		std::string error;
-		this->communication_py_script_ = Foundation::ScriptObjectPtr(script_service->LoadScript(COMMUNICATION_SCRIPT_NAME, error));
+		this->communication_py_script_ = Foundation::ScriptObjectPtr(script_service->LoadScript(COMMUNICATION_PYTHON_MODULE, error));
 		if(error=="None")
 		{
-			this->python_communication_object_ = Foundation::ScriptObjectPtr ( this->communication_py_script_->GetObject(COMMUNICATION_CLASS_NAME) );
+			this->python_communication_object_ = Foundation::ScriptObjectPtr ( this->communication_py_script_->GetObject(COMMUNICATION_PYTHON_CLASS) );
 			CallPythonCommunicationObject("CDoStartUp");
 		}
 		else
 		{
 			std::string text = "Cannot run python script: ";
-			text.append(COMMUNICATION_SCRIPT_NAME);
+			text.append(COMMUNICATION_PYTHON_MODULE);
 			throw text;
 		}
 
@@ -294,7 +294,11 @@ namespace Communication
 		return ContactListPtr(list);
 	}
 
-	// static
+	/**
+	 *  static method to get instance pointer of communication manager.
+	 *  Python script callbacks are static methods and need this intance
+	 *  pointer.
+	 */
 	CommunicationManagerPtr CommunicationManager::GetInstance()
 	{
 		return CommunicationManager::instance_;

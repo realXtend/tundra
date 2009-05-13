@@ -101,10 +101,10 @@ namespace CommunicationUI
 
     void SelectionDialog::callback(char *answer)
     {
-	    std::map<std::string, Foundation::Comms::SettingsAttribute> attributes;
-	    Foundation::Comms::SettingsAttribute attr;
+	    std::map<std::string, SettingsAttribute> attributes;
+	    SettingsAttribute attr;
 
-	    attr.type = Foundation::Comms::String;
+		attr.type = CommSettingsType::String;
         if(usePassData_){
             std::cout << "using passdata" << passData_ << std::endl;
             attr.value = passData_;

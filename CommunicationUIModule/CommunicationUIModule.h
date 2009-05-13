@@ -19,6 +19,21 @@
 namespace CommunicationUI
 {
 
+	enum CommSettingsType 
+	{
+		String = 0,
+		Int,
+		Boolean
+	};
+
+	struct SettingsAttribute
+	{
+		//std::string name;
+		CommSettingsType type;
+		std::string value;
+		int length;
+	};
+
 	typedef boost::shared_ptr<ChatSession> ChatSessionUIPtr;
 	//
 	//class MODULE_API CommunicationUIModule : public Foundation::ModuleInterfaceImpl, public IConfigureCallBack
@@ -37,7 +52,7 @@ namespace CommunicationUI
 
         void StartChat(const char* contact);
 
-		virtual void Callback(std::string aConfigName, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes);
+		virtual void Callback(std::string aConfigName, std::map<std::string, SettingsAttribute> attributes);
 
 		MODULE_LOGGING_FUNCTIONS
 		//! returns name of this module. Needed for logging.
@@ -179,7 +194,7 @@ namespace CommunicationUI
 
 	private:
 		// Service References
-		boost::shared_ptr<Foundation::Comms::CommunicationManagerServiceInterface> commManager;
+//		boost::shared_ptr<Foundation::Comms::CommunicationManagerServiceInterface> commManager;
 		Communication::CommunicationServicePtr communication_service_;
 
 		boost::shared_ptr<Foundation::ScriptServiceInterface> scriptService;

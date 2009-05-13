@@ -15,29 +15,34 @@
 #include "Participant.h"
 #include "FriendRequest.h"
 
-// TODO: Make this threadsafe
-// TODO: paramters are char* in python function calls. Maybe eg. shared_prt or std::string would be better? (But this is python module issue)
-// TODO: rename all classes to be like: "IMSession : IMSession" -> "IMSession : IMSessionInterface"
-// TODO: Move console commands to separate class: ConsoleUI
+/**
+ * Implementation of CommunicationServiceInterface
+ *
+ * Uses telepathy-python library as backend using IMDemo python module through PythonScriptModule.
+ * Current python implementation uses Telepathy-Gabble connection manager to provice Jabber IM 
+ * services. By nature of Telepathy framework it's quite easy to use any connection manager and 
+ * the IM services those offer. So Communication Service is designed to be generic IM service
+ * which hide protocol specific features from user.
+ *
+ * @todo Make this threadsafe
+ * @todo paramters are char* in python function calls. Maybe eg. shared_prt or std::string would be better? (But this is python module issue)
+ * @todo Move console commands to separate class: ConsoleUI
+ * @todo namespace should be renamed to "CommunicationImpl" to hide the implementation from namespace of service interface
+ */
 
-// todo: should this be renamed to TPCommunicatation to hide the implementation from namespace of service interface
 namespace Communication
 {
-	#define COMMUNICATION_SCRIPT_NAME "IMDemo" // why not IMDemo.py ???
-	#define COMMUNICATION_CLASS_NAME "IMDemo"
-
-
+	#define COMMUNICATION_PYTHON_MODULE "IMDemo" 
+	#define COMMUNICATION_PYTHON_CLASS "IMDemo"
 
 	class CommunicationManager;
 	typedef boost::shared_ptr<CommunicationManager> CommunicationManagerPtr;
 
-	/*
-	 * Implements CommunicationServiceInterface with python backend which uses telepathy-python.
-	 * @todo rename to CommunicationManger
+	/**
+	 *  Implements CommunicationServiceInterface with python backend which uses telepathy-python.
 	 */
 	class CommunicationManager : public CommunicationServiceInterface
 	{
-		// TODO: Might be a better way to do communicatio between these classes
 		friend class IMSession;
 		friend class Session;
 		friend class FriendRequest;
