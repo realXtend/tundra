@@ -35,7 +35,7 @@ namespace Foundation
 
             \ingroup Services_group
         */
-        enum Type {ST_Renderer, ST_Physics, ST_Gui, ST_Scripting, ST_Console, ST_ConsoleCommand, ST_Asset, ST_CommunicationManager, ST_Texture, ST_Sound, ST_Input, ST_Communication, ST_Unknown };
+        enum Type {ST_Renderer, ST_Physics, ST_Gui, ST_Scripting, ST_Console, ST_ConsoleCommand, ST_Asset, ST_Texture, ST_Sound, ST_Input, ST_Communication, ST_Unknown };
     }
 }
 
