@@ -14,7 +14,7 @@
 #include "EventManager.h"
 #include "Platform.h"
 
-/*! \defgroup Foundation_group Foundation
+/*! \defgroup Foundation_group Foundation Client Interface
     \copydoc Foundation
 */
 
