@@ -110,7 +110,7 @@ namespace Scene
         Foundation::Framework *framework_;
 
         //! Name of the scene
-        const std::string name_;
+        std::string name_;
     };
 }
 

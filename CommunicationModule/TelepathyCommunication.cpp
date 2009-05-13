@@ -480,9 +480,7 @@ namespace Communication
 			return Console::ResultSuccess(text);
 		}
 		text.append("Sessions: (");
-		char buffer[1000]; // TODO: clean this up!
-		itoa(im_sessions_->size(), buffer, 10);
-		text.append(buffer);
+		text.append(Core::ToString<int>(im_sessions_->size()));
 		text.append(")\n");
 
 		ContactInfoPtr jabber_contact;
@@ -601,9 +599,7 @@ namespace Communication
 	{
 		std::string text;
 		text = "Friend requests (";
-		char buffer[1000];
-		itoa(friend_requests_->size(), buffer, 10);
-		text.append(buffer);
+		text.append(Core::ToString<int>(friend_requests_->size()));
 		text.append("):\n");
 
 		for ( FriendRequestList::iterator i = friend_requests_->begin(); i < friend_requests_->end(); i++)
