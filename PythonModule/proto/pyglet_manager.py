@@ -9,14 +9,18 @@ currently here is only test code for modules and handelers that would
 use the manager, nothing of the Manager itself yet.
 """
 
-import circuits
+#e = rexviewer.event
+
+import pyglet
 
 class RealxtendViewer(pyglet.event.EventDispatcher):
     def run(self, deltatime):
         print ".",
         self.dispatch_event('update', deltatime)
+        self.dispatch_event('on_chat', "Bob", "hello")
 
 RealxtendViewer.register_event_type('update')
+RealxtendViewer.register_event_type('on_chat')
     
 viewer = RealxtendViewer()
 
@@ -29,12 +33,12 @@ class TestModule:
     def __init__(self):
         self.data = 1
         
-    @viewer.event
-    def update(self):
+    #@viewer.event
+    def not_update(self, deltatime):
         if self.data == 1:
-            self.data == 0
+            self.data = 0
         else:
-            self.data == 1
+            self.data = 1
         print self.data,
             
 """
@@ -43,9 +47,26 @@ the python module of it, i.e. the file, can be considered as the module,
 so no classes are required.
 """
 
+"""XXX NOTE: the first notation a) somehow breaks c) if done after it,
+post to pyglet / submit a bug about it?"""
+# a)
 @viewer.event
-def dosomething():
+def update(deltatime):
     pass #e.g. move an object w.r.t to something (like time?)
+    print "_",
+
+# b)
+def arbitary_func(deltatime):
+    print "|",
+viewer.push_handlers(update=arbitary_func)
+
+# c)
+tm = TestModule()
+viewer.push_handlers(update=tm.not_update)
+
+@viewer.event
+def on_chat(frm, msg):
+    print "Chat from %s: %s" % (frm, msg)
     
 """
 update may be nice as a method, but the real thing are the events.
@@ -61,5 +82,4 @@ update may be nice as a method, but the real thing are the events.
     
 if __name__ == '__main__':
     pyglet.clock.schedule_interval(viewer.run, 0.1)
-
-
+    pyglet.app.run()

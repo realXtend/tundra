@@ -1,4 +1,5 @@
-import stripped_pyglet as pyglet
+import pyglet
+
 
 class RealxtendViewer(pyglet.event.EventDispatcher):
     def clank(self):
@@ -14,12 +15,16 @@ class RealxtendViewer(pyglet.event.EventDispatcher):
         pass
         print ".",
         self.dispatch_event('update', deltatime)
+        
+print RealxtendViewer
 
 RealxtendViewer.register_event_type('on_clank')
 RealxtendViewer.register_event_type('on_clicked')
 RealxtendViewer.register_event_type('update')
 
 viewer = RealxtendViewer()
+
+print viewer
 
 @viewer.event
 def on_clank():
@@ -40,5 +45,7 @@ def update(deltatime):
 #make the mock viewer run
 pyglet.clock.schedule_interval(viewer.run, 0.1)
 viewer.push_handlers(on_clicked=override_on_clicked)
+
+print "done scheduling"
 
 pyglet.app.run()
