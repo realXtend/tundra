@@ -59,7 +59,7 @@ namespace CommunicationUI
 //                      (framework_->GetService<Scene::SceneManager>(Foundation::Service::ST_SceneManager)).lock();
 		//commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager).lock();
 
-        commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager).lock();
+//        commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager).lock();
 
 		CommunicationUIModule::instance_= this;		
         
@@ -250,12 +250,12 @@ namespace CommunicationUI
         LogInfo(settingsStr);
         std::vector<std::string> settingsVect = this->SplitString(settingsStr, ":", 0);
         // code the vector into a map that config dialog understands
-        std::map<std::string, Foundation::Comms::SettingsAttribute> attrs;
+        std::map<std::string, SettingsAttribute> attrs;
 		
         for(std::vector<std::string>::iterator iter = settingsVect.begin(); iter<settingsVect.end()-1; iter+=2)
         {
-            Foundation::Comms::SettingsAttribute attr;
-		    attr.type = Foundation::Comms::String;
+            SettingsAttribute attr;
+			attr.type = CommSettingsType::String;
 		    attr.value = *(iter+1);
             std::string key = *iter;
             attrs[key] = attr;
@@ -273,10 +273,18 @@ namespace CommunicationUI
         Gtk::Main::run(sd);        
     }
 
+	// TODO: Move this to communication module ?
+	//       Or this can be read from file
+	std::map<std::string, SettingsAttribute> GetAccountAttributes()
+	{
+		std::map<std::string, SettingsAttribute>  attributes; //std::vector<std:string> list;
+		return attributes;
+	}
+
 	void CommunicationUIModule::OnAccountMenuSetAccountAndPassword()
 	{
 		//LogInfo("Set account");
-		std::map<std::string, Foundation::Comms::SettingsAttribute> attributes = commManager->GetAccountAttributes();
+		std::map<std::string, SettingsAttribute> attributes = GetAccountAttributes(); //commManager->GetAccountAttributes();
 		int count = attributes.size();
 		LogInfo(attributes.find("name")->first);
 
@@ -415,9 +423,9 @@ namespace CommunicationUI
     void CommunicationUIModule::OnContactAdd()
     {
         LogDebug("OnContactAdd");
-		std::map<std::string, Foundation::Comms::SettingsAttribute> attrs;
-		Foundation::Comms::SettingsAttribute contact_address;
-		contact_address.type = Foundation::Comms::String;
+		std::map<std::string, SettingsAttribute> attrs;
+		SettingsAttribute contact_address;
+		contact_address.type = CommSettingsType::String;
 		contact_address.value = "";
 		attrs["contact address"] = contact_address;
 		int count = attrs.size();
@@ -481,20 +489,21 @@ namespace CommunicationUI
 //        this->CallIMPyMethod("CSetStatus", "s", status);
     }
 
-	void CommunicationUIModule::Callback(std::string aConfigName, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes)
+	void CommunicationUIModule::Callback(std::string aConfigName, std::map<std::string, SettingsAttribute> attributes)
 	{
         if(aConfigName=="account settings"){
-            commManager->SetAccountAttributes(attributes);
+			// TODO: Handle settings, rg. write to ConfigureManager
+//            commManager->SetAccountAttributes(attributes);
         } else if(aConfigName=="connection settings") {
             LogInfo("Callback from settings dlg");
             //commManager->SetAccountAttributes(attributes);
             // code to attributes into one string and call save
             std::string saveString;
-            std::map<std::string, Foundation::Comms::SettingsAttribute>::const_iterator iter;	
+            std::map<std::string, SettingsAttribute>::const_iterator iter;	
             //for(iter = attributes.begin(); iter!=attributes.end(); iter++){
             for(iter = attributes.begin(); iter!=attributes.end(); ++iter){
                 std::string key = iter->first;
-                Foundation::Comms::SettingsAttribute attr = iter->second;
+                SettingsAttribute attr = iter->second;
                 saveString.append(key + ":" + attr.value + ":");                
             }
             // remove the last ":"
@@ -502,7 +511,7 @@ namespace CommunicationUI
             LogInfo(saveString);
             this->CallIMPyMethod("CSaveSettings", "s", saveString);
         } else if(aConfigName=="contact address") {
-            Foundation::Comms::SettingsAttribute sattr = attributes["contact address"];
+            SettingsAttribute sattr = attributes["contact address"];
 			Communication::ContactInfo* info = new Communication::ContactInfo();
 			info->SetProperty("protocol", "jabber"); // todo: remove this fixed definition
 			info->SetProperty("address", sattr.value);
@@ -512,7 +521,7 @@ namespace CommunicationUI
             LogInfo("Remote request callback");
             // send responce to other end
             std::string answer = attributes.begin()->first;
-            Foundation::Comms::SettingsAttribute user = attributes.begin()->second;
+            SettingsAttribute user = attributes.begin()->second;
             LogDebug(answer);
             LogDebug(user.value);
             if(answer=="Ok"){
@@ -524,7 +533,7 @@ namespace CommunicationUI
             LogInfo("Presence request callback");
             // send responce to other end
             std::string answer = attributes.begin()->first;
-            Foundation::Comms::SettingsAttribute user = attributes.begin()->second;
+            SettingsAttribute user = attributes.begin()->second;
             LogDebug(answer);
             LogDebug(user.value);
 			Communication::FriendRequestPtr r =	FindFriendRequest(user.value);
@@ -547,7 +556,7 @@ namespace CommunicationUI
             LogInfo("Contact accepted callback");
             // send responce to other end
             std::string answer = attributes.begin()->first;
-            Foundation::Comms::SettingsAttribute user = attributes.begin()->second;
+            SettingsAttribute user = attributes.begin()->second;
             LogDebug(answer);
             LogDebug(user.value);
             if(answer=="Ok"){
@@ -558,7 +567,7 @@ namespace CommunicationUI
         } else if(aConfigName=="Subscribe incoming"){
             LogInfo("Subscribe incoming callback");
             std::string answer = attributes.begin()->first;
-            Foundation::Comms::SettingsAttribute user = attributes.begin()->second;
+            SettingsAttribute user = attributes.begin()->second;
             LogInfo(answer);
             if(answer=="Ok"){
                 CallIMPyMethod("CSendSubscription", "s", user.value);
@@ -569,7 +578,7 @@ namespace CommunicationUI
             LogInfo("Incoming contact request");
             // send responce to other end
             std::string answer = attributes.begin()->first;
-            Foundation::Comms::SettingsAttribute user = attributes.begin()->second;
+            SettingsAttribute user = attributes.begin()->second;
             LogDebug(answer);
             LogDebug(user.value);
             if(answer=="Ok"){
@@ -585,7 +594,8 @@ namespace CommunicationUI
             LogInfo("Unknown callback");
             LogInfo(aConfigName);
         }
-		if(aConfigName=="account settings"){ commManager->SetAccountAttributes(attributes); }
+		// TODO: Save eg. configure manager from where Communication Service can read them ?
+//		if(aConfigName=="account settings"){ commManager->SetAccountAttributes(attributes); }
 	}
 
 

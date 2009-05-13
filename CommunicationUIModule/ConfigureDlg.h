@@ -3,7 +3,9 @@
 
 //#include <stdafx.h>
 
+#include "CommunicationUIModule.h"
 #include "DialogCallbackInterface.h"
+
 
 #pragma warning( push )
 #pragma warning( disable : 4250 )
@@ -17,14 +19,14 @@ namespace CommunicationUI
     public:
         IConfigureCallBack()  {}
         virtual ~IConfigureCallBack() {}
-	    virtual void Callback(std::string aConfigName, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes) = 0;
+	    virtual void Callback(std::string aConfigName, std::map<std::string, SettingsAttribute> attributes) = 0;
     };
 
 
     class ConfigureDlg : public Gtk::Dialog
     {
     public:
-	    ConfigureDlg(int count, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes, std::string name,
+	    ConfigureDlg(int count, std::map<std::string, SettingsAttribute> attributes, std::string name,
 		   DialogCallBackInterface* aConfCaller);
 
       //  ConfigureDlg(int count, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes, std::string name,
@@ -63,7 +65,7 @@ namespace CommunicationUI
         //DialogCallBackInterfacePtr configCallback;
 
 	    //Foundation::Comms::CommunicationManagerServiceInterface* commManager;
-	    void (*callbackMethod)(std::map<std::string, Foundation::Comms::SettingsAttribute>);  
+	    void (*callbackMethod)(std::map<std::string, SettingsAttribute>);  
     };
 }
 #pragma warning( pop )

@@ -24,7 +24,7 @@
 namespace CommunicationUI
 {
 
-    ConfigureDlg::ConfigureDlg(int count, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes, std::string name,
+    ConfigureDlg::ConfigureDlg(int count, std::map<std::string, SettingsAttribute> attributes, std::string name,
 							     DialogCallBackInterface* aConfCaller)
     //ConfigureDlg::ConfigureDlg(int count, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes, std::string name,
 				//			     DialogCallBackInterfacePtr aConfCaller)
@@ -53,7 +53,7 @@ namespace CommunicationUI
 	    /* pack the table into the scrolled window */
 	    m_ScrolledWindow.add(m_Table);
 
-	    std::map<std::string, Foundation::Comms::SettingsAttribute>::const_iterator iter;	
+	    std::map<std::string, SettingsAttribute>::const_iterator iter;	
 
 	    int row = 0;
 	    for(iter = attributes.begin(); iter!=attributes.end(); ++iter)
@@ -76,7 +76,7 @@ namespace CommunicationUI
 		    pair->entry = pEntry;
 		    widgetPairs.push_back(pair);
 
-            Foundation::Comms::SettingsAttribute attr = iter->second;            
+            SettingsAttribute attr = iter->second;            
             pEntry->set_text(Glib::ustring(attr.value));
     		
 		    row++;
@@ -123,7 +123,7 @@ namespace CommunicationUI
     void ConfigureDlg::onButtonOk()
     {
 	    // read values to map:
-	    std::map<std::string, Foundation::Comms::SettingsAttribute> attributes;
+	    std::map<std::string, SettingsAttribute> attributes;
     	
 	    std::vector<accessWidgets*>::iterator iter;
 	    for(iter = widgetPairs.begin();iter!=widgetPairs.end();iter++)
@@ -135,8 +135,8 @@ namespace CommunicationUI
 		    std::string value = aW->entry->get_text().raw();
 		    //Communication::CommunicationUIModule::LogInfo(name);
 		    //Communication::CommunicationUIModule::LogInfo(value);
-		    Foundation::Comms::SettingsAttribute attr;
-		    attr.type = Foundation::Comms::String;
+		    SettingsAttribute attr;
+			attr.type =  CommSettingsType::String;
 		    attr.value = value;
 		    attributes[name] = attr;
 	    }
