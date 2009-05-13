@@ -7,14 +7,35 @@
 namespace Communication
 {
 
-	TPMessage::TPMessage()
+	TPMessage::TPMessage(): time_stamp_(CreateTimeStamp())
 	{
-
 	}
 
-	TPMessage::TPMessage(ParticipantPtr author): author_(author)
+    /**
+	 * @return timestamp in format HH:MM
+	 **/
+	std::string TPMessage::CreateTimeStamp()
 	{
-		// TODO: get timestamp 
+		time_t t;
+		struct tm* time_info;
+		time(&t);
+		time_info = localtime(&t);
+		int hours = time_info->tm_hour;
+		int minutes = time_info->tm_min;
+
+		std::stringstream stream;
+		if (hours < 10)
+			stream << "0";
+		stream << hours;
+		stream << ":";
+		if (minutes < 10)
+			stream << "0";
+		stream << minutes;
+		return stream.str();
+	}
+
+	TPMessage::TPMessage(ParticipantPtr author): time_stamp_(CreateTimeStamp()), author_(author)
+	{
 	}
 
 	ParticipantPtr TPMessage::GetAuthor()
@@ -24,13 +45,8 @@ namespace Communication
 
 	std::string TPMessage::GetTimeStamp()
 	{
-		return "00:00"; // todo: set real time to variable at constructor
+		return time_stamp_;
 	}
-
-	//std::string TPMessage::GetSessionId()
-	//{
-	//	return session_id_;
-	//}
 
 
 	//
@@ -38,27 +54,30 @@ namespace Communication
 	// 
 
 
+	/**
+	 * Default constructor
+	 **/
 	TPIMMessage::TPIMMessage()
 	{
-
+		TPMessage::TPMessage();
 	}
 
+	/**
+	 * @param author The author participant of this message
+	 * @param text Text contect of this message
+	 **/
 	TPIMMessage::TPIMMessage(ParticipantPtr author, std::string text): TPMessage(author), text_(text)
 	{
-		
 	}
 
 	TPIMMessage::TPIMMessage(std::string text): text_(text)
 	{
-		
 	}
 	
 	void TPIMMessage::SetSession(SessionPtr s)
 	{
 		session_ = s;
 	}
-
-
 
 	void TPIMMessage::SetText(std::string text)
 	{
@@ -72,7 +91,7 @@ namespace Communication
 
 	std::string TPIMMessage::GetTimeStamp()
 	{
-		return "00:00"; // todo: set real time to variable at constructor
+		return time_stamp_;
 	}
 
 	ParticipantPtr TPIMMessage::GetAuthor()

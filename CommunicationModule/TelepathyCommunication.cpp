@@ -765,9 +765,8 @@ namespace Communication
 			if ( c->GetContactInfo("jabber")->GetProperty("address").compare(addr) == 0)
 			{
 				IMSessionPtr s = comm->CreateIMSession(c);
-				IMSessionRequestEvent* e = new IMSessionRequestEvent(s, c);
-				Events::IMSessionRequestEventPtr e_ptr = Events::IMSessionRequestEventPtr(e);
-				comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::IM_SESSION_REQUEST, (Foundation::EventDataInterface*)&e_ptr);
+				IMSessionRequestEvent e = IMSessionRequestEvent(s, c);
+				comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::IM_SESSION_REQUEST, (Foundation::EventDataInterface*)&e);
 				std::string text = "Session created for: ";
 				text.append(addr);
 				LogInfo(text);

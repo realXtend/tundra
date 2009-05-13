@@ -17,12 +17,14 @@ namespace Communication
 	public:
 		TPMessage();
 		TPMessage(ParticipantPtr author);
-		Communication::ParticipantPtr GetAuthor();
-		std::string GetTimeStamp();
+		virtual Communication::ParticipantPtr GetAuthor();
+		virtual std::string GetTimeStamp();
 	protected:
-		std::string GetSessionId(); // called by TelepathyCommunication
+		virtual std::string TPMessage::CreateTimeStamp();
 
+		std::string time_stamp_;
 		ParticipantPtr author_;
+		SessionPtr session_;
 	};
 
 	/*
@@ -46,8 +48,6 @@ namespace Communication
 
 	protected:
 		std::string text_;
-		SessionPtr session_;
-//		ParticipantPtr author_;
 	};
 
 } // end of namespace: Communication
