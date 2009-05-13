@@ -63,7 +63,7 @@ namespace CommunicationUI
 
 		CommunicationUIModule::instance_= this;		
         
-        setupSciptInterface();		
+       // setupSciptInterface();		
 		SetupCommunicationServiceUsage();
 	}
 
@@ -884,9 +884,41 @@ namespace CommunicationUI
        return returnVector;
     } 
 
-	/*
- 	 * Handles all communication events
-     */
+	/**
+	 * @return Corresponding ChatSessionUIPtr object of given IMSessionPtr object
+	 **/
+	ChatSessionUIPtr CommunicationUIModule::GetUIChatSession(Communication::IMSessionPtr s)
+	{
+		for (std::map<std::string, ChatSessionUIPtr>::iterator i = chatSessions_.begin(); i != chatSessions_.end(); i++)
+		{
+			ChatSessionUIPtr cs = i->second;
+			if ( cs->session_ == s )
+			{
+				return cs;
+			}
+		}
+		return ChatSessionUIPtr();
+		//std::string map_key = m->GetAuthor()->GetContact()->GetContactInfo("jabber")->GetProperty("address"); // <--- THIS WORKS ONLY IF THERE IS ONLY ONE PARTICIPANT PER SESSION !!!!
+		//ChatSessionUIPtr ui_session = chatSessions_[map_key]->OnMessageReceived(m);
+		//if (ui_session)
+		//	return ui_session;
+		//
+		//return ChatSessionUIPtr(NULL);
+	}
+
+	/**
+	 * Creates a new ui session element for given im session
+	 **/
+	ChatSessionUIPtr CommunicationUIModule::CreateUIChatSession(Communication::IMSessionPtr s)
+	{
+		return ChatSessionUIPtr();
+	}
+
+
+
+	/**
+ 	 * Handles all communication service events
+     **/
     bool CommunicationUIModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if ( category_id != communication_event_category_id_)
@@ -900,8 +932,15 @@ namespace CommunicationUI
 				Communication::IMMessagePtr m = e->GetIMMessage();
 				Communication::IMSessionPtr s = e->GetSession();
 
-				std::string map_key = m->GetAuthor()->GetContact()->GetContactInfo("jabber")->GetProperty("address"); // <--- THIS WORKS ONLY IF THERE IS ONLY ONE PARTICIPANT PER SESSION !!!!
-				chatSessions_[map_key]->OnMessageReceived(m);
+				ChatSessionUIPtr ui_session = GetUIChatSession(s);
+				if ( ui_session == NULL)
+				{
+					// We have a new incoming session
+
+					break;// todo: Handle situation
+				}
+
+				ui_session->OnMessageReceived(m);
 
 				std::string message_text = m->GetText();
 				std::string text;
@@ -1022,6 +1061,7 @@ namespace CommunicationUI
         return false;
     }    
 
+	
 
 	void CommunicationUIModule::UpdateOnlineStatusList()
 	{
@@ -1060,9 +1100,24 @@ namespace CommunicationUI
 		}
 	}
 
-	void CommunicationUIModule::HandleIncomingIMSession(Communication::IMSessionPtr session)
+	/**
+	 * Creates ui session object and popups a new window for given session object
+	 **/
+	void CommunicationUIModule::HandleIncomingIMSession(Communication::IMSessionPtr s)
 	{
-
+		std::string protocol = "jabber"; // todo: remove this fixed definition
+		std::string address = s->GetOriginator()->GetContact()->GetContactInfo(protocol)->GetProperty("address");
+		std::string session_originator = "test"; // todo: s->GetOriginator() --> ParticipantPtr
+		ChatSessionUIPtr chat_session = GetUIChatSession(s);
+		if (!chat_session)
+		{
+			chat_session = ChatSessionUIPtr( new ChatSession(s, communication_service_) );
+			chatSessions_[std::string(session_originator)] = chat_session;
+		}
+		chat_session->ChannelOpen();
+		//            instance_->chatSessions_[std::string(addr)] = ChatSessionUIPtr(new ChatSession(addr, instance_->imScriptObject));
+        //} 
+        //instance_->chatSessions_[std::string(addr)]->ChannelOpen();
 	}
 
 }

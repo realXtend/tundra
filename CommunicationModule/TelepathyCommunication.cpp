@@ -186,44 +186,54 @@ namespace Communication
 		throw error_message;
 	}
 
-	/*
+	/**
+	 *
 	 * Creates a new IM session with given contact.
-	 * /todo: in future it's possible to add participients to existing session
-	 */
+	 * @todo: in future it's possible to add participients to existing session
+	 *
+	 **/
 	IMSessionPtr TelepathyCommunication::CreateIMSession(ContactPtr contact)
+	{
+		return CreateIMSession(contact, user_);
+	}
+
+	IMSessionPtr TelepathyCommunication::CreateIMSession(ContactPtr contact, ContactPtr originator)
 	{
 		std::string protocol = "jabber";
 
 		// Currently we only support jabber
 		if ( protocol.compare("jabber") == 0)
 		{
-//			int session_id = 0; // todo: replace by real id
-			TPIMSession* session = new TPIMSession(python_communication_object_);
-			session->protocol_ = protocol;
+			ParticipantPtr partner = ParticipantPtr( new TPParticipant(contact) );
+			ParticipantPtr user = ParticipantPtr( new TPParticipant(user_) );
 
-			// Add participants: user and the contact
-			TPParticipant* participant = new TPParticipant(contact);
-			ParticipantPtr participant_ptr = ParticipantPtr((ParticipantInterface*)participant);
-			session->participants_->push_back(participant_ptr);
-			participant = new TPParticipant(user_);
-			participant_ptr = ParticipantPtr((ParticipantInterface*)participant);
-			session->participants_->push_back(participant_ptr);
-
+			TPIMSession* session = NULL;
+			if (contact == originator)
+				session = new TPIMSession(partner, python_communication_object_);
+			else
+				session = new TPIMSession(user, python_communication_object_);
 			IMSessionPtr session_ptr = IMSessionPtr((IMSessionInterface*)session);
+
+			session->protocol_ = protocol;
+			session->participants_->push_back(partner);
+			session->participants_->push_back(user);
+			
 			this->im_sessions_->push_back(session_ptr);
 
-			char** args = new char*[1];
-			char* buf1 = new char[1000];
 			std::string address = contact->GetContactInfo(protocol)->GetProperty("address");
 			if (address.length() == 0)
 			{
 				LogError("Given contact has no address");
 				// TODO: We must handle error in better way
-				return IMSessionPtr((IMSessionInterface*)new TPIMSession(python_communication_object_));
+				return IMSessionPtr();
+//				return IMSessionPtr((IMSessionInterface*)new TPIMSession(python_communication_object_));
 			}
+
+			char** args = new char*[1];
+			char* buf1 = new char[1000];
 			strcpy(buf1, address.c_str());
 			args[0] = buf1;
-			std::string method = "CStartChatSession"; // todo: CCreateIMSessionJabber, CCreateIMSessionSIP, etc.
+			std::string method = "CStartChatSession";
 			std::string syntax = "s";
 			Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, args);
 			return session_ptr;
@@ -732,12 +742,12 @@ namespace Communication
 	/*
 	   Called by communication.py via PythonScriptModule
 	   When new session (telepathy-text-channel) is opened
-	   todo: session id should be received (we get jabber address)
-	   todo: This is called both with incoming and outgoing sessions. These should be separedted.
+	   todo: session id of somekind should be received (we get jabber address)
+	   todo: This is called both with incoming and outgoing sessions. These should be separated.
 	*/
 	void TelepathyCommunication::PyCallbackChannelOpened(char* addr)
 	{
-		// Find the right session (with participant with given address)
+		// Find the right session (with participant with given address, this is the only way currently...)
 		IMSessionListPtr sessions = TelepathyCommunication::GetInstance()->im_sessions_;
 		for (IMSessionList::iterator i = sessions->begin() ; i < sessions->end(); i++)
 		{
@@ -747,15 +757,15 @@ namespace Communication
 			{
 				if ( (*j)->GetContact()->GetContactInfo("jabber")->GetProperty("address").compare(addr) == 0)
 				{
-					// We find the right session and so we can be sure that this session already exist
-					// we don't have to do anything
+					// We found the right session so we can be sure that session already exist
+					// we don't have to do anything here
 					LogDebug("Channel opened for exist session");
 					return;
 				}
 			}
 		}
 
-		// There was no session with this address, we have to create one and send proper event
+		// There was no session with given address, we have to create one and send proper event
 		// * this happens when session is created by remote partner
 
 		TelepathyCommunicationPtr comm = TelepathyCommunication::GetInstance();
@@ -764,7 +774,7 @@ namespace Communication
 			ContactPtr c = *i;
 			if ( c->GetContactInfo("jabber")->GetProperty("address").compare(addr) == 0)
 			{
-				IMSessionPtr s = comm->CreateIMSession(c);
+				IMSessionPtr s = comm->CreateIMSession(c, c);
 				IMSessionRequestEvent e = IMSessionRequestEvent(s, c);
 				comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::IM_SESSION_REQUEST, (Foundation::EventDataInterface*)&e);
 				std::string text = "Session created for: ";

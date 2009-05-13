@@ -120,6 +120,8 @@ namespace CommunicationUI
 		void UpdateContactList();
 		Communication::ContactPtr FindContact(std::string address);
 		void HandleIncomingIMSession(Communication::IMSessionPtr session);
+		ChatSessionUIPtr GetUIChatSession(Communication::IMSessionPtr s);
+		ChatSessionUIPtr CreateUIChatSession(Communication::IMSessionPtr s);
 
 
         // adds contact to ui contact list
@@ -177,11 +179,8 @@ namespace CommunicationUI
 		// Service References
 		boost::shared_ptr<Foundation::Comms::CommunicationManagerServiceInterface> commManager;
 		Communication::CommunicationServicePtr communication_service_;
-        //boost::weak_ptr<Foundation::Comms::CommunicationManagerServiceInterface> commManager;
-		
 
 		boost::shared_ptr<Foundation::ScriptServiceInterface> scriptService;
-        //boost::weak_ptr<Foundation::ScriptServiceInterface> scriptService;
 
 		// Scripts
 		Foundation::ScriptObject* sobj;
