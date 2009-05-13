@@ -54,6 +54,9 @@ namespace OgreRenderer
     private:
         //! Ogre mesh
         Ogre::MeshPtr ogre_mesh_;
+        
+        //! destroys mesh if exists
+        void RemoveMesh();
     };
 }
 

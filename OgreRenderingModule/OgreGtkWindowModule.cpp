@@ -45,7 +45,7 @@ namespace OgreRenderer
     // virtual
     void OgreGtkWindowModule::PreInitialize()
     {
-        bool embed = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "EmbedOgreIntoGtk", false);
+        bool embed = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "embed_into_gtk", false);
 
         boost::shared_ptr<OgreRenderingModule> rendering_module = framework_->GetModuleManager()->GetModule<OgreRenderingModule>(Foundation::Module::MT_Renderer).lock();
         Foundation::ModuleWeakPtr gtkmmui_module = framework_->GetModuleManager()->GetModule("GtkmmUI");

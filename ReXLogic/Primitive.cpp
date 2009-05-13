@@ -5,6 +5,7 @@
 #include "RexNetworkUtils.h"
 #include "RexLogicModule.h"
 #include "EC_OpenSimPrim.h"
+#include "EC_NetworkPosition.h"
 #include "EC_Viewable.h"
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
 #include "../OgreRenderingModule/EC_OgreMesh.h"
@@ -42,7 +43,7 @@ namespace RexLogic
             // Create a new entity.
             Scene::EntityPtr entity = CreateNewPrimEntity(entityid);
             rexlogicmodule_->RegisterFullId(fullid,entityid); 
-            EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
+            EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
             prim.LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
             prim.FullId = fullid;
             CheckPendingRexPrimData(entityid);
@@ -52,7 +53,7 @@ namespace RexLogic
         // Send the 'Entity Updated' event.
         /*
         Core::event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
-        Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_OpenSimPrim");
+        Foundation::ComponentInterfacePtr component = entity->GetComponent(EC_OpenSimPrim::NameStatic());
         EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(component.get());
         Scene::SceneEventData::Events entity_event_data(entityid);
         entity_event_data.sceneName = scene->Name();
@@ -69,8 +70,9 @@ namespace RexLogic
         
         Core::StringVector defaultcomponents;
         defaultcomponents.push_back(EC_OpenSimPrim::NameStatic());
+        defaultcomponents.push_back(EC_NetworkPosition::NameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
-        
+                
         Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents); 
 
         DebugCreateOgreBoundingBox(rexlogicmodule_, entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()),"AmbientRed");
@@ -96,7 +98,8 @@ namespace RexLogic
             uint8_t pcode = msg->ReadU8();
 
             Scene::EntityPtr entity = GetOrCreatePrimEntity(localid, fullid);
-            EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
+            EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+            EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(entity->GetComponent(EC_NetworkPosition::NameStatic()).get());
 
             ///\todo Are we setting the param or looking up by this param? I think the latter, but this is now doing the former. 
             ///      Will cause problems with multigrid support.
@@ -106,6 +109,13 @@ namespace RexLogic
             prim.ClickAction = msg->ReadU8();
 
             Core::Vector3Df ogre_scale = Core::OpenSimToOgreCoordinateAxes(msg->ReadVector3());
+            // Scale is not handled by interpolation system, so set directly
+            Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());  
+            if (placeable)
+            {
+                OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());                                    
+                ogrepos.SetScale(ogre_scale);
+            }            
             
             size_t bytes_read = 0;
             const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
@@ -121,24 +131,13 @@ namespace RexLogic
                 // ofs 36 - orientation, quat with last (w) component omitted - 3 x float (3x4 bytes)
                 // ofs 48 - angular velocity - 3 x float (3x4 bytes)
                 // total 60 bytes
-
-                Core::Vector3df pos = *reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[0]);
-                ogre_pos = Core::OpenSimToOgreCoordinateAxes(pos);
-                Core::Quaternion quat = Core::UnpackQuaternionFromFloat3((float*)&objectdatabytes[36]); 
-                ogre_quat = Core::OpenSimToOgreQuaternion(quat);
-
-                /// \todo Velocity field unhandled.
-                /// \todo Acceleration field unhandled.
-                /// \todo Angular velocity field unhandled.
-
-                Foundation::ComponentPtr placeable = entity->GetComponent("EC_OgrePlaceable");
-                if (placeable)
-                {
-                    OgreRenderer::EC_OgrePlaceable* ec_ogrepos = checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
-                    ec_ogrepos->SetPosition(ogre_pos);
-                    ec_ogrepos->SetOrientation(ogre_quat);
-                    ec_ogrepos->SetScale(ogre_scale);
-                }
+                
+                netpos.position_ = Core::OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[0]));                
+                netpos.velocity_ = Core::OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[12])); 
+                netpos.accel_ = Core::OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[24]));
+                netpos.rotation_ = Core::OpenSimToOgreQuaternion(Core::UnpackQuaternionFromFloat3((float*)&objectdatabytes[36])); 
+                netpos.rotvel_ = Core::OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[48]));
+                netpos.Updated();
             }
             else
                 RexLogicModule::LogError("Error reading ObjectData for prim:" + Core::ToString(prim.LocalId) + ". Bytes read:" + Core::ToString(bytes_read));
@@ -171,29 +170,26 @@ namespace RexLogic
         int i = 0;
         uint32_t localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[i]);                
         i += 6;
-
-        Core::Vector3df position = GetProcessedVector(&bytes[i]);
+        
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(localid);
+        if(!entity) return;
+        EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(entity->GetComponent(EC_NetworkPosition::NameStatic()).get());
+        
+        netpos.position_ = GetProcessedVector(&bytes[i]);
         i += sizeof(Core::Vector3df);
         
-        Core::Vector3df velocity = GetProcessedScaledVectorFromUint16(&bytes[i],128);
+        netpos.velocity_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
         i += 6;
         
-        Core::Vector3df accel = GetProcessedVectorFromUint16(&bytes[i]); 
+        netpos.accel_ = GetProcessedVectorFromUint16(&bytes[i]); 
         i += 6;
 
-        Core::Quaternion rotation = GetProcessedQuaternion(&bytes[i]);
+        netpos.rotation_ = GetProcessedQuaternion(&bytes[i]);
         i += 8;
 
-        Core::Vector3df rotvel = GetProcessedVectorFromUint16(&bytes[i]);
+        netpos.rotvel_ = GetProcessedVectorFromUint16(&bytes[i]);
         
-        // set values
-        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(localid);
-        if(entity)
-        {
-            OgreRenderer::EC_OgrePlaceable &ogrePos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent("EC_OgrePlaceable").get());
-            ogrePos.SetPosition(position);
-            ogrePos.SetOrientation(rotation);                    
-        }
+        netpos.Updated();
     }
     
     bool Primitive::HandleRexGM_RexMediaUrl(OpenSimProtocol::NetworkEventInboundData* data)
@@ -248,7 +244,7 @@ namespace RexLogic
     {
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         if (!entity) return;
-        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
+        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
                
         RexPrimDataMap::iterator i = pending_rexprimdata_.find(prim.FullId);
         if (i != pending_rexprimdata_.end())
@@ -264,7 +260,7 @@ namespace RexLogic
 
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         if (!entity) return;
-        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
+        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
 
         // graphical values
         prim.DrawType = ReadUInt8FromBytes(primdata,idx);
@@ -324,7 +320,7 @@ namespace RexLogic
         if(!entity)
             return false;
 
-        Foundation::ComponentPtr component = entity->GetComponent("EC_OpenSimPrim");
+        Foundation::ComponentPtr component = entity->GetComponent(EC_OpenSimPrim::NameStatic());
         if(component)
         {
             EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(component.get());
@@ -350,7 +346,7 @@ namespace RexLogic
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(full_id);
         if(entity)
         {
-            EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
+            EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
             prim.ObjectName = name;
             prim.Description = desc;
             
@@ -373,7 +369,7 @@ namespace RexLogic
                                 
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         if (!entity) return;
-        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());
+        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
             
         if ((prim.DrawType == RexTypes::DRAWTYPE_MESH) && (!prim.MeshUUID.IsNull()))
         {
@@ -431,7 +427,7 @@ namespace RexLogic
     {                        
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         if (!entity) return;
-        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());            
+        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());            
            
         Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
         if (!mesh) return;
@@ -521,7 +517,7 @@ namespace RexLogic
                
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         if (!entity) return;
-        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent("EC_OpenSimPrim").get());            
+        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());            
            
         Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
         if (!mesh) return;

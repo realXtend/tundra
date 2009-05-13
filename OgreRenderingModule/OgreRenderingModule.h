@@ -53,12 +53,6 @@ namespace OgreRenderer
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
         //! callback for console command
-        Console::CommandResult ConsoleRequestTexture(const Core::StringVector &params);
-
-        //! callback for console command
-        Console::CommandResult ConsoleRequestMesh(const Core::StringVector &params);
-
-        //! callback for console command
         Console::CommandResult ConsoleStats(const Core::StringVector &params);
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Renderer;

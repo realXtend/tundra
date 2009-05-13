@@ -6,6 +6,7 @@
 #include "RexServerConnection.h"
 #include "Renderer.h"
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
+#include "EC_NetworkPosition.h"
 #include <Ogre.h>
 
 namespace RexLogic
@@ -122,7 +123,7 @@ namespace RexLogic
     {
         if(avatarentity_)
         {
-            OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent("EC_OgrePlaceable").get());
+            OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get());
             return ogreplaceable.GetOrientation();        
         }
         else
@@ -133,7 +134,7 @@ namespace RexLogic
     {
         if(avatarentity_)
         {
-            OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent("EC_OgrePlaceable").get());
+            OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get());
             ogreplaceable.SetOrientation(rotation);
             net_dirtymovement_ = true;         
         }
@@ -176,7 +177,7 @@ namespace RexLogic
             return;
 
         Ogre::Camera *camera = renderer->GetCurrentCamera();
-        OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent("EC_OgrePlaceable").get());
+        OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get());
 
         // update body rotation
         if(yaw_ != 0)
@@ -211,7 +212,7 @@ namespace RexLogic
         }        
     }
     
-    void AvatarController::HandleServerObjectUpdate(RexTypes::Vector3 position, Core::Quaternion rotation)
+    void AvatarController::HandleAgentMovementComplete(RexTypes::Vector3 position, Core::Quaternion rotation)
     {
         if(!avatarentity_)
             return;
@@ -219,8 +220,12 @@ namespace RexLogic
         // client is authorative over own avatar rotation for now
             
         // set position according to the value from server
-        OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent("EC_OgrePlaceable").get());
-        ogreplaceable.SetPosition(position);            
+        EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity_->GetComponent(EC_NetworkPosition::NameStatic()).get());
+
+        netpos.position_ = position;
+        netpos.velocity_ = Core::Vector3Df::ZERO;
+        netpos.accel_ = Core::Vector3Df::ZERO;
+        netpos.Updated();    
     }    
     
 }

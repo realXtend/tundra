@@ -28,6 +28,7 @@
 // Ogre -specific
 #include "../OgreRenderingModule/Renderer.h"
 #include "../OgreRenderingModule/OgreTextureResource.h"
+#include "../OgreRenderingModule/EC_OgrePlaceable.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -40,8 +41,11 @@
 
 namespace RexLogic
 {
-    RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_), current_controller_(Controller_Avatar), send_input_state_(false)
-    {
+    RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_), 
+        current_controller_(Controller_Avatar), 
+        send_input_state_(false), 
+        movement_damping_constant_(10.0f)
+    { 
     }
 
     RexLogicModule::~RexLogicModule()
@@ -96,6 +100,8 @@ namespace RexLogic
         current_controller_ = Controller_Avatar;
         input_handler_->SetState(avatar_controller_);
         
+        movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting("RexLogicModule", "movement_damping_constant", 10.0f);
+             
         LogInfo("Module " + Name() + " initialized.");
     }
 
@@ -197,6 +203,9 @@ namespace RexLogic
     // virtual
     void RexLogicModule::Update(Core::f64 frametime)
     {
+        // interpolate objects
+        HandleInterpolation(frametime);
+            
         // Poll the connection state and update the info to the UI.
         OpenSimProtocol::Connection::State cur_state = rexserver_connection_->GetConnectionState();
         if (cur_state != connectionState_)
@@ -223,7 +232,7 @@ namespace RexLogic
                 GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
             else
                 GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
-        }
+        }      
     }
 
     // virtual
@@ -411,7 +420,7 @@ namespace RexLogic
 
         return GetCurrentActiveScene();
     }
-
+    
     Scene::EntityPtr RexLogicModule::GetEntityWithComponent(Core::entity_id_t entityid, const std::string &requiredcomponent)
     {
         if (!activeScene_)
@@ -453,8 +462,53 @@ namespace RexLogic
         if (iter != UUIDs_.end())
             UUIDs_.erase(iter);    
     } 
-}
 
+
+    void RexLogicModule::HandleInterpolation(Core::f64 frametime)
+    {
+        //! \todo probably should not be directly in RexLogicModule
+        
+        if (!activeScene_)
+            return;
+            
+        // Damping interpolation factor, dependent on frame time
+        Core::f32 factor = pow(2.0, -frametime * movement_damping_constant_);
+        if (factor < 0.0) factor = 0.0;
+        if (factor > 1.0) factor = 1.0;
+        Core::f32 rev_factor = 1.0 - factor;
+                
+        for(Scene::SceneManagerInterface::EntityIterator iter = activeScene_->begin();
+            iter != activeScene_->end(); ++iter)
+        {
+            Scene::EntityInterface &entity = *iter;
+            
+            Foundation::ComponentPtr ogrepos_ptr = entity.GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());              
+            Foundation::ComponentPtr netpos_ptr = entity.GetComponent(EC_NetworkPosition::NameStatic());              
+            if (!ogrepos_ptr || !netpos_ptr)
+                continue;   
+            
+            OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(ogrepos_ptr.get()); 
+            EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(netpos_ptr.get()); 
+            
+            bool client_rotation = false;    
+            if (GetAvatarController()->GetAvatarEntity() && entity.GetId() == GetAvatarController()->GetAvatarEntity()->GetId())
+                client_rotation = true; // client authoritative rotation
+            
+            netpos.AddTime(frametime); 
+
+            // Interpolate, then damp
+            netpos.velocity_ += netpos.accel_ * frametime;
+            netpos.position_ += netpos.velocity_ * frametime;            
+            netpos.damped_position_ = rev_factor * netpos.position_ + factor * netpos.damped_position_;
+
+            ogrepos.SetPosition(netpos.damped_position_);  
+                      
+            if (!client_rotation)
+                ogrepos.SetOrientation(netpos.rotation_);                     
+        }
+    }
+}   
+    
 using namespace RexLogic;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)

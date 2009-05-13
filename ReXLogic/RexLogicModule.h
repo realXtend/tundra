@@ -111,7 +111,10 @@ namespace RexLogic
 
         //! Handle a resource event. Needs to be passed to several receivers (Prim, Terrain etc.)
         bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
-
+    
+        //! Handle motion interpolation of scene objects
+        void HandleInterpolation(Core::f64 frametime);
+        
         //! login through console
         Console::CommandResult ConsoleLogin(const Core::StringVector &params);
 
@@ -139,6 +142,9 @@ namespace RexLogic
 
         //! (local) camera controller for this client
         CameraControllerPtr camera_controller_;
+
+        //! Movement damping constant
+        Core::f32 movement_damping_constant_;
 
         typedef boost::function<bool(Core::event_id_t,Foundation::EventDataInterface*)> LogicEventHandlerFunction;
         typedef std::map<Core::event_category_id_t, LogicEventHandlerFunction> LogicEventHandlerMap;
