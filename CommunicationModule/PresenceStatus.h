@@ -1,16 +1,16 @@
-#ifndef incl_TPPresenceStatus_h
-#define incl_TPPresenceStatus_h
+#ifndef incl_PresenceStatus_h
+#define incl_PresenceStatus_h
 
 #include "Foundation.h"
 #include "EventDataInterface.h"
 
 namespace Communication
 {
-	class TPPresenceStatus: PresenceStatusInterface
+	class PresenceStatus: PresenceStatusInterface
 	{
-		friend class TelepathyCommunication;
+		friend class CommunicationManager;
 	public:
-		TPPresenceStatus();
+		PresenceStatus();
 		void SetOnlineStatus(std::string status);
 		std::string GetOnlineStatus();
 		void SetOnlineMessage(std::string message);
@@ -27,4 +27,4 @@ namespace Communication
 	};
 }
 
-#endif // incl_TPPresenceStatus_h
+#endif // incl_PresenceStatus_h

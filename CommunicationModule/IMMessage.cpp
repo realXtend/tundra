@@ -1,20 +1,20 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
 
-#include "TPIMMessage.h"
+#include "IMMessage.h"
 
 
 namespace Communication
 {
 
-	TPMessage::TPMessage(): time_stamp_(CreateTimeStamp())
+	Message::Message(): time_stamp_(CreateTimeStamp())
 	{
 	}
 
     /**
 	 * @return timestamp in format HH:MM
 	 **/
-	std::string TPMessage::CreateTimeStamp()
+	std::string Message::CreateTimeStamp()
 	{
 		time_t t;
 		struct tm* time_info;
@@ -34,67 +34,67 @@ namespace Communication
 		return stream.str();
 	}
 
-	TPMessage::TPMessage(ParticipantPtr author): time_stamp_(CreateTimeStamp()), author_(author)
+	Message::Message(ParticipantPtr author): time_stamp_(CreateTimeStamp()), author_(author)
 	{
 	}
 
-	ParticipantPtr TPMessage::GetAuthor()
+	ParticipantPtr Message::GetAuthor()
 	{
 		return author_;
 	}
 
-	std::string TPMessage::GetTimeStamp()
+	std::string Message::GetTimeStamp()
 	{
 		return time_stamp_;
 	}
 
 
 	//
-	// TPIMMessage ----------------------------------->
+	// IMMessage ----------------------------------->
 	// 
 
 
 	/**
 	 * Default constructor
 	 **/
-	TPIMMessage::TPIMMessage()
+	IMMessage::IMMessage()
 	{
-		TPMessage::TPMessage();
+		Message::Message();
 	}
 
 	/**
 	 * @param author The author participant of this message
 	 * @param text Text contect of this message
 	 **/
-	TPIMMessage::TPIMMessage(ParticipantPtr author, std::string text): TPMessage(author), text_(text)
+	IMMessage::IMMessage(ParticipantPtr author, std::string text): Message(author), text_(text)
 	{
 	}
 
-	TPIMMessage::TPIMMessage(std::string text): text_(text)
+	IMMessage::IMMessage(std::string text): text_(text)
 	{
 	}
 	
-	void TPIMMessage::SetSession(SessionPtr s)
+	void IMMessage::SetSession(SessionPtr s)
 	{
 		session_ = s;
 	}
 
-	void TPIMMessage::SetText(std::string text)
+	void IMMessage::SetText(std::string text)
 	{
 		this->text_ = text;
 	}
 
-	std::string TPIMMessage::GetText()
+	std::string IMMessage::GetText()
 	{
 		return this->text_;
 	}
 
-	std::string TPIMMessage::GetTimeStamp()
+	std::string IMMessage::GetTimeStamp()
 	{
 		return time_stamp_;
 	}
 
-	ParticipantPtr TPIMMessage::GetAuthor()
+	ParticipantPtr IMMessage::GetAuthor()
 	{
 		return author_;
 	}

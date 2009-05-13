@@ -1,5 +1,5 @@
-#ifndef incl_TPIMMessage_h
-#define incl_TPIMMessage_h
+#ifndef incl_IMMessage_h
+#define incl_IMMessage_h
 
 #include "Foundation.h"
 #include "EventDataInterface.h"
@@ -11,16 +11,16 @@ namespace Communication
 	/*
 	 *
 	 */
-	class TPMessage: public MessageInterface
+	class Message: public MessageInterface
 	{
-		friend class TelepathyCommunication;
+		friend class CommunicationManager;
 	public:
-		TPMessage();
-		TPMessage(ParticipantPtr author);
+		Message();
+		Message(ParticipantPtr author);
 		virtual Communication::ParticipantPtr GetAuthor();
 		virtual std::string GetTimeStamp();
 	protected:
-		virtual std::string TPMessage::CreateTimeStamp();
+		virtual std::string Message::CreateTimeStamp();
 
 		std::string time_stamp_;
 		ParticipantPtr author_;
@@ -30,19 +30,19 @@ namespace Communication
 	/*
 	 *
 	 */
-	class TPIMMessage: public TPMessage, public IMMessageInterface
+	class IMMessage: public Message, public IMMessageInterface
 	{
-		friend class TelepathyCommunication;
-		friend class TPIMSession;
+		friend class CommunicationManager;
+		friend class IMSession;
 	public:
-		TPIMMessage();
-		TPIMMessage(ParticipantPtr author, std::string text); // should be private ?
-		TPIMMessage(std::string text); // should be private ?
+		IMMessage();
+		IMMessage(ParticipantPtr author, std::string text); // should be private ?
+		IMMessage(std::string text); // should be private ?
 		void SetSession(SessionPtr s); // SessionInterface::CreateIMMessage(text), might be a better choice
 		void SetText(std::string t);
 		std::string GetText();
 
-		// TODO: Fix this - these are TPMessage class methods...
+		// TODO: Fix this - these are Message class methods...
 		virtual std::string GetTimeStamp();
 		virtual ParticipantPtr GetAuthor();
 
@@ -52,4 +52,4 @@ namespace Communication
 
 } // end of namespace: Communication
 
-#endif // incl_TPIMMessage_h
+#endif // incl_IMMessage_h

@@ -1,17 +1,17 @@
-#ifndef incl_TPContact_h
-#define incl_TPContact_h
+#ifndef incl_Contact_h
+#define incl_Contact_h
 
 #include "Foundation.h"
 #include "EventDataInterface.h"
-#include "TPPresenceStatus.h"
+#include "PresenceStatus.h"
 
 namespace Communication
 {
-	class TPContact : ContactInterface
+	class Contact : ContactInterface
 	{
-		friend class TelepathyCommunication;
+		friend class CommunicationManager;
 	public:
-		TPContact(std::string id);
+		Contact(std::string id);
 		virtual void SetName(std::string name);
 		virtual std::string GetName();
 		virtual PresenceStatusPtr GetPresenceStatus();
@@ -27,4 +27,4 @@ namespace Communication
 
 } // end of namespace: Communication
 
-#endif // incl_TPContact_h
+#endif // incl_Contact_h

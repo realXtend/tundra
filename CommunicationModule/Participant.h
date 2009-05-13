@@ -1,16 +1,16 @@
-#ifndef incl_TPParticipant_h
-#define incl_TPParticipant_h
+#ifndef incl_Participant_h
+#define incl_Participant_h
 
 #include "Foundation.h"
 #include "EventDataInterface.h"
-#include "TPPresenceStatus.h"
+#include "PresenceStatus.h"
 
 namespace Communication
 {
-	class TPParticipant : public ParticipantInterface
+	class Participant : public ParticipantInterface
 	{
 	public:
-		TPParticipant(ContactPtr contact);
+		Participant(ContactPtr contact);
 		virtual ContactPtr GetContact();
 	protected:
 		ContactPtr contact_;
@@ -21,4 +21,4 @@ namespace Communication
 
 } // end of namespace Communication
 
-#endif // incl_TPParticipant_h
+#endif // incl_Participant_h

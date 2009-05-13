@@ -1,20 +1,20 @@
-#ifndef incl_TPIMSession_h
-#define incl_TPIMSession_h
+#ifndef incl_IMSession_h
+#define incl_IMSession_h
 
 #include "Foundation.h"
 #include "EventDataInterface.h"
-#include "TPIMMessage.h"
+#include "IMMessage.h"
 
 namespace Communication
 {
 
 	// TODO: ScriptObjectPtr doesn't should not be given to constructor...
 
-	class TPSession : public SessionInterface
+	class Session : public SessionInterface
 	{
-		friend class TelepathyCommunication;
+		friend class CommunicationManager;
 	public:
-		TPSession(ParticipantPtr originator, Foundation::ScriptObjectPtr python_communication_object);
+		Session(ParticipantPtr originator, Foundation::ScriptObjectPtr python_communication_object);
 		virtual void Close();
 		virtual void SendInvitation(ContactPtr c);
 		virtual void Kick(ParticipantPtr p);
@@ -22,8 +22,8 @@ namespace Communication
 		virtual std::string GetProtocol();
 		virtual ParticipantPtr GetOriginator();
 	protected:
-		virtual void NotifyClosedByRemote(); // Called by TelepathyCommunication
-		//virtual std::string GetId(); // called by TelepathyCommunication
+		virtual void NotifyClosedByRemote(); // Called by CommunicationManager
+		//virtual std::string GetId(); // called by CommunicationManager
 		
 		
 		std::string id_;
@@ -37,11 +37,11 @@ namespace Communication
 	/**
 	 * Instant message session. Capable to send IMMessagePtr objects
 	 **/ 
-	class TPIMSession : public TPSession, public IMSessionInterface
+	class IMSession : public Session, public IMSessionInterface
 	{
-		friend class TelepathyCommunication;
+		friend class CommunicationManager;
 	public:
-		TPIMSession(ParticipantPtr originator, Foundation::ScriptObjectPtr python_communication_object);
+		IMSession(ParticipantPtr originator, Foundation::ScriptObjectPtr python_communication_object);
 		virtual void SendIMMessage(IMMessagePtr m);
 		virtual IMMessageListPtr GetMessageHistory();
 
@@ -56,7 +56,7 @@ namespace Communication
 
 
 	protected:
-		void NotifyMessageReceived(IMMessagePtr m); // called by TelepathyCommunication
+		void NotifyMessageReceived(IMMessagePtr m); // called by CommunicationManager
 
 		IMMessageList im_messages_;
 	};
@@ -64,4 +64,4 @@ namespace Communication
 } // end of namespace: Communication
 
 
-#endif // incl_TPIMSession_h
+#endif // incl_IMSession_h

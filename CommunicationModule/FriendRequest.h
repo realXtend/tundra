@@ -1,15 +1,19 @@
-#ifndef incl_TPFriendRequest_h
-#define incl_TPFriendRequest_h
+#ifndef incl_FriendRequest_h
+#define incl_FriendRequest_h
 
 #include "Foundation.h"
 #include "EventDataInterface.h"
 
+/*
+ * =========================
+ * Hello there: This is a test class !
+ */
 namespace Communication
 {
-	class TPFriendRequest : FriendRequestInterface
+	class FriendRequest : FriendRequestInterface
 	{
 	public:
-		TPFriendRequest(ContactInfoPtr contact_info);
+		FriendRequest(ContactInfoPtr contact_info);
 		virtual ContactInfoPtr GetContactInfo();
 		virtual void Accept();
 		virtual void Deny();
@@ -19,4 +23,4 @@ namespace Communication
 
 } // end of namespace: Communication
 
-#endif // incl_TPFriendRequest_h
+#endif // incl_FriendRequest_h
