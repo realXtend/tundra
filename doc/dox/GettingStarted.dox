@@ -15,6 +15,10 @@
 	create new ones, see 
 	- \subpage ModuleArchitecture "Module architecture".
 	
+\section rex_logic_GS RealXtend and Open Simulator logic
+	To learn more about the logic behind RealXtend.
+	- \subpage RexLogic_Module "RexLogic module".
+
 \section scene_GS Scene
 	To learn more about the scene-entity-component model, see
 	- \subpage SceneModelPage "Scenes, entities and components".
@@ -29,6 +33,10 @@
 	- \subpage OpenSimProtocolConnection "Managing the OpenSim connection state", 
 	- \subpage OSUDP "Interfacing with the OpenSim world using OSUDP messages" and
 	- \subpage XMLRPC "Performing custom XMLRPC calls".
+	
+\section ui_GS Viewer user interface
+	For creating and handling user interface, see
+	- \subpage GtkmmUIPage "GtkmmUI module for Gtk".
     
 \section assets_GS Working with assets
 	- \subpage AssetModule "Using the asset module"
@@ -39,8 +47,10 @@
 \section input_GS Working with input
 	- \subpage Input_page "Handling input"
 	
-\section debug_GS Development / debug
+\section debug_GS Development / debug help
 	- \subpage DebugConsole "Debug console"
+	- \subpage DebugStatsPage "DebugStats module"
+	- \subpage NetTestLogicPage "NetTestLogic module"
 	
 \section unit_testing_GS Testing and unit tests
 	- \subpage Testing_page "Testing"
