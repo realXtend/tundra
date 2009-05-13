@@ -1,7 +1,6 @@
 #ifndef incl_CommunicationModule_h
 #define incl_CommunicationModule_h
 
-//#include <Interfaces/EntityInterface.h>
 #include "Foundation.h"
 #include "ModuleInterface.h"
 

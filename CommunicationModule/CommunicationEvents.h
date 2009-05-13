@@ -3,11 +3,15 @@
 
 #include "Foundation.h"
 #include "EventDataInterface.h"
-
+/**
+ *  Implementation of all communication service events.
+ *
+ *
+ */
 namespace Communication
 {
-	/*
-	 *
+	/**
+	 *  
 	 */
 	class IMMessageEvent : public Events::IMMessageEventInterface
 	{
@@ -21,7 +25,7 @@ namespace Communication
 	};
 
 
-	/*
+	/**
 	 *
 	 */
 	class PresenceStatusUpdateEvent : public Events::PresenceStatusUpdateEventInterface
@@ -35,7 +39,7 @@ namespace Communication
 	
 
 
-	/*
+	/**
 	 *
 	 */
 	class IMSessionRequestEvent : public Events::IMSessionRequestEventInterface
@@ -49,6 +53,9 @@ namespace Communication
 		ContactPtr contact_;
 	};
 
+	/**
+	 *
+	 */
 	class FriendRequestEvent : public Events::FriendRequestEventInterface
 	{
 	public:
@@ -58,7 +65,7 @@ namespace Communication
 		FriendRequestPtr friend_request_;
 	};
 
-	/*
+	/**
 	 *
 	 */
 	class SessionStateEvent : public  Events::SessionStateEventInterface
@@ -73,7 +80,7 @@ namespace Communication
 		IMSessionPtr session_;
 	};
 
-	/*
+	/**
 	 *
 	 */
 	class ConnectionStateEvent: public Events::ConnectionStateEventInterface
