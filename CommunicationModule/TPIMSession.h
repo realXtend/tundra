@@ -23,7 +23,7 @@ namespace Communication
 		virtual ParticipantPtr GetOriginator();
 	protected:
 		virtual void NotifyClosedByRemote(); // Called by TelepathyCommunication
-		virtual std::string GetId(); // called by TelepathyCommunication
+		//virtual std::string GetId(); // called by TelepathyCommunication
 		
 		
 		std::string id_;

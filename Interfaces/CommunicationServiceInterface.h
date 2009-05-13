@@ -213,7 +213,7 @@ namespace Communication
 		virtual void CloseConnection() = 0; 
 		virtual IMSessionPtr CreateIMSession(ContactPtr contact) = 0;
 		virtual IMSessionPtr CreateIMSession(ContactInfoPtr contact) = 0;
-		virtual ContactListPtr GetContactList() = 0;
+		virtual ContactListPtr GetContactList() const = 0;
 		virtual void SetPresenceStatus(PresenceStatusPtr p) = 0; 
 		virtual PresenceStatusPtr GetPresenceStatus() = 0;
 		virtual IMMessagePtr CreateIMMessage(std::string text) = 0;

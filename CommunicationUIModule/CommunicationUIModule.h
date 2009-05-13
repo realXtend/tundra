@@ -122,7 +122,9 @@ namespace CommunicationUI
 		void HandleIncomingIMSession(Communication::IMSessionPtr session);
 		ChatSessionUIPtr GetUIChatSession(Communication::IMSessionPtr s);
 		ChatSessionUIPtr CreateUIChatSession(Communication::IMSessionPtr s);
-
+		void HandleFriendRequest(Communication::FriendRequestPtr r);
+		void ShowFriendRequestWindow(Communication::FriendRequestPtr r);
+		Communication::FriendRequestPtr	FindFriendRequest(std::string address);
 
         // adds contact to ui contact list
 		void addContactItem(char *);
@@ -192,6 +194,8 @@ namespace CommunicationUI
 
 		std::map<std::string, std::string> contactList_;
 		Communication::ContactListPtr contact_list_;
+		typedef std::map<std::string, Communication::FriendRequestPtr> FriendRequestMap;
+		FriendRequestMap friend_requests_;
 
 
 	};
