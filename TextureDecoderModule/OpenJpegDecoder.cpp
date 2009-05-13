@@ -181,9 +181,9 @@ namespace TextureDecoder
             TextureResource* texture = checked_static_cast<TextureResource*>(resource.get());
             Core::u8* data = texture->GetData();
             texture->SetLevel(request.level_);
-            for (int y = 0; y < actual_width; ++y)
+            for (int y = 0; y < actual_height; ++y)
             {
-                for (int x = 0; x < actual_height; ++x)
+                for (int x = 0; x < actual_width; ++x)
                 {
                     for (int c = 0; c < image->numcomps; ++c)
                     {
