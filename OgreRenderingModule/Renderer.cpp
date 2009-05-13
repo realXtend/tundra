@@ -137,14 +137,14 @@ namespace OgreRenderer
         LoadPlugins(plugins_filename_);
         
 #ifdef _WINDOWS
-        std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>("OgreRenderer", "RenderSystem", "Direct3D9 Rendering Subsystem");
+        std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>("OgreRenderer", "rendersystem", "Direct3D9 Rendering Subsystem");
 #else
         std::string rendersystem_name = "OpenGL Rendering Subsystem";
         framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", rendersystem_name);
 #endif
-        int width = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "WindowWidth", 800);
-        int height = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "WindowHeight", 600);
-        bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "Fullscreen", false);
+        int width = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_width", 800);
+        int height = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_height", 600);
+        bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "fullscreen", false);
         
         Ogre::RenderSystem* rendersystem = root_->getRenderSystemByName(rendersystem_name);
         

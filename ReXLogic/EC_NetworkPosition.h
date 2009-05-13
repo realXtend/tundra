@@ -10,6 +10,8 @@
 namespace RexLogic
 {
     //! Represents object position/rotation/velocity data received from network, for clientside inter/extrapolation
+    /*! Note currently values are stored in Ogre format axes.
+     */ 
     class EC_NetworkPosition : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_NetworkPosition);
@@ -31,8 +33,32 @@ namespace RexLogic
         //! Rotational velocity;
         Core::Vector3df rotvel_;
         
-        //! Age of last update from network
+        //! Age of current update from network
         Core::f64 time_since_update_;      
+        
+        //! Previous update interval
+        Core::f64 time_since_prev_update_;         
+        
+        //! Damped position
+        Core::Vector3df damped_position_; 
+        
+        //! Damped orientation
+        Core::Quaternion damped_rotation_;
+        
+        //! Whether update is first
+        bool first_update;        
+        
+        //! Add time
+        void AddTime(Core::f64 frametime);
+                
+        //! Finished an update
+        void Updated();
+        
+        //! Disable position damping, call after updating position
+        void NoPositionDamping();
+
+        //! Disable rotation damping, call after updating rotation
+        void NoRotationDamping();
          
     private:
         EC_NetworkPosition(Foundation::ModuleInterface* module);        

@@ -43,15 +43,6 @@ namespace OgreRenderer
         DECLARE_MODULE_EC(EC_OgreCustomObject);
         DECLARE_MODULE_EC(EC_OgreConsoleOverlay);
 
-
-        AutoRegisterConsoleCommand(Console::CreateCommand(
-                "RequestTexture", "Download, decode & create Ogre texture. Usage: RequestTexture(uuid)", 
-                Console::Bind(this, &OgreRenderingModule::ConsoleRequestTexture)));
-
-        AutoRegisterConsoleCommand(Console::CreateCommand(
-                "RequestMesh", "Download & create Ogre mesh. Usage: RequestMesh(uuid)", 
-                Console::Bind(this, &OgreRenderingModule::ConsoleRequestMesh)));
-
         AutoRegisterConsoleCommand(Console::CreateCommand(
                 "RenderStats", "Prints out render statistics.", 
                 Console::Bind(this, &OgreRenderingModule::ConsoleStats)));
@@ -139,14 +130,6 @@ namespace OgreRenderer
     // virtual 
     void OgreRenderingModule::Uninitialize()
     {        
-        if (framework_->GetServiceManager()->IsRegistered(Foundation::Service::ST_ConsoleCommand))
-        {
-            // Unregister debug commands
-            boost::shared_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
-            console->UnregisterCommand("RequestTexture");
-            console->UnregisterCommand("RequestMesh");
-        }
-
         framework_->GetServiceManager()->UnregisterService(renderer_);
         renderer_.reset();
         
@@ -157,28 +140,6 @@ namespace OgreRenderer
     void OgreRenderingModule::Update(Core::f64 frametime)
     {
         renderer_->Update(frametime);
-    }
-
-    Console::CommandResult OgreRenderingModule::ConsoleRequestTexture(const Core::StringVector &params)
-    {
-        if (params.size() < 1)
-            return Console::ResultFailure("Usage: RequestTexture(uuid)");
-
-        if (renderer_)
-            renderer_->RequestResource(params[0], OgreTextureResource::GetTypeStatic());
-
-        return Console::ResultSuccess();
-    }
-
-    Console::CommandResult OgreRenderingModule::ConsoleRequestMesh(const Core::StringVector &params)
-    {
-        if (params.size() < 1)
-            return Console::ResultFailure("Usage: RequestMesh(uuid)");
-
-        if (renderer_)
-            renderer_->RequestResource(params[0], OgreMeshResource::GetTypeStatic());
-
-        return Console::ResultSuccess();
     }
 
     Console::CommandResult OgreRenderingModule::ConsoleStats(const Core::StringVector &params)

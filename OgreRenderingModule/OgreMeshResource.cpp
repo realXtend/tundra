@@ -21,17 +21,7 @@ namespace OgreRenderer
 
     OgreMeshResource::~OgreMeshResource()
     {
-        if (!ogre_mesh_.isNull())
-        {
-            std::string mesh_name = ogre_mesh_->getName();
-            ogre_mesh_.setNull();
-
-            try
-            {
-                Ogre::MeshManager::getSingleton().remove(mesh_name);
-            }
-            catch (...) {}
-        }
+        RemoveMesh();
     }
 
     bool OgreMeshResource::SetData(Foundation::AssetPtr source)
@@ -86,7 +76,7 @@ namespace OgreRenderer
         catch (Ogre::Exception &e)
         {
             OgreRenderingModule::LogError("Failed to create mesh " + id_ + ": " + std::string(e.what()));
-            ogre_mesh_.setNull();            
+            RemoveMesh();            
             return false;
         }
 
@@ -105,4 +95,19 @@ namespace OgreRenderer
     {
         return type_name;
     }    
+    
+    void OgreMeshResource::RemoveMesh()
+    {
+        if (!ogre_mesh_.isNull())
+        {
+            std::string mesh_name = ogre_mesh_->getName();
+            ogre_mesh_.setNull();
+
+            try
+            {
+                Ogre::MeshManager::getSingleton().remove(mesh_name);
+            }
+            catch (...) {}
+        }    
+    }
 }

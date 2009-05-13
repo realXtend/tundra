@@ -49,7 +49,7 @@ namespace RexLogic
         //! update camera position
         void Update(Core::f64 frametime);
         
-        void HandleServerObjectUpdate(RexTypes::Vector3 position, Core::Quaternion rotation);   
+        void HandleAgentMovementComplete(RexTypes::Vector3 position, Core::Quaternion rotation);   
 
     private:
         Foundation::Framework *framework_;
