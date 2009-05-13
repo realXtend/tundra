@@ -90,6 +90,8 @@ namespace Communication
 		IMSessionPtr CreateIMSession(ContactPtr contact, ContactPtr originator);
 		void RequestPresenceStatuses();
 		Foundation::ScriptObject* CallPythonCommunicationObject(const std::string &method_name, const std::string &arg) const;
+		Foundation::ScriptObject* CallPythonCommunicationObject(const std::string &method_name) const;
+
 
 		
 		
