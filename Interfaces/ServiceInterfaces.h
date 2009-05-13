@@ -12,7 +12,6 @@
 #include "ConsoleCommandServiceInterface.h"
 #include "AssetServiceInterface.h"
 #include "TextureServiceInterface.h"
-#include "CommunicationManagerServiceInterface.h"
 #include "CommunicationServiceInterface.h"
 
 namespace Foundation
