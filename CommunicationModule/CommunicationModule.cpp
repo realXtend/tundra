@@ -6,7 +6,7 @@
 
 #include "CommunicationModule.h"
 #include "CommunicationManager.h"
-#include "TelepathyCommunication.h"
+#include "CommunicationManager.h"
 
 
 namespace Communication
@@ -27,26 +27,23 @@ namespace Communication
 	void CommunicationModule::Initialize() 
 	{
 		// OLD WAY (Still used)
-		communication_manager_old_ = Foundation::Comms::CommunicationManagerPtr(new CommunicationManager());
-		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_CommunicationManager, communication_manager_old_);
-		LogInfo("Module " + Name() + " initialized.");
+		//communication_manager_old_ = Foundation::Comms::CommunicationManagerPtr(new CommunicationManager());
+		//framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_CommunicationManager, communication_manager_old_);
+		//LogInfo("Module " + Name() + " initialized.");
 
 		// NEW
-		//communication_manager_ = CommunicationServicePtr((CommunicationServiceInterface*)new TelepathyCommunication(framework_));
-		//framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communication, communication_manager_);//.get());
-		//LogInfo("Initialized.");
+		communication_manager_ = CommunicationServicePtr((CommunicationServiceInterface*)new CommunicationManager(framework_));
+		LogInfo("Initialized.");
 	}
 
 	void CommunicationModule::PostInitialize()
 	{
-		// todo: Connect with credential from conf file ?
 	}
 
 	void CommunicationModule::Uninitialize()
 	{
-        framework_->GetServiceManager()->UnregisterService(communication_manager_old_);
-		communication_manager_old_.reset();
-		LogInfo("Module " + Name() + " uninitialized.");
+        framework_->GetServiceManager()->UnregisterService(communication_manager_);
+		LogInfo("Uninitialized.");
 	}
 
 	void CommunicationModule::Update(Core::f64 frametime)

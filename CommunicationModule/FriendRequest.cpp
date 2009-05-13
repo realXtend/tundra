@@ -1,22 +1,22 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
-#include "TelepathyCommunication.h"
-#include "TPFriendRequest.h"
+#include "CommunicationManager.h"
+#include "FriendRequest.h"
 
 
 namespace Communication
 {
-	TPFriendRequest::TPFriendRequest(ContactInfoPtr contact_info)
+	FriendRequest::FriendRequest(ContactInfoPtr contact_info)
 	{
 		contact_info_ = contact_info;
 	}
 
-	ContactInfoPtr TPFriendRequest::GetContactInfo()
+	ContactInfoPtr FriendRequest::GetContactInfo()
 	{
 		return contact_info_;
 	}
 
-	void TPFriendRequest::Accept()
+	void FriendRequest::Accept()
 	{
 		char** args = new char*[1];
 		char* buf1 = new char[1000];
@@ -24,10 +24,10 @@ namespace Communication
 		args[0] = buf1;
 		std::string method = "CAcceptContactRequest"; // todo: CCreateIMSessionJabber, CCreateIMSessionSIP, etc.
 		std::string syntax = "s";
-		Foundation::ScriptObject* ret = TelepathyCommunication::GetInstance()->python_communication_object_->CallMethod(method, syntax, args);
+		Foundation::ScriptObject* ret = CommunicationManager::GetInstance()->python_communication_object_->CallMethod(method, syntax, args);
 	}
 
-	void TPFriendRequest::Deny()
+	void FriendRequest::Deny()
 	{
 		char** args = new char*[1];
 		char* buf1 = new char[1000];
@@ -35,7 +35,7 @@ namespace Communication
 		args[0] = buf1;
 		std::string method = "CDenyContactRequest"; // todo: CCreateIMSessionJabber, CCreateIMSessionSIP, etc.
 		std::string syntax = "s";
-		Foundation::ScriptObject* ret = TelepathyCommunication::GetInstance()->python_communication_object_->CallMethod(method, syntax, args);
+		Foundation::ScriptObject* ret = CommunicationManager::GetInstance()->python_communication_object_->CallMethod(method, syntax, args);
 	}
 
 } // end of namespace: Communication

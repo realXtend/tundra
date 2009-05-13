@@ -1,67 +1,67 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
-#include "TelepathyCommunication.h"
-#include "TPIMSession.h"
+#include "CommunicationManager.h"
+#include "IMSession.h"
 
 namespace Communication
 {
 
-	TPSession::TPSession(ParticipantPtr originator, Foundation::ScriptObjectPtr python_communication_object) : originator_(originator), protocol_("")
+	Session::Session(ParticipantPtr originator, Foundation::ScriptObjectPtr python_communication_object) : originator_(originator), protocol_("")
 	{
 		python_communication_object_ = python_communication_object;		
 		participants_ = ParticipantListPtr( new ParticipantList() );
 	}
 
-	//std::string TPSession::GetId()
+	//std::string Session::GetId()
 	//{
 	//	return id_;
 	//}
 
-	std::string TPSession::GetProtocol()
+	std::string Session::GetProtocol()
 	{
 		return protocol_;
 	}
 
-	ParticipantPtr TPSession::GetOriginator()
+	ParticipantPtr Session::GetOriginator()
 	{
 		return originator_;
 	}
 
-	void TPSession::Close()
+	void Session::Close()
 	{
 	}
 
-	void TPSession::NotifyClosedByRemote()
+	void Session::NotifyClosedByRemote()
 	{
 		// todo: handle this
 	}
 
 
-	void TPSession::SendInvitation(ContactPtr c)
+	void Session::SendInvitation(ContactPtr c)
 	{
 		// Not implemented in python yet: Multiuser chat
 	}
 
-	void TPSession::Kick(ParticipantPtr p)
+	void Session::Kick(ParticipantPtr p)
 	{
 		// Not implemented in python yet:
 	}
 
-	ParticipantListPtr TPSession::GetParticipants()
+	ParticipantListPtr Session::GetParticipants()
 	{
 		return participants_;
 	}
 
-	// TPIMSession ---------------------------->
+	// IMSession ---------------------------->
 
-	TPIMSession::TPIMSession(ParticipantPtr originator, Foundation::ScriptObjectPtr python_communication_object) : TPSession(originator, python_communication_object)
+	IMSession::IMSession(ParticipantPtr originator, Foundation::ScriptObjectPtr python_communication_object) : Session(originator, python_communication_object)
 	{
 	}
 
 	/*
 	 * Send IM message to all person in current session
 	 */
-	void TPIMSession::SendIMMessage(IMMessagePtr m)
+	void IMSession::SendIMMessage(IMMessagePtr m)
 	{
 		for (ParticipantList::iterator i = participants_->begin(); i < participants_->end(); i++)
 		{
@@ -91,12 +91,12 @@ namespace Communication
 	}
 
 	// Update message history 
-	void TPIMSession::NotifyMessageReceived(IMMessagePtr m)
+	void IMSession::NotifyMessageReceived(IMMessagePtr m)
 	{
 		im_messages_.push_back(m);
 	}
 	
-	IMMessageListPtr TPIMSession::GetMessageHistory()
+	IMMessageListPtr IMSession::GetMessageHistory()
 	{
 		IMMessageList* list = new IMMessageList();
 		for (int i = 0; i < im_messages_.size(); i++)
@@ -106,7 +106,7 @@ namespace Communication
 		return IMMessageListPtr(list);
 	}
 
-	void TPIMSession::Close()
+	void IMSession::Close()
 	{
 		char** args = new char*[1];
 		char* buf1 = new char[1000];
@@ -116,32 +116,32 @@ namespace Communication
 		std::string syntax = "s";
 		Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, args);
 
-		TelepathyCommunication::GetInstance()->RemoveIMSession(this);
+		CommunicationManager::GetInstance()->RemoveIMSession(this);
 	}
 
-	void TPIMSession::SendInvitation(ContactPtr c)
+	void IMSession::SendInvitation(ContactPtr c)
 	{
-		TPSession::SendInvitation(c);
+		Session::SendInvitation(c);
 	}
 
-	void TPIMSession::Kick(ParticipantPtr p)
+	void IMSession::Kick(ParticipantPtr p)
 	{
-		TPSession::Kick(p);
+		Session::Kick(p);
 	}
 
-	ParticipantListPtr TPIMSession::GetParticipants()
+	ParticipantListPtr IMSession::GetParticipants()
 	{
-		return TPSession::GetParticipants();
+		return Session::GetParticipants();
 	}
 
-	std::string TPIMSession::GetProtocol()
+	std::string IMSession::GetProtocol()
 	{
-		return TPSession::GetProtocol();
+		return Session::GetProtocol();
 	}
 	
-	ParticipantPtr TPIMSession::GetOriginator()
+	ParticipantPtr IMSession::GetOriginator()
 	{
-		return TPSession::GetOriginator();
+		return Session::GetOriginator();
 	}
 
 

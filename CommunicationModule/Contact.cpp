@@ -2,38 +2,39 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
 
-#include "TPContact.h"
+#include "Contact.h"
 
 
 namespace Communication
 {
-	TPContact::TPContact(std::string id): name_(""), id_(id)
+	Contact::Contact(std::string id): name_(""), id_(id)
 	{
 		contact_infos_ = ContactInfoListPtr( new ContactInfoList() );
-		presence_status_ = PresenceStatusPtr( (PresenceStatusInterface*) new TPPresenceStatus() );
+		presence_status_ = PresenceStatusPtr( (PresenceStatusInterface*) new PresenceStatus() );
 	}
 
-	void TPContact::SetName(std::string name)
+	void Contact::SetName(std::string name)
 	{
 		name_ = name;
+		
 	}
 
-	std::string TPContact::GetName()
+	std::string Contact::GetName()
 	{
 		return name_;
 	}
 
-	PresenceStatusPtr TPContact::GetPresenceStatus()
+	PresenceStatusPtr Contact::GetPresenceStatus()
 	{
 		return presence_status_;
 	}
 
-	ContactInfoListPtr TPContact::GetContactInfoList()
+	ContactInfoListPtr Contact::GetContactInfoList()
 	{
 		return contact_infos_;
 	}
 
-	ContactInfoPtr TPContact::GetContactInfo(std::string protocol)
+	ContactInfoPtr Contact::GetContactInfo(std::string protocol)
 	{
 		for (ContactInfoList::iterator i = contact_infos_->begin(); i < contact_infos_->end(); i++)
 		{
@@ -49,7 +50,7 @@ namespace Communication
 	}
 
 	// todo: might be a good idea to test for duplicates
-	void TPContact::AddContactInfo(ContactInfoPtr contact_info)
+	void Contact::AddContactInfo(ContactInfoPtr contact_info)
 	{
 		contact_infos_->push_back(contact_info);
 	}
