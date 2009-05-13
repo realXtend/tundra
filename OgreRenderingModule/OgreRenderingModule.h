@@ -58,6 +58,9 @@ namespace OgreRenderer
         //! callback for console command
         Console::CommandResult ConsoleRequestMesh(const Core::StringVector &params);
 
+        //! callback for console command
+        Console::CommandResult ConsoleStats(const Core::StringVector &params);
+
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Renderer;
 
     private:
