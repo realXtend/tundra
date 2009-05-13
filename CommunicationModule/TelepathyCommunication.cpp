@@ -107,7 +107,7 @@ namespace Communication
 		if(error=="None")
 		{
 			this->python_communication_object_ = Foundation::ScriptObjectPtr ( this->communication_py_script_->GetObject(COMMUNICATION_CLASS_NAME) );
-			CallPythonCommunicationObject("CDoStartUp", "");
+			CallPythonCommunicationObject("CDoStartUp");
 		}
 		else
 		{
@@ -171,7 +171,7 @@ namespace Communication
 		user_contact->AddContactInfo(ContactInfoPtr(info));
 		user_ = ContactPtr((ContactInterface*)user_contact);
 
-		CallPythonCommunicationObject("CAccountConnect", "");
+		CallPythonCommunicationObject("CAccountConnect");
 	}
 
 	/*
@@ -185,7 +185,7 @@ namespace Communication
 			return;
 		}
 
-		CallPythonCommunicationObject("CDisconnect", "");
+		CallPythonCommunicationObject("CDisconnect");
 	}
 
 	// Not implemented yet: We allow sessions only with contacts at this point of development
@@ -924,6 +924,8 @@ namespace Communication
 		TelepathyCommunicationPtr comm = TelepathyCommunication::GetInstance();
 		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_STATE_UPDATE);
 		comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
+
+		comm->RequestPresenceStatuses();
 	}
 
 	/*
@@ -1123,23 +1125,62 @@ namespace Communication
 	 */ 
 	void TelepathyCommunication::RequestPresenceStatuses()
 	{
-		TelepathyCommunication::GetInstance()->CallPythonCommunicationObject("CRefreshContactStatusList", "");
+		TelepathyCommunication::GetInstance()->CallPythonCommunicationObject("CRefreshContactStatusList");
 	}
 
 	/**
 	 * Wrapper for calling methods of python object.
-     * The object is python_communication_object_ and methos signature is (string method_name, string arg)
+     * The object is python_communication_object_ and methos signature is (string method_name, "", NULL)
+	 */
+	Foundation::ScriptObject* TelepathyCommunication::CallPythonCommunicationObject(const std::string &method_name) const
+	{
+		try
+		{
+			std::string method = method_name;
+			std::string syntax = "";
+			Foundation::ScriptObject* ret = TelepathyCommunication::GetInstance()->python_communication_object_->CallMethod(method, syntax, NULL);
+			return ret;
+		}
+		catch(...)
+		{
+			std::string text;
+			text = "Cannot call method [";
+			text.append(method_name);
+			text.append("] with argument [NULL]");
+			LogError(text);
+		}
+		return NULL; 
+	}
+
+	/**
+	 * Wrapper for calling methods of python object.
+     * The object is python_communication_object_ and methos signature is (string method_name, "s", string arg)
 	 */
 	Foundation::ScriptObject* TelepathyCommunication::CallPythonCommunicationObject(const std::string &method_name, const std::string &arg) const
 	{
-		const int BUFFER_SIZE = 1000;
-		char** args = new char*[1];
-		char* buf1 = new char[BUFFER_SIZE];
-		strcpy(buf1, arg.substr(0,BUFFER_SIZE-1).c_str());
-		std::string method = method_name;
-		std::string syntax = "s";
-		Foundation::ScriptObject* ret = TelepathyCommunication::GetInstance()->python_communication_object_->CallMethod(method, syntax, args);
-		return ret;
+		try
+		{
+			const int BUFFER_SIZE = 1000;
+			char** args = new char*[1];
+			char* buf1 = new char[BUFFER_SIZE];
+			strcpy(buf1, arg.substr(0,BUFFER_SIZE-1).c_str());
+			args[0] = buf1;
+			std::string method = method_name;
+			std::string syntax = "s";
+			Foundation::ScriptObject* ret = TelepathyCommunication::GetInstance()->python_communication_object_->CallMethod(method, syntax, args);
+			return ret;
+		}
+		catch(...)
+		{
+			std::string text;
+			text = "Cannot call method [";
+			text.append(method_name);
+			text.append("] with argument [");
+			text.append(arg);
+			text.append("]");
+			LogError(text);
+		}
+		return NULL; 
 	}
 
 } // end of namespace: Communication
