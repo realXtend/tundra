@@ -21,7 +21,9 @@
 	to represent a row of identical lights which can be turned on or off by simply
 	modifying the one shared component.
 
-	Entities can contain any number of components of any type.
+	Entities can contain any number of components of any type. They can even contain
+	several different instances of the same type of component. It is up to the component
+	to make sure this causes no problems.
 
 \section component_scene_sec Component
 
@@ -33,10 +35,12 @@
 \section usage_scene_sec Usage
 	
 	Components are accessed through entities and entities are accessed through scenes.
-	A service is provided for access to scenes, for detailed information, see
-	Foundation::SceneManagerServiceInterface.
+	Scenes can be accessed, created and removed through the Framework.
 	
-	The service can be accessed the usual way, see \ref ModuleServices "Services"
-	for more information.
+	Please note that components, entities and scenes are managed as shared pointers.
+	If you wish to store a pointer for longer period of time, over the scope of a 
+	single function, weak pointer is preferred to avoid dangling references and to
+	make sure when component, entity or scene is removed, it gets destroyed properly
+	right away.
 
 */
