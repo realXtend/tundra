@@ -8,6 +8,8 @@
 
 namespace Communication
 {
+	// static
+	TelepathyCommunicationPtr TelepathyCommunication::instance_;
 
 	// Split given text with given separator and return substring of given index
 	// * Not very optimal, but works
@@ -29,14 +31,18 @@ namespace Communication
 		}
 		return "";
 	}
+	
 
-	TelepathyCommunicationPtr TelepathyCommunication::instance_;
-	void (TelepathyCommunication::*testCallbackPtr)(char*) = NULL;  
+//	void (TelepathyCommunication::*testCallbackPtr)(char*) = NULL;  
 
-	TelepathyCommunication::TelepathyCommunication(Foundation::Framework *f) : connected_(false)
+	/**
+	 * @param framework is pointer to framework. Given here becouse this is not a module class and framework
+	 *        services are used through this object.
+	 **/
+	TelepathyCommunication::TelepathyCommunication(Foundation::Framework *framework) : connected_(false)
 	{
 		TelepathyCommunication::instance_ = TelepathyCommunicationPtr(this);
-		framework_ = f;
+		framework_ = framework;
 
 		friend_requests_ = FriendRequestListPtr( new FriendRequestList() );
 		im_sessions_ = IMSessionListPtr( new IMSessionList() );
@@ -48,10 +54,16 @@ namespace Communication
 
 	TelepathyCommunication::~TelepathyCommunication()
 	{
-		// todo: Cleanup
+		// todo: unregister service
+		// todo: unregister console commands
+		UninitializePythonCommunication();
 	}
 
-	// todo: Add description fields 
+	/**
+	 * Define console commands here
+	 * @todo Create separate class for console commands
+	 * @todo Add description fields 
+	 */
 	void TelepathyCommunication::RegisterConsoleCommands()
 	{
         boost::shared_ptr<Console::CommandService> console_service = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
@@ -76,7 +88,9 @@ namespace Communication
 		}
 	}
 
-	// rename to: InitPythonCommunication
+	/**
+     * Initialize python object as communication backend
+	 */
 	void TelepathyCommunication::InitializePythonCommunication()
 	{
         boost::shared_ptr<Foundation::ScriptServiceInterface> script_service = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting).lock();
@@ -93,10 +107,7 @@ namespace Communication
 		if(error=="None")
 		{
 			this->python_communication_object_ = Foundation::ScriptObjectPtr ( this->communication_py_script_->GetObject(COMMUNICATION_CLASS_NAME) );
-			std::string name = "CDoStartUp";
-			std::string syntax = "";
-			char** args = NULL;
-			this->python_communication_object_->CallMethod(name, syntax, args); // todo: get return value
+			CallPythonCommunicationObject("CDoStartUp", "");
 		}
 		else
 		{
@@ -131,16 +142,19 @@ namespace Communication
 		// TODO: free any python related resources
 	}
 
+	/**
+     * Register event cotegory for communication services: Communication
+	 */
 	void TelepathyCommunication::RegisterEvents()
 	{
 		comm_event_category_ = framework_->GetEventManager()->RegisterEventCategory("Communication");  
 		event_manager_ = framework_->GetEventManager();
 	}
 
-	/*
-	  Currently uses credential from Account.txt
-	  todo: use given credential instead
-	*/
+	/**
+	 * Currently uses credential from connection.ini
+	 * todo: use given credentials instead
+	 */
 	void TelepathyCommunication::OpenConnection(CredentialsPtr c)
 	{
 		if (connected_)
@@ -149,6 +163,7 @@ namespace Communication
 			return;
 		}
 		TPContact* user_contact = new TPContact("user");
+		user_contact->SetName("You"); 
 		ContactInfo* info = new ContactInfo();
 		
 		info->SetProperty("protocol", c->GetProperty("protocol") );
@@ -156,9 +171,7 @@ namespace Communication
 		user_contact->AddContactInfo(ContactInfoPtr(info));
 		user_ = ContactPtr((ContactInterface*)user_contact);
 
-		std::string method = "CAccountConnect";
-		std::string syntax = "";
-		Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, NULL);
+		CallPythonCommunicationObject("CAccountConnect", "");
 	}
 
 	/*
@@ -172,9 +185,7 @@ namespace Communication
 			return;
 		}
 
-		std::string method = "CDisconnect";
-		std::string syntax = "";
-		Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, NULL);
+		CallPythonCommunicationObject("CDisconnect", "");
 	}
 
 	// Not implemented yet: We allow sessions only with contacts at this point of development
@@ -212,6 +223,7 @@ namespace Communication
 				session = new TPIMSession(partner, python_communication_object_);
 			else
 				session = new TPIMSession(user, python_communication_object_);
+			session->id_ = contact->GetContactInfo(protocol)->GetProperty("address"); // todo: some another type to session id 
 			IMSessionPtr session_ptr = IMSessionPtr((IMSessionInterface*)session);
 
 			session->protocol_ = protocol;
@@ -224,18 +236,10 @@ namespace Communication
 			if (address.length() == 0)
 			{
 				LogError("Given contact has no address");
-				// TODO: We must handle error in better way
-				return IMSessionPtr();
-//				return IMSessionPtr((IMSessionInterface*)new TPIMSession(python_communication_object_));
+				return IMSessionPtr();	// TODO: We must handle error in better way
 			}
 
-			char** args = new char*[1];
-			char* buf1 = new char[1000];
-			strcpy(buf1, address.c_str());
-			args[0] = buf1;
-			std::string method = "CStartChatSession";
-			std::string syntax = "s";
-			Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, args);
+			CallPythonCommunicationObject("CStartChatSession", address);
 			return session_ptr;
 			// TODO: Get session id from python ?
 		}
@@ -249,18 +253,27 @@ namespace Communication
 		throw error_message;
 	}
 
-	// Removes session with given id from im_sessions_ list
-	void TelepathyCommunication::RemoveIMSession(std::string session_id)
+
+	/**
+	 *  Removes session with given id from im_sessions_ list
+	 */
+	void TelepathyCommunication::RemoveIMSession(const TPIMSession* s)
 	{
-		for (IMSessionList::iterator i; i < im_sessions_->end(); i++)
+		for (IMSessionList::iterator i = im_sessions_->begin(); i != im_sessions_->end(); ++i)
 		{
-			TPIMSession* session =  (TPIMSession*)i->get();
-			if ( session->GetId().compare(session_id) == 0)
+			if (s == static_cast<TPIMSession*>((*i).get()))
+			{
 				im_sessions_->erase(i);
+				return;
+			}
 		}
+		// todo: error handling
 	}
 
-	ContactListPtr TelepathyCommunication::GetContactList()
+	/**
+	 *
+	 **/
+	ContactListPtr TelepathyCommunication::GetContactList() const
 	{
 
 		ContactList* list = new ContactList();
@@ -497,10 +510,10 @@ namespace Communication
 		for (int i=0; i<im_sessions_->size(); i++)
 		{
 			IMSessionPtr s = (*im_sessions_)[i];
-			std::string id = ((TPIMSession*)s.get())->GetId();
-			text.append("* session: ");
+			std::string id = ((TPIMSession*)s.get())->id_;
+			text.append("* session: [");
 			text.append(id);
-			text.append("\n");
+			text.append("]\n");
 		}
 		text.append("Ready.\n");
 		return Console::ResultSuccess(text);
@@ -564,7 +577,7 @@ namespace Communication
 			std::string address = contact->GetContactInfo("jabber")->GetProperty("address");
 			std::string online_status = contact->GetPresenceStatus()->GetOnlineStatus();
 			std::string online_message = contact->GetPresenceStatus()->GetOnlineMessage();
-			text.append( id.append(" ").append(address).append(" ").append(online_status).append(" ").append(online_message) );
+			text.append( id.append(" ").append(address).append(" ").append(online_status).append(" ").append(online_message).append("\n") );
 		}
 		return Console::ResultSuccess(text);
 	}
@@ -799,15 +812,15 @@ namespace Communication
 	   // TODO: Session id sould be received 
 	   // todo: in future the sessions should not be depended by actual network connection or open channels
 	*/
-	void TelepathyCommunication::PyCallbackChannelClosed(char*)
+	void TelepathyCommunication::PyCallbackChannelClosed(char* address)
 	{
 		LogInfo("Session closed");
-		std::string session_id = "";
+		std::string session_id = address;
 		for (int i = 0; i < TelepathyCommunication::GetInstance()->im_sessions_->size(); i++)
 		{
 			IMSessionPtr s = TelepathyCommunication::GetInstance()->im_sessions_->at(i);
 			TPIMSession* im_session = (TPIMSession*)s.get();
-			if ( im_session->GetId().compare(session_id) == 0 )
+			if ( im_session->id_.compare(session_id) == 0 )
 			{
 				im_session->NotifyClosedByRemote();
 				SessionStateEvent e = SessionStateEvent(s,Events::SessionStateEventInterface::SESSION_END);
@@ -913,7 +926,6 @@ namespace Communication
 		comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
 	}
 
-
 	/*
 	   Called by communication.py via PythonScriptModule
 	   When presence status has updated
@@ -990,10 +1002,14 @@ namespace Communication
 	}
 
 
-	/*
-	   Called by communication.py via PythonScriptModule
-	   When contact is removed from contact list
-	*/
+	/**
+	 *  Called by communication.py via PythonScriptModule
+	 *  When contact is removed from contact list.
+	 *  This also happens when user send a friend request and get negative answer
+     *  Removes given contact from contact_list_ and send CONNECTION_STATE event
+	 *
+	 *  @todo for some reason we got this message twise, this should be fixed
+ 	 */
 	void TelepathyCommunication::PyCallbackContactRemoved(char* id)
 	{
 		TelepathyCommunicationPtr comm = TelepathyCommunication::GetInstance();
@@ -1004,12 +1020,17 @@ namespace Communication
 			if (contact->id_.compare(id) == 0)
 			{
 				comm->contact_list_.erase(i);
+
+				TelepathyCommunicationPtr comm = TelepathyCommunication::GetInstance();
+				ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_STATE_UPDATE);
+				comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
+
 				return;
 			}
 		}
 
 		std::string text;
-		text.append("ERROR: Cannot remove contact: ");
+		text.append("ERROR: Cannot remove contact: "); 
 		text.append(id);
 		LogError(text);
 	}
@@ -1061,17 +1082,11 @@ namespace Communication
 	   Called by communication.py via PythonScriptModule
 	   When friend request was accpeted by user and now contact wants to subscribe the user
 
-	   We have to subscribe this contact too
+	   We have to subscribe this contact too so we send subsribtion request automatically.
 	*/
 	void TelepathyCommunication::PyCallbackFriendAdded(char* id)
 	{
-		char** args = new char*[1];
-		char* buf1 = new char[1000];
-		strcpy(buf1, id);
-		std::string method = "CSendSubscription";
-		std::string syntax = "s";
-		Foundation::ScriptObject* ret = TelepathyCommunication::GetInstance()->python_communication_object_->CallMethod(method, syntax, args);
-
+		TelepathyCommunication::GetInstance()->CallPythonCommunicationObject("CSendSubscription", id);
 	}
 
 	/*
@@ -1101,6 +1116,30 @@ namespace Communication
 		TPPresenceStatus::online_status_options_ = comm->presence_status_options_;
 		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_STATE_UPDATE);
 		comm->event_manager_->SendEvent(comm->comm_event_category_, Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
+	}
+
+	/**
+	 * Request presence status update from IM server
+	 */ 
+	void TelepathyCommunication::RequestPresenceStatuses()
+	{
+		TelepathyCommunication::GetInstance()->CallPythonCommunicationObject("CRefreshContactStatusList", "");
+	}
+
+	/**
+	 * Wrapper for calling methods of python object.
+     * The object is python_communication_object_ and methos signature is (string method_name, string arg)
+	 */
+	Foundation::ScriptObject* TelepathyCommunication::CallPythonCommunicationObject(const std::string &method_name, const std::string &arg) const
+	{
+		const int BUFFER_SIZE = 1000;
+		char** args = new char*[1];
+		char* buf1 = new char[BUFFER_SIZE];
+		strcpy(buf1, arg.substr(0,BUFFER_SIZE-1).c_str());
+		std::string method = method_name;
+		std::string syntax = "s";
+		Foundation::ScriptObject* ret = TelepathyCommunication::GetInstance()->python_communication_object_->CallMethod(method, syntax, args);
+		return ret;
 	}
 
 } // end of namespace: Communication

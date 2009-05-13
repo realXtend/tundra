@@ -34,6 +34,7 @@ namespace Communication
 
 	/*
 	 * Implements CommunicationServiceInterface with python backend which uses telepathy-python.
+	 * @todo rename to CommunicationManger
 	 */
 	class TelepathyCommunication : public CommunicationServiceInterface
 	{
@@ -54,7 +55,7 @@ namespace Communication
 		void CloseConnection();
 		IMSessionPtr CreateIMSession(ContactPtr contact);
 		IMSessionPtr CreateIMSession(ContactInfoPtr contact);
-		ContactListPtr GetContactList();
+		ContactListPtr GetContactList() const;
 		void SetPresenceStatus(PresenceStatusPtr p);
 		PresenceStatusPtr GetPresenceStatus();
 		IMMessagePtr CreateIMMessage(std::string text);
@@ -84,10 +85,12 @@ namespace Communication
 
 	protected:
 		static TelepathyCommunicationPtr instance_;
-
-		void RemoveIMSession(std::string session_id); 
+		void RemoveIMSession(const TPIMSession* s);
 		ContactPtr GetContact(std::string id);
 		IMSessionPtr CreateIMSession(ContactPtr contact, ContactPtr originator);
+		void RequestPresenceStatuses();
+		Foundation::ScriptObject* CallPythonCommunicationObject(const std::string &method_name, const std::string &arg) const;
+
 		
 		
 		// member variables

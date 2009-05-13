@@ -378,6 +378,7 @@ namespace CommunicationUI
 
 		// we didn't find given contact
 		// todo: better error handling
+		return Communication::ContactPtr();
 		throw "Cannot find contact";
 	}
 
@@ -431,15 +432,18 @@ namespace CommunicationUI
         if(iter)
         {
             std::string id = (*iter)[lstContacts.columns_.id_];
-            std::string contact = (*iter)[lstContacts.columns_.contact_];
-            Foundation::ScriptObject* ret = CallIMPyMethod("CRemoveContact", "s", contact);
+            std::string address = (*iter)[lstContacts.columns_.contact_];
+			Communication::ContactPtr c = FindContact(address);
+			if (c)
+				communication_service_->RemoveContact(c);
+//            Foundation::ScriptObject* ret = CallIMPyMethod("CRemoveContact", "s", contact);
         }
     }
 
     void CommunicationUIModule::OnRefresh()
     {
         LogInfo("OnRefresh");
-        Foundation::ScriptObject* ret = CallIMPyMethod("CRefreshContactStatusList", "", std::string(""));
+        //Foundation::ScriptObject* ret = CallIMPyMethod("CRefreshContactStatusList", "", std::string(""));
     }
 
     void CommunicationUIModule::OnSetPresenceMessage()
@@ -499,7 +503,11 @@ namespace CommunicationUI
             this->CallIMPyMethod("CSaveSettings", "s", saveString);
         } else if(aConfigName=="contact address") {
             Foundation::Comms::SettingsAttribute sattr = attributes["contact address"];
-            CallIMPyMethod("CAddContact", "s", sattr.value);
+			Communication::ContactInfo* info = new Communication::ContactInfo();
+			info->SetProperty("protocol", "jabber"); // todo: remove this fixed definition
+			info->SetProperty("address", sattr.value);
+			communication_service_->SendFriendRequest(Communication::ContactInfoPtr(info));
+//            CallIMPyMethod("CAddContact", "s", sattr.value);
         } else if(aConfigName=="Remote request"){
             LogInfo("Remote request callback");
             // send responce to other end
@@ -519,10 +527,21 @@ namespace CommunicationUI
             Foundation::Comms::SettingsAttribute user = attributes.begin()->second;
             LogDebug(answer);
             LogDebug(user.value);
+			Communication::FriendRequestPtr r =	FindFriendRequest(user.value);
+			if (!r)
+			{
+				std::string text = "Cannot find friend request: ";
+				text.append(user.value);
+				LogError(text);
+				return; 
+			}
+			
             if(answer=="Ok"){
-                CallIMPyMethod("CAcceptContactRequest", "s", user.value);
+				r->Accept();
+//                CallIMPyMethod("CAcceptContactRequest", "s", user.value);
             } else {
-                CallIMPyMethod("CDenyContactRequest", "s", user.value);
+				r->Deny();
+//                CallIMPyMethod("CDenyContactRequest", "s", user.value);
             }
         } else if(aConfigName=="Contact accepted"){
             LogInfo("Contact accepted callback");
@@ -992,6 +1011,7 @@ namespace CommunicationUI
 				text = "Got event FRIEND_REQUEST: ";
 				text.append(address);
 				LogInfo(text);
+				HandleFriendRequest(r);
 			}
 			return true;
 			break;
@@ -1061,6 +1081,33 @@ namespace CommunicationUI
         return false;
     }    
 
+	void CommunicationUIModule::ShowFriendRequestWindow(Communication::FriendRequestPtr r)
+	{
+		std::string id = r->GetContactInfo()->GetProperty("address");
+		friend_requests_[id] = r;
+
+        std::string infoText = "Let user ";
+        infoText.append(id);
+        infoText.append(" see your presence status");
+        SelectionDialog sd("Presence request", infoText, "_Allow", "_Deny", instance_, std::string(id));
+        Gtk::Main::run(sd);
+	}
+	
+	/**
+	 * 
+	 */
+	Communication::FriendRequestPtr	CommunicationUIModule::FindFriendRequest(std::string address)
+	{
+		FriendRequestMap::iterator i = friend_requests_.find(address);
+		if (i == friend_requests_.end())
+			return Communication::FriendRequestPtr(); // didn't find the request!!
+		return i->second;
+	}
+
+	void CommunicationUIModule::HandleFriendRequest(Communication::FriendRequestPtr r)
+	{
+		ShowFriendRequestWindow(r);
+	}
 	
 
 	void CommunicationUIModule::UpdateOnlineStatusList()

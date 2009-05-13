@@ -12,10 +12,10 @@ namespace Communication
 		participants_ = ParticipantListPtr( new ParticipantList() );
 	}
 
-	std::string TPSession::GetId()
-	{
-		return id_;
-	}
+	//std::string TPSession::GetId()
+	//{
+	//	return id_;
+	//}
 
 	std::string TPSession::GetProtocol()
 	{
@@ -29,12 +29,6 @@ namespace Communication
 
 	void TPSession::Close()
 	{
-		std::string method = "CCloseChannel";
-		std::string syntax = "";
-		// todo: check if it is safe to send NULL as a last parameter here...
-		Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, NULL);
-		TelepathyCommunication::GetInstance()->RemoveIMSession(id_);
-		// todo: When it is possible to have multiple sessions on python side we must send session id here
 	}
 
 	void TPSession::NotifyClosedByRemote()
@@ -114,7 +108,15 @@ namespace Communication
 
 	void TPIMSession::Close()
 	{
-		TPSession::Close();
+		char** args = new char*[1];
+		char* buf1 = new char[1000];
+		strcpy(buf1, id_.c_str());
+		args[0] = buf1;
+		std::string method = "CCloseChannel";
+		std::string syntax = "s";
+		Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, args);
+
+		TelepathyCommunication::GetInstance()->RemoveIMSession(this);
 	}
 
 	void TPIMSession::SendInvitation(ContactPtr c)
