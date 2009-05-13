@@ -32,7 +32,7 @@ namespace Scene
     public:
         virtual ~SceneManager() {}
 
-        SceneManagerInterface &operator =(const SceneManagerInterface &other)
+        SceneManager &operator =(const SceneManager &other)
         {
             if (&other != this)
             {
