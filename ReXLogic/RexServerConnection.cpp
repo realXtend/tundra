@@ -73,7 +73,7 @@ namespace RexLogic
         
         // Get server address and port.
         int port = 9000;
-        pos = serveraddress.find(":");
+        pos = serveraddress.rfind(":");
         std::string serveraddress_noport;
         if(pos == std::string::npos)
         {
@@ -132,7 +132,7 @@ namespace RexLogic
 		if (myInfo_.gridUrl.size() != 0)
 		{
 			int port = 9000;
-			size_t pos = myInfo_.gridUrl.find(":");
+			size_t pos = myInfo_.gridUrl.rfind(":");
 			std::string serveraddress_noport;
 			if(pos == std::string::npos)
 			{
