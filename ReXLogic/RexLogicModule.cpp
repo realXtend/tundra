@@ -22,6 +22,7 @@
 #include "EC_Terrain.h"
 #include "EC_Water.h"
 #include "EC_OgreSky.h"
+#include "EC_NetworkPosition.h"
 #include "InputEvents.h"
 
 // Ogre -specific
@@ -57,7 +58,8 @@ namespace RexLogic
         DECLARE_MODULE_EC(EC_OpenSimAvatar);
         DECLARE_MODULE_EC(EC_Terrain);
         DECLARE_MODULE_EC(EC_Water);
-
+        DECLARE_MODULE_EC(EC_NetworkPosition);
+        
         AutoRegisterConsoleCommand(Console::CreateCommand("Login", 
             "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
             Console::Bind(this, &RexLogicModule::ConsoleLogin)));

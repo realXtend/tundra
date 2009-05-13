@@ -105,13 +105,15 @@ namespace RexLogic
             prim.Material = msg->ReadU8();
             prim.ClickAction = msg->ReadU8();
 
-            Core::Vector3Df ogre_pos = Core::OpenSimToOgreCoordinateAxes(msg->ReadVector3());
-            Core::Quaternion ogre_quat;
+            Core::Vector3Df ogre_scale = Core::OpenSimToOgreCoordinateAxes(msg->ReadVector3());
             
             size_t bytes_read = 0;
             const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
             if (bytes_read == 60)
             {
+                Core::Vector3Df ogre_pos;
+                Core::Quaternion ogre_quat;
+
                 // The data contents:
                 // ofs  0 - pos xyz - 3 x float (3x4 bytes)
                 // ofs 12 - vel xyz - 3 x float (3x4 bytes)
@@ -119,6 +121,7 @@ namespace RexLogic
                 // ofs 36 - orientation, quat with last (w) component omitted - 3 x float (3x4 bytes)
                 // ofs 48 - angular velocity - 3 x float (3x4 bytes)
                 // total 60 bytes
+
                 Core::Vector3df pos = *reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[0]);
                 ogre_pos = Core::OpenSimToOgreCoordinateAxes(pos);
                 Core::Quaternion quat = Core::UnpackQuaternionFromFloat3((float*)&objectdatabytes[36]); 
@@ -127,17 +130,18 @@ namespace RexLogic
                 /// \todo Velocity field unhandled.
                 /// \todo Acceleration field unhandled.
                 /// \todo Angular velocity field unhandled.
+
+                Foundation::ComponentPtr placeable = entity->GetComponent("EC_OgrePlaceable");
+                if (placeable)
+                {
+                    OgreRenderer::EC_OgrePlaceable* ec_ogrepos = checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
+                    ec_ogrepos->SetPosition(ogre_pos);
+                    ec_ogrepos->SetOrientation(ogre_quat);
+                    ec_ogrepos->SetScale(ogre_scale);
+                }
             }
             else
                 RexLogicModule::LogError("Error reading ObjectData for prim:" + Core::ToString(prim.LocalId) + ". Bytes read:" + Core::ToString(bytes_read));
-
-            Foundation::ComponentPtr placeable = entity->GetComponent("EC_OgrePlaceable");
-            if (placeable)
-            {
-                OgreRenderer::EC_OgrePlaceable* ec_ogrepos = checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
-                ec_ogrepos->SetPosition(ogre_pos);
-                ec_ogrepos->SetOrientation(ogre_quat);
-            }
             
             prim.ParentId = msg->ReadU32();
             prim.UpdateFlags = msg->ReadU32();
