@@ -79,6 +79,9 @@ namespace OgreRenderer
         
         //! Ogre scene node
         Ogre::SceneNode* scene_node_;
+        
+        //! attached to scene hierarchy-flag
+        bool attached_;
     };
 }
 

@@ -490,21 +490,15 @@ namespace RexLogic
             OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(ogrepos_ptr.get()); 
             EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(netpos_ptr.get()); 
             
-            bool client_rotation = false;    
-            if (GetAvatarController()->GetAvatarEntity() && entity.GetId() == GetAvatarController()->GetAvatarEntity()->GetId())
-                client_rotation = true; // client authoritative rotation
-            
             netpos.AddTime(frametime); 
 
             // Interpolate, then damp
-            netpos.velocity_ += netpos.accel_ * frametime;
+            // netpos.velocity_ += netpos.accel_ * frametime;
             netpos.position_ += netpos.velocity_ * frametime;            
             netpos.damped_position_ = rev_factor * netpos.position_ + factor * netpos.damped_position_;
 
             ogrepos.SetPosition(netpos.damped_position_);  
-                      
-            if (!client_rotation)
-                ogrepos.SetOrientation(netpos.rotation_);                     
+            ogrepos.SetOrientation(netpos.rotation_);                     
         }
     }
 }   

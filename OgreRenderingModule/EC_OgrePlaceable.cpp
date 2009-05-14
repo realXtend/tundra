@@ -13,12 +13,11 @@ namespace OgreRenderer
     EC_OgrePlaceable::EC_OgrePlaceable(Foundation::ModuleInterface* module) :
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
-        scene_node_(NULL)
+        scene_node_(NULL),
+        attached_(false)
     {
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
-        scene_node_ = scene_mgr->createSceneNode();
-        
-        AttachNode();
+        scene_node_ = scene_mgr->createSceneNode();     
     }
     
     EC_OgrePlaceable::~EC_OgrePlaceable()
@@ -61,6 +60,7 @@ namespace OgreRenderer
     void EC_OgrePlaceable::SetPosition(const Core::Vector3df& position)
     {
         scene_node_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
+        AttachNode(); // Nodes become visible only after having their position set at least once
     }
 
     void EC_OgrePlaceable::SetOrientation(const Core::Quaternion& orientation)
@@ -75,6 +75,9 @@ namespace OgreRenderer
 
     void EC_OgrePlaceable::AttachNode()
     {
+        if (attached_)
+            return;
+                
         Ogre::SceneNode* parent_node;
         
         if (!parent_)
@@ -89,10 +92,14 @@ namespace OgreRenderer
         }
         
         parent_node->addChild(scene_node_);
+        attached_ = true;
     }
     
     void EC_OgrePlaceable::DetachNode()
     {
+        if (!attached_)
+            return;
+            
         Ogre::SceneNode* parent_node;
         
         if (!parent_)
@@ -107,5 +114,6 @@ namespace OgreRenderer
         }
         
         parent_node->removeChild(scene_node_);
+        attached_ = false;
     }
 }
