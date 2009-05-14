@@ -13,6 +13,7 @@
 #include "ServiceManager.h"
 #include "EventManager.h"
 #include "Platform.h"
+#include "Profiler.h"
 
 /*! \defgroup Foundation_group Foundation Client Interface
     \copydoc Foundation
