@@ -29,8 +29,7 @@ namespace Scene
         virtual ~SceneManagerInterface() {}
 
         //! assignment operator
-        //! \todo Fix GCC compatibility
-        //virtual SceneManagerInterface &operator =(const SceneManagerInterface &other) = 0;
+        virtual SceneManagerInterface &operator =(const SceneManagerInterface &other) = 0;
         //! Returns true if the two scenes have the same name
         virtual bool operator == (const SceneManagerInterface &other) const = 0;
         //! Returns true if the two scenes have different names

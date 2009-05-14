@@ -32,7 +32,7 @@ namespace Scene
     public:
         virtual ~SceneManager() {}
 
-        SceneManager &operator =(const SceneManager &other)
+        SceneManager &operator =(const SceneManagerInterface &other)
         {
             if (&other != this)
             {
@@ -110,7 +110,7 @@ namespace Scene
         Foundation::Framework *framework_;
 
         //! Name of the scene
-        std::string name_;
+        const std::string name_;
     };
 }
 
