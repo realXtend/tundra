@@ -81,5 +81,15 @@ update may be nice as a method, but the real thing are the events.
     #~ create_sparkle((0,2, 0,2), 0.5) #in upper right corner, for half a sec
     
 if __name__ == '__main__':
+    import pollable_pyglet_app
+    
     pyglet.clock.schedule_interval(viewer.run, 0.1)
-    pyglet.app.run()
+    #pyglet.app.run()
+    """don't want to run a blocking thing here now,
+    as want to use the api without threads first,
+    so added a crude simple poll with yielf to pyglet.app"""
+    pollable_pyglet_app.enable() #replaces the event loop impl
+    pump = pyglet.app.event_loop.pump()
+    while 1:
+        #print "*",
+        pump.next()
