@@ -42,6 +42,35 @@ BOOST_AUTO_TEST_CASE( framework_application )
     BOOST_CHECK (app_name_w.compare(Core::ToWString(fw.GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "application_name"))) == 0 );
 }
 
+BOOST_AUTO_TEST_CASE( framework_profiler )
+{
+    Foundation::Framework fw;
+    {
+        
+        int u;
+        PROFILE(Test_Profile1);
+        {
+            for (int k = 0 ; k < 2 ; ++k)
+            {
+                PROFILE(Test_Profile2);
+                for (int i = 0 ; i<4 ; ++i)
+                {
+                    u = 5 * i / 2;
+                }
+            }
+        }
+        ELIFORP(Test_Profile1);
+        
+
+        Foundation::Profiler &profiler = Foundation::ProfilerSection::GetProfiler();
+        Foundation::ProfilerNode *node = static_cast<Foundation::ProfilerNode*>(profiler.GetChild("Test_Profile1"));
+        BOOST_CHECK_EQUAL (node->num_called_total_, 1);
+        
+        node = static_cast<Foundation::ProfilerNode*>(node->GetChild("Test_Profile2"));
+        BOOST_CHECK_EQUAL (node->num_called_total_, 2);
+    }
+}
+
 void frameworkConfigurationManagerTest()
 {
     Foundation::ConfigurationManager manager(0, "./testing/");
