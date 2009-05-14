@@ -40,8 +40,8 @@ namespace OgreRenderer
 
         Foundation::Framework* framework = renderer_->GetFramework();
 
-        int width = framework->GetDefaultConfig().DeclareSetting("OgreRenderer", "WindowWidth", 800);
-        int height = framework->GetDefaultConfig().DeclareSetting("OgreRenderer", "WindowHeight", 600);
+        int width = framework->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_width", 800);
+        int height = framework->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_height", 600);
 
         requisition->width = width;
         requisition->height = height;
