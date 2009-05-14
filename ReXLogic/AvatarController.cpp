@@ -136,6 +136,8 @@ namespace RexLogic
         {
             EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity_->GetComponent(EC_NetworkPosition::NameStatic()).get());
             netpos.rotation_ = rotation;    
+            netpos.Updated();
+            
             net_dirtymovement_ = true;         
         }
     }
@@ -233,8 +235,7 @@ namespace RexLogic
         // set position according to the value from server
         EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity_->GetComponent(EC_NetworkPosition::NameStatic()).get());
 
-        netpos.position_ = position;
-        
+        netpos.position_ = position;        
         netpos.Updated();    
     }        
 }

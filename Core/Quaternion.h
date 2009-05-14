@@ -48,6 +48,9 @@ class Quaternion
 		//! Equalilty operator
 		bool operator==(const Quaternion& other) const;
 
+		//! Inequality operator
+		bool operator!=(const Quaternion& other) const;
+
         bool equals(const Quaternion other, const f32 tolerance = ROUNDING_ERROR_32 ) const
 		{
 			return Core::equals(x, other.x, tolerance) &&
@@ -170,6 +173,13 @@ inline bool Quaternion::operator==(const Quaternion& other) const
 {
     return equals(other);
 }
+
+// equal operator
+inline bool Quaternion::operator!=(const Quaternion& other) const
+{
+    return !equals(other);
+}
+
 
 
 // assignment operator
