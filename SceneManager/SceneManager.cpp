@@ -14,7 +14,7 @@ namespace Scene
         ScenePtr new_scene = framework_->CreateScene(newName);
         if (new_scene)
         {
-            *checked_static_cast<SceneManager*>(new_scene.get()) = *this;
+		*new_scene = *this;
         }
         return new_scene;
     }
