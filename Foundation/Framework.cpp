@@ -173,6 +173,10 @@ namespace Foundation
                 renderer.lock()->Render();
             }
             
+            // Reset profiling data
+#ifdef PROFILING
+            GetProfiler().Reset();
+#endif
         }
 
          UnloadModules();
