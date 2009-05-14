@@ -54,17 +54,22 @@ namespace CommunicationUI
 	void CommunicationUIModule::PostInitialize()
 	{
 		initializeMainCommWindow();
-		//commManager = (framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager)).lock();
-        //commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager);
-//                      (framework_->GetService<Scene::SceneManager>(Foundation::Service::ST_SceneManager)).lock();
-		//commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager).lock();
-
-//        commManager = framework_->GetService<Foundation::Comms::CommunicationManagerServiceInterface>(Foundation::Service::ST_CommunicationManager).lock();
-
 		CommunicationUIModule::instance_= this;		
         
-       // setupSciptInterface();		
-		SetupCommunicationServiceUsage();
+       // setupSciptInterface(); // old way
+
+		try
+		{
+			SetupCommunicationServiceUsage();
+		}
+		catch(std::string error)
+		{
+			std::string text = "PostInitialize failed: ";
+			text.append(error);
+			LogError(text);
+
+			// todo: We should uninitialize comm ui here...
+		}
 	}
 
 	void CommunicationUIModule::Uninitialize()
@@ -160,28 +165,32 @@ namespace CommunicationUI
 
 	
 		
-	/*
+	/**
 	 *  - Fetches communication service object
 	 *  - Subscribes communication events
-	 *  - Get contact list 
+	 *  - Get contact list from communication service
 	 */
 	void CommunicationUIModule::SetupCommunicationServiceUsage()
 	{
 		communication_service_ = framework_->GetService<Communication::CommunicationServiceInterface>(Foundation::Service::ST_Communication).lock();
-		if (communication_service_.get() == NULL)
+		if ( !communication_service_)
 		{
-			LogError("Cannot find communication service!");
-			return;
+			std::string error = "Cannot find communication service!";
+			LogError(error);
+			throw error;
 		}
 
 		framework_->GetEventManager()->RegisterEventSubscriber( framework_->GetModuleManager()->GetModule(this->Name()), 0, Foundation::ModuleWeakPtr() );
         communication_event_category_id_ = framework_->GetEventManager()->QueryEventCategory("Communication");
         
         if (communication_event_category_id_ == 0 )
-            LogWarning("Unable to find event category for Communication events!");
+		{
+			std::string error = "Unable to find event category for Communication events!";
+			LogError(error);
+			throw error;
+		}
 
 		contact_list_ = communication_service_->GetContactList();
-
 	}
 
     void CommunicationUIModule::setupSciptInterface()
@@ -255,7 +264,7 @@ namespace CommunicationUI
         for(std::vector<std::string>::iterator iter = settingsVect.begin(); iter<settingsVect.end()-1; iter+=2)
         {
             SettingsAttribute attr;
-			attr.type = CommSettingsType::String;
+			attr.type = CommunicationUI::String;
 		    attr.value = *(iter+1);
             std::string key = *iter;
             attrs[key] = attr;
@@ -425,7 +434,7 @@ namespace CommunicationUI
         LogDebug("OnContactAdd");
 		std::map<std::string, SettingsAttribute> attrs;
 		SettingsAttribute contact_address;
-		contact_address.type = CommSettingsType::String;
+		contact_address.type = CommunicationUI::String;
 		contact_address.value = "";
 		attrs["contact address"] = contact_address;
 		int count = attrs.size();
