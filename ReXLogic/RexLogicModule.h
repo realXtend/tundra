@@ -113,6 +113,10 @@ namespace RexLogic
         bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
     
         //! Handle motion interpolation of scene objects
+        /*! Performs dead-reckoning and damped motion for all scene entities which have an OgrePlaceable and a NetworkPosition
+            component. If the OgrePlaceable position/rotation is set anywhere else, it will be overridden by the next
+            call to this, so it should be avoided.
+         */
         void HandleInterpolation(Core::f64 frametime);
         
         //! login through console
@@ -145,6 +149,9 @@ namespace RexLogic
 
         //! Movement damping constant
         Core::f32 movement_damping_constant_;
+
+        //! How long to keep doing dead reckoning
+        Core::f64 dead_reckoning_time_;
 
         typedef boost::function<bool(Core::event_id_t,Foundation::EventDataInterface*)> LogicEventHandlerFunction;
         typedef std::map<Core::event_category_id_t, LogicEventHandlerFunction> LogicEventHandlerMap;

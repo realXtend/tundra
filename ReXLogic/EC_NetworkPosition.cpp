@@ -15,12 +15,7 @@ namespace RexLogic
     EC_NetworkPosition::~EC_NetworkPosition()
     {
     }
-    
-    void EC_NetworkPosition::AddTime(Core::f64 frametime)
-    {
-        time_since_update_ += frametime;
-    }
-        
+
     void EC_NetworkPosition::Updated()
     {                   
         // See if updated many times on the same frame, don't "update" in that case

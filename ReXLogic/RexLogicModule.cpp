@@ -102,6 +102,8 @@ namespace RexLogic
         
         movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting("RexLogicModule", "movement_damping_constant", 10.0f);
              
+        dead_reckoning_time_ = framework_->GetDefaultConfig().DeclareSetting("RexLogicModule", "dead_reckoning_time", 2.0f);
+
         LogInfo("Module " + Name() + " initialized.");
     }
 
@@ -490,16 +492,28 @@ namespace RexLogic
             OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(ogrepos_ptr.get()); 
             EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(netpos_ptr.get()); 
             
-            netpos.AddTime(frametime); 
+            if (netpos.time_since_update_ <= dead_reckoning_time_)
+            {            
+                netpos.time_since_update_ += frametime; 
 
-            // Interpolate, then damp
-            // netpos.velocity_ += netpos.accel_ * frametime;
-            netpos.position_ += netpos.velocity_ * frametime;            
-            netpos.damped_position_ = netpos.position_ * rev_factor + netpos.damped_position_ * factor;
-            netpos.damped_rotation_.slerp(netpos.rotation_, netpos.damped_rotation_, factor);
-
-            ogrepos.SetPosition(netpos.damped_position_);  
-            ogrepos.SetOrientation(netpos.damped_rotation_);                     
+                // Interpolate
+                
+                // acceleration disabled until figured out what goes wrong. possibly mostly irrelevant with OpenSim server
+                // netpos.velocity_ += netpos.accel_ * frametime;
+                
+                netpos.position_ += netpos.velocity_ * frametime;            
+                
+                // Dampened (smooth) movement
+                
+                if (netpos.damped_position_ != netpos.position_)
+                    netpos.damped_position_ = netpos.position_ * rev_factor + netpos.damped_position_ * factor;
+                
+                if (netpos.damped_rotation_ != netpos.rotation_)                
+                    netpos.damped_rotation_.slerp(netpos.rotation_, netpos.damped_rotation_, factor);
+    
+                ogrepos.SetPosition(netpos.damped_position_);  
+                ogrepos.SetOrientation(netpos.damped_rotation_);                     
+            }
         }
     }
 }   

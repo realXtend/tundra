@@ -10,7 +10,7 @@
 namespace RexLogic
 {
     //! Represents object position/rotation/velocity data received from network, for clientside inter/extrapolation
-    /*! Note currently values are stored in Ogre format axes.
+    /*! Note that currently values are stored in Ogre format axes.
      */ 
     class EC_NetworkPosition : public Foundation::ComponentInterface
     {
@@ -47,9 +47,6 @@ namespace RexLogic
         
         //! Whether update is first
         bool first_update;        
-        
-        //! Add time
-        void AddTime(Core::f64 frametime);
                 
         //! Finished an update
         void Updated();
