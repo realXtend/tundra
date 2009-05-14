@@ -6,6 +6,9 @@
 
 namespace Communication
 {
+	/**
+	 *  Implementation of PresenceStatusInterface
+	 */
 	class PresenceStatus: PresenceStatusInterface
 	{
 		friend class CommunicationManager;

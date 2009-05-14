@@ -7,6 +7,9 @@
 
 namespace Communication
 {
+	/**
+	 *  Implementation of ParticipantInterface
+	 */
 	class Participant : public ParticipantInterface
 	{
 	public:

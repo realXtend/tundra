@@ -1,7 +1,6 @@
 #ifndef incl_CommunicationManager_h
 #define incl_CommunicationManager_h
 
-
 #include "StableHeaders.h"
 
 #include "Foundation.h"
@@ -21,7 +20,7 @@
  * Uses telepathy-python library as backend using IMDemo python module through PythonScriptModule.
  * Current python implementation uses Telepathy-Gabble connection manager to provice Jabber IM 
  * services. By nature of Telepathy framework it's quite easy to use any connection manager and 
- * the IM services those offer. So Communication Service is designed to be generic IM service
+ * the IM services those offers. Communication Service is designed to be generic IM service interface
  * which hide protocol specific features from user.
  *
  * @todo Make this threadsafe
@@ -39,7 +38,7 @@ namespace Communication
 	typedef boost::shared_ptr<CommunicationManager> CommunicationManagerPtr;
 
 	/**
-	 *  Implements CommunicationServiceInterface with python backend which uses telepathy-python.
+	 *  Implements CommunicationServiceInterface with python backend which uses telepathy-python
 	 */
 	class CommunicationManager : public CommunicationServiceInterface
 	{
@@ -54,7 +53,9 @@ namespace Communication
 		CommunicationManager(Foundation::Framework *f);
 		~CommunicationManager(void);
 
-		// CommunicationServiceInterface
+		static const std::string NameStatic() { return "CommunicationManager"; } // for logging functionality
+
+		// CommunicationServiceInterface begin
 		void OpenConnection(CredentialsPtr c);
 		void CloseConnection();
 		IMSessionPtr CreateIMSession(ContactPtr contact);
@@ -64,10 +65,9 @@ namespace Communication
 		PresenceStatusPtr GetPresenceStatus();
 		IMMessagePtr CreateIMMessage(std::string text);
 		void SendFriendRequest(ContactInfoPtr contact_info);
-		void RemoveContact(ContactPtr contact); // todo: move to ContactList class
+		void RemoveContact(ContactPtr contact); 
 		virtual CredentialsPtr GetCredentials(); 
-
-		static const std::string NameStatic() { return "CommunicationManager"; } // for logging functionality
+		// CommunicationServiceInterface end
 
 		// callbacks for console commands
 		Console::CommandResult ConsoleHelp(const Core::StringVector &params);
@@ -86,10 +86,14 @@ namespace Communication
 		Console::CommandResult ConsoleAcceptFriendRequest(const Core::StringVector &params);
 		Console::CommandResult ConsoleDenyFriendRequest(const Core::StringVector &params);
 
+	protected:
 		static CommunicationManagerPtr GetInstance(); // for python callbacks
 
-	protected:
-		static CommunicationManagerPtr instance_;
+		void InitializePythonCommunication();
+		void UninitializePythonCommunication();
+		void RegisterConsoleCommands();
+		void RegisterEvents();
+
 		void RemoveIMSession(const IMSession* s);
 		ContactPtr GetContact(std::string id);
 		IMSessionPtr CreateIMSession(ContactPtr contact, ContactPtr originator);
@@ -97,26 +101,27 @@ namespace Communication
 		Foundation::ScriptObject* CallPythonCommunicationObject(const std::string &method_name, const std::string &arg) const;
 		Foundation::ScriptObject* CallPythonCommunicationObject(const std::string &method_name) const;
 
+		// static variables
+		static CommunicationManagerPtr instance_;
 
-		
-		
 		// member variables
 		bool connected_; // todo: replace this with "Connection" or "ConnectionStatus" object
 		Foundation::Framework* framework_;
+		Foundation::ScriptObjectPtr communication_py_script_; 
+		Foundation::ScriptObjectPtr python_communication_object_; 
+		Foundation::EventManagerPtr event_manager_;
+		Core::event_category_id_t comm_event_category_; // todo: could be static 
+
 		IMSessionListPtr im_sessions_;
 		ContactList contact_list_;
 		PresenceStatusPtr presence_status_;
 		std::vector<std::string> presence_status_options_;
 		FriendRequestListPtr friend_requests_;
-		Foundation::ScriptObjectPtr communication_py_script_; 
-		Foundation::ScriptObjectPtr python_communication_object_; 
-		Foundation::EventManagerPtr event_manager_;
-		Core::event_category_id_t comm_event_category_; // todo: could be static 
 		ContactPtr user_;
 
-		// python event handlers
-		// * todo: could these be non-static member functions?
-		// * todo: could we handle memory allocation in some another way with these function parameters?
+		//! python event handlers
+		//! @todo: could these be non-static member functions?
+		//! @todo: could we handle memory allocation in some another way with these function parameters?
 		static void PyCallbackTest(char *);
 		static void PyCallbackConnected(char*);
 		static void PyCallbackConnecting(char*);
@@ -134,12 +139,6 @@ namespace Communication
 		static void PyCallbackFriendRequestRemotePending(char* id);
 		static void PyCallbackFriendAdded(char* id);
 		static void PyCallbackPresenceStatusTypes(char* id);
-
-		// initialization
-		void InitializePythonCommunication();
-		void UninitializePythonCommunication();
-		void RegisterConsoleCommands();
-		void RegisterEvents();
 	};
 
 } // end of namespace Communication

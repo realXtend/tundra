@@ -3,9 +3,10 @@
 
 #include "Foundation.h"
 #include "EventDataInterface.h"
+
 /**
  *  Implementation of all communication service events.
- *
+ *  For more information see the CommunicationServiceInterface
  *
  */
 namespace Communication
@@ -37,8 +38,6 @@ namespace Communication
 		ContactPtr contact_;
 	};
 	
-
-
 	/**
 	 *
 	 */
