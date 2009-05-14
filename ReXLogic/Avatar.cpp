@@ -145,14 +145,28 @@ namespace RexLogic
         if(!entity) return;
         EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(entity->GetComponent(EC_NetworkPosition::NameStatic()).get());
 
-        netpos.position_ = GetProcessedVector(&bytes[i]);
+        Core::Vector3df position = GetProcessedVector(&bytes[i]);
         i += sizeof(Core::Vector3df);
         
         netpos.velocity_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
         i += 6;
         
-        netpos.rotation_ = GetProcessedQuaternion(&bytes[i]);
+        Core::Quaternion rotation = GetProcessedQuaternion(&bytes[i]);
      
+        if (rexlogicmodule_->GetAvatarController()->GetAvatarEntity() && entity->GetId() == rexlogicmodule_->GetAvatarController()->GetAvatarEntity()->GetId())
+        {
+            rexlogicmodule_->GetAvatarController()->HandleNetworkUpdate(position, rotation);
+        }
+        else
+        {
+            netpos.position_ = position;
+            netpos.rotation_ = rotation;
+        }
+                  
+        //! \todo what to do with acceleration & rotation velocity? zero them currently
+        netpos.accel_ = Core::Vector3df::ZERO;
+        netpos.rotvel_ = Core::Vector3df::ZERO;
+        
         netpos.Updated();                 
     }    
     
@@ -181,7 +195,7 @@ namespace RexLogic
         if(!entity) return;        
         EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(entity->GetComponent(EC_NetworkPosition::NameStatic()).get());
 
-        netpos.position_ = GetProcessedVector(&bytes[i]);
+        Core::Vector3df position = GetProcessedVector(&bytes[i]);
         i += sizeof(Core::Vector3df);
 
         netpos.velocity_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
@@ -190,11 +204,21 @@ namespace RexLogic
         netpos.accel_ = GetProcessedVectorFromUint16(&bytes[i]);
         i += 6;
 
-        netpos.rotation_ = GetProcessedQuaternion(&bytes[i]);
+        Core::Quaternion rotation = GetProcessedQuaternion(&bytes[i]);
         i += 8;        
 
         netpos.rotvel_ = GetProcessedVectorFromUint16(&bytes[i]);
 
+        if (rexlogicmodule_->GetAvatarController()->GetAvatarEntity() && entity->GetId() == rexlogicmodule_->GetAvatarController()->GetAvatarEntity()->GetId())
+        {
+            rexlogicmodule_->GetAvatarController()->HandleNetworkUpdate(position, rotation);
+        }
+        else
+        {
+            netpos.position_ = position;
+            netpos.rotation_ = rotation;
+        }
+        
         netpos.Updated();
                             
     }

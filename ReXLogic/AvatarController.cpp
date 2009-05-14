@@ -123,8 +123,8 @@ namespace RexLogic
     {
         if(avatarentity_)
         {
-            OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get());
-            return ogreplaceable.GetOrientation();        
+            EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity_->GetComponent(EC_NetworkPosition::NameStatic()).get());
+            return netpos.rotation_;      
         }
         else
             return Core::Quaternion(0,0,0,1);
@@ -134,8 +134,8 @@ namespace RexLogic
     {
         if(avatarentity_)
         {
-            OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get());
-            ogreplaceable.SetOrientation(rotation);
+            EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity_->GetComponent(EC_NetworkPosition::NameStatic()).get());
+            netpos.rotation_ = rotation;    
             net_dirtymovement_ = true;         
         }
     }
@@ -184,9 +184,13 @@ namespace RexLogic
         {
             Core::Quaternion rotchange;
             rotchange.fromAngleAxis((yaw_*frametime*0.5f),RexTypes::Vector3(0,1,0)); 
-            Core::Quaternion newrot = rotchange * ogreplaceable.GetOrientation();
+            Core::Quaternion newrot = rotchange * GetBodyRotation();
             SetBodyRotation(newrot.normalize());
         }
+
+        // hack: so that there is no lag between avatar/camera, copy orientation to ogre scenenode here, instead
+        // of waiting for the general update/interpolation cycle
+        ogreplaceable.SetOrientation(GetBodyRotation());
 
         // update camera position
         RexTypes::Vector3 campos = ogreplaceable.GetPosition();
@@ -196,23 +200,30 @@ namespace RexLogic
         
         RexTypes::Vector3 lookat = ogreplaceable.GetPosition();
         lookat += (ogreplaceable.GetOrientation() * cameraoffset_);
-        camera->lookAt(lookat.x,lookat.y,lookat.z);
-        
-        // send movement update to server if necessary
-        if(net_dirtymovement_)
-        {
-            // send max 20 updates per second
-            net_movementupdatetime_ += (float)frametime;
-            if(net_movementupdatetime_ > 0.05f)
-            {
-                SendMovementToServer();
-                net_movementupdatetime_ = 0.0f;
-                net_dirtymovement_ = false;
-            }        
-        }        
+        camera->lookAt(lookat.x,lookat.y,lookat.z);           
     }
     
-    void AvatarController::HandleAgentMovementComplete(RexTypes::Vector3 position, Core::Quaternion rotation)
+    void AvatarController::HandleAgentMovementComplete(const RexTypes::Vector3& position, const RexTypes::Vector3& lookat)
+    {
+        if(!avatarentity_)
+            return;
+            
+        // set position/rotation according to the value from server
+        EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity_->GetComponent(EC_NetworkPosition::NameStatic()).get());
+
+        //! \todo handle lookat to set initial avatar orientation
+        
+        netpos.position_ = position;
+        netpos.velocity_ = Core::Vector3Df::ZERO;
+        netpos.accel_ = Core::Vector3Df::ZERO;
+        
+        // Initial position within region, do not damp
+        netpos.NoPositionDamping();
+        netpos.NoRotationDamping();
+        netpos.Updated();    
+    }    
+    
+    void AvatarController::HandleNetworkUpdate(const RexTypes::Vector3& position, const Core::Quaternion& rotation)
     {
         if(!avatarentity_)
             return;
@@ -223,10 +234,8 @@ namespace RexLogic
         EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity_->GetComponent(EC_NetworkPosition::NameStatic()).get());
 
         netpos.position_ = position;
-        netpos.velocity_ = Core::Vector3Df::ZERO;
-        netpos.accel_ = Core::Vector3Df::ZERO;
+        
         netpos.Updated();    
-    }    
-    
+    }        
 }
 

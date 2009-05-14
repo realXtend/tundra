@@ -207,7 +207,7 @@ namespace RexLogic
         {
             Vector3 position = data->message->ReadVector3(); 
             Vector3 lookat = data->message->ReadVector3();
-            rexlogicmodule_->GetAvatarController()->HandleAgentMovementComplete(Core::OpenSimToOgreCoordinateAxes(position),Core::OpenSimToOgreQuaternion(lookat));
+            rexlogicmodule_->GetAvatarController()->HandleAgentMovementComplete(Core::OpenSimToOgreCoordinateAxes(position),Core::OpenSimToOgreCoordinateAxes(lookat));
 
             /// \todo tucofixme, what to do with regionhandle & timestamp?
             uint64_t regionhandle = data->message->ReadU64();
