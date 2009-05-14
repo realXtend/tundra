@@ -7,6 +7,7 @@
 #include "ServiceInterfaces.h"
 #include "ServiceManager.h"
 #include "SceneManagerInterface.h"
+#include "Profiler.h"
 
 namespace Foundation
 {
@@ -100,6 +101,8 @@ namespace Foundation
         //! Returns the scene map for self reflection / introspection.
         const SceneMap &GetSceneMap() const { return scenes_; }
 
+        //! Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
+        Profiler &GetProfiler() { return *ProfilerSection::GetProfiler(); }
 
         //! load and init module
         Console::CommandResult ConsoleLoadModule(const Core::StringVector &params);

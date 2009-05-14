@@ -114,13 +114,17 @@ namespace Foundation
 #endif
     };
 
+    //! N-ary tree structure for profiling nodes
     class ProfilerNodeTree
     {
         ProfilerNodeTree();
     public:
         typedef std::list<ProfilerNodeTree*> NodeList;
 
-        ProfilerNodeTree(const std::string &name, ProfilerNodeTree *parent) : name_(name), parent_(parent) {}
+        //! constructor that takes a name for the node
+        ProfilerNodeTree(const std::string &name) : name_(name), parent_(NULL) {}
+
+        //! destructor
         virtual ~ProfilerNodeTree()
         {
             for (NodeList::iterator it = children_.begin() ; 
@@ -130,11 +134,30 @@ namespace Foundation
                 delete *it;
             }
         }
+
+        //! Resets this node and all child nodes
+        virtual void ResetValues()
+        {
+            for (NodeList::iterator it = children_.begin() ; 
+                 it != children_.end() ;
+                 ++it)
+            {
+                (*it)->ResetValues();
+            }
+        }
         
+        //! Add a child for this node
         void AddChild(ProfilerNodeTree *node)
         {
             children_.push_back(node);
+            node->parent_ = this;
         }
+
+        //! Returns a child node
+        /*!
+            \param name Name of the child node
+            \return Child node or NULL if the node was not child
+        */
         ProfilerNodeTree* GetChild(const std::string &name)
         {
             assert (name != name_);
@@ -151,41 +174,83 @@ namespace Foundation
 
             return NULL;
         }
+        //! Returns the name of this node
         const std::string &Name() const { return name_; }
+
+        //! Returns the parent of this node
         ProfilerNodeTree *Parent() { return parent_; }
 
+        //! Returns list of children for introspection
+        const NodeList &GetChildren() const { return children_; }
+
     private:
-        ProfilerNodeTree *parent_;
         NodeList children_;
+        ProfilerNodeTree *parent_;
         const std::string name_;
     };
 
     //! Data container for profiling data for a profiling block
     class ProfilerNode : public ProfilerNodeTree
     {
+        friend class Profiler;
+        ProfilerNode();
     public:
-        ProfilerNode(const std::string &name, ProfilerNodeTree *parent) : 
-          ProfilerNodeTree(name, parent),
+        //! constructor that takes a name for the node
+        ProfilerNode(const std::string &name) : 
+          ProfilerNodeTree(name),
           num_called_total_(0),
+          num_called_(0),
+          num_called_current_(0),
           total_(0.0),
           elapsed_current_(0.0),
-          elapsed_(0.0) 
+          elapsed_(0.0) ,
+          elapsed_min_(0.0),
+          elapsed_max_(0.0),
+          elapsed_min_current_(0.0),
+          elapsed_max_current_(0.0)
           {}
+
         virtual ~ProfilerNode() {}
+
+        void ResetValues()
+        {
+            num_called_ = num_called_current_;
+            num_called_current_ = 0;
+
+            elapsed_ = elapsed_current_;
+            elapsed_current_ = 0;
+
+            elapsed_min_ = elapsed_min_current_;
+            elapsed_min_current_ = 0;
+
+            elapsed_max_ = elapsed_max_current_;
+            elapsed_max_current_ = 0;
+        }
 
         //! Number of times this profile has been called during the execution of the program
         Core::ulong num_called_total_;
 
-        //! Total time spend in this profile
+        //! Number of times this profile was called during last frame
+        Core::ulong num_called_;
+
+        //! Total time spend in this profile during the execution of the program
         double total_;
-
-        //! Average time spend in this profile
-        //double average_;
-
-        double elapsed_current_;
 
         //! Time spend in this profiling block during last frame.
         double elapsed_;
+
+        //! Minimum time spend in this profile during last frame
+        double elapsed_min_;
+
+        //! Maximum time spend in this profile during last frame
+        double elapsed_max_;
+
+    private:
+        Core::ulong num_called_current_;
+        double elapsed_current_;
+        double elapsed_min_current_;
+        double elapsed_max_current_;
+
 
         ProfilerBlock block_;
     };
@@ -198,8 +263,10 @@ namespace Foundation
     */
     class Profiler : public ProfilerNodeTree
     {
+        friend class Framework;
     public:
-        Profiler() : ProfilerNodeTree(std::string("Root"), NULL) { current_node_ = this; ProfilerBlock::QueryCapability(); }
+        Profiler() : ProfilerNodeTree(std::string("Root")) { current_node_ = this; ProfilerBlock::QueryCapability(); }
+    public:
         ~Profiler() {}
 
         //! Start a profiling block.
@@ -212,17 +279,26 @@ namespace Foundation
         //! End the profiling block
         void EndBlock(const std::string &name);
 
+        //! Reset profiling data (should be called between frames
+        void Reset();
+
+        //! Returns root profiling node
+        ProfilerNodeTree *GetRoot() { return this; }
+
     private:
         //! Cached node topmost in stack
         ProfilerNodeTree *current_node_;
     };
 
+    //! Used by PROFILE - macro to automatically stop profiling clock when going out of scope
     class ProfilerSection
     {
+        friend class Framework;
+        ProfilerSection();
     public:
         ProfilerSection(const std::string &name) : name_(name), destroyed_(false)
         {
-            GetProfiler().StartBlock(name);
+            GetProfiler()->StartBlock(name);
         }
 
         ~ProfilerSection()
@@ -233,21 +309,22 @@ namespace Foundation
             }
         }
 
+        //! Explicitly destroy this section before it runs out of scope
         __inline void Destruct()
         {
-            GetProfiler().EndBlock(name_);
+            GetProfiler()->EndBlock(name_);
             destroyed_ = true;
         }
-
-        __inline static Profiler &GetProfiler()
-        {
-            static Profiler profiler;
-            return profiler;
-        }
+        static Profiler *GetProfiler();
 
     private:
+        //! Parent profiler used by this section
+        //static Profiler *profiler_;
+
+        //! Name of this profiling section
         const std::string name_;
 
+        //! True if this section has explicitly been destroyed before it run out of scope
         bool destroyed_;
     };
 }

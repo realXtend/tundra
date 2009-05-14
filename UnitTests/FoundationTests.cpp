@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE( framework_profiler )
         ELIFORP(Test_Profile1);
         
 
-        Foundation::Profiler &profiler = Foundation::ProfilerSection::GetProfiler();
+        Foundation::Profiler &profiler = fw.GetProfiler();
         Foundation::ProfilerNode *node = static_cast<Foundation::ProfilerNode*>(profiler.GetChild("Test_Profile1"));
         BOOST_CHECK (node != NULL);
         BOOST_CHECK_EQUAL (node->num_called_total_, 1);
