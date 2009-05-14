@@ -174,17 +174,20 @@ namespace Communication
 	typedef std::vector<IMSessionPtr> IMSessionList;
 	typedef boost::shared_ptr<IMSessionList> IMSessionListPtr;
 	
-	// Login information for communication server connection
-	// todo: rename to Account ?
-	// todo: separate interface and implementation
-	//
-	// info: properties are communication manager and protocol specific:
-	// eg.
-	// * protocol
-	// * account
-	// * server
-	// * server_port
-	// * password
+	/**
+	 *  Login information for IM server connection login
+	 *
+	 * @todo rename to Account?
+	 * @todo separate interface and implementation
+	 *
+	 * properties are communication manager and protocol specific:
+	 * eg.
+	 * - "protocol"
+	 * - "account"
+	 * - "server"
+	 * - "server_port"
+	 * - "password"
+	 */
 	class Credentials
 	{
 	public: 
@@ -197,14 +200,23 @@ namespace Communication
 	};
 	typedef boost::shared_ptr<Credentials> CredentialsPtr;
 
-	// todo: possibility to join chat rooms
-	// Send Events:
-	// * SessionRequest (todo: rename to Session?)
-	// * PresenceUpdate
-	// * ConnectionStateUpdate
-	// * MessageReceived (maybe we will not allow messages without session? instead we'll always create one)
-	//   todo: rename to Message ?
-	// * FriendRequest
+	/**
+	 * The communication service
+	 *
+	 * Offers IM functionality: - contact lists with presence status information
+	 *                          - IM sessions for text based chat
+	 *                          - possibility to set own presence status
+	 *
+	 * current implementation supports Jabber protocol but interface is protocl free
+	 * and more protocol support is easy to add.
+	 *
+	 * @todo Add possibility to join chat rooms
+	 * @todo Multiuser IM sessions
+	 * @todo voip sessions
+	 * @todo video sessions
+	 *
+	 * Send COMMUNICATION event group events
+	 */
 	class CommunicationServiceInterface : public Foundation::ServiceInterface
 	{
 	public:
@@ -217,31 +229,31 @@ namespace Communication
 		virtual void SetPresenceStatus(PresenceStatusPtr p) = 0; 
 		virtual PresenceStatusPtr GetPresenceStatus() = 0;
 		virtual IMMessagePtr CreateIMMessage(std::string text) = 0;
-		virtual void SendFriendRequest(ContactInfoPtr contact_info) = 0;  // todo: move to ContactList class
-		virtual void RemoveContact(ContactPtr contact) = 0; // todo: move to ContactList class
+		virtual void SendFriendRequest(ContactInfoPtr contact_info) = 0;  // todo: move to ContactList class ?
+		virtual void RemoveContact(ContactPtr contact) = 0; // todo: move to ContactList class ?
 	};
 	typedef boost::shared_ptr<CommunicationServiceInterface> CommunicationServicePtr;
 
 
-	/*
-	 * All events of COMMUNICATION event group
+	/**
+	 * The events in COMMUNICATION event group.
 	 */
     namespace Events
     {
-        static const Core::event_id_t PRESENCE_STATUS_UPDATE = 1;
-        static const Core::event_id_t IM_MESSAGE = 2;
-        static const Core::event_id_t IM_SESSION_REQUEST = 3;
-		static const Core::event_id_t FRIEND_REQUEST = 5;
-		static const Core::event_id_t FRIEND_RESPONSE = 6;
-		static const Core::event_id_t CONNECTION_STATE = 7; 
-		static const Core::event_id_t SESSION_STATE = 8; 
+        static const Core::event_id_t PRESENCE_STATUS_UPDATE = 1; // When presence status of contact in contact list changes
+        static const Core::event_id_t IM_MESSAGE = 2;             // When IMMessage is received
+        static const Core::event_id_t IM_SESSION_REQUEST = 3;     // When IM session request is received
+		static const Core::event_id_t FRIEND_REQUEST = 5;         // When friend request is received
+		static const Core::event_id_t FRIEND_RESPONSE = 6;        // Isn't in use
+		static const Core::event_id_t CONNECTION_STATE = 7;       // When session status is changed or contact list content is changed
+		static const Core::event_id_t SESSION_STATE = 8;          // When session ends or participant joins or leaf 
 
 		// future events ?
-//		static const Core::event_id_t SESSION_INVITATION_RESPONSE_RECEIVED = 5;
-//      static const Core::event_id_t FRIENDSHIP_RESPONSE_RECEIVED = 9;
-//      static const Core::event_id_t SESSION_JOIN_REQUEST_RECEIVED = 11;
+//		static const Core::event_id_t SESSION_INVITATION_RESPONSE_RECEIVED ;
+//      static const Core::event_id_t FRIENDSHIP_RESPONSE_RECEIVED;
+//      static const Core::event_id_t SESSION_JOIN_REQUEST_RECEIVED;
 
-		/*
+		/**
 		 *
 		 */
 		class PresenceStatusUpdateEventInterface  // : public Foundation::EventDataInterface
@@ -252,7 +264,7 @@ namespace Communication
 		};
 		typedef boost::shared_ptr<PresenceStatusUpdateEventInterface> PresenceStatusUpdateEventPtr;
 
-		/*
+		/**
 		 *
 		 */
 		class IMMessageEventInterface //  : public Foundation::EventDataInterface  // PROBLEM: EventDataInterface is not declared yet ?
@@ -263,7 +275,7 @@ namespace Communication
 		};
 		typedef boost::shared_ptr<IMMessageEventInterface> IMMessageEventPtr;
 
-		/*
+		/**
 		 *
 		 */
 		class IMSessionRequestEventInterface // : public Foundation::EventDataInterface
@@ -274,7 +286,7 @@ namespace Communication
 		};
 		typedef boost::shared_ptr<IMSessionRequestEventInterface> IMSessionRequestEventPtr;
 
-		/*
+		/**
 		 *
 		 */
 		class FriendRequestEventInterface  //: public Foundation::EventDataInterface
@@ -284,7 +296,7 @@ namespace Communication
 		};
 		typedef boost::shared_ptr<FriendRequestEventInterface> FriendRequestEventPtr;
 
-		/*
+		/**
 		 *
 		 */
 		class SessionStateEventInterface
@@ -300,7 +312,7 @@ namespace Communication
 		};
 		typedef boost::shared_ptr<SessionStateEventInterface> SessionStateEventPtr;
 
-		/*
+		/**
 		 *
 		 */
 		class ConnectionStateEventInterface
