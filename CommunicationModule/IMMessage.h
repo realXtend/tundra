@@ -4,12 +4,13 @@
 #include "Foundation.h"
 #include "EventDataInterface.h"
 
-// todo: implement author
+
 
 namespace Communication
 {
-	/*
-	 *
+	/**
+	 *  Implementation of MessageInterface
+	 *  @todo: implement author
 	 */
 	class Message: public MessageInterface
 	{
@@ -27,8 +28,10 @@ namespace Communication
 		SessionPtr session_;
 	};
 
-	/*
+	/**
+	 *  Implementation of IMMessageInterface
 	 *
+	 *  @todo solve the inheritance issue 
 	 */
 	class IMMessage: public Message, public IMMessageInterface
 	{
@@ -42,7 +45,7 @@ namespace Communication
 		void SetText(std::string t);
 		std::string GetText();
 
-		// TODO: Fix this - these are Message class methods...
+		//! @TODO: Fix this - these are Message class methods...
 		virtual std::string GetTimeStamp();
 		virtual ParticipantPtr GetAuthor();
 

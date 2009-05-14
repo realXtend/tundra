@@ -4,9 +4,10 @@
 #include "Foundation.h"
 #include "EventDataInterface.h"
 
-/*
- * =========================
- * Hello there: This is a test class !
+/**
+ *  Implementation of FriendRequestInterface
+ *
+ *  Uses CommunicationManagers python script object for sending accept and deny messages to IM server
  */
 namespace Communication
 {

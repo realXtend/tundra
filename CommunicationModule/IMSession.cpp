@@ -6,16 +6,10 @@
 namespace Communication
 {
 
-	Session::Session(ParticipantPtr originator, Foundation::ScriptObjectPtr python_communication_object) : originator_(originator), protocol_("")
+	Session::Session(ParticipantPtr originator) : originator_(originator), protocol_("")
 	{
-		python_communication_object_ = python_communication_object;		
 		participants_ = ParticipantListPtr( new ParticipantList() );
 	}
-
-	//std::string Session::GetId()
-	//{
-	//	return id_;
-	//}
 
 	std::string Session::GetProtocol()
 	{
@@ -33,18 +27,17 @@ namespace Communication
 
 	void Session::NotifyClosedByRemote()
 	{
-		// todo: handle this
+		// todo: handle this: how?
 	}
-
 
 	void Session::SendInvitation(ContactPtr c)
 	{
-		// Not implemented in python yet: Multiuser chat
+		// Not implemented in python yet (Multiuser chat)
 	}
 
 	void Session::Kick(ParticipantPtr p)
 	{
-		// Not implemented in python yet:
+		// Not implemented in python yet (Multiuser chat)
 	}
 
 	ParticipantListPtr Session::GetParticipants()
@@ -52,13 +45,14 @@ namespace Communication
 		return participants_;
 	}
 
+	// todo: Move this to own file
 	// IMSession ---------------------------->
 
-	IMSession::IMSession(ParticipantPtr originator, Foundation::ScriptObjectPtr python_communication_object) : Session(originator, python_communication_object)
+	IMSession::IMSession(ParticipantPtr originator) : Session(originator)
 	{
 	}
 
-	/*
+	/**
 	 * Send IM message to all person in current session
 	 */
 	void IMSession::SendIMMessage(IMMessagePtr m)
@@ -71,26 +65,20 @@ namespace Communication
 			if ( address.length() == 0 )
 			{
 				// We have a problem: We don't know address of this participant!
+				// @todo Report this!
+				return;
 			}
 
-			char** args = new char*[1];
-			char* buf1 = new char[1000];
 			std::string arg_text;
 			arg_text.append(address);
 			arg_text.append(":");
 			arg_text.append(m->GetText());
-			strcpy(buf1, arg_text.c_str() ); 
-			args[0] = buf1;
-
-			std::string method = "CSendChat";
-			std::string syntax = "s";
-			Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, args);
+			CommunicationManager::GetInstance()->CallPythonCommunicationObject("CSendChat", arg_text);
 		}
 
 		im_messages_.push_back(m);
 	}
 
-	// Update message history 
 	void IMSession::NotifyMessageReceived(IMMessagePtr m)
 	{
 		im_messages_.push_back(m);
@@ -108,14 +96,7 @@ namespace Communication
 
 	void IMSession::Close()
 	{
-		char** args = new char*[1];
-		char* buf1 = new char[1000];
-		strcpy(buf1, id_.c_str());
-		args[0] = buf1;
-		std::string method = "CCloseChannel";
-		std::string syntax = "s";
-		Foundation::ScriptObject* ret = python_communication_object_->CallMethod(method, syntax, args);
-
+		CommunicationManager::GetInstance()->CallPythonCommunicationObject("CCloseChannel", id_);
 		CommunicationManager::GetInstance()->RemoveIMSession(this);
 	}
 
@@ -143,8 +124,5 @@ namespace Communication
 	{
 		return Session::GetOriginator();
 	}
-
-
-
 
 } // end of namespace: Communication

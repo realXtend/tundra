@@ -18,24 +18,12 @@ namespace Communication
 
 	void FriendRequest::Accept()
 	{
-		char** args = new char*[1];
-		char* buf1 = new char[1000];
-		strcpy(buf1, contact_info_->GetProperty("address").c_str());
-		args[0] = buf1;
-		std::string method = "CAcceptContactRequest"; // todo: CCreateIMSessionJabber, CCreateIMSessionSIP, etc.
-		std::string syntax = "s";
-		Foundation::ScriptObject* ret = CommunicationManager::GetInstance()->python_communication_object_->CallMethod(method, syntax, args);
+		CommunicationManager::GetInstance()->CallPythonCommunicationObject("CAcceptContactRequest", contact_info_->GetProperty("address").c_str() );
 	}
 
 	void FriendRequest::Deny()
 	{
-		char** args = new char*[1];
-		char* buf1 = new char[1000];
-		strcpy(buf1, contact_info_->GetProperty("address").c_str());
-		args[0] = buf1;
-		std::string method = "CDenyContactRequest"; // todo: CCreateIMSessionJabber, CCreateIMSessionSIP, etc.
-		std::string syntax = "s";
-		Foundation::ScriptObject* ret = CommunicationManager::GetInstance()->python_communication_object_->CallMethod(method, syntax, args);
+		CommunicationManager::GetInstance()->CallPythonCommunicationObject("CDenyContactRequest", contact_info_->GetProperty("address").c_str() );
 	}
 
 } // end of namespace: Communication

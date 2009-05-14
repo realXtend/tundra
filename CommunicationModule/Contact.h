@@ -7,6 +7,9 @@
 
 namespace Communication
 {
+	/**
+	 *  Implementation of ContactInterface
+	 */
 	class Contact : ContactInterface
 	{
 		friend class CommunicationManager;

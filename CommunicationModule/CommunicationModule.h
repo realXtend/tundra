@@ -6,6 +6,11 @@
 
 #include "CommunicationModuleApi.h"
 
+/**
+ *  Communication module
+ *
+ *  Creates CommunicationManager object to offer CommunicationServiceInterfce 
+ */
 namespace Communication
 {
 	class COMMS_MODULE_API CommunicationModule : public Foundation::ModuleInterfaceImpl

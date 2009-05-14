@@ -12,7 +12,7 @@ namespace Communication
 	}
 
     /**
-	 * @return timestamp in format HH:MM
+	 * @return timestamp in format "HH:MM"
 	 **/
 	std::string Message::CreateTimeStamp()
 	{
@@ -48,11 +48,8 @@ namespace Communication
 		return time_stamp_;
 	}
 
-
-	//
+	// todo: Move to own file
 	// IMMessage ----------------------------------->
-	// 
-
 
 	/**
 	 * Default constructor
@@ -98,5 +95,4 @@ namespace Communication
 	{
 		return author_;
 	}
-
 }

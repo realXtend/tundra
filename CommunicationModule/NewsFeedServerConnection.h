@@ -3,11 +3,13 @@
 
 #include "Foundation.h"
 
-// JUST IDEAS NOW
-
-// OPEN QUESTIONS:  
-// * Where subscribe lists are stored?
-
+/**
+ *  Just an idea..
+ *
+ *  What if we could have news message acstraction for receiving 
+ *  news messages from different sources so user can get message from
+ *  interested events.
+ */
 namespace Communication
 {
 	class NewsMessage
@@ -20,9 +22,9 @@ namespace Communication
 		// -attachments
 	};
 
-	// News feed server connection for eg. Atom, RSS and Web syndication services
-	// EVENTS: 
-	// - NewsMessage
+	/**
+	 *  News feed server connection for eg. Atom, RSS and Web syndication services
+	 */
 	class NewsFeedServerConnection
 	{
 	public:
