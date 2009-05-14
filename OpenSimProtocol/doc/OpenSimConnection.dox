@@ -22,6 +22,5 @@ In both connection cases OpenSimModule uses XMLRPC-interface. Please see \subpag
 @note At the moment choose of how connection is made depends what connection data user gives in Login Window of Viewer. If user gives authentication login, password and authentication address,
 connection is made through authentication procedure. If user leaves those fields blank connection is made through direct connection. 
 
-@section code_level_creating_connection Dealing connection in code level
 	
 */
