@@ -16,7 +16,7 @@ namespace Core
             float invNorm = 1.f / sqrt(sq);
             return Core::Quaternion(x * invNorm, y * invNorm, z * invNorm, 0.f);
         }
-        float w = 1.f - sqrt(sq);
+        float w = sqrt(1.f - sq);
         return Quaternion(x, y, z, w);
     }
     

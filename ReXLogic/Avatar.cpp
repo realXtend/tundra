@@ -207,7 +207,7 @@ namespace RexLogic
         Core::Quaternion rotation = GetProcessedQuaternion(&bytes[i]);
         i += 8;        
 
-        netpos.rotvel_ = GetProcessedVectorFromUint16(&bytes[i]);
+        netpos.rotvel_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
 
         if (rexlogicmodule_->GetAvatarController()->GetAvatarEntity() && entity->GetId() == rexlogicmodule_->GetAvatarController()->GetAvatarEntity()->GetId())
         {

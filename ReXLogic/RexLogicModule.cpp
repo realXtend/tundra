@@ -495,10 +495,11 @@ namespace RexLogic
             // Interpolate, then damp
             // netpos.velocity_ += netpos.accel_ * frametime;
             netpos.position_ += netpos.velocity_ * frametime;            
-            netpos.damped_position_ = rev_factor * netpos.position_ + factor * netpos.damped_position_;
+            netpos.damped_position_ = netpos.position_ * rev_factor + netpos.damped_position_ * factor;
+            netpos.damped_rotation_.slerp(netpos.rotation_, netpos.damped_rotation_, factor);
 
             ogrepos.SetPosition(netpos.damped_position_);  
-            ogrepos.SetOrientation(netpos.rotation_);                     
+            ogrepos.SetOrientation(netpos.damped_rotation_);                     
         }
     }
 }   
