@@ -11,7 +11,7 @@
 namespace RexLogic
 {
 
-Sky::Sky(RexLogicModule *owner) : owner_(owner), skyEnabled_(false), skyBoxImageCount_(0)
+Sky::Sky(RexLogicModule *owner) : owner_(owner), skyEnabled_(false), type_(OgreRenderer::SKYTYPE_NONE), skyBoxImageCount_(0)
 {
 }
 
@@ -135,6 +135,7 @@ void Sky::UpdateSky(OgreRenderer::SkyType type, const std::vector<std::string> &
 
 void Sky::CreateDefaultSky(bool show)
 {
+    type_ = OgreRenderer::SKYTYPE_BOX;
     Scene::EntityPtr sky = GetSkyEntity().lock();
     if (sky)
     {
@@ -203,9 +204,6 @@ void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
     case OgreRenderer::SKYTYPE_PLANE:
         if (tex->tag_ == skyPlaneTextureRequest_)
             sky_component->SetSkyPlaneMaterialTexture(tex->id_.c_str());
-        break;
-    case OgreRenderer::SKYTYPE_NONE:
-        sky_component->DisableSky();
         break;
     default:
         break;
