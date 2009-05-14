@@ -496,23 +496,40 @@ namespace RexLogic
             {            
                 netpos.time_since_update_ += frametime; 
 
-                // Interpolate
+                // Interpolate motion
                 
                 // acceleration disabled until figured out what goes wrong. possibly mostly irrelevant with OpenSim server
                 // netpos.velocity_ += netpos.accel_ * frametime;
                 
                 netpos.position_ += netpos.velocity_ * frametime;            
                 
+                // Interpolate rotation
+                
+                if (netpos.rotvel_.getLengthSQ() > 0.001)
+                {
+                    Core::Quaternion rot_quat1;
+                    Core::Quaternion rot_quat2;
+                    Core::Quaternion rot_quat3;
+                    
+                    rot_quat1.fromAngleAxis(netpos.rotvel_.x * 0.5 * frametime, Core::Vector3df(1,0,0));
+                    rot_quat2.fromAngleAxis(netpos.rotvel_.y * 0.5 * frametime, Core::Vector3df(0,1,0));
+                    rot_quat3.fromAngleAxis(netpos.rotvel_.z * 0.5 * frametime, Core::Vector3df(0,0,1));
+                    
+                    netpos.rotation_ *= rot_quat1;                  
+                    netpos.rotation_ *= rot_quat2; 
+                    netpos.rotation_ *= rot_quat3;                   
+                }
+                
                 // Dampened (smooth) movement
                 
                 if (netpos.damped_position_ != netpos.position_)
                     netpos.damped_position_ = netpos.position_ * rev_factor + netpos.damped_position_ * factor;
                 
-                if (netpos.damped_rotation_ != netpos.rotation_)                
+                if (netpos.damped_rotation_ != netpos.rotation_)
                     netpos.damped_rotation_.slerp(netpos.rotation_, netpos.damped_rotation_, factor);
     
-                ogrepos.SetPosition(netpos.damped_position_);  
-                ogrepos.SetOrientation(netpos.damped_rotation_);                     
+                ogrepos.SetPosition(netpos.damped_position_);
+                ogrepos.SetOrientation(netpos.damped_rotation_);
             }
         }
     }
