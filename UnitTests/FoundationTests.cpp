@@ -55,19 +55,28 @@ BOOST_AUTO_TEST_CASE( framework_profiler )
                 PROFILE(Test_Profile2);
                 for (int i = 0 ; i<4 ; ++i)
                 {
+                    PROFILE(Test_Profile4);
                     u = 5 * i / 2;
                 }
             }
+            PROFILE(Test_Profile3);
         }
         ELIFORP(Test_Profile1);
         
 
         Foundation::Profiler &profiler = Foundation::ProfilerSection::GetProfiler();
         Foundation::ProfilerNode *node = static_cast<Foundation::ProfilerNode*>(profiler.GetChild("Test_Profile1"));
+        BOOST_CHECK (node != NULL);
         BOOST_CHECK_EQUAL (node->num_called_total_, 1);
         
-        node = static_cast<Foundation::ProfilerNode*>(node->GetChild("Test_Profile2"));
+        node = static_cast<Foundation::ProfilerNode*>(node->GetChild("Test_Profile3"));
+        BOOST_CHECK (node != NULL);
+        node = static_cast<Foundation::ProfilerNode*>(node->Parent()->GetChild("Test_Profile2"));
+        BOOST_CHECK (node != NULL);
         BOOST_CHECK_EQUAL (node->num_called_total_, 2);
+        node = static_cast<Foundation::ProfilerNode*>(node->GetChild("Test_Profile4"));
+        BOOST_CHECK (node != NULL);
+        BOOST_CHECK_EQUAL (node->num_called_total_, 8);
     }
 }
 
