@@ -23,6 +23,8 @@ This project has the following dependencies:
 
 - OpenJpeg 1.3: http://www.openjpeg.org/
 
+- OpenAL 1.1: http://connect.creativelabs.com/openal/
+
 
 OBTAINING DEPENDENCIES
 ======================
