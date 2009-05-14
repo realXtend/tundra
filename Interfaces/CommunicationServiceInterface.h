@@ -175,6 +175,19 @@ namespace Communication
 	typedef boost::shared_ptr<IMSessionList> IMSessionListPtr;
 	
 	/**
+	 *  Interface for credential for login to IM server
+	 *  @todo this is not in use yet, instead we currently use Credentials class
+	 */
+	class CredentialsInterface
+	{
+	public: 
+		virtual ~CredentialsInterface() {};
+		virtual void SetProperty(const std::string &key, const std::string &value) const = 0;
+		virtual std::string GetProperty(const std::string &key) const = 0;
+		virtual std::vector<std::string> GetProperties() const = 0;
+	};
+
+	/**
 	 *  Login information for IM server connection login
 	 *
 	 * @todo rename to Account?
@@ -199,6 +212,8 @@ namespace Communication
 		std::map<std::string, std::string> properties_;
 	};
 	typedef boost::shared_ptr<Credentials> CredentialsPtr;
+
+
 
 	/**
 	 * The communication service
@@ -231,6 +246,11 @@ namespace Communication
 		virtual IMMessagePtr CreateIMMessage(std::string text) = 0;
 		virtual void SendFriendRequest(ContactInfoPtr contact_info) = 0;  // todo: move to ContactList class ?
 		virtual void RemoveContact(ContactPtr contact) = 0; // todo: move to ContactList class ?
+
+		/**
+		 *  Return CredentialsPtr object with necessary properties set with ampty values
+		 */
+		virtual CredentialsPtr GetCredentials() = 0; 
 	};
 	typedef boost::shared_ptr<CommunicationServiceInterface> CommunicationServicePtr;
 

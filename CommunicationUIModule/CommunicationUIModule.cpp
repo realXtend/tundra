@@ -252,26 +252,28 @@ namespace CommunicationUI
 
 	void CommunicationUIModule::OnAccountMenuSettings()
 	{
-        LogInfo("OnAccountMenuSettings");
-        Foundation::ScriptObject* so = this->CallIMPyMethod("CGetSettings", "", std::string(""));
-        char* retVal = so->ConvertToChar();
-        std::string settingsStr(retVal);
-        LogInfo(settingsStr);
-        std::vector<std::string> settingsVect = this->SplitString(settingsStr, ":", 0);
-        // code the vector into a map that config dialog understands
-        std::map<std::string, SettingsAttribute> attrs;
+		// TODO replace this with CredentialPtr usage
+		Communication::CredentialsPtr c = communication_service_->GetCredentials();
+   //     LogInfo("OnAccountMenuSettings");
+   //     Foundation::ScriptObject* so = this->CallIMPyMethod("CGetSettings", "", std::string(""));
+   //     char* retVal = so->ConvertToChar();
+   //     std::string settingsStr(retVal);
+   //     LogInfo(settingsStr);
+   //     std::vector<std::string> settingsVect = this->SplitString(settingsStr, ":", 0);
+   //     // code the vector into a map that config dialog understands
+   //     std::map<std::string, SettingsAttribute> attrs;
 		
-        for(std::vector<std::string>::iterator iter = settingsVect.begin(); iter<settingsVect.end()-1; iter+=2)
-        {
-            SettingsAttribute attr;
-			attr.type = CommunicationUI::String;
-		    attr.value = *(iter+1);
-            std::string key = *iter;
-            attrs[key] = attr;
-        }
+   //     for(std::vector<std::string>::iterator iter = settingsVect.begin(); iter<settingsVect.end()-1; iter+=2)
+   //     {
+   //         SettingsAttribute attr;
+			//attr.type = CommunicationUI::String;
+		 //   attr.value = *(iter+1);
+   //         std::string key = *iter;
+   //         attrs[key] = attr;
+   //     }
 
-        ConfigureDlg accDlg(attrs.size(), attrs, "connection settings", this);
-        Gtk::Main::run(accDlg);
+   //     ConfigureDlg accDlg(attrs.size(), attrs, "connection settings", this);
+   //     Gtk::Main::run(accDlg);
 	}
 
     void CommunicationUIModule::OnCreateAccount()
@@ -293,9 +295,22 @@ namespace CommunicationUI
 	void CommunicationUIModule::OnAccountMenuSetAccountAndPassword()
 	{
 		//LogInfo("Set account");
-		std::map<std::string, SettingsAttribute> attributes = GetAccountAttributes(); //commManager->GetAccountAttributes();
+		std::map<std::string, SettingsAttribute> attributes; // attributes for ConfigureDlg object
+
+		Communication::CredentialsPtr c = communication_service_->GetCredentials();
+		std::vector<std::string> properties = c->GetProperties();
+		for (std::vector<std::string>::iterator i = properties.begin(); i != properties.end(); i++)
+		{
+			std::string name = *i;
+			SettingsAttribute attr;
+			attr.type = CommunicationUI::String;
+			attr.value = c->GetProperty(name);
+			attributes[name] = attr;
+		}
+
+//		std::map<std::string, SettingsAttribute> attributes = GetAccountAttributes(); //commManager->GetAccountAttributes();
 		int count = attributes.size();
-		LogInfo(attributes.find("name")->first);
+//		LogInfo(attributes.find("name")->first);
 
 		ConfigureDlg accDlg(count, attributes, "account settings", this);
 		Gtk::Main::run(accDlg);
@@ -498,27 +513,56 @@ namespace CommunicationUI
 //        this->CallIMPyMethod("CSetStatus", "s", status);
     }
 
+	/**
+	 *  @todo implement save eg. with ConfiguratonManager
+	 */
+	void CommunicationUIModule::SaveCredentials(Communication::CredentialsPtr c)
+	{
+
+	}
+
+	/**
+	 *  @todo implement load eg. with ConfigurationManager
+	 */
+	Communication::CredentialsPtr CommunicationUIModule::LoadCreadentials()
+	{
+		Communication::Credentials* c = new Communication::Credentials();
+		// todo: set properties here
+
+		return Communication::CredentialsPtr(c);
+	}
+
 	void CommunicationUIModule::Callback(std::string aConfigName, std::map<std::string, SettingsAttribute> attributes)
 	{
-        if(aConfigName=="account settings"){
+        if(aConfigName=="account settings")
+		{
 			// TODO: Handle settings, rg. write to ConfigureManager
 //            commManager->SetAccountAttributes(attributes);
-        } else if(aConfigName=="connection settings") {
-            LogInfo("Callback from settings dlg");
+        } else if(aConfigName=="connection settings")
+		{
+			LogInfo("Callback from settings dlg");
+			// TODO: Replace this functionality with CredentialPtr usage
+
+			Communication::Credentials* c = new Communication::Credentials();
+			Communication::CredentialsPtr credentials = Communication::CredentialsPtr(c);
+
             //commManager->SetAccountAttributes(attributes);
             // code to attributes into one string and call save
-            std::string saveString;
-            std::map<std::string, SettingsAttribute>::const_iterator iter;	
-            //for(iter = attributes.begin(); iter!=attributes.end(); iter++){
-            for(iter = attributes.begin(); iter!=attributes.end(); ++iter){
-                std::string key = iter->first;
-                SettingsAttribute attr = iter->second;
-                saveString.append(key + ":" + attr.value + ":");                
+//            std::string saveString;
+            for(std::map<std::string, SettingsAttribute>::const_iterator iter = attributes.begin(); iter!=attributes.end(); ++iter){
+				CommunicationUI::SettingsAttribute attr = iter->second;
+				std::string value = static_cast<std::string>(attr.value);
+				credentials->SetProperty(iter->first, value);
+                //std::string key = iter->first;
+                //SettingsAttribute attr = iter->second;
+                //saveString.append(key + ":" + attr.value + ":");                
             }
             // remove the last ":"
-            saveString = saveString.substr(0, saveString.size()-1);
-            LogInfo(saveString);
-            this->CallIMPyMethod("CSaveSettings", "s", saveString);
+//            saveString = saveString.substr(0, saveString.size()-1);
+//            LogInfo(saveString);
+			SaveCredentials(credentials);
+//            this->CallIMPyMethod("CSaveSettings", "s", saveString);
+
         } else if(aConfigName=="contact address") {
             SettingsAttribute sattr = attributes["contact address"];
 			Communication::ContactInfo* info = new Communication::ContactInfo();
@@ -597,8 +641,20 @@ namespace CommunicationUI
             }
         } else if(aConfigName=="Contact removed"){
             LogInfo("Contact removed");
-        } else if(aConfigName=="Register account"){
-            CallIMPyMethod("CCreateAccount", "", std::string(""));
+        } else if(aConfigName=="Register account")
+		{
+			std::string answer = attributes.begin()->first;
+            if(answer=="Ok"){
+				
+				Communication::CredentialsPtr c = LoadCreadentials();
+				// TODO: Implement CreateAccount(c) in communication sevice interface
+//				communication_service_->CreateAccount(c);
+//            CallIMPyMethod("CCreateAccount", "", std::string(""));
+            }
+			else {
+				// User canceled, we do nothing
+            }
+
         } else {
             LogInfo("Unknown callback");
             LogInfo(aConfigName);

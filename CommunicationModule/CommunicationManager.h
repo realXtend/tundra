@@ -65,6 +65,7 @@ namespace Communication
 		IMMessagePtr CreateIMMessage(std::string text);
 		void SendFriendRequest(ContactInfoPtr contact_info);
 		void RemoveContact(ContactPtr contact); // todo: move to ContactList class
+		virtual CredentialsPtr GetCredentials(); 
 
 		static const std::string NameStatic() { return "CommunicationManager"; } // for logging functionality
 
