@@ -42,10 +42,15 @@ namespace OpenALAudio
     void OpenALAudioModule::Initialize()
     {
         sound_->Initialize();
+        if (sound_->GetBufferCount() < 1)
+        {
+            LogInfo("Module " + Name() + " initialization failed!");
+            return;
+        }
 
 		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Sound, sound_);
 
-        LogInfo("Module " + Name() + " initialized.");
+        LogInfo("Module " + Name() + " initialized with " + sound_->LogBufferCount() + " buffers.");
     }
 
     void OpenALAudioModule::PostInitialize()
@@ -54,7 +59,8 @@ namespace OpenALAudio
 
     void OpenALAudioModule::Uninitialize()
 	{
-		framework_->GetServiceManager()->UnregisterService(sound_);
+        sound_->Uninitialize();
+        framework_->GetServiceManager()->UnregisterService(sound_);
 		sound_.reset();
 
 		LogInfo("Module " + Name() + " uninitialized.");
