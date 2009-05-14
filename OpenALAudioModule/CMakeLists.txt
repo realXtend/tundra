@@ -18,6 +18,7 @@ include_directories (
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
+INCLUDE_OPENAL()
 
 add_definitions (-DMODULE_EXPORTS)
 
@@ -42,6 +43,7 @@ target_link_libraries (${TARGET_NAME} Foundation Interfaces)
 # External library linkage
 LINK_BOOST()
 LINK_POCO()
+LINK_OPENAL()
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

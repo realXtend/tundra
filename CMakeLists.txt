@@ -17,6 +17,7 @@ include (Gtkmm)
 include (Python)
 include (OIS)
 include (OpenJpeg)
+include (OpenAL)
 
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
@@ -46,6 +47,7 @@ FIND_OGRE()
 FIND_OIS()
 FIND_OPENJPEG()
 FIND_GTKMM()
+FIND_OPENAL()
 
 # Default additional include & library directories
 include_directories (${REX_DEP_PATH}/include)

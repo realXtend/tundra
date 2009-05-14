@@ -4,6 +4,7 @@
 
 #include "SoundServiceInterface.h"
 #include <boost/shared_ptr.hpp>
+#include <al.h>
 
 namespace Foundation
 {
@@ -20,11 +21,21 @@ namespace OpenALAudio
 
 		void Initialize();
 
-		void Update(); //Per frame updating. Usually nothing is done here, but it is here in case it is needed.
+        void Uninitialize();
+
+		void Update(); //Per frame updating. Updates the listener position
 
 		virtual void Playsound(); //! todo add functionality
 
 		virtual void PlayVorbis(); //! todo add functionality
+
+        std::string LogBufferCount(); //Returns initialized sound buffer count for loggin
+        int GetBufferCount(); //Returns initialized sound buffer count
+
+    private:
+        bool initialized_;
+        ALuint buffers_[256];
+        ALint numBuffers_;
     };
 
     typedef boost::shared_ptr<Sound> SoundPtr;
