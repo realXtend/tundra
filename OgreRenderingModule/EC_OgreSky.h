@@ -11,18 +11,16 @@
 namespace OgreRenderer
 {
 
-class Renderer;
-
-//! Sky type
+/// Sky type
 enum SkyType
 {
-    SKYTYPE_PLANE,
+    SKYTYPE_NONE = 0,
     SKYTYPE_BOX,
     SKYTYPE_DOME,
-    SKYTYPE_NONE
+    SKYTYPE_PLANE,
 };
 
-//! Enumeration of the skybox texture indexes.
+/// Enumeration of the skybox texture indexes.
 enum SkyBoxIndex
 {
     SKYBOX_IND_FRONT = 0,
@@ -39,15 +37,17 @@ struct SkyImageData
     /// Sky type for which the image is for
     SkyType type;
 
-    /// Skybox texture index.
+    /// SkyBox texture index.
     SkyBoxIndex index;
-
+    
+    /// Curvature of SkyDome.
     float curvature;
-
+    
+    /// Tiling of SkyDome.
     float tiling;
 };
 
-//! Generic ogre sky parameters, see Ogre documentation for more info.
+/// Generic ogre sky parameters, see Ogre documentation for more info.
 struct SkyParameters
 {
     std::string material;
@@ -56,7 +56,6 @@ struct SkyParameters
     float angle;
     RexTypes::Vector3 angleAxis;
     
-    // Set the default values.
     SkyParameters() : 
     material("Rex/skybox"),
     distance(50),
@@ -65,8 +64,8 @@ struct SkyParameters
     angleAxis(0, 0, 1) {}
 };
 
-//! Sky parameters for skydome, see Ogre documentation for more info.
-struct SkydomeParameters
+/// Sky parameters for skydome, see Ogre documentation for more info.
+struct SkyDomeParameters
 {
     float curvature;
     float tiling;
@@ -74,8 +73,7 @@ struct SkydomeParameters
     int ySegments;
     int ySegmentsKeep;
     
-    // Set the default values.
-    SkydomeParameters() :
+    SkyDomeParameters() :
     curvature(10.f),
     tiling(8.f),
     xSegments(16),
@@ -83,11 +81,25 @@ struct SkydomeParameters
     ySegmentsKeep(-1) {}
 };
 
+/// Sky parameters for skyplane, see Ogre documentation for more info.
+struct SkyPlaneParameters
+{
+    float scale;
+    float tiling; 
+    float bow; 
+    int xSegments; 
+    int ySegments; 
+    
+    ///\todo ctor with default values.
+};
+
+class Renderer;
 typedef boost::shared_ptr<Renderer> RendererPtr;
 
-//! Ogre sky component
-/*! \todo other sky methods, like plane or dome
-    \ingroup OgreRenderingModuleClient
+/** Ogre sky component
+ *
+ *  \ingroup OgreRenderingModuleClient
+ *
  */
 class OGRE_MODULE_API EC_OgreSky : public Foundation::ComponentInterface
 {
@@ -95,75 +107,74 @@ class OGRE_MODULE_API EC_OgreSky : public Foundation::ComponentInterface
 public:
     virtual ~EC_OgreSky();
 
-   /**
-    * @param index Index of texture to be set.
-    * @param id UUID of the new skybox texture.
-    */
-//   void SetSkyBoxTextureID(const SkyBoxIndex &index, const RexUUID &id) { skyboxTexturesIds_[index] = id; }
-
-   /** @param index Index of texture to be get.
-     * @return UUID of the skybox texture.
-     */
-//   const RexUUID &GetSkyBoxTextureID(const SkyBoxIndex &index) const { return skyboxTexturesIds_[index]; }
-    
-    /// Creates the default skybox. Note: this will be removed soon!
-    void CreateDefaultSkybox();
-   
     /// Creates the default sky. The sky type (box, dome, plane) is read from a config file.
     /// @param show Is the sky shown.
-    void CreateDefaultSky(bool show = true);
-   
-    //! enables a skybox
-    /*! other sky methods will be disabled
-        \param material_name material name
-        \param distance distance of skybox from camera
-        \return true if successful
-        \todo use material/texture asset reference when asset system exists
-     */
-   bool SetSkyBox(const std::string& material_name, Core::Real distance);
+    void CreateSky(bool show = true);
 
-    //! disables sky methods
+    //! Disables sky methods
     void DisableSky();
        
-    /** Update sky info.
-     *
-     * @param type Type of the sky: box, dome or none. 
-     * @param images List of image uuids for the sky.
-     * @param curvature If sky type is dome, curvature of the dome.
-     * @param tiling If sky type is dome, tiling of the dome.
+    /** Enables a skybox.
+     *  Other sky methods will be disabled
+     *  @param material_name material name
+     *  @param distance distance of skybox from camera
+     *  @return true if successful
+     *  @todo use material/texture asset reference when asset system exists
      */
-    void UpdateSky(SkyType type, const std::vector<std::string> &images, float curvature, float tiling);
+    bool SetSkyBox(const std::string& material_name, Core::Real distance);
+    
+    /// Sets the sky material.
+    /// @param material_name Material name.
+    void SetSkyMaterial(const std::string& material_name) { genericSkyParameters.material = material_name; }
+    
+    /// Sets new textures for SkyBox.
+    /// @param index Index of the texture.
+    /// @param texture name Texture name.
+    void SetSkyBoxMaterialTexture(int index, const char *texture_name, size_t image_count);
+    
+    /// Sets the texture for SkyDome.
+    /// @param texture name Texture name.
+    void SetSkyDomeMaterialTexture(const char *texture_name, const SkyImageData *parameters);
+    
+    /// Sets the texture for SkyPlane.
+    /// @param texture name Texture name.
+    void SetSkyPlaneMaterialTexture(const char *texture_name);
+    
+    /// Reads the sky parameters from the configuration file.
+    void GetSkyConfig();
         
 private:
-    //! constructor
-    /*! \param module renderer module
-     */
+    /// Constructor
+    /// @param module ModuleInterface pointer.
     EC_OgreSky(Foundation::ModuleInterface* module);
     
-    ///\todo remove?
-    Foundation::ModuleInterface* owner_;
-    
-    //! Renderer
+    /// Renderer
     RendererPtr renderer_;
     
-    //! whether sky enabled by this component
+    /// whether sky enabled by this component
     bool skyEnabled_;
     
-    //! Type of the sky.
+    /// Type of the sky.
     SkyType type_;
 
-    //! UUID's of the texture assets the skybox uses for rendering. Should be stored per-scene.
+    /// UUID's of the texture assets the skybox uses for rendering. Should be stored per-scene.
 //    RexTypes::RexUUID skyboxTexturesIds_[SKYBOX_IND_COUNT];
     
-    //! Generic sky parameters common to all sky types
+    /// Generic sky parameters common to all sky types.
     SkyParameters genericSkyParameters;
 
-    //! Parameters for skydome
-    SkydomeParameters skydomeParameters;
+    /// Parameters for skydome
+    SkyDomeParameters skyDomeParameters;
    
-   //! List of skybox image names.
-   std::vector<std::string> skyboxImages_;
+    /// Parameters for skyplane.
+    SkyPlaneParameters skyPlaneParameters;
+       
+    /// List of skybox image names.
+    std::vector<std::string> skyBoxImages_;
+   
+    Foundation::ModuleInterface* owner_; 
     
+    size_t currentSkyBoxImageCount_;
 };
 
 } // namespace OgreRenderer

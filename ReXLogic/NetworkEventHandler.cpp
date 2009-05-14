@@ -132,8 +132,8 @@ namespace RexLogic
             return rexlogicmodule_->GetPrimitiveHandler()->HandleRexGM_RexPrimData(data); 
         else if (methodname == "RexAppearance")
             return rexlogicmodule_->GetAvatarHandler()->HandleRexGM_RexAppearance(data);
-//        else if (methodname == "RexSky")
-//            return rexlogicmodule_->GetSkyHandler()->HandleRexGM_RexSky(data);
+        else if (methodname == "RexSky")
+              return rexlogicmodule_->GetSkyHandler()->HandleRexGM_RexSky(data);
         else
             return false;    
     }

@@ -3,24 +3,134 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
 #include "OgreRenderingModule.h"
-#include "Renderer.h"
 #include "RexLogicModule.h"
 #include "Sky.h"
-#include "EC_OgreSky.h"
 
 #include "../OgreRenderingModule/OgreTextureResource.h"
-
-#include <Ogre.h>
 
 namespace RexLogic
 {
 
-Sky::Sky(RexLogicModule *owner) : owner_(owner), skyEnabled_(false)
+Sky::Sky(RexLogicModule *owner) : owner_(owner), skyEnabled_(false), skyBoxImageCount_(0)
 {
 }
 
 Sky::~Sky()
 {
+}
+
+bool Sky::HandleRexGM_RexSky(OpenSimProtocol::NetworkEventInboundData* data)
+{
+    NetInMessage &msg = *data->message;
+    msg.ResetReading();
+    msg.SkipToFirstVariableByName("Parameter");
+    
+    // Variable block begins, should have currently (at least) 4 instances.
+    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+    if (instance_count < 4)
+    {
+        RexLogicModule::LogWarning("Generic message \"RexSky\" did not contain all the necessary data.");
+        return false;
+    }
+    
+    // 1st instance contains the sky type.
+    OgreRenderer::SkyType type = OgreRenderer::SKYTYPE_NONE;
+    type = (OgreRenderer::SkyType)boost::lexical_cast<int>(msg.ReadString());
+
+    // 2nd instance contains the texture uuid's
+    std::string image_string = msg.ReadString();
+    Core::StringVector images = Ogre::StringUtil::split(image_string);
+    
+    // 3rd instance contains the curvature parameter.
+    float curvature = boost::lexical_cast<float>(msg.ReadString());
+
+    // 4th instance contains the tiling parameter.
+    float tiling = boost::lexical_cast<float>(msg.ReadString());
+
+    UpdateSky(type, images, curvature, tiling);
+    
+    return false;
+}
+
+void Sky::UpdateSky(OgreRenderer::SkyType type, const std::vector<std::string> &images, float curvature, float tiling)
+{
+    type_ = type;
+    if (type_ == OgreRenderer::SKYTYPE_NONE)
+    {
+        Scene::EntityPtr sky = GetSkyEntity().lock();
+        if (sky)
+        {
+            OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
+            sky_component->CreateSky();
+            return;
+        }
+    }
+    
+    // Suffixes are used to identify different texture positions on the skybox.
+    std::map<std::string, int> indexMap;
+    std::map<std::string, int>::const_iterator suffixIter;
+    indexMap["_fr"] = 0; // front
+    indexMap["_bk"] = 1; // back
+    indexMap["_lf"] = 2; // left
+    indexMap["_rt"] = 3; // right
+    indexMap["_up"] = 4; // up
+    indexMap["_dn"] = 5; // down
+
+    currentSkyBoxImageCount_ = 0;
+    skyBoxImageCount_ = 0;
+    skyBoxImages_.clear();
+    skyBoxImages_.reserve(skyBoxTextureCount);
+    
+    size_t max = std::min(images.size(), (size_t)skyBoxTextureCount);
+    for(size_t n = 0; n < max; ++n)
+    {
+        std::string image_str = images[n];
+        size_t index = n;
+        if (image_str.size() < 4)
+            break;
+        
+        switch(type_)
+        {
+        case OgreRenderer::SKYTYPE_BOX:
+        {
+            std::string suffix = image_str.substr(image_str.size() - 3);
+            suffixIter = indexMap.find(suffix);
+            if (suffixIter == indexMap.end())
+                break;
+            
+            index = suffixIter->second;
+            image_str = image_str.substr(0, image_str.size() - 3);
+
+            RexUUID image_id(image_str);
+            if (image_id.IsNull())
+                break;
+            
+            ++skyBoxImageCount_;
+            skyBoxTextures_[index] = image_id;
+            break;
+        }
+        case OgreRenderer::SKYTYPE_DOME:
+        {
+            RexUUID image_id(image_str);
+            skyDomeTexture_ = image_id;
+            break;
+        }
+        case OgreRenderer::SKYTYPE_PLANE:
+        {
+            RexUUID image_id(image_str);
+            skyPlaneTexture_ = image_id;
+            break;
+        }
+        }
+    }
+    
+    RequestSkyTextures();
+          
+    /*OgreRenderer::SkyImageData *imageData = new OgreRenderer::SkyImageData;
+    imageData->index = index;
+    imageData->type = type;
+    imageData->curvature = curvature;
+    imageData->tiling = tiling;*/
 }
 
 void Sky::CreateDefaultSky(bool show)
@@ -30,71 +140,106 @@ void Sky::CreateDefaultSky(bool show)
     {
         OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
         assert(sky_component);
-    
+
         ///\todo change to CreateDefaultSky()
-        sky_component->CreateDefaultSkybox();
+        sky_component->CreateSky();
     }
 }
 
-void Sky::RequestSkyboxTextures()
+void Sky::RequestSkyTextures()
 {
-    boost::weak_ptr<OgreRenderer::Renderer> w_renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+    boost::weak_ptr<OgreRenderer::Renderer> w_renderer = owner_->GetFramework()->GetServiceManager()->GetService
+        <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
     boost::shared_ptr<OgreRenderer::Renderer> renderer = w_renderer.lock();
-
-    for(int i = 0; i < skyboxTextureCount; ++i)
-        skyboxTextureRequests_[i] = renderer->RequestResource(skyboxTextures_[i].ToString(), OgreRenderer::OgreTextureResource::GetTypeStatic());
+    
+    switch(type_)
+    {
+    case OgreRenderer::SKYTYPE_BOX:
+        for(int i = 0; i < skyBoxTextureCount; ++i)
+            skyBoxTextureRequests_[i] = renderer->RequestResource(skyBoxTextures_[i].ToString(),
+                OgreRenderer::OgreTextureResource::GetTypeStatic());
+        break;
+    case OgreRenderer::SKYTYPE_DOME:
+        skyDomeTextureRequest_ = renderer->RequestResource(skyDomeTexture_.ToString(),
+            OgreRenderer::OgreTextureResource::GetTypeStatic());
+        break;
+    case OgreRenderer::SKYTYPE_PLANE:
+        skyPlaneTextureRequest_ = renderer->RequestResource(skyPlaneTexture_.ToString(),
+            OgreRenderer::OgreTextureResource::GetTypeStatic());
+        break;
+    case OgreRenderer::SKYTYPE_NONE:
+    default:
+        break;
+    }
 }
 
 void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
 {
     assert(tex);
-
-    /*for(int i = 0; i < num_terrain_textures; ++i)
-        if (tex->tag_ == terrain_texture_requests_[i])
-            SetSkyMaterialTexture(i, tex->id_.c_str());*/
+    
+    Scene::EntityPtr sky = GetSkyEntity().lock();
+    if (!sky)
+    {
+        RexLogicModule::LogError("Could not get SkyEntityPtr!");
+        return;
+    }
+    
+    OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
+    assert(sky_component);
+  
+    switch(type_)
+    {
+    case OgreRenderer::SKYTYPE_BOX:
+        for(int i = 0; i < skyBoxTextureCount; ++i)
+        {
+            if (tex->tag_ == skyBoxTextureRequests_[i])
+                sky_component->SetSkyBoxMaterialTexture(i, tex->id_.c_str(), skyBoxImageCount_);
+        }
+        break;
+    case OgreRenderer::SKYTYPE_DOME:
+        if (tex->tag_ == skyDomeTextureRequest_)
+            sky_component->SetSkyDomeMaterialTexture(tex->id_.c_str(), 0);
+        break;
+    case OgreRenderer::SKYTYPE_PLANE:
+        if (tex->tag_ == skyPlaneTextureRequest_)
+            sky_component->SetSkyPlaneMaterialTexture(tex->id_.c_str());
+        break;
+    case OgreRenderer::SKYTYPE_NONE:
+        sky_component->DisableSky();
+        break;
+    default:
+        break;
+    }
 }
 
-bool Sky::HandleRexGM_RexSky(OpenSimProtocol::NetworkEventInboundData* data)
+void Sky::SetSkyTexture(const RexUUID texture_id)
 {
-    NetInMessage &msg = *data->message;
-    msg.ResetReading();
-    msg.SkipToFirstVariableByName("Parameter");
-    
-    // Variable block begins
-    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
-    if (instance_count < 4)
+    switch(type_)
     {
-        RexLogicModule::LogError("Generic message \"RexSky\" did not contain all the necessary data.");
-        return false;
+    case OgreRenderer::SKYTYPE_DOME:
+        skyDomeTexture_ = texture_id;
+        break;
+    case OgreRenderer::SKYTYPE_PLANE:
+        skyPlaneTexture_ = texture_id;
+        break;
+    default:
+        RexLogicModule::LogError("SetSkyTexture can be used only for SkyDome and SkyPlane!");
+        break;
     }
-    
-    // First instance contains the sky type.
-    int type = OgreRenderer::SKYTYPE_NONE;
-    type = msg.ReadU8();
-    switch(type)
-    {
-    case 0:
-        type = OgreRenderer::SKYTYPE_NONE;
-        break;
-    case 1:
-        type = OgreRenderer::SKYTYPE_BOX;
-        break;
-    case 2:
-        type = OgreRenderer::SKYTYPE_DOME;
-        break;
-    //\todo Support for skyplane
-    }
-    
-    std::string image_string = msg.ReadString();
-    Ogre::StringVector images = Ogre::StringUtil::split(image_string);
-    float curvature = msg.ReadF32();
-    float tiling = msg.ReadF32();
-    
-//    UpdateSky(type, images, curvature, tiling);
-    
-    return false;
 }
-
+    
+void Sky::SetSkyBoxTextures(const RexUUID textures[skyBoxTextureCount])
+{
+    if (type_ != OgreRenderer::SKYTYPE_DOME)
+    {
+        RexLogicModule::LogError("SetSkyBoxTextures can be used only for SkyBox!");
+        return;
+    }
+    
+    for(int i = 0; i < skyBoxTextureCount; ++i)
+        skyBoxTextures_[i] = textures[i];
+}
+    
 void Sky::FindCurrentlyActiveSky()
 {
     Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
@@ -114,62 +259,5 @@ Scene::EntityWeakPtr Sky::GetSkyEntity()
 {
     return cachedSkyEntity_;
 }
-
-/*
-void LLOgreRenderer::updateSky(RexSkyType type, const std::vector<std::string> &images, F32 curvature, F32 tiling)
-{
-   if (type == REXSKY_NONE)
-   {
-      mCurrentSkyType = type;
-      createSky(false);
-   } else
-   {
-      std::map<std::string, int> indexMap;
-      std::map<std::string, int>::const_iterator suffixIter;
-      indexMap["_fr"] = 0;
-      indexMap["_bk"] = 1;
-      indexMap["_lf"] = 2;
-      indexMap["_rt"] = 3;
-      indexMap["_up"] = 4;
-      indexMap["_dn"] = 5;
-
-      mCurrentSkyBoxImageCount = 0;
-      mSkyBoxImageCount = 0;
-      mSkyboxImages.clear();
-      mSkyboxImages.reserve(6);
-
-      size_t max = std::min(images.size(), (size_t)6);
-      size_t n;
-      for (n=0 ; n<max ; ++n)
-      {
-         std::string imageStr = images[n];
-         int index = (int)n;
-         if (imageStr.size() > 3)
-         {
-            std::string suffix = imageStr.substr(imageStr.size() - 3);
-            suffixIter = indexMap.find(suffix);
-            if (suffixIter != indexMap.end())
-            {
-               index = suffixIter->second;
-               imageStr = imageStr.substr(0, imageStr.size() - 3);
-            }
-         }
-         LLUUID imageId(imageStr);
-
-         if (imageId.notNull())
-         {
-            mSkyBoxImageCount++;
-
-            LLViewerImage *image = gImageList.getImage(imageId, FALSE, TRUE, 0, 0, gAgent.getRegionHost());
-            SkyImageData *imageData = new SkyImageData;
-            imageData->mIndex = index;
-            imageData->mType = type;
-            imageData->mCurvature = curvature;
-            imageData->mTiling = tiling;
-            image->setLoadedCallback(onSkyTextureLoaded, 0, FALSE, (void*)imageData);
-         }
-      }
-   }
-}*/
 
 } // namespace RexLogic
