@@ -263,7 +263,7 @@ namespace RexLogic
                 // Pass the texture asset to the terrain manager - the texture might be in the terrain.
                 terrain_->OnTextureReadyEvent(res);
                 // Pass the texture asset to the sky manager - the texture might be in the sky.
-//                sky_->OnTextureReadyEvent(res);
+                sky_->OnTextureReadyEvent(res);
             }
         }
         
@@ -357,7 +357,7 @@ namespace RexLogic
         entity->AddEntityComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_OgreSky"));
         
         sky_->FindCurrentlyActiveSky();
-        sky_->CreateDefaultSky(true);
+        sky_->CreateDefaultSky();
     }
     
     TerrainPtr RexLogicModule::GetTerrainHandler()
