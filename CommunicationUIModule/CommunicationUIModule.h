@@ -140,6 +140,10 @@ namespace CommunicationUI
 		void HandleFriendRequest(Communication::FriendRequestPtr r);
 		void ShowFriendRequestWindow(Communication::FriendRequestPtr r);
 		Communication::FriendRequestPtr	FindFriendRequest(std::string address);
+		void SaveCredentials(Communication::CredentialsPtr c);
+		Communication::CredentialsPtr LoadCreadentials();
+
+
 
         // adds contact to ui contact list
 		void addContactItem(char *);

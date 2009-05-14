@@ -356,6 +356,16 @@ namespace Communication
 		this->python_communication_object_->CallMethod(name, syntax, args); // todo: get return value
 	}
 
+	CredentialsPtr CommunicationManager::GetCredentials()
+	{
+		Credentials* c = new Credentials();
+		c->SetProperty("protocol", "jabber");
+		c->SetProperty("address","");
+		c->SetProperty("password","");
+		c->SetProperty("server address","");
+		c->SetProperty("server port","");
+		return CredentialsPtr(c);
+	}
 
 	ContactPtr CommunicationManager::GetContact(std::string id)
 	{
