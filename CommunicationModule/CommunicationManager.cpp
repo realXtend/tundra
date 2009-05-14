@@ -1072,7 +1072,7 @@ namespace Communication
 		text.append(id);
 		LogDebug(text);
 
-		// TODO: Send ContactListUpdateEvent ?
+		CommunicationManager::GetInstance()->RequestPresenceStatuses();
 	}
 
 	/*
