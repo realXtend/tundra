@@ -5,9 +5,23 @@ import Connection
 import traceback
 import rexviewer as r
 import os        
+import dbusmanager
         
 class IMDemo:
     def __init__(self):
+        self.dbusmanager_ = dbusmanager.DBusManager()
+        if not self.dbusmanager_.is_dbus_service_running():
+            print("TRY to start dbus manager")
+            # The paths are related to current working directory
+            self.dbusmanager_.start_dbus_service("dbus/dbus-daemon.exe", "--config-file=dbus/data/session.conf")
+            
+        if not self.dbusmanager_.is_dbus_service_running():
+            print("ERROR: Cannot find dbus service!")        
+            # todo: report this error to CommunicationManager
+            return
+        else:
+            print(">> dbus daemon running")
+            
         self.connection = Connection.Connection(self)
         pass
     
