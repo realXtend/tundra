@@ -42,6 +42,15 @@ BOOST_AUTO_TEST_CASE( framework_application )
     BOOST_CHECK (app_name_w.compare(Core::ToWString(fw.GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "application_name"))) == 0 );
 }
 
+void Profiler_Recursion()
+{
+    PROFILE(Test_Profile5);
+    static int cnt = 0;
+    cnt++;
+    if (cnt < 5)
+        Profiler_Recursion();
+}
+
 BOOST_AUTO_TEST_CASE( framework_profiler )
 {
     Foundation::Framework fw;
@@ -62,6 +71,9 @@ BOOST_AUTO_TEST_CASE( framework_profiler )
             PROFILE(Test_Profile3);
         }
         ELIFORP(Test_Profile1);
+
+        // recursion test
+        Profiler_Recursion();
         
 
         Foundation::Profiler &profiler = fw.GetProfiler();
