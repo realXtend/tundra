@@ -42,12 +42,13 @@ BOOST_AUTO_TEST_CASE( framework_application )
     BOOST_CHECK (app_name_w.compare(Core::ToWString(fw.GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "application_name"))) == 0 );
 }
 
+int total_recursions = 5;
 void Profiler_Recursion()
 {
     PROFILE(Test_Profile5);
     static int cnt = 0;
     cnt++;
-    if (cnt < 5)
+    if (cnt < total_recursions)
         Profiler_Recursion();
 }
 
@@ -89,6 +90,10 @@ BOOST_AUTO_TEST_CASE( framework_profiler )
         node = static_cast<Foundation::ProfilerNode*>(node->GetChild("Test_Profile4"));
         BOOST_CHECK (node != NULL);
         BOOST_CHECK_EQUAL (node->num_called_total_, 8);
+
+        node = static_cast<Foundation::ProfilerNode*>(profiler.GetChild("Test_Profile5"));
+        BOOST_CHECK (node != NULL);
+        BOOST_CHECK_EQUAL (node->num_called_total_, total_recursions);
     }
 }
 
