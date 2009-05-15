@@ -261,6 +261,8 @@ namespace Foundation
 
     void EventManager::LoadEventSubscriberTree(const std::string& filename)
     {
+        PROFILE(EventManager_LoadEventSubscriberTree);
+
         Foundation::RootLogInfo("Loading event subscriber tree from " + filename);
         
         try

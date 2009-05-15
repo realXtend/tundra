@@ -58,6 +58,8 @@ namespace Foundation
 
     void ModuleManager::LoadAvailableModules()
     {
+        PROFILE(ModuleManager_LoadAvailableModules);
+
         // Find all shared modules and load them
         Core::StringVectorPtr files;
         try
@@ -87,6 +89,7 @@ namespace Foundation
     {
         ModuleInterface *mod;
 
+        PROFILE(ModuleManager_PreInitModules);
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
             mod = modules_[i].module_.get();
@@ -94,6 +97,7 @@ namespace Foundation
                 PreInitializeModule(mod);
         }
         
+        PROFILE(ModuleManager_InitModules);
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
             mod = modules_[i].module_.get();
@@ -101,6 +105,7 @@ namespace Foundation
                 InitializeModule(mod);
         }
         
+        PROFILE(ModuleManager_PostInitModules);
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
             PostInitializeModule(modules_[i].module_.get());
@@ -234,6 +239,7 @@ namespace Foundation
 
     void ModuleManager::LoadModule(const fs::path &path, const Core::StringVectorPtr &all_files)
     {
+        PROFILE(ModuleManager_LoadModule);
         assert (path.has_filename());
 
         std::string ext = path.extension();

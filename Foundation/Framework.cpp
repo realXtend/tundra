@@ -21,6 +21,7 @@ namespace Foundation
     {
         ProfilerSection::SetProfiler(&profiler_);
 
+        PROFILE(FW_Startup);
         application_ = ApplicationPtr(new Application(this));
         platform_ = PlatformPtr(new Platform(this));
 		// Create config manager
@@ -60,6 +61,7 @@ namespace Foundation
 
     void Framework::CreateLoggingSystem()
     {
+        PROFILE(FW_CreateLoggingSystem);
         Poco::LoggingFactory *loggingfactory = new Poco::LoggingFactory();
 
         Poco::Channel *consolechannel = NULL;
@@ -146,6 +148,7 @@ namespace Foundation
 
     void Framework::Go()
     {
+        PROFILE(FW_Go);
         PostInitialize();
 
         boost::timer timer;
@@ -156,6 +159,8 @@ namespace Foundation
         // main loop
         while (exit_signal_ == false)
         {
+            PROFILE(MainLoop);
+
             double frametime = timer.elapsed();
             timer.restart();
             // do synchronized update for modules
@@ -171,7 +176,10 @@ namespace Foundation
             
             // process delayed events
             
-            event_manager_->ProcessDelayedEvents(frametime);
+            {
+               PROFILE(FW_ProcessDelayedEvents);
+                event_manager_->ProcessDelayedEvents(frametime);
+            }
             
             // if we have a renderer service, render now
 			
@@ -327,7 +335,9 @@ namespace Foundation
             timings += ", elapsed total " + Core::ToString(timings_node->total_);
             timings += ", called " + Core::ToString(timings_node->num_called_);
             timings += ", elapsed " + Core::ToString(timings_node->elapsed_);
-            timings += ", average " + Core::ToString(timings_node->total_ / timings_node->num_called_total_);
+
+            double average = timings_node->num_called_total_ == 0 ? 0.0 : timings_node->total_ / timings_node->num_called_total_;
+            timings += ", average " + Core::ToString(average);
             console->Print(timings);
         }
 
