@@ -225,6 +225,8 @@ namespace Foundation
 
             elapsed_max_ = elapsed_max_current_;
             elapsed_max_current_ = 0;
+
+            ProfilerNodeTree::ResetValues();
         }
 
         //! Number of times this profile has been called during the execution of the program
@@ -264,7 +266,7 @@ namespace Foundation
     class Profiler : public ProfilerNodeTree
     {
         friend class Framework;
-    public:
+    private:
         Profiler() : ProfilerNodeTree(std::string("Root")) { current_node_ = this; ProfilerBlock::QueryCapability(); }
     public:
         ~Profiler() {}
@@ -298,6 +300,7 @@ namespace Foundation
     public:
         ProfilerSection(const std::string &name) : name_(name), destroyed_(false)
         {
+            assert (profiler_ && "Trying to profile before profiler initialized.");
             GetProfiler()->StartBlock(name);
         }
 
@@ -312,14 +315,18 @@ namespace Foundation
         //! Explicitly destroy this section before it runs out of scope
         __inline void Destruct()
         {
+            assert (profiler_ && "Trying to profile before profiler initialized.");
+
             GetProfiler()->EndBlock(name_);
             destroyed_ = true;
         }
-        static Profiler *GetProfiler();
+        static Profiler *GetProfiler() { return profiler_; }
+        //! This should only be called once per translation unit. it contains some side-effects too
+        static void SetProfiler(Profiler *profiler) { profiler_ = profiler; ProfilerBlock::QueryCapability(); }
 
     private:
         //! Parent profiler used by this section
-        //static Profiler *profiler_;
+        static Profiler *profiler_;
 
         //! Name of this profiling section
         const std::string name_;

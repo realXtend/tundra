@@ -12,7 +12,7 @@ namespace Foundation
     LARGE_INTEGER ProfilerBlock::api_overhead_;
 #endif
 
-//    Profiler *ProfilerSection::profiler_ = NULL;
+    Profiler *ProfilerSection::profiler_ = NULL;
 
     bool ProfilerBlock::QueryCapability()
     {
@@ -63,13 +63,6 @@ namespace Foundation
     void Profiler::Reset()
     {
         GetRoot()->ResetValues();
-    }
-
-    Profiler profiler;
-
-    Profiler *ProfilerSection::GetProfiler()
-    {
-        return &profiler;
     }
 }
 

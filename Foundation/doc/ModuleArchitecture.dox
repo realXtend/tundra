@@ -39,6 +39,14 @@ POCO_END_MANIFEST
                 \endverbatim
               where CLASS_NAME is the name of the newly created class. The above needs to be outside of any namespace,
               there should only be one manifest section per library!
+              Also for the profiler to work correctly, copy the following:
+				\verbatim
+extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Framework *framework);
+void SetProfiler(Foundation::Framework *framework)
+{
+    Foundation::ProfilerSection::SetProfiler(&framework->GetProfiler());
+}
+				\endverbatim
             - Create a module definition file (xml file) that matches the name of the sub-project
               and that contains the names of the module entry classes (modules that are contained in
               a single sub-project, often just one). See \ref module_def_sec.

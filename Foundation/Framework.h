@@ -102,7 +102,8 @@ namespace Foundation
         const SceneMap &GetSceneMap() const { return scenes_; }
 
         //! Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
-        Profiler &GetProfiler() { return *ProfilerSection::GetProfiler(); }
+//        Profiler &GetProfiler() { return *ProfilerSection::GetProfiler(); }
+        Profiler &GetProfiler() { return profiler_; }
 
         //! load and init module
         Console::CommandResult ConsoleLoadModule(const Core::StringVector &params);
@@ -173,6 +174,8 @@ namespace Foundation
 
         //! Current 'default' scene
         Scene::ScenePtr default_scene_;
+
+        Profiler profiler_;
     };
 }
 

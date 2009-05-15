@@ -50,6 +50,12 @@ namespace Communication
 	}
 }
 
+extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Framework *framework);
+void SetProfiler(Foundation::Framework *framework)
+{
+    Foundation::ProfilerSection::SetProfiler(&framework->GetProfiler());
+}
+
 using namespace Communication;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)

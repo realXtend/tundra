@@ -60,3 +60,9 @@ void GtkmmUI::Update(Core::f64 frametime)
 
     impl_->gtk->iteration(false);
 }
+
+extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Framework *framework);
+void SetProfiler(Foundation::Framework *framework)
+{
+    Foundation::ProfilerSection::SetProfiler(&framework->GetProfiler());
+}
