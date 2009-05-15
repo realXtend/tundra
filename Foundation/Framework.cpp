@@ -131,6 +131,8 @@ namespace Foundation
 
     void Framework::PostInitialize()
     {
+        PROFILE(FW_PostInitialize);
+
         LoadModules();
 
         // commands must be registered after modules are loaded and initialized
@@ -155,7 +157,10 @@ namespace Foundation
             double frametime = timer.elapsed();
             timer.restart();
             // do synchronized update for modules
-            module_manager_->UpdateModules(frametime);
+            {
+                PROFILE(FW_UpdateModules);
+                module_manager_->UpdateModules(frametime);
+            }
 
             // call asynchronous update on modules / do parallel tasks
 
@@ -170,6 +175,7 @@ namespace Foundation
 			
             if (renderer.expired() == false)
             {
+                PROFILE(FW_Render);
                 renderer.lock()->Render();
             }
             
@@ -184,8 +190,14 @@ namespace Foundation
 
     void Framework::LoadModules()
     {
-        module_manager_->LoadAvailableModules();
-        module_manager_->InitializeModules();
+        {
+            PROFILE(FW_LoadModules);
+            module_manager_->LoadAvailableModules();
+        }
+        {
+            PROFILE(FW_InitializeModules);
+            module_manager_->InitializeModules();
+        }
     }
 
     void Framework::UnloadModules()
@@ -296,6 +308,56 @@ namespace Foundation
         }
     }
 
+    void PrintTimingsToConsole(const Console::ConsolePtr &console, const ProfilerNodeTree *node)
+    {
+        const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
+
+        static int level = -2; // start at -2 because we don't print out root
+
+        if (timings_node)
+        {
+            assert (level >= 0);
+
+            std::string timings;
+            timings.append(level, ' ');
+            timings += timings_node->Name();
+            timings += ": called total " + Core::ToString(timings_node->num_called_total_);
+            timings += ", elapsed total " + Core::ToString(timings_node->total_);
+            timings += ", called " + Core::ToString(timings_node->num_called_);
+            timings += ", elapsed " + Core::ToString(timings_node->elapsed_);
+            timings += ", average " + Core::ToString(timings_node->total_ / timings_node->num_called_total_);
+            console->Print(timings);
+        }
+
+        level += 2;
+        const ProfilerNodeTree::NodeList &children = node->GetChildren();
+        for (ProfilerNodeTree::NodeList::const_iterator it = children.begin() ; 
+             it != children.end() ;
+             ++it)
+        {
+            PrintTimingsToConsole(console, *it);
+        }
+        level -= 2;
+    }
+
+    Console::CommandResult Framework::ConsoleProfile(const Core::StringVector &params)
+    {
+        boost::shared_ptr<Console::ConsoleServiceInterface> console = GetService<Console::ConsoleServiceInterface>(Foundation::Service::ST_Console).lock();
+        if (console)
+        {
+            Profiler &profiler = GetProfiler();
+            ProfilerNodeTree *node = profiler.GetRoot();
+            PrintTimingsToConsole(console, node);
+            /*while (node)
+            {
+                const NodeList &children = node->GetChildren();
+            
+            }*/
+        }
+        return Console::ResultSuccess();
+    }
+
+
     void Framework::RegisterConsoleCommands()
     {
         boost::shared_ptr<Console::CommandService> console = GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
@@ -316,6 +378,10 @@ namespace Foundation
             console->RegisterCommand(Console::CreateCommand("SendEvent", 
                 "Sends an internal event. Only for events that contain no data. Usage: SendEvent(event category name, event id)", 
                 Console::Bind(this, &Framework::ConsoleSendEvent)));
+
+            console->RegisterCommand(Console::CreateCommand("Profile", 
+                "Outputs profiling data. Usage: Profile() for full, or Profile(name) for specific profiling block", 
+                Console::Bind(this, &Framework::ConsoleProfile)));
         }
     }
 }

@@ -116,6 +116,9 @@ namespace Foundation
         //! send event
         Console::CommandResult ConsoleSendEvent(const Core::StringVector &params);
 
+        //! Output profiling data
+        Console::CommandResult ConsoleProfile(const Core::StringVector &params);
+
         //! Returns name of the configuration group used by the framework
         /*! The group name is used with ConfigurationManager, for framework specific
             settings. Alternatively a class may use it's own name as the name of the
