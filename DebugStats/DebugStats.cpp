@@ -651,3 +651,9 @@ void DebugStats::PopulatePrimPropertiesTreeView(
     prim_row[primPropertiesColumns_.colValue] = Core::ToString(prim->SelectPriority);
     prim_row[primPropertiesColumns_.colEditable] = true;
 }
+
+extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Framework *framework);
+void SetProfiler(Foundation::Framework *framework)
+{
+    Foundation::ProfilerSection::SetProfiler(&framework->GetProfiler());
+}

@@ -1244,6 +1244,13 @@ namespace CommunicationUI
 
 }
 
+extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Framework *framework);
+void SetProfiler(Foundation::Framework *framework)
+{
+    assert (framework);
+    assert (Foundation::ProfilerSection::GetProfiler() == NULL);
+    Foundation::ProfilerSection::SetProfiler(&framework->GetProfiler());
+}
 
 using namespace CommunicationUI;
 

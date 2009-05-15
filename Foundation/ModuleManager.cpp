@@ -8,6 +8,8 @@
 
 namespace fs = boost::filesystem;
 
+typedef void (*SetProfilerFunc)(Foundation::Framework *framework);
+
 
 namespace Foundation
 {
@@ -321,6 +323,12 @@ namespace Foundation
             try
             {
                 library = Module::SharedLibraryPtr(new Module::SharedLibrary(path));
+
+                assert (library->sl_.hasSymbol("SetProfiler") && "Function SetProfiler() need to be exported from the shared library for profiling to work properly!");
+                {
+                    SetProfilerFunc setProfiler = (SetProfilerFunc) library->sl_.getSymbol("SetProfiler");
+	                setProfiler(framework_);
+                }
             } 
             catch (Poco::Exception &e)
             {

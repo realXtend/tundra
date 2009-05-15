@@ -19,6 +19,8 @@ namespace Foundation
     
     Framework::Framework() : exit_signal_(false)
     {
+        ProfilerSection::SetProfiler(&profiler_);
+
         application_ = ApplicationPtr(new Application(this));
         platform_ = PlatformPtr(new Platform(this));
 		// Create config manager

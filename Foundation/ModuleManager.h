@@ -30,11 +30,13 @@ namespace Foundation
         struct SharedLibrary : public boost::noncopyable
         {
             SharedLibrary();
-            SharedLibrary(const std::string &path) : path_(path) { cl_.loadLibrary(path_); }
+            SharedLibrary(const std::string &path) : path_(path) { sl_.load(path); cl_.loadLibrary(path_); }
             ~SharedLibrary() { cl_.unloadLibrary(path_); }
 
             //! path to the shared library
             std::string path_;
+            //! shared library
+            Poco::SharedLibrary sl_;
             //! class loader
             Poco::ClassLoader<ModuleInterface> cl_;
         };
