@@ -17,10 +17,9 @@ macro (INCLUDE_OPENAL)
 	if (MSVC)
 		include_directories (${REX_DEP_PATH}/OpenAL/include)
 		link_directories (${REX_DEP_PATH}/OpenAL/libs/Win32)
-		
-		
 	else (MSVC)
-		include_directories (${openal_INCLUDE_DIRS})
+		include_directories (${openal_INCLUDE_DIRS} 
+            /usr/include/AL /usr/local/include/AL) #HACK: pkg-config expects you to include <AL/al.h>, so returns null for INCLUDE_DIRS
 		link_directories (${openal_LIBDIR})
 	endif (MSVC)
 endmacro (INCLUDE_OPENAL)

@@ -21,7 +21,7 @@ namespace Communication
 		virtual Communication::ParticipantPtr GetAuthor();
 		virtual std::string GetTimeStamp();
 	protected:
-		virtual std::string Message::CreateTimeStamp();
+		virtual std::string CreateTimeStamp();
 
 		std::string time_stamp_;
 		ParticipantPtr author_;

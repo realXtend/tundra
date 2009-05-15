@@ -1,6 +1,6 @@
 #include <al.h>
 #include <alc.h>
-#include <poco/Logger.h>
+#include <Poco/Logger.h>
 #include "StableHeaders.h"
 #include "Foundation.h"
 #include "OpenALAudio.h"
