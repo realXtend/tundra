@@ -80,6 +80,9 @@ namespace PythonScript
 		chathandler = engine_->LoadScript("chathandler", error); //the module
 		chathandler = chathandler->GetObject("ChatHandler"); //instanciates a class in this module with the given name
 
+		modulemanager = engine_->LoadScript("modulemanager", error); //the pymodule loader & event manager
+		modulemanager = modulemanager->GetObject("ModuleManager"); //instanciates
+
         LogInfo("Module " + Name() + " initialized.");
     }
 
@@ -137,9 +140,9 @@ namespace PythonScript
 				strcpy(buf1, message.c_str());
 				args[0] = buf1;
 
-				std::string methodname = "onChat";
+				std::string methodname = "RexNetMsgChatFromSimulator";
 				std::string paramtypes = "s";
-				Foundation::ScriptObject* ret = chathandler->CallMethod(methodname, paramtypes, args);
+				Foundation::ScriptObject* ret = modulemanager->CallMethod(methodname, paramtypes, args);
 
 				/* previous method of calling a function with an argument tuple
 	            pArgs = PyTuple_New(1); //takes a single argument
@@ -219,6 +222,11 @@ namespace PythonScript
     {
 		//XXX remove when/as the core has the fps limitter
 		engine_->RunString("import time; time.sleep(0.01);"); //a hack to save cpu now.
+
+		char** args = new char*[2]; //is this 2 'cause the latter terminates?
+		std::string methodname = "run";
+		std::string paramtypes = ""; //"f"
+		modulemanager->CallMethod(methodname, paramtypes, args); 
     }
 }
 

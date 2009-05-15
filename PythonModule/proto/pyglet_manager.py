@@ -13,7 +13,7 @@ use the manager, nothing of the Manager itself yet.
 
 import pyglet
 
-class RealxtendViewer(pyglet.event.EventDispatcher):
+class PygletManager(pyglet.event.EventDispatcher):
     def run(self, deltatime):
         print ".",
         self.dispatch_event('update', deltatime)
@@ -22,7 +22,9 @@ class RealxtendViewer(pyglet.event.EventDispatcher):
 RealxtendViewer.register_event_type('update')
 RealxtendViewer.register_event_type('on_chat')
     
-viewer = RealxtendViewer()
+manager = PygletManager() 
+#pyglet doesn't have managers so no confusion here, 
+#circuits has though so was calling 'runner' or something
 
 class TestModule:
     """A wish of how a py written module might like to have the system.
@@ -59,6 +61,7 @@ def update(deltatime):
 def arbitary_func(deltatime):
     print "|",
 viewer.push_handlers(update=arbitary_func)
+viewer.push_handlers(on_chat=arbitary_func)
 
 # c)
 tm = TestModule()
@@ -87,7 +90,7 @@ if __name__ == '__main__':
     #pyglet.app.run()
     """don't want to run a blocking thing here now,
     as want to use the api without threads first,
-    so added a crude simple poll with yielf to pyglet.app"""
+    so added a crude simple pump using yield to pyglet.app"""
     pollable_pyglet_app.enable() #replaces the event loop impl
     pump = pyglet.app.event_loop.pump()
     while 1:

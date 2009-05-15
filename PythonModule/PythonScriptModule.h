@@ -96,6 +96,7 @@ namespace PythonScript
 		PyObject *pName, *pModule, *pDict, *pFunc;
 	    PyObject *pArgs, *pValue;*/
 		Foundation::ScriptObject* chathandler;
+		Foundation::ScriptObject* modulemanager;
 	};
 
 	static void initpymod();
