@@ -30,15 +30,27 @@ namespace Foundation
 
     void Profiler::StartBlock(const std::string &name)
     {
-        ProfilerNodeTree *node = current_node_->GetChild(name);
+        ProfilerNodeTree *node = current_node_;
+
+        if (name != current_node_->Name())
+            node = current_node_->GetChild(name);
+
         if (!node)
         {
             node = new ProfilerNode(name);
             current_node_->AddChild(node);
         }
 
-        current_node_ = node;
-        checked_static_cast<ProfilerNode*>(current_node_)->block_.Start();
+        assert (current_node_->recursion_ >= 0);
+        
+        if (current_node_ == node)
+            current_node_->recursion_++; // handle recursion
+        else
+        {
+            current_node_ = node;
+
+            checked_static_cast<ProfilerNode*>(current_node_)->block_.Start();
+        }
     }
 
     void Profiler::EndBlock(const std::string &name)
@@ -57,7 +69,13 @@ namespace Foundation
         node->elapsed_max_current_ = elapsed > node->elapsed_max_current_ ? elapsed : node->elapsed_max_current_;
         node->total_ += elapsed;
 
-        current_node_ = node->Parent();
+        assert (current_node_->recursion_ >= 0);
+
+        // need to handle recursion
+        if (current_node_->recursion_ > 0)
+            current_node_->recursion_--;
+        else
+            current_node_ = node->Parent();
     }
 
     void Profiler::Reset()
