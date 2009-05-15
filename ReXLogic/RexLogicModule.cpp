@@ -55,6 +55,8 @@ namespace RexLogic
     // virtual
     void RexLogicModule::Load()
     {
+        PROFILE(RexLogicModule_Load);
+
         DECLARE_MODULE_EC(EC_Viewable);
         DECLARE_MODULE_EC(EC_FreeData);
         DECLARE_MODULE_EC(EC_SpatialSound);
@@ -84,6 +86,8 @@ namespace RexLogic
     // virtual
     void RexLogicModule::Initialize()
     {
+        PROFILE(RexLogicModule_Initialize);
+
         /// \todo fixme, register WorldLogic to the framework as realxtend worldlogicinterface!
         // WorldLogic::registerSystem(framework);
         // world_logic_ = new WorldLogic(framework);
@@ -205,6 +209,8 @@ namespace RexLogic
     // virtual
     void RexLogicModule::Update(Core::f64 frametime)
     {
+        PROFILE(RexLogicModule_Update);
+
         // interpolate objects
         HandleInterpolation(frametime);
             
@@ -234,7 +240,7 @@ namespace RexLogic
                 GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
             else
                 GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
-        }      
+        }
     }
 
     // virtual
@@ -286,7 +292,7 @@ namespace RexLogic
             const std::string &param_pass = params[1];
             
             // overwrite the password so it won't stay in-memory
-            const_cast<std::string&>(param_pass).erase();
+            const_cast<std::string&>(param_pass).replace(0, param_pass.size(), param_pass.size(), ' ');
         } if (params.size() > 2)
             server = params[2];
 
@@ -294,8 +300,7 @@ namespace RexLogic
 		        passwd, server);
 
         // overwrite the password so it won't stay in-memory
-        //!\ todo does this overwrite the string properly? Probably not.
-        passwd.erase();
+        passwd.replace(0, passwd.size(), passwd.size(), ' ');
         
 
         if (success)
