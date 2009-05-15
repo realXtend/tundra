@@ -153,13 +153,21 @@ void DebugStats::InitializeModulesWindow()
     Gtk::Window *debugWindow = 0;
     debugModules_->get_widget("windowDebugModules", debugWindow);
 
+    // Bind window to main window if available                   
+    GtkmmUI* ui = dynamic_cast<GtkmmUI*>(gtkmmui_module_.lock().get());
+    Gtk::Window* mainWindow = ui->GetMainWindow();
+    if (mainWindow)
+    {
+        debugWindow->set_transient_for(*mainWindow);
+    }
+
     debugModulesModel_ = Gtk::TreeStore::create(moduleModelColumns_);
 
     Gtk::TreeView *tv = 0;
     debugModules_->get_widget("treeview1", tv);
     tv->set_model(debugModulesModel_);
 
-    debugWindow->show();
+    debugWindow->show();       
 }
 
 void DebugStats::PopulateModulesTreeView()
@@ -201,6 +209,14 @@ void DebugStats::InitializeEventsWindow()
 
     Gtk::Window *debugWindow = 0;
     debugEvents_->get_widget("window1", debugWindow);
+
+    // Bind window to main window if available                   
+    GtkmmUI* ui = dynamic_cast<GtkmmUI*>(gtkmmui_module_.lock().get());
+    Gtk::Window* mainWindow = ui->GetMainWindow();
+    if (mainWindow)
+    {
+        debugWindow->set_transient_for(*mainWindow);
+    }
 
     debugEventsModel_ = Gtk::TreeStore::create(moduleModelColumns_);
 
@@ -264,6 +280,15 @@ void DebugStats::InitializeEntityListWindow()
     
     // Show, set title, set default size.
     entityListControls_->get_widget("window_entitylist", windowEntityList);
+
+    // Bind window to main window if available                   
+    GtkmmUI* ui = dynamic_cast<GtkmmUI*>(gtkmmui_module_.lock().get());
+    Gtk::Window* mainWindow = ui->GetMainWindow();
+    if (mainWindow)
+    {
+        windowEntityList->set_transient_for(*mainWindow);
+    }
+
     windowEntityList->set_default_size(250, 300);
     windowEntityList->show();
     windowEntityList->set_title("Entity List");
@@ -539,6 +564,14 @@ void DebugStats::InitializePrimPropertiesWindow()
     
     // Get the window.
     primPropertiesControls_->get_widget("dialog_prim_properties", primPropertiesWindow_);
+    
+    // Bind window to main window if available                   
+    GtkmmUI* ui = dynamic_cast<GtkmmUI*>(gtkmmui_module_.lock().get());
+    Gtk::Window* mainWindow = ui->GetMainWindow();
+    if (mainWindow)
+    {
+        primPropertiesWindow_->set_transient_for(*mainWindow);
+    }    
     
     // Set up tree view.
     Gtk::TreeView *treeview_prim_properties = 0;

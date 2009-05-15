@@ -6,6 +6,7 @@
 
 #include "OgreGtkWindowModule.h"
 #include "OgreRenderingModule.h"
+#include "GtkmmUI.h"
 
 #pragma warning( push )
 #pragma warning( disable : 4250 )
@@ -69,6 +70,9 @@ namespace OgreRenderer
             rendering_module->GetRenderer()->SetMainWindowHandle(handle);
 #endif
             //! \todo Retrieve main Gtk window handle for other platforms.
+            
+            GtkmmUI* ui = dynamic_cast<GtkmmUI*>(gtkmmui_module.lock().get());
+            ui->SetMainWindow(ogre_window_);
         }
     }
 
