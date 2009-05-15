@@ -25,11 +25,6 @@ set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FOR
 # Set common directory for installing non-system dependencies
 set (REX_DEP_PATH $ENV{REX_DEP_PATH})
 
-# Create config files from example config files 
-if (NOT EXISTS ./bin/data/app_config.xml)
-	execute_process (COMMAND cmake -E copy ./bin/data/app_config_example.xml ./bin/data/app_config.xml)
-endif (NOT EXISTS ./bin/data/app_config.xml)
-
 # Set project name
 project (realXtend-viewer)
 
