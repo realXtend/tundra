@@ -4,6 +4,7 @@
 
 #include "RexLoginWindow.h"
 #include "RexLogicModule.h"
+#include "GtkmmUI.h"
 
 namespace RexLogic
 {
@@ -29,11 +30,19 @@ namespace RexLogic
 
         if (!loginControls)
             return;
-        
+                 
         // Get the widgets.
         loginControls->get_widget("dialog_login", loginWindow);
         entryUsername = loginControls->get_widget("entry_username",entryUsername);
         entryServer = loginControls->get_widget("entry_server", entryServer);
+        
+        // Bind window to main window if available                   
+        GtkmmUI* ui = dynamic_cast<GtkmmUI*>(gtkmmui_module.lock().get());
+        Gtk::Window* mainWindow = ui->GetMainWindow();
+        if (mainWindow)
+        {
+            loginWindow->set_transient_for(*mainWindow);
+        }        
         
         // Bind callbacks.
         loginControls->connect_clicked("button_connect", sigc::mem_fun(*this, &RexLoginWindow::OnClickConnect));

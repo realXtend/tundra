@@ -27,7 +27,8 @@ public:
 };
 
 GtkmmUI::GtkmmUI()
-:ModuleInterfaceImpl("GtkmmUI")
+:ModuleInterfaceImpl("GtkmmUI"),
+main_window_(NULL)
 {
     impl_ = boost::shared_ptr<GtkmmUIImpl>(new GtkmmUIImpl);
 }

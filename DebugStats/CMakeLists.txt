@@ -53,7 +53,7 @@ if (MSVC)
 	target_link_libraries (${TARGET_NAME} )
 endif (MSVC)
 
-target_link_libraries (${TARGET_NAME} Foundation RexCommon RexLogicModule OpenSimProtocolModule OgreRenderingModule Interfaces)
+target_link_libraries (${TARGET_NAME} Foundation RexCommon RexLogicModule OpenSimProtocolModule OgreRenderingModule Interfaces GtkmmUI)
 
 # External library linkage (needs target defined)
 LINK_POCO()

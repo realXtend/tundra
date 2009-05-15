@@ -3,11 +3,17 @@
 
 #include "Foundation.h"
 #include "ModuleInterface.h"
+#include "GtkmmUIApi.h"
 
 class GtkmmUIImpl;
 
+namespace Gtk
+{
+    class Window;
+}
+
 /// GtkmmUI is a module that implements and provides Gtkmm UI for other modules.
-class GtkmmUI : public Foundation::ModuleInterfaceImpl
+class GTKMMUI_MODULE_API GtkmmUI : public Foundation::ModuleInterfaceImpl
 {
 public:
     GtkmmUI();
@@ -19,6 +25,9 @@ public:
     void Uninitialize();
     void Update(Core::f64 frametime);
 
+    void SetMainWindow(Gtk::Window* window) { main_window_ = window; }
+    Gtk::Window* GetMainWindow() { return main_window_; }
+
 private:
     void operator=(const GtkmmUI &);
     GtkmmUI(const GtkmmUI &);
@@ -26,6 +35,8 @@ private:
     Foundation::Framework *framework_;
 
     boost::shared_ptr<GtkmmUIImpl> impl_;
+
+    Gtk::Window* main_window_;
 };
 
 #endif

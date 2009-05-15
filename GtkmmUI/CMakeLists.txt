@@ -30,7 +30,7 @@ INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_GTKMM()
 
-add_definitions (-DMODULE_EXPORTS)
+add_definitions (-DGTKMMUI_MODULE_EXPORTS -DMODULE_EXPORTS)
 
 # Define dynamic library
 if (NOT MSVC)
