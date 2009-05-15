@@ -117,12 +117,13 @@ namespace Foundation
     //! N-ary tree structure for profiling nodes
     class ProfilerNodeTree
     {
+        friend class Profiler;
         ProfilerNodeTree();
     public:
         typedef std::list<ProfilerNodeTree*> NodeList;
 
         //! constructor that takes a name for the node
-        ProfilerNodeTree(const std::string &name) : name_(name), parent_(NULL) {}
+        ProfilerNodeTree(const std::string &name) : name_(name), parent_(NULL), recursion_(0) {}
 
         //! destructor
         virtual ~ProfilerNodeTree()
@@ -187,6 +188,9 @@ namespace Foundation
         NodeList children_;
         ProfilerNodeTree *parent_;
         const std::string name_;
+
+        //! helper counter for recursion
+        int recursion_;
     };
 
     //! Data container for profiling data for a profiling block
