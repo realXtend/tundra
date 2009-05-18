@@ -11,20 +11,41 @@ namespace PythonScript
 
 	PythonScriptObject::PythonScriptObject(void) : Foundation::ScriptObject()
 	{
+        this->pythonObj=NULL;
+        this->pythonRef=NULL;
 	}
 
 	PythonScriptObject::~PythonScriptObject(void)
 	{
+        if(pythonObj!=NULL&&pythonRef!=NULL){
+            Py_DECREF(pythonObj);
+        }
 		if(pythonRef!=NULL){
-			delete pythonRef;
-			pythonRef = NULL;
-		}
-		if(pythonObj!=NULL){
-			delete pythonObj;
-			pythonObj = NULL;
+            Py_DECREF(pythonRef);
 		}
 	}
 
+    void PythonScriptObject::ReleaseResources()
+    {
+        if(pythonObj!=NULL&&pythonRef!=NULL){
+            ////Py_ssize_t count = pythonObj->ob_refcnt;
+            //int count = (int)pythonObj->ob_refcnt;
+            //if(count>0){
+            //    for(int i=0;i<count;i++){
+                    Py_DECREF(pythonObj);
+            //    }
+            //}
+        }
+		if(pythonRef!=NULL){
+            ////Py_ssize_t count = pythonRef->ob_refcnt;
+            //int count = (int)pythonRef->ob_refcnt;
+            //if(count>0){
+            //    for(int i=0;i<count;i++){
+                    Py_DECREF(pythonRef);
+            //    }
+            //}
+        }        
+    }
 
 	Foundation::ScriptObject* PythonScriptObject::CallMethod(std::string& methodname, 
 															 std::string& syntax, 
