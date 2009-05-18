@@ -14,6 +14,7 @@ namespace Foundation
 	public:
         ScriptObject() {}
         virtual ~ScriptObject() {}
+        virtual void ReleaseResources() = 0;
 
 		// for syntax parameter see http://docs.python.org/c-api/arg.html
 		virtual ScriptObject* CallMethod(std::string& methodname, std::string& syntax, char* argv[]) = 0;
