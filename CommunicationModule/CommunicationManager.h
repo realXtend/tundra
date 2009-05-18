@@ -34,9 +34,6 @@ namespace Communication
 	#define COMMUNICATION_PYTHON_MODULE "IMDemo" 
 	#define COMMUNICATION_PYTHON_CLASS "IMDemo"
 
-	class CommunicationManager;
-	typedef boost::shared_ptr<CommunicationManager> CommunicationManagerPtr;
-
 	/**
 	 *  Implements CommunicationServiceInterface with python backend which uses telepathy-python
 	 */
@@ -67,6 +64,8 @@ namespace Communication
 		void SendFriendRequest(ContactInfoPtr contact_info);
 		void RemoveContact(ContactPtr contact); 
 		virtual CredentialsPtr GetCredentials(); 
+		bool IsInitialized() { return initialized_; }
+		
 		// CommunicationServiceInterface end
 
 		// callbacks for console commands
@@ -87,7 +86,7 @@ namespace Communication
 		Console::CommandResult ConsoleDenyFriendRequest(const Core::StringVector &params);
 
 	protected:
-		static CommunicationManagerPtr GetInstance(); // for python callbacks
+		static CommunicationManager* GetInstance(); // for python callbacks
 
 		void InitializePythonCommunication();
 		void UninitializePythonCommunication();
@@ -102,9 +101,10 @@ namespace Communication
 		Foundation::ScriptObject* CallPythonCommunicationObject(const std::string &method_name) const;
 
 		// static variables
-		static CommunicationManagerPtr instance_;
+		static CommunicationManager* instance_;
 
 		// member variables
+		bool initialized_; // in such state that the service can be registered
 		bool connected_; // todo: replace this with "Connection" or "ConnectionStatus" object
 		Foundation::Framework* framework_;
 		Foundation::ScriptObjectPtr communication_py_script_; 
