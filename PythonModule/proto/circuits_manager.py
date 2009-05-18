@@ -18,13 +18,13 @@ class Update(Event):
     pass #to have the deltatime as event data
     
 class Chat(Event):
-    
+    pass
 
 class ComponentRunner(Component):
     def run(self, deltatime):
         print ".",
         m.push(Update(), "update")
-        m.Push(Chat(), "on_chat")
+        m.push(Chat("hip", "hop"), "on_chat")
     
 runner = ComponentRunner()
 
@@ -45,8 +45,8 @@ class TestModule(Component):
             self.data = 1
         print self.data,
         
-    def on_chat(self, m=None):
-        print "Test Module received chat message:", m
+    def on_chat(self, frm=None, msg=None):
+        print "Test Module received chat message:", frm, msg
         
 tm = TestModule()
 m += tm # Equivalent to: tm.register(m)
@@ -55,23 +55,8 @@ m += tm # Equivalent to: tm.register(m)
 why not allow plain functions as event handlers too,
 the python module of it, i.e. the file, can be considered as the module,
 so no classes are required.
-"""
 
-"""apparently not possible with circuits, see circuits_test for the failed attempt.
-hm reportedly is possible:
-14:29 <@prologic> <antont> is it possible to register an arbitary method or
-                  function as an event handler, one that is not in a subclass
-                  of Component? am reading the docs and going to try that now..
-                  <-- yes it's possible
-14:58 <+antont> i wonder how, as m._add is not supposed to be used (i know what
-                that _ means :) and didn't work either
-@viewer.event
-def dosomething():
-    pass #e.g. move an object w.r.t to something (like time?)
-"""
-    
-"""
-update may be nice as a method, but the real thing are the events.
+circuits has it so that you are supposed to make components.
 """
 
 #~ @e.communication.PRESENCE_STATUS_UPDATE
