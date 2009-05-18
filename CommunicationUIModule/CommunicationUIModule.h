@@ -190,8 +190,6 @@ namespace CommunicationUI
 
 		int entryret_;
 			
-		// Currently just 1 session
-		bool sessionUp_;
 	public:
 		ChatSessionUIPtr session_;
 	    std::map<std::string, ChatSessionUIPtr> chatSessions_;
