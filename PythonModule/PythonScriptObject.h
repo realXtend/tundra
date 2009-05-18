@@ -11,13 +11,15 @@ namespace PythonScript
 	public:
 		PythonScriptObject(void);
 		virtual ~PythonScriptObject(void);
-	  
+	    virtual void ReleaseResources();   
 		
 		virtual ScriptObject* CallMethod(std::string& methodname, std::string& syntax, char* argv[]);
 		virtual ScriptObject* CallMethod(std::string& methodname, const std::string& syntax, const ScriptObject* args);
 		virtual ScriptObject* GetObject(const std::string& objectname);
 
 		virtual char* ConvertToChar();
+
+        
 
 		PyObject* pythonRef; // reference to class or python script
 		PyObject* pythonObj; // object instance
