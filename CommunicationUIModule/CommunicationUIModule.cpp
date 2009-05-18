@@ -74,6 +74,9 @@ namespace CommunicationUI
 
 	void CommunicationUIModule::Uninitialize()
 	{
+        //imScriptObject->ReleaseResources();
+        //sobj->ReleaseResources();
+        framework_->GetEventManager()->UnregisterEventSubscriber(this);
         SAFE_DELETE(wndCommMain);
 	}
 
@@ -202,14 +205,14 @@ namespace CommunicationUI
         BOOST_ASSERT(scriptService!=NULL);
 
 		std::string error;
-
         
-
-		Foundation::ScriptObject* script = scriptService->LoadScript("IMDemo", error);
+		//Foundation::ScriptObject* script = scriptService->LoadScript("IMDemo", error);
+        sobj = scriptService->LoadScript("IMDemo", error);
 
 		if(error=="None")
 		{
-			this->imScriptObject = script->GetObject("IMDemo");
+			//this->imScriptObject = script->GetObject("IMDemo");
+            this->imScriptObject = sobj->GetObject("IMDemo");
 			std::string str = "CDoStartUp";
 			std::string syntax = "";
 			Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
@@ -222,8 +225,6 @@ namespace CommunicationUI
 		Foundation::ScriptEventInterface *eIntf = dynamic_cast<Foundation::ScriptEventInterface*>(this->scriptService.get());
 
         //Foundation::ScriptEventInterface* eIntf = dynamic_cast<Foundation::ScriptEventInterface*>(scriptService.get());
-
-		sessionUp_ = false;
 
 		eIntf->SetCallback(CommunicationUIModule::testCallback, "key");
 		eIntf->SetCallback(CommunicationUIModule::connected, "connected");
@@ -719,7 +720,7 @@ namespace CommunicationUI
 		if(instance_->session_!=NULL){
 			instance_->session_->ChannelClosed();
 		} 
-		instance_->sessionUp_ = false;
+		//instance_->sessionUp_ = false;
 	}
 
 	void CommunicationUIModule::messagReceived(char* addr_mess)
