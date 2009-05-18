@@ -6,7 +6,7 @@
 namespace Communication
 {
 	// static
-	CommunicationManagerPtr CommunicationManager::instance_;
+	CommunicationManager* CommunicationManager::instance_ = NULL;
 
 	/**
 	 *  Split given text with given separator and return substring of given index
@@ -34,9 +34,9 @@ namespace Communication
 	 * @param framework is pointer to framework. Given here becouse this is not a module class and framework
 	 *        services are used through this object.
 	 **/
-	CommunicationManager::CommunicationManager(Foundation::Framework *framework) : connected_(false)
+	CommunicationManager::CommunicationManager(Foundation::Framework *framework) : connected_(false), initialized_(false)
 	{
-		CommunicationManager::instance_ = CommunicationManagerPtr(this);
+		instance_ = this;
 		framework_ = framework;
 
 		friend_requests_ = FriendRequestListPtr( new FriendRequestList() );
@@ -48,7 +48,7 @@ namespace Communication
 			InitializePythonCommunication();
 			RegisterConsoleCommands();
 			RegisterEvents();
-			framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communication, GetInstance() );
+            initialized_ = true;
 			LogInfo("Service initialized");
 		}
 		catch(std::string error)
@@ -61,7 +61,7 @@ namespace Communication
 
 	CommunicationManager::~CommunicationManager()
 	{
-		// todo: unregister service
+		instance_ = NULL;	    
 		// todo: unregister console commands
 		UninitializePythonCommunication();
 	}
@@ -298,9 +298,9 @@ namespace Communication
 	 *  Python script callbacks are static methods and need this intance
 	 *  pointer.
 	 */
-	CommunicationManagerPtr CommunicationManager::GetInstance()
+	CommunicationManager* CommunicationManager::GetInstance()
 	{
-		return CommunicationManager::instance_;
+		return instance_;
 	}
 
 	/**
@@ -790,7 +790,7 @@ namespace Communication
 		LogInfo("Server connection: Connected");
 		
 
-		CommunicationManagerPtr comm = CommunicationManager::GetInstance();
+		CommunicationManager* comm = CommunicationManager::GetInstance();
 		comm->presence_status_->SetOnlineStatus("online");
 
 		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_OPEN);
@@ -805,7 +805,7 @@ namespace Communication
 	{
 		CommunicationManager::GetInstance()->connected_ = false;
 		LogInfo("Server connection: Connecting...");
-		CommunicationManagerPtr comm = CommunicationManager::GetInstance();
+		CommunicationManager* comm = CommunicationManager::GetInstance();
         ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_CONNECTING);
         comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);		
 		// todo : Do we need this? Send notify for UI to be "connecting state"?
@@ -820,7 +820,7 @@ namespace Communication
 		CommunicationManager::GetInstance()->connected_ = false;
 		LogInfo("Server connection: Disconnected");
 
-		CommunicationManagerPtr comm = CommunicationManager::GetInstance();
+		CommunicationManager* comm = CommunicationManager::GetInstance();
 
 		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_CLOSE);
 		comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
@@ -856,7 +856,7 @@ namespace Communication
 		// There was no session with given address, we have to create one and send proper event
 		// * this happens when session is created by remote partner
 
-		CommunicationManagerPtr comm = CommunicationManager::GetInstance();
+		CommunicationManager* comm = CommunicationManager::GetInstance();
 		for (ContactList::iterator i = comm->contact_list_.begin(); i < comm->contact_list_.end(); i++)
 		{
 			ContactPtr c = *i;
@@ -996,7 +996,7 @@ namespace Communication
 		ContactPtr ptr = ContactPtr( (ContactInterface*)c );
 		CommunicationManager::GetInstance()->contact_list_.push_back(ptr);
 
-		CommunicationManagerPtr comm = CommunicationManager::GetInstance();
+		CommunicationManager* comm = CommunicationManager::GetInstance();
 		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_STATE_UPDATE);
 		comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
 
@@ -1090,7 +1090,7 @@ namespace Communication
  	 */
 	void CommunicationManager::PyCallbackContactRemoved(char* id)
 	{
-		CommunicationManagerPtr comm = CommunicationManager::GetInstance();
+		CommunicationManager* comm = CommunicationManager::GetInstance();
 
 		for (ContactList::iterator i = comm->contact_list_.begin(); i < comm->contact_list_.end(); i++)
 		{
@@ -1099,7 +1099,7 @@ namespace Communication
 			{
 				comm->contact_list_.erase(i);
 
-				CommunicationManagerPtr comm = CommunicationManager::GetInstance();
+				CommunicationManager* comm = CommunicationManager::GetInstance();
 				ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_STATE_UPDATE);
 				comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
 
@@ -1178,7 +1178,7 @@ namespace Communication
 	 */
 	void CommunicationManager::PyCallbackPresenceStatusTypes(char* type_list)
 	{
-		CommunicationManagerPtr comm = CommunicationManager::GetInstance();
+		CommunicationManager* comm = CommunicationManager::GetInstance();
 		std::string option;
 		int i = 0;
 		do

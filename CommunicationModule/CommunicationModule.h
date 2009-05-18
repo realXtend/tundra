@@ -13,6 +13,9 @@
  */
 namespace Communication
 {
+    class CommunicationManager;
+	typedef boost::shared_ptr<CommunicationManager> CommunicationManagerPtr;    
+    
 	class COMMS_MODULE_API CommunicationModule : public Foundation::ModuleInterfaceImpl
 	{
 	public:
@@ -34,7 +37,7 @@ namespace Communication
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communication;
 
 	private:
-		CommunicationServicePtr communication_manager_;
+		CommunicationManagerPtr communication_manager_;
 	};
 }
 

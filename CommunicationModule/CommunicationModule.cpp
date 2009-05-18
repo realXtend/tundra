@@ -26,7 +26,9 @@ namespace Communication
 
 	void CommunicationModule::Initialize() 
 	{
-		communication_manager_ = CommunicationServicePtr((CommunicationServiceInterface*)new CommunicationManager(framework_));
+		communication_manager_ = CommunicationManagerPtr(new CommunicationManager(framework_));
+		if (communication_manager_->IsInitialized())
+		    framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communication, communication_manager_ );
 		LogInfo("Initialized.");
 	}
 
@@ -36,7 +38,8 @@ namespace Communication
 
 	void CommunicationModule::Uninitialize()
 	{
-        framework_->GetServiceManager()->UnregisterService(communication_manager_);
+	    if (communication_manager_ && communication_manager_->IsInitialized())
+            framework_->GetServiceManager()->UnregisterService(communication_manager_);
 		LogInfo("Uninitialized.");
 	}
 
