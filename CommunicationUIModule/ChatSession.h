@@ -49,6 +49,7 @@ namespace CommunicationUI
 
 		void OnMessageReceived(Communication::IMMessagePtr m);
 		void OnStateChanged();
+		void AddMessageToScreen(Communication::IMMessagePtr m);
 
 		// instance access
 		//static ChatSession* instance_;

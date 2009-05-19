@@ -231,6 +231,9 @@ namespace Communication
 		virtual std::string GetProtocol() = 0;
 		virtual ParticipantPtr GetOriginator() = 0;
 
+		//! Return current user as participant
+		virtual ParticipantPtr GetUser() = 0;
+
 	};
 	typedef boost::shared_ptr<IMSessionInterface> IMSessionPtr;
 	typedef std::vector<IMSessionPtr> IMSessionList;

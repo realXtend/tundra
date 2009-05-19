@@ -28,6 +28,7 @@ namespace Communication
 		std::string protocol_;
 		ParticipantListPtr participants_;
 		ParticipantPtr originator_;
+		ParticipantPtr user_;
 	};
 
 
@@ -50,11 +51,12 @@ namespace Communication
 		virtual ParticipantListPtr GetParticipants();
 		virtual std::string GetProtocol();
 		virtual ParticipantPtr GetOriginator();
+		virtual ParticipantPtr GetUser();
 
 	protected:
 		void NotifyMessageReceived(IMMessagePtr m); // called by CommunicationManager
-
 		IMMessageList im_messages_;
+		
 	};
 
 } // end of namespace: Communication
