@@ -125,23 +125,23 @@ namespace Communication
 		}
 
 		// define python callbacks
-		script_event_service->SetCallback( CommunicationManager::PyCallbackTest, "key");
-		script_event_service->SetCallback( CommunicationManager::PyCallbackConnected, "connected");
-		script_event_service->SetCallback( CommunicationManager::PyCallbackConnecting, "connecting");
-		script_event_service->SetCallback( CommunicationManager::PyCallbackDisconnected, "disconnected");
-		script_event_service->SetCallback( CommunicationManager::PyCallbackChannelOpened, "channel_opened");
-		script_event_service->SetCallback( CommunicationManager::PyCallbackChannelClosed, "channel_closed");
-		script_event_service->SetCallback( CommunicationManager::PyCallbackMessagReceived, "message_received");
-		script_event_service->SetCallback( CommunicationManager::PycallbackContactReceived, "contact_item");
-		script_event_service->SetCallback( CommunicationManager::PyCallbackContactStatusChanged, "contact_status_changed");
-		script_event_service->SetCallback( CommunicationManager::PyCallbackMessageSent, "message_sent");
-		script_event_service->SetCallback( CommunicationManager::PyCallbackFriendRequest, "incoming_request");
-		script_event_service->SetCallback( CommunicationManager::PyCallbackContactRemoved, "contact_removed");
-		script_event_service->SetCallback( CommunicationManager::PyCallbackContactAdded, "contact_added");
-		script_event_service->SetCallback( CommunicationManager::PyCallbackFriendRequestLocalPending, "local_pending");
-		script_event_service->SetCallback( CommunicationManager::PyCallbackFriendRequestRemotePending, "remote_pending");
-		script_event_service->SetCallback( CommunicationManager::PyCallbackFriendAdded, "contact_added_publish_list");
-		script_event_service->SetCallback( CommunicationManager::PyCallbackPresenceStatusTypes, "got_available_status_list");
+		script_event_service->SetCallback( PyCallbackTest, "key");
+		script_event_service->SetCallback( PyCallbackConnected, "connected");
+		script_event_service->SetCallback( PyCallbackConnecting, "connecting");
+		script_event_service->SetCallback( PyCallbackDisconnected, "disconnected");
+		script_event_service->SetCallback( PyCallbackChannelOpened, "channel_opened");
+		script_event_service->SetCallback( PyCallbackChannelClosed, "channel_closed");
+		script_event_service->SetCallback( PyCallbackMessagReceived, "message_received");
+		script_event_service->SetCallback( PycallbackContactReceived, "contact_item");
+		script_event_service->SetCallback( PyCallbackPresenceStatusChanged, "contact_status_changed");
+		script_event_service->SetCallback( PyCallbackMessageSent, "message_sent");
+		script_event_service->SetCallback( PyCallbackFriendRequest, "incoming_request");
+		script_event_service->SetCallback( PyCallbackContactRemoved, "contact_removed");
+		script_event_service->SetCallback( PyCallbackContactAdded, "contact_added");
+		script_event_service->SetCallback( PyCallbackFriendRequestLocalPending, "local_pending");
+		script_event_service->SetCallback( PyCallbackFriendRequestRemotePending, "remote_pending");
+		script_event_service->SetCallback( PyCallbackFriendAdded, "contact_added_publish_list");
+		script_event_service->SetCallback( PyCallbackPresenceStatusTypes, "got_available_status_list");
 	}
 
 	void CommunicationManager::UninitializePythonCommunication()
@@ -169,14 +169,16 @@ namespace Communication
 			LogError("Connection to IM server already exist!");
 			return;
 		}
-		Contact* user_contact = new Contact("user");
-		user_contact->SetName("You"); 
+		std::string CURRENT_USER_ID = "1"; 
+		Contact* user_contact = new Contact(CURRENT_USER_ID);
+		user_contact->SetName(c->GetProperty("address")); 
+
 		ContactInfo* info = new ContactInfo();
-		
 		info->SetProperty("protocol", c->GetProperty("protocol") );
 		info->SetProperty("address", c->GetProperty("address") );
 		user_contact->AddContactInfo(ContactInfoPtr(info));
-		user_ = ContactPtr((ContactInterface*)user_contact);
+
+		user_ = ContactPtr(static_cast<ContactInterface*>(user_contact));
 
 		CallPythonCommunicationObject("CAccountConnect");
 	}
@@ -350,23 +352,8 @@ namespace Communication
 	 */
 	void CommunicationManager::RemoveContact(ContactPtr contact)
 	{
-		std::string name = "CRemoveContact";
-		std::string syntax = "s";
-		char** args = new char*[1];
-		char* buf1 = new char[1000];
-		std::string address = contact->GetContactInfo("jabber")->GetProperty("address");
-		if ( address.size() == 0)
-		{
-			std::string text;
-			text = "Try to remove nonexist contact (";
-			text.append( ((Contact*)contact.get())->id_ );
-			text.append(") from contact list!");
-			LogError(text);
-			return;
-		}
-		strcpy(buf1, address.c_str());
-		args[0] = buf1;
-		this->python_communication_object_->CallMethod(name, syntax, args); // todo: get return value
+		Contact* c = static_cast<Contact*>(contact.get());
+		CallPythonCommunicationObject("CRemoveContact", c->id_);
 	}
 
 	/**
@@ -546,6 +533,8 @@ namespace Communication
 			return Console::ResultFailure("There is no session to be closed.");
 		}
 
+		// TODO: FIX THIS, we close the first session now
+		//       We have to close asked session
 		((IMSession*)(*im_sessions_)[0].get())->Close();
 
 		return Console::ResultSuccess("Ready.");
@@ -791,7 +780,9 @@ namespace Communication
 		
 
 		CommunicationManager* comm = CommunicationManager::GetInstance();
-		comm->presence_status_->SetOnlineStatus("online");
+
+		// TODO: Fix this, we should get the real status from IM Server
+		comm->presence_status_->SetOnlineStatus("available");
 
 		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_OPEN);
 		comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
@@ -969,7 +960,7 @@ namespace Communication
 	 *  Called by IMDemo.py via PythonScriptModule
 	 *  When we get a contact from our contact list from IM server
 	 *  - We build our contact info list here!
-	 *  - Send CONNECTION_STATE - CONNECTION_STATE_UPDATE event becouse we have now new information from IM server
+	 *  - Send CONNECTION_STATE - CONNECTION_STATE_UPDATE event because we have now new information from IM server
      */
 	void CommunicationManager::PycallbackContactReceived(char* id_address)
 	{
@@ -1005,10 +996,10 @@ namespace Communication
 
 	/**
 	 *  Called by IMDemo.py via PythonScriptModule
-	 *  When presence status has updated
+	 *  When presence status has update was received from IM server
 	 *  @param id_status_message format: <id>:<online status>:<online message>
 	 */
-	void CommunicationManager::PyCallbackContactStatusChanged(char* id_status_message)
+	void CommunicationManager::PyCallbackPresenceStatusChanged(char* id_status_message)
 	{
 		std::string id = GetSplitString(id_status_message, ":", 0);
 		std::string status = GetSplitString(id_status_message, ":", 1);
@@ -1031,12 +1022,11 @@ namespace Communication
 		t.append(message);
 		LogInfo(t);
 
-		//ContactList* contact_list = &(CommunicationManager::GetInstance()->contact_list_);
 		ContactList* contact_list = &CommunicationManager::GetInstance()->contact_list_;
 		for (int i=0; i<contact_list->size(); i++)
 		{
 			ContactPtr c = (*contact_list)[i];
-			if ( ((Contact*)c.get())->id_.compare(id) == 0 )
+			if ((static_cast<Contact*>(c.get()))->id_.compare(id) == 0 )
 			{
 				((PresenceStatus*)c->GetPresenceStatus().get())->NotifyUpdate(status, message); 
 				PresenceStatusUpdateEvent e = PresenceStatusUpdateEvent( c );
@@ -1161,9 +1151,9 @@ namespace Communication
 
 	/**
 	 *  Called by IMDemo.py via PythonScriptModule
-	 *  When friend request was accpeted by user and now contact wants to subscribe the user
+	 *  When friend request was accpeted by user and now the new friend wants to subscribe the user too
      *
-	 *  We have to subscribe this contact too so we send subsribtion request automatically.
+	 *  We want to subscribe this contact too so we send subsribtion request automatically.
 	 */
 	void CommunicationManager::PyCallbackFriendAdded(char* id)
 	{

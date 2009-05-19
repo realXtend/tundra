@@ -1138,7 +1138,6 @@ namespace CommunicationUI
 				Communication::Events::SessionStateEventInterface* e = (Communication::Events::SessionStateEventInterface*)(data);
 				Communication::IMSessionPtr s =  e->GetIMSession();
 
-				
 				int event_type = e->GetType();
 				switch(event_type)
 				{
@@ -1186,16 +1185,27 @@ namespace CommunicationUI
 	}
 	
 
+	/*
+	 *  Get all online status options from communication service and fills
+	 *  drop down menu with these options and selects current state.
+	 */
 	void CommunicationUIModule::UpdateOnlineStatusList()
 	{
+		instance_->cmbPresence.clear();
 		std::vector<std::string> options = communication_service_->GetPresenceStatus()->GetOnlineStatusOptions();
-//        std::vector<std::string> split = SplitString(std::string(statuslist_N), std::string(":"), 0);
         for(std::vector<std::string>::iterator iter = options.begin(); iter < options.end(); iter++)
 		{
 			std::string option = (*iter);
+
+			// we filter these options because user is not allowed to se these
+			// might be a better filter then at communication manager side?
 			if ( option.compare("unknown") == 0 || option.compare("offline") == 0)
 				continue;
-            instance_->cmbPresence.append_text(option);
+
+            cmbPresence.append_text(option);
+
+			if (communication_service_->GetPresenceStatus()->GetOnlineStatus().compare(option) == 0)
+				cmbPresence.set_active_text(option);
         }
 	}
 

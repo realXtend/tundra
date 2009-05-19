@@ -130,7 +130,7 @@ namespace Communication
 		static void PyCallbackChannelClosed(char*);
 		static void PyCallbackMessagReceived(char*);
 		static void PycallbackContactReceived(char* contact);
-		static void PyCallbackContactStatusChanged(char* id);
+		static void PyCallbackPresenceStatusChanged(char* id);
 		static void PyCallbackMessageSent(char* id);
 		static void PyCallbackFriendRequest(char* id);
 		static void PyCallbackContactRemoved(char* id);
