@@ -138,7 +138,6 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 		    call.AddMember("first", firstName_);
 		    call.AddMember("last", lastName_);
 		    call.AddMember("passwd", password_hash);
-			call.AddMember("version", std::string("realXtend bob 0.0.1"));  ///\todo Make build system create versioning information.
          }
 	    else if (authentication_ && callMethod_ == std::string("ClientAuthentication"))
 	    {
