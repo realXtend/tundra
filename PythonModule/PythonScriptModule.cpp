@@ -11,6 +11,7 @@
 #include "RexLogicModule.h" //now for SendChat, perhaps other stuff for the api will be here too?
 #include "OpenSimProtocolModule.h" //for handling net events
 #include "RexProtocolMsgIDs.h"
+#include "InputEvents.h" //handling input events
 
 #include "SceneEvents.h" //sending scene events after (placeable component) manipulation
 
@@ -113,7 +114,11 @@ namespace PythonScript
 		//for notifying placeable movement
 		PythonScript::scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
 	    if (PythonScript::scene_event_category_ == 0)
-			LogWarning("Unable to find event category for Scene events!");    
+			LogWarning("Unable to find event category for Scene events!");
+
+		inputeventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
+        if (inputeventcategoryid == 0)
+            LogError("Unable to find event category for Input");
 	}
 
     bool PythonScriptModule::HandleEvent(
@@ -121,6 +126,24 @@ namespace PythonScript
         Core::event_id_t event_id, 
         Foundation::EventDataInterface* data)
     {
+		//input events. 
+		//another option for enabling py handlers for these would be to allow
+		//implementing input state in py, see the AvatarController and CameraController in rexlogic
+		if (category_id == inputeventcategoryid)
+		{
+			switch (event_id)
+			{
+				case Input::Events::MOVE_FORWARD_PRESSED:
+					PyObject_CallMethod(pmmInstance, "MOVE_FORWARD_PRESSED", "");
+					break;
+
+				case Input::Events::MOVE_FORWARD_RELEASED:
+                    PyObject_CallMethod(pmmInstance, "MOVE_FORWARD_RELEASED", "");
+                    break;
+			}
+		}
+
+		//was for first receive chat test, when no module provided it, so handles net event directly
         if (category_id == inboundCategoryID_)
         {
             OpenSimProtocol::NetworkEventInboundData *event_data = static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);

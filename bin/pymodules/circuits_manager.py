@@ -14,11 +14,10 @@ from circuits import handler, Event, Component, Manager
 # Create a new Manager
 m = Manager()
 
-class Update(Event):
-    pass #to have the deltatime as event data
-    
-class Chat(Event):
-    pass
+class Update(Event): pass     
+class Chat(Event): pass    
+class MoveForwardPressed(Event): pass
+class MoveForwardReleased(Event): pass
 
 class ComponentRunner(Component):
     def __init__(self):
@@ -33,6 +32,12 @@ class ComponentRunner(Component):
         frm = "Bob"
         m.push(Chat(frm, message), "on_chat")
         
+    def MOVE_FORWARD_PRESSED(self):
+        m.push(MoveForwardPressed(), "on_moveforwardpressed")
+        
+    def MOVE_FORWARD_RELEASED(self):
+        m.push(MoveForwardReleased(), "on_moveforwardreleased")
+
     def exit(self):
         print "Circuits manager stopping."
         m.stop()
@@ -52,10 +57,16 @@ class TestModule(Component):
             self.data = 0
         else:
             self.data = 1
-        print self.data, deltatime
+        #print self.data, deltatime
         
     def on_chat(self, frm=None, msg=None):
         print "Test Module received chat message:", frm, msg
+        
+    def on_moveforwardpressed(self):
+        print "^"
+        
+    def on_moveforwardreleased(self):
+        print "."
         
 tm = TestModule()
 m += tm # Equivalent to: tm.register(m)
