@@ -1023,13 +1023,16 @@ namespace Communication
 		LogInfo(t);
 
 		ContactList* contact_list = &CommunicationManager::GetInstance()->contact_list_;
-		for (int i=0; i<contact_list->size(); i++)
+		for (ContactList::iterator i = contact_list->begin(); i != contact_list->end(); ++i)
 		{
-			ContactPtr c = (*contact_list)[i];
-			if ((static_cast<Contact*>(c.get()))->id_.compare(id) == 0 )
+			
+			ContactPtr c = *(i);
+			Contact* contact = static_cast<Contact*>(c.get());
+			if (contact->id_.compare(id) == 0 )
 			{
-				((PresenceStatus*)c->GetPresenceStatus().get())->NotifyUpdate(status, message); 
-				PresenceStatusUpdateEvent e = PresenceStatusUpdateEvent( c );
+				PresenceStatus* s = static_cast<PresenceStatus*>(c->GetPresenceStatus().get());
+				s->NotifyUpdate(status, message); 
+				PresenceStatusUpdateEvent e = PresenceStatusUpdateEvent(c);
 				CommunicationManager::GetInstance()->event_manager_->SendEvent(CommunicationManager::GetInstance()->comm_event_category_, Communication::Events::PRESENCE_STATUS_UPDATE, (Foundation::EventDataInterface*)&e);
 			}
 		}

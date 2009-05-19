@@ -34,7 +34,7 @@ namespace Communication
 		return this->online_message_;
 	}
 
-	void PresenceStatus::NotifyUpdate(std::string online_status, std::string online_message)
+	void PresenceStatus::NotifyUpdate(const std::string &online_status, const std::string &online_message)
 	{
 		online_status_ = online_status;
 		online_message_ = online_message;
