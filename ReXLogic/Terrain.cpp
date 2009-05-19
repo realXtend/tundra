@@ -106,17 +106,23 @@ namespace
         const float vertexSpacingY = 1.f;
         const float patchSpacingX = 16 * vertexSpacingX;
         const float patchSpacingY = 16 * vertexSpacingY;
-        const Ogre::Vector3 patchOrigin(patch.header.y * patchSpacingY, 0.f, patch.header.x * patchSpacingX);
+        const Ogre::Vector3 patchOrigin(patch.header.x * patchSpacingX, patch.header.y * patchSpacingY, 0.f);
+//        const Ogre::Vector3 patchOrigin(patch.header.y * patchSpacingY, 0.f, patch.header.x * patchSpacingX);
         const float heightScale = 1.f;
         for(int y = 0; y+1 < patchSize; ++y)
             for(int x = 0; x+1 < patchSize; ++x)
             {
                 // These coordinates are directly generated to our Ogre coordinate system, i.e. are cycled from OpenSim XYZ -> our YZX.
                 // see Core::OpenSimToOgreCoordinateAxes.
-                Ogre::Vector3 a = patchOrigin + Ogre::Vector3(vertexSpacingY * y,     heightScale * patch.heightData[y*patchSize+x], vertexSpacingX * x);
-                Ogre::Vector3 b = patchOrigin + Ogre::Vector3(vertexSpacingY * y, heightScale * patch.heightData[y*patchSize+x+1], vertexSpacingX * (x+1));
-                Ogre::Vector3 c = patchOrigin + Ogre::Vector3(vertexSpacingY * (y+1),     heightScale * patch.heightData[(y+1)*patchSize+x], vertexSpacingX * x);
-                Ogre::Vector3 d = patchOrigin + Ogre::Vector3(vertexSpacingY * (y+1), heightScale * patch.heightData[(y+1)*patchSize+x+1], vertexSpacingX * (x+1));
+//                Ogre::Vector3 a = patchOrigin + Ogre::Vector3(vertexSpacingY * y,     heightScale * patch.heightData[y*patchSize+x], vertexSpacingX * x);
+//                Ogre::Vector3 b = patchOrigin + Ogre::Vector3(vertexSpacingY * y, heightScale * patch.heightData[y*patchSize+x+1], vertexSpacingX * (x+1));
+//                Ogre::Vector3 c = patchOrigin + Ogre::Vector3(vertexSpacingY * (y+1),     heightScale * patch.heightData[(y+1)*patchSize+x], vertexSpacingX * x);
+//                Ogre::Vector3 d = patchOrigin + Ogre::Vector3(vertexSpacingY * (y+1), heightScale * patch.heightData[(y+1)*patchSize+x+1], vertexSpacingX * (x+1));
+
+                Ogre::Vector3 a = patchOrigin + Ogre::Vector3(vertexSpacingX * x, vertexSpacingY * y,     heightScale * patch.heightData[y*patchSize+x]);
+                Ogre::Vector3 b = patchOrigin + Ogre::Vector3(vertexSpacingX * (x+1), vertexSpacingY * y, heightScale * patch.heightData[y*patchSize+x+1]);
+                Ogre::Vector3 c = patchOrigin + Ogre::Vector3(vertexSpacingX * x, vertexSpacingY * (y+1),     heightScale * patch.heightData[(y+1)*patchSize+x]);
+                Ogre::Vector3 d = patchOrigin + Ogre::Vector3(vertexSpacingX * (x+1), vertexSpacingY * (y+1), heightScale * patch.heightData[(y+1)*patchSize+x+1]);
 
                 manual->position(a);
                 manual->position(b);
@@ -156,7 +162,8 @@ namespace
         const float vertexSpacingY = 1.f;
         const float patchSpacingX = 16 * vertexSpacingX;
         const float patchSpacingY = 16 * vertexSpacingY;
-        const Ogre::Vector3 patchOrigin(patch.y * patchSpacingY, 0.f, patch.x * patchSpacingX);
+//        const Ogre::Vector3 patchOrigin(patch.y * patchSpacingY, 0.f, patch.x * patchSpacingX);
+        const Ogre::Vector3 patchOrigin(patch.x * patchSpacingX, patch.y * patchSpacingY, 0.f);
 
         int curIndex = 0;
 
@@ -176,8 +183,10 @@ namespace
                 // These coordinates are directly generated to our Ogre coordinate system, i.e. are cycled from OpenSim XYZ -> our YZX.
                 // see Core::OpenSimToOgreCoordinateAxes.
                 Ogre::Vector3 pos;
-                pos.x = vertexSpacingY * y;
-                pos.z = vertexSpacingX * x;
+// Ogre:                pos.x = vertexSpacingY * y;
+// Ogre:                pos.z = vertexSpacingX * x;
+                pos.x = vertexSpacingX * x;
+                pos.y = vertexSpacingY * y;
 
                 EC_Terrain::Patch *thisPatch;
                 int X = x;
@@ -215,10 +224,12 @@ namespace
                     Y = 0;
                 }
 
-                pos.y = thisPatch->heightData[Y*patchSize+X];
+// Ogre:        pos.y = thisPatch->heightData[Y*patchSize+X];
+                pos.z = thisPatch->heightData[Y*patchSize+X];
 
                 manual->position(patchOrigin + pos);
-                manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.z + pos.z) * vScale);
+// Ogre:                manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.z + pos.z) * vScale);
+                manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.y + pos.y) * vScale);
                 ++curIndex;
             }
 

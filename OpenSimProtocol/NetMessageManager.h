@@ -41,7 +41,6 @@ public:
 	void ProcessMessages();
 
 	/// Interprets the given byte stream as a message and dumps it contents out to the log. Useful only for diagnostics and such.
-	void DumpNetworkMessage(const uint8_t *data, size_t numBytes);
 	void DumpNetworkMessage(NetMsgID id, NetInMessage *msg);
 
 #ifndef RELEASE
