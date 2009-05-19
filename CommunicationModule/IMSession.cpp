@@ -125,4 +125,9 @@ namespace Communication
 		return Session::GetOriginator();
 	}
 
+	ParticipantPtr IMSession::GetUser()
+	{
+		return user_;
+	}
+
 } // end of namespace: Communication

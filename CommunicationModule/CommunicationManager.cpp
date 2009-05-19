@@ -240,6 +240,7 @@ namespace Communication
 			session->protocol_ = protocol;
 			session->participants_->push_back(partner);
 			session->participants_->push_back(user);
+			session->user_ = user;
 			
 			this->im_sessions_->push_back(session_ptr);
 
@@ -329,7 +330,7 @@ namespace Communication
 	{
 		ParticipantPtr p = ParticipantPtr();
 		IMMessage* m = new IMMessage(p, text);
-		return IMMessagePtr((IMMessageInterface*)m);
+		return IMMessagePtr(static_cast<IMMessageInterface*>(m));
 	}
 
 	/**

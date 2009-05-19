@@ -44,8 +44,29 @@ namespace CommunicationUI
 			std::string address = p->GetContact()->GetContactInfo(protocol)->GetProperty("address");
 			counterpart_ = address;
 		}
-
-		counterpart_ = session->GetOriginator()->GetContact()->GetName();
+		
+		Communication::ParticipantPtr originator = session->GetOriginator();
+		
+		if (originator == session->GetUser())
+		{
+			// We select the address of the first counter participant to be the window title
+			Communication::ParticipantListPtr list = session->GetParticipants();
+			for (Communication::ParticipantList::iterator i = list->begin(); i != list->end(); ++i)
+			{
+				Communication::ParticipantPtr p = *i;
+				if (p != session->GetUser())
+				{
+					counterpart_ = p->GetContact()->GetName();
+					break;
+				}
+			}
+		}
+		else
+		{
+			// We select the adderss of orginator of the session to be the windows title
+			counterpart_ = session->GetOriginator()->GetContact()->GetName();
+		}
+		
 		SetupUI();
 	}
 
@@ -112,31 +133,13 @@ namespace CommunicationUI
 		std::string text = sendTxt.c_str();
 		Communication::IMMessagePtr message = communication_service_->CreateIMMessage(text);
 		session_->SendIMMessage(message);
-//        CommunicationUI::CommunicationUIModule::CallIMPyMethod("CSendChat", "s", addr_mess);
-        
-
-		Gtk::TextBuffer::iterator chatIter = chatBuffer_->end();
-		chatBuffer_->insert(chatIter, "\nYou> ");
-		chatIter = chatBuffer_->end();
-		chatBuffer_->insert(chatIter, sendTxt);
-        chatBuffer_->insert(chatIter, "\n ..");
-        chatIter = chatBuffer_->end();
-        txtChatView_->scroll_to(chatIter, 0.0, 1.0, 0.0);
-        //txtChatView_->scroll_to_iter(chatIter);
-        //delete[] args;
+		AddMessageToScreen(message);
 	}
+
 
 	void ChatSession::onCloseClicked()
 	{
-		//CommunicationUI::CommunicationUIModule::LogInfo("Close clicked");
-		//std::string str = "CCloseChannel";
-		//std::string syntax = "";
-		//Foundation::ScriptObject* ret = imScriptObject_->CallMethod(str, syntax, NULL);        
-
 		session_->Close();
-        
-//        Foundation::ScriptObject* ret = CommunicationUIModule::CallIMPyMethod("CCloseChannel", "s", this->counterpart_);
-		
 	}
 
 	void ChatSession::ChannelOpen()
@@ -168,19 +171,39 @@ namespace CommunicationUI
 
 	void ChatSession::OnMessageReceived(Communication::IMMessagePtr m)
 	{
-		std::string text;
-		text.append(m->GetTimeStamp());
-		text.append(" ");
-		text.append(m->GetAuthor()->GetContact()->GetName());
-		text.append(" >> ");
-		text.append(m->GetText());
-		ReceivedMessage( text );
+		AddMessageToScreen(m);
 	}
 
 	void ChatSession::OnStateChanged()
 	{
 
 	}
+
+	/*
+	 *  Add given message to chat window message history view
+	 *  Format: <time stamp> <author> ">>" <message text>
+	 */
+	void ChatSession::AddMessageToScreen(Communication::IMMessagePtr m)
+	{
+		Communication::ParticipantPtr author = m->GetAuthor();
+		std::string text;
+		text.append(m->GetTimeStamp());
+		text.append(" ");
+		if (author)
+			text.append(m->GetAuthor()->GetContact()->GetName());
+		else
+			text.append("You");
+		text.append(" >> ");
+		text.append(m->GetText());
+
+		Gtk::TextBuffer::iterator chatIter = chatBuffer_->end();
+		chatBuffer_->insert(chatIter, "\n");
+		chatIter = chatBuffer_->end();
+		chatBuffer_->insert(chatIter, text);
+        chatIter = chatBuffer_->end();
+        txtChatView_->scroll_to(chatIter, 0.0, 1.0, 0.5);
+	}
+
 
 
 
