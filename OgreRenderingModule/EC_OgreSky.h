@@ -60,8 +60,8 @@ struct SkyParameters
     material("Rex/skybox"),
     distance(50),
     drawFirst(true),
-    angle(0.f),
-    angleAxis(0, 0, 1) {}
+    angle(90),
+    angleAxis(1, 0, 0) {}
 };
 
 /// Sky parameters for skydome, see Ogre documentation for more info.

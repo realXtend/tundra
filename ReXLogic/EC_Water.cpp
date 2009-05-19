@@ -42,12 +42,12 @@ namespace RexLogic
 
     void EC_Water::SetWaterHeight(float height)
     {
-        scene_node_->setPosition(scene_node_->getPosition().x, height, scene_node_->getPosition().z);
+        scene_node_->setPosition(scene_node_->getPosition().x, scene_node_->getPosition().y, height);
     }
 
     float EC_Water::GetWaterHeight() const
     {
-        return scene_node_->getPosition().y;
+        return scene_node_->getPosition().z;
     }
 
     void EC_Water::CreateOgreWaterObject()
