@@ -201,11 +201,10 @@ namespace CommunicationUI
 		chatIter = chatBuffer_->end();
 		chatBuffer_->insert(chatIter, text);
         chatIter = chatBuffer_->end();
-        txtChatView_->scroll_to(chatIter, 0.0, 1.0, 0.5);
+        txtChatView_->scroll_to(chatIter, 0.0, 1.0, 1.0);
+		chatIter = chatBuffer_->end();
+		chatBuffer_->place_cursor(chatIter);
 	}
-
-
-
 
 }
 
