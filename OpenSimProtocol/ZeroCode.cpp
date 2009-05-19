@@ -51,8 +51,8 @@ size_t CountZeroDecodedLength(const uint8_t *data, size_t numBytes)
 			}
 			size_t numZeroes = data[i++];
 
-			if (numZeroes == 0) // A run of zero zeroes? The packet is then malformed.
-				return 0; ///\todo Warning log out.
+//			if (numZeroes == 0) // A run of zero zeroes? The packet is then malformed.
+//				return 0; ///\todo Warning log out.
 
 			length += numZeroes;
 		}

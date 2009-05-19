@@ -249,6 +249,8 @@ namespace RexLogic
         m->AddUUID(myInfo_.sessionID);
 
         FinishMessageBuilding(m);
+
+        RexLogicModule::LogInfo("Sent a Logout Request to the server... waiting for reply before quitting.");
 	}
 	
 	void RexServerConnection::SendChatFromViewerPacket(std::string text)
