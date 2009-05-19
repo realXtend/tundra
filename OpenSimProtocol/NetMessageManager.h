@@ -57,8 +57,11 @@ private:
 	/// @return A new sequence number for outbound UDP messages.
 	size_t GetNewSequenceNumber() { return sequenceNumber++; }
 
-	/// Sends a PacketAck message to the server, Acking the packet with the given packetID.
-	void SendPacketACK(uint32_t packetID);
+	/// Queues acking the packet with the given packetID.
+	void QueuePacketACK(uint32_t packetID);
+	
+	/// Sends pending acks to the server.
+	void SendPendingACKs();
 	
 	/// Processes a received PacketAck message.
 	void ProcessPacketACK(NetInMessage *msg);
@@ -98,6 +101,9 @@ private:
 
 	/// A pool of NetOutMessage structures, which have been handed out to the application and are currently being built.
 	std::list<NetOutMessage*> usedMessagePool;
+	
+	/// Packet acks pending to be sent
+	std::set<uint32_t> pendingACKs;
 
 	typedef std::list<std::pair<time_t, NetOutMessage*> > MessageResendList;
 	/// A pool of NetOutMessages that are in the outbound queue. Need to keep the unacked reliable messages in

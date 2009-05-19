@@ -186,7 +186,7 @@ namespace Asset
                     m->AddF32(0.0); // Download priority, 0 = cancel
                     m->AddU32(0); // Starting packet
                     m->AddU8(RexIT_Normal); // Image type
-    
+                    m->MarkReliable();
                     net->FinishMessageBuilding(m);
 
                     // Send transfer canceled event
@@ -224,7 +224,7 @@ namespace Asset
                     assert(m);
                     m->AddUUID(i->first); // Transfer ID
                     m->AddS32(RexAC_Asset); // Asset channel type
-
+                    m->MarkReliable();
                     net->FinishMessageBuilding(m);
             
                     // Send transfer canceled event
@@ -290,7 +290,7 @@ namespace Asset
         m->AddF32(100.0); // Download priority
         m->AddU32(0); // Starting packet
         m->AddU8(RexIT_Normal); // Image type
-        
+        m->MarkReliable();
         net->FinishMessageBuilding(m);
     }
     
@@ -329,7 +329,7 @@ namespace Asset
         memcpy(&asset_info[0], &asset_id.data, 16);
         memcpy(&asset_info[16], &asset_type, 4);
         m->AddBuffer(20, asset_info);
-        
+        m->MarkReliable();
         net->FinishMessageBuilding(m);
         
         return;

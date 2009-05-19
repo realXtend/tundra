@@ -22,7 +22,7 @@ namespace RexLogic
         cameradistance_ = 20.0f;
         camera_min_distance_ = 1.0f;
         camera_max_distance_ = 50.0f;
-        cameraoffset_ = RexTypes::Vector3(0,1.8f,0);
+        cameraoffset_ = RexTypes::Vector3(0,0,1.8f);
         
         yaw_ = 0.0f;
         net_movementupdatetime_ = 0.0f;
@@ -185,7 +185,7 @@ namespace RexLogic
         if(yaw_ != 0)
         {
             Core::Quaternion rotchange;
-            rotchange.fromAngleAxis((yaw_*frametime*0.5f),RexTypes::Vector3(0,1,0)); 
+            rotchange.fromAngleAxis((yaw_*frametime*0.5f),RexTypes::Vector3(0,0,1)); 
             Core::Quaternion newrot = rotchange * GetBodyRotation();
             SetBodyRotation(newrot.normalize());
         }
@@ -196,7 +196,7 @@ namespace RexLogic
 
         // update camera position
         RexTypes::Vector3 campos = ogreplaceable.GetPosition();
-        campos += (ogreplaceable.GetOrientation() * RexTypes::Vector3(0,0,-1) * cameradistance_);
+        campos += (ogreplaceable.GetOrientation() * RexTypes::Vector3(-1,0,0) * cameradistance_);
         campos += (ogreplaceable.GetOrientation() * cameraoffset_);
         camera->setPosition(campos.x,campos.y,campos.z);
         

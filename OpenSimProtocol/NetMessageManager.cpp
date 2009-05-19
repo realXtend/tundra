@@ -186,11 +186,14 @@ void NetMessageManager::ProcessMessages()
 		// and check if we've seen this packet before.
 		pair<set<uint32_t>::iterator, bool> ret = receivedSequenceNumbers.insert(seqNum);
 		if (ret.second == false) 
+		{
+		    cout << "Dropping duplicate" << endl;
 			continue; // A message with this sequence number has already been given to the application for processing. Drop it this time.
+        }
 
 		// Send ACK for reliable messages.
 		if ((data[0] & NetFlagReliable) != 0)
-			SendPacketACK(seqNum);
+			QueuePacketACK(seqNum);
 
 //		NetMsgID id = ExtractNetworkMessageNumber(&data[0], numBytes);
 
@@ -222,6 +225,9 @@ void NetMessageManager::ProcessMessages()
 	const size_t cMaxSeqNumMemorySize = 300;
 	while(receivedSequenceNumbers.size() > cMaxSeqNumMemorySize)
 		receivedSequenceNumbers.erase(receivedSequenceNumbers.begin()); // We remove from the front to guarantee the smallest(oldest) are removed first.
+
+    // Send pending ACKs
+    SendPendingACKs();
 }
 
 bool NetMessageManager::ConnectTo(const char *serverAddress, int port)
@@ -340,14 +346,40 @@ void NetMessageManager::SendProcessedMessage(NetOutMessage *msg)
         messageListener->OnNetworkMessageSent(msg);
 }
 
-///\todo Send multiple ACKs in one packet?
-void NetMessageManager::SendPacketACK(uint32_t packetID)
+void NetMessageManager::QueuePacketACK(uint32_t packetID)
 {
-	NetOutMessage *m = StartNewMessage(RexNetMsgPacketAck);
-	assert(m);
-	m->SetVariableBlockCount(1);
-	m->AddU32(packetID);
-	FinishMessage(m);
+    pendingACKs.insert(packetID);
+}
+
+///\todo Have better delay method for pending ACKs, currently sends everything accumulated just over one frame
+void NetMessageManager::SendPendingACKs()
+{
+    static const size_t max_acks_in_msg = 100;
+
+    while (pendingACKs.size())
+    {
+        size_t acks_to_send = pendingACKs.size();
+        if (acks_to_send > max_acks_in_msg)
+            acks_to_send = max_acks_in_msg;
+
+        NetOutMessage *m = StartNewMessage(RexNetMsgPacketAck);
+        assert(m);
+        m->SetVariableBlockCount(acks_to_send);
+        
+        std::set<uint32_t>::iterator i = pendingACKs.begin();
+        size_t added_acks = 0;
+        
+        while (added_acks < acks_to_send)
+        {
+            m->AddU32(*i);
+            ++added_acks;
+            ++i;
+        }
+        
+        FinishMessage(m);
+        
+        pendingACKs.erase(pendingACKs.begin(), i);
+    }
 }
 
 void NetMessageManager::ProcessPacketACK(NetInMessage *msg)

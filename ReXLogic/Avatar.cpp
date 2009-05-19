@@ -69,7 +69,7 @@ namespace RexLogic
         if (placeable)
         {
             OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
-            ogrepos.SetScale(Vector3(0.5,1.5,0.5));
+            ogrepos.SetScale(Vector3(0.5,0.5,1.5));
             DebugCreateOgreBoundingBox(rexlogicmodule_, entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()),"AmbientGreen");
         }
         
