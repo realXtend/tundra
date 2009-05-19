@@ -10,11 +10,18 @@
 #include "../OgreRenderingModule/Renderer.h"
 #include "ConversionUtils.h"
 
+
+
 namespace RexLogic
 {
     Avatar::Avatar(RexLogicModule *rexlogicmodule)
-    {
+    { 
         rexlogicmodule_ = rexlogicmodule;
+
+        avatar_anims_[RexTypes::RexUUID("6ed24bd8-91aa-4b12-ccc7-c97c857ab4e0")] = AVATAR_ANIM_WALK;
+        avatar_anims_[RexTypes::RexUUID("2408fe9e-df1d-1d7d-f4ff-1384fa7b350f")] = AVATAR_ANIM_STAND;
+        avatar_anims_[RexTypes::RexUUID("aec4610c-757f-bc4e-c092-c6e9caf18daf")] = AVATAR_ANIM_FLY;
+        avatar_anims_[RexTypes::RexUUID("1c7600d6-661f-b87b-efe2-d7421eb93c86")] = AVATAR_ANIM_SIT_GROUND;               
     }
     
     Avatar::~Avatar()
@@ -278,7 +285,12 @@ namespace RexLogic
         for(size_t i = 0; i < animlistcount; i++)
         {
             RexUUID animid = data->message->ReadUUID();
-            Core::s32 animsequence = data->message->ReadS32();     
+            Core::s32 animsequence = data->message->ReadS32();
+
+            if(avatar_anims_.find(animid) != avatar_anims_.end())
+            {
+                /// \todo handle known animation: avatar_anims_[animid]                        
+            }
         }        
         
         size_t animsourcelistcount = data->message->ReadCurrentBlockInstanceCount();
@@ -287,6 +299,7 @@ namespace RexLogic
             RexUUID objectid = data->message->ReadUUID();  
         }
         // PhysicalAvatarEventList not used
+                
         return false;
-    }  
+    }     
 }

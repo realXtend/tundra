@@ -4,6 +4,7 @@
 #define incl_Avatar_h
 
 #include "NetworkEvents.h"
+#include "RexUUID.h"
 
 namespace RexLogic
 {
@@ -31,6 +32,17 @@ namespace RexLogic
         //!         Does not return null. If the entity doesn't exist, an entity with the given entityid and fullid is created and returned.
         Scene::EntityPtr GetOrCreateAvatarEntity(Core::entity_id_t entityid, const RexUUID &fullid);
         Scene::EntityPtr CreateNewAvatarEntity(Core::entity_id_t entityid);
+        
+        //! Animation map
+        typedef std::map<RexTypes::RexUUID,int> AvatarAnimationMap;
+        AvatarAnimationMap avatar_anims_;
+        
+        //! Avatar animation ids
+        static const int AVATAR_ANIM_UNDEFINED = 0;
+        static const int AVATAR_ANIM_WALK = 1;
+        static const int AVATAR_ANIM_STAND = 2;
+        static const int AVATAR_ANIM_FLY = 3;
+        static const int AVATAR_ANIM_SIT_GROUND = 4;               
     };
 }
 #endif
