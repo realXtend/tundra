@@ -88,6 +88,46 @@ namespace PythonScript
 		}
 	}
 
+	Foundation::ScriptObject* PythonScriptObject::CallMethod2(std::string& methodname, 
+															 std::string& syntax, 
+															 ...)
+		{
+		if(syntax==""){
+			char *m = new char[methodname.size()+1];
+			strcpy(m, methodname.c_str());
+			PyObject* pRetValue = PyObject_CallMethod(this->pythonObj, 
+													  m, 
+													  NULL, 
+													  NULL);
+			delete m;
+			PythonScriptObject* obj = new PythonScriptObject();
+			obj->pythonObj = pRetValue;
+			return obj;
+
+		} else {
+			char *m = new char[methodname.size()+1];
+			char *s = new char[syntax.size()+1];
+
+			strcpy(m, methodname.c_str());
+			strcpy(s, syntax.c_str());
+			PyObject* pRetValue = PyObject_CallMethod(this->pythonObj, 
+													  m, 
+													  s
+													  __VA_ARGS__
+													  );
+
+			//PyObject* pRetValue = PyObject_CallMethod(this->pythonObj, 
+			//										  m, 
+			//										  s, 
+			//										  argv[0]);
+			delete m;
+			delete s;
+			PythonScriptObject* obj = new PythonScriptObject();
+			obj->pythonObj = pRetValue;
+			return obj;
+		}
+	}
+
 	Foundation::ScriptObject* PythonScriptObject::CallMethod(std::string& methodname, 
 															 const std::string& syntax, 
 															 const Foundation::ScriptObject* args)

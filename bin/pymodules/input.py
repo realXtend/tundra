@@ -9,12 +9,13 @@ av_entid = 8880005
 
 idnum = av_entid
 
-print "Getting entity id", idnum,
-e = r.getEntity(idnum)
-print "got:", e
-#print dir(r)
+if 0: #get entity
+    print "Getting entity id", idnum,
+    e = r.getEntity(idnum)
+    print "got:", e
+    #print dir(r)
 
-if 1: #test avatar tracking, works :)
+if 0: #test avatar tracking, works :)
     a = r.getEntity(av_entid)
     print "Avatar pos:", a.place
     """
@@ -22,3 +23,8 @@ if 1: #test avatar tracking, works :)
     make a sound of a nearby object of interest, 
     like when a pet or a friend moves?
     """
+    
+if 1: #push an incoming chat msg event
+    from eventsource import viewer
+    viewer.dispatch_event('on_chat', "input", "testing")
+    print viewer._event_stack
