@@ -1221,15 +1221,13 @@ namespace CommunicationUI
 		this->lstContacts.lstContactsTreeModel->clear();
 		for(Communication::ContactList::iterator i = contact_list_->begin(); i < contact_list_->end(); i++)
 		{
-			Gtk::TreeModel::Row row = *(this->lstContacts.lstContactsTreeModel->append());
 			Communication::ContactPtr c = (*i);
-			//std::string id(contactID);
-			//std::string contact(name);
 
-			row[this->lstContacts.columns_.id_] = ""; // std::string(id);
-			row[this->lstContacts.columns_.contact_] = c->GetContactInfo(protocol)->GetProperty("address");
-			row[this->lstContacts.columns_.status_] = c->GetPresenceStatus()->GetOnlineStatus();
-			row[this->lstContacts.columns_.message_] = c->GetPresenceStatus()->GetOnlineMessage();
+			Gtk::TreeModel::Row row = *(this->lstContacts.lstContactsTreeModel->append());
+			row[lstContacts.columns_.id_] = ""; // std::string(id);
+			row[lstContacts.columns_.contact_] = c->GetContactInfo(protocol)->GetProperty("address");
+			row[lstContacts.columns_.status_] = c->GetPresenceStatus()->GetOnlineStatus();
+			row[lstContacts.columns_.message_] = c->GetPresenceStatus()->GetOnlineMessage();
 		}
 	}
 
