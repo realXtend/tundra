@@ -12,6 +12,12 @@ class ModuleManager:
         pass
         print "Manager got on_chat", m #frm, message
         
+    def MOVE_FORWARD_PRESSED(self):
+        print "|"
+        
+    def MOVE_FORWARD_RELEASED(self):
+        print "_"
+        
     def exit(self):
         print "exiting module manager"
         pass

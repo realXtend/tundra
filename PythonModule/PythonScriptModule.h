@@ -89,6 +89,7 @@ namespace PythonScript
 
 		// Category id for incoming messages.
 		Core::event_category_id_t inboundCategoryID_;
+		Core::event_category_id_t inputeventcategoryid;
 
 		// the hook to the python-written module manager that passes events on
 		PyObject *pmmModule, *pmmDict, *pmmClass, *pmmInstance;
