@@ -16,21 +16,10 @@ using namespace RexTypes;
 class OSPROTO_MODULE_API NetInMessage
 {
 public:
-	NetInMessage(size_t seqNum, const NetMessageInfo *info, const uint8_t *compressedData, size_t numBytes, bool zeroEncoded);
+	NetInMessage(size_t seqNum, const uint8_t *compressedData, size_t numBytes, bool zeroEncoded);
 	~NetInMessage();
 	
-	NetInMessage(const NetInMessage &rhs)
-	{
-	    sequenceNumber = rhs.sequenceNumber;
-	    messageInfo = rhs.messageInfo;
-	    messageData = rhs.messageData;
-	    currentBlock = rhs.currentBlock;
-	    currentBlockInstanceNumber = rhs.currentBlockInstanceNumber;
-	    currentBlockInstanceCount = rhs.currentBlockInstanceCount;
-	    currentVariable = rhs.currentVariable;
-	    currentVariableSize = rhs.currentVariableSize;
-	    bytesRead = rhs.bytesRead;
-	}
+	NetInMessage(const NetInMessage &rhs);
 	
 	// The following functions all read data from the message and advance to the next variable in the message block.
 	uint8_t  ReadU8();
@@ -57,7 +46,6 @@ public:
 
 	//IPADDR	ReadIPAddr(IPADDR value);  ///\todo
 	//IPPORT	ReadIPPort(IPPORT value);  ///\todo
-	//void		ReadNetVarFixed ///\todo Is this needed?
 
     void ReadString(char *dst, size_t maxSize);
     std::string ReadString();
@@ -102,7 +90,9 @@ public:
     uint32_t GetSequenceNumber() const { return sequenceNumber; } 
     
 	/// @return Message id of this packet.
-	const NetMsgID GetMessageID() const { return messageInfo->id; }
+    const NetMsgID GetMessageID() const { return messageID; }
+
+    void SetMessageInfo(const NetMessageInfo *info);
 
 	/// @return A structure that represents the types and amounts of blocks and variables of this packet. Use it to examine the whole structure of this message type.
 	const NetMessageInfo *GetMessageInfo() const { return messageInfo; }
@@ -139,7 +129,10 @@ private:
 	
 	/// The sequence number of the message.
 	uint32_t sequenceNumber;
-	
+
+    /// The message ID of the message (extracted from the message stream).
+	uint32_t messageID;
+
 	/// Identifies what kind of packet we're handling.
 	const NetMessageInfo *messageInfo;
 	

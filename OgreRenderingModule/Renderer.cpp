@@ -263,6 +263,8 @@ namespace OgreRenderer
         camera_ = scenemanager_->createCamera("Camera");
         camera_->setNearClipDistance(0.1f);
         camera_->setFarClipDistance(2000.f);
+        camera_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
+        camera_->roll(Ogre::Radian(Ogre::Math::HALF_PI));
         Ogre::Viewport* viewport = renderwindow_->addViewport(camera_);
         camera_->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
     }

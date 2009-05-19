@@ -215,6 +215,7 @@ namespace RexLogic
         HandleInterpolation(frametime);
             
         // Poll the connection state and update the info to the UI.
+        /// \todo Move this to the Login UI class.
         OpenSimProtocol::Connection::State cur_state = rexserver_connection_->GetConnectionState();
         if (cur_state != connectionState_)
         {
@@ -222,6 +223,7 @@ namespace RexLogic
             connectionState_ = cur_state;
         }
         
+        /// \todo Move this to OpenSimProtocolModule.
         if (!rexserver_connection_->IsConnected() &&
             rexserver_connection_->GetConnectionState() == OpenSimProtocol::Connection::STATE_INIT_UDP)
         {
@@ -240,6 +242,27 @@ namespace RexLogic
                 GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
             else
                 GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
+        }
+
+        if (rexserver_connection_->IsConnected())
+        {
+            boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+            Ogre::Camera *camera = renderer->GetCurrentCamera();
+            Ogre::Vector3 up = camera->getUp();
+            Ogre::Vector3 fwd = camera->getDirection();
+            Ogre::Vector3 right = camera->getRight();
+            float l1 = up.length();
+            float l2 = fwd.length();
+            float l3 = right.length();
+            float p1 = up.dotProduct(fwd);
+            float p2 = fwd.dotProduct(right);
+            float p3 = right.dotProduct(up);
+            std::stringstream ss;
+            if (abs(l1 - 1.f) > 1e-3f || abs(l2 - 1.f) > 1e-3f || abs(l3 - 1.f) > 1e-3f || abs(p1) > 1e-3f || abs(p2) > 1e-3f || abs(p3) > 1e-3f)
+            {
+                ss << "Warning! Camera TM base not orthonormal! Pos. magnitudes: " << l1 << ", " << l2 << ", " << l3 << ", Dot product magnitudes: " << p1 << ", " << p2 << ", " << p3;
+//                LogInfo(ss.str());
+            }
         }
     }
 

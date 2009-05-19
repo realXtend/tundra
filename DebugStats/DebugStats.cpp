@@ -618,7 +618,7 @@ void DebugStats::PopulatePrimPropertiesTreeView(
     
     RexTypes::Vector3 pos = Core::OgreToOpenSimCoordinateAxes(ogre_pos->GetPosition());
     RexTypes::Vector3 scale = Core::OgreToOpenSimCoordinateAxes(ogre_pos->GetScale());
-    RexTypes::Vector3 rot = Core::PackQuaternionToFloat3(Core::OpenSimToOgreQuaternion(ogre_pos->GetOrientation()));
+    RexTypes::Vector3 rot = Core::PackQuaternionToFloat3(Core::OgreToOpenSimQuaternion(ogre_pos->GetOrientation()));
     
     // Set the values
     sb_pos_x->set_value((double)pos.x);

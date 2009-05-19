@@ -16,16 +16,19 @@
 
 using namespace std;
 
-/* For reference, here's how the message looks:
-struct UDPMessageHeader
+/* For reference, here's how an SLUDP packet frame looks like:
+struct UDPMessagePacket
 {
-	uint8_t flags;
-	uint32_t sequenceNumber;
-	uint8_t extraHeaderSize;
-	// (extraHeaderSize bytes of extra header data.)
-	// 1,2 or 4 bytes of message number information.
-	// Message body.
-	// Appended acks.
+    uint8_t flags;
+    uint32_t sequenceNumber;
+    uint8_t extraHeaderSize;
+    byte extraHeaderData[extraHeaderSize];  // Not currently parsed at all.
+    // Message body. (possibly zerocoded)
+    // Appended acks.                       // Not currently parsed at all.
+
+    // The format for message body:
+    // u8/u16/u32 messageNumber; // Variable-length -encoded.
+    // Message content.          // Serialized data, the format is described by the SLUDP message_template.msg
 };
 */
 
@@ -33,7 +36,7 @@ struct UDPMessageHeader
 /// @param data A pointer to the message data.
 /// @param numBytes The size of data, in bytes.
 /// @param messageLength [out] The remaining length of the buffer is returned here, in bytes.
-/// @return A pointer to the start of the message body, or 0 if the size of the body is 0 bytes.
+/// @return A pointer to the start of the message body, or 0 if the size of the body is 0 bytes or if the message was malformed.
 static uint8_t *ComputeMessageBodyStartAddrAndLength(uint8_t *data, size_t numBytes, size_t *messageLength)
 {
 	// Too small buffer, no body existing at all.
@@ -46,76 +49,20 @@ static uint8_t *ComputeMessageBodyStartAddrAndLength(uint8_t *data, size_t numBy
 	// There's a variable-sized extra header we need to skip. How many bytes is it?
 	const uint8_t extraHeaderSize = data[5];
 
-	// Then there's a VLE-encoded packetNumber (1,2 or 4 bytes) we need to skip: 
-	// Defend against past-buffer read for malformed packets: What is the max size the packetNumber can be in bytes?
-	int maxMsgNumBytes = min((int)numBytes - 6 - extraHeaderSize, 4); 
-	if (maxMsgNumBytes <= 0) // Packet too short.
-	{
-		if (messageLength)
-			*messageLength = 0;
-		return 0;
-	}
-	// packetNumber is one byte long.
-	if (maxMsgNumBytes >= 1 && data[6 + extraHeaderSize] != 0xFF)
-	{
-		if (messageLength)
-			*messageLength = numBytes - 6 - extraHeaderSize - 1;
-		return *messageLength > 0 ? data + 6 + extraHeaderSize + 1 : 0;
-	}
-	// packetNumber is two bytes long.
-	if (maxMsgNumBytes >= 2 && data[6 + extraHeaderSize + 1] != 0xFF)
-	{
-		if (messageLength)
-			*messageLength = numBytes - 6 - extraHeaderSize - 2;
-		return *messageLength > 0 ? data + 6 + extraHeaderSize + 2 : 0;
-	}
-	// packetNumber is four bytes long.
-	if (maxMsgNumBytes >= 4)
-	{
-		if (messageLength)
-			*messageLength = numBytes - 6 - extraHeaderSize - 4;
-		return *messageLength > 0 ? data + 6 + extraHeaderSize + 4 : 0;
-	}
-
-	// The packet was malformed if we get here.
-	if (messageLength)
-		*messageLength = 0;
-	return 0;
+    if (messageLength)
+        *messageLength = numBytes - 6 - extraHeaderSize;
+    return data + 6 + extraHeaderSize;
 }
 
 /// const version of above.
+/*
 static const uint8_t *ComputeMessageBodyStartAddrAndLength(const uint8_t *data, size_t numBytes, size_t *messageLength)
 {
 	return ComputeMessageBodyStartAddrAndLength(const_cast<uint8_t *>(data), numBytes, messageLength);
 }
+*/
 
-/// Reads the message number from the given byte stream that represents a message.
-/// @param data Pointer to the start of the message data (to first byte of header).
-/// @param numBytes The size of the message (including headers).
-/// @return The message number, or 0 to denote an invalid message.
-static NetMsgID ExtractNetworkMessageNumber(const uint8_t *data, size_t numBytes)
-{
-	assert(data || numBytes == 0);
-
-	if (numBytes < 6)
-		return 0;
-	uint8_t extraHeaderSize = data[5];
-
-	// Defend against past-buffer read for malformed packets: What is the max size the packetNumber can be in bytes?
-	int maxMsgNumBytes = min((int)numBytes - 6 - extraHeaderSize, 4); 
-	if (maxMsgNumBytes <= 0)
-		return 0;
-	if (maxMsgNumBytes >= 1 && data[6 + extraHeaderSize] != 0xFF)
-		return data[6 + extraHeaderSize];
-	if (maxMsgNumBytes >= 2 && data[6 + extraHeaderSize + 1] != 0xFF)
-		return ntohs(*(u_short*)&data[6 + extraHeaderSize]);
-	if (maxMsgNumBytes >= 4)
-		return ntohl(*(u_long*)&data[6 + extraHeaderSize]);
-
-	return 0;
-}
-
-/// Reads the packet sequence number from the given byte stream that represents a message.
+/// Reads the packet sequence number from the given byte stream that represents an SLUDP packet.
 /// @param data Pointer to the start of the message data (to first byte of header).
 /// @param numBytes The size of the message (including headers).
 /// @return The message sequence number, or 0 to denote an error occurred.
@@ -211,67 +158,6 @@ void NetMessageManager::DumpNetworkMessage(NetMsgID id, NetInMessage *msg)
 	}
 }
 
-///\todo Remove or refactor
-void NetMessageManager::DumpNetworkMessage(const uint8_t *data, size_t numBytes)
-{
-	NetMsgID id = ExtractNetworkMessageNumber(data, numBytes);
-	const NetMessageInfo *info = messageList->GetMessageInfoByID(id);
-	if (!info)
-	{
-		std::cout << "Packet with invalid ID received: 0x" << std::hex << id << ". Size was " << numBytes << " bytes." << std::endl;
-		return;
-	}
-
-	size_t messageLength = 0;
-	size_t msgInd = 0;
-	const uint8_t *message = ComputeMessageBodyStartAddrAndLength(data, numBytes, &messageLength);
-		
-	std::cout << "Message \"" << info->name << "\" length " << messageLength << " bytes:" << std::endl;
-	for(size_t i = 0; i < info->blocks.size(); ++i)
-	{
-		size_t repeatCounter = 0;
-		const NetMessageBlock &block = info->blocks[i];
-		if (block.type == NetBlockMultiple)
-			repeatCounter = block.repeatCount;
-
-		std::cout << "  Block \"" << block.name << "\":" << std::endl;
-		for(size_t j = 0; j < block.variables.size(); ++j)
-		{	
-			const NetMessageVariable &var = block.variables[j];
-			const size_t &varSize = NetVariableSizes[var.type];
-			const char *varStr = VariableTypeToStr(var.type);
-
-			//void *varDataBuf = malloc(varSize);
-			//memcpy(varDataBuf, &message[msgInd], varSize);
-			
-			//std::cout << "    " << msgInd << ":" << var.name << "(" << varStr << ", " << varSize << " bytes):" << std::endl;
-			/*if(var.type == NetVarU8) {uint8_t *varData = (uint8_t *)varDataBuf; std::cout << varData << std::endl;}
-			if(var.type == NetVarU16){uint16_t *varData = (uint16_t *)varDataBuf; std::cout << varData << std::endl;}
-			if(var.type == NetVarU32){uint32_t *varData = (uint32_t *)varDataBuf; std::cout << varData << std::endl;}
-			if(var.type == NetVarU64){uint64_t *varData = (uint64_t *)varDataBuf; std::cout << varData << std::endl;}
-			if(var.type == NetVarS8){int8_t *varData = (int8_t *)varDataBuf; std::cout << varData << std::endl;}
-			if(var.type == NetVarS16){int16_t *varData = (int16_t *)varDataBuf; std::cout << varData << std::endl;}
-			if(var.type == NetVarS32){int32_t *varData = (int32_t *)varDataBuf; std::cout << varData << std::endl;}
-			if(var.type == NetVarS64){int64_t *varData = (int64_t *)varDataBuf; std::cout << varData << std::endl;}*/
-
-			msgInd += varSize;
-
-			if (msgInd > messageLength)
-			{
-				std::cout << "Warning! Message index (" << msgInd << ") " << "exceeded the message length (" << messageLength << ")" << std::endl;
-				break;
-			}
-			
-		}
-		if (repeatCounter > 0 && (block.type == NetBlockMultiple || block.type == NetBlockMultiple))
-		{
-			--repeatCounter;
-			std::cout << "Repeating block " << block.name << " for " << repeatCounter << " more times. " << std::endl;
-			continue;
-		}
-	}
-}
-
 /// Polls the inbound socket until the message queue is empty. Also resends any timed out reliable messages.
 void NetMessageManager::ProcessMessages()
 {
@@ -290,11 +176,10 @@ void NetMessageManager::ProcessMessages()
 		if (!messageListener)
 		{
 			cout << "No UDP message listener set! Dropping incoming packet as unhandled:" << endl;
-			DumpNetworkMessage(&data[0], numBytes);
+//			DumpNetworkMessage(&data[0], numBytes);
 			continue;
 		}
 
-		NetMsgID id = ExtractNetworkMessageNumber(&data[0], numBytes);
 		uint32_t seqNum = ExtractNetworkMessageSequenceNumber(&data[0], numBytes);
 		
 		// We need to do pruning of inbound duplicates, so add the sequence number to the set of received sequence numbers, 
@@ -306,13 +191,16 @@ void NetMessageManager::ProcessMessages()
 		// Send ACK for reliable messages.
 		if ((data[0] & NetFlagReliable) != 0)
 			SendPacketACK(seqNum);
-	
+
+//		NetMsgID id = ExtractNetworkMessageNumber(&data[0], numBytes);
+
 		size_t messageLength = 0;
 		const uint8_t *message = ComputeMessageBodyStartAddrAndLength(&data[0], numBytes, &messageLength);
-		NetInMessage msg(seqNum, messageList->GetMessageInfoByID(id), &message[0], messageLength, (data[0] & NetFlagZeroCode) != 0);
+		NetInMessage msg(seqNum, &message[0], messageLength, (data[0] & NetFlagZeroCode) != 0);
+        msg.SetMessageInfo(messageList->GetMessageInfoByID(msg.GetMessageID()));
 			
 		// NetMessageManager handles all Acks and Pings. Those are not passed to the application.
-		switch(id)
+        switch(msg.GetMessageID())
 		{
 		case RexNetMsgPacketAck:
 			ProcessPacketACK(&msg);
@@ -322,7 +210,7 @@ void NetMessageManager::ProcessMessages()
 			break;
 		default:
 			// Pass the message to the listener(s).
-			messageListener->OnNetworkMessageReceived(id, &msg);
+            messageListener->OnNetworkMessageReceived(msg.GetMessageID(), &msg);
 			break;
 		}
 	}
@@ -408,15 +296,12 @@ void NetMessageManager::FinishMessage(NetOutMessage *message)
 	// Try to Zero-encode the message if that is desired. If encoding worsens the size, we'll send unencoded.
 	if (message->GetMessageInfo()->encoding == NetZeroEncoded)
 	{
-
 		size_t bodyLength = 0;
 		const uint8_t *bodyData = ComputeMessageBodyStartAddrAndLength(&data[0], message->BytesFilled(), &bodyLength);
 		assert(bodyLength < message->BytesFilled());
 		size_t headerLength = message->BytesFilled() - bodyLength;
 
 		size_t encodedBodyLength = CountZeroEncodedLength(bodyData, bodyLength);
-		std::vector<uint8_t> zeroCodedData;
-		zeroCodedData.resize(headerLength + encodedBodyLength, 0);
 
 		// If the encoded message would take more space than the non-coded, just send non-coded.
 		if (headerLength + encodedBodyLength >= message->BytesFilled()) 
@@ -427,6 +312,8 @@ void NetMessageManager::FinishMessage(NetOutMessage *message)
 		{
 			data[0] |= NetFlagZeroCode;
 
+		    std::vector<uint8_t> zeroCodedData;
+		    zeroCodedData.resize(headerLength + encodedBodyLength, 0);
 			memcpy(&zeroCodedData[0], &data[0], headerLength);
 			ZeroEncode(&zeroCodedData[headerLength], encodedBodyLength, bodyData, bodyLength);
 			data = zeroCodedData;

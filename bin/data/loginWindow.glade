@@ -96,7 +96,7 @@
         <child>
           <widget class="GtkLabel" id="label_auth_login">
             <property name="visible">True</property>
-            <property name="label" translatable="yes">Authentication login</property>
+            <property name="label" translatable="yes">RexAuthentication login name</property>
           </widget>
           <packing>
             <property name="position">8</property>
@@ -114,7 +114,7 @@
         <child>
           <widget class="GtkLabel" id="label_authentication">
             <property name="visible">True</property>
-            <property name="label" translatable="yes">Authentication server address and port</property>
+            <property name="label" translatable="yes">RexAuthentication server address and port</property>
           </widget>
           <packing>
             <property name="position">10</property>

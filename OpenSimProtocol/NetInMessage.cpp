@@ -1,5 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 #include <iostream>
+
+#include "Poco/Net/DatagramSocket.h" // To get htons etc.
+
 #include "NetInMessage.h"
 #include "ZeroCode.h"
 
@@ -7,11 +10,96 @@
 
 using namespace RexTypes;
 
-NetInMessage::NetInMessage(size_t seqNum, const NetMessageInfo *info, const uint8_t *data, size_t numBytes, bool zeroCoded)
-:messageInfo(info), sequenceNumber(seqNum)
-{
-	assert(info != 0);
+#undef min
 
+namespace
+{
+
+/// Reads the message number from the given byte stream that represents an SLUDP message body.
+/// @param data Pointer to the start of the message body. See NetMessageManager.cpp for a detailed description of the structure.
+/// @param numBytes The number of bytes in data.
+/// @param [out] messageIDLength The number of bytes taken by the VLE-encoding of the message ID.
+/// @return The message number, or 0 to denote an invalid message.
+static NetMsgID ExtractNetworkMessageID(const uint8_t *data, size_t numBytes, size_t *messageIDLength)
+{
+	assert(data || numBytes == 0);
+    assert(messageIDLength);
+
+	// Defend against past-buffer read for malformed packets: What is the max size the packetNumber can be in bytes?
+    int maxMsgNumBytes = std::min((int)numBytes, 4); 
+	if (maxMsgNumBytes <= 0)
+    {
+        *messageIDLength = 0;
+		return 0;
+    }
+	if (maxMsgNumBytes >= 1 && data[0] != 0xFF)
+    {
+        *messageIDLength = 1;
+		return data[0];
+    }
+	if (maxMsgNumBytes >= 2 && data[1] != 0xFF)
+    {
+        *messageIDLength = 2;
+		return ntohs(*(u_short*)&data[0]);
+    }
+	if (maxMsgNumBytes >= 4)
+    {
+        *messageIDLength = 4;
+		return ntohl(*(u_long*)&data[0]);
+    }
+
+	return 0;
+}
+/*
+/// This function skips the messageNumber from the given message body buffer.
+/// @param data A pointer to message body that has *already* been zerodecoded.
+/// @param numBytes The number of bytes in the message body.
+/// @param messageLength [out] The remaining length of the buffer is returned here, in bytes.
+/// @return A pointer to the start of the message content, or 0 if the size of the body is 0 bytes or if the message was malformed.
+static uint8_t *ComputeMessageContentStartAddrAndLength(uint8_t *data, size_t numBytes, size_t *messageLength)
+{
+	// Then there's a VLE-encoded packetNumber (1,2 or 4 bytes) we need to skip: 
+	// Defend against past-buffer read for malformed packets: What is the max size the packetNumber can be in bytes?
+	int maxMsgNumBytes = min((int)numBytes, 4); 
+	if (maxMsgNumBytes <= 0) // Packet too short.
+	{
+		if (messageLength)
+			*messageLength = 0;
+		return 0;
+	}
+	// packetNumber is one byte long.
+	if (maxMsgNumBytes >= 1 && data[0] != 0xFF)
+	{
+		if (messageLength)
+			*messageLength = numBytes - 1;
+		return *messageLength > 0 ? data + 1 : 0;
+	}
+	// packetNumber is two bytes long.
+	if (maxMsgNumBytes >= 2 && data[1] != 0xFF)
+	{
+		if (messageLength)
+			*messageLength = numBytes - 2;
+		return *messageLength > 0 ? data + 2 : 0;
+	}
+	// packetNumber is four bytes long.
+	if (maxMsgNumBytes >= 4)
+	{
+		if (messageLength)
+			*messageLength = numBytes - 4;
+		return *messageLength > 0 ? data + 4 : 0;
+	}
+
+	// The packet was malformed if we get here.
+	if (messageLength)
+		*messageLength = 0;
+	return 0;
+}
+*/
+}
+
+NetInMessage::NetInMessage(size_t seqNum, const uint8_t *data, size_t numBytes, bool zeroCoded)
+:messageInfo(0), sequenceNumber(seqNum)
+{
 	if (zeroCoded)
 	{
 		size_t decodedLength = CountZeroDecodedLength(data, numBytes);
@@ -20,20 +108,52 @@ NetInMessage::NetInMessage(size_t seqNum, const NetMessageInfo *info, const uint
 	}
 	else
 	{
-		messageData.resize(numBytes, 0); ///\todo Can optimize here for extra-extra bit of performance if profiling shows the need for so..
-		for(size_t i = 0; i < numBytes; ++i)
-			messageData[i] = data[i];
+        messageData.reserve(numBytes);
+        messageData.insert(messageData.end(), data, data + numBytes);
 	}
 
-	ResetReading();
+    size_t messageIDLength = 0;
+    messageID = ExtractNetworkMessageID(&messageData[0], numBytes, &messageIDLength);
+    if (messageIDLength == 0)
+        throw Core::Exception("Malformed SLUDP packet read! MessageID not present!");
+    
+    // We remove the messageID from the beginning of the message data buffer, since we just want to store the message content.
+    messageData.erase(messageData.begin(), messageData.begin() + messageIDLength);
+}
+
+NetInMessage::NetInMessage(const NetInMessage &rhs)
+{
+    sequenceNumber = rhs.sequenceNumber;
+    messageInfo = rhs.messageInfo;
+    messageData = rhs.messageData;
+    currentBlock = rhs.currentBlock;
+    currentBlockInstanceNumber = rhs.currentBlockInstanceNumber;
+    currentBlockInstanceCount = rhs.currentBlockInstanceCount;
+    currentVariable = rhs.currentVariable;
+    currentVariableSize = rhs.currentVariableSize;
+    bytesRead = rhs.bytesRead;
+    messageID = rhs.messageID;
 }
 
 NetInMessage::~NetInMessage()
 {
 }
 
+void NetInMessage::SetMessageInfo(const NetMessageInfo *info)
+{
+    assert(messageInfo == 0);
+    assert(info != 0);
+    assert(info->id == messageID);
+
+    messageInfo = info;
+
+	ResetReading();
+}
+
 void NetInMessage::ResetReading()
 {
+    assert(messageInfo);
+
 	currentBlock = 0;
 	currentBlockInstanceNumber = 0;
 	currentVariable = 0;
@@ -280,7 +400,9 @@ NetVariableType NetInMessage::CheckNextVariableType() const
 
 void NetInMessage::AdvanceToNextVariable()
 {
-	if (currentBlock >= messageInfo->blocks.size()) // We're finished reading if currentBlock points past all the blocks.
+    assert(messageInfo);
+
+    if (currentBlock >= messageInfo->blocks.size()) // We're finished reading if currentBlock points past all the blocks.
 		return;
 
 	const NetMessageBlock &curBlock = messageInfo->blocks[currentBlock];
@@ -309,6 +431,8 @@ void NetInMessage::AdvanceToNextVariable()
 
 size_t NetInMessage::ReadCurrentBlockInstanceCount()
 {
+    assert(messageInfo);
+
     const NetMessageBlock &curBlock = messageInfo->blocks[currentBlock];
 	switch(curBlock.type)
 	{
@@ -330,7 +454,9 @@ size_t NetInMessage::ReadCurrentBlockInstanceCount()
 
 void NetInMessage::SkipToNextVariable(bool bytesAlreadyRead)
 {
-	if (currentBlock >= messageInfo->blocks.size()) // We're finished reading if currentBlock points past all the blocks.
+    assert(messageInfo);
+
+    if (currentBlock >= messageInfo->blocks.size()) // We're finished reading if currentBlock points past all the blocks.
 		return;
 
 	const NetMessageBlock &curBlock = messageInfo->blocks[currentBlock];
