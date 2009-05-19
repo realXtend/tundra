@@ -26,8 +26,17 @@
     typedef int LONGLONG;
 #endif
 
+
+
 namespace Foundation
 {
+    class ProfilerNodeTree;
+    namespace
+    {
+        //! For boost::thread_specific_ptr, we don't want it doing automatic deletion
+        void EmptyDeletor(ProfilerNodeTree *node) { }
+    }
+
     //! Profiles a block of code using Windows API function QueryPerformanceCounter
     class ProfilerBlock
     {
@@ -121,9 +130,10 @@ namespace Foundation
         ProfilerNodeTree();
     public:
         typedef std::list<ProfilerNodeTree*> NodeList;
+            
 
         //! constructor that takes a name for the node
-        ProfilerNodeTree(const std::string &name) : name_(name), parent_(NULL), recursion_(0) {}
+        ProfilerNodeTree(const std::string &name) : name_(name), parent_(NULL), recursion_(0) { }
 
         //! destructor
         virtual ~ProfilerNodeTree()
@@ -185,8 +195,11 @@ namespace Foundation
         const NodeList &GetChildren() const { return children_; }
 
     private:
+        //! list of all children for this node
         NodeList children_;
+        //! cached parent node for easy access
         ProfilerNodeTree *parent_;
+        //! Name of this node
         const std::string name_;
 
         //! helper counter for recursion
@@ -212,7 +225,7 @@ namespace Foundation
           elapsed_max_(0.0),
           elapsed_min_current_(0.0),
           elapsed_max_current_(0.0)
-          {}
+          { }
 
         virtual ~ProfilerNode() {}
 
@@ -266,34 +279,55 @@ namespace Foundation
     /*!
         Do not use this class directly for profiling, use instead PROFILE
         and ELIFORP macros.
+
+        \todo Probably a memory leak around here somewhere, too lazy to check for sure if this is the source.
     */
-    class Profiler : public ProfilerNodeTree
+    class Profiler
     {
         friend class Framework;
     private:
-        Profiler() : ProfilerNodeTree(std::string("Root")) { current_node_ = this; ProfilerBlock::QueryCapability(); }
+        Profiler()
+        {
+            //! we don't want thread_specific_ptr to delete this one automatically
+            current_node_ = new boost::thread_specific_ptr<ProfilerNodeTree>(&EmptyDeletor);
+
+            ProfilerBlock::QueryCapability(); 
+        }
     public:
-        ~Profiler() {}
+        ~Profiler() { delete current_node_; }
 
         //! Start a profiling block.
         /*!
             Normally you don't use this directly, instead you use the macro PROFILE.
             However if you want profiling that lasts out of scope, you can use this directly,
             you also need to call matching Profiler::EndBlock()
+
+            Re-entrant.
         */
         void StartBlock(const std::string &name);
         //! End the profiling block
+        /*! Each StartBlock() should have a matching EndBlock(). Recursion is supported.
+            
+            Re-entrant.
+        */
         void EndBlock(const std::string &name);
 
         //! Reset profiling data (should be called between frames
         void Reset();
 
         //! Returns root profiling node
-        ProfilerNodeTree *GetRoot() { return this; }
+        ProfilerNodeTree *GetRoot()
+        { 
+            if (!root_.get())
+                root_.reset(new ProfilerNodeTree("Root"));
+            return root_.get();
+        }
 
     private:
-        //! Cached node topmost in stack
-        ProfilerNodeTree *current_node_;
+        //! Root profiler node
+        boost::thread_specific_ptr<ProfilerNodeTree> root_;
+        //! Cached node topmost in stack, specific to each thread
+        boost::thread_specific_ptr<ProfilerNodeTree> *current_node_;
     };
 
     //! Used by PROFILE - macro to automatically stop profiling clock when going out of scope

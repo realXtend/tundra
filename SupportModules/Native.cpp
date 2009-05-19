@@ -15,11 +15,13 @@ namespace Console
 
         while (true)
         {
+            PROFILE(NativeInput);
             boost::this_thread::interruption_point();
             
             std::string command_line;
             std::getline(std::cin, command_line);
 
+            PROFILE(NativeInput_QueueCommand);
             command_service_->QueueCommand(command_line);
         }
     }
