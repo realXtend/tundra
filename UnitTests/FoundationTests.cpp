@@ -78,7 +78,8 @@ BOOST_AUTO_TEST_CASE( framework_profiler )
         
 
         Foundation::Profiler &profiler = fw.GetProfiler();
-        Foundation::ProfilerNode *node = static_cast<Foundation::ProfilerNode*>(profiler.GetChild("Test_Profile1"));
+        Foundation::ProfilerNodeTree *root = profiler.GetRoot();
+        Foundation::ProfilerNode *node = static_cast<Foundation::ProfilerNode*>(root->GetChild("Test_Profile1"));
         BOOST_CHECK (node != NULL);
         BOOST_CHECK_EQUAL (node->num_called_total_, 1);
         
@@ -91,7 +92,7 @@ BOOST_AUTO_TEST_CASE( framework_profiler )
         BOOST_CHECK (node != NULL);
         BOOST_CHECK_EQUAL (node->num_called_total_, 8);
 
-        node = static_cast<Foundation::ProfilerNode*>(profiler.GetChild("Test_Profile5"));
+        node = static_cast<Foundation::ProfilerNode*>(root->GetChild("Test_Profile5"));
         BOOST_CHECK (node != NULL);
         BOOST_CHECK_EQUAL (node->num_called_total_, total_recursions);
     }

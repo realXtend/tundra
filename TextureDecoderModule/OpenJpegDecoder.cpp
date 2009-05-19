@@ -55,6 +55,7 @@ namespace TextureDecoder
     {
         while (running_)
         {
+            PROFILE(OpenJpegDecoder);
             boost::this_thread::interruption_point();
 
             DecodeRequest current_request;
@@ -73,7 +74,10 @@ namespace TextureDecoder
             if (have_request)
                 PerformDecode(current_request);
             else
+            {
+                PROFILE(OpenJpegDecoder_Sleep);
                 boost::this_thread::sleep(boost::posix_time::milliseconds(20));
+            }
         }
     }
 
@@ -114,6 +118,8 @@ namespace TextureDecoder
 
     void OpenJpegDecoder::PerformDecode(DecodeRequest& request)
     {
+        PROFILE(OpenJpegDecoder_PerformDecode);
+
         DecodeResult result;
 
         result.id_ = request.id_;
