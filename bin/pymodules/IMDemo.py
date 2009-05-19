@@ -115,7 +115,7 @@ class IMDemo:
     def CCloseChannel(self, addr):
         print "CCloseChannel:"
         print "calling connection.close_channel"
-        self.connection.close_channel("addr")
+        self.connection.close_channel(addr)
 
     def CSendChat(self, addr_mess):
         spl = addr_mess.split(':')
