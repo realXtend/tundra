@@ -169,12 +169,13 @@ namespace Communication
 			LogError("Connection to IM server already exist!");
 			return;
 		}
-		std::string CURRENT_USER_ID = "1"; 
+		protocol_ = c->GetProperty("protocol");
+		std::string CURRENT_USER_ID = "1"; // because python side defines this
 		Contact* user_contact = new Contact(CURRENT_USER_ID);
 		user_contact->SetName(c->GetProperty("address")); 
 
 		ContactInfo* info = new ContactInfo();
-		info->SetProperty("protocol", c->GetProperty("protocol") );
+		info->SetProperty("protocol", protocol_ );
 		info->SetProperty("address", c->GetProperty("address") );
 		user_contact->AddContactInfo(ContactInfoPtr(info));
 
@@ -221,48 +222,35 @@ namespace Communication
 	 */
 	IMSessionPtr CommunicationManager::CreateIMSession(ContactPtr contact, ContactPtr originator)
 	{
-		std::string protocol = "jabber";
-
-		// Currently we only support jabber
-		if ( protocol.compare("jabber") == 0)
+		std::string address = contact->GetContactInfo(protocol_)->GetProperty("address");
+		if (address.length() == 0)
 		{
-			ParticipantPtr partner = ParticipantPtr( new Participant(contact) );
-			ParticipantPtr user = ParticipantPtr( new Participant(user_) );
-
-			IMSession* session = NULL;
-			if (contact == originator)
-				session = new IMSession(partner);
-			else
-				session = new IMSession(user);
-			session->id_ = contact->GetContactInfo(protocol)->GetProperty("address"); // todo: some another type to session id 
-			IMSessionPtr session_ptr = IMSessionPtr((IMSessionInterface*)session);
-
-			session->protocol_ = protocol;
-			session->participants_->push_back(partner);
-			session->participants_->push_back(user);
-			session->user_ = user;
-			
-			this->im_sessions_->push_back(session_ptr);
-
-			std::string address = contact->GetContactInfo(protocol)->GetProperty("address");
-			if (address.length() == 0)
-			{
-				LogError("Given contact has no address");
-				return IMSessionPtr();	// TODO: We must handle error in better way
-			}
-
-			CallPythonCommunicationObject("CStartChatSession", address);
-			return session_ptr;
-			// TODO: Get session id from python ?
+			std::string error = "Given contact has no address for protocol";
+			error.append(protocol_);
+			LogError(error);
+			return IMSessionPtr();	// TODO: We must handle error in better way
 		}
 
-		// TODO: Handle error properly
-		std::string error_message;
-		error_message.append("Protocol [");
-		error_message.append(protocol);
-		error_message.append("] is not supported by communication manager.");
-		LogError(error_message);
-		throw error_message;
+		ParticipantPtr partner = ParticipantPtr( new Participant(contact) );
+		ParticipantPtr user = ParticipantPtr( new Participant(user_) );
+
+		IMSession* session = NULL;
+		if (contact == originator)
+			session = new IMSession(partner);
+		else
+			session = new IMSession(user);
+		session->id_ = contact->GetContactInfo(protocol_)->GetProperty("address"); // todo: some another type to session id 
+		IMSessionPtr session_ptr = IMSessionPtr((IMSessionInterface*)session);
+
+		session->participants_->push_back(partner);
+		session->participants_->push_back(user);
+		session->user_ = user;
+		
+		this->im_sessions_->push_back(session_ptr);
+
+		CallPythonCommunicationObject("CStartChatSession", address);
+		return session_ptr;
+		// TODO: Get session id from python ?
 	}
 
 
@@ -355,6 +343,8 @@ namespace Communication
 	{
 		Contact* c = static_cast<Contact*>(contact.get());
 		CallPythonCommunicationObject("CRemoveContact", c->id_);
+		std::string protocol = protocol_;
+		CallPythonCommunicationObject("CRemoveContact", c->GetContactInfo(protocol)->GetProperty("address"));
 	}
 
 	/**
@@ -362,6 +352,8 @@ namespace Communication
 	 */
 	CredentialsPtr CommunicationManager::GetCredentials()
 	{
+		// These are fixe attributes for jabber
+		// todo: figure out better system
 		Credentials* c = new Credentials();
 		c->SetProperty("protocol", "jabber");
 		c->SetProperty("address","");
@@ -623,7 +615,7 @@ namespace Communication
 			Contact* contact = (Contact*) c.get();
 			std::string id = contact->id_;
 			std::string name = contact->GetName();
-			std::string address = contact->GetContactInfo("jabber")->GetProperty("address");
+			std::string address = contact->GetContactInfo(protocol_)->GetProperty("address");
 			std::string online_status = contact->GetPresenceStatus()->GetOnlineStatus();
 			std::string online_message = contact->GetPresenceStatus()->GetOnlineMessage();
 			text.append( id.append(" ").append(address).append(" ").append(online_status).append(" ").append(online_message).append("\n") );
@@ -651,7 +643,7 @@ namespace Communication
 		}
 
 		ContactInfo* info = new ContactInfo();
-		info->SetProperty("protocol", "jabber");
+		info->SetProperty("protocol", protocol_);
 		info->SetProperty("address", params[0]);
 		SendFriendRequest( ContactInfoPtr(info) );
 		return Console::ResultSuccess("Ready.");
@@ -688,7 +680,7 @@ namespace Communication
 		{
 			FriendRequestPtr r = (*i);
 			ContactInfoPtr info = r->GetContactInfo();
-			if ( info->GetProperty("protocol").compare("jabber") == 0 )
+			if ( info->GetProperty("protocol").compare(protocol_) == 0 )
 			{
 				std::string address = info->GetProperty("address");
 				text.append("* ");
@@ -712,7 +704,7 @@ namespace Communication
 		{
 			FriendRequestPtr r = (*i);
 			ContactInfoPtr info = r->GetContactInfo();
-			if ( info->GetProperty("protocol").compare("jabber") == 0 )
+			if ( info->GetProperty("protocol").compare(protocol_) == 0 )
 			{
 				if ( info->GetProperty("address").compare(address) == 0)
 				{
@@ -741,7 +733,7 @@ namespace Communication
 		{
 			FriendRequestPtr r = (*i);
 			ContactInfoPtr info = r->GetContactInfo();
-			if ( info->GetProperty("protocol").compare("jabber") == 0 )
+			if ( info->GetProperty("protocol").compare(protocol_) == 0 )
 			{
 				if ( info->GetProperty("address").compare(address) == 0)
 				{
@@ -827,15 +819,16 @@ namespace Communication
 	 */
 	void CommunicationManager::PyCallbackChannelOpened(char* addr)
 	{
+		CommunicationManager* comm = CommunicationManager::GetInstance();
 		// Find the right session (with participant with given address, this is the only way currently...)
-		IMSessionListPtr sessions = CommunicationManager::GetInstance()->im_sessions_;
+		IMSessionListPtr sessions = comm->im_sessions_;
 		for (IMSessionList::iterator i = sessions->begin() ; i < sessions->end(); i++)
 		{
 			IMSessionPtr s = *i;
 			ParticipantListPtr participants = ((IMSession*)s.get())->GetParticipants();
 			for (ParticipantList::iterator j = participants->begin(); j < participants->end(); j++)
 			{
-				if ( (*j)->GetContact()->GetContactInfo("jabber")->GetProperty("address").compare(addr) == 0)
+				if ( (*j)->GetContact()->GetContactInfo(comm->protocol_)->GetProperty("address").compare(addr) == 0)
 				{
 					// We found the right session so we can be sure that session already exist
 					// we don't have to do anything here
@@ -848,11 +841,10 @@ namespace Communication
 		// There was no session with given address, we have to create one and send proper event
 		// * this happens when session is created by remote partner
 
-		CommunicationManager* comm = CommunicationManager::GetInstance();
 		for (ContactList::iterator i = comm->contact_list_.begin(); i < comm->contact_list_.end(); i++)
 		{
 			ContactPtr c = *i;
-			if ( c->GetContactInfo("jabber")->GetProperty("address").compare(addr) == 0)
+			if ( c->GetContactInfo(comm->protocol_)->GetProperty("address").compare(addr) == 0)
 			{
 				IMSessionPtr s = comm->CreateIMSession(c, c);
 				IMSessionRequestEvent e = IMSessionRequestEvent(s, c);
@@ -861,6 +853,11 @@ namespace Communication
 				text.append(addr);
 				LogInfo(text);
 				return;
+			}
+			else
+			{
+				std::string error = "Cannot craete IM session - unknow originator";
+				LogError(error);
 			}
 		}
 
@@ -905,6 +902,8 @@ namespace Communication
 	 */
 	void CommunicationManager::PyCallbackMessagReceived(char* address_text)
 	{
+		CommunicationManager* comm = CommunicationManager::GetInstance();
+
 		std::string address = GetSplitString(address_text,":",0);
 		std::string text = GetSplitString(address_text,":",1);
 		if (address.length() == 0)
@@ -939,14 +938,14 @@ namespace Communication
 			ParticipantListPtr participants = ((IMSession*)s.get())->GetParticipants();
 			for (ParticipantList::iterator j = participants->begin(); j < participants->end(); j++)
 			{
-				if ( (*j)->GetContact()->GetContactInfo("jabber")->GetProperty("address").compare(address) == 0)
+				if ( (*j)->GetContact()->GetContactInfo(comm->protocol_)->GetProperty("address").compare(address) == 0)
 				{
 					// Found the author of message
 					((IMMessage*)m.get())->author_ = *j;
 
 					((IMSession*)s.get())->NotifyMessageReceived(m);
 					IMMessageEvent e = IMMessageEvent(s,m);
-					CommunicationManager::GetInstance()->event_manager_->SendEvent(CommunicationManager::GetInstance()->comm_event_category_, Communication::Events::IM_MESSAGE, (Foundation::EventDataInterface*)&e);
+					comm->event_manager_->SendEvent(CommunicationManager::GetInstance()->comm_event_category_, Communication::Events::IM_MESSAGE, (Foundation::EventDataInterface*)&e);
 					return;
 				}
 			}
@@ -965,6 +964,7 @@ namespace Communication
      */
 	void CommunicationManager::PycallbackContactReceived(char* id_address)
 	{
+		CommunicationManager* comm = CommunicationManager::GetInstance();
 		LogInfo("PycallbackFriendReceived");
 
 		std::string id = GetSplitString(id_address,":",0);
@@ -979,7 +979,7 @@ namespace Communication
 		}
 
 		ContactInfo* info = new ContactInfo();
-		info->SetProperty("protocol", "jabber");
+		info->SetProperty("protocol", comm->protocol_);
 		info->SetProperty("address", address);
 
 		Contact* c = new Contact(id);
@@ -988,7 +988,7 @@ namespace Communication
 		ContactPtr ptr = ContactPtr( (ContactInterface*)c );
 		CommunicationManager::GetInstance()->contact_list_.push_back(ptr);
 
-		CommunicationManager* comm = CommunicationManager::GetInstance();
+		
 		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_STATE_UPDATE);
 		comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
 
@@ -1131,15 +1131,16 @@ namespace Communication
 	 */
 	void CommunicationManager::PyCallbackFriendRequestLocalPending(char* address)
 	{
+		CommunicationManager* comm = CommunicationManager::GetInstance();
 		ContactInfo* info = new ContactInfo();
-		info->SetProperty("protocol", "jabber");
+		info->SetProperty("protocol", comm->protocol_);
 		info->SetProperty("address", address);
 		FriendRequest* request = new FriendRequest( ContactInfoPtr(info) );
 		FriendRequestPtr r = FriendRequestPtr((FriendRequestInterface*)request);
 		CommunicationManager::GetInstance()->friend_requests_->push_back(r);
 
 		FriendRequestEvent e = FriendRequestEvent(r);
-		CommunicationManager::GetInstance()->event_manager_->SendEvent(CommunicationManager::GetInstance()->comm_event_category_, Communication::Events::FRIEND_REQUEST, (Foundation::EventDataInterface*)&e);
+		comm->event_manager_->SendEvent(CommunicationManager::GetInstance()->comm_event_category_, Communication::Events::FRIEND_REQUEST, (Foundation::EventDataInterface*)&e);
 	}
 
 	/**
@@ -1177,14 +1178,15 @@ namespace Communication
 		int i = 0;
 		do
 		{
-			option = GetSplitString(type_list, ":", i);
+			option = GetSplitString(type_list, ":", i++);
 			if ( option.length() > 0 )
 			{
-				// We don't allow these
-				if ( option.compare("unknown") != 0 && option.compare("offline") != 0 )
-					comm->presence_status_options_.push_back(option);
+				// Filter: We don't allow these because user is not allewed to set them
+				if ( option.compare("unknown") == 0 || option.compare("offline") == 0 || option.compare("error") == 0)
+					continue;
+
+				comm->presence_status_options_.push_back(option);
 			}
-			i++;
 		}
 		while (option.length() > 0);
 

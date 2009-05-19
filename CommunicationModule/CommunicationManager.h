@@ -118,6 +118,7 @@ namespace Communication
 		std::vector<std::string> presence_status_options_;
 		FriendRequestListPtr friend_requests_;
 		ContactPtr user_;
+		std::string protocol_;
 
 		//! python event handlers
 		//! @todo: could these be non-static member functions?

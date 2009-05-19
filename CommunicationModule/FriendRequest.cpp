@@ -19,11 +19,13 @@ namespace Communication
 	void FriendRequest::Accept()
 	{
 		CommunicationManager::GetInstance()->CallPythonCommunicationObject("CAcceptContactRequest", contact_info_->GetProperty("address").c_str() );
+		// todo: remove this from list
 	}
 
 	void FriendRequest::Deny()
 	{
 		CommunicationManager::GetInstance()->CallPythonCommunicationObject("CDenyContactRequest", contact_info_->GetProperty("address").c_str() );
+		// todo: remove this from list
 	}
 
 } // end of namespace: Communication

@@ -319,16 +319,12 @@ namespace CommunicationUI
 
 	void CommunicationUIModule::OnAccountMenuConnect()
 	{
-		// TODO: use user defines credential 
+
         LogInfo("OnAccountMenuConnect");
-        //
-		Communication::Credentials* c = new Communication::Credentials();
-		communication_service_->OpenConnection(Communication::CredentialsPtr(c));
-        /*/
-		std::string str = "CAccountConnect";
-		std::string syntax = "";
-		Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
-        //*/
+
+		Communication::CredentialsPtr c = communication_service_->GetCredentials();
+		// TODO: use user defines credential 
+		communication_service_->OpenConnection(c);
 	}
 	void CommunicationUIModule::OnAccountMenuDisconnect()
 	{
@@ -464,13 +460,16 @@ namespace CommunicationUI
         Gtk::TreeModel::iterator iter = lstContacts.GetSelected();
         if(iter)
         {
-            std::string id = (*iter)[lstContacts.columns_.id_];
             std::string address = (*iter)[lstContacts.columns_.contact_];
 			Communication::ContactPtr c = FindContact(address);
 			if (c)
+			{
 				communication_service_->RemoveContact(c);
-//            Foundation::ScriptObject* ret = CallIMPyMethod("CRemoveContact", "s", contact);
+				return;
+			}
         }
+		std::string error = "Try to remove unknow contact";
+		LogError(error);
     }
 
     void CommunicationUIModule::OnRefresh()
@@ -1196,11 +1195,6 @@ namespace CommunicationUI
         for(std::vector<std::string>::iterator iter = options.begin(); iter < options.end(); iter++)
 		{
 			std::string option = (*iter);
-
-			// we filter these options because user is not allowed to se these
-			// might be a better filter then at communication manager side?
-			if ( option.compare("unknown") == 0 || option.compare("offline") == 0)
-				continue;
 
             cmbPresence.append_text(option);
 
