@@ -19,6 +19,7 @@ include_directories (
     ../ReXLogic
     ../OpenSimProtocol #needed 'cause ReXLogic uses it
     ../OgreRenderingModule #to be able to get placeable component data
+    ../InputModuleOIS
 )
 
 link_directories (${PROJECT_BINARY_DIR}/RexLogic/Debug ${PROJECT_BINARY_DIR}/RexLogic/Release)
