@@ -45,6 +45,17 @@ class Quaternion
 		//! Constructor which converts a matrix to a Quaternion
 		Quaternion(const Matrix4& mat);
 
+		//! Constructor which creates quaternion from rotation angle and rotation axis.
+		/** Axis must be unit length.
+		The Quaternion representing the rotation is
+		q = cos(A/2)+sin(A/2)*(x*i+y*j+z*k).
+		\param angle Rotation Angle in radians.
+		\param axis Rotation axis. */
+		Quaternion(f32 angle, const Vector3df& axis)
+		{
+		    fromAngleAxis(angle, axis);
+		}
+
 		//! Equalilty operator
 		bool operator==(const Quaternion& other) const;
 

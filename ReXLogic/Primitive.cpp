@@ -404,9 +404,8 @@ namespace RexLogic
             // Handle scale mesh to prim-setting
             meshptr->SetScaleToUnity(prim.ScaleToPrim); 
 
-            // Set adjustment orientation for mesh (an arbitrary legacy haxor)
-            Core::Quaternion adjust;
-            adjust.fromAngleAxis(Core::PI/2, Core::Vector3df(0,1,0));
+            // Set adjustment orientation for mesh (a legacy haxor, Ogre meshes usually have Y-axis as vertical)
+            Core::Quaternion adjust(Core::PI/2, 0, Core::PI);
             meshptr->SetAdjustOrientation(adjust);
 
             // Check/request mesh textures
