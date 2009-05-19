@@ -138,6 +138,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 		    call.AddMember("first", firstName_);
 		    call.AddMember("last", lastName_);
 		    call.AddMember("passwd", password_hash);
+			call.AddMember("version", std::string("realXtend bob 0.0.1"));  ///\todo Make build system create versioning information.
          }
 	    else if (authentication_ && callMethod_ == std::string("ClientAuthentication"))
 	    {
@@ -174,7 +175,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 	    }
    
         call.AddMember("start", std::string("last")); // Starting position: last/home
-	    call.AddMember("version", std::string("realXtend 1.20.13.91224"));  ///\todo Make build system create versioning information.
+	    call.AddMember("version", std::string("realXtend bob 0.0.1"));  ///\todo Make build system create versioning information.
 	    call.AddMember("channel", std::string("realXtend"));
 	    call.AddMember("platform", std::string("Win")); ///\todo.
 	    call.AddMember("mac", mac_hash);
@@ -257,6 +258,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 		    // Authentication results
             threadState_->parameters.sessionHash = call.GetReply<std::string>("sessionHash");
             threadState_->parameters.gridUrl = std::string(call.GetReply<std::string>("gridUrl"));
+			//\bug the grid url provided by authentication server points to tcp port, but the grid url is used in the code to connecto to udp port
             threadState_->parameters.avatarStorageUrl = std::string(call.GetReply<std::string>("avatarStorageUrl"));
 		    loginresult = true;
 	    }
@@ -265,6 +267,22 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
             threadState_->parameters.sessionID.FromString(call.GetReply<std::string>("session_id"));
             threadState_->parameters.agentID.FromString(call.GetReply<std::string>("agent_id"));
 		    threadState_->parameters.circuitCode = call.GetReply<int>("circuit_code");
+
+			//\bug related to one 10 lines above. instead of using port defined in authentication server, use the one given by simulator
+			std::string gridUrl = call.GetReply<std::string>("sim_ip");
+			if (gridUrl.size() != 0)
+			{
+				int port = call.GetReply<int>("sim_port");
+				if (port > 0)
+				{
+					std::string s;
+					std::stringstream out;
+					out << port;
+					gridUrl += ":"+out.str();
+
+					threadState_->parameters.gridUrl = gridUrl;
+				}
+			}
 		    loginresult = true;
 	    }
     }
