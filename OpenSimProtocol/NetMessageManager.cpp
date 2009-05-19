@@ -186,10 +186,7 @@ void NetMessageManager::ProcessMessages()
 		// and check if we've seen this packet before.
 		pair<set<uint32_t>::iterator, bool> ret = receivedSequenceNumbers.insert(seqNum);
 		if (ret.second == false) 
-		{
-		    cout << "Dropping duplicate" << endl;
 			continue; // A message with this sequence number has already been given to the application for processing. Drop it this time.
-        }
 
 		// Send ACK for reliable messages.
 		if ((data[0] & NetFlagReliable) != 0)

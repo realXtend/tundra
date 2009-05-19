@@ -34,6 +34,11 @@ namespace OgreRenderer
     
     void EC_OgrePlaceable::SetParent(Foundation::ComponentPtr placeable)
     {
+        if (!dynamic_cast<EC_OgrePlaceable*>(placeable.get()))
+        {
+            OgreRenderingModule::LogError("Attempted to set parent placeable which is not " + NameStatic());
+            return;
+        }
         DetachNode();
         parent_ = placeable;
         AttachNode();
