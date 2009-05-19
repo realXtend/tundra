@@ -267,5 +267,26 @@ namespace RexLogic
         scene->RemoveEntity(objectid);
         rexlogicmodule_->UnregisterFullId(fullid);
         return false;
-    }     
+    }
+   
+    bool Avatar::HandleOSNE_AvatarAnimation(OpenSimProtocol::NetworkEventInboundData* data)   
+    {        
+        data->message->ResetReading();
+        RexUUID avatarid = data->message->ReadUUID();
+     
+        size_t animlistcount = data->message->ReadCurrentBlockInstanceCount();
+        for(size_t i = 0; i < animlistcount; i++)
+        {
+            RexUUID animid = data->message->ReadUUID();
+            Core::s32 animsequence = data->message->ReadS32();     
+        }        
+        
+        size_t animsourcelistcount = data->message->ReadCurrentBlockInstanceCount();
+        for(size_t i = 0; i < animsourcelistcount; i++)
+        {
+            RexUUID objectid = data->message->ReadUUID();  
+        }
+        // PhysicalAvatarEventList not used
+        return false;
+    }  
 }

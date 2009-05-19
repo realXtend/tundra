@@ -17,6 +17,7 @@ namespace RexLogic
 
         bool HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_KillObject(uint32_t objectid);
+        bool HandleOSNE_AvatarAnimation(OpenSimProtocol::NetworkEventInboundData* data);
 
         bool HandleRexGM_RexAppearance(OpenSimProtocol::NetworkEventInboundData* data);
 

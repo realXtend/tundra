@@ -83,6 +83,7 @@ namespace RexLogic
         {
             case RexNetMsgRegionHandshake:              return HandleOSNE_RegionHandshake(netdata); break;
             case RexNetMsgAgentMovementComplete:        return HandleOSNE_AgentMovementComplete(netdata); break;
+            case RexNetMsgAvatarAnimation:              return rexlogicmodule_->GetAvatarHandler()->HandleOSNE_AvatarAnimation(netdata); break;
             case RexNetMsgGenericMessage:               return HandleOSNE_GenericMessage(netdata); break;
             case RexNetMsgLogoutReply:                  return HandleOSNE_LogoutReply(netdata); break;
             case RexNetMsgImprovedTerseObjectUpdate:    return HandleOSNE_ImprovedTerseObjectUpdate(netdata); break;
@@ -250,7 +251,7 @@ namespace RexLogic
                     break;
             }
             
-            ///\todo Unhandled inbound variable 'TextureEntry'.
+            data->message->SkipToNextVariable(); ///\todo Unhandled inbound variable 'TextureEntry'.
         }
         return false;
     }
