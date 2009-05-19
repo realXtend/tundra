@@ -90,13 +90,15 @@ namespace PythonScript
 		// Category id for incoming messages.
 		Core::event_category_id_t inboundCategoryID_;
 
-		// first stab at having a py defined event handler
-		// now just one - eventually could have a list/dict of these?
-		/*
-		PyObject *pName, *pModule, *pDict, *pFunc;
-	    PyObject *pArgs, *pValue;*/
-		Foundation::ScriptObject* chathandler;
-		Foundation::ScriptObject* modulemanager;
+		// the hook to the python-written module manager that passes events on
+		PyObject *pmmModule, *pmmDict, *pmmClass, *pmmInstance;
+	    PyObject *pmmArgs, *pmmValue;
+		//Foundation::ScriptObject* modulemanager;
+		/* can't get passing __VA_ARGS__ to pass my args 
+		   in PythonScriptObject::CallMethod2
+		   so reverting to use the Py C API directly, not using the ScriptObject now
+		   for the modulemanager */
+
 	};
 
 	static void initpymod();

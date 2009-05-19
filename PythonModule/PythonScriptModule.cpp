@@ -74,16 +74,33 @@ namespace PythonScript
 		PythonScript::staticframework = framework_;
 		PythonScript::initpymod(); //initializes the rexviewer module to be imported within py
 
-		//XXX hardcoded loading of the test chat event handler,
-		//the system for defining what to load and how they register to be designed
-		std::string error;
-		chathandler = engine_->LoadScript("chathandler", error); //the module
-		chathandler = chathandler->GetObject("ChatHandler"); //instanciates a class in this module with the given name
+		//load the py written module manager using the py c api directly
+		pmmModule = PyImport_ImportModule("modulemanager");
+		if (pmmModule == NULL) {
+			LogError("Failed to import py modulemanager");
+			return;
+		}
+		pmmDict = PyModule_GetDict(pmmModule);
+		if (pmmDict == NULL) {
+			LogError("Unable to get modulemanager module namespace");
+			return;
+		}
+		pmmClass = PyDict_GetItemString(pmmDict, "ModuleManager");
+		if(pmmClass == NULL) {
+			LogError("Unable get ModuleManager class from modulemanager namespace");
+			return;
+		}
+		if (PyCallable_Check(pmmClass)) {
+			pmmInstance = PyObject_CallObject(pmmClass, NULL); 
+		} else {
+			LogError("Unable to create instance from class ModuleManager");
+		}
 
-		modulemanager = engine_->LoadScript("modulemanager", error); //the pymodule loader & event manager
-		modulemanager = modulemanager->GetObject("ModuleManager"); //instanciates
+		//std::string error;
+		//modulemanager = engine_->LoadScript("modulemanager", error); //the pymodule loader & event manager
+		//modulemanager = modulemanager->GetObject("ModuleManager"); //instanciates
 
-        LogInfo("Module " + Name() + " initialized.");
+        LogInfo("Module " + Name() + " initialized succesfully.");
     }
 
     void PythonScriptModule::PostInitialize()
@@ -127,26 +144,27 @@ namespace PythonScript
 	            msg->SkipToFirstVariableByName("Message");
 	            std::string message = (const char *)msg->ReadBuffer(&bytes_read);
 				
-	            ss << "[" << Core::GetLocalTimeString() << "] " << name << ": " << message << std::endl;
-				LogInfo(ss.str());
+	            //ss << "[" << Core::GetLocalTimeString() << "] " << name << ": " << message << std::endl;
+				//LogInfo(ss.str());
 	            //WriteToChatWindow(ss.str());
 				//can readbuffer ever return null? should be checked if yes. XXX
 
+				PyObject_CallMethod(pmmInstance, "RexNetMsgChatFromSimulator", "ss", name, message);
+
 				/* reusing the PythonScriptObject made for comms.
 				 * the previous method of doing pArgs and PyString_FromString certainly seems safer,
-				 * we must refactor to get this other solution to use those. */
+				 * we must refactor to get this other solution to use those.
 				char** args = new char*[2]; //is this 2 'cause the latter terminates?
 				char* buf1 = new char[1000];
 				strcpy(buf1, message.c_str());
 				args[0] = buf1;
 
 				std::string methodname = "RexNetMsgChatFromSimulator";
-				std::string paramtypes = "s";
-				Foundation::ScriptObject* ret = modulemanager->CallMethod(methodname, paramtypes, args);
+				std::string paramtypes = "s";*/
+				//Foundation::ScriptObject* ret = modulemanager->CallMethod(methodname, paramtypes, args);
 
 				/* previous method of calling a function with an argument tuple
 	            pArgs = PyTuple_New(1); //takes a single argument
-				//pValue = PyInt_FromLong(1); //..which is now just int 1
 				pValue = PyString_FromString(message.c_str());
 				//pValue reference stolen here:
 				PyTuple_SetItem(pArgs, 0, pValue);
@@ -213,6 +231,12 @@ namespace PythonScript
     {        
         framework_->GetServiceManager()->UnregisterService(engine_);
 
+		PyObject_CallMethod(pmmInstance, "exit", "");
+		/*char** args = new char*[2]; //is this 2 'cause the latter terminates?
+		std::string methodname = "exit";
+		std::string paramtypes = ""; //"f"
+		modulemanager->CallMethod2(methodname, paramtypes);*/
+
 		engine_->Uninitialize();
         LogInfo("Module " + Name() + " uninitialized.");
     }
@@ -223,10 +247,12 @@ namespace PythonScript
 		//XXX remove when/as the core has the fps limitter
 		engine_->RunString("import time; time.sleep(0.01);"); //a hack to save cpu now.
 
-		char** args = new char*[2]; //is this 2 'cause the latter terminates?
+		PyObject_CallMethod(pmmInstance, "run", "f", frametime);
+		/*char** args = new char*[2]; //is this 2 'cause the latter terminates?
 		std::string methodname = "run";
-		std::string paramtypes = ""; //"f"
-		modulemanager->CallMethod(methodname, paramtypes, args); 
+		std::string paramtypes = "f";
+		modulemanager->CallMethod2(methodname, paramtypes, 0.05); //;frametime);
+		*/		
     }
 }
 

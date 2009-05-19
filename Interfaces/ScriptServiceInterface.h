@@ -18,6 +18,7 @@ namespace Foundation
 
 		// for syntax parameter see http://docs.python.org/c-api/arg.html
 		virtual ScriptObject* CallMethod(std::string& methodname, std::string& syntax, char* argv[]) = 0;
+		virtual ScriptObject* CallMethod2(std::string& methodname, std::string& syntax, ...) = 0;
 		virtual ScriptObject* CallMethod(std::string& methodname, const std::string& syntax, const ScriptObject* args) = 0;
 		virtual ScriptObject* GetObject(const std::string& objectname) = 0;
 
