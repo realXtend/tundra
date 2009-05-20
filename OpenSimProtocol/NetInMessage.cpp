@@ -367,7 +367,7 @@ const uint8_t *NetInMessage::ReadBuffer(size_t *bytesRead)
 	if (CheckNextVariableType() < NetVarBufferByte ||
 	    CheckNextVariableType() > NetVarBuffer4Bytes)
 	{
-	    throw Core::Exception("Tried to read wrong variable type.");
+	    throw NetMessageException(NetMessageException::ET_VariableTypeMismatch);
     }
     
 	RequireNextVariableType(NetVarNone);

@@ -202,43 +202,53 @@ namespace RexLogic
 
     bool Primitive::HandleRexGM_RexPrimData(OpenSimProtocol::NetworkEventInboundData* data)
     {
-        data->message->ResetReading();
-        data->message->SkipToFirstVariableByName("Parameter");
-        
-        // Variable block begins
-        size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
-        
-        // First instance contains the UUID.
-        RexUUID primuuid(data->message->ReadString());
-                
-        // Calculate full data size
-        size_t fulldatasize = data->message->GetDataSize();
-        size_t bytes_read = data->message->BytesRead();
-        fulldatasize -= bytes_read;
-        
-        // Allocate memory block
         std::vector<Core::u8> fulldata;
-        fulldata.resize(fulldatasize);
-        int offset = 0;
+        RexUUID primuuid;
         
-        // Read the binary data.
-        // The first instance contains always the UUID and rest of instances contain only binary data.
-        // Data for multiple objects are never sent in the same message. All of the necessary data fits in one message.
-        // Read the data:
-        while(data->message->BytesRead() < data->message->GetDataSize())
+        try
         {
-            const Core::u8* readbytedata = data->message->ReadBuffer(&bytes_read);
-            memcpy(&fulldata[offset], readbytedata, bytes_read);
-            offset += bytes_read;
+            data->message->ResetReading();
+            data->message->SkipToFirstVariableByName("Parameter");
+            
+            // Variable block begins
+            size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+            
+            // First instance contains the UUID.
+            primuuid.FromString(data->message->ReadString());
+                    
+            // Calculate full data size
+            size_t fulldatasize = data->message->GetDataSize();
+            size_t bytes_read = data->message->BytesRead();
+            fulldatasize -= bytes_read;
+            
+            // Allocate memory block
+            fulldata.resize(fulldatasize);
+            int offset = 0;
+            
+            // Read the binary data.
+            // The first instance contains always the UUID and rest of instances contain only binary data.
+            // Data for multiple objects are never sent in the same message. All of the necessary data fits in one message.
+            // Read the data:
+            while(data->message->BytesRead() < data->message->GetDataSize())
+            {
+                const Core::u8* readbytedata = data->message->ReadBuffer(&bytes_read);
+                memcpy(&fulldata[offset], readbytedata, bytes_read);
+                offset += bytes_read;
+            }
         }
-
+        catch (Core::Exception& e)
+        {
+            RexLogicModule::LogError("Exception while reading RexPrimData: " + std::string(e.what()));
+            return false;
+        }
+        
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
         // If cannot get the entity, put to pending rexprimdata
         if (entity)           
             HandleRexPrimDataBlob(entity->GetId(), &fulldata[0]);
         else
             pending_rexprimdata_[primuuid] = fulldata;
-        
+            
         return false;
     }
 
