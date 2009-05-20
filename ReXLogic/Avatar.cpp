@@ -25,7 +25,7 @@ namespace RexLogic
         avatar_anims_[RexTypes::RexUUID("aec4610c-757f-bc4e-c092-c6e9caf18daf")] = AVATAR_ANIM_FLY;
         avatar_anims_[RexTypes::RexUUID("1c7600d6-661f-b87b-efe2-d7421eb93c86")] = AVATAR_ANIM_SIT_GROUND;               
     }
-    
+
     Avatar::~Avatar()
     {
     }
@@ -137,8 +137,11 @@ namespace RexLogic
             // Set own avatar
             if (avatar.FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
                 rexlogicmodule_->GetAvatarController()->SetAvatarEntity(entity);
-            
+
             ShowAvatarNameOverlay(avatar.LocalId);
+
+            msg->SkipToFirstVariableByName("JointAxisOrAnchor");
+            msg->SkipToNextVariable(); // To next instance
         }
         
         return false;

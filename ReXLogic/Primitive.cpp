@@ -150,6 +150,8 @@ namespace RexLogic
             prim.HoveringText = msg->ReadString(); 
             msg->SkipToNextVariable();      // TextColor
             prim.MediaUrl = msg->ReadString();
+            msg->SkipToFirstVariableByName("JointAxisOrAnchor");
+            msg->SkipToNextVariable(); // To next instance
         }
         return false;
     }
