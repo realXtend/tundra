@@ -151,7 +151,7 @@ namespace OgreRenderer
 
         text_element_->setDimensions(0.8, 0.8);
         text_element_->setMetricsMode(Ogre::GMM_PIXELS);
-        text_element_->setPosition(0.1, 0.1);
+        text_element_->setPosition(1, 1);
         text_element_->setParameter("font_name", fontName);
         text_element_->setParameter("char_height", font_->getParameter("size"));
 //        text_element_->setCharHeight(0.035f);
