@@ -33,9 +33,8 @@ class ComponentRunner(Component):
         #XXX make some 'autoload' system, perhaps just 'import autoload'?
         #or __all__ in pymodules __init__ ? (i.e. import pymodules would do that)
         #dunno yet, but something. next TODO basically (task xyz)
-        import circuits_testmodule
-        tm = circuits_testmodule.TestModule()
-        m += tm # Equivalent to: tm.register(m)
+        import autoload
+        autoload.load(m)
         
         m.start()
 
@@ -44,7 +43,6 @@ class ComponentRunner(Component):
         self.m.push(Update(deltatime), "update")
         
     def RexNetMsgChatFromSimulator(self, frm, message):
-        frm = "Bob"
         self.m.push(Chat(frm, message), "on_chat")
         
     def INPUT_EVENT(self, evid):

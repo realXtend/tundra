@@ -1,10 +1,11 @@
 class TestModule:
     """Was wish of how a py written module might like to have the system.
-    Is now ported to circuits, so is made a Circuits.Component.
     Was earlier made to work with pyglet, that is in pyglet_testmodule.py
+    The current implementation is the TestModule in circuits_testmodule.py
+
     This could for example be the CommunicationsModule, right?
     Or something that implements as a custom control type..
-    Now attempting a generic test thing."""
+    Here a generic test thing."""
     
     def __init__(self):
         self.data = 1

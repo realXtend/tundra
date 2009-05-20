@@ -1,8 +1,8 @@
 try:
     import rexviewer as r
-except ImportError:
-    #not running under rex
+except ImportError: #not running under rex
     import mockviewer as r
+
 from circuits import Component
 
 inputtests = {
@@ -11,10 +11,12 @@ inputtests = {
 }
 
 class TestModule(Component):
-    """A wish of how a py written module might like to have the system.
+    """Was a wish of how a py written module might like to have the system.
+    Is now ported to circuits, so is made a Circuits.Component.
+    
     This could for example be the CommunicationsModule, right?
     Or something that implements as a custom control type..
-    Now attempting a generic test thing."""
+    Here a generic test thing."""
     
     def __init__(self):
         Component.__init__(self)
