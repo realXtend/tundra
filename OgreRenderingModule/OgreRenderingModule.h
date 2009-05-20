@@ -17,6 +17,8 @@ namespace OgreRenderer
 {
     class Renderer;
     typedef boost::shared_ptr<Renderer> RendererPtr;
+
+    //! \bug Ogre assert fail when viewing a mesh that contains a reference to non-existing skeleton.
     
     /** \defgroup OgreRenderingModuleClient OgreRenderingModule Client Interface
         This page lists the public interface of the OgreRenderingModule.
