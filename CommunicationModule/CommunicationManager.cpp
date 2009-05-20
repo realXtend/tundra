@@ -170,8 +170,7 @@ namespace Communication
 			return;
 		}
 		protocol_ = c->GetProperty("protocol");
-		std::string CURRENT_USER_ID = "1"; // because python side defines this
-		Contact* user_contact = new Contact(CURRENT_USER_ID);
+		Contact* user_contact = new Contact(LOCAL_USER_ID);
 		user_contact->SetName(c->GetProperty("address")); 
 
 		ContactInfo* info = new ContactInfo();
@@ -338,7 +337,6 @@ namespace Communication
 	void CommunicationManager::RemoveContact(ContactPtr contact)
 	{
 		Contact* c = static_cast<Contact*>(contact.get());
-//		CallPythonCommunicationObject("CRemoveContact", c->id_);
 		CallPythonCommunicationObject("CRemoveContact", c->GetContactInfo(protocol_)->GetProperty("address"));
 	}
 
@@ -347,7 +345,7 @@ namespace Communication
 	 */
 	CredentialsPtr CommunicationManager::GetCredentials()
 	{
-		// These are fixe attributes for jabber
+		// These are fixed attributes for jabber
 		// todo: figure out better system
 		Credentials* c = new Credentials();
 		c->SetProperty("protocol", "jabber");
@@ -770,6 +768,8 @@ namespace Communication
 
 		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_OPEN);
 		comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
+
+		comm->RequestPresenceStatuses();
 	}
 
 	/**
@@ -1023,6 +1023,13 @@ namespace Communication
 
 		CommunicationManager* comm = CommunicationManager::GetInstance();
 
+		if (id.compare(LOCAL_USER_ID) == 0)
+		{
+			comm->presence_status_->SetOnlineStatus(status);
+			comm->presence_status_->SetOnlineMessage(message);
+			return;
+		}
+
 		for (ContactList::iterator i = comm->contact_list_.begin(); i != comm->contact_list_.end(); ++i)
 		{
 			ContactPtr c = *(i);
@@ -1161,6 +1168,7 @@ namespace Communication
 	 */
 	void CommunicationManager::PyCallbackFriendRequestRemotePending(char* id)
 	{
+		CommunicationManager::GetInstance()->CallPythonCommunicationObject("CAcceptContactRequest", id);
 	}
 
 	/**
