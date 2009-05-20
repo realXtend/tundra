@@ -9,7 +9,7 @@
 #include <OgreTextAreaOverlayElement.h>
 #include <OgreFontManager.h>
 
-// Code adapted from http://www.ogre3d.org/wiki/index.php/ObjectTextDisplay and
+// Code partly adapted from http://www.ogre3d.org/wiki/index.php/ObjectTextDisplay and
 // http://www.ogre3d.org/wiki/index.php/ObjectTitle
 
 namespace OgreRenderer
@@ -30,6 +30,9 @@ namespace OgreRenderer
         
     {
         camera_ = renderer_.lock()->GetCurrentCamera();
+        windowWidth_ = camera_->getViewport()->getActualWidth();
+        windowHeight_ = camera_->getViewport()->getActualHeight();
+        
         CreateOverlay();
     }
     
@@ -60,7 +63,7 @@ namespace OgreRenderer
 		    return;
 	    }
 	    
-        Ogre::Vector3 point = node_->_getDerivedPosition();
+	    Ogre::Vector3 point = node_->_getDerivedPosition();
                 
 	    // Is the camera facing that point? If not, hide the overlay and return.
 	    Ogre::Plane cameraPlane = Ogre::Plane(Ogre::Vector3(camera_->getDerivedOrientation().zAxis()), camera_->getDerivedPosition());
@@ -80,10 +83,17 @@ namespace OgreRenderer
 	    // Update the position (centering the text)
 	    container_->setPosition(x - (textDim_.x / 2), y);
         
-        // Update the dimensions also, in case that the window is resized.
-	    textDim_ = GetTextDimensions(text_);
-	    container_->setDimensions(textDim_.x, textDim_.y);
-
+        // Update the dimensions also if the window is resized.
+        if (windowWidth_ != camera_->getViewport()->getActualWidth() ||
+            windowHeight_ != camera_->getViewport()->getActualHeight())
+        {
+            windowWidth_ = camera_->getViewport()->getActualWidth();
+            windowHeight_ = camera_->getViewport()->getActualHeight();
+            
+	        textDim_ = GetTextDimensions(text_);
+	        container_->setDimensions(textDim_.x, textDim_.y);
+        }
+        
         ///\todo Scale the text and width and height of the container?	    
 //        text_element_->setMetricsMode(Ogre::GMM_RELATIVE);
 //        text_element_->setPosition(textDim_.x, textDim_.y);
@@ -149,7 +159,6 @@ namespace OgreRenderer
         text_element_ = checked_static_cast<Ogre::TextAreaOverlayElement*>
             (Ogre::OverlayManager::getSingleton().createOverlayElement("TextArea", overlayName_));
 //	    text_element_ = Ogre::OverlayManager::getSingleton().createOverlayElement("TextArea", "shapeNameText");
-
         text_element_->setDimensions(0.8, 0.8);
         text_element_->setMetricsMode(Ogre::GMM_PIXELS);
         text_element_->setPosition(1, 2);
@@ -160,8 +169,11 @@ namespace OgreRenderer
 	    text_element_->setColour(Ogre::ColourValue::Black);
 	    container_->addChild(text_element_);
 	    
-        textDim_ = GetTextDimensions(text_);
-        container_->setDimensions(textDim_.x, textDim_.y);
+	    if(text_ != "")
+	    {
+            textDim_ = GetTextDimensions(text_);
+            container_->setDimensions(textDim_.x, textDim_.y);
+        }
         
         if (visible_)
             overlay_->show();
@@ -170,7 +182,6 @@ namespace OgreRenderer
         
         overlay_->setZOrder(500);
     }
-    
     
     Ogre::Vector2 EC_OgreMovableTextOverlay::GetTextDimensions(const std::string &text)
     {
