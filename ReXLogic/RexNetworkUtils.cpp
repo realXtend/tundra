@@ -178,4 +178,22 @@ namespace RexLogic
         
         return result;
     }    
+    
+    void WriteUInt8ToBytes(uint8_t value, uint8_t* bytes, int& idx)
+    {
+        bytes[idx] = value;
+        idx++;
+    }
+
+    void WriteUInt32ToBytes(uint32_t value, uint8_t* bytes, int& idx)
+    {
+        *(uint32_t*)(&bytes[idx]) = value;
+        idx += sizeof(uint32_t);
+    }
+    
+    void WriteFloatToBytes(float value, uint8_t* bytes, int& idx)
+    {
+        *(float*)(&bytes[idx]) = value;
+        idx += sizeof(float);
+    }
 }
