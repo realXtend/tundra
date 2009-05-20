@@ -312,27 +312,23 @@ namespace Communication
 	}
 
 	/**
-	 *
+	 *  @todo we should add this method to IMSessionInterface too 
+	 *        so the messages to be created can be associate to 
+	 *        automatically to right session (we can set the 
+	 *        author)
 	 */
 	IMMessagePtr CommunicationManager::CreateIMMessage(std::string text)
 	{
-		ParticipantPtr p = ParticipantPtr();
-		IMMessage* m = new IMMessage(p, text);
+		IMMessage* m = new IMMessage(text);
 		return IMMessagePtr(static_cast<IMMessageInterface*>(m));
 	}
 
 	/**
-	 *
+	 *  Send friend request to IM server
 	 */
 	void CommunicationManager::SendFriendRequest(ContactInfoPtr contact_info)
 	{
-		std::string name = "CAddContact";
-		std::string syntax = "s";
-		char** args = new char*[1];
-		char* buf1 = new char[1000];
-		strcpy(buf1, contact_info->GetProperty("address").c_str());
-		args[0] = buf1;
-		this->python_communication_object_->CallMethod(name, syntax, args); // todo: get return value
+		CallPythonCommunicationObject("CAddContact", contact_info->GetProperty("address").c_str());
 	}
 
 	/**
@@ -342,9 +338,8 @@ namespace Communication
 	void CommunicationManager::RemoveContact(ContactPtr contact)
 	{
 		Contact* c = static_cast<Contact*>(contact.get());
-		CallPythonCommunicationObject("CRemoveContact", c->id_);
-		std::string protocol = protocol_;
-		CallPythonCommunicationObject("CRemoveContact", c->GetContactInfo(protocol)->GetProperty("address"));
+//		CallPythonCommunicationObject("CRemoveContact", c->id_);
+		CallPythonCommunicationObject("CRemoveContact", c->GetContactInfo(protocol_)->GetProperty("address"));
 	}
 
 	/**
@@ -750,10 +745,6 @@ namespace Communication
 	}
 
 	/**
-     * PythonScriptModule callback function handlers: 
-	 */
-
-	/**
 	 *  Called by IMDemo.py via PythonScriptModule
 	 *  For internal test from python 
 	 */
@@ -792,7 +783,6 @@ namespace Communication
 		CommunicationManager* comm = CommunicationManager::GetInstance();
         ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_CONNECTING);
         comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);		
-		// todo : Do we need this? Send notify for UI to be "connecting state"?
 	}
 
 	/**
@@ -862,7 +852,7 @@ namespace Communication
 		}
 
 		// The incoming session is from someone who is unknow to us
-		// * We do nothin
+		// * We do nothing
 		// TODO: We can ask user if he wants to allow these messages..
 		std::string text = "Session from unknow address: ";
 		text.append(addr);
@@ -872,25 +862,24 @@ namespace Communication
 
 	/**
 	 *  Called by IMDemo.py via PythonScriptModule
-	 *  When (the only) session is closed by remote end
-	 *  @todo Session id sould be received 
+	 *  When session is closed 
 	 *  @todo in future the sessions should not be depended by actual network connection or open channels
+	 *        at least in ui level. So session can be open even the other participant is offline.
 	 */
 	void CommunicationManager::PyCallbackChannelClosed(char* address)
 	{
+		CommunicationManager* comm = CommunicationManager::GetInstance();
 		LogInfo("Session closed");
 		std::string session_id = address;
-		for (int i = 0; i < CommunicationManager::GetInstance()->im_sessions_->size(); i++)
+		for (IMSessionList::iterator i = comm->im_sessions_->begin(); i != comm->im_sessions_->end(); ++i)
 		{
-			IMSessionPtr s = CommunicationManager::GetInstance()->im_sessions_->at(i);
-			IMSession* im_session = (IMSession*)s.get();
+			IMSessionPtr s = *i;
+			IMSession* im_session = static_cast<IMSession*>(s.get());
 			if ( im_session->id_.compare(session_id) == 0 )
 			{
 				im_session->NotifyClosedByRemote();
 				SessionStateEvent e = SessionStateEvent(s,Events::SessionStateEventInterface::SESSION_END);
 				CommunicationManager::GetInstance()->event_manager_->SendEvent(CommunicationManager::GetInstance()->comm_event_category_, Communication::Events::SESSION_STATE, (Foundation::EventDataInterface*)&e);
-
-				// todo: remove session from im_sessions_
 			}
 		}
 	}
@@ -917,6 +906,8 @@ namespace Communication
 
 		if (CommunicationManager::GetInstance()->im_sessions_->size() == 0)
 		{
+			//\todo Might be a good idea handle also these out of session messages
+			//      Perhaps we could create session
 			std::string t = "";
 			t.append("Message received but there is no sessions!");
 			LogInfo(t);
@@ -930,20 +921,23 @@ namespace Communication
 
 		IMMessagePtr m = CommunicationManager::GetInstance()->CreateIMMessage(text);
 
-		// Find the right session (with given address)
+		// Find the right session (wich includes participant with given address)
+
 		IMSessionListPtr sessions = CommunicationManager::GetInstance()->im_sessions_;
-		for (IMSessionList::iterator i = sessions->begin() ; i < sessions->end(); i++)
+		for (IMSessionList::iterator i = sessions->begin() ; i != sessions->end(); ++i)
 		{
 			IMSessionPtr s = *i;
-			ParticipantListPtr participants = ((IMSession*)s.get())->GetParticipants();
-			for (ParticipantList::iterator j = participants->begin(); j < participants->end(); j++)
+			ParticipantListPtr participants = s->GetParticipants();
+			for (ParticipantList::iterator j = participants->begin(); j != participants->end(); ++j)
 			{
-				if ( (*j)->GetContact()->GetContactInfo(comm->protocol_)->GetProperty("address").compare(address) == 0)
+				ParticipantPtr participant = *j;
+				if (participant->GetContact()->GetContactInfo(comm->protocol_)->GetProperty("address").compare(address) == 0)
 				{
 					// Found the author of message
-					((IMMessage*)m.get())->author_ = *j;
-
+					
+					((IMMessage*)m.get())->author_ = participant;
 					((IMSession*)s.get())->NotifyMessageReceived(m);
+
 					IMMessageEvent e = IMMessageEvent(s,m);
 					comm->event_manager_->SendEvent(CommunicationManager::GetInstance()->comm_event_category_, Communication::Events::IM_MESSAGE, (Foundation::EventDataInterface*)&e);
 					return;
@@ -952,15 +946,20 @@ namespace Communication
 		}
 
 		// error
-		t = "Error: Message from someone out side any sessions";
-		LogError(t);
+		std::string error = "Error: Out of session message received";
+		error.append(address_text);
+		LogError(error);
 	}
 
 	/**
 	 *  Called by IMDemo.py via PythonScriptModule
-	 *  When we get a contact from our contact list from IM server
-	 *  - We build our contact info list here!
-	 *  - Send CONNECTION_STATE - CONNECTION_STATE_UPDATE event because we have now new information from IM server
+	 *  When we get a contact item in our contact list from IM server. 
+	 *  We build the contact list here
+	 *  \param id_address Contact id and IM address in format: <id>:<address>
+	 *
+	 *  Events:
+	 *  - Send CONNECTION_STATE / CONNECTION_STATE_UPDATE event because we have now new information
+	 *    to ui to show
      */
 	void CommunicationManager::PycallbackContactReceived(char* id_address)
 	{
@@ -985,9 +984,8 @@ namespace Communication
 		Contact* c = new Contact(id);
 		c->SetName(address);
 		c->AddContactInfo(ContactInfoPtr(info));
-		ContactPtr ptr = ContactPtr( (ContactInterface*)c );
+		ContactPtr ptr = ContactPtr(static_cast<ContactInterface*>(c));
 		CommunicationManager::GetInstance()->contact_list_.push_back(ptr);
-
 		
 		ConnectionStateEvent e = ConnectionStateEvent(Events::ConnectionStateEventInterface::CONNECTION_STATE_UPDATE);
 		comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
@@ -998,7 +996,7 @@ namespace Communication
 	/**
 	 *  Called by IMDemo.py via PythonScriptModule
 	 *  When presence status has update was received from IM server
-	 *  @param id_status_message format: <id>:<online status>:<online message>
+	 *  \param id_status_message format: <id>:<online status>:<online message>
 	 */
 	void CommunicationManager::PyCallbackPresenceStatusChanged(char* id_status_message)
 	{
@@ -1023,37 +1021,43 @@ namespace Communication
 		t.append(message);
 		LogInfo(t);
 
-		ContactList* contact_list = &CommunicationManager::GetInstance()->contact_list_;
-		for (ContactList::iterator i = contact_list->begin(); i != contact_list->end(); ++i)
+		CommunicationManager* comm = CommunicationManager::GetInstance();
+
+		for (ContactList::iterator i = comm->contact_list_.begin(); i != comm->contact_list_.end(); ++i)
 		{
-			
 			ContactPtr c = *(i);
 			Contact* contact = static_cast<Contact*>(c.get());
-			if (contact->id_.compare(id) == 0 )
+			if (contact->id_.compare(id) == 0)
 			{
 				PresenceStatus* s = static_cast<PresenceStatus*>(c->GetPresenceStatus().get());
 				s->NotifyUpdate(status, message); 
 				PresenceStatusUpdateEvent e = PresenceStatusUpdateEvent(c);
-				CommunicationManager::GetInstance()->event_manager_->SendEvent(CommunicationManager::GetInstance()->comm_event_category_, Communication::Events::PRESENCE_STATUS_UPDATE, (Foundation::EventDataInterface*)&e);
+				comm->event_manager_->SendEvent(comm->comm_event_category_, Communication::Events::PRESENCE_STATUS_UPDATE, (Foundation::EventDataInterface*)&e);
+				return;
 			}
 		}
+
+		std::string error = "Presence status update for unknow contact: ";
+		error.append(id_status_message);
+		LogError(error);
 	}
 
 	/**
 	 *  Called by IMDemo.py via PythonScriptModule
-	 *  When message was sent 
+	 *  When message sent ack is received from IM server
 	 */
 	void CommunicationManager::PyCallbackMessageSent(char* t)
 	{
 		LogInfo("PycallbackMessageSent");
-		// todo: handle this (maybe IMMessage should have status flag for this ?)
+		//\todo: handle this (maybe IMMessage should have ack status flag?)
 	}
 
 	/**
 	 *  Called by IMDemo.py via PythonScriptModule
-	 *  When friend request (permission to subscripe users presence status) was received
+	 *  When friend request (permission to subscripe user's presence status) was received
+	 *  \param address The IM address of originator of this request.
 	 *
-	 *  @todo HANDLE THIS
+	 *  \todo HANDLE THIS
      */
 	void CommunicationManager::PyCallbackFriendRequest(char* address)
 	{
@@ -1077,18 +1081,19 @@ namespace Communication
 	/**
 	 *  Called by IMDemo.py via PythonScriptModule
 	 *  When contact is removed from contact list.
-	 *  This also happens when user send a friend request and get negative answer
-     *  Removes given contact from contact_list_ and send CONNECTION_STATE event
-	 *
-	 *  @todo for some reason we got this message twise, this should be fixed
+	 *  This also happens when user send a friend request and get deby answer
+     *  Removes given contact from contact_list_
+	 *  \note Send CONNECTION_STATE event.
+	 *  \param id Contact id 
+	 *  \todo for some reason we got this message twise, this should be fixed
  	 */
 	void CommunicationManager::PyCallbackContactRemoved(char* id)
 	{
 		CommunicationManager* comm = CommunicationManager::GetInstance();
 
-		for (ContactList::iterator i = comm->contact_list_.begin(); i < comm->contact_list_.end(); i++)
+		for (ContactList::iterator i = comm->contact_list_.begin(); i != comm->contact_list_.end(); ++i)
 		{
-			Contact* contact = (Contact*)((*i).get());
+			Contact* contact = static_cast<Contact*>((*i).get());
 			if (contact->id_.compare(id) == 0)
 			{
 				comm->contact_list_.erase(i);
@@ -1101,15 +1106,16 @@ namespace Communication
 			}
 		}
 
-		std::string text;
-		text.append("ERROR: Cannot remove contact: "); 
-		text.append(id);
-		LogError(text);
+		std::string error;
+		error.append("ERROR: Cannot remove contact, isn't in contact list: "); 
+		error.append(id);
+		LogError(error);
 	}
 
 	/**
 	 *  Called by IMDemo.py via PythonScriptModule
-	 *  When contact is added to contact list on IM server (friend request is accepted)
+	 *  When contact is added to contact list on IM server (friend request is accepted by both participants)
+	 *  \param id Contact id for this new contact 
 	 */
 	void CommunicationManager::PyCallbackContactAdded(char* id)
 	{
@@ -1118,13 +1124,16 @@ namespace Communication
 		text.append(id);
 		LogDebug(text);
 
+		//\todo: Check that will we get the PyCallbackContactReceived or not!
+		//       If not then we have to manually add this contact to our contact list
+
 		CommunicationManager::GetInstance()->RequestPresenceStatuses();
 	}
 
 	/**
 	 *  Called by IMDemo.py via PythonScriptModule
 	 *  When friend request (subscribe request) is received and is waiting for reply
-     *
+     *  \param id ???
 	 *  Send FriendRequestEvent
      *
 	 *  TODO: if we have request friendship first, we should automatically accept this.
@@ -1145,31 +1154,32 @@ namespace Communication
 
 	/**
 	 *  Called by IMDemo.py via PythonScriptModule
-	 *  When friend request id pending on remote side (waiting for accept/deny)
-	 *
-	 *  @todo send some kinf of event
+	 *  When friend request id pending on remote side (waiting for accept/deny) ???
+	 *  \note This is not currently used by IMDemo.py
+	 *  \todo If this is unnecessary callback we should remove this
+	 *  \param id Unknow
 	 */
 	void CommunicationManager::PyCallbackFriendRequestRemotePending(char* id)
 	{
-
 	}
 
 	/**
 	 *  Called by IMDemo.py via PythonScriptModule
 	 *  When friend request was accpeted by user and now the new friend wants to subscribe the user too
-     *
-	 *  We want to subscribe this contact too so we send subsribtion request automatically.
+     *  \param address IM address of new friend
+	 *  We have already accepted friendship so we send subsribtion request automatically here.
 	 */
-	void CommunicationManager::PyCallbackFriendAdded(char* id)
+	void CommunicationManager::PyCallbackFriendAdded(char* address)
 	{
-		CommunicationManager::GetInstance()->CallPythonCommunicationObject("CSendSubscription", id);
+		CommunicationManager::GetInstance()->CallPythonCommunicationObject("CSendSubscription", address);
 	}
 
 	/**
 	 *  Called by IMDemo.py via PythonScriptModule
 	 *  After successfully login.
-     *
-	 *  /param type_list list of available presence status options (<optio1>:<option2>:<option3>...)
+	 *  \param type_list List of available presence status options in format: <optio1>:<option2>:<option3>...
+	 *  \note We filter some options here because it's not allowed to user set those.
+	 *  \note Send CONNECTION_STATE event
 	 */
 	void CommunicationManager::PyCallbackPresenceStatusTypes(char* type_list)
 	{
@@ -1179,9 +1189,8 @@ namespace Communication
 		do
 		{
 			option = GetSplitString(type_list, ":", i++);
-			if ( option.length() > 0 )
+			if (option.length() > 0)
 			{
-				// Filter: We don't allow these because user is not allewed to set them
 				if ( option.compare("unknown") == 0 || option.compare("offline") == 0 || option.compare("error") == 0)
 					continue;
 
@@ -1196,7 +1205,7 @@ namespace Communication
 	}
 
 	/**
-	 * Request presence status update from IM server
+	 *  Requests presence status updates from IM server
 	 */ 
 	void CommunicationManager::RequestPresenceStatuses()
 	{
@@ -1204,17 +1213,17 @@ namespace Communication
 	}
 
 	/**
-	 * Wrapper for calling methods of python object.
-     * The object is python_communication_object_ and methos signature is (string method_name, "", NULL)
+	 *  Wrapper for calling methods of python objects.
+	 *  \param method_name The method name
+     *  \note The calls methods of python_communication_object_ with signature: (string method_name, "", NULL)
 	 */
-	Foundation::ScriptObject* CommunicationManager::CallPythonCommunicationObject(const std::string &method_name) const
+	void CommunicationManager::CallPythonCommunicationObject(const std::string &method_name) const
 	{
 		try
 		{
 			std::string method = method_name;
 			std::string syntax = "";
 			Foundation::ScriptObject* ret = CommunicationManager::GetInstance()->python_communication_object_->CallMethod(method, syntax, NULL);
-			return ret;
 		}
 		catch(...)
 		{
@@ -1224,14 +1233,15 @@ namespace Communication
 			text.append("] with argument [NULL]");
 			LogError(text);
 		}
-		return NULL; 
 	}
 
 	/**
 	 * Wrapper for calling methods of python object.
-     * The object is python_communication_object_ and methos signature is (string method_name, "s", string arg)
+	 *  \param method_name The method name
+	 *  \param arg The string argument for the method
+     *  \note The calls methods of python_communication_object_ with signature: (string method_name, "s", string arg)
 	 */
-	Foundation::ScriptObject* CommunicationManager::CallPythonCommunicationObject(const std::string &method_name, const std::string &arg) const
+	void CommunicationManager::CallPythonCommunicationObject(const std::string &method_name, const std::string &arg) const
 	{
 		try
 		{
@@ -1243,7 +1253,6 @@ namespace Communication
 			std::string method = method_name;
 			std::string syntax = "s";
 			Foundation::ScriptObject* ret = CommunicationManager::GetInstance()->python_communication_object_->CallMethod(method, syntax, args);
-			return ret;
 		}
 		catch(...)
 		{
@@ -1255,7 +1264,6 @@ namespace Communication
 			text.append("]");
 			LogError(text);
 		}
-		return NULL; 
 	}
 
 } // end of namespace: Communication

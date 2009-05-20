@@ -97,20 +97,20 @@ namespace Communication
 		ContactPtr GetContact(std::string id);
 		IMSessionPtr CreateIMSession(ContactPtr contact, ContactPtr originator);
 		void RequestPresenceStatuses();
-		Foundation::ScriptObject* CallPythonCommunicationObject(const std::string &method_name, const std::string &arg) const;
-		Foundation::ScriptObject* CallPythonCommunicationObject(const std::string &method_name) const;
+		void CallPythonCommunicationObject(const std::string &method_name, const std::string &arg) const;
+		void CallPythonCommunicationObject(const std::string &method_name) const;
 
-		// static variables
+		// static variables for python callbacks
 		static CommunicationManager* instance_;
 
 		// member variables
 		bool initialized_; // in such state that the service can be registered
-		bool connected_; // todo: replace this with "Connection" or "ConnectionStatus" object
+		bool connected_; // \todo replace this with "Connection" or "ConnectionStatus" object
 		Foundation::Framework* framework_;
 		Foundation::ScriptObjectPtr communication_py_script_; 
 		Foundation::ScriptObjectPtr python_communication_object_; 
 		Foundation::EventManagerPtr event_manager_;
-		Core::event_category_id_t comm_event_category_; // todo: could be static 
+		Core::event_category_id_t comm_event_category_; // \todo could be static 
 
 		IMSessionListPtr im_sessions_;
 		ContactList contact_list_;
@@ -120,9 +120,9 @@ namespace Communication
 		ContactPtr user_;
 		std::string protocol_;
 
-		//! python event handlers
-		//! @todo: could these be non-static member functions?
-		//! @todo: could we handle memory allocation in some another way with these function parameters?
+		// python event handlers
+		// \todo: could these be non-static member functions?
+		// \todo: could we handle memory allocation in some another way with these function parameters?
 		static void PyCallbackTest(char *);
 		static void PyCallbackConnected(char*);
 		static void PyCallbackConnecting(char*);

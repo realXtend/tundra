@@ -14,9 +14,11 @@ namespace Communication
 	{
 	public:
 		Participant(ContactPtr contact);
-		virtual ContactPtr GetContact();
+		virtual ContactPtr GetContact() const;
+//		virtual ContactInfoPtr GetCurrentContactInfo() const;
 	protected:
 		ContactPtr contact_;
+//		ParticipantPrt current_contact_info_; 
 		IMMessageListPtr im_messages_;
 		std::string last_message_time_stamp_;
 		int message_count_;

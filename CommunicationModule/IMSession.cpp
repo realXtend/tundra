@@ -79,6 +79,9 @@ namespace Communication
 		im_messages_.push_back(m);
 	}
 
+	/*
+	 *  Updates message history
+	 */
 	void IMSession::NotifyMessageReceived(IMMessagePtr m)
 	{
 		im_messages_.push_back(m);

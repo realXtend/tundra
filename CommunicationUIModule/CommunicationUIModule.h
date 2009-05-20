@@ -14,7 +14,6 @@
 
 #include "ModuleInterface.h"
 #include "ContactList.h"
-//#include "PythonScriptModule.h"
 
 namespace CommunicationUI
 {
@@ -66,41 +65,6 @@ namespace CommunicationUI
 		Core::event_category_id_t communication_event_category_id_;
 
 	private:
-		// event handlers
-		static void testCallback(char*);
-		static void connected(char*);
-		static void connecting(char*);
-		static void disconnected(char*);
-		static void channelOpened(char*);
-		static void channelClosed(char*);
-		static void messagReceived(char*);
-		static void contactReceived(char* t);
-        static void contactStatusChanged(char*);
-        static void handleAvailableStatusList(char*);
-        static void handleRegisteringSuccess(char*);
-        static void handleRegisteringFailure(char*);
-
-
-
-        static void contactAdded(char*);
-        static void contactAddedToPublishList(char*);
-        static void contactRemoved(char*);
-        static void remotePending(char*);
-        static void localPending(char*);
-
-        static void incomingRequest(char*);
-
-        
-
-		void setOnlineStatus(char* status);
-    public:
-        static Foundation::ScriptObject* CallIMPyMethod(char* method, char* syntax, std::string& param);
-    private:
-
-        static std::vector<std::string> SplitString(const std::string &inString, const std::string &separator, const int &splitAmount);
-
-
-	private:
 		void initializeMainCommWindow();
 		void SetupCommunicationServiceUsage();
 		void OnAccountMenuSettings();
@@ -126,11 +90,6 @@ namespace CommunicationUI
         void OnRefresh();
         void OnComboChange();
 
-        void reloadIMScript();
-        void setupSciptInterface();
-        void clearContactList();
-
-        void testDialog();
 		void UpdateOnlineStatusList();
 		void UpdateContactList();
 		Communication::ContactPtr FindContact(std::string address);
@@ -142,14 +101,6 @@ namespace CommunicationUI
 		Communication::FriendRequestPtr	FindFriendRequest(std::string address);
 		void SaveCredentials(Communication::CredentialsPtr c);
 		Communication::CredentialsPtr LoadCreadentials();
-
-
-
-        // adds contact to ui contact list
-		void addContactItem(char *);
-
-        // could be in python module as utility method (reservers memory)
-        static char** buildOneStringParamArrayFromConstCharArray(const char* prm);
 
 		Glib::RefPtr<Gnome::Glade::Xml> commUI_XML;
 
@@ -171,50 +122,21 @@ namespace CommunicationUI
         Gtk::ComboBoxText cmbPresence;
         Gtk::Label* lblPresenceStatus;
         
-
-        //class PresenceColumns : public Gtk::TreeModel::ColumnRecord
-        //{
-        //    public:
-        //    PresenceColumns()
-        //    { add(presence_); add(message_); }
-
-        //    Gtk::TreeModelColumn<Glib::ustring> presence_;
-        //    Gtk::TreeModelColumn<Glib::ustring> message_;
-        //};
-        //PresenceColumns presenceCols_;
-
-        //Glib::RefPtr<Gtk::ListStore> presenceModel_;
-
-
 	protected:
 
 		int entryret_;
 			
 	public:
-		ChatSessionUIPtr session_;
-	    std::map<std::string, ChatSessionUIPtr> chatSessions_;
+//		ChatSessionUIPtr session_;
+	    std::map<std::string, ChatSessionUIPtr> chatSessions_; // todo: do we need a map here?
 
 	private:
 		// Service References
-//		boost::shared_ptr<Foundation::Comms::CommunicationManagerServiceInterface> commManager;
 		Communication::CommunicationServicePtr communication_service_;
 
-		boost::shared_ptr<Foundation::ScriptServiceInterface> scriptService;
-
-		// Scripts
-		Foundation::ScriptObject* sobj;
-		Foundation::ScriptObject* imScriptObject;
-
-		// Pointer to ui instance (needed for accessing from static methods, which are needed for event passsing)
-		static CommunicationUIModule* instance_;
-		//Foundation::CommunicationUIManagerPtr CommunicationUI_manager_;
-
-		std::map<std::string, std::string> contactList_;
 		Communication::ContactListPtr contact_list_;
 		typedef std::map<std::string, Communication::FriendRequestPtr> FriendRequestMap;
 		FriendRequestMap friend_requests_;
-
-
 	};
 }
 #pragma warning( pop )
