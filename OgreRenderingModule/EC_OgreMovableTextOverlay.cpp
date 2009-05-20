@@ -78,17 +78,18 @@ namespace OgreRenderer
 	    float y = 1 - ((point.y / 2) + 0.5f);
 
 	    // Update the position (centering the text)
-	    float offset = y / 9;
 	    container_->setPosition(x - (textDim_.x / 2), y);
-//        text_element_->setPosition(textDim_.x / 2, 0.1);
+        
+        // Update the dimensions also, in case that the window is resized.
+	    textDim_ = GetTextDimensions(text_);
+	    container_->setDimensions(textDim_.x, textDim_.y);
 
-        ///\todo Scale the text and width and height of the container.
-
+        ///\todo Scale the text and width and height of the container?	    
+//        text_element_->setMetricsMode(Ogre::GMM_RELATIVE);
+//        text_element_->setPosition(textDim_.x, textDim_.y);
 //        text_element_->setPosition(textDim_.x / 10, 0.01);
 //        text_element_->setCharHeight(max_x - min_x/*2*0.0175f*///);
-	    
-	    ///\todo Update container's width and height.
-//        container_->setDimensions(textDim_.x, textDim_.y);
+       
 	    overlay_->show();
     }
     
@@ -151,7 +152,7 @@ namespace OgreRenderer
 
         text_element_->setDimensions(0.8, 0.8);
         text_element_->setMetricsMode(Ogre::GMM_PIXELS);
-        text_element_->setPosition(1, 1);
+        text_element_->setPosition(1, 2);
         text_element_->setParameter("font_name", fontName);
         text_element_->setParameter("char_height", font_->getParameter("size"));
 //        text_element_->setCharHeight(0.035f);
