@@ -3,6 +3,11 @@
 #ifndef incl_Avatar_h
 #define incl_Avatar_h
 
+namespace OgreRenderer
+{
+    class EC_OgrePlaceable;
+}
+
 #include "NetworkEvents.h"
 #include "RexUUID.h"
 
@@ -24,14 +29,26 @@ namespace RexLogic
 
         void HandleTerseObjectUpdate_30bytes(const uint8_t* bytes);
         void HandleTerseObjectUpdateForAvatar_60bytes(const uint8_t* bytes);
+        
+        /// Update the avatar name overlay positions.
+        void UpdateAvatarNameOverlayPositions();
 
     private:
         RexLogicModule *rexlogicmodule_;
-
+        
         //! @return The entity corresponding to given id AND uuid. This entity is guaranteed to have an existing EC_OpenSimAvatar component.
         //!         Does not return null. If the entity doesn't exist, an entity with the given entityid and fullid is created and returned.
         Scene::EntityPtr GetOrCreateAvatarEntity(Core::entity_id_t entityid, const RexUUID &fullid);
         Scene::EntityPtr CreateNewAvatarEntity(Core::entity_id_t entityid);
+        
+        //! Creates the name overlay above the avatar.
+        //! @param placeable EC_OgrePlaceable entity component.
+        //! @param entity_id Entity id of the avatar.
+        void CreateNameOverlay(OgreRenderer::EC_OgrePlaceable &placeable, Core::entity_id_t entity_id);
+        
+        //! Show the avatar name overlay.
+        //! @param entity_id Entity id of the avatar.
+        void Avatar::ShowAvatarNameOverlay(Core::entity_id_t entity_id);
         
         //! Animation map
         typedef std::map<RexTypes::RexUUID,int> AvatarAnimationMap;

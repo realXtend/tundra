@@ -6,10 +6,18 @@
 #include "RexTypes.h"
 #include "RexUUID.h"
 
+namespace Ogre
+{
+    class ManualObject;
+}
+
 namespace RexLogic
 {       
     //! Creates an OBB for debug visualization of the extents of the given scene object.
-    void DebugCreateOgreBoundingBox(Foundation::ModuleInterface *module, const Foundation::ComponentInterfacePtr ogrePlaceable, const std::string &materialName);
+    Ogre::ManualObject *DebugCreateOgreBoundingBox(
+        Foundation::ModuleInterface *module,
+        const Foundation::ComponentInterfacePtr ogrePlaceable,
+        const std::string &materialName);
     
     //! Helper functions for getting values from terseupdate packets
     Core::Quaternion GetProcessedQuaternion(const uint8_t* bytes);

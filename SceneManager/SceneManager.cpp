@@ -13,9 +13,8 @@ namespace Scene
     {
         ScenePtr new_scene = framework_->CreateScene(newName);
         if (new_scene)
-        {
-		*new_scene = *this;
-        }
+            *new_scene = *this;
+
         return new_scene;
     }
 
