@@ -238,15 +238,22 @@ namespace RexLogic
         // Variable block begins
         size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
 
-        std::string avataraddress = data->message->ReadString();
-        RexUUID avatarid(data->message->ReadString());
-        bool overrideappearance = ParseBool(data->message->ReadString());
-        
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
-        if(entity)
+        bool overrideappearance = false;
+
+        if (instance_count >= 2)
         {
-            EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());        
-            avatar.SetAppearanceAddress(avataraddress,overrideappearance);
+            std::string avataraddress = data->message->ReadString();
+            RexUUID avatarid(data->message->ReadString());
+        
+            if (instance_count >= 3)
+                overrideappearance = ParseBool(data->message->ReadString());
+        
+            Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
+            if(entity)
+            {
+                EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());        
+                avatar.SetAppearanceAddress(avataraddress,overrideappearance);
+            }
         }
         
         return false;
