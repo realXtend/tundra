@@ -108,6 +108,12 @@ namespace OgreRenderer
 
         //! The renderer, need reference to check if renderer is still alive.
         boost::weak_ptr<Renderer> renderer_;
+        
+        //! The window width during the overlay construction.
+        int windowWidth_;
+        
+        //! The window height during the overlay construction.
+        int windowHeight_;
     };
 }
 
