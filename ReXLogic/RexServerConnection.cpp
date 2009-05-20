@@ -10,6 +10,7 @@
 #include "QuatUtils.h"
 #include "ConversionUtils.h"
 #include "SceneManager.h"
+#include "RexNetworkUtils.h"
 
 namespace RexLogic
 {
@@ -177,6 +178,7 @@ namespace RexLogic
 			// Send the necessary UDP packets.
 			SendUseCircuitCodePacket();
 			SendCompleteAgentMovementPacket();
+			SendAgentThrottlePacket();
 			
 			RexLogicModule::LogInfo("Connected to server " + serverAddress_ + ".");
 		}
@@ -218,6 +220,7 @@ namespace RexLogic
         m->AddU32(myInfo_.circuitCode);
         m->AddUUID(myInfo_.sessionID);
         m->AddUUID(myInfo_.agentID);
+        m->MarkReliable();
         
         FinishMessageBuilding(m);
 	}
@@ -233,6 +236,39 @@ namespace RexLogic
         m->AddUUID(myInfo_.agentID);
         m->AddUUID(myInfo_.sessionID);
         m->AddU32(myInfo_.circuitCode);
+        m->MarkReliable();
+        
+        FinishMessageBuilding(m);
+    }
+    
+    void RexServerConnection::SendAgentThrottlePacket()
+    {
+        if(!connected_)
+            return;
+
+        Core::f32 max_bits_per_second = framework_->GetDefaultConfig().DeclareSetting("RexLogicModule", "max_bits_per_second", 1000000.0f);
+        
+        int idx = 0;
+        static const size_t size = 7 * sizeof(Core::f32);
+        Core::u8 throttle_block[size];
+        
+        WriteFloatToBytes(max_bits_per_second * 0.1f, throttle_block, idx); // resend
+        WriteFloatToBytes(max_bits_per_second * 0.1f, throttle_block, idx); // land
+        WriteFloatToBytes(max_bits_per_second * 0.02f, throttle_block, idx); // wind
+        WriteFloatToBytes(max_bits_per_second * 0.02f, throttle_block, idx); // cloud
+        WriteFloatToBytes(max_bits_per_second * 0.25f, throttle_block, idx); // task
+        WriteFloatToBytes(max_bits_per_second * 0.26f, throttle_block, idx); // texture
+        WriteFloatToBytes(max_bits_per_second * 0.25f, throttle_block, idx); // asset
+        
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentThrottle);
+        assert(m);
+
+        m->AddUUID(myInfo_.agentID);
+        m->AddUUID(myInfo_.sessionID);
+        m->AddU32(myInfo_.circuitCode);
+        m->AddU32(0); // Generation counter
+        m->AddBuffer(size, throttle_block); // throttles
+        m->MarkReliable();
         
         FinishMessageBuilding(m);
     }
