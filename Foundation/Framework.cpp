@@ -356,7 +356,6 @@ namespace Foundation
 
     Console::CommandResult Framework::ConsoleProfile(const Core::StringVector &params)
     {
-        throw Core::Exception("blah");
         boost::shared_ptr<Console::ConsoleServiceInterface> console = GetService<Console::ConsoleServiceInterface>(Foundation::Service::ST_Console).lock();
         if (console)
         {
