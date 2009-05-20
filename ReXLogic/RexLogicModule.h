@@ -15,10 +15,15 @@ namespace RexLogic
     class NetworkStateEventHandler;
     class CameraController;
     class Terrain;
-    class Avatar;    class Primitive;    class Sky;    class Water;    class RexLoginWindow;    typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
+    class Avatar;
+    class Primitive;
+    class Sky;
+    class Water;
+    class RexLoginWindow;
+    
+    typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
     typedef boost::shared_ptr<AvatarController> AvatarControllerPtr;
     typedef boost::shared_ptr<CameraController> CameraControllerPtr;
-
     typedef boost::weak_ptr<Terrain> TerrainWeakPtr;
     typedef boost::shared_ptr<Terrain> TerrainPtr;
     typedef boost::shared_ptr<Water> WaterPtr;

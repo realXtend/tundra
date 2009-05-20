@@ -6,7 +6,9 @@
 #include "RexLogicModule.h"
 #include "EC_OpenSimAvatar.h"
 #include "EC_NetworkPosition.h"
+#include <Ogre.h>
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
+#include "../OgreRenderingModule/EC_OgreMovableTextOverlay.h"
 #include "../OgreRenderingModule/Renderer.h"
 #include "ConversionUtils.h"
 
@@ -61,16 +63,20 @@ namespace RexLogic
         Core::StringVector defaultcomponents;
         defaultcomponents.push_back(EC_OpenSimAvatar::NameStatic());
         defaultcomponents.push_back(EC_NetworkPosition::NameStatic());
-        defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());        
+        defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
+        defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
         
-        Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents);
- 
-        Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());  
+        Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents);
+
+        Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
         if (placeable)
         {
             OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
             ogrepos.SetScale(Vector3(0.5,0.5,1.5));
-            DebugCreateOgreBoundingBox(rexlogicmodule_, entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()),"AmbientGreen");
+            DebugCreateOgreBoundingBox(rexlogicmodule_,
+                entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()), "AmbientGreen");
+            
+            CreateNameOverlay(ogrepos, entityid);
         }
         
         return entity;
@@ -94,9 +100,10 @@ namespace RexLogic
             msg->SkipToNextVariable();		// CRC U32 ///\todo Unhandled inbound variable 'CRC'.
             uint8_t pcode = msg->ReadU8();
 
-            Scene::EntityPtr entity = GetOrCreateAvatarEntity(localid,fullid);
+            Scene::EntityPtr entity = GetOrCreateAvatarEntity(localid, fullid);
             if (!entity)
                 return false;
+                
             EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());
             EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(entity->GetComponent(EC_NetworkPosition::NameStatic()).get());
 
@@ -130,6 +137,8 @@ namespace RexLogic
             // Set own avatar
             if (avatar.FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
                 rexlogicmodule_->GetAvatarController()->SetAvatarEntity(entity);
+            
+            ShowAvatarNameOverlay(avatar.LocalId);
         }
         
         return false;
@@ -309,4 +318,61 @@ namespace RexLogic
                 
         return false;
     }     
+    void Avatar::UpdateAvatarNameOverlayPositions()
+    {
+        Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+        if (!scene)
+            return;
+        
+        for(Scene::SceneManagerInterface::EntityIterator iter = scene->begin();
+            iter != scene->end(); ++iter)
+        {
+            Scene::EntityInterface &entity = *iter;
+            Foundation::ComponentPtr overlay_ptr = entity.GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+            if (!overlay_ptr)
+                continue;
+            
+            OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay_ptr.get());
+            name_overlay.Update();
+        }
+    }
+    
+    void Avatar::CreateNameOverlay(OgreRenderer::EC_OgrePlaceable &placeable, Core::entity_id_t entity_id)
+    {
+        Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+        if (!scene)
+            return;
+        
+        Scene::EntityPtr entity = scene->GetEntity(entity_id);
+        if (!entity)
+            return;
+        
+        Foundation::ComponentPtr overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+        EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());
+        if (overlay)
+        {
+            OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
+            name_overlay.SetText(avatar.GetFullName());
+            name_overlay.SetParentNode(placeable.GetSceneNode());
+        }
+    }   
+    void Avatar::ShowAvatarNameOverlay(Core::entity_id_t entity_id)
+    {
+        Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+        if (!scene)
+            return;
+        
+        Scene::EntityPtr entity = scene->GetEntity(entity_id);
+        if (!entity)
+            return;
+        
+        Foundation::ComponentPtr overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+        EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());
+        if (overlay)
+        {
+            OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
+            name_overlay.SetText(avatar.GetFullName());
+            name_overlay.SetVisible(true);
+        }
+    }
 }

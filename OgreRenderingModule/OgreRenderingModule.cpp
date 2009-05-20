@@ -14,6 +14,8 @@
 #include "EC_OgreSky.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreConsoleOverlay.h"
+#include "EC_OgreTextOverlay.h"
+#include "EC_OgreMovableTextOverlay.h"
 #include "OgreGtkWindowModule.h"
 
 
@@ -42,6 +44,8 @@ namespace OgreRenderer
         DECLARE_MODULE_EC(EC_OgreSky);
         DECLARE_MODULE_EC(EC_OgreCustomObject);
         DECLARE_MODULE_EC(EC_OgreConsoleOverlay);
+        DECLARE_MODULE_EC(EC_OgreTextOverlay);
+        DECLARE_MODULE_EC(EC_OgreMovableTextOverlay);
 
         AutoRegisterConsoleCommand(Console::CreateCommand(
                 "RenderStats", "Prints out render statistics.", 

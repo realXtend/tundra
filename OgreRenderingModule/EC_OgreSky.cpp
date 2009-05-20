@@ -72,6 +72,7 @@ void EC_OgreSky::CreateSky(bool show)
             OgreRenderingModule::LogError("Could not set SkyBox: " + std::string(e.what()));
             return;
         }                
+        
         skyEnabled_ = true;
         break;
     }
@@ -87,13 +88,12 @@ void EC_OgreSky::CreateSky(bool show)
             OgreRenderingModule::LogError("Could not set SkyDome: " + std::string(e.what()));
             return;
         }
-        
+
         skyEnabled_ = true;
         break;
-        
     case SKYTYPE_PLANE:
         try
-        {   
+        {
             ///\todo
             Ogre::Plane plane;
             plane.d = 1000;
@@ -107,8 +107,7 @@ void EC_OgreSky::CreateSky(bool show)
         }
         
         skyEnabled_ = true;
-        break;    
-        
+        break;
     case SKYTYPE_NONE:
     default:
         skyEnabled_ = false;

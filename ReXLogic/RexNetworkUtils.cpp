@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "RexNetworkUtils.h"
 #include "RexLogicModule.h"
 #include "QuatUtils.h"
 #include "ConversionUtils.h"
@@ -15,12 +16,16 @@
 namespace RexLogic
 {    
     /// Creates a bounding box (consisting of lines) into the Ogre scene hierarchy. This function will be removed or refactored later on, once proper material system is present. -jj.
-    void DebugCreateOgreBoundingBox(Foundation::ModuleInterface *module, Foundation::ComponentInterfacePtr ogrePlaceable, const std::string &materialName)
+    Ogre::ManualObject *DebugCreateOgreBoundingBox(
+        Foundation::ModuleInterface *module,
+        Foundation::ComponentInterfacePtr ogrePlaceable,
+        const std::string &materialName)
     {
         OgreRenderer::EC_OgrePlaceable &component = dynamic_cast<OgreRenderer::EC_OgrePlaceable&>(*ogrePlaceable.get());
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>
+            (Foundation::Service::ST_Renderer).lock();
         if (!renderer)
-            return;
+            return 0;
 
         Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
 
@@ -79,6 +84,8 @@ namespace RexLogic
        
         Ogre::SceneNode *node = component.GetSceneNode();
         node->attachObject(manual);
+        
+        return manual;
     }
 
     bool ParseBool(const std::string &value)

@@ -29,6 +29,7 @@
 #include "../OgreRenderingModule/Renderer.h"
 #include "../OgreRenderingModule/OgreTextureResource.h"
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
+#include "../OgreRenderingModule/EC_OgreMovableTextOverlay.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -243,7 +244,6 @@ namespace RexLogic
             else
                 GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
         }
-
         if (rexserver_connection_->IsConnected())
         {
             boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -267,6 +267,9 @@ namespace RexLogic
                 }
             }
         }
+
+        // Update avatar name overlay positions.
+        GetAvatarHandler()->UpdateAvatarNameOverlayPositions();
     }
 
     // virtual
@@ -493,10 +496,9 @@ namespace RexLogic
     {
         IDMap::iterator iter = UUIDs_.find(fullid);
         if (iter != UUIDs_.end())
-            UUIDs_.erase(iter);    
-    } 
-
-
+            UUIDs_.erase(iter);
+    }
+    
     void RexLogicModule::HandleInterpolation(Core::f64 frametime)
     {
         //! \todo probably should not be directly in RexLogicModule
