@@ -8,16 +8,13 @@ class ModuleManager:
     """here was using 'on_chat' but changed to viewer event names,
     perhaps clearest as these are what the viewer calls,
     core authors know exactly which is which here."""
-    def RexNetMsgChatFromSimulator(self, m): #frm, message):
+    def RexNetMsgChatFromSimulator(self, frm, message):
         pass
-        print "Manager got on_chat", m #frm, message
+        print "Manager got on_chat", frm, message
         
-    def MOVE_FORWARD_PRESSED(self):
-        print "|"
-        
-    def MOVE_FORWARD_RELEASED(self):
-        print "_"
-        
+    def INPUT_EVENT(self, evid):
+        print "Manager got input event:", evid
+                
     def exit(self):
         print "exiting module manager"
         pass

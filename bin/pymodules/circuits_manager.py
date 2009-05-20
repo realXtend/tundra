@@ -11,65 +11,57 @@ use the manager, nothing of the Manager itself yet.
 
 from circuits import handler, Event, Component, Manager
 
-# Create a new Manager
-m = Manager()
-
 class Update(Event): pass     
 class Chat(Event): pass    
-class MoveForwardPressed(Event): pass
-class MoveForwardReleased(Event): pass
-
+class Input(Event): pass
+    
 class ComponentRunner(Component):
+    instance = None
+
     def __init__(self):
+        # instanciated from the c++ side, as modulemanager there
+        assert self.instance is None
+        ComponentRunner.instance = self #is used as a singleton now
+
+        # Create a new circuits Manager
+        self.m = Manager()
+
         Component.__init__(self)
+        
+        m = self.m
+        
+        #XXX make some 'autoload' system, perhaps just 'import autoload'?
+        #or __all__ in pymodules __init__ ? (i.e. import pymodules would do that)
+        #dunno yet, but something. next TODO basically (task xyz)
+        import circuits_testmodule
+        tm = circuits_testmodule.TestModule()
+        m += tm # Equivalent to: tm.register(m)
+        
         m.start()
 
     def run(self, deltatime=0.1):
         #print ".",
-        m.push(Update(deltatime), "update")
+        self.m.push(Update(deltatime), "update")
         
-    def RexNetMsgChatFromSimulator(self, message): #frm, message):
+    def RexNetMsgChatFromSimulator(self, frm, message):
         frm = "Bob"
-        m.push(Chat(frm, message), "on_chat")
+        self.m.push(Chat(frm, message), "on_chat")
         
-    def MOVE_FORWARD_PRESSED(self):
-        m.push(MoveForwardPressed(), "on_moveforwardpressed")
+    def INPUT_EVENT(self, evid):
+        """Note: the PygameDriver for circuits has a different design:
+        there the event data is Key, and the channel either "keydown" or "keyup",
+        and mouse and clicks are different events and channels.
+        Here we have no way to differentiate presses/releases,
+        'cause the c++ internals don't do that apart from the constant name.
+        """
+        self.m.push(Input(evid), "on_input")
+        #print "circuits_manager ComponentRunner got input event:", evid        
         
-    def MOVE_FORWARD_RELEASED(self):
-        m.push(MoveForwardReleased(), "on_moveforwardreleased")
-
     def exit(self):
         print "Circuits manager stopping."
-        m.stop()
-    
-class TestModule(Component):
-    """A wish of how a py written module might like to have the system.
-    This could for example be the CommunicationsModule, right?
-    Or something that implements as a custom control type..
-    Now attempting a generic test thing."""
-    
-    def __init__(self):
-        Component.__init__(self)
-        self.data = 1
+        self.m.stop()
         
-    def update(self, deltatime):
-        if self.data == 1:
-            self.data = 0
-        else:
-            self.data = 1
-        #print self.data, deltatime
-        
-    def on_chat(self, frm=None, msg=None):
-        print "Test Module received chat message:", frm, msg
-        
-    def on_moveforwardpressed(self):
-        print "^"
-        
-    def on_moveforwardreleased(self):
-        print "."
-        
-tm = TestModule()
-m += tm # Equivalent to: tm.register(m)
+#TestModule moved to own file (err, module)
 
 """
 why not allow plain functions as event handlers too,
@@ -91,7 +83,6 @@ if __name__ == '__main__':
     runner = ComponentRunner()
 
     import time
-    m.start()
     while True:
         runner.run(0.1)
         runner.RexNetMsgChatFromSimulator("main..")

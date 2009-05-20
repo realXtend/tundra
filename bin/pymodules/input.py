@@ -1,5 +1,7 @@
 import rexviewer as r
 
+print dir(r)
+
 #some prim
 idnum = 720001
 #idnum = 0
@@ -24,7 +26,17 @@ if 0: #test avatar tracking, works :)
     like when a pet or a friend moves?
     """
     
-if 1: #push an incoming chat msg event
-    from eventsource import viewer
-    viewer.dispatch_event('on_chat', "input", "testing")
-    print viewer._event_stack
+if 1: #push an event, now an input event
+    #from eventsource import viewer
+    #from modulemanager import m 
+    import circuits_manager
+    mm = circuits_manager.ComponentRunner.instance
+    print mm
+    
+    mm.INPUT_EVENT(r.MOVE_FORWARD_PRESSED)
+    
+    #previous pyglet stuff, was an ncoming chat msg event
+    #m.dispatch_event('on_chat', "input", "testing")
+    #print viewer._event_stack
+    
+
