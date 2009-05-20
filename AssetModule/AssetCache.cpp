@@ -115,7 +115,7 @@ namespace Asset
     {    
         const std::string& asset_id = asset->GetId();
         
-        AssetModule::LogInfo("Storing complete asset " + asset_id);
+        AssetModule::LogDebug("Storing complete asset " + asset_id);
 
         // Store to memory cache
         assets_[asset_id] = asset;

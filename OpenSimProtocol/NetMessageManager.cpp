@@ -385,7 +385,7 @@ void NetMessageManager::ProcessPacketACK(NetInMessage *msg)
 	for(size_t i = 0; i < blockCount; ++i)
 	{
 		uint32_t id = msg->ReadU32();
-		std::cout << "Received ACK for packet " << id  << std::endl;
+		//std::cout << "Received ACK for packet " << id  << std::endl;
 		RemoveMessageFromResendQueue(id);
 	}
 }

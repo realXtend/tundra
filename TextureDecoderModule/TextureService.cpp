@@ -86,7 +86,7 @@ namespace TextureDecoder
                 if (result.texture_)
                 {
                     TextureResource* texture = checked_static_cast<TextureResource*>(result.texture_.get());
-                    TextureDecoderModule::LogInfo("Decoded texture w " + Core::ToString<Core::uint>(texture->GetWidth()) + " h " +
+                    TextureDecoderModule::LogDebug("Decoded texture w " + Core::ToString<Core::uint>(texture->GetWidth()) + " h " +
                         Core::ToString<Core::uint>(texture->GetHeight()) + " level " + Core::ToString<int>(result.level_));
     
                     // Send resource ready event for each request tag in the request

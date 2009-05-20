@@ -49,8 +49,12 @@ namespace Asset
         if (!RexUUID::IsValid(asset_id))
             return false;
             
+        RexUUID uuid(asset_id);
+        if (uuid.IsNull())
+            return false;
+            
         int asset_type_int = GetAssetTypeFromTypeName(asset_type);
-        if (asset_type_int < 0)      
+        if (asset_type_int < 0)
             return false;
         
         AssetRequest new_request;
@@ -276,7 +280,7 @@ namespace Asset
         new_transfer.InsertTags(tags);        
         texture_transfers_[asset_id] = new_transfer;
     
-        AssetModule::LogInfo("Requesting texture " + asset_id.ToString());
+        AssetModule::LogDebug("Requesting texture " + asset_id.ToString());
 
         NetOutMessage *m = net->StartMessageBuilding(RexNetMsgRequestImage);
         assert(m);
@@ -315,7 +319,7 @@ namespace Asset
         new_transfer.InsertTags(tags);
         asset_transfers_[transfer_id] = new_transfer;
         
-        AssetModule::LogInfo("Requesting asset " + asset_id_str);
+        AssetModule::LogDebug("Requesting asset " + asset_id_str);
         
         NetOutMessage *m = net->StartMessageBuilding(RexNetMsgTransferRequest);
         assert(m);
