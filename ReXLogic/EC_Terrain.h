@@ -63,6 +63,9 @@ namespace RexLogic
             return true;
         }
 
+        /// Removes all stored terrain patches and the associated Ogre scene nodes.
+        void Destroy();
+
     private:
         EC_Terrain(Foundation::ModuleInterface* module);
 

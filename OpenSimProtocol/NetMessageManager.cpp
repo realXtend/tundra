@@ -351,6 +351,13 @@ void NetMessageManager::QueuePacketACK(uint32_t packetID)
 ///\todo Have better delay method for pending ACKs, currently sends everything accumulated just over one frame
 void NetMessageManager::SendPendingACKs()
 {
+    // If we aren't even connected (or not connected anymore), clear any old pending ACKs and return.
+    if (!connection.get())
+    {
+        pendingACKs.clear();
+        return;
+    }
+
     static const size_t max_acks_in_msg = 100;
 
     while (pendingACKs.size())
