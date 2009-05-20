@@ -105,12 +105,20 @@ namespace Communication
 	/**
 	 *  Participiant of session. One contact can be paricipant in several sessions
 	 *  and participant can basically be someone outside of users contact list 
+	 *
+	 *  @todo Do we really need this abstraction? We could instead use ContactPtr
+	 *        for every occasion.
 	 */
 	class ParticipantInterface
 	{
 	public:
 		virtual ~ParticipantInterface() {};
-		virtual ContactPtr GetContact() = 0;
+
+		//! @return ContactPtr object corresponding the contact who is participating in session
+		virtual ContactPtr GetContact() const = 0;
+
+		//! @return ContactInfoPtr object corresponding the protocol used in session
+//		virtual ContactInfoPtr GetCurrentContactInfo() const = 0;
 	};
     typedef boost::shared_ptr<ParticipantInterface> ParticipantPtr;
 	typedef std::vector<ParticipantPtr> ParticipantList;

@@ -29,7 +29,6 @@
 
 namespace CommunicationUI
 {
-	CommunicationUIModule* CommunicationUIModule::instance_;
 
 	CommunicationUIModule::CommunicationUIModule(void):ModuleInterfaceImpl("CommunicationUIModule")
 	{
@@ -54,10 +53,7 @@ namespace CommunicationUI
 	void CommunicationUIModule::PostInitialize()
 	{
 		initializeMainCommWindow();
-		CommunicationUIModule::instance_= this;		
         
-       // setupSciptInterface(); // old way
-
 		try
 		{
 			SetupCommunicationServiceUsage();
@@ -68,14 +64,12 @@ namespace CommunicationUI
 			text.append(error);
 			LogError(text);
 
-			// todo: We should uninitialize comm ui here...
+			// \todo We should uninitialize comm ui here...
 		}
 	}
 
 	void CommunicationUIModule::Uninitialize()
 	{
-        //imScriptObject->ReleaseResources();
-        //sobj->ReleaseResources();
         framework_->GetEventManager()->UnregisterEventSubscriber(this);
         SAFE_DELETE(wndCommMain);
 	}
@@ -126,8 +120,6 @@ namespace CommunicationUI
         commUI_XML->connect_clicked("mi_busy", sigc::mem_fun(*this, &CommunicationUIModule::OnSetStatusBusy));
         commUI_XML->connect_clicked("mi_offline", sigc::mem_fun(*this, &CommunicationUIModule::OnSetStatusOffline));
 
-		//commUI_XML->connect_clicked("btnTest", sigc::mem_fun(*this, &CommunicationUIModule::reloadIMScript));
-        commUI_XML->connect_clicked("btnTest", sigc::mem_fun(*this, &CommunicationUIModule::testDialog));
         commUI_XML->connect_clicked("btnAddContact", sigc::mem_fun(*this, &CommunicationUIModule::OnContactAdd));
         commUI_XML->connect_clicked("btnRemoveContact", sigc::mem_fun(*this, &CommunicationUIModule::OnContactRemove));
         commUI_XML->connect_clicked("btnRefresh", sigc::mem_fun(*this, &CommunicationUIModule::OnRefresh));
@@ -135,7 +127,6 @@ namespace CommunicationUI
 
 
 
-        //commUI_XML->connect_property_changed("cmbPresence", sigc::mem_fun(*this, &CommunicationUIModule::OnComboChange));
         cmbPresence.signal_changed().connect(sigc::mem_fun(*this, &CommunicationUIModule::OnComboChange) );
 
 
@@ -143,35 +134,16 @@ namespace CommunicationUI
 		commUI_XML->connect_clicked("btnEntryOk", sigc::mem_fun(*this, &CommunicationUIModule::OnEntryDlgOk));
 		commUI_XML->connect_clicked("btnEntryCancel", sigc::mem_fun(*this, &CommunicationUIModule::OnEntryDlgCancel));
         
-        //wndCommMain->set_name("Comms UI");
         wndCommMain->set_title("Comms UI");
 		wndCommMain->show();
         lstContacts.show();
         cmbPresence.show();
 	}
 
-    void CommunicationUIModule::testDialog()
-    {
-        //SelectionDialog sd("test", "Go home", "_Yep", "_No Way!", this);
-        //Gtk::Main::run(sd);
-		std::string str = "CTest";
-		std::string syntax = "";
-        Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
-    }
-
-    void CommunicationUIModule::reloadIMScript()
-    {
-        delete this->imScriptObject;
-        this->imScriptObject = NULL;
-        setupSciptInterface();
-    }
-
-	
-		
 	/**
 	 *  - Fetches communication service object
 	 *  - Subscribes communication events
-	 *  - Get contact list from communication service
+	 *  - Gets contact list from communication service
 	 */
 	void CommunicationUIModule::SetupCommunicationServiceUsage()
 	{
@@ -196,74 +168,11 @@ namespace CommunicationUI
 		contact_list_ = communication_service_->GetContactList();
 	}
 
-    void CommunicationUIModule::setupSciptInterface()
-    {
-        //scriptService = (framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting)).lock();
-        //scriptService = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting);
-		//scriptService = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting).lock();
-        scriptService = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting).lock();
-        BOOST_ASSERT(scriptService!=NULL);
-
-		std::string error;
-        
-		//Foundation::ScriptObject* script = scriptService->LoadScript("IMDemo", error);
-        sobj = scriptService->LoadScript("IMDemo", error);
-
-		if(error=="None")
-		{
-			//this->imScriptObject = script->GetObject("IMDemo");
-            this->imScriptObject = sobj->GetObject("IMDemo");
-			std::string str = "CDoStartUp";
-			std::string syntax = "";
-			Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
-            //Foundation::ScriptObject* ret = CallIMPyMethod("CDoStartUp", "s", NULL);
-		}
-        //boost::shared_ptr<Foundation::ScriptEventInterface> eIntf 
-        //    = dynamic_cast<boost::shared_ptr<Foundation::ScriptEventInterface>>(this->scriptService);
-        //boost::shared_ptr<Foundation::ScriptEventInterface> eIntf = (boost::shared_ptr<Foundation::ScriptEventInterface)(this->scriptService);
-		//Foundation::ScriptEventInterface *eIntf = dynamic_cast<Foundation::ScriptEventInterface*>(this->scriptService);
-		Foundation::ScriptEventInterface *eIntf = dynamic_cast<Foundation::ScriptEventInterface*>(this->scriptService.get());
-
-        //Foundation::ScriptEventInterface* eIntf = dynamic_cast<Foundation::ScriptEventInterface*>(scriptService.get());
-
-		eIntf->SetCallback(CommunicationUIModule::testCallback, "key");
-		eIntf->SetCallback(CommunicationUIModule::connected, "connected");
-		eIntf->SetCallback(CommunicationUIModule::disconnected, "disconnected");
-		eIntf->SetCallback(CommunicationUIModule::disconnected, "connecting");
-
-		eIntf->SetCallback(CommunicationUIModule::channelOpened, "channel_opened");
-		eIntf->SetCallback(CommunicationUIModule::channelClosed, "channel_closed");
-		eIntf->SetCallback(CommunicationUIModule::messagReceived, "message_received");
-		eIntf->SetCallback(CommunicationUIModule::contactReceived, "contact_item");
-
-        eIntf->SetCallback(CommunicationUIModule::contactAdded, "contact_added");
-        eIntf->SetCallback(CommunicationUIModule::contactAddedToPublishList, "contact_added_publish_list");
-        eIntf->SetCallback(CommunicationUIModule::contactRemoved, "contact_removed");
-        eIntf->SetCallback(CommunicationUIModule::remotePending, "remote_pending");
-        eIntf->SetCallback(CommunicationUIModule::localPending, "local_pending");
-
-        eIntf->SetCallback(CommunicationUIModule::incomingRequest, "incoming_request");
-
-        eIntf->SetCallback(CommunicationUIModule::contactStatusChanged, "contact_status_changed");
-        eIntf->SetCallback(CommunicationUIModule::handleAvailableStatusList, "got_available_status_list");
-
-        eIntf->SetCallback(CommunicationUIModule::handleRegisteringSuccess, "account_registering_succeeded");
-        eIntf->SetCallback(CommunicationUIModule::handleRegisteringFailure, "account_registering_failed");
-    }
-
 	void CommunicationUIModule::OnAccountMenuSettings()
 	{
-		// TODO replace this with CredentialPtr usage
 		Communication::CredentialsPtr c = communication_service_->GetCredentials();
-   //     LogInfo("OnAccountMenuSettings");
-   //     Foundation::ScriptObject* so = this->CallIMPyMethod("CGetSettings", "", std::string(""));
-   //     char* retVal = so->ConvertToChar();
-   //     std::string settingsStr(retVal);
-   //     LogInfo(settingsStr);
-   //     std::vector<std::string> settingsVect = this->SplitString(settingsStr, ":", 0);
-   //     // code the vector into a map that config dialog understands
-   //     std::map<std::string, SettingsAttribute> attrs;
-		
+		// \todo Setup settings dlg and show it
+
    //     for(std::vector<std::string>::iterator iter = settingsVect.begin(); iter<settingsVect.end()-1; iter+=2)
    //     {
    //         SettingsAttribute attr;
@@ -273,8 +182,8 @@ namespace CommunicationUI
    //         attrs[key] = attr;
    //     }
 
-   //     ConfigureDlg accDlg(attrs.size(), attrs, "connection settings", this);
-   //     Gtk::Main::run(accDlg);
+//        ConfigureDlg accDlg(attrs.size(), attrs, "connection settings", this);
+//		Gtk::Main::run(accDlg);
 	}
 
     void CommunicationUIModule::OnCreateAccount()
@@ -285,17 +194,8 @@ namespace CommunicationUI
         Gtk::Main::run(sd);        
     }
 
-	// TODO: Move this to communication module ?
-	//       Or this can be read from file
-	std::map<std::string, SettingsAttribute> GetAccountAttributes()
-	{
-		std::map<std::string, SettingsAttribute>  attributes; //std::vector<std:string> list;
-		return attributes;
-	}
-
 	void CommunicationUIModule::OnAccountMenuSetAccountAndPassword()
 	{
-		//LogInfo("Set account");
 		std::map<std::string, SettingsAttribute> attributes; // attributes for ConfigureDlg object
 
 		Communication::CredentialsPtr c = communication_service_->GetCredentials();
@@ -309,28 +209,20 @@ namespace CommunicationUI
 			attributes[name] = attr;
 		}
 
-//		std::map<std::string, SettingsAttribute> attributes = GetAccountAttributes(); //commManager->GetAccountAttributes();
-		int count = attributes.size();
-//		LogInfo(attributes.find("name")->first);
-
-		ConfigureDlg accDlg(count, attributes, "account settings", this);
+		ConfigureDlg accDlg(attributes.size(), attributes, "account settings", this);
 		Gtk::Main::run(accDlg);
 	}
 
 	void CommunicationUIModule::OnAccountMenuConnect()
 	{
-
         LogInfo("OnAccountMenuConnect");
 
+		// \todo use user defined credential here!
 		Communication::CredentialsPtr c = communication_service_->GetCredentials();
-		// TODO: use user defines credential 
 		communication_service_->OpenConnection(c);
 	}
 	void CommunicationUIModule::OnAccountMenuDisconnect()
 	{
-		//std::string str = "CDisconnect";
-		//std::string syntax = "";
-		//Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, NULL);
 		communication_service_->CloseConnection();
 	}
 
@@ -353,50 +245,46 @@ namespace CommunicationUI
         
 	}
 
-	// todo: Use user defines values
     void CommunicationUIModule::OnSetStatusOnline()
     {
 		Communication::PresenceStatusPtr s = communication_service_->GetPresenceStatus();
 		s->SetOnlineStatus("available");
 		communication_service_->SetPresenceStatus( s );
-        //std::cout << "OnSetStatusOnline" << std::endl;
-        //this->CallIMPyMethod("CSetStatus", "s", std::string("available"));
     }
+
     void CommunicationUIModule::OnSetStatusAway()
     {
 		Communication::PresenceStatusPtr s = communication_service_->GetPresenceStatus();
 		s->SetOnlineStatus("away");
 		communication_service_->SetPresenceStatus( s );
-//        this->CallIMPyMethod("CSetStatus", "s", std::string("away"));
     }
     void CommunicationUIModule::OnSetStatusBusy()
     {
 		Communication::PresenceStatusPtr s = communication_service_->GetPresenceStatus();
 		s->SetOnlineStatus("busy");
 		communication_service_->SetPresenceStatus( s );
-        //std::cout << "OnSetStatusBusy" << std::endl;
-        //this->CallIMPyMethod("CSetStatus", "s", std::string("busy"));
     }
+
     void CommunicationUIModule::OnSetStatusOffline()
     {
 		return; // Gabble connection manager will crash if we send this online status !!!
 
+		// \bug
 		Communication::PresenceStatusPtr s = communication_service_->GetPresenceStatus();
 		s->SetOnlineStatus("offline");
 		communication_service_->SetPresenceStatus( s );
-        //std::cout << "OnSetStatusOffline" << std::endl;
-        //this->CallIMPyMethod("CSetStatus", "s", std::string("offline"));
     }
 
 	/*
-	 * NOTE: This sould not be needed when using contact list directly
-	 *       But if we know just the address we need this to find actual contat
-	 *       object
+	 * \note This sould not be needed when using contact list directly.
+	 *       But if we know just the address we need this to find actual contact
+	 *       object.
+	 * \todo Don't use protocol specific im address as a key for contacts
 	 */
 	Communication::ContactPtr CommunicationUIModule::FindContact(std::string address)
 	{
 		std::string protocol = "jabber"; // todo remove fixed definition
-		for (Communication::ContactList::iterator i = contact_list_->begin(); i < contact_list_->end(); i++)
+		for (Communication::ContactList::iterator i = contact_list_->begin(); i != contact_list_->end(); ++i)
 		{
 			Communication::ContactPtr c = (*i);
 			if (c->GetContactInfo(protocol)->GetProperty("address").compare(address) == 0)
@@ -406,23 +294,20 @@ namespace CommunicationUI
 		}
 
 		// we didn't find given contact
-		// todo: better error handling
+		// \todo better error handling
 		return Communication::ContactPtr();
-		throw "Cannot find contact";
 	}
 
+	// Direct chat command support 
+	// \todo remove this
     void CommunicationUIModule::StartChat(const char* contact_address)
     {
 		LogInfo("start chat window here");
-//        Foundation::ScriptObject* ret = CallIMPyMethod("CStartChatSession", "s", std::string(contact));
-        //sessionUp_ = true;
-		//this->session_ = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(contact, imScriptObject));
 		try
 		{
 			Communication::ContactPtr contact = FindContact(contact_address);	
 			Communication::IMSessionPtr session = communication_service_->CreateIMSession(contact);
 			chatSessions_[std::string(contact_address)] = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(session, communication_service_));
-//			chatSessions_[std::string(contact)] = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(contact, imScriptObject));
 		}
 		catch(...)
 		{
@@ -472,10 +357,10 @@ namespace CommunicationUI
 		LogError(error);
     }
 
+	// \todo remove this?
     void CommunicationUIModule::OnRefresh()
     {
         LogInfo("OnRefresh");
-        //Foundation::ScriptObject* ret = CallIMPyMethod("CRefreshContactStatusList", "", std::string(""));
     }
 
     void CommunicationUIModule::OnSetPresenceMessage()
@@ -487,7 +372,6 @@ namespace CommunicationUI
         LogInfo("1");
 
         Glib::ustring pmessage = entryPresenceMessage->get_text();
-        //std::string pmessage = entrySetPresenceMessage->get_text();
 
         LogInfo("2");
         status.append(":");
@@ -498,7 +382,6 @@ namespace CommunicationUI
 		Communication::PresenceStatusPtr s = communication_service_->GetPresenceStatus();
 		s->SetOnlineMessage(status);
 		communication_service_->SetPresenceStatus( s );
-//        this->CallIMPyMethod("CSetStatus", "s", status);
     }
 
     void CommunicationUIModule::OnComboChange()
@@ -510,11 +393,10 @@ namespace CommunicationUI
 		Communication::PresenceStatusPtr s = communication_service_->GetPresenceStatus();
 		s->SetOnlineStatus(status);
 		communication_service_->SetPresenceStatus( s );
-//        this->CallIMPyMethod("CSetStatus", "s", status);
     }
 
 	/**
-	 *  @todo implement save eg. with ConfiguratonManager
+	 *  \todo Implement save eg. with ConfiguratonManager
 	 */
 	void CommunicationUIModule::SaveCredentials(Communication::CredentialsPtr c)
 	{
@@ -522,12 +404,12 @@ namespace CommunicationUI
 	}
 
 	/**
-	 *  @todo implement load eg. with ConfigurationManager
+	 *  \todo Implement load eg. with ConfigurationManager
 	 */
 	Communication::CredentialsPtr CommunicationUIModule::LoadCreadentials()
 	{
 		Communication::Credentials* c = new Communication::Credentials();
-		// todo: set properties here
+		// \todo set properties here
 
 		return Communication::CredentialsPtr(c);
 	}
@@ -566,22 +448,22 @@ namespace CommunicationUI
         } else if(aConfigName=="contact address") {
             SettingsAttribute sattr = attributes["contact address"];
 			Communication::ContactInfo* info = new Communication::ContactInfo();
-			info->SetProperty("protocol", "jabber"); // todo: remove this fixed definition
 			info->SetProperty("address", sattr.value);
 			communication_service_->SendFriendRequest(Communication::ContactInfoPtr(info));
-//            CallIMPyMethod("CAddContact", "s", sattr.value);
-        } else if(aConfigName=="Remote request"){
-            LogInfo("Remote request callback");
-            // send responce to other end
-            std::string answer = attributes.begin()->first;
-            SettingsAttribute user = attributes.begin()->second;
-            LogDebug(answer);
-            LogDebug(user.value);
-            if(answer=="Ok"){
-                CallIMPyMethod("CAcceptContactRequest", "s", user.value);
-            } else {
-                CallIMPyMethod("CDenyContactRequest", "s", user.value);
-            }
+        } else if(aConfigName=="Remote request")
+		{
+			// TODO: This must be checked
+            //LogInfo("Remote request callback");
+            //// send responce to other end
+            //std::string answer = attributes.begin()->first;
+            //SettingsAttribute user = attributes.begin()->second;
+            //LogDebug(answer);
+            //LogDebug(user.value);
+            //if(answer=="Ok"){
+            //    CallIMPyMethod("CAcceptContactRequest", "s", user.value);
+            //} else {
+            //    CallIMPyMethod("CDenyContactRequest", "s", user.value);
+            //}
         } else if(aConfigName=="Presence request"){
             LogInfo("Presence request callback");
             // send responce to other end
@@ -605,40 +487,42 @@ namespace CommunicationUI
 				r->Deny();
 //                CallIMPyMethod("CDenyContactRequest", "s", user.value);
             }
-        } else if(aConfigName=="Contact accepted"){
-            LogInfo("Contact accepted callback");
-            // send responce to other end
-            std::string answer = attributes.begin()->first;
-            SettingsAttribute user = attributes.begin()->second;
-            LogDebug(answer);
-            LogDebug(user.value);
-            if(answer=="Ok"){
-                CallIMPyMethod("CAcceptContactRequest", "s", user.value);
-            } else {
-                CallIMPyMethod("CDenyContactRequest", "s", user.value);
-            }
+        } else if(aConfigName=="Contact accepted")
+		{
+			// TODO: Check this
+            //LogInfo("Contact accepted callback");
+            //// send responce to other end
+            //std::string answer = attributes.begin()->first;
+            //SettingsAttribute user = attributes.begin()->second;
+            //LogDebug(answer);
+            //LogDebug(user.value);
+            //if(answer=="Ok"){
+            //    CallIMPyMethod("CAcceptContactRequest", "s", user.value);
+            //} else {
+            //    CallIMPyMethod("CDenyContactRequest", "s", user.value);
+            //}
         } else if(aConfigName=="Subscribe incoming"){
-            LogInfo("Subscribe incoming callback");
-            std::string answer = attributes.begin()->first;
-            SettingsAttribute user = attributes.begin()->second;
-            LogInfo(answer);
-            if(answer=="Ok"){
-                CallIMPyMethod("CSendSubscription", "s", user.value);
-            } else {
-                CallIMPyMethod("CDenyContactRequest", "s", user.value);
-            }
+            //LogInfo("Subscribe incoming callback");
+            //std::string answer = attributes.begin()->first;
+            //SettingsAttribute user = attributes.begin()->second;
+            //LogInfo(answer);
+            //if(answer=="Ok"){
+            //    CallIMPyMethod("CSendSubscription", "s", user.value);
+            //} else {
+            //    CallIMPyMethod("CDenyContactRequest", "s", user.value);
+            //}
         } else if(aConfigName=="Incoming contact request"){
-            LogInfo("Incoming contact request");
-            // send responce to other end
-            std::string answer = attributes.begin()->first;
-            SettingsAttribute user = attributes.begin()->second;
-            LogDebug(answer);
-            LogDebug(user.value);
-            if(answer=="Ok"){
-                CallIMPyMethod("CAcceptContactRequest", "s", user.value);
-            } else {
-                CallIMPyMethod("CDenyContactRequest", "s", user.value);
-            }
+            //LogInfo("Incoming contact request");
+            //// send responce to other end
+            //std::string answer = attributes.begin()->first;
+            //SettingsAttribute user = attributes.begin()->second;
+            //LogDebug(answer);
+            //LogDebug(user.value);
+            //if(answer=="Ok"){
+            //    CallIMPyMethod("CAcceptContactRequest", "s", user.value);
+            //} else {
+            //    CallIMPyMethod("CDenyContactRequest", "s", user.value);
+            //}
         } else if(aConfigName=="Contact removed"){
             LogInfo("Contact removed");
         } else if(aConfigName=="Register account")
@@ -663,323 +547,14 @@ namespace CommunicationUI
 //		if(aConfigName=="account settings"){ commManager->SetAccountAttributes(attributes); }
 	}
 
-
-
-	void CommunicationUIModule::setOnlineStatus(char* status)
-	{
-
-		Gtk::Label* label = (Gtk::Label*)instance_->commUI_XML->get_widget("lblOnlineStatus");
-		label->set_label(status);
-	}
-
-	void CommunicationUIModule::testCallback(char* t)
-	{
-	}
-
-	void CommunicationUIModule::connected(char* t)
-	{
-		LogInfo("connected");
-		instance_->setOnlineStatus("connected");
-	}
-
-	void CommunicationUIModule::connecting(char*)
-	{
-		LogInfo("connecting");
-		instance_->setOnlineStatus("connecting");
-	}
-
-	void CommunicationUIModule::disconnected(char* t)
-	{
-		LogInfo("disconnected");
-		instance_->setOnlineStatus("disconnected");
-        instance_->clearContactList();
-	}
-
-	void CommunicationUIModule::channelOpened(char* addr)
-	{
-		LogInfo("channelOpened");
-		//if(instance_->session_!=NULL&&instance_->sessionUp_!=false){
-		//	instance_->session_->ChannelOpen();
-		//} else {
-		//	instance_->session_ = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(addr, instance_->imScriptObject));
-		//}
-		//instance_->sessionUp_ = true;
-        std::map<std::string, ChatSessionUIPtr>::iterator iter = instance_->chatSessions_.find(std::string(addr));
-        if(iter == instance_->chatSessions_.end())
-		{
-//			Communication::IMSessionPtr session = communication_service_->CreateIMSession(
-            instance_->chatSessions_[std::string(addr)] = ChatSessionUIPtr(new ChatSession(addr, instance_->imScriptObject));
-        } 
-        instance_->chatSessions_[std::string(addr)]->ChannelOpen();
-	}
-
-	void CommunicationUIModule::channelClosed(char* t)
-	{
-		LogInfo("channelClosed");
-		if(instance_->session_!=NULL){
-			instance_->session_->ChannelClosed();
-		} 
-		//instance_->sessionUp_ = false;
-	}
-
-	void CommunicationUIModule::messagReceived(char* addr_mess)
-	{
-		if(instance_->session_!=NULL){
-			instance_->session_->ReceivedMessage(addr_mess);
-		}
-        std::vector<std::string> split = SplitString(std::string(addr_mess), std::string(":"), 2);
-	    char *addr = new char[split[0].size()+1];
-        char *mess = new char[split[1].size()+1];
-	    std::strcpy(addr, split[0].c_str());
-        std::strcpy(mess, split[1].c_str());        
-
-        instance_->chatSessions_[std::string(addr)]->ReceivedMessage(mess);
-
-        delete[] addr;
-        delete[] mess;
-	}
-
-    void CommunicationUIModule::clearContactList()
-    {
-        this->lstContacts.lstContactsTreeModel->clear();
-    }
-
-	void CommunicationUIModule::contactReceived(char* t)
-	{
-		LogInfo("contact item");
-        LogInfo(t);
-		instance_->addContactItem(t);
-	}
-
-	//void CommunicationUIModule::addContactItem(char *contactID)
-    void CommunicationUIModule::addContactItem(char *id_and_address)
-	{
-		//std::string str = "CGetContactWithID";
-		//std::string syntax = "s";
-		////!!
-		//char** args = new char*[1];
-		//char* buf1 = new char[20];
-		//strcpy(buf1, contactID);
-		//args[0] = buf1;
-
-		//Foundation::ScriptObject* ret = imScriptObject->CallMethod(str, syntax, args);
-		//char* name = ret->ConvertToChar();
-
-        std::vector<std::string> split = SplitString(std::string(id_and_address), std::string(":"), 2);
-	    char *id = new char[split[0].size()+1];
-        char *contact = new char[split[1].size()+1];
-	    std::strcpy(id, split[0].c_str());
-        std::strcpy(contact, split[1].c_str());        
-        
-        //this->lstContacts.columns_
-        Gtk::TreeModel::Row row = *(this->lstContacts.lstContactsTreeModel->append());
-
-        //std::string id(contactID);
-        //std::string contact(name);
-        row[this->lstContacts.columns_.id_] = std::string(id);
-        row[this->lstContacts.columns_.contact_] = std::string(contact);
-        row[this->lstContacts.columns_.status_] = "offline";
-        row[this->lstContacts.columns_.message_] = "-";
-
-        delete[] id;
-        delete[] contact;
-	}
-
-
-   
     void CommunicationUIModule::OnContactListClicked()
     {
         LogInfo("OnContactListClicked");
     }
     
-    void CommunicationUIModule::contactStatusChanged(char* id_n_status)
-    {
-        LogInfo("status change");
-        LogInfo(id_n_status);
-		//Foundation::ScriptObject* ret = instance_->imScriptObject->CallMethod(str, syntax, args);
-        
-        std::vector<std::string> split = SplitString(std::string(id_n_status), std::string(":"), 3);
-        ////const char* id = split[0].c_str();
-        //std::string id_str = split[0];
-        //const char* status = split[1].c_str();
-
-	    // allocate space for a zero-terminated copy of the string
-	    char *id = new char[split[0].size()+1];
-        char *status = new char[split[1].size()+1];
-        char *status_string = new char[split[2].size()+1];
-	    std::strcpy(id, split[0].c_str());
-        std::strcpy(status, split[1].c_str());
-        std::strcpy(status_string, split[2].c_str());
-        LogInfo(id);
-        
-        if(strcmp(id, "1")==0){
-            LogInfo("set on status");
-            Glib::ustring title("Comms UI | (");
-            title.append(status);
-            title.append(" - ");
-            title.append(status_string);
-            title.append(")");
-            // does not work
-            LogInfo("set title");
-            instance_->wndCommMain->set_title(title);
-            //lblOnlineStatus
-            //Gtk::Label* lblPresenceStatus;
-            LogInfo("set label");
-            instance_->lblPresenceStatus->set_text(title);
-        } else {
-    	    instance_->lstContacts.setContactStatus(id, status, status_string);
-        }
-	    delete[] id;
-        delete[] status;
-        delete[] status_string;
-    }
-
-    void CommunicationUIModule::handleAvailableStatusList(char* statuslist_N)
-    {
-        LogInfo("handleAvailableStatusList");
-        LogInfo(statuslist_N);
-        std::vector<std::string> split = SplitString(std::string(statuslist_N), std::string(":"), 0);
-        for(std::vector<std::string>::iterator iter = split.begin();iter < split.end(); iter++){
-            if(*iter!="unknown"&&*iter!="offline"){
-                instance_->cmbPresence.append_text(*iter);
-            }
-        }
-        
-    }
-    
-    void CommunicationUIModule::handleRegisteringSuccess(char* reason)
-    {
-        LogInfo("handleRegisteringSuccess");
-        std::string infoText = "Registering succeeded: ";
-        infoText.append(reason);
-        SelectionDialog sd("Registering succeeded", infoText , "_Ok", "_Cancel", instance_, false);
-        Gtk::Main::run(sd);
-    }
-
-    void CommunicationUIModule::handleRegisteringFailure(char* reason)
-    {
-        LogInfo("handleRegisteringFailure");
-        std::string infoText = "Registering failed: ";
-        infoText.append(reason);
-        SelectionDialog sd("Registering failed", infoText , "_Ok", "_Cancel", instance_, false);
-        Gtk::Main::run(sd);        
-    }
-
-    void CommunicationUIModule::contactAdded(char* addr)
-    {
-        LogInfo("contactAdded");
-        std::string infoText = "user ";
-        infoText.append(addr);
-        infoText.append(" accepted your contact request");
-        SelectionDialog sd("Contact accepted", infoText , "_Ok", "_Cancel", instance_, std::string(addr));
-        Gtk::Main::run(sd);
-    }
-
-    void CommunicationUIModule::contactAddedToPublishList(char* addr)
-    {
-        LogInfo("contactAddedToPublishList");
-        std::string infoText = "user ";
-        infoText.append(addr);
-        infoText.append(" added to your publish list, subscribe?");
-        SelectionDialog sd("Subscribe incoming", infoText , "_Ok", "_Cancel", instance_, std::string(addr));
-        Gtk::Main::run(sd);        
-    }
-
-    void CommunicationUIModule::contactRemoved(char* id)
-    {
-        LogInfo("contactRemoved"); 
-        instance_->lstContacts.RemoveContact(id);
-        //sprintf(
-        std::string infoText = "User ";
-        infoText.append(id);
-        infoText.append(" removed you from his/hers contact list");
-        SelectionDialog sd("Contact removed", infoText, "_Ok", "_Not shown", instance_, std::string(id), false);
-        Gtk::Main::run(sd);
-    }
-    void CommunicationUIModule::remotePending(char* id)
-    {
-        LogInfo("remotePending"); 
-        LogInfo(id); 
-        std::string infoText = "Let user ";
-        infoText.append(id);
-        infoText.append(" see your presence status");
-
-        SelectionDialog sd("Remote request", infoText, "_Allow", "_Deny", instance_, std::string(id));
-        Gtk::Main::run(sd);
-    }
-    void CommunicationUIModule::localPending(char* id)
-    {
-        LogDebug("localPending"); 
-        LogInfo(id); 
-        std::string infoText = "Let user ";
-        infoText.append(id);
-        infoText.append(" see your presence status");
-
-        SelectionDialog sd("Presence request", infoText, "_Allow", "_Deny", instance_, std::string(id));
-        Gtk::Main::run(sd);
-    }
-
-    void CommunicationUIModule::incomingRequest(char* addr)
-    {
-        LogInfo("incomingRequest"); 
-        LogInfo(addr); 
-        std::string infoText = "User ";
-        infoText.append(addr);
-        infoText.append(" want's to add you as a contact");
-        SelectionDialog sd("Incoming contact request", infoText, "_Allow", "_Deny", instance_, std::string(addr));
-        Gtk::Main::run(sd);
-    }
-
-    char** CommunicationUIModule::buildOneStringParamArrayFromConstCharArray(const char* prm)
-    {
-        size_t len = strlen(prm);
-		char* buf1 = new char[strlen(prm)+1];
-		strcpy(buf1, prm);
-        char** args = new char*[1];
-        args[0] = buf1;
-		return args;
-    }
-
-    Foundation::ScriptObject* CommunicationUIModule::CallIMPyMethod(char* method, char* syntax, std::string& param)
-    {
-        if(strcmp(syntax, "")!=0){
-            char** args = buildOneStringParamArrayFromConstCharArray(param.c_str());
-            return instance_->imScriptObject->CallMethod(std::string(method), std::string(syntax), args); // memory freed in pymod
-            //\bug need to know how actually ret values from python scripts are freed            
-        } else {
-            return instance_->imScriptObject->CallMethod(std::string(method), std::string(syntax), NULL); // memory freed in pymod
-            //\bug need to know how actually ret values from python scripts are freed            
-        }
-    }
-    
-    std::vector<std::string> CommunicationUIModule::SplitString(const std::string &inString, const std::string &separator, const int &splitAmount)
-    {
-       std::vector<std::string> returnVector;
-       std::string::size_type start = 0;
-       std::string::size_type end = 0;
-       int round = 0;
-       if(splitAmount!=0){
-           while ((end=inString.find (separator, start)) != std::string::npos && round < splitAmount)
-           {
-              returnVector.push_back (inString.substr (start, end-start));
-              start = end+separator.size();
-              round++;
-           }
-       } else {
-           while ((end=inString.find (separator, start)) != std::string::npos)
-           {
-              returnVector.push_back (inString.substr (start, end-start));
-              start = end+separator.size();
-              round++;
-           }       
-       }
-       returnVector.push_back (inString.substr (start));
-
-       return returnVector;
-    } 
-
 	/**
 	 * @return Corresponding ChatSessionUIPtr object of given IMSessionPtr object
+	 *         if it cannot be found then return null pointer
 	 **/
 	ChatSessionUIPtr CommunicationUIModule::GetUIChatSession(Communication::IMSessionPtr s)
 	{
@@ -987,17 +562,12 @@ namespace CommunicationUI
 		{
 			ChatSessionUIPtr cs = i->second;
 			if ( cs->session_ == s )
-			{
 				return cs;
-			}
 		}
+
+		std::string error = "We don't find the session!";
+		LogError(error);
 		return ChatSessionUIPtr();
-		//std::string map_key = m->GetAuthor()->GetContact()->GetContactInfo("jabber")->GetProperty("address"); // <--- THIS WORKS ONLY IF THERE IS ONLY ONE PARTICIPANT PER SESSION !!!!
-		//ChatSessionUIPtr ui_session = chatSessions_[map_key]->OnMessageReceived(m);
-		//if (ui_session)
-		//	return ui_session;
-		//
-		//return ChatSessionUIPtr(NULL);
 	}
 
 	/**
@@ -1007,8 +577,6 @@ namespace CommunicationUI
 	{
 		return ChatSessionUIPtr();
 	}
-
-
 
 	/**
  	 * Handles all communication service events
@@ -1100,7 +668,7 @@ namespace CommunicationUI
 			{
 				Communication::Events::ConnectionStateEventInterface* e = (Communication::Events::ConnectionStateEventInterface*)(data);
 				std::string type_text;
-                Gtk::Label* label = (Gtk::Label*)instance_->commUI_XML->get_widget("lblOnlineStatus");
+                Gtk::Label* label = (Gtk::Label*)commUI_XML->get_widget("lblOnlineStatus");
 				switch(e->GetType())
 				{
 				case Communication::Events::ConnectionStateEventInterface::CONNECTION_OPEN:
@@ -1163,7 +731,7 @@ namespace CommunicationUI
         std::string infoText = "Let user ";
         infoText.append(id);
         infoText.append(" see your presence status");
-        SelectionDialog sd("Presence request", infoText, "_Allow", "_Deny", instance_, std::string(id));
+        SelectionDialog sd("Presence request", infoText, "_Allow", "_Deny", this, std::string(id));
         Gtk::Main::run(sd);
 	}
 	
@@ -1190,7 +758,7 @@ namespace CommunicationUI
 	 */
 	void CommunicationUIModule::UpdateOnlineStatusList()
 	{
-		instance_->cmbPresence.clear();
+		cmbPresence.clear();
 		std::vector<std::string> options = communication_service_->GetPresenceStatus()->GetOnlineStatusOptions();
         for(std::vector<std::string>::iterator iter = options.begin(); iter < options.end(); iter++)
 		{
@@ -1219,7 +787,7 @@ namespace CommunicationUI
 
 			Gtk::TreeModel::Row row = *(this->lstContacts.lstContactsTreeModel->append());
 			row[lstContacts.columns_.id_] = ""; // std::string(id);
-			row[lstContacts.columns_.contact_] = c->GetContactInfo(protocol)->GetProperty("address");
+			row[lstContacts.columns_.contact_] = c->GetName(); // GetContactInfo(protocol)->GetProperty("address");
 			row[lstContacts.columns_.status_] = c->GetPresenceStatus()->GetOnlineStatus();
 			row[lstContacts.columns_.message_] = c->GetPresenceStatus()->GetOnlineMessage();
 		}
@@ -1230,19 +798,15 @@ namespace CommunicationUI
 	 **/
 	void CommunicationUIModule::HandleIncomingIMSession(Communication::IMSessionPtr s)
 	{
-		std::string protocol = "jabber"; // todo: remove this fixed definition
-		std::string address = s->GetOriginator()->GetContact()->GetContactInfo(protocol)->GetProperty("address");
-		std::string session_originator = "test"; // todo: s->GetOriginator() --> ParticipantPtr
+//		std::string protocol = "jabber"; // todo: remove this fixed definition
+		std::string session_id = "test"; // s->GetOriginator()->GetContact()->GetContactInfo(protocol)->GetProperty("address");
 		ChatSessionUIPtr chat_session = GetUIChatSession(s);
 		if (!chat_session)
 		{
 			chat_session = ChatSessionUIPtr( new ChatSession(s, communication_service_) );
-			chatSessions_[std::string(session_originator)] = chat_session;
+			chatSessions_[std::string(session_id)] = chat_session;
 		}
 		chat_session->ChannelOpen();
-		//            instance_->chatSessions_[std::string(addr)] = ChatSessionUIPtr(new ChatSession(addr, instance_->imScriptObject));
-        //} 
-        //instance_->chatSessions_[std::string(addr)]->ChannelOpen();
 	}
 
 }

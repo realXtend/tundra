@@ -9,6 +9,7 @@ namespace Communication
 
 	Message::Message(): time_stamp_(CreateTimeStamp())
 	{
+		author_ = ParticipantPtr(); // we don't know yet
 	}
 
     /**
