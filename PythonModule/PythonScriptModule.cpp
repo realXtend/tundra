@@ -131,16 +131,7 @@ namespace PythonScript
 		//implementing input state in py, see the AvatarController and CameraController in rexlogic
 		if (category_id == inputeventcategoryid)
 		{
-			switch (event_id)
-			{
-				case Input::Events::MOVE_FORWARD_PRESSED:
-					PyObject_CallMethod(pmmInstance, "MOVE_FORWARD_PRESSED", "");
-					break;
-
-				case Input::Events::MOVE_FORWARD_RELEASED:
-                    PyObject_CallMethod(pmmInstance, "MOVE_FORWARD_RELEASED", "");
-                    break;
-			}
+			PyObject_CallMethod(pmmInstance, "INPUT_EVENT", "i", event_id);
 		}
 
 		//was for first receive chat test, when no module provided it, so handles net event directly
@@ -386,6 +377,28 @@ static void PythonScript::initpymod()
 	PyObject* m;
 	
 	m = Py_InitModule("rexviewer", EmbMethods);
+
+	//add events constants - now just the input events
+	//XXX move these to some submodule ('input'? .. better than 'constants'?)
+	PyModule_AddIntConstant(m, "MOVE_FORWARD_PRESSED", Input::Events::MOVE_FORWARD_PRESSED);
+	PyModule_AddIntConstant(m, "MOVE_FORWARD_RELEASED", Input::Events::MOVE_FORWARD_RELEASED);
+
+	/* TODO: get the constants from the EventManager,
+	add registrating those (it's not (currently) mandatory),
+	to the modules themselves, e.g. InputModule (currently the OIS thing but that is to change)
+	Foundation::EventManager &em = *framework_->GetEventManager();
+    const Foundation::EventManager::EventCategoryMap &categories = em.GetEventCategoryMap();
+
+    for(Foundation::EventManager::EventCategoryMap::const_iterator iter = categories.begin();
+        iter != categories.end(); ++iter)
+    {
+        std::stringstream ss;
+        ss << iter->first << " (id:" << iter->second << ")";
+
+        Gtk::TreeStore::iterator treeiter = debugEventsModel_->append();
+
+        treeiter->set_value(0, ss.str());
+    }*/
 
 	entity_init(m); 
 	/* this is planned to be vice versa: 

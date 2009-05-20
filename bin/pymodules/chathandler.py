@@ -1,9 +1,15 @@
-import rexviewer as r
-from eventsource import viewer #the pyglet dispatcher
+"""was earlier direct test then modulemanager.py didn't exist,
+and later with pyglet_manager a test with that, worked.
+now the circuits_testmodule.TestModule has a chat handler too (as a method),
+this is not called directly by the c++ side anymore,
+but is to be loaded by the circuits_manager ModuleManager/ComponentRunner
+"""
 
-@viewer
-def on_chat(frm, m):
-    print "chathandler.onChat got chat message:", frm, m
-    if 'bot' in m.lower():
-        r.sendChat("I heard you!")
-    return True
+import rexviewer as r
+from circuits import Component
+
+class ChatHandler(Component):
+    def on_chat(self, frm, message):
+        print "ChatHandler.onChat got chat message:", frm, message
+        if 'bot' in message.lower():
+            r.sendChat("I heard you!")
