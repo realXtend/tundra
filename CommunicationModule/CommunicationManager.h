@@ -33,6 +33,7 @@ namespace Communication
 {
 	#define COMMUNICATION_PYTHON_MODULE "IMDemo" 
 	#define COMMUNICATION_PYTHON_CLASS "IMDemo"
+	#define LOCAL_USER_ID "1" // defined in python side
 
 	/**
 	 *  Implements CommunicationServiceInterface with python backend which uses telepathy-python

@@ -30,7 +30,7 @@
 namespace CommunicationUI
 {
 
-	CommunicationUIModule::CommunicationUIModule(void):ModuleInterfaceImpl("CommunicationUIModule")
+	CommunicationUIModule::CommunicationUIModule(void):ModuleInterfaceImpl("CommunicationUIModule"), online_status_list_ready_(false)
 	{
 	}
 
@@ -127,7 +127,7 @@ namespace CommunicationUI
 
 
 
-        cmbPresence.signal_changed().connect(sigc::mem_fun(*this, &CommunicationUIModule::OnComboChange) );
+        cmbPresence.signal_changed().connect(sigc::mem_fun(*this, &CommunicationUIModule::OnPresenceStatusSelection) );
 
 
 		// entry dialog
@@ -384,16 +384,19 @@ namespace CommunicationUI
 		communication_service_->SetPresenceStatus( s );
     }
 
-    void CommunicationUIModule::OnComboChange()
-    {
-        LogInfo("OnComboChange");
+	void CommunicationUIModule::OnPresenceStatusSelection()
+	{
+        LogInfo("OnPresenceStatusSelection");
         std::string status = cmbPresence.get_active_text();
         LogInfo(status);
+
+		if (!online_status_list_ready_)
+			return; // list build process causes these events
 
 		Communication::PresenceStatusPtr s = communication_service_->GetPresenceStatus();
 		s->SetOnlineStatus(status);
 		communication_service_->SetPresenceStatus( s );
-    }
+	}
 
 	/**
 	 *  \todo Implement save eg. with ConfiguratonManager
@@ -758,17 +761,16 @@ namespace CommunicationUI
 	 */
 	void CommunicationUIModule::UpdateOnlineStatusList()
 	{
+		online_status_list_ready_ = false;
 		cmbPresence.clear();
 		std::vector<std::string> options = communication_service_->GetPresenceStatus()->GetOnlineStatusOptions();
-        for(std::vector<std::string>::iterator iter = options.begin(); iter < options.end(); iter++)
+        for(std::vector<std::string>::iterator iter = options.begin(); iter != options.end(); ++iter)
 		{
 			std::string option = (*iter);
-
             cmbPresence.append_text(option);
-
-			if (communication_service_->GetPresenceStatus()->GetOnlineStatus().compare(option) == 0)
-				cmbPresence.set_active_text(option);
         }
+		cmbPresence.set_active_text(communication_service_->GetPresenceStatus()->GetOnlineStatus());
+		online_status_list_ready_ = true;
 	}
 
 	/*

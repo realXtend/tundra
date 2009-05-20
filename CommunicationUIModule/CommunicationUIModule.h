@@ -88,7 +88,7 @@ namespace CommunicationUI
 		void OnContactAdd();
 		void OnContactRemove();
         void OnRefresh();
-        void OnComboChange();
+		void OnPresenceStatusSelection();
 
 		void UpdateOnlineStatusList();
 		void UpdateContactList();
@@ -125,6 +125,7 @@ namespace CommunicationUI
 	protected:
 
 		int entryret_;
+		bool online_status_list_ready_; 
 			
 	public:
 //		ChatSessionUIPtr session_;
