@@ -5,7 +5,11 @@ this is not called directly by the c++ side anymore,
 but is to be loaded by the circuits_manager ModuleManager/ComponentRunner
 """
 
-import rexviewer as r
+try:
+    import rexviewer as r
+except ImportError: #not running under rex
+    import mockviewer as r
+
 from circuits import Component
 
 class ChatHandler(Component):

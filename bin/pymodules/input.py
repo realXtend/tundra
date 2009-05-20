@@ -35,8 +35,13 @@ if 1: #push an event, now an input event
     
     mm.INPUT_EVENT(r.MOVE_FORWARD_PRESSED)
     
+    #a chat message again now too
+    mm.RexNetMsgChatFromSimulator("Bob", "- that's me, Bob.")
+    
     #previous pyglet stuff, was an ncoming chat msg event
     #m.dispatch_event('on_chat', "input", "testing")
     #print viewer._event_stack
+    
+    
     
 
