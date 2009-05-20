@@ -51,7 +51,7 @@ namespace
 
         std::stringstream ss;
         ss << "Texture \"" << texName << "\": width: " << tex->getWidth() << ", height: " << tex->getHeight() << ", mips: " << tex->getNumMipmaps();
-        RexLogicModule::LogInfo(ss.str());
+        RexLogicModule::LogDebug(ss.str());
     }
 
     const char terrainMaterialName[] = "TerrainMaterial";

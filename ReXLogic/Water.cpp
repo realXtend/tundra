@@ -59,7 +59,7 @@ void Water::CreateWaterGeometry()
     Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeId());
     entity->AddEntityComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent("EC_Water"));
     EC_Water *waterComponent = checked_static_cast<EC_Water*>(entity->GetComponent("EC_Water").get());
-//    waterComponent->SetWaterHeight(0.f);
+    waterComponent->SetWaterHeight(20.f);
 
     cachedWaterEntity_ = entity;
 }
