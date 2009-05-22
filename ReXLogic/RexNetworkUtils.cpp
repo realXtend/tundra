@@ -151,10 +151,26 @@ namespace RexLogic
         return result;
     }
 
+    uint16_t ReadUInt16FromBytes(const uint8_t* bytes, int& idx)
+    {
+        uint16_t result = *(uint16_t*)(&bytes[idx]);
+        idx += sizeof(uint16_t);
+        
+        return result;
+    }
+    
     uint32_t ReadUInt32FromBytes(const uint8_t* bytes, int& idx)
     {
         uint32_t result = *(uint32_t*)(&bytes[idx]);
         idx += sizeof(uint32_t);
+        
+        return result;
+    }
+
+    int32_t ReadSInt32FromBytes(const uint8_t* bytes, int& idx)
+    {
+        uint32_t result = *(int32_t*)(&bytes[idx]);
+        idx += sizeof(int32_t);
         
         return result;
     }

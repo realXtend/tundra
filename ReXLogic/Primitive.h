@@ -30,8 +30,6 @@ namespace RexLogic
         typedef std::map<std::pair<Core::request_tag_t, RexTypes::asset_type_t>, Core::entity_id_t> EntityResourceRequestMap;
 
     private:
-        typedef std::map<RexTypes::RexUUID, std::vector<Core::u8> > RexPrimDataMap;    
-
         //! The owning module.
         RexLogicModule *rexlogicmodule_;
     
@@ -41,24 +39,40 @@ namespace RexLogic
         Scene::EntityPtr CreateNewPrimEntity(Core::entity_id_t entityid);
         
         //! checks if stored pending rexdata exists for prim and handles it
+        //! @param entityid Entity id.
         void CheckPendingRexPrimData(Core::entity_id_t entityid);
         
         //! handle rexprimdata blob coming from server in a genericmessage
         void HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t* primdata);
         
         //! handles changes in drawtype. sets/removes mesh as necessary
-        void HandleDrawType(Core::entity_id_t entityid);
+        //! @param entityid Entity id.
+        void HandleDrawType(Core::entity_id_t entityid);   
 
         //! Re-binds all the Ogre materials attached to the given prim entity. If the materials haven't yet been loaded in, requests for
         //! those materials are made and the material binding is delayed until the downloads are complete.
         void HandleMeshMaterials(Core::entity_id_t entityid);
 
         //! handles mesh texture changes
+        //! @param entityid Entity id.
         void HandleMeshTextures(Core::entity_id_t entityid);
-        
+
+        //! handles the ExtraParams data.
+        //! @param entity_id Entity id.
+        //! @param extra_params_data Binary data blob.
+        void HandleExtraParams(const Core::entity_id_t &entity_id, const uint8_t *extra_params_data);
+                
         //! handles mesh resource being ready
         void HandleMeshReady(Core::entity_id_t entity, Foundation::ResourcePtr res);
-
+        
+        /** Attachs a light component to a prim.
+         * @param entity Entity pointer of the prim.
+         * @param color Color.
+         * @param radius Radius of the light.
+         * @param falloff Falloff factor of the light.
+         */ 
+        void AttachLightComponent(Scene::EntityPtr entity, Core::Color color, float radius, float falloff);
+        
         //! handles mesh texture resource being ready
         void HandleMeshTextureReady(Core::entity_id_t entity, Foundation::ResourcePtr res);
         
@@ -74,6 +88,7 @@ namespace RexLogic
         //! are received before the actual objects have been created (first ObjectUpdate is received). Any such pending
         //! messages are queued here to wait that the object is created. The real problem here is that SLUDP doesn't give
         //! us any reliable ordered stream of communication.
+        typedef std::map<RexTypes::RexUUID, std::vector<Core::u8> > RexPrimDataMap;
         RexPrimDataMap pending_rexprimdata_;
     };
 }

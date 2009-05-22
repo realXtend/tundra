@@ -9,6 +9,7 @@
 #include "EC_Viewable.h"
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
 #include "../OgreRenderingModule/EC_OgreMesh.h"
+#include "../OgreRenderingModule/EC_OgreLight.h"
 #include "../OgreRenderingModule/OgreMeshResource.h"
 #include "../OgreRenderingModule/OgreTextureResource.h"
 #include "../OgreRenderingModule/OgreMaterialResource.h"
@@ -151,9 +152,19 @@ namespace RexLogic
             prim.HoveringText = msg->ReadString(); 
             msg->SkipToNextVariable();      // TextColor
             prim.MediaUrl = msg->ReadString();
+            msg->SkipToNextVariable();      // PSBlock
+            
+            // If there are extra params, handle them.
+            if (msg->ReadVariableSize() > 1)
+            {
+                const uint8_t *extra_params_data = msg->ReadBuffer(&bytes_read);
+                HandleExtraParams(localid, extra_params_data);
+            }
+            
             msg->SkipToFirstVariableByName("JointAxisOrAnchor");
             msg->SkipToNextVariable(); // To next instance
         }
+        
         return false;
     }
     
@@ -275,7 +286,9 @@ namespace RexLogic
         int idx = 0;
 
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
-        if (!entity) return;
+        if (!entity)
+            return;
+            
         EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
 
         // graphical values
@@ -421,7 +434,6 @@ namespace RexLogic
         if (!entity)
             return;
         EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
-            
         if ((prim.DrawType == RexTypes::DRAWTYPE_MESH) && (!prim.MeshUUID.IsNull()))
         {
             //RexLogicModule::LogInfo("Entity " + Core::ToString<Core::entity_id_t>(entityid) + 
@@ -540,6 +552,82 @@ namespace RexLogic
 
             ++i;
         }    
+    }
+    
+    void Primitive::HandleExtraParams(const Core::entity_id_t &entity_id, const uint8_t *extra_params_data)
+    {
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entity_id);
+        if (!entity)
+            return;
+        
+        int idx = 0;
+        uint8_t num_params = ReadUInt8FromBytes(extra_params_data, idx);
+        for (uint8_t param_i = 0; param_i < num_params; ++param_i)
+        {
+            uint16_t param_type = ReadUInt16FromBytes(extra_params_data, idx);
+            Core::uint param_size = ReadSInt32FromBytes(extra_params_data, idx);
+            switch (param_type)
+            {
+            case 32: // light
+            {
+                // If light component doesn't exist, create it.
+                if(!entity->GetComponent(OgreRenderer::EC_OgreLight::NameStatic()).get())
+                    entity->AddEntityComponent(rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent("EC_OgreLight"));
+                    
+                // Read the data.
+                uint8_t r = ReadUInt8FromBytes(extra_params_data, idx);
+                uint8_t g = ReadUInt8FromBytes(extra_params_data, idx);
+                uint8_t b = ReadUInt8FromBytes(extra_params_data, idx);
+                uint8_t a = ReadUInt8FromBytes(extra_params_data, idx);
+                float radius = ReadFloatFromBytes(extra_params_data, idx);
+                float cutoff = ReadFloatFromBytes(extra_params_data, idx); //this seems not be used anywhere.
+                float falloff = ReadFloatFromBytes(extra_params_data, idx);
+                
+                Core::Color color(r, g, b, a);
+                AttachLightComponent(entity, color, radius, falloff);
+                break;
+            }
+            ///\todo Are we interested in other types of extra params? Probably not.
+            case 16: // flexible
+            case 48: // sculpt
+            default:
+                break;
+            }
+        }
+    }
+    
+    void Primitive::AttachLightComponent(Scene::EntityPtr entity, Core::Color color, float radius, float falloff)
+    {
+        if (radius < 0.001) radius = 0.001;
+
+        // Attenuation calculation
+        float x = 3.f * (1.f + falloff);
+        float linear = x / radius; // % of brightness at radius
+        // Add a constant quad term for diminishing the light more beyond radius
+        float quad = 0.3f / (radius * radius); 
+
+        // Use the point where linear attenuation has reduced intensity to 1/20 as max range
+        // (OpenGL has no absolute light range cap like Direct3D)
+        float max_radius = radius;
+        if (linear > 0.0)
+        {
+            max_radius = 20 / linear;
+            if (max_radius < radius)
+                max_radius = radius;
+        }
+
+        OgreRenderer::EC_OgreLight &light = *checked_static_cast<OgreRenderer::EC_OgreLight*>
+            (entity->GetComponent(OgreRenderer::EC_OgreLight::NameStatic()).get());
+            
+        ///\note Only point lights are supported at the moment.
+        light.SetType(OgreRenderer::EC_OgreLight::LT_Spot);
+        Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());  
+        if (placeable)
+            light.SetPlaceable(placeable);
+        
+        ///\note Test if the color values have to be in range [0, 1].
+        light.SetColor(color);
+        light.SetAttenuation(max_radius, 0.0f, linear, quad);
     }
 
     bool Primitive::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)

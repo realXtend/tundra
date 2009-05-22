@@ -81,10 +81,8 @@ namespace OgreRenderer
                 if (event_data->asset_type_ == "Mesh")
                     UpdateMesh(event_data->asset_, event_data->tag_);
 
-/** \todo Uncomment when Material Script parsing is done.
                 if (event_data->asset_type_ == "MaterialScript")
                     UpdateMaterial(event_data->asset_, event_data->tag_);
-*/
             }
             break;
             
