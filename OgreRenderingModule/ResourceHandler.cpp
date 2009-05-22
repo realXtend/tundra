@@ -5,6 +5,7 @@
 #include "OgreRenderingModule.h"
 #include "OgreTextureResource.h"
 #include "OgreMeshResource.h"
+#include "OgreMaterialResource.h"
 #include "ResourceInterface.h"
 #include "ResourceHandler.h"
 
@@ -34,6 +35,8 @@ namespace OgreRenderer
             return GetTexture(id);
         if (type == OgreMeshResource::GetTypeStatic())
             return GetMesh(id);
+        if (type == OgreMaterialResource::GetTypeStatic())
+            return GetMaterial(id);
             
         OgreRenderingModule::LogWarning("Requested unknown renderer resource type " + type);            
         return Foundation::ResourcePtr();
@@ -44,7 +47,9 @@ namespace OgreRenderer
         if (type == OgreTextureResource::GetTypeStatic())
             return RequestTexture(id);
         if (type == OgreMeshResource::GetTypeStatic())
-            return RequestMesh(id);      
+            return RequestMesh(id);
+        if (type == OgreMaterialResource::GetTypeStatic())
+            return RequestMaterial(id);
             
         OgreRenderingModule::LogWarning("Requested unknown renderer resource type " + type);
         return 0;     
@@ -56,6 +61,8 @@ namespace OgreRenderer
             return RemoveTexture(id);
         if (type == OgreMeshResource::GetTypeStatic())
             return RemoveMesh(id); 
+        if (type == OgreMaterialResource::GetTypeStatic())
+            return RemoveMaterial(id);
     }    
     
     bool ResourceHandler::HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
@@ -65,13 +72,19 @@ namespace OgreRenderer
             case Asset::Events::ASSET_READY:
             {
                 Asset::Events::AssetReady *event_data = checked_static_cast<Asset::Events::AssetReady*>(data); 
+
+                // Check that the request tag matches our request, so we do not (possibly) update unnecessarily many times
+                // because of others' requests     
+                if (expected_request_tags_.find(event_data->tag_) == expected_request_tags_.end())             
+                    return false;
+
                 if (event_data->asset_type_ == "Mesh")
-                {
-                    // Check that the request tag matches our request, so we do not (possibly) update unnecessarily many times
-                    // because of others' requests     
-                    if (expected_request_tags_.find(event_data->tag_) != expected_request_tags_.end())                      
-                        UpdateMesh(event_data->asset_, event_data->tag_);
-                }
+                    UpdateMesh(event_data->asset_, event_data->tag_);
+
+/** \todo Uncomment when Material Script parsing is done.
+                if (event_data->asset_type_ == "MaterialScript")
+                    UpdateMaterial(event_data->asset_, event_data->tag_);
+*/
             }
             break;
             
@@ -287,6 +300,98 @@ namespace OgreRenderer
             for (Core::uint i = 0; i < tags.size(); ++i)
             {        
                 Resource::Events::ResourceReady event_data(mesh->GetId(), mesh, tags[i]);
+                framework_->GetEventManager()->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, &event_data);
+            }
+            
+            success = true;
+        }
+        
+        request_tags_.erase(source->GetId());
+        return success;
+    }    
+
+    Core::request_tag_t ResourceHandler::RequestMaterial(const std::string& id)
+    {
+        Core::request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
+        
+        // See if already have the material with data
+        Foundation::ResourcePtr material = GetMaterial(id);
+        if (material)
+        {
+            if (!checked_static_cast<OgreMaterialResource*>(material.get())->GetMaterial().isNull())
+            {
+                Resource::Events::ResourceReady* event_data = new Resource::Events::ResourceReady(material->GetId(), material, tag);
+                framework_->GetEventManager()->SendDelayedEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, Foundation::EventDataPtr(event_data));
+                return tag;
+            }
+        }
+        
+        // Request from asset system
+        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
+        if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
+        {
+            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+
+            // Perform the actual asset request only once, for the first request
+            if (request_tags_.find(id) == request_tags_.end())
+            {
+                Core::request_tag_t source_tag = asset_service->RequestAsset(id, "MaterialScript");
+                if (source_tag) 
+                {
+                    request_tags_[id].push_back(tag);
+                    expected_request_tags_.insert(source_tag);
+                    return tag;
+                }                
+            }     
+            else
+            {
+                request_tags_[id].push_back(tag); 
+                return tag;
+            }                     
+        }
+
+        return 0;
+    }
+
+    Foundation::ResourcePtr ResourceHandler::GetMaterial(const std::string& id)
+    {
+        Foundation::ResourceMap::iterator i = materials_.find(id);
+        if (i == materials_.end())
+            return Foundation::ResourcePtr();
+        else
+            return i->second;
+    }
+
+    void ResourceHandler::RemoveMaterial(const std::string& id)
+    {
+        Foundation::ResourceMap::iterator i = materials_.find(id);
+        if (i == materials_.end())
+            return;
+        else
+            materials_.erase(i);
+    }
+
+    bool ResourceHandler::UpdateMaterial(Foundation::AssetPtr source, Core::request_tag_t tag)
+    {    
+        expected_request_tags_.erase(tag);
+            
+        // If not found, prepare new
+        Foundation::ResourcePtr material = GetMaterial(source->GetId());
+        if (!material)
+        {
+            material = materials_[source->GetId()] = Foundation::ResourcePtr(new OgreMaterialResource(source->GetId()));
+        }
+
+        bool success = false;
+        OgreMaterialResource* material_res = checked_static_cast<OgreMaterialResource*>(material.get());
+
+        // If data successfully set, or already have valid data, success (send RESOURCE_READY_EVENT)
+        if ((!material_res->GetMaterial().isNull()) || (material_res->SetData(source)))
+        {
+            const Core::RequestTagVector& tags = request_tags_[source->GetId()];            
+            for (Core::uint i = 0; i < tags.size(); ++i)
+            {        
+                Resource::Events::ResourceReady event_data(material->GetId(), material, tags[i]);
                 framework_->GetEventManager()->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, &event_data);
             }
             

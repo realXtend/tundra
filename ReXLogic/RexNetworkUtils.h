@@ -28,8 +28,11 @@ namespace RexLogic
     
     bool ParseBool(const std::string &value);
     
-    //! Helper functions for reading values from byteblob
+    // Helper functions for reading values from byteblob:
+
+    //! \todo Remove, not serialization-safe. (bool assumed 8bit.)
     bool ReadBoolFromBytes(const uint8_t* bytes, int& idx);
+
     uint8_t ReadUInt8FromBytes(const uint8_t* bytes, int& idx);
     uint32_t ReadUInt32FromBytes(const uint8_t* bytes, int& idx);
     float ReadFloatFromBytes(const uint8_t* bytes, int& idx);

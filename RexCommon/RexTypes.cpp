@@ -9,7 +9,7 @@ namespace RexTypes
     static const std::string ASSETTYPE_MATERIAL_SCRIPT("MaterialScript");
     static const std::string ASSETTYPE_UNKNOWN("Unknown");
      
-    int GetAssetTypeFromTypeName(const std::string& asset_type)
+    asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type)
     {
         if (asset_type == ASSETTYPE_TEXTURE)
             return RexAT_Texture;
@@ -25,7 +25,7 @@ namespace RexTypes
         return -1;    
     }   
     
-    const std::string& GetTypeNameFromAssetType(int asset_type)
+    const std::string& GetTypeNameFromAssetType(asset_type_t asset_type)
     {
         if (asset_type == RexAT_Texture)
             return ASSETTYPE_TEXTURE;

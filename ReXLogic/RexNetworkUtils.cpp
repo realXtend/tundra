@@ -190,7 +190,7 @@ namespace RexLogic
         
         return result;
     }    
-    
+
     void WriteUInt8ToBytes(uint8_t value, uint8_t* bytes, int& idx)
     {
         bytes[idx] = value;
