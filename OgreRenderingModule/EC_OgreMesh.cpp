@@ -82,6 +82,7 @@ namespace OgreRenderer
             Ogre::SkeletonPtr skeleton = Ogre::SkeletonManager::getSingleton().getByName(mesh->getSkeletonName());
             if (skeleton.isNull() || skeleton->getNumBones() == 0)
             {
+                OgreRenderingModule::LogWarning("Mesh " + mesh_name + " has a skeleton with 0 bones. Disabling the skeleton.");
                 mesh->setSkeletonName("");
             }
         }
