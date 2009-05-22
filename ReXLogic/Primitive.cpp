@@ -11,6 +11,7 @@
 #include "../OgreRenderingModule/EC_OgreMesh.h"
 #include "../OgreRenderingModule/OgreMeshResource.h"
 #include "../OgreRenderingModule/OgreTextureResource.h"
+#include "../OgreRenderingModule/OgreMaterialResource.h"
 #include "../OgreRenderingModule/OgreMaterialUtils.h"
 #include "../OgreRenderingModule/Renderer.h"
 #include "ConversionUtils.h"
@@ -307,7 +308,7 @@ namespace RexLogic
             newmaterialdata.Type = ReadUInt8FromBytes(primdata,idx);
             newmaterialdata.UUID = ReadUUIDFromBytes(primdata,idx);
             tempmaterialindex = ReadUInt8FromBytes(primdata,idx);
-            materials[tempmaterialindex] = newmaterialdata;                           
+            materials[tempmaterialindex] = newmaterialdata;
         }
         prim.Materials = materials;
 
@@ -319,7 +320,10 @@ namespace RexLogic
         prim.SoundRadius = ReadFloatFromBytes(primdata,idx);               
 
         prim.SelectPriority = ReadUInt32FromBytes(primdata,idx);
-        
+   
+        // Handle any change in the drawtype of the prim. Also, 
+        // the Ogre materials on this prim have possibly changed. Issue requests of the new materials 
+        // from the asset provider and bind the new materials to this prim.
         HandleDrawType(entityid);
     }
     
@@ -375,15 +379,47 @@ namespace RexLogic
         
         return false;        
     }
+/*
+    void Primitive::HandleOgreMaterialsChanged(Core::entity_id_t entityid)
+    {
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+        assert(entity.get());
+        if (!entity) 
+            return;
 
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+
+        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+
+        for(MaterialMap::iterator iter = prim.Materials.begin(); iter != prim.Materials.end(); ++iter)
+        {
+            RexLogic::MaterialData &material = iter->second;
+
+            Core::request_tag_t tag = renderer->RequestResource(material.UUID.ToString(), OgreRenderer::OgreMaterialResource::GetTypeStatic());
+
+            // Remember that we are going to get a resource event for this entity
+            if (tag)
+            {
+                prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_MaterialScript)] = entityid;
+                ///\todo remove, clb debug.
+                RexLogicModule::LogInfo("Requested Ogre material.");
+            }
+        }
+    }
+*/
+    ///\todo We now pass the entityid in the function. It is assumed that the entity contains exactly one EC_OpenSimPrim and one EC_OgreMesh component.
+    /// Possibly in the future an entity can have several meshes attached to it, so we should pass in the EC_OgreMesh in question.
     void Primitive::HandleDrawType(Core::entity_id_t entityid)
     {
+        ///\todo Make this only discard mesh resource request tags.
         // Discard old request tags for this entity
-        DiscardRequestTags(entityid, mesh_request_tags_);
-        DiscardRequestTags(entityid, mesh_texture_request_tags_);
+        DiscardRequestTags(entityid, prim_resource_request_tags_);
                                 
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
-        if (!entity) return;
+        assert(entity.get());
+        if (!entity)
+            return;
         EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
             
         if ((prim.DrawType == RexTypes::DRAWTYPE_MESH) && (!prim.MeshUUID.IsNull()))
@@ -413,7 +449,7 @@ namespace RexLogic
 
                 // Remember that we are going to get a resource event for this entity
                 if (tag)
-                    mesh_request_tags_[tag] = entityid;         
+                    prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Mesh)] = entityid;
             }
                         
             // Handle scale mesh to prim-setting
@@ -424,7 +460,7 @@ namespace RexLogic
             mesh.SetAdjustOrientation(adjust);
 
             // Check/request mesh textures
-            HandleMeshTextures(entityid);
+            HandleMeshMaterials(entityid);
         }
         else
         {
@@ -437,45 +473,71 @@ namespace RexLogic
         }
     } 
     
-    void Primitive::HandleMeshTextures(Core::entity_id_t entityid)
+    void Primitive::HandleMeshMaterials(Core::entity_id_t entityid)
     {                        
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
-        if (!entity) return;
+        if (!entity) 
+            return;
         EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());            
            
         Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-        if (!mesh) return;
+        if (!mesh)
+            return;
             
         OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
      
         boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
             GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-                                        
+            
+        // Loop through all the materials in the mesh 
         MaterialMap::const_iterator i = prim.Materials.begin();
         while (i != prim.Materials.end())
         {
-            Core::uint idx = i->first;                
-            // For now, handle only textures, not materials
-            if ((i->second.Type == RexTypes::RexAT_Texture) && (!i->second.UUID.IsNull()))
-            {
-                std::string tex_name = i->second.UUID.ToString();
+            if (i->second.UUID.IsNull())
+                continue;
 
-                //! \todo in the future material names will not correspond directly to texture names, so can't use this kind of check
-                if (meshptr->GetMaterialName(idx) != tex_name)
+            const std::string mat_name = i->second.UUID.ToString();
+            Core::uint idx = i->first;   
+
+            //! \todo in the future material names will not correspond directly to texture names, so can't use this kind of check
+            // If the mesh material is up-to-date, no need to process any further.
+            if (meshptr->GetMaterialName(idx) == mat_name)
+                continue;
+
+            switch(i->second.Type)
+            {
+                case RexTypes::RexAT_Texture:
                 {
-                    Foundation::ResourcePtr res = renderer->GetResource(tex_name, OgreRenderer::OgreTextureResource::GetTypeStatic());
+                    Foundation::ResourcePtr res = renderer->GetResource(mat_name, OgreRenderer::OgreTextureResource::GetTypeStatic());
                     if (res)
                         HandleMeshTextureReady(entityid, res);
                     else
                     {                
-                        Core::request_tag_t tag = renderer->RequestResource(tex_name, OgreRenderer::OgreTextureResource::GetTypeStatic());
+                        Core::request_tag_t tag = renderer->RequestResource(mat_name, OgreRenderer::OgreTextureResource::GetTypeStatic());
 
                         // Remember that we are going to get a resource event for this entity
                         if (tag)
-                            mesh_texture_request_tags_[tag] = entityid;   
+                            prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Texture)] = entityid;   
                     } 
                 }
-            }    
+                break;
+                case RexTypes::RexAT_MaterialScript:
+                {
+                    Foundation::ResourcePtr res = renderer->GetResource(mat_name, OgreRenderer::OgreMaterialResource::GetTypeStatic());
+                    if (res)
+                        HandleMaterialResourceReady(entityid, res);
+                    else
+                    {                
+                        Core::request_tag_t tag = renderer->RequestResource(mat_name, OgreRenderer::OgreMaterialResource::GetTypeStatic());
+
+                        // Remember that we are going to get a resource event for this entity
+                        if (tag)
+                            prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_MaterialScript)] = entityid;   
+                    } 
+                }
+                break;
+            }
+
             ++i;
         }    
     }
@@ -485,23 +547,40 @@ namespace RexLogic
         if (event_id == Resource::Events::RESOURCE_READY)
         {
             Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
-            Foundation::ResourcePtr res = event_data->resource_;            
-            
-            EntityResourceRequestMap::iterator i = mesh_request_tags_.find(event_data->tag_);
-            if (i != mesh_request_tags_.end())
+            Foundation::ResourcePtr res = event_data->resource_;
+            RexTypes::asset_type_t asset_type = -1;
+
+            ///\todo Perhaps the Resource should be able to tell us what from what type of Asset it was produced from, instead of having to do it here.
+            // First we identify what kind of resource is ready:
+            if (res->GetType() == OgreRenderer::OgreMeshResource::GetTypeStatic())
+                asset_type = RexTypes::RexAT_Mesh;
+            else if (res->GetType() == OgreRenderer::OgreTextureResource::GetTypeStatic())
+                asset_type = RexTypes::RexAT_Texture;
+            else if (res->GetType() == OgreRenderer::OgreMaterialResource::GetTypeStatic())
+                asset_type = RexTypes::RexAT_MaterialScript;
+
+            EntityResourceRequestMap::iterator i = prim_resource_request_tags_.find(std::make_pair(event_data->tag_, asset_type));
+            if (i == prim_resource_request_tags_.end())
+                return false; // Not our resource request, go somewhere else to process it.
+
+            switch(asset_type)
             {
+            case RexAT_Texture:
+                HandleMeshTextureReady(i->second, res);
+                break;
+            case RexAT_Mesh:
                 HandleMeshReady(i->second, res);
-                mesh_request_tags_.erase(i);
-                return true;
+                break;
+            case RexAT_MaterialScript:
+                HandleMaterialResourceReady(i->second, res);
+                break;
+            default:
+                assert(false && "Invalid asset_type added to prim_resource_request_tags_! Don't know how it ended up there and don't know how to handle!");
+                break;
             }
-            
-            EntityResourceRequestMap::iterator j = mesh_texture_request_tags_.find(event_data->tag_);
-            if (j != mesh_texture_request_tags_.end())
-            {
-                HandleMeshTextureReady(j->second, res);
-                mesh_texture_request_tags_.erase(j);
-                return true;
-            }            
+
+            prim_resource_request_tags_.erase(i);
+            return true;
         }
         
         return false;
@@ -520,14 +599,19 @@ namespace RexLogic
         OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());         
                                               
         meshptr->SetMesh(res->GetId());  
+
         // Check/set textures now that we have the mesh
-        HandleMeshTextures(entityid);                    
+        HandleMeshMaterials(entityid);                    
     }
 
     void Primitive::HandleMeshTextureReady(Core::entity_id_t entityid, Foundation::ResourcePtr res)
     {
-        if (!res) return;
-        if (res->GetType() != OgreRenderer::OgreTextureResource::GetTypeStatic()) return;
+        assert(res.get());
+        if (!res) 
+            return;
+        assert(res->GetType() == OgreRenderer::OgreTextureResource::GetTypeStatic());
+        if (res->GetType() != OgreRenderer::OgreTextureResource::GetTypeStatic()) 
+            return;
                
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         if (!entity) return;
@@ -555,15 +639,51 @@ namespace RexLogic
             ++i;
         }
     }
-       
-    void Primitive::DiscardRequestTags(Core::entity_id_t entityid, EntityResourceRequestMap& map)
+
+    void Primitive::HandleMaterialResourceReady(Core::entity_id_t entityid, Foundation::ResourcePtr res)
     {
-        Core::RequestTagVector tags_to_remove;
+        assert(res.get());
+        if (!res) 
+            return;
+        assert(res->GetType() == OgreRenderer::OgreMaterialResource::GetTypeStatic());
+        if (res->GetType() != OgreRenderer::OgreMaterialResource::GetTypeStatic()) 
+            return;
+               
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+        if (!entity) return;
+        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());            
+           
+        Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+        assert(mesh.get());
+        if (!mesh) 
+            return;
+        OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());      
+        // If don't have the actual mesh entity yet, no use trying to set the material
+        if (!meshptr->GetEntity()) return;     
+                        
+        MaterialMap::const_iterator i = prim.Materials.begin();
+        while (i != prim.Materials.end())
+        {
+            Core::uint idx = i->first;
+            // For now, handle only textures, not materials
+            if ((i->second.Type == RexTypes::RexAT_MaterialScript) && (i->second.UUID.ToString() == res->GetId()))
+            {
+                // debug material creation to see diffuse textures                        
+                meshptr->SetMaterial(idx, res->GetId());
+            }
+            ++i;
+        }
+    }
+
+    void Primitive::DiscardRequestTags(Core::entity_id_t entityid, Primitive::EntityResourceRequestMap& map)
+    {
+        std::vector<Primitive::EntityResourceRequestMap::iterator> tags_to_remove;
+
         EntityResourceRequestMap::iterator i = map.begin();
         while (i != map.end())
         {
             if (i->second == entityid)
-                tags_to_remove.push_back(i->first);
+                tags_to_remove.push_back(i);
             ++i;
         }
         for (int j = 0; j < tags_to_remove.size(); ++j)

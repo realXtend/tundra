@@ -38,10 +38,15 @@ namespace TextureDecoder
         data_.resize(width * height * components);
     }
 
+    static const std::string texture_resource_name("Texture");
+
     const std::string& TextureResource::GetType() const
     {
-        static const std::string name("Texture");
+        return texture_resource_name;
+    }
 
-        return name;
+    const std::string& TextureResource::GetTypeStatic()
+    {
+        return texture_resource_name;
     }
 }

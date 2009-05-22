@@ -52,8 +52,10 @@ namespace Asset
         RexUUID uuid(asset_id);
         if (uuid.IsNull())
             return false;
-            
-        int asset_type_int = GetAssetTypeFromTypeName(asset_type);
+
+        // The UDP asset provider only understands the fixed set of asset types used in OpenSim. If the string type is something
+        // else, we can't satisfy the request.
+        asset_type_t asset_type_int = GetAssetTypeFromTypeName(asset_type);
         if (asset_type_int < 0)
             return false;
         

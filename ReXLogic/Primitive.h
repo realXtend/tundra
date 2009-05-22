@@ -26,11 +26,13 @@ namespace RexLogic
         void HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes);
                         
         bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
-             
+
+        typedef std::map<std::pair<Core::request_tag_t, RexTypes::asset_type_t>, Core::entity_id_t> EntityResourceRequestMap;
+
     private:
-        typedef std::map<Core::request_tag_t, Core::entity_id_t> EntityResourceRequestMap; 
         typedef std::map<RexTypes::RexUUID, std::vector<Core::u8> > RexPrimDataMap;    
-            
+
+        //! The owning module.
         RexLogicModule *rexlogicmodule_;
     
         //! @return The entity corresponding to given id AND uuid. This entity is guaranteed to have an existing EC_OpenSimPrim component.
@@ -45,7 +47,11 @@ namespace RexLogic
         void HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t* primdata);
         
         //! handles changes in drawtype. sets/removes mesh as necessary
-        void HandleDrawType(Core::entity_id_t entityid);   
+        void HandleDrawType(Core::entity_id_t entityid);
+
+        //! Re-binds all the Ogre materials attached to the given prim entity. If the materials haven't yet been loaded in, requests for
+        //! those materials are made and the material binding is delayed until the downloads are complete.
+        void HandleMeshMaterials(Core::entity_id_t entityid);
 
         //! handles mesh texture changes
         void HandleMeshTextures(Core::entity_id_t entityid);
@@ -55,17 +61,19 @@ namespace RexLogic
 
         //! handles mesh texture resource being ready
         void HandleMeshTextureReady(Core::entity_id_t entity, Foundation::ResourcePtr res);
-                
+        
+        void HandleMaterialResourceReady(Core::entity_id_t entityid, Foundation::ResourcePtr res);
+
         //! discards request tags for certain entity
         void DiscardRequestTags(Core::entity_id_t, EntityResourceRequestMap& map);
         
-        //! resource request tags for meshes
-        EntityResourceRequestMap mesh_request_tags_;    
-     
-        //! resource request tags for mesh textures
-        EntityResourceRequestMap mesh_texture_request_tags_; 
+        //! maps tags of all pending resource request to prim entities.
+        EntityResourceRequestMap prim_resource_request_tags_;
         
-        //! pending rexprimdatas
+        //! pending rexprimdatas. This map exists because in some cases the network messages that describe prim parameters
+        //! are received before the actual objects have been created (first ObjectUpdate is received). Any such pending
+        //! messages are queued here to wait that the object is created. The real problem here is that SLUDP doesn't give
+        //! us any reliable ordered stream of communication.
         RexPrimDataMap pending_rexprimdata_;
     };
 }

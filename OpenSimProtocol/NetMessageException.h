@@ -33,13 +33,13 @@ public:
      * Override constructor. 
      * @param message is error message. 
      */
-    NetMessageException(const std::string& message) : Core::Exception(), strMessage_(message) {}
+    explicit NetMessageException(const std::string& message) : Core::Exception(), strMessage_(message), type_(ET_None) {}
 
     /**
      * Override constructor. 
      * @param type Exception type enum. 
      */
-    NetMessageException(ExceptionType type) : Core::Exception(), type_(type) {}
+    explicit NetMessageException(ExceptionType type) : Core::Exception(), type_(type) {}
     
     /**
      * Returns error message for caller. 
@@ -66,9 +66,9 @@ public:
     const std::string &What() const
     {
         static const std::string exception_strings[ET_EnumCount] = {
-            "None"
+            "None",
             "Tried to read wrong variable type",
-            "Current block is variable: use ReadCurrentBlockInstanceCount first in order to proceed"
+            "Current block is variable: use ReadCurrentBlockInstanceCount first in order to proceed",
             "This block's instance count is already read",
             };
 

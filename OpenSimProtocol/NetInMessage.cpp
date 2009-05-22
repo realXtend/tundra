@@ -506,7 +506,7 @@ void NetInMessage::SkipToFirstVariableByName(const std::string &variableName)
 {
 	assert(messageInfo);
 
-    //\Todo Make sure that one can't skip to inside variable-count block.
+    /// \todo Make sure that one can't skip to inside variable-count block.
 
     // Check out that the variable really exists.
 	bool bFound = false;
@@ -530,12 +530,21 @@ void NetInMessage::SkipToFirstVariableByName(const std::string &variableName)
 	if (!bFound)
 	{
 		std::cout << "Variable \"" << variableName << "\" not found in the message info!" << std::endl;
-		return;
+        throw Core::Exception("Invalid nonexisting variableName input to NetInMessage::SkipToFirstVariableByName");
 	}
 
 	// Skip to the desired variable.
 	for(size_t it = 0; it < skip_count; ++it)
 		SkipToNextVariable();
+}
+
+void NetInMessage::SkipToNextInstanceStart()
+{
+    const NetMessageBlock &curBlock = messageInfo->blocks[currentBlock];
+    const int numVariablesLeftInThisInstance = (curBlock.variables.size() - currentVariable);
+
+    for(int i = 0; i < numVariablesLeftInThisInstance; ++i)
+        SkipToNextVariable();
 }
 
 void NetInMessage::StartReadingNextBlock()

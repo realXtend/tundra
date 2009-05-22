@@ -81,6 +81,11 @@ public:
 	/// Skips to the first variable with the specified name.
 	void SkipToFirstVariableByName(const std::string &variableName);
 
+    /// Skips all the remaining variables in the current instance of the current block.
+    /// The new read pointer will point to the first variable of the next instance of current block type, or if this was the last instance of current block type,
+    /// then to the first variable of the first instance of the next block type (if it exists).
+    void SkipToNextInstanceStart();
+
 	/// Returns a pointer to a stream of given amount of bytes in the inbound packet. Doesn't do any validation. Increments the bytesRead pointer, but doesn't
 	/// advance to the next variable. Use this only to do custom raw reading of the packet.
 	/// @param Amount of bytes to be read.

@@ -20,6 +20,7 @@ namespace TextureDecoder
         virtual int GetLevel() const { return level_; }
         virtual Core::u8* GetData() { return &data_[0]; }
         virtual const std::string& GetType() const;
+        static const std::string& GetTypeStatic();
 
         void SetSize(Core::uint width, Core::uint height, Core::uint components);
         void SetLevel(int level) { level_ = level; }

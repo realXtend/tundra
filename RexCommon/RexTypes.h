@@ -137,14 +137,15 @@ enum ControlFlags
     AGENT_CONTROL_ML_LBUTTON_UP = 0x1 << CONTROL_ML_LBUTTON_UP_INDEX
 };
 
+typedef int asset_type_t;
 
 // UDP Asset types
-const int RexAT_Texture = 0;
-const int RexAT_Mesh = 43;
-const int RexAT_Skeleton = 44;
-const int RexAT_MaterialScript = 45;
-const int RexAT_ParticleScript = 47;
-const int RexAT_FlashAnimation = 49;
+const asset_type_t RexAT_Texture = 0;
+const asset_type_t RexAT_Mesh = 43;
+const asset_type_t RexAT_Skeleton = 44;
+const asset_type_t RexAT_MaterialScript = 45;
+const asset_type_t RexAT_ParticleScript = 47;
+const asset_type_t RexAT_FlashAnimation = 49;
             
 // UDP Asset channels
 const int RexAC_Unknown = 0;
@@ -173,13 +174,13 @@ const int RexTS_UnknownError = -4;
 /*! \param asset_type Asset type name
     \return non-negative asset type, or -1 if unknown
  */
-int GetAssetTypeFromTypeName(const std::string& asset_type);
+asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type);
 
 //! Returns asset type name from ReX/OpenSim asset type
 /*! \param asset_type Asset type
     \return asset type name
  */
-const std::string& GetTypeNameFromAssetType(int asset_type);
+const std::string& GetTypeNameFromAssetType(asset_type_t asset_type);
 
 // Prim drawtypes
 const int DRAWTYPE_PRIM = 0;
