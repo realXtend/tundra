@@ -68,9 +68,13 @@ namespace OgreRenderer
         /*! does not affect point lights
             \param direction light direction
          */
-         void SetDirection(const Core::Vector3df& direction);
+        void SetDirection(const Core::Vector3df& direction);
+        
+        //! Whether the light casts shadows or not.
+        //! @param enabled Whether the light casts shadows or not.
+        void SetCastShadows(const bool &enabled);
 
-        //! returns Ogre light
+        //! @return Ogre light pointer
         Ogre::Light* GetLight() const { return light_; }
         
     private:

@@ -34,7 +34,9 @@ namespace RexLogic
     bool ReadBoolFromBytes(const uint8_t* bytes, int& idx);
 
     uint8_t ReadUInt8FromBytes(const uint8_t* bytes, int& idx);
+    uint16_t ReadUInt16FromBytes(const uint8_t* bytes, int& idx);
     uint32_t ReadUInt32FromBytes(const uint8_t* bytes, int& idx);
+    int32_t ReadSInt32FromBytes(const uint8_t* bytes, int& idx);
     float ReadFloatFromBytes(const uint8_t* bytes, int& idx);
     RexTypes::RexUUID ReadUUIDFromBytes(const uint8_t* bytes, int& idx);
     std::string ReadNullTerminatedStringFromBytes(const uint8_t* bytes, int& idx);
