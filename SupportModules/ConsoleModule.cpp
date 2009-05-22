@@ -65,6 +65,7 @@ namespace Console
     // virtual
     bool ConsoleModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
+        PROFILE(ConsoleModule_HandleEvent);
         if (framework_->GetEventManager()->QueryEventCategory("Input") == category_id)
         {
             if (event_id == Input::Events::SCROLL)

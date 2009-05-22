@@ -145,63 +145,68 @@ namespace Input
     // virtual 
     void InputModuleOIS::Update(Core::f64 frametime)
     {
-        if( keyboard_ && mouse_ )
         {
-            keyboard_->capture();
-	        mouse_->capture();
-    	    if ( joy_ ) joy_->capture();
+            PROFILE(InputModuleOIS_Update);
 
-            const OIS::MouseState &ms = mouse_->getMouseState();
-            if (ms.Z.rel != 0)
+            if( keyboard_ && mouse_ )
             {
-                Events::SingleAxisMovement mw;
-                mw.z_.rel_ = ms.Z.rel;
-                mw.z_.abs_ = ms.Z.abs;
-                framework_->GetEventManager()->SendEvent(event_category_, Events::SCROLL, &mw);
+                keyboard_->capture();
+	            mouse_->capture();
+    	        if ( joy_ ) joy_->capture();
+
+                const OIS::MouseState &ms = mouse_->getMouseState();
+                if (ms.Z.rel != 0)
+                {
+                    Events::SingleAxisMovement mw;
+                    mw.z_.rel_ = ms.Z.rel;
+                    mw.z_.abs_ = ms.Z.abs;
+                    framework_->GetEventManager()->SendEvent(event_category_, Events::SCROLL, &mw);
+                }
+                // previous mouse position
+                const Events::Movement prev_movement = movement_;
+
+                // we assume GetMouseMovement() will be called several times in one frame
+                // It makes sense then to only query OIS once for the mouse state and then
+                // return the same state per frame.
+                movement_.x_.rel_ = ms.X.rel;
+                movement_.x_.abs_ = ms.X.abs;
+
+                movement_.y_.rel_ = ms.Y.rel;
+                movement_.y_.abs_ = ms.Y.abs;
+
+                movement_.z_.rel_ = ms.Z.rel;
+                movement_.z_.abs_ = ms.Z.abs;
+
+                // launch event when mouse is dragged. Disabled since launching event every frame is not all that efficient.
+                //if (ms.buttonDown(OIS::MB_Right))
+                //{
+                //    //if (movement_ != prev_movement)
+                //    {
+                //        dragged_ = true;
+                //        framework_->GetEventManager()->SendEvent(event_category_, Events::DRAGGING, &movement_);
+                //    }
+                //} else if (dragged_)
+                //{
+                //    dragged_ = false;
+                //    Events::Movement no_rel_movement = movement_;
+                //    no_rel_movement.x_.rel_ = 0;
+                //    no_rel_movement.y_.rel_ = 0;
+                //    no_rel_movement.z_.rel_ = 0;
+                //    framework_->GetEventManager()->SendEvent(event_category_, Events::DRAGGING_STOPPED, &no_rel_movement);
+                //}
+
+                // first update input events for the current state, then send events for keys that are common to all states
+                UpdateSliderEvents(input_state_);
+                UpdateSliderEvents(Input::State_All);
+
+                if (keyboard_->buffered() == false)
+                {
+                    SendKeyEvents(input_state_);
+                }
+                SendKeyEvents(Input::State_All);
             }
-            // previous mouse position
-            const Events::Movement prev_movement = movement_;
-
-            // we assume GetMouseMovement() will be called several times in one frame
-            // It makes sense then to only query OIS once for the mouse state and then
-            // return the same state per frame.
-            movement_.x_.rel_ = ms.X.rel;
-            movement_.x_.abs_ = ms.X.abs;
-
-            movement_.y_.rel_ = ms.Y.rel;
-            movement_.y_.abs_ = ms.Y.abs;
-
-            movement_.z_.rel_ = ms.Z.rel;
-            movement_.z_.abs_ = ms.Z.abs;
-
-            // launch event when mouse is dragged. Disabled since launching event every frame is not all that efficient.
-            //if (ms.buttonDown(OIS::MB_Right))
-            //{
-            //    //if (movement_ != prev_movement)
-            //    {
-            //        dragged_ = true;
-            //        framework_->GetEventManager()->SendEvent(event_category_, Events::DRAGGING, &movement_);
-            //    }
-            //} else if (dragged_)
-            //{
-            //    dragged_ = false;
-            //    Events::Movement no_rel_movement = movement_;
-            //    no_rel_movement.x_.rel_ = 0;
-            //    no_rel_movement.y_.rel_ = 0;
-            //    no_rel_movement.z_.rel_ = 0;
-            //    framework_->GetEventManager()->SendEvent(event_category_, Events::DRAGGING_STOPPED, &no_rel_movement);
-            //}
-
-            // first update input events for the current state, then send events for keys that are common to all states
-            UpdateSliderEvents(input_state_);
-            UpdateSliderEvents(Input::State_All);
-
-            if (keyboard_->buffered() == false)
-            {
-                SendKeyEvents(input_state_);
-            }
-            SendKeyEvents(Input::State_All);
         }
+        RESETPROFILER;
     }
 
     // virtual

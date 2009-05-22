@@ -128,6 +128,7 @@ namespace NetTest
 
     void NetTestLogicModule::Update(Core::f64 frametime)
     {
+        RESETPROFILER;
     }
 
     bool NetTestLogicModule::HandleEvent(
@@ -135,6 +136,8 @@ namespace NetTest
         Core::event_id_t event_id, 
         Foundation::EventDataInterface* data)
     {
+        PROFILE(NetTestLogicModule_HandleEvent);
+
         if (!netTestWindow)
             return false;
 

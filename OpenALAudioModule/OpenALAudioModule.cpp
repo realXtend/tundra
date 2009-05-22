@@ -68,7 +68,11 @@ namespace OpenALAudio
 
     void OpenALAudioModule::Update()
 	{
-		sound_->Update();
+        {
+            PROFILE(OpenALAudioModule_Update);
+		    sound_->Update();
+        }
+        RESETPROFILER;
 	}
 }
 

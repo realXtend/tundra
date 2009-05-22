@@ -109,6 +109,7 @@ void DebugStats::Uninitialize()
 
 void DebugStats::Update(Core::f64 frametime)
 {
+    RESETPROFILER;
 }
 
 bool DebugStats::HandleEvent(
@@ -117,6 +118,8 @@ bool DebugStats::HandleEvent(
     Foundation::EventDataInterface *data
     )
 {
+    PROFILE(DebugStats_HandleEvent);
+
     if (category_id == scene_event_category_ && gtkmmui_module_.expired() == false)
     {
         Scene::Events::SceneEventData *event_data = dynamic_cast<Scene::Events::SceneEventData *>(data);    

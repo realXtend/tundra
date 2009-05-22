@@ -57,9 +57,13 @@ void GtkmmUI::Uninitialize()
 
 void GtkmmUI::Update(Core::f64 frametime)
 {
-    assert(impl_);
+    {
+        PROFILE(GtkmmUI_Update);
+        assert(impl_);
 
-    impl_->gtk->iteration(false);
+        impl_->gtk->iteration(false);
+    }
+    RESETPROFILER;
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);

@@ -11,6 +11,7 @@
 #include "NetMessageManager.h"
 #include "ZeroCode.h"
 #include "RexProtocolMsgIDs.h"
+#include "Profiler.h"
 
 #include "curl/curl.h"
 
@@ -161,12 +162,14 @@ void NetMessageManager::DumpNetworkMessage(NetMsgID id, NetInMessage *msg)
 /// Polls the inbound socket until the message queue is empty. Also resends any timed out reliable messages.
 void NetMessageManager::ProcessMessages()
 {
+    PROFILE (NetMessageManager_ProcessMessages);
     if (!connection)
         return;
         
 	if (!ResendQueueIsEmpty())
 		ProcessResendQueue();
     
+    PROFILE(NetMessageManager_WhilePacketsAvailable);
 	while(connection->PacketsAvailable())
 	{
 		const int cMaxPayload = 2048;
@@ -351,6 +354,7 @@ void NetMessageManager::QueuePacketACK(uint32_t packetID)
 ///\todo Have better delay method for pending ACKs, currently sends everything accumulated just over one frame
 void NetMessageManager::SendPendingACKs()
 {
+    PROFILE(NetMessageManager_SendPendingACKs);
     // If we aren't even connected (or not connected anymore), clear any old pending ACKs and return.
     if (!connection.get())
     {
@@ -436,6 +440,7 @@ void NetMessageManager::RemoveMessageFromResendQueue(uint32_t packetID)
 
 void NetMessageManager::ProcessResendQueue()
 {
+    PROFILE(NetMessageManager_ProcessResendQueue);
 	const int cTimeoutSeconds = 5;
 
 	const time_t timeNow = time(NULL);

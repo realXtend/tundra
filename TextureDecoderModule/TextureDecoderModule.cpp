@@ -46,8 +46,13 @@ namespace TextureDecoder
     // virtual
     void TextureDecoderModule::Update(Core::f64 frametime)
     {
-        if (texture_service_)
-            texture_service_->Update(frametime);
+        {
+            PROFILE(TextureDecoderModule_Update);
+
+            if (texture_service_)
+                texture_service_->Update(frametime);
+        }
+        RESETPROFILER;
     }
 
     // virtual 
@@ -60,6 +65,7 @@ namespace TextureDecoder
     
     bool TextureDecoderModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
+        PROFILE(TextureDecoderModule_HandleEvent);
         if (category_id == asset_event_category_)
         {
             if (texture_service_)
