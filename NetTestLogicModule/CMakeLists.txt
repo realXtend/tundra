@@ -29,8 +29,10 @@ include_directories (
 
 # Disable warning
 if (MSVC)
-   set_property (DIRECTORY PROPERTY COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS)
+	add_definitions (-D_CRT_SECURE_NO_WARNINGS)
 endif (MSVC)
+
+
 
 FIND_GTKMM()
 

@@ -62,8 +62,12 @@ namespace Asset
     // virtual
     void AssetModule::Update(Core::f64 frametime)
     {
-        if (manager_)
-            manager_->Update(frametime);
+        {
+            PROFILE(AssetModule_Update);
+            if (manager_)
+                manager_->Update(frametime);
+        }
+        RESETPROFILER;
     }
 
     // virtual 
@@ -93,6 +97,7 @@ namespace Asset
         Core::event_id_t event_id, 
         Foundation::EventDataInterface* data)
     {
+        PROFILE(AssetModule_HandleEvent);
         if ((category_id == inboundcategory_id_))
         {
             if (udp_asset_provider_)

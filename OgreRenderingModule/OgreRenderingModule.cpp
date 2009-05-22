@@ -113,6 +113,7 @@ namespace OgreRenderer
         Core::event_id_t event_id, 
         Foundation::EventDataInterface* data)
     {
+        PROFILE(OgreRenderingModule_HandleEvent);
         if (!renderer_)
             return false;
 
@@ -141,7 +142,12 @@ namespace OgreRenderer
     // virtual
     void OgreRenderingModule::Update(Core::f64 frametime)
     {
-        renderer_->Update(frametime);
+        {
+            PROFILE(OgreRenderingModule_Update);
+        
+            renderer_->Update(frametime);
+        }
+        RESETPROFILER;
     }
 
     Console::CommandResult OgreRenderingModule::ConsoleStats(const Core::StringVector &params)

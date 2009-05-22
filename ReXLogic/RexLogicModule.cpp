@@ -211,66 +211,66 @@ namespace RexLogic
     void RexLogicModule::Update(Core::f64 frametime)
     {
         {
-        PROFILE(RexLogicModule_Update);
+            PROFILE(RexLogicModule_Update);
 
-        // interpolate objects
-        HandleInterpolation(frametime);
-            
-        // Poll the connection state and update the info to the UI.
-        /// \todo Move this to the Login UI class.
-        OpenSimProtocol::Connection::State cur_state = rexserver_connection_->GetConnectionState();
-        if (cur_state != connectionState_)
-        {
-            loginWindow_->UpdateConnectionStateToUI(cur_state);
-            connectionState_ = cur_state;
-        }
-        
-        /// \todo Move this to OpenSimProtocolModule.
-        if (!rexserver_connection_->IsConnected() &&
-            rexserver_connection_->GetConnectionState() == OpenSimProtocol::Connection::STATE_INIT_UDP)
-        {
-            rexserver_connection_->CreateUDPConnection();
-        }
-        
-        input_handler_->Update(frametime);
-
-        if (send_input_state_)
-        {
-            send_input_state_ = false;
-
-            // can't send events during initalization, so workaround
-            Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-            if (current_controller_ == Controller_Avatar)
-                GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
-            else
-                GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
-        }
-        if (rexserver_connection_->IsConnected())
-        {
-            boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-            if (renderer)
+            // interpolate objects
+            HandleInterpolation(frametime);
+                
+            // Poll the connection state and update the info to the UI.
+            /// \todo Move this to the Login UI class.
+            OpenSimProtocol::Connection::State cur_state = rexserver_connection_->GetConnectionState();
+            if (cur_state != connectionState_)
             {
-                Ogre::Camera *camera = renderer->GetCurrentCamera();
-                Ogre::Vector3 up = camera->getUp();
-                Ogre::Vector3 fwd = camera->getDirection();
-                Ogre::Vector3 right = camera->getRight();
-                float l1 = up.length();
-                float l2 = fwd.length();
-                float l3 = right.length();
-                float p1 = up.dotProduct(fwd);
-                float p2 = fwd.dotProduct(right);
-                float p3 = right.dotProduct(up);
-                std::stringstream ss;
-                if (abs(l1 - 1.f) > 1e-3f || abs(l2 - 1.f) > 1e-3f || abs(l3 - 1.f) > 1e-3f || abs(p1) > 1e-3f || abs(p2) > 1e-3f || abs(p3) > 1e-3f)
+                loginWindow_->UpdateConnectionStateToUI(cur_state);
+                connectionState_ = cur_state;
+            }
+            
+            /// \todo Move this to OpenSimProtocolModule.
+            if (!rexserver_connection_->IsConnected() &&
+                rexserver_connection_->GetConnectionState() == OpenSimProtocol::Connection::STATE_INIT_UDP)
+            {
+                rexserver_connection_->CreateUDPConnection();
+            }
+            
+            input_handler_->Update(frametime);
+
+            if (send_input_state_)
+            {
+                send_input_state_ = false;
+
+                // can't send events during initalization, so workaround
+                Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+                if (current_controller_ == Controller_Avatar)
+                    GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
+                else
+                    GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
+            }
+            if (rexserver_connection_->IsConnected())
+            {
+                boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+                if (renderer)
                 {
-                    ss << "Warning! Camera TM base not orthonormal! Pos. magnitudes: " << l1 << ", " << l2 << ", " << l3 << ", Dot product magnitudes: " << p1 << ", " << p2 << ", " << p3;
-    //                LogInfo(ss.str());
+                    Ogre::Camera *camera = renderer->GetCurrentCamera();
+                    Ogre::Vector3 up = camera->getUp();
+                    Ogre::Vector3 fwd = camera->getDirection();
+                    Ogre::Vector3 right = camera->getRight();
+                    float l1 = up.length();
+                    float l2 = fwd.length();
+                    float l3 = right.length();
+                    float p1 = up.dotProduct(fwd);
+                    float p2 = fwd.dotProduct(right);
+                    float p3 = right.dotProduct(up);
+                    std::stringstream ss;
+                    if (abs(l1 - 1.f) > 1e-3f || abs(l2 - 1.f) > 1e-3f || abs(l3 - 1.f) > 1e-3f || abs(p1) > 1e-3f || abs(p2) > 1e-3f || abs(p3) > 1e-3f)
+                    {
+                        ss << "Warning! Camera TM base not orthonormal! Pos. magnitudes: " << l1 << ", " << l2 << ", " << l3 << ", Dot product magnitudes: " << p1 << ", " << p2 << ", " << p3;
+        //                LogInfo(ss.str());
+                    }
                 }
             }
-        }
 
-        // Update avatar name overlay positions.
-        GetAvatarHandler()->UpdateAvatarNameOverlayPositions();
+            // Update avatar name overlay positions.
+            GetAvatarHandler()->UpdateAvatarNameOverlayPositions();
         }
         RESETPROFILER;
     }
@@ -278,6 +278,7 @@ namespace RexLogic
     // virtual
     bool RexLogicModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
+        PROFILE(RexLogicModule_HandleEvent);
         LogicEventHandlerMap::iterator i = event_handlers_.find(category_id);
         if (i != event_handlers_.end())
             return (i->second)(event_id, data);

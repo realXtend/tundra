@@ -63,16 +63,20 @@ namespace OpenSimProtocol
     // virtual
     void OpenSimProtocolModule::Update(Core::f64 frametime)
     {
-        if (loginWorker_.IsReady() && loginWorker_.GetState() == Connection::STATE_XMLRPC_REPLY_RECEIVED)
         {
-            // XML-RPC reply received; get the login parameters and signal that we're ready to
-            // establish an UDP connection.
-            clientParameters_ = loginWorker_.GetClientParameters();
-            loginWorker_.SetConnectionState(Connection::STATE_INIT_UDP);
+            PROFILE(OpenSimProtocolModule_Update);
+            if (loginWorker_.IsReady() && loginWorker_.GetState() == Connection::STATE_XMLRPC_REPLY_RECEIVED)
+            {
+                // XML-RPC reply received; get the login parameters and signal that we're ready to
+                // establish an UDP connection.
+                clientParameters_ = loginWorker_.GetClientParameters();
+                loginWorker_.SetConnectionState(Connection::STATE_INIT_UDP);
+            }
+            
+            if (connected_)
+                networkManager_->ProcessMessages();
         }
-        
-        if (connected_)
-            networkManager_->ProcessMessages();
+        RESETPROFILER;
     }
     
     //virtual
