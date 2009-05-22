@@ -37,6 +37,12 @@ namespace OgreRenderer
     
     void EC_OgreMesh::SetPlaceable(Foundation::ComponentPtr placeable)
     {
+        if (!dynamic_cast<EC_OgrePlaceable*>(placeable.get()))
+        {
+            OgreRenderingModule::LogError("Attempted to set placeable which is not " + NameStatic());
+            return;
+        }
+        
         DetachEntity();
         placeable_ = placeable;
         AttachEntity();

@@ -30,6 +30,7 @@
 #include "../OgreRenderingModule/OgreTextureResource.h"
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
 #include "../OgreRenderingModule/EC_OgreMovableTextOverlay.h"
+#include "../OgreRenderingModule/EC_OgreAnimationController.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -213,8 +214,8 @@ namespace RexLogic
         {
             PROFILE(RexLogicModule_Update);
 
-            // interpolate objects
-            HandleInterpolation(frametime);
+            // interpolate & animate objects
+            UpdateObjects(frametime);
                 
             // Poll the connection state and update the info to the UI.
             /// \todo Move this to the Login UI class.
@@ -503,7 +504,7 @@ namespace RexLogic
             UUIDs_.erase(iter);
     }
     
-    void RexLogicModule::HandleInterpolation(Core::f64 frametime)
+    void RexLogicModule::UpdateObjects(Core::f64 frametime)
     {
         //! \todo probably should not be directly in RexLogicModule
         
@@ -523,50 +524,64 @@ namespace RexLogic
             
             Foundation::ComponentPtr ogrepos_ptr = entity.GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());              
             Foundation::ComponentPtr netpos_ptr = entity.GetComponent(EC_NetworkPosition::NameStatic());              
-            if (!ogrepos_ptr || !netpos_ptr)
-                continue;   
-            
-            OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(ogrepos_ptr.get()); 
-            EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(netpos_ptr.get()); 
-            
-            if (netpos.time_since_update_ <= dead_reckoning_time_)
-            {            
-                netpos.time_since_update_ += frametime; 
+            if (ogrepos_ptr && netpos_ptr)
+            {
+                OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(ogrepos_ptr.get()); 
+                EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(netpos_ptr.get()); 
+                
+                if (netpos.time_since_update_ <= dead_reckoning_time_)
+                {            
+                    netpos.time_since_update_ += frametime; 
 
-                // Interpolate motion
-                
-                // acceleration disabled until figured out what goes wrong. possibly mostly irrelevant with OpenSim server
-                // netpos.velocity_ += netpos.accel_ * frametime;
-                
-                netpos.position_ += netpos.velocity_ * frametime;            
-                
-                // Interpolate rotation
-                
-                if (netpos.rotvel_.getLengthSQ() > 0.001)
-                {
-                    Core::Quaternion rot_quat1;
-                    Core::Quaternion rot_quat2;
-                    Core::Quaternion rot_quat3;
+                    // Interpolate motion
                     
-                    rot_quat1.fromAngleAxis(netpos.rotvel_.x * 0.5 * frametime, Core::Vector3df(1,0,0));
-                    rot_quat2.fromAngleAxis(netpos.rotvel_.y * 0.5 * frametime, Core::Vector3df(0,1,0));
-                    rot_quat3.fromAngleAxis(netpos.rotvel_.z * 0.5 * frametime, Core::Vector3df(0,0,1));
+                    // acceleration disabled until figured out what goes wrong. possibly mostly irrelevant with OpenSim server
+                    // netpos.velocity_ += netpos.accel_ * frametime;
                     
-                    netpos.rotation_ *= rot_quat1;                  
-                    netpos.rotation_ *= rot_quat2; 
-                    netpos.rotation_ *= rot_quat3;                   
+                    netpos.position_ += netpos.velocity_ * frametime;            
+                    
+                    // Interpolate rotation
+                    
+                    if (netpos.rotvel_.getLengthSQ() > 0.001)
+                    {
+                        Core::Quaternion rot_quat1;
+                        Core::Quaternion rot_quat2;
+                        Core::Quaternion rot_quat3;
+                        
+                        rot_quat1.fromAngleAxis(netpos.rotvel_.x * 0.5 * frametime, Core::Vector3df(1,0,0));
+                        rot_quat2.fromAngleAxis(netpos.rotvel_.y * 0.5 * frametime, Core::Vector3df(0,1,0));
+                        rot_quat3.fromAngleAxis(netpos.rotvel_.z * 0.5 * frametime, Core::Vector3df(0,0,1));
+                        
+                        netpos.rotation_ *= rot_quat1;                  
+                        netpos.rotation_ *= rot_quat2; 
+                        netpos.rotation_ *= rot_quat3;                   
+                    }
+                    
+                    // Dampened (smooth) movement
+                    
+                    if (netpos.damped_position_ != netpos.position_)
+                        netpos.damped_position_ = netpos.position_ * rev_factor + netpos.damped_position_ * factor;
+                    
+                    if (netpos.damped_rotation_ != netpos.rotation_)
+                        netpos.damped_rotation_.slerp(netpos.rotation_, netpos.damped_rotation_, factor);
+        
+                    ogrepos.SetPosition(netpos.damped_position_);
+                    ogrepos.SetOrientation(netpos.damped_rotation_);
                 }
-                
-                // Dampened (smooth) movement
-                
-                if (netpos.damped_position_ != netpos.position_)
-                    netpos.damped_position_ = netpos.position_ * rev_factor + netpos.damped_position_ * factor;
-                
-                if (netpos.damped_rotation_ != netpos.rotation_)
-                    netpos.damped_rotation_.slerp(netpos.rotation_, netpos.damped_rotation_, factor);
-    
-                ogrepos.SetPosition(netpos.damped_position_);
-                ogrepos.SetOrientation(netpos.damped_rotation_);
+            }
+            
+            Foundation::ComponentPtr animctrl_ptr = entity.GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic());
+            if (animctrl_ptr)
+            {
+                OgreRenderer::EC_OgreAnimationController &animctrl = *checked_static_cast<OgreRenderer::EC_OgreAnimationController*>(animctrl_ptr.get());
+                if (netpos_ptr)
+                {
+                    //! \todo this is just a primitive hack to test animation controller. to be removed
+                    EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(netpos_ptr.get()); 
+                    Core::f32 walkspeed = Core::Vector3df(netpos.velocity_.x, netpos.velocity_.y, 0.0).getLength() / 2;
+                    animctrl.SetAnimationSpeed("Walk", walkspeed);
+                }
+                animctrl.Update(frametime);
             }
         }
     }

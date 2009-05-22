@@ -10,6 +10,7 @@
 namespace Ogre
 {
     class Entity;
+    class SceneNode;
 }
 
 namespace OgreRenderer
