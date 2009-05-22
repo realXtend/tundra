@@ -19,7 +19,8 @@ namespace RexLogic
     Ogre::ManualObject *DebugCreateOgreBoundingBox(
         Foundation::ModuleInterface *module,
         Foundation::ComponentInterfacePtr ogrePlaceable,
-        const std::string &materialName)
+        const std::string &materialName,
+        Core::Vector3df scale)
     {
         OgreRenderer::EC_OgrePlaceable &component = dynamic_cast<OgreRenderer::EC_OgrePlaceable&>(*ogrePlaceable.get());
         boost::shared_ptr<OgreRenderer::Renderer> renderer = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>
@@ -29,11 +30,7 @@ namespace RexLogic
 
         Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
 
-        ///\todo Quick W.I.P Ogre object naming, refactor. -jj.
-        static int c = 0;
-        std::stringstream ss;
-        ss << "manual " << c++;
-        Ogre::ManualObject *manual = sceneMgr->createManualObject(ss.str());
+        Ogre::ManualObject *manual = sceneMgr->createManualObject(renderer->GetUniqueObjectName());
         manual->begin(materialName, Ogre::RenderOperation::OT_LINE_LIST);
 
         const Ogre::Vector3 v[8] = 
@@ -47,37 +44,45 @@ namespace RexLogic
             Ogre::Vector3( 0.5, 0.5,-0.5), // 6 ++-
             Ogre::Vector3( 0.5, 0.5, 0.5), // 7 +++
         };
+        
+        Ogre::Vector3 sv[8];
+        for (int i = 0; i < 8; ++i)
+        {
+            sv[i].x = v[i].x * scale.x;
+            sv[i].y = v[i].y * scale.y;
+            sv[i].z = v[i].z * scale.z;
+        }
 
-        manual->position(v[0]);
-        manual->position(v[1]);
-        manual->position(v[0]);
-        manual->position(v[2]);
-        manual->position(v[0]);
-        manual->position(v[4]);
+        manual->position(sv[0]);
+        manual->position(sv[1]);
+        manual->position(sv[0]);
+        manual->position(sv[2]);
+        manual->position(sv[0]);
+        manual->position(sv[4]);
 
-        manual->position(v[1]);
-        manual->position(v[3]);
-        manual->position(v[1]);
-        manual->position(v[5]);
+        manual->position(sv[1]);
+        manual->position(sv[3]);
+        manual->position(sv[1]);
+        manual->position(sv[5]);
 
-        manual->position(v[2]);
-        manual->position(v[6]);
-        manual->position(v[2]);
-        manual->position(v[3]);
+        manual->position(sv[2]);
+        manual->position(sv[6]);
+        manual->position(sv[2]);
+        manual->position(sv[3]);
 
-        manual->position(v[3]);
-        manual->position(v[7]);
+        manual->position(sv[3]);
+        manual->position(sv[7]);
 
-        manual->position(v[4]);
-        manual->position(v[5]);
-        manual->position(v[4]);
-        manual->position(v[6]);
+        manual->position(sv[4]);
+        manual->position(sv[5]);
+        manual->position(sv[4]);
+        manual->position(sv[6]);
 
-        manual->position(v[5]);
-        manual->position(v[7]);
+        manual->position(sv[5]);
+        manual->position(sv[7]);
 
-        manual->position(v[6]);
-        manual->position(v[7]);
+        manual->position(sv[6]);
+        manual->position(sv[7]);
 
         manual->end();
         manual->setDebugDisplayEnabled(true);

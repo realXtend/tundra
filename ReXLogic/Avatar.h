@@ -41,6 +41,9 @@ namespace RexLogic
         Scene::EntityPtr GetOrCreateAvatarEntity(Core::entity_id_t entityid, const RexUUID &fullid);
         Scene::EntityPtr CreateNewAvatarEntity(Core::entity_id_t entityid);
         
+        //! Creates a default mesh for the avatar
+        void CreateDefaultAvatarMesh(Core::entity_id_t entity_id);
+        
         //! Creates the name overlay above the avatar.
         //! @param placeable EC_OgrePlaceable entity component.
         //! @param entity_id Entity id of the avatar.
@@ -59,7 +62,10 @@ namespace RexLogic
         static const int AVATAR_ANIM_WALK = 1;
         static const int AVATAR_ANIM_STAND = 2;
         static const int AVATAR_ANIM_FLY = 3;
-        static const int AVATAR_ANIM_SIT_GROUND = 4;               
+        static const int AVATAR_ANIM_SIT_GROUND = 4;
+        
+        //! Default avatar mesh name
+        std::string default_avatar_mesh_;
     };
 }
 #endif
