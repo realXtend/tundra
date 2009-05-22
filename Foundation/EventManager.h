@@ -140,7 +140,7 @@ namespace Foundation
 
         typedef std::map<std::string, Core::event_category_id_t> EventCategoryMap;
 
-        typedef std::map<Core::event_category_id_t, std::map<Core::event_category_id_t, std::string > > EventMap;
+        typedef std::map<Core::event_category_id_t, std::map<Core::event_id_t, std::string > > EventMap;
 
         //! Returns event category map
         const EventCategoryMap &GetEventCategoryMap() const { return event_category_map_; }
