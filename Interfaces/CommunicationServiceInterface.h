@@ -15,9 +15,11 @@
  *
  * For more information see CommunicationServiceInterface description.
  *
- * @todo Add ContactListInterface class 
- * @todo Add ContactInfoInterface
- * @todo Add CredentialsInterface
+ * \todo Support IM communication with users outside contact list
+ * \todo Support contact groups
+ * \todo Add ContactListInterface class 
+ * \todo Add ContactInfoInterface
+ * \todo Add CredentialsInterface
  *
  */
 
@@ -29,8 +31,8 @@ namespace Communication
 	 * "protocol","jabber"
 	 * "address","your_jabber_address"
 	 *
-	 * @todo should be renamed to ContactAddress ?
-	 * @todo separate interface and implementation
+	 * \todo should be renamed to ContactAddress or UserInfo?
+	 * \todo separate interface and implementation
 	 */
 	class ContactInfo
 	{
@@ -197,8 +199,8 @@ namespace Communication
 	/**
 	 *  IM message containing text attribute.
 	 *
-	 * @todo more components like attachment (link, file, request, etc.)
-	 * @todo Would be nice to inherit from MessageInterfa but that causes problems on implementation side when 
+	 * \todo more components like attachment (link, file, request, etc.)
+	 * \todo Would be nice to inherit from MessageInterfa but that causes problems on implementation side when 
 	 *       we herit same base class twice.
 	 */
 	class IMMessageInterface //: public SessionInterface 

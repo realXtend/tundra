@@ -6,7 +6,6 @@
 #pragma warning( push )
 #pragma warning( disable : 4250 )
 #include <gtkmm.h>
-//#include "Foundation.h"
 
 namespace CommunicationUI
 {
@@ -14,7 +13,7 @@ namespace CommunicationUI
 	class ChatSession
 	{
 	public:
-		ChatSession(const char* counterpart, Foundation::ScriptObject* imScriptObject);
+		ChatSession(const char* counterpart);
 		ChatSession(Communication::IMSessionPtr session, Communication::CommunicationServicePtr communication_service);
 		~ChatSession(void);
 		
@@ -40,19 +39,17 @@ namespace CommunicationUI
 		void SetupUI();
 
 		std::string counterpart_;
-
+		Communication::IMSessionPtr session_;
 		
 	public:
-		Foundation::ScriptObject* imScriptObject_; // TODO: Eventually this code would not be here as it is no UI specific, this would be session object from CommunicationModule
-		Communication::IMSessionPtr session_;
+//		Foundation::ScriptObject* imScriptObject_; // TODO: Eventually this code would not be here as it is no UI specific, this would be session object from CommunicationModule
+		
 		Communication::CommunicationServicePtr communication_service_;
 
 		void OnMessageReceived(Communication::IMMessagePtr m);
 		void OnStateChanged();
 		void AddMessageToScreen(Communication::IMMessagePtr m);
-
-		// instance access
-		//static ChatSession* instance_;
+		Communication::IMSessionPtr GetSession();
 	};
 }
 

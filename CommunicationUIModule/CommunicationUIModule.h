@@ -128,8 +128,9 @@ namespace CommunicationUI
 		bool online_status_list_ready_; 
 			
 	public:
-//		ChatSessionUIPtr session_;
-	    std::map<std::string, ChatSessionUIPtr> chatSessions_; // todo: do we need a map here?
+		typedef std::vector<ChatSessionUIPtr>  ChatSessionVector;
+		ChatSessionVector chatSessions_;
+//	    std::map<std::string, ChatSessionUIPtr> chatSessions_; // todo: do we need a map here?
 
 	private:
 		// Service References

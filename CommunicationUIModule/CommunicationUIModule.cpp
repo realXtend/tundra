@@ -226,6 +226,9 @@ namespace CommunicationUI
 		communication_service_->CloseConnection();
 	}
 
+	/*
+	 *  Show window where user can give IM address of partner to with start chat session
+	 */
 	void CommunicationUIModule::OnDirectChatMenuStartChat()
 	{
 		LogInfo("OnDirectChatMenuStartChat");
@@ -307,7 +310,8 @@ namespace CommunicationUI
 		{
 			Communication::ContactPtr contact = FindContact(contact_address);	
 			Communication::IMSessionPtr session = communication_service_->CreateIMSession(contact);
-			chatSessions_[std::string(contact_address)] = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(session, communication_service_));
+//			chatSessions_[std::string(contact_address)] = CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(session, communication_service_));
+			chatSessions_.push_back( CommunicationUI::ChatSessionUIPtr(new CommunicationUI::ChatSession(session, communication_service_)) );
 		}
 		catch(...)
 		{
@@ -561,14 +565,14 @@ namespace CommunicationUI
 	 **/
 	ChatSessionUIPtr CommunicationUIModule::GetUIChatSession(Communication::IMSessionPtr s)
 	{
-		for (std::map<std::string, ChatSessionUIPtr>::iterator i = chatSessions_.begin(); i != chatSessions_.end(); i++)
+		for (ChatSessionVector::iterator i = chatSessions_.begin(); i != chatSessions_.end(); ++i)
 		{
-			ChatSessionUIPtr cs = i->second;
-			if ( cs->session_ == s )
+			ChatSessionUIPtr cs = *i;
+			if ( cs->GetSession() == s )
 				return cs;
 		}
 
-		std::string error = "We don't find the session!";
+		std::string error = "We don't find session dlg instance for given session!";
 		LogError(error);
 		return ChatSessionUIPtr();
 	}
@@ -598,7 +602,7 @@ namespace CommunicationUI
 				Communication::IMSessionPtr s = e->GetSession();
 
 				ChatSessionUIPtr ui_session = GetUIChatSession(s);
-				if ( ui_session == NULL)
+				if (!ui_session)
 				{
 					// We have a new incoming session
 
@@ -713,13 +717,12 @@ namespace CommunicationUI
 				{
 				case Communication::Events::SessionStateEventInterface::SESSION_END:
 					{
-						// TODO: FIX THIS!!! We have to have an another way to select right session!
-						std::string map_key = s->GetParticipants()->at(0)->GetContact()->GetContactInfo("jabber")->GetProperty("address");
-						chatSessions_[map_key]->OnStateChanged();
+						ChatSessionUIPtr chat_dlg = GetUIChatSession(s);
+						if (chat_dlg)
+							chat_dlg->OnStateChanged();
 					}
 					break;
 				}
-
 			}
 		}
        
@@ -773,14 +776,11 @@ namespace CommunicationUI
 		online_status_list_ready_ = true;
 	}
 
-	/*
-	 * Refresh contact list element
+	/**
+	 *  Refresh contact list ui element
 	 */
 	void CommunicationUIModule::UpdateContactList()
 	{
-		// todo fill ui contact list with content of this->contact_list_
-		std::string protocol = "jabber"; // todo: remove this fixed definition
-
 		contact_list_ = communication_service_->GetContactList();
 		this->lstContacts.lstContactsTreeModel->clear();
 		for(Communication::ContactList::iterator i = contact_list_->begin(); i < contact_list_->end(); i++)
@@ -788,25 +788,23 @@ namespace CommunicationUI
 			Communication::ContactPtr c = (*i);
 
 			Gtk::TreeModel::Row row = *(this->lstContacts.lstContactsTreeModel->append());
-			row[lstContacts.columns_.id_] = ""; // std::string(id);
-			row[lstContacts.columns_.contact_] = c->GetName(); // GetContactInfo(protocol)->GetProperty("address");
+			row[lstContacts.columns_.id_] = "";  // \todo We don't need first column...
+			row[lstContacts.columns_.contact_] = c->GetName();
 			row[lstContacts.columns_.status_] = c->GetPresenceStatus()->GetOnlineStatus();
 			row[lstContacts.columns_.message_] = c->GetPresenceStatus()->GetOnlineMessage();
 		}
 	}
 
 	/**
-	 * Creates ui session object and popups a new window for given session object
+	 *  Creates ui session object (a dialog) and popups a new window for given session object
 	 **/
 	void CommunicationUIModule::HandleIncomingIMSession(Communication::IMSessionPtr s)
 	{
-//		std::string protocol = "jabber"; // todo: remove this fixed definition
-		std::string session_id = "test"; // s->GetOriginator()->GetContact()->GetContactInfo(protocol)->GetProperty("address");
 		ChatSessionUIPtr chat_session = GetUIChatSession(s);
 		if (!chat_session)
 		{
 			chat_session = ChatSessionUIPtr( new ChatSession(s, communication_service_) );
-			chatSessions_[std::string(session_id)] = chat_session;
+			chatSessions_.push_back(chat_session);
 		}
 		chat_session->ChannelOpen();
 	}

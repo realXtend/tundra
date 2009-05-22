@@ -244,6 +244,7 @@ namespace Communication
 		session->participants_->push_back(partner);
 		session->participants_->push_back(user);
 		session->user_ = user;
+		session->protocol_ = protocol_;
 		
 		this->im_sessions_->push_back(session_ptr);
 

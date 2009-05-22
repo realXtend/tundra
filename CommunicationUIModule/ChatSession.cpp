@@ -23,27 +23,20 @@
 
 namespace CommunicationUI
 {
-	//ChatSession* ChatSession::instance_;
 
-	ChatSession::ChatSession(const char* counterpart, Foundation::ScriptObject* imScriptObject)
-		: counterpart_(std::string(counterpart)), imScriptObject_(imScriptObject)//: counterpart_(std::string(counterpart)), scriptService_(scriptService), imScriptObject_(imScriptObject)
+	ChatSession::ChatSession(const char* counterpart): counterpart_(std::string(counterpart))
 	{
 		SetupUI();
 	}
 
-	// Find out participants (currently just one)
+	/**
+	 * Find out participants (currently just one)
+	 * and set window title along first participant
+	 */
 	ChatSession::ChatSession(Communication::IMSessionPtr session, Communication::CommunicationServicePtr comm_service)
 	{
 		communication_service_ = comm_service;
-		std::string protocol = "jabber"; // todo: remove this fixed definition
 		session_ = session;
-		Communication::ParticipantListPtr list = session->GetParticipants();
-		for ( Communication::ParticipantList::iterator i = list->begin(); i < list->end(); i++)
-		{
-			Communication::ParticipantPtr p = (*i);
-			std::string address = p->GetContact()->GetContactInfo(protocol)->GetProperty("address");
-			counterpart_ = address;
-		}
 		
 		Communication::ParticipantPtr originator = session->GetOriginator();
 		
@@ -206,6 +199,13 @@ namespace CommunicationUI
 		chatBuffer_->place_cursor(chatIter);
 	}
 
+	/*
+	 *  Return chat session object
+	 */
+	Communication::IMSessionPtr ChatSession::GetSession()
+	{
+		return session_;
+	}
 }
 
 
