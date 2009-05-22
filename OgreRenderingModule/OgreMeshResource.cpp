@@ -69,7 +69,7 @@ namespace OgreRenderer
             {
                 Ogre::SubMesh* submesh = ogre_mesh_->getSubMesh(i);
                 if (submesh)
-                    submesh->setMaterialName("BaseWhite");
+                    submesh->setMaterialName("UnlitTextured");
             }
             
         }
