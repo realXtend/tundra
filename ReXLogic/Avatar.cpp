@@ -10,6 +10,7 @@
 #include "../OgreRenderingModule/EC_OgreMesh.h"
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
 #include "../OgreRenderingModule/EC_OgreMovableTextOverlay.h"
+#include "../OgreRenderingModule/EC_OgreAnimationController.h"
 #include "../OgreRenderingModule/Renderer.h"
 #include "ConversionUtils.h"
 
@@ -69,6 +70,7 @@ namespace RexLogic
         defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::NameStatic());
+        defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::NameStatic());
         
         Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents);
 
@@ -392,6 +394,8 @@ namespace RexLogic
             
         Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
         Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+        Foundation::ComponentPtr animctrlptr = entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic());
+        
         if (placeableptr && meshptr)
         {
             OgreRenderer::EC_OgrePlaceable &placeable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeableptr.get());
@@ -404,6 +408,16 @@ namespace RexLogic
             mesh.SetAdjustOrientation(adjust);
             // Position approximately within the bounding box
             mesh.SetAdjustPosition(Core::Vector3df(0,0,-0.75));
+            
+        }
+        
+        if (animctrlptr && meshptr)
+        {
+            OgreRenderer::EC_OgreAnimationController &animctrl = *checked_static_cast<OgreRenderer::EC_OgreAnimationController*>(animctrlptr.get());
+            
+            animctrl.SetMeshEntity(meshptr);
+            animctrl.EnableAnimation("Walk");
+            animctrl.SetAnimationSpeed("Walk", 0.0);
         }
     }
     

@@ -346,6 +346,7 @@ namespace OgreRenderer
         // Render without swapping buffers first
         Ogre::RenderSystem* renderer = root_->getRenderSystem();
         renderer->_updateAllRenderTargets(false);
+        root_->_fireFrameRenderingQueued();
         // Send postrender event, so that custom rendering may be added
         framework_->GetEventManager()->SendEvent(renderercategory_id_, Events::POST_RENDER, NULL);
         // Swap buffers now

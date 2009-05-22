@@ -117,12 +117,14 @@ namespace RexLogic
         //! Handle a resource event. Needs to be passed to several receivers (Prim, Terrain etc.)
         bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
     
-        //! Handle motion interpolation of scene objects
+        //! Handle real-time update scene objects
         /*! Performs dead-reckoning and damped motion for all scene entities which have an OgrePlaceable and a NetworkPosition
             component. If the OgrePlaceable position/rotation is set anywhere else, it will be overridden by the next
             call to this, so it should be avoided.
+            
+            Performs animation update to all objects that have an OgreAnimationController component.
          */
-        void HandleInterpolation(Core::f64 frametime);
+        void UpdateObjects(Core::f64 frametime);
         
         //! login through console
         Console::CommandResult ConsoleLogin(const Core::StringVector &params);
