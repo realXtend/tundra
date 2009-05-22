@@ -53,8 +53,13 @@ namespace Console
 
     void ConsoleModule::Update(Core::f64 frametime)
     {
-        assert (manager_);
-        manager_->Update(frametime);
+        {
+            PROFILE(ConsoleModule_Update);
+
+            assert (manager_);
+            manager_->Update(frametime);
+        }
+        RESETPROFILER;
     }
 
     // virtual

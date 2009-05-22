@@ -324,10 +324,11 @@ namespace Foundation
     {
         const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
 
-        static int level = -2; // start at -2 because we don't print out root
+        static int level = -2;
 
         if (timings_node)
         {
+            level += 2;
             assert (level >= 0);
 
             std::string timings;
@@ -343,7 +344,7 @@ namespace Foundation
             console->Print(timings);
         }
 
-        level += 2;
+        
         const ProfilerNodeTree::NodeList &children = node->GetChildren();
         for (ProfilerNodeTree::NodeList::const_iterator it = children.begin() ; 
              it != children.end() ;
@@ -351,7 +352,10 @@ namespace Foundation
         {
             PrintTimingsToConsole(console, *it);
         }
-        level -= 2;
+        if (timings_node)
+        {
+            level -= 2;
+        }
     }
 
     Console::CommandResult Framework::ConsoleProfile(const Core::StringVector &params)
@@ -360,13 +364,9 @@ namespace Foundation
         if (console)
         {
             Profiler &profiler = GetProfiler();
-            ProfilerNodeTree *node = profiler.GetRoot();
+            ProfilerNodeTree *node = profiler.Lock().get();
             PrintTimingsToConsole(console, node);
-            /*while (node)
-            {
-                const NodeList &children = node->GetChildren();
-            
-            }*/
+            profiler.Release();
         }
         return Console::ResultSuccess();
     }

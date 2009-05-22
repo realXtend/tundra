@@ -78,6 +78,8 @@ namespace TextureDecoder
                 PROFILE(OpenJpegDecoder_Sleep);
                 boost::this_thread::sleep(boost::posix_time::milliseconds(20));
             }
+
+            RESETPROFILER
         }
     }
 
