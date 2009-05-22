@@ -75,6 +75,16 @@ namespace OgreRenderer
         RemoveMesh();
         
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+
+        Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().getByName(mesh_name);
+        if (mesh->hasSkeleton())
+        {
+            Ogre::SkeletonPtr skeleton = Ogre::SkeletonManager::getSingleton().getByName(mesh->getSkeletonName());
+            if (skeleton.isNull() || skeleton->getNumBones() == 0)
+            {
+                mesh->setSkeletonName("");
+            }
+        }
         
         try
         {
