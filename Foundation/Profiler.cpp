@@ -19,11 +19,6 @@ namespace Foundation
 #ifdef _WINDOWS
         BOOL result = QueryPerformanceFrequency(&frequency_);
         supported_ = (result != 0);
-
-        ProfilerBlock cnt;
-        cnt.Start();
-        cnt.Stop();
-        api_overhead_.QuadPart = cnt.end_time_.QuadPart - cnt.start_time_.QuadPart;
 #endif
         return supported_;
     }
@@ -89,7 +84,37 @@ namespace Foundation
 
     void Profiler::Reset()
     {
+        ProfilerNodeTree *root = new ProfilerNodeTree("MainThread");
+        root->AddChild(GetRoot());
+
+        // lock here shouldn't matter, as we are not profiling here
+        Core::MutexLock lock(mutex_);
+
         GetRoot()->ResetValues();
+
+        ProfilerNodeTree *new_root = all_nodes_->GetChild("MainThread");
+        all_nodes_->RemoveChild(new_root);
+        delete new_root;
+        all_nodes_->AddChild(root);
+    }
+
+    void Profiler::ThreadedReset()
+    {
+        const std::string thread("Thread" + Core::ToString(boost::this_thread::get_id()));
+
+        ProfilerNodeTree *root = new ProfilerNodeTree(thread);
+        root->AddChild(GetRoot());
+
+        // lock here shouldn't matter, as we are not profiling here
+        Core::MutexLock lock(mutex_);
+
+        GetRoot()->ResetValues();
+
+        ProfilerNodeTree *new_root = all_nodes_->GetChild(thread);
+        all_nodes_->RemoveChild(new_root);
+        delete new_root;
+        
+        all_nodes_->AddChild(root);
     }
 }
 

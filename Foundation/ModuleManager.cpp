@@ -8,7 +8,7 @@
 
 namespace fs = boost::filesystem;
 
-typedef void (*SetProfilerFunc)(Foundation::Framework *framework);
+typedef void (*SetProfilerFunc)(Foundation::Profiler *profiler);
 
 
 namespace Foundation
@@ -337,7 +337,7 @@ namespace Foundation
 
                 {
                     SetProfilerFunc setProfiler = (SetProfilerFunc) library->sl_.getSymbol("SetProfiler");
-	                setProfiler(framework_);
+	                setProfiler(&framework_->GetProfiler());
                 }
             } 
             catch (Poco::Exception &e)
@@ -451,17 +451,8 @@ namespace Foundation
         assert(entry.module_);
 
         entry.module_->UnloadInternal();
+
         entry.module_.reset(); // Triggers the deletion of the ModuleInterface object. (either causes operator delete or Poco's module free to be called)
-/*
-        if (!entry.shared_library_) // If our module is a static library (and not a dynamic one allocated using Poco), we need to free with delete.
-        {
-            delete entry.module_;
-        }
-        else // This is a shared library that is owned by Poco, need to use Poco's destroy.
-        {
-            entry.shared_library_->cl_.destroy(entry.entry_, entry.module_);
-            SAFE_DELETE(entry.module_);
-        }*/
     }
 
     bool ModuleManager::HasModule(ModuleInterface *module) const

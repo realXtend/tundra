@@ -17,9 +17,13 @@
 */
 #   define ELIFORP(x)   x ## __profiler__.Destruct();
 
+//! Resets profiling data per frame. Must be called at end of each frame in each thread, otherwise profiling data may be inaccurate or unavailable.
+#define RESETPROFILER { Foundation::ProfilerSection::GetProfiler()->ThreadedReset(); }
+
 #else
 #   define PROFILE(x)
 #   define ELIFORP(x)
+#   define RESETPROFILER
 #endif
 
 #ifndef _WINDOWS
@@ -128,6 +132,7 @@ namespace Foundation
     {
         friend class Profiler;
         ProfilerNodeTree();
+        ProfilerNodeTree(const ProfilerNodeTree &rhs);
     public:
         typedef std::list<ProfilerNodeTree*> NodeList;
             
@@ -137,6 +142,11 @@ namespace Foundation
 
         //! destructor
         virtual ~ProfilerNodeTree()
+        {
+        }
+
+        //! Removes and deletes all child nodes
+        virtual void RemoveAndDeleteChildren()
         {
             for (NodeList::iterator it = children_.begin() ; 
                  it != children_.end() ;
@@ -162,6 +172,17 @@ namespace Foundation
         {
             children_.push_back(node);
             node->parent_ = this;
+        }
+
+        //! Removes the child node. Does not delete it.
+        void RemoveChild(ProfilerNodeTree *node)
+        {
+            if (node)
+            {
+                NodeList::iterator it = std::find(children_.begin(), children_.end(), node);
+                assert (it != children_.end());
+                children_.erase(it);
+            }
         }
 
         //! Returns a child node
@@ -205,6 +226,7 @@ namespace Foundation
         //! helper counter for recursion
         int recursion_;
     };
+    typedef boost::shared_ptr<ProfilerNodeTree> ProfilerNodeTreePtr;
 
     //! Data container for profiling data for a profiling block
     class ProfilerNode : public ProfilerNodeTree
@@ -280,7 +302,22 @@ namespace Foundation
         Do not use this class directly for profiling, use instead PROFILE
         and ELIFORP macros.
 
-        \todo Probably a memory leak around here somewhere, too lazy to check for sure if this is the source.
+        Threadsafety: all profiling related functions are re-entrant so can
+              be safely used from any thread. Profiling data needs to be reset
+              per frame, so ThreadedReset() should be called from within the 
+              profiled thread. The profiling data won't show up otherwise.
+
+              Lock() and Release() functions should not be used, they are for
+              reporting profiling data. They are threadsafe because the
+              variables that are accessed during reporting are ones that are only
+              written to during Reset() or ResetThread and that is protected by a lock.
+              Otherwise for thread safety boost::thread_specific_ptr is used to store
+              thread specific profiling data. 
+              
+              Locks are not used when dealing with profiling blocks, as they might skew
+              the data too much.
+
+        \todo A memory leak around here somewhere of several kilobytes.
     */
     class Profiler
     {
@@ -290,11 +327,12 @@ namespace Foundation
         {
             //! we don't want thread_specific_ptr to delete this one automatically
             current_node_ = new boost::thread_specific_ptr<ProfilerNodeTree>(&EmptyDeletor);
+            all_nodes_ = boost::shared_ptr<ProfilerNodeTree>(new ProfilerNodeTree("Root"));
 
             ProfilerBlock::QueryCapability(); 
         }
     public:
-        ~Profiler() { delete current_node_; }
+        ~Profiler() { current_node_->release(); delete current_node_; root_->RemoveAndDeleteChildren(); }
 
         //! Start a profiling block.
         /*!
@@ -312,10 +350,13 @@ namespace Foundation
         */
         void EndBlock(const std::string &name);
 
-        //! Reset profiling data (should be called between frames
+        //! Reset profiling data (should be called between frames from main thread only)
         void Reset();
 
-        //! Returns root profiling node
+        //! Reset profiling data for threads other than main thread. Don't call directly, use RESETPROFILER macro instead.
+        void ThreadedReset();
+
+        //! Returns root profiling node for the current thread only, re-entrant
         ProfilerNodeTree *GetRoot()
         { 
             if (!root_.get())
@@ -323,11 +364,27 @@ namespace Foundation
             return root_.get();
         }
 
+        //! Returns root profiling node for all threads, you must call Release() after you are done!
+        ProfilerNodeTreePtr Lock()
+        {
+            mutex_.lock();
+            return all_nodes_;
+        }
+
+        void Release()
+        {
+            mutex_.unlock();
+        }
+
     private:
         //! Root profiler node
         boost::thread_specific_ptr<ProfilerNodeTree> root_;
         //! Cached node topmost in stack, specific to each thread
         boost::thread_specific_ptr<ProfilerNodeTree> *current_node_;
+
+        //! container for all nodes
+        boost::shared_ptr<ProfilerNodeTree> all_nodes_;
+        Core::Mutex mutex_;
     };
 
     //! Used by PROFILE - macro to automatically stop profiling clock when going out of scope
