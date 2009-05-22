@@ -77,13 +77,17 @@ namespace OgreRenderer
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
 
         Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().getByName(mesh_name);
-        if (mesh->hasSkeleton())
+        // Note: for resources loaded from disk, the resource might not exist until attempted to use in an entity for the first time
+        if (!mesh.isNull())
         {
-            Ogre::SkeletonPtr skeleton = Ogre::SkeletonManager::getSingleton().getByName(mesh->getSkeletonName());
-            if (skeleton.isNull() || skeleton->getNumBones() == 0)
+            if (mesh->hasSkeleton())
             {
-                OgreRenderingModule::LogWarning("Mesh " + mesh_name + " has a skeleton with 0 bones. Disabling the skeleton.");
-                mesh->setSkeletonName("");
+                Ogre::SkeletonPtr skeleton = Ogre::SkeletonManager::getSingleton().getByName(mesh->getSkeletonName());
+                if (skeleton.isNull() || skeleton->getNumBones() == 0)
+                {
+                    OgreRenderingModule::LogWarning("Mesh " + mesh_name + " has a skeleton with 0 bones. Disabling the skeleton.");
+                    mesh->setSkeletonName("");
+                }
             }
         }
         
@@ -212,7 +216,7 @@ namespace OgreRenderer
             Ogre::Vector3 size = bbox.getMaximum() - bbox.getMinimum();
             if (size.x != 0.0) scale.x /= size.x;
             if (size.y != 0.0) scale.y /= size.y;
-	        if (size.z != 0.0) scale.z /= size.z;                 
+	        if (size.z != 0.0) scale.z /= size.z;
         }
         
         adjustment_node_->setScale(scale);

@@ -135,7 +135,7 @@ namespace OgreRenderer
         node_ = scene_mgr->createSceneNode();
         
         // Set the node position above the parent node.
-        node_->setPosition(0, 0, 1);
+        node_->setPosition(0, 0, 2);
         
 	    // Overlay
 	    overlayName_ = renderer_.lock()->GetUniqueObjectName();

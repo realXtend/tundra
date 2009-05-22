@@ -212,9 +212,11 @@ namespace RexLogic
             
             // Variable block begins
             size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+            size_t read_instances = 0;
             
             // First instance contains the UUID.
             primuuid.FromString(data->message->ReadString());
+            ++read_instances;
                     
             // Calculate full data size
             size_t fulldatasize = data->message->GetDataSize();
@@ -229,16 +231,17 @@ namespace RexLogic
             // The first instance contains always the UUID and rest of instances contain only binary data.
             // Data for multiple objects are never sent in the same message. All of the necessary data fits in one message.
             // Read the data:
-            while(data->message->BytesRead() < data->message->GetDataSize())
+            while((data->message->BytesRead() < data->message->GetDataSize()) && (read_instances < instance_count))
             {
                 const Core::u8* readbytedata = data->message->ReadBuffer(&bytes_read);
                 memcpy(&fulldata[offset], readbytedata, bytes_read);
                 offset += bytes_read;
+                ++read_instances;
             }
         }
         catch (Core::Exception& e)
         {
-            RexLogicModule::LogError("Exception while reading RexPrimData: " + std::string(e.what()));
+            RexLogicModule::LogError("Exception while reading RexPrimData for primuuid " + primuuid.ToString() + ": " + std::string(e.what()));
             return false;
         }
         
@@ -389,20 +392,20 @@ namespace RexLogic
             //    " has drawtype " + Core::ToString<int>(prim.DrawType) + " meshid " + prim.MeshUUID.ToString());
             
             // Get/create mesh component 
-            Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-            if (!mesh)
-                entity->AddEntityComponent(mesh = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreMesh::NameStatic()));
+            Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+            if (!meshptr)
+                entity->AddEntityComponent(meshptr = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreMesh::NameStatic()));
                             
-            OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+            OgreRenderer::EC_OgreMesh& mesh = *(checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get()));
             
             // Attach to placeable if not yet attached
-            if (!meshptr->GetPlaceable())
-                meshptr->SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
+            if (!mesh.GetPlaceable())
+                mesh.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
                              
             // Change mesh if yet nonexistent/changed
             // assume name to be UUID of mesh asset, which should be true of OgreRenderer resources
             std::string mesh_name = prim.MeshUUID.ToString();
-            if (meshptr->GetMeshName() != mesh_name)
+            if (mesh.GetMeshName() != mesh_name)
             {
                 boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
                     GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -414,11 +417,11 @@ namespace RexLogic
             }
                         
             // Handle scale mesh to prim-setting
-            meshptr->SetScaleToUnity(prim.ScaleToPrim); 
+            mesh.SetScaleToUnity(prim.ScaleToPrim); 
 
             // Set adjustment orientation for mesh (a legacy haxor, Ogre meshes usually have Y-axis as vertical)
             Core::Quaternion adjust(Core::PI/2, 0, Core::PI);
-            meshptr->SetAdjustOrientation(adjust);
+            mesh.SetAdjustOrientation(adjust);
 
             // Check/request mesh textures
             HandleMeshTextures(entityid);
@@ -426,10 +429,10 @@ namespace RexLogic
         else
         {
             // Remove mesh component if exists
-            Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-            if (mesh)
+            Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+            if (meshptr)
             {
-                entity->RemoveEntityComponent(mesh = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreMesh::NameStatic()));
+                entity->RemoveEntityComponent(meshptr);
             }
         }
     } 

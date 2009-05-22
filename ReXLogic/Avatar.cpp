@@ -7,6 +7,7 @@
 #include "EC_OpenSimAvatar.h"
 #include "EC_NetworkPosition.h"
 #include <Ogre.h>
+#include "../OgreRenderingModule/EC_OgreMesh.h"
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
 #include "../OgreRenderingModule/EC_OgreMovableTextOverlay.h"
 #include "../OgreRenderingModule/Renderer.h"
@@ -24,6 +25,8 @@ namespace RexLogic
         avatar_anims_[RexTypes::RexUUID("2408fe9e-df1d-1d7d-f4ff-1384fa7b350f")] = AVATAR_ANIM_STAND;
         avatar_anims_[RexTypes::RexUUID("aec4610c-757f-bc4e-c092-c6e9caf18daf")] = AVATAR_ANIM_FLY;
         avatar_anims_[RexTypes::RexUUID("1c7600d6-661f-b87b-efe2-d7421eb93c86")] = AVATAR_ANIM_SIT_GROUND;               
+        
+        default_avatar_mesh_ = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "default_mesh_name", std::string("Jack.mesh"));
     }
 
     Avatar::~Avatar()
@@ -65,6 +68,7 @@ namespace RexLogic
         defaultcomponents.push_back(EC_NetworkPosition::NameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+        defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::NameStatic());
         
         Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents);
 
@@ -72,11 +76,11 @@ namespace RexLogic
         if (placeable)
         {
             OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
-            ogrepos.SetScale(Vector3(0.5,0.5,1.5));
             DebugCreateOgreBoundingBox(rexlogicmodule_,
-                entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()), "AmbientGreen");
+                entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()), "AmbientGreen", Vector3(0.5,0.5,1.5));
             
             CreateNameOverlay(ogrepos, entityid);
+            CreateDefaultAvatarMesh(entityid);
         }
         
         return entity;
@@ -378,4 +382,29 @@ namespace RexLogic
             name_overlay.SetVisible(true);
         }
     }
+    
+
+    void Avatar::CreateDefaultAvatarMesh(Core::entity_id_t entity_id)
+    {
+        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(entity_id);
+        if (!entity)
+            return;
+            
+        Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+        if (placeableptr && meshptr)
+        {
+            OgreRenderer::EC_OgrePlaceable &placeable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeableptr.get());
+            OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
+            
+            mesh.SetPlaceable(placeableptr);
+            mesh.SetMesh(default_avatar_mesh_);
+            // Set adjustment orientation for mesh (Ogre meshes usually have Y-axis as vertical)
+            Core::Quaternion adjust(Core::PI/2, 0, -Core::PI/2);
+            mesh.SetAdjustOrientation(adjust);
+            // Position approximately within the bounding box
+            mesh.SetAdjustPosition(Core::Vector3df(0,0,-0.75));
+        }
+    }
+    
 }

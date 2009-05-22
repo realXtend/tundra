@@ -1,0 +1,11 @@
+import * from "UnlitTextured.material"
+
+material male/Body : UnlitTextured
+{
+    set_texture_alias diffuseMap Jack_body_yellow1.jpg
+}
+
+material male/Face : UnlitTextured
+{
+    set_texture_alias diffuseMap Jack_face_yellow.jpg
+}
