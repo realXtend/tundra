@@ -1,5 +1,6 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
+#include "CommunicationSettings.h"
 
 #include "CommunicationManager.h"
 
@@ -142,6 +143,8 @@ namespace Communication
 		script_event_service->SetCallback( PyCallbackFriendRequestRemotePending, "remote_pending");
 		script_event_service->SetCallback( PyCallbackFriendAdded, "contact_added_publish_list");
 		script_event_service->SetCallback( PyCallbackPresenceStatusTypes, "got_available_status_list");
+		script_event_service->SetCallback( PyCallbackAccountCreationSucceeded, "account_registering_succeeded");
+        script_event_service->SetCallback( PyCallbackAccountCreationFailed, "account_registering_failed");
 	}
 
 	void CommunicationManager::UninitializePythonCommunication()
@@ -162,7 +165,7 @@ namespace Communication
 	 * Currently uses credential from connection.ini
 	 * todo: use given credentials instead
 	 */
-	void CommunicationManager::OpenConnection(CredentialsPtr c)
+	void CommunicationManager::OpenConnection(CommunicationSettingsInterfacePtr c)
 	{
 		if (connected_)
 		{
@@ -344,18 +347,35 @@ namespace Communication
 	/**
 	 *  
 	 */
-	CredentialsPtr CommunicationManager::GetCredentials()
+	CommunicationSettingsInterfacePtr CommunicationManager::GetCommunicationSettings()
 	{
 		// These are fixed attributes for jabber
 		// todo: figure out better system
-		Credentials* c = new Credentials();
-		c->SetProperty("protocol", "jabber");
-		c->SetProperty("address","");
-		c->SetProperty("password","");
-		c->SetProperty("server address","");
-		c->SetProperty("server port","");
-		return CredentialsPtr(c);
+        // todo: this should read the current settings
+        CommunicationSettings* commSettings = new CommunicationSettings(this);
+        Communication::CommunicationSettingsInterface* commInterface = (CommunicationSettingsInterface*)commSettings ;
+        //Communication::CommunicationSettingsInterface* commInterface = new CommunicationSettings();
+        CommunicationSettingsInterfacePtr commInterfacePtr = CommunicationSettingsInterfacePtr(commInterface);
+        commInterfacePtr->Load();
+        return commInterfacePtr;
+
+  //      Credentials* c = new Credentials();
+  //      c->Load();
+		//c->SetProperty("protocol", "jabber");
+		//c->SetProperty("address","");
+		//c->SetProperty("password","");
+		//c->SetProperty("server address","");
+		//c->SetProperty("server port","");
+		//return CredentialsPtr(c);
 	}
+
+	/**
+	 *  Connects to server according to connection settings and creates account and disconnects 
+	 */
+    void CommunicationManager::CreateAccount()
+    {
+        this->CallPythonCommunicationObject("CCreateAccount");
+    }
 
 	/**
 	 *  Find contact from contact list with given contact id
@@ -463,15 +483,15 @@ namespace Communication
 			return Console::ResultFailure(reason);
 		}
 
-		Credentials* c = new Credentials(); // OpenConnection method doesn't use this yet.
+		CommunicationSettingsInterface* cs = new CommunicationSettings(this); // OpenConnection method doesn't use this yet.
 		if ( params.size() == 4)
 		{
-			c->SetProperty("account",params[0]);
-			c->SetProperty("password",params[1]);
-			c->SetProperty("server",params[2]);
-			c->SetProperty("server_port",params[3]);
+			cs->SetProperty("account",params[0]);
+			cs->SetProperty("password",params[1]);
+			cs->SetProperty("server",params[2]);
+			cs->SetProperty("server_port",params[3]);
 		}
-		OpenConnection( CredentialsPtr(c) );
+		OpenConnection( CommunicationSettingsInterfacePtr(cs) );
 
 		std::string text;
 		text.append("NOTE: Current version uses credential from Account.txt file.");
@@ -895,6 +915,7 @@ namespace Communication
 		CommunicationManager* comm = CommunicationManager::GetInstance();
 
 		std::string address = GetSplitString(address_text,":",0);
+        //\bug does this work if there's : characters in message?
 		std::string text = GetSplitString(address_text,":",1);
 		if (address.length() == 0)
 		{
@@ -1213,6 +1234,19 @@ namespace Communication
 		comm->event_manager_->SendEvent(comm->comm_event_category_, Events::CONNECTION_STATE, (Foundation::EventDataInterface*)&e);
 	}
 
+    void CommunicationManager::PyCallbackAccountCreationSucceeded(char* reason)
+    {
+        CommunicationManager* comm = CommunicationManager::GetInstance();
+        ConnectionStateEvent e = ConnectionStateEvent(Events::AccountCreationEventInterface::ACCOUNT_CREATION_SUCCEEDED);
+        comm->event_manager_->SendEvent(comm->comm_event_category_, Events::ACCOUNT_CREATION, (Foundation::EventDataInterface*)&e);
+    }
+    void CommunicationManager::PyCallbackAccountCreationFailed(char* reason)
+    {
+        CommunicationManager* comm = CommunicationManager::GetInstance();
+        ConnectionStateEvent e = ConnectionStateEvent(Events::AccountCreationEventInterface::ACCOUNT_CREATION_FAILED);
+        comm->event_manager_->SendEvent(comm->comm_event_category_, Events::ACCOUNT_CREATION, (Foundation::EventDataInterface*)&e);
+    }
+
 	/**
 	 *  Requests presence status updates from IM server
 	 */ 
@@ -1233,6 +1267,7 @@ namespace Communication
 			std::string method = method_name;
 			std::string syntax = "";
 			Foundation::ScriptObject* ret = CommunicationManager::GetInstance()->python_communication_object_->CallMethod(method, syntax, NULL);
+            ret->ReleaseResources();
 		}
 		catch(...)
 		{
@@ -1262,6 +1297,7 @@ namespace Communication
 			std::string method = method_name;
 			std::string syntax = "s";
 			Foundation::ScriptObject* ret = CommunicationManager::GetInstance()->python_communication_object_->CallMethod(method, syntax, args);
+            ret->ReleaseResources();
 		}
 		catch(...)
 		{
@@ -1274,5 +1310,65 @@ namespace Communication
 			LogError(text);
 		}
 	}
+
+	/**
+	 *  Wrapper for calling methods of python objects.
+	 *  \param method_name The method name
+     *  \note The calls methods of python_communication_object_ with signature: (string method_name, "", NULL)
+     *  returns python script object that the caller must release with ReleaseResources method
+	 */
+	Foundation::ScriptObject* CommunicationManager::CallPythonCommunicationObjectAndGetReturnValue(const std::string &method_name) const
+    {
+		try
+		{
+			std::string method = method_name;
+			std::string syntax = "";
+			Foundation::ScriptObject* ret = CommunicationManager::GetInstance()->python_communication_object_->CallMethod(method, syntax, NULL);
+            return ret;
+		}
+		catch(...)
+		{
+			std::string text;
+			text = "Cannot call method [";
+			text.append(method_name);
+			text.append("] with argument [NULL]");
+			LogError(text);
+            return NULL;
+		}
+    }
+
+	/**
+	 * Wrapper for calling methods of python object.
+	 *  \param method_name The method name
+	 *  \param arg The string argument for the method
+     *  \note The calls methods of python_communication_object_ with signature: (string method_name, "s", string arg)
+     *  returns python script object that the caller must release with ReleaseResources method
+	 */
+	Foundation::ScriptObject* CommunicationManager::CallPythonCommunicationObjectAndGetReturnValue(const std::string &method_name,  const std::string &arg) const
+    {
+		try
+		{
+			const int BUFFER_SIZE = 1000;
+			char** args = new char*[1];
+			char* buf1 = new char[BUFFER_SIZE];
+			strcpy(buf1, arg.substr(0,BUFFER_SIZE-1).c_str());
+			args[0] = buf1;
+			std::string method = method_name;
+			std::string syntax = "s";
+			Foundation::ScriptObject* ret = CommunicationManager::GetInstance()->python_communication_object_->CallMethod(method, syntax, args);
+            return ret;
+		}
+		catch(...)
+		{
+			std::string text;
+			text = "Cannot call method [";
+			text.append(method_name);
+			text.append("] with argument [");
+			text.append(arg);
+			text.append("]");
+			LogError(text);
+            return NULL;
+		}        
+    }
 
 } // end of namespace: Communication

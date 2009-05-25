@@ -250,20 +250,25 @@ namespace Communication
 	typedef boost::shared_ptr<IMSessionList> IMSessionListPtr;
 	
 	/**
-	 *  Interface for credential for login to IM server
+	 *  Interface for communicationsettings for IM server connections
 	 *
 	 *  @todo this is not in use yet, instead we currently use Credentials class
 	 */
-	class CredentialsInterface
+	class CommunicationSettingsInterface
 	{
 	public: 
-		virtual ~CredentialsInterface() {};
-		virtual void SetProperty(const std::string &key, const std::string &value) const = 0;
-		virtual std::string GetProperty(const std::string &key) const = 0;
-		virtual std::vector<std::string> GetProperties() const = 0;
+        CommunicationSettingsInterface() {};
+		virtual ~CommunicationSettingsInterface() {};
+		virtual void SetProperty(const std::string &key, const std::string &value) = 0;
+		virtual std::string GetProperty(const std::string &key) = 0;
+		virtual std::vector<std::string> GetProperties() = 0;
+        virtual void Load() = 0;
+        virtual void Save() = 0;
 	};
+    typedef boost::shared_ptr<CommunicationSettingsInterface> CommunicationSettingsInterfacePtr;
 
 	/**
+     * DEBRICATED
 	 *  Login information for IM server connection login
 	 *
 	 *  @todo rename to Account or AccountData?
@@ -283,9 +288,11 @@ namespace Communication
 	{
 	public: 
 		virtual ~Credentials() {};
-		virtual void SetProperty(std::string key, std::string value);
-		virtual std::string GetProperty(std::string key);
-		virtual std::vector<std::string> GetProperties();
+		virtual void SetProperty(std::string key, std::string value) = 0;
+		virtual std::string GetProperty(std::string key) = 0;
+		virtual std::vector<std::string> GetProperties() = 0;
+        virtual void Load() = 0;
+        virtual void Save() = 0;
 	protected:
 		std::map<std::string, std::string> properties_;
 	};
@@ -317,7 +324,7 @@ namespace Communication
 		virtual ~CommunicationServiceInterface() {}
 
 		//! Opens the connection to IM server
-		virtual void OpenConnection(CredentialsPtr c) = 0;
+        virtual void OpenConnection(CommunicationSettingsInterfacePtr c) = 0;
 
 		//! Closes the connection to IM server
 		virtual void CloseConnection() = 0; 
@@ -351,9 +358,12 @@ namespace Communication
 		virtual void RemoveContact(ContactPtr contact) = 0; // todo: move to ContactList class ?
 
 		/**
-		 *  Return CredentialsPtr object with necessary properties set with ampty values
+		 *  Return CommunicationSettingsInterfacePtr object with necessary properties according to current settings
 		 */
-		virtual CredentialsPtr GetCredentials() = 0; 
+		virtual CommunicationSettingsInterfacePtr GetCommunicationSettings() = 0; 
+
+        //! Creates account according to connection settings
+        virtual void CreateAccount() = 0;
 	};
 	typedef boost::shared_ptr<CommunicationServiceInterface> CommunicationServicePtr;
 
@@ -363,14 +373,14 @@ namespace Communication
 	 */
     namespace Events
     {
-        static const Core::event_id_t PRESENCE_STATUS_UPDATE = 1; //! When presence status of contact in contact list changes
-        static const Core::event_id_t IM_MESSAGE = 2;             //! When IMMessage is received
-        static const Core::event_id_t IM_SESSION_REQUEST = 3;     //! When IM session request is received
-		static const Core::event_id_t FRIEND_REQUEST = 5;         //! When friend request is received
-		static const Core::event_id_t FRIEND_RESPONSE = 6;        //! Isn't in use currently
-		static const Core::event_id_t CONNECTION_STATE = 7;       //! When session status is changed or contact list content is changed
-		static const Core::event_id_t SESSION_STATE = 8;          //! When session ends or participant joins or leaf 
-
+        static const Core::event_id_t PRESENCE_STATUS_UPDATE = 1;   //! When presence status of contact in contact list changes
+        static const Core::event_id_t IM_MESSAGE = 2;               //! When IMMessage is received
+        static const Core::event_id_t IM_SESSION_REQUEST = 3;       //! When IM session request is received
+		static const Core::event_id_t FRIEND_REQUEST = 5;           //! When friend request is received
+		static const Core::event_id_t FRIEND_RESPONSE = 6;          //! Isn't in use currently
+		static const Core::event_id_t CONNECTION_STATE = 7;         //! When session status is changed or contact list content is changed
+		static const Core::event_id_t SESSION_STATE = 8;            //! When session ends or participant joins or leaf 
+        static const Core::event_id_t ACCOUNT_CREATION = 9;         //! When account creation has end result: succeeded or failed
 
 		//! Future events ?
 		//! - SESSION_INVITATION_RESPONSE_RECEIVED 
@@ -446,6 +456,19 @@ namespace Communication
 			static const int CONNECTION_CLOSE = 2;
 			static const int CONNECTION_STATE_UPDATE = 3;
             static const int CONNECTION_CONNECTING = 4;
+
+			virtual int GetType() = 0;
+		};
+		typedef boost::shared_ptr<ConnectionStateEventInterface> ConnectionStateEventPtr;
+
+		/**
+		 *  Deliveres information about Account creation success
+		 */
+		class AccountCreationEventInterface
+		{
+		public:
+			static const int ACCOUNT_CREATION_SUCCEEDED = 1;
+			static const int ACCOUNT_CREATION_FAILED = 2;
 
 			virtual int GetType() = 0;
 		};

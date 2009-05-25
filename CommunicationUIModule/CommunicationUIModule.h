@@ -7,7 +7,6 @@
 #pragma warning( push )
 #pragma warning( disable : 4275 ) // IConfigureCallBack used only inside CommunicationUIModule 
 #include "Foundation.h"
-
 #include "ChatSession.h"
 #include "ConfigureDlg.h"
 #include "DialogCallbackInterface.h"
@@ -34,8 +33,7 @@ namespace CommunicationUI
 	};
 
 	typedef boost::shared_ptr<ChatSession> ChatSessionUIPtr;
-	//
-	//class MODULE_API CommunicationUIModule : public Foundation::ModuleInterfaceImpl, public IConfigureCallBack
+
     class MODULE_API CommunicationUIModule : public Foundation::ModuleInterfaceImpl, public CommunicationUI::DialogCallBackInterface
 	{
 	public:
@@ -99,8 +97,11 @@ namespace CommunicationUI
 		void HandleFriendRequest(Communication::FriendRequestPtr r);
 		void ShowFriendRequestWindow(Communication::FriendRequestPtr r);
 		Communication::FriendRequestPtr	FindFriendRequest(std::string address);
-		void SaveCredentials(Communication::CredentialsPtr c);
-		Communication::CredentialsPtr LoadCreadentials();
+
+
+		
+		Communication::CommunicationSettingsInterfacePtr LoadCommunicationSettings();
+
 
 		Glib::RefPtr<Gnome::Glade::Xml> commUI_XML;
 
@@ -135,8 +136,9 @@ namespace CommunicationUI
 	private:
 		// Service References
 		Communication::CommunicationServicePtr communication_service_;
-
 		Communication::ContactListPtr contact_list_;
+        Communication::CommunicationSettingsInterfacePtr comms_settings_;
+
 		typedef std::map<std::string, Communication::FriendRequestPtr> FriendRequestMap;
 		FriendRequestMap friend_requests_;
 	};

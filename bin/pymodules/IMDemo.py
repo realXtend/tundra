@@ -137,6 +137,7 @@ class IMDemo:
 
     def CGetStatusWithID(self, id):
         return str(self.connection.get_contact_status(id))
+    
     def CSetStatus(self, status_message):
         spl = status_message.split(':')
         if len(spl)==1:

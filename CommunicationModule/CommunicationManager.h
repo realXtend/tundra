@@ -54,7 +54,7 @@ namespace Communication
 		static const std::string NameStatic() { return "CommunicationManager"; } // for logging functionality
 
 		// CommunicationServiceInterface begin
-		void OpenConnection(CredentialsPtr c);
+		void OpenConnection(CommunicationSettingsInterfacePtr c);
 		void CloseConnection();
 		IMSessionPtr CreateIMSession(ContactPtr contact);
 		IMSessionPtr CreateIMSession(ContactInfoPtr contact);
@@ -64,7 +64,11 @@ namespace Communication
 		IMMessagePtr CreateIMMessage(std::string text);
 		void SendFriendRequest(ContactInfoPtr contact_info);
 		void RemoveContact(ContactPtr contact); 
-		virtual CredentialsPtr GetCredentials(); 
+		//virtual CredentialsPtr GetCredentials(); 
+        virtual CommunicationSettingsInterfacePtr GetCommunicationSettings(); 
+
+        virtual void CreateAccount();
+
 		bool IsInitialized() { return initialized_; }
 		
 		// CommunicationServiceInterface end
@@ -100,6 +104,11 @@ namespace Communication
 		void RequestPresenceStatuses();
 		void CallPythonCommunicationObject(const std::string &method_name, const std::string &arg) const;
 		void CallPythonCommunicationObject(const std::string &method_name) const;
+    public:
+        // need to access these from CommunicationSettings
+		Foundation::ScriptObject* CallPythonCommunicationObjectAndGetReturnValue(const std::string &method_name, const std::string &arg) const;
+		Foundation::ScriptObject* CallPythonCommunicationObjectAndGetReturnValue(const std::string &method_name) const;
+    protected:
 
 		// static variables for python callbacks
 		static CommunicationManager* instance_;
@@ -141,6 +150,8 @@ namespace Communication
 		static void PyCallbackFriendRequestRemotePending(char* id);
 		static void PyCallbackFriendAdded(char* id);
 		static void PyCallbackPresenceStatusTypes(char* id);
+		static void PyCallbackAccountCreationSucceeded(char* id);
+        static void PyCallbackAccountCreationFailed(char* id);
 	};
 
 } // end of namespace Communication

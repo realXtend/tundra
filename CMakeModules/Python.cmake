@@ -15,12 +15,16 @@ macro (LINK_PYTHON)
 	if (MSVC)
     if(PYTHON_FORCE_RELEASE_VERSION)    
 		target_link_libraries (${TARGET_NAME}
-			debug Python26 
-			optimized Python26)
+#			debug Python26 
+#			optimized Python26)
+			debug Python25 
+			optimized Python25)
     else(PYTHON_FORCE_RELEASE_VERSION)
 		target_link_libraries (${TARGET_NAME}
-			debug Python26_d 
-			optimized Python26)
+#			debug Python26_d 
+#			optimized Python26)
+			debug Python25_d 
+			optimized Python25)
     endif(PYTHON_FORCE_RELEASE_VERSION)
 	endif (MSVC)
 endmacro (LINK_PYTHON)

@@ -31,7 +31,8 @@ namespace Communication
 		NewsFeedServerConnection(void);
 		~NewsFeedServerConnection(void);
 
-		void Open(Credentials c); 
+        //commented out 'cause does not build at the moment and is not needed currently
+		//void Open(CommunicationSettings c); 
 		void Close();
 		void Subscribe(/*resource*/);
 		void Unsubscribe(/*resource*/);

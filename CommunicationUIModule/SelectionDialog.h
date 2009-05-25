@@ -53,11 +53,9 @@ namespace CommunicationUI
 
 	    Gtk::Button btnOk_;
 	    Gtk::Button btnCancel_;
-        //Gtk::Button btnClose_;
         Gtk::Label lblQuestion_;
 
         DialogCallBackInterface* dialogCaller_;
-        //DialogCallBackInterfacePtr dialogCaller_;
     };
 }
 #pragma warning( pop )
