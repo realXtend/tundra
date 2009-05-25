@@ -34,6 +34,10 @@ namespace RexLogic
         void StopMovingLeft();
         void StartMovingRight();
         void StopMovingRight();
+        void StartMovingUp();
+        void StopMovingUp();
+        void StartMovingDown();
+        void StopMovingDown();
         void Zoom(int value);
         void StartRotatingLeft();
         void StopRotatingLeft();
