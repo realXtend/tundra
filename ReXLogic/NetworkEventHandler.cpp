@@ -78,6 +78,7 @@ namespace RexLogic
 
     bool NetworkEventHandler::HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
+        PROFILE(NetworkEventHandler_HandleOpenSimNetworkEvent);
         OpenSimProtocol::NetworkEventInboundData *netdata = checked_static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
         switch(event_id)
         {
