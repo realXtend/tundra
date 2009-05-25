@@ -161,38 +161,40 @@ namespace Foundation
         // main loop
         while (exit_signal_ == false)
         {
-            PROFILE(MainLoop);
-
-            double frametime = timer.elapsed();
-            timer.restart();
-            // do synchronized update for modules
             {
-                PROFILE(FW_UpdateModules);
-                module_manager_->UpdateModules(frametime);
-            }
+                PROFILE(MainLoop);
 
-            // call asynchronous update on modules / do parallel tasks
+                double frametime = timer.elapsed();
+                timer.restart();
+                // do synchronized update for modules
+                {
+                    PROFILE(FW_UpdateModules);
+                    module_manager_->UpdateModules(frametime);
+                }
 
-            // synchronize shared data across modules
-            //mChangeManager->_propagateChanges();
-            
-            // process delayed events
-            
-            {
-               PROFILE(FW_ProcessDelayedEvents);
-                event_manager_->ProcessDelayedEvents(frametime);
+                // call asynchronous update on modules / do parallel tasks
+
+                // synchronize shared data across modules
+                //mChangeManager->_propagateChanges();
+                
+                // process delayed events
+                
+                {
+                   PROFILE(FW_ProcessDelayedEvents);
+                    event_manager_->ProcessDelayedEvents(frametime);
+                }
+                
+                // if we have a renderer service, render now
+    			
+                if (renderer.expired() == false)
+                {
+                    PROFILE(FW_Render);
+                    renderer.lock()->Render();
+                }
             }
             
-            // if we have a renderer service, render now
-			
-            if (renderer.expired() == false)
-            {
-                PROFILE(FW_Render);
-                renderer.lock()->Render();
-            }
-            
-            // Reset profiling data
 #ifdef PROFILING
+            // Reset profiling data. Should be outside of any profiling blocks.
             GetProfiler().Reset();
 #endif
         }
