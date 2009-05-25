@@ -6,10 +6,10 @@
 #include "Core.h"
 #include "Foundation.h"
 
-BOOST_AUTO_TEST_SUITE(test_suite_core)
+BOOST_AUTO_TEST_SUITE(core)
 
 
-BOOST_AUTO_TEST_CASE( core_exception )
+BOOST_AUTO_TEST_CASE( exception )
 {
     Core::Exception e;
     try
@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE( core_exception )
     }
 }
 
-BOOST_AUTO_TEST_CASE( core_vector3 )
+BOOST_AUTO_TEST_CASE( vector3 )
 {
     Core::Vector3df test;
     BOOST_CHECK_EQUAL (test, Core::Vector3df(0, 0, 0));
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE( core_vector3 )
 
 }
 
-BOOST_AUTO_TEST_CASE( core_quaternion )
+BOOST_AUTO_TEST_CASE( quaternion )
 {
     Core::Quaternion test;
     BOOST_CHECK_EQUAL (test, Core::Quaternion::IDENTITY);
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE( core_quaternion )
     BOOST_CHECK_EQUAL (test, Core::Quaternion(0, 0.70710683f, 0, 0.70710683f));
 }
 
-BOOST_AUTO_TEST_CASE( core_string_utils )
+BOOST_AUTO_TEST_CASE( string_utils )
 {
     BOOST_CHECK_EQUAL (Core::ToString(123),  std::string("123"));
 
