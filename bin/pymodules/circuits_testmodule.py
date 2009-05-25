@@ -6,8 +6,8 @@ except ImportError: #not running under rex
 from circuits import Component
 
 inputtests = {
-    r.MOVE_FORWARD_PRESSED: "^",
-    r.MOVE_FORWARD_RELEASED: "."
+    r.MoveForwardPressed: "^",
+    r.MoveForwardReleased: "."
 }
 
 class TestModule(Component):
