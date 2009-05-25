@@ -29,9 +29,6 @@ namespace CommunicationUI
 	    ConfigureDlg(int count, std::map<std::string, SettingsAttribute> attributes, std::string name,
 		   DialogCallBackInterface* aConfCaller);
 
-      //  ConfigureDlg(int count, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes, std::string name,
-		    //DialogCallBackInterfacePtr aConfCaller);
-
 	    virtual ~ConfigureDlg(void);
 
     protected:
@@ -54,10 +51,8 @@ namespace CommunicationUI
 		    Gtk::Entry* entry;
 	    };
 
-	    // MVC model part
 	    // did not know how to read widgets from table, so adding references to all entries for reading
 	    std::vector<accessWidgets*> widgetPairs;
-        //std::vector<char*>  widgetText;
 
 	    std::string configName;
 	    //IConfigureCallBack* configCallback;

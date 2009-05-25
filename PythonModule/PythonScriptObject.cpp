@@ -28,22 +28,10 @@ namespace PythonScript
     void PythonScriptObject::ReleaseResources()
     {
         if(pythonObj!=NULL&&pythonRef!=NULL){
-            ////Py_ssize_t count = pythonObj->ob_refcnt;
-            //int count = (int)pythonObj->ob_refcnt;
-            //if(count>0){
-            //    for(int i=0;i<count;i++){
-                    Py_DECREF(pythonObj);
-            //    }
-            //}
+            Py_DECREF(pythonObj);
         }
 		if(pythonRef!=NULL){
-            ////Py_ssize_t count = pythonRef->ob_refcnt;
-            //int count = (int)pythonRef->ob_refcnt;
-            //if(count>0){
-            //    for(int i=0;i<count;i++){
-                    Py_DECREF(pythonRef);
-            //    }
-            //}
+            Py_DECREF(pythonRef);
         }        
     }
 
@@ -75,10 +63,6 @@ namespace PythonScript
 													  s, 
 													  *argv);
 
-			//PyObject* pRetValue = PyObject_CallMethod(this->pythonObj, 
-			//										  m, 
-			//										  s, 
-			//										  argv[0]);
 			delete m;
 			delete s;
             delete []*argv;
@@ -157,6 +141,10 @@ namespace PythonScript
 		return obj;
 	}
 
+    /**
+     * returns pyobject as char array, return value must not be modified (memory freeing is handled by python,
+     * when ReleaseResources and destructor methods are called)
+     */
 	char* PythonScriptObject::ConvertToChar(){
 		return PyString_AsString(this->pythonObj);
 	}

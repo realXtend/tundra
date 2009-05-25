@@ -21,7 +21,6 @@ namespace CommunicationUI
 {
 
 
-    //ContactList::ContactList(CommunicationUIModule& uimodule): uimodule_(uimodule)
     ContactList::ContactList()
     {
         //Fill popup menu:
@@ -42,10 +41,6 @@ namespace CommunicationUI
         this->append_column("Status", columns_.status_);
         this->append_column("Message", columns_.message_);
         notFound = false;
-
-        //Gtk::TreeModel::Row row = *(lstContactsTreeModel->append());
-        //row[columns_.id_] = "test";
-        //row[columns_.contact_] = "test";
 
     }
 
@@ -76,19 +71,12 @@ namespace CommunicationUI
         bool handled = false;
         switch (event->keyval)
         {
+            // catching the enter press for sure
             case GDK_Return:
             case GDK_KP_Enter:
             case GDK_ISO_Enter:
             case GDK_3270_Enter:
                 startChat();
-                //event->time
-                //gtk_main_do_event(
-                //popContactMenu.popup(
-                //Glib::RefPtr<Gtk::TreeView::Selection> refSelection = get_selection();
-                //if(refSelection)
-                //{
-                //    refSelection->
-                //}
                 handled = true;
                 break;
             case GDK_Tab:
@@ -112,8 +100,6 @@ namespace CommunicationUI
                 //iter->get_value
                 std::string id = (*iter)[this->columns_.id_];
                 std::string contact = (*iter)[this->columns_.contact_];
-                //int id = (*iter)[m_Columns.m_col_id];
-
                 this->uimodule_->StartChat(contact.c_str());
             }
         }
@@ -122,12 +108,6 @@ namespace CommunicationUI
         //Communication::CommunicationUIModule::LogDebug("GetSelected");
         Glib::RefPtr<Gtk::TreeView::Selection> refSelection = get_selection();
         return refSelection->get_selected();
-        //if(refSelection)
-        //{
-        //    Gtk::TreeModel::iterator iter = 
-        //    return iter;
-        //}
-        //return ;
     }
 
     void ContactList::startVoip(){
@@ -145,8 +125,6 @@ namespace CommunicationUI
             lstContactsTreeModel->erase(iter);
         } else {
             notFound = false;
-            //Communication::CommunicationUIModule::LogInfo("row to remove was not found:");
-            //Communication::CommunicationUIModule::LogInfo(id);
         }
     }
 
@@ -157,22 +135,10 @@ namespace CommunicationUI
             Gtk::TreeModel::Row row = *iter;
             row.set_value(2, std::string(status));
             row.set_value(3, std::string(status_string));
-            //row.get_value(
         } else {
             notFound = false;
         }
 
-        //Gtk::TreeModel::Children children = lstContactsTreeModel->children();
-        //for(Gtk::TreeModel::iterator iter = children.begin(); iter != children.end(); ++iter)
-        //{            
-        //    Gtk::TreeModel::Row row = *iter;
-        //    std::string val;
-        //    row.get_value(0, val);
-        //    if(val==std::string(id))
-        //    {
-        //        row.set_value(2, std::string(status));    
-        //    }
-        //}
     }
 
     Gtk::TreeModel::iterator ContactList::getRowWithId(char* id)

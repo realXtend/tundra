@@ -93,13 +93,9 @@ namespace CommunicationUI
         commUI_XML->get_widget("entryPresenceMessage", entryPresenceMessage);
         commUI_XML->get_widget("lblPresenceStatus", lblPresenceStatus);
 
-
-
         cmbPresence.set_size_request(240, 25);
         fxdContainer->put(cmbPresence, 25, 40);
         
-
-
         if(!wndCommMain||!fxdContainer)//||!wndSelection)
 			return;
 
@@ -115,20 +111,11 @@ namespace CommunicationUI
 
 		commUI_XML->connect_clicked("mi_directchat", sigc::mem_fun(*this, &CommunicationUIModule::OnDirectChatMenuStartChat));
         
-        commUI_XML->connect_clicked("mi_online", sigc::mem_fun(*this, &CommunicationUIModule::OnSetStatusOnline));
-        commUI_XML->connect_clicked("mi_away", sigc::mem_fun(*this, &CommunicationUIModule::OnSetStatusAway));
-        commUI_XML->connect_clicked("mi_busy", sigc::mem_fun(*this, &CommunicationUIModule::OnSetStatusBusy));
-        commUI_XML->connect_clicked("mi_offline", sigc::mem_fun(*this, &CommunicationUIModule::OnSetStatusOffline));
-
         commUI_XML->connect_clicked("btnAddContact", sigc::mem_fun(*this, &CommunicationUIModule::OnContactAdd));
         commUI_XML->connect_clicked("btnRemoveContact", sigc::mem_fun(*this, &CommunicationUIModule::OnContactRemove));
-        commUI_XML->connect_clicked("btnRefresh", sigc::mem_fun(*this, &CommunicationUIModule::OnRefresh));
+        //commUI_XML->connect_clicked("btnRefresh", sigc::mem_fun(*this, &CommunicationUIModule::OnRefresh));
         commUI_XML->connect_clicked("btnSetPresenceMessage", sigc::mem_fun(*this, &CommunicationUIModule::OnSetPresenceMessage));
-
-
-
         cmbPresence.signal_changed().connect(sigc::mem_fun(*this, &CommunicationUIModule::OnPresenceStatusSelection) );
-
 
 		// entry dialog
 		commUI_XML->connect_clicked("btnEntryOk", sigc::mem_fun(*this, &CommunicationUIModule::OnEntryDlgOk));
@@ -166,13 +153,23 @@ namespace CommunicationUI
 		}
 
 		contact_list_ = communication_service_->GetContactList();
+        comms_settings_ = communication_service_->GetCommunicationSettings();
 	}
 
 	void CommunicationUIModule::OnAccountMenuSettings()
 	{
-		Communication::CredentialsPtr c = communication_service_->GetCredentials();
-		// \todo Setup settings dlg and show it
-
+        // convert the settings used by communications to one used in communicationsui, since communications needs its own kind of settings?
+        std::vector<std::string> keys = comms_settings_->GetProperties();
+        std::map<std::string, SettingsAttribute> settingsMap;
+        for(std::vector<std::string>::iterator iter = keys.begin();iter<keys.end(); iter++){
+            SettingsAttribute attr;
+			attr.type = CommunicationUI::String;
+		    attr.value = comms_settings_->GetProperty(*(iter));
+            settingsMap[*(iter)] = attr;
+        }
+        ConfigureDlg accDlg(settingsMap.size(), settingsMap, "connection settings", this);
+		Gtk::Main::run(accDlg);
+               
    //     for(std::vector<std::string>::iterator iter = settingsVect.begin(); iter<settingsVect.end()-1; iter+=2)
    //     {
    //         SettingsAttribute attr;
@@ -181,9 +178,8 @@ namespace CommunicationUI
    //         std::string key = *iter;
    //         attrs[key] = attr;
    //     }
-
-//        ConfigureDlg accDlg(attrs.size(), attrs, "connection settings", this);
-//		Gtk::Main::run(accDlg);
+  //      ConfigureDlg accDlg(settingsMap.size(), settingsMap, "connection settings", this);
+		//Gtk::Main::run(accDlg);
 	}
 
     void CommunicationUIModule::OnCreateAccount()
@@ -198,7 +194,7 @@ namespace CommunicationUI
 	{
 		std::map<std::string, SettingsAttribute> attributes; // attributes for ConfigureDlg object
 
-		Communication::CredentialsPtr c = communication_service_->GetCredentials();
+		Communication::CommunicationSettingsInterfacePtr c = communication_service_->GetCommunicationSettings();
 		std::vector<std::string> properties = c->GetProperties();
 		for (std::vector<std::string>::iterator i = properties.begin(); i != properties.end(); i++)
 		{
@@ -218,7 +214,7 @@ namespace CommunicationUI
         LogInfo("OnAccountMenuConnect");
 
 		// \todo use user defined credential here!
-		Communication::CredentialsPtr c = communication_service_->GetCredentials();
+		Communication::CommunicationSettingsInterfacePtr c = communication_service_->GetCommunicationSettings();
 		communication_service_->OpenConnection(c);
 	}
 	void CommunicationUIModule::OnAccountMenuDisconnect()
@@ -403,22 +399,12 @@ namespace CommunicationUI
 	}
 
 	/**
-	 *  \todo Implement save eg. with ConfiguratonManager
-	 */
-	void CommunicationUIModule::SaveCredentials(Communication::CredentialsPtr c)
-	{
-
-	}
-
-	/**
 	 *  \todo Implement load eg. with ConfigurationManager
 	 */
-	Communication::CredentialsPtr CommunicationUIModule::LoadCreadentials()
+	Communication::CommunicationSettingsInterfacePtr CommunicationUIModule::LoadCommunicationSettings()
 	{
-		Communication::Credentials* c = new Communication::Credentials();
-		// \todo set properties here
-
-		return Communication::CredentialsPtr(c);
+        Communication::CommunicationSettingsInterfacePtr csifp = communication_service_->GetCommunicationSettings();
+        return csifp;
 	}
 
 	void CommunicationUIModule::Callback(std::string aConfigName, std::map<std::string, SettingsAttribute> attributes)
@@ -431,26 +417,13 @@ namespace CommunicationUI
 		{
 			LogInfo("Callback from settings dlg");
 			// TODO: Replace this functionality with CredentialPtr usage
-
-			Communication::Credentials* c = new Communication::Credentials();
-			Communication::CredentialsPtr credentials = Communication::CredentialsPtr(c);
-
-            //commManager->SetAccountAttributes(attributes);
-            // code to attributes into one string and call save
-//            std::string saveString;
             for(std::map<std::string, SettingsAttribute>::const_iterator iter = attributes.begin(); iter!=attributes.end(); ++iter){
-				CommunicationUI::SettingsAttribute attr = iter->second;
-				std::string value = static_cast<std::string>(attr.value);
-				credentials->SetProperty(iter->first, value);
-                //std::string key = iter->first;
-                //SettingsAttribute attr = iter->second;
-                //saveString.append(key + ":" + attr.value + ":");                
+                std::string key = iter->first;
+                CommunicationUI::SettingsAttribute attr = iter->second;
+                std::string value = attr.value;
+                comms_settings_->SetProperty(key, value);
             }
-            // remove the last ":"
-//            saveString = saveString.substr(0, saveString.size()-1);
-//            LogInfo(saveString);
-			SaveCredentials(credentials);
-//            this->CallIMPyMethod("CSaveSettings", "s", saveString);
+            comms_settings_->Save();
 
         } else if(aConfigName=="contact address") {
             SettingsAttribute sattr = attributes["contact address"];
@@ -535,9 +508,9 @@ namespace CommunicationUI
         } else if(aConfigName=="Register account")
 		{
 			std::string answer = attributes.begin()->first;
-            if(answer=="Ok"){
-				
-				Communication::CredentialsPtr c = LoadCreadentials();
+            if(answer=="Ok"){				
+                //Communication::CommunicationSettingsInterfacePtr c = LoadCommunicationSettings();
+                this->communication_service_->CreateAccount();
 				// TODO: Implement CreateAccount(c) in communication sevice interface
 //				communication_service_->CreateAccount(c);
 //            CallIMPyMethod("CCreateAccount", "", std::string(""));
@@ -724,6 +697,32 @@ namespace CommunicationUI
 					break;
 				}
 			}
+        case Communication::Events::ACCOUNT_CREATION:
+			{
+				Communication::Events::SessionStateEventInterface* e = (Communication::Events::SessionStateEventInterface*)(data);
+				int event_type = e->GetType();
+				switch(event_type)
+				{
+                case Communication::Events::AccountCreationEventInterface::ACCOUNT_CREATION_SUCCEEDED:
+                    {
+                        std::string infoText("Account created!");
+                        SelectionDialog sd("Account creation succeeded", infoText , "_Ok", "_Cancel", this, false);
+                        Gtk::Main::run(sd);        
+                        
+                    }
+                    break;
+                case Communication::Events::AccountCreationEventInterface::ACCOUNT_CREATION_FAILED:
+                    //\bug the reason why account is not created, is currently not passed to user
+                    {
+                        std::string infoText("Account creation failed!");
+                        SelectionDialog sd("Account creation failed", infoText , "_Ok", "_Cancel", this, false);
+                        Gtk::Main::run(sd);        
+                        
+                    }
+                    break;
+                }
+            }
+
 		}
        
         return false;

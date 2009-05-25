@@ -101,28 +101,6 @@ namespace CommunicationUI
         std::cout << "0" << std::endl;
 		txtEntrySend_->set_text("");
 		
-		//// pack message
-		//char** args = new char*[3];
-  //      //Glib::ustring::size_type = sendTxt.length();
-  //      char* addr = new char[counterpart_.length()];
-		//char* mess = new char[sendTxt.length()];
-  //      
-		//strcpy(mess,sendTxt.c_str());
-  //      strcpy(addr,counterpart_.c_str());
-		//args[0] = addr;
-  //      args[1] = mess;
-
-		//std::string str = "CSendChat";
-		//std::string syntax = "ss";
-  //      //SIZE_T t = counterpart_.length();
-  //      Foundation::ScriptObject* ret = imScriptObject_->CallMethod(str, syntax, args);
-
-        //std::cout << "1" << std::endl;
-        //std::string addr_mess(counterpart_);
-        //addr_mess.append(":");
-        //addr_mess.append(sendTxt.c_str());
-        //std::cout << addr_mess << std::endl;
-
 		std::string text = sendTxt.c_str();
 		Communication::IMMessagePtr message = communication_service_->CreateIMMessage(text);
 		session_->SendIMMessage(message);

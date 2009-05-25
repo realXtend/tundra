@@ -26,8 +26,6 @@ namespace CommunicationUI
 
     ConfigureDlg::ConfigureDlg(int count, std::map<std::string, SettingsAttribute> attributes, std::string name,
 							     DialogCallBackInterface* aConfCaller)
-    //ConfigureDlg::ConfigureDlg(int count, std::map<std::string, Foundation::Comms::SettingsAttribute> attributes, std::string name,
-				//			     DialogCallBackInterfacePtr aConfCaller)
     : m_Table(count, 2),
       m_Button_Close("C_lose", true),
       m_Button_Ok("_Ok", true),
@@ -36,14 +34,11 @@ namespace CommunicationUI
 	    set_title(name);
 	    configName = name;
 	    set_border_width(0);
-        //set_size_request(300, count*50 + 75);
 	    set_size_request(400, count*50 + 40);
-    	
 	    configCallback = aConfCaller;
     	
 	    m_ScrolledWindow.set_border_width(10);
 
-	    //m_ScrolledWindow.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
 	    m_ScrolledWindow.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 
 	    get_vbox()->pack_start(m_ScrolledWindow);
@@ -59,13 +54,10 @@ namespace CommunicationUI
 	    for(iter = attributes.begin(); iter!=attributes.end(); ++iter)
 	    {
 		    // todo: check for string lenght
-		    //char buffer[32];
-            //char buffer[iter->first.size()+1];
             char* buffer = new char[iter->first.size()+1];
 		    strcpy(buffer, iter->first.c_str());
 		    strcat(buffer, ":");
 		    Gtk::Label* pLabel = Gtk::manage(new Gtk::Label(buffer));
-            //this->widgetText.push_back(buffer); //Gtk::manages?
 		    pLabel->set_justify(Gtk::JUSTIFY_RIGHT);
 		    m_Table.attach(*pLabel, 0, 1, row, row + 1);
 		    Gtk::Entry* pEntry = Gtk::manage(new Gtk::Entry());
@@ -155,15 +147,6 @@ namespace CommunicationUI
 		    delete aW;
 	    }		
 	    widgetPairs.clear();
-
-	    //std::vector<char*>::iterator iter2;
-	    //for(iter2 = widgetText.begin();iter2!=widgetText.end();iter2++)
-	    //{
-		   // char* ch = *iter2;
-		   // delete ch;
-	    //}		
-	    //widgetText.clear();
-
 	    hide();
     }
 }

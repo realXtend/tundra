@@ -39,8 +39,6 @@ namespace CommunicationUI
     {
         dialogCaller_ = aConfCaller;
         std::cout << "SelectionDialog constructor:" << std::endl;
-        //std::cout << "passData " << passData << std::endl;
-        //std::string passData_ = passData;
         std::cout << "passData_ " << passData_ << std::endl;
         usePassData_ = true;
         Initialize();
@@ -112,17 +110,13 @@ namespace CommunicationUI
             std::cout << "not using passdata" << std::endl;
             attr.value = "";
         }
-        
-        //CommunicationUIModule::LogDebug("passdata");
+         
         std::cout << "passdata" << std::endl;
-        //CommunicationUIModule::LogDebug(attr.value);
         std::cout << "attr.value" << attr.value << std::endl;
 	    attributes[std::string(answer)] = attr;
         
-
 	    // calling back
         this->dialogCaller_->Callback(this->name_, attributes);
-        
         cleanUp();
     }
 
