@@ -11,9 +11,9 @@
 #include "TestModuleb.h"
 
 //! Unit test for framework
-BOOST_AUTO_TEST_SUITE(test_suite_foundation)
+BOOST_AUTO_TEST_SUITE(fw)
 
-BOOST_AUTO_TEST_CASE( framework_platform )
+BOOST_AUTO_TEST_CASE( platform )
 {
     Foundation::Framework fw;
 
@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE( framework_platform )
     BOOST_CHECK (appData_unicode.find(Core::ToWString(fw.GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "application_name"))) != std::wstring::npos);
 }
 
-BOOST_AUTO_TEST_CASE( framework_application )
+BOOST_AUTO_TEST_CASE( application )
 {
     Foundation::Framework fw;
 
@@ -52,7 +52,7 @@ void Profiler_Recursion()
         Profiler_Recursion();
 }
 
-BOOST_AUTO_TEST_CASE( framework_profiler )
+BOOST_AUTO_TEST_CASE( profiler )
 {
     Foundation::Framework fw;
     {
@@ -110,7 +110,7 @@ void frameworkConfigurationManagerTest()
     BOOST_CHECK (manager.HasKey("NoGroup", "no_key") == false);
 }
 
-BOOST_AUTO_TEST_CASE( framework_configuration_manager )
+BOOST_AUTO_TEST_CASE( configuration_manager )
 {
     frameworkConfigurationManagerTest();
 
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE( framework_configuration_manager )
 #endif
 }
 
-BOOST_AUTO_TEST_CASE( framework_headless )
+BOOST_AUTO_TEST_CASE( headless )
 {
     // integration test for running the viewer in headless mode
     Foundation::Framework fw;
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE( framework_headless )
 }
 
 // Should be last, so default configuration file gets properly saved in debug mode
-BOOST_AUTO_TEST_CASE( framework_test_module )
+BOOST_AUTO_TEST_CASE( test_module )
 {
     Foundation::Framework fw;
     

@@ -18,7 +18,7 @@
 #include "InputEvents.h"
 
 //! Unit test for framework
-BOOST_AUTO_TEST_SUITE(test_suite_support_modules)
+BOOST_AUTO_TEST_SUITE(support_modules)
 
 
 Foundation::Framework &CreateFramework()
@@ -71,7 +71,7 @@ struct TestB
     int test_var_;
 };
 
-BOOST_AUTO_TEST_CASE( support_modules_console_commands )
+BOOST_AUTO_TEST_CASE( console_commands )
 {
     Foundation::Framework &fw = CreateFramework();
 
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE( support_modules_console_commands )
     BOOST_CHECK_EQUAL (testb.test_var_, 1);
 }
 
-BOOST_AUTO_TEST_CASE( support_modules_console_ogre )
+BOOST_AUTO_TEST_CASE( console_ogre )
 {
     Foundation::Framework &fw = CreateFramework();
 
