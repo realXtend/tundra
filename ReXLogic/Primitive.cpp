@@ -506,7 +506,10 @@ namespace RexLogic
         while (i != prim.Materials.end())
         {
             if (i->second.UUID.IsNull())
+            {
+                ++i;
                 continue;
+            }
 
             const std::string mat_name = i->second.UUID.ToString();
             Core::uint idx = i->first;   
@@ -514,7 +517,10 @@ namespace RexLogic
             //! \todo in the future material names will not correspond directly to texture names, so can't use this kind of check
             // If the mesh material is up-to-date, no need to process any further.
             if (meshptr->GetMaterialName(idx) == mat_name)
+            {
+                ++i;
                 continue;
+            }
 
             switch(i->second.Type)
             {
