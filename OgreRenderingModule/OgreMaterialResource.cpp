@@ -38,10 +38,17 @@ namespace OgreRenderer
         }
 
         Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(const_cast<Core::u8 *>(source->GetData()), source->GetSize()));
-        Ogre::MaterialManager::getSingleton().parseScript(data, "");
-        Ogre::MaterialManager::getSingleton().create(source->GetId(), "");
+        try
+        {
+            Ogre::MaterialManager::getSingleton().parseScript(data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            Ogre::MaterialManager::getSingleton().create(source->GetId(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
-        OgreRenderingModule::LogDebug("Ogre material " + id_ + " created");
+            OgreRenderingModule::LogDebug("Ogre material " + id_ + " created");
+        } catch (Ogre::Exception &e)
+        {
+            OgreRenderingModule::LogWarning(e.what());
+            OgreRenderingModule::LogWarning("Failed to parse Ogre material " + id_ + ".");
+        }
         return true;
     }
 
