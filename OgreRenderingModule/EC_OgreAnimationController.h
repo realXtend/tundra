@@ -23,57 +23,6 @@ namespace OgreRenderer
     {
         DECLARE_EC(EC_OgreAnimationController);
     public:
-        virtual ~EC_OgreAnimationController();
-
-        //! gets mesh entity component
-        Foundation::ComponentPtr GetMeshEntity() const { return mesh_entity_; }
-        
-        //! sets mesh entity component
-        void SetMeshEntity(Foundation::ComponentPtr mesh_entity);
-        
-        //! updates animation(s) by elapsed time
-        void Update(Core::f64 frametime);
-        
-        //! Enable animation, with optional fade-in period. Returns true if success (animation exists)
-        bool EnableAnimation(const std::string& name, bool looped = true, Core::f32 fadein = 0.0f);
-	
-        //! Enable an exclusive animation (fades out all other animations with fadeOut parameter)
-        bool EnableExclusiveAnimation(const std::string& name, bool looped, Core::f32 fadein = 0.0f, Core::f32 fadeout = 0.0f);
-
-        //! Check whether non-looping animation has finished
-        /*! If looping, returns always false
-        */
-        bool HasAnimationFinished(const std::string& name);
-
-        //! Check whether animation is active
-        //! \param check_fade_out if true, also fade-out (until totally faded) phase is interpreted as "active"
-        bool IsAnimationActive(const std::string& name, bool check_fadeout = true);
-
-       //! Disable animation, with optional fade-out period. Returns true if success (animation exists)
-        bool DisableAnimation(const std::string& name, Core::f32 fadeout = 0.0f);
-
-        //! Disable all animations with the same fadeout period
-        void DisableAllAnimations(Core::f32 fadeout = 0.0f);
-
-        //! forwards animation to end, useful if animation is played in reverse
-        void SetAnimationToEnd(const std::string& name);
-
-        //! Set relative speed of active animation. Once disabled, the speed is forgotten! Returns true if success (animation exists)
-        bool SetAnimationSpeed(const std::string& name, Core::f32 speedfactor);
-
-        //! Change weight of an active animation (default 1.0). Return false if the animation doesn't exist or isn't active
-        bool SetAnimationWeight(const std::string& name, Core::f32 weight);
-
-        //! Set time position of an active animation.
-        bool SetAnimationTimePosition(const std::string& name, Core::f32 new_position);
-
-        //! Set autostop on animation
-        bool SetAnimationAutoStop(const std::string& name, bool enable);
-
-        //! set number of times the animation is repeated (0 = repeat indefinitely)
-        bool SetAnimationNumLoops(const std::string& name, Core::uint repeats);
-        
-    private:
         
         //! Enumeration of animation phase
         enum AnimationPhase
@@ -121,8 +70,62 @@ namespace OgreRenderer
         };
         
         typedef std::map<std::string, Animation> AnimationMap;
+
+        virtual ~EC_OgreAnimationController();
+
+        //! Gets mesh entity component
+        Foundation::ComponentPtr GetMeshEntity() const { return mesh_entity_; }
         
-        //! constructor
+        //! Gets mesh entity component
+        void SetMeshEntity(Foundation::ComponentPtr mesh_entity);
+        
+        //! Updates animation(s) by elapsed time
+        void Update(Core::f64 frametime);
+        
+        //! Enables animation, with optional fade-in period. Returns true if success (animation exists)
+        bool EnableAnimation(const std::string& name, bool looped = true, Core::f32 fadein = 0.0f);
+	
+        //! Enables an exclusive animation (fades out all other animations with fadeOut parameter)
+        bool EnableExclusiveAnimation(const std::string& name, bool looped, Core::f32 fadein = 0.0f, Core::f32 fadeout = 0.0f);
+
+        //! Checks whether non-looping animation has finished
+        /*! If looping, returns always false
+        */
+        bool HasAnimationFinished(const std::string& name);
+
+        //! Checks whether animation is active
+        //! \param check_fade_out if true, also fade-out (until totally faded) phase is interpreted as "active"
+        bool IsAnimationActive(const std::string& name, bool check_fadeout = true);
+
+       //! Disables animation, with optional fade-out period. Returns true if success (animation exists)
+        bool DisableAnimation(const std::string& name, Core::f32 fadeout = 0.0f);
+
+        //! Disables all animations with the same fadeout period
+        void DisableAllAnimations(Core::f32 fadeout = 0.0f);
+
+        //! Forwards animation to end, useful if animation is played in reverse
+        void SetAnimationToEnd(const std::string& name);
+
+        //! Sets relative speed of active animation. Once disabled, the speed is forgotten! Returns true if success (animation exists)
+        bool SetAnimationSpeed(const std::string& name, Core::f32 speedfactor);
+
+        //! Changes weight of an active animation (default 1.0). Return false if the animation doesn't exist or isn't active
+        bool SetAnimationWeight(const std::string& name, Core::f32 weight);
+
+        //! Sets time position of an active animation.
+        bool SetAnimationTimePosition(const std::string& name, Core::f32 new_position);
+
+        //! Sets autostop on animation
+        bool SetAnimationAutoStop(const std::string& name, bool enable);
+
+        //! Sets number of times the animation is repeated (0 = repeat indefinitely)
+        bool SetAnimationNumLoops(const std::string& name, Core::uint repeats);
+        
+        //! Returns all running animations
+        const AnimationMap& GetRunningAnimations() const { return animations_; }
+        
+    private:
+        //! Constructor
         /*! \param module renderer module
          */
         EC_OgreAnimationController(Foundation::ModuleInterface* module);

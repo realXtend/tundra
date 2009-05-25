@@ -3,6 +3,14 @@
 #ifndef incl_Avatar_h
 #define incl_Avatar_h
 
+namespace Poco
+{
+    namespace XML
+    {
+        class Node;
+    }
+}
+
 namespace OgreRenderer
 {
     class EC_OgrePlaceable;
@@ -14,6 +22,45 @@ namespace OgreRenderer
 namespace RexLogic
 {
     class RexLogicModule;
+
+    //! Defines an animation for the avatar
+    struct AnimationDefinition
+    {
+        //! Most likely a UUID
+        std::string id_;
+        //! Identifying human-readable name, not mandatory and not used directly in code
+        std::string name_;
+        //! Actual animation name in the mesh/skeleton
+        std::string animation_name_;
+        //! Should play looped?
+        bool looped_;
+        //! Exclusive; override (stop) other animations
+        bool exclusive_;
+        //! Speed scaled with avatar movement speed?
+        bool use_velocity_;
+        //! Always restart animation when it starts playing?
+        bool always_restart_;
+        //! Blend-in period in seconds
+        Core::Real fadein_;
+        //! Blend-out period in seconds
+        Core::Real fadeout_;
+        //! Speed modification (1.0 original)
+        Core::Real speedfactor_;
+        //! Weight modification (1.0 full)
+        Core::Real weightfactor_;
+        
+        AnimationDefinition() :
+            looped_(true),
+            exclusive_(false),
+            use_velocity_(false),
+            always_restart_(false),
+            fadein_(0.0),
+            fadeout_(0.0),
+            speedfactor_(1.0),
+            weightfactor_(1.0)
+        {
+        }
+    };
 
     class Avatar
     {
@@ -33,6 +80,12 @@ namespace RexLogic
         /// Update the avatar name overlay positions.
         void UpdateAvatarNameOverlayPositions();
 
+        //! Starts requested avatar animations, stops others
+        void StartAvatarAnimations(const RexTypes::RexUUID& avatarid, const std::vector<RexTypes::RexUUID>& anim_ids);
+        
+        //! Updates running avatar animations
+        void UpdateAvatarAnimations(Core::entity_id_t avatarid, Core::f64 frametime);
+        
     private:
         RexLogicModule *rexlogicmodule_;
         
@@ -51,10 +104,23 @@ namespace RexLogic
         
         //! Show the avatar name overlay.
         //! @param entity_id Entity id of the avatar.
-        void Avatar::ShowAvatarNameOverlay(Core::entity_id_t entity_id);
+        void ShowAvatarNameOverlay(Core::entity_id_t entity_id);
+        
+        //! Reads default avatar animations from an xml file
+        void ReadAnimationDefinitions(const std::string& path);
+        
+        //! Reads an avatar animation definition
+        void ReadAnimationDefinition(Poco::XML::Node* node);
+        
+        //! Looks up an animation definition by animation name
+        const AnimationDefinition& GetAnimDefByAnimName(const std::string& name);
+        
+        //! Animation definition map
+        typedef std::map<RexTypes::RexUUID, AnimationDefinition> AnimationDefinitionMap;
+        AnimationDefinitionMap default_anim_defs_;
         
         //! Animation map
-        typedef std::map<RexTypes::RexUUID,int> AvatarAnimationMap;
+        typedef std::map<RexTypes::RexUUID, int> AvatarAnimationMap;
         AvatarAnimationMap avatar_anims_;
         
         //! Avatar animation ids

@@ -87,6 +87,32 @@ namespace RexLogic
         controlflags_ &= ~RexTypes::AGENT_CONTROL_LEFT_NEG;
         SendMovementToServer();
     }
+    
+    
+    void AvatarController::StartMovingUp()
+    {
+        controlflags_ |= RexTypes::AGENT_CONTROL_UP_POS;
+        SendMovementToServer();
+    }
+
+    void AvatarController::StopMovingUp()
+    {
+        controlflags_ &= ~RexTypes::AGENT_CONTROL_UP_POS;
+        SendMovementToServer();
+    }
+
+    void AvatarController::StartMovingDown()
+    {
+        controlflags_ |= RexTypes::AGENT_CONTROL_UP_NEG;
+        SendMovementToServer();
+    }
+
+    void AvatarController::StopMovingDown()
+    {
+        controlflags_ &= ~RexTypes::AGENT_CONTROL_UP_NEG;
+        SendMovementToServer();
+    }
+    
 
     void AvatarController::Zoom(int value) 
     {    

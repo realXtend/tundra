@@ -14,7 +14,12 @@
 #include "../OgreRenderingModule/Renderer.h"
 #include "ConversionUtils.h"
 
-
+#include "Poco/DOM/DOMParser.h"
+#include "Poco/DOM/Element.h"
+#include "Poco/DOM/Attr.h"
+#include "Poco/DOM/NamedNodeMap.h"
+#include "Poco/DOM/AutoPtr.h"
+#include "Poco/SAX/InputSource.h"
 
 namespace RexLogic
 {
@@ -25,9 +30,13 @@ namespace RexLogic
         avatar_anims_[RexTypes::RexUUID("6ed24bd8-91aa-4b12-ccc7-c97c857ab4e0")] = AVATAR_ANIM_WALK;
         avatar_anims_[RexTypes::RexUUID("2408fe9e-df1d-1d7d-f4ff-1384fa7b350f")] = AVATAR_ANIM_STAND;
         avatar_anims_[RexTypes::RexUUID("aec4610c-757f-bc4e-c092-c6e9caf18daf")] = AVATAR_ANIM_FLY;
-        avatar_anims_[RexTypes::RexUUID("1c7600d6-661f-b87b-efe2-d7421eb93c86")] = AVATAR_ANIM_SIT_GROUND;               
+        avatar_anims_[RexTypes::RexUUID("1c7600d6-661f-b87b-efe2-d7421eb93c86")] = AVATAR_ANIM_SIT_GROUND;
         
         default_avatar_mesh_ = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "default_mesh_name", std::string("Jack.mesh"));
+        std::string default_animation_path = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "default_animations_file", std::string("./data/default_animations.xml"));
+        
+        // Read default animation definitions
+        ReadAnimationDefinitions(default_animation_path);
     }
 
     Avatar::~Avatar()
@@ -306,16 +315,18 @@ namespace RexLogic
         data->message->ResetReading();
         RexUUID avatarid = data->message->ReadUUID();
      
+        std::vector<RexUUID> animations_to_start;
         size_t animlistcount = data->message->ReadCurrentBlockInstanceCount();
         for(size_t i = 0; i < animlistcount; i++)
         {
             RexUUID animid = data->message->ReadUUID();
             Core::s32 animsequence = data->message->ReadS32();
 
-            if(avatar_anims_.find(animid) != avatar_anims_.end())
-            {
-                /// \todo handle known animation: avatar_anims_[animid]                        
-            }
+            animations_to_start.push_back(animid);
+            //if(avatar_anims_.find(animid) != avatar_anims_.end())
+            //{
+            //    /// \todo handle known animation: avatar_anims_[animid]                        
+            //}
         }        
         
         size_t animsourcelistcount = data->message->ReadCurrentBlockInstanceCount();
@@ -325,8 +336,11 @@ namespace RexLogic
         }
         // PhysicalAvatarEventList not used
                 
+        StartAvatarAnimations(avatarid, animations_to_start);
+                
         return false;
     }     
+    
     void Avatar::UpdateAvatarNameOverlayPositions()
     {
         Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
@@ -385,7 +399,6 @@ namespace RexLogic
         }
     }
     
-
     void Avatar::CreateDefaultAvatarMesh(Core::entity_id_t entity_id)
     {
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(entity_id);
@@ -416,9 +429,224 @@ namespace RexLogic
             OgreRenderer::EC_OgreAnimationController &animctrl = *checked_static_cast<OgreRenderer::EC_OgreAnimationController*>(animctrlptr.get());
             
             animctrl.SetMeshEntity(meshptr);
-            animctrl.EnableAnimation("Walk");
-            animctrl.SetAnimationSpeed("Walk", 0.0);
         }
     }
     
+    void Avatar::ReadAnimationDefinitions(const std::string& filename)
+    {
+        PROFILE(Avatar_ReadAnimationDefinitions);
+
+        RexLogicModule::LogInfo("Loading default avatar animations from " + filename);
+        
+        default_anim_defs_.clear();
+        
+        try
+        {
+            Poco::XML::InputSource source(filename);
+            Poco::XML::DOMParser parser;
+            Poco::XML::AutoPtr<Poco::XML::Document> document = parser.parse(&source);
+            
+            if (!document.isNull())
+            {
+                Poco::XML::Node* node = document->firstChild();
+                if (node && node->nodeName() == "animations")
+                {
+                    node = node->firstChild();
+                    while (node)
+                    {
+                        ReadAnimationDefinition(node);
+                        node = node->nextSibling();
+                    }
+                }
+            }
+            else
+            {
+                RexLogicModule::LogError("Could not load animations from " + filename);
+            }
+        }
+        catch (Poco::Exception& e)
+        {
+            RexLogicModule::LogError("Could not load animations from " + filename + ": " + e.what());
+        }
+        catch (Core::Exception& e)
+        {
+            RexLogicModule::LogError("Could not load animations from " + filename + ": " + e.what());
+        }
+    }
+    
+    void Avatar::ReadAnimationDefinition(Poco::XML::Node* node)
+    {
+        if (node->nodeName() != "animation")
+            return;
+            
+        Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> attributes = node->attributes();
+        if (!attributes.isNull())
+        {
+            try
+            {
+                Poco::XML::Attr* id_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("id"));
+                if (!id_attr) 
+                    id_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("uuid")); // legacy
+                if (!id_attr) 
+                    return; // Can't identify animation
+
+                Poco::XML::Attr* intname_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("internal_name"));
+                if (!intname_attr)
+                    intname_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("ogrename")); // legacy
+                if  (!intname_attr)
+                    return; // Can't map animation to mesh animation
+                    
+                AnimationDefinition new_def;
+                new_def.id_ = id_attr->getValue();
+                new_def.animation_name_ = intname_attr->getValue();
+                
+                Poco::XML::Attr* name_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("name"));
+                if (name_attr)
+                    new_def.name_ = name_attr->getValue();
+
+                Poco::XML::Attr* looped_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("looped"));
+                if (looped_attr)
+                    new_def.looped_ = Core::ParseString<bool>(looped_attr->getValue());
+
+                Poco::XML::Attr* exclusive_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("exclusive"));
+                if (exclusive_attr)
+                    new_def.exclusive_ = Core::ParseString<bool>(exclusive_attr->getValue());
+
+                Poco::XML::Attr* usevelocity_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("usevelocity"));
+                if (usevelocity_attr)
+                    new_def.use_velocity_ = Core::ParseString<bool>(usevelocity_attr->getValue());
+
+                Poco::XML::Attr* restart_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("alwaysrestart"));
+                if (restart_attr)
+                    new_def.always_restart_ = Core::ParseString<bool>(restart_attr->getValue());
+
+                Poco::XML::Attr* fadein_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("fadein"));
+                if (fadein_attr)
+                    new_def.fadein_ = Core::ParseString<Core::Real>(fadein_attr->getValue());
+
+                Poco::XML::Attr* fadeout_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("fadeout"));
+                if (fadeout_attr)
+                    new_def.fadeout_ = Core::ParseString<Core::Real>(fadeout_attr->getValue());
+
+                Poco::XML::Attr* speed_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("speedfactor"));
+                if (speed_attr)
+                    new_def.speedfactor_ = Core::ParseString<Core::Real>(speed_attr->getValue());
+
+                Poco::XML::Attr* weight_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("weightfactor"));
+                if (weight_attr)
+                    new_def.weightfactor_ = Core::ParseString<Core::Real>(weight_attr->getValue());
+                    
+                default_anim_defs_[RexUUID(new_def.id_)] = new_def;
+            }
+            catch(boost::bad_lexical_cast)
+            {
+                RexLogicModule::LogError("Malformed animation definition");
+            }
+        }
+    }
+
+    const AnimationDefinition& Avatar::GetAnimDefByAnimName(const std::string& name)
+    {
+        static AnimationDefinition default_def;
+        
+        AnimationDefinitionMap::const_iterator def = default_anim_defs_.begin();
+        while (def != default_anim_defs_.end())
+        {
+            if (def->second.animation_name_ == name)
+                return def->second;
+            ++def;
+        }
+        return default_def;
+    }
+    
+    void Avatar::StartAvatarAnimations(const RexTypes::RexUUID& avatarid, const std::vector<RexTypes::RexUUID>& anim_ids)
+    {
+        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
+        if (!entity)
+            return;
+        
+        Foundation::ComponentPtr animctrlptr = entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic());
+        if (!animctrlptr)
+            return;
+        
+        OgreRenderer::EC_OgreAnimationController &animctrl = *checked_static_cast<OgreRenderer::EC_OgreAnimationController*>(animctrlptr.get());
+            
+        // Convert uuid's to actual animation names
+        std::vector<std::string> anims_to_start;
+        for (unsigned i = 0; i < anim_ids.size(); ++i)
+        {
+            AnimationDefinitionMap::const_iterator def = default_anim_defs_.find(anim_ids[i]);
+            if (def != default_anim_defs_.end())
+                anims_to_start.push_back(def->second.animation_name_);
+        }
+        
+        // Other animations that are going on have to be stopped
+        std::vector<std::string> anims_to_stop;
+        const OgreRenderer::EC_OgreAnimationController::AnimationMap& running_anims = animctrl.GetRunningAnimations();
+        OgreRenderer::EC_OgreAnimationController::AnimationMap::const_iterator anim = running_anims.begin();
+        while (anim != running_anims.end())
+        {
+            if (std::find(anims_to_start.begin(), anims_to_start.end(), anim->first) == anims_to_start.end())
+                anims_to_stop.push_back(anim->first);
+            ++anim;
+        }
+        
+        for (unsigned i = 0; i < anims_to_start.size(); ++i)
+        {
+            const AnimationDefinition& def = GetAnimDefByAnimName(anims_to_start[i]);
+            
+            animctrl.EnableAnimation(
+                def.animation_name_,
+                def.looped_,
+                def.fadein_
+            );
+            
+            animctrl.SetAnimationSpeed(def.animation_name_, def.speedfactor_);
+            animctrl.SetAnimationWeight(def.animation_name_, def.weightfactor_);
+            
+            if (def.always_restart_)
+                animctrl.SetAnimationTimePosition(def.animation_name_, 0.0);
+        }
+        
+        for (unsigned i = 0; i < anims_to_stop.size(); ++i)
+        {
+            const AnimationDefinition& def = GetAnimDefByAnimName(anims_to_stop[i]);
+            
+            animctrl.DisableAnimation(
+                def.animation_name_,
+                def.fadeout_
+            );
+        }
+    }
+
+    void Avatar::UpdateAvatarAnimations(Core::entity_id_t avatarid, Core::f64 frametime)
+    {
+        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
+        if (!entity)
+            return;
+        
+        Foundation::ComponentPtr animctrl_ptr = entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic());
+        Foundation::ComponentPtr netpos_ptr = entity->GetComponent(EC_NetworkPosition::NameStatic());
+        if (!animctrl_ptr || !netpos_ptr)
+            return;
+            
+        OgreRenderer::EC_OgreAnimationController &animctrl = *checked_static_cast<OgreRenderer::EC_OgreAnimationController*>(animctrl_ptr.get());
+        EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(netpos_ptr.get());
+        
+        const OgreRenderer::EC_OgreAnimationController::AnimationMap& running_anims = animctrl.GetRunningAnimations();
+        OgreRenderer::EC_OgreAnimationController::AnimationMap::const_iterator anim = running_anims.begin();
+        while (anim != running_anims.end())
+        {
+            const AnimationDefinition& def = GetAnimDefByAnimName(anim->first);
+            // If animation is velocity-adjusted, adjust animation speed by network position speed (horizontal plane movement only)
+            if (def.use_velocity_)
+            {
+                Core::Real speed = Core::Vector3df(netpos.velocity_.x, netpos.velocity_.y, 0).getLength() * 0.5;
+                
+                animctrl.SetAnimationSpeed(anim->first, def.speedfactor_ * speed);
+            }
+            
+            ++anim;
+        }
+    }
 }

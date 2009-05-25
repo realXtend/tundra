@@ -573,14 +573,12 @@ namespace RexLogic
             Foundation::ComponentPtr animctrl_ptr = entity.GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic());
             if (animctrl_ptr)
             {
+                // If is an avatar, handle update for avatar animations
+                if (entity.GetComponent(EC_OpenSimAvatar::NameStatic()))
+                    avatar_->UpdateAvatarAnimations(entity.GetId(), frametime);
+                    
+                // General animation controller update
                 OgreRenderer::EC_OgreAnimationController &animctrl = *checked_static_cast<OgreRenderer::EC_OgreAnimationController*>(animctrl_ptr.get());
-                if (netpos_ptr)
-                {
-                    //! \todo this is just a primitive hack to test animation controller. to be removed
-                    EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(netpos_ptr.get()); 
-                    Core::f32 walkspeed = Core::Vector3df(netpos.velocity_.x, netpos.velocity_.y, 0.0).getLength() / 2;
-                    animctrl.SetAnimationSpeed("Walk", walkspeed);
-                }
                 animctrl.Update(frametime);
             }
         }
