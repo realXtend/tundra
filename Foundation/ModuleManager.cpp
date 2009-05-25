@@ -358,6 +358,12 @@ namespace Foundation
                 continue;
             }
 
+            if (IsExcluded(*it))
+            {
+                Foundation::RootLogInfo("Module " + *it + " excluded and not loaded.");
+                continue;
+            }
+
             Foundation::RootLogInfo("Attempting to load module: " + *it + ".");
 
 

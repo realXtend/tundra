@@ -443,8 +443,11 @@ namespace RexLogic
             Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
             if (!meshptr)
                 entity->AddEntityComponent(meshptr = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreMesh::NameStatic()));
-                            
-            OgreRenderer::EC_OgreMesh& mesh = *(checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get()));
+            
+
+            if (!meshptr)
+                return;
+            OgreRenderer::EC_OgreMesh& mesh = *(dynamic_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get()));
             
             // Attach to placeable if not yet attached
             if (!mesh.GetPlaceable())
@@ -622,7 +625,10 @@ namespace RexLogic
                 max_radius = radius;
         }
 
-        OgreRenderer::EC_OgreLight &light = *checked_static_cast<OgreRenderer::EC_OgreLight*>
+        if (!entity->GetComponent(OgreRenderer::EC_OgreLight::NameStatic()))
+            return;
+
+        OgreRenderer::EC_OgreLight& light = *checked_static_cast<OgreRenderer::EC_OgreLight*>
             (entity->GetComponent(OgreRenderer::EC_OgreLight::NameStatic()).get());
             
         ///\note Only point lights are supported at the moment.
