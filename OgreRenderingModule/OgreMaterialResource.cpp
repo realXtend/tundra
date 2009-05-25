@@ -48,6 +48,7 @@ namespace OgreRenderer
         {
             OgreRenderingModule::LogWarning(e.what());
             OgreRenderingModule::LogWarning("Failed to parse Ogre material " + id_ + ".");
+            return false;
         }
         return true;
     }
