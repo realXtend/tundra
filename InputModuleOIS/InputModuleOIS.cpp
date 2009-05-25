@@ -44,9 +44,13 @@ namespace Input
     {
         LogInfo("*** Initializing OIS ***");
 
- 
-        
-        event_category_ = framework_->GetEventManager()->RegisterEventCategory("Input");
+		Foundation::EventManagerPtr event_manager = framework_->GetEventManager();        
+        event_category_ = event_manager->RegisterEventCategory("Input");
+		//registering these two as a test now.
+		//do we really want to do this for all, or would there be a way for py to reuse the definitions in .h?
+		//i looked at ctypeslib codegenerator and some cppheaderparser etc. but didn't see an easy solution yet. --antont
+		event_manager->RegisterEvent(event_category_, Events::MOVE_FORWARD_PRESSED, "MoveForwardPressed");
+		event_manager->RegisterEvent(event_category_, Events::MOVE_FORWARD_RELEASED, "MoveForwardReleased");
 
         key_mapping_ = MapperPtr(new Mapper(this));
 

@@ -91,6 +91,8 @@ namespace PythonScript
 		Core::event_category_id_t inboundCategoryID_;
 		Core::event_category_id_t inputeventcategoryid;
 
+		PyObject *apiModule; //the module made here that exposes the c++ side / api, 'rexviewer'
+
 		// the hook to the python-written module manager that passes events on
 		PyObject *pmmModule, *pmmDict, *pmmClass, *pmmInstance;
 	    PyObject *pmmArgs, *pmmValue;
@@ -102,7 +104,7 @@ namespace PythonScript
 
 	};
 
-	static void initpymod();
+	static PyObject* initpymod();
 	//static Scene::ScenePtr GetScene();
 
 	//a helper and to avoid copy-paste when doing the get in Entity.getattro

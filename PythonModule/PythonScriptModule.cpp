@@ -73,7 +73,7 @@ namespace PythonScript
 
 		//XXX hack to have a ref to framework for api funcs
 		PythonScript::staticframework = framework_;
-		PythonScript::initpymod(); //initializes the rexviewer module to be imported within py
+		apiModule = PythonScript::initpymod(); //initializes the rexviewer module to be imported within py
 
 		//load the py written module manager using the py c api directly
 		pmmModule = PyImport_ImportModule("modulemanager");
@@ -91,11 +91,8 @@ namespace PythonScript
 			LogError("Unable get ModuleManager class from modulemanager namespace");
 			return;
 		}
-		if (PyCallable_Check(pmmClass)) {
-			pmmInstance = PyObject_CallObject(pmmClass, NULL); 
-		} else {
-			LogError("Unable to create instance from class ModuleManager");
-		}
+		//instanciating the manager moved to PostInitialize, 
+		//'cause it does autoload.py where TestComponent expects the event constants to be there already
 
 		//std::string error;
 		//modulemanager = engine_->LoadScript("modulemanager", error); //the pymodule loader & event manager
@@ -106,19 +103,76 @@ namespace PythonScript
 
     void PythonScriptModule::PostInitialize()
     {
+		Foundation::EventManagerPtr em = framework_->GetEventManager();        
+
+		/* get the category IDs of event types that pass on to the modulemanager */
 		//(was) for onChat
-		inboundCategoryID_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
+		inboundCategoryID_ = em->QueryEventCategory("OpenSimNetworkIn");
         if (inboundCategoryID_ == 0)
             LogWarning("Unable to find event category for incoming OpenSimNetwork events!");
 
 		//for notifying placeable movement
-		PythonScript::scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
+		PythonScript::scene_event_category_ = em->QueryEventCategory("Scene");
 	    if (PythonScript::scene_event_category_ == 0)
 			LogWarning("Unable to find event category for Scene events!");
 
-		inputeventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
+		inputeventcategoryid = em->QueryEventCategory("Input");
         if (inputeventcategoryid == 0)
             LogError("Unable to find event category for Input");
+
+		/* add events constants - now just the input events */
+		//XXX move these to some submodule ('input'? .. better than 'constants'?)
+		/*PyModule_AddIntConstant(apiModule, "MOVE_FORWARD_PRESSED", Input::Events::MOVE_FORWARD_PRESSED);
+		PyModule_AddIntConstant(apiModule, "MOVE_FORWARD_RELEASED", Input::Events::MOVE_FORWARD_RELEASED);
+		LogInfo("Added event constants.");*/
+
+		/* TODO: get the constants from the EventManager,
+		add registrating those (it's not (currently) mandatory),
+		to the modules themselves, e.g. InputModule (currently the OIS thing but that is to change) */
+		const Foundation::EventManager::EventMap &evmap = em->GetEventMap();
+		Foundation::EventManager::EventMap::const_iterator cat_iter = evmap.find(inputeventcategoryid);
+		if (cat_iter != evmap.end())
+		{
+			std::map<Core::event_id_t, std::string> evs = cat_iter->second;
+			for (std::map<Core::event_id_t, std::string>::iterator ev_iter = evs.begin();
+				ev_iter != evs.end(); ++ev_iter)
+			{
+				/*std::stringstream ss;
+				ss << ev_iter->first << " (id:" << ev_iter->second << ")";
+				LogInfo(ss.str());*/
+				PyModule_AddIntConstant(apiModule, ev_iter->second.c_str(), ev_iter->first);
+			}
+		}
+		else
+			LogInfo("No registered events in the input category.");
+
+		/*for (Foundation::EventManager::EventMap::const_iterator iter = evmap[inputeventcategoryid].begin();
+			iter != evmap[inputeventcategoryid].end(); ++iter)
+		{
+			std::stringstream ss;
+			ss << iter->first << " (id:" << iter->second << ")";
+			LogInfo(ss.str());
+		}*/
+		
+		/* TODO perhaps should expose all categories, so any module would get it's events exposed automagically 
+		const Foundation::EventManager::EventCategoryMap &categories = em.GetEventCategoryMap();
+		for(Foundation::EventManager::EventCategoryMap::const_iterator iter = categories.begin();
+			iter != categories.end(); ++iter)
+		{
+			std::stringstream ss;
+			ss << iter->first << " (id:" << iter->second << ")";
+
+			treeiter->set_value(0, ss.str());
+		} */
+
+		//now that the event constants etc are there, can instanciate the manager which triggers the loading of components
+		if (PyCallable_Check(pmmClass)) {
+			pmmInstance = PyObject_CallObject(pmmClass, NULL); 
+			LogInfo("Instanciated Py ModuleManager.");
+		} else {
+			LogError("Unable to create instance from class ModuleManager");
+		}
+
 	}
 
     bool PythonScriptModule::HandleEvent(
@@ -245,7 +299,8 @@ namespace PythonScript
     {        
         framework_->GetServiceManager()->UnregisterService(engine_);
 
-		PyObject_CallMethod(pmmInstance, "exit", "");
+		if (pmmInstance != NULL) //sometimes when devving it can be, when there was a bug - this helps to be able to reload it
+			PyObject_CallMethod(pmmInstance, "exit", "");
 		/*char** args = new char*[2]; //is this 2 'cause the latter terminates?
 		std::string methodname = "exit";
 		std::string paramtypes = ""; //"f"
@@ -261,7 +316,8 @@ namespace PythonScript
 		//XXX remove when/as the core has the fps limitter
 		engine_->RunString("import time; time.sleep(0.01);"); //a hack to save cpu now.
 
-		PyObject_CallMethod(pmmInstance, "run", "f", frametime);
+		if (pmmInstance != NULL)
+			PyObject_CallMethod(pmmInstance, "run", "f", frametime);
 		/*char** args = new char*[2]; //is this 2 'cause the latter terminates?
 		std::string methodname = "run";
 		std::string paramtypes = "f";
@@ -370,39 +426,22 @@ static PyMethodDef EmbMethods[] = {
 	{NULL, NULL, 0, NULL}
 };
 
-static void PythonScript::initpymod()
+static PyObject* PythonScript::initpymod()
 {
 	PyObject* m;
 	
 	m = Py_InitModule("rexviewer", EmbMethods);
 
-	//add events constants - now just the input events
-	//XXX move these to some submodule ('input'? .. better than 'constants'?)
-	PyModule_AddIntConstant(m, "MOVE_FORWARD_PRESSED", Input::Events::MOVE_FORWARD_PRESSED);
-	PyModule_AddIntConstant(m, "MOVE_FORWARD_RELEASED", Input::Events::MOVE_FORWARD_RELEASED);
-
-	/* TODO: get the constants from the EventManager,
-	add registrating those (it's not (currently) mandatory),
-	to the modules themselves, e.g. InputModule (currently the OIS thing but that is to change)
-	Foundation::EventManager &em = *framework_->GetEventManager();
-    const Foundation::EventManager::EventCategoryMap &categories = em.GetEventCategoryMap();
-
-    for(Foundation::EventManager::EventCategoryMap::const_iterator iter = categories.begin();
-        iter != categories.end(); ++iter)
-    {
-        std::stringstream ss;
-        ss << iter->first << " (id:" << iter->second << ")";
-
-        Gtk::TreeStore::iterator treeiter = debugEventsModel_->append();
-
-        treeiter->set_value(0, ss.str());
-    }*/
+	//event constants are now put in PostInit so that the other modules have registered theirs already.
+	//XXX what about new event types defined in py-written modules?
 
 	entity_init(m); 
 	/* this is planned to be vice versa: 
 	   the implementing modules, like here scene for Entity,
 	   would call something here to get a ref to the module, or something?
 	*/
+
+	return m;
 }
 
 /* this belongs to Entity.cpp but when added to the api from there, the staticframework is always null */
