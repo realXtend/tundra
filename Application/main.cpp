@@ -76,7 +76,9 @@ int run (int argc, char **argv)
     int return_value = EXIT_SUCCESS;
 
     // Create application object
-    try 
+#if !defined(_DEBUG) || !defined (_MSC_VER)
+    try
+#endif
     {
         Foundation::Framework fw;
         setup (fw);
@@ -85,16 +87,18 @@ int run (int argc, char **argv)
         //options (argc, argv, fw);
 
         fw.Go();
-    } 
+    }
+#if !defined(_DEBUG) || !defined (_MSC_VER)
     catch (std::exception& e)
     {
         Foundation::Platform::Message("An exception has occurred!", e.what());
-#if defined(_DEBUG)
+#   if defined(_DEBUG)
         throw;
-#else
+#   else
         return_value = EXIT_FAILURE;
-#endif
+#   endif
     }
+#endif
 
     return return_value;
 }

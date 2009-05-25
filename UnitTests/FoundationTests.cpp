@@ -132,12 +132,16 @@ BOOST_AUTO_TEST_CASE( framework_headless )
     fw.GetModuleManager()->ExcludeModule(Test::TestModuleB::NameStatic());
     fw.GetModuleManager()->ExcludeModule("GtkmmUI");
     fw.GetModuleManager()->ExcludeModule(Foundation::Module::MT_Renderer);
+    fw.GetModuleManager()->ExcludeModule("CommunicationUIModule");
+    fw.GetModuleManager()->ExcludeModule(Foundation::Module::MT_CommunicationUI);
+    
 
     fw.PostInitialize();
     fw.GetModuleManager()->UpdateModules(0.01);
     Console::CommandManagerPtr command = fw.GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
     command->QueueCommand("login");
     boost::timer timer;
+    Foundation::RootLogInfo("Now running headless mode integration test. Please wait ~10 seconds.");
     while (timer.elapsed() < 10.0) // pretend 10 seconds is enought time to login
         fw.GetModuleManager()->UpdateModules(0.01);
 
