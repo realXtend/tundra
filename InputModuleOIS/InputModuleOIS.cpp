@@ -209,14 +209,8 @@ namespace Input
                 }
                 SendKeyEvents(Input::State_All);
 
-#ifdef _DEBUG
-                //! \bug For finding input related bug, where input stops working sometimes until the console is show and rehidden again.
-                Console::ConsolePtr console = GetFramework()->GetService<Console::ConsoleServiceInterface>(Foundation::Service::ST_Console).lock();
-                if (console)
-                {
-                    assert (input_state_ != Input::State_Buffered || console->IsVisible() == true);
-                }
-#endif
+                //! \bug If key released -event is not send for hiding console window, keyboard will remain in buffered state and no keyboard events will be sent.
+                //!      This can happen f.ex. when render window looses focus while hiding the console window, before 'grave' key is released.
             }
         }
         RESETPROFILER;
