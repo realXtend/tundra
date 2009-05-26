@@ -132,6 +132,9 @@ namespace RexLogic
         //! logout through console
         Console::CommandResult ConsoleLogout(const Core::StringVector &params);
         
+        //! toggle fly mode through console
+        Console::CommandResult ConsoleToggleFlyMode(const Core::StringVector &params);
+        
     private:
         //! Event handler for network events.
         NetworkEventHandler *network_handler_;

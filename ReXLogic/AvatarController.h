@@ -43,6 +43,7 @@ namespace RexLogic
         void StopRotatingLeft();
         void StartRotatingRight();
         void StopRotatingRight();
+        void ToggleFlyMode();
          
         //! Gets avatar entity
         Scene::EntityPtr GetAvatarEntity() const { return avatarentity_; }

@@ -46,6 +46,8 @@ namespace RexLogic
         virtual void StopRotatingDown() {}
         virtual void StopRollingLeft() {}
         virtual void StopRollingRight() {}
+        virtual void ToggleFlyMode() {}
+        
         //! mouselook drag.
         /*!
             \param movement contains absolute and relative movement for the drag

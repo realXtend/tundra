@@ -113,12 +113,16 @@ namespace RexLogic
         SendMovementToServer();
     }
     
+    void AvatarController::ToggleFlyMode()
+    {
+        controlflags_ ^= RexTypes::AGENT_CONTROL_FLY;
+        SendMovementToServer();
+    }
 
     void AvatarController::Zoom(int value) 
     {    
         cameradistance_ -= (value*0.015f);
         cameradistance_ = std::max(camera_min_distance_, std::min(camera_max_distance_,cameradistance_));
-
     }
 
     void AvatarController::StartRotatingLeft()
