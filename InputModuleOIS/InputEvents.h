@@ -61,7 +61,8 @@ namespace Input
         static const Core::event_id_t INPUTSTATE_THIRDPERSON = 35;
         static const Core::event_id_t INPUTSTATE_FREECAMERA = 36;
         
-
+        static const Core::event_id_t TOGGLE_FLYMODE = 37;
+        static const Core::event_id_t TOGGLE_FLYMODE_REL = 38;
 
         //! Event for buffered key input. 
         /*! Do not use for any continous input such as avatar movement, it will probably cause input lag

@@ -232,6 +232,7 @@ namespace Input
         module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_PGDOWN,  Events::MOVE_DOWN_PRESSED,      Events::MOVE_DOWN_RELEASED,    0);
         module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_LEFT,    Events::ROTATE_LEFT_PRESSED,    Events::ROTATE_LEFT_RELEASED,  0);
         module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_RIGHT,   Events::ROTATE_RIGHT_PRESSED,   Events::ROTATE_RIGHT_RELEASED, 0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_F,       Events::TOGGLE_FLYMODE,         Events::TOGGLE_FLYMODE_REL, 0);
 
         module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_W,       Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED,  0);
         module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_S,       Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,     0);

@@ -75,6 +75,10 @@ namespace RexLogic
         AutoRegisterConsoleCommand(Console::CreateCommand("Logout", 
             "Logout from server.",
             Console::Bind(this, &RexLogicModule::ConsoleLogout)));
+            
+        AutoRegisterConsoleCommand(Console::CreateCommand("Fly",
+            "Toggle flight mode.",
+            Console::Bind(this, &RexLogicModule::ConsoleToggleFlyMode)));
 
         LogInfo("Module " + Name() + " loaded.");
     }
@@ -354,8 +358,14 @@ namespace RexLogic
             return Console::ResultFailure("Not connected to server.");
         }
     }
-        
-
+    
+    Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const Core::StringVector &params)
+    {
+        Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::TOGGLE_FLYMODE, NULL);
+        return Console::ResultSuccess();
+    }
+    
     void RexLogicModule::SwitchController()
     {
         if (current_controller_ == Controller_Avatar)
