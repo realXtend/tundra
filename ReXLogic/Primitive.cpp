@@ -768,8 +768,21 @@ namespace RexLogic
             // For now, handle only textures, not materials
             if ((i->second.Type == RexTypes::RexAT_MaterialScript) && (i->second.UUID.ToString() == res->GetId()))
             {
-                // debug material creation to see diffuse textures                        
-                meshptr->SetMaterial(idx, res->GetId());
+                OgreRenderer::OgreMaterialResource *materialRes = dynamic_cast<OgreRenderer::OgreMaterialResource*>(res.get());
+                assert(materialRes);
+
+                Ogre::MaterialPtr mat = materialRes->GetMaterial();
+                assert(mat.get());
+                if (!mat.get())
+                {
+                    std::stringstream ss;
+                    ss << std::string("Resource \"") << res->GetId() << "\" did not contain a proper Ogre::MaterialPtr!";
+                    RexLogicModule::LogInfo(ss.str());
+                }
+                meshptr->SetMaterial(idx, mat->getName());
+                std::stringstream ss;
+                ss << std::string("Set submesh ") << idx << " to use material \"" << mat->getName() << "\"";
+                RexLogicModule::LogInfo(ss.str());
             }
             ++i;
         }

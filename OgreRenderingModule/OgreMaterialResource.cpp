@@ -40,10 +40,28 @@ namespace OgreRenderer
         Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(const_cast<Core::u8 *>(source->GetData()), source->GetSize()));
         try
         {
-            Ogre::MaterialManager::getSingleton().parseScript(data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-            Ogre::MaterialManager::getSingleton().create(source->GetId(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            ///\todo Poor reading of the material name. Change this
+            /// The Ogre material name and the OpenSim asset name should coincide, so we need to replace the name we read here with the
+            /// Rex asset name.
+            data->seek(0);
+            char str[512] = {};
+            char materialName[512] = {};
+            data->readLine(str, 510);
+            sscanf(str, "material %s", materialName);
+            data->seek(0);
 
-            OgreRenderingModule::LogDebug("Ogre material " + id_ + " created");
+            Ogre::MaterialManager::getSingleton().parseScript(data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            Ogre::MaterialManager::getSingleton().create(materialName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            ogre_material_ = Ogre::MaterialManager::getSingleton().getByName(materialName);
+
+            if (ogre_material_->getName().length() == 0)
+            {
+                OgreRenderingModule::LogDebug(std::string("Warning: Possibly failed to create an ogre material from Rex Material asset ") +
+                    source->GetId());
+            }
+            else
+                OgreRenderingModule::LogDebug(std::string("Ogre material \"") + ogre_material_->getName() + "\" created from Rex Material asset " +
+                    source->GetId());
         } catch (Ogre::Exception &e)
         {
             OgreRenderingModule::LogWarning(e.what());
