@@ -545,7 +545,7 @@ namespace RexLogic
         for(Scene::SceneManager::iterator iter = activeScene_->begin();
             iter != activeScene_->end(); ++iter)
         {
-            Scene::EntityInterface &entity = **iter;
+            Scene::Entity &entity = **iter;
             
             Foundation::ComponentPtr ogrepos_ptr = entity.GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());              
             Foundation::ComponentPtr netpos_ptr = entity.GetComponent(EC_NetworkPosition::NameStatic());              

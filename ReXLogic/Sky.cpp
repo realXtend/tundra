@@ -243,7 +243,7 @@ void Sky::FindCurrentlyActiveSky()
     for(Scene::SceneManager::iterator iter = scene->begin();
         iter != scene->end(); ++iter)
     {
-        Scene::EntityInterface &entity = **iter;
+        Scene::Entity &entity = **iter;
         Foundation::ComponentInterfacePtr sky_component = entity.GetComponent("EC_OgreSky");
         if (sky_component.get())
         {

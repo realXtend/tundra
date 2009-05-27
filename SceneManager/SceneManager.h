@@ -3,7 +3,7 @@
 #ifndef incl_SceneSceneManager_h
 #define incl_SceneSceneManager_h
 
-#include "EntityInterface.h"
+#include "Entity.h"
 
 namespace Scene
 {

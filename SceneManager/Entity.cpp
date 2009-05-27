@@ -8,7 +8,7 @@
 
 namespace Scene
 {
-    Entity::Entity(Core::uint id) : EntityInterface(), id_(id)
+    Entity::Entity(Core::uint id) : id_(id)
     {
     }
 

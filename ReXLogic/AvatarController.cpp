@@ -7,7 +7,7 @@
 #include "Renderer.h"
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
 #include "EC_NetworkPosition.h"
-#include "EntityInterface.h"
+#include "Entity.h"
 #include <Ogre.h>
 
 namespace RexLogic
