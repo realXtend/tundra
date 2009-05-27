@@ -17,27 +17,19 @@ namespace RexLogic
 
     EC_Water::~EC_Water()
     {
-        /** \todo Remove the Water data from Ogre nodes.
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService
+            <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (!renderer) // Oops! Inconvenient dtor order - can't delete our own stuff since we can't get an instance to the owner.
             return;
+            
         Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
         if (!sceneMgr) // Oops! Same as above.
             return;
-
-        for(int y = 0; y < cNumPatchesPerEdge; ++y)
-            for(int x = 0; x < cNumPatchesPerEdge; ++x)
-            {
-                Ogre::SceneNode *node = GetPatch(x, y).node;
-                if (!node)
-                    continue;
-
-                sceneMgr->getRootSceneNode()->removeChild(node);
-                sceneMgr->destroyManualObject(dynamic_cast<Ogre::ManualObject*>(node->getAttachedObject(0)));
-                node->detachAllObjects();
-                sceneMgr->destroySceneNode(node);
-            }
-        */
+        
+        // Destroy the water node and entity.
+        scene_node_->detachObject(entity_);
+        sceneMgr->getRootSceneNode()->removeAndDestroyChild("WaterNode");
+        sceneMgr->destroyEntity(entity_);
     }
 
     void EC_Water::SetWaterHeight(float height)
@@ -53,7 +45,8 @@ namespace RexLogic
 
     void EC_Water::CreateOgreWaterObject()
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService
+            <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (renderer)
         {
             Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();

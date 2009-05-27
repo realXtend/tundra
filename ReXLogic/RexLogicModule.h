@@ -19,6 +19,7 @@ namespace RexLogic
     class Primitive;
     class Sky;
     class Water;
+    class Environment;
     class RexLoginWindow;
     
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
@@ -30,6 +31,7 @@ namespace RexLogic
     typedef boost::shared_ptr<Avatar> AvatarPtr;
     typedef boost::shared_ptr<Primitive> PrimitivePtr;
     typedef boost::shared_ptr<Sky> SkyPtr;
+    typedef boost::shared_ptr<Environment> EnvironmentPtr;
 
     enum InputController
     {
@@ -82,6 +84,9 @@ namespace RexLogic
         
         //! @return The sky handler object that manages reX sky logic.
         SkyPtr GetSkyHandler();
+        
+        //! @return The environment handler object that manages reX sky logic.
+        EnvironmentPtr GetEnvironmentHandler();
         
         //! The scene system can store multiple scenes. Only one scene is active at a time, that is the one
         //! that is currently being rendered. You may pass a null pointer to erase the currently active scene.
@@ -180,6 +185,8 @@ namespace RexLogic
         PrimitivePtr primitive_;
         
         SkyPtr sky_;
+        
+        EnvironmentPtr environment_;
 
         Scene::ScenePtr activeScene_;
 
@@ -190,6 +197,9 @@ namespace RexLogic
         
         //! Recreates the sky. Called at startup.
         void CreateSky();
+
+        //! Recreates the sky. Called at startup.        
+        void CreateEnvironment();
         
         //! workaround for not being able to send events during initialization
         bool send_input_state_;

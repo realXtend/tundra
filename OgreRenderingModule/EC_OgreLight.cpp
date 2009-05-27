@@ -60,6 +60,7 @@ namespace OgreRenderer
     void EC_OgreLight::SetColor(const Core::Color& color)
     {
         light_->setDiffuseColour(Ogre::ColourValue(color.r, color.g, color.b, color.a));
+        light_->setSpecularColour(Ogre::ColourValue(color.r, color.g, color.b, color.a));
     }
     
     void EC_OgreLight::SetAttenuation(float range, float constant, float linear, float quad)

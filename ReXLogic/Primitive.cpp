@@ -641,7 +641,7 @@ namespace RexLogic
             (entity->GetComponent(OgreRenderer::EC_OgreLight::NameStatic()).get());
             
         ///\note Only point lights are supported at the moment.
-        light.SetType(OgreRenderer::EC_OgreLight::LT_Spot);
+        light.SetType(OgreRenderer::EC_OgreLight::LT_Point);
         Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());  
         if (placeable)
             light.SetPlaceable(placeable);

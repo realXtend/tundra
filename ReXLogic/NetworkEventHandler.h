@@ -34,7 +34,6 @@ namespace RexLogic
         bool HandleOSNE_KillObject(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_LogoutReply(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
-
         bool HandleOSNE_RegionHandshake(OpenSimProtocol::NetworkEventInboundData* data);
 
         //! Handler functions for GenericMessages

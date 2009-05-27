@@ -11,7 +11,7 @@
 namespace RexLogic
 {
 
-Sky::Sky(RexLogicModule *owner) : owner_(owner), skyEnabled_(false), type_(OgreRenderer::SKYTYPE_NONE), skyBoxImageCount_(0)
+Sky::Sky(RexLogicModule *owner) : owner_(owner), skyEnabled_(false), type_(OgreRenderer::SKYTYPE_BOX), skyBoxImageCount_(0)
 {
 }
 
@@ -61,7 +61,7 @@ void Sky::UpdateSky(OgreRenderer::SkyType type, const std::vector<std::string> &
         if (sky)
         {
             OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
-            sky_component->CreateSky();
+            sky_component->DisableSky();
             return;
         }
     }
@@ -141,8 +141,6 @@ void Sky::CreateDefaultSky(bool show)
     {
         OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
         assert(sky_component);
-
-        ///\todo change to CreateDefaultSky()
         sky_component->CreateSky();
     }
 }
