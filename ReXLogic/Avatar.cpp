@@ -347,7 +347,7 @@ namespace RexLogic
         if (!scene)
             return;
         
-        //! \todo instead of iterating through all entities in the scene, iterate through all components of type EC_OgreMovableTextOverlay using Foundation::ComponentManager
+        //! \todo instead of iterating through all entities in the scene, iterate through all components of type EC_OgreMovableTextOverlay using Foundation::ComponentManager. -cm
         for(Scene::SceneManagerInterface::EntityIterator iter = scene->begin();
             iter != scene->end(); ++iter)
         {
