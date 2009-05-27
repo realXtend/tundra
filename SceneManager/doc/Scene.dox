@@ -9,6 +9,10 @@
 	At the highest level, the world (and some other parts aswell) is composed of one or
 	more scenes. Scenes are generic containers for entities, and entities may be shared
 	between scenes.
+	
+	Iterators are provided for iterating through all entities in a scene. If you wish to
+	access components of a specific type inside the entities, iterating with
+	Foundation::ComponentManager is the preferred way.
 
 \section entity_scene_sec Entity
 

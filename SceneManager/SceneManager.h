@@ -11,6 +11,11 @@ namespace Scene
     /*!
         Contains all entities in the world in a generic fashion.
         Acts as a factory for all entities.
+
+        Contains iterators for iterating all entities in the scene.
+        If you wish to access components of a specific type inside
+        the entities, iterating with Foundation::ComponentManager is
+        the preferred way.
     */
     class SceneManager : public Scene::SceneManagerInterface
     {
