@@ -110,14 +110,9 @@ namespace RexLogic
             prim.Material = msg->ReadU8();
             prim.ClickAction = msg->ReadU8();
 
-            Core::Vector3Df ogre_scale = Core::OpenSimToOgreCoordinateAxes(msg->ReadVector3());
+            prim.Scale = Core::OpenSimToOgreCoordinateAxes(msg->ReadVector3());
             // Scale is not handled by interpolation system, so set directly
-            Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());  
-            if (placeable)
-            {
-                OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());                                    
-                ogrepos.SetScale(ogre_scale);
-            }            
+            HandlePrimScale(localid);
             
             size_t bytes_read = 0;
             const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
@@ -147,7 +142,27 @@ namespace RexLogic
             prim.ParentId = msg->ReadU32();
             prim.UpdateFlags = msg->ReadU32();
             
-            // Skip path related variables
+            // Read prim shape
+            prim.PathCurve = msg->ReadU8();
+            prim.ProfileCurve = msg->ReadU8();
+            prim.PathBegin = msg->ReadU16() / 0.01f;
+            prim.PathEnd = msg->ReadU16() / 0.01f;
+            prim.PathScaleX = msg->ReadU8() / 0.01f;
+            prim.PathScaleY = msg->ReadU8() / 0.01f;
+            prim.PathShearX = ((int8_t)msg->ReadU8()) / 0.01;
+            prim.PathShearY = ((int8_t)msg->ReadU8()) / 0.01;
+            prim.PathTwist = msg->ReadS8() / 0.01;
+            prim.PathTwistBegin = msg->ReadS8() / 0.01;
+            prim.PathRadiusOffset = msg->ReadS8() / 0.01;
+            prim.PathTaperX = msg->ReadS8() / 0.01;
+            prim.PathTaperY = msg->ReadS8() / 0.01;
+            prim.PathRevolutions = msg->ReadU8() / 0.015;
+            prim.PathSkew = msg->ReadS8() / 0.01;
+            prim.ProfileBegin = msg->ReadU16() / 0.01;
+            prim.ProfileEnd = msg->ReadU16() / 0.01;
+            prim.ProfileHollow = msg->ReadU16() / 0.01;
+            
+            // Skip to prim text
             msg->SkipToFirstVariableByName("Text");
             prim.HoveringText = msg->ReadString(); 
             msg->SkipToNextVariable();      // TextColor
@@ -338,6 +353,7 @@ namespace RexLogic
         // the Ogre materials on this prim have possibly changed. Issue requests of the new materials 
         // from the asset provider and bind the new materials to this prim.
         HandleDrawType(entityid);
+        HandlePrimScale(entityid);
     }
     
     bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
@@ -466,14 +482,7 @@ namespace RexLogic
                 if (tag)
                     prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Mesh)] = entityid;
             }
-                        
-            // Handle scale mesh to prim-setting
-            mesh.SetScaleToUnity(prim.ScaleToPrim); 
-
-            // Set adjustment orientation for mesh (a legacy haxor, Ogre meshes usually have Y-axis as vertical)
-            Core::Quaternion adjust(Core::PI/2, 0, Core::PI);
-            mesh.SetAdjustOrientation(adjust);
-
+            
             // Check/request mesh textures
             HandleMeshMaterials(entityid);
         }
@@ -693,15 +702,22 @@ namespace RexLogic
         
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         if (!entity) return;
-           
-        Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-        if (!mesh) return;
-        OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());         
-                                              
-        meshptr->SetMesh(res->GetId());  
+        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
 
+        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+        if (!meshptr) return;
+        OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
+        
+        mesh.SetMesh(res->GetId());
+
+        // Set adjustment orientation for mesh (a legacy haxor, Ogre meshes usually have Y-axis as vertical)
+        Core::Quaternion adjust(Core::PI/2, 0, Core::PI);
+        mesh.SetAdjustOrientation(adjust);
+
+        HandlePrimScale(entityid);
+        
         // Check/set textures now that we have the mesh
-        HandleMeshMaterials(entityid);                    
+        HandleMeshMaterials(entityid); 
     }
 
     void Primitive::HandleMeshTextureReady(Core::entity_id_t entityid, Foundation::ResourcePtr res)
@@ -721,7 +737,7 @@ namespace RexLogic
         if (!mesh) return;
         OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());      
         // If don't have the actual mesh entity yet, no use trying to set texture
-        if (!meshptr->GetEntity()) return;     
+        if (!meshptr->GetEntity()) return;
                         
         MaterialMap::const_iterator i = prim.Materials.begin();
         while (i != prim.Materials.end())
@@ -801,5 +817,52 @@ namespace RexLogic
         }
         for (int j = 0; j < tags_to_remove.size(); ++j)
             map.erase(tags_to_remove[j]);
-    }                
+    }
+    
+    void Primitive::HandlePrimScale(Core::entity_id_t entityid)
+    {
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+        if (!entity) return;
+        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());            
+        Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());  
+        if (!placeable) return;
+        OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
+        
+        // Handle scale mesh to prim-setting
+        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+        if (meshptr)
+        {
+            OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
+            Core::Vector3df adjust_scale(1.0, 1.0, 1.0);
+            if (prim.ScaleToPrim && mesh.GetEntity())
+            {
+                Core::Vector3df min, max, size;
+
+                mesh.GetBoundingBox(min, max);
+                size = max - min;
+                if ((size.x != 0.0) && (size.y != 0.0) && (size.z != 0.0))
+                {
+                    adjust_scale.x /= size.x;
+                    adjust_scale.y /= size.y;
+                    adjust_scale.z /= size.z;
+                }
+            }
+
+            // Because Ogre doesn't care about rotation when combining scaling, have to do a nasty hack here
+            // (meshes have X & Y axes swapped)
+            const Core::Vector3df& prim_scale = prim.Scale;
+            if ((prim_scale.x != 0.0) && (prim_scale.y != 0.0) && (prim_scale.z != 0.0))
+            {
+                adjust_scale.y /= prim_scale.y;
+                adjust_scale.z /= prim_scale.z;
+
+                adjust_scale.y *= prim_scale.z;
+                adjust_scale.z *= prim_scale.y;
+            }
+
+            mesh.SetAdjustScale(adjust_scale);
+        }
+
+        ogrepos.SetScale(prim.Scale);
+    }
 }

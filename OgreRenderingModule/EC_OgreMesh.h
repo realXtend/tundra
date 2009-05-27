@@ -72,10 +72,10 @@ namespace OgreRenderer
          */
         void SetAdjustOrientation(const Core::Quaternion& orientation);
                 
-        //! sets scale to unity-mode
-        /*! \param enable Whether to enable or disable scaling
+        //! sets adjustment scale
+        /*! \param position new scale
          */
-        void SetScaleToUnity(bool enable);
+        void SetAdjustScale(const Core::Vector3df& scale);
         
         //! removes mesh
         void RemoveMesh();
@@ -89,12 +89,16 @@ namespace OgreRenderer
         //! returns Ogre mesh entity
         Ogre::Entity* GetEntity() const { return entity_; }
         
+        //! returns bounding box of Ogre mesh entity
+        //! returns zero box if no entity
+        void GetBoundingBox(Core::Vector3df& min, Core::Vector3df& max);
+        
         //! returns adjustment position
         Core::Vector3df GetAdjustPosition() const;
         //! returns adjustment orientation
-        Core::Quaternion GetAdjustOrientation() const;        
-        //! returns whether scale to unity mode is on
-        bool GetScaleToUnity() const { return scale_to_unity_; }
+        Core::Quaternion GetAdjustOrientation() const;
+        //! returns adjustment scale
+        Core::Vector3df GetAdjustScale() const;
         
     private:
         //! constructor
@@ -125,9 +129,6 @@ namespace OgreRenderer
         
         //! mesh entity attached to placeable -flag
         bool attached_;
-        
-        //! scale entity to unity size -flag
-        bool scale_to_unity_;
     };
 }
 

@@ -186,6 +186,22 @@ const std::string& GetTypeNameFromAssetType(asset_type_t asset_type);
 const int DRAWTYPE_PRIM = 0;
 const int DRAWTYPE_MESH = 1;
 
+// Primitive shapes
+const int SHAPE_CIRCLE = 0;
+const int SHAPE_SQUARE = 1;
+const int SHAPE_ISOMETRIC_TRIANGLE = 2;
+const int SHAPE_EQUILATERAL_TRIANGLE = 3;
+const int SHAPE_RIGHT_TRIANGLE = 4;
+const int SHAPE_HALF_CIRCLE = 5;
+
+// Primitive hollow shapes
+const int HOLLOW_CIRCLE = 16;
+const int HOLLOW_SQUARE = 32;
+const int HOLLOW_TRIANGLE = 48;
+
+// Primitive extrusion type
+const int EXTRUSION_STRAIGHT = 16;
+
 }
 
 #endif

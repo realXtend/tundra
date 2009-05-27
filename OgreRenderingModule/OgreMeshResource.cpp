@@ -54,7 +54,7 @@ namespace OgreRenderer
             Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)source->GetData(), source->GetSize(), false));
             Ogre::MeshSerializer serializer;
             serializer.importMesh(stream, ogre_mesh_.getPointer());
-
+            
             // Generate tangents to mesh
             try
             {
