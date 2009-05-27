@@ -11,6 +11,7 @@ include_directories (
 	../Core
 	../Foundation
 	../Interfaces
+	../SceneManager
 )
 
 # External library includes

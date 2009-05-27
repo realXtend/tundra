@@ -23,7 +23,6 @@
 #include "Foundation.h"
 
 #include "Entity.h"
-#include "SceneManagerInterface.h"
 #include "SceneEvents.h"
 #include "ComponentInterface.h"
 

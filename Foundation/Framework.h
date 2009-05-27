@@ -6,7 +6,6 @@
 #include "ConfigurationManager.h"
 #include "ServiceInterfaces.h"
 #include "ServiceManager.h"
-#include "SceneManagerInterface.h"
 #include "Profiler.h"
 
 namespace Foundation
