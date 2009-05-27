@@ -4,6 +4,7 @@
 #include "Entity.h"
 #include "Framework.h"
 #include "ComponentInterface.h"
+#include "SceneManager.h"
 
 namespace Scene
 {

@@ -5,6 +5,7 @@
 #include "OgreRenderingModule.h"
 #include "RexLogicModule.h"
 #include "Sky.h"
+#include "SceneManager.h"
 
 #include "../OgreRenderingModule/OgreTextureResource.h"
 
@@ -239,10 +240,10 @@ void Sky::SetSkyBoxTextures(const RexUUID textures[skyBoxTextureCount])
 void Sky::FindCurrentlyActiveSky()
 {
     Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
-    for(Scene::SceneManagerInterface::EntityIterator iter = scene->begin();
+    for(Scene::SceneManager::iterator iter = scene->begin();
         iter != scene->end(); ++iter)
     {
-        Scene::EntityInterface &entity = *iter;
+        Scene::EntityInterface &entity = **iter;
         Foundation::ComponentInterfacePtr sky_component = entity.GetComponent("EC_OgreSky");
         if (sky_component.get())
         {

@@ -11,6 +11,7 @@
 #include "ConsoleModule.h"
 #include "ConsoleManager.h"
 #include "CommandManager.h"
+#include "SceneManager.h"
 
 namespace Console
 {

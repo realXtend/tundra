@@ -7,11 +7,11 @@
 
 namespace Scene
 {
-    class SceneManagerInterface;
+    class SceneManager;
     class EntityInterface;
     typedef boost::weak_ptr<EntityInterface> EntityWeakPtr;
     typedef boost::shared_ptr<EntityInterface> EntityPtr;
-    typedef boost::shared_ptr<SceneManagerInterface> ScenePtr;
+    typedef boost::shared_ptr<SceneManager> ScenePtr;
 
     //! Represents an entity in the world. 
     /*! An entity is just a collection of components, the components define what
