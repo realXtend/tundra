@@ -35,6 +35,7 @@ namespace OgreRenderer
             LT_Directional
         };
         
+        //! Destructor.
         virtual ~EC_OgreLight();
     
         //! gets placeable component

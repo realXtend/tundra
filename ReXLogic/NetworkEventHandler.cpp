@@ -22,6 +22,7 @@
 #include "Avatar.h"
 #include "Primitive.h"
 #include "Sky.h"
+#include "Environment.h"
 
 using namespace Core;
 
@@ -92,6 +93,7 @@ namespace RexLogic
             case RexNetMsgObjectUpdate:                 return HandleOSNE_ObjectUpdate(netdata); break;
             case RexNetMsgObjectProperties:             return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_ObjectProperties(netdata); break;
             case RexNetMsgLayerData:                    return rexlogicmodule_->GetTerrainHandler()->HandleOSNE_LayerData(netdata); break;
+            case RexNetMsgSimulatorViewerTimeMessage:   return rexlogicmodule_->GetEnvironmentHandler()->HandleOSNE_SimulatorViewerTimeMessage(netdata); break;
             default:                                    return false; break;
         }
         

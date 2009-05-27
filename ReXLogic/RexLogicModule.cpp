@@ -21,7 +21,6 @@
 #include "EC_OpenSimAvatar.h"
 #include "EC_Terrain.h"
 #include "EC_Water.h"
-#include "EC_OgreSky.h"
 #include "EC_NetworkPosition.h"
 #include "InputEvents.h"
 
@@ -40,6 +39,7 @@
 #include "Avatar.h"
 #include "Primitive.h"
 #include "Sky.h"
+#include "Environment.h"
 
 namespace RexLogic
 {
@@ -410,7 +410,15 @@ namespace RexLogic
         sky_->FindCurrentlyActiveSky();
         sky_->CreateDefaultSky();
     }
-    
+
+    void RexLogicModule::CreateEnvironment()
+    {
+        environment_ = EnvironmentPtr(new Environment(this));
+        Scene::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
+        entity->AddEntityComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_OgreEnvironment"));
+        environment_->SetEntity(entity);
+    }
+        
     TerrainPtr RexLogicModule::GetTerrainHandler()
     {
         return terrain_;
@@ -434,8 +442,13 @@ namespace RexLogic
     SkyPtr RexLogicModule::GetSkyHandler()
     {
         return sky_;
-    }    
-
+    }
+    
+    EnvironmentPtr RexLogicModule::GetEnvironmentHandler()
+    {
+        return environment_;
+    }
+    
     void RexLogicModule::SetCurrentActiveScene(Scene::ScenePtr scene)
     {
         activeScene_ = scene;
@@ -468,6 +481,8 @@ namespace RexLogic
         
         // Create a water handler.
         CreateWater();
+        
+        CreateEnvironment();
 
         return GetCurrentActiveScene();
     }
