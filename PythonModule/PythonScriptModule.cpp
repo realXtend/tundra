@@ -12,9 +12,10 @@
 #include "OpenSimProtocolModule.h" //for handling net events
 #include "RexProtocolMsgIDs.h"
 #include "InputEvents.h" //handling input events
+#include "InputServiceInterface.h" //for getting mouse info from the input service
 
-#include "SceneEvents.h" //sending scene events after (placeable component) manipulation
 #include "SceneManager.h"
+#include "SceneEvents.h" //sending scene events after (placeable component) manipulation
 
 
 #include "Entity.h"
@@ -324,6 +325,36 @@ namespace PythonScript
 		std::string paramtypes = "f";
 		modulemanager->CallMethod2(methodname, paramtypes, 0.05); //;frametime);
 		*/		
+
+		/* Mouse input special handling. InputModuleOIS has sending these as events commented out,
+		   This polling is copy-pasted from the InputHandler in RexLogicModule */
+        boost::shared_ptr<Input::InputServiceInterface> input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input).lock();
+        if (input)
+        {
+            boost::optional<const Input::Events::Movement&> movement = input->PollSlider(Input::Events::MOUSELOOK);
+            if (movement)
+            {
+				//LogDebug("me sees mouse move too");
+
+				//might perhaps wrap that nice pos class later but this is simpler now
+				float x_abs = static_cast<float>(movement->x_.abs_);
+				float y_abs = static_cast<float>(movement->y_.abs_);
+
+				float x_rel = static_cast<float>(movement->x_.rel_);
+				float y_rel = static_cast<float>(movement->y_.rel_);
+
+				PyObject_CallMethod(pmmInstance, "MOUSE_INPUT", "ffff", x_abs, y_abs, x_rel, y_rel);
+
+                //dragging_ = true;
+                //state->Drag(&*movement);
+            } /*else if (dragging_)
+            {
+                dragging_ = false;
+                Input::Events::Movement zero;
+                state->Drag(&zero);
+            }*/
+        }
+
     }
 }
 

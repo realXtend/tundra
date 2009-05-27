@@ -55,6 +55,9 @@ class ComponentRunner(Component):
         self.m.push(Input(evid), "on_input")
         #print "circuits_manager ComponentRunner got input event:", evid        
         
+    def MOUSE_INPUT(self, x_abs, y_abs, x_rel, y_rel):
+        print "Manager got mouse input", x_abs, y_abs, x_rel, y_rel
+        
     def exit(self):
         print "Circuits manager stopping."
         self.m.stop()
