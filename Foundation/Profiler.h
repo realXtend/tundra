@@ -18,6 +18,9 @@
 #   define ELIFORP(x)   x ## __profiler__.Destruct();
 
 //! Resets profiling data per frame. Must be called at end of each frame in each thread, otherwise profiling data may be inaccurate or unavailable.
+//! \todo Currently RESETPROFILER is called in modules at end of Update(), but that will probably cause mismatched timing data if things are profiled
+//!       after the Update() call but still in the same frame, f.ex. when handling events. All profiling data in the main thread should be reset
+//!       at the same time, at the end of the main loop. Threads are free to reset whenever they choose, as they have their own frame. -cm
 #define RESETPROFILER { Foundation::ProfilerSection::GetProfiler()->ThreadedReset(); }
 
 #else

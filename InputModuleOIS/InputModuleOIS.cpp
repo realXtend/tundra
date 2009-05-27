@@ -181,6 +181,7 @@ namespace Input
                 movement_.z_.rel_ = ms.Z.rel;
                 movement_.z_.abs_ = ms.Z.abs;
 
+                //! \todo enable / fix sending mouse dragging events. Disabled previously for performance reasons which later turned out to be false. - cm
                 // launch event when mouse is dragged. Disabled since launching event every frame is not all that efficient.
                 //if (ms.buttonDown(OIS::MB_Right))
                 //{
