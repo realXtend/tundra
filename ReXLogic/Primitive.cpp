@@ -9,6 +9,7 @@
 #include "EC_Viewable.h"
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
 #include "../OgreRenderingModule/EC_OgreMesh.h"
+#include "../OgreRenderingModule/EC_OgreCustomObject.h"
 #include "../OgreRenderingModule/EC_OgreLight.h"
 #include "../OgreRenderingModule/OgreMeshResource.h"
 #include "../OgreRenderingModule/OgreTextureResource.h"
@@ -19,6 +20,7 @@
 #include "QuatUtils.h"
 #include "SceneEvents.h"
 #include "ResourceInterface.h"
+#include "PrimGeometryUtils.h"
 #include "SceneManager.h"
 
 namespace RexLogic
@@ -85,7 +87,7 @@ namespace RexLogic
     bool Primitive::HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data)
     {
         NetInMessage *msg = data->message;
- 
+
         msg->ResetReading();
         uint64_t regionhandle = msg->ReadU64();
         msg->SkipToNextVariable(); // TimeDilation U16 ///\todo Unhandled inbound variable 'TimeDilation'.
@@ -146,22 +148,22 @@ namespace RexLogic
             // Read prim shape
             prim.PathCurve = msg->ReadU8();
             prim.ProfileCurve = msg->ReadU8();
-            prim.PathBegin = msg->ReadU16() / 0.01f;
-            prim.PathEnd = msg->ReadU16() / 0.01f;
-            prim.PathScaleX = msg->ReadU8() / 0.01f;
-            prim.PathScaleY = msg->ReadU8() / 0.01f;
-            prim.PathShearX = ((int8_t)msg->ReadU8()) / 0.01;
-            prim.PathShearY = ((int8_t)msg->ReadU8()) / 0.01;
-            prim.PathTwist = msg->ReadS8() / 0.01;
-            prim.PathTwistBegin = msg->ReadS8() / 0.01;
-            prim.PathRadiusOffset = msg->ReadS8() / 0.01;
-            prim.PathTaperX = msg->ReadS8() / 0.01;
-            prim.PathTaperY = msg->ReadS8() / 0.01;
-            prim.PathRevolutions = msg->ReadU8() / 0.015;
-            prim.PathSkew = msg->ReadS8() / 0.01;
-            prim.ProfileBegin = msg->ReadU16() / 0.01;
-            prim.ProfileEnd = msg->ReadU16() / 0.01;
-            prim.ProfileHollow = msg->ReadU16() / 0.01;
+            prim.PathBegin = msg->ReadU16() * 0.01f;
+            prim.PathEnd = 1.0f - msg->ReadU16() * 0.01f;
+            prim.PathScaleX = msg->ReadU8() * 0.01f - 1.0f;
+            prim.PathScaleY = msg->ReadU8() * 0.01f - 1.0f;
+            prim.PathShearX = ((int8_t)msg->ReadU8()) * 0.01f;
+            prim.PathShearY = ((int8_t)msg->ReadU8()) * 0.01f;
+            prim.PathTwist = msg->ReadS8() * 0.01f;
+            prim.PathTwistBegin = msg->ReadS8() * 0.01f;
+            prim.PathRadiusOffset = msg->ReadS8() * 0.01f;
+            prim.PathTaperX = msg->ReadS8() * 0.01f;
+            prim.PathTaperY = msg->ReadS8() * 0.01f;
+            prim.PathRevolutions = 1.0f + msg->ReadU8() * 0.015f;
+            prim.PathSkew = msg->ReadS8() * 0.01f;
+            prim.ProfileBegin = msg->ReadU16() * 0.01f;
+            prim.ProfileEnd = 1.0f - msg->ReadU16() * 0.01f;
+            prim.ProfileHollow = msg->ReadU16() * 0.01f;
             
             // Skip to prim text
             msg->SkipToFirstVariableByName("Text");
@@ -179,6 +181,8 @@ namespace RexLogic
             
             msg->SkipToFirstVariableByName("JointAxisOrAnchor");
             msg->SkipToNextVariable(); // To next instance
+            
+            HandleDrawType(localid);
         }
         
         return false;
@@ -447,21 +451,22 @@ namespace RexLogic
         DiscardRequestTags(entityid, prim_resource_request_tags_);
                                 
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
-        assert(entity.get());
         if (!entity)
             return;
         EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
         if ((prim.DrawType == RexTypes::DRAWTYPE_MESH) && (!prim.MeshUUID.IsNull()))
         {
-            //RexLogicModule::LogInfo("Entity " + Core::ToString<Core::entity_id_t>(entityid) + 
-            //    " has drawtype " + Core::ToString<int>(prim.DrawType) + " meshid " + prim.MeshUUID.ToString());
+            // Remove custom object component if exists
+            Foundation::ComponentPtr customptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
+            if (customptr)
+            {
+                entity->RemoveEntityComponent(customptr);
+            }
             
             // Get/create mesh component 
             Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
             if (!meshptr)
                 entity->AddEntityComponent(meshptr = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreMesh::NameStatic()));
-            
-
             if (!meshptr)
                 return;
             OgreRenderer::EC_OgreMesh& mesh = *(dynamic_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get()));
@@ -487,7 +492,7 @@ namespace RexLogic
             // Check/request mesh textures
             HandleMeshMaterials(entityid);
         }
-        else
+        else if (prim.DrawType == RexTypes::DRAWTYPE_PRIM)
         {
             // Remove mesh component if exists
             Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
@@ -495,11 +500,26 @@ namespace RexLogic
             {
                 entity->RemoveEntityComponent(meshptr);
             }
+            
+            // Get/create custom (manual) object component 
+            Foundation::ComponentPtr customptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
+            if (!customptr)
+                entity->AddEntityComponent(customptr = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreCustomObject::NameStatic()));
+            if (!customptr)
+                return;
+            OgreRenderer::EC_OgreCustomObject& custom = *(dynamic_cast<OgreRenderer::EC_OgreCustomObject*>(customptr.get()));
+            
+            // Attach to placeable if not yet attached
+            if (!custom.GetPlaceable())
+                custom.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
+            
+            // Create/update geometry
+            CreatePrimGeometry(custom.GetObject(), prim);
         }
     } 
     
     void Primitive::HandleMeshMaterials(Core::entity_id_t entityid)
-    {                        
+    {
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         if (!entity) 
             return;
