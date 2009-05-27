@@ -542,10 +542,10 @@ namespace RexLogic
         if (factor > 1.0) factor = 1.0;
         Core::f32 rev_factor = 1.0 - factor;
                 
-        for(Scene::SceneManagerInterface::EntityIterator iter = activeScene_->begin();
+        for(Scene::SceneManager::iterator iter = activeScene_->begin();
             iter != activeScene_->end(); ++iter)
         {
-            Scene::EntityInterface &entity = *iter;
+            Scene::EntityInterface &entity = **iter;
             
             Foundation::ComponentPtr ogrepos_ptr = entity.GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());              
             Foundation::ComponentPtr netpos_ptr = entity.GetComponent(EC_NetworkPosition::NameStatic());              

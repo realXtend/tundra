@@ -8,9 +8,9 @@
 
 namespace Scene
 {
-    class SceneManagerInterface;
-    typedef boost::shared_ptr<SceneManagerInterface> ScenePtr;
-    typedef boost::weak_ptr<SceneManagerInterface> SceneWeakPtr;
+    class SceneManager;
+    typedef boost::shared_ptr<SceneManager> ScenePtr;
+    typedef boost::weak_ptr<SceneManager> SceneWeakPtr;
 
     //! Acts as a generic scenegraph for all entities in the scene.
     /*!

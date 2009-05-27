@@ -13,6 +13,7 @@
 #include "../OgreRenderingModule/EC_OgreAnimationController.h"
 #include "../OgreRenderingModule/Renderer.h"
 #include "ConversionUtils.h"
+#include "SceneManager.h"
 
 #include "Poco/DOM/DOMParser.h"
 #include "Poco/DOM/Element.h"
@@ -348,10 +349,10 @@ namespace RexLogic
             return;
         
         //! \todo instead of iterating through all entities in the scene, iterate through all components of type EC_OgreMovableTextOverlay using Foundation::ComponentManager. -cm
-        for(Scene::SceneManagerInterface::EntityIterator iter = scene->begin();
+        for(Scene::SceneManager::iterator iter = scene->begin();
             iter != scene->end(); ++iter)
         {
-            Scene::EntityInterface &entity = *iter;
+            Scene::EntityInterface &entity = **iter;
             Foundation::ComponentPtr overlay_ptr = entity.GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
             if (!overlay_ptr)
                 continue;

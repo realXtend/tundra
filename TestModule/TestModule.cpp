@@ -8,6 +8,7 @@
 #include "EntityInterface.h"
 #include "TestServiceInterface.h"
 #include "TestService.h"
+#include "SceneManager.h"
 
 
 

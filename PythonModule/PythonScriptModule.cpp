@@ -14,6 +14,7 @@
 #include "InputEvents.h" //handling input events
 
 #include "SceneEvents.h" //sending scene events after (placeable component) manipulation
+#include "SceneManager.h"
 
 
 #include "Entity.h"

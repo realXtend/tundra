@@ -21,6 +21,7 @@
 #include "TerrainDecoder.h"
 #include "RexLogicModule.h"
 #include "Terrain.h"
+#include "SceneManager.h"
 
 using namespace Core;
 
@@ -355,10 +356,10 @@ namespace
     void Terrain::FindCurrentlyActiveTerrain()
     {
         Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
-        for(Scene::SceneManagerInterface::EntityIterator iter = scene->begin();
+        for(Scene::SceneManager::iterator iter = scene->begin();
             iter != scene->end(); ++iter)
         {
-            Scene::EntityInterface &entity = *iter;
+            Scene::EntityInterface &entity = **iter;
             Foundation::ComponentInterfacePtr terrainComponent = entity.GetComponent("EC_Terrain");
             if (terrainComponent.get())
             {

@@ -15,6 +15,7 @@ include_directories (
 	../Interfaces
 	../OgreRenderingModule
 	../InputModuleOIS
+	../SceneManager
 )
 		
 # External library includes
@@ -34,7 +35,7 @@ set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Core Foundation)
+target_link_libraries (${TARGET_NAME} Core Foundation SceneManager)
 
 # External library linkage
 LINK_BOOST()

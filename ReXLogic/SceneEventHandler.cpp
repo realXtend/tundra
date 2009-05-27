@@ -4,6 +4,7 @@
 #include "SceneEventHandler.h"
 #include "SceneEvents.h"
 #include "RexLogicModule.h"
+#include "SceneManager.h"
 
 namespace RexLogic
 {

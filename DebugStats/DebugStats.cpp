@@ -37,6 +37,7 @@
 #include "EC_OgrePlaceable.h"
 #include "QuatUtils.h"
 #include "ConversionUtils.h"
+#include "SceneManager.h"
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
    POCO_EXPORT_CLASS(DebugStats)
@@ -311,16 +312,16 @@ void DebugStats::PopulateEntityListTreeView()
     for(Foundation::Framework::SceneMap::const_iterator iter = scenes.begin(); iter != scenes.end(); ++iter)
     {
         // Add scene node.
-        const Scene::SceneManagerInterface &scene = *iter->second;
+        const Scene::SceneManager &scene = *iter->second;
         
         Gtk::TreeModel::Row scene_row = *(entityListModel_->append());
         scene_row[entityModelColumns_.colName] = scene.Name();
         scene_row[entityModelColumns_.colID] = "";
         
-        for(Scene::SceneManagerInterface::ConstEntityIterator iter = scene.begin(); iter != scene.end(); ++iter)
+        for(Scene::SceneManager::const_iterator iter = scene.begin(); iter != scene.end(); ++iter)
         {
             // Add entity.
-            const Scene::Entity &entity = dynamic_cast<const Scene::Entity &>(*iter);
+            const Scene::Entity &entity = dynamic_cast<const Scene::Entity &>(**iter);
 
             Gtk::TreeModel::Row entity_row = *(entityListModel_->append(scene_row.children()));
             entity_row[entityModelColumns_.colName] = "Entity";
@@ -381,7 +382,7 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Even
                 const Foundation::Framework::SceneMap &scenes = framework_->GetSceneMap();
                 for(Foundation::Framework::SceneMap::const_iterator iter = scenes.begin(); iter != scenes.end(); ++iter)
                 {
-                    const Scene::SceneManagerInterface &scene = *iter->second;
+                    const Scene::SceneManager &scene = *iter->second;
                     if (scene.HasEntity(event_data->localID))
                         scene_name = scene.Name();
                 }
@@ -408,7 +409,7 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Even
                 const Foundation::Framework::SceneMap &scenes = framework_->GetSceneMap();
                 for(Foundation::Framework::SceneMap::const_iterator iter = scenes.begin(); iter != scenes.end(); ++iter)
                 {
-                    const Scene::SceneManagerInterface &scene = *iter->second;
+                    const Scene::SceneManager &scene = *iter->second;
                     if (scene.HasEntity(event_data->localID))
                         scene_name = scene.Name();
                 }
@@ -420,7 +421,7 @@ void DebugStats::UpdateEntityListTreeView(Core::event_id_t event_id, Scene::Even
                 const Scene::ScenePtr &scene_ptr = framework_->GetScene(scene_name);
                 if (!scene_ptr)
                     return;
-                const Scene::SceneManagerInterface &scene = *scene_ptr.get();
+                const Scene::SceneManager &scene = *scene_ptr.get();
 
                 // Find the scene row.
                 Gtk::TreeModel::Children rows = entityListModel_->children();

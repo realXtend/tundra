@@ -18,6 +18,7 @@ namespace Core
 
         virtual AnyIteratorInterface &operator =(const AnyIteratorInterface &rhs) = 0;
         virtual bool operator ==(const AnyIteratorInterface &rhs) const = 0;
+        virtual bool operator !=(const AnyIteratorInterface &rhs) const = 0;
 
         virtual AnyIteratorInterface &operator ++() = 0;
 
@@ -39,7 +40,8 @@ namespace Core
                 iter_ = dynamic_cast<const AnyIteratorImpl&>(rhs).iter_;
             return *this;
         }
-        virtual bool operator ==(const AnyIteratorInterface<base_type> &rhs) const { return iter_ == dynamic_cast<const AnyIteratorImpl&>(rhs).iter_; }
+        virtual bool operator ==(const AnyIteratorInterface<base_type> &rhs) const { return iter_ == static_cast<const AnyIteratorImpl&>(rhs).iter_; }
+        virtual bool operator !=(const AnyIteratorInterface<base_type> &rhs) const { return iter_ != static_cast<const AnyIteratorImpl&>(rhs).iter_; }
 
         virtual AnyIteratorImpl &operator ++() { ++iter_; return *this; }
 

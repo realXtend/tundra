@@ -19,6 +19,7 @@
 #include "QuatUtils.h"
 #include "SceneEvents.h"
 #include "ResourceInterface.h"
+#include "SceneManager.h"
 
 namespace RexLogic
 {

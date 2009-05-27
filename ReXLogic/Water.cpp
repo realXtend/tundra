@@ -19,6 +19,7 @@
 
 #include "RexLogicModule.h"
 #include "Water.h"
+#include "SceneManager.h"
 
 namespace RexLogic
 {
@@ -35,10 +36,10 @@ Water::~Water()
 void Water::FindCurrentlyActiveWater()
 {
     Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
-    for(Scene::SceneManagerInterface::EntityIterator iter = scene->begin();
+    for(Scene::SceneManager::iterator iter = scene->begin();
         iter != scene->end(); ++iter)
     {
-        Scene::EntityInterface &entity = *iter;
+        Scene::EntityInterface &entity = **iter;
         Foundation::ComponentInterfacePtr waterComponent = entity.GetComponent("EC_Water");
         if (waterComponent.get())
         {
