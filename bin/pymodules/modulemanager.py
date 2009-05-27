@@ -14,6 +14,9 @@ class ModuleManager:
         
     def INPUT_EVENT(self, evid):
         print "Manager got input event:", evid
+        
+    def MOUSE_INPUT(self, x_abs, y_abs, x_rel, y_rel):
+        print "Manager got mouse input", x_abs, y_abs, x_rel, y_rel
                 
     def exit(self):
         print "exiting module manager"
