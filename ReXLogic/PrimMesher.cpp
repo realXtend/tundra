@@ -1053,6 +1053,7 @@ namespace PrimMesher
         int steps = 1;
 
         float length = pathCutEnd - pathCutBegin;
+        
         normalsProcessed = false;
 
         if (viewerMode && sides == 3)
@@ -1062,7 +1063,6 @@ namespace PrimMesher
             if (abs(taperX) > 0.01 || abs(taperY) > 0.01)
                 steps = (int)(steps * 4.5 * length);
         }
-
 
         float twistBegin = this->twistBegin / 360.0f * twoPi;
         float twistEnd = this->twistEnd / 360.0f * twoPi;
