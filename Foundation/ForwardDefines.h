@@ -6,6 +6,17 @@
 #include <boost/shared_ptr.hpp>
 #include <Poco/Logger.h>
 
+namespace Scene
+{
+    class EntityInterface;
+    class SceneManager;
+
+    typedef boost::shared_ptr<SceneManager> ScenePtr;
+    typedef boost::weak_ptr<SceneManager> SceneWeakPtr;
+    typedef boost::weak_ptr<EntityInterface> EntityWeakPtr;
+    typedef boost::shared_ptr<EntityInterface> EntityPtr;
+} 
+
 namespace Foundation
 {
     class ModuleManager;
@@ -31,7 +42,6 @@ namespace Foundation
     typedef boost::shared_ptr<ComponentInterfaceAbstract> ComponentInterfacePtr;
     typedef boost::shared_ptr<ComponentInterfaceAbstract> ComponentPtr;
     typedef boost::weak_ptr<ComponentInterfaceAbstract> WeakComponentPtr;
-    
     
     //! Use root logging only in foundation classes.
     static void RootLogFatal(const std::string &msg)
