@@ -39,7 +39,7 @@ void Water::FindCurrentlyActiveWater()
     for(Scene::SceneManager::iterator iter = scene->begin();
         iter != scene->end(); ++iter)
     {
-        Scene::EntityInterface &entity = **iter;
+        Scene::Entity &entity = **iter;
         Foundation::ComponentInterfacePtr waterComponent = entity.GetComponent("EC_Water");
         if (waterComponent.get())
         {

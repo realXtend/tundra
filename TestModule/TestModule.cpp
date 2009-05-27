@@ -5,7 +5,6 @@
 #include "TestModule.h"
 #include "EC_Dummy.h"
 #include <Poco/ClassLibrary.h>
-#include "EntityInterface.h"
 #include "TestServiceInterface.h"
 #include "TestService.h"
 #include "SceneManager.h"

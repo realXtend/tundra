@@ -359,7 +359,7 @@ namespace
         for(Scene::SceneManager::iterator iter = scene->begin();
             iter != scene->end(); ++iter)
         {
-            Scene::EntityInterface &entity = **iter;
+            Scene::Entity &entity = **iter;
             Foundation::ComponentInterfacePtr terrainComponent = entity.GetComponent("EC_Terrain");
             if (terrainComponent.get())
             {

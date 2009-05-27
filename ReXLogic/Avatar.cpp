@@ -352,7 +352,7 @@ namespace RexLogic
         for(Scene::SceneManager::iterator iter = scene->begin();
             iter != scene->end(); ++iter)
         {
-            Scene::EntityInterface &entity = **iter;
+            Scene::Entity &entity = **iter;
             Foundation::ComponentPtr overlay_ptr = entity.GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
             if (!overlay_ptr)
                 continue;

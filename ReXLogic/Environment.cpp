@@ -7,7 +7,7 @@
 #include "Environment.h"
 #include "Foundation.h"
 #include "EC_OgreEnvironment.h"
-#include "EntityInterface.h"
+#include "Entity.h"
 
 namespace RexLogic
 {

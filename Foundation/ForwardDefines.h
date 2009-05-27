@@ -8,13 +8,13 @@
 
 namespace Scene
 {
-    class EntityInterface;
+    class Entity;
     class SceneManager;
 
     typedef boost::shared_ptr<SceneManager> ScenePtr;
     typedef boost::weak_ptr<SceneManager> SceneWeakPtr;
-    typedef boost::weak_ptr<EntityInterface> EntityWeakPtr;
-    typedef boost::shared_ptr<EntityInterface> EntityPtr;
+    typedef boost::weak_ptr<Entity> EntityWeakPtr;
+    typedef boost::shared_ptr<Entity> EntityPtr;
 } 
 
 namespace Foundation
