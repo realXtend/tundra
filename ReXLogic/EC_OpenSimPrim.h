@@ -52,6 +52,7 @@ namespace RexLogic
         uint32_t SelectPriority;
 
         //! Drawing related variables
+        Core::Vector3df Scale;
         uint8_t DrawType;
         bool IsVisible;
         bool CastShadows;
@@ -70,6 +71,26 @@ namespace RexLogic
         float AnimationRate;
 
         MaterialMap Materials;
+
+        //! Primitive shape related variables
+        uint8_t PathCurve;
+        uint8_t ProfileCurve;
+        float PathBegin;
+        float PathEnd;
+        float PathScaleX;
+        float PathScaleY;
+        float PathShearX;
+        float PathShearY;
+        float PathTwist;
+        float PathTwistBegin;
+        float PathRadiusOffset;
+        float PathTaperX;
+        float PathTaperY;
+        float PathRevolutions;
+        float PathSkew;
+        float ProfileBegin;
+        float ProfileEnd;
+        float ProfileHollow;
 
         void PrintDebug();
         

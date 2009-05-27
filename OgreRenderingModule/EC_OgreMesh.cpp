@@ -16,8 +16,7 @@ namespace OgreRenderer
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         entity_(NULL),
         adjustment_node_(NULL),
-        attached_(false),
-        scale_to_unity_(false)
+        attached_(false)
     {
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
         adjustment_node_ = scene_mgr->createSceneNode();        
@@ -48,12 +47,6 @@ namespace OgreRenderer
         AttachEntity();
     }
     
-    void EC_OgreMesh::SetScaleToUnity(bool enable)
-    {
-        scale_to_unity_ = enable;
-        ScaleEntity();
-    }
-    
     void EC_OgreMesh::SetAdjustPosition(const Core::Vector3df& position)
     {
         adjustment_node_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
@@ -63,6 +56,11 @@ namespace OgreRenderer
     {
         adjustment_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
     }   
+    
+    void EC_OgreMesh::SetAdjustScale(const Core::Vector3df& scale)
+    {
+        adjustment_node_->setScale(Ogre::Vector3(scale.x, scale.y, scale.z));
+    }
     
     Core::Vector3df EC_OgreMesh::GetAdjustPosition() const
     {
@@ -75,6 +73,12 @@ namespace OgreRenderer
         const Ogre::Quaternion& orientation = adjustment_node_->getOrientation();
         return Core::Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
     }     
+    
+    Core::Vector3df EC_OgreMesh::GetAdjustScale() const
+    {
+        const Ogre::Vector3& scale = adjustment_node_->getScale();
+        return Core::Vector3df(scale.x, scale.y, scale.z);
+    }
     
     bool EC_OgreMesh::SetMesh(const std::string& mesh_name)
     {
@@ -108,7 +112,6 @@ namespace OgreRenderer
         }
         
         AttachEntity();
-        ScaleEntity();
         return true;
     }
     
@@ -208,23 +211,20 @@ namespace OgreRenderer
             return entity_->getMesh()->getName();
     }
     
-    void EC_OgreMesh::ScaleEntity()
+    void EC_OgreMesh::GetBoundingBox(Core::Vector3df& min, Core::Vector3df& max)
     {
         if (!entity_)
-            return;
-     
-        Ogre::Vector3 scale(1.0, 1.0, 1.0);
-        
-        if (scale_to_unity_)
         {
-            const Ogre::AxisAlignedBox& bbox = entity_->getBoundingBox();
-        
-            Ogre::Vector3 size = bbox.getMaximum() - bbox.getMinimum();
-            if (size.x != 0.0) scale.x /= size.x;
-            if (size.y != 0.0) scale.y /= size.y;
-	        if (size.z != 0.0) scale.z /= size.z;
+            min = Core::Vector3df(0.0, 0.0, 0.0);
+            max = Core::Vector3df(0.0, 0.0, 0.0);
+            return;
         }
+     
+        const Ogre::AxisAlignedBox& bbox = entity_->getMesh()->getBounds();
+        const Ogre::Vector3& bboxmin = bbox.getMinimum();
+        const Ogre::Vector3& bboxmax = bbox.getMaximum();
         
-        adjustment_node_->setScale(scale);
+        min = Core::Vector3df(bboxmin.x, bboxmin.y, bboxmin.z);
+        max = Core::Vector3df(bboxmax.x, bboxmax.y, bboxmax.z);
     }
 }
