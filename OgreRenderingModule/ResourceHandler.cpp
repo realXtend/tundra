@@ -395,6 +395,9 @@ namespace OgreRenderer
             
             success = true;
         }
+        //! \todo if material_res->SetData(source) fails for some reason (material fails to parse) we still put the (invalid) material in
+        //!       materials_ map, and GetMaterials() returns it, but of course causes crashes since there is no Ogre::Material behind it.
+        //!       See todo item in Primitive::HandleMeshReady() -cm
         
         request_tags_.erase(source->GetId());
         return success;

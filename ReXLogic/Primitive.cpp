@@ -779,6 +779,9 @@ namespace RexLogic
 
     void Primitive::HandleMaterialResourceReady(Core::entity_id_t entityid, Foundation::ResourcePtr res)
     {
+        //! \todo crash, probably when mesh arrives, but material for it is not yet ready / failed to parse. Also other crashes but got too frustrated to check. See also todo item in ResourceHandler::UpdateMaterial(). -cm
+        return;
+
         assert(res.get());
         if (!res) 
             return;
