@@ -45,15 +45,8 @@ namespace RexLogic
     {
         try
         {
-            float pathShearX = primitive.PathShearX;
-            float pathShearY = primitive.PathShearY;
-            float pathBegin = primitive.PathBegin;
-            float pathEnd = primitive.PathEnd;
-            float pathScaleX = primitive.PathScaleX;
-            float pathScaleY = primitive.PathScaleY;
-
             float profileBegin = primitive.ProfileBegin;
-            float profileEnd = primitive.ProfileEnd;
+            float profileEnd = 1.0f - primitive.ProfileEnd;
             float profileHollow = primitive.ProfileHollow;
 
             int sides = 4;
@@ -79,28 +72,28 @@ namespace RexLogic
                 hollowSides = 3;
 
             PrimMesher::PrimMesh primMesh(sides, profileBegin, profileEnd, profileHollow, hollowSides);
-            primMesh.topShearX = pathShearX;
-            primMesh.topShearY = pathShearY;
-            primMesh.pathCutBegin = pathBegin;
-            primMesh.pathCutEnd = pathEnd;
+            primMesh.topShearX = primitive.PathShearX;
+            primMesh.topShearY = primitive.PathShearY;
+            primMesh.pathCutBegin = primitive.PathBegin;
+            primMesh.pathCutEnd = 1.0f - primitive.PathEnd;
 
             if (primitive.PathCurve == RexTypes::EXTRUSION_STRAIGHT)
             {
-                primMesh.twistBegin = primitive.PathTwistBegin * 18 / 10;
-                primMesh.twistEnd = primitive.PathTwist * 18 / 10;
-                primMesh.taperX = primitive.PathScaleX;
-                primMesh.taperY = primitive.PathScaleY;
+                primMesh.twistBegin = primitive.PathTwistBegin * 180;
+                primMesh.twistEnd = primitive.PathTwist * 180;
+                primMesh.taperX = primitive.PathScaleX - 1.0f;
+                primMesh.taperY = primitive.PathScaleY - 1.0f;
                 primMesh.ExtrudeLinear();
             }
             else
             {
-                primMesh.holeSizeX = (200 - primitive.PathScaleX) * 0.01f;
-                primMesh.holeSizeY = (200 - primitive.PathScaleY) * 0.01f;
-                primMesh.radius = 0.01f * primitive.PathRadiusOffset;
+                primMesh.holeSizeX = (2.0f - primitive.PathScaleX);
+                primMesh.holeSizeY = (2.0f - primitive.PathScaleY);
+                primMesh.radius = primitive.PathRadiusOffset;
                 primMesh.revolutions = primitive.PathRevolutions;
                 primMesh.skew = primitive.PathSkew;
-                primMesh.twistBegin = primitive.PathTwistBegin * 36 / 10;
-                primMesh.twistEnd = primitive.PathTwist * 36 / 10;
+                primMesh.twistBegin = primitive.PathTwistBegin * 360;
+                primMesh.twistEnd = primitive.PathTwist * 360;
                 primMesh.taperX = primitive.PathTaperX;
                 primMesh.taperY = primitive.PathTaperY;
                 primMesh.ExtrudeCircular();
@@ -111,6 +104,7 @@ namespace RexLogic
                 object->clear();
                 object->setDynamic(true);
                 object->begin("UnlitTextured");
+                std::cout << "Prim with " << primMesh.viewerFaces.size() << " faces" << std::endl;
                 for (unsigned i = 0; i < primMesh.viewerFaces.size(); ++i)
                 {
                     Ogre::Vector3 pos1(primMesh.viewerFaces[i].v1.X, primMesh.viewerFaces[i].v1.Y, primMesh.viewerFaces[i].v1.Z);
