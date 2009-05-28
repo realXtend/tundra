@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "EC_OgreMovableTextOverlay.h"
+#include "EC_OgrePlaceable.h"
 #include "Renderer.h"
 #include "OgreRenderingModule.h"
 
@@ -21,12 +22,14 @@ namespace OgreRenderer
         overlay_(NULL),
         camera_(NULL),
         font_(NULL),
+        node_(NULL),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
 //        char_height_(2*0.0175f),
         visible_(false),
         overlayName_(""),
         containerName_(""),
-        text_("")
+        text_(""),
+        attached_(false)
         
     {
         camera_ = renderer_.lock()->GetCurrentCamera();
@@ -49,7 +52,14 @@ namespace OgreRenderer
 	        overlayManager->destroyOverlayElement(text_element_);
 	        overlayManager->destroyOverlayElement(container_);
 	        overlayManager->destroy(overlay_);
-        }
+	        if (node_)
+	        {
+	            DetachNode();
+                Ogre::SceneManager *scene_mgr = renderer_.lock()->GetSceneManager();
+                scene_mgr->destroySceneNode(node_);
+                node_ = NULL;
+            }
+        }   
     }
 
     void EC_OgreMovableTextOverlay::Update()
@@ -112,9 +122,46 @@ namespace OgreRenderer
 		    overlay_->hide();
     }
     
-    void EC_OgreMovableTextOverlay::SetParentNode(Ogre::SceneNode *parent_node)
+    void EC_OgreMovableTextOverlay::SetPlaceable(Foundation::ComponentPtr placeable)
     {
-        parent_node->addChild(node_);
+        if (!placeable)
+        {
+            OgreRenderingModule::LogError("Null placeable for overlay");
+            return;
+        }
+        
+        EC_OgrePlaceable* placeableptr = dynamic_cast<EC_OgrePlaceable*>(placeable.get());
+        if (!placeableptr)
+        {
+            OgreRenderingModule::LogError("Placeable is not" + EC_OgrePlaceable::NameStatic());
+            return;
+        }
+        
+        DetachNode();
+        placeable_  = placeable;
+        AttachNode();
+    }
+    
+    void EC_OgreMovableTextOverlay::AttachNode()
+    {
+        if ((node_) && (!attached_) && (placeable_))
+        {
+            Ogre::SceneNode* parent =
+                checked_static_cast<EC_OgrePlaceable*>(placeable_.get())->GetSceneNode();
+            parent->addChild(node_);
+            attached_ = true;
+        }
+    }
+
+    void EC_OgreMovableTextOverlay::DetachNode()
+    {
+        if ((node_) && (attached_) && (placeable_))
+        {
+            Ogre::SceneNode* parent =
+                checked_static_cast<EC_OgrePlaceable*>(placeable_.get())->GetSceneNode();
+            parent->removeChild(node_);
+            attached_ = false;
+        }
     }
 
     void EC_OgreMovableTextOverlay::SetText(const std::string& text)

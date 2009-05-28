@@ -102,9 +102,8 @@ namespace RexLogic
             if (object)
             {
                 object->clear();
-                object->setDynamic(true);
                 object->begin("UnlitTextured");
-                std::cout << "Prim with " << primMesh.viewerFaces.size() << " faces" << std::endl;
+                
                 for (unsigned i = 0; i < primMesh.viewerFaces.size(); ++i)
                 {
                     Ogre::Vector3 pos1(primMesh.viewerFaces[i].v1.X, primMesh.viewerFaces[i].v1.Y, primMesh.viewerFaces[i].v1.Z);
