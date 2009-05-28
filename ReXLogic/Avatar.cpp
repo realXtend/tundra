@@ -91,7 +91,7 @@ namespace RexLogic
             DebugCreateOgreBoundingBox(rexlogicmodule_,
                 entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()), "AmbientGreen", Vector3(0.5,0.5,1.5));
             
-            CreateNameOverlay(ogrepos, entityid);
+            CreateNameOverlay(placeable, entityid);
             CreateDefaultAvatarMesh(entityid);
         }
         
@@ -143,12 +143,9 @@ namespace RexLogic
             // NameValue contains: FirstName STRING RW SV " + firstName + "\nLastName STRING RW SV " + lastName
             msg->SkipToFirstVariableByName("NameValue");
             std::string namevalue = msg->ReadString();
-            size_t pos = namevalue.find("\n");
-            if(pos != std::string::npos)
-            {
-                avatar.SetFirstName(namevalue.substr(23,pos-23));
-                avatar.SetLastName(namevalue.substr(pos+23));
-            }
+            NameValueMap map = ParseNameValueMap(namevalue);
+            avatar.SetFirstName(map["FirstName"]);
+            avatar.SetLastName(map["LastName"]);
             
             // Set own avatar
             if (avatar.FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
@@ -362,7 +359,7 @@ namespace RexLogic
         }
     }
     
-    void Avatar::CreateNameOverlay(OgreRenderer::EC_OgrePlaceable &placeable, Core::entity_id_t entity_id)
+    void Avatar::CreateNameOverlay(Foundation::ComponentPtr placeable, Core::entity_id_t entity_id)
     {
         Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
         if (!scene)
@@ -378,7 +375,7 @@ namespace RexLogic
         {
             OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
             name_overlay.SetText(avatar.GetFullName());
-            name_overlay.SetParentNode(placeable.GetSceneNode());
+            name_overlay.SetPlaceable(placeable);
         }
     }   
     void Avatar::ShowAvatarNameOverlay(Core::entity_id_t entity_id)

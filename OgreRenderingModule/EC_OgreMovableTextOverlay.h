@@ -48,8 +48,8 @@ namespace OgreRenderer
         //! assignment operator. See copy constructor
 //        EC_OgreMovableTextOverlay &operator ==(const EC_OgreTextOverlay &other) { assert (false); return *this; }
         
-        //! Sets the scene node which the overlay is meant to follow.
-        void SetParentNode(Ogre::SceneNode *parent_node);
+        //! Sets the placeable (scene node) which the overlay is meant to follow.
+        void SetPlaceable(Foundation::ComponentPtr placeable);
         
         //! displays the text as is in the overlay
         void SetText(const std::string &text);
@@ -67,6 +67,12 @@ namespace OgreRenderer
         //! Create the Ogre overlay
         void CreateOverlay();
         
+        //! Attach scene node to parent placeable node
+        void AttachNode();
+        
+        //! Detach scene node to parent placeable node
+        void DetachNode();
+        
         //! return the dimensions of the text.
         Ogre::Vector2 GetTextDimensions(const std::string &text);
         
@@ -81,6 +87,12 @@ namespace OgreRenderer
         
         //! SceneNode for the overlay text position.
         Ogre::SceneNode *node_;
+        
+        //! Parent placeable which will be followed
+        Foundation::ComponentPtr placeable_;
+        
+        //! Attached to parent-flag
+        bool attached_;
         
         //! Camera.
         const Ogre::Camera *camera_;

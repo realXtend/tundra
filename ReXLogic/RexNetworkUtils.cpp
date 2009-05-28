@@ -224,4 +224,31 @@ namespace RexLogic
         *(float*)(&bytes[idx]) = value;
         idx += sizeof(float);
     }
+    
+    NameValueMap ParseNameValueMap(const std::string& namevalue)
+    {
+        // Split into lines
+        NameValueMap map;
+        Core::StringVector lines = Core::SplitString(namevalue, '\n');
+        for (unsigned i = 0; i < lines.size(); ++i)
+        {
+            Core::StringVector line = Core::SplitString(lines[i], ' ');
+            if (line.size() > 4)
+            {
+                // First element is the name
+                const std::string& name = line[0];
+                std::string value;
+                // Skip over the STRING RW SV etc. (3 values)
+                // Concatenate the rest of the values
+                for (unsigned j = 4; j < line.size(); ++j)
+                {
+                    value += line[j];
+                    if (j != line.size()-1)
+                        value += " ";
+                }
+                map[name] = value;
+            }
+        }
+        return map;
+    }
 }

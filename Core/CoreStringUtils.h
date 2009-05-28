@@ -56,6 +56,9 @@ namespace Core
         
         return ss.str();
     }
+    
+    //! Split a string by separator char
+    Core::StringVector SplitString(const std::string& str, char separator);
 }
  
 #endif
