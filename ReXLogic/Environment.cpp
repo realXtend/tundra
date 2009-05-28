@@ -35,10 +35,14 @@ bool Environment::HandleOSNE_SimulatorViewerTimeMessage(OpenSimProtocol::Network
     
     if (!entity_)
         return false;
+
+    Foundation::ComponentPtr component = entity_->GetComponent("EC_OgreEnvironment");
+    if (!component)
+        return false;
     
     // Update the sunlight direction and angle velocity.
     OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
-        (entity_->GetComponent("EC_OgreEnvironment").get());
+        (component.get());
         
     env.SetSunDirection(sunDirection_);
     // Set somekind of ambient light, so that the lights are visible.
