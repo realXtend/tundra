@@ -110,7 +110,7 @@ namespace PythonScript
 	//a helper and to avoid copy-paste when doing the get in Entity.getattro
 	static Scene::ScenePtr GetScene() 
 	{
-		PythonScript::PythonScriptModule::LogDebug("Getting scene..");
+		//PythonScript::PythonScriptModule::LogDebug("Getting scene..");
 
 		//in this way, the staticframework pointer gotten is 0 also in GetEntity
 		//Foundation::Framework *framework_ = PythonScript::PythonScriptModule::GetStaticFramework(); 

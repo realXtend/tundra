@@ -17,7 +17,6 @@
 #include "SceneManager.h"
 #include "SceneEvents.h" //sending scene events after (placeable component) manipulation
 
-
 #include "Entity.h"
 
 namespace PythonScript
@@ -492,7 +491,7 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 	const char* c_name = PyString_AsString(name);
 	std::string s_name = std::string(c_name);
 
-	std::cout << "Entity: getting unknown attribute: " << s_name;
+	//std::cout << "Entity: getting unknown attribute: " << s_name;
 	
 	//entity_ptrs map usage
 	/* this crashes now in boost, 
@@ -556,7 +555,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 	const char* c_name = PyString_AsString(name);
 	std::string s_name = std::string(c_name);
 
-	std::cout << "Entity: setting unknown attribute: " << s_name;
+	//std::cout << "Entity: setting unknown attribute: " << s_name;
 	rexviewer_EntityObject *eob = (rexviewer_EntityObject *)self;
 
 	//entity_ptrs map usage
@@ -599,9 +598,11 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 		float x, y, z;
 		if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
 			return NULL; //XXX report ArgumentException error
+	    
+		// Set the new values.
 		placeable->SetPosition(Vector3(x, y, z));
-		//RexTypes::Vector3 scale = ogre_pos->GetScale();
-		//RexTypes::Vector3 rot = Core::PackQuaternionToFloat3(ogre_pos->GetOrientation());
+	    //ogre_pos->SetScale(Core::OpenSimToOgreCoordinateAxes(scale));
+		//ogre_pos->SetOrientation(Core::OpenSimToOgreQuaternion(quat));
 		/* .. i guess best to wrap the Rex Vector and other types soon,
 		   the pyrr irrlicht binding project does it for these using swig,
 		   https://opensvn.csie.org/traccgi/pyrr/browser/pyrr/irrlicht.i */
