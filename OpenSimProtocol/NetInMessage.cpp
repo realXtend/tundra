@@ -582,6 +582,7 @@ void NetInMessage::StartReadingNextBlock()
 		if (currentBlockInstanceCount == 0)
 		{
 			++currentBlock;
+            
 
 			// Malformity check.
 			if (bytesRead >= messageData.size() || currentBlock >= messageInfo->blocks.size())
