@@ -105,6 +105,12 @@ namespace RexLogic
         data->message->ResetReading();
         data->message->SkipToNextVariable();
         data->message->SkipToNextVariable();
+
+        if (data->message->GetCurrentBlock() >= data->message->GetBlockCount())
+        {
+            RexLogicModule::LogDebug("Empty ImprovedTerseObjectUpdate packet received, ignoring.");
+            return false;
+        }
         
         // Variable block: Object Data
         size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
@@ -226,7 +232,13 @@ namespace RexLogic
     
         uint64_t regionhandle = data->message->ReadU64();    
         data->message->SkipToNextVariable(); // TimeDilation U16 ///\todo Unhandled inbound variable 'TimeDilation'.
-        
+
+        if (data->message->GetCurrentBlock() >= data->message->GetBlockCount())
+        {
+            RexLogicModule::LogDebug("Empty ImprovedTerseObjectUpdate packet received, ignoring.");
+            return false;
+        }
+
         // Variable block
         size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
         for(size_t i = 0; i < instance_count; i++)
