@@ -4,7 +4,7 @@ to help py api dev and testing"""
 import rexviewer as r
 from circuits import Component
 
-class Commander(Component):
+class KeyCommander(Component):
     def __init__(self):
         Component.__init__(self)
         self.inputmap = {

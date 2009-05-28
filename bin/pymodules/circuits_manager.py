@@ -64,7 +64,7 @@ class ComponentRunner(Component):
     def MOUSE_INPUT(self, x_abs, y_abs, x_rel, y_rel):
         i = MouseInfo(x_abs, y_abs, x_rel, y_rel)
         #print "Manager got mouse input", i
-        self.m.push(MouseMove(i), "on_input")
+        self.m.push(MouseMove(i), "on_mousemove")
         
     def exit(self):
         print "Circuits manager stopping."
