@@ -11,9 +11,15 @@ use the manager, nothing of the Manager itself yet.
 
 from circuits import handler, Event, Component, Manager
 
+#is not identical to the c++ side, where x and y have abs and rel
+#XXX consider making identical and possible wrapping of the c++ type
+from collections import namedtuple
+MouseInfo = namedtuple('MouseInfo', 'x y rel_x rel_y')
+
 class Update(Event): pass     
 class Chat(Event): pass    
 class Input(Event): pass
+class MouseMove(Event): pass
     
 class ComponentRunner(Component):
     instance = None
@@ -56,7 +62,9 @@ class ComponentRunner(Component):
         #print "circuits_manager ComponentRunner got input event:", evid        
         
     def MOUSE_INPUT(self, x_abs, y_abs, x_rel, y_rel):
-        print "Manager got mouse input", x_abs, y_abs, x_rel, y_rel
+        i = MouseInfo(x_abs, y_abs, x_rel, y_rel)
+        #print "Manager got mouse input", i
+        self.m.push(MouseMove(i), "on_input")
         
     def exit(self):
         print "Circuits manager stopping."
