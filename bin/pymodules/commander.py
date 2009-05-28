@@ -12,12 +12,12 @@ class Commander(Component):
         }
     
     def on_input(self, evid):
-        print "Commander got input", evid
+        #print "Commander got input", evid
         if evid in self.inputmap:
             self.inputmap[evid]()
             
     def run_inputpy(self):
-        print "Command:"
+        #print "Command:"
         import input
         input = reload(input)
         
