@@ -148,10 +148,10 @@ namespace RexLogic
             // Read prim shape
             prim.PathCurve = msg->ReadU8();
             prim.ProfileCurve = msg->ReadU8();
-            prim.PathBegin = msg->ReadU16() * 0.01f;
-            prim.PathEnd = 1.0f - msg->ReadU16() * 0.01f;
-            prim.PathScaleX = msg->ReadU8() * 0.01f - 1.0f;
-            prim.PathScaleY = msg->ReadU8() * 0.01f - 1.0f;
+            prim.PathBegin = msg->ReadU16() * 0.00002f;
+            prim.PathEnd = msg->ReadU16() * 0.00002f;
+            prim.PathScaleX = msg->ReadU8() * 0.01f;
+            prim.PathScaleY = msg->ReadU8() * 0.01f;
             prim.PathShearX = ((int8_t)msg->ReadU8()) * 0.01f;
             prim.PathShearY = ((int8_t)msg->ReadU8()) * 0.01f;
             prim.PathTwist = msg->ReadS8() * 0.01f;
@@ -161,9 +161,9 @@ namespace RexLogic
             prim.PathTaperY = msg->ReadS8() * 0.01f;
             prim.PathRevolutions = 1.0f + msg->ReadU8() * 0.015f;
             prim.PathSkew = msg->ReadS8() * 0.01f;
-            prim.ProfileBegin = msg->ReadU16() * 0.01f;
-            prim.ProfileEnd = 1.0f - msg->ReadU16() * 0.01f;
-            prim.ProfileHollow = msg->ReadU16() * 0.01f;
+            prim.ProfileBegin = msg->ReadU16() * 0.00002f;
+            prim.ProfileEnd = msg->ReadU16() * 0.00002f;
+            prim.ProfileHollow = msg->ReadU16() * 0.00002f;
             
             // Skip to prim text
             msg->SkipToFirstVariableByName("Text");
