@@ -1,13 +1,15 @@
 import rexviewer as r
 
-print dir(r)
+print "--- *** ---"
+
+#print dir(r)
 
 #some prim
-idnum = 720001
+idnum = 720011 #the cube most far away from the screen in Toni & Petri 's test sim
 #idnum = 0
 
 #av ent
-av_entid = 8880005
+av_entid = 8880007
 
 idnum = av_entid
 
@@ -17,23 +19,25 @@ if 0: #get entity
     print "got:", e
     #print dir(r)
 
-if 0: #test avatar tracking, works :)
+if 1: #test avatar tracking, works :)
+    print "<:::",
     a = r.getEntity(av_entid)
-    print "Avatar pos:", a.place
+    print "Avatar pos:", a.place,
+    print ":::>"
     """
     perhaps some local script could track movement?
     make a sound of a nearby object of interest, 
     like when a pet or a friend moves?
     """
     
-if 1: #push an event, now an input event
+if 0: #push an event, now an input event
     #from eventsource import viewer
     #from modulemanager import m 
     import circuits_manager
     mm = circuits_manager.ComponentRunner.instance
     print mm
     
-    mm.INPUT_EVENT(r.MOVE_FORWARD_PRESSED)
+    mm.INPUT_EVENT(r.MoveForwardPressed)
     
     #a chat message again now too
     mm.RexNetMsgChatFromSimulator("Bob", "- that's me, Bob.")

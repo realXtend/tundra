@@ -30,7 +30,7 @@ namespace PythonScript
 	PyObject* PythonScript::entity_create(Core::entity_id_t ent_id) //, Scene::EntityPtr entity)
 	{
 		rexviewer_EntityObject* eob;
-		std::cout << "Entity: creating a wrapper pyobject ..";
+		//std::cout << "Entity: creating a wrapper pyobject ..";
 		eob = PyObject_New(rexviewer_EntityObject, &rexviewer_EntityType); //sets refcount to 1
 
 		//std::cout << "setting the pointer to the entity in the wrapper: " << entity << std::endl;

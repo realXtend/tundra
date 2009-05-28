@@ -13,12 +13,12 @@ and the ones that work with the current actual api are run here.
 
 import rexviewer as r
 
-idnum = 720001
+idnum = 720011
 #idnum = 0
 
 #playing with avatar
-av_entid = 8880005
-idnum = av_entid
+#av_entid = 8880004
+#idnum = av_entid
 
 def test_move(e):
     p = e.place #.pos - the w.i.p. api has a shortcut now that instead of a placeable with loc,rot,scale it just gives loc now directly

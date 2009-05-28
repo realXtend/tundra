@@ -8,10 +8,12 @@ whatever loading that you want (in your module i.e. .py file).
 
 import circuits_testmodule
 import chathandler
+import commander
 
 modules = [
     circuits_testmodule.TestModule,
-    chathandler.ChatHandler
+    chathandler.ChatHandler,
+    commander.Commander
 ]
 
 def load(circuitsmanager):
