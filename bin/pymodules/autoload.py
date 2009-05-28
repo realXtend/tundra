@@ -8,12 +8,14 @@ whatever loading that you want (in your module i.e. .py file).
 
 import circuits_testmodule
 import chathandler
-import commander
+import keycommands
+import mousecontrol
 
 modules = [
-    circuits_testmodule.TestModule,
+    #circuits_testmodule.TestModule,
     chathandler.ChatHandler,
-    commander.Commander
+    keycommands.KeyCommander,
+    mousecontrol.MouseControl
 ]
 
 def load(circuitsmanager):

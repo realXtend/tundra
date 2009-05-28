@@ -33,7 +33,7 @@ class TestModule(Component):
         print "Test Module received chat message:", frm, msg
         
     def on_input(self, evid):
-        print "Test Module receiving input event:", evid
+        #print "Test Module receiving input event:", evid
         
         if evid in inputtests:
             print inputtests[evid]
