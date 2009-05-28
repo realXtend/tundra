@@ -105,6 +105,9 @@ namespace Console
 
     Console::CommandResult CommandManager::ExecuteCommand(const std::string &commandline)
     {
+        if (commandline.empty())
+            return Console::ResultFailure();
+
         std::string cl = commandline;
 
         // separate command and parameters

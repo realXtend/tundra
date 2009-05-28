@@ -23,12 +23,14 @@ namespace Console
         //! (thread) entry point
         void operator()();
 
-        void SetCommandManager(Console::ConsoleCommandServiceInterface *command_service) { command_service_ = command_service; }
+        void SetCommandManager(Console::ConsoleCommandServiceInterface *command_service) { command_service_ = command_service; assert (command_service_); }
+        void SetFramework(Foundation::Framework *framework) { framework_ = framework; assert (framework_); }
 
     private:
         NativeInput(const NativeInput &other);
 
         Console::ConsoleCommandServiceInterface *command_service_;
+        Foundation::Framework *framework_;
     };
 
     //! Native debug console
@@ -38,7 +40,7 @@ namespace Console
         Native(const Native &other);
     public:
         //! constructor
-        Native(Console::ConsoleCommandServiceInterface *command_service);
+        Native(Console::ConsoleCommandServiceInterface *command_service, Foundation::Framework *framework);
         //! destructor
         virtual ~Native();
 

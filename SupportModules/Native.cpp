@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 
-#include <boost/tokenizer.hpp>
 #include "Native.h"
 #include "ConsoleModule.h"
     
@@ -21,6 +20,12 @@ namespace Console
             std::string command_line;
             std::getline(std::cin, command_line);
 
+            if (std::cin.fail())
+            {
+                framework_->Exit();
+                break;
+            }
+
             PROFILE(NativeInput_QueueCommand);
             command_service_->QueueCommand(command_line);
         }
@@ -30,10 +35,12 @@ namespace Console
     // ***********************************************************
 
 
-    Native::Native(Console::ConsoleCommandServiceInterface *command_service) : Console::ConsoleServiceInterface()
+    Native::Native(Console::ConsoleCommandServiceInterface *command_service, Foundation::Framework *framework) : Console::ConsoleServiceInterface()
     {
         assert (command_service);
         input_.SetCommandManager(command_service);
+        input_.SetFramework(framework);
+
         thread_ = boost::thread(boost::ref(input_));
     }
 

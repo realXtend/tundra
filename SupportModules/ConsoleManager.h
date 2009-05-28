@@ -26,7 +26,7 @@ namespace Console
         {
             parent_ = parent;
             command_manager_ = CommandManagerPtr(new CommandManager(parent_, this));
-            native_ = ConsolePtr(new Native(command_manager_.get()));
+            native_ = ConsolePtr(new Native(command_manager_.get(), parent->GetFramework()));
             ogre_ = ConsolePtr(new OgreOverlay(parent));
         }
 
