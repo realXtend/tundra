@@ -165,6 +165,10 @@ namespace RexLogic
             prim.ProfileEnd = msg->ReadU16() * 0.00002f;
             prim.ProfileHollow = msg->ReadU16() * 0.00002f;
             
+            // Texture entry
+            const uint8_t *textureentrybytes = msg->ReadBuffer(&bytes_read);
+            ParseTextureEntryData(prim, textureentrybytes, bytes_read);
+            
             // Skip to prim text
             msg->SkipToFirstVariableByName("Text");
             prim.HoveringText = msg->ReadString(); 
@@ -411,7 +415,7 @@ namespace RexLogic
         else
             RexLogicModule::LogInfo("Received 'ObjectProperties' packet for unknown entity (" + full_id.ToString() + ").");
         
-        return false;        
+        return false;
     }
 /*
     void Primitive::HandleOgreMaterialsChanged(Core::entity_id_t entityid)
@@ -513,10 +517,50 @@ namespace RexLogic
             if (!custom.GetPlaceable())
                 custom.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
             
+            // Request prim textures
+            HandlePrimTextures(entityid);
+            
             // Create/update geometry
             CreatePrimGeometry(custom.GetObject(), prim);
         }
     } 
+    
+    void Primitive::HandlePrimTextures(Core::entity_id_t entityid)
+    {
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+        if (!entity) 
+            return;
+        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+        
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+
+        std::set<RexTypes::RexUUID> tex_requests;
+        
+        if (!prim.PrimDefaultTexture.IsNull())
+            tex_requests.insert(prim.PrimDefaultTexture);
+            
+        TextureMap::const_iterator i = prim.PrimTextures.begin();
+        while (i != prim.PrimTextures.end())
+        {
+            if (!i->second.IsNull())
+                tex_requests.insert(i->second);
+            ++i;
+        }
+        
+        std::set<RexTypes::RexUUID>::const_iterator j = tex_requests.begin();
+        while (j != tex_requests.end())
+        {
+            std::string texname = (*j).ToString();
+            Core::request_tag_t tag = renderer->RequestResource(texname, OgreRenderer::OgreTextureResource::GetTypeStatic());
+             
+            // Remember that we are going to get a resource event for this entity
+            if (tag)
+                prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Texture)] = entityid;
+                
+            ++j;
+        }
+    }
     
     void Primitive::HandleMeshMaterials(Core::entity_id_t entityid)
     {
@@ -561,7 +605,7 @@ namespace RexLogic
                 {
                     Foundation::ResourcePtr res = renderer->GetResource(mat_name, OgreRenderer::OgreTextureResource::GetTypeStatic());
                     if (res)
-                        HandleMeshTextureReady(entityid, res);
+                        HandleTextureReady(entityid, res);
                     else
                     {                
                         Core::request_tag_t tag = renderer->RequestResource(mat_name, OgreRenderer::OgreTextureResource::GetTypeStatic());
@@ -696,7 +740,7 @@ namespace RexLogic
             switch(asset_type)
             {
             case RexAT_Texture:
-                HandleMeshTextureReady(i->second, res);
+                HandleTextureReady(i->second, res);
                 break;
             case RexAT_Mesh:
                 HandleMeshReady(i->second, res);
@@ -741,7 +785,7 @@ namespace RexLogic
         HandleMeshMaterials(entityid); 
     }
 
-    void Primitive::HandleMeshTextureReady(Core::entity_id_t entityid, Foundation::ResourcePtr res)
+    void Primitive::HandleTextureReady(Core::entity_id_t entityid, Foundation::ResourcePtr res)
     {
         assert(res.get());
         if (!res) 
@@ -753,27 +797,51 @@ namespace RexLogic
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         if (!entity) return;
         EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());            
-           
-        Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-        if (!mesh) return;
-        OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());      
-        // If don't have the actual mesh entity yet, no use trying to set texture
-        if (!meshptr->GetEntity()) return;
-                        
-        MaterialMap::const_iterator i = prim.Materials.begin();
-        while (i != prim.Materials.end())
+        if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
         {
-            Core::uint idx = i->first;                
-            // For now, handle only textures, not materials
-            if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.UUID.ToString() == res->GetId()))
+            Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+            if (!mesh) return;
+            OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());      
+            // If don't have the actual mesh entity yet, no use trying to set texture
+            if (!meshptr->GetEntity()) return;
+                            
+            MaterialMap::const_iterator i = prim.Materials.begin();
+            while (i != prim.Materials.end())
             {
-                // debug material creation to see diffuse textures                        
-                Ogre::MaterialPtr mat = OgreRenderer::GetOrCreateUnlitTexturedMaterial(res->GetId().c_str());
-                OgreRenderer::SetTextureUnitOnMaterial(mat, 0, res->GetId().c_str());
-               
-                meshptr->SetMaterial(idx, res->GetId());
+                Core::uint idx = i->first;
+                // For now, handle only textures, not materials
+                if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.UUID.ToString() == res->GetId()))
+                {
+                    // debug material creation to see diffuse textures
+                    Ogre::MaterialPtr mat = OgreRenderer::GetOrCreateUnlitTexturedMaterial(res->GetId().c_str());
+                    OgreRenderer::SetTextureUnitOnMaterial(mat, res->GetId().c_str());
+                   
+                    meshptr->SetMaterial(idx, res->GetId());
+                }
+                ++i;
             }
-            ++i;
+        }
+        else
+        {
+            // Handle prim texture
+            Foundation::ComponentPtr custom = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
+            if (!custom) return;
+            OgreRenderer::EC_OgreCustomObject* customptr = checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(custom.get());
+            
+            Ogre::ManualObject* manual = customptr->GetObject();
+            if (!manual) return;
+            
+            for (Core::uint i = 0; i < manual->getNumSections(); ++i)
+            {
+                // If this section of the custom geometry is using the received texture, update the material
+                // Note: material has already been created beforehand, which is kind of hackish
+                if (manual->getSection(i)->getMaterialName() == res->GetId())
+                {
+                    Ogre::MaterialPtr mat = OgreRenderer::GetOrCreateUnlitTexturedMaterial(res->GetId().c_str());
+                    OgreRenderer::SetTextureUnitOnMaterial(mat, res->GetId().c_str());
+                    break;
+                }
+            }
         }
     }
 
@@ -888,5 +956,33 @@ namespace RexLogic
         }
 
         ogrepos.SetScale(prim.Scale);
+    }
+    
+    void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes, size_t length)
+    {
+        prim.PrimTextures.clear();
+        
+        int idx = 0;
+        
+        if (idx >= length)
+            return;
+        RexTypes::RexUUID default_texture_id = ReadUUIDFromBytes(bytes, idx);
+        prim.PrimDefaultTexture = default_texture_id;
+        
+        uint32_t bits;
+        int num_bits;
+
+        while ((idx < length) && (ReadTextureEntryBits(bits, num_bits, bytes, idx)))
+        {
+            RexTypes::RexUUID texture_id = ReadUUIDFromBytes(bytes, idx);
+            for (int i = 0; i < num_bits; ++i)
+            {
+                if (bits & 1)
+                {
+                    prim.PrimTextures[i] = texture_id;
+                }
+                bits >>= 1;
+            }
+        }
     }
 }

@@ -40,6 +40,8 @@ namespace RexTypes
         
         bool operator ==(const RexUUID &rhs) const;
         
+        bool operator !=(const RexUUID &rhs) const;
+                
         bool operator <(const RexUUID &rhs) const;
 
         friend std::ostream& operator << ( std::ostream &out, const RexUUID &r )

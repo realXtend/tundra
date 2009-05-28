@@ -25,8 +25,11 @@ namespace OgreRenderer
         return material;
     }
     
-    void SetTextureUnitOnMaterial(Ogre::MaterialPtr material, Core::uint index, const char *textureName)
+    void SetTextureUnitOnMaterial(Ogre::MaterialPtr material, const char *textureName, Core::uint index)
     {
+        Ogre::TextureManager &tm = Ogre::TextureManager::getSingleton();
+        Ogre::TexturePtr tex = tm.getByName(textureName);
+        
         Ogre::Material::TechniqueIterator iter = material->getTechniqueIterator();
         while(iter.hasMoreElements())
         {
@@ -43,7 +46,12 @@ namespace OgreRenderer
                 {                
                     Ogre::TextureUnitState *texUnit = texIter.getNext();
                     if ((index == cmp_index) || (index == SET_ALL_UNITS))
-                        texUnit->setTextureName(textureName);
+                    {
+                        if (!tex.isNull())
+                            texUnit->setTextureName(textureName);
+                        else
+                            texUnit->setTextureName("TextureMissing.png");
+                    }
                     cmp_index++;
                 }
             }

@@ -36,6 +36,7 @@
 #include "RexTypes.h"
 #include "RexLogicModule.h"
 #include "EC_OpenSimPrim.h"
+#include "../OgreRenderingModule/OgreMaterialUtils.h"
 
 #include <Ogre.h>
 
@@ -102,10 +103,46 @@ namespace RexLogic
             if (object)
             {
                 object->clear();
-                object->begin("UnlitTextured");
                 
-                for (unsigned i = 0; i < primMesh.viewerFaces.size(); ++i)
+                RexTypes::RexUUID tex_id;
+                RexTypes::RexUUID prev_tex_id;
+                
+                Core::uint indices = 0;
+                
+                for (Core::uint i = 0; i < primMesh.viewerFaces.size(); ++i)
                 {
+                    // Here we assume (again) that material name = texture UUID in text form
+                    //! \todo handle material override if prim is using material script
+
+                    // Try to find face's texture in texturemap, use default if not found
+                    tex_id = primitive.PrimDefaultTexture;
+                    TextureMap::const_iterator t = primitive.PrimTextures.find(primMesh.viewerFaces[i].primFaceNumber);
+                    if (t != primitive.PrimTextures.end())
+                        tex_id = t->second;
+                    
+                    if ((i == 0) || (tex_id != prev_tex_id))
+                    {
+                        // Fill the indices of previous subsection before beginning new
+                        if (indices)
+                        {
+                            for (Core::uint j = 0; j < indices; j += 3)
+                            {
+                                object->index(j);
+                                object->index(j+1);
+                                object->index(j+2);
+                            }
+                            indices = 0;
+                            object->end();
+                        }
+                            
+                        std::string mat_name = tex_id.ToString();
+                        // Actually create the material here if texture yet missing, we'll fill later
+                        OgreRenderer::GetOrCreateUnlitTexturedMaterial(mat_name.c_str());
+                        
+                        object->begin(mat_name);
+                    }
+                    prev_tex_id = tex_id;
+                    
                     Ogre::Vector3 pos1(primMesh.viewerFaces[i].v1.X, primMesh.viewerFaces[i].v1.Y, primMesh.viewerFaces[i].v1.Z);
                     Ogre::Vector3 pos2(primMesh.viewerFaces[i].v2.X, primMesh.viewerFaces[i].v2.Y, primMesh.viewerFaces[i].v2.Z);
                     Ogre::Vector3 pos3(primMesh.viewerFaces[i].v3.X, primMesh.viewerFaces[i].v3.Y, primMesh.viewerFaces[i].v3.Z);
@@ -129,16 +166,21 @@ namespace RexLogic
                     object->position(pos3);
                     object->normal(n3);
                     object->textureCoord(uv3);
+                    indices += 3;
                 }
-                for (unsigned i = 0; i < primMesh.viewerFaces.size(); ++i)
+                
+                // Fill the indices of last subsection
+                if (indices)
                 {
-                    object->index(i*3);
-                    object->index(i*3+1);
-                    object->index(i*3+2);
+                    for (Core::uint j = 0; j < indices; j += 3)
+                    {
+                        object->index(j);
+                        object->index(j+1);
+                        object->index(j+2);
+                    }
+                    indices = 0;
+                    object->end();
                 }
-                
-                object->end();
-                
             }
             else
             {

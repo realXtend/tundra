@@ -18,6 +18,9 @@ namespace RexLogic
     // Map for holding materials
     typedef std::map<uint8_t, MaterialData> MaterialMap;
 
+    // Map for holding prim textures
+    typedef std::map<uint8_t, RexTypes::RexUUID> TextureMap;
+    
     //! Each scene entity representing a prim in OpenSim sense has
     //! this component.
     class EC_OpenSimPrim : public Foundation::ComponentInterface
@@ -70,6 +73,9 @@ namespace RexLogic
         std::string AnimationName;
         float AnimationRate;
 
+        RexTypes::RexUUID PrimDefaultTexture;
+        TextureMap PrimTextures;
+        
         MaterialMap Materials;
 
         //! Primitive shape related variables

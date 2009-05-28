@@ -9,6 +9,7 @@
 namespace RexLogic
 {
     class RexLogicModule;
+    class EC_OpenSimPrim;
 
     class Primitive
     {
@@ -42,6 +43,13 @@ namespace RexLogic
         //! @param entityid Entity id.
         void CheckPendingRexPrimData(Core::entity_id_t entityid);
         
+        //! parse TextureEntry data from ObjectUpdate
+        /*! @param prim Primitive component to receive texture data
+            @param data Byte buffer
+            @param length Length of byte buffer
+         */
+        void ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes, size_t length);
+        
         //! handle rexprimdata blob coming from server in a genericmessage
         void HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t* primdata);
         
@@ -53,6 +61,10 @@ namespace RexLogic
         //! those materials are made and the material binding is delayed until the downloads are complete.
         void HandleMeshMaterials(Core::entity_id_t entityid);
 
+        //! handles prim texture requests
+        //! @param entityid Entity id.
+        void HandlePrimTextures(Core::entity_id_t entityid);
+        
         //! handles mesh texture changes
         //! @param entityid Entity id.
         void HandleMeshTextures(Core::entity_id_t entityid);
@@ -73,9 +85,9 @@ namespace RexLogic
          */ 
         void AttachLightComponent(Scene::EntityPtr entity, Core::Color color, float radius, float falloff);
         
-        //! handles mesh texture resource being ready
-        void HandleMeshTextureReady(Core::entity_id_t entity, Foundation::ResourcePtr res);
-        
+        //! handles mesh or prim texture resource being ready
+        void HandleTextureReady(Core::entity_id_t entity, Foundation::ResourcePtr res);
+
         void HandleMaterialResourceReady(Core::entity_id_t entityid, Foundation::ResourcePtr res);
 
         //! handles prim size change

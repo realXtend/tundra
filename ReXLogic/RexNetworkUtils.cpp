@@ -251,4 +251,22 @@ namespace RexLogic
         }
         return map;
     }
+    
+    bool ReadTextureEntryBits(uint32_t& bits, int& num_bits, const uint8_t* bytes, int& idx)
+    {
+        bits = 0;
+        num_bits = 0;
+        uint8_t byte;
+        
+        do
+        {
+            byte = bytes[idx++];
+            bits <<= 7;
+            bits |= byte & 0x7f;
+            num_bits += 7;
+        }
+        while (byte & 0x80);
+        
+        return bits != 0;
+    }
 }
