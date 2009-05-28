@@ -40,6 +40,7 @@ namespace RexLogic
     float ReadFloatFromBytes(const uint8_t* bytes, int& idx);
     RexTypes::RexUUID ReadUUIDFromBytes(const uint8_t* bytes, int& idx);
     std::string ReadNullTerminatedStringFromBytes(const uint8_t* bytes, int& idx);
+    bool ReadTextureEntryBits(uint32_t& bits, int& num_bits, const uint8_t* bytes, int& idx);
     
     //! Helper functions for writing values into byteblob
     void WriteUInt8ToBytes(uint8_t value, uint8_t* bytes, int& idx);
