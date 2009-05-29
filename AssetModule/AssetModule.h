@@ -66,6 +66,9 @@ namespace Asset
     private:
         //! UDP asset provider
         Foundation::AssetProviderPtr udp_asset_provider_;
+
+        //! Http asset provider
+		Foundation::AssetProviderPtr http_asset_provider_;
         
         //! asset manager
         AssetManagerPtr manager_;
