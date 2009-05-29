@@ -39,8 +39,10 @@ namespace RexLogic
         DrawDistance = 0;
         LOD = 0;
         
+        HasPrimShapeData = false;
+        
         MeshUUID.SetNull();
-        CollisionMesh.SetNull();        
+        CollisionMesh.SetNull();
         ParticleScriptUUID.SetNull();
 
         AnimationPackageUUID.SetNull();

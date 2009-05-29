@@ -539,13 +539,7 @@ namespace PrimMesher
         float startAngle = pprofileStart * twoPi;
         float stopAngle = pprofileEnd * twoPi;
 
-        try { angles.makeAngles(psides, startAngle, stopAngle); }
-        catch (Core::Exception& e)
-        {
-
-            errorMessage = std::string("makeAngles failed: Exception: ") + e.what();
-            return;
-        }
+        angles.makeAngles(psides, startAngle, stopAngle); 
 
         numOuterVerts = angles.angles.size();
 
@@ -559,13 +553,7 @@ namespace PrimMesher
                 hollowAngles = angles;
             else
             {
-                try { hollowAngles.makeAngles(phollowSides, startAngle, stopAngle); }
-                catch (Core::Exception& e)
-                {
-                    errorMessage = std::string("makeAngles failed: Exception: ") + e.what();
-
-                    return;
-                }
+                hollowAngles.makeAngles(phollowSides, startAngle, stopAngle);
             }
             numHollowVerts = hollowAngles.angles.size();
         }
@@ -1109,7 +1097,6 @@ namespace PrimMesher
             hollow *= 1.414f;
 
         Profile profile(sides, profileStart, profileEnd, hollow, hollowSides, true);
-        errorMessage = profile.errorMessage;
 
         numPrimFaces = profile.numPrimFaces;
 
@@ -1351,7 +1338,7 @@ namespace PrimMesher
                     done = true;
             }
             else done = true;
-
+            
             if (done && viewerMode)
             {
                 // add the top faces to the viewerFaces list here
@@ -1480,7 +1467,6 @@ namespace PrimMesher
             needEndFaces = true;
 
         Profile profile(sides, profileStart, profileEnd, hollow, hollowSides, needEndFaces);
-        errorMessage = profile.errorMessage;
 
         numPrimFaces = profile.numPrimFaces;
 
@@ -1749,7 +1735,9 @@ namespace PrimMesher
             // calculate the angle for the next iteration of the loop
 
             if (angle >= endAngle)
+            {
                 done = true;
+            }
             else
             {
                 step += 1;
