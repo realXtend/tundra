@@ -108,24 +108,25 @@ namespace RexLogic
 
         if (data->message->GetCurrentBlock() >= data->message->GetBlockCount())
         {
-            RexLogicModule::LogDebug("Empty ImprovedTerseObjectUpdate packet received, ignoring.");
+            RexLogicModule::LogDebug("Empty ObjectUpdate packet received, ignoring.");
             return false;
         }
         
-        // Variable block: Object Data
         size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
-        for(size_t i = 0; i < instance_count; ++i)
-        {    
+        bool result = false;
+        if (instance_count > 0)
+        {
             data->message->SkipToFirstVariableByName("PCode");
+
             uint8_t pcode = data->message->ReadU8();
             switch(pcode)
             {
-                case 0x09: return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_ObjectUpdate(data); break;
-                case 0x2f: return rexlogicmodule_->GetAvatarHandler()->HandleOSNE_ObjectUpdate(data); break;
+                case 0x09: result = rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_ObjectUpdate(data); break;
+                case 0x2f: result = rexlogicmodule_->GetAvatarHandler()->HandleOSNE_ObjectUpdate(data); break;
             }
         }
         
-        return false;
+        return result;
     }
     
     bool NetworkEventHandler::HandleOSNE_GenericMessage(OpenSimProtocol::NetworkEventInboundData* data)
