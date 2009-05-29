@@ -145,7 +145,7 @@ namespace RexLogic
                             
                         std::string mat_name = tex_id.ToString();
                         // Actually create the material here if texture yet missing, we'll fill later
-                        OgreRenderer::GetOrCreateUnlitTexturedMaterial(mat_name.c_str());
+                        OgreRenderer::GetOrCreateLitTexturedMaterial(mat_name.c_str());
                         
                         object->begin(mat_name);
                     }

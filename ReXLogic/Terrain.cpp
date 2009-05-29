@@ -70,7 +70,7 @@ namespace
 
         DebugDumpOgreTextureInfo(textureName);
 
-        Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateUnlitTexturedMaterial(terrainMaterialName);
+        Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
         assert(terrainMaterial.get());
 
         Ogre::Material::TechniqueIterator iter = terrainMaterial->getTechniqueIterator();
@@ -120,10 +120,10 @@ namespace
 //                Ogre::Vector3 c = patchOrigin + Ogre::Vector3(vertexSpacingY * (y+1),     heightScale * patch.heightData[(y+1)*patchSize+x], vertexSpacingX * x);
 //                Ogre::Vector3 d = patchOrigin + Ogre::Vector3(vertexSpacingY * (y+1), heightScale * patch.heightData[(y+1)*patchSize+x+1], vertexSpacingX * (x+1));
 
-                Ogre::Vector3 a = patchOrigin + Ogre::Vector3(vertexSpacingX * x, vertexSpacingY * y,     heightScale * patch.heightData[y*patchSize+x]);
-                Ogre::Vector3 b = patchOrigin + Ogre::Vector3(vertexSpacingX * (x+1), vertexSpacingY * y, heightScale * patch.heightData[y*patchSize+x+1]);
-                Ogre::Vector3 c = patchOrigin + Ogre::Vector3(vertexSpacingX * x, vertexSpacingY * (y+1),     heightScale * patch.heightData[(y+1)*patchSize+x]);
-                Ogre::Vector3 d = patchOrigin + Ogre::Vector3(vertexSpacingX * (x+1), vertexSpacingY * (y+1), heightScale * patch.heightData[(y+1)*patchSize+x+1]);
+                Ogre::Vector3 a = Ogre::Vector3(vertexSpacingX * x, vertexSpacingY * y,     heightScale * patch.heightData[y*patchSize+x]);
+                Ogre::Vector3 b = Ogre::Vector3(vertexSpacingX * (x+1), vertexSpacingY * y, heightScale * patch.heightData[y*patchSize+x+1]);
+                Ogre::Vector3 c = Ogre::Vector3(vertexSpacingX * x, vertexSpacingY * (y+1),     heightScale * patch.heightData[(y+1)*patchSize+x]);
+                Ogre::Vector3 d = Ogre::Vector3(vertexSpacingX * (x+1), vertexSpacingY * (y+1), heightScale * patch.heightData[(y+1)*patchSize+x+1]);
 
                 manual->position(a);
                 manual->position(b);
@@ -153,7 +153,7 @@ namespace
         Ogre::SceneNode *node = patch.node;
         assert(node);
         assert(node->numAttachedObjects() == 1);
-        Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateUnlitTexturedMaterial(terrainMaterialName);
+        Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
 
         Ogre::ManualObject *manual = dynamic_cast<Ogre::ManualObject*>(node->getAttachedObject(0));
         manual->clear(); /// \note For optimization, could use beginUpdate.
@@ -228,7 +228,9 @@ namespace
 // Ogre:        pos.y = thisPatch->heightData[Y*patchSize+X];
                 pos.z = thisPatch->heightData[Y*patchSize+X];
 
-                manual->position(patchOrigin + pos);
+                manual->position(pos);
+                //! \todo create normals properly
+                manual->normal(0,0,1);
 // Ogre:                manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.z + pos.z) * vScale);
                 manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.y + pos.y) * vScale);
                 ++curIndex;
@@ -267,6 +269,14 @@ namespace
             node = sceneMgr->createSceneNode();
             sceneMgr->getRootSceneNode()->addChild(node);
             node->attachObject(manual);
+            
+            const float vertexSpacingX = 1.f;
+            const float vertexSpacingY = 1.f;
+            const float patchSpacingX = 16 * vertexSpacingX;
+            const float patchSpacingY = 16 * vertexSpacingY;
+            const Ogre::Vector3 patchOrigin(patchX * patchSpacingX, patchY * patchSpacingY, 0.f);
+
+            node->setPosition(patchOrigin);
         }
     }
 
