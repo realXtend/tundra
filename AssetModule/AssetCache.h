@@ -6,6 +6,7 @@
 namespace Asset
 {
     //! Stores assets to memory and/or disk based cache. Created and used by AssetManager.
+	//! \todo Add support for urls as asset id
     class AssetCache
     {
     public:

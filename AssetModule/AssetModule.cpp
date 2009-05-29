@@ -7,6 +7,7 @@
 #include "RexProtocolMsgIDs.h"
 #include "RexUUID.h"
 #include "UDPAssetProvider.h"
+#include "HttpAssetProvider.h"
 
 using namespace OpenSimProtocol;
 using namespace RexTypes;
@@ -46,6 +47,9 @@ namespace Asset
         
         udp_asset_provider_ = Foundation::AssetProviderPtr(new UDPAssetProvider(framework_));
         manager_->RegisterAssetProvider(udp_asset_provider_);
+
+		http_asset_provider_ = Foundation::AssetProviderPtr(new HttpAssetProvider(framework_));
+		manager_->RegisterAssetProvider(http_asset_provider_);
         
         LogInfo("Module " + Name() + " initialized.");
     }
