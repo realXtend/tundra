@@ -60,7 +60,9 @@ namespace Asset
 
 	bool HttpAssetProvider::RequestAsset(const std::string& asset_url, const std::string& asset_type, Core::request_tag_t tag)
 	{
-        if (RexUUID::IsValid(asset_url))
+	    // Differentiate between UDP & URL based requests
+        //! \todo check URL validity in more sophisticated way, if desired
+        if (asset_url.find("://") == std::string::npos)
             return false;
 
         asset_type_t asset_type_int = GetAssetTypeFromTypeName(asset_type);
