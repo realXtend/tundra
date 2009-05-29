@@ -164,6 +164,7 @@ namespace RexLogic
             prim.ProfileBegin = msg->ReadU16() * 0.00002f;
             prim.ProfileEnd = msg->ReadU16() * 0.00002f;
             prim.ProfileHollow = msg->ReadU16() * 0.00002f;
+            prim.HasPrimShapeData = true;
             
             // Texture entry
             const uint8_t *textureentrybytes = msg->ReadBuffer(&bytes_read);
@@ -513,7 +514,8 @@ namespace RexLogic
             HandlePrimTextures(entityid);
             
             // Create/update geometry
-            CreatePrimGeometry(custom.GetObject(), prim);
+            if (prim.HasPrimShapeData)
+                CreatePrimGeometry(custom.GetObject(), prim);
         }
     } 
     

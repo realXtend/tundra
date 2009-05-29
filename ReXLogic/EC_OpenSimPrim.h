@@ -104,6 +104,7 @@ namespace RexLogic
         float ProfileBegin;
         float ProfileEnd;
         float ProfileHollow;
+        bool HasPrimShapeData;
 
         void PrintDebug();
         

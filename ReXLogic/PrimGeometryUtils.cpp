@@ -44,6 +44,9 @@ namespace RexLogic
 {
     void CreatePrimGeometry(Ogre::ManualObject* object, EC_OpenSimPrim& primitive)
     {
+        if (!primitive.HasPrimShapeData)
+            return;
+            
         try
         {
             float profileBegin = primitive.ProfileBegin;
@@ -72,8 +75,6 @@ namespace RexLogic
             else if ((primitive.ProfileCurve & 0xf0) == RexTypes::HOLLOW_TRIANGLE)
                 hollowSides = 3;
 
-            RexLogicModule::LogInfo("PrimMesher::PrimMesh");
-            //! \todo probably cause of random crash -cm
             PrimMesher::PrimMesh primMesh(sides, profileBegin, profileEnd, profileHollow, hollowSides);
             primMesh.topShearX = primitive.PathShearX;
             primMesh.topShearY = primitive.PathShearY;
@@ -101,10 +102,7 @@ namespace RexLogic
                 primMesh.taperY = primitive.PathTaperY;
                 primMesh.ExtrudeCircular();
             }
-            // Doesn't get here in case of crash, see above todo
 
-            RexLogicModule::LogInfo("Object begin.");
-            
             if (object)
             {
                 object->clear();

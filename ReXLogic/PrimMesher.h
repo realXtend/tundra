@@ -238,8 +238,6 @@ namespace PrimMesher
     /// </summary>
     struct Profile
     {
-        std::string errorMessage;
-
         std::vector<Coord> coords;
         std::vector<Face> faces;
         std::vector<Coord> vertexNormals;
@@ -283,8 +281,6 @@ namespace PrimMesher
 
     struct PrimMesh
     {
-        std::string errorMessage;
-
         std::vector<Coord> coords;
         std::vector<Coord> normals;
         std::vector<Face> faces;
