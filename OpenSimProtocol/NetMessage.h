@@ -10,7 +10,7 @@
 /// UDP message header flags.
 enum NetHeaderFlag
 {
-	NetFlagAck = 0x10, ///< The message contains appended ACKs. \todo We're not supporting these (yet) (and would rather not, it's a crappy idea)
+	NetFlagAck = 0x10, ///< The message contains appended ACKs.
 	NetFlagResent = 0x20, ///< This message is a resend, since the other end didn't ACK it in time.
 	NetFlagReliable = 0x40, ///< This message needs to be ACKed.
 	NetFlagZeroCode = 0x80  ///< This message is compressed by RLE-encoding zeroes.

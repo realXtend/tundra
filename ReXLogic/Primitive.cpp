@@ -241,46 +241,38 @@ namespace RexLogic
         std::vector<Core::u8> fulldata;
         RexUUID primuuid;
         
-        try
-        {
-            data->message->ResetReading();
-            data->message->SkipToFirstVariableByName("Parameter");
-            
-            // Variable block begins
-            size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
-            size_t read_instances = 0;
-            
-            // First instance contains the UUID.
-            primuuid.FromString(data->message->ReadString());
-            ++read_instances;
-                    
-            // Calculate full data size
-            size_t fulldatasize = data->message->GetDataSize();
-            size_t bytes_read = data->message->BytesRead();
-            fulldatasize -= bytes_read;
-            
-            // Allocate memory block
-            fulldata.resize(fulldatasize);
-            int offset = 0;
-            
-            // Read the binary data.
-            // The first instance contains always the UUID and rest of instances contain only binary data.
-            // Data for multiple objects are never sent in the same message. All of the necessary data fits in one message.
-            // Read the data:
-            while((data->message->BytesRead() < data->message->GetDataSize()) && (read_instances < instance_count))
-            {
-                const Core::u8* readbytedata = data->message->ReadBuffer(&bytes_read);
-                memcpy(&fulldata[offset], readbytedata, bytes_read);
-                offset += bytes_read;
-                ++read_instances;
-            }
-        }
-        catch (Core::Exception& e)
-        {
-            RexLogicModule::LogError("Exception while reading RexPrimData for primuuid " + primuuid.ToString() + ": " + std::string(e.what()));
-            return false;
-        }
+        data->message->ResetReading();
+        data->message->SkipToFirstVariableByName("Parameter");
         
+        // Variable block begins
+        size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+        size_t read_instances = 0;
+        
+        // First instance contains the UUID.
+        primuuid.FromString(data->message->ReadString());
+        ++read_instances;
+                
+        // Calculate full data size
+        size_t fulldatasize = data->message->GetDataSize();
+        size_t bytes_read = data->message->BytesRead();
+        fulldatasize -= bytes_read;
+        
+        // Allocate memory block
+        fulldata.resize(fulldatasize);
+        int offset = 0;
+        
+        // Read the binary data.
+        // The first instance contains always the UUID and rest of instances contain only binary data.
+        // Data for multiple objects are never sent in the same message. All of the necessary data fits in one message.
+        // Read the data:
+        while((data->message->BytesRead() < data->message->GetDataSize()) && (read_instances < instance_count))
+        {
+            const Core::u8* readbytedata = data->message->ReadBuffer(&bytes_read);
+            memcpy(&fulldata[offset], readbytedata, bytes_read);
+            offset += bytes_read;
+            ++read_instances;
+        }
+
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
         // If cannot get the entity, put to pending rexprimdata
         if (entity)           
@@ -658,15 +650,11 @@ namespace RexLogic
                     entity->AddEntityComponent(rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent("EC_OgreLight"));
                     
                 // Read the data.
-                uint8_t r = ReadUInt8FromBytes(extra_params_data, idx);
-                uint8_t g = ReadUInt8FromBytes(extra_params_data, idx);
-                uint8_t b = ReadUInt8FromBytes(extra_params_data, idx);
-                uint8_t a = ReadUInt8FromBytes(extra_params_data, idx);
+                Core::Color color = ReadColorFromBytes(extra_params_data, idx);
                 float radius = ReadFloatFromBytes(extra_params_data, idx);
                 float cutoff = ReadFloatFromBytes(extra_params_data, idx); //this seems not be used anywhere.
                 float falloff = ReadFloatFromBytes(extra_params_data, idx);
                 
-                Core::Color color(r, g, b, a);
                 AttachLightComponent(entity, color, radius, falloff);
                 break;
             }
@@ -961,25 +949,49 @@ namespace RexLogic
     void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes, size_t length)
     {
         prim.PrimTextures.clear();
+        prim.PrimColors.clear();
         
         int idx = 0;
+        uint32_t bits;
+        int num_bits;
         
         if (idx >= length)
             return;
+        
         RexTypes::RexUUID default_texture_id = ReadUUIDFromBytes(bytes, idx);
         prim.PrimDefaultTexture = default_texture_id;
         
-        uint32_t bits;
-        int num_bits;
-
         while ((idx < length) && (ReadTextureEntryBits(bits, num_bits, bytes, idx)))
         {
+            if (idx >= length)
+                return;
             RexTypes::RexUUID texture_id = ReadUUIDFromBytes(bytes, idx);
             for (int i = 0; i < num_bits; ++i)
             {
                 if (bits & 1)
                 {
                     prim.PrimTextures[i] = texture_id;
+                }
+                bits >>= 1;
+            }
+        }
+        
+        if (idx >= length)
+            return;
+        
+        Core::Color default_color = ReadColorFromBytes(bytes, idx);
+        prim.PrimDefaultColor = default_color;
+        
+        while ((idx < length) && (ReadTextureEntryBits(bits, num_bits, bytes, idx)))
+        {
+            if (idx >= length)
+                return;
+            Core::Color color = ReadColorFromBytes(bytes, idx);
+            for (int i = 0; i < num_bits; ++i)
+            {
+                if (bits & 1)
+                {
+                    prim.PrimColors[i] = color;
                 }
                 bits >>= 1;
             }

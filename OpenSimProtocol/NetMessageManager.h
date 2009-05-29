@@ -66,6 +66,9 @@ private:
 	/// Processes a received PacketAck message.
 	void ProcessPacketACK(NetInMessage *msg);
 	
+	/// Processes a received PacketAck ID.
+	void ProcessPacketACK(uint32_t id);
+	
 	/// Responds to a ping check from the server with a CompletePingCheck message.
 	void SendCompletePingCheck(uint8_t pingID);
 

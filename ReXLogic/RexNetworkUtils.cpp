@@ -191,6 +191,16 @@ namespace RexLogic
         return result; 
     }
     
+    Core::Color ReadColorFromBytes(const uint8_t* bytes, int& idx)
+    {
+        uint8_t r = bytes[idx++];
+        uint8_t g = bytes[idx++];
+        uint8_t b = bytes[idx++];
+        uint8_t a = bytes[idx++];
+        
+        return Core::Color(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
+    }
+        
     std::string ReadNullTerminatedStringFromBytes(const uint8_t* bytes, int& idx)
     {
         std::string result = "";
