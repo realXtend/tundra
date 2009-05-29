@@ -30,7 +30,7 @@ namespace RexLogic
         
         SelectPriority = 0;
 
-        DrawType = 0;
+        DrawType = RexTypes::DRAWTYPE_PRIM;
         IsVisible = true;
         CastShadows = false;
         LightCreatesShadows = false;

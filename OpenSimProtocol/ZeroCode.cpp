@@ -55,7 +55,7 @@ size_t CountZeroDecodedLength(const uint8_t *data, size_t numBytes)
 
             //! \todo Additional zeroes indicate more than 256 (one byte) zeros -cm
 			if (numZeroes == 0) // A run of zero zeroes? The packet is then malformed. (Actually no, see above todo -cm)
-                OpenSimProtocol::OpenSimProtocolModule::LogDebug("Warning! A run of zero zeroes ('00 00') detected on a zeroencoded packet!");
+                OpenSimProtocol::OpenSimProtocolModule::LogWarning("Warning! A run of zero zeroes ('00 00') detected on a zeroencoded packet!");
 //				return 0; ///\todo Warning log out.
 
 			length += numZeroes;

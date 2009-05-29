@@ -15,11 +15,14 @@ namespace RexLogic
         uint8_t Type;
         RexTypes::RexUUID UUID;
     }; 
-    // Map for holding materials
+    //! Map for holding materials
     typedef std::map<uint8_t, MaterialData> MaterialMap;
 
-    // Map for holding prim textures
+    //! Map for holding prim textures
     typedef std::map<uint8_t, RexTypes::RexUUID> TextureMap;
+    
+    //! Map for holding prim textures
+    typedef std::map<uint8_t, Core::Color> ColorMap;
     
     //! Each scene entity representing a prim in OpenSim sense has
     //! this component.
@@ -42,7 +45,7 @@ namespace RexLogic
 
         uint8_t Material;
         uint8_t ClickAction;
-        uint32_t UpdateFlags;        
+        uint32_t UpdateFlags;
 
         std::string ServerScriptClass;
         
@@ -73,10 +76,14 @@ namespace RexLogic
         std::string AnimationName;
         float AnimationRate;
 
+        //! reX materials
+        MaterialMap Materials;
+
+        //! Primitive texture entry data
         RexTypes::RexUUID PrimDefaultTexture;
         TextureMap PrimTextures;
-        
-        MaterialMap Materials;
+        Core::Color PrimDefaultColor;
+        ColorMap PrimColors;
 
         //! Primitive shape related variables
         uint8_t PathCurve;

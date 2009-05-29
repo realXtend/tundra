@@ -25,7 +25,7 @@ struct UDPMessagePacket
     uint8_t extraHeaderSize;
     byte extraHeaderData[extraHeaderSize];  // Not currently parsed at all.
     // Message body. (possibly zerocoded)
-    // Appended acks.                       // Not currently parsed at all.
+    // Appended acks.
 
     // The format for message body:
     // u8/u16/u32 messageNumber; // Variable-length -encoded.
@@ -51,8 +51,49 @@ static uint8_t *ComputeMessageBodyStartAddrAndLength(uint8_t *data, size_t numBy
 	const uint8_t extraHeaderSize = data[5];
 
     if (messageLength)
+    {
         *messageLength = numBytes - 6 - extraHeaderSize;
+        
+        // If there's pending acks, remove them from message length
+        if (data[0] & NetFlagAck)
+        {
+            size_t acksize = 1 + data[numBytes-1] * 4;
+            // Malformed?
+            if (*messageLength < acksize)
+            {
+                *messageLength = 0;
+                return 0; 
+            }
+            *messageLength -= acksize;
+        }
+    }
+    
     return data + 6 + extraHeaderSize;
+}
+
+/// Returns a list of appended acks from packet
+/// @param data A pointer to the message data.
+/// @param numBytes The size of data, in bytes.
+static std::vector<uint32_t> GetAppendedAckList(uint8_t *data, size_t numBytes)
+{
+    std::vector<uint32_t> acks;
+    if ((data[0] & NetFlagAck) && (numBytes > 6))
+    {
+        if (numBytes > 6)
+        {
+            size_t num_acks = data[numBytes-1];
+            acks.resize(num_acks);
+            
+            int idx = numBytes - 1 - num_acks * 4;
+            if (idx < 6) return acks;
+            
+            for (size_t i = 0; i < num_acks; ++i)
+            {
+                acks.push_back((uint32_t)ntohl(*(u_long*)&data[idx]));
+            }
+        }
+    }
+    return acks;
 }
 
 /// const version of above.
@@ -199,9 +240,24 @@ void NetMessageManager::ProcessMessages()
 
 		size_t messageLength = 0;
 		const uint8_t *message = ComputeMessageBodyStartAddrAndLength(&data[0], numBytes, &messageLength);
+        if (!message)
+        {
+            cout << "Malformed packet received, could not determine message size" << endl;
+		    continue;
+		}
+		
+		std::vector<uint32_t> appended_acks = GetAppendedAckList(&data[0], numBytes);
+		
 		NetInMessage msg(seqNum, &message[0], messageLength, (data[0] & NetFlagZeroCode) != 0);
         msg.SetMessageInfo(messageList->GetMessageInfoByID(msg.GetMessageID()));
-			
+
+		// Process appended acks
+	    if (appended_acks.size())
+	    {
+	        for (unsigned i = 0; i < appended_acks.size(); ++i)
+	            ProcessPacketACK(appended_acks[i]);
+	    }
+	    
 		// NetMessageManager handles all Acks and Pings. Those are not passed to the application.
         switch(msg.GetMessageID())
 		{
@@ -395,10 +451,14 @@ void NetMessageManager::ProcessPacketACK(NetInMessage *msg)
 	size_t blockCount = msg->ReadCurrentBlockInstanceCount();
 	for(size_t i = 0; i < blockCount; ++i)
 	{
-		uint32_t id = msg->ReadU32();
-		//std::cout << "Received ACK for packet " << id  << std::endl;
-		RemoveMessageFromResendQueue(id);
+		ProcessPacketACK(msg->ReadU32());
 	}
+}
+
+void NetMessageManager::ProcessPacketACK(uint32_t id)
+{
+    //std::cout << "Received ACK for packet " << id  << std::endl;
+    RemoveMessageFromResendQueue(id);
 }
 
 void NetMessageManager::SendCompletePingCheck(uint8_t pingID)

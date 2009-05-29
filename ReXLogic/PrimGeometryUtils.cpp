@@ -124,6 +124,11 @@ namespace RexLogic
                     TextureMap::const_iterator t = primitive.PrimTextures.find(primMesh.viewerFaces[i].primFaceNumber);
                     if (t != primitive.PrimTextures.end())
                         tex_id = t->second;
+                        
+                    Core::Color color = primitive.PrimDefaultColor;
+                    ColorMap::const_iterator c = primitive.PrimColors.find(primMesh.viewerFaces[i].primFaceNumber);
+                    if (c != primitive.PrimColors.end())
+                        color = c->second;
                     
                     if ((i == 0) || (tex_id != prev_tex_id))
                     {
@@ -163,14 +168,18 @@ namespace RexLogic
                     object->position(pos1);
                     object->normal(n1);
                     object->textureCoord(uv1);
+                    object->colour(color.r, color.g, color.b, color.a);
                     
                     object->position(pos2);
                     object->normal(n2);
                     object->textureCoord(uv2);
+                    object->colour(color.r, color.g, color.b, color.a);
                     
                     object->position(pos3);
                     object->normal(n3);
                     object->textureCoord(uv3);
+                    object->colour(color.r, color.g, color.b, color.a);
+                    
                     indices += 3;
                 }
                 
