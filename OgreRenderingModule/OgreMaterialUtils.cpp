@@ -8,6 +8,23 @@
 
 namespace OgreRenderer
 {
+    Ogre::MaterialPtr GetOrCreateLitTexturedMaterial(const char *materialName)
+    {
+        const char baseMaterialName[] = "LitTextured";
+
+        Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
+        Ogre::MaterialPtr material = mm.getByName(materialName);
+
+        if (!material.get())
+        {
+            Ogre::MaterialPtr baseMaterial = mm.getByName(baseMaterialName);
+            material = baseMaterial->clone(materialName);
+        }
+
+        assert(material.get());
+        return material;
+    }
+
     Ogre::MaterialPtr GetOrCreateUnlitTexturedMaterial(const char *materialName)
     {
         const char baseMaterialName[] = "UnlitTextured";

@@ -803,7 +803,7 @@ namespace RexLogic
                 if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.UUID.ToString() == res->GetId()))
                 {
                     // debug material creation to see diffuse textures
-                    Ogre::MaterialPtr mat = OgreRenderer::GetOrCreateUnlitTexturedMaterial(res->GetId().c_str());
+                    Ogre::MaterialPtr mat = OgreRenderer::GetOrCreateLitTexturedMaterial(res->GetId().c_str());
                     OgreRenderer::SetTextureUnitOnMaterial(mat, res->GetId().c_str());
                    
                     meshptr->SetMaterial(idx, res->GetId());
@@ -827,7 +827,7 @@ namespace RexLogic
                 // Note: material has already been created beforehand, which is kind of hackish
                 if (manual->getSection(i)->getMaterialName() == res->GetId())
                 {
-                    Ogre::MaterialPtr mat = OgreRenderer::GetOrCreateUnlitTexturedMaterial(res->GetId().c_str());
+                    Ogre::MaterialPtr mat = OgreRenderer::GetOrCreateLitTexturedMaterial(res->GetId().c_str());
                     OgreRenderer::SetTextureUnitOnMaterial(mat, res->GetId().c_str());
                     break;
                 }

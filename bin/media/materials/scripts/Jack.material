@@ -1,11 +1,11 @@
-import * from "UnlitTextured.material"
+import * from "LitTextured.material"
 
-material male/Body : UnlitTextured
+material male/Body : LitTextured
 {
     set_texture_alias diffuseMap Jack_body_yellow1.jpg
 }
 
-material male/Face : UnlitTextured
+material male/Face : LitTextured
 {
     set_texture_alias diffuseMap Jack_face_yellow.jpg
 }

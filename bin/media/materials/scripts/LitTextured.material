@@ -1,0 +1,16 @@
+// Renders primitives with a single lit texture
+// Todo: make it programmable pipeline -based
+material LitTextured
+{
+	technique
+	{
+		pass
+		{
+			texture_unit diffuseMap
+			{
+				texture TextureMissing.png
+			}
+		} 
+	}
+}
+ 
