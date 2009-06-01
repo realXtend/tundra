@@ -61,11 +61,11 @@ namespace RexLogic
         //! those materials are made and the material binding is delayed until the downloads are complete.
         void HandleMeshMaterials(Core::entity_id_t entityid);
 
-        //! handles prim texture requests
+        //! handles prim texture/material requests
         //! @param entityid Entity id.
-        void HandlePrimTextures(Core::entity_id_t entityid);
+        void HandlePrimTexturesAndMaterial(Core::entity_id_t entityid);
         
-        //! handles mesh texture changes
+        //! handles mesh texture/material changes
         //! @param entityid Entity id.
         void HandleMeshTextures(Core::entity_id_t entityid);
 
