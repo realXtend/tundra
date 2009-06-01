@@ -61,7 +61,7 @@ namespace RexLogic
         //! Name of this controllable
         std::string name_;
 
-        EC_Controllable(Foundation::ModuleInterface* module) : current_action_(0), dirty_(false) {}
+        EC_Controllable(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework()), current_action_(0), dirty_(false) {}
     };
 }
 
