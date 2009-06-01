@@ -43,6 +43,10 @@ namespace Scene
         static const Core::event_id_t EVENT_COMPONENT_DELETED = 0x0b;
         /// Indicateds that component's properties are updated.
         static const Core::event_id_t EVENT_COMPONENT_UPDATED=  0x0c;
+
+        // Other events
+        //! Entity with controllable component created
+        static const Core::event_id_t EVENT_CONTROLLABLE_ENTITY = 0x0d;
         
         /// Event data interface for Scene object related events.
         /*class SceneEventData: public Foundation::EventDataInterface
@@ -109,6 +113,12 @@ namespace Scene
             std::vector<Scene::EntityPtr> entity_ptr_list;
         };
 
+        class EntityEventData : public Foundation::EventDataInterface
+        {
+        public:
+            Scene::EntityPtr entity;
+        };
+
         namespace
         {
             void RegisterSceneEvents(const Foundation::EventManagerPtr &event_manager)
@@ -123,6 +133,8 @@ namespace Scene
                 event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_SELECT, "Entity Select");
                 event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_SELECTED, "Entity Selected");
                 event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_DESELECT, "Entity Deselect");
+
+                event_manager->RegisterEvent(scene_event_category, Events::EVENT_CONTROLLABLE_ENTITY, "Controllable Entity Created");
             }
         }
     }

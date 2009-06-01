@@ -23,6 +23,7 @@
 #include "EC_Terrain.h"
 #include "EC_Water.h"
 #include "EC_NetworkPosition.h"
+#include "EC_Controllable.h"
 #include "InputEvents.h"
 
 // Ogre -specific
@@ -69,6 +70,7 @@ namespace RexLogic
         DECLARE_MODULE_EC(EC_Terrain);
         DECLARE_MODULE_EC(EC_Water);
         DECLARE_MODULE_EC(EC_NetworkPosition);
+        DECLARE_MODULE_EC(EC_Controllable);
         
         AutoRegisterConsoleCommand(Console::CreateCommand("Login", 
             "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",

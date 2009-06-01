@@ -7,6 +7,8 @@
 #include "EC_OpenSimPresence.h"
 #include "EC_OpenSimAvatar.h"
 #include "EC_NetworkPosition.h"
+#include "EC_Controllable.h"
+#include "SceneEvents.h"
 #include <Ogre.h>
 #include "../OgreRenderingModule/EC_OgreMesh.h"
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
@@ -150,8 +152,19 @@ namespace RexLogic
             presence.SetLastName(map["LastName"]);
             
             // Set own avatar
-            if (presence.FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
+            if (presence.FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID && !entity->GetComponent(EC_Controllable::NameStatic()))
+            {
+                Foundation::Framework *fw = rexlogicmodule_->GetFramework();
+                assert (fw->GetComponentManager()->CanCreate(EC_Controllable::NameStatic()));
+
+                entity->AddEntityComponent(fw->GetComponentManager()->CreateComponent(EC_Controllable::NameStatic()));
+
+                Scene::Events::EntityEventData event_data;
+                event_data.entity = entity;
+                fw->GetEventManager()->SendEvent(fw->GetEventManager()->QueryEventCategory("Scene"), Scene::Events::EVENT_CONTROLLABLE_ENTITY, &event_data);
+
                 rexlogicmodule_->GetAvatarController()->SetAvatarEntity(entity);
+            }
 
             ShowAvatarNameOverlay(presence.LocalId);
 
