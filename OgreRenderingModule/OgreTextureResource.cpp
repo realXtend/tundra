@@ -36,16 +36,50 @@ namespace OgreRenderer
         }
     }
 
+    bool OgreTextureResource::SetDummyData()
+    {
+        if (!ogre_texture_.isNull())
+            return true;
+            
+        Ogre::PixelFormat pixel_format = Ogre::PF_B8G8R8;
+       
+        try
+        { 
+            ogre_texture_ = Ogre::TextureManager::getSingleton().createManual(
+                        id_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
+                        1, 1, Ogre::MIP_DEFAULT, pixel_format, Ogre::TU_DEFAULT); 
+
+            if (ogre_texture_.isNull())
+            {
+                OgreRenderingModule::LogError("Failed to create texture " + id_);
+                return false; 
+            }
+            
+            static Core::u8 dummy_data[] = {0xff, 0xf0, 0x00};
+            
+            Ogre::Box dimensions(0, 0, 1, 1);
+            Ogre::PixelBox pixel_box(dimensions, pixel_format, (void*)dummy_data);
+            ogre_texture_->getBuffer()->blitFromMemory(pixel_box);
+        }
+        catch (Ogre::Exception& e)
+        {
+            OgreRenderingModule::LogError("Failed to create texture " + id_ + ": " + std::string(e.what()));
+            return false;
+        }
+            
+        return true;
+    }
+    
     bool OgreTextureResource::SetData(Foundation::TexturePtr source)
     {
         if (!source)
         {
-            OgreRenderingModule::LogError("Null source texture data pointer");     
+            OgreRenderingModule::LogError("Null source texture data pointer");
             return false;
         }
         if ((!source->GetWidth()) || (!source->GetHeight()))
         {
-            OgreRenderingModule::LogError("Texture with zero dimension(s)");     
+            OgreRenderingModule::LogError("Texture with zero dimension(s)");
             return false;
         }
             

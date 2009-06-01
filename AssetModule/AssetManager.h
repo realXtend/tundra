@@ -49,6 +49,11 @@ namespace Asset
          */
         virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received);
         
+        //! Checks asset id for validity
+        /*! \return true if asset id is valid
+         */
+        virtual bool IsValidId(const std::string& asset_id);
+        
         //! Requests an asset download
         /*! Events will be sent when download progresses, and when asset is ready.
             Note that this will also send an ASSET_READY event even if the asset already exists in cache.

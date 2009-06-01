@@ -44,10 +44,15 @@ namespace OgreRenderer
         //! returns quality level
         int GetLevel() const { return level_; }
 
+        //! sets dummy data if no data yet
+        /*! \return true if successful
+         */
+        bool SetDummyData();
+        
         //! sets contents from raw source texture
         /*! \param source source raw texture data
             \return true if successful
-        */
+         */
         bool SetData(Foundation::TexturePtr source);
 
         //! returns resource type in text form (static)

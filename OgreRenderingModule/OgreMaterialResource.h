@@ -27,7 +27,7 @@ namespace OgreRenderer
         
         //! constructor
         /*! \param id mesh id
-            \param source asset data to construct mesh from
+            \param source asset data to construct material from
         */
         OgreMaterialResource(const std::string& id, Foundation::AssetPtr source);
 
@@ -37,7 +37,7 @@ namespace OgreRenderer
         //! returns resource type in text form
         virtual const std::string& GetType() const;
 
-        //! returns Ogre mesh
+        //! returns Ogre material
         /*! may be null if no data successfully set yet
          */
         Ogre::MaterialPtr GetMaterial() const { return ogre_material_; }
@@ -56,6 +56,9 @@ namespace OgreRenderer
         
         //! Deinitializes the material and frees all Ogre-side structures as well.
         void RemoveMaterial();
+        
+        //! Internal method to parse braces from an Ogre script. Returns true if line contained open/close brace
+        static bool ProcessBraces(const std::string& line, int& brace_level);
     };
 }
 

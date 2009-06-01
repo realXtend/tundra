@@ -36,6 +36,21 @@ namespace Asset
         return GetFromCache(asset_id);
     }
   
+    bool AssetManager::IsValidId(const std::string& asset_id)
+    {
+        AssetProviderVector::iterator i = providers_.begin();
+        while (i != providers_.end())
+        {
+            // See if a provider can handle request
+            if ((*i)->IsValidId(asset_id))
+                return true;
+            
+            ++i;
+        }
+        
+        return false; // No provider could identify ID as valid
+    }
+    
     Core::request_tag_t AssetManager::RequestAsset(const std::string& asset_id, const std::string& asset_type)
     {
         Core::request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
@@ -67,7 +82,7 @@ namespace Asset
     {
         if (!received)
             return Foundation::AssetPtr();
-              
+        
         // See if any provider has ongoing transfer for this asset
         AssetProviderVector::iterator i = providers_.begin();
         while (i != providers_.end())
@@ -76,9 +91,9 @@ namespace Asset
                 return (*i)->GetIncompleteAsset(asset_id, asset_type, received);
 
             ++i;
-        }               
+        }
         
-        // No transfer, either get complete asset or nothing      
+        // No transfer, either get complete asset or nothing
         return GetAsset(asset_id, asset_type);
             
         // Not enough bytes

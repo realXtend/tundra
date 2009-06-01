@@ -31,6 +31,11 @@ namespace Foundation
         //! Returns name of asset provider for identification purposes
         virtual const std::string& Name() = 0;
         
+        //! Checks an asset id for validity
+        /*! \return true if this asset provider can handle the id
+         */
+        virtual bool IsValidId(const std::string& asset_id) = 0;
+         
         //! Requests an asset for download
         /*! Note: implementation should not queue multiple transfers if for some reason RequestAsset gets called
             multiple times for the same asset. However, they should store all the tags associated with the same
@@ -75,7 +80,7 @@ namespace Foundation
             it does not need to be called manually.
             \param frametime Seconds since last frame
          */
-        virtual void Update(Core::f64 frametime) {};           
+        virtual void Update(Core::f64 frametime) {};
     };
 }
 
