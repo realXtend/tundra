@@ -15,6 +15,8 @@ idnum = 720011
 class MouseControl(Component):
     def __init__(self):
         Component.__init__(self)
+        
+        #XXX should done this only after connecting or something
         self.target = r.getEntity(idnum)
         print "MouseControl inited with target", self.target
         

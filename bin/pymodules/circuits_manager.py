@@ -36,15 +36,14 @@ class ComponentRunner(Component):
         
         m = self.m
         
-        #XXX make some 'autoload' system, perhaps just 'import autoload'?
         #or __all__ in pymodules __init__ ? (i.e. import pymodules would do that)
-        #dunno yet, but something. next TODO basically (task xyz)
         import autoload
         autoload.load(m)
         
         m.start()
 
     def run(self, deltatime=0.1):
+        #XXX should this be using the __tick__ mechanism of circuits, and how?
         #print ".",
         self.m.push(Update(deltatime), "update")
         
