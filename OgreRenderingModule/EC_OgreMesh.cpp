@@ -17,7 +17,8 @@ namespace OgreRenderer
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         entity_(NULL),
         adjustment_node_(NULL),
-        attached_(false)
+        attached_(false),
+        draw_distance_(0.0)
     {
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
         adjustment_node_ = scene_mgr->createSceneNode();
@@ -81,6 +82,13 @@ namespace OgreRenderer
         return Core::Vector3df(scale.x, scale.y, scale.z);
     }
     
+    void EC_OgreMesh::SetDrawDistance(float draw_distance)
+    {
+        draw_distance_ = draw_distance;
+        if (entity_)
+            entity_->setRenderingDistance(draw_distance_);
+    }
+    
     bool EC_OgreMesh::SetMesh(const std::string& mesh_name)
     {
         RemoveMesh();
@@ -105,6 +113,8 @@ namespace OgreRenderer
         try
         {
             entity_ = scene_mgr->createEntity(renderer_->GetUniqueObjectName(), mesh_name);
+            if (entity_)
+                entity_->setRenderingDistance(draw_distance_);
         }
         catch (Ogre::Exception& e)
         {

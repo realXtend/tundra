@@ -39,6 +39,11 @@ namespace OgreRenderer
          */
         void SetPlaceable(Foundation::ComponentPtr placeable);
         
+        //! sets draw distance
+        /*! \param draw_distance New draw distance, 0.0 = draw always (default)
+         */
+        void SetDrawDistance(float draw_distance);
+        
         //! sets mesh
         /*! if mesh already sets, removes the old one
             \param mesh_name mesh to use
@@ -103,6 +108,9 @@ namespace OgreRenderer
         //! returns adjustment scale
         Core::Vector3df GetAdjustScale() const;
         
+        //! returns draw distance
+        float GetDrawDistance() const { return draw_distance_; }
+        
     private:
         //! constructor
         /*! \param module renderer module
@@ -132,6 +140,9 @@ namespace OgreRenderer
         
         //! mesh entity attached to placeable -flag
         bool attached_;
+        
+        //! draw distance
+        float draw_distance_;
     };
 }
 

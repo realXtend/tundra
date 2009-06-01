@@ -486,6 +486,9 @@ namespace RexLogic
                     prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Mesh)] = entityid;
             }
             
+            // Set rendering distance
+            mesh.SetDrawDistance(prim.DrawDistance);
+            
             // Check/request mesh textures
             HandleMeshMaterials(entityid);
         }
@@ -509,6 +512,9 @@ namespace RexLogic
             // Attach to placeable if not yet attached
             if (!custom.GetPlaceable())
                 custom.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
+            
+            // Set rendering distance
+            custom.SetDrawDistance(prim.DrawDistance);
             
             // Request prim textures
             HandlePrimTexturesAndMaterial(entityid);
