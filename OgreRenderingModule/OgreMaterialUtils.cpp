@@ -46,6 +46,12 @@ namespace OgreRenderer
     {
         Ogre::TextureManager &tm = Ogre::TextureManager::getSingleton();
         Ogre::TexturePtr tex = tm.getByName(textureName);
+        bool has_alpha = false;
+        if (!tex.isNull())
+        {
+            if (Ogre::PixelUtil::hasAlpha(tex->getFormat()))
+                has_alpha = true;
+        }
         
         Ogre::Material::TechniqueIterator iter = material->getTechniqueIterator();
         while(iter.hasMoreElements())
@@ -56,11 +62,18 @@ namespace OgreRenderer
             while(passIter.hasMoreElements())
             {
                 Ogre::Pass *pass = passIter.getNext();
+                
+                // Crude alpha reject on/off based on whether texture has alpha
+                if (has_alpha)
+                    pass->setAlphaRejectSettings(Ogre::CMPF_GREATER_EQUAL, 128);
+                else
+                    pass->setAlphaRejectFunction(Ogre::CMPF_ALWAYS_PASS);
+                    
                 Ogre::Pass::TextureUnitStateIterator texIter = pass->getTextureUnitStateIterator();
                 Core::uint cmp_index = 0;
                 
                 while(texIter.hasMoreElements())
-                {                
+                {
                     Ogre::TextureUnitState *texUnit = texIter.getNext();
                     if ((index == cmp_index) || (index == SET_ALL_UNITS))
                     {
