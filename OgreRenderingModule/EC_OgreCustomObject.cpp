@@ -15,7 +15,8 @@ namespace OgreRenderer
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         object_(NULL),
-        attached_(false)
+        attached_(false),
+        draw_distance_(0.0)
     {
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
         
@@ -40,6 +41,13 @@ namespace OgreRenderer
         DetachObject();
         placeable_ = placeable;
         AttachObject();
+    }
+    
+    void EC_OgreCustomObject::SetDrawDistance(float draw_distance)
+    {
+        draw_distance_ = draw_distance;
+        if (object_)
+            object_->setRenderingDistance(draw_distance_);
     }
     
     void EC_OgreCustomObject::AttachObject()
