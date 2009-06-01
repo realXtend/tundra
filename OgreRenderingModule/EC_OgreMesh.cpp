@@ -8,6 +8,8 @@
 #include "EC_OgreMesh.h"
 #include "RexTypes.h"
 
+#include <Ogre.h>
+
 namespace OgreRenderer
 {
     EC_OgreMesh::EC_OgreMesh(Foundation::ModuleInterface* module) :

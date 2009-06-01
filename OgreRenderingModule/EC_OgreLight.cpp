@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreLight.h"
+#include "OgreConversionUtils.h"
 
 #include <Ogre.h>
 
