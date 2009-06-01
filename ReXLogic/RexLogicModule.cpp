@@ -237,7 +237,8 @@ namespace RexLogic
                 rexserver_connection_->CreateUDPConnection();
             }
             
-            input_handler_->Update(frametime);
+            if (rexserver_connection_->IsConnected())
+                input_handler_->Update(frametime);
 
             if (send_input_state_)
             {
@@ -250,9 +251,11 @@ namespace RexLogic
                 else
                     GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
             }
+            
             if (rexserver_connection_->IsConnected())
             {
-                boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+                boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
+                    <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
                 if (renderer)
                 {
                     Ogre::Camera *camera = renderer->GetCurrentCamera();
@@ -266,17 +269,22 @@ namespace RexLogic
                     float p2 = fwd.dotProduct(right);
                     float p3 = right.dotProduct(up);
                     std::stringstream ss;
-                    if (abs(l1 - 1.f) > 1e-3f || abs(l2 - 1.f) > 1e-3f || abs(l3 - 1.f) > 1e-3f || abs(p1) > 1e-3f || abs(p2) > 1e-3f || abs(p3) > 1e-3f)
+                    if (abs(l1 - 1.f) > 1e-3f || abs(l2 - 1.f) > 1e-3f || abs(l3 - 1.f) > 1e-3f ||
+                        abs(p1) > 1e-3f || abs(p2) > 1e-3f || abs(p3) > 1e-3f)
                     {
-                        ss << "Warning! Camera TM base not orthonormal! Pos. magnitudes: " << l1 << ", " << l2 << ", " << l3 << ", Dot product magnitudes: " << p1 << ", " << p2 << ", " << p3;
+                        ss << "Warning! Camera TM base not orthonormal! Pos. magnitudes: " << l1 << ", " << l2 << ", " <<
+                            l3 << ", Dot product magnitudes: " << p1 << ", " << p2 << ", " << p3;
         //                LogInfo(ss.str());
                     }
+                    
+                    // Update avatar name overlay positions.
+                    GetAvatarHandler()->UpdateAvatarNameOverlayPositions();
+                    
+                    GetEnvironmentHandler()->UpdateVisualEffects();
                 }
             }
-
-            // Update avatar name overlay positions.
-            GetAvatarHandler()->UpdateAvatarNameOverlayPositions();
         }
+        
         RESETPROFILER;
     }
 
@@ -384,7 +392,7 @@ namespace RexLogic
             GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
         }
     }
-
+    
     void RexLogicModule::CreateTerrain()
     {
         terrain_ = TerrainPtr(new Terrain(this));
@@ -414,9 +422,7 @@ namespace RexLogic
     void RexLogicModule::CreateEnvironment()
     {
         environment_ = EnvironmentPtr(new Environment(this));
-        Scene::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
-        entity->AddEntityComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_OgreEnvironment"));
-        environment_->SetEntity(entity);
+        environment_->CreateEnvironment();
     }
         
     TerrainPtr RexLogicModule::GetTerrainHandler()

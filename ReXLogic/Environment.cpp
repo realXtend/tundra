@@ -7,7 +7,7 @@
 #include "Environment.h"
 #include "Foundation.h"
 #include "EC_OgreEnvironment.h"
-#include "Entity.h"
+#include "SceneManager.h"
 
 namespace RexLogic
 {
@@ -20,7 +20,34 @@ Environment::Environment(RexLogicModule *owner)
 Environment::~Environment()
 {
 }
-   
+
+void Environment::FindCurrentlyActiveEnvironment()
+{
+    Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
+    for(Scene::SceneManager::iterator iter = scene->begin();
+        iter != scene->end(); ++iter)
+    {
+        Scene::Entity &entity = **iter;
+        Foundation::ComponentInterfacePtr envComponent = entity.GetComponent("EC_OgreEnvironment");
+        if (envComponent.get())
+            cachedEnvironmentEntity_ = scene->GetEntity(entity.GetId());
+    }
+}
+
+Scene::EntityWeakPtr Environment::GetEnvironmentEntity()
+{
+    return cachedEnvironmentEntity_;
+}
+
+void Environment::CreateEnvironment()
+{
+    Scene::ScenePtr active_scene = owner_->GetCurrentActiveScene();
+    Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeId());
+    entity->AddEntityComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent("EC_OgreEnvironment"));
+
+    cachedEnvironmentEntity_ = entity;
+}
+
 bool Environment::HandleOSNE_SimulatorViewerTimeMessage(OpenSimProtocol::NetworkEventInboundData *data)
 {
     NetInMessage &msg = *data->message;
@@ -32,11 +59,9 @@ bool Environment::HandleOSNE_SimulatorViewerTimeMessage(OpenSimProtocol::Network
     sunDirection_ = msg.ReadVector3();
     sunPhase_ = msg.ReadF32(); // seems to be zero, at least with 0.4 server
     sunAngVelocity_ = msg.ReadVector3();
-    
-    if (!entity_)
-        return false;
 
-    Foundation::ComponentPtr component = entity_->GetComponent("EC_OgreEnvironment");
+    FindCurrentlyActiveEnvironment();
+    Foundation::ComponentPtr component = GetEnvironmentEntity().lock()->GetComponent("EC_OgreEnvironment");
     if (!component)
         return false;
     
@@ -45,11 +70,16 @@ bool Environment::HandleOSNE_SimulatorViewerTimeMessage(OpenSimProtocol::Network
         (component.get());
         
     env.SetSunDirection(sunDirection_);
-    // Set somekind of ambient light, so that the lights are visible.
-    ///\todo Find a good default value
-    env.SetAmbientLightColor(Core::Color(0.75f, 0.75f, 0.75f, 0.1f));
+       
+    return false; 
+}
 
-    return false;    
+void Environment::UpdateVisualEffects()
+{
+    FindCurrentlyActiveEnvironment();
+    OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
+        (GetEnvironmentEntity().lock()->GetComponent("EC_OgreEnvironment").get());
+    env.UpdateVisualEffects();
 }
 
 }

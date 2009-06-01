@@ -14,6 +14,7 @@ namespace RexLogic
 
 Sky::Sky(RexLogicModule *owner) : owner_(owner), skyEnabled_(false), type_(OgreRenderer::SKYTYPE_BOX), skyBoxImageCount_(0)
 {
+    
 }
 
 Sky::~Sky()

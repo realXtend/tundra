@@ -69,7 +69,7 @@ namespace RexLogic
 
         //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
         void SwitchController();
-
+        
         //! @return The logic object that manages the water-related parts of the scene.
         WaterPtr GetWaterHandler();
         
@@ -198,7 +198,7 @@ namespace RexLogic
         //! Recreates the sky. Called at startup.
         void CreateSky();
 
-        //! Recreates the sky. Called at startup.        
+        //! Recreates the environment. Called at startup.        
         void CreateEnvironment();
         
         //! workaround for not being able to send events during initialization

@@ -56,6 +56,8 @@ namespace
     }
 
     const char terrainMaterialName[] = "TerrainMaterial";
+    //const char terrainMaterialName[] = "Rex/TerrainPCF";
+    //const char terrainMaterialName[] = "Rex/TerrainBool";
 }
 
     /// Sets the texture of the material used to render terrain.
@@ -71,6 +73,9 @@ namespace
         DebugDumpOgreTextureInfo(textureName);
 
         Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
+        //Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
+        //Ogre::MaterialPtr terrainMaterial = mm.getByName(terrainMaterialName);
+        
         assert(terrainMaterial.get());
 
         Ogre::Material::TechniqueIterator iter = terrainMaterial->getTechniqueIterator();

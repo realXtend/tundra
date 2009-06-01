@@ -341,20 +341,11 @@ namespace RexLogic
     
     void Avatar::UpdateAvatarNameOverlayPositions()
     {
-        Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
-        if (!scene)
-            return;
-        
-        //! \todo instead of iterating through all entities in the scene, iterate through all components of type EC_OgreMovableTextOverlay using Foundation::ComponentManager. -cm
-        for(Scene::SceneManager::iterator iter = scene->begin();
-            iter != scene->end(); ++iter)
+        Foundation::ComponentManager::const_iterator it;
+        for (it = rexlogicmodule_->GetFramework()->GetComponentManager()->Begin("EC_OgreMovableTextOverlay");
+             it != rexlogicmodule_->GetFramework()->GetComponentManager()->End("EC_OgreMovableTextOverlay"); ++it)
         {
-            Scene::Entity &entity = **iter;
-            Foundation::ComponentPtr overlay_ptr = entity.GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
-            if (!overlay_ptr)
-                continue;
-            
-            OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay_ptr.get());
+            OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(it->lock().get());
             name_overlay.Update();
         }
     }
@@ -420,6 +411,7 @@ namespace RexLogic
             mesh.SetAdjustOrientation(adjust);
             // Position approximately within the bounding box
             mesh.SetAdjustPosition(Core::Vector3df(0,0,-0.75));
+            mesh.SetCastShadows(true);
             
         }
         
