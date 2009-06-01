@@ -47,6 +47,15 @@ namespace RexLogic
         if (!primitive.HasPrimShapeData)
             return;
             
+        std::string mat_override;
+        if ((primitive.Materials[0].Type == RexTypes::RexAT_MaterialScript) && (!primitive.Materials[0].UUID.IsNull()))
+        {
+            mat_override = primitive.Materials[0].UUID.ToString();
+            // If cannot find the override material, use default
+            if (Ogre::MaterialManager::getSingleton().getByName(mat_override).isNull())
+                mat_override = "LitTextured";
+        }
+            
         try
         {
             float profileBegin = primitive.ProfileBegin;
@@ -114,42 +123,49 @@ namespace RexLogic
                 
                 for (Core::uint i = 0; i < primMesh.viewerFaces.size(); ++i)
                 {
-                    // Here we assume (again) that material name = texture UUID in text form
-                    //! \todo handle material override if prim is using material script
-
-                    // Try to find face's texture in texturemap, use default if not found
-                    tex_id = primitive.PrimDefaultTexture;
-                    TextureMap::const_iterator t = primitive.PrimTextures.find(primMesh.viewerFaces[i].primFaceNumber);
-                    if (t != primitive.PrimTextures.end())
-                        tex_id = t->second;
-                        
                     Core::Color color = primitive.PrimDefaultColor;
                     ColorMap::const_iterator c = primitive.PrimColors.find(primMesh.viewerFaces[i].primFaceNumber);
                     if (c != primitive.PrimColors.end())
                         color = c->second;
                     
-                    if ((i == 0) || (tex_id != prev_tex_id))
+                    if (mat_override.empty())
                     {
-                        // Fill the indices of previous subsection before beginning new
-                        if (indices)
-                        {
-                            for (Core::uint j = 0; j < indices; j += 3)
-                            {
-                                object->index(j);
-                                object->index(j+1);
-                                object->index(j+2);
-                            }
-                            indices = 0;
-                            object->end();
-                        }
-                            
-                        std::string mat_name = tex_id.ToString();
-                        // Actually create the material here if texture yet missing, we'll fill later
-                        OgreRenderer::GetOrCreateLitTexturedMaterial(mat_name.c_str());
+                        // Try to find face's texture in texturemap, use default if not found
+                        tex_id = primitive.PrimDefaultTexture;
+                        TextureMap::const_iterator t = primitive.PrimTextures.find(primMesh.viewerFaces[i].primFaceNumber);
+                        if (t != primitive.PrimTextures.end())
+                            tex_id = t->second;
                         
-                        object->begin(mat_name);
+                        if ((i == 0) || (tex_id != prev_tex_id))
+                        {
+                            // Fill the indices of previous subsection before beginning new
+                            if (indices)
+                            {
+                                for (Core::uint j = 0; j < indices; j += 3)
+                                {
+                                    object->index(j);
+                                    object->index(j+1);
+                                    object->index(j+2);
+                                }
+                                indices = 0;
+                                object->end();
+                            }
+                                
+                                
+                            // Here we assume (again) that material name = texture UUID in text form
+                            std::string mat_name = tex_id.ToString();
+                            // Actually create the material here if texture yet missing, we'll fill later
+                            OgreRenderer::GetOrCreateLitTexturedMaterial(mat_name.c_str());
+                            
+                            object->begin(mat_name);
+                        }
+                        prev_tex_id = tex_id;
                     }
-                    prev_tex_id = tex_id;
+                    else
+                    {
+                        if (i == 0)
+                            object->begin(mat_override);
+                    }
                     
                     Ogre::Vector3 pos1(primMesh.viewerFaces[i].v1.X, primMesh.viewerFaces[i].v1.Y, primMesh.viewerFaces[i].v1.Z);
                     Ogre::Vector3 pos2(primMesh.viewerFaces[i].v2.X, primMesh.viewerFaces[i].v2.Y, primMesh.viewerFaces[i].v2.Z);

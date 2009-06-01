@@ -511,7 +511,7 @@ namespace RexLogic
                 custom.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
             
             // Request prim textures
-            HandlePrimTextures(entityid);
+            HandlePrimTexturesAndMaterial(entityid);
             
             // Create/update geometry
             if (prim.HasPrimShapeData)
@@ -519,7 +519,7 @@ namespace RexLogic
         }
     } 
     
-    void Primitive::HandlePrimTextures(Core::entity_id_t entityid)
+    void Primitive::HandlePrimTexturesAndMaterial(Core::entity_id_t entityid)
     {
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         if (!entity) 
@@ -529,30 +529,48 @@ namespace RexLogic
         boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
             GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
 
-        std::set<RexTypes::RexUUID> tex_requests;
-        
-        if (!prim.PrimDefaultTexture.IsNull())
-            tex_requests.insert(prim.PrimDefaultTexture);
-            
-        TextureMap::const_iterator i = prim.PrimTextures.begin();
-        while (i != prim.PrimTextures.end())
+        // Check for prim material override
+        if ((prim.Materials[0].Type == RexTypes::RexAT_MaterialScript) && (!prim.Materials[0].UUID.IsNull()))
         {
-            if (!i->second.IsNull())
-                tex_requests.insert(i->second);
-            ++i;
+            std::string matname = prim.Materials[0].UUID.ToString();
+            // Request material if don't have it yet
+            if (!renderer->GetResource(matname, OgreRenderer::OgreMaterialResource::GetTypeStatic()))
+            {
+                Core::request_tag_t tag = renderer->RequestResource(matname, OgreRenderer::OgreMaterialResource::GetTypeStatic());
+                 
+                // Remember that we are going to get a resource event for this entity
+                if (tag)
+                    prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_MaterialScript)] = entityid;
+            }
         }
-        
-        std::set<RexTypes::RexUUID>::const_iterator j = tex_requests.begin();
-        while (j != tex_requests.end())
+        else
         {
-            std::string texname = (*j).ToString();
-            Core::request_tag_t tag = renderer->RequestResource(texname, OgreRenderer::OgreTextureResource::GetTypeStatic());
-             
-            // Remember that we are going to get a resource event for this entity
-            if (tag)
-                prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Texture)] = entityid;
+            // Otherwise request normal textures
+            std::set<RexTypes::RexUUID> tex_requests;
             
-            ++j;
+            if (!prim.PrimDefaultTexture.IsNull())
+                tex_requests.insert(prim.PrimDefaultTexture);
+                
+            TextureMap::const_iterator i = prim.PrimTextures.begin();
+            while (i != prim.PrimTextures.end())
+            {
+                if (!i->second.IsNull())
+                    tex_requests.insert(i->second);
+                ++i;
+            }
+            
+            std::set<RexTypes::RexUUID>::const_iterator j = tex_requests.begin();
+            while (j != tex_requests.end())
+            {
+                std::string texname = (*j).ToString();
+                Core::request_tag_t tag = renderer->RequestResource(texname, OgreRenderer::OgreTextureResource::GetTypeStatic());
+                 
+                // Remember that we are going to get a resource event for this entity
+                if (tag)
+                    prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Texture)] = entityid;
+                
+                ++j;
+            }
         }
     }
     
@@ -848,39 +866,56 @@ namespace RexLogic
         if (!entity) return;
         EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());            
            
-        Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-        assert(mesh.get());
-        if (!mesh) 
-            return;
-        OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());      
-        // If don't have the actual mesh entity yet, no use trying to set the material
-        if (!meshptr->GetEntity()) return;
-        
-        MaterialMap::const_iterator i = prim.Materials.begin();
-        while (i != prim.Materials.end())
+        // Handle material ready for prim
+        if (prim.DrawType == RexTypes::DRAWTYPE_PRIM)
         {
-            Core::uint idx = i->first;
-            if ((i->second.Type == RexTypes::RexAT_MaterialScript) && (i->second.UUID.ToString() == res->GetId()))
+            Foundation::ComponentPtr customptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
+            if (customptr && res->GetId() == prim.Materials[0].UUID.ToString() && prim.Materials[0].Type == RexTypes::RexAT_MaterialScript)
             {
-                OgreRenderer::OgreMaterialResource *materialRes = dynamic_cast<OgreRenderer::OgreMaterialResource*>(res.get());
-                assert(materialRes);
+                OgreRenderer::EC_OgreCustomObject& custom = *checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(customptr.get());
+                // Update geometry now that the material exists
+                if (prim.HasPrimShapeData)
+                    CreatePrimGeometry(custom.GetObject(), prim);
+            }
+        }
+        
+        // Handle material ready for mesh
+        if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
+        {
+            Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+            if (mesh) 
+            {
+                OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());      
+                // If don't have the actual mesh entity yet, no use trying to set the material
+                if (!meshptr->GetEntity()) return;
+                
+                MaterialMap::const_iterator i = prim.Materials.begin();
+                while (i != prim.Materials.end())
+                {
+                    Core::uint idx = i->first;
+                    if ((i->second.Type == RexTypes::RexAT_MaterialScript) && (i->second.UUID.ToString() == res->GetId()))
+                    {
+                        OgreRenderer::OgreMaterialResource *materialRes = dynamic_cast<OgreRenderer::OgreMaterialResource*>(res.get());
+                        assert(materialRes);
 
-                Ogre::MaterialPtr mat = materialRes->GetMaterial();
-                if (!mat.get())
-                {
-                    std::stringstream ss;
-                    ss << std::string("Resource \"") << res->GetId() << "\" did not contain a proper Ogre::MaterialPtr!";
-                    RexLogicModule::LogWarning(ss.str());
-                }
-                else
-                {
-                    meshptr->SetMaterial(idx, mat->getName());
-                    std::stringstream ss;
-                    ss << std::string("Set submesh ") << idx << " to use material \"" << mat->getName() << "\"";
-                    RexLogicModule::LogDebug(ss.str());
+                        Ogre::MaterialPtr mat = materialRes->GetMaterial();
+                        if (!mat.get())
+                        {
+                            std::stringstream ss;
+                            ss << std::string("Resource \"") << res->GetId() << "\" did not contain a proper Ogre::MaterialPtr!";
+                            RexLogicModule::LogWarning(ss.str());
+                        }
+                        else
+                        {
+                            meshptr->SetMaterial(idx, mat->getName());
+                            std::stringstream ss;
+                            ss << std::string("Set submesh ") << idx << " to use material \"" << mat->getName() << "\"";
+                            RexLogicModule::LogDebug(ss.str());
+                        }
+                    }
+                    ++i;
                 }
             }
-            ++i;
         }
     }
 
