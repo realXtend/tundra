@@ -52,6 +52,7 @@ namespace OgreRenderer
 	        overlayManager->destroyOverlayElement(text_element_);
 	        overlayManager->destroyOverlayElement(container_);
 	        overlayManager->destroy(overlay_);
+	        
 	        if (node_)
 	        {
 	            DetachNode();

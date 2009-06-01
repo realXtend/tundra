@@ -59,8 +59,7 @@ namespace OgreRenderer
     
     void EC_OgreLight::SetColor(const Core::Color& color)
     {
-        light_->setDiffuseColour(Ogre::ColourValue(color.r, color.g, color.b, color.a));
-        light_->setSpecularColour(Ogre::ColourValue(color.r, color.g, color.b, color.a));
+        light_->setDiffuseColour(ToOgreColor(color));
     }
     
     void EC_OgreLight::SetAttenuation(float range, float constant, float linear, float quad)
@@ -70,7 +69,7 @@ namespace OgreRenderer
     
     void EC_OgreLight::SetDirection(const Core::Vector3df& direction)
     {
-        light_->setDirection(Ogre::Vector3(direction.x, direction.y, direction.z));
+        light_->setDirection(ToOgreVector3(direction));
     }
         
     void EC_OgreLight::SetCastShadows(const bool &enabled)

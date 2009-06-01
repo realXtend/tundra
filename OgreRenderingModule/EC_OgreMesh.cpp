@@ -6,8 +6,7 @@
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
-
-#include <Ogre.h>
+#include "RexTypes.h"
 
 namespace OgreRenderer
 {
@@ -19,7 +18,7 @@ namespace OgreRenderer
         attached_(false)
     {
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
-        adjustment_node_ = scene_mgr->createSceneNode();        
+        adjustment_node_ = scene_mgr->createSceneNode();
     }
     
     EC_OgreMesh::~EC_OgreMesh()
@@ -210,6 +209,12 @@ namespace OgreRenderer
         else
             return entity_->getMesh()->getName();
     }
+    
+    void EC_OgreMesh::SetCastShadows(bool enabled)
+    {
+        if (entity_)
+            entity_->setCastShadows(enabled);
+    }        
     
     void EC_OgreMesh::GetBoundingBox(Core::Vector3df& min, Core::Vector3df& max)
     {

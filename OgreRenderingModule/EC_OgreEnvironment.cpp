@@ -15,19 +15,23 @@ namespace OgreRenderer
 EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface* module) :
     Foundation::ComponentInterface(module->GetFramework()),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
-    sunlight_(NULL)
+    sunlight_(NULL),
+    cameraUnderWater_(false)
 //    attached_(false)
 {
-    InitShadows();
+//    InitShadows();
     CreateSunlight();
 }
 
 EC_OgreEnvironment::~EC_OgreEnvironment()
 {
+    SetBackgoundColor(Core::Color(0, 0, 0));
+    DisableFog();
+    
     if (sunlight_)
     {
         DetachSunlight();
-        Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();
+        Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();        
         sceneManager->destroyLight(sunlight_);
         sunlight_ = NULL;
     }
@@ -42,52 +46,92 @@ void EC_OgreEnvironment::SetPlaceable(Foundation::ComponentPtr placeable)
 
 void EC_OgreEnvironment::SetBackgoundColor(const Core::Color &color)
 {
-    renderer_->GetCurrentCamera()->getViewport()->setBackgroundColour(
-        Ogre::ColourValue(color.r, color.g, color.b, color.a));
+    renderer_->GetCurrentCamera()->getViewport()->setBackgroundColour(ToOgreColor(color));
 }
 
 Core::Color EC_OgreEnvironment::GetBackgoundColor() const
 {
-    return Core::Color(renderer_->GetCurrentCamera()->getViewport()->getBackgroundColour().r,
-        renderer_->GetCurrentCamera()->getViewport()->getBackgroundColour().g,
-        renderer_->GetCurrentCamera()->getViewport()->getBackgroundColour().b,
-        renderer_->GetCurrentCamera()->getViewport()->getBackgroundColour().a);
+    return ToCoreColor(renderer_->GetCurrentCamera()->getViewport()->getBackgroundColour());
 }
 
 void EC_OgreEnvironment::SetAmbientLightColor(const Core::Color &color)
 {
     Ogre::SceneManager* sceneManager = renderer_->GetSceneManager();
-    sceneManager->setAmbientLight(Ogre::ColourValue(color.r, color.g, color.b, color.a));
+    sceneManager->setAmbientLight(ToOgreColor(color));
 }
 
 Core::Color EC_OgreEnvironment::GetAmbientLightColor() const
 {
-    Ogre::SceneManager* sceneManager = renderer_->GetSceneManager();
-    
-    return Core::Color(sceneManager->getAmbientLight().r,
-        sceneManager->getAmbientLight().g,
-        sceneManager->getAmbientLight().b,
-        sceneManager->getAmbientLight().a);
+    Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();
+    return ToCoreColor(sceneManager->getAmbientLight());
 }
 
 void EC_OgreEnvironment::SetSunColor(const Core::Color& color)
 {
-    sunlight_->setDiffuseColour(Ogre::ColourValue(color.r, color.g, color.b, color.a));
-}
-
-void EC_OgreEnvironment::SetSunAttenuation(float range, float constant, float linear, float quad)
-{
-    sunlight_->setAttenuation(range, constant, linear, quad);
+    sunlight_->setDiffuseColour(ToOgreColor(color));
 }
 
 void EC_OgreEnvironment::SetSunDirection(const Core::Vector3df& direction)
 {
-    sunlight_->setDirection(Ogre::Vector3(direction.x, direction.y, direction.z));
+    sunlight_->setDirection(ToOgreVector3(direction));
 }
     
 void EC_OgreEnvironment::SetSunCastShadows(const bool &enabled)
 {
     sunlight_->setCastShadows(enabled);
+}
+
+void EC_OgreEnvironment::UpdateVisualEffects()
+{
+    //float fogStart(50.0f);
+    float fogStart(100.0f);
+    //float fogEnd(150.0f);
+    float fogEnd(250.0f);
+    float waterFogStart(1.0f);
+    //float waterFogEnd(15.0f);
+    float waterFogEnd(45.0f);
+    //Ogre::ColourValue waterFogColor(0.2, 0.4, 0.3);
+    Ogre::ColourValue waterFogColor(0.2f, 0.553f, 0.486f);
+    Ogre::ColourValue backgroundColor(0.5, 0.5, 1.0);
+    Ogre::ColourValue skyColor(1.0, 1.0, 1.0);
+    float cameraNearClip(0.5f);
+    float cameraFarClip(500.0f);
+    
+    // UpdateGlobaLightning()
+    
+    Ogre::Camera *camera = renderer_->GetCurrentCamera();
+    Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();
+    Ogre::Entity *water_ent = sceneManager->getEntity("WaterEntity");
+    
+    // Set fogging
+    if (camera->getPosition().z >= water_ent->getParentNode()->getPosition().z)
+    {
+        sceneManager->setFog(Ogre::FOG_LINEAR, skyColor * backgroundColor, 0.001, fogStart, fogEnd);
+        camera->getViewport()->setBackgroundColour(skyColor * backgroundColor);
+
+        if (cameraUnderWater_)
+        {
+            cameraUnderWater_ = false;
+            camera->setFarClipDistance(cameraFarClip);
+        }
+    }
+    else
+    {
+        sceneManager->setFog(Ogre::FOG_LINEAR, skyColor * waterFogColor, 0.001, waterFogStart, waterFogEnd);
+	    camera->getViewport()->setBackgroundColour(skyColor * waterFogColor);
+
+        if (!cameraUnderWater_)
+        {
+            cameraUnderWater_= true;
+            camera->setFarClipDistance(waterFogEnd + 10.f);
+        }
+    }
+}
+
+void EC_OgreEnvironment::DisableFog()
+{
+    Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();
+    sceneManager->setFog(Ogre::FOG_NONE);
 }
 
 void EC_OgreEnvironment::CreateSunlight()
@@ -99,8 +143,11 @@ void EC_OgreEnvironment::CreateSunlight()
     sunlight_->setDiffuseColour(0.93f, 1, 0.13f);
     sunlight_->setPosition(0, 255, 100);
     sunlight_->setDirection(125, 125, 5);
-//    sunlight_->setAttenuation();
-    sunlight_->setCastShadows(true);   
+    sunlight_->setCastShadows(true);
+
+    // Set somekind of ambient light, so that the lights are visible.
+    ///\todo Find a good default value.
+    SetAmbientLightColor(Core::Color(1, 1, 1, 1));    
 }
 
 void EC_OgreEnvironment::AttachSunlight()
@@ -125,22 +172,21 @@ void EC_OgreEnvironment::DetachSunlight()
 
 void EC_OgreEnvironment::InitShadows()
 {
-    /*
+    ///\note Shadows don't work yet. Needs proper shaders and materials.
     float shadowFarDist = 15;
-    unsigned long shadowTextureSize = 512;
+    unsigned short shadowTextureSize = 512;
     float shadowFadeStart = 0.7;
     float shadowFadeEnd = 0.9;
     float shadowDirLightTextureOffset = 0.6;
-    int shadowTextureCount = 1;
+    size_t shadowTextureCount = 1;
     Ogre::ColourValue shadowColor(0.6f, 0.6f, 0.6f);
-    bool useObjectShadows = false;
     int shadowMethod = 2; //enum, ShadowsNone
     
     // This is the default material to use for shadow buffer rendering pass, overridable in script.
     // Note that we use the same single material (vertex program) for each object, so we're relying on
     // that we use Ogre software skinning. Hardware skinning would require us to do different vertex programs
     // for skinned/nonskinned geometry.
-    std::string ogreShadowCasterMaterial = "rex/ShadowCaster"; 
+    std::string ogreShadowCasterMaterial = "rex/ShadowCaster";
     
     Ogre::SceneManager* sceneManager = renderer_->GetSceneManager();
     sceneManager->setShadowColour(shadowColor);
@@ -160,7 +206,6 @@ void EC_OgreEnvironment::InitShadows()
 	    sceneManager->setShadowTextureCasterMaterial(ogreShadowCasterMaterial.c_str());
 	    sceneManager->setShadowTextureSelfShadow(true);
     }
-    */
 }
 
 }

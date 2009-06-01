@@ -63,7 +63,7 @@ namespace RexLogic
                 entity_->setCastShadows(false);
 
                 scene_node_ = sceneMgr->getRootSceneNode()->createChildSceneNode("WaterNode");
-                scene_node_->attachObject(entity_);           
+                scene_node_->attachObject(entity_);
             }
         }
     }

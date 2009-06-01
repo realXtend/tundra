@@ -6,6 +6,9 @@
 using namespace std;
 
 /// Converts a single char to a value of 0-15. (4 bits)
+namespace
+{
+
 static uint8_t CharToNibble(char c)
 {
     if (isdigit(c))
@@ -25,133 +28,137 @@ static uint8_t StringToByte(const char *str)
     return (CharToNibble(str[0]) << 4) | CharToNibble(str[1]);
 }
 
+}
+
 namespace RexTypes
 {
-    RexUUID::RexUUID()
-    {
+
+RexUUID::RexUUID()
+{
+    SetNull();
+}
+
+RexUUID::RexUUID(const char *str)
+{
+    if (str)
+        FromString(str);
+    else
         SetNull();
-    }
+}
+
+RexUUID::RexUUID(const std::string &str)
+{
+    FromString(str.c_str());
+}
+
+void RexUUID::SetNull()
+{
+    for(int i = 0; i < cSizeBytes; ++i)
+        data[i] = 0;
+}
+
+bool RexUUID::IsNull() const
+{
+    for(int i = 0; i < cSizeBytes; ++i)
+        if (data[i] != 0)
+            return false;
+    return true;
+}
     
-    RexUUID::RexUUID(const char *str)
-    {
-        if (str)
-            FromString(str);
-        else
-            SetNull();
-    }
-    
-    RexUUID::RexUUID(const std::string &str)
-    {
-        FromString(str.c_str());
-    }
-    
-    void RexUUID::SetNull()
-    {
-        for(int i = 0; i < cSizeBytes; ++i)
-            data[i] = 0;
-    }
-    
-    bool RexUUID::IsNull() const
-    {
-        for(int i = 0; i < cSizeBytes; ++i)
-            if (data[i] != 0)
-                return false;
-        return true;
-    }
+void RexUUID::Random()
+{
+    for (int i = 0; i < cSizeBytes; ++i)
+        data[i] = rand() & 0xff;
+}
+
+bool RexUUID::IsValid(const char *str)
+{
+    if (!str) return false;
         
-    void RexUUID::Random()
-    {
-        for (int i = 0; i < cSizeBytes; ++i)
-            data[i] = rand() & 0xff;
-    }
-    
-    bool RexUUID::IsValid(const char *str)
-    {
-        if (!str) return false;
+    int valid_nibbles = 0;
             
-        int valid_nibbles = 0;
-                
-        while (*str)
-        {
-            if (CharToNibble(*str) <= 0xf)
-                valid_nibbles++;           
-            str++;
-        } 
-        
-        return (valid_nibbles == cSizeBytes * 2);
-    }
-    
-    /// Converts a C string representing a RexUUID to a uint8_t array.
-    /// Supports either the format "1c1bbda2-304b-4cbf-ba3f-75324b044c73" or "1c1bbda2304b4cbfba3f75324b044c73".
-    void RexUUID::FromString(const char *str)
+    while (*str)
     {
-        int curIndex = 0;
-        for(int i = 0; i < cSizeBytes; ++i)
-    	{
-            while(!(isalpha(str[curIndex]) || isdigit(str[curIndex]) || str[curIndex] == '\0')) 
-                ++curIndex;
-                if (str[curIndex] == '\0')
-                    break;
-            data[i] = StringToByte(str + curIndex);
-            curIndex += 2;
-        }
+        if (CharToNibble(*str) <= 0xf)
+            valid_nibbles++;           
+        str++;
+    } 
+    
+    return (valid_nibbles == cSizeBytes * 2);
+}
+
+/// Converts a C string representing a RexUUID to a uint8_t array.
+/// Supports either the format "1c1bbda2-304b-4cbf-ba3f-75324b044c73" or "1c1bbda2304b4cbfba3f75324b044c73".
+void RexUUID::FromString(const char *str)
+{
+    int curIndex = 0;
+    for(int i = 0; i < cSizeBytes; ++i)
+	{
+        while(!(isalpha(str[curIndex]) || isdigit(str[curIndex]) || str[curIndex] == '\0')) 
+            ++curIndex;
+            if (str[curIndex] == '\0')
+                break;
+        data[i] = StringToByte(str + curIndex);
+        curIndex += 2;
     }
-    
-    std::string RexUUID::ToString() const
-    {
-        stringstream str;
-        int i = 0;
-    
-        for(int j = 0; j < 4; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
-        str << "-";
-    
-        for(int j = 0; j < 2; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
-        str << "-";
-    
-        for(int j = 0; j < 2; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
-        str << "-";
-    
-        for(int j = 0; j < 2; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
-        str << "-";
-    
-        for(int j = 0; j < 6; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
-    
-        return str.str();
-    }
-    
+}
+
+std::string RexUUID::ToString() const
+{
+    stringstream str;
+    int i = 0;
+
+    for(int j = 0; j < 4; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
+    str << "-";
+
+    for(int j = 0; j < 2; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
+    str << "-";
+
+    for(int j = 0; j < 2; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
+    str << "-";
+
+    for(int j = 0; j < 2; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
+    str << "-";
+
+    for(int j = 0; j < 6; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
+
+    return str.str();
+}
+
 /*    void RexUUID::operator =(const RexUUID &rhs)
-    {
-        if (this != &rhs)
-            for(int i = 0; i < cSizeBytes; ++i)
-                data[i] = rhs.data[i];
-    }*/
-    
-    bool RexUUID::operator ==(const RexUUID &rhs) const
-    {
+{
+    if (this != &rhs)
         for(int i = 0; i < cSizeBytes; ++i)
-            if (data[i] != rhs.data[i])
-                return false;
-    
-        return true;
-    }
-    
-    bool RexUUID::operator !=(const RexUUID &rhs) const
-    {
-        for(int i = 0; i < cSizeBytes; ++i)
-            if (data[i] != rhs.data[i])
-                return true;
-    
-        return false;
-    }
-    
-    bool RexUUID::operator <(const RexUUID &rhs) const
-    {
-        for(int i = 0; i < cSizeBytes; ++i)
-            if (data[i] < rhs.data[i])
-                return true;
-            else if (data[i] > rhs.data[i])
-                return false;
-    
-        return false;
-    }
+            data[i] = rhs.data[i];
+}*/
+
+bool RexUUID::operator ==(const RexUUID &rhs) const
+{
+    for(int i = 0; i < cSizeBytes; ++i)
+        if (data[i] != rhs.data[i])
+            return false;
+
+    return true;
+}
+
+bool RexUUID::operator !=(const RexUUID &rhs) const
+{
+    for(int i = 0; i < cSizeBytes; ++i)
+        if (data[i] != rhs.data[i])
+            return true;
+
+    return false;
+}
+
+bool RexUUID::operator <(const RexUUID &rhs) const
+{
+    for(int i = 0; i < cSizeBytes; ++i)
+        if (data[i] < rhs.data[i])
+            return true;
+        else if (data[i] > rhs.data[i])
+            return false;
+
+    return false;
+}
+
 }

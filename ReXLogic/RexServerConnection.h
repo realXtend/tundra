@@ -49,7 +49,7 @@ namespace RexLogic
         
         /// Set the connection type.
         /// @param ConnectionType enum.
-		void SetConnectionType( ConnectionType type ) { connection_type_ = type; }
+		void SetConnectionType(ConnectionType type) { connection_type_ = type; }
         
         /// Get the connection type.
         /// @return ConnectionType enum.

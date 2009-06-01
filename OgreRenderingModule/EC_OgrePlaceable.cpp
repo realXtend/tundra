@@ -17,7 +17,7 @@ namespace OgreRenderer
         attached_(false)
     {
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
-        scene_node_ = scene_mgr->createSceneNode();     
+        scene_node_ = scene_mgr->createSceneNode();
     }
     
     EC_OgrePlaceable::~EC_OgrePlaceable()

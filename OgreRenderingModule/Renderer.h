@@ -8,6 +8,7 @@
 #include "LogListenerInterface.h"
 #include "ResourceInterface.h"
 #include "OgreModuleApi.h"
+#include "OgreConversionUtils.h"
 
 namespace Foundation
 {

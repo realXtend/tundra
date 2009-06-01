@@ -837,7 +837,8 @@ namespace RexLogic
 
     void Primitive::HandleMaterialResourceReady(Core::entity_id_t entityid, Foundation::ResourcePtr res)
     {
-        //! \todo crash, probably when mesh arrives, but material for it is not yet ready / failed to parse. Also other crashes but got too frustrated to check. See also todo item in ResourceHandler::UpdateMaterial(). -cm
+        //! \todo crash, probably when mesh arrives, but material for it is not yet ready / failed to parse. 
+        //! Also other crashes but got too frustrated to check. See also todo item in ResourceHandler::UpdateMaterial(). -cm
         return;
 
         assert(res.get());
@@ -904,10 +905,14 @@ namespace RexLogic
     void Primitive::HandlePrimScale(Core::entity_id_t entityid)
     {
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
-        if (!entity) return;
+        if (!entity)
+            return;
+            
         EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());            
         Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());  
-        if (!placeable) return;
+        if (!placeable)
+            return;
+            
         OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
         
         // Handle scale mesh to prim-setting
@@ -943,6 +948,9 @@ namespace RexLogic
             }
 
             mesh.SetAdjustScale(adjust_scale);
+            // Handle cast shadows
+            ///\todo Find a better place?
+            mesh.SetCastShadows(prim.CastShadows);
         }
 
         ogrepos.SetScale(prim.Scale);

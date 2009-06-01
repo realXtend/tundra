@@ -203,7 +203,8 @@ namespace RexLogic
             RexLogicModule::LogInfo("LogoutReply received with matching IDs. Logging out.");
             rexlogicmodule_->GetServerConnection()->ForceServerDisconnect();
             rexlogicmodule_->DeleteScene("World");
-        } 
+        }
+        
         return false;   
     } 
   

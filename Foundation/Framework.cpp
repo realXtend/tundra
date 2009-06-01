@@ -240,6 +240,7 @@ namespace Foundation
             scenes_.erase(scene);
         }
     }
+    
     Scene::ScenePtr Framework::GetScene(const std::string &name) const
     {
         SceneMap::const_iterator scene = scenes_.find(name);
