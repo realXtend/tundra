@@ -4,6 +4,7 @@
 #include "RexNetworkUtils.h"
 #include "Avatar.h"
 #include "RexLogicModule.h"
+#include "EC_OpenSimPresence.h"
 #include "EC_OpenSimAvatar.h"
 #include "EC_NetworkPosition.h"
 #include <Ogre.h>
@@ -60,9 +61,9 @@ namespace RexLogic
             {
                 rexlogicmodule_->RegisterFullId(fullid,entityid);
             
-                EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());
-                avatar.LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
-                avatar.FullId = fullid;
+                EC_OpenSimPresence &presence = *checked_static_cast<EC_OpenSimPresence*>(entity->GetComponent(EC_OpenSimPresence::NameStatic()).get());
+                presence.LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
+                presence.FullId = fullid;
             }
         }
         return entity;
@@ -75,6 +76,7 @@ namespace RexLogic
             return Scene::EntityPtr();
         
         Core::StringVector defaultcomponents;
+        defaultcomponents.push_back(EC_OpenSimPresence::NameStatic());
         defaultcomponents.push_back(EC_OpenSimAvatar::NameStatic());
         defaultcomponents.push_back(EC_NetworkPosition::NameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
@@ -120,10 +122,10 @@ namespace RexLogic
             if (!entity)
                 return false;
                 
-            EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());
+            EC_OpenSimPresence &presence = *checked_static_cast<EC_OpenSimPresence*>(entity->GetComponent(EC_OpenSimPresence::NameStatic()).get());
             EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(entity->GetComponent(EC_NetworkPosition::NameStatic()).get());
 
-            avatar.RegionHandle = regionhandle;
+            presence.RegionHandle = regionhandle;
             
             // Get position from objectdata
             msg->SkipToFirstVariableByName("ObjectData");
@@ -138,20 +140,20 @@ namespace RexLogic
             }                
                         
             msg->SkipToFirstVariableByName("ParentID");
-            avatar.ParentId = msg->ReadU32();
+            presence.ParentId = msg->ReadU32();
             
             // NameValue contains: FirstName STRING RW SV " + firstName + "\nLastName STRING RW SV " + lastName
             msg->SkipToFirstVariableByName("NameValue");
             std::string namevalue = msg->ReadString();
             NameValueMap map = ParseNameValueMap(namevalue);
-            avatar.SetFirstName(map["FirstName"]);
-            avatar.SetLastName(map["LastName"]);
+            presence.SetFirstName(map["FirstName"]);
+            presence.SetLastName(map["LastName"]);
             
             // Set own avatar
-            if (avatar.FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
+            if (presence.FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
                 rexlogicmodule_->GetAvatarController()->SetAvatarEntity(entity);
 
-            ShowAvatarNameOverlay(avatar.LocalId);
+            ShowAvatarNameOverlay(presence.LocalId);
 
             msg->SkipToFirstVariableByName("JointAxisOrAnchor");
             msg->SkipToNextVariable(); // To next instance
@@ -296,11 +298,11 @@ namespace RexLogic
         if(!entity)
             return false;
 
-        Foundation::ComponentPtr component = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
+        Foundation::ComponentPtr component = entity->GetComponent(EC_OpenSimPresence::NameStatic());
         if(component)
         {
-            EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(component.get());
-            fullid = avatar.FullId;
+            EC_OpenSimPresence &presence = *checked_static_cast<EC_OpenSimPresence*>(component.get());
+            fullid = presence.FullId;
         }
         
         scene->RemoveEntity(objectid);
@@ -361,11 +363,11 @@ namespace RexLogic
             return;
         
         Foundation::ComponentPtr overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
-        EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());
+        EC_OpenSimPresence &presence = *checked_static_cast<EC_OpenSimPresence*>(entity->GetComponent(EC_OpenSimPresence::NameStatic()).get());
         if (overlay)
         {
             OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
-            name_overlay.SetText(avatar.GetFullName());
+            name_overlay.SetText(presence.GetFullName());
             name_overlay.SetPlaceable(placeable);
         }
     }   
@@ -380,11 +382,11 @@ namespace RexLogic
             return;
         
         Foundation::ComponentPtr overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
-        EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());
+        EC_OpenSimPresence &presence = *checked_static_cast<EC_OpenSimPresence*>(entity->GetComponent(EC_OpenSimPresence::NameStatic()).get());
         if (overlay)
         {
             OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
-            name_overlay.SetText(avatar.GetFullName());
+            name_overlay.SetText(presence.GetFullName());
             name_overlay.SetVisible(true);
         }
     }

@@ -7,46 +7,46 @@ namespace RexLogic
 {
     EC_OpenSimAvatar::EC_OpenSimAvatar(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework())
     {
-        RegionHandle = 0;
-        LocalId = 0;
-        FullId.SetNull();
-        ParentId = 0;     
+        //RegionHandle = 0;
+        //LocalId = 0;
+        //FullId.SetNull();
+        //ParentId = 0;     
     
-        first_name_ = "";
-        last_name_ = "";
+        //first_name_ = "";
+        //last_name_ = "";
         
-        avatar_address_ = "";
-        avatar_override_address_ = "";
+        //avatar_address_ = "";
+        //avatar_override_address_ = "";
     }
 
     EC_OpenSimAvatar::~EC_OpenSimAvatar()
     {
     }
 
-    void EC_OpenSimAvatar::SetFirstName(const std::string &name)
-    {
-        first_name_ = name;
-    } 
+    //void EC_OpenSimAvatar::SetFirstName(const std::string &name)
+    //{
+    //    first_name_ = name;
+    //} 
 
-    std::string EC_OpenSimAvatar::GetFirstName()
-    {
-        return first_name_;
-    }
+    //std::string EC_OpenSimAvatar::GetFirstName()
+    //{
+    //    return first_name_;
+    //}
 
-    void EC_OpenSimAvatar::SetLastName(const std::string &name)
-    {
-        last_name_ = name;
-    }
+    //void EC_OpenSimAvatar::SetLastName(const std::string &name)
+    //{
+    //    last_name_ = name;
+    //}
 
-    std::string EC_OpenSimAvatar::GetLastName()
-    {
-        return last_name_;
-    }
+    //std::string EC_OpenSimAvatar::GetLastName()
+    //{
+    //    return last_name_;
+    //}
 
-    std::string EC_OpenSimAvatar::GetFullName()
-    {
-        return first_name_ + " " + last_name_;
-    }
+    //std::string EC_OpenSimAvatar::GetFullName()
+    //{
+    //    return first_name_ + " " + last_name_;
+    //}
     
     void EC_OpenSimAvatar::SetAppearanceAddress(const std::string &address, bool overrideappearance)
     {

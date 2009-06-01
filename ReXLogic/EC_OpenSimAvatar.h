@@ -18,16 +18,16 @@ namespace RexLogic
     public:
         virtual ~EC_OpenSimAvatar();
 
-        //! set first name
-        void SetFirstName(const std::string &name);    
-        //! get first name
-        std::string GetFirstName();  
-        //! set last name
-        void SetLastName(const std::string &name);    
-        //! get last name
-        std::string GetLastName(); 
-        //! get full name
-        std::string GetFullName(); 
+        ////! set first name
+        //void SetFirstName(const std::string &name);    
+        ////! get first name
+        //std::string GetFirstName();  
+        ////! set last name
+        //void SetLastName(const std::string &name);    
+        ////! get last name
+        //std::string GetLastName(); 
+        ////! get full name
+        //std::string GetFullName(); 
 
         //! set appearance address 
         void SetAppearanceAddress(const std::string &address, bool overrideappearance);
@@ -35,17 +35,17 @@ namespace RexLogic
         std::string GetAppearanceAddress();
 
      
-        // !ID related
-        uint64_t RegionHandle;
-        uint32_t LocalId;
-        RexTypes::RexUUID FullId;
-        uint32_t ParentId;
+        //// !ID related
+        //uint64_t RegionHandle;
+        //uint32_t LocalId;
+        //RexTypes::RexUUID FullId;
+        //uint32_t ParentId;
                 
     private:
-        //! first name of avatar
-        std::string first_name_;
-        //! last name of avatar
-        std::string last_name_;
+        ////! first name of avatar
+        //std::string first_name_;
+        ////! last name of avatar
+        //std::string last_name_;
 
         //! appearance address
         std::string avatar_address_;
