@@ -109,7 +109,8 @@ namespace RexLogic
         Scene::EntityPtr GetPrimEntity(const RexUUID &fullid);
 
         //! @return The entity corresponding to given scene entityid, or null if not found. 
-        //!         This entity is guaranteed to have an existing EC_OpenSimAvatar component.
+        //!         This entity is guaranteed to have an existing EC_OpenSimAvatar component,
+        //!         and EC_OpenSimPresence component.
         __inline Scene::EntityPtr GetAvatarEntity(Core::entity_id_t entityid) { return GetEntityWithComponent(entityid,"EC_OpenSimAvatar"); }
         Scene::EntityPtr GetAvatarEntity(const RexUUID &fullid); 
 

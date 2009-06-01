@@ -18,6 +18,7 @@
 #include "EC_FreeData.h"
 #include "EC_SpatialSound.h"
 #include "EC_OpenSimPrim.h"
+#include "EC_OpenSimPresence.h"
 #include "EC_OpenSimAvatar.h"
 #include "EC_Terrain.h"
 #include "EC_Water.h"
@@ -63,6 +64,7 @@ namespace RexLogic
         DECLARE_MODULE_EC(EC_FreeData);
         DECLARE_MODULE_EC(EC_SpatialSound);
         DECLARE_MODULE_EC(EC_OpenSimPrim);
+        DECLARE_MODULE_EC(EC_OpenSimPresence);
         DECLARE_MODULE_EC(EC_OpenSimAvatar);
         DECLARE_MODULE_EC(EC_Terrain);
         DECLARE_MODULE_EC(EC_Water);
