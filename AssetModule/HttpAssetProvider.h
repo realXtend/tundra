@@ -30,6 +30,8 @@ namespace Asset
 
         //! Constructor
         /*! \param framework Framework
+
+            throws Core::Exception in case of an error.
          */     
         HttpAssetProvider(Foundation::Framework* framework);
 

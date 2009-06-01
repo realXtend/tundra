@@ -35,7 +35,16 @@ namespace Asset
 		buffer_ = new Core::u8[BUFFER_SIZE];
 
 		asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("UDPAssetProvider", "Timeout", DEFAULT_ASSET_TIMEOUT);            
-		Poco::Net::HTTPStreamFactory::registerFactory();
+		try
+        {
+            Poco::Net::HTTPStreamFactory::registerFactory();
+        } catch (Poco::Exception &e)
+        {
+            AssetModule::LogError(e.displayText());
+            AssetModule::LogError("Failed to register HTTP stream factory.");
+
+            throw Core::Exception();
+        }
 
 		Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         
@@ -49,6 +58,8 @@ namespace Asset
 
 	HttpAssetProvider::~HttpAssetProvider()
 	{
+        //! \todo Poco::Net::HTTPStreamFactory::unregisterFactory() probably requires Poco 1.3.5 or later. Doing unregistering manually for now. -cm
+        Poco::URIStreamOpener::defaultOpener().unregisterStreamFactory("http");
 		delete [] buffer_;
 	}
 	
