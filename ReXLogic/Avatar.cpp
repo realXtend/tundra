@@ -88,8 +88,8 @@ namespace RexLogic
         if (placeable)
         {
             OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
-            DebugCreateOgreBoundingBox(rexlogicmodule_,
-                entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()), "AmbientGreen", Vector3(0.5,0.5,1.5));
+            //DebugCreateOgreBoundingBox(rexlogicmodule_,
+            //    entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()), "AmbientGreen", Vector3(0.5,0.5,1.5));
             
             CreateNameOverlay(placeable, entityid);
             CreateDefaultAvatarMesh(entityid);

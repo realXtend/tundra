@@ -1,0 +1,188 @@
+/* SuperShader.cg implements an uber-shader-like approach to creating different materials.
+	Current features:
+	- The shader computes fixed 1 directional light and 2 point lights.
+	- The surface diffuse color is sample from a diffuse map if DIFFUSE_MAPPING is used, otherwise a singe diffuse color is used.
+	- Does optional PCF shadow mapping if SHADOW_MAPPING is defined. There is only a single shadow map and it is used for the world directional light.
+	- Diffuse shading is per-pixel Lambertian, but the point light attenuation parameters are computed per-vertex.
+	- Specular shading is computed per-pixel using the traditional Phong model. It can be enabled with SPECULAR_LIGHTING.
+	  The specular color is sampled from a specular map if SPECULAR_MAPPING is defined, otherwise a single specular color is used.
+	- If NORMAL_MAPPING is defined, the per-pixel computations are done in the local tangent space and the normals are sampled from a normal map.
+	  This requires the vertex stream to contain tangent data. If NORMAL_MAPPING is not defined, then the light computations are done in world space.
+	- if LUMINANCE_MAPPING is defined, a grayscale luminance map is sampled to add to diffuse light accumulation.
+	- if OPACITY_MAPPING is defined, the output alpha is taken from a grayscale opacity map, otherwise it is 1.0
+	- Fogging is always enabled.
+	
+	- When writing the .material files it is important that the texture_units are presented in the following order:
+	    diffuse, specular, normal, shadow, luminance, opacity
+	  Each of these correspond to a #define (i.e. diffuse <-> DIFFUSE_MAPPING) Make sure that you specify exactly those texture_units
+	  for which the corresponding #define is set, and those only. This is to guarantee that the order Ogre populates the texture samplers
+	  matches to the order in which the shader reads the textures.
+*/
+
+#include "CommonCode.cg"
+
+void mainVS
+(
+	in float4 pos : POSITION,
+	in float3 normal : NORMAL,
+#ifdef NORMAL_MAPPING	
+	in float3 tangent : TANGENT,
+#endif	
+	in float2 tex : TEXCOORD0,
+#ifdef LIGHT_MAPPING
+	in float2 tex2 : TEXCOORD1, 
+#endif	
+	out float4 oPos : POSITION,
+	out float2 oTex,
+#ifdef LIGHT_MAPPING
+	out float2 oTex2, 
+#endif		
+	out float4 oFog,
+#if defined(SPECULAR_LIGHTING) || defined(REFLECTION_MAPPING)
+	out float3 oViewDir, // in tangent space
+#endif
+	// xyz has the light direction, w has the light strength (precalculated per-vertex attenuation factor).
+	out float4 oLightDir[cNumPerPixelLights]
+#ifdef SHADOW_MAPPING
+	, out float4 oShadowTex
+#endif
+
+#if !defined(NORMAL_MAPPING)
+	, out float3 oNormal
+#endif
+)
+{
+    float4 worldPos = mul(worldMatrix, pos);
+
+	oPos = mul(worldViewProjMatrix, pos);
+	oTex = ComputeTexCoord(tex);
+#ifdef LIGHT_MAPPING
+	oTex2 = tex2;
+#endif
+#if defined(SPECULAR_LIGHTING) || defined(REFLECTION_MAPPING)
+	oViewDir = normalize(camPos - worldPos.xyz);
+#endif
+
+#ifndef NORMAL_MAPPING
+	oNormal = mul(worldMatrix, float4(normal, 0));
+#endif
+
+	// Process all point lights.
+	oLightDir[0] = float4(sunLightDir.xyz, 1.f);
+	oLightDir[1] = ComputePointLightDirAndAttenuation(worldPos.xyz, lightPos0, lightAtt0);
+	oLightDir[2] = ComputePointLightDirAndAttenuation(worldPos.xyz, lightPos1, lightAtt1);
+
+#ifdef NORMAL_MAPPING
+	// Reconstruct tangent coordinate frame.
+	float4x4 mWorldToTangent = ComputeWorldToTangentSpaceTransform(normal, tangent);
+	
+	oLightDir[0] = float4(mul(mWorldToTangent, float4(sunLightDir.xyz,0)).xyz, 1.f);
+	oLightDir[1].xyz = mul(mWorldToTangent, float4(oLightDir[1].xyz, 0)).xyz;
+	oLightDir[2].xyz = mul(mWorldToTangent, float4(oLightDir[2].xyz, 0)).xyz;
+
+#if defined(SPECULAR_LIGHTING) || defined(REFLECTION_MAPPING)
+	oViewDir = mul(mWorldToTangent, float4(oViewDir,0)).xyz;
+#endif
+	
+#endif
+
+	// Output fog color and strength.
+	oFog = ComputeFog(oPos.z);
+	
+#ifdef SHADOW_MAPPING
+	// Calculate shadow map coords
+	oShadowTex = mul(lightViewProj, worldPos);
+#endif
+}
+
+void mainPS(
+	in float2 tex,
+#ifdef LIGHT_MAPPING
+	in float2 tex2, 
+#endif		
+	in float4 fog,
+#if defined(SPECULAR_LIGHTING) || defined(REFLECTION_MAPPING)
+	in float3 viewDir, // in tangent space 
+#endif
+	
+	// xyz has the light direction, w has the light strength (precalculated per-vertex attenuation factor).
+	in float4 lightDir[cNumPerPixelLights], // in tangent space
+#ifdef SHADOW_MAPPING
+	in float4 shadowTex,
+#endif
+
+#if !defined(NORMAL_MAPPING)
+	in float3 normal,
+#endif
+	out float4 oCol: COLOR
+)
+{
+#if defined(SPECULAR_LIGHTING) || defined(REFLECTION_MAPPING)
+	viewDir = normalize(viewDir);
+#endif
+	for(int i = 0; i < cNumPerPixelLights; ++i)
+		lightDir[i].xyz = normalize(lightDir[i].xyz);
+
+	float4 baseColor = SampleDiffuseColor(tex);
+#ifdef SPECULAR_LIGHTING
+	float3 specularColor = SampleSpecularColor(tex);
+#endif
+
+#ifdef NORMAL_MAPPING
+	float3 normal = SampleNormalMap(normalMap, tex);
+#else
+	normal = normalize(normal); // normal comes as an input from VS.	
+#endif	
+	
+	// Start with ambient color.
+#ifdef LIGHT_MAPPING	
+	float3 diffuseLightFactor = tex2D(lightMap, tex2).xyz;
+#else	
+	float3 diffuseLightFactor = ambientLight.xyz;
+#endif
+
+#ifdef SPECULAR_LIGHTING
+	float3 specularLightFactor = float3(0,0,0);
+#endif
+
+	const float3 lightDiffuseColors[cNumPerPixelLights] = { sunLightCol.xyz, lightCol0.xyz, lightCol1.xyz };
+	const float3 lightSpecularColors[cNumPerPixelLights] = { sunLightCol.xyz, lightCol0.xyz, lightCol1.xyz };
+	
+	for(int i = 0; i < cNumPerPixelLights; ++i)
+	{
+		float lightness = 1.f;
+#ifdef SHADOW_MAPPING
+		if (i == 0) 
+			lightness = SampleShadowMap4TapPCF(shadowMap, shadowTex, 0.f);
+#endif
+		float NdotL = max(0.f, dot(normal, lightDir[i].xyz));
+		diffuseLightFactor += lightness * NdotL * lightDiffuseColors[i];
+
+#ifdef SPECULAR_LIGHTING
+		float specularFactor = ComputeLightSpecularFactor(normal, NdotL, lightDir[i].xyz, viewDir);
+		specularLightFactor += lightness * specularFactor * lightSpecularColors[i];
+#endif
+	}
+
+#ifdef LUMINANCE_MAPPING
+	// Process the light accumulated from the luminance map.
+	diffuseLightFactor += SampleLuminanceMap(luminanceMap, tex);
+#endif
+
+#ifdef SPECULAR_LIGHTING
+	float3 totalColor = diffuseLightFactor * baseColor.rgb + specularLightFactor * specularColor;
+#else
+	float3 totalColor = diffuseLightFactor * baseColor.rgb;
+#endif
+
+#ifdef REFLECTION_MAPPING
+	totalColor += SampleReflectionColor(normal, viewDir);
+#endif
+	
+	oCol.rgb = ApplyFog(totalColor, fog);
+#ifdef DIFFUSE_ALPHA
+	oCol.a = baseColor.a;
+#else
+	oCol.a = SampleFragmentAlpha(tex); // If alpha masking is enabled, we could move this to be the very first op in the shader, and early out.
+#endif
+}

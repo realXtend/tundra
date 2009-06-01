@@ -2,10 +2,10 @@ import * from "LitTextured.material"
 
 material male/Body : LitTextured
 {
-    set_texture_alias diffuseMap Jack_body_yellow1.jpg
+    set_texture_alias baseMap Jack_body_yellow1.jpg
 }
 
 material male/Face : LitTextured
 {
-    set_texture_alias diffuseMap Jack_face_yellow.jpg
+    set_texture_alias baseMap Jack_face_yellow.jpg
 }

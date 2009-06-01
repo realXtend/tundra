@@ -1,0 +1,47 @@
+vertex_program rex/ShadowCasterVP cg
+{
+    source ShadowCaster.cg
+    entry_point mainVS
+    profiles vs_1_1 arbvp1
+
+    default_params
+    {
+        param_named_auto worldViewProj worldviewproj_matrix
+		param_named_auto texelOffsets texel_offsets
+    }
+}
+
+fragment_program rex/ShadowCasterFP cg
+{
+    source ShadowCaster.cg
+    entry_point mainPS
+    profiles ps_2_0 arbfp1
+
+    default_params
+    {
+    }
+}
+
+vertex_program rex/ShadowCasterAlphaVP cg
+{
+    source ShadowCaster.cg
+    entry_point mainVSAlpha
+    profiles vs_1_1 arbvp1
+
+    default_params
+    {
+        param_named_auto worldViewProj worldviewproj_matrix
+		param_named_auto texelOffsets texel_offsets
+    }
+}
+
+fragment_program rex/ShadowCasterAlphaFP cg
+{
+    source ShadowCaster.cg
+    entry_point mainPSAlpha
+    profiles ps_2_0 arbfp1
+
+    default_params
+    {
+    }
+}

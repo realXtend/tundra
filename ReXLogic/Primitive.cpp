@@ -80,7 +80,7 @@ namespace RexLogic
                 
         Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents); 
 
-        DebugCreateOgreBoundingBox(rexlogicmodule_, entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()),"AmbientRed");
+        //DebugCreateOgreBoundingBox(rexlogicmodule_, entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()),"AmbientRed");
         return entity;
     }    
 
@@ -877,7 +877,7 @@ namespace RexLogic
                     meshptr->SetMaterial(idx, mat->getName());
                     std::stringstream ss;
                     ss << std::string("Set submesh ") << idx << " to use material \"" << mat->getName() << "\"";
-                    RexLogicModule::LogInfo(ss.str());
+                    RexLogicModule::LogDebug(ss.str());
                 }
             }
             ++i;
