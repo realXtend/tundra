@@ -1,0 +1,328 @@
+// Here are all the common functionality code used in the material library shaders.
+
+// Supported #defines:
+
+// #define ANIM_TEXTURES      - The vertex texture coordinate set 0 will be transformed by a texture matrix.
+
+// #define SPECULAR_LIGHTING
+
+// #define DIFFUSE_MAPPING
+// #define SPECULAR_MAPPING
+// #define NORMAL_MAPPING
+// #define SHADOW_MAPPING
+// #define LUMINANCE_MAPPING
+
+// These are mutually exclusive.
+// #define OPACITY_MAPPING     - If true, the object alpha is sampled from a separate opacity map. 
+// #define DIFFUSE_ALPHA       - If true, the object alpha is sampled from the alpha channel of the diffuse map.
+// #define ALPHA_MASKING       - If true, 0 or 1 will be output as the alpha, depending on whether diffuse map alpha is < or > than 0.5f
+// #define SOLID_ALPHA         - If true, the alpha color will be a solid color.
+
+// #define REFLECTION_MAPPING  - Reflection mapping done on a virtual cube map (a 2D texture that is mapped like a cube map).
+
+// #define LIGHT_MAPPING
+
+#ifdef SPECULAR_MAPPING
+#define SPECULAR_LIGHTING
+#endif
+
+#ifdef SHADOW_MAPPING
+uniform float inverseShadowmapSize;
+uniform float fixedDepthBias;
+uniform float gradientClamp;
+uniform float gradientScaleBias;
+uniform float shadowFuzzyWidth;
+
+uniform float4x4 lightViewProj;
+
+float SampleShadowMap4TapPCF(sampler2D shadowMap, float4 shadowUV, float viewZ)
+{
+	// point on shadowmap
+	shadowUV = shadowUV / shadowUV.w;
+
+	float centerdepth = tex2D(shadowMap, shadowUV.xy).x;
+    
+    // gradient calculation
+  	float pixeloffset = inverseShadowmapSize;
+    float4 depths = float4(
+    	tex2D(shadowMap, shadowUV.xy + float2(-pixeloffset, 0)).x,
+    	tex2D(shadowMap, shadowUV.xy + float2(+pixeloffset, 0)).x,
+    	tex2D(shadowMap, shadowUV.xy + float2(0, -pixeloffset)).x,
+    	tex2D(shadowMap, shadowUV.xy + float2(0, +pixeloffset)).x);
+
+	float2 differences = abs( depths.yw - depths.xz );
+	float gradient = min(gradientClamp, max(differences.x, differences.y));
+	float gradientFactor = gradient * gradientScaleBias;
+
+	// visibility function
+	float depthAdjust = gradientFactor + (fixedDepthBias * centerdepth);
+	float finalCenterDepth = centerdepth;// + depthAdjust;
+
+	// shadowUV.z contains lightspace position of current object
+	shadowUV.z -= fixedDepthBias + gradientFactor;
+
+	// use depths from prev, calculate diff
+//	depths += depthAdjust;
+	float4 d = float4(shadowUV.z, shadowUV.z, shadowUV.z, shadowUV.z);
+	float4 f = saturate((depths - d) * shadowFuzzyWidth);
+
+	float final = saturate((finalCenterDepth - shadowUV.z) * shadowFuzzyWidth);
+	final += f.x + f.y + f.w + f.z;
+
+
+/*
+	// use depths from prev, calculate diff
+	depths += depthAdjust;
+	float final = (finalCenterDepth > shadowUV.z) ? 1.0 : 0.0;
+	final += (depths.x > shadowUV.z) ? 1.0 : 0.0;
+	final += (depths.y > shadowUV.z) ? 1.0 : 0.0;
+	final += (depths.z > shadowUV.z) ? 1.0 : 0.0;
+	final += (depths.w > shadowUV.z) ? 1.0 : 0.0;
+*/
+
+	
+	final *= 0.2f;
+
+	// Do a visibility fade based on viewer z distance. todo: parameterize the distance instead of the current hardcoded one.
+	float visFactor = saturate((viewZ - 47.5f) / 2.5f);
+//	float visFactor = saturate((shadowUV.z + 1.f) * 10.f);
+
+//	return max(final, visFactor);
+
+	float edges = (shadowUV.z >= 1.f || shadowUV.w <= 0.f || shadowUV.x <= 0.f || shadowUV.x >= 1.f || shadowUV.y <= 0.f || shadowUV.y >= 1.f) ? 1.f : 0.f;
+
+	return max(edges, max(final, visFactor));
+//	return visFactor;// + (1.f - visFactor) * final;// * visFactor + (1.f - visFactor);
+}
+
+#endif
+
+uniform float3 surfaceAmbientColor; // PS
+
+// Scene ambient light color
+uniform float4 ambientLight; // PS
+
+// When using specular lighting:
+uniform float specularPower; // PS
+
+// When using specular or reflections:
+uniform float3 camPos; // Camera position in world space, VS.
+
+// One directional light
+uniform float4 sunLightDir; // VS, world space.
+uniform float4 sunLightCol; // PS
+
+// The number of supported point lights.
+// N.B. If you change this, track the TEXCOORDn changes accordingly.
+static const int cNumPointLights = 2;
+
+// The number of lights passed from VS to PS. Currently fixed one dir. light + 2 point lights.
+static const int cNumPerPixelLights = 3;
+
+// Two point lights. Couldn't use array notation, something fishy with Ogre, it wouldn't pass the parameters if light_position_array was used.
+uniform float4 lightPos0; // VS, world space.
+uniform float4 lightPos1; // VS, world space.
+uniform float4 lightCol0; // PS
+uniform float4 lightCol1; // PS
+uniform float4 lightAtt0; // VS
+uniform float4 lightAtt1; // VS
+
+// Fogging
+uniform float4 fogParams; // VS
+uniform float4 fogColor;  // VS
+
+// Common transforms
+uniform float4x4 worldViewProjMatrix; // VS
+uniform float4x4 worldMatrix; // VS
+
+// When using normal mapping:
+uniform float4x4 inverseWorldMatrix; // VS
+
+// When using texture animations:
+uniform float4x4 textureMatrix;
+
+#ifdef DIFFUSE_MAPPING
+uniform sampler2D diffuseMap;
+#endif
+#ifdef SPECULAR_MAPPING
+uniform sampler2D specularMap;
+#endif
+#ifdef NORMAL_MAPPING
+uniform sampler2D normalMap;
+#endif
+#ifdef LIGHT_MAPPING
+uniform sampler2D lightMap;
+#endif
+#ifdef SHADOW_MAPPING
+uniform sampler2D shadowMap;
+#endif
+#ifdef LUMINANCE_MAPPING
+uniform sampler2D luminanceMap;
+#endif
+#ifdef OPACITY_MAPPING
+uniform sampler2D opacityMap;
+#endif
+#ifdef REFLECTION_MAPPING
+uniform sampler2D reflectionMap;
+#endif
+
+#ifdef SOLID_ALPHA
+float opacity = 0.5f;
+#endif
+
+float2 ComputeTexCoord(float2 tex)
+{
+#ifdef ANIM_TEXTURES
+	return mul(textureMatrix, float4(tex,0,1)).xy;
+#else
+	return tex;
+#endif
+}
+
+// Computes the surface diffuse color.
+float4 SampleDiffuseColor(float2 tex)
+{
+#ifdef DIFFUSE_ALPHA
+	return tex2D(diffuseMap, tex);
+#endif
+#ifdef DIFFUSE_MAPPING
+	return float4(tex2D(diffuseMap, tex).rgb, 1.f);
+#endif
+#if !defined(DIFFUSE_MAPPING) && !defined(DIFFUSE_ALPHA)
+	return float4(surfaceAmbientColor, 1.f);
+#endif
+}
+
+float3 SampleSpecularColor(float2 tex)
+{
+#ifdef SPECULAR_MAPPING
+	return tex2D(specularMap, tex).xyz;
+#else
+	return float3(1,1,1); ///\todo Read material specular color.
+#endif
+}
+
+float3 SampleReflectionColor(float3 normal, float3 viewDir)
+{
+#ifdef REFLECTION_MAPPING
+	float3 refl = 2.f * dot(normal, viewDir) * normal - viewDir;
+	// This is a real cheap version of environment mapping - we're using only one 2D texture and not a cube map.
+	// This corresponds to using a cube map where each face is the same, so we can just use e.g. the .xy components to sample the texture.
+	return tex2D(reflectionMap, refl.xy); 
+#else
+	return float3(0,0,0);
+#endif		
+}
+
+// @param vertexPos Vertex position in world space.
+// @param lightPos Light position in world space.
+// @param lightAtt The light attenuation parameters in the form float4(lightRange, lightConstantAtt, lightLinearAtt, lightQuadraticAtt). lightRange is ignored for now.
+// Note: It is important that both vertexPos and lightPos are passed in world space, since the light attenuation parameters hold only
+// for distances in world space. Can't compute in local object space, since if the object world matrix contained scaling, the light attenuation wouldn't
+// be consistent across different objects.
+// @return xyz - light direction in world space, w - (linear) light strength/attenuation factor.
+float4 ComputePointLightDirAndAttenuation(float3 vertexPos, float4 lightPos, float4 lightAtt)
+{
+	float4 result;
+	
+	result.xyz = lightPos.xyz - vertexPos;
+	float lightDist = length(result.xyz);
+	result.xyz /= lightDist;
+
+	// N.B. lightAtt[i].x (light range) is ignored.
+	result.w = 1.f / (lightAtt.y + lightDist * (lightAtt.z + lightDist * lightAtt.w));
+	
+	return result;
+}
+
+// Returns The diffuse light color for the passed point light.
+// @param normal Fragment normal, normalized.
+// @param lightDirAndAtten xyz - light direction, normalized. w - attenuation factor.
+// @param lightCol The light diffuse color.
+float3 ComputePointLightDiffuseAmount(float3 normal, float4 lightDirAndAtten, float3 lightCol)
+{
+	return max(0.f, dot(lightDirAndAtten.xyz, normal)) * lightDirAndAtten.w * lightCol;
+}
+
+// Returns The diffuse light color for the passed directional light.
+// @param normal Fragment normal, normalized.
+// @param lightDirAndAtten light direction, normalized.
+// @param lightCol The light diffuse color.
+float3 ComputeDirLightDiffuseAmount(float3 normal, float3 lightDir, float3 lightCol)
+{
+	return max(0.f, dot(lightDir, normal)) * lightCol;
+}
+
+// Returns the specular factor for the passed light.
+float ComputeLightSpecularFactor(float3 normal, float NdotL, float3 lightDir, float3 viewDir)
+{
+	float3 R = 2.f * NdotL * normal - lightDir;
+	float RdotV = max(0.f, dot(R, viewDir));
+
+	return pow(RdotV, specularPower) * (NdotL <= 0.f ? 0.f : 2.f);
+}
+
+float3 SampleLuminanceMap(sampler luminanceMap, float2 tex)
+{
+	return tex2D(luminanceMap, tex).xxx;
+}
+
+// Returns the normal read from the given sampler. By convention, in the tangent space float3(0,0,1) is up, and float3(1,0,0) is to the direction of tex U-coord.
+// Currently float3(0,1,0) is ill-conditioned and either follows V or -V, but as long as artists don't get picky we don't have a huge preference to fix this.
+float3 SampleNormalMap(sampler normalMap, float2 tex)
+{
+	return normalize((tex2D(normalMap, tex).xyz - float3(0.5f, 0.5f, 0)) * float3(2.f, 2.f, 1.f));
+}
+
+float4x4 ComputeWorldToTangentSpaceTransform(float3 normal, float3 tangent)
+{
+	float3 biTangent = cross(normal, tangent);
+	float4x4 mObjToTangent;
+	mObjToTangent._m00_m01_m02_m03 = float4(tangent, 0);
+	mObjToTangent._m10_m11_m12_m13 = float4(biTangent, 0);
+	mObjToTangent._m20_m21_m22_m23 = float4(normal, 0);
+	mObjToTangent._m30_m31_m32_m33 = float4(0, 0, 0, 1);
+	
+	return mul(mObjToTangent, inverseWorldMatrix);
+}
+
+// Computes the fog parameters to be passed from VS to PS.
+float4 ComputeFog(float viewDepth)
+{
+	float4 fog;
+	
+    // Fog params packed as: exp_density, linear_start, linear_end, 1.0 / (linear_end - linear_start)
+    // Store fog density to w
+    fog.w = clamp((fogParams.z-viewDepth)/(fogParams.z-fogParams.y), 0, 1);
+    // And color to xyz
+    fog.xyz = fogColor.rgb;
+    
+    return fog;
+}
+
+// Applies fogging to the given color.
+// @param fogParams rgb - fog color, w - fog weight (1.f - no fog, 0.f - full fog)
+float3 ApplyFog(float3 color, float4 fogParams)
+{
+	return color * fogParams.w + fogParams.xyz * (1.f - fogParams.w);
+}
+
+// Reads the fragment alpha from an opacity map if one is present, or returns fully opaque otherwise.
+float SampleFragmentAlpha(float2 tex)
+{
+#ifdef ALPHA_MASKING
+	return (tex2D(diffuseMap, tex).a >= 0.5f) ? 1.f : 0.f;
+#endif
+
+#ifdef OPACITY_MAPPING
+	return tex2D(opacityMap, tex).x;
+#endif
+
+#ifdef SOLID_ALPHA
+	return opacity;
+#endif
+
+#if !defined(ALPHA_MASKING) && !defined(OPACITY_MAPPING) && !defined(SOLID_ALPHA)
+	return 1.f;
+#endif	
+}

@@ -148,7 +148,7 @@ void EC_OgreEnvironment::CreateSunlight()
 
     // Set somekind of ambient light, so that the lights are visible.
     ///\todo Find a good default value.
-    SetAmbientLightColor(Core::Color(1, 1, 1, 1));    
+    SetAmbientLightColor(Core::Color(0.5, 0.5, 0.5, 1));    
 }
 
 void EC_OgreEnvironment::AttachSunlight()

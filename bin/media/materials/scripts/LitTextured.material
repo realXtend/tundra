@@ -1,16 +1,25 @@
 // Renders primitives with a single lit texture
-// Todo: make it programmable pipeline -based
+// todo: programmable pipeline still disabled for now, so that we can control alphareject 
+// based on whether texture has alpha
 material LitTextured
 {
 	technique
 	{
 		pass
 		{
-			texture_unit diffuseMap
+			//iteration once
+
+			//vertex_program_ref rex/DiffVP
+			//{
+			//}
+			//fragment_program_ref rex/DiffFP
+			//{
+			//}
+			
+			texture_unit baseMap
 			{
 				texture TextureMissing.png
 			}
-		} 
+		}
 	}
 }
- 

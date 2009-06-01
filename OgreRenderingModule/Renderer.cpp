@@ -137,7 +137,9 @@ namespace OgreRenderer
         LoadPlugins(plugins_filename_);
         
 #ifdef _WINDOWS
-        std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>("OgreRenderer", "rendersystem", "Direct3D9 Rendering Subsystem");
+//        std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>("OgreRenderer", "rendersystem", "Direct3D9 Rendering Subsystem");
+        // Have to default to OpenGL until GPU programs fixed for PS 2.0 profile
+        std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>("OgreRenderer", "rendersystem", "OpenGL Rendering Subsystem");
 #else
         std::string rendersystem_name = "OpenGL Rendering Subsystem";
         framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", rendersystem_name);

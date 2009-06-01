@@ -20,7 +20,7 @@ namespace OgreRenderer
     //! Sets texture unit on a material to a given texture name. Use index SET_ALL_UNITS to set all units.
     /*! If texture cannot actually be found, uses the missing texture texture
      */ 
-    void OGRE_MODULE_API SetTextureUnitOnMaterial(Ogre::MaterialPtr material, const char *textureName, Core::uint index = SET_ALL_UNITS);
+    void OGRE_MODULE_API SetTextureUnitOnMaterial(Ogre::MaterialPtr material, const char *textureName, Core::uint index = 0);
 }
 
 #endif

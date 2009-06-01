@@ -1,0 +1,40 @@
+uniform float4x4 worldViewProj; // VS
+uniform float4 texelOffsets; // VS
+
+void mainVS(in float4 pos : POSITION,
+            out float4 oPos : POSITION,
+            out float2 oDepth)
+{
+	oPos = mul(worldViewProj, pos);
+	oPos.xy += texelOffsets.zw * oPos.w;
+	oDepth = oPos.zw;
+}
+
+void mainPS(in float2 depth,
+            out float4 oCol : COLOR)
+{
+	float d = depth.x / depth.y;
+	oCol = float4(d,d,d,1.f);
+}
+
+void mainVSAlpha(in float4 pos : POSITION,
+            in float2 tex : TEXCOORD0,
+            out float4 oPos : POSITION,
+            out float2 oTex,
+            out float2 oDepth)
+{
+	oPos = mul(worldViewProj, pos);
+	oPos.xy += texelOffsets.zw * oPos.w;
+	oDepth = oPos.zw;
+}
+
+uniform sampler2D diffuseMap; // PS
+
+void mainPSAlpha(in float2 tex,
+            in float2 depth,
+            out float4 oCol : COLOR)
+{
+	float alpha = tex2D(diffuseMap, tex).a;
+	float d = depth.x / depth.y;
+	oCol = float4(d,d,d,alpha);
+}

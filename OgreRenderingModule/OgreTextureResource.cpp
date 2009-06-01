@@ -55,7 +55,7 @@ namespace OgreRenderer
                 return false; 
             }
             
-            static Core::u8 dummy_data[] = {0xff, 0xf0, 0x00};
+            static Core::u8 dummy_data[] = {0x80, 0x80, 0x80};
             
             Ogre::Box dimensions(0, 0, 1, 1);
             Ogre::PixelBox pixel_box(dimensions, pixel_format, (void*)dummy_data);
