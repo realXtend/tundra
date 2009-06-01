@@ -48,8 +48,15 @@ namespace Asset
         udp_asset_provider_ = Foundation::AssetProviderPtr(new UDPAssetProvider(framework_));
         manager_->RegisterAssetProvider(udp_asset_provider_);
 
-		http_asset_provider_ = Foundation::AssetProviderPtr(new HttpAssetProvider(framework_));
-		manager_->RegisterAssetProvider(http_asset_provider_);
+        try
+        {
+    		http_asset_provider_ = Foundation::AssetProviderPtr(new HttpAssetProvider(framework_));
+            manager_->RegisterAssetProvider(http_asset_provider_);
+        } catch (Core::Exception &e)
+        {
+            AssetModule::LogWarning("Failed to create HTTP asset provider.");
+        }
+		
         
         LogInfo("Module " + Name() + " initialized.");
     }
