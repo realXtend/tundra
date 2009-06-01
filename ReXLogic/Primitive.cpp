@@ -551,7 +551,7 @@ namespace RexLogic
             // Remember that we are going to get a resource event for this entity
             if (tag)
                 prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Texture)] = entityid;
-                
+            
             ++j;
         }
     }
@@ -585,7 +585,7 @@ namespace RexLogic
             const std::string mat_name = i->second.UUID.ToString();
             Core::uint idx = i->first;   
 
-            //! \todo in the future material names will not correspond directly to texture names, so can't use this kind of check
+            //! \todo in the future material names will probably not correspond directly to texture names, so can't use this kind of check
             // If the mesh material is up-to-date, no need to process any further.
             if (meshptr->GetMaterialName(idx) == mat_name)
             {
@@ -601,7 +601,7 @@ namespace RexLogic
                     if (res)
                         HandleTextureReady(entityid, res);
                     else
-                    {                
+                    {
                         Core::request_tag_t tag = renderer->RequestResource(mat_name, OgreRenderer::OgreTextureResource::GetTypeStatic());
 
                         // Remember that we are going to get a resource event for this entity
@@ -616,7 +616,7 @@ namespace RexLogic
                     if (res)
                         HandleMaterialResourceReady(entityid, res);
                     else
-                    {                
+                    {
                         Core::request_tag_t tag = renderer->RequestResource(mat_name, OgreRenderer::OgreMaterialResource::GetTypeStatic());
 
                         // Remember that we are going to get a resource event for this entity
@@ -837,10 +837,6 @@ namespace RexLogic
 
     void Primitive::HandleMaterialResourceReady(Core::entity_id_t entityid, Foundation::ResourcePtr res)
     {
-        //! \todo crash, probably when mesh arrives, but material for it is not yet ready / failed to parse. 
-        //! Also other crashes but got too frustrated to check. See also todo item in ResourceHandler::UpdateMaterial(). -cm
-        return;
-
         assert(res.get());
         if (!res) 
             return;
@@ -858,30 +854,31 @@ namespace RexLogic
             return;
         OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());      
         // If don't have the actual mesh entity yet, no use trying to set the material
-        if (!meshptr->GetEntity()) return;     
-                        
+        if (!meshptr->GetEntity()) return;
+        
         MaterialMap::const_iterator i = prim.Materials.begin();
         while (i != prim.Materials.end())
         {
             Core::uint idx = i->first;
-            // For now, handle only textures, not materials
             if ((i->second.Type == RexTypes::RexAT_MaterialScript) && (i->second.UUID.ToString() == res->GetId()))
             {
                 OgreRenderer::OgreMaterialResource *materialRes = dynamic_cast<OgreRenderer::OgreMaterialResource*>(res.get());
                 assert(materialRes);
 
                 Ogre::MaterialPtr mat = materialRes->GetMaterial();
-                assert(mat.get());
                 if (!mat.get())
                 {
                     std::stringstream ss;
                     ss << std::string("Resource \"") << res->GetId() << "\" did not contain a proper Ogre::MaterialPtr!";
+                    RexLogicModule::LogWarning(ss.str());
+                }
+                else
+                {
+                    meshptr->SetMaterial(idx, mat->getName());
+                    std::stringstream ss;
+                    ss << std::string("Set submesh ") << idx << " to use material \"" << mat->getName() << "\"";
                     RexLogicModule::LogInfo(ss.str());
                 }
-                meshptr->SetMaterial(idx, mat->getName());
-                std::stringstream ss;
-                ss << std::string("Set submesh ") << idx << " to use material \"" << mat->getName() << "\"";
-                RexLogicModule::LogInfo(ss.str());
             }
             ++i;
         }

@@ -31,6 +31,11 @@ namespace Asset
         //! Returns name of asset provider
         virtual const std::string& Name();
         
+        //! Checks an asset id for validity
+        /*! \return true if this asset provider can handle the id
+         */
+        virtual bool IsValidId(const std::string& asset_id);
+        
         //! Requests an asset for download
         /*! \param asset_id Asset UUID
             \param asset_type Asset type        

@@ -19,7 +19,8 @@ namespace OgreRenderer
     ResourceHandler::~ResourceHandler()
     {
         textures_.clear();
-        meshes_.clear();    
+        meshes_.clear();
+        materials_.clear();
     }
     
     void ResourceHandler::PostInitialize()
@@ -38,11 +39,11 @@ namespace OgreRenderer
         if (type == OgreMaterialResource::GetTypeStatic())
             return GetMaterial(id);
             
-        OgreRenderingModule::LogWarning("Requested unknown renderer resource type " + type);            
+        OgreRenderingModule::LogWarning("Requested unknown renderer resource type " + type);
         return Foundation::ResourcePtr();
     }
     
-    Core::request_tag_t ResourceHandler::RequestResource(const std::string& id, const std::string& type)   
+    Core::request_tag_t ResourceHandler::RequestResource(const std::string& id, const std::string& type)
     {
         if (type == OgreTextureResource::GetTypeStatic())
             return RequestTexture(id);
@@ -52,7 +53,7 @@ namespace OgreRenderer
             return RequestMaterial(id);
             
         OgreRenderingModule::LogWarning("Requested unknown renderer resource type " + type);
-        return 0;     
+        return 0;
     }
     
     void ResourceHandler::RemoveResource(const std::string& id, const std::string& type)
@@ -144,7 +145,7 @@ namespace OgreRenderer
             {
                 Core::request_tag_t source_tag = texture_service->RequestTexture(id);
                 if (source_tag)
-                {          
+                {
                     expected_request_tags_.insert(source_tag);
                     request_tags_[id].push_back(tag); 
                     return tag;
@@ -154,7 +155,7 @@ namespace OgreRenderer
             {
                 request_tags_[id].push_back(tag); 
                 return tag;
-            }                   
+            }
         }
         
         return 0;
@@ -188,7 +189,7 @@ namespace OgreRenderer
         Foundation::ResourcePtr tex = GetTexture(source_tex->GetId());
         if (!tex)
         {
-            tex = textures_[source_tex->GetId()] = Foundation::ResourcePtr(new OgreTextureResource(source_tex->GetId()));
+            tex = Foundation::ResourcePtr(new OgreTextureResource(source_tex->GetId()));
         }
 
         // If highest level, erase texture decode request tag (should not get more raw resource events for this texture)
@@ -199,6 +200,8 @@ namespace OgreRenderer
         bool success = false;
         if (checked_static_cast<OgreTextureResource*>(tex.get())->SetData(source_tex))
         {
+            textures_[source_tex->GetId()] = tex;
+            
             const Core::RequestTagVector& tags = request_tags_[source_tex->GetId()];            
             for (Core::uint i = 0; i < tags.size(); ++i)
             {
@@ -285,7 +288,7 @@ namespace OgreRenderer
         Foundation::ResourcePtr mesh = GetMesh(source->GetId());
         if (!mesh)
         {
-            mesh = meshes_[source->GetId()] = Foundation::ResourcePtr(new OgreMeshResource(source->GetId()));
+            mesh = Foundation::ResourcePtr(new OgreMeshResource(source->GetId()));
         }
 
         bool success = false;
@@ -294,7 +297,9 @@ namespace OgreRenderer
         // If data successfully set, or already have valid data, success (send RESOURCE_READY_EVENT)
         if ((!mesh_res->GetMesh().isNull()) || (mesh_res->SetData(source)))
         {
-            const Core::RequestTagVector& tags = request_tags_[source->GetId()];            
+            meshes_[source->GetId()] = mesh;
+            
+            const Core::RequestTagVector& tags = request_tags_[source->GetId()];
             for (Core::uint i = 0; i < tags.size(); ++i)
             {        
                 Resource::Events::ResourceReady event_data(mesh->GetId(), mesh, tags[i]);
@@ -339,13 +344,13 @@ namespace OgreRenderer
                     request_tags_[id].push_back(tag);
                     expected_request_tags_.insert(source_tag);
                     return tag;
-                }                
-            }     
+                }
+            }
             else
             {
                 request_tags_[id].push_back(tag); 
                 return tag;
-            }                     
+            }
         }
 
         return 0;
@@ -377,16 +382,47 @@ namespace OgreRenderer
         Foundation::ResourcePtr material = GetMaterial(source->GetId());
         if (!material)
         {
-            material = materials_[source->GetId()] = Foundation::ResourcePtr(new OgreMaterialResource(source->GetId()));
+            material = Foundation::ResourcePtr(new OgreMaterialResource(source->GetId()));
         }
 
         bool success = false;
         OgreMaterialResource* material_res = checked_static_cast<OgreMaterialResource*>(material.get());
 
         // If data successfully set, or already have valid data, success (send RESOURCE_READY_EVENT)
+        Core::StringVector tex_names;
         if ((!material_res->GetMaterial().isNull()) || (material_res->SetData(source)))
         {
-            const Core::RequestTagVector& tags = request_tags_[source->GetId()];            
+            /*! \todo Check textures. If do not exist, create texture with dummy data & request.
+                Not the nicest way to handle things, but works for now
+             */
+            Foundation::ResourceInterface::ReferenceVector& references = material_res->GetReferences();
+            
+            for (Core::uint i = 0; i < references.size(); ++i)
+            {
+                Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
+                if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
+                {
+                    boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+                    // Check that the texture is an asset based texture
+                    if (asset_service->IsValidId(references[i]))
+                    {
+                        if (!GetTexture(references[i]))
+                        {
+                            OgreTextureResource* temp_tex = new OgreTextureResource(references[i]);
+                            temp_tex->SetDummyData();
+                    
+                            Foundation::ResourcePtr tex = Foundation::ResourcePtr(temp_tex);
+                            textures_[references[i]] = tex;
+                    
+                            RequestTexture(references[i]);
+                        }
+                    }
+                    
+                }
+            }
+        
+            materials_[source->GetId()] = material;
+            const Core::RequestTagVector& tags = request_tags_[source->GetId()];
             for (Core::uint i = 0; i < tags.size(); ++i)
             {        
                 Resource::Events::ResourceReady event_data(material->GetId(), material, tags[i]);
@@ -395,11 +431,8 @@ namespace OgreRenderer
             
             success = true;
         }
-        //! \todo if material_res->SetData(source) fails for some reason (material fails to parse) we still put the (invalid) material in
-        //!       materials_ map, and GetMaterials() returns it, but of course causes crashes since there is no Ogre::Material behind it.
-        //!       See todo item in Primitive::HandleMeshReady() -cm
-        
+
         request_tags_.erase(source->GetId());
         return success;
-    }    
+    }
 }

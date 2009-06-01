@@ -43,12 +43,17 @@ namespace Asset
         
         return name;
     }
+
+    bool UDPAssetProvider::IsValidId(const std::string& asset_id)
+    {
+        return RexUUID::IsValid(asset_id);
+    }
     
     bool UDPAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, Core::request_tag_t tag)
     {
-        if (!RexUUID::IsValid(asset_id))
+        if (!IsValidId(asset_id))
             return false;
-            
+
         RexUUID uuid(asset_id);
         if (uuid.IsNull())
             return false;
