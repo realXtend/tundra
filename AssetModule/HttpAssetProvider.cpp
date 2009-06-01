@@ -69,6 +69,13 @@ namespace Asset
         if (asset_type_int < 0)
             return false;
 
+		HttpAssetTransfer* transfer = GetTransfer(asset_url);
+		if (transfer)
+		{
+			transfer->InsertTag(tag);
+			return true;
+		}
+
 		HttpAssetTransfer* t = new HttpAssetTransfer();
 		t->SetAssetId(asset_url);
 		t->SetAssetType(asset_type_int);
