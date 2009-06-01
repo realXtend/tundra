@@ -52,7 +52,7 @@ namespace Asset
         {
     		http_asset_provider_ = Foundation::AssetProviderPtr(new HttpAssetProvider(framework_));
             manager_->RegisterAssetProvider(http_asset_provider_);
-        } catch (Core::Exception &e)
+        } catch (Core::Exception)
         {
             AssetModule::LogWarning("Failed to create HTTP asset provider.");
         }
