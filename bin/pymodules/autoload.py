@@ -14,8 +14,8 @@ import mousecontrol
 modules = [
     #circuits_testmodule.TestModule,
     chathandler.ChatHandler,
-    keycommands.KeyCommander,
-    mousecontrol.MouseControl
+    keycommands.KeyCommander
+    #mousecontrol.MouseControl
 ]
 
 def load(circuitsmanager):
