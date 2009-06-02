@@ -53,11 +53,11 @@ namespace Asset
         
         if (check_disk)
         {
-            std::set<std::string>::iterator i = disk_cache_contents_.find(asset_id);
+            std::set<std::string>::iterator i = disk_cache_contents_.find(GetHash(asset_id));
             
             if (i != disk_cache_contents_.end())
             {               
-                boost::filesystem::path file_path(cache_path_ + "/" + asset_id);      
+                boost::filesystem::path file_path(cache_path_ + "/" + GetHash(asset_id));      
                 std::ifstream filestr(file_path.native_directory_string().c_str(), std::ios::in | std::ios::binary);
                 if (filestr.good())
                 {
@@ -118,10 +118,11 @@ namespace Asset
         AssetModule::LogDebug("Storing complete asset " + asset_id);
 
         // Store to memory cache
+		
         assets_[asset_id] = asset;
                 
         // Store to disk cache
-        boost::filesystem::path file_path(cache_path_ + "/" + asset_id);
+        boost::filesystem::path file_path(cache_path_ + "/" + GetHash(asset_id));
         std::ofstream filestr(file_path.native_directory_string().c_str(), std::ios::out | std::ios::binary);
         if (filestr.good())
         {
@@ -136,11 +137,18 @@ namespace Asset
             filestr.write((const char *)&data[0], size);
             filestr.close();
             
-            disk_cache_contents_.insert(asset_id);
+            disk_cache_contents_.insert(GetHash(asset_id));
         }
         else
         {
             AssetModule::LogError("Error storing asset " + asset_id + " to cache.");
         }
     }    
+
+	std::string AssetCache::GetHash(const std::string &asset_id)
+	{
+		md5_engine_.update(asset_id.c_str(), asset_id.size());
+		std::string hash = md5_engine_.digestToHex(md5_engine_.digest());
+		return hash;
+	}
 }
