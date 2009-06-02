@@ -15,12 +15,12 @@ namespace OgreRenderer
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         object_(NULL),
-        attached_(false),
-        draw_distance_(0.0)
+        attached_(false)
     {
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
         
         object_ = scene_mgr->createManualObject(renderer_->GetUniqueObjectName());
+        object_->setCastShadows(false);
     }
     
     EC_OgreCustomObject::~EC_OgreCustomObject()
@@ -45,9 +45,14 @@ namespace OgreRenderer
     
     void EC_OgreCustomObject::SetDrawDistance(float draw_distance)
     {
-        draw_distance_ = draw_distance;
         if (object_)
-            object_->setRenderingDistance(draw_distance_);
+            object_->setRenderingDistance(draw_distance);
+    }
+    
+   void EC_OgreCustomObject::SetCastShadows(bool enabled)
+    {
+        if (object_)
+            object_->setCastShadows(enabled);
     }
     
     void EC_OgreCustomObject::AttachObject()

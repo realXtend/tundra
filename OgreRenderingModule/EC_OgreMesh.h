@@ -141,6 +141,9 @@ namespace OgreRenderer
         //! mesh entity attached to placeable -flag
         bool attached_;
         
+        //! cast shadows falg
+        bool cast_shadows_;
+        
         //! draw distance
         float draw_distance_;
     };

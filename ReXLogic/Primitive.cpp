@@ -446,7 +446,7 @@ namespace RexLogic
         ///\todo Make this only discard mesh resource request tags.
         // Discard old request tags for this entity
         DiscardRequestTags(entityid, prim_resource_request_tags_);
-                                
+        
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
         if (!entity)
             return;
@@ -471,7 +471,7 @@ namespace RexLogic
             // Attach to placeable if not yet attached
             if (!mesh.GetPlaceable())
                 mesh.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
-                             
+            
             // Change mesh if yet nonexistent/changed
             // assume name to be UUID of mesh asset, which should be true of OgreRenderer resources
             std::string mesh_name = prim.MeshUUID.ToString();
@@ -486,8 +486,9 @@ namespace RexLogic
                     prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Mesh)] = entityid;
             }
             
-            // Set rendering distance
+            // Set rendering distance & shadows
             mesh.SetDrawDistance(prim.DrawDistance);
+            mesh.SetCastShadows(prim.CastShadows);
             
             // Check/request mesh textures
             HandleMeshMaterials(entityid);
@@ -513,8 +514,9 @@ namespace RexLogic
             if (!custom.GetPlaceable())
                 custom.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
             
-            // Set rendering distance
+            // Set rendering distance/cast shadows setting
             custom.SetDrawDistance(prim.DrawDistance);
+            custom.SetCastShadows(prim.CastShadows);
             
             // Request prim textures
             HandlePrimTexturesAndMaterial(entityid);
@@ -986,9 +988,6 @@ namespace RexLogic
             }
 
             mesh.SetAdjustScale(adjust_scale);
-            // Handle cast shadows
-            ///\todo Find a better place?
-            mesh.SetCastShadows(prim.CastShadows);
         }
 
         ogrepos.SetScale(prim.Scale);

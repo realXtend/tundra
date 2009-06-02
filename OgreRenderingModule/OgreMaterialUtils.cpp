@@ -64,10 +64,10 @@ namespace OgreRenderer
                 Ogre::Pass *pass = passIter.getNext();
                 
                 // Crude alpha reject on/off based on whether texture has alpha
-                if (has_alpha)
-                    pass->setAlphaRejectSettings(Ogre::CMPF_GREATER_EQUAL, 128);
-                else
-                    pass->setAlphaRejectFunction(Ogre::CMPF_ALWAYS_PASS);
+                //if (has_alpha)
+                //    pass->setAlphaRejectSettings(Ogre::CMPF_GREATER_EQUAL, 128);
+                //else
+                //    pass->setAlphaRejectFunction(Ogre::CMPF_ALWAYS_PASS);
                     
                 Ogre::Pass::TextureUnitStateIterator texIter = pass->getTextureUnitStateIterator();
                 Core::uint cmp_index = 0;
