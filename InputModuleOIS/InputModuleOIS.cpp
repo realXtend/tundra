@@ -20,7 +20,7 @@ namespace Input
         , event_category_(0)
         , dragged_(false)
         , input_state_(State_Unknown)
-    {       
+    {
     }
 
     InputModuleOIS::~InputModuleOIS()
@@ -125,6 +125,10 @@ namespace Input
         LogInfo("\tDevice: " + std::string(DeviceType[i->first]) + " Vendor: " + i->second);
 #endif
 
+        for (int i=0 ; i<256 ; ++i)
+        {
+            key_states_[i] = false;
+        }
 
         LogInfo("Module " + Name() + " initialized.");
     }
@@ -353,6 +357,7 @@ namespace Input
 
     void InputModuleOIS::SendKeyEvents(Input::State state)
     {
+        PROFILE(InputModuleOIS_SendKeyEvents);
         KeyEventInfoVector &keys = GetKeyInfo(state);
         for (size_t i=0 ; i<keys.size() ; ++i)
         {
@@ -367,6 +372,45 @@ namespace Input
             {
                 keys[i].pressed_ = false;
                 framework_->GetEventManager()->SendEvent(event_category_, keys[i].released_event_id_, NULL);
+            }
+        }
+
+        PROFILE(InputModuleOIS_SendKeyEvents_Raw);
+        // send raw keycodes
+        for (int i=0 ; i<256 ; ++i)
+        {
+            if (keyboard_->isKeyDown(static_cast<OIS::KeyCode>(i)) && key_states_[i] == false)
+            {
+                key_states_[i] = true;
+
+                const bool alt = keyboard_->isModifierDown(OIS::Keyboard::Alt);
+                const bool ctrl = keyboard_->isModifierDown(OIS::Keyboard::Ctrl);
+                const bool shift = keyboard_->isModifierDown(OIS::Keyboard::Shift);
+
+                int modifiers = 0;
+                if (alt) modifiers |= OIS::Keyboard::Alt;
+                if (ctrl) modifiers |= OIS::Keyboard::Ctrl;
+                if (shift) modifiers |= OIS::Keyboard::Shift;
+
+                Events::Key key_event(i, modifiers);
+                framework_->GetEventManager()->SendEvent(event_category_, Events::KEY_PRESSED, &key_event);
+            }
+
+            if (keyboard_->isKeyDown(static_cast<OIS::KeyCode>(i)) == false && key_states_[i])
+            {
+                key_states_[i] = false;
+
+                const bool alt = keyboard_->isModifierDown(OIS::Keyboard::Alt);
+                const bool ctrl = keyboard_->isModifierDown(OIS::Keyboard::Ctrl);
+                const bool shift = keyboard_->isModifierDown(OIS::Keyboard::Shift);
+
+                int modifiers = 0;
+                if (alt) modifiers |= OIS::Keyboard::Alt;
+                if (ctrl) modifiers |= OIS::Keyboard::Ctrl;
+                if (shift) modifiers |= OIS::Keyboard::Shift;
+
+                Events::Key key_event(i, modifiers);
+                framework_->GetEventManager()->SendEvent(event_category_, Events::KEY_RELEASED, &key_event);
             }
         }
     }
@@ -509,16 +553,12 @@ namespace Input
         Events::BufferedKey key_event(arg.key, arg.text);
         bool handled = framework_->GetEventManager()->SendEvent(event_category_, Events::BUFFERED_KEY_PRESSED, &key_event);
 
-        //handled_[arg.key] = handled;
-
         return handled;
     }
     bool InputModuleOIS::keyReleased( const OIS::KeyEvent &arg )
     {
         Events::BufferedKey key_event(arg.key, arg.text);
         bool handled = framework_->GetEventManager()->SendEvent(event_category_, Events::BUFFERED_KEY_RELEASED, &key_event);
-
-        //handled_[arg.key] = false;
 
         return handled;
     }

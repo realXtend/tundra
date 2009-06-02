@@ -64,6 +64,9 @@ namespace Input
         static const Core::event_id_t TOGGLE_FLYMODE = 37;
         static const Core::event_id_t TOGGLE_FLYMODE_REL = 38;
 
+        static const Core::entity_id_t KEY_PRESSED = 39;
+        static const Core::entity_id_t KEY_RELEASED = 40;
+
         //! Event for buffered key input. 
         /*! Do not use for any continous input such as avatar movement, it will probably cause input lag
             General use case is text input.
@@ -81,6 +84,25 @@ namespace Input
             const int code_;
             //! The key that was pressed as a character
             const Core::uint text_;
+        };
+
+        //! Raw keycode event for unbuffered input
+        /*! Avoid using unless you are sure this is what you should be using.
+
+            \ingroup Input_group
+        */
+        class Key : public Foundation::EventDataInterface
+        {
+            Key();
+        public:
+            Key(int code, int modifiers) : code_(code), modifiers_(modifiers)  {}
+            virtual ~Key() {}
+        
+            //! OIS::KeyCode, include OISKeyboard.h for the codes
+            const int code_;
+            
+            //! OIS modifiers (OIS::Keyboard::Ctrl, OIS::Keyboard::Shift, OIS::Keyboard::Alt)
+            const int modifiers_;
         };
 
         //! Movement along axis. \ingroup Input_group

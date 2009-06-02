@@ -263,6 +263,9 @@ namespace Input
 
         //! current input state
         Input::State input_state_;
+
+        //! vector of key states, used for sending raw keycode events. Plain array should be fine.
+        bool key_states_[256];
     };
 }
 #endif
