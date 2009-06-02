@@ -121,7 +121,7 @@ namespace RexLogic
                 
                 Core::uint indices = 0;
                 
-                for (Core::uint i = 0; i < primMesh.viewerFaces.size(); ++i)
+                for (int i = 0; i < primMesh.viewerFaces.size(); ++i)
                 {
                     Core::Color color = primitive.PrimDefaultColor;
                     ColorMap::const_iterator c = primitive.PrimColors.find(primMesh.viewerFaces[i].primFaceNumber);
@@ -138,33 +138,24 @@ namespace RexLogic
                         
                         if ((i == 0) || (tex_id != prev_tex_id))
                         {
-                            // Fill the indices of previous subsection before beginning new
                             if (indices)
-                            {
-                                for (Core::uint j = 0; j < indices; j += 3)
-                                {
-                                    object->index(j);
-                                    object->index(j+1);
-                                    object->index(j+2);
-                                }
-                                indices = 0;
                                 object->end();
-                            }
-                                
+
+                            indices = 0;
                                 
                             // Here we assume (again) that material name = texture UUID in text form
                             std::string mat_name = tex_id.ToString();
                             // Actually create the material here if texture yet missing, we'll fill later
                             OgreRenderer::GetOrCreateLitTexturedMaterial(mat_name.c_str());
                             
-                            object->begin(mat_name);
+                            object->begin(mat_name, Ogre::RenderOperation::OT_TRIANGLE_LIST);
                         }
                         prev_tex_id = tex_id;
                     }
                     else
                     {
                         if (i == 0)
-                            object->begin(mat_override);
+                            object->begin(mat_override, Ogre::RenderOperation::OT_TRIANGLE_LIST);
                     }
                     
                     Ogre::Vector3 pos1(primMesh.viewerFaces[i].v1.X, primMesh.viewerFaces[i].v1.Y, primMesh.viewerFaces[i].v1.Z);
@@ -194,21 +185,14 @@ namespace RexLogic
                     object->textureCoord(uv3);
                     object->colour(color.r, color.g, color.b, color.a);
                     
-                    indices += 3;
+                    object->index(indices++);
+                    object->index(indices++);
+                    object->index(indices++);
                 }
                 
-                // Fill the indices of last subsection
+                // End last subsection
                 if (indices)
-                {
-                    for (Core::uint j = 0; j < indices; j += 3)
-                    {
-                        object->index(j);
-                        object->index(j+1);
-                        object->index(j+2);
-                    }
-                    indices = 0;
                     object->end();
-                }
             }
             else
             {

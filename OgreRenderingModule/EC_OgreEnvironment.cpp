@@ -20,7 +20,7 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface* module) :
     cameraUnderWater_(false)
 //    attached_(false)
 {
-//    InitShadows();
+    InitShadows();
     CreateSunlight();
 }
 
@@ -142,8 +142,8 @@ void EC_OgreEnvironment::CreateSunlight()
     sunlight_->setType(Ogre::Light::LT_DIRECTIONAL);
     ///\todo Read parameters from config file?
     sunlight_->setDiffuseColour(0.93f, 1, 0.13f);
-    sunlight_->setPosition(0, 255, 100);
-    sunlight_->setDirection(125, 125, 5);
+    sunlight_->setPosition(0, 0, 0);
+    sunlight_->setDirection(-1, -1, -1);
     sunlight_->setCastShadows(true);
 
     // Set somekind of ambient light, so that the lights are visible.
@@ -173,15 +173,10 @@ void EC_OgreEnvironment::DetachSunlight()
 
 void EC_OgreEnvironment::InitShadows()
 {
-    ///\note Shadows don't work yet. Needs proper shaders and materials.
-    float shadowFarDist = 15;
-    unsigned short shadowTextureSize = 512;
-    float shadowFadeStart = 0.7;
-    float shadowFadeEnd = 0.9;
-    float shadowDirLightTextureOffset = 0.6;
+    float shadowFarDist = 50;
+    unsigned short shadowTextureSize = 2048;
     size_t shadowTextureCount = 1;
     Ogre::ColourValue shadowColor(0.6f, 0.6f, 0.6f);
-    int shadowMethod = 2; //enum, ShadowsNone
     
     // This is the default material to use for shadow buffer rendering pass, overridable in script.
     // Note that we use the same single material (vertex program) for each object, so we're relying on
@@ -194,19 +189,18 @@ void EC_OgreEnvironment::InitShadows()
     sceneManager->setShadowFarDistance(shadowFarDist);
 
     sceneManager->setShadowTextureSize(shadowTextureSize);
-    sceneManager->setShadowDirLightTextureOffset(shadowDirLightTextureOffset);
-    sceneManager->setShadowTextureFadeStart(shadowFadeStart);
-    sceneManager->setShadowTextureFadeEnd(shadowFadeEnd);
     sceneManager->setShadowTextureCount(shadowTextureCount);
 
-    // Set shadow mode to texture rather than stencil, so object geometry has less of an impact
-    //if (shadowMethod == ShadowsPCF)
-    {
-	    sceneManager->setShadowTexturePixelFormat(Ogre::PF_FLOAT16_R);
-	    sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
-	    sceneManager->setShadowTextureCasterMaterial(ogreShadowCasterMaterial.c_str());
-	    sceneManager->setShadowTextureSelfShadow(true);
-    }
+    sceneManager->setShadowTexturePixelFormat(Ogre::PF_FLOAT16_R);
+    sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
+    sceneManager->setShadowTextureCasterMaterial(ogreShadowCasterMaterial.c_str());
+    sceneManager->setShadowTextureSelfShadow(true);
+    
+    Ogre::ShadowCameraSetupPtr shadowCameraSetup = Ogre::ShadowCameraSetupPtr(new Ogre::FocusedShadowCameraSetup());
+    sceneManager->setShadowCameraSetup(shadowCameraSetup);
+    
+    // If set to true, problems with objects that clip into the ground
+    sceneManager->setShadowCasterRenderBackFaces(false);
 }
 
 }

@@ -77,24 +77,8 @@ namespace
         //Ogre::MaterialPtr terrainMaterial = mm.getByName(terrainMaterialName);
         
         assert(terrainMaterial.get());
+        OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName);
 
-        Ogre::Material::TechniqueIterator iter = terrainMaterial->getTechniqueIterator();
-        while(iter.hasMoreElements())
-        {
-            Ogre::Technique *tech = iter.getNext();
-            assert(tech);
-            Ogre::Technique::PassIterator passIter = tech->getPassIterator();
-            while(passIter.hasMoreElements())
-            {
-                Ogre::Pass *pass = passIter.getNext();
-                Ogre::Pass::TextureUnitStateIterator texIter = pass->getTextureUnitStateIterator();
-                while(texIter.hasMoreElements())
-                {
-                    Ogre::TextureUnitState *texUnit = texIter.getNext();
-                    texUnit->setTextureName(textureName);
-                }
-            }
-        }
 //        while(iter->
 //        terrainMaterial->
 //        Ogre::MaterialPtr newMaterial = material->clone(materialName);
@@ -270,6 +254,7 @@ namespace
             ss.clear();
             ss << "TerrainPatch " << patchX << ", " << patchY;
             Ogre::ManualObject *manual = sceneMgr->createManualObject(ss.str());
+            manual->setCastShadows(false);
 
             node = sceneMgr->createSceneNode();
             sceneMgr->getRootSceneNode()->addChild(node);

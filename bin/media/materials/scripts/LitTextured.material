@@ -1,24 +1,27 @@
 // Renders primitives with a single lit texture
-// todo: programmable pipeline still disabled for now, so that we can control alphareject 
-// based on whether texture has alpha
 material LitTextured
 {
 	technique
 	{
 		pass
 		{
-			//iteration once
+			iteration once
 
-			//vertex_program_ref rex/DiffVP
-			//{
-			//}
-			//fragment_program_ref rex/DiffFP
-			//{
-			//}
+			vertex_program_ref rex/DiffShadowVP
+			{
+			}
+			fragment_program_ref rex/DiffShadowFP
+			{
+			}
 			
 			texture_unit baseMap
 			{
 				texture TextureMissing.png
+			}
+			
+			texture_unit shadowMap
+			{
+				content_type shadow	
 			}
 		}
 	}

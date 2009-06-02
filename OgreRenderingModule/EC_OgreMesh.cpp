@@ -18,6 +18,7 @@ namespace OgreRenderer
         entity_(NULL),
         adjustment_node_(NULL),
         attached_(false),
+        cast_shadows_(false),
         draw_distance_(0.0)
     {
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
@@ -114,7 +115,10 @@ namespace OgreRenderer
         {
             entity_ = scene_mgr->createEntity(renderer_->GetUniqueObjectName(), mesh_name);
             if (entity_)
+            {
                 entity_->setRenderingDistance(draw_distance_);
+                entity_->setCastShadows(cast_shadows_);
+            }
         }
         catch (Ogre::Exception& e)
         {
@@ -224,6 +228,7 @@ namespace OgreRenderer
     
     void EC_OgreMesh::SetCastShadows(bool enabled)
     {
+        cast_shadows_ = enabled;
         if (entity_)
             entity_->setCastShadows(enabled);
     }        

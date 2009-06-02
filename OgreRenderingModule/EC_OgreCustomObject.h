@@ -42,14 +42,14 @@ namespace OgreRenderer
         /*! \param draw_distance New draw distance, 0.0 = draw always (default)
          */
         void SetDrawDistance(float draw_distance);
+                
+        //! Sets if the object casts shadows or not.
+        void SetCastShadows(bool enabled);
         
         //! returns the custom object
         /*! use the Ogre::ManualObject interface to actually create geometry.
          */
         Ogre::ManualObject* GetObject() const { return object_; }
-        
-        //! returns draw distance
-        float GetDrawDistance() const { return draw_distance_; }
         
     private:
         //! constructor
@@ -74,9 +74,6 @@ namespace OgreRenderer
         
         //! object attached to placeable -flag
         bool attached_;
-        
-        //! draw distance
-        float draw_distance_;
     };
 }
 

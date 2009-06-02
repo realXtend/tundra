@@ -69,7 +69,7 @@ bool Environment::HandleOSNE_SimulatorViewerTimeMessage(OpenSimProtocol::Network
     OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
         (component.get());
         
-    env.SetSunDirection(sunDirection_);
+    //env.SetSunDirection(-sunDirection_);
        
     return false; 
 }

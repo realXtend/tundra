@@ -425,7 +425,7 @@ namespace RexLogic
             Core::Quaternion adjust(Core::PI/2, 0, -Core::PI/2);
             mesh.SetAdjustOrientation(adjust);
             // Position approximately within the bounding box
-            mesh.SetAdjustPosition(Core::Vector3df(0,0,-0.75));
+            mesh.SetAdjustPosition(Core::Vector3df(0,0,-0.8));
             mesh.SetCastShadows(true);
             
         }
