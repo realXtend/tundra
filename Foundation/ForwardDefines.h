@@ -41,7 +41,7 @@ namespace Foundation
 
     typedef boost::shared_ptr<ComponentInterfaceAbstract> ComponentInterfacePtr;
     typedef boost::shared_ptr<ComponentInterfaceAbstract> ComponentPtr;
-    typedef boost::weak_ptr<ComponentInterfaceAbstract> WeakComponentPtr;
+    typedef boost::weak_ptr<ComponentInterfaceAbstract> ComponentWeakPtr;
     
     //! Use root logging only in foundation classes.
     static void RootLogFatal(const std::string &msg)
