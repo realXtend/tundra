@@ -17,8 +17,8 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface* module) :
     Foundation::ComponentInterface(module->GetFramework()),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
     sunlight_(NULL),
-    cameraUnderWater_(false)
-//    attached_(false)
+    cameraUnderWater_(false),
+    attached_(false)
 {
     InitShadows();
     CreateSunlight();
@@ -98,7 +98,7 @@ void EC_OgreEnvironment::UpdateVisualEffects()
     float cameraNearClip(0.5f);
     float cameraFarClip(500.0f);
     
-    // UpdateGlobaLightning()
+    // UpdateGlobalLighting();
     
     Ogre::Camera *camera = renderer_->GetCurrentCamera();
     Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();
@@ -153,21 +153,23 @@ void EC_OgreEnvironment::CreateSunlight()
 
 void EC_OgreEnvironment::AttachSunlight()
 {
-    if ((placeable_))
+    if ((placeable_) && (!attached_))
     {
         EC_OgrePlaceable* placeable = checked_static_cast<EC_OgrePlaceable*>(placeable_.get());
         Ogre::SceneNode* node = placeable->GetSceneNode();
         node->attachObject(sunlight_);
+        attached_ = true;
     }
 }
 
 void EC_OgreEnvironment::DetachSunlight()
 {
-    if ((placeable_))
+    if ((placeable_) && (attached_))
     {
         EC_OgrePlaceable* placeable = checked_static_cast<EC_OgrePlaceable*>(placeable_.get());
         Ogre::SceneNode* node = placeable->GetSceneNode();
         node->detachObject(sunlight_);
+        attached_ = false;
     }
 }
 

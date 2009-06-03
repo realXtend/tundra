@@ -18,6 +18,7 @@ namespace OgreRenderer
 
 #include "NetworkEvents.h"
 #include "RexUUID.h"
+#include "EC_OpenSimAvatar.h"
 
 namespace RexLogic
 {
@@ -79,9 +80,6 @@ namespace RexLogic
         
         /// Update the avatar name overlay positions.
         void UpdateAvatarNameOverlayPositions();
-
-        //! Starts requested avatar animations, stops others
-        void StartAvatarAnimations(const RexTypes::RexUUID& avatarid, const std::vector<RexTypes::RexUUID>& anim_ids);
         
         //! Updates running avatar animations
         void UpdateAvatarAnimations(Core::entity_id_t avatarid, Core::f64 frametime);
@@ -116,20 +114,19 @@ namespace RexLogic
         //! Looks up an animation definition by animation name
         const AnimationDefinition& GetAnimDefByAnimName(const std::string& name);
         
+        //! Starts requested avatar animations, stops others
+        void StartAvatarAnimations(const RexTypes::RexUUID& avatarid, const std::vector<RexTypes::RexUUID>& anim_ids);
+        
+        //! Sets avatar state
+        void SetAvatarState(const RexTypes::RexUUID& avatarid, EC_OpenSimAvatar::State state);
+
         //! Animation definition map
         typedef std::map<RexTypes::RexUUID, AnimationDefinition> AnimationDefinitionMap;
         AnimationDefinitionMap default_anim_defs_;
         
-        //! Animation map
-        typedef std::map<RexTypes::RexUUID, int> AvatarAnimationMap;
-        AvatarAnimationMap avatar_anims_;
-        
-        //! Avatar animation ids
-        static const int AVATAR_ANIM_UNDEFINED = 0;
-        static const int AVATAR_ANIM_WALK = 1;
-        static const int AVATAR_ANIM_STAND = 2;
-        static const int AVATAR_ANIM_FLY = 3;
-        static const int AVATAR_ANIM_SIT_GROUND = 4;
+        //! Avatar state map
+        typedef std::map<RexTypes::RexUUID, EC_OpenSimAvatar::State> AvatarStateMap;
+        AvatarStateMap avatar_states_;
         
         //! Default avatar mesh name
         std::string default_avatar_mesh_;

@@ -7,6 +7,8 @@ namespace RexLogic
 {
     EC_OpenSimAvatar::EC_OpenSimAvatar(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework())
     {
+        state_ = Stand;
+        
         //RegionHandle = 0;
         //LocalId = 0;
         //FullId.SetNull();
@@ -56,11 +58,21 @@ namespace RexLogic
             avatar_address_ = address;
     }
     
-    std::string EC_OpenSimAvatar::GetAppearanceAddress()
+    const std::string& EC_OpenSimAvatar::GetAppearanceAddress() const
     {
         if(avatar_override_address_.length() > 0)
             return avatar_override_address_;
         else
-            return avatar_address_;   
+            return avatar_address_;
+    }
+    
+    void EC_OpenSimAvatar::SetState(State state)
+    {
+        state_ = state;
+    }
+    
+    EC_OpenSimAvatar::State EC_OpenSimAvatar::GetState() const
+    {
+        return state_;
     }
 }

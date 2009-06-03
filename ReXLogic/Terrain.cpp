@@ -16,6 +16,7 @@
 #include "../OgreRenderingModule/Renderer.h"
 #include "../OgreRenderingModule/OgreTextureResource.h"
 #include "../OgreRenderingModule/OgreMaterialUtils.h"
+#include "../OgreRenderingModule/OgreConversionUtils.h"
 
 #include "BitStream.h"
 #include "TerrainDecoder.h"
@@ -218,8 +219,7 @@ namespace
                 pos.z = thisPatch->heightData[Y*patchSize+X];
 
                 manual->position(pos);
-                //! \todo create normals properly
-                manual->normal(0,0,1);
+                manual->normal(OgreRenderer::ToOgreVector3(terrain.CalculateNormal(thisPatch->x, thisPatch->y, X, Y)));
 // Ogre:                manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.z + pos.z) * vScale);
                 manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.y + pos.y) * vScale);
                 ++curIndex;
@@ -250,10 +250,7 @@ namespace
         {
             Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
 
-            std::stringstream ss;
-            ss.clear();
-            ss << "TerrainPatch " << patchX << ", " << patchY;
-            Ogre::ManualObject *manual = sceneMgr->createManualObject(ss.str());
+            Ogre::ManualObject *manual = sceneMgr->createManualObject(renderer->GetUniqueObjectName());
             manual->setCastShadows(false);
 
             node = sceneMgr->createSceneNode();

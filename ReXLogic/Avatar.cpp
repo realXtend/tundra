@@ -31,10 +31,15 @@ namespace RexLogic
     { 
         rexlogicmodule_ = rexlogicmodule;
 
-        avatar_anims_[RexTypes::RexUUID("6ed24bd8-91aa-4b12-ccc7-c97c857ab4e0")] = AVATAR_ANIM_WALK;
-        avatar_anims_[RexTypes::RexUUID("2408fe9e-df1d-1d7d-f4ff-1384fa7b350f")] = AVATAR_ANIM_STAND;
-        avatar_anims_[RexTypes::RexUUID("aec4610c-757f-bc4e-c092-c6e9caf18daf")] = AVATAR_ANIM_FLY;
-        avatar_anims_[RexTypes::RexUUID("1c7600d6-661f-b87b-efe2-d7421eb93c86")] = AVATAR_ANIM_SIT_GROUND;
+        avatar_states_[RexTypes::RexUUID("6ed24bd8-91aa-4b12-ccc7-c97c857ab4e0")] = EC_OpenSimAvatar::Walk;
+        avatar_states_[RexTypes::RexUUID("47f5f6fb-22e5-ae44-f871-73aaaf4a6022")] = EC_OpenSimAvatar::Walk;
+        avatar_states_[RexTypes::RexUUID("2408fe9e-df1d-1d7d-f4ff-1384fa7b350f")] = EC_OpenSimAvatar::Stand;
+        avatar_states_[RexTypes::RexUUID("aec4610c-757f-bc4e-c092-c6e9caf18daf")] = EC_OpenSimAvatar::Fly;
+        avatar_states_[RexTypes::RexUUID("1a5fe8ac-a804-8a5d-7cbd-56bd83184568")] = EC_OpenSimAvatar::Sit;
+        avatar_states_[RexTypes::RexUUID("1c7600d6-661f-b87b-efe2-d7421eb93c86")] = EC_OpenSimAvatar::Sit;
+        avatar_states_[RexTypes::RexUUID("4ae8016b-31b9-03bb-c401-b1ea941db41d")] = EC_OpenSimAvatar::Hover;
+        avatar_states_[RexTypes::RexUUID("20f063ea-8306-2562-0b07-5c853b37b31e")] = EC_OpenSimAvatar::Hover;
+        avatar_states_[RexTypes::RexUUID("62c5de58-cb33-5743-3d07-9e4cd4352864")] = EC_OpenSimAvatar::Hover;
         
         default_avatar_mesh_ = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "default_mesh_name", std::string("Jack.mesh"));
         std::string default_animation_path = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "default_animations_file", std::string("./data/default_animations.xml"));
@@ -290,6 +295,7 @@ namespace RexLogic
         
             Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
             if(entity)
+            
             {
                 EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());        
                 avatar.SetAppearanceAddress(avataraddress,overrideappearance);
@@ -336,11 +342,13 @@ namespace RexLogic
             Core::s32 animsequence = data->message->ReadS32();
 
             animations_to_start.push_back(animid);
-            //if(avatar_anims_.find(animid) != avatar_anims_.end())
-            //{
-            //    /// \todo handle known animation: avatar_anims_[animid]                        
-            //}
-        }        
+            
+            if(avatar_states_.find(animid) != avatar_states_.end())
+            {
+                // Set avatar state based on animation: not probably best way, but possibly acceptable for now
+                SetAvatarState(avatarid, avatar_states_[animid]);
+            }
+        }
         
         size_t animsourcelistcount = data->message->ReadCurrentBlockInstanceCount();
         for(size_t i = 0; i < animsourcelistcount; i++)
@@ -570,7 +578,7 @@ namespace RexLogic
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
         if (!entity)
             return;
-        
+            
         Foundation::ComponentPtr animctrlptr = entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic());
         if (!animctrlptr)
             return;
@@ -654,5 +662,18 @@ namespace RexLogic
             
             ++anim;
         }
+    }
+    
+    void Avatar::SetAvatarState(const RexTypes::RexUUID& avatarid, EC_OpenSimAvatar::State state)
+    {
+        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
+        if (!entity)
+            return;
+         
+        Foundation::ComponentPtr avatar_ptr = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
+        if (!avatar_ptr)
+            return;
+        EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatar_ptr.get());
+        avatar.SetState(state);
     }
 }

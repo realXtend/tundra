@@ -49,4 +49,31 @@ namespace RexLogic
                 sceneMgr->destroySceneNode(node);
             }
     }
+    
+    float EC_Terrain::GetPoint(int x, int y)
+    {
+        if (x < 0) x = 0;
+        if (y < 0) y = 0;
+        if (x >= cNumPatchesPerEdge * 16) x = cNumPatchesPerEdge * 16 - 1;
+        if (y >= cNumPatchesPerEdge * 16) y = cNumPatchesPerEdge * 16 - 1;
+        
+        return GetPatch(x / cPatchSize, y / cPatchSize).heightData[(y % cPatchSize) * cPatchSize + (x % cPatchSize)];
+    }
+    
+    Core::Vector3df EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside)
+    {
+        int px = x * cPatchSize + xinside;
+        int py = y * cPatchSize + yinside;
+        
+        float x_slope = GetPoint(px-1, py) - GetPoint(px+1, py);
+        if ((px <= 0) || (px >= cNumPatchesPerEdge * 16))
+            x_slope *= 2;
+        float y_slope = GetPoint(px, py-1) - GetPoint(px, py+1);
+        if ((py <= 0) || (py >= cNumPatchesPerEdge * 16))
+            y_slope *= 2;
+        
+        Core::Vector3df normal(x_slope, y_slope, 2.0);
+        normal.normalize();
+        return normal;
+    }
 }
