@@ -97,6 +97,9 @@ namespace OgreRenderer
         /// placeable component, optional
         Foundation::ComponentPtr placeable_;
         
+        /// attached to placeable -flag
+        bool attached_;
+        
         /// renderer
         RendererPtr renderer_;
         

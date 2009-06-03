@@ -16,6 +16,17 @@ namespace RexLogic
         DECLARE_EC(EC_OpenSimAvatar);
        
     public:
+        //! Avatar states
+        //! \todo Do we need combinations of states?
+        enum State
+        {
+            Stand,
+            Walk,
+            Fly,
+            Hover,
+            Sit
+        };
+
         virtual ~EC_OpenSimAvatar();
 
         ////! set first name
@@ -32,8 +43,12 @@ namespace RexLogic
         //! set appearance address 
         void SetAppearanceAddress(const std::string &address, bool overrideappearance);
         // get appearance address that is used, return override if that is defined, otherwise the default address
-        std::string GetAppearanceAddress();
+        const std::string& GetAppearanceAddress() const;
 
+        //! set state
+        void SetState(State state);
+        //! get state
+        State GetState() const;
      
         //// !ID related
         //uint64_t RegionHandle;
@@ -51,6 +66,9 @@ namespace RexLogic
         std::string avatar_address_;
         //! appearance override address
         std::string avatar_override_address_;
+        
+        //! state
+        State state_;
 
         EC_OpenSimAvatar(Foundation::ModuleInterface* module);
     };

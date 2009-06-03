@@ -41,7 +41,8 @@ namespace RexLogic
         /// The OpenSim world has a 16x16 grid of terrain patches. Alter this to change the
         /// assumption.
         static const int cNumPatchesPerEdge = 16;
-
+        static const int cPatchSize = 16;
+        
         /// @return The patch at given (x,y) coordinates. Pass in values in range [0, 15].
         Patch &GetPatch(int x, int y)
         {
@@ -52,6 +53,14 @@ namespace RexLogic
             return patches[y][x];
         }
 
+        /// Calculate terrain normal
+        /// @param x patch horizontal number
+        /// @param y patch vertical number
+        /// @param xinside horizontal position within patch
+        /// @param yinside vertical position within patch
+        /// @return normal
+        Core::Vector3df CalculateNormal(int x, int y, int xinside, int yinside);
+        
         /// @return True if all the patches of the terrain are loaded.
         bool AllPatchesLoaded() const
         {
@@ -69,6 +78,9 @@ namespace RexLogic
     private:
         EC_Terrain(Foundation::ModuleInterface* module);
 
+        /// Utility to get heightmap point
+        float GetPoint(int x, int y);
+        
         /// Stores the actual height patches.
         Patch patches[cNumPatchesPerEdge][cNumPatchesPerEdge];
 
