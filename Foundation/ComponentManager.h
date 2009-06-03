@@ -21,7 +21,7 @@ namespace Foundation
     class ComponentManager
     {
     public:
-        typedef std::list<WeakComponentPtr> ComponentList;
+        typedef std::list<ComponentWeakPtr> ComponentList;
         typedef std::map< std::string, ComponentList > ComponentTypeMap;
         typedef ComponentList::iterator iterator;
         typedef ComponentList::const_iterator const_iterator;

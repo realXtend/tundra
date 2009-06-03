@@ -21,6 +21,7 @@ namespace RexLogic
     class Water;
     class Environment;
     class RexLoginWindow;
+    class AvatarControllable;
     
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
     typedef boost::shared_ptr<AvatarController> AvatarControllerPtr;
@@ -32,6 +33,7 @@ namespace RexLogic
     typedef boost::shared_ptr<Primitive> PrimitivePtr;
     typedef boost::shared_ptr<Sky> SkyPtr;
     typedef boost::shared_ptr<Environment> EnvironmentPtr;
+    typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
 
     enum InputController
     {
@@ -170,7 +172,8 @@ namespace RexLogic
         Core::f64 dead_reckoning_time_;
 
         typedef boost::function<bool(Core::event_id_t,Foundation::EventDataInterface*)> LogicEventHandlerFunction;
-        typedef std::map<Core::event_category_id_t, LogicEventHandlerFunction> LogicEventHandlerMap;
+        typedef std::vector<LogicEventHandlerFunction> EventHandlerVector;
+        typedef std::map<Core::event_category_id_t, EventHandlerVector> LogicEventHandlerMap;
         
         LogicEventHandlerMap event_handlers_;
 
@@ -217,6 +220,9 @@ namespace RexLogic
         
         //! The connection state which is shown in the login window.
         OpenSimProtocol::Connection::State connectionState_;
+
+        //! An avatar controllable
+        AvatarControllablePtr avatar_controllable_;
     };
 }
 

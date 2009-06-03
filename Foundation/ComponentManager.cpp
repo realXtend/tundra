@@ -22,7 +22,7 @@ namespace Foundation
 
         ComponentInterfacePtr component = (*iter->second.get())();
 
-        components_[type].push_back(WeakComponentPtr(component));
+        components_[type].push_back(ComponentWeakPtr(component));
 
         return component;
     }
@@ -35,7 +35,7 @@ namespace Foundation
 
         ComponentInterfacePtr newComponent = (*iter->second.get())(component);
 
-        components_[component->Name()].push_back(WeakComponentPtr(newComponent));
+        components_[component->Name()].push_back(ComponentWeakPtr(newComponent));
 
         return newComponent;
     }
