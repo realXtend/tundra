@@ -19,6 +19,9 @@ namespace OgreRenderer
 
     /// Converts Core::Vector3f to Ogre::Vector3.
     Ogre::Vector3 OGRE_MODULE_API ToOgreVector3(const Core::Vector3df &vector);
+
+    /// Converts Core::Quaternion to Ogre::Quaternion
+    Ogre::Quaternion OGRE_MODULE_API ToOgreQuaternion(const Core::Quaternion &quat);
 }
 
 #endif

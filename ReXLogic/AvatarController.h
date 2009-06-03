@@ -45,6 +45,8 @@ namespace RexLogic
         void StopRotatingRight();
         void ToggleFlyMode();
          
+        void Drag(const Input::Events::Movement *movement);
+                 
         //! Gets avatar entity
         Scene::EntityPtr GetAvatarEntity() const { return avatarentity_; }
 
@@ -57,6 +59,11 @@ namespace RexLogic
         void HandleAgentMovementComplete(const RexTypes::Vector3& position, const RexTypes::Vector3& lookat);   
         void HandleNetworkUpdate(const RexTypes::Vector3& position, const Core::Quaternion& rotation);
 
+        //! Check first/third mode when switching from free camera
+        /*! \param if cached true, assume that firstperson mode within avatar controller is up-to-date
+         */
+        void CheckMode(bool cached = false);
+        
     private:
         Foundation::Framework *framework_;
      
@@ -74,6 +81,11 @@ namespace RexLogic
         
         //! camera offset
         RexTypes::Vector3 cameraoffset_;
+
+        //! camera offset in first person
+        /*! fallback mode only, if can't get from avatar head position
+         */
+        RexTypes::Vector3 cameraoffset_firstperson_;
         
         //! camera min distance
         float camera_min_distance_;
@@ -81,6 +93,18 @@ namespace RexLogic
         //! camera max distance
         float camera_max_distance_; 
 
+        //! relative pitch of the camera for one frame, frame time independent
+        Core::Real drag_pitch_;
+
+        //! relative yaw of the camera for one frame, frame time independent
+        Core::Real drag_yaw_;
+        
+        //! first person mode camera sensitivity
+        Core::Real rot_sensitivity_;
+        
+        //! first person camera pitch (radians)
+        Core::Real firstperson_pitch_;
+        
         //! head rotation
         Core::Quaternion headrotation_;
 
@@ -92,6 +116,12 @@ namespace RexLogic
         
         //! how much time has been waited for the network movement update
         float net_movementupdatetime_;      
+        
+        //! first person mode flag
+        bool firstperson_;
+        
+        //! name of avatar skeleton head bone for first person tracking
+        std::string head_bone_;
     };
 }
 

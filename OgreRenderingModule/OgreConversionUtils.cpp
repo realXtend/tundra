@@ -24,4 +24,9 @@ Ogre::Vector3 ToOgreVector3(const Core::Vector3df &vector)
     return Ogre::Vector3(vector.x, vector.y, vector.z);
 }
 
+Ogre::Quaternion ToOgreQuaternion(const Core::Quaternion &quat)
+{
+    return Ogre::Quaternion(quat.w, quat.x, quat.y, quat.z);
+}
+
 }

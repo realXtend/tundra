@@ -417,6 +417,8 @@ namespace RexLogic
 
             Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
             GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
+
+            avatar_controller_->CheckMode();
         }
     }
     

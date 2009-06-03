@@ -57,10 +57,10 @@ namespace RexLogic
         Core::Real yaw_;
 
         // relative pitch of the camera for one frame, frame time independent
-        Ogre::Real drag_pitch_;
+        Core::Real drag_pitch_;
 
         // relative yaw of the camera for one frame, frame time independent
-        Ogre::Real drag_yaw_;
+        Core::Real drag_yaw_;
 
         //! translation speed of the camera
         Core::Real sensitivity_;
