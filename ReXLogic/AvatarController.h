@@ -76,6 +76,11 @@ namespace RexLogic
 
         void SendMovementToServer();
 
+        //! Stop all rotation
+        void StopRotating();
+        //! Stop all strafing
+        void StopStrafing();
+        
         //! camera distance
         float cameradistance_;
         

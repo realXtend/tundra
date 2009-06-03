@@ -171,6 +171,19 @@ namespace RexLogic
         SendMovementToServer();
     }
 
+    void AvatarController::StopRotating()
+    {
+        yaw_ = 0;
+        SendMovementToServer();
+    }
+    
+    void AvatarController::StopStrafing()
+    {
+        controlflags_ &= ~RexTypes::AGENT_CONTROL_LEFT_POS;
+        controlflags_ &= ~RexTypes::AGENT_CONTROL_LEFT_NEG;
+        SendMovementToServer();
+    }
+    
     Core::Quaternion AvatarController::GetBodyRotation()
     {
         if(avatarentity_)
@@ -349,6 +362,7 @@ namespace RexLogic
                 rexlogicmodule_->GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FIRSTPERSON, NULL);
                 firstperson_ = true;
                 firstperson_pitch_ = 0.0f;
+                StopRotating();
             }
         }
         else
@@ -359,6 +373,7 @@ namespace RexLogic
                 rexlogicmodule_->GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
                 firstperson_ = false;
                 firstperson_pitch_ = 0.0f;
+                StopStrafing();
             }
         }
     }
