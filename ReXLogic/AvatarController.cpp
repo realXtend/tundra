@@ -4,8 +4,12 @@
 #include "AvatarController.h"
 #include "RexLogicModule.h"
 #include "RexServerConnection.h"
+#include "EventManager.h"
+#include "InputEvents.h"
 #include "Renderer.h"
+#include "../OgreRenderingModule/EC_OgreMesh.h"
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
+#include "../OgreRenderingModule/OgreConversionUtils.h"
 #include "EC_NetworkPosition.h"
 #include "Entity.h"
 #include <Ogre.h>
@@ -23,11 +27,20 @@ namespace RexLogic
         cameradistance_ = 20.0f;
         camera_min_distance_ = 1.0f;
         camera_max_distance_ = 50.0f;
-        cameraoffset_ = RexTypes::Vector3(0,0,1.8f);
+        cameraoffset_ = Core::Vector3df(0,0,1.8f);
+        cameraoffset_firstperson_ = Core::Vector3df(0.5f,0,0.8f);
         
         yaw_ = 0.0f;
         net_movementupdatetime_ = 0.0f;
         net_dirtymovement_ = false;
+        
+        drag_yaw_ = 0.f;
+        drag_pitch_ = 0.f;
+        firstperson_pitch_ = 0.f;
+        firstperson_ = false;
+
+        rot_sensitivity_ = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "mouselook_rotation_sensitivity", 1.6f);
+        head_bone_ = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting<std::string>("RexAvatar", "headbone_name", "Bip01_Head");
     }
 
     AvatarController::~AvatarController()
@@ -36,7 +49,7 @@ namespace RexLogic
             avatarentity_.reset();
     }
     
-    void AvatarController::SetAvatarEntity(Scene::EntityPtr avatar)    
+    void AvatarController::SetAvatarEntity(Scene::EntityPtr avatar)
     {
         avatarentity_ = avatar;
     }
@@ -120,10 +133,18 @@ namespace RexLogic
         SendMovementToServer();
     }
 
+    void AvatarController::Drag(const Input::Events::Movement *movement)
+    {
+        drag_yaw_ = static_cast<float>(movement->x_.rel_) * -0.2f;
+        drag_pitch_ = static_cast<float>(movement->y_.rel_) * -0.2f;
+    }
+
     void AvatarController::Zoom(int value) 
     {    
         cameradistance_ -= (value*0.015f);
         cameradistance_ = std::max(camera_min_distance_, std::min(camera_max_distance_,cameradistance_));
+        
+        CheckMode(true);
     }
 
     void AvatarController::StartRotatingLeft()
@@ -212,28 +233,76 @@ namespace RexLogic
         Ogre::Camera *camera = renderer->GetCurrentCamera();
         OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get());
 
+        if (!firstperson_)
+        {
+            drag_yaw_ = 0.0;
+            drag_pitch_ = 0.0;
+        }
+        else
+        {
+            // update camera pitch
+            if (drag_pitch_ != 0)
+            {
+                firstperson_pitch_ += Ogre::Degree(drag_pitch_ * rot_sensitivity_).valueRadians();
+                if (firstperson_pitch_ < -Core::PI/2) firstperson_pitch_ = -Core::PI/2;
+                if (firstperson_pitch_ > Core::PI/2) firstperson_pitch_ = Core::PI/2;
+            }
+        }
+        
         // update body rotation
-        if(yaw_ != 0)
+        if ((yaw_ != 0) ||(drag_yaw_ != 0))
         {
             Core::Quaternion rotchange;
-            rotchange.fromAngleAxis((yaw_*frametime*0.5f),RexTypes::Vector3(0,0,1)); 
+            rotchange.fromAngleAxis((yaw_*frametime*0.5f + Ogre::Degree(drag_yaw_ * rot_sensitivity_).valueRadians()),RexTypes::Vector3(0,0,1)); 
+            
             Core::Quaternion newrot = rotchange * GetBodyRotation();
             SetBodyRotation(newrot.normalize());
         }
 
-        // hack: so that there is no lag between avatar/camera, copy orientation to ogre scenenode here, instead
-        // of waiting for the general update/interpolation cycle
-        ogreplaceable.SetOrientation(GetBodyRotation());
-
         // update camera position
         RexTypes::Vector3 campos = ogreplaceable.GetPosition();
-        campos += (ogreplaceable.GetOrientation() * RexTypes::Vector3(-1,0,0) * cameradistance_);
-        campos += (ogreplaceable.GetOrientation() * cameraoffset_);
+        campos += (GetBodyRotation() * RexTypes::Vector3(-1,0,0) * cameradistance_);
+        campos += (GetBodyRotation() * cameraoffset_);
         camera->setPosition(campos.x,campos.y,campos.z);
         
         RexTypes::Vector3 lookat = ogreplaceable.GetPosition();
         lookat += (ogreplaceable.GetOrientation() * cameraoffset_);
-        camera->lookAt(lookat.x,lookat.y,lookat.z);           
+        camera->lookAt(lookat.x,lookat.y,lookat.z);
+            
+        if (firstperson_)
+        {
+            bool fallback = true;
+            // Try to use head bone from avatar to get the first person camera position
+            Foundation::ComponentPtr mesh_ptr = avatarentity_->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+            if (mesh_ptr)
+            {
+                OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh_ptr.get());
+                Ogre::Entity* ent = mesh.GetEntity();
+                if (ent)
+                {
+                    Ogre::SkeletonInstance* skel = ent->getSkeleton();
+                    if (skel->hasBone(head_bone_))
+                    {
+                        Ogre::Bone* bone = skel->getBone(head_bone_);
+                        Ogre::Vector3 headpos = bone->_getDerivedPosition();
+                        Core::Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y - 0.5f);
+                        RexTypes::Vector3 campos = ogreplaceable.GetPosition();
+                        campos += GetBodyRotation() * ourheadpos;
+                        camera->setPosition(campos.x,campos.y,campos.z);
+                        fallback = false;
+                    }
+                }
+            }
+            
+            // Fallback using fixed position
+            if (fallback)
+            {
+                RexTypes::Vector3 campos = ogreplaceable.GetPosition();
+                campos += (GetBodyRotation() * cameraoffset_firstperson_);
+                camera->setPosition(campos.x,campos.y,campos.z);
+            }            
+            camera->pitch(Ogre::Radian(firstperson_pitch_));
+        }
     }
     
     void AvatarController::HandleAgentMovementComplete(const RexTypes::Vector3& position, const RexTypes::Vector3& lookat)
@@ -269,5 +338,29 @@ namespace RexLogic
         netpos.position_ = position;        
         netpos.Updated();    
     }        
+    
+    void AvatarController::CheckMode(bool cached)
+    {
+        if (cameradistance_ == camera_min_distance_)
+        {
+            if ((!firstperson_) || (!cached))
+            {
+                Core::event_category_id_t event_category = rexlogicmodule_->GetFramework()->GetEventManager()->QueryEventCategory("Input");
+                rexlogicmodule_->GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FIRSTPERSON, NULL);
+                firstperson_ = true;
+                firstperson_pitch_ = 0.0f;
+            }
+        }
+        else
+        {
+            if ((firstperson_) || (!cached))
+            {
+                Core::event_category_id_t event_category = rexlogicmodule_->GetFramework()->GetEventManager()->QueryEventCategory("Input");
+                rexlogicmodule_->GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
+                firstperson_ = false;
+                firstperson_pitch_ = 0.0f;
+            }
+        }
+    }
 }
 
