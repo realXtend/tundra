@@ -103,6 +103,9 @@ namespace RexLogic
 
         //! relative yaw of the camera for one frame, frame time independent
         Core::Real drag_yaw_;
+
+        //! third person mode turn sensitivity
+        Core::Real turn_sensitivity_;
         
         //! first person mode camera sensitivity
         Core::Real rot_sensitivity_;
