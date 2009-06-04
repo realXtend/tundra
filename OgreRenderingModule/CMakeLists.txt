@@ -24,6 +24,7 @@ INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_OGRE()
 INCLUDE_GTKMM()
+INCLUDE_CAELUM()
 
 add_definitions (-DOGRE_MODULE_EXPORTS -DMODULE_EXPORTS)
 
@@ -50,6 +51,7 @@ LINK_BOOST()
 LINK_POCO()
 LINK_OGRE()
 LINK_GTKMM()
+LINK_CAELUM()
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

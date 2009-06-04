@@ -48,6 +48,9 @@ void Environment::CreateEnvironment()
     cachedEnvironmentEntity_ = entity;
 }
 
+///\todo Remove this when Caelum is working ok.
+bool test = true;
+
 bool Environment::HandleOSNE_SimulatorViewerTimeMessage(OpenSimProtocol::NetworkEventInboundData *data)
 {
     NetInMessage &msg = *data->message;
@@ -66,20 +69,31 @@ bool Environment::HandleOSNE_SimulatorViewerTimeMessage(OpenSimProtocol::Network
         return false;
     
     // Update the sunlight direction and angle velocity.
+    ///\note Not needed anymore as we use Caleum now.
     OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
         (component.get());
-        
-    //env.SetSunDirection(-sunDirection_);
-       
-    return false; 
+//    env.SetSunDirection(-sunDirection_);        
+    
+    /** \note
+     *  It's not necessary to update the environment time every time SimulatorViewerTimeMessage is received
+     *  (about every tenth second that is) because the Caleum system has its own perception of time. But let's
+     *  do it anyways for now.
+     */
+    if (test)
+    {
+        env.SetTime(usecSinceStart_);
+        test = false;
+    }
+    
+    return false;
 }
 
-void Environment::UpdateVisualEffects()
+void Environment::UpdateVisualEffects(Core::f64 frametime)
 {
     FindCurrentlyActiveEnvironment();
     OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
         (GetEnvironmentEntity().lock()->GetComponent("EC_OgreEnvironment").get());
-    env.UpdateVisualEffects();
+    env.UpdateVisualEffects(frametime);
 }
 
 }

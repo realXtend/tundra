@@ -18,6 +18,7 @@ include (Python)
 include (OIS)
 include (OpenJpeg)
 include (OpenAL)
+include (Caelum)
 
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
@@ -48,6 +49,7 @@ FIND_OIS()
 FIND_OPENJPEG()
 FIND_GTKMM()
 FIND_OPENAL()
+FIND_CAELUM()
 
 # Default additional include & library directories
 include_directories (${REX_DEP_PATH}/include)

@@ -12,6 +12,10 @@ namespace Ogre
     class Light;
 }
 
+namespace Caelum
+{
+    class CaelumSystem;
+}
 
 namespace OgreRenderer
 {
@@ -65,15 +69,22 @@ namespace OgreRenderer
         /// Whether the sunlight casts shadows or not.
         /// @param enabled Whether the light casts shadows or not.
         void SetSunCastShadows(const bool &enabled);
-
+        
+        /// Set the time.
+        /// @param time Time as UNIX EPOCH seconds.
+        void EC_OgreEnvironment::SetTime(time_t time);
+        
         /// @return Ogre light pointer
         Ogre::Light* GetSunlight() const { return sunlight_; }
         
         /// Updates the visual effects, e.g. the fog.
-        void UpdateVisualEffects();
+        void UpdateVisualEffects(Core::f64 frametime);
         
         /// Disables the fog.
         void DisableFog();
+        
+        /// 
+        void SetTimeScale(float value);
         
     private:
         /// Constructor.
@@ -91,6 +102,9 @@ namespace OgreRenderer
         /// \note Not sure if this is needed. Maybe if we want to create custom suns?
         void DetachSunlight();
         
+        ///        
+        void InitCaelum();
+        
         /// Initializes shadows.
         void InitShadows();
         
@@ -106,8 +120,11 @@ namespace OgreRenderer
         /// Ogre sunlight
         Ogre::Light *sunlight_;
         
-        /// Is the camera above or under the water.
+        /// Is the camera under the water.
         bool cameraUnderWater_;
+
+        /// Caelum system.
+        Caelum::CaelumSystem *caelumSystem_;
     };
 }
 

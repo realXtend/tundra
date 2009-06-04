@@ -52,7 +52,7 @@ void EC_OgreSky::CreateSky(bool show)
     
     Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
     
-    RexTypes::Vector3 v = Core::OpenSimToOgreCoordinateAxes(genericSkyParameters.angleAxis);
+    RexTypes::Vector3 v = genericSkyParameters.angleAxis;
     Ogre::Quaternion orientation(Ogre::Degree(genericSkyParameters.angle), Ogre::Vector3(v.x, v.y, v.z));
  
     ///\todo Get the sky type and other parameters from the config file.
