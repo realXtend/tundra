@@ -23,10 +23,10 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface* module) :
     cameraUnderWater_(false),
     attached_(false)
 {
-    InitShadows();
 //    CreateSunlight();
 //    SetAmbientLightColor(Core::Color(0, 0, 0, 1));
     InitCaelum();
+    InitShadows();
 }
 
 EC_OgreEnvironment::~EC_OgreEnvironment()
@@ -137,23 +137,23 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
     if (caelumSystem_->getSun()->getMainLight()->getDirection().z > 0)
     {
         caelumSystem_->getSun()->setVisibilityFlags(false);
-        caelumSystem_->getSun()->getMainLight()->setVisible(false);
+        //caelumSystem_->getSun()->getMainLight()->setVisible(false);
     }
     else
     {
         caelumSystem_->getSun()->setVisibilityFlags(true);
-        caelumSystem_->getSun()->getMainLight()->setVisible(true);
+        //caelumSystem_->getSun()->getMainLight()->setVisible(true);
     }
      
     if (caelumSystem_->getMoon()->getMainLight()->getDirection().z > 0)
     {
         caelumSystem_->getMoon()->setVisibilityFlags(false);
-        caelumSystem_->getMoon()->getMainLight()->setVisible(false);
+        //caelumSystem_->getMoon()->getMainLight()->setVisible(false);
     }
     else
     {
         caelumSystem_->getMoon()->setVisibilityFlags(true);
-        caelumSystem_->getMoon()->getMainLight()->setVisible(true);
+        //caelumSystem_->getMoon()->getMainLight()->setVisible(true);
     }
 
     // Set fogging    
@@ -262,6 +262,9 @@ void EC_OgreEnvironment::InitCaelum()
     
     // We want to manage the fog ourself.
     caelumSystem_->setManageSceneFog(false);
+
+    caelumSystem_->setEnsureSingleLightSource(true);
+    caelumSystem_->setEnsureSingleShadowSource(true);
 }
        
 void EC_OgreEnvironment::InitShadows()
