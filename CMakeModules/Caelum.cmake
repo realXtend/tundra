@@ -12,9 +12,9 @@ macro (INCLUDE_CAELUM)
 endmacro (INCLUDE_CAELUM)
 
 macro (LINK_CAELUM)
-	if (NOT MSVC)
+	if (MSVC)
 		target_link_libraries (${TARGET_NAME}
 			optimized caelum
 			debug caelum_d)
-	endif (NOT MSVC)
+	endif (MSVC)
 endmacro (LINK_CAELUM)
