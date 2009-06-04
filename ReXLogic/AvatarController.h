@@ -122,6 +122,9 @@ namespace RexLogic
         //! how much time has been waited for the network movement update
         float net_movementupdatetime_;      
         
+        //! minimum permissible time between network movement updates
+        float net_updateinterval_;
+        
         //! first person mode flag
         bool firstperson_;
         

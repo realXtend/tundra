@@ -39,8 +39,11 @@ namespace RexLogic
         firstperson_pitch_ = 0.f;
         firstperson_ = false;
 
-        rot_sensitivity_ = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "mouselook_rotation_sensitivity", 1.6f);
+        rot_sensitivity_ = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "mouselook_rotation_sensitivity", 1.0f);
         head_bone_ = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting<std::string>("RexAvatar", "headbone_name", "Bip01_Head");
+        float updates_per_second = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "updates_per_second", 20.0f);
+        if (updates_per_second <= 0.0) updates_per_second = 1.0;
+        net_updateinterval_ = 1.0 / updates_per_second;
     }
 
     AvatarController::~AvatarController()
@@ -57,80 +60,80 @@ namespace RexLogic
     void AvatarController::StartMovingForward()
     {
         controlflags_ |= RexTypes::AGENT_CONTROL_AT_POS;
-        SendMovementToServer();
+        net_dirtymovement_ = true;
     }
 
     void AvatarController::StopMovingForward()
     {
         controlflags_ &= ~RexTypes::AGENT_CONTROL_AT_POS;
-        SendMovementToServer();
+        net_dirtymovement_ = true;
     }
 
     void AvatarController::StartMovingBackward()
     {
         controlflags_ |= RexTypes::AGENT_CONTROL_AT_NEG;
-        SendMovementToServer();
+        net_dirtymovement_ = true;
     }
 
     void AvatarController::StopMovingBackward()
     {
         controlflags_ &= ~RexTypes::AGENT_CONTROL_AT_NEG;
-        SendMovementToServer();
+        net_dirtymovement_ = true;
     }
 
     void AvatarController::StartMovingLeft()
     {
         controlflags_ |= RexTypes::AGENT_CONTROL_LEFT_POS;
-        SendMovementToServer();
+        net_dirtymovement_ = true;
     }
 
     void AvatarController::StopMovingLeft()
     {
         controlflags_ &= ~RexTypes::AGENT_CONTROL_LEFT_POS;
-        SendMovementToServer();
+        net_dirtymovement_ = true;
     }
 
     void AvatarController::StartMovingRight()
     {
         controlflags_ |= RexTypes::AGENT_CONTROL_LEFT_NEG;
-        SendMovementToServer();
+        net_dirtymovement_ = true;
     }
 
     void AvatarController::StopMovingRight()
     {
         controlflags_ &= ~RexTypes::AGENT_CONTROL_LEFT_NEG;
-        SendMovementToServer();
+        net_dirtymovement_ = true;
     }
     
     
     void AvatarController::StartMovingUp()
     {
         controlflags_ |= RexTypes::AGENT_CONTROL_UP_POS;
-        SendMovementToServer();
+        net_dirtymovement_ = true;
     }
 
     void AvatarController::StopMovingUp()
     {
         controlflags_ &= ~RexTypes::AGENT_CONTROL_UP_POS;
-        SendMovementToServer();
+        net_dirtymovement_ = true;
     }
 
     void AvatarController::StartMovingDown()
     {
         controlflags_ |= RexTypes::AGENT_CONTROL_UP_NEG;
-        SendMovementToServer();
+        net_dirtymovement_ = true;
     }
 
     void AvatarController::StopMovingDown()
     {
         controlflags_ &= ~RexTypes::AGENT_CONTROL_UP_NEG;
-        SendMovementToServer();
+        net_dirtymovement_ = true;
     }
     
     void AvatarController::ToggleFlyMode()
     {
         controlflags_ ^= RexTypes::AGENT_CONTROL_FLY;
-        SendMovementToServer();
+        net_dirtymovement_ = true;
     }
 
     void AvatarController::Drag(const Input::Events::Movement *movement)
@@ -150,38 +153,33 @@ namespace RexLogic
     void AvatarController::StartRotatingLeft()
     {
         yaw_ = 1;
-        SendMovementToServer();
     }
     
     void AvatarController::StopRotatingLeft()
     {
         yaw_ = 0;
-        SendMovementToServer();
     }
     
     void AvatarController::StartRotatingRight()
     {
         yaw_ = -1;
-        SendMovementToServer();
     }
     
     void AvatarController::StopRotatingRight()
     {
         yaw_ = 0;
-        SendMovementToServer();
     }
 
     void AvatarController::StopRotating()
     {
         yaw_ = 0;
-        SendMovementToServer();
     }
     
     void AvatarController::StopStrafing()
     {
         controlflags_ &= ~RexTypes::AGENT_CONTROL_LEFT_POS;
         controlflags_ &= ~RexTypes::AGENT_CONTROL_LEFT_NEG;
-        SendMovementToServer();
+        net_dirtymovement_ = true;
     }
     
     Core::Quaternion AvatarController::GetBodyRotation()
@@ -203,15 +201,22 @@ namespace RexLogic
             netpos.rotation_ = rotation;    
             netpos.Updated();
             
-            net_dirtymovement_ = true;         
+            net_dirtymovement_ = true;
         }
     }
 
 
     void AvatarController::SendMovementToServer()
     {
+        if (!net_dirtymovement_)
+            return;
+        if (net_movementupdatetime_ < net_updateinterval_)
+            return;
+        
         // 0 = walk, 1 = mouselook, 2 = type
         uint8_t flags = 0;
+        if (firstperson_)
+            flags = 1;
         
         Core::Quaternion bodyrot = Core::Quaternion(0,0,0,1);
         Core::Quaternion headrot = Core::Quaternion(0,0,0,1);
@@ -230,92 +235,97 @@ namespace RexLogic
         RexTypes::Vector3 camcenter = Vector3(0,0,0);
         RexTypes::Vector3 camataxis = Vector3(0,0,0);
         RexTypes::Vector3 camleftaxis = Vector3(0,0,0);
-        RexTypes::Vector3 camupaxis = Vector3(0,0,0);       
-        float fardist = 4000.0f;
+        RexTypes::Vector3 camupaxis = Vector3(0,0,0);
+        float fardist = 1000.0f;
         
         rexlogicmodule_->GetServerConnection()->SendAgentUpdatePacket(bodyrot,headrot,0,camcenter,camataxis,camleftaxis,camupaxis,fardist,controlflags_,flags);            
+        net_movementupdatetime_ = 0.0f;
+        net_dirtymovement_ = false;
     }
     
     
     void AvatarController::Update(Core::f64 frametime)
     {
         boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        if (!renderer || !avatarentity_)
-            return;
-
-        Ogre::Camera *camera = renderer->GetCurrentCamera();
-        OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get());
-
-        if (!firstperson_)
+        if (renderer && avatarentity_)
         {
-            drag_yaw_ = 0.0;
-            drag_pitch_ = 0.0;
-        }
-        else
-        {
-            // update camera pitch
-            if (drag_pitch_ != 0)
+            Ogre::Camera *camera = renderer->GetCurrentCamera();
+            OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get());
+
+            if (!firstperson_)
             {
-                firstperson_pitch_ += Ogre::Degree(drag_pitch_ * rot_sensitivity_).valueRadians();
-                if (firstperson_pitch_ < -Core::PI/2) firstperson_pitch_ = -Core::PI/2;
-                if (firstperson_pitch_ > Core::PI/2) firstperson_pitch_ = Core::PI/2;
+                drag_yaw_ = 0.0;
+                drag_pitch_ = 0.0;
             }
-        }
-        
-        // update body rotation
-        if ((yaw_ != 0) ||(drag_yaw_ != 0))
-        {
-            Core::Quaternion rotchange;
-            rotchange.fromAngleAxis((yaw_*frametime*0.5f + Ogre::Degree(drag_yaw_ * rot_sensitivity_).valueRadians()),RexTypes::Vector3(0,0,1)); 
-            
-            Core::Quaternion newrot = rotchange * GetBodyRotation();
-            SetBodyRotation(newrot.normalize());
-        }
-
-        // update camera position
-        RexTypes::Vector3 campos = ogreplaceable.GetPosition();
-        campos += (GetBodyRotation() * RexTypes::Vector3(-1,0,0) * cameradistance_);
-        campos += (GetBodyRotation() * cameraoffset_);
-        camera->setPosition(campos.x,campos.y,campos.z);
-        
-        RexTypes::Vector3 lookat = ogreplaceable.GetPosition();
-        lookat += (ogreplaceable.GetOrientation() * cameraoffset_);
-        camera->lookAt(lookat.x,lookat.y,lookat.z);
-            
-        if (firstperson_)
-        {
-            bool fallback = true;
-            // Try to use head bone from avatar to get the first person camera position
-            Foundation::ComponentPtr mesh_ptr = avatarentity_->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-            if (mesh_ptr)
+            else
             {
-                OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh_ptr.get());
-                Ogre::Entity* ent = mesh.GetEntity();
-                if (ent)
+                // update camera pitch
+                if (drag_pitch_ != 0)
                 {
-                    Ogre::SkeletonInstance* skel = ent->getSkeleton();
-                    if (skel->hasBone(head_bone_))
-                    {
-                        Ogre::Bone* bone = skel->getBone(head_bone_);
-                        Ogre::Vector3 headpos = bone->_getDerivedPosition();
-                        Core::Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y - 0.5f);
-                        RexTypes::Vector3 campos = ogreplaceable.GetPosition();
-                        campos += GetBodyRotation() * ourheadpos;
-                        camera->setPosition(campos.x,campos.y,campos.z);
-                        fallback = false;
-                    }
+                    firstperson_pitch_ += Ogre::Degree(drag_pitch_ * rot_sensitivity_).valueRadians();
+                    if (firstperson_pitch_ < -Core::PI/2) firstperson_pitch_ = -Core::PI/2;
+                    if (firstperson_pitch_ > Core::PI/2) firstperson_pitch_ = Core::PI/2;
                 }
             }
             
-            // Fallback using fixed position
-            if (fallback)
+            // update body rotation
+            if ((yaw_ != 0) ||(drag_yaw_ != 0))
             {
-                RexTypes::Vector3 campos = ogreplaceable.GetPosition();
-                campos += (GetBodyRotation() * cameraoffset_firstperson_);
-                camera->setPosition(campos.x,campos.y,campos.z);
-            }            
-            camera->pitch(Ogre::Radian(firstperson_pitch_));
+                Core::Quaternion rotchange;
+                rotchange.fromAngleAxis((yaw_*frametime*0.5f + Ogre::Degree(drag_yaw_ * rot_sensitivity_).valueRadians()),RexTypes::Vector3(0,0,1)); 
+                
+                Core::Quaternion newrot = rotchange * GetBodyRotation();
+                SetBodyRotation(newrot.normalize());
+            }
+
+            // update camera position
+            RexTypes::Vector3 campos = ogreplaceable.GetPosition();
+            campos += (GetBodyRotation() * RexTypes::Vector3(-1,0,0) * cameradistance_);
+            campos += (GetBodyRotation() * cameraoffset_);
+            camera->setPosition(campos.x,campos.y,campos.z);
+            
+            RexTypes::Vector3 lookat = ogreplaceable.GetPosition();
+            lookat += (ogreplaceable.GetOrientation() * cameraoffset_);
+            camera->lookAt(lookat.x,lookat.y,lookat.z);
+                
+            if (firstperson_)
+            {
+                bool fallback = true;
+                // Try to use head bone from avatar to get the first person camera position
+                Foundation::ComponentPtr mesh_ptr = avatarentity_->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+                if (mesh_ptr)
+                {
+                    OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh_ptr.get());
+                    Ogre::Entity* ent = mesh.GetEntity();
+                    if (ent)
+                    {
+                        Ogre::SkeletonInstance* skel = ent->getSkeleton();
+                        if (skel->hasBone(head_bone_))
+                        {
+                            Ogre::Bone* bone = skel->getBone(head_bone_);
+                            Ogre::Vector3 headpos = bone->_getDerivedPosition();
+                            Core::Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y - 0.5f);
+                            RexTypes::Vector3 campos = ogreplaceable.GetPosition();
+                            campos += GetBodyRotation() * ourheadpos;
+                            camera->setPosition(campos.x,campos.y,campos.z);
+                            fallback = false;
+                        }
+                    }
+                }
+                
+                // Fallback using fixed position
+                if (fallback)
+                {
+                    RexTypes::Vector3 campos = ogreplaceable.GetPosition();
+                    campos += (GetBodyRotation() * cameraoffset_firstperson_);
+                    camera->setPosition(campos.x,campos.y,campos.z);
+                }            
+                camera->pitch(Ogre::Radian(firstperson_pitch_));
+            }
         }
+        
+        net_movementupdatetime_ += frametime;
+        SendMovementToServer();
     }
     
     void AvatarController::HandleAgentMovementComplete(const RexTypes::Vector3& position, const RexTypes::Vector3& lookat)
