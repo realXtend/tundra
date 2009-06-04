@@ -65,22 +65,28 @@ namespace RexLogic
         void CheckMode(bool cached = false);
         
     private:
+        //! Constructs network control flags from user input + some automation
+        void SetNetControlFlags();
+        
+        //! Sends agent update to server, if flags/rotation dirty & enough time elapsed of last update
+        void SendMovementToServer();
+
+        //! Stops all rotation
+        void StopRotating();
+        
+        //! Stops all strafing
+        void StopStrafing();
+        
         Foundation::Framework *framework_;
      
         RexLogicModule *rexlogicmodule_;
         
-        uint32_t controlflags_;        
+        //! Control flags from user input
+        uint32_t controlflags_;
 
         //! Own avatar
         Scene::EntityPtr avatarentity_;
 
-        void SendMovementToServer();
-
-        //! Stop all rotation
-        void StopRotating();
-        //! Stop all strafing
-        void StopStrafing();
-        
         //! camera distance
         float cameradistance_;
         
@@ -127,6 +133,9 @@ namespace RexLogic
         
         //! minimum permissible time between network movement updates
         float net_updateinterval_;
+        
+        //! control flags to be sent to server
+        uint32_t net_controlflags_;
         
         //! first person mode flag
         bool firstperson_;
