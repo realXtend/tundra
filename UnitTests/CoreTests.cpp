@@ -68,13 +68,19 @@ BOOST_AUTO_TEST_CASE( vector3 )
     Core::Vector3di other_str(1, 1, 1);
     ss >> other_str;
     BOOST_CHECK_EQUAL (test_str, other_str);
+    ss.clear();
 
-    Core::Vector3df test_fv(1.5f ,0.5f, 1.5f);
-    Core::Vector3df other_fv;
+    Core::Vector3df test_fv(1.5f, 0.5f, 1.5f);
+    Core::Vector3df other_fv(1.5f, 0.5f, 1.5f);
     ss << test_fv;
     ss >> test_fv;
     BOOST_CHECK (Core::equals(test_fv.x, other_fv.x) && Core::equals(test_fv.y, other_fv.y) && Core::equals(test_fv.z, other_fv.z));
 
+    test_fv.set(0, 0, 0);
+    other_fv.set(0, 0, 1);
+    std::string test_fv_str = Core::ToString(test_fv);
+    other_fv = Core::ParseString<Core::Vector3df>(test_fv_str);
+    BOOST_CHECK (Core::equals(test_fv.x, other_fv.x) && Core::equals(test_fv.y, other_fv.y) && Core::equals(test_fv.z, other_fv.z));
 }
 
 BOOST_AUTO_TEST_CASE( quaternion )
