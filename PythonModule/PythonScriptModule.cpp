@@ -1,5 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+
+#include "OISKeyboard.h"
+//#include "OISMouse.h"
+
 #include "StableHeaders.h"
 #include "PythonScriptModule.h"
 //#include "Foundation.h"
@@ -186,9 +190,23 @@ namespace PythonScript
 		//implementing input state in py, see the AvatarController and CameraController in rexlogic
 		if (category_id == inputeventcategoryid)
 		{
-			PyObject_CallMethod(pmmInstance, "INPUT_EVENT", "i", event_id);
-		}
+			
+			//key inputs, send the event id and key info (code+mod) for the python side
+			if (event_id == Input::Events::KEY_PRESSED || event_id == Input::Events::KEY_RELEASED)
+			{
+				//InputEvents::Key *key = static_cast<InputEvents::Key *> (data);
+				Input::Events::Key* key = checked_static_cast<Input::Events::Key *>(data);
+				
+				const int keycode = key->code_;
+				const int mods = key->modifiers_;
+				//OIS::KeyCode* keycode = key->code_;
 
+				PyObject_CallMethod(pmmInstance, "KEY_INPUT_EVENT", "iii", event_id, keycode, mods);	
+			}
+			else
+				PyObject_CallMethod(pmmInstance, "INPUT_EVENT", "i", event_id);
+		}
+		
 		//was for first receive chat test, when no module provided it, so handles net event directly
         if (category_id == inboundCategoryID_)
         {

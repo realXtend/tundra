@@ -14,7 +14,8 @@ class ModuleManager:
         
     def INPUT_EVENT(self, evid):
         print "Manager got input event:", evid
-        
+    def KEY_INPUT_EVENT(self, evid, keycode, keymod):
+        print "Manager got key_input event:", evid, keycode, keymod
     def MOUSE_INPUT(self, x_abs, y_abs, x_rel, y_rel):
         print "Manager got mouse input", x_abs, y_abs, x_rel, y_rel
                 
