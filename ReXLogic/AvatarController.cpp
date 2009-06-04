@@ -32,6 +32,7 @@ namespace RexLogic
         
         yaw_ = 0.0f;
         net_movementupdatetime_ = 0.0f;
+        net_controlflags_ = 0;
         net_dirtymovement_ = false;
         
         drag_yaw_ = 0.f;
@@ -61,80 +62,67 @@ namespace RexLogic
     void AvatarController::StartMovingForward()
     {
         controlflags_ |= RexTypes::AGENT_CONTROL_AT_POS;
-        net_dirtymovement_ = true;
     }
 
     void AvatarController::StopMovingForward()
     {
         controlflags_ &= ~RexTypes::AGENT_CONTROL_AT_POS;
-        net_dirtymovement_ = true;
     }
 
     void AvatarController::StartMovingBackward()
     {
         controlflags_ |= RexTypes::AGENT_CONTROL_AT_NEG;
-        net_dirtymovement_ = true;
     }
 
     void AvatarController::StopMovingBackward()
     {
         controlflags_ &= ~RexTypes::AGENT_CONTROL_AT_NEG;
-        net_dirtymovement_ = true;
     }
 
     void AvatarController::StartMovingLeft()
     {
         controlflags_ |= RexTypes::AGENT_CONTROL_LEFT_POS;
-        net_dirtymovement_ = true;
     }
 
     void AvatarController::StopMovingLeft()
     {
         controlflags_ &= ~RexTypes::AGENT_CONTROL_LEFT_POS;
-        net_dirtymovement_ = true;
     }
 
     void AvatarController::StartMovingRight()
     {
         controlflags_ |= RexTypes::AGENT_CONTROL_LEFT_NEG;
-        net_dirtymovement_ = true;
     }
 
     void AvatarController::StopMovingRight()
     {
         controlflags_ &= ~RexTypes::AGENT_CONTROL_LEFT_NEG;
-        net_dirtymovement_ = true;
     }
     
     
     void AvatarController::StartMovingUp()
     {
         controlflags_ |= RexTypes::AGENT_CONTROL_UP_POS;
-        net_dirtymovement_ = true;
     }
 
     void AvatarController::StopMovingUp()
     {
         controlflags_ &= ~RexTypes::AGENT_CONTROL_UP_POS;
-        net_dirtymovement_ = true;
     }
 
     void AvatarController::StartMovingDown()
     {
         controlflags_ |= RexTypes::AGENT_CONTROL_UP_NEG;
-        net_dirtymovement_ = true;
     }
 
     void AvatarController::StopMovingDown()
     {
         controlflags_ &= ~RexTypes::AGENT_CONTROL_UP_NEG;
-        net_dirtymovement_ = true;
     }
     
     void AvatarController::ToggleFlyMode()
     {
         controlflags_ ^= RexTypes::AGENT_CONTROL_FLY;
-        net_dirtymovement_ = true;
     }
 
     void AvatarController::Drag(const Input::Events::Movement *movement)
@@ -206,7 +194,6 @@ namespace RexLogic
         }
     }
 
-
     void AvatarController::SendMovementToServer()
     {
         if (!net_dirtymovement_)
@@ -239,7 +226,7 @@ namespace RexLogic
         RexTypes::Vector3 camupaxis = Vector3(0,0,0);
         float fardist = 1000.0f;
         
-        rexlogicmodule_->GetServerConnection()->SendAgentUpdatePacket(bodyrot,headrot,0,camcenter,camataxis,camleftaxis,camupaxis,fardist,controlflags_,flags);            
+        rexlogicmodule_->GetServerConnection()->SendAgentUpdatePacket(bodyrot,headrot,0,camcenter,camataxis,camleftaxis,camupaxis,fardist,net_controlflags_,flags);
         net_movementupdatetime_ = 0.0f;
         net_dirtymovement_ = false;
     }
@@ -326,6 +313,7 @@ namespace RexLogic
         }
         
         net_movementupdatetime_ += frametime;
+        SetNetControlFlags();
         SendMovementToServer();
     }
     
@@ -387,6 +375,46 @@ namespace RexLogic
                 StopStrafing();
             }
         }
+    }
+    
+    void AvatarController::SetNetControlFlags()
+    {
+        uint32_t oldflags = net_controlflags_;
+        net_controlflags_ = controlflags_;
+     
+        // First person mode fly up/down automation
+        if ((controlflags_ & RexTypes::AGENT_CONTROL_FLY) && (firstperson_) && ((controlflags_ & (RexTypes::AGENT_CONTROL_UP_POS|RexTypes::AGENT_CONTROL_UP_NEG)) == 0))
+        {
+            if ((controlflags_ & RexTypes::AGENT_CONTROL_AT_POS) && (firstperson_pitch_ > Core::PI/12))
+            {
+                net_controlflags_ |= RexTypes::AGENT_CONTROL_UP_POS;
+                if (firstperson_pitch_ > Core::PI/3)
+                    net_controlflags_ &= ~RexTypes::AGENT_CONTROL_AT_POS;
+            }
+            
+            if ((controlflags_ & RexTypes::AGENT_CONTROL_AT_POS) && (firstperson_pitch_ < -Core::PI/12))
+            {
+                net_controlflags_ |= RexTypes::AGENT_CONTROL_UP_NEG;
+                if (firstperson_pitch_ < -Core::PI/3)
+                    net_controlflags_ &= ~RexTypes::AGENT_CONTROL_AT_POS;
+            }
+            if ((controlflags_ & RexTypes::AGENT_CONTROL_AT_NEG) && (firstperson_pitch_ > Core::PI/12))
+            {
+                net_controlflags_ |= RexTypes::AGENT_CONTROL_UP_NEG;
+                if (firstperson_pitch_ > Core::PI/3)
+                    net_controlflags_ &= ~RexTypes::AGENT_CONTROL_AT_NEG;
+            }
+            
+            if ((controlflags_ & RexTypes::AGENT_CONTROL_AT_NEG) && (firstperson_pitch_ < -Core::PI/12))
+            {
+                net_controlflags_ |= RexTypes::AGENT_CONTROL_UP_POS;
+                if (firstperson_pitch_ < -Core::PI/3)
+                    net_controlflags_ &= ~RexTypes::AGENT_CONTROL_AT_NEG;
+            }
+        }
+        
+        if (net_controlflags_ != oldflags)
+            net_dirtymovement_ = true;
     }
 }
 
