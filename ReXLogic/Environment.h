@@ -5,11 +5,6 @@
 #ifndef incl_RexLogicModule_Environment_h
 #define incl_RexLogicModule_Environment_h
 
-namespace Ogre
-{
-    class Camera;
-}
-
 namespace RexLogic
 {
     class Environment
@@ -37,7 +32,7 @@ namespace RexLogic
         bool HandleOSNE_SimulatorViewerTimeMessage(OpenSimProtocol::NetworkEventInboundData* data);
         
         /// Updates the visual effects (fog, skybox etc).
-        void UpdateVisualEffects();
+        void UpdateVisualEffects(Core::f64 frametime);
         
     private:
         /// Creates the global sunlight.
@@ -52,16 +47,16 @@ namespace RexLogic
         /// Server's perception of time (UNIX EPOCH).
         time_t usecSinceStart_;
         
-        /// Unknown.
+        /// Unknown/not needed. \todo delete?
         uint32_t secPerDay_;
         
-        /// Unknown.
+        /// Unknown/not needed. \todo delete?
         uint32_t secPerYear_;
         
         /// Direction of the sunlight.
         Vector3 sunDirection_;
         
-        /// Unknown.
+        /// Unknown/not needed. \todo delete?
         float sunPhase_;
         
         /// Sun's angle velocity.

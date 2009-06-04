@@ -302,7 +302,8 @@ namespace RexLogic
                     // Update avatar name overlay positions.
                     GetAvatarHandler()->UpdateAvatarNameOverlayPositions();
                     
-                    GetEnvironmentHandler()->UpdateVisualEffects();
+                    // Update environment-spesific visual effects.
+                    GetEnvironmentHandler()->UpdateVisualEffects(frametime);
                 }
             }
         }
@@ -445,7 +446,7 @@ namespace RexLogic
         entity->AddEntityComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_OgreSky"));
         
         sky_->FindCurrentlyActiveSky();
-        sky_->CreateDefaultSky();
+        //sky_->CreateDefaultSky();
     }
 
     void RexLogicModule::CreateEnvironment()
