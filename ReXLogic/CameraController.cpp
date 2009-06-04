@@ -18,7 +18,7 @@ module_(module)
         assert (module_);
 
         sensitivity_ = module_->GetFramework()->GetDefaultConfig().DeclareSetting("Camera", "translation_sensitivity", 25.f);
-        rot_sensitivity_ = module_->GetFramework()->GetDefaultConfig().DeclareSetting("Camera", "rotation_sensitivity", 1.6f);
+        rot_sensitivity_ = module_->GetFramework()->GetDefaultConfig().DeclareSetting("Camera", "rotation_sensitivity", 1.0f);
     }
 
     CameraController::~CameraController()
