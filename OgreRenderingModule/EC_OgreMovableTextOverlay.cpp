@@ -74,6 +74,8 @@ namespace OgreRenderer
 		    return;
 	    }
 	    
+	    // This is possibly an evil thing to do but gets rid of overlay stuttering
+	    node_->_update(true, true);
 	    Ogre::Vector3 point = node_->_getDerivedPosition();
                 
 	    // Is the camera facing that point? If not, hide the overlay and return.

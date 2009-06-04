@@ -39,7 +39,8 @@ namespace RexLogic
         firstperson_pitch_ = 0.f;
         firstperson_ = false;
 
-        rot_sensitivity_ = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "mouselook_rotation_sensitivity", 1.0f);
+        rot_sensitivity_ = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "mouselook_rotation_sensitivity", 1.3f);
+        turn_sensitivity_ = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "thirdperson_rotation_sensitivity", 0.8f);
         head_bone_ = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting<std::string>("RexAvatar", "headbone_name", "Bip01_Head");
         float updates_per_second = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "updates_per_second", 20.0f);
         if (updates_per_second <= 0.0) updates_per_second = 1.0;
@@ -272,7 +273,7 @@ namespace RexLogic
             if ((yaw_ != 0) ||(drag_yaw_ != 0))
             {
                 Core::Quaternion rotchange;
-                rotchange.fromAngleAxis((yaw_*frametime*0.5f + Ogre::Degree(drag_yaw_ * rot_sensitivity_).valueRadians()),RexTypes::Vector3(0,0,1)); 
+                rotchange.fromAngleAxis((yaw_*frametime* turn_sensitivity_ + Ogre::Degree(drag_yaw_ * rot_sensitivity_).valueRadians()),RexTypes::Vector3(0,0,1)); 
                 
                 Core::Quaternion newrot = rotchange * GetBodyRotation();
                 SetBodyRotation(newrot.normalize());
