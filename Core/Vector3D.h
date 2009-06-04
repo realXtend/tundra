@@ -359,26 +359,27 @@ namespace Core
         friend std::istream& operator >> ( std::istream& in, Vector3D<T>& v )
         {
             std::string str;
-            in >> str;
+            std::getline(in, str);
+
             size_t pos = str.find_last_of('(');
             if (pos != std::string::npos)
             {
-                size_t val = str.find_last_of(',');
+                size_t val = str.find(',', pos);
                 if (val != std::string::npos)
                 {
                     T xx = Core::ParseString<T>(str.substr(pos + 1, val - pos - 1));
 
-                    in >> str;
-                    val = str.find(',');
+                    pos = val;
+                    val = str.find(',', pos + 1);
                     if (val != std::string::npos)
                     {
-                        T yy = Core::ParseString<T>(str.substr(0, val));
+                        T yy = Core::ParseString<T>(str.substr(pos + 2, val - pos - 2));
                         
-                        in >> str;
-                        val = str.find(',');
+                        pos = val;
+                        val = str.find(')', pos + 1);
                         if (val != std::string::npos)
                         {
-                            T zz = Core::ParseString<T>(str.substr(0, val));
+                            T zz = Core::ParseString<T>(str.substr(pos + 2, val - pos - 2));
                             v.x = xx;
                             v.y = yy;
                             v.z = zz;
