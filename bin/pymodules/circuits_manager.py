@@ -44,7 +44,7 @@ class ComponentRunner(Component):
 
     def run(self, deltatime=0.1):
         #XXX should this be using the __tick__ mechanism of circuits, and how?
-        #print ".",
+        print ".",
         self.m.push(Update(deltatime), "update")
         
     def RexNetMsgChatFromSimulator(self, frm, message):
@@ -58,8 +58,24 @@ class ComponentRunner(Component):
         'cause the c++ internals don't do that apart from the constant name.
         """
         self.m.push(Input(evid), "on_input")
-        #print "circuits_manager ComponentRunner got input event:", evid        
+        print "circuits_manager ComponentRunner got input event:", evid       
         
+    def KEY_INPUT_EVENT(self, evid, keycode, keymod):
+        KEY_PRESSED = 39 #bad idea... change, please
+        KEY_RELEASED = 40 
+        """Handles key inputs, creates a Circuits Key event with the data provided
+        """
+        
+        print "CircuitManager received KEY_INPUT", evid, keycode, keymod,
+        if evid == KEY_PRESSED:
+            self.push(Key(keycode, keymod), "keydown")
+            print "pressed."
+        elif evid == KEY_RELEASED:
+            print "released."
+            self.push(Key(keycode, keymod), "keyup")
+        else:
+            return
+            
     def MOUSE_INPUT(self, x_abs, y_abs, x_rel, y_rel):
         i = MouseInfo(x_abs, y_abs, x_rel, y_rel)
         #print "Manager got mouse input", i
