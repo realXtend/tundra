@@ -208,6 +208,9 @@ namespace RexLogic
     // virtual 
     void RexLogicModule::Uninitialize()
     {
+        // Hackish fix for crash at exit because EC_OgreEnvironment remains
+        DeleteScene("World");
+        
         if (rexserver_connection_->IsConnected())
         {
             //! \todo tucofixme, at the moment don't wait for LogoutReply packet, just close connection.
@@ -221,6 +224,7 @@ namespace RexLogic
         avatar_controller_.reset();
         camera_controller_.reset();
         avatar_controllable_.reset();
+        environment_.reset();
 
         event_handlers_.clear();
 
