@@ -9,27 +9,6 @@
 
 namespace RexLogic
 {
-    //// List of common actions for controllables
-    //// Zero is reserved and odd numbers are implicitly reserved for 'stopped' actions.
-    //namespace Actions
-    //{
-    //    namespace
-    //    {
-    //        const int MoveForward       = 2;
-    //        const int MoveBackward      = 4;
-    //        const int MoveLeft          = 6;
-    //        const int MoveRight         = 8;
-    //        const int RotateLeft        = 10;
-    //        const int RotateRight       = 12;
-    //        const int MoveUp            = 14;
-    //        const int MoveDown          = 16;
-    //        const int RotateUp          = 18;
-    //        const int RotateDown        = 20;
-    //        const int ZoomIn            = 22;
-    //        const int ZoomOut           = 24;
-    //    }
-    //}
-
     //! Controllable entity component.
     /*! Any entity with this component may be controlled by the user.
         The entity can be controlled via 'actions'. Each different type

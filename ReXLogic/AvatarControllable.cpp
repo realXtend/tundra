@@ -42,7 +42,7 @@ namespace RexLogic
         control_flags_[RA::MoveRight] = RexTypes::AGENT_CONTROL_LEFT_NEG;
         control_flags_[RA::MoveUp] = RexTypes::AGENT_CONTROL_UP_POS;
         control_flags_[RA::MoveDown] = RexTypes::AGENT_CONTROL_UP_NEG;
-        control_flags_[RA::FlyMode] = RexTypes::AGENT_CONTROL_FLY;
+        //control_flags_[RA::FlyMode] = RexTypes::AGENT_CONTROL_FLY;
 
         rotation_sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("RexAvatar", "rotation_speed", 1.1f);
         Core::Real updates_per_second = framework_->GetDefaultConfig().DeclareSetting("RexAvatar", "updates_per_second", 20.0f);
@@ -132,37 +132,41 @@ namespace RexLogic
         {
             EC_OpenSimAvatar *avatar = checked_static_cast<EC_OpenSimAvatar*>(entity_data->entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());
 
-            ActionControlFlagMap::const_iterator it = control_flags_.find(event_id);
-            if (it != control_flags_.end())
+            if (event_id == RexTypes::Actions::FlyMode)
             {
-                avatar->controlflags |= it->second;
+                avatar->controlflags ^= RexTypes::AGENT_CONTROL_FLY;
             } else
             {
-                it = control_flags_.find(event_id - 1);
+                ActionControlFlagMap::const_iterator it = control_flags_.find(event_id);
                 if (it != control_flags_.end())
                 {
-                    avatar->controlflags &= ~it->second;
+                    avatar->controlflags |= it->second;
                 } else
                 {
-                    // do other actions
-                    switch (event_id)
+                    it = control_flags_.find(event_id - 1);
+                    if (it != control_flags_.end())
                     {
-                    case RA::RotateLeft:
-                        avatar->yaw = -1;
-                        break;
-                    case RA::RotateRight:
-                        avatar->yaw = 1;
-                        break;
-                    case RA::RotateLeft + 1:
-                    case RA::RotateRight + 1:
-                        avatar->yaw = 0;
-                        break;
+                        avatar->controlflags &= ~it->second;
+                    } else
+                    {
+                        // do other actions
+                        switch (event_id)
+                        {
+                        case RA::RotateLeft:
+                            avatar->yaw = -1;
+                            break;
+                        case RA::RotateRight:
+                            avatar->yaw = 1;
+                            break;
+                        case RA::RotateLeft + 1:
+                        case RA::RotateRight + 1:
+                            avatar->yaw = 0;
+                            break;
+                        }
                     }
                 }
             }
             net_dirty_ = true;
-
-            return true;
         }
         return false;
     }

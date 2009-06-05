@@ -7,12 +7,6 @@
 
 namespace RexLogic
 {
-    //const int CT_CAMERA = 2;
-    //namespace Actions
-    //{
-    //    const int Zoom = 101;
-    //}
-
     class CameraZoomEvent : public Foundation::EventDataInterface
     {
     public:
