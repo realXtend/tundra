@@ -4,32 +4,31 @@
 #define incl_RexLogic_EC_Controllable_h
 
 #include "ComponentInterface.h"
-//#include "Foundation.h"
-//#include "RexUUID.h"
+#include "RexTypes.h"
 #include "InputEvents.h"
 
 namespace RexLogic
 {
-    // List of common actions for controllables
-    // Zero is reserved and odd numbers are implicitly reserved for 'stopped' actions.
-    namespace Actions
-    {
-        namespace
-        {
-            const int MoveForward       = 2;
-            const int MoveBackward      = 4;
-            const int MoveLeft          = 6;
-            const int MoveRight         = 8;
-            const int RotateLeft        = 10;
-            const int RotateRight       = 12;
-            const int MoveUp            = 14;
-            const int MoveDown          = 16;
-            const int RotateUp          = 18;
-            const int RotateDown        = 20;
-            const int ZoomIn            = 22;
-            const int ZoomOut           = 24;
-        }
-    }
+    //// List of common actions for controllables
+    //// Zero is reserved and odd numbers are implicitly reserved for 'stopped' actions.
+    //namespace Actions
+    //{
+    //    namespace
+    //    {
+    //        const int MoveForward       = 2;
+    //        const int MoveBackward      = 4;
+    //        const int MoveLeft          = 6;
+    //        const int MoveRight         = 8;
+    //        const int RotateLeft        = 10;
+    //        const int RotateRight       = 12;
+    //        const int MoveUp            = 14;
+    //        const int MoveDown          = 16;
+    //        const int RotateUp          = 18;
+    //        const int RotateDown        = 20;
+    //        const int ZoomIn            = 22;
+    //        const int ZoomOut           = 24;
+    //    }
+    //}
 
     //! Controllable entity component.
     /*! Any entity with this component may be controlled by the user.
@@ -68,19 +67,22 @@ namespace RexLogic
             actions_.erase(action);
         }
 
-        //! Sets current action for this controllable. Event for the action is send in a delayed fashion.
-        void SetCurrentAction(int action)
-        { 
-            assert (action != 0 && "Action ID 0 reserved for internal use.");
-            assert(actions_.find(action) != actions_.end() && "Action not supported by this controller.");
+        ////! Sets current action for this controllable. Event for the action is send in a delayed fashion.
+        //void SetCurrentAction(int action)
+        //{ 
+        //    assert (action != 0 && "Action ID 0 reserved for internal use.");
+        //    assert(actions_.find(action) != actions_.end() && "Action not supported by this controller.");
 
-            current_action_ = action;
+        //    current_action_ = action;
 
-            dirty_ = true;
-        }
+        //    dirty_ = true;
+        //}
 
         //! Set unique name for this controllable
-        void SetName(const std::string &name) { name_ = name; }
+        void SetType(RexTypes::ControllableType type) { type_ = type; }
+
+        //! Returns the type of this controllable
+        RexTypes::ControllableType GetType() const { return type_; }
 
     private:
         typedef std::set<int> ActionSet;
@@ -94,8 +96,8 @@ namespace RexLogic
         //! If true, an action is pending and needs to be sent
         bool dirty_;
 
-        //! Name of this controllable
-        std::string name_;
+        //! Type of this controllable
+        RexTypes::ControllableType type_;
 
         EC_Controllable(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework()), current_action_(0), dirty_(false) {}
     };
@@ -104,7 +106,7 @@ namespace RexLogic
     {
         namespace
         {
-            typedef std::map<Core::event_id_t, int> ActionInputMap;
+            
             //! A helper function for assigning common actions to a controllable. For an example of how to use, see AvatarControllable.
             /*! Returns default mappings from input events to actions which can be used for convinience by controllables.
 
@@ -113,8 +115,9 @@ namespace RexLogic
                 \param controllable Controllable component. Not a ComponentPtr to avoid type casts
                 \return A mapping from input events to controller actions
             */
-            ActionInputMap AssignCommonActions(EC_Controllable *controllable)
+            RexTypes::Actions::ActionInputMap AssignCommonActions(EC_Controllable *controllable)
             {
+                using namespace RexTypes::Actions;
                 controllable->AddAction(MoveForward);
                 controllable->AddAction(MoveBackward);
                 controllable->AddAction(MoveLeft);
@@ -125,8 +128,6 @@ namespace RexLogic
                 controllable->AddAction(MoveDown);
                 controllable->AddAction(RotateUp);
                 controllable->AddAction(RotateDown);
-                controllable->AddAction(ZoomIn);
-                controllable->AddAction(ZoomOut);
 
                 ActionInputMap input_map;
  
@@ -138,9 +139,22 @@ namespace RexLogic
                 input_map[Input::Events::MOVE_LEFT_RELEASED] = MoveLeft + 1;
                 input_map[Input::Events::MOVE_RIGHT_PRESSED] = MoveRight;
                 input_map[Input::Events::MOVE_RIGHT_RELEASED] = MoveRight + 1;
+                input_map[Input::Events::ROTATE_LEFT_PRESSED] = RotateLeft;
+                input_map[Input::Events::ROTATE_LEFT_RELEASED] = RotateLeft + 1;
+                input_map[Input::Events::ROTATE_RIGHT_PRESSED] = RotateRight;
+                input_map[Input::Events::ROTATE_RIGHT_RELEASED] = RotateRight + 1;
 
-                //input_map[Input::Events::ro] = MoveRight;
-                //input_map[Input::Events::MOVE_RIGHT_RELEASED] = MoveRight + 1;
+                input_map[Input::Events::MOVE_UP_PRESSED] = MoveUp;
+                input_map[Input::Events::MOVE_UP_RELEASED] = MoveUp + 1;
+                input_map[Input::Events::MOVE_DOWN_PRESSED] = MoveDown;
+                input_map[Input::Events::MOVE_DOWN_RELEASED] = MoveDown + 1;
+                input_map[Input::Events::ROTATE_UP_PRESSED] = RotateUp;
+                input_map[Input::Events::ROTATE_UP_RELEASED] = RotateUp + 1;
+                input_map[Input::Events::ROTATE_DOWN_PRESSED] = RotateUp;
+                input_map[Input::Events::ROTATE_DOWN_RELEASED] = RotateUp + 1;
+
+
+                
 
                 return input_map;
             }
