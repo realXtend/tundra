@@ -112,6 +112,14 @@ namespace OgreRenderer
     
     Renderer::~Renderer()
     {
+        unsigned int width, height, depth;
+        int left, top;
+        renderwindow_->getMetrics(width, height, depth, left, top);
+        framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_width", width);
+        framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_height", height);
+        framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_left", left);
+        framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_top", top);
+
         if (initialized_)
         {
             Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
@@ -146,6 +154,8 @@ namespace OgreRenderer
 #endif
         int width = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_width", 800);
         int height = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_height", 600);
+        int window_left = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_left", -1);
+        int window_top = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_top", -1);
         bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "fullscreen", false);
         
         Ogre::RenderSystem* rendersystem = root_->getRenderSystemByName(rendersystem_name);
@@ -169,6 +179,11 @@ namespace OgreRenderer
 
         if (!external_window_parameter_.empty()) 
             params["externalWindowHandle"] = external_window_parameter_;
+
+        if (window_left != -1)
+            params["left"] = Core::ToString(window_left);
+        if (window_top != -1)
+            params["top"] = Core::ToString(window_top);
 
         try
         {
