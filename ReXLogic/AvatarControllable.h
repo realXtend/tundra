@@ -11,13 +11,6 @@ namespace RexLogic
     class RexServerConnection;
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
 
-    //! Type of this controllable
-    //const int CT_AVATAR = 1;
-    //namespace Actions
-    //{
-    //    const int FlyMode = 100;
-    //}
-
     //! A controller for avatar.
     /*! For more information about controllables, see EC_Controllable.
     */

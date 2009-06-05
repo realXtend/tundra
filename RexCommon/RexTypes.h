@@ -212,13 +212,10 @@ const ControllableType CT_CAMERA = 2;
 
 // List of common actions for controllables
 // Zero is reserved and odd numbers are implicitly reserved for 'stopped' actions.
-
-
-
 namespace Actions
 {
-    //namespace
-    //{
+    namespace
+    {
         const int Invalid           = 0;
         const int MoveForward       = 2;
         const int MoveBackward      = 4;
@@ -232,9 +229,7 @@ namespace Actions
         const int RotateDown        = 20;
         const int FlyMode           = 22;
         const int Zoom              = 24;
-
-    //}
-
+    }
     typedef std::map<Core::event_id_t, int> ActionInputMap;
 }
 
