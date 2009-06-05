@@ -51,6 +51,9 @@ namespace RexLogic
         void AddTime(Core::f64 frametime);
 
     private:
+        typedef std::map<int, Core::Vector3df> ActionTransMap;
+
+        //! current camera state
         State current_state_;
 
         //! Entity this camera is attached to in third / first person modes
@@ -71,11 +74,17 @@ namespace RexLogic
         //! first person camera offset
         Core::Vector3df camera_offset_firstperson_;
 
+        //! move speed
+        Core::Real sensitivity_;
+
         //! zoom speed
         Core::Real zoom_sensitivity_;
 
         //! camera pitch when dragging
         Core::Real firstperson_pitch_;
+
+        //! camera yaw when dragging
+        Core::Real firstperson_yaw_;
 
         //! mouse look sensitivity
         Core::Real firstperson_sensitivity_;
@@ -83,11 +92,20 @@ namespace RexLogic
         //! drag pitch
         Core::Real drag_pitch_;
 
+        //! drag yaw
+        Core::Real drag_yaw_;
+
         //! name of the head bone to use for positioning first person camera
         std::string head_bone_;
 
         //! cached value for event category
         Core::event_category_id_t action_event_category_;
+
+        //! translation in free look mode
+        Core::Vector3df free_translation_;
+
+        //! Action to translation map in free look mode
+        ActionTransMap action_trans_;
 
         Foundation::Framework *framework_;
     };

@@ -269,7 +269,8 @@ namespace Input
         module_->RegisterUnbufferedKeyEvent(Input::State_All, OIS::KC_TAB,     Events::SWITCH_CONTROLLER,      Events::SWITCH_CONTROLLER_REL, 0);
 
         module_->RegisterSliderEvent(Input::State_FirstPerson, SliderMouse,    Events::MOUSELOOK,              Events::MOUSELOOK_STOPPED, OIS::MB_Right);
-        module_->RegisterSliderEvent(Input::State_FreeCamera, SliderMouse,    Events::MOUSELOOK,              Events::MOUSELOOK_STOPPED, OIS::MB_Right);
+        module_->RegisterSliderEvent(Input::State_ThirdPerson, SliderMouse,    Events::MOUSELOOK,              Events::MOUSELOOK_STOPPED, OIS::MB_Right);
+        module_->RegisterSliderEvent(Input::State_FreeCamera,  SliderMouse,    Events::MOUSELOOK,              Events::MOUSELOOK_STOPPED, OIS::MB_Right);
     }
 }
 
