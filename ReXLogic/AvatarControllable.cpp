@@ -42,7 +42,6 @@ namespace RexLogic
         control_flags_[RA::MoveRight] = RexTypes::AGENT_CONTROL_LEFT_NEG;
         control_flags_[RA::MoveUp] = RexTypes::AGENT_CONTROL_UP_POS;
         control_flags_[RA::MoveDown] = RexTypes::AGENT_CONTROL_UP_NEG;
-        //control_flags_[RA::FlyMode] = RexTypes::AGENT_CONTROL_FLY;
 
         rotation_sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("RexAvatar", "rotation_speed", 1.1f);
         Core::Real updates_per_second = framework_->GetDefaultConfig().DeclareSetting("RexAvatar", "updates_per_second", 20.0f);
@@ -77,7 +76,9 @@ namespace RexLogic
 
     bool AvatarControllable::HandleInputEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        if (event_id == Input::Events::INPUTSTATE_THIRDPERSON && current_state_ == FirstPerson)
+        // switch between first and third person modes
+
+        if (event_id == Input::Events::INPUTSTATE_THIRDPERSON && current_state_ != ThirdPerson)
         {
             current_state_ = ThirdPerson;
 
@@ -92,7 +93,7 @@ namespace RexLogic
             }
         }
 
-        if (event_id == Input::Events::INPUTSTATE_FIRSTPERSON && current_state_ == ThirdPerson)
+        if (event_id == Input::Events::INPUTSTATE_FIRSTPERSON && current_state_ != FirstPerson)
         {
             current_state_ = FirstPerson;
 
@@ -106,6 +107,12 @@ namespace RexLogic
             }            
         }
 
+        if (event_id == Input::Events::INPUTSTATE_FREECAMERA && current_state_ != InActive)
+        {
+            current_state_ = InActive;
+        }
+
+        // send action events corresponding to input events
         RA::ActionInputMap::const_iterator it = input_events_.find(event_id);
         if (it != input_events_.end())
         {
@@ -134,22 +141,26 @@ namespace RexLogic
 
             if (event_id == RexTypes::Actions::FlyMode)
             {
+                // flying is a special case as it is a mode that is switched on /off by keypress
                 avatar->controlflags ^= RexTypes::AGENT_CONTROL_FLY;
             } else
             {
                 ActionControlFlagMap::const_iterator it = control_flags_.find(event_id);
                 if (it != control_flags_.end())
                 {
+                    // Set flag
                     avatar->controlflags |= it->second;
                 } else
                 {
                     it = control_flags_.find(event_id - 1);
                     if (it != control_flags_.end())
                     {
+                        // Unset flag
                         avatar->controlflags &= ~it->second;
                     } else
                     {
-                        // do other actions
+                        // No control flags for rotation, do as special cases
+
                         switch (event_id)
                         {
                         case RA::RotateLeft:
@@ -173,8 +184,11 @@ namespace RexLogic
 
     void AvatarControllable::AddTime(Core::f64 frametime)
     {
+        if (current_state_ == InActive)
+            return;
+
         boost::shared_ptr<Input::InputServiceInterface> input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input).lock();
-        if (input && current_state_ == FirstPerson)
+        if (input)
         {
             boost::optional<const Input::Events::Movement&> movement = input->PollSlider(Input::Events::MOUSELOOK);
             if (movement)
@@ -186,7 +200,6 @@ namespace RexLogic
                 drag_yaw_ = 0;
                 net_dirty_ = true;
             }
-
         }
 
         //! \todo for simplification, we just go over all entities in the scene. For performance, some other solution may be prudent
@@ -207,9 +220,9 @@ namespace RexLogic
                     netpos->rotation_ = rotchange * netpos->rotation_;
                     netpos->Updated();
 
-                    OgreRenderer::EC_OgrePlaceable *ogreplaceable = 
-                        checked_static_cast<OgreRenderer::EC_OgrePlaceable*>
-                        ((*it)->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get());
+                    //OgreRenderer::EC_OgrePlaceable *ogreplaceable = 
+                    //    checked_static_cast<OgreRenderer::EC_OgrePlaceable*>
+                    //    ((*it)->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get());
                 }
 
                 SendScheduledMovementToServer(avatar->controlflags);

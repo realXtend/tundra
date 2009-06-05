@@ -19,7 +19,8 @@ namespace RexLogic
         enum State
         {
             FirstPerson,
-            ThirdPerson
+            ThirdPerson,
+            InActive
         };
 
     public:

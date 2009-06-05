@@ -24,7 +24,9 @@ namespace RexLogic
       , action_event_category_(fw->GetEventManager()->QueryEventCategory("Action"))
       , current_state_(ThirdPerson)
       , firstperson_pitch_(0)
+      , firstperson_yaw_(0)
       , drag_pitch_(0)
+      , drag_yaw_(0)
     {
         camera_distance_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "default_distance", 20.f);
         camera_min_distance_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "min_distance", 1.f);
@@ -37,10 +39,18 @@ namespace RexLogic
         camera_offset_firstperson_ = Core::ParseString<Core::Vector3df>(
             framework_->GetDefaultConfig().DeclareSetting("Camera", "first_person_offset", Core::ToString(Core::Vector3df(0.5f, 0, 0.8f))));
 
+        sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "translation_sensitivity", 25.f);
         zoom_sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "zoom_sensitivity", 0.015f);
-        firstperson_sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("RexAvatar", "mouselook_rotation_sensitivity", 1.3f);
+        firstperson_sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "mouselook_rotation_sensitivity", 1.3f);
 
         head_bone_ = framework_->GetDefaultConfig().DeclareSetting<std::string>("RexAvatar", "headbone_name", "Bip01_Head");
+
+        action_trans_[RexTypes::Actions::MoveForward] = Core::Vector3df::NEGATIVE_UNIT_Z;
+        action_trans_[RexTypes::Actions::MoveBackward] = Core::Vector3df::UNIT_Z;
+        action_trans_[RexTypes::Actions::MoveLeft] = Core::Vector3df::NEGATIVE_UNIT_X;
+        action_trans_[RexTypes::Actions::MoveRight] = Core::Vector3df::UNIT_X;
+        action_trans_[RexTypes::Actions::MoveUp] = Core::Vector3df::UNIT_Y;
+        action_trans_[RexTypes::Actions::MoveDown] = Core::Vector3df::NEGATIVE_UNIT_Y;
     }
 
     bool CameraControllable::HandleSceneEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
@@ -55,6 +65,24 @@ namespace RexLogic
 
     bool CameraControllable::HandleInputEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
+        if (event_id == Input::Events::INPUTSTATE_THIRDPERSON && current_state_ != ThirdPerson)
+        {
+            current_state_ = ThirdPerson;
+            firstperson_pitch_ = 0.0f;
+        }
+
+        if (event_id == Input::Events::INPUTSTATE_FIRSTPERSON && current_state_ != FirstPerson)
+        {
+            current_state_ = FirstPerson;         
+            firstperson_pitch_ = 0.0f;
+        }
+
+        if (event_id == Input::Events::INPUTSTATE_FREECAMERA && current_state_ != FreeLook)
+        {
+            current_state_ = FreeLook;
+            firstperson_pitch_ = 0.0f;
+        }
+
         if (event_id == Input::Events::SCROLL)
         {
             CameraZoomEvent event_data;
@@ -75,8 +103,30 @@ namespace RexLogic
 
             camera_distance_ -= (value * zoom_sensitivity_);
             camera_distance_ = Core::clamp(camera_distance_, camera_min_distance_, camera_max_distance_);
-            return true;
         }
+
+        if (current_state_ == FreeLook)
+        {
+            ActionTransMap::const_iterator it = action_trans_.find(event_id);
+            if (it != action_trans_.end())
+            {
+                // start movement
+                const Core::Vector3df &vec = it->second;
+                free_translation_.x = ( vec.x == 0 ) ? free_translation_.x : vec.x;
+                free_translation_.y = ( vec.y == 0 ) ? free_translation_.y : vec.y;
+                free_translation_.z = ( vec.z == 0 ) ? free_translation_.z : vec.z;
+            }
+            it = action_trans_.find(event_id - 1);
+            if (it != action_trans_.end())
+            {
+                // stop movement
+                const Core::Vector3df &vec = it->second;
+                free_translation_.x = ( vec.x == 0 ) ? free_translation_.x : 0;
+                free_translation_.y = ( vec.y == 0 ) ? free_translation_.y : 0;
+                free_translation_.z = ( vec.z == 0 ) ? free_translation_.z : 0;
+            }
+        }
+
         return false;
     }
 
@@ -88,9 +138,11 @@ namespace RexLogic
             boost::optional<const Input::Events::Movement&> movement = input->PollSlider(Input::Events::MOUSELOOK);
             if (movement)
             {
+                drag_yaw_ = static_cast<Core::Real>(movement->x_.rel_) * -0.005f;
                 drag_pitch_ = static_cast<Core::Real>(movement->y_.rel_) * -0.005f;
-            } else if (drag_pitch_ != 0)
+            } else if (drag_pitch_ != 0 || drag_yaw_ != 0)
             {
+                drag_yaw_ = 0;
                 drag_pitch_ = 0;
             }
         }
@@ -111,14 +163,18 @@ namespace RexLogic
                 Core::Vector3df avatar_pos = placeable->GetPosition();
                 Core::Quaternion avatar_orientation = netpos->rotation_; 
 
-                Core::Vector3df pos = avatar_pos;
-                pos += (avatar_orientation * Core::Vector3df::NEGATIVE_UNIT_X * camera_distance_);
-                pos += (avatar_orientation * camera_offset_);
-                camera->setPosition(pos.x, pos.y, pos.z);
-            
-                Core::Vector3df lookat = avatar_pos + avatar_orientation * camera_offset_;
-                camera->lookAt(lookat.x, lookat.y, lookat.z);
-
+                if (current_state_ == FirstPerson || current_state_ == ThirdPerson)
+                {
+                    // this is mostly for third person camera, but also needed by first person camera since it sets proper initial orientation for the camera
+                    Core::Vector3df pos = avatar_pos;
+                    pos += (avatar_orientation * Core::Vector3df::NEGATIVE_UNIT_X * camera_distance_);
+                    pos += (avatar_orientation * camera_offset_);
+                    camera->setPosition(pos.x, pos.y, pos.z);
+                    
+                    Core::Vector3df lookat = avatar_pos + avatar_orientation * camera_offset_;
+                    camera->lookAt(lookat.x, lookat.y, lookat.z);
+                }
+                
                 if (current_state_ == FirstPerson)
                 {
                     bool fallback = true;
@@ -154,10 +210,20 @@ namespace RexLogic
                     {
                         firstperson_pitch_ += drag_pitch_ * firstperson_sensitivity_;
                         firstperson_pitch_ = Core::clamp(firstperson_pitch_, -Core::HALF_PI, Core::HALF_PI);
-                        //if (firstperson_pitch_ < -Core::HALF_PI) firstperson_pitch_ = -Core::HALF_PI;
-                        //if (firstperson_pitch_ > Core::HALF_PI) firstperson_pitch_ = Core::HALF_PI;
                     }
                     camera->pitch(Ogre::Radian(firstperson_pitch_));
+                }
+
+                if (current_state_ == FreeLook)
+                {
+                    const float trans_dt = (float)frametime * sensitivity_;
+
+                    Ogre::Vector3 pos = camera->getPosition();
+                    pos += camera->getOrientation() * Ogre::Vector3(free_translation_.x, free_translation_.y, free_translation_.z) * trans_dt;
+                    camera->setPosition(pos);
+
+                    camera->pitch(Ogre::Radian(drag_pitch_ * firstperson_sensitivity_));
+                    camera->yaw(Ogre::Radian(drag_yaw_ * firstperson_sensitivity_));
                 }
             }
         }
@@ -174,7 +240,6 @@ namespace RexLogic
                     framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
                     
                     firstperson_pitch_ = 0.0f;
-                    //StopStrafing();
                 }
                 break;
             }
@@ -187,34 +252,10 @@ namespace RexLogic
                     current_state_ = FirstPerson;
                     
                     firstperson_pitch_ = 0.0f;
-                    //StopRotating();
                 }
                 break;
             }
         }
-
-        //if (cameradistance_ == camera_min_distance_)
-        //{
-        //    if ((!firstperson_) || (!cached))
-        //    {
-        //        Core::event_category_id_t event_category = rexlogicmodule_->GetFramework()->GetEventManager()->QueryEventCategory("Input");
-        //        rexlogicmodule_->GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FIRSTPERSON, NULL);
-        //        firstperson_ = true;
-        //        firstperson_pitch_ = 0.0f;
-        //        StopRotating();
-        //    }
-        //}
-        //else
-        //{
-        //    if ((firstperson_) || (!cached))
-        //    {
-        //        Core::event_category_id_t event_category = rexlogicmodule_->GetFramework()->GetEventManager()->QueryEventCategory("Input");
-        //        rexlogicmodule_->GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
-        //        firstperson_ = false;
-        //        firstperson_pitch_ = 0.0f;
-        //        StopStrafing();
-        //    }
-        //}
     }
 }
 

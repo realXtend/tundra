@@ -149,8 +149,8 @@ namespace RexLogic
         eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
         if (eventcategoryid != 0)
         {
-            //event_handlers_[eventcategoryid].push_back(boost::bind(&AvatarControllable::HandleInputEvent, avatar_controllable_.get(), _1, _2));
-            //event_handlers_[eventcategoryid].push_back(boost::bind(&CameraControllable::HandleInputEvent, camera_controllable_.get(), _1, _2));
+            event_handlers_[eventcategoryid].push_back(boost::bind(&AvatarControllable::HandleInputEvent, avatar_controllable_.get(), _1, _2));
+            event_handlers_[eventcategoryid].push_back(boost::bind(&CameraControllable::HandleInputEvent, camera_controllable_.get(), _1, _2));
             event_handlers_[eventcategoryid].push_back(boost::bind(&InputEventHandler::HandleInputEvent, input_handler_, _1, _2));
         } else
             LogError("Unable to find event category for Input");
@@ -285,9 +285,9 @@ namespace RexLogic
             
             if (rexserver_connection_->IsConnected())
             {
-                //avatar_controllable_->AddTime(frametime);
-                //camera_controllable_->AddTime(frametime);
-                input_handler_->Update(frametime);
+                avatar_controllable_->AddTime(frametime);
+                camera_controllable_->AddTime(frametime);
+                //input_handler_->Update(frametime);
 
                 boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
                     <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
