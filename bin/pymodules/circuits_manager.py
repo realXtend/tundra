@@ -8,7 +8,7 @@ impl if it seems that a py written manager makes sense within the c++ framework 
 currently here is only test code for modules and handelers that would
 use the manager, nothing of the Manager itself yet.
 """
-
+import rexviewer as r
 from circuits import handler, Event, Component, Manager
 
 #is not identical to the c++ side, where x and y have abs and rel
@@ -16,6 +16,7 @@ from circuits import handler, Event, Component, Manager
 from collections import namedtuple
 MouseInfo = namedtuple('MouseInfo', 'x y rel_x rel_y')
 
+class Key(Event): pass
 class Update(Event): pass     
 class Chat(Event): pass    
 class Input(Event): pass
@@ -40,15 +41,15 @@ class ComponentRunner(Component):
         import autoload
         autoload.load(m)
         
-        m.start()
+        #m.start()
 
     def run(self, deltatime=0.1):
         #XXX should this be using the __tick__ mechanism of circuits, and how?
-        print ".",
-        self.m.push(Update(deltatime), "update")
+        #print ".",
+        self.m.send(Update(deltatime), "update")
         
     def RexNetMsgChatFromSimulator(self, frm, message):
-        self.m.push(Chat(frm, message), "on_chat")
+        self.m.send(Chat(frm, message), "on_chat")
         
     def INPUT_EVENT(self, evid):
         """Note: the PygameDriver for circuits has a different design:
@@ -57,33 +58,38 @@ class ComponentRunner(Component):
         Here we have no way to differentiate presses/releases,
         'cause the c++ internals don't do that apart from the constant name.
         """
-        self.m.push(Input(evid), "on_input")
-        print "circuits_manager ComponentRunner got input event:", evid       
+        self.m.send(Input(evid), "on_input")
+        #print "circuits_manager ComponentRunner got input event:", evid       
         
     def KEY_INPUT_EVENT(self, evid, keycode, keymod):
-        KEY_PRESSED = 39 #bad idea... change, please
-        KEY_RELEASED = 40 
         """Handles key inputs, creates a Circuits Key event with the data provided
+        WIP, since on_keydown call doesn't work for now, resorted in using Input(keycode)
+        instead, works similarly but still not the way it should
         """
         
-        print "CircuitManager received KEY_INPUT", evid, keycode, keymod,
-        if evid == KEY_PRESSED:
-            self.push(Key(keycode, keymod), "keydown")
-            print "pressed."
-        elif evid == KEY_RELEASED:
-            print "released."
-            self.push(Key(keycode, keymod), "keyup")
-        else:
-            return
+        #print "CircuitManager received KEY_INPUT (event:", evid, "key:", keycode, "mods:", keymod, ")",
+        #key = Key(keycode, keymod)
+        
+        if evid == r.KeyPressed:
+            #self.m.send(key, "on_keydown")
+            self.m.send(Input(keycode), "on_input") #well, since on_keydown doesnt work for some odd reason, using this instead for now
+            #print "pressed."
+        
+        #~ elif evid == r.KeyReleased:
+            #~ #self.m.send(key, "on_keyup")
+            #~ print "released."
+        #~ else:
+            #~ print "Nothing found."
+            #~ return
             
     def MOUSE_INPUT(self, x_abs, y_abs, x_rel, y_rel):
         i = MouseInfo(x_abs, y_abs, x_rel, y_rel)
         #print "Manager got mouse input", i
-        self.m.push(MouseMove(i), "on_mousemove")
+        self.m.send(MouseMove(i), "on_mousemove")
         
     def exit(self):
         print "Circuits manager stopping."
-        self.m.stop()
+        self.m.stop() #is this needed?
         
 #TestModule moved to own file (err, module)
 
