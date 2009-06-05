@@ -202,6 +202,43 @@ const int HOLLOW_TRIANGLE = 48;
 // Primitive extrusion type
 const int EXTRUSION_STRAIGHT = 16;
 
+typedef int ControllableType;
+//! invalid controllable type
+const ControllableType CT_INVALID_TYPE = 0;
+//! avatar controllable type
+const ControllableType CT_AVATAR = 1;
+//! camera controllable type
+const ControllableType CT_CAMERA = 2;
+
+// List of common actions for controllables
+// Zero is reserved and odd numbers are implicitly reserved for 'stopped' actions.
+
+
+
+namespace Actions
+{
+    //namespace
+    //{
+        const int Invalid           = 0;
+        const int MoveForward       = 2;
+        const int MoveBackward      = 4;
+        const int MoveLeft          = 6;
+        const int MoveRight         = 8;
+        const int RotateLeft        = 10;
+        const int RotateRight       = 12;
+        const int MoveUp            = 14;
+        const int MoveDown          = 16;
+        const int RotateUp          = 18;
+        const int RotateDown        = 20;
+        const int FlyMode           = 22;
+        const int Zoom              = 24;
+
+    //}
+
+    typedef std::map<Core::event_id_t, int> ActionInputMap;
+}
+
+
 }
 
 #endif

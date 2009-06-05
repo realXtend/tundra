@@ -22,6 +22,7 @@ namespace RexLogic
     class Environment;
     class RexLoginWindow;
     class AvatarControllable;
+    class CameraControllable;
     
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
     typedef boost::shared_ptr<AvatarController> AvatarControllerPtr;
@@ -34,6 +35,7 @@ namespace RexLogic
     typedef boost::shared_ptr<Sky> SkyPtr;
     typedef boost::shared_ptr<Environment> EnvironmentPtr;
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
+    typedef boost::shared_ptr<CameraControllable> CameraControllablePtr;
 
     enum InputController
     {
@@ -223,6 +225,9 @@ namespace RexLogic
 
         //! An avatar controllable
         AvatarControllablePtr avatar_controllable_;
+
+        //! Camera controllable
+        CameraControllablePtr camera_controllable_;
     };
 }
 

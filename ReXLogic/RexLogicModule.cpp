@@ -14,6 +14,7 @@
 #include "SceneManager.h"
 #include "RexLoginWindow.h"
 #include "AvatarControllable.h"
+#include "CameraControllable.h"
 
 #include "EC_Viewable.h"
 #include "EC_FreeData.h"
@@ -99,7 +100,7 @@ namespace RexLogic
     {
         PROFILE(RexLogicModule_Initialize);
 
-        framework_->GetEventManager()->RegisterEventCategory("Actions");
+        framework_->GetEventManager()->RegisterEventCategory("Action");
 
         /// \todo fixme, register WorldLogic to the framework as realxtend worldlogicinterface!
         // WorldLogic::registerSystem(framework);
@@ -113,7 +114,8 @@ namespace RexLogic
         network_state_handler_ = new NetworkStateEventHandler(framework_, this);
         input_handler_ = new InputEventHandler(framework_, this);
         scene_handler_ = new SceneEventHandler(framework_, this);
-        avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(framework_->GetEventManager()));
+        avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(framework_, rexserver_connection_, framework_->GetEventManager()));
+        camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
 
         current_controller_ = Controller_Avatar;
         input_handler_->SetState(avatar_controller_);
@@ -147,7 +149,8 @@ namespace RexLogic
         eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
         if (eventcategoryid != 0)
         {
-            event_handlers_[eventcategoryid].push_back(boost::bind(&AvatarControllable::HandleInputEvent, avatar_controllable_.get(), _1, _2));
+            //event_handlers_[eventcategoryid].push_back(boost::bind(&AvatarControllable::HandleInputEvent, avatar_controllable_.get(), _1, _2));
+            //event_handlers_[eventcategoryid].push_back(boost::bind(&CameraControllable::HandleInputEvent, camera_controllable_.get(), _1, _2));
             event_handlers_[eventcategoryid].push_back(boost::bind(&InputEventHandler::HandleInputEvent, input_handler_, _1, _2));
         } else
             LogError("Unable to find event category for Input");
@@ -155,8 +158,10 @@ namespace RexLogic
         // Action events.
         eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Action");
         if (eventcategoryid != 0)
+        {
             event_handlers_[eventcategoryid].push_back(boost::bind(&AvatarControllable::HandleActionEvent, avatar_controllable_.get(), _1, _2));
-        else
+            event_handlers_[eventcategoryid].push_back(boost::bind(&CameraControllable::HandleActionEvent, camera_controllable_.get(), _1, _2));
+        } else
             LogError("Unable to find event category for Action");
 
         // Scene events.
@@ -165,6 +170,7 @@ namespace RexLogic
         {
             event_handlers_[eventcategoryid].push_back(boost::bind(&SceneEventHandler::HandleSceneEvent, scene_handler_, _1, _2));
             event_handlers_[eventcategoryid].push_back(boost::bind(&AvatarControllable::HandleSceneEvent, avatar_controllable_.get(), _1, _2));
+            event_handlers_[eventcategoryid].push_back(boost::bind(&CameraControllable::HandleSceneEvent, camera_controllable_.get(), _1, _2));
         } else
             LogError("Unable to find event category for Scene");
 
@@ -224,7 +230,9 @@ namespace RexLogic
         avatar_controller_.reset();
         camera_controller_.reset();
         avatar_controllable_.reset();
+        camera_controllable_.reset();
         environment_.reset();
+
 
         event_handlers_.clear();
 
@@ -263,9 +271,6 @@ namespace RexLogic
                 rexserver_connection_->CreateUDPConnection();
             }
             
-            if (rexserver_connection_->IsConnected())
-                input_handler_->Update(frametime);
-
             if (send_input_state_)
             {
                 send_input_state_ = false;
@@ -280,6 +285,10 @@ namespace RexLogic
             
             if (rexserver_connection_->IsConnected())
             {
+                //avatar_controllable_->AddTime(frametime);
+                //camera_controllable_->AddTime(frametime);
+                input_handler_->Update(frametime);
+
                 boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
                     <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
                 if (renderer)
