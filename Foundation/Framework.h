@@ -45,10 +45,10 @@ namespace Foundation
         bool IsExiting() { return exit_signal_; }
 
         //! Returns the default configuration
-        const ConfigurationManager &GetDefaultConfig() const { return *(config_manager_.get()); }
+        ConfigurationManager &GetDefaultConfig() { return *(config_manager_.get()); }
 
         //! Returns pointer to the default configuration
-        const ConfigurationManager *GetDefaultConfigPtr() const { return config_manager_.get(); }
+        ConfigurationManager *GetDefaultConfigPtr() { return config_manager_.get(); }
 
         //! Shortcut for retrieving a service. See ServiceManager::GetService() for more info
         template <class T>
