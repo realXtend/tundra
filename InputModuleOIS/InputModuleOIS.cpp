@@ -53,7 +53,7 @@ namespace Input
 		event_manager->RegisterEvent(event_category_, Events::MOVE_FORWARD_RELEASED, "MoveForwardReleased");
 
 		event_manager->RegisterEvent(event_category_, Events::KEY_PRESSED, "KeyPressed");
-		event_manager->RegisterEvent(event_category_, Events::KEY_RELEASED, "KeyPressed");
+		event_manager->RegisterEvent(event_category_, Events::KEY_RELEASED, "KeyReleased");
 
         key_mapping_ = MapperPtr(new Mapper(this));
 
