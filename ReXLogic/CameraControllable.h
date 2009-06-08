@@ -104,6 +104,8 @@ namespace RexLogic
         //! translation in free look mode
         Core::Vector3df free_translation_;
 
+        Core::Vector3df normalized_free_translation_;
+
         //! Action to translation map in free look mode
         ActionTransMap action_trans_;
 
