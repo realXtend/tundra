@@ -50,8 +50,6 @@ namespace RexLogic
 
     AvatarController::~AvatarController()
     {
-        if(avatarentity_)
-            avatarentity_.reset();
     }
     
     void AvatarController::SetAvatarEntity(Scene::EntityPtr avatar)
@@ -173,9 +171,9 @@ namespace RexLogic
     
     Core::Quaternion AvatarController::GetBodyRotation()
     {
-        if(avatarentity_)
+        if(avatarentity_.lock())
         {
-            EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity_->GetComponent(EC_NetworkPosition::NameStatic()).get());
+            EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity_.lock()->GetComponent(EC_NetworkPosition::NameStatic()).get());
             return netpos.rotation_;      
         }
         else
@@ -184,9 +182,9 @@ namespace RexLogic
 
     void AvatarController::SetBodyRotation(Core::Quaternion rotation)
     {
-        if(avatarentity_)
+        if(avatarentity_.lock())
         {
-            EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity_->GetComponent(EC_NetworkPosition::NameStatic()).get());
+            EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity_.lock()->GetComponent(EC_NetworkPosition::NameStatic()).get());
             netpos.rotation_ = rotation;    
             netpos.Updated();
             
@@ -209,7 +207,7 @@ namespace RexLogic
         Core::Quaternion bodyrot = Core::Quaternion(0,0,0,1);
         Core::Quaternion headrot = Core::Quaternion(0,0,0,1);
 
-        if(avatarentity_)
+        if(avatarentity_.lock())
         {
             bodyrot = GetBodyRotation();
             headrot = bodyrot;
@@ -235,10 +233,10 @@ namespace RexLogic
     void AvatarController::Update(Core::f64 frametime)
     {
         boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        if (renderer && avatarentity_)
+        if (renderer && avatarentity_.lock())
         {
             Ogre::Camera *camera = renderer->GetCurrentCamera();
-            OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get());
+            OgreRenderer::EC_OgrePlaceable &ogreplaceable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(avatarentity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get());
 
             if (!firstperson_)
             {
@@ -280,7 +278,7 @@ namespace RexLogic
             {
                 bool fallback = true;
                 // Try to use head bone from avatar to get the first person camera position
-                Foundation::ComponentPtr mesh_ptr = avatarentity_->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+                Foundation::ComponentPtr mesh_ptr = avatarentity_.lock()->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
                 if (mesh_ptr)
                 {
                     OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh_ptr.get());
@@ -319,11 +317,12 @@ namespace RexLogic
     
     void AvatarController::HandleAgentMovementComplete(const RexTypes::Vector3& position, const RexTypes::Vector3& lookat)
     {
-        if(!avatarentity_)
+        Scene::EntityPtr avatarentity = avatarentity_.lock();
+        if(!avatarentity)
             return;
             
         // set position/rotation according to the value from server
-        EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity_->GetComponent(EC_NetworkPosition::NameStatic()).get());
+        EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity->GetComponent(EC_NetworkPosition::NameStatic()).get());
 
         //! \todo handle lookat to set initial avatar orientation
         
@@ -339,13 +338,14 @@ namespace RexLogic
     
     void AvatarController::HandleNetworkUpdate(const RexTypes::Vector3& position, const Core::Quaternion& rotation)
     {
-        if(!avatarentity_)
+        Scene::EntityPtr avatarentity = avatarentity_.lock();
+        if(!avatarentity)
             return;
 
         // client is authorative over own avatar rotation for now
             
         // set position according to the value from server
-        EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity_->GetComponent(EC_NetworkPosition::NameStatic()).get());
+        EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity->GetComponent(EC_NetworkPosition::NameStatic()).get());
 
         netpos.position_ = position;        
         netpos.Updated();    

@@ -168,7 +168,7 @@ namespace RexLogic
                 event_data.entity = entity;
                 fw->GetEventManager()->SendEvent(fw->GetEventManager()->QueryEventCategory("Scene"), Scene::Events::EVENT_CONTROLLABLE_ENTITY, &event_data);
 
-                //rexlogicmodule_->GetAvatarController()->SetAvatarEntity(entity);
+                rexlogicmodule_->GetAvatarController()->SetAvatarEntity(entity);
             }
 
             ShowAvatarNameOverlay(presence.LocalId);
