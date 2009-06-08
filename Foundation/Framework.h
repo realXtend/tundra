@@ -174,6 +174,9 @@ namespace Foundation
         //! Current 'default' scene
         Scene::ScenePtr default_scene_;
 
+        //! maximum number of ticks (milliseconds) per frame for frame limiter
+        Core::uint max_ticks_;
+
         Profiler profiler_;
     };
 }

@@ -33,6 +33,15 @@ namespace Foundation
         config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));
         config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_level"), std::string("information"));
 
+        Core::uint max_fps_release = config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("max_fps_release"), 60);
+        Core::uint max_fps_debug = config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("max_fps_debug"), static_cast<Core::uint>(-1));
+
+        
+        max_ticks_ = 1000 / max_fps_release;
+#ifdef _DEBUG
+        max_ticks_ = 1000 / max_fps_debug;
+#endif
+
         platform_->PrepareApplicationDataDirectory(); // depends on config
 
         CreateLoggingSystem(); // depends on config and platform
@@ -165,6 +174,7 @@ namespace Foundation
                 PROFILE(MainLoop);
 
                 double frametime = timer.elapsed();
+                
                 timer.restart();
                 // do synchronized update for modules
                 {
@@ -190,6 +200,13 @@ namespace Foundation
                 {
                     PROFILE(FW_Render);
                     renderer.lock()->Render();
+                }
+
+                //! \note We limit frames for the whole main thread, not just for the renderer. This is the price to pay for being an application rather than a game.
+                Core::uint elapsed_time = static_cast<Core::uint>(timer.elapsed() * 1000); // get time until this point, as we do not want to include time used in sleeping in previous frame
+                if (max_ticks_ > elapsed_time)
+                {
+                    boost::this_thread::sleep(boost::posix_time::milliseconds(max_ticks_ - elapsed_time));
                 }
             }
             
