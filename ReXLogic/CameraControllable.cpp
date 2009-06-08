@@ -125,6 +125,8 @@ namespace RexLogic
                 free_translation_.y = ( vec.y == 0 ) ? free_translation_.y : 0;
                 free_translation_.z = ( vec.z == 0 ) ? free_translation_.z : 0;
             }
+            normalized_free_translation_ = free_translation_;
+            normalized_free_translation_.normalize();
         }
 
         return false;
@@ -219,7 +221,7 @@ namespace RexLogic
                     const float trans_dt = (float)frametime * sensitivity_;
 
                     Ogre::Vector3 pos = camera->getPosition();
-                    pos += camera->getOrientation() * Ogre::Vector3(free_translation_.x, free_translation_.y, free_translation_.z) * trans_dt;
+                    pos += camera->getOrientation() * Ogre::Vector3(normalized_free_translation_.x, normalized_free_translation_.y, normalized_free_translation_.z) * trans_dt;
                     camera->setPosition(pos);
 
                     camera->pitch(Ogre::Radian(drag_pitch_ * firstperson_sensitivity_));
