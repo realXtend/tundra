@@ -8,6 +8,7 @@ vertex_program OceanVS cg
 	{
 		param_named_auto WorldViewProj worldviewproj_matrix
 		param_named_auto eyePosition camera_position_object_space
+        param_named_auto ambient ambient_light_colour
 	}
 }
 
@@ -16,11 +17,6 @@ fragment_program OceanPS cg
 	source Ocean.cg
 	entry_point OceanPSMain
 	profiles ps_2_0 arbfp1
-	
-	default_params
-	{
-		param_named colorModulate float4 1 1 1 1
-	}
 }
 
 material Ocean
