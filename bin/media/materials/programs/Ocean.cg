@@ -26,6 +26,7 @@ struct a2v {
 
 struct v2f {
 	float4 Position  : POSITION;  // in clip space
+	float4 color : COLOR;
 	float3 rotMatrix1 : TEXCOORD0; // first row of the 3x3 transform from tangent to obj space
 	float3 rotMatrix2 : TEXCOORD1; // second row of the 3x3 transform from tangent to obj space
 	float3 rotMatrix3 : TEXCOORD2; // third row of the 3x3 transform from tangent to obj space
@@ -54,7 +55,8 @@ v2f OceanVSMain(a2v IN,
 		uniform float2 bumpSpeed,
 		uniform float time,
 		uniform float waveFreq,
-		uniform float waveAmp
+		uniform float waveAmp,
+		uniform float4 ambient
         )
 {
 	v2f OUT;
@@ -104,7 +106,10 @@ v2f OceanVSMain(a2v IN,
 	OUT.bumpCoord2.xy = IN.TexCoord*textureScale * 4.0 + time * bumpSpeed * 8.0;
 
 	OUT.eyeVector = P.xyz - eyePosition; // eye position in vertex space
-	
+
+    // calculate water color from ambient light, brighten it somewhat
+    OUT.color = float4(ambient.r * 2.0, ambient.g * 2.0, ambient.b * 2.0, 1.0);
+
 	return OUT;
 }
 
@@ -120,7 +125,6 @@ float4 OceanPSMain(v2f IN,
 			uniform float fresnelPower,
 			uniform float fresnelBias,
 			uniform float hdrMultiplier,
-			uniform float4 colorModulate,
 			uniform float4 fogParams,
 			uniform float4 fogColor,
 			uniform float farClip
@@ -162,12 +166,12 @@ float4 OceanPSMain(v2f IN,
     float4 waterColor = lerp(shallowColor, deepColor, facing) * waterAmount;
 
     reflection = lerp(waterColor,  reflection * reflectionColor, fresnel) * reflectionAmount;
-	
-	// Rex fog
-	float fogFarDistance = farClip * 0.98;
-//	float fogDist = clamp((fogParams.z - length(IN.eyeVector)) / (fogParams.z - fogParams.y), 0, 1); // Fog based on scene fog settings
-	float fogDist = saturate((fogFarDistance - length(IN.eyeVector)) / (fogFarDistance - fogParams.y)); // Fog based on far clip distance
-	return lerp(fogColor, (waterColor + reflection) * colorModulate, fogDist);
 
-//   return (waterColor + reflection) * colorModulate;
+	// Rex water coloration + fog
+	float fogFarDistance = farClip * 0.98;
+	float fogDist = clamp((fogParams.z - length(IN.eyeVector)) / (fogParams.z - fogParams.y), 0, 1); // Fog based on scene fog settings
+//	float fogDist = saturate((fogFarDistance - length(IN.eyeVector)) / (fogFarDistance - fogParams.y)); // Fog based on far clip distance
+	return lerp(fogColor, (waterColor + reflection) * IN.color, fogDist);
+
+//   return (waterColor + reflection) * IN.color;
 }
