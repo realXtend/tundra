@@ -191,6 +191,7 @@ namespace RexLogic
                             Ogre::SkeletonInstance* skel = ent->getSkeleton();
                             if (skel->hasBone(head_bone_))
                             {
+                                //! \todo the bone position never updates if the entity is not in camera frustum
                                 Ogre::Bone* bone = skel->getBone(head_bone_);
                                 Ogre::Vector3 headpos = bone->_getDerivedPosition();
                                 Core::Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y - 0.5f);
