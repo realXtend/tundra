@@ -48,7 +48,7 @@ namespace RexLogic
         void Drag(const Input::Events::Movement *movement);
                  
         //! Gets avatar entity
-        Scene::EntityPtr GetAvatarEntity() const { return avatarentity_; }
+        Scene::EntityPtr GetAvatarEntity() const { return avatarentity_.lock(); }
 
         //! Sets avatar entity
         void SetAvatarEntity(Scene::EntityPtr avatar);        
@@ -85,7 +85,7 @@ namespace RexLogic
         uint32_t controlflags_;
 
         //! Own avatar
-        Scene::EntityPtr avatarentity_;
+        Scene::EntityWeakPtr avatarentity_;
 
         //! camera distance
         float cameradistance_;
