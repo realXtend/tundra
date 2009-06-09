@@ -315,6 +315,27 @@ namespace RexLogic
         SendMovementToServer(controlflags);
     }
 
+    void AvatarControllable::HandleAgentMovementComplete(const RexTypes::Vector3& position, const RexTypes::Vector3& lookat)
+    {
+        //! \todo this is more or less where our user agent model design breaks. We can have multiple controllables, but this function can handle exactly one controllable. -cm
 
+        Scene::EntityPtr avatarentity = entity_.lock();
+        if(!avatarentity)
+            return;
+            
+        // set position/rotation according to the value from server
+        EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity->GetComponent(EC_NetworkPosition::NameStatic()).get());
+
+        //! \todo handle lookat to set initial avatar orientation
+        
+        netpos.position_ = position;
+        netpos.velocity_ = Core::Vector3Df::ZERO;
+        netpos.accel_ = Core::Vector3Df::ZERO;
+        
+        // Initial position within region, do not damp
+        netpos.NoPositionDamping();
+        netpos.NoRotationDamping();
+        netpos.Updated();    
+    }    
 }
 

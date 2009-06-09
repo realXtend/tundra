@@ -167,8 +167,6 @@ namespace RexLogic
                 Scene::Events::EntityEventData event_data;
                 event_data.entity = entity;
                 fw->GetEventManager()->SendEvent(fw->GetEventManager()->QueryEventCategory("Scene"), Scene::Events::EVENT_CONTROLLABLE_ENTITY, &event_data);
-
-                rexlogicmodule_->GetAvatarController()->SetAvatarEntity(entity);
             }
 
             ShowAvatarNameOverlay(presence.LocalId);
@@ -205,13 +203,10 @@ namespace RexLogic
         
         Core::Quaternion rotation = GetProcessedQuaternion(&bytes[i]);
      
-        if (rexlogicmodule_->GetAvatarController()->GetAvatarEntity() && entity->GetId() == rexlogicmodule_->GetAvatarController()->GetAvatarEntity()->GetId())
+        netpos.position_ = position;
+        if (!entity->GetComponent(EC_Controllable::NameStatic()))
         {
-            rexlogicmodule_->GetAvatarController()->HandleNetworkUpdate(position, rotation);
-        }
-        else
-        {
-            netpos.position_ = position;
+            // Do not update rotation for entities controlled by this client, client handles the rotation for itself (jitters during turning may result otherwise).
             netpos.rotation_ = rotation;
         }
                   
@@ -261,13 +256,11 @@ namespace RexLogic
 
         netpos.rotvel_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
 
-        if (rexlogicmodule_->GetAvatarController()->GetAvatarEntity() && entity->GetId() == rexlogicmodule_->GetAvatarController()->GetAvatarEntity()->GetId())
+        
+        netpos.position_ = position;
+        if (!entity->GetComponent(EC_Controllable::NameStatic()))
         {
-            rexlogicmodule_->GetAvatarController()->HandleNetworkUpdate(position, rotation);
-        }
-        else
-        {
-            netpos.position_ = position;
+            // Do not update rotation for entities controlled by this client, client handles the rotation for itself (jitters during turning may result otherwise).
             netpos.rotation_ = rotation;
         }
         

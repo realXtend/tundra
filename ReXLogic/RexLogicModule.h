@@ -5,7 +5,6 @@
 
 #include "ModuleInterface.h"
 #include "RexServerConnection.h"
-#include "AvatarController.h"
 
 namespace RexLogic
 {
@@ -24,7 +23,6 @@ namespace RexLogic
     class CameraControllable;
     
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
-    typedef boost::shared_ptr<AvatarController> AvatarControllerPtr;
     typedef boost::weak_ptr<Terrain> TerrainWeakPtr;
     typedef boost::shared_ptr<Terrain> TerrainPtr;
     typedef boost::shared_ptr<Water> WaterPtr;
@@ -70,8 +68,6 @@ namespace RexLogic
         
         RexServerConnectionPtr GetServerConnection() const { return rexserver_connection_; }
 
-        AvatarControllerPtr GetAvatarController() const { return avatar_controller_; }
-
         //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
         void SwitchCameraState();
         
@@ -95,6 +91,9 @@ namespace RexLogic
 
         //! Returns the camera controllable
         CameraControllablePtr GetCameraControllable() { return camera_controllable_; }
+
+        //! Returns the avatar controllable
+        AvatarControllablePtr GetAvatarControllable() { return avatar_controllable_; }
         
         //! The scene system can store multiple scenes. Only one scene is active at a time, that is the one
         //! that is currently being rendered. You may pass a null pointer to erase the currently active scene.
@@ -164,9 +163,6 @@ namespace RexLogic
         
         //! Server connection
         RexServerConnectionPtr rexserver_connection_;
-
-        //! Local avatar controller for this client
-        AvatarControllerPtr avatar_controller_;
 
         //! Movement damping constant
         Core::f32 movement_damping_constant_;

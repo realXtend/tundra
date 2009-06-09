@@ -106,7 +106,6 @@ namespace RexLogic
         // world_logic_ = new WorldLogic(framework);
         avatar_ = AvatarPtr(new Avatar(this));
         primitive_ = PrimitivePtr(new Primitive(this));
-        avatar_controller_ = AvatarControllerPtr(new AvatarController(framework_, this));
         rexserver_connection_ = RexServerConnectionPtr(new RexServerConnection(framework_));
         network_handler_ = new NetworkEventHandler(framework_, this);
         network_state_handler_ = new NetworkStateEventHandler(framework_, this);
@@ -224,7 +223,6 @@ namespace RexLogic
         rexserver_connection_.reset();
         avatar_.reset();
         primitive_.reset();
-        avatar_controller_.reset();
         avatar_controllable_.reset();
         camera_controllable_.reset();
         environment_.reset();

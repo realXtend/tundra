@@ -44,17 +44,6 @@ namespace RexLogic
     }
     
     void SceneEventHandler::HandleEntityDeletedEvent(Core::event_id_t entityid)    
-    {        
-        Scene::ScenePtr scene = framework_->GetScene("World");
-        if (!scene)
-            return;
-
-        Scene::EntityPtr entity = scene->GetEntity(entityid);
-        if(entity && rexlogicmodule_->GetAvatarController()->GetAvatarEntity() && entity->GetId() == rexlogicmodule_->GetAvatarController()->GetAvatarEntity()->GetId())
-        {
-            Scene::EntityPtr emptyavatar;
-            rexlogicmodule_->GetAvatarController()->SetAvatarEntity(emptyavatar);
-        }      
-    }    
-    
+    {
+    }
 }
