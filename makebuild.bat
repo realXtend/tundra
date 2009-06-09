@@ -5,7 +5,7 @@
 rmdir build /S /Q
 md build
 xcopy bin\*.* build /S /C
-rmdir build\data\configuration /S /Q
+del build\data\configuration\*.xml
 rmdir build\testing /S /Q
 del build\*.dll
 del build\viewerd.exe
