@@ -78,12 +78,14 @@ namespace OgreRenderer
         Ogre::Light* GetSunlight() const { return sunlight_; }
         
         /// Updates the visual effects, e.g. the fog.
+        /// @param frametime Time since last frame.
         void UpdateVisualEffects(Core::f64 frametime);
         
         /// Disables the fog.
         void DisableFog();
         
-        /// 
+        /// Speeds up the times
+        /// @param value
         void SetTimeScale(float value);
         
     private:
@@ -102,8 +104,14 @@ namespace OgreRenderer
         /// \note Not sure if this is needed. Maybe if we want to create custom suns?
         void DetachSunlight();
         
-        ///        
+        /// Initializes the Caleum system.
         void InitCaelum();
+
+		/// Shuts down the Caelum system.
+		void ShutdownCaelum();
+        
+        /// Initializes the Hydrax system. 
+        void InitHydrax();
         
         /// Initializes shadows.
         void InitShadows();
@@ -122,9 +130,15 @@ namespace OgreRenderer
         
         /// Is the camera under the water.
         bool cameraUnderWater_;
-
+        
         /// Caelum system.
         Caelum::CaelumSystem *caelumSystem_;
+        
+        /// Is the Caelum system used or not.
+        bool useCaelum_;
+        
+        /// Caleum Sunlight ambient color multiplier factor.
+        float sunColorMultiplier_;
     };
 }
 
