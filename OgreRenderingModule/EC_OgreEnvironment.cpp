@@ -25,7 +25,7 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface* module) :
     cameraUnderWater_(false),
     attached_(false),
     useCaelum_(true),
-    sunColorMultiplier_(0.5)
+    sunColorMultiplier_(2.f)
 {
     if (useCaelum_)
         InitCaelum();
@@ -133,21 +133,21 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
     {
         // Set sunlight attenuation using ambient multiplier.
         // Seems to be working ok, but feel free to fix if you find better logic and/or values.
-        Ogre::ColourValue ambientMultiplier(sunColorMultiplier_, sunColorMultiplier_, sunColorMultiplier_, 1);
-        caelumSystem_->getSun()->setAmbientMultiplier(ambientMultiplier);
+        Ogre::ColourValue diffuseMultiplier(sunColorMultiplier_, sunColorMultiplier_, sunColorMultiplier_, 1);
+        caelumSystem_->getSun()->setDiffuseMultiplier(diffuseMultiplier);
         
         float sunDirZaxis = caelumSystem_->getSun()->getMainLight()->getDirection().z;
-        if (sunDirZaxis > -0.1f)
+        if (sunDirZaxis > 0)
         {
-            sunColorMultiplier_ -= 0.002f;
-            if (sunColorMultiplier_ <= 0.f)
-                sunColorMultiplier_ = 0.f;            
+            sunColorMultiplier_ -= 0.005f;
+            if (sunColorMultiplier_ <= 0.05f)
+                sunColorMultiplier_ = 0.05f;            
         }
-        else if(sunDirZaxis < 0.2)
+        else if(sunDirZaxis < 0)
         {
-            sunColorMultiplier_ += 0.005f;
-            if (sunColorMultiplier_ >= 0.5f)
-                sunColorMultiplier_ = 0.5f;
+            sunColorMultiplier_ += 0.010f;
+            if (sunColorMultiplier_ >= 2.f)
+                sunColorMultiplier_ = 2.f;
         }
         
         // Get the sky/sunlight and fog colors from Caelum.
@@ -209,15 +209,12 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
         camera->setFarClipDistance(waterFogEnd + 10.f);
         cameraUnderWater_ = true;
     }
-    
+
     if (useCaelum_)
     {
         // Force hiding of Caelum clouds, else shadows get messed up.
         caelumSystem_->getCloudSystem()->forceLayerVisibilityFlags(0);
 
-        // Disable moon light.
-        caelumSystem_->getMoon()->setForceDisable(true);
-        
         // Update Caelum system.
         caelumSystem_->notifyCameraChanged(camera);
         caelumSystem_->updateSubcomponents(frametime);
@@ -286,6 +283,8 @@ void EC_OgreEnvironment::InitCaelum()
     // Use just one light (the brightest one) at a time.
     caelumSystem_->setEnsureSingleLightSource(true);
     caelumSystem_->setEnsureSingleShadowSource(true);
+    
+    caelumSystem_->getMoon()->setDiffuseMultiplier(Ogre::ColourValue(0.25f, 0.25f, 0.25f));
 }
 
 void EC_OgreEnvironment::ShutdownCaelum()
