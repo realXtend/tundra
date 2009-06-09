@@ -8,8 +8,10 @@
 #include "EC_OgreEnvironment.h"
 #include "OgreConversionUtils.h"
 
+// Ogre include
 #include <Ogre.h>
 
+// Caelum include
 #include "Caelum.h"
 
 namespace OgreRenderer
@@ -21,11 +23,15 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface* module) :
     sunlight_(NULL),
     caelumSystem_(NULL),
     cameraUnderWater_(false),
-    attached_(false)
+    attached_(false),
+    useCaelum_(true),
+    sunColorMultiplier_(0.5)
 {
-//    CreateSunlight();
-//    SetAmbientLightColor(Core::Color(0, 0, 0, 1));
-    InitCaelum();
+    if (useCaelum_)
+        InitCaelum();
+    else
+        CreateSunlight();
+    
     InitShadows();
 }
 
@@ -41,9 +47,9 @@ EC_OgreEnvironment::~EC_OgreEnvironment()
         sceneManager->destroyLight(sunlight_);
         sunlight_ = NULL;
     }
-
-    if (caelumSystem_)
-        caelumSystem_->shutdown(true);
+    
+    if (useCaelum_)
+        ShutdownCaelum();
 }
 
 void EC_OgreEnvironment::SetPlaceable(Foundation::ComponentPtr placeable)
@@ -101,63 +107,75 @@ void EC_OgreEnvironment::SetTime(time_t time)
     int min_diff = mytime->minute() - ptm->tm_min;
     SAFE_DELETE(mytime);
     
-    caelumSystem_->getUniversalClock()->setGregorianDateTime(
-        1900 + ptm->tm_year, 1 + ptm->tm_mon, ptm->tm_mday, ptm->tm_hour + hour_diff,
-        ptm->tm_min + min_diff, ptm->tm_sec);
+    if (useCaelum_)
+    {
+        caelumSystem_->getUniversalClock()->setGregorianDateTime(
+            1900 + ptm->tm_year, 1 + ptm->tm_mon, ptm->tm_mday, ptm->tm_hour + hour_diff,
+            ptm->tm_min + min_diff, ptm->tm_sec);
     
-    SetTimeScale(500);
+        SetTimeScale(1000);
+    }
 }
 
 void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
 {
     ///\todo Make this prettier (local -> member variables) when the right values are found.
-    ///\todo fog/view distance could be dynamically configurable
     float fogStart(10.0f);
-    //float fogEnd(150.0f);
     float fogEnd(300.0f);
     float waterFogStart(1.0f);
-    //float waterFogEnd(15.0f);
     float waterFogEnd(50.0f);
     Ogre::ColourValue fogColor;
     Ogre::ColourValue waterFogColor(0.2, 0.4, 0.35);
-    //Ogre::ColourValue waterFogColor(0.2f, 0.553f, 0.486f);
     float cameraNearClip(0.5f);
     float cameraFarClip(500.0f); 
     
-    // Update Caelum system.
+    if (useCaelum_)
+    {
+        // Set sunlight attenuation using ambient multiplier.
+        // Seems to be working ok, but feel free to fix if you find better logic and/or values.
+        Ogre::ColourValue ambientMultiplier(sunColorMultiplier_, sunColorMultiplier_, sunColorMultiplier_, 1);
+        caelumSystem_->getSun()->setAmbientMultiplier(ambientMultiplier);
+        
+        float sunDirZaxis = caelumSystem_->getSun()->getMainLight()->getDirection().z;
+        if (sunDirZaxis > -0.1f)
+        {
+            sunColorMultiplier_ -= 0.002f;
+            if (sunColorMultiplier_ <= 0.f)
+                sunColorMultiplier_ = 0.f;            
+        }
+        else if(sunDirZaxis < 0.2)
+        {
+            sunColorMultiplier_ += 0.005f;
+            if (sunColorMultiplier_ >= 0.5f)
+                sunColorMultiplier_ = 0.5f;
+        }
+        
+        // Get the sky/sunlight and fog colors from Caelum.
+        float julDay = caelumSystem_->getUniversalClock()->getJulianDay();
+        float relDayTime = fmod(julDay, 1);
+        Ogre::Vector3 sunDir = caelumSystem_->getSunDirection(julDay);
+        fogColor = caelumSystem_->getGroundFog()->getColour();
+        
+        // Hide sun and moon sprites when they're below the water line (direction.z > ~0.10f).
+        // Also disable the corresponding lights.
+        ///\note Disabled for now. Seems to ok without this.
+/*      if (caelumSystem_->getSun() > 0.10f)
+            caelumSystem_->getSun()->setForceDisable(true);
+        else
+            caelumSystem_->getSun()->setForceDisable(false);*/
+         
+        /*if (caelumSystem_->getMoon()->getMainLight()->getDirection().z > 0.10f)
+            caelumSystem_->getMoon()->setForceDisable(true);
+        else
+            caelumSystem_->getMoon()->setForceDisable(false);
+*/
+    }
+    
+    // Set fogging
     Ogre::Camera *camera = renderer_->GetCurrentCamera();
-    caelumSystem_->notifyCameraChanged(camera);
-    caelumSystem_->updateSubcomponents(frametime);
-    
-    // Get the sky/sunlight and fog colors from Caelum.
-    float julDay = caelumSystem_->getUniversalClock()->getJulianDay();
-    float relDayTime = fmod(julDay, 1);
-    Ogre::Vector3 sunDir = caelumSystem_->getSunDirection(julDay);
-    fogColor = caelumSystem_->getGroundFog()->getColour();
-    
-    // Hide sun and moon sprites when they're below the water line (z > 0).
-    // Also disable the corresponding lights.
-    if (caelumSystem_->getSun()->getMainLight()->getDirection().z > 0)
-    {
-        caelumSystem_->getSun()->setVisibilityFlags(false);
-    }
-    else
-    {
-        caelumSystem_->getSun()->setVisibilityFlags(true);
-    }
-     
-    if (caelumSystem_->getMoon()->getMainLight()->getDirection().z > 0)
-    {
-        caelumSystem_->getMoon()->setVisibilityFlags(false);
-    }
-    else
-    {
-        caelumSystem_->getMoon()->setVisibilityFlags(true);
-    }
-
-    // Set fogging    
     Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();
     Ogre::Entity *water = sceneManager->getEntity("WaterEntity");
+   
     if (!water)
     {
         // No water entity. ///\todo Test.
@@ -165,10 +183,14 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
         camera->getViewport()->setBackgroundColour(fogColor);
         camera->setFarClipDistance(cameraFarClip);
     }
-    else if (camera->getPosition().z >= water->getParentNode()->getPosition().z)
+    else if(camera->getPosition().z >= water->getParentNode()->getPosition().z)
     {
         // We're above the water.
-        caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_ALL);  
+        if (useCaelum_)
+        {
+            caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_ALL);  
+            caelumSystem_->getCloudSystem()->forceLayerVisibilityFlags(0);
+        }
         
         sceneManager->setFog(Ogre::FOG_LINEAR, fogColor, 0.001, fogStart, fogEnd);
         camera->getViewport()->setBackgroundColour(fogColor);
@@ -178,8 +200,9 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
     else
     {
         // We're below the water.
-       // Hide the Caleum subsystems.
-        caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
+        // Hide the Caleum subsystems.
+        if (useCaelum_)
+            caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
         
         sceneManager->setFog(Ogre::FOG_LINEAR, fogColor * waterFogColor, 0.001, waterFogStart, waterFogEnd);
         camera->getViewport()->setBackgroundColour(fogColor * waterFogColor);
@@ -187,8 +210,18 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
         cameraUnderWater_ = true;
     }
     
-    // Force hiding of Caelum clouds, else shadows get messed up.
-    caelumSystem_->getCloudSystem()->forceLayerVisibilityFlags(0);
+    if (useCaelum_)
+    {
+        // Force hiding of Caelum clouds, else shadows get messed up.
+        caelumSystem_->getCloudSystem()->forceLayerVisibilityFlags(0);
+
+        // Disable moon light.
+        caelumSystem_->getMoon()->setForceDisable(true);
+        
+        // Update Caelum system.
+        caelumSystem_->notifyCameraChanged(camera);
+        caelumSystem_->updateSubcomponents(frametime);
+    }
 }
 
 void EC_OgreEnvironment::DisableFog()
@@ -199,7 +232,8 @@ void EC_OgreEnvironment::DisableFog()
 
 void EC_OgreEnvironment::SetTimeScale(float value)
 {
-    caelumSystem_->getUniversalClock()->setTimeScale(value);
+    if (useCaelum_)
+        caelumSystem_->getUniversalClock()->setTimeScale(value);
 }
 
 void EC_OgreEnvironment::CreateSunlight()
@@ -209,13 +243,9 @@ void EC_OgreEnvironment::CreateSunlight()
     sunlight_->setType(Ogre::Light::LT_DIRECTIONAL);
     ///\todo Read parameters from config file?
     sunlight_->setDiffuseColour(0.93f, 1, 0.13f);
-    sunlight_->setPosition(0, 0, 0);
     sunlight_->setDirection(-1, -1, -1);
     sunlight_->setCastShadows(true);
-
-    // Set somekind of ambient light, so that the lights are visible.
-    ///\todo Find a good default value.
-    SetAmbientLightColor(Core::Color(0.5, 0.5, 0.5, 1));    
+    SetAmbientLightColor(Core::Color(0.5, 0.5, 0.5, 1));
 }
 
 void EC_OgreEnvironment::AttachSunlight()
@@ -244,7 +274,7 @@ void EC_OgreEnvironment::InitCaelum()
 {
     caelumSystem_ = new Caelum::CaelumSystem(renderer_->GetRoot().get(),
         renderer_->GetSceneManager(), Caelum::CaelumSystem::CAELUM_COMPONENTS_ALL);
-    
+        
     // Flip the Caelum camera and ground node orientations 90 degrees.
     Ogre::Quaternion orientation(Ogre::Degree(90), Ogre::Vector3(1, 0, 0));
     caelumSystem_->getCaelumCameraNode()->setOrientation(orientation);
@@ -252,11 +282,19 @@ void EC_OgreEnvironment::InitCaelum()
     
     // We want to manage the fog ourself.
     caelumSystem_->setManageSceneFog(false);
-
+   
+    // Use just one light (the brightest one) at a time.
     caelumSystem_->setEnsureSingleLightSource(true);
     caelumSystem_->setEnsureSingleShadowSource(true);
 }
-       
+
+void EC_OgreEnvironment::ShutdownCaelum()
+{
+    if (caelumSystem_)
+        caelumSystem_->shutdown(true);
+}
+
+
 void EC_OgreEnvironment::InitShadows()
 {
     float shadowFarDist = 50;

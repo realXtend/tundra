@@ -25,6 +25,8 @@ This project has the following dependencies:
 
 - OpenAL 1.1: http://connect.creativelabs.com/openal/
 
+- Caelum OGRE Add-on 0.4: http://www.ogre3d.org/wiki/index.php/Caelum/ . Used for the dynamic environmetal lightning.
+
 
 OBTAINING DEPENDENCIES
 ======================
