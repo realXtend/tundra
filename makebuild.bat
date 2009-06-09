@@ -13,5 +13,6 @@ del build\modules\core\*d.dll
 del build\modules\test\*d.dll
 del build\modules\test\TestModule*.*
 del build\modules\test\non_existing_system.xml
+del build\modules\core\OpenAL*.*
 xcopy ..\viewerbuilddlls\*.* build /S /C
 
