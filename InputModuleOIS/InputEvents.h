@@ -49,8 +49,8 @@ namespace Input
 
         static const Core::event_id_t SHOW_DEBUG_CONSOLE = 28;
         static const Core::event_id_t SHOW_DEBUG_CONSOLE_REL = 29;
-        static const Core::event_id_t SWITCH_CONTROLLER = 30;
-        static const Core::event_id_t SWITCH_CONTROLLER_REL = 31;
+        static const Core::event_id_t SWITCH_CAMERA_STATE = 30;
+        static const Core::event_id_t SWITCH_CAMERA_STATE_REL = 31;
 
         //! mouse dragged
         static const Core::event_id_t MOUSELOOK = 32;

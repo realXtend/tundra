@@ -12,7 +12,6 @@ namespace RexLogic
     {
         framework_ = framework;
         rexlogicmodule_ = rexlogicmodule;
-        dragging_ = false;
     }
 
     InputEventHandler::~InputEventHandler()
@@ -21,124 +20,15 @@ namespace RexLogic
     
     bool InputEventHandler::HandleInputEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        if (event_id == Input::Events::SWITCH_CONTROLLER)
+        if (event_id == Input::Events::SWITCH_CAMERA_STATE)
         {
-            rexlogicmodule_->SwitchController();
-            return true;
-        }
-
-        boost::shared_ptr<InputState> state = state_.lock();
-
-        if (state)
-        {
-            switch(event_id)
-            {
-                case Input::Events::MOVE_FORWARD_PRESSED:
-                    state->StartMovingForward();
-                    break;
-                case Input::Events::MOVE_FORWARD_RELEASED:
-                    state->StopMovingForward();
-                    break;
-                case Input::Events::MOVE_BACK_PRESSED:  
-                    state->StartMovingBackward();
-                    break;
-                case Input::Events::MOVE_BACK_RELEASED:
-                    state->StopMovingBackward();
-                    break;
-                case Input::Events::MOVE_LEFT_PRESSED:
-                    state->StartMovingLeft();
-                    break;
-                case Input::Events::MOVE_LEFT_RELEASED:
-                    state->StopMovingLeft();
-                    break;
-                case Input::Events::MOVE_RIGHT_PRESSED:       
-                    state->StartMovingRight();
-                    break;
-                case Input::Events::MOVE_RIGHT_RELEASED:
-                    state->StopMovingRight();
-                    break;
-                case Input::Events::MOVE_UP_PRESSED:
-                    state->StartMovingUp();
-                    break;
-                case Input::Events::MOVE_UP_RELEASED:
-                    state->StopMovingUp();
-                    break;
-                case Input::Events::MOVE_DOWN_PRESSED:
-                    state->StartMovingDown();
-                    break;
-                case Input::Events::MOVE_DOWN_RELEASED:
-                    state->StopMovingDown();
-                    break;
-                case Input::Events::ROTATE_LEFT_PRESSED:
-                    state->StartRotatingLeft();
-                    break;
-                case Input::Events::ROTATE_LEFT_RELEASED:
-                    state->StopRotatingLeft();
-                    break;
-                case Input::Events::ROTATE_RIGHT_PRESSED:
-                    state->StartRotatingRight();
-                    break;
-                case Input::Events::ROTATE_RIGHT_RELEASED:
-                    state->StopRotatingRight();
-                    break;
-                case Input::Events::ROTATE_UP_PRESSED:
-                    state->StartRotatingUp();
-                    break;
-                case Input::Events::ROTATE_UP_RELEASED:
-                    state->StopRotatingUp();
-                    break;
-                case Input::Events::ROTATE_DOWN_PRESSED:
-                    state->StartRotatingDown();
-                    break;
-                case Input::Events::ROTATE_DOWN_RELEASED:
-                    state->StopRotatingDown();
-                    break;
-                case Input::Events::ROLL_LEFT_PRESSED:
-                    state->StartRollingLeft();
-                    break;
-                case Input::Events::ROLL_LEFT_RELEASED:
-                    state->StopRollingLeft();
-                    break;
-                case Input::Events::ROLL_RIGHT_PRESSED:
-                    state->StartRollingRight();
-                    break;
-                case Input::Events::ROLL_RIGHT_RELEASED:
-                    state->StopRollingRight();
-                    break;
-                case Input::Events::TOGGLE_FLYMODE:
-                    state->ToggleFlyMode();
-                    break;
-                case Input::Events::SCROLL:
-                    int rel = checked_static_cast<Input::Events::SingleAxisMovement*>(data)->z_.rel_;    
-                    state->Zoom(rel);
-                    break;
-            }
-        } else
-        {
-            RexLogicModule::LogDebug("Warning: no input state present, movement input not handled.");
+            rexlogicmodule_->SwitchCameraState();
+            return false;
         }
         return false;
     }
 
     void InputEventHandler::Update(Core::f64 frametime)
     {
-        boost::shared_ptr<InputState> state = state_.lock();
-        boost::shared_ptr<Input::InputServiceInterface> input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input).lock();
-        if (input)
-        {
-            boost::optional<const Input::Events::Movement&> movement = input->PollSlider(Input::Events::MOUSELOOK);
-            if (movement)
-            {
-                dragging_ = true;
-                state->Drag(&*movement);
-            } else if (dragging_)
-            {
-                dragging_ = false;
-                Input::Events::Movement zero;
-                state->Drag(&zero);
-            }
-        }
-
-        state->Update(frametime);
     }
 }

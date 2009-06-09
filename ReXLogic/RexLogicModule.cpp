@@ -46,10 +46,10 @@
 
 namespace RexLogic
 {
-    RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_), 
-        current_controller_(Controller_Avatar), 
-        send_input_state_(false), 
-        movement_damping_constant_(10.0f)
+    RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_),
+        send_input_state_(false),
+        movement_damping_constant_(10.0f),
+        camera_state_(CS_Follow)
     { 
     }
 
@@ -114,13 +114,12 @@ namespace RexLogic
         scene_handler_ = new SceneEventHandler(framework_, this);
         avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
         camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
-
-        current_controller_ = Controller_Avatar;
-        input_handler_->SetState(avatar_controller_);
         
         movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting("RexLogicModule", "movement_damping_constant", 10.0f);
              
         dead_reckoning_time_ = framework_->GetDefaultConfig().DeclareSetting("RexLogicModule", "dead_reckoning_time", 2.0f);
+
+        camera_state_ = static_cast<CameraState>(framework_->GetDefaultConfig().DeclareSetting("RexLogicModule", "default_camera_state", static_cast<int>(CS_Follow)));
 
         LogInfo("Module " + Name() + " initialized.");
     }
@@ -274,7 +273,7 @@ namespace RexLogic
 
                 // can't send events during initalization, so workaround
                 Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-                if (current_controller_ == Controller_Avatar)
+                if (camera_state_ == CS_Follow)
                     GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
                 else
                     GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
@@ -284,7 +283,6 @@ namespace RexLogic
             {
                 avatar_controllable_->AddTime(frametime);
                 camera_controllable_->AddTime(frametime);
-                //input_handler_->Update(frametime);
 
                 boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
                     <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -412,24 +410,20 @@ namespace RexLogic
         return Console::ResultSuccess();
     }
     
-    void RexLogicModule::SwitchController()
+    void RexLogicModule::SwitchCameraState()
     {
-        if (current_controller_ == Controller_Avatar)
+        if (camera_state_ == CS_Follow)
         {
-            //current_controller_ = Controller_Camera;
-            //input_handler_->SetState(camera_controller_);
+            camera_state_ = CS_Free;
 
             Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
             GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
         } else
         {
-            //current_controller_ = Controller_Avatar;
-            //input_handler_->SetState(avatar_controller_);
+            camera_state_ = CS_Follow;
 
             Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
             GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
-
-            //avatar_controller_->CheckMode();
         }
     }
     
