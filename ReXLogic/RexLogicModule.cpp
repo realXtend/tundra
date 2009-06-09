@@ -114,7 +114,7 @@ namespace RexLogic
         network_state_handler_ = new NetworkStateEventHandler(framework_, this);
         input_handler_ = new InputEventHandler(framework_, this);
         scene_handler_ = new SceneEventHandler(framework_, this);
-        avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(framework_, rexserver_connection_, framework_->GetEventManager()));
+        avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
         camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
 
         current_controller_ = Controller_Avatar;

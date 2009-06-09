@@ -37,6 +37,9 @@ namespace RexLogic
         //! current control flags for the avatar. If you modify this variable, you are responsible for sending update to server.
         uint32_t controlflags;
 
+        //! cached control flags for the avatar, from previous update.
+        uint32_t cached_controlflags;
+
         //! yaw the avatar (-1 for left, 1 for right)
         int yaw;
 
