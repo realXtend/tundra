@@ -25,4 +25,15 @@ material LitTextured
 			}
 		}
 	}
+	// fallback
+	technique
+	{
+	    pass
+	    {
+	        texture_unit baseMap
+	        {
+	            texture TextureMissing.png
+	        }
+        }
+	}
 }
