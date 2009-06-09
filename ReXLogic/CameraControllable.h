@@ -50,6 +50,9 @@ namespace RexLogic
         //! update camera simulation for all controllable cameras
         void AddTime(Core::f64 frametime);
 
+        //! returns camera pitch
+        Core::Real GetPitch() const { return firstperson_pitch_; }
+
     private:
         typedef std::map<int, Core::Vector3df> ActionTransMap;
 

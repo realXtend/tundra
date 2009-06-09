@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "AvatarControllable.h"
+#include "CameraControllable.h"
 #include "EC_NetworkPosition.h"
 #include "EC_OpenSimAvatar.h"
 #include "RexLogicModule.h"
@@ -15,23 +16,56 @@ namespace RA = RexTypes::Actions;
 
 namespace RexLogic
 {
-    AvatarControllable::AvatarControllable(Foundation::Framework *fw, const RexServerConnectionPtr &connection, const Foundation::EventManagerPtr &event_manager) : 
-        framework_(fw)
-      , connection_(connection)
-      , event_manager_(event_manager)
-      , input_event_category_(event_manager->QueryEventCategory("Input"))
-      , scene_event_category_(event_manager->QueryEventCategory("Scene"))
-      , action_event_category_(event_manager->QueryEventCategory("Action"))
+    uint32_t SetFPControlFlags(uint32_t control_flags, Core::Real pitch)
+    {
+        uint32_t net_controlflags = control_flags;
+
+        // First person mode fly up/down automation
+        if ((control_flags & RexTypes::AGENT_CONTROL_FLY) && ((control_flags & (RexTypes::AGENT_CONTROL_UP_POS|RexTypes::AGENT_CONTROL_UP_NEG)) == 0))
+        {
+            if ((control_flags & RexTypes::AGENT_CONTROL_AT_POS) && (pitch > Core::PI/12))
+            {
+                net_controlflags |= RexTypes::AGENT_CONTROL_UP_POS;
+                if (pitch > Core::PI/3)
+                    net_controlflags &= ~RexTypes::AGENT_CONTROL_AT_POS;
+            }
+            
+            if ((control_flags & RexTypes::AGENT_CONTROL_AT_POS) && (pitch < -Core::PI/12))
+            {
+                net_controlflags |= RexTypes::AGENT_CONTROL_UP_NEG;
+                if (pitch < -Core::PI/3)
+                    net_controlflags &= ~RexTypes::AGENT_CONTROL_AT_POS;
+            }
+            if ((control_flags & RexTypes::AGENT_CONTROL_AT_NEG) && (pitch > Core::PI/12))
+            {
+                net_controlflags |= RexTypes::AGENT_CONTROL_UP_NEG;
+                if (pitch > Core::PI/3)
+                    net_controlflags &= ~RexTypes::AGENT_CONTROL_AT_NEG;
+            }
+            
+            if ((control_flags & RexTypes::AGENT_CONTROL_AT_NEG) && (pitch < -Core::PI/12))
+            {
+                net_controlflags |= RexTypes::AGENT_CONTROL_UP_POS;
+                if (pitch < -Core::PI/3)
+                    net_controlflags &= ~RexTypes::AGENT_CONTROL_AT_NEG;
+            }
+        }
+        return net_controlflags;
+    }
+
+    AvatarControllable::AvatarControllable(RexLogicModule *rexlogic) : 
+        framework_(rexlogic->GetFramework())
+      , connection_(rexlogic->GetServerConnection())
+      , event_manager_(rexlogic->GetFramework()->GetEventManager())
+      , rexlogic_(rexlogic)
       , net_dirty_(false)
       , net_movementupdatetime_(0.f)
       , net_updateinterval_(0.f)
       , current_state_(ThirdPerson)
       , drag_yaw_(0)
     {
-        if (input_event_category_ == Core::IllegalEventCategory)
-            RexLogicModule::LogError("AvatarControllable: failed to acquire input event category, controller disabled.");
-        if (scene_event_category_ == Core::IllegalEventCategory)
-            RexLogicModule::LogError("AvatarControllable: failed to acquire scene event category, controller disabled.");
+        action_event_category_ = event_manager_->QueryEventCategory("Action");
+
         if (action_event_category_ == Core::IllegalEventCategory)
             RexLogicModule::LogError("AvatarControllable: failed to acquire action event category, controller disabled.");
 
@@ -202,7 +236,7 @@ namespace RexLogic
             }
         }
 
-        //! \todo for simplification, we just go over all entities in the scene. For performance, some other solution may be prudent
+        //! \todo for simplicity, we just go over all entities in the scene. For performance, some other solution may be prudent
         Scene::ScenePtr scene = framework_->GetScene("World");
         Scene::SceneManager::iterator it = scene->begin();
         Foundation::ComponentPtr component;
@@ -219,13 +253,18 @@ namespace RexLogic
                     Core::Quaternion rotchange(0, 0, (-avatar->yaw * (Core::f32)frametime + drag_yaw_) * rotation_sensitivity_);
                     netpos->rotation_ = rotchange * netpos->rotation_;
                     netpos->Updated();
-
-                    //OgreRenderer::EC_OgrePlaceable *ogreplaceable = 
-                    //    checked_static_cast<OgreRenderer::EC_OgrePlaceable*>
-                    //    ((*it)->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get());
                 }
 
-                SendScheduledMovementToServer(avatar->controlflags);
+                //! \todo hax to get camera pitch. Should be fixed once camera is a proper entity and component. -cm
+                Core::Real pitch = rexlogic_->GetCameraControllable()->GetPitch();
+                
+                uint32_t net_controlflags = SetFPControlFlags(avatar->controlflags, pitch);
+                if (net_controlflags != avatar->cached_controlflags)
+                    net_dirty_ = true;
+
+                avatar->cached_controlflags = net_controlflags;
+
+                SendScheduledMovementToServer(net_controlflags);
             }
         }
 
@@ -275,5 +314,7 @@ namespace RexLogic
 
         SendMovementToServer(controlflags);
     }
+
+
 }
 

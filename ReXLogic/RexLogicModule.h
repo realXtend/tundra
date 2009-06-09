@@ -91,6 +91,9 @@ namespace RexLogic
         
         //! @return The environment handler object that manages reX sky logic.
         EnvironmentPtr GetEnvironmentHandler();
+
+        //! Returns the camera controllable
+        CameraControllablePtr GetCameraControllable() { return camera_controllable_; }
         
         //! The scene system can store multiple scenes. Only one scene is active at a time, that is the one
         //! that is currently being rendered. You may pass a null pointer to erase the currently active scene.

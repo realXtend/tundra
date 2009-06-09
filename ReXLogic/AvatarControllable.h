@@ -8,6 +8,8 @@
 
 namespace RexLogic
 {
+    class RexLogicModule;
+
     class RexServerConnection;
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
 
@@ -23,9 +25,12 @@ namespace RexLogic
             InActive
         };
 
-    public:
         //! default constructor
-        AvatarControllable(Foundation::Framework *fw, const RexServerConnectionPtr &connection, const Foundation::EventManagerPtr &event_manager);
+        AvatarControllable();
+    public:
+        //! constructor that takes rex logic module
+        AvatarControllable(RexLogicModule *rexlogic);
+
         //! destructor
         ~AvatarControllable() {}
 
@@ -67,12 +72,6 @@ namespace RexLogic
 
         typedef std::map<int, RexTypes::ControlFlags> ActionControlFlagMap;
 
-        //! convenient cached value for input event category
-        Core::event_category_id_t input_event_category_;
-
-        //! convenient cached value for scene event category
-        Core::event_category_id_t scene_event_category_;
-
         //! convenient cached value for action event category
         Core::event_category_id_t action_event_category_;
 
@@ -84,6 +83,9 @@ namespace RexLogic
 
         //! event manager
         Foundation::EventManagerPtr event_manager_;
+
+        //! (parent) rex logic module
+        RexLogicModule *rexlogic_;
 
         //! mappings from input events to actions
         RexTypes::Actions::ActionInputMap input_events_;
