@@ -126,9 +126,8 @@ float4 OceanPSMain(v2f IN,
 			uniform float fresnelBias,
 			uniform float hdrMultiplier,
 			uniform float4 fogParams,
-			uniform float4 fogColor,
-			uniform float farClip
-			
+			uniform float4 fogColor
+
 			) : COLOR
 {
 	// sum normal maps
@@ -168,10 +167,6 @@ float4 OceanPSMain(v2f IN,
     reflection = lerp(waterColor,  reflection * reflectionColor, fresnel) * reflectionAmount;
 
 	// Rex water coloration + fog
-	float fogFarDistance = farClip * 0.98;
 	float fogDist = clamp((fogParams.z - length(IN.eyeVector)) / (fogParams.z - fogParams.y), 0, 1); // Fog based on scene fog settings
-//	float fogDist = saturate((fogFarDistance - length(IN.eyeVector)) / (fogFarDistance - fogParams.y)); // Fog based on far clip distance
 	return lerp(fogColor, (waterColor + reflection) * IN.color, fogDist);
-
-//   return (waterColor + reflection) * IN.color;
 }
