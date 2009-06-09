@@ -17,5 +17,19 @@ material UnlitTextured
 			}
 		} 
 	}
+	
+	// fallback
+	technique
+	{
+	    pass
+	    {
+	        lighting off
+	        
+	        texture_unit baseMap
+	        {
+	            texture TextureMissing.png
+	        }
+        }
+	}
 }
  
