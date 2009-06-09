@@ -10,7 +10,7 @@
 #include "OpenSimProtocolModule.h"
 #include "RexLogicModule.h"
 #include "Entity.h"
-#include "AvatarController.h"
+#include "AvatarControllable.h"
 
 // Ogre renderer -specific.
 #include <OgreMaterialManager.h>
@@ -219,7 +219,9 @@ namespace RexLogic
         {
             Vector3 position = data->message->ReadVector3(); 
             Vector3 lookat = data->message->ReadVector3();
-            rexlogicmodule_->GetAvatarController()->HandleAgentMovementComplete(Core::OpenSimToOgreCoordinateAxes(position),Core::OpenSimToOgreCoordinateAxes(lookat));
+
+            assert (rexlogicmodule_->GetAvatarControllable() && "Handling agent movement complete event before avatar controller is created.");
+            rexlogicmodule_->GetAvatarControllable()->HandleAgentMovementComplete(Core::OpenSimToOgreCoordinateAxes(position), Core::OpenSimToOgreCoordinateAxes(lookat));
 
             /// \todo tucofixme, what to do with regionhandle & timestamp?
             uint64_t regionhandle = data->message->ReadU64();

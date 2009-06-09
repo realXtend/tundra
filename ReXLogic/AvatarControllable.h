@@ -46,6 +46,9 @@ namespace RexLogic
         //! Add time to avatar control simulation for all controllable avatars
         void AddTime(Core::f64 frametime);
 
+        //! Agent movement complete (network) event handling
+        void HandleAgentMovementComplete(const RexTypes::Vector3& position, const RexTypes::Vector3& lookat);
+
     private:
         //! Returns avatar entity rotation
         const Core::Quaternion &GetBodyRotation() const;
