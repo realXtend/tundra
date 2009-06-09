@@ -222,17 +222,17 @@ namespace Input
         // See InputModuleOIS for explanation
         module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_W,       Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED, 0);
         module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_S,       Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,    0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_A,       Events::MOVE_LEFT_PRESSED,      Events::MOVE_LEFT_RELEASED,  0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_D,       Events::MOVE_RIGHT_PRESSED,     Events::MOVE_RIGHT_RELEASED, 0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_A,       Events::MOVE_LEFT_PRESSED,      Events::MOVE_LEFT_RELEASED,    0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_D,       Events::MOVE_RIGHT_PRESSED,     Events::MOVE_RIGHT_RELEASED,   0);
         module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_UP,      Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED, 0);
         module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_DOWN,    Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,    0);
         module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_SPACE,   Events::MOVE_UP_PRESSED,        Events::MOVE_UP_RELEASED,      0);
         module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_C,       Events::MOVE_DOWN_PRESSED,      Events::MOVE_DOWN_RELEASED,    0);
         module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_PGUP,    Events::MOVE_UP_PRESSED,        Events::MOVE_UP_RELEASED,      0);
         module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_PGDOWN,  Events::MOVE_DOWN_PRESSED,      Events::MOVE_DOWN_RELEASED,    0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_LEFT,    Events::MOVE_LEFT_PRESSED,      Events::MOVE_LEFT_RELEASED,  0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_RIGHT,   Events::MOVE_RIGHT_PRESSED,     Events::MOVE_RIGHT_RELEASED, 0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_F,       Events::TOGGLE_FLYMODE,         Events::TOGGLE_FLYMODE_REL, 0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_LEFT,    Events::MOVE_LEFT_PRESSED,      Events::MOVE_LEFT_RELEASED,    0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_RIGHT,   Events::MOVE_RIGHT_PRESSED,     Events::MOVE_RIGHT_RELEASED,   0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_FirstPerson, OIS::KC_F,       Events::TOGGLE_FLYMODE,         Events::TOGGLE_FLYMODE_REL,    0);
 
         module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_W,       Events::MOVE_FORWARD_PRESSED,   Events::MOVE_FORWARD_RELEASED, 0);
         module_->RegisterUnbufferedKeyEvent(Input::State_ThirdPerson, OIS::KC_S,       Events::MOVE_BACK_PRESSED,      Events::MOVE_BACK_RELEASED,    0);
@@ -265,8 +265,8 @@ namespace Input
         module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_I,       Events::ROTATE_UP_PRESSED,      Events::ROTATE_UP_RELEASED,     0);
         module_->RegisterUnbufferedKeyEvent(Input::State_FreeCamera, OIS::KC_K,       Events::ROTATE_DOWN_PRESSED,    Events::ROTATE_DOWN_RELEASED,   0);
 
-        module_->RegisterUnbufferedKeyEvent(Input::State_All, OIS::KC_GRAVE,   Events::SHOW_DEBUG_CONSOLE,     Events::SHOW_DEBUG_CONSOLE_REL, 0);
-        module_->RegisterUnbufferedKeyEvent(Input::State_All, OIS::KC_TAB,     Events::SWITCH_CONTROLLER,      Events::SWITCH_CONTROLLER_REL, 0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_All, OIS::KC_GRAVE,   Events::SHOW_DEBUG_CONSOLE,     Events::SHOW_DEBUG_CONSOLE_REL,  0);
+        module_->RegisterUnbufferedKeyEvent(Input::State_All, OIS::KC_TAB,     Events::SWITCH_CAMERA_STATE,    Events::SWITCH_CAMERA_STATE_REL, 0);
 
         module_->RegisterSliderEvent(Input::State_FirstPerson, SliderMouse,    Events::MOUSELOOK,              Events::MOUSELOOK_STOPPED, OIS::MB_Right);
         module_->RegisterSliderEvent(Input::State_ThirdPerson, SliderMouse,    Events::MOUSELOOK,              Events::MOUSELOOK_STOPPED, OIS::MB_Right);

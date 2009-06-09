@@ -35,10 +35,13 @@ namespace RexLogic
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<CameraControllable> CameraControllablePtr;
 
-    enum InputController
+    //! Camera states handled by rex logic
+    enum CameraState
     {
-        Controller_Avatar,
-        Controller_Camera
+        //! Camera follows the avatar (third or first person)
+        CS_Follow,
+        //! Camera moves around freely
+        CS_Free
     };
 
     //! interface for modules
@@ -70,7 +73,7 @@ namespace RexLogic
         AvatarControllerPtr GetAvatarController() const { return avatar_controller_; }
 
         //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
-        void SwitchController();
+        void SwitchCameraState();
         
         //! @return The logic object that manages the water-related parts of the scene.
         WaterPtr GetWaterHandler();
@@ -177,9 +180,6 @@ namespace RexLogic
         
         LogicEventHandlerMap event_handlers_;
 
-        //! current input controller
-        InputController current_controller_;
-
         WaterPtr water_;
 
         TerrainPtr terrain_;
@@ -226,6 +226,9 @@ namespace RexLogic
 
         //! Camera controllable
         CameraControllablePtr camera_controllable_;
+
+        //! current camera state
+        CameraState camera_state_;
     };
 }
 
