@@ -52,10 +52,8 @@ material Ocean
 				param_named fresnelPower float 5.0
 				param_named fresnelBias float 0.328
 				param_named hdrMultiplier float 0.471
-				param_named_auto colorModulate custom 0
 				param_named_auto fogParams fog_params
 				param_named_auto fogColor fog_colour
-				param_named_auto farClip far_clip_distance
 			}
 
 			texture_unit
