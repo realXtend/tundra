@@ -10,7 +10,6 @@
 #include "SceneEventHandler.h"
 #include "EventDataInterface.h"
 #include "TextureInterface.h"
-#include "CameraController.h"
 #include "SceneManager.h"
 #include "RexLoginWindow.h"
 #include "AvatarControllable.h"
@@ -108,7 +107,6 @@ namespace RexLogic
         avatar_ = AvatarPtr(new Avatar(this));
         primitive_ = PrimitivePtr(new Primitive(this));
         avatar_controller_ = AvatarControllerPtr(new AvatarController(framework_, this));
-        camera_controller_ = CameraControllerPtr(new CameraController(this));
         rexserver_connection_ = RexServerConnectionPtr(new RexServerConnection(framework_));
         network_handler_ = new NetworkEventHandler(framework_, this);
         network_state_handler_ = new NetworkStateEventHandler(framework_, this);
@@ -228,7 +226,6 @@ namespace RexLogic
         avatar_.reset();
         primitive_.reset();
         avatar_controller_.reset();
-        camera_controller_.reset();
         avatar_controllable_.reset();
         camera_controllable_.reset();
         environment_.reset();
@@ -419,20 +416,20 @@ namespace RexLogic
     {
         if (current_controller_ == Controller_Avatar)
         {
-            current_controller_ = Controller_Camera;
-            input_handler_->SetState(camera_controller_);
+            //current_controller_ = Controller_Camera;
+            //input_handler_->SetState(camera_controller_);
 
             Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
             GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
         } else
         {
-            current_controller_ = Controller_Avatar;
-            input_handler_->SetState(avatar_controller_);
+            //current_controller_ = Controller_Avatar;
+            //input_handler_->SetState(avatar_controller_);
 
             Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
             GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
 
-            avatar_controller_->CheckMode();
+            //avatar_controller_->CheckMode();
         }
     }
     

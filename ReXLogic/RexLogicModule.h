@@ -13,7 +13,6 @@ namespace RexLogic
     class InputEventHandler;
     class SceneEventHandler;
     class NetworkStateEventHandler;
-    class CameraController;
     class Terrain;
     class Avatar;
     class Primitive;
@@ -26,7 +25,6 @@ namespace RexLogic
     
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
     typedef boost::shared_ptr<AvatarController> AvatarControllerPtr;
-    typedef boost::shared_ptr<CameraController> CameraControllerPtr;
     typedef boost::weak_ptr<Terrain> TerrainWeakPtr;
     typedef boost::shared_ptr<Terrain> TerrainPtr;
     typedef boost::shared_ptr<Water> WaterPtr;
@@ -166,9 +164,6 @@ namespace RexLogic
 
         //! Local avatar controller for this client
         AvatarControllerPtr avatar_controller_;
-
-        //! (local) camera controller for this client
-        CameraControllerPtr camera_controller_;
 
         //! Movement damping constant
         Core::f32 movement_damping_constant_;
