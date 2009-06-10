@@ -6,6 +6,7 @@
 #include "ComponentInterface.h"
 #include "Foundation.h"
 #include "RexUUID.h"
+#include "RexTypes.h"
 
 namespace RexLogic
 {
@@ -13,13 +14,13 @@ namespace RexLogic
     struct MaterialData
     {
         uint8_t Type;
-        RexTypes::RexUUID UUID;
+		RexTypes::RexAssetID asset_id;
     }; 
     //! Map for holding materials
     typedef std::map<uint8_t, MaterialData> MaterialMap;
 
     //! Map for holding prim textures
-    typedef std::map<uint8_t, RexTypes::RexUUID> TextureMap;
+    typedef std::map<uint8_t, RexTypes::RexAssetID> TextureMap;
     
     //! Map for holding prim textures
     typedef std::map<uint8_t, Core::Color> ColorMap;
@@ -49,9 +50,9 @@ namespace RexLogic
 
         std::string ServerScriptClass;
         
-        RexTypes::RexUUID CollisionMesh;
+		RexTypes::RexAssetID CollisionMeshID;
         
-        RexTypes::RexUUID SoundUUID;
+		RexTypes::RexAssetID SoundID;
         float SoundVolume;
         float SoundRadius;
         
@@ -68,11 +69,11 @@ namespace RexLogic
         float DrawDistance;
         float LOD;
         
-        RexTypes::RexUUID MeshUUID;
-        RexTypes::RexUUID ParticleScriptUUID;
-        
+		RexTypes::RexAssetID MeshID;
+		RexTypes::RexAssetID ParticleScriptID;
+
         //! Animation
-        RexTypes::RexUUID AnimationPackageUUID;
+		RexTypes::RexAssetID AnimationPackageID;
         std::string AnimationName;
         float AnimationRate;
 
@@ -80,7 +81,7 @@ namespace RexLogic
         MaterialMap Materials;
 
         //! Primitive texture entry data
-        RexTypes::RexUUID PrimDefaultTexture;
+        RexTypes::RexAssetID PrimDefaultTextureID;
         TextureMap PrimTextures;
         Core::Color PrimDefaultColor;
         ColorMap PrimColors;
@@ -107,7 +108,7 @@ namespace RexLogic
         bool HasPrimShapeData;
 
         void PrintDebug();
-        
+
     private:
         EC_OpenSimPrim(Foundation::ModuleInterface* module);
     };

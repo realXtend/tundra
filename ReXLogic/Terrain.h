@@ -32,7 +32,7 @@ public:
     //! The OpenSim terrain has a hardcoded size of four textures. When/if we lift that, change the amount here or remove altogether if dynamic.
     static const int num_terrain_textures = 4;
 
-    void SetTerrainTextures(const RexUUID textures[num_terrain_textures]);
+    void SetTerrainTextures(const RexAssetID textures[num_terrain_textures]);
 
     void RequestTerrainTextures();
 
@@ -51,7 +51,7 @@ private:
     Core::request_tag_t terrain_texture_requests_[num_terrain_textures];
 
     //! UUID's of the texture assets the terrain uses for rendering. Should be stored per-scene.
-    RexUUID terrain_textures_[num_terrain_textures];
+    RexAssetID terrain_textures_[num_terrain_textures];
 
     Scene::EntityWeakPtr cachedTerrainEntity_;
 
