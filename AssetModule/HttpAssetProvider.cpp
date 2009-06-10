@@ -3,13 +3,6 @@
 
 #include "StableHeaders.h"
 
-#include "Poco/URIStreamOpener.h"
-#include "Poco/StreamCopier.h"
-#include "Poco/Path.h"
-#include "Poco/URI.h"
-#include "Poco/Exception.h"
-#include "Poco/Net/HTTPStreamFactory.h"
-#include "Poco/Net/FTPStreamFactory.h"
 #include <memory>
 #include <iostream>
 
@@ -32,19 +25,7 @@ namespace Asset
 
 	HttpAssetProvider::HttpAssetProvider(Foundation::Framework* framework) : framework_(framework)
 	{
-		buffer_ = new Core::u8[BUFFER_SIZE];
-
 		asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("UDPAssetProvider", "Timeout", DEFAULT_ASSET_TIMEOUT);            
-		try
-        {
-            Poco::Net::HTTPStreamFactory::registerFactory();
-        } catch (Poco::Exception &e)
-        {
-            AssetModule::LogError(e.displayText());
-            AssetModule::LogError("Failed to register HTTP stream factory.");
-
-            throw Core::Exception();
-        }
 
 		Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         
@@ -58,9 +39,6 @@ namespace Asset
 
 	HttpAssetProvider::~HttpAssetProvider()
 	{
-        //! \todo Poco::Net::HTTPStreamFactory::unregisterFactory() probably requires Poco 1.3.5 or later. Doing unregistering manually for now. -cm
-        Poco::URIStreamOpener::defaultOpener().unregisterStreamFactory("http");
-		delete [] buffer_;
 	}
 	
 	const std::string& HttpAssetProvider::Name()
@@ -147,24 +125,27 @@ namespace Asset
         return false;
     }
 
-	// \todo Current implementation get all asset data before return 
-	//       We should only download what is available and get rest later
 	void HttpAssetProvider::Update(Core::f64 frametime)
 	{
 		HttpAssetTransferMap::iterator i = asset_transfers_.begin();
 		while (i != asset_transfers_.end())
 		{
 			HttpAssetTransferPtr t = i->second;
-			int received = 0;
-			std::istream* s = t->GetResponseStream();
-			if (s == NULL)
-				continue;
 
-			s->read((char*)(buffer_), BUFFER_SIZE);
-			received = s->gcount();
+			if (t->IsFailed())
+			{
+				std::stringstream buf;
+				buf << "HttpAssetTransfer is failed for: ";
+				buf << t->GetAssetId();
+				AssetModule::LogError(buf.str());
 
-			t->ReceiveData(t->GetNextPacketId(), buffer_, received);
-                
+				SendAssetCanceled(*t.get());
+
+		        asset_transfers_.erase(i);
+				return;
+			}
+
+			t->Update(frametime);
 			SendAssetProgress(*t.get());
 
 			if (t->Ready())
@@ -172,6 +153,22 @@ namespace Asset
 				StoreAsset(*t.get());
 		        asset_transfers_.erase(i);
 				return;
+			}
+			else
+			{
+				t->AddTime(frametime);
+				if (t->GetTime() > asset_timeout_)
+				{
+					std::stringstream buf;
+					buf << "HttpAssetTransfer time out for: ";
+					buf << t->GetAssetId();
+					AssetModule::LogError(buf.str());
+
+					SendAssetCanceled(*t.get());
+
+					asset_transfers_.erase(i);
+					return;
+				}
 			}
 			i++;
 		}

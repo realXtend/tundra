@@ -1,16 +1,14 @@
 #include "StableHeaders.h"
 
-#include "Poco/URIStreamOpener.h"
 #include "Poco/StreamCopier.h"
 #include "Poco/Path.h"
 #include "Poco/URI.h"
 #include "Poco/Exception.h"
-#include "Poco/Net/HTTPStreamFactory.h"
-#include "Poco/Net/FTPStreamFactory.h"
-
 
 #include "HttpAssetTransfer.h"
 #include "AssetModule.h"
+
+#include "Poco/Net/HTTPStream.h"
 
 namespace Asset
 {
@@ -18,13 +16,15 @@ namespace Asset
         size_(0),
         received_(0),
         time_(0.0),
-		packet_id_(0),
-		response_stream_(NULL)
+		response_stream_(NULL),
+		failed_(false)
     {
     }
 
 	void HttpAssetTransfer::StartTransfer()
 	{
+		buffer_ = new Core::u8[BUFFER_SIZE];
+
 		Poco::URI uri(asset_id_);
 		std::string path(uri.getPathAndQuery());
 		if (path.empty())
@@ -32,54 +32,55 @@ namespace Asset
 
 		http_session_.setHost(uri.getHost());
 		http_session_.setPort(uri.getPort());
-
+		Poco::Timespan time_out(HTTP_TIMEOUT_MS*1000);
+		http_session_.setTimeout(time_out);
+		
 		http_request_.setMethod(Poco::Net::HTTPRequest::HTTP_GET);
 		http_request_.setURI(path);
 		http_request_.setVersion(Poco::Net::HTTPMessage::HTTP_1_1);
-		http_session_.sendRequest(http_request_);
-		http_session_.receiveResponse(http_response_);
-		
-		int data_size = http_response_.getContentLength();
-		SetSize(data_size);
 
-		response_stream_ = Poco::URIStreamOpener::defaultOpener().open(uri);
+		try
+		{
+			http_session_.sendRequest(http_request_);
+			std::istream &s = http_session_.receiveResponse(http_response_);
+			response_stream_ = &s;
+
+			int data_size = http_response_.getContentLength();
+			SetSize(data_size);
+		}
+		catch (Poco::Exception e)
+		{
+			failed_ = true;
+			return;
+		}
 	}
     
     HttpAssetTransfer::~HttpAssetTransfer()
     {
+		if (buffer_)
+		{
+			delete [] buffer_;
+			buffer_ = NULL;
+		}
     }
     
     bool HttpAssetTransfer::Ready() const
     {
-        if (!size_) 
-            return false; // No header received, size not known yet
-        
-        return received_ >= size_;
+		if (!response_stream_)
+			return false;
+
+		if (response_stream_->eof())
+			return true;
+		else
+			return false;
     }
     
     Core::uint HttpAssetTransfer::GetReceivedContinuous() const
     {
-        Core::uint size = 0;
-        
-        DataPacketMap::const_iterator i = data_packets_.begin();
-        
-        Core::uint expected_index = 0;
-      
-        while (i != data_packets_.end())
-        {
-            if (i->first != expected_index)
-                break;
-            
-            size += i->second.size();
-            
-            ++expected_index;
-            ++i;
-        }
-        
-        return size;
+		return received_data_.size();
     }
     
-    void HttpAssetTransfer::ReceiveData(Core::uint packet_index, const Core::u8* data, Core::uint size)
+    void HttpAssetTransfer::ReceiveData(const Core::u8* data, Core::uint size)
     {
         time_ = 0.0;
         
@@ -89,49 +90,35 @@ namespace Asset
             return;
         }
         
-        if (!data_packets_[packet_index].size())
-        {
-            data_packets_[packet_index].resize(size);
-            memcpy(&data_packets_[packet_index][0], data, size);
-            received_ += size;
-        }
-        else
-        {
-            AssetModule::LogWarning("Already received asset data packet index " + Core::ToString<Core::uint>(packet_index));
-        }
+		int new_size = received_data_.size() + size;
+		received_data_.resize(new_size);
+		memcpy(&received_data_[0], data, size);
+        received_ += size;
     }
     
     void HttpAssetTransfer::AssembleData(Core::u8* buffer) const
     {
-        DataPacketMap::const_iterator i = data_packets_.begin();
-        
-        Core::uint expected_index = 0;
-      
-        while (i != data_packets_.end())
-        {
-            if (i->first != expected_index)
-                break;
-            
-            memcpy(buffer, &i->second[0], i->second.size());
-            buffer += i->second.size();
-            
-            ++expected_index;
-            ++i;
-        }
+        memcpy(buffer, &received_data_[0], received_data_.size());
     }
 
-
-	std::istream* HttpAssetTransfer::GetResponseStream()
+	bool HttpAssetTransfer::IsFailed()
 	{
-		return response_stream_;
+		return failed_;
 	}
 
-
-	int HttpAssetTransfer::GetNextPacketId()
+	void HttpAssetTransfer::Update(Core::f64 frametime)
 	{
-		int i = packet_id_;
-		packet_id_++;
-		return i;
-	}
+		int received = 0;
 
+		response_stream_->rdbuf()->pubsync();
+		int count = response_stream_->rdbuf()->in_avail();
+		count = BUFFER_SIZE; //\hack, in_avail method doesn't work and returns always zero
+			
+		if (count > BUFFER_SIZE)
+			count = BUFFER_SIZE;
+
+		response_stream_->read((char*)(buffer_), count);
+		received = response_stream_->gcount();
+		ReceiveData(buffer_, received);
+	}
 }

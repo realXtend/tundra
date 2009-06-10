@@ -17,17 +17,10 @@ namespace Asset
     //! Http asset provider
     /*! Provides asset downloading with http protocol.
         Created by AssetModule.
-		\todo Handle timeouts
-		\todo Replace fixed transfer rate with implementation where only received bytes are read
      */
     class HttpAssetProvider : public Foundation::AssetProviderInterface
     {
     public:  
-		/**
-		 *  Bytes read from http server per Update method call per http request is max this value.
-		 */
-		static const int BUFFER_SIZE = 1024; 
-
         //! Constructor
         /*! \param framework Framework
 
@@ -137,8 +130,7 @@ namespace Asset
         
         //! Framework
         Foundation::Framework* framework_;    
-        
-		const Core::u8* buffer_;
+
     };
 } // end of namespace: Asset
 
