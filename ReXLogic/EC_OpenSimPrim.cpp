@@ -24,7 +24,7 @@ namespace RexLogic
 
         ServerScriptClass = "";
 
-        SoundUUID;
+        SoundID = "";
         SoundVolume = 0;
         SoundRadius = 0;
         
@@ -41,11 +41,11 @@ namespace RexLogic
         
         HasPrimShapeData = false;
         
-        MeshUUID.SetNull();
-        CollisionMesh.SetNull();
-        ParticleScriptUUID.SetNull();
+        MeshID = "";
+        CollisionMeshID = "";
+        ParticleScriptID = "";
 
-        AnimationPackageUUID.SetNull();
+        AnimationPackageID = "";
         AnimationName = "";
         AnimationRate = 0;
 
@@ -75,9 +75,9 @@ namespace RexLogic
         RexLogicModule::LogInfo("UpdateFlags:" + Core::ToString(UpdateFlags));
         
         RexLogicModule::LogInfo("ServerScriptClass:" + ServerScriptClass);        
-        RexLogicModule::LogInfo("CollisionMesh:" + CollisionMesh.ToString());
+        RexLogicModule::LogInfo("CollisionMeshID:" + CollisionMeshID);
 
-        RexLogicModule::LogInfo("SoundUUID:" + SoundUUID.ToString());        
+        RexLogicModule::LogInfo("SoundID:" + SoundID);        
         RexLogicModule::LogInfo("SoundVolume:" + Core::ToString(SoundVolume));
         RexLogicModule::LogInfo("SoundRadius:" + Core::ToString(SoundRadius));        
 

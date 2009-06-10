@@ -53,11 +53,11 @@ namespace RexLogic
             
         /// Set the sky texture for Skydome or Skyplane.
         /// @param texture_id
-        void SetSkyTexture(const RexUUID texture_id);
+        void SetSkyTexture(const RexAssetID texture_id);
 
         /// Sets the SkyBox textures.
         /// @param textures array of texture UUID's.
-        void SetSkyBoxTextures(const RexUUID textures[skyBoxTextureCount]);
+        void SetSkyBoxTextures(const RexAssetID textures[skyBoxTextureCount]);
 
         /// Looks through all the entities in RexLogic's currently active scene to find the Sky
         /// entity. Caches it internally. Use GetSkyEntity to obtain it afterwards.    
@@ -88,16 +88,16 @@ namespace RexLogic
         Core::request_tag_t skyPlaneTextureRequest_;
             
         /// UUID's of the texture assets the skybox uses for rendering. Should be stored per-scene.
-        RexUUID skyBoxTextures_[skyBoxTextureCount];
+        RexAssetID skyBoxTextures_[skyBoxTextureCount];
 
         /// List of skybox image names (UUID's) as strings.
-        std::vector<std::string> skyBoxImages_;
+        std::vector<RexAssetID> skyBoxImages_;
         
         /// UUID of the texture asset the skydome uses for rendering. Should be stored per-scene.
-        RexUUID skyDomeTexture_;
+        RexAssetID skyDomeTexture_;
 
         /// UUID of the texture asset the skyplane uses for rendering. Should be stored per-scene.
-        RexUUID skyPlaneTexture_;
+        RexAssetID skyPlaneTexture_;
         
         /// Keeps count of the skybox images.
         size_t skyBoxImageCount_;

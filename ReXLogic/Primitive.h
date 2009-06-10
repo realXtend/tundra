@@ -51,7 +51,7 @@ namespace RexLogic
         void ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes, size_t length);
         
         //! handle rexprimdata blob coming from server in a genericmessage
-        void HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t* primdata);
+        void HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t* primdata, const int primdata_size);
         
         //! handles changes in drawtype. sets/removes mesh as necessary
         //! @param entityid Entity id.

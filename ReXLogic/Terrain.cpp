@@ -301,7 +301,7 @@ namespace
         boost::shared_ptr<OgreRenderer::Renderer> renderer = w_renderer.lock();
 
         for(int i = 0; i < num_terrain_textures; ++i)
-            terrain_texture_requests_[i] = renderer->RequestResource(terrain_textures_[i].ToString(), OgreRenderer::OgreTextureResource::GetTypeStatic());
+            terrain_texture_requests_[i] = renderer->RequestResource(terrain_textures_[i], OgreRenderer::OgreTextureResource::GetTypeStatic());
     }
 
     void Terrain::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
@@ -344,7 +344,7 @@ namespace
         return false;
     }
 
-    void Terrain::SetTerrainTextures(const RexUUID textures[num_terrain_textures])
+    void Terrain::SetTerrainTextures(const RexAssetID textures[num_terrain_textures])
     {
         for(int i = 0; i < num_terrain_textures; ++i)
             terrain_textures_[i] = textures[i];

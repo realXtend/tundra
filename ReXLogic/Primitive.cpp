@@ -277,7 +277,7 @@ namespace RexLogic
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
         // If cannot get the entity, put to pending rexprimdata
         if (entity)           
-            HandleRexPrimDataBlob(entity->GetId(), &fulldata[0]);
+			HandleRexPrimDataBlob(entity->GetId(), &fulldata[0], fulldata.size());
         else
             pending_rexprimdata_[primuuid] = fulldata;
             
@@ -293,12 +293,12 @@ namespace RexLogic
         RexPrimDataMap::iterator i = pending_rexprimdata_.find(prim.FullId);
         if (i != pending_rexprimdata_.end())
         {
-            HandleRexPrimDataBlob(entityid, &i->second[0]);
+			HandleRexPrimDataBlob(entityid, &i->second[0], i->second.size());
             pending_rexprimdata_.erase(i);
         }
     }
 
-    void Primitive::HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t* primdata)
+    void Primitive::HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t* primdata, const int primdata_size)
     {
         int idx = 0;
 
@@ -318,26 +318,28 @@ namespace RexLogic
         prim.DrawDistance = ReadFloatFromBytes(primdata,idx);
         prim.LOD = ReadFloatFromBytes(primdata,idx);
 
-        prim.MeshUUID = ReadUUIDFromBytes(primdata,idx);
-        prim.CollisionMesh = ReadUUIDFromBytes(primdata,idx);      
+		prim.MeshID = ReadUUIDFromBytes(primdata,idx).ToString();
+		prim.CollisionMeshID = ReadUUIDFromBytes(primdata,idx).ToString();      
         
-        prim.ParticleScriptUUID = ReadUUIDFromBytes(primdata,idx);
+		prim.ParticleScriptID = ReadUUIDFromBytes(primdata,idx).ToString();
 
         // animation
-        prim.AnimationPackageUUID = ReadUUIDFromBytes(primdata,idx);        
+		prim.AnimationPackageID = ReadUUIDFromBytes(primdata,idx).ToString();        
         prim.AnimationName = ReadNullTerminatedStringFromBytes(primdata,idx);
         prim.AnimationRate = ReadFloatFromBytes(primdata,idx);
 
         MaterialMap materials;
         uint8_t tempmaterialindex = 0; 
         uint8_t tempmaterialcount = ReadUInt8FromBytes(primdata,idx);
+		std::vector<uint8_t> material_indexes;
         for(int i=0;i<tempmaterialcount;i++)
         {
             MaterialData newmaterialdata;
 
             newmaterialdata.Type = ReadUInt8FromBytes(primdata,idx);
-            newmaterialdata.UUID = ReadUUIDFromBytes(primdata,idx);
+			newmaterialdata.asset_id = ReadUUIDFromBytes(primdata,idx).ToString();
             tempmaterialindex = ReadUInt8FromBytes(primdata,idx);
+			material_indexes.push_back(tempmaterialindex); 
             materials[tempmaterialindex] = newmaterialdata;
         }
         prim.Materials = materials;
@@ -345,11 +347,43 @@ namespace RexLogic
         prim.ServerScriptClass = ReadNullTerminatedStringFromBytes(primdata,idx);
   
         // sound
-        prim.SoundUUID = ReadUUIDFromBytes(primdata,idx);       
+		prim.SoundID = ReadUUIDFromBytes(primdata,idx).ToString();       
         prim.SoundVolume = ReadFloatFromBytes(primdata,idx);
         prim.SoundRadius = ReadFloatFromBytes(primdata,idx);               
 
         prim.SelectPriority = ReadUInt32FromBytes(primdata,idx);
+
+		// Asset urls
+		if (idx < primdata_size)
+		{
+			std::string rex_mesh_url = ReadNullTerminatedStringFromBytes(primdata,idx);
+			std::string rex_collision_mesh_url = ReadNullTerminatedStringFromBytes(primdata,idx);
+			std::string rex_particle_script_url = ReadNullTerminatedStringFromBytes(primdata,idx);
+			std::string rex_animation_package_url = ReadNullTerminatedStringFromBytes(primdata,idx);
+			std::string rex_sound_url = ReadNullTerminatedStringFromBytes(primdata,idx);
+
+			if (rex_mesh_url.size() > 0)
+				prim.CollisionMeshID = rex_mesh_url;
+			if (rex_collision_mesh_url.size() > 0)
+				prim.CollisionMeshID = rex_collision_mesh_url;
+			if (rex_particle_script_url.size() > 0)
+				prim.ParticleScriptID = rex_particle_script_url;
+			if (rex_animation_package_url.size() > 0)
+				prim.AnimationPackageID = rex_animation_package_url;
+			if (rex_sound_url.size() > 0)
+				prim.SoundID = rex_sound_url;
+
+			for (int i=0; i<tempmaterialcount; ++i)
+			{
+				std::string rex_material_url = ReadNullTerminatedStringFromBytes(primdata,idx);
+				if (rex_material_url.size() > 0)
+				{
+					uint8_t material_index = material_indexes[i];
+					materials[material_index].asset_id = rex_material_url;
+				}
+			}
+			prim.Materials = materials;
+		}
    
         // Handle any change in the drawtype of the prim. Also, 
         // the Ogre materials on this prim have possibly changed. Issue requests of the new materials 
@@ -451,7 +485,7 @@ namespace RexLogic
         if (!entity)
             return;
         EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
-        if ((prim.DrawType == RexTypes::DRAWTYPE_MESH) && (!prim.MeshUUID.IsNull()))
+		if ((prim.DrawType == RexTypes::DRAWTYPE_MESH) && (!RexTypes::IsNull(prim.MeshID)))
         {
             // Remove custom object component if exists
             Foundation::ComponentPtr customptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
@@ -474,7 +508,7 @@ namespace RexLogic
             
             // Change mesh if yet nonexistent/changed
             // assume name to be UUID of mesh asset, which should be true of OgreRenderer resources
-            std::string mesh_name = prim.MeshUUID.ToString();
+            std::string mesh_name = prim.MeshID;
             if (mesh.GetMeshName() != mesh_name)
             {
                 boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
@@ -538,9 +572,10 @@ namespace RexLogic
             GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
 
         // Check for prim material override
-        if ((prim.Materials[0].Type == RexTypes::RexAT_MaterialScript) && (!prim.Materials[0].UUID.IsNull()))
+		if ((prim.Materials[0].Type == RexTypes::RexAT_MaterialScript) && (!RexTypes::IsNull(prim.Materials[0].asset_id)))
         {
-            std::string matname = prim.Materials[0].UUID.ToString();
+			std::string matname = prim.Materials[0].asset_id;
+			
             // Request material if don't have it yet
             if (!renderer->GetResource(matname, OgreRenderer::OgreMaterialResource::GetTypeStatic()))
             {
@@ -554,23 +589,23 @@ namespace RexLogic
         else
         {
             // Otherwise request normal textures
-            std::set<RexTypes::RexUUID> tex_requests;
+            std::set<RexTypes::RexAssetID> tex_requests;
             
-            if (!prim.PrimDefaultTexture.IsNull())
-                tex_requests.insert(prim.PrimDefaultTexture);
+			if (!RexTypes::IsNull(prim.PrimDefaultTextureID))
+                tex_requests.insert(prim.PrimDefaultTextureID);
                 
             TextureMap::const_iterator i = prim.PrimTextures.begin();
             while (i != prim.PrimTextures.end())
             {
-                if (!i->second.IsNull())
+				if (!RexTypes::IsNull(i->second))
                     tex_requests.insert(i->second);
                 ++i;
             }
             
-            std::set<RexTypes::RexUUID>::const_iterator j = tex_requests.begin();
+            std::set<RexTypes::RexAssetID>::const_iterator j = tex_requests.begin();
             while (j != tex_requests.end())
             {
-                std::string texname = (*j).ToString();
+                std::string texname = (*j);
                 Core::request_tag_t tag = renderer->RequestResource(texname, OgreRenderer::OgreTextureResource::GetTypeStatic());
                  
                 // Remember that we are going to get a resource event for this entity
@@ -602,13 +637,13 @@ namespace RexLogic
         MaterialMap::const_iterator i = prim.Materials.begin();
         while (i != prim.Materials.end())
         {
-            if (i->second.UUID.IsNull())
+			if (RexTypes::IsNull(i->second.asset_id))
             {
                 ++i;
                 continue;
             }
 
-            const std::string mat_name = i->second.UUID.ToString();
+			const std::string mat_name = i->second.asset_id;
             Core::uint idx = i->first;   
 
             //! \todo in the future material names will probably not correspond directly to texture names, so can't use this kind of check
@@ -826,7 +861,7 @@ namespace RexLogic
             {
                 Core::uint idx = i->first;
                 // For now, handle only textures, not materials
-                if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.UUID.ToString() == res->GetId()))
+				if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(res->GetId()) == 0))
                 {
                     // debug material creation to see diffuse textures
                     Ogre::MaterialPtr mat = OgreRenderer::GetOrCreateLitTexturedMaterial(res->GetId().c_str());
@@ -878,7 +913,7 @@ namespace RexLogic
         if (prim.DrawType == RexTypes::DRAWTYPE_PRIM)
         {
             Foundation::ComponentPtr customptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
-            if (customptr && res->GetId() == prim.Materials[0].UUID.ToString() && prim.Materials[0].Type == RexTypes::RexAT_MaterialScript)
+			if (customptr && res->GetId() == prim.Materials[0].asset_id  && prim.Materials[0].Type == RexTypes::RexAT_MaterialScript)
             {
                 OgreRenderer::EC_OgreCustomObject& custom = *checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(customptr.get());
                 // Update geometry now that the material exists
@@ -901,7 +936,7 @@ namespace RexLogic
                 while (i != prim.Materials.end())
                 {
                     Core::uint idx = i->first;
-                    if ((i->second.Type == RexTypes::RexAT_MaterialScript) && (i->second.UUID.ToString() == res->GetId()))
+					if ((i->second.Type == RexTypes::RexAT_MaterialScript) && (i->second.asset_id == res->GetId()))
                     {
                         OgreRenderer::OgreMaterialResource *materialRes = dynamic_cast<OgreRenderer::OgreMaterialResource*>(res.get());
                         assert(materialRes);
@@ -1006,7 +1041,7 @@ namespace RexLogic
             return;
         
         RexTypes::RexUUID default_texture_id = ReadUUIDFromBytes(bytes, idx);
-        prim.PrimDefaultTexture = default_texture_id;
+		prim.PrimDefaultTextureID = default_texture_id.ToString();
         
         while ((idx < length) && (ReadTextureEntryBits(bits, num_bits, bytes, idx)))
         {
@@ -1017,7 +1052,7 @@ namespace RexLogic
             {
                 if (bits & 1)
                 {
-                    prim.PrimTextures[i] = texture_id;
+					prim.PrimTextures[i] = texture_id.ToString();
                 }
                 bits >>= 1;
             }

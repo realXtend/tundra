@@ -167,11 +167,11 @@ namespace RexLogic
         data->message->SkipToNextVariable(); // CacheID
         for(int i = 0; i < 4; ++i)
             data->message->SkipToNextVariable(); // TerrainBase0..3
-        RexUUID terrain[4];
-        terrain[0] = data->message->ReadUUID();
-        terrain[1] = data->message->ReadUUID();
-        terrain[2] = data->message->ReadUUID();
-        terrain[3] = data->message->ReadUUID();        
+        RexAssetID terrain[4];
+        terrain[0] = data->message->ReadUUID().ToString();
+        terrain[1] = data->message->ReadUUID().ToString();
+        terrain[2] = data->message->ReadUUID().ToString();
+        terrain[3] = data->message->ReadUUID().ToString();        
 
         RexLogicModule::LogInfo("Joined to the sim \"" + sim_name + "\".");
         

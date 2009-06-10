@@ -103,24 +103,21 @@ void Sky::UpdateSky(OgreRenderer::SkyType type, const std::vector<std::string> &
             index = suffixIter->second;
             image_str = image_str.substr(0, image_str.size() - 3);
 
-            RexUUID image_id(image_str);
-            if (image_id.IsNull())
-                break;
+			if (RexTypes::IsNull(image_str))
+				break;
             
             ++skyBoxImageCount_;
-            skyBoxTextures_[index] = image_id;
+            skyBoxTextures_[index] = image_str;
             break;
         }
         case OgreRenderer::SKYTYPE_DOME:
         {
-            RexUUID image_id(image_str);
-            skyDomeTexture_ = image_id;
+            skyDomeTexture_ = image_str;
             break;
         }
         case OgreRenderer::SKYTYPE_PLANE:
         {
-            RexUUID image_id(image_str);
-            skyPlaneTexture_ = image_id;
+            skyPlaneTexture_ = image_str;
             break;
         }
         }
@@ -157,15 +154,15 @@ void Sky::RequestSkyTextures()
     {
     case OgreRenderer::SKYTYPE_BOX:
         for(int i = 0; i < skyBoxTextureCount; ++i)
-            skyBoxTextureRequests_[i] = renderer->RequestResource(skyBoxTextures_[i].ToString(),
+            skyBoxTextureRequests_[i] = renderer->RequestResource(skyBoxTextures_[i],
                 OgreRenderer::OgreTextureResource::GetTypeStatic());
         break;
     case OgreRenderer::SKYTYPE_DOME:
-        skyDomeTextureRequest_ = renderer->RequestResource(skyDomeTexture_.ToString(),
+        skyDomeTextureRequest_ = renderer->RequestResource(skyDomeTexture_,
             OgreRenderer::OgreTextureResource::GetTypeStatic());
         break;
     case OgreRenderer::SKYTYPE_PLANE:
-        skyPlaneTextureRequest_ = renderer->RequestResource(skyPlaneTexture_.ToString(),
+        skyPlaneTextureRequest_ = renderer->RequestResource(skyPlaneTexture_,
             OgreRenderer::OgreTextureResource::GetTypeStatic());
         break;
     case OgreRenderer::SKYTYPE_NONE:
@@ -210,7 +207,7 @@ void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
     }
 }
 
-void Sky::SetSkyTexture(const RexUUID texture_id)
+void Sky::SetSkyTexture(const RexAssetID texture_id)
 {
     switch(type_)
     {
@@ -226,7 +223,7 @@ void Sky::SetSkyTexture(const RexUUID texture_id)
     }
 }
     
-void Sky::SetSkyBoxTextures(const RexUUID textures[skyBoxTextureCount])
+void Sky::SetSkyBoxTextures(const RexAssetID textures[skyBoxTextureCount])
 {
     if (type_ != OgreRenderer::SKYTYPE_DOME)
     {
