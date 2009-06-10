@@ -13,19 +13,31 @@ namespace Asset
     //! Stores data related to an Http asset transfer that is in progress. Not necessary to clients of the AssetModule.
     class HttpAssetTransfer
     {
+	private:
+		/**
+		 *  Bytes read from http server per Update method call per http request
+		 */
+		static const int BUFFER_SIZE = 1024; 
+
+		/**
+		 *  Timeout in ms for http get
+		 */
+		static const int HTTP_TIMEOUT_MS = 2000;
+
     public:
+
         //! Constructor
         HttpAssetTransfer();
+
         //! Destructor
         ~HttpAssetTransfer();
         
         //! Receives an asset data packet
         /*! Also resets elapsed time
-            \param packet_index Packet number, starting from 0
             \param data Pointer to data
             \param size Size of data packet
          */
-        void ReceiveData(Core::uint packet_index, const Core::u8* data, Core::uint size);
+        void ReceiveData(const Core::u8* data, Core::uint size);
         
         //! Assembles continuous asset data to a buffer
         /*! Call GetReceivedContinuous() (or GetReceived() if you know the transfer is complete)
@@ -92,20 +104,21 @@ namespace Asset
         //! Returns whether transfer is finished (all bytes received)
         bool Ready() const;
 
-		//void Update(Core::f64 frametime);
-
-
 		//! Send http GET request and open stream for response data
 		void StartTransfer();
 
-		//! return stream for reading http response
-		std::istream* GetResponseStream();
+		//! Return error state
+		bool IsFailed();
 
-		//! return next packet id 
-		int GetNextPacketId();
+		//! Read bytes from response stream 
+		//! /bug Current implementatation read always fixed amount of bytes (BUFFER_SIZE) and blocks while reading those bytes.
+		//!      Hostile server can stop viewer main loop using this bug
+		//!      We have to change this so that we only read available bytes.
+		void Update(Core::f64 frametime);
         
     private:
         typedef std::map<Core::uint, std::vector<Core::u8> > DataPacketMap;
+		typedef std::vector<Core::u8> DataVector;
         
         //! Asset ID
         std::string asset_id_; 
@@ -113,14 +126,14 @@ namespace Asset
         //! Asset type
         Core::uint asset_type_;
         
-        //! Expected size
+        ////! Expected size (Only used for "is ready" determination..)
         Core::uint size_;
-        
+
         //! Received bytes
         Core::uint received_;
         
-        //! Map of data packets
-        DataPacketMap data_packets_;
+        //! Received data
+		DataVector received_data_;
         
         //! Elapsed time since last packet
         Core::f64 time_;
@@ -140,9 +153,11 @@ namespace Asset
 		//! input stream for reading http response data
 		std::istream* response_stream_;
 
-		//! For data assembly we need id for every data chunk received from server
-		//! This start from 0 and increments by 1 for every time GetNextPacketId is called
-		int packet_id_;
+		//! error flag, true if http get has been failded
+		bool failed_;
+
+		//! response stream read buffer
+		const Core::u8 *buffer_;
     };
 
 } // end of namespace: Asset
