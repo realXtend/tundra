@@ -354,7 +354,8 @@ namespace RexLogic
         prim.SelectPriority = ReadUInt32FromBytes(primdata,idx);
 
 		// Asset urls
-		if (idx < primdata_size)
+		// Check for reasonably longer data. There might be an extra endzero
+		if (idx+5 < primdata_size)
 		{
 			std::string rex_mesh_url = ReadNullTerminatedStringFromBytes(primdata,idx);
 			std::string rex_collision_mesh_url = ReadNullTerminatedStringFromBytes(primdata,idx);
