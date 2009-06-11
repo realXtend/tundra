@@ -1,4 +1,5 @@
 #include "RexTypes.h"
+#include "RexUUID.h"
 
 namespace RexTypes
 {   
@@ -40,4 +41,15 @@ namespace RexTypes
             
         return ASSETTYPE_UNKNOWN;    
     }  
+
+	bool IsNull(RexAssetID id)
+	{
+		if (id.size() == 0)
+			return true;
+
+		if (RexUUID::IsValid(id) && RexUUID(id).IsNull())
+			return true;
+
+		return false;
+	}
 }

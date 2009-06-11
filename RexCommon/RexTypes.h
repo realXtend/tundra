@@ -202,6 +202,8 @@ const int HOLLOW_TRIANGLE = 48;
 // Primitive extrusion type
 const int EXTRUSION_STRAIGHT = 16;
 
+typedef std::string RexAssetID;
+
 typedef int ControllableType;
 //! invalid controllable type
 const ControllableType CT_INVALID_TYPE = 0;
@@ -233,7 +235,8 @@ namespace Actions
     typedef std::map<Core::event_id_t, int> ActionInputMap;
 }
 
+bool IsNull(RexAssetID id);
 
-}
+} // end of namespace: RexTypes
 
 #endif
