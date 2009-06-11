@@ -1,7 +1,10 @@
 """a module that executes test commands bound to keys,
 to help py api dev and testing"""
 
-import rexviewer as r
+try:
+    import rexviewer as r
+except ImportError: #not running under rex
+    import mockviewer as r
 from circuits import Component
 
 class KeyCommander(Component):
