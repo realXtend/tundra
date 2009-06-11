@@ -8,7 +8,10 @@ impl if it seems that a py written manager makes sense within the c++ framework 
 currently here is only test code for modules and handelers that would
 use the manager, nothing of the Manager itself yet.
 """
-import rexviewer as r
+try:
+    import rexviewer as r
+except ImportError: #not running under rex
+    import mockviewer as r
 from circuits import handler, Event, Component, Manager
 
 #is not identical to the c++ side, where x and y have abs and rel
@@ -115,7 +118,7 @@ if __name__ == '__main__':
     import time
     while True:
         runner.run(0.1)
-        runner.RexNetMsgChatFromSimulator("main..")
+        runner.RexNetMsgChatFromSimulator("main..", "hello")
         time.sleep(0.1)
 
 

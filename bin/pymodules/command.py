@@ -48,5 +48,12 @@ if 0: #push an event, now an input event
     #print viewer._event_stack
     
 if 1: #create entity
-    print "New entity created:", r.createEntity(new_id)
-    print
+    pass
+    #not safe now:
+    """
+    New entity created:16:39:22 [Foundation] Error: Can't create entity with given i
+d because it's already used: 9999999
+Assertion failed: px != 0, file D:\k2\rex\viewer\trunk\external_libs\include\boo
+st/shared_ptr.hpp, line 419
+    """
+    #print "New entity created:", r.createEntity(new_id)

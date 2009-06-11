@@ -7,7 +7,10 @@ for the use case in mind the entity moved here actually would be a local
 cursor thing, towards which the avatar moves (rts style). testing with a prim now.
 """
 
-import rexviewer as r
+try:
+    import rexviewer as r
+except ImportError: #not running under rex
+    import mockviewer as r
 from circuits import Component
 
 idnum = 720011
