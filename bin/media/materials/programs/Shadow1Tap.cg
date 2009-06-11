@@ -1,0 +1,38 @@
+// Defines different methods for sampling a standard depth-based shadow map.
+// Include only right after including CommonCode.cg first.
+
+// Supported #defines:
+
+// #define SHADOW_MAPPING
+
+#ifdef SHADOW_MAPPING
+/* These four parameters are packed in the following variable:
+uniform float shadowFuzzyWidth;
+uniform float fixedDepthBias;
+uniform float gradientClamp;
+uniform float gradientScaleBias; */
+uniform float4 shadowMapParams;
+
+uniform float inverseShadowmapSize;
+
+uniform float4x4 lightViewProj;
+
+float SampleShadowMap1TapPCF(sampler2D shadowMap, float4 shadowUV)
+{
+    const float shadowFuzzyWidth = shadowMapParams.x;
+    const float fixedDepthBias = shadowMapParams.y;
+
+    // point on shadowmap
+	shadowUV = shadowUV / shadowUV.w;
+
+	float centerdepth = tex2D(shadowMap, shadowUV.xy).x;
+
+	// use depths from prev, calculate diff
+	float lightAmount = 0.2f * saturate((centerdepth - shadowUV.z + fixedDepthBias) * shadowFuzzyWidth);
+
+//	float edges = (shadowUV.z >= 1.f || shadowUV.w <= 0.f || shadowUV.x <= 0.f || shadowUV.x >= 1.f || shadowUV.y <= 0.f || shadowUV.y >= 1.f) ? 1.f : 0.f;
+
+	return lightAmount;//max(edges, lightAmount);
+}
+
+#endif
