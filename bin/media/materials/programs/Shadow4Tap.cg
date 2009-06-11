@@ -1,0 +1,86 @@
+// The most tweaked and highest-res imaginable shadow map sampling.
+// Include only right after including CommonCode.cg first.
+
+// Supported #defines:
+
+// #define SHADOW_MAPPING
+
+#ifdef SHADOW_MAPPING
+
+/* These four parameters are packed in the following variable:
+uniform float shadowFuzzyWidth;
+uniform float fixedDepthBias;
+uniform float gradientClamp;
+uniform float gradientScaleBias; */
+uniform float4 shadowMapParams;
+
+uniform float inverseShadowmapSize;
+
+uniform float4x4 lightViewProj;
+
+float SampleShadowMap4TapPCF(sampler2D shadowMap, float4 shadowUV, float viewZ)
+{
+    const float shadowFuzzyWidth = shadowMapParams.x;
+    const float fixedDepthBias = shadowMapParams.y;
+    const float gradientClamp = shadowMapParams.z;
+    const float gradientScaleBias = shadowMapParams.w;
+
+	// point on shadowmap
+	shadowUV = shadowUV / shadowUV.w;
+
+	float centerdepth = tex2D(shadowMap, shadowUV.xy).x;
+    
+    // gradient calculation
+  	float pixeloffset = inverseShadowmapSize;
+    float4 depths = float4(
+    	tex2D(shadowMap, shadowUV.xy + float2(-pixeloffset, 0)).x,
+    	tex2D(shadowMap, shadowUV.xy + float2(+pixeloffset, 0)).x,
+    	tex2D(shadowMap, shadowUV.xy + float2(0, -pixeloffset)).x,
+    	tex2D(shadowMap, shadowUV.xy + float2(0, +pixeloffset)).x);
+
+	float2 differences = abs( depths.yw - depths.xz );
+	float gradient = min(gradientClamp, max(differences.x, differences.y));
+	float gradientFactor = gradient * gradientScaleBias;
+
+	// visibility function
+	float depthAdjust = gradientFactor + (fixedDepthBias * centerdepth);
+	float finalCenterDepth = centerdepth;// + depthAdjust;
+
+	// shadowUV.z contains lightspace position of current object
+	shadowUV.z -= fixedDepthBias + gradientFactor;
+
+	// use depths from prev, calculate diff
+//	depths += depthAdjust;
+	float4 d = float4(shadowUV.z, shadowUV.z, shadowUV.z, shadowUV.z);
+	float4 f = saturate((depths - d) * shadowFuzzyWidth);
+
+	float final = saturate((finalCenterDepth - shadowUV.z) * shadowFuzzyWidth);
+	final += f.x + f.y + f.w + f.z;
+
+
+/*
+	// use depths from prev, calculate diff
+	depths += depthAdjust;
+	float final = (finalCenterDepth > shadowUV.z) ? 1.0 : 0.0;
+	final += (depths.x > shadowUV.z) ? 1.0 : 0.0;
+	final += (depths.y > shadowUV.z) ? 1.0 : 0.0;
+	final += (depths.z > shadowUV.z) ? 1.0 : 0.0;
+	final += (depths.w > shadowUV.z) ? 1.0 : 0.0;
+*/
+
+	
+	final *= 0.2f;
+
+	// Do a visibility fade based on viewer z distance. todo: parameterize the distance instead of the current hardcoded one.
+	float visFactor = saturate((viewZ - 47.5f) / 2.5f);
+//	float visFactor = saturate((shadowUV.z + 1.f) * 10.f);
+
+//	return max(final, visFactor);
+
+	float edges = (shadowUV.z >= 1.f || shadowUV.w <= 0.f || shadowUV.x <= 0.f || shadowUV.x >= 1.f || shadowUV.y <= 0.f || shadowUV.y >= 1.f) ? 1.f : 0.f;
+
+	return max(edges, max(final, visFactor));
+//	return visFactor;// + (1.f - visFactor) * final;// * visFactor + (1.f - visFactor);
+}
+
+#endif

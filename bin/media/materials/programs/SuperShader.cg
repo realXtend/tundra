@@ -20,6 +20,8 @@
 */
 
 #include "CommonCode.cg"
+#include "Shadow4Tap.cg"
+//#include "Shadow1Tap.cg"
 
 void mainVS
 (
@@ -152,7 +154,8 @@ void mainPS(
 	{
 		float lightness = 1.f;
 #ifdef SHADOW_MAPPING
-		if (i == 0) 
+		if (i == 0) // Only the first light - the directional light uses a shadow map.
+//			lightness = SampleShadowMap1TapPCF(shadowMap, shadowTex);
 			lightness = SampleShadowMap4TapPCF(shadowMap, shadowTex, 0.f);
 #endif
 		float NdotL = max(0.f, dot(normal, lightDir[i].xyz));
