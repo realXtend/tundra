@@ -32,12 +32,19 @@ namespace Asset
         //! Destructor
         ~HttpAssetTransfer();
         
-        //! Receives an asset data packet
+        //! Receives an asset data 
         /*! Also resets elapsed time
             \param data Pointer to data
             \param size Size of data packet
          */
         void ReceiveData(const Core::u8* data, Core::uint size);
+
+        //! Receives an asset metadata 
+        /*! Also resets elapsed time
+            \param data Pointer to data
+            \param size Size of data packet
+         */
+		void ReceiveMetadata(const Core::u8* data, Core::uint size);
         
         //! Assembles continuous asset data to a buffer
         /*! Call GetReceivedContinuous() (or GetReceived() if you know the transfer is complete)
@@ -48,20 +55,20 @@ namespace Asset
         
         //! Sets asset ID
         /*! \param asset_id Asset id
+		    \todo move implementation to cpp file
          */
-        void SetAssetId(const std::string& asset_id) { asset_id_ = asset_id; }
+        void SetAssetId(const std::string& asset_id)
+		{
+			asset_id_ = asset_id;
+			asset_data_uri_ = asset_id+"/data";
+			asset_metadata_uri_ = asset_id+"/metadata";
+		}
 
         
         //! Sets asset type
         /*! \param asset_type Asset type
          */
         void SetAssetType(Core::uint asset_type) { asset_type_ = asset_type; }
-        
-        //! Sets asset size
-        /*! Called when asset transfer header received
-            \param size Asset size in bytes
-         */
-        void SetSize(Core::uint size) { size_ = size; }
         
         //! Adds elapsed time
         /*! \param delta_time Amount of time to add
@@ -88,12 +95,12 @@ namespace Asset
         
         //! Returns asset type
         Core::uint GetAssetType() const { return asset_type_; }
-        
+
         //! Returns expected asset size, 0 if unknown
-        Core::uint GetSize() const { return size_; }
+		Core::uint GetSize() const; 
         
         //! Returns total size of data received so far
-        Core::uint GetReceived() const { return received_; }
+		Core::uint GetReceived() const { return received_data_.size(); }
         
         //! Returns total size of continuous data from the asset beginning received so far
         Core::uint GetReceivedContinuous() const;
@@ -112,28 +119,44 @@ namespace Asset
 
 		//! Read bytes from response stream 
 		//! /bug Current implementatation read always fixed amount of bytes (BUFFER_SIZE) and blocks while reading those bytes.
-		//!      Hostile server can stop viewer main loop using this bug
+		//!      Hostile server can stop viewer main loop using this security hole
 		//!      We have to change this so that we only read available bytes.
 		void Update(Core::f64 frametime);
         
     private:
+
+		/**
+		 *  Send http request with given uri.
+		 *  Will cancel any exist request for same asset (there is 2 request per asset: metadata and data requests)
+		 */
+		void SendHttpGetRequest(std::string resource_uri);
+
         typedef std::map<Core::uint, std::vector<Core::u8> > DataPacketMap;
 		typedef std::vector<Core::u8> DataVector;
         
         //! Asset ID
         std::string asset_id_; 
+
+		//! uri for asset data
+		std::string asset_data_uri_;
+
+		//! uri for asset metadata
+		std::string asset_metadata_uri_;
         
         //! Asset type
         Core::uint asset_type_;
         
-        ////! Expected size (Only used for "is ready" determination..)
-        Core::uint size_;
+        ////! Expected http response data size
+        Core::uint response_size_;
 
-        //! Received bytes
-        Core::uint received_;
+		//! Received bytes
+        Core::uint received_count_;
         
         //! Received data
 		DataVector received_data_;
+
+		//! Received metadata
+		DataVector received_metadata_;
         
         //! Elapsed time since last packet
         Core::f64 time_;
@@ -143,9 +166,6 @@ namespace Asset
 
 		//! Http session from asset fetch
 		Poco::Net::HTTPClientSession http_session_;
-
-		//! Http request for asset fetch
-		Poco::Net::HTTPRequest http_request_;
 
 		//! Http response for http_request_ 
 		Poco::Net::HTTPResponse http_response_;
@@ -158,6 +178,16 @@ namespace Asset
 
 		//! response stream read buffer
 		const Core::u8 *buffer_;
+
+		//! true if asset metadata was successfully fetched from server
+		bool metadata_fetched_;
+
+		//! true if asset data was successfully fetched from server
+		bool data_fetched_;
+
+		//! true if asset metadata is under progress
+		//! false if asset data is under progress
+		bool fetching_metadata_;
     };
 
 } // end of namespace: Asset
