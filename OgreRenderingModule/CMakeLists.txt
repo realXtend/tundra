@@ -26,6 +26,7 @@ INCLUDE_POCO()
 INCLUDE_OGRE()
 INCLUDE_GTKMM()
 INCLUDE_CAELUM()
+# INCLUDE_HYDRAX()
 
 add_definitions (-DOGRE_MODULE_EXPORTS -DMODULE_EXPORTS)
 
@@ -56,6 +57,7 @@ LINK_POCO()
 LINK_OGRE()
 LINK_GTKMM()
 LINK_CAELUM()
+# LINK_HYDRAX()
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
