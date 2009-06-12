@@ -14,6 +14,12 @@
 // Caelum include
 #include "Caelum.h"
 
+// Hydrax includes
+/*#include <Hydrax.h>
+#include <Noise/Perlin/Perlin.h>
+#include <Modules/ProjectedGrid/ProjectedGrid.h>
+*/
+
 namespace OgreRenderer
 {
 
@@ -22,15 +28,22 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface* module) :
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
     sunlight_(NULL),
     caelumSystem_(NULL),
+//    hydraxSystem_(NULL),
+//    noiseModule_(NULL),
+//    module_(NULL),
     cameraUnderWater_(false),
     attached_(false),
     useCaelum_(true),
+//    useHydrax_(true),
     sunColorMultiplier_(2.f)
 {
     if (useCaelum_)
         InitCaelum();
     else
         CreateSunlight();
+    
+//    if (useHydrax_)
+//        InitHydrax();
     
     InitShadows();
 }
@@ -219,6 +232,17 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
         caelumSystem_->notifyCameraChanged(camera);
         caelumSystem_->updateSubcomponents(frametime);
     }
+    
+/*    if (useHydrax_)
+    {
+        // Get the sun's position. Note: these two lines are from "Nature" demo app, found from OGRE forum.
+		Ogre::Vector3 sunPosition = camera->getPosition();//getWorldPosition();
+		sunPosition -= caelumSystem_->getSun()->getLightDirection() * 80000;
+        
+        // Update Hydrax system.
+        hydraxSystem_->update(frametime);
+	    hydraxSystem_->setSunPosition(sunPosition);    
+    }*/
 }
 
 void EC_OgreEnvironment::DisableFog()
@@ -293,6 +317,51 @@ void EC_OgreEnvironment::ShutdownCaelum()
         caelumSystem_->shutdown(true);
 }
 
+void EC_OgreEnvironment::InitHydrax()
+{
+    /*hydraxSystem_ = new Hydrax::Hydrax(renderer_->GetSceneManager(), renderer_->GetCurrentCamera(),
+        renderer_->GetCurrentCamera()->getViewport());
+    
+    /*    
+    //hydraxSystem_->setRttOptions(Hydrax::RttOptions(Hydrax::TEX_QUA_1024, Hydrax::TEX_QUA_1024, Hydrax::TEX_QUA_1024));
+    
+    hydraxSystem_->setComponents(static_cast<Hydrax::HydraxComponent>(Hydrax::HYDRAX_COMPONENT_FOAM   |
+        Hydrax::HYDRAX_COMPONENT_DEPTH  |
+        Hydrax::HYDRAX_COMPONENT_SMOOTH |
+        Hydrax::HYDRAX_COMPONENT_CAUSTICS | 
+        Hydrax::HYDRAX_COMPONENT_SUN));*/
+/*
+    Hydrax::Module::ProjectedGrid *module_ = new Hydrax::Module::ProjectedGrid(
+        hydraxSystem_, new Hydrax::Noise::Perlin(Hydrax::Noise::Perlin::Options(8, 1.15f, 0.49f, 1.14f, 1.27f)),
+        Ogre::Plane(Ogre::Vector3(0,1,0), Ogre::Vector3(0,0,0)),
+        Hydrax::MaterialManager::NM_VERTEX,
+        Hydrax::Module::ProjectedGrid::Options(256, 3.25f, 0.035f, true));
+
+    hydraxSystem_->setModule(static_cast<Hydrax::Module::Module*>(module_));
+
+    hydraxSystem_->setShaderMode(Hydrax::MaterialManager::SM_HLSL);
+
+    hydraxSystem_->create();
+
+    hydraxSystem_->setPosition(Ogre::Vector3(0,107,0));
+    hydraxSystem_->setPlanesError(4);
+    hydraxSystem_->setDepthLimit(5.2);
+    hydraxSystem_->setNormalDistortion(0.035);
+    hydraxSystem_->setDepthColor(Ogre::Vector3(0.04,0.185,0.265));
+    hydraxSystem_->setSmoothPower(2.5);
+    hydraxSystem_->setCausticsScale(8);
+    hydraxSystem_->setCausticsEnd(0.65);
+    hydraxSystem_->setGlobalTransparency(0);
+    hydraxSystem_->setFullReflectionDistance(99999997952.0);
+    hydraxSystem_->setPolygonMode(0);
+    hydraxSystem_->setFoamScale(0.1);
+
+    hydraxSystem_->getMaterialManager()->getMaterial(Hydrax::MaterialManager::MAT_WATER)->getTechnique(0)->getPass(0)->setFog(true, Ogre::FOG_NONE);
+
+    Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName("terrain"); 
+    mat->createTechnique();
+    hydraxSystem_->getMaterialManager()->addDepthTechnique(mat, 1);*/
+}
 
 void EC_OgreEnvironment::InitShadows()
 {
