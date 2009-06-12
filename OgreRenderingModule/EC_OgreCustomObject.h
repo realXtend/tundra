@@ -36,7 +36,7 @@ namespace OgreRenderer
         /*! set a null placeable to detach the object, otherwise will attach
             \param placeable placeable component
          */
-        void SetPlaceable(Foundation::ComponentPtr placeable);
+        void SetPlaceable(Foundation::ComponentPtr placeable, Scene::Entity *parent_entity = NULL);
         
         //! sets draw distance
         /*! \param draw_distance New draw distance, 0.0 = draw always (default)

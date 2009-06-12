@@ -19,6 +19,8 @@
 #include "EC_OgreEnvironment.h"
 #include "OgreGtkWindowModule.h"
 #include "InputEvents.h"
+#include "SceneEvents.h"
+#include "Entity.h"
 
 
 namespace OgreRenderer
@@ -26,7 +28,8 @@ namespace OgreRenderer
     OgreRenderingModule::OgreRenderingModule() : ModuleInterfaceImpl(type_static_),
         assetcategory_id_(0),
         resourcecategory_id_(0),
-        input_event_category_(0)
+        input_event_category_(0),
+        scene_event_category_(0)
     {
     }
 
@@ -111,6 +114,7 @@ namespace OgreRenderer
         }
 
         input_event_category_ = event_manager->QueryEventCategory("Input");
+        scene_event_category_ = event_manager->QueryEventCategory("Scene");
 
         renderer_->PostInitialize();
     }
@@ -139,7 +143,13 @@ namespace OgreRenderer
         {
             // do raycast into the world when user clicks mouse button
             Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
-            renderer_->Raycast(movement->x_.abs_, movement->y_.abs_);
+            Scene::Entity *entity = renderer_->Raycast(movement->x_.abs_, movement->y_.abs_);
+
+            if (entity)
+            {
+                Scene::Events::SceneEventData event_data(entity->GetId());
+                framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_GRAB, &event_data);
+            }
         }
 
         return false;

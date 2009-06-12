@@ -421,7 +421,7 @@ namespace RexLogic
             OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
             
             mesh.SetPlaceable(placeableptr);
-            mesh.SetMesh(default_avatar_mesh_);
+            mesh.SetMesh(default_avatar_mesh_, entity.get());
             // Set adjustment orientation for mesh (Ogre meshes usually have Y-axis as vertical)
             Core::Quaternion adjust(Core::PI/2, 0, -Core::PI/2);
             mesh.SetAdjustOrientation(adjust);

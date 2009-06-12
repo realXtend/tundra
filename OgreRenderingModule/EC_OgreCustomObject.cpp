@@ -36,11 +36,14 @@ namespace OgreRenderer
         }
     }
     
-    void EC_OgreCustomObject::SetPlaceable(Foundation::ComponentPtr placeable)
+    void EC_OgreCustomObject::SetPlaceable(Foundation::ComponentPtr placeable, Scene::Entity *parent_entity)
     {
         DetachObject();
         placeable_ = placeable;
         AttachObject();
+
+        if (object_)
+            object_->setUserAny(Ogre::Any(parent_entity));
     }
     
     void EC_OgreCustomObject::SetDrawDistance(float draw_distance)
@@ -55,7 +58,7 @@ namespace OgreRenderer
             object_->setCastShadows(enabled);
     }
     
-    void EC_OgreCustomObject::AttachObject()
+   void EC_OgreCustomObject::AttachObject()
     {
         if ((placeable_) && (!attached_))
         {

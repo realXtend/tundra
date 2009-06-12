@@ -49,7 +49,7 @@ namespace OgreRenderer
             \param mesh_name mesh to use
             \return true if successful
          */
-        bool SetMesh(const std::string& mesh_name);
+        bool SetMesh(const std::string& mesh_name, Scene::Entity *parent_entity);
         
         //! gets number of materials (submeshes) in mesh entity
         Core::uint GetNumMaterials();

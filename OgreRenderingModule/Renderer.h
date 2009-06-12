@@ -20,6 +20,7 @@ namespace Ogre
     class SceneManager;
     class Camera;
     class RenderWindow;
+    class RaySceneQuery;
 }
 
 namespace OgreRenderer
@@ -51,10 +52,13 @@ namespace OgreRenderer
 
         //! Do raycast into the world from viewport coordinates.
         /*! The coordinates are a position in the render window, not scaled to [0,1].
+            \todo Returns raw pointer to entity. Returning smart pointer may take some thinking/design. Maybe just return entity id?
+
             \param x Horizontal position for the origin of the ray
             \param y Vertical position for the origin of the ray
+            \return Entity that the ray hit, or NULL if no entities found.
         */
-        virtual void Raycast(int x, int y);
+        virtual Scene::Entity *Raycast(int x, int y);
 
         //! Resizes the window
         virtual void Resize(Core::uint width, Core::uint height);
@@ -208,6 +212,9 @@ namespace OgreRenderer
         
         //! filename for the Ogre3D plugins file
         std::string plugins_filename_;
+
+        //! ray for raycasting, reusable
+        Ogre::RaySceneQuery *ray_query_;
     };
 }
 

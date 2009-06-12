@@ -6,6 +6,9 @@
 #include "ResourceHandler.h"
 #include "OgreRenderingModule.h"
 
+#include "SceneEvents.h"
+#include "Entity.h"
+
 #include <Ogre.h>
 
 using namespace Foundation;
@@ -100,7 +103,8 @@ namespace OgreRenderer
         log_listener_(OgreLogListenerPtr(new LogListener)),
         resource_handler_(ResourceHandlerPtr(new ResourceHandler(framework))),
         config_filename_ (config),
-        plugins_filename_ (plugins)
+        plugins_filename_ (plugins),
+        ray_query_(NULL)
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         
@@ -287,6 +291,9 @@ namespace OgreRenderer
         camera_->roll(Ogre::Radian(Ogre::Math::HALF_PI));
         Ogre::Viewport* viewport = renderwindow_->addViewport(camera_);
         camera_->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
+
+        ray_query_ = scenemanager_->createRayQuery(Ogre::Ray());
+        ray_query_->setSortByDistance(true); 
     }
 
     size_t Renderer::GetWindowHandle() const
@@ -375,10 +382,38 @@ namespace OgreRenderer
         root_->_fireFrameEnded();
     }
 
-    void Renderer::Raycast(int x, int y)
+    Scene::Entity *Renderer::Raycast(int x, int y)
     {
-        Core::Real fx = renderwindow_->getWidth() / (Core::Real)x;
-        Core::Real fy = renderwindow_->getHeight() / (Core::Real)y;
+        if (!initialized_) return NULL;
+
+        Core::Real screenx = x / (Core::Real)renderwindow_->getWidth();
+        Core::Real screeny = y / (Core::Real)renderwindow_->getHeight();
+
+        Ogre::Ray ray = camera_->getCameraToViewportRay(screenx, screeny);
+        ray_query_->setRay(ray);
+        Ogre::RaySceneQueryResult &results = ray_query_->execute();
+        for (size_t i=0 ; i<results.size() ; ++i)
+        {
+            Ogre::RaySceneQueryResultEntry &entry = results[i];
+            if (entry.movable != NULL)
+            {
+
+                Ogre::Any any = entry.movable->getUserAny();
+                if (any.isEmpty() == false)
+                {
+                    Scene::Entity *entity = NULL;
+                    try
+                    {
+                        entity = Ogre::any_cast<Scene::Entity*>(any);
+                    } catch (Ogre::InvalidParametersException)
+                    {
+                        continue;
+                    }
+                    return entity;
+                }
+            }
+        }
+        return 0;
     }
     
     std::string Renderer::GetUniqueObjectName()
