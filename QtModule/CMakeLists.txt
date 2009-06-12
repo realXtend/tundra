@@ -2,6 +2,8 @@
 set (TARGET_NAME QtModule)
 set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/modules/core)
 
+FIND_QT4()
+
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
