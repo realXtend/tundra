@@ -53,7 +53,7 @@ else ()
   endif()
 endif()
 
-if (NOT OPENJPEG_FOUND AND NOT OPENJPEG_INCLUDE_DIR OR NOT OPENJPEG_LIBRARY_DIR)
+if (NOT MSVC AND NOT OPENJPEG_FOUND AND NOT OPENJPEG_INCLUDE_DIR OR NOT OPENJPEG_LIBRARY_DIR)
   message(STATUS "OpenJpeg was not found either guessed paths or pkg-config, please add enviroment variable OPENJPEG_HOME")
 endif()
 

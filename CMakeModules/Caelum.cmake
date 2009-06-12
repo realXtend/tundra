@@ -53,7 +53,7 @@ else ()
   endif()
 endif()
 
-if (NOT CAELUM_FOUND AND NOT CAELUM_INCLUDE_DIR OR NOT CAELUM_LIBRARY_DIR)
+if (NOT MSVC AND NOT CAELUM_FOUND AND NOT CAELUM_INCLUDE_DIR OR NOT CAELUM_LIBRARY_DIR)
   message(STATUS "Caelum was not found either guessed paths or pkg-config, please add enviroment variable CAELUM_HOME")
 endif()
 
