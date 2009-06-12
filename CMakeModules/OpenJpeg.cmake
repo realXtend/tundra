@@ -12,7 +12,7 @@ findpkg_begin(OPENJPG)
 if (MSVC)
   set(OPENJPG_PREFIX_GUESSES $ENV{REX_DEP_PATH}/OpenJpeg
     C:/OpenJpeg
-    $ENV{PROGRAMFILES}/OpenJpeg C:/caelum $ENV{REX_DEP_PATH}/openjpeg)
+    $ENV{PROGRAMFILES}/OpenJpeg C:/openjpeg $ENV{REX_DEP_PATH}/openjpeg)
 elseif (UNIX)
   set(OPENJPEG_PREFIX_GUESSES 
     /opt/openjpeg
@@ -33,7 +33,7 @@ set(OPENJPEG_PREFIX_PATH
 
 create_search_paths(OPENJPEG)
 
-# try to locate Caelum via pkg-config
+# try to locate OpenJpeg via pkg-config
 use_pkgconfig(OPENJPEG "OPENJPEG")
 # try to find framework on OSX
 findpkg_framework(OPENJPEG)

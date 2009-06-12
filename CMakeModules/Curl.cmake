@@ -34,7 +34,7 @@ set(CURL_PREFIX_PATH
 
 create_search_paths(CURL)
 
-# try to locate Caelum via pkg-config
+# try to locate CURL via pkg-config
 use_pkgconfig(CURL "CURL")
 # try to find framework on OSX
 findpkg_framework(CURL)
@@ -66,8 +66,8 @@ macro (INCLUDE_CURL)
     include_directories (${REX_DEP_PATH}/libcurl/include)
     link_directories (${REX_DEP_PATH}/libcurl/lib/DLL-Debug ${REX_DEP_PATH}/libcurl/lib/DLL-Release)		
   elseif(NOT MSVC AND CURL_FOUND)
-    include_directories(${CAELUM_INCLUDE_DIRS})
-    link_directories(${CAELUM_LIBRARY_DIRS})
+    include_directories(${CURL_INCLUDE_DIRS})
+    link_directories(${CURL_LIBRARY_DIRS})
   else()
     include_directories(${CURL_INCLUDE_DIR})
     link_directories(${CURL_LIBRARY_DIR})
