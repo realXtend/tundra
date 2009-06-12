@@ -61,11 +61,16 @@ namespace Input
         static const Core::event_id_t INPUTSTATE_THIRDPERSON = 35;
         static const Core::event_id_t INPUTSTATE_FREECAMERA = 36;
         
+        //! switch to fly mode
         static const Core::event_id_t TOGGLE_FLYMODE = 37;
         static const Core::event_id_t TOGGLE_FLYMODE_REL = 38;
 
-        static const Core::entity_id_t KEY_PRESSED = 39;
-        static const Core::entity_id_t KEY_RELEASED = 40;
+        static const Core::event_id_t KEY_PRESSED = 39;
+        static const Core::event_id_t KEY_RELEASED = 40;
+
+        //! user clicked mouse over the viewport, usable with f.ex. raycasting
+        static const Core::event_id_t INWORLD_CLICK = 41;
+        static const Core::event_id_t INWORLD_CLICK_REL = 42;
 
         //! Event for buffered key input. 
         /*! Do not use for any continous input such as avatar movement, it will probably cause input lag

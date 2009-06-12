@@ -499,6 +499,26 @@ namespace RexLogic
             m->AddBuffer(prim->ObjectName.size(), (uint8_t*)prim->ObjectName.c_str());
         }
     }
+
+    void RexServerConnection::SendObjectGrabPacket(Core::entity_id_t object_id)
+    {
+        if (!connected_)
+            return;
+    
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectSelect);
+        assert(m);
+        
+        // AgentData
+        m->AddUUID(myInfo_.agentID);
+        m->AddUUID(myInfo_.sessionID);
+        
+        // ObjectData
+        m->AddU32(object_id);
+        //! \todo Touch offset is not send / calculated currently since it is not really used by the server anyway. -cm
+        m->AddVector3(Vector3::ZERO);
+        
+        FinishMessageBuilding(m);
+    }
     
     void RexServerConnection::SendObjectDescriptionPacket(std::vector<Scene::EntityPtr> entity_ptr_list)
     {

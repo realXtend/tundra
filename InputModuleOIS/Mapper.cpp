@@ -271,6 +271,8 @@ namespace Input
         module_->RegisterSliderEvent(Input::State_FirstPerson, SliderMouse,    Events::MOUSELOOK,              Events::MOUSELOOK_STOPPED, OIS::MB_Right);
         module_->RegisterSliderEvent(Input::State_ThirdPerson, SliderMouse,    Events::MOUSELOOK,              Events::MOUSELOOK_STOPPED, OIS::MB_Right);
         module_->RegisterSliderEvent(Input::State_FreeCamera,  SliderMouse,    Events::MOUSELOOK,              Events::MOUSELOOK_STOPPED, OIS::MB_Right);
+
+        module_->RegisterMouseButtonEvent(Input::State_All, OIS::MB_Left,      Events::INWORLD_CLICK,    Events::INWORLD_CLICK_REL,   0);
     }
 }
 
