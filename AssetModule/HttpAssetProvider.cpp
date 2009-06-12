@@ -57,16 +57,16 @@ namespace Asset
             return true;
     }
 
-	bool HttpAssetProvider::RequestAsset(const std::string& asset_url, const std::string& asset_type, Core::request_tag_t tag)
+	bool HttpAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, Core::request_tag_t tag)
 	{
-	    if (!IsValidId(asset_url))
+	    if (!IsValidId(asset_id))
 	        return false;
 
         asset_type_t asset_type_int = GetAssetTypeFromTypeName(asset_type);
         if (asset_type_int < 0)
             return false;
 
-		HttpAssetTransfer* transfer = GetTransfer(asset_url);
+		HttpAssetTransfer* transfer = GetTransfer(asset_id);
 		if (transfer)
 		{
 			transfer->InsertTag(tag);
@@ -74,10 +74,10 @@ namespace Asset
 		}
 
 		HttpAssetTransfer* t = new HttpAssetTransfer();
-		t->SetAssetId(asset_url);
+		t->SetAssetId(asset_id);
 		t->SetAssetType(asset_type_int);
 		t->InsertTag(tag);
-		asset_transfers_[asset_url] = HttpAssetTransferPtr(t);
+		asset_transfers_[asset_id] = HttpAssetTransferPtr(t);
 		t->StartTransfer();
         return true;
 	}

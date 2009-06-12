@@ -7,11 +7,6 @@
 #include "HttpAssetTransfer.h"
 #include "AssetProviderInterface.h"
 
-namespace OpensimProtocol
-{
-    class OpenSimProtocolModule;
-}
-
 namespace Asset
 {    
     //! Http asset provider
@@ -45,7 +40,7 @@ namespace Asset
             \param tag Asset request tag, allocated by AssetService
             \return true if asset ID was valid and download could be queued, false if not 
          */
-        virtual bool RequestAsset(const std::string& asset_url, const std::string& asset_type, Core::request_tag_t tag);
+        virtual bool RequestAsset(const std::string& asset_id, const std::string& asset_type, Core::request_tag_t tag);
         
         //! Returns whether a certain asset is already being downloaded
         virtual bool InProgress(const std::string& asset_id);
@@ -80,18 +75,6 @@ namespace Asset
         bool HandleNetworkEvent(Foundation::EventDataInterface* data);
         
     private:
-        //! Pending asset request. Used internally by UDPAssetProvider
-        struct AssetRequest
-        {
-            //! Asset ID
-            std::string asset_id_;
-            //! Asset type
-            int asset_type_;
-            //! Associated request tags
-            Core::RequestTagVector tags_;
-
-			std::string url_;
-        };
         
         //! Stores completed asset to asset service's cache
         void StoreAsset(HttpAssetTransfer& transfer);
