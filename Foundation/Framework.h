@@ -119,6 +119,9 @@ namespace Foundation
         //! Output profiling data
         Console::CommandResult ConsoleProfile(const Core::StringVector &params);
 
+        //! limit frames
+        Console::CommandResult ConsoleLimitFrames(const Core::StringVector &params);
+
         //! Returns name of the configuration group used by the framework
         /*! The group name is used with ConfigurationManager, for framework specific
             settings. Alternatively a class may use it's own name as the name of the
