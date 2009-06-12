@@ -50,16 +50,22 @@ namespace Input
         SliderJoy1
     };
 
+
+
     //! info for key event. Unique by keycode / modifier pair. 
-    /*! Different keys can launch the same event, but same key can't launch multiple events. */
+    /*! Different keys can launch the same event, but same key can't launch multiple events.
+        \todo Refactor, rename UnBufferedKeyEventInfo into something more appropriate as it handles mouse and joystick buttons too. 
+              Merge RegisterUnbufferedKeyEvent() and RegisterMouseButtonEvent().
+    */
     struct UnBufferedKeyEventInfo
     {
+        enum Type { Keyboard, Mouse, Joystick };
         // compiler generated copy constructor applies
 
         //! comparison
         bool operator ==(const UnBufferedKeyEventInfo &rhs) const
         { 
-            return (key_ == rhs.key_ && 
+            return (key_ == rhs.key_ && type_ == rhs.type_ && 
                 (modifier_ == rhs.modifier_ || pressed_event_id_ == rhs.pressed_event_id_ || released_event_id_ == rhs.released_event_id_ )  
                 );
         }
@@ -69,6 +75,7 @@ namespace Input
         int key_; //! ois keycode
         int modifier_; //! modifier key
         bool pressed_; //! is the key currently pressed down
+        Type type_; //! type of the key, keyboard key, mouse button, joystick button
     };
 
     //! info for input "sliders" (f.ex. mouse dragging)
@@ -170,6 +177,21 @@ namespace Input
             \param modifier bit flag for modifier keys (ctrl, shift, alt). See OIS for the bit flag values.
         */
         void RegisterUnbufferedKeyEvent(Input::State state, OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event, int modifier = 0);
+
+        //! add a mouse button for listening
+        /*! Internal use only!
+
+            precond: pressed_event + 1 == released_event
+
+            \note Not efficient.
+
+            \param state The state for which to register the event for
+            \param button OIS mouse button that launches the event. See OIS for the codes
+            \param pressed_event event that is launched when button is pressed (launched once)
+            \param released_event event that is launched when button is released (launched once)
+            \param modifier bit flag for modifier keys (ctrl, shift, alt). See OIS for the bit flag values.
+        */
+        void RegisterMouseButtonEvent(Input::State state, OIS::MouseButtonID button, Core::event_id_t pressed_event, Core::event_id_t released_event, int modifier = 0);
 
         //! Register a slider input
         /*! Internal use only!

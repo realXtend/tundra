@@ -102,6 +102,10 @@ namespace RexLogic
         /// @param List of updated entity pointers.
         void SendObjectNamePacket(std::vector<Scene::EntityPtr> entity_ptr_list);
         
+        /// Sends a packet which indicates object has been touched.
+        /// @param Local ID of the object which has been touched.
+        void SendObjectGrabPacket(Core::entity_id_t object_id);
+        
         /// Sends a packet indicating change in Object's description
         /// @param List of updated entity pointers.
         void SendObjectDescriptionPacket(std::vector<Scene::EntityPtr> entity_ptr_list);

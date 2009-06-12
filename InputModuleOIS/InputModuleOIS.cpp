@@ -260,7 +260,7 @@ namespace Input
 
     bool InputModuleOIS::IsEvent(Core::event_id_t input_event) const
     {
-        //!\ This whole function is a bit wtf. This probably needs a better way to map from input events to KeyEventInfo struct.
+        //!\ This whole function is a bit wtf. This probably needs a better way to map from input events to KeyEventInfo struct. -cm
         {
             const KeyEventInfoVector &keys = GetKeyInfo(input_state_);
             for (size_t i = 0 ; i < keys.size() ; ++i)
@@ -290,9 +290,15 @@ namespace Input
         const bool ctrl = keyboard_->isModifierDown(OIS::Keyboard::Ctrl);
         const bool shift = keyboard_->isModifierDown(OIS::Keyboard::Shift);
 
+        const OIS::MouseState &ms = mouse_->getMouseState();
+        const OIS::JoyStickState *js = NULL;
+        if (joy_) js = &joy_->getJoyStickState();        
+
         bool key_pressed = false;
         OIS::KeyCode code = static_cast<OIS::KeyCode>(info.key_);
-        if (keyboard_->isKeyDown(static_cast<OIS::KeyCode>(code)))
+        if ( (info.type_ == UnBufferedKeyEventInfo::Keyboard && keyboard_->isKeyDown(static_cast<OIS::KeyCode>(code))) ||
+             (info.type_ == UnBufferedKeyEventInfo::Mouse && ms.buttonDown(static_cast<OIS::MouseButtonID>(code))) ||
+             (info.type_ == UnBufferedKeyEventInfo::Joystick && js && (js->mButtons[code])) )
         {
             const bool mod_alt   = !((info.modifier_ & OIS::Keyboard::Alt)   == 0);
             const bool mod_ctrl  = !((info.modifier_ & OIS::Keyboard::Ctrl)  == 0);
@@ -369,12 +375,12 @@ namespace Input
             if (keys[i].pressed_ == false && pressed)
             {
                 keys[i].pressed_ = true;
-                framework_->GetEventManager()->SendEvent(event_category_, keys[i].pressed_event_id_, NULL);
+                framework_->GetEventManager()->SendEvent(event_category_, keys[i].pressed_event_id_, &movement_);
             }
             if (keys[i].pressed_ == true && !pressed)
             {
                 keys[i].pressed_ = false;
-                framework_->GetEventManager()->SendEvent(event_category_, keys[i].released_event_id_, NULL);
+                framework_->GetEventManager()->SendEvent(event_category_, keys[i].released_event_id_, &movement_);
             }
         }
 
@@ -456,6 +462,7 @@ namespace Input
         keyeventinfo.released_event_id_ = released_event;
         keyeventinfo.key_ = key;
         keyeventinfo.modifier_ = modifier;
+        keyeventinfo.type_ = UnBufferedKeyEventInfo::Keyboard;
 
 #ifdef _DEBUG
         const bool mod_alt   = !((modifier & OIS::Keyboard::Alt)   == 0);
@@ -473,6 +480,57 @@ namespace Input
 
         if (keyboard_)
             LogDebug("Bound key " + keyboard_->getAsString(key) + " to event id: " + Core::ToString(pressed_event) + " with modifiers:" + mod_str + ".");
+#endif
+
+        KeyEventInfoMap::iterator key_vector = listened_keys_.find(state);
+        if (key_vector == listened_keys_.end())
+        {
+            listened_keys_[state].push_back(keyeventinfo);
+        } else
+        {
+            KeyEventInfoVector::iterator it = std::find(key_vector->second.begin(), key_vector->second.end(), keyeventinfo);
+            if ( it != key_vector->second.end())
+            {
+                // replace old event
+                *it = keyeventinfo;
+
+                LogDebug("Replaced previously bound key.");
+            } else
+            {
+                // register new event
+                key_vector->second.push_back(keyeventinfo);
+            }
+        }
+    }
+
+    void InputModuleOIS::RegisterMouseButtonEvent(Input::State state, OIS::MouseButtonID key, Core::event_id_t pressed_event, Core::event_id_t released_event, int modifier)
+    {
+        assert (pressed_event + 1 == released_event);
+
+        UnBufferedKeyEventInfo keyeventinfo;
+        keyeventinfo.pressed_ = false;
+        keyeventinfo.pressed_event_id_ = pressed_event;
+        keyeventinfo.released_event_id_ = released_event;
+        keyeventinfo.key_ = key;
+        keyeventinfo.modifier_ = modifier;
+        keyeventinfo.type_ = UnBufferedKeyEventInfo::Mouse;
+
+#ifdef _DEBUG
+        const bool mod_alt   = !((modifier & OIS::Keyboard::Alt)   == 0);
+        const bool mod_ctrl  = !((modifier & OIS::Keyboard::Ctrl)  == 0);
+        const bool mod_shift = !((modifier & OIS::Keyboard::Shift) == 0);
+        std::string mod_str;
+        if (!mod_alt && !mod_ctrl && !mod_shift)
+            mod_str = " none";
+        if (mod_alt)
+            mod_str += " alt";
+        if (mod_ctrl)
+            mod_str += " ctrl";
+        if (mod_shift)
+            mod_str += " shift";
+
+        if (mouse_)
+            LogDebug("Bound a mouse button to event id: " + Core::ToString(pressed_event) + " with modifiers:" + mod_str + ".");
 #endif
 
         KeyEventInfoMap::iterator key_vector = listened_keys_.find(state);

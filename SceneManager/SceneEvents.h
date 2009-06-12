@@ -35,18 +35,22 @@ namespace Scene
         static const Core::event_id_t EVENT_ENTITY_SELECTED =   0x08;
         /// Indicates that the entity has been deselected.
         static const Core::event_id_t EVENT_ENTITY_DESELECT =   0x09;
+        /// Indicates that the entity has been touched.
+        static const Core::event_id_t EVENT_ENTITY_GRAB =       0x0a;
         
         /// Component related event id's.
         /// Indicates that a new component is added to an entity.
-        static const Core::event_id_t EVENT_COMPONENT_ADDED =   0x0a;
+        static const Core::event_id_t EVENT_COMPONENT_ADDED =   0x0b;
         /// Indicates that a component is deleted from an entity.
-        static const Core::event_id_t EVENT_COMPONENT_DELETED = 0x0b;
+        static const Core::event_id_t EVENT_COMPONENT_DELETED = 0x0c;
         /// Indicateds that component's properties are updated.
-        static const Core::event_id_t EVENT_COMPONENT_UPDATED=  0x0c;
+        static const Core::event_id_t EVENT_COMPONENT_UPDATED=  0x0d;
 
         // Other events
         //! Entity with controllable component created
-        static const Core::event_id_t EVENT_CONTROLLABLE_ENTITY = 0x0d;
+        static const Core::event_id_t EVENT_CONTROLLABLE_ENTITY = 0x0e;
+
+        
         
         /// Event data interface for Scene object related events.
         /*class SceneEventData: public Foundation::EventDataInterface

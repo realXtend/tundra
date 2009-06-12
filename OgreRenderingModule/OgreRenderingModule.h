@@ -68,6 +68,9 @@ namespace OgreRenderer
 
         //! resource event category
         Core::event_category_id_t resourcecategory_id_;
+
+        //! input event category
+        Core::event_category_id_t input_event_category_;
     };
 }
 

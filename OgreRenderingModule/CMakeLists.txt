@@ -17,6 +17,7 @@ include_directories (
 	../AssetModule
 	../RexCommon
 	../GtkmmUI
+	../InputModuleOIS
 )
 
 # External library includes

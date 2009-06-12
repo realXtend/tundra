@@ -33,6 +33,9 @@ namespace RexLogic
             case Scene::Events::EVENT_ENTITY_UPDATED:
                 rexlogicmodule_->GetServerConnection()->SendMultipleObjectUpdatePacket(event_data->entity_ptr_list);
                 break;
+            case Scene::Events::EVENT_ENTITY_GRAB:
+                rexlogicmodule_->GetServerConnection()->SendObjectGrabPacket(event_data->localID);
+                break;
             case Scene::Events::EVENT_ENTITY_DELETED:
                 HandleEntityDeletedEvent(event_data->localID);
                 break;

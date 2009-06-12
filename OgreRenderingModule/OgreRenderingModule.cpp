@@ -18,13 +18,15 @@
 #include "EC_OgreAnimationController.h"
 #include "EC_OgreEnvironment.h"
 #include "OgreGtkWindowModule.h"
+#include "InputEvents.h"
 
 
 namespace OgreRenderer
 {
     OgreRenderingModule::OgreRenderingModule() : ModuleInterfaceImpl(type_static_),
         assetcategory_id_(0),
-        resourcecategory_id_(0)
+        resourcecategory_id_(0),
+        input_event_category_(0)
     {
     }
 
@@ -108,6 +110,8 @@ namespace OgreRenderer
             event_manager->RegisterEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, "ResourceReady");
         }
 
+        input_event_category_ = event_manager->QueryEventCategory("Input");
+
         renderer_->PostInitialize();
     }
 
@@ -129,6 +133,12 @@ namespace OgreRenderer
         if (category_id == resourcecategory_id_)
         {
             return renderer_->GetResourceHandler()->HandleResourceEvent(event_id, data);
+        }
+
+        if (category_id == input_event_category_ && event_id == Input::Events::INWORLD_CLICK)
+        {
+            // do raycast into the world
+            //return renderer->Raycast();
         }
 
         return false;
