@@ -31,14 +31,14 @@ if 0: #test avatar tracking, works :)
     like when a pet or a friend moves?
     """
     
-if 0: #push an event, now an input event
+if 1: #push an event, input and/or chat
     #from eventsource import viewer
     #from modulemanager import m 
     import circuits_manager
     mm = circuits_manager.ComponentRunner.instance
     print mm
     
-    mm.INPUT_EVENT(r.MoveForwardPressed)
+    #mm.INPUT_EVENT(r.MoveForwardPressed)
     
     #a chat message again now too
     mm.RexNetMsgChatFromSimulator("Bob", "- that's me, Bob.")

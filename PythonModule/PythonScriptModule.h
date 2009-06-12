@@ -119,6 +119,7 @@ namespace PythonScript
 		Foundation::Framework *framework_ = PythonScript::staticframework;
 
 		Scene::ScenePtr &scene = framework_->GetScene("World"); //XXX hardcoded scene name, like in debugstats now
+		//Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene(); //this seems to have appeared, change to this XXX
 		return scene;
 	}
 }
