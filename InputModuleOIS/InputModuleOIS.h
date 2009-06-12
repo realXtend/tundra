@@ -124,7 +124,7 @@ namespace Input
 
         typedef std::vector<SliderEventInfo> SliderInfoVector;
         typedef std::map<Input::State, SliderInfoVector> SliderInfoMap;
-
+		
         InputModuleOIS();
         virtual ~InputModuleOIS();
 
