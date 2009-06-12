@@ -391,6 +391,17 @@ namespace Foundation
         return Console::ResultSuccess();
     }
 
+    Console::CommandResult Framework::ConsoleLimitFrames(const Core::StringVector &params)
+    {
+        if (params.size() != 1)
+            return Console::ResultInvalidParameters();
+
+        int max_fps = Core::clamp(Core::ParseString<int>(params[0]), 1, 1000000);
+        max_ticks_ = 1000 / max_fps;
+
+        return Console::ResultSuccess();
+    }
+
 
     void Framework::RegisterConsoleCommands()
     {
@@ -416,6 +427,10 @@ namespace Foundation
             console->RegisterCommand(Console::CreateCommand("Profile", 
                 "Outputs profiling data. Usage: Profile() for full, or Profile(name) for specific profiling block", 
                 Console::Bind(this, &Framework::ConsoleProfile)));
+
+            console->RegisterCommand(Console::CreateCommand("FrameLimit", 
+                "Limit fps. Usage: FrameLimit(max_frames)", 
+                Console::Bind(this, &Framework::ConsoleLimitFrames)));
         }
     }
 }
