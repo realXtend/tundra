@@ -6,6 +6,7 @@
 #include <iomanip>
 
 #include <Poco/LocalDateTime.h>
+#include <boost/lexical_cast.hpp>
 
 namespace Core
 {

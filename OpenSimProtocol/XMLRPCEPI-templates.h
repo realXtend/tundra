@@ -6,7 +6,7 @@
 
 #include <xmlrpc.h>
 #include "XMLRPCCall.h"
-
+#include <boost/lexical_cast.hpp>
 
 template <typename T> T XMLRPCEPI::GetReply(const char* name) const 
 {

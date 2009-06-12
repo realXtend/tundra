@@ -34,6 +34,7 @@ if (MSVC)
 	add_definitions (-DUNICODE -D_UNICODE)
 endif (MSVC)
 
+
 # Generate profiling data
 if (MSVC)
 	add_definitions (-DPROFILING)

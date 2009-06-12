@@ -17,6 +17,7 @@
 #define incl_Core_Vector3D_h
 
 #include "CoreMath.h"
+#include "CoreStringUtils.h"
 
 namespace Core
 {

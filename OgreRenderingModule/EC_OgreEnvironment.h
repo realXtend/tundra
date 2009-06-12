@@ -6,6 +6,7 @@
 #include "ComponentInterface.h"
 #include "Foundation.h"
 #include "OgreModuleApi.h"
+#include <ctime>
 
 namespace Ogre
 {
@@ -72,7 +73,7 @@ namespace OgreRenderer
         
         /// Set the time.
         /// @param time Time as UNIX EPOCH seconds.
-        void EC_OgreEnvironment::SetTime(time_t time);
+        void SetTime(time_t time);
         
         /// @return Ogre light pointer
         Ogre::Light* GetSunlight() const { return sunlight_; }

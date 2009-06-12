@@ -22,7 +22,7 @@ namespace RexLogic
         void FindCurrentlyActiveEnvironment();
         
         /// @return The scene entity that represents the terrain in the currently active world.        
-        Scene::EntityWeakPtr Environment::GetEnvironmentEntity();
+        Scene::EntityWeakPtr GetEnvironmentEntity();
         
         /// Creates the environment EC.
         void CreateEnvironment();
