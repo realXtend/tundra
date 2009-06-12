@@ -90,8 +90,9 @@ namespace OgreRenderer
             entity_->setRenderingDistance(draw_distance_);
     }
     
-    bool EC_OgreMesh::SetMesh(const std::string& mesh_name)
+    bool EC_OgreMesh::SetMesh(const std::string& mesh_name, Scene::Entity *parent_entity)
     {
+        assert (parent_entity);
         RemoveMesh();
         
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
@@ -118,6 +119,7 @@ namespace OgreRenderer
             {
                 entity_->setRenderingDistance(draw_distance_);
                 entity_->setCastShadows(cast_shadows_);
+                entity_->setUserAny(Ogre::Any(parent_entity));
             }
         }
         catch (Ogre::Exception& e)

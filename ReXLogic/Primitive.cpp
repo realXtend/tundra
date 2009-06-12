@@ -546,7 +546,7 @@ namespace RexLogic
             
             // Attach to placeable if not yet attached
             if (!custom.GetPlaceable())
-                custom.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
+                custom.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()), entity.get());
             
             // Set rendering distance/cast shadows setting
             custom.SetDrawDistance(prim.DrawDistance);
@@ -824,7 +824,7 @@ namespace RexLogic
         if (!meshptr) return;
         OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
         
-        mesh.SetMesh(res->GetId());
+        mesh.SetMesh(res->GetId(), entity.get());
 
         // Set adjustment orientation for mesh (a legacy haxor, Ogre meshes usually have Y-axis as vertical)
         Core::Quaternion adjust(Core::PI/2, 0, Core::PI);

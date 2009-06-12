@@ -505,7 +505,7 @@ namespace RexLogic
         if (!connected_)
             return;
     
-        NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectSelect);
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectGrab);
         assert(m);
         
         // AgentData

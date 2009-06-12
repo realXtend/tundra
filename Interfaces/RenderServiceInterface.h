@@ -7,6 +7,11 @@
 #include "ResourceInterface.h"
 #include "LogListenerInterface.h"
 
+namespace Scene
+{
+    class Entity;
+}
+
 namespace Foundation
 {
     //! \todo document -cm
@@ -26,7 +31,7 @@ namespace Foundation
             \param x Horizontal position for the origin of the ray
             \param y Vertical position for the origin of the ray
         */
-        virtual void Raycast(int x, int y) = 0;
+        virtual Scene::Entity *Raycast(int x, int y) = 0;
         //! Resizes the rendering window
         /*! \param width New window width
             \param height New window height
