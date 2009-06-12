@@ -6,7 +6,6 @@
 #include "RexLogicModule.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_NetworkPosition.h"
-#include "EC_Viewable.h"
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
 #include "../OgreRenderingModule/EC_OgreMesh.h"
 #include "../OgreRenderingModule/EC_OgreCustomObject.h"
