@@ -3,6 +3,8 @@
 
 macro (FIND_OGRE)
 
+if (UNIX)
+
 include(FindPkgMacros)
 findpkg_begin(OGRE)
 
@@ -67,6 +69,7 @@ endif()
 #		separate_arguments (OGRE_LIBRARIES)
 #	endif (NOT MSVC)
 
+endif()
 endmacro (FIND_OGRE)
 
 macro (INCLUDE_OGRE)

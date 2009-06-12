@@ -3,32 +3,28 @@
 
 macro (FIND_POCO)
 
+if (UNIX)
+
 include(FindPkgMacros)
 findpkg_begin(POCO)
 
 
 # Construct search paths from enviromental hits and OS spesific guesses
 
-if (MSVC)
-  set(POCO_PREFIX_GUESSES $ENV{REX_DEP_PATH}/PoCo
-      C:/PoCo
-      $ENV{PROGRAMFILES}/PoCo C:/Poco)
-elseif (UNIX)
-  set(POCO_PREFIX_GUESSES 
-      /opt/PoCo
-      /opt/poco
-      /opt/Poco
-      /usr/local
-      /usr/lib/PoCo
-      /usr/lib/Poco
-      /usr/local/Poco
-      $ENV{HOME}/PoCo
-      $ENV{HOME}/Poco
-      $ENV{HOME}/poco
-      $ENV{REX_DEP_PATH}/poco
-      $ENV{REX_DEP_PATH}/Poco
-      $ENV{REX_DEP_PATH}/PoCo)
-endif()
+set(POCO_PREFIX_GUESSES 
+  /opt/PoCo
+  /opt/poco
+  /opt/Poco
+  /usr/local
+  /usr/lib/PoCo
+  /usr/lib/Poco
+  /usr/local/Poco
+  $ENV{HOME}/PoCo
+  $ENV{HOME}/Poco
+  $ENV{HOME}/poco
+  $ENV{REX_DEP_PATH}/poco
+  $ENV{REX_DEP_PATH}/Poco
+  $ENV{REX_DEP_PATH}/PoCo)
 
 set(POCO_PREFIX_PATH 
     ${POCO_HOME} $ENV{POCO_HOME} ${POCO_PREFIX_GUESSES})
@@ -59,6 +55,7 @@ if (NOT POCO_FOUND AND NOT POCO_INCLUDE_DIR OR NOT POCO_LIBRARY_DIR)
   message(STATUS "Poco was not found either guessed paths or pkg-config, please add enviroment variable POCO_HOME")
 endif()
 
+endif()
 endmacro (FIND_POCO)
 
 macro (INCLUDE_POCO)

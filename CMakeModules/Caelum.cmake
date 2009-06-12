@@ -3,6 +3,7 @@
 
 macro (FIND_CAELUM)
 
+if (UNIX)
 include(FindPkgMacros)
 findpkg_begin(CAELUM)
 
@@ -57,6 +58,7 @@ if (NOT MSVC AND NOT CAELUM_FOUND AND NOT CAELUM_INCLUDE_DIR OR NOT CAELUM_LIBRA
   message(STATUS "Caelum was not found either guessed paths or pkg-config, please add enviroment variable CAELUM_HOME")
 endif()
 
+endif()
 endmacro (FIND_CAELUM)
 
 macro (INCLUDE_CAELUM)
