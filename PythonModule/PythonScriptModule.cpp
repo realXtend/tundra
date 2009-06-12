@@ -23,6 +23,13 @@
 
 #include "Entity.h"
 
+//for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
+//#include "../OgreRenderingModule/EC_OgreMesh.h"
+#include "../OgreRenderingModule/EC_OgrePlaceable.h"
+//#include "../OgreRenderingModule/EC_OgreMovableTextOverlay.h"
+#include "RexNetworkUtils.h" //debugboundingbox in CreateEntity
+
+
 namespace PythonScript
 {
 	Foundation::ScriptEventInterface* PythonScriptModule::engineAccess;// for reaching engine from static method
@@ -131,7 +138,7 @@ namespace PythonScript
 		PyModule_AddIntConstant(apiModule, "MOVE_FORWARD_RELEASED", Input::Events::MOVE_FORWARD_RELEASED);
 		LogInfo("Added event constants.");*/
 
-		/* TODO: get the constants from the EventManager,
+		/* TODO: add other categories and expose the hierarchy as py submodules or something,
 		add registrating those (it's not (currently) mandatory),
 		to the modules themselves, e.g. InputModule (currently the OIS thing but that is to change) */
 		const Foundation::EventManager::EventMap &evmap = em->GetEventMap();
@@ -222,6 +229,9 @@ namespace PythonScript
 		}
 		
 		//was for first receive chat test, when no module provided it, so handles net event directly
+		/* got a crash with this now during login, when the viewer was also getting asset data etc.
+		   disabling the direct reading of network data here now to be on the safe side,
+		   this has always behaved correctly till now though (since march). --antont june 12th 
         if (category_id == inboundCategoryID_)
         {
             OpenSimProtocol::NetworkEventInboundData *event_data = static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
@@ -252,41 +262,10 @@ namespace PythonScript
 
 				PyObject_CallMethod(pmmInstance, "RexNetMsgChatFromSimulator", "ss", name, message);
 
-				/* reusing the PythonScriptObject made for comms.
-				 * the previous method of doing pArgs and PyString_FromString certainly seems safer,
-				 * we must refactor to get this other solution to use those.
-				char** args = new char*[2]; //is this 2 'cause the latter terminates?
-				char* buf1 = new char[1000];
-				strcpy(buf1, message.c_str());
-				args[0] = buf1;
-
-				std::string methodname = "RexNetMsgChatFromSimulator";
-				std::string paramtypes = "s";*/
-				//Foundation::ScriptObject* ret = modulemanager->CallMethod(methodname, paramtypes, args);
-
-				/* previous method of calling a function with an argument tuple
-	            pArgs = PyTuple_New(1); //takes a single argument
-				pValue = PyString_FromString(message.c_str());
-				//pValue reference stolen here:
-				PyTuple_SetItem(pArgs, 0, pValue);
-
-				pValue = PyObject_CallObject(pFunc, pArgs);
-				Py_DECREF(pArgs);
-				if (pValue != NULL) {
-					//printf("Result of call: %ld\n", PyInt_AsLong(pValue));
-					LogInfo("Python chathandler executed ok.");
-					Py_DECREF(pValue);
-				}
-				else {
-					Py_DECREF(pFunc);
-					PyErr_Print();
-					fprintf(stderr,"Call failed\n");
-				}*/
-
 	            break;
 		        }
 			}
-		}
+		}*/
 
 		return false;
 	}
@@ -413,7 +392,7 @@ static PyObject* SendChat(PyObject *self, PyObject *args)
 	const char* msg;
 
 	if(!PyArg_ParseTuple(args, "s", &msg))
-		return NULL;
+		return NULL; //XXX raise ValueError
 
 	//Foundation::Framework *framework_ = Foundation::ComponentInterfacePythonScriptModule::GetFramework();
 	Foundation::Framework *framework_ = PythonScript::staticframework;
@@ -429,13 +408,11 @@ static PyObject* SendChat(PyObject *self, PyObject *args)
 	Py_RETURN_TRUE;
 }
 
-//now just gives the id back, was to test using a service - w.i.p. code
+//returns an Entity wrapper, is in actual use
 static PyObject* GetEntity(PyObject *self, PyObject *args)
 {
 	unsigned int ent_id_int;
 	Core::entity_id_t ent_id;
-
-	PyObject* ret;
 
 	if(!PyArg_ParseTuple(args, "i", &ent_id_int))
 		return NULL; //XXX report ArgumentException error
@@ -462,6 +439,60 @@ static PyObject* GetEntity(PyObject *self, PyObject *args)
 		return NULL; //XXX TODO: raise ValueError
 }
 
+static PyObject* CreateEntity(PyObject *self, PyObject *args)
+{
+	Foundation::Framework *framework_ = PythonScript::staticframework;
+	RexLogic::RexLogicModule *rexlogic_;
+
+	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+
+	unsigned int ent_id_int;
+	Core::entity_id_t ent_id;
+
+	if(!PyArg_ParseTuple(args, "i", &ent_id_int))
+		return NULL; //XXX report ArgumentException error
+
+	ent_id = (Core::entity_id_t) ent_id_int;
+
+	Scene::ScenePtr scene = PythonScript::GetScene();
+        
+    if (!scene) //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::NameStatic()))
+		return NULL; //XXX return some sensible exception info
+        
+    Core::StringVector defaultcomponents;
+    defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
+    //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+    //defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::NameStatic());
+    //defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::NameStatic());
+        
+    Scene::EntityPtr entity = scene->CreateEntity(ent_id, defaultcomponents);
+
+    Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+    if (placeable)
+    {
+        OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
+
+        //DebugCreateOgreBoundingBox(rexlogic_,
+        //    entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()), "AmbientGreen", Vector3(0.5,0.5,1.5));
+            
+        /* CreateNameOverlay(ogrepos, entityid);
+		        Foundation::ComponentPtr overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+        EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());
+        if (overlay)
+        {
+            OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
+            name_overlay.SetText(avatar.GetFullName());
+            name_overlay.SetParentNode(placeable.GetSceneNode());
+        }*/
+
+        //CreateDefaultAvatarMesh(entityid);
+        
+        return entity_create(ent_id); //return the py wrapper for the new entity
+    }
+
+	return NULL; //XXX return some sensible exception info
+}
+
 static PyObject* PyEventCallback(PyObject *self, PyObject *args){
 	std::cout << "PyEventCallback" << std::endl;
 	const char* key;
@@ -478,10 +509,13 @@ static PyObject* PyEventCallback(PyObject *self, PyObject *args){
 
 static PyMethodDef EmbMethods[] = {
 	{"sendChat", (PyCFunction)SendChat, METH_VARARGS,
-	"Send the given text as a chat message."},
+	"Send the given text as an in-world chat message."},
 
 	{"getEntity", (PyCFunction)GetEntity, METH_VARARGS,
 	"Gets the entity with the given ID."},
+
+	{"createEntity", (PyCFunction)CreateEntity, METH_VARARGS,
+	"Creates a new entity with the given ID, and returns it."},
 
 	{"pyEventCallback", (PyCFunction)PyEventCallback, METH_VARARGS,
 	"Handling callbacks from py scripts. Calling convension: with 2 strings"},
