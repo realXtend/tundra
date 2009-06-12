@@ -1,3 +1,6 @@
+# Set project name
+project (realXtend-viewer)
+
 # CMake version requirement
 cmake_minimum_required (VERSION 2.4)
 
@@ -19,7 +22,8 @@ include (OIS)
 include (OpenJpeg)
 include (OpenAL)
 include (Caelum)
-#include (Hydrax)#include (Qt4)
+#include (Hydrax)
+include (Qt)
 
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
@@ -27,14 +31,10 @@ set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FOR
 # Set common directory for installing non-system dependencies
 set (REX_DEP_PATH $ENV{REX_DEP_PATH})
 
-# Set project name
-project (realXtend-viewer)
-
 # In Visual Studio, use unicode character set
 if (MSVC)
 	add_definitions (-DUNICODE -D_UNICODE)
 endif (MSVC)
-
 
 # Generate profiling data
 if (MSVC)
@@ -52,7 +52,7 @@ FIND_OPENJPEG()
 FIND_GTKMM()
 FIND_OPENAL()
 FIND_CAELUM()
-#FIND_HYDRAX()#FIND_QT4()
+#FIND_HYDRAX()
 
 # Default additional include & library directories
 include_directories (${REX_DEP_PATH}/include)
@@ -69,7 +69,7 @@ add_subdirectory (SceneManager)
 add_subdirectory (OgreRenderingModule)
 add_subdirectory (Application)
 add_subdirectory (ReXLogic)
-add_subdirectory (TestModule)
+#add_subdirectory (TestModule)
 #add_subdirectory (UnitTests) #TODO: didn't compile on fedora
 add_subdirectory (OpenSimProtocol)
 add_subdirectory (GtkmmUI)
@@ -83,3 +83,4 @@ add_subdirectory (AssetModule)
 add_subdirectory (InputModuleOIS)
 add_subdirectory (TextureDecoderModule)
 add_subdirectory (OpenALAudioModule)
+#add_subdirectory (QtModule)

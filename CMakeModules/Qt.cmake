@@ -3,39 +3,36 @@
 
 macro (FIND_QT4)
 
+if (MSVC)
+FIND_PACKAGE(Qt4 REQUIRED)
+elseif (UNIX)
+
 include(FindPkgMacros)
 findpkg_begin(Qt4)
 
 # Construct search paths from enviromental hits and OS spesific guesses
 
 # PENDING fix version number depency. 
-
-if (MSVC)
-  set(Qt4_PREFIX_GUESSES $ENV{REX_DEP_PATH}/Qt4
-      C:/Trolltech/Qt-4.5.1/
-      $ENV{PROGRAMFILES}/Trolltech/Qt-4.5.1 C:/Ogre $ENV{REX_DEP_PATH}/Qt)
-elseif (UNIX)
-  set(Qt4_PREFIX_GUESSES 
-      /opt/Trolltech/Qt-4.5.1
-      /opt/Trolltech/Qt4
-      /usr/local/Trolltech/Qt
-      /usr/local/Trolltech/Qt-4.5.1
-      /usr/local/Trolltech/Qt-4.5.1/lib
-      /usr/local/Trolltech/Qt-4.5.1/include
-      /usr/lib/
-      /usr/local/include
-      $ENV{HOME}/Qt4
-      $ENV{HOME}/Qt
-      $ENV{REX_DEP_PATH}/Qt4
-      $ENV{REX_DEP_PATH}/qt4)
-endif()
+set(Qt4_PREFIX_GUESSES 
+  /opt/Trolltech/Qt-4.5.1
+  /opt/Trolltech/Qt4
+  /usr/local/Trolltech/Qt
+  /usr/local/Trolltech/Qt-4.5.1
+  /usr/local/Trolltech/Qt-4.5.1/lib
+  /usr/local/Trolltech/Qt-4.5.1/include
+  /usr/lib/
+  /usr/local/include
+  $ENV{HOME}/Qt4
+  $ENV{HOME}/Qt
+  $ENV{REX_DEP_PATH}/Qt4
+  $ENV{REX_DEP_PATH}/qt4)
 
 set(Qt4_PREFIX_PATH 
     ${Qt4_HOME} $ENV{Qt4_HOME} ${Qt4_PREFIX_GUESSES})
 
 create_search_paths(Qt4)
 
-# try to locate Ogre via pkg-config
+# try to locate Qt4 via pkg-config
 use_pkgconfig(Qt4 "Qt4")
 
 # try to find framework on OSX
@@ -53,23 +50,24 @@ else ()
     find_path(Qt4_LIBRARY_DIR  QtCore4.lib HINTS ${Qt4_LIB_SEARCH_PATH})
   else ()
     find_path(Qt4_LIBRARY_DIR libQtCore4.so HINTS ${Qt4_LIB_SEARCH_PATH})
-  endif()
+  endif()  
 endif()
 
 if (NOT MSVC AND NOT Qt4_FOUND AND NOT Qt4_INCLUDE_DIR OR NOT Qt4_LIBRARY_DIR)
   message(STATUS "Qt4 was not found either guessed paths or pkg-config, please add enviroment variable QT4_HOME")
 endif()
 
+endif()
 endmacro (FIND_QT4)
 
 macro (INCLUDE_QT4)
-	
-  INCLUDE(${QT_USE_FILE})
+
+include(${QT_USE_FILE})
   
   if (MSVC)
-    if (DEFINED ENV{Qt4_HOME})
-      include_directories ($ENV{Qt4_HOME}/include)
-      link_directories ($ENV{Qt4_HOME}/lib)
+    if (DEFINED ENV{QTDIR})
+      include_directories ($ENV{QTDIR}/include)
+      link_directories ($ENV{QTDIR}/lib)
     else()
       include_directories (${REX_DEP_PATH}/Qt/include)
       link_directories (${REX_DEP_PATH}/Qt/lib)

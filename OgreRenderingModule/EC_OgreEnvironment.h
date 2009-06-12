@@ -18,7 +18,6 @@ namespace Caelum
     class CaelumSystem;
 }
 
-/*
 namespace Hydrax
 {
     class Hydrax;
@@ -33,7 +32,6 @@ namespace Hydrax
         class Perlin;
     }
 }
-*/
 
 namespace OgreRenderer
 {
@@ -161,9 +159,9 @@ namespace OgreRenderer
         /// Caleum Sunlight ambient color multiplier factor.
         float sunColorMultiplier_;
 
-        /*Hydrax::Hydrax *hydraxSystem_;
+        Hydrax::Hydrax *hydraxSystem_;
         Hydrax::Noise::Perlin *noiseModule_;
-        Hydrax::Module::ProjectedGrid *module_;*/
+        Hydrax::Module::ProjectedGrid *module_;
     };
 }
 
