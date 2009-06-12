@@ -12,7 +12,9 @@ try:
     import rexviewer as r
 except ImportError: #not running under rex
     import mockviewer as r
-from circuits import handler, Event, Component, Manager
+from circuits import handler, Event, Component, Manager, Debugger
+
+#r.forwardevents = True
 
 #is not identical to the c++ side, where x and y have abs and rel
 #XXX consider making identical and possible wrapping of the c++ type
@@ -27,14 +29,14 @@ class MouseMove(Event): pass
     
 class ComponentRunner(Component):
     instance = None
-
+    
     def __init__(self):
         # instanciated from the c++ side, as modulemanager there
         assert self.instance is None
         ComponentRunner.instance = self #is used as a singleton now
 
         # Create a new circuits Manager
-        self.m = Manager()
+        self.m = Manager()# + Debugger()
 
         Component.__init__(self)
         
@@ -43,7 +45,8 @@ class ComponentRunner(Component):
         #or __all__ in pymodules __init__ ? (i.e. import pymodules would do that)
         import autoload
         autoload.load(m)
-        
+        self.forwardevent = True
+        r.eventhandled = False
         #m.start()
 
     def run(self, deltatime=0.1):
@@ -71,19 +74,14 @@ class ComponentRunner(Component):
         """
         
         #print "CircuitManager received KEY_INPUT (event:", evid, "key:", keycode, "mods:", keymod, ")",
-        #key = Key(keycode, keymod)
-        
+        rvalue = False
         if evid == r.KeyPressed:
-            #self.m.send(key, "on_keydown")
-            self.m.send(Input(keycode), "on_input") #well, since on_keydown doesnt work for some odd reason, using this instead for now
+            self.m.send(Key(keycode, keymod), "on_keydown")
+            #self.m.send(Input(keycode), "on_input") #well, since on_keydown doesnt work for some odd reason, using this instead for now
             #print "pressed."
-        
-        #~ elif evid == r.KeyReleased:
-            #~ #self.m.send(key, "on_keyup")
-            #~ print "released."
-        #~ else:
-            #~ print "Nothing found."
-            #~ return
+            rvalue = r.eventhandled
+
+        return rvalue
             
     def MOUSE_INPUT(self, x_abs, y_abs, x_rel, y_rel):
         i = MouseInfo(x_abs, y_abs, x_rel, y_rel)
@@ -93,6 +91,10 @@ class ComponentRunner(Component):
     def exit(self):
         print "Circuits manager stopping."
         self.m.stop() #is this needed?
+        
+    #~ def retfunc(self, boolvalue):
+        #~ #print "Return value:", bool, "-> ", 
+        #~ self.forwardevent = boolvalue
         
 #TestModule moved to own file (err, module)
 
@@ -118,7 +120,12 @@ if __name__ == '__main__':
     import time
     while True:
         runner.run(0.1)
-        runner.RexNetMsgChatFromSimulator("main..", "hello")
+        #runner.RexNetMsgChatFromSimulator("main..", "hello")
+        rvalue = runner.KEY_INPUT_EVENT(3, 46, 0)
+        if rvalue:
+            print "returned true"
+        else:
+            print "returned false"
         time.sleep(0.1)
 
 

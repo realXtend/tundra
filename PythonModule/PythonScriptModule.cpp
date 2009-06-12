@@ -201,10 +201,24 @@ namespace PythonScript
 				const int mods = key->modifiers_;
 				//OIS::KeyCode* keycode = key->code_;
 
-				PyObject_CallMethod(pmmInstance, "KEY_INPUT_EVENT", "iii", event_id, keycode, mods);	
+				PyObject* value = PyObject_CallMethod(pmmInstance, "KEY_INPUT_EVENT", "iii", event_id, keycode, mods);
+
+				if (PyObject_IsTrue(value))
+				{
+					//LogInfo("KEY_INPUT_EVENT returned true.");
+					return true;  
+				} 
+				else 
+				{
+					//LogInfo("KEY_INPUT_EVENT returned false.");
+					return false;
+				}
+
 			}
 			else
+			{
 				PyObject_CallMethod(pmmInstance, "INPUT_EVENT", "i", event_id);
+			}
 		}
 		
 		//was for first receive chat test, when no module provided it, so handles net event directly
