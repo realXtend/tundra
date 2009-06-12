@@ -19,6 +19,7 @@ include (OIS)
 include (OpenJpeg)
 include (OpenAL)
 include (Caelum)
+#include (Qt4)
 
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
@@ -51,6 +52,7 @@ FIND_OPENJPEG()
 FIND_GTKMM()
 FIND_OPENAL()
 FIND_CAELUM()
+#FIND_QT4()
 
 # Default additional include & library directories
 include_directories (${REX_DEP_PATH}/include)
