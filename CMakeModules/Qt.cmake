@@ -87,6 +87,14 @@ endmacro (INCLUDE_QT4)
 
 macro (LINK_QT4)
 
+  #PENDING is some of these needed: 
+  #TARGET_LINK_LIBRARIES(
+  # ${QT_LIBRARIES}
+  # ${QT_QTNETWORK_LIBRARIES}
+  # ${QT_QTTEST_LIBRARIES}
+  #)
+
+
 	if (MSVC)
 	  target_link_libraries (${TARGET_NAME}
 	    QtCore4  QtGui4  qtmain  QtNetwork4  QtWebKit4
