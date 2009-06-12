@@ -56,7 +56,7 @@ namespace RexLogic
         float SoundVolume;
         float SoundRadius;
         
-        uint32_t SelectPriority;
+        int32_t SelectPriority;
 
         //! Drawing related variables
         Core::Vector3df Scale;
