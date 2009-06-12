@@ -196,11 +196,13 @@ namespace OgreRenderer
         {
             throw Core::Exception("Could not create Ogre rendering window");
         }
+        renderwindow_->setDeactivateOnFocusChange(false);
 
         SetupResources();
         SetupScene();
         
         Ogre::WindowEventUtilities::addWindowEventListener(renderwindow_, listener_.get());
+        
         
         initialized_ = true;
     }
@@ -371,6 +373,12 @@ namespace OgreRenderer
         renderer->_swapAllRenderTargetBuffers(renderer->getWaitForVerticalBlank());
 
         root_->_fireFrameEnded();
+    }
+
+    void Renderer::Raycast(int x, int y)
+    {
+        Core::Real fx = renderwindow_->getWidth() / (Core::Real)x;
+        Core::Real fy = renderwindow_->getHeight() / (Core::Real)y;
     }
     
     std::string Renderer::GetUniqueObjectName()

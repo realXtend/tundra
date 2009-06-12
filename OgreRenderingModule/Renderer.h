@@ -49,18 +49,12 @@ namespace OgreRenderer
         //! Destructor
         virtual ~Renderer();
 
-        //! Threadsafe service to framework
-        virtual void Raycast()
-        {
-            // mutex_lock lock(mRenderer);
-            // perform raycast (synchronized)
-
-            // OR
-            //
-            // Queue raycast request, perform raycast in update() after rendering the scene
-            // Return handle to the raycast request. The request is updated with the result
-            // after raycast has been performed. (see Smoke demo, collision handling)
-        }
+        //! Do raycast into the world from viewport coordinates.
+        /*! The coordinates are a position in the render window, not scaled to [0,1].
+            \param x Horizontal position for the origin of the ray
+            \param y Vertical position for the origin of the ray
+        */
+        virtual void Raycast(int x, int y);
 
         //! Resizes the window
         virtual void Resize(Core::uint width, Core::uint height);
