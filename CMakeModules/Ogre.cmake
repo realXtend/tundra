@@ -13,7 +13,7 @@ if (MSVC)
       C:/OgreSDK
       $ENV{PROGRAMFILES}/OgreSDK C:/Ogre $ENV{REX_DEP_PATH}/ogre)
 elseif (UNIX)
-  set(CAELUM_PREFIX_GUESSES 
+  set(OGRE_PREFIX_GUESSES 
       /opt/OGRE
       /opt/ogre
       /usr/local
