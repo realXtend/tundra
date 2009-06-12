@@ -21,7 +21,12 @@ namespace Foundation
 
         //! Renders the scene
         virtual void Render() = 0;
-        virtual void Raycast() = 0;
+        //! Do raycast into the world from viewport coordinates.
+        /*! The coordinates are a position in the render window, not scaled to [0,1].
+            \param x Horizontal position for the origin of the ray
+            \param y Vertical position for the origin of the ray
+        */
+        virtual void Raycast(int x, int y) = 0;
         //! Resizes the rendering window
         /*! \param width New window width
             \param height New window height
