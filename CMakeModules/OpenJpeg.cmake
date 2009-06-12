@@ -3,6 +3,7 @@
 
 macro (FIND_OPENJPEG)
 
+if (UNIX)
 include(FindPkgMacros)
 findpkg_begin(OPENJPG)
 
@@ -57,6 +58,7 @@ if (NOT MSVC AND NOT OPENJPEG_FOUND AND NOT OPENJPEG_INCLUDE_DIR OR NOT OPENJPEG
   message(STATUS "OpenJpeg was not found either guessed paths or pkg-config, please add enviroment variable OPENJPEG_HOME")
 endif()
 
+endif()
 endmacro (FIND_OPENJPEG)
 
 macro (INCLUDE_OPENJPEG)

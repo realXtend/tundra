@@ -3,6 +3,8 @@
 
 macro (FIND_XMLRPCEPI)
 
+if (UNIX)
+
 include(FindPkgMacros)
 findpkg_begin(XMLRPCEPI)
 
@@ -52,6 +54,7 @@ if (NOT MSVC AND NOT XMLRPC-EPI_FOUND AND NOT XMLRPCEPI_INCLUDE_DIR OR NOT XMLRP
   message(STATUS "xmlrpc-epi was not found either guessed paths or pkg-config, please add enviroment variable XMLRPCEPI_HOME")
 endif()
 
+endif()
 endmacro (FIND_XMLRPCEPI)
 
 macro (INCLUDE_XMLRPCEPI)

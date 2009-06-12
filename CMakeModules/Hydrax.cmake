@@ -15,6 +15,6 @@ macro (LINK_HYDRAX)
 	if (MSVC)
 		target_link_libraries (${TARGET_NAME}
 			optimized Hydrax
-			debug Hydrax)
+			debug Hydraxd)
 	endif (MSVC)
 endmacro (LINK_HYDRAX)

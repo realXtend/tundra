@@ -3,31 +3,26 @@
 
 macro (FIND_CURL)
 
+if (UNIX)
+
 include(FindPkgMacros)
 findpkg_begin(CURL)
 
 # Construct search paths from enviromental hits and OS spesific guesses
 
-if (MSVC)
-  set(CURL_PREFIX_GUESSES $ENV{REX_DEP_PATH}/curl
-      C:/curl
-      $ENV{PROGRAMFILES}/curl $ENV{REX_DEP_PATH}/libcurl
-      C:/libcurl)
-elseif (UNIX)
-  set(CURL_PREFIX_GUESSES 
-      /opt/curl
-      /opt/libcurl
-      /usr/local
-      /usr/lib/curl
-      /usr/lib/libcurl
-      /usr/local/curl
-      /usr/local/libcurl
-      $ENV{HOME}/curl
-      $ENV{HOME}/libcurl
-      $ENV{HOME}/Curl
-      $ENV{REX_DEP_PATH}/curl
-      $ENV{REX_DEP_PATH}/libcurl)
-endif()
+set(CURL_PREFIX_GUESSES 
+  /opt/curl
+  /opt/libcurl
+  /usr/local
+  /usr/lib/curl
+  /usr/lib/libcurl
+  /usr/local/curl
+  /usr/local/libcurl
+  $ENV{HOME}/curl
+  $ENV{HOME}/libcurl
+  $ENV{HOME}/Curl
+  $ENV{REX_DEP_PATH}/curl
+  $ENV{REX_DEP_PATH}/libcurl)
 
 set(CURL_PREFIX_PATH 
     ${CURL_HOME} $ENV{CURL_HOME} ${CURL_PREFIX_GUESSES})
@@ -58,6 +53,7 @@ if (NOT MSVC AND NOT CURL_FOUND AND NOT CURL_INCLUDE_DIR OR NOT CURL_LIBRARY_DIR
   message(STATUS "Curl was not found either guessed paths or pkg-config, please add enviroment variable CURL_HOME")
 endif()
 
+endif()
 endmacro (FIND_CURL)
 
 macro (INCLUDE_CURL)
