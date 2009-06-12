@@ -29,7 +29,6 @@
 #include "DebugStats.h"
 #include "GtkmmUI.h"
 
-#include "EC_Viewable.h"
 #include "EC_FreeData.h"
 #include "EC_SpatialSound.h"
 #include "EC_OpenSimPrim.h"
