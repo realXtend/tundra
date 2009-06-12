@@ -22,6 +22,7 @@ include_directories (
 INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_OIS()
+INCLUDE_OGRE()
 
 add_definitions (-DMODULE_EXPORTS)
 
@@ -48,3 +49,4 @@ endif (MSVC)
 # External library linkage
 LINK_POCO()
 LINK_BOOST()
+LINK_OGRE()
