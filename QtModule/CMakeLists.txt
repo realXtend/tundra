@@ -2,7 +2,9 @@
 set (TARGET_NAME QtModule)
 set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/modules/core)
 
-FIND_QT4()
+if (MSVC)
+  FIND_QT4()
+endif()
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -29,7 +31,7 @@ INCLUDE_OGRE()
 INCLUDE_QT4()
 
 #Wrap 
-
+include(${QT_USE_FILE})
 QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
@@ -55,12 +57,13 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation Interfaces RexCommon)
+target_link_libraries (${TARGET_NAME} Foundation Interfaces RexCommon )
 
 # External library linkage
 LINK_BOOST()
 LINK_POCO()
 LINK_OGRE()
+LINK_QT4()
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
