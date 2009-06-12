@@ -18,6 +18,7 @@ include_directories (
 	../RexCommon
 	../GtkmmUI
 	../InputModuleOIS
+	../ReXLogic
 )
 
 # External library includes
