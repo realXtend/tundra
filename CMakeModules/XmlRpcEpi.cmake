@@ -48,7 +48,7 @@ else ()
   endif()
 endif()
 
-if (NOT XMLRPC-EPI_FOUND AND NOT XMLRPCEPI_INCLUDE_DIR OR NOT XMLRPCEPI_LIBRARY_DIR)
+if (NOT MSVC AND NOT XMLRPC-EPI_FOUND AND NOT XMLRPCEPI_INCLUDE_DIR OR NOT XMLRPCEPI_LIBRARY_DIR)
   message(STATUS "xmlrpc-epi was not found either guessed paths or pkg-config, please add enviroment variable XMLRPCEPI_HOME")
 endif()
 

@@ -54,7 +54,7 @@ else ()
   endif()
 endif()
 
-if (NOT CURL_FOUND AND NOT CURL_INCLUDE_DIR OR NOT CURL_LIBRARY_DIR)
+if (NOT MSVC AND NOT CURL_FOUND AND NOT CURL_INCLUDE_DIR OR NOT CURL_LIBRARY_DIR)
   message(STATUS "Curl was not found either guessed paths or pkg-config, please add enviroment variable CURL_HOME")
 endif()
 

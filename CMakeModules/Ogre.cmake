@@ -53,7 +53,7 @@ else ()
   endif()
 endif()
 
-if (NOT OGRE_FOUND AND NOT OGRE_INCLUDE_DIR OR NOT OGRE_LIBRARY_DIR)
+if (NOT MSVC AND NOT OGRE_FOUND AND NOT OGRE_INCLUDE_DIR OR NOT OGRE_LIBRARY_DIR)
   message(STATUS "Ogre was not found either guessed paths or pkg-config, please add enviroment variable OGRE_HOME")
 endif()
 
