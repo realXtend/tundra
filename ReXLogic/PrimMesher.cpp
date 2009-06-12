@@ -1,4 +1,4 @@
-﻿// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in license.txt
 // Based on PrimMesher project, converted from C# to C++
 
 /*

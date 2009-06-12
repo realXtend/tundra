@@ -1,3 +1,48 @@
+
+Most of Linux distributions
+---------------------------
+
+Viewer code uses many external libraries which are needed download/install/build before 
+code itself can be build. Current used external libraries are listed in 
+depencies.txt-file (note you don't need to download MD5). Most of libraries are found from your distribution 
+repositories so don't panic. 
+
+Current build system is CMake, which can be found from your linux distribution own repository. 
+For use of CMake I suggest that you use cmake-gui -software.  
+
+For cmake-gui users: 
+
+1. Choose source code, example:  /my/path/to/code/viewer 
+2. Choose location where binaries are build,  example: /my/path/to/build/directory
+2.1 Choose view from Simple view to Groupped view (more informative)  
+3. Hit the configure button, verify that all external libraries are found
+4. After successful configuration hit the Generate button which will create actual Makefile which 
+is located in your build directory. 
+5. Go to your build directory and run $ make  
+
+For plain cmake users: 
+
+1. Run $ cmake .   ( in viewer code directory)
+2. Assure that cmake found all external libraries 
+3. Run $ make  
+
+Known problems: 
+
+1. If compiling crashes to " ..relocation R_X86_64_32 against `a local symbol' " or something 
+assure that all your statically linked external libraries are compiled with -fPIC flag OR 
+change statical libraries to shared versions. You can to that example choosing which library is used to change values
+of library paths in cmake-gui example: libMy.a -file to corresponding libMy.so-file.  
+
+2. Remember to change linux-plugins.cfg file to point current location of your OGRE plugins 
+(it can be example /usr/local/lib/OGRE)
+
+3. Remember that viewer searches plugins and configuration files 
+to load from it own current directory this means that your folder where 
+viewer executable lies has to have next folders and files: 
+
+data/  media/ modules/ plugins.cfg  plugins-unix.cfg  pymodules  resources.cfg  testing 
+
+
 Fedora
 ------
 1. Compile latest boost from source

@@ -404,8 +404,9 @@ namespace Asset
         
         transfer.SetSize(size);
         
-        Core::uint data_size; 
-        const Core::u8* data = msg->ReadBuffer(&data_size); // ImageData block
+        //Core::uint data_size; 
+        size_t data_size;
+	const Core::u8* data = msg->ReadBuffer(&data_size); // ImageData block
         transfer.ReceiveData(0, data, data_size);
                 
         SendAssetProgress(transfer);
@@ -431,8 +432,9 @@ namespace Asset
         
         Core::u16 packet_index = msg->ReadU16();
         
-        Core::uint data_size; 
-        const Core::u8* data = msg->ReadBuffer(&data_size); // ImageData block
+        //Core::uint data_size; 
+        size_t data_size;
+	const Core::u8* data = msg->ReadBuffer(&data_size); // ImageData block
         transfer.ReceiveData(packet_index, data, data_size);
       
         SendAssetProgress(transfer);
@@ -526,8 +528,9 @@ namespace Asset
             return;
         }
         
-        Core::uint data_size; 
-        const Core::u8* data = msg->ReadBuffer(&data_size); // Data block
+        //Core::uint data_size; 
+        size_t data_size;
+	const Core::u8* data = msg->ReadBuffer(&data_size); // Data block
         transfer.ReceiveData(packet_index, data, data_size);
         
         SendAssetProgress(transfer);

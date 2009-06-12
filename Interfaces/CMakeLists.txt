@@ -21,8 +21,21 @@ INCLUDE_POCO()
 add_definitions (-DMODULE_EXPORTS)
 
 # Define static library
+
 add_library (${TARGET_NAME} STATIC ${SOURCE_FILES})
+
+# Because this is static library, compile it with -fPIC in Linux. 
+
+if (NOT MSVC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+endif()
+
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 
 # Have to define language, because there are no CPP files in the source directory
 set_target_properties (${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+
+if (NOT MSVC)
+  LINK_BOOST()
+  LINK_POCO()
+endif()

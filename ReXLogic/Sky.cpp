@@ -7,6 +7,8 @@
 #include "Sky.h"
 #include "SceneManager.h"
 
+#include "CoreTypes.h"
+
 #include "../OgreRenderingModule/OgreTextureResource.h"
 
 namespace RexLogic
@@ -41,7 +43,26 @@ bool Sky::HandleRexGM_RexSky(OpenSimProtocol::NetworkEventInboundData* data)
 
     // 2nd instance contains the texture uuid's
     std::string image_string = msg.ReadString();
-    Core::StringVector images = Ogre::StringUtil::split(image_string);
+   
+    //HACK split() returns vector-struct not a direct vector after verson 6
+
+#if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1 
+    Core::StringVector images_type = Ogre::StringUtil::split(image_string);
+    Core::StringVector images = images_type;
+#else
+    Ogre::vector< Ogre::String >::type images_type = Ogre::StringUtil::split(image_string);
+    Core::StringVector images; 
+    int size = images_type.size();
+    images.resize(size);
+    for (int i = 0; i < size; ++i)
+      images[i] = images_type[i];
+    
+#endif
+    
+    //END HACK
+   
+
+    //Core::StringVector images = boost::lexical_cast<Core::StringVector>(images_type);
     
     // 3rd instance contains the curvature parameter.
     float curvature = boost::lexical_cast<float>(msg.ReadString());
