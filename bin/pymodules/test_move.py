@@ -13,7 +13,7 @@ and the ones that work with the current actual api are run here.
 
 import rexviewer as r
 
-idnum = 720011
+idnum = 720004
 #idnum = 0
 
 #playing with avatar
@@ -21,21 +21,43 @@ idnum = 720011
 #idnum = av_entid
 
 def test_move(e):
-    p = e.place #.pos - the w.i.p. api has a shortcut now that instead of a placeable with loc,rot,scale it just gives loc now directly
+    p = e.pos #.pos - the w.i.p. api has a shortcut now that instead of a placeable with loc,rot,scale it just gives loc now directly
     oldx = p[0] #p.x - Vector3 not wrapped (yet), just gives a tuple
     #p.x += 1 #change the x-coordinate
     newpos = (p[0] + 1, p[1], p[2])
     print "TEST MOVE: trying to move to pos:", newpos
-    e.place = newpos
+    e.pos = newpos
     
-    assert e.place[0] > (oldx + 0.9) #and ,finally test if it actually did move
-    print "TEST MOVE SUCCEEDED", e.place[0], oldx #if we get this far, the move actually worked! Yay.
-        
+    assert e.pos[0] > (oldx + 0.9) #and ,finally test if it actually did move
+    print "TEST MOVE SUCCEEDED", e.pos[0], oldx #if we get this far, the move actually worked! Yay.
+
+def test_scale(e):
+    p = e.scale
+    oldx = p[0]
+    
+    newscale = (p[0]+1, p[1], p[2])
+    print "TEST SCALE: trying to scale the avatar to:", newscale
+    e.scale = newscale
+    assert e.scale[0] > (oldx+0.9)
+    print "TEST SCALE SUCCEEDED", e.scale[0], oldx
+    
+def test_orientation(e):
+    p = e.orientation
+    oldz = p[2]
+    
+    newort = (p[0], p[1], p[2]+1, p[3])
+    print "TEST ORIENTATION: trying to rotate the avatar around its axis to:", newort
+    e.orientation = newort
+    assert e.orientation[2] > (oldz+0.9)
+    print "TEST ORIENTATION SUCCEEDED", e.orientation[2], oldz
+    
 def runtests():
     #e = viewer.scenes['World'].entities[1] #the id for testdummy, or by name?
     #note: now is directly in viewer as GetEntity, defaulting to 'World' scene
     
     e = r.getEntity(idnum)
     test_move(e)
+    test_scale(e)
+    test_orientation(e)
     
 runtests()

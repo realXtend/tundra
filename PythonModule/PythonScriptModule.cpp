@@ -586,7 +586,7 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 		return PyString_FromString(retstr.c_str());
 	}
 
-	else if (s_name.compare("place") == 0)
+	else if (s_name.compare("pos") == 0)
 	{
         const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
 		if (!ogre_component)
@@ -603,6 +603,29 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 		   the pyrr irrlicht binding project does it for these using swig,
 		   https://opensvn.csie.org/traccgi/pyrr/browser/pyrr/irrlicht.i */
 		return Py_BuildValue("fff", pos.x, pos.y, pos.z);
+	}
+
+	else if (s_name.compare("scale") == 0)
+	{
+		const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
+		if (!ogre_component)
+            return NULL; //XXX report AttributeError        
+		OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
+		
+		RexTypes::Vector3 scale = placeable->GetScale();
+
+		return Py_BuildValue("fff", scale.x, scale.y, scale.z);
+	}
+
+	else if (s_name.compare("orientation") == 0)
+	{
+		const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
+		if (!ogre_component)
+            return NULL; //XXX report AttributeError        
+		OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
+		
+		Core::Quaternion orient = placeable->GetOrientation();
+		return Py_BuildValue("ffff", orient.x, orient.y, orient.z, orient.w);
 	}
 
 	std::cout << "unknown component type."  << std::endl;
@@ -651,13 +674,12 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 	}*/
 
 	//else 
-	if (s_name.compare("place") == 0)
+	if (s_name.compare("pos") == 0)
 	{
-        const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
+		const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
 		if (!ogre_component)
             return NULL; //XXX report AttributeError        
 		OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
-		
 		/* this must probably return a new object, a 'Place' instance, that has these.
 		   or do we wanna hide the E-C system in the api and have these directly on entity? 
 		   probably not a good idea to hide the actual system that much. or? */
@@ -683,7 +705,63 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 		return 0; //success.
 	}
 
+	else if (s_name.compare("scale") == 0)
+	{
+		const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
+		if (!ogre_component)
+            return NULL; //XXX report AttributeError        
+		OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
+		
+		float x, y, z;
+		if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
+			return NULL; //XXX report ArgumentException error
+	    
+		// Set the new values.
+		placeable->SetScale(Vector3(x, y, z));
+	    
+	    Scene::Events::SceneEventData event_data(eob->ent_id);
+		event_data.entity_ptr_list.push_back(entity);
+		PythonScript::staticframework->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
+
+		return 0; //success.
+	}
+	
+	else if (s_name.compare("orientation") == 0)
+	{
+		const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
+		if (!ogre_component)
+            return NULL; //XXX report AttributeError        
+		OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
+		
+		float x, y, z, w;
+		if(!PyArg_ParseTuple(value, "ffff", &x, &y, &z, &w))
+			return NULL; //XXX report ArgumentException error
+	    
+		// Set the new values.
+		placeable->SetOrientation(Core::Quaternion(x, y, z, w));
+	    
+	    Scene::Events::SceneEventData event_data(eob->ent_id);
+		event_data.entity_ptr_list.push_back(entity);
+		PythonScript::staticframework->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
+
+		return 0; //success.
+	}
+
 	std::cout << "unknown component type."  << std::endl;
 	return -1; //the way for setattr to report a failure
 }
+
+/*
+OgreRenderer::EC_OgrePlaceable PythonScript::GetPlaceable() 
+{
+	rexviewer_EntityObject *eob = (rexviewer_EntityObject *)self;
+	Scene::ScenePtr scene = PythonScript::GetScene();
+	Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
+	const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
+	if (!ogre_component)
+		return NULL; //XXX report AttributeError        
+	OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());	
+}
+*/
+
 
