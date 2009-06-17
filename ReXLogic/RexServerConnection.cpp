@@ -106,7 +106,6 @@ namespace RexLogic
         {
             connection_type_ = DirectConnection;
             sp->LoginToServer(first_name, last_name,password, serveraddress_noport, port, &threadState_);
-        
         }
         
         // Save the server address and port for later use.
@@ -558,6 +557,46 @@ namespace RexLogic
         FinishMessageBuilding(m);
     }
     
+    void RexServerConnection::SendAgentSetAppearancePacket()
+    {
+        if (!connected_)
+            return;    
+        
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentSetAppearance);
+        
+        // Agentdata        
+        m->AddUUID(myInfo_.agentID);
+        m->AddUUID(myInfo_.sessionID); 
+        m->AddU32(1);
+        m->AddVector3(RexTypes::Vector3(0.45f, 0.6f, 1.708378f)); // Values for a default avatar height based on server
+
+        // Wearabledata (empty)       
+        m->SetVariableBlockCount(0);
+        m->AdvanceToNextVariable();
+
+        // ObjectData (empty)
+        m->AddBuffer(0,0);  
+        
+        // VisualParam, these determine avatar's height on the server
+        uint8_t visualparams[218];
+        for(size_t i = 0; i < 218; ++i)  
+            visualparams[i] = 0;       
+
+        // Params based on source of server, which uses 218 params. 
+        visualparams[25] = 122; // Body height
+        visualparams[77] = 0; // Shoe heel height
+        visualparams[78] = 0; // Shoe platform height
+        visualparams[120] = 68; // Head size
+        visualparams[125] = 178; // Leg length
+        visualparams[148] = 117; // Neck length
+
+        m->SetVariableBlockCount(218);
+        for(size_t i = 0; i < 218; ++i)
+            m->AddU8(visualparams[i]);
+                    
+        FinishMessageBuilding(m);
+    }    
+  
     volatile OpenSimProtocol::Connection::State RexServerConnection::GetConnectionState()
     {
         boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();

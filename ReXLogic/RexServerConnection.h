@@ -112,6 +112,9 @@ namespace RexLogic
 
         /// Sends handshake reply packet
         void SendRegionHandshakeReplyPacket(RexTypes::RexUUID agent_id, RexTypes::RexUUID session_id, uint32_t flags);
+
+        /// Sends hardcoded agentappearance packet
+        void SendAgentSetAppearancePacket();
                         
         /// @return Name of the sim we're connected to.
         std::string GetSimName() { return simName_; }

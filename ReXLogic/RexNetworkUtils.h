@@ -45,8 +45,10 @@ namespace RexLogic
     
     //! Helper functions for writing values into byteblob
     void WriteUInt8ToBytes(uint8_t value, uint8_t* bytes, int& idx);
+    void WriteUInt16ToBytes(uint16_t value, uint8_t* bytes, int& idx);    
     void WriteUInt32ToBytes(uint32_t value, uint8_t* bytes, int& idx);
     void WriteFloatToBytes(float value, uint8_t* bytes, int& idx);
+    void WriteUUIDToBytes(const RexTypes::RexUUID &value, uint8_t* bytes, int& idx);    
     
     //! Helper function for parsing namevaluemap
     typedef std::map<std::string, std::string> NameValueMap;

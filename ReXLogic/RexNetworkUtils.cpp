@@ -223,6 +223,12 @@ namespace RexLogic
         idx++;
     }
 
+    void WriteUInt16ToBytes(uint16_t value, uint8_t* bytes, int& idx)
+    {
+        *(uint16_t*)(&bytes[idx]) = value;
+        idx += sizeof(uint16_t);
+    }
+
     void WriteUInt32ToBytes(uint32_t value, uint8_t* bytes, int& idx)
     {
         *(uint32_t*)(&bytes[idx]) = value;
@@ -234,6 +240,13 @@ namespace RexLogic
         *(float*)(&bytes[idx]) = value;
         idx += sizeof(float);
     }
+    
+    void WriteUUIDToBytes(const RexTypes::RexUUID &value, uint8_t* bytes, int& idx)
+    {
+        *(RexTypes::RexUUID*)(&bytes[idx]) = value;
+        idx += sizeof(RexTypes::RexUUID);
+    }    
+    
     
     NameValueMap ParseNameValueMap(const std::string& namevalue)
     {
