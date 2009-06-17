@@ -1,9 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "ResourceHandler.h"
 #include "OgreMaterialResource.h"
+#include "OgreTextureResource.h"
 #include "OgreRenderingModule.h"
+#include "ResourceHandler.h"
 
 #include <Ogre.h>
 
@@ -61,7 +62,7 @@ namespace OgreRenderer
                 if ((line.length()) && (line.substr(0, 2) != "//"))
                 {
                     // Process opening/closing braces
-                    if (!ProcessBraces(line, brace_level))
+                    if (!ResourceHandler::ProcessBraces(line, brace_level))
                     {
                         // If not a brace and on level 0, it should be a new material; replace name
                         if ((brace_level == 0) && (line.substr(0, 8) == "material"))
@@ -83,7 +84,9 @@ namespace OgreRenderer
                             if ((line.substr(0, 8) == "texture ") && (line.length() > 8))
                             {
                                 std::string tex_name = line.substr(8);
-                                references_.push_back(tex_name);
+                                // Note: we assume all texture references are asset based. ResourceHandler checks later whether this is true,
+                                // before requesting the reference
+                                references_.push_back(Foundation::ResourceReference(tex_name, OgreTextureResource::GetTypeStatic()));
                             }
                         }
 
@@ -169,18 +172,8 @@ namespace OgreRenderer
         }
     }
     
-    bool OgreMaterialResource::ProcessBraces(const std::string& line, int& braceLevel)
+    bool OgreMaterialResource::IsValid() const
     {
-        if (line == "{")
-        {
-            ++braceLevel;
-            return true;
-        } 
-        else if (line == "}")
-        {
-            --braceLevel;
-            return true;
-        }
-        else return false;
+        return (!ogre_material_.isNull());
     }
 }

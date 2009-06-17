@@ -36,6 +36,9 @@ namespace OgreRenderer
         //! returns resource type in text form
         virtual const std::string& GetType() const;
 
+        //! returns whether resource valid
+        virtual bool IsValid() const;
+        
         //! returns Ogre texture
         /*! may be null if no data successfully set yet
          */
@@ -43,11 +46,6 @@ namespace OgreRenderer
 
         //! returns quality level
         int GetLevel() const { return level_; }
-
-        //! sets dummy data if no data yet
-        /*! \return true if successful
-         */
-        bool SetDummyData();
         
         //! sets contents from raw source texture
         /*! \param source source raw texture data

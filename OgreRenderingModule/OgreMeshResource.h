@@ -37,6 +37,9 @@ namespace OgreRenderer
         //! returns resource type in text form
         virtual const std::string& GetType() const;
 
+        //! returns whether resource valid
+        virtual bool IsValid() const;
+        
         //! returns Ogre mesh
         /*! may be null if no data successfully set yet
          */
@@ -50,7 +53,7 @@ namespace OgreRenderer
 
         //! returns resource type in text form (static)
         static const std::string& GetTypeStatic();
-
+        
     private:
         //! Ogre mesh
         Ogre::MeshPtr ogre_mesh_;

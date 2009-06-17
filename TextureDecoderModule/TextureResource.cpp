@@ -49,4 +49,9 @@ namespace TextureDecoder
     {
         return texture_resource_name;
     }
+    
+    bool TextureResource::IsValid() const
+    {
+        return data_.size() > 0;
+    }
 }

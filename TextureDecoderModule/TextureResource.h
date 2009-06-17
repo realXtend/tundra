@@ -14,6 +14,7 @@ namespace TextureDecoder
         TextureResource(const std::string& id, Core::uint width, Core::uint height, Core::uint components);
         virtual ~TextureResource();
 
+        virtual bool IsValid() const;
         virtual Core::uint GetWidth() const { return width_; }
         virtual Core::uint GetHeight() const { return height_; }
         virtual Core::uint GetComponents() const { return components_; }

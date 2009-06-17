@@ -444,35 +444,7 @@ namespace RexLogic
         
         return false;
     }
-/*
-    void Primitive::HandleOgreMaterialsChanged(Core::entity_id_t entityid)
-    {
-        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
-        assert(entity.get());
-        if (!entity) 
-            return;
 
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
-            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-
-        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
-
-        for(MaterialMap::iterator iter = prim.Materials.begin(); iter != prim.Materials.end(); ++iter)
-        {
-            RexLogic::MaterialData &material = iter->second;
-
-            Core::request_tag_t tag = renderer->RequestResource(material.UUID.ToString(), OgreRenderer::OgreMaterialResource::GetTypeStatic());
-
-            // Remember that we are going to get a resource event for this entity
-            if (tag)
-            {
-                prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_MaterialScript)] = entityid;
-                ///\todo remove, clb debug.
-                RexLogicModule::LogInfo("Requested Ogre material.");
-            }
-        }
-    }
-*/
     ///\todo We now pass the entityid in the function. It is assumed that the entity contains exactly one EC_OpenSimPrim and one EC_OgreMesh component.
     /// Possibly in the future an entity can have several meshes attached to it, so we should pass in the EC_OgreMesh in question.
     void Primitive::HandleDrawType(Core::entity_id_t entityid)
@@ -557,7 +529,7 @@ namespace RexLogic
             
             // Create/update geometry
             if (prim.HasPrimShapeData)
-                CreatePrimGeometry(custom.GetObject(), prim);
+                CreatePrimGeometry(rexlogicmodule_->GetFramework(), custom.GetObject(), prim);
         }
     } 
     
@@ -918,7 +890,7 @@ namespace RexLogic
                 OgreRenderer::EC_OgreCustomObject& custom = *checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(customptr.get());
                 // Update geometry now that the material exists
                 if (prim.HasPrimShapeData)
-                    CreatePrimGeometry(custom.GetObject(), prim);
+                    CreatePrimGeometry(rexlogicmodule_->GetFramework(), custom.GetObject(), prim);
             }
         }
         
