@@ -10,6 +10,8 @@
 
 namespace Foundation
 {
+    class RexQEngine;
+
     //! contains entry point for the framework.
     /*! Allows access to various managers and services
 
@@ -28,8 +30,11 @@ namespace Foundation
         //! Do post-initialization steps. No need to call if using Framework::Go().
         void PostInitialize();
 
-        //! entry point for the framework
+        //! Entry point for the framework.
         void Go();
+
+        //! Runs through a single frame of logic update and rendering.
+        void ProcessOneFrame();
 
         ComponentManagerPtr GetComponentManager() const { return component_manager_; }
         ModuleManagerPtr GetModuleManager() const { return module_manager_; }
@@ -140,6 +145,7 @@ namespace Foundation
         //! Unloads all available modules. Do not call normally.
         void UnloadModules();
 
+        std::string GetApplicationMainWindowHandle() const;
     private:
         //! Registers framework specific console commands
         //! Should be called after modules are loaded and initialized
@@ -177,10 +183,15 @@ namespace Foundation
         //! Current 'default' scene
         Scene::ScenePtr default_scene_;
 
+        boost::shared_ptr<RexQEngine> q_engine_;
+
         //! maximum number of ticks (milliseconds) per frame for frame limiter
         Core::uint max_ticks_;
 
         Profiler profiler_;
+
+        boost::timer timer;
+
     };
 }
 

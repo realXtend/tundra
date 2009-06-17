@@ -13,6 +13,8 @@
 #include "SceneManager.h"
 #include "SceneEvents.h"
 
+#include "RexQEngine.h"
+
 namespace Foundation
 {
     const char *Framework::DEFAULT_EVENT_SUBSCRIBER_TREE_PATH = "./data/event_tree.xml";
@@ -53,6 +55,8 @@ namespace Foundation
         event_manager_ = EventManagerPtr(new EventManager(this));
 
         Scene::Events::RegisterSceneEvents(event_manager_);
+
+        q_engine_ = boost::shared_ptr<RexQEngine>(new RexQEngine(this));
     }
 
     Framework::~Framework()
@@ -157,64 +161,74 @@ namespace Foundation
         event_manager_->LoadEventSubscriberTree(DEFAULT_EVENT_SUBSCRIBER_TREE_PATH);
     }
 
+    void Framework::ProcessOneFrame()
+    {
+        if (exit_signal_ == true)
+            return; // We've accidentally ended up to update a frame, but we're actually quitting.
+
+#ifdef PROFILING
+        // Reset profiling data. Should be outside of any profiling blocks.
+        GetProfiler().Reset();
+#endif
+
+        PROFILE(MainLoop);
+
+        double frametime = timer.elapsed();
+        
+        timer.restart();
+        // do synchronized update for modules
+        {
+            PROFILE(FW_UpdateModules);
+            module_manager_->UpdateModules(frametime);
+        }
+
+        // call asynchronous update on modules / do parallel tasks
+
+        // synchronize shared data across modules
+        //mChangeManager->_propagateChanges();
+        
+        // process delayed events
+        
+        {
+           PROFILE(FW_ProcessDelayedEvents);
+            event_manager_->ProcessDelayedEvents(frametime);
+        }
+        
+        // if we have a renderer service, render now
+        boost::weak_ptr<Foundation::RenderServiceInterface> renderer = 
+                    service_manager_->GetService<RenderServiceInterface>(Service::ST_Renderer);
+		
+        if (renderer.expired() == false)
+        {
+            PROFILE(FW_Render);
+            renderer.lock()->Render();
+        }
+
+        //! \note We limit frames for the whole main thread, not just for the renderer. This is the price to pay for being an application rather than a game.
+        Core::uint elapsed_time = static_cast<Core::uint>(timer.elapsed() * 1000); // get time until this point, as we do not want to include time used in sleeping in previous frame
+        if (max_ticks_ > elapsed_time)
+        {
+            boost::this_thread::sleep(boost::posix_time::milliseconds(max_ticks_ - elapsed_time));
+        }
+    }
+
+    std::string Framework::GetApplicationMainWindowHandle() const
+    { 
+        return q_engine_->GetMainWindowHandle();
+    }
+
     void Framework::Go()
     {
         PROFILE(FW_Go);
         PostInitialize();
 
-        boost::timer timer;
-
-        boost::weak_ptr<Foundation::RenderServiceInterface> renderer = 
-                    service_manager_->GetService<RenderServiceInterface>(Service::ST_Renderer);
-
+#ifdef USE_QT
+        q_engine_->Go();
+#else
         // main loop
         while (exit_signal_ == false)
-        {
-            {
-                PROFILE(MainLoop);
-
-                double frametime = timer.elapsed();
-                
-                timer.restart();
-                // do synchronized update for modules
-                {
-                    PROFILE(FW_UpdateModules);
-                    module_manager_->UpdateModules(frametime);
-                }
-
-                // call asynchronous update on modules / do parallel tasks
-
-                // synchronize shared data across modules
-                //mChangeManager->_propagateChanges();
-                
-                // process delayed events
-                
-                {
-                   PROFILE(FW_ProcessDelayedEvents);
-                    event_manager_->ProcessDelayedEvents(frametime);
-                }
-                
-                // if we have a renderer service, render now
-    			
-                if (renderer.expired() == false)
-                {
-                    PROFILE(FW_Render);
-                    renderer.lock()->Render();
-                }
-
-                //! \note We limit frames for the whole main thread, not just for the renderer. This is the price to pay for being an application rather than a game.
-                Core::uint elapsed_time = static_cast<Core::uint>(timer.elapsed() * 1000); // get time until this point, as we do not want to include time used in sleeping in previous frame
-                if (max_ticks_ > elapsed_time)
-                {
-                    boost::this_thread::sleep(boost::posix_time::milliseconds(max_ticks_ - elapsed_time));
-                }
-            }
-            
-#ifdef PROFILING
-            // Reset profiling data. Should be outside of any profiling blocks.
-            GetProfiler().Reset();
+            ProcessOneFrame();
 #endif
-        }
 
          UnloadModules();
     }

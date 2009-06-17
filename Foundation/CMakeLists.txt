@@ -1,10 +1,11 @@
 # Define target name
 set (TARGET_NAME Foundation)
 
+# Application.cpp ComponentManager.cpp ConfigurationManager.cpp EventManager.cpp Framework.cpp ModuleManager.cpp PlatformNix.cpp PlatformWin.cpp Profiler.cpp ServiceManager.cpp StableHeaders.cpp
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
+file (GLOB MOC_FILES RexQEngine.h)
 
 # Include directories
 include_directories (
@@ -17,13 +18,21 @@ include_directories (
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
+INCLUDE_QT4()
 
-add_definitions (-DMODULE_EXPORTS)
-#add_definitions (-DOPENSIMPROTOCOL_MODULE_EXPORTS)
+#Wrap 
+include(${QT_USE_FILE})
+QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
+QT4_WRAP_UI(UI_SRCS ${UI_FILES})
+QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
+
+set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
+
+add_definitions (-DMODULE_EXPORTS -DUSE_QT)
 
 # Define static library
 
-add_library (${TARGET_NAME} STATIC ${SOURCE_FILES})
+add_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
 # Because this is static library, compile it with -fPIC in Linux.
 
@@ -44,7 +53,6 @@ if (MSVC)
 	set_source_files_properties (StableHeaders.cpp PROPERTIES COMPILE_FLAGS "/YcStableHeaders.h")
 endif (MSVC)
 
-if (NOT MSVC)
-  LINK_BOOST()
-  LINK_POCO()
-endif()
+LINK_BOOST()
+LINK_POCO()
+LINK_QT4()

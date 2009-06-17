@@ -202,6 +202,8 @@ namespace OgreRenderer
 
         if (!external_window_parameter_.empty()) 
             params["externalWindowHandle"] = external_window_parameter_;
+        else
+            params["externalWindowHandle"] = framework_->GetApplicationMainWindowHandle();
 
         //! \todo -1 is actually valid value for window position but not sure how to properly handle 'invalid' value so leave like this for now. -cm
         if (window_left != -1)
