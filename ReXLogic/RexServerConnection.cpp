@@ -431,6 +431,14 @@ namespace RexLogic
         for(size_t i = 0; i < entity_ptr_list.size(); ++i)
         {
             const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
+			if (!prim_component) 
+			{
+				/* the py api allows moving any entity with a placeable component, not just prims.
+				   without this check an attempt to move the avatar from py crashed here */
+				RexLogicModule::LogWarning("Not sending entity position update of a non-prim entity (e.g. avatar), as the protocol doesn't support it.");
+	            return;
+			}
+
             RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
             
             const Foundation::ComponentInterfacePtr &ogre_component = entity_ptr_list[i]->GetComponent("EC_OgrePlaceable");

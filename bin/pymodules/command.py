@@ -10,7 +10,7 @@ idnum = 720011 #the cube most far away from the screen in Toni & Petri 's test s
 new_id = 9999999
 
 #av ent
-av_entid = 8880007
+av_entid = 8880000
 
 idnum = av_entid
 
@@ -20,16 +20,26 @@ if 0: #get entity
     print "got:", e
     #print dir(r)
 
-if 0: #test avatar tracking, works :)
+if 1: #test avatar tracking, works :)
     print "<:::",
     a = r.getEntity(av_entid)
-    print "Avatar pos:", a.place,
+    print "Avatar pos:", a.pos,
     print ":::>"
     """
     perhaps some local script could track movement?
     make a sound of a nearby object of interest, 
     like when a pet or a friend moves?
     """
+    
+    #test what happens when we move the av
+    #a.pos = a.pos[0] + 1, a.pos[1], a.pos[2]
+    """crash, because of how network updates are coded in the internals: 
+    XXX RexServerConnecion.cpp
+    RexServerConnection::SendMultipleObjectUpdatePacket(std::vector<Scene::EntityPtr> entity_ptr_list)
+    const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
+    (because avatars don't have the prim component"""
+
+    
     
 if 1: #push an event, input and/or chat
     #from eventsource import viewer
