@@ -297,11 +297,15 @@ void NetOutMessage::AdvanceToNextVariable()
 	++currentVariable;
 
 	const NetMessageBlock &curBlock = messageInfo->blocks[currentBlock];
+
 	if (curBlock.type == NetBlockVariable && blockQuantityCounter < 1)
 	{
-		///\todo: test
-		std::cout << "Repeat count not set for block whose type is variable! Can't proceed." << std::endl;
-		return;
+	    // Sending empty variable block so proceed to next block
+	    currentVariable = 0;
+	    ++currentBlock;
+	    return;
+		// std::cout << "Repeat count not set for block whose type is variable! Can't proceed." << std::endl;
+		// return;
 	}
 
 	size_t var_size = curBlock.variables.size();
@@ -324,6 +328,8 @@ void NetOutMessage::AdvanceToNextVariable()
             case NetBlockVariable:
                 if(blockQuantityCounter > 0)
                     --blockQuantityCounter;
+                if(blockQuantityCounter == 0)
+                    ++currentBlock;
                 break;                        
 		}
 /*		if (curBlock.repeatCount > 1 && blockQuantityCounter <= curBlock.repeatCount)

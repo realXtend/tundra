@@ -227,6 +227,8 @@ namespace RexLogic
             uint64_t regionhandle = data->message->ReadU64();
             uint32_t timestamp = data->message->ReadU32(); 
         }
+        
+        rexlogicmodule_->GetServerConnection()->SendAgentSetAppearancePacket();
         return false;
     }
 
