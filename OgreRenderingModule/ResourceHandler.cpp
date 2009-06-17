@@ -9,6 +9,7 @@
 #include "OgreParticleResource.h"
 #include "ResourceInterface.h"
 #include "ResourceHandler.h"
+#include "OgreMaterialUtils.h"
 
 namespace OgreRenderer
 {
@@ -241,7 +242,13 @@ namespace OgreRenderer
         {
             resources_[source_tex->GetId()] = tex;
             
-            const Core::RequestTagVector& tags = request_tags_[source_tex->GetId()];            
+            // Create legacy material already here
+            // Needed for example with particle scripts, where there is no further code to 
+            // create the material/set the texture, because it's all created by Ogre from the script
+            Ogre::MaterialPtr mat = GetOrCreateLitTexturedMaterial(source_tex->GetId().c_str());
+            SetTextureUnitOnMaterial(mat, source_tex->GetId().c_str());
+            
+            const Core::RequestTagVector& tags = request_tags_[source_tex->GetId()];
             for (Core::uint i = 0; i < tags.size(); ++i)
             {
                 Resource::Events::ResourceReady event_data(tex->GetId(), tex, tags[i]);
@@ -341,7 +348,7 @@ namespace OgreRenderer
         bool success = false;
         OgreMaterialResource* material_res = checked_static_cast<OgreMaterialResource*>(material.get());
 
-        // If data successfully set, or already have valid data, success (send RESOURCE_READY_EVENT)
+        // If data successfully set, or already have valid data, success; check resource references if any
         Core::StringVector tex_names;
         if ((material_res->IsValid()) || (material_res->SetData(source)))
         {
@@ -362,13 +369,13 @@ namespace OgreRenderer
         Foundation::ResourcePtr particle = GetResourceInternal(source->GetId(), OgreParticleResource::GetTypeStatic());
         if (!particle)
         {
-            particle = Foundation::ResourcePtr(new OgreMaterialResource(source->GetId()));
+            particle = Foundation::ResourcePtr(new OgreParticleResource(source->GetId()));
         }
 
         bool success = false;
         OgreParticleResource* particle_res = checked_static_cast<OgreParticleResource*>(particle.get());
 
-        // If data successfully set, or already have valid data, success (send RESOURCE_READY_EVENT)
+        // If data successfully set, or already have valid data, success; check resource references if any
         Core::StringVector tex_names;
         if ((particle_res->IsValid()) || (particle_res->SetData(source)))
         {

@@ -1,0 +1,18 @@
+material Smoke
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_write off
+			scene_blend alpha_blend
+			fog_override true none
+
+			texture_unit
+			{
+				texture smoke.png
+			}
+		}
+	}
+}

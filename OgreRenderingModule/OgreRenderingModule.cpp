@@ -15,6 +15,7 @@
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreConsoleOverlay.h"
 #include "EC_OgreMovableTextOverlay.h"
+#include "EC_OgreParticleSystem.h"
 #include "EC_OgreAnimationController.h"
 #include "EC_OgreEnvironment.h"
 #include "OgreGtkWindowModule.h"
@@ -51,6 +52,7 @@ namespace OgreRenderer
         DECLARE_MODULE_EC(EC_OgreCustomObject);
         DECLARE_MODULE_EC(EC_OgreConsoleOverlay);
         DECLARE_MODULE_EC(EC_OgreMovableTextOverlay);
+        DECLARE_MODULE_EC(EC_OgreParticleSystem);
         DECLARE_MODULE_EC(EC_OgreAnimationController);
         DECLARE_MODULE_EC(EC_OgreEnvironment);
 

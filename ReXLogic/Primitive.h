@@ -53,10 +53,10 @@ namespace RexLogic
         //! handle rexprimdata blob coming from server in a genericmessage
         void HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t* primdata, const int primdata_size);
         
-        //! handles changes in drawtype. sets/removes mesh as necessary
+        //! handles changes in drawtype (mesh/prim). also handles particle scripts.
         //! @param entityid Entity id.
-        void HandleDrawType(Core::entity_id_t entityid);   
-
+        void HandleDrawType(Core::entity_id_t entityid);
+        
         //! Re-binds all the Ogre materials attached to the given prim entity. If the materials haven't yet been loaded in, requests for
         //! those materials are made and the material binding is delayed until the downloads are complete.
         void HandleMeshMaterials(Core::entity_id_t entityid);
@@ -76,6 +76,9 @@ namespace RexLogic
                 
         //! handles mesh resource being ready
         void HandleMeshReady(Core::entity_id_t entity, Foundation::ResourcePtr res);
+        
+        //! handles particle script resource being ready
+        void HandleParticleScriptReady(Core::entity_id_t entity, Foundation::ResourcePtr res);
         
         /** Attachs a light component to a prim.
          * @param entity Entity pointer of the prim.

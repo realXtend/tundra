@@ -123,9 +123,6 @@ namespace OgreRenderer
         //! detaches entity from placeable
         void DetachEntity();
         
-        //! scales entity, using adjustment node, according to "scale to unity" setting
-        void ScaleEntity();
-        
         //! placeable component 
         Foundation::ComponentPtr placeable_;
         
@@ -141,7 +138,7 @@ namespace OgreRenderer
         //! mesh entity attached to placeable -flag
         bool attached_;
         
-        //! cast shadows falg
+        //! cast shadows flag
         bool cast_shadows_;
         
         //! draw distance
