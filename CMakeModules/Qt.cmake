@@ -4,8 +4,7 @@
 macro (FIND_QT4)
 
 if (MSVC)
-
-FIND_PACKAGE(Qt4 REQUIRED)
+FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtWebkit REQUIRED)
 
 elseif (UNIX)
 
@@ -58,8 +57,8 @@ macro (INCLUDE_QT4)
   
   if (MSVC)
     if (DEFINED ENV{QTDIR})
-      include_directories ($ENV{QTDIR}/include)
-      link_directories ($ENV{QTDIR}/lib)
+      include_directories ($ENV{QTDIR}/include ${QT_INCLUDE_DIR})
+      link_directories ($ENV{QTDIR}/lib ${QT_LIBRARIES})
     else()
       include_directories (${REX_DEP_PATH}/Qt/include)
       link_directories (${REX_DEP_PATH}/Qt/lib)
@@ -84,7 +83,11 @@ endmacro (INCLUDE_QT4)
 macro (LINK_QT4)
   if (MSVC)
     target_link_libraries (${TARGET_NAME}
-      QtCore4  QtGui4  qtmain  QtNetwork4  QtWebKit4
+      ${QT_LIBRARIES} 
+      ${QT_QTGUI_LIBRARY} 
+	  ${QT_QTCORE_LIBRARY}
+	  ${QT_QTWEBKIT_LIBRARY}
+	  ${QT_QTNETWORK_LIBRARY}      
       )
   elseif (NOT MSVC AND QT4_FOUND)
     target_link_libraries (${TARGET_NAME} ${QT_LIBRARIES} ${QT_QTGUI_LIBRARY} 

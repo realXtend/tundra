@@ -2,10 +2,6 @@
 set (TARGET_NAME QtModule)
 set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/modules/core)
 
-if (MSVC)
-  FIND_QT4()
-endif()
-
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
@@ -26,7 +22,6 @@ include_directories (
 
 # External library includes
 INCLUDE_BOOST()
-INCLUDE_POCO()
 INCLUDE_OGRE()
 INCLUDE_QT4()
 
@@ -36,7 +31,7 @@ QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
-add_definitions (-DOGRE_MODULE_EXPORTS -DMODULE_EXPORTS)
+add_definitions (-DMODULE_EXPORTS)
 
 # Define dynamic library
 if (NOT MSVC)
@@ -61,7 +56,6 @@ target_link_libraries (${TARGET_NAME} Foundation Interfaces RexCommon )
 
 # External library linkage
 LINK_BOOST()
-LINK_POCO()
 LINK_OGRE()
 LINK_QT4()
 
