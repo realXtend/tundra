@@ -5,6 +5,7 @@
 #include "OgreParticleResource.h"
 #include "OgreTextureResource.h"
 #include "OgreRenderingModule.h"
+#include "OgreMaterialUtils.h"
 #include "ResourceHandler.h"
 
 #include <Ogre.h>
@@ -69,6 +70,8 @@ namespace OgreRenderer
                         {
                             line = id_ + "_" + Core::ToString<size_t>(new_templates.size());
                             new_templates.push_back(line);
+                            // New script compilers need this
+                            line = "particle_system " + line;
                         }
                         else
                         {
@@ -105,7 +108,7 @@ namespace OgreRenderer
                                         std::string variation;
                                         if (line_vec.size() >= 3)
                                             variation = line_vec[2];
-                                            
+                                        
                                         references_.push_back(Foundation::ResourceReference(mat_name, OgreTextureResource::GetTypeStatic()));
                                         line = "material " + mat_name;
                                     }
@@ -133,10 +136,8 @@ namespace OgreRenderer
             }
 
             std::string output_str = output.str();
-            Ogre::DataStreamPtr modified_data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream((Core::u8 *)(&output_str[0]), output_str.size()));
-
+            Ogre::DataStreamPtr modified_data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(&output_str[0], output_str.size()));
             Ogre::ParticleSystemManager::getSingleton().parseScript(modified_data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-            
         }
         catch (Ogre::Exception& e)
         {
@@ -150,7 +151,7 @@ namespace OgreRenderer
             if (Ogre::ParticleSystemManager::getSingleton().getTemplate(new_templates[i]))
             {
                 templates_.push_back(new_templates[i]);
-                OgreRenderingModule::LogDebug("Ogre particle script template " + new_templates[i] + " created");
+                OgreRenderingModule::LogDebug("Ogre particle system template " + new_templates[i] + " created");
             }
         }
         

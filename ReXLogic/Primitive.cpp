@@ -10,9 +10,11 @@
 #include "../OgreRenderingModule/EC_OgreMesh.h"
 #include "../OgreRenderingModule/EC_OgreCustomObject.h"
 #include "../OgreRenderingModule/EC_OgreLight.h"
-#include "../OgreRenderingModule/OgreMeshResource.h"
+#include "../OgreRenderingModule/EC_OgreParticleSystem.h"
 #include "../OgreRenderingModule/OgreTextureResource.h"
 #include "../OgreRenderingModule/OgreMaterialResource.h"
+#include "../OgreRenderingModule/OgreMeshResource.h"
+#include "../OgreRenderingModule/OgreParticleResource.h"
 #include "../OgreRenderingModule/OgreMaterialUtils.h"
 #include "../OgreRenderingModule/Renderer.h"
 #include "ConversionUtils.h"
@@ -275,7 +277,7 @@ namespace RexLogic
 
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
         // If cannot get the entity, put to pending rexprimdata
-        if (entity)           
+        if (entity)
 			HandleRexPrimDataBlob(entity->GetId(), &fulldata[0], fulldata.size());
         else
             pending_rexprimdata_[primuuid] = fulldata;
@@ -412,9 +414,9 @@ namespace RexLogic
         }
         
         scene->RemoveEntity(objectid);
-        rexlogicmodule_->UnregisterFullId(fullid);        
+        rexlogicmodule_->UnregisterFullId(fullid);
         return false;
-    }    
+    }
 
     bool Primitive::HandleOSNE_ObjectProperties(OpenSimProtocol::NetworkEventInboundData* data)
     {
@@ -480,7 +482,7 @@ namespace RexLogic
             
             // Change mesh if yet nonexistent/changed
             // assume name to be UUID of mesh asset, which should be true of OgreRenderer resources
-            std::string mesh_name = prim.MeshID;
+            const std::string& mesh_name = prim.MeshID;
             if (mesh.GetMeshName() != mesh_name)
             {
                 boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
@@ -531,7 +533,45 @@ namespace RexLogic
             if (prim.HasPrimShapeData)
                 CreatePrimGeometry(rexlogicmodule_->GetFramework(), custom.GetObject(), prim);
         }
-    } 
+        
+        if (!RexTypes::IsNull(prim.ParticleScriptID))
+        {
+            // Create particle system component & attach, if does not yet exist
+            Foundation::ComponentPtr particleptr = entity->GetComponent(OgreRenderer::EC_OgreParticleSystem::NameStatic());
+            if (!particleptr)
+                entity->AddEntityComponent(particleptr = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreParticleSystem::NameStatic()));
+            if (!particleptr)
+                return;
+            OgreRenderer::EC_OgreParticleSystem& particle = *(dynamic_cast<OgreRenderer::EC_OgreParticleSystem*>(particleptr.get()));
+            
+            // Attach to placeable if not yet attached
+            if (!particle.GetPlaceable())
+                particle.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
+                
+            // Change particle system if yet nonexistent/changed
+            const std::string& script_name = prim.ParticleScriptID;
+            
+            if (particle.GetParticleSystemName(0).find(script_name) == std::string::npos)
+            {
+                boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+                    GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+                Core::request_tag_t tag = renderer->RequestResource(script_name, OgreRenderer::OgreParticleResource::GetTypeStatic());
+
+                // Remember that we are going to get a resource event for this entity
+                if (tag)
+                    prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_ParticleScript)] = entityid;
+            }
+        }
+        else
+        {
+            // If should be no particle system, remove it if exists
+            Foundation::ComponentPtr particleptr = entity->GetComponent(OgreRenderer::EC_OgreParticleSystem::NameStatic());
+            if (particleptr)
+            {
+                entity->RemoveEntityComponent(particleptr);
+            }
+        }
+    }
     
     void Primitive::HandlePrimTexturesAndMaterial(Core::entity_id_t entityid)
     {
@@ -713,7 +753,7 @@ namespace RexLogic
         float quad = 0.3f / (radius * radius); 
 
         // Use the point where linear attenuation has reduced intensity to 1/20 as max range
-        // (OpenGL has no absolute light range cap like Direct3D)
+        // (lighting model/shaders used have no absolute range cap)
         float max_radius = radius;
         if (linear > 0.0)
         {
@@ -755,6 +795,8 @@ namespace RexLogic
                 asset_type = RexTypes::RexAT_Texture;
             else if (res->GetType() == OgreRenderer::OgreMaterialResource::GetTypeStatic())
                 asset_type = RexTypes::RexAT_MaterialScript;
+            else if (res->GetType() == OgreRenderer::OgreParticleResource::GetTypeStatic())
+                asset_type = RexTypes::RexAT_ParticleScript;
 
             EntityResourceRequestMap::iterator i = prim_resource_request_tags_.find(std::make_pair(event_data->tag_, asset_type));
             if (i == prim_resource_request_tags_.end())
@@ -770,6 +812,9 @@ namespace RexLogic
                 break;
             case RexAT_MaterialScript:
                 HandleMaterialResourceReady(i->second, res);
+                break;
+            case RexAT_ParticleScript:
+                HandleParticleScriptReady(i->second, res);
                 break;
             default:
                 assert(false && "Invalid asset_type added to prim_resource_request_tags_! Don't know how it ended up there and don't know how to handle!");
@@ -806,6 +851,31 @@ namespace RexLogic
         
         // Check/set textures now that we have the mesh
         HandleMeshMaterials(entityid); 
+    }
+
+    void Primitive::HandleParticleScriptReady(Core::entity_id_t entityid, Foundation::ResourcePtr res)
+    {
+        if (!res) return;
+        if (res->GetType() != OgreRenderer::OgreParticleResource::GetTypeStatic()) return;
+        OgreRenderer::OgreParticleResource* partres = checked_static_cast<OgreRenderer::OgreParticleResource*>(res.get());
+         
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+        if (!entity) return;
+        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+
+        Foundation::ComponentPtr particleptr = entity->GetComponent(OgreRenderer::EC_OgreParticleSystem::NameStatic());
+        if (!particleptr) return;
+        OgreRenderer::EC_OgreParticleSystem& particle = *checked_static_cast<OgreRenderer::EC_OgreParticleSystem*>(particleptr.get());
+
+        particle.RemoveParticleSystems();
+        for (Core::uint i = 0; i < partres->GetNumTemplates(); ++i)
+        {
+            particle.AddParticleSystem(partres->GetTemplateName(i));
+        }
+
+        // Set adjustment orientation for system (legacy haxor)
+        //Core::Quaternion adjust(Core::PI, 0, Core::PI);
+        //particle.SetAdjustOrientation(adjust);
     }
 
     void Primitive::HandleTextureReady(Core::entity_id_t entityid, Foundation::ResourcePtr res)
