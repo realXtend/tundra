@@ -1,5 +1,6 @@
 #include "StableHeaders.h"
 #include "TextureRequest.h"
+#include "TextureDecoderModule.h"
 
 namespace TextureDecoder
 {
@@ -53,22 +54,24 @@ namespace TextureDecoder
     {
         if (level < 0) level = 0;
         
-        // If nothing known of the image yet, assume the first packet will tell us everything
-        if ((!width_) || (!height_) || (!components_))
-            return 600;
+        // If nothing known of the image yet, assume the first full packet will tell us everything
+        Core::uint estimate = 600;
         
-        // If max quality level, we require the full size downloaded
-        if (!level)
-            return size_ ? size_ : 600;
+        // If know the dimensions, do data size estimation
+        if ((width_) && (height_) && (components_))
+            estimate = (Core::uint)((width_ >> level) * (height_ >> level) * components_ * 0.15f);
+
+        // If asset size known, adjust level 0 to require whole asset downloaded, and make sure
+        // the estimate is not higher than actual data size
+        if (size_)
+        {
+            if (!level)
+                estimate = size_;
+                
+            if (estimate > size_) 
+                estimate = size_;
+        }
         
-        // Assume about 85% compression ratio
-        Core::uint estimate = (Core::uint)((width_ >> level) * (height_ >> level) * components_ * 0.15f);
-        
-        if (estimate > size_) 
-            estimate = size_;
-        if (estimate < 600)
-            estimate = 600;
-            
         return estimate;
     }
     

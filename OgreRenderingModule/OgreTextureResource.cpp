@@ -26,48 +26,14 @@ namespace OgreRenderer
         if (!ogre_texture_.isNull())
         {
             std::string tex_name = ogre_texture_->getName();
-            ogre_texture_.setNull();
-
+            ogre_texture_.setNull(); 
+            
             try
             {
                 Ogre::TextureManager::getSingleton().remove(tex_name);
             }
             catch (...) {}
         }
-    }
-
-    bool OgreTextureResource::SetDummyData()
-    {
-        if (!ogre_texture_.isNull())
-            return true;
-            
-        Ogre::PixelFormat pixel_format = Ogre::PF_B8G8R8;
-       
-        try
-        { 
-            ogre_texture_ = Ogre::TextureManager::getSingleton().createManual(
-                        id_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
-                        1, 1, Ogre::MIP_DEFAULT, pixel_format, Ogre::TU_DEFAULT); 
-
-            if (ogre_texture_.isNull())
-            {
-                OgreRenderingModule::LogError("Failed to create texture " + id_);
-                return false; 
-            }
-            
-            static Core::u8 dummy_data[] = {0x80, 0x80, 0x80};
-            
-            Ogre::Box dimensions(0, 0, 1, 1);
-            Ogre::PixelBox pixel_box(dimensions, pixel_format, (void*)dummy_data);
-            ogre_texture_->getBuffer()->blitFromMemory(pixel_box);
-        }
-        catch (Ogre::Exception& e)
-        {
-            OgreRenderingModule::LogError("Failed to create texture " + id_ + ": " + std::string(e.what()));
-            return false;
-        }
-            
-        return true;
     }
     
     bool OgreTextureResource::SetData(Foundation::TexturePtr source)
@@ -162,4 +128,9 @@ namespace OgreRenderer
     {
         return type_name;
     }    
+    
+    bool OgreTextureResource::IsValid() const
+    {
+        return (!ogre_texture_.isNull());
+    }
 }

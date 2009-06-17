@@ -461,7 +461,7 @@ namespace Asset
         // Send transfer canceled event
         SendAssetCanceled(transfer);
 
-        AssetModule::LogInfo("Transfer of texture " + asset_id.ToString() + " canceled");
+        AssetModule::LogDebug("Transfer of texture " + asset_id.ToString() + " canceled");
         texture_transfers_.erase(i);
     }
     
@@ -484,7 +484,7 @@ namespace Asset
         
         if ((status != RexTS_Ok) && (status != RexTS_Done))
         {
-            AssetModule::LogInfo("Transfer for asset " + transfer.GetAssetId() + " canceled with code " + Core::ToString<Core::s32>(status));
+            AssetModule::LogDebug("Transfer for asset " + transfer.GetAssetId() + " canceled with code " + Core::ToString<Core::s32>(status));
             asset_transfers_.erase(i);
             return;
         }
@@ -519,7 +519,7 @@ namespace Asset
         
         if ((status != RexTS_Ok) && (status != RexTS_Done))
         {
-            AssetModule::LogInfo("Transfer for asset " + transfer.GetAssetId() + " canceled with code " + Core::ToString<Core::s32>(status));
+            AssetModule::LogDebug("Transfer for asset " + transfer.GetAssetId() + " canceled with code " + Core::ToString<Core::s32>(status));
 
             // Send transfer canceled event
             SendAssetCanceled(transfer);
@@ -557,7 +557,7 @@ namespace Asset
         // Send transfer canceled event
         SendAssetCanceled(transfer);
 
-        AssetModule::LogInfo("Transfer for asset " + transfer.GetAssetId() + " canceled");
+        AssetModule::LogDebug("Transfer for asset " + transfer.GetAssetId() + " canceled");
         asset_transfers_.erase(i);
     }
 

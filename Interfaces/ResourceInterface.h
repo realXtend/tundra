@@ -11,6 +11,23 @@ namespace Foundation
     typedef boost::shared_ptr<ResourceInterface> ResourcePtr;
     typedef std::map<std::string, Foundation::ResourcePtr> ResourceMap;
 
+    //! Reference to a resource depended on
+    struct ResourceReference
+    {
+        ResourceReference(const std::string& id, const std::string& type) :
+            id_(id),
+            type_(type)
+        {
+        }
+        
+        //! Resource id
+        std::string id_;
+        //! Resource type
+        std::string type_;
+    };
+    
+    typedef std::vector<ResourceReference> ResourceReferenceVector;
+        
     //! An identifiable resource object of some kind. Subclass as needed.
     /*! Note that resources are different from assets in the sense that assets are binary blobs of data, while
         resources should be usable, for example an image which stores its dimensions and actual decoded image data
@@ -18,10 +35,8 @@ namespace Foundation
     class MODULE_API ResourceInterface
     {
     public:
-        typedef std::vector<std::string> ReferenceVector;
-        
         //! default constructor
-        ResourceInterface() {}        
+        ResourceInterface() {}
 
         //! constructor
         /*! \param id identifier of resource
@@ -36,11 +51,16 @@ namespace Foundation
          */
         void SetId(const std::string& id) { id_ = id; }
 
+        //! returns whether content is valid and usable
+        /*! mainly for subsystem internal use: invalid resources should not be returned to caller
+         */
+        virtual bool IsValid() const = 0;
+        
         //! returns identifier
         const std::string& GetId() const { return id_; }
 
         //! returns non-const reference vector
-        ReferenceVector& GetReferences() { return references_; }
+        ResourceReferenceVector& GetReferences() { return references_; }
 
         //! returns type in text form
         virtual const std::string& GetType() const = 0;
@@ -48,9 +68,12 @@ namespace Foundation
     protected:
         //! resource identifier
         std::string id_;
+        
+        //! content valid-flag
+        bool valid_;
 
-        //! references to other resources (resource id's)
-        ReferenceVector references_;
+        //! references to other resources this resource depends on
+        ResourceReferenceVector references_;
     };
 }
 

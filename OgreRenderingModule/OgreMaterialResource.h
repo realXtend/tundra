@@ -37,6 +37,9 @@ namespace OgreRenderer
         //! returns resource type in text form
         virtual const std::string& GetType() const;
 
+        //! returns whether resource valid
+        virtual bool IsValid() const;
+
         //! returns Ogre material
         /*! may be null if no data successfully set yet
          */
@@ -57,8 +60,6 @@ namespace OgreRenderer
         //! Deinitializes the material and frees all Ogre-side structures as well.
         void RemoveMaterial();
         
-        //! Internal method to parse braces from an Ogre script. Returns true if line contained open/close brace
-        static bool ProcessBraces(const std::string& line, int& brace_level);
     };
 }
 

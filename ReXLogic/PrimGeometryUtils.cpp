@@ -37,12 +37,14 @@
 #include "RexLogicModule.h"
 #include "EC_OpenSimPrim.h"
 #include "../OgreRenderingModule/OgreMaterialUtils.h"
+#include "../OgreRenderingModule/OgreMaterialResource.h"
+#include "../OgreRenderingModule/Renderer.h"
 
 #include <Ogre.h>
 
 namespace RexLogic
 {
-    void CreatePrimGeometry(Ogre::ManualObject* object, EC_OpenSimPrim& primitive)
+    void CreatePrimGeometry(Foundation::Framework* framework, Ogre::ManualObject* object, EC_OpenSimPrim& primitive)
     {
         if (!primitive.HasPrimShapeData)
             return;
@@ -53,8 +55,13 @@ namespace RexLogic
 			mat_override = primitive.Materials[0].asset_id;
 
             // If cannot find the override material, use default
-            if (Ogre::MaterialManager::getSingleton().getByName(mat_override).isNull())
+            // We will probably get resource ready event later for the material & redo this prim
+            boost::shared_ptr<OgreRenderer::Renderer> renderer = framework->GetServiceManager()->
+                GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+            if (!renderer->GetResource(mat_override, OgreRenderer::OgreMaterialResource::GetTypeStatic()))
+            {
                 mat_override = "LitTextured";
+            }
         }
             
         try

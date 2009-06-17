@@ -110,4 +110,9 @@ namespace OgreRenderer
             catch (...) {}
         }    
     }
+    
+    bool OgreMeshResource::IsValid() const
+    {
+        return (!ogre_mesh_.isNull());
+    }
 }
