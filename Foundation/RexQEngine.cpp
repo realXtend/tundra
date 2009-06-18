@@ -3,14 +3,14 @@
 #include <sstream>
 #include <string>
 
-#ifndef Q_WS_WIN
-#include <QX11Info>
-#endif
-
 #include <QApplication>
 #include <QWidget>
 #include <QPushButton>
 #include <QHBoxLayout>
+
+#ifndef Q_WS_WIN
+#include <QX11Info>
+#endif
 
 #include "Framework.h"
 

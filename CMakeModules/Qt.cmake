@@ -1,4 +1,4 @@
-# Find, include and link Qt4 Find is already called in the top-level 
+# Find, include and link Qt4 Find is already called in the top-level
 # CMakeLists
 
 macro (FIND_QT4)
@@ -57,15 +57,22 @@ macro (INCLUDE_QT4)
   
   if (MSVC)
     if (DEFINED ENV{QTDIR})
-      include_directories ($ENV{QTDIR}/include ${QT_INCLUDE_DIR})
+      include_directories ($ENV{QTDIR}/include ${QT_INCLUDE_DIR}
+      ${QT_QTWEBKIT_INCLUDE_DIR}
+      ${QT_QTCORE_INCLUDE_DIR}
+      ${QT_QTDBUS_INCLUDE_DIR}
+      ${QT_QTGUI_INCLUDE_DIR}
+      ${QT_QTNETWORK_INCLUDE_DIR}
+      ${QT_QTSCRIPT_INCLUDE_DIR}
+      ${QT_QTSQL_DIR})
       link_directories ($ENV{QTDIR}/lib ${QT_LIBRARIES})
     else()
       include_directories (${REX_DEP_PATH}/Qt/include)
       link_directories (${REX_DEP_PATH}/Qt/lib)
     endif()
   elseif (NOT MSVC AND QT4_FOUND)
-    include_directories(${QT_INCLUDE_DIR} ${QT_QTWEBKIT_INCLUDE_DIR} 
-      ${QT_QTCORE_INCLUDE_DIR} 
+    include_directories(${QT_INCLUDE_DIR} ${QT_QTWEBKIT_INCLUDE_DIR}
+      ${QT_QTCORE_INCLUDE_DIR}
       ${QT_QTDBUS_INCLUDE_DIR}
       ${QT_QTGUI_INCLUDE_DIR}
       ${QT_QTNETWORK_INCLUDE_DIR}
