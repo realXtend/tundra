@@ -78,8 +78,19 @@ namespace OgreRenderer
                             // Check for ColourImage, which is a risky affector and may easily crash if image can't be loaded
                             if (line.substr(0, 8) == "affector")
                             {
-                                std::vector<Ogre::String> line_vec = Ogre::StringUtil::split(line, "\t ");
-                                if (line_vec.size() >= 2)
+			      std::vector<Ogre::String> line_vec;
+
+#if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR == 6 
+			      line_vec = Ogre::StringUtil::split(line, "\t ");
+#else 
+			      Ogre::vector<Ogre::String>::type vec = Ogre::StringUtil::split(line,"\t ");
+			      int size = vec.size();
+			      line_vec.resize(size);
+			      
+			      for (int i = 0; i < size; ++i)
+				line_vec[i] = vec[i];
+#endif                                
+                               if (line_vec.size() >= 2)
                                 {
                                     if (line_vec[1] == "ColourImage")
                                     {
@@ -91,8 +102,18 @@ namespace OgreRenderer
                             // Check for image/material definition
                             else if (line.substr(0, 8) == "material")
                             {
-                                std::vector<Ogre::String> line_vec = Ogre::StringUtil::split(line, "\t ");
-                                if (line_vec.size() >= 2)
+			      std::vector<Ogre::String> line_vec;
+#if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR == 6 
+			      line_vec = Ogre::StringUtil::split(line, "\t ");
+#else 
+			      Ogre::vector<Ogre::String>::type vec = Ogre::StringUtil::split(line,"\t ");
+			      int size = vec.size();
+			      line_vec.resize(size);
+			      
+			      for (int i = 0; i < size; ++i)
+				line_vec[i] = vec[i];
+#endif                                         
+				if (line_vec.size() >= 2)
                                 {
                                     std::string mat_name = line_vec[1];
                                     // Material script mode
