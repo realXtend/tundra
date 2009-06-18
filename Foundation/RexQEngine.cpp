@@ -3,6 +3,10 @@
 #include <sstream>
 #include <string>
 
+#ifndef Q_WS_WIN
+#include <QX11Info>
+#endif
+
 #include <QApplication>
 #include <QWidget>
 #include <QPushButton>
@@ -23,6 +27,11 @@ RexQEngine::RexQEngine(Framework *owner)
     ogre_host_widget_ = new QWidget();
 
     ogre_host_widget_->setWindowTitle("Ogre3D Window");
+#ifndef Q_WS_WIN 
+    // At the begin render window and widget should be same size.  
+    ogre_host_widget_->resize(800,600);
+ 
+#endif
     ogre_host_widget_->show();
 }
 
@@ -34,23 +43,30 @@ RexQEngine::~RexQEngine()
 
 std::string RexQEngine::GetMainWindowHandle() const
 {
-    std::stringstream windowHandle;
+  std::stringstream windowHandle;
+
 #ifndef Q_WS_WIN
+ 
     QX11Info info = ogre_host_widget_->x11Info();
     windowHandle << (unsigned long)(info.display());
     windowHandle << ":";
-    windowHandle << static_cast<unsigned int>(info.screen()));
+    windowHandle << static_cast<unsigned int>(info.screen());
     windowHandle << ":";
   
   // This which one is used depends that is widget allready created and is show()-method called. 
-  if (!isHidden())
+  if (ogre_host_widget_->isHidden())
     windowHandle << static_cast<unsigned long>(ogre_host_widget_->effectiveWinId());
   else
     windowHandle << static_cast<unsigned long>(ogre_host_widget_->winId());
-#else
+
+ #else
+ 
     windowHandle << (size_t)(HWND)ogre_host_widget_->winId();
+ 
 #endif
-    return windowHandle.str();
+ 
+   return windowHandle.str();   
+
 }
 
 void RexQEngine::UpdateFrame()
@@ -69,26 +85,12 @@ void RexQEngine::Go()
 
     QObject::connect(app_, SIGNAL(aboutToQuit()), this, SLOT(OnQuitQApp()));
 
-//    ogre_host_widget_ = new QWidget();
 
     // Application frame updates are processed according to the periodic
     // ticks of this timer.
     QObject::connect(&frame_update_timer_, SIGNAL(timeout()), this, SLOT(UpdateFrame()));
     frame_update_timer_.setSingleShot(true);
     frame_update_timer_.start(16);
-
-    
-/*
-    QWidget widget;
-    widget.setWindowTitle("Start window");
-    widget.show();
-    QHBoxLayout layOut; 
-    QPushButton* pButton = new QPushButton("&Start our awesome application", &widget);
-    layOut.addWidget(pButton);
-    widget.setLayout(&layOut);
-    QObject::connect(pButton, SIGNAL(clicked()), this, SLOT(UpdateFrame()));
-*/
-//    QObject::connect(app, SIGNAL(guiThreadAwake()), this, SLOT(UpdateFrame()));
 
     app_->exec();
 }
