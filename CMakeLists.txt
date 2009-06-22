@@ -31,15 +31,19 @@ set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FOR
 # Set common directory for installing non-system dependencies
 set (REX_DEP_PATH $ENV{REX_DEP_PATH})
 
+# Use Caelum, but not Hydrax for now.
+SET (CAELUM 1)
+SET (HYDRAX 0)
+
 # In Visual Studio, use unicode character set
 if (MSVC)
 	add_definitions (-DUNICODE -D_UNICODE)
 endif (MSVC)
 
 # Generate profiling data
-if (MSVC)
-	add_definitions (-DPROFILING)
-endif (MSVC)
+#if (MSVC)
+#	add_definitions (-DPROFILING)
+#endif (MSVC)
 
 # Find needed external libraries, abort on error
 FIND_BOOST()
@@ -51,9 +55,15 @@ FIND_OIS()
 FIND_OPENJPEG()
 FIND_GTKMM()
 #FIND_OPENAL()
-FIND_CAELUM()
-#FIND_HYDRAX()
 FIND_QT4()
+
+if (CAELUM)
+	FIND_CAELUM()
+endif (CAELUM)
+
+if (HYDRAX)
+	FIND_HYDRAX()
+endif (HYDRAX)
 
 # Default additional include & library directories
 include_directories (${REX_DEP_PATH}/include)

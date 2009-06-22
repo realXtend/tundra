@@ -13,12 +13,12 @@ include_directories (
 	../Core
 	../Foundation
 	../SceneManager
+	../ReXLogic
 	../Interfaces
 	../AssetModule
 	../RexCommon
 	../GtkmmUI
 	../InputModuleOIS
-	../ReXLogic
 )
 
 # External library includes
@@ -26,10 +26,26 @@ INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_OGRE()
 INCLUDE_GTKMM()
-INCLUDE_CAELUM()
-#INCLUDE_HYDRAX()
 
-add_definitions (-DOGRE_MODULE_EXPORTS -DMODULE_EXPORTS)
+if (CAELUM)
+	INCLUDE_CAELUM()
+endif (CAELUM)
+
+if (HYDRAX)
+	INCLUDE_HYDRAX()
+endif (HYDRAX)
+
+
+add_definitions (-DOGRE_MODULE_EXPORTS -DMODULE_EXPORTS) 
+
+if (CAELUM)
+	add_definitions (-DCAELUM)
+endif (CAELUM)
+
+if (HYDRAX)
+	add_definitions (-DHYDRAX)
+endif (HYDRAX)
+
 
 # Define dynamic library
 if (NOT MSVC)
@@ -57,8 +73,14 @@ LINK_BOOST()
 LINK_POCO()
 LINK_OGRE()
 LINK_GTKMM()
-LINK_CAELUM()
-#LINK_HYDRAX()
+
+if (CAELUM)
+	LINK_CAELUM()
+endif (CAELUM)
+
+if (HYDRAX)
+	LINK_HYDRAX()
+endif (HYDRAX)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

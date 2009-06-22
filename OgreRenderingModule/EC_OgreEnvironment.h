@@ -6,18 +6,22 @@
 #include "ComponentInterface.h"
 #include "Foundation.h"
 #include "OgreModuleApi.h"
-#include <ctime>
+
+#include <OgreColourValue.h>
 
 namespace Ogre
 {
     class Light;
 }
 
+#ifdef CAELUM
 namespace Caelum
 {
     class CaelumSystem;
 }
+#endif
 
+#ifdef HYDRAX
 namespace Hydrax
 {
     class Hydrax;
@@ -32,6 +36,7 @@ namespace Hydrax
         class Perlin;
     }
 }
+#endif
 
 namespace OgreRenderer
 {
@@ -99,10 +104,17 @@ namespace OgreRenderer
         
         /// Disables the fog.
         void DisableFog();
-        
+
+#ifdef CAELUM        
         /// Speeds up the times
-        /// @param value
+        /// @param value 2 doubles etc.
         void SetTimeScale(float value);
+#endif        
+        /// @return Is the Caelum system used or not.
+        bool IsCaleumUsed() const { return useCaelum_; }
+        
+        /// @return Is the Hydrax system used or not.
+        bool IsHydraxUsed() const { return useHydrax_; }
         
     private:
         /// Constructor.
@@ -119,15 +131,22 @@ namespace OgreRenderer
         /// Detaches sunlight from placeable.
         /// \note Not sure if this is needed. Maybe if we want to create custom suns?
         void DetachSunlight();
-        
+
+#ifdef CAELUM
         /// Initializes the Caleum system.
         void InitCaelum();
 
 		/// Shuts down the Caelum system.
 		void ShutdownCaelum();
-        
+#endif
+      
+#ifdef HYDRAX
         /// Initializes the Hydrax system. 
         void InitHydrax();
+        
+        /// Shuts down the Hydrax system.
+        void ShutdownHydrax();
+#endif
         
         /// Initializes shadows.
         void InitShadows();
@@ -146,22 +165,50 @@ namespace OgreRenderer
         
         /// Is the camera under the water.
         bool cameraUnderWater_;
-        
+
+#ifdef CAELUM        
         /// Caelum system.
         Caelum::CaelumSystem *caelumSystem_;
+#endif
         
         /// Is the Caelum system used or not.
         bool useCaelum_;
 
-        /// Is the Caelum system used or not.
+        /// Is the Hydrax system used or not.
         bool useHydrax_;
                 
         /// Caleum Sunlight ambient color multiplier factor.
         float sunColorMultiplier_;
-
+        
+        /// Fog start distance.
+        float fogStart_;
+        
+        /// Fog end distance.
+        float fogEnd_;
+        
+        /// Water fog start distance.
+        float waterFogStart_;
+        
+        /// Water fog end distance.
+        float waterFogEnd_;
+        
+        /// Fog color.
+        Ogre::ColourValue fogColor_;
+        
+        /// Water fog color.
+        Ogre::ColourValue waterFogColor_;
+        
+        /// Camera near clip distance.
+        float cameraNearClip_;
+        
+        /// Camera far clip distance.
+        float cameraFarClip_;
+        
+#ifdef HYDRAX
         Hydrax::Hydrax *hydraxSystem_;
         Hydrax::Noise::Perlin *noiseModule_;
         Hydrax::Module::ProjectedGrid *module_;
+#endif
     };
 }
 

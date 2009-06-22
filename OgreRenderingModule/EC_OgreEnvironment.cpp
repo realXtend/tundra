@@ -5,20 +5,23 @@
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
-#include "EC_OgreEnvironment.h"
 #include "OgreConversionUtils.h"
 
-// Ogre include
+#include "EC_OgreEnvironment.h"
+
 #include <Ogre.h>
 
-// Caelum include
-#include "Caelum.h"
+///\note The CAELUM and HYDRAX defines are set in the root CMakeLists.txt.
 
-// Hydrax includes
-/*#include <Hydrax.h>
+#ifdef CAELUM
+#include "Caelum.h"
+#endif
+
+#ifdef HYDRAX
+#include <Hydrax.h>
 #include <Noise/Perlin/Perlin.h>
 #include <Modules/ProjectedGrid/ProjectedGrid.h>
-*/
+#endif
 
 namespace OgreRenderer
 {
@@ -27,23 +30,39 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface* module) :
     Foundation::ComponentInterface(module->GetFramework()),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
     sunlight_(NULL),
+#ifdef CAELUM    
     caelumSystem_(NULL),
-//    hydraxSystem_(NULL),
-//    noiseModule_(NULL),
-//    module_(NULL),
+#endif
+#ifdef HYDRAX
+    hydraxSystem_(NULL),
+    noiseModule_(NULL),
+    module_(NULL),
+#endif    
     cameraUnderWater_(false),
     attached_(false),
-    useCaelum_(true),
-//    useHydrax_(true),
-    sunColorMultiplier_(2.f)
+    useCaelum_(false),
+    useHydrax_(false),
+    sunColorMultiplier_(2.f),
+    fogStart_(100.f),
+    fogEnd_(500.f),
+    waterFogStart_(1.f),
+    waterFogEnd_(50.f),
+    fogColor_(),
+    waterFogColor_(0.2f, 0.4f, 0.35f),
+    cameraNearClip_(0.5f),
+    cameraFarClip_(500.f)     
 {
-    if (useCaelum_)
-        InitCaelum();
-    else
-        CreateSunlight();
-    
-//    if (useHydrax_)
-//        InitHydrax();
+#ifdef CAELUM
+    InitCaelum();
+    useCaelum_ = true;
+#else    
+    CreateSunlight();
+#endif
+
+#ifdef HYDRAX
+    InitHydrax();
+    useHydrax_ = true;
+#endif
     
     InitShadows();
 }
@@ -61,8 +80,13 @@ EC_OgreEnvironment::~EC_OgreEnvironment()
         sunlight_ = NULL;
     }
     
-    if (useCaelum_)
+#ifdef CAELUM
         ShutdownCaelum();
+#endif
+
+#ifdef HYDRAX
+        ShutdownHydrax();
+#endif
 }
 
 void EC_OgreEnvironment::SetPlaceable(Foundation::ComponentPtr placeable)
@@ -120,129 +144,113 @@ void EC_OgreEnvironment::SetTime(time_t time)
     int min_diff = mytime->minute() - ptm->tm_min;
     SAFE_DELETE(mytime);
     
-    if (useCaelum_)
-    {
-        caelumSystem_->getUniversalClock()->setGregorianDateTime(
-            1900 + ptm->tm_year, 1 + ptm->tm_mon, ptm->tm_mday, ptm->tm_hour + hour_diff,
-            ptm->tm_min + min_diff, ptm->tm_sec);
-    
-        SetTimeScale(1000);
-    }
+#ifdef CAELUM
+    caelumSystem_->getUniversalClock()->setGregorianDateTime(
+        1900 + ptm->tm_year, 1 + ptm->tm_mon, ptm->tm_mday, ptm->tm_hour + hour_diff,
+        ptm->tm_min + min_diff, ptm->tm_sec);
+#endif
+    ///\todo Do something with the time when Caelum is not used?
 }
 
 void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
 {
-    ///\todo Make this prettier (local -> member variables) when the right values are found.
-    float fogStart(10.0f);
-    float fogEnd(300.0f);
-    float waterFogStart(1.0f);
-    float waterFogEnd(50.0f);
-    Ogre::ColourValue fogColor;
-    Ogre::ColourValue waterFogColor(0.2, 0.4, 0.35);
-    float cameraNearClip(0.5f);
-    float cameraFarClip(500.0f); 
+#ifdef CAELUM
+    // Set sunlight attenuation using diffuse multiplier.
+    // Seems to be working ok, but feel free to fix if you find better logic and/or values.
+    Ogre::ColourValue diffuseMultiplier(sunColorMultiplier_, sunColorMultiplier_, sunColorMultiplier_, 1);
+    caelumSystem_->getSun()->setDiffuseMultiplier(diffuseMultiplier);
     
-    if (useCaelum_)
+    float sunDirZaxis = caelumSystem_->getSun()->getMainLight()->getDirection().z;
+    if (sunDirZaxis > 0)
     {
-        // Set sunlight attenuation using ambient multiplier.
-        // Seems to be working ok, but feel free to fix if you find better logic and/or values.
-        Ogre::ColourValue diffuseMultiplier(sunColorMultiplier_, sunColorMultiplier_, sunColorMultiplier_, 1);
-        caelumSystem_->getSun()->setDiffuseMultiplier(diffuseMultiplier);
-        
-        float sunDirZaxis = caelumSystem_->getSun()->getMainLight()->getDirection().z;
-        if (sunDirZaxis > 0)
-        {
-            sunColorMultiplier_ -= 0.005f;
-            if (sunColorMultiplier_ <= 0.05f)
-                sunColorMultiplier_ = 0.05f;            
-        }
-        else if(sunDirZaxis < 0)
-        {
-            sunColorMultiplier_ += 0.010f;
-            if (sunColorMultiplier_ >= 2.f)
-                sunColorMultiplier_ = 2.f;
-        }
-        
-        // Get the sky/sunlight and fog colors from Caelum.
-        float julDay = caelumSystem_->getUniversalClock()->getJulianDay();
-        float relDayTime = fmod(julDay, 1);
-        Ogre::Vector3 sunDir = caelumSystem_->getSunDirection(julDay);
-        fogColor = caelumSystem_->getGroundFog()->getColour();
-        
-        // Hide sun and moon sprites when they're below the water line (direction.z > ~0.10f).
-        // Also disable the corresponding lights.
-        ///\note Disabled for now. Seems to ok without this.
-/*      if (caelumSystem_->getSun() > 0.10f)
-            caelumSystem_->getSun()->setForceDisable(true);
-        else
-            caelumSystem_->getSun()->setForceDisable(false);*/
-         
-        /*if (caelumSystem_->getMoon()->getMainLight()->getDirection().z > 0.10f)
-            caelumSystem_->getMoon()->setForceDisable(true);
-        else
-            caelumSystem_->getMoon()->setForceDisable(false);
-*/
+        sunColorMultiplier_ -= 0.005f;
+        if (sunColorMultiplier_ <= 0.05f)
+            sunColorMultiplier_ = 0.05f;
     }
+    else if(sunDirZaxis < 0)
+    {
+        sunColorMultiplier_ += 0.010f;
+        if (sunColorMultiplier_ >= 2.f)
+            sunColorMultiplier_ = 2.f;
+    }
+    
+    // Get the sky/sunlight and fog colors from Caelum.
+    float julDay = caelumSystem_->getUniversalClock()->getJulianDay();
+    float relDayTime = fmod(julDay, 1);
+    Ogre::Vector3 sunDir = caelumSystem_->getSunDirection(julDay);
+    fogColor_ = caelumSystem_->getGroundFog()->getColour();
+#endif
     
     // Set fogging
     Ogre::Camera *camera = renderer_->GetCurrentCamera();
     Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();
     Ogre::Entity *water = sceneManager->getEntity("WaterEntity");
-   
     if (!water)
     {
-        // No water entity. ///\todo Test.
-        sceneManager->setFog(Ogre::FOG_LINEAR, fogColor, 0.001, fogStart, fogEnd);
-        camera->getViewport()->setBackgroundColour(fogColor);
-        camera->setFarClipDistance(cameraFarClip);
+        // No water entity. ///\todo Test. Prolly crashes here.
+        sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001, fogStart_, fogEnd_);
+        camera->getViewport()->setBackgroundColour(fogColor_);
+        camera->setFarClipDistance(cameraFarClip_);
     }
     else if(camera->getPosition().z >= water->getParentNode()->getPosition().z)
     {
         // We're above the water.
-        if (useCaelum_)
-        {
-            caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_ALL);  
-            caelumSystem_->getCloudSystem()->forceLayerVisibilityFlags(0);
-        }
-        
-        sceneManager->setFog(Ogre::FOG_LINEAR, fogColor, 0.001, fogStart, fogEnd);
-        camera->getViewport()->setBackgroundColour(fogColor);
-        camera->setFarClipDistance(cameraFarClip);
+#ifdef CAELUM
+        caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_ALL);  
+        caelumSystem_->getCloudSystem()->forceLayerVisibilityFlags(0);
+#endif
+        sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001, fogStart_, fogEnd_);
+        camera->getViewport()->setBackgroundColour(fogColor_);
+        camera->setFarClipDistance(cameraFarClip_);
         cameraUnderWater_ = false;
     }
     else
     {
         // We're below the water.
+#ifdef CAELUM
         // Hide the Caleum subsystems.
-        if (useCaelum_)
-            caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
-        
-        sceneManager->setFog(Ogre::FOG_LINEAR, fogColor * waterFogColor, 0.001, waterFogStart, waterFogEnd);
-        camera->getViewport()->setBackgroundColour(fogColor * waterFogColor);
-        camera->setFarClipDistance(waterFogEnd + 10.f);
+        caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
+#endif
+        sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_ * waterFogColor_, 0.001, waterFogStart_, waterFogEnd_);
+        camera->getViewport()->setBackgroundColour(fogColor_ * waterFogColor_);
+        camera->setFarClipDistance(waterFogEnd_ + 10.f);
         cameraUnderWater_ = true;
     }
 
-    if (useCaelum_)
-    {
-        // Force hiding of Caelum clouds, else shadows get messed up.
-        caelumSystem_->getCloudSystem()->forceLayerVisibilityFlags(0);
+#ifdef CAELUM
+    // Force hiding of Caelum clouds, else shadows get messed up.
+    caelumSystem_->getCloudSystem()->forceLayerVisibilityFlags(0);
 
-        // Update Caelum system.
-        caelumSystem_->notifyCameraChanged(camera);
-        caelumSystem_->updateSubcomponents(frametime);
-    }
+    // Update Caelum system.
+    caelumSystem_->notifyCameraChanged(camera);
+    caelumSystem_->updateSubcomponents(frametime);
+
+    // Get the sun's position. The magic number 80000 is from "Nature" demo app, found from OGRE forum.
+    // This would be used for Hydrax.
+//    Ogre::Vector3 sunPos = camera->getPosition();
+//    sunPos -= caelumSystem_->getSun()->getLightDirection() * 80000;
+#endif
     
-/*    if (useHydrax_)
-    {
-        // Get the sun's position. Note: these two lines are from "Nature" demo app, found from OGRE forum.
-		Ogre::Vector3 sunPosition = camera->getPosition();//getWorldPosition();
-		sunPosition -= caelumSystem_->getSun()->getLightDirection() * 80000;
-        
-        // Update Hydrax system.
-        hydraxSystem_->update(frametime);
-	    hydraxSystem_->setSunPosition(sunPosition);    
-    }*/
+#ifdef HYDRAX
+    // Update Hydrax system.
+    hydraxSystem_->update(frametime);
+    
+    //Ogre::Vector3 origPos(-5000, -5000, 20);
+    //hydraxSystem_->setPosition(origPos);
+    
+    sunPos = camera->getPosition();
+    sunPos -= caelumSystem_->getSun()->getLightDirection() * 80000;
+    
+    //Ogre::Vector3 flippedSunPos(sunPos.y, sunPos.z, sunPos.x);
+    hydraxSystem_->setSunPosition(sunPos);
+    //hydraxSystem_->setPosition(Ogre::Vector3(-5000, 20, -5000));
+    //hydraxSystem_->setVisible(true);
+
+//        Ogre::Vector3 cam_pos = hydraxSystem_->getCamera()->getPosition();
+//        hydraxSystem_->getCamera()->setPosition(cam_pos);
+//    std::cout << "C " << hydraxSystem_->getMesh()->getSceneNode()->getPosition() << std::endl;
+//        std::cout << "D " << hydraxSystem_->getRttManager()->getPlanesSceneNode()->getPosition()<< std::endl;
+#endif
 }
 
 void EC_OgreEnvironment::DisableFog()
@@ -251,11 +259,12 @@ void EC_OgreEnvironment::DisableFog()
     sceneManager->setFog(Ogre::FOG_NONE);
 }
 
+#ifdef CAELUM
 void EC_OgreEnvironment::SetTimeScale(float value)
 {
-    if (useCaelum_)
-        caelumSystem_->getUniversalClock()->setTimeScale(value);
+    caelumSystem_->getUniversalClock()->setTimeScale(value);
 }
+#endif
 
 void EC_OgreEnvironment::CreateSunlight()
 {
@@ -291,6 +300,7 @@ void EC_OgreEnvironment::DetachSunlight()
     }
 }
 
+#ifdef CAELUM
 void EC_OgreEnvironment::InitCaelum()
 {
     caelumSystem_ = new Caelum::CaelumSystem(renderer_->GetRoot().get(),
@@ -313,55 +323,84 @@ void EC_OgreEnvironment::InitCaelum()
 
 void EC_OgreEnvironment::ShutdownCaelum()
 {
-    if (caelumSystem_)
-        caelumSystem_->shutdown(true);
+    caelumSystem_->shutdown(true);
 }
+#endif
 
+#ifdef HYDRAX
 void EC_OgreEnvironment::InitHydrax()
 {
-    /*hydraxSystem_ = new Hydrax::Hydrax(renderer_->GetSceneManager(), renderer_->GetCurrentCamera(),
+    // Create Hydrax system.
+    hydraxSystem_ = new Hydrax::Hydrax(renderer_->GetSceneManager(), renderer_->GetCurrentCamera(),
         renderer_->GetCurrentCamera()->getViewport());
     
-    /*    
-    //hydraxSystem_->setRttOptions(Hydrax::RttOptions(Hydrax::TEX_QUA_1024, Hydrax::TEX_QUA_1024, Hydrax::TEX_QUA_1024));
+    // Create noise module. 
+	noiseModule_ = new Hydrax::Noise::Perlin(Hydrax::Noise::Perlin::Options(8, 1.15f, 0.49f, 1.14f, 1.27f));
     
-    hydraxSystem_->setComponents(static_cast<Hydrax::HydraxComponent>(Hydrax::HYDRAX_COMPONENT_FOAM   |
-        Hydrax::HYDRAX_COMPONENT_DEPTH  |
-        Hydrax::HYDRAX_COMPONENT_SMOOTH |
-        Hydrax::HYDRAX_COMPONENT_CAUSTICS | 
-        Hydrax::HYDRAX_COMPONENT_SUN));*/
-/*
-    Hydrax::Module::ProjectedGrid *module_ = new Hydrax::Module::ProjectedGrid(
-        hydraxSystem_, new Hydrax::Noise::Perlin(Hydrax::Noise::Perlin::Options(8, 1.15f, 0.49f, 1.14f, 1.27f)),
-        Ogre::Plane(Ogre::Vector3(0,1,0), Ogre::Vector3(0,0,0)),
+    /*Ogre::Plane(Ogre::Vector3::UNIT_Z, 0)*/
+
+    // Create water plane
+//    Ogre::Plane plane(Ogre::Vector3::NEGATIVE_UNIT_Z, 0);
+/*Ogre::MeshManager::getSingleton().createPlane("HydraxWaterMesh",
+        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane,
+        5000, 5000, 10, 10, true, 1, 1, 1, Ogre::Vector3::UNIT_X);*/
+   
+	// Create our projected grid module  (Rush)
+	/*module_ = new Hydrax::Module::ProjectedGrid(hydraxSystem_,  // Hydrax parent pointer
+	    noiseModule_,											// Noise module
+	   Ogre::Plane(Ogre::Vector3(0,1,0), Ogre::Vector3(0,0,0)), // Base plane
+	    Hydrax::MaterialManager::NM_VERTEX,						// Normal mode
+	    Hydrax::Module::ProjectedGrid::Options(150));			// Projected grid options	
+    */
+
+    // Nature
+    module_ = new Hydrax::Module::ProjectedGrid(
+        hydraxSystem_, noiseModule_,
+        Ogre::Plane(Ogre::Vector3(0, 1, 0), Ogre::Vector3(0, 0, 0)),
         Hydrax::MaterialManager::NM_VERTEX,
         Hydrax::Module::ProjectedGrid::Options(256, 3.25f, 0.035f, true));
-
+    
     hydraxSystem_->setModule(static_cast<Hydrax::Module::Module*>(module_));
 
-    hydraxSystem_->setShaderMode(Hydrax::MaterialManager::SM_HLSL);
+//    hydraxSystem_->loadCfg("HydraxDemo.hdx");
+    hydraxSystem_->loadCfg("goodPreset.hdx"); // from "Rush" demo app
 
+//    hydraxSystem_->setPosition(Ogre::Vector3(0,0,0));
     hydraxSystem_->create();
 
-    hydraxSystem_->setPosition(Ogre::Vector3(0,107,0));
-    hydraxSystem_->setPlanesError(4);
+    // Rotate the water plane.
+    Ogre::Quaternion orientation(Ogre::Degree(90), Ogre::Vector3(1, 0, 0));
+    hydraxSystem_->rotate(orientation);
+//    hydraxSystem_->getMesh()->getSceneNode()->setOrientation(orientation);
+//    hydraxSystem_->getRttManager()->getPlanesSceneNode()->setOrientation(orientation);
+        
+//    hydraxSystem_->setPosition(Ogre::Vector3(-5000, -5000, 20));    
+    
+//    hydraxSystem_->setPolygonMode(Ogre::PM_WIREFRAME);
+    
+//    hydraxSystem_->getMaterialManager()->getMaterial(Hydrax::MaterialManager::MAT_WATER)->getTechnique(0)->getPass(0)->setFog(true, Ogre::FOG_NONE);
+    
+    /*hydraxSystem_->setPlanesError(4);
     hydraxSystem_->setDepthLimit(5.2);
     hydraxSystem_->setNormalDistortion(0.035);
-    hydraxSystem_->setDepthColor(Ogre::Vector3(0.04,0.185,0.265));
+    //hydraxSystem_->setDepthColor(Ogre::Vector3(0.04,0.185,0.265));
     hydraxSystem_->setSmoothPower(2.5);
     hydraxSystem_->setCausticsScale(8);
     hydraxSystem_->setCausticsEnd(0.65);
     hydraxSystem_->setGlobalTransparency(0);
     hydraxSystem_->setFullReflectionDistance(99999997952.0);
-    hydraxSystem_->setPolygonMode(0);
+    hydraxSystem_->setPolygonMode(Ogre::PM_SOLID/*0*//*);
     hydraxSystem_->setFoamScale(0.1);
 
     hydraxSystem_->getMaterialManager()->getMaterial(Hydrax::MaterialManager::MAT_WATER)->getTechnique(0)->getPass(0)->setFog(true, Ogre::FOG_NONE);
-
-    Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName("terrain"); 
-    mat->createTechnique();
-    hydraxSystem_->getMaterialManager()->addDepthTechnique(mat, 1);*/
+    */
 }
+
+void EC_OgreEnvironment::ShutdownHydrax()
+{
+    hydraxSystem_->remove();
+}
+#endif
 
 void EC_OgreEnvironment::InitShadows()
 {

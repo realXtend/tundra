@@ -23,12 +23,6 @@ include_directories (
 	../GtkmmUI
 )
 
-# Library directories
-#link_directories (
-	#../OpenSimProtocol/Debug
-	#../OpenSimProtocol/Release
-#)
-
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
