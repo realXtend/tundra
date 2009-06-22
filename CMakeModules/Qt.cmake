@@ -64,7 +64,8 @@ macro (INCLUDE_QT4)
       ${QT_QTGUI_INCLUDE_DIR}
       ${QT_QTNETWORK_INCLUDE_DIR}
       ${QT_QTSCRIPT_INCLUDE_DIR}
-      ${QT_QTSQL_DIR})
+      ${QT_QTSQL_DIR}
+      ${QT_QTUITOOL_INCLUDE_DIR})
       link_directories ($ENV{QTDIR}/lib ${QT_LIBRARIES})
     else()
       include_directories (${REX_DEP_PATH}/Qt/include)
@@ -77,7 +78,8 @@ macro (INCLUDE_QT4)
       ${QT_QTGUI_INCLUDE_DIR}
       ${QT_QTNETWORK_INCLUDE_DIR}
       ${QT_QTSCRIPT_INCLUDE_DIR}
-      ${QT_QTSQL_DIR})
+      ${QT_QTSQL_DIR}
+      ${QT_QTUITOOLS_INCLUDE_DIR})
     link_directories(${QT_LIBRARY_DIRS})
   else()
     include_directories(${Qt4_INCLUDE_DIR})
@@ -92,18 +94,20 @@ macro (LINK_QT4)
     target_link_libraries (${TARGET_NAME}
       ${QT_LIBRARIES} 
       ${QT_QTGUI_LIBRARY} 
-	  ${QT_QTCORE_LIBRARY}
-	  ${QT_QTWEBKIT_LIBRARY}
-	  ${QT_QTNETWORK_LIBRARY}      
+      ${QT_QTCORE_LIBRARY}
+      ${QT_QTWEBKIT_LIBRARY}
+      ${QT_QTNETWORK_LIBRARY}
+      ${Qt_QTUITOOLS_LIBRARY}
       )
   elseif (NOT MSVC AND QT4_FOUND)
     target_link_libraries (${TARGET_NAME} ${QT_LIBRARIES} ${QT_QTGUI_LIBRARY} 
       ${QT_QTWEBKIT_LIBRARY} ${QT_QTCORE_LIBRARY} ${QT_QTDBUS_LIBRARY}
       ${QT_QTNETWORK_LIBRARY}
       ${QT_QTSCRIPT_LIBRARY}
-      ${QT_QTSQL_LIBRARY})
+      ${QT_QTSQL_LIBRARY}
+      ${QT_QTUITOOLS_LIBRARY})
   else()	
-    target_link_libraries(${TARGET_NAME} QtCore QtGui  qtmain  QtNetwork  QtWebKit)
+    target_link_libraries(${TARGET_NAME} QtCore QtGui  qtmain  QtNetwork  QtWebKit QtUitools)
   endif (MSVC)
   
 endmacro (LINK_QT4)

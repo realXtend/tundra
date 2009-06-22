@@ -26,8 +26,9 @@ namespace Foundation
         PROFILE(FW_Startup);
         application_ = ApplicationPtr(new Application(this));
         platform_ = PlatformPtr(new Platform(this));
-		// Create config manager
-		config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
+	
+	// Create config manager
+	config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
 
         config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
         config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("1"));
