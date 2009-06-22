@@ -97,7 +97,7 @@ namespace RexLogic
     void RexLoginWindow::Connect()
     {
       // Check which tab is active
-      qDebug("RexLoginWindow::Connect() START");
+     
       QTabWidget *pWidget = pLogin_widget_->findChild<QTabWidget* >("tabWidget");
       int index = pWidget->currentIndex();
       
@@ -110,7 +110,7 @@ namespace RexLogic
 	case 0:
 	  {
 	    // Open sim
-	    qDebug("RexLoginWindow::Connect() Open Sim connection");
+	
 	    QLineEdit *pLine = pLogin_widget_->findChild<QLineEdit* >("line_user_name");
 	    user_name = pLine->text().toStdString();
 	    pLine =  pLogin_widget_->findChild<QLineEdit* >("line_server");
@@ -129,7 +129,7 @@ namespace RexLogic
 	case 1:
 	  {
 	    // Rex authentication 
-	    qDebug("RexLoginWindow::Connect() Rex authentication connection");
+	 
 	    QLineEdit *pLine = pLogin_widget_->findChild<QLineEdit* >("line_user_name_au");
 	    user_name = pLine->text().toStdString();
 	    pLine =  pLogin_widget_->findChild<QLineEdit* >("line_server_au");
