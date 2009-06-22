@@ -159,8 +159,8 @@ namespace
 
         const int patchSize = 16;
 
-        const float uScale = 1e-2f;
-        const float vScale = 1e-2f;
+        const float uScale = 1e-2f*13;
+        const float vScale = 1e-2f*13;
 
         for(int y = 0; y <= patchSize; ++y)
             for(int x = 0; x <= patchSize; ++x)
