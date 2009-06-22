@@ -46,7 +46,7 @@ namespace OgreRenderer
         return false;
     }
     
-    const std::string& GetMaterialSuffix(Core::uint variation)
+    std::string GetMaterialSuffix(Core::uint variation)
     {
         if (variation >= MAX_MATERIAL_VARIATIONS)
         {

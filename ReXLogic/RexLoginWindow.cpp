@@ -5,7 +5,6 @@
 #include "RexLoginWindow.h"
 #include "RexLogicModule.h"
 //#include "GtkmmUI.h"
-#include <QDebug>
 #include <QFile>
 #include <QPushButton>
 #include <QLabel>
@@ -35,7 +34,7 @@ namespace RexLogic
       //if (!qt_module.expired())
       //	 {
        QUiLoader loader;
-       QFile file("../data/ui/login.ui");
+       QFile file("./data/ui/login.ui");
        pLogin_widget_ = loader.load(&file); 
       
       //	 }

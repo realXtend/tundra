@@ -22,8 +22,11 @@ namespace RexLogic
     //! Map for holding prim textures
     typedef std::map<uint8_t, RexTypes::RexAssetID> TextureMap;
     
-    //! Map for holding prim textures
+    //! Map for holding prim face colors
     typedef std::map<uint8_t, Core::Color> ColorMap;
+    
+    //! Map for holding prim face material bytes
+    typedef std::map<uint8_t, uint8_t> MaterialTypeMap;
     
     //! Each scene entity representing a prim in OpenSim sense has
     //! this component.
@@ -85,6 +88,8 @@ namespace RexLogic
         TextureMap PrimTextures;
         Core::Color PrimDefaultColor;
         ColorMap PrimColors;
+        uint8_t PrimDefaultMaterialType;
+        MaterialTypeMap PrimMaterialTypes;
 
         //! Primitive shape related variables
         uint8_t PathCurve;

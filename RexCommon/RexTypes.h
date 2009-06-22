@@ -202,6 +202,11 @@ const int HOLLOW_TRIANGLE = 48;
 // Primitive extrusion type
 const int EXTRUSION_STRAIGHT = 16;
 
+// Primitive texture entry material type
+const uint8_t MATERIALTYPE_BUMP_BITS = 0x1f;
+const uint8_t MATERIALTYPE_FULLBRIGHT = 0x20;
+const uint8_t MATERIALTYPE_SHINY_BITS = 0xc0;
+
 typedef std::string RexAssetID;
 
 typedef int ControllableType;

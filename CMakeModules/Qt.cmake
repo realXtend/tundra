@@ -65,7 +65,7 @@ macro (INCLUDE_QT4)
       ${QT_QTNETWORK_INCLUDE_DIR}
       ${QT_QTSCRIPT_INCLUDE_DIR}
       ${QT_QTSQL_DIR}
-      ${QT_QTUITOOL_INCLUDE_DIR})
+      ${QT_QTUITOOLS_INCLUDE_DIR})
       link_directories ($ENV{QTDIR}/lib ${QT_LIBRARIES})
     else()
       include_directories (${REX_DEP_PATH}/Qt/include)
@@ -97,7 +97,7 @@ macro (LINK_QT4)
       ${QT_QTCORE_LIBRARY}
       ${QT_QTWEBKIT_LIBRARY}
       ${QT_QTNETWORK_LIBRARY}
-      ${Qt_QTUITOOLS_LIBRARY}
+      ${QT_QTUITOOLS_LIBRARY}
       )
   elseif (NOT MSVC AND QT4_FOUND)
     target_link_libraries (${TARGET_NAME} ${QT_LIBRARIES} ${QT_QTGUI_LIBRARY} 

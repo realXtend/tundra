@@ -1044,6 +1044,20 @@ namespace RexLogic
         ogrepos.SetScale(prim.Scale);
     }
     
+    void SkipTextureEntrySection(const uint8_t* bytes, int& idx, int length, int elementsize)
+    {
+        idx += elementsize; // Default value
+        uint32_t bits;
+        int num_bits;
+        
+        while ((idx < length) && (ReadTextureEntryBits(bits, num_bits, bytes, idx)))
+        {
+            if (idx >= length)
+                return;
+            idx += elementsize; // More values
+        }
+    }
+    
     void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes, size_t length)
     {
         prim.PrimTextures.clear();
@@ -1057,7 +1071,7 @@ namespace RexLogic
             return;
         
         RexTypes::RexUUID default_texture_id = ReadUUIDFromBytes(bytes, idx);
-		prim.PrimDefaultTextureID = default_texture_id.ToString();
+        prim.PrimDefaultTextureID = default_texture_id.ToString();
         
         while ((idx < length) && (ReadTextureEntryBits(bits, num_bits, bytes, idx)))
         {
@@ -1068,7 +1082,7 @@ namespace RexLogic
             {
                 if (bits & 1)
                 {
-					prim.PrimTextures[i] = texture_id.ToString();
+                    prim.PrimTextures[i] = texture_id.ToString();
                 }
                 bits >>= 1;
             }
@@ -1090,6 +1104,30 @@ namespace RexLogic
                 if (bits & 1)
                 {
                     prim.PrimColors[i] = color;
+                }
+                bits >>= 1;
+            }
+        }
+        
+        SkipTextureEntrySection(bytes, idx, length, 4); // RepeatU
+        SkipTextureEntrySection(bytes, idx, length, 4); // RepeatV
+        SkipTextureEntrySection(bytes, idx, length, 2); // OffsetU
+        SkipTextureEntrySection(bytes, idx, length, 2); // OffsetV
+        SkipTextureEntrySection(bytes, idx, length, 2); // Rotation
+        
+        uint8_t default_materialtype = bytes[idx++];
+        prim.PrimDefaultMaterialType = default_materialtype;
+        
+        while ((idx < length) && (ReadTextureEntryBits(bits, num_bits, bytes, idx)))
+        {
+            if (idx >= length)
+                return;
+            uint8_t materialtype = bytes[idx++];
+            for (int i = 0; i < num_bits; ++i)
+            {
+                if (bits & 1)
+                {
+                    prim.PrimMaterialTypes[i] = materialtype;
                 }
                 bits >>= 1;
             }
