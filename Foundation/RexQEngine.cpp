@@ -76,7 +76,7 @@ void RexQEngine::UpdateFrame()
     owner_->ProcessOneFrame();
 
     /// \todo Compute a new delta time. \todo Break down update and render.
-    frame_update_timer_.start(16);
+    frame_update_timer_.start(0);
 }
 
 void RexQEngine::Go()
@@ -90,7 +90,7 @@ void RexQEngine::Go()
     // ticks of this timer.
     QObject::connect(&frame_update_timer_, SIGNAL(timeout()), this, SLOT(UpdateFrame()));
     frame_update_timer_.setSingleShot(true);
-    frame_update_timer_.start(16);
+    frame_update_timer_.start(0);
 
     app_->exec();
 }
