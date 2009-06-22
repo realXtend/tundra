@@ -328,14 +328,23 @@ namespace Foundation
     private:
         Profiler()
         {
+#ifdef PROFILING
             //! we don't want thread_specific_ptr to delete this one automatically
             current_node_ = new boost::thread_specific_ptr<ProfilerNodeTree>(&EmptyDeletor);
             all_nodes_ = boost::shared_ptr<ProfilerNodeTree>(new ProfilerNodeTree("Root"));
 
-            ProfilerBlock::QueryCapability(); 
+            ProfilerBlock::QueryCapability();
+#endif            
         }
     public:
-        ~Profiler() { current_node_->release(); delete current_node_; root_->RemoveAndDeleteChildren(); }
+        ~Profiler()
+        {
+#ifdef PROFILING
+            current_node_->release();
+            delete current_node_;
+            root_->RemoveAndDeleteChildren();
+#endif  
+        }
 
         //! Start a profiling block.
         /*!
