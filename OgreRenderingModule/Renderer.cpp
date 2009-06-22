@@ -457,6 +457,9 @@ namespace OgreRenderer
 
         // second pass with per poly picking, with entities sorted first by selection priority, then by distance
         std::map< int, std::vector< std::pair< Scene::Entity*, Ogre::Entity* > > >::reverse_iterator it = candidates.rbegin();
+        Core::Real closest_distance = -1.f;
+        Scene::Entity *closest_entity = NULL;
+
         for ( ; it != candidates.rend() ; ++it)
         {
             for (size_t i=0 ; i<it->second.size() ; ++i)
@@ -468,7 +471,6 @@ namespace OgreRenderer
                 if (ogre_entity == NULL)
                     return entity;
 
-                
                 size_t vertex_count;
                 size_t index_count;
                 Core::Vector3df *vertices = 0;
@@ -480,7 +482,7 @@ namespace OgreRenderer
                                     ToRexQuaternion(ogre_entity->getParentNode()->_getDerivedOrientation()),
                                     ToRexVector(ogre_entity->getParentNode()->_getDerivedScale()));
 
-                Core::Real closest_distance = -1.f;
+                
                 // test for hitting individual triangles on the mesh
                 for (size_t i = 0; i <index_count; i += 3)
                 {
@@ -495,18 +497,19 @@ namespace OgreRenderer
                         {
                             // this is the closest/best so far, save it off
                             closest_distance = hit.second;
+                            closest_entity = entity;
                         }
                     }
-                }
-                if (closest_distance >= 0.f)
-                {
-                    return entity;
-                }
-                
+                } 
+            }
+            // if this selectpriority got a hit, return the entity 
+            if (closest_distance >= 0.f)
+            {
+                return closest_entity;
             }
         }
-    
-        return NULL;
+
+        return closest_entity;
     }
 
     // Get the mesh information for the given mesh.
