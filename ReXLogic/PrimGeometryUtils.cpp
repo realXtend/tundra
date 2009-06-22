@@ -138,11 +138,21 @@ namespace RexLogic
                     
                     if (mat_override.empty())
                     {
+                        std::string suffix = "";
+                        
+                        // Check for fullbright
+                        bool fullbright = (primitive.PrimDefaultMaterialType & RexTypes::MATERIALTYPE_FULLBRIGHT) != 0;
+                        MaterialTypeMap::const_iterator mt = primitive.PrimMaterialTypes.find(primMesh.viewerFaces[i].primFaceNumber);
+                        if (mt != primitive.PrimMaterialTypes.end())
+                            fullbright = (mt->second & RexTypes::MATERIALTYPE_FULLBRIGHT) != 0;
+                        if (fullbright)
+                            suffix = OgreRenderer::GetMaterialSuffix(OgreRenderer::LEGACYMAT_FULLBRIGHT);
+                        
                         // Try to find face's texture in texturemap, use default if not found
-						texture_id = primitive.PrimDefaultTextureID;
+                        texture_id = primitive.PrimDefaultTextureID + suffix;
                         TextureMap::const_iterator t = primitive.PrimTextures.find(primMesh.viewerFaces[i].primFaceNumber);
                         if (t != primitive.PrimTextures.end())
-                            texture_id = t->second;
+                            texture_id = t->second + suffix;
                         
                         if ((i == 0) || (texture_id != prev_texture_id))
                         {
