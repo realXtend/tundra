@@ -242,11 +242,10 @@ namespace OgreRenderer
         {
             resources_[source_tex->GetId()] = tex;
             
-            // Create legacy material already here
+            // Create legacy material(s) already here
             // Needed for example with particle scripts, where there is no further code to 
             // create the material/set the texture, because it's all created by Ogre from the script
-            Ogre::MaterialPtr mat = GetOrCreateLitTexturedMaterial(source_tex->GetId().c_str());
-            SetTextureUnitOnMaterial(mat, source_tex->GetId().c_str());
+            CreateLegacyMaterials(source_tex->GetId());
             
             const Core::RequestTagVector& tags = request_tags_[source_tex->GetId()];
             for (Core::uint i = 0; i < tags.size(); ++i)

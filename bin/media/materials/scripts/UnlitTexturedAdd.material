@@ -1,0 +1,19 @@
+material UnlitTexturedAdd
+{
+	technique
+	{
+		pass
+		{
+		    // Cannot use programmable pipeline here for need of fog override
+            lighting off
+            depth_write off
+	        scene_blend add
+	        fog_override true
+
+			texture_unit baseMap
+			{
+				texture TextureMissing.png
+			}
+		}
+	}
+}

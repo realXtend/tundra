@@ -3,11 +3,60 @@
 /// Contains some common methods for 
 
 #include "StableHeaders.h"
-
 #include "OgreMaterialUtils.h"
+#include "OgreRenderingModule.h"
 
 namespace OgreRenderer
 {
+    std::string BaseMaterials[] = {
+        "LitTextured", // normal
+        "UnlitTextured", // normal fullbright
+        "LitTexturedSoftAlpha", // soft alpha
+        "UnlitTexturedSoftAlpha", // soft alpha fullbright
+        "LitTexturedAdd", // additive
+        "UnlitTexturedAdd" // additive fullbright
+    };
+    
+    std::string AlphaBaseMaterials[] = {
+        "LitTexturedAlpha", // hard alpha
+        "UnlitTexturedAlpha", // hard alpha fullbright
+        "LitTexturedSoftAlpha", // soft alpha
+        "UnlitTexturedSoftAlpha", // soft alpha fullbright
+        "LitTexturedAdd", // additive
+        "UnlitTexturedAdd" // additive fullbright
+    };
+    
+    std::string MaterialSuffix[] = {
+        "", // normal
+        "fb", // normal fullbright
+        "alpha", // soft alpha
+        "fbalpha", // soft alpha fullbright
+        "add", // additive
+        "fbadd" // additive fullbright
+    };
+
+    bool IsMaterialSuffixValid(const std::string& suffix)
+    {
+        for (Core::uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
+        {
+            if (suffix == MaterialSuffix[i])
+                return true;
+        }
+        
+        return false;
+    }
+    
+    const std::string& GetMaterialSuffix(Core::uint variation)
+    {
+        if (variation >= MAX_MATERIAL_VARIATIONS)
+        {
+            OgreRenderingModule::LogWarning("Requested suffix for non-existing material variation " + Core::ToString<Core::uint>(variation));
+            variation = 0;
+        }
+        
+        return MaterialSuffix[variation];
+    }
+
     Ogre::MaterialPtr GetOrCreateLitTexturedMaterial(const char *materialName)
     {
         const char baseMaterialName[] = "LitTextured";
@@ -41,17 +90,53 @@ namespace OgreRenderer
         assert(material.get());
         return material;
     }
-    
-    void SetTextureUnitOnMaterial(Ogre::MaterialPtr material, const char *textureName, Core::uint index)
+
+    void CreateLegacyMaterials(const std::string& texture_name)
+    {
+        for (Core::uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
+        {
+            const std::string& base_material_name = BaseMaterials[i];
+            const std::string& alpha_base_material_name = AlphaBaseMaterials[i];
+            
+            Ogre::TextureManager &tm = Ogre::TextureManager::getSingleton();
+            Ogre::TexturePtr tex = tm.getByName(texture_name);
+            bool has_alpha = false;
+            if (!tex.isNull())
+            {
+                if (Ogre::PixelUtil::hasAlpha(tex->getFormat()))
+                    has_alpha = true;
+            }
+            
+            std::string material_name = texture_name + MaterialSuffix[i];
+            Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
+            Ogre::MaterialPtr material = mm.getByName(material_name);
+
+            if (!material.get())
+            {
+                material = mm.create(material_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+                assert(material.get());
+            }
+            
+            Ogre::MaterialPtr base_material;
+            if (!has_alpha)
+                base_material = mm.getByName(base_material_name);
+            else
+                base_material = mm.getByName(alpha_base_material_name);
+            if (!base_material.get())
+            {
+                OgreRenderingModule::LogError("Could not find " + MaterialSuffix[i] + " base material for " + texture_name);
+                return;
+            }
+
+            base_material->copyDetailsTo(material);
+            SetTextureUnitOnMaterial(material, texture_name, 0);
+        }
+    }
+
+    void SetTextureUnitOnMaterial(Ogre::MaterialPtr material, const std::string& texture_name, Core::uint index)
     {
         Ogre::TextureManager &tm = Ogre::TextureManager::getSingleton();
-        Ogre::TexturePtr tex = tm.getByName(textureName);
-        bool has_alpha = false;
-        if (!tex.isNull())
-        {
-            if (Ogre::PixelUtil::hasAlpha(tex->getFormat()))
-                has_alpha = true;
-        }
+        Ogre::TexturePtr tex = tm.getByName(texture_name);
         
         Ogre::Material::TechniqueIterator iter = material->getTechniqueIterator();
         while(iter.hasMoreElements())
@@ -63,22 +148,16 @@ namespace OgreRenderer
             {
                 Ogre::Pass *pass = passIter.getNext();
                 
-                // Crude alpha reject on/off based on whether texture has alpha
-                //if (has_alpha)
-                //    pass->setAlphaRejectSettings(Ogre::CMPF_GREATER_EQUAL, 128);
-                //else
-                //    pass->setAlphaRejectFunction(Ogre::CMPF_ALWAYS_PASS);
-                    
                 Ogre::Pass::TextureUnitStateIterator texIter = pass->getTextureUnitStateIterator();
                 Core::uint cmp_index = 0;
                 
                 while(texIter.hasMoreElements())
                 {
                     Ogre::TextureUnitState *texUnit = texIter.getNext();
-                    if ((index == cmp_index) || (index == SET_ALL_UNITS))
+                    if (index == cmp_index) 
                     {
-                        if (!tex.isNull())
-                            texUnit->setTextureName(textureName);
+                        if (tex.get())
+                            texUnit->setTextureName(texture_name);
                         else
                             texUnit->setTextureName("TextureMissing.png");
                     }

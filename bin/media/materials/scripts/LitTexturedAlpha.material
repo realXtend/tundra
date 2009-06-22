@@ -1,27 +1,23 @@
-// Renders primitives with a single lit texture, includes shadowing
-material LitTextured
+// Renders primitives with a single lit texture, includes alpharejection
+material LitTexturedAlpha
 {
 	technique
-	{
+	{	    
 		pass
 		{
+            alpha_rejection greater_equal 128
 			iteration once
 
-			vertex_program_ref rex/DiffShadowVP
+			vertex_program_ref rex/DiffAlphamaskVP
 			{
 			}
-			fragment_program_ref rex/DiffShadowFP
+			fragment_program_ref rex/DiffAlphamaskFP
 			{
 			}
 			
 			texture_unit baseMap
 			{
 				texture TextureMissing.png
-			}
-			
-			texture_unit shadowMap
-			{
-				content_type shadow	
 			}
 		}
 	}
@@ -30,6 +26,8 @@ material LitTextured
 	{
 	    pass
 	    {
+	        alpha_rejection greater_equal 128
+
 	        texture_unit baseMap
 	        {
 	            texture TextureMissing.png

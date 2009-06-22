@@ -1,35 +1,34 @@
-// Renders primitives with a single lit texture, includes shadowing
-material LitTextured
+material UnlitTexturedSoftAlpha
 {
 	technique
 	{
 		pass
 		{
-			iteration once
+            depth_write off
+	        scene_blend alpha_blend
 
-			vertex_program_ref rex/DiffShadowVP
+			vertex_program_ref UnlitTexturedVP
 			{
 			}
-			fragment_program_ref rex/DiffShadowFP
+			fragment_program_ref UnlitTexturedFP
 			{
 			}
-			
 			texture_unit baseMap
 			{
 				texture TextureMissing.png
 			}
-			
-			texture_unit shadowMap
-			{
-				content_type shadow	
-			}
-		}
+		} 
 	}
+	
 	// fallback
 	technique
 	{
 	    pass
 	    {
+            depth_write off
+	        scene_blend alpha_blend
+	        lighting off
+
 	        texture_unit baseMap
 	        {
 	            texture TextureMissing.png
