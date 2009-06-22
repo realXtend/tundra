@@ -902,38 +902,12 @@ namespace RexLogic
             while (i != prim.Materials.end())
             {
                 Core::uint idx = i->first;
-                // For now, handle only textures, not materials
-				if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(res->GetId()) == 0))
+                if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(res->GetId()) == 0))
                 {
-                    // debug material creation to see diffuse textures
-                    Ogre::MaterialPtr mat = OgreRenderer::GetOrCreateLitTexturedMaterial(res->GetId().c_str());
-                    OgreRenderer::SetTextureUnitOnMaterial(mat, res->GetId().c_str());
-                   
+                    // Use a legacy material with the same name as the texture, created automatically by renderer
                     meshptr->SetMaterial(idx, res->GetId());
                 }
                 ++i;
-            }
-        }
-        else
-        {
-            // Handle prim texture
-            Foundation::ComponentPtr custom = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
-            if (!custom) return;
-            OgreRenderer::EC_OgreCustomObject* customptr = checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(custom.get());
-            
-            Ogre::ManualObject* manual = customptr->GetObject();
-            if (!manual) return;
-            
-            for (Core::uint i = 0; i < manual->getNumSections(); ++i)
-            {
-                // If this section of the custom geometry is using the received texture, update the material
-                // Note: material has already been created beforehand, which is kind of hackish
-                if (manual->getSection(i)->getMaterialName() == res->GetId())
-                {
-                    Ogre::MaterialPtr mat = OgreRenderer::GetOrCreateLitTexturedMaterial(res->GetId().c_str());
-                    OgreRenderer::SetTextureUnitOnMaterial(mat, res->GetId().c_str());
-                    break;
-                }
             }
         }
     }

@@ -74,9 +74,6 @@ namespace
         DebugDumpOgreTextureInfo(textureName);
 
         Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
-        //Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
-        //Ogre::MaterialPtr terrainMaterial = mm.getByName(terrainMaterialName);
-        
         assert(terrainMaterial.get());
         OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName);
 

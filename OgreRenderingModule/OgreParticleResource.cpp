@@ -113,7 +113,7 @@ namespace OgreRenderer
 			      for (int i = 0; i < size; ++i)
 				line_vec[i] = vec[i];
 #endif                                         
-				if (line_vec.size() >= 2)
+                                if (line_vec.size() >= 2)
                                 {
                                     std::string mat_name = line_vec[1];
                                     // Material script mode
@@ -125,13 +125,15 @@ namespace OgreRenderer
                                     // Texture mode
                                     else 
                                     {
-                                        //! @todo handle legacy material variations
                                         std::string variation;
                                         if (line_vec.size() >= 3)
                                             variation = line_vec[2];
                                         
+                                        if (!IsMaterialSuffixValid(variation))
+                                            variation = "";
+                                            
                                         references_.push_back(Foundation::ResourceReference(mat_name, OgreTextureResource::GetTypeStatic()));
-                                        line = "material " + mat_name;
+                                        line = "material " + mat_name + variation;
                                     }
                                 }
                             }

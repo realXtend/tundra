@@ -117,6 +117,17 @@ namespace OgreRenderer
         return true;
     }
 
+    bool OgreTextureResource::HasAlpha() const
+    {
+        if (ogre_texture_.get())
+        {
+            if (Ogre::PixelUtil::hasAlpha(ogre_texture_->getFormat()))
+                return true;
+        }
+        
+        return false;
+    }
+
     static const std::string type_name("OgreTexture");
         
     const std::string& OgreTextureResource::GetType() const

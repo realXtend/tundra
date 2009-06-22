@@ -153,7 +153,7 @@ namespace RexLogic
                                 
                             // Here we assume (again) that material name = texture UUID in text form
                             // Actually create the material here if texture yet missing, we'll fill later
-                            OgreRenderer::GetOrCreateLitTexturedMaterial(texture_id.c_str());
+                            OgreRenderer::CreateLegacyMaterials(texture_id);
                             
                             object->begin(texture_id, Ogre::RenderOperation::OT_TRIANGLE_LIST);
                         }

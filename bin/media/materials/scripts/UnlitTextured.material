@@ -11,7 +11,7 @@ material UnlitTextured
 			fragment_program_ref UnlitTexturedFP
 			{
 			}
-			texture_unit diffuseMap
+			texture_unit baseMap
 			{
 				texture TextureMissing.png
 			}
@@ -24,7 +24,7 @@ material UnlitTextured
 	    pass
 	    {
 	        lighting off
-	        
+
 	        texture_unit baseMap
 	        {
 	            texture TextureMissing.png
