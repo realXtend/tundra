@@ -5,11 +5,10 @@
 #include "RendererEvents.h"
 #include "ResourceHandler.h"
 #include "OgreRenderingModule.h"
+#include "EC_OgrePlaceable.h"
 
 #include "SceneEvents.h"
 #include "Entity.h"
-
-#include "EC_OpenSimPrim.h"
 
 #include <Ogre.h>
 
@@ -403,125 +402,16 @@ namespace OgreRenderer
         root_->_fireFrameEnded();
     }
 
-    Scene::Entity *Renderer::Raycast(int x, int y)
-    {
-        if (!initialized_) return NULL;
-
-        Core::Real screenx = x / (Core::Real)renderwindow_->getWidth();
-        Core::Real screeny = y / (Core::Real)renderwindow_->getHeight();
-
-        Ogre::Ray ray = camera_->getCameraToViewportRay(screenx, screeny);
-        ray_query_->setRay(ray);
-        Ogre::RaySceneQueryResult &results = ray_query_->execute();
-
-        // We use both distance and select priority to determine which entity we pick
-        // Distance is the first choice, as ray query results are sorted by distance.
-        
-        std::map< int, std::vector< std::pair<Scene::Entity*, Ogre::Entity* > > > candidates;
-
-        // first pass to get best candidate by bounding box and select priority
-        int best_priority = -1000000;
-        for (size_t i=0 ; i<results.size() ; ++i)
-        {
-            Ogre::RaySceneQueryResultEntry &entry = results[i];
-            if (entry.movable != NULL)
-            {
-
-                Ogre::Any any = entry.movable->getUserAny();
-                if (any.isEmpty() == false)
-                {
-                    Scene::Entity *entity = NULL;
-                    try
-                    {
-                        entity = Ogre::any_cast<Scene::Entity*>(any);
-                    } catch (Ogre::InvalidParametersException)
-                    {
-                        continue;
-                    }
-                    Foundation::ComponentPtr component = entity->GetComponent(RexLogic::EC_OpenSimPrim::NameStatic());
-                    if (component)
-                    {
-                        RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim*>(component.get());
-                        if (entry.movable->getMovableType().compare("Entity") == 0)
-                        {
-                            Ogre::Entity *ogre_entity = static_cast<Ogre::Entity*>(entry.movable);
-                            candidates[prim->SelectPriority].push_back(std::make_pair(entity, ogre_entity));
-                        } else
-                        {
-                            candidates[prim->SelectPriority].push_back(std::pair<Scene::Entity*, Ogre::Entity*>(entity, NULL));
-                        }
-                    }
-                }
-            }
-        }
-
-        // second pass with per poly picking, with entities sorted first by selection priority, then by distance
-        std::map< int, std::vector< std::pair< Scene::Entity*, Ogre::Entity* > > >::reverse_iterator it = candidates.rbegin();
-        Core::Real closest_distance = -1.f;
-        Scene::Entity *closest_entity = NULL;
-
-        for ( ; it != candidates.rend() ; ++it)
-        {
-            for (size_t i=0 ; i<it->second.size() ; ++i)
-            {
-                Scene::Entity *entity = it->second[i].first;
-                Ogre::Entity *ogre_entity = it->second[i].second;
-
-                // if we don't have mesh, just assume bounding box is good enough and return the hit
-                if (ogre_entity == NULL)
-                    return entity;
-
-                size_t vertex_count;
-                size_t index_count;
-                Core::Vector3df *vertices = 0;
-                unsigned long *indices = 0;
-
-                // get the mesh information
-                getMeshInformation( ogre_entity->getMesh().get(), vertex_count, vertices, index_count, indices,
-                                    ToRexVector(ogre_entity->getParentNode()->_getDerivedPosition()),
-                                    ToRexQuaternion(ogre_entity->getParentNode()->_getDerivedOrientation()),
-                                    ToRexVector(ogre_entity->getParentNode()->_getDerivedScale()));
-
-                
-                // test for hitting individual triangles on the mesh
-                for (size_t i = 0; i <index_count; i += 3)
-                {
-                    // check for a hit against this triangle
-                    std::pair<bool, Ogre::Real> hit = Ogre::Math::intersects(ray, ToOgreVector(vertices[indices[i]]),
-                        ToOgreVector(vertices[indices[i+1]]), ToOgreVector(vertices[indices[i+2]]), true, false);
-
-                    // if it was a hit check if its the closest
-                    if (hit.first)
-                    {
-                        if (closest_distance < 0.0f || hit.second < closest_distance)
-                        {
-                            // this is the closest/best so far, save it off
-                            closest_distance = hit.second;
-                            closest_entity = entity;
-                        }
-                    }
-                } 
-            }
-            // if this selectpriority got a hit, return the entity 
-            if (closest_distance >= 0.f)
-            {
-                return closest_entity;
-            }
-        }
-
-        return closest_entity;
-    }
-
     // Get the mesh information for the given mesh.
     // Code found in Wiki: www.ogre3d.org/wiki/index.php/RetrieveVertexData
-    void Renderer::getMeshInformation(const Ogre::Mesh *mesh,
+    void getMeshInformation(const Ogre::Mesh *mesh,
                                     size_t &vertex_count,
-                                    Core::Vector3df* &vertices,
+                                    Ogre::Vector3* &vertices,
                                     size_t &index_count,
                                     unsigned long* &indices,
-                                    const Core::Vector3df &position,
-                                    const Core::Quaternion &orient,
-                                    const Core::Vector3df &scale)
+                                    const Ogre::Vector3 &position,
+                                    const Ogre::Quaternion &orient,
+                                    const Ogre::Vector3 &scale)
     {
         bool added_shared = false;
         size_t current_offset = 0;
@@ -556,7 +446,7 @@ namespace OgreRenderer
 
 
         // Allocate space for the vertices and indices
-        vertices = new Core::Vector3df[vertex_count];
+        vertices = new Ogre::Vector3[vertex_count];
         indices = new unsigned long[index_count];
 
         added_shared = false;
@@ -595,7 +485,7 @@ namespace OgreRenderer
                 {
                     posElem->baseVertexPointerToElement(vertex, &pReal);
 
-                    Core::Vector3df pt(pReal[0], pReal[1], pReal[2]);
+                    Ogre::Vector3 pt(pReal[0], pReal[1], pReal[2]);
 
                     vertices[current_offset + j] = (orient * (pt * scale)) + position;
                 }
@@ -637,6 +527,107 @@ namespace OgreRenderer
 
             current_offset = next_offset;
         }
+    }
+    
+    Scene::Entity *Renderer::Raycast(int x, int y)
+    {
+        if (!initialized_) return NULL;
+
+        Core::Real screenx = x / (Core::Real)renderwindow_->getWidth();
+        Core::Real screeny = y / (Core::Real)renderwindow_->getHeight();
+
+        Ogre::Ray ray = camera_->getCameraToViewportRay(screenx, screeny);
+        ray_query_->setRay(ray);
+        Ogre::RaySceneQueryResult &results = ray_query_->execute();
+
+        // We use both distance and select priority to determine which entity we pick
+        // Distance is the first choice, as ray query results are sorted by distance.
+        
+        std::map< int, std::vector< std::pair<Scene::Entity*, Ogre::Entity* > > > candidates;
+
+        // first pass to get best candidate by bounding box and select priority
+        for (size_t i=0 ; i<results.size() ; ++i)
+        {
+            Ogre::RaySceneQueryResultEntry &entry = results[i];
+            if (entry.distance > 0.0f && entry.movable != NULL)
+            {
+                Ogre::Any any = entry.movable->getUserAny();
+                if (any.isEmpty() == false)
+                {
+                    Scene::Entity *entity = NULL;
+                    try
+                    {
+                        entity = Ogre::any_cast<Scene::Entity*>(any);
+                    } catch (Ogre::InvalidParametersException)
+                    {
+                        continue;
+                    }
+                    Foundation::ComponentPtr component = entity->GetComponent(EC_OgrePlaceable::NameStatic());
+                    if (component)
+                    {
+                        EC_OgrePlaceable *placeable = checked_static_cast<EC_OgrePlaceable*>(component.get());
+                        if (entry.movable->getMovableType().compare("Entity") == 0)
+                        {
+                            Ogre::Entity *ogre_entity = static_cast<Ogre::Entity*>(entry.movable);
+                            candidates[placeable->GetSelectPriority()].push_back(std::make_pair(entity, ogre_entity));
+                        } else
+                        {
+                            candidates[placeable->GetSelectPriority()].push_back(std::pair<Scene::Entity*, Ogre::Entity*>(entity, NULL));
+                        }
+                    }
+                }
+            }
+        }
+
+        // second pass with per poly picking, with entities sorted first by selection priority, then by distance
+        std::map< int, std::vector< std::pair< Scene::Entity*, Ogre::Entity* > > >::reverse_iterator it = candidates.rbegin();
+
+        for ( ; it != candidates.rend() ; ++it)
+        {
+            for (size_t i=0 ; i<it->second.size() ; ++i)
+            {
+                Scene::Entity *entity = it->second[i].first;
+                Ogre::Entity *ogre_entity = it->second[i].second;
+
+                // if we don't have mesh, just assume bounding box is good enough and return the hit
+                if (ogre_entity == NULL)
+                {
+                    return entity;
+                }
+                size_t vertex_count;
+                size_t index_count;
+                Ogre::Vector3 *vertices = 0;
+                unsigned long *indices = 0;
+
+                // get the mesh information
+                getMeshInformation( ogre_entity->getMesh().get(), vertex_count, vertices, index_count, indices,
+                                    ogre_entity->getParentNode()->_getDerivedPosition(),
+                                    ogre_entity->getParentNode()->_getDerivedOrientation(),
+                                    ogre_entity->getParentNode()->_getDerivedScale());
+                
+                // test for hitting individual triangles on the mesh
+                bool hit_mesh = false;
+                for (size_t i = 0; i <index_count; i += 3)
+                {
+                    // check for a hit against this triangle
+                    std::pair<bool, Ogre::Real> hit = Ogre::Math::intersects(ray, vertices[indices[i]],
+                        vertices[indices[i+1]], vertices[indices[i+2]], true, false);
+
+                    if (hit.first && hit.second > 0.0f)
+                    {
+                        hit_mesh = true;
+                    }
+                }
+                
+                delete[] vertices;
+                delete[] indices;
+                
+                if (hit_mesh)
+                    return entity;
+            }
+        }
+
+        return NULL;
     }
     
     std::string Renderer::GetUniqueObjectName()
