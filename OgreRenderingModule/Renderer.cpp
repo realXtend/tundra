@@ -540,60 +540,82 @@ namespace OgreRenderer
         ray_query_->setRay(ray);
         Ogre::RaySceneQueryResult &results = ray_query_->execute();
 
-        // We use both distance and select priority to determine which entity we pick
-        // Distance is the first choice, as ray query results are sorted by distance.
-        
-        std::map< int, std::vector< std::pair<Scene::Entity*, Ogre::Entity* > > > candidates;
-
-        // first pass to get best candidate by bounding box and select priority
-        for (size_t i=0 ; i<results.size() ; ++i)
+        Scene::Entity* closest_entity = NULL;
+        int best_priority = -1000000;
+        // Prepass: get best available priority for breaking early
+        for (size_t i = 0; i < results.size(); ++i)
         {
             Ogre::RaySceneQueryResultEntry &entry = results[i];
-            if (entry.distance > 0.0f && entry.movable != NULL)
+            if (!entry.movable)
+                continue;
+                
+            Ogre::Any any = entry.movable->getUserAny();
+            if (any.isEmpty())
+                continue;
+
+            Scene::Entity *entity = NULL;
+            try
             {
-                Ogre::Any any = entry.movable->getUserAny();
-                if (any.isEmpty() == false)
-                {
-                    Scene::Entity *entity = NULL;
-                    try
-                    {
-                        entity = Ogre::any_cast<Scene::Entity*>(any);
-                    } catch (Ogre::InvalidParametersException)
-                    {
-                        continue;
-                    }
-                    Foundation::ComponentPtr component = entity->GetComponent(EC_OgrePlaceable::NameStatic());
-                    if (component)
-                    {
-                        EC_OgrePlaceable *placeable = checked_static_cast<EC_OgrePlaceable*>(component.get());
-                        if (entry.movable->getMovableType().compare("Entity") == 0)
-                        {
-                            Ogre::Entity *ogre_entity = static_cast<Ogre::Entity*>(entry.movable);
-                            candidates[placeable->GetSelectPriority()].push_back(std::make_pair(entity, ogre_entity));
-                        } else
-                        {
-                            candidates[placeable->GetSelectPriority()].push_back(std::pair<Scene::Entity*, Ogre::Entity*>(entity, NULL));
-                        }
-                    }
-                }
+                entity = Ogre::any_cast<Scene::Entity*>(any);
+            } catch (Ogre::InvalidParametersException)
+            {
+                continue;
             }
+            Foundation::ComponentPtr component = entity->GetComponent(EC_OgrePlaceable::NameStatic());
+            if (!component)
+                continue;
+                
+            EC_OgrePlaceable *placeable = checked_static_cast<EC_OgrePlaceable*>(component.get());
+            int current_priority = placeable->GetSelectPriority();
+            if (current_priority > best_priority)
+                best_priority = current_priority;
         }
 
-        // second pass with per poly picking, with entities sorted first by selection priority, then by distance
-        std::map< int, std::vector< std::pair< Scene::Entity*, Ogre::Entity* > > >::reverse_iterator it = candidates.rbegin();
+        // Now do the real pass
+        Ogre::Real closest_distance = -1.0f;
+        int closest_priority = -1000000;
 
-        for ( ; it != candidates.rend() ; ++it)
+        for (size_t i = 0; i < results.size(); ++i)
         {
-            for (size_t i=0 ; i<it->second.size() ; ++i)
+            Ogre::RaySceneQueryResultEntry &entry = results[i];
+            // Stop checking if we have found a raycast hit that is closer
+            // than all remaining entities, and the priority found is best possible
+            if ((closest_distance >= 0.0f) &&
+                (closest_distance < entry.distance) && (closest_priority >= best_priority))
             {
-                Scene::Entity *entity = it->second[i].first;
-                Ogre::Entity *ogre_entity = it->second[i].second;
+                break;
+            }
 
-                // if we don't have mesh, just assume bounding box is good enough and return the hit
-                if (ogre_entity == NULL)
-                {
-                    return entity;
-                }
+            if (!entry.movable)
+                continue;
+                
+            Ogre::Any any = entry.movable->getUserAny();
+            if (any.isEmpty())
+                continue;
+                
+            
+            Scene::Entity *entity = NULL;
+            try
+            {
+                entity = Ogre::any_cast<Scene::Entity*>(any);
+            } catch (Ogre::InvalidParametersException)
+            {
+                continue;
+            }
+            Foundation::ComponentPtr component = entity->GetComponent(EC_OgrePlaceable::NameStatic());
+            if (!component)
+                continue;
+                
+            EC_OgrePlaceable *placeable = checked_static_cast<EC_OgrePlaceable*>(component.get());
+            int current_priority = placeable->GetSelectPriority();
+            if (current_priority < closest_priority)
+                continue;
+
+            // Mesh entity check: triangle intersection
+            if (entry.movable->getMovableType().compare("Entity") == 0)
+            {
+                Ogre::Entity* ogre_entity = static_cast<Ogre::Entity*>(entry.movable);
+            
                 size_t vertex_count;
                 size_t index_count;
                 Ogre::Vector3 *vertices = 0;
@@ -601,33 +623,52 @@ namespace OgreRenderer
 
                 // get the mesh information
                 getMeshInformation( ogre_entity->getMesh().get(), vertex_count, vertices, index_count, indices,
-                                    ogre_entity->getParentNode()->_getDerivedPosition(),
-                                    ogre_entity->getParentNode()->_getDerivedOrientation(),
-                                    ogre_entity->getParentNode()->_getDerivedScale());
-                
+                            ogre_entity->getParentNode()->_getDerivedPosition(),
+                            ogre_entity->getParentNode()->_getDerivedOrientation(),
+                            ogre_entity->getParentNode()->_getDerivedScale());
+        
                 // test for hitting individual triangles on the mesh
                 bool hit_mesh = false;
-                for (size_t i = 0; i <index_count; i += 3)
+                for (size_t j = 0; j < index_count; j += 3)
                 {
                     // check for a hit against this triangle
-                    std::pair<bool, Ogre::Real> hit = Ogre::Math::intersects(ray, vertices[indices[i]],
-                        vertices[indices[i+1]], vertices[indices[i+2]], true, false);
-
-                    if (hit.first && hit.second > 0.0f)
+                    std::pair<bool, Ogre::Real> hit = Ogre::Math::intersects(ray, vertices[indices[j]],
+                        vertices[indices[j+1]], vertices[indices[j+2]], true, false);
+                    if (hit.first)
                     {
-                        hit_mesh = true;
+                        if ((closest_distance < 0.0f) || (hit.second < closest_distance) || (current_priority > closest_priority))
+                        {
+                            if (current_priority >= closest_priority)
+                            {
+                                // this is the closest/best so far, save it
+                                closest_distance = hit.second;
+                                closest_priority = current_priority;
+                                closest_entity = entity;
+                            }
+                        }
                     }
                 }
                 
                 delete[] vertices;
                 delete[] indices;
-                
-                if (hit_mesh)
-                    return entity;
+            }
+            else
+            {
+                // Not an entity, fall back to just using the bounding box - ray intersection
+                if ((closest_distance < 0.0f) || (entry.distance < closest_distance) || (current_priority > closest_priority))
+                {
+                    if (current_priority >= closest_priority)
+                    {
+                        // this is the closest/best so far, save it
+                        closest_distance = entry.distance;
+                        closest_priority = current_priority;
+                        closest_entity = entity;
+                    }
+                }
             }
         }
-
-        return NULL;
+        
+        return closest_entity;
     }
     
     std::string Renderer::GetUniqueObjectName()
