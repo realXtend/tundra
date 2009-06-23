@@ -14,7 +14,8 @@ namespace OgreRenderer
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         scene_node_(NULL),
-        attached_(false)
+        attached_(false),
+        select_priority_(-1000000)
     {
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
         scene_node_ = scene_mgr->createSceneNode();

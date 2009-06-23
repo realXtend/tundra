@@ -354,6 +354,15 @@ namespace RexLogic
 
         prim.SelectPriority = ReadUInt32FromBytes(primdata,idx);
 
+        // Copy selectpriority to the placeable for the renderer raycast
+        Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+        if (placeableptr)
+        {
+            OgreRenderer::EC_OgrePlaceable &placeable = 
+                *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeableptr.get());
+            placeable.SetSelectPriority(prim.SelectPriority);
+        }
+
 		// Asset urls
 		// Check for reasonably longer data. There might be an extra endzero
 		if (idx+5 < primdata_size)

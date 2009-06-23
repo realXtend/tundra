@@ -46,6 +46,11 @@ namespace OgreRenderer
          */
         void SetScale(const Core::Vector3df& scale);
 
+        //! sets select priority
+        /*! \param priority new select priority
+         */
+        void SetSelectPriority(int priority) { select_priority_ = priority; }
+        
         //! gets parent placeable
         Foundation::ComponentPtr GetParent() { return parent_; }
         
@@ -59,6 +64,9 @@ namespace OgreRenderer
         //! returns Ogre scenenode
         Ogre::SceneNode* GetSceneNode() const { return scene_node_; }
 
+        //! returns select priority
+        int GetSelectPriority() const { return select_priority_; }
+        
     private:
         //! constructor
         /*! \param module renderer module
@@ -82,6 +90,9 @@ namespace OgreRenderer
         
         //! attached to scene hierarchy-flag
         bool attached_;
+        
+        //! selection priority for picking
+        int select_priority_;
     };
 }
 

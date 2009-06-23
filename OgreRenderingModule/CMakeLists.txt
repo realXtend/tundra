@@ -13,7 +13,6 @@ include_directories (
 	../Core
 	../Foundation
 	../SceneManager
-	../ReXLogic
 	../Interfaces
 	../AssetModule
 	../RexCommon

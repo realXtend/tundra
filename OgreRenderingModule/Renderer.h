@@ -155,15 +155,7 @@ namespace OgreRenderer
          */
         void Update(Core::f64 frametime);
 
-        //! Get the mesh information for the given mesh.
-        void getMeshInformation(const Ogre::Mesh *mesh,
-                                    size_t &vertex_count,
-                                    Core::Vector3df* &vertices,
-                                    size_t &index_count,
-                                    unsigned long* &indices,
-                                    const Core::Vector3df &position,
-                                    const Core::Quaternion &orient,
-                                    const Core::Vector3df &scale);
+
 
     private:
         //! Loads Ogre plugins in a manner which allows individual plugin loading to fail
