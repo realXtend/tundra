@@ -205,12 +205,13 @@ namespace Foundation
             renderer.lock()->Render();
         }
 
+        //! \note Frame limiter disabled for now for inaccuracy of boost timer, hopefully more accurate solution can be made on Qt side
         //! \note We limit frames for the whole main thread, not just for the renderer. This is the price to pay for being an application rather than a game.
-        Core::uint elapsed_time = static_cast<Core::uint>(timer.elapsed() * 1000); // get time until this point, as we do not want to include time used in sleeping in previous frame
-        if (max_ticks_ > elapsed_time)
-        {
-            boost::this_thread::sleep(boost::posix_time::milliseconds(max_ticks_ - elapsed_time));
-        }
+        //Core::uint elapsed_time = static_cast<Core::uint>(timer.elapsed() * 1000); // get time until this point, as we do not want to include time used in sleeping in previous frame
+        //if (max_ticks_ > elapsed_time)
+        //{
+        //    boost::this_thread::sleep(boost::posix_time::milliseconds(max_ticks_ - elapsed_time));
+        //}
     }
 
     std::string Framework::GetApplicationMainWindowHandle() const

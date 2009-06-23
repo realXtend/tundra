@@ -172,6 +172,9 @@ void mainPS(
 	diffuseLightFactor += SampleLuminanceMap(luminanceMap, tex);
 #endif
 
+    // Limit diffuse term to prevent overburn
+    diffuseLightFactor = min(diffuseLightFactor, float3(1,1,1));
+
 #ifdef SPECULAR_LIGHTING
 	float3 totalColor = diffuseLightFactor * baseColor.rgb + specularLightFactor * specularColor;
 #else
@@ -181,7 +184,7 @@ void mainPS(
 #ifdef REFLECTION_MAPPING
 	totalColor += SampleReflectionColor(normal, viewDir);
 #endif
-	
+
 	oCol.rgb = ApplyFog(totalColor, fog);
 #ifdef DIFFUSE_ALPHA
 	oCol.a = baseColor.a;

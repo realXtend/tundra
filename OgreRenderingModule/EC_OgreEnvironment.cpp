@@ -23,6 +23,8 @@
 #include <Modules/ProjectedGrid/ProjectedGrid.h>
 #endif
 
+const float MAX_SUNLIGHT_MULTIPLIER = 1.5f;
+
 namespace OgreRenderer
 {
 
@@ -42,7 +44,7 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface* module) :
     attached_(false),
     useCaelum_(false),
     useHydrax_(false),
-    sunColorMultiplier_(2.f),
+    sunColorMultiplier_(MAX_SUNLIGHT_MULTIPLIER),
     fogStart_(100.f),
     fogEnd_(500.f),
     waterFogStart_(1.f),
@@ -170,8 +172,8 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
     else if(sunDirZaxis < 0)
     {
         sunColorMultiplier_ += 0.010f;
-        if (sunColorMultiplier_ >= 2.f)
-            sunColorMultiplier_ = 2.f;
+        if (sunColorMultiplier_ >= MAX_SUNLIGHT_MULTIPLIER)
+            sunColorMultiplier_ = MAX_SUNLIGHT_MULTIPLIER;
     }
     
     // Get the sky/sunlight and fog colors from Caelum.
