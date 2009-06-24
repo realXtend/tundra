@@ -18,8 +18,10 @@ from circuits import handler, Event, Component, Manager, Debugger
 
 #is not identical to the c++ side, where x and y have abs and rel
 #XXX consider making identical and possible wrapping of the c++ type
-from collections import namedtuple
-MouseInfo = namedtuple('MouseInfo', 'x y rel_x rel_y')
+#from collections import namedtuple
+#MouseInfo = namedtuple('MouseInfo', 'x y rel_x rel_y')
+from mouseinfo import MouseInfo
+
 
 class Key(Event): pass
 class Update(Event): pass     
@@ -47,6 +49,7 @@ class ComponentRunner(Component):
         autoload.load(m)
         self.forwardevent = True
         r.eventhandled = False
+        self.mouseinfo = MouseInfo(0,0,0,0)
         #m.start()
 
     def run(self, deltatime=0.1):
@@ -73,7 +76,7 @@ class ComponentRunner(Component):
         instead, works similarly but still not the way it should
         """
         
-        #print "CircuitManager received KEY_INPUT (event:", evid, "key:", keycode, "mods:", keymod, ")",
+        print "CircuitManager received KEY_INPUT (event:", evid, "key:", keycode, "mods:", keymod, ")",
         rvalue = False
         if evid == r.KeyPressed:
             self.m.send(Key(keycode, keymod), "on_keydown")
@@ -84,9 +87,9 @@ class ComponentRunner(Component):
         return rvalue
             
     def MOUSE_INPUT(self, x_abs, y_abs, x_rel, y_rel):
-        i = MouseInfo(x_abs, y_abs, x_rel, y_rel)
-        #print "Manager got mouse input", i
-        self.m.send(MouseMove(i), "on_mousemove")
+        self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
+        #print "Manager got mouse input", self.mouseinfo, self.mouseinfo.x, self.mouseinfo.y
+        self.m.send(MouseMove(self.mouseinfo), "on_mousemove")
         
     def exit(self):
         print "Circuits manager stopping."
@@ -121,11 +124,15 @@ if __name__ == '__main__':
     while True:
         runner.run(0.1)
         #runner.RexNetMsgChatFromSimulator("main..", "hello")
+        """
         rvalue = runner.KEY_INPUT_EVENT(3, 46, 0)
         if rvalue:
             print "returned true"
         else:
             print "returned false"
+            
+        """
+        runner.MOUSE_INPUT(5, 6, 7, 8)
         time.sleep(0.1)
 
 
