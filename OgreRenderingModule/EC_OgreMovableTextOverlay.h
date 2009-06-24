@@ -56,8 +56,11 @@ namespace OgreRenderer
         
         //! displays the text as is in the overlay
         void SetText(const std::string &text);
-
-        //! hide / show the overlay
+		
+		//! returns the text of the overlay
+		std::string GetText() { return text_; }
+        
+		//! hide / show the overlay
         void SetVisible(bool visible);
 
         //! Updates the text overlay and container position and dimension.

@@ -22,11 +22,12 @@
 #include "SceneEvents.h" //sending scene events after (placeable component) manipulation
 
 #include "Entity.h"
-
+#include "Avatar.h" //remove?
+#include "EC_OpenSimPresence.h"
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
 //#include "../OgreRenderingModule/EC_OgreMesh.h"
 #include "../OgreRenderingModule/EC_OgrePlaceable.h"
-//#include "../OgreRenderingModule/EC_OgreMovableTextOverlay.h"
+#include "../OgreRenderingModule/EC_OgreMovableTextOverlay.h"
 #include "RexNetworkUtils.h" //debugboundingbox in CreateEntity
 
 
@@ -407,6 +408,23 @@ static PyObject* SendChat(PyObject *self, PyObject *args)
 
 	Py_RETURN_TRUE;
 }
+/* //W.I.P. RayCasting API for python
+static PyObject* RayCast(PyObject *self, PyObject *args)
+{
+	float x, y;
+	
+	if(!PyArg_ParseTuple(args, "ff", &x, &y))
+		return NULL; //XXX raise ValueError
+
+	Scene::Entity *entity = renderer_->Raycast(x, y);
+
+    if (entity)
+    {
+        Scene::Events::SceneEventData event_data(entity->GetId());
+        framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_GRAB, &event_data);
+    }
+}
+*/
 
 //returns an Entity wrapper, is in actual use
 static PyObject* GetEntity(PyObject *self, PyObject *args)
@@ -628,6 +646,16 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 		return Py_BuildValue("ffff", orient.x, orient.y, orient.z, orient.w);
 	}
 
+	else if (s_name.compare("text") == 0)
+	{
+		Foundation::ComponentInterfacePtr &overlay = entity->GetComponent("EC_OgreMovableTextOverlay"); //OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+		if (!overlay)
+			return NULL; //XXX report AttributeError and differentiate these
+		OgreRenderer::EC_OgreMovableTextOverlay *name_overlay = checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay *>(overlay.get());
+		std::string text = name_overlay->GetText();
+		return PyString_FromString(text.c_str());
+	}
+
 	std::cout << "unknown component type."  << std::endl;
 	return NULL;
 }
@@ -745,6 +773,31 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 		PythonScript::staticframework->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
 
 		return 0; //success.
+	}
+
+	else if (s_name.compare("text") == 0)
+	{
+        Foundation::ComponentPtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+		
+		const char* c_text = PyString_AsString(value);
+		std::string text = std::string(c_text);
+		//if(!PyArg_ParseTuple(value, "s", &text))
+		//	return NULL; //XXX report ArgumentException error
+				
+        if (overlay)
+        {
+            OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
+			name_overlay.SetText(text);
+            //name_overlay.SetPlaceable(placeable); //is this actually needed for something?
+        }
+		else
+			return NULL;
+
+		Scene::Events::SceneEventData event_data(eob->ent_id);
+		event_data.entity_ptr_list.push_back(entity);
+		PythonScript::staticframework->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
+
+		return 0;
 	}
 
 	std::cout << "unknown component type."  << std::endl;
