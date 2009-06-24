@@ -110,6 +110,10 @@ class Connection():
 ##    CLOSE CHANNEL
 ##====================================================
     def close_channel(self, addr):
+        if not addr in self.sessions:
+            print("Tried to close_channel('"+str(addr)+"') but there it doesn't exist.")
+            return
+            
         print "try"
         try:
             print "close_channel"
@@ -229,7 +233,10 @@ class Connection():
 
 
     def CloseMe(self, contactAddr):
-        del self.sessions[contactAddr]
+        try:
+            del self.sessions[contactAddr]
+        except:
+            print("Warning: Tried to delete connection '"+str(contactAddr)+"' but cannot find it.")
 
 
     def SubscribeContactList(self):

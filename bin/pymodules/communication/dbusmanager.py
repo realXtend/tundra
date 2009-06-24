@@ -49,7 +49,27 @@ class ServiceThread(threading.Thread):
             #print ">>>"+str(os.environ['dbusdir'])
             if self.print_debug_info_:
                 print("BEGIN subprocess: ["+str(self.application_path_)+"] with ["+str(self.arguments_)+"]")
-            subprocess.call([self.application_path_, self.arguments_]) # block until process is terminated
+            import os # DEBUG
+            print "DIR2="+str(os.getcwd()) # DEBUG
+            
+            # Create output log file
+            outFile = os.path.join(os.curdir, "output.log")
+            outptr = file(outFile, "w")
+
+            # Create error log file
+            errFile = os.path.join(os.curdir, "error.log")
+            errptr = file(errFile, "w")            
+            
+#            subprocess.call([self.application_path_, self.arguments_],0, None, None, outptr, errptr) # block until process is terminated
+#            p = subprocess.Popen([self.application_path_, self.arguments_], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            p = subprocess.Popen([self.application_path_, self.arguments_], stdin=subprocess.PIPE, stdout=outptr, stderr=subprocess.STDOUT)
+            exit_code = p.wait()
+ 
+            outptr.close()
+            errptr.close()
+            
+            
+            
             if self.print_debug_info_:
                 print("END subprocess")
         except WindowsError, (error):
@@ -166,7 +186,8 @@ class DBusManager:
             
         try:    
             self.service_thread_ = ServiceThread(app_path, app_args)
-            self.service_thread_.setDaemon(True) 
+            self.service_thread_.daemoin = False
+            self.service_thread_.setName('dbus-daemon')
             self.service_thread_.start()
         except str,(reason):
             print("Cannot start dbus daemon: " + str(reason) )
@@ -185,6 +206,7 @@ class DBusManager:
         if self.service_thread_ == None:
             return
         self.service_thread_.stop()
+        
         
         
 if __name__ == "__main__":
