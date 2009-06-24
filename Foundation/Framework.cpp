@@ -219,6 +219,11 @@ namespace Foundation
         return q_engine_->GetMainWindowHandle();
     }
 
+    QWidget *Framework::GetApplicationMainWindowQWidget() const
+    {
+        return q_engine_->GetMainWindowQWidget();
+    }
+
     void Framework::Go()
     {
         PROFILE(FW_Go);
@@ -233,6 +238,15 @@ namespace Foundation
 #endif
 
          UnloadModules();
+    }
+    
+    void Framework::Exit()
+    {
+        exit_signal_ = true;
+#ifdef USE_QT
+        if (q_engine_)
+            q_engine_->SendQAppQuitMessage();
+#endif
     }
 
     void Framework::LoadModules()
@@ -356,9 +370,33 @@ namespace Foundation
         }
     }
 
-    void PrintTimingsToConsole(const Console::ConsolePtr &console, const ProfilerNodeTree *node)
+    static std::string FormatTime(double time)
+    {
+        char str[128];
+        if (time >= 60.0)
+        {
+            double seconds = fmod(time, 60.0);
+            int minutes = (int)(time / 60.0);
+            sprintf(str, "%dmin %2.2fs", minutes, (float)seconds);
+        }
+        else if (time >= 1.0)
+            sprintf(str, "%2.2fs", (float)time);
+        else
+            sprintf(str, "%2.2fms", (float)time*1000.f);
+
+        return std::string(str);
+    }
+
+    /// Outputs a hierarchical list of all PROFILE() blocks onto the given console.
+    /// @param node The root node where to start the printing.
+    /// @param showUnused If true, even blocks that haven't been called will be included. If false, only
+    ///        the blocks that were actually recently called are included. 
+    void PrintTimingsToConsole(const Console::ConsolePtr &console, const ProfilerNodeTree *node, bool showUnused)
     {
         const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
+
+        // Controls whether we will recursively call self to also print all child nodes.
+        bool recurseToChildren = true;
 
         static int level = -2;
 
@@ -367,26 +405,46 @@ namespace Foundation
             level += 2;
             assert (level >= 0);
 
-            std::string timings;
-            timings.append(level, ' ');
-            timings += timings_node->Name();
-            timings += ": called total " + Core::ToString(timings_node->num_called_total_);
-            timings += ", elapsed total " + Core::ToString(timings_node->total_);
-            timings += ", called " + Core::ToString(timings_node->num_called_);
-            timings += ", elapsed " + Core::ToString(timings_node->elapsed_);
-
             double average = timings_node->num_called_total_ == 0 ? 0.0 : timings_node->total_ / timings_node->num_called_total_;
-            timings += ", average " + Core::ToString(average);
-            console->Print(timings);
+
+            if (timings_node->num_called_ == 0 && !showUnused)
+                recurseToChildren = false;
+            else
+            {
+                char str[512];
+                // If we've spent less than 1/10th of a millisecond, show condensed.
+                if (!showUnused && timings_node->elapsed_ * 1000.0 < 0.1) 
+                    sprintf(str, "%s: called: %d.", timings_node->Name().c_str(), timings_node->num_called_);
+                else
+                    sprintf(str, "%s: called total: %d, elapsed total: %s, called: %d, elapsed: %s, avg: %s",
+                        timings_node->Name().c_str(), timings_node->num_called_total_,
+                        FormatTime(timings_node->total_).c_str(), timings_node->num_called_,
+                        FormatTime(timings_node->elapsed_).c_str(), FormatTime(average).c_str());
+
+                std::string timings;
+                timings.append(level, ' ');
+                timings += str;
+    /*
+                timings += timings_node->Name();
+                timings += ": called total " + Core::ToString(timings_node->num_called_total_);
+                timings += ", elapsed total " + Core::ToString(timings_node->total_);
+                timings += ", called " + Core::ToString(timings_node->num_called_);
+                timings += ", elapsed " + Core::ToString(timings_node->elapsed_);
+                timings += ", average " + Core::ToString(average);
+    */
+                console->Print(timings);
+            }
         }
 
-        
-        const ProfilerNodeTree::NodeList &children = node->GetChildren();
-        for (ProfilerNodeTree::NodeList::const_iterator it = children.begin() ; 
-             it != children.end() ;
-             ++it)
+        if (recurseToChildren)
         {
-            PrintTimingsToConsole(console, *it);
+            const ProfilerNodeTree::NodeList &children = node->GetChildren();
+            for (ProfilerNodeTree::NodeList::const_iterator it = children.begin() ; 
+                 it != children.end() ;
+                 ++it)
+            {
+                PrintTimingsToConsole(console, *it, showUnused);
+            }
         }
         if (timings_node)
         {
@@ -401,7 +459,7 @@ namespace Foundation
         {
             Profiler &profiler = GetProfiler();
             ProfilerNodeTree *node = profiler.Lock().get();
-            PrintTimingsToConsole(console, node);
+            PrintTimingsToConsole(console, node, false);
             profiler.Release();
         }
         return Console::ResultSuccess();

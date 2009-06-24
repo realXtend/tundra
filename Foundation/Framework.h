@@ -8,6 +8,8 @@
 #include "ServiceManager.h"
 #include "Profiler.h"
 
+class QWidget;
+
 namespace Foundation
 {
     class RexQEngine;
@@ -44,7 +46,7 @@ namespace Foundation
         ConfigurationManagerPtr GetConfigManager() { return config_manager_;}
 
         //! Signal the framework to exit at first possible opportunity
-        void Exit() { exit_signal_ = true; }
+        void Exit();
 
         //! Returns true if framework is in the process of exiting (will exit at next possible opportunity)
         bool IsExiting() { return exit_signal_; }
@@ -146,6 +148,8 @@ namespace Foundation
         void UnloadModules();
 
         std::string GetApplicationMainWindowHandle() const;
+
+        QWidget *GetApplicationMainWindowQWidget() const;
     private:
         //! Registers framework specific console commands
         //! Should be called after modules are loaded and initialized

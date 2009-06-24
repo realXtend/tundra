@@ -5,7 +5,7 @@ set (TARGET_NAME Foundation)
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-file (GLOB MOC_FILES RexQEngine.h)
+file (GLOB MOC_FILES RexQEngine.h OgreUIView.h)
 
 # Include directories
 include_directories (
@@ -20,7 +20,7 @@ INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_QT4()
 
-#Wrap 
+# Build parameters required by Qt - define files for moc prepass, process resource and ui files.
 include(${QT_USE_FILE})
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})

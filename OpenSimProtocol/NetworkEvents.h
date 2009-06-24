@@ -66,6 +66,8 @@ namespace OpenSimProtocol
                  "XML-RPC authentication reply received", "XML-RPC login reply received", "Initalizing UDP connection",
                  "Connected" };
 
+            assert(state >= 0);
+            assert(state < STATE_ENUM_COUNT);
             return connection_strings[state];
         }
     }

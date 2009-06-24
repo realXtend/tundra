@@ -161,7 +161,7 @@ namespace Input
         //! Polls the current mouse state for both absolute and relative movement
         /*! Not thread safe. Internal use only!
         */
-        INPUTOIS_MODULE_API __inline const Events::Movement &GetMouseMovement() const { return movement_; }
+        INPUTOIS_MODULE_API const Events::Movement &GetMouseMovement() const;// { return movement_; }
 
         //! add a key for unbuffered listening
         /*! Internal use only!

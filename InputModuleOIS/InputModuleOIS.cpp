@@ -258,6 +258,11 @@ namespace Input
         return handled;
     }
 
+    const Events::Movement &InputModuleOIS::GetMouseMovement() const
+    {
+        return movement_;
+    }
+
     bool InputModuleOIS::IsEvent(Core::event_id_t input_event) const
     {
         //!\ This whole function is a bit wtf. This probably needs a better way to map from input events to KeyEventInfo struct. -cm

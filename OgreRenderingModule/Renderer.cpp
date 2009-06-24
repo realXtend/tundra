@@ -167,9 +167,7 @@ namespace OgreRenderer
         LoadPlugins(plugins_filename_);
         
 #ifdef _WINDOWS
-//        std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>("OgreRenderer", "rendersystem", "Direct3D9 Rendering Subsystem");
-        // Have to default to OpenGL until GPU programs fixed for PS 2.0 profile
-        std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>("OgreRenderer", "rendersystem", "OpenGL Rendering Subsystem");
+        std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>("OgreRenderer", "rendersystem", "Direct3D9 Rendering Subsystem");
 #else
         std::string rendersystem_name = "OpenGL Rendering Subsystem";
         framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", rendersystem_name);
@@ -199,10 +197,11 @@ namespace OgreRenderer
         Ogre::NameValuePairList params;
         std::string application_name = framework_->GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "application_name");
 
-        if (!external_window_parameter_.empty()) 
-            params["externalWindowHandle"] = external_window_parameter_;
-        else
-            params["externalWindowHandle"] = framework_->GetApplicationMainWindowHandle();
+        /// \todo These could be removed for good once we're sure we don't need to embed Ogre into GTK or Qt *ever*.
+//        if (!external_window_parameter_.empty()) 
+//            params["externalWindowHandle"] = external_window_parameter_;
+//        else
+//            params["externalWindowHandle"] = framework_->GetApplicationMainWindowHandle();
 
         //! \todo -1 is actually valid value for window position but not sure how to properly handle 'invalid' value so leave like this for now. -cm
         if (window_left != -1)

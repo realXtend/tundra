@@ -62,7 +62,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation Interfaces OpenSimProtocolModule RexCommon OgreRenderingModule GtkmmUI)
+target_link_libraries (${TARGET_NAME} Foundation Interfaces OpenSimProtocolModule RexCommon OgreRenderingModule GtkmmUI QtModule)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
