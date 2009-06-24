@@ -39,6 +39,7 @@ namespace RexLogic
     int32_t ReadSInt32FromBytes(const uint8_t* bytes, int& idx);
     float ReadFloatFromBytes(const uint8_t* bytes, int& idx);
     Core::Color ReadColorFromBytes(const uint8_t* bytes, int& idx);
+    Core::Color ReadColorFromBytesInverted(const uint8_t* bytes, int& idx);
     RexTypes::RexUUID ReadUUIDFromBytes(const uint8_t* bytes, int& idx);
     std::string ReadNullTerminatedStringFromBytes(const uint8_t* bytes, int& idx);
     bool ReadTextureEntryBits(uint32_t& bits, int& num_bits, const uint8_t* bytes, int& idx);

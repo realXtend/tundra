@@ -50,9 +50,9 @@ namespace RexLogic
             return;
             
         std::string mat_override;
-		if ((primitive.Materials[0].Type == RexTypes::RexAT_MaterialScript) && (!RexTypes::IsNull(primitive.Materials[0].asset_id)))
+        if ((primitive.Materials[0].Type == RexTypes::RexAT_MaterialScript) && (!RexTypes::IsNull(primitive.Materials[0].asset_id)))
         {
-			mat_override = primitive.Materials[0].asset_id;
+            mat_override = primitive.Materials[0].asset_id;
 
             // If cannot find the override material, use default
             // We will probably get resource ready event later for the material & redo this prim
@@ -124,10 +124,11 @@ namespace RexLogic
             {
                 object->clear();
                 
-				RexTypes::RexAssetID texture_id; 
-				RexTypes::RexAssetID prev_texture_id;
+                RexTypes::RexAssetID texture_id; 
+                RexTypes::RexAssetID prev_texture_id;
                 
                 Core::uint indices = 0;
+                bool first_face = true;
                 
                 for (int i = 0; i < primMesh.viewerFaces.size(); ++i)
                 {
@@ -135,8 +136,14 @@ namespace RexLogic
                     ColorMap::const_iterator c = primitive.PrimColors.find(primMesh.viewerFaces[i].primFaceNumber);
                     if (c != primitive.PrimColors.end())
                         color = c->second;
+
+                    // Skip face if very transparent
+                    if (color.a <= 0.11f)
+                        continue;
                     
-                    if (mat_override.empty())
+                    if (!mat_override.empty())
+                        texture_id = mat_override;
+                    else
                     {
                         std::string suffix = "";
                         
@@ -153,26 +160,21 @@ namespace RexLogic
                         TextureMap::const_iterator t = primitive.PrimTextures.find(primMesh.viewerFaces[i].primFaceNumber);
                         if (t != primitive.PrimTextures.end())
                             texture_id = t->second + suffix;
-                        
-                        if ((i == 0) || (texture_id != prev_texture_id))
-                        {
-                            if (indices)
-                                object->end();
-
-                            indices = 0;
-                                
-                            // Here we assume (again) that material name = texture UUID in text form
-                            // Actually create the material here if texture yet missing, we'll fill later
-                            OgreRenderer::CreateLegacyMaterials(texture_id);
-                            
-                            object->begin(texture_id, Ogre::RenderOperation::OT_TRIANGLE_LIST);
-                        }
-                        prev_texture_id = texture_id;
+                        // Actually create the material here if texture yet missing, the material will be
+                        // updated later
+                        OgreRenderer::CreateLegacyMaterials(texture_id);
                     }
-                    else
+                    
+                    if ((first_face) || (texture_id != prev_texture_id))
                     {
-                        if (i == 0)
-                            object->begin(mat_override, Ogre::RenderOperation::OT_TRIANGLE_LIST);
+                        if (indices)
+                            object->end();
+
+                        indices = 0;
+                        
+                        object->begin(texture_id, Ogre::RenderOperation::OT_TRIANGLE_LIST);
+                        prev_texture_id = texture_id;
+                        first_face = false;
                     }
                     
                     Ogre::Vector3 pos1(primMesh.viewerFaces[i].v1.X, primMesh.viewerFaces[i].v1.Y, primMesh.viewerFaces[i].v1.Z);
