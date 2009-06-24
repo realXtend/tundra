@@ -16,7 +16,7 @@ macro (INCLUDE_PYTHON)
 	
   if (MSVC)
     include_directories (${REX_DEP_PATH}/Python/include)
-    link_directories (${REX_DEP_PATH}/Python)
+    link_directories (${REX_DEP_PATH}/Python/lib)
   else()
     include_directories(${python_INCLUDE_DIRS})
     link_directories(${python_LIBRARY_DIRS})
