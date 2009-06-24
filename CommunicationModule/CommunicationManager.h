@@ -31,7 +31,7 @@
 
 namespace Communication
 {
-	#define COMMUNICATION_PYTHON_MODULE "IMDemo" 
+	#define COMMUNICATION_PYTHON_MODULE "communication.IMDemo" 
 	#define COMMUNICATION_PYTHON_CLASS "IMDemo"
 	#define LOCAL_USER_ID "1" // defined in python side
 
