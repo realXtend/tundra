@@ -7,7 +7,7 @@ vertex_program UnlitTexturedVP cg
 	default_params
 	{
 		param_named_auto worldViewProj worldviewproj_matrix
-	}	
+	}
 }
 
 fragment_program UnlitTexturedFP cg
@@ -15,4 +15,25 @@ fragment_program UnlitTexturedFP cg
 	source UnlitTextured.cg
 	entry_point UnlitTexturedFP
 	profiles ps_2_0 arbfp1
+}
+
+vertex_program UnlitTexturedVColVP cg
+{
+	source UnlitTextured.cg
+	entry_point UnlitTexturedVP
+	profiles vs_2_0 arbvp1
+   	compile_arguments -DVERTEX_COLOR
+
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+	}
+}
+
+fragment_program UnlitTexturedVColFP cg
+{
+	source UnlitTextured.cg
+	entry_point UnlitTexturedFP
+	profiles ps_2_0 arbfp1
+   	compile_arguments -DVERTEX_COLOR
 }

@@ -1,12 +1,11 @@
 // Renders primitives with a single lit texture, includes alpharejection
-material LitTexturedAlpha
+material LitTexturedHardAlpha
 {
 	technique
 	{	    
 		pass
 		{
             alpha_rejection greater_equal 128
-			iteration once
 
 			vertex_program_ref rex/DiffAlphamaskVP
 			{

@@ -145,7 +145,11 @@ namespace RexLogic
                         texture_id = mat_override;
                     else
                     {
-                        std::string suffix = "";
+                        unsigned variation = OgreRenderer::LEGACYMAT_VERTEXCOL;
+                        
+                        // Check for transparency
+                        if (color.a < 1.0f)
+                            variation = OgreRenderer::LEGACYMAT_VERTEXCOLALPHA;
                         
                         // Check for fullbright
                         bool fullbright = (primitive.PrimDefaultMaterialType & RexTypes::MATERIALTYPE_FULLBRIGHT) != 0;
@@ -153,7 +157,9 @@ namespace RexLogic
                         if (mt != primitive.PrimMaterialTypes.end())
                             fullbright = (mt->second & RexTypes::MATERIALTYPE_FULLBRIGHT) != 0;
                         if (fullbright)
-                            suffix = OgreRenderer::GetMaterialSuffix(OgreRenderer::LEGACYMAT_FULLBRIGHT);
+                            variation |= OgreRenderer::LEGACYMAT_FULLBRIGHT;
+                        
+                        std::string suffix = OgreRenderer::GetMaterialSuffix(variation);
                         
                         // Try to find face's texture in texturemap, use default if not found
                         texture_id = primitive.PrimDefaultTextureID + suffix;

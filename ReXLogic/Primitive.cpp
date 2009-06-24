@@ -540,7 +540,10 @@ namespace RexLogic
             
             // Create/update geometry
             if (prim.HasPrimShapeData)
+            {
                 CreatePrimGeometry(rexlogicmodule_->GetFramework(), custom.GetObject(), prim);
+                custom.CommitChanges();
+            }
         }
         
         if (!RexTypes::IsNull(prim.ParticleScriptID))
@@ -954,7 +957,10 @@ namespace RexLogic
                 OgreRenderer::EC_OgreCustomObject& custom = *checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(customptr.get());
                 // Update geometry now that the material exists
                 if (prim.HasPrimShapeData)
+                {
                     CreatePrimGeometry(rexlogicmodule_->GetFramework(), custom.GetObject(), prim);
+                    custom.CommitChanges();
+                }
             }
         }
         

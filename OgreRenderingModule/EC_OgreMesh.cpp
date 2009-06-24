@@ -30,11 +30,11 @@ namespace OgreRenderer
         RemoveMesh();
         
         if (adjustment_node_)
-        {            
+        {
             Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
             scene_mgr->destroySceneNode(adjustment_node_);
             adjustment_node_ = NULL;
-        }        
+        }
     }
     
     void EC_OgreMesh::SetPlaceable(Foundation::ComponentPtr placeable)

@@ -1,18 +1,18 @@
-material UnlitTexturedSoftAlpha
-{ 
+material UnlitTexturedSoftAlphaVCol
+{
     receive_shadows off
 
 	technique
 	{
 		pass
 		{
-            depth_write off
 	        scene_blend alpha_blend
+            depth_write off
 
-			vertex_program_ref UnlitTexturedVP
+			vertex_program_ref UnlitTexturedVColVP
 			{
 			}
-			fragment_program_ref UnlitTexturedFP
+			fragment_program_ref UnlitTexturedVColFP
 			{
 			}
 			texture_unit baseMap
@@ -31,10 +31,13 @@ material UnlitTexturedSoftAlpha
 	        scene_blend alpha_blend
             depth_write off
 
+            diffuse vertexcolour
+            
 	        texture_unit baseMap
 	        {
 	            texture TextureMissing.png
 	        }
         }
 	}
+
 }

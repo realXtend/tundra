@@ -16,8 +16,17 @@ namespace OgreRenderer
     //! Additive blended legacy variation
     const Core::uint LEGACYMAT_ADDITIVE = 2;
     
+    //! Forced alpha legacy variation
+    const Core::uint LEGACYMAT_ALPHA = 4;
+
+    //! Vertex color variation
+    const Core::uint LEGACYMAT_VERTEXCOL = 6;
+    
+    //! Vertex color + forced alpha variation
+    const Core::uint LEGACYMAT_VERTEXCOLALPHA = 8;
+    
     //! Maximum legacy material variations
-    const Core::uint MAX_MATERIAL_VARIATIONS = 4;
+    const Core::uint MAX_MATERIAL_VARIATIONS = 10;
 
     //! Gets material suffix by variation type
     std::string OGRE_MODULE_API GetMaterialSuffix(Core::uint variation);

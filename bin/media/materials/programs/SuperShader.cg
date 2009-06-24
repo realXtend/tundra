@@ -27,6 +27,9 @@ void mainVS
 (
 	in float4 pos : POSITION,
 	in float3 normal : NORMAL,
+#ifdef VERTEX_COLOR
+	in float4 color : COLOR,
+#endif
 #ifdef NORMAL_MAPPING	
 	in float3 tangent : TANGENT,
 #endif	
@@ -36,6 +39,9 @@ void mainVS
 #endif	
 	out float4 oPos : POSITION,
 	out float2 oTex,
+#ifdef VERTEX_COLOR
+	out float4 oColor : COLOR,
+#endif
 #ifdef LIGHT_MAPPING
 	out float2 oTex2, 
 #endif		
@@ -88,6 +94,11 @@ void mainVS
 	
 #endif
 
+#ifdef VERTEX_COLOR
+    // Vertex color
+    oColor = color;
+#endif
+
 	// Output fog color and strength.
 	oFog = ComputeFog(oPos.z);
 	
@@ -98,6 +109,9 @@ void mainVS
 }
 
 void mainPS(
+#ifdef VERTEX_COLOR
+    in float4 color : COLOR,
+#endif
 	in float2 tex,
 #ifdef LIGHT_MAPPING
 	in float2 tex2, 
@@ -125,7 +139,12 @@ void mainPS(
 	for(int i = 0; i < cNumPerPixelLights; ++i)
 		lightDir[i].xyz = normalize(lightDir[i].xyz);
 
+#ifdef VERTEX_COLOR
+	float4 baseColor = color * SampleDiffuseColor(tex);
+#else
 	float4 baseColor = SampleDiffuseColor(tex);
+#endif
+
 #ifdef SPECULAR_LIGHTING
 	float3 specularColor = SampleSpecularColor(tex);
 #endif

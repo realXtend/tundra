@@ -1,4 +1,4 @@
-material UnlitTexturedAlpha
+material UnlitTexturedHardAlpha
 {
 	technique
 	{
