@@ -12,7 +12,7 @@
 #include <QDebug>
 #include <QMouseEvent>
 #include <QPicture>
-#include <QGraphicsSceneEvent.h>
+#include <QGraphicsSceneEvent>
 
 #include <OgreHardwarePixelBuffer.h>
 #include <OgreTexture.h>
