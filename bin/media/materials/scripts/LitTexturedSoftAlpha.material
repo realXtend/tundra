@@ -4,35 +4,36 @@ material LitTexturedSoftAlpha
 	{
 		pass
 		{
+		    iteration_once
             depth_write off
 	        scene_blend alpha_blend
-			iteration once
 
-			vertex_program_ref rex/DiffVP
+			vertex_program_ref rex/DiffaVP
 			{
 			}
-			fragment_program_ref rex/DiffFP
+			fragment_program_ref rex/DiffaFP
 			{
 			}
-			
+
 			texture_unit baseMap
 			{
 				texture TextureMissing.png
 			}
 		}
 	}
+	
 	// fallback
 	technique
 	{
-	    pass
-	    {
+		pass
+		{
             depth_write off
-            scene_blend alpha_blend
-	        
-            texture_unit baseMap
-	        {
-	            texture TextureMissing.png
-	        }
-        }
+	        scene_blend alpha_blend
+
+			texture_unit baseMap
+			{
+				texture TextureMissing.png
+			}
+		}
 	}
 }

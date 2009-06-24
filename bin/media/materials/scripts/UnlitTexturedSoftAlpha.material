@@ -1,12 +1,12 @@
 material UnlitTexturedSoftAlpha
-{
+{ 
 	technique
 	{
 		pass
 		{
             depth_write off
 	        scene_blend alpha_blend
-
+		
 			vertex_program_ref UnlitTexturedVP
 			{
 			}
@@ -19,8 +19,8 @@ material UnlitTexturedSoftAlpha
 			}
 		} 
 	}
-	
-	// fallback
+
+    // fallback
 	technique
 	{
 	    pass

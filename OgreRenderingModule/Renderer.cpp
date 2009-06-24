@@ -90,25 +90,6 @@ namespace OgreRenderer
         ListenerList listeners_;
     };
 
-/////////////////////////////////////////////////////////
-
-    Core::Vector3df ToRexVector(const Ogre::Vector3 &vec)
-    {
-        return Core::Vector3df(vec.x, vec.y, vec.z);
-    }
-
-    Ogre::Vector3 ToOgreVector(const Core::Vector3df &vec)
-    {
-        return Ogre::Vector3(vec.x, vec.y, vec.z);
-    }
-
-    Core::Quaternion ToRexQuaternion(const Ogre::Quaternion &quat)
-    {
-        return Core::Quaternion(quat.x, quat.y, quat.z, quat.w);
-    }
-
-/////////////////////////////////////////////////////////
-
     Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins) :
         initialized_(false),
         framework_(framework),

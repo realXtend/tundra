@@ -48,6 +48,9 @@ namespace OgreRenderer
         //! assignment operator. See copy constructor
 //        EC_OgreMovableTextOverlay &operator ==(const EC_OgreTextOverlay &other) { assert (false); return *this; }
         
+        //! Creates the Ogre overlay with a specified offset. Call first.
+        void CreateOverlay(const Core::Vector3df& offset);
+        
         //! Sets the placeable (scene node) which the overlay is meant to follow.
         void SetPlaceable(Foundation::ComponentPtr placeable);
         
@@ -57,16 +60,10 @@ namespace OgreRenderer
         //! hide / show the overlay
         void SetVisible(bool visible);
 
-        //! @return True if the overlay is visible, false otherwise.
-        bool IsVisible() const;
-
         //! Updates the text overlay and container position and dimension.
         void Update();
         
     private:
-        //! Create the Ogre overlay
-        void CreateOverlay();
-        
         //! Attach scene node to parent placeable node
         void AttachNode();
         

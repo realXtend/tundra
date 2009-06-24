@@ -210,7 +210,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
     {
         // We're below the water.
 #ifdef CAELUM
-        // Hide the Caleum subsystems.
+        // Hide the Caelum subsystems.
         caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
 #endif
         sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_ * waterFogColor_, 0.001, waterFogStart_, waterFogEnd_);
