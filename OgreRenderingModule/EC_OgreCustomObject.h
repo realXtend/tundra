@@ -22,6 +22,8 @@ namespace OgreRenderer
     
     //! Ogre custom object component
     /*! Needs to be attached to a placeable (aka scene node) to be visible.
+        Note that internally this converts the manual object to a mesh entity because of render queue bugs in Ogre
+        related to manual objects (still unfixed as of 1.6.2)
         \ingroup OgreRenderingModuleClient
      */
     class OGRE_MODULE_API EC_OgreCustomObject : public Foundation::ComponentInterface
