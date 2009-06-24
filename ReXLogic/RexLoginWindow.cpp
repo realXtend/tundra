@@ -60,24 +60,35 @@ namespace RexLogic
              
         strText = framework_->GetDefaultConfigPtr()->GetSetting<std::string>(strGroup, strKey);
 
-        // Opensim auth:
+        // Opensim username:
         QLineEdit *line = login_widget_->findChild<QLineEdit* >("line_user_name");
         line->setText(QString(strText.c_str()));
 
-        // Rex auth: 
-        line = login_widget_->findChild<QLineEdit* >("line_user_name_au");
-        line->setText(QString(strText.c_str()));
-         
-        strKey = "server";
+		strKey = "server";	
         strText = framework_->GetDefaultConfigPtr()->GetSetting<std::string>(strGroup, strKey);
 
-        // Opensim auth: 
+        // Opensim server: 
         line = login_widget_->findChild<QLineEdit* >("line_server");
         line->setText(QString(strText.c_str()));
 
-        // Rex auth:
+		// Rex auth:
         line = login_widget_->findChild<QLineEdit* >("line_server_au");
         line->setText(QString(strText.c_str()));
+
+		strKey = "auth_name";	
+        strText = framework_->GetDefaultConfigPtr()->GetSetting<std::string>(strGroup, strKey);
+
+		// Rex auth: 
+        line = login_widget_->findChild<QLineEdit* >("line_login_au");
+        line->setText(QString(strText.c_str()));
+         
+		strKey = "auth_server";	
+        strText = framework_->GetDefaultConfigPtr()->GetSetting<std::string>(strGroup, strKey);
+
+		// Rex auth: 
+        line = login_widget_->findChild<QLineEdit* >("line_auth_server");
+        line->setText(QString(strText.c_str()));
+         
 
         login_widget_->show();
 
@@ -141,15 +152,28 @@ namespace RexLogic
 
 	    successful = rex_logic_->GetServerConnection()->ConnectToServer(user_name,
 									  password, server_address);
+		if (successful)
+      	{
+			// Save login and server settings for future use. 
+			framework_->GetConfigManager()->SetSetting<std::string>(
+											std::string("Login"),
+											std::string("server"),
+											server_address);
+			framework_->GetConfigManager()->SetSetting<std::string>(
+											std::string("Login"),
+											std::string("username"),
+											user_name);
+        }
+
 	    break;
 	  }
 	case 1:
 	  {
 	    // Rex authentication 
 	 
-	    QLineEdit *line = login_widget_->findChild<QLineEdit* >("line_user_name_au");
-	    user_name = line->text().toStdString();
-	    line =  login_widget_->findChild<QLineEdit* >("line_server_au");
+	    QLineEdit* line = 0;
+	    user_name ="";
+		line =  login_widget_->findChild<QLineEdit* >("line_server_au");
 	    server_address = line->text().toStdString();
 
 	    // password
@@ -157,17 +181,37 @@ namespace RexLogic
 	    line = login_widget_->findChild<QLineEdit* >("line_password_au");
 
 	    std::string password = line->text().toStdString();
-	    std::cout<<"Password: "<<password<<"user_name: "<<user_name<<" server_address: "<<server_address<<std::endl; 
-	    line = login_widget_->findChild<QLineEdit* >("line_auth_login");
+	   
+	    line = login_widget_->findChild<QLineEdit* >("line_login_au");
 	    std::string auth_login = line->text().toStdString();
-
-	    line = login_widget_->findChild<QLineEdit* >("line_auth_server");
+		
+		// START HACK because some reason authentication server needs a last name when system logs into localhost authentication server
+		// we need to do this. 
+		user_name = auth_login + " " + auth_login;
+	    // END 
+		
+		line = login_widget_->findChild<QLineEdit* >("line_auth_server");
 	    std::string auth_server = line->text().toStdString();
-	    std::cout<<"auth_server: "<<auth_server<<" auth_login: "<<auth_login<<std::endl;
-
+	 
 	    successful = rex_logic_->GetServerConnection()->ConnectToServer(user_name, password,
 									  server_address, auth_server, auth_login);
-	    break;
+		// Because hack we clear this, just in case.
+		user_name="";
+
+		if (successful)
+		{
+			// Save login and server settings for future use. 
+			framework_->GetConfigManager()->SetSetting<std::string>(
+											std::string("Login"),
+											std::string("auth_server"),
+											auth_server);
+			framework_->GetConfigManager()->SetSetting<std::string>(
+											std::string("Login"),
+											std::string("auth_name"),
+											auth_login);
+		}
+	    
+		break;
 	  }
 	case 2:
 	  {
@@ -178,18 +222,7 @@ namespace RexLogic
 	  break;
 	}
       
-      if (successful)
-      	{
-	  // Save login and server settings for future use. 
-	  framework_->GetConfigManager()->SetSetting<std::string>(
-								  std::string("Login"),
-								  std::string("server"),
-								  server_address);
-	  framework_->GetConfigManager()->SetSetting<std::string>(
-								  std::string("Login"),
-								  std::string("username"),
-								  user_name);
-        }
+     
     }
 
     void RexLoginWindow::DisconnectAndShowLoginWindow()
