@@ -34,8 +34,7 @@ class Settings:
             lines.append(key + "=" + val + "\n")
             #saveStr = saveStr + key + "=" + value + "\n"
             
-        #iniFile = open("pymodules"+os.sep+"connection.ini","w")
-        iniFile = open("pymodules"+os.sep+"connection.ini","w")
+        iniFile = open("data"+os.sep+"connection.ini","w")
         iniFile.writelines(lines)
         iniFile.close()
 
@@ -63,8 +62,12 @@ class Settings:
     def loadCommunicationIni(self):
         """ Doing it the more dynamic way """
         print "loading connection.ini file"
-        accoutFileStr = file("pymodules"+os.sep+"connection.ini").read()
-        d = self.parse_account(accoutFileStr)
+        try:
+            accoutFileStr = file("data"+os.sep+"connection.ini").read()
+            d = self.parse_account(accoutFileStr)
+        except:
+            pairs = [] 
+            d = dict(pairs)
         return d
 
     def parse_account(self, s):
