@@ -93,7 +93,7 @@ namespace RexLogic
 
         void HandleMaterialResourceReady(Core::entity_id_t entityid, Foundation::ResourcePtr res);
 
-        //! handles prim size change
+        //! handles prim size
         void HandlePrimScale(Core::entity_id_t entityid);
 
         //! discards request tags for certain entity

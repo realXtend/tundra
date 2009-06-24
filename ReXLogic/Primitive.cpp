@@ -580,6 +580,17 @@ namespace RexLogic
                 entity->RemoveEntityComponent(particleptr);
             }
         }
+        
+        // Handle visibility via the placeable
+        {
+            Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+            if (placeableptr)
+            {
+                OgreRenderer::EC_OgrePlaceable& placeable = *(dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(placeableptr.get()));
+                placeable.GetSceneNode()->setVisible(prim.IsVisible);
+            }
+        }
+        
     }
     
     void Primitive::HandlePrimTexturesAndMaterial(Core::entity_id_t entityid)
@@ -903,10 +914,10 @@ namespace RexLogic
         {
             Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
             if (!mesh) return;
-            OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());      
+            OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
             // If don't have the actual mesh entity yet, no use trying to set texture
             if (!meshptr->GetEntity()) return;
-                            
+            
             MaterialMap::const_iterator i = prim.Materials.begin();
             while (i != prim.Materials.end())
             {
@@ -1100,14 +1111,14 @@ namespace RexLogic
         if (idx >= length)
             return;
         
-        Core::Color default_color = ReadColorFromBytes(bytes, idx);
+        Core::Color default_color = ReadColorFromBytesInverted(bytes, idx);
         prim.PrimDefaultColor = default_color;
         
         while ((idx < length) && (ReadTextureEntryBits(bits, num_bits, bytes, idx)))
         {
             if (idx >= length)
                 return;
-            Core::Color color = ReadColorFromBytes(bytes, idx);
+            Core::Color color = ReadColorFromBytesInverted(bytes, idx);
             for (int i = 0; i < num_bits; ++i)
             {
                 if (bits & 1)

@@ -37,7 +37,11 @@ namespace OgreRenderer
     Ogre::MaterialPtr OGRE_MODULE_API GetOrCreateLitTexturedMaterial(const char *materialName);
 
     //! Creates legacy material variations from texture
-    void OGRE_MODULE_API CreateLegacyMaterials(const std::string& texture_name);
+    /*! @param texture_name texture to use
+        @param update if true, will recreate the materials even if they already exist (used when updating the texture, and
+        texture alpha settings possibly change)
+     */
+    void OGRE_MODULE_API CreateLegacyMaterials(const std::string& texture_name, bool update = false);
 
     //! Sets texture unit on a material to a given texture name.
     /*! If texture cannot actually be found, uses the missing texture texture

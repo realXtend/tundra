@@ -91,24 +91,29 @@ namespace OgreRenderer
         return material;
     }
 
-    void CreateLegacyMaterials(const std::string& texture_name)
+    void CreateLegacyMaterials(const std::string& texture_name, bool update)
     {
+        Ogre::TextureManager &tm = Ogre::TextureManager::getSingleton();
+        Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
+        
+        Ogre::TexturePtr tex = tm.getByName(texture_name);
+        bool has_alpha = false;
+        if (!tex.isNull())
+        {
+            if (Ogre::PixelUtil::hasAlpha(tex->getFormat()))
+                has_alpha = true;
+        }
+        
+        // Early out: if texture does not yet exist and materials have already been created once
+        if (((tex.isNull()) || (!update)) && (!mm.getByName(texture_name).isNull()))
+            return;
+        
         for (Core::uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
         {
             const std::string& base_material_name = BaseMaterials[i];
             const std::string& alpha_base_material_name = AlphaBaseMaterials[i];
             
-            Ogre::TextureManager &tm = Ogre::TextureManager::getSingleton();
-            Ogre::TexturePtr tex = tm.getByName(texture_name);
-            bool has_alpha = false;
-            if (!tex.isNull())
-            {
-                if (Ogre::PixelUtil::hasAlpha(tex->getFormat()))
-                    has_alpha = true;
-            }
-            
             std::string material_name = texture_name + MaterialSuffix[i];
-            Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
             Ogre::MaterialPtr material = mm.getByName(material_name);
 
             if (!material.get())
