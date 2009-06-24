@@ -1,7 +1,6 @@
 #include "StableHeaders.h"
 
 #include "OgreUIView.h"
-#include "OgreUIScene.h"
 #include "Profiler.h"
 
 #ifndef Q_WS_WIN

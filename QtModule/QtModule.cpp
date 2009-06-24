@@ -12,7 +12,6 @@
 #include <QPushButton>
 #include <QtUiTools>
 
-#include "OgreUIScene.h"
 #include "OgreUIView.h"
 #include "InputEvents.h"
 #include "InputModuleOIS.h"
