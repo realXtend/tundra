@@ -65,11 +65,16 @@ namespace RexLogic
         int px = x * cPatchSize + xinside;
         int py = y * cPatchSize + yinside;
         
-        float x_slope = GetPoint(px-1, py) - GetPoint(px+1, py);
-        if ((px <= 0) || (px >= cNumPatchesPerEdge * 16))
+        int xNext = Core::clamp(px+1, 0, cNumPatchesPerEdge * Patch::cNumVerticesPerPatchEdge - 1);
+        int yNext = Core::clamp(py+1, 0, cNumPatchesPerEdge * Patch::cNumVerticesPerPatchEdge - 1);
+        int xPrev = Core::clamp(px-1, 0, cNumPatchesPerEdge * Patch::cNumVerticesPerPatchEdge - 1);
+        int yPrev = Core::clamp(py-1, 0, cNumPatchesPerEdge * Patch::cNumVerticesPerPatchEdge - 1);
+
+        float x_slope = GetPoint(xPrev, py) - GetPoint(xNext, py);
+        if ((px <= 0) || (px >= cNumPatchesPerEdge * Patch::cNumVerticesPerPatchEdge))
             x_slope *= 2;
-        float y_slope = GetPoint(px, py-1) - GetPoint(px, py+1);
-        if ((py <= 0) || (py >= cNumPatchesPerEdge * 16))
+        float y_slope = GetPoint(px, yPrev) - GetPoint(px, yNext);
+        if ((py <= 0) || (py >= cNumPatchesPerEdge * Patch::cNumVerticesPerPatchEdge))
             y_slope *= 2;
         
         Core::Vector3df normal(x_slope, y_slope, 2.0);

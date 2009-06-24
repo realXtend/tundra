@@ -368,6 +368,7 @@ namespace OgreRenderer
     {
         if (!initialized_) return;
         
+        PROFILE(Renderer_Render);
         root_->_fireFrameStarted();
         
         // Render without swapping buffers first
