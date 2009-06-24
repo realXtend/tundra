@@ -7,20 +7,17 @@
 
 namespace OgreRenderer
 {
-    //! Standard legacy variation (lit, hard alpha if any)
+    //! Standard legacy variation (lit)
     const Core::uint LEGACYMAT_NORMAL = 0;
     
     //! Fullbright legacy variation (can be combined with others)
     const Core::uint LEGACYMAT_FULLBRIGHT = 1;
     
-    //! Soft alpha blended legacy variation
-    const Core::uint LEGACYMAT_ALPHA = 2;
-    
     //! Additive blended legacy variation
-    const Core::uint LEGACYMAT_ADDITIVE = 4;
+    const Core::uint LEGACYMAT_ADDITIVE = 2;
     
     //! Maximum legacy material variations
-    const Core::uint MAX_MATERIAL_VARIATIONS = 6;
+    const Core::uint MAX_MATERIAL_VARIATIONS = 4;
 
     //! Gets material suffix by variation type
     std::string OGRE_MODULE_API GetMaterialSuffix(Core::uint variation);

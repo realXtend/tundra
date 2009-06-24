@@ -5,6 +5,7 @@
 #include "EC_OgrePlaceable.h"
 #include "Renderer.h"
 #include "OgreRenderingModule.h"
+#include "OgreConversionUtils.h"
 
 #include <Ogre.h>
 #include <OgreTextAreaOverlayElement.h>
@@ -35,8 +36,6 @@ namespace OgreRenderer
         camera_ = renderer_.lock()->GetCurrentCamera();
         windowWidth_ = camera_->getViewport()->getActualWidth();
         windowHeight_ = camera_->getViewport()->getActualHeight();
-        
-        CreateOverlay();
     }
     
     // virtual
@@ -44,14 +43,17 @@ namespace OgreRenderer
     {
         if (!renderer_.expired())
         {    
-	        overlay_->hide();
-	        container_->removeChild(overlayName_);
-	        overlay_->remove2D(container_);
+            if (overlay_)
+            {
+	            overlay_->hide();
+	            container_->removeChild(overlayName_);
+	            overlay_->remove2D(container_);
 
-            Ogre::OverlayManager *overlayManager = Ogre::OverlayManager::getSingletonPtr();    	    
-	        overlayManager->destroyOverlayElement(text_element_);
-	        overlayManager->destroyOverlayElement(container_);
-	        overlayManager->destroy(overlay_);
+                Ogre::OverlayManager *overlayManager = Ogre::OverlayManager::getSingletonPtr();    	    
+	            overlayManager->destroyOverlayElement(text_element_);
+	            overlayManager->destroyOverlayElement(container_);
+	            overlayManager->destroy(overlay_);
+	        }
 	        
 	        if (node_)
 	        {
@@ -65,6 +67,9 @@ namespace OgreRenderer
 
     void EC_OgreMovableTextOverlay::Update()
     {
+        if (!node_)
+            return;
+        
         if (!visible_)
 	        return;
 
@@ -118,6 +123,9 @@ namespace OgreRenderer
     
     void EC_OgreMovableTextOverlay::SetVisible(bool visible)
     {
+        if (!node_)
+            return;
+            
 	    visible_ = visible;
 	    if (visible)
 		    overlay_->show();
@@ -127,6 +135,9 @@ namespace OgreRenderer
     
     void EC_OgreMovableTextOverlay::SetPlaceable(Foundation::ComponentPtr placeable)
     {
+        if (!node_)
+            return;
+            
         if (!placeable)
         {
             OgreRenderingModule::LogError("Null placeable for overlay");
@@ -169,23 +180,30 @@ namespace OgreRenderer
 
     void EC_OgreMovableTextOverlay::SetText(const std::string& text)
     {
+        if (!node_)
+            return;
+            
 	    text_ = text;
 	    text_element_->setCaption(text_);
         textDim_ = GetTextDimensions(text_);
 	    container_->setDimensions(textDim_.x, textDim_.y);
     }
 
-    void EC_OgreMovableTextOverlay::CreateOverlay()
+    void EC_OgreMovableTextOverlay::CreateOverlay(const Core::Vector3df& offset)
     {
         if (renderer_.expired())
+            return;
+        
+        // Return if already created
+        if (node_)
             return;
         
         // Create SceneNode
         Ogre::SceneManager *scene_mgr = renderer_.lock()->GetSceneManager();
         node_ = scene_mgr->createSceneNode();
         
-        // Set the node position above the parent node.
-        node_->setPosition(0, 0, 2);
+        // Set the node position to an user-specified offset
+        node_->setPosition(ToOgreVector3(offset));
         
 	    // Overlay
 	    overlayName_ = renderer_.lock()->GetUniqueObjectName();

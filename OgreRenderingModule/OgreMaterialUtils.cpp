@@ -11,15 +11,11 @@ namespace OgreRenderer
     std::string BaseMaterials[] = {
         "LitTextured", // normal
         "UnlitTextured", // normal fullbright
-        "LitTexturedSoftAlpha", // soft alpha
-        "UnlitTexturedSoftAlpha", // soft alpha fullbright
         "LitTexturedAdd", // additive
         "UnlitTexturedAdd" // additive fullbright
     };
     
     std::string AlphaBaseMaterials[] = {
-        "LitTexturedAlpha", // hard alpha
-        "UnlitTexturedAlpha", // hard alpha fullbright
         "LitTexturedSoftAlpha", // soft alpha
         "UnlitTexturedSoftAlpha", // soft alpha fullbright
         "LitTexturedAdd", // additive
@@ -29,8 +25,6 @@ namespace OgreRenderer
     std::string MaterialSuffix[] = {
         "", // normal
         "fb", // normal fullbright
-        "alpha", // soft alpha
-        "fbalpha", // soft alpha fullbright
         "add", // additive
         "fbadd" // additive fullbright
     };
