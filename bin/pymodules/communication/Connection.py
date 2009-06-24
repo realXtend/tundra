@@ -74,7 +74,12 @@ class Connection():
         
         reg = telepathy.client.ManagerRegistry()
         reg.LoadManager(self.manager_file)
-        mgr = reg.GetManager(self.manager)
+        try:
+            mgr = reg.GetManager(self.manager)
+        except dbus.exceptions.DBusException, e:
+            print("ERROR: Cannot find dbus daemon!")
+            print(e)
+            return
         
         p = d["port"]
         p0 = dbus.UInt32(int(p))
