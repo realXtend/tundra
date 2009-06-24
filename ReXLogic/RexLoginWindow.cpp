@@ -4,6 +4,7 @@
 
 #include "RexLoginWindow.h"
 #include "RexLogicModule.h"
+#include "QtModule.h"
 //#include "GtkmmUI.h"
 #include <QFile>
 #include <QPushButton>
@@ -13,95 +14,111 @@
 #include <QTabWidget>
 #include <QLineEdit>
 
+#include <QGraphicsScene>
+#include <QGraphicsView>
+
 namespace RexLogic
 {
     RexLoginWindow::RexLoginWindow(Foundation::Framework* framework, RexLogicModule *module) :
-    framework_(framework), rexLogic_(module), pLogin_widget_(0)
+    framework_(framework), rex_logic_(module), login_widget_(0)
     {
         InitLoginWindow();
     }
     
     RexLoginWindow::~RexLoginWindow()
     {
-        SAFE_DELETE(pLogin_widget_);
+        SAFE_DELETE(login_widget_);
     }
 
     void RexLoginWindow::InitLoginWindow()
     {
-      ///todo Set check that qt_module exist 
-      //Foundation::ModuleWeakPtr qt_module = framework_->GetModuleManager()->GetModule("QtModule");
-       
-      //if (!qt_module.expired())
-      //	 {
-       QUiLoader loader;
-       QFile file("./data/ui/login.ui");
-       pLogin_widget_ = loader.load(&file); 
-      
-      //	 }
-      //else
-      // return;
+        Foundation::ModuleWeakPtr qt_module = framework_->GetModuleManager()->GetModule("QtModule");
 
-       // Create connections.
+        // If this occurs, we're most probably operating in headless mode.
+        if (qt_module.expired())
+            return;
 
-       QPushButton *pButton = pLogin_widget_->findChild<QPushButton *>("but_connect");
-       QObject::connect(pButton, SIGNAL(clicked()), this, SLOT(Connect()));
+        QUiLoader loader;
+        QFile file("./data/ui/login.ui");
+        login_widget_ = loader.load(&file); 
 
-       pButton = pLogin_widget_->findChild<QPushButton *>("but_log_out");
-       QObject::connect(pButton, SIGNAL(clicked()), this, SLOT(Disconnect()));
-       
-       pButton = pLogin_widget_->findChild<QPushButton *>("but_quit");
-       QObject::connect(pButton, SIGNAL(clicked()), this, SLOT(Quit()));
-       
+        // Create connections.
+        QPushButton *pButton = login_widget_->findChild<QPushButton *>("but_connect");
+        QObject::connect(pButton, SIGNAL(clicked()), this, SLOT(Connect()));
 
-       // Read old connection settings from xml configuration file.
+        pButton = login_widget_->findChild<QPushButton *>("but_log_out");
+        QObject::connect(pButton, SIGNAL(clicked()), this, SLOT(Disconnect()));
 
-       std::string strText = "";
-       std::string strGroup = "Login";
-       std::string strKey = "username";
-       
-      
-       strText = framework_->GetDefaultConfigPtr()->GetSetting<std::string>(strGroup, strKey);
-      
-       // Open sim:
+        pButton = login_widget_->findChild<QPushButton *>("but_quit");
+        QObject::connect(pButton, SIGNAL(clicked()), this, SLOT(Quit()));       
 
-       QLineEdit *pLine = pLogin_widget_->findChild<QLineEdit* >("line_user_name");
-       pLine->setText(QString(strText.c_str()));
-       
-       // Rex Auth: 
+        // Recover the connection settings that were used in previous login
+        // from the xml configuration file.
+        std::string strText = "";
+        std::string strGroup = "Login";
+        std::string strKey = "username";
+             
+        strText = framework_->GetDefaultConfigPtr()->GetSetting<std::string>(strGroup, strKey);
 
-       pLine = pLogin_widget_->findChild<QLineEdit* >("line_user_name_au");
-       pLine->setText(QString(strText.c_str()));
+        // Opensim auth:
+        QLineEdit *line = login_widget_->findChild<QLineEdit* >("line_user_name");
+        line->setText(QString(strText.c_str()));
+
+        // Rex auth: 
+        line = login_widget_->findChild<QLineEdit* >("line_user_name_au");
+        line->setText(QString(strText.c_str()));
          
-       strKey = "server";
-       strText = "";
-       
-       strText = framework_->GetDefaultConfigPtr()->GetSetting<std::string>(strGroup, strKey);
-      
-       // Open sim: 
+        strKey = "server";
+        strText = framework_->GetDefaultConfigPtr()->GetSetting<std::string>(strGroup, strKey);
 
-       pLine = pLogin_widget_->findChild<QLineEdit* >("line_server");
-       pLine->setText(QString(strText.c_str()));
- 
-       // Rex Auth:
+        // Opensim auth: 
+        line = login_widget_->findChild<QLineEdit* >("line_server");
+        line->setText(QString(strText.c_str()));
 
-       pLine = pLogin_widget_->findChild<QLineEdit* >("line_server_au");
-       pLine->setText(QString(strText.c_str()));
- 
-       // Show :
-       pLogin_widget_->show();
+        // Rex auth:
+        line = login_widget_->findChild<QLineEdit* >("line_server_au");
+        line->setText(QString(strText.c_str()));
 
+        login_widget_->show();
 
-    
+        CreateLogoutMenu();
+    }
+
+    void RexLoginWindow::CreateLogoutMenu()
+    {
+        Foundation::ModuleSharedPtr qt_module = framework_->GetModuleManager()->GetModule("QtModule").lock();
+        QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
+
+        // If this occurs, we're most probably operating in headless mode.
+        if (!qt_ui)
+            return;
+
+        QGraphicsScene *scene = qt_ui->GetUIScene();
+
+        ///\todo Free.
+        logout_button_ = new QPushButton();
+        logout_button_->setText("Log out");
+        logout_button_->move(5, 5);
+        scene->addWidget(logout_button_);
+        QObject::connect(logout_button_, SIGNAL(clicked()), this, SLOT(DisconnectAndShowLoginWindow()));
+        logout_button_->hide();
+
+        ///\todo Free.
+        quit_button_ = new QPushButton();
+        quit_button_->setText("Quit");
+        scene->addWidget(quit_button_);
+        quit_button_->move(5, 30);
+        QObject::connect(quit_button_, SIGNAL(clicked()), this, SLOT(Quit()));
+        quit_button_->hide();
     }
 
     void RexLoginWindow::Connect()
     {
-      // Check which tab is active
-     
-      QTabWidget *pWidget = pLogin_widget_->findChild<QTabWidget* >("tabWidget");
-      int index = pWidget->currentIndex();
+      // Check which tab is active     
+      QTabWidget *widget = login_widget_->findChild<QTabWidget* >("tabWidget");
+      int index = widget->currentIndex();
       
-      bool succesful = false;
+      bool successful = false;
       std::string user_name = "";
       std::string server_address = "";
 
@@ -111,18 +128,18 @@ namespace RexLogic
 	  {
 	    // Open sim
 	
-	    QLineEdit *pLine = pLogin_widget_->findChild<QLineEdit* >("line_user_name");
-	    user_name = pLine->text().toStdString();
-	    pLine =  pLogin_widget_->findChild<QLineEdit* >("line_server");
-	    server_address = pLine->text().toStdString();
+	    QLineEdit *line = login_widget_->findChild<QLineEdit* >("line_user_name");
+	    user_name = line->text().toStdString();
+	    line =  login_widget_->findChild<QLineEdit* >("line_server");
+	    server_address = line->text().toStdString();
 
 	    // password
 
-	    pLine = pLogin_widget_->findChild<QLineEdit* >("line_password");
+	    line = login_widget_->findChild<QLineEdit* >("line_password");
 
-	    std::string password = pLine->text().toStdString();
+	    std::string password = line->text().toStdString();
 
-	    succesful = rexLogic_->GetServerConnection()->ConnectToServer(user_name,
+	    successful = rex_logic_->GetServerConnection()->ConnectToServer(user_name,
 									  password, server_address);
 	    break;
 	  }
@@ -130,25 +147,25 @@ namespace RexLogic
 	  {
 	    // Rex authentication 
 	 
-	    QLineEdit *pLine = pLogin_widget_->findChild<QLineEdit* >("line_user_name_au");
-	    user_name = pLine->text().toStdString();
-	    pLine =  pLogin_widget_->findChild<QLineEdit* >("line_server_au");
-	    server_address = pLine->text().toStdString();
+	    QLineEdit *line = login_widget_->findChild<QLineEdit* >("line_user_name_au");
+	    user_name = line->text().toStdString();
+	    line =  login_widget_->findChild<QLineEdit* >("line_server_au");
+	    server_address = line->text().toStdString();
 
 	    // password
 
-	    pLine = pLogin_widget_->findChild<QLineEdit* >("line_password_au");
+	    line = login_widget_->findChild<QLineEdit* >("line_password_au");
 
-	    std::string password = pLine->text().toStdString();
+	    std::string password = line->text().toStdString();
 	    std::cout<<"Password: "<<password<<"user_name: "<<user_name<<" server_address: "<<server_address<<std::endl; 
-	    pLine = pLogin_widget_->findChild<QLineEdit* >("line_auth_login");
-	    std::string auth_login = pLine->text().toStdString();
+	    line = login_widget_->findChild<QLineEdit* >("line_auth_login");
+	    std::string auth_login = line->text().toStdString();
 
-	    pLine = pLogin_widget_->findChild<QLineEdit* >("line_auth_server");
-	    std::string auth_server = pLine->text().toStdString();
+	    line = login_widget_->findChild<QLineEdit* >("line_auth_server");
+	    std::string auth_server = line->text().toStdString();
 	    std::cout<<"auth_server: "<<auth_server<<" auth_login: "<<auth_login<<std::endl;
 
-	    succesful = rexLogic_->GetServerConnection()->ConnectToServer(user_name, password,
+	    successful = rex_logic_->GetServerConnection()->ConnectToServer(user_name, password,
 									  server_address, auth_server, auth_login);
 	    break;
 	  }
@@ -161,7 +178,7 @@ namespace RexLogic
 	  break;
 	}
       
-      if (succesful)
+      if (successful)
       	{
 	  // Save login and server settings for future use. 
 	  framework_->GetConfigManager()->SetSetting<std::string>(
@@ -173,36 +190,54 @@ namespace RexLogic
 								  std::string("username"),
 								  user_name);
         }
+    }
 
-     
+    void RexLoginWindow::DisconnectAndShowLoginWindow()
+    {
+        Disconnect();
+        ShowLoginWindow();
+    }
+
+    void RexLoginWindow::HideLoginWindow()
+    {
+        login_widget_->hide();
+        logout_button_->show();
+        quit_button_->show();
+    }
+
+    void RexLoginWindow::ShowLoginWindow()
+    {
+        login_widget_->show();
+        logout_button_->hide();
+        quit_button_->hide();
     }
 
     void RexLoginWindow::Disconnect()
     {
-      // Disconnect from server
-      rexLogic_->GetServerConnection()->RequestLogout();
+        // Disconnect from server
+        rex_logic_->GetServerConnection()->RequestLogout();
     }
   
     void RexLoginWindow::Quit()
-    {
-   
-      if (rexLogic_->GetServerConnection()->IsConnected())
-	rexLogic_->GetServerConnection()->RequestLogout();
+    {   
+        if (rex_logic_->GetServerConnection()->IsConnected())
+            rex_logic_->GetServerConnection()->RequestLogout();
         
-      framework_->Exit();
-      
+        framework_->Exit();      
     }
-  
-  
-   void RexLoginWindow::UpdateConnectionStateToUI(OpenSimProtocol::Connection::State state)
+ 
+    void RexLoginWindow::UpdateConnectionStateToUI(OpenSimProtocol::Connection::State state)
     { 
-      if ( pLogin_widget_ != 0)
-	{
-	  QLabel *pLabel = pLogin_widget_->findChild<QLabel* >("lab_state");
-	  pLabel->setText(QString(OpenSimProtocol::Connection::NetworkStateToString(state).c_str()));
+        ///\todo Perhaps this state change should come from above instead of this function.
+        if (state == OpenSimProtocol::Connection::STATE_CONNECTED)
+            HideLoginWindow();
+        else
+            ShowLoginWindow();
 
-	}
-      
-      
+        if (login_widget_ != 0)
+        {
+            QLabel *pLabel = login_widget_->findChild<QLabel* >("lab_state");
+            pLabel->setText(QString(OpenSimProtocol::Connection::NetworkStateToString(state).c_str()));
+        }
     }
 }

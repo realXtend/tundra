@@ -18,11 +18,14 @@ include_directories (
 	../SceneModule
 	../Interfaces
 	../RexCommon
+	../OgreRenderingModule
+	../InputModuleOIS
 )
 
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_OGRE()
+INCLUDE_OIS() # ///\todo Remove.
 INCLUDE_QT4()
 
 #Wrap 
@@ -31,7 +34,7 @@ QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
-add_definitions (-DMODULE_EXPORTS)
+add_definitions (-DMODULE_EXPORTS -DQT_MODULE_EXPORTS)
 
 # Define dynamic library
 if (NOT MSVC)
@@ -52,11 +55,12 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation Interfaces RexCommon )
+target_link_libraries (${TARGET_NAME} Foundation Interfaces RexCommon OgreRenderingModule InputModuleOIS)
 
 # External library linkage
 LINK_BOOST()
 LINK_OGRE()
+LINK_OIS() # ///\todo Remove.
 LINK_QT4()
 
 # Copy XML files from source directory to target directory
