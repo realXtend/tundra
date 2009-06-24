@@ -225,16 +225,16 @@ void NetMessageManager::ProcessMessages()
 		}
 
 		uint32_t seqNum = ExtractNetworkMessageSequenceNumber(&data[0], numBytes);
-		
+
+		// Send ACK for reliable messages.
+		if ((data[0] & NetFlagReliable) != 0)
+			QueuePacketACK(seqNum);
+
 		// We need to do pruning of inbound duplicates, so add the sequence number to the set of received sequence numbers, 
 		// and check if we've seen this packet before.
 		pair<set<uint32_t>::iterator, bool> ret = receivedSequenceNumbers.insert(seqNum);
 		if (ret.second == false) 
 			continue; // A message with this sequence number has already been given to the application for processing. Drop it this time.
-
-		// Send ACK for reliable messages.
-		if ((data[0] & NetFlagReliable) != 0)
-			QueuePacketACK(seqNum);
 
 //		NetMsgID id = ExtractNetworkMessageNumber(&data[0], numBytes);
 
@@ -252,7 +252,7 @@ void NetMessageManager::ProcessMessages()
         msg.SetMessageInfo(messageList->GetMessageInfoByID(msg.GetMessageID()));
 
 		// Process appended acks
-	    if (appended_acks.size())
+	    if (appended_acks.size() > 0)
 	    {
 	        for (unsigned i = 0; i < appended_acks.size(); ++i)
 	            ProcessPacketACK(appended_acks[i]);
@@ -282,7 +282,7 @@ void NetMessageManager::ProcessMessages()
 	while(receivedSequenceNumbers.size() > cMaxSeqNumMemorySize)
 		receivedSequenceNumbers.erase(receivedSequenceNumbers.begin()); // We remove from the front to guarantee the smallest(oldest) are removed first.
 
-    // Send pending ACKs
+    // Acknowledge all the new accumulated packets that the server sent as reliable.
     SendPendingACKs();
 }
 
@@ -420,7 +420,7 @@ void NetMessageManager::SendPendingACKs()
 
     static const size_t max_acks_in_msg = 100;
 
-    while (pendingACKs.size())
+    while (pendingACKs.size() > 0)
     {
         size_t acks_to_send = pendingACKs.size();
         if (acks_to_send > max_acks_in_msg)
@@ -435,6 +435,10 @@ void NetMessageManager::SendPendingACKs()
         
         while (added_acks < acks_to_send)
         {
+            // Note! Horrible protocol design issue! The sequence numbers that both
+            // server and client use are sent in big endian, but in the ACK packets
+            // they need to be transferred in little endian. !! So, no conversion to
+            // big endian here.
             m->AddU32(*i);
             ++added_acks;
             ++i;

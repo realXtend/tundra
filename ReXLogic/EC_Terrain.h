@@ -24,7 +24,10 @@ namespace RexLogic
         /// Describes a single patch that is present in the scene.
         struct Patch
         {
-            Patch():x(0),y(0), node(0){}
+            Patch():x(0),y(0), node(0), patch_geometry_dirty(true) {}
+
+            static const int cNumVerticesPerPatchEdge = 16;
+
             /// X coordinate on the grid of patches. In OpenSim this is [0, 15], but might change.
             int x;
 
@@ -32,10 +35,16 @@ namespace RexLogic
             int y;
 
             /// Typically this will be a 16x16 array of height values in world coordinates.
+            /// If the length is zero, this patch hasn't been loaded in yet.
             std::vector<float> heightData;
 
             /// Ogre -specific: Store a reference to the actual render hierarchy node.
             Ogre::SceneNode *node;
+
+            /// If true, the CPU-side heightmap data has changed, but we haven't yet updated
+            /// the GPU-side geometry resources since the neighboring patches haven't been loaded
+            /// in yet.
+            bool patch_geometry_dirty;
         };
 
         /// The OpenSim world has a 16x16 grid of terrain patches. Alter this to change the

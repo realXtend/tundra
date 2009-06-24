@@ -32,6 +32,8 @@ public:
     //! The OpenSim terrain has a hardcoded size of four textures. When/if we lift that, change the amount here or remove altogether if dynamic.
     static const int num_terrain_textures = 4;
 
+    /// Sets the new terrain texture UUIDs that are used for this terrain. Places
+    /// new resource requests to the asset handler if any of the textures have changed.
     void SetTerrainTextures(const RexAssetID textures[num_terrain_textures]);
 
     void RequestTerrainTextures();
@@ -55,12 +57,15 @@ private:
 
     Scene::EntityWeakPtr cachedTerrainEntity_;
 
-    void CreateOrUpdateTerrainPatch(const DecodedTerrainPatch &patch, int patchSize);
+    void CreateOrUpdateTerrainPatchHeightData(const DecodedTerrainPatch &patch, int patchSize);
+
+    void RegenerateDirtyTerrainPatches();
 
     void CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY);
 
     void GenerateTerrainGeometryForOnePatch(EC_Terrain &terrain, EC_Terrain::Patch &patch);
     void GenerateTerrainGeometry(EC_Terrain &terrain);
+    void GenerateTerrainGeometryForSinglePatch(EC_Terrain &terrain, int patchX, int patchY);
     void DebugGenerateTerrainVisData(Ogre::SceneNode *node, const DecodedTerrainPatch &patch, int patchSize);
 
     void SetTerrainMaterialTexture(int index, const char *textureName);

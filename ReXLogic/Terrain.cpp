@@ -135,16 +135,36 @@ namespace
         manual->setDebugDisplayEnabled(true);
     }
 
+    /// Creates Ogre geometry data for the single given patch, or updates the geometry for an existing
+    /// patch if the associated Ogre resources already exist.
     void Terrain::GenerateTerrainGeometryForOnePatch(EC_Terrain &terrain, EC_Terrain::Patch &patch)
     {
         Ogre::SceneNode *node = patch.node;
+        bool firstTimeFill = (node == 0);
+        if (!node)
+        {
+            CreateOgreTerrainPatchNode(node, patch.x, patch.y);
+            patch.node = node;
+        }
         assert(node);
         assert(node->numAttachedObjects() == 1);
+
         Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
 
         Ogre::ManualObject *manual = dynamic_cast<Ogre::ManualObject*>(node->getAttachedObject(0));
-        manual->clear(); /// \note For optimization, could use beginUpdate.
-        manual->begin(terrainMaterial->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
+        if (firstTimeFill)
+        {
+            manual->clear();
+            manual->estimateVertexCount(17*17);
+            manual->estimateIndexCount(17*17*3*2);
+            manual->begin(terrainMaterial->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
+        }
+        else
+        {
+            assert(manual->getNumSections() == 1);    
+            manual->setMaterialName(0, terrainMaterial->getName());
+            manual->beginUpdate(0);
+        }
 
         const float vertexSpacingX = 1.f;
         const float vertexSpacingY = 1.f;
@@ -155,9 +175,9 @@ namespace
 
         int curIndex = 0;
 
-        int stride = (patch.x + 1 >= terrain.cNumPatchesPerEdge) ? 16 : 17;
+        const int stride = (patch.x + 1 >= terrain.cNumPatchesPerEdge) ? 16 : 17;
 
-        const int patchSize = 16;
+        const int patchSize = EC_Terrain::Patch::cNumVerticesPerPatchEdge;
 
         const float uScale = 1e-2f*13;
         const float vScale = 1e-2f*13;
@@ -223,21 +243,8 @@ namespace
             }
 
         manual->end();
-//        manual->setDebugDisplayEnabled(true);
-    }
 
-    void Terrain::GenerateTerrainGeometry(EC_Terrain &terrain) 
-    {
-        for(int y = 0; y < terrain.cNumPatchesPerEdge; ++y)
-            for(int x = 0; x < terrain.cNumPatchesPerEdge; ++x)
-            {
-                EC_Terrain::Patch &patch = terrain.GetPatch(x, y);
-
-                if (!patch.node)
-                    CreateOgreTerrainPatchNode(patch.node, x, y);
-
-                GenerateTerrainGeometryForOnePatch(terrain, patch);
-            }
+        patch.patch_geometry_dirty = false;
     }
 
     void Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY)
@@ -264,7 +271,7 @@ namespace
         }
     }
 
-    void Terrain::CreateOrUpdateTerrainPatch(const DecodedTerrainPatch &patch, int patchSize)
+    void Terrain::CreateOrUpdateTerrainPatchHeightData(const DecodedTerrainPatch &patch, int patchSize)
     {
         if (patch.heightData.size() < patchSize * patchSize)
         {
@@ -278,8 +285,34 @@ namespace
         EC_Terrain::Patch &scenePatch = terrainComponent->GetPatch(patch.header.x, patch.header.y);
         scenePatch.x = patch.header.x;
         scenePatch.y = patch.header.y;
-        scenePatch.heightData = patch.heightData;
 
+        // Do a check to see if the height data actually changed. It seems that OpenSim server doesn't track this
+        // and just stupidly sends all the patches after doing minor or no changes (or even if just changing the
+        // terrain texture without changing the actual height data).
+        bool heightDataChanged = false;
+        if (scenePatch.heightData.size() != patch.heightData.size()) // If this patch did not exist at all?
+            heightDataChanged = true;
+        else
+            for(size_t i = 0; i < scenePatch.heightData.size() && heightDataChanged == false; ++i)
+                if (fabs(scenePatch.heightData[i] - patch.heightData[i]) > 1e-3f)
+                    heightDataChanged = true;
+
+        scenePatch.heightData = patch.heightData;
+        // Flag the relevant GPU-side resources now to be dirty. We can't immediately regenerate them here since we need
+        // slope and connectivity information from the neighboring patches as well, so we have to wait for later.
+        // We need to mark the nearest 3x3 grid of patches dirty.
+        if (heightDataChanged)
+            for(int y = -1; y <= 1; ++y)
+                for(int x = -1; x <= 1; ++x)
+                {
+                    int X = x + scenePatch.x;
+                    int Y = y + scenePatch.y;
+                    if (X >= 0 && X < EC_Terrain::cNumPatchesPerEdge &&
+                        Y >= 0 && Y < EC_Terrain::cNumPatchesPerEdge)
+                        terrainComponent->GetPatch(X, Y).patch_geometry_dirty = true;
+                }
+
+/*
         if (!scenePatch.node)
             CreateOgreTerrainPatchNode(scenePatch.node, scenePatch.x, scenePatch.y);
 
@@ -290,6 +323,48 @@ namespace
             RequestTerrainTextures();
             GenerateTerrainGeometry(*terrainComponent);
         }
+        */
+    }
+
+    void Terrain::RegenerateDirtyTerrainPatches()
+    {
+        PROFILE(RegenerateOgreTerrainGeom);
+        Scene::EntityPtr terrain = GetTerrainEntity().lock();
+        EC_Terrain *terrainComponent = checked_static_cast<EC_Terrain*>(terrain->GetComponent("EC_Terrain").get());
+        assert(terrainComponent);
+
+        for(int y = 0; y < EC_Terrain::cNumPatchesPerEdge; ++y)
+            for(int x = 0; x < EC_Terrain::cNumPatchesPerEdge; ++x)
+            {
+                EC_Terrain::Patch &scenePatch = terrainComponent->GetPatch(x, y);
+                if (!scenePatch.patch_geometry_dirty || scenePatch.heightData.size() == 0)
+                    continue;
+
+                bool neighborsLoaded = true;
+
+                const int neighbors[8][2] = 
+                { 
+                    { -1, -1 }, { -1, 0 }, { -1, 1 },
+                    {  0, -1 },            {  0, 1 },
+                    {  1, -1 }, {  1, 0 }, {  1, 1 }
+                };
+
+                for(int i = 0; i < 8; ++i)
+                {
+                    int nX = x + neighbors[i][0];
+                    int nY = y + neighbors[i][1];
+                    if (nX >= 0 && nX < EC_Terrain::cNumPatchesPerEdge &&
+                        nY >= 0 && nY < EC_Terrain::cNumPatchesPerEdge &&
+                        terrainComponent->GetPatch(nX, nY).heightData.size() == 0)
+                    {
+                        neighborsLoaded = false;
+                        break;
+                    }
+                }
+
+                if (neighborsLoaded)
+                    GenerateTerrainGeometryForOnePatch(*terrainComponent, scenePatch);
+            }
     }
 
     void Terrain::RequestTerrainTextures()
@@ -313,6 +388,8 @@ namespace
     /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
     bool Terrain::HandleOSNE_LayerData(OpenSimProtocol::NetworkEventInboundData* data)
     {
+        PROFILE(HandleOSNE_LayerData);
+
         NetInMessage &msg = *data->message;
         u8 layerID = msg.ReadU8();
         size_t sizeBytes = 0;
@@ -331,7 +408,12 @@ namespace
             std::vector<DecodedTerrainPatch> patches;
             DecompressLand(patches, bits, header);
             for(size_t i = 0; i < patches.size(); ++i)
-                CreateOrUpdateTerrainPatch(patches[i], header.patchSize);
+                CreateOrUpdateTerrainPatchHeightData(patches[i], header.patchSize);
+
+            // Now that we have updated all the height map data for each patch, see if
+            // we have enough of the patches loaded in to regenerate the GPU-side resources
+            // as well.
+            RegenerateDirtyTerrainPatches();
             break;
         }
         default:
@@ -343,8 +425,16 @@ namespace
 
     void Terrain::SetTerrainTextures(const RexAssetID textures[num_terrain_textures])
     {
+        bool texturesChanged = false;
         for(int i = 0; i < num_terrain_textures; ++i)
-            terrain_textures_[i] = textures[i];
+            if (terrain_textures_[i] != textures[i])
+            {
+                terrain_textures_[i] = textures[i];
+                texturesChanged = true;
+            }
+
+        if (texturesChanged)
+            RequestTerrainTextures();
     }
 
     void Terrain::FindCurrentlyActiveTerrain()
