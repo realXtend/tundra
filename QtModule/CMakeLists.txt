@@ -27,6 +27,7 @@ INCLUDE_BOOST()
 INCLUDE_OGRE()
 INCLUDE_OIS() # ///\todo Remove.
 INCLUDE_QT4()
+INCLUDE_POCO()
 
 #Wrap 
 include(${QT_USE_FILE})
