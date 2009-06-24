@@ -1,25 +1,25 @@
-// Renders primitives with a single lit texture, includes shadowing
-material LitTextured
+// Renders primitives with a single lit texture, includes shadowing, modulates with vertex color
+material LitTexturedVCol
 {
 	technique
 	{
 		pass
 		{
-			vertex_program_ref rex/DiffShadowVP
+			vertex_program_ref rex/DiffShadowVColVP
 			{
 			}
-			fragment_program_ref rex/DiffShadowFP
+			fragment_program_ref rex/DiffShadowVColFP
 			{
 			}
-
+			
 			texture_unit baseMap
 			{
 				texture TextureMissing.png
 			}
-
+			
 			texture_unit shadowMap
 			{
-				content_type shadow
+				content_type shadow	
 			}
 		}
 	}
@@ -29,6 +29,8 @@ material LitTextured
 	{
 	    pass
 	    {
+            diffuse vertexcolour
+
 	        texture_unit baseMap
 	        {
 	            texture TextureMissing.png

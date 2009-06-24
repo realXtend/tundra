@@ -4,12 +4,19 @@ void UnlitTexturedVP
 (
     in float4 pos : POSITION,
     in float2 tex : TEXCOORD0,
+#ifdef VERTEX_COLOR
+    in float4 color : COLOR,
+    out float4 oColor : COLOR,
+#endif
     out float4 oPos : POSITION,
     out float2 oTex : TEXCOORD0
 )
 {
     oPos = mul(worldViewProj, pos);
     oTex = tex;
+#ifdef VERTEX_COLOR
+    oColor = color;
+#endif
 }
 
 uniform sampler2D diffuseMap;
@@ -17,8 +24,15 @@ uniform sampler2D diffuseMap;
 void UnlitTexturedFP
 (
     in float2 tex : TEXCOORD0,
-    out float4 oCol : COLOR
+#ifdef VERTEX_COLOR
+    in float4 color : COLOR,
+#endif
+    out float4 oColor : COLOR
 )
 {
-    oCol = tex2D(diffuseMap, tex);
+#ifdef VERTEX_COLOR
+    oColor = tex2D(diffuseMap, tex) * color;
+#else
+    oColor = tex2D(diffuseMap, tex);
+#endif
 }

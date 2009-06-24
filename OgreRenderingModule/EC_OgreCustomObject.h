@@ -10,6 +10,7 @@
 namespace Ogre
 {
     class ManualObject;
+    class Entity;
 }
 
 namespace OgreRenderer
@@ -51,17 +52,26 @@ namespace OgreRenderer
          */
         Ogre::ManualObject* GetObject() const { return object_; }
         
+        //! Commit changes
+        /*! converts ManualObject to mesh, makes an entity out of it & clears the manualobject.
+            \return true if successful
+         */
+        bool CommitChanges();
+        
     private:
         //! constructor
         /*! \param module renderer module
          */
         EC_OgreCustomObject(Foundation::ModuleInterface* module);
         
-        //! attaches object to placeable
-        void AttachObject();
+        //! attaches entity to placeable
+        void AttachEntity();
         
-        //! detaches object from placeable
-        void DetachObject();
+        //! detaches entity from placeable
+        void DetachEntity();
+        
+        //! removes old entity and mesh
+        void DestroyEntity();
         
         //! placeable component 
         Foundation::ComponentPtr placeable_;
@@ -72,8 +82,20 @@ namespace OgreRenderer
         //! Ogre manual object
         Ogre::ManualObject* object_;
         
+        //! Ogre mesh entity (converted from the manual object on commit)
+        Ogre::Entity* entity_;
+        
         //! object attached to placeable -flag
         bool attached_;
+        
+        //! whether should cast shadows
+        bool cast_shadows_;
+        
+        //! draw distance
+        float draw_distance_;
+        
+        //! parent entity
+        Scene::Entity* parent_entity_;
     };
 }
 

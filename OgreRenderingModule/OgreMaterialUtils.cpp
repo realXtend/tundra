@@ -12,21 +12,39 @@ namespace OgreRenderer
         "LitTextured", // normal
         "UnlitTextured", // normal fullbright
         "LitTexturedAdd", // additive
-        "UnlitTexturedAdd" // additive fullbright
+        "UnlitTexturedAdd", // additive fullbright
+        "LitTexturedSoftAlpha", // forced soft alpha
+        "UnlitTexturedSoftAlpha", // forced soft alpha fullbright
+        "LitTexturedVCol", // vertexcolor
+        "UnlitTexturedVCol", // vertexcolor fullbright
+        "LitTexturedSoftAlphaVCol", // vertexcolor forced soft alpha
+        "UnlitTexturedSoftAlphaVCol" // vertexcolor forced soft alpha fullbright
     };
     
     std::string AlphaBaseMaterials[] = {
         "LitTexturedSoftAlpha", // soft alpha
         "UnlitTexturedSoftAlpha", // soft alpha fullbright
         "LitTexturedAdd", // additive
-        "UnlitTexturedAdd" // additive fullbright
+        "UnlitTexturedAdd", // additive fullbright
+        "LitTexturedSoftAlpha", // forced soft alpha
+        "UnlitTexturedSoftAlpha", // forced soft alpha fullbright
+        "LitTexturedSoftAlphaVCol", // vertexcolor soft alpha
+        "UnlitTexturedSoftAlphaVCol", // vertexcolor soft alpha fullbright
+        "LitTexturedSoftAlphaVCol", // vertexcolor forced soft alpha
+        "UnlitTexturedSoftAlphaVCol" // vertexcolor forced soft alpha fullbright
     };
     
     std::string MaterialSuffix[] = {
         "", // normal
         "fb", // normal fullbright
         "add", // additive
-        "fbadd" // additive fullbright
+        "fbadd", // additive fullbright
+        "alpha", // forced alpha
+        "fbalpha", // forced alpha fullbright
+        "vcol", // vertex color
+        "fbvcol", // vertex color fullbright
+        "vcolalpha", // vertex color alpha
+        "fbvcolalpha" // vertex color alpha fullbright
     };
 
     bool IsMaterialSuffixValid(const std::string& suffix)

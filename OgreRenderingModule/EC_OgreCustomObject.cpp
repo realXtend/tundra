@@ -15,22 +15,24 @@ namespace OgreRenderer
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         object_(NULL),
-        attached_(false)
+        entity_(NULL),
+        parent_entity_(NULL),
+        attached_(false),
+        cast_shadows_(false),
+        draw_distance_(0.0f)
     {
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
         
         object_ = scene_mgr->createManualObject(renderer_->GetUniqueObjectName());
-        object_->setCastShadows(false);
     }
     
     EC_OgreCustomObject::~EC_OgreCustomObject()
     {
+        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+        DestroyEntity();
+
         if (object_)
         {
-            DetachObject();
-
-            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
-            
             scene_mgr->destroyManualObject(object_);
             object_ = NULL;
         }
@@ -38,45 +40,102 @@ namespace OgreRenderer
     
     void EC_OgreCustomObject::SetPlaceable(Foundation::ComponentPtr placeable, Scene::Entity *parent_entity)
     {
-        DetachObject();
+        parent_entity_ = parent_entity;
+        
+        DetachEntity();
         placeable_ = placeable;
-        AttachObject();
+        AttachEntity();
+    }
+    
+    bool EC_OgreCustomObject::CommitChanges()
+    {
+        DestroyEntity();
+        
+        if (!object_->getNumSections())
+            return true;
+            
+        try
+        {
+            std::string mesh_name = renderer_->GetUniqueObjectName();
+            object_->convertToMesh(mesh_name);
+            object_->clear();
+        
+            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
 
-        if (object_)
-            object_->setUserAny(Ogre::Any(parent_entity));
+            entity_ = scene_mgr->createEntity(renderer_->GetUniqueObjectName(), mesh_name);
+            if (entity_)
+            {
+                AttachEntity();
+                entity_->setRenderingDistance(draw_distance_);
+                entity_->setCastShadows(cast_shadows_);
+                entity_->setUserAny(Ogre::Any(parent_entity_));
+            }
+            else
+            {
+                OgreRenderingModule::LogError("Could not create entity from manualobject mesh");
+                return false;
+            }
+        }   
+        catch (Ogre::Exception& e)
+        {
+            OgreRenderingModule::LogError("Could not convert manualobject to mesh: " + std::string(e.what()));
+            return false;
+        }
+        
+        return true;
     }
     
     void EC_OgreCustomObject::SetDrawDistance(float draw_distance)
     {
-        if (object_)
-            object_->setRenderingDistance(draw_distance);
+        draw_distance_ = draw_distance;
+        if (entity_)
+            entity_->setRenderingDistance(draw_distance);
     }
     
    void EC_OgreCustomObject::SetCastShadows(bool enabled)
     {
-        if (object_)
-            object_->setCastShadows(enabled);
+        cast_shadows_ = enabled;
+        if (entity_)
+            entity_->setCastShadows(enabled);
     }
     
-   void EC_OgreCustomObject::AttachObject()
+   void EC_OgreCustomObject::AttachEntity()
     {
-        if ((placeable_) && (!attached_))
+        if ((placeable_) && (!attached_) && (entity_))
         {
             EC_OgrePlaceable* placeable = checked_static_cast<EC_OgrePlaceable*>(placeable_.get());
             Ogre::SceneNode* node = placeable->GetSceneNode();
-            node->attachObject(object_);
+            node->attachObject(entity_);
             attached_ = true;
         }
     }
     
-    void EC_OgreCustomObject::DetachObject()
+    void EC_OgreCustomObject::DetachEntity()
     {
-        if ((placeable_) && (attached_))
+        if ((placeable_) && (attached_) && (entity_))
         {
             EC_OgrePlaceable* placeable = checked_static_cast<EC_OgrePlaceable*>(placeable_.get());
             Ogre::SceneNode* node = placeable->GetSceneNode();
-            node->detachObject(object_);
+            node->detachObject(entity_);
             attached_ = false;
+        }
+    }
+    
+    void EC_OgreCustomObject::DestroyEntity()
+    {
+        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+        
+        if (entity_)
+        {
+            DetachEntity();
+            std::string mesh_name = entity_->getMesh()->getName();
+            scene_mgr->destroyEntity(entity_);
+            entity_ = NULL;
+            try
+            {
+                Ogre::MeshManager::getSingleton().remove(mesh_name);
+            }
+            catch (...) {}
         }
     }
 }

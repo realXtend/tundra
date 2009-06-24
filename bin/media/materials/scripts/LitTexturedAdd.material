@@ -1,12 +1,14 @@
 material LitTexturedAdd
 {
+    receive_shadows off
+
 	technique
 	{
 		pass
 		{
 		    // Cannot use programmable pipeline here for need of fog override
-            depth_write off
 	        scene_blend add
+            depth_write off
 	        fog_override true
 
 			texture_unit baseMap

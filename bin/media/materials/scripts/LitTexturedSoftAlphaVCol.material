@@ -1,18 +1,18 @@
-material LitTexturedSoftAlpha
+material LitTexturedSoftAlphaVCol
 {
     receive_shadows off
 
-	technique
+   	technique
 	{
 		pass
 		{
 	        scene_blend alpha_blend
             depth_write off
 
-			vertex_program_ref rex/DiffaVP
+			vertex_program_ref rex/DiffaVColVP
 			{
 			}
-			fragment_program_ref rex/DiffaFP
+			fragment_program_ref rex/DiffaVColFP
 			{
 			}
 
@@ -22,7 +22,7 @@ material LitTexturedSoftAlpha
 			}
 		}
 	}
-	
+
 	// fallback
 	technique
 	{
@@ -30,6 +30,8 @@ material LitTexturedSoftAlpha
 		{
 	        scene_blend alpha_blend
             depth_write off
+
+            diffuse vertexcolour
 
 			texture_unit baseMap
 			{
