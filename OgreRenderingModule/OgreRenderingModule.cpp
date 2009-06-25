@@ -81,7 +81,11 @@ namespace OgreRenderer
 #endif 
     
         // create renderer here, so it can be accessed in uninitialized state by other module's PreInitialize()
-        renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogre_config_filename, plugins_filename));
+
+        std::string window_title = framework_->GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "window_title") 
+            + " " + VersionMajor() + "." + VersionMinor();
+
+        renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogre_config_filename, plugins_filename, window_title));
     }
 
     // virtual

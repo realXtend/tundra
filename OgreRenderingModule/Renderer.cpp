@@ -90,7 +90,7 @@ namespace OgreRenderer
         ListenerList listeners_;
     };
 
-    Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins) :
+    Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title) :
         initialized_(false),
         framework_(framework),
         scenemanager_(NULL),
@@ -103,7 +103,8 @@ namespace OgreRenderer
         resource_handler_(ResourceHandlerPtr(new ResourceHandler(framework))),
         config_filename_ (config),
         plugins_filename_ (plugins),
-        ray_query_(NULL)
+        ray_query_(NULL),
+        window_title_(window_title)
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         
@@ -176,7 +177,6 @@ namespace OgreRenderer
         root_->initialise(false);
 
         Ogre::NameValuePairList params;
-        std::string application_name = framework_->GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "application_name");
 
         /// \todo These could be removed for good once we're sure we don't need to embed Ogre into GTK or Qt *ever*.
 //        if (!external_window_parameter_.empty()) 
@@ -192,7 +192,7 @@ namespace OgreRenderer
 
         try
         {
-            renderwindow_ = root_->createRenderWindow(application_name, width, height, fullscreen, &params);
+            renderwindow_ = root_->createRenderWindow(window_title_, width, height, fullscreen, &params);
         }
         catch (Ogre::Exception e) {}
         

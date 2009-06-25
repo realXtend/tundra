@@ -46,7 +46,7 @@ namespace OgreRenderer
         
     public:
         //! Constructor
-        Renderer(Foundation::Framework* framework, const std::string& config, const std::string& plugins);
+        Renderer(Foundation::Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title);
 
         //! Destructor
         virtual ~Renderer();
@@ -218,6 +218,9 @@ namespace OgreRenderer
 
         //! ray for raycasting, reusable
         Ogre::RaySceneQuery *ray_query_;
+        
+        //! window title to be used when creating renderwindow
+        std::string window_title_;
     };
 }
 

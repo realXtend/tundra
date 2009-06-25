@@ -31,8 +31,9 @@ namespace Foundation
 	config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
 
         config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
-        config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("1"));
+        config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("0.1"));
         config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("application_name"), std::string("realXtend"));
+        config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("window_title"), std::string("realXtend Naali"));
         config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));
         config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_level"), std::string("information"));
 
