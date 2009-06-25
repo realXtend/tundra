@@ -223,7 +223,7 @@ if __name__ == "__main__":
         print("* dbus service is running")
     else:
         print("* dbus service is not running")
-        dbus_manager.start_dbus_service("../dbus/dbus-daemon.exe", "--config-file=../dbus/data/session.conf")
+        dbus_manager.start_dbus_service("telepathy/dbus-daemon.exe", "--config-file=data/session.conf")
         if dbus_manager.is_dbus_service_running():
             print("* Try to start dbus: Succeed")
             dbus_manager.stop_dbus_service()
