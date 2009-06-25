@@ -3,4 +3,5 @@
    <dependency>OpenSimProtocolModule</dependency>
    <dependency>SupportModules</dependency>
    <dependency>OgreRenderingModule</dependency>
+   <dependency>QtModule</dependency>
 </config>
