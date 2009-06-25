@@ -8,7 +8,7 @@
 /*! Name of the profiling block must be unique in the scope, so do not use the name of the function
     as the name of the profiling block!
 
-    \param x Unique name for the profiling block, use without quotes, f.ex. START_PROFILE(name_of_the_block)
+    \param x Unique name for the profiling block, use without quotes, f.ex. PROFILE(name_of_the_block)
 */
 #   define PROFILE(x) Foundation::ProfilerSection x ## __profiler__(#x);
 
@@ -138,16 +138,16 @@ namespace Foundation
         ProfilerNodeTree(const ProfilerNodeTree &rhs);
     public:
         typedef std::list<ProfilerNodeTree*> NodeList;
-            
 
         //! constructor that takes a name for the node
-        ProfilerNodeTree(const std::string &name) : name_(name), parent_(NULL), recursion_(0) { }
+        ProfilerNodeTree(const std::string &name) : name_(name), parent_(NULL), recursion_(0) {}
 
         //! destructor
         virtual ~ProfilerNodeTree()
         {
+            
         }
-
+        
         //! Removes and deletes all child nodes
         virtual void RemoveAndDeleteChildren()
         {
@@ -342,7 +342,7 @@ namespace Foundation
 #ifdef PROFILING
             current_node_->release();
             delete current_node_;
-            root_->RemoveAndDeleteChildren();
+            GetRoot()->RemoveAndDeleteChildren();
 #endif  
         }
 

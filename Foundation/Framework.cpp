@@ -27,8 +27,8 @@ namespace Foundation
         application_ = ApplicationPtr(new Application(this));
         platform_ = PlatformPtr(new Platform(this));
 	
-	// Create config manager
-	config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
+	    // Create config manager
+	    config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
 
         config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
         config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("0.1"));
@@ -162,12 +162,12 @@ namespace Foundation
         // add event subscribers now, that all modules are loaded/initialized
         event_manager_->LoadEventSubscriberTree(DEFAULT_EVENT_SUBSCRIBER_TREE_PATH);
     }
-
+    
     void Framework::ProcessOneFrame()
     {
         if (exit_signal_ == true)
             return; // We've accidentally ended up to update a frame, but we're actually quitting.
-
+        
 #ifdef PROFILING
         // Reset profiling data. Should be outside of any profiling blocks.
         GetProfiler().Reset();
@@ -192,7 +192,7 @@ namespace Foundation
         // process delayed events
         
         {
-           PROFILE(FW_ProcessDelayedEvents);
+            PROFILE(FW_ProcessDelayedEvents);
             event_manager_->ProcessDelayedEvents(frametime);
         }
         
@@ -238,7 +238,7 @@ namespace Foundation
             ProcessOneFrame();
 #endif
 
-         UnloadModules();
+        UnloadModules();
     }
     
     void Framework::Exit()
