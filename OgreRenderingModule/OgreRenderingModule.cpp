@@ -18,7 +18,6 @@
 #include "EC_OgreParticleSystem.h"
 #include "EC_OgreAnimationController.h"
 #include "EC_OgreEnvironment.h"
-#include "OgreGtkWindowModule.h"
 #include "InputEvents.h"
 #include "SceneEvents.h"
 #include "Entity.h"
@@ -215,6 +214,6 @@ using namespace OgreRenderer;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
    POCO_EXPORT_CLASS(OgreRenderingModule)
-   POCO_EXPORT_CLASS(OgreGtkWindowModule)
+   //POCO_EXPORT_CLASS(OgreGtkWindowModule)
 POCO_END_MANIFEST
 

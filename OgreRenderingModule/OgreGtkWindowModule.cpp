@@ -2,6 +2,8 @@
 
 #include "StableHeaders.h"
 
+/*
+
 #include <Ogre.h>
 
 #include "OgreGtkWindowModule.h"
@@ -106,4 +108,5 @@ namespace OgreRenderer
     }
 }
 
+*/
 
