@@ -3,6 +3,8 @@
 #ifndef incl_OgreGtkWindowModule_h
 #define incl_OgreGtkWindowModule_h
 
+/*
+
 #include "OgreModuleApi.h"
 
 namespace Foundation
@@ -20,10 +22,8 @@ namespace OgreRenderer
     class OgreWidget;    
 
     //! A Gtk window for Ogre renderer. Ogre will render to this window, if this module is present.
-    /*! Depends on GtkmmUI module.
-
-        \todo Probably causes a memoryleak
-    */
+    //! Depends on GtkmmUI module.
+    //! \todo Probably causes a memoryleak
     class OGRE_MODULE_API OgreGtkWindowModule : public Foundation::ModuleInterfaceImpl
     {
     public:
@@ -52,5 +52,7 @@ namespace OgreRenderer
         Gtk::Window* ogre_window_;
     };
 }
+
+*/
 
 #endif
