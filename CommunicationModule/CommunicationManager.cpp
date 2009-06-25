@@ -196,6 +196,8 @@ namespace Communication
 			LogError("Connection to IM server doesn't exist!");
 			return;
 		}
+		contact_list_.clear();
+		im_sessions_->clear();
 
 		CallPythonCommunicationObject("CDisconnect");
 	}
