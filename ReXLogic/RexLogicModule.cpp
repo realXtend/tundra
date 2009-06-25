@@ -212,11 +212,7 @@ namespace RexLogic
         DeleteScene("World");
         
         if (rexserver_connection_->IsConnected())
-        {
-            //! \todo tucofixme, at the moment don't wait for LogoutReply packet, just close connection.
-            rexserver_connection_->RequestLogout();
-            rexserver_connection_->ForceServerDisconnect(); 
-        }
+            LogoutAndDeleteWorld();
         
         rexserver_connection_.reset();
         avatar_.reset();
@@ -356,6 +352,15 @@ namespace RexLogic
         return false;
     }
 
+    void RexLogicModule::LogoutAndDeleteWorld()
+    {
+        rexserver_connection_->RequestLogout();
+        rexserver_connection_->ForceServerDisconnect(); // Because the current server doesn't send a logoutreplypacket.
+
+        if (framework_->HasScene("World"))
+            DeleteScene("World");
+    }
+
     Console::CommandResult RexLogicModule::ConsoleLogin(const Core::StringVector &params)
     {
         std::string name = "Test User";
@@ -391,7 +396,7 @@ namespace RexLogic
     {
         if (rexserver_connection_->IsConnected())
         {
-            rexserver_connection_->RequestLogout();
+            LogoutAndDeleteWorld();
             return Console::ResultSuccess();
         } else
         {

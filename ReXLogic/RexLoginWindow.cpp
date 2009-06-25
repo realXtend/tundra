@@ -248,13 +248,13 @@ namespace RexLogic
     void RexLoginWindow::Disconnect()
     {
         // Disconnect from server
-        rex_logic_->GetServerConnection()->RequestLogout();
+        rex_logic_->LogoutAndDeleteWorld();
     }
   
     void RexLoginWindow::Quit()
     {   
         if (rex_logic_->GetServerConnection()->IsConnected())
-            rex_logic_->GetServerConnection()->RequestLogout();
+            rex_logic_->LogoutAndDeleteWorld();
         
         framework_->Exit();      
     }

@@ -26,6 +26,18 @@ namespace RexLogic
                     rexlogicmodule_->CreateNewActiveScene("World");
                     break;
                 }
+            case OpenSimProtocol::Events::EVENT_SERVER_DISCONNECTED:
+                {
+                    // Might be user quitting or server dropping connection.
+                    // This event occurs when OpenSimProtocolModule has already closed connection. 
+                    // Make sure the rexlogic also thinks connection is closed.
+                    if(rexlogicmodule_->GetServerConnection()->IsConnected())
+                        rexlogicmodule_->GetServerConnection()->ForceServerDisconnect();
+                        
+                    if(framework_->HasScene("World"))
+                        rexlogicmodule_->DeleteScene("World");
+                    break;
+                }
             default:
                 break;
         }
