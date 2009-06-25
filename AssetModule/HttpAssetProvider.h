@@ -4,6 +4,7 @@
 #define incl_Asset_HttpAssetProvider_h
 
 #include "StableHeaders.h"
+#include "RexAsset.h"
 #include "HttpAssetTransfer.h"
 #include "AssetProviderInterface.h"
 
@@ -75,6 +76,8 @@ namespace Asset
         bool HandleNetworkEvent(Foundation::EventDataInterface* data);
         
     private:
+		
+		std::string SerializeToJSON(Foundation::AssetPtr asset) const;
         
         //! Stores completed asset to asset service's cache
         void StoreAsset(HttpAssetTransfer& transfer);

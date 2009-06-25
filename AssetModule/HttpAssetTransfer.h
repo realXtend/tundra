@@ -53,7 +53,14 @@ namespace Asset
          */
         void AssembleData(Core::u8* buffer) const;
         
-        //! Sets asset ID
+        //! Assembles continuous asset metadata to a buffer
+        /*! Call GetReceivedMetadata() if you know the transfer is complete
+            first to know how big the buffer must be
+            \param buffer Pointer to buffer that will receive data
+         */
+        void AssembleMetadata(Core::u8* buffer) const;
+
+		//! Sets asset ID
         /*! \param asset_id Asset id
 		    \todo move implementation to cpp file
          */
@@ -102,7 +109,10 @@ namespace Asset
         //! Returns total size of data received so far
 		Core::uint GetReceived() const { return received_data_.size(); }
         
-        //! Returns total size of continuous data from the asset beginning received so far
+        //! Returns asset metadata as string
+		std::string GetAssetMetadata();
+
+		//! Returns total size of continuous data from the asset beginning received so far
         Core::uint GetReceivedContinuous() const;
         
         //! Returns elapsed time since last packet
@@ -122,16 +132,19 @@ namespace Asset
 		//!      Hostile server can stop viewer main loop using this security hole
 		//!      We have to change this so that we only read available bytes.
 		void Update(Core::f64 frametime);
-        
+
+		//! Send http POST request to store asset to asset service
+		void SendHttpPostAssetRequest(const std::string &host, const std::string &json_data);        
+
     private:
 
 		/**
 		 *  Send http request with given uri.
 		 *  Will cancel any exist request for same asset (there is 2 request per asset: metadata and data requests)
 		 */
-		void SendHttpGetRequest(std::string resource_uri);
+		void SendHttpGetAssetRequest(const std::string &resource_uri);
 
-        typedef std::map<Core::uint, std::vector<Core::u8> > DataPacketMap;
+		//! Downloaded binary data of asset
 		typedef std::vector<Core::u8> DataVector;
         
         //! Asset ID

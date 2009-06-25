@@ -3,8 +3,11 @@
 #ifndef incl_Interfaces_AssetInterface_h
 #define incl_Interfaces_AssetInterface_h
 
+#include "AssetMetadataInterface.h"
+
 namespace Foundation
 {
+
     class AssetInterface;
     typedef boost::shared_ptr<AssetInterface> AssetPtr;
     
@@ -29,7 +32,11 @@ namespace Foundation
         
         //! Returns asset data
         virtual const Core::u8* GetData() = 0;
+
+		//! Returns asset metadata
+		virtual AssetMetadataInterface* GetMetadata() = 0;
     };
+	
 }
 
 #endif
