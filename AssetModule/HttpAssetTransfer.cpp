@@ -4,6 +4,7 @@
 #include "Poco/Path.h"
 #include "Poco/URI.h"
 #include "Poco/Exception.h"
+#include "Poco/Net/NetException.h"
 
 #include "HttpAssetTransfer.h"
 #include "AssetModule.h"
@@ -13,6 +14,7 @@
 namespace Asset
 {
     HttpAssetTransfer::HttpAssetTransfer() :
+		buffer_(NULL),
 		asset_id_(""),
 		asset_data_uri_(""),
 		asset_metadata_uri_(""),
@@ -26,12 +28,12 @@ namespace Asset
 		data_fetched_(false),
 		fetching_metadata_(true)
     {
+		buffer_ = new Core::u8[BUFFER_SIZE];
     }
 
 	void HttpAssetTransfer::StartTransfer()
 	{
-		buffer_ = new Core::u8[BUFFER_SIZE];
-		SendHttpGetRequest(asset_metadata_uri_);
+		SendHttpGetAssetRequest(asset_metadata_uri_);
 	}
     
     HttpAssetTransfer::~HttpAssetTransfer()
@@ -43,7 +45,7 @@ namespace Asset
 		}
     }
 
-	void HttpAssetTransfer::SendHttpGetRequest(std::string resource_uri)
+	void HttpAssetTransfer::SendHttpGetAssetRequest(const std::string &resource_uri)
 	{
 		if (http_session_.connected())
 		{
@@ -103,6 +105,79 @@ namespace Asset
 		}
 	}
 
+	void HttpAssetTransfer::SendHttpPostAssetRequest(const std::string &host, const std::string &json_data)
+	{
+		std::string ASSET_UPLOADING_CONTENT_TYPE = "application/json";
+		int content_length = json_data.length();
+		std::istringstream stream(json_data);
+
+		int send_count = 0; //\todo make member var
+
+		Poco::URI uri(host);
+		std::string path(uri.getPathAndQuery());
+		if (path.empty())
+			path = "/";
+
+		http_session_.setHost(uri.getHost());
+		http_session_.setPort(uri.getPort());
+
+		Poco::Timespan time_out(HTTP_TIMEOUT_MS*1000);
+
+		Poco::Net::HTTPRequest request;
+		request.setMethod(Poco::Net::HTTPRequest::HTTP_POST);
+		std::string t = uri.toString();
+		request.setURI(uri.getPath());
+		request.setVersion(Poco::Net::HTTPMessage::HTTP_1_1);
+		request.setContentType(ASSET_UPLOADING_CONTENT_TYPE);
+		request.setContentLength(content_length);
+		request.setKeepAlive(false);
+
+		try
+		{
+			std::ostream &request_body = http_session_.sendRequest(request);
+			request_body.write(json_data.c_str(), json_data.length());
+		
+			std::istream &s = http_session_.receiveResponse(http_response_);
+			
+			Poco::Net::HTTPResponse::HTTPStatus status = http_response_.getStatus();
+			switch (status)
+			{
+			case Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK:
+					response_stream_ = &s;
+					response_size_ = http_response_.getContentLength();
+					break;
+
+			default:
+				std::string reason = http_response_.getReasonForStatus(status);
+				std::stringstream error;
+				error << "Http POST failed for: ";
+				error << host << std::endl;
+				error << "Reason: " << reason;
+				AssetModule::LogError(error.str());
+				failed_ = true;
+				return;
+			}
+		}
+		catch (Poco::Exception e)
+		{
+			std::stringstream error;
+			error << "Http POST failed for: ";
+			error << host << std::endl;
+			error << "Reason: " << e.displayText();
+			AssetModule::LogError(error.str());
+			failed_ = true;
+			return;
+		}
+		catch (Poco::Net::MessageException e)
+		{
+			std::string u = request.getURI();
+			std::string m = request.getMethod();
+			std::string error = e.message();
+			
+		}
+	}
+
+
     bool HttpAssetTransfer::Ready() const
     {
 		if (metadata_fetched_ && data_fetched_)
@@ -161,6 +236,18 @@ namespace Asset
         memcpy(buffer, &received_data_[0], received_data_.size());
     }
 
+
+	std::string HttpAssetTransfer::GetAssetMetadata()
+	{
+		std::string metadata(received_metadata_.begin(), received_metadata_.end());
+		return metadata;
+	}
+
+	void HttpAssetTransfer::AssembleMetadata(Core::u8* buffer) const
+    {
+        memcpy(buffer, &received_metadata_[0], received_metadata_.size());
+    }
+
 	bool HttpAssetTransfer::IsFailed()
 	{
 		return failed_;
@@ -206,7 +293,7 @@ namespace Asset
 			if (metadata_fetched_ && !data_fetched_)
 			{
 				fetching_metadata_ = false;
-				SendHttpGetRequest(asset_data_uri_);
+				SendHttpGetAssetRequest(asset_data_uri_);
 			}
 		}
 	}

@@ -2,7 +2,7 @@
 
 
 #include "StableHeaders.h"
-
+#include "Poco/Base64Encoder.h"
 #include <memory>
 #include <iostream>
 
@@ -214,6 +214,10 @@ namespace Asset
             RexAsset::AssetDataVector& data = checked_static_cast<RexAsset*>(new_asset.get())->GetDataInternal();
             data.resize(transfer.GetReceived());
             transfer.AssembleData(&data[0]);
+
+			Foundation::AssetMetadataInterface* metadata = new_asset->GetMetadata();
+			RexAssetMetadata* m = static_cast<RexAssetMetadata*>(metadata);
+			m->DesesrializeFromJSON(transfer.GetAssetMetadata());
       
             asset_service->StoreAsset(new_asset);
             
@@ -231,5 +235,33 @@ namespace Asset
             AssetModule::LogError("Asset service not found, could not store asset to cache");
         }
     }    
+
+	std::string HttpAssetProvider::SerializeToJSON(Foundation::AssetPtr asset) const
+	{
+		RexAssetMetadata* metadata = static_cast<RexAssetMetadata*>(asset->GetMetadata());
+		std::stringstream s;
+
+		s << "{";
+		s << "\"id\":\"" << metadata->GetId() << "\",";
+		s << "\"name\":\"" << metadata->GetName() << "\",";
+		s << "\"description\":\"" << metadata->GetDescription() << "\",";
+		s << "\"type\":\"" << metadata->GetContentType() << "\",";
+		if (metadata->IsTemporary())
+			s << "\"temporary\":" << "true" << ",";
+		else
+			s << "\"temporary\":" << "false" << ",";
+		s << "\"data\":\"";
+		Poco::Base64Encoder encoder(s);
+
+		encoder.write((char*)asset->GetData(),asset->GetSize());
+		encoder.flush();
+		encoder.close();
+		s << "\"";
+		s << "}";
+
+		std::string t = s.str();
+
+		return s.str();
+	}
 
 } // end of namespace

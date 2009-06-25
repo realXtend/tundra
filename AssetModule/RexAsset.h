@@ -4,6 +4,7 @@
 #define incl_Asset_RexAsset_h
 
 #include "AssetInterface.h"
+#include "RexAssetMetadata.h"
 #include "RexUUID.h"
 
 namespace Asset
@@ -38,7 +39,10 @@ namespace Asset
         
         //! returns asset data vector, non-const. For internal use
         AssetDataVector& GetDataInternal() { return data_; }
-        
+
+		//! Returns asset metadata
+		virtual Foundation::AssetMetadataInterface* GetMetadata() {return (Foundation::AssetMetadataInterface*)&metadata_;}
+
     private:
         //! asset id
         std::string asset_id_;
@@ -46,7 +50,10 @@ namespace Asset
         std::string asset_type_;
         //! asset data
         AssetDataVector data_;
+		//! asset metadata
+		RexAssetMetadata metadata_;
     };
+
 }
 
 #endif
