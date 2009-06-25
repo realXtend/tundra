@@ -75,7 +75,7 @@ namespace Asset
 			Poco::Net::HTTPResponse::HTTPStatus status = http_response_.getStatus();
 			switch (status)
 			{
-			case Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK:
+			case Poco::Net::HTTPResponse::HTTP_OK:
 					response_stream_ = &s;
 					response_size_ = http_response_.getContentLength();
 					break;

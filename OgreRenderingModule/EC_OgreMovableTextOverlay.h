@@ -17,7 +17,6 @@ namespace Ogre
     class SceneNode;
     class MovableObject;
     class Camera;
-    class Vector2;
     class Font;
 }
 
@@ -57,8 +56,12 @@ namespace OgreRenderer
         //! displays the text as is in the overlay
         void SetText(const std::string &text);
 		
+		//! Set new material for the overlay container.
+		//! @param material_name Name of the Ogre material.
+		void SetMaterial(const std::string& material_name);
+		
 		//! returns the text of the overlay
-		std::string GetText() { return text_; }
+		std::string GetText() const { return text_; }
         
 		//! hide / show the overlay
         void SetVisible(bool visible);
@@ -75,6 +78,10 @@ namespace OgreRenderer
         
         //! return the dimensions of the text.
         Ogre::Vector2 GetTextDimensions(const std::string &text);
+        
+        //! Set alpha channel intensity for text and container material.
+        //! @param distance The distance of the camera from the overlay node.
+        void SetAlphaChannelIntensity(const float &distance);
         
         //! Overlay element for the text.
         Ogre::TextAreaOverlayElement *text_element_;
@@ -102,7 +109,10 @@ namespace OgreRenderer
 
         //! Unique object name for the overlay container.
         std::string containerName_;
-                
+        
+        //! Name of the material used by the overlay container.
+        std::string materialName_;
+        
         //! The overlay text.
         std::string text_;
         
