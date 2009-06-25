@@ -1,7 +1,7 @@
 @rem Makes a build directory of the viewer, so that you can run the NSIS install script
 @rem You should have a directory ..\viewerbuilddlls which has release versions of
-@rem all dependency dlls, including gtkmm, and also VS2008 redistributable & 
-@rem OpenAL installers 
+@rem all dependency dlls, including gtkmm & Qt core/ui/webkit, and also VS2008 
+@rem redistributable 
 @echo off
 rmdir build /S /Q
 md build
@@ -11,8 +11,9 @@ rmdir build\testing /S /Q
 del build\*.dll
 del build\viewerd.exe
 del build\modules\core\*d.dll
-del build\modules\test\*d.dll
-del build\modules\test\TestModule*.*
-del build\modules\test\non_existing_system.xml
+del build\modules\core\OpenAL*.*
+del build\modules\core\DebugStats*.*
+del build\modules\test\*.xml
+del build\modules\test\*.dll
 xcopy ..\viewerbuilddlls\*.* build /S /C
 

@@ -25,13 +25,11 @@ Section ""
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\realXtend-viewer" \
                    "UninstallString" "$INSTDIR\uninstaller.exe"
 
-  ExecWait '"$INSTDIR\vcredist_x86.exe"'
-  ExecWait '"$INSTDIR\oalinst.exe"'
-
-  Delete "$INSTDIR\vcredist_x86.exe"
-  Delete "$INSTDIR\oalinst.exe"
+  ExecWait '"$INSTDIR\vcredist_x86.exe" /q'
 
   WriteUninstaller "$INSTDIR\uninstaller.exe"
+
+  Delete "$INSTDIR\vcredist_x86.exe"
 SectionEnd
 
 Section "Start Menu Shortcuts"
