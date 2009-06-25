@@ -24,6 +24,7 @@ include (OpenJpeg)
 include (Caelum)
 #include (Hydrax)
 include (Qt)
+include (TinyJson)
 
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
