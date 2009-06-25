@@ -22,7 +22,9 @@ namespace Console
 
             if (std::cin.fail())
             {
+                #ifndef WINDOWS_APP
                 framework_->Exit();
+                #endif
                 break;
             }
 

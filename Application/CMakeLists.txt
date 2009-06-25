@@ -30,10 +30,15 @@ endif (MSVC)
 
 # Define executable
 if (NOT MSVC)
-	SET (EXECUTABLE_OUTPUT_PATH ${TARGET_DIR})
+   SET (EXECUTABLE_OUTPUT_PATH ${TARGET_DIR})
 endif (NOT MSVC)
 
-add_executable (${TARGET_NAME} ${SOURCE_FILES})
+if (MSVC AND WINDOWS_APP)
+   add_executable (${TARGET_NAME} WIN32 ${SOURCE_FILES})
+else (MSVC AND WINDOWS_APP)
+   add_executable (${TARGET_NAME} ${SOURCE_FILES})
+endif (MSVC AND WINDOWS_APP)
+
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 
 if (MSVC)
