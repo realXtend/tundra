@@ -20,14 +20,12 @@ include_directories (
 	../RexCommon
 	../InputModuleOIS
 	../QtModule
-	../GtkmmUI
 )
 
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_OGRE()
-INCLUDE_GTKMM()
 INCLUDE_QT4()
 
 include(${QT_USE_FILE})
@@ -53,7 +51,6 @@ set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
 LINK_BOOST()
 LINK_POCO()
 LINK_OGRE()
-LINK_GTKMM()
 LINK_QT4()
 
 if (MSVC)
@@ -62,7 +59,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation Interfaces OpenSimProtocolModule RexCommon OgreRenderingModule GtkmmUI QtModule)
+target_link_libraries (${TARGET_NAME} Foundation Interfaces OpenSimProtocolModule RexCommon OgreRenderingModule QtModule)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

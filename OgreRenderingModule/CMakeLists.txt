@@ -16,7 +16,6 @@ include_directories (
 	../Interfaces
 	../AssetModule
 	../RexCommon
-	../GtkmmUI
 	../InputModuleOIS
 )
 
@@ -24,7 +23,6 @@ include_directories (
 INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_OGRE()
-INCLUDE_GTKMM()
 
 if (CAELUM)
 	INCLUDE_CAELUM()
@@ -65,13 +63,12 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation Interfaces RexCommon GtkmmUI)
+target_link_libraries (${TARGET_NAME} Foundation Interfaces RexCommon)
 
 # External library linkage
 LINK_BOOST()
 LINK_POCO()
 LINK_OGRE()
-LINK_GTKMM()
 
 if (CAELUM)
 	LINK_CAELUM()

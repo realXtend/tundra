@@ -3,6 +3,8 @@
 #ifndef incl_OgreRenderer_OgreWidget_h
 #define incl_OgreRenderer_OgreWidget_h
 
+/*
+
 #include <gtkmm/widget.h>
 
 namespace OgreRenderer
@@ -30,5 +32,6 @@ namespace OgreRenderer
     };
 }
 
+*/
 
 #endif
