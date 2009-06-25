@@ -148,6 +148,9 @@ namespace RexLogic
         //! toggle fly mode through console
         Console::CommandResult ConsoleToggleFlyMode(const Core::StringVector &params);
         
+        //! logout from server and delete current scene
+        void LogoutAndDeleteWorld();
+        
     private:
         //! Event handler for network events.
         NetworkEventHandler *network_handler_;

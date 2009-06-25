@@ -4,6 +4,8 @@
 #include "OpenSimProtocolModule.h"
 #include "RexProtocolMsgIDs.h"
 
+#include "Poco/Net/NetException.h"
+
 namespace OpenSimProtocol
 {
 	OpenSimProtocolModule::OpenSimProtocolModule() :
@@ -74,7 +76,18 @@ namespace OpenSimProtocol
             }
             
             if (connected_)
-                networkManager_->ProcessMessages();
+            {
+                try
+                {
+                    networkManager_->ProcessMessages();
+                }
+                catch(Poco::Net::NetException &e)
+                {
+                    LogError(e.what());
+                    LogInfo("Network error occured. Closing server connection.");
+                    DisconnectFromRexServer();
+                }
+            }
         }
         RESETPROFILER;
     }
@@ -165,9 +178,14 @@ namespace OpenSimProtocol
 	
 	void OpenSimProtocolModule::DisconnectFromRexServer()
 	{
+	    if(!connected_)
+	        return;
+	
 	    networkManager_->Disconnect();
 	    loginWorker_.SetConnectionState(Connection::STATE_DISCONNECTED);
 	    connected_ = false;
+	    
+	    eventManager_->SendEvent(networkStateEventCategory_, Events::EVENT_SERVER_DISCONNECTED, NULL);
 	}
 
 	void OpenSimProtocolModule::DumpNetworkMessage(NetMsgID id, NetInMessage *msg)
