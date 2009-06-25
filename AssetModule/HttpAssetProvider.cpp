@@ -25,7 +25,7 @@ namespace Asset
 
 	HttpAssetProvider::HttpAssetProvider(Foundation::Framework* framework) : framework_(framework)
 	{
-		asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("UDPAssetProvider", "Timeout", DEFAULT_ASSET_TIMEOUT);            
+		asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("HTTPAssetProvider", "timeout", DEFAULT_ASSET_TIMEOUT);            
 
 		Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         

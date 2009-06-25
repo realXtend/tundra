@@ -59,6 +59,9 @@ namespace TextureDecoder
 
         //! OpenJpeg decoder that's run in a thread
         OpenJpegDecoder decoder_;
+        
+        //! Max decodes per frame
+        int max_decodes_per_frame_;
     };
 }
 
