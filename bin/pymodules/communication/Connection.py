@@ -1,7 +1,7 @@
 ##
 ## Will hopefully be refactored soon
 ##
-
+import os
 import sys
 import dbus.glib
 import logging
@@ -29,7 +29,7 @@ import traceback
 class Connection():
     
     def __init__(self, app):
-        self.manager_file = "gabble.manager"
+        self.manager_file = "data"+os.sep+"gabble.manager"
         self.manager = "gabble"
         self.protocol = "jabber"
         self.conn = None

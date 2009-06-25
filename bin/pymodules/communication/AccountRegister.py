@@ -55,7 +55,7 @@ class AccountRegister():
 
     def _connect(self, manager, protocol, account, ready_handler=None):
         reg = telepathy.client.ManagerRegistry()
-        reg.LoadManager("gabble.manager")
+        reg.LoadManager("data"+os.sep+"gabble.manager")
         reg.LoadManagers()
         print "protocol, account"
         print protocol, account
