@@ -203,6 +203,12 @@ namespace RexLogic
 			// Save login and server settings for future use. 
 			framework_->GetConfigManager()->SetSetting<std::string>(
 											std::string("Login"),
+											std::string("server"),
+											server_address);
+				
+			// Save login and server settings for future use. 
+			framework_->GetConfigManager()->SetSetting<std::string>(
+											std::string("Login"),
 											std::string("auth_server"),
 											auth_server);
 			framework_->GetConfigManager()->SetSetting<std::string>(

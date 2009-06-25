@@ -146,8 +146,9 @@ namespace OpenSimProtocol
 		}
 		else
 		{
-			LogError("Could not connect to server. Reason: port number was not found from authentication server address." );
-            return false;
+			OpenSimProtocolModule::LogInfo("No port defined for the authentication server, using default port (10001).");	
+			auth_port = "10001";
+			auth_address = auth_server_address;
 		}
         
         loginWorker_.SetupXMLRPCLogin(first_name, last_name, password, address, boost::lexical_cast<std::string>(port), callMethod,
