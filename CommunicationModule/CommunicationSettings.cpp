@@ -53,6 +53,8 @@ namespace Communication
     {
         Foundation::ScriptObject* sobj = cmanager_->CallPythonCommunicationObjectAndGetReturnValue("CGetSettings");
         char* retVal = sobj->ConvertToChar();
+		if (retVal == NULL)
+			return; 
         std::string settingsString(retVal);
         std::vector<std::string> settingsParamsPairsVector = this->SplitString(settingsString, std::string(":"), 0);
         

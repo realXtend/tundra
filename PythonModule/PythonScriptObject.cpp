@@ -146,6 +146,8 @@ namespace PythonScript
      * when ReleaseResources and destructor methods are called)
      */
 	char* PythonScriptObject::ConvertToChar(){
+		if (!this->pythonObj)
+			return NULL;
 		return PyString_AsString(this->pythonObj);
 	}
 
