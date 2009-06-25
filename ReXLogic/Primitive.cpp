@@ -993,9 +993,9 @@ namespace RexLogic
                         else
                         {
                             meshptr->SetMaterial(idx, mat->getName());
-                            std::stringstream ss;
-                            ss << std::string("Set submesh ") << idx << " to use material \"" << mat->getName() << "\"";
-                            RexLogicModule::LogDebug(ss.str());
+                            //std::stringstream ss;
+                            //ss << std::string("Set submesh ") << idx << " to use material \"" << mat->getName() << "\"";
+                            //RexLogicModule::LogDebug(ss.str());
                         }
                     }
                     ++i;

@@ -10,6 +10,8 @@
 
 namespace TextureDecoder
 {
+    static const int DEFAULT_MAX_DECODES = 4;
+    
     TextureService::TextureService(Foundation::Framework* framework) : 
         framework_(framework)
     {
@@ -21,6 +23,10 @@ namespace TextureDecoder
             resourcecategory_id_ = event_manager->RegisterEventCategory("Resource");
             event_manager->RegisterEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, "ResourceReady");
         }
+        
+        max_decodes_per_frame_ = framework_->GetDefaultConfig().DeclareSetting("TextureDecoder", "max_decodes_per_frame", DEFAULT_MAX_DECODES);
+        if (max_decodes_per_frame_ <= 0) 
+            max_decodes_per_frame_ = 1;
 
         thread_ = boost::thread(boost::ref(decoder_));
     }
@@ -43,7 +49,7 @@ namespace TextureDecoder
         }
      
         TextureRequest new_request(asset_id); 
-        new_request.InsertTag(tag);                  
+        new_request.InsertTag(tag);
         requests_[asset_id] = new_request;
         
         return tag;
@@ -55,12 +61,12 @@ namespace TextureDecoder
         if (!service_manager->IsRegistered(Foundation::Service::ST_Asset))
         {
             // No asset service, clear asset request status of requests & do nothing
-            TextureRequestMap::iterator i = requests_.begin();     
+            TextureRequestMap::iterator i = requests_.begin();
             while (i != requests_.end())
             {
                 i->second.SetRequested(false);
                 ++i;
-            }            
+            }
             return;
         }
 
@@ -76,6 +82,7 @@ namespace TextureDecoder
 
         // Check for any decode results
         DecodeResult result;
+        int results = 0;
         while (decoder_.GetResult(result))
         {
             i = requests_.find(result.id_);
@@ -102,8 +109,12 @@ namespace TextureDecoder
                 
                 // Remove request if final quality level was decoded
                 if (done)
-                    requests_.erase(i);                
+                    requests_.erase(i);
             }
+            
+            results++;
+            if (results >= max_decodes_per_frame_)
+                break;
         }
     }
     
