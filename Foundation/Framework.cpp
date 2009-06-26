@@ -544,9 +544,11 @@ namespace Foundation
                 "Sends an internal event. Only for events that contain no data. Usage: SendEvent(event category name, event id)", 
                 Console::Bind(this, &Framework::ConsoleSendEvent)));
 
+#ifdef PROFILING
             console->RegisterCommand(Console::CreateCommand("Profile", 
                 "Outputs profiling data. Usage: Profile() for full, or Profile(name) for specific profiling block", 
                 Console::Bind(this, &Framework::ConsoleProfile)));
+#endif
 
             console->RegisterCommand(Console::CreateCommand("FrameLimit", 
                 "Limit fps. Usage: FrameLimit(max_frames)", 
