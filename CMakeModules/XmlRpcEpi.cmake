@@ -22,6 +22,7 @@ elseif (UNIX)
       /usr/lib/xmlrpc-epi
       /usr/local/xmlrpc-epi
       $ENV{HOME}/xmlrpc-epi
+      $ENV{REX_DEP_PATH}
       $ENV{REX_DEP_PATH}/xmlrpc-epi)
 endif()
 

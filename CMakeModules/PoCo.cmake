@@ -12,19 +12,21 @@ findpkg_begin(POCO)
 # Construct search paths from enviromental hits and OS spesific guesses
 
 set(POCO_PREFIX_GUESSES 
-  /opt/PoCo
-  /opt/poco
-  /opt/Poco
-  /usr/local
-  /usr/lib/PoCo
-  /usr/lib/Poco
-  /usr/local/Poco
-  $ENV{HOME}/PoCo
-  $ENV{HOME}/Poco
-  $ENV{HOME}/poco
-  $ENV{REX_DEP_PATH}/poco
-  $ENV{REX_DEP_PATH}/Poco
-  $ENV{REX_DEP_PATH}/PoCo)
+    /opt/PoCo
+    /opt/poco
+    /opt/Poco
+    /usr/local
+    /usr/lib/PoCo
+    /usr/lib/Poco
+    /usr/local/Poco
+    $ENV{HOME}/PoCo
+    $ENV{HOME}/Poco
+    $ENV{HOME}/poco
+    $ENV{REX_DEP_PATH}
+    $ENV{REX_DEP_PATH}/poco
+    $ENV{REX_DEP_PATH}/Poco
+    $ENV{REX_DEP_PATH}/include/Poco
+    $ENV{REX_DEP_PATH}/PoCo)
 
 set(POCO_PREFIX_PATH 
     ${POCO_HOME} $ENV{POCO_HOME} ${POCO_PREFIX_GUESSES})
@@ -43,6 +45,7 @@ if (POCO_FOUND)
   set(POCO_INCLUDE_DIR "${POCO_INCLUDE_DIRS}")
 else ()
   message(STATUS "try to find PoCo from guessed paths")
+  #message(STATUS "try to find PoCo from guessed ${POCO_INC_SEARCH_PATH} ${POCO_PKGC_INCLUDE_DIRS}")
   find_path(POCO_INCLUDE_DIR Poco.h HINTS ${POCO_INC_SEARCH_PATH} ${POCO_PKGC_INCLUDE_DIRS})
   if (MSVC)
     find_path(POCO_LIBRARY_DIR PocoFoundation.lib HINTS ${POCO_LIB_SEARCH_PATH})

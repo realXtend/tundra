@@ -16,17 +16,20 @@ if (MSVC)
     $ENV{PROGRAMFILES}/OpenJpeg C:/openjpeg $ENV{REX_DEP_PATH}/openjpeg)
 elseif (UNIX)
   set(OPENJPEG_PREFIX_GUESSES 
-    /opt/openjpeg
-    /opt/OpenJpeg
-    /usr/local
-    /usr/lib/openjpeg
-    /usr/lib/OpenJpeg
-    /usr/local/openjpeg
-    /usr/local/OpenJpeg
-    $ENV{HOME}/OpenJpeg
-    $ENV{HOME}/openjpeg
-    $ENV{REX_DEP_PATH}/openjpeg
-    $ENV{REX_DEP_PATH}/OpenJpeg)
+      /opt/openjpeg
+      /opt/OpenJpeg
+      /usr/local
+      /usr/lib/openjpeg
+      /usr/lib/OpenJpeg
+      /usr/include/openjpeg
+      /usr/include/OpenJpeg
+      /usr/local/openjpeg
+      /usr/local/OpenJpeg
+      $ENV{HOME}/OpenJpeg
+      $ENV{HOME}/openjpeg
+      $ENV{REX_DEP_PATH}
+      $ENV{REX_DEP_PATH}/openjpeg
+      $ENV{REX_DEP_PATH}/OpenJpeg)
 endif()
 
 set(OPENJPEG_PREFIX_PATH 
@@ -51,6 +54,7 @@ else ()
     find_path(OPENJPEG_LIBRARY_DIR OpenJPEG.lib HINTS ${OPENJPEG_LIB_SEARCH_PATH})
   else ()
     find_path(OPENJPEG_LIBRARY_DIR libopenjpeg.a HINTS ${OPENJPEG_LIB_SEARCH_PATH})
+    find_path(OPENJPEG_LIBRARY_DIR libopenjpeg.so HINTS ${OPENJPEG_LIB_SEARCH_PATH})
   endif()
 endif()
 

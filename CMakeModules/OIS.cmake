@@ -12,18 +12,19 @@ macro (FIND_OIS)
       message (STATUS "OIS was not found by pkg-config")
       
       set(OIS_PREFIX_GUESSES 
-	/opt/OIS
-	/opt/ois
-	/usr/local
-	/usr/lib/ois
-	/usr/lib/OIS
-	/usr/local/ois
-	/usr/local/OIS
-	/usr/local/include/OIS
-	$ENV{HOME}/ois
-	$ENV{HOME}/OIS
-	$ENV{REX_DEP_PATH}/ois
-	$ENV{REX_DEP_PATH}/OIS)
+          /opt/OIS
+          /opt/ois
+          /usr/local
+          /usr/lib/ois
+          /usr/lib/OIS
+          /usr/local/ois
+          /usr/local/OIS
+          /usr/local/include/OIS
+          $ENV{HOME}/ois
+          $ENV{HOME}/OIS
+          $ENV{REX_DEP_PATH}
+          $ENV{REX_DEP_PATH}/ois
+          $ENV{REX_DEP_PATH}/OIS)
       
       set(OIS_PREFIX_PATH 
 	${OIS_HOME} $ENV{OIS_HOME} ${OIS_PREFIX_GUESSES})

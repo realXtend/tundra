@@ -19,13 +19,15 @@ endmacro(pkg_message)
 
 # Construct search paths for includes and libraries from a PREFIX_PATH
 macro(create_search_paths PREFIX)
-  foreach(dir ${${PREFIX}_PREFIX_PATH})
-    set(${PREFIX}_INC_SEARCH_PATH ${${PREFIX}_INC_SEARCH_PATH}
-      ${dir}/include ${dir}/include/${PREFIX} ${dir}/Headers ${dir})
-    set(${PREFIX}_LIB_SEARCH_PATH ${${PREFIX}_LIB_SEARCH_PATH}
-      ${dir}/lib ${dir}/lib/${PREFIX} ${dir}/Libs ${dir})
-  endforeach(dir)
-  set(${PREFIX}_FRAMEWORK_SEARCH_PATH ${${PREFIX}_PREFIX_PATH})
+    set(${PREFIX}_INC_SEARCH_PATH /usr/include)
+    set(${PREFIX}_LIB_SEARCH_PATH /usr/lib)
+    foreach(dir ${${PREFIX}_PREFIX_PATH})
+        set(${PREFIX}_INC_SEARCH_PATH ${${PREFIX}_INC_SEARCH_PATH}
+            ${dir}/include ${dir}/include/${PREFIX} ${dir}/Headers ${dir})
+        set(${PREFIX}_LIB_SEARCH_PATH ${${PREFIX}_LIB_SEARCH_PATH}
+            ${dir}/lib ${dir}/lib/${PREFIX} ${dir}/Libs ${dir})
+    endforeach(dir)
+    set(${PREFIX}_FRAMEWORK_SEARCH_PATH ${${PREFIX}_PREFIX_PATH})
 endmacro(create_search_paths)
 
 # clear cache variables if a certain variable changed
