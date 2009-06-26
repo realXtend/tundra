@@ -15,7 +15,16 @@ namespace Foundation
     class RexQEngine;
 
     //! contains entry point for the framework.
-    /*! Allows access to various managers and services
+    /*! Allows access to various managers and services. The standard way of using
+        the framework is by first creating the framework and then calling Framework::Go()
+        which will then load / initialize all modules and enters the main loop which
+        automatically updates all loaded modules.
+
+        There are other ways of using the framework. To f.ex. run without the main loop,
+        see Framework::PostInitialize(). All the modules need to be updated manually then.
+
+        The constructor initalizes the framework. Config or logging should not be used
+        usually without first initializing the framework.
 
         \ingroup Foundation_group
     */
@@ -24,12 +33,27 @@ namespace Foundation
     public:
         typedef std::map<std::string, Scene::ScenePtr> SceneMap;
 
-        //! default constructor
+        //! default constructor. Initializes the framework.
         Framework();
         //! destructor
         ~Framework();
 
+        //! Parse program options from command line arguments
+        /*! For internal use. Should be called immediatelly after creating the framework,
+            so all options will be taken in effect properly.
+        */
+        void ParseProgramOptions(int argc, char **argv);
+
         //! Do post-initialization steps. No need to call if using Framework::Go().
+        /*! This function can be used if you wish to use the framework without main loop.
+            It does
+            In that case the correct order is:
+                Foundation::Framework fw;                  // create the framework
+                fw.GetModuleManager()->ExcludeModule(...)  // optional step for excluding certain modules
+                ...                                        // other initalization steps
+                fw.PostInitialize()
+                ...                                        // continue program execution without framework's main loop
+        */
         void PostInitialize();
 
         //! Entry point for the framework.
@@ -192,10 +216,39 @@ namespace Foundation
         //! maximum number of ticks (milliseconds) per frame for frame limiter
         Core::uint max_ticks_;
 
+        //! profiler
         Profiler profiler_;
 
-        boost::timer timer;
+        //! program options
+        boost::program_options::variables_map cm_options_;
 
+        //! command line arguments as supplied by the operating system
+        int argc_;
+        char **argv_;
+
+        boost::timer timer;
+    };
+
+    namespace
+    {
+        const Core::event_id_t PROGRAM_OPTIONS = 1;
+    }
+
+    //! Contains pre-parsed program options and non-parsed command line arguments.
+    /*! Options contains program options pre-parsed by framework. If modules wish
+        to use their own command line arguments, the arguments are also supplied.
+    */
+    class ProgramOptionsEvent : public EventDataInterface
+    {
+        ProgramOptionsEvent();
+    public:
+        ProgramOptionsEvent(const boost::program_options::variables_map &vars, int ac, char **av) : options(vars), argc(ac), argv(av) {}
+
+        //! parsed program options
+        const boost::program_options::variables_map &options;
+        //! command line arguments as supplied by the operating system
+        int argc;
+        char **argv;
     };
 }
 

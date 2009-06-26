@@ -82,6 +82,7 @@ int run (int argc, char **argv)
     {
         Foundation::Framework fw;
         setup (fw);
+        fw.ParseProgramOptions(argc, argv);
 
         // \todo Parse command line options for command loading
         //options (argc, argv, fw);

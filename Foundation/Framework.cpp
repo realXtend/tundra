@@ -150,9 +150,50 @@ namespace Foundation
         delete loggingfactory;
     }
 
+    void Framework::ParseProgramOptions(int argc, char **argv)
+    {
+        Foundation::RootLogInfo("Parsing command line arguments...");
+
+        argc_ = argc;
+        argv_ = argv;
+
+        namespace po = boost::program_options;
+  
+        po::options_description desc;
+        desc.add_options()
+            ("headless", "run viewer in headless mode without any windows or rendering")
+            ("user", po::value<std::string>(), "user name")
+            ("passwd", po::value<std::string>(), "user password")
+            ("server", po::value<std::string>(), "world server and port")
+            ("auth_server", po::value<std::string>(), "realXtend authentication server address and port")
+            ("auth_login", po::value<std::string>(), "realXtend authentication server user name")
+            ("login", "automatically login to server using provided credentials")
+            ;
+
+        try
+        {  
+            po::store (po::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), cm_options_);
+        } catch (std::exception &e)
+        {
+            Foundation::RootLogWarning(e.what());
+        }
+        po::notify (cm_options_);
+    }
+
     void Framework::PostInitialize()
     {
         PROFILE(FW_PostInitialize);
+
+        Core::event_category_id_t framework_events = event_manager_->RegisterEventCategory("Framework");
+
+        // headless mode based on program options
+        if (cm_options_.count("headless"))
+        {
+            module_manager_->ExcludeModule("GtkmmUI");
+            module_manager_->ExcludeModule(Foundation::Module::MT_Renderer);
+            module_manager_->ExcludeModule("CommunicationUIModule");
+            module_manager_->ExcludeModule(Foundation::Module::MT_CommunicationUI);
+        }
 
         LoadModules();
 
@@ -161,6 +202,10 @@ namespace Foundation
 
         // add event subscribers now, that all modules are loaded/initialized
         event_manager_->LoadEventSubscriberTree(DEFAULT_EVENT_SUBSCRIBER_TREE_PATH);
+
+        ProgramOptionsEvent *data = new ProgramOptionsEvent(cm_options_, argc_, argv_);
+        event_manager_->SendEvent(framework_events, PROGRAM_OPTIONS, data);
+        delete data;
     }
     
     void Framework::ProcessOneFrame()

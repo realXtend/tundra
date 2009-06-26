@@ -37,6 +37,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/timer.hpp>
+#include <boost/program_options.hpp>
 
 #include <Poco/Foundation.h>
 #include <Poco/DirectoryIterator.h>
