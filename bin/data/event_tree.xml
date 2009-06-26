@@ -3,7 +3,7 @@
 	<subscriber module="DebugStats" priority="100" />
 	<subscriber module="RexLogicModule" priority="100" />
 	<subscriber module="NetTestLogicModule" priority="100" />
-        <subscriber module="ScriptModule" priority="100" />
+    <subscriber module="PythonScriptModule" priority="90" />
 	<subscriber module="InputModuleOIS" priority="1" />
 	<subscriber module="ConsoleModule" priority="101" />
 	<subscriber module="OgreRenderingModule" priority="99" />
