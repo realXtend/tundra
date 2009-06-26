@@ -142,7 +142,7 @@ namespace Asset
 			Poco::Net::HTTPResponse::HTTPStatus status = http_response_.getStatus();
 			switch (status)
 			{
-			case Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK:
+			case Poco::Net::HTTPResponse::HTTP_OK:
 					response_stream_ = &s;
 					response_size_ = http_response_.getContentLength();
 					break;
@@ -158,7 +158,14 @@ namespace Asset
 				return;
 			}
 		}
-		catch (Poco::Exception e)
+		catch (Poco::Net::MessageException &e)
+		{
+			std::string u = request.getURI();
+			std::string m = request.getMethod();
+			std::string error = e.message();
+			
+		}
+		catch (Poco::Exception &e)
 		{
 			std::stringstream error;
 			error << "Http POST failed for: ";
@@ -167,13 +174,6 @@ namespace Asset
 			AssetModule::LogError(error.str());
 			failed_ = true;
 			return;
-		}
-		catch (Poco::Net::MessageException e)
-		{
-			std::string u = request.getURI();
-			std::string m = request.getMethod();
-			std::string error = e.message();
-			
 		}
 	}
 
