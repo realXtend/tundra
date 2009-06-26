@@ -115,13 +115,28 @@ namespace OpenSimProtocol
 		const std::string& address,
 		int port,
 		ConnectionThreadState *thread_state)
-     {   
+	{   
 		std::string callMethod = "login_to_simulator";
 		loginWorker_.SetupXMLRPCLogin(first_name, last_name, password, address, boost::lexical_cast<std::string>(port), callMethod, thread_state);
 
 		// Start the thread.
 		boost::thread(boost::ref(loginWorker_));
-    }
+	}
+
+	void OpenSimProtocolModule::LoginToCBServer(
+		const std::string& first_name,
+		const std::string& last_name,
+		const std::string& address,
+		int port,
+		ConnectionThreadState *thread_state)
+	{
+		std::string callMethod = "login_to_simulator";
+		loginWorker_.SetupXMLRPCLogin(first_name, last_name, "auth_done", address, boost::lexical_cast<std::string>(port), callMethod, thread_state, "openid", "openid", "openid", true); 
+		
+		// Start the thread.
+		boost::thread(boost::ref(loginWorker_));
+	}
+
     
     bool OpenSimProtocolModule::LoginUsingRexAuthentication(
         const std::string& first_name,

@@ -149,7 +149,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 		    loginuri = loginuri+worldAddress_+":"+ worldPort_;
 		    call.AddMember("loginuri", loginuri);
 	    }
-	    else if (authentication_ && callMethod_ == std::string("login_to_simulator"))
+	    else if (authentication_ && callMethod_ == std::string("login_to_simulator") )
 	    {
 
 		    call.AddMember("sessionhash", threadState_->parameters.sessionHash);
@@ -169,12 +169,20 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 		    if (!worldAddress_.find("http") != std::string::npos )
 			    loginuri = "http://";
     		
-		    loginuri = loginuri + worldAddress_ + ":" + worldPort_;
+			if ( authenticationLogin_ == std::string("openid") )
+			{
+				loginuri = loginuri + worldAddress_;
+			} else {
+				loginuri = loginuri + worldAddress_ + ":" + worldPort_;
+			}
+
 		    call.AddMember("loginuri", loginuri.c_str());
 	    }
+
+
    
         call.AddMember("start", std::string("last")); // Starting position: last/home
-	    call.AddMember("version", std::string("realXtend bob 0.0.1"));  ///\todo Make build system create versioning information.
+	    call.AddMember("version", std::string("realXtend Naali 0.0.1"));  ///\todo Make build system create versioning information.
 	    call.AddMember("channel", std::string("realXtend"));
 	    call.AddMember("platform", std::string("Win")); ///\todo.
 	    call.AddMember("mac", mac_hash);

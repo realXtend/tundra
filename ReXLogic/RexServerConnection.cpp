@@ -114,6 +114,21 @@ namespace RexLogic
         
         return true;
     }
+
+	bool RexServerConnection::ConnectToCableBeachServer(const std::string& firstname, const std::string& lastname, int port, const std::string& serveraddress)
+	{
+        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
+        if (!sp.get())
+        {
+            RexLogicModule::LogError("Getting network interface did not succeed.");
+            return false;
+        }
+		
+		connection_type_ = DirectConnection;
+		sp->LoginToCBServer(firstname, lastname, serveraddress, port, &threadState_);
+		
+		return true;
+	}
     
     bool RexServerConnection::CreateUDPConnection()
     {

@@ -1,0 +1,8 @@
+
+<identities>
+    <world>http://jonnenauha.admino.com:8002/login</world>
+    <world>http://jonnenauha.admino.com:8002/login</world>
+    <openid>http://jonnenauha.admino.com:8004/a</openid>
+    <openid>http://jonnenauha.admino.com:8004/jonnenau</openid>
+    <openid>http://jonnenauha.admino.com:8004/anttiko</openid>
+</identities>

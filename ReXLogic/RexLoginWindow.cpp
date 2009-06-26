@@ -1,9 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-
 #include "RexLoginWindow.h"
 #include "RexLogicModule.h"
+#include "cbloginwidget.h"
 #include "QtModule.h"
 //#include "GtkmmUI.h"
 #include <QFile>
@@ -14,6 +14,7 @@
 #include <QTabWidget>
 #include <QLineEdit>
 
+#include "Poco/URI.h"
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
@@ -222,6 +223,10 @@ namespace RexLogic
 	case 2:
 	  {
 	    // OpenID
+		CBLoginWidget *cblogin = new CBLoginWidget();
+		cblogin->show();
+		QObject::connect(cblogin, SIGNAL( loginProcessed(QString) ), SLOT( processCBLogin(QString) ));
+		successful = false;
 	    break;
 	  }
 	default:
@@ -264,7 +269,26 @@ namespace RexLogic
         
         framework_->Exit();      
     }
- 
+
+	void RexLoginWindow::processCBLogin(QString inresult)
+	{
+		size_t pos1;
+		size_t pos2;
+		std::string result = inresult.toStdString();
+
+		pos1 = result.find("http://");
+		pos2 = result.find("?");
+		std::string address = result.substr(pos1, pos2);
+		pos1 = result.find("&", pos2);
+		std::string firstname = result.substr(pos2+1, pos1-pos2-1);
+		std::string lastname = result.substr(pos1+1, result.length() );
+
+		Poco::URI uri = Poco::URI(address);
+		int port = uri.getPort();
+
+		rex_logic_->GetServerConnection()->ConnectToCableBeachServer(firstname, lastname, port, address);
+	}
+
     void RexLoginWindow::UpdateConnectionStateToUI(OpenSimProtocol::Connection::State state)
     { 
         ///\todo Perhaps this state change should come from above instead of this function.
