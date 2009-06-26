@@ -161,6 +161,13 @@ namespace OgreRenderer
         bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "fullscreen", false);
         
         Ogre::RenderSystem* rendersystem = root_->getRenderSystemByName(rendersystem_name);
+#ifdef _WINDOWS
+        // OpenGL fallback
+        if (!rendersystem)
+        {
+            rendersystem = root_->getRenderSystemByName("OpenGL Rendering Subsystem");
+        }
+#endif
         
         if (!rendersystem)
         {
