@@ -31,6 +31,14 @@ This project has the following dependencies:
 OBTAINING DEPENDENCIES
 ======================
 
+Linux
+------------------------------------------------
+
+See your distribution's software repository.
+
+Windows
+------------------------------------------------
+
 If you don't have 32-bit Windows as an OS, don't use the direct links.
 
 gtkmm  ->  Website: http://www.gtkmm.org/
@@ -64,11 +72,3 @@ external librarys
 	   
 	   NOTE: If you use the source method you will have to install boost and poco separately. URLs for this are on top of this document.
 
-
-MAKE THE PROJECT FILE
-=====================
-
-Go to your <project_folder>/trunk and execute the cmake.bat if you are not using VS2008, and cmake_vs2008.bat, if you are using VS2008.
-
-If everything went right you should now have a Visual Studio project file in your <project_folder>/trunk. 
-When compiling for the first time, compile in debug mode and run the exe at least once. Some data files are created in debug mode which are needed when running in release mode.

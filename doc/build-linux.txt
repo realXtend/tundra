@@ -1,16 +1,16 @@
+The viewer has many external libraries which may not be satisfied by default 
+on many distributions. A list of dependencies can be found in them 
+depencies.txt file. However not all of them will be missing from your 
+installation (MD5 is a good example, it should be on all unix-like operating 
+systems). 
 
-Most of Linux distributions
----------------------------
-
-Viewer code uses many external libraries which are needed download/install/build before 
-code itself can be build. Current used external libraries are listed in 
-depencies.txt-file (note you don't need to download MD5). Most of libraries are found from your distribution 
-repositories so don't panic. 
-
-Current build system is CMake, which can be found from your linux distribution own repository. 
-For use of CMake I suggest that you use cmake-gui -software.  
+Many distributions separate packages into two (or more parts): a users package
+containing the binaries (ex: "foo"), and a developers package containging
+headers and other development files (ex: "foo-devel" or "foo-debug"). You will
+need both.
 
 For cmake-gui users: 
+----------------------------------------
 
 1. Choose source code, example:  /my/path/to/code/viewer 
 2. Choose location where binaries are build,  example: /my/path/to/build/directory
@@ -21,6 +21,7 @@ is located in your build directory.
 5. Go to your build directory and run $ make  
 
 For plain cmake users: 
+----------------------------------------
 
 1. Run $ cmake .   ( in viewer code directory)
 2. Assure that cmake found all external libraries 
@@ -44,7 +45,7 @@ data/  media/ modules/ plugins.cfg  plugins-unix.cfg  pymodules  resources.cfg  
 
 
 Fedora
-------
+----------------------------------------
 1. Compile latest boost from source
 2. Compile Poco from source
 3. Run $ REX_DEP_PATH=/opt/deps cmake .
