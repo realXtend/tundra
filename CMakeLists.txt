@@ -49,10 +49,10 @@ if (MSVC)
 	add_definitions (-DUNICODE -D_UNICODE)
 endif (MSVC)
 
-# Generate profiling data
-if (MSVC)
-	add_definitions (-DPROFILING)
-endif (MSVC)
+# Generate profiling data. Currently disabled because of threadsafety issues.
+#if (MSVC)
+#	add_definitions (-DPROFILING)
+#endif (MSVC)
 
 # Find needed external libraries, abort on error
 FIND_BOOST()
@@ -92,9 +92,9 @@ add_subdirectory (ReXLogic)
 #add_subdirectory (TestModule)
 #add_subdirectory (UnitTests) #TODO: didn't compile on fedora
 add_subdirectory (OpenSimProtocol)
-add_subdirectory (GtkmmUI)
-add_subdirectory (DebugStats)
-add_subdirectory (NetTestLogicModule)
+#add_subdirectory (GtkmmUI)
+#add_subdirectory (DebugStats)
+#add_subdirectory (NetTestLogicModule)
 add_subdirectory (PythonModule)
 add_subdirectory (SupportModules)
 add_subdirectory (AssetModule)
