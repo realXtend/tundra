@@ -96,15 +96,16 @@ void EC_OgreMovableTextOverlay::Update()
     // Hide the overlay if it's too far.
     Ogre::Vector3 res = camera_->getPosition() - point;
     float distance = sqrt(res.x * res.x + res.y * res.y + res.z * res.z);
+    
     if (distance > MAX_VISIBILITY_DISTANCE)
     {
         overlay_->hide();
         return;
     }
-    
+
     // Set the alpha channel for the overlay.
     SetAlphaChannelIntensity(distance);
-
+    
     // Derive the 2D screen-space coordinates for node point.
     point = camera_->getProjectionMatrix() * (camera_->getViewMatrix() * point);
     
@@ -299,6 +300,7 @@ Ogre::Vector2 EC_OgreMovableTextOverlay::GetTextDimensions(const std::string &te
 
 void EC_OgreMovableTextOverlay::SetAlphaChannelIntensity(const float &distance)
 {
+    std::cout << distance << std::endl;
     ///\todo ATM hardcoded for the default material only.
     static const float materialMaxAlpha = 0.4f;
     float materialAlpha, textAlpha;
@@ -312,8 +314,12 @@ void EC_OgreMovableTextOverlay::SetAlphaChannelIntensity(const float &distance)
     Ogre::MaterialPtr material = mm.getByName("RedTransparent");
     
     if (material.get())
+    {
+        Ogre::MaterialPtr baseMaterial = mm.getByName("RedTransparent");
+        material = baseMaterial->clone("RedTransparentClone");
         material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(
             Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, materialAlpha, materialAlpha, 0);
+    }
     
     text_element_->setColour(Ogre::ColourValue(fontColor_.r, fontColor_.g, fontColor_.b, textAlpha));
 }
