@@ -5,6 +5,8 @@
 #include "XMLRPCException.h"
 #include <string>
 #include <xmlrpc.h>
+#include "Poco/URI.h"
+#include "boost/lexical_cast.hpp"
 
 /**
  * Represents a XMLRPC connection. You can do multiple XMLRPC requests/replies using the same connection.
@@ -26,9 +28,9 @@ public:
      * @param address is server address. 
      * @param port is server port.
      */
-    void SetServerAddress(const std::string& address, const std::string& port) { strUrl_ = address + ":" + port; }
-    void SetServer(const std::string& address) { strUrl_ = address; }
+    void SetServerAddress(const std::string& address, const std::string& port);
 
+    void SetServer(const std::string& address) { strUrl_ = address; }
 	
 	/**
      * Sends the XMLRPC request data (pure xml) over to the server.

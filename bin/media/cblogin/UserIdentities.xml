@@ -1,0 +1,13 @@
+
+<identities>
+    <world>http://jonnenauha.admino.com:8002/login</world>
+    <world>http://192.168.0.197:8002/login</world>
+    <world>http://192.168.0.107:8002/login</world>
+    <world>http://192.168.0.198:8002/login</world>
+    <world>http://192.168.0.198:8002/login</world>
+    <openid>http://jonnenauha.admino.com:8004/jonnenau</openid>
+    <openid>http://jonnenauha.admino.com:8004/anttiko</openid>
+    <openid>http://192.168.0.198:8004/testi</openid>
+    <openid>http://192.168.0.198:8004/testi</openid>
+    <openid>http://192.168.0.198:8004/testuser</openid>
+</identities>

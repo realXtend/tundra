@@ -7,7 +7,21 @@
 
 XMLRPCConnection::XMLRPCConnection(const std::string& address, const std::string& port)
 {
-    strUrl_ = std::string(address) + ":" + port;
+	Poco::URI uri = Poco::URI(address);
+	uri.setPort( boost::lexical_cast<int>(port) );
+	strUrl_ = uri.toString();
+}
+
+/**
+ * Sets server address. 
+ * @param address is server address. 
+ * @param port is server port.
+ */
+void XMLRPCConnection::SetServerAddress(const std::string& address, const std::string& port) 
+{ 
+	Poco::URI uri = Poco::URI(address);
+	uri.setPort( boost::lexical_cast<int>(port) );
+	strUrl_ = uri.toString();
 }
 
 /// The writer callback function used by cURL.

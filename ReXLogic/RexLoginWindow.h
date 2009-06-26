@@ -43,6 +43,7 @@ namespace RexLogic
         void Disconnect();
         void DisconnectAndShowLoginWindow();
         void Quit();
+	void processCBLogin(QString result);
         
     private:
         /// Hides the login window and shows the logout/quit menu that is embedded to main window.

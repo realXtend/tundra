@@ -75,6 +75,14 @@ namespace OpenSimProtocol
 		    int port,
 		    ConnectionThreadState *thread_state);
 
+		/// Cable Beach style login, setting authentication done unlike normal LoginToServer
+		void LoginToCBServer(
+			const std::string& first_name,
+			const std::string& last_name,
+			const std::string& address,
+			int port,
+			ConnectionThreadState *thread_state);
+
 		/**
 		 * Logs in to a reX server using the authentication procedure.
 		 * 
