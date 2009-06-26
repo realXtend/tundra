@@ -1,36 +1,36 @@
 class MouseInfo:
-    def __init__(self, x, y, x_rel, y_rel):
-        self.setInfo(x, y, x_rel, y_rel)
+    def __init__(self, x, y, rel_x, rel_y):
+        self.setInfo(x, y, rel_x, rel_y)
         
-    def setInfo(self, x, y, x_rel, y_rel):
+    def setInfo(self, x, y, rel_x, rel_y):
         self.x = x
         self.y = y
-        self.x_rel = x_rel
-        self.y_rel = y_rel
+        self.rel_x = rel_x
+        self.rel_y = rel_y
 
 """
 class MouseInfo:
     instance = None
 
     class __impl:
-        def __init__(self, x, y, x_rel, y_rel):
-            self.setInfo(x, y, x_rel, y_rel)
+        def __init__(self, x, y, rel_x, rel_y):
+            self.setInfo(x, y, rel_x, rel_y)
             
-        def setInfo(self, x, y, x_rel, y_rel):
+        def setInfo(self, x, y, rel_x, rel_y):
             self.x = x
             self.y = y
-            self.x_rel = x_rel
-            self.y_rel = y_rel
+            self.rel_x = rel_x
+            self.rel_y = rel_y
             
         def test(self):
             return id(self), self.x, self.y
 
-    def __init__(self, x, y, x_rel, y_rel):
+    def __init__(self, x, y, rel_x, rel_y):
         
         if MouseInfo.instance is None:
-            MouseInfo.instance = MouseInfo.__impl(x, y, x_rel, y_rel)
+            MouseInfo.instance = MouseInfo.__impl(x, y, rel_x, rel_y)
         else:
-            MouseInfo.instance.setInfo(x, y, x_rel, y_rel)
+            MouseInfo.instance.setInfo(x, y, rel_x, rel_y)
             
         self.__dict__['_MouseInfo__instance'] = MouseInfo.instance
 

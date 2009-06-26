@@ -13,7 +13,7 @@ and the ones that work with the current actual api are run here.
 
 import rexviewer as r
 
-idnum = 720012
+idnum = 720006
 #idnum = 0
 
 #playing with avatar
@@ -54,7 +54,7 @@ def test_orientation(e):
 def test_text(e):
     text = e.text
     print "TEST TEXT-OVER-TOP: printing the entity name:", text
-    e.text = "swoot"
+    e.text = "swootness"
     print "TEST TEXT-OVER-TOP: changed name?"
     
 def runtests():
@@ -62,9 +62,9 @@ def runtests():
     #note: now is directly in viewer as GetEntity, defaulting to 'World' scene
     
     e = r.getEntity(idnum)
-    #test_move(e)
-    #test_scale(e)
-    #test_orientation(e)
+    test_move(e)
+    test_scale(e)
+    test_orientation(e)
     test_text(e)
 
 runtests()
