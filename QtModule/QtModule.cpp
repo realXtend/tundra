@@ -97,6 +97,10 @@ void QtModule::PostInitialize()
 
 void QtModule::Uninitialize()
 {
+    delete main_view_;
+    main_view_ = NULL;
+    delete main_scene_;
+    main_scene_ = NULL;
 }
 
 bool QtModule::HandleEvent(Core::event_category_id_t category_id,
