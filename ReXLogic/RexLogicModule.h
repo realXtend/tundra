@@ -12,6 +12,7 @@ namespace RexLogic
     class InputEventHandler;
     class SceneEventHandler;
     class NetworkStateEventHandler;
+    class FrameworkEventHandler;
     class Terrain;
     class Avatar;
     class Primitive;
@@ -163,6 +164,9 @@ namespace RexLogic
         
         //! Event handler for scene events.
         SceneEventHandler *scene_handler_;
+
+        //! event handler for framework events
+        FrameworkEventHandler *framework_handler_;
         
         //! Server connection
         RexServerConnectionPtr rexserver_connection_;

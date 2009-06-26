@@ -8,6 +8,7 @@
 #include "NetworkStateEventHandler.h"
 #include "InputEventHandler.h"
 #include "SceneEventHandler.h"
+#include "FrameworkEventHandler.h"
 #include "EventDataInterface.h"
 #include "TextureInterface.h"
 #include "SceneManager.h"
@@ -109,6 +110,7 @@ namespace RexLogic
         network_state_handler_ = new NetworkStateEventHandler(framework_, this);
         input_handler_ = new InputEventHandler(framework_, this);
         scene_handler_ = new SceneEventHandler(framework_, this);
+        framework_handler_ = new FrameworkEventHandler(rexserver_connection_.get());
         avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
         camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
         
@@ -173,7 +175,14 @@ namespace RexLogic
         if (eventcategoryid != 0)
             event_handlers_[eventcategoryid].push_back(boost::bind(&RexLogicModule::HandleResourceEvent, this, _1, _2));
         else
-            LogError("Unable to find event category for Resource");        
+            LogError("Unable to find event category for Resource");
+
+        // Framework events
+        eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Framework");
+        if (eventcategoryid != 0)
+            event_handlers_[eventcategoryid].push_back(boost::bind(&FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
+        else
+            LogError("Unable to find event category for Framework");
                             
         boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (renderer)
@@ -228,6 +237,7 @@ namespace RexLogic
         SAFE_DELETE (input_handler_);
 		SAFE_DELETE (scene_handler_);
 		SAFE_DELETE (network_state_handler_);
+        SAFE_DELETE (framework_handler_);
 		
 		SAFE_DELETE(loginWindow_);
         
