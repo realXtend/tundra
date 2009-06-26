@@ -32,7 +32,7 @@ EC_OgreMovableTextOverlay::EC_OgreMovableTextOverlay(Foundation::ModuleInterface
     visible_(false),
     overlayName_(""),
     containerName_(""),
-    materialName_("RedTransparent"),
+    baseMaterialName_("RedTransparent"),
     text_(""),
     attached_(false)
     
@@ -127,7 +127,7 @@ void EC_OgreMovableTextOverlay::Update()
         container_->setDimensions(textDim_.x, textDim_.y);
     }
     
-    ///\todo Scale the text and width and height of the container?	    
+    ///\todo Scale the text and width and height of the container?
 //        text_element_->setMetricsMode(Ogre::GMM_RELATIVE);
 //        text_element_->setPosition(textDim_.x, textDim_.y);
 //        text_element_->setPosition(textDim_.x / 10, 0.01);
@@ -240,7 +240,7 @@ void EC_OgreMovableTextOverlay::CreateOverlay(const Core::Vector3df& offset)
     containerName_ = renderer_.lock()->GetUniqueObjectName();
     container_ = static_cast<Ogre::OverlayContainer*>
         (Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", containerName_));
-    container_->setMaterialName(materialName_);
+    container_->setMaterialName(baseMaterialName_);
     overlay_->add2D(container_);
     
     // Font
@@ -271,6 +271,16 @@ void EC_OgreMovableTextOverlay::CreateOverlay(const Core::Vector3df& offset)
         container_->setDimensions(textDim_.x, textDim_.y);
     }
     
+    // Clone own copy of the material for this overlay.
+    Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
+    Ogre::MaterialPtr material = mm.getByName(baseMaterialName_);
+    if (material.get())
+    {
+        Ogre::MaterialPtr baseMaterial = mm.getByName(baseMaterialName_);
+        materialName_ = renderer_.lock()->GetUniqueObjectName();
+        material = baseMaterial->clone(materialName_);
+    }
+        
     if (visible_)
         overlay_->show();
     else
@@ -311,16 +321,11 @@ void EC_OgreMovableTextOverlay::SetAlphaChannelIntensity(const float &distance)
         materialAlpha = materialMaxAlpha;
     
     Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
-    Ogre::MaterialPtr material = mm.getByName("RedTransparent");
-    
+    Ogre::MaterialPtr material = mm.getByName(materialName_);
     if (material.get())
-    {
-        Ogre::MaterialPtr baseMaterial = mm.getByName("RedTransparent");
-        material = baseMaterial->clone("RedTransparentClone");
         material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(
             Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, materialAlpha, materialAlpha, 0);
-    }
-    
+               
     text_element_->setColour(Ogre::ColourValue(fontColor_.r, fontColor_.g, fontColor_.b, textAlpha));
 }
 
