@@ -23,7 +23,7 @@ namespace Python
 namespace PythonScript
 {
 	//typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;
-	typedef boost::shared_ptr<std::vector<void(*)(char*)>> StdFunctionVectorPtr;
+	typedef boost::shared_ptr<std::vector<void(*)(char*)> > StdFunctionVectorPtr;
 
     class PythonScriptModule;
     
