@@ -14,7 +14,7 @@
 ///\note The CAELUM and HYDRAX defines are set in the root CMakeLists.txt.
 
 #ifdef CAELUM
-#include "Caelum.h"
+#include <Caelum.h>
 #endif
 
 #ifdef HYDRAX

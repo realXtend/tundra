@@ -9,7 +9,9 @@ This project has the following dependencies:
 
 - Ogre 1.6.1 or newer, http://www.ogre3d.org 
 
-- GTK--2.4. Gtkmm is being used by the GtkmmUI for the UI system. You will be instructed below how to install this.
+- OIS 1.2 or newer, http://sourceforge.net/projects/wgois
+
+- Qt 4.5 or newer, http://www.qtsoftware.com/ 
 
 - MD5 using C++ 2005-02-15, http://www.md5hashing.com/c++/. This project is used by building the project source files as part of the main project build. Contains the following four files: md5.h, md5.c, md5wrapper.h, md5wrapper.c that are located in OpenSimProtocol/.
 
