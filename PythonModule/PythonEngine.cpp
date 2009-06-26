@@ -98,7 +98,6 @@ namespace PythonScript
 		error = "None";
 		//std::string scriptPath("pymodules");
 		//PyImport_ImportModule(scriptPath.c_str());
-		PyImport_ImportModule("pymodules");
 		pName = PyString_FromString(scriptname.c_str());
 		//pName = PyString_FromString(scriptPath.c_str());
 		if(pName==NULL){ error = "name parsing failed"; return NULL;}
