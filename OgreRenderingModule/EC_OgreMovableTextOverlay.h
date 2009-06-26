@@ -114,7 +114,10 @@ namespace OgreRenderer
         //! Unique object name for the overlay container.
         std::string containerName_;
         
-        //! Name of the material used by the overlay container.
+        //! Name of the base material used by the overlay container.
+        std::string baseMaterialName_;
+        
+        //! Name of the actual material used by the overlay container.
         std::string materialName_;
         
         //! The overlay text.
