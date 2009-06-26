@@ -260,6 +260,7 @@ void EC_OgreMovableTextOverlay::CreateOverlay(const Core::Vector3df& offset)
     text_element_->setParameter("char_height", font_->getParameter("size"));
 //        text_element_->setCharHeight(0.035f);
     text_element_->setParameter("horz_align", "left");
+    fontColor_ = Core::Color(0, 0, 0, 1);
     text_element_->setColour(Ogre::ColourValue::Black);
     container_->addChild(text_element_);
     
@@ -283,7 +284,7 @@ Ogre::Vector2 EC_OgreMovableTextOverlay::GetTextDimensions(const std::string &te
     Ogre::Vector2 result(0, 0);
     
     for(std::string::const_iterator it = text.begin(); it < text.end(); ++it)
-    {   
+    {
 	    if (*it == 0x0020)
 		    result.x += font_->getGlyphAspectRatio(0x0030);
 	    else
@@ -314,7 +315,7 @@ void EC_OgreMovableTextOverlay::SetAlphaChannelIntensity(const float &distance)
         material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(
             Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, materialAlpha, materialAlpha, 0);
     
-    text_element_->setColour(Ogre::ColourValue(0, 0, 0, textAlpha));
+    text_element_->setColour(Ogre::ColourValue(fontColor_.r, fontColor_.g, fontColor_.b, textAlpha));
 }
 
 }

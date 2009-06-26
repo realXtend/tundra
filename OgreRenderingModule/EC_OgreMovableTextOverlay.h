@@ -56,12 +56,16 @@ namespace OgreRenderer
         //! displays the text as is in the overlay
         void SetText(const std::string &text);
 		
-		//! Set new material for the overlay container.
-		//! @param material_name Name of the Ogre material.
-		void SetMaterial(const std::string& material_name);
-		
 		//! returns the text of the overlay
 		std::string GetText() const { return text_; }
+		
+		//! Set new material for the overlay container.
+		//! @param material_name Name of the Ogre material.
+		void SetMaterial(const std::string& material_name);		
+        
+        //! Set the overlay text font color.
+        //! @param color New color.
+        void SetFontColor(const Core::Color &color) { fontColor_ = color; }
         
 		//! hide / show the overlay
         void SetVisible(bool visible);
@@ -121,6 +125,9 @@ namespace OgreRenderer
         
         //! Overlay text dimensions.
         Ogre::Vector2 textDim_;
+        
+        //! Color of the font.
+        Core::Color fontColor_;
         
         //! Font height
 //        const Core::Real char_height_;

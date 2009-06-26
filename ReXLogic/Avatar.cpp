@@ -381,7 +381,7 @@ namespace RexLogic
         if (overlay)
         {
             OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
-            name_overlay.CreateOverlay(Core::Vector3df(0.0f,0.0f,1.5f));
+            name_overlay.CreateOverlay(Core::Vector3df(0.0f, 0.0f, 1.5f));
             name_overlay.SetText(presence.GetFullName());
             name_overlay.SetPlaceable(placeable);
         }
