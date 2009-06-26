@@ -327,7 +327,7 @@ namespace PythonScript
     void PythonScriptModule::Update(Core::f64 frametime)
     {
 		//XXX remove when/as the core has the fps limitter
-		engine_->RunString("import time; time.sleep(0.01);"); //a hack to save cpu now.
+		//engine_->RunString("import time; time.sleep(0.01);"); //a hack to save cpu now.
 
 		if (pmmInstance != NULL)
 			PyObject_CallMethod(pmmInstance, "run", "f", frametime);
