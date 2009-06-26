@@ -3,13 +3,11 @@
 #include "XMLRPCConnection.h"
 #include "curl/curl.h"
 #include <vector>
-
+#include <iostream>
 
 XMLRPCConnection::XMLRPCConnection(const std::string& address, const std::string& port)
 {
-	Poco::URI uri = Poco::URI(address);
-	uri.setPort( boost::lexical_cast<int>(port) );
-	strUrl_ = uri.toString();
+    SetServerAddress(address, port);
 }
 
 /**
@@ -19,9 +17,14 @@ XMLRPCConnection::XMLRPCConnection(const std::string& address, const std::string
  */
 void XMLRPCConnection::SetServerAddress(const std::string& address, const std::string& port) 
 { 
-	Poco::URI uri = Poco::URI(address);
-	uri.setPort( boost::lexical_cast<int>(port) );
-	strUrl_ = uri.toString();
+    std::string address_copy = address;
+    if (address_copy.find("://") == std::string::npos)
+        address_copy = "http://" + address_copy;
+        
+    Poco::URI uri = Poco::URI(address_copy);
+    uri.setPort( boost::lexical_cast<int>(port) );
+    
+    strUrl_ = uri.toString();
 }
 
 /// The writer callback function used by cURL.
