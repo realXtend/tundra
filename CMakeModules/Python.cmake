@@ -4,10 +4,10 @@
 macro (FIND_PYTHON)
  
   if (UNIX)
-    find_package (PkgConfig)
-    pkg_search_module (python python)
-    if (NOT python_INCLUDE_DIRS AND NOT python_LIBRARIES)
+    find_package(PythonLibs)
+    if (NOT PYTHON_LIBRARIES OR NOT_PYTHON_INCLUDE_PATH)
       message (FATAL_ERROR "Python not found by pkg-config")
+    endif()
   endif()
 
 endmacro (FIND_PYTHON)
@@ -18,8 +18,8 @@ macro (INCLUDE_PYTHON)
     include_directories (${REX_DEP_PATH}/Python/include)
     link_directories (${REX_DEP_PATH}/Python/lib)
   else()
-    include_directories(${python_INCLUDE_DIRS})
-    link_directories(${python_LIBRARY_DIRS})
+    include_directories(${PYTHON_INCLUDE_PATH})
+    link_directories(${PYTHON_LIBRARY_DIR})
   endif (MSVC)
   
 endmacro (INCLUDE_PYTHON)
@@ -40,7 +40,7 @@ macro (LINK_PYTHON)
 	optimized Python25)
     endif(PYTHON_FORCE_RELEASE_VERSION)
   else()
-    target_link_libraries (${TARGET_NAME} ${python_LIBRARIES})
+    target_link_libraries (${TARGET_NAME} ${PYTHON_LIBRARIES})
   endif (MSVC)
   
 
