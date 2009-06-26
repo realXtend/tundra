@@ -33,6 +33,7 @@ EC_OgreMovableTextOverlay::EC_OgreMovableTextOverlay(Foundation::ModuleInterface
     overlayName_(""),
     containerName_(""),
     baseMaterialName_("RedTransparent"),
+    materialHasAlpha_(false),
     text_(""),
     attached_(false)
     
@@ -104,7 +105,8 @@ void EC_OgreMovableTextOverlay::Update()
     }
 
     // Set the alpha channel for the overlay.
-    SetAlphaChannelIntensity(distance);
+    if (materialHasAlpha_)
+        SetAlphaChannelIntensity(distance);
     
     // Derive the 2D screen-space coordinates for node point.
     point = camera_->getProjectionMatrix() * (camera_->getViewMatrix() * point);
@@ -204,16 +206,34 @@ void EC_OgreMovableTextOverlay::SetText(const std::string& text)
     container_->setDimensions(textDim_.x, textDim_.y);
 }
 
-void EC_OgreMovableTextOverlay::SetMaterial(const std::string& material_name)
+void EC_OgreMovableTextOverlay::SetMaterial(const std::string& new_base_material)
 {
+    ///\todo Make this work for other materials!
+    // Clone own copy of the material for this overlay.
     Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
-    Ogre::MaterialPtr material = mm.getByName(material_name);
-
+    Ogre::MaterialPtr material = mm.getByName(new_base_material);
     if (material.get())
-        container_->setMaterialName(material_name);
+    {
+        baseMaterialName_ = new_base_material;
+        Ogre::MaterialPtr baseMaterial = mm.getByName(baseMaterialName_);
+        materialName_ = renderer_.lock()->GetUniqueObjectName();
+        material = baseMaterial->clone(materialName_);
+        
+        //todo Check that the the material alpha channel?
+        const Ogre::LayerBlendModeEx &blend = 
+                    baseMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getAlphaBlendMode();
+        if (blend.alphaArg1 > 0)
+            materialHasAlpha_ = true;
+        else
+            materialHasAlpha_ = false;
+                
+        // Set the max alpha for the material.                            
+        materialMaxAlpha_ = blend.alphaArg1;
+           
+        container_->setMaterialName(materialName_);
+    }
     else
-        OgreRenderingModule::LogError("Invalid material name!");
-
+        OgreRenderingModule::LogError("Invalid material name!");    
 }
 
 void EC_OgreMovableTextOverlay::CreateOverlay(const Core::Vector3df& offset)
@@ -240,7 +260,6 @@ void EC_OgreMovableTextOverlay::CreateOverlay(const Core::Vector3df& offset)
     containerName_ = renderer_.lock()->GetUniqueObjectName();
     container_ = static_cast<Ogre::OverlayContainer*>
         (Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", containerName_));
-    container_->setMaterialName(baseMaterialName_);
     overlay_->add2D(container_);
     
     // Font
@@ -271,6 +290,8 @@ void EC_OgreMovableTextOverlay::CreateOverlay(const Core::Vector3df& offset)
         container_->setDimensions(textDim_.x, textDim_.y);
     }
     
+    SetMaterial("RedTransparent"/*baseMaterialName_*/);
+    /*
     // Clone own copy of the material for this overlay.
     Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
     Ogre::MaterialPtr material = mm.getByName(baseMaterialName_);
@@ -279,7 +300,13 @@ void EC_OgreMovableTextOverlay::CreateOverlay(const Core::Vector3df& offset)
         Ogre::MaterialPtr baseMaterial = mm.getByName(baseMaterialName_);
         materialName_ = renderer_.lock()->GetUniqueObjectName();
         material = baseMaterial->clone(materialName_);
+        
+        // Get the max alpha for the material.
+        ///\todo ATM value 0.4 is hardcoded for the "RedTransparent" material.
+        ///      Could be read from the material at some point?
+        materialMaxAlpha_ = 0.4f;
     }
+    */
         
     if (visible_)
         overlay_->show();
@@ -310,15 +337,12 @@ Ogre::Vector2 EC_OgreMovableTextOverlay::GetTextDimensions(const std::string &te
 
 void EC_OgreMovableTextOverlay::SetAlphaChannelIntensity(const float &distance)
 {
-    std::cout << distance << std::endl;
-    ///\todo ATM hardcoded for the default material only.
-    static const float materialMaxAlpha = 0.4f;
     float materialAlpha, textAlpha;
     
     textAlpha = (MAX_VISIBILITY_DISTANCE - distance) / MAX_VISIBILITY_DISTANCE;
     materialAlpha = (MAX_VISIBILITY_DISTANCE - distance) / MAX_VISIBILITY_DISTANCE;
-    if (materialAlpha > materialMaxAlpha)
-        materialAlpha = materialMaxAlpha;
+    if (materialAlpha > materialMaxAlpha_)
+        materialAlpha = materialMaxAlpha_;
     
     Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
     Ogre::MaterialPtr material = mm.getByName(materialName_);

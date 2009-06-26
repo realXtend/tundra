@@ -59,10 +59,6 @@ namespace OgreRenderer
 		//! returns the text of the overlay
 		std::string GetText() const { return text_; }
 		
-		//! Set new material for the overlay container.
-		//! @param material_name Name of the Ogre material.
-		void SetMaterial(const std::string& material_name);		
-        
         //! Set the overlay text font color.
         //! @param color New color.
         void SetFontColor(const Core::Color &color) { fontColor_ = color; }
@@ -86,7 +82,12 @@ namespace OgreRenderer
         //! Set alpha channel intensity for text and container material.
         //! @param distance The distance of the camera from the overlay node.
         void SetAlphaChannelIntensity(const float &distance);
-        
+
+		//! Set new material for the overlay container.
+		//! @param material_name Name of the Ogre material.
+		//! \todo Make this public when it works ok.
+		void SetMaterial(const std::string& material_name);		
+		        
         //! Overlay element for the text.
         Ogre::TextAreaOverlayElement *text_element_;
 
@@ -119,6 +120,12 @@ namespace OgreRenderer
         
         //! Name of the actual material used by the overlay container.
         std::string materialName_;
+        
+        //! Max alpha value of the overlay container material.
+        float materialMaxAlpha_;
+        
+        //! Whether or not the container material has alpha channel.
+        bool materialHasAlpha_;
         
         //! The overlay text.
         std::string text_;
