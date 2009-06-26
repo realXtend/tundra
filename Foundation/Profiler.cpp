@@ -94,7 +94,12 @@ namespace Foundation
 
         ProfilerNodeTree *new_root = all_nodes_->GetChild("MainThread");
         all_nodes_->RemoveChild(new_root);
-        delete new_root;
+        if (new_root)
+        {
+            new_root->auto_delete_children = false;
+            delete new_root;
+        }
+
         all_nodes_->AddChild(root);
     }
 
@@ -112,7 +117,11 @@ namespace Foundation
 
         ProfilerNodeTree *new_root = all_nodes_->GetChild(thread);
         all_nodes_->RemoveChild(new_root);
-        delete new_root;
+        if (new_root)
+        {
+            new_root->auto_delete_children = false;
+            delete new_root;
+        }
         
         all_nodes_->AddChild(root);
     }

@@ -15,7 +15,7 @@
 //! Optionally ends the current profiling block
 /*! Use when you wish to end a profiling block before it goes out of scope
 */
-#   define ELIFORP(x)   x ## __profiler__.Destruct();
+#   define ELIFORP(x) x ## __profiler__.Destruct();
 
 //! Resets profiling data per frame. Must be called at end of each frame in each thread, otherwise profiling data may be inaccurate or unavailable.
 //! \todo Currently RESETPROFILER is called in modules at end of Update(), but that will probably cause mismatched timing data if things are profiled
@@ -38,11 +38,6 @@
 namespace Foundation
 {
     class ProfilerNodeTree;
-    namespace
-    {
-        //! For boost::thread_specific_ptr, we don't want it doing automatic deletion
-        void EmptyDeletor(ProfilerNodeTree *node) { }
-    }
 
     //! Profiles a block of code using Windows API function QueryPerformanceCounter
     class ProfilerBlock
@@ -140,12 +135,13 @@ namespace Foundation
         typedef std::list<ProfilerNodeTree*> NodeList;
 
         //! constructor that takes a name for the node
-        ProfilerNodeTree(const std::string &name) : name_(name), parent_(NULL), recursion_(0) {}
+        ProfilerNodeTree(const std::string &name) : name_(name), parent_(NULL), recursion_(0), auto_delete_children(true) { }
 
         //! destructor
         virtual ~ProfilerNodeTree()
         {
-            
+            if (auto_delete_children)
+                RemoveAndDeleteChildren();
         }
         
         //! Removes and deletes all child nodes
@@ -155,8 +151,10 @@ namespace Foundation
                  it != children_.end() ;
                  ++it)
             {
+                (*it)->RemoveAndDeleteChildren();
                 delete *it;
             }
+            children_.clear();
         }
 
         //! Resets this node and all child nodes
@@ -184,6 +182,19 @@ namespace Foundation
             {
                 NodeList::iterator it = std::find(children_.begin(), children_.end(), node);
                 assert (it != children_.end());
+                children_.erase(it);
+            }
+        }
+
+        //! Removes and deletes the child node and all its children.
+        void RemoveAndDestroyChild(ProfilerNodeTree *node)
+        {
+            if (node)
+            {
+                NodeList::iterator it = std::find(children_.begin(), children_.end(), node);
+                assert (it != children_.end());
+                (*it)->RemoveAndDeleteChildren();
+                delete *it;
                 children_.erase(it);
             }
         }
@@ -217,6 +228,9 @@ namespace Foundation
 
         //! Returns list of children for introspection
         const NodeList &GetChildren() const { return children_; }
+
+        //! Set true to auto delete children when this node is deleted
+        bool auto_delete_children;
 
     private:
         //! list of all children for this node
@@ -298,6 +312,20 @@ namespace Foundation
 
         ProfilerBlock block_;
     };
+
+    namespace
+    {
+        //! For boost::thread_specific_ptr, we don't want it doing automatic deletion
+        void EmptyDeletor(ProfilerNodeTree *node) { }
+        void TSPNodeDeletor(ProfilerNodeTree *node)
+        { 
+            if (node)
+            {
+                node->RemoveAndDeleteChildren();
+                delete node;
+            }
+        }
+    }
     
 
     //! Profiler can be used to measure execution time of a block of code.
@@ -331,7 +359,10 @@ namespace Foundation
 #ifdef PROFILING
             //! we don't want thread_specific_ptr to delete this one automatically
             current_node_ = new boost::thread_specific_ptr<ProfilerNodeTree>(&EmptyDeletor);
+            //root_ = new boost::thread_specific_ptr<ProfilerNodeTree>(&TSPNodeDeletor);
+
             all_nodes_ = boost::shared_ptr<ProfilerNodeTree>(new ProfilerNodeTree("Root"));
+            all_nodes_->auto_delete_children = false;
 
             ProfilerBlock::QueryCapability();
 #endif            
@@ -342,7 +373,6 @@ namespace Foundation
 #ifdef PROFILING
             current_node_->release();
             delete current_node_;
-            GetRoot()->RemoveAndDeleteChildren();
 #endif  
         }
 
@@ -352,9 +382,13 @@ namespace Foundation
             However if you want profiling that lasts out of scope, you can use this directly,
             you also need to call matching Profiler::EndBlock()
 
+            Can be called multiple times with the same name without calling EndBlock() for
+            recursion support.
+
             Re-entrant.
         */
         void StartBlock(const std::string &name);
+
         //! End the profiling block
         /*! Each StartBlock() should have a matching EndBlock(). Recursion is supported.
             
