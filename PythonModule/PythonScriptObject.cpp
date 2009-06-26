@@ -4,6 +4,10 @@
 #include "PythonScriptModule.h"
 #include "PythonScriptObject.h"
 
+#ifdef unix
+#include <cstdarg>
+#endif
+
 namespace PythonScript
 {
 
@@ -94,12 +98,22 @@ namespace PythonScript
 
 			strcpy(m, methodname.c_str());
 			strcpy(s, syntax.c_str());
+#ifndef unix
 			PyObject* pRetValue = PyObject_CallMethod(this->pythonObj, 
 													  m, 
 													  s
 													  __VA_ARGS__
 													  );
+#else
+			// Macro __VA_ARGS__ is not defined in unix side, gives compile error, i do not know what is happening here so i just add this for unix 
+			// probably it won't work. 
 
+			va_list ap;
+			PyObject* pRetValue = PyObject_CallMethod(this->pythonObj, 
+								  m, 
+								  s, 
+								  ap);
+#endif
 			//PyObject* pRetValue = PyObject_CallMethod(this->pythonObj, 
 			//										  m, 
 			//										  s, 
