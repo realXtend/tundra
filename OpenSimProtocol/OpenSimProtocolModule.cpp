@@ -150,7 +150,7 @@ namespace OpenSimProtocol
 	{
 		bool authentication = true;
 		std::string callMethod = "ClientAuthentication";
-		int pos = auth_server_address.find(":");
+		int pos = auth_server_address.rfind(":");
 		std::string auth_port = "";
 		std::string auth_address = "";
 		
