@@ -36,7 +36,7 @@ namespace Asset
 		return content_type_;
 	}
 
-	const std::string& RexAssetMetadata::GetHashSHA1() const
+	std::string RexAssetMetadata::GetHashSHA1() const
 	{
 		//\todo encode to hexdecimal string
 		hash_sha1_;
@@ -44,7 +44,7 @@ namespace Asset
 		return hash;
 	}
 
-	const bool RexAssetMetadata::IsTemporary() const
+	bool RexAssetMetadata::IsTemporary() const
 	{
 		return temporary_;
 	}

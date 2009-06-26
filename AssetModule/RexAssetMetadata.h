@@ -36,10 +36,10 @@ namespace Asset
 		//! Return SHA1 hash of asset data
 		//! Format: Hexadecimal (40 char length string)
 		//! /note NOT IMPLEMENTED 
-		virtual const std::string& GetHashSHA1() const; 
+		virtual std::string GetHashSHA1() const; 
 
 		//! Return true id asset is temporary
-		virtual const bool IsTemporary() const;
+		virtual bool IsTemporary() const;
 
 		//! Return methods as <method, url> map 
 		virtual const Foundation::MethodMap& GetMethods() const;
