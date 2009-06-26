@@ -2,7 +2,7 @@ import rexviewer as r
 
 print "--- *** ---"
 
-print dir(r)
+#print dir(r)
 
 #some prim
 idnum = 720011 #the cube most far away from the screen in Toni & Petri 's test sim
@@ -20,9 +20,12 @@ if 0: #get entity
     print "got:", e
     #print dir(r)
 
-if 1: #test avatar tracking, works :)
+if 0: #test avatar tracking, works :)
     print "<:::",
-    a = r.getEntity(av_entid)
+    try:
+        a = r.getEntity(av_entid)
+    except:
+        print "could find the avatar with the given id", av_entid
     print "Avatar pos:", a.pos,
     print ":::>"
     """
@@ -41,7 +44,7 @@ if 1: #test avatar tracking, works :)
 
     
     
-if 1: #push an event, input and/or chat
+if 0: #push an event, input and/or chat
     #from eventsource import viewer
     #from modulemanager import m 
     import circuits_manager
@@ -57,7 +60,7 @@ if 1: #push an event, input and/or chat
     #m.dispatch_event('on_chat', "input", "testing")
     #print viewer._event_stack
     
-if 1: #create entity
+if 0: #create entity
     pass
     #not safe now:
     """
