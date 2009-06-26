@@ -33,10 +33,10 @@ namespace Foundation
 
 		//! Return SHA1 hash of asset data
 		//! Format: Hexadecimal (40 char length string)
-		virtual const std::string& GetHashSHA1() const = 0; 
+		virtual std::string GetHashSHA1() const = 0; 
 
 		//! Return true id asset is temporary
-		virtual const bool IsTemporary() const = 0;
+		virtual bool IsTemporary() const = 0;
 
 		//! Return methods as <method, url> map 
 		virtual const MethodMap& GetMethods() const = 0;
