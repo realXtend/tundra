@@ -6,19 +6,22 @@ to have access here to the class, of course, and that can do
 whatever loading that you want (in your module i.e. .py file).
 """
 
-import circuits_testmodule
-import chathandler
-import keycommands
-import mousecontrol
+#import apitest.circuits_testmodule
+import usr.chathandler
+import usr.keycommands
+#import usr.mousecontrol
 
 modules = [
-    #circuits_testmodule.TestModule,
-    chathandler.ChatHandler,
-    keycommands.KeyCommander
-    #mousecontrol.MouseControl
+    #apitest.circuits_testmodule.TestModule,
+    usr.chathandler.ChatHandler,
+    usr.keycommands.KeyCommander#,
+    #usr.mousecontrol.MouseControl
 ]
 
 def load(circuitsmanager):
     for klass in modules:
-        modinst = klass()
-        circuitsmanager += modinst # Equivalent to: tm.register(m)
+        try:
+            modinst = klass()
+            circuitsmanager += modinst # Equivalent to: tm.register(m)
+        except:
+            print "failed to instansciate pymodule", klass #XXX add exception info

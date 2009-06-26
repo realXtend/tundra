@@ -13,7 +13,7 @@ except ImportError: #not running under rex
     import mockviewer as r
 from circuits import Component
 
-idnum = 720011
+idnum = 720006
 
 class MouseControl(Component):
     def __init__(self):
@@ -25,9 +25,10 @@ class MouseControl(Component):
         
     def on_mousemove(self, m):
         e = self.target
-        #print "moved from", e.place, "to ->",
-        x, y, z = e.place #should probably wrap Vector3, see test_move.py for refactoring notes        
+        print m
+        print "moved from", e.pos, "to ->",
+        x, y, z = e.pos #should probably wrap Vector3, see test_move.py for refactoring notes        
         x += m.rel_x #for the actual use case would need birds eye cam and raycast to ground towards the mouse cursor pos, this was kinda fun too though :)
         y += m.rel_y
-        e.place = x, y, z
-        #print e.place
+        e.pos = x, y, z
+        print e.pos

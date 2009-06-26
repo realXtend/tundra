@@ -13,7 +13,7 @@ try:
 except ImportError: #not running under rex
     import mockviewer as r
 from circuits import handler, Event, Component, Manager, Debugger
-
+#print "Loaded circuits_manager."
 #r.forwardevents = True
 
 #is not identical to the c++ side, where x and y have abs and rel
@@ -38,7 +38,7 @@ class ComponentRunner(Component):
         ComponentRunner.instance = self #is used as a singleton now
 
         # Create a new circuits Manager
-        self.m = Manager()# + Debugger()
+        self.m = Manager()# + Debugger() #XXX make a debugger that shows exceptions to user, but nothing else.
 
         Component.__init__(self)
         
