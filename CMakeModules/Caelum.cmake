@@ -24,6 +24,7 @@ elseif (UNIX)
       /usr/local/caelum
       $ENV{HOME}/Caelum
       $ENV{HOME}/caelum
+      $ENV{REX_DEP_PATH}
       $ENV{REX_DEP_PATH}/caelum
       $ENV{REX_DEP_PATH}/Caelum)
 endif()

@@ -25,6 +25,7 @@ elseif (UNIX)
       /usr/local/ogre
       $ENV{HOME}/Ogre
       $ENV{HOME}/OGRE
+      $ENV{REX_DEP_PATH}
       $ENV{REX_DEP_PATH}/Ogre
       $ENV{REX_DEP_PATH}/ogre)
 endif()

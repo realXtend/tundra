@@ -11,18 +11,21 @@ findpkg_begin(CURL)
 # Construct search paths from enviromental hits and OS spesific guesses
 
 set(CURL_PREFIX_GUESSES 
-  /opt/curl
-  /opt/libcurl
-  /usr/local
-  /usr/lib/curl
-  /usr/lib/libcurl
-  /usr/local/curl
-  /usr/local/libcurl
-  $ENV{HOME}/curl
-  $ENV{HOME}/libcurl
-  $ENV{HOME}/Curl
-  $ENV{REX_DEP_PATH}/curl
-  $ENV{REX_DEP_PATH}/libcurl)
+    /opt/curl
+    /opt/libcurl
+    /usr/local
+    /usr/lib/curl
+    /usr/lib/libcurl
+    /usr/include/curl
+    /usr/include/libcurl
+    /usr/local/curl
+    /usr/local/libcurl
+    $ENV{HOME}/curl
+    $ENV{HOME}/libcurl
+    $ENV{HOME}/Curl
+    $ENV{REX_DEP_PATH}
+    $ENV{REX_DEP_PATH}/curl
+    $ENV{REX_DEP_PATH}/libcurl)
 
 set(CURL_PREFIX_PATH 
     ${CURL_HOME} $ENV{CURL_HOME} ${CURL_PREFIX_GUESSES})
@@ -46,6 +49,7 @@ else ()
     find_path(CURL_LIBRARY_DIR libcurl.dll HINTS ${CURL_LIB_SEARCH_PATH})
   else ()
     find_path(CURL_LIBRARY_DIR libcurl.a HINTS ${CURL_LIB_SEARCH_PATH})
+    find_path(CURL_LIBRARY_DIR libcurl.so HINTS ${CURL_LIB_SEARCH_PATH})
   endif()
 endif()
 

@@ -16,18 +16,19 @@ findpkg_begin(Qt4)
 
 # PENDING fix version number depency. 
 set(Qt4_PREFIX_GUESSES 
-  /opt/Trolltech/Qt-4.5.1
-  /opt/Trolltech/Qt4
-  /usr/local/Trolltech/Qt
-  /usr/local/Trolltech/Qt-4.5.1
-  /usr/local/Trolltech/Qt-4.5.1/lib
-  /usr/local/Trolltech/Qt-4.5.1/include
-  /usr/lib/
-  /usr/local/include
-  $ENV{HOME}/Qt4
-  $ENV{HOME}/Qt
-  $ENV{REX_DEP_PATH}/Qt4
-  $ENV{REX_DEP_PATH}/qt4)
+    /opt/Trolltech/Qt-4.5.1
+    /opt/Trolltech/Qt4
+    /usr/local/Trolltech/Qt
+    /usr/local/Trolltech/Qt-4.5.1
+    /usr/local/Trolltech/Qt-4.5.1/lib
+    /usr/local/Trolltech/Qt-4.5.1/include
+    /usr/lib/
+    /usr/local/include
+    $ENV{HOME}/Qt4
+    $ENV{HOME}/Qt
+    $ENV{REX_DEP_PATH}
+    $ENV{REX_DEP_PATH}/Qt4
+    $ENV{REX_DEP_PATH}/qt4)
 
 set(Qt4_PREFIX_PATH 
     ${Qt4_HOME} $ENV{Qt4_HOME} ${Qt4_PREFIX_GUESSES})
