@@ -41,7 +41,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>2</number>
    </property>
    <widget class="QWidget" name="tab_open_sim">
     <attribute name="title">
@@ -225,6 +225,19 @@
     <attribute name="title">
      <string>OpenID</string>
     </attribute>
+    <widget class="QLabel" name="label_openid_info">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>120</y>
+       <width>171</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Click Connect to start OpenID login</string>
+     </property>
+    </widget>
    </widget>
   </widget>
   <widget class="QWidget" name="horizontalLayoutWidget">
