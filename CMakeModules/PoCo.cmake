@@ -19,6 +19,7 @@ set(POCO_PREFIX_GUESSES
     /usr/lib
     /usr/lib/PoCo
     /usr/lib/Poco
+    /usr/local/include/Poco
     /usr/local/Poco
     $ENV{HOME}/PoCo
     $ENV{HOME}/Poco
