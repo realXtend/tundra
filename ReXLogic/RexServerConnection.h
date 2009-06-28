@@ -37,11 +37,11 @@ namespace RexLogic
             const std::string& auth_server_address = "",
             const std::string& auth_login = "");
 
-		/// Connect to a rex server with cablebeach/openid
-		bool RexServerConnection::ConnectToCableBeachServer(const std::string& firstname, 
-															const std::string& lastname,
-															int port,
-															const std::string& serveraddress);
+	/// Connect to a rex server with cablebeach/openid
+	bool ConnectToCableBeachServer(const std::string& firstname, 
+				       const std::string& lastname,
+				       int port,
+				       const std::string& serveraddress);
         
         /// Creates the UDP connection after a succesfull XML-RPC login.
         /// @return True, if success.
