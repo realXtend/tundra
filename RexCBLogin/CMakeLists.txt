@@ -32,12 +32,19 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DMODULE_EXPORTS)
 
-# Define dynamic library
+# Define static  library
 if (NOT MSVC)
 	SET (LIBRARY_OUTPUT_PATH ${TARGET_DIR})
 endif (NOT MSVC)
 
 add_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
+
+# Because this is static library, compile it with -fPIC in Linux.
+
+if (NOT MSVC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+endif()
+
 
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
