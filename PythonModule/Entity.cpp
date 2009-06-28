@@ -14,7 +14,7 @@ namespace PythonScript
 		{NULL}  /* Sentinel */
 	};
 
-	void PythonScript::entity_init(PyObject* m)
+	void entity_init(PyObject* m)
 	{
  		rexviewer_EntityType.tp_new = PyType_GenericNew;
 		if (PyType_Ready(&rexviewer_EntityType) < 0)
@@ -27,7 +27,7 @@ namespace PythonScript
 		PyModule_AddObject(m, "Entity", (PyObject *)&rexviewer_EntityType);
 	}
 
-	PyObject* PythonScript::entity_create(Core::entity_id_t ent_id) //, Scene::EntityPtr entity)
+	PyObject* entity_create(Core::entity_id_t ent_id) //, Scene::EntityPtr entity)
 	{
 		rexviewer_EntityObject* eob;
 		//std::cout << "Entity: creating a wrapper pyobject ..";
