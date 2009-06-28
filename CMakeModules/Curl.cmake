@@ -20,6 +20,7 @@ set(CURL_PREFIX_GUESSES
     /usr/include/libcurl
     /usr/local/curl
     /usr/local/libcurl
+    /usr/local/include/curl
     $ENV{HOME}/curl
     $ENV{HOME}/libcurl
     $ENV{HOME}/Curl
