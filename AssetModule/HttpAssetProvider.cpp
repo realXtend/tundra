@@ -215,9 +215,14 @@ namespace Asset
             data.resize(transfer.GetReceived());
             transfer.AssembleData(&data[0]);
 
-			Foundation::AssetMetadataInterface* metadata = new_asset->GetMetadata();
-			RexAssetMetadata* m = static_cast<RexAssetMetadata*>(metadata);
-			m->DesesrializeFromJSON(transfer.GetAssetMetadata());
+	   
+#ifdef unix
+	    RexAssetMetadata* m = dynamic_cast<RexAssetMetadata*>(new_asset->GetMetadata());
+#else	   
+	    Foundation::AssetMetadataInterface* metadata = new_asset->GetMetadata();
+	    RexAssetMetadata* m = static_cast<RexAssetMetadata*>(metadata);
+#endif	
+	    m->DesesrializeFromJSON(transfer.GetAssetMetadata());
       
             asset_service->StoreAsset(new_asset);
             
@@ -238,7 +243,11 @@ namespace Asset
 
 	std::string HttpAssetProvider::SerializeToJSON(Foundation::AssetPtr asset) const
 	{
+#ifdef unix
+		RexAssetMetadata* metadata = dynamic_cast<RexAssetMetadata*>(asset->GetMetadata());
+#else
 		RexAssetMetadata* metadata = static_cast<RexAssetMetadata*>(asset->GetMetadata());
+#endif		
 		std::stringstream s;
 
 		s << "{";
