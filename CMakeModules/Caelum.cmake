@@ -22,6 +22,7 @@ elseif (UNIX)
       /usr/lib/caelum
       /usr/local/Caelum
       /usr/local/caelum
+      /usr/local/include/Caelum
       $ENV{HOME}/Caelum
       $ENV{HOME}/caelum
       $ENV{REX_DEP_PATH}
