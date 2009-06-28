@@ -648,7 +648,7 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 
 	else if (s_name.compare("text") == 0)
 	{
-		Foundation::ComponentInterfacePtr &overlay = entity->GetComponent("EC_OgreMovableTextOverlay"); //OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+		const Foundation::ComponentInterfacePtr &overlay = entity->GetComponent("EC_OgreMovableTextOverlay"); //OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
 		if (!overlay)
 			return NULL; //XXX report AttributeError and differentiate these
 		OgreRenderer::EC_OgreMovableTextOverlay *name_overlay = checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay *>(overlay.get());
@@ -777,7 +777,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 
 	else if (s_name.compare("text") == 0)
 	{
-        Foundation::ComponentPtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+	  const Foundation::ComponentPtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
 		
 		const char* c_text = PyString_AsString(value);
 		std::string text = std::string(c_text);
