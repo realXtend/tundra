@@ -61,6 +61,7 @@ class Connection():
 ##    CONNECTING
 ##====================================================
     def ConnectAccount(self, d):
+        print("ConnectAccount...")
         self.account = d["account"]
         self.password = d["password"]
         self.server = d["server"]
@@ -85,14 +86,20 @@ class Connection():
         p0 = dbus.UInt32(int(p))
         d["port"] = p0
 
+        print ("ReqeustConnection for "+self.protocol)
         conn_bus_name, conn_object_path = mgr[CONN_MGR_INTERFACE].RequestConnection(self.protocol, d)
-        
+        print ""
+        print conn_bus_name
+        print conn_object_path
+        print ""
         self.conn = telepathy.client.Connection(conn_bus_name, conn_object_path, ready_handler=None)
         self.conn[CONN_INTERFACE].connect_to_signal('StatusChanged', self.status_changed_cb)
         self.conn[CONN_INTERFACE].connect_to_signal('NewChannel', self.new_channel_cb)
         self.contactlist.SetConnection(self.conn)
-
+        
+        print("Connectionb.ConnectAccount() begin")
         self._connect()
+        print("Connectionb.ConnectAccount() success")
         pass
 
     def RecvDisconnect(self, sender):
