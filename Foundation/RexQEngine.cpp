@@ -19,14 +19,17 @@
 
 #include "RexQEngine.h"
 
+// \todo: replace globals with proper encapsulation
+extern int global_argc;
+extern char **global_argv;
+
 namespace Foundation
 {
 
 RexQEngine::RexQEngine(Framework *owner)
 :owner_(owner)
 {
-    int argc = 0;
-    app_ = new QApplication(argc, 0);
+    app_ = new QApplication(global_argc, global_argv);
 
 //    ogre_host_widget_ = new QWidget();
 

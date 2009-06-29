@@ -35,8 +35,14 @@ void options (int argc, char **argv, Foundation::Framework &fw);
 int generate_dump(EXCEPTION_POINTERS* pExceptionPointers);
 #endif
 
+int global_argc;
+char **global_argv;
+
 int main (int argc, char **argv)
 {
+    global_argc = argc;
+    global_argv = argv;
+
     int return_value = EXIT_SUCCESS;
 
     // set debug flag for memory leaks
