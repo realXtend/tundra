@@ -19,7 +19,10 @@ namespace Foundation
 {
     const char *Framework::DEFAULT_EVENT_SUBSCRIBER_TREE_PATH = "./data/event_tree.xml";
     
-    Framework::Framework() : exit_signal_(false)
+    Framework::Framework(int argc, char** argv) : 
+        exit_signal_(false),
+        argc_(argc),
+        argv_(argv)
     {
         ProfilerSection::SetProfiler(&profiler_);
 
@@ -58,7 +61,7 @@ namespace Foundation
 
         Scene::Events::RegisterSceneEvents(event_manager_);
 
-        q_engine_ = boost::shared_ptr<RexQEngine>(new RexQEngine(this));
+        q_engine_ = boost::shared_ptr<RexQEngine>(new RexQEngine(this, argc_, argv_));
     }
 
     Framework::~Framework()
@@ -150,12 +153,9 @@ namespace Foundation
         delete loggingfactory;
     }
 
-    void Framework::ParseProgramOptions(int argc, char **argv)
+    void Framework::ParseProgramOptions()
     {
         Foundation::RootLogInfo("Parsing command line arguments...");
-
-        argc_ = argc;
-        argv_ = argv;
 
         namespace po = boost::program_options;
   
@@ -172,7 +172,7 @@ namespace Foundation
 
         try
         {  
-            po::store (po::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), cm_options_);
+            po::store (po::command_line_parser(argc_, argv_).options(desc).allow_unregistered().run(), cm_options_);
         } catch (std::exception &e)
         {
             Foundation::RootLogWarning(e.what());

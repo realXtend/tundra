@@ -35,14 +35,8 @@ void options (int argc, char **argv, Foundation::Framework &fw);
 int generate_dump(EXCEPTION_POINTERS* pExceptionPointers);
 #endif
 
-int global_argc;
-char **global_argv;
-
 int main (int argc, char **argv)
 {
-    global_argc = argc;
-    global_argv = argv;
-
     int return_value = EXIT_SUCCESS;
 
     // set debug flag for memory leaks
@@ -86,9 +80,9 @@ int run (int argc, char **argv)
     try
 #endif
     {
-        Foundation::Framework fw;
+        Foundation::Framework fw(argc, argv);
         setup (fw);
-        fw.ParseProgramOptions(argc, argv);
+        fw.ParseProgramOptions();
 
         // \todo Parse command line options for command loading
         //options (argc, argv, fw);
