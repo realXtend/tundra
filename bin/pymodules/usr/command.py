@@ -69,6 +69,30 @@ Assertion failed: px != 0, file D:\k2\rex\viewer\trunk\external_libs\include\boo
 st/shared_ptr.hpp, line 419
     """
     #print "New entity created:", r.createEntity(new_id)
+
+if 0: #placeable and text tests
+    print "Testing..."
+    e = r.getEntity(720004)    
+
+    #~ try:
+        #~ e.pos = 1
+    #~ except Exception, e:
+        #~ print e
+        
+    #e.orientation = "well this ain't a quarternion."
+    #e.scale = ("does", "this", "work")
+    #~ def test():
+        #~ print "this ain't a string..."
+    
+    e.text = "swoot"
+    e.text = 1
+    e.text = ("swoot", "ness")
+    e.text = (1, 2)
+    e.text = test
+    
+    e.pos = 1
+    
+    print e.text, e.pos, e.scale, e.orientation
     
 if 0: #send chat
     r.sendChat("here we go.")
