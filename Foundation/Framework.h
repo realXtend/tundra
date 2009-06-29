@@ -75,6 +75,9 @@ namespace Foundation
         //! Returns true if framework is in the process of exiting (will exit at next possible opportunity)
         bool IsExiting() { return exit_signal_; }
 
+        //! Returns true if framework is properly initialized and Go() can be called.
+        bool Initialized() const { return initialized_; }
+
         //! Returns the default configuration
         ConfigurationManager &GetDefaultConfig() { return *(config_manager_.get()); }
 
@@ -222,11 +225,17 @@ namespace Foundation
         //! program options
         boost::program_options::variables_map cm_options_;
 
+        //! program option descriptions
+        boost::program_options::options_description cm_descriptions_;
+
         //! command line arguments as supplied by the operating system
         int argc_;
         char **argv_;
 
         boost::timer timer;
+
+        //! true if framework is properly initialized, false otherwise.
+        bool initialized_;
     };
 
     namespace

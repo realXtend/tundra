@@ -22,46 +22,58 @@ namespace Foundation
     Framework::Framework(int argc, char** argv) : 
         exit_signal_(false),
         argc_(argc),
-        argv_(argv)
+        argv_(argv),
+        initialized_(false),
+        log_formatter_(NULL)
     {
-        ProfilerSection::SetProfiler(&profiler_);
+        ParseProgramOptions();
+        if (cm_options_.count("help")) 
+        {
+            std::cout << "Supported command line arguments: " << std::endl;
+            std::cout << cm_descriptions_ << std::endl;
+        } else
+        {
+            ProfilerSection::SetProfiler(&profiler_);
 
-        PROFILE(FW_Startup);
-        application_ = ApplicationPtr(new Application(this));
-        platform_ = PlatformPtr(new Platform(this));
-	
-	    // Create config manager
-	    config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
+            PROFILE(FW_Startup);
+            application_ = ApplicationPtr(new Application(this));
+            platform_ = PlatformPtr(new Platform(this));
+    	
+	        // Create config manager
+	        config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
 
-        config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
-        config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("0.1"));
-        config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("application_name"), std::string("realXtend"));
-        config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("window_title"), std::string("realXtend Naali"));
-        config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));
-        config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_level"), std::string("information"));
+            config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
+            config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("0.1"));
+            config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("application_name"), std::string("realXtend"));
+            config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("window_title"), std::string("realXtend Naali"));
+            config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));
+            config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_level"), std::string("information"));
 
-        Core::uint max_fps_release = config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("max_fps_release"), 60);
-        Core::uint max_fps_debug = config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("max_fps_debug"), static_cast<Core::uint>(-1));
+            Core::uint max_fps_release = config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("max_fps_release"), 60);
+            Core::uint max_fps_debug = config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("max_fps_debug"), static_cast<Core::uint>(-1));
 
-        
-        max_ticks_ = 1000 / max_fps_release;
-#ifdef _DEBUG
-        max_ticks_ = 1000 / max_fps_debug;
-#endif
+            
+            max_ticks_ = 1000 / max_fps_release;
+    #ifdef _DEBUG
+            max_ticks_ = 1000 / max_fps_debug;
+    #endif
 
-        platform_->PrepareApplicationDataDirectory(); // depends on config
+            platform_->PrepareApplicationDataDirectory(); // depends on config
 
-        CreateLoggingSystem(); // depends on config and platform
+            CreateLoggingSystem(); // depends on config and platform
 
-        // create managers
-        module_manager_ = ModuleManagerPtr(new ModuleManager(this));
-        component_manager_ = ComponentManagerPtr(new ComponentManager(this));
-        service_manager_ = ServiceManagerPtr(new ServiceManager(this));
-        event_manager_ = EventManagerPtr(new EventManager(this));
+            // create managers
+            module_manager_ = ModuleManagerPtr(new ModuleManager(this));
+            component_manager_ = ComponentManagerPtr(new ComponentManager(this));
+            service_manager_ = ServiceManagerPtr(new ServiceManager(this));
+            event_manager_ = EventManagerPtr(new EventManager(this));
 
-        Scene::Events::RegisterSceneEvents(event_manager_);
+            Scene::Events::RegisterSceneEvents(event_manager_);
 
-        q_engine_ = boost::shared_ptr<RexQEngine>(new RexQEngine(this, argc_, argv_));
+            q_engine_ = boost::shared_ptr<RexQEngine>(new RexQEngine(this, argc_, argv_));
+
+            initialized_ = true;
+        }
     }
 
     Framework::~Framework()
@@ -76,7 +88,8 @@ namespace Foundation
             log_channels_[i]->release();
             
         log_channels_.clear();
-        log_formatter_->release();
+        if (log_formatter_)
+            log_formatter_->release();
     }
 
     void Framework::CreateLoggingSystem()
@@ -155,15 +168,14 @@ namespace Foundation
 
     void Framework::ParseProgramOptions()
     {
-        Foundation::RootLogInfo("Parsing command line arguments...");
-
         namespace po = boost::program_options;
   
-        po::options_description desc;
-        desc.add_options()
-            ("headless", "run viewer in headless mode without any windows or rendering")
-            ("user", po::value<std::string>(), "user name")
-            ("passwd", po::value<std::string>(), "user password")
+        //po::options_description desc;
+        cm_descriptions_.add_options()
+            //("headless", "run viewer in headless mode without any windows or rendering") //! \todo disabled since doesn't work with Qt -cm
+            ("help", "produce help message")
+            ("user", po::value<std::string>(), "OpenSim login name")
+            ("passwd", po::value<std::string>(), "OpenSim login password")
             ("server", po::value<std::string>(), "world server and port")
             ("auth_server", po::value<std::string>(), "realXtend authentication server address and port")
             ("auth_login", po::value<std::string>(), "realXtend authentication server user name")
@@ -172,7 +184,7 @@ namespace Foundation
 
         try
         {  
-            po::store (po::command_line_parser(argc_, argv_).options(desc).allow_unregistered().run(), cm_options_);
+            po::store (po::command_line_parser(argc_, argv_).options(cm_descriptions_).allow_unregistered().run(), cm_options_);
         } catch (std::exception &e)
         {
             Foundation::RootLogWarning(e.what());
@@ -187,13 +199,14 @@ namespace Foundation
         Core::event_category_id_t framework_events = event_manager_->RegisterEventCategory("Framework");
 
         // headless mode based on program options
-        if (cm_options_.count("headless"))
-        {
-            module_manager_->ExcludeModule("GtkmmUI");
-            module_manager_->ExcludeModule(Foundation::Module::MT_Renderer);
-            module_manager_->ExcludeModule("CommunicationUIModule");
-            module_manager_->ExcludeModule(Foundation::Module::MT_CommunicationUI);
-        }
+        //! \todo disabled since doesn't work with Qt -cm
+        //if (cm_options_.count("headless"))
+        //{
+        //    module_manager_->ExcludeModule("GtkmmUI");
+        //    module_manager_->ExcludeModule(Foundation::Module::MT_Renderer);
+        //    module_manager_->ExcludeModule("CommunicationUIModule");
+        //    module_manager_->ExcludeModule(Foundation::Module::MT_CommunicationUI);
+        //}
 
         LoadModules();
 
