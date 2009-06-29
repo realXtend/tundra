@@ -65,6 +65,7 @@ int main (int argc, char **argv)
    return return_value;
 }
 
+//! post init setup for framework
 void setup (Foundation::Framework &fw)
 {
     fw.GetModuleManager()->ExcludeModule(Foundation::Module::MT_Test);
@@ -81,13 +82,12 @@ int run (int argc, char **argv)
 #endif
     {
         Foundation::Framework fw(argc, argv);
-        setup (fw);
-        fw.ParseProgramOptions();
+        if (fw.Initialized())
+        {
+            setup (fw);
 
-        // \todo Parse command line options for command loading
-        //options (argc, argv, fw);
-
-        fw.Go();
+            fw.Go();
+        }
     }
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     catch (std::exception& e)
@@ -102,35 +102,6 @@ int run (int argc, char **argv)
 #endif
 
     return return_value;
-}
-
-void options (int argc, char **argv, Foundation::Framework &fw)
-{
-    using namespace boost::program_options;
-    typedef boost::char_separator <char> separator;
-    typedef boost::tokenizer <separator> tokenizer;
-    
-    options_description desc;
-    variables_map options;
-
-    desc.add_options()
-        ("headless", "run viewer without rendering")
-        ("script", value<std::string>(), "commands to run");
-
-    store (parse_command_line (argc, argv, desc), options);
-    notify (options);
-
-    if (options.count ("script"))
-    {
-        //\todo We can't use the CommandManager until it's (pre)loaded
-        //tokenizer tok ((options["script"].as <std::string> ()), separator (";"));
-        //Console::CommandManager *cm 
-        //    (fw.GetService <Console::CommandManager>
-        //     (Foundation::Service::ST_ConsoleCommand));
-
-        //for (tokenizer::iterator it (tok.begin()); it != tok.end(); ++it)
-        //    cm-> QueueCommand (*it);
-    }
 }
 
 #if defined(_MSC_VER) && defined(WINDOWS_APP)
