@@ -159,15 +159,16 @@ void NetInMessage::ResetReading()
 	currentVariable = 0;
 	currentVariableSize = 0;
 	bytesRead = 0;
-	//variableCountBlockNext = false;
+	variableCountBlockNext = false;
 	
 	// If first block's type is variable, prevent the user proceeding before he has read the block instance count
 	// by setting the variableCountBlockNext true.
-	const NetMessageBlock &firstBlock = messageInfo->blocks[currentBlock];
-	if (firstBlock.type == NetBlockVariable)
-        variableCountBlockNext = true;
-    else
-        variableCountBlockNext = false;
+	if (messageInfo->blocks.size())
+	{
+	    const NetMessageBlock &firstBlock = messageInfo->blocks[currentBlock];
+	    if (firstBlock.type == NetBlockVariable)
+            variableCountBlockNext = true;
+    }
     
 	StartReadingNextBlock();
 	ReadNextVariableSize();
