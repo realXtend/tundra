@@ -393,7 +393,10 @@ PyObject* SendChat(PyObject *self, PyObject *args)
 	const char* msg;
 
 	if(!PyArg_ParseTuple(args, "s", &msg))
-		return NULL; //XXX raise ValueError
+	{
+		PyErr_SetString(PyExc_ValueError, "param should be a string.");
+        return NULL;
+	}
 
 	//Foundation::Framework *framework_ = Foundation::ComponentInterfacePythonScriptModule::GetFramework();
 	Foundation::Framework *framework_ = PythonScript::staticframework;
@@ -433,14 +436,20 @@ PyObject* GetEntity(PyObject *self, PyObject *args)
 	Core::entity_id_t ent_id;
 
 	if(!PyArg_ParseTuple(args, "i", &ent_id_int))
-		return NULL; //XXX report ArgumentException error
+	{
+		PyErr_SetString(PyExc_ValueError, "Getting an entity failed, param should be an integer.");
+        return NULL;   
+	}
 
 	ent_id = (Core::entity_id_t) ent_id_int;
 
 	Scene::ScenePtr scene = PythonScript::GetScene();
 
 	if (scene == 0)
-		return NULL; //XXX return some sensible exception info
+	{
+		PyErr_SetString(PyExc_ValueError, "Scene is none.");
+        return NULL;   
+	}
 
 	//PythonScript::foo(); 
 	/*
@@ -454,7 +463,10 @@ PyObject* GetEntity(PyObject *self, PyObject *args)
 		return entity_create(ent_id);
 
 	else
-		return NULL; //XXX TODO: raise ValueError
+	{
+		PyErr_SetString(PyExc_ValueError, "No entity with the ent_id found.");
+        return NULL;   
+	}
 }
 
 PyObject* CreateEntity(PyObject *self, PyObject *args)
@@ -468,15 +480,21 @@ PyObject* CreateEntity(PyObject *self, PyObject *args)
 	Core::entity_id_t ent_id;
 
 	if(!PyArg_ParseTuple(args, "i", &ent_id_int))
-		return NULL; //XXX report ArgumentException error
+	{
+		PyErr_SetString(PyExc_ValueError, "param should be an integer"); //XXX change the exception
+        return NULL;   
+	}
 
 	ent_id = (Core::entity_id_t) ent_id_int;
 
 	Scene::ScenePtr scene = PythonScript::GetScene();
         
     if (!scene) //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::NameStatic()))
-		return NULL; //XXX return some sensible exception info
-        
+	{
+		PyErr_SetString(PyExc_ValueError, "Scene is none."); //XXX change the exception
+        return NULL;   
+	}
+
     Core::StringVector defaultcomponents;
     defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
     //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
@@ -507,8 +525,9 @@ PyObject* CreateEntity(PyObject *self, PyObject *args)
         
         return entity_create(ent_id); //return the py wrapper for the new entity
     }
-
-	return NULL; //XXX return some sensible exception info
+	
+	PyErr_SetString(PyExc_ValueError, "placeable not found."); //XXX change the exception
+    return NULL;   
 }
 
 PyObject* PyEventCallback(PyObject *self, PyObject *args){
@@ -566,7 +585,11 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 
 	if (!(tmp = PyObject_GenericGetAttr((PyObject*)self, name))) {
 		if (!PyErr_ExceptionMatches(PyExc_AttributeError))
+		{
+			//std::cout << "..attribute error" << std::endl;
 			return NULL;
+		}
+
 		PyErr_Clear();
 	}
 	else
@@ -596,7 +619,10 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 		std::cout << ".. getting prim" << std::endl;
 		const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
 		if (!prim_component)
-			return NULL; //XXX report AttributeError
+		{
+			PyErr_SetString(PyExc_AttributeError, "prim not found.");
+			return NULL;   
+		}
 		RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
 	        
 		//m->AddU32(prim->LocalId);
@@ -608,7 +634,10 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 	{
         const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
 		if (!ogre_component)
-            return NULL; //XXX report AttributeError        
+		{
+			PyErr_SetString(PyExc_AttributeError, "placeable not found.");
+			return NULL;   
+		}       
 		OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
 		
 		/* this must probably return a new object, a 'Place' instance, that has these.
@@ -627,7 +656,10 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 	{
 		const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
 		if (!ogre_component)
-            return NULL; //XXX report AttributeError        
+		{
+			PyErr_SetString(PyExc_AttributeError, "placeable not found.");
+			return NULL;   
+		}     
 		OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
 		
 		RexTypes::Vector3 scale = placeable->GetScale();
@@ -639,7 +671,10 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 	{
 		const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
 		if (!ogre_component)
-            return NULL; //XXX report AttributeError        
+		{
+			PyErr_SetString(PyExc_AttributeError, "placeable not found.");
+			return NULL;   
+		}         
 		OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
 		
 		Core::Quaternion orient = placeable->GetOrientation();
@@ -648,9 +683,13 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 
 	else if (s_name.compare("text") == 0)
 	{
-		const Foundation::ComponentInterfacePtr &overlay = entity->GetComponent("EC_OgreMovableTextOverlay"); //OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+		const Foundation::ComponentInterfacePtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+
 		if (!overlay)
-			return NULL; //XXX report AttributeError and differentiate these
+		{
+			PyErr_SetString(PyExc_AttributeError, "overlay not found.");
+			return NULL;   
+		}  
 		OgreRenderer::EC_OgreMovableTextOverlay *name_overlay = checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay *>(overlay.get());
 		std::string text = name_overlay->GetText();
 		return PyString_FromString(text.c_str());
@@ -706,15 +745,22 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 	{
 		const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
 		if (!ogre_component)
-            return NULL; //XXX report AttributeError        
+		{
+			PyErr_SetString(PyExc_AttributeError, "placeable not found.");
+            return NULL;   
+		}
+		
 		OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
 		/* this must probably return a new object, a 'Place' instance, that has these.
 		   or do we wanna hide the E-C system in the api and have these directly on entity? 
 		   probably not a good idea to hide the actual system that much. or? */
 		float x, y, z;
 		if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
-			return NULL; //XXX report ArgumentException error
-	    
+		{
+			//std::cout << "...parse error" << std::endl;
+			PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float).");
+			return NULL;
+		}
 		// Set the new values.
 		placeable->SetPosition(Vector3(x, y, z));
 	    //ogre_pos->SetScale(Core::OpenSimToOgreCoordinateAxes(scale));
@@ -737,13 +783,19 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 	{
 		const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
 		if (!ogre_component)
-            return NULL; //XXX report AttributeError        
+        {
+			PyErr_SetString(PyExc_AttributeError, "placeable not found.");
+            return NULL;
+		}
 		OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
 		
 		float x, y, z;
 		if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
-			return NULL; //XXX report ArgumentException error
-	    
+		{
+			PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float)");
+			return NULL;   
+		}
+		    
 		// Set the new values.
 		placeable->SetScale(Vector3(x, y, z));
 	    
@@ -758,12 +810,18 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 	{
 		const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
 		if (!ogre_component)
-            return NULL; //XXX report AttributeError        
+        {
+			PyErr_SetString(PyExc_AttributeError, "placeable not found.");
+            return NULL;
+		}    
 		OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
 		
 		float x, y, z, w;
 		if(!PyArg_ParseTuple(value, "ffff", &x, &y, &z, &w))
-			return NULL; //XXX report ArgumentException error
+		{
+			PyErr_SetString(PyExc_ValueError, "params should be (float, float, float, float)"); //XXX change the exception
+			return NULL;   
+		}
 	    
 		// Set the new values.
 		placeable->SetOrientation(Core::Quaternion(x, y, z, w));
@@ -777,25 +835,34 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 
 	else if (s_name.compare("text") == 0)
 	{
-	  const Foundation::ComponentPtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+		if (PyString_Check(value)) 
+		{
+			const Foundation::ComponentPtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+			const char* c_text = PyString_AsString(value);
+			std::string text = std::string(c_text);
+		    if (overlay)
+			{
+				OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
+				name_overlay.SetText(text);
+				//name_overlay.SetPlaceable(placeable); //is this actually needed for something?
+			}
+			else //xxx
+			{
+				PyErr_SetString(PyExc_ValueError, "overlay not found."); //XXX change the exception
+				return NULL;   
+			}
 		
-		const char* c_text = PyString_AsString(value);
-		std::string text = std::string(c_text);
-		//if(!PyArg_ParseTuple(value, "s", &text))
+		}
+		else
+		{
+			PyErr_SetString(PyExc_ValueError, "text is a string"); //XXX change the exception
+			return NULL;
+		}
+		
+		//if(!PyArg_ParseTuple(value, "s", c_text))
 		//	return NULL; //XXX report ArgumentException error
 				
-        if (overlay)
-        {
-            OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
-			name_overlay.SetText(text);
-            //name_overlay.SetPlaceable(placeable); //is this actually needed for something?
-        }
-		else
-			return NULL;
 
-		Scene::Events::SceneEventData event_data(eob->ent_id);
-		event_data.entity_ptr_list.push_back(entity);
-		PythonScript::staticframework->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
 
 		return 0;
 	}
