@@ -1,4 +1,7 @@
 #include "CoreStableHeaders.h"
+
+#include <float.h>
+
 #include "Quaternion.h"
 #include "QuatUtils.h"
 
@@ -6,6 +9,9 @@ namespace Core
 {
     Quaternion UnpackQuaternionFromFloat3(float x, float y, float z)
     {
+        if (_isnan(x) || _isnan(y) || _isnan(z) || !_finite(x) || !_finite(y) || !_finite(z))
+            return Quaternion(0, 0, 0, 1.f);
+
         float sq = x*x+y*y+z*z;
         // If the inputted coordinates are already too large in magnitude, renormalize the inputs and just set w = 0.
         // It can happen in two cases: Either float imprecision gave us a bit too high values, so setting w=0 is the proper action,

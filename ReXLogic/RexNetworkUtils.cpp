@@ -1,6 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
+#include <float.h>
+
 #include "RexNetworkUtils.h"
 #include "RexLogicModule.h"
 #include "QuatUtils.h"
@@ -135,6 +138,32 @@ namespace RexLogic
         return Core::OpenSimToOgreCoordinateAxes(resultvector);  
     }
     
+    bool IsValidPositionVector(const Core::Vector3df &pos)
+    {
+        // This is a heuristic check to guard against the OpenSim server sending us stupid positions.
+        if (fabs(pos.x) > 1e6f || fabs(pos.y) > 1e6f || fabs(pos.z) > 1e6f) 
+            return false;
+        if (_isnan(pos.x) || _isnan(pos.y) || _isnan(pos.z))
+            return false;
+        if (!_finite(pos.x) || !_finite(pos.y) || !_finite(pos.z))
+            return false;
+
+        return true;
+    }
+
+    bool IsValidVelocityVector(const Core::Vector3df &pos)
+    {
+        // This is a heuristic check to guard against the OpenSim server sending us stupid velocity vectors.
+        if (fabs(pos.x) > 1e3f || fabs(pos.y) > 1e3f || fabs(pos.z) > 1e3f)
+            return false;
+        if (_isnan(pos.x) || _isnan(pos.y) || _isnan(pos.z))
+            return false;
+        if (!_finite(pos.x) || !_finite(pos.y) || !_finite(pos.z))
+            return false;
+
+        return true;
+    }
+
     bool ReadBoolFromBytes(const uint8_t* bytes, int& idx)
     {
         bool result = *(bool*)(&bytes[idx]);

@@ -89,9 +89,8 @@ namespace OgreRenderer
 
     // virtual
     void OgreRenderingModule::Initialize()
-    {      
+    { 
         assert (renderer_);
-
 
         assert (!renderer_->IsInitialized());
         renderer_->Initialize();

@@ -55,29 +55,36 @@ namespace TextureDecoder
     {
         while (running_)
         {
-            PROFILE(OpenJpegDecoder);
-            boost::this_thread::interruption_point();
-
-            DecodeRequest current_request;
             bool have_request = false;
 
             {
-                Core::MutexLock lock(request_mutex_);
-                if (!requests_.empty())
+                PROFILE(OpenJpegDecoder);
+                boost::this_thread::interruption_point();
+
+                DecodeRequest current_request;
+
                 {
-                    have_request = true;
-                    current_request = requests_.front();
-                    requests_.pop_front();
+                    Core::MutexLock lock(request_mutex_);
+                    if (!requests_.empty())
+                    {
+                        have_request = true;
+                        current_request = requests_.front();
+                        requests_.pop_front();
+                    }
+                }
+                
+                if (have_request)
+                {
+                    PROFILE(OpenJpegDecoder_Decode);
+                    PerformDecode(current_request);
                 }
             }
-            
-            if (have_request)
-                PerformDecode(current_request);
-            else
-            {
-                PROFILE(OpenJpegDecoder_Sleep);
+
+            // We didn't have any work to process, sleep until some come up.
+            ///\todo Convert to wait for an event that signals that a new decode request
+            /// has arrived.
+            if (!have_request)
                 boost::this_thread::sleep(boost::posix_time::milliseconds(20));
-            }
 
             RESETPROFILER
         }

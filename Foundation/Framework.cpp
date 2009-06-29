@@ -215,7 +215,7 @@ namespace Foundation
         
 #ifdef PROFILING
         // Reset profiling data. Should be outside of any profiling blocks.
-        GetProfiler().Reset();
+        GetProfiler().ThreadedReset();
 #endif
 
         PROFILE(MainLoop);
@@ -275,13 +275,7 @@ namespace Foundation
         PROFILE(FW_Go);
         PostInitialize();
 
-#ifdef USE_QT
         q_engine_->Go();
-#else
-        // main loop
-        while (exit_signal_ == false)
-            ProcessOneFrame();
-#endif
 
         UnloadModules();
     }
@@ -289,10 +283,10 @@ namespace Foundation
     void Framework::Exit()
     {
         exit_signal_ = true;
-#ifdef USE_QT
+
         if (q_engine_)
             q_engine_->SendQAppQuitMessage();
-#endif
+
     }
 
     void Framework::LoadModules()
@@ -458,18 +452,16 @@ namespace Foundation
             else
             {
                 char str[512];
-                // If we've spent less than 1/10th of a millisecond, show condensed.
+                // If we've spent less than 1/10th of a millisecond, hide if we're showing just brief info.
                 if (!showUnused && timings_node->elapsed_ * 1000.0 < 0.1) 
-                    sprintf(str, "%s: called: %d.", timings_node->Name().c_str(), timings_node->num_called_);
+                    recurseToChildren = false;
                 else
+                {
                     sprintf(str, "%s: called total: %d, elapsed total: %s, called: %d, elapsed: %s, avg: %s",
                         timings_node->Name().c_str(), timings_node->num_called_total_,
                         FormatTime(timings_node->total_).c_str(), timings_node->num_called_,
                         FormatTime(timings_node->elapsed_).c_str(), FormatTime(average).c_str());
 
-                std::string timings;
-                timings.append(level, ' ');
-                timings += str;
     /*
                 timings += timings_node->Name();
                 timings += ": called total " + Core::ToString(timings_node->num_called_total_);
@@ -478,7 +470,13 @@ namespace Foundation
                 timings += ", elapsed " + Core::ToString(timings_node->elapsed_);
                 timings += ", average " + Core::ToString(average);
     */
-                console->Print(timings);
+
+                    std::string timings;
+                    timings.append(level, ' ');
+                    timings += str;
+
+                    console->Print(timings);
+                }
             }
         }
 
@@ -489,7 +487,7 @@ namespace Foundation
                  it != children.end() ;
                  ++it)
             {
-                PrintTimingsToConsole(console, *it, showUnused);
+                PrintTimingsToConsole(console, (*it).get(), showUnused);
             }
         }
         if (timings_node)
@@ -504,9 +502,14 @@ namespace Foundation
         if (console)
         {
             Profiler &profiler = GetProfiler();
-            ProfilerNodeTree *node = profiler.Lock().get();
-            PrintTimingsToConsole(console, node, false);
-            profiler.Release();
+//            ProfilerNodeTree *node = profiler.Lock().get();
+            ProfilerNodeTree *node = profiler.GetRoot();
+            if (params.size() > 0 && params.front() == "all")
+                PrintTimingsToConsole(console, node, true);
+            else
+                PrintTimingsToConsole(console, node, false);
+            console->Print(" ");
+//            profiler.Release();
         }
         return Console::ResultSuccess();
     }

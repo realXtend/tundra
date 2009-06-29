@@ -197,6 +197,12 @@ namespace RexLogic
 
         Scene::ScenePtr activeScene_;
 
+#ifdef _DEBUG
+        /// Checks the currently active camera that its transformation is correct, and logs into debug output
+        /// if not. Thanks go to Ogre for having issues with this..
+        void DebugSanityCheckOgreCameraTransform();
+#endif
+
         void CreateWater();
 
         //! Recreates the terrain. Called at startup.

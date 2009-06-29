@@ -25,7 +25,10 @@ namespace RexLogic
     Core::Vector3df GetProcessedScaledVectorFromUint16(const uint8_t* bytes, float scale);
     Core::Vector3df GetProcessedVectorFromUint16(const uint8_t* bytes);
     Core::Vector3df GetProcessedVector(const uint8_t* bytes);
-    
+
+    bool IsValidPositionVector(const Core::Vector3df &pos);
+    bool IsValidVelocityVector(const Core::Vector3df &pos);
+
     bool ParseBool(const std::string &value);
     
     // Helper functions for reading values from byteblob:

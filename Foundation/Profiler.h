@@ -129,34 +129,19 @@ namespace Foundation
     class ProfilerNodeTree
     {
         friend class Profiler;
-        ProfilerNodeTree();
-        ProfilerNodeTree(const ProfilerNodeTree &rhs);
+//        ProfilerNodeTree(); // N/I
+        ProfilerNodeTree(const ProfilerNodeTree &rhs); // N/I
     public:
-        typedef std::list<ProfilerNodeTree*> NodeList;
+        typedef std::list<boost::shared_ptr<ProfilerNodeTree> > NodeList;
 
         //! constructor that takes a name for the node
-        ProfilerNodeTree(const std::string &name) : name_(name), parent_(NULL), recursion_(0), auto_delete_children(true) { }
+        explicit ProfilerNodeTree(const std::string &name) : name_(name), parent_(NULL), recursion_(0)
+        { }
 
         //! destructor
         virtual ~ProfilerNodeTree()
-        {
-            if (auto_delete_children)
-                RemoveAndDeleteChildren();
-        }
+        { }
         
-        //! Removes and deletes all child nodes
-        virtual void RemoveAndDeleteChildren()
-        {
-            for (NodeList::iterator it = children_.begin() ; 
-                 it != children_.end() ;
-                 ++it)
-            {
-                (*it)->RemoveAndDeleteChildren();
-                delete *it;
-            }
-            children_.clear();
-        }
-
         //! Resets this node and all child nodes
         virtual void ResetValues()
         {
@@ -169,33 +154,23 @@ namespace Foundation
         }
         
         //! Add a child for this node
-        void AddChild(ProfilerNodeTree *node)
+        void AddChild(boost::shared_ptr<ProfilerNodeTree> node)
         {
             children_.push_back(node);
             node->parent_ = this;
         }
 
-        //! Removes the child node. Does not delete it.
+        //! Removes the child node.
         void RemoveChild(ProfilerNodeTree *node)
         {
             if (node)
             {
-                NodeList::iterator it = std::find(children_.begin(), children_.end(), node);
-                assert (it != children_.end());
-                children_.erase(it);
-            }
-        }
-
-        //! Removes and deletes the child node and all its children.
-        void RemoveAndDestroyChild(ProfilerNodeTree *node)
-        {
-            if (node)
-            {
-                NodeList::iterator it = std::find(children_.begin(), children_.end(), node);
-                assert (it != children_.end());
-                (*it)->RemoveAndDeleteChildren();
-                delete *it;
-                children_.erase(it);
+                for(NodeList::iterator iter = children_.begin(); iter != children_.end(); ++iter)
+                    if ((*iter).get() == node)
+                    {
+                        children_.erase(iter);
+                        return;
+                    }
             }
         }
 
@@ -214,7 +189,7 @@ namespace Foundation
             {
                 if ((*it)->name_ == name)
                 {
-                    return *it;
+                    return (*it).get();
                 }
             }
 
@@ -228,9 +203,6 @@ namespace Foundation
 
         //! Returns list of children for introspection
         const NodeList &GetChildren() const { return children_; }
-
-        //! Set true to auto delete children when this node is deleted
-        bool auto_delete_children;
 
     private:
         //! list of all children for this node
@@ -249,10 +221,11 @@ namespace Foundation
     class ProfilerNode : public ProfilerNodeTree
     {
         friend class Profiler;
-        ProfilerNode();
+        ProfilerNode(); // N/I
+        ProfilerNode(const ProfilerNode &rhs); // N/I
     public:
         //! constructor that takes a name for the node
-        ProfilerNode(const std::string &name) : 
+        explicit ProfilerNode(const std::string &name) : 
           ProfilerNodeTree(name),
           num_called_total_(0),
           num_called_(0),
@@ -264,9 +237,12 @@ namespace Foundation
           elapsed_max_(0.0),
           elapsed_min_current_(0.0),
           elapsed_max_current_(0.0)
-          { }
+          {
+          }
 
-        virtual ~ProfilerNode() {}
+        virtual ~ProfilerNode()
+        {
+        }
 
         void ResetValues()
         {
@@ -317,14 +293,10 @@ namespace Foundation
     {
         //! For boost::thread_specific_ptr, we don't want it doing automatic deletion
         void EmptyDeletor(ProfilerNodeTree *node) { }
-        void TSPNodeDeletor(ProfilerNodeTree *node)
+/*        void TSPNodeDeletor(ProfilerNodeTree *node)
         { 
-            if (node)
-            {
-                node->RemoveAndDeleteChildren();
-                delete node;
-            }
-        }
+            delete node;
+        }*/
     }
     
 
@@ -353,27 +325,18 @@ namespace Foundation
     class Profiler
     {
         friend class Framework;
-    private:
+    public://private:
         Profiler()
+            :current_node_(&EmptyDeletor),
+            root_("Root")
         {
 #ifdef PROFILING
-            //! we don't want thread_specific_ptr to delete this one automatically
-            current_node_ = new boost::thread_specific_ptr<ProfilerNodeTree>(&EmptyDeletor);
-            //root_ = new boost::thread_specific_ptr<ProfilerNodeTree>(&TSPNodeDeletor);
-
-            all_nodes_ = boost::shared_ptr<ProfilerNodeTree>(new ProfilerNodeTree("Root"));
-            all_nodes_->auto_delete_children = false;
-
             ProfilerBlock::QueryCapability();
-#endif            
+#endif
         }
     public:
         ~Profiler()
         {
-#ifdef PROFILING
-            current_node_->release();
-            delete current_node_;
-#endif  
         }
 
         //! Start a profiling block.
@@ -396,25 +359,23 @@ namespace Foundation
         */
         void EndBlock(const std::string &name);
 
-        //! Reset profiling data (should be called between frames from main thread only)
-        void Reset();
-
-        //! Reset profiling data for threads other than main thread. Don't call directly, use RESETPROFILER macro instead.
+        //! Reset profiling data for the current thread. Don't call directly, use RESETPROFILER macro instead.
         void ThreadedReset();
 
-        //! Returns root profiling node for the current thread only, re-entrant
-        ProfilerNodeTree *GetRoot()
-        { 
-            if (!root_.get())
-                root_.reset(new ProfilerNodeTree("Root"));
-            return root_.get();
-        }
+        ProfilerNodeTree *CreateThreadRootBlock();
 
-        //! Returns root profiling node for all threads, you must call Release() after you are done!
-        ProfilerNodeTreePtr Lock()
+        ProfilerNodeTree *GetThreadRootBlock();
+
+        std::string GetThisThreadRootBlockName();
+
+        //! Returns root profiling node for the current thread only, re-entrant
+        ProfilerNodeTree *GetOrCreateThreadRootBlock();
+
+        //! Returns root profiling node for all threads.
+        ProfilerNodeTree *Lock()
         {
             mutex_.lock();
-            return all_nodes_;
+            return &root_;
         }
 
         void Release()
@@ -422,14 +383,24 @@ namespace Foundation
             mutex_.unlock();
         }
 
-    private:
-        //! Root profiler node
-        boost::thread_specific_ptr<ProfilerNodeTree> root_;
-        //! Cached node topmost in stack, specific to each thread
-        boost::thread_specific_ptr<ProfilerNodeTree> *current_node_;
+        ProfilerNodeTree *GetRoot() { return &root_; }
 
-        //! container for all nodes
-        boost::shared_ptr<ProfilerNodeTree> all_nodes_;
+    private:
+        //! The single global root node object. This is a dummy root node that doesn't track any
+        //! timing statistics, but just contains all the root blocks of each thread as its children.
+        //! This root_ node doesn't own any of the memory of any of its children, those are owned 
+        //! and freed by each thread separately Namely, freeing all instances inside the 
+        //! thread_specific_root_ will cause all blocks to be freed.
+        ProfilerNodeTree root_;
+
+        //! Contains the root profile block for each thread.
+        boost::thread_specific_ptr<ProfilerNodeTree> thread_specific_root_;
+        //! Points to the current topmost profile block in the stack for each thread.
+        boost::thread_specific_ptr<ProfilerNodeTree> current_node_;
+
+        //! container for all the root profile nodes for each thread.
+        std::list<ProfilerNodeTree*> thread_root_nodes_;
+
         Core::Mutex mutex_;
     };
 
@@ -437,9 +408,10 @@ namespace Foundation
     class ProfilerSection
     {
         friend class Framework;
-        ProfilerSection();
+        ProfilerSection(); // N/I
+        ProfilerSection(const ProfilerSection &rhs);
     public:
-        ProfilerSection(const std::string &name) : name_(name), destroyed_(false)
+        explicit ProfilerSection(const std::string &name) : name_(name), destroyed_(false)
         {
             assert (profiler_ && "Trying to profile before profiler initialized.");
             GetProfiler()->StartBlock(name);

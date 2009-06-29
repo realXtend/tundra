@@ -21,14 +21,16 @@
 namespace RexLogic
 {
     RexLoginWindow::RexLoginWindow(Foundation::Framework* framework, RexLogicModule *module) :
-    framework_(framework), rex_logic_(module), login_widget_(0)
+    framework_(framework), rex_logic_(module), login_widget_(0), logout_button_(0), quit_button_(0)
     {
         InitLoginWindow();
     }
     
     RexLoginWindow::~RexLoginWindow()
     {
-        SAFE_DELETE(login_widget_);
+        delete login_widget_;
+        delete logout_button_;
+        delete quit_button_;
     }
 
     void RexLoginWindow::InitLoginWindow()
@@ -39,6 +41,21 @@ namespace RexLogic
         if (qt_module.expired())
             return;
 
+        /** \todo Just instantiating a QUiLoader on the next code line below causes 
+              11 memory leaks to show up, like the following:
+                {106636} normal block at 0x09D6B1F0, 68 bytes long.
+                {106635} normal block at 0x09D6C770, 16 bytes long.
+                {104970} normal block at 0x09D689E8, 68 bytes long.
+                {104969} normal block at 0x09D6B728, 16 bytes long.
+                {104910} normal block at 0x09D6B5A8, 4 bytes long.
+                {2902} normal block at 0x018CE528, 24 bytes long.
+                {2901} normal block at 0x018CE480, 104 bytes long.
+                {2900} normal block at 0x018CDD10, 8 bytes long.
+                {2899} normal block at 0x018CE428, 24 bytes long.
+                {2898} normal block at 0x018CE3D0, 24 bytes long.
+                {2897} normal block at 0x018CE358, 56 bytes long.
+
+                Figure something out.. */
         QUiLoader loader;
         QFile file("./data/ui/login.ui");
         login_widget_ = loader.load(&file); 
@@ -51,7 +68,7 @@ namespace RexLogic
         QObject::connect(pButton, SIGNAL(clicked()), this, SLOT(Disconnect()));
 
         pButton = login_widget_->findChild<QPushButton *>("but_quit");
-        QObject::connect(pButton, SIGNAL(clicked()), this, SLOT(Quit()));       
+        QObject::connect(pButton, SIGNAL(clicked()), this, SLOT(Quit()));
 
         // Recover the connection settings that were used in previous login
         // from the xml configuration file.
@@ -89,7 +106,6 @@ namespace RexLogic
 		// Rex auth: 
         line = login_widget_->findChild<QLineEdit* >("line_auth_server");
         line->setText(QString(strText.c_str()));
-         
 
         login_widget_->show();
 
@@ -107,7 +123,6 @@ namespace RexLogic
 
         QGraphicsScene *scene = qt_ui->GetUIScene();
 
-        ///\todo Free.
         logout_button_ = new QPushButton();
         logout_button_->setText("Log out");
         logout_button_->move(5, 5);
@@ -115,7 +130,6 @@ namespace RexLogic
         QObject::connect(logout_button_, SIGNAL(clicked()), this, SLOT(DisconnectAndShowLoginWindow()));
         logout_button_->hide();
 
-        ///\todo Free.
         quit_button_ = new QPushButton();
         quit_button_->setText("Quit");
         scene->addWidget(quit_button_);

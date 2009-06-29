@@ -89,6 +89,7 @@ namespace Foundation
     {
         ModuleInterface *mod;
 
+        {
         PROFILE(ModuleManager_PreInitModules);
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
@@ -96,7 +97,9 @@ namespace Foundation
             if (mod->State() != Foundation::Module::MS_Initialized)
                 PreInitializeModule(mod);
         }
+        }
         
+        {
         PROFILE(ModuleManager_InitModules);
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
@@ -104,11 +107,14 @@ namespace Foundation
             if (mod->State() != Foundation::Module::MS_Initialized)
                 InitializeModule(mod);
         }
+        }
         
+        {
         PROFILE(ModuleManager_PostInitModules);
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
             PostInitializeModule(modules_[i].module_.get());
+        }
         }
     }
 

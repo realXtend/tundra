@@ -244,6 +244,35 @@ namespace RexLogic
 		LogInfo("Module " + Name() + " uninitialized.");
     }
     
+#ifdef _DEBUG
+    void RexLogicModule::DebugSanityCheckOgreCameraTransform()
+    {
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
+            <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
+            return;
+
+        Ogre::Camera *camera = renderer->GetCurrentCamera();
+        Ogre::Vector3 up = camera->getUp();
+        Ogre::Vector3 fwd = camera->getDirection();
+        Ogre::Vector3 right = camera->getRight();
+        float l1 = up.length();
+        float l2 = fwd.length();
+        float l3 = right.length();
+        float p1 = up.dotProduct(fwd);
+        float p2 = fwd.dotProduct(right);
+        float p3 = right.dotProduct(up);
+        std::stringstream ss;
+        if (abs(l1 - 1.f) > 1e-3f || abs(l2 - 1.f) > 1e-3f || abs(l3 - 1.f) > 1e-3f ||
+            abs(p1) > 1e-3f || abs(p2) > 1e-3f || abs(p3) > 1e-3f)
+        {
+            ss << "Warning! Camera TM base not orthonormal! Pos. magnitudes: " << l1 << ", " << l2 << ", " <<
+                l3 << ", Dot product magnitudes: " << p1 << ", " << p2 << ", " << p3;
+            LogDebug(ss.str());
+        }
+    }
+#endif
+
     // virtual
     void RexLogicModule::Update(Core::f64 frametime)
     {
@@ -285,36 +314,12 @@ namespace RexLogic
             {
                 avatar_controllable_->AddTime(frametime);
                 camera_controllable_->AddTime(frametime);
-
-                boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
-                    <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-                if (renderer)
-                {
-                    Ogre::Camera *camera = renderer->GetCurrentCamera();
-                    Ogre::Vector3 up = camera->getUp();
-                    Ogre::Vector3 fwd = camera->getDirection();
-                    Ogre::Vector3 right = camera->getRight();
-                    float l1 = up.length();
-                    float l2 = fwd.length();
-                    float l3 = right.length();
-                    float p1 = up.dotProduct(fwd);
-                    float p2 = fwd.dotProduct(right);
-                    float p3 = right.dotProduct(up);
-                    std::stringstream ss;
-                    if (abs(l1 - 1.f) > 1e-3f || abs(l2 - 1.f) > 1e-3f || abs(l3 - 1.f) > 1e-3f ||
-                        abs(p1) > 1e-3f || abs(p2) > 1e-3f || abs(p3) > 1e-3f)
-                    {
-                        ss << "Warning! Camera TM base not orthonormal! Pos. magnitudes: " << l1 << ", " << l2 << ", " <<
-                            l3 << ", Dot product magnitudes: " << p1 << ", " << p2 << ", " << p3;
-        //                LogInfo(ss.str());
-                    }
                     
-                    // Update avatar name overlay positions.
-                    GetAvatarHandler()->UpdateAvatarNameOverlayPositions();
-                    
-                    // Update environment-spesific visual effects.
-                    GetEnvironmentHandler()->UpdateVisualEffects(frametime);
-                }
+                // Update avatar name overlay positions.
+                GetAvatarHandler()->UpdateAvatarNameOverlayPositions();
+                
+                // Update environment-spesific visual effects.
+                GetEnvironmentHandler()->UpdateVisualEffects(frametime);
             }
         }
         
