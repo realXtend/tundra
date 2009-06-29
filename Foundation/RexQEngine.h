@@ -25,7 +25,7 @@ class RexQEngine : public QObject
     Q_OBJECT
 
 public:
-    RexQEngine(Framework *owner);
+    RexQEngine(Framework *owner, int argc, char** argv);
     virtual ~RexQEngine();
 
     /// Transitions into the QApplication main loop.

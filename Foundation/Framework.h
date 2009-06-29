@@ -33,8 +33,8 @@ namespace Foundation
     public:
         typedef std::map<std::string, Scene::ScenePtr> SceneMap;
 
-        //! default constructor. Initializes the framework.
-        Framework();
+        //! constructor. Initializes the framework.
+        Framework(int argc, char** argv);
         //! destructor
         ~Framework();
 
@@ -42,7 +42,7 @@ namespace Foundation
         /*! For internal use. Should be called immediatelly after creating the framework,
             so all options will be taken in effect properly.
         */
-        void ParseProgramOptions(int argc, char **argv);
+        void ParseProgramOptions();
 
         //! Do post-initialization steps. No need to call if using Framework::Go().
         /*! This function can be used if you wish to use the framework without main loop.
