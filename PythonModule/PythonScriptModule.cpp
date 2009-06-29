@@ -388,7 +388,7 @@ extern "C"
 /* API calls exposed to py. 
 will probably be wrapping the actual modules in separate files,
 but first test now here. also will use boostpy or something, but now first by hand */
-static PyObject* SendChat(PyObject *self, PyObject *args)
+PyObject* SendChat(PyObject *self, PyObject *args)
 {
 	const char* msg;
 
@@ -427,7 +427,7 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
 */
 
 //returns an Entity wrapper, is in actual use
-static PyObject* GetEntity(PyObject *self, PyObject *args)
+PyObject* GetEntity(PyObject *self, PyObject *args)
 {
 	unsigned int ent_id_int;
 	Core::entity_id_t ent_id;
@@ -457,7 +457,7 @@ static PyObject* GetEntity(PyObject *self, PyObject *args)
 		return NULL; //XXX TODO: raise ValueError
 }
 
-static PyObject* CreateEntity(PyObject *self, PyObject *args)
+PyObject* CreateEntity(PyObject *self, PyObject *args)
 {
 	Foundation::Framework *framework_ = PythonScript::staticframework;
 	RexLogic::RexLogicModule *rexlogic_;
@@ -511,7 +511,7 @@ static PyObject* CreateEntity(PyObject *self, PyObject *args)
 	return NULL; //XXX return some sensible exception info
 }
 
-static PyObject* PyEventCallback(PyObject *self, PyObject *args){
+PyObject* PyEventCallback(PyObject *self, PyObject *args){
 	std::cout << "PyEventCallback" << std::endl;
 	const char* key;
 	const char* message;

@@ -15,6 +15,7 @@ av_entid = 8880000
 idnum = av_entid
 
 if 0: #get entity
+    #idnum = new_id
     print "Getting entity id", idnum,
     e = r.getEntity(idnum)
     print "got:", e
@@ -42,8 +43,6 @@ if 0: #test avatar tracking, works :)
     const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
     (because avatars don't have the prim component"""
 
-    
-    
 if 0: #push an event, input and/or chat
     #from eventsource import viewer
     #from modulemanager import m 
@@ -70,3 +69,7 @@ Assertion failed: px != 0, file D:\k2\rex\viewer\trunk\external_libs\include\boo
 st/shared_ptr.hpp, line 419
     """
     #print "New entity created:", r.createEntity(new_id)
+    
+if 1: #send chat
+    r.sendChat("here we go.")
+    print "called sendchat ok"
