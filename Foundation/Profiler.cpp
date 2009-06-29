@@ -25,40 +25,52 @@ namespace Foundation
 
     void Profiler::StartBlock(const std::string &name)
     {
-        ProfilerNodeTree *node = current_node_->get();
-        if (!node)
+        // Get the current topmost profiling node in the stack, or 
+        // if none exists, get the root node or create a new root node.
+        // This will be the parent node of the new block we're starting.
+        ProfilerNodeTree *parent = current_node_.get();
+        if (!parent)
         {
-            node = GetRoot();
-            current_node_->reset(node);
+            parent = GetOrCreateThreadRootBlock();
+            current_node_.reset(parent);
         }
+        assert(parent);
 
-        if (name != (*current_node_)->Name())
-            node = (*current_node_)->GetChild(name);
+        // If parent name == new block name, we assume that we're
+        // recursively re-entering the same function (with a single
+        // profiling block).
+        ProfilerNodeTree *node = (name != parent->Name()) ? parent->GetChild(name) : parent;
 
+        // We're entering this PROFILE() block for the first time,
+        // need to allocate the memory for it.
         if (!node)
         {
             node = new ProfilerNode(name);
-            (*current_node_)->AddChild(node);
+            parent->AddChild(boost::shared_ptr<ProfilerNodeTree>(node));
         }
 
-        assert ((*current_node_)->recursion_ >= 0);
-        
-        if (current_node_->get() == node)
-            (*current_node_)->recursion_++; // handle recursion
+        assert (parent->recursion_ >= 0);
+
+        // If a recursive call, just increment recursion count, the timer has already
+        // been started so no need to touch it. Otherwise, start the timer for the current
+        // block.
+        if (parent == node)
+            parent->recursion_++; // handle recursion
         else
         {
-            current_node_->release();
-            current_node_->reset(node);
+            current_node_.release();
+            current_node_.reset(node);
 
-            checked_static_cast<ProfilerNode*>(current_node_->get())->block_.Start();
+            checked_static_cast<ProfilerNode*>(node)->block_.Start();
         }
     }
 
     void Profiler::EndBlock(const std::string &name)
     {
-        assert ((*current_node_)->Name() == name && "New profiling block started before old one ended!");
+        ProfilerNodeTree *treeNode = current_node_.get();
+        assert (treeNode->Name() == name && "New profiling block started before old one ended!");
 
-        ProfilerNode* node = checked_static_cast<ProfilerNode*>(current_node_->get());
+        ProfilerNode* node = checked_static_cast<ProfilerNode*>(treeNode);
         node->block_.Stop();
         node->num_called_total_++;
         node->num_called_current_++;
@@ -70,60 +82,62 @@ namespace Foundation
         node->elapsed_max_current_ = elapsed > node->elapsed_max_current_ ? elapsed : node->elapsed_max_current_;
         node->total_ += elapsed;
 
-        assert ((*current_node_)->recursion_ >= 0);
+        assert (node->recursion_ >= 0);
 
         // need to handle recursion
-        if ((*current_node_)->recursion_ > 0)
-            (*current_node_)->recursion_--;
+        if (node->recursion_ > 0)
+            --node->recursion_;
         else
         {
-            current_node_->release();
-            current_node_->reset(node->Parent());
+            current_node_.release();
+            current_node_.reset(node->Parent());
         }
     }
 
-    void Profiler::Reset()
+    ProfilerNodeTree *Profiler::GetThreadRootBlock()
+    { 
+        return thread_specific_root_.get();
+    }
+
+    ProfilerNodeTree *Profiler::GetOrCreateThreadRootBlock()
+    { 
+        if (!thread_specific_root_.get())
+            return CreateThreadRootBlock();
+
+        return thread_specific_root_.get();
+    }
+
+    std::string Profiler::GetThisThreadRootBlockName()
     {
-        ProfilerNodeTree *root = new ProfilerNodeTree("MainThread");
-        root->AddChild(GetRoot());
+        return std::string("Thread" + Core::ToString(boost::this_thread::get_id()));
+    }
 
-        // lock here shouldn't matter, as we are not profiling here
-        Core::MutexLock lock(mutex_);
+    ProfilerNodeTree *Profiler::CreateThreadRootBlock()
+    {
+        std::string rootObjectName = GetThisThreadRootBlockName();
 
-        GetRoot()->ResetValues();
+        ProfilerNodeTree *root = new ProfilerNodeTree(rootObjectName);
+        thread_specific_root_.reset(root);
 
-        ProfilerNodeTree *new_root = all_nodes_->GetChild("MainThread");
-        all_nodes_->RemoveChild(new_root);
-        if (new_root)
-        {
-            new_root->auto_delete_children = false;
-            delete new_root;
-        }
+        // Each thread root block is added as a child of a dummy node root_ owned by
+        // this Profiler. The root_ object doesn't own the memory of its children,
+        // but just weakly refers to them an allows easy access for printing the
+        // profiling data in each thread.
+        root_.AddChild(boost::shared_ptr<ProfilerNodeTree>(root, &EmptyDeletor));
 
-        all_nodes_->AddChild(root);
+        thread_root_nodes_.push_back(root);
+        return root;
     }
 
     void Profiler::ThreadedReset()
     {
-        const std::string thread("Thread" + Core::ToString(boost::this_thread::get_id()));
+        ProfilerNodeTree *root = GetThreadRootBlock();
+        if (!root)
+            return;
 
-        ProfilerNodeTree *root = new ProfilerNodeTree(thread);
-        root->AddChild(GetRoot());
-
-        // lock here shouldn't matter, as we are not profiling here
-        Core::MutexLock lock(mutex_);
-
-        GetRoot()->ResetValues();
-
-        ProfilerNodeTree *new_root = all_nodes_->GetChild(thread);
-        all_nodes_->RemoveChild(new_root);
-        if (new_root)
-        {
-            new_root->auto_delete_children = false;
-            delete new_root;
-        }
-        
-        all_nodes_->AddChild(root);
+        mutex_.lock();
+        root->ResetValues();
+        mutex_.unlock();
     }
 }
 

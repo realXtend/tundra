@@ -116,13 +116,19 @@ namespace OgreRenderer
     
     Renderer::~Renderer()
     {
-        unsigned int width, height, depth;
-        int left, top;
-        renderwindow_->getMetrics(width, height, depth, left, top);
-        framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_width", width);
-        framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_height", height);
-        framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_left", left);
-        framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_top", top);
+        if (ray_query_ && scenemanager_)
+            scenemanager_->destroyQuery(ray_query_);
+
+        if (renderwindow_)
+        {
+            unsigned int width, height, depth;
+            int left, top;
+            renderwindow_->getMetrics(width, height, depth, left, top);
+            framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_width", width);
+            framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_height", height);
+            framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_left", left);
+            framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_top", top);
+        }
 
         if (initialized_)
         {
@@ -211,10 +217,9 @@ namespace OgreRenderer
 
         SetupResources();
         SetupScene();
-        
+
         Ogre::WindowEventUtilities::addWindowEventListener(renderwindow_, listener_.get());
-        
-        
+              
         initialized_ = true;
     }
 

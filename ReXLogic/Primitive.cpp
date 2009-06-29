@@ -121,10 +121,7 @@ namespace RexLogic
             size_t bytes_read = 0;
             const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
             if (bytes_read == 60)
-            {
-                Core::Vector3Df ogre_pos;
-                Core::Quaternion ogre_quat;
-
+            {               
                 // The data contents:
                 // ofs  0 - pos xyz - 3 x float (3x4 bytes)
                 // ofs 12 - vel xyz - 3 x float (3x4 bytes)
@@ -132,12 +129,23 @@ namespace RexLogic
                 // ofs 36 - orientation, quat with last (w) component omitted - 3 x float (3x4 bytes)
                 // ofs 48 - angular velocity - 3 x float (3x4 bytes)
                 // total 60 bytes
-                
-                netpos.position_ = Core::OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[0]));                
-                netpos.velocity_ = Core::OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[12])); 
-                netpos.accel_ = Core::OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[24]));
+
+                Core::Vector3Df vec = Core::OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[0]));
+                if (IsValidPositionVector(vec))
+                    netpos.position_ = vec;
+
+                vec = Core::OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[12])); 
+                if (IsValidVelocityVector(vec))
+                    netpos.velocity_ = vec;
+
+                vec = Core::OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[24]));
+                if (IsValidVelocityVector(vec)) // Use Velocity validation for Acceleration as well - it's ok as they are quite similar.
+                    netpos.accel_ = vec;
+
                 netpos.rotation_ = Core::OpenSimToOgreQuaternion(Core::UnpackQuaternionFromFloat3((float*)&objectdatabytes[36])); 
-                netpos.rotvel_ = Core::OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[48]));
+                vec = Core::OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[48]));
+                if (IsValidVelocityVector(vec)) // Use Velocity validation for Angular Velocity as well - it's ok as they are quite similar.
+                    netpos.rotvel_ = vec;
                 netpos.Updated();
             }
             else
@@ -215,7 +223,9 @@ namespace RexLogic
         if(!entity) return;
         EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(entity->GetComponent(EC_NetworkPosition::NameStatic()).get());
         
-        netpos.position_ = GetProcessedVector(&bytes[i]);
+        Core::Vector3Df vec = GetProcessedVector(&bytes[i]);
+        if (IsValidPositionVector(vec))
+            netpos.position_ = vec;
         i += sizeof(Core::Vector3df);
         
         netpos.velocity_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
@@ -228,8 +238,10 @@ namespace RexLogic
         i += 8;
 
         netpos.rotvel_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
+        i += 16;
         
         netpos.Updated();
+        assert(i <= 60);
     }
     
     bool Primitive::HandleRexGM_RexMediaUrl(OpenSimProtocol::NetworkEventInboundData* data)

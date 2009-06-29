@@ -11,19 +11,24 @@ endif (COMMAND cmake_policy)
 
 # Set CMake custom module path & include them
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CMakeModules)
+
+# The following CMake modules are required for the project
+# to build.
 include (Boost)
 include (PoCo)
 include (Curl)
 include (XmlRpcEpi)
 include (Ogre)
-include (Gtkmm)
-include (Python)
 include (OIS)
 include (OpenJpeg)
+include (Qt)
+
+# The following CMake modules are optional.
+include (Gtkmm)
+include (Python)
 #include (OpenAL)
 include (Caelum)
 #include (Hydrax)
-include (Qt)
 include (TinyJson)
 
 # Disable unnecessary build types
@@ -50,9 +55,9 @@ if (MSVC)
 endif (MSVC)
 
 # Generate profiling data. Currently disabled because of threadsafety issues.
-#if (MSVC)
-#	add_definitions (-DPROFILING)
-#endif (MSVC)
+if (MSVC)
+	add_definitions (-DPROFILING)
+endif (MSVC)
 
 # Find needed external libraries, abort on error
 FIND_BOOST()
@@ -81,7 +86,10 @@ include_directories (${REX_DEP_PATH}/include)
 # Library directories
 link_directories (${REX_DEP_PATH}/lib)
 
-# Add subprojects
+# Add all the subprojects in the rex viewer.
+# The following are the core modules that are 
+# required for the project to build. None of
+# these can't be omitted.
 add_subdirectory (Core)
 add_subdirectory (Foundation)
 add_subdirectory (Interfaces)
@@ -90,19 +98,29 @@ add_subdirectory (SceneManager)
 add_subdirectory (OgreRenderingModule)
 add_subdirectory (Application)
 add_subdirectory (ReXLogic)
+add_subdirectory (SupportModules)
+add_subdirectory (AssetModule)
+add_subdirectory (QtModule)
+
+# The following are not really core modules,
+# but you can't do anything practical without
+# having them so, they're effectively required.
+add_subdirectory (InputModuleOIS)
+add_subdirectory (TextureDecoderModule)
+add_subdirectory (OpenSimProtocol)
+
+# The following modules are optional. You may
+# leave out any of these, and the project should
+# still build and work. If it doesn't, please
+# report it as a bug.
+
 #add_subdirectory (TestModule)
 #add_subdirectory (UnitTests) #TODO: didn't compile on fedora
-add_subdirectory (OpenSimProtocol)
 #add_subdirectory (GtkmmUI)
 #add_subdirectory (DebugStats)
 #add_subdirectory (NetTestLogicModule)
 add_subdirectory (PythonModule)
-add_subdirectory (SupportModules)
-add_subdirectory (AssetModule)
 add_subdirectory (CommunicationModule)
 #add_subdirectory (CommunicationUIModule)
-add_subdirectory (InputModuleOIS)
-add_subdirectory (TextureDecoderModule)
 #add_subdirectory (OpenALAudioModule)
-add_subdirectory (QtModule)
 add_subdirectory (RexCBLogin)

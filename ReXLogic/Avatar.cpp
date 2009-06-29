@@ -144,8 +144,8 @@ namespace RexLogic
                 // ofs 16 - pos xyz - 3 x float (3x4 bytes)
                 netpos.position_ = Core::OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[16]));
                 netpos.Updated();
-            }                
-                        
+            }
+
             msg->SkipToFirstVariableByName("ParentID");
             presence.ParentId = msg->ReadU32();
             
@@ -180,6 +180,9 @@ namespace RexLogic
     
     void Avatar::HandleTerseObjectUpdate_30bytes(const uint8_t* bytes)
     {
+        if (!rexlogicmodule_ || !rexlogicmodule_->GetCurrentActiveScene().get())
+            return;
+
         // The data contents:
         // ofs  0 - localid - packed to 4 bytes
         // ofs  4 - position xyz - 3 x float (3x4 bytes)
@@ -195,8 +198,10 @@ namespace RexLogic
         if(!entity) return;
         EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(entity->GetComponent(EC_NetworkPosition::NameStatic()).get());
 
-        Core::Vector3df position = GetProcessedVector(&bytes[i]);
+        Core::Vector3df position = GetProcessedVector(&bytes[i]);    
         i += sizeof(Core::Vector3df);
+        if (!IsValidPositionVector(position))
+            return;
         
         netpos.velocity_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
         i += 6;
@@ -214,7 +219,9 @@ namespace RexLogic
         netpos.accel_ = Core::Vector3df::ZERO;
         netpos.rotvel_ = Core::Vector3df::ZERO;
         
-        netpos.Updated();                 
+        netpos.Updated();
+
+        assert(i <= 30);
     }    
     
     void Avatar::HandleTerseObjectUpdateForAvatar_60bytes(const uint8_t* bytes)
@@ -245,6 +252,9 @@ namespace RexLogic
         Core::Vector3df position = GetProcessedVector(&bytes[i]);
         i += sizeof(Core::Vector3df);
 
+        if (!IsValidPositionVector(position))
+            return;
+
         netpos.velocity_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
         i += 6;
         
@@ -255,7 +265,6 @@ namespace RexLogic
         i += 8;        
 
         netpos.rotvel_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
-
         
         netpos.position_ = position;
         if (!entity->GetComponent(EC_Controllable::NameStatic()))
@@ -265,7 +274,8 @@ namespace RexLogic
         }
         
         netpos.Updated();
-                            
+
+        assert(i <= 60);                            
     }
         
     bool Avatar::HandleRexGM_RexAppearance(OpenSimProtocol::NetworkEventInboundData* data)

@@ -335,7 +335,7 @@ RexUUID NetInMessage::ReadUUID()
 
 void NetInMessage::ReadString(char *dst, size_t maxSize)
 {
-    // The OpenSim protocol doesn't spesify variable type for strings so use "NetVarNone".
+    // The OpenSim protocol doesn't specify variable type for strings so use "NetVarNone".
     RequireNextVariableType(NetVarNone);
     
     if (maxSize == 0)
@@ -351,7 +351,7 @@ void NetInMessage::ReadString(char *dst, size_t maxSize)
 
 std::string NetInMessage::ReadString()
 {
-    // The OpenSim protocol doesn't spesify variable type for strings so use "NetVarNone".
+    // The OpenSim protocol doesn't specify variable type for strings so use "NetVarNone".
     RequireNextVariableType(NetVarNone);
     
     char tmp[257];
