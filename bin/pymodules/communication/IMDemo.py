@@ -11,7 +11,8 @@ class IMDemo:
     def __init__(self):
         self.dbusmanager_ = dbusmanager.DBusManager()
         if not self.dbusmanager_.is_dbus_service_running():
-            print("TRY to start dbus manager")
+            pass
+            #print("TRY to start dbus manager")
             # The paths are related to current working directory
             #self.dbusmanager_.start_dbus_service("telepathy/dbus-daemon.exe", "--config-file=data/session.conf")
             
