@@ -496,8 +496,7 @@ namespace Communication
 		OpenConnection( CommunicationSettingsInterfacePtr(cs) );
 
 		std::string text;
-		text.append("NOTE: Current version uses credential from Account.txt file.");
-		text.append("Ready.");
+		text.append("NOTE: Current version always uses credentials from data/connection.ini.");
 		return Console::ResultSuccess(text);
 	}
 
