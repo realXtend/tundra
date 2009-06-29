@@ -20,7 +20,7 @@ include_directories (
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
-INCLUDE_TINYJSON()
+#INCLUDE_TINYJSON()
 
 add_definitions (-DASSET_MODULE_EXPORTS -DMODULE_EXPORTS)
 

@@ -29,7 +29,7 @@ include (Python)
 #include (OpenAL)
 include (Caelum)
 #include (Hydrax)
-include (TinyJson)
+#include (TinyJson)
 
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
