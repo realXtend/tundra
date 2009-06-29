@@ -253,6 +253,8 @@ namespace RexLogic
                     Core::Quaternion rotchange(0, 0, (-avatar->yaw * (Core::f32)frametime + drag_yaw_) * rotation_sensitivity_);
                     netpos->rotation_ = rotchange * netpos->rotation_;
                     netpos->Updated();
+
+                    net_dirty_ = true;
                 }
 
                 //! \todo hax to get camera pitch. Should be fixed once camera is a proper entity and component. -cm
