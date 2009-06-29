@@ -70,6 +70,6 @@ st/shared_ptr.hpp, line 419
     """
     #print "New entity created:", r.createEntity(new_id)
     
-if 1: #send chat
+if 0: #send chat
     r.sendChat("here we go.")
-    print "called sendchat ok"
+    #print "called sendchat ok"
