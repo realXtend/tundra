@@ -117,7 +117,7 @@
    </widget>
    <widget class="QWidget" name="tab_authentication">
     <attribute name="title">
-     <string>Rex authentication</string>
+     <string>reX Authentication</string>
     </attribute>
     <widget class="QWidget" name="verticalLayoutWidget_2">
      <property name="geometry">
