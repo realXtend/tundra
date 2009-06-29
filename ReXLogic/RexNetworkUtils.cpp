@@ -2,7 +2,11 @@
 
 #include "StableHeaders.h"
 
+#ifndef unix
 #include <float.h>
+#else
+#include "CoreTypes.h"
+#endif
 
 #include "RexNetworkUtils.h"
 #include "RexLogicModule.h"

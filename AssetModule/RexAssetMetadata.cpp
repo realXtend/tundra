@@ -2,7 +2,7 @@
 #include "RexAssetMetadata.h"
 #include "Poco/Base64Encoder.h"
 #include "Poco/StreamCopier.h"
-#include <TinyJson.h>
+#include "TinyJson/TinyJson.h"
 
 namespace Asset
 {
