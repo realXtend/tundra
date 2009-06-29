@@ -550,9 +550,9 @@ namespace Foundation
                 Console::Bind(this, &Framework::ConsoleProfile)));
 #endif
 
-            console->RegisterCommand(Console::CreateCommand("FrameLimit", 
-                "Limit fps. Usage: FrameLimit(max_frames)", 
-                Console::Bind(this, &Framework::ConsoleLimitFrames)));
+            //console->RegisterCommand(Console::CreateCommand("FrameLimit", 
+            //    "Limit fps. Usage: FrameLimit(max_frames)", 
+            //    Console::Bind(this, &Framework::ConsoleLimitFrames)));
         }
     }
 }
