@@ -81,8 +81,8 @@ if 0: #placeable and text tests
         
     #e.orientation = "well this ain't a quarternion."
     #e.scale = ("does", "this", "work")
-    #~ def test():
-        #~ print "this ain't a string..."
+    def test():
+        print "this ain't a string..."
     
     e.text = "swoot"
     e.text = 1
