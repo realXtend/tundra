@@ -13,7 +13,7 @@ class IMDemo:
         if not self.dbusmanager_.is_dbus_service_running():
             print("TRY to start dbus manager")
             # The paths are related to current working directory
-            self.dbusmanager_.start_dbus_service("telepathy/dbus-daemon.exe", "--config-file=data/session.conf")
+            #self.dbusmanager_.start_dbus_service("telepathy/dbus-daemon.exe", "--config-file=data/session.conf")
             
         if not self.dbusmanager_.is_dbus_service_running():
             print("ERROR: Cannot find dbus service!")        
@@ -100,6 +100,7 @@ class IMDemo:
         print "CAccountConnect"
         #str, d = doReadAccountAndConnect()
         d = self.connection.GetConnectionSettings()
+        print "connection.ini loaded"
         #self.accountConnect(d)
         self.connection.ConnectAccount(d)
 
