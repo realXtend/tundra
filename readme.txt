@@ -1,5 +1,5 @@
-realXtend Viewer
-================
+realXtend Naali 0.0.1
+=====================
 
 System requirements
 -------------------

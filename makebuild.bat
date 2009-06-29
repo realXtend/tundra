@@ -5,6 +5,7 @@
 @echo off
 rmdir build /S /Q
 md build
+copy readme.txt build
 xcopy bin\*.* build /S /C
 del build\data\configuration\*.xml
 rmdir build\testing /S /Q
@@ -18,4 +19,9 @@ del build\modules\core\CommunicationUI*.*
 del build\modules\test\*.xml
 del build\modules\test\*.dll
 xcopy ..\viewerbuilddlls\*.* build /S /C
-
+del build\pymodules\*.pyc
+del build\pymodules\apitest\*.pyc
+del build\pymodules\circuits\*.pyc
+del build\pymodules\communication\*.pyc
+del build\pymodules\core\*.pyc
+del build\pymodules\usr\*.pyc

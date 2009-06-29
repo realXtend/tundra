@@ -36,6 +36,7 @@ Section "Start Menu Shortcuts"
   SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\realXtend Naali"
   CreateShortCut "$SMPROGRAMS\realXtend Naali\realXtend Naali.lnk" "$INSTDIR\viewer.exe"
+  CreateShortCut "$SMPROGRAMS\realXtend Naali\Readme.lnk" "$INSTDIR\readme.txt"
   CreateShortCut "$SMPROGRAMS\realXtend Naali\Uninstall.lnk" "$INSTDIR\uninstaller.exe"
 SectionEnd
 
