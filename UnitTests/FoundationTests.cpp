@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_SUITE(fw)
 
 BOOST_AUTO_TEST_CASE( platform )
 {
-    Foundation::Framework fw;
+    Foundation::Framework fw(0, NULL);
 
     std::string appData = fw.GetPlatform()->GetApplicationDataDirectory();
     BOOST_CHECK (appData.find(fw.GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "application_name")) != std::string::npos);
@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE( platform )
 
 BOOST_AUTO_TEST_CASE( application )
 {
-    Foundation::Framework fw;
+    Foundation::Framework fw(0, NULL);
 
     std::string app_name = Foundation::Application::Name();
     BOOST_CHECK_EQUAL (app_name, fw.GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "application_name") );
@@ -57,7 +57,7 @@ void Profiler_Recursion()
 
 BOOST_AUTO_TEST_CASE( profiler )
 {
-    Foundation::Framework fw;
+    Foundation::Framework fw(0, NULL);
     {
         
         int u;
@@ -81,7 +81,9 @@ BOOST_AUTO_TEST_CASE( profiler )
         
 
         Foundation::Profiler &profiler = fw.GetProfiler();
-        Foundation::ProfilerNodeTree *root = profiler.GetRoot();
+        Foundation::ProfilerNodeTree *all_root = profiler.GetRoot();
+        Foundation::ProfilerNodeTree *root = all_root->GetChild(profiler.GetThisThreadRootBlockName());
+
         Foundation::ProfilerNode *node = static_cast<Foundation::ProfilerNode*>(root->GetChild("Test_Profile1"));
         BOOST_CHECK (node != NULL);
         BOOST_CHECK_EQUAL (node->num_called_total_, 1);
@@ -170,7 +172,7 @@ BOOST_AUTO_TEST_CASE( headless )
 // Should be last, so default configuration file gets properly saved in debug mode
 BOOST_AUTO_TEST_CASE( test_module )
 {
-    Foundation::Framework fw;
+    Foundation::Framework fw(0, NULL);
     
     Test::StaticModuleDefinitions static_test;
     static_test(&fw);
