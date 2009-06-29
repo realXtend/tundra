@@ -13,9 +13,11 @@ behind it. Naali provides three different connection modes: OpenSim, realXtend a
 
 -Opensim
 Use the OpenSim connection method to connect to an OpenSim server with or without authentication,
-a legacy realXtend server (version 0.4 and above) without authentication, and Taiga server suite without
-authentication. If the server you are going to connect doesn't use authentication, no password is required.
-Just insert some username ([first name]SPACE[lastname]), server address and port (address:port) and click connect.
+a legacy realXtend server (version 0.4 and above) without authentication. If the server you are going to connect 
+doesn't use authentication, no password is required. Just insert some username ([first name]SPACE[lastname]), 
+server address and port (address:port) and click connect. If you are connecting to Taiga servers via 
+OpenSim authentication you must give firstname, lastname and password correctly and the sim must
+have a corresponding account.
 
 -reX authentication
 realXtend authentication connection method can be used to login to legacy realXtend servers and Taiga server
@@ -25,7 +27,17 @@ connect.
 Note: The viewer will use 9000 and 10001 as the default ports for the servers if you don't spesify them yourself.
 
 -OpenID
-\todo
+You can use OpenID login to connect to realXtend Taiga server. For this you have to have a Taiga OpenID account.
+In the login window select OpenID tab and click connect. Set your world and openid urls, for example:
+World: 'http://taiga-server-address:8002/login' OpenID: 'http://taiga-server-address:8004/YourAccountName'
+OpenID provider can be in a different server than the world. You only need one Taiga OpenID account
+and the authentication will work on every Taiga server.
+
+NOTE: You can create an Taiga OpenID account by going to 'http://taiga-server-address:8004/signup' 
+with your browser and fill out the forms. Default ports for Taiga are the following: World 8002 
+OpenID 8004 you need to include the ports to the urls in the OpenID login window fields.
+Remember that you need to include the /login in the url path on world server field and /YourUserName 
+in the OpenID field.
 
 After a succesful connection the login window disappears and logout and quit buttons appear to the bottom
 right corner of the screen. Use "Logout" button to log out and get back to the login window and "Quit" button
