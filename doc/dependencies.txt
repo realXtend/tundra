@@ -29,6 +29,8 @@ This project has the following dependencies:
 
 - Caelum OGRE Add-on 0.4: http://www.ogre3d.org/wiki/index.php/Caelum. Used for the dynamic environmental lightning.
 
+- Python 2.5 or newer (but not 3.* currently): http://www.python.org/
+
 
 OBTAINING DEPENDENCIES
 ======================
