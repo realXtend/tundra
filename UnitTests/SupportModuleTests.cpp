@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_SUITE(support_modules)
 
 Foundation::Framework &CreateFramework()
 {
-    static Foundation::Framework fw;
+    static Foundation::Framework fw(0, NULL);
     return fw;
 }
 
