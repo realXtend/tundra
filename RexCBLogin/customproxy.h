@@ -1,5 +1,5 @@
-#ifndef CUSTOMPROXY_H
-#define CUSTOMPROXY_H
+#ifndef incl_CustomProxy_h
+#define incl_CustomProxy_h
 
 #include <QGraphicsProxyWidget>
 #include <QTimeLine>
@@ -21,4 +21,4 @@ private:
 
 };
 
-#endif
+#endif // incl_CustomProxy_h

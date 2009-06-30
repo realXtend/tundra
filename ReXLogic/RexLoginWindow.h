@@ -7,6 +7,7 @@
 
 #include "NetworkEvents.h"
 #include "Foundation.h"
+#include "cbloginwidget.h"
 
 class QWidget;
 class QPushButton;
@@ -55,6 +56,7 @@ namespace RexLogic
         QWidget *login_widget_;
         QPushButton *logout_button_;
         QPushButton *quit_button_;
+		CBLoginWidget *cblogin;
     };
 }
 

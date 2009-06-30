@@ -5,7 +5,7 @@
 LoginPanel::LoginPanel(QWidget *parent)
 	: QWidget(parent)
 {
-	ui = new Ui_LoginPanel;
+	ui = new Ui_LoginPanel();
 	ui->setupUi(this);
 
 	setProperties();
@@ -15,8 +15,6 @@ LoginPanel::LoginPanel(QWidget *parent)
 void LoginPanel::setProperties() 
 {
 	setObjectName("logindata");
-	ui->comboBoxWorlds->addItem("");
-	ui->comboBoxOpenIDs->addItem("");
 }
 
 void LoginPanel::connectSignals()

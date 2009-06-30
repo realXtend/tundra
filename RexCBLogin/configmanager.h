@@ -1,5 +1,5 @@
-#ifndef CONFIGMANAGER_H
-#define CONFIGMANAGER_H
+#ifndef incl_ConfigManager_h
+#define incl_ConfigManager_h
 
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
@@ -11,6 +11,7 @@ class ConfigManager
 
 public:
 	ConfigManager();
+	~ConfigManager();
 	void setConfigFilePath(QString path);
 	bool readConfig();
 	bool writeCongif(QString world, QString openID);
@@ -18,11 +19,11 @@ public:
 	QStringList* getOpenIDList();
 
 private:
-	QString *configFilePath;
+	QString configFilePath;
 	QXmlStreamReader reader;
 	QStringList *worldList;
 	QStringList *openIDList;
 
 };
 
-#endif
+#endif // incl_ConfigManager_h
