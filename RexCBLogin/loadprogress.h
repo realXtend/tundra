@@ -1,5 +1,5 @@
-#ifndef LOGINPROGRESS_H
-#define LOGINPROGRESS_H
+#ifndef incl_LoadProgressPanel_h
+#define incl_LoadProgressPanel_h
 
 #include "ui_loadprogress.h"
 #include <QDialog>
@@ -18,4 +18,4 @@ private:
 	QRect screen;
 };
 
-#endif
+#endif // incl_LoadProgressPanel_h

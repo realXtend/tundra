@@ -15,6 +15,7 @@ CBLoginWidget::CBLoginWidget(QWidget *parent, Qt::WFlags flags)
 
 CBLoginWidget::~CBLoginWidget()
 {
+	delete scene;
 }
 
 void CBLoginWidget::setProperties()
@@ -81,12 +82,22 @@ void CBLoginWidget::resizeEvent(QResizeEvent *rEvent)
 
 void CBLoginWidget::showLoginPanel()
 {
-	// Load configs to drop down menus, if changes
+	// Load configs to drop down menus, if there is changes
 	if ( configmanager.getWorldList()->length() > loginpanel->ui->comboBoxWorlds->count() - 1 )
+	{
+		// If there is changes in the QStringList then we empty combobox
+		loginpanel->ui->comboBoxWorlds->clear();
+		loginpanel->ui->comboBoxWorlds->addItem("");
 		loginpanel->setComboBoxItems("worlds", configmanager.getWorldList());
-	if ( configmanager.getOpenIDList()->length() > loginpanel->ui->comboBoxOpenIDs->count() -1 )
-		loginpanel->setComboBoxItems("openids", configmanager.getOpenIDList());
+	}
 
+	if ( configmanager.getOpenIDList()->length() > loginpanel->ui->comboBoxOpenIDs->count() -1 )
+	{
+		// If there is changes in the QStringList then we empty combobox
+		loginpanel->ui->comboBoxOpenIDs->clear();
+		loginpanel->ui->comboBoxOpenIDs->addItem("");
+		loginpanel->setComboBoxItems("openids", configmanager.getOpenIDList());
+	}
 	scene->removeItem(loginwebviewProxy);
 	scene->addItem(loginpanelProxy);
 	loadSplashState = 0;
@@ -96,12 +107,6 @@ void CBLoginWidget::showWebView()
 {
 	if ( loginpanel->ui->lineEditWorld->text().length() != 0 && loginpanel->ui->lineEditOpenID->text().length() != 0 )
 	{
-		// Check if user wants to save entries to config
-		if ( loginpanel->ui->checkBoxSave->isChecked() )
-		{
-			if ( !configmanager.writeCongif(loginpanel->ui->lineEditWorld->text(), loginpanel->ui->lineEditOpenID->text()) ) 
-				showMessageDialog("Writing to UserIdentities.xml failed");
-		}
 		scene->removeItem(loginpanelProxy);
 		scene->addItem(loginwebviewProxy);
 		loginwebview->loadAutoLoginPage();
@@ -119,10 +124,19 @@ void CBLoginWidget::processLogin(bool success)
 	if ( success )
 	{
 		QString pageTitle = loginwebview->ui->webView->page()->mainFrame()->title();
-		if ( pageTitle == "AutomatedLogin" ) {
+		if ( pageTitle == "AutomatedLogin" ) 
+		{
 			loginwebview->ui->webView->page()->mainFrame()->addToJavaScriptWindowObject(loginpanel->objectName(), loginpanel);
 			loginwebview->ui->webView->page()->mainFrame()->evaluateJavaScript("loginWithData()");
-		} else if ( pageTitle == "LoginSuccess") {
+		} 
+		else if ( pageTitle == "LoginSuccess") 
+		{
+			// Check if user wants to save entries to config
+			if ( loginpanel->ui->checkBoxSave->isChecked() )
+			{
+				if ( !configmanager.writeCongif(loginpanel->ui->lineEditWorld->text(), loginpanel->ui->lineEditOpenID->text()) ) 
+					showMessageDialog("Writing to UserIdentities.xml failed");
+			}
 			QVariant returnValue;
 			returnValue = loginwebview->ui->webView->page()->mainFrame()->evaluateJavaScript("ReturnSuccessValue()");
 			emit( loginProcessed(returnValue.toString()) );

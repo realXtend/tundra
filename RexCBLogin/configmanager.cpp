@@ -6,14 +6,20 @@ ConfigManager::ConfigManager()
 	openIDList = new QStringList();
 }
 
+ConfigManager::~ConfigManager()
+{
+	delete worldList;
+	delete openIDList;
+}
+
 void ConfigManager::setConfigFilePath(QString path)
 {
-	configFilePath = new QString(path);
+	configFilePath = QString(path);
 }
 
 bool ConfigManager::readConfig()
 {
-	QFile file(*configFilePath);
+	QFile file(configFilePath);
 	if (!file.open(QFile::ReadOnly | QFile::Text)) {
         return false;
     }
@@ -49,46 +55,56 @@ bool ConfigManager::readConfig()
 
 bool ConfigManager::writeCongif(QString world, QString openID)
 {
-	QFile file(*configFilePath);
-	if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        return false;
-    }
-
-	QXmlStreamWriter writer(&file);
-	writer.setAutoFormatting(true);
-
-	// <identities>
-	writer.writeStartElement("identities");
-	// <world>
-	for (int i=0; i<worldList->size(); ++i)
+	if ( !worldList->contains(world) || !openIDList->contains(openID) )
 	{
-		writer.writeStartElement("world");
-		writer.writeCharacters(worldList->at(i));
-		writer.writeEndElement();
-	}
-	writer.writeStartElement("world");
-	writer.writeCharacters(world);
-	writer.writeEndElement();
-	// </world>
-	// <openid>
-	for (int i=0; i<openIDList->size(); ++i)
-	{
-		writer.writeStartElement("openid");
-		writer.writeCharacters(openIDList->at(i));
-		writer.writeEndElement();
-	}
-	writer.writeStartElement("openid");
-	writer.writeCharacters(openID);
-	writer.writeEndElement();
-	// </openid>
-	writer.writeEndElement();
-	// </identities>
+		QFile file(configFilePath);
+		if (!file.open(QFile::WriteOnly | QFile::Text)) {
+			return false;
+		}
 
-	//writer.writeStartElement("world");
-	//writer.writeCharacters(world);
-	//writer.writeEndElement();
+		QXmlStreamWriter writer(&file);
+		writer.setAutoFormatting(true);
+		
+		// <identities>
+		writer.writeStartElement("identities");
 
-	file.close();
+		// <world>
+		for (int i=0; i<worldList->size(); ++i)
+		{
+			writer.writeStartElement("world");
+			writer.writeCharacters(worldList->at(i));
+			writer.writeEndElement();
+		}
+		if ( worldList->contains(world) == false ) 
+		{
+			writer.writeStartElement("world");
+			writer.writeCharacters(world);
+			writer.writeEndElement();
+			worldList->append(world);
+		}
+		// </world>
+
+		// <openid>
+		for (int i=0; i<openIDList->size(); ++i)
+		{
+			writer.writeStartElement("openid");
+			writer.writeCharacters(openIDList->at(i));
+			writer.writeEndElement();
+		}
+		if ( openIDList->contains(openID) == false )
+		{
+			writer.writeStartElement("openid");
+			writer.writeCharacters(openID);
+			writer.writeEndElement();
+			openIDList->append(openID);
+		}
+		// </openid>
+
+		writer.writeEndElement();
+		// </identities>
+
+		file.close();
+	}
 	return true;
 }
 

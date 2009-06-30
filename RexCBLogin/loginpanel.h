@@ -1,5 +1,5 @@
-#ifndef LOGINPANEL_H
-#define LOGINPANEL_H
+#ifndef incl_LoginPanel_h
+#define incl_LoginPanel_h
 
 #include "ui_loginpanel.h"
 #include <QWidget>
@@ -24,4 +24,4 @@ public slots:
 
 };
 
-#endif
+#endif // incl_LoginPanel_h

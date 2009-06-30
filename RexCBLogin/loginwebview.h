@@ -1,5 +1,5 @@
-#ifndef LOGINWEBVIEW_H
-#define LOGINWEBVIEW_H
+#ifndef incl_LoginWebView_h
+#define incl_LoginWebView_h
 
 #include "ui_loginwebview.h"
 #include "loadprogress.h"
@@ -31,4 +31,4 @@ private:
 
 };
 
-#endif LOGINWEBVIEW_H
+#endif // incl_LoginWebView_h

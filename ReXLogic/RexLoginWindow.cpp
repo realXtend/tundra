@@ -3,9 +3,8 @@
 #include "StableHeaders.h"
 #include "RexLoginWindow.h"
 #include "RexLogicModule.h"
-#include "cbloginwidget.h"
 #include "QtModule.h"
-//#include "GtkmmUI.h"
+
 #include <QFile>
 #include <QPushButton>
 #include <QLabel>
@@ -25,12 +24,13 @@ namespace RexLogic
     {
         InitLoginWindow();
     }
-    
+
     RexLoginWindow::~RexLoginWindow()
     {
         delete login_widget_;
         delete logout_button_;
         delete quit_button_;
+		delete cblogin;
     }
 
     void RexLoginWindow::InitLoginWindow()
@@ -237,7 +237,7 @@ namespace RexLogic
 	case 2:
 	  {
 	    // OpenID
-		CBLoginWidget *cblogin = new CBLoginWidget();
+		cblogin = new CBLoginWidget();
 		cblogin->show();
 		QObject::connect(cblogin, SIGNAL( loginProcessed(QString) ), SLOT( processCBLogin(QString) ));
 		successful = false;

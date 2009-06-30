@@ -1,5 +1,5 @@
-#ifndef CBLOGINWIDGET_H
-#define CBLOGINWIDGET_H
+#ifndef incl_CBLoginWidget_h
+#define incl_CBLoginWidget_h
 
 #include "ui_cbloginframe.h"
 
@@ -54,4 +54,4 @@ signals:
 
 };
 
-#endif
+#endif // incl_CBLoginWidget_h
