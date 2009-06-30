@@ -108,10 +108,12 @@ void RexUUID::FromString(const char *str)
             return;
         }
 
-        while(!(isalpha(str[curIndex]) || isdigit(str[curIndex]) || str[curIndex] == '\0')) 
+        ///\todo Tighten parsing, now accepts all characters, like 'g' or 'Y'.
+        while(!isalpha(str[curIndex]) && !isdigit(str[curIndex]) && !str[curIndex] == '\0')
             ++curIndex;
 
-        if (curIndex >= strLen)
+        // The following parse needs to read two characters from the string, hence the +1.
+        if (curIndex + 1 >= strLen)
         {
             SetNull();
             return;
