@@ -12,7 +12,7 @@ After a succesful initialization, you will see the login window and the OGRE ren
 behind it. Naali provides three different connection modes: OpenSim, realXtend authentication and OpenID:
 
 -Opensim
-Use the OpenSim connection method to connect to an OpenSim server with or without authentication,
+Use the OpenSim connection method to connect to an OpenSim server with or without authentication, or to
 a legacy realXtend server (version 0.4 and above) without authentication. If the server you are going to
 connect doesn't use authentication, no password is required. Just insert some username ([first name] [lastname]),
 server address and port ([address]:[port]) and click connect. If you are connecting to Taiga servers via 
