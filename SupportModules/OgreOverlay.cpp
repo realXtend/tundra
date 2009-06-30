@@ -15,6 +15,11 @@
 
 namespace Console
 {
+
+//////////////////////////////////////////
+
+    //   Log listeners
+
     class LogListener : public Foundation::LogListenerInterface
     {
         LogListener();
@@ -32,12 +37,28 @@ namespace Console
         OgreOverlay *console_;
     };
 
+    class PocoLogChannel : public Poco::Channel
+    {
+    private:
+        //! default constructor not applicable
+        PocoLogChannel();
+
+    public:
+        PocoLogChannel(Console::ConsoleServiceInterface *console) : Poco::Channel(), console_(console) { assert(console_ && "Console not set for PocoLogChannel log listener!"); }
+        virtual ~PocoLogChannel() {}
+        
+        void log(const Poco::Message & msg) { console_->Print(msg.getText()); }
+    private:
+        Console::ConsoleServiceInterface *console_;
+    };
+
 /////////////////////////////////////////////
 
     OgreOverlay::OgreOverlay(Foundation::ModuleInterface *module) : 
         Console::ConsoleServiceInterface()
             , module_(module)
             , log_listener_(LogListenerPtr(new LogListener(this)))
+            , poco_log_channel_(PocoLogChannelPtr(new PocoLogChannel(this)))
             , max_lines_(256)
             , max_visible_lines(1)
             , text_position_(0)
@@ -52,6 +73,8 @@ namespace Console
     {
         Foundation::Framework *framework = module_->GetFramework();
 
+        framework->AddLogChannel(poco_log_channel_.get());
+
         const Foundation::ConfigurationManager &config = framework->GetDefaultConfig();
         cursor_blink_freq_ = config.DeclareSetting("DebugConsole", "cursor_blink_frequency", 0.5f);
                 
@@ -64,6 +87,8 @@ namespace Console
     OgreOverlay::~OgreOverlay()
     {
         Foundation::Framework *framework = module_->GetFramework();
+
+        framework->RemoveLogChannel(poco_log_channel_.get());
 
         console_overlay_.reset();
 
@@ -113,14 +138,32 @@ namespace Console
     // virtual
     void OgreOverlay::Print(const std::string &text)
     {
+        if (text.empty())
+            return;
+
         {
             Core::MutexLock lock(mutex_);
 
-            message_lines_.push_front(text);
-            if (message_lines_.size() >= max_lines_)
-                message_lines_.pop_back();
+            // split text by line breaks
+            std::string line;
+            line.reserve(text.size());
+            for (size_t n=0 ; n<text.size() ; ++n)
+            {
+                if (text[n] != '\n')
+                    line += text[n];
 
-            update_ = true;
+                if (text[n] == '\n' || n == text.size() - 1)
+                {
+                    message_lines_.push_front(line);
+                    if (message_lines_.size() >= max_lines_)
+                        message_lines_.pop_back();
+
+                    line.clear();
+                }
+                
+           }
+
+           update_ = true;
         }
     }
 
@@ -398,6 +441,9 @@ namespace Console
     void OgreOverlay::FormatPage(std::string &pageOut)
     {
         Core::MutexLock lock(mutex_);
+
+        //! \todo We could split long lines for nice word-wrap on the console, but problem is figuring out how long a line is.
+        //!       Currently in the font used, not all characters are fixed-width (space...).
 
         std::string page;
         size_t num_lines = 0;

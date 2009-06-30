@@ -30,7 +30,9 @@ namespace Console
         //! add time
         virtual void Update(Core::f64 frametime) {}
 
-        //! Prints text to the console
+        //! Prints text to the console.
+        /*! The text will be split to multiple lines to fit. '\n' should be used for line breaks.
+        */
         virtual void Print(const std::string &text) = 0;
 
         //! scroll console text rel amount

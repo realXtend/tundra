@@ -14,8 +14,10 @@ namespace Console
 {
     class ConsoleModule;
     class LogListener;
+    class PocoLogChannel;
 
     typedef boost::shared_ptr<LogListener> LogListenerPtr;
+    typedef boost::shared_ptr<PocoLogChannel> PocoLogChannelPtr;
 
     //! Ogre debug console
     /*! \todo Set max line length for command line and printed lines. -cm
@@ -120,6 +122,9 @@ namespace Console
 
         //! Log listener for renderer log
         LogListenerPtr log_listener_;
+
+        //! Log listener for poco log
+        PocoLogChannelPtr poco_log_channel_;
 
         //! Contains all lines printed to the console
         Core::StringList message_lines_;
