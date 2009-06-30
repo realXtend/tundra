@@ -8,8 +8,9 @@ except ImportError: #not running under rex
 from circuits import Component
 
 class KeyCommander(Component):
-    OIS_KEY_C = 46
+    OIS_KEY_C = 46 #it might be possible to use pyois from pyogre to get these
     OIS_KEY_UP = 200
+    OIS_KEY_PERIOD = 52
     EVENTHANDLED = True
     
     def __init__(self):
@@ -17,9 +18,8 @@ class KeyCommander(Component):
         self.inputmap = {
             #r.MoveForwardPressed: self.run_commandpy,
             #r.KeyPressed: self.run_commandpy, 
-            self.OIS_KEY_C: self.run_commandpy,
-            self.OIS_KEY_UP: self.overrideForwardWalking
-            
+            self.OIS_KEY_PERIOD: self.run_commandpy
+            #self.OIS_KEY_UP: self.overrideForwardWalking
         }
         
     def on_keydown(self, key, mods):#, retfunc):
@@ -42,7 +42,6 @@ class KeyCommander(Component):
         r.eventhandled = self.EVENTHANDLED
         import command
         command = reload(command)
-
         
     def overrideForwardWalking(self):
         #print "Arrow UP pressed, don't move?"
