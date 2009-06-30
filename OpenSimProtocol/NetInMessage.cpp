@@ -660,11 +660,12 @@ void NetInMessage::ReadNextVariableSize()
 
 void *NetInMessage::ReadBytesUnchecked(size_t count)
 {
-	if (bytesRead >= messageData.size() && count == 0)
+	if (bytesRead >= messageData.size() || count == 0)
 		return 0;
 
 	if (bytesRead + count > messageData.size())
 	{
+        bytesRead = messageData.size(); // Jump to the end of the whole message so that we don't after this read anything.
 		std::cout << "Error: Size of the message exceeded. Can't read bytes anymore." << std::endl;
 		return 0;
 	}

@@ -210,18 +210,19 @@ namespace PythonScript
 				//OIS::KeyCode* keycode = key->code_;
 
 				PyObject* value = PyObject_CallMethod(pmmInstance, "KEY_INPUT_EVENT", "iii", event_id, keycode, mods);
-
-				if (PyObject_IsTrue(value))
-				{
-					//LogInfo("KEY_INPUT_EVENT returned true.");
-					return true;  
-				} 
-				else 
-				{
-					//LogInfo("KEY_INPUT_EVENT returned false.");
-					return false;
-				}
-
+                if (value)
+                {
+				    if (PyObject_IsTrue(value))
+				    {
+					    //LogInfo("KEY_INPUT_EVENT returned true.");
+					    return true;  
+				    } 
+				    else 
+				    {
+					    //LogInfo("KEY_INPUT_EVENT returned false.");
+					    return false;
+    				}
+                }
 			}
 			else
 			{
