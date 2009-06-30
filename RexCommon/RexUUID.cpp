@@ -89,15 +89,34 @@ bool RexUUID::IsValid(const char *str)
 
 /// Converts a C string representing a RexUUID to a uint8_t array.
 /// Supports either the format "1c1bbda2-304b-4cbf-ba3f-75324b044c73" or "1c1bbda2304b4cbfba3f75324b044c73".
+/// If the inputted string is zero, or if the length is zero, or if a parsing error occurs, the UUID will be
+/// set to null.
 void RexUUID::FromString(const char *str)
 {
+    const int strLen = (str == 0) ? 0 : strlen(str);
+    if (strLen == 0)
+    {
+        SetNull();
+        return;
+    }
     int curIndex = 0;
     for(int i = 0; i < cSizeBytes; ++i)
 	{
+        if (curIndex >= strLen)
+        {
+            SetNull();
+            return;
+        }
+
         while(!(isalpha(str[curIndex]) || isdigit(str[curIndex]) || str[curIndex] == '\0')) 
             ++curIndex;
-            if (str[curIndex] == '\0')
-                break;
+
+        if (curIndex >= strLen)
+        {
+            SetNull();
+            return;
+        }
+
         data[i] = StringToByte(str + curIndex);
         curIndex += 2;
     }
