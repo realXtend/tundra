@@ -16,12 +16,12 @@ Use the OpenSim connection method to connect to an OpenSim server with or withou
 -reX authentication
 realXtend authentication connection method can be used to login to a legacy realXtend server and Taiga server suite with authentication. Insert your username, password, server and authentication server adresses and ports, and click connect. 
 
-Note: The viewer will use 9000 and 10001 as the default ports for the servers if you don't spesify them yourself.
+Note: The viewer will use 9000 and 10001 as the default ports for the servers if you don't specify them yourself.
 
 -OpenID
 You can use OpenID login to connect to realXtend Taiga server. For this connection method, you have to have a valid Taiga OpenID account. In the login window, select OpenID tab and click Connect. Set your world and openid urls, for example: World: 'http://taiga-server-address:8002/login' and OpenID: 'http://taiga-server-address:8004/YourAccountName'. OpenID provider can be located in a different server than the world server. You need only one Taiga OpenID account in order to be able to connect on any Taiga server.
 
-NOTE: You can create a Taiga OpenID account by going to http://taiga-server-address:8004/signup with your browser and fillling out the forms. Default ports for Taiga are 8002 for World server and 8004 for the OpenID server. You need to include the ports to the urls in the OpenID login window fields. Also remember that you need to include "/login" in the url path on world server field and "/YourUserName" in the OpenID field.
+NOTE: You can create a Taiga OpenID account by going to http://taiga-server-address:8004/signup with your browser and filling out the forms. Default ports for Taiga are 8002 for World server and 8004 for the OpenID server. You need to include the ports to the urls in the OpenID login window fields. Also remember that you need to include "/login" in the url path on world server field and "/YourUserName" in the OpenID field.
 
 After a succesful connection the login window disappears and logout and quit buttons appear to the bottom right corner of the screen. Use "Logout" button to log out and get back to the login window and "Quit" button to terminate the program.
 
