@@ -39,7 +39,11 @@ namespace Communication
 	void CommunicationModule::Uninitialize()
 	{
 	    if (communication_manager_ && communication_manager_->IsInitialized())
+		{
             framework_->GetServiceManager()->UnregisterService(communication_manager_);
+			communication_manager_->UnInitialize();
+		}
+
 		LogInfo("Uninitialized.");
 	}
 

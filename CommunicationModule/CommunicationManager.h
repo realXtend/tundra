@@ -55,6 +55,8 @@ namespace Communication
 
 		// CommunicationServiceInterface begin
 		void OpenConnection(CommunicationSettingsInterfacePtr c);
+
+		// Close exist connection to IM server
 		void CloseConnection();
 		IMSessionPtr CreateIMSession(ContactPtr contact);
 		IMSessionPtr CreateIMSession(ContactInfoPtr contact);
@@ -70,6 +72,7 @@ namespace Communication
         virtual void CreateAccount();
 
 		bool IsInitialized() { return initialized_; }
+		void UnInitialize();
 		
 		// CommunicationServiceInterface end
 
@@ -105,29 +108,61 @@ namespace Communication
 		void CallPythonCommunicationObject(const std::string &method_name, const std::string &arg) const;
 		void CallPythonCommunicationObject(const std::string &method_name) const;
     public:
-        // need to access these from CommunicationSettings
+
+        //! public because: need to access these from CommunicationSettings
 		Foundation::ScriptObject* CallPythonCommunicationObjectAndGetReturnValue(const std::string &method_name, const std::string &arg) const;
+
+		//! public because: need to access these from CommunicationSettings
 		Foundation::ScriptObject* CallPythonCommunicationObjectAndGetReturnValue(const std::string &method_name) const;
+
     protected:
 
-		// static variables for python callbacks
+		//! pointer for CommuniocationManager instance
+		//! Used by GetInstance member function
 		static CommunicationManager* instance_;
 
-		// member variables
-		bool initialized_; // in such state that the service can be registered
-		bool connected_; // \todo replace this with "Connection" or "ConnectionStatus" object
+		//! true if initialization is completed successfully
+		bool initialized_; 
+
+		//! true when connection is open to IM server
+		//! \todo replace this with "Connection" or "ConnectionStatus" object
+		bool connected_; 
+
+		//! pointer to viewer framework object
 		Foundation::Framework* framework_;
-		Foundation::ScriptObjectPtr communication_py_script_; 
-		Foundation::ScriptObjectPtr python_communication_object_; 
+
+		//! python module object that contains from COMMUNICATION_PYTHON_MODULE path
+		Foundation::ScriptObject* communication_py_script_; 
+
+		//! python object of COMMUNICATION_PYTHON_CLASS class
+		Foundation::ScriptObject* python_communication_object_; 
+
+		//! Viewer's event manager
 		Foundation::EventManagerPtr event_manager_;
+
+		//! Event category for events send by CommmunicationModule 
 		Core::event_category_id_t comm_event_category_; // \todo could be static 
 
+		//! Placeholder for all open IM session
 		IMSessionListPtr im_sessions_;
+
+		//! Placeholder for all contacts of current users
 		ContactList contact_list_;
+
+		//! Presence status of current user
 		PresenceStatusPtr presence_status_;
+
+		//! Available options for presence status
 		std::vector<std::string> presence_status_options_;
+
+		//! Placeholder for active friend requests
 		FriendRequestListPtr friend_requests_;
+
+		//! Current user
 		ContactPtr user_;
+
+		//! Current protocl
+		//! \todo We should refactore comm module so that multiple sessions for different IM serveces is possible
 		std::string protocol_;
 
 		// python event handlers

@@ -35,7 +35,11 @@ namespace Communication
 	 * @param framework is pointer to framework. Given here becouse this is not a module class and framework
 	 *        services are used through this object.
 	 **/
-	CommunicationManager::CommunicationManager(Foundation::Framework *framework) : connected_(false), initialized_(false)
+	CommunicationManager::CommunicationManager(Foundation::Framework *framework) :
+		connected_(false),
+		initialized_(false),
+		python_communication_object_(NULL),
+		communication_py_script_(NULL)
 	{
 		instance_ = this;
 		framework_ = framework;
@@ -62,9 +66,13 @@ namespace Communication
 
 	CommunicationManager::~CommunicationManager()
 	{
-		instance_ = NULL;	    
-		// todo: unregister console commands
+		UnInitialize();
+	}
+
+	void CommunicationManager::UnInitialize()
+	{
 		UninitializePythonCommunication();
+		instance_ = NULL;	    
 	}
 
 	/**
@@ -112,10 +120,10 @@ namespace Communication
 		Foundation::ScriptEventInterface* script_event_service = dynamic_cast<Foundation::ScriptEventInterface*>(script_service.get());
 
 		std::string error;
-		this->communication_py_script_ = Foundation::ScriptObjectPtr(script_service->LoadScript(COMMUNICATION_PYTHON_MODULE, error));
+		this->communication_py_script_ = script_service->LoadScript(COMMUNICATION_PYTHON_MODULE, error);
 		if(error=="None")
 		{
-			this->python_communication_object_ = Foundation::ScriptObjectPtr ( this->communication_py_script_->GetObject(COMMUNICATION_PYTHON_CLASS) );
+			this->python_communication_object_ = this->communication_py_script_->GetObject(COMMUNICATION_PYTHON_CLASS);
 			CallPythonCommunicationObject("CDoStartUp");
 		}
 		else
@@ -149,8 +157,18 @@ namespace Communication
 
 	void CommunicationManager::UninitializePythonCommunication()
 	{
-		// TODO: free any python related resources
-	}
+		if (communication_py_script_)
+		{
+			delete communication_py_script_;
+			communication_py_script_ = NULL;
+		}
+
+		if (python_communication_object_)
+		{
+			delete python_communication_object_;
+			python_communication_object_ = NULL;
+		}
+	} 
 
 	/**
      * Register event cotegory for communication services: Communication
