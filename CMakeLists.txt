@@ -56,7 +56,7 @@ endif (MSVC)
 
 # Generate profiling data. Currently disabled because of threadsafety issues.
 if (MSVC)
-	add_definitions (-DPROFILING)
+#	add_definitions (-DPROFILING)
 endif (MSVC)
 
 # Find needed external libraries, abort on error
@@ -120,7 +120,7 @@ add_subdirectory (OpenSimProtocol)
 #add_subdirectory (DebugStats)
 #add_subdirectory (NetTestLogicModule)
 add_subdirectory (PythonModule)
-add_subdirectory (CommunicationModule)
+#add_subdirectory (CommunicationModule)
 #add_subdirectory (CommunicationUIModule)
 #add_subdirectory (OpenALAudioModule)
 add_subdirectory (RexCBLogin)
