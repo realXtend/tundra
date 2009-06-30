@@ -24,7 +24,8 @@ namespace Foundation
         argc_(argc),
         argv_(argv),
         initialized_(false),
-        log_formatter_(NULL)
+        log_formatter_(NULL),
+        splitterchannel(NULL)
     {
         ParseProgramOptions();
         if (cm_options_.count("help")) 
@@ -113,7 +114,8 @@ namespace Foundation
         filechannel->setProperty("archive","number");
         filechannel->setProperty("compress","false");
 
-        Poco::SplitterChannel *splitterchannel = new Poco::SplitterChannel();
+        //Poco::SplitterChannel *
+        splitterchannel = new Poco::SplitterChannel();
         if (consolechannel)
             splitterchannel->addChannel(consolechannel);
         splitterchannel->addChannel(filechannel); 
@@ -164,6 +166,18 @@ namespace Foundation
         
         delete currenttime;
         delete loggingfactory;
+    }
+
+    void Framework::AddLogChannel(Poco::Channel *channel)
+    {
+        assert (channel);
+        splitterchannel->addChannel(channel);
+    }
+
+    void Framework::RemoveLogChannel(Poco::Channel *channel)
+    {
+        assert (channel);
+        splitterchannel->removeChannel(channel);
     }
 
     void Framework::ParseProgramOptions()

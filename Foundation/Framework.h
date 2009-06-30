@@ -10,6 +10,11 @@
 
 class QWidget;
 
+namespace Poco
+{
+    class SplitterChannel;
+}
+
 namespace Foundation
 {
     class RexQEngine;
@@ -138,6 +143,12 @@ namespace Foundation
 //        Profiler &GetProfiler() { return *ProfilerSection::GetProfiler(); }
         Profiler &GetProfiler() { return profiler_; }
 
+        //! Add a new log listener for poco log
+        void AddLogChannel(Poco::Channel *channel);
+
+        //! Remove existing log listener from poco log
+        void RemoveLogChannel(Poco::Channel *channel);
+
         //! load and init module
         Console::CommandResult ConsoleLoadModule(const Core::StringVector &params);
 
@@ -236,6 +247,8 @@ namespace Foundation
 
         //! true if framework is properly initialized, false otherwise.
         bool initialized_;
+
+        Poco::SplitterChannel *splitterchannel;
     };
 
     namespace
