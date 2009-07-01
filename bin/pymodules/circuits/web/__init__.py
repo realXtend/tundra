@@ -16,4 +16,8 @@ from sessions import Sessions
 from events import Request, Response
 from servers import BaseServer, Server
 from errors import HTTPError, Forbidden, NotFound, Redirect
-from dispatchers import Dispatcher, VirtualHosts, XMLRPC, JSONRPC
+from dispatchers import Dispatcher, VirtualHosts, XMLRPC
+try:
+    from dispatchers import JSONRPC
+except ImportError:
+    pass

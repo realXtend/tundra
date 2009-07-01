@@ -13,15 +13,17 @@ try:
 except ImportError: #not running under rex
     import mockviewer as r
 from circuits import handler, Event, Component, Manager, Debugger
-#print "Loaded circuits_manager."
+
+#START_WEBSERVER = True #now aiming serving screenshots, possibly other stuff later
+START_WEBSERVER = False
+
 #r.forwardevents = True
 
 #is not identical to the c++ side, where x and y have abs and rel
 #XXX consider making identical and possible wrapping of the c++ type
 #from collections import namedtuple
 #MouseInfo = namedtuple('MouseInfo', 'x y rel_x rel_y')
-from mouseinfo import MouseInfo
-
+from core.mouseinfo import MouseInfo
 
 class Key(Event): pass
 class Update(Event): pass     
@@ -38,7 +40,7 @@ class ComponentRunner(Component):
         ComponentRunner.instance = self #is used as a singleton now
 
         # Create a new circuits Manager
-        self.m = Manager()# + Debugger() #XXX make a debugger that shows exceptions to user, but nothing else.
+        self.m = Manager()# + Debugger()
 
         Component.__init__(self)
         
@@ -51,11 +53,27 @@ class ComponentRunner(Component):
         r.eventhandled = False
         self.mouseinfo = MouseInfo(0,0,0,0)
         #m.start()
+        
+        self.rungen = None
+        self.webserver = None
+        if START_WEBSERVER:
+            self.start_webserver() #sets rungen
+            
+    def start_webserver(self):
+        """an exception for the web server, had trouble doing this within it 
+        and in autoload"""
+        import usr.webcontroller
+        from circuits.web import Server
+        wc = usr.webcontroller.WebController()
+        self.webserver = Server(8000)
+        self.rungen = (self.webserver + wc).run_once() #added a yield to the core
 
     def run(self, deltatime=0.1):
         #XXX should this be using the __tick__ mechanism of circuits, and how?
         #print ".",
         self.m.send(Update(deltatime), "update")
+        if self.rungen is not None:
+            self.rungen.next()
         
     def RexNetMsgChatFromSimulator(self, frm, message):
         self.m.send(Chat(frm, message), "on_chat")
@@ -94,6 +112,13 @@ class ComponentRunner(Component):
     def exit(self):
         print "Circuits manager stopping."
         self.m.stop() #is this needed?
+        if self.webserver is not None:
+            self.webserver.stop()
+            while 1:
+                try:
+                    self.rungen.next() #should end now
+                except StopIteration:
+                    break
         
     #~ def retfunc(self, boolvalue):
         #~ #print "Return value:", bool, "-> ", 
