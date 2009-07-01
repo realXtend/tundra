@@ -747,6 +747,63 @@ class Manager(object):
                             self._flush()
             except:
                 pass
+                
+    def run_once(self, sleep=0, mode=None, log=True, __self=None):
+        """the classic 'make non blocking' trick:
+        copy the whole freaking mainloop and add a yield in the center
+        """
+        if __self is not None:
+            self = __self
+
+        if not mode == "T":
+            if os.name == "posix":
+                signal(SIGHUP, self._signal)
+            signal(SIGINT, self._signal)
+            signal(SIGTERM, self._signal)
+
+        self._running = True
+
+        self.push(Started(self, mode))
+
+        try:
+            while self.running:
+                try:
+                    [f() for f in self._ticks.copy()]
+                    self._flush()
+                    if sleep:
+                        try:
+                            time.sleep(sleep)
+                        except:
+                            pass
+                except (KeyboardInterrupt, SystemExit):
+                    self._running = False
+                except:
+                    try:
+                        if log:
+                            self.push(Error(*_exc_info()))
+                    finally:
+                        self._flush()
+                yield True
+        finally:
+            try:
+                self.push(Stopped(self))
+                rtime = time.time()
+                while len(self) > 0 and (time.time() - rtime) < 3:
+                    try:
+                        [f() for f in self._ticks.copy()]
+                        self._flush()
+                        if sleep:
+                            time.sleep(sleep)
+                        rtime = time.time()
+                    except:
+                        try:
+                            if log:
+                                self.push(Error(*_exc_info()))
+                        finally:
+                            self._flush()
+            except:
+                pass
+
 
 class BaseComponent(Manager):
     """Base Component
