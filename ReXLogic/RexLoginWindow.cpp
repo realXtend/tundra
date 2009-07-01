@@ -109,6 +109,9 @@ namespace RexLogic
 
         login_widget_->show();
 
+		//OpenID widget init
+		cblogin = new CBLoginWidget();
+
         CreateLogoutMenu();
     }
 
