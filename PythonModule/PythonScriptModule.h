@@ -81,6 +81,12 @@ namespace PythonScript
 
 	static Foundation::Framework* GetStaticFramework() { return PythonScript::staticframework; }
 	static Foundation::ScriptEventInterface* engineAccess;
+
+		//api code is outside the module now, but reuses these .. err, but can't see 'cause dont have a ref to the instance?
+		// Category id for incoming messages.
+		Core::event_category_id_t inboundCategoryID_;
+		Core::event_category_id_t inputeventcategoryid;
+
 		
 	private:
         
@@ -91,10 +97,6 @@ namespace PythonScript
 		void RunFile(const std::string &modulename);
 		void Reset();
 		
-		// Category id for incoming messages.
-		Core::event_category_id_t inboundCategoryID_;
-		Core::event_category_id_t inputeventcategoryid;
-
 		PyObject *apiModule; //the module made here that exposes the c++ side / api, 'rexviewer'
 
 		// the hook to the python-written module manager that passes events on

@@ -564,6 +564,8 @@ PyObject* SetCameraYawPitch(PyObject *self, PyObject *args)
 		boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
 		//cam->SetYaw(y); //XXX not implemented yet. there was no getter previously either.
 		cam->GetPitch(); //XXX disabled 'cause of linking prob
+		//cam->HandleInputEvent(PythonScript::PythonScriptModule::inputeventcategoryid, &x);
+		//cam->AddTime((Core::Real) 0.1);
 		//cam->SetPitch(p);
 	}
 	
@@ -575,7 +577,7 @@ PyObject* SetCameraYawPitch(PyObject *self, PyObject *args)
 	//}
 	else
 	{
-		PyErr_SetString(PyExc_RuntimeError, "No rendering module, no camera.");
+		PyErr_SetString(PyExc_RuntimeError, "No logic module, no cameracontrollable.");
 		return NULL;
 	}
 
@@ -598,6 +600,10 @@ PyObject* GetCameraYawPitch(PyObject *self, PyObject *args)
 	//else - no logic module. can that ever happen?)
 	return NULL; //rises py exception
 }
+
+//slider input
+/*	UpdateSliderEvents(input_state_);
+	UpdateSliderEvents(Input::State_All);*/
 
 PyObject* PyEventCallback(PyObject *self, PyObject *args){
 	std::cout << "PyEventCallback" << std::endl;
