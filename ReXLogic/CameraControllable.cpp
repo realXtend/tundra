@@ -264,13 +264,14 @@ namespace RexLogic
 		}
     }
 
-	void CameraControllable::SetPitch(float newpitch)
+	void CameraControllable::SetPitch(Core::Real newpitch)
 	{
 		boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
 		Ogre::Camera *camera = renderer->GetCurrentCamera();
 
 		firstperson_pitch_ = newpitch;
 		camera->pitch(Ogre::Radian(firstperson_pitch_));
+		//XXX w.i.p.
 	}
 }
 
