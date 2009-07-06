@@ -38,6 +38,14 @@ if __name__ == '__main__': #running from cmdline, testing without viewer
     """this is that the viewer does"""
     m = ModuleManager()
     import time
-    while 1:
-        m.run(0.1)
-        time.sleep(0.1)
+    try:
+        while 1:
+                m.run(0.1)
+                time.sleep(0.1)
+        #except KeyboardInterrupt:
+    finally:
+        print "stopping circuitsmanager"
+        m.exit()
+            
+        
+            

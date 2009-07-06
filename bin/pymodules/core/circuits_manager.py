@@ -30,6 +30,7 @@ class Update(Event): pass
 class Chat(Event): pass    
 class Input(Event): pass
 class MouseMove(Event): pass
+class Exit(Event): pass
     
 class ComponentRunner(Component):
     instance = None
@@ -110,8 +111,11 @@ class ComponentRunner(Component):
         self.m.send(MouseMove(self.mouseinfo), "on_mousemove")
         
     def exit(self):
+        self.m.send(Exit(), "on_exit") #the stop below wasn't sent to components?
         print "Circuits manager stopping."
-        self.m.stop() #is this needed?
+        self.m.stop() #not going to components now so made the exit event above as a quick fix
+        
+        #webserver first version, will switch to dev branch of circuits and refactor to use tick() and flush() so no need for this generator hack anymore
         if self.webserver is not None:
             self.webserver.stop()
             while 1:
