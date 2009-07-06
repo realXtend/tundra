@@ -31,6 +31,7 @@ namespace RexLogic
 {
     class RexLogicModule;
     class EC_OpenSimPrim;
+	class CameraControllable;
 }
 
 namespace PythonScript
