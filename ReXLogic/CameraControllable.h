@@ -52,6 +52,7 @@ namespace RexLogic
 
         //! returns camera pitch
         Core::Real GetPitch() const { return firstperson_pitch_; }
+		void SetPitch(float newpitch);
 
     private:
         typedef std::map<int, Core::Vector3df> ActionTransMap;
