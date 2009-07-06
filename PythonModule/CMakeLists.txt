@@ -1,7 +1,7 @@
 # Define target name and output directory
 set (TARGET_NAME PythonScriptModule)
 set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/modules/core)
-set (PYTHON_FORCE_RELEASE_VERSION 1) # set if you want to use release version of python when building debug version of viever
+set (PYTHON_FORCE_RELEASE_VERSION 1) # set if you want to use release version of python when building debug version of viewer
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -58,6 +58,7 @@ target_link_libraries (${TARGET_NAME} Core Foundation OpenSimProtocolModule RexC
 LINK_BOOST()
 LINK_POCO()
 LINK_PYTHON()
+#LINK_OGRE() #was direct camera access
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

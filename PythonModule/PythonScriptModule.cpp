@@ -26,10 +26,14 @@
 #include "EC_OpenSimPresence.h"
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
 //#include "../OgreRenderingModule/EC_OgreMesh.h"
-#include "../OgreRenderingModule/EC_OgrePlaceable.h"
-#include "../OgreRenderingModule/EC_OgreMovableTextOverlay.h"
+#include "EC_OgrePlaceable.h"
+#include "EC_OgreMovableTextOverlay.h"
 #include "RexNetworkUtils.h" //debugboundingbox in CreateEntity
 
+#include "RexLogicModule.h" 
+#include "CameraControllable.h"
+//now done via logic cameracontrollable #include "Renderer.h" //for setting camera pitch
+//#include "ogrecamera.h"
 
 namespace PythonScript
 {
@@ -531,12 +535,76 @@ PyObject* CreateEntity(PyObject *self, PyObject *args)
     return NULL;   
 }
 
+/*
+//camera zoom - send an event like logic CameraControllable does:
+            CameraZoomEvent event_data;
+            //event_data.entity = entity_.lock(); // no entity for camera, :( -cm
+            event_data.amount = checked_static_cast<Input::Events::SingleAxisMovement*>(data)->z_.rel_;
+            //if (event_data.entity) // only send the event if we have an existing entity, no point otherwise
+            framework_->GetEventManager()->SendEvent(action_event_category_, RexTypes::Actions::Zoom, &event_data);
+*/
+
+//XXX logic CameraControllable has GetPitch, perhaps should have SetPitch too
+PyObject* SetCameraYawPitch(PyObject *self, PyObject *args) 
+{
+	Core::Real newyaw, newpitch;
+	float y, p;
+	if(!PyArg_ParseTuple(args, "ff", &y, &p)) {
+		PyErr_SetString(PyExc_ValueError, "New camera yaw and pitch expected as float, float.");
+		return NULL;
+	}
+	newyaw = (Core::Real) y;
+	newpitch = (Core::Real) p;
+
+	//boost::shared_ptr<OgreRenderer::Renderer> renderer = PythonScript::staticframework->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+	RexLogic::RexLogicModule *rexlogic_;
+	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::staticframework->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+	if (rexlogic_)
+	{
+		boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
+		//cam->SetYaw(y); //XXX not implemented yet. there was no getter previously either.
+		cam->GetPitch(); //XXX disabled 'cause of linking prob
+		//cam->SetPitch(p);
+	}
+	
+	//was with renderer, worked but required overriding rexlogic :p
+	//{
+	//	Ogre::Camera *camera = renderer->GetCurrentCamera();
+	//	camera->yaw(Ogre::Radian(newyaw));
+	//	camera->pitch(Ogre::Radian(newpitch));
+	//}
+	else
+	{
+		PyErr_SetString(PyExc_RuntimeError, "No rendering module, no camera.");
+		return NULL;
+	}
+
+	Py_RETURN_NONE;
+}
+
+PyObject* GetCameraYawPitch(PyObject *self, PyObject *args) 
+{
+	Core::Real yaw, pitch;
+
+	RexLogic::RexLogicModule *rexlogic_;
+	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::staticframework->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+	if (rexlogic_)
+	{
+		boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
+		pitch = cam->GetPitch();
+		yaw = 0; //XXX not implemented yet (?)
+		return Py_BuildValue("ff", (float)pitch, float(yaw));
+	}
+	//else - no logic module. can that ever happen?)
+	return NULL; //rises py exception
+}
+
 PyObject* PyEventCallback(PyObject *self, PyObject *args){
 	std::cout << "PyEventCallback" << std::endl;
 	const char* key;
 	const char* message;
 	if(!PyArg_ParseTuple(args, "ss", &key, &message))
-		Py_RETURN_FALSE;
+		Py_RETURN_FALSE; //XXX should raise an exception but that'd require refactor in the comms py backend
 	std::cout << key << std::endl;
 	std::cout << message << std::endl;
 	std::string k(key);
@@ -554,6 +622,12 @@ static PyMethodDef EmbMethods[] = {
 
 	{"createEntity", (PyCFunction)CreateEntity, METH_VARARGS,
 	"Creates a new entity with the given ID, and returns it."},
+
+	{"getCameraYawPitch", (PyCFunction)GetCameraYawPitch, METH_VARARGS,
+	"Returns the camera yaw and pitch."},
+
+	{"setCameraYawPitch", (PyCFunction)SetCameraYawPitch, METH_VARARGS,
+	"Sets the camera yaw and pitch."},
 
 	{"pyEventCallback", (PyCFunction)PyEventCallback, METH_VARARGS,
 	"Handling callbacks from py scripts. Calling convension: with 2 strings"},
