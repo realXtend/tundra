@@ -307,6 +307,9 @@ namespace PythonScript
 		
 		Core::Real newyaw = 0.1;
 		//rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
+		rexlogic_->SetAvatarYaw(newyaw);
+		//rexlogic_->GetAvatarControllable()->AddTime(0.1);
+		//rexlogic_->GetAvatarControllable()->HandleInputEvent(0, NULL);
 		
 		//rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
 	}
@@ -585,12 +588,11 @@ PyObject* SetCameraYawPitch(PyObject *self, PyObject *args)
 	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::staticframework->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 	if (rexlogic_)
 	{
-		boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
-		//cam->SetYaw(y); //XXX not implemented yet. there was no getter previously either.
-		cam->GetPitch(); //XXX disabled 'cause of linking prob
+		//boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
 		//cam->HandleInputEvent(PythonScript::PythonScriptModule::inputeventcategoryid, &x);
 		//cam->AddTime((Core::Real) 0.1);
-		//cam->SetPitch(p);
+		//cam->SetPitch(p); //have a linking prob with this
+		rexlogic_->SetCameraYawPitch(y, p);
 	}
 	
 	//was with renderer, worked but required overriding rexlogic :p

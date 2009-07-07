@@ -264,14 +264,16 @@ namespace RexLogic
 		}
     }
 
-	//experimental for py api, not used now
-	/*void CameraControllable::SetPitch(Core::Real newpitch)
+	//experimental for py api
+	void CameraControllable::SetYawPitch(Core::Real newyaw, Core::Real newpitch)
 	{
 		boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
 		Ogre::Camera *camera = renderer->GetCurrentCamera();
 
+		firstperson_yaw_ = newyaw;
 		firstperson_pitch_ = newpitch;
+		camera->yaw(Ogre::Radian(firstperson_yaw_));
 		camera->pitch(Ogre::Radian(firstperson_pitch_));
-	}*/
+	}
 }
 

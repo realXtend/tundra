@@ -151,6 +151,10 @@ namespace RexLogic
         
         //! logout from server and delete current scene
         void LogoutAndDeleteWorld();
+
+		//! XXX have linking probs to AvatarController so trying this wrapper
+		void SetAvatarYaw(Core::Real newyaw);
+		void SetCameraYawPitch(Core::Real newyaw, Core::Real newpitch);
         
     private:
         //! Event handler for network events.

@@ -1,8 +1,11 @@
+"""this is executed when you press '.' in the ogre window, the viewer main window.
+used for quick testing of py commands."""
+
 import rexviewer as r
 
 print "--- *** ---"
 
-#print dir(r)
+print dir(r)
 
 #some prim
 idnum = 720011 #the cube most far away from the screen in Toni & Petri 's test sim
@@ -12,36 +15,56 @@ new_id = 9999999
 #av ent
 av_entid = 8880000
 
-idnum = av_entid
+def rotate(e):
+    o = e.orientation    
+    newort = (o[0], o[1], o[2] + 0.5, o[3])
+    print "Rotating to ort:", newort
+    e.orientation = newort
+    #assert e.orientation[2] > (oldz+0.9) #xxx some logic fail here?
+    #print "TEST ORIENTATION SUCCEEDED", e.orientation[2], oldortz
+    
+def move(e):
+    p = e.pos #.pos - the w.i.p. api has a shortcut now that instead of a placeable with loc,rot,scale it just gives loc now directly
+    oldx = p[0] #p.x - Vector3 not wrapped (yet), just gives a tuple
+    #p.x += 1 #change the x-coordinate
+    newpos = (p[0] - 1, p[1], p[2])
+    print "Moving to move to pos:", newpos
+    e.pos = newpos
 
-if 0: #get entity
+if 1: #get entity
     #idnum = new_id
     print "Getting entity id", idnum,
     e = r.getEntity(idnum)
     print "got:", e
     #print dir(r)
+    rotate(e)
+    #move(e)
 
-if 0: #test avatar tracking, works :)
+if 1: #test avatar tracking, works :)
     print "<:::",
     try:
         a = r.getEntity(av_entid)
     except:
         print "could find the avatar with the given id", av_entid
-    print "Avatar pos:", a.pos,
-    print ":::>"
-    """
-    perhaps some local script could track movement?
-    make a sound of a nearby object of interest, 
-    like when a pet or a friend moves?
-    """
-    
-    #test what happens when we move the av
-    #a.pos = a.pos[0] + 1, a.pos[1], a.pos[2]
-    """crash, because of how network updates are coded in the internals: 
-    XXX RexServerConnecion.cpp
-    RexServerConnection::SendMultipleObjectUpdatePacket(std::vector<Scene::EntityPtr> entity_ptr_list)
-    const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
-    (because avatars don't have the prim component"""
+    else:
+        print "Avatar pos:", a.pos,
+        print ":::>"
+        """
+        perhaps some local script could track movement?
+        make a sound of a nearby object of interest, 
+        like when a pet or a friend moves?
+        """
+        
+        #test what happens when we move the av
+        #a.pos = a.pos[0] + 1, a.pos[1], a.pos[2]
+        """crash, because of how network updates are coded in the internals: 
+        XXX RexServerConnecion.cpp
+        RexServerConnection::SendMultipleObjectUpdatePacket(std::vector<Scene::EntityPtr> entity_ptr_list)
+        const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
+        (because avatars don't have the prim component"""
+        
+        #rotating the av
+        rotate(a)
 
 if 0: #push an event, input and/or chat
     #from eventsource import viewer
@@ -97,3 +120,14 @@ if 0: #placeable and text tests
 if 0: #send chat
     r.sendChat("here we go.")
     #print "called sendchat ok"
+    
+if 1: #camera pitch
+    dy = 0.1
+    dp = 0
+    #dp = -0.1
+    #dp = 0.1
+    r.setCameraYawPitch(dy, dp)
+    print r.getCameraYawPitch()
+        
+if 0: #avatar set yaw (turn)
+    r.setAvatarYaw(-1)

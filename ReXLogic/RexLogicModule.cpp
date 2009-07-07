@@ -376,6 +376,17 @@ namespace RexLogic
             DeleteScene("World");
     }
 
+	//XXX temporary workarounds for a linking prob in pymodule, would like to call these directly (if this is the right idea for av / view control to begin with)
+	void RexLogicModule::SetAvatarYaw(Core::Real newyaw)
+	{
+		avatar_controllable_->SetYaw(newyaw);
+	}
+
+	void RexLogicModule::SetCameraYawPitch(Core::Real newyaw, Core::Real newpitch)
+	{
+		camera_controllable_->SetYawPitch(newyaw, newpitch);
+	}
+
     Console::CommandResult RexLogicModule::ConsoleLogin(const Core::StringVector &params)
     {
         std::string name = "Test User";
