@@ -52,7 +52,7 @@ namespace RexLogic
 
         //! returns camera pitch
         Core::Real GetPitch() const { return firstperson_pitch_; }
-		void SetPitch(Core::Real newpitch);
+		void SetYawPitch(Core::Real newyaw, Core::Real newpitch); //experimental for py api
 
     private:
         typedef std::map<int, Core::Vector3df> ActionTransMap;
