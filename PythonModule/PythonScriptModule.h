@@ -96,6 +96,9 @@ namespace PythonScript
 		void RunString(const char* codestr);
 		void RunFile(const std::string &modulename);
 		void Reset();
+
+		//a testing place
+		void x();
 		
 		PyObject *apiModule; //the module made here that exposes the c++ side / api, 'rexviewer'
 
