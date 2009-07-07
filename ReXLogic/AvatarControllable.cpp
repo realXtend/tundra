@@ -339,5 +339,25 @@ namespace RexLogic
         netpos.NoRotationDamping();
         netpos.Updated();    
     }    
+
+	void AvatarControllable::SetYaw(Core::Real newyaw)
+	{
+		//keys left/right set to -1/1 .. but this can use fractions too, right?
+		//and is seeminly not overridden by anything at least in AddTime.
+
+        //XXX ! \todo for simplicity, we just go over all entities in the scene. For performance, some other solution may be prudent
+        Scene::ScenePtr scene = framework_->GetScene("World");
+        Scene::SceneManager::iterator it = scene->begin();
+        Foundation::ComponentPtr component;
+        for ( ; it != scene->end() ; ++it)
+        {
+            component = (*it)->GetComponent(EC_Controllable::NameStatic());
+            if (IsAvatar(component))
+            {
+                EC_OpenSimAvatar *avatar = checked_static_cast<EC_OpenSimAvatar*>((*it)->GetComponent(EC_OpenSimAvatar::NameStatic()).get());
+                avatar->yaw = newyaw;
+			}
+		}
+	}
 }
 

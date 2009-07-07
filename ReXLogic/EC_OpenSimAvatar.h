@@ -41,7 +41,8 @@ namespace RexLogic
         uint32_t cached_controlflags;
 
         //! yaw the avatar (-1 for left, 1 for right)
-        int yaw;
+		//NOTE: changed experimentally to float to support 'analog' rotating, via e.g. joystick?
+		Core::Real yaw;
 
         //! set state
         void SetState(State state);

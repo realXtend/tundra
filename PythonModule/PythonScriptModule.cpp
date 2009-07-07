@@ -35,6 +35,8 @@
 //now done via logic cameracontrollable #include "Renderer.h" //for setting camera pitch
 //#include "ogrecamera.h"
 
+#include "AvatarControllable.h"
+
 namespace PythonScript
 {
 	Foundation::ScriptEventInterface* PythonScriptModule::engineAccess;// for reaching engine from static method
@@ -292,6 +294,23 @@ namespace PythonScript
 		}
 	}
 
+	void PythonScriptModule::x()
+	{
+		RexLogic::RexLogicModule *rexlogic_;
+		rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+
+		rexlogic_->GetServerConnection()->SendChatFromViewerPacket("x");
+		//rexlogic_->GetAvatarHandler()->UpdateAvatarNameOverlayPositions();
+
+		rexlogic_->GetServerConnection()->IsConnected();
+		rexlogic_->GetCameraControllable()->GetPitch();
+		
+		Core::Real newyaw = 0.1;
+		//rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
+		
+		//rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
+	}
+
     Console::CommandResult PythonScriptModule::ConsoleRunFile(const Core::StringVector &params)
 	{		
 		if (params.size() != 1)
@@ -413,6 +432,11 @@ PyObject* SendChat(PyObject *self, PyObject *args)
 	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
 	rexlogic_->GetServerConnection()->SendChatFromViewerPacket(msg);
+	//rexlogic_->GetServerConnection()->IsConnected();
+	//Core::Real newyaw = 0.1;
+	//rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
+	//rexlogic_->GetCameraControllable()->GetPitch();
+	//rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
 
 	Py_RETURN_TRUE;
 }
@@ -601,6 +625,41 @@ PyObject* GetCameraYawPitch(PyObject *self, PyObject *args)
 	return NULL; //rises py exception
 }
 
+PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
+{
+	Core::Real newyaw;
+
+	float y;
+	if(!PyArg_ParseTuple(args, "f", &y)) {
+		PyErr_SetString(PyExc_ValueError, "New avatar yaw expected as float.");
+		return NULL;
+	}
+	newyaw = (Core::Real) y;
+
+	RexLogic::RexLogicModule *rexlogic_;
+	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::staticframework->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+	if (rexlogic_)
+	{
+		rexlogic_->GetServerConnection()->IsConnected();
+		rexlogic_->GetServerConnection()->IsConnected();
+		//rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
+		//boost::shared_ptr<RexLogic::AvatarControllable> avc = rexlogic_->GetAvatarControllable();
+		//avc->SetYaw(newyaw);
+		//Core::f64 t = (Core::f64) 0.01;
+		//avc->AddTime(t);
+		//rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
+	}
+	
+	else
+	{
+		PyErr_SetString(PyExc_RuntimeError, "No logic module, no AvatarControllable.");
+		return NULL;
+	}
+
+	Py_RETURN_NONE;
+}
+
+
 //slider input
 /*	UpdateSliderEvents(input_state_);
 	UpdateSliderEvents(Input::State_All);*/
@@ -634,6 +693,9 @@ static PyMethodDef EmbMethods[] = {
 
 	{"setCameraYawPitch", (PyCFunction)SetCameraYawPitch, METH_VARARGS,
 	"Sets the camera yaw and pitch."},
+
+	{"setAvatarYaw", (PyCFunction)SetAvatarYaw, METH_VARARGS,
+	"Changes the avatar yaw with the given amount. Keys left/right are -1/+1."},	
 
 	{"pyEventCallback", (PyCFunction)PyEventCallback, METH_VARARGS,
 	"Handling callbacks from py scripts. Calling convension: with 2 strings"},
