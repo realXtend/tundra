@@ -30,7 +30,7 @@ class Update(Event): pass
 class Chat(Event): pass    
 class Input(Event): pass
 class MouseMove(Event): pass
-#class Exit(Event): pass
+class Exit(Event): pass
     
 class ComponentRunner(Component):
     instance = None
@@ -111,7 +111,7 @@ class ComponentRunner(Component):
         self.m.send(MouseMove(self.mouseinfo), "on_mousemove")
         
     def exit(self):
-        #self.m.send(Exit(), "on_exit") #am not running the manager properly so the stop doesn't propagate to components. fix when switch to dev branch of circuits XXX
+        self.m.send(Exit(), "on_exit") #am not running the manager properly so the stop doesn't propagate to components. fix when switch to dev branch of circuits XXX
         print "Circuits manager stopping."
         self.m.stop() #not going to components now so made the exit event above as a quick fix
         
