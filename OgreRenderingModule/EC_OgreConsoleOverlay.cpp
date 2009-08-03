@@ -22,7 +22,7 @@ namespace OgreRenderer
         , visible_(false)
         , max_visible_lines_( height_ / char_height_ * 0.91876f )
         , position_(0)
-        , speed_(3.0f)
+        , speed_(module->GetFramework()->GetDefaultConfig().DeclareSetting("DebugConsole", "appear_speed", 3.0f))
         , active_(visible_)
     {
         CreateOverlay();
