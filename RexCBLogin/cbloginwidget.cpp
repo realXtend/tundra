@@ -20,13 +20,16 @@ CBLoginWidget::~CBLoginWidget()
 
 void CBLoginWidget::setProperties()
 {
-	// Read config
-	configmanager.setConfigFilePath(QString("media\\cblogin\\UserIdentities.xml"));
-	if ( !configmanager.readConfig() )
+  // Read config
+    
+  // Note: QString should change automagically separator to correct version. Depending of OS.   
+  configmanager.setConfigFilePath(QString("media/cblogin/UserIdentities.xml"));
+	
+  if ( !configmanager.readConfig() )
 		showMessageDialog("Parsing UserIdentities.xml failed");
 
 	// Scene
-	QBrush b = QBrush( QPixmap("media\\cblogin\\background.png") );
+  	QBrush b = QBrush( QPixmap("media/cblogin/background.png") );
 	scene->setBackgroundBrush( b );
 	scene->setStickyFocus(true);
 
