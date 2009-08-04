@@ -18,6 +18,7 @@ if (MSVC)
 elseif (UNIX)
   set(XMLRPCEPI_PREFIX_GUESSES 
       /opt/xmlrpc-epi
+      /usr/include
       /usr/local
       /usr/lib/xmlrpc-epi
       /usr/local/xmlrpc-epi
@@ -43,7 +44,7 @@ if (XMLRPC-EPI_FOUND)
   set(XMLRPCEPI_INCLUDE_DIR "${XMLRPC-EPI_INCLUDE_DIRS}")
 else ()
   message(STATUS "try to find xmlrpc-epi from guessed paths")
-  find_path(XMLRPCEPI_INCLUDE_DIR xmlrpc.h HINTS ${XMLRPCEPI_INC_SEARCH_PATH} ${XMLRPCEPI_PKGC_INCLUDE_DIRS})
+  find_path(XMLRPCEPI_INCLUDE_DIR xmlrpc.h HINTS ${XMLRPCEPI_INC_SEARCH_PATH} ${XMLRPCEPI_PKGC_INCLUDE_DIRS} ${XMLRPCEPI_PREFIX_PATH})
   if (MSVC)
     find_path(XMLRPCEPI_LIBRARY_DIR xmlrpcepi.lib HINTS ${XMLRPCEPI_LIB_SEARCH_PATH})
   else ()
