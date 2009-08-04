@@ -11,7 +11,8 @@ Getting Started
 After a succesful initialization, you will see the login window and the OGRE rendering window behind it. Naali provides three different connection modes: OpenSim, realXtend authentication and OpenID.
 
 -Opensim
-Use the OpenSim connection method to connect to an OpenSim server with or without authentication, or to a legacy realXtend server (version 0.4 and above) without authentication. If the server you are going to connect doesn't use authentication, no password is required. Just insert some username ([first name] [lastname]), server address and port ([address]:[port]) and click connect. If you are connecting to Taiga servers via OpenSim authentication, you must give proper firstname, lastname and password, and the sim must have a corresponding account.
+Use the OpenSim connection method to connect to an OpenSim server with or without authentication, or to a legacy realXtend server (version 0.4 and above) without authentication. If the server you are going to connect doesn't use authentication, no password is required. Just insert some username ([first name] [lastname]), server address and port ([address]:[port]) and click connect. 
+If you are connecting to Taiga servers via OpenSim authentication, you must give proper firstname, lastname and password, and the sim must have a corresponding account. Also the default world port is 8002 and NOT the usual 9000 because you are authenticating to a cablebeach worldserver, not directly to the sim. 
 
 -reX authentication
 realXtend authentication connection method can be used to login to a legacy realXtend server and Taiga server suite with authentication. Insert your username, password, server and authentication server adresses and ports, and click connect. 
