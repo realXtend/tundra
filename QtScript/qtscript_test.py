@@ -26,12 +26,11 @@ button = QtGui.QPushButton("Press", window)
 button.resize(200, 40)
 # Resize our button to (200, 40) -> (X, Y)
 
-#old style signals, works in pyqt 4.4
-button.connect(button, QtCore.SIGNAL("clicked()"),\
-    printhello) #QtCore.SLOT("quit()"))
+"""old style signals, works in pyqt 4.4"""
+#button.connect(button, QtCore.SIGNAL("clicked()"), printhello) #QtCore.SLOT("quit()"))
 
 #new style signals in 4.5, must upgdate to get these
-#button.clicked.connect(printhello)
+button.clicked.connect(printhello)
 
 # Connect the button's click signal to the QApplication's quit() slot.
 window.show()
