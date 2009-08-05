@@ -5,7 +5,7 @@
 \section intro_GS Viewer introduction
 	The viewer is divided into several different projects and namespaces.
 
-    - The \subpage RexNGCore "Core" contains functionality common to all projects in the viewer.
+    - The \subpage RexNGCore "Core" contains functionality common to all projects in the viewer solution.
     - The \subpage Foundation_group "Foundation" is the framework around which the viewer is build.
     - Several modules that create the functionality of the viewer with the
       help of the framework.	
@@ -15,7 +15,7 @@
 	create new ones, see 
 	- \subpage ModuleArchitecture "Module architecture".
 	
-\section rex_logic_GS RealXtend and Open Simulator logic
+\section rex_logic_GS RealXtend and OpenSimulator logic
 	To learn more about the logic behind RealXtend.
 	- \subpage RexLogic_Module "RexLogic module".
 
