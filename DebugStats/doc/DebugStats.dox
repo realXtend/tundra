@@ -2,6 +2,8 @@
 
 \page DebugStatsPage DebugStats module
 
+<b>The DebugStats module is deprecated and is due to be removed in the future. The same functionality is planned
+to be later on reimplemented on top of the Qt UI module.</b>
 The DebugStats module is a project intended solely for used as a developing aid. It uses the GtkmmUI module to 
 create windows that just dump various internal structures on screen to ease understanding what is going on.
 For planned stable release builds, this module will most probably be omitted.

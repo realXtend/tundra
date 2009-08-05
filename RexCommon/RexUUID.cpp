@@ -23,6 +23,7 @@ static uint8_t CharToNibble(char c)
 }
 
 /// @return The first two characters of the given string converted to a byte: "B9" -> 0xB9.
+/// Has no error checking. Just returns 0xFF if the parsing failed.
 static uint8_t StringToByte(const char *str)
 {
     return (CharToNibble(str[0]) << 4) | CharToNibble(str[1]);
@@ -108,7 +109,7 @@ void RexUUID::FromString(const char *str)
             return;
         }
 
-        ///\todo Tighten parsing, now accepts all characters, like 'g' or 'Y'.
+        ///\bug Tighten parsing, now accepts all characters, like 'g' or 'Y'.
         while(!isalpha(str[curIndex]) && !isdigit(str[curIndex]) && !str[curIndex] == '\0')
             ++curIndex;
 
@@ -119,6 +120,7 @@ void RexUUID::FromString(const char *str)
             return;
         }
 
+        ///\bug Here, if str[curIndex+1] is not an appropriate character, there's going to be an error!
         data[i] = StringToByte(str + curIndex);
         curIndex += 2;
     }
