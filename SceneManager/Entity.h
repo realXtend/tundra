@@ -12,7 +12,7 @@ namespace Scene
     //! Represents an entity in the world. 
     /*! An entity is just a collection of components, the components define what
         the entity is and what it does.
-        Entities should not be directly created, instead use SceneInterface::CreateEntity().
+        Entities should not be directly created, instead use SceneManager::CreateEntity().
 
         \ingroup Scene_group
     */

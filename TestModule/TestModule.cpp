@@ -123,9 +123,9 @@ namespace Test
 
 
         Scene::ScenePtr scene2 = sceneManager->GetScene("test_scene");
-        assert(*scene.get() == *scene2.get() && "SceneInterface operator== failed");
-        assert(*scene.get() != *cloned_scene.get() && "SceneInterface operator!= failed");
-        assert(*cloned_scene.get() < *scene.get() && "SceneInterface operator< failed");
+        assert(*scene.get() == *scene2.get() && "SceneManager operator== failed");
+        assert(*scene.get() != *cloned_scene.get() && "SceneManager operator!= failed");
+        assert(*cloned_scene.get() < *scene.get() && "SceneManager operator< failed");
 
 
         boost::shared_ptr<TestServiceInterface> test_service = framework_->GetServiceManager()->GetService<TestServiceInterface>(TestService::type_).lock();
