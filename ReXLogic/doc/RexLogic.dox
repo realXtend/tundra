@@ -4,7 +4,7 @@
 
 The RexLogic module is the "heart" of the viewer. It handles all the client-side logic that is related to connecting
 to and persisting in an OpenSim/ModRex server. While several other modules in the project aim to be
-generic and free from any OpenSim-speficic functionality, this module is the place where all the OpenSim-centric
+generic and free from any OpenSim-specific functionality, this module is the place where all the OpenSim-centric
 features are implemented.
 
 Some modules in the project can be thought as "service" modules - they work in the background to provide other 

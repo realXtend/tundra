@@ -2,6 +2,7 @@
 
 \page GtkmmUIPage GtkmmUI module
 
+<b>The GtkmmUI module is deprecated and is due to be removed in the future.</b>
 The GtkmmUI module manages the initialization and updates of the gtk windowing system. This
 is achieved through the gtkmm library, which wraps the gtk internals to a C++ -style API.
 To build GtkmmUI, you first need to get the gtkmm-devel library, which can be found <a href="http://www.gtkmm.org/">here</a>.
