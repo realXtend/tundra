@@ -13,44 +13,47 @@ namespace Scene
     */
     namespace Events
     {
-        // Scene related event id's.
-        /// Indicates that a new scene is added. Triggered by Scene::SceneManager.
+        // Scene-related event id's:
+
+        /// Sent as a notification whenever a new scene was added to the system. \todo Not yet used. \todo Event data object not defined.
         static const Core::event_id_t EVENT_SCENE_ADDED =       0x01;
-        /// Indicates that a scene is deleted. Triggered by Scene::SceneManager.
+        /// Sent as a notification whenever a scene was deleted from the system. \todo Not yet used. \todo Event data object not defined.
         static const Core::event_id_t EVENT_SCENE_DELETED =     0x02;
-        /// Indicates that a scene is cloned. Triggered by Scene::SceneManager. Not used yet.
+        /// Sent as a notification whenever a clone of an existing scene was made. \todo Not yet used. \todo Event data object not defined. \todo This might never be supported if not useful/necessary.. remove?
         static const Core::event_id_t EVENT_SCENE_CLONED =      0x03;
 
-        // Entity related event id's.
-        /// Indicates that a new entity is added to a scene. Triggered by Scene::Generic.
+        // Entity-related event id's:
+
+        /// Sent as a notification whenever a new entity was added to a scene. \todo Not yet used.
         static const Core::event_id_t EVENT_ENTITY_ADDED =      0x04;
-        /// Triggered to notify that event's component properties has been modified.
-        ///\todo Is this needed?
+        /// Sent as a notification whenever an attribute in a component of an entity was modified. \todo Not yet used. \todo Event data object not defined. \todo Might be too general? Break down into component-specific events?
         static const Core::event_id_t EVENT_ENTITY_UPDATED =    0x05;
-        /// Indicates that a entity is deleted from a scene.
+        /// Sent by the SceneManager::DeleteEntity as a notification whenever an entity was deleted from a scene.
         static const Core::event_id_t EVENT_ENTITY_DELETED =    0x06;
-        /// Indicates that a entity is selected and it's properties are viewed.
+        /// An action event that can be sent by anyone to cause the RexLogic module change the currently selected objects and fetch their properties from the server. \todo Not yet used.
         static const Core::event_id_t EVENT_ENTITY_SELECT =     0x07;
-        /// Indicates that the server has responsed to the 'Entity Selected' event.
+        /// Sent by the RexLogic primitive handler as a notification whenever the current selection was changed and the object properties have been fetched from the server.
         static const Core::event_id_t EVENT_ENTITY_SELECTED =   0x08;
-        /// Indicates that the entity has been deselected.
+        /// An action event that can be sent by anyone to cause the current selection to be cleared. \todo Not yet used.
         static const Core::event_id_t EVENT_ENTITY_DESELECT =   0x09;
-        /// Indicates that the entity has been touched.
+        /// An action event that can be sent by anyone to cause an entity be grabbed (drag-selected). \todo Distinguish which clicks need to cause a select and which need to cause a grab.
         static const Core::event_id_t EVENT_ENTITY_GRAB =       0x0a;
         
-        /// Component related event id's.
+        // Component-related event id's:
+
+    /** \todo For creating events that can be used to alter the scene, events like this might be useful as well:
         /// Indicates that a new component is added to an entity.
         static const Core::event_id_t EVENT_COMPONENT_ADDED =   0x0b;
         /// Indicates that a component is deleted from an entity.
         static const Core::event_id_t EVENT_COMPONENT_DELETED = 0x0c;
         /// Indicateds that component's properties are updated.
         static const Core::event_id_t EVENT_COMPONENT_UPDATED=  0x0d;
+*/
+        // Other events:
 
-        // Other events
-        //! Entity with controllable component created
+        /// Sent to register a scene entity as a controllable entity (has the Controllable component). Also sets
+        /// that entity as the currently controlled entity. 
         static const Core::event_id_t EVENT_CONTROLLABLE_ENTITY = 0x0e;
-
-        
         
         /// Event data interface for Scene object related events.
         /*class SceneEventData: public Foundation::EventDataInterface

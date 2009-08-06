@@ -457,6 +457,11 @@ namespace RexLogic
             prim.ObjectName = name;
             prim.Description = desc;
             
+            ///\todo Odd behavior? The ENTITY_SELECTED event is passed only after the server responds with an ObjectProperties
+            /// message. Should we maintain our own notion of what's selected and rename this event to PRIM_OBJECT_PROPERTIES or
+            /// something similar? Or is it desired that the ObjectProperties wire message defines exactly what objects the
+            /// client has selected?
+
             // Send the 'Entity Selected' event.
             Core::event_category_id_t event_category_id = rexlogicmodule_->GetFramework()->GetEventManager()->QueryEventCategory("Scene");
             Scene::Events::SceneEventData event_data(prim.LocalId);
