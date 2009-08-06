@@ -23,21 +23,25 @@ namespace OpenSimProtocol
     };
     
     /// Defines the events posted by the OpenSimProtocolModule in category <b>NetworkState</b>.
-    /// \ingroup OpenSimProtocolClient @{
+    /// \ingroup OpenSimProtocolClient 
     namespace Events
     {
-        ///\todo Describe.
+        /**
+		 * Notify event which is sent when OpenSimProtocol module has disconnect connection between server and client.  
+		 */
         static const Core::event_id_t EVENT_SERVER_DISCONNECTED = 0x01;
-        static const Core::event_id_t EVENT_INIT_XMLRPC = 0x02;
-        static const Core::event_id_t EVENT_WAITING_XMLRPC_REPLY = 0x03;
-        static const Core::event_id_t EVENT_XMLRPC_AUTH_REPLY_RECEIVED = 0x04;
-        static const Core::event_id_t EVENT_XMLRPC_LOGIN_REPLY_RECEIVED = 0x05;
-        static const Core::event_id_t EVENT_XMLRPC_LOGIN_FAILED = 0x06;
-        static const Core::event_id_t EVENT_INIT_UPD_CONNECTION= 0x07;
-        static const Core::event_id_t EVENT_SERVER_CONNECTED = 0x08;
-        static const Core::event_id_t EVENT_CONNECTION_FAILED = 0x09;
+    
+		/** 
+		 * Notify event which is send when connection is made to the server. 
+		 */
+        static const Core::event_id_t EVENT_SERVER_CONNECTED = 0x02;
+        
+		/**
+		 * Notify event which can be send when connection has failed. 
+		 */
+		static const Core::event_id_t EVENT_CONNECTION_FAILED = 0x03;
     }
-    /// @}
+  
     
     /// Enumeration of the network connection states.
     /// When modified, update also the connection_strings table of the NetworkStateToString function.
