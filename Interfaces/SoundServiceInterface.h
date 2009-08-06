@@ -7,9 +7,9 @@
 
 namespace Foundation
 {
-    //! \todo document -cm
+    //! A possible interface for sound functionality.
     /*!
-        \ingroup Services_group
+	    Currently not in use.
     */
     class SoundServiceInterface : public ServiceInterface
     {
