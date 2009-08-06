@@ -7,7 +7,7 @@
 
 namespace Foundation
 {
-    class ResourceInterface;    
+    class ResourceInterface;
     typedef boost::shared_ptr<ResourceInterface> ResourcePtr;
     typedef std::map<std::string, Foundation::ResourcePtr> ResourceMap;
 
@@ -85,7 +85,7 @@ namespace Resource
         //! resource ready event id. When this is posted, the data passed along the event is of type Resource::Events::ResourceReady.
         static const Core::event_id_t RESOURCE_READY = 1;
         
-        //! resource ready event data
+        //! Resource ready event data
         class ResourceReady : public Foundation::EventDataInterface
         {
         public:
@@ -99,9 +99,12 @@ namespace Resource
             virtual ~ResourceReady()
             {
             }
-        
+            
+            //! ID of resource that is ready
             std::string id_;
+            //! Pointer to ready resource
             Foundation::ResourcePtr resource_;
+            //! Request tag identifying the resource request
             Core::request_tag_t tag_;
         };
     }
