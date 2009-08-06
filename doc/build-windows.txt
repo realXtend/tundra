@@ -1,24 +1,50 @@
+The Naali viewer codebase uses CMake as its build system, so to generate the project solution files for Microsoft Visual Studio 2008 to use, you need to install CMake from http://www.cmake.org/.
+To be able to build the source repository, the first thing you need to do is to obtain (and possibly compile) the dependencies that are required by Naali. The second step is to configure 
+the CMake build script to locate those dependencies, and finally you can compile the viewer solution itself.
 
-Using the Pre-built Binaries
-----------------------------
+Microsoft Visual C++ 2005 or earlier versions are not officially supported (but might work).
 
-Includes the following: Boost, PoCo, Ogre3D, xmlrpcepi, libiconv2, libexpat
-1. Copy the necessary  DLLs to the SVN bin/ directory.
-2. Copy the includes and LIB files in external_dependencies to REX_DEP_PATH.
+Obtaining the dependencies
+--------------------------
+For getting the dependencies, you have two choices, depending on how much code you want to compile yourself. In the following, it is assumed that the viewer SVN trunk has been checked out to \viewerTrunk\.
 
-Configuring the Build
----------------------
+Preparing the precompiled dependency package
+-------------------------------------------------
+Use this option when you just need to get Naali compiled, and to focus on developing Naali itself.
 
-- Boost: Set the global VS environment settings to refer to Boost includes and libraries, or copy to ${REX_DEP_PATH}/Boost/include & ${REX_DEP_PATH}/Boost/libs
-- PoCo: Set the global VS environment settings to refer to the PoCo includes and libraries, or copy to ${REX_DEP_PATH}/PoCo/include & ${REX_DEP_PATH}/PoCo/libs
-- Ogre: Set the global VS environment settings to refer to the Ogre includes and libraries, or copy to ${REX_DEP_PATH}/Ogre/include & ${REX_DEP_PATH}/Ogre/libs
-- Gtkmm: Set the environment variable GTKMM_BASEPATH to point to the Gtkmm root.
-- XMLRPC-EPI: XMLRPC-EPI depends on LibIconv and eXpat. To build this, first build the expat project. 
+1. Download the precompiled dependency package from http://dev.realxtend.org/gf/project/viewerdeps/frs/.
+2. Extract it to a folder, say, \viewerDeps\.
+3. From the folder \viewerDeps\bin\, copy all the DLLs to \viewerTrunk\viewer\bin\.
+4. Continue from Building the Viewer below.
 
-MAKE THE PROJECT FILE
----------------------
+Preparing the dependency repository
+----------------------------------------
+Use this option when you need to be able to generate custom builds of the dependency packages or if you want to have better debugging capabilities in VS (breakpoints, step through, trace, edit-and-continue inside dependency libraries).
+This process is much more involved, but allows you to have a lot less boundaries when developing. Note that not all of the external dependencies are included in this repository, since the large size of the 
+resulting codebase forbids that.
 
-Go to your <project_folder>/trunk and execute the cmake.bat if you are not using VS2008, and cmake_vs2008.bat, if you are using VS2008.
+To build Naali using the dependency repository, perform the following:
 
-If everything went right you should now have a Visual Studio project file in your <project_folder>/trunk. 
-When compiling for the first time, compile in debug mode and run the exe at least once. Some data files are created in debug mode which are needed when running in release mode.
+1. Get the viewer dependency repository by executing 'svn checkout http://dev.realxtend.org/svn/viewerDeps/trunk/'. The following assumes that you checked out the dependencies into the folder \viewerDeps\.
+2. Download, install and build Boost from http://www.boost.org/. Version v1.36.0 or newer is required.
+3. Download, install and build Qt from http://www.qtsoftware.com/, or obtain Qt from the precompiled dependency package. Check that the environment variable QTDIR is correct. See \viewerTrunk\doc\qt.txt for more details. 
+4. Download, install and build Ogre from http://www.ogre3d.org/. Alternatively complete this dependency using the precompiled dependency package. Ogre version v1.6.1 or newer is required. Check that 
+   OGRE_HOME environment variable points to the installation root folder.
+5. Download, install and build PoCo from http://pocoproject.org/. Version v1.3.4 or newer is required. It seems that Visual Studio 2008 Express cannot be used to compile PoCo, so in that case, you just have to
+   get the precompiled version from the dependency package.
+6. See \viewerDeps\expat\ReadmeRex.txt. Build Expat from \viewerDeps\expat\expat.sln. Copy the outputted DLLs to \viewerTrunk\viewer\bin\.
+7. See \viewerDeps\GnuWin32\ReadmeRex.txt. LibIconv doesn't require building. Copy the DLLs in \viewerDeps\GnuWin32\bin\ to \viewerTrunk\viewer\bin\.
+8. See \viewerDeps\libcurl\ReadmeRex.txt. Build LibCurl from the file vc9curl.sln. Copy the resulting outputted DDLs to \viewerTrunk\viewer\bin\.
+9. Build OpenJPEG from \viewerDeps\OpenJPEG\LibOpenJPEG.sln. Copy the resulting outputted DLLs to \viewerTrunk\viewer\bin\.
+10. See \viewerDeps\xmlrpc-epi\ReadmeRex.txt. Build XMLRPC-EPI from \viewerDeps\xmlrpc-epi\xmlrpcepi.sln. Copy the resulting outputted DLLs to \viewerTrunk\viewer\bin\.
+11. Continue from Building the Viewer below.
+
+Building the Viewer
+-------------------
+
+1. Set the REX_DEP_PATH system environment variable to point to \viewerDeps\.
+2. Open up \viewerTrunk\viewer\CMakeLists.txt and configure the set of modules that you want to build by commenting out the unnecessary ones. For most people, the default set of modules works just fine.
+3. Make sure that cmake is in your PATH. Start up Visual Studio 2008 Command prompt, navigate to \viewerTrunk\viewer\bin\ and execute 'cmake.exe .'. If cmake has issues with finding your
+   installation of MSVC9 toolchain, you can try forcing it with 'cmake.exe -G "Visual Studio 9 2008"'.
+4. Open up realXtend-viewer.sln and build the solution.
+5. When compiling for the first time, compile in debug mode and run the exe at least once. Some data files are created in debug mode which are needed when running in release mode. TODO: Clarify on this, sounds like a bug? -jj.

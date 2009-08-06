@@ -9,6 +9,13 @@ findpkg_begin(CAELUM)
 
 # Construct search paths from enviromental hits and OS spesific guesses
 
+# TODO: For MSVC, remove all this guessing, it's not how things are done in Windows. The search procedure is the following:
+# 1. If $ENV{CAELUM_HOME} is defined, use that directory.
+# 2. If not, use $ENV{REX_DEP_PATH}/caelum.
+# There should be no guessing of what the outputted library name might be. Caelum might not even be built or even unzipped 
+# by the time this script is run. -jj.
+# TODO: Do the same for all other MSVC dependencies.
+
 if (MSVC)
   set(CAELUM_PREFIX_GUESSES $ENV{REX_DEP_PATH}/Caelum
       C:/Caelum
