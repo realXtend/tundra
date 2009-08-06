@@ -43,10 +43,14 @@ namespace Asset
             virtual ~AssetReady()
             {
             }
-        
+            
+            //! ID of the ready asset
             std::string asset_id_;
+            //! Type of the ready asset
             std::string asset_type_;
+            //! Pointer to the ready asset
             Foundation::AssetPtr asset_;
+            //! Request tag, identifying the asset request
             Core::request_tag_t tag_;
         };
 
@@ -68,11 +72,16 @@ namespace Asset
             virtual ~AssetProgress()
             {
             }
-        
+            
+            //! ID of the asset in progress
             std::string asset_id_;
+            //! Type of the asset in progress
             std::string asset_type_;
+            //! Total size in bytes of the asset
             Core::uint size_;
+            //! Total received bytes (may be non-contiguous) for the asset so far
             Core::uint received_;
+            //! Total received continuous bytes from the asset data beginning so far
             Core::uint received_continuous_;
         };
 
@@ -92,7 +101,9 @@ namespace Asset
             {
             }
         
+            //! ID of the asset whose transfer was canceled
             std::string asset_id_;
+            //! Type of the asset whose transfer was canceled
             std::string asset_type_;
         };
     }
