@@ -29,17 +29,26 @@ if (service_manager_->IsRegistered(Service::ST_Renderer))
 	\section ogreresources_ORM Using renderer resources created from in-world asset data
 
 	Through the RenderService one can also request renderer-specific resources created from in-world assets (textures, meshes etc.) 
-	Currently there is support for requesting and creating mesh (OgreRenderer::OgreMeshResource) and texture (OgreRenderer::OgreTextureResource) resources. 
 	The Ogre resources are subclassed from the abstract interface Foundation::ResourceInterface and contain a pointer to the actual Ogre resource object.
 
+	Currently there is support for requesting and creating mesh (OgreRenderer::OgreMeshResource), texture (OgreRenderer::OgreTextureResource), 
+        material (OgreRenderer::OgreMaterialResource) and particle script (OgreRenderer::OgreParticleResource) resources.
+
 	See the functions Foundation::RenderServiceInterface::GetResource(), Foundation::RenderServiceInterface::RequestResource() and Foundation::RenderServiceInterface::RemoveResource().
-	They are similar to the AssetService in that GetResource() will not automatically request download of the asset; RequestResource() is needed for that.
+	They are similar to the AssetService in that GetResource() will not automatically request download of the asset; RequestResource() is needed for that. 
+	Also similarly to the AssetService, RequestResource() returns a request tag by which you can identify your request later.
 	
 	Note that to ensure that the renderer actually creates the resources correctly, one should not ask the assets directly from the 
 	AssetService (unless interested of the raw asset data), but rather the resources from the RenderService.
 	
 	The RESOURCE_READY event will be sent when a renderer resource request has been completed.
 	
+	An example of requesting a mesh resource: (note that at least currently resource id's correspond directly to asset id's)
+
+\code
+	Core::request_tag_t tag = renderer->RequestResource(mesh_resource_id, OgreRenderer::OgreMeshResource::GetTypeStatic());
+\endcode
+
 		
 	\section ogrespecific_ORM Using Ogre-specific functionality
 

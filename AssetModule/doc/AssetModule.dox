@@ -37,7 +37,8 @@ if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
 
 	If an asset was not found in the cache by using GetAsset(), you likely want to initiate a transfer for it. The function
 	Foundation::AssetServiceInterface::RequestAsset() can be used for this. Like GetAsset(), it requires the 
-	asset identifier and type. A request tag will be returned, which will be later used in the ASSET_READY event.
+	asset identifier and type. An unique request tag will be returned, by which you can identify your request, and which 
+        will be later used in the ASSET_READY event.
 
 	The progress of an asset download can be queried with the function Foundation::AssetServiceInterface::QueryAssetStatus().
 	It takes pointers to 3 unsigned integer variables, which will be filled, in order, with the asset data size
@@ -53,10 +54,11 @@ if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
 	Example of getting an asset, and requesting its download if not found:
 	
 \code
-Foundation::AssetPtr mesh_asset = asset_service->GetAsset(id, "Mesh");
+Foundation::AssetPtr mesh_asset = asset_service->GetAsset(mesh_asset_id, "Mesh");
+Core::request_tag_t tag;
 if (!mesh_asset)
 {
-    asset_service->RequestAsset(id, "Mesh");
+    tag = asset_service->RequestAsset(id, "Mesh");
 }
 \endcode
 
