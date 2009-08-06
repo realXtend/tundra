@@ -156,7 +156,11 @@ namespace RexLogic
             presence.SetFirstName(map["FirstName"]);
             presence.SetLastName(map["LastName"]);
             
-            // Set own avatar
+            // If the server sent an ObjectUpdate on a prim that is actually the client's avatar, and if the Entity that 
+            // corresponds to this prim doesn't yet have a Controllable component, add it to the Entity.
+            // This also causes a EVENT_CONTROLLABLE_ENTITY to be passed which will register this Entity as the currently 
+            // controlled avatar entity. -jj.
+            ///\todo Perhaps this logic could be done beforehand when creating the avatar Entity instead of doing it here? -jj.
             if (presence.FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID && !entity->GetComponent(EC_Controllable::NameStatic()))
             {
                 Foundation::Framework *fw = rexlogicmodule_->GetFramework();
