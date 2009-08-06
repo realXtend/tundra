@@ -5,6 +5,10 @@
 
 namespace Foundation
 {
+	//! A service interface for a world logic module.
+	/*! 
+		Currently not in use.
+	 */
     class WorldLogicInterface
     {
     public:
