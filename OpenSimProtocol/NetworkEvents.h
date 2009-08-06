@@ -27,17 +27,20 @@ namespace OpenSimProtocol
     namespace Events
     {
         /**
-		 * Notify event which is sent when OpenSimProtocol module has disconnect connection between server and client.  
+		 * Notify event which is sent when OpenSimProtocol module has disconnect connection between server and client. 
+		 * @note this event should never send from outside module. Use DisconnectFromServer() or similar method.
 		 */
         static const Core::event_id_t EVENT_SERVER_DISCONNECTED = 0x01;
     
 		/** 
 		 * Notify event which is send when connection is made to the server. 
+		 * @note this event should never send from outside module. Use ConnectToServer() or similar method.
 		 */
         static const Core::event_id_t EVENT_SERVER_CONNECTED = 0x02;
         
 		/**
 		 * Notify event which can be send when connection has failed. 
+		 * @note this event should never send from outside module. 
 		 */
 		static const Core::event_id_t EVENT_CONNECTION_FAILED = 0x03;
     }
