@@ -7,9 +7,14 @@
 
 namespace Foundation
 {    
-    //! \todo document -cm
+    //! Texture decoding service.
     /*!
         \ingroup Services_group
+        
+        Through this interface, texture assets can be requested to be downloaded and decoded.
+        The decoded textures are returned through the RESOURCE_READY event as raw texture resources 
+        (Foundation::TextureInterface).
+        Implemented by the \ref TextureDecoderModule.
     */
     class TextureServiceInterface : public ServiceInterface
     {
@@ -18,8 +23,8 @@ namespace Foundation
         virtual ~TextureServiceInterface() {}
 
         //! Requests a texture to be received and decoded
-        /*! When texture data becomes available, an event will be sent for each quality level decoded        
-            \param asset_id texture ID, UUID for legacy UDP assets         
+        /*! When texture data becomes available, an event will be sent for each quality level decoded
+            \param asset_id texture ID, UUID for legacy UDP assets
             \return request tag, will be sent back along with RESOURCE_READY event
          */
         virtual Core::request_tag_t RequestTexture(const std::string& asset_id) = 0;

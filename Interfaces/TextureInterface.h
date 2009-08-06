@@ -15,7 +15,7 @@ namespace Foundation
     {
     public:
         //! default constructor
-        TextureInterface() : ResourceInterface() {}        
+        TextureInterface() : ResourceInterface() {}
 
         //! constructor
         /*! \param id identifier of texture resource

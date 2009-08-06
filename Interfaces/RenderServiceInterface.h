@@ -14,9 +14,12 @@ namespace Scene
 
 namespace Foundation
 {
-    //! \todo document -cm
+    //! Render service interface.
     /*!
         \ingroup Services_group
+        
+        Manages the rendering window, handles scene rendering, and manages renderer related resources.
+        Implemented by the \ref OgreRenderingModule.
     */
     class MODULE_API RenderServiceInterface : public ServiceInterface
     {
