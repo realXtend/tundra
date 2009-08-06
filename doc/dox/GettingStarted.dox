@@ -41,6 +41,7 @@
 \section assets_GS Working with assets and resources
 	- \subpage AssetModule "Using the asset module"
 	- \subpage Resources "Using resources"
+	- \subpage TextureDecoderModule "Texture decoding"
 
 \section renderer_GS Working with the renderer
 	- \subpage OgreRenderingModule "Using the Ogre renderer module"	
