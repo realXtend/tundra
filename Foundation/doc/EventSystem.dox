@@ -82,14 +82,15 @@ if (assetcategory_id_ == 0 )
 	to the data structure can be NULL when sending an event.
 
 	But if a data structure is required, it needs to be subclassed from Foundation::EventDataInterface. 
-	For clarity, a certain type of data structure should always correspond to a certain event ID of a 
+	For clarity and safety, a certain type of data structure should always correspond to a certain event ID of a 
 	certain event category. For example the ASSET_READY event of the AssetModule always contains
-	a pointer to a Asset::Event::AssetReady structure.
+	a pointer to a Asset::Events::AssetReady structure. Then, when handling the event, one can downcast to the
+	expected class to access the event data structure contents.
 
 	The pointer to an event data structure should only assumed to be valid during the handling 
 	of an event; the pointer should never be stored (it is typically a temporary object.)
 
-	See for example InputEvents.h and AssetEvents.h for examples of defining event data structures.
+	See InputEvents.h and AssetEvents.h for examples of defining event data structures.
 
 
 	\section sendingevent_ES Sending an event

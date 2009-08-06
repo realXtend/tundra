@@ -62,16 +62,6 @@ if (!mesh_asset)
 }
 \endcode
 
-	\section assetevents_AS Asset events
-
-	Events with the category "Asset" will be sent informing of the status of asset downloads. These are defined in AssetEvents.h
-
-	ASSET_READY event with the data structure Asset::Events::AssetReady will be sent when a download is complete.
-
-	ASSET_PROGRESS events with the data structure Asset::Events::AssetProgress are sent periodically as the asset download progresses.
-
-	If an asset download gets canceled due to for example timeout, the ASSET_CANCELED event with data structure Asset::Events::AssetCanceled will be sent.
-
 	\section assetproviders_AS Asset providers
 
 	Internally, the asset service uses asset providers (see Foundation::AssetProviderInterface) to perform the actual asset downloading.
@@ -81,4 +71,26 @@ if (!mesh_asset)
 
 	Note that asset providers must, upon completing download of an asset, add it by themselves to the asset service's cache, using
 	Foundation::AssetServiceInterface::StoreAsset().	
+
+
+	\section assetevents_AS Asset events
+
+	Events with the category "Asset" will be sent informing of the status of asset downloads. These are defined in AssetEvents.h. It is the responsibility of asset providers to send these events; other modules should
+        not send them.
+
+	\subsection assetready_AS ASSET_READY
+
+	ASSET_READY event with the data structure Asset::Events::AssetReady will be sent when a download of an asset is complete. A separate event is sent for each request made for the same asset (each with unique request tag.)
+	When handling an ASSET_READY event from within a module, only return true (event handled and should not be propagated) if the request tag matches a request you made. Alternatively it is safe to always return false.
+
+	\subsection assetprogress_AS ASSET_PROGRESS
+
+	ASSET_PROGRESS events with the data structure Asset::Events::AssetProgress are sent periodically as the asset download progresses. These events are not sent multiple times for each request (there is no request tag field),
+	so when handling them, return false so that other interested modules will get the event too.
+
+	\subsection assetcanceled_AS ASSET_CANCELED
+
+	If an asset download gets canceled due to for example network timeout, the ASSET_CANCELED event with data structure Asset::Events::AssetCanceled will be sent. These events are not sent multiple times for each request 
+	(there is no request tag field), so when handling them, return false so that other interested modules will get the event too.
+
 */
