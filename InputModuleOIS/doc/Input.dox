@@ -33,20 +33,34 @@ namespace Input
 	Input has a state. Each state has their own set of h/w input events corresponding to generic input events,
         f.ex. in State_ThirdPerson 'A' and 'D' may be used to rotate the camera (and avatar) around, while in
         State_FreeCamera they can be used to slide the camera left or right. In this way keys can launch different
-        events in different states. Input service should be used to set the state.
+        events in different states. Input service should be used to set the state. Input states are currently
+        hardcoded. See Input::State enumeration for more information.
         
 \section events_input Input events
         
-        Keyboard events are supported in the following way:
+        <strong>Keyboard events are supported in the following way:</strong>
         A single key code that corresponds to an event, modifiers may be included (ctrl, alt and/or shift) as a bit flag.
-        An event is launched when corresponding key is pressed together with any modifier keys.
-        A corresponding event_released is launched when corresponding key or any modifier keys are released.
+        An event is sent when key is pressed together with any modifier keys.
+        An event is sent when key or any modifier keys are released.
+        Keyboard input events are paired in such a way that corresponding key pressed and key released events are
+        sequential, so you can easily derive one from the other.
+        
+        There are also specific input events defined for generic actions, such as moving left, moving right, 
+        rotating left and so on. These generic input events are the preferred way to handle input, rather than directly
+        tying actions into key codes.
 
-        Mouse movement is supported in the following way:
+        <strong>Mouse movement is supported in the following way:</strong>
         Input sliders are used for continuous non-uniform input events such as mouse movement.
         A slider can be combined with a button press in the same device, such as mouse button, and a modifier key
-        (ctrl, alt and/or shift). Slider events are not send as events, but need to be queried from an input service.
+        (ctrl, alt and/or shift). Slider events are not currently send as events, but need to be queried from an input service.
         See Foundation::InputServiceInterface for more information.
+        
+        Some input events may only be sent in some input states. F.ex. buffered key pressed and released events
+        are only sent in buffered state.
+        
+        All input events generally may be sent by any module or piece of code to achieve generic actions that can be easily
+        overridden. As an example a bot ai module could sent movement events to control the bot avatar, rather than try 
+        directly controlling the avatar entity.
 	
 */
 }

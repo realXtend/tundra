@@ -19,44 +19,62 @@ namespace Input
         //       'start' event (MOVE_FORWARD_PRESSED) there should be an
         //       'end' event (MOVE_FORWARD_RELEASED) and (MOVE_FORWARD_PRESSED == MOVE_FORWARD_RELEASED - 1)
         //       Yhis is for simplicity, so one can get the 'end' event easily from the 'start' event.
+        //! Sent as notification for buffered keyboard input, when any key is pressed. Uses BufferedKey event data class.
         static const Core::event_id_t BUFFERED_KEY_PRESSED = 1;  // only when input state is buffered
+        //! Sent as notification for buffered keyboard input, when any key is released. Uses BufferedKey event data class.
         static const Core::event_id_t BUFFERED_KEY_RELEASED = 2; // only when input state is buffered
+        //! Generic scroll input event. Uses SingleAxisMovement event data class.
         static const Core::event_id_t SCROLL = 3;
+        //! Generic move forward event
         static const Core::event_id_t MOVE_FORWARD_PRESSED = 4;
         static const Core::event_id_t MOVE_FORWARD_RELEASED = 5;
+        //! Generic move backward event
         static const Core::event_id_t MOVE_BACK_PRESSED = 6;
         static const Core::event_id_t MOVE_BACK_RELEASED = 7;
+        //! Generic move left event
         static const Core::event_id_t MOVE_LEFT_PRESSED = 8;
         static const Core::event_id_t MOVE_LEFT_RELEASED = 9;
+        //! Generic move right event
         static const Core::event_id_t MOVE_RIGHT_PRESSED = 10;
         static const Core::event_id_t MOVE_RIGHT_RELEASED = 11;
+        //! Generic move up event
         static const Core::event_id_t MOVE_UP_PRESSED = 12;
         static const Core::event_id_t MOVE_UP_RELEASED = 13;
+        //! Generic move down event
         static const Core::event_id_t MOVE_DOWN_PRESSED = 14;
         static const Core::event_id_t MOVE_DOWN_RELEASED = 15;
+        //! Generic rotate left event
         static const Core::event_id_t ROTATE_LEFT_PRESSED = 16;
         static const Core::event_id_t ROTATE_LEFT_RELEASED = 17;
+        //! Generic rotate right event
         static const Core::event_id_t ROTATE_RIGHT_PRESSED = 18;
         static const Core::event_id_t ROTATE_RIGHT_RELEASED = 19;
+        //! Generic rotate up event
         static const Core::event_id_t ROTATE_UP_PRESSED = 20;
         static const Core::event_id_t ROTATE_UP_RELEASED = 21;
+        //! Generic rotate down event
         static const Core::event_id_t ROTATE_DOWN_PRESSED = 22;
         static const Core::event_id_t ROTATE_DOWN_RELEASED = 23;
+        //! Generic roll left event
         static const Core::event_id_t ROLL_LEFT_PRESSED = 24;
         static const Core::event_id_t ROLL_LEFT_RELEASED = 25;
+        //! Generic roll right event
         static const Core::event_id_t ROLL_RIGHT_PRESSED = 26;
         static const Core::event_id_t ROLL_RIGHT_RELEASED = 27;
 
+        //! Input event for showing the debug console
         static const Core::event_id_t SHOW_DEBUG_CONSOLE = 28;
         static const Core::event_id_t SHOW_DEBUG_CONSOLE_REL = 29;
+
+        //! Input event for switching camera states
         static const Core::event_id_t SWITCH_CAMERA_STATE = 30;
         static const Core::event_id_t SWITCH_CAMERA_STATE_REL = 31;
 
-        //! mouse dragged
+        //! Mouse dragged input event. Not used currently.
         static const Core::event_id_t MOUSELOOK = 32;
         static const Core::event_id_t MOUSELOOK_STOPPED = 33;
 
-        //! event for changing input state
+        //! Input event for changing input state
         static const Core::event_id_t INPUTSTATE_FIRSTPERSON = 34;
         static const Core::event_id_t INPUTSTATE_THIRDPERSON = 35;
         static const Core::event_id_t INPUTSTATE_FREECAMERA = 36;
@@ -65,10 +83,12 @@ namespace Input
         static const Core::event_id_t TOGGLE_FLYMODE = 37;
         static const Core::event_id_t TOGGLE_FLYMODE_REL = 38;
 
+        //! Custom key released input event. Can be used to catch any key on the keyboard, contains optional modifier key.
+        //! Uses Key event data class.
         static const Core::event_id_t KEY_PRESSED = 39;
         static const Core::event_id_t KEY_RELEASED = 40;
 
-        //! user clicked mouse over the viewport, usable with f.ex. raycasting
+        //! user clicked mouse over the viewport, usable with f.ex. raycasting. Movement event data class is used.
         static const Core::event_id_t INWORLD_CLICK = 41;
         static const Core::event_id_t INWORLD_CLICK_REL = 42;
 

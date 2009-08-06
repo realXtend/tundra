@@ -13,15 +13,15 @@ namespace Input
     */
     enum State
     {
-        //! unknown state
+        //! unknown state. For internal use!
         State_Unknown = 0,
         //! all states, useful if you want a key to correspond to one event on all states
         State_All,
-        //! 1st person camera
+        //! 1st person camera, camera is attached to the avatar
         State_FirstPerson,
-        //! 3rd person camera
+        //! 3rd person camera, camera is focused on the avatar
         State_ThirdPerson,
-        //! Free ghostcamera
+        //! Free ghostcamera, the camera may move around freely separate from avatar
         State_FreeCamera,
         //! Buffered state, for direct key input (UI and such)
         State_Buffered,
