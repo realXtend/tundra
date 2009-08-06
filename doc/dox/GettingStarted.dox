@@ -38,8 +38,9 @@
 	For creating and handling user interface, see
 	- \subpage GtkmmUIPage "GtkmmUI module for Gtk".
     
-\section assets_GS Working with assets
+\section assets_GS Working with assets and resources
 	- \subpage AssetModule "Using the asset module"
+	- \subpage Resources "Using resources"
 
 \section renderer_GS Working with the renderer
 	- \subpage OgreRenderingModule "Using the Ogre renderer module"	
