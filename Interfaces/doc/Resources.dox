@@ -23,7 +23,7 @@
 
 	\section resourceevents_RES Resource events
 
-	Events with the category "Resource" will be sent informing of the status of resource requests. These are sent by the modules implementing the resource services; other modules should not send them.
+	Events with the category "Resource" will be sent informing of the status of resource requests. These are defined in ResourceInterface.h. The events are sent by the modules implementing the resource services; other modules should not send them.
 
 	\subsection resourceready_RES RESOURCE_READY
 
