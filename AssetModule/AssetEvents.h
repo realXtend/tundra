@@ -11,17 +11,17 @@ namespace Asset
     //! Asset events
     namespace Events
     {
-        //! Asset ready event id
+        //! Sent when an asset has been completely loaded. Uses AssetReady event data structure.
         /*! \ingroup AssetModuleClient
          */
         static const Core::event_id_t ASSET_READY = 1;
         
-        //! Asset progress event id
+        //! Sent periodically to tell about the progress of an asset download. Uses AssetProgress event data structure.
         /*! \ingroup AssetModuleClient
          */
         static const Core::event_id_t ASSET_PROGRESS = 2;
 
-        //! Asset transfer canceled event id
+        //! Sent when asset download has been canceled out of some reason (for example network timeout). Uses AssetCanceled event data structure.
         /*! \ingroup AssetModuleClient
          */
         static const Core::event_id_t ASSET_CANCELED = 3;

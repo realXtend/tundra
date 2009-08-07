@@ -10,17 +10,17 @@ namespace OgreRenderer
     //! renderer events
     namespace Events
     {
-        //! Postrender event id
+        //! Sent when main rendering is finished and screen buffers are about to be swapped.
         /*! \ingroup OgreRenderingModuleClient
          */
         static const Core::event_id_t POST_RENDER = 1;
         
-        //! Window closed event id
+        //! Sent when the rendering window has been closed and the application loop is about to terminate.
         /*! \ingroup OgreRenderingModuleClient
          */
         static const Core::event_id_t WINDOW_CLOSED = 2;
 
-        //! Window resized event id
+        //! Sent when the rendering window has been resized. Uses WindowResized event data structure.
         /*! \ingroup OgreRenderingModuleClient
          */
         static const Core::event_id_t WINDOW_RESIZED = 3;

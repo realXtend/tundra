@@ -82,7 +82,7 @@ namespace Resource
 {
     namespace Events
     {
-        //! resource ready event id. When this is posted, the data passed along the event is of type Resource::Events::ResourceReady.
+        //! Sent when a resource is ready. Uses the event data structure ResourceReady.
         static const Core::event_id_t RESOURCE_READY = 1;
         
         //! Resource ready event data
