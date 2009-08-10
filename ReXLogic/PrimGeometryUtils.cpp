@@ -130,6 +130,7 @@ namespace RexLogic
                 Core::uint indices = 0;
                 bool first_face = true;
                 
+                //! \bug: for boxes, up and down faces are swapped, judging from applying a different texture to all faces. Seems to be a PrimMesher issue.
                 for (int i = 0; i < primMesh.viewerFaces.size(); ++i)
                 {
                     Core::Color color = primitive.PrimDefaultColor;
