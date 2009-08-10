@@ -36,10 +36,14 @@ namespace Foundation
 		virtual void NotifyScriptEvent(const std::string& key, const std::string& message) = 0;		
 	};
 
-    //! \todo document -cm
+    //! Script service interface.
     /*!
         \ingroup Services_group
+    
+        Provides execution of interpreted code as a service for any module to use. Used (in 0.0.1 release) by CommunicationsModule to load the Python written, Telepathy libs using impementation for instant messaging services.
+        Implemented by the \ref PythonScriptModule.
     */
+
     class ScriptServiceInterface : public ServiceInterface
     {
     public:

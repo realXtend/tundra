@@ -1,0 +1,25 @@
+/**
+
+\page PythonScriptModule About the Python scripting module
+
+	Here is some documentation of the c++ level usage and the implementation of the Python scripting module for Realxtend Naali. End user documentation on how to write viewer plugins in Python is in bin/pymodules/readme.txt
+	
+	\section embedding_PYM About the embedding and loading Python written parts
+	
+	The viewer embeds Python. That is, at startup this module loads the Python interpreter from a library file (dll/so/dylib) and initializes it within the viewer process. To load and otherwise manage the Python written plugins, it loads a ModuleManager class from a Python written module and instanciates it, which handles loading the py plugins and registering them to the event system used on the py side.
+	
+	\section api_PYM Implementation of the API
+	
+	This c++ written PythonScriptModule implements the API that the Python written parts can use. This is currently done by hand, by writing wrapper functions that accept parameters from Python, convert those to c++ variables (and raise correct Python exceptions when wrong parameters were given), call corresponding internal c++ methods in other viewer modules, and finally convert the results to Python objects and return them.
+	
+	The API is exposed on the py side as a module called 'rexviewer' (should be renamed to naali now that we have a name..).  This is created in the function PythonScript::initpymod using the method definition table EmbMethods[], both in PythonScriptModule.cpp . The EmbMethods table can be extended to add new functions to the API.
+	
+	\section entity_PYM The Entity type for data access and manipulation
+	
+	Currently there is only one new type exposed from the viewer to Python, Entity, in Entity.cpp . That is used to expose the data in the components of entities (see the design document on the wiki about the Entity-Component data model used). A generic automatic technique for exposing all E-C data has been discussed, but currently only few selected data types are exposed: position, scale, orientation, text-on-top, prim name. These are implemented in Entity_getattro and Entity_setattro functions for getting and setting.
+	
+	\section events_PYM Forwarding the events to Python written modules
+	
+	Python written modules being event handlers in the viewer is implemented by having this PythonScriptModule to listen any relevant events, and pass them on to the ModuleManager which triggers the corresponding events on the Python side. This is implemented in PythonScriptModule::HandleEvent and is currently enabled for input events (for the keyboard). As an exception the mouse input is polled in the module update method.
+
+*/
