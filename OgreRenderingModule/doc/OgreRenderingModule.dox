@@ -41,7 +41,7 @@ if (service_manager_->IsRegistered(Service::ST_Renderer))
 	Note that to ensure that the renderer actually creates the resources correctly, one should not ask the assets directly from the 
 	AssetService (unless interested of the raw asset data), but rather the resources from the RenderService.
 	
-	The RESOURCE_READY event will be sent when a renderer resource request has been completed.
+	The RESOURCE_READY event will be sent when a renderer resource request has been completed. See also \ref Resources.
 	
 	An example of requesting a mesh resource: (note that at least currently resource id's correspond directly to asset id's)
 

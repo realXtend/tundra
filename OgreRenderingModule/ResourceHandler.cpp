@@ -129,9 +129,16 @@ namespace OgreRenderer
             
             case Asset::Events::ASSET_CANCELED:
             {
-                Asset::Events::AssetCanceled *event_data = checked_static_cast<Asset::Events::AssetCanceled*>(data);   
-                // Remove client request tags related to this asset, we're not going to get it
+                Asset::Events::AssetCanceled *event_data = checked_static_cast<Asset::Events::AssetCanceled*>(data);
+                // Send a RESOURCE_CANCELED event for each request that was made for this asset, then clear the tags
+                const Core::RequestTagVector& tags = request_tags_[event_data->asset_id_];
+                for (Core::uint i = 0; i < tags.size(); ++i)
+                {
+                    Resource::Events::ResourceCanceled canceled_event_data(event_data->asset_id_, tags[i]);
+                    framework_->GetEventManager()->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_CANCELED, &canceled_event_data);
+                }
                 request_tags_.erase(event_data->asset_id_);
+                
                 // Check if the asset matches outstanding resource references
                 std::map<std::string, Foundation::ResourceReferenceVector>::iterator i = outstanding_references_.begin();
                 while (i != outstanding_references_.end())

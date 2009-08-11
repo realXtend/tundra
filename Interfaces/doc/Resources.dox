@@ -28,4 +28,9 @@
 	\subsection resourceready_RES RESOURCE_READY
 
 	When a resource has been decoded (this involves first downloading enough or whole of the underlying binary asset), a RESOURCE_READY event will be sent, with the event data structure Resource::Events::ResourceReady. This event is sent for each request of the same resource, with a matching request tag. When handling this event, true (= event handled and should not be propagated) should only be returned if the request tag matches your request. It is safe to return false always.		
+	
+	\subsection resourcecanceled_RES RESOURCE_CANCELED
+
+	If a resource request cannot be fulfilled (due for example to asset transfer timing out), a RESOURCE_CANCELED event will be sent, with the event data structure Resource::Events::ResourceCanceled. Like RESOURCE_READY, it is sent
+for each request of a resource, with a matching request tag, so when handling the event, the same applies as above.
 */
