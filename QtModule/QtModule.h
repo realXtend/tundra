@@ -6,7 +6,7 @@
 #include "Foundation.h"
 #include "ModuleInterface.h"
 #include "QtModuleApi.h"
-
+#include <QList>
 class QGraphicsScene;
 
 namespace QtUI
@@ -44,6 +44,8 @@ public:
     /// @return The QGraphicsScene that corresponds to the main fullscreen 2D UI canvas.
     QGraphicsScene *GetUIScene() const;
 
+	
+
 private:
     ///\todo Currently the QtModule only holds a single main 2D scene.
     /// Expand this functionality to allow multiple scenes to be created,
@@ -64,6 +66,8 @@ private:
     void PollMouseInput();
 
     bool mouse_left_button_down_;
+
+	
 };
 
 }
