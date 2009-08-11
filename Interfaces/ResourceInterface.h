@@ -85,6 +85,9 @@ namespace Resource
         //! Sent when a resource is ready. Uses the event data structure ResourceReady.
         static const Core::event_id_t RESOURCE_READY = 1;
         
+        //! Sent when a resource request could not be served. Uses the event data structure ResourceCanceled.
+        static const Core::event_id_t RESOURCE_CANCELED = 2;
+        
         //! Resource ready event data
         class ResourceReady : public Foundation::EventDataInterface
         {
@@ -104,6 +107,26 @@ namespace Resource
             std::string id_;
             //! Pointer to ready resource
             Foundation::ResourcePtr resource_;
+            //! Request tag identifying the resource request
+            Core::request_tag_t tag_;
+        };
+        
+        //! Resource canceled event data
+        class ResourceCanceled : public Foundation::EventDataInterface
+        {
+        public:
+            ResourceCanceled(const std::string& id, Core::request_tag_t tag) :
+                id_(id),
+                tag_(tag)
+            {
+            }
+            
+            virtual ~ResourceCanceled()
+            {
+            }
+            
+            //! ID of resource that was canceled
+            std::string id_;
             //! Request tag identifying the resource request
             Core::request_tag_t tag_;
         };

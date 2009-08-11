@@ -22,6 +22,7 @@ namespace TextureDecoder
         {
             resourcecategory_id_ = event_manager->RegisterEventCategory("Resource");
             event_manager->RegisterEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, "ResourceReady");
+            event_manager->RegisterEvent(resourcecategory_id_, Resource::Events::RESOURCE_CANCELED, "ResourceCanceled");
         }
         
         max_decodes_per_frame_ = framework_->GetDefaultConfig().DeclareSetting("TextureDecoder", "max_decodes_per_frame", DEFAULT_MAX_DECODES);
@@ -164,7 +165,16 @@ namespace TextureDecoder
             TextureRequestMap::iterator i = requests_.find(event_data->asset_id_);
             if (i != requests_.end())
             {
-                TextureDecoderModule::LogInfo("Texture decode request " + i->second.GetId() + " canceled");
+                TextureDecoderModule::LogDebug("Texture decode request " + i->second.GetId() + " canceled");
+                
+                // Send a RESOURCE_CANCELED event for each request that was made for this texture
+                const Core::RequestTagVector& tags = i->second.GetTags();
+                for (Core::uint j = 0; j < tags.size(); ++j)
+                {
+                    Resource::Events::ResourceCanceled canceled_event_data(i->second.GetId(), tags[j]);
+                    framework_->GetEventManager()->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_CANCELED, &canceled_event_data);
+                }
+                
                 requests_.erase(i);
             }
         }

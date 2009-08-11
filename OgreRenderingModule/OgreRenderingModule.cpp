@@ -115,6 +115,7 @@ namespace OgreRenderer
         {
             resourcecategory_id_ = event_manager->RegisterEventCategory("Resource");
             event_manager->RegisterEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, "ResourceReady");
+            event_manager->RegisterEvent(resourcecategory_id_, Resource::Events::RESOURCE_CANCELED, "ResourceCanceled");
         }
 
         input_event_category_ = event_manager->QueryEventCategory("Input");
