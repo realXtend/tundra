@@ -6,7 +6,7 @@
 #include "Foundation.h"
 #include "ModuleInterface.h"
 #include "QtModuleApi.h"
-#include <QList>
+
 class QGraphicsScene;
 
 namespace QtUI
