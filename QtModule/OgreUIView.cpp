@@ -22,13 +22,15 @@
 #include <OgrePanelOverlayElement.h>
 #include <OgreTextureUnitState.h>
 
+
 namespace QtUI
 {
 
 OgreUIView::OgreUIView()
 :overlay_(0),
 container_(0),
-mouseDown(false)
+mouseDown(false),
+view_dirty_(true)
 {
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 }
@@ -124,6 +126,12 @@ void OgreUIView::drawBackground(QPainter *painter, const QRectF &rect)
 
 void OgreUIView::RenderSceneToOgreSurface()
 {
+	
+	// Render if and only if scene is dirty.
+	if (!view_dirty_)
+		return;
+
+	
     PROFILE(RenderSceneToOgre);
     // We draw the GraphicsView area to an offscreen QPixmap and blit that onto the Ogre GPU surface.
     QPixmap pixmap(this->size());
@@ -151,6 +159,7 @@ void OgreUIView::RenderSceneToOgreSurface()
         PROFILE(UIToOgreBlit);
         texture_->getBuffer()->blitFromMemory(pixel_box);
     }
+	view_dirty_ = false;
 }
 
 void OgreUIView::InjectMouseMove(int x, int y)
@@ -228,6 +237,11 @@ void OgreUIView::InjectMouseRelease(int x, int y)
     mouseEvent.setModifiers(0);
     mouseEvent.setAccepted(false);
     QApplication::sendEvent(this->scene(), &mouseEvent);
+}
+
+void OgreUIView::Update()
+{
+	view_dirty_ = true;
 }
 
 }

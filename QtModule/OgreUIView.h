@@ -53,6 +53,12 @@ public:
 
     /// @return The Ogre overlay container associated to this view.
     Ogre::OverlayContainer *GetContainer() const { return container_; }
+	
+	void SetDirtyState(bool state) { view_dirty_ = state; }
+
+public slots:
+	
+	void Update();
 
 protected:
     /// Override Qt's QGraphicsView's background drawing to enable alpha on the empty
@@ -74,6 +80,7 @@ private:
     int mousePressX;
     int mousePressY;
     bool mouseDown;
+	bool view_dirty_;
 
     Ogre::TexturePtr texture_;
     Ogre::MaterialPtr material_;

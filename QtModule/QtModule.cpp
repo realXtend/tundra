@@ -64,6 +64,9 @@ void QtModule::Initialize()
     main_view_->SetViewCanvasSize(128, 128);
     main_view_->SetParentWindowSize(renderer->GetWindowWidth(), renderer->GetWindowHeight());
 
+	// Test:
+	QObject::connect(main_scene_,SIGNAL(changed(const QList<QRectF>&)),main_view_,SLOT(Update()));
+
     ///\todo We currently do a fixed canvas size as above. One method would be to do a fullscreen 
     /// render window sized canvas like below, but probably the most optimal method is to have the
     /// client generate the size (or automatically generate the canvas size according to the widget
@@ -171,12 +174,14 @@ void QtModule::Update(Core::f64 frametime)
             mouse_left_button_down_ = false;
         }
         else
-            main_view_->InjectMouseMove(pos.x(), pos.y());
-
+		    main_view_->InjectMouseMove(pos.x(), pos.y());
+			
+		
         PROFILE(QtSceneRender);
-        ///\todo We now redraw every frame. Optimize to redraw only those rectangles that are dirty.
-        ///\ Optimize to redraw only when changed.
-        main_view_->RenderSceneToOgreSurface();
+        ///\todo Optimize to redraw only those rectangles that are dirty.
+        
+		main_view_->RenderSceneToOgreSurface();
+		
     }
     RESETPROFILER;
 }
@@ -185,6 +190,7 @@ const std::string &QtModule::NameStatic()
 {
     return moduleName;
 }
+
 
 }
 
