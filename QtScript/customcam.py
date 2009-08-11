@@ -34,6 +34,7 @@ class SceneEntity(QObject):
     def default_update(self):
         pass
         
+    """pos as a qt property so that qtscript code can see and modify it"""
     def get_pos(self):
         return self._pos
     def set_pos(self, val):
