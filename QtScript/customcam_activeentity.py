@@ -14,47 +14,44 @@ from PyQt4.QtCore import QObject
 
 class SceneEntity(QObject):
     """
-    a dummy entity that's positioned in a scene. 
-    just passive data like actual Naali entities.
-    (for the earlier active variation, where has update signal & handler, 
-    see customcam_activeentity.py)
-    the position is a qt property, so qtscript handlers can access and modify.    
-    """    
+    a dummy entity that's in a scene and which updates.
+    has he update call as a qt signal,
+    and the position as a qt property,
+    so qtscript can override.
+    
+    in the actual viewer we have decoupled passive entities which are just data,
+    and active controllers etc - most certainly want to keep that, so might be
+    a good idea to refactor this to reflect that idea.
+    """
+    
+    update = QtCore.pyqtSignal()
+    
     def __init__(self):
         QObject.__init__(self)
         self._pos = 0.0        
-                
+        self.update.connect(self.default_update)
+        
+    def default_update(self):
+        pass
+        
     """pos as a qt property so that qtscript code can see and modify it"""
     def get_pos(self):
         return self._pos
     def set_pos(self, val):
         self._pos = val
     pos = QtCore.pyqtProperty("float", get_pos, set_pos)
-    
-av = SceneEntity()
-cam = SceneEntity()
-    
-class Controller(QObject):
-    """a thing that is called every frame"""
-    update = QtCore.pyqtSignal()
-    
-    def __init__(self):
-        QObject.__init__(self)
-        self.update.connect(self.default_update)
         
+class Avatar(SceneEntity):
     def default_update(self):
-        pass
+        self.pos += 0.1 #moves at constant speed so we can see whether cam tracking really works
         
-class AvatarController(Controller):
-    def default_update(self):
-        av.pos += 0.1 #moves at constant speed so we can see whether cam tracking really works
+av = Avatar()
 
-class CameraController(Controller):
+class Camera(SceneEntity):    
     def default_update(self):
-        cam.pos = av.pos - 1.0 #default cam behav: keeps 1.0 behind av
+        self.pos = av.pos - 1.0 #default cam behav: keeps 1.0 behind av
         
-avctrl = AvatarController()
-camctrl = CameraController()
+cam = Camera()
 
 engine = QtScript.QScriptEngine()
 
@@ -64,24 +61,23 @@ def debugprint(ctx, eng): #for javascript to print to console
 
 """the javascript source of the custom camera code - keeps 0.5 behind av"""
 jscam = """
-function mycamctrl() {
+function mycam() {
     //print("MYCAM: " + avatar.pos + " - " + camera.pos);
     camera.pos = avatar.pos - 0.5; 
 }
 
-cameracontrol.update.connect(mycamctrl);
-print("MYCAM: connected a custom update to cameracontroller.");
+camera.update.connect(mycam);
+print("MYCAM: connected a custom code to control camera.");
 """
 
 eprop = engine.globalObject().setProperty
 eprop("avatar", engine.newQObject(av))
 eprop("camera", engine.newQObject(cam))
-eprop("cameracontrol", engine.newQObject(camctrl))
 eprop("print", engine.newFunction(debugprint))
 
 def update(): #we probably don't want such individual calls per entity .. or do we?
-    avctrl.update.emit()
-    camctrl.update.emit()
+    av.update.emit()
+    cam.update.emit()
 
 def checkcamdist(name, target):
     d = av.pos - cam.pos
@@ -112,7 +108,7 @@ CHECK CAM DIST: cam distance from av is 1.000000 (posses: 0.200000 - -0.800000)
 SUCCESS: default cam is keeping cam within 1.000000 from av
 CHECK CAM DIST: cam distance from av is 1.000000 (posses: 0.300000 - -0.700000)
 SUCCESS: default cam is keeping cam within 1.000000 from av
-MYCAM: connected a custom update to cameracontroller.
+MYCAM: connected a custom code to control camera.
 CHECK CAM DIST: cam distance from av is 0.500000 (posses: 0.400000 - -0.100000)
 SUCCESS: custom cam is keeping cam within 0.500000 from av
 CHECK CAM DIST: cam distance from av is 0.500000 (posses: 0.500000 - 0.000000)
