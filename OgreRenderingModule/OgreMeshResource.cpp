@@ -76,7 +76,7 @@ namespace OgreRenderer
         catch (Ogre::Exception &e)
         {
             OgreRenderingModule::LogError("Failed to create mesh " + id_ + ": " + std::string(e.what()));
-            RemoveMesh();            
+            RemoveMesh();
             return false;
         }
 

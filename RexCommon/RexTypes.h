@@ -146,7 +146,15 @@ const asset_type_t RexAT_Skeleton = 44;
 const asset_type_t RexAT_MaterialScript = 45;
 const asset_type_t RexAT_ParticleScript = 47;
 const asset_type_t RexAT_FlashAnimation = 49;
-            
+
+// Text asset types
+const std::string ASSETTYPENAME_TEXTURE("Texture");
+const std::string ASSETTYPENAME_MESH("Mesh");
+const std::string ASSETTYPENAME_SKELETON("Skeleton");
+const std::string ASSETTYPENAME_PARTICLE_SCRIPT("ParticleScript");
+const std::string ASSETTYPENAME_MATERIAL_SCRIPT("MaterialScript");
+const std::string ASSETTYPENAME_UNKNOWN("Unknown");
+
 // UDP Asset channels
 const int RexAC_Unknown = 0;
 const int RexAC_Miscellaneous = 1;

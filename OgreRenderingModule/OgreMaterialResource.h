@@ -14,7 +14,7 @@ namespace OgreRenderer
     class OgreMaterialResource;
     typedef boost::shared_ptr<OgreMaterialResource> OgreMaterialResourcePtr;
 
-    //! An Ogre-specific mesh resource
+    //! An Ogre-specific material script resource
     /*! \ingroup OgreRenderingModuleClient
      */
     class OGRE_MODULE_API OgreMaterialResource : public Foundation::ResourceInterface
@@ -26,7 +26,7 @@ namespace OgreRenderer
         explicit OgreMaterialResource(const std::string& id);
         
         //! constructor
-        /*! \param id mesh id
+        /*! \param id material id
             \param source asset data to construct material from
         */
         OgreMaterialResource(const std::string& id, Foundation::AssetPtr source);

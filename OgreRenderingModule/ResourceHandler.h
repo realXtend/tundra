@@ -70,6 +70,13 @@ namespace OgreRenderer
          */
         bool UpdateMesh(Foundation::AssetPtr source, Core::request_tag_t tag); 
 
+        //! Creates or updates a skeleton, based on source asset data
+        /*! \param source Asset
+            \param tag Request tag from asset event
+            \return true if successful
+         */
+        bool UpdateSkeleton(Foundation::AssetPtr source, Core::request_tag_t tag); 
+
         //! Creates or updates a material, based on source asset data
         /*! \param source The material asset data.
             \param tag Request tag from raw asset resource event
