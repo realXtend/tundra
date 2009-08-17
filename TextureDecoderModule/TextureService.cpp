@@ -7,6 +7,7 @@
 #include "TextureDecoderModule.h"
 #include "TextureResource.h"
 #include "TextureService.h"
+#include "RexTypes.h"
 
 namespace TextureDecoder
 {
@@ -100,7 +101,7 @@ namespace TextureDecoder
                     // Send resource ready event for each request tag in the request
                     const Core::RequestTagVector& tags = i->second.GetTags();
 
-                    Foundation::EventManagerPtr event_manager = framework_->GetEventManager();                    
+                    Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
                     for (Core::uint j = 0; j < tags.size(); ++j)
                     { 
                         Resource::Events::ResourceReady event_data(i->second.GetId(), result.texture_, tags[j]);
@@ -143,8 +144,8 @@ namespace TextureDecoder
 
         if (request.HasEnoughData())
         {
-            // Queue decode request to decode thread     
-            Foundation::AssetPtr asset = asset_service->GetIncompleteAsset(request.GetId(), "Texture", request.GetReceived());
+            // Queue decode request to decode thread
+            Foundation::AssetPtr asset = asset_service->GetIncompleteAsset(request.GetId(), RexTypes::ASSETTYPENAME_TEXTURE, request.GetReceived());
             if (asset)
             {
                 DecodeRequest new_request;

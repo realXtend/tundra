@@ -7,19 +7,22 @@
 #include "OgreMeshResource.h"
 #include "OgreMaterialResource.h"
 #include "OgreParticleResource.h"
+#include "OgreSkeletonResource.h"
 #include "ResourceInterface.h"
 #include "ResourceHandler.h"
 #include "OgreMaterialUtils.h"
+#include "RexTypes.h"
 
 namespace OgreRenderer
 {
     ResourceHandler::ResourceHandler(Foundation::Framework* framework) :
         framework_(framework)
     {
-        source_types_[OgreTextureResource::GetTypeStatic()] = "Texture";
-        source_types_[OgreMeshResource::GetTypeStatic()] = "Mesh";
-        source_types_[OgreMaterialResource::GetTypeStatic()] = "MaterialScript";
-        source_types_[OgreParticleResource::GetTypeStatic()] = "ParticleScript";
+        source_types_[OgreTextureResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_TEXTURE;
+        source_types_[OgreMeshResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_MESH;
+        source_types_[OgreSkeletonResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_SKELETON;
+        source_types_[OgreMaterialResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_MATERIAL_SCRIPT;
+        source_types_[OgreParticleResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_PARTICLE_SCRIPT;
     }
 
     ResourceHandler::~ResourceHandler()
@@ -116,13 +119,16 @@ namespace OgreRenderer
                 if (expected_request_tags_.find(event_data->tag_) == expected_request_tags_.end())
                     return false;
 
-                if (event_data->asset_type_ == "Mesh")
+                if (event_data->asset_type_ == RexTypes::ASSETTYPENAME_MESH)
                     UpdateMesh(event_data->asset_, event_data->tag_);
 
-                if (event_data->asset_type_ == "MaterialScript")
+                if (event_data->asset_type_ == RexTypes::ASSETTYPENAME_SKELETON)
+                    UpdateSkeleton(event_data->asset_, event_data->tag_);
+
+                if (event_data->asset_type_ == RexTypes::ASSETTYPENAME_MATERIAL_SCRIPT)
                     UpdateMaterial(event_data->asset_, event_data->tag_);
 
-                if (event_data->asset_type_ == "ParticleScript")
+                if (event_data->asset_type_ == RexTypes::ASSETTYPENAME_PARTICLE_SCRIPT)
                     UpdateParticles(event_data->asset_, event_data->tag_);
             }
             break;
@@ -336,7 +342,7 @@ namespace OgreRenderer
         }
         
         return success;
-    }    
+    }
 
     bool ResourceHandler::UpdateMaterial(Foundation::AssetPtr source, Core::request_tag_t tag)
     {    
@@ -386,6 +392,32 @@ namespace OgreRenderer
             resources_[source->GetId()] = particle;
             ProcessResourceReferences(particle);
 
+            success = true;
+        }
+        
+        return success;
+    }
+    
+    bool ResourceHandler::UpdateSkeleton(Foundation::AssetPtr source, Core::request_tag_t tag)
+    {    
+        expected_request_tags_.erase(tag);
+            
+        // If not found, prepare new
+        Foundation::ResourcePtr skeleton = GetResourceInternal(source->GetId(), OgreSkeletonResource::GetTypeStatic());
+        if (!skeleton)
+        {
+            skeleton = Foundation::ResourcePtr(new OgreSkeletonResource(source->GetId()));
+        }
+
+        bool success = false;
+        OgreSkeletonResource* skeleton_res = checked_static_cast<OgreSkeletonResource*>(skeleton.get());
+
+        // If data successfully set, or already have valid data, success (send RESOURCE_READY_EVENT)
+        if ((skeleton_res->IsValid()) || (skeleton_res->SetData(source)))
+        {
+            resources_[source->GetId()] = skeleton;
+            ProcessResourceReferences(skeleton);
+            
             success = true;
         }
         
