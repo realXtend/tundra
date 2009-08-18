@@ -2,6 +2,7 @@
 an experiment in overriding default behaviour by a qtscript defined handler,
 using qt signals and properties. for the problem statement see
 http://wiki.realxtend.org/index.php/Qt_Script_as_a_means_of_extending_and_overriding_internal_Naali_behavior
+about qt signals and slots in general, see http://doc.trolltech.com/4.5/signalsandslots.html
 
 NOTE: doesn't disconnect the default handler when a new one is added.
 do browsers do that when you define e.g. myimg.onclick via DOM in js?
