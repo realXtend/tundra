@@ -1,6 +1,6 @@
 #include "StableHeaders.h"
 
-#include "OgreUIView.h"
+#include "UICanvas.h"
 #include "Profiler.h"
 
 #ifndef Q_WS_WIN
@@ -26,20 +26,42 @@
 namespace QtUI
 {
 
-OgreUIView::OgreUIView()
+UICanvas::UICanvas()
 :overlay_(0),
 container_(0),
 mouseDown(false),
-view_dirty_(true)
+view_dirty_(true),
+mode_(Internal)
 {
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 }
 
-OgreUIView::~OgreUIView()
+UICanvas::UICanvas(Mode mode) :overlay_(0),
+container_(0),
+mouseDown(false),
+view_dirty_(true),
+mode_(mode)
+{
+ if (mode_ == External) 
+ {
+     setScene(new QGraphicsScene);
+
+    // Deal canvas as widget. 
+    // Currently do nothing
+ }
+ else
+ {
+    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+ }
+    
+}
+
+
+UICanvas::~UICanvas()
 {
 }
 
-void OgreUIView::SetViewCanvasSize(int width, int height)
+void UICanvas::SetViewCanvasSize(int width, int height)
 {
     this->move(0, 0);
     this->resize(width, height);
@@ -47,7 +69,7 @@ void OgreUIView::SetViewCanvasSize(int width, int height)
     CreateOgreResources(width, height);
 }
 
-void OgreUIView::ResizeOgreTexture(int width, int height)
+void UICanvas::ResizeOgreTexture(int width, int height)
 {
     texture_->freeInternalResources();
     texture_->setWidth(width);
@@ -55,7 +77,7 @@ void OgreUIView::ResizeOgreTexture(int width, int height)
     texture_->createInternalResources();
 }
 
-void OgreUIView::CreateOgreResources(int width, int height)
+void UICanvas::CreateOgreResources(int width, int height)
 {
     // If we've already created the resources, just resize the texture to a new size.
     if (texture_.get())
@@ -106,7 +128,7 @@ void OgreUIView::CreateOgreResources(int width, int height)
     overlay_->show();
 }
 
-void OgreUIView::SetParentWindowSize(int windowWidth, int windowHeight)
+void UICanvas::SetParentWindowSize(int windowWidth, int windowHeight)
 {
     // Compute the appropriate Ogre overlay scale so that the resulting composition will be pixel perfect.
     float relWidth = (float)texture_->getWidth()/windowWidth;
@@ -118,17 +140,17 @@ void OgreUIView::SetParentWindowSize(int windowWidth, int windowHeight)
     container_->setDimensions(relWidth, relHeight);
 }
 
-void OgreUIView::drawBackground(QPainter *painter, const QRectF &rect)
+void UICanvas::drawBackground(QPainter *painter, const QRectF &rect)
 {
     QBrush black(Qt::transparent);
     painter->fillRect(rect, black);
 }
 
-void OgreUIView::RenderSceneToOgreSurface()
+void UICanvas::RenderSceneToOgreSurface()
 {
 	
 	// Render if and only if scene is dirty.
-	if (!view_dirty_)
+	if (!view_dirty_ && mode_ == External)
 		return;
 
 	
@@ -162,7 +184,7 @@ void OgreUIView::RenderSceneToOgreSurface()
 	view_dirty_ = false;
 }
 
-void OgreUIView::InjectMouseMove(int x, int y)
+void UICanvas::InjectMouseMove(int x, int y)
 {
     // Translate the mouse position from QGraphicsView coordinate frame onto
     // the QGraphicsScene coordinate frame.
@@ -191,7 +213,7 @@ void OgreUIView::InjectMouseMove(int x, int y)
     QApplication::sendEvent(this->scene(), &mouseEvent);
 }
 
-void OgreUIView::InjectMousePress(int x, int y)
+void UICanvas::InjectMousePress(int x, int y)
 {
     // Translate the mouse position from QGraphicsView coordinate frame onto
     // the QGraphicsScene coordinate frame.
@@ -216,7 +238,7 @@ void OgreUIView::InjectMousePress(int x, int y)
     QApplication::sendEvent(this->scene(), &mouseEvent);
 }
 
-void OgreUIView::InjectMouseRelease(int x, int y)
+void UICanvas::InjectMouseRelease(int x, int y)
 {
     // Translate the mouse position from QGraphicsView coordinate frame onto
     // the QGraphicsScene coordinate frame.
@@ -239,7 +261,7 @@ void OgreUIView::InjectMouseRelease(int x, int y)
     QApplication::sendEvent(this->scene(), &mouseEvent);
 }
 
-void OgreUIView::Update()
+void UICanvas::Update()
 {
 	view_dirty_ = true;
 }

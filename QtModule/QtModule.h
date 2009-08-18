@@ -7,12 +7,15 @@
 #include "ModuleInterface.h"
 #include "QtModuleApi.h"
 
+#include <QList>
+#include "UICanvas.h"
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+
 class QGraphicsScene;
 
 namespace QtUI
 {
-
-class OgreUIView;
 
 /// QtModule provides other modules with the ability to load widgets on canvases.
 /// These canvases can be then shown on the 2D screen or placed into the 3D world
@@ -44,7 +47,13 @@ public:
     /// @return The QGraphicsScene that corresponds to the main fullscreen 2D UI canvas.
     QGraphicsScene *GetUIScene() const;
 
-	
+	/**
+	 * Creates a canvas which is tracked by QtModule. 
+	 * @return pointer to newly created canvas.
+	 */
+    boost::weak_ptr<UICanvas> CreateCanvas(UICanvas::Mode mode) { canvases_.append(boost::shared_ptr<UICanvas>(new UICanvas(mode))); return canvases_.last(); }
+   	
+    void DeleteCanvas(UICanvas* canvas) {} 
 
 private:
     ///\todo Currently the QtModule only holds a single main 2D scene.
@@ -54,7 +63,7 @@ private:
     /// and perform compositing on a per-widget basis to minimize redundant
     /// redraws.
     QGraphicsScene *main_scene_;
-    OgreUIView *main_view_;
+    UICanvas *main_view_;
 
     // The event categories this module subscribes to.
     Core::event_category_id_t input_event_category_;
@@ -66,6 +75,7 @@ private:
     void PollMouseInput();
 
     bool mouse_left_button_down_;
+    QList<boost::shared_ptr<UICanvas> > canvases_;
 
 	
 };
