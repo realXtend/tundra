@@ -12,7 +12,7 @@
 #include <QPushButton>
 #include <QtUiTools>
 
-#include "OgreUIView.h"
+#include "UICanvas.h"
 #include "InputEvents.h"
 #include "InputModuleOIS.h"
 
@@ -25,7 +25,7 @@ namespace
 }
 
 QtModule::QtModule()
-:ModuleInterfaceImpl(moduleName)
+:ModuleInterfaceImpl(Foundation::Module::MT_Gui)
 {
 }
 
@@ -59,7 +59,7 @@ void QtModule::Initialize()
     // Create the single main 2D scene.
     main_scene_ = new QGraphicsScene();
 
-    main_view_ = new OgreUIView();
+    main_view_ = new UICanvas();
     main_view_->setScene(main_scene_);
     main_view_->SetViewCanvasSize(128, 128);
     main_view_->SetParentWindowSize(renderer->GetWindowWidth(), renderer->GetWindowHeight());
@@ -104,6 +104,7 @@ void QtModule::Uninitialize()
     main_view_ = NULL;
     delete main_scene_;
     main_scene_ = NULL;
+    
 }
 
 bool QtModule::HandleEvent(Core::event_category_id_t category_id,

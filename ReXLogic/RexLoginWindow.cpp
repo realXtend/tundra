@@ -16,6 +16,7 @@
 #include "Poco/URI.h"
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include "UICanvas.h"
 
 namespace RexLogic
 {
@@ -35,12 +36,15 @@ namespace RexLogic
 
     void RexLoginWindow::InitLoginWindow()
     {
-        Foundation::ModuleWeakPtr qt_module = framework_->GetModuleManager()->GetModule("QtModule");
-
+        boost::shared_ptr<QtUI::QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+       
         // If this occurs, we're most probably operating in headless mode.
-        if (qt_module.expired())
+     
+        if ( qt_module.get() == 0)
             return;
 
+        canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::External).lock();
+        
         /** \todo Just instantiating a QUiLoader on the next code line below causes 
               11 memory leaks to show up, like the following:
                 {106636} normal block at 0x09D6B1F0, 68 bytes long.
@@ -59,6 +63,15 @@ namespace RexLogic
         QUiLoader loader;
         QFile file("./data/ui/login.ui");
         login_widget_ = loader.load(&file); 
+        
+        // If user wants to add many widgets into one canvas, it must be done currently through scene-object. 
+        //QGraphicsScene* scene = canvas_->scene();
+        //scene->addWidget(login_widget_);
+
+        canvas_->setViewport(login_widget_);
+        
+        // Set canvas size. 
+        canvas_->resize(login_widget_->size());
 
         // Create connections.
         QPushButton *pButton = login_widget_->findChild<QPushButton *>("but_connect");
@@ -107,6 +120,8 @@ namespace RexLogic
         line = login_widget_->findChild<QLineEdit* >("line_auth_server");
         line->setText(QString(strText.c_str()));
 
+        
+        canvas_->show();
         login_widget_->show();
 
 		//OpenID widget init
@@ -261,6 +276,7 @@ namespace RexLogic
 
     void RexLoginWindow::HideLoginWindow()
     {
+        canvas_->hide();
         login_widget_->hide();
         logout_button_->show();
         quit_button_->show();
@@ -268,6 +284,7 @@ namespace RexLogic
 
     void RexLoginWindow::ShowLoginWindow()
     {
+        canvas_->show();
         login_widget_->show();
         logout_button_->hide();
         quit_button_->hide();

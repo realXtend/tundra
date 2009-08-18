@@ -8,6 +8,7 @@
 #include "NetworkEvents.h"
 #include "Foundation.h"
 #include "cbloginwidget.h"
+#include "UICanvas.h"
 
 class QWidget;
 class QPushButton;
@@ -57,6 +58,7 @@ namespace RexLogic
         QPushButton *logout_button_;
         QPushButton *quit_button_;
 		CBLoginWidget *cblogin;
+        boost::shared_ptr<QtUI::UICanvas> canvas_;
     };
 }
 
