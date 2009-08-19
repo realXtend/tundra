@@ -6,13 +6,7 @@
 #include "ModuleReference.h"
 #include "EventDataInterface.h"
 
-namespace Poco
-{
-    namespace XML
-    {
-        class Node;
-    }
-}
+class QDomElement;
 
 namespace Foundation
 {
@@ -166,7 +160,7 @@ namespace Foundation
         EventSubscriber* FindNodeWithModule(EventSubscriber* node, ModuleInterface* module) const;
         
         //! Finds a node from the tree which has certain module as a child
-         /*! \param node Starting node for search
+        /*! \param node Starting node for search
             \param module Module to look for
             \return Pointer to node, or 0 if not found
          */
@@ -181,17 +175,17 @@ namespace Foundation
          */
         bool SendEvent(EventSubscriber* node, Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const;
         
-        //! Populates subscriber tree from Poco xml document nodes
-        /*! \param node Pointer to Poco xml document node
+        //! Populates subscriber tree from xml elements
+        /*! \param node Pointer to xml element
             \param parent_name Current parent module name (empty for root)
          */
-        void BuildTreeFromNode(Poco::XML::Node* node, const std::string parent_name);
+        void BuildTreeFromNode(QDomElement& elem, const std::string parent_name);
 
         //! Next event category ID that will be assigned
         Core::event_category_id_t next_category_id_;
         
         //! Next free request tag to be used
-        Core::request_tag_t next_request_tag_;    
+        Core::request_tag_t next_request_tag_;
                 
         //! Map for assigned event category id's
         EventCategoryMap event_category_map_;

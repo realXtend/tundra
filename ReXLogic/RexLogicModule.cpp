@@ -25,6 +25,7 @@
 #include "EC_Water.h"
 #include "EC_NetworkPosition.h"
 #include "EC_Controllable.h"
+#include "EC_AvatarAppearance.h"
 #include "InputEvents.h"
 
 // Ogre -specific
@@ -71,6 +72,7 @@ namespace RexLogic
         DECLARE_MODULE_EC(EC_Water);
         DECLARE_MODULE_EC(EC_NetworkPosition);
         DECLARE_MODULE_EC(EC_Controllable);
+        DECLARE_MODULE_EC(EC_AvatarAppearance);
         
         AutoRegisterConsoleCommand(Console::CreateCommand("Login", 
             "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
@@ -183,7 +185,7 @@ namespace RexLogic
             event_handlers_[eventcategoryid].push_back(boost::bind(&FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
         else
             LogError("Unable to find event category for Framework");
-                            
+        
         boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (renderer)
         {
