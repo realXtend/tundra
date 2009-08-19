@@ -107,7 +107,7 @@ class ComponentRunner(Component):
             
     def MOUSE_INPUT(self, x_abs, y_abs, x_rel, y_rel):
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
-        print "Manager got mouse input", self.mouseinfo, self.mouseinfo.x, self.mouseinfo.y
+        #print "Manager got mouse input", self.mouseinfo, self.mouseinfo.x, self.mouseinfo.y
         self.m.send(MouseMove(self.mouseinfo), "on_mousemove")
         
     def exit(self):
