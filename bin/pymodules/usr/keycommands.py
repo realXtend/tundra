@@ -36,6 +36,14 @@ class KeyCommander(Component):
         
         if evid in self.inputmap:
             self.inputmap[evid]()
+    
+    #uncomment this for raycasting tests
+    #~ def on_mousemove(self, mouseinfo):
+        #~ print "MouseMove", mouseinfo.x, mouseinfo.y
+        #~ ent = r.rayCast(mouseinfo.x, mouseinfo.y)
+        #~ print "Got entity:", ent
+        #~ if ent is not False:
+            #~ print "Entity position is", ent.pos
         
     def run_commandpy(self):
         #print "Command:"
