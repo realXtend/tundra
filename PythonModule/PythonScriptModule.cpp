@@ -17,6 +17,7 @@
 #include "RexProtocolMsgIDs.h"
 #include "InputEvents.h" //handling input events
 #include "InputServiceInterface.h" //for getting mouse info from the input service
+#include "RenderServiceInterface.h" //for getting rendering services, i.e. raycasts
 
 #include "SceneManager.h"
 #include "SceneEvents.h" //sending scene events after (placeable component) manipulation
@@ -443,23 +444,32 @@ PyObject* SendChat(PyObject *self, PyObject *args)
 
 	Py_RETURN_TRUE;
 }
-/* //W.I.P. RayCasting API for python
+
+
+//returns the entity at the position (x, y), if nothing there, returns False	
 static PyObject* RayCast(PyObject *self, PyObject *args)
 {
 	float x, y;
 	
-	if(!PyArg_ParseTuple(args, "ff", &x, &y))
-		return NULL; //XXX raise ValueError
+	if(!PyArg_ParseTuple(args, "ff", &x, &y)){
+		PyErr_SetString(PyExc_ValueError, "Raycasting failed due to ValueError, needs (x, y) values.");
+        return NULL;   
+	}
 
-	Scene::Entity *entity = renderer_->Raycast(x, y);
+	Foundation::Framework *framework_ = PythonScript::staticframework;
+	boost::shared_ptr<Foundation::RenderServiceInterface> render = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+	Scene::Entity *entity = render->Raycast(x, y);
 
     if (entity)
     {
         Scene::Events::SceneEventData event_data(entity->GetId());
         framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_GRAB, &event_data);
+		return entity_create(entity->GetId());
     }
+	else 
+		Py_RETURN_FALSE;
 }
-*/
+
 
 //returns an Entity wrapper, is in actual use
 PyObject* GetEntity(PyObject *self, PyObject *args)
@@ -701,6 +711,9 @@ static PyMethodDef EmbMethods[] = {
 
 	{"pyEventCallback", (PyCFunction)PyEventCallback, METH_VARARGS,
 	"Handling callbacks from py scripts. Calling convension: with 2 strings"},
+
+	{"rayCast", (PyCFunction)RayCast, METH_VARARGS,
+	"RayCasting from camera to point (x,y)."},
 
 	{NULL, NULL, 0, NULL}
 };
