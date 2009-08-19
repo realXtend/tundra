@@ -4,12 +4,9 @@
 #include "EventManager.h"
 #include "ModuleManager.h"
 
-#include "Poco/DOM/DOMParser.h"
-#include "Poco/DOM/Element.h"
-#include "Poco/DOM/Attr.h"
-#include "Poco/DOM/NamedNodeMap.h"
-#include "Poco/DOM/AutoPtr.h"
-#include "Poco/SAX/InputSource.h"
+#include <QDomDocument>
+#include <QDomElement>
+#include <QFile>
 
 #include <algorithm>
 
@@ -264,88 +261,76 @@ namespace Foundation
         PROFILE(EventManager_LoadEventSubscriberTree);
 
         Foundation::RootLogInfo("Loading event subscriber tree from " + filename);
-        
-        try
+
+        QFile file(filename.c_str());
+        if (!file.open(QIODevice::ReadOnly))
         {
-            Poco::XML::InputSource source(filename);
-            Poco::XML::DOMParser parser;
-            Poco::XML::AutoPtr<Poco::XML::Document> document = parser.parse(&source);
-            
-            if (!document.isNull())
-            {
-                Poco::XML::Node* node = document->firstChild();
-                if (node)
-                {
-                    BuildTreeFromNode(node, "");
-                }
-            }
-            else
-            {
-                Foundation::RootLogError("Could not load event subscriber tree from " + filename);
-            }
+            Foundation::RootLogError("Could not open subscriber tree file " + filename);
+            return;
         }
-        catch (Poco::Exception& e)
+        QDomDocument doc("subscribertree");
+        if (!doc.setContent(&file))
         {
-            Foundation::RootLogError("Could not load event subscriber tree from " + filename + ": " + e.what());
+            file.close();
+            Foundation::RootLogError("Could not load subscriber tree file " + filename);
+            return;
         }
+        file.close();
+
+        QDomElement elem = doc.firstChildElement();
+        if (!elem.isNull())
+            BuildTreeFromNode(elem, "");
     }
     
-    void EventManager::BuildTreeFromNode(Poco::XML::Node* node, const std::string parent_name)
+    void EventManager::BuildTreeFromNode(QDomElement& elem, const std::string parent_name)
     {
-        while (node)
+        while (!elem.isNull())
         {
             std::string new_parent_name = parent_name;
             
-            Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> attributes = node->attributes();
-            if (!attributes.isNull())
+            std::string module_name = elem.attribute("module").toStdString();
+            std::string priority_str = elem.attribute("priority").toStdString();
+            
+            if ((!module_name.empty()) && (!priority_str.empty()))
             {
-                Poco::XML::Attr* module_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("module"));
-                Poco::XML::Attr* priority_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("priority"));
-
-                if (module_attr && priority_attr)
+                int priority = boost::lexical_cast<int>(priority_str);
+                
+                new_parent_name = module_name;
+                
+                ModuleWeakPtr module_weak(framework_->GetModuleManager()->GetModule(module_name));
+                ModuleSharedPtr module (module_weak.lock());
+                if (module)
                 {
-                    const std::string& module_name = module_attr->getValue();
-                    int priority = boost::lexical_cast<int>(priority_attr->getValue());
-                    
-                    new_parent_name = module_name;
-                    
-                    ModuleWeakPtr module_weak 
-                        (framework_->
-                        GetModuleManager()->
-                        GetModule(module_name));
-                    ModuleSharedPtr module (module_weak.lock());
-                    if (module)
+                    if (parent_name.empty())
                     {
-                        if (parent_name.empty())
-                        {
-                            RegisterEventSubscriber(module, priority, ModuleWeakPtr());
-                        }
-                        else
-                        {
-                            ModuleWeakPtr parent = framework_->GetModuleManager()->GetModule(parent_name);
-                            if (parent.lock().get())
-                            {
-                                RegisterEventSubscriber(module, priority, parent);
-                            }
-                            else
-                            {
-                                Foundation::RootLogWarning("Parent module " + parent_name + " not found for module " + module_name);
-                            }
-                        }
+                        RegisterEventSubscriber(module, priority, ModuleWeakPtr());
                     }
                     else
                     {
-                        Foundation::RootLogWarning("Module " + module_name + " not found");
+                        ModuleWeakPtr parent = framework_->GetModuleManager()->GetModule(parent_name);
+                        if (parent.lock().get())
+                        {
+                            RegisterEventSubscriber(module, priority, parent);
+                        }
+                        else
+                        {
+                            Foundation::RootLogWarning("Parent module " + parent_name + " not found for module " + module_name);
+                        }
                     }
+                }
+                else
+                {
+                    Foundation::RootLogWarning("Module " + module_name + " not found");
                 }
             }
             
-            if (node->firstChild())
+            QDomElement childElem = elem.firstChildElement();
+            if (!childElem.isNull())
             {
-                BuildTreeFromNode(node->firstChild(), new_parent_name);
+                BuildTreeFromNode(childElem, new_parent_name);
             }
             
-            node = node->nextSibling();
+            elem = elem.nextSiblingElement();
         }
     }
     

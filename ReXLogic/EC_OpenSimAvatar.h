@@ -48,13 +48,12 @@ namespace RexLogic
         void SetState(State state);
         //! get state
         State GetState() const;
-                     
+
     private:
         //! appearance address
         std::string avatar_address_;
         //! appearance override address
         std::string avatar_override_address_;
-        
         //! state
         State state_;
 
