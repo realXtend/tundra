@@ -3,7 +3,9 @@
 #ifndef incl_RexLogic_AvatarAppearance_h
 #define incl_RexLogic_AvatarAppearance_h
 
-#include "AnimationDefinition.h"
+#include "EC_AvatarAppearance.h"
+
+class QDomDocument;
 
 namespace RexLogic
 {
@@ -16,17 +18,17 @@ namespace RexLogic
         AvatarAppearance(RexLogicModule *rexlogicmodule);
         ~AvatarAppearance();
         
+        //! Reads default appearance of avatar from file to xml document
+        void ReadDefaultAppearance(const std::string& filename);
+        
         //! Sets up an avatar entity's appearance
         void SetupAppearance(Scene::EntityPtr entity);
         
     private:
         RexLogicModule *rexlogicmodule_;
         
-        //! Default animation definition map
-        AnimationDefinitionMap default_animations_;
-        
-        //! Default avatar mesh name
-        std::string default_avatar_mesh_;
+        //! Default avatar appearance xml document
+        boost::shared_ptr<QDomDocument> default_appearance_;
     };
 }
 
