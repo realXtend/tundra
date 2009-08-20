@@ -11,7 +11,7 @@ namespace OgreRenderer
 #include "NetworkEvents.h"
 #include "RexUUID.h"
 #include "EC_OpenSimAvatar.h"
-#include "AnimationDefinition.h"
+#include "EC_AvatarAppearance.h"
 #include "AvatarAppearance.h"
 
 namespace RexLogic

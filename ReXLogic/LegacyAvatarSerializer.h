@@ -3,8 +3,9 @@
 #ifndef incl_RexLogic_LegacyAvatarSerializer_h
 #define incl_RexLogic_LegacyAvatarSerializer_h
 
-#include "AnimationDefinition.h"
+#include "EC_AvatarAppearance.h"
 
+class QDomDocument;
 class QDomElement;
 
 namespace RexLogic
@@ -13,11 +14,17 @@ namespace RexLogic
     class LegacyAvatarSerializer
     {
     public:
-        //! Read animation definitions from an xml file
-        static void ReadAnimationDefinitions(AnimationDefinitionMap& dest, const std::string& filename);
+        //! Reads avatar definition into an EC_AvatarAppearance from an xml document
+        //! \return true if mostly successful
+        static bool ReadAvatarAppearance(EC_AvatarAppearance& dest, const QDomDocument& source);
         
-        //! Read a single animation definition from an xml node
-        static void ReadAnimationDefinition(AnimationDefinitionMap& dest, const QDomElement& elem);
+        //! Reads animation definitions only from an xml fdocument
+        //! \return true if successful
+        static bool ReadAnimationDefinitions(AnimationDefinitionMap& dest, const QDomDocument& source);
+        
+        //! Reads a single animation definition from an xml node
+        //! \return true if successful
+        static bool ReadAnimationDefinition(AnimationDefinitionMap& dest, const QDomElement& elem);
     };
 }
 
