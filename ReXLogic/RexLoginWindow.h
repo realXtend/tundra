@@ -28,7 +28,7 @@ namespace RexLogic
         void InitLoginWindow();
         	
         // Shows an error dialog.
-	//void ShowErrorDialog(std::string message);        
+	    //void ShowErrorDialog(std::string message);        
        
         /// Updates the UI with a new connection state string.
         /// @param The connection state enum.
@@ -59,6 +59,7 @@ namespace RexLogic
         QPushButton *quit_button_;
 		CBLoginWidget *cblogin;
         boost::shared_ptr<QtUI::UICanvas> canvas_;
+        boost::shared_ptr<QtUI::UICanvas> screen_canvas_;
     };
 }
 

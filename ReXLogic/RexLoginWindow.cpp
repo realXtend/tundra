@@ -21,17 +21,19 @@
 namespace RexLogic
 {
     RexLoginWindow::RexLoginWindow(Foundation::Framework* framework, RexLogicModule *module) :
-    framework_(framework), rex_logic_(module), login_widget_(0), logout_button_(0), quit_button_(0)
+    framework_(framework), rex_logic_(module), login_widget_(0), logout_button_(0), quit_button_(0), cblogin(0)
     {
         InitLoginWindow();
     }
 
     RexLoginWindow::~RexLoginWindow()
     {
-        delete login_widget_;
-        delete logout_button_;
-        delete quit_button_;
-		delete cblogin;
+        // These are own by canvases so they deal cleaning operations.
+        login_widget_ = 0;
+		logout_button_ = 0;
+        quit_button_ = 0;
+
+        delete cblogin;
     }
 
     void RexLoginWindow::InitLoginWindow()
@@ -63,13 +65,9 @@ namespace RexLogic
         QUiLoader loader;
         QFile file("./data/ui/login.ui");
         login_widget_ = loader.load(&file); 
-        
-        // If user wants to add many widgets into one canvas, it must be done currently through scene-object. 
-        //QGraphicsScene* scene = canvas_->scene();
-        //scene->addWidget(login_widget_);
-
-        canvas_->setViewport(login_widget_);
-        
+      
+        canvas_->AddWidget(login_widget_);
+    
         // Set canvas size. 
         canvas_->resize(login_widget_->size());
 
@@ -121,8 +119,8 @@ namespace RexLogic
         line->setText(QString(strText.c_str()));
 
         
-        canvas_->show();
-        login_widget_->show();
+        canvas_->Show();
+        //login_widget_->show();
 
 		//OpenID widget init
 		cblogin = new CBLoginWidget();
@@ -139,21 +137,29 @@ namespace RexLogic
         if (!qt_ui)
             return;
 
-        QGraphicsScene *scene = qt_ui->GetUIScene();
-
+        screen_canvas_ = qt_ui->CreateCanvas(QtUI::UICanvas::Internal).lock();
+        screen_canvas_->SetCanvasSize(128,128);
+        QSize size = screen_canvas_->GetRenderWindowSize();
+        screen_canvas_->SetPosition(size.width()-128,size.height()-128);
+        
         logout_button_ = new QPushButton();
         logout_button_->setText("Log out");
         logout_button_->move(5, 5);
-        scene->addWidget(logout_button_);
         QObject::connect(logout_button_, SIGNAL(clicked()), this, SLOT(DisconnectAndShowLoginWindow()));
+        
         logout_button_->hide();
+        screen_canvas_->AddWidget(logout_button_);
 
         quit_button_ = new QPushButton();
         quit_button_->setText("Quit");
-        scene->addWidget(quit_button_);
         quit_button_->move(5, 30);
         QObject::connect(quit_button_, SIGNAL(clicked()), this, SLOT(Quit()));
+        
         quit_button_->hide();
+        screen_canvas_->AddWidget(quit_button_);
+        
+        
+
     }
 
     void RexLoginWindow::Connect()
@@ -276,18 +282,21 @@ namespace RexLogic
 
     void RexLoginWindow::HideLoginWindow()
     {
-        canvas_->hide();
-        login_widget_->hide();
-        logout_button_->show();
-        quit_button_->show();
+        canvas_->Hide();
+        //login_widget_->hide();
+
+        screen_canvas_->Show();
+       
     }
 
     void RexLoginWindow::ShowLoginWindow()
     {
-        canvas_->show();
-        login_widget_->show();
-        logout_button_->hide();
-        quit_button_->hide();
+        canvas_->Show();
+        //login_widget_->show();
+        
+        screen_canvas_->Hide();
+        //logout_button_->hide();
+        //quit_button_->hide();
     }
 
     void RexLoginWindow::Disconnect()
