@@ -15,27 +15,41 @@ class KeyCommander(Component):
     
     def __init__(self):
         Component.__init__(self)
-        self.inputmap = {
-            #r.MoveForwardPressed: self.run_commandpy,
-            #r.KeyPressed: self.run_commandpy, 
+        
+        """
+        This dictionary has the keyboard commands, well the
+        event ids for different keys that are currently enabled
+        on the python side.
+        """
+        self.keymap = {
             self.OIS_KEY_PERIOD: self.run_commandpy
-            #self.OIS_KEY_UP: self.overrideForwardWalking
         }
         
-    def on_keydown(self, key, mods):#, retfunc):
+        """
+        This has the events and overrides different ones... explain better! ;)
+        """
+        self.inputmap = {
+            #r.MoveForwardPressed: self.overrideForwardWalking #overrides the moveforward event
+        }
+        
+    def on_keydown(self, key, mods):
         #print "on_keydown call -> ", key
-        #retfunc(self.FORWARDEVENTS)
-        if key in self.inputmap:
-            self.inputmap[key]()
+        if key in self.keymap:
+            r.eventhandled = self.EVENTHANDLED
+            self.keymap[key]()
+        else:
+            r.eventhandled = False
 
     def on_keyup(self, key, mods):
         pass
         
     def on_input(self, evid):
         #print "Commander got input", evid
-        
         if evid in self.inputmap:
+            r.eventhandled = self.EVENTHANDLED
             self.inputmap[evid]()
+        else:
+            r.eventhandled = False
     
     #uncomment this for raycasting tests
     #~ def on_mousemove(self, mouseinfo):
@@ -52,5 +66,5 @@ class KeyCommander(Component):
         command = reload(command)
         
     def overrideForwardWalking(self):
-        #print "Arrow UP pressed, don't move?"
+        print "MoveForward called, STOP, it's Hammer time!"
         r.eventhandled = self.EVENTHANDLED
