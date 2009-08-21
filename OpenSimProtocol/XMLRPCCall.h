@@ -19,30 +19,32 @@ public:
      * Overrided constructor which creates call method which METHOD is set to given param.
      * @param method is method name. 
      */
-    XMLRPCCall(const std::string& method);
+    explicit XMLRPCCall(const std::string& method);
     XMLRPCCall();
     ~XMLRPCCall();
 
     /**
      * Returns request object (reference). 
-     * @note XMLRPC_REQUEST is actually pointer which contains reference counter, be careful. 
      */
-    XMLRPC_REQUEST& GetRequest() { return request_;}
+    XMLRPC_REQUEST GetRequest() { return request_;}
     
     /**
      * Returns paramlist in current call. 
-     * @note XMLRPC_VALUE is actually pointer which contains reference counter, be careful. 
      */
-    XMLRPC_VALUE& GetParamList() { return paramList_; }
+    XMLRPC_VALUE GetParamList() { return paramList_; }
     
     /**
      * Returns current call options. 
-     * @note STRUCT_XMLRPC_REQUEST_OUTPUT_OPTIONS is actually pointer which contains reference counter, be careful. 
      */
-    STRUCT_XMLRPC_REQUEST_OUTPUT_OPTIONS& GetOptions() { return output_; }
+//    STRUCT_XMLRPC_REQUEST_OUTPUT_OPTIONS &GetOptions() { return output_; }
     
     /**
-     * Returns reply request. 
+     * Returns reply request.
+     * \todo What is a 'reply request'? In XMLRPC, we send a request structure, and get back a reply structure. Is this
+     *       for getting the request structure before sending the request so that more variables can be added to it using
+     *       the C API? Or is this for getting the request structure after the request has been sent so that one can use 
+     *       the C API to read the reply structure? Apparently this can be used for both (?), so recommend renaming just to
+     *       GetXMLRPC_REQUEST() to reflect it's a getter for a generic purpose on the underlying C structure. -jj.
      */
     XMLRPC_REQUEST GetReply() const { return reply_; }
     
@@ -78,6 +80,6 @@ private:
     XMLRPC_REQUEST reply_;
     STRUCT_XMLRPC_REQUEST_OUTPUT_OPTIONS output_;
     std::map<std::string, XMLRPC_VALUE> mapArrays_;
-
 };
+
 #endif

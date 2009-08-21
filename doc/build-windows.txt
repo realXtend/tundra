@@ -1,3 +1,6 @@
+This documentation relates to the currently up-to-date version of SVN trunk. For more information on how to build the latest release,
+see http://wiki.realxtend.org/index.php/Building_Naali_in_Windows.
+
 The Naali viewer codebase uses CMake as its build system, so to generate the project solution files for Microsoft Visual Studio 2008 to use, you need to install CMake from http://www.cmake.org/.
 To be able to build the source repository, the first thing you need to do is to obtain (and possibly compile) the dependencies that are required by Naali. The second step is to configure 
 the CMake build script to locate those dependencies, and finally you can compile the viewer solution itself.
