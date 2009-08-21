@@ -176,7 +176,7 @@ namespace RexLogic
         RexServerConnectionPtr rexserver_connection_;
 
         //! Movement damping constant
-        Core::f32 movement_damping_constant_;
+        Core::Real movement_damping_constant_;
 
         //! How long to keep doing dead reckoning
         Core::f64 dead_reckoning_time_;

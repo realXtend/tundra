@@ -606,10 +606,10 @@ namespace RexLogic
             return;
             
         // Damping interpolation factor, dependent on frame time
-        Core::f32 factor = pow(2.0, -frametime * movement_damping_constant_);
+        Core::Real factor = pow(2.0, -frametime * movement_damping_constant_);
         if (factor < 0.0) factor = 0.0;
         if (factor > 1.0) factor = 1.0;
-        Core::f32 rev_factor = 1.0 - factor;
+        Core::Real rev_factor = 1.0 - factor;
                 
         for(Scene::SceneManager::iterator iter = activeScene_->begin();
             iter != activeScene_->end(); ++iter)

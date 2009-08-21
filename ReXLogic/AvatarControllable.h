@@ -103,7 +103,7 @@ namespace RexLogic
         RexServerConnectionPtr connection_;
 
         //! default speed for avatar rotation
-        Core::f32 rotation_sensitivity_;
+        Core::Real rotation_sensitivity_;
 
         //! First or third person mode
         State current_state_;

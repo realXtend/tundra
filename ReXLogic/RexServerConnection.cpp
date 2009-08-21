@@ -260,10 +260,10 @@ namespace RexLogic
         if(!connected_)
             return;
 
-        Core::f32 max_bits_per_second = framework_->GetDefaultConfig().DeclareSetting("RexLogicModule", "max_bits_per_second", 1000000.0f);
+        Core::Real max_bits_per_second = framework_->GetDefaultConfig().DeclareSetting("RexLogicModule", "max_bits_per_second", 1000000.0f);
         
         int idx = 0;
-        static const size_t size = 7 * sizeof(Core::f32);
+        static const size_t size = 7 * sizeof(Core::Real);
         Core::u8 throttle_block[size];
         
         WriteFloatToBytes(max_bits_per_second * 0.1f, throttle_block, idx); // resend

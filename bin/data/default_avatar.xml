@@ -149,25 +149,16 @@
     <morph_modifier name="thin-body-upper" internal_name="Morph_thin-body-upper" influence="0.000000" />
     <morph_modifier name="thin-legs-lower" internal_name="Morph_thin-legs-lower" influence="0.000000" />
     <morph_modifier name="thin-legs-upper" internal_name="Morph_thin-legs-upper" influence="0.000000" />
-    <animation name="AWAY" id="fd037134-85d4-f241-72c6-4f42164fedee" internal_name="Stand" looped="true" fadein="0.250000" fadeout="0.250000" speedfactor="1.000000" />
-    <animation name="CROUCHWALK" id="47f5f6fb-22e5-ae44-f871-73aaaf4a6022" internal_name="Crouch" looped="true" usevelocity="true" fadein="0.250000" fadeout="0.250000" speedfactor="1.400000" />
-    <animation name="FLY" id="aec4610c-757f-bc4e-c092-c6e9caf18daf" internal_name="Fly" looped="true" fadein="0.250000" fadeout="0.250000" speedfactor="1.100000" />
-    <animation name="HOVER" id="4ae8016b-31b9-03bb-c401-b1ea941db41d" internal_name="Hover" looped="true" fadein="0.250000" fadeout="0.250000" speedfactor="0.350000" />
-    <animation name="HOVER_DOWN" id="20f063ea-8306-2562-0b07-5c853b37b31e" internal_name="Hover" looped="true" fadein="0.250000" fadeout="0.250000" speedfactor="0.350000" />
-    <animation name="HOVER_UP" id="62c5de58-cb33-5743-3d07-9e4cd4352864" internal_name="Hover" looped="true" fadein="0.250000" fadeout="0.250000" speedfactor="0.350000" />
-    <animation name="RUN" id="05ddbff8-aaa9-92a1-2b74-8fe77a29b445" internal_name="Run" looped="true" usevelocity="true" fadein="0.250000" fadeout="0.250000" speedfactor="0.600000" />
-    <animation name="SIT" id="1a5fe8ac-a804-8a5d-7cbd-56bd83184568" internal_name="SitOnObject" fadein="0.400000" fadeout="0.500000" speedfactor="1.000000" />
-    <animation name="SIT_FEMALE" id="b1709c8d-ecd3-54a1-4f28-d55ac0840782" internal_name="SitOnObject" fadein="0.400000" fadeout="0.500000" speedfactor="1.000000" />
-    <animation name="SIT_GENERIC" id="245f3c54-f1c0-bf2e-811f-46d8eeb386e7" internal_name="SitOnObject" fadein="0.400000" fadeout="0.500000" speedfactor="1.000000" />
-    <animation name="SIT_GROUND" id="1c7600d6-661f-b87b-efe2-d7421eb93c86" internal_name="SitOnGround1" fadein="0.400000" fadeout="0.500000" speedfactor="1.000000" />
-    <animation name="SIT_GROUND_CONSTRAINED" id="1a2bd58e-87ff-0df8-0b4c-53e047b0bb6e" internal_name="SitOnGround1" fadein="0.400000" fadeout="0.500000" speedfactor="1.000000" />
-    <animation name="SIT_TO_STAND" id="a8dee56f-2eae-9e7a-05a2-6fb92b97e21e" internal_name="SitOnGround1" fadein="0.400000" fadeout="0.500000" speedfactor="1.000000" />
-    <animation name="STAND" id="2408fe9e-df1d-1d7d-f4ff-1384fa7b350f" internal_name="Stand" looped="true" fadein="0.250000" fadeout="0.250000" speedfactor="1.000000" />
-    <animation name="STAND_1" id="15468e00-3400-bb66-cecc-646d7c14458e" internal_name="Stand" looped="true" fadein="0.250000" fadeout="0.250000" speedfactor="1.000000" />
-    <animation name="STAND_2" id="370f3a20-6ca6-9971-848c-9a01bc42ae3c" internal_name="Stand" looped="true" fadein="0.250000" fadeout="0.250000" speedfactor="1.000000" />
-    <animation name="STAND_3" id="42b46214-4b44-79ae-deb8-0df61424ff4b" internal_name="Stand" looped="true" fadein="0.250000" fadeout="0.250000" speedfactor="1.000000" />
-    <animation name="STAND_4" id="f22fed8b-a5ed-2c93-64d5-bdd8b93c889f" internal_name="Stand" looped="true" fadein="0.250000" fadeout="0.250000" speedfactor="1.000000" />
-    <animation name="WALK" id="6ed24bd8-91aa-4b12-ccc7-c97c857ab4e0" internal_name="Walk" looped="true" usevelocity="true" fadein="0.250000" fadeout="0.250000" speedfactor="1.000000" />
+    <animation name="CrouchWalk" id="47f5f6fb-22e5-ae44-f871-73aaaf4a6022" internal_name="Crouch" looped="1" speedfactor="1.4" usevelocity="1" fadein="0.25" fadeout="0.25" />
+    <animation name="Fly" id="aec4610c-757f-bc4e-c092-c6e9caf18daf" internal_name="Fly" looped="1" speedfactor="1.1" fadein="0.25" fadeout="0.25" />
+    <animation name="Hover" id="4ae8016b-31b9-03bb-c401-b1ea941db41d" internal_name="Hover" speedfactor="0.35" looped="1" fadein="0.25" fadeout="0.25" />
+    <animation name="HoverDown" id="20f063ea-8306-2562-0b07-5c853b37b31e" internal_name="Hover" speedfactor="0.35" looped="1" fadein="0.25" fadeout="0.25" />
+    <animation name="HoverUp" id="62c5de58-cb33-5743-3d07-9e4cd4352864" internal_name="Hover" speedfactor="0.35" looped="1" fadein="0.25" fadeout="0.25" />
+    <animation name="Run" id="05ddbff8-aaa9-92a1-2b74-8fe77a29b445" internal_name="Run" looped="1" speedfactor="0.6" usevelocity="1" fadein="0.25" fadeout="0.25" />
+    <animation name="Sit" id="1a5fe8ac-a804-8a5d-7cbd-56bd83184568" internal_name="SitOnObject" looped="0" fadein="0.4" fadeout="0.5" />
+    <animation name="SitGround" id="1c7600d6-661f-b87b-efe2-d7421eb93c86" internal_name="SitOnGround1" looped="0" fadein="0.4" fadeout="0.5" />
+    <animation name="Stand" id="2408fe9e-df1d-1d7d-f4ff-1384fa7b350f" internal_name="Stand" looped="1" fadein="0.25" fadeout="0.25" />
+    <animation name="Walk" id="6ed24bd8-91aa-4b12-ccc7-c97c857ab4e0" internal_name="Walk" looped="1" speedfactor="1.0" usevelocity="1" fadein="0.25" fadeout="0.25" />
     <master_modifier name="Arms twist" position="0.000000" category="Posture">
         <target_modifier type="dynamic_animation" name="Arm_Twist2" mode="cumulative" />
     </master_modifier>

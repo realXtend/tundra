@@ -92,9 +92,9 @@ namespace RexLogic
         //! Identifying human-readable name, not mandatory and not used directly in code
         std::string name_;
         //! Individual bone modifiers
-        BoneModifierVector modifiers;
+        BoneModifierVector modifiers_;
         //! Interpolation value between start (0.0) and end (1.0) transform of individual modifiers
-        float value_;
+        Core::Real value_;
         
         BoneModifierSet() : value_(0.0f)
         {
@@ -111,7 +111,7 @@ namespace RexLogic
         //! Name of morph animation
         std::string morph_name_;
         //! Interpolation value between none (0.0) and full (1.0) influence
-        float value_;
+        Core::Real value_;
         
         MorphModifier() : value_(0.0f)
         {
