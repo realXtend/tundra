@@ -8,6 +8,8 @@
 #include "NetInMessage.h"
 #include "NetOutMessage.h"
 
+class Inventory;
+
 namespace OpenSimProtocol
 {
     /// Info structure used to pass messages between the main thread and the XMLRPC connect thread.
@@ -20,6 +22,8 @@ namespace OpenSimProtocol
         std::string sessionHash;
         std::string gridUrl;
         std::string avatarStorageUrl;
+        std::string seedCapabilities;
+        boost::shared_ptr<Inventory> inventory;
     };
     
     /// Defines the events posted by the OpenSimProtocolModule in category <b>NetworkState</b>.

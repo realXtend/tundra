@@ -43,46 +43,44 @@ class XMLRPCEPI
 public:
 
     XMLRPCEPI();
-    XMLRPCEPI(const std::string& method);
+    explicit XMLRPCEPI(const std::string& method);
     XMLRPCEPI(const std::string& method, const std::string& address, const std::string& port);
     ~XMLRPCEPI();
 
-    /**
-     * Initialises connection to given address. 
-     * 
-     * @param address is server address without port number
-     * @param port is a server port where calls are send. 
-     * @throw XMLRPCException if problem arises.
-     * 
-     **/
-    
+    /** Initialises connection to given address. This doesn't actually build up a network connection,
+        but instead the address and port are stored for later use when Send() is called. You have to
+        call this function at least once to set the address before calling Send() (if you didn't initialize
+        using the ctor that takes in address and port). You may call this function multiple times before
+        calling Send() to change the address where the connection is made.
+        @param address The server hostname (IP address or a domain name), without the port number.
+        @param port The port on the server where the connection is made.
+        @throw XMLRPCException if problem arises. */
     void Connect(const std::string& address, const std::string& port);
     
     /**
      * Creates new call. Removes old call method from memory. 
      * @param method is new xmlrpc request method name. if method is empty call will be created with last saved method name 
      * see @p SetCallMethod
-     */
-    
+     */    
     void CreateCall(const std::string& method = "");
 
-    /**
-     * Sends build xmlrpc-call through connection. All data which was added into xmlrpc call are held in memory until class 
-     * user either destroys this object or calls @p CreateCall() method. 
-     *
-     * @note Connect method must be called at least once before any calls can be send (or special constructor must be used to construct this object)
-     * 
-     * @throw XMLRPCException if message cannot be send or problem occures. 
-     */
-    
+    /** You can use this method to gain access to the internal XMLRPCCall structure, e.g. if you want to use the C API
+        to manage the parameters in the request and reply structs.
+        @return The XMLRPCCall object that corresponds to the current call, or 0 if no call has been created. */
+    XMLRPCCall *GetXMLRPCCall();
+
+    /** Sends the built xmlrpc-call through connection. All data which was added into the call are held in memory until the 
+        class user either destroys this object or calls @p CreateCall() method. 
+        @note Connect method must be called at least once before any calls can be send (or special constructor must be used to construct this object)
+        @throw XMLRPCException if message cannot be send or problem occures. */
     void Send();
 
     /**
      * Sets a new call method name. 
      * @param method is new xmlrpc request method name. 
      */
-    void SetCallMethod(const std::string& method) { strCallMethod_ = method;}
-    std::string GetCallMethod() const { return strCallMethod_; }
+    void SetCallMethod(const std::string& method) { callMethod_ = method;}
+    std::string GetCallMethod() const { return callMethod_; }
     
      /**
      * Clears old call method data from memory. This method will remove all members which were saved using 
@@ -126,11 +124,9 @@ private:
     // Default implementation does not do anything. 
     template <typename T> void Add(const char* name, const T& value);
    
-    std::string strCallMethod_;
-    XMLRPCConnection* pConnection_;
-    XMLRPCCall* pCall_;
-
-	
+    std::string callMethod_;
+    XMLRPCConnection* connection_;
+    XMLRPCCall* call_;
 };
 
 #include "XMLRPCEPI-templates.h"
