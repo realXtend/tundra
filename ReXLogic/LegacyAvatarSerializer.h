@@ -18,13 +18,37 @@ namespace RexLogic
         //! \return true if mostly successful
         static bool ReadAvatarAppearance(EC_AvatarAppearance& dest, const QDomDocument& source);
         
-        //! Reads animation definitions only from an xml fdocument
+        //! Reads animation definitions only from an xml document
         //! \return true if successful
         static bool ReadAnimationDefinitions(AnimationDefinitionMap& dest, const QDomDocument& source);
         
-        //! Reads a single animation definition from an xml node
+        //! Reads a bone modifier set from an xml node, and adds it to the vector
+        //! \return true if successful
+        static bool ReadBoneModifierSet(BoneModifierSetVector& dest, const QDomElement& elem);
+        
+        //! Reads a bone modifier parameter from an xml node
+        /*! Actual modifiers should have been read before the parameters; this function expects a filled vector of modifier sets
+            \return true if successful
+         */
+        static bool ReadBoneModifierParameter(BoneModifierSetVector& dest, const QDomElement& elem);
+        
+        //! Reads a morph modifier from an xml node, and adds it to the vector
+        //! \return true if successful
+        static bool ReadMorphModifier(MorphModifierVector& dest, const QDomElement& elem);
+        
+        //! Reads a single animation definition from an xml node, and adds it to the map
         //! \return true if successful
         static bool ReadAnimationDefinition(AnimationDefinitionMap& dest, const QDomElement& elem);
+        
+        //! Reads a vector3 from a string, encoded as "x y z"
+        static Core::Vector3df ParseVector3(const std::string& text);
+        
+        //! Reads a quaternion from a string, encoded as "w x y z"
+        static Core::Quaternion ParseQuaternion(const std::string& text);
+        
+        //! Reads an euler angle rotation (degrees) from a string, returns as a quaternion
+        static Core::Quaternion ParseEulerAngles(const std::string& text);
+        
     };
 }
 

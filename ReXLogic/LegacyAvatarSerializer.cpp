@@ -25,6 +25,7 @@ namespace RexLogic
         
         // Get mesh
         // Note: the legacy avatar xml just stores the asset human-readable names; actual asset ID's come from elsewhere
+        // and we don't bother with them for now
         QDomElement base_elem = avatar.firstChildElement("base");
         if (!base_elem.isNull())
         {
@@ -80,8 +81,46 @@ namespace RexLogic
             dest.SetMaterial(mat_index, material);
             
             material_elem = material_elem.nextSiblingElement("material");
-            mat_index++;
+            ++mat_index;
         }
+        
+        // Get main transform
+        QDomElement transform_elem = avatar.firstChildElement("transformation");
+        if (!transform_elem.isNull())
+        {
+            Transform trans;
+            trans.position_ = ParseVector3(transform_elem.attribute("position").toStdString());
+            trans.orientation_ = ParseQuaternion(transform_elem.attribute("rotation").toStdString());
+            trans.scale_ = ParseVector3(transform_elem.attribute("scale").toStdString());
+            dest.SetTransform(trans);
+        }
+        
+        // Get bone modifiers
+        QDomElement bonemodifier_elem = avatar.firstChildElement("dynamic_animation");
+        BoneModifierSetVector bonemodifiers;
+        while (!bonemodifier_elem.isNull())
+        {
+            ReadBoneModifierSet(bonemodifiers, bonemodifier_elem);
+            bonemodifier_elem = bonemodifier_elem.nextSiblingElement("dynamic_animation");
+        }
+        // Get bone modifier parameters
+        QDomElement bonemodifierparam_elem = avatar.firstChildElement("dynamic_animation_parameter");
+        while (!bonemodifierparam_elem.isNull())
+        {
+            ReadBoneModifierParameter(bonemodifiers, bonemodifierparam_elem);
+            bonemodifierparam_elem = bonemodifierparam_elem.nextSiblingElement("dynamic_animation_parameter");
+        }
+        dest.SetBoneModifiers(bonemodifiers);
+        
+        // Get morph modifiers
+        QDomElement morphmodifier_elem = avatar.firstChildElement("morph_modifier");
+        MorphModifierVector morphmodifiers;
+        while (!morphmodifier_elem.isNull())
+        {
+            ReadMorphModifier(morphmodifiers, morphmodifier_elem);
+            morphmodifier_elem = morphmodifier_elem.nextSiblingElement("morph_modifier");
+        }
+        dest.SetMorphModifiers(morphmodifiers);
         
         // Get animations
         QDomElement animation_elem = avatar.firstChildElement("animation");
@@ -93,6 +132,114 @@ namespace RexLogic
         }
         dest.SetAnimations(animations);
         
+        // Get properties
+        QDomElement property_elem = avatar.firstChildElement("property");
+        while (!property_elem.isNull())
+        {
+            std::string name = property_elem.attribute("name").toStdString();
+            std::string value = property_elem.attribute("value").toStdString();
+            if ((!name.empty()) && (!value.empty()))
+                dest.SetProperty(name, value);
+            
+            property_elem = property_elem.nextSiblingElement("property");
+        }
+        return true;
+    }
+    
+    bool LegacyAvatarSerializer::ReadBoneModifierSet(BoneModifierSetVector& dest, const QDomElement& source)
+    {
+        BoneModifierSet modifier_set;
+        modifier_set.name_ = source.attribute("name").toStdString();
+        unsigned num_bones = 0;
+        
+        QDomElement bones = source.firstChildElement("bones");
+        if (!bones.isNull())
+        {
+            QDomElement bone = bones.firstChildElement("bone");
+            while (!bone.isNull())
+            {
+                BoneModifier modifier;
+                modifier.bone_name_ = bone.attribute("name").toStdString();
+                QDomElement rotation = bone.firstChildElement("rotation");
+                QDomElement translation = bone.firstChildElement("translation");
+                QDomElement scale = bone.firstChildElement("scale");
+                
+                modifier.start_.position_ = ParseVector3(translation.attribute("start").toStdString());
+                modifier.start_.orientation_ = ParseEulerAngles(rotation.attribute("start").toStdString());
+                modifier.start_.scale_ = ParseVector3(scale.attribute("start").toStdString());
+                
+                modifier.end_.position_ = ParseVector3(translation.attribute("end").toStdString());
+                modifier.end_.orientation_ = ParseEulerAngles(rotation.attribute("end").toStdString());
+                modifier.end_.scale_ = ParseVector3(scale.attribute("end").toStdString());
+                
+                std::string trans_mode = translation.attribute("mode").toStdString();
+                std::string rot_mode = rotation.attribute("mode").toStdString();
+                
+                if (trans_mode == "absolute")
+                    modifier.position_mode_ = Absolute;
+                if (trans_mode == "relative")
+                    modifier.position_mode_ = Relative;
+                
+                if (rot_mode == "absolute")
+                    modifier.orientation_mode_ = Absolute;
+                if (rot_mode == "relative")
+                    modifier.orientation_mode_ = Relative;
+                if (rot_mode == "cumulative")
+                    modifier.orientation_mode_ = Cumulative;
+                
+                modifier_set.modifiers_.push_back(modifier);
+                
+                bone = bone.nextSiblingElement("bone");
+                ++num_bones;
+            }
+        }
+        
+        if (num_bones)
+            dest.push_back(modifier_set);
+        
+        return true;
+    }
+    
+    bool LegacyAvatarSerializer::ReadBoneModifierParameter(BoneModifierSetVector& dest, const QDomElement& source)
+    {
+        // Find existing modifier from the vector
+        std::string name = source.attribute("name").toStdString();
+        for (unsigned i = 0; i < dest.size(); ++i)
+        {
+            if (dest[i].name_ == name)
+            {
+                try
+                {
+                    dest[i].value_ = Core::ParseString<Core::Real>(source.attribute("position").toStdString());
+                }
+                catch (boost::bad_lexical_cast)
+                {
+                    return false;
+                }
+                
+                return true;
+            }
+        }
+        
+        return false; // Not found
+    }
+    
+    bool LegacyAvatarSerializer::ReadMorphModifier(MorphModifierVector& dest, const QDomElement& source)
+    {
+        MorphModifier morph;
+        
+        morph.name_ = source.attribute("name").toStdString();
+        morph.morph_name_ = source.attribute("internal_name").toStdString();
+        try
+        {
+            morph.value_ = Core::ParseString<Core::Real>(source.attribute("influence").toStdString());
+        }
+        catch (boost::bad_lexical_cast)
+        {
+            return false;
+        }
+        
+        dest.push_back(morph);
         return true;
     }
     
@@ -168,5 +315,86 @@ namespace RexLogic
         }
         
         return true;
+    }
+    
+    Core::Vector3df LegacyAvatarSerializer::ParseVector3(const std::string& text)
+    {
+        Core::Vector3df vec(0.0f, 0.0f, 0.0f);
+        
+        Core::StringVector components = Core::SplitString(text, ' ');
+        if (components.size() == 3)
+        {
+            try
+            {
+                vec.x = Core::ParseString<Core::Real>(components[0]);
+                vec.y = Core::ParseString<Core::Real>(components[1]);
+                vec.z = Core::ParseString<Core::Real>(components[2]);
+            }
+            catch (boost::bad_lexical_cast)
+            {
+            }
+        }
+        return vec;
+    }
+    
+    Core::Quaternion LegacyAvatarSerializer::ParseQuaternion(const std::string& text)
+    {
+        Core::Quaternion quat;
+        
+        Core::StringVector components = Core::SplitString(text, ' ');
+        if (components.size() == 4)
+        {
+            try
+            {
+                quat.w = Core::ParseString<Core::Real>(components[0]);
+                quat.x = Core::ParseString<Core::Real>(components[1]);
+                quat.y = Core::ParseString<Core::Real>(components[2]);
+                quat.z = Core::ParseString<Core::Real>(components[3]);
+            }
+            catch (boost::bad_lexical_cast)
+            {
+            }
+        }
+        return quat;
+    }
+    
+    Core::Quaternion LegacyAvatarSerializer::ParseEulerAngles(const std::string& text)
+    {
+        Core::Quaternion quat;
+        
+        Core::StringVector components = Core::SplitString(text, ' ');
+        if (components.size() == 3)
+        {
+            try
+            {
+                Core::Real xrad = Core::degToRad(Core::ParseString<Core::Real>(components[0]));
+                Core::Real yrad = Core::degToRad(Core::ParseString<Core::Real>(components[1]));
+                Core::Real zrad = Core::degToRad(Core::ParseString<Core::Real>(components[2]));
+                
+                Core::Real angle = yrad * 0.5;
+                double cx = cos(angle);
+                double sx = sin(angle);
+
+                angle = zrad * 0.5;
+                double cy = cos(angle);
+                double sy = sin(angle);
+
+                angle = xrad * 0.5;
+                double cz = cos(angle);
+                double sz = sin(angle);
+
+                quat.x = sx * sy * cz + cx * cy * sz;
+                quat.y = sx * cy * cz + cx * sy * sz;
+                quat.z = cx * sy * cz - sx * cy * sz;
+                quat.w = cx * cy * cz - sx * sy * sz;
+                
+                quat.normalize();
+            }
+            catch (boost::bad_lexical_cast)
+            {
+            }
+        }
+        
+        return quat;
     }
 }

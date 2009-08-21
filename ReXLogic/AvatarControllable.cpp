@@ -253,7 +253,7 @@ namespace RexLogic
                 {
                     EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>((*it)->GetComponent(EC_NetworkPosition::NameStatic()).get());
 
-                    Core::Quaternion rotchange(0, 0, (-avatar->yaw * (Core::f32)frametime + drag_yaw_) * rotation_sensitivity_);
+                    Core::Quaternion rotchange(0, 0, (-avatar->yaw * (Core::Real)frametime + drag_yaw_) * rotation_sensitivity_);
                     netpos->rotation_ = rotchange * netpos->rotation_;
                     netpos->Updated();
 

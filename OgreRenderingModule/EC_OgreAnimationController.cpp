@@ -173,7 +173,7 @@ namespace OgreRenderer
     }
     
     //! Enable an exclusive animation (fades out all other animations of same priority with fadeOut parameter)
-    bool EC_OgreAnimationController::EnableExclusiveAnimation(const std::string& name, bool looped, Core::f32 fadein, Core::f32 fadeout)
+    bool EC_OgreAnimationController::EnableExclusiveAnimation(const std::string& name, bool looped, Core::Real fadein, Core::Real fadeout)
     {
         // Disable all other active animations
         AnimationMap::iterator i = animations_.begin();
@@ -193,7 +193,7 @@ namespace OgreRenderer
     }
 
     //! Enable an animation. Return false if the animation doesn't exist
-    bool EC_OgreAnimationController::EnableAnimation(const std::string& name, bool looped, Core::f32 fadein)
+    bool EC_OgreAnimationController::EnableAnimation(const std::string& name, bool looped, Core::Real fadein)
     {
         Ogre::Entity* entity = GetEntity();
         Ogre::AnimationState* animstate = GetAnimationState(entity, name);
@@ -297,7 +297,7 @@ namespace OgreRenderer
     }
 
     //! Disable an animation. Return false if the animation doesn't exist or isn't active
-    bool EC_OgreAnimationController::DisableAnimation(const std::string& name, Core::f32 fadeout)
+    bool EC_OgreAnimationController::DisableAnimation(const std::string& name, Core::Real fadeout)
     {
         AnimationMap::iterator i = animations_.find(name);
         if (i != animations_.end())
@@ -311,7 +311,7 @@ namespace OgreRenderer
     }
 
     //! Disable all animations. 
-    void EC_OgreAnimationController::DisableAllAnimations(Core::f32 fadeout)
+    void EC_OgreAnimationController::DisableAllAnimations(Core::Real fadeout)
     {
         AnimationMap::iterator i = animations_.begin();
         while (i != animations_.end())
@@ -336,7 +336,7 @@ namespace OgreRenderer
     }
 
     //! Change speedfactor of an active animation. Return false if the animation doesn't exist or isn't active
-    bool EC_OgreAnimationController::SetAnimationSpeed(const std::string& name, Core::f32 speedfactor)
+    bool EC_OgreAnimationController::SetAnimationSpeed(const std::string& name, Core::Real speedfactor)
     {
         AnimationMap::iterator i = animations_.find(name);
         if (i != animations_.end())
@@ -349,7 +349,7 @@ namespace OgreRenderer
     }
 
     //! Change weight of an active animation (default 1.0). Return false if the animation doesn't exist or isn't active
-    bool EC_OgreAnimationController::SetAnimationWeight(const std::string& name, Core::f32 weight)
+    bool EC_OgreAnimationController::SetAnimationWeight(const std::string& name, Core::Real weight)
     {
         AnimationMap::iterator i = animations_.find(name);
         if (i != animations_.end())
@@ -362,7 +362,7 @@ namespace OgreRenderer
     }
 
     //! Change time position of an active animation. Return false if the animation doesn't exist or isn't active
-    bool EC_OgreAnimationController::SetAnimationTimePosition(const std::string& name, Core::f32 newPosition)
+    bool EC_OgreAnimationController::SetAnimationTimePosition(const std::string& name, Core::Real newPosition)
     {
         Ogre::Entity* entity = GetEntity();
         Ogre::AnimationState* animstate = GetAnimationState(entity, name);
