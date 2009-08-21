@@ -23,13 +23,6 @@ namespace RexLogic
         skeleton_ = skeleton;
     }
     
-    void EC_AvatarAppearance::SetMaterial(Core::uint index, const AvatarMaterial& material)
-    {
-        if (materials_.size() <= index)
-            materials_.resize(index + 1);
-        materials_[index] = material;
-    }
-    
     void EC_AvatarAppearance::SetMaterials(const AvatarMaterialVector& materials)
     {
         materials_ = materials;
@@ -48,6 +41,11 @@ namespace RexLogic
     void EC_AvatarAppearance::SetAnimations(const AnimationDefinitionMap& animations)
     {
         animations_ = animations;
+    }
+    
+    void EC_AvatarAppearance::SetAttachments(const AvatarAttachmentVector& attachments)
+    {
+        attachments_ = attachments;
     }
     
     void EC_AvatarAppearance::SetTransform(const Transform& transform)

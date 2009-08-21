@@ -163,6 +163,29 @@ namespace RexLogic
     
     typedef std::map<std::string, std::string> AvatarPropertyMap;
     
+    //! Defines an attachment for an avatar
+    struct AvatarAttachment
+    {
+        //! Name of attachment
+        std::string name_;
+        //! Mesh 
+        AvatarAsset mesh_;
+        //! Whether skeleton should be linked (for animations)
+        bool link_skeleton_;
+        //! Materials used by the mesh
+        AvatarMaterialVector materials_;
+        //! Transform 
+        Transform transform_;
+        //! Category of attachment
+        std::string category_;
+        //! Base bone of attachment. Empty if attached directly to avatar scene node
+        std::string bone_name_;
+        //! Polygons indices to hide from avatar when using this attachment
+        std::vector<Core::uint> polygons_to_hide_;
+    };
+    
+    typedef std::vector<AvatarAttachment> AvatarAttachmentVector;
+    
     const AnimationDefinition& GetAnimationByName(const AnimationDefinitionMap& animations, const std::string& name);
 
     //! Entity component that stores an avatar's appearance parameters
@@ -175,10 +198,10 @@ namespace RexLogic
         void SetMesh(const AvatarAsset& mesh);
         void SetSkeleton(const AvatarAsset& skeleton);
         void SetMaterials(const AvatarMaterialVector& materials);
-        void SetMaterial(Core::uint index, const AvatarMaterial& material);
         void SetBoneModifiers(const BoneModifierSetVector& modifiers);
         void SetMorphModifiers(const MorphModifierVector& modifiers);
         void SetAnimations(const AnimationDefinitionMap& animations);
+        void SetAttachments(const AvatarAttachmentVector& attachments);
         void SetTransform(const Transform& transform);
         void SetProperty(const std::string& name, const std::string& value);
         void ClearProperties();
@@ -190,6 +213,7 @@ namespace RexLogic
         const BoneModifierSetVector& GetBoneModifiers() const { return bone_modifiers_; }
         const MorphModifierVector& GetMorphModifiers() const { return morph_modifiers_; }
         const AnimationDefinitionMap& GetAnimations() const { return animations_; }
+        const AvatarAttachmentVector& GetAttachments() const { return attachments_; }
         const Transform& GetTransform() const { return transform_; }
         bool HasProperty(const std::string& name) const;
         const std::string& GetProperty(const std::string& name) const;
@@ -205,6 +229,8 @@ namespace RexLogic
         AvatarMaterialVector materials_;
         //! Animation defines
         AnimationDefinitionMap animations_;
+        //! Attachments
+        AvatarAttachmentVector attachments_;
         //! Transform
         Transform transform_;
         //! Bone modifiers
