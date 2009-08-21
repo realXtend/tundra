@@ -40,6 +40,10 @@ namespace RexLogic
         //! \return true if successful
         static bool ReadAnimationDefinition(AnimationDefinitionMap& dest, const QDomElement& elem);
         
+        //! Reads an avatar attachment from an xml node, and adds it to the vector
+        //! \return true if successful
+        static bool ReadAttachment(AvatarAttachmentVector& dest, const QDomElement& elem);
+        
         //! Reads a vector3 from a string, encoded as "x y z"
         static Core::Vector3df ParseVector3(const std::string& text);
         

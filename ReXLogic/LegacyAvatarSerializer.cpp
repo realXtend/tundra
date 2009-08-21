@@ -48,6 +48,7 @@ namespace RexLogic
         // Get materials, should be 2 of them
         Core::uint mat_index = 0;
         QDomElement material_elem = avatar.firstChildElement("material");
+        AvatarMaterialVector materials;
         while (!material_elem.isNull())
         {
             AvatarMaterial material;
@@ -73,16 +74,17 @@ namespace RexLogic
                 {
                     AvatarAsset texture;
                     texture.name_ = tex_name;
-                    texture.id_ = RexTypes::ASSETTYPENAME_TEXTURE;
+                    texture.type_ = RexTypes::ASSETTYPENAME_TEXTURE;
                     material.textures_.push_back(texture);
                 }
             }
             
-            dest.SetMaterial(mat_index, material);
+            materials.push_back(material);
             
             material_elem = material_elem.nextSiblingElement("material");
             ++mat_index;
         }
+        dest.SetMaterials(materials);
         
         // Get main transform
         QDomElement transform_elem = avatar.firstChildElement("transformation");
@@ -94,6 +96,16 @@ namespace RexLogic
             trans.scale_ = ParseVector3(transform_elem.attribute("scale").toStdString());
             dest.SetTransform(trans);
         }
+        
+        // Get attachments
+        QDomElement attachment_elem = avatar.firstChildElement("attachment");
+        AvatarAttachmentVector attachments;
+        while (!attachment_elem.isNull())
+        {
+            ReadAttachment(attachments, attachment_elem);
+            attachment_elem = attachment_elem.nextSiblingElement("attachment");
+        }
+        dest.SetAttachments(attachments);
         
         // Get bone modifiers
         QDomElement bonemodifier_elem = avatar.firstChildElement("dynamic_animation");
@@ -314,6 +326,78 @@ namespace RexLogic
             return false;
         }
         
+        return true;
+    }
+    
+    bool LegacyAvatarSerializer::ReadAttachment(AvatarAttachmentVector& dest, const QDomElement& elem)
+    {
+        AvatarAttachment attachment;
+        
+        QDomElement name = elem.firstChildElement("name");
+        if (!name.isNull())
+        {
+            attachment.name_ = name.attribute("value").toStdString();
+        }
+        else
+        {
+            RexLogicModule::LogError("Attachment without name element");
+            return false;
+        }
+
+        QDomElement category = elem.firstChildElement("category");
+        if (!category.isNull())
+        {
+            attachment.category_ = category.attribute("name").toStdString();
+        }
+        
+        QDomElement mesh = elem.firstChildElement("mesh");
+        if (!mesh.isNull())
+        {
+            attachment.mesh_.name_ = mesh.attribute("name").toStdString();
+            attachment.mesh_.type_ = RexTypes::ASSETTYPENAME_MESH;
+            attachment.link_skeleton_ = ParseBool(mesh.attribute("linkskeleton").toStdString());
+        }
+        else
+        {
+            RexLogicModule::LogError("Attachment without mesh element");
+            return false;
+        }
+        
+        QDomElement avatar = elem.firstChildElement("avatar");
+        if (!avatar.isNull())
+        {
+            QDomElement bone = avatar.firstChildElement("bone");
+            if (!bone.isNull())
+            {
+                attachment.bone_name_ = bone.attribute("name").toStdString();
+                if (attachment.bone_name_ == "None")
+                    attachment.bone_name_ = std::string();
+                attachment.transform_.position_ = ParseVector3(bone.attribute("offset").toStdString());
+                attachment.transform_.orientation_ = ParseQuaternion(bone.attribute("rotation").toStdString());
+                attachment.transform_.scale_ = ParseVector3(bone.attribute("scale").toStdString());
+            }
+            
+            QDomElement polygon = avatar.firstChildElement("avatar_polygon");
+            while (!polygon.isNull())
+            {
+                try
+                {
+                    Core::uint idx = Core::ParseString<Core::uint>(polygon.attribute("idx").toStdString());
+                    attachment.polygons_to_hide_.push_back(idx);
+                }
+                catch (boost::bad_lexical_cast)
+                {
+                }
+                polygon = polygon.nextSiblingElement("avatar_polygon");
+            }
+        }
+        else
+        {
+            RexLogicModule::LogError("Attachment without avatar element");
+            return false;
+        }
+        
+        dest.push_back(attachment);
         return true;
     }
     
