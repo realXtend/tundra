@@ -86,7 +86,10 @@ class ComponentRunner(Component):
         Here we have no way to differentiate presses/releases,
         'cause the c++ internals don't do that apart from the constant name.
         """
+        rvalue = False
         self.m.send(Input(evid), "on_input")
+        rvalue = r.eventhandled
+        return rvalue
         #print "circuits_manager ComponentRunner got input event:", evid       
         
     def KEY_INPUT_EVENT(self, evid, keycode, keymod):
@@ -99,10 +102,8 @@ class ComponentRunner(Component):
         rvalue = False
         if evid == r.KeyPressed:
             self.m.send(Key(keycode, keymod), "on_keydown")
-            #self.m.send(Input(keycode), "on_input") #well, since on_keydown doesnt work for some odd reason, using this instead for now
             #print "pressed."
             rvalue = r.eventhandled
-
         return rvalue
             
     def MOUSE_INPUT(self, x_abs, y_abs, x_rel, y_rel):
