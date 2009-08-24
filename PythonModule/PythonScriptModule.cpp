@@ -463,12 +463,12 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
 
     if (entity)
     {
-        Scene::Events::SceneEventData event_data(entity->GetId());
-        framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_GRAB, &event_data);
+        //Scene::Events::SceneEventData event_data(entity->GetId());
+        //framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_GRAB, &event_data);
 		return entity_create(entity->GetId());
     }
 	else 
-		Py_RETURN_FALSE;
+		Py_RETURN_NONE;
 }
 
 static PyObject* SwitchCameraState(PyObject *self)
@@ -477,6 +477,35 @@ static PyObject* SwitchCameraState(PyObject *self)
 	RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 	rexlogic_->SwitchCameraState();
     Py_RETURN_NONE;
+}
+
+static PyObject* SendEvent(PyObject *self, PyObject *args)
+{
+	std::cout << "PySendEvent" << std::endl;
+	unsigned int event_id_int;//, ent_id_int = 0;
+	Foundation::Framework *framework_ = PythonScript::staticframework;
+	//Core::entity_id_t ent_id;
+	Core::event_id_t event_id;
+
+	if(!PyArg_ParseTuple(args, "i", &event_id_int))//, &ent_id_int))
+	{
+		PyErr_SetString(PyExc_ValueError, "Getting an event id failed, param should be an integer.");
+        return NULL;   
+	}
+	
+	//ent_id = (Core::entity_id_t) ent_id_int;
+	event_id = (Core::event_id_t) event_id_int;
+	Core::event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
+	if (event_id == Input::Events::SWITCH_CAMERA_STATE) 
+	{
+        std::cout << "switch camera state gotten!" << std::endl;
+		PythonScript::staticframework->GetEventManager()->SendEvent(event_category, event_id, NULL);//&event_data);
+	} 
+	else
+		std::cout << "failed..." << std::endl;
+
+	
+	Py_RETURN_TRUE;
 }
 
 //returns an Entity wrapper, is in actual use
@@ -725,6 +754,10 @@ static PyMethodDef EmbMethods[] = {
 
 	{"switchCameraState", (PyCFunction)SwitchCameraState, METH_VARARGS,
 	"Switching the camera mode from free to thirdperson and back again."},
+	
+	
+	{"sendEvent", (PyCFunction)SendEvent, METH_VARARGS,
+	"Send an event id (WIP other stuff)."},
 
 
 	{NULL, NULL, 0, NULL}

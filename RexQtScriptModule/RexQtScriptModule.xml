@@ -1,4 +1,4 @@
 <config>
-	<entry>QtScriptModule</entry>
+	<entry>RexQtScriptModule</entry>
 	<dependency>QtModule</dependency>
 </config>

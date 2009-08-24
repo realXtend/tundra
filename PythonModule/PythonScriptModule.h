@@ -53,24 +53,22 @@ namespace PythonScript
         PythonScriptModule();
         virtual ~PythonScriptModule();
 
-	//the module interface
-        
-	virtual void Load();
+		//the module interface
+		virtual void Load();
         virtual void Unload();
         virtual void Initialize();
         virtual void PostInitialize();
         virtual void Uninitialize();
         virtual void Update(Core::f64 frametime);
 
-	//handling events
-	virtual bool HandleEvent(
-	    Core::event_category_id_t category_id,
+		//handling events
+		virtual bool HandleEvent(
+			Core::event_category_id_t category_id,
             Core::event_id_t event_id, 
             Foundation::EventDataInterface* data);
 
-	//! callback for console command
-        
-	Console::CommandResult ConsoleRunString(const Core::StringVector &params);
+		//! callback for console command        
+		Console::CommandResult ConsoleRunString(const Core::StringVector &params);
         Console::CommandResult ConsoleRunFile(const Core::StringVector &params);
         Console::CommandResult ConsoleReset(const Core::StringVector &params);
         
@@ -80,8 +78,8 @@ namespace PythonScript
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_PythonScript;
 
-	static Foundation::Framework* GetStaticFramework() { return PythonScript::staticframework; }
-	static Foundation::ScriptEventInterface* engineAccess;
+		static Foundation::Framework* GetStaticFramework() { return PythonScript::staticframework; }
+		static Foundation::ScriptEventInterface* engineAccess;
 
 		//api code is outside the module now, but reuses these .. err, but can't see 'cause dont have a ref to the instance?
 		// Category id for incoming messages.

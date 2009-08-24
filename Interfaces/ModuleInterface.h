@@ -54,6 +54,7 @@ namespace Foundation
 			MT_Test,
 			MT_NetTestLogic,
 			MT_PythonScript,
+			MT_QtScript,
             MT_Console,
             MT_Asset,
 			MT_Communication,
@@ -73,7 +74,7 @@ namespace Foundation
 
             static const std::string type_strings[MT_Unknown] = {
                  "OgreRenderingModule", "OgreGtkWindowModule", "SoundModule", "QtModule", "RexLogicModule", "OpenSimProtocolModule",
-                 "TestModule", "NetTestLogicModule", "PythonScriptModule", "ConsoleModule", "AssetModule", "CommunicationModule",
+                 "TestModule", "NetTestLogicModule", "PythonScriptModule", "QtScriptModule", "ConsoleModule", "AssetModule", "CommunicationModule",
 				 "CommunicationUIModule", "InputModuleOIS", "TextureDecoderModule" };
 
             return type_strings[type];
