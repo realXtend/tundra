@@ -31,7 +31,12 @@ def move(e):
     print "Moving to move to pos:", newpos
     e.pos = newpos
 
-if 1: #get entity
+if 0:
+    print "Testing camera swap..."
+    hmm = r.switchCameraState()
+    #print hmm
+    
+if 0: #get entity
     #idnum = new_id
     print "Getting entity id", idnum,
     e = r.getEntity(idnum)
@@ -40,7 +45,7 @@ if 1: #get entity
     rotate(e)
     #move(e)
 
-if 1: #test avatar tracking, works :)
+if 0: #test avatar tracking, works :)
     print "<:::",
     try:
         a = r.getEntity(av_entid)
@@ -95,7 +100,7 @@ st/shared_ptr.hpp, line 419
 
 if 0: #placeable and text tests
     print "Testing..."
-    e = r.getEntity(720004)    
+    e = r.getEntity(720005)    
 
     #~ try:
         #~ e.pos = 1
@@ -121,7 +126,7 @@ if 0: #send chat
     r.sendChat("here we go.")
     #print "called sendchat ok"
     
-if 1: #camera pitch
+if 0: #camera pitch
     dy = 0.1
     dp = 0
     #dp = -0.1
