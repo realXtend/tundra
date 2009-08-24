@@ -19,20 +19,24 @@ class XMLRPCException : public std::exception
 public:
     ///\todo Add the originating XMLRPCEPI object.
     explicit XMLRPCException(const std::string &str)
-    :strMessage_(str)
+    :msg_(str)
+    {
+    }
+
+    virtual ~XMLRPCException () throw()
     {
     }
     
-    const char *what () const throw () { return strMessage_.c_str(); }
+    const char *what () const throw () { return msg_.c_str(); }
 
     /**
      * Sets error message. 
      * @param message is string which contains error message.
      */
-    void SetMessage(const std::string& message) { strMessage_ = message; }
+    void SetMessage(const std::string& message) { msg_ = message; }
 
 private:
 
-    std::string strMessage_;
+    std::string msg_;
 };
 #endif 
