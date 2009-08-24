@@ -205,7 +205,7 @@ namespace PythonScript
 		//implementing input state in py, see the AvatarController and CameraController in rexlogic
 		if (category_id == inputeventcategoryid)
 		{
-			
+			PyObject* value = NULL;
 			//key inputs, send the event id and key info (code+mod) for the python side
 			if (event_id == Input::Events::KEY_PRESSED || event_id == Input::Events::KEY_RELEASED)
 			{
@@ -215,26 +215,27 @@ namespace PythonScript
 				const int keycode = key->code_;
 				const int mods = key->modifiers_;
 				//OIS::KeyCode* keycode = key->code_;
+				
+				value = PyObject_CallMethod(pmmInstance, "KEY_INPUT_EVENT", "iii", event_id, keycode, mods);
+			}
+			else
+			{
+				value = PyObject_CallMethod(pmmInstance, "INPUT_EVENT", "i", event_id);
+			}
 
-				PyObject* value = PyObject_CallMethod(pmmInstance, "KEY_INPUT_EVENT", "iii", event_id, keycode, mods);
-                if (value)
+			if (value)
                 {
 				    if (PyObject_IsTrue(value))
 				    {
-					    //LogInfo("KEY_INPUT_EVENT returned true.");
+					    //LogInfo("X_INPUT_EVENT returned true.");
 					    return true;  
 				    } 
 				    else 
 				    {
-					    //LogInfo("KEY_INPUT_EVENT returned false.");
+					    //LogInfo("X_INPUT_EVENT returned false.");
 					    return false;
     				}
                 }
-			}
-			else
-			{
-				PyObject_CallMethod(pmmInstance, "INPUT_EVENT", "i", event_id);
-			}
 		}
 		
 		//was for first receive chat test, when no module provided it, so handles net event directly
@@ -470,6 +471,13 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
 		Py_RETURN_FALSE;
 }
 
+static PyObject* SwitchCameraState(PyObject *self)
+{
+	Foundation::Framework *framework_ = PythonScript::staticframework;
+	RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+	rexlogic_->SwitchCameraState();
+    Py_RETURN_NONE;
+}
 
 //returns an Entity wrapper, is in actual use
 PyObject* GetEntity(PyObject *self, PyObject *args)
@@ -714,6 +722,10 @@ static PyMethodDef EmbMethods[] = {
 
 	{"rayCast", (PyCFunction)RayCast, METH_VARARGS,
 	"RayCasting from camera to point (x,y)."},
+
+	{"switchCameraState", (PyCFunction)SwitchCameraState, METH_VARARGS,
+	"Switching the camera mode from free to thirdperson and back again."},
+
 
 	{NULL, NULL, 0, NULL}
 };
