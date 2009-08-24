@@ -1,0 +1,4 @@
+<config>
+	<entry>QtScriptModule</entry>
+	<dependency>QtModule</dependency>
+</config>
