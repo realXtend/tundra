@@ -127,7 +127,7 @@ namespace QtUI
         /**
          * Sets canvas to dirty-state, if it is true then it should be draw.  
          */
-        void Dirty(bool state) { dirty_ = state; }
+        void Dirty() { dirty_ = true; }
 
         /**
          * Sets new Render-window size. 

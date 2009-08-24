@@ -37,7 +37,7 @@ UICanvas::UICanvas(): overlay_(0),
     setScene(new QGraphicsScene);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
-    QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(Dirty(true)));
+    QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(Dirty()));
 }
 
 UICanvas::UICanvas(Mode mode): overlay_(0),
