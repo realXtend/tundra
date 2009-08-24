@@ -1,5 +1,5 @@
-#ifndef incl_QtScriptModule_h
-#define incl_QtScriptModule_h
+#ifndef incl_RexQtScriptModule_h
+#define incl_RexQtScriptModule_h
 
 #include "Foundation.h"
 #include "StableHeaders.h"
@@ -9,6 +9,9 @@
 
 namespace RexQtScript
 {
+     //hack to have a ref to framework so can get the module in api funcs
+    static Foundation::Framework *staticframework;
+
     class MODULE_API RexQtScriptModule : public Foundation::ModuleInterfaceImpl
 	{
     public:
@@ -29,9 +32,15 @@ namespace RexQtScript
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_QtScript;
 
+		//QScriptValue test(QScriptContext *context, QScriptEngine *engine);
+
 	private:
 		QScriptEngine engine;
 	};
+
+	//api stuff
+	QScriptValue LoadUI(QScriptContext *context, QScriptEngine *engine);
+	QScriptValue Print(QScriptContext *context, QScriptEngine *engine);
 }
 
 #endif

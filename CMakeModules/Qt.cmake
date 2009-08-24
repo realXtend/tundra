@@ -4,7 +4,7 @@
 macro (FIND_QT4)
 
 if (MSVC)
-FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtWebkit REQUIRED)
+FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtWebkit QtScript REQUIRED)
 
 elseif (UNIX)
 
@@ -102,6 +102,7 @@ macro (LINK_QT4)
       ${QT_QTNETWORK_LIBRARY}
       ${QT_QTUITOOLS_LIBRARY}
       ${QT_QTXML_LIBRARY}
+      ${QT_QTSCRIPT_LIBRARY}
       )
   elseif (NOT MSVC AND QT4_FOUND)
     target_link_libraries (${TARGET_NAME} ${QT_LIBRARIES} ${QT_QTGUI_LIBRARY}
@@ -111,9 +112,10 @@ macro (LINK_QT4)
       ${QT_QTSQL_LIBRARY}
       ${QT_QTUITOOLS_LIBRARY}
       ${QT_QTXML_LIBRARY}
+      ${QT_QTSCRIPT_LIBRARY}
       )
   else()
-    target_link_libraries(${TARGET_NAME} QtCore QtGui  qtmain  QtNetwork  QtWebKit QtUitools QtXml)
+    target_link_libraries(${TARGET_NAME} QtCore QtGui  qtmain  QtNetwork  QtWebKit QtUitools QtXml QtScript)
   endif (MSVC)
 
 endmacro (LINK_QT4)
