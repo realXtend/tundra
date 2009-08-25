@@ -56,7 +56,7 @@ class KeyCommander(Component):
         #~ print "MouseMove", mouseinfo.x, mouseinfo.y
         #~ ent = r.rayCast(mouseinfo.x, mouseinfo.y)
         #~ print "Got entity:", ent
-        #~ if ent is not False:
+        #~ if ent is not None:
             #~ print "Entity position is", ent.pos
         
     def run_commandpy(self):

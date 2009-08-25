@@ -155,6 +155,9 @@ namespace OgreRenderer
          */
         void Update(Core::f64 frametime);
 
+		//! Takes a screenshot and saves it to a file.
+		void TakeScreenshot(const std::string& filePath, const std::string& fileName);//const Ogre::String& pyFilePath, const Ogre::String& pyFileName):
+
 
 
     private:

@@ -35,7 +35,7 @@
 #include "CameraControllable.h"
 //now done via logic cameracontrollable #include "Renderer.h" //for setting camera pitch
 //#include "ogrecamera.h"
-
+#include "../OgreRenderingModule/Renderer.h" //for the screenshot api
 #include "AvatarControllable.h"
 
 namespace PythonScript
@@ -470,6 +470,33 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
 	else 
 		Py_RETURN_NONE;
 }
+static PyObject* TakeScreenshot(PyObject *self, PyObject *args)
+{
+	const char* filePath;
+	const char* fileName;
+
+	std::string oFilePath;
+	std::string oFileName;
+
+	if(!PyArg_ParseTuple(args, "ss", &filePath, &fileName))
+		PyErr_SetString(PyExc_ValueError, "Getting the filepath and filename failed.");
+
+	
+	oFilePath = filePath;
+	oFileName = fileName;
+
+	Foundation::Framework *framework_ = PythonScript::staticframework;
+	boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+	if (renderer){
+
+		//std::cout << "Screenshot in PYSM ... " << std::endl;
+		renderer->TakeScreenshot(oFilePath, oFileName);
+	}
+	else
+		std::cout << "Failed ..." << std::endl;
+
+	Py_RETURN_NONE;
+}
 
 static PyObject* SwitchCameraState(PyObject *self)
 {
@@ -758,6 +785,9 @@ static PyMethodDef EmbMethods[] = {
 	
 	{"sendEvent", (PyCFunction)SendEvent, METH_VARARGS,
 	"Send an event id (WIP other stuff)."},
+
+	{"takeScreenshot", (PyCFunction)TakeScreenshot, METH_VARARGS,
+	"Takes a screenshot and saves it to a timestamped file."},
 
 
 	{NULL, NULL, 0, NULL}
