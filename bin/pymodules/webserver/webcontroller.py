@@ -16,11 +16,10 @@ PORT = 8000
 
 #doesn't work in the embedded context. what would help?
 #PATH = os.path.dirname(__file__) + "/screenshot/"
-PATH = "C:\\work\\rex\\trunk\\bin\\pymodules\\webserver" + "/screenshot/"
+#PATH = "C:\\work\\rex\\trunk\\bin\\pymodules\\webserver" + "/screenshot/"
+PATH = "C:/work/rex/trunk/bin/pymodules/webserver/screenshot/"
 
-IMAGEPATH = "C:/work/rex/trunk/bin/pymodules/webserver/screenshot/"
-
-print "WEB PATH:", PATH
+print "WEB PATH for images:", PATH
 
 class WebServer(Server):
     """this is the component that autoload registers to the viewer"""
@@ -34,14 +33,14 @@ class WebController(Controller):
         
     def render(self):
         timestr = datetime.datetime.today().isoformat()
-        imgsrc = "image.png"
-        r.takeScreenshot(IMAGEPATH, imgsrc)
+        imgname = "image.png"
+        r.takeScreenshot(PATH, imgname)
         
         return """
         <h1>Realxtend Naali viewer</h1>
         <h2>at %s</h2>
         <img src="%s"/>
-        """ % (timestr, imgsrc)
+        """ % (timestr, imgname)
 
 #~ if __name__ == '__main__':
     #~ while 1:
