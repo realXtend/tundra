@@ -10,16 +10,13 @@ except ImportError: #not running within the viewer, but testing outside it
 
 from circuits.web import Controller, Server, Static
 import datetime
-import os.path
+import os
 
 PORT = 8000
 
-#doesn't work in the embedded context. what would help?
-#PATH = os.path.dirname(__file__) + "/screenshot/"
-#PATH = "C:\\work\\rex\\trunk\\bin\\pymodules\\webserver" + "/screenshot/"
-PATH = "C:/work/rex/trunk/bin/pymodules/webserver/screenshot/"
-
-print "WEB PATH for images:", PATH
+#__file__ doesn't work in embedded context, but os.getcwd() helps
+PATH = os.getcwd() + "/pymodules/webserver" + "/screenshot/"
+#print "WEB PATH for images:", PATH
 
 class WebServer(Server):
     """this is the component that autoload registers to the viewer"""
