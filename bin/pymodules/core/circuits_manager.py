@@ -14,9 +14,6 @@ except ImportError: #not running under rex
     import mockviewer as r
 from circuits import handler, Event, Component, Manager, Debugger
 
-#START_WEBSERVER = True #now aiming serving screenshots, possibly other stuff later
-START_WEBSERVER = False
-
 #r.forwardevents = True
 
 #is not identical to the c++ side, where x and y have abs and rel
@@ -50,31 +47,18 @@ class ComponentRunner(Component):
         #or __all__ in pymodules __init__ ? (i.e. import pymodules would do that)
         import autoload
         autoload.load(m)
-        self.forwardevent = True
-        r.eventhandled = False
+        self.forwardevent = True 
+        r.eventhandled = False #XXX this should be reset always when a new event is handled
         self.mouseinfo = MouseInfo(0,0,0,0)
-        #m.start()
-        
-        self.rungen = None
-        self.webserver = None
-        if START_WEBSERVER:
-            self.start_webserver() #sets rungen
+        #m.start() #instead we tick() & flush() in update
             
-    def start_webserver(self):
-        """an exception for the web server, had trouble doing this within it 
-        and in autoload"""
-        import usr.webcontroller
-        from circuits.web import Server
-        wc = usr.webcontroller.WebController()
-        self.webserver = Server(8000)
-        self.rungen = (self.webserver + wc).run_once() #added a yield to the core
-
     def run(self, deltatime=0.1):
-        #XXX should this be using the __tick__ mechanism of circuits, and how?
         #print ".",
-        self.m.send(Update(deltatime), "update")
-        if self.rungen is not None:
-            self.rungen.next()
+        m = self.m
+        m.send(Update(deltatime), "update") #XXX should this be using the __tick__ mechanism of circuits, and how?
+        m.tick()
+        m.flush()
+        #XXX NOTE: now that we tick & flush, circuits works normally, and we could change from send() to push() for the events
         
     def RexNetMsgChatFromSimulator(self, frm, message):
         self.m.send(Chat(frm, message), "on_chat")
@@ -115,16 +99,7 @@ class ComponentRunner(Component):
         self.m.send(Exit(), "on_exit") #am not running the manager properly so the stop doesn't propagate to components. fix when switch to dev branch of circuits XXX
         print "Circuits manager stopping."
         self.m.stop() #not going to components now so made the exit event above as a quick fix
-        
-        #webserver first version, will switch to dev branch of circuits and refactor to use tick() and flush() so no need for this generator hack anymore
-        if self.webserver is not None:
-            self.webserver.stop()
-            while 1:
-                try:
-                    self.rungen.next() #should end now
-                except StopIteration:
-                    break
-        
+                
     #~ def retfunc(self, boolvalue):
         #~ #print "Return value:", bool, "-> ", 
         #~ self.forwardevent = boolvalue
@@ -163,6 +138,6 @@ if __name__ == '__main__':
             
         """
         runner.MOUSE_INPUT(5, 6, 7, 8)
-        time.sleep(0.1)
+        time.sleep(0.01)
 
 
