@@ -12,10 +12,10 @@ descriptors for read/write events. Pollers:
    - KQueue
 """
 
-import warnings
 from errno import *
 from select import select
 from select import error as SelectError
+from socket import error as SocketError
 
 try:
     from select import poll
@@ -23,7 +23,6 @@ try:
     HAS_POLL = 1
 except ImportError:
     HAS_POLL = 0
-    warnings.warn("No poll support available.")
 
 try:
     from select import epoll
@@ -36,7 +35,6 @@ except ImportError:
         HAS_EPOLL = 1
     except ImportError:
         HAS_EPOLL = 0
-        warnings.warn("No epoll support available.")
 
 from circuits.core import handler, Event, BaseComponent
 
@@ -123,7 +121,7 @@ class Select(_Poller):
             # Something *totally* invalid (object w/o fileno, non-integral
             # result) was passed
             return self._preenDescriptors()
-        except (SelectError, IOError), e:
+        except (SelectError, SocketError, IOError), e:
             # select(2) encountered an error
             if e[0] in (0, 2):
                 # windows does this if it got an empty list

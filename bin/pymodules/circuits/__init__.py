@@ -97,7 +97,7 @@ circuits.web = circuits.web.main:main
 
 from core import handler, Event, Component,  Manager
 
-#from core.bridge import Bridge #antont local diff to allow running from debug py (not import socket for which don't have debug symbols here)
+from core.timers import Timer
+from core.bridge import Bridge
 from core.debugger import Debugger
-from core.timers import Timer, Timer
 from core.workers import Thread, Process

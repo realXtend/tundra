@@ -43,8 +43,8 @@ class Debugger(Component):
         self.IgnoreEvents.extend(kwargs.get("IgnoreEvents", []))
         self.IgnoreChannels.extend(kwargs.get("IgnoreChannels", []))
 
-    @handler("error", filter=True)
-    def error(self, *args, **kwargs):
+    @handler("exception", filter=True)
+    def exception(self, *args, **kwargs):
         if not self.errors:
             return
 
@@ -53,8 +53,11 @@ class Debugger(Component):
         if len(args) == 3:
             type, value, traceback = args
             handler = kwargs.get("handler", None)
-            s.write("ERROR in %s (%s): %s\n" % (
-                reprhandler(handler) or "'Unknown'", type, value))
+            if handler is None:
+                handler = "'Unknown'"
+            else:
+                handler = reprhandler(handler)
+            s.write("ERROR in %s (%s): %s\n" % (handler, type, value))
             s.write("%s\n" % "".join(format_tb(traceback)))
         else:
             s.write("Unknown Error\n")

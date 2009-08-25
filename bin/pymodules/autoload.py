@@ -10,15 +10,18 @@ whatever loading that you want (in your module i.e. .py file).
 import usr.chathandler
 import usr.keycommands
 #import usr.mousecontrol
-#import usr.webserver
+#import webserver.webcontroller
+#import headtrack.control
 
 modules = [
     #apitest.circuits_testmodule.TestModule,
     usr.chathandler.ChatHandler,
-    usr.keycommands.KeyCommander#,
-    #usr.webserver.WebServer#,
+    usr.keycommands.KeyCommander,
+    #webserver.webcontroller.WebServer,
     #usr.mousecontrol.MouseControl,
 ]
+
+#modules.append(headtrack.control.HeadTrack)
 
 def load(circuitsmanager):
     for klass in modules:
@@ -31,10 +34,3 @@ def load(circuitsmanager):
         else:
             circuitsmanager += modinst # Equivalent to: tm.register(m)
  
-    #had trouble doing here too.. 
-    #~ """an exception for the web server, had trouble doing this within it"""
-    #~ ws = usr.webserver.WebServer()
-    #~ rungen = (usr.webserver.Server(8000) + ws).run_once() #added a yield to the core
-    #~ ws.rungen = rungen
-    #~ circuitsmanager += ws
-
