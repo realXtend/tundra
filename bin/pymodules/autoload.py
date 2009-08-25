@@ -17,7 +17,7 @@ modules = [
     #apitest.circuits_testmodule.TestModule,
     usr.chathandler.ChatHandler,
     usr.keycommands.KeyCommander,
-    #webserver.webcontroller.WebServer,
+    #webserver.webcontroller.WebServer
     #usr.mousecontrol.MouseControl,
 ]
 

@@ -1,5 +1,7 @@
 """a non-blocking, non-threaded non-multiprocessing circuits web server"""
 
+import rexviewer as r
+
 try:
     import circuits
 except ImportError: #not running within the viewer, but testing outside it
@@ -14,7 +16,9 @@ PORT = 8000
 
 #doesn't work in the embedded context. what would help?
 #PATH = os.path.dirname(__file__) + "/screenshot/"
-PATH = "D:\\k2\\rex\\viewer\\trunk\\bin\\pymodules\\webserver" + "/screenshot/"
+PATH = "C:\\work\\rex\\trunk\\bin\\pymodules\\webserver" + "/screenshot/"
+
+IMAGEPATH = "C:/work/rex/trunk/bin/pymodules/webserver/screenshot/"
 
 print "WEB PATH:", PATH
 
@@ -30,7 +34,9 @@ class WebController(Controller):
         
     def render(self):
         timestr = datetime.datetime.today().isoformat()
-        imgsrc = "image.jpg"
+        imgsrc = "image.png"
+        r.takeScreenshot(IMAGEPATH, imgsrc)
+        
         return """
         <h1>Realxtend Naali viewer</h1>
         <h2>at %s</h2>

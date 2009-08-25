@@ -32,6 +32,19 @@ def move(e):
     e.pos = newpos
 
 if 0:
+    print "Testing taking a screenshot..."
+    
+    path = "pymodules/webserver/screenshot/"
+    pic = "current.png"
+    
+    hmm = r.takeScreenshot(path, pic)
+    
+if 0:
+    print "Testing event sending, camera for now..."#   , r.SwitchCameraState
+    hmm = r.sendEvent(r.SwitchCameraState)
+    print "test done?", hmm
+
+if 0:
     print "Testing camera swap..."
     hmm = r.switchCameraState()
     #print hmm

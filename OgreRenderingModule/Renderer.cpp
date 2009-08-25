@@ -683,5 +683,15 @@ namespace OgreRenderer
     {
         return resource_handler_->RemoveResource(id, type);    
     }
+
+	void Renderer::TakeScreenshot(const std::string& filePath, const std::string& fileName)
+	{
+		if (renderwindow_) 
+		{
+			Ogre::String file = filePath + fileName;
+			renderwindow_->writeContentsToFile(file);
+			//std::cout << "Took a screenshot!" << std::endl;
+		}
+	}
 }
 
