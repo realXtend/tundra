@@ -47,6 +47,12 @@ public:
 	 */
     boost::weak_ptr<UICanvas> CreateCanvas(UICanvas::Mode mode) { return controller_->CreateCanvas(mode); }
 
+    /**
+     * Deletes canvas. Because UICanvas is shared pointer, it actually removes a reference from a controller lists. 
+     * 
+     */
+
+    void DeleteCanvas(const boost::shared_ptr<UICanvas>& canvas) { controller_->RemoveCanvas(canvas->GetID()); }
 
 private:
 

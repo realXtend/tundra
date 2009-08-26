@@ -79,6 +79,13 @@ namespace QtUI
         void SetParentWindowSize(const QSize& size);
         QSize GetParentWindowSize() const { return parentWindowSize_;}
 
+
+        /**
+         * Removes canvas from internal list. 
+         * @param id is a canvas id. 
+         */
+        void RemoveCanvas(const QString& id);
+
     public slots:
         
         /**
