@@ -717,7 +717,7 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 	if (rexlogic_)
 	{
 		rexlogic_->GetServerConnection()->IsConnected();
-		rexlogic_->GetServerConnection()->IsConnected();
+        //had linking problems with these, hopefully can be solved somehow easily.
 		//rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
 		//boost::shared_ptr<RexLogic::AvatarControllable> avc = rexlogic_->GetAvatarControllable();
 		//avc->SetYaw(newyaw);

@@ -148,4 +148,6 @@ if 0: #camera pitch
     print r.getCameraYawPitch()
         
 if 0: #avatar set yaw (turn)
-    r.setAvatarYaw(-1)
+    a = -1.0
+    print "setting avatar yaw with %f" % a
+    r.setAvatarYaw(a)

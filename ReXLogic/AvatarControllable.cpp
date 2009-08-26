@@ -345,6 +345,7 @@ namespace RexLogic
 
 	void AvatarControllable::SetYaw(Core::Real newyaw)
 	{
+        //a test for py api -- gets overridden by something in the internals, kb handling or network?
 		//keys left/right set to -1/1 .. but this can use fractions too, right?
 		//and is seeminly not overridden by anything at least in AddTime.
 
@@ -361,6 +362,7 @@ namespace RexLogic
                 avatar->yaw = newyaw;
 			}
 		}
+        net_dirty_ = true; //testing if this would send it to server and solve the overriden prob
 	}
 }
 
