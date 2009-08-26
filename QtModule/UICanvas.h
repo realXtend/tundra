@@ -37,7 +37,7 @@ namespace QtUI
         enum Mode { External = 0, Internal, Embedded };
         
         UICanvas();
-        UICanvas(Mode mode);
+        UICanvas(Mode mode, const QSize& parentWindowSize);
 
         virtual ~UICanvas();
         
@@ -73,7 +73,8 @@ namespace QtUI
         /**
          * Resizes the UI canvas size and reallocates Qt and Ogre surfaces to new size. 
          * @param width is a new width of canvas. 
-         * @param height is a new height of canvas. 
+         * @param height is a new height of canvas.
+         * @todo override widgets own resize?
          */
         void SetCanvasSize(int width, int height);
 
@@ -133,6 +134,8 @@ namespace QtUI
          * Sets new Render-window size. 
          */
         void SetRenderWindowSize(const QSize& size) { renderWindowSize_ = size; }
+
+        
 
     signals:
         

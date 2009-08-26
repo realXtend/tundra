@@ -29,20 +29,20 @@ namespace QtUI
 UICanvas::UICanvas(): overlay_(0),
                       container_(0),
                       dirty_(true),
-                      mode_(Internal),
+                      mode_(External),
                       id_(QUuid::createUuid().toString()),
                       widgets_(0)
 {
    
     setScene(new QGraphicsScene);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-
     QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(Dirty()));
 }
 
-UICanvas::UICanvas(Mode mode): overlay_(0),
+UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
                                container_(0),
                                dirty_(true),
+                               renderWindowSize_(parentWindowSize),
                                mode_(mode),
                                id_(QUuid::createUuid().toString()),
                                widgets_(0)
@@ -59,7 +59,8 @@ UICanvas::UICanvas(Mode mode): overlay_(0),
  {
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     setScene(new QGraphicsScene);
-
+    QSize size = this->size();
+    CreateOgreResources(size.width(), size.height());
     QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(Dirty()));
  }
  else 
@@ -225,14 +226,24 @@ void UICanvas::SetCanvasSize(int width, int height)
 {
     move(0, 0);
     resize(width, height);
-    CreateOgreResources(width, height);
-  
+    
+    if ( mode_ != External)
+    {
+        CreateOgreResources(width, height);
+        float relWidth = (float)texture_->getWidth()/double(renderWindowSize_.width());
+        float relHeight = (float)texture_->getHeight()/double(renderWindowSize_.height());
+        container_->setDimensions(relWidth, relHeight);
+        
+    }
+    
     // Repaint canvas. 
     dirty_ = true;
+    RenderSceneToOgreSurface();
 }
 
 void UICanvas::ResizeOgreTexture(int width, int height)
 {
+  
     texture_->freeInternalResources();
     texture_->setWidth(width);
     texture_->setHeight(height);
@@ -267,7 +278,7 @@ void UICanvas::CreateOgreResources(int width, int height)
     // matches the render window size.
     //container_->setDimensions(1.0,1.0);
 
-      container_->setPosition(0,0);
+    container_->setPosition(0,0);
    
 
     // Add container in default overlay
@@ -312,14 +323,18 @@ void UICanvas::CreateOgreResources(int width, int height)
 
 void UICanvas::Show()
 {
-    ///todo pending should we call show() for overlay, container?
+   
     if ( mode_ != External)
     {
         QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
         for (; iter != scene_widgets_.end(); ++iter)
             (*iter)->show();
-           
-         dirty_ = true;
+            
+        
+        container_->show();
+        overlay_->show();
+        
+        dirty_ = true;
         RenderSceneToOgreSurface();
     }
     else
@@ -329,13 +344,15 @@ void UICanvas::Show()
 
 void UICanvas::Hide()
 {
-    ///todo pending: should we call hide() for overlay, container?
+  
     if ( mode_ != External)
         {
             QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
             for (; iter != scene_widgets_.end(); ++iter)
                 (*iter)->hide();
-               
+              
+            container_->hide();
+            overlay_->hide();
             dirty_ = true;
             RenderSceneToOgreSurface();
         }

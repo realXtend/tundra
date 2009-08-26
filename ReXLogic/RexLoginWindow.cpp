@@ -66,10 +66,15 @@ namespace RexLogic
         QFile file("./data/ui/login.ui");
         login_widget_ = loader.load(&file); 
       
-        canvas_->AddWidget(login_widget_);
-    
+      
+        ///todo - Here we have strange and not-so-wanted feature. If you first addWidget (in Internal-canvas) and then SetCanvasSize() result: only partial window is seen. 
+        // must investigate futher that why this happends.
+
         // Set canvas size. 
-        canvas_->resize(login_widget_->size());
+        QSize size = login_widget_->size();
+        canvas_->SetCanvasSize(size.width(), size.height());
+
+        canvas_->AddWidget(login_widget_);
 
         // Create connections.
         QPushButton *pButton = login_widget_->findChild<QPushButton *>("but_connect");
@@ -120,7 +125,7 @@ namespace RexLogic
 
         
         canvas_->Show();
-        //login_widget_->show();
+      
 
 		//OpenID widget init
 		cblogin = new CBLoginWidget();
@@ -139,6 +144,7 @@ namespace RexLogic
 
         screen_canvas_ = qt_ui->CreateCanvas(QtUI::UICanvas::Internal).lock();
         screen_canvas_->SetCanvasSize(128,128);
+        
         QSize size = screen_canvas_->GetRenderWindowSize();
         screen_canvas_->SetPosition(size.width()-128,size.height()-128);
         
@@ -261,8 +267,10 @@ namespace RexLogic
 	case 2:
 	  {
 	    // OpenID
-		cblogin = new CBLoginWidget();
-		cblogin->show();
+        if(cblogin == 0)
+            cblogin = new CBLoginWidget();
+		
+        cblogin->show();
 		QObject::connect(cblogin, SIGNAL( loginProcessed(QString) ), SLOT( processCBLogin(QString) ));
 		successful = false;
 	    break;
@@ -292,11 +300,8 @@ namespace RexLogic
     void RexLoginWindow::ShowLoginWindow()
     {
         canvas_->Show();
-        //login_widget_->show();
-        
         screen_canvas_->Hide();
-        //logout_button_->hide();
-        //quit_button_->hide();
+      
     }
 
     void RexLoginWindow::Disconnect()

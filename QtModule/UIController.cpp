@@ -38,8 +38,7 @@ void UIController::Arrange()
 
 boost::weak_ptr<UICanvas> UIController::CreateCanvas(UICanvas::Mode mode)
 {
-    boost::shared_ptr<UICanvas> canvas(new UICanvas(mode));
-    canvas->SetRenderWindowSize(parentWindowSize_);
+    boost::shared_ptr<UICanvas> canvas(new UICanvas(mode, parentWindowSize_));
     
     QObject::connect(this,SIGNAL(RenderWindowSizeChanged(const QSize&)),canvas.get(), SLOT(SetRenderWindowSize(const QSize&)));
     QObject::connect(canvas.get(), SIGNAL(RequestArrange()), this, SLOT(RequestArrange()));
