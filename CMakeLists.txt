@@ -24,7 +24,7 @@ include (OpenJpeg)
 include (Qt)
 
 # The following CMake modules are optional.
-include (Gtkmm)
+#include (Gtkmm)
 include (Python)
 #include (OpenAL)
 include (Caelum)
@@ -67,7 +67,7 @@ FIND_XMLRPCEPI() #TODO: didn't detect on fedora
 FIND_OGRE()
 FIND_OIS()
 FIND_OPENJPEG()
-FIND_GTKMM()
+#FIND_GTKMM()
 #FIND_OPENAL()
 FIND_QT4()
 FIND_PYTHON()
