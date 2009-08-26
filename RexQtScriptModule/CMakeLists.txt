@@ -23,6 +23,7 @@ include_directories (
 INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_QT4()
+INCLUDE_OGRE() #QtModule UICanvas.h does include Ogre.h and we need that here
 
 add_definitions (-DMODULE_EXPORTS)
 
