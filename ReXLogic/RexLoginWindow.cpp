@@ -153,7 +153,7 @@ namespace RexLogic
         logout_button_->move(5, 5);
         QObject::connect(logout_button_, SIGNAL(clicked()), this, SLOT(DisconnectAndShowLoginWindow()));
         
-        logout_button_->hide();
+       
         screen_canvas_->AddWidget(logout_button_);
 
         quit_button_ = new QPushButton();
@@ -161,9 +161,10 @@ namespace RexLogic
         quit_button_->move(5, 30);
         QObject::connect(quit_button_, SIGNAL(clicked()), this, SLOT(Quit()));
         
-        quit_button_->hide();
+      
         screen_canvas_->AddWidget(quit_button_);
         
+        screen_canvas_->Hide();
         
 
     }

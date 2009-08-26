@@ -35,6 +35,21 @@ void UIController::Arrange()
         
 }
 
+void UIController::RemoveCanvas(const QString& id)
+{
+    QList<boost::shared_ptr<UICanvas> >::iterator iter = canvases_.begin();
+    int index = 0;
+    for(; iter != canvases_.end(); ++iter, ++index)
+    {
+        QString canvas_id = (*iter)->GetID();
+        if ( canvas_id == id)
+        {
+            canvases_.removeAt(index);
+            break;
+        }
+    }
+}
+
 
 boost::weak_ptr<UICanvas> UIController::CreateCanvas(UICanvas::Mode mode)
 {
