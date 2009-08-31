@@ -24,6 +24,7 @@
 #include <OgrePanelOverlayElement.h>
 #include <OgreTextureUnitState.h>
 
+#include "MemoryLeakCheck.h"
 
 
 namespace QtUI

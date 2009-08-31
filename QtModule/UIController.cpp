@@ -4,6 +4,8 @@
 #include "UIController.h"
 #include <QApplication>
 
+#include "MemoryLeakCheck.h"
+
 namespace QtUI
 {
 
@@ -223,8 +225,8 @@ bool UIController::Contains(const boost::shared_ptr<UICanvas>& canvas, const QPo
     QPoint pos = canvas->GetPosition().toPoint();
     return pos.x() <= point.x() && 
            pos.y() <= point.y() && 
-           (pos.x() + canvas->width()) >= point.x() && 
-           (pos.y() + canvas->height()) >= point.y();
+           (pos.x() + canvas->width()) > point.x() && 
+           (pos.y() + canvas->height()) > point.y();
 }
 
 }

@@ -13,6 +13,8 @@
 #include "InputEvents.h"
 #include "InputModuleOIS.h"
 
+#include "MemoryLeakCheck.h"
+
 namespace QtUI
 {
 
