@@ -92,6 +92,13 @@ namespace Input
         static const Core::event_id_t INWORLD_CLICK = 41;
         static const Core::event_id_t INWORLD_CLICK_REL = 42;
 
+
+		//! The following mouse click events are only used by the Python API at the moment!
+		static const Core::event_id_t LEFT_MOUSECLICK_PRESSED = 43;
+		static const Core::event_id_t LEFT_MOUSECLICK_RELEASED = 44;
+		static const Core::event_id_t RIGHT_MOUSECLICK_PRESSED = 45;
+		static const Core::event_id_t RIGHT_MOUSECLICK_RELEASED = 46;
+
         //! Event for buffered key input. 
         /*! Do not use for any continous input such as avatar movement, it will probably cause input lag
             General use case is text input.

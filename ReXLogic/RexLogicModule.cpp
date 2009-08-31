@@ -383,6 +383,13 @@ namespace RexLogic
 	{
 		avatar_controllable_->SetYaw(newyaw);
 	}
+	
+	//XXX another temporary workarounds for a linking prob in pymodule
+	void RexLogicModule::SetAvatarRotation(Core::Quaternion newrot)
+	{
+		std::cout << "RexLogicModule::SetAvatarRotation" << std::endl;
+		avatar_controllable_->SetRotation(newrot);
+	}
 
 	void RexLogicModule::SetCameraYawPitch(Core::Real newyaw, Core::Real newpitch)
 	{
