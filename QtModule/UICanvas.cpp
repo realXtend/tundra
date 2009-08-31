@@ -14,6 +14,8 @@
 #include <QWidget>
 #include <QGraphicsProxyWidget>
 
+#include <Ogre.h>
+
 #include <OgreHardwarePixelBuffer.h>
 #include <OgreTexture.h>
 #include <OgreMaterial.h>
@@ -23,12 +25,14 @@
 #include <OgreTextureUnitState.h>
 
 
+
 namespace QtUI
 {
 
 UICanvas::UICanvas(): overlay_(0),
                       container_(0),
                       dirty_(true),
+                      surfaceName_(""),
                       mode_(External),
                       id_(QUuid::createUuid().toString()),
                       widgets_(0)
@@ -47,10 +51,10 @@ UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
                                id_(QUuid::createUuid().toString()),
                                widgets_(0)
 {
+ setScene(new QGraphicsScene);
+ 
  if (mode_ == External) 
  {
-     setScene(new QGraphicsScene);
-
     // Deal canvas as normal QWidget. 
     // Currently do nothing
 
@@ -58,7 +62,6 @@ UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
  else if (mode_ == Internal)
  {
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    setScene(new QGraphicsScene);
     QSize size = this->size();
     CreateOgreResources(size.width(), size.height());
     QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(Dirty()));
@@ -78,8 +81,8 @@ UICanvas::~UICanvas()
 
     if (mode_ != External) 
     {
-      QString surfaceName = QString("tex") + id_;
-      Ogre::TextureManager::getSingleton().remove(surfaceName.toStdString().c_str());
+    
+      Ogre::TextureManager::getSingleton().remove(surfaceName_.toStdString().c_str());
       QString surfaceMaterial = QString("mat") + id_;
       Ogre::MaterialManager::getSingleton().remove(surfaceMaterial.toStdString().c_str());
       
@@ -214,8 +217,9 @@ void UICanvas::SetCanvasSize(int width, int height)
     if ( mode_ != External)
     {
         CreateOgreResources(width, height);
-        float relWidth = (float)texture_->getWidth()/double(renderWindowSize_.width());
-        float relHeight = (float)texture_->getHeight()/double(renderWindowSize_.height());
+        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
+        float relWidth = (float)texture->getWidth()/double(renderWindowSize_.width());
+        float relHeight = (float)texture->getHeight()/double(renderWindowSize_.height());
         container_->setDimensions(relWidth, relHeight);
         
     }
@@ -227,17 +231,29 @@ void UICanvas::SetCanvasSize(int width, int height)
 
 void UICanvas::ResizeOgreTexture(int width, int height)
 {
-  
-    texture_->freeInternalResources();
-    texture_->setWidth(width);
-    texture_->setHeight(height);
-    texture_->createInternalResources();
+    Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
+    texture->freeInternalResources();
+    texture->setWidth(width);
+    texture->setHeight(height);
+    texture->createInternalResources();
 }
 
 void UICanvas::CreateOgreResources(int width, int height)
 {
     // If we've already created the resources, just resize the texture to a new size.
     
+    if ( surfaceName_ != "")
+    {
+        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
+        if (width == texture->getWidth() && height == texture->getHeight())
+            return;
+        ResizeOgreTexture(width, height);
+        assert(overlay_);
+        assert(container_);
+        return;
+
+    }
+    /*
     if (texture_.get())
     {
         if (width == texture_->getWidth() && height == texture_->getHeight())
@@ -248,6 +264,7 @@ void UICanvas::CreateOgreResources(int width, int height)
         assert(material_.get());
         return;
     }
+    */
 
     QString overlayName = QString("over") + id_;
     overlay_ = Ogre::OverlayManager::getSingleton().create(overlayName.toStdString().c_str());
@@ -275,29 +292,29 @@ void UICanvas::CreateOgreResources(int width, int height)
     
   
    
-    QString surfaceName = QString("tex") + id_;
+    surfaceName_ = QString("tex") + id_;
   
-    texture_ = Ogre::TextureManager::getSingleton().createManual(surfaceName.toStdString().c_str(), 
+    Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual(surfaceName_.toStdString().c_str(), 
 						        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
 						        Ogre::TEX_TYPE_2D, width, height, 0, 
 						        Ogre::PF_A8R8G8B8, Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
 
     QString surfaceMaterial = QString("mat") + id_;
-    material_ = Ogre::MaterialManager::getSingleton().create(surfaceMaterial.toStdString().c_str(),
+    Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(surfaceMaterial.toStdString().c_str(),
 						        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
     
-    Ogre::TextureUnitState *state = material_->getTechnique(0)->getPass(0)->createTextureUnitState();
-    material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBF_SOURCE_ALPHA, Ogre::SBF_ONE_MINUS_SOURCE_ALPHA);
-    state->setTextureName(surfaceName.toStdString().c_str());
+    Ogre::TextureUnitState *state = material->getTechnique(0)->getPass(0)->createTextureUnitState();
+    material->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBF_SOURCE_ALPHA, Ogre::SBF_ONE_MINUS_SOURCE_ALPHA);
+    state->setTextureName(surfaceName_.toStdString().c_str());
 
     // Generate pixel perfect texture. 
 
-    float relWidth = (float)texture_->getWidth()/double(renderWindowSize_.width());
-    float relHeight = (float)texture_->getHeight()/double(renderWindowSize_.height());
+    float relWidth = (float)texture->getWidth()/double(renderWindowSize_.width());
+    float relHeight = (float)texture->getHeight()/double(renderWindowSize_.height());
     container_->setDimensions(relWidth, relHeight);
 
-    container_->setMaterialName(surfaceMaterial.toStdString().c_str());
+    container_->setMaterialName(surfaceMaterial .toStdString().c_str());
     container_->show();
     container_->setEnabled(true);
     container_->setColour(Ogre::ColourValue(1,1,1,1));
@@ -386,7 +403,8 @@ void UICanvas::RenderSceneToOgreSurface()
     Ogre::PixelBox pixel_box(dimensions, Ogre::PF_A8R8G8B8, (void*)img.bits());
     {
         PROFILE(UIToOgreBlit);
-        texture_->getBuffer()->blitFromMemory(pixel_box);
+        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
+        texture->getBuffer()->blitFromMemory(pixel_box);
     }
 	
     dirty_ = false;
