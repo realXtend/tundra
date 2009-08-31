@@ -47,7 +47,9 @@ namespace RexLogic
         void AddTime(Core::f64 frametime);
 
 		//! Sets the yaw of the avatar, experimental for py api
-	void SetYaw(Core::Real newyaw);
+		void SetYaw(Core::Real newyaw);
+		//! Sets the rotation of the avatar, experimental for py api
+		void SetRotation(Core::Quaternion newrot);
 
         //! Agent movement complete (network) event handling
         void HandleAgentMovementComplete(const RexTypes::Vector3& position, const RexTypes::Vector3& lookat);

@@ -154,6 +154,7 @@ namespace RexLogic
 
 		//! XXX have linking probs to AvatarController so trying this wrapper
 		void SetAvatarYaw(Core::Real newyaw);
+		void SetAvatarRotation(Core::Quaternion newrot);
 		void SetCameraYawPitch(Core::Real newyaw, Core::Real newpitch);
         
     private:

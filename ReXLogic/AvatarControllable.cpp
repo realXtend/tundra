@@ -345,10 +345,8 @@ namespace RexLogic
 
 	void AvatarControllable::SetYaw(Core::Real newyaw)
 	{
-        //a test for py api -- gets overridden by something in the internals, kb handling or network?
 		//keys left/right set to -1/1 .. but this can use fractions too, right?
 		//and is seeminly not overridden by anything at least in AddTime.
-
         //XXX ! \todo for simplicity, we just go over all entities in the scene. For performance, some other solution may be prudent
         Scene::ScenePtr scene = framework_->GetScene("World");
         Scene::SceneManager::iterator it = scene->begin();
@@ -362,7 +360,28 @@ namespace RexLogic
                 avatar->yaw = newyaw;
 			}
 		}
-        net_dirty_ = true; //testing if this would send it to server and solve the overriden prob
+		net_dirty_ = true;
+	}
+
+	void AvatarControllable::SetRotation(Core::Quaternion newrot)
+	{
+		std::cout << "AvatarControllable::SetRotation" << std::endl;
+		Scene::ScenePtr scene = framework_->GetScene("World");
+        Scene::SceneManager::iterator it = scene->begin();
+        Foundation::ComponentPtr component;
+        for ( ; it != scene->end() ; ++it)
+        {
+            component = (*it)->GetComponent(EC_Controllable::NameStatic());
+            if (IsAvatar(component))
+            {
+				EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>((*it)->GetComponent(EC_NetworkPosition::NameStatic()).get());
+				netpos->rotation_ = newrot * netpos->rotation_;
+				netpos->Updated();
+			}
+		}
+
+
+        net_dirty_ = true;
 	}
 }
 
