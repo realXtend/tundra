@@ -63,11 +63,7 @@ UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
     CreateOgreResources(size.width(), size.height());
     QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(Dirty()));
  }
- else 
- {
-     // Embedded
-     ///todo How to deal Embedded canvases?
- }
+
     
 }
 
@@ -136,11 +132,7 @@ void UICanvas::AddWidget(QWidget* widget)
 
                break;
             }
-        case Embedded:
-            {
-                ///todo How to deal Embedded ? 
-                break;
-            }
+      
         default:
             break;
     }
@@ -164,11 +156,7 @@ void UICanvas::SetPosition(int x, int y)
             dirty_ = true;
             break;
         }
-    case Embedded:
-        {
-            ///todo How to deal Embedded windows?
-            break;
-        }
+   
     default:
         break;
 
@@ -208,11 +196,7 @@ QPointF UICanvas::GetPosition() const
                 break;
 
             }
-        case Embedded:
-            {
-                ///todo How to deal embedded canvases? 
-                break;
-            }
+        
         default:
             break;
 
