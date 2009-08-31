@@ -205,11 +205,7 @@ int UIController::GetCanvas(const QPoint& point)
                         return index;
                     break;
                 }
-            case UICanvas::Embedded:
-                {
-                    // Currently we don't know how to deal 3D-canvases. 
-                    break;
-                }
+           
             default:
                 break;  
 

@@ -21,7 +21,7 @@ namespace QtUI
     /**
      *  UICanvas is interface which must be used to show own UI components. How UI-component is show depends solely which mode UICanvas is set. If UICanvas object
      *  is set as External mode then UI component will be shown as external window. Case when mode is set as Internal canvas is shown as top of Ogre render window as overlay, when 
-     *  mode is an Embedded UI component is shown in 3D-world as texture of some Ogre::Entity, binding UICanvas to entity must be done by class user. Currently changes of UICanvas 
+     *  or in 3D-world as texture of some Ogre::Entity (binding UICanvas to entity must be done by class user). Currently changes of UICanvas 
      *  modes (external to internal or otherway) is not supported. 
      *  
      */
@@ -34,7 +34,7 @@ namespace QtUI
  
     public:
         
-        enum Mode { External = 0, Internal, Embedded };
+        enum Mode { External = 0, Internal};
         
         UICanvas();
         UICanvas(Mode mode, const QSize& parentWindowSize);
@@ -44,12 +44,7 @@ namespace QtUI
         void SetMode(Mode mode) { mode_ = mode; }
         Mode GetMode() const { return mode_; }
 
-        /**
-         * Add windget into canvas. Canvas will take ownership of the given widget. 
-         * @param widget anykind QWidget. 
-         */
-        void AddWidget(QWidget* widget);  
-
+    
         /** 
          * Sets a position of canvas in render-window coordinate system.
          * 
@@ -95,16 +90,7 @@ namespace QtUI
          */
         QString GetID() const { return id_;}
 
-        /**
-         * Shows widget
-         */
-        void Show();
-
-        /**
-         * Hides widget
-         *
-         */
-        void Hide();
+       
     
         /**
          * Maps given point (assumption that it is really on canvas area) from render window coordinates to view coordinates (viewport). 
@@ -135,7 +121,23 @@ namespace QtUI
          */
         void SetRenderWindowSize(const QSize& size) { renderWindowSize_ = size; }
 
-        
+        /**
+         * Shows widget
+         */
+        void Show();
+
+        /**
+         * Hides widget
+         *
+         */
+        void Hide();
+
+        /**
+         * Add windget into canvas. Canvas will take ownership of the given widget. 
+         * @param widget anykind QWidget. 
+         */
+        void AddWidget(QWidget* widget);  
+
 
     signals:
         
