@@ -18,6 +18,8 @@
 #include <QGraphicsView>
 #include "UICanvas.h"
 
+#include "MemoryLeakCheck.h"
+
 namespace RexLogic
 {
     RexLoginWindow::RexLoginWindow(Foundation::Framework* framework, RexLogicModule *module) :
