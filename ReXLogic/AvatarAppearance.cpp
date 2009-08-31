@@ -7,6 +7,9 @@
 #include "EC_AvatarAppearance.h"
 #include "SceneManager.h"
 #include "../OgreRenderingModule/EC_OgreMesh.h"
+#include "../OgreRenderingModule/OgreMaterialResource.h"
+#include "../OgreRenderingModule/OgreMaterialUtils.h"
+#include "../OgreRenderingModule/Renderer.h"
 
 #include <QDomDocument>
 #include <QFile>
@@ -48,7 +51,7 @@ namespace RexLogic
     {
         if (!entity)
             return;
-            
+        
         Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
         Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
         if (meshptr && appearanceptr)
@@ -59,13 +62,66 @@ namespace RexLogic
             // Deserialize appearance from the document into the EC
             LegacyAvatarSerializer::ReadAvatarAppearance(appearance, *default_appearance_);
             
-            mesh.SetMesh(appearance.GetMesh().name_, entity.get());
-            // Set adjustment orientation for mesh (Ogre meshes usually have Y-axis as vertical)
-            Core::Quaternion adjust(Core::PI/2, 0, -Core::PI/2);
-            mesh.SetAdjustOrientation(adjust);
-            // Position approximately within the bounding box
-            mesh.SetAdjustPosition(Core::Vector3df(0.0f, 0.0f, -0.8f));
-            mesh.SetCastShadows(true);
+            // Setup mesh according to appearance, incl. materials & textures
+            SetupMeshAndMaterials(entity);
         }
+    }
+    
+    void AvatarAppearance::SetupMeshAndMaterials(Scene::EntityPtr entity)
+    {
+        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()).get());
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(entity->GetComponent(EC_AvatarAppearance::NameStatic()).get());
+        
+        // Setup mesh
+        //! \todo use mesh resource
+        mesh.SetMesh(appearance.GetMesh().name_, entity.get());
+        
+        // Arbitrary materials would cause problems, because we really would want avatar materials to use the SuperShader style materials for
+        // proper shadowing. For now, we force all materials to be based on LitTextured shader material
+        
+        AvatarMaterialVector materials = appearance.GetMaterials();
+        for (Core::uint i = 0; i < materials.size(); ++i)
+        {
+            //! \todo handle multitextured materials, for now only one used (avatar generator only uses one texture per material)
+            //! \todo use material/texture resources
+            
+            // See if a texture is specified, if not, assume default
+            if (materials[i].textures_.size())
+            {
+                AvatarAsset& texture = materials[i].textures_[0];
+                if (!texture.name_.empty())
+                {
+                    // Create a new temporary material resource for texture override. Will hopefully be deleted when the appearance EC is deleted
+                    boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+                        GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+                    
+                    Ogre::MaterialPtr override_mat = OgreRenderer::GetOrCreateLitTexturedMaterial(renderer->GetUniqueObjectName().c_str());
+                    materials[i].asset_.resource_ = OgreRenderer::CreateResourceFromMaterial(override_mat);
+                    
+                    // Load local texture if not yet loaded
+                    //! \todo remove once local avatar resources are not needed anymore
+                    if (texture.id_.empty())
+                    {
+                        Ogre::TextureManager& tex_man = Ogre::TextureManager::getSingleton();
+                        Ogre::TexturePtr tex = tex_man.getByName(texture.name_);
+                        if (tex.isNull())
+                            tex_man.load(texture.name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+                        OgreRenderer::SetTextureUnitOnMaterial(override_mat, texture.name_);
+                    }
+                    
+                    mesh.SetMaterial(i, override_mat->getName());
+                }
+            }
+        }
+        
+        // Store the modified materials vector (with created temp resources) to the EC
+        appearance.SetMaterials(materials);
+        
+        // Set adjustment orientation for mesh (Ogre meshes usually have Y-axis as vertical)
+        Core::Quaternion adjust(Core::PI/2, 0, -Core::PI/2);
+        mesh.SetAdjustOrientation(adjust);
+        // Position approximately within the bounding box
+        mesh.SetAdjustPosition(Core::Vector3df(0.0f, 0.0f, -0.8f));
+        mesh.SetCastShadows(true);
     }
 }

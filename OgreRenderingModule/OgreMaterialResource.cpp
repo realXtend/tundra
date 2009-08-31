@@ -26,6 +26,11 @@ namespace OgreRenderer
         RemoveMaterial();
     }
 
+    void OgreMaterialResource::SetMaterial(Ogre::MaterialPtr material)
+    {
+        ogre_material_ = material;
+    }
+    
     bool OgreMaterialResource::SetData(Foundation::AssetPtr source)
     {
         // Remove old material if any
@@ -119,7 +124,7 @@ namespace OgreRenderer
             std::string output_str = output.str();
             Ogre::DataStreamPtr modified_data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream((Core::u8 *)(&output_str[0]), output_str.size()));
 
-            Ogre::MaterialManager::getSingleton().parseScript(modified_data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);            
+            Ogre::MaterialManager::getSingleton().parseScript(modified_data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
             ogre_material_ = Ogre::MaterialManager::getSingleton().getByName(id_);
             if (ogre_material_.isNull())
             {
