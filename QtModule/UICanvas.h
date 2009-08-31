@@ -3,8 +3,6 @@
 #ifndef incl_QtModule_UICanvas_h
 #define incl_QtModule_UICanvas_h
 
-#include <Ogre.h>
-
 
 #include <QGraphicsView>
 #include <QSize>
@@ -15,6 +13,12 @@
 class QPainter;
 class QWidget;
 class QGraphicsProxyWidget;
+
+namespace Ogre
+{
+    class OverlayContainer;
+    class Overlay;
+}
 
 namespace QtUI
 {
@@ -74,18 +78,11 @@ namespace QtUI
         void SetCanvasSize(int width, int height);
 
         
-        /**
-         * Returns a overlay container which contains overalay which are associated to this canvas.
-         * @return The Ogre overlay container associated to this canvas. if canvas is in external mode it returns zero pointer.
-         *
-         */
-        
-        Ogre::OverlayContainer *GetContainer() const { return container_; }
     	
         /**
          * Returns canvas uniq id which is used to generate canvases uniq texture and material name. Texture name is "tex" + id and material name is "mat" + id. Container name is "con" + id
-         * and overlay name is "over" + id
-         *
+         * and overlay name is "over" + id. 
+         * @note for External widget there exist no material or overlay, container. 
          * @return canvas uniq ID.
          */
         QString GetID() const { return id_;}
@@ -119,7 +116,7 @@ namespace QtUI
         /**
          * Sets new Render-window size. 
          */
-        void SetRenderWindowSize(const QSize& size) { renderWindowSize_ = size; }
+        void SetRenderWindowSize(const QSize& size) { renderWindowSize_ = size; dirty_ = true;}
 
         /**
          * Shows widget
@@ -171,8 +168,8 @@ namespace QtUI
         /// Defines that is scene dirty -- should it draw again. 
 	    bool dirty_;
 
-        Ogre::TexturePtr texture_;
-        Ogre::MaterialPtr material_;
+        /// Ogre texture name. 
+        QString surfaceName_;
         
         Ogre::Overlay *overlay_;
         Ogre::OverlayContainer *container_;
