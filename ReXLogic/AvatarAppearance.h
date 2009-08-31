@@ -25,10 +25,13 @@ namespace RexLogic
         void SetupAppearance(Scene::EntityPtr entity);
         
     private:
-        RexLogicModule *rexlogicmodule_;
+        //! Sets up an avatar mesh
+        void SetupMeshAndMaterials(Scene::EntityPtr entity);
         
         //! Default avatar appearance xml document
         boost::shared_ptr<QDomDocument> default_appearance_;
+        
+        RexLogicModule *rexlogicmodule_;
     };
 }
 

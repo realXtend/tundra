@@ -4,6 +4,7 @@
 #include <Ogre.h>
 
 #include "OgreModuleApi.h"
+#include "ResourceInterface.h"
 
 namespace OgreRenderer
 {
@@ -53,6 +54,9 @@ namespace OgreRenderer
     /*! If texture cannot actually be found, uses the missing texture texture
      */ 
     void OGRE_MODULE_API SetTextureUnitOnMaterial(Ogre::MaterialPtr material, const std::string& texture_name, Core::uint index = 0);
+    
+    //! Creates a material resource from an Ogre material pointer
+    Foundation::ResourcePtr OGRE_MODULE_API CreateResourceFromMaterial(Ogre::MaterialPtr material);
 }
 
 #endif

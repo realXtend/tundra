@@ -51,6 +51,9 @@ namespace OgreRenderer
         */
         bool SetData(Foundation::AssetPtr source);
 
+        //! sets to contain an external material pointer
+        void SetMaterial(Ogre::MaterialPtr material);
+
         //! returns resource type in text form (static)
         static const std::string& GetTypeStatic();
 

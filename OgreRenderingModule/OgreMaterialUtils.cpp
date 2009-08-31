@@ -4,6 +4,7 @@
 
 #include "StableHeaders.h"
 #include "OgreMaterialUtils.h"
+#include "OgreMaterialResource.h"
 #include "OgreRenderingModule.h"
 
 namespace OgreRenderer
@@ -182,5 +183,14 @@ namespace OgreRenderer
                 }
             }
         }
+    }
+    
+    Foundation::ResourcePtr OGRE_MODULE_API CreateResourceFromMaterial(Ogre::MaterialPtr material)
+    {
+        assert(!material.isNull());
+        OgreMaterialResource* res = new OgreMaterialResource(material->getName());
+        res->SetMaterial(material);
+        Foundation::ResourcePtr res_ptr(res);
+        return res_ptr;
     }
 }
