@@ -74,11 +74,13 @@ UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
 
 UICanvas::~UICanvas()
 {
-    // Owned by QGraphicsScene-class. 
-
-    QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
-    for (; iter != scene_widgets_.end(); ++iter)
-        (*iter)=0;
+   
+    for (int i = scene_widgets_.size(); i--;)
+    {        
+        QGraphicsProxyWidget* widget = scene_widgets_.takeAt(i);
+        delete widget;
+        
+    }
 
     if (mode_ != External) 
     {
@@ -97,6 +99,12 @@ UICanvas::~UICanvas()
     }
     container_ = 0;
     overlay_ = 0;
+
+    QGraphicsScene* scene = this->scene();
+    delete scene;
+    scene = 0;
+
+   
 }
 
 void UICanvas::AddWidget(QWidget* widget)
@@ -254,18 +262,7 @@ void UICanvas::CreateOgreResources(int width, int height)
         return;
 
     }
-    /*
-    if (texture_.get())
-    {
-        if (width == texture_->getWidth() && height == texture_->getHeight())
-            return;
-        ResizeOgreTexture(width, height);
-        assert(overlay_);
-        assert(container_);
-        assert(material_.get());
-        return;
-    }
-    */
+   
 
     QString overlayName = QString("over") + id_;
     overlay_ = Ogre::OverlayManager::getSingleton().create(overlayName.toStdString().c_str());
