@@ -62,8 +62,9 @@ namespace RexLogic
             // Deserialize appearance from the document into the EC
             LegacyAvatarSerializer::ReadAvatarAppearance(appearance, *default_appearance_);
             
-            // Setup mesh according to appearance, incl. materials & textures
+            // Setup appearance
             SetupMeshAndMaterials(entity);
+            SetupMorphs(entity);
         }
     }
     
@@ -91,7 +92,7 @@ namespace RexLogic
                 AvatarAsset& texture = materials[i].textures_[0];
                 if (!texture.name_.empty())
                 {
-                    // Create a new temporary material resource for texture override. Will hopefully be deleted when the appearance EC is deleted
+                    // Create a new temporary material resource for texture override. Should be deleted when the appearance EC is deleted
                     boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
                         GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
                     
@@ -120,8 +121,40 @@ namespace RexLogic
         // Set adjustment orientation for mesh (Ogre meshes usually have Y-axis as vertical)
         Core::Quaternion adjust(Core::PI/2, 0, -Core::PI/2);
         mesh.SetAdjustOrientation(adjust);
+        //! \todo use bones/properties for positioning adjustment
         // Position approximately within the bounding box
         mesh.SetAdjustPosition(Core::Vector3df(0.0f, 0.0f, -0.8f));
         mesh.SetCastShadows(true);
+    }
+    
+    void AvatarAppearance::SetupMorphs(Scene::EntityPtr entity)
+    {
+        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()).get());
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(entity->GetComponent(EC_AvatarAppearance::NameStatic()).get());
+        
+        Ogre::Entity* ogre_entity = mesh.GetEntity();
+        if (!ogre_entity)
+            return;
+        Ogre::AnimationStateSet* anims = ogre_entity->getAllAnimationStates();
+        if (!anims)
+            return;
+            
+        const MorphModifierVector& morphs = appearance.GetMorphModifiers();
+        for (Core::uint i = 0; i < morphs.size(); ++i)
+        {
+            if (anims->hasAnimationState(morphs[i].morph_name_))
+            {
+                float timePos = morphs[i].value_;
+                if (timePos < 0.0f)
+                    timePos = 0.0f;
+                // Clamp very close to 1.0, but do not actually go to 1.0 or the morph animation will wrap
+                if (timePos > 0.99995f)
+                    timePos = 0.99995f;
+                
+                Ogre::AnimationState* anim = anims->getAnimationState(morphs[i].morph_name_);
+                anim->setTimePosition(timePos);
+                anim->setEnabled(timePos > 0.0f);
+            }
+        }
     }
 }
