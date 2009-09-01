@@ -7,6 +7,7 @@
 
 #include <QList>
 #include <QPoint>
+#include <QTime>
 #include <QGraphicsSceneMouseEvent> 
 
 #include <boost/shared_ptr.hpp>
@@ -72,6 +73,13 @@ namespace QtUI
         void InjectMouseRelease(int x, int y);
 
         /**
+         * Sends a mouse double click event to correct canvas. 
+         * @param x is a event position on x-axis. 
+         * @param y is a event position on y-axis.
+         */
+        void InjectDoubleClick(int x, int y);
+
+        /**
          * Sets a new size of Ogre-render window. 
          * @param size is new size of Ogre-render window. 
          */
@@ -92,6 +100,7 @@ namespace QtUI
          * Reques arrange of canvases to new Z-order. 
          */
         void RequestArrange() { arrange_ = true; }
+
 
     signals:
         
@@ -130,15 +139,24 @@ namespace QtUI
         
         // Is mouse currently down?
         bool mouseDown_;
-
-        // Last location of mousePress down.
-        QPoint mousePress_;
        
+        // Last location of mouse press down.
+        QPoint mousePress_;
+
         // Is Z-order changed? Should it arrange again.
         bool arrange_;
 
         // Render window size.
         QSize parentWindowSize_;
+
+        // Last mouse position.
+        QPoint lastPosition_;
+
+        // Timer which is used to detect double click events. 
+        QTime timer_;
+
+        // Time which defines how soon two mouse press down events are assumed as double click.  
+        int responseTimeLimit_;
 
     };
 
