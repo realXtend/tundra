@@ -134,20 +134,21 @@ void QtModule::Update(Core::f64 frametime)
         
         const Input::Events::Movement &mouse = input->GetMouseMovement();
         QPointF pos = QPointF(mouse.x_.abs_, mouse.y_.abs_);
-
-        
+          
 
         if (input->IsButtonDown(OIS::MB_Left) && !mouse_left_button_down_)
         {
-            
+           
             controller_->InjectMousePress(pos.x(), pos.y());
             mouse_left_button_down_ = true;
+           
         }
         else if (!input->IsButtonDown(OIS::MB_Left) && mouse_left_button_down_)
         {
-          
+           
             controller_->InjectMouseRelease(pos.x(),pos.y());
             mouse_left_button_down_ = false;
+        
         }
         else
         {

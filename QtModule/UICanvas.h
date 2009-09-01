@@ -8,6 +8,7 @@
 #include <QSize>
 #include <QRect>
 #include <QString>
+
 #include "QtModuleApi.h"
 
 class QPainter;
