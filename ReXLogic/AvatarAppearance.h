@@ -28,6 +28,9 @@ namespace RexLogic
         //! Sets up an avatar mesh
         void SetupMeshAndMaterials(Scene::EntityPtr entity);
         
+        //! Sets up avatar morphs
+        void SetupMorphs(Scene::EntityPtr entity);
+        
         //! Default avatar appearance xml document
         boost::shared_ptr<QDomDocument> default_appearance_;
         
