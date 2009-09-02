@@ -204,6 +204,8 @@ namespace RexLogic
         void SetAttachments(const AvatarAttachmentVector& attachments);
         void SetTransform(const Transform& transform);
         void SetProperty(const std::string& name, const std::string& value);
+        void SetMorphModifierValue(const std::string& name, Core::Real value);
+        void SetBoneModifierSetValue(const std::string& name, Core::Real value);
         void ClearProperties();
         void Clear();
         

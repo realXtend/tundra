@@ -139,9 +139,9 @@ namespace OgreRenderer
             OgreRenderingModule::LogWarning("Failed to parse Ogre material " + source->GetId() + ".");
 
             ogre_material_ = Ogre::MaterialManager::getSingleton().getByName(id_);
-	    Ogre::ResourcePtr ogre_material = static_cast<Ogre::ResourcePtr>(ogre_material_);
-	    //Ogre::MaterialManager::getSingleton().remove(static_cast<Ogre::ResourcePtr>(ogre_material_));
-	    Ogre::MaterialManager::getSingleton().remove(ogre_material);
+            Ogre::ResourcePtr ogre_material = static_cast<Ogre::ResourcePtr>(ogre_material_);
+            //Ogre::MaterialManager::getSingleton().remove(static_cast<Ogre::ResourcePtr>(ogre_material_));
+            Ogre::MaterialManager::getSingleton().remove(ogre_material);
             return false;
         }
         return true;
