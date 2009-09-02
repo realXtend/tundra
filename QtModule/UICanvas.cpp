@@ -51,7 +51,8 @@ UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
                                renderWindowSize_(parentWindowSize),
                                mode_(mode),
                                id_(QUuid::createUuid().toString()),
-                               widgets_(0)
+                               widgets_(0),
+                               locked_(false)
 {
  setScene(new QGraphicsScene);
  
