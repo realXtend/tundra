@@ -58,6 +58,30 @@ namespace RexLogic
         properties_[name] = value;
     }
     
+    void EC_AvatarAppearance::SetMorphModifierValue(const std::string& name, Core::Real value)
+    {
+        for (unsigned i = 0; i < morph_modifiers_.size(); ++i)
+        {
+            if (morph_modifiers_[i].name_ == name)
+            {
+                morph_modifiers_[i].value_ = value;
+                break;
+            }
+        }
+    }
+    
+    void EC_AvatarAppearance::SetBoneModifierSetValue(const std::string& name, Core::Real value)
+    {
+        for (unsigned i = 0; i < bone_modifiers_.size(); ++i)
+        {
+            if (bone_modifiers_[i].name_ == name)
+            {
+                bone_modifiers_[i].value_ = value;
+                break;
+            }
+        }
+    }
+    
     void EC_AvatarAppearance::ClearProperties()
     {
         properties_.clear();
