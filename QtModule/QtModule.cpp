@@ -134,7 +134,7 @@ void QtModule::Update(Core::f64 frametime)
         
         const Input::Events::Movement &mouse = input->GetMouseMovement();
         QPointF pos = QPointF(mouse.x_.abs_, mouse.y_.abs_);
-          
+        QPoint change = lastPos_ - pos.toPoint(); 
 
         if (input->IsButtonDown(OIS::MB_Left) && !mouse_left_button_down_)
         {
@@ -150,12 +150,12 @@ void QtModule::Update(Core::f64 frametime)
             mouse_left_button_down_ = false;
         
         }
-        else
+        else if ( change.manhattanLength() >= 1 )
         {
-		 
-            controller_->InjectMouseMove(pos.x(),pos.y());
+		    controller_->InjectMouseMove(pos.x(),pos.y());
         }	
-		
+		lastPos_ = pos.toPoint();
+
         PROFILE(QtSceneRender);
 
         ///\todo Optimize to redraw only those rectangles that are dirty.

@@ -69,7 +69,21 @@ namespace QtUI
         
         QPointF GetPosition() const;
 
-        
+        /**
+         * Locks canvas position so that it cannot drag over render windows.
+         * @note this behavior is only possible for internal canvases. 
+         * @param locked is a boolean which defines that is canvas locked. 
+         */
+         
+        void SetLockPosition(bool locked) { locked_ = locked; }
+
+        /**
+         * Returns true if canvas is locked
+         * false if not. 
+         */
+
+        bool IsCanvasPositionLocked() const { return locked_; }
+
         /**
          * Resizes the UI canvas size and reallocates Qt and Ogre surfaces to new size. 
          * @param width is a new width of canvas. 
@@ -78,7 +92,10 @@ namespace QtUI
          */
         void SetCanvasSize(int width, int height);
 
-        
+        /** 
+         * Returns canvas geometry. 
+         */
+        QRect GetCanvasGeometry() const { return this->geometry(); }
     	
         /**
          * Returns canvas uniq id which is used to generate canvases uniq texture and material name. Texture name is "tex" + id and material name is "mat" + id. Container name is "con" + id
@@ -179,6 +196,7 @@ namespace QtUI
         Mode mode_;
         QString id_;
         int widgets_;
+        bool locked_;
 
         QList<QGraphicsProxyWidget* > scene_widgets_;
 

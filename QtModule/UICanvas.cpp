@@ -36,7 +36,8 @@ UICanvas::UICanvas(): overlay_(0),
                       surfaceName_(""),
                       mode_(External),
                       id_(QUuid::createUuid().toString()),
-                      widgets_(0)
+                      widgets_(0),
+                      locked_(false)
 {
    
     setScene(new QGraphicsScene);
