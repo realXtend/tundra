@@ -3,13 +3,15 @@
 
 #include "UIController.h"
 #include <QApplication>
+#include <QDebug>
+#include <cmath>
 
 #include "MemoryLeakCheck.h"
 
 namespace QtUI
 {
 
-UIController::UIController() : arrange_(false), responseTimeLimit_(500)
+UIController::UIController() : mouseDown_(false), arrange_(false), responseTimeLimit_(500)
 {}
 
 UIController::~UIController()
@@ -66,12 +68,15 @@ boost::weak_ptr<UICanvas> UIController::CreateCanvas(UICanvas::Mode mode)
 
 void UIController::InjectMouseMove(int x, int y)
 {
+   
     QPoint point(x,y);
-    lastPosition_ = point;
     int index = GetCanvas(point);
     
-    if (index != -1)
+    // Normal move. 
+
+    if (index != -1 && !mouseDown_)
     {
+ 
         // Location of mouse event in scene.
         QPoint p = canvases_[index]->MapToCanvas(x,y);
         QPointF pos = canvases_[index]->mapToScene(p);
@@ -105,10 +110,36 @@ void UIController::InjectMouseMove(int x, int y)
         QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);    
         
     }
+    else if ( mouseDown_ )
+    {
+        // Drag event. 
+        
+        // Find active canvas, move it to this location (if canvas is not locked.)
+        
+        index = GetCanvas(lastPosition_);
+        
+        if ( index != -1)
+        {
+            if ( !canvases_[index]->IsCanvasPositionLocked() )
+            {
+                QPoint pos = canvases_[index]->GetPosition().toPoint();
+
+                int xPos = point.x()-(lastPosition_.x()-pos.x());
+                int yPos = point.y()-(lastPosition_.y()-pos.y());
+              
+                canvases_[index]->SetPosition(xPos, yPos);
+            }
+        }
+
+    }
+    
+    lastPosition_ = point;
+
 }
 
 void UIController::InjectMousePress(int x, int y)
 {
+  
     QPoint point(x,y);
   
     int index = GetCanvas(point);
@@ -139,7 +170,7 @@ void UIController::InjectMousePress(int x, int y)
         timer_.setHMS(0,0,0,-1);
     }
     
-    lastPosition_ = point;
+    
     if (index != -1)
     {
     
@@ -171,14 +202,14 @@ void UIController::InjectMousePress(int x, int y)
 
         
     }
+    lastPosition_ = point;
 }
 
 void UIController::InjectMouseRelease(int x, int y)
 {
     ////todo what to do release after double click?
-
+  
     QPoint point(x,y);
-    lastPosition_ = point;
     int index = GetCanvas(point);
 
     if (index != -1)
@@ -189,10 +220,6 @@ void UIController::InjectMouseRelease(int x, int y)
         QPoint p = canvases_[index]->MapToCanvas(x,y);
         QPointF pos = canvases_[index]->mapToScene(p);
         QPoint currentMousePos((int)pos.x(), (int)pos.y());
-
-        mouseDown_ = false;
-        
-       
 
         QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseRelease);
         mouseEvent.setButtonDownScenePos(Qt::NoButton, currentMousePos);
@@ -212,6 +239,8 @@ void UIController::InjectMouseRelease(int x, int y)
     
     }
 
+    mouseDown_ = false;
+    lastPosition_ = point;
 }
 
 void UIController::InjectDoubleClick(int x, int y)

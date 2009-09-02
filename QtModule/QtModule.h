@@ -64,7 +64,8 @@ private:
     
 
     bool mouse_left_button_down_;
-    
+    QPoint lastPos_;
+
     UIController* controller_;
 
 };
