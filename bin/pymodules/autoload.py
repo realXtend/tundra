@@ -10,14 +10,26 @@ whatever loading that you want (in your module i.e. .py file).
 import usr.chathandler
 import usr.keycommands
 #import usr.mousecontrol
-#import webserver.webcontroller
+import editgui
+
+try:
+    import webserver.webcontroller
+except ImportError: #socket not avaible in debugmode
+    import circuits
+    WebServer = circuits.Component #a dummy for debugmode
+else:
+    from webserver.webcontroller import WebServer
+    
 #import headtrack.control
+import usr.sleeper
 
 modules = [
     #apitest.circuits_testmodule.TestModule,
     usr.chathandler.ChatHandler,
     usr.keycommands.KeyCommander,
-    #webserver.webcontroller.WebServer
+    usr.sleeper.Sleeper,
+    editgui.EditGUI,
+    WebServer
     #usr.mousecontrol.MouseControl,
 ]
 
@@ -25,12 +37,13 @@ modules = [
 
 def load(circuitsmanager):
     for klass in modules:
-        #modinst = klass()
-        #circuitsmanager += modinst
+        #~ modinst = klass()
+        #~ circuitsmanager += modinst
         try:
-            modinst = klass()
-        except:
-            print "failed to instansciate pymodule", klass #XXX add exception info
+            modinst = klass()            
+        except Exception, exc:
+            print "failed to instansciate pymodule", klass
+            print exc
         else:
             circuitsmanager += modinst # Equivalent to: tm.register(m)
  

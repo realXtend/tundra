@@ -44,7 +44,7 @@ namespace PythonScript
     static Core::event_category_id_t scene_event_category_ ;
 
     class PythonEngine;
-    typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;	
+    typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;
 
     //! A scripting module using Python
     class MODULE_API PythonScriptModule : public Foundation::ModuleInterfaceImpl
@@ -113,6 +113,8 @@ namespace PythonScript
 		//   so reverting to use the Py C API directly, not using the ScriptObject now
 		//   for the modulemanager 
 		
+		bool mouse_left_button_down_;
+		bool mouse_right_button_down_;
 
 	};
 

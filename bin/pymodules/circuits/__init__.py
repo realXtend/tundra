@@ -98,6 +98,9 @@ circuits.web = circuits.web.main:main
 from core import handler, Event, Component,  Manager
 
 from core.timers import Timer
-from core.bridge import Bridge
+try:
+    from core.bridge import Bridge
+except:
+    print "Failed to import circuits.core.bridge. This probably means we're running in debug mode, and the debug version of the Python socket library is available. Continuing without."
 from core.debugger import Debugger
 from core.workers import Thread, Process

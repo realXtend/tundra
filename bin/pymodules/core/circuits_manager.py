@@ -27,6 +27,7 @@ class Update(Event): pass
 class Chat(Event): pass    
 class Input(Event): pass
 class MouseMove(Event): pass
+class MouseClick(Event): pass
 class Exit(Event): pass
     
 class ComponentRunner(Component):
@@ -38,7 +39,10 @@ class ComponentRunner(Component):
         ComponentRunner.instance = self #is used as a singleton now
 
         # Create a new circuits Manager
-        self.m = Manager()# + Debugger()
+        #ignevents = [Update, MouseMove]
+        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick']
+        ignchannels = [('*', n) for n in ignchannames]
+        self.m = Manager() + Debugger(IgnoreChannels = ignchannels) #IgnoreEvents = ignored)
 
         Component.__init__(self)
         
@@ -70,11 +74,12 @@ class ComponentRunner(Component):
         Here we have no way to differentiate presses/releases,
         'cause the c++ internals don't do that apart from the constant name.
         """
+        #print "circuits_manager ComponentRunner got input event:", evid       
         rvalue = False
         self.m.send(Input(evid), "on_input")
         rvalue = r.eventhandled
         return rvalue
-        #print "circuits_manager ComponentRunner got input event:", evid       
+        
         
     def KEY_INPUT_EVENT(self, evid, keycode, keymod):
         """Handles key inputs, creates a Circuits Key event with the data provided
@@ -90,11 +95,22 @@ class ComponentRunner(Component):
             rvalue = r.eventhandled
         return rvalue
             
-    def MOUSE_INPUT(self, x_abs, y_abs, x_rel, y_rel):
+    def MOUSE_MOVEMENT(self, x_abs, y_abs, x_rel, y_rel):
+        rvalue = False
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
-        #print "Manager got mouse input", self.mouseinfo, self.mouseinfo.x, self.mouseinfo.y
+        #print "CircuitsManager got mouse input", self.mouseinfo, self.mouseinfo.x, self.mouseinfo.y
         self.m.send(MouseMove(self.mouseinfo), "on_mousemove")
-        
+        rvalue = r.eventhandled
+        return rvalue
+    
+    def MOUSE_CLICK(self, mb_click, x_abs, y_abs, x_rel, y_rel):
+        #print "CircuitsManager got mouse click", mb_click 
+        rvalue = False
+        self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
+        self.m.send(MouseClick(mb_click, self.mouseinfo), "on_mouseclick")
+        rvalue = r.eventhandled
+        return rvalue
+
     def exit(self):
         self.m.send(Exit(), "on_exit") #am not running the manager properly so the stop doesn't propagate to components. fix when switch to dev branch of circuits XXX
         print "Circuits manager stopping."

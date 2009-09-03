@@ -12,17 +12,17 @@
 #include "ConsoleCommandServiceInterface.h"
 #include "PythonEngine.h" //is this needed here?
 
-#include "RexLogicModule.h" //now for SendChat, perhaps other stuff for the api will be here too?
+#include "RexLogicModule.h" //much of the api is here
 #include "OpenSimProtocolModule.h" //for handling net events
 #include "RexProtocolMsgIDs.h"
 #include "InputEvents.h" //handling input events
-#include "InputServiceInterface.h" //for getting mouse info from the input service
+#include "InputServiceInterface.h" //for getting mouse info from the input service, prolly not used anymore ?
+#include "InputModuleOIS.h" //for getting mouse info from the input module
 #include "RenderServiceInterface.h" //for getting rendering services, i.e. raycasts
 
 #include "SceneManager.h"
 #include "SceneEvents.h" //sending scene events after (placeable component) manipulation
 
-#include "Entity.h"
 #include "Avatar.h" //remove?
 #include "EC_OpenSimPresence.h"
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
@@ -37,6 +37,16 @@
 //#include "ogrecamera.h"
 #include "../OgreRenderingModule/Renderer.h" //for the screenshot api
 #include "AvatarControllable.h"
+
+#include "Entity.h"
+#include "RexPythonQt.h"
+
+//had to move the createcanvas func here due to the staticframework ref prob
+#include "PythonQt.h"
+#include <QGroupBox> //just for testing addObject
+#include <QtUiTools> //for .ui loading in testing
+#include "QtModule.h"
+#include "UICanvas.h"
 
 namespace PythonScript
 {
@@ -95,6 +105,9 @@ namespace PythonScript
 		PythonScript::staticframework = framework_;
 		apiModule = PythonScript::initpymod(); //initializes the rexviewer module to be imported within py
 
+		//init PythonQt, implemented in RexPythonQt.cpp
+		PythonScript::initRexQtPy(apiModule);
+
 		//load the py written module manager using the py c api directly
 		pmmModule = PyImport_ImportModule("modulemanager");
 		if (pmmModule == NULL) {
@@ -117,7 +130,8 @@ namespace PythonScript
 		//std::string error;
 		//modulemanager = engine_->LoadScript("modulemanager", error); //the pymodule loader & event manager
 		//modulemanager = modulemanager->GetObject("ModuleManager"); //instanciates
-
+		mouse_left_button_down_ = false;
+		mouse_right_button_down_ = false;
         LogInfo("Module " + Name() + " initialized succesfully.");
     }
 
@@ -218,7 +232,7 @@ namespace PythonScript
 				
 				value = PyObject_CallMethod(pmmInstance, "KEY_INPUT_EVENT", "iii", event_id, keycode, mods);
 			}
-			else
+			else //XXX change to if-else...
 			{
 				value = PyObject_CallMethod(pmmInstance, "INPUT_EVENT", "i", event_id);
 			}
@@ -368,25 +382,58 @@ namespace PythonScript
 
 		/* Mouse input special handling. InputModuleOIS has sending these as events commented out,
 		   This polling is copy-pasted from the InputHandler in RexLogicModule */
-        boost::shared_ptr<Input::InputServiceInterface> input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input).lock();
+        //boost::shared_ptr<Input::InputServiceInterface> input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input).lock();
+		boost::shared_ptr<Input::InputModuleOIS> input = framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
         if (input)
         {
-            boost::optional<const Input::Events::Movement&> movement = input->PollSlider(Input::Events::MOUSELOOK);
+            //boost::optional<const Input::Events::Movement&> movement = input->PollSlider(Input::Events::MOUSELOOK);
+			boost::optional<const Input::Events::Movement&> movement = input->GetMouseMovement();
             if (movement)
             {
 				//LogDebug("me sees mouse move too");
 
 				//might perhaps wrap that nice pos class later but this is simpler now
-				float x_abs = static_cast<float>(movement->x_.abs_);
-				float y_abs = static_cast<float>(movement->y_.abs_);
+				//float x_abs = static_cast<float>(movement->x_.abs_);
+				//float y_abs = static_cast<float>(movement->y_.abs_);
+				//
+				//float x_rel = static_cast<float>(movement->x_.rel_);
+				//float y_rel = static_cast<float>(movement->y_.rel_);
 
-				float x_rel = static_cast<float>(movement->x_.rel_);
-				float y_rel = static_cast<float>(movement->y_.rel_);
-
-				PyObject_CallMethod(pmmInstance, "MOUSE_INPUT", "ffff", x_abs, y_abs, x_rel, y_rel);
+				int x_abs = movement->x_.abs_;
+				int y_abs = movement->y_.abs_;
+				int x_rel = movement->x_.rel_;
+				int y_rel = movement->y_.rel_;
 
                 //dragging_ = true;
                 //state->Drag(&*movement);
+
+				if (input->IsButtonDown(OIS::MB_Left) && !mouse_left_button_down_)
+				{
+					PyObject_CallMethod(pmmInstance, "MOUSE_CLICK", "iiiii", Input::Events::LEFT_MOUSECLICK_PRESSED, x_abs, y_abs, x_rel, y_rel);
+					mouse_left_button_down_ = true;
+				}
+				else if (!input->IsButtonDown(OIS::MB_Left) && mouse_left_button_down_)
+				{
+					PyObject_CallMethod(pmmInstance, "MOUSE_CLICK", "iiiii", Input::Events::LEFT_MOUSECLICK_RELEASED, x_abs, y_abs, x_rel, y_rel);
+					mouse_left_button_down_ = false;
+				}
+
+				else if (input->IsButtonDown(OIS::MB_Right) && !mouse_right_button_down_)
+				{
+					PyObject_CallMethod(pmmInstance, "MOUSE_CLICK", "iiiii", Input::Events::RIGHT_MOUSECLICK_PRESSED, x_abs, y_abs, x_rel, y_rel);
+					mouse_right_button_down_ = true;
+				}
+				else if (!input->IsButtonDown(OIS::MB_Right) && mouse_right_button_down_)
+				{
+					PyObject_CallMethod(pmmInstance, "MOUSE_CLICK", "iiiii", Input::Events::RIGHT_MOUSECLICK_RELEASED, x_abs, y_abs, x_rel, y_rel);
+					mouse_right_button_down_ = false;
+				}
+				else //do we need this... ?
+				{
+					PyObject_CallMethod(pmmInstance, "MOUSE_MOVEMENT", "iiii", x_abs, y_abs, x_rel, y_rel);
+				}	
+				
+
             } /*else if (dragging_)
             {
                 dragging_ = false;
@@ -446,6 +493,23 @@ PyObject* SendChat(PyObject *self, PyObject *args)
 	Py_RETURN_TRUE;
 }
 
+static PyObject* SetAvatarRotation(PyObject *self, PyObject *args)
+{
+	Foundation::Framework *framework_ = PythonScript::staticframework;
+	RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+	float x, y, z, w;
+
+	if(!PyArg_ParseTuple(args, "ffff", &x, &y, &z, &w))
+	{
+		PyErr_SetString(PyExc_ValueError, "Value error, need x, y, z, w params");
+        return NULL;
+	}
+	std::cout << "Sending newrot..." << std::endl;
+	Core::Quaternion newrot(x, y, z, w); //seriously, is this how constructing a quat works!?
+	rexlogic_->SetAvatarRotation(newrot);
+
+	Py_RETURN_NONE;
+}
 
 //returns the entity at the position (x, y), if nothing there, returns False	
 static PyObject* RayCast(PyObject *self, PyObject *args)
@@ -724,6 +788,7 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 		//Core::f64 t = (Core::f64) 0.01;
 		//avc->AddTime(t);
 		//rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
+		rexlogic_->SetAvatarYaw(newyaw);
 	}
 	
 	else
@@ -734,6 +799,36 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 
 	Py_RETURN_NONE;
 }
+
+PyObject* CreateCanvas(PyObject *self, PyObject *args)
+{	    
+	if (!PythonScript::staticframework)
+	{
+		std::cout << "Oh crap staticframework is not there!";
+		return NULL;
+	}
+
+	boost::shared_ptr<QtUI::QtModule> qt_module = PythonScript::staticframework->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+	boost::shared_ptr<QtUI::UICanvas> canvas_;
+    
+	if ( qt_module.get() == 0)
+	    return NULL;
+
+	canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::External).lock();
+
+	//QtUI::UICanvas* qcanvas = canvas_.get();
+		
+	//these can be done on the py side too, so decoupled from this:
+	QWidget *widget;
+	QUiLoader loader;
+	QFile file("pymodules/editgui/editobject.ui");
+	widget = loader.load(&file); 
+	canvas_->AddWidget(widget);
+	canvas_->Show();
+
+	return PythonQt::self()->wrapQObject(widget); //box); //qcanvas
+}
+
 
 
 //slider input
@@ -754,6 +849,8 @@ PyObject* PyEventCallback(PyObject *self, PyObject *args){
 	Py_RETURN_TRUE;
 }
 
+// XXX NOTE: there apparently is a way to expose bound c++ methods? 
+// http://mail.python.org/pipermail/python-list/2004-September/282436.html
 static PyMethodDef EmbMethods[] = {
 	{"sendChat", (PyCFunction)SendChat, METH_VARARGS,
 	"Send the given text as an in-world chat message."},
@@ -781,14 +878,19 @@ static PyMethodDef EmbMethods[] = {
 
 	{"switchCameraState", (PyCFunction)SwitchCameraState, METH_VARARGS,
 	"Switching the camera mode from free to thirdperson and back again."},
-	
-	
+
+	{"setAvatarRotation", (PyCFunction)SetAvatarRotation, METH_VARARGS,
+	"Rotating the avatar."},
+
 	{"sendEvent", (PyCFunction)SendEvent, METH_VARARGS,
 	"Send an event id (WIP other stuff)."},
 
 	{"takeScreenshot", (PyCFunction)TakeScreenshot, METH_VARARGS,
 	"Takes a screenshot and saves it to a timestamped file."},
 
+	//from RexPythonQt.cpp now .. except got the fricken staticframework == null prob!
+	{"createCanvas", (PyCFunction)CreateCanvas, METH_VARARGS, 
+	 "Create a new Qt canvas within the viewer"},
 
 	{NULL, NULL, 0, NULL}
 };
@@ -846,6 +948,11 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 	Scene::ScenePtr scene = PythonScript::GetScene();
 	rexviewer_EntityObject *eob = (rexviewer_EntityObject *)self;
 	Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
+
+	if (s_name.compare("id") == 0)
+	{
+		return Py_BuildValue("I", eob->ent_id); //unsigned int - is verified to be correct, same as c++ shows (at least in GetEntity debug print)
+	}
 	
 	if (s_name.compare("prim") == 0)
 	{
@@ -861,6 +968,19 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 		//m->AddU32(prim->LocalId);
 		std::string retstr = "local id:" + prim->FullId.ToString() + "- prim name: " + prim->ObjectName;
 		return PyString_FromString(retstr.c_str());
+	}
+	else if (s_name.compare("name") == 0)
+	{
+		//std::cout << ".. getting prim" << std::endl;
+		const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
+		if (!prim_component)
+		{
+			PyErr_SetString(PyExc_AttributeError, "prim not found.");
+			return NULL;   
+		}
+		RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
+	    
+		return PyString_FromString(prim->ObjectName.c_str());
 	}
 
 	else if (s_name.compare("pos") == 0)
