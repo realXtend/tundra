@@ -18,7 +18,7 @@ namespace PythonScript
 		//XXX add shutdown too!
 		// init PythonQt, but not Python 'cause PythonScriptModule has already done that.
 		PythonQt::init(PythonQt::DoNotInitializePython);
-  
+
 		// get the __main__ python module
 		//PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
   
@@ -26,16 +26,53 @@ namespace PythonScript
 		//QVariant result = mainModule.evalScript("19*2+4", Py_eval_input);
 
 		// add the canvas creation func from here to the rexviewer py api
-		/* now in PythonScriptModule.cpp due to staticframework ref prob
+		// now in PythonScriptModule.cpp due to staticframework ref prob
+		/*
 		PyObject *moduleDict = PyModule_GetDict(apimodule);
 		static PyMethodDef createcanvasdef[] = {{"createCanvas", CreateCanvas, METH_VARARGS, "Create a new Qt canvas within the viewer"}};
 		PyObject *createCanvasFunc = PyCFunction_New(createcanvasdef, NULL);
-		PyDict_SetItemString(moduleDict, "createCanvas", createCanvasFunc); */
+		PyDict_SetItemString(moduleDict, "createCanvas", createCanvasFunc); 
+		*/
 	}
 
-	/* the whole thing to PythonScriptModule.cpp due to the staticframework prob..
+	// the whole thing to PythonScriptModule.cpp due to the staticframework prob..
+	/*
 	PyObject* CreateCanvas(PyObject *self, PyObject *args)
 	{	    
+		PythonScript::self()->LogInfo("Creating canvas in RexPythonQt!");
+		if (!PythonScript::self()->GetFramework()) //<- this bit is null always... and crashes the viewer aswell... what gives
+		{
+			//std::cout << "Oh crap staticframework is not there!";
+			PythonScript::self()->LogInfo("PythonScript's framework is not present!");
+			return NULL;
+		}
+
+		boost::shared_ptr<QtUI::QtModule> qt_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+		boost::shared_ptr<QtUI::UICanvas> canvas_;
+	    
+		if ( qt_module.get() == 0)
+			return NULL;
+
+		canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::External).lock();
+
+		//QtUI::UICanvas* qcanvas = canvas_.get();
+			
+		//these can be done on the py side too, so decoupled from this:
+		QWidget *widget;
+		QUiLoader loader;
+		QFile file("pymodules/editgui/editobject.ui");
+		widget = loader.load(&file); 
+		canvas_->AddWidget(widget);
+		canvas_->Show();
+
+		return PythonQt::self()->wrapQObject(widget); //box); //qcanvas
+	}
+	//*/
+	/*PyObject* CreateCanvas(PyObject *self, PyObject *args)
+	{	    
+		mod = PythonScript::self();
+		mod->LogInfo
+		frm = mod->GetFrae
 		if (!PythonScript::staticframework)
 		{
 			std::cout << "Oh crap staticframework is not there!";

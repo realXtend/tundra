@@ -94,6 +94,7 @@ namespace PythonScript
     // virtual
     void PythonScriptModule::Initialize()
     {
+		PythonScript::pythonscriptmodule_ = this;
 		engine_ = PythonScript::PythonEnginePtr(new PythonScript::PythonEngine(framework_));
         engine_->Initialize();
 		
@@ -132,6 +133,7 @@ namespace PythonScript
 		//modulemanager = modulemanager->GetObject("ModuleManager"); //instanciates
 		mouse_left_button_down_ = false;
 		mouse_right_button_down_ = false;
+
         LogInfo("Module " + Name() + " initialized succesfully.");
     }
 
@@ -213,13 +215,13 @@ namespace PythonScript
         Core::event_category_id_t category_id,
         Core::event_id_t event_id, 
         Foundation::EventDataInterface* data)
-    {
+    {	
+		PyObject* value = NULL;
 		//input events. 
 		//another option for enabling py handlers for these would be to allow
 		//implementing input state in py, see the AvatarController and CameraController in rexlogic
 		if (category_id == inputeventcategoryid)
 		{
-			PyObject* value = NULL;
 			//key inputs, send the event id and key info (code+mod) for the python side
 			if (event_id == Input::Events::KEY_PRESSED || event_id == Input::Events::KEY_RELEASED)
 			{
@@ -232,25 +234,43 @@ namespace PythonScript
 				
 				value = PyObject_CallMethod(pmmInstance, "KEY_INPUT_EVENT", "iii", event_id, keycode, mods);
 			}
-			else //XXX change to if-else...
+
+			else//XXX change to if-else...
 			{
 				value = PyObject_CallMethod(pmmInstance, "INPUT_EVENT", "i", event_id);
 			}
-
-			if (value)
-                {
-				    if (PyObject_IsTrue(value))
-				    {
-					    //LogInfo("X_INPUT_EVENT returned true.");
-					    return true;  
-				    } 
-				    else 
-				    {
-					    //LogInfo("X_INPUT_EVENT returned false.");
-					    return false;
-    				}
-                }
 		}
+		else if (category_id == scene_event_category_)
+		{
+
+			/*
+			 only handles local modifications so far, needs a network refactorin of entity update events
+			 to get inbound network entity updates workin
+			*/
+			if (event_id == Scene::Events::EVENT_ENTITY_UPDATED)
+			{
+				//LogInfo("Entity updated.");
+				Scene::Events::SceneEventData* edata = checked_static_cast<Scene::Events::SceneEventData *>(data);
+				unsigned int ent_id = edata->localID;
+				if (ent_id != 0)
+					value = PyObject_CallMethod(pmmInstance, "ENTITY_UPDATED", "I", ent_id);
+			}
+			
+		}
+		if (value)
+        {
+		    if (PyObject_IsTrue(value))
+		    {
+			    //LogInfo("X_INPUT_EVENT returned true.");
+			    return true;  
+		    } 
+		    else 
+		    {
+			    //LogInfo("X_INPUT_EVENT returned false.");
+			    return false;
+			}
+        }
+		
 		
 		//was for first receive chat test, when no module provided it, so handles net event directly
 		/* got a crash with this now during login, when the viewer was also getting asset data etc.
@@ -475,7 +495,7 @@ PyObject* SendChat(PyObject *self, PyObject *args)
 	}
 
 	//Foundation::Framework *framework_ = Foundation::ComponentInterfacePythonScriptModule::GetFramework();
-	Foundation::Framework *framework_ = PythonScript::staticframework;
+	Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;//
 	//todo weak_pointerize
 
 	//move decl to .h and getting to Initialize (see NetTEstLogicModule::Initialize)
@@ -495,7 +515,7 @@ PyObject* SendChat(PyObject *self, PyObject *args)
 
 static PyObject* SetAvatarRotation(PyObject *self, PyObject *args)
 {
-	Foundation::Framework *framework_ = PythonScript::staticframework;
+	Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
 	RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 	float x, y, z, w;
 
@@ -521,7 +541,7 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
         return NULL;   
 	}
 
-	Foundation::Framework *framework_ = PythonScript::staticframework;
+	Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
 	boost::shared_ptr<Foundation::RenderServiceInterface> render = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
 	Scene::Entity *entity = render->Raycast(x, y);
 
@@ -548,8 +568,8 @@ static PyObject* TakeScreenshot(PyObject *self, PyObject *args)
 	
 	oFilePath = filePath;
 	oFileName = fileName;
-
-	Foundation::Framework *framework_ = PythonScript::staticframework;
+	
+	Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
 	boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
 	if (renderer){
 
@@ -564,7 +584,7 @@ static PyObject* TakeScreenshot(PyObject *self, PyObject *args)
 
 static PyObject* SwitchCameraState(PyObject *self)
 {
-	Foundation::Framework *framework_ = PythonScript::staticframework;
+	Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
 	RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 	rexlogic_->SwitchCameraState();
     Py_RETURN_NONE;
@@ -574,7 +594,7 @@ static PyObject* SendEvent(PyObject *self, PyObject *args)
 {
 	std::cout << "PySendEvent" << std::endl;
 	unsigned int event_id_int;//, ent_id_int = 0;
-	Foundation::Framework *framework_ = PythonScript::staticframework;
+	Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
 	//Core::entity_id_t ent_id;
 	Core::event_id_t event_id;
 
@@ -590,7 +610,7 @@ static PyObject* SendEvent(PyObject *self, PyObject *args)
 	if (event_id == Input::Events::SWITCH_CAMERA_STATE) 
 	{
         std::cout << "switch camera state gotten!" << std::endl;
-		PythonScript::staticframework->GetEventManager()->SendEvent(event_category, event_id, NULL);//&event_data);
+		framework_->GetEventManager()->SendEvent(event_category, event_id, NULL);//&event_data);
 	} 
 	else
 		std::cout << "failed..." << std::endl;
@@ -641,7 +661,7 @@ PyObject* GetEntity(PyObject *self, PyObject *args)
 
 PyObject* CreateEntity(PyObject *self, PyObject *args)
 {
-	Foundation::Framework *framework_ = PythonScript::staticframework;
+	Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
 	RexLogic::RexLogicModule *rexlogic_;
 
 	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
@@ -723,7 +743,7 @@ PyObject* SetCameraYawPitch(PyObject *self, PyObject *args)
 
 	//boost::shared_ptr<OgreRenderer::Renderer> renderer = PythonScript::staticframework->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
 	RexLogic::RexLogicModule *rexlogic_;
-	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::staticframework->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 	if (rexlogic_)
 	{
 		//boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
@@ -753,7 +773,7 @@ PyObject* GetCameraYawPitch(PyObject *self, PyObject *args)
 	Core::Real yaw, pitch;
 
 	RexLogic::RexLogicModule *rexlogic_;
-	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::staticframework->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 	if (rexlogic_)
 	{
 		boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
@@ -777,7 +797,7 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 	newyaw = (Core::Real) y;
 
 	RexLogic::RexLogicModule *rexlogic_;
-	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::staticframework->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 	if (rexlogic_)
 	{
 		rexlogic_->GetServerConnection()->IsConnected();
@@ -802,13 +822,14 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 
 PyObject* CreateCanvas(PyObject *self, PyObject *args)
 {	    
-	if (!PythonScript::staticframework)
+	if (!PythonScript::self()->GetFramework())//PythonScript::staticframework)
 	{
-		std::cout << "Oh crap staticframework is not there!";
+		//std::cout << "Oh crap staticframework is not there! (py)" << std::endl;
+		PythonScript::self()->LogInfo("PythonScript's framework is not present!");
 		return NULL;
 	}
 
-	boost::shared_ptr<QtUI::QtModule> qt_module = PythonScript::staticframework->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+	boost::shared_ptr<QtUI::QtModule> qt_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
 	boost::shared_ptr<QtUI::UICanvas> canvas_;
     
 	if ( qt_module.get() == 0)
@@ -889,9 +910,10 @@ static PyMethodDef EmbMethods[] = {
 	"Takes a screenshot and saves it to a timestamped file."},
 
 	//from RexPythonQt.cpp now .. except got the fricken staticframework == null prob!
+	
 	{"createCanvas", (PyCFunction)CreateCanvas, METH_VARARGS, 
-	 "Create a new Qt canvas within the viewer"},
-
+	"Create a new Qt canvas within the viewer"},
+	
 	{NULL, NULL, 0, NULL}
 };
 
@@ -1127,7 +1149,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 		   perhaps there'll be some MoveEntity thing in logic that can reuse for this? */
 	    Scene::Events::SceneEventData event_data(eob->ent_id);
 		event_data.entity_ptr_list.push_back(entity);
-		PythonScript::staticframework->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
+		PythonScript::self()->GetFramework()->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
 
 		return 0; //success.
 	}
@@ -1154,7 +1176,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 	    
 	    Scene::Events::SceneEventData event_data(eob->ent_id);
 		event_data.entity_ptr_list.push_back(entity);
-		PythonScript::staticframework->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
+		PythonScript::self()->GetFramework()->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
 
 		return 0; //success.
 	}
@@ -1181,7 +1203,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 	    
 	    Scene::Events::SceneEventData event_data(eob->ent_id);
 		event_data.entity_ptr_list.push_back(entity);
-		PythonScript::staticframework->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
+		PythonScript::self()->GetFramework()->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
 
 		return 0; //success.
 	}

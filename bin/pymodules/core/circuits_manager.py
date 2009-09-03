@@ -28,6 +28,7 @@ class Chat(Event): pass
 class Input(Event): pass
 class MouseMove(Event): pass
 class MouseClick(Event): pass
+class EntityUpdate(Event): pass
 class Exit(Event): pass
     
 class ComponentRunner(Component):
@@ -40,7 +41,7 @@ class ComponentRunner(Component):
 
         # Create a new circuits Manager
         #ignevents = [Update, MouseMove]
-        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick']
+        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated']
         ignchannels = [('*', n) for n in ignchannames]
         self.m = Manager() + Debugger(IgnoreChannels = ignchannels) #IgnoreEvents = ignored)
 
@@ -108,6 +109,14 @@ class ComponentRunner(Component):
         rvalue = False
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
         self.m.send(MouseClick(mb_click, self.mouseinfo), "on_mouseclick")
+        rvalue = r.eventhandled
+        return rvalue
+        
+    def ENTITY_UPDATED(self, id):
+        #print "Entity updated!", id
+        rvalua = False
+        
+        self.m.send(EntityUpdate(id), "on_entityupdated")
         rvalue = r.eventhandled
         return rvalue
 

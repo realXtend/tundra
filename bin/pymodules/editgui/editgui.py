@@ -9,11 +9,9 @@ Works for selecting an object with the mouse, and then changing the position
 using the qt widgets. Is shown immediately in-world and synched over the net.
 
 TODO (most work is in api additions on the c++ side, then simple usage here):
-- show name of the selected object
-- sync changes from over the net to the gui dialog: listen to scene objectupdates
+- (WIP, needs network event refactoring) sync changes from over the net to the gui dialog: listen to scene objectupdates
   (this is needed/nice when someone else is moving the same obj at the same time,
    works correctly in slviewer, i.e. the dialogs there update on net updates)
-- mousemove always, all button clicks
 - hilite the selected object
 (- list all the objects to allow selection from there)
 
@@ -56,6 +54,8 @@ class EditGUI(Component):
         self.sel = None
         
         self.left_button_down = False
+        self.widget.label.text = "<none>"
+        r.c = self.widget
         
     #~ def changed_x(self, v):
         #~ print "x changed to: %f" % v
@@ -87,6 +87,7 @@ class EditGUI(Component):
         self.widget.xpos.setValue(x)
         self.widget.ypos.setValue(y)
         self.widget.zpos.setValue(z)
+        self.widget.label.text = ent.id
         
     def on_mousemove(self, mouseinfo):
         """stub for dragging objects around 
@@ -107,5 +108,9 @@ class EditGUI(Component):
                 #if self.sel is not ent: #XXX wrappers are not reused - there may now be multiple wrappers for same entity
                 if self.sel is None or self.sel.id != ent.id: #a diff ent than prev sel was changed
                     self.select(ent)
+            else:
+                self.sel = None
+                self.widget.label.text = "<none>"
+
         elif click_id == r.LeftMouseClickReleased:
             self.left_button_down = False

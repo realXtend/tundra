@@ -43,7 +43,9 @@ namespace PythonScript
     // Category id for scene events - outside the module class 'cause entity_setattro wants this too
     static Core::event_category_id_t scene_event_category_ ;
 
-    class PythonEngine;
+
+    
+	class PythonEngine;
     typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;
 
     //! A scripting module using Python
@@ -78,7 +80,7 @@ namespace PythonScript
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_PythonScript;
 
-		static Foundation::Framework* GetStaticFramework() { return PythonScript::staticframework; }
+		//Foundation::Framework* GetFramework() { return frameworkptr;  };//this still returns null or 0... WHY?
 		static Foundation::ScriptEventInterface* engineAccess;
 
 		//api code is outside the module now, but reuses these .. err, but can't see 'cause dont have a ref to the instance?
@@ -88,9 +90,9 @@ namespace PythonScript
 
 		
 	private:
-        
+
 		PythonEnginePtr engine_;
-		
+
 		//basic feats
 		void RunString(const char* codestr);
 		void RunFile(const std::string &modulename);
@@ -136,6 +138,9 @@ namespace PythonScript
 		//Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene(); //this seems to have appeared, change to this XXX
 		return scene;
 	}
+
+	static PythonScriptModule* pythonscriptmodule_;
+	static PythonScriptModule* self() { return pythonscriptmodule_; }
 }
 
 #endif

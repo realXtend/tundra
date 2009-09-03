@@ -113,7 +113,7 @@ st/shared_ptr.hpp, line 419
 
 if 0: #placeable and text tests
     print "Testing..."
-    e = r.getEntity(720005)    
+    e = r.getEntity(8880005)    
 
     #~ try:
         #~ e.pos = 1
