@@ -32,10 +32,11 @@ InventoryFolder *InventoryFolder::GetFirstSubFolderByID(const RexTypes::RexUUID 
     return 0;        
 }
 
-void InventoryFolder::AddSubFolder(const InventoryFolder &folder)
+InventoryFolder *InventoryFolder::AddSubFolder(const InventoryFolder &folder)
 {
     children.push_back(folder);
     children.back().parent = this;
+    return &children.back();
 }
 
 void InventoryFolder::DebugDumpInventoryFolderStructure(int indentationLevel)
@@ -61,4 +62,18 @@ InventoryFolder *Inventory::GetFirstSubFolderByID(const RexTypes::RexUUID &searc
 void Inventory::DebugDumpInventoryFolderStructure()
 {
     root.DebugDumpInventoryFolderStructure(0);
+}
+
+InventoryFolder *Inventory::GetOrCreateNewFolder(const RexTypes::RexUUID &id, InventoryFolder &parent)
+{
+    // Return an existing folder if one with the given id is present.
+    InventoryFolder *existing = GetFirstSubFolderByID(id);
+    if (existing)
+        return existing;
+
+    // Create a new folder.
+    InventoryFolder newFolder;
+    newFolder.id = id;
+    newFolder.name = "New Folder";
+    return parent.AddSubFolder(newFolder);
 }
