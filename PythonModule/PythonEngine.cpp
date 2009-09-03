@@ -24,10 +24,8 @@ namespace PythonScript
 		if (!Py_IsInitialized())
 		{
 	        Py_Initialize();
-			RunString("import sys; sys.path.append('pymodules');"); //XXX change to the c equivalent when have network to access the reference
-			RunString("import sys; sys.path.append('pymodules\\python25_Lib.zip');"); // python modules from folder python25/Lib 
-
-			//RunString("sys.path.append('C:\CODE\RexNG3\bin\pymodules');");
+			RunString("import sys; sys.path.append('pymodules');"); //XXX change to the c equivalent
+			RunString("import sys; sys.path.append('pymodules\\python26_Lib.zip');"); // python modules from folder python26/Lib 
 		}
 		//else
 			//LogWarning("Python already initialized in PythonScriptModule init!");

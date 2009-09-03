@@ -26,6 +26,7 @@ include (Qt)
 # The following CMake modules are optional.
 #include (Gtkmm)
 include (Python)
+include (PythonQt)
 #include (OpenAL)
 include (Caelum)
 #include (Hydrax)
