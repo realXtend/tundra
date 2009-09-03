@@ -58,6 +58,10 @@ class KeyCommander(Component):
         #~ print "Got entity:", ent
         #~ if ent is not None:
             #~ print "Entity position is", ent.pos
+    
+    #~ def on_entityupdated(self, id):
+        #~ e = r.getEntity(id)
+        #~ print "Entity got touched", id#, "got", e, e.pos
         
     def run_commandpy(self):
         #print "Command:"
