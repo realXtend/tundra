@@ -80,6 +80,14 @@ namespace QtUI
         void InjectDoubleClick(int x, int y);
 
         /**
+         * Sends a key pressed event to correct canvas. 
+         * @param text is a key which was pressed (letter). 
+         * @param modifier is a value which defines that was alt or shift down. 
+         */
+
+        void InjectKeyPressed(Qt::Key keyCode, const Qt::KeyboardModifier& modifier);
+
+        /**
          * Sets a new size of Ogre-render window. 
          * @param size is new size of Ogre-render window. 
          */

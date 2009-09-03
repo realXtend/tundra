@@ -6,8 +6,8 @@
 #include "Foundation.h"
 #include "ModuleInterface.h"
 #include "QtModuleApi.h"
-
 #include "UIController.h"
+#include <QMap>
 
 class QGraphicsScene;
 namespace QtUI
@@ -56,7 +56,8 @@ public:
 
 private:
 
-   
+    void InitializeKeyCodes();
+
     // The event categories this module subscribes to.
     Core::event_category_id_t input_event_category_;
     Core::event_category_id_t renderer_event_category_;
@@ -68,6 +69,7 @@ private:
 
     UIController* controller_;
 
+    QMap<int, Qt::Key> converterMap_;
 };
 
 }

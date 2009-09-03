@@ -5,6 +5,7 @@
 #include <QApplication>
 #include <QDebug>
 #include <cmath>
+#include <QKeyEvent>
 
 #include "MemoryLeakCheck.h"
 
@@ -182,7 +183,7 @@ void UIController::InjectMousePress(int x, int y)
 
         // For future use save press state. 
         mouseDown_ = true;
-        mousePress_ = currentMousePos;
+        mousePress_ = point;
 
         QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMousePress);
         
@@ -280,6 +281,22 @@ void UIController::InjectDoubleClick(int x, int y)
     
     }
  
+}
+
+void UIController::InjectKeyPressed(Qt::Key keyCode, const Qt::KeyboardModifier& modifier)
+{
+    QKeySequence sequence(keyCode);  
+    QKeyEvent keyEvent(QEvent::KeyPress, keyCode, modifier, sequence.toString().toLower());
+    keyEvent.setAccepted(false);
+    
+    // Take a location of last known mouse press and send it to that canvas. 
+    
+    int index = GetCanvas(mousePress_);
+    if ( index != -1 )
+    {
+         QApplication::sendEvent(canvases_[index]->scene(), &keyEvent);
+    }
+
 }
 
 void UIController::SetParentWindowSize(const QSize& size)
