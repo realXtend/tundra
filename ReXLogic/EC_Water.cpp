@@ -4,7 +4,7 @@
 #include "EC_Water.h"
 
 #include <Ogre.h>
-#include "../OgreRenderingModule/Renderer.h"
+#include "Renderer.h"
 
 namespace RexLogic
 {

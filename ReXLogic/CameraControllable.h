@@ -99,9 +99,6 @@ namespace RexLogic
         //! drag yaw
         Core::Real drag_yaw_;
 
-        //! name of the head bone to use for positioning first person camera
-        std::string head_bone_;
-
         //! cached value for event category
         Core::event_category_id_t action_event_category_;
 

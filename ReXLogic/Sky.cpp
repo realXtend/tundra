@@ -9,7 +9,7 @@
 
 #include "CoreTypes.h"
 
-#include "../OgreRenderingModule/OgreTextureResource.h"
+#include "OgreTextureResource.h"
 
 namespace RexLogic
 {

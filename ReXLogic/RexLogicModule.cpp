@@ -29,11 +29,11 @@
 #include "InputEvents.h"
 
 // Ogre -specific
-#include "../OgreRenderingModule/Renderer.h"
-#include "../OgreRenderingModule/OgreTextureResource.h"
-#include "../OgreRenderingModule/EC_OgrePlaceable.h"
-#include "../OgreRenderingModule/EC_OgreMovableTextOverlay.h"
-#include "../OgreRenderingModule/EC_OgreAnimationController.h"
+#include "Renderer.h"
+#include "OgreTextureResource.h"
+#include "EC_OgrePlaceable.h"
+#include "EC_OgreMovableTextOverlay.h"
+#include "EC_OgreAnimationController.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>

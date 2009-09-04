@@ -12,11 +12,11 @@
 #include <OgreIteratorWrappers.h>
 #include <OgreTechnique.h>
 
-#include "../OgreRenderingModule/EC_OgrePlaceable.h"
-#include "../OgreRenderingModule/Renderer.h"
-#include "../OgreRenderingModule/OgreTextureResource.h"
-#include "../OgreRenderingModule/OgreMaterialUtils.h"
-#include "../OgreRenderingModule/OgreConversionUtils.h"
+#include "EC_OgrePlaceable.h"
+#include "Renderer.h"
+#include "OgreTextureResource.h"
+#include "OgreMaterialUtils.h"
+#include "OgreConversionUtils.h"
 
 #include "BitStream.h"
 #include "TerrainDecoder.h"

@@ -50,6 +50,9 @@ namespace OgreRenderer
         //! Creates the Ogre overlay with a specified offset. Call first.
         void CreateOverlay(const Core::Vector3df& offset);
         
+        //! Adjust offset of overlay
+        void SetOffset(const Core::Vector3df& offset);
+        
         //! Sets the placeable (scene node) which the overlay is meant to follow.
         void SetPlaceable(Foundation::ComponentPtr placeable);
         

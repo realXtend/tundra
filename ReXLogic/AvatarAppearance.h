@@ -10,6 +10,7 @@ class QDomDocument;
 namespace Ogre
 {
     class Bone;
+    class Entity;
     class Node;
     class Vector3;
     class Quaternion;
@@ -51,11 +52,17 @@ namespace RexLogic
         //! Sets up avatar bone modifiers
         void SetupBoneModifiers(Scene::EntityPtr entity);
         
+        //! Sets up avatar attachments
+        void SetupAttachments(Scene::EntityPtr entity);
+        
         //! Resets mesh entity bones to initial transform from the mesh original skeleton
         void ResetBones(Scene::EntityPtr entity);
         
         //! Applies a bone modifier
         void ApplyBoneModifier(Scene::EntityPtr entity, const BoneModifier& modifier, Core::Real value);
+        
+        //! Hides vertices from an entity's mesh. Mesh should be cloned from the base mesh and this must not be called more than once for the entity.
+        void HideVertices(Ogre::Entity*, std::set<Core::uint> vertices_to_hide);
         
         //! Gets a bone safely from the avatar skeleton
         /*! \return Pointer to bone, or 0 if does not exist

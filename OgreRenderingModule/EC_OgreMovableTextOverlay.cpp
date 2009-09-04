@@ -236,6 +236,14 @@ void EC_OgreMovableTextOverlay::SetMaterial(const std::string& new_base_material
         OgreRenderingModule::LogError("Invalid material name!");    
 }
 
+void EC_OgreMovableTextOverlay::SetOffset(const Core::Vector3df& offset)
+{
+    if (!node_)
+        return;
+        
+    node_->setPosition(ToOgreVector3(offset));
+}
+
 void EC_OgreMovableTextOverlay::CreateOverlay(const Core::Vector3df& offset)
 {
     if (renderer_.expired())

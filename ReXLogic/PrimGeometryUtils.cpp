@@ -36,9 +36,9 @@
 #include "RexTypes.h"
 #include "RexLogicModule.h"
 #include "EC_OpenSimPrim.h"
-#include "../OgreRenderingModule/OgreMaterialUtils.h"
-#include "../OgreRenderingModule/OgreMaterialResource.h"
-#include "../OgreRenderingModule/Renderer.h"
+#include "OgreMaterialUtils.h"
+#include "OgreMaterialResource.h"
+#include "Renderer.h"
 
 #include <Ogre.h>
 
