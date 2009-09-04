@@ -277,5 +277,20 @@ namespace RexLogic
 		camera->yaw(Ogre::Radian(firstperson_yaw_));
 		camera->pitch(Ogre::Radian(firstperson_pitch_));
 	}
+	/*
+	Core::Vector3df CameraControllable::GetCameraUp(){
+		boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+		Ogre::Camera *camera = renderer->GetCurrentCamera();
+		Ogre::Vector3 up = camera->getUp();
+		return Core::Vector3df(up.x, up.y, up.z);
+	}
+
+	Core::Vector3df CameraControllable::GetCameraRight(){
+		boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+		Ogre::Camera *camera = renderer->GetCurrentCamera();
+		Ogre::Vector3 right = camera->getRight();
+		return Core::Vector3df(right.x, right.y, right.z);
+	}
+	*/
 }
 

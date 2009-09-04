@@ -139,6 +139,9 @@ if 0: #send chat
     r.sendChat("here we go.")
     #print "called sendchat ok"
     
+if 1: #print test
+    r.logInfo("this is a test print!")
+    
 if 0: #camera pitch
     dy = 0.1
     dp = 0
