@@ -6,15 +6,17 @@
 #include "RexLogicModule.h"
 #include "EC_AvatarAppearance.h"
 #include "SceneManager.h"
-#include "../OgreRenderingModule/EC_OgreMesh.h"
-#include "../OgreRenderingModule/OgreMaterialResource.h"
-#include "../OgreRenderingModule/OgreMaterialUtils.h"
-#include "../OgreRenderingModule/Renderer.h"
-#include "../OgreRenderingModule/OgreConversionUtils.h"
+#include "EC_OgreMesh.h"
+#include "EC_OgreMovableTextOverlay.h"
+#include "OgreMaterialResource.h"
+#include "OgreMaterialUtils.h"
+#include "Renderer.h"
+#include "OgreConversionUtils.h"
 #include <QDomDocument>
 #include <QFile>
 
 static const Core::Real FIXED_HEIGHT_OFFSET = -0.87f;
+static const Core::Real OVERLAY_HEIGHT_MULTIPLIER = 1.5f;
 
 namespace RexLogic
 {
@@ -68,6 +70,7 @@ namespace RexLogic
         // Setup appearance
         SetupMeshAndMaterials(entity);
         SetupDynamicAppearance(entity);
+        SetupAttachments(entity);
     }
     
     void AvatarAppearance::SetupDynamicAppearance(Scene::EntityPtr entity)
@@ -119,6 +122,7 @@ namespace RexLogic
                 offset = initial_base_pos;
 
                 // Additionally, if has the rootbone property, can do dynamic adjustment for sitting etc.
+                // and adjust the name overlay height
                 if (appearance.HasProperty("rootbone"))
                 {
                     Ogre::Bone* root_bone = GetAvatarBone(entity, appearance.GetProperty("rootbone"));
@@ -131,6 +135,14 @@ namespace RexLogic
                         float c = abs(current_root_pos.y / initial_root_pos.y);
                         if (c > 1.0) c = 1.0;
                         offset = initial_base_pos * c;
+
+                        // Set name overlay height according to base + root distance.
+                        Foundation::ComponentPtr overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+                        if (overlay)
+                        {
+                            OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
+                            name_overlay.SetOffset(Core::Vector3df(0, 0, abs(initial_base_pos.y - initial_root_pos.y) * OVERLAY_HEIGHT_MULTIPLIER));
+                        }
                     }
                 }
             }
@@ -144,13 +156,29 @@ namespace RexLogic
         OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()).get());
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(entity->GetComponent(EC_AvatarAppearance::NameStatic()).get());
         
+        // Mesh needs to be cloned if there are attachments which need to hide vertices
+        bool need_mesh_clone = false;
+        const AvatarAttachmentVector& attachments = appearance.GetAttachments();
+        std::set<Core::uint> vertices_to_hide;
+        for (Core::uint i = 0; i < attachments.size(); ++i)
+        {
+            if (attachments[i].vertices_to_hide_.size())
+            {
+                need_mesh_clone = true;
+                for (Core::uint j = 0; j < attachments[i].vertices_to_hide_.size(); ++j)
+                    vertices_to_hide.insert(attachments[i].vertices_to_hide_[j]);
+            }
+        }
+        
         // Setup mesh
         //! \todo use mesh resource
-        mesh.SetMesh(appearance.GetMesh().name_, entity.get());
+        //! \todo handle setting custom skeleton
+        mesh.SetMesh(appearance.GetMesh().name_, entity.get(), need_mesh_clone);
+        if (need_mesh_clone)
+            HideVertices(mesh.GetEntity(), vertices_to_hide);
         
         // Arbitrary materials would cause problems, because we really would want avatar materials to use the SuperShader style materials for
         // proper shadowing. For now, we force all materials to be based on LitTextured shader material
-        
         AvatarMaterialVector materials = appearance.GetMaterials();
         for (Core::uint i = 0; i < materials.size(); ++i)
         {
@@ -174,10 +202,19 @@ namespace RexLogic
                     //! \todo remove once local avatar resources are not needed anymore
                     if (texture.id_.empty())
                     {
-                        Ogre::TextureManager& tex_man = Ogre::TextureManager::getSingleton();
-                        Ogre::TexturePtr tex = tex_man.getByName(texture.name_);
+                        Ogre::TextureManager& tex_mgr = Ogre::TextureManager::getSingleton();
+                        Ogre::TexturePtr tex = tex_mgr.getByName(texture.name_);
                         if (tex.isNull())
-                            tex_man.load(texture.name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+                        {
+                            try
+                            {
+                                tex_mgr.load(texture.name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+                            }
+                            catch (Ogre::Exception& e)
+                            {
+                                RexLogicModule::LogWarning("Local texture load failed: " + std::string(e.what()));
+                            }
+                        }
                         OgreRenderer::SetTextureUnitOnMaterial(override_mat, texture.name_);
                     }
                     
@@ -196,6 +233,27 @@ namespace RexLogic
         // Will be overridden by bone-based height adjust, if available
         mesh.SetAdjustPosition(Core::Vector3df(0.0f, 0.0f, FIXED_HEIGHT_OFFSET));
         mesh.SetCastShadows(true);
+    }
+    
+    void AvatarAppearance::SetupAttachments(Scene::EntityPtr entity)
+    {
+        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()).get());
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(entity->GetComponent(EC_AvatarAppearance::NameStatic()).get());
+        
+        mesh.RemoveAllAttachments();
+        
+        const AvatarAttachmentVector& attachments = appearance.GetAttachments();
+        
+        for (Core::uint i = 0; i < attachments.size(); ++i)
+        {
+            // Setup attachment meshes
+            //! \todo use mesh resources
+            //! \todo use material & texture resources, force attachments to use shader materials?
+            mesh.SetAttachmentMesh(i, attachments[i].mesh_.name_, attachments[i].bone_name_, attachments[i].link_skeleton_);
+            mesh.SetAttachmentPosition(i, attachments[i].transform_.position_);
+            mesh.SetAttachmentOrientation(i, attachments[i].transform_.orientation_);
+            mesh.SetAttachmentScale(i, attachments[i].transform_.scale_);
+        }
     }
     
     void AvatarAppearance::SetupMorphs(Scene::EntityPtr entity)
@@ -225,6 +283,22 @@ namespace RexLogic
                 Ogre::AnimationState* anim = anims->getAnimationState(morphs[i].morph_name_);
                 anim->setTimePosition(timePos);
                 anim->setEnabled(timePos > 0.0f);
+                
+                // Also set position in attachment entities, if have the same morph
+                for (Core::uint j = 0; j < mesh.GetNumAttachments(); ++j)
+                {
+                    Ogre::Entity* attachment = mesh.GetAttachmentEntity(j);
+                    if (!attachment)
+                        continue;
+                    Ogre::AnimationStateSet* attachment_anims = attachment->getAllAnimationStates();
+                    if (!attachment_anims)
+                        continue;
+                    if (!attachment_anims->hasAnimationState(morphs[i].morph_name_))
+                        continue;
+                    Ogre::AnimationState* attachment_anim = attachment_anims->getAnimationState(morphs[i].morph_name_);
+                    attachment_anim->setTimePosition(timePos);
+                    attachment_anim->setEnabled(timePos > 0.0f);
+                }
             }
         }
     }
@@ -444,5 +518,65 @@ namespace RexLogic
         if (!skeleton->hasBone(bone_name))
             return 0;
         return skeleton->getBone(bone_name);
+    }
+    
+    void AvatarAppearance::HideVertices(Ogre::Entity* entity, std::set<Core::uint> vertices_to_hide)
+    {
+        if (!entity)
+            return;
+        Ogre::MeshPtr mesh = entity->getMesh();
+        if (mesh.isNull())
+            return;
+        
+        for (Core::uint m = 0; m < 1; ++m)
+        {
+            // Under current system, it seems vertices should only be hidden from first submesh
+            Ogre::SubMesh *submesh = mesh->getSubMesh(m);
+            Ogre::IndexData *data = submesh->indexData;
+            Ogre::HardwareIndexBufferSharedPtr ibuf = data->indexBuffer;
+
+            unsigned long* lIdx = static_cast<unsigned long*>(ibuf->lock(Ogre::HardwareBuffer::HBL_NORMAL));
+            unsigned short* pIdx = reinterpret_cast<unsigned short*>(lIdx);
+            bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
+
+            for (Core::uint n = 0; n < data->indexCount; n += 3)
+            {
+                if (!use32bitindexes)
+                {
+                    if (vertices_to_hide.find(pIdx[n]) != vertices_to_hide.end() ||
+                        vertices_to_hide.find(pIdx[n+1]) != vertices_to_hide.end() ||
+                        vertices_to_hide.find(pIdx[n+2]) != vertices_to_hide.end())
+                    {
+                        if (n + 3 < data->indexCount)
+                        {
+                            for (size_t i = n ; i<data->indexCount-3 ; ++i)
+                            {
+                                pIdx[i] = pIdx[i+3];
+                            }
+                        }
+                        data->indexCount -= 3;
+                        n -= 3;
+                    }
+                }
+                else
+                {
+                    if (vertices_to_hide.find(lIdx[n]) != vertices_to_hide.end() ||
+                        vertices_to_hide.find(lIdx[n+1]) != vertices_to_hide.end() ||
+                        vertices_to_hide.find(lIdx[n+2]) != vertices_to_hide.end())
+                    {
+                        if (n + 3 < data->indexCount)
+                        {
+                            for (size_t i = n ; i<data->indexCount-3 ; ++i)
+                            {
+                                lIdx[i] = lIdx[i+3];
+                            }
+                        }
+                        data->indexCount -= 3;
+                        n -= 3;
+                    }
+                }
+            }
+            ibuf->unlock();
+        }
     }
 }

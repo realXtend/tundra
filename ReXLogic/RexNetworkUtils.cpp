@@ -17,8 +17,8 @@
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
 #include <OgreMaterialManager.h>
-#include "../OgreRenderingModule/EC_OgrePlaceable.h"
-#include "../OgreRenderingModule/Renderer.h"
+#include "EC_OgrePlaceable.h"
+#include "Renderer.h"
 
 namespace RexLogic
 {    

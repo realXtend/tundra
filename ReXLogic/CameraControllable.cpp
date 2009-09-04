@@ -11,6 +11,7 @@
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
+#include "EC_AvatarAppearance.h"
 //#include "RexTypes.h"
 #include "InputEvents.h"
 #include "InputServiceInterface.h"
@@ -42,9 +43,7 @@ namespace RexLogic
         sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "translation_sensitivity", 25.f);
         zoom_sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "zoom_sensitivity", 0.015f);
         firstperson_sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "mouselook_rotation_sensitivity", 1.3f);
-
-        head_bone_ = framework_->GetDefaultConfig().DeclareSetting<std::string>("RexAvatar", "headbone_name", "Bip01_Head");
-
+        
         action_trans_[RexTypes::Actions::MoveForward] = Core::Vector3df::NEGATIVE_UNIT_Z;
         action_trans_[RexTypes::Actions::MoveBackward] = Core::Vector3df::UNIT_Z;
         action_trans_[RexTypes::Actions::MoveLeft] = Core::Vector3df::NEGATIVE_UNIT_X;
@@ -182,22 +181,25 @@ namespace RexLogic
                     bool fallback = true;
                     // Try to use head bone from target entity to get the first person camera position
                     Foundation::ComponentPtr mesh_ptr = target->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-                    if (mesh_ptr)
+                    Foundation::ComponentPtr appearance_ptr = target->GetComponent(EC_AvatarAppearance::NameStatic());
+                    if (mesh_ptr && appearance_ptr)
                     {
                         OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh_ptr.get());
+                        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearance_ptr.get());
                         Ogre::Entity* ent = mesh.GetEntity();
                         if (ent)
                         {
                             Ogre::SkeletonInstance* skel = ent->getSkeleton();
-                            if (skel->hasBone(head_bone_))
+                            if (skel && skel->hasBone(appearance.GetProperty("headbone")))
                             {
                                 // Hack: force Ogre to update skeleton with current animation state, even if avatar invisible
                                 if (ent->getAllAnimationStates())
                                     skel->setAnimationState(*ent->getAllAnimationStates());
                                 
-                                Ogre::Bone* bone = skel->getBone(head_bone_);
+                                Ogre::Bone* bone = skel->getBone(appearance.GetProperty("headbone"));
                                 Ogre::Vector3 headpos = bone->_getDerivedPosition();
-                                Core::Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y - 0.5f);
+                                Core::Real adjustheight = mesh.GetAdjustPosition().z + 0.15;
+                                Core::Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y + adjustheight);
                                 RexTypes::Vector3 campos = avatar_pos + (avatar_orientation * ourheadpos);
                                 camera->setPosition(campos.x, campos.y, campos.z);
                                 fallback = false;

@@ -383,7 +383,7 @@ namespace RexLogic
                 try
                 {
                     Core::uint idx = Core::ParseString<Core::uint>(polygon.attribute("idx").toStdString());
-                    attachment.polygons_to_hide_.push_back(idx);
+                    attachment.vertices_to_hide_.push_back(idx);
                 }
                 catch (boost::bad_lexical_cast)
                 {

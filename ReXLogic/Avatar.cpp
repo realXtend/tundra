@@ -12,11 +12,11 @@
 #include "EC_Controllable.h"
 #include "SceneEvents.h"
 #include <Ogre.h>
-#include "../OgreRenderingModule/EC_OgreMesh.h"
-#include "../OgreRenderingModule/EC_OgrePlaceable.h"
-#include "../OgreRenderingModule/EC_OgreMovableTextOverlay.h"
-#include "../OgreRenderingModule/EC_OgreAnimationController.h"
-#include "../OgreRenderingModule/Renderer.h"
+#include "EC_OgreMesh.h"
+#include "EC_OgrePlaceable.h"
+#include "EC_OgreMovableTextOverlay.h"
+#include "EC_OgreAnimationController.h"
+#include "Renderer.h"
 #include "ConversionUtils.h"
 #include "SceneManager.h"
 

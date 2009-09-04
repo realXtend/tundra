@@ -181,7 +181,7 @@ namespace RexLogic
         //! Base bone of attachment. Empty if attached directly to avatar scene node
         std::string bone_name_;
         //! Polygons indices to hide from avatar when using this attachment
-        std::vector<Core::uint> polygons_to_hide_;
+        std::vector<Core::uint> vertices_to_hide_;
     };
     
     typedef std::vector<AvatarAttachment> AvatarAttachmentVector;
