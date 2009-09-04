@@ -779,12 +779,56 @@ PyObject* GetCameraYawPitch(PyObject *self, PyObject *args)
 		boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
 		pitch = cam->GetPitch();
 		yaw = 0; //XXX not implemented yet (?)
+
 		return Py_BuildValue("ff", (float)pitch, float(yaw));
 	}
 	//else - no logic module. can that ever happen?)
 	return NULL; //rises py exception
 }
+PyObject* PyLogInfo(PyObject *self, PyObject *args) 
+{
+	const char* message;
+	if(!PyArg_ParseTuple(args, "s", &message))
+	{
+		PyErr_SetString(PyExc_ValueError, "Needs a string.");
+		return NULL;
+	}
+	PythonScript::self()->LogInfo(message);
+	
+	Py_RETURN_NONE;
+}
 
+/*
+PyObject* GetCameraUp(PyObject *self) 
+{
+	//RexTypes::Vector3 up;
+	RexLogic::RexLogicModule *rexlogic_;
+	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+	if (rexlogic_)
+	{
+		boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
+		RexTypes::Vector3 up = cam->GetCameraUp();
+		
+		return Py_BuildValue("fff", up.x, up.y, up.z);
+	}
+	return NULL;
+}
+
+PyObject* GetCameraRight(PyObject *self) 
+{
+	RexTypes::Vector3 right;
+	RexLogic::RexLogicModule *rexlogic_;
+	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+	if (rexlogic_)
+	{
+		boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
+		right = cam->GetCameraRight();
+		
+		return Py_BuildValue("fff", right.x, right.y, right.z);
+	}
+	return NULL;
+}
+*/
 PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 {
 	Core::Real newyaw;
@@ -909,11 +953,17 @@ static PyMethodDef EmbMethods[] = {
 	{"takeScreenshot", (PyCFunction)TakeScreenshot, METH_VARARGS,
 	"Takes a screenshot and saves it to a timestamped file."},
 
+	{"logInfo", (PyCFunction)PyLogInfo, METH_VARARGS,
+	"Prints a text using the LogInfo-method."},
+
 	//from RexPythonQt.cpp now .. except got the fricken staticframework == null prob!
+	/*
+	{"getCameraRight", (PyCFunction)GetCameraRight, METH_VARARGS, 
+	"Get the right-vector for the camera."},
 	
-	{"createCanvas", (PyCFunction)CreateCanvas, METH_VARARGS, 
-	"Create a new Qt canvas within the viewer"},
-	
+	{"getCameraUp", (PyCFunction)GetCameraUp, METH_VARARGS, 
+	"Get the up-vector for the camera."},
+	*/
 	{NULL, NULL, 0, NULL}
 };
 
