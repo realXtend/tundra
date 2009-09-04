@@ -16,9 +16,13 @@ class ModuleManager:
         print "Manager got input event:", evid
     def KEY_INPUT_EVENT(self, evid, keycode, keymod):
         print "Manager got key_input event:", evid, keycode, keymod
-    def MOUSE_INPUT(self, x_abs, y_abs, x_rel, y_rel):
-        print "Manager got mouse input", x_abs, y_abs, x_rel, y_rel
-                
+    def MOUSE_MOVEMENT(self, x_abs, y_abs, x_rel, y_rel):
+        print "Manager got mouse movement", x_abs, y_abs, x_rel, y_rel
+    def MOUSE_CLICK(self, mb_click, x_abs, y_abs, x_rel, y_rel):
+        print "Manager got mouse click", mb_click, x_abs, y_abs, x_rel, y_rel
+    def ENTITY_UPDATED(self, id):
+        print "Manager got an entity updated", id
+    
     def exit(self):
         print "exiting module manager"
         pass
