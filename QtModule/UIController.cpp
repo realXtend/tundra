@@ -155,20 +155,24 @@ void UIController::InjectMousePress(int x, int y)
         // Double click has happen.
        
         // Restart to zero.
-        timer_.setHMS(0,0,0,-1);
-        QPoint loc = lastPosition_ - point;
+        timer_ = QTime();
         
-        if ( loc.manhattanLength() < 5)
-            InjectDoubleClick(x,y);
-
+        QPoint loc = lastPosition_ - point;
         lastPosition_ = point;
-        return;
+        if ( loc.manhattanLength() < 2)
+        {
+            InjectDoubleClick(x,y);
+            return;
+        }
+      
+        
     }
     else 
     {
         // Restart to zero.
-        
-        timer_.setHMS(0,0,0,-1);
+        timer_ = QTime();
+        // And start again.    
+        timer_.start();
     }
     
     
