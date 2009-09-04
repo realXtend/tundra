@@ -30,6 +30,11 @@ include (PythonQt)
 #include (OpenAL)
 include (Caelum)
 #include (Hydrax)
+include (TelepathyQt4)
+include (glib)
+include (GStreamer)
+include (TelepathyFarsight2)
+
 
 
 # Disable unnecessary build types
@@ -121,7 +126,7 @@ add_subdirectory (OpenSimProtocol)
 #add_subdirectory (DebugStats)
 #add_subdirectory (NetTestLogicModule)
 add_subdirectory (PythonModule)
-#add_subdirectory (CommunicationModule)
+add_subdirectory (CommunicationModule)
 #add_subdirectory (CommunicationUIModule)
 #add_subdirectory (OpenALAudioModule)
 add_subdirectory (RexCBLogin)
