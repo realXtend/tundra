@@ -2,6 +2,8 @@
 
 #include "StableHeaders.h"
 
+#include "DebugOperatorNew.h"
+
 #include "QtModule.h"
 
 #include <Ogre.h>
