@@ -9,6 +9,7 @@
 #include <QPoint>
 #include <QTime>
 #include <QGraphicsSceneMouseEvent> 
+#include <QKeyEvent>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
@@ -85,7 +86,9 @@ namespace QtUI
          * @param modifier is a value which defines that was alt or shift down. 
          */
 
-        void InjectKeyPressed(Qt::Key keyCode, const Qt::KeyboardModifier& modifier);
+        void InjectKeyPressed(Qt::Key keyCode, const Qt::KeyboardModifiers& modifier);
+
+        void InjectKeyReleased(Qt::Key keyCode, const Qt::KeyboardModifiers& modifier);
 
         /**
          * Sets a new size of Ogre-render window. 
@@ -165,6 +168,18 @@ namespace QtUI
 
         // Time which defines how soon two mouse press down events are assumed as double click.  
         int responseTimeLimit_;
+
+        // Is some key hold down. 
+        bool keyDown_;
+
+        // Last key event. 
+        QKeyEvent lastKeyEvent_;
+
+        QTime keyTimer_;
+        
+        // Time when key press down event is though as a multiple key press event. 
+        int multipleKeyLimit_;
+
 
     };
 
