@@ -15,7 +15,7 @@
 namespace QtUI
 {
 
-UIController::UIController() : mouseDown_(false), arrange_(false), responseTimeLimit_(500)
+UIController::UIController() : mouseDown_(false), arrange_(false), responseTimeLimit_(500), keyDown_(false), lastKeyEvent_(QKeyEvent(QEvent::KeyPress,0,Qt::NoModifier)), multipleKeyLimit_(150)
 {}
 
 UIController::~UIController()
@@ -23,6 +23,17 @@ UIController::~UIController()
 
 void UIController::Update()
 {
+    
+    if ( keyDown_ && keyTimer_.elapsed() > multipleKeyLimit_ )
+    {
+        //HACK
+        keyTimer_ = QTime();
+        keyTimer_.start();
+        int keyCode = lastKeyEvent_.key();
+        Qt::KeyboardModifiers modifiers = lastKeyEvent_.modifiers();
+        InjectKeyPressed(static_cast<Qt::Key>(keyCode), modifiers);
+    }
+    
 
     QList<boost::shared_ptr<UICanvas> >::iterator iter = canvases_.begin();
     for(; iter != canvases_.end(); ++iter)
@@ -290,8 +301,9 @@ void UIController::InjectDoubleClick(int x, int y)
  
 }
 
-void UIController::InjectKeyPressed(Qt::Key keyCode, const Qt::KeyboardModifier& modifier)
+void UIController::InjectKeyPressed(Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
 {
+    
     QKeySequence sequence(keyCode);  
     QKeyEvent keyEvent(QEvent::KeyPress, keyCode, modifier, sequence.toString().toLower());
     keyEvent.setAccepted(false);
@@ -302,8 +314,29 @@ void UIController::InjectKeyPressed(Qt::Key keyCode, const Qt::KeyboardModifier&
     if ( index != -1 )
     {
          QApplication::sendEvent(canvases_[index]->scene(), &keyEvent);
+         keyDown_ = true;
+         lastKeyEvent_ = keyEvent;
+         keyTimer_.start();
     }
 
+}
+
+void UIController::InjectKeyReleased(Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
+{
+     
+    QKeySequence sequence(keyCode);  
+    QKeyEvent keyEvent(QEvent::KeyRelease, keyCode, modifier, sequence.toString().toLower());
+    keyEvent.setAccepted(false);
+    
+    // Take a location of last known mouse press and send it to that canvas. 
+    
+    int index = GetCanvas(mousePress_);
+    if ( index != -1 )
+    {
+         QApplication::sendEvent(canvases_[index]->scene(), &keyEvent);
+         keyTimer_ = QTime();
+    }
+    keyDown_ = false;
 }
 
 void UIController::SetParentWindowSize(const QSize& size)

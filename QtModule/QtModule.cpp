@@ -107,7 +107,7 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
 
         
     }
-    else if ( category_id = input_event_category_ && event_id == Input::Events::KEY_PRESSED)
+    else if ( category_id = input_event_category_ && event_id == Input::Events::KEY_PRESSED ||event_id == Input::Events::KEY_RELEASED)
     {
         boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
         framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
@@ -126,7 +126,7 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
             else
                 return false;
 
-            Qt::KeyboardModifier modifier;
+            Qt::KeyboardModifiers modifier;
 
             switch(key->modifiers_)
             {
@@ -152,13 +152,13 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
                 }
             }
 
-            controller_->InjectKeyPressed(value, modifier);
+            if (event_id == Input::Events::KEY_PRESSED)
+                controller_->InjectKeyPressed(value, modifier);
+            else
+                controller_->InjectKeyReleased(value, modifier);
         }
     }
-    else if ( category_id = input_event_category_ && event_id == Input::Events::KEY_RELEASED)
-    {
-
-    }
+  
     
 
     return false;
