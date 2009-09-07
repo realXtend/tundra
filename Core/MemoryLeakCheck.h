@@ -36,8 +36,6 @@ __forceinline void *operator new[](std::size_t size, const char *file, int line)
     return _malloc_dbg(size, _CLIENT_BLOCK, file, line);
 }
 
-#define new new (__FILE__, __LINE__)
-
 __forceinline void operator delete(void *ptr, const char *, int)
 {
     _free_dbg(ptr, _CLIENT_BLOCK);
@@ -47,6 +45,8 @@ __forceinline void operator delete[](void *ptr, const char *, int)
 {
     _free_dbg(ptr, _CLIENT_BLOCK);
 }
+
+#define new new (__FILE__, __LINE__)
 
 #endif // ~_MSC_VER
 
