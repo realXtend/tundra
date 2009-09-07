@@ -103,6 +103,7 @@ macro (LINK_QT4)
       ${QT_QTUITOOLS_LIBRARY}
       ${QT_QTXML_LIBRARY}
       ${QT_QTSCRIPT_LIBRARY}
+      ${QT_QTDBUS_LIBRARY}
       )
   elseif (NOT MSVC AND QT4_FOUND)
     target_link_libraries (${TARGET_NAME} ${QT_LIBRARIES} ${QT_QTGUI_LIBRARY}
@@ -113,9 +114,10 @@ macro (LINK_QT4)
       ${QT_QTUITOOLS_LIBRARY}
       ${QT_QTXML_LIBRARY}
       ${QT_QTSCRIPT_LIBRARY}
+      ${QT_QTDBUS_LIBRARY}
       )
   else()
-    target_link_libraries(${TARGET_NAME} QtCore QtGui  qtmain  QtNetwork  QtWebKit QtUitools QtXml QtScript)
+    target_link_libraries(${TARGET_NAME} QtCore QtGui  qtmain  QtNetwork  QtWebKit QtUitools QtXml QtScript QtDbus4)
   endif (MSVC)
 
 endmacro (LINK_QT4)
