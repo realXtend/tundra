@@ -61,8 +61,13 @@ namespace Core
     typedef boost::lock_guard<Mutex> MutexLock;
     //! Raii style recursive mutex locking
     typedef boost::lock_guard<RecursiveMutex> RecursiveMutexLock;
-
+    //! Scoped lock
+    typedef boost::mutex::scoped_lock ScopedLock;
+    
+    //! Thread
     typedef boost::thread Thread;
+    //! Condition
+    typedef boost::condition Condition;
 }
 
 #endif // incl_Types_h

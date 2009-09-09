@@ -75,32 +75,35 @@ namespace TextureDecoder
         return estimate;
     }
     
-    bool TextureRequest::UpdateWithDecodeResult(const DecodeResult& result)
-    {     
-        // Decode no longer pending
-        decode_requested_ = false;
+    bool TextureRequest::UpdateWithDecodeResult(DecodeResult* result)
+    {
+        if (result)
+        {
+            // Decode no longer pending
+            decode_requested_ = false;
 
-        // Update amount of quality levels, should now be known
-        levels_ = result.max_levels_;
-        
-        // See if successfully decoded data
-        if (result.texture_)
-        {
-            // Update texture original dimensions, should now be known
-            width_ = result.original_width_;
-            height_ =  result.original_height_;
-            components_ = result.components_;
-                   
-            decoded_level_ = next_level_;  
-        }
-        
-        // Set next quality level to decode
-        // We do this regardless of success or failure, so that illegal texture data will
-        // not cause endless re-decoding attempts
-        if (next_level_ > 0)
-        {
-            next_level_--;
-            return false;
+            // Update amount of quality levels, should now be known
+            levels_ = result->max_levels_;
+            
+            // See if successfully decoded data
+            if (result->texture_)
+            {
+                // Update texture original dimensions, should now be known
+                width_ = result->original_width_;
+                height_ =  result->original_height_;
+                components_ = result->components_;
+                       
+                decoded_level_ = next_level_;  
+            }
+            
+            // Set next quality level to decode
+            // We do this regardless of success or failure, so that illegal texture data will
+            // not cause endless re-decoding attempts
+            if (next_level_ > 0)
+            {
+                next_level_--;
+                return false;
+            }
         }
         return true;
     }

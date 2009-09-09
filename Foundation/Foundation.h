@@ -12,6 +12,7 @@
 #include "ConfigurationManager.h"
 #include "ServiceManager.h"
 #include "EventManager.h"
+#include "ThreadTaskManager.h"
 #include "Platform.h"
 #include "Profiler.h"
 

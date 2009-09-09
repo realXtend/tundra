@@ -12,8 +12,35 @@
 #include "Foundation.h"
 #include "SceneManager.h"
 #include "SceneEvents.h"
+#include "ResourceInterface.h"
+#include "ThreadTaskManager.h"
 
 #include "RexQEngine.h"
+
+namespace Resource
+{
+    namespace Events
+    {
+        void RegisterResourceEvents(const Foundation::EventManagerPtr &event_manager)
+        {
+            Core::event_category_id_t resource_event_category = event_manager->RegisterEventCategory("Resource");
+            event_manager->RegisterEvent(resource_event_category, Resource::Events::RESOURCE_READY, "ResourceReady");
+            event_manager->RegisterEvent(resource_event_category, Resource::Events::RESOURCE_CANCELED, "ResourceCanceled");
+        }
+    }
+}
+
+namespace Task
+{
+    namespace Events
+    {
+        void RegisterTaskEvents(const Foundation::EventManagerPtr &event_manager)
+        {
+            Core::event_category_id_t resource_event_category = event_manager->RegisterEventCategory("Task");
+            event_manager->RegisterEvent(resource_event_category, Task::Events::REQUEST_COMPLETED, "RequestCompleted");
+        }
+    }
+}
 
 namespace Foundation
 {
@@ -68,8 +95,11 @@ namespace Foundation
             component_manager_ = ComponentManagerPtr(new ComponentManager(this));
             service_manager_ = ServiceManagerPtr(new ServiceManager(this));
             event_manager_ = EventManagerPtr(new EventManager(this));
+            thread_task_manager_ = ThreadTaskManagerPtr(new ThreadTaskManager(this));
 
             Scene::Events::RegisterSceneEvents(event_manager_);
+            Resource::Events::RegisterResourceEvents(event_manager_);
+            Task::Events::RegisterTaskEvents(event_manager_);
 
             q_engine_ = boost::shared_ptr<RexQEngine>(new RexQEngine(this, argc_, argv_));
 
@@ -256,13 +286,13 @@ namespace Foundation
             module_manager_->UpdateModules(frametime);
         }
 
-        // call asynchronous update on modules / do parallel tasks
-
-        // synchronize shared data across modules
-        //mChangeManager->_propagateChanges();
+        // check framework's thread task manager for completed requests, send as events
+        {
+            PROFILE(FW_ProcessThreadTaskResults)
+            thread_task_manager_->SendResultEvents();
+        }
         
         // process delayed events
-        
         {
             PROFILE(FW_ProcessDelayedEvents);
             event_manager_->ProcessDelayedEvents(frametime);
@@ -586,4 +616,3 @@ namespace Foundation
         }
     }
 }
-

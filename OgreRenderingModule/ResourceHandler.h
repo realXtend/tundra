@@ -105,7 +105,7 @@ namespace OgreRenderer
         unsigned GetNumOutstandingReferences(const std::string& id);
 
         //! resource event category
-        Core::event_category_id_t resourcecategory_id_;
+        Core::event_category_id_t resource_event_category_;
                 
         //! Ogre resources
         Foundation::ResourceMap resources_;

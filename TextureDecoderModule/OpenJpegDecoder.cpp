@@ -43,71 +43,25 @@
 
 namespace TextureDecoder
 {
-    OpenJpegDecoder::OpenJpegDecoder() : running_(true)
+    OpenJpegDecoder::OpenJpegDecoder() :
+        Foundation::ThreadTask("TextureDecoder")
     {
     }
-
-    OpenJpegDecoder::~OpenJpegDecoder()
+    
+    void OpenJpegDecoder::Work()
     {
-    }
-
-    void OpenJpegDecoder::operator ()()
-    {
-        while (running_)
+        while (keep_running_)
         {
-            bool have_request = false;
-
+            WaitForRequests();
+            
+            DecodeRequestPtr request = boost::dynamic_pointer_cast<DecodeRequest>(GetNextRequest());
+            if (request)
             {
-                PROFILE(OpenJpegDecoder);
-                boost::this_thread::interruption_point();
-
-                DecodeRequest current_request;
-
-                {
-                    Core::MutexLock lock(request_mutex_);
-                    if (!requests_.empty())
-                    {
-                        have_request = true;
-                        current_request = requests_.front();
-                        requests_.pop_front();
-                    }
-                }
-                
-                if (have_request)
-                {
-                    PROFILE(OpenJpegDecoder_Decode);
-                    PerformDecode(current_request);
-                }
+                PROFILE(OpenJpegDecoder_Decode);
+                PerformDecode(request);
             }
 
-            // We didn't have any work to process, sleep until some come up.
-            ///\todo Convert to wait for an event that signals that a new decode request
-            /// has arrived.
-            if (!have_request)
-                boost::this_thread::sleep(boost::posix_time::milliseconds(20));
-
             RESETPROFILER
-        }
-    }
-
-    void OpenJpegDecoder::AddRequest(const DecodeRequest& request)
-    {
-        Core::MutexLock lock(request_mutex_);
-
-        requests_.push_back(request);
-    }
-
-    bool OpenJpegDecoder::GetResult(DecodeResult& result)
-    {
-        Core::MutexLock lock(result_mutex_);
-
-        if (results_.empty())
-            return false;
-        else
-        {
-            result = results_.front();
-            results_.pop_front();
-            return true;
         }
     }
 
@@ -125,30 +79,28 @@ namespace TextureDecoder
     {
     }
 
-    void OpenJpegDecoder::PerformDecode(DecodeRequest& request)
+    void OpenJpegDecoder::PerformDecode(DecodeRequestPtr request)
     {
+        if (!request)
+            return;
+        
         PROFILE(OpenJpegDecoder_PerformDecode);
 
-        DecodeResult result;
+        DecodeResultPtr result(new DecodeResult());
 
-        result.id_ = request.id_;
-        result.level_ = -1; // no level decoded yet
-        result.max_levels_ = 5;
-        result.original_width_ = 0;
-        result.original_height_ = 0;
-        result.components_ = 0;
+        result->id_ = request->id_;
+        result->level_ = -1; // no level decoded yet
+        result->max_levels_ = 5;
+        result->original_width_ = 0;
+        result->original_height_ = 0;
+        result->components_ = 0;
 
         // Guard against OpenJpeg crash on illegal data at an early phase
-        unsigned char *data = (unsigned char *)request.source_->GetData();
+        unsigned char *data = (unsigned char *)request->source_->GetData();
         if (data[0] != 0xFF)
         {
             TextureDecoderModule::LogError("Invalid data passed to PerformDecode!");
-
-            {
-                Core::MutexLock lock(result_mutex_);
-                results_.push_back(result);
-            }
-            
+            QueueResult<DecodeResult>(result);
             return;
         }
 
@@ -166,36 +118,36 @@ namespace TextureDecoder
         //event_mgr.info_handler = HandleInfo;
         
         opj_set_default_decoder_parameters(&parameters);
-        parameters.cp_reduce = request.level_;
+        parameters.cp_reduce = request->level_;
         
         dinfo = opj_create_decompress(CODEC_J2K);
         opj_setup_decoder(dinfo, &parameters);
         opj_set_event_mgr((opj_common_ptr)dinfo, &event_mgr, this);
         
-        cio = opj_cio_open((opj_common_ptr)dinfo, (unsigned char *)request.source_->GetData(), request.source_->GetSize());
+        cio = opj_cio_open((opj_common_ptr)dinfo, (unsigned char *)request->source_->GetData(), request->source_->GetSize());
         
         image = opj_decode_with_info(dinfo, cio, &cstr_info);
-        result.max_levels_ = cstr_info.numlayers;
+        result->max_levels_ = cstr_info.numlayers;
 
         opj_cio_close(cio);
         opj_destroy_decompress(dinfo);
         
         if ((image) && (image->numcomps))
         {
-            result.original_width_ = image->x1 - image->x0;
-            result.original_height_ = image->y1 - image->y0;
-            result.components_ = image->numcomps;
-            result.level_ = request.level_;
+            result->original_width_ = image->x1 - image->x0;
+            result->original_height_ = image->y1 - image->y0;
+            result->components_ = image->numcomps;
+            result->level_ = request->level_;
 
             // Assume all components are same size
             int actual_width = image->comps[0].w;
             int actual_height = image->comps[0].h;
 
             // Create a (possibly temporary, if no-one stores the pointer) raw texture resource
-            Foundation::ResourcePtr resource(new TextureResource(request.source_->GetId(), actual_width, actual_height, image->numcomps));
+            Foundation::ResourcePtr resource(new TextureResource(request->source_->GetId(), actual_width, actual_height, image->numcomps));
             TextureResource* texture = checked_static_cast<TextureResource*>(resource.get());
             Core::u8* data = texture->GetData();
-            texture->SetLevel(request.level_);
+            texture->SetLevel(request->level_);
             for (int y = 0; y < actual_height; ++y)
             {
                 for (int x = 0; x < actual_width; ++x)
@@ -208,15 +160,12 @@ namespace TextureDecoder
                 }
             }
      
-            result.texture_ = resource;
+            result->texture_ = resource;
         }
 
         if (image)
             opj_image_destroy(image);
 
-        {
-            Core::MutexLock lock(result_mutex_);
-            results_.push_back(result);
-        }
+        QueueResult<DecodeResult>(result);
     }
 }

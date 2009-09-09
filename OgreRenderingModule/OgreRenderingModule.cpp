@@ -26,8 +26,8 @@
 namespace OgreRenderer
 {
     OgreRenderingModule::OgreRenderingModule() : ModuleInterfaceImpl(type_static_),
-        assetcategory_id_(0),
-        resourcecategory_id_(0),
+        asset_event_category_(0),
+        resource_event_category_(0),
         input_event_category_(0),
         scene_event_category_(0)
     {
@@ -105,19 +105,12 @@ namespace OgreRenderer
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
 
-        assetcategory_id_ = event_manager->QueryEventCategory("Asset");
+        asset_event_category_ = event_manager->QueryEventCategory("Asset");
         
-        if (assetcategory_id_ == 0 )
+        if (asset_event_category_ == 0 )
             LogWarning("Unable to find event category for Asset events!");
 
-        resourcecategory_id_ = event_manager->QueryEventCategory("Resource");
-        if (!resourcecategory_id_)
-        {
-            resourcecategory_id_ = event_manager->RegisterEventCategory("Resource");
-            event_manager->RegisterEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, "ResourceReady");
-            event_manager->RegisterEvent(resourcecategory_id_, Resource::Events::RESOURCE_CANCELED, "ResourceCanceled");
-        }
-
+        resource_event_category_ = event_manager->QueryEventCategory("Resource");
         input_event_category_ = event_manager->QueryEventCategory("Input");
         scene_event_category_ = event_manager->QueryEventCategory("Scene");
 
@@ -134,12 +127,12 @@ namespace OgreRenderer
         if (!renderer_)
             return false;
 
-        if (category_id == assetcategory_id_)
+        if (category_id == asset_event_category_)
         {
             return renderer_->GetResourceHandler()->HandleAssetEvent(event_id, data);
         }
 
-        if (category_id == resourcecategory_id_)
+        if (category_id == resource_event_category_)
         {
             return renderer_->GetResourceHandler()->HandleResourceEvent(event_id, data);
         }

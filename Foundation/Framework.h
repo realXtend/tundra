@@ -73,6 +73,7 @@ namespace Foundation
         EventManagerPtr GetEventManager() const { return event_manager_; }
         PlatformPtr GetPlatform() const { return platform_; }
         ConfigurationManagerPtr GetConfigManager() { return config_manager_;}
+        ThreadTaskManagerPtr GetThreadTaskManager() { return thread_task_manager_;}
 
         //! Signal the framework to exit at first possible opportunity
         void Exit();
@@ -204,6 +205,7 @@ namespace Foundation
         ServiceManagerPtr service_manager_;
         EventManagerPtr event_manager_;
         PlatformPtr platform_;
+        ThreadTaskManagerPtr thread_task_manager_;
 		 
 		//! default configuration
         ConfigurationManagerPtr config_manager_;

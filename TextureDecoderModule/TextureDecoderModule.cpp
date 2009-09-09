@@ -41,7 +41,8 @@ namespace TextureDecoder
     {   
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         asset_event_category_ = event_manager->QueryEventCategory("Asset");
-    } 
+        task_event_category_ = event_manager->QueryEventCategory("Task");
+    }
     
     // virtual
     void TextureDecoderModule::Update(Core::f64 frametime)
@@ -72,7 +73,12 @@ namespace TextureDecoder
                 return texture_service_->HandleAssetEvent(event_id, data);
             else return false;
         }
-        
+        if (category_id == task_event_category_)
+        {
+            if (texture_service_)
+                return texture_service_->HandleTaskEvent(event_id, data);
+            else return false;
+        }
         return false;
     }
 }

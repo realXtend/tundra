@@ -5,7 +5,6 @@
 
 #include "TextureRequest.h"
 #include "TextureServiceInterface.h"
-#include "OpenJpegDecoder.h"
 
 namespace Foundation
 {
@@ -37,6 +36,9 @@ namespace TextureDecoder
         //! Handles an asset event. Called by TextureDecoderModule
         bool HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
         
+        //! Handles a thread task event. Called by TextureDecoderModule
+        bool HandleTaskEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        
     private:
         //! Updates a texture request
         /*! Polls the asset service & queues decode requests to the decode thread as necessary
@@ -49,17 +51,11 @@ namespace TextureDecoder
         Foundation::Framework* framework_;
                 
         //! Resource event category
-        Core::event_category_id_t resourcecategory_id_;
+        Core::event_category_id_t resource_event_category_;
 
         //! Ongoing texture requests
         TextureRequestMap requests_;
 
-        //! Thread for actual decoding work
-        Core::Thread thread_;
-
-        //! OpenJpeg decoder that's run in a thread
-        OpenJpegDecoder decoder_;
-        
         //! Max decodes per frame
         int max_decodes_per_frame_;
     };
