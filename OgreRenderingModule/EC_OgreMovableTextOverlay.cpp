@@ -299,23 +299,7 @@ void EC_OgreMovableTextOverlay::CreateOverlay(const Core::Vector3df& offset)
     }
     
     SetMaterial("RedTransparent"/*baseMaterialName_*/);
-    /*
-    // Clone own copy of the material for this overlay.
-    Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
-    Ogre::MaterialPtr material = mm.getByName(baseMaterialName_);
-    if (material.get())
-    {
-        Ogre::MaterialPtr baseMaterial = mm.getByName(baseMaterialName_);
-        materialName_ = renderer_.lock()->GetUniqueObjectName();
-        material = baseMaterial->clone(materialName_);
-        
-        // Get the max alpha for the material.
-        ///\todo ATM value 0.4 is hardcoded for the "RedTransparent" material.
-        ///      Could be read from the material at some point?
-        materialMaxAlpha_ = 0.4f;
-    }
-    */
-        
+    
     if (visible_)
         overlay_->show();
     else

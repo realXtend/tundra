@@ -28,7 +28,7 @@ namespace RexLogic
         myInfo_.regionID.SetNull();
         myInfo_.circuitCode = 0;
 
-		connection_type_ = DirectConnection;
+        connection_type_ = DirectConnection;
         
         // Get pointer to the network interface.
         netInterface_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>
@@ -46,8 +46,8 @@ namespace RexLogic
     {
     }
     
-	bool RexServerConnection::ConnectToServer(const std::string& username, const std::string& password, 
-				const std::string& serveraddress, const std::string& auth_server_address, const std::string& auth_login)
+    bool RexServerConnection::ConnectToServer(const std::string& username, const std::string& password, 
+        const std::string& serveraddress, const std::string& auth_server_address, const std::string& auth_login)
     {
         boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
         if (!sp.get())
@@ -94,14 +94,14 @@ namespace RexLogic
                 return false;
             }
         }
-		
-		if (auth_server_address != "")
-		{
-		    connection_type_ = AuthenticationConnection;
-		    sp->LoginUsingRexAuthentication(first_name,
-				last_name, password, serveraddress_noport, port,
-				auth_server_address, auth_login, &threadState_);
-        }   
+        
+        if (auth_server_address != "")
+        {
+            connection_type_ = AuthenticationConnection;
+            sp->LoginUsingRexAuthentication(first_name,
+                last_name, password, serveraddress_noport, port,
+                auth_server_address, auth_login, &threadState_);
+        }
         else
         {
             connection_type_ = DirectConnection;
@@ -115,20 +115,20 @@ namespace RexLogic
         return true;
     }
 
-	bool RexServerConnection::ConnectToCableBeachServer(const std::string& firstname, const std::string& lastname, int port, const std::string& serveraddress)
-	{
+    bool RexServerConnection::ConnectToCableBeachServer(const std::string& firstname, const std::string& lastname, int port, const std::string& serveraddress)
+    {
         boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
         if (!sp.get())
         {
             RexLogicModule::LogError("Getting network interface did not succeed.");
             return false;
         }
-		
-		connection_type_ = DirectConnection;
-		sp->LoginToCBServer(firstname, lastname, serveraddress, port, &threadState_);
-		
-		return true;
-	}
+        
+        connection_type_ = DirectConnection;
+        sp->LoginToCBServer(firstname, lastname, serveraddress, port, &threadState_);
+        
+        return true;
+    }
     
     bool RexServerConnection::CreateUDPConnection()
     {
@@ -140,65 +140,65 @@ namespace RexLogic
         }
         
         // Get the client-spesific information.
-		myInfo_ = sp->GetClientParameters();
+        myInfo_ = sp->GetClientParameters();
 
-		//Get the udp server and port from login response
-		bool connect_result;
-		if (myInfo_.gridUrl.size() != 0)
-		{
-			int port = 9000;
-			size_t pos = myInfo_.gridUrl.rfind(":");
-			std::string serveraddress_noport;
-			if(pos == std::string::npos)
-			{
-				serveraddress_noport = myInfo_.gridUrl;				
-			}
-			else
-			{
-				serveraddress_noport = myInfo_.gridUrl.substr(0, pos);
-        
-				try
-				{
-					port = boost::lexical_cast<int>(myInfo_.gridUrl.substr(pos + 1));
-				} 
-				catch(std::exception)
-				{
-					RexLogicModule::LogError("Invalid port number, only numbers are allowed.");
-					return false;
-				}
-			}
-			connect_result = sp->CreateUDPConnection(serveraddress_noport.c_str(), port);
-		}
-		else
-		{
-			connect_result = sp->CreateUDPConnection(serverAddress_.c_str(), serverPort_);
-		}
-        
-
-		if(connect_result)
-		{
-			connected_ = true;
-			
-			// Check that the parameters are valid.
-			if (myInfo_.agentID.IsNull() || myInfo_.sessionID.IsNull())
-			{
-			    // Client parameters not valid. Disconnect.
-			    sp->DisconnectFromRexServer();
-			    RexLogicModule::LogError("Client parameters are not valid! Disconnecting.");
-			    connected_ = false;
-			    return false;
+        //Get the udp server and port from login response
+        bool connect_result;
+        if (myInfo_.gridUrl.size() != 0)
+        {
+            int port = 9000;
+            size_t pos = myInfo_.gridUrl.rfind(":");
+            std::string serveraddress_noport;
+            if(pos == std::string::npos)
+            {
+                serveraddress_noport = myInfo_.gridUrl;                
             }
-			
-			// Send the necessary UDP packets.
-			SendUseCircuitCodePacket();
-			SendCompleteAgentMovementPacket();
-			SendAgentThrottlePacket();
-			
-			RexLogicModule::LogInfo("Connected to server " + serverAddress_ + ".");
-		}
-		else
-		{
-			RexLogicModule::LogInfo("Connecting to server " + serverAddress_ + " failed.");
+            else
+            {
+                serveraddress_noport = myInfo_.gridUrl.substr(0, pos);
+        
+                try
+                {
+                    port = boost::lexical_cast<int>(myInfo_.gridUrl.substr(pos + 1));
+                } 
+                catch(std::exception)
+                {
+                    RexLogicModule::LogError("Invalid port number, only numbers are allowed.");
+                    return false;
+                }
+            }
+            connect_result = sp->CreateUDPConnection(serveraddress_noport.c_str(), port);
+        }
+        else
+        {
+            connect_result = sp->CreateUDPConnection(serverAddress_.c_str(), serverPort_);
+        }
+        
+
+        if(connect_result)
+        {
+            connected_ = true;
+            
+            // Check that the parameters are valid.
+            if (myInfo_.agentID.IsNull() || myInfo_.sessionID.IsNull())
+            {
+                // Client parameters not valid. Disconnect.
+                sp->DisconnectFromRexServer();
+                RexLogicModule::LogError("Client parameters are not valid! Disconnecting.");
+                connected_ = false;
+                return false;
+            }
+            
+            // Send the necessary UDP packets.
+            SendUseCircuitCodePacket();
+            SendCompleteAgentMovementPacket();
+            SendAgentThrottlePacket();
+            
+            RexLogicModule::LogInfo("Connected to server " + serverAddress_ + ".");
+        }
+        else
+        {
+            RexLogicModule::LogInfo("Connecting to server " + serverAddress_ + " failed.");
         }
         
         return connect_result;
@@ -223,10 +223,10 @@ namespace RexLogic
         connected_ = false;
     }
     
-	void RexServerConnection::SendUseCircuitCodePacket()
-	{
+    void RexServerConnection::SendUseCircuitCodePacket()
+    {
         if(!connected_)
-            return;	
+            return;    
 
         NetOutMessage *m = StartMessageBuilding(RexNetMsgUseCircuitCode);
         assert(m);
@@ -237,7 +237,7 @@ namespace RexLogic
         m->MarkReliable();
         
         FinishMessageBuilding(m);
-	}
+    }
 
     void RexServerConnection::SendCompleteAgentMovementPacket()
     {
@@ -301,9 +301,9 @@ namespace RexLogic
         FinishMessageBuilding(m);
 
         RexLogicModule::LogInfo("Sent a Logout Request to the server... waiting for reply before quitting.");
-	}
-	
-	void RexServerConnection::SendChatFromViewerPacket(std::string text)
+    }
+    
+    void RexServerConnection::SendChatFromViewerPacket(std::string text)
     {
         if(!connected_)
             return;    
@@ -318,11 +318,11 @@ namespace RexLogic
         m->AddS32(0);
         
         FinishMessageBuilding(m);
-	}	
-	
-	void RexServerConnection::SendAgentUpdatePacket(Core::Quaternion bodyrot, Core::Quaternion headrot, uint8_t state, 
-	    RexTypes::Vector3 camcenter, RexTypes::Vector3 camataxis, RexTypes::Vector3 camleftaxis, RexTypes::Vector3 camupaxis,
-	    float fardist, uint32_t controlflags, uint8_t flags)
+    }    
+    
+    void RexServerConnection::SendAgentUpdatePacket(Core::Quaternion bodyrot, Core::Quaternion headrot, uint8_t state, 
+        RexTypes::Vector3 camcenter, RexTypes::Vector3 camataxis, RexTypes::Vector3 camleftaxis, RexTypes::Vector3 camupaxis,
+        float fardist, uint32_t controlflags, uint8_t flags)
     {
         if(!connected_)
             return;    
@@ -344,7 +344,7 @@ namespace RexLogic
         m->AddU8(flags);
         
         FinishMessageBuilding(m);
-	}
+    }
     
     void RexServerConnection::SendObjectSelectPacket(Core::entity_id_t object_id)
     {
@@ -446,13 +446,13 @@ namespace RexLogic
         for(size_t i = 0; i < entity_ptr_list.size(); ++i)
         {
             const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
-			if (!prim_component) 
-			{
-				/* the py api allows moving any entity with a placeable component, not just prims.
-				   without this check an attempt to move the avatar from py crashed here */
-				RexLogicModule::LogWarning("Not sending entity position update of a non-prim entity (e.g. avatar), as the protocol doesn't support it.");
-	            return;
-			}
+            if (!prim_component) 
+            {
+                /* the py api allows moving any entity with a placeable component, not just prims.
+                   without this check an attempt to move the avatar from py crashed here */
+                RexLogicModule::LogWarning("Not sending entity position update of a non-prim entity (e.g. avatar), as the protocol doesn't support it.");
+                return;
+            }
 
             RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
             
@@ -463,11 +463,11 @@ namespace RexLogic
             m->AddU8(13);
 
             // Position
-		    memcpy(&data[offset], &Core::OgreToOpenSimCoordinateAxes(ogre_pos->GetPosition()), sizeof(Vector3));
-		    offset += sizeof(Vector3);
-		                
+            memcpy(&data[offset], &Core::OgreToOpenSimCoordinateAxes(ogre_pos->GetPosition()), sizeof(Vector3));
+            offset += sizeof(Vector3);
+                        
             // Scale
-		    memcpy(&data[offset], &Core::OgreToOpenSimCoordinateAxes(ogre_pos->GetScale()), sizeof(Vector3));
+            memcpy(&data[offset], &Core::OgreToOpenSimCoordinateAxes(ogre_pos->GetScale()), sizeof(Vector3));
             offset += sizeof(Vector3);
         }
         
@@ -564,7 +564,7 @@ namespace RexLogic
             m->AddU32(prim->LocalId);
             m->AddBuffer(prim->Description.size(), (uint8_t*)prim->Description.c_str());
         }
-    }        
+    }
 
     void RexServerConnection::SendRegionHandshakeReplyPacket(RexTypes::RexUUID agent_id, RexTypes::RexUUID session_id, uint32_t flags)
     {
@@ -618,8 +618,34 @@ namespace RexLogic
             m->AddU8(visualparams[i]);
                     
         FinishMessageBuilding(m);
-    }    
-  
+    }
+
+    void RexServerConnection::SendCreateInventoryFolder(
+        const RexTypes::RexUUID &parent_id,
+        const RexTypes::RexUUID &folder_id,
+        const RexTypes::asset_type_t &type,
+        const std::string &name)
+    {
+        if (!connected_)
+            return;
+
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgCreateInventoryFolder);
+        assert(m);
+
+        // AgentData
+        m->AddUUID(myInfo_.agentID);
+        m->AddUUID(myInfo_.sessionID);
+
+        // FolderData
+        m->AddUUID(folder_id);
+        m->AddUUID(parent_id);
+        m->AddS8(type);
+        ///\todo if "+1" doesn't exist, last char vanishes from the name, eg. "3D Models" -> "3D Model".
+        m->AddBuffer(name.length() + 1, (uint8_t*)name.c_str());
+        
+        FinishMessageBuilding(m);
+    }
+
     volatile OpenSimProtocol::Connection::State RexServerConnection::GetConnectionState()
     {
         boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();

@@ -2,11 +2,10 @@
 #ifndef incl_OSProto_Inventory_h
 #define incl_OSProto_Inventory_h
 
+#include "OpenSimProtocolModuleApi.h"
 #include "RexUUID.h"
 
-class InventoryFolder;
-
-class InventoryFolder
+class OSPROTO_MODULE_API InventoryFolder
 {
 public:
     InventoryFolder()
@@ -39,11 +38,13 @@ public:
     /// @return The newly added folder.
     InventoryFolder *AddSubFolder(const InventoryFolder &folder);
 
+#ifdef _DEBUG
     void DebugDumpInventoryFolderStructure(int indentationLevel);
+#endif
 };
 
 /// Inventory represents the hierarchy of an OpenSim inventory.
-class Inventory
+class OSPROTO_MODULE_API Inventory
 {
 public:
     InventoryFolder root;
