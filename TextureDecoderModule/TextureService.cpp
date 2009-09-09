@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "AssetEvents.h"
 #include "AssetInterface.h"
+#include "OpenJpegDecoder.h"
 #include "ResourceInterface.h"
 #include "TextureDecoderModule.h"
 #include "TextureResource.h"
@@ -18,25 +19,19 @@ namespace TextureDecoder
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
 
-        resourcecategory_id_ = event_manager->QueryEventCategory("Resource");
-        if (!resourcecategory_id_)
-        {
-            resourcecategory_id_ = event_manager->RegisterEventCategory("Resource");
-            event_manager->RegisterEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, "ResourceReady");
-            event_manager->RegisterEvent(resourcecategory_id_, Resource::Events::RESOURCE_CANCELED, "ResourceCanceled");
-        }
-        
+        resource_event_category_ = event_manager->QueryEventCategory("Resource");
+
         max_decodes_per_frame_ = framework_->GetDefaultConfig().DeclareSetting("TextureDecoder", "max_decodes_per_frame", DEFAULT_MAX_DECODES);
         if (max_decodes_per_frame_ <= 0) 
             max_decodes_per_frame_ = 1;
 
-        thread_ = boost::thread(boost::ref(decoder_));
+        // Create decoder thread task and let the framework thread task manager handle it
+        Foundation::ThreadTaskPtr decoder(new OpenJpegDecoder());
+        framework_->GetThreadTaskManager()->AddThreadTask(decoder);
     }
     
     TextureService::~TextureService()
     {
-        decoder_.Stop();
-        thread_.join();
     }
 
     Core::request_tag_t TextureService::RequestTexture(const std::string& asset_id)
@@ -75,48 +70,11 @@ namespace TextureDecoder
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
 
         // Check if assets have enough data to queue decode requests
-        TextureRequestMap::iterator i = requests_.begin();     
+        TextureRequestMap::iterator i = requests_.begin();
         while (i != requests_.end())
         {
             UpdateRequest(i->second, asset_service.get());
             ++i;
-        }
-
-        // Check for any decode results
-        DecodeResult result;
-        int results = 0;
-        while (decoder_.GetResult(result))
-        {
-            i = requests_.find(result.id_);
-            if (i != requests_.end())
-            {
-                bool done = i->second.UpdateWithDecodeResult(result);
-      
-                if (result.texture_)
-                {
-                    TextureResource* texture = checked_static_cast<TextureResource*>(result.texture_.get());
-                    TextureDecoderModule::LogDebug("Decoded texture w " + Core::ToString<Core::uint>(texture->GetWidth()) + " h " +
-                        Core::ToString<Core::uint>(texture->GetHeight()) + " level " + Core::ToString<int>(result.level_));
-    
-                    // Send resource ready event for each request tag in the request
-                    const Core::RequestTagVector& tags = i->second.GetTags();
-
-                    Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-                    for (Core::uint j = 0; j < tags.size(); ++j)
-                    { 
-                        Resource::Events::ResourceReady event_data(i->second.GetId(), result.texture_, tags[j]);
-                        event_manager->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, &event_data);    
-                    }      
-                }   
-                
-                // Remove request if final quality level was decoded
-                if (done)
-                    requests_.erase(i);
-            }
-            
-            results++;
-            if (results >= max_decodes_per_frame_)
-                break;
         }
     }
     
@@ -148,15 +106,54 @@ namespace TextureDecoder
             Foundation::AssetPtr asset = asset_service->GetIncompleteAsset(request.GetId(), RexTypes::ASSETTYPENAME_TEXTURE, request.GetReceived());
             if (asset)
             {
-                DecodeRequest new_request;
-                new_request.id_ = request.GetId();
-                new_request.level_ = request.GetNextLevel();
-                new_request.source_ = asset;
-                decoder_.AddRequest(new_request);
+                DecodeRequestPtr new_decode_request(new DecodeRequest());
+                new_decode_request->id_ = request.GetId();
+                new_decode_request->level_ = request.GetNextLevel();
+                new_decode_request->source_ = asset;
+                framework_->GetThreadTaskManager()->AddRequest("TextureDecoder", new_decode_request);
+                
                 request.SetDecodeRequested(true);
             }
         }
     }  
+    
+    bool TextureService::HandleTaskEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        if (event_id != Task::Events::REQUEST_COMPLETED)
+            return false;
+        DecodeResult* result = dynamic_cast<DecodeResult*>(data);
+        if (!result || result->task_description_ != "TextureDecoder")
+            return false;
+        
+        TextureRequestMap::iterator i = requests_.find(result->id_);
+        if (i != requests_.end())
+        {
+            bool done = i->second.UpdateWithDecodeResult(result);
+  
+            if (result->texture_)
+            {
+                TextureResource* texture = checked_static_cast<TextureResource*>(result->texture_.get());
+                TextureDecoderModule::LogDebug("Decoded texture w " + Core::ToString<Core::uint>(texture->GetWidth()) + " h " +
+                    Core::ToString<Core::uint>(texture->GetHeight()) + " level " + Core::ToString<int>(result->level_));
+
+                // Send resource ready event for each request tag in the request
+                const Core::RequestTagVector& tags = i->second.GetTags();
+
+                Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+                for (Core::uint j = 0; j < tags.size(); ++j)
+                { 
+                    Resource::Events::ResourceReady event_data(i->second.GetId(), result->texture_, tags[j]);
+                    event_manager->SendEvent(resource_event_category_, Resource::Events::RESOURCE_READY, &event_data);    
+                }      
+            }   
+            
+            // Remove request if final quality level was decoded
+            if (done)
+                requests_.erase(i);
+        }
+        
+        return true;
+    }
     
     bool TextureService::HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
@@ -173,7 +170,7 @@ namespace TextureDecoder
                 for (Core::uint j = 0; j < tags.size(); ++j)
                 {
                     Resource::Events::ResourceCanceled canceled_event_data(i->second.GetId(), tags[j]);
-                    framework_->GetEventManager()->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_CANCELED, &canceled_event_data);
+                    framework_->GetEventManager()->SendEvent(resource_event_category_, Resource::Events::RESOURCE_CANCELED, &canceled_event_data);
                 }
                 
                 requests_.erase(i);

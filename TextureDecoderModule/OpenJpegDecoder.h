@@ -7,55 +7,25 @@
 #include "TextureInterface.h"
 #include "TextureRequest.h"
 
+#include "ThreadTask.h"
+
 namespace TextureDecoder
 {
     //! OpenJpeg decoder that runs in a thread and serves decode requests, used internally by TextureService
-    class OpenJpegDecoder
+    class OpenJpegDecoder : public Foundation::ThreadTask
     {
     public:
-        //! constructor
+        //! Constructor
         OpenJpegDecoder();
-
-        //! destructor
-        ~OpenJpegDecoder();
-
-        //! (thread) entry point
-        void operator()();
-
-        //! adds a decode request to the thread
-        /*! \param request a filled DecodeRequest structure
-         */
-        void AddRequest(const DecodeRequest& request);
-
-        //! gets the next decode result 
-        /*! \param result a DecodeResult structure to be filled with the result
-            \return true if a result was available and the structure was filled
-         */
-        bool GetResult(DecodeResult& result);  
-
-        //! stops the decode thread
-        void Stop() { running_ = false; }
-
+        
+        //! Work function
+        virtual void Work();
+        
     private:
-        //! perform decode, runs in the decode thread
+        //! perform a decode & queue result
         /*! \param request decode request to serve
          */
-        void PerformDecode(DecodeRequest& request);
-
-        //! request queue
-        std::list<DecodeRequest> requests_;
- 
-        //! request queue mutex
-        Core::Mutex request_mutex_;
-
-        //! result queue
-        std::list<DecodeResult> results_;
-
-        //! result queue mutex
-        Core::Mutex result_mutex_;
-
-        //! whether should keep running
-        volatile bool running_;
+        void PerformDecode(DecodeRequestPtr request);
     };
 }
 #endif

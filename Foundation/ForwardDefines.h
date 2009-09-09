@@ -27,8 +27,9 @@ namespace Foundation
     class EventManager;
     class Platform;
     class Application;
-	class ConfigurationManager;
+    class ConfigurationManager;
     class ComponentInterfaceAbstract;
+    class ThreadTaskManager;
 
     typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
     typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
@@ -38,6 +39,7 @@ namespace Foundation
     typedef boost::shared_ptr<EventManager> EventManagerPtr;
     typedef boost::shared_ptr<Platform> PlatformPtr;
     typedef boost::shared_ptr<Application> ApplicationPtr;
+    typedef boost::shared_ptr<ThreadTaskManager> ThreadTaskManagerPtr;
 
     typedef boost::shared_ptr<ComponentInterfaceAbstract> ComponentInterfacePtr;
     typedef boost::shared_ptr<ComponentInterfaceAbstract> ComponentPtr;

@@ -5,12 +5,14 @@
 
 #include "AssetInterface.h"
 #include "ResourceInterface.h"
+#include "ThreadTask.h"
 
 namespace TextureDecoder
 {
     //! OpenJpeg decode request, used internally by TextureService
-    struct DecodeRequest
+    class DecodeRequest : public Foundation::ThreadTaskRequest
     {
+    public:
         //! Texture asset ID
         std::string id_;
 
@@ -21,9 +23,12 @@ namespace TextureDecoder
         int level_;
     };
 
+    typedef boost::shared_ptr<DecodeRequest> DecodeRequestPtr;
+    
     //! OpenJpeg decode result, used internally by TextureService
-    struct DecodeResult
+    struct DecodeResult : public Foundation::ThreadTaskResult
     {
+    public:
         //! Texture asset id
         std::string id_;
         
@@ -45,6 +50,8 @@ namespace TextureDecoder
         //! Amount of components in texture
         Core::uint components_;
     };
+    
+    typedef boost::shared_ptr<DecodeResult> DecodeResultPtr;
 
     //! An ongoing texture request, used internally by TextureService
     class TextureRequest
@@ -77,7 +84,7 @@ namespace TextureDecoder
         /*! \param result Decode result
             \return true if highest quality level was successfully decoded and request can be erased
          */
-        bool UpdateWithDecodeResult(const DecodeResult& result);
+        bool UpdateWithDecodeResult(DecodeResult* result);
  
         //! Inserts a request tag
         void InsertTag(Core::request_tag_t tag) { tags_.push_back(tag); }

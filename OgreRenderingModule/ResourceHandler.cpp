@@ -46,7 +46,7 @@ namespace OgreRenderer
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         
-        resourcecategory_id_ = event_manager->QueryEventCategory("Resource");
+        resource_event_category_ = event_manager->QueryEventCategory("Resource");
     }
     
     Foundation::ResourcePtr ResourceHandler::GetResource(const std::string& id, const std::string& type)
@@ -141,7 +141,7 @@ namespace OgreRenderer
                 for (Core::uint i = 0; i < tags.size(); ++i)
                 {
                     Resource::Events::ResourceCanceled canceled_event_data(event_data->asset_id_, tags[i]);
-                    framework_->GetEventManager()->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_CANCELED, &canceled_event_data);
+                    framework_->GetEventManager()->SendEvent(resource_event_category_, Resource::Events::RESOURCE_CANCELED, &canceled_event_data);
                 }
                 request_tags_.erase(event_data->asset_id_);
                 
@@ -201,7 +201,7 @@ namespace OgreRenderer
             if (checked_static_cast<OgreTextureResource*>(tex.get())->GetLevel() == 0)
             {
                 Resource::Events::ResourceReady* event_data = new Resource::Events::ResourceReady(tex->GetId(), tex, tag);
-                framework_->GetEventManager()->SendDelayedEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, Foundation::EventDataPtr(event_data));
+                framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, Foundation::EventDataPtr(event_data));
                 return tag;
             }
         }
@@ -262,7 +262,7 @@ namespace OgreRenderer
             for (Core::uint i = 0; i < tags.size(); ++i)
             {
                 Resource::Events::ResourceReady event_data(tex->GetId(), tex, tags[i]);
-                framework_->GetEventManager()->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, &event_data);
+                framework_->GetEventManager()->SendEvent(resource_event_category_, Resource::Events::RESOURCE_READY, &event_data);
             }
            
             success = true;
@@ -287,7 +287,7 @@ namespace OgreRenderer
         if (res)
         {
             Resource::Events::ResourceReady* event_data = new Resource::Events::ResourceReady(res->GetId(), res, tag);
-            framework_->GetEventManager()->SendDelayedEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, Foundation::EventDataPtr(event_data));
+            framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, Foundation::EventDataPtr(event_data));
             return tag;
         }
         
@@ -463,7 +463,7 @@ namespace OgreRenderer
             for (Core::uint i = 0; i < tags.size(); ++i)
             {
                 Resource::Events::ResourceReady event_data(resource->GetId(), resource, tags[i]);
-                framework_->GetEventManager()->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, &event_data);
+                framework_->GetEventManager()->SendEvent(resource_event_category_, Resource::Events::RESOURCE_READY, &event_data);
             }
             request_tags_.erase(resource->GetId());
         }
@@ -513,7 +513,7 @@ namespace OgreRenderer
                         for (Core::uint i = 0; i < tags.size(); ++i)
                         {
                             Resource::Events::ResourceReady event_data(dependent->GetId(), dependent, tags[i]);
-                            framework_->GetEventManager()->SendEvent(resourcecategory_id_, Resource::Events::RESOURCE_READY, &event_data);
+                            framework_->GetEventManager()->SendEvent(resource_event_category_, Resource::Events::RESOURCE_READY, &event_data);
                         }
                         request_tags_.erase(dependent->GetId());
                     }

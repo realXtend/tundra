@@ -48,6 +48,9 @@ namespace TextureDecoder
         
         //! Asset event category
         Core::event_category_id_t asset_event_category_;
+        
+        //! Task event category
+        Core::event_category_id_t task_event_category_;
     };
 }
 

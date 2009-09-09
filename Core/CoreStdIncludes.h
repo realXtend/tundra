@@ -33,6 +33,7 @@
 #include <boost/smart_ptr.hpp>
 #include <boost/any.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/condition.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>

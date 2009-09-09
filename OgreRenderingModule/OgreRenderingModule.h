@@ -64,10 +64,10 @@ namespace OgreRenderer
         RendererPtr renderer_;
 
         //! asset event category
-        Core::event_category_id_t assetcategory_id_;
+        Core::event_category_id_t asset_event_category_;
 
         //! resource event category
-        Core::event_category_id_t resourcecategory_id_;
+        Core::event_category_id_t resource_event_category_;
 
         //! input event category
         Core::event_category_id_t input_event_category_;
