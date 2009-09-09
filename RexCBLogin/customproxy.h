@@ -11,7 +11,8 @@ class CustomProxy
 
 public:
 	CustomProxy(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
-	void showEvent(QShowEvent *sEvent);
+	~CustomProxy();
+    void showEvent(QShowEvent *sEvent);
 
 public slots:
 	void updateShowStep(qreal step);

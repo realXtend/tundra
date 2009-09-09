@@ -1,7 +1,11 @@
+
+#include "../Core/DebugOperatorNew.h"
 #include "cbloginwidget.h"
+#include "../Core/MemoryLeakCheck.h"
+
 
 CBLoginWidget::CBLoginWidget(QWidget *parent, Qt::WFlags flags)
-	: QFrame(parent)
+	: QFrame(parent),  view(0), scene(0),  loginpanelProxy(0), loginwebviewProxy(0), loginpanel(0), loginwebview(0)
 {
 	ui.setupUi(this);
 
@@ -15,7 +19,13 @@ CBLoginWidget::CBLoginWidget(QWidget *parent, Qt::WFlags flags)
 
 CBLoginWidget::~CBLoginWidget()
 {
+    
+    delete loginpanelProxy;
+    loginpanelProxy = 0;
+    delete loginwebviewProxy;
+    loginwebviewProxy = 0;
 	delete scene;
+    
 }
 
 void CBLoginWidget::setProperties()

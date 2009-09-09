@@ -1,5 +1,7 @@
+#include "../Core/DebugOperatorNew.h"
 #include "loginwebview.h"
 #include "cbloginwidget.h"
+#include "../Core/MemoryLeakCheck.h"
 
 LoginWebView::LoginWebView(QWidget *parent, QGraphicsView *view)
 	: QWidget(0)
@@ -7,13 +9,23 @@ LoginWebView::LoginWebView(QWidget *parent, QGraphicsView *view)
 	ui = new Ui_LoginWebView;
 	ui->setupUi(this);
 	ui->webView->settings()->setAttribute(QWebSettings::JavascriptEnabled, true);
-	loadSplash = new LoadProgressPanel(parent);
+	loadSplash = new LoadProgressPanel(0);
 	loadSplash->hide();
 	loadSplash->setGeometry( (parent->size().width() / 2) - 180, (parent->size().height() / 2) - 50, 0, 0 );
 
 	myview = view;
 	
 	connectSignals();
+}
+
+LoginWebView::~LoginWebView()
+{
+    delete ui;
+    ui = 0;
+    // Does not own
+    myview = 0;
+    delete loadSplash;
+    loadSplash = 0;
 }
 
 void LoginWebView::connectSignals()

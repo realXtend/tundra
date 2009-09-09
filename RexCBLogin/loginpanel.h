@@ -11,6 +11,7 @@ class LoginPanel
 
 public:
 	LoginPanel(QWidget *parent = 0);
+    ~LoginPanel();
 	Ui_LoginPanel *ui;
 	void setComboBoxItems(QString boxName, QStringList *items);
 

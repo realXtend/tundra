@@ -16,7 +16,8 @@ class LoginWebView
 
 public:
 	LoginWebView(QWidget *parent = 0, QGraphicsView *view = 0);
-	Ui_LoginWebView *ui;
+    ~LoginWebView();
+    Ui_LoginWebView *ui;
 	LoadProgressPanel *loadSplash;
 	void loadAutoLoginPage();
 
