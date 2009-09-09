@@ -29,9 +29,11 @@ void UIController::Update()
         //HACK
         keyTimer_ = QTime();
         keyTimer_.start();
-        int keyCode = lastKeyEvent_.key();
-        Qt::KeyboardModifiers modifiers = lastKeyEvent_.modifiers();
-        InjectKeyPressed(static_cast<Qt::Key>(keyCode), modifiers);
+    
+        for ( QList<QPair<Qt::Key, Qt::KeyboardModifiers> >::iterator iter = pressedKeys_.begin(); iter != pressedKeys_.end(); ++iter)
+            InjectKeyPressed((*iter).first,(*iter).second);
+        
+
     }
     
 
@@ -304,8 +306,27 @@ void UIController::InjectDoubleClick(int x, int y)
 void UIController::InjectKeyPressed(Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
 {
     
-    QKeySequence sequence(keyCode);  
-    QKeyEvent keyEvent(QEvent::KeyPress, keyCode, modifier, sequence.toString().toLower());
+    QString text = " ";
+    if ( keyCode != Qt::Key_Space )
+    {
+        QKeySequence sequence(keyCode);  
+        text = sequence.toString();
+        text = text.toLower(); 
+
+        switch ( modifier )
+        {     
+            case Qt::ShiftModifier:
+            {
+                text = text.toUpper();
+                break;
+            }
+            default:
+                break;
+        }
+    
+    }
+    
+    QKeyEvent keyEvent(QEvent::KeyPress, keyCode, modifier, text);
     keyEvent.setAccepted(false);
     
     // Take a location of last known mouse press and send it to that canvas. 
@@ -317,9 +338,14 @@ void UIController::InjectKeyPressed(Qt::Key keyCode, const Qt::KeyboardModifiers
          keyDown_ = true;
          lastKeyEvent_ = keyEvent;
          keyTimer_.start();
+
+         // Add key into list (if it is unique).
+         if ( !pressedKeys_.contains(qMakePair(keyCode, modifier)))
+             pressedKeys_.append(qMakePair(keyCode, modifier));
     }
 
 }
+
 
 void UIController::InjectKeyReleased(Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
 {
@@ -336,6 +362,17 @@ void UIController::InjectKeyReleased(Qt::Key keyCode, const Qt::KeyboardModifier
          QApplication::sendEvent(canvases_[index]->scene(), &keyEvent);
          keyTimer_ = QTime();
     }
+
+  
+    int size = pressedKeys_.size();
+    for (int i = size; i--;)
+    {
+        if (pressedKeys_[i].first == keyCode)
+            pressedKeys_.removeAt(i);
+    }
+    //if ( pressedKeys_.contains(qMakePair(keyCode, modifier)))
+    //    pressedKeys_.removeAll(qMakePair(keyCode, modifier));
+    
     keyDown_ = false;
 }
 

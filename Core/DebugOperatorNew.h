@@ -16,7 +16,7 @@
 #define incl_Core_DebugOperatorNew_h
 
 #if defined(_MSC_VER) && defined(_DEBUG) 
-
+#include <utility>
 #define _CRTDBG_MAP_ALLOC
     
 void *operator new(std::size_t size);

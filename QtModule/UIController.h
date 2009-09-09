@@ -23,6 +23,8 @@ namespace QtUI
     class UIController : public QObject
     {   
         Q_OBJECT
+       
+    
     public:
         UIController();
         virtual ~UIController();
@@ -180,7 +182,8 @@ namespace QtUI
         // Time when key press down event is though as a multiple key press event. 
         int multipleKeyLimit_;
 
-
+        // Current pressed keys
+        QList<QPair<Qt::Key, Qt::KeyboardModifiers> > pressedKeys_;
     };
 
 
