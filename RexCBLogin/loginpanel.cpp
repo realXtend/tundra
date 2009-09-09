@@ -1,15 +1,22 @@
+#include "../Core/DebugOperatorNew.h"
 #include "loginpanel.h"
 
 #include <QtGui>
+#include "../Core/MemoryLeakCheck.h"
 
 LoginPanel::LoginPanel(QWidget *parent)
-	: QWidget(parent)
+	: QWidget(parent), ui(0)
 {
 	ui = new Ui_LoginPanel();
 	ui->setupUi(this);
 
 	setProperties();
 	connectSignals();
+}
+
+LoginPanel::~LoginPanel()
+{
+    delete ui;
 }
 
 void LoginPanel::setProperties() 

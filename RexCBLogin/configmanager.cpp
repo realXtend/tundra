@@ -1,4 +1,6 @@
+#include "../Core/DebugOperatorNew.h"
 #include "configmanager.h"
+#include "../Core/MemoryLeakCheck.h"
 
 ConfigManager::ConfigManager()
 {

@@ -12,6 +12,7 @@ class LoadProgressPanel
 
 public:
 	LoadProgressPanel(QWidget *parent = 0);
+    ~LoadProgressPanel();
 	Ui_LoadProgress *ui;
 
 private:

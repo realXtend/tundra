@@ -1,13 +1,21 @@
+#include "../Core/DebugOperatorNew.h"
 #include "customproxy.h"
 
 #include <QtGui>
+#include "../Core/MemoryLeakCheck.h"
 
 CustomProxy::CustomProxy(QGraphicsItem *parent, Qt::WindowFlags wFlags)
-	: QGraphicsProxyWidget(parent, wFlags)
+: QGraphicsProxyWidget(parent, wFlags), timeLineShow(0)
 {
 	setTransform( QTransform().scale(0, 0) );
-	timeLineShow = new QTimeLine(1000, this);
+	timeLineShow = new QTimeLine(1000, 0);
 	QObject::connect( timeLineShow, SIGNAL(valueChanged(qreal)), this, SLOT(updateShowStep(qreal)) );
+}
+
+CustomProxy::~CustomProxy()
+{
+    delete timeLineShow;
+    timeLineShow = 0;
 }
 
 void CustomProxy::showEvent(QShowEvent *sEvent)
