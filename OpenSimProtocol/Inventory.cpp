@@ -14,7 +14,7 @@ InventoryFolder *InventoryFolder::GetFirstSubFolderByName(const char *searchName
             return folder;
     }
 
-    return 0;        
+    return 0;
 }
 
 InventoryFolder *InventoryFolder::GetFirstSubFolderByID(const RexTypes::RexUUID &searchId)
@@ -29,7 +29,7 @@ InventoryFolder *InventoryFolder::GetFirstSubFolderByID(const RexTypes::RexUUID 
             return folder;
     }
 
-    return 0;        
+    return 0;
 }
 
 InventoryFolder *InventoryFolder::AddSubFolder(const InventoryFolder &folder)
@@ -39,15 +39,17 @@ InventoryFolder *InventoryFolder::AddSubFolder(const InventoryFolder &folder)
     return &children.back();
 }
 
+#ifdef _DEBUG
 void InventoryFolder::DebugDumpInventoryFolderStructure(int indentationLevel)
 {
     for(int i = 0; i < indentationLevel; ++i)
         std::cout << " ";
-    std::cout << name << std::endl;
+    std::cout << name << " " << id << std::endl;
 
     for(FolderList::iterator iter = children.begin(); iter != children.end(); ++iter)
         iter->DebugDumpInventoryFolderStructure(indentationLevel + 3);
 }
+#endif
 
 InventoryFolder *Inventory::GetFirstSubFolderByName(const char *name)
 {

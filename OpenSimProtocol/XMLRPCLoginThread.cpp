@@ -70,16 +70,16 @@ volatile Connection::State XMLRPCLoginThread::GetState() const
 
 void XMLRPCLoginThread::SetupXMLRPCLogin(
             const std::string& first_name, 
-			const std::string& last_name, 
-			const std::string& password,
-			const std::string& worldAddress,
-			const std::string& worldPort,
-			const std::string& callMethod,
+            const std::string& last_name, 
+            const std::string& password,
+            const std::string& worldAddress,
+            const std::string& worldPort,
+            const std::string& callMethod,
             ConnectionThreadState *thread_state,
-			const std::string& authentication_login,
-			const std::string& authentication_address,
-			const std::string& authentication_port,
-			bool authentication)
+            const std::string& authentication_login,
+            const std::string& authentication_address,
+            const std::string& authentication_port,
+            bool authentication)
 {
     // Save the info for login.
     firstName_ = first_name;
@@ -232,9 +232,9 @@ boost::shared_ptr<Inventory> ExtractInventoryFromXMLRPCReply(XMLRPCEPI &call)
             iter = next;
         }
     }
-
+#ifdef _DEBUG
     inventory->DebugDumpInventoryFolderStructure();
-
+#endif
     return inventory;
 }
 
@@ -369,11 +369,11 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
 
     try
     {
-	    if (!authentication_)
-	    {
+        if (!authentication_)
+        {
             threadState_->parameters.sessionID.FromString(call.GetReply<std::string>("session_id"));
             threadState_->parameters.agentID.FromString(call.GetReply<std::string>("agent_id"));
-		    threadState_->parameters.circuitCode = call.GetReply<int>("circuit_code");
+            threadState_->parameters.circuitCode = call.GetReply<int>("circuit_code");
             threadState_->parameters.seedCapabilities = call.GetReply<std::string>("seed_capability");
             
             threadState_->parameters.gridUrl = ExtractGridAddressFromXMLRPCReply(call);
@@ -386,23 +386,23 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
                 throw XMLRPCException("Failed to receive sessionID, agentID or circuitCode from login_to_simulator reply!");
 
             threadState_->parameters.inventory = ExtractInventoryFromXMLRPCReply(call);
-	    }
-	    else if (authentication_ && callMethod_ != std::string("login_to_simulator")) 
-	    {
-		    // Authentication results
+        }
+        else if (authentication_ && callMethod_ != std::string("login_to_simulator")) 
+        {
+            // Authentication results
             threadState_->parameters.sessionHash = call.GetReply<std::string>("sessionHash");
             threadState_->parameters.gridUrl = std::string(call.GetReply<std::string>("gridUrl"));
-			//\bug the grid url provided by authentication server points to tcp port, but the grid url is used in the code to connect to udp port
+            //\bug the grid url provided by authentication server points to tcp port, but the grid url is used in the code to connect to udp port
             threadState_->parameters.avatarStorageUrl = std::string(call.GetReply<std::string>("avatarStorageUrl"));
-	    }
-	    else if (authentication_ && callMethod_ == std::string("login_to_simulator"))
-	    {
+        }
+        else if (authentication_ && callMethod_ == std::string("login_to_simulator"))
+        {
             threadState_->parameters.sessionID.FromString(call.GetReply<std::string>("session_id"));
             threadState_->parameters.agentID.FromString(call.GetReply<std::string>("agent_id"));
-		    threadState_->parameters.circuitCode = call.GetReply<int>("circuit_code");
+            threadState_->parameters.circuitCode = call.GetReply<int>("circuit_code");
             threadState_->parameters.seedCapabilities = call.GetReply<std::string>("seed_capability");
 
-			///\bug related to one 10 lines above. instead of using port defined in authentication server, 
+            ///\bug related to one 10 lines above. instead of using port defined in authentication server, 
             /// use the one given by simulator.
             /// Does this still apply? -jj. Is this a bug in the rex auth server? If so, flag as a workaround or something similar.
             threadState_->parameters.gridUrl = ExtractGridAddressFromXMLRPCReply(call);
@@ -410,7 +410,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
                 throw XMLRPCException("Failed to extract sim_ip and sim_port from login_to_simulator reply!");
 
             threadState_->parameters.inventory = ExtractInventoryFromXMLRPCReply(call);
-	    }
+        }
         else
             throw XMLRPCException(std::string("Undefined login method ") + callMethod_ + " in XMLRPCLoginThread!");
     }
@@ -432,8 +432,8 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
         
         return false;
     }
-	   
-	return true;
+       
+    return true;
 }
 
 }

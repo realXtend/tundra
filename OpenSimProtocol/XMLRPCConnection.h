@@ -2,11 +2,7 @@
 #ifndef incl_OpenSimProtocolModule_XMLRPCConnection_h
 #define incl_OpenSimProtocolModule_XMLRPCConnection_h
 
-#include "XMLRPCException.h"
-#include <string>
 #include <xmlrpc.h>
-#include "Poco/URI.h"
-#include "boost/lexical_cast.hpp"
 
 /**
  * Represents a XMLRPC connection. You can do multiple XMLRPC requests/replies using the same connection.
@@ -40,11 +36,8 @@ public:
      **/
 	XMLRPC_REQUEST Send(const char* data);  
 
-  
-
 private:
     std::string strUrl_;
-
 };
 
 #endif

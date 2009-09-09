@@ -42,8 +42,8 @@ namespace OpenSimProtocol
         virtual void Initialize();
         virtual void Uninitialize();
         virtual void Update(Core::f64 frametime);
-		
-		MODULE_LOGGING_FUNCTIONS
+        
+        MODULE_LOGGING_FUNCTIONS
 
         //! Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
@@ -57,60 +57,60 @@ namespace OpenSimProtocol
         /// Passes outbound network events to listeners. Used for stats/debugging.
         virtual void OnNetworkMessageSent(const NetOutMessage *msg);
         
-		/**
-		 * Logs in to a reX server without the authentication procedure.
-		 * 
-		 * @param first_name is first part of given username. 
-		 * @param last_name is second part of given username.
-		 * @param address is world server ip-address (or dns-name?) does not contain port number.
-		 * @param port is a world server port (where connection is done). 
-		 * @return true if login was successfull false if not. 
-		 *
-		 * */
-		void LoginToServer(
-			const std::string& first_name,
-			const std::string& last_name,
-			const std::string& password,
-			const std::string& address,
-		    int port,
-		    ConnectionThreadState *thread_state);
+        /**
+         * Logs in to a reX server without the authentication procedure.
+         * 
+         * @param first_name is first part of given username. 
+         * @param last_name is second part of given username.
+         * @param address is world server ip-address (or dns-name?) does not contain port number.
+         * @param port is a world server port (where connection is done). 
+         * @return true if login was successfull false if not. 
+         *
+         * */
+        void LoginToServer(
+            const std::string& first_name,
+            const std::string& last_name,
+            const std::string& password,
+            const std::string& address,
+            int port,
+            ConnectionThreadState *thread_state);
 
-		/// Cable Beach style login, setting authentication done unlike normal LoginToServer
-		void LoginToCBServer(
-			const std::string& first_name,
-			const std::string& last_name,
-			const std::string& address,
-			int port,
-			ConnectionThreadState *thread_state);
+        /// Cable Beach style login, setting authentication done unlike normal LoginToServer
+        void LoginToCBServer(
+            const std::string& first_name,
+            const std::string& last_name,
+            const std::string& address,
+            int port,
+            ConnectionThreadState *thread_state);
 
-		/**
-		 * Logs in to a reX server using the authentication procedure.
-		 * 
-		 * @param first_name is first part of given username. 
-		 * @param last_name is second part of given username.
-		 * @param address is world server ip-address (or dns-name?) does not contain port number.
-		 * @param port is a world server port (where connection is done). 
-		 * @param auth_server_address is authentication server ip-address (contains port number). 
-		 * @param auth_login is a login name which will be used to login authentication server. 
-		 * @return true if login was successfull false if not. 
-		 *
-		 * */
+        /**
+         * Logs in to a reX server using the authentication procedure.
+         * 
+         * @param first_name is first part of given username. 
+         * @param last_name is second part of given username.
+         * @param address is world server ip-address (or dns-name?) does not contain port number.
+         * @param port is a world server port (where connection is done). 
+         * @param auth_server_address is authentication server ip-address (contains port number). 
+         * @param auth_login is a login name which will be used to login authentication server. 
+         * @return true if login was successfull false if not. 
+         *
+         * */
 
-		bool LoginUsingRexAuthentication(const std::string& first_name,
-			const std::string& last_name,
-			const std::string& password,
-			const std::string& address,
-			int port,
-			const std::string& auth_server_address, 
-			const std::string& auth_login,
-			ConnectionThreadState *thread_state);
+        bool LoginUsingRexAuthentication(const std::string& first_name,
+            const std::string& last_name,
+            const std::string& password,
+            const std::string& address,
+            int port,
+            const std::string& auth_server_address, 
+            const std::string& auth_login,
+            ConnectionThreadState *thread_state);
 
         /// Creates the UDP connection to the server.
         ///@ return True, if the connection was succesfull, false otherwise.
         bool CreateUDPConnection(const char *address, int port);
 
         /// Disconnects from a reX server.
-       	void DisconnectFromRexServer();
+           void DisconnectFromRexServer();
         
         /// Dumps network message to the console.
         void DumpNetworkMessage(NetMsgID id, NetInMessage *msg);
@@ -140,11 +140,11 @@ namespace OpenSimProtocol
         /// Object which handles the XML-RPC login procedure.
         XMLRPCLoginThread loginWorker_;
        
-	    /// Handles the UDP communications with the reX server.
-	    boost::shared_ptr<NetMessageManager> networkManager_;
-	    
-		/// State of the network connection.
-		bool connected_;
+        /// Handles the UDP communications with the reX server.
+        boost::shared_ptr<NetMessageManager> networkManager_;
+        
+        /// State of the network connection.
+        bool connected_;
         
         /// Event manager.
         Foundation::EventManagerPtr eventManager_;
@@ -153,10 +153,10 @@ namespace OpenSimProtocol
         Core::event_category_id_t networkStateEventCategory_;
         
         /// Network event category for inbound messages.
-        Core::event_category_id_t networkEventInCategory_;		
+        Core::event_category_id_t networkEventInCategory_;        
         
         /// Network event category for outbound messages.
-        Core::event_category_id_t networkEventOutCategory_;		
+        Core::event_category_id_t networkEventOutCategory_;        
         
         /// Current connection client-spesific parameters.
         ClientParameters clientParameters_;

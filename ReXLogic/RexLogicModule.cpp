@@ -45,13 +45,20 @@
 #include "Sky.h"
 #include "Environment.h"
 
+#include "QtUtils.h"
+#include "AssetUploader.h"
+#include "Inventory.h"
+#include "RexTypes.h"
+
+#include <QFileDialog>
+
 namespace RexLogic
 {
     RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_),
         send_input_state_(false),
         movement_damping_constant_(10.0f),
         camera_state_(CS_Follow)
-    { 
+    {
     }
 
     RexLogicModule::~RexLogicModule()
@@ -86,6 +93,14 @@ namespace RexLogic
             "Toggle flight mode.",
             Console::Bind(this, &RexLogicModule::ConsoleToggleFlyMode)));
 
+        AutoRegisterConsoleCommand(Console::CreateCommand("Upload",
+            "Upload an asset. Usage: Upload(AssetType, Name, Description)",
+            Console::Bind(this, &RexLogicModule::UploadAsset)));
+
+        AutoRegisterConsoleCommand(Console::CreateCommand("MultiUpload",
+            "Upload multiple assets.",
+            Console::Bind(this, &RexLogicModule::UploadMultipleAssets)));
+
         LogInfo("Module " + Name() + " loaded.");
     }
 
@@ -115,9 +130,10 @@ namespace RexLogic
         framework_handler_ = new FrameworkEventHandler(rexserver_connection_.get());
         avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
         camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
-        
+        asset_uploader_ = AssetUploaderPtr(new AssetUploader());
+
         movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting("RexLogicModule", "movement_damping_constant", 10.0f);
-             
+
         dead_reckoning_time_ = framework_->GetDefaultConfig().DeclareSetting("RexLogicModule", "dead_reckoning_time", 2.0f);
 
         camera_state_ = static_cast<CameraState>(framework_->GetDefaultConfig().DeclareSetting("RexLogicModule", "default_camera_state", static_cast<int>(CS_Follow)));
@@ -231,21 +247,21 @@ namespace RexLogic
         avatar_controllable_.reset();
         camera_controllable_.reset();
         environment_.reset();
-
+        asset_uploader_.reset();
 
         event_handlers_.clear();
 
         SAFE_DELETE (network_handler_);
         SAFE_DELETE (input_handler_);
-		SAFE_DELETE (scene_handler_);
-		SAFE_DELETE (network_state_handler_);
+        SAFE_DELETE (scene_handler_);
+        SAFE_DELETE (network_state_handler_);
         SAFE_DELETE (framework_handler_);
-		
-		SAFE_DELETE(loginWindow_);
-        
-		LogInfo("Module " + Name() + " uninitialized.");
+
+        SAFE_DELETE(loginWindow_);
+
+        LogInfo("Module " + Name() + " uninitialized.");
     }
-    
+
 #ifdef _DEBUG
     void RexLogicModule::DebugSanityCheckOgreCameraTransform()
     {
@@ -378,23 +394,23 @@ namespace RexLogic
             DeleteScene("World");
     }
 
-	//XXX temporary workarounds for a linking prob in pymodule, would like to call these directly (if this is the right idea for av / view control to begin with)
-	void RexLogicModule::SetAvatarYaw(Core::Real newyaw)
-	{
-		avatar_controllable_->SetYaw(newyaw);
-	}
-	
-	//XXX another temporary workarounds for a linking prob in pymodule
-	void RexLogicModule::SetAvatarRotation(Core::Quaternion newrot)
-	{
-		std::cout << "RexLogicModule::SetAvatarRotation" << std::endl;
-		avatar_controllable_->SetRotation(newrot);
-	}
+    //XXX temporary workarounds for a linking prob in pymodule, would like to call these directly (if this is the right idea for av / view control to begin with)
+    void RexLogicModule::SetAvatarYaw(Core::Real newyaw)
+    {
+        avatar_controllable_->SetYaw(newyaw);
+    }
 
-	void RexLogicModule::SetCameraYawPitch(Core::Real newyaw, Core::Real newpitch)
-	{
-		camera_controllable_->SetYawPitch(newyaw, newpitch);
-	}
+    //XXX another temporary workarounds for a linking prob in pymodule
+    void RexLogicModule::SetAvatarRotation(Core::Quaternion newrot)
+    {
+        std::cout << "RexLogicModule::SetAvatarRotation" << std::endl;
+        avatar_controllable_->SetRotation(newrot);
+    }
+
+    void RexLogicModule::SetCameraYawPitch(Core::Real newyaw, Core::Real newpitch)
+    {
+        camera_controllable_->SetYawPitch(newyaw, newpitch);
+    }
 
     Console::CommandResult RexLogicModule::ConsoleLogin(const Core::StringVector &params)
     {
@@ -411,11 +427,11 @@ namespace RexLogic
             
             // overwrite the password so it won't stay in-memory
             const_cast<std::string&>(param_pass).replace(0, param_pass.size(), param_pass.size(), ' ');
-        } if (params.size() > 2)
+        } 
+        if (params.size() > 2)
             server = params[2];
 
-        bool success = rexserver_connection_->ConnectToServer(name,
-		        passwd, server);
+        bool success = rexserver_connection_->ConnectToServer(name, passwd, server);
 
         // overwrite the password so it won't stay in-memory
         passwd.replace(0, passwd.size(), passwd.size(), ' ');
@@ -446,6 +462,113 @@ namespace RexLogic
         return Console::ResultSuccess();
     }
     
+    Console::CommandResult RexLogicModule::UploadAsset(const Core::StringVector &params)
+    {
+        using namespace RexTypes;
+
+        std::string name = "(No Name)";
+        std::string description = "(No Description)";
+        
+        if (params.size() < 1)
+            return Console::ResultFailure("Invalid syntax. Usage: \"upload [asset_type] [name] [description]."
+                "Name and description are optional. Supported asset types:\n"
+                "Texture\nMesh\nSkeleton\nMaterialScript\nParticleScript\nFlashAnimation");
+
+        asset_type_t asset_type = GetAssetTypeFromTypeName(params[0]);
+
+        if (asset_type == -1)
+            return Console::ResultFailure("Invalid asset type. Supported parameters:\n"
+                "Texture\nMesh\nSkeleton\nMaterialScript\nParticleScript\nFlashAnimation");
+
+        if (params.size() > 1)
+            name = params[1];
+
+        if (params.size() > 2)
+            description = params[2];
+
+        std::string filter = GetOpenFileNameFilter(asset_type);
+        std::string filename = Foundation::QtUtils::GetOpenFileName(filter, "Open", Foundation::QtUtils::GetCurrentPath());
+        if (filename == "")
+            return Console::ResultFailure("No file chosen.");
+
+        std::string caps_seed = rexserver_connection_->GetInfo().seedCapabilities;
+        asset_uploader_->SetUploadCapability(caps_seed);
+        boost::shared_ptr<Inventory> inventory = rexserver_connection_->GetInfo().inventory;
+
+        // Get the category name for this asset type.
+        std::string cat_name = GetCategoryNameForAssetType(asset_type);
+        RexUUID folder_id;
+
+        // Check out if this inventory category exists.
+        InventoryFolder *folder = inventory->GetFirstSubFolderByName(cat_name.c_str());
+        if (!folder)
+        {
+            // I doesn't. Create new inventory folder.
+            folder_id.Random();
+            InventoryFolder *new_cat = inventory->GetOrCreateNewFolder(folder_id, inventory->root);
+            new_cat->name = cat_name;
+            
+            // Notify the server about the new inventory folder.
+            rexserver_connection_->SendCreateInventoryFolder(inventory->root.id, folder_id, asset_type, cat_name);
+        }
+        else
+            folder_id = folder->id;
+
+        // Upload.
+        Core::Thread thread(boost::bind(&AssetUploader::UploadFile, asset_uploader_,
+            asset_type, filename, name, description, folder_id));
+
+        return Console::ResultSuccess();
+    }
+
+    Console::CommandResult RexLogicModule::UploadMultipleAssets(const Core::StringVector &params)
+    {
+        CreateRexInventoryFolders();
+
+        Core::StringList filenames = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
+        if (filenames.empty())
+            return Console::ResultFailure("No files chosen.");
+
+        std::string caps_seed = rexserver_connection_->GetInfo().seedCapabilities;
+        asset_uploader_->SetUploadCapability(caps_seed);
+        boost::shared_ptr<Inventory> inventory = rexserver_connection_->GetInfo().inventory;
+
+        // Multiupload.
+        Core::Thread thread(boost::bind(&AssetUploader::UploadFiles, asset_uploader_, filenames, inventory.get()));
+
+        return Console::ResultSuccess();
+    }
+
+    void RexLogicModule::CreateRexInventoryFolders()
+    {
+        using namespace RexTypes;
+
+        const char *asset_types[] = { "Texture", "Mesh", "Skeleton", "MaterialScript", "ParticleScript", "FlashAnimation" };
+        asset_type_t asset_type;
+        for(int i = 0; i < NUMELEMS(asset_types); ++i)
+        {
+            asset_type = GetAssetTypeFromTypeName(asset_types[i]);
+            std::string cat_name = GetCategoryNameForAssetType(asset_type);
+            RexUUID folder_id;
+
+            // Check out if this inventory category exists.
+            boost::shared_ptr<Inventory> inventory = rexserver_connection_->GetInfo().inventory;
+            InventoryFolder *folder = inventory->GetFirstSubFolderByName(cat_name.c_str());
+            if (!folder)
+            {
+                // I doesn't. Create new inventory folder.
+                folder_id.Random();
+                InventoryFolder *new_cat = inventory->GetOrCreateNewFolder(folder_id, inventory->root);
+                new_cat->name = cat_name;
+                
+                // Notify the server about the new inventory folder.
+                rexserver_connection_->SendCreateInventoryFolder(inventory->root.id, folder_id, asset_type, cat_name);
+            }
+            else
+                folder_id = folder->id;
+        }
+    }
+
     void RexLogicModule::SwitchCameraState()
     {
         if (camera_state_ == CS_Follow)
@@ -454,7 +577,8 @@ namespace RexLogic
 
             Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
             GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
-        } else
+        }
+        else
         {
             camera_state_ = CS_Follow;
 
@@ -462,7 +586,7 @@ namespace RexLogic
             GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
         }
     }
-    
+
     void RexLogicModule::CreateTerrain()
     {
         terrain_ = TerrainPtr(new Terrain(this));
@@ -478,7 +602,7 @@ namespace RexLogic
         water_ = WaterPtr(new Water(this));
         water_->CreateWaterGeometry();
     }
-    
+
     void RexLogicModule::CreateSky()
     {
         sky_ = SkyPtr(new Sky(this));
@@ -494,7 +618,7 @@ namespace RexLogic
         environment_ = EnvironmentPtr(new Environment(this));
         environment_->CreateEnvironment();
     }
-        
+
     TerrainPtr RexLogicModule::GetTerrainHandler()
     {
         return terrain_;
@@ -514,17 +638,17 @@ namespace RexLogic
     {
         return primitive_;
     }
-    
+
     SkyPtr RexLogicModule::GetSkyHandler()
     {
         return sky_;
     }
-    
+
     EnvironmentPtr RexLogicModule::GetEnvironmentHandler()
     {
         return environment_;
     }
-    
+
     void RexLogicModule::SetCurrentActiveScene(Scene::ScenePtr scene)
     {
         activeScene_ = scene;
@@ -691,7 +815,7 @@ void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
-    
+
 using namespace RexLogic;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)

@@ -8,12 +8,12 @@
 
 namespace OpenSimProtocol
 {
-	OpenSimProtocolModule::OpenSimProtocolModule() :
+    OpenSimProtocolModule::OpenSimProtocolModule() :
     ModuleInterfaceImpl(Foundation::Module::MT_OpenSimProtocol),
     connected_(false)
     {
     }
-    
+
     // virtual
     OpenSimProtocolModule::~OpenSimProtocolModule()
     {
@@ -35,12 +35,12 @@ namespace OpenSimProtocol
     void OpenSimProtocolModule::Initialize()
     {
         ///\todo Read the template filename from a config file.
-		const char *filename = "./data/message_template.msg";
-		
-		networkManager_ = boost::shared_ptr<NetMessageManager>(new NetMessageManager(filename));
-		assert(networkManager_);
-		    
-		networkManager_->RegisterNetworkListener(this);
+        const char *filename = "./data/message_template.msg";
+
+        networkManager_ = boost::shared_ptr<NetMessageManager>(new NetMessageManager(filename));
+        assert(networkManager_);
+            
+        networkManager_->RegisterNetworkListener(this);
         
         // Register event categories.
         eventManager_ = framework_->GetEventManager();
@@ -53,15 +53,15 @@ namespace OpenSimProtocol
 
     // virtual 
     void OpenSimProtocolModule::Uninitialize()
-    {		
-		if(connected_)
-		    DisconnectFromRexServer();
+    {
+        if(connected_)
+            DisconnectFromRexServer();
         
         networkManager_->UnregisterNetworkListener(this);
       
-		LogInfo("System " + Name() + " uninitialized.");
+        LogInfo("System " + Name() + " uninitialized.");
     }
-    
+
     // virtual
     void OpenSimProtocolModule::Update(Core::f64 frametime)
     {
@@ -91,7 +91,7 @@ namespace OpenSimProtocol
         }
         RESETPROFILER;
     }
-    
+
     //virtual
     void OpenSimProtocolModule::OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg)
     {
@@ -110,76 +110,76 @@ namespace OpenSimProtocol
 
     void OpenSimProtocolModule::LoginToServer(
         const std::string& first_name,
-		const std::string& last_name,
-		const std::string& password,
-		const std::string& address,
-		int port,
-		ConnectionThreadState *thread_state)
-	{   
-		std::string callMethod = "login_to_simulator";
-		loginWorker_.SetupXMLRPCLogin(first_name, last_name, password, address, boost::lexical_cast<std::string>(port), callMethod, thread_state);
+        const std::string& last_name,
+        const std::string& password,
+        const std::string& address,
+        int port,
+        ConnectionThreadState *thread_state)
+    {   
+        std::string callMethod = "login_to_simulator";
+        loginWorker_.SetupXMLRPCLogin(first_name, last_name, password, address, boost::lexical_cast<std::string>(port), callMethod, thread_state);
 
-		// Start the thread.
-		boost::thread(boost::ref(loginWorker_));
-	}
+        // Start the thread.
+        boost::thread(boost::ref(loginWorker_));
+    }
 
-	void OpenSimProtocolModule::LoginToCBServer(
-		const std::string& first_name,
-		const std::string& last_name,
-		const std::string& address,
-		int port,
-		ConnectionThreadState *thread_state)
-	{
-		std::string callMethod = "login_to_simulator";
-		loginWorker_.SetupXMLRPCLogin(first_name, last_name, "auth_done", address, boost::lexical_cast<std::string>(port), callMethod, thread_state, "openid", "openid", "openid", true); 
-		
-		// Start the thread.
-		boost::thread(boost::ref(loginWorker_));
-	}
+    void OpenSimProtocolModule::LoginToCBServer(
+        const std::string& first_name,
+        const std::string& last_name,
+        const std::string& address,
+        int port,
+        ConnectionThreadState *thread_state)
+    {
+        std::string callMethod = "login_to_simulator";
+        loginWorker_.SetupXMLRPCLogin(first_name, last_name, "auth_done", address, boost::lexical_cast<std::string>(port), callMethod, thread_state, "openid", "openid", "openid", true); 
+        
+        // Start the thread.
+        boost::thread(boost::ref(loginWorker_));
+    }
 
-    
+
     bool OpenSimProtocolModule::LoginUsingRexAuthentication(
         const std::string& first_name,
-		const std::string& last_name,
-		const std::string& password,
-		const std::string& address,
-		int port,
-		const std::string& auth_server_address, 
-		const std::string& auth_login,
-		ConnectionThreadState *thread_state)
-	{
-		bool authentication = true;
-		std::string callMethod = "ClientAuthentication";
-		int pos = auth_server_address.rfind(":");
-		std::string auth_port = "";
-		std::string auth_address = "";
-		
-		if (pos != std::string::npos)
-		{
-			auth_port = auth_server_address.substr(pos+1);
-			auth_address = auth_server_address.substr(0,pos);
-		}
-		else
-		{
-			OpenSimProtocolModule::LogInfo("No port defined for the authentication server, using default port (10001).");	
-			auth_port = "10001";
-			auth_address = auth_server_address;
-		}
+        const std::string& last_name,
+        const std::string& password,
+        const std::string& address,
+        int port,
+        const std::string& auth_server_address, 
+        const std::string& auth_login,
+        ConnectionThreadState *thread_state)
+    {
+        bool authentication = true;
+        std::string callMethod = "ClientAuthentication";
+        int pos = auth_server_address.rfind(":");
+        std::string auth_port = "";
+        std::string auth_address = "";
+        
+        if (pos != std::string::npos)
+        {
+            auth_port = auth_server_address.substr(pos+1);
+            auth_address = auth_server_address.substr(0,pos);
+        }
+        else
+        {
+            OpenSimProtocolModule::LogInfo("No port defined for the authentication server, using default port (10001).");    
+            auth_port = "10001";
+            auth_address = auth_server_address;
+        }
         
         loginWorker_.SetupXMLRPCLogin(first_name, last_name, password, address, boost::lexical_cast<std::string>(port), callMethod,
             thread_state, auth_login, auth_address, auth_port, authentication);
         
         // Start the thread.
-		boost::thread(boost::ref(loginWorker_));
+        boost::thread(boost::ref(loginWorker_));
         
-		return true;
-	}
+        return true;
+    }
 
     bool OpenSimProtocolModule::CreateUDPConnection(const char *address, int port)
-	{
+    {
         loginWorker_.SetConnectionState(Connection::STATE_INIT_UDP);
-	    
-	    bool udp_success = networkManager_->ConnectTo(address, port);
+        
+        bool udp_success = networkManager_->ConnectTo(address, port);
         if (!udp_success)
             return false;
         
@@ -189,35 +189,35 @@ namespace OpenSimProtocol
         eventManager_->SendEvent(networkStateEventCategory_, Events::EVENT_SERVER_CONNECTED, NULL);
         connected_ = true;
         
-        return true;	
-	}
-	
-	void OpenSimProtocolModule::DisconnectFromRexServer()
-	{
-	    if(!connected_)
-	        return;
-	
-	    networkManager_->Disconnect();
-	    loginWorker_.SetConnectionState(Connection::STATE_DISCONNECTED);
-	    connected_ = false;
-	    
-	    eventManager_->SendEvent(networkStateEventCategory_, Events::EVENT_SERVER_DISCONNECTED, NULL);
-	}
+        return true;
+    }
 
-	void OpenSimProtocolModule::DumpNetworkMessage(NetMsgID id, NetInMessage *msg)
-	{
-	    networkManager_->DumpNetworkMessage(id, msg);
-	}
-	
-	NetOutMessage *OpenSimProtocolModule::StartMessageBuilding(NetMsgID msgId)
-	{
-	    return networkManager_->StartNewMessage(msgId);
-	}
-	
-	void OpenSimProtocolModule::FinishMessageBuilding(NetOutMessage *msg)
-	{
-	    networkManager_->FinishMessage(msg);
-	}
+    void OpenSimProtocolModule::DisconnectFromRexServer()
+    {
+        if(!connected_)
+            return;
+
+        networkManager_->Disconnect();
+        loginWorker_.SetConnectionState(Connection::STATE_DISCONNECTED);
+        connected_ = false;
+        
+        eventManager_->SendEvent(networkStateEventCategory_, Events::EVENT_SERVER_DISCONNECTED, NULL);
+    }
+
+    void OpenSimProtocolModule::DumpNetworkMessage(NetMsgID id, NetInMessage *msg)
+    {
+        networkManager_->DumpNetworkMessage(id, msg);
+    }
+
+    NetOutMessage *OpenSimProtocolModule::StartMessageBuilding(NetMsgID msgId)
+    {
+        return networkManager_->StartNewMessage(msgId);
+    }
+
+    void OpenSimProtocolModule::FinishMessageBuilding(NetOutMessage *msg)
+    {
+        networkManager_->FinishMessage(msg);
+    }
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
