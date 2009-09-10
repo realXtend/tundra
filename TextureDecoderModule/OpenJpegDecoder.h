@@ -21,11 +21,18 @@ namespace TextureDecoder
         //! Work function
         virtual void Work();
         
+        //! Set maximum amount of decodes to perform per frame
+        /*! \param decodes Amount of decodes per frame
+         */
+        void SetDecodesPerFrame(Core::uint decodes);
+        
     private:
         //! perform a decode & queue result
         /*! \param request decode request to serve
          */
         void PerformDecode(DecodeRequestPtr request);
+        
+        Core::uint decodes_per_frame_;
     };
 }
 #endif

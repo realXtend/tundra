@@ -65,6 +65,12 @@ namespace Foundation
                 }
                 ++i;
             }
+            
+            RootLogError("No thread task matching task description " + task_description + ", could not queue request");
+        }
+        else
+        {
+            RootLogError("Null request passed to AddRequest");
         }
         
         return false;
@@ -162,4 +168,27 @@ namespace Foundation
         return results;
     }
 
+    Core::uint ThreadTaskManager::GetNumResults()
+    {
+        Core::MutexLock lock(result_mutex_);
+        return results_.size();
+    }
+    
+    Core::uint ThreadTaskManager::GetNumResults(const std::string& task_description)
+    {
+        Core::uint num = 0;
+        
+        {
+            Core::MutexLock lock(result_mutex_);
+            std::list<ThreadTaskResultPtr>::iterator i = results_.begin();
+            while (i != results_.end())
+            {
+                if ((*i)->task_description_ == task_description)
+                    ++num;
+                ++i;
+            }
+        }
+        
+        return num;
+    }
 }

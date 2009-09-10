@@ -8,9 +8,9 @@
 namespace Foundation
 {
     ThreadTask::ThreadTask(const std::string& task_description) :
+        keep_running_(true),
         task_description_(task_description),
         task_manager_(0),
-        keep_running_(true),
         running_(false),
         finished_(false)
     {
@@ -47,6 +47,10 @@ namespace Foundation
                 requests_.push_back(request);
             }
             request_condition_.notify_one();
+        }
+        else
+        {
+            RootLogError("Null work request passed to AddRequest");
         }
     }
 
@@ -98,8 +102,13 @@ namespace Foundation
             result->task_description_ = task_description_;
             result_ = result;
         }
+        else
+        {
+            RootLogError("Null result passed to SetResult");
+        }
     }
-    void ThreadTask::QueueResult(ThreadTaskResultPtr result)
+    
+    bool ThreadTask::QueueResult(ThreadTaskResultPtr result)
     {
         if (result)
         {
@@ -107,11 +116,18 @@ namespace Foundation
             {
                 result->task_description_ = task_description_;
                 task_manager_->QueueResult(result);
+                return true;
             }
             else
             {
                 RootLogError("Thread task manager not set, can not queue result");
             }
         }
+        else
+        {
+            RootLogError("Null result passed to QueueResult");
+        }
+        
+        return false;
     }
 }

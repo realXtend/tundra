@@ -26,8 +26,10 @@ namespace TextureDecoder
             max_decodes_per_frame_ = 1;
 
         // Create decoder thread task and let the framework thread task manager handle it
-        Foundation::ThreadTaskPtr decoder(new OpenJpegDecoder());
-        framework_->GetThreadTaskManager()->AddThreadTask(decoder);
+        OpenJpegDecoder* decoder = new OpenJpegDecoder();
+        decoder->SetDecodesPerFrame(max_decodes_per_frame_);
+
+        framework_->GetThreadTaskManager()->AddThreadTask(Foundation::ThreadTaskPtr(decoder));
     }
     
     TextureService::~TextureService()

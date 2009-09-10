@@ -37,6 +37,7 @@
 #include "StableHeaders.h"
 #include "TextureResource.h"
 #include "TextureDecoderModule.h"
+#include "ThreadTaskManager.h"
 #include "OpenJpegDecoder.h"
 
 #include <openjpeg.h>
@@ -44,21 +45,44 @@
 namespace TextureDecoder
 {
     OpenJpegDecoder::OpenJpegDecoder() :
-        Foundation::ThreadTask("TextureDecoder")
+        Foundation::ThreadTask("TextureDecoder"),
+        decodes_per_frame_(1)
     {
+    }
+    
+    void OpenJpegDecoder::SetDecodesPerFrame(Core::uint decodes) 
+    { 
+        if (decodes)
+            decodes_per_frame_ = decodes;
     }
     
     void OpenJpegDecoder::Work()
     {
-        while (keep_running_)
+        while (ShouldRun())
         {
             WaitForRequests();
             
-            DecodeRequestPtr request = boost::dynamic_pointer_cast<DecodeRequest>(GetNextRequest());
+            DecodeRequestPtr request = GetNextRequest<DecodeRequest>();
             if (request)
             {
-                PROFILE(OpenJpegDecoder_Decode);
-                PerformDecode(request);
+                // Wait if "too many" results already produced, to prevent slowing down the main thread with 
+                // too many texture creations per frame
+                Foundation::ThreadTaskManager* manager = GetThreadTaskManager();
+                if (manager)
+                {
+                    for (;;)
+                    {
+                        Core::uint results = manager->GetNumResults(GetTaskDescription());
+                        if (results < decodes_per_frame_)
+                            break;
+                        boost::this_thread::sleep(boost::posix_time::milliseconds(20));
+                    }
+                }
+                
+                {
+                    PROFILE(OpenJpegDecoder_Decode);
+                    PerformDecode(request);
+                }
             }
 
             RESETPROFILER

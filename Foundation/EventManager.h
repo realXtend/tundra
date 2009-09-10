@@ -96,6 +96,17 @@ namespace Foundation
          */
         void SendDelayedEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataPtr data, Core::f64 delay = 0.0);
 
+        //! Template version of sending a delayed event. Will perform dynamic_pointer_cast from specified type to EventDataPtr
+        /*! \param category_id Event category ID
+            \param event_id Event ID
+            \param data Shared pointer to event data structure (event-specific), can be NULL if not needed
+            \param delay Delay in seconds until sending event, 0 to send during next framework update
+         */
+        template <class T> void SendDelayedEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, boost::shared_ptr<T> data, Core::f64 delay = 0.0)
+        {
+            SendDelayedEvent(category_id, event_id, boost::dynamic_pointer_cast<EventDataPtr>(data), delay);
+        }
+
         //! Registers a module to the event subscriber tree
         /*! Do not call while responding to an event!
             \param module Module to register
