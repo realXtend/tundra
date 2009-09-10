@@ -53,8 +53,10 @@ public:
 
     InventoryFolder *GetFirstSubFolderByID(const RexTypes::RexUUID &id);
 
+#ifdef _DEBUG
     /// Prints out the whole inventory folder tree to stdout.
     void DebugDumpInventoryFolderStructure();
+#endif
 
     /// @param id The id for the new folder, must be unique.
     /// @param parent The folder under which this new folder will be created.

@@ -61,10 +61,12 @@ InventoryFolder *Inventory::GetFirstSubFolderByID(const RexTypes::RexUUID &searc
     return root.GetFirstSubFolderByID(searchId);
 }
 
+#ifdef _DEBUG
 void Inventory::DebugDumpInventoryFolderStructure()
 {
     root.DebugDumpInventoryFolderStructure(0);
 }
+#endif
 
 InventoryFolder *Inventory::GetOrCreateNewFolder(const RexTypes::RexUUID &id, InventoryFolder &parent)
 {
