@@ -42,21 +42,21 @@ namespace OpenSimProtocol
         virtual void Initialize();
         virtual void Uninitialize();
         virtual void Update(Core::f64 frametime);
-        
+
         MODULE_LOGGING_FUNCTIONS
 
         //! Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
-        
+
         //! Returns type of this module. Needed for logging.
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_OpenSimProtocol;
-        
+
         /// Passes inbound network events to listeners.
         virtual void OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg);
-        
+
         /// Passes outbound network events to listeners. Used for stats/debugging.
         virtual void OnNetworkMessageSent(const NetOutMessage *msg);
-        
+
         /**
          * Logs in to a reX server without the authentication procedure.
          * 
@@ -111,55 +111,80 @@ namespace OpenSimProtocol
 
         /// Disconnects from a reX server.
            void DisconnectFromRexServer();
-        
+
         /// Dumps network message to the console.
         void DumpNetworkMessage(NetMsgID id, NetInMessage *msg);
 
         /// Start building a new outbound message.
         /// @return An empty message holder where the message can be built.
         NetOutMessage *StartMessageBuilding(NetMsgID msgId);
-        
+
         /// Finishes (sends) the message. The passed msg pointer will be invalidated after calling this, so don't
         /// access it or hold on to it afterwards. The user doesn't have to do any deallocation, it is all managed by
         /// this class.
         void FinishMessageBuilding(NetOutMessage *msg);
-        
+
         /// Returns client parameters of current connection
         const ClientParameters& GetClientParameters() const { return clientParameters_; }
-        
+
+        /// Sets new capability.
+        /// @param name Name of capability.
+        /// @param url URL of the capability.
+        void SetCapability(const std::string &name, const std::string &url);
+
+        /// Returns URL of the requested capability, or null string if the capability doens't exist.
+        /// @param name Name of the capability.
+        /// @return Capability URL.
+        std::string GetCapability(const std::string &name);
+
         ///@return True if connection exists.
         bool IsConnected() const { return connected_; }
-        
+
         ///@return Connection::State enum of the connection state.
         Connection::State GetConnectionState() const { return loginWorker_.GetState(); }
-        
+
     private:
+        /// Requests capabilities from the server.
+        /// @param seed Seed capability URL.
+        void RequestCapabilities(const std::string &seed);
+
+        /// Extracts capabilities from XML string
+        /// @param xml XML string from the server.
+        void ExtractCapabilitiesFromXml(std::string xml);
+
         /// Thread for the login process.
         Core::Thread thread_;
 
         /// Object which handles the XML-RPC login procedure.
         XMLRPCLoginThread loginWorker_;
-       
+
         /// Handles the UDP communications with the reX server.
         boost::shared_ptr<NetMessageManager> networkManager_;
-        
+
         /// State of the network connection.
         bool connected_;
-        
+
         /// Event manager.
         Foundation::EventManagerPtr eventManager_;
-        
+
         /// Network state event category.
         Core::event_category_id_t networkStateEventCategory_;
-        
+
         /// Network event category for inbound messages.
-        Core::event_category_id_t networkEventInCategory_;        
-        
+        Core::event_category_id_t networkEventInCategory_;
+
         /// Network event category for outbound messages.
-        Core::event_category_id_t networkEventOutCategory_;        
-        
+        Core::event_category_id_t networkEventOutCategory_;
+
         /// Current connection client-spesific parameters.
         ClientParameters clientParameters_;
+
+        ///Typedefs for capability map.
+        typedef std::map<std::string, std::string> caps_map_t;
+        typedef std::map<std::string, std::string>::iterator caps_map_it_t;
+
+        /// Server-spesific capabilities.
+        caps_map_t capabilities_;
     };
 
     /// @}

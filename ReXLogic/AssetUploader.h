@@ -31,9 +31,12 @@ namespace RexLogic
         /// Default destructor.
         virtual ~AssetUploader();
 
+        /// @return Does asset uploader have an upload capability.
+        bool HasUploadCapability() const { return uploadCapability_ != ""; }
+
         /// Sets the upload capability url.
-        /// @param seed SEED capability url.
-        void SetUploadCapability(std::string seed);
+        /// @param url Capability url.
+        void SetUploadCapability(const std::string &url) {uploadCapability_ = url; }
 
         /** Uploads a file using HTTP.
          *  @param asset_type_t Asset type.

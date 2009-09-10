@@ -232,9 +232,7 @@ boost::shared_ptr<Inventory> ExtractInventoryFromXMLRPCReply(XMLRPCEPI &call)
             iter = next;
         }
     }
-#ifdef _DEBUG
-    inventory->DebugDumpInventoryFolderStructure();
-#endif
+
     return inventory;
 }
 
