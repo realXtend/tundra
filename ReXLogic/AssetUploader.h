@@ -52,14 +52,14 @@ namespace RexLogic
         /// Uploads multiple files using HTTP.
         /// @param files List of AssetInfo structs.
         /// @param inventory Pointer to the user's inventory.
-        void AssetUploader::UploadFiles(Core::StringList filenames, Inventory *inventory);
+        void UploadFiles(Core::StringList filenames, Inventory *inventory);
 
         /// @return The latest cURL error.
         std::string GetLastCurlError() const { return std::string(curlErrorBuffer_); }
 
     private:
         /// Creates NewFileAgentInventory XML message.
-        std::string AssetUploader::CreateNewFileAgentInventoryXML(
+        std::string CreateNewFileAgentInventoryXML(
             const std::string &asset_type,
             const std::string &inventory_type,
             const std::string &folder_id,
