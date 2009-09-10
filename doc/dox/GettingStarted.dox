@@ -34,6 +34,10 @@
 	- \subpage OSUDP "Interfacing with the OpenSim world using OSUDP messages" and
 	- \subpage XMLRPC "Performing custom XMLRPC calls".
 	
+\section threadtask_GS Background worker threads
+	There exist helper classes for creating worker threads that run in the background, see
+	- \subpage ThreadTask "Threaded task system"
+
 \section ui_GS Viewer user interface
 	For creating and handling user interface, see
 	- \subpage GtkmmUIPage "GtkmmUI module for Gtk".

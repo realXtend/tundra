@@ -32,10 +32,12 @@ namespace Foundation
     /*! Subclass to use and implement the Work() function. The work can either be 
         - one-shot, use SetResult() and terminate work thread
         - continuous, use QueueResult() to queue results to the thread task manager, while work thread keeps running
-          In this case a task manager is needed to post results to, otherwise results will be lost
+          In this mode a thread task manager is needed to post results to, otherwise results will be lost
      */
     class ThreadTask
     {
+        friend class ThreadTaskManager;
+        
     public:
         //! Constructor
         /*! \param task_description Description of the work this thread will be doing. Should be unique,
@@ -60,9 +62,12 @@ namespace Foundation
             AddRequest(boost::dynamic_pointer_cast<ThreadTaskRequest>(request));
         }
         
-        //! Gets final result from a completed (stopped) work thread. If result not yet ready, returns null
+        //! Gets final result from a completed (stopped) work thread.
+        /*! \return Result, or NULL if thread still running or has not produced a result
+         */
         ThreadTaskResultPtr GetResult() const;
         
+        //! Template version of getting final result. Performs dynamic_pointer_cast to the type specified.
         template <class T> boost::shared_ptr<T> GetResult() const
         {
             return boost::dynamic_pointer_cast<T>(GetResult());
@@ -80,43 +85,69 @@ namespace Foundation
         //! Thread entry point
         void operator()();
         
-        //! Sets task manager. Needs to be set to use queued results, otherwise they will be lost
-        void SetThreadTaskManager(ThreadTaskManager* manager) { task_manager_ = manager; }
-        
     protected:
         //! Performs work thread activity.
-        /*! Note: if doing a loop, check the keep_running_ variable and terminate when it turns false
+        /*! Note: if doing a loop, check ShouldRun() function and terminate when it returns false
          */
         virtual void Work() = 0;
         
-        //! Waits for request queue to contain at least one item, or keep_running_ to become false
-        /*! \return true if a request did arrive, false if keep_running_ becomes false
+        //! Waits for request queue to contain at least one item, or ShouldRun() becomes false
+        /*! \return true if a request did arrive, false if ShouldRun() becomes false
          */
         bool WaitForRequests();
         
-        //! Gets the next request from the request queue. Returns 0 if queue empty
+        //! Gets the next request from the request queue. Returns NULL if queue empty
         ThreadTaskRequestPtr GetNextRequest();
         
+        //! Template version of getting next request. Performs dynamic_pointer_cast to the type specified.
         template <class T> boost::shared_ptr<T> GetNextRequest()
         {
             return boost::dynamic_pointer_cast<T>(GetNextRequest());
         }
         
-        //! Queues result to ThreadTaskManager. Call from work thread. If manager not set, does nothing and logs error.
-        void QueueResult(ThreadTaskResultPtr result);
-        
-        template <class T> void QueueResult(boost::shared_ptr<T> result)
-        {
-            QueueResult(boost::dynamic_pointer_cast<ThreadTaskResult>(result));
-        }
-        
-        //! Sets final result. Call from work thread. Work thread should terminate after this.
+        //! Sets final result for one-shot tasks.
+        /*! Call from Work() function, which should return after that.
+            \param result Final result
+         */
         void SetResult(ThreadTaskResultPtr result);
         
+        //! Template version of storing final result.
+        /*! Performs dynamic_pointer_cast from specified type to ThreadTaskResult.
+            \param result Final result
+         */
         template <class T> void SetResult(boost::shared_ptr<T> result)
         {
             SetResult(boost::dynamic_pointer_cast<ThreadTaskResult>(result));
         }
+        
+        //! Queues result to ThreadTaskManager, for continuous tasks.
+        /*! Call from Work() function.
+            \param result Result to be queued
+            \return True if successful (a thread task manager has been set), false if not
+         */
+        bool QueueResult(ThreadTaskResultPtr result);
+        
+        //! Template version of queuing a result.
+        /*! Performs dynamic_pointer_cast from specified type to ThreadTaskResult.
+            \param result Result to be queued
+         */
+         
+        template <class T> bool QueueResult(boost::shared_ptr<T> result)
+        {
+            return QueueResult(boost::dynamic_pointer_cast<ThreadTaskResult>(result));
+        }
+        
+        //! Returns thread task manager
+        ThreadTaskManager* GetThreadTaskManager() const { return task_manager_; }
+        
+        //! Whether should keep running the continuous work loop
+        bool ShouldRun() const { return keep_running_; }
+        
+    private:
+        //! Sets task manager. Needs to be set to use queued results, otherwise they will be lost
+        /*! \param manager Task manager
+         */
+        void SetThreadTaskManager(ThreadTaskManager* manager) { task_manager_ = manager; }
         
         //! Task description
         std::string task_description_;
@@ -130,10 +161,10 @@ namespace Foundation
         std::list<ThreadTaskRequestPtr> requests_;
         //! Work thread
         Core::Thread thread_;
-        //! Thread task manager, collects queued results
-        ThreadTaskManager* task_manager_;
         //! Final result, available when work finished
         ThreadTaskResultPtr result_;
+        //! Thread task manager, collects queued results
+        ThreadTaskManager* task_manager_;
         //! Keep running-flag
         bool keep_running_;
         //! Running flag
@@ -150,7 +181,7 @@ namespace Task
 {
     namespace Events
     {
-        //! Sent when a work request is completed with either success or failure. Uses the event data structure ThreadTaskResult and its subclasses
+        //! Sent when a work result has arrived. Uses the event data structure ThreadTaskResult and its subclasses
         static const Core::event_id_t REQUEST_COMPLETED = 1;
     }
 }

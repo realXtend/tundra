@@ -9,8 +9,10 @@ namespace Foundation
 {
     class Framework;
     
-    //! Takes ownership of ThreadTasks to handle results from them. Necessary to use ThreadTasks in queued result mode.
-    /*! There exists a system-wide ThreadTaskManager in the framework, but nothing prevents you creating your own additional ThreadTaskManagers.
+    //! Manager of ThreadTasks.
+    /*! Takes ownership of ThreadTasks to handle results from them. Necessary to use ThreadTasks in queued result mode.
+        There exists a system-wide ThreadTaskManager in the framework, but nothing prevents you creating your own additional
+        ThreadTaskManager and registering tasks to it instead.
      */
     class ThreadTaskManager
     {
@@ -44,12 +46,19 @@ namespace Foundation
          */
         bool AddRequest(const std::string& task_description, ThreadTaskRequestPtr request);
         
+        //! Template version of adding request. Perfoms dynamic_pointer_cast to ThreadTaskRequest from specified class.
+        /*! \param task_description Task description
+            \param request Task request
+            \return true if a matching ThreadTask was found to perform request, false if not
+         */
         template <class T> void AddRequest(const std::string& task_description, boost::shared_ptr<T> request)
         {
             AddRequest(task_description, boost::dynamic_pointer_cast<ThreadTaskRequest>(request));
         }
         
         //! Checks for results and sends them as events. Deletes finished ThreadTasks.
+        /*! Framework calls this for the system-wide ThreadTaskManager on each run of the main loop.
+         */
         void SendResultEvents();
         
         //! Gets all results. Does not send them as events. Deletes finished ThreadTasks.
@@ -58,8 +67,16 @@ namespace Foundation
         //! Gets results matching a certain task description. Does not send them as events. Deletes finished ThreadTasks matching description.
         std::vector<ThreadTaskResultPtr> GetResults(const std::string& task_description);
         
+        //! Gets amount of results in queue
+        Core::uint GetNumResults();
+        
+        //! Gets amount of results in queue for certain task type
+        Core::uint GetNumResults(const std::string& task_description);
+        
     private:
         //! Queues a result. Called from ThreadTask work thread.
+        /*! \param result Result to queue
+         */
         void QueueResult(ThreadTaskResultPtr result);
         
         //! Owned ThreadTasks
