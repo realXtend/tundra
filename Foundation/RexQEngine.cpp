@@ -22,7 +22,7 @@
 namespace Foundation
 {
 
-RexQEngine::RexQEngine(Framework *owner, int argc, char** argv)
+RexQEngine::RexQEngine(Framework *owner, int &argc, char** argv)
 :owner_(owner)
 {
     app_ = new QApplication(argc, argv);
