@@ -491,8 +491,15 @@ namespace RexLogic
         if (filename == "")
             return Console::ResultFailure("No file chosen.");
 
-        std::string caps_seed = rexserver_connection_->GetInfo().seedCapabilities;
-        asset_uploader_->SetUploadCapability(caps_seed);
+        if (!asset_uploader_->HasUploadCapability())
+        {
+            std::string upload_url = rexserver_connection_->GetCapability("NewFileAgentInventory");
+            if (upload_url == "")
+                return Console::ResultFailure("Could not set upload capability for asset uploader.");
+
+            asset_uploader_->SetUploadCapability(upload_url);
+        }
+
         boost::shared_ptr<Inventory> inventory = rexserver_connection_->GetInfo().inventory;
 
         // Get the category name for this asset type.
@@ -529,8 +536,15 @@ namespace RexLogic
         if (filenames.empty())
             return Console::ResultFailure("No files chosen.");
 
-        std::string caps_seed = rexserver_connection_->GetInfo().seedCapabilities;
-        asset_uploader_->SetUploadCapability(caps_seed);
+        if (!asset_uploader_->HasUploadCapability())
+        {
+            std::string upload_url = rexserver_connection_->GetCapability("NewFileAgentInventory");
+            if (upload_url == "")
+                return Console::ResultFailure("Could not set upload capability for asset uploader.");
+
+            asset_uploader_->SetUploadCapability(upload_url);
+        }
+
         boost::shared_ptr<Inventory> inventory = rexserver_connection_->GetInfo().inventory;
 
         // Multiupload.

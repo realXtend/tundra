@@ -142,6 +142,10 @@ namespace RexLogic
         /// @return A structure of connection spesific information, e.g. AgentID and SessionID.
         OpenSimProtocol::ClientParameters GetInfo() const { return myInfo_; }
 
+        /// @return A structure of connection spesific information, e.g. AgentID and SessionID.
+        /// @param name Name of the capability.
+        std::string GetCapability(const std::string &name);
+
         /// @return True if the client connected to a server.
         bool IsConnected() { return connected_; }
 

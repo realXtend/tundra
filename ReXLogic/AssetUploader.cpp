@@ -215,14 +215,6 @@ AssetUploader::~AssetUploader()
     curl_easy_cleanup(curl_);
 }
 
-void AssetUploader::SetUploadCapability(std::string seed)
-{
-    ///\todo Fetch the all the caps when user logs in and use the real NewFileAgentInventory caps here.
-    // Replace "Seed" (=0000-ending) with "NewFileAgentInventory" (0002-ending)
-    seed.replace(seed.length() - 2, 1, "2");
-    uploadCapability_ = seed;
-}
-
 void AssetUploader::UploadFile(
     const RexTypes::asset_type_t &asset_type,
     const std::string &filename,
@@ -244,7 +236,7 @@ void AssetUploader::UploadFile(
     // Post NewFileAgentInventory message informing the server about upcoming asset upload.
     std::vector<char> response;
     bool success = HttpPostNewFileAgentInventory(uploadCapability_, &asset_xml[0], asset_xml.size(), &response);
-    if (success)
+    if (!success)
         return;
 
     response.push_back('\0');
@@ -366,6 +358,7 @@ void AssetUploader::UploadFiles(Core::StringList filenames, Inventory *inventory
         size_t name_end_pos = filename.find_last_of('.');
         if (name_start_pos != std::string::npos && name_end_pos != std::string::npos)
             name = filename.substr(name_start_pos + 1, name_end_pos - name_start_pos - 1);
+
         std::string description = "(No Description)";
 
         RexTypes::RexUUID folder_id = inventory->GetFirstSubFolderByName(cat_name.c_str())->id;
@@ -579,4 +572,4 @@ bool AssetUploader::HttpPostFileUpload(
     return true;
 }
 
-}
+} // namespace RexLogic
