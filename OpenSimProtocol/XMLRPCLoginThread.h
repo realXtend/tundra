@@ -25,7 +25,7 @@ namespace OpenSimProtocol
         void operator()();
         
         /**
-         * Sets up the XMP-RPC login procedure using authentication server or direct rexserver depending of 
+         * Sets up the XML-RPC login procedure using authentication server or direct rexserver depending of 
          * given @p callMethod param and @p authentication param. All data which will be got from authentication of
          * login into world server is saved in @p ConnectionThreadState struct. 
          *

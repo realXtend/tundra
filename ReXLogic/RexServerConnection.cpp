@@ -193,6 +193,7 @@ namespace RexLogic
             SendUseCircuitCodePacket();
             SendCompleteAgentMovementPacket();
             SendAgentThrottlePacket();
+            SendAgentWearablesRequestPacket();
             
             RexLogicModule::LogInfo("Connected to server " + serverAddress_ + ".");
         }
@@ -234,6 +235,21 @@ namespace RexLogic
         m->AddU32(myInfo_.circuitCode);
         m->AddUUID(myInfo_.sessionID);
         m->AddUUID(myInfo_.agentID);
+        m->MarkReliable();
+
+        FinishMessageBuilding(m);
+    }
+
+    void RexServerConnection::SendAgentWearablesRequestPacket()
+    {
+        if(!connected_)
+            return;
+
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentWearablesRequest);
+        assert(m);
+        
+        m->AddUUID(myInfo_.agentID);
+        m->AddUUID(myInfo_.sessionID);
         m->MarkReliable();
 
         FinishMessageBuilding(m);

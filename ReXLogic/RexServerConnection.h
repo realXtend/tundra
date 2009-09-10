@@ -73,10 +73,14 @@ namespace RexLogic
         /// Server starts to send object updates etc after it has received this packet.        
         void SendCompleteAgentMovementPacket();
 
+        /// Sends wearables request to the server
+        /// In reX mode, this causes the server to send the avatar appearance address
+        void SendAgentWearablesRequestPacket();
+
         /// Tells client bandwidth to the server
         /// \todo make configurable or measure, now a fixed value
         void SendAgentThrottlePacket();
-
+        
         /// Sends a message requesting logout from the server. The server is then going to flood us with some
         /// inventory UUIDs after that, but we'll be ignoring those.        
         void SendLogoutRequestPacket();
