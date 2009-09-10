@@ -77,6 +77,10 @@ namespace RexLogic
                 Figure something out.. */
         QUiLoader loader;
         QFile file("./data/ui/login.ui");
+
+        if (!file.exists())
+            RexLogicModule::LogError ("cannot find login.ui");
+
         login_widget_ = loader.load(&file); 
       
       
