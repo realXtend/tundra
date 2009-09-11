@@ -45,7 +45,7 @@ To build Naali using the dependency repository, perform the following:
 Building the Viewer
 -------------------
 
-1. Set the REX_DEP_PATH system environment variable to point to \viewerDeps\.
+1. Set the NAALI_DEP_PATH system environment variable to point to \viewerDeps\.
 2. Open up \viewerTrunk\viewer\CMakeLists.txt and configure the set of modules that you want to build by commenting out the unnecessary ones. For most people, the default set of modules works just fine.
 3. Make sure that cmake is in your PATH. Start up Visual Studio 2008 Command prompt, navigate to \viewerTrunk\viewer\bin\ and execute 'cmake.exe .'. If cmake has issues with finding your
    installation of MSVC9 toolchain, you can try forcing it with 'cmake.exe -G "Visual Studio 9 2008"'.

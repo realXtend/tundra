@@ -24,7 +24,7 @@ For plain cmake users:
 ----------------------------------------
  
 0. Change to viewer code directory
-1. Run $ REX_DEP_PATH=/path/to/external/deps cmake .  
+1. Run $ NAALI_DEP_PATH=/path/to/external/deps cmake .  
 2. Assure that cmake found all external libraries 
 3. Run $ make  
 

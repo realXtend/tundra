@@ -24,11 +24,11 @@ set(POCO_PREFIX_GUESSES
     $ENV{HOME}/PoCo
     $ENV{HOME}/Poco
     $ENV{HOME}/poco
-    $ENV{REX_DEP_PATH}
-    $ENV{REX_DEP_PATH}/poco
-    $ENV{REX_DEP_PATH}/Poco
-    $ENV{REX_DEP_PATH}/include/Poco
-    $ENV{REX_DEP_PATH}/PoCo)
+    $ENV{NAALI_DEP_PATH}
+    $ENV{NAALI_DEP_PATH}/poco
+    $ENV{NAALI_DEP_PATH}/Poco
+    $ENV{NAALI_DEP_PATH}/include/Poco
+    $ENV{NAALI_DEP_PATH}/PoCo)
 
 set(POCO_PREFIX_PATH 
     ${POCO_HOME} $ENV{POCO_HOME} ${POCO_PREFIX_GUESSES})
@@ -66,8 +66,8 @@ endmacro (FIND_POCO)
 macro (INCLUDE_POCO)
 	
         if (MSVC)
-	  include_directories (${REX_DEP_PATH}/PoCo/include)
-	  link_directories (${REX_DEP_PATH}/PoCo/lib)
+	  include_directories (${NAALI_DEP_PATH}/PoCo/include)
+	  link_directories (${NAALI_DEP_PATH}/PoCo/lib)
         else(NOT MSVC AND POCO_FOUND)
 	  include_directories(${POCO_INCLUDE_DIRS})
 	  link_directories(${POCO_LIBRARY_DIRS})

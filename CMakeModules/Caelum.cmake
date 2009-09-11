@@ -11,15 +11,15 @@ findpkg_begin(CAELUM)
 
 # TODO: For MSVC, remove all this guessing, it's not how things are done in Windows. The search procedure is the following:
 # 1. If $ENV{CAELUM_HOME} is defined, use that directory.
-# 2. If not, use $ENV{REX_DEP_PATH}/caelum.
+# 2. If not, use $ENV{NAALI_DEP_PATH}/caelum.
 # There should be no guessing of what the outputted library name might be. Caelum might not even be built or even unzipped 
 # by the time this script is run. -jj.
 # TODO: Do the same for all other MSVC dependencies.
 
 if (MSVC)
-  set(CAELUM_PREFIX_GUESSES $ENV{REX_DEP_PATH}/Caelum
+  set(CAELUM_PREFIX_GUESSES $ENV{NAALI_DEP_PATH}/Caelum
       C:/Caelum
-      $ENV{PROGRAMFILES}/Caelum C:/caelum $ENV{REX_DEP_PATH}/caelum)
+      $ENV{PROGRAMFILES}/Caelum C:/caelum $ENV{NAALI_DEP_PATH}/caelum)
 elseif (UNIX)
   set(CAELUM_PREFIX_GUESSES 
       /opt/Caelum
@@ -32,9 +32,9 @@ elseif (UNIX)
       /usr/local/include/Caelum
       $ENV{HOME}/Caelum
       $ENV{HOME}/caelum
-      $ENV{REX_DEP_PATH}
-      $ENV{REX_DEP_PATH}/caelum
-      $ENV{REX_DEP_PATH}/Caelum)
+      $ENV{NAALI_DEP_PATH}
+      $ENV{NAALI_DEP_PATH}/caelum
+      $ENV{NAALI_DEP_PATH}/Caelum)
 endif()
 
 set(CAELUM_PREFIX_PATH 
@@ -72,8 +72,8 @@ endmacro (FIND_CAELUM)
 
 macro (INCLUDE_CAELUM)
 	if (MSVC)
-	  include_directories (${REX_DEP_PATH}/Caelum/include)
-	  link_directories (${REX_DEP_PATH}/Caelum/lib)
+	  include_directories (${NAALI_DEP_PATH}/Caelum/include)
+	  link_directories (${NAALI_DEP_PATH}/Caelum/lib)
         elseif( NOT MSVC AND CAELUM_FOUND)
 	  include_directories(${CAELUM_INCLUDE_DIRS})
 	  link_directories(${CAELUM_LIBRARY_DIRS})

@@ -26,9 +26,9 @@ set(Qt4_PREFIX_GUESSES
     /usr/local/include
     $ENV{HOME}/Qt4
     $ENV{HOME}/Qt
-    $ENV{REX_DEP_PATH}
-    $ENV{REX_DEP_PATH}/Qt4
-    $ENV{REX_DEP_PATH}/qt4)
+    $ENV{NAALI_DEP_PATH}
+    $ENV{NAALI_DEP_PATH}/Qt4
+    $ENV{NAALI_DEP_PATH}/qt4)
 
 set(Qt4_PREFIX_PATH 
     ${Qt4_HOME} $ENV{Qt4_HOME} ${Qt4_PREFIX_GUESSES})
@@ -70,8 +70,8 @@ macro (INCLUDE_QT4)
       ${QT_QTXML_INCLUDE_DIR})
       link_directories ($ENV{QTDIR}/lib ${QT_LIBRARIES})
     else()
-      include_directories (${REX_DEP_PATH}/Qt/include)
-      link_directories (${REX_DEP_PATH}/Qt/lib)
+      include_directories (${NAALI_DEP_PATH}/Qt/include)
+      link_directories (${NAALI_DEP_PATH}/Qt/lib)
     endif()
   elseif (NOT MSVC AND QT4_FOUND)
     include_directories(${QT_INCLUDE_DIR} ${QT_QTWEBKIT_INCLUDE_DIR}

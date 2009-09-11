@@ -11,9 +11,9 @@ findpkg_begin(OGRE)
 # Construct search paths from enviromental hits and OS spesific guesses
 
 if (MSVC)
-  set(OGRE_PREFIX_GUESSES $ENV{REX_DEP_PATH}/Ogre
+  set(OGRE_PREFIX_GUESSES $ENV{NAALI_DEP_PATH}/Ogre
       C:/OgreSDK
-      $ENV{PROGRAMFILES}/OgreSDK C:/Ogre $ENV{REX_DEP_PATH}/ogre)
+      $ENV{PROGRAMFILES}/OgreSDK C:/Ogre $ENV{NAALI_DEP_PATH}/ogre)
 elseif (UNIX)
   set(OGRE_PREFIX_GUESSES 
       /opt/OGRE
@@ -25,9 +25,9 @@ elseif (UNIX)
       /usr/local/ogre
       $ENV{HOME}/Ogre
       $ENV{HOME}/OGRE
-      $ENV{REX_DEP_PATH}
-      $ENV{REX_DEP_PATH}/Ogre
-      $ENV{REX_DEP_PATH}/ogre)
+      $ENV{NAALI_DEP_PATH}
+      $ENV{NAALI_DEP_PATH}/Ogre
+      $ENV{NAALI_DEP_PATH}/ogre)
 endif()
 
 set(OGRE_PREFIX_PATH 
@@ -79,8 +79,8 @@ macro (INCLUDE_OGRE)
 	    include_directories ($ENV{OGRE_HOME}/include)
 	    link_directories ($ENV{OGRE_HOME}/lib)
 	  else()
-	    include_directories (${REX_DEP_PATH}/Ogre/include)
-	    link_directories (${REX_DEP_PATH}/Ogre/lib)
+	    include_directories (${NAALI_DEP_PATH}/Ogre/include)
+	    link_directories (${NAALI_DEP_PATH}/Ogre/lib)
 	  endif()
         elseif (NOT MSVC AND OGRE_FOUND)
 	  include_directories(${OGRE_INCLUDE_DIRS})
@@ -88,8 +88,8 @@ macro (INCLUDE_OGRE)
 	else()
 	  include_directories(${OGRE_INCLUDE_DIR})
 	  link_directories(${OGRE_LIBRARY_DIR})
-	  #include_directories (${REX_DEP_PATH}/Ogre/include)
-	  #link_directories (${REX_DEP_PATH}/Ogre/lib)
+	  #include_directories (${NAALI_DEP_PATH}/Ogre/include)
+	  #link_directories (${NAALI_DEP_PATH}/Ogre/lib)
 	endif()
 		
 	#else (MSVC)

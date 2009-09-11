@@ -57,7 +57,7 @@ external libraries
        ->  Direct link: http://dev.realxtend.org/gf/download/frsrelease/102/19/Dependencies_VS2008.zip
        1.  Extract the "bin" and "external_libs" from the .zip file to your <project_folder>/trunk folder.
        2.  Windows will probably prompt that you are extracting a "bin" folder that already exist. Just allow windows to continue the operation.
-       3.  Set a new Windows System Variable named "REX_DEP_PATH" and set it to the "<project_folder>/trunk/external_libs" folder.
+       3.  Set a new Windows System Variable named "NAALI_DEP_PATH" and set it to the "<project_folder>/trunk/external_libs" folder.
            Help to do this 
            - Windows XP: http://support.microsoft.com/kb/310519 
            - Vista: Right Click "My Computer" on your desktop -> Properties -> Left side "Advanced system settings" -> "Enviroment Variables..."

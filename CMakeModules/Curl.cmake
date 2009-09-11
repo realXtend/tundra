@@ -24,9 +24,9 @@ set(CURL_PREFIX_GUESSES
     $ENV{HOME}/curl
     $ENV{HOME}/libcurl
     $ENV{HOME}/Curl
-    $ENV{REX_DEP_PATH}
-    $ENV{REX_DEP_PATH}/curl
-    $ENV{REX_DEP_PATH}/libcurl)
+    $ENV{NAALI_DEP_PATH}
+    $ENV{NAALI_DEP_PATH}/curl
+    $ENV{NAALI_DEP_PATH}/libcurl)
 
 set(CURL_PREFIX_PATH 
     ${CURL_HOME} $ENV{CURL_HOME} ${CURL_PREFIX_GUESSES})
@@ -64,8 +64,8 @@ endmacro (FIND_CURL)
 macro (INCLUDE_CURL)
   
   if (MSVC)
-    include_directories (${REX_DEP_PATH}/libcurl/include)
-    link_directories (${REX_DEP_PATH}/libcurl/lib/DLL-Debug ${REX_DEP_PATH}/libcurl/lib/DLL-Release)		
+    include_directories (${NAALI_DEP_PATH}/libcurl/include)
+    link_directories (${NAALI_DEP_PATH}/libcurl/lib/DLL-Debug ${NAALI_DEP_PATH}/libcurl/lib/DLL-Release)		
   elseif(NOT MSVC AND CURL_FOUND)
     include_directories(${CURL_INCLUDE_DIRS})
     link_directories(${CURL_LIBRARY_DIRS})
