@@ -956,7 +956,6 @@ static PyMethodDef EmbMethods[] = {
 	{"logInfo", (PyCFunction)PyLogInfo, METH_VARARGS,
 	"Prints a text using the LogInfo-method."},
 
-	//from RexPythonQt.cpp now .. except got the fricken staticframework == null prob!
 	/*
 	{"getCameraRight", (PyCFunction)GetCameraRight, METH_VARARGS, 
 	"Get the right-vector for the camera."},
@@ -964,6 +963,11 @@ static PyMethodDef EmbMethods[] = {
 	{"getCameraUp", (PyCFunction)GetCameraUp, METH_VARARGS, 
 	"Get the up-vector for the camera."},
 	*/
+	//from RexPythonQt.cpp now .. except got the fricken staticframework == null prob!
+
+	{"createCanvas", (PyCFunction)CreateCanvas, METH_VARARGS, 
+	 "Create a new Qt canvas within the viewer"},
+
 	{NULL, NULL, 0, NULL}
 };
 

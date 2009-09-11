@@ -139,7 +139,7 @@ if 0: #send chat
     r.sendChat("here we go.")
     #print "called sendchat ok"
     
-if 1: #print test
+if 0: #print test
     r.logInfo("this is a test print!")
     
 if 0: #camera pitch
@@ -263,4 +263,59 @@ if 0: #python-ogre test - using the extension lib in the embedded context :o
         mnode.attachObject(mob)
         
     drawline()
+
+if 0:
+    #print "Importing PythonQt..."
+    import PythonQt
+    #print dir(PythonQt)
+    #print "Importing PythonQt.QtGui..."
+    #import PythonQt.QtGui as gui
+    #print dir(gui)
+    import PythonQt.QtUiTools as uitools
+    print dir(uitools.QUiLoader)
+    #print dir(gui.QTreeWidgetItem)
     
+
+if 0:
+    from PythonQt.QtGui import *
+
+    group = QGroupBox()
+    box = QVBoxLayout(group)
+    print dir(box)
+    push1 =  QPushButton(group)
+    box.addWidget(push1)
+    push2 =  QPushButton(group)
+    box.addWidget(push2)
+    check =  QCheckBox(group)
+    check.text = 'check me'
+    group.title = 'my title'
+    push1.text = 'press me'
+    push2.text = 'press me2'
+    box.addWidget(check)
+    group.show()
+
+
+if 0:
+    from PythonQt.QtGui import *
+    from PythonQt.QtCore import QPoint
+    box = r.c
+    box.label.text = "hmm"
+
+    #~ children = []
+    #~ children.append(QTreeWidgetItem(box.treeWidget))
+    #~ children.append(QTreeWidgetItem(box.treeWidget))
+    #~ children.append(QTreeWidgetItem(box.treeWidget))
+    #~ children.append(QTreeWidgetItem(box.treeWidget))
+    #~ print len(children)
+    def test(item, idx):
+        print "worked...", item, idx
+    box.treeWidget.connect('activated(QModelIndex)', test)
+    #box.treeWidget.connect('itemActivated', test)
+    #box.treeWidget.itemClicked.connect(box.treeWidget.itemClickedSetSelected)
+    
+    #~ pos = QPoint(0,1)
+    #~ thingie5 = box.treeWidget.indexAt(pos)  
+    #print box.treeWidget.findChild
+    #index = box.treeWidget.currentIndex()
+    #print box.treeWidget.activated(index), index
+    #print dir(box.treeWidget)

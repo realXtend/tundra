@@ -20,6 +20,7 @@ TODO (most work is in api additions on the c++ side, then simple usage here):
 
 import rexviewer as r
 import PythonQt
+from PythonQt.QtGui import QTreeWidgetItem
 from circuits import Component
 
 class EditGUI(Component):
@@ -27,7 +28,6 @@ class EditGUI(Component):
     
     def __init__(self):
         Component.__init__(self)
-        
         canvas = r.createCanvas()
         #now test code does hardcoded test loadui itself
         widget = canvas
@@ -56,6 +56,9 @@ class EditGUI(Component):
         self.left_button_down = False
         self.widget.label.text = "<none>"
         r.c = self.widget
+        self.widget.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
+        
+        self.widgetList = {}
         
     #~ def changed_x(self, v):
         #~ print "x changed to: %f" % v
@@ -77,9 +80,18 @@ class EditGUI(Component):
             pos[i] = v
             ent.pos = pos[0], pos[1], pos[2] #XXX API should accept a list/tuple too .. or perhaps a vector type will help here too
             #print "=>", ent.pos
-            
+    
+    def itemActivated(self, item):
+        print "Got the following item index...", item #we has index, now what? WIP
+        
     def select(self, ent):
         self.sel = ent
+        
+        if not self.widgetList.has_key(self.sel.id):
+            tWid = QTreeWidgetItem(self.widget.treeWidget)
+            tWid.setText(0, self.sel.id)
+            self.widgetList[self.sel.id] = tWid
+        
         print "Selected entity:", self.sel.id, "at", self.sel.pos#, self.sel.name
         
         #update the gui vals to show what the newly selected entity has

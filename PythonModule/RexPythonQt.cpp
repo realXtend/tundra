@@ -2,13 +2,13 @@
 #include "RexPythonQt.h"
 #include "Python.h" //to add CreateCanvas first as a normal py func
 #include "PythonQt.h"
+#include "PythonQt_QtAll.h"
 #include <QGroupBox> //just for testing addObject
 #include <QtUiTools> //for .ui loading in testing
 
 #include "QtModule.h"
 #include "UICanvas.h"
 #include "PythonScriptModule.h"
-//#include "PythonQt_QtAll.h"
 //#include "gui/PythonQtScriptingConsole.h"
 
 namespace PythonScript
@@ -18,7 +18,7 @@ namespace PythonScript
 		//XXX add shutdown too!
 		// init PythonQt, but not Python 'cause PythonScriptModule has already done that.
 		PythonQt::init(PythonQt::DoNotInitializePython);
-
+		PythonQt_QtAll::init();
 		// get the __main__ python module
 		//PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
   

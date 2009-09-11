@@ -28,7 +28,9 @@ macro (LINK_PYTHONQT)
   if (MSVC)
     target_link_libraries (${TARGET_NAME}
             debug PythonQt_d
-            optimized PythonQt)
+	    debug PythonQt_QtAll_d
+            optimized PythonQt
+	    optimized PythonQt_QtAll)
   else()
     target_link_libraries (${TARGET_NAME} ${PYTHONQT_LIBRARIES})
   endif (MSVC)
