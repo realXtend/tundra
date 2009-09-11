@@ -5,7 +5,8 @@ Created on 8.9.2009
 '''
 
 import sys
-import time
+import os
+#import time
 
 from connection import WebDavClient
 from webdav.Connection import WebdavError
@@ -16,26 +17,27 @@ from PyQt4.QtCore import QObject, pyqtSlot, QFile
 
 NAME = 0
 TYPE = 1
-MODIFIED = 2
+#MODIFIED = 2
 
 class Application(QObject):
     
-    guiMain = None
-    webdav = None
-    
-    myIdentity = None
-    myWebDav = None
-    
     def __init__(self, webdavIn, connectSuccess):
+        self.guiMain = None
+        self.webdav = None
+        self.myIdentity = None
+        self.myWebDav = None
         self.app = QApplication(sys.argv)
+        
         connectionEstablished = False
+        
         while (connectionEstablished == False):
             if connectSuccess:
+                connectionEstablished = connectSuccess
                 self.webdav = webdavIn
                 guiMain = GuiMain(self)
                 guiMain.show()
             else:
-                guiUserInput = UserDefinesSettings()
+                guiUserInput = UserDefinesSettings(self, "Could not connect to fetched inventory")
                 self.myIdentity, self.myWebDav = guiUserInput.askUserInput()
                 testWebDav = WebDavClient(str(self.myIdentity), str(self.myWebDav))
                 try:
@@ -43,6 +45,7 @@ class Application(QObject):
                     connectionEstablished = True
                 except WebdavError:
                     connectionEstablished = False
+                    
         sys.exit(self.app.exec_())
     
 class GuiMain(QDialog):
@@ -53,26 +56,19 @@ class GuiMain(QDialog):
     def __init__(self, parent):
         self.app = parent
         super(GuiMain, self).__init__()
-        uic.loadUi('main_gui.ui', self)
-        self.setBottomContolButtonsEnabled(False)
+        uic.loadUi("gui" + os.sep + "main_gui.ui", self)
+        self.setBottomContolButtonsEnabled(True)
         self.connectSignals()
+        self.listRootResources()
         
     def connectSignals(self):
         treeView = self.findChild(QTreeWidget, "treeWidget")
         treeView.itemDoubleClicked.connect(self.itemDoubleClicked)
         treeView.itemClicked.connect(self.itemClickedSetSelected)
         
-    @pyqtSlot()
-    def on_pushButton_Connect_clicked(self):
+    def listRootResources(self):
         self.setBottomContolButtonsEnabled(True)
         self.path = ""
-        """ INIT CONNECTION """   
-        url = str(self.findChild(QLineEdit, "lineEdit_ServerUrl").text())
-        user = str(self.findChild(QLineEdit, "lineEdit_User").text())
-        passwd = str(self.findChild(QLineEdit, "lineEdit_Password").text())
-        if ( self.app.webdav.setupConnection(url, user, passwd) == False ):
-            self.connectionLost()
-            return
         """ GET INVENTORY """
         treeView = self.findChild(QTreeWidget, "treeWidget")
         treeView.clear()
@@ -82,10 +78,10 @@ class GuiMain(QDialog):
             for itemName in results:
                 item = QTreeWidgetItem()
                 itemType = results[itemName].getResourceType()
-                dateModified = time.asctime(results[itemName].getLastModified())
+                #dateModified = time.asctime(results[itemName].getLastModified())
                 item.setText(NAME, itemName)
                 item.setText(TYPE, itemType)
-                item.setText(MODIFIED, dateModified)
+                #item.setText(MODIFIED, dateModified)
                 if (itemType == "resource"):
                     item.setText(TYPE, "Resource")
                     item.setIcon(0, QIcon(QPixmap("iconResource.png")))
@@ -220,11 +216,11 @@ class GuiMain(QDialog):
             if (results != False):
                 for childItemName in results:
                     itemType = results[childItemName].getResourceType()
-                    dateModified = time.asctime(results[childItemName].getLastModified())
+                    #dateModified = time.asctime(results[childItemName].getLastModified())
                     item = QTreeWidgetItem()
                     item.setText(NAME, childItemName)
                     item.setText(TYPE, itemType)
-                    item.setText(MODIFIED, dateModified)
+                    #item.setText(MODIFIED, dateModified)
                     if (itemType == "resource"):
                         item.setText(TYPE, "Resource")
                         item.setIcon(0, QIcon(QPixmap("iconResource.png")))
@@ -306,13 +302,28 @@ class GuiMain(QDialog):
         self.findChild(QPushButton, "pushButton_AddDirectory").setEnabled(boolean)
         self.findChild(QPushButton, "pushButton_Delete").setEnabled(boolean)
 
-class UserDefinesSettings(object):
+class UserDefinesSettings(QDialog):
     
     identity = False
     webdav = False
     
-    def __init__(self):
-        pass
+    def __init__(self, parent, message):
+        self.identity = None
+        self.webdav = None
+        self.app = parent
+        super(UserDefinesSettings, self).__init__()
+        uic.loadUi("gui" + os.sep + "setupconnection_gui.ui", self)
+        self.show()
+        
+    @pyqtSlot()
+    def on_pushButton_Connect_clicked(self):
+        self.identity = str(self.findChild(QLineEdit, "lineEdit_ServerUrl").text())
+        self.webdav = str(self.findChild(QLineEdit, "lineEdit_User").text())
+        self.close()
+        
+    @pyqtSlot()
+    def on_pushButton_Close_clicked(self):
+        self.exec_()
         
     def askUserInput(self):
         while self.identity == False and self.webdav == False:
@@ -326,4 +337,5 @@ class UserDefinesSettings(object):
                     self.webdav = False
             else:
                 self.identity = False
+        
         
