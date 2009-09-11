@@ -1,12 +1,12 @@
-Name "realXtend Naali"
+Name "Naali"
 
 Page directory
 Page instfiles
 
-InstallDir "$PROGRAMFILES\realXtend Naali"
+InstallDir "$PROGRAMFILES\Naali"
 VIProductVersion "0.0.1"
 
-OutFile "realXtend-viewer.exe"
+OutFile "naali-viewer-installer.exe"
 
 XPStyle on
 
@@ -16,13 +16,13 @@ Section ""
   SetOutPath $INSTDIR
   File /r build\*.*
 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\realXtendNaali" \
-                   "DisplayName" "realXtend Naali"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali" \
+                   "DisplayName" "Naali"
 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\realXtendNaali" \
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali" \
                    "DisplayVersion" "0.0.1"
 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\realXtendNaali" \
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali" \
                    "UninstallString" "$INSTDIR\uninstaller.exe"
 
   ExecWait '"$INSTDIR\vcredist_x86.exe" /q'
@@ -34,10 +34,10 @@ SectionEnd
 
 Section "Start Menu Shortcuts"
   SetShellVarContext all
-  CreateDirectory "$SMPROGRAMS\realXtend Naali"
-  CreateShortCut "$SMPROGRAMS\realXtend Naali\realXtend Naali.lnk" "$INSTDIR\viewer.exe"
-  CreateShortCut "$SMPROGRAMS\realXtend Naali\Readme.lnk" "$INSTDIR\readme.txt"
-  CreateShortCut "$SMPROGRAMS\realXtend Naali\Uninstall.lnk" "$INSTDIR\uninstaller.exe"
+  CreateDirectory "$SMPROGRAMS\Naali"
+  CreateShortCut "$SMPROGRAMS\Naali\Naali.lnk" "$INSTDIR\viewer.exe"
+  CreateShortCut "$SMPROGRAMS\Naali\Readme.lnk" "$INSTDIR\readme.txt"
+  CreateShortCut "$SMPROGRAMS\Naali\Uninstall.lnk" "$INSTDIR\uninstaller.exe"
 SectionEnd
 
 Section "Uninstall"
@@ -46,11 +46,11 @@ Section "Uninstall"
   #removing the APPDATA\roaming\realxtend doesn't seem to work properly on Vista. (maybe incorrect user information is given through add/remove programs)
   SetShellVarContext all
   RMDir /r "$APPDATA\Roaming\realXtend"
-  RMDir /r "$SMPROGRAMS\realXtend Naali"
+  RMDir /r "$SMPROGRAMS\Naali"
 
   SetShellVarContext current
   RMDir /r "$APPDATA\Roaming\realXtend"
-  RMDir /r "$SMPROGRAMS\realXtend Naali"
+  RMDir /r "$SMPROGRAMS\Naali"
 
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\realXtendNaali"
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali"
 SectionEnd

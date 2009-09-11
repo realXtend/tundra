@@ -1,5 +1,5 @@
 # Set project name
-project (realXtend-viewer)
+project (naali-viewer)
 
 # CMake version requirement
 cmake_minimum_required (VERSION 2.4)
@@ -24,7 +24,6 @@ include (OpenJpeg)
 include (Qt)
 
 # The following CMake modules are optional.
-#include (Gtkmm)
 include (Python)
 include (PythonQt)
 #include (OpenAL)
