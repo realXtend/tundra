@@ -85,13 +85,21 @@ namespace QtUI
         /**
          * Sends a key pressed event to correct canvas. 
          * @param text is a key which was pressed (letter). 
+         * @param keyCode is a code of key
          * @param modifier is a value which defines that was alt or shift down. 
          */
 
-        void InjectKeyPressed(Qt::Key keyCode, const Qt::KeyboardModifiers& modifier);
+        void InjectKeyPressed(const QString& text, Qt::Key keyCode = Qt::Key_unknown, const Qt::KeyboardModifiers& modifier = Qt::NoModifier);
 
-        void InjectKeyReleased(Qt::Key keyCode, const Qt::KeyboardModifiers& modifier);
+        /**
+         * Sends a key released event to correct canvas. 
+         * @param text is a key which was pressed (letter). 
+         * @param keyCode is a code of key
+         * @param modifier is a value which defines that was alt or shift down. 
+         */
 
+        void InjectKeyReleased(const QString& text, Qt::Key keyCode = Qt::Key_unknown , const Qt::KeyboardModifiers& modifier = Qt::NoModifier);
+      
         /**
          * Sets a new size of Ogre-render window. 
          * @param size is new size of Ogre-render window. 
@@ -106,6 +114,13 @@ namespace QtUI
          * @param id is a canvas id. 
          */
         void RemoveCanvas(const QString& id);
+
+        /**
+         * Returns information about that should OIS keyboard to be in buffered state or not. 
+         * @return true if keyboard should set to bufferd false if not.
+         */
+        bool IsKeyboardFocus() const { return keyboard_buffered_; }
+
 
     public slots:
         
@@ -183,7 +198,10 @@ namespace QtUI
         int multipleKeyLimit_;
 
         // Current pressed keys
-        QList<QPair<Qt::Key, Qt::KeyboardModifiers> > pressedKeys_;
+        QList<QPair<Qt::Key, QString> > pressedKeys_;
+
+        // Should keyboard to put buffered state?
+        bool keyboard_buffered_;
     };
 
 

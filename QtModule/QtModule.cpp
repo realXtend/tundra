@@ -107,56 +107,42 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
 
         
     }
-    else if ( category_id = input_event_category_ && event_id == Input::Events::KEY_PRESSED ||event_id == Input::Events::KEY_RELEASED)
+    else if ( category_id == input_event_category_ && (event_id == Input::Events::BUFFERED_KEY_PRESSED ||event_id == Input::Events::BUFFERED_KEY_RELEASED))
     {
+       
         boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
         framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
 
         boost::shared_ptr<Input::InputModuleOIS> input = inputWeak.lock();
 
-        Input::Events::Key* key = checked_static_cast<Input::Events::Key* >(data);
-        
+      
+
+        Input::Events::BufferedKey* key = checked_static_cast<Input::Events::BufferedKey* >(data);
+
         if ( input.get() == 0)
             return false;
         else
         {
+            
+            
             Qt::Key value;
             if ( converterMap_.contains(static_cast<int>(key->code_)) )
                 value = converterMap_[static_cast<int>(key->code_)];
             else
-                return false;
-
-            Qt::KeyboardModifiers modifier;
-
-            switch(key->modifiers_)
-            {
-            case OIS::Keyboard::Alt:
-                {
-                    modifier = Qt::AltModifier;
-                    break;
-                }
-            case OIS::Keyboard::Ctrl:
-                {
-                    modifier = Qt::ControlModifier;
-                    break;
-                }
-            case OIS::Keyboard::Shift:
-                {
-                    modifier = Qt::ShiftModifier;
-                    break;
-                }
-            default:
-                {
-                    modifier = Qt::NoModifier;
-                    break;
-                }
-            }
-
-            if (event_id == Input::Events::KEY_PRESSED)
-                controller_->InjectKeyPressed(value, modifier);
+                value = Qt::Key_unknown;
+            
+           
+            Qt::KeyboardModifier modifier = Qt::NoModifier;
+            if (event_id == Input::Events::BUFFERED_KEY_PRESSED)
+                controller_->InjectKeyPressed(QString(QChar(key->text_)), value);
             else
-                controller_->InjectKeyReleased(value, modifier);
+            {
+                controller_->InjectKeyReleased(QString(QChar(key->text_)), value);
+            }
+            
+         
         }
+        
     }
   
     
@@ -182,23 +168,29 @@ void QtModule::Update(Core::f64 frametime)
         boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
             framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
 
-        boost::shared_ptr<Input::InputModuleOIS> input_ = inputWeak.lock();
-        //input_ = inputWeak.lock();
-        if (!input_.get())
+        boost::shared_ptr<Input::InputModuleOIS> input = inputWeak.lock();
+      
+        if (!input.get())
             return;
         
-        const Input::Events::Movement &mouse = input_->GetMouseMovement();
+        const Input::Events::Movement &mouse = input->GetMouseMovement();
         QPointF pos = QPointF(mouse.x_.abs_, mouse.y_.abs_);
         QPoint change = lastPos_ - pos.toPoint(); 
 
-        if (input_->IsButtonDown(OIS::MB_Left) && !mouse_left_button_down_)
+        if (input->IsButtonDown(OIS::MB_Left) && !mouse_left_button_down_)
         {
-           
+         
             controller_->InjectMousePress(pos.x(), pos.y());
+            
+            if ( controller_->IsKeyboardFocus() && input->GetState() != Input::State_Buffered)
+                input->SetState(Input::State_Buffered);
+            else  
+                input->SetState(Input::State_Unknown);
+            
             mouse_left_button_down_ = true;
            
         }
-        else if (!input_->IsButtonDown(OIS::MB_Left) && mouse_left_button_down_)
+        else if (!input->IsButtonDown(OIS::MB_Left) && mouse_left_button_down_)
         {
            
             controller_->InjectMouseRelease(pos.x(),pos.y());
