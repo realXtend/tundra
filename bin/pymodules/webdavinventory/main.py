@@ -10,8 +10,6 @@ from connection import WebDavClient
 from connection import HTTPClient
 
 class MainFunction():
-    
-
 
     def __init__(self, host, identityType, identity = None, firstName = None, lastName = None):
         self.httpclient = None
@@ -28,11 +26,11 @@ class MainFunction():
         self.lastName = lastName
         """ START HTTP/WEBDAV CLIENTS """
         connectSuccess = self.connectClients()
-        self.app = gui.Application(self.webdavclient, connectSuccess)
+        self.app = gui.Application(self.webdavclient, self.httpclient, connectSuccess)
         if connectSuccess == False:
             self.identity = self.app.myIdentity
             self.host = self.app.myWebDav
-            
+
     def connectClients(self):
         self.httpclient = HTTPClient()
         """ SETUP HTTP CLIENT AND CREATE QUERY STRING """
@@ -51,4 +49,7 @@ class MainFunction():
                     return False
 
 if __name__ == '__main__':
-    MainFunction("127.0.0.1:8002", "openid", "http://admino.com:8004/jonnenauha")
+	""" OpenID way """
+    #MainFunction("127.0.0.1:8002", "openid", "http://admino.com:8004/jonnenauha")
+    """ OpenSim way """
+	MainFunction("127.0.0.1:8002", "normal", None, "Jonne", "Nauha")

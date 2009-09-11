@@ -6,47 +6,72 @@ Created on 8.9.2009
 
 import sys
 import os
-#import time
 
 from connection import WebDavClient
-from webdav.Connection import WebdavError
 
 from PyQt4 import uic
-from PyQt4.QtGui import QApplication, QDialog, QTreeWidget, QTreeWidgetItem, QLineEdit, QLabel, QFileDialog, QInputDialog, QMessageBox, QIcon, QPixmap, QTreeWidgetItemIterator, QPushButton
+from PyQt4.QtGui import QApplication, QDialog, QTreeWidgetItem, QLineEdit, QFileDialog, QInputDialog, QMessageBox, QIcon, QPixmap
 from PyQt4.QtCore import QObject, pyqtSlot, QFile
 
 NAME = 0
 TYPE = 1
-#MODIFIED = 2
 
 class Application(QObject):
     
-    def __init__(self, webdavIn, connectSuccess):
+    def __init__(self, webdavIn, httpclient, connectSuccess):
         self.guiMain = None
-        self.webdav = None
-        self.myIdentity = None
-        self.myWebDav = None
+        self.guiUserInput = None
+        self.webdav = webdavIn
+        self.httpclient = httpclient
         self.app = QApplication(sys.argv)
-        
-        connectionEstablished = False
-        
-        while (connectionEstablished == False):
-            if connectSuccess:
-                connectionEstablished = connectSuccess
-                self.webdav = webdavIn
-                guiMain = GuiMain(self)
-                guiMain.show()
-            else:
-                guiUserInput = UserDefinesSettings(self, "Could not connect to fetched inventory")
-                self.myIdentity, self.myWebDav = guiUserInput.askUserInput()
-                testWebDav = WebDavClient(str(self.myIdentity), str(self.myWebDav))
-                try:
-                    testWebDav.setupConnection()
-                    connectionEstablished = True
-                except WebdavError:
-                    connectionEstablished = False
-                    
+        self.runApplication(connectSuccess)
         sys.exit(self.app.exec_())
+        
+    def runApplication(self, connectSuccess):
+        if connectSuccess:
+            self.guiMain = GuiMain(self)
+            self.guiMain.finished.connect(self.closeHandler)
+            self.guiMain.show()
+        else:
+            self.guiUserInput = UserDefinesSettings("Could not retrieve Inventory URL from World Server")
+            self.guiUserInput.pushButton_Connect.clicked.connect(self.connectHandler)
+            self.guiUserInput.pushButton_Close.clicked.connect(self.closeHandler)
+            self.guiUserInput.show()
+    
+    def connectHandler(self, bool):
+        failed = False
+        myHost, authType, authInfo  = self.guiUserInput.getUserInput()
+        
+        try:
+            index = authInfo.index(" ")
+            firstName = authInfo[0:index]
+            lastName = authInfo[index+1:]
+            if (self.httpclient.setupConnection(myHost, authType, None, firstName, lastName) == False):
+                failed = True
+        except ValueError:
+            if (self.httpclient.setupConnection(myHost, authType, authInfo, None, None) == False):
+                failed = True
+        
+        try:
+            identityurl, webdavurl = self.httpclient.requestIdentityAndWebDavURL()
+        except Exception:
+            failed = True
+        
+        if (failed == False):
+            self.webdav = WebDavClient(identityurl, webdavurl)
+            try:
+                self.webdav.setupConnection()
+                self.guiUserInput.close()
+                self.runApplication(True)
+            except Exception:
+                self.guiUserInput.close()
+                self.runApplication(False)
+        else:
+            self.guiUserInput.close()
+            self.runApplication(False)
+            
+    def closeHandler(self, bool):
+        self.app.exit()
     
 class GuiMain(QDialog):
 
@@ -60,9 +85,9 @@ class GuiMain(QDialog):
         self.setBottomContolButtonsEnabled(True)
         self.connectSignals()
         self.listRootResources()
-        
+
     def connectSignals(self):
-        treeView = self.findChild(QTreeWidget, "treeWidget")
+        treeView = self.treeWidget
         treeView.itemDoubleClicked.connect(self.itemDoubleClicked)
         treeView.itemClicked.connect(self.itemClickedSetSelected)
         
@@ -70,7 +95,7 @@ class GuiMain(QDialog):
         self.setBottomContolButtonsEnabled(True)
         self.path = ""
         """ GET INVENTORY """
-        treeView = self.findChild(QTreeWidget, "treeWidget")
+        treeView = self.treeWidget
         treeView.clear()
         results = self.app.webdav.listResources(None)
         if (results != False):
@@ -78,10 +103,8 @@ class GuiMain(QDialog):
             for itemName in results:
                 item = QTreeWidgetItem()
                 itemType = results[itemName].getResourceType()
-                #dateModified = time.asctime(results[itemName].getLastModified())
                 item.setText(NAME, itemName)
                 item.setText(TYPE, itemType)
-                #item.setText(MODIFIED, dateModified)
                 if (itemType == "resource"):
                     item.setText(TYPE, "Resource")
                     item.setIcon(0, QIcon(QPixmap("iconResource.png")))
@@ -147,15 +170,16 @@ class GuiMain(QDialog):
         self.foldersDeleted = 0
         selectedItem = self.getSelectedTreeItem()
         if ( self.deleteTreeWidgetFolderAndChildren(selectedItem, self.path) == False):
-            self.setInfoLabel("Folders deleted: %d  Items Deleted: %d  But errors occurred while deleting resources") % (self.foldersDeleted, self.itemsDeleted)
+            message = "Folders deleted: %d  Items Deleted: %d  But errors occurred while deleting resources" % (self.foldersDeleted, self.itemsDeleted)
+            self.setInfoLabel(message)
+            return
         else:
-            self.setInfoLabel("Folders deleted: %d  Items Deleted: %d  All delete operations executed successfully") % (self.foldersDeleted, self.itemsDeleted)
-        treeRoot = self.findChild(QTreeWidget, "treeWidget").invisibleRootItem()
-        if (selectedItem.parent() != treeRoot):
-            self.itemDoubleClicked(selectedItem.parent())
-            selectedItem.parent().setSelected(True)
-        elif (selectedItem.parent() == treeRoot):
-            self.on_pushButton_Connect_clicked()
+            treeRoot = self.treeWidget.invisibleRootItem()
+            if (selectedItem.parent() != treeRoot):
+                self.itemDoubleClicked(selectedItem.parent())
+                selectedItem.parent().setExpanded(True)
+            elif (selectedItem.parent() == treeRoot):
+                self.on_pushButton_Connect_clicked()
             
         
     """ DELETE HELPER FUNCTION """
@@ -163,43 +187,20 @@ class GuiMain(QDialog):
         myPath = pathInTree
         """ IF resource THEN delete """
         if (childItem != False and childItem.text(TYPE) == "Resource"):
-            if ( self.app.webdav.deleteResource(self.path, str(childItem.text(NAME))) == False ):
-                self.itemsDeleted += 1
+            itemLen = len( str(childItem.text(NAME)) )
+            itemLen -= 2*itemLen + 1
+            resourceParentPath = myPath[0: itemLen]
+            if ( self.app.webdav.deleteResource(resourceParentPath, str(childItem.text(NAME))) == False ):
+                return True
+            else:
                 return False
         """ IF collection THEN list resources """
         if (childItem != False and childItem.text(TYPE) == "Folder"):
-            childItems = []
-            childFolders = []
-            resources = self.app.webdav.listResources(myPath)
-            if (resources != False):
-                """ Get and store all child items and folders """
-                for childName in resources:
-                    itemType = resources[childName].getResourceType()
-                    if (itemType == "resource"):
-                        childItems.append(childName)
-                    elif (itemType == "collection"):
-                        childFolders.append(childName)
-                    else:
-                        return False
-                """ Go through child items and delete them """
-                for itemName in childItems:
-                    foundItem = self.getTreeItemByName(itemName, childItem)
-                    if (foundItem != None):
-                        if (self.deleteTreeWidgetFolderAndChildren(foundItem, None) == False):
-                            return False
-                    else:
-                        return False
-                """ Go through child folders, call this function recursively, finally delete folder """
-                for folderName in childFolders:
-                    foundFolder = self.getTreeItemByName(folderName, childItem)
-                    if (foundFolder != None):
-                        if ( self.deleteTreeWidgetFolderAndChildren(foundFolder, myPath + "/" + folderName) == False ):
-                            return False
-                        else:
-                            self.app.webdav.deleteFolder(myPath, foundFolder)
-                            self.foldersDeleted += 1
-                    else:
-                        return False
+            itemLen = len( str(childItem.text(NAME)) )
+            itemLen -= 2*itemLen + 1
+            myPath = myPath[0: itemLen]
+            if (self.app.webdav.deleteDirectory(myPath, str(childItem.text(NAME))) == True):
+                return True
             else:
                 return False
                 
@@ -216,11 +217,9 @@ class GuiMain(QDialog):
             if (results != False):
                 for childItemName in results:
                     itemType = results[childItemName].getResourceType()
-                    #dateModified = time.asctime(results[childItemName].getLastModified())
                     item = QTreeWidgetItem()
                     item.setText(NAME, childItemName)
                     item.setText(TYPE, itemType)
-                    #item.setText(MODIFIED, dateModified)
                     if (itemType == "resource"):
                         item.setText(TYPE, "Resource")
                         item.setIcon(0, QIcon(QPixmap("iconResource.png")))
@@ -241,11 +240,11 @@ class GuiMain(QDialog):
         if (sourceItem.text(TYPE) == "Resource"):
             enabled = False
             self.path = self.path[0:-1]
-            self.findChild(QPushButton, "pushButton_Download").setEnabled(True)
+            self.pushButton_Download.setEnabled(True)
         else:
-            self.findChild(QPushButton, "pushButton_Download").setEnabled(False)
-        self.findChild(QPushButton, "pushButton_Upload").setEnabled(enabled)
-        self.findChild(QPushButton, "pushButton_AddDirectory").setEnabled(enabled)
+            self.pushButton_Download.setEnabled(False)
+        self.pushButton_Upload.setEnabled(enabled)
+        self.pushButton_AddDirectory.setEnabled(enabled)
         self.setInfoLabel(None)
     
     def getTreeItemByName(self, itemName, parent):
@@ -258,13 +257,12 @@ class GuiMain(QDialog):
         return None
             
     def getSelectedTreeItem(self):
-        treeView = self.findChild(QTreeWidget, "treeWidget")
+        treeView = self.treeWidget
         selectedItems = treeView.selectedItems()
         if (selectedItems == []):
             self.setInfoLabel("Error: Select Item First")
             return False
         return selectedItems[0]
-        
     
     def removeChildren(self, parent):
         childCount = parent.childCount()
@@ -284,7 +282,7 @@ class GuiMain(QDialog):
         self.localTempPath += str(thisSourceItem.text(0)) + "/"
 
     def setInfoLabel(self, message):
-        label = self.findChild(QLabel, "label_Path")
+        label = self.label_Path
         if (message == None):
             label.setText("Current path: /"+self.path)
         else:
@@ -292,50 +290,29 @@ class GuiMain(QDialog):
 
     def connectionLost(self):
         self.setInfoLabel("Error: the server is down or not a webdav server")
-        self.findChild(QTreeWidget, "treeWidget").clear()
+        self.treeWidget.clear()
         self.setBottomContolButtonsEnabled(False)
         
     def setBottomContolButtonsEnabled(self, boolean):
-        self.findChild(QTreeWidget, "treeWidget").setEnabled(boolean)
-        self.findChild(QPushButton, "pushButton_Upload").setEnabled(boolean)
-        self.findChild(QPushButton, "pushButton_Download").setEnabled(boolean)
-        self.findChild(QPushButton, "pushButton_AddDirectory").setEnabled(boolean)
-        self.findChild(QPushButton, "pushButton_Delete").setEnabled(boolean)
+        self.treeWidget.setEnabled(boolean)
+        self.pushButton_Upload.setEnabled(boolean)
+        self.pushButton_Download.setEnabled(boolean)
+        self.pushButton_AddDirectory.setEnabled(boolean)
+        self.pushButton_Delete.setEnabled(boolean)
 
 class UserDefinesSettings(QDialog):
-    
-    identity = False
-    webdav = False
-    
-    def __init__(self, parent, message):
+        
+    def __init__(self, message):
+        self.host = None
+        self.authType = None
         self.identity = None
-        self.webdav = None
-        self.app = parent
         super(UserDefinesSettings, self).__init__()
         uic.loadUi("gui" + os.sep + "setupconnection_gui.ui", self)
-        self.show()
-        
-    @pyqtSlot()
-    def on_pushButton_Connect_clicked(self):
-        self.identity = str(self.findChild(QLineEdit, "lineEdit_ServerUrl").text())
-        self.webdav = str(self.findChild(QLineEdit, "lineEdit_User").text())
-        self.close()
-        
-    @pyqtSlot()
-    def on_pushButton_Close_clicked(self):
-        self.exec_()
-        
-    def askUserInput(self):
-        while self.identity == False and self.webdav == False:
-            self.identity, OK = QInputDialog.getText(None, "Identity", "Give identity url", QLineEdit.Normal, "http://")
-            if (OK and self.identity != ""):
-                self.webdav, OK = QInputDialog.getText(None, "Webdav", "Give webdavurl", QLineEdit.Normal, "http://")
-                if (OK and self.webdav  != ""):
-                    return self.identity, self.webdav
-                else:
-                    self.identity = False
-                    self.webdav = False
-            else:
-                self.identity = False
-        
-        
+        self.label_StatusInfo.setText(message)
+
+    def getUserInput(self):
+        self.hide()
+        self.host = str(self.lineEdit_ServerUrl.text())
+        self.authType = str(self.comboBox.itemText(self.comboBox.currentIndex()))
+        self.authIdentity = str(self.lineEdit_authIdentity.text())
+        return self.host, self.authType, self.authIdentity
