@@ -49,7 +49,7 @@ class MainFunction():
                     return False
 
 if __name__ == '__main__':
-	""" OpenID way """
+    """ OpenID way """
     #MainFunction("127.0.0.1:8002", "openid", "http://admino.com:8004/jonnenauha")
     """ OpenSim way """
-	MainFunction("127.0.0.1:8002", "normal", None, "Jonne", "Nauha")
+    MainFunction("127.0.0.1:8002", "normal", None, "Jonne", "Nauha")
