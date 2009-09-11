@@ -6,7 +6,7 @@ endmacro (FIND_TELEPATHY_FARSIGHT2)
 macro (INCLUDE_TELEPATHY_FARSIGHT2)
 	
     if (MSVC)
-	  include_directories (${NAALI_DEP_PATH}telepathy-farsight2/include)
+	  include_directories (${NAALI_DEP_PATH}/telepathy-farsight2/include)
 	  link_directories (${NAALI_DEP_PATH}/telepathy-farsight2/lib)
     else(NOT MSVC AND TELEPATHY_FARSIGHT2_FOUND)
 	  include_directories(${TELEPATHY_FARSIGHT2_INCLUDE_DIRS})
