@@ -40,7 +40,7 @@ include (TelepathyFarsight2)
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
 
 # Set common directory for installing non-system dependencies
-set (REX_DEP_PATH $ENV{REX_DEP_PATH})
+set (NAALI_DEP_PATH $ENV{NAALI_DEP_PATH})
 
 # Use Caelum, but not Hydrax for now.
 SET (CAELUM 1)
@@ -86,10 +86,10 @@ if (HYDRAX)
 endif (HYDRAX)
 
 # Default additional include & library directories
-include_directories (${REX_DEP_PATH}/include)
+include_directories (${NAALI_DEP_PATH}/include)
 
 # Library directories
-link_directories (${REX_DEP_PATH}/lib)
+link_directories (${NAALI_DEP_PATH}/lib)
 
 # Add all the subprojects in the rex viewer.
 # The following are the core modules that are 

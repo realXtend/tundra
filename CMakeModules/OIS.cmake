@@ -22,9 +22,9 @@ macro (FIND_OIS)
           /usr/local/include/OIS
           $ENV{HOME}/ois
           $ENV{HOME}/OIS
-          $ENV{REX_DEP_PATH}
-          $ENV{REX_DEP_PATH}/ois
-          $ENV{REX_DEP_PATH}/OIS)
+          $ENV{NAALI_DEP_PATH}
+          $ENV{NAALI_DEP_PATH}/ois
+          $ENV{NAALI_DEP_PATH}/OIS)
       
       set(OIS_PREFIX_PATH 
 	${OIS_HOME} $ENV{OIS_HOME} ${OIS_PREFIX_GUESSES})
@@ -55,8 +55,8 @@ endmacro (FIND_OIS)
 macro (INCLUDE_OIS)
 
   if (MSVC)
-    include_directories (${REX_DEP_PATH}/ois/includes)
-    link_directories (${REX_DEP_PATH}/ois/dll)
+    include_directories (${NAALI_DEP_PATH}/ois/includes)
+    link_directories (${NAALI_DEP_PATH}/ois/dll)
   else (MSVC)
     include_directories (${OIS_INCLUDE_DIRS})
     link_directories (${OIS_LIBDIR})

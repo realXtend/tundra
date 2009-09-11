@@ -12,7 +12,7 @@ findpkg_begin(XMLRPCEPI)
 # Construct search paths from enviromental hits and OS spesific guesses
 
 if (MSVC)
-  set(XMLRPCEPI_PREFIX_GUESSES $ENV{REX_DEP_PATH}/xmlrpc-epi
+  set(XMLRPCEPI_PREFIX_GUESSES $ENV{NAALI_DEP_PATH}/xmlrpc-epi
       C:/xmlrpc-epi
       $ENV{PROGRAMFILES}/xmlrpc-epi)
 elseif (UNIX)
@@ -23,8 +23,8 @@ elseif (UNIX)
       /usr/lib/xmlrpc-epi
       /usr/local/xmlrpc-epi
       $ENV{HOME}/xmlrpc-epi
-      $ENV{REX_DEP_PATH}
-      $ENV{REX_DEP_PATH}/xmlrpc-epi)
+      $ENV{NAALI_DEP_PATH}
+      $ENV{NAALI_DEP_PATH}/xmlrpc-epi)
 endif()
 
 set(XMLRPCEPI_PREFIX_PATH 
@@ -61,8 +61,8 @@ endmacro (FIND_XMLRPCEPI)
 
 macro (INCLUDE_XMLRPCEPI)
     if (MSVC)
-      set (XMLRPCEPI_INCLUDE_DIRS ${REX_DEP_PATH}/xmlrpc-epi/src)
-      set (XMLRPCEPI_LINK_DIRS ${REX_DEP_PATH}/xmlrpc-epi)
+      set (XMLRPCEPI_INCLUDE_DIRS ${NAALI_DEP_PATH}/xmlrpc-epi/src)
+      set (XMLRPCEPI_LINK_DIRS ${NAALI_DEP_PATH}/xmlrpc-epi)
       include_directories (${XMLRPCEPI_INCLUDE_DIRS})
       link_directories (${XMLRPCEPI_LINK_DIRS})
     else(NOT MSVC AND XMLRPC-EPI_FOUND)

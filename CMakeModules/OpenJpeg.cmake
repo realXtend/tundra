@@ -11,9 +11,9 @@ findpkg_begin(OPENJPG)
 # Construct search paths from enviromental hits and OS spesific guesses
 
 if (MSVC)
-  set(OPENJPG_PREFIX_GUESSES $ENV{REX_DEP_PATH}/OpenJpeg
+  set(OPENJPG_PREFIX_GUESSES $ENV{NAALI_DEP_PATH}/OpenJpeg
     C:/OpenJpeg
-    $ENV{PROGRAMFILES}/OpenJpeg C:/openjpeg $ENV{REX_DEP_PATH}/openjpeg)
+    $ENV{PROGRAMFILES}/OpenJpeg C:/openjpeg $ENV{NAALI_DEP_PATH}/openjpeg)
 elseif (UNIX)
   set(OPENJPEG_PREFIX_GUESSES 
       /opt/openjpeg
@@ -27,9 +27,9 @@ elseif (UNIX)
       /usr/local/OpenJpeg
       $ENV{HOME}/OpenJpeg
       $ENV{HOME}/openjpeg
-      $ENV{REX_DEP_PATH}
-      $ENV{REX_DEP_PATH}/openjpeg
-      $ENV{REX_DEP_PATH}/OpenJpeg)
+      $ENV{NAALI_DEP_PATH}
+      $ENV{NAALI_DEP_PATH}/openjpeg
+      $ENV{NAALI_DEP_PATH}/OpenJpeg)
 endif()
 
 set(OPENJPEG_PREFIX_PATH 
@@ -67,11 +67,11 @@ endmacro (FIND_OPENJPEG)
 
 macro (INCLUDE_OPENJPEG)
   if (MSVC)
-    include_directories (${REX_DEP_PATH}/OpenJpeg/include)
-    link_directories (${REX_DEP_PATH}/OpenJpeg/lib)
-    include_directories (${REX_DEP_PATH}/OpenJpeg/libopenjpeg/)
-    link_directories (${REX_DEP_PATH}/OpenJpeg/Debug)
-    link_directories (${REX_DEP_PATH}/OpenJpeg/Release)
+    include_directories (${NAALI_DEP_PATH}/OpenJpeg/include)
+    link_directories (${NAALI_DEP_PATH}/OpenJpeg/lib)
+    include_directories (${NAALI_DEP_PATH}/OpenJpeg/libopenjpeg/)
+    link_directories (${NAALI_DEP_PATH}/OpenJpeg/Debug)
+    link_directories (${NAALI_DEP_PATH}/OpenJpeg/Release)
   elseif (NOT MSVC AND OPENJPEG_FOUND)
     include_directories(${OPENJPEG_INCLUDE_DIRS})
     link_directories(${OPENJPEG_LIBRARY_DIRS})
