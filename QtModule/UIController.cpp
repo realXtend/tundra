@@ -9,13 +9,14 @@
 #include <QDebug>
 #include <cmath>
 #include <QKeyEvent>
-
+#include <QGraphicsItem>
+#include <QGraphicsWidget>
 #include "MemoryLeakCheck.h"
 
 namespace QtUI
 {
 
-UIController::UIController() : mouseDown_(false), arrange_(false), responseTimeLimit_(500), keyDown_(false), lastKeyEvent_(QKeyEvent(QEvent::KeyPress,0,Qt::NoModifier)), multipleKeyLimit_(150)
+UIController::UIController() : mouseDown_(false), arrange_(false), responseTimeLimit_(500), keyDown_(false), lastKeyEvent_(QKeyEvent(QEvent::KeyPress,0,Qt::NoModifier)), multipleKeyLimit_(150), keyboard_buffered_(false)
 {}
 
 UIController::~UIController()
@@ -30,8 +31,8 @@ void UIController::Update()
         keyTimer_ = QTime();
         keyTimer_.start();
     
-        for ( QList<QPair<Qt::Key, Qt::KeyboardModifiers> >::iterator iter = pressedKeys_.begin(); iter != pressedKeys_.end(); ++iter)
-            InjectKeyPressed((*iter).first,(*iter).second);
+        for ( QList<QPair<Qt::Key, QString> >::iterator iter = pressedKeys_.begin(); iter != pressedKeys_.end(); ++iter)
+            InjectKeyPressed((*iter).second, (*iter).first);
         
 
     }
@@ -98,7 +99,7 @@ void UIController::InjectMouseMove(int x, int y)
         QPoint p = canvases_[index]->MapToCanvas(x,y);
         QPointF pos = canvases_[index]->mapToScene(p);
         
-        //QPointF pos = canvases_[index]->mapToScene(point);
+     
         
         QPoint currentMousePos((int)pos.x(), (int)pos.y());
 
@@ -156,9 +157,10 @@ void UIController::InjectMouseMove(int x, int y)
 
 void UIController::InjectMousePress(int x, int y)
 {
-  
+    
     QPoint point(x,y);
-  
+    keyboard_buffered_ = false;
+
     int index = GetCanvas(point);
     
     if ( timer_.isNull() )
@@ -220,7 +222,24 @@ void UIController::InjectMousePress(int x, int y)
         mouseEvent.setAccepted(false);
         
         QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);
+        
+        // Here starts nice HACK idea is to check that did press event went to somekind textedit widget. 
+        // if it went we need to set OIS keyboard to buffered mode. 
 
+        QGraphicsItem* item = canvases_[index]->itemAt(mouseEvent.pos().toPoint());
+        if ( item != 0)
+        {
+            QGraphicsWidget* widget = item->topLevelWidget();
+            
+            if ( widget->hasCursor() )
+            {            
+                QCursor cursor = widget->cursor();
+                if ( cursor.shape() == Qt::IBeamCursor)
+                    keyboard_buffered_ = true;
+            }
+            
+        }
+    
         
     }
     lastPosition_ = point;
@@ -303,10 +322,11 @@ void UIController::InjectDoubleClick(int x, int y)
  
 }
 
-void UIController::InjectKeyPressed(Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
+void UIController::InjectKeyPressed(const QString& text, Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
 {
-    
-    QString text = " ";
+   // void UIController::InjectKeyPressed(Qt::Key keyCode, const Qt::KeyboardModifiers& modifier) 
+    //QString text = " ";
+    /*
     if ( keyCode != Qt::Key_Space )
     {
         QKeySequence sequence(keyCode);  
@@ -325,7 +345,8 @@ void UIController::InjectKeyPressed(Qt::Key keyCode, const Qt::KeyboardModifiers
         }
     
     }
-    
+    */
+   
     QKeyEvent keyEvent(QEvent::KeyPress, keyCode, modifier, text);
     keyEvent.setAccepted(false);
     
@@ -340,17 +361,20 @@ void UIController::InjectKeyPressed(Qt::Key keyCode, const Qt::KeyboardModifiers
          keyTimer_.start();
 
          // Add key into list (if it is unique).
-         if ( !pressedKeys_.contains(qMakePair(keyCode, modifier)))
-             pressedKeys_.append(qMakePair(keyCode, modifier));
+        
+         if ( !pressedKeys_.contains(qMakePair(keyCode, text)))
+              pressedKeys_.append(qMakePair(keyCode, text));
     }
 
 }
 
-
-void UIController::InjectKeyReleased(Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
+void UIController::InjectKeyReleased(const QString& text, Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
 {
-     
+ 
+    //void UIController::InjectKeyReleased(Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
+
     QKeySequence sequence(keyCode);  
+
     QKeyEvent keyEvent(QEvent::KeyRelease, keyCode, modifier, sequence.toString().toLower());
     keyEvent.setAccepted(false);
     
@@ -370,8 +394,8 @@ void UIController::InjectKeyReleased(Qt::Key keyCode, const Qt::KeyboardModifier
         if (pressedKeys_[i].first == keyCode)
             pressedKeys_.removeAt(i);
     }
-    //if ( pressedKeys_.contains(qMakePair(keyCode, modifier)))
-    //    pressedKeys_.removeAll(qMakePair(keyCode, modifier));
+    
+   
     
     keyDown_ = false;
 }
