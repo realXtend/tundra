@@ -16,10 +16,9 @@ CABLEBEACH_WEBDAV_HEADER = "CableBeach-WebDavInventory"
 
 class HTTPClient(object):
     
-    httpclient = None
-    identityQueryString= None
-    
     def __init__(self):
+        self.httpclient = None
+        self.identityQueryString = None
         pass
     
     def setupConnection(self, host, identityType, identity = None, firstName = None, lastName = None):
