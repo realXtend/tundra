@@ -44,29 +44,29 @@ namespace HttpUtilities
         method_ = method;
     }
     
-    void HttpRequest::SetRequestBody(const std::string& content_type, const std::vector<Core::u8>& body)
+    void HttpRequest::SetRequestData(const std::string& content_type, const std::vector<Core::u8>& data)
     {
-        request_body_ = body;
+        request_data_ = data;
         content_type_ = content_type;
     }
     
-    void HttpRequest::SetRequestBody(const std::string& content_type, const char* body)
+    void HttpRequest::SetRequestData(const std::string& content_type, const char* data)
     {
-        if (!body)
+        if (!data)
             return;
         
-        Core::uint size = strlen(body);
-        request_body_.resize(size);
-        memcpy(&request_body_[0], body, size);
+        Core::uint size = strlen(data);
+        request_data_.resize(size);
+        memcpy(&request_data_[0], data, size);
         
         content_type_ = content_type;
     }
     
-    void HttpRequest::SetRequestBody(const std::string& content_type, const std::string& body)
+    void HttpRequest::SetRequestData(const std::string& content_type, const std::string& data)
     {
-        Core::uint size = body.length();
-        request_body_.resize(size);
-        memcpy(&request_body_[0], body.c_str(), size);
+        Core::uint size = data.length();
+        request_data_.resize(size);
+        memcpy(&request_data_[0], data.c_str(), size);
         
         content_type_ = content_type;
     }
@@ -75,7 +75,7 @@ namespace HttpUtilities
     {
         status_ = 0;
         reason_ = std::string();
-        response_body_.clear();
+        response_data_.clear();
         
         try
         {
@@ -91,9 +91,9 @@ namespace HttpUtilities
             else
                 request.setURI(uri.getPathAndQuery());
             
-            if (request_body_.size())
+            if (request_data_.size())
             {
-                request.setContentLength(request_body_.size());
+                request.setContentLength(request_data_.size());
                 request.setContentType(content_type_);
             }
             
@@ -113,10 +113,10 @@ namespace HttpUtilities
             }
             
             std::ostream& request_stream = session.sendRequest(request);
-            if (request_body_.size())
+            if (request_data_.size())
             {
-                std::vector<Core::u8>::const_iterator i = request_body_.begin();
-                while (i != request_body_.end())
+                std::vector<Core::u8>::const_iterator i = request_data_.begin();
+                while (i != request_data_.end())
                 {
                     request_stream.put(*i);
                     ++i;
@@ -132,7 +132,7 @@ namespace HttpUtilities
             {
                 int c = response_stream.get();
                 if (response_stream.good())
-                    response_body_.push_back(c);
+                    response_data_.push_back(c);
             }
         }
         catch (Poco::Exception& e)
