@@ -118,6 +118,7 @@ namespace TextureDecoder
         result->original_width_ = 0;
         result->original_height_ = 0;
         result->components_ = 0;
+        result->tag_ = request->tag_;
 
         // Guard against OpenJpeg crash on illegal data at an early phase
         unsigned char *data = (unsigned char *)request->source_->GetData();

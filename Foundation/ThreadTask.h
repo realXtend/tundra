@@ -13,8 +13,13 @@ namespace Foundation
     class ThreadTaskRequest
     {
     public:
-        ThreadTaskRequest()  {}
+        ThreadTaskRequest() {}
         virtual ~ThreadTaskRequest() {}
+        
+        //! Request tag. Assigned when queuing the request & returned to caller.
+        /*! Note: assigned by a ThreadTaskManager, not by ThreadTask itself
+         */
+        Core::request_tag_t tag_;
     };
 
     typedef boost::shared_ptr<ThreadTaskRequest> ThreadTaskRequestPtr;
@@ -23,6 +28,10 @@ namespace Foundation
     class ThreadTaskResult : public EventDataInterface
     {
     public:
+        //! Request tag. Should be copied from the request to match the result to request
+        Core::request_tag_t tag_;
+        
+        //! Task description (which kind of task produced the result)
         std::string task_description_;
     };
     
@@ -57,9 +66,10 @@ namespace Foundation
         //! Adds a work request and starts the work thread if not running
         void AddRequest(ThreadTaskRequestPtr request);
         
+        //! Template version of adding a work request. Performs dynamic_pointer_cast from the type specified.
         template <class T> void AddRequest(boost::shared_ptr<T> request)
         {
-            AddRequest(boost::dynamic_pointer_cast<ThreadTaskRequest>(request));
+            return AddRequest(boost::dynamic_pointer_cast<ThreadTaskRequest>(request));
         }
         
         //! Gets final result from a completed (stopped) work thread.

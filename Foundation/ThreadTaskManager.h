@@ -38,22 +38,28 @@ namespace Foundation
          */
         void RemoveThreadTask(ThreadTaskPtr task);
         
+        //! Removes a ThreadTask by task description
+        /*! If many tasks with same description, removes the first one
+            \param task_description Task description to remove by
+         */
+         void RemoveThreadTask(const std::string& task_description);
+        
         //! Adds a request by task description
         /*! \param task_description Task description
             \param request Task request
-            \return true if a matching ThreadTask was found to perform request, false if not
+            \return a non-zero request tag if request could be fulfilled, zero if not
             Note: currently simply the first matching ThreadTask will be used; there is no load balancing
          */
-        bool AddRequest(const std::string& task_description, ThreadTaskRequestPtr request);
+        Core::request_tag_t AddRequest(const std::string& task_description, ThreadTaskRequestPtr request);
         
         //! Template version of adding request. Perfoms dynamic_pointer_cast to ThreadTaskRequest from specified class.
         /*! \param task_description Task description
             \param request Task request
-            \return true if a matching ThreadTask was found to perform request, false if not
+            \return a non-zero request tag if request could be fulfilled, zero if not
          */
-        template <class T> void AddRequest(const std::string& task_description, boost::shared_ptr<T> request)
+        template <class T> Core::request_tag_t AddRequest(const std::string& task_description, boost::shared_ptr<T> request)
         {
-            AddRequest(task_description, boost::dynamic_pointer_cast<ThreadTaskRequest>(request));
+            return AddRequest(task_description, boost::dynamic_pointer_cast<ThreadTaskRequest>(request));
         }
         
         //! Checks for results and sends them as events. Deletes finished ThreadTasks.

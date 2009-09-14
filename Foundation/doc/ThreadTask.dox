@@ -15,15 +15,15 @@
 
 	\section threadtaskrequest_TTS ThreadTaskRequest
 	
-	Foundation::ThreadTaskRequest is the means to communicate units of work to a worker thread. Think of it as function call parameters. By default the class
-	is empty: subclass and add the parameters you need. ThreadTaskRequests are relayed through shared pointers, so a new request should always be allocated from the heap
-	with new and wrapped inside a shared pointer.
+	Foundation::ThreadTaskRequest is the means to communicate units of work to a worker thread. Think of it as function call parameters. Subclass and add the parameters you need. 
+        ThreadTaskRequests are relayed through shared pointers, so a new request should always be allocated from the heap with new and wrapped inside a shared pointer.
 
 	\section threadtaskresult_TTS ThreadTaskResult
 	
 	Foundation::ThreadTaskResult is used by a worker thread to communicate results of work back to the application. It is subclassed from Foundation::EventDataInterface, 
-        so that task results can also be sent as events; there is an added field that stores the task description of the ThreadTask that produced the result. Subclass and 
-	add the parameters you need. Like ThreadTaskRequest, ThreadTaskResults are relayed through shared pointers, and have to be allocated from the heap.
+        so that task results can also be sent as events; there is an added field that stores the task description of the ThreadTask that produced the result, and also a request tag
+	field that can be used to match the result to a specific request. Subclass and add the parameters you need. Like ThreadTaskRequest, ThreadTaskResults are relayed through
+        shared pointers, and have to be allocated from the heap.
 
 	\section threadtaskmanager_TTS ThreadTaskManager
 	
@@ -88,6 +88,7 @@
 	    Core::uint secret_number = PerformCalculation(request->parameter1_, request->parameter2_); // Do something with the request parameters, just an example	    
 
 	    OwnThreadTaskResultPtr result(new OwnThreadTaskResult()); // Create result object
+	    result->tag_ = request->tag_; // Copy tag so that result can be matched to request
 	    result->return_value_ = secret_number;
 
 	    SetResult<OwnThreadTaskResult>(result); // Set final result & return from work function
@@ -102,7 +103,8 @@
 	unnecessary CPU time.
   
 	Because SetResult() allows only one result to be stored at a time, the results have to be queued somewhere. This is why in continuous mode it is necessary to register the 
-	task into a Foundation::ThreadTaskManager. In the example below, the framework's thread task manager is used, and events are used to check for the result.
+	task into a Foundation::ThreadTaskManager. In the example below, the framework's thread task manager is used, and events are used to check for the result. Note that 
+	the ThreadTaskManager assigns an unique request tag to each request and returns it.
 
 	Setup, adding to the ThreadTaskManager, and adding a request:
 
@@ -119,7 +121,7 @@
 
 	// Now there are two ways to add the request: either directly to the task as in the one-shot example
 	// or via the task manager, using the task description. Use the second method, as that's something new
-	manager->AddRequest("SecretNumberGenerator", request);
+	Core::request_tag_t tag = manager->AddRequest("SecretNumberGenerator", request);
 	
 	\endcode
 
@@ -161,6 +163,7 @@
 	            Core::uint secret_number = PerformCalculation(request->parameter1_, request->parameter2_); 
 
 	            OwnThreadTaskResultPtr result(new OwnThreadTaskResult());
+	            result->tag_ = request->tag_; // Copy tag so that result can be matched to request
 	            result->return_value_ = secret_number;
 
 	            QueueResult<OwnThreadTaskResult>(result); // Queue result to thread task manager
