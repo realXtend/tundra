@@ -50,8 +50,26 @@ namespace Foundation
         
         RootLogWarning("Can not remove thread task " + task->GetTaskDescription() + ", not found");
     }
+    
+    void ThreadTaskManager::RemoveThreadTask(const std::string& task_description)
+    {
+        std::vector<ThreadTaskPtr>::iterator i = tasks_.begin();
+        while (i != tasks_.end())
+        {
+            if ((*i)->GetTaskDescription() == task_description)
+            {
+                (*i)->Stop();
+                (*i)->SetThreadTaskManager(0);
+                tasks_.erase(i);
+                return;
+            }
+            ++i;
+        }
+        
+        RootLogWarning("Can not remove thread task " + task_description + ", not found");
+    }
 
-    bool ThreadTaskManager::AddRequest(const std::string& task_description, ThreadTaskRequestPtr request)
+    Core::request_tag_t ThreadTaskManager::AddRequest(const std::string& task_description, ThreadTaskRequestPtr request)
     {
         if (request)
         {
@@ -60,8 +78,10 @@ namespace Foundation
             {
                 if ((*i)->GetTaskDescription() == task_description)
                 {
+                    Core::request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
+                    request->tag_ = tag;
                     (*i)->AddRequest(request);
-                    return true;
+                    return tag;
                 }
                 ++i;
             }
@@ -73,7 +93,7 @@ namespace Foundation
             RootLogError("Null request passed to AddRequest");
         }
         
-        return false;
+        return 0;
     }
     
     void ThreadTaskManager::QueueResult(ThreadTaskResultPtr result)
