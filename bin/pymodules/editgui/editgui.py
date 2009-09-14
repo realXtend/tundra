@@ -38,7 +38,7 @@ class EditGUI(Component):
         loader = QUiLoader()
         self.canvas = r.createCanvas(EXTERNAL) #change to internal later, had some rendering problems?
         
-        file = QFile("pymodules/usr/editobject.ui")
+        file = QFile(self.UIFILE)
 
         widget = loader.load(file)
 
