@@ -44,11 +44,11 @@ XMLRPC_REQUEST XMLRPCConnection::Send(const char* data)
 {
     HttpUtilities::HttpRequest request;
     request.SetUrl(strUrl_);
-    request.SetRequestBody("text/xml", data);
+    request.SetRequestData("text/xml", data);
     request.SetMethod(HttpUtilities::HttpRequest::Post);
     request.Perform();
     
-    const std::vector<Core::u8> response_data = request.GetResponseBody();
+    const std::vector<Core::u8> response_data = request.GetResponseData();
     
     if (!request.GetSuccess())
         throw XMLRPCException(std::string("XMLRPCEPI exception in XMLRPCConnection::Send() " + request.GetReason()));

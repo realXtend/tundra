@@ -306,7 +306,7 @@ void OpenSimProtocolModule::RequestCapabilities(const std::string &seed)
     HttpUtilities::HttpRequest request;
     request.SetUrl(seed);
     request.SetMethod(HttpUtilities::HttpRequest::Post);
-    request.SetRequestBody("application/xml", msg.c_str());
+    request.SetRequestData("application/xml", msg.c_str());
     request.Perform();
     
     if (!request.GetSuccess())
@@ -315,7 +315,7 @@ void OpenSimProtocolModule::RequestCapabilities(const std::string &seed)
         return;
     }
 
-    std::vector<Core::u8> response = request.GetResponseBody();
+    std::vector<Core::u8> response = request.GetResponseData();
     if (response.size() == 0)
     {
         LogError("Size of the response data to \"SEED\" capabilities message was zero.");

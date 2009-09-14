@@ -21,21 +21,36 @@ namespace HttpUtilities
         ~HttpRequest();
         
         //! Sets url. If protocol not specified, http:// is used. If path is empty, / will be used.
+        /*! \param url Url
+         */
         void SetUrl(const std::string& url);
         
         //! Sets method. Default method is get
+        /*! \param method Method
+         */
         void SetMethod(Method method);
         
         //! Sets request data from a vector
-        void SetRequestBody(const std::string& content_type, const std::vector<Core::u8>& body);
+        /*! \param content_type Content type string
+            \param data Data
+         */
+        void SetRequestData(const std::string& content_type, const std::vector<Core::u8>& data);
         
         //! Sets request data from a string
-        void SetRequestBody(const std::string& content_type, const std::string& body);
+        /*! \param content_type Content type string
+            \param data Data
+         */
+        void SetRequestData(const std::string& content_type, const std::string& data);
         
         //! Sets request data from a C string. Null terminator is not included.
-        void SetRequestBody(const std::string& content_type, const char* body);
+        /*! \param content_type Content type string
+            \param data Data
+         */
+        void SetRequestData(const std::string& content_type, const char* data);
         
-        //! Sets timeout for request in seconds. Default is 5.
+        //! Sets timeout for request. Default is 5 seconds.
+        /*! \param seconds Timeout in seconds
+         */
         void SetTimeout(Core::Real seconds);
         
         //! Performs the request
@@ -48,7 +63,7 @@ namespace HttpUtilities
         Method GetMethod() const { return method_; }
         
         //! Returns request data
-        const std::vector<Core::u8>& GetRequestBody() const { return request_body_; }
+        const std::vector<Core::u8>& GetRequestData() const { return request_data_; }
         
         //! Returns timeout
         Core::Real GetTimeout() const { return timeout_; }
@@ -67,7 +82,7 @@ namespace HttpUtilities
         const std::string& GetReason() const { return reason_; }
         
         //! Returns reply data
-        const std::vector<Core::u8>& GetResponseBody() const { return response_body_; }
+        const std::vector<Core::u8>& GetResponseData() const { return response_data_; }
         
     private:
         //! Url
@@ -76,12 +91,12 @@ namespace HttpUtilities
         Method method_;
         //! Http connection timeout
         Core::Real timeout_;
-        //! Request data
-        std::vector<Core::u8> request_body_;
+        //! Request data to be send
+        std::vector<Core::u8> request_data_;
         //! Request data content type
         std::string content_type_;
         //! Reply data
-        std::vector<Core::u8> response_body_;
+        std::vector<Core::u8> response_data_;
         //! Reply status code
         int status_;
         //! Reply reason
