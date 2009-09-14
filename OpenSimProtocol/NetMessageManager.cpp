@@ -13,8 +13,6 @@
 #include "RexProtocolMsgIDs.h"
 #include "Profiler.h"
 
-#include "curl/curl.h"
-
 using namespace std;
 
 /* For reference, here's how an SLUDP packet frame looks like:
@@ -303,7 +301,6 @@ void NetMessageManager::Disconnect()
 {
     connection->Close();
     receivedSequenceNumbers.clear();
-	curl_global_cleanup();
 }
 
 NetOutMessage *NetMessageManager::StartNewMessage(NetMsgID id)

@@ -106,6 +106,7 @@ add_subdirectory (ReXLogic)
 add_subdirectory (SupportModules)
 add_subdirectory (AssetModule)
 add_subdirectory (QtModule)
+add_subdirectory (HttpUtilities)
 
 # The following are not really core modules,
 # but you can't do anything practical without
@@ -130,3 +131,4 @@ add_subdirectory (PythonModule)
 #add_subdirectory (OpenALAudioModule)
 add_subdirectory (RexCBLogin)
 #add_subdirectory (RexQtScriptModule)
+
