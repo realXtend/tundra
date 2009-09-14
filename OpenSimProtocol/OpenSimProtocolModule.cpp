@@ -6,7 +6,7 @@
 
 #include "Poco/Net/NetException.h"
 
-#include "curl/curl.h"
+#include "HttpRequest.h"
 
 namespace
 {
@@ -302,41 +302,20 @@ void OpenSimProtocolModule::RequestCapabilities(const std::string &seed)
         "<string>UntrustedSimulatorMessage</string>"
         "<string>ViewerStats</string>"
         "</array></llsd>";
-
-    std::vector<char> response;
-    curl_global_init(CURL_GLOBAL_ALL);
-    CURL *curl = curl_easy_init();
-    const unsigned int curlTimeout = 5;
-    char curlErrorBuffer[256];
-    CURLcode result;
-    curl_slist *headers = 0;
-
-    headers = curl_slist_append(headers, "Accept: */*");
-    headers = curl_slist_append(headers, "Accept-Encoding: deflate, gzip");    
-    headers = curl_slist_append(headers, "Content-Type: application/xml");    
-    headers = curl_slist_append(headers, "Expect: 100-continue");
-    headers = curl_slist_append(headers, "");
-
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-    curl_easy_setopt(curl, CURLOPT_URL, seed.c_str());
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, msg.c_str());
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, msg.size());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-    curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlErrorBuffer);
-    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, curlTimeout);
-
-    result = curl_easy_perform(curl);
-
-    curl_slist_free_all(headers);
-    curl_easy_cleanup(curl);
-
-    if (result != CURLE_OK)
+    
+    HttpUtilities::HttpRequest request;
+    request.SetUrl(seed);
+    request.SetMethod(HttpUtilities::HttpRequest::Post);
+    request.SetRequestBody("application/xml", msg.c_str());
+    request.Perform();
+    
+    if (!request.GetSuccess())
     {
-        LogError(std::string(curlErrorBuffer));
+        LogError(request.GetReason());
         return;
     }
 
+    std::vector<Core::u8> response = request.GetResponseBody();
     if (response.size() == 0)
     {
         LogError("Size of the response data to \"SEED\" capabilities message was zero.");
@@ -344,7 +323,8 @@ void OpenSimProtocolModule::RequestCapabilities(const std::string &seed)
     }
 
     response.push_back('\0');
-    std::string response_str = &response[0];
+    std::string response_str = (char *)&response[0];
+    
     ExtractCapabilitiesFromXml(response_str);
 }
 

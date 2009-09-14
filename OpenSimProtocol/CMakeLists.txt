@@ -15,6 +15,7 @@ include_directories (
 	../Foundation
 	../Interfaces
 	../NetTestLogicModule
+	../HttpUtilities
 )
 
 # Disable warning
@@ -26,7 +27,6 @@ endif (MSVC)
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
-INCLUDE_CURL()
 INCLUDE_XMLRPCEPI()
 
 add_definitions (-DOSPROTO_MODULE_EXPORTS -DMODULE_EXPORTS)
@@ -48,11 +48,10 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation RexCommon Interfaces Core)
+target_link_libraries (${TARGET_NAME} Foundation RexCommon Interfaces Core HttpUtilities)
 
 # External library linkage (needs target defined)
 LINK_POCO()
-LINK_CURL()
 LINK_XMLRPCEPI()
 
 # Copy XML files from source directory to target directory

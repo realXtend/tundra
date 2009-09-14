@@ -21,6 +21,7 @@ include_directories (
     ../InputModuleOIS
     ../QtModule
     ../RexCBLogin
+    ../HttpUtilities
 )
 
 # External library includes
@@ -45,7 +46,6 @@ endif (NOT MSVC)
 
 add_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
 
-
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
@@ -64,7 +64,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation Interfaces OpenSimProtocolModule RexCommon OgreRenderingModule QtModule RexCBLogin)
+target_link_libraries (${TARGET_NAME} Foundation Interfaces OpenSimProtocolModule RexCommon OgreRenderingModule QtModule RexCBLogin HttpUtilities)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
