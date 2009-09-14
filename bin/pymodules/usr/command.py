@@ -319,3 +319,33 @@ if 0:
     #index = box.treeWidget.currentIndex()
     #print box.treeWidget.activated(index), index
     #print dir(box.treeWidget)
+
+if 0:
+    box = r.c
+    print box#, dir(box)
+    
+if 0: #QtUI::UICanvas::External ?! not here...
+    from PythonQt.QtUiTools import QUiLoader
+    from PythonQt.QtCore import QFile, QIODevice
+    #print dir(quil)  
+    #print dir(PythonQt.QtCore.QIODevice)
+    loader = QUiLoader()
+    canvas = r.createCanvas(0)
+    
+    file = QFile("pymodules/usr/editobject.ui")
+    iodev = QIODevice(file)
+
+    widget = loader.load(file)
+    canvas.AddWidget(widget)
+    canvas.Show()
+    
+    
+"""
+['__dict__', '__doc__', '__init__', '__module__', '__weakref__', 'addPluginPath', 'availableWidgets', 'blockSignals', 'c
+hildEvent', 'children', 'className', 'clearPluginPaths', 'connect', 'createAction', 'createActionGroup', 'createLayout',
+ 'createWidget', 'customEvent', 'deleteLater', 'destroyed', 'disconnect', 'dumpObjectInfo', 'dumpObjectTree', 'dynamicPr
+opertyNames', 'emit', 'event', 'eventFilter', 'findChild', 'findChildren', 'help', 'inherits', 'installEventFilter', 'is
+ScriptingEnabled', 'isWidgetType', 'killTimer', 'load', 'moveToThread', 'parent', 'pluginPaths', 'property', 'removeEven
+tFilter', 'setObjectName', 'setParent', 'setProperty', 'setScriptingEnabled', 'setWorkingDirectory', 'signalsBlocked', '
+startTimer', 'thread', 'timerEvent', 'toString', 'tr', 'workingDirectory']
+"""

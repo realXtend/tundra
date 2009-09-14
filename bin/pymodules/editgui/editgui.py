@@ -21,20 +21,30 @@ TODO (most work is in api additions on the c++ side, then simple usage here):
 import rexviewer as r
 import PythonQt
 from PythonQt.QtGui import QTreeWidgetItem
+from PythonQt.QtUiTools import QUiLoader
+from PythonQt.QtCore import QFile
 from circuits import Component
+
+INTERNAL = 1
+EXTERNAL = 0
 
 class EditGUI(Component):
     EVENTHANDLED = False
+    UIFILE = "pymodules/editgui/editobject.ui"
     
     def __init__(self):
         Component.__init__(self)
-        canvas = r.createCanvas()
-        #now test code does hardcoded test loadui itself
-        widget = canvas
-        #widget = loadui("dialog.ui");
-        #canvas.addWidget(widget)
         
-        self.widget = widget
+        loader = QUiLoader()
+        self.canvas = r.createCanvas(EXTERNAL) #change to internal later, had some rendering problems?
+        
+        file = QFile("pymodules/usr/editobject.ui")
+
+        widget = loader.load(file)
+
+        self.canvas.AddWidget(widget)
+        self.canvas.Show()
+
         #for some reason setRange is not there. is not not a slot of these?
         #"QDoubleSpinBox has no attribute named 'setRange'"
         #apparently they are properties .minimum and .maximum, made in the xml now
@@ -54,7 +64,9 @@ class EditGUI(Component):
         self.sel = None
         
         self.left_button_down = False
+        self.widget = widget
         self.widget.label.text = "<none>"
+
         r.c = self.widget
         self.widget.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
         

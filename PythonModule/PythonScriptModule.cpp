@@ -873,25 +873,37 @@ PyObject* CreateCanvas(PyObject *self, PyObject *args)
 		return NULL;
 	}
 
+	int imode;
+
+	if(!PyArg_ParseTuple(args, "i", &imode))
+	{
+		PyErr_SetString(PyExc_ValueError, "Getting the mode failed, need 0 / 1");
+        return NULL;   
+	}
+	
+
 	boost::shared_ptr<QtUI::QtModule> qt_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
 	boost::shared_ptr<QtUI::UICanvas> canvas_;
     
 	if ( qt_module.get() == 0)
 	    return NULL;
+	
+	QtUI::UICanvas::Mode rMode = (QtUI::UICanvas::Mode) imode;
+	canvas_ = qt_module->CreateCanvas(rMode).lock();
 
-	canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::External).lock();
-
-	//QtUI::UICanvas* qcanvas = canvas_.get();
+	QtUI::UICanvas* qcanvas = canvas_.get();
 		
 	//these can be done on the py side too, so decoupled from this:
-	QWidget *widget;
+	//QWidget *widget;
 	QUiLoader loader;
-	QFile file("pymodules/editgui/editobject.ui");
-	widget = loader.load(&file); 
-	canvas_->AddWidget(widget);
-	canvas_->Show();
+	//QFile file("pymodules/editgui/editobject.ui");
+	//widget = loader.load(&file); 
+	
+	//canvas_->AddWidget(widget);
+	//canvas_->Show();
 
-	return PythonQt::self()->wrapQObject(widget); //box); //qcanvas
+	//return PythonQt::self()->wrapQObject(widget); //box); //qcanvas
+	return PythonQt::self()->wrapQObject(qcanvas);
 }
 
 
