@@ -3,6 +3,8 @@ used for quick testing of py commands."""
 
 import rexviewer as r
 
+from webdavinventory.main import MainFunction
+
 print "--- *** ---"
 
 #print dir(r)
@@ -30,6 +32,17 @@ def move(e):
     newpos = (p[0] - 1, p[1], p[2])
     print "Moving to move to pos:", newpos
     e.pos = newpos
+
+if 0:
+    """ WEBDAV INVENTORY FROM CABLE BEACH, for it you need to have:
+        1. Cablebeach world and inventoryserver up and running
+        2a. OpenID account (pref. realxtend one or possibly 3rd party havent tested yet)
+        2b. OpenSim account to the sim you are connecting to (note this needs also either OpenSim running or OpenSim has been run in order to store user to opensim.users db that CB world server will check for credentials)
+        3. Login to cablebeach with OpenID via browser http:ip:8002/login
+        4. Change below your ip, mode to normal if OpenSim login, openid if openid, identity if opensim = "Firstname Lastname" openid = "http:identityurl.com"
+        5. Start Viewer and hit '.' in the ogre main window. Be sure to change if 0: to if 1: of this sample """	
+    #main = MainFunction("127.0.0.1:8002", "normal", None, "Jonne", "Nauha")
+    #main = MainFunction("127.0.0.1:8002", "openid", "http://admino.com:8004/jonnenauha")
 
 if 0:
     print "Testing taking a screenshot..."
@@ -136,7 +149,7 @@ if 0: #placeable and text tests
     print e.text, e.pos, e.scale, e.orientation
     
 if 0: #send chat
-    r.sendChat("here we go.")
+    r.sendChat("hello from new realXtend Naali!")
     #print "called sendchat ok"
     
 if 0: #print test
