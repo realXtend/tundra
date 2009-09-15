@@ -29,6 +29,8 @@ namespace HttpUtilities
         //! Data to be sent in the request
         std::vector<Core::u8> data_;
     };
+    
+    typedef boost::shared_ptr<HttpTaskRequest> HttpTaskRequestPtr;
 
     //! Data structure for http task results
     class HttpTaskResult : public Foundation::ThreadTaskResult
@@ -41,6 +43,8 @@ namespace HttpUtilities
         //! Response data
         std::vector<Core::u8> data_;
     };
+
+    typedef boost::shared_ptr<HttpTaskResult> HttpTaskResultPtr;
 
     // Performs threaded http request(s)
     class HttpTask : public Foundation::ThreadTask
@@ -70,6 +74,8 @@ namespace HttpUtilities
         //! Continuous mode flag
         bool continuous_;
     };
+    
+    typedef boost::shared_ptr<HttpTask> HttpTaskPtr;
 }
 
 #endif // incl_HttpUtilities_HttpTask_h__
