@@ -8,8 +8,9 @@ import gui
 
 from connection import WebDavClient
 from connection import HTTPClient
+from circuits import Component
 
-class MainFunction():
+class MainFunction(object):
 
     def __init__(self, host, identityType, identity = None, firstName = None, lastName = None):
         self.httpclient = None
@@ -27,9 +28,6 @@ class MainFunction():
         """ START HTTP/WEBDAV CLIENTS """
         connectSuccess = self.connectClients()
         self.app = gui.Application(self.webdavclient, self.httpclient, connectSuccess)
-        if connectSuccess == False:
-            self.identity = self.app.myIdentity
-            self.host = self.app.myWebDav
 
     def connectClients(self):
         self.httpclient = HTTPClient()

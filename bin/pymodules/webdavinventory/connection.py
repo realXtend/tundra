@@ -9,7 +9,6 @@ import httplib
 from httplib import HTTPConnection, HTTPException
 from webdav import WebdavClient
 from webdav.Connection import WebdavError, AuthorizationError
-from PyQt4.QtGui import QInputDialog, QLineEdit
 
 CABLEBEACH_IDENTITY_HEADER = "CableBeach-Identity"
 CABLEBEACH_WEBDAV_HEADER = "CableBeach-WebDavInventory"
@@ -19,7 +18,9 @@ class HTTPClient(object):
     def __init__(self):
         self.httpclient = None
         self.identityQueryString = None
-        pass
+        self.storedHost = None
+        self.storedIdentityType = None
+        self.storedIdentity = None
     
     def setupConnection(self, host, identityType, identity = None, firstName = None, lastName = None):
         strict = None
@@ -27,17 +28,22 @@ class HTTPClient(object):
         timeout = 10
         if (self.createRequestURL(identityType, identity, firstName, lastName) == False):
             return False
-        """ host = 'www.example.com:port' NO http:// or / at end """
         self.httpclient = HTTPConnection(host, port, strict, timeout)
+        self.storedHost = host
     
     def createRequestURL(self, identityType, identity, firstName, lastName):
         self.identityQueryString = "/services/webdav?type=" + identityType + "&"
         if (identityType == "openid" and identity != None):
             self.identityQueryString += "identity=" + identity
+            self.storedIdentityType = 0
+            self.storedIdentity = identity
         elif (identityType == "normal" and firstName != None and lastName != None):
             self.identityQueryString += "firstname=" + firstName + "&lastname=" + lastName
+            self.storedIdentityType = 1
+            self.storedIdentity = firstName + " " + lastName
         else:
             return False
+        
         
     def requestIdentityAndWebDavURL(self):
         identityurl = None
@@ -83,7 +89,7 @@ class WebDavClient(object):
         except WebdavError:
             raise HTTPException
             
-    def determineAuthentication(self):
+    def determineAuthentication(self):       
         authFailures = 0
         while authFailures < 2:
             try:
@@ -91,11 +97,11 @@ class WebDavClient(object):
             except AuthorizationError as e:                           
                 if e.authType == "Basic":
                     #self.password = QInputDialog.getText(None, "WebDav Inventory Password", "WebDav Inventory is asking for Basic authentication\n\nPlease give your password:", QLineEdit.Normal, "")
-                    self.password = ""
+                    self.password = "" # CableBeach server does not check passwords yet
                     self.resource.connection.addBasicAuthorization(self.user, str(self.password))
                 elif e.authType == "Digest":
                     #self.password = QInputDialog.getText(None, "WebDav Inventory Password", "WebDav Inventory is asking for Digest authentication\n\nPlease give your password:", QLineEdit.Normal, "")
-                    self.password = ""
+                    self.password = "" # CableBeach server does not check passwords yet
                     info = WebdavClient.parseDigestAuthInfo(e.authInfo)
                     self.resource.connection.addDigestAuthorization(self.user, self.password, realm=info["realm"], qop=info["qop"], nonce=info["nonce"])
                 else:
@@ -141,16 +147,18 @@ class WebDavClient(object):
             return False
         
     def uploadFile(self, filePath, collectionWebDavPath, resourceWebDavName):
+        dataFile = None
         try:
-            dataFile= open(filePath, 'rb')
+            dataFile = open(filePath, 'rb')
         except IOError:
             return False
         if ( self.setCollectionStorerToPath(collectionWebDavPath) ):
-            try:     
+            try:
                 self.resource.addResource(resourceWebDavName, dataFile.read())
                 dataFile.close()
                 return True
             except WebdavError, IOError:
+                dataFile.close()
                 return False
         else:
             return False
