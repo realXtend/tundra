@@ -73,7 +73,7 @@ UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
  {
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     QSize size = this->size();
-    
+   
     CreateOgreResources(size.width(), size.height());
     QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(Dirty()));
  }
@@ -252,11 +252,14 @@ void UICanvas::SetRenderWindowSize(const QSize& size)
 {
     
     renderWindowSize_ = size;
-    Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
-    float relWidth = (float)texture->getWidth()/double(renderWindowSize_.width());
-    float relHeight = (float)texture->getHeight()/double(renderWindowSize_.height());
-    container_->setDimensions(relWidth, relHeight);
-    dirty_ = true;
+    if ( mode_ != External)
+    {
+        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
+        float relWidth = (float)texture->getWidth()/double(renderWindowSize_.width());
+        float relHeight = (float)texture->getHeight()/double(renderWindowSize_.height());
+        container_->setDimensions(relWidth, relHeight);
+        dirty_ = true;
+    }
 }
 
 void UICanvas::ResizeOgreTexture(int width, int height)
