@@ -134,7 +134,7 @@ namespace QtUI
         /**
          * Sets new Render-window size. 
          */
-        void SetRenderWindowSize(const QSize& size) { renderWindowSize_ = size; dirty_ = true;}
+        void SetRenderWindowSize(const QSize& size); 
 
         /**
          * Shows widget
@@ -197,7 +197,7 @@ namespace QtUI
         QString id_;
         int widgets_;
         bool locked_;
-
+      
         QList<QGraphicsProxyWidget* > scene_widgets_;
 
     };
