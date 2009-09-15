@@ -294,22 +294,36 @@ if 0:
     box.addWidget(check)
     group.show()
 
+if 0:
+    box = r.c.widget
+    def funk(item):
+        print "got index...", item
+        box.treeWidget.currentItem().setText(0, "doooood")
+    r.c.widget.treeWidget.disconnect('activated(QModelIndex)', r.c.itemActivated)
+    r.c.itemActivated = funk
+    r.c.widget.treeWidget.connect('activated(QModelIndex)', funk)
+    print type(r.c)
 
+if 0:
+    box = r.c.widget.treeWidget
+    box.clear()
+    
 if 0:
     from PythonQt.QtGui import *
     from PythonQt.QtCore import QPoint
-    box = r.c
+    box = r.c.widget
     box.label.text = "hmm"
 
-    #~ children = []
-    #~ children.append(QTreeWidgetItem(box.treeWidget))
-    #~ children.append(QTreeWidgetItem(box.treeWidget))
-    #~ children.append(QTreeWidgetItem(box.treeWidget))
-    #~ children.append(QTreeWidgetItem(box.treeWidget))
-    #~ print len(children)
-    def test(item, idx):
-        print "worked...", item, idx
-    box.treeWidget.connect('activated(QModelIndex)', test)
+    children = []
+    children.append(QTreeWidgetItem(box.treeWidget))
+    children[0].setText(0, "swoot")
+    children.append(QTreeWidgetItem(box.treeWidget))
+    children.append(QTreeWidgetItem(box.treeWidget))
+    children.append(QTreeWidgetItem(box.treeWidget))
+    print len(children)
+    #~ def test(item, idx):
+        #~ print "worked...", item, idx
+    #~ box.treeWidget.connect('itemActivated(QTreeWidgetItem)', test)
     #box.treeWidget.connect('itemActivated', test)
     #box.treeWidget.itemClicked.connect(box.treeWidget.itemClickedSetSelected)
     
@@ -321,9 +335,13 @@ if 0:
     #print dir(box.treeWidget)
 
 if 0:
-    box = r.c
-    print box#, dir(box)
-    
+    box = r.c.widget
+    #print box, dir(box.treeWidget)
+    text = box.treeWidget.currentItem().text(0)
+    print text
+    print type(text), r.c.widgetList
+    print r.c.widgetList[720010]
+
 if 0: #QtUI::UICanvas::External ?! not here...
     from PythonQt.QtUiTools import QUiLoader
     from PythonQt.QtCore import QFile, QIODevice

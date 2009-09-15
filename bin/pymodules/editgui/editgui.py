@@ -34,7 +34,6 @@ class EditGUI(Component):
     
     def __init__(self):
         Component.__init__(self)
-        
         loader = QUiLoader()
         self.canvas = r.createCanvas(EXTERNAL) #change to internal later, had some rendering problems?
         
@@ -67,10 +66,12 @@ class EditGUI(Component):
         self.widget = widget
         self.widget.label.text = "<none>"
 
-        r.c = self.widget
+        r.c = self
         self.widget.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
         
         self.widgetList = {}
+        print type(self.canvas)
+        print type(self.widget)
         
     #~ def changed_x(self, v):
         #~ print "x changed to: %f" % v
@@ -94,15 +95,22 @@ class EditGUI(Component):
             #print "=>", ent.pos
     
     def itemActivated(self, item):
-        print "Got the following item index...", item #we has index, now what? WIP
-        
+        #print "Got the following item index...", item, dir(item), item.data, dir(item.data) #we has index, now what? WIP
+        current = self.widget.treeWidget.currentItem()
+        text = current.text(0)
+        print "Selected:", text
+        if self.widgetList.has_key(text):
+            self.select(self.widgetList[text][0])
+    
     def select(self, ent):
         self.sel = ent
         
         if not self.widgetList.has_key(self.sel.id):
             tWid = QTreeWidgetItem(self.widget.treeWidget)
-            tWid.setText(0, self.sel.id)
-            self.widgetList[self.sel.id] = tWid
+            id = self.sel.id
+            tWid.setText(0, id)
+            
+            self.widgetList[str(id)] = (ent, tWid)
         
         print "Selected entity:", self.sel.id, "at", self.sel.pos#, self.sel.name
         
