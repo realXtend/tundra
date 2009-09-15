@@ -52,20 +52,22 @@ external libraries
     You can do this in two ways:
 	
 	1. BINARIES
-	
-       ->  Website: http://dev.realxtend.org/svn/viewerdeps
-       ->  Direct link: http://dev.realxtend.org/gf/download/frsrelease/102/19/Dependencies_VS2008.zip
-       1.  Extract the "bin" and "external_libs" from the .zip file to your <project_folder>/trunk folder.
-       2.  Windows will probably prompt that you are extracting a "bin" folder that already exist. Just allow windows to continue the operation.
-       3.  Set a new Windows System Variable named "NAALI_DEP_PATH" and set it to the "<project_folder>/trunk/external_libs" folder.
-           Help to do this 
+
+       -> Website: http://dev.realxtend.org/gf/project/viewerdeps/scmsvn/?action=browse&path=%2Fbin%2Fwindows%2F
+       -> SVN checkout: http://dev.realxtend.org/svn/viewerdeps/bin/windows
+       1. Copy the bin directory from <dep_checkout_folder> to your viewer <project_folder>/trunk folder.
+       2. Windows will probably prompt that you are copying to a "bin" folder that already exists. Just allow windows to continue the operation.
+       3. Set a new Windows System Variable named "NAALI_DEP_PATH" and set it to <dep_checkout_folder>
+           Help to do this
            - Windows XP: http://support.microsoft.com/kb/310519 
            - Vista: Right Click "My Computer" on your desktop -> Properties -> Left side "Advanced system settings" -> "Enviroment Variables..."
-		   
+       4. Qt is not included in the svn due to its size. See the file build_qt_windows.txt for options.
+
+
     2. SOURCE
 	
        -> Website: http://dev.realxtend.org/gf/project/viewerdeps/scmsvn/
-	   -> SVN checkout: http://dev.realxtend.org/svn/viewerdeps
-	   
+	   -> SVN checkout: http://dev.realxtend.org/svn/viewerdeps/trunk
+
 	   NOTE: If you use the source method you will have to install boost and poco separately. URLs for this are on top of this document.
 
