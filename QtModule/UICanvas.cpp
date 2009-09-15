@@ -17,7 +17,7 @@
 #include <QUuid>
 #include <QWidget>
 #include <QGraphicsProxyWidget>
-
+#include <QDebug>
 #include <Ogre.h>
 
 #include <OgreHardwarePixelBuffer.h>
@@ -42,10 +42,12 @@ UICanvas::UICanvas(): overlay_(0),
                       id_(QUuid::createUuid().toString()),
                       widgets_(0),
                       locked_(false)
+                      
 {
    
     setScene(new QGraphicsScene);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+   
     QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(Dirty()));
 }
 
@@ -57,6 +59,7 @@ UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
                                id_(QUuid::createUuid().toString()),
                                widgets_(0),
                                locked_(false)
+                          
 {
  setScene(new QGraphicsScene);
  
@@ -70,6 +73,7 @@ UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
  {
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     QSize size = this->size();
+    
     CreateOgreResources(size.width(), size.height());
     QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(Dirty()));
  }
@@ -226,7 +230,7 @@ QPointF UICanvas::GetPosition() const
 
 void UICanvas::SetCanvasSize(int width, int height)
 {
-    move(0, 0);
+    //move(0, 0);
     resize(width, height);
     
     if ( mode_ != External)
@@ -242,6 +246,17 @@ void UICanvas::SetCanvasSize(int width, int height)
     // Repaint canvas. 
     dirty_ = true;
     RenderSceneToOgreSurface();
+}
+
+void UICanvas::SetRenderWindowSize(const QSize& size)
+{
+    
+    renderWindowSize_ = size;
+    Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
+    float relWidth = (float)texture->getWidth()/double(renderWindowSize_.width());
+    float relHeight = (float)texture->getHeight()/double(renderWindowSize_.height());
+    container_->setDimensions(relWidth, relHeight);
+    dirty_ = true;
 }
 
 void UICanvas::ResizeOgreTexture(int width, int height)

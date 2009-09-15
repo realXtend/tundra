@@ -98,9 +98,7 @@ void UIController::InjectMouseMove(int x, int y)
         // Location of mouse event in scene.
         QPoint p = canvases_[index]->MapToCanvas(x,y);
         QPointF pos = canvases_[index]->mapToScene(p);
-        
-     
-        
+          
         QPoint currentMousePos((int)pos.x(), (int)pos.y());
 
         QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
@@ -193,7 +191,8 @@ void UIController::InjectMousePress(int x, int y)
         timer_.start();
     }
     
-    
+    mouseDown_ = true;
+
     if (index != -1)
     {
     
@@ -204,7 +203,7 @@ void UIController::InjectMousePress(int x, int y)
         QPoint currentMousePos((int)pos.x(), (int)pos.y());
 
         // For future use save press state. 
-        mouseDown_ = true;
+      
         mousePress_ = point;
 
         QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMousePress);
@@ -223,7 +222,7 @@ void UIController::InjectMousePress(int x, int y)
         
         QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);
         
-        // Here starts nice HACK idea is to check that did press event went to somekind textedit widget. 
+        // Here starts nice HACK: Idea is to check that did press event went to somekind textedit widget. 
         // if it went we need to set OIS keyboard to buffered mode. 
 
         QGraphicsItem* item = canvases_[index]->itemAt(mouseEvent.pos().toPoint());
@@ -324,28 +323,7 @@ void UIController::InjectDoubleClick(int x, int y)
 
 void UIController::InjectKeyPressed(const QString& text, Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
 {
-   // void UIController::InjectKeyPressed(Qt::Key keyCode, const Qt::KeyboardModifiers& modifier) 
-    //QString text = " ";
-    /*
-    if ( keyCode != Qt::Key_Space )
-    {
-        QKeySequence sequence(keyCode);  
-        text = sequence.toString();
-        text = text.toLower(); 
-
-        switch ( modifier )
-        {     
-            case Qt::ShiftModifier:
-            {
-                text = text.toUpper();
-                break;
-            }
-            default:
-                break;
-        }
-    
-    }
-    */
+   
    
     QKeyEvent keyEvent(QEvent::KeyPress, keyCode, modifier, text);
     keyEvent.setAccepted(false);
@@ -371,8 +349,6 @@ void UIController::InjectKeyPressed(const QString& text, Qt::Key keyCode, const 
 void UIController::InjectKeyReleased(const QString& text, Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
 {
  
-    //void UIController::InjectKeyReleased(Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
-
     QKeySequence sequence(keyCode);  
 
     QKeyEvent keyEvent(QEvent::KeyRelease, keyCode, modifier, sequence.toString().toLower());
