@@ -4,10 +4,357 @@
 
 #include "CommunicationManager.h"
 
+// Test Telepathy-Farsight
+#include <glib.h>
+#include <gst/gst.h>
+#include <gst/farsight/fs-conference-iface.h>
+
+#include <boost/thread/thread.hpp>
+#include <gst/farsight/fs-transmitter.h>
+//#include <gst/farsight/fs-session.h>
+//#include <gst/farsight/fs-plugin.h>
+
 namespace Communication
 {
 	// static
 	CommunicationManager* CommunicationManager::instance_ = NULL;
+
+
+	void DBusDaemonThread::operator()()
+	{
+		char* command = "startdbus.bat";
+		int ret = system(command);
+	}
+
+	void DBusDaemonThread::Stop()
+	{
+
+	}
+
+
+
+	typedef struct _TestSession
+	{
+		FsSession *session;
+		FsStream *stream;
+	} TestSession;
+
+//#define DEFAULT_AUDIOSRC       "alsasrc"
+#define DEFAULT_AUDIOSRC       "dshowaudiosrc" // For windows
+#define DEFAULT_AUDIOSINK      "audioconvert ! audioresample ! audioconvert ! alsasink"
+
+	static void src_pad_added_cb (FsStream *stream, GstPad *pad, FsCodec *codec, gpointer user_data)
+	{
+
+		// TEST
+//		GstElement* alsasrc = gst_element_factory_make("alsasrc")
+
+
+		GstElement *pipeline = GST_ELEMENT_CAST (user_data);
+		GstElement *sink = NULL;
+		GError *error = NULL;
+		GstPad *pad2;
+
+		//g_print ("Adding receive pipeline\n");
+
+		if (g_getenv ("AUDIOSINK"))
+			sink = gst_parse_bin_from_description (g_getenv ("AUDIOSINK"), TRUE, &error);
+		else
+			sink = gst_parse_bin_from_description (DEFAULT_AUDIOSINK, TRUE, &error);
+		//print_error (error);
+		g_assert (sink);
+
+		g_assert (gst_bin_add (GST_BIN (pipeline), sink));
+
+
+		pad2 = gst_element_get_static_pad (sink, "sink");
+		g_assert (pad2);
+
+		g_assert (GST_PAD_LINK_SUCCESSFUL (gst_pad_link (pad, pad2)));
+
+		g_assert (gst_element_set_state (sink, GST_STATE_PLAYING) !=
+		GST_STATE_CHANGE_FAILURE);
+
+		gst_object_unref (pad2);
+	}
+
+	static gboolean async_bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
+	{
+		switch (GST_MESSAGE_TYPE(message))
+		{
+		case GST_MESSAGE_ERROR:
+			{
+			GError *error = NULL;
+			gchar *debug_str = NULL;
+
+			gst_message_parse_error (message, &error, &debug_str);
+			g_error ("Got gst message: %s %s", error->message, debug_str);
+			}
+			break;
+		case GST_MESSAGE_WARNING:
+			{
+			GError *error = NULL;
+			gchar *debug_str = NULL;
+
+			gst_message_parse_warning (message, &error, &debug_str);
+			g_warning ("Got gst message: %s %s", error->message, debug_str);
+			}
+			break;
+		case GST_MESSAGE_ELEMENT:
+			{
+			const GstStructure *s = gst_message_get_structure (message);
+
+			if (gst_structure_has_name (s, "farsight-error"))
+			{
+				gint error;
+				const gchar *error_msg = gst_structure_get_string (s, "error-msg");
+				const gchar *debug_msg = gst_structure_get_string (s, "debug-msg");
+
+				g_assert (gst_structure_get_enum (s, "error-no", FS_TYPE_ERROR,
+                  &error));
+
+				if (FS_ERROR_IS_FATAL (error))
+					g_error ("Farsight fatal error: %d %s %s", error, error_msg,
+					debug_msg);
+				else
+					g_warning ("Farsight non-fatal error: %d %s %s", error, error_msg,
+		            debug_msg);
+			}
+			else if (gst_structure_has_name (s, "farsight-new-local-candidate"))
+			{
+				const GValue *val = gst_structure_get_value (s, "candidate");
+				FsCandidate *cand = NULL;
+
+				g_assert (val);
+				cand = (FsCandidate*)g_value_get_boxed (val);
+
+				g_print ("New candidate: %s %d\n", cand->ip, cand->port);
+			}
+			else if (gst_structure_has_name (s,
+                "farsight-local-candidates-prepared"))
+			{
+				g_print ("Local candidates prepared\n");
+			}
+			else if (gst_structure_has_name (s, "farsight-recv-codecs-changed"))
+			{
+				const GValue *val = gst_structure_get_value (s, "codecs");
+				GList *codecs = NULL;
+
+				g_assert (val);
+				codecs = (GList*)g_value_get_boxed (val);
+
+				g_print ("Recv codecs changed:\n");
+				for (; codecs; codecs = g_list_next (codecs))
+				{
+					FsCodec *codec = (FsCodec*)codecs->data;
+					gchar *tmp = fs_codec_to_string (codec);
+					g_print ("%s\n", tmp);
+					g_free (tmp);
+				}
+			}
+			else if (gst_structure_has_name (s, "farsight-send-codec-changed"))
+			{
+				const GValue *val = gst_structure_get_value (s, "codec");
+				FsCodec *codec = NULL;
+				gchar *tmp;
+				g_assert (val);
+				codec = (FsCodec*)g_value_get_boxed (val);
+				tmp = fs_codec_to_string (codec);
+
+				g_print ("Send codec changed: %s\n", tmp);
+				g_free (tmp);
+			}
+		}
+		break;
+		default:
+		break;
+		}
+	
+		return TRUE;
+	}
+
+
+	static TestSession* add_audio_session (GstElement *pipeline, FsConference *conf, guint id, FsParticipant *part, guint localport, const gchar *remoteip, guint remoteport)
+	{
+		
+		TestSession *ses = g_slice_new0 (TestSession);
+		GError *error = NULL;
+		GstPad *pad = NULL, *pad2 = NULL;
+		GstElement *src = NULL;
+		GList *cands = NULL;
+		GList *codecs = NULL;
+		GParameter param = {0};
+		gboolean res;
+
+		
+		ses->session = fs_conference_new_session (conf, FS_MEDIA_TYPE_AUDIO, &error);
+//  print_error (error);
+		g_assert (ses->session);
+
+		g_object_get (ses->session, "sink-pad", &pad, NULL);
+
+		// Get audio source
+		if (g_getenv ("AUDIOSRC"))
+			src = gst_parse_bin_from_description (g_getenv ("AUDIOSRC"), TRUE, &error);
+		else
+			src = gst_parse_bin_from_description (DEFAULT_AUDIOSRC, TRUE, &error);
+
+		// DEBUG
+//		src = gst_parse_bin_from_description ("dshowaudiosrc", TRUE, &error);
+
+
+		//print_error (error);
+		g_assert (src);
+
+		g_assert (gst_bin_add (GST_BIN (pipeline), src));
+
+		pad2 = gst_element_get_static_pad (src, "src");
+		g_assert (pad2);
+
+		g_assert (GST_PAD_LINK_SUCCESSFUL (gst_pad_link (pad2, pad)));
+
+		gst_object_unref (pad2);
+		gst_object_unref (pad);
+
+
+		cands = g_list_prepend (NULL, fs_candidate_new ("", FS_COMPONENT_RTP,
+          FS_CANDIDATE_TYPE_HOST, FS_NETWORK_PROTOCOL_UDP, NULL, localport));
+
+        param.name = "preferred-local-candidates";
+		g_value_init (&param.value, FS_TYPE_CANDIDATE_LIST);
+		g_value_take_boxed (&param.value, cands);
+
+		gchar** test;
+		test = fs_transmitter_list_available();
+//		test = fs_plugin_list_available("transmitters");
+//		test = fs_session_list_transmitters(ses->session);
+		ses->stream = fs_session_new_stream (ses->session, part, FS_DIRECTION_BOTH, "rawudp", 1, &param, &error);
+//		ses->stream = fs_session_new_stream (ses->session, part, FS_DIRECTION_BOTH, "rawudp", 0, NULL, &error);
+//		ses->stream = fs_session_new_stream (ses->session, part, FS_DIRECTION_BOTH, "gstudp", 1, &param, &error); // TEST
+		//print_error (error);
+		g_assert (ses->stream);
+
+		g_value_unset (&param.value);
+
+		g_signal_connect (ses->stream, "src-pad-added", G_CALLBACK (src_pad_added_cb), pipeline);
+
+		cands = g_list_prepend (NULL, fs_candidate_new ("", FS_COMPONENT_RTP,
+          FS_CANDIDATE_TYPE_HOST, FS_NETWORK_PROTOCOL_UDP, remoteip,  remoteport));
+
+		res = fs_stream_set_remote_candidates (ses->stream, cands, &error);
+		//print_error (error);
+		g_assert (res);
+
+		fs_candidate_list_destroy (cands);
+
+		codecs = g_list_prepend (NULL, fs_codec_new (FS_CODEC_ID_ANY, "PCMA", FS_MEDIA_TYPE_AUDIO, 0));
+		codecs = g_list_prepend (codecs,
+		fs_codec_new (FS_CODEC_ID_ANY, "PCMU", FS_MEDIA_TYPE_AUDIO, 0));
+
+		res = fs_session_set_codec_preferences (ses->session, codecs, &error);
+		//print_error (error);
+		fs_codec_list_destroy (codecs);
+
+
+		g_object_get (ses->session, "codecs", &codecs, NULL);
+		res = fs_stream_set_remote_codecs (ses->stream, codecs, &error);
+		//print_error (error);
+		g_assert (res);
+
+		return ses;
+	}
+
+
+	//Farsight2Thread::Farsight2Thread()
+	//{
+	//	int i = 0;
+	//}
+
+	//Farsight2Thread::~Farsight2Thread()
+	//{}
+
+	/**
+	 *  Start gmain loop torun gstream streaming engine
+	 */
+	void Farsight2Thread::operator()()
+	{
+		int argc = 4;
+		char* argv[4];
+		char* temp = "";
+		char* local_ip = "5566";
+		char* remote_ip = "5567";
+		char* remote_address = "192.168.0.201";
+
+		argv[0] = temp;
+		argv[1] = local_ip;
+		argv[2] = remote_address;
+		argv[3] = remote_ip;
+
+//		GOptionGroup* options = gst_init_get_option_group();
+
+//		putenv("GST_PLUGIN_PATH=C:\\gstreamer_bin_test\\lib\\gstreamer-0.10");
+		putenv("GST_PLUGIN_PATH=.\\gstreamer-0.10");
+			//,C:\\gstreamer_bin_test\\lib\\farsight2-0.0");
+		
+		gst_init(NULL, NULL);
+//		gst_init(&argc, ((char***)&argv));
+
+		// Get GStreamer version
+		guint major, minor, micro, nano;
+		gst_version (&major, &minor, &micro, &nano);
+
+
+		GstElement *pipeline = NULL;
+		gmain_loop_ = g_main_loop_new (NULL, FALSE);
+		
+		
+	    pipeline = gst_pipeline_new (NULL);
+		GstBus *bus = NULL;
+		GstElement *conf = NULL;
+		FsParticipant *part = NULL;
+		GError *error = NULL;
+
+
+		bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+		gst_bus_add_watch (bus, async_bus_cb, pipeline);
+		gst_object_unref (bus);
+
+		conf = gst_element_factory_make ("fsrtpconference", NULL);
+		g_assert (conf);
+
+		part = fs_conference_new_participant (FS_CONFERENCE (conf), "test@ignore", &error);
+		
+	//	LogError(error->message);
+		g_assert (part);
+		g_assert (gst_bin_add (GST_BIN (pipeline), conf));
+
+	    add_audio_session (pipeline, FS_CONFERENCE (conf), 1, part, 5566, remote_address, 5567);
+		g_assert (gst_element_set_state (pipeline, GST_STATE_PLAYING) != GST_STATE_CHANGE_FAILURE);
+
+		g_main_loop_run (gmain_loop_);
+		
+		
+
+		g_assert (gst_element_set_state (pipeline, GST_STATE_NULL) != GST_STATE_CHANGE_FAILURE);
+		g_object_unref (part);
+		gst_object_unref (pipeline);
+		g_main_loop_unref (gmain_loop_);
+
+	}
+
+	void Farsight2Thread::Stop()
+	{
+		if (gmain_loop_ == NULL)
+		{
+			// TODO: RAISE ERROR
+			return;
+		}
+
+		if (g_main_loop_is_running(gmain_loop_))
+			g_main_loop_quit(gmain_loop_);
+		
+		gst_deinit();
+	}
 
 	/**
 	 *  Split given text with given separator and return substring of given index
@@ -31,6 +378,28 @@ namespace Communication
 		return "";
 	}
 	
+		
+	void CommunicationManager::StartFarsight2()
+	{
+		farsight2_thread_ = new Farsight2Thread();
+		boost::thread t(*farsight2_thread_);
+//		t.join();
+	}
+
+	void CommunicationManager::StopFarsight2()
+	{
+		farsight2_thread_->Stop();
+	}
+
+	void CommunicationManager::StartDBusService()
+	{
+		dbus_daemon_thread_ = new DBusDaemonThread();
+		boost::thread t(*dbus_daemon_thread_);
+	}
+
+
+
+
 	/**
 	 * @param framework is pointer to framework. Given here becouse this is not a module class and framework
 	 *        services are used through this object.
@@ -47,6 +416,23 @@ namespace Communication
 		friend_requests_ = FriendRequestListPtr( new FriendRequestList() );
 		im_sessions_ = IMSessionListPtr( new IMSessionList() );
 		presence_status_ = PresenceStatusPtr( (PresenceStatusInterface*) new PresenceStatus() );
+
+
+		// BEGIN of Telepathy-Farsight/GSreamer
+		//FsBaseConference conference;
+
+
+//		Core::Thread my_thread_(&TestThread);
+//		boost::thread::id = my_thread.get_id();
+		//my_thread_.run();
+//		my_thread_.start();
+
+		//StartDBusService();
+		StartFarsight2();
+		
+		
+		// END of Telepathy-Farsight/GSreamer 
+
 
 		try
 		{
@@ -72,7 +458,11 @@ namespace Communication
 	void CommunicationManager::UnInitialize()
 	{
 		UninitializePythonCommunication();
-		instance_ = NULL;	    
+		instance_ = NULL;	   
+
+		GMainLoop *loop = NULL;
+		if (g_main_loop_is_running(loop))
+			g_main_loop_quit(loop);
 	}
 
 	/**
@@ -1391,3 +1781,7 @@ namespace Communication
     }
 
 } // end of namespace: Communication
+
+
+
+

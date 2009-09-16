@@ -1,18 +1,14 @@
-
-#include <Poco/Logger.h>
-
 #include "StableHeaders.h"
 #include "Foundation.h"
 
 #include "CommunicationModule.h"
-#include "CommunicationManager.h"
-#include "CommunicationManager.h"
+//#include "CommunicationManager.h"
 
 
 namespace Communication
 {
 
-	CommunicationModule::CommunicationModule(void):ModuleInterfaceImpl("CommunicationModule")
+	CommunicationModule::CommunicationModule(void):ModuleInterfaceImpl("CommunicationModule"), communication_manager_(NULL), console_ui_(NULL)
 	{
 	}
 
@@ -26,9 +22,21 @@ namespace Communication
 
 	void CommunicationModule::Initialize() 
 	{
-		communication_manager_ = CommunicationManagerPtr(new CommunicationManager(framework_));
-		if (communication_manager_->IsInitialized())
-		    framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communication, communication_manager_ );
+		
+		communication_manager_ = TpQt4Communication::CommunicationManager::GetInstance();
+		console_ui_ = new CommunicationUI::ConsoleUI(framework_);
+		if (communication_manager_->GetState() == TpQt4Communication::CommunicationManager::STATE_ERROR)
+		{
+			LogError("Initialization failed.");
+			return;
+		}
+//		c.SetProtocol("jabber");
+//		c.SetUserID("kuonanoja@jabber.org");
+//		c.SetPassword("jabber666");
+		//comm_->OpenConnection();
+		//communication_manager_ = CommunicationManagerPtr(new CommunicationManager(framework_));
+		//if (communication_manager_->IsInitialized())
+//		    framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communication, communication_manager_ );
 		LogInfo("Initialized.");
 	}
 
@@ -38,17 +46,18 @@ namespace Communication
 
 	void CommunicationModule::Uninitialize()
 	{
-	    if (communication_manager_ && communication_manager_->IsInitialized())
-		{
-            framework_->GetServiceManager()->UnregisterService(communication_manager_);
-			communication_manager_->UnInitialize();
-		}
-
+	 //   if (communication_manager_ && communication_manager_->IsInitialized())
+		//{
+  //          framework_->GetServiceManager()->UnregisterService(communication_manager_);
+		//	communication_manager_->UnInitialize();
+		//}
+		// TODO: Uninitialize communication manager
 		LogInfo("Uninitialized.");
 	}
 
 	void CommunicationModule::Update(Core::f64 frametime)
 	{
+		
 		//if done this way, should keep the ref that got in init
 		/*Foundation::ScriptServiceInterface *pyengine = framework_->GetService<Foundation::ScriptServiceInterface>
 			(Foundation::Service::ST_Scripting);
