@@ -16,6 +16,12 @@ namespace Ogre
     class Quaternion;
 }
 
+namespace HttpUtilities
+{
+    class HttpTask;
+    typedef boost::shared_ptr<HttpTask> HttpTaskPtr;
+}
+
 namespace RexLogic
 {
     class RexLogicModule;
@@ -30,8 +36,16 @@ namespace RexLogic
         //! Reads default appearance of avatar from file to xml document
         void ReadDefaultAppearance(const std::string& filename);
         
-        //! Sets up an avatar entity's appearance. 
-        /*! Since this involves deserializing the appearance description XML & creating the mesh entity,
+        //! Reads an avatar's appearance from avatar storage
+        /*! The storage address should be set beforehand in the EC_OpensimAvatar component.
+         */
+        void DownloadAppearance(Scene::EntityPtr entity);
+        
+        //! Sets up an avatar entity's default appearance.
+        void SetupDefaultAppearance(Scene::EntityPtr entity);
+        
+        //! Sets up an avatar entity's appearance with data from the appearance EC.
+        /*! Since this involves deserializing the appearance description XML & (re)creating the mesh entity,
             should only be called when the whole appearance changes. Calls also SetupDynamicAppearance().
          */
         void SetupAppearance(Scene::EntityPtr entity);
@@ -41,6 +55,9 @@ namespace RexLogic
         
         //! Adjusts (possibly dynamic) height offset of avatar
         void AdjustHeightOffset(Scene::EntityPtr entity);
+        
+        //! Performs frame-based update.
+        void Update(Core::f64 frametime);
         
     private:
         //! Sets up an avatar mesh
@@ -64,6 +81,12 @@ namespace RexLogic
         //! Hides vertices from an entity's mesh. Mesh should be cloned from the base mesh and this must not be called more than once for the entity.
         void HideVertices(Ogre::Entity*, std::set<Core::uint> vertices_to_hide);
         
+        //! Processes appearance downloads
+        void ProcessAppearanceDownloads();
+        
+        //! Processes an avatar appearance download result
+        void ProcessAppearanceDownload(Scene::EntityPtr entity, const std::vector<Core::u8>& data);
+        
         //! Gets a bone safely from the avatar skeleton
         /*! \return Pointer to bone, or 0 if does not exist
          */
@@ -74,6 +97,9 @@ namespace RexLogic
         
         //! Default avatar appearance xml document
         boost::shared_ptr<QDomDocument> default_appearance_;
+        
+        //! Thread tasks for avatar appearance downloads
+        std::map<Core::entity_id_t, HttpUtilities::HttpTaskPtr> appearance_downloaders_;
         
         RexLogicModule *rexlogicmodule_;
     };

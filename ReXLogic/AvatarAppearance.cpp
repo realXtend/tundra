@@ -5,6 +5,7 @@
 #include "LegacyAvatarSerializer.h"
 #include "RexLogicModule.h"
 #include "EC_AvatarAppearance.h"
+#include "EC_OpenSimAvatar.h"
 #include "SceneManager.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreMovableTextOverlay.h"
@@ -12,11 +13,18 @@
 #include "OgreMaterialUtils.h"
 #include "Renderer.h"
 #include "OgreConversionUtils.h"
+
+#include "HttpTask.h"
+
+#include "LLSDUtilities.h"
+
 #include <QDomDocument>
 #include <QFile>
 
 static const Core::Real FIXED_HEIGHT_OFFSET = -0.87f;
 static const Core::Real OVERLAY_HEIGHT_MULTIPLIER = 1.5f;
+
+using namespace HttpUtilities;
 
 namespace RexLogic
 {
@@ -32,6 +40,107 @@ namespace RexLogic
     {
     }
 
+    void AvatarAppearance::Update(Core::f64 frametime)
+    {
+        ProcessAppearanceDownloads();
+    }
+    
+    void AvatarAppearance::DownloadAppearance(Scene::EntityPtr entity)
+    {
+        if (!entity)
+            return;
+        
+        Foundation::ComponentPtr avatarptr = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
+        if (!avatarptr)
+            return;
+        EC_OpenSimAvatar& avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatarptr.get());
+        
+        std::string appearance_address = avatar.GetAppearanceAddress();
+        if (appearance_address.empty())
+            return;
+        
+        // See if download already exists for this avatar
+        if (appearance_downloaders_.find(entity->GetId()) != appearance_downloaders_.end())
+            return;
+        
+        // Setup new http task running in the background
+        HttpTaskPtr new_download(new HttpTask());
+        HttpTaskRequestPtr new_request(new HttpTaskRequest());
+        new_request->url_ = appearance_address;
+        appearance_downloaders_[entity->GetId()] = new_download;
+        new_download->AddRequest<HttpTaskRequest>(new_request);
+    }
+    
+    void AvatarAppearance::ProcessAppearanceDownloads()
+    {
+        // Check download results
+        std::map<Core::entity_id_t, HttpTaskPtr>::iterator i = appearance_downloaders_.begin();
+        while (i != appearance_downloaders_.end())
+        {
+            bool done = false;
+            
+            if (i->second)
+            {
+                HttpTaskResultPtr result = i->second->GetResult<HttpTaskResult>();
+                if (result)
+                {
+                    if (result->status_ == 200)
+                    {
+                        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(i->first);
+                        if (entity)
+                            ProcessAppearanceDownload(entity, result->data_);
+                    }
+                    else
+                    {
+                        RexLogicModule::LogInfo("Error downloading avatar appearance for avatar " + Core::ToString<int>(i->first) + ": " + result->reason_);
+                    } 
+                    
+                    done = true;
+                }
+            }
+            
+            if (!done)
+                ++i;
+            else
+                appearance_downloaders_.erase(i++);
+        }
+    }
+    
+    void AvatarAppearance::ProcessAppearanceDownload(Scene::EntityPtr entity, const std::vector<Core::u8>& data)
+    {
+        if (!entity)
+            return;
+        
+        std::string data_str((const char*)&data[0], data.size());
+        std::map<std::string, std::string> contents = RexTypes::ParseLLSDMap(data_str);
+        
+        // Get the avatar appearance description ("generic xml")
+        std::map<std::string, std::string>::iterator i = contents.find("generic xml");
+        if (i != contents.end())
+        {
+            std::string& appearance_str = i->second;
+
+            // Return to original format by substituting to < >
+            ReplaceSubstring(appearance_str, "&lt;", "<");
+            ReplaceSubstring(appearance_str, "&gt;", ">");
+                
+            QDomDocument appearance_doc("appearance");
+            QByteArray appearance_bytes(appearance_str.c_str());
+            appearance_doc.setContent(appearance_bytes);
+            
+            Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+            if (!appearanceptr)
+                return;
+            EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+            
+            // Deserialize appearance from the document into the EC
+            LegacyAvatarSerializer::ReadAvatarAppearance(appearance, appearance_doc);
+            // Rebuild avatar
+            SetupAppearance(entity);
+        }
+    }
+    
+    
     void AvatarAppearance::ReadDefaultAppearance(const std::string& filename)
     {
         default_appearance_ = boost::shared_ptr<QDomDocument>(new QDomDocument("defaultappearance"));
@@ -51,6 +160,19 @@ namespace RexLogic
         file.close();
     }
     
+    void AvatarAppearance::SetupDefaultAppearance(Scene::EntityPtr entity)
+    {
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!appearanceptr)
+            return;
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+        
+        // Deserialize appearance from the document into the EC
+        LegacyAvatarSerializer::ReadAvatarAppearance(appearance, *default_appearance_);
+        
+        SetupAppearance(entity);
+    }
+    
     void AvatarAppearance::SetupAppearance(Scene::EntityPtr entity)
     {
         if (!entity)
@@ -60,12 +182,6 @@ namespace RexLogic
         Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
         if (!meshptr || !appearanceptr)
             return;
-        
-        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
-        
-        // Deserialize appearance from the document into the EC
-        LegacyAvatarSerializer::ReadAvatarAppearance(appearance, *default_appearance_);
         
         // Setup appearance
         SetupMeshAndMaterials(entity);
