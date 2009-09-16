@@ -1,5 +1,5 @@
-#ifndef incl_ConsoleUI_h
-#define incl_ConsoleUI_h
+#ifndef incl_QtUI_h
+#define incl_QtUI_h
 
 #include "StableHeaders.h"
 #include "Foundation.h"
@@ -9,10 +9,10 @@ namespace CommunicationUI
 	class QtUI
 	{
 	public:
-		QtUI(void);
+		QtUI(Foundation::Framework* framework);
 		~QtUI(void);
 	};
 
 } //end if namespace: CommunicationUI
 
-#endif // incl_ConsoleUI_h
+#endif // incl_QtUI_h

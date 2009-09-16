@@ -5,8 +5,10 @@
 
 namespace CommunicationUI
 {
-	QtUI::QtUI(void)
+
+	QtUI::QtUI(Foundation::Framework* framework)
 	{
+
 	}
 
 	QtUI::~QtUI(void)
