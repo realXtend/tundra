@@ -57,6 +57,7 @@ namespace Communication
 //		TpQt4Communication::Connection* my_connection_;
 //		TpQt4Communication::TextChatSessionPtr my_chat_session_;
 		CommunicationUI::ConsoleUI* console_ui_;
+		CommunicationUI::QtUI* qt_ui_;
 		//TpQt4CommunicationManagerPtr comm_;
 		//TpQt4CommunicationManager* comm_;
 	};
