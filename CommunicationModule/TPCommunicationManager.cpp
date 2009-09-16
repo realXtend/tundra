@@ -215,11 +215,6 @@ namespace TpQt4Communication
 
 	Connection* CommunicationManager::OpenConnection(const Credentials &credentials)
 	{
-		if (!connection_manager_->isReady())
-		{
-			QDBusConnection dbus_conn = connection_manager_->dbusConnection();
-		}
-
 		if (state_ != STATE_READY)
 		{
 			LogError("Cannot create IM connection because ConnectionManger is not ready.");
