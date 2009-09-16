@@ -7,7 +7,6 @@
 #include <QProcess>
 #include <QStringList>
 
-
 namespace TpQt4Communication
 {
 	CommunicationManager* CommunicationManager::instance_ =  NULL; // static member function initialization
@@ -156,8 +155,6 @@ namespace TpQt4Communication
 			}
 		}
 
-//		instance_ = this;
-		//Framework::GetApplicationMainWindowQWidget();
 		qDebug() << "TpQt4 Thread:" << this->thread(); 
 
 		QThread* ct = QThread::currentThread();
@@ -166,12 +163,10 @@ namespace TpQt4Communication
 		Tp::registerTypes();
 		Tp::enableDebug(true);
 		Tp::enableWarnings(true);
-		//pending_ready_ = NULL;
+
 		this->connection_manager_ = Tp::ConnectionManager::create(CONNECTION_MANAGER_NAME);
 		Tp::PendingReady* p = this->connection_manager_->becomeReady();
-//		this->pending_ready_ = p;
-		//QThread* t = this->thread();
-//		connect(this->pending_ready_perse,
+
 		QObject::connect(p,
 				SIGNAL(finished(Tp::PendingOperation *)),
 				this,
@@ -182,7 +177,10 @@ namespace TpQt4Communication
 	{
 		// todo: close connection
 		if (dbus_daemon_)
-			dbus_daemon_->close();
+		{
+			dbus_daemon_->kill();
+			dbus_daemon_->terminate();
+		}
 	}
 
 	// Static factory method for communication manager
@@ -225,8 +223,8 @@ namespace TpQt4Communication
 		connections_.push_back(connection);
 
 		QVariantMap params;
-		QString user_name = "kuonanoja";
-		QString pass_word = "jabber666";
+		QString user_name = "realxtend";
+		QString pass_word = "";
 		QString server = "jabber.org";
 		QString port = "5222";
 
@@ -252,7 +250,7 @@ namespace TpQt4Communication
 	bool CommunicationManager::IsDBusServiceAvailable(std::string name)
 	{
 		// name.c_str()
-		QString bus_name("");
+		QString bus_name(name.c_str());
 		QDBusConnection conn = QDBusConnection::connectToBus(QDBusConnection::SessionBus, bus_name);
 		if (conn.isConnected())
 		{
@@ -276,6 +274,13 @@ namespace TpQt4Communication
             this, SLOT(OnDBusDaemonExited()) );
 
 		dbus_daemon_->start(path);
+
+		// wait some time so that dbus daemon can start up
+		QTime dieTime = QTime::currentTime().addSecs(1);
+		while( QTime::currentTime() < dieTime )
+			QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+		
+		//boost::thread::sleep(1000);
 	}
 
 	void CommunicationManager::OnDBusDaemonStdout()

@@ -25,6 +25,8 @@ namespace Communication
 		
 		communication_manager_ = TpQt4Communication::CommunicationManager::GetInstance();
 		console_ui_ = new CommunicationUI::ConsoleUI(framework_);
+		qt_ui_ = new CommunicationUI::QtUI(framework_);
+
 		if (communication_manager_->GetState() == TpQt4Communication::CommunicationManager::STATE_ERROR)
 		{
 			LogError("Initialization failed.");
@@ -46,6 +48,24 @@ namespace Communication
 
 	void CommunicationModule::Uninitialize()
 	{
+		if (console_ui_)
+		{
+			delete console_ui_;
+			console_ui_ = NULL;
+		}
+
+		if (qt_ui_)
+		{
+			delete qt_ui_;
+			qt_ui_ = NULL;
+		}
+
+		if (communication_manager_)
+		{
+			delete communication_manager_;
+			communication_manager_ = NULL;
+		}
+
 	 //   if (communication_manager_ && communication_manager_->IsInitialized())
 		//{
   //          framework_->GetServiceManager()->UnregisterService(communication_manager_);
