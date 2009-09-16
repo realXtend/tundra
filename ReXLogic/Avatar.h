@@ -33,6 +33,9 @@ namespace RexLogic
         void HandleTerseObjectUpdate_30bytes(const uint8_t* bytes);
         void HandleTerseObjectUpdateForAvatar_60bytes(const uint8_t* bytes);
         
+        //! Misc. frame-based update
+        void Update(Core::f64 frametime);
+        
         /// Update the avatar name overlay positions.
         void UpdateAvatarNameOverlayPositions();
         

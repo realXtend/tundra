@@ -300,6 +300,9 @@ namespace RexLogic
             // interpolate & animate objects
             UpdateObjects(frametime);
                 
+            // update avatar stuff (download requests etc.)
+            avatar_->Update(frametime);
+                
             // Poll the connection state and update the info to the UI.
             /// \todo Move this to the Login UI class.
             OpenSimProtocol::Connection::State cur_state = rexserver_connection_->GetConnectionState();

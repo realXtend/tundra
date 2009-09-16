@@ -300,10 +300,10 @@ namespace RexLogic
         
             Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
             if(entity)
-            
             {
                 EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());        
                 avatar.SetAppearanceAddress(avataraddress,overrideappearance);
+                avatar_appearance_.DownloadAppearance(entity);
             }
         }
         
@@ -367,6 +367,11 @@ namespace RexLogic
         return false;
     }     
     
+    void Avatar::Update(Core::f64 frametime)
+    {
+        avatar_appearance_.Update(frametime);
+    }
+        
     void Avatar::UpdateAvatarNameOverlayPositions()
     {
         Foundation::ComponentManager::const_iterator it;
@@ -434,7 +439,7 @@ namespace RexLogic
             OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
             
             mesh.SetPlaceable(placeableptr);
-            avatar_appearance_.SetupAppearance(entity);
+            avatar_appearance_.SetupDefaultAppearance(entity);
         }
         
         if (animctrlptr && meshptr)
