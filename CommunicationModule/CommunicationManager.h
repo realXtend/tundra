@@ -14,6 +14,8 @@
 #include "Participant.h"
 #include "FriendRequest.h"
 
+#include "glib.h"
+
 /**
  * Implementation of CommunicationServiceInterface
  *
@@ -34,6 +36,27 @@ namespace Communication
 	#define COMMUNICATION_PYTHON_MODULE "communication.IMDemo" 
 	#define COMMUNICATION_PYTHON_CLASS "IMDemo"
 	#define LOCAL_USER_ID "1" // defined in python side
+
+	class Farsight2Thread
+	{
+	public:
+//		Farsight2Thread();
+//		~Farsight2Thread();
+		void operator()();
+		void Stop();
+
+	private:
+		GMainLoop* gmain_loop_;
+	};
+
+
+	class DBusDaemonThread
+	{
+	public:
+		void operator()();
+		void Stop();
+	};
+
 
 	/**
 	 *  Implements CommunicationServiceInterface with python backend which uses telepathy-python
@@ -107,6 +130,14 @@ namespace Communication
 		void RequestPresenceStatuses();
 		void CallPythonCommunicationObject(const std::string &method_name, const std::string &arg) const;
 		void CallPythonCommunicationObject(const std::string &method_name) const;
+
+		void StartFarsight2();
+		void StopFarsight2();
+		Farsight2Thread* farsight2_thread_;
+		DBusDaemonThread* dbus_daemon_thread_;
+
+
+		void StartDBusService();
     public:
 
         //! public because: need to access these from CommunicationSettings
@@ -189,6 +220,11 @@ namespace Communication
         static void PyCallbackAccountCreationFailed(char* id);
 	};
 
+
 } // end of namespace Communication
 
+
+
 #endif // incl_CommunicationManager_h
+
+

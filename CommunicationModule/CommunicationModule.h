@@ -2,19 +2,34 @@
 #define incl_CommunicationModule_h
 
 #include "Foundation.h"
-#include "ModuleInterface.h"
+//#include "ModuleInterface.h"
 
 #include "CommunicationModuleApi.h"
+//#include "CommunicationManager.h"
+#include "TpCommunicationManager.h"
+#include "ConsoleUI.h"
+#include "QtUI.h"
+
 
 /**
  *  Communication module
  *
- *  Creates CommunicationManager object to offer CommunicationServiceInterfce 
+ *  Provides:
+ *  - CommunicationManager object for connecting IM servers
+ *  - ConsoleUI for text based user interface
+ *  - QtUI for Qt based user interface 
+ *
+ *  Instructions:
+ * - TODO
+ *
  */
 namespace Communication
 {
-    class CommunicationManager;
-	typedef boost::shared_ptr<CommunicationManager> CommunicationManagerPtr;    
+  //  class CommunicationManager;
+//	typedef boost::shared_ptr<CommunicationManager> CommunicationManagerPtr;    
+
+//	class TpQt4CommunicationManager;
+//	typedef boost::shared_ptr<TpQt4CommunicationManager> TpQt4CommunicationManagerPtr;    
     
 	class COMMS_MODULE_API CommunicationModule : public Foundation::ModuleInterfaceImpl
 	{
@@ -37,7 +52,13 @@ namespace Communication
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communication;
 
 	private:
-		CommunicationManagerPtr communication_manager_;
+		//CommunicationManagerPtr communication_manager_;
+		TpQt4Communication::CommunicationManager* communication_manager_;
+//		TpQt4Communication::Connection* my_connection_;
+//		TpQt4Communication::TextChatSessionPtr my_chat_session_;
+		CommunicationUI::ConsoleUI* console_ui_;
+		//TpQt4CommunicationManagerPtr comm_;
+		//TpQt4CommunicationManager* comm_;
 	};
 }
 
