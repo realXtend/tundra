@@ -14,6 +14,13 @@ namespace Foundation
 
     ThreadTaskManager::~ThreadTaskManager()
     {
+        std::vector<ThreadTaskPtr>::iterator i = tasks_.begin();
+        while (i != tasks_.end())
+        {
+            (*i)->Stop();
+            (*i)->SetThreadTaskManager(0);
+            ++i;
+        }
     }
 
     void ThreadTaskManager::AddThreadTask(ThreadTaskPtr task)
