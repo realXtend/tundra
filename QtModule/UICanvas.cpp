@@ -174,7 +174,6 @@ void UICanvas::SetPosition(int x, int y)
             float relX = x/double(renderWindowSize_.width()), relY = y/double(renderWindowSize_.height());
             container_->setPosition(relX, relY);
            
-            emit RequestArrange();
             dirty_ = true;
             break;
         }
@@ -184,6 +183,20 @@ void UICanvas::SetPosition(int x, int y)
 
     }
 
+}
+
+void UICanvas::SetZOrder(int order)
+{
+    if ( mode_ != External)
+        overlay_->setZOrder(order);
+}
+
+int UICanvas::GetZOrder() const
+{
+    if (mode_ != External)
+        return overlay_->getZOrder();
+
+    return -1;
 }
 
 QPoint UICanvas::MapToCanvas(int x, int y)
@@ -230,7 +243,6 @@ QPointF UICanvas::GetPosition() const
 
 void UICanvas::SetCanvasSize(int width, int height)
 {
-    //move(0, 0);
     resize(width, height);
     
     if ( mode_ != External)
@@ -304,9 +316,11 @@ void UICanvas::CreateOgreResources(int width, int height)
     container_->setPosition(0,0);
    
 
+    overlay_->setZOrder(1);
+
     // Add container in default overlay
     overlay_->add2D(container_);
-
+    
 
     ///\todo Tell Ogre not to generate a mipmap chain. This texture only needs to have only one
     /// mip level.
@@ -337,11 +351,10 @@ void UICanvas::CreateOgreResources(int width, int height)
     container_->setDimensions(relWidth, relHeight);
 
     container_->setMaterialName(surfaceMaterial .toStdString().c_str());
-    container_->show();
     container_->setEnabled(true);
     container_->setColour(Ogre::ColourValue(1,1,1,1));
 
-    overlay_->show();
+   
 }
 
 void UICanvas::Show()
@@ -435,7 +448,8 @@ void UICanvas::RenderSceneToOgreSurface()
 
 void UICanvas::Render()
 {
-    RenderSceneToOgreSurface();	
+    if ( mode_ != External && container_->isVisible())
+        RenderSceneToOgreSurface();	
 }
 
 }
