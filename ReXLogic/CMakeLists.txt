@@ -6,7 +6,7 @@ set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES RexLoginWindow.h)
+file (GLOB MOC_FILES RexLoginWindow.h RexWebLogin.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Include directories

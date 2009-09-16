@@ -6,6 +6,7 @@
 #include <QtGui>
 #include <QWidget>
 #include <QWebView>
+#include <QProgressBar>
 
 namespace RexLogic
 {
@@ -13,18 +14,32 @@ namespace RexLogic
 	class RexWebLogin 
 		: public QWidget
 	{
+		Q_OBJECT
 
 	public:
-		RexWebLogin(QWidget *parent);
+		RexWebLogin(QWidget *parent, QString address);
 		virtual ~RexWebLogin();
 
+	public slots:
+		void goToUrl();
+		void goToUrl(bool checked);
+		void loadStarted();
+		void updateUi(int progress);
+		void processPage(bool success);
+
 	private:
+		void showEvent(QShowEvent *showEvent);
 		void initWidget();
 		void connectSignals();
 
 		QWidget *widget_;
 		QWebView *webView_;
+		QProgressBar *progressBar;
+		QLabel *statusLabel;
+		QComboBox *comboBoxAddress;
+		QPushButton *goButton;
 		QVBoxLayout *layout_;
+		QString address_;
 
 	};
 }
