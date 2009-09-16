@@ -75,6 +75,8 @@ namespace TextureDecoder
                         Core::uint results = manager->GetNumResults(GetTaskDescription());
                         if (results < decodes_per_frame_)
                             break;
+                        if (!ShouldRun())
+                            return;
                         boost::this_thread::sleep(boost::posix_time::milliseconds(20));
                     }
                 }
