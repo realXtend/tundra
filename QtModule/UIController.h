@@ -127,7 +127,7 @@ namespace QtUI
         /**
          * Reques arrange of canvases to new Z-order. 
          */
-        void RequestArrange() { arrange_ = true; }
+        void RequestArrange(const QString& id) { arrange_ = true; active_canvas_ = id; }
 
 
     signals:
@@ -202,6 +202,9 @@ namespace QtUI
 
         // Should keyboard to put buffered state?
         bool keyboard_buffered_;
+
+        // Currently (or last) active canvas id.
+        QString active_canvas_;
     };
 
 

@@ -106,7 +106,6 @@ namespace QtUI
         QString GetID() const { return id_;}
 
        
-    
         /**
          * Maps given point (assumption that it is really on canvas area) from render window coordinates to view coordinates (viewport). 
          * @return coordinates in view (viewport) coordinate system.
@@ -118,6 +117,20 @@ namespace QtUI
          * @return current renderwindow size. 
          */
         QSize GetRenderWindowSize() const { return renderWindowSize_;}
+
+        /**
+         * Set Z-order. Changes overlay own "default" z-order value to new value.
+         * @note by default overlay z-value is 1
+         * @param order new order value must be under 650 (this comes from Ogre).
+         *
+         */
+        void SetZOrder(int order);
+        
+        /**
+         * Returns overlay z-order value. 
+         * @return overlay z-order value and for external canvases it returns -1
+         */
+        int GetZOrder() const;
 
      public slots:
     	
@@ -159,7 +172,7 @@ namespace QtUI
         /** 
          * Signal is emited if canvas Z-order in Ogre scene might change. 
          */
-        void RequestArrange();
+        void RequestArrange(const QString& id);
 
     protected:
         

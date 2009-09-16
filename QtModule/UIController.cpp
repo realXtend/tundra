@@ -16,7 +16,7 @@
 namespace QtUI
 {
 
-UIController::UIController() : mouseDown_(false), arrange_(false), responseTimeLimit_(500), keyDown_(false), lastKeyEvent_(QKeyEvent(QEvent::KeyPress,0,Qt::NoModifier)), multipleKeyLimit_(150), keyboard_buffered_(false)
+UIController::UIController() : mouseDown_(false), arrange_(false), responseTimeLimit_(500), keyDown_(false), lastKeyEvent_(QKeyEvent(QEvent::KeyPress,0,Qt::NoModifier)), multipleKeyLimit_(150), keyboard_buffered_(false), active_canvas_("")
 {}
 
 UIController::~UIController()
@@ -51,7 +51,19 @@ void UIController::Arrange()
 {
     if (arrange_)
     {
-        ///todo Arrange canvases to z-order.
+        /// Arrange canvases to somekind Z-order, currently just put latest active canvas to first in list. 
+        
+        for ( int i = 0; i < canvases_.size(); ++i)
+        {
+            if ( canvases_[i]->GetID() == active_canvas_)
+            {
+                boost::shared_ptr<UICanvas> canvas = canvases_.takeAt(i);
+                canvases_.prepend(canvas);
+                break;
+            }
+        }
+       
+
     }
     arrange_ = false;
         
@@ -78,7 +90,7 @@ boost::weak_ptr<UICanvas> UIController::CreateCanvas(UICanvas::Mode mode)
     boost::shared_ptr<UICanvas> canvas(new UICanvas(mode, parentWindowSize_));
     
     QObject::connect(this,SIGNAL(RenderWindowSizeChanged(const QSize&)),canvas.get(), SLOT(SetRenderWindowSize(const QSize&)));
-    QObject::connect(canvas.get(), SIGNAL(RequestArrange()), this, SLOT(RequestArrange()));
+    QObject::connect(canvas.get(), SIGNAL(RequestArrange(const QString&)), this, SLOT(RequestArrange(const QString&)));
 
     canvases_.append(canvas);
     return canvas;
@@ -145,6 +157,7 @@ void UIController::InjectMouseMove(int x, int y)
               
                 canvases_[index]->SetPosition(xPos, yPos);
             }
+          
         }
 
     }
@@ -220,6 +233,24 @@ void UIController::InjectMousePress(int x, int y)
         mouseEvent.setModifiers(0);
         mouseEvent.setAccepted(false);
         
+        // Change last active canvas back to normal state.
+        if ( active_canvas_ != "")
+        {
+            for ( int i = 0; i < canvases_.size(); ++i)
+                if ( canvases_[i]->GetID() == active_canvas_)
+                {
+                    // Z -order value 1 is normal value.
+                    canvases_[i]->SetZOrder(1);
+                    break;
+                }
+                
+        }
+
+        // Change new canvas to a active overlay.
+        canvases_[index]->SetZOrder(2);
+        // Request change our internal "order" 
+        RequestArrange(canvases_[index]->GetID());
+
         QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);
         
         // Here starts nice HACK: Idea is to check that did press event went to somekind textedit widget. 
@@ -271,8 +302,7 @@ void UIController::InjectMouseRelease(int x, int y)
         mouseEvent.setButton(Qt::LeftButton);
         mouseEvent.setModifiers(0);
         mouseEvent.setAccepted(false);
-     
-       
+    
 
         QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);
     
