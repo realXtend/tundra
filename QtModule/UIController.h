@@ -122,6 +122,15 @@ namespace QtUI
         bool IsKeyboardFocus() const { return keyboard_buffered_; }
 
 
+        /**
+         * Updates mouse cursor to correct state. 
+         * @param x is x-axis coordinate of cursor position in render window coordinate system.
+         * @param y is y-axis coordiante of cursor position in render window coordinate system.
+         * @param index is index to canvas which is below of mouse cursor.
+         */
+
+        void UpdateMouseCursor(int x, int y, int index = -1);
+
     public slots:
         
         /**

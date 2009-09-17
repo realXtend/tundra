@@ -104,7 +104,7 @@ void UIController::InjectMouseMove(int x, int y)
     
     // Normal move. 
 
-    if (index != -1 && !mouseDown_)
+    if (index != -1 && !mouseDown_ && !canvases_[index]->IsHidden())
     {
  
         // Location of mouse event in scene.
@@ -135,10 +135,15 @@ void UIController::InjectMouseMove(int x, int y)
         mouseEvent.setModifiers(0);
         mouseEvent.setAccepted(false);
     
-        QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);    
+       
+        UpdateMouseCursor(x,y,index);
+        QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);   
         
+        
+       
+  
     }
-    else if ( mouseDown_ )
+    else if ( mouseDown_)
     {
         // Drag event. 
         
@@ -146,7 +151,7 @@ void UIController::InjectMouseMove(int x, int y)
         
         index = GetCanvas(lastPosition_);
         
-        if ( index != -1)
+        if ( index != -1 && !canvases_[index]->IsHidden())
         {
             if ( !canvases_[index]->IsCanvasPositionLocked() )
             {
@@ -206,7 +211,7 @@ void UIController::InjectMousePress(int x, int y)
     
     mouseDown_ = true;
 
-    if (index != -1)
+    if (index != -1 && !canvases_[index]->IsHidden())
     {
     
         // Translate the mouse position from QGraphicsView coordinate frame onto
@@ -264,12 +269,22 @@ void UIController::InjectMousePress(int x, int y)
             if ( widget->hasCursor() )
             {            
                 QCursor cursor = widget->cursor();
-                if ( cursor.shape() == Qt::IBeamCursor)
+                Qt::CursorShape shape = cursor.shape();
+                if ( shape == Qt::IBeamCursor)
                     keyboard_buffered_ = true;
+              
             }
             
         }
-    
+
+      
+        QCursor cursor = canvases_[index]->cursor();
+        Qt::CursorShape shape = cursor.shape();
+        if ( shape == Qt::SizeBDiagCursor || shape == Qt::SizeHorCursor || shape == Qt::SizeVerCursor)
+         {
+                    qDebug()<<"We want to resize canvas!";
+         }
+       
         
     }
     lastPosition_ = point;
@@ -282,7 +297,7 @@ void UIController::InjectMouseRelease(int x, int y)
     QPoint point(x,y);
     int index = GetCanvas(point);
 
-    if (index != -1)
+    if (index != -1 && !canvases_[index]->IsHidden())
     {
         
         // Translate the mouse position from QGraphicsView coordinate frame onto
@@ -318,7 +333,7 @@ void UIController::InjectDoubleClick(int x, int y)
     lastPosition_ = point;
     int index = GetCanvas(point);
     
-    if (index != -1)
+    if (index != -1 && !canvases_[index]->IsHidden())
     {
     
         // Translate the mouse position from QGraphicsView coordinate frame onto
@@ -361,7 +376,7 @@ void UIController::InjectKeyPressed(const QString& text, Qt::Key keyCode, const 
     // Take a location of last known mouse press and send it to that canvas. 
     
     int index = GetCanvas(mousePress_);
-    if ( index != -1 )
+    if ( index != -1 && !canvases_[index]->IsHidden())
     {
          QApplication::sendEvent(canvases_[index]->scene(), &keyEvent);
          keyDown_ = true;
@@ -387,7 +402,7 @@ void UIController::InjectKeyReleased(const QString& text, Qt::Key keyCode, const
     // Take a location of last known mouse press and send it to that canvas. 
     
     int index = GetCanvas(mousePress_);
-    if ( index != -1 )
+    if ( index != -1 && !canvases_[index]->IsHidden() )
     {
          QApplication::sendEvent(canvases_[index]->scene(), &keyEvent);
          keyTimer_ = QTime();
@@ -410,6 +425,64 @@ void UIController::SetParentWindowSize(const QSize& size)
 {
     parentWindowSize_ = size;
     emit RenderWindowSizeChanged(size);
+}
+
+void UIController::UpdateMouseCursor(int x, int y, int index)
+{
+    if ( index != -1)
+    {
+        QRect frame = canvases_[index]->frameGeometry();
+        QPointF pos = canvases_[index]->GetPosition();
+        
+        // Rectangular sides. 
+        
+        int bottom = pos.y() + frame.height();
+        int bottomLeft = pos.x();
+        int bottomRight = pos.x() + frame.width();
+        int top = pos.y();
+        
+        int side_margin = 4;
+        int corner_margin = 4;
+        
+        // Corners.
+        QRect left_bottom_corner_box(QPoint(bottomLeft,bottom-corner_margin),QPoint(bottomLeft+corner_margin, bottom));
+        QRect left_top_corner_box(QPoint(bottomLeft, top), QPoint(bottomLeft + corner_margin, top + corner_margin));
+        
+        QRect right_top_corner_box(QPoint(bottomRight, top), QPoint(bottomRight - corner_margin, top + corner_margin));
+        QRect right_bottom_corner_box(QPoint(bottomRight - corner_margin, bottom - corner_margin), QPoint(bottomRight,bottom));
+        
+        // Sides
+
+        QRect top_side_box(QPoint(bottomLeft + corner_margin, top), QPoint(bottomRight - corner_margin, top - side_margin));
+        QRect bottom_side_box(QPoint(bottomLeft - corner_margin, bottom - side_margin), QPoint(bottomRight - corner_margin, bottom));
+
+        QRect left_side_box(QPoint(bottomLeft, top + corner_margin), QPoint(bottomLeft + side_margin, bottom - corner_margin));
+        QRect right_side_box(QPoint(bottomRight-corner_margin, top + side_margin), QPoint(bottomRight, bottom - corner_margin));
+
+        QPoint point(x,y);
+
+        if ( left_bottom_corner_box.contains(point) )
+            QApplication::setOverrideCursor(QCursor(Qt::SizeBDiagCursor));
+        else if ( left_top_corner_box.contains(point) )
+            QApplication::setOverrideCursor(QCursor(Qt::SizeFDiagCursor));
+        else if ( right_top_corner_box.contains(point))
+            QApplication::setOverrideCursor(QCursor(Qt::SizeBDiagCursor));
+        else if ( right_bottom_corner_box.contains(point) )
+            QApplication::setOverrideCursor(QCursor(Qt::SizeFDiagCursor));
+        else if (top_side_box.contains(point))
+            QApplication::setOverrideCursor(QCursor(Qt::SizeVerCursor));
+        else if (bottom_side_box.contains(point) )
+            QApplication::setOverrideCursor(QCursor(Qt::SizeVerCursor));
+        else if (left_side_box.contains(point))
+            QApplication::setOverrideCursor(QCursor(Qt::SizeHorCursor));
+        else if (right_side_box.contains(point))
+            QApplication::setOverrideCursor(QCursor(Qt::SizeHorCursor));
+        else
+            QApplication::setOverrideCursor(QCursor(Qt::ArrowCursor));
+            //QApplication::restoreOverrideCursor();   
+
+    }
+
 }
 
 
