@@ -132,6 +132,11 @@ namespace QtUI
          */
         int GetZOrder() const;
 
+        /** 
+         * Returns true if canvas is not shown in window. 
+         */
+        bool IsHidden() const; 
+
      public slots:
     	
 	    /** 

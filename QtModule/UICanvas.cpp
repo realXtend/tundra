@@ -240,6 +240,10 @@ QPointF UICanvas::GetPosition() const
     return position;
 }
 
+bool UICanvas::IsHidden() const
+{
+    return !overlay_->isVisible(); 
+}
 
 void UICanvas::SetCanvasSize(int width, int height)
 {
