@@ -142,7 +142,6 @@ namespace RexLogic
 
         
         canvas_->Show();
-      
 
 		//OpenID widget init
 		cblogin = new CBLoginWidget();
@@ -198,7 +197,7 @@ namespace RexLogic
 
       switch (index)
 	{
-	case 0:
+	case 1:
 	  {
 	    // Open sim
 	
@@ -230,7 +229,7 @@ namespace RexLogic
 
 	    break;
 	  }
-	case 1:
+	case 2:
 	  {
 	    // Rex authentication 
 	 
@@ -282,7 +281,7 @@ namespace RexLogic
 	    
 		break;
 	  }
-	case 2:
+	case 0:
 	  {
 	    // OpenID
         if(cblogin == 0)
