@@ -103,6 +103,7 @@ namespace TpQt4Communication
 	{
 	    if (op->isError())
 		{
+//			error_message_.append( op->errorMessage() );
 			// TODO: Error handling
 			state_ = STATE_ERROR;
 			return;
@@ -139,20 +140,24 @@ namespace TpQt4Communication
 	{
 		std::string bus_name = "org.freedesktop.Telepathy.ConnectionManager.";
 		bus_name.append(CONNECTION_MANAGER_NAME);
-		if ( !IsDBusServiceAvailable(bus_name) )
+//		if ( !IsDBusServiceAvailable(bus_name) )
 		{
 #ifdef WIN32
 			StartDBusDaemon();
 #endif
-			if ( !IsDBusServiceAvailable(bus_name) )
-			{
-				state_ = STATE_ERROR;
-				std::string reason = "Cannot initialize CommunicationManager: DBus service (";
-				reason.append(bus_name);
-				reason.append(") is not available.");
-				LogError(reason);
-				return;
-			}
+			// HACK: DISABLED temmporarily
+			//       Currently IsDBusServiceAvailable method can be only called once
+			//       because implementation of QDBus
+			//
+			//if ( !IsDBusServiceAvailable(bus_name) )
+			//{
+			//	state_ = STATE_ERROR;
+			//	std::string reason = "Cannot initialize CommunicationManager: DBus service (";
+			//	reason.append(bus_name);
+			//	reason.append(") is not available.");
+			//	LogError(reason);
+			//	return;
+			//}
 		}
 
 		qDebug() << "TpQt4 Thread:" << this->thread(); 
@@ -214,7 +219,9 @@ namespace TpQt4Communication
 	{
 		if (op->isError())
 		{
-			LogError("Cannot initialize ConnectionManager.");
+			std::string message = "Cannot initialize ConnectionManager: ";
+			message.append( op->errorMessage().toStdString() );
+			LogError( message );
 			state_ = STATE_ERROR;
 //			LogError("Cannot open connection to Telepathy ConnectionManager");
 			return;

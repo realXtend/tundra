@@ -304,6 +304,7 @@ namespace TpQt4Communication
 		Tp::ConnectionPtr tp_connection_;
 		std::vector<FriendRequest*> received_friend_requests_;
 		std::vector<TextChatRequest*> received_text_chat_requests_;
+		std::string error_message_;
 		
 
 	public Q_SLOTS:
