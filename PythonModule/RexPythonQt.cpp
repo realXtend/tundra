@@ -1,8 +1,8 @@
 #include "StableHeaders.h"
 #include "RexPythonQt.h"
-#include "Python.h" //to add CreateCanvas first as a normal py func
-#include "PythonQt.h"
-#include "PythonQt_QtAll.h"
+#include <Python.h> //to add CreateCanvas first as a normal py func
+#include <PythonQt.h>
+#include <PythonQt_QtAll.h>
 #include <QGroupBox> //just for testing addObject
 #include <QtUiTools> //for .ui loading in testing
 
