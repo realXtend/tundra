@@ -70,7 +70,7 @@ namespace TpQt4Communication
 	{
 	}
 
-
+	
 	Connection::State Connection::GetState()
 	{
 		return state_;
@@ -175,12 +175,24 @@ namespace TpQt4Communication
 
 	CommunicationManager::~CommunicationManager()
 	{
-		// todo: close connection
 		if (dbus_daemon_)
 		{
-			dbus_daemon_->kill();
-			dbus_daemon_->terminate();
+			dbus_daemon_->kill(); // terminate seems not to be enough
+			bool ok = dbus_daemon_->waitForFinished(1000);
+			if (!ok)
+			{
+				LogError("Cannot terminate dbus daemon process.");
+			}
+			delete dbus_daemon_;
+			dbus_daemon_ = NULL;
 		}
+
+		for (ConnectionList::iterator i = connections_.begin(); i != connections_.end(); ++i)
+		{
+			delete *i;
+			*i = NULL;
+		}
+		connections_.clear();
 	}
 
 	// Static factory method for communication manager
@@ -249,38 +261,61 @@ namespace TpQt4Communication
 
 	bool CommunicationManager::IsDBusServiceAvailable(std::string name)
 	{
-		// name.c_str()
-		QString bus_name(name.c_str());
-		QDBusConnection conn = QDBusConnection::connectToBus(QDBusConnection::SessionBus, bus_name);
-		if (conn.isConnected())
+		std::string bus_name = "org.freedesktop.Telepathy.ConnectionManager.";
+		bus_name.append(CONNECTION_MANAGER_NAME);
+
+		QDBusConnection bus = QDBusConnection::sessionBus();
+		//bus.connectToBus(QDBusConnection::SessionBus, bus_name.c_str());
+		//if (bus.isConnected())
+		//{
+		//	bus.disconnectFromBus(bus_name.c_str());
+		//}
+		QString service_name = "org.realxtend.Naali.dbustest";
+		if ( bus.registerService(service_name) )
 		{
-			conn.disconnectFromBus(bus_name);
+			bus.unregisterService(service_name);
 			return true;
 		}
-		else
-			return false;
+		return false;
+
+		// name.c_str()
+//		QString bus_name(name.c_str());
+//		QDBusConnection conn = QDBusConnection::connectToBus(QDBusConnection::SessionBus, bus_name);
+		//if (bus.isConnected())
+		//{
+		//	bus.disconnectFromBus(bus_name);
+		//	return true;
+		//}
+		//else
+		//	return false;
 	}
 
 #ifdef WIN32
 	void CommunicationManager::StartDBusDaemon()
 	{
-		QString path = "startdbus.bat";
-		dbus_daemon_ = new QProcess(this);
-//		dbus_daemon_->addArgument( path );
+		QString path = "dbus\\dbus-daemon.exe --config-file=data\\session.conf";
 
-		connect( dbus_daemon_, SIGNAL(readyReadStandardOutput()),
-            this, SLOT(OnDBusDaemonStdout()) );
-		connect( dbus_daemon_, SIGNAL(finished(int exitCode, QProcess::ExitStatus exitStatus)),
-            this, SLOT(OnDBusDaemonExited()) );
+		dbus_daemon_ = new QProcess();
+		QStringList env = QProcess::systemEnvironment();
+		env << "DBUS_SESSION_BUS_ADDRESS=tcp:host=localhost,port=12434";
+		dbus_daemon_->setEnvironment(env);
+
+		connect( dbus_daemon_, SIGNAL(readyReadStandardOutput()), this, SLOT(OnDBusDaemonStdout()) );
+		connect( dbus_daemon_, SIGNAL(finished(int exitCode, QProcess::ExitStatus exitStatus)), this, SLOT(OnDBusDaemonExited(int exitCode, QProcess::ExitStatus exitStatus)) );
 
 		dbus_daemon_->start(path);
+		bool ok = dbus_daemon_->waitForStarted(2000);
+		if (!ok)
+		{
+			state_ = STATE_ERROR;
+			LogError("Cannot start dbus daemon process.");
+			return;
+		}
 
 		// wait some time so that dbus daemon can start up
-		QTime dieTime = QTime::currentTime().addSecs(1);
+		QTime dieTime = QTime::currentTime().addSecs(2);
 		while( QTime::currentTime() < dieTime )
 			QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-		
-		//boost::thread::sleep(1000);
 	}
 
 	void CommunicationManager::OnDBusDaemonStdout()
@@ -290,6 +325,7 @@ namespace TpQt4Communication
 
 	void CommunicationManager::OnDBusDaemonExited( int exitCode, QProcess::ExitStatus exitStatus )
 	{
+
 	}
 #endif		
 

@@ -60,6 +60,7 @@
  */ 
 namespace TpQt4Communication
 {
+	typedef std::string Address;
 	typedef std::string Protocol;
 	typedef std::string PresenceState;
 	typedef std::string PresenceMessage;
@@ -83,22 +84,22 @@ namespace TpQt4Communication
 	};
 	typedef boost::weak_ptr<PresenceStatus> PresenceStatusWeakPtr;
 
-	/**
-     * IM address holder for exp. jabber addres: "yourname@jabber.org".
-	 * Includes also type of address like: "jabber", "email"
-	 * 		
-	 */
-	class Address
-	{
-	public:
-		Address(std::string type, std::string address);
-		std::string ToString();
-		std::string GetType();
-	private:
-		std::string address_;
-		std::string type_;
-	};
-	typedef boost::weak_ptr<Address> AddressWeakPtr;
+	///**
+ //    * IM address holder for exp. jabber addres: "yourname@jabber.org".
+	// * Includes also type of address like: "jabber", "email"
+	// * 		
+	// */
+	//class Address
+	//{
+	//public:
+	//	Address(std::string type, std::string address);
+	//	std::string ToString();
+	//	std::string GetType();
+	//private:
+	//	std::string address_;
+	//	std::string type_;
+	//};
+	//typedef boost::weak_ptr<Address> AddressWeakPtr;
 
 	/**
 	 *  Contact item in user's contact lisdt
@@ -107,13 +108,13 @@ namespace TpQt4Communication
 	class Contact
 	{
 	public:
-		Contact(AddressWeakPtr address, std::string real_name);
-		AddressWeakPtr GetAddress();
+		Contact(Address address, std::string real_name);
+		Address GetAddress();
 		std::string GetRealName();
 		PresenceStatusWeakPtr GetPresenceStatus();
 		void SetRealName(std::string name);
 	private:
-		AddressWeakPtr address_;
+		Address address_;
 		std::string real_name_;
 		PresenceStatusWeakPtr presence_status_;
 	};
@@ -209,6 +210,33 @@ namespace TpQt4Communication
 	typedef boost::weak_ptr<User> UserWeakPtr;
 
 	/**
+	 * 
+	 *
+	 *
+	 */
+	class FriendRequest
+	{
+	public:
+		enum State { STATE_PENDING, STATE_ACCEPTED, STATE_REJECTED };
+		Address GetAddressFrom();
+		Address GetAddressTo();
+		State GetState();
+	private:
+		State state_;
+		Address from_;
+		Address to_;
+	};
+
+	class TextChatRequest
+	{
+	public:
+		enum State { STATE_PENDING, STATE_ACCEPTED, STATE_REJECTED };
+		State GetState();
+	private:
+		State state_;
+	};
+
+	/**
 	 *  Credential for connecting to IM server
 	 *
 	 *  NOTE: Propably attribute map with arbitrary keys value pairs are the best choise here...
@@ -257,7 +285,7 @@ namespace TpQt4Communication
 	public:
 		Connection();
 		enum State{STATE_CONNECTING, STATE_OPEN,  STATE_CLOSED, STATE_ERROR};
-		void SendFriendRequest(AddressWeakPtr a);
+		void SendFriendRequest(const Address &a);
 		User* GetUser();
 		std::string GetID();
 		void Close();
@@ -266,6 +294,7 @@ namespace TpQt4Communication
 
 		TextChatSessionPtr CreateTextChatSession();
 		void CreateVoipSession();
+		
 
 	private :
 		std::string id_;
@@ -273,6 +302,8 @@ namespace TpQt4Communication
 		State state_;
 		std::string protocol_;
 		Tp::ConnectionPtr tp_connection_;
+		std::vector<FriendRequest*> received_friend_requests_;
+		std::vector<TextChatRequest*> received_text_chat_requests_;
 		
 
 	public Q_SLOTS:
