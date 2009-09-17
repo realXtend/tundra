@@ -3,7 +3,10 @@ used for quick testing of py commands."""
 
 import rexviewer as r
 
-from webdavinventory.main import MainFunction
+try:
+    from webdavinventory.main import MainFunction
+except ImportError:
+    print "fail in importing webdavinv - doesn't work with debug python now"
 
 print "--- *** ---"
 
@@ -72,6 +75,7 @@ if 0: #get entity
     #move(e)
 
 if 0: #test avatar tracking, works :)
+    av_entid = 2628869553
     print "<:::",
     try:
         a = r.getEntity(av_entid)
@@ -86,16 +90,17 @@ if 0: #test avatar tracking, works :)
         like when a pet or a friend moves?
         """
         
-        #test what happens when we move the av
-        #a.pos = a.pos[0] + 1, a.pos[1], a.pos[2]
-        """crash, because of how network updates are coded in the internals: 
-        XXX RexServerConnecion.cpp
-        RexServerConnection::SendMultipleObjectUpdatePacket(std::vector<Scene::EntityPtr> entity_ptr_list)
-        const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
-        (because avatars don't have the prim component"""
-        
-        #rotating the av
-        rotate(a)
+        if 0:
+            #test what happens when we move the av
+            #a.pos = a.pos[0] + 1, a.pos[1], a.pos[2]
+            """crash, because of how network updates are coded in the internals: 
+            XXX RexServerConnecion.cpp
+            RexServerConnection::SendMultipleObjectUpdatePacket(std::vector<Scene::EntityPtr> entity_ptr_list)
+            const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
+            (because avatars don't have the prim component"""
+            
+            #rotating the av
+            rotate(a)
 
 if 0: #push an event, input and/or chat
     #from eventsource import viewer
@@ -370,6 +375,17 @@ if 0: #QtUI::UICanvas::External ?! not here...
     canvas.AddWidget(widget)
     canvas.Show()
     
+    
+
+if 0: #collada load testing
+    import collada
+    print collada.Collada
+    try:
+        pycollada_test
+    except:
+        import pycollada_test
+    else:
+        pycollada_test = reload(pycollada_test)
     
 """
 ['__dict__', '__doc__', '__init__', '__module__', '__weakref__', 'addPluginPath', 'availableWidgets', 'blockSignals', 'c
