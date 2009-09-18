@@ -7,6 +7,7 @@
 #include <QFile>
 #include <QVBoxLayout>
 #include <QPushButton>
+#include <QWebFrame>
 
 namespace RexLogic
 {
