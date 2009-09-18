@@ -191,6 +191,11 @@ namespace RexLogic
             
             // Send the necessary UDP packets.
             SendUseCircuitCodePacket();
+            //! \todo release mode viewer sends the following packets "too fast" for some old rexservers to cope. Wait a while.
+            /*! Proper solution would be to wait for ack from the UseCircuitCode packet before continuing to send packets.
+                It may also be that the issue is only an issue on a localhost server (ie. with no real network delay)
+             */
+            boost::this_thread::sleep(boost::posix_time::milliseconds(100));
             SendCompleteAgentMovementPacket();
             SendAgentThrottlePacket();
             SendAgentWearablesRequestPacket();

@@ -56,7 +56,7 @@ namespace Asset
             std::set<std::string>::iterator i = disk_cache_contents_.find(GetHash(asset_id));
             
             if (i != disk_cache_contents_.end())
-            {               
+            {
                 boost::filesystem::path file_path(cache_path_ + "/" + GetHash(asset_id));      
                 std::ifstream filestr(file_path.native_directory_string().c_str(), std::ios::in | std::ios::binary);
                 if (filestr.good())
@@ -64,7 +64,7 @@ namespace Asset
                     filestr.seekg(0, std::ios::end);
                     Core::uint length = filestr.tellg();
                     filestr.seekg(0, std::ios::beg);
-                                                            
+
                     if (length > 1)
                     {
                         std::string type;
@@ -118,7 +118,6 @@ namespace Asset
         AssetModule::LogDebug("Storing complete asset " + asset_id);
 
         // Store to memory cache
-		
         assets_[asset_id] = asset;
                 
         // Store to disk cache
@@ -145,10 +144,10 @@ namespace Asset
         }
     }    
 
-	std::string AssetCache::GetHash(const std::string &asset_id)
-	{
-		md5_engine_.update(asset_id.c_str(), asset_id.size());
-		std::string hash = md5_engine_.digestToHex(md5_engine_.digest());
-		return hash;
-	}
+    std::string AssetCache::GetHash(const std::string &asset_id)
+    {
+        md5_engine_.update(asset_id.c_str(), asset_id.size());
+        std::string hash = md5_engine_.digestToHex(md5_engine_.digest());
+        return hash;
+    }
 }

@@ -57,7 +57,7 @@ namespace Foundation
         
         RootLogWarning("Can not remove thread task " + task->GetTaskDescription() + ", not found");
     }
-    
+
     void ThreadTaskManager::RemoveThreadTask(const std::string& task_description)
     {
         std::vector<ThreadTaskPtr>::iterator i = tasks_.begin();
@@ -75,7 +75,33 @@ namespace Foundation
         
         RootLogWarning("Can not remove thread task " + task_description + ", not found");
     }
-
+    
+    void ThreadTaskManager::RemoveThreadTasks()
+    {
+        std::vector<ThreadTaskPtr>::iterator i = tasks_.begin();
+        while (i != tasks_.end())
+        {
+            (*i)->Stop();
+            (*i)->SetThreadTaskManager(0);
+            ++i;
+        }
+        
+        tasks_.clear();
+    }
+    
+    ThreadTaskPtr ThreadTaskManager::GetThreadTask(const std::string& task_description)
+    {
+        std::vector<ThreadTaskPtr>::iterator i = tasks_.begin();
+        while (i != tasks_.end())
+        {
+            if ((*i)->GetTaskDescription() == task_description)
+                return (*i);
+            ++i;
+        }
+        
+        return ThreadTaskPtr();
+    }
+    
     Core::request_tag_t ThreadTaskManager::AddRequest(const std::string& task_description, ThreadTaskRequestPtr request)
     {
         if (request)

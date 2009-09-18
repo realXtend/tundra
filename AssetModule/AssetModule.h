@@ -67,6 +67,9 @@ namespace Asset
         //! UDP asset provider
         Foundation::AssetProviderPtr udp_asset_provider_;
 
+        //! XMLRPC asset provider
+        Foundation::AssetProviderPtr xmlrpc_asset_provider_;
+
         //! Http asset provider
 		Foundation::AssetProviderPtr http_asset_provider_;
         

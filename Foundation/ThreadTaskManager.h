@@ -42,7 +42,16 @@ namespace Foundation
         /*! If many tasks with same description, removes the first one
             \param task_description Task description to remove by
          */
-         void RemoveThreadTask(const std::string& task_description);
+        void RemoveThreadTask(const std::string& task_description);
+        
+        //! Removes all ThreadTasks
+        void RemoveThreadTasks();
+        
+        //! Gets a ThreadTask by task description
+        /*! If many tasks with same description, gets the first one
+            \param task_description Task description
+         */
+        ThreadTaskPtr GetThreadTask(const std::string& task_description);
         
         //! Adds a request by task description
         /*! \param task_description Task description

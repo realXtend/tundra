@@ -42,6 +42,8 @@ namespace HttpUtilities
         std::string reason_;
         //! Response data
         std::vector<Core::u8> data_;
+        
+        bool GetSuccess() const { return status_ == 200; }
     };
 
     typedef boost::shared_ptr<HttpTaskResult> HttpTaskResultPtr;
@@ -50,13 +52,14 @@ namespace HttpUtilities
     class HttpTask : public Foundation::ThreadTask
     {
     public:
-        //! Constructor with default task description HttpRequest
+        //! Constructor with default task description HttpRequest, non-continuous mode
         HttpTask();
         
         //! Constructor with custom task description
         /*! \param task_description Task description
+            \param continuous Continuous mode on/off, default off
          */
-        HttpTask(const std::string& task_description);
+        HttpTask(const std::string& task_description, bool continuous = false);
         
         //! Sets continuous mode on/off. Default is off (no ThreadTaskManager needed, one-shot request/response)
         /*! \param enable Continuous mode setting

@@ -11,9 +11,9 @@ namespace HttpUtilities
     {
     }
 
-    HttpTask::HttpTask(const std::string& task_description) :
+    HttpTask::HttpTask(const std::string& task_description, bool continuous) :
         Foundation::ThreadTask(task_description),
-        continuous_(false)
+        continuous_(continuous)
     {
     }
     

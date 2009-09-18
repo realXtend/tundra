@@ -7,6 +7,7 @@
 #include "RexProtocolMsgIDs.h"
 #include "RexUUID.h"
 #include "UDPAssetProvider.h"
+#include "XMLRPCAssetProvider.h"
 #include "HttpAssetProvider.h"
 
 using namespace OpenSimProtocol;
@@ -48,6 +49,10 @@ namespace Asset
         udp_asset_provider_ = Foundation::AssetProviderPtr(new UDPAssetProvider(framework_));
         manager_->RegisterAssetProvider(udp_asset_provider_);
 
+        // Add XMLRPC asset provider before http asset provider, so it will take requests it recognizes though both use http
+        xmlrpc_asset_provider_ = Foundation::AssetProviderPtr(new XMLRPCAssetProvider(framework_));
+        manager_->RegisterAssetProvider(xmlrpc_asset_provider_);
+
         try
         {
     		http_asset_provider_ = Foundation::AssetProviderPtr(new HttpAssetProvider(framework_));
@@ -85,6 +90,8 @@ namespace Asset
     void AssetModule::Uninitialize()
     {
         manager_->UnregisterAssetProvider(udp_asset_provider_);
+        manager_->UnregisterAssetProvider(xmlrpc_asset_provider_);
+        manager_->UnregisterAssetProvider(http_asset_provider_);
     
         framework_->GetServiceManager()->UnregisterService(manager_);
         manager_.reset();

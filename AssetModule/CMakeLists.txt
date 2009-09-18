@@ -15,12 +15,12 @@ include_directories (
 	../Interfaces
 	../RexCommon
 	../OpenSimProtocol
+	../HttpUtilities
 )
 		
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
-INCLUDE_CURL()
 
 add_definitions (-DASSET_MODULE_EXPORTS -DMODULE_EXPORTS)
 
@@ -34,12 +34,11 @@ set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Core Foundation Interfaces OpenSimProtocolModule RexCommon)
+target_link_libraries (${TARGET_NAME} Core Foundation Interfaces OpenSimProtocolModule RexCommon HttpUtilities)
 
 # External library linkage
 LINK_BOOST()
 LINK_POCO()
-LINK_CURL()
 
 if (MSVC)
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})
