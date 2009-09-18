@@ -11,14 +11,15 @@ Obtaining the dependencies
 --------------------------
 For getting the dependencies, you have two choices, depending on how much code you want to compile yourself. In the following, it is assumed that the viewer SVN trunk has been checked out to \viewerTrunk\.
 
-Preparing the precompiled dependency package
+Preparing the dependency binary repository
 -------------------------------------------------
 Use this option when you just need to get Naali compiled, and to focus on developing Naali itself.
 
-1. Download the precompiled dependency package from http://dev.realxtend.org/gf/project/viewerdeps/frs/.
-2. Extract it to a folder, say, \viewerDeps\.
-3. From the folder \viewerDeps\bin\, copy all the DLLs to \viewerTrunk\viewer\bin\.
-4. Continue from Building the Viewer below.
+1. Get the viewer binary dependency repository by doing a SVN checkout of http://dev.realxtend.org/svn/viewerdeps/bin/windows. The following assumes that you checked out the binary dependencies into the folder \viewerDeps\.
+2. After checkout, SVN export the \viewerDeps\bin folder (right-click on it and select Export) to \viewerTrunk\
+3. Windows will probably prompt that you are copying to a "bin" folder that already exists. Just allow windows to continue the operation.
+4. Qt is not included in the svn due to its size. See the file build_qt_windows.txt for options.
+5. After getting Qt, continue from Building the Viewer below.
 
 Preparing the dependency repository
 ----------------------------------------
