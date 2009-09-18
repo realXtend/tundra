@@ -7,7 +7,7 @@
 
 #include "NetworkEvents.h"
 #include "Foundation.h"
-#include "cbloginwidget.h"
+#include "RexWebLogin.h"
 #include "UICanvas.h"
 
 class QWidget;
@@ -45,7 +45,7 @@ namespace RexLogic
         void Disconnect();
         void DisconnectAndShowLoginWindow();
         void Quit();
-	void processCBLogin(QString result);
+		void processCBLogin(QString result);
         
     private:
         /// Hides the login window and shows the logout/quit menu that is embedded to main window.
@@ -57,7 +57,7 @@ namespace RexLogic
         QWidget *login_widget_;
         QPushButton *logout_button_;
         QPushButton *quit_button_;
-		CBLoginWidget *cblogin;
+		RexWebLogin *webLogin;
         boost::shared_ptr<QtUI::UICanvas> canvas_;
         boost::shared_ptr<QtUI::UICanvas> screen_canvas_;
      

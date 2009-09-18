@@ -20,7 +20,6 @@ include_directories (
     ../RexCommon
     ../InputModuleOIS
     ../QtModule
-    ../RexCBLogin
     ../HttpUtilities
 )
 
@@ -64,7 +63,7 @@ if (MSVC)
 endif (MSVC)
 
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation Interfaces OpenSimProtocolModule RexCommon OgreRenderingModule QtModule RexCBLogin HttpUtilities)
+target_link_libraries (${TARGET_NAME} Foundation Interfaces OpenSimProtocolModule RexCommon OgreRenderingModule QtModule HttpUtilities)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

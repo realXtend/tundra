@@ -46,6 +46,70 @@
         <number>3</number>
        </property>
        <item>
+        <widget class="QPushButton" name="pushButton_Back">
+         <property name="statusTip">
+          <string>Back</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>25</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_Forward">
+         <property name="statusTip">
+          <string>Forward</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>25</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_Refresh">
+         <property name="statusTip">
+          <string>Refresh</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>25</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_Stop">
+         <property name="statusTip">
+          <string>Stop</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>25</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QComboBox" name="comboBox_Address">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -59,6 +123,9 @@
            <italic>false</italic>
           </font>
          </property>
+         <property name="statusTip">
+          <string>Address</string>
+         </property>
          <property name="editable">
           <bool>true</bool>
          </property>
@@ -66,17 +133,14 @@
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_Go">
+         <property name="statusTip">
+          <string>Go to address</string>
+         </property>
          <property name="iconSize">
           <size>
            <width>25</width>
            <height>25</height>
           </size>
-         </property>
-         <property name="autoDefault">
-          <bool>false</bool>
-         </property>
-         <property name="default">
-          <bool>false</bool>
          </property>
          <property name="flat">
           <bool>true</bool>
@@ -124,6 +188,12 @@
        </property>
        <item>
         <widget class="QLabel" name="label_Status">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -170,8 +240,6 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="weblogin_resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

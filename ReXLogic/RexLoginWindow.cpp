@@ -23,7 +23,7 @@
 namespace RexLogic
 {
     RexLoginWindow::RexLoginWindow(Foundation::Framework* framework, RexLogicModule *module) :
-    framework_(framework), rex_logic_(module), login_widget_(0), logout_button_(0), quit_button_(0), cblogin(0)
+    framework_(framework), rex_logic_(module), login_widget_(0), logout_button_(0), quit_button_(0), webLogin(0)
     {
         InitLoginWindow();
     }
@@ -46,7 +46,7 @@ namespace RexLogic
 
         }
 
-        delete cblogin;
+        delete webLogin;
     }
 
     void RexLoginWindow::InitLoginWindow()
@@ -139,12 +139,8 @@ namespace RexLogic
 		// Rex auth: 
         line = login_widget_->findChild<QLineEdit* >("line_auth_server");
         line->setText(QString(strText.c_str()));
-
         
         canvas_->Show();
-
-		//OpenID widget init
-		cblogin = new CBLoginWidget();
 
         CreateLogoutMenu();
     }
@@ -281,17 +277,31 @@ namespace RexLogic
 	    
 		break;
 	  }
+
 	case 0:
-	  {
-	    // OpenID
-        if(cblogin == 0)
-            cblogin = new CBLoginWidget();
-		
-        cblogin->show();
-		QObject::connect(cblogin, SIGNAL( loginProcessed(QString) ), SLOT( processCBLogin(QString) ));
+	{
+		// OpenID
+
+		/* 
+			////////////////
+			OLD OPENID LOGIN
+
+			if(cblogin == 0)
+				cblogin = new CBLoginWidget();
+
+			cblogin->show();
+			QObject::connect(cblogin, SIGNAL( loginProcessed(QString) ), SLOT( processCBLogin(QString) ));
+			successful = false;
+			break;
+		*/
+		QComboBox *comboBoxAddress = login_widget_->findChild<QComboBox* >("comboBox_Address");
+		webLogin = new RexWebLogin(0, comboBoxAddress->currentText());
+		webLogin->show();
+		QObject::connect(webLogin, SIGNAL( loginProcessed(QString) ), SLOT( processCBLogin(QString) ));
 		successful = false;
-	    break;
-	  }
+		break;
+	}
+
 	default:
 	  break;
 	}
