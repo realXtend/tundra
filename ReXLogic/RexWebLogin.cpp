@@ -33,7 +33,7 @@ namespace RexLogic
 		// Load ui to widget from file
 		QUiLoader loader;
         QFile uiFile("./data/ui/weblogin.ui");
-		this->widget_ = loader.load(&uiFile);
+		this->widget_ = loader.load(&uiFile, this);
 		this->widget_->setMinimumSize(750, 550);
 		uiFile.close();
 
@@ -51,23 +51,45 @@ namespace RexLogic
 		comboBoxAddress = this->widget_->findChild<QComboBox *>("comboBox_Address");
 		comboBoxAddress->setEditText(address_);
 
-		// Add image to button
+		// Get buttons and add image to them
+		backButton = this->widget_->findChild<QPushButton *>("pushButton_Back");
+		backButton->setIcon(QIcon("./data/ui/images/arrow_left_48.png"));
+		backButton->setIconSize(QSize(20, 20));
+		forwardButton = this->widget_->findChild<QPushButton *>("pushButton_Forward");
+		forwardButton->setIcon(QIcon("./data/ui/images/arrow_right_48.png"));
+		forwardButton->setIconSize(QSize(20, 20));
+		stopButton = this->widget_->findChild<QPushButton *>("pushButton_Stop");
+		stopButton->setIcon(QIcon("./data/ui/images/cross_48.png"));
+		stopButton->setIconSize(QSize(20, 20));
+		stopButton->setEnabled(false);
+		refreshButton = this->widget_->findChild<QPushButton *>("pushButton_Refresh");
+		refreshButton->setIcon(QIcon("./data/ui/images/refresh_48.png"));
+		refreshButton->setIconSize(QSize(20, 20));
 		goButton = this->widget_->findChild<QPushButton *>("pushButton_Go");
 		goButton->setIcon(QIcon("./data/ui/images/arrow_right_green_48.png"));
 		goButton->setIconSize(QSize(20, 20));
 		
 		// But widget to layout, set layout to this
-		this->layout_ = new QVBoxLayout(0);
+		this->layout_ = new QVBoxLayout(this);
 		this->layout_->setSpacing(0);
 		this->layout_->setMargin(0);
 		this->layout_->addWidget(this->widget_);
 		this->setLayout(this->layout_);
+		this->setWindowTitle("realXtend Naali web browser");
+		this->setWindowIcon(QIcon("./data/ui/images/globe_48.png"));
 	}
 
 	void RexWebLogin::connectSignals()
 	{
-		QObject::connect(this->comboBoxAddress->lineEdit(), SIGNAL( returnPressed() ), this, SLOT( goToUrl() ));
+		// Buttons
+		QObject::connect(this->backButton, SIGNAL( clicked() ), this->webView_, SLOT( back() ));
+		QObject::connect(this->forwardButton, SIGNAL( clicked() ), this->webView_, SLOT( forward() ));
+		QObject::connect(this->stopButton, SIGNAL( clicked() ), this->webView_, SLOT( stop() ));
+		QObject::connect(this->refreshButton, SIGNAL( clicked() ), this->webView_, SLOT( reload() ));
 		QObject::connect(this->goButton, SIGNAL( clicked(bool) ), this, SLOT( goToUrl(bool) ));
+		// Addressbar
+		QObject::connect(this->comboBoxAddress->lineEdit(), SIGNAL( returnPressed() ), this, SLOT( goToUrl() ));
+		// Webview
 		QObject::connect(this->webView_, SIGNAL( loadStarted() ), this, SLOT( loadStarted() ));
 		QObject::connect(this->webView_, SIGNAL( loadProgress(int) ), this, SLOT( updateUi(int) ));
 		QObject::connect(this->webView_, SIGNAL( loadFinished(bool) ), this, SLOT( processPage(bool) ));
@@ -85,6 +107,7 @@ namespace RexLogic
 
 	void RexWebLogin::loadStarted()
 	{
+		this->stopButton->setEnabled(true);
 		this->statusLabel->setText("Loading page...");
 		this->progressBar->show();
 	}
@@ -96,15 +119,29 @@ namespace RexLogic
 
 	void RexWebLogin::processPage(bool success)
 	{
+		// Update GUI
+		this->stopButton->setEnabled(false);
 		address_ = this->webView_->url().toString();
 		this->comboBoxAddress->lineEdit()->setText(address_);
+		QString title(this->webView_->page()->mainFrame()->title());
+		title.append(" - realXtend Naali web browser");
+		this->setWindowTitle(title);
 		if ( this->comboBoxAddress->findText(address_, Qt::MatchFixedString) == -1 )
 			this->comboBoxAddress->addItem(address_);
 		this->statusLabel->setText("Done");
 		this->progressBar->hide();
-
 		// Do actual HTML page processing...
+		if ( success )
+		{
+			QString pageTitle = this->webView_->page()->mainFrame()->title();
+			if ( pageTitle == "LoginSuccess") 
+			{
+				QVariant returnValue;
+				returnValue = this->webView_->page()->mainFrame()->evaluateJavaScript("ReturnSuccessValue()");
+				emit( loginProcessed(returnValue.toString()) );
+				this->close();
+			}
+		}
 	}
-	
 
 }

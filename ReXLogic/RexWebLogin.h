@@ -37,9 +37,16 @@ namespace RexLogic
 		QProgressBar *progressBar;
 		QLabel *statusLabel;
 		QComboBox *comboBoxAddress;
+		QPushButton *refreshButton;
+		QPushButton *backButton;
+		QPushButton *forwardButton;
+		QPushButton *stopButton;
 		QPushButton *goButton;
 		QVBoxLayout *layout_;
 		QString address_;
+
+	signals:
+		void loginProcessed(QString);
 
 	};
 }
