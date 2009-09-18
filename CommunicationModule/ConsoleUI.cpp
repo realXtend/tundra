@@ -26,6 +26,7 @@ namespace CommunicationUI
 			console_service->RegisterCommand(Console::CreateCommand("comm_help", "Lists all connection", Console::Bind(this, &ConsoleUI::OnCommandHelp)));
 			console_service->RegisterCommand(Console::CreateCommand("comm_connections", "Lists all connection", Console::Bind(this, &ConsoleUI::OnCommandConnections)));
 			console_service->RegisterCommand(Console::CreateCommand("comm_login", "Login to jabber server: comm_login(uid, pwd, server, port)", Console::Bind(this, &ConsoleUI::OnCommandLogin)));
+			console_service->RegisterCommand(Console::CreateCommand("comm logout", "Logout from jabber server: comm logout()", Console::Bind(this, &ConsoleUI::OnCommandLogout)));
 			console_service->RegisterCommand(Console::CreateCommand("comm_user", "Show information about current user", Console::Bind(this, &ConsoleUI::OnCommandUser)));
 		}
 		else
@@ -129,6 +130,21 @@ namespace CommunicationUI
 		result.append(presence_message);
 		result.append("\n");
 
+		return Console::ResultSuccess(result);
+	}
+
+	Console::CommandResult ConsoleUI::OnCommandLogout(const Core::StringVector &params)
+	{
+		std::string result = "";
+
+		if ( default_connection_ == NULL )
+		{
+			result = "There is no connection to close.";
+			return Console::ResultSuccess(result);
+		}
+
+		default_connection_->Close();
+		result = "ok.";
 		return Console::ResultSuccess(result);
 	}
 
