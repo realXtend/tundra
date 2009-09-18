@@ -36,6 +36,35 @@ namespace TpQt4Communication
 		return message_text_;
 	}
 
+	Message::Message(std::string text)
+	{
+		text_ = text;
+		author_ = "";
+		time_stamp_ = QTime::currentTime();
+	}
+
+	void TextChatSession::Invite(Address a)
+	{
+
+	}
+
+	void TextChatSession::SendTextMessage(std::string text)
+	{
+		Message* m = new Message(text);
+		messages_.push_back(m);
+	}
+
+	MessageVector TextChatSession::GetMessageHistory()
+	{
+		return messages_;
+	}
+
+	void TextChatSession::Close()
+	{
+		// todo: 
+	}
+
+
 	User::User(): user_id_(""), protocol_("")
 	{
 
@@ -70,6 +99,20 @@ namespace TpQt4Communication
 	{
 	}
 
+	void Connection::Close()
+	{
+		
+		if (state_ != STATE_OPEN )
+		{
+			std::string message = "Connection is not open.";
+			LogError(message);
+			return;
+		}
+
+		LogError("Try to disconnect IM server connection.");
+		Tp::PendingOperation* p = tp_connection_->requestDisconnect();
+		// TODO: connect slots
+	}
 	
 	Connection::State Connection::GetState()
 	{
@@ -103,37 +146,102 @@ namespace TpQt4Communication
 	{
 	    if (op->isError())
 		{
+			std::string message = "Cannot connect to IM server";
+			message.append( op->errorMessage().toStdString() );
+			LogError(message);
 //			error_message_.append( op->errorMessage() );
 			// TODO: Error handling
 			state_ = STATE_ERROR;
 			return;
 		}
-  
+		
 		Tp::PendingConnection *c = qobject_cast<Tp::PendingConnection *>(op);
 		tp_connection_ = c->connection();
+
+		std::string message = "Got response from IM server";
+		LogInfo(message);
 		
 		//conn->requestsInterface(
-	    //conn->requestConnect(
 		//conn->gotInterfaces
-		QObject::connect(tp_connection_->requestConnect(),
-            SIGNAL(finished(Tp::PendingOperation *)),
-			this,
-            SLOT(onConnectionConnected(Tp::PendingOperation *)));
-		QObject::connect(tp_connection_.data(),
-			SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
-			this,
-			SLOT(onConnectionInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
+		QObject::connect(tp_connection_->requestConnect(), SIGNAL(finished(Tp::PendingOperation *)),
+//			this,
+			SLOT(OnConnectionConnected(Tp::PendingOperation *)));
+		QObject::connect(tp_connection_.data(), SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
+		//	this,
+		SLOT(OnConnectionInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
 	}
 
 
 	void Connection::OnConnectionConnected(Tp::PendingOperation *op)
 	{
+		std::string message = "Connection established successfully to IM server.";
+		LogInfo(message);
+		LogInfo("Create user.");
+		user_ = new User();
+		state_ = STATE_OPEN;
+
+		// Request friend list
+		QObject::connect(tp_connection_->contactManager(),
+            SIGNAL(presencePublicationRequested(const Tp::Contacts &)),
+            SLOT(OnPresencePublicationRequested(const Tp::Contacts &)));
+
+		//QStringList list;
+		//Tp::PendingContacts *pending_contacts = this->tp_connection_->contactManager()->contactsForIdentifiers(list);
+		//Tp::Contacts contacts  = this->tp_connection_->contactManager()->allKnownContacts();
+		//
+		//for (int i = 0; i < contacts.size(); ++i)
+		//{
+		//	Tp::ContactPtr c = contacts[i];
+		//	std::string id = c->id().toStdString();
+		//	
+		//	LogInfo("***");
+		//	LogInfo(id);
+		//	//Contact contact = new Contact(address, real_name);
+		//	
+		//}
+
+		//QObject::connect((QObject*)pending_contacts, SIGNAL(finished(Tp::PendingOperation *)),
+		//	SLOT(OnContactRetrieved(Tp::PendingOperation *)));
+	}
+
+	void Connection::OnPresencePublicationRequested(const Tp::Contacts &contacts)
+	{
+		foreach (const Tp::ContactPtr &contact, contacts)
+		{
+			LogInfo("****");
+			//std::string id = contact.id().toStdString();
+
+		}
 
 	}
 
-	void Connection::OnConnectionInvalidated(Tp::PendingOperation *op)
+	void Connection::OnContactRetrieved(Tp::PendingOperation *op)
 	{
+		if (op->isError())
+		{
+			LogError("Failed to receive friendlist.");
+			return;
+		}
+		LogInfo("Friendlist received.");
+		Tp::PendingContacts *pcontacts = qobject_cast<Tp::PendingContacts *>(op);
+		QList<Tp::ContactPtr> contacts = pcontacts->contacts();
+		
+		for (int i = 0; i < contacts.size(); ++i)
+		{
+			Tp::ContactPtr c = contacts[i];
+			std::string id = c->id().toStdString();
+			
+			LogInfo("***");
+			LogInfo(id);
+			//Contact contact = new Contact(address, real_name);
+			
+		}
+	}
 
+	void Connection::OnConnectionInvalidated(Tp::DBusProxy *proxy, const QString &errorName, const QString &errorMessage)
+	{
+		LogError("Connection::OnConnectionInvalidated");
+		state_ = STATE_ERROR;
 	}
 
 	CommunicationManager::CommunicationManager(): state_(STATE_INITIALIZING), dbus_daemon_(NULL)
@@ -168,14 +276,18 @@ namespace TpQt4Communication
 		Tp::registerTypes();
 		Tp::enableDebug(true);
 		Tp::enableWarnings(true);
+		
 
 		this->connection_manager_ = Tp::ConnectionManager::create(CONNECTION_MANAGER_NAME);
+
+
 		Tp::PendingReady* p = this->connection_manager_->becomeReady();
 
 		QObject::connect(p,
 				SIGNAL(finished(Tp::PendingOperation *)),
-				this,
+//				this,
 				SLOT(OnConnectionManagerReady(Tp::PendingOperation *)));
+
 	}
 
 	CommunicationManager::~CommunicationManager()
@@ -217,8 +329,12 @@ namespace TpQt4Communication
 
 	void CommunicationManager::OnConnectionManagerReady(Tp::PendingOperation *op)
 	{
+		LogInfo( "ConnectionManager init ready..." );
+
+
 		if (op->isError())
 		{
+			LogError( "result: ERROR" );
 			std::string message = "Cannot initialize ConnectionManager: ";
 			message.append( op->errorMessage().toStdString() );
 			LogError( message );
@@ -226,6 +342,9 @@ namespace TpQt4Communication
 //			LogError("Cannot open connection to Telepathy ConnectionManager");
 			return;
 		}
+
+		//return; // HACK
+
 		LogInfo("ConnectionManager is ready.");
 		state_ = STATE_READY;
 	}
@@ -242,16 +361,19 @@ namespace TpQt4Communication
 		connections_.push_back(connection);
 
 		QVariantMap params;
-		QString user_name = "realxtend";
+		QString user_name = "@jabber.org";
 		QString pass_word = "";
 		QString server = "jabber.org";
-		QString port = "5222";
+//		QIn port = 5222;
 
 		params.insert("account", QVariant(user_name));
 		params.insert("password", QVariant(pass_word));
 		params.insert("server", QVariant(server));
-		params.insert("port", QVariant(port));
+//		params.insert("port", QVariant(port));
 
+		std::string message = "Try to connecto to IM server: ";
+		message.append( server.toStdString () );
+		LogInfo(message);
 		Tp::PendingConnection *pending_connection = connection_manager_->requestConnection(IM_PROTOCOL, params);
 		QObject::connect(pending_connection,
 				SIGNAL(finished(Tp::PendingOperation *)),
@@ -302,13 +424,13 @@ namespace TpQt4Communication
 	{
 		QString path = "dbus\\dbus-daemon.exe --config-file=data\\session.conf";
 
-		dbus_daemon_ = new QProcess();
+		dbus_daemon_ = new QProcess(this);
 		QStringList env = QProcess::systemEnvironment();
 		env << "DBUS_SESSION_BUS_ADDRESS=tcp:host=localhost,port=12434";
 		dbus_daemon_->setEnvironment(env);
 
 		connect( dbus_daemon_, SIGNAL(readyReadStandardOutput()), this, SLOT(OnDBusDaemonStdout()) );
-		connect( dbus_daemon_, SIGNAL(finished(int exitCode, QProcess::ExitStatus exitStatus)), this, SLOT(OnDBusDaemonExited(int exitCode, QProcess::ExitStatus exitStatus)) );
+		connect( dbus_daemon_, SIGNAL(finished(int exitCode)), this, SLOT(OnDBusDaemonExited(int exitCode)) );
 
 		dbus_daemon_->start(path);
 		bool ok = dbus_daemon_->waitForStarted(2000);
@@ -330,7 +452,7 @@ namespace TpQt4Communication
 		QByteArray buffer= dbus_daemon_->readAllStandardOutput();
 	}
 
-	void CommunicationManager::OnDBusDaemonExited( int exitCode, QProcess::ExitStatus exitStatus )
+	void CommunicationManager::OnDBusDaemonExited( int exitCode )
 	{
 
 	}
