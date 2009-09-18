@@ -13,18 +13,18 @@
 #include "OgreMaterialUtils.h"
 #include "Renderer.h"
 #include "OgreConversionUtils.h"
-
 #include "HttpTask.h"
-
+#include "HttpUtilities.h"
 #include "LLSDUtilities.h"
+
+#include "Poco/URI.h"
 
 #include <QDomDocument>
 #include <QFile>
 
 static const Core::Real FIXED_HEIGHT_OFFSET = -0.87f;
 static const Core::Real OVERLAY_HEIGHT_MULTIPLIER = 1.5f;
-
-using namespace HttpUtilities;
+static const Core::uint XMLRPC_ASSET_HASH_LENGTH = 28;
 
 namespace RexLogic
 {
@@ -64,27 +64,27 @@ namespace RexLogic
             return;
         
         // Setup new http task running in the background
-        HttpTaskPtr new_download(new HttpTask());
-        HttpTaskRequestPtr new_request(new HttpTaskRequest());
+        HttpUtilities::HttpTaskPtr new_download(new HttpUtilities::HttpTask());
+        HttpUtilities::HttpTaskRequestPtr new_request(new HttpUtilities::HttpTaskRequest());
         new_request->url_ = appearance_address;
         appearance_downloaders_[entity->GetId()] = new_download;
-        new_download->AddRequest<HttpTaskRequest>(new_request);
+        new_download->AddRequest<HttpUtilities::HttpTaskRequest>(new_request);
     }
     
     void AvatarAppearance::ProcessAppearanceDownloads()
     {
         // Check download results
-        std::map<Core::entity_id_t, HttpTaskPtr>::iterator i = appearance_downloaders_.begin();
+        std::map<Core::entity_id_t, HttpUtilities::HttpTaskPtr>::iterator i = appearance_downloaders_.begin();
         while (i != appearance_downloaders_.end())
         {
             bool done = false;
             
             if (i->second)
             {
-                HttpTaskResultPtr result = i->second->GetResult<HttpTaskResult>();
+                HttpUtilities::HttpTaskResultPtr result = i->second->GetResult<HttpUtilities::HttpTaskResult>();
                 if (result)
                 {
-                    if (result->status_ == 200)
+                    if (result->GetSuccess())
                     {
                         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(i->first);
                         if (entity)
@@ -110,6 +110,12 @@ namespace RexLogic
     {
         if (!entity)
             return;
+        Foundation::ComponentPtr avatarptr = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!avatarptr || !appearanceptr)
+            return;
+        EC_OpenSimAvatar& avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatarptr.get());
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
         
         std::string data_str((const char*)&data[0], data.size());
         std::map<std::string, std::string> contents = RexTypes::ParseLLSDMap(data_str);
@@ -127,16 +133,30 @@ namespace RexLogic
             QDomDocument appearance_doc("appearance");
             QByteArray appearance_bytes(appearance_str.c_str());
             appearance_doc.setContent(appearance_bytes);
-            
-            Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-            if (!appearanceptr)
-                return;
-            EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+
             
             // Deserialize appearance from the document into the EC
             LegacyAvatarSerializer::ReadAvatarAppearance(appearance, appearance_doc);
             // Rebuild avatar
             SetupAppearance(entity);
+        }
+        
+        // Attempt to request the assets
+        //! \todo request as renderer resources to trigger their creation properly
+        Foundation::ServiceManagerPtr service_manager = rexlogicmodule_->GetFramework()->GetServiceManager(); 
+        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        
+        std::string host = HttpUtilities::GetHostFromUrl(avatar.GetAppearanceAddress());
+        if (host.empty()) return;
+        
+        i = contents.begin();
+        while (i != contents.end())
+        {
+            if (i->second.length() == XMLRPC_ASSET_HASH_LENGTH)
+            {
+                asset_service->RequestAsset(host + "/item/" + i->second, "?");
+            }
+            ++i;
         }
     }
     
@@ -151,6 +171,7 @@ namespace RexLogic
             RexLogicModule::LogError("Could not open avatar default appearance file " + filename);
             return;
         }
+        
         if (!default_appearance_->setContent(&file))
         {
             file.close();
