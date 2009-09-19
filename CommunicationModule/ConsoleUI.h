@@ -13,7 +13,7 @@ namespace CommunicationUI
 	/**
 	 *  Provides console based user interface for communication manager.
 	 *  Mainly purpose is to provide tools for testing but it can be used
-	 *  for actual comminications too
+	 *  for actual comminications too.
 	 *
 	 */ 
 	class ConsoleUI
@@ -67,7 +67,11 @@ namespace CommunicationUI
 
 		TpQt4Communication::CommunicationManager* communication_manager_;
 		Foundation::Framework* framework_;
+
+		//! There can be multiple connection open but this one is used 
 		TpQt4Communication::Connection* default_connection_;
+
+		//! There can be multiple chat sessions open but this one is used
 		TpQt4Communication::TextChatSession* default_chat_session_;
 	};
 

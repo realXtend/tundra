@@ -48,6 +48,11 @@ namespace TpQt4Communication
 
 	}
 
+	TextChatSession::TextChatSession()
+	{
+
+	}
+
 	void TextChatSession::SendTextMessage(std::string text)
 	{
 		Message* m = new Message(text);
@@ -65,9 +70,44 @@ namespace TpQt4Communication
 	}
 
 
-	User::User(): user_id_(""), protocol_("")
+	Contact::Contact(Tp::Contact* tp_contact)
 	{
+		LogInfo("Create Contact object");
+		tp_contact_ = tp_contact;
+		ConnectSignals();
+	}
 
+	void Contact::ConnectSignals()
+	{
+		QObject::connect(tp_contact_,
+            SIGNAL(simplePresenceChanged(const QString &, uint, const QString &)),
+            SLOT(OnContactChanged()));
+		QObject::connect(tp_contact_,
+            SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState)),
+            SLOT(OnContactChanged()));
+		QObject::connect(tp_contact_,
+            SIGNAL(publishStateChanged(Tp::Contact::PresenceState)),
+            SLOT(OnContactChanged()));
+		QObject::connect(tp_contact_,
+            SIGNAL(blockStatusChanged(bool)),
+            SLOT(OnContactChanged()));
+	}
+
+	void Contact::OnContactChanged()
+	{
+		LogInfo("Contact state changed");
+	}
+
+	User::User(Tp::ConnectionPtr tp_connection): user_id_(""), protocol_(""), tp_connection_(tp_connection)
+	{
+		tp_contact_ = tp_connection->selfContact();
+	}
+
+	void User::SetPresenceStatus(std::string status, std::string message)
+	{
+		QString s(status.c_str());
+		QString m(message.c_str());
+		tp_connection_->setSelfPresence(s, m);
 	}
 
 	std::string User::GetUserID()
@@ -95,8 +135,23 @@ namespace TpQt4Communication
 
 	}
 
-	Connection::Connection() : user_(NULL), state_(STATE_CLOSED), id_(""), protocol_(""), tp_connection_(NULL)
+	std::string Credentials::GetProtocol() const 
 	{
+		return protocol_;
+	}
+
+	std::string Credentials::GetServer() const
+	{
+		return server_;
+	}
+
+	Connection::Connection(const Credentials &credentials) : user_(NULL), state_(STATE_CONNECTING), id_(""), protocol_( credentials.GetProtocol() ), server_( credentials.GetServer() ) , tp_connection_(NULL)
+	{
+	}
+
+	Connection::~Connection()
+	{
+		tp_connection_->requestDisconnect();
 	}
 
 	void Connection::Close()
@@ -136,11 +191,14 @@ namespace TpQt4Communication
 
 	TextChatSessionPtr Connection::CreateTextChatSession()
 	{
+		QVariantMap params;
+
+		Tp::PendingChannel* pending_channel = tp_connection_->createChannel(params);
+		Tp::ChannelPtr c = pending_channel->channel();
+		
 		TextChatSession* session = new TextChatSession();
 		return TextChatSessionPtr(session);
 	}
-
-
 
 	void Connection::OnConnectionCreated(Tp::PendingOperation *op)
 	{
@@ -163,12 +221,13 @@ namespace TpQt4Communication
 		
 		//conn->requestsInterface(
 		//conn->gotInterfaces
-		QObject::connect(tp_connection_->requestConnect(), SIGNAL(finished(Tp::PendingOperation *)),
-//			this,
-			SLOT(OnConnectionConnected(Tp::PendingOperation *)));
-		QObject::connect(tp_connection_.data(), SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
-		//	this,
-		SLOT(OnConnectionInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
+		QObject::connect(tp_connection_->requestConnect(), SIGNAL(finished(Tp::PendingOperation *)),SLOT(OnConnectionConnected(Tp::PendingOperation *)));
+		QObject::connect(tp_connection_.data(), SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),	SLOT(OnConnectionInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
+
+
+		QObject::connect(tp_connection_->requestsInterface(),
+                SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
+                SLOT(OnNewChannels(const Tp::ChannelDetailsList&)));
 	}
 
 
@@ -177,7 +236,7 @@ namespace TpQt4Communication
 		std::string message = "Connection established successfully to IM server.";
 		LogInfo(message);
 		LogInfo("Create user.");
-		user_ = new User();
+		user_ = new User(tp_connection_);
 		state_ = STATE_OPEN;
 
 		// Request friend list
@@ -186,37 +245,70 @@ namespace TpQt4Communication
             SLOT(OnPresencePublicationRequested(const Tp::Contacts &)));
 
 		//QStringList list;
-		//Tp::PendingContacts *pending_contacts = this->tp_connection_->contactManager()->contactsForIdentifiers(list);
-		//Tp::Contacts contacts  = this->tp_connection_->contactManager()->allKnownContacts();
-		//
-		//for (int i = 0; i < contacts.size(); ++i)
-		//{
-		//	Tp::ContactPtr c = contacts[i];
-		//	std::string id = c->id().toStdString();
-		//	
-		//	LogInfo("***");
-		//	LogInfo(id);
-		//	//Contact contact = new Contact(address, real_name);
-		//	
-		//}
+		
+		Tp::Contacts contacts  = this->tp_connection_->contactManager()->allKnownContacts();
+		
+		
+		for (Tp::Contacts::iterator i = contacts.begin(); i != contacts.end(); ++i)
+		{
+			Tp::ContactPtr c = *i;
+			std::string id = c->id().toStdString();
+			
+			LogInfo("***");
+			LogInfo(id);
+			//Contact contact = new Contact(address, real_name);
+			
+		}
 
-		//QObject::connect((QObject*)pending_contacts, SIGNAL(finished(Tp::PendingOperation *)),
-		//	SLOT(OnContactRetrieved(Tp::PendingOperation *)));
+//		Tp::PendingContacts *pending_contacts = this->tp_connection_->contactManager()->->contactsForIdentifiers(list);
+//		QObject::connect((QObject*)pending_contacts, SIGNAL(finished(Tp::PendingOperation *)),
+//			SLOT(OnContactRetrieved(Tp::PendingOperation *)));
+	}
+
+	void Connection::OnNewChannels(const Tp::ChannelDetailsList& channels)
+	{
+		LogInfo("New channel received.");
+		foreach (const Tp::ChannelDetails &details, channels) 
+		{
+			QString channelType = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
+			bool requested = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested")).toBool();
+			// qDebug() << " channelType:" << channelType;
+			//  qDebug() << " requested  :" << requested;
+
+			if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT && !requested)
+			{
+				Tp::TextChannelPtr channel = Tp::TextChannel::create(tp_connection_, details.channel.path(), details.properties);
+				//mCallHandler->addIncomingCall(channel);
+				LogInfo("Text channel");
+			}
+
+			if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST && !requested)
+			{
+				LogInfo("Contact list channel");
+			}
+
+			if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA && !requested)
+			{
+				LogInfo("Streamed media channel");
+			}
+			
+		}
 	}
 
 	void Connection::OnPresencePublicationRequested(const Tp::Contacts &contacts)
 	{
+		LogInfo("OnPresencePublicationRequested");
+		// TODO: Create Friend request object ?
 		foreach (const Tp::ContactPtr &contact, contacts)
 		{
 			LogInfo("****");
 			//std::string id = contact.id().toStdString();
-
 		}
-
 	}
 
 	void Connection::OnContactRetrieved(Tp::PendingOperation *op)
 	{
+		LogInfo("OnContactRetrieved");
 		if (op->isError())
 		{
 			LogError("Failed to receive friendlist.");
@@ -357,12 +449,12 @@ namespace TpQt4Communication
 			return NULL;
 		}
 
-		Connection* connection = new Connection();
+		Connection* connection = new Connection(credentials);
 		connections_.push_back(connection);
 
 		QVariantMap params;
-		QString user_name = "@jabber.org";
-		QString pass_word = "";
+		QString user_name = "kuonanoja@jabber.org";
+		QString pass_word = "jabber666";
 		QString server = "jabber.org";
 //		QIn port = 5222;
 
@@ -375,10 +467,9 @@ namespace TpQt4Communication
 		message.append( server.toStdString () );
 		LogInfo(message);
 		Tp::PendingConnection *pending_connection = connection_manager_->requestConnection(IM_PROTOCOL, params);
-		QObject::connect(pending_connection,
-				SIGNAL(finished(Tp::PendingOperation *)),
-				(QObject*)connection,
-				SLOT(OnConnectionCreated(Tp::PendingOperation *)));
+		QObject::connect(pending_connection, SIGNAL(finished(Tp::PendingOperation *)),
+				(QObject*)connection, SLOT(OnConnectionCreated(Tp::PendingOperation *)));
+
 
 		return connection;
 	}
@@ -428,9 +519,9 @@ namespace TpQt4Communication
 		QStringList env = QProcess::systemEnvironment();
 		env << "DBUS_SESSION_BUS_ADDRESS=tcp:host=localhost,port=12434";
 		dbus_daemon_->setEnvironment(env);
-
+		
 		connect( dbus_daemon_, SIGNAL(readyReadStandardOutput()), this, SLOT(OnDBusDaemonStdout()) );
-		connect( dbus_daemon_, SIGNAL(finished(int exitCode)), this, SLOT(OnDBusDaemonExited(int exitCode)) );
+		connect( dbus_daemon_, SIGNAL(finished(int)), this, SLOT(OnDBusDaemonExited(int)) );
 
 		dbus_daemon_->start(path);
 		bool ok = dbus_daemon_->waitForStarted(2000);
@@ -456,6 +547,7 @@ namespace TpQt4Communication
 	{
 
 	}
+
 #endif		
 
 } // namespace TpQt4Communication
