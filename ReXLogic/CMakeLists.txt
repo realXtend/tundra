@@ -49,6 +49,7 @@ LINK_POCO()
 LINK_OGRE()
 LINK_QT4()
 LINK_CURL()
+LINK_OPENJPEG()
 # Define libraries to be linked into target
 target_link_libraries (${TARGET_NAME} Foundation Interfaces OpenSimProtocolModule RexCommon OgreRenderingModule QtModule HttpUtilities)
 
