@@ -234,7 +234,7 @@ if 0: #python-ogre test - using the extension lib in the embedded context :o
     #print vp
     bg = vp.getBackgroundColour()
     #only affects when not connected, when caelum is not there i figure
-    vp.setBackgroundColour(ogre.ColourValue(0, 0.2, 0))
+    vp.setBackgroundColour(ogre.ColourValue(0.1, 0.2, 0))
     
     cam = vp.getCamera()
     #print cam
@@ -326,7 +326,7 @@ if 0:
     box = r.c.widget.treeWidget
     box.clear()
     
-if 0:
+if 0: #populating the EditGui window
     from PythonQt.QtGui import *
     from PythonQt.QtCore import QPoint
     box = r.c.widget
@@ -386,13 +386,39 @@ if 0: #collada load testing
         import pycollada_test
     else:
         pycollada_test = reload(pycollada_test)
+
+if 0: #canvas size edit
+    box = r.c
+    #print dir(box.widget.size)
+    #print box.widget.size.width()#, box.widget.size.height
+    #print type(box.canvas)
+    #box.canvas.size.setHeight(600)#
+    #box.canvas.adjustSize()
+    width = box.widget.size.width()
+    height = box.widget.size.height()
+    print width, height
+    box.canvas.resize(width, height)
+    #print box.canvas.resize(380, 250)
     
-"""
-['__dict__', '__doc__', '__init__', '__module__', '__weakref__', 'addPluginPath', 'availableWidgets', 'blockSignals', 'c
-hildEvent', 'children', 'className', 'clearPluginPaths', 'connect', 'createAction', 'createActionGroup', 'createLayout',
- 'createWidget', 'customEvent', 'deleteLater', 'destroyed', 'disconnect', 'dumpObjectInfo', 'dumpObjectTree', 'dynamicPr
-opertyNames', 'emit', 'event', 'eventFilter', 'findChild', 'findChildren', 'help', 'inherits', 'installEventFilter', 'is
-ScriptingEnabled', 'isWidgetType', 'killTimer', 'load', 'moveToThread', 'parent', 'pluginPaths', 'property', 'removeEven
-tFilter', 'setObjectName', 'setParent', 'setProperty', 'setScriptingEnabled', 'setWorkingDirectory', 'signalsBlocked', '
-startTimer', 'thread', 'timerEvent', 'toString', 'tr', 'workingDirectory']
-"""
+if 0: #ogre cam test and vectors
+    import ogre.renderer.OGRE as ogre
+    root = ogre.Root.getSingleton()
+    #print dir(r)
+    print root.isInitialised()
+    rs = root.getRenderSystem()
+    
+    vp = rs._getViewport()
+    
+    
+    #~ print dir(ogre.Vector3)
+    #~ vec = ogre.Vector3(5, 5, 5).normalisedCopy() 
+    #~ print vec, type(vec)
+    cam = vp.getCamera()
+    
+    #print dir(cam)
+    #print cam.Orientation, cam.DerivedOrientation, cam.getOrientation()
+    #~ print "\n"
+    #~ print cam.getRight(), cam.getUp()
+    
+    
+    
