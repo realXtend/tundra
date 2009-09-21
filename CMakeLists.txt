@@ -18,14 +18,9 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CMakeModules)
 include (Sagase)
 include (ModuleSetup)
 
-include (Boost)
-include (PoCo)
 include (Curl)
 include (XmlRpcEpi)
-include (Ogre)
-include (OIS)
 include (OpenJpeg)
-include (Qt)
 
 # The following CMake modules are optional.
 include (Python)
@@ -37,7 +32,6 @@ include (TelepathyQt4)
 include (glib)
 include (GStreamer)
 include (TelepathyFarsight2)
-
 
 
 # Disable unnecessary build types
@@ -69,16 +63,15 @@ if (MSVC)
 endif (MSVC)
 
 # Find needed external libraries, abort on error
-FIND_BOOST()
-FIND_POCO() #TODO: didn't detect on fedora
+configure_boost ()
+configure_poco ()
+configure_qt4 ()
+configure_ois ()
+configure_ogre ()
+
 FIND_CURL()
-FIND_XMLRPCEPI() #TODO: didn't detect on fedora
-FIND_OGRE()
-FIND_OIS()
+FIND_XMLRPCEPI()
 FIND_OPENJPEG()
-#FIND_GTKMM()
-#FIND_OPENAL()
-FIND_QT4()
 FIND_PYTHON()
 
 if (CAELUM)

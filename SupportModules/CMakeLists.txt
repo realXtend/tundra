@@ -7,25 +7,19 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-# Include directories
-use_module_headers (${TARGET_NAME} OgreRenderingModule InputModuleOIS)
-		
-# External library includes
-INCLUDE_BOOST()
-INCLUDE_POCO()
-INCLUDE_OIS()
-INCLUDE_OGRE()
-
 add_definitions (-DCONSOLE_MODULE_EXPORTS)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
-target_link_libraries (${TARGET_NAME} OgreRenderingModule)
+use_module_headers (${TARGET_NAME} OgreRenderingModule InputModuleOIS)
+use_package (BOOST)
+use_package (POCO)
+use_package (OIS)
+use_package (OGRE)
 
-# External library linkage
-LINK_BOOST()
-LINK_POCO()
-LINK_OGRE()
+target_link_libraries (${TARGET_NAME} OgreRenderingModule)
+link_ois ()
+link_ogre ()
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
@@ -35,15 +29,12 @@ endforeach (XML_FILE)
 # Precompiled headers on MSVC
 if (MSVC)
 	foreach( src_file ${CPP_FILES} )
-        	set_source_files_properties(
-            		${src_file}
+        	set_source_files_properties( ${src_file}
             		PROPERTIES
-            		COMPILE_FLAGS "/YuStableHeaders.h"
-        	)
+            		COMPILE_FLAGS "/YuStableHeaders.h")
 	endforeach( src_file ${CPP_FILES} )
 
 	set_source_files_properties(StableHeaders.cpp
         	PROPERTIES
-        	COMPILE_FLAGS "/YcStableHeaders.h"
-        )
+        	COMPILE_FLAGS "/YcStableHeaders.h")
 endif (MSVC)

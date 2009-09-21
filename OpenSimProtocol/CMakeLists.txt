@@ -7,22 +7,17 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-# Include directories
-use_module_headers (${TARGET_NAME} NetTestLogicModule HttpUtilities)
-
-# External library includes
-INCLUDE_BOOST()
-INCLUDE_POCO()
-INCLUDE_XMLRPCEPI()
-
 add_definitions (-DOSPROTO_MODULE_EXPORTS)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager RexCommon)
-target_link_libraries (${TARGET_NAME} RexCommon HttpUtilities)
+use_module_headers (${TARGET_NAME} NetTestLogicModule HttpUtilities)
+use_package (BOOST)
+use_package (POCO)
 
-# External library linkage (needs target defined)
-LINK_POCO()
+INCLUDE_XMLRPCEPI()
+
+target_link_libraries (${TARGET_NAME} RexCommon HttpUtilities)
 LINK_XMLRPCEPI()
 
 # Copy XML files from source directory to target directory

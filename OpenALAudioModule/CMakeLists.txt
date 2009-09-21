@@ -7,18 +7,12 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-# External library includes
-INCLUDE_BOOST()
-INCLUDE_POCO()
-INCLUDE_OPENAL()
-
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 use_framework_modules (${TARGET_NAME} Core Foundation Interfaces)
+use_package (BOOST)
+use_package (POCO)
 
-# External library linkage
-LINK_BOOST()
-LINK_POCO()
-LINK_OPENAL()
+INCLUDE_OPENAL()
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
