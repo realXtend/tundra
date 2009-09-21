@@ -1,5 +1,5 @@
-#ifndef incl_CommunicationModule_h
-#define incl_CommunicationModule_h
+#ifndef incl_Comm_CommunicationModule_h
+#define incl_Comm_CommunicationModule_h
 
 #include "Foundation.h"
 #include "ModuleInterface.h"
@@ -54,4 +54,4 @@ namespace Communication
 	};
 }
 
-#endif
+#endif // incl_Comm_CommunicationModule_h

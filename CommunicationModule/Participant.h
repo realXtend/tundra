@@ -1,29 +1,29 @@
-#ifndef incl_Participant_h
-#define incl_Participant_h
+#ifndef incl_Comm_Participant_h
+#define incl_Comm_Participant_h
 
 #include "Foundation.h"
 #include "EventDataInterface.h"
+
 #include "PresenceStatus.h"
 
-namespace Communication
+namespace TpQt4Communication
 {
 	/**
-	 *  Implementation of ParticipantInterface
+	 *  An participant is session. A Participant object is created when invited person have
+	 *  accepted to join to session.
+	 *
+	 * You can get an Participant object by calling 
+	 *
 	 */
-	class Participant : public ParticipantInterface
+	class Participant
 	{
 	public:
-		Participant(ContactPtr contact);
-		virtual ContactPtr GetContact() const;
-//		virtual ContactInfoPtr GetCurrentContactInfo() const;
-	protected:
-		ContactPtr contact_;
-//		ParticipantPrt current_contact_info_; 
-		IMMessageListPtr im_messages_;
-		std::string last_message_time_stamp_;
-		int message_count_;
+		std::string GetRealName();
+		std::string GetAddress();
 	};
 
-} // end of namespace Communication
 
-#endif // incl_Participant_h
+
+} // end of namespace TpQt4Communication
+
+#endif // incl_Comm_Participant_h

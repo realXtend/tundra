@@ -4,54 +4,48 @@
 #include "Contact.h"
 
 
-namespace Communication
+namespace TpQt4Communication
 {
-	Contact::Contact(std::string id): name_(""), id_(id)
+	Contact::Contact(Tp::ContactPtr tp_contact)
 	{
-		contact_infos_ = ContactInfoListPtr( new ContactInfoList() );
-		presence_status_ = PresenceStatusPtr( (PresenceStatusInterface*) new PresenceStatus() );
+		LogInfo("Create Contact object");
+		tp_contact_ = tp_contact;
+		ConnectSignals();
 	}
 
-	void Contact::SetName(std::string name)
+	void Contact::ConnectSignals()
 	{
-		name_ = name;
+		//QObject::connect(tp_contact_.data(),
+  //          SIGNAL(simplePresenceChanged(const QString &, uint, const QString &)),
+  //          SLOT(OnContactChanged()));
+		//QObject::connect(tp_contact_,
+  //          SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState)),
+  //          SLOT(OnContactChanged()));
+		//QObject::connect(tp_contact_,
+  //          SIGNAL(publishStateChanged(Tp::Contact::PresenceState)),
+  //          SLOT(OnContactChanged()));
+		//QObject::connect(tp_contact_,
+  //          SIGNAL(blockStatusChanged(bool)),
+  //          SLOT(OnContactChanged()));
+	}
+
+	void Contact::OnContactChanged()
+	{
+		LogInfo("Contact state changed");
+
+		QString status =  tp_contact_->presenceStatus();
 		
-	}
-
-	std::string Contact::GetName()
-	{
-		return name_;
-	}
-
-	PresenceStatusPtr Contact::GetPresenceStatus()
-	{
-		return presence_status_;
-	}
-
-	ContactInfoListPtr Contact::GetContactInfoList()
-	{
-		return contact_infos_;
-	}
-
-	ContactInfoPtr Contact::GetContactInfo(std::string protocol)
-	{
-		for (ContactInfoList::iterator i = contact_infos_->begin(); i < contact_infos_->end(); i++)
+		switch( tp_contact_->subscriptionState() )
 		{
-			if ( (*i)->GetProperty("protocol").compare(protocol) == 0)
-			{
-				return *i;
-			}
+			case Tp::Contact::PresenceStateAsk: break;
+			case Tp::Contact::PresenceStateNo: break;
+			case Tp::Contact::PresenceStateYes: break;
 		}
-
-		// contact info for given protocol didn't found
-		// we return an empty contact info object
-		return ContactInfoPtr(new ContactInfo());
-	}
-
-	// todo: might be a good idea to test for duplicates
-	void Contact::AddContactInfo(ContactInfoPtr contact_info)
-	{
-		contact_infos_->push_back(contact_info);
+		
+		if (tp_contact_->isBlocked())
+		{
+			// User has blocked this contact
+		}
 	}
 
 } // end of namespace: Communication

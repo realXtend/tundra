@@ -28,18 +28,6 @@ namespace Communication
 		qt_ui_ = new CommunicationUI::QtUI(0, framework_);
 		qt_ui_->show();
 
-		if (communication_manager_->GetState() == TpQt4Communication::CommunicationManager::STATE_ERROR)
-		{
-			LogError("Initialization failed.");
-			return;
-		}
-//		c.SetProtocol("jabber");
-//		c.SetUserID("kuonanoja@jabber.org");
-//		c.SetPassword("jabber666");
-		//comm_->OpenConnection();
-		//communication_manager_ = CommunicationManagerPtr(new CommunicationManager(framework_));
-		//if (communication_manager_->IsInitialized())
-//		    framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communication, communication_manager_ );
 		LogInfo("Initialized.");
 	}
 

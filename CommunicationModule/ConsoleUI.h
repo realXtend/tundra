@@ -1,5 +1,5 @@
-#ifndef incl_ConsoleUI_h
-#define incl_ConsoleUI_h
+#ifndef incl_Comm_ConsoleUI_h
+#define incl_Comm_ConsoleUI_h
 
 #include "StableHeaders.h"
 #include "Foundation.h"
@@ -77,4 +77,4 @@ namespace CommunicationUI
 
 } //end if namespace: CommunicationUI
 
-#endif // incl_ConsoleUI_h
+#endif // incl_Comm_ConsoleUI_h
