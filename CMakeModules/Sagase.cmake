@@ -56,8 +56,8 @@ function (sagase_generate_paths INCLUDE_PATHS LIBRARY_PATHS)
         foreach (pkgname ${path_names})
 
             set (includes ${includes} 
-                ${prefix}/${pkgname}/includes 
-                ${prefix}/includes/${pkgname})
+                ${prefix}/${pkgname}/include 
+                ${prefix}/include/${pkgname})
 
             set (libraries ${libraries} 
                 ${prefix}/${pkgname}/lib ${prefix}/lib/${pkgname}
