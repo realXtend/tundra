@@ -89,11 +89,6 @@ if (HYDRAX)
 	FIND_HYDRAX()
 endif (HYDRAX)
 
-# Default additional include & library directories
-include_directories (${NAALI_DEP_PATH}/include)
-
-# Library directories
-link_directories (${NAALI_DEP_PATH}/lib)
 
 # Add all the subprojects in the rex viewer.
 # The following are the core modules that are 

@@ -11,15 +11,7 @@ file (GLOB RESOURCE_FILES resource/*.qrc)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Include directories
-include_directories (
-	../Core
-	../Foundation
-	../SceneModule
-	../Interfaces
-	../RexCommon
-	../OgreRenderingModule
-	../InputModuleOIS
-)
+use_module_headers (${TARGET_NAME} RexCommon OgreRenderingModule InputModuleOIS)
 
 # External library includes
 INCLUDE_BOOST()
@@ -37,15 +29,9 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 add_definitions (-DQT_MODULE_EXPORTS)
 
 
-add_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
-
-
-set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
-set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
-set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
-
-# Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation Interfaces RexCommon OgreRenderingModule InputModuleOIS)
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
+use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
+target_link_libraries (${TARGET_NAME} RexCommon OgreRenderingModule InputModuleOIS)
 
 # External library linkage
 LINK_BOOST()

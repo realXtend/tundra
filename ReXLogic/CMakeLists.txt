@@ -9,18 +9,7 @@ file (GLOB MOC_FILES RexLoginWindow.h RexWebLogin.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Include directories
-include_directories (
-    ../Core
-    ../Foundation
-    ../SceneManager
-    ../Interfaces
-    ../OgreRenderingModule
-    ../OpenSimProtocol
-    ../RexCommon
-    ../InputModuleOIS
-    ../QtModule
-    ../HttpUtilities
-)
+use_module_headers (${TARGET_NAME} OgreRenderingModule OpenSimProtocol RexCommon InputModuleOIS QtModule HttpUtilities)
 
 # External library includes
 INCLUDE_BOOST()
@@ -37,11 +26,8 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DUSE_QT)
 
-add_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
-
-set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
-set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
-set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
+use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
 
 # External library linkage
 LINK_BOOST()
@@ -50,8 +36,9 @@ LINK_OGRE()
 LINK_QT4()
 LINK_CURL()
 LINK_OPENJPEG()
+
 # Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation Interfaces OpenSimProtocolModule RexCommon OgreRenderingModule QtModule HttpUtilities)
+target_link_libraries (${TARGET_NAME} OpenSimProtocolModule RexCommon OgreRenderingModule QtModule HttpUtilities)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

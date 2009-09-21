@@ -8,15 +8,7 @@ file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Include directories
-include_directories (
-	../Core
-	../Foundation
-	../SceneManager
-	../Interfaces
-	../AssetModule
-	../RexCommon
-	../InputModuleOIS
-)
+use_module_headers (${TARGET_NAME} AssetModule SupportModules InputModuleOIS RexCommon)
 
 # External library includes
 INCLUDE_BOOST()
@@ -43,15 +35,8 @@ if (HYDRAX)
 endif (HYDRAX)
 
 
-
-add_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-
-
-set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
-set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
-set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
-
-# Define libraries to be linked into target
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
 target_link_libraries (${TARGET_NAME} Foundation Interfaces RexCommon)
 
 # External library linkage
@@ -75,15 +60,12 @@ endforeach (XML_FILE)
 # Precompiled headers on MSVC
 if (MSVC)
 	foreach( src_file ${CPP_FILES} )
-        	set_source_files_properties(
-            		${src_file}
+        	set_source_files_properties(${src_file}
             		PROPERTIES
-            		COMPILE_FLAGS "/YuStableHeaders.h"
-        	)
+            		COMPILE_FLAGS "/YuStableHeaders.h")
 	endforeach( src_file ${CPP_FILES} )
 
 	set_source_files_properties(StableHeaders.cpp
         	PROPERTIES
-        	COMPILE_FLAGS "/YcStableHeaders.h"
-        )
-endif (MSVC)
+        	COMPILE_FLAGS "/YcStableHeaders.h")
+endif ()

@@ -8,15 +8,7 @@ file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Include directories
-include_directories (
-	../Core
-	../RexCommon
-	../Foundation
-	../Interfaces
-	../NetTestLogicModule
-	../HttpUtilities
-)
-
+use_module_headers (${TARGET_NAME} NetTestLogicModule HttpUtilities)
 
 # External library includes
 INCLUDE_BOOST()
@@ -25,13 +17,9 @@ INCLUDE_XMLRPCEPI()
 
 add_definitions (-DOSPROTO_MODULE_EXPORTS)
 
-add_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
-set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
-set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
-
-# Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation RexCommon Interfaces Core HttpUtilities)
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager RexCommon)
+target_link_libraries (${TARGET_NAME} RexCommon HttpUtilities)
 
 # External library linkage (needs target defined)
 LINK_POCO()

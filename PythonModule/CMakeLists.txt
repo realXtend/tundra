@@ -11,19 +11,7 @@ file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Include directories
-include_directories (
-	../Core
-	../Foundation
-	../SceneManager
-	../Interfaces
-    ../RexCommon
-    ../ReXLogic
-    ../OpenSimProtocol #needed 'cause ReXLogic uses it
-    ../OgreRenderingModule #to be able to get placeable component data
-    ../InputModuleOIS
-    ../QtModule #for UICanvas creation (in PythonQt part of the api)
-)
-
+use_module_headers (${TARGET_NAME} RexCommon ReXLogic OpenSimProtocol OgreRenderingModule InputModuleOIS QtModule)
 link_directories (${PROJECT_BINARY_DIR}/RexLogic/Debug ${PROJECT_BINARY_DIR}/RexLogic/Release)
 
 # External library includes
@@ -40,13 +28,9 @@ if(PYTHON_FORCE_RELEASE_VERSION)
     add_definitions(-DPYTHON_FORCE_RELEASE_VERSION) 
 endif(PYTHON_FORCE_RELEASE_VERSION)
 
-add_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
-set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
-set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
-
-# Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Core Foundation Interfaces OpenSimProtocolModule RexCommon RexLogicModule) # OgreRenderingModule)
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
+target_link_libraries (${TARGET_NAME} OpenSimProtocolModule RexCommon RexLogicModule) # OgreRenderingModule)
 
 # External library linkage
 LINK_BOOST()

@@ -8,14 +8,7 @@ file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Include directories
-include_directories (
-	../Core
-	../Foundation
-	../Interfaces
-	../OgreRenderingModule
-	../InputModuleOIS
-	../SceneManager
-)
+use_module_headers (${TARGET_NAME} OgreRenderingModule InputModuleOIS)
 		
 # External library includes
 INCLUDE_BOOST()
@@ -25,12 +18,9 @@ INCLUDE_OGRE()
 
 add_definitions (-DCONSOLE_MODULE_EXPORTS)
 
-add_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
-set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
-
-# Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Core Foundation SceneManager OgreRenderingModule)
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
+target_link_libraries (${TARGET_NAME} OgreRenderingModule)
 
 # External library linkage
 LINK_BOOST()
