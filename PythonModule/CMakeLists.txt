@@ -10,35 +10,28 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-# Include directories
-use_module_headers (${TARGET_NAME} RexCommon ReXLogic OpenSimProtocol OgreRenderingModule InputModuleOIS QtModule)
-link_directories (${PROJECT_BINARY_DIR}/RexLogic/Debug ${PROJECT_BINARY_DIR}/RexLogic/Release)
-
-# External library includes
-INCLUDE_BOOST()
-INCLUDE_POCO()
-INCLUDE_PYTHON()
-INCLUDE_PYTHONQT()
-INCLUDE_QT4()
-INCLUDE_OIS()
-INCLUDE_OGRE()
-
-
 if(PYTHON_FORCE_RELEASE_VERSION)
     add_definitions(-DPYTHON_FORCE_RELEASE_VERSION) 
 endif(PYTHON_FORCE_RELEASE_VERSION)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
-target_link_libraries (${TARGET_NAME} OpenSimProtocolModule RexCommon RexLogicModule) # OgreRenderingModule)
+use_module_headers (${TARGET_NAME} RexCommon ReXLogic OpenSimProtocol OgreRenderingModule InputModuleOIS QtModule)
+use_package (BOOST)
+use_package (POCO)
+use_package (QT4)
+use_package (OIS)
+use_package (OGRE)
 
-# External library linkage
-LINK_BOOST()
-LINK_POCO()
+INCLUDE_PYTHON()
+INCLUDE_PYTHONQT()
 LINK_PYTHON()
-#LINK_OGRE() #was direct camera access
 LINK_PYTHONQT()
-LINK_QT4()
+
+link_directories (${PROJECT_BINARY_DIR}/RexLogic/Debug ${PROJECT_BINARY_DIR}/RexLogic/Release)
+target_link_libraries (${TARGET_NAME} OpenSimProtocolModule RexCommon RexLogicModule) # OgreRenderingModule)
+link_ois ()
+link_ogre ()
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

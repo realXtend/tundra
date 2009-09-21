@@ -1,4 +1,13 @@
 # Naali build macros
+#
+# Generally used as follows:
+# 1. call configure_${PACKAGE}() once
+# 2. call init_target (${NAME}) once per build target
+# 3. call build_library/executable() on the source files
+# 4. call use_framework_modules() with a list of framework module names
+# 4. call use_module_headers() with a list of local module names for includes
+# 4. call use_module_libraries() with a list of local module names libraries
+# 4. call use_package (${PACKAGE}) once per build target
 
 # =============================================================================
 # reusable macros
@@ -13,8 +22,9 @@ macro (init_target NAME)
 
     message (STATUS "Found build target: " ${TARGET_NAME})
 
-    include_directories (${NAALI_DEP_PATH}/include)
-    link_directories (${NAALI_DEP_PATH}/lib)
+    # headers or libraries are found here will just work
+    include_directories ($ENV{NAALI_DEP_PATH}/include)
+    link_directories ($ENV{NAALI_DEP_PATH}/lib)
 
     # if OUTPUT is defined
     if (${TARGET_NAME}_OUTPUT)# AND ${TARGET_NAME}_OUTPUT STREQUAL "OUTPUT")
@@ -61,24 +71,31 @@ macro (build_library TARGET_NAME LIB_TYPE)
 endmacro (build_library)
 
 # build an executable from internal sources 
-macro (build_executable TARGET_NAME LIB_TYPE)
+macro (build_executable TARGET_NAME)
 
-    message (STATUS "building " ${LIB_TYPE} " executable: " ${TARGET_NAME})
+    message (STATUS "building executable: " ${TARGET_NAME})
+    
+    if (MSVC AND WINDOWS_APP)
+        add_executable (${TARGET_NAME} WIN32 ${ARGN})
+    else ()
+        add_executable (${TARGET_NAME} ${ARGN})
+    endif ()
 
-    add_library (${TARGET_NAME} ${LIB_TYPE} ${ARGN})
+    if (MSVC)
+        target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)
+    endif (MSVC)
 
-    # internal library naming convention
     set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
-    set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
-    set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
 
 endmacro (build_executable)
 
 # include and lib directories, and definitions
 macro (use_package PREFIX)
+    message (STATUS "-- using " ${PREFIX})
+    add_definitions (${${PREFIX}_DEFINITIONS})
     include_directories (${${PREFIX}_INCLUDE_DIRS})
     link_directories (${${PREFIX}_LIBRARY_DIRS})
-    add_definitions (${${PREFIX}_DEFINITIONS})
+    target_link_libraries (${TARGET_NAME} ${${PREFIX}_LIBRARIES})
 endmacro (use_package)
 
 # include local framework headers and libraries
@@ -104,7 +121,6 @@ macro (use_module_libraries TARGET_NAME)
         target_link_libraries (${TARGET_NAME} ${module_})
     endforeach ()
 endmacro (use_module_libraries)
-
 
 # link directories
 macro (link_package PREFIX TARGET_NAME)
@@ -176,13 +192,13 @@ macro (configure_ois)
         PREFIXES $ENV{NAALI_DEP_PATH})
 endmacro (configure_ois)
 
-macro (link_OIS ${TARGET_NAME})
+macro (link_ois ${TARGET_NAME})
     if (MSVC)
         target_link_libraries (${TARGET_NAME} debug OIS_d optimized OIS)
     else ()
         target_link_libraries (${TARGET_NAME} ${OIS_LIBRARIES})
     endif ()
-endmacro (link_OIS)
+endmacro (link_ois)
 
 macro (configure_ogre)
     sagase_configure_package (OGRE 

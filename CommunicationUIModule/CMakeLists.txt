@@ -7,15 +7,10 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-# External library includes
-INCLUDE_BOOST()
-INCLUDE_POCO()
-
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager RexCommon)
-
-# External library linkage (needs target defined)
-LINK_POCO()
+use_package (BOOST)
+use_package (POCO)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

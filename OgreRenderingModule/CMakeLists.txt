@@ -7,14 +7,6 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-# Include directories
-use_module_headers (${TARGET_NAME} AssetModule SupportModules InputModuleOIS RexCommon)
-
-# External library includes
-INCLUDE_BOOST()
-INCLUDE_POCO()
-INCLUDE_OGRE()
-
 if (CAELUM)
 	INCLUDE_CAELUM()
 endif (CAELUM)
@@ -22,9 +14,6 @@ endif (CAELUM)
 if (HYDRAX)
 	INCLUDE_HYDRAX()
 endif (HYDRAX)
-
-
-add_definitions (-DOGRE_MODULE_EXPORTS) 
 
 if (CAELUM)
 	add_definitions (-DCAELUM)
@@ -34,15 +23,18 @@ if (HYDRAX)
 	add_definitions (-DHYDRAX)
 endif (HYDRAX)
 
+add_definitions (-DOGRE_MODULE_EXPORTS) 
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
-target_link_libraries (${TARGET_NAME} Foundation Interfaces RexCommon)
+use_module_headers (${TARGET_NAME} AssetModule SupportModules InputModuleOIS RexCommon)
+use_package (BOOST)
+use_package (POCO)
+use_package (OGRE)
 
-# External library linkage
-LINK_BOOST()
-LINK_POCO()
-LINK_OGRE()
+target_link_libraries (${TARGET_NAME} Foundation Interfaces RexCommon)
+link_ois ()
+link_ogre ()
 
 if (CAELUM)
 	LINK_CAELUM()

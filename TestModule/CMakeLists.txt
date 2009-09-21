@@ -7,19 +7,11 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-# Include directories
-use_module_headers (${TARGET_NAME} OgreRenderingSystem)
-
-# External library includes
-INCLUDE_BOOST()
-INCLUDE_POCO()
-
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+use_module_headers (${TARGET_NAME} OgreRenderingSystem)
 use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
-
-# External library linkage
-LINK_BOOST()
-LINK_POCO()
+use_package (BOOST)
+use_package (POCO)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

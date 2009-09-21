@@ -10,34 +10,25 @@ file (GLOB RESOURCE_FILES resource/*.qrc)
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-# Include directories
-use_module_headers (${TARGET_NAME} RexCommon OgreRenderingModule InputModuleOIS)
-
-# External library includes
-INCLUDE_BOOST()
-INCLUDE_OGRE()
-INCLUDE_OIS() # ///\todo Remove.
-INCLUDE_QT4()
-INCLUDE_POCO()
-
-#Wrap 
-include(${QT_USE_FILE})
+# Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DQT_MODULE_EXPORTS)
 
-
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
-target_link_libraries (${TARGET_NAME} RexCommon OgreRenderingModule InputModuleOIS)
+use_module_headers (${TARGET_NAME} RexCommon OgreRenderingModule InputModuleOIS)
+use_package (BOOST)
+use_package (OGRE)
+use_package (OIS) # ///\todo Remove.
+use_package (QT4)
+use_package (POCO)
 
-# External library linkage
-LINK_BOOST()
-LINK_OGRE()
-LINK_OIS() # ///\todo Remove.
-LINK_QT4()
+target_link_libraries (${TARGET_NAME} RexCommon OgreRenderingModule InputModuleOIS)
+link_ois ()
+link_ogre ()
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

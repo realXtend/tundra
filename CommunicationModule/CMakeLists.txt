@@ -10,38 +10,27 @@ file (GLOB RESOURCE_FILES resource/*.qrc)
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-
-# Include directories
-
-#FIND_QT4() 
 FIND_TELEPATHY_QT4()
 FIND_GSTREAMER()
 FIND_TELEPATHY_FARSIGHT2()
 
-# External library includes
-INCLUDE_BOOST()
-INCLUDE_POCO()
-INCLUDE_QT4()
-INCLUDE_TELEPATHY_QT4()
-INCLUDE_GSTREAMER()
-INCLUDE_TELEPATHY_FARSIGHT2()
-
-#Wrap 
-include(${QT_USE_FILE})
+# Qt4 Wrap 
 QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
-
-
 
 add_definitions (-DCOMMS_MODULE_EXPORTS)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
+use_package (BOOST)
+use_package (POCO)
+use_package (QT4)
 
-# External library linkage (needs target defined)
-LINK_POCO()
-LINK_QT4()
+INCLUDE_TELEPATHY_QT4()
+INCLUDE_GSTREAMER()
+INCLUDE_TELEPATHY_FARSIGHT2()
+
 LINK_TELEPATHY_QT4()
 LINK_GSTREAMER()
 LINK_TELEPATHY_FARSIGHT2()
