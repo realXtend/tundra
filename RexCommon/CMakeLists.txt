@@ -1,5 +1,5 @@
 # Define target name
-set (TARGET_NAME RexCommon)
+init_target (RexCommon)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)

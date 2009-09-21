@@ -1,6 +1,5 @@
 # Define target name and output directory
-set (TARGET_NAME OpenSimProtocolModule)
-set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/modules/core)
+init_target (OpenSimProtocolModule OUTPUT modules/core)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
