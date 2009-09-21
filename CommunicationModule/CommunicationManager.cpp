@@ -1,7 +1,6 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
 #include "CommunicationSettings.h"
-
 #include "CommunicationManager.h"
 
 // Test Telepathy-Farsight

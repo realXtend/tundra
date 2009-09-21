@@ -51,11 +51,11 @@ namespace CommunicationUI
 		if (communication_manager_->GetState() == TpQt4Communication::CommunicationManager::STATE_ERROR)
 			result.append("failed.");
 		result.append("\n");
-		TpQt4Communication::ConnectionList list = communication_manager_->GetAllConnections();
-		if (list.size() == 0)
+		TpQt4Communication::ConnectionVector connections = communication_manager_->GetAllConnections();
+		if (connections.size() == 0)
 			result.append("No connections.\n");
 		else
-			for (TpQt4Communication::ConnectionList::iterator i = list.begin(); i != list.end(); ++i)
+			for (TpQt4Communication::ConnectionVector::iterator i = connections.begin(); i != connections.end(); ++i)
 			{
 				TpQt4Communication::Connection* connection = *i;
 				result.append( connection->GetID() );
@@ -83,13 +83,13 @@ namespace CommunicationUI
 	Console::CommandResult ConsoleUI::OnCommandConnections(const Core::StringVector &params)
 	{
 		std::string result = "";
-		TpQt4Communication::ConnectionList list = communication_manager_->GetAllConnections();
+		TpQt4Communication::ConnectionVector list = communication_manager_->GetAllConnections();
 		if (list.size() == 0)
 			result.append("No connection.");
 		else
 		{
 			result.append("Connections:");
-			for (TpQt4Communication::ConnectionList::iterator i = list.begin(); i != list.end(); i++)
+			for (TpQt4Communication::ConnectionVector::iterator i = list.begin(); i != list.end(); i++)
 			{
 				TpQt4Communication::Connection* connection = (TpQt4Communication::Connection*)*i;
 

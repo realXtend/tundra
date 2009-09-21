@@ -1,33 +1,33 @@
-#ifndef incl_PresenceStatus_h
-#define incl_PresenceStatus_h
+#ifndef incl_Comm_PresenceStatus_h
+#define incl_Comm_PresenceStatus_h
 
 #include "Foundation.h"
-#include "EventDataInterface.h"
+//#include "EventDataInterface.h"
 
-namespace Communication
+namespace TpQt4Communication
 {
+
+
 	/**
-	 *  Implementation of PresenceStatusInterface
+	 *  Presence status of contact in contact list or current user 
+	 *
 	 */
-	class PresenceStatus: PresenceStatusInterface
+	class PresenceStatus
 	{
-		friend class CommunicationManager;
 	public:
 		PresenceStatus();
-		void SetOnlineStatus(std::string status);
-		std::string GetOnlineStatus();
-		void SetOnlineMessage(std::string message);
-		std::string GetOnlineMessage();
-		std::vector<std::string> GetOnlineStatusOptions();
-	protected:
-		void NotifyUpdate(const std::string &online_status, const std::string &online_message);
-		void UpdateToServer();
 
-		std::string id_; // contact id on python side -> do we need it here ?
-		std::string online_status_;
-		std::string online_message_;
-		static std::vector<std::string> online_status_options_;
+		void SetStatusText(std::string text);
+		std::string GetStatusText();
+		void SetMessageText(std::string text);
+		std::string GetMessageText();
+		static std::vector<std::string> GetAllowedStatuses();
+	private:
+		std::string status_text_;
+		std::string message_text_;
 	};
+	typedef boost::weak_ptr<PresenceStatus> PresenceStatusWeakPtr;
+
 }
 
-#endif // incl_PresenceStatus_h
+#endif // incl_Comm_PresenceStatus_h

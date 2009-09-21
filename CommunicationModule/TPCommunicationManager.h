@@ -1,5 +1,5 @@
-#ifndef incl_TpCommunicationManager_h
-#define incl_TpCommunicationManager_h
+#ifndef incl_Comm_TpCommunicationManager_h
+#define incl_Comm_TpCommunicationManager_h
 
 #include "StableHeaders.h"
 #include "Foundation.h"
@@ -14,15 +14,25 @@
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/Contact>
-#include <TelepathyQt4/Connection>
 #include <TelepathyQt4/PendingConnection>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingChannel>
-#include <TelepathyQt4/TextChannel>
 
+
+#include "Communication.h"
+#include "Connection.h"
+#include "PresenceStatus.h"
+#include "Contact.h"
+#include "TextChatSession.h"
+#include "IMMessage.h"
+#include "User.h"
+#include "Contact.h"
+#include "Credentials.h"
+#include "VoipSession.h"
 
 
 /**
@@ -68,30 +78,8 @@
  */ 
 namespace TpQt4Communication
 {
-	typedef std::string Address;
-	typedef std::string Protocol;
-	typedef std::string PresenceState;
-	typedef std::string PresenceMessage;
 
-	/**
-	 *  Presence status of contact in contact list or current user 
-	 *
-	 */
-	class PresenceStatus
-	{
-	public:
-		PresenceStatus();
 
-		void SetStatusText(std::string text);
-		std::string GetStatusText();
-		void SetMessageText(std::string text);
-		std::string GetMessageText();
-		static std::vector<std::string> GetAllowedStatuses();
-	private:
-		std::string status_text_;
-		std::string message_text_;
-	};
-	typedef boost::weak_ptr<PresenceStatus> PresenceStatusWeakPtr;
 
 	///**
  //    * IM address holder for exp. jabber addres: "yourname@jabber.org".
@@ -110,288 +98,27 @@ namespace TpQt4Communication
 	//};
 	//typedef boost::weak_ptr<Address> AddressWeakPtr;
 
-	/**
-	 *  Contact item in user's contact lisdt
-	 *
-	 */
-	class Contact : QObject
-	{
-		Q_OBJECT
-		friend class Connection;
 
-		MODULE_LOGGING_FUNCTIONS
-		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 
-	private:
-		Contact(Tp::Contact* tp_contact);
-		void ConnectSignals();
-	public:
-		Address GetAddress();
-		std::string GetRealName();
-		PresenceStatusWeakPtr GetPresenceStatus();
-		void SetRealName(std::string name);
-	private:
-		Address address_;
-		std::string real_name_;
-		PresenceStatusWeakPtr presence_status_;
-		Tp::Contact* tp_contact_;
-	private Q_SLOTS:
-		void OnContactChanged();
-	};
-	typedef std::vector<Contact*> ContactVector;
 
-	/**
-	 * User's contact list aka Friendlist.
-	 * Current implementation is flat but might be better to change to support hierarcy.
-	 * EVENTS: 
-	 *	- FriendRequestResponse
-     * - FriendRequest
-	 */
-	class ContactList
-	{
-	public:
-	private:
-		
-		
-	};
+
+
+
+
+
 
 
 	/**
-	 *  An participant is session. A Participant object is created when invited person have
-	 *  accepted to join to session.
-	 *
-	 * You can get an Participant object by calling 
-	 *
-	 */
-	class Participant
-	{
-	public:
-		std::string GetRealName();
-		std::string GetAddress();
-	};
-
-	class Message
-	{
-	public:
-		Message(std::string text);
-		std::string GetText();
-		Address GetAuthor();
-		int GetTimeStamp();
-	private:
-		std::string text_;
-		QTime time_stamp_; 
-		Address author_;
-	};
-	typedef std::vector<Message*> MessageVector;
-
-	/**
-	EVENTS:
-		- ParticipantLeft
-		- ParticipantJoined
-		- TextMessageReceived
-		- SessionClosed
-	*/
-	class TextChatSession
-	{
-	public:
-		TextChatSession();
-		TextChatSession(Tp::TextChannelPtr tp_text_channel);
-		void Invite(Address a);
-		void SendTextMessage(std::string text);
-		void Close();
-		MessageVector GetMessageHistory(); // todo: return value
-	private:
-		MessageVector messages_;
-		Tp::TextChannelPtr tp_text_channel_;
-	};
-	typedef boost::shared_ptr<TextChatSession> TextChatSessionPtr;
-	typedef boost::weak_ptr<TextChatSession> TextChatSessionWeakPtr;
-
-	/**
-	EVENTS: 
-		- ParticipantLeft
-		- ParticipantJoined
-		- TextMessageReceived
-		- SessionClosed
-	*/
-	class VoipSession
-	{
-	public:
-		void Invite(Address a);
-		void Close();
-		void GetParticipants();
-		void SetMicrophoneVolume(double value);
-		double GetMicrophoneVolume();
-	};
-
-	class VideoConferenceSession
-	{
-
-	};
-
-	/**
-	 *  Represents an user in one IM server. There is one User object per Connection object.
-	 *
-	 *  User object is created when a connection to IM server is made. You can get 
-	 *  User object by calling connection.GetUser()
-	 *
-	 */
-	class User
-	{
-	public:
-		User(Tp::ConnectionPtr tp_connection);
-		std::string GetUserID();
-		std::string GetProtocol();
-		void SetPresenceStatus(std::string state, std::string message);
-		PresenceStatus* GetPresenceStatus();
-	private:
-		std::string user_id_;
-		std::string protocol_;
-		PresenceStatus presence_status_;
-		Tp::ConnectionPtr tp_connection_;
-		Tp::ContactPtr tp_contact_;
-	};
-	typedef boost::weak_ptr<User> UserWeakPtr;
-
-	/**
-	 * 
-	 *
-	 *
-	 */
-	class FriendRequest
-	{
-	public:
-		enum State { STATE_PENDING, STATE_ACCEPTED, STATE_REJECTED };
-		Address GetAddressFrom();
-		Address GetAddressTo();
-		State GetState();
-	private:
-		State state_;
-		Address from_;
-		Address to_;
-	};
-	typedef std::vector<FriendRequest*> FriendRequestList;
-
-	class TextChatSessionRequest
-	{
-	public:
-		enum State { STATE_PENDING, STATE_ACCEPTED, STATE_REJECTED };
-		State GetState();
-	private:
-		State state_;
-	};
-	typedef std::vector<TextChatSessionRequest*> TextChatSessionRequestList;
-
-	/**
-	 *  Credential for connecting to IM server
-	 *
-	 *  NOTE: Propably attribute map with arbitrary keys value pairs are the best choise here...
-	 *
-	 */
-	class Credentials
-	{
-	public:
-		Credentials();
-		void SetProtocol(std::string protocol);
-		void SetUserID(std::string user_id);
-		void SetPassword(std::string pwd);
-		void SetServer(std::string server);
-		std::string GetProtocol() const;
-		std::string GetUserID() const ;
-		std::string GetUserPassword() const;
-		std::string GetServer() const;
-		void LoadFromFile(std::string path);
-	private:
-		std::string user_id_;
-		std::string password_;
-		std::string protocol_;
-		std::string server_;
-		std::map<std::string, std::string> attributes_;
-	};
-	typedef boost::weak_ptr<Credentials> CredentialsWeakPtr;
-
-	/**
-	 *  Connection to IM server like jabber.org. 
-	 *  Connection objects are created by calling CommunicationManager.OpenConnection(credentials);
-
-	 *  Connection have to close by calling connection.Close(). All connections will be closed if 
-	 *  CommunicationManager is deleted.
-	 * 
-	 *
-	 */
-//	class CommunicationManager;
-
-	class Connection : QObject
-	{
-		Q_OBJECT
-
-		friend class CommunicationManager;
-
-		MODULE_LOGGING_FUNCTIONS
-		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
-
-		#define IM_PROTOCOL "jabber"
-
-	//	friend class CommunicationManager;
-		
-		//Connection(Tp::ConnectionPtr tp_connection);
-	public:
-		Connection(const Credentials &credentials);
-		~Connection();
-		enum State{STATE_CONNECTING, STATE_OPEN,  STATE_CLOSED, STATE_ERROR};
-		void SendFriendRequest(const Address &a);
-		User* GetUser();
-		std::string GetID();
-		std::string GetServer();
-		void Close();
-		std::string GetProtocol();
-		State GetState();
-
-		TextChatSessionPtr CreateTextChatSession();
-		void CreateVoipSession();
-		void SendFriendRequest(Address to, std::string message = "");
-
-		FriendRequestList GetFriendRequests();
-		TextChatSessionRequestList GetTextChatSessionRequests();
-
-	private :
-		void ConnectTpSignals();
-
-		std::string id_;
-		User* user_;
-		State state_;
-		std::string protocol_;
-		std::string server_;
-		Tp::ConnectionPtr tp_connection_;
-		std::vector<FriendRequest*> received_friend_requests_;
-		std::vector<TextChatSessionRequest*> received_text_chat_requests_;
-		std::string error_message_;
-
-	
-
-	public Q_SLOTS:
-		void OnConnectionCreated(Tp::PendingOperation *op);
-		void OnConnectionConnected(Tp::PendingOperation *);
-		void OnConnectionInvalidated(Tp::DBusProxy *proxy, const QString &errorName, const QString &errorMessage);
-		void OnContactRetrieved(Tp::PendingOperation *);
-		void OnPresencePublicationRequested(const Tp::Contacts &);
-		void OnNewChannels(const Tp::ChannelDetailsList&);
-
-	};
-	typedef boost::weak_ptr<Connection> ConnectionWeakPtr;
-	typedef std::vector<Connection*> ConnectionList;
-
-	/**
-	 * 
-	 *
-	 *
+	 *  Keeps all Connection objects
+	 *  Starts WinDBus id dbus service isn't available on Windows platform
+	 *	
 	 */
 	class CommunicationManager : QObject
 	{
 		Q_OBJECT
 		MODULE_LOGGING_FUNCTIONS
 
-		#define CONNECTION_MANAGER_NAME "gabble"
+		
 	private:
 		
 	public:
@@ -401,27 +128,44 @@ namespace TpQt4Communication
 		~CommunicationManager();
 		static CommunicationManager* GetInstance();
 		
-
 		Connection* OpenConnection(const Credentials &credentials);
 		State GetState();
 
-		ConnectionList GetAllConnections();
-		ConnectionList GetConnections(std::string protocol);
+		ConnectionVector GetAllConnections();
+		ConnectionVector GetConnections(std::string protocol);
 		void CloseAllConnections();
 
 	private:
+
+		//! return true if DBus service is available 
+		//! NOTE: because current QDBus implementation this cannot be uset at the moment.
+		//!       (If return false it cannot be used after QApplication is restarted)
 		bool IsDBusServiceAvailable(std::string name);
+
+		//! Starts WinDBus process
 		void StartDBusDaemon();
 		
-		Tp::ConnectionManagerPtr connection_manager_;
-		bool connection_manager_ready_;
-		//std::list<Tp::ConnectionPtr> connections_;
-		ConnectionList connections_;
-		Tp::PendingReady* pending_ready_;
+		//! ConnectionManager object from Telepathy-Qt4 library
+		Tp::ConnectionManagerPtr tp_connection_manager_;
+
+		//!
+		//bool connection_manager_ready_;
+		
+		//! Connections to IM server (currently we only open one)
+		ConnectionVector connections_;
+
+		//!
+		//Tp::PendingReady* pending_ready_;
+
+		//! 
 		State state_;
 
 		//! dbus daemon and gabble process for Windows platform
 		QProcess* dbus_daemon_;
+
+//	public Q_SIGNALS:
+		void Ready();
+		void Error(QString &reason);
 
 	private Q_SLOTS:
 		void OnConnectionManagerReady(Tp::PendingOperation *op);
@@ -436,4 +180,4 @@ namespace TpQt4Communication
 } // namespace TpQt4Communication
 
 
-#endif incl_TpCommunicationManager_h
+#endif //incl_Comm_TpCommunicationManager_h
