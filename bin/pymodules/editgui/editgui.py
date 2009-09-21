@@ -25,11 +25,24 @@ from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile
 from circuits import Component
 
+try:
+    import ogre.renderer.OGRE as ogre
+except ImportError:
+    ogreroot = False
+else:
+    root = ogre.Root.getSingleton()
+    ogreroot = root.isInitialised()
+    V3 = ogre.Vector3
+    
 INTERNAL = 1
 EXTERNAL = 0
 
+UP = 0
+RIGHT = 1
+
 class EditGUI(Component):
     EVENTHANDLED = False
+    OIS_ESC = 1
     UIFILE = "pymodules/editgui/editobject.ui"
     
     def __init__(self):
@@ -40,7 +53,9 @@ class EditGUI(Component):
         file = QFile(self.UIFILE)
 
         widget = loader.load(file)
-
+        width = widget.size.width()
+        height = widget.size.height()
+        self.canvas.resize(width, height)
         self.canvas.AddWidget(widget)
         self.canvas.Show()
 
@@ -63,15 +78,27 @@ class EditGUI(Component):
         self.sel = None
         
         self.left_button_down = False
+        self.right_button_down = False
         self.widget = widget
         self.widget.label.text = "<none>"
 
         r.c = self
-        self.widget.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
+        self.widget.treeWidget.connect('clicked()', self.itemActivated)
+        #self.widget.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
         
         self.widgetList = {}
-        print type(self.canvas)
-        print type(self.widget)
+        
+        self.cam = None
+        
+        self.upArrow = None
+        self.rightArrow = None
+        
+        self.mouse_events = {
+            r.LeftMouseClickPressed: self.LeftMouseDown,
+            r.LeftMouseClickReleased: self.LeftMouseUp,  
+            r.RightMouseClickPressed: self.RightMouseDown,
+            r.RightMouseClickReleased: self.RightMouseUp
+        }
         
     #~ def changed_x(self, v):
         #~ print "x changed to: %f" % v
@@ -93,8 +120,11 @@ class EditGUI(Component):
             pos[i] = v
             ent.pos = pos[0], pos[1], pos[2] #XXX API should accept a list/tuple too .. or perhaps a vector type will help here too
             #print "=>", ent.pos
+            
+    def itemClicked(self): #XXX dirty hack to get single click for activating, should we use some qt stylesheet for this, or just listen to click?
+        self.itemActivated(self) 
     
-    def itemActivated(self, item):
+    def itemActivated(self, item=None): #the item from signal is not used, same impl used by click
         #print "Got the following item index...", item, dir(item), item.data, dir(item.data) #we has index, now what? WIP
         current = self.widget.treeWidget.currentItem()
         text = current.text(0)
@@ -104,7 +134,7 @@ class EditGUI(Component):
     
     def select(self, ent):
         self.sel = ent
-        
+
         if not self.widgetList.has_key(self.sel.id):
             tWid = QTreeWidgetItem(self.widget.treeWidget)
             id = self.sel.id
@@ -121,28 +151,120 @@ class EditGUI(Component):
         self.widget.zpos.setValue(z)
         self.widget.label.text = ent.id
         
+        if self.cam is None and ogreroot:
+            rs = root.getRenderSystem()
+            vp = rs._getViewport()
+            self.cam = vp.getCamera()
+            self.drawArrows(ent)
+        elif self.cam is not None and ogreroot: 
+            self.drawArrows(ent)
+    
+    def drawArrows(self, ent):
+        #~ right = self.cam.getRight().normalisedCopy()
+        #~ up = self.cam.getUp().normalisedCopy()
+        #~ #print right, up, ent.pos
+        x, y, z = ent.pos
+        pos = V3(x, y, z)
+        
+        #~ rightArrowEnd = pos + right *5 
+        #~ upArrowEnd = pos + up *5 
+        #~ #print "Directions", rightDir, upDir
+        #~ #print "Arrow end positions:", rightArrowEnd, upArrowEnd
+        
+        if self.upArrow is None: #creating the upArrow for the first time, well only time it should be created really
+            self.upArrow = self.createArrow(UP, V3(0, 0, 0), V3(0, 5, 0))
+        
+        if self.rightArrow is None:
+            self.rightArrow = self.createArrow(RIGHT, V3(0, 0, 0), V3(5, 0, 0))
+    
+        #print self.upArrow, type(self.upArrow), "\n"
+        #print self.rightArrow, type(self.rightArrow)
+        
+        self.showArrow(self.upArrow, pos)
+        self.showArrow(self.rightArrow, pos)
+        
+    def createArrow(self, direction, start, end):
+        sm = root.getSceneManager("SceneManager")
+        mob =  sm.createManualObject("arrow_EditGui_MOB_%d" % direction)
+        arrow = sm.getRootSceneNode().createChildSceneNode("arrow_EditGui_NODE_%d" % direction)
+
+        material = ogre.MaterialManager.getSingleton().create("manual1Material","debugger")
+        material.setReceiveShadows(False)
+        tech = material.getTechnique(0)
+        tech.setLightingEnabled(True)
+        pass0 = tech.getPass(0)
+        pass0.setDiffuse(0, 0, 1, 0)
+        pass0.setAmbient(0, 0, 1)
+        pass0.setSelfIllumination(0, 0, 1)
+        
+        mob.begin("manual1Material", ogre.RenderOperation.OT_LINE_LIST)
+        mob.position(start)
+        mob.position(end)
+        mob.end()
+        mob.setVisible(True)
+        arrow.setVisible(True)
+        print "created the manual material"
+        arrow.attachObject(mob)
+        return arrow
+        
+    def showArrow(self, arrow, pos):
+        arrow.setPosition(pos)
+        arrow.setOrientation(self.cam.DerivedOrientation)
+        arrow.setVisible(True)
+
+    def hideArrows(self):
+        print "Hiding arrows!"
+        
+        if self.upArrow is not None:
+            self.upArrow.setVisible(False)
+    
+        if self.rightArrow is not None:
+            self.rightArrow.setVisible(False)
+            
+    def on_keydown(self, key, mods):
+        if key == self.OIS_ESC:
+            self.hideArrows()  
+        r.eventhandled = False
+            
     def on_mousemove(self, mouseinfo):
         """stub for dragging objects around 
         - should get the dir of movements relative to the view somehow"""
         if self.left_button_down and self.sel is not None:
             print "MouseMove:", mouseinfo.x, mouseinfo.y
 
+        elif self.right_button_down and self.sel is not None:
+            self.rightArrow.setOrientation(self.cam.DerivedOrientation)
+            self.upArrow.setOrientation(self.cam.DerivedOrientation)
+            
+    def LeftMouseDown(self, mouseinfo):
+        self.left_button_down = True
+        ent = r.rayCast(mouseinfo.x, mouseinfo.y)
+        #print "Got entity:", ent
+        if ent is not None:
+            r.eventhandled = self.EVENTHANDLED
+            #print "Entity position is", ent.pos
+            #print "Entity id is", ent.id
+            #if self.sel is not ent: #XXX wrappers are not reused - there may now be multiple wrappers for same entity
+            if self.sel is None or self.sel.id != ent.id: #a diff ent than prev sel was changed
+                self.select(ent)
+        else:
+            self.sel = None
+            self.widget.label.text = "<none>"
+            
+    def LeftMouseUp(self, mouseinfo):
+        self.left_button_down = False
+        
+    def RightMouseDown(self, mouseinfo):
+        self.right_button_down = True
+        
+    def RightMouseUp(self, mouseinfo):
+        self.right_button_down = False
+        
     def on_mouseclick(self, click_id, mouseinfo):
         #print "MouseMove", mouseinfo.x, mouseinfo.y
-        if click_id == r.LeftMouseClickPressed:
-            self.left_button_down = True
-            ent = r.rayCast(mouseinfo.x, mouseinfo.y)
-            #print "Got entity:", ent
-            if ent is not None:
-                r.eventhandled = self.EVENTHANDLED
-                #print "Entity position is", ent.pos
-                #print "Entity id is", ent.id
-                #if self.sel is not ent: #XXX wrappers are not reused - there may now be multiple wrappers for same entity
-                if self.sel is None or self.sel.id != ent.id: #a diff ent than prev sel was changed
-                    self.select(ent)
-            else:
-                self.sel = None
-                self.widget.label.text = "<none>"
-
-        elif click_id == r.LeftMouseClickReleased:
-            self.left_button_down = False
+        #print "on_mouseclick", click_id,
+        if self.mouse_events.has_key(click_id):
+            self.mouse_events[click_id](mouseinfo)
+            #print "on_mouseclick", click_id, self.mouse_events[click_id]
+        #else:
+            #print "unknown click_id?", self.mouse_events
