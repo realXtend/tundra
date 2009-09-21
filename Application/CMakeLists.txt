@@ -19,8 +19,6 @@ include_directories (
 INCLUDE_POCO()
 INCLUDE_BOOST()
 
-add_definitions (-DMODULE_EXPORTS)
-
 # Preprocessor defines
 if (MSVC)
    set_property (DIRECTORY PROPERTY COMPILE_DEFINITIONS_RELEASE _DMEMDUMP)
@@ -39,10 +37,6 @@ else (MSVC AND WINDOWS_APP)
 endif (MSVC AND WINDOWS_APP)
 
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
-
-if (MSVC)
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
-endif (MSVC)
 
 # Define libraries to be linked into target
 target_link_libraries (${TARGET_NAME} Core Foundation)

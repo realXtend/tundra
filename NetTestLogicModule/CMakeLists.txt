@@ -26,11 +26,6 @@ include_directories (
 	#../ReXLogic/Release
 #)
 
-# Disable warning
-if (MSVC)
-	add_definitions (-D_CRT_SECURE_NO_WARNINGS)
-endif (MSVC)
-
 
 
 FIND_GTKMM()
@@ -40,7 +35,6 @@ INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_GTKMM()
 
-add_definitions (-DMODULE_EXPORTS)
 #add_definitions (-NETTEST_MODULE_EXPORTS)
 
 # Define dynamic library
@@ -51,12 +45,6 @@ endif (NOT MSVC)
 add_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
-
-if (MSVC)
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
-	target_link_libraries (${TARGET_NAME} ws2_32.lib iphlpapi.lib)
-endif (MSVC)
 
 # Define libraries to be linked into target
 target_link_libraries (${TARGET_NAME} Core Interfaces Foundation OpenSimProtocolModule RexCommon RexLogicModule)

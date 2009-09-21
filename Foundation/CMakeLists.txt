@@ -27,7 +27,7 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-add_definitions (-DMODULE_EXPORTS -DUSE_QT)
+add_definitions (-DUSE_QT)
 
 # Define static library
 
