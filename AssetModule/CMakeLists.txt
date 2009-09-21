@@ -23,11 +23,6 @@ INCLUDE_POCO()
 
 add_definitions (-DASSET_MODULE_EXPORTS)
 
-# Define dynamic library
-if (NOT MSVC)
-	SET (LIBRARY_OUTPUT_PATH ${TARGET_DIR})
-endif (NOT MSVC)
-
 add_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
