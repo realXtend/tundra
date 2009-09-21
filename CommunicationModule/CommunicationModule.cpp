@@ -25,7 +25,8 @@ namespace Communication
 		
 		communication_manager_ = TpQt4Communication::CommunicationManager::GetInstance();
 		console_ui_ = new CommunicationUI::ConsoleUI(framework_);
-		qt_ui_ = new CommunicationUI::QtUI(framework_);
+		qt_ui_ = new CommunicationUI::QtUI(0, framework_);
+		qt_ui_->show();
 
 		if (communication_manager_->GetState() == TpQt4Communication::CommunicationManager::STATE_ERROR)
 		{
