@@ -13,6 +13,9 @@ macro (init_target NAME)
 
     message (STATUS "Found build target: " ${TARGET_NAME})
 
+    include_directories (${NAALI_DEP_PATH}/include)
+    link_directories (${NAALI_DEP_PATH}/lib)
+
     # if OUTPUT is defined
     if (${TARGET_NAME}_OUTPUT)# AND ${TARGET_NAME}_OUTPUT STREQUAL "OUTPUT")
         
@@ -39,6 +42,38 @@ macro (init_target NAME)
     endif ()
 endmacro (init_target)
 
+# build a library from internal sources
+macro (build_library TARGET_NAME LIB_TYPE)
+
+    message (STATUS "building " ${LIB_TYPE} " library: " ${TARGET_NAME})
+
+    if (UNIX AND ${LIB_TYPE} STREQUAL "STATIC")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    endif ()
+
+    add_library (${TARGET_NAME} ${LIB_TYPE} ${ARGN})
+
+    # internal library naming convention
+    set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
+    set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
+    set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
+
+endmacro (build_library)
+
+# build an executable from internal sources 
+macro (build_executable TARGET_NAME LIB_TYPE)
+
+    message (STATUS "building " ${LIB_TYPE} " executable: " ${TARGET_NAME})
+
+    add_library (${TARGET_NAME} ${LIB_TYPE} ${ARGN})
+
+    # internal library naming convention
+    set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
+    set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
+    set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
+
+endmacro (build_executable)
+
 # include and lib directories, and definitions
 macro (use_package PREFIX)
     include_directories (${${PREFIX}_INCLUDE_DIRS})
@@ -46,13 +81,30 @@ macro (use_package PREFIX)
     add_definitions (${${PREFIX}_DEFINITIONS})
 endmacro (use_package)
 
-# include and link local modules
-macro (use_internal_module MODULES TARGET_NAME)
-    foreach (module_ ${MODULES})
-        include_directories (../${module_})
+# include local framework headers and libraries
+macro (use_framework_modules TARGET_NAME)
+    set (INTERNAL_FRAMEWORK_DIR "..")
+    foreach (module_ ${ARGN})
+        include_directories (${INTERNAL_FRAMEWORK_DIR}/${module_})
         target_link_libraries (${TARGET_NAME} ${module_})
     endforeach ()
-endmacro (use_internal_module)
+endmacro (use_framework_modules)
+
+# include local module headers 
+macro (use_module_headers TARGET_NAME)
+    set (INTERNAL_MODULE_DIR "..")
+    foreach (module_ ${ARGN})
+        include_directories (${INTERNAL_MODULE_DIR}/${module_})
+    endforeach ()
+endmacro (use_module_headers)
+
+# include local module libraries
+macro (use_module_libraries TARGET_NAME)
+    foreach (module_ ${ARGN})
+        target_link_libraries (${TARGET_NAME} ${module_})
+    endforeach ()
+endmacro (use_module_libraries)
+
 
 # link directories
 macro (link_package PREFIX TARGET_NAME)

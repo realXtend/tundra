@@ -7,25 +7,13 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-# Include directories
-include_directories (
-	../Core
-	../Foundation
-	../Interfaces
-)
-
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_OPENAL()
 
-add_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
-set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
-set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
-
-# Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Foundation Interfaces)
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+use_framework_modules (${TARGET_NAME} Core Foundation Interfaces)
 
 # External library linkage
 LINK_BOOST()

@@ -7,15 +7,7 @@ file (GLOB H_FILES *.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Include directories
-include_directories (
-	../Core
-	../Foundation
-	../Interfaces
-	../SceneManager
-	../TestModule
-	../SupportModules
-	../InputModuleOIS
-)
+use_module_headers (${TARGET_NAME} TestModule SupportModules InputModuleOIS)
 
 # External library includes
 INCLUDE_BOOST()
@@ -26,9 +18,10 @@ INCLUDE_OGRE()
 add_executable (${TARGET_NAME} ${SOURCE_FILES})
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 
-# Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Core Foundation 
-Interfaces SupportModules)
+use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
+target_link_libraries (${TARGET_NAME} SupportModules)
+
+
 if (MSVC)
    target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)
 endif (MSVC)

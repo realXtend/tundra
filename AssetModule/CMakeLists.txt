@@ -8,14 +8,7 @@ file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Include directories
-include_directories (
-	../Core
-	../Foundation
-	../Interfaces
-	../RexCommon
-	../OpenSimProtocol
-	../HttpUtilities
-)
+use_module_headers (${TARGET_NAME} RexCommon OpenSimProtocol HttpUtilities)
 		
 # External library includes
 INCLUDE_BOOST()
@@ -23,12 +16,9 @@ INCLUDE_POCO()
 
 add_definitions (-DASSET_MODULE_EXPORTS)
 
-add_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
-set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
-
-# Define libraries to be linked into target
-target_link_libraries (${TARGET_NAME} Core Foundation Interfaces OpenSimProtocolModule RexCommon HttpUtilities)
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+use_framework_modules (${TARGET_NAME} Core Foundation Interfaces)
+target_link_libraries (${TARGET_NAME} OpenSimProtocolModule RexCommon HttpUtilities)
 
 # External library linkage
 LINK_BOOST()

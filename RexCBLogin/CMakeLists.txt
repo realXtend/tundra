@@ -10,16 +10,7 @@ file (GLOB RESOURCE_FILES resource/*.qrc)
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-# Include directories
-#include_directories (
-#	../Core
-#	../Foundation
-#	../SceneModule
-#	../Interfaces
-#	../RexCommon
-#)
-
-# External library includes
+Foundation # External library includes
 #INCLUDE_BOOST()
 INCLUDE_QT4()
 
@@ -29,18 +20,7 @@ QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
-add_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
-
-# Because this is static library, compile it with -fPIC in Linux.
-
-if (NOT MSVC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-endif()
-
-
-set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
-set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
-set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
+build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
 # Define libraries to be linked into target
 #target_link_libraries (${TARGET_NAME} Foundation Interfaces RexCommon )
