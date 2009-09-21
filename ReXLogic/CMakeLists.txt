@@ -1,6 +1,5 @@
 # Define target name and output directory
-set (TARGET_NAME RexLogicModule)
-set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/modules/core)
+init_target (RexLogicModule OUTPUT modules/core)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)

@@ -1,6 +1,6 @@
 # Define target name and output directory
-set (TARGET_NAME PythonScriptModule)
-set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/modules/core)
+init_target (PythonScriptModule OUTPUT modules/core)
+
 set (PYTHON_FORCE_RELEASE_VERSION 0) # set if you want to use release version of python when building debug version of viewer
 #doesn't work anymore now that PythonQt was introduced - attempts to build viewer in debugmode with release mode pythonqt have failed so far
 

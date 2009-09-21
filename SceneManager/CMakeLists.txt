@@ -1,5 +1,5 @@
 # Define target name and output directory
-set (TARGET_NAME SceneManager)
+init_target (SceneManager)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)

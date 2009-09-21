@@ -1,5 +1,5 @@
 # Define target name
-set (TARGET_NAME Interfaces)
+init_target (Interfaces)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)

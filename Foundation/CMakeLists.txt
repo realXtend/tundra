@@ -1,5 +1,5 @@
 # Define target name
-set (TARGET_NAME Foundation)
+init_target (Foundation)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)

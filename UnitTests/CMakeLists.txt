@@ -1,6 +1,5 @@
 # Define target name and output directory
-set (TARGET_NAME UnitTests)
-set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin)
+init_target (UnitTests OUTPUT ./)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
