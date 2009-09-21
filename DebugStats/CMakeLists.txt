@@ -12,7 +12,6 @@ include_directories (
 	../Core
 	../Foundation
 	../Interfaces
-	../GtkmmUI
 	../SceneManager
 	../RexCommon
 	../ReXLogic
@@ -20,17 +19,10 @@ include_directories (
 	../OgreRenderingModule
 )
 
-# Disable warning
-if (MSVC)
-	add_definitions (-D_CRT_SECURE_NO_WARNINGS)
-endif (MSVC)
-
 # External library includes
 INCLUDE_BOOST()
 INCLUDE_POCO()
 INCLUDE_GTKMM()
-
-add_definitions (-DMODULE_EXPORTS)
 
 # Define dynamic library
 if (NOT MSVC)
@@ -41,13 +33,7 @@ add_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 
-if (MSVC)
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
-	target_link_libraries (${TARGET_NAME} )
-endif (MSVC)
-
-target_link_libraries (${TARGET_NAME} Foundation RexCommon RexLogicModule OpenSimProtocolModule OgreRenderingModule Interfaces GtkmmUI)
+target_link_libraries (${TARGET_NAME} Foundation RexCommon RexLogicModule OpenSimProtocolModule OgreRenderingModule Interfaces)
 
 # External library linkage (needs target defined)
 LINK_POCO()

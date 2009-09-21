@@ -34,7 +34,7 @@ QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
-add_definitions (-DMODULE_EXPORTS -DQT_MODULE_EXPORTS)
+add_definitions (-DQT_MODULE_EXPORTS)
 
 # Define dynamic library
 if (NOT MSVC)
@@ -48,11 +48,6 @@ add_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESO
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
-
-if (MSVC)
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
-endif (MSVC)
 
 # Define libraries to be linked into target
 target_link_libraries (${TARGET_NAME} Foundation Interfaces RexCommon OgreRenderingModule InputModuleOIS)

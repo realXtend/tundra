@@ -36,7 +36,6 @@ INCLUDE_OIS()
 INCLUDE_OGRE()
 
 
-add_definitions (-DMODULE_EXPORTS)
 if(PYTHON_FORCE_RELEASE_VERSION)
     add_definitions(-DPYTHON_FORCE_RELEASE_VERSION) 
 endif(PYTHON_FORCE_RELEASE_VERSION)
@@ -50,11 +49,6 @@ add_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
-
-if (MSVC)
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
-endif (MSVC)
 
 # Define libraries to be linked into target
 target_link_libraries (${TARGET_NAME} Core Foundation Interfaces OpenSimProtocolModule RexCommon RexLogicModule) # OgreRenderingModule)

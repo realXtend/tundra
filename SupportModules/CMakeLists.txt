@@ -23,7 +23,7 @@ INCLUDE_POCO()
 INCLUDE_OIS()
 INCLUDE_OGRE()
 
-add_definitions (-DCONSOLE_MODULE_EXPORTS -DMODULE_EXPORTS)
+add_definitions (-DCONSOLE_MODULE_EXPORTS)
 
 # Define dynamic library
 if (NOT MSVC)
@@ -41,11 +41,6 @@ target_link_libraries (${TARGET_NAME} Core Foundation SceneManager OgreRendering
 LINK_BOOST()
 LINK_POCO()
 LINK_OGRE()
-
-if (MSVC)
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
-endif (MSVC)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

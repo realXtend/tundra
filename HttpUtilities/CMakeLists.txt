@@ -18,8 +18,6 @@ INCLUDE_POCO()
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-add_definitions (-DMODULE_EXPORTS)
-
 # Define static library
 
 add_library (${TARGET_NAME} STATIC ${SOURCE_FILES})

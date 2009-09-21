@@ -29,8 +29,6 @@ QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
-add_definitions (-DMODULE_EXPORTS)
-
 # Define static  library
 if (NOT MSVC)
 	SET (LIBRARY_OUTPUT_PATH ${TARGET_DIR})
@@ -48,11 +46,6 @@ endif()
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
 set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
-
-#if (MSVC)
-#	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})
-#	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
-#endif (MSVC)
 
 # Define libraries to be linked into target
 #target_link_libraries (${TARGET_NAME} Foundation Interfaces RexCommon )
