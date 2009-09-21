@@ -16,37 +16,37 @@ using namespace std;
 /// Fetches the MAC address.
 std::string GetMACaddressString()
 {
-#ifdef WIN32
-	IP_ADAPTER_INFO AdapterInfo[16];
-	
-	DWORD dwBufLen = sizeof(AdapterInfo);
-
-	DWORD dwStatus = GetAdaptersInfo(AdapterInfo, &dwBufLen);
-	if (dwStatus != ERROR_SUCCESS)
-	{
-		///\todo Log error.
-		assert(false && "GetAdaptersInfo failed!");
-		return "";
-	}
-
-	PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;
-	
-	std::stringstream ss;
-	while(pAdapterInfo)
-	{
-		ss << hex << pAdapterInfo->Address[0] <<
-			hex << pAdapterInfo->Address[1] <<
-			hex << pAdapterInfo->Address[2] <<
-			hex << pAdapterInfo->Address[3] <<
-			hex << pAdapterInfo->Address[4] <<
-			hex << pAdapterInfo->Address[5];
-		pAdapterInfo = pAdapterInfo->Next;
-	}
-
-	return ss.str();
-#else
+//#ifdef WIN32
+//	IP_ADAPTER_INFO AdapterInfo[16];
+//	
+//	DWORD dwBufLen = sizeof(AdapterInfo);
+//
+//	DWORD dwStatus = GetAdaptersInfo(AdapterInfo, &dwBufLen);
+//	if (dwStatus != ERROR_SUCCESS)
+//	{
+//		///\todo Log error.
+//		assert(false && "GetAdaptersInfo failed!");
+//		return "";
+//	}
+//
+//	PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;
+//	
+//	std::stringstream ss;
+//	while(pAdapterInfo)
+//	{
+//		ss << hex << pAdapterInfo->Address[0] <<
+//			hex << pAdapterInfo->Address[1] <<
+//			hex << pAdapterInfo->Address[2] <<
+//			hex << pAdapterInfo->Address[3] <<
+//			hex << pAdapterInfo->Address[4] <<
+//			hex << pAdapterInfo->Address[5];
+//		pAdapterInfo = pAdapterInfo->Next;
+//	}
+//
+//	return ss.str();
+//#else
 	return "01234567";
-#endif
+//#endif
 }
 
 ///\todo Find a way for other OS's
