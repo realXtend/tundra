@@ -43,11 +43,6 @@ if (HYDRAX)
 endif (HYDRAX)
 
 
-# Define dynamic library
-if (NOT MSVC)
-	SET (LIBRARY_OUTPUT_PATH ${TARGET_DIR})
-endif (NOT MSVC)
-
 
 add_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 

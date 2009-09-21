@@ -23,11 +23,6 @@ INCLUDE_POCO()
 INCLUDE_OIS()
 INCLUDE_OGRE()
 
-# Define executable
-if (NOT MSVC)
-	SET (EXECUTABLE_OUTPUT_PATH ${TARGET_DIR})
-endif (NOT MSVC)
-
 add_executable (${TARGET_NAME} ${SOURCE_FILES})
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 

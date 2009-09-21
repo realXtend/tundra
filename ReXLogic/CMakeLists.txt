@@ -37,11 +37,6 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DUSE_QT)
 
-# Define dynamic library
-if (NOT MSVC)
-    SET (LIBRARY_OUTPUT_PATH ${TARGET_DIR})
-endif (NOT MSVC)
-
 add_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
 
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
@@ -54,8 +49,6 @@ LINK_POCO()
 LINK_OGRE()
 LINK_QT4()
 LINK_CURL()
-LINK_OPENJPEG()
-
 # Define libraries to be linked into target
 target_link_libraries (${TARGET_NAME} Foundation Interfaces OpenSimProtocolModule RexCommon OgreRenderingModule QtModule HttpUtilities)
 

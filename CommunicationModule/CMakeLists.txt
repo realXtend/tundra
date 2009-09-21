@@ -42,11 +42,6 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DCOMMS_MODULE_EXPORTS)
 
-# Define dynamic library
-if (NOT MSVC)
-	SET (LIBRARY_OUTPUT_PATH ${TARGET_DIR})
-endif (NOT MSVC)
-
 add_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")

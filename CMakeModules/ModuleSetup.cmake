@@ -29,6 +29,7 @@ macro (init_target NAME)
         else ()
             # copy to target directory
             set (LIBRARY_OUTPUT_PATH ${TARGET_DIR})
+            set (EXECUTABLE_OUTPUT_PATH ${TARGET_DIR})
         endif ()
     endif ()
 

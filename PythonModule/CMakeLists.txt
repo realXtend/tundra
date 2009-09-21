@@ -40,11 +40,6 @@ if(PYTHON_FORCE_RELEASE_VERSION)
     add_definitions(-DPYTHON_FORCE_RELEASE_VERSION) 
 endif(PYTHON_FORCE_RELEASE_VERSION)
 
-# Define dynamic library
-if (NOT MSVC)
-	SET (LIBRARY_OUTPUT_PATH ${TARGET_DIR})
-endif (NOT MSVC)
-
 add_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
