@@ -44,8 +44,6 @@ function (sagase_generate_paths INCLUDE_PATHS LIBRARY_PATHS)
     #    set (normal_path_prefixes ${normal_path_prefixes} ${p})
     #endforeach ()
 
-    set (path_names ${path_names} ".")
-
     # add prefix+name paths
     foreach (prefix ${path_prefixes})
         foreach (pkgname ${path_names})
@@ -183,6 +181,9 @@ macro (sagase_configure_package PREFIX)
 
     if (NOT found_)
         message (STATUS "trying brute-force search ")
+
+        # take names to be directory names, and include "."
+        set (PKG_NAMES ${PKG_NAMES} ".")
 
         # generate a combination of possible search paths
         sagase_generate_paths (include_paths library_paths NAMES ${PKG_NAMES} PREFIXES ${PKG_PREFIXES})
