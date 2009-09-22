@@ -127,7 +127,7 @@ endmacro (link_modules)
 macro (link_package PREFIX)
     target_link_libraries (${TARGET_NAME} ${${PREFIX}_LIBRARIES})
 
-    if (MSVC)
+    if (MSVC AND ${PREFIX}_DEBUG_LIBRARIES)
         target_link_libraries (${TARGET_NAME} debug ${${PREFIX}_DEBUG_LIBRARIES})
     endif ()
 endmacro (link_package)
