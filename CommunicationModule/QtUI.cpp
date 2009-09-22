@@ -120,12 +120,18 @@ namespace CommunicationUI
 
 			QObject::connect((QObject *)im_connection_, SIGNAL( Connected() ), this, SLOT( connectionEstablished() ));
 			QObject::connect((QObject *)im_connection_, SIGNAL( Error(String &) ), this, SLOT( connectionFailed(QString &) ));
+			return;
 		}	
-		else 
+
+		if (commManager_->GetState() == CommunicationManager::STATE_ERROR)
 		{
-			QObject::connect((QObject *)commManager_, SIGNAL( Ready() ), this, SLOT( managerReady() ));
-			QObject::connect((QObject *)commManager_, SIGNAL( Error(QString &) ), this, SLOT( connectionFailed(QString &) ));
+			QString message = "Communication manager initialize error."; 
+			connectionFailed(message);
+			return;
 		}
+			
+		QObject::connect((QObject *)commManager_, SIGNAL( Ready() ), this, SLOT( managerReady() ));
+		QObject::connect((QObject *)commManager_, SIGNAL( Error(QString &) ), this, SLOT( connectionFailed(QString &) ));
 	}
 
 	void QtUI::managerReady()
