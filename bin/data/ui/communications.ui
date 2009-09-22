@@ -42,9 +42,6 @@
            <property name="styleSheet">
             <string>color: rgb(40, 129, 223);</string>
            </property>
-           <property name="text">
-            <string>Jonne Nauha</string>
-           </property>
           </widget>
          </item>
          <item>
@@ -76,6 +73,12 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="minimumSize">
+              <size>
+               <width>150</width>
+               <height>0</height>
+              </size>
+             </property>
              <property name="font">
               <font>
                <pointsize>10</pointsize>
@@ -83,9 +86,6 @@
              </property>
              <property name="styleSheet">
               <string>color: rgb(80, 129, 223);</string>
-             </property>
-             <property name="text">
-              <string>Kebabkioskilla</string>
              </property>
              <property name="frame">
               <bool>false</bool>
