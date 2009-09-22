@@ -20,3 +20,4 @@ use_package (QT4)
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
 link_package (QT4)
+close_target ()

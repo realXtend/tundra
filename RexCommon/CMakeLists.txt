@@ -16,4 +16,4 @@ use_framework_modules (Core  )
 link_package (BOOST)
 link_package (POCO)           
 
-
+close_target ()
