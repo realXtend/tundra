@@ -151,7 +151,24 @@ namespace CommunicationUI
 		std::string result = "";
 
 		TpQt4Communication::Credentials credentials;
-		credentials.LoadFromFile("data/connection.ini");
+		if ( params.size() == 0 )
+		{
+			// For fast testing...
+			credentials.SetUserID("@jabber.org");
+			credentials.SetPassword("");
+			credentials.SetServer("jabber.org");
+			credentials.SetServerPort(5222);
+		}
+
+		if (params.size() == 4)
+		{
+			credentials.SetUserID(params[0]);
+			credentials.SetPassword(params[1]);
+			credentials.SetServer(params[2]);
+			credentials.SetServerPort(0); //! HACK: We don't use this yet
+			
+		}
+
 		LogInfo("Try to open connection.");
 		default_connection_ = communication_manager_->OpenConnection(credentials);
 		if (default_connection_ == NULL)

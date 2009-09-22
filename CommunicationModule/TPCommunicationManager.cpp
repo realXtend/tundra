@@ -121,23 +121,27 @@ namespace TpQt4Communication
 		connections_.push_back(connection);
 
 		QVariantMap params;
-		QString user_name = "realxtend@jabber.org";
-		QString pass_word = "jabber666";
-		QString server = "jabber.org";
+		QString user_name = QString(credentials.GetUserID().c_str());
+		QString password = QString(credentials.GetUserPassword().c_str());
+		QString server = QString(credentials.GetServer().c_str());
+		if ( !user_name.contains("@") )
+		{
+			user_name.append("@");
+			user_name.append(server);
+		}
 //		QIn port = 5222;
 
-		params.insert("account", QVariant(user_name));
-		params.insert("password", QVariant(pass_word));
-		params.insert("server", QVariant(server));
+		params.insert("account", QString(user_name));
+		params.insert("password", QString(password));
+		params.insert("server", QString(server));
 //		params.insert("port", QVariant(port));
 
-		std::string message = "Try to connecto to IM server: ";
+		std::string message = "Try to connect to IM server: ";
 		message.append( server.toStdString () );
 		LogInfo(message);
 		Tp::PendingConnection *pending_connection = tp_connection_manager_->requestConnection(IM_PROTOCOL, params);
 		QObject::connect(pending_connection, SIGNAL(finished(Tp::PendingOperation *)),
 				(QObject*)connection, SLOT(OnConnectionCreated(Tp::PendingOperation *)));
-
 
 		return connection;
 	}
