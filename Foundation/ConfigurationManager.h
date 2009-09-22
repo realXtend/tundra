@@ -4,6 +4,7 @@
 #define incl_Foundation_ConfigurationManager_h
 
 #include "boost/filesystem.hpp" 
+#include "StableHeaders.h"
 
 namespace Foundation
 {
