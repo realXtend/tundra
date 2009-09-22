@@ -39,4 +39,4 @@ if (MSVC)
         	COMPILE_FLAGS "/YcStableHeaders.h")
 endif (MSVC)
 
-copy_target ()
+final_target ()

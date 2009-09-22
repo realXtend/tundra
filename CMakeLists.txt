@@ -15,6 +15,7 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CMakeModules)
 # The following CMake modules are required for the project to build.
 include (Sagase)
 include (ModuleSetup)
+include (ConfigurePackages)
 
 # The following CMake modules are optional.
 include (TelepathyQt4)
