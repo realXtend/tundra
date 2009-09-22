@@ -149,6 +149,12 @@ macro (configure_boost)
         NAMES Boost boost
         COMPONENTS date_time filesystem system thread program_options unit_test_framework
         PREFIXES ${ENV_NAALI_DEP_PATH})
+
+    if (MSVC)
+        set (BOOST_INCLUDE_DIRS ${BOOST_INCLUDE_DIRS} ${ENV_NAALI_DEP_PATH}/include)
+        set (BOOST_LIBRARY_DIRS ${BOOST_LIBRARY_DIRS} ${ENV_NAALI_DEP_PATH}/lib)
+    endif ()
+
 endmacro (configure_boost)
 
 macro (configure_poco)
