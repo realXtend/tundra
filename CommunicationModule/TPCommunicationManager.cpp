@@ -190,7 +190,7 @@ namespace TpQt4Communication
 
 		dbus_daemon_ = new QProcess(this);
 		QStringList env = QProcess::systemEnvironment();
-		QString env_item = "DBUS_SESSION_BUS_ADDRESS=tcp:host=localhost,port=";
+		QString env_item = "DBUS_SESSION_BUS_ADDRESS=tcp:host=127.0.0.1,port=";
 		env_item.append( QString(port, 10));
 		env << env_item;
 		dbus_daemon_->setEnvironment(env);
