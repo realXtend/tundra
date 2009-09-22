@@ -59,6 +59,7 @@ endif (MSVC)
 
 # Set normalized path for common environment variables
 file (TO_CMAKE_PATH "$ENV{NAALI_DEP_PATH}" ENV_NAALI_DEP_PATH)
+file (TO_CMAKE_PATH "$ENV{NAALI_DEP_PATH}" NAALI_DEP_PATH)
 file (TO_CMAKE_PATH "$ENV{QT_DIR}" ENV_QT_DIR)
 file (TO_CMAKE_PATH "$ENV{OGRE_HOME}" ENV_OGRE_HOME)
 
