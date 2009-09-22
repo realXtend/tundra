@@ -2,6 +2,9 @@
 #include "Foundation.h"
 
 #include "ConsoleUI.h"
+#include "TextChatSession.h"
+
+using namespace TpQt4Communication;
 
 namespace CommunicationUI
 {
@@ -28,11 +31,34 @@ namespace CommunicationUI
 			console_service->RegisterCommand(Console::CreateCommand("comm login", "Login to jabber server: comm login(uid, pwd, server, port)", Console::Bind(this, &ConsoleUI::OnCommandLogin)));
 			console_service->RegisterCommand(Console::CreateCommand("comm logout", "Logout from jabber server: comm logout()", Console::Bind(this, &ConsoleUI::OnCommandLogout)));
 			console_service->RegisterCommand(Console::CreateCommand("comm user", "Show information about current user", Console::Bind(this, &ConsoleUI::OnCommandUser)));
+			console_service->RegisterCommand(Console::CreateCommand("comm message", "Send message to default text chat session", Console::Bind(this, &ConsoleUI::OnCommandMessage)));
+			console_service->RegisterCommand(Console::CreateCommand("comm accept", "Accept all chat request.", Console::Bind(this, &ConsoleUI::OnCommandAcceptTextChatSession)));
 		}
 		else
 		{
 			// TODO: Error message
 		}
+	}
+
+	Console::CommandResult ConsoleUI::OnCommandMessage(const Core::StringVector &params)
+	{
+		if (default_chat_session_ == NULL)
+		{
+			std::string reason = "No open chat sessions.";
+			return Console::ResultFailure(reason);
+		}
+
+		if (params.size() != 1)
+		{
+			std::string reason = "Wrong number of arguments: comm message(\"your message\")";
+			return Console::ResultFailure(reason);
+		}
+
+		std::string text = params[0];
+		default_chat_session_->SendTextMessage(text);
+
+		std::string message = "";
+		return Console::ResultSuccess(message);
 	}
 
 	Console::CommandResult ConsoleUI::OnCommandState(const Core::StringVector &params)
@@ -173,6 +199,21 @@ namespace CommunicationUI
 		}
 
 		default_connection_->Close();
+		result = "ok.";
+		return Console::ResultSuccess(result);
+	}
+
+	Console::CommandResult ConsoleUI::OnCommandAcceptTextChatSession(const Core::StringVector &params)
+	{
+		default_connection_->GetTextChatSessionRequests();
+		TpQt4Communication::TextChatSessionRequestVector requests = default_connection_->GetTextChatSessionRequests();
+		for (TextChatSessionRequestVector::iterator i = requests.begin(); i != requests.end(); ++i)
+		{
+			TextChatSession* session = (*i)->Accept();
+			default_chat_session_ = session;
+		}
+
+		std::string result = "Not implemented";
 		result = "ok.";
 		return Console::ResultSuccess(result);
 	}

@@ -7,6 +7,7 @@
 
 #include "TpCommunicationManager.h"
 
+
 namespace CommunicationUI
 {
 
@@ -64,6 +65,12 @@ namespace CommunicationUI
 		Console::CommandResult OnCommandSendFriendRequest(const Core::StringVector &params);
 		Console::CommandResult OnCommandAcceptFriendRequest(const Core::StringVector &params);
 		Console::CommandResult OnCommandRejectFriendRequest(const Core::StringVector &params);
+
+		//! Accept all received text chat sessions on queue
+		Console::CommandResult OnCommandAcceptTextChatSession(const Core::StringVector &params);
+
+		//! Close default session
+		Console::CommandResult OnCommandClose(const Core::StringVector &params);
 
 		TpQt4Communication::CommunicationManager* communication_manager_;
 		Foundation::Framework* framework_;

@@ -32,12 +32,9 @@ namespace TpQt4Communication
 		std::string GetPresenceStatus();
 		std::string GetPresenceMessage();
 
-//		PresenceStatusWeakPtr GetPresenceStatus();
-		//void SetRealName(std::string name);
 	private:
 		Address address_;
 		std::string real_name_;
-//		PresenceStatusWeakPtr presence_status_;
 		Tp::ContactPtr tp_contact_;
 		std::string presence_status_;
 		std::string presence_message_;
@@ -50,23 +47,6 @@ namespace TpQt4Communication
 	};
 	typedef boost::weak_ptr<Contact> ContactWeakPtr;
 	typedef std::vector<Contact*> ContactVector;
-
-
-	/**
-	 * DO WE ACTUALLY NEED THIS CLASS ???
-	 *
-	 * User's contact list aka Friendlist.
-	 * Current implementation is flat but might be better to change to support hierarcy.
-	 * EVENTS: 
-	 *	- FriendRequestResponse
-     * - FriendRequest
-	 */
-	class ContactList
-	{
-	public:
-	private:
-		
-	};
 
 } // end of namespace: Communication
 
