@@ -7,10 +7,6 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-if (CAELUM)
-	INCLUDE_CAELUM()
-endif (CAELUM)
-
 if (HYDRAX)
 	INCLUDE_HYDRAX()
 endif (HYDRAX)
@@ -25,24 +21,29 @@ endif (HYDRAX)
 
 add_definitions (-DOGRE_MODULE_EXPORTS) 
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
-use_module_headers (${TARGET_NAME} AssetModule SupportModules InputModuleOIS RexCommon)
 use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
-
-target_link_libraries (${TARGET_NAME} Foundation Interfaces RexCommon)
-link_ois ()
-link_ogre ()
+use_modules (AssetModule SupportModules InputModuleOIS RexCommon)
 
 if (CAELUM)
-	LINK_CAELUM()
+    use_package (CAELUM)
 endif (CAELUM)
 
 if (HYDRAX)
-	LINK_HYDRAX()
+	use_package (HYDRAX)
 endif (HYDRAX)
+
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+use_framework_modules (Core Foundation Interfaces SceneManager)
+
+link_modules (Foundation Interfaces RexCommon)
+link_package (BOOST)
+link_package (POCO)
+link_package (OGRE)
+link_package (OIS)
+link_package (OGRE)
+
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

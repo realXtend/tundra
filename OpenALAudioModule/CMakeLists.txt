@@ -7,12 +7,16 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-use_framework_modules (${TARGET_NAME} Core Foundation Interfaces)
-use_package (BOOST)
 use_package (POCO)
+use_package (BOOST)
 
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+use_framework_modules (Core Foundation Interfaces)
 INCLUDE_OPENAL()
+
+link_package (POCO)
+link_package (BOOST)
+
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

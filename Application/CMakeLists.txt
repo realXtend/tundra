@@ -12,8 +12,13 @@ if (MSVC)
    set_property (DIRECTORY PROPERTY COMPILE_DEFINITIONS_DEBUG _DMEMORYLEAKS)
 endif (MSVC)
 
-build_executable (${TARGET_NAME} ${SOURCE_FILES})
-use_framework_modules (${TARGET_NAME} Core Foundation Interfaces)
-use_module_headers (${TARGET_NAME} SupportModules TestModule)
 use_package (BOOST)
 use_package (POCO)
+use_modules (SupportModules TestModule)
+
+build_executable (${TARGET_NAME} ${SOURCE_FILES})
+use_framework_modules (Core Foundation Interfaces)
+
+link_package (BOOST)
+link_package (POCO)
+

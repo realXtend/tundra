@@ -9,16 +9,19 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 add_definitions (-DOSPROTO_MODULE_EXPORTS)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager RexCommon)
-use_module_headers (${TARGET_NAME} NetTestLogicModule HttpUtilities)
 use_package (BOOST)
 use_package (POCO)
+use_package (XMLRPC)
+use_modules (NetTestLogicModule HttpUtilities)
 
-INCLUDE_XMLRPCEPI()
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+use_framework_modules (Core Foundation Interfaces SceneManager RexCommon)
 
-target_link_libraries (${TARGET_NAME} RexCommon HttpUtilities)
-LINK_XMLRPCEPI()
+link_modules (RexCommon HttpUtilities)
+link_package (BOOST)
+link_package (POCO)
+link_package (XMLRPC)
+
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

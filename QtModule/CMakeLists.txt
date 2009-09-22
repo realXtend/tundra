@@ -17,18 +17,25 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DQT_MODULE_EXPORTS)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
-use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
-use_module_headers (${TARGET_NAME} RexCommon OgreRenderingModule InputModuleOIS)
 use_package (BOOST)
 use_package (OGRE)
 use_package (OIS) # ///\todo Remove.
 use_package (QT4)
 use_package (POCO)
+use_modules (RexCommon OgreRenderingModule InputModuleOIS)
 
-target_link_libraries (${TARGET_NAME} RexCommon OgreRenderingModule InputModuleOIS)
-link_ois ()
-link_ogre ()
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
+use_framework_modules (Core Foundation Interfaces SceneManager)
+
+link_modules (RexCommon OgreRenderingModule InputModuleOIS)
+link_package (OIS)
+link_package (OGRE)
+link_package (BOOST)
+link_package (OGRE)
+link_package (OIS) # ///\todo Remove.
+link_package (QT4)
+link_package (POCO)
+
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

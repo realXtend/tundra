@@ -114,6 +114,8 @@ macro (sagase_configure_package PREFIX)
     sagase_parse_arguments ("COMPONENTS" "PREFIXES" PKG_COMPONENTS ${ARGN})
     sagase_parse_arguments ("PREFIXES" none PKG_PREFIXES ${ARGN})
 
+    message (STATUS "** Configuring " ${PREFIX})
+
     set (found_ FALSE)
 
     foreach (name_ ${PKG_NAMES})
@@ -126,14 +128,13 @@ macro (sagase_configure_package PREFIX)
         # when searching for a package who's name is all caps, this appears to
         # cause a name collision, and is thus bypassed.
         if (NOT name_ STREQUAL name_upper_)
-            message (STATUS "trying find_package: " ${name_})
-
+            
             # try built-in CMake modules first
             find_package (${name_} QUIET COMPONENTS ${PKG_COMPONENTS})
         endif ()
 
         if (${name_}_FOUND OR ${name_upper_}_FOUND)
-            message (STATUS "sagase: configured " ${PREFIX})
+            message (STATUS "sagase: configured " ${PREFIX} " using find_package")
             set (${PREFIX}_INCLUDE_DIRS ${${name_}_INCLUDE_DIRS})
             set (${PREFIX}_LIBRARIES ${${name_}_LIBRARIES})
             set (${PREFIX}_LIBRARY_DIRS ${${name_}_LIBRARY_DIRS})
@@ -154,8 +155,6 @@ macro (sagase_configure_package PREFIX)
             elseif (UNIX)
                 # what else is there besides pkg-config?
                 # non-linux OSes may be a problem
-                message (STATUS "tring pkg_check_modules: " ${name_})
-
                 include (FindPkgConfig)
                 if (PKG_CONFIG_FOUND)
                     pkg_check_modules(${PREFIX} ${name_})
@@ -164,7 +163,7 @@ macro (sagase_configure_package PREFIX)
                 endif ()
 
                 if (${PREFIX}_FOUND)
-                    message (STATUS "sagase: configured " ${PREFIX})
+                    message (STATUS "sagase: configured " ${PREFIX} " using pkg-config")
                     # already set: ${PREFIX}_INCLUDE_DIRS, 
                     # ${PREFIX}_LIBRARY_DIRS, ${PREFIX}_LIBRARIES
                     set (${PREFIX}_DEFINITIONS ${${PREFIX}_CFLAGS_OTHER})
@@ -180,7 +179,7 @@ macro (sagase_configure_package PREFIX)
     endforeach ()
 
     if (NOT found_)
-        message (STATUS "trying brute-force search ")
+        message (STATUS "sagase: trying brute-force search")
 
         # take names to be directory names, and include "."
         set (${PREFIX}_PATH_NAMES ${PKG_NAMES} ".")

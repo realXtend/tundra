@@ -7,13 +7,17 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
-use_module_headers (${TARGET_NAME} OpenSimProtocol ReXLogic RexCommon)
 use_package (BOOST)
 use_package (POCO)
+use_modules (OpenSimProtocol ReXLogic RexCommon)
 
-target_link_libraries (${TARGET_NAME} OpenSimProtocolModule RexCommon RexLogicModule)
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+use_framework_modules (Core Foundation Interfaces SceneManager)
+
+link_modules (OpenSimProtocolModule RexCommon RexLogicModule)
+link_package (BOOST)
+link_package (POCO)
+
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

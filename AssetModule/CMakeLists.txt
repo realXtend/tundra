@@ -9,13 +9,17 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 		
 add_definitions (-DASSET_MODULE_EXPORTS)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-use_framework_modules (${TARGET_NAME} Core Foundation Interfaces)
-use_module_headers (${TARGET_NAME} RexCommon OpenSimProtocol HttpUtilities)
 use_package (BOOST)
 use_package (POCO)
 
-target_link_libraries (${TARGET_NAME} OpenSimProtocolModule RexCommon HttpUtilities)
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+use_framework_modules (Core Foundation Interfaces)
+use_modules (RexCommon OpenSimProtocol HttpUtilities)
+
+link_modules (OpenSimProtocolModule RexCommon HttpUtilities)
+link_package (BOOST)
+link_package (POCO)
+
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
