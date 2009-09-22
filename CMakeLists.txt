@@ -12,9 +12,7 @@ endif (COMMAND cmake_policy)
 # Set CMake custom module path & include them
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CMakeModules)
 
-# The following CMake modules are required for the project
-# to build.
-
+# The following CMake modules are required for the project to build.
 include (Sagase)
 include (ModuleSetup)
 
@@ -37,9 +35,6 @@ include (TelepathyFarsight2)
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
 
-# Set common directory for installing non-system dependencies
-set (NAALI_DEP_PATH $ENV{NAALI_DEP_PATH})
-
 # Use Caelum, but not Hydrax for now.
 SET (CAELUM 1)
 SET (HYDRAX 0)
@@ -61,6 +56,11 @@ endif (MSVC)
 if (MSVC)
 #	add_definitions (-DPROFILING)
 endif (MSVC)
+
+# Set normalized path for common environment variables
+file (TO_CMAKE_PATH "$ENV{NAALI_DEP_PATH}" ENV_NAALI_DEP_PATH)
+file (TO_CMAKE_PATH "$ENV{QT_DIR}" ENV_QT_DIR)
+file (TO_CMAKE_PATH "$ENV{OGRE_HOME}" ENV_OGRE_HOME)
 
 # Find needed external libraries, abort on error
 configure_boost ()

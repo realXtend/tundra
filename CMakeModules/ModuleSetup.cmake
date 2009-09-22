@@ -23,8 +23,8 @@ macro (init_target NAME)
     message (STATUS "Found build target: " ${TARGET_NAME})
 
     # headers or libraries are found here will just work
-    include_directories ($ENV{NAALI_DEP_PATH}/include)
-    link_directories ($ENV{NAALI_DEP_PATH}/lib)
+    include_directories (${ENV_NAALI_DEP_PATH}/include)
+    link_directories (${ENV_NAALI_DEP_PATH}/lib)
 
     # if OUTPUT is defined
     if (${TARGET_NAME}_OUTPUT)# AND ${TARGET_NAME}_OUTPUT STREQUAL "OUTPUT")
@@ -135,21 +135,21 @@ macro (configure_boost)
     sagase_configure_package (BOOST 
         NAMES Boost boost
         COMPONENTS date_time filesystem system thread program_options unit_test_framework
-        PREFIXES $ENV{NAALI_DEP_PATH})
+        PREFIXES ${ENV_NAALI_DEP_PATH})
 endmacro (configure_boost)
 
 macro (configure_poco)
     sagase_configure_package (POCO 
         NAMES Poco PoCo poco
         COMPONENTS Poco PocoFoundation PocoNet PocoUtil PocoXML
-        PREFIXES $ENV{NAALI_DEP_PATH})
+        PREFIXES ${ENV_NAALI_DEP_PATH})
 endmacro (configure_poco)
 
 macro (configure_qt4)
     sagase_configure_package (QT4 
         NAMES Qt4 qt4 Qt qt
         COMPONENTS QtCore QtGui QtWebkit QtScript QtXml QtNetwork QtUiTools
-        PREFIXES $ENV{NAALI_DEP_PATH} $ENV{QTDIR})
+        PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_QT_DIR})
 
     # FindQt4.cmake does it's own thing...
     if (QT4_FOUND)
@@ -189,7 +189,7 @@ macro (configure_ois)
     sagase_configure_package (OIS 
         NAMES Ois ois OIS 
         COMPONENTS OIS
-        PREFIXES $ENV{NAALI_DEP_PATH})
+        PREFIXES ${ENV_NAALI_DEP_PATH})
 endmacro (configure_ois)
 
 macro (link_ois ${TARGET_NAME})
@@ -204,7 +204,7 @@ macro (configure_ogre)
     sagase_configure_package (OGRE 
         NAMES Ogre OgreSDK ogre OGRE
         COMPONENTS Ogre ogre OGRE OgreMain 
-        PREFIXES $ENV{NAALI_DEP_PATH} $ENV{OGRE_HOME})
+        PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_OGRE_HOME})
 endmacro (configure_ogre)
 
 macro (link_ogre ${TARGET_NAME})
