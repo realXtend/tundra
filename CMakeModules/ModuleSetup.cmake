@@ -111,9 +111,10 @@ endmacro (use_framework_modules)
 
 # include local module headers 
 macro (use_modules)
-    message (STATUS "-- using modules: " ${ARGN})
+    message (STATUS "-- using modules:")
     set (INTERNAL_MODULE_DIR "..")
     foreach (module_ ${ARGN})
+		message (STATUS "       " ${module_})
         include_directories (${INTERNAL_MODULE_DIR}/${module_})
         link_directories (${INTERNAL_MODULE_DIR}/${module_})
     endforeach ()
