@@ -88,12 +88,8 @@ namespace TpQt4Communication
 
 	void CommunicationManager::OnConnectionManagerReady(Tp::PendingOperation *op)
 	{
-		LogInfo( "ConnectionManager init ready..." );
-
-
 		if (op->isError())
 		{
-			LogError( "result: ERROR" );
 			std::string message = "Cannot initialize ConnectionManager: ";
 			message.append( op->errorMessage().toStdString() );
 			LogError( message );
@@ -129,14 +125,14 @@ namespace TpQt4Communication
 			user_name.append("@");
 			user_name.append(server);
 		}
-//		QIn port = 5222;
+//		QInt port = 5222;
 
 		params.insert("account", QString(user_name));
 		params.insert("password", QString(password));
 		params.insert("server", QString(server));
 //		params.insert("port", QVariant(port));
 
-		std::string message = "Try to connect to IM server: ";
+		std::string message = "Try to open connection to IM server: ";
 		message.append( server.toStdString () );
 		LogInfo(message);
 		Tp::PendingConnection *pending_connection = tp_connection_manager_->requestConnection(IM_PROTOCOL, params);
@@ -225,7 +221,8 @@ namespace TpQt4Communication
 
 	void CommunicationManager::OnDBusDaemonExited( int exitCode )
 	{
-
+		QString message = "DBusdaemon quit.";
+		LogDebug( message.toStdString() );
 	}
 
 #endif		
@@ -237,15 +234,5 @@ namespace TpQt4Communication
 			(*i)->Close();
 		}
 	}
-
-	//void CommunicationManager::Ready()
-	//{
-
-	//}
-
-	//void CommunicationManager::Error(QString &reason)
-	//{
-
-	//}
 
 } // namespace TpQt4Communication
