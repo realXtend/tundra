@@ -122,41 +122,44 @@ namespace RexLogic
         
         // Get the avatar appearance description ("generic xml")
         std::map<std::string, std::string>::iterator i = contents.find("generic xml");
-        if (i != contents.end())
-        {
-            std::string& appearance_str = i->second;
-
-            // Return to original format by substituting to < >
-            ReplaceSubstring(appearance_str, "&lt;", "<");
-            ReplaceSubstring(appearance_str, "&gt;", ">");
-                
-            QDomDocument appearance_doc("appearance");
-            QByteArray appearance_bytes(appearance_str.c_str());
-            appearance_doc.setContent(appearance_bytes);
-
+        if (i == contents.end())
+            return;
             
-            // Deserialize appearance from the document into the EC
-            LegacyAvatarSerializer::ReadAvatarAppearance(appearance, appearance_doc);
-            // Rebuild avatar
-            SetupAppearance(entity);
+        std::string& appearance_str = i->second;
+
+        // Return to original format by substituting to < >
+        ReplaceSubstring(appearance_str, "&lt;", "<");
+        ReplaceSubstring(appearance_str, "&gt;", ">");
+            
+        QDomDocument appearance_doc("appearance");
+        QByteArray appearance_bytes(appearance_str.c_str());
+        appearance_doc.setContent(appearance_bytes);
+
+        std::map<std::string, std::string>::iterator j = contents.begin();
+        while (j != contents.end())
+        {
+            if (j->first != "generic xml")
+                RexLogicModule::LogInfo("Avatar asset content map: " + j->first + " " + j->second);
+            ++j;
         }
         
-        // Attempt to request the assets
-        //! \todo request as renderer resources to trigger their creation properly
-        Foundation::ServiceManagerPtr service_manager = rexlogicmodule_->GetFramework()->GetServiceManager(); 
-        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
-        
-        std::string host = HttpUtilities::GetHostFromUrl(avatar.GetAppearanceAddress());
-        if (host.empty()) return;
-        
-        i = contents.begin();
-        while (i != contents.end())
+        // Deserialize appearance from the document into the EC
+        LegacyAvatarSerializer::ReadAvatarAppearance(appearance, appearance_doc, avatar.GetAppearanceAddress(), contents);
+        // If all resources exist, rebuild avatar
+        if (appearance.AreResourcesLoaded())
+            SetupAppearance(entity);
+        else
         {
-            if (i->second.length() == XMLRPC_ASSET_HASH_LENGTH)
+            // Request needed resources
+            boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+                GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+            Core::RequestTagVector tags;
+            appearance.RequestRendererResources(renderer.get(), tags);
+            // Associate tags with this entity
+            for (Core::uint i = 0; i < tags.size(); ++i)
             {
-                asset_service->RequestAsset(host + "/item/" + i->second, "?");
+                avatar_resource_tags_[tags[i]] = entity->GetId();
             }
-            ++i;
         }
     }
     
@@ -189,7 +192,8 @@ namespace RexLogic
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
         
         // Deserialize appearance from the document into the EC
-        LegacyAvatarSerializer::ReadAvatarAppearance(appearance, *default_appearance_);
+        // Note: we have no appearance address or asset map, all assets in the default appearance are local
+        LegacyAvatarSerializer::ReadAvatarAppearance(appearance, *default_appearance_, std::string(), std::map<std::string, std::string>());
         
         SetupAppearance(entity);
     }
@@ -293,8 +297,9 @@ namespace RexLogic
         OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()).get());
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(entity->GetComponent(EC_AvatarAppearance::NameStatic()).get());
         
-        // Mesh needs to be cloned if there are attachments which need to hide vertices
-        bool need_mesh_clone = false;
+        // Mesh needs to be cloned if there are attachments which need to hide vertices, or custom skeleton
+        bool need_mesh_clone = true;
+        
         const AvatarAttachmentVector& attachments = appearance.GetAttachments();
         std::set<Core::uint> vertices_to_hide;
         for (Core::uint i = 0; i < attachments.size(); ++i)
@@ -307,10 +312,11 @@ namespace RexLogic
             }
         }
         
-        // Setup mesh
-        //! \todo use mesh resource
-        //! \todo handle setting custom skeleton
-        mesh.SetMesh(appearance.GetMesh().name_, entity.get(), need_mesh_clone);
+        if (appearance.GetSkeleton().resource_)
+            mesh.SetMeshWithSkeleton(appearance.GetMesh().GetLocalOrResourceName(), appearance.GetSkeleton().GetLocalOrResourceName(), entity.get(), need_mesh_clone);
+        else
+            mesh.SetMesh(appearance.GetMesh().GetLocalOrResourceName(), entity.get(), need_mesh_clone);
+            
         if (need_mesh_clone)
             HideVertices(mesh.GetEntity(), vertices_to_hide);
         
@@ -336,8 +342,7 @@ namespace RexLogic
                     materials[i].asset_.resource_ = OgreRenderer::CreateResourceFromMaterial(override_mat);
                     
                     // Load local texture if not yet loaded
-                    //! \todo remove once local avatar resources are not needed anymore
-                    if (texture.id_.empty())
+                    if (texture.resource_id_.empty())
                     {
                         Ogre::TextureManager& tex_mgr = Ogre::TextureManager::getSingleton();
                         Ogre::TexturePtr tex = tex_mgr.getByName(texture.name_);
@@ -352,8 +357,8 @@ namespace RexLogic
                                 RexLogicModule::LogWarning("Local texture load failed: " + std::string(e.what()));
                             }
                         }
-                        OgreRenderer::SetTextureUnitOnMaterial(override_mat, texture.name_);
                     }
+                    OgreRenderer::SetTextureUnitOnMaterial(override_mat, texture.GetLocalOrResourceName());
                     
                     mesh.SetMaterial(i, override_mat->getName());
                 }
@@ -386,7 +391,7 @@ namespace RexLogic
             // Setup attachment meshes
             //! \todo use mesh resources
             //! \todo use material & texture resources, force attachments to use shader materials?
-            mesh.SetAttachmentMesh(i, attachments[i].mesh_.name_, attachments[i].bone_name_, attachments[i].link_skeleton_);
+            mesh.SetAttachmentMesh(i, attachments[i].mesh_.GetLocalOrResourceName(), attachments[i].bone_name_, attachments[i].link_skeleton_);
             mesh.SetAttachmentPosition(i, attachments[i].transform_.position_);
             mesh.SetAttachmentOrientation(i, attachments[i].transform_.orientation_);
             mesh.SetAttachmentScale(i, attachments[i].transform_.scale_);
@@ -715,5 +720,41 @@ namespace RexLogic
             }
             ibuf->unlock();
         }
+    }
+    
+    bool AvatarAppearance::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        if (!event_id == Resource::Events::RESOURCE_READY)
+            return false;
+
+        Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
+        if (!event_data)
+            return false;
+        std::map<Core::request_tag_t, Core::entity_id_t>::iterator i = avatar_resource_tags_.find(event_data->tag_);
+        if (i == avatar_resource_tags_.end())
+            return false;
+        Core::entity_id_t id = i->second;
+        avatar_resource_tags_.erase(i);
+        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(id);
+        if (!entity)
+            return true;
+        
+        Foundation::ComponentPtr avatarptr = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!avatarptr || !appearanceptr)
+            return true;
+        EC_OpenSimAvatar& avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatarptr.get());
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+        
+        // See if still missing some resource
+        if (!appearance.AreResourcesLoaded())
+        {
+            appearance.ResourceLoaded(event_data->resource_);
+            // If this was the last, can update appearance
+            if (appearance.AreResourcesLoaded())
+                SetupAppearance(entity);
+        }
+        
+        return true;
     }
 }

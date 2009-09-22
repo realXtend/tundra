@@ -59,6 +59,9 @@ namespace RexLogic
         //! Performs frame-based update.
         void Update(Core::f64 frametime);
         
+        //! Handles resource event
+        bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        
     private:
         //! Sets up an avatar mesh
         void SetupMeshAndMaterials(Scene::EntityPtr entity);
@@ -100,6 +103,9 @@ namespace RexLogic
         
         //! Thread tasks for avatar appearance downloads
         std::map<Core::entity_id_t, HttpUtilities::HttpTaskPtr> appearance_downloaders_;
+        
+        //! Avatar resource request tags associated to entity
+        std::map<Core::request_tag_t, Core::entity_id_t> avatar_resource_tags_;
         
         RexLogicModule *rexlogicmodule_;
     };

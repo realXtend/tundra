@@ -42,6 +42,9 @@ namespace RexLogic
         //! Updates running avatar animations
         void UpdateAvatarAnimations(Core::entity_id_t avatarid, Core::f64 frametime);
         
+        //! Handles resource event
+        bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        
     private:
         RexLogicModule *rexlogicmodule_;
         

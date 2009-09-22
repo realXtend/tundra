@@ -91,6 +91,13 @@ namespace OgreRenderer
          */
         bool UpdateParticles(Foundation::AssetPtr source, Core::request_tag_t tag);
 
+        //! Creates or updates image based texture, based on source asset data
+        /*! \param source The image asset data.
+            \param tag Request tag from raw asset resource event
+            \return true if successful
+         */
+        bool UpdateImageTexture(Foundation::AssetPtr source, Core::request_tag_t tag);
+
         //! Processes resource references of a resource once it has been loaded.
         /*! Adds references to outstanding list and makes requests as necessary.
             If no outstanding references, sends RESOURCE_READY event

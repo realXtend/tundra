@@ -153,6 +153,7 @@ namespace RexTypes
     const std::string ASSETTYPENAME_MATERIAL_SCRIPT("MaterialScript");
     const std::string ASSETTYPENAME_PARTICLE_SCRIPT("ParticleScript");
     const std::string ASSETTYPENAME_FLASH_ANIMATION("FlashAnimation");
+    const std::string ASSETTYPENAME_IMAGE("Image"); // Avatar asset. No UDP equivalent
     const std::string ASSETTYPENAME_UNKNOWN("Unknown");
 
     // Inventory category names.

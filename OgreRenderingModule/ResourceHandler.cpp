@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "AssetEvents.h"
 #include "OgreRenderingModule.h"
+#include "OgreImageTextureResource.h"
 #include "OgreTextureResource.h"
 #include "OgreMeshResource.h"
 #include "OgreMaterialResource.h"
@@ -23,6 +24,7 @@ namespace OgreRenderer
         source_types_[OgreSkeletonResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_SKELETON;
         source_types_[OgreMaterialResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_MATERIAL_SCRIPT;
         source_types_[OgreParticleResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_PARTICLE_SCRIPT;
+        source_types_[OgreImageTextureResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_IMAGE;
     }
 
     ResourceHandler::~ResourceHandler()
@@ -83,7 +85,8 @@ namespace OgreRenderer
         if (type == OgreTextureResource::GetTypeStatic())
             return RequestTexture(id);
         if (type == OgreMeshResource::GetTypeStatic() || type == OgreMaterialResource::GetTypeStatic() ||
-            type == OgreParticleResource::GetTypeStatic())
+            type == OgreParticleResource::GetTypeStatic() || type == OgreImageTextureResource::GetTypeStatic() ||
+            type == OgreSkeletonResource::GetTypeStatic())
             return RequestOtherResource(id, type);
             
         OgreRenderingModule::LogWarning("Requested unknown renderer resource type " + type);
@@ -130,6 +133,9 @@ namespace OgreRenderer
 
                 if (event_data->asset_type_ == RexTypes::ASSETTYPENAME_PARTICLE_SCRIPT)
                     UpdateParticles(event_data->asset_, event_data->tag_);
+
+                if (event_data->asset_type_ == RexTypes::ASSETTYPENAME_IMAGE)
+                    UpdateImageTexture(event_data->asset_, event_data->tag_);
             }
             break;
             
@@ -337,6 +343,32 @@ namespace OgreRenderer
         {
             resources_[source->GetId()] = mesh;
             ProcessResourceReferences(mesh);
+            
+            success = true;
+        }
+        
+        return success;
+    }
+
+    bool ResourceHandler::UpdateImageTexture(Foundation::AssetPtr source, Core::request_tag_t tag)
+    {    
+        expected_request_tags_.erase(tag);
+            
+        // If not found, prepare new
+        Foundation::ResourcePtr tex = GetResourceInternal(source->GetId(), OgreImageTextureResource::GetTypeStatic());
+        if (!tex)
+        {
+            tex = Foundation::ResourcePtr(new OgreImageTextureResource(source->GetId()));
+        }
+
+        bool success = false;
+        OgreImageTextureResource* tex_res = checked_static_cast<OgreImageTextureResource*>(tex.get());
+
+        // If data successfully set, or already have valid data, success (send RESOURCE_READY_EVENT)
+        if ((tex_res->IsValid()) || (tex_res->SetData(source)))
+        {
+            resources_[source->GetId()] = tex;
+            ProcessResourceReferences(tex);
             
             success = true;
         }

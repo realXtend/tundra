@@ -365,7 +365,9 @@ namespace RexLogic
     
     bool RexLogicModule::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        // Pass the event to the mesh manager.
+        // Pass the event to the avatar maanger
+        avatar_->HandleResourceEvent(event_id, data);
+        // Pass the event to the primitive manager
         primitive_->HandleResourceEvent(event_id, data);
                 
         if (event_id == Resource::Events::RESOURCE_READY)

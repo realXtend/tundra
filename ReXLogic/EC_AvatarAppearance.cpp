@@ -2,9 +2,46 @@
 
 #include "StableHeaders.h"
 #include "EC_AvatarAppearance.h"
+#include "Renderer.h"
 
 namespace RexLogic
 {
+    bool AvatarAsset::IsLoaded() const
+    {
+        // If contains no resource id, then we assume it's a local asset which are considered "always loaded"
+        if (resource_id_.empty())
+            return true;
+        if (resource_)
+            return true;
+        return false;
+    }
+    
+    void AvatarAsset::ResourceLoaded(Foundation::ResourcePtr resource)
+    {
+        if (!resource)
+            return;
+        if ((resource->GetId() == resource_id_) && (resource->GetType() == resource_type_))
+            resource_ = resource;
+    }
+    
+    void AvatarAsset::RequestRendererResource(OgreRenderer::Renderer* renderer, Core::RequestTagVector& tags)
+    {
+        if ((!resource_id_.empty()) && (!resource_type_.empty()))
+        {
+            Core::request_tag_t tag = renderer->RequestResource(resource_id_, resource_type_);
+            if (tag)
+                tags.push_back(tag);
+        }
+    }
+    
+    const std::string& AvatarAsset::GetLocalOrResourceName() const
+    {
+        if (resource_)
+            return resource_->GetId();
+        else
+            return name_;
+    }
+    
     EC_AvatarAppearance::EC_AvatarAppearance(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework())
     {
     }
@@ -122,6 +159,73 @@ namespace RexLogic
         else
             return false;
     }
+    
+    bool EC_AvatarAppearance::AreResourcesLoaded() const
+    {
+        if (!mesh_.IsLoaded())
+            return false;
+        if (!skeleton_.IsLoaded())
+            return false;
+        for (Core::uint i = 0; i < materials_.size(); ++i)
+        {
+            if (!materials_[i].asset_.IsLoaded())
+                return false;
+            for (Core::uint j = 0; j < materials_[i].textures_.size(); ++j)
+            {
+                if (!materials_[i].textures_[j].IsLoaded())
+                    return false;
+            }
+        }
+        for (Core::uint i = 0; i < attachments_.size(); ++i)
+        {
+            if (!attachments_[i].mesh_.IsLoaded())
+                return false;
+        }
+        
+        return true;
+    }
+    
+    void EC_AvatarAppearance::ResourceLoaded(Foundation::ResourcePtr resource)
+    {
+        // Kind of lazy code, just check every avatar asset and see which one matches (if any)
+        mesh_.ResourceLoaded(resource);
+        skeleton_.ResourceLoaded(resource);
+        
+        for (Core::uint i = 0; i < materials_.size(); ++i)
+        {
+            materials_[i].asset_.ResourceLoaded(resource);
+            
+            for (Core::uint j = 0; j < materials_[i].textures_.size(); ++j)
+            {
+                materials_[i].textures_[j].ResourceLoaded(resource);
+            }
+        }
+        for (Core::uint i = 0; i < attachments_.size(); ++i)
+        {
+            attachments_[i].mesh_.ResourceLoaded(resource);
+        }
+    }
+    
+    void EC_AvatarAppearance::RequestRendererResources(OgreRenderer::Renderer* renderer, Core::RequestTagVector& tags)
+    {
+        mesh_.RequestRendererResource(renderer, tags);
+        skeleton_.RequestRendererResource(renderer, tags);
+        
+        for (Core::uint i = 0; i < materials_.size(); ++i)
+        {
+            materials_[i].asset_.RequestRendererResource(renderer, tags);
+            
+            for (Core::uint j = 0; j < materials_[i].textures_.size(); ++j)
+            {
+                materials_[i].textures_[j].RequestRendererResource(renderer, tags);
+            }
+        }
+        for (Core::uint i = 0; i < attachments_.size(); ++i)
+        {
+            attachments_[i].mesh_.RequestRendererResource(renderer, tags);
+        }
+    }
+    
     
     const AnimationDefinition& GetAnimationByName(const AnimationDefinitionMap& animations, const std::string& name)
     {

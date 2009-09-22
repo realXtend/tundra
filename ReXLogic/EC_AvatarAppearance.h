@@ -8,19 +8,33 @@
 #include "RexTypes.h"
 #include "RexUUID.h"
 
+namespace OgreRenderer
+{
+    class Renderer;
+}
+
 namespace RexLogic
 {
     //! Defines an asset for an avatar
-    struct AvatarAsset
+    class AvatarAsset
     {
+    public:
         //! Asset (human-readable) name
         std::string name_;
-        //! Asset id
-        std::string id_;
-        //! Asset type
-        std::string type_;
-        //! Resource (once loaded)
+        //! Asset resource id
+        std::string resource_id_;
+        //! Asset resource type
+        std::string resource_type_;
+        //! Resource (once it has been loaded)
         Foundation::ResourcePtr resource_;
+        
+        bool IsLoaded() const;
+        
+        void ResourceLoaded(Foundation::ResourcePtr resource);
+        
+        void RequestRendererResource(OgreRenderer::Renderer* renderer, Core::RequestTagVector& tags);
+        
+        const std::string& GetLocalOrResourceName() const;
     };
     
     typedef std::vector<AvatarAsset> AvatarAssetVector;
@@ -219,6 +233,10 @@ namespace RexLogic
         const Transform& GetTransform() const { return transform_; }
         bool HasProperty(const std::string& name) const;
         const std::string& GetProperty(const std::string& name) const;
+        
+        void ResourceLoaded(Foundation::ResourcePtr resource);
+        void RequestRendererResources(OgreRenderer::Renderer* renderer, Core::RequestTagVector& tags);
+        bool AreResourcesLoaded() const;
         
     private:
         EC_AvatarAppearance(Foundation::ModuleInterface* module);
