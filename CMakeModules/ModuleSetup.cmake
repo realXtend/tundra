@@ -207,8 +207,10 @@ macro (configure_python)
     # FindPythonLibs.cmake
     if (PYTHONLIBS_FOUND)
         set (PYTHON_LIBRARIES ${PYTHON_LIBRARY})
-        set (PYTHON_DEBUG_LIBRARIES ${PYTHON_DEBUG_LIBRARY})
         set (PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_PATH})
+        if (PYTHON_DEBUG_LIBRARY)
+            set (PYTHON_DEBUG_LIBRARIES ${PYTHON_DEBUG_LIBRARY})
+        endif ()
     endif ()
     
 endmacro (configure_python)
