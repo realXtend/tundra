@@ -559,4 +559,9 @@ namespace RexLogic
         EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatar_ptr.get());
         avatar.SetState(state);
     }
+    
+    bool Avatar::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        return avatar_appearance_.HandleResourceEvent(event_id, data);
+    }
 }

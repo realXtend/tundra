@@ -5,6 +5,12 @@
 #include "RexLogicModule.h"
 #include "RexTypes.h"
 #include "RexNetworkUtils.h"
+#include "OgreImageTextureResource.h"
+#include "OgreMaterialResource.h"
+#include "OgreMeshResource.h"
+#include "OgreSkeletonResource.h"
+
+#include "HttpUtilities.h"
 
 #include <QDomDocument>
 #include <QDomElement>
@@ -12,7 +18,7 @@
 
 namespace RexLogic
 {
-    bool LegacyAvatarSerializer::ReadAvatarAppearance(RexLogic::EC_AvatarAppearance& dest, const QDomDocument& source)
+    bool LegacyAvatarSerializer::ReadAvatarAppearance(RexLogic::EC_AvatarAppearance& dest, const QDomDocument& source, const std::string& appearance_address, const std::map<std::string ,std::string>& asset_map)
     {
         dest.Clear();
         
@@ -24,14 +30,13 @@ namespace RexLogic
         }
         
         // Get mesh
-        // Note: the legacy avatar xml just stores the asset human-readable names; actual asset ID's come from elsewhere
-        // and we don't bother with them for now
         QDomElement base_elem = avatar.firstChildElement("base");
         if (!base_elem.isNull())
         {
             AvatarAsset mesh;
             mesh.name_ = base_elem.attribute("mesh").toStdString();
-            mesh.type_ = RexTypes::ASSETTYPENAME_MESH;
+            mesh.resource_type_ = OgreRenderer::OgreMeshResource::GetTypeStatic();
+            FillAssetId(mesh, appearance_address, asset_map);
             dest.SetMesh(mesh);
         }
         
@@ -41,7 +46,8 @@ namespace RexLogic
         {
             AvatarAsset skeleton;
             skeleton.name_ = skeleton_elem.attribute("name").toStdString();
-            skeleton.type_ = RexTypes::ASSETTYPENAME_SKELETON;
+            skeleton.resource_type_ = OgreRenderer::OgreSkeletonResource::GetTypeStatic();
+            FillAssetId(skeleton, appearance_address, asset_map);
             dest.SetSkeleton(skeleton);
         }
         
@@ -53,7 +59,8 @@ namespace RexLogic
         {
             AvatarMaterial material;
             material.asset_.name_ = material_elem.attribute("name").toStdString();
-            material.asset_.type_ = RexTypes::ASSETTYPENAME_MATERIAL_SCRIPT;
+            material.asset_.resource_type_ = OgreRenderer::OgreMaterialResource::GetTypeStatic();
+            FillAssetId(material.asset_, appearance_address, asset_map);
             
             // Check for texture override
             QDomElement texture_elem;
@@ -74,7 +81,8 @@ namespace RexLogic
                 {
                     AvatarAsset texture;
                     texture.name_ = tex_name;
-                    texture.type_ = RexTypes::ASSETTYPENAME_TEXTURE;
+                    texture.resource_type_ = OgreRenderer::OgreImageTextureResource::GetTypeStatic();
+                    FillAssetId(texture, appearance_address, asset_map);
                     material.textures_.push_back(texture);
                 }
             }
@@ -102,7 +110,7 @@ namespace RexLogic
         AvatarAttachmentVector attachments;
         while (!attachment_elem.isNull())
         {
-            ReadAttachment(attachments, attachment_elem);
+            ReadAttachment(attachments, attachment_elem, appearance_address, asset_map);
             attachment_elem = attachment_elem.nextSiblingElement("attachment");
         }
         dest.SetAttachments(attachments);
@@ -329,7 +337,7 @@ namespace RexLogic
         return true;
     }
     
-    bool LegacyAvatarSerializer::ReadAttachment(AvatarAttachmentVector& dest, const QDomElement& elem)
+    bool LegacyAvatarSerializer::ReadAttachment(AvatarAttachmentVector& dest, const QDomElement& elem, const std::string& appearance_address, const std::map<std::string ,std::string>& asset_map)
     {
         AvatarAttachment attachment;
         
@@ -354,7 +362,8 @@ namespace RexLogic
         if (!mesh.isNull())
         {
             attachment.mesh_.name_ = mesh.attribute("name").toStdString();
-            attachment.mesh_.type_ = RexTypes::ASSETTYPENAME_MESH;
+            attachment.mesh_.resource_type_ = OgreRenderer::OgreMeshResource::GetTypeStatic();
+            FillAssetId(attachment.mesh_, appearance_address, asset_map);
             attachment.link_skeleton_ = ParseBool(mesh.attribute("linkskeleton").toStdString());
         }
         else
@@ -480,5 +489,28 @@ namespace RexLogic
         }
         
         return quat;
+    }
+    
+    bool LegacyAvatarSerializer::FillAssetId(RexLogic::AvatarAsset& dest, const std::string& appearance_address, const std::map<std::string, std::string> &asset_map)
+    {
+        // Asset map contains name-to-hash mappings
+        std::map<std::string, std::string>::const_iterator i = asset_map.find(dest.name_);
+        if (i == asset_map.end())
+        {
+            // If not found, try without file extension
+            std::size_t idx = dest.name_.find('.');
+            if (idx != std::string::npos)
+            {
+                std::string name_noext = dest.name_.substr(0, idx);
+                i = asset_map.find(name_noext);
+                if (i == asset_map.end())
+                    return false;
+            }
+            else
+                return false;
+        }
+        std::string host = HttpUtilities::GetHostFromUrl(appearance_address);
+        dest.resource_id_ = host + "/item/" + i->second;
+        return true;
     }
 }

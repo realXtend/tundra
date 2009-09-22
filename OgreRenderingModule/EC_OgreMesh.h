@@ -51,7 +51,17 @@ namespace OgreRenderer
             \return true if successful
          */
         bool SetMesh(const std::string& mesh_name, Scene::Entity *parent_entity, bool clone = false);
-                
+
+        //! sets mesh with custom skeleton
+        /*! if mesh already sets, removes the old one
+            \param mesh_name mesh to use
+            \param skeleton_name skeleton to use
+            \param parent_entity parent entity we belong to
+            \param clone whether mesh should be cloned for modifying geometry uniquely
+            \return true if successful
+         */
+        bool SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, Scene::Entity *parent_entity, bool clone = false);
+
         //! sets material in mesh
         /*! \param index submesh index
             \param material_name material name

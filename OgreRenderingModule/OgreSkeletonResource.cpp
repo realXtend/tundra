@@ -62,7 +62,7 @@ namespace OgreRenderer
             return false;
         }
 
-        OgreRenderingModule::LogDebug("Ogre mesh " + id_ + " created");
+        OgreRenderingModule::LogDebug("Ogre skeleton " + id_ + " created");
         return true;
     }
 

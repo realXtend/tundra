@@ -182,6 +182,63 @@ namespace OgreRenderer
         return true;
     }
     
+    bool EC_OgreMesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, Scene::Entity *parent_entity, bool clone)
+    {
+        Ogre::SkeletonPtr skel = Ogre::SkeletonManager::getSingleton().getByName(skeleton_name);
+        if (skel.isNull())
+        {
+            OgreRenderingModule::LogError("Could not set skeleton " + skeleton_name + " to mesh " + mesh_name + ": not found");
+            return false;
+        }
+        
+        // When setting with skeleton, use clone always (another entity with same mesh might want to use different skeleton, 
+        // which Ogre does not support)
+        clone = true;
+        
+        assert (parent_entity);
+        RemoveMesh();
+
+        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+        
+        Ogre::Mesh* mesh = PrepareMesh(mesh_name, clone);
+        if (!mesh)
+            return false;
+        
+        try
+        {
+            mesh->_notifySkeleton(skel);
+        }
+        catch (Ogre::Exception& e)
+        {
+            OgreRenderingModule::LogError("Could not set skeleton " + skeleton_name + " to mesh " + mesh_name + ": " + std::string(e.what()));
+            return false;
+        }
+        
+        
+        try
+        {
+            entity_ = scene_mgr->createEntity(renderer_->GetUniqueObjectName(), mesh->getName());
+            if (!entity_)
+            {
+                OgreRenderingModule::LogError("Could not set mesh " + mesh_name);
+                return false;
+            }
+            
+            entity_->setRenderingDistance(draw_distance_);
+            entity_->setCastShadows(cast_shadows_);
+            entity_->setUserAny(Ogre::Any(parent_entity));
+        }
+        catch (Ogre::Exception& e)
+        {
+            OgreRenderingModule::LogError("Could not set mesh " + mesh_name + ": " + std::string(e.what()));
+            return false;
+        }
+        
+        AttachEntity();
+        return true;
+    }
+    
+    
     void EC_OgreMesh::RemoveMesh()
     {
         if (!entity_)
