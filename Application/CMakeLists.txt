@@ -22,3 +22,5 @@ use_framework_modules (Core Foundation Interfaces)
 link_package (BOOST)
 link_package (POCO)
 
+copy_target ()
+

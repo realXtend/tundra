@@ -8,7 +8,8 @@
 # 4. call use_module_headers() with a list of local module names for includes
 # 4. call use_module_libraries() with a list of local module names libraries
 # 4. call use_package (${PACKAGE}) once per build target
-
+# 5. call copy_target () at the end of build target's cmakelists.txt
+#    (not needed for lib targets, only exe's & modules)
 # =============================================================================
 # reusable macros
 
@@ -33,14 +34,10 @@ macro (init_target NAME)
         set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/${ARGV2})
 
         if (MSVC)
-            # export symbols
+            # export symbols, copy needs to be added via copy_target
             add_definitions (-DMODULE_EXPORTS)
-
-            # copy to target directory
-            add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})
-            add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
         else ()
-            # copy to target directory
+            # set target directory
             set (LIBRARY_OUTPUT_PATH ${TARGET_DIR})
             set (EXECUTABLE_OUTPUT_PATH ${TARGET_DIR})
         endif ()
@@ -51,6 +48,14 @@ macro (init_target NAME)
         add_definitions (-D_CRT_SECURE_NO_WARNINGS)
     endif ()
 endmacro (init_target)
+
+macro (copy_target)
+    if (MSVC)
+        # copy to target directory
+        add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${TARGET_DIR})
+        add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
+    endif ()
+endmacro (copy_target)
 
 # build a library from internal sources
 macro (build_library TARGET_NAME LIB_TYPE)
