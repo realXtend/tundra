@@ -45,3 +45,4 @@ foreach (XML_FILE ${XML_FILES})
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
 endforeach (XML_FILE)
 
+copy_target ()

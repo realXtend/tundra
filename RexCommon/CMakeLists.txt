@@ -14,6 +14,6 @@ build_library (${TARGET_NAME} STATIC ${SOURCE_FILES})
 use_framework_modules (Core  )
 
 link_package (BOOST)
-link_package (POCO)
+link_package (POCO)           
 
 

@@ -44,3 +44,5 @@ if (MSVC)
         	PROPERTIES
         	COMPILE_FLAGS "/YcStableHeaders.h")
 endif (MSVC)
+
+copy_target ()

@@ -12,3 +12,5 @@ build_executable (${TARGET_NAME} ${SOURCE_FILES})
 use_framework_modules (Core Foundation Interfaces SceneManager)
 
 link_modules (SupportModules)
+
+copy_target ()
