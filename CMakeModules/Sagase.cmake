@@ -124,9 +124,8 @@ macro (sagase_configure_package PREFIX)
     set (found_ FALSE)
 
     foreach (name_ ${PKG_NAMES})
-
+		
         string (TOUPPER ${name_} name_upper_)
-
         # find_package can't handle packages in all caps.
         # cmake is a macro language, which means it defines global variables,
         # which it tries to namespace by choosing all caps variable names,
@@ -205,9 +204,15 @@ macro (sagase_configure_package PREFIX)
 
         # try using "COMPONENTS" as possible file names (without prefix or extension)
         foreach (component_ ${PKG_COMPONENTS})
-            
-            # get header path
+            # get C header path
             find_path (${PREFIX}_${component_}_INCLUDE_DIR ${component_}.h ${include_paths})
+            
+            if (${PREFIX}_${component_}_INCLUDE_DIR)
+                set (${PREFIX}_INCLUDE_DIRS ${${PREFIX}_INCLUDE_DIRS} ${${PREFIX}_${component_}_INCLUDE_DIR})
+            endif ()
+			
+			# get C++ header path
+            find_path (${PREFIX}_${component_}_INCLUDE_DIR ${component_}.hpp ${include_paths})
             
             if (${PREFIX}_${component_}_INCLUDE_DIR)
                 set (${PREFIX}_INCLUDE_DIRS ${${PREFIX}_INCLUDE_DIRS} ${${PREFIX}_${component_}_INCLUDE_DIR})
@@ -227,7 +232,7 @@ macro (sagase_configure_package PREFIX)
 
     # stop process if nothing is found through any means
     if (NOT found_ AND NOT ${PREFIX}_INCLUDE_DIRS AND NOT ${PREFIX}_LIBRARY_DIRS AND NOT ${PREFIX}_LIBRARIES)
-        message (FATAL_ERROR "!! sagase: unable to configure " ${PREFIX}) 
+		message (FATAL_ERROR "!! sagase: unable to configure " ${PREFIX}) 
     endif ()
     
     # remove duplicate entires from return variables
