@@ -5,7 +5,7 @@
 #include "ModuleInterface.h"
 
 #include "CommunicationModuleApi.h"
-#include "TpCommunicationManager.h"
+#include "CommunicationManager.h"
 #include "ConsoleUI.h"
 #include "QtUI.h"
 

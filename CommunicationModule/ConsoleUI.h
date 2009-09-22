@@ -5,7 +5,7 @@
 #include "Foundation.h"
 #include "ModuleInterface.h" // for logger
 
-#include "TpCommunicationManager.h"
+#include "CommunicationManager.h"
 
 
 namespace CommunicationUI

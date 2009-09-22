@@ -1,5 +1,5 @@
-#ifndef incl_Comm_TpCommunicationManager_h
-#define incl_Comm_TpCommunicationManager_h
+#ifndef incl_Comm_CommunicationManager_h
+#define incl_Comm_CommunicationManager_h
 
 #include "StableHeaders.h"
 #include "Foundation.h"
@@ -162,4 +162,4 @@ namespace TpQt4Communication
 } // namespace TpQt4Communication
 
 
-#endif //incl_Comm_TpCommunicationManager_h
+#endif //incl_Comm_CommunicationManager_h
