@@ -44,8 +44,8 @@ function (sagase_generate_paths INCLUDE_PATHS LIBRARY_PATHS)
     #    set (normal_path_prefixes ${normal_path_prefixes} ${p})
     #endforeach ()
 
-    set (include_names "include" "includes")
-    set (lib_names "lib" "libs" "bin" "bins" "dll" "dlls")
+    set (include_names "." "include" "includes")
+    set (lib_names "." "lib" "libs" "bin" "bins" "dll" "dlls")
 
     # add prefix+name paths
     foreach (prefix ${path_prefixes})
