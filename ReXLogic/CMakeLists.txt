@@ -21,6 +21,7 @@ use_package (OGRE)
 use_package (QT4)
 use_package (CURL)
 use_package (OPENJPEG)
+use_package (OIS)
 use_modules (OgreRenderingModule OpenSimProtocol RexCommon InputModuleOIS QtModule HttpUtilities)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
