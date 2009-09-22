@@ -247,9 +247,27 @@ macro (sagase_configure_package PREFIX)
 
     # report to screen what was found
     message (STATUS "sagase: " ${PREFIX} " Configure Results.")
-    message (STATUS "-- Include Directories: " ${${PREFIX}_INCLUDE_DIRS})
-    message (STATUS "-- Libarary Directories: " ${${PREFIX}_LIBRARY_DIRS})
-    message (STATUS "-- Libraries: " ${${PREFIX}_LIBRARIES})
-    message (STATUS "-- Defines: " ${${PREFIX}_DEFINITIONS})
+	
+    message (STATUS "-- Include Directories:")
+	foreach (include_dir ${${PREFIX}_INCLUDE_DIRS})
+		message (STATUS "       " ${include_dir})
+	endforeach()
+	
+    message (STATUS "-- Libarary Directories:")
+	foreach (library_dir ${${PREFIX}_LIBRARY_DIRS})
+		message (STATUS "       " ${library_dir})
+	endforeach()
+	
+    message (STATUS "-- Libraries:")
+	foreach (library ${${PREFIX}_LIBRARIES})
+		message (STATUS "       " ${library})
+	endforeach()
+	
+    message (STATUS "-- Defines:")
+	foreach (definition ${${PREFIX}_DEFINITIONS})
+		message (STATUS "       " ${definition})
+	endforeach()
+	
+	message (STATUS "") # newline for readability
 
 endmacro (sagase_configure_package)
