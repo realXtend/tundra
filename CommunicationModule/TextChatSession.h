@@ -51,10 +51,11 @@ namespace TpQt4Communication
 		void Ready();
 		void Error(QString &reason);
 		void Closed();
-		
 	};
 	typedef boost::shared_ptr<TextChatSession> TextChatSessionPtr;
 	typedef boost::weak_ptr<TextChatSession> TextChatSessionWeakPtr;
+	typedef std::vector<TextChatSession*> TextChatSessionVector;
+
 
 	/**
 	 * Holds received TextChannel until user have made decision to accept or reject.
@@ -92,9 +93,13 @@ namespace TpQt4Communication
 	//slots:
 		//void OnChannelReady(Tp::PendingOperation*);
 		//void OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &);
+	//slots:
+		void OnTextChannelClosed(Tp::PendingOperation* op);
+
 	signals:
 		//! Request was canceled by it's originator
 		void Canceled();
+
 	};
 	typedef boost::weak_ptr<TextChatSessionRequest> TextChatSessionRequestWeakPtr;
 	typedef std::vector<TextChatSessionRequest*> TextChatSessionRequestVector;

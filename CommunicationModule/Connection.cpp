@@ -30,6 +30,10 @@ namespace TpQt4Communication
 		return state_;
 	}
 
+	std::string Connection::GetServer()
+	{
+		return server_;
+	}
 	//std::string Connection::GetID()
 	//{
 	//	return id_;
@@ -132,8 +136,47 @@ namespace TpQt4Communication
 		ContactVector new_contacts;
 		foreach (const Tp::ContactPtr &contact, tp_connection_->contactManager()->allKnownContacts())
 		{
-			Contact* c = new Contact(contact);
-			new_contacts.push_back(c);
+			switch (contact->subscriptionState())
+			{
+			case Tp::Contact::PresenceStateNo:
+				LogInfo("subscriptionState = PresenceStateNo");
+				// User have already make a decicion to not accpet this contact to the friend list..
+				break;
+
+			case Tp::Contact::PresenceStateYes:
+				{
+					LogInfo("subscriptionState = PresenceStateYes");
+					// A friend list item
+					Contact* c = new Contact(contact);
+					new_contacts.push_back(c);
+				}
+				break;
+
+			case Tp::Contact::PresenceStateAsk:
+				{
+					LogInfo("subscriptionState = PresenceStateAsk");
+					// User have not yet made the decision to accept or reject presence subscription 
+					// So we create a FriendRequest obeject
+					FriendRequest* request = new FriendRequest(contact);
+					received_friend_requests_.push_back(request);
+					emit ReceivedFriendRequest(request);
+				}
+				break;
+			}
+			switch (contact->publishState())
+			{
+			case Tp::Contact::PresenceStateNo:
+				LogInfo("publishState = PresenceStateNo");
+				break;
+
+			case Tp::Contact::PresenceStateYes:
+				LogInfo("publishState = PresenceStateYes");
+				break;
+
+			case Tp::Contact::PresenceStateAsk:
+				LogInfo("publishState = PresenceStateAsk");
+				break;
+			}
         }
 		
 		if (all_known_contacts.count() > 0)
@@ -237,10 +280,13 @@ namespace TpQt4Communication
 			message.append(id.toStdString());
 			LogInfo(message);
 			//! todo: Create FriendRequest object
+			FriendRequest* request = new FriendRequest(Tp::ContactPtr(contact));
+			received_friend_requests_.push_back(request);
+			emit ReceivedFriendRequest(request);
 		}
 	}
 
-	// ???
+	// For checking status of sent friend request ???
 	void Connection::OnContactRetrieved(Tp::PendingOperation *op)
 	{
 		LogInfo("OnContactRetrieved");
@@ -280,6 +326,14 @@ namespace TpQt4Communication
 		return requests;
 	}
 
+	FriendRequestVector Connection::GetFriendRequests()
+	{
+		return FriendRequestVector(received_friend_requests_);
+	}
 
+	TextChatSessionVector Connection::GetTextChatSessions()
+	{
+		return TextChatSessionVector(text_chat_sessions_);
+	}
 
 } // end of namespace: TpQt4Communication

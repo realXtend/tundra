@@ -44,8 +44,6 @@ namespace TpQt4Communication
 		MODULE_LOGGING_FUNCTIONS
 		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 
-		
-
 	public:
 		Connection(const Credentials &credentials);
 		~Connection();
@@ -62,8 +60,9 @@ namespace TpQt4Communication
 		void CreateVoipSession();
 		void SendFriendRequest(Address to, std::string message = "");
 
-		FriendRequestList GetFriendRequests();
+		FriendRequestVector GetFriendRequests();
 		TextChatSessionRequestVector GetTextChatSessionRequests();
+		TextChatSessionVector GetTextChatSessions();
 
 	private :
 		void ConnectTpSignals();
@@ -75,7 +74,7 @@ namespace TpQt4Communication
 		std::string server_;
 		Tp::ConnectionPtr tp_connection_;
 		std::vector<FriendRequest*> received_friend_requests_;
-		//std::vector<TextChatSessionRequest*> received_text_chat_requests_;
+		TextChatSessionVector text_chat_sessions_;
 		TextChatSessionRequestVector received_text_chat_requests_;
 		std::string error_message_;
 
@@ -97,6 +96,7 @@ namespace TpQt4Communication
 		void Error(QString &reason);
 		void Closed();
 		void ReceivedTextChatSessionRequest(TextChatSessionRequest* request);
+		void ReceivedFriendRequest(FriendRequest* request);
 //		void VoipSessionRequest(VoipSessionRequest* request);
 	};
 	typedef boost::weak_ptr<Connection> ConnectionWeakPtr;
