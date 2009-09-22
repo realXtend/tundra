@@ -49,17 +49,22 @@ function (sagase_generate_paths INCLUDE_PATHS LIBRARY_PATHS)
     # add prefix+name paths
     foreach (prefix ${path_prefixes})
         foreach (pkgname ${path_names})
-            foreach (subpkgname ${path_names})
+            #foreach (subpkgname ${path_names})
 
                 set (includes ${includes} 
-                    ${prefix}/${pkgname}/include/${subpkgname})
+                    ${prefix}/${pkgname}/include
+                    ${prefix}/include/${pkgname})
+                    #${prefix}/${pkgname}/include/${subpkgname})
 
                 set (libraries ${libraries} 
-                    ${prefix}/${pkgname}/lib/${subpkgname}
-                    ${prefix}/${pkgname}/bin/${subpkgname}
-                    ${prefix}/${pkgname}/dll/${subpkgname})
+                    ${prefix}/${pkgname}/lib ${prefix}/lib/${pkgname}
+                    ${prefix}/${pkgname}/bin ${prefix}/bin/${pkgname}
+                    ${prefix}/${pkgname}/dll ${prefix}/dll/${pkgname})
+                    #${prefix}/${pkgname}/lib/${subpkgname}
+                    #${prefix}/${pkgname}/bin/${subpkgname}
+                    #${prefix}/${pkgname}/dll/${subpkgname})
 
-            endforeach ()
+                #endforeach ()
         endforeach ()
     endforeach ()
 
@@ -200,12 +205,14 @@ macro (sagase_configure_package PREFIX)
         foreach (component_ ${PKG_COMPONENTS})
             
             # get header path
-            foreach (header_extension_ ${HEADER_POSTFIXES})
-                find_path (${PREFIX}_${component_}_INCLUDE_DIR ${component_}${header_extension_} ${include_paths})
-                
-                if (${PREFIX}_${component_}_INCLUDE_DIR)
-                    set (${PREFIX}_INCLUDE_DIRS ${${PREFIX}_INCLUDE_DIRS} ${${PREFIX}_${component_}_INCLUDE_DIR})
-                endif ()
+            foreach (pkgname_ ${PKG_NAMES})
+                foreach (header_extension_ ${HEADER_POSTFIXES})
+                    find_path (${PREFIX}_${component_}_INCLUDE_DIR ${pkgname_}/${component_}${header_extension_} ${include_paths})
+                    
+                    if (${PREFIX}_${component_}_INCLUDE_DIR)
+                        set (${PREFIX}_INCLUDE_DIRS ${${PREFIX}_INCLUDE_DIRS} ${${PREFIX}_${component_}_INCLUDE_DIR})
+                    endif ()
+                endforeach ()
             endforeach ()
 
             # get library path
