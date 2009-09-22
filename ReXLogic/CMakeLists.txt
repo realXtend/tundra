@@ -15,22 +15,28 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DUSE_QT)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
-use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
-use_module_headers (${TARGET_NAME} OgreRenderingModule OpenSimProtocol RexCommon InputModuleOIS QtModule HttpUtilities)
 use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
+use_package (CURL)
+use_package (OPENJPEG)
+use_modules (OgreRenderingModule OpenSimProtocol RexCommon InputModuleOIS QtModule HttpUtilities)
 
-INCLUDE_CURL()
-INCLUDE_OPENJPEG()
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
+use_framework_modules (Core Foundation Interfaces SceneManager)
 
-target_link_libraries (${TARGET_NAME} OpenSimProtocolModule RexCommon OgreRenderingModule QtModule HttpUtilities)
-LINK_CURL()
-LINK_OPENJPEG()
-link_ois ()
-link_ogre ()
+link_modules (OpenSimProtocolModule RexCommon OgreRenderingModule QtModule HttpUtilities)
+link_package (OIS)
+link_package (OGRE)
+
+link_package (BOOST)
+link_package (POCO)
+link_package (OGRE)
+link_package (QT4)
+link_package (CURL)
+link_package (OPENJPEG)
+
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

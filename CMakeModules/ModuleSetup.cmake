@@ -95,11 +95,10 @@ macro (use_package PREFIX)
     add_definitions (${${PREFIX}_DEFINITIONS})
     include_directories (${${PREFIX}_INCLUDE_DIRS})
     link_directories (${${PREFIX}_LIBRARY_DIRS})
-    target_link_libraries (${TARGET_NAME} ${${PREFIX}_LIBRARIES})
 endmacro (use_package)
 
 # include local framework headers and libraries
-macro (use_framework_modules TARGET_NAME)
+macro (use_framework_modules)
     set (INTERNAL_FRAMEWORK_DIR "..")
     foreach (module_ ${ARGN})
         include_directories (${INTERNAL_FRAMEWORK_DIR}/${module_})
@@ -108,27 +107,41 @@ macro (use_framework_modules TARGET_NAME)
 endmacro (use_framework_modules)
 
 # include local module headers 
-macro (use_module_headers TARGET_NAME)
+macro (use_modules)
+    message (STATUS "-- using modules: " ${ARGN})
     set (INTERNAL_MODULE_DIR "..")
     foreach (module_ ${ARGN})
         include_directories (${INTERNAL_MODULE_DIR}/${module_})
+        link_directories (${INTERNAL_MODULE_DIR}/${module_})
     endforeach ()
-endmacro (use_module_headers)
+endmacro (use_modules)
 
 # include local module libraries
-macro (use_module_libraries TARGET_NAME)
+macro (link_modules)
     foreach (module_ ${ARGN})
         target_link_libraries (${TARGET_NAME} ${module_})
     endforeach ()
-endmacro (use_module_libraries)
+endmacro (link_modules)
 
 # link directories
-macro (link_package PREFIX TARGET_NAME)
+macro (link_package PREFIX)
     target_link_libraries (${TARGET_NAME} ${${PREFIX}_LIBRARIES})
+
+    if (MSVC)
+        target_link_libraries (${TARGET_NAME} debug ${${PREFIX}_DEBUG_LIBRARIES})
+    endif ()
 endmacro (link_package)
 
+# manually find the debug libraries
+macro (find_debug_libraries PREFIX DEBUG_POSTFIX)
+    foreach (lib_ ${${PREFIX}_LIBRARIES})
+        set (${PREFIX}_DEBUG_LIBRARIES ${${PREFIX}_DEBUG_LIBRARIES}
+            ${lib_}${DEBUG_POSTFIX})
+    endforeach ()
+endmacro ()
+
 # =============================================================================
-# per-project macros
+# per-project configuration macros
 
 macro (configure_boost)
     set (Boost_USE_STATIC_LIBS ON)
@@ -151,8 +164,8 @@ macro (configure_qt4)
         COMPONENTS QtCore QtGui QtWebkit QtScript QtXml QtNetwork QtUiTools
         PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_QT_DIR})
 
-    # FindQt4.cmake does it's own thing...
-    if (QT4_FOUND)
+    # FindQt4.cmake
+    if (QT4_FOUND AND QT_USE_FILE)
 
         include (${QT_USE_FILE})
 
@@ -185,32 +198,106 @@ macro (configure_qt4)
     endif ()
 endmacro (configure_qt4)
 
+macro (configure_python)
+    sagase_configure_package (PYTHON
+        NAMES PythonLibs Python python Python26 python26 Python2.6 python2.6
+        COMPONENTS Python python Python26 python Python2.6 python2.6
+        PREFIXES ${ENV_NAALI_DEP_PATH})
+
+    # FindPythonLibs.cmake
+    if (PYTHONLIBS_FOUND)
+        set (PYTHON_LIBRARIES ${PYTHON_LIBRARY})
+        set (PYTHON_DEBUG_LIBRARIES ${PYTHON_DEBUG_LIBRARY})
+        set (PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_PATH})
+    endif ()
+    
+endmacro (configure_python)
+
+macro (configure_python_qt)
+    sagase_configure_package (PYTHON_QT
+        NAMES PythonQt
+        COMPONENTS PythonQt PythonQt_QtAll
+        PREFIXES ${ENV_NAALI_DEP_PATH})
+    
+    find_debug_libraries (PYTHON "_d")
+
+endmacro (configure_python_qt)
+
 macro (configure_ois)
     sagase_configure_package (OIS 
         NAMES Ois ois OIS 
         COMPONENTS OIS
         PREFIXES ${ENV_NAALI_DEP_PATH})
-endmacro (configure_ois)
+    
+    find_debug_libraries (OIS "_d")
 
-macro (link_ois ${TARGET_NAME})
-    if (MSVC)
-        target_link_libraries (${TARGET_NAME} debug OIS_d optimized OIS)
-    else ()
-        target_link_libraries (${TARGET_NAME} ${OIS_LIBRARIES})
-    endif ()
-endmacro (link_ois)
+endmacro (configure_ois)
 
 macro (configure_ogre)
     sagase_configure_package (OGRE 
         NAMES Ogre OgreSDK ogre OGRE
         COMPONENTS Ogre ogre OGRE OgreMain 
         PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_OGRE_HOME})
+
+    find_debug_libraries (OGRE "_d")
+
 endmacro (configure_ogre)
 
-macro (link_ogre ${TARGET_NAME})
-    if (MSVC)
-        target_link_libraries (${TARGET_NAME} debug OgreMain_d optimized OgreMain)
-    else ()
-        target_link_libraries (${TARGET_NAME} ${OGRE_LIBRARIES})
-    endif ()
-endmacro (link_ogre)
+macro (configure_caelum)
+    sagase_configure_package (CAELUM 
+        NAMES Caelum caelum CAELUM
+        COMPONENTS Caelum caelum CAELUM
+        PREFIXES ${ENV_NAALI_DEP_PATH})
+    
+    find_debug_libraries (CAELUM "_d")
+
+endmacro (configure_caelum)
+
+macro (configure_hydrax)
+    sagase_configure_package (HYDRAX 
+        NAMES Hydrax
+        COMPONENTS Hydrax
+        PREFIXES ${ENV_NAALI_DEP_PATH})
+    
+    find_debug_libraries (HYDRAX "_d")
+
+endmacro (configure_hydrax)
+
+macro (configure_xmlrpc)
+    sagase_configure_package (XMLRPC 
+        NAMES xmlrpc xmlrpcepi xmlrpc-epi
+        COMPONENTS xmlrpc xmlrpcepi xmlrpc-epi
+        PREFIXES ${ENV_NAALI_DEP_PATH}
+        ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/src
+        ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Release
+        ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Debug)
+    
+    find_debug_libraries (XMLRPC "d")
+
+endmacro (configure_xmlrpc)
+
+macro (configure_curl)
+    sagase_configure_package (CURL 
+        NAMES Curl curl libcurl
+        COMPONENTS curl
+        PREFIXES ${ENV_NAALI_DEP_PATH}
+        ${ENV_NAALI_DEP_PATH}/libcurl/lib/DLL-Debug 
+        ${ENV_NAALI_DEP_PATH}/libcurl/lib/DLL-Release)		
+    
+    find_debug_libraries (CURL "d")
+
+endmacro (configure_curl)
+
+macro (configure_openjpeg)
+    sagase_configure_package (OPENJPEG 
+        NAMES OpenJpeg OpenJPEG openjpeg
+        COMPONENTS OpenJpeg OpenJPEG openjpeg
+        PREFIXES ${ENV_NAALI_DEP_PATH}
+        ${ENV_NAALI_DEP_PATH}/OpenJpeg/libopenjpeg
+        ${ENV_NAALI_DEP_PATH}/OpenJpeg/Debug
+        ${ENV_NAALI_DEP_PATH}/OpenJpeg/Release)
+    
+    find_debug_libraries (OPENJPEG "d")
+
+endmacro (configure_openjpeg)
+

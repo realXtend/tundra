@@ -6,8 +6,8 @@ endmacro (FIND_HYDRAX)
 
 macro (INCLUDE_HYDRAX)
 	if (MSVC)
-		include_directories (${NAALI_DEP_PATH}/Hydrax/include)
-		link_directories (${NAALI_DEP_PATH}/Hydrax/lib)
+		include_directories (${ENV_NAALI_DEP_PATH}/Hydrax/include)
+		link_directories (${ENV_NAALI_DEP_PATH}/Hydrax/lib)
 	endif (MSVC)
 endmacro (INCLUDE_HYDRAX)
 

@@ -16,16 +16,7 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CMakeModules)
 include (Sagase)
 include (ModuleSetup)
 
-include (Curl)
-include (XmlRpcEpi)
-include (OpenJpeg)
-
 # The following CMake modules are optional.
-include (Python)
-include (PythonQt)
-#include (OpenAL)
-include (Caelum)
-#include (Hydrax)
 include (TelepathyQt4)
 include (glib)
 include (GStreamer)
@@ -59,7 +50,6 @@ endif (MSVC)
 
 # Set normalized path for common environment variables
 file (TO_CMAKE_PATH "$ENV{NAALI_DEP_PATH}" ENV_NAALI_DEP_PATH)
-file (TO_CMAKE_PATH "$ENV{NAALI_DEP_PATH}" NAALI_DEP_PATH)
 file (TO_CMAKE_PATH "$ENV{QT_DIR}" ENV_QT_DIR)
 file (TO_CMAKE_PATH "$ENV{OGRE_HOME}" ENV_OGRE_HOME)
 
@@ -67,20 +57,20 @@ file (TO_CMAKE_PATH "$ENV{OGRE_HOME}" ENV_OGRE_HOME)
 configure_boost ()
 configure_poco ()
 configure_qt4 ()
+configure_python ()
+configure_python_qt ()
 configure_ois ()
 configure_ogre ()
-
-FIND_CURL()
-FIND_XMLRPCEPI()
-FIND_OPENJPEG()
-FIND_PYTHON()
+configure_xmlrpc ()
+configure_curl ()
+configure_openjpeg ()
 
 if (CAELUM)
-	FIND_CAELUM()
+    configure_caelum ()
 endif (CAELUM)
 
 if (HYDRAX)
-	FIND_HYDRAX()
+	configure_hydrax ()
 endif (HYDRAX)
 
 

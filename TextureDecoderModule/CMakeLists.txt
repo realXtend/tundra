@@ -9,16 +9,20 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 add_definitions (-DTEXTURE_DECODER_MODULE_EXPORTS)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-use_framework_modules (${TARGET_NAME} Core Foundation Interfaces)
-use_module_headers (${TARGET_NAME} RexCommon AssetModule)
 use_package (BOOST)
 use_package (POCO)
+use_package (OPENJPEG)
+use_modules (RexCommon AssetModule)
 
-INCLUDE_OPENJPEG()
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+use_framework_modules (Core Foundation Interfaces)
 
-target_link_libraries (${TARGET_NAME} RexCommon)
-LINK_OPENJPEG()
+link_modules (RexCommon)
+
+link_package (BOOST)
+link_package (POCO)
+link_package (OPENJPEG)
+
 
 # Precompiled headers on MSVC
 if (MSVC)

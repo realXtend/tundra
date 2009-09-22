@@ -9,17 +9,23 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 add_definitions (-DCONSOLE_MODULE_EXPORTS)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-use_framework_modules (${TARGET_NAME} Core Foundation Interfaces SceneManager)
-use_module_headers (${TARGET_NAME} OgreRenderingModule InputModuleOIS)
 use_package (BOOST)
 use_package (POCO)
 use_package (OIS)
 use_package (OGRE)
+use_modules (OgreRenderingModule InputModuleOIS)
 
-target_link_libraries (${TARGET_NAME} OgreRenderingModule)
-link_ois ()
-link_ogre ()
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+use_framework_modules (Core Foundation Interfaces SceneManager)
+
+link_modules (OgreRenderingModule)
+link_package (OIS)
+link_package (OGRE)
+link_package (BOOST)
+link_package (POCO)
+link_package (OIS)
+link_package (OGRE)
+
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
