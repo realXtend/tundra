@@ -17,7 +17,6 @@ use_modules (OgreRenderingModule)
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 use_framework_modules (Core Foundation Interfaces)
 
-link_package (OIS)
 link_package (BOOST)
 link_package (POCO)
 link_package (OIS)
