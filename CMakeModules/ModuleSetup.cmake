@@ -288,7 +288,7 @@ endmacro (configure_xmlrpc)
 macro (configure_curl)
     sagase_configure_package (CURL 
         NAMES Curl curl libcurl
-        COMPONENTS curl
+        COMPONENTS curl_imp
         PREFIXES ${ENV_NAALI_DEP_PATH}
         ${ENV_NAALI_DEP_PATH}/libcurl/lib/DLL-Debug 
         ${ENV_NAALI_DEP_PATH}/libcurl/lib/DLL-Release)		
