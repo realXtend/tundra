@@ -23,16 +23,19 @@ namespace TpQt4Communication
 		void SetUserID(std::string user_id);
 		void SetPassword(std::string pwd);
 		void SetServer(std::string server);
+		void SetServerPort(int);
 		std::string GetProtocol() const;
 		std::string GetUserID() const ;
 		std::string GetUserPassword() const;
 		std::string GetServer() const;
+		int GetServerPort() const;
 		void LoadFromFile(std::string path);
 	private:
 		std::string user_id_;
 		std::string password_;
 		std::string protocol_;
 		std::string server_;
+		int port_;
 	//	std::map<std::string, std::string> attributes_;
 	};
 	typedef boost::weak_ptr<Credentials> CredentialsWeakPtr;

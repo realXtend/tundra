@@ -77,11 +77,9 @@ namespace TpQt4Communication
 	{
 	    if (op->isError())
 		{
-			std::string message = "Cannot connect to IM server";
+			std::string message = "Cannot connect to IM server: ";
 			message.append( op->errorMessage().toStdString() );
 			LogError(message);
-//			error_message_.append( op->errorMessage() );
-			// TODO: Error handling
 			state_ = STATE_ERROR;
 			QString m;
 			m.append(message.c_str());
@@ -118,11 +116,10 @@ namespace TpQt4Communication
 		LogDebug(" Connection::OnConnectionReady");
 	    if (op->isError())
 		{
-			std::string message = "Connection cannot become ready.";
-			LogError(message);
-			QString m;
-			m.append(message.c_str());
-			emit(m);
+			QString message = "Connection cannot become ready: ";
+			message.append(op->errorMessage());
+			emit Error(message);
+			LogError(message.toStdString());
 	        return;
 		}
 
@@ -149,6 +146,15 @@ namespace TpQt4Communication
 
 	void Connection::OnConnectionConnected(Tp::PendingOperation *op)
 	{
+		if (op->isError())
+		{
+			QString reason = "Connection cannot become connected: ";
+			reason.append(op->errorMessage());
+			emit Error(reason);
+			LogError(reason.toStdString());
+			state_ = STATE_ERROR;
+			return;
+		}
 		std::string message = "Connection established successfully to IM server.";
 
 		if ( tp_connection_.isNull() )
