@@ -32,13 +32,7 @@ namespace TpQt4Communication
 	void User::AddContacts(ContactVector &contacts)
 	{
 		contacts_.assign(contacts.begin(), contacts.end());
-	//	emit ContactListChangend();
+		emit ContactListChangend();
 	}
-
-	void User::ContactListChangend()
-	{
-	}
-
-
 
 } // end of TpQt4Communication: 

@@ -10,7 +10,7 @@ namespace TpQt4Communication
 
 	/**
 	 *  Presence status of contact in contact list or current user 
-	 *
+	 *  DO WE NEED THIS ?
 	 */
 	class PresenceStatus
 	{

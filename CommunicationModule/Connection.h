@@ -52,7 +52,7 @@ namespace TpQt4Communication
 		enum State{STATE_CONNECTING, STATE_OPEN,  STATE_CLOSED, STATE_ERROR};
 		void SendFriendRequest(const Address &a);
 		User* GetUser();
-		std::string GetID();
+//		std::string GetID();
 		std::string GetServer();
 		void Close();
 		std::string GetProtocol();
@@ -78,12 +78,6 @@ namespace TpQt4Communication
 		std::vector<TextChatSessionRequest*> received_text_chat_requests_;
 		std::string error_message_;
 
-//	public Q_SIGNALS:
-		void Connecting(QString &message);
-		void Ready(QString &message);
-		void Error(QString &reason);
-		void Closed(QString &reason);
-
 	public Q_SLOTS:
 		void OnConnectionCreated(Tp::PendingOperation *op);
 		void OnConnectionReady(Tp::PendingOperation *op);
@@ -92,6 +86,12 @@ namespace TpQt4Communication
 		void OnContactRetrieved(Tp::PendingOperation *);
 		void OnPresencePublicationRequested(const Tp::Contacts &);
 		void OnNewChannels(const Tp::ChannelDetailsList&);
+
+	signals:
+		void Connecting(QString &message);
+		void Connected();
+		void Error(QString &reason);
+		void Closed();
 	};
 	typedef boost::weak_ptr<Connection> ConnectionWeakPtr;
 	typedef std::vector<Connection*> ConnectionVector;
