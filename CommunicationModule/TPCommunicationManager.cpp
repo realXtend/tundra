@@ -19,7 +19,7 @@ namespace TpQt4Communication
 //		if ( !IsDBusServiceAvailable(bus_name) )
 		{
 #ifdef WIN32
-			StartDBusDaemon();
+			StartDBusDaemon(DBUS_SESSION_PORT);
 #endif
 			// HACK: DISABLED temmporarily
 			//       Currently IsDBusServiceAvailable method can be only called once
@@ -186,36 +186,44 @@ namespace TpQt4Communication
 	}
 
 #ifdef WIN32
-	void CommunicationManager::StartDBusDaemon()
+	void CommunicationManager::StartDBusDaemon(int port)
 	{
-		QString path = "dbus\\dbus-daemon.exe --config-file=data\\session.conf";
+		QString path = "dbus\\dbus-daemon.exe";
+		QString arguments = "--config-file=data\\session.conf";
 
 		dbus_daemon_ = new QProcess(this);
 		QStringList env = QProcess::systemEnvironment();
-		env << "DBUS_SESSION_BUS_ADDRESS=tcp:host=localhost,port=12434";
+		QString env_item = "DBUS_SESSION_BUS_ADDRESS=tcp:host=localhost,port=";
+		env_item.append( QString(port, 10));
+		env << env_item;
 		dbus_daemon_->setEnvironment(env);
 		
 		connect( dbus_daemon_, SIGNAL(readyReadStandardOutput()), this, SLOT(OnDBusDaemonStdout()) );
 		connect( dbus_daemon_, SIGNAL(finished(int)), this, SLOT(OnDBusDaemonExited(int)) );
 
-		dbus_daemon_->start(path);
-		bool ok = dbus_daemon_->waitForStarted(2000);
+		QString command = path.append(" ").append(arguments);
+		dbus_daemon_->start(command);
+		bool ok = dbus_daemon_->waitForStarted(1000);
 		if (!ok)
 		{
 			state_ = STATE_ERROR;
 			LogError("Cannot start dbus daemon process.");
+			//! todo: raise exception
 			return;
 		}
 
 		// wait some time so that dbus daemon can start up
-		QTime dieTime = QTime::currentTime().addSecs(2);
+		QTime dieTime = QTime::currentTime().addSecs(1);
 		while( QTime::currentTime() < dieTime )
 			QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
 	}
 
 	void CommunicationManager::OnDBusDaemonStdout()
 	{
-		QByteArray buffer= dbus_daemon_->readAllStandardOutput();
+		QByteArray buffer = dbus_daemon_->readAllStandardOutput();
+		QString message = "DBusdaemon output: ";
+		message.append(buffer);
+		LogDebug( message.toStdString() );
 	}
 
 	void CommunicationManager::OnDBusDaemonExited( int exitCode )
@@ -224,5 +232,14 @@ namespace TpQt4Communication
 	}
 
 #endif		
+
+	void CommunicationManager::CloseAllConnections()
+	{
+		for (ConnectionVector::iterator i = connections_.begin(); i != connections_.end(); ++i)
+		{
+			(*i)->Close();
+		}
+	}
+
 
 } // namespace TpQt4Communication

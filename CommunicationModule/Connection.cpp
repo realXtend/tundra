@@ -108,11 +108,19 @@ namespace TpQt4Communication
 			//SLOT(OnPresencePublicationRequested(const Tp::Contacts &)));
 
 		// Build Friendlist
+		Tp::Contacts all_known_contacts = tp_connection_->contactManager()->allKnownContacts();
 		foreach (const Tp::ContactPtr &contact, tp_connection_->contactManager()->allKnownContacts())
 		{
+			Contact* c = new Contact(contact);
+			user_->contacts_.push_back(c);
+
 			//contact.	
 			LogInfo("a friends: ");
         }
+		if (all_known_contacts.count() > 0)
+		{
+			// todo signal about contact list change
+		}
 	}
 
 	void Connection::OnConnectionConnected(Tp::PendingOperation *op)

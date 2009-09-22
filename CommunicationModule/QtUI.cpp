@@ -25,6 +25,17 @@ namespace CommunicationUI
 		mattik->textEditChat_->appendPlainText("[12:47:03] You: Well hello to you too sir!");
 		tabWidgetCoversations_->addTab(mattik, "MattiK");
 		tabWidgetCoversations_->addTab(new Conversation(this), "Sempuki");
+
+		// Connecti to IM server
+		Credentials credentials;
+		credentials.SetProtocol("jabber");
+		credentials.SetUserID("");
+		credentials.SetPassword("");
+		credentials.SetServer("jabber.org");
+		CommunicationManager* comm = CommunicationManager::GetInstance();
+		im_connection_ = comm->OpenConnection(credentials);
+		
+		//im_connection_
 	}
 
 	QtUI::~QtUI(void)

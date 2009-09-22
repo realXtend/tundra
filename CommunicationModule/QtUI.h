@@ -5,6 +5,10 @@
 #include "Foundation.h"
 
 #include <QtGui>
+#include "TPCommunicationManager.h"
+#include "Connection.h"
+
+using namespace TpQt4Communication;
 
 namespace CommunicationUI
 {
@@ -30,6 +34,8 @@ namespace CommunicationUI
 		QLineEdit *lineEditStatus_;
 		QComboBox *comboBoxStatus_;
 		QLabel *connectionStatus_;
+
+		Connection* im_connection_;
 
 	};
 

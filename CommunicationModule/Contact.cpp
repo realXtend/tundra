@@ -15,18 +15,18 @@ namespace TpQt4Communication
 
 	void Contact::ConnectSignals()
 	{
-		//QObject::connect(tp_contact_.data(),
-  //          SIGNAL(simplePresenceChanged(const QString &, uint, const QString &)),
-  //          SLOT(OnContactChanged()));
-		//QObject::connect(tp_contact_,
-  //          SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState)),
-  //          SLOT(OnContactChanged()));
-		//QObject::connect(tp_contact_,
-  //          SIGNAL(publishStateChanged(Tp::Contact::PresenceState)),
-  //          SLOT(OnContactChanged()));
-		//QObject::connect(tp_contact_,
-  //          SIGNAL(blockStatusChanged(bool)),
-  //          SLOT(OnContactChanged()));
+		QObject::connect(tp_contact_.data(),
+            SIGNAL(simplePresenceChanged(const QString &, uint, const QString &)),
+            SLOT(OnContactChanged()));
+		QObject::connect(tp_contact_.data(),
+            SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState)),
+            SLOT(OnContactChanged()));
+		QObject::connect(tp_contact_.data(),
+            SIGNAL(publishStateChanged(Tp::Contact::PresenceState)),
+            SLOT(OnContactChanged()));
+		QObject::connect(tp_contact_.data(),
+            SIGNAL(blockStatusChanged(bool)),
+            SLOT(OnContactChanged()));
 	}
 
 	void Contact::OnContactChanged()
@@ -46,6 +46,21 @@ namespace TpQt4Communication
 		{
 			// User has blocked this contact
 		}
+	}
+
+	Address Contact::GetAddress()
+	{
+		return tp_contact_->id().toStdString();
+	}
+
+	std::string Contact::GetRealName()
+	{
+		return tp_contact_->alias().toStdString();
+	}
+
+	PresenceStatusWeakPtr Contact::GetPresenceStatus()
+	{
+		return presence_status_;
 	}
 
 } // end of namespace: Communication

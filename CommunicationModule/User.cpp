@@ -29,6 +29,16 @@ namespace TpQt4Communication
 		return protocol_;
 	}
 
+	void User::AddContacts(ContactVector &contacts)
+	{
+		contacts_.assign(contacts.begin(), contacts.end());
+	//	emit ContactListChangend();
+	}
+
+	void User::ContactListChangend()
+	{
+	}
+
 
 
 } // end of TpQt4Communication: 
