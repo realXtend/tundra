@@ -1,7 +1,7 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
 
-#include "TPCommunicationManager.h"
+#include "CommunicationManager.h"
 #include <QtDbus>
 #include <QtCore>
 #include <QProcess>

@@ -5,7 +5,7 @@
 #include "Foundation.h"
 
 #include <QtGui>
-#include "TPCommunicationManager.h"
+#include "CommunicationManager.h"
 #include "Connection.h"
 
 using namespace TpQt4Communication;
