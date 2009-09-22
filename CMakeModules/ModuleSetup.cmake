@@ -214,9 +214,9 @@ macro (configure_python)
     if (PYTHONLIBS_FOUND)
         set (PYTHON_LIBRARIES ${PYTHON_LIBRARY})
         set (PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_PATH})
-        if (PYTHON_DEBUG_LIBRARY)
-            set (PYTHON_DEBUG_LIBRARIES ${PYTHON_DEBUG_LIBRARY})
-        endif ()
+		#if (PYTHON_DEBUG_LIBRARY)
+        #    set (PYTHON_DEBUG_LIBRARIES ${PYTHON_DEBUG_LIBRARY})
+        #endif ()
     endif ()
     
 endmacro (configure_python)
@@ -226,9 +226,6 @@ macro (configure_python_qt)
         NAMES PythonQt
         COMPONENTS PythonQt PythonQt_QtAll
         PREFIXES ${ENV_NAALI_DEP_PATH})
-    
-    # TODO: not currently working
-    #find_debug_libraries (PYTHON "_d")
 
 endmacro (configure_python_qt)
 
@@ -275,25 +272,32 @@ endmacro (configure_hydrax)
 macro (configure_xmlrpc)
     sagase_configure_package (XMLRPC 
         NAMES xmlrpc xmlrpcepi xmlrpc-epi
-        COMPONENTS xmlrpc xmlrpcepi xmlrpc-epi
+        COMPONENTS xmlrpc xmlrpcepi xmlrpc-epi xmlrpcepid 
         PREFIXES ${ENV_NAALI_DEP_PATH}
         ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/src
-        ${ENV_NAALI_DEP_PATH}/xmlrpc-epi)
-    
-    find_debug_libraries (XMLRPC "d")
-
+        ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Debug
+		${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Release)
+   
+	if (MSVC)
+		set (XMLRPC_LIBRARIES xmlrpcepi)
+		set (XMLRPC_DEBUG_LIBRARIES xmlrpcepid)
+	endif()
+	
 endmacro (configure_xmlrpc)
 
 macro (configure_curl)
     sagase_configure_package (CURL 
         NAMES Curl curl libcurl
-        COMPONENTS curl libcurl libcurl_imp
+        COMPONENTS curl libcurl_imp libcurld_imp
         PREFIXES ${ENV_NAALI_DEP_PATH}
         ${ENV_NAALI_DEP_PATH}/libcurl/lib/DLL-Debug 
         ${ENV_NAALI_DEP_PATH}/libcurl/lib/DLL-Release)		
     
-    find_debug_libraries (CURL "d")
-
+	if (MSVC)
+		set (CURL_LIBRARIES libcurl_imp)
+		set (CURL_DEBUG_LIBRARIES libcurld_imp)
+	endif()
+	
 endmacro (configure_curl)
 
 macro (configure_openjpeg)
