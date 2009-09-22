@@ -44,25 +44,25 @@ function (sagase_generate_paths INCLUDE_PATHS LIBRARY_PATHS)
     #    set (normal_path_prefixes ${normal_path_prefixes} ${p})
     #endforeach ()
 
+    set (include_names "include" "includes")
+    set (lib_names "lib" "libs" "bin" "bins" "dll" "dlls")
+
     # add prefix+name paths
     foreach (prefix ${path_prefixes})
         foreach (pkgname ${path_names})
-            #foreach (subpkgname ${path_names})
 
+            foreach (inclname ${path_names})
                 set (includes ${includes} 
-                    ${prefix}/${pkgname}/include
-                    ${prefix}/include/${pkgname})
-                    #${prefix}/${pkgname}/include/${subpkgname})
+                    ${prefix}/${pkgname}/${inclname}
+                    ${prefix}/${inclname}/${pkgname})
+                endforeach ()
 
+            foreach (libname ${lib_names})
                 set (libraries ${libraries} 
-                    ${prefix}/${pkgname}/lib ${prefix}/lib/${pkgname}
-                    ${prefix}/${pkgname}/bin ${prefix}/bin/${pkgname}
-                    ${prefix}/${pkgname}/dll ${prefix}/dll/${pkgname})
-                    #${prefix}/${pkgname}/lib/${subpkgname}
-                    #${prefix}/${pkgname}/bin/${subpkgname}
-                    #${prefix}/${pkgname}/dll/${subpkgname})
+                    ${prefix}/${pkgname}/${libname} 
+                    ${prefix}/${libname}/${pkgname})
+                endforeach ()
 
-                #endforeach ()
         endforeach ()
     endforeach ()
 
