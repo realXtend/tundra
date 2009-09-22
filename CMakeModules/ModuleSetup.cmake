@@ -278,8 +278,7 @@ macro (configure_xmlrpc)
         COMPONENTS xmlrpc xmlrpcepi xmlrpc-epi
         PREFIXES ${ENV_NAALI_DEP_PATH}
         ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/src
-        ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Release
-        ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Debug)
+        ${ENV_NAALI_DEP_PATH}/xmlrpc-epi)
     
     find_debug_libraries (XMLRPC "d")
 
@@ -288,7 +287,7 @@ endmacro (configure_xmlrpc)
 macro (configure_curl)
     sagase_configure_package (CURL 
         NAMES Curl curl libcurl
-        COMPONENTS curl_imp
+        COMPONENTS curl libcurl libcurl_imp
         PREFIXES ${ENV_NAALI_DEP_PATH}
         ${ENV_NAALI_DEP_PATH}/libcurl/lib/DLL-Debug 
         ${ENV_NAALI_DEP_PATH}/libcurl/lib/DLL-Release)		
