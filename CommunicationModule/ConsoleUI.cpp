@@ -32,7 +32,10 @@ namespace CommunicationUI
 			console_service->RegisterCommand(Console::CreateCommand("comm logout", "Logout from jabber server: comm logout()", Console::Bind(this, &ConsoleUI::OnCommandLogout)));
 			console_service->RegisterCommand(Console::CreateCommand("comm user", "Show information about current user", Console::Bind(this, &ConsoleUI::OnCommandUser)));
 			console_service->RegisterCommand(Console::CreateCommand("comm message", "Send message to default text chat session", Console::Bind(this, &ConsoleUI::OnCommandMessage)));
-			console_service->RegisterCommand(Console::CreateCommand("comm accept", "Accept all chat request.", Console::Bind(this, &ConsoleUI::OnCommandAcceptTextChatSession)));
+			console_service->RegisterCommand(Console::CreateCommand("comm accept chat", "Accept all chat requests.", Console::Bind(this, &ConsoleUI::OnCommandAcceptTextChatSession)));
+			console_service->RegisterCommand(Console::CreateCommand("comm reject chat", "Reject all chat requests.", Console::Bind(this, &ConsoleUI::OnCommandAcceptTextChatSession)));
+			console_service->RegisterCommand(Console::CreateCommand("comm accept friend", "Accept a friend request.", Console::Bind(this, &ConsoleUI::OnCommandAcceptTextChatSession)));
+			console_service->RegisterCommand(Console::CreateCommand("comm reject friend", "Reject friend request.", Console::Bind(this, &ConsoleUI::OnCommandAcceptTextChatSession)));
 		}
 		else
 		{
@@ -81,22 +84,40 @@ namespace CommunicationUI
 		if (connections.size() == 0)
 			result.append("No connections.\n");
 		else
+		{
+			std::stringstream s;
+			s << connections.size();
+			s << " connections\n";
+			result.append(s.str());
 			for (TpQt4Communication::ConnectionVector::iterator i = connections.begin(); i != connections.end(); ++i)
 			{
 				TpQt4Communication::Connection* connection = *i;
-//				result.append( connection->GetID() );
+				result.append("  ");
+				result.append( connection->GetServer() );
 				result.append(" (");
 				result.append( connection->GetProtocol() );
 				result.append(") :");
 				switch( connection->GetState() )
 				{
-					case TpQt4Communication::Connection::STATE_CONNECTING: result.append("Connecting"); break;
+					case TpQt4Communication::Connection::STATE_CONNECTING: result.append("Connecting..."); break;
 					case TpQt4Communication::Connection::STATE_ERROR: result.append("Error"); break;
 					case TpQt4Communication::Connection::STATE_OPEN: result.append("Open"); break;
 					case TpQt4Communication::Connection::STATE_CLOSED: result.append("Closed"); break;
 				}
+				std::stringstream s;
+				s << "\n    ";
+				s << connection->GetFriendRequests().size();
+				s << " friend requests";
+				s << "\n    ";
+				s << connection->GetTextChatSessionRequests().size();
+				s << " text chat requests";
+				s << "\n    ";
+				s << connection->GetTextChatSessions().size();
+				s << " text chat sessions";
+				result.append(s.str());
 				result.append("\n");
 			}
+		}
 
 		return Console::ResultSuccess(result);
 	}
@@ -154,8 +175,8 @@ namespace CommunicationUI
 		if ( params.size() == 0 )
 		{
 			// For fast testing...
-			credentials.SetUserID("@jabber.org");
-			credentials.SetPassword("");
+			credentials.SetUserID("kuonanoja@jabber.org");
+			credentials.SetPassword("jabber666");
 			credentials.SetServer("jabber.org");
 			credentials.SetServerPort(5222);
 		}
@@ -234,5 +255,22 @@ namespace CommunicationUI
 		result = "ok.";
 		return Console::ResultSuccess(result);
 	}
+
+	Console::CommandResult ConsoleUI::OnCommandSendFriendRequest(const Core::StringVector &params)
+	{
+		return Console::ResultFailure("NOT IMPLEMENTED");
+	}
+
+	Console::CommandResult ConsoleUI::OnCommandAcceptFriendRequest(const Core::StringVector &params)
+	{
+		return Console::ResultFailure("NOT IMPLEMENTED");
+	}
+
+	Console::CommandResult ConsoleUI::OnCommandRejectFriendRequest(const Core::StringVector &params)
+	{
+		return Console::ResultFailure("NOT IMPLEMENTED");
+	}
+
+
 
 } //end if namespace: CommunicationUI
