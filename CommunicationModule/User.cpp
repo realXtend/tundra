@@ -35,4 +35,11 @@ namespace TpQt4Communication
 		emit ContactListChangend();
 	}
 
+	ContactVector User::GetContacts()
+	{
+		ContactVector contacts;
+		contacts.assign(contacts_.begin(), contacts_.end());
+		return contacts;
+	}
+
 } // end of TpQt4Communication: 
