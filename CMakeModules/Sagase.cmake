@@ -183,10 +183,10 @@ macro (sagase_configure_package PREFIX)
         message (STATUS "trying brute-force search ")
 
         # take names to be directory names, and include "."
-        set (PKG_NAMES ${PKG_NAMES} ".")
+        set (${PREFIX}_PATH_NAMES ${PKG_NAMES} ".")
 
         # generate a combination of possible search paths
-        sagase_generate_paths (include_paths library_paths NAMES ${PKG_NAMES} PREFIXES ${PKG_PREFIXES})
+        sagase_generate_paths (include_paths library_paths NAMES ${${PREFIX}_PATH_NAMES} PREFIXES ${PKG_PREFIXES})
 
         # all C and C++ headers
         set (HEADER_POSTFIXES ".h" ".hpp" ".hh" ".hxx")
@@ -206,9 +206,9 @@ macro (sagase_configure_package PREFIX)
         foreach (component_ ${PKG_COMPONENTS})
             
             # get header path
-            foreach (pkgname_ ${PKG_NAMES})
+            foreach (pathname_ ${${PREFIX}_PATH_NAMES})
                 foreach (header_extension_ ${HEADER_POSTFIXES})
-                    find_path (${PREFIX}_${component_}_INCLUDE_DIR ${pkgname_}/${component_}${header_extension_} ${include_paths})
+                    find_path (${PREFIX}_${component_}_INCLUDE_DIR ${pathname_}/${component_}${header_extension_} ${include_paths})
                     
                     if (${PREFIX}_${component_}_INCLUDE_DIR)
                         set (${PREFIX}_INCLUDE_DIRS ${${PREFIX}_INCLUDE_DIRS} ${${PREFIX}_${component_}_INCLUDE_DIR})
