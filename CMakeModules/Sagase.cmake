@@ -48,7 +48,7 @@ function (sagase_generate_paths INCLUDE_PATHS LIBRARY_PATHS)
     foreach (prefix ${path_prefixes})
 
         set (includes ${includes} 
-            ${prefix}/includes)
+            ${prefix}/include)
 
         set (libraries ${libraries} 
             ${prefix}/lib 
