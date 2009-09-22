@@ -23,4 +23,4 @@ if (MSVC)
 	set_source_files_properties (CoreStableHeaders.cpp PROPERTIES COMPILE_FLAGS "/YcCoreStableHeaders.h")
 endif (MSVC)
 
-close_target ()
+final_target ()

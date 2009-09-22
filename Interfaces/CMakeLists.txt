@@ -19,4 +19,4 @@ link_package (POCO)
 # Have to define language, because there are no CPP files in the source directory
 set_target_properties (${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
-close_target ()
+final_target ()
