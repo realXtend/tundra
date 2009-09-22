@@ -144,8 +144,6 @@ namespace TpQt4Communication
 		QProcess* dbus_daemon_;
 
 //	public Q_SIGNALS:
-		void Ready();
-		void Error(QString &reason);
 
 	private Q_SLOTS:
 		void OnConnectionManagerReady(Tp::PendingOperation *op);
@@ -154,6 +152,10 @@ namespace TpQt4Communication
 
 	public:
 		static CommunicationManager* instance_;
+
+	signals:
+		void Ready();
+		void Error(QString &reason);
 	};
 
 

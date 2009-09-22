@@ -36,25 +36,17 @@ namespace TpQt4Communication
 			//}
 		}
 
-		qDebug() << "TpQt4 Thread:" << this->thread(); 
-
-		QThread* ct = QThread::currentThread();
-		QThread* t = this->thread();
-
 		Tp::registerTypes();
 		Tp::enableDebug(true);
 		Tp::enableWarnings(true);
 		
-
 		this->tp_connection_manager_ = Tp::ConnectionManager::create(CONNECTION_MANAGER_NAME);
-
 
 		Tp::PendingReady* p = this->tp_connection_manager_->becomeReady();
 
 		QObject::connect(p,
 				SIGNAL(finished(Tp::PendingOperation *)),
 				SLOT(OnConnectionManagerReady(Tp::PendingOperation *)));
-
 	}
 
 	CommunicationManager::~CommunicationManager()
@@ -106,14 +98,15 @@ namespace TpQt4Communication
 			message.append( op->errorMessage().toStdString() );
 			LogError( message );
 			state_ = STATE_ERROR;
-//			LogError("Cannot open connection to Telepathy ConnectionManager");
+			QString reason;
+			reason.append(message.c_str());
+			emit Error(reason);
 			return;
 		}
 
-		//return; // HACK
-
 		LogInfo("ConnectionManager is ready.");
 		state_ = STATE_READY;
+		emit Ready();
 	}
 
 	Connection* CommunicationManager::OpenConnection(const Credentials &credentials)
@@ -241,5 +234,14 @@ namespace TpQt4Communication
 		}
 	}
 
+	//void CommunicationManager::Ready()
+	//{
+
+	//}
+
+	//void CommunicationManager::Error(QString &reason)
+	//{
+
+	//}
 
 } // namespace TpQt4Communication
