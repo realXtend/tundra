@@ -34,7 +34,10 @@ namespace TpQt4Communication
 		LogInfo("Contact state changed");
 
 		QString status =  tp_contact_->presenceStatus();
-		
+		QString message =  tp_contact_->presenceMessage();
+		presence_status_ = status.toStdString();
+		presence_message_ = message.toStdString();
+
 		switch( tp_contact_->subscriptionState() )
 		{
 			case Tp::Contact::PresenceStateAsk: break;
@@ -46,6 +49,7 @@ namespace TpQt4Communication
 		{
 			// User has blocked this contact
 		}
+		emit StateChanged();
 	}
 
 	Address Contact::GetAddress()
@@ -58,9 +62,9 @@ namespace TpQt4Communication
 		return tp_contact_->alias().toStdString();
 	}
 
-	PresenceStatusWeakPtr Contact::GetPresenceStatus()
-	{
-		return presence_status_;
-	}
+	//PresenceStatusWeakPtr Contact::GetPresenceStatus()
+	//{
+	//	return presence_status_;
+	//}
 
 } // end of namespace: Communication

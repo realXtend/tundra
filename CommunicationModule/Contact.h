@@ -29,13 +29,18 @@ namespace TpQt4Communication
 	public:
 		Address GetAddress();
 		std::string GetRealName();
-		PresenceStatusWeakPtr GetPresenceStatus();
+		std::string GetPresenceStatus();
+		std::string GetPresenceMessage();
+
+//		PresenceStatusWeakPtr GetPresenceStatus();
 		//void SetRealName(std::string name);
 	private:
 		Address address_;
 		std::string real_name_;
-		PresenceStatusWeakPtr presence_status_;
+//		PresenceStatusWeakPtr presence_status_;
 		Tp::ContactPtr tp_contact_;
+		std::string presence_status_;
+		std::string presence_message_;
 
 	signals:
 		void StateChanged();

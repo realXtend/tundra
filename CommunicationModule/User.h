@@ -30,6 +30,7 @@ namespace TpQt4Communication
 		std::string GetProtocol();
 		void SetPresenceStatus(std::string state, std::string message);
 		PresenceStatus* GetPresenceStatus();
+		ContactVector GetContacts();
 //		PresenceStatusWeakPtr GetPresenceStatus();
 	private:
 
@@ -42,15 +43,12 @@ namespace TpQt4Communication
 		Tp::ConnectionPtr tp_connection_;
 		Tp::ContactPtr tp_contact_;
 		ContactVector contacts_;
-
-	public:
-	//signals:
+	
+	signals:
 		void ContactListChangend();
 
 	};
 	typedef boost::weak_ptr<User> UserWeakPtr;
-
-
 
 } // end of TpQt4Communication: 
 

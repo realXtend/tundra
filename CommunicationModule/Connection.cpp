@@ -30,10 +30,10 @@ namespace TpQt4Communication
 		return state_;
 	}
 
-	std::string Connection::GetID()
-	{
-		return id_;
-	}
+	//std::string Connection::GetID()
+	//{
+	//	return id_;
+	//}
 
 	User* Connection::GetUser()
 	{
@@ -68,6 +68,9 @@ namespace TpQt4Communication
 //			error_message_.append( op->errorMessage() );
 			// TODO: Error handling
 			state_ = STATE_ERROR;
+			QString m;
+			m.append(message.c_str());
+			emit Error(m);
 			return;
 		}
 		
@@ -78,15 +81,17 @@ namespace TpQt4Communication
 		LogInfo(message);
 
 		QObject::connect(tp_connection_->becomeReady(Tp::Connection::FeatureRoster),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(OnConnectionReady(Tp::PendingOperation *)));
+		                 SIGNAL(finished(Tp::PendingOperation *)),
+						 SLOT(OnConnectionReady(Tp::PendingOperation *)));
 
-		
 		//conn->requestsInterface(
 		//conn->gotInterfaces
-		QObject::connect(tp_connection_->requestConnect(), SIGNAL(finished(Tp::PendingOperation *)),SLOT(OnConnectionConnected(Tp::PendingOperation *)));
-		QObject::connect(tp_connection_.data(), SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),	SLOT(OnConnectionInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
-
+		QObject::connect(tp_connection_->requestConnect(),
+					     SIGNAL(finished(Tp::PendingOperation *)),
+						 SLOT(OnConnectionConnected(Tp::PendingOperation *)));
+		QObject::connect(tp_connection_.data(),
+			             SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
+						 SLOT(OnConnectionInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
 
 		//QObject::connect(tp_connection_->requestsInterface(),
   //              SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
@@ -95,13 +100,16 @@ namespace TpQt4Communication
 
 	void Connection::OnConnectionReady(Tp::PendingOperation *op)
 	{
-		LogInfo(" Connection::OnConnectionReady");
+		LogDebug(" Connection::OnConnectionReady");
 	    if (op->isError())
 		{
-			LogError("Connection cannot become ready.");
+			std::string message = "Connection cannot become ready.";
+			LogError(message);
+			QString m;
+			m.append(message.c_str());
+			emit(m);
 	        return;
 		}
-
 
 	  //  connect(tp_connection_->contactManager(),
 	  //      SIGNAL(presencePublicationRequested(const Tp::Contacts &)),
@@ -109,18 +117,19 @@ namespace TpQt4Communication
 
 		// Build Friendlist
 		Tp::Contacts all_known_contacts = tp_connection_->contactManager()->allKnownContacts();
+		ContactVector new_contacts;
 		foreach (const Tp::ContactPtr &contact, tp_connection_->contactManager()->allKnownContacts())
 		{
 			Contact* c = new Contact(contact);
-			user_->contacts_.push_back(c);
-
-			//contact.	
-			LogInfo("a friends: ");
+			new_contacts.push_back(c);
         }
+		
 		if (all_known_contacts.count() > 0)
 		{
-			// todo signal about contact list change
+			user_->AddContacts(new_contacts);
 		}
+		state_ = STATE_OPEN;
+		emit Connected();
 	}
 
 	void Connection::OnConnectionConnected(Tp::PendingOperation *op)

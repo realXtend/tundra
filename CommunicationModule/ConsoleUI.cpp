@@ -58,7 +58,7 @@ namespace CommunicationUI
 			for (TpQt4Communication::ConnectionVector::iterator i = connections.begin(); i != connections.end(); ++i)
 			{
 				TpQt4Communication::Connection* connection = *i;
-				result.append( connection->GetID() );
+//				result.append( connection->GetID() );
 				result.append(" (");
 				result.append( connection->GetProtocol() );
 				result.append(") :");
@@ -93,7 +93,7 @@ namespace CommunicationUI
 			{
 				TpQt4Communication::Connection* connection = (TpQt4Communication::Connection*)*i;
 
-				result.append(connection->GetID());
+//				result.append(connection->GetID());
 				result.append(" ");
 				if (connection->GetState() == TpQt4Communication::Connection::STATE_CONNECTING)
 					result.append("[Connecting...]");
