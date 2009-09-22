@@ -227,7 +227,8 @@ macro (configure_python_qt)
         COMPONENTS PythonQt PythonQt_QtAll
         PREFIXES ${ENV_NAALI_DEP_PATH})
     
-    find_debug_libraries (PYTHON "_d")
+    # TODO: not currently working
+    #find_debug_libraries (PYTHON "_d")
 
 endmacro (configure_python_qt)
 
