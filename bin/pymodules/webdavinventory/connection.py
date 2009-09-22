@@ -48,7 +48,7 @@ class HTTPClient(object):
     def requestIdentityAndWebDavURL(self):
         identityurl = None
         webdavurl = None
-        if (self.httpclient != None):
+        if self.httpclient is not None:
             try:
                 self.httpclient.request("GET", self.identityQueryString)
             except httplib.socket.error:
@@ -62,6 +62,8 @@ class HTTPClient(object):
                 webdavurl = None
             self.httpclient.close()
             return identityurl, webdavurl
+        else:
+            raise RuntimeError, "http client not there yet, you should call setupConnection first"
 
 class WebDavClient(object):
         
