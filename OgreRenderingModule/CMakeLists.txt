@@ -24,6 +24,7 @@ add_definitions (-DOGRE_MODULE_EXPORTS)
 use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
+use_package (OIS)
 use_modules (AssetModule SupportModules InputModuleOIS RexCommon)
 
 if (CAELUM)
@@ -44,6 +45,13 @@ link_package (OGRE)
 link_package (OIS)
 link_package (OGRE)
 
+if (CAELUM)
+    link_package (CAELUM)
+endif (CAELUM)
+
+if (HYDRAX)
+	link_package (HYDRAX)
+endif (HYDRAX)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
