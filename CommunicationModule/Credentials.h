@@ -33,7 +33,7 @@ namespace TpQt4Communication
 		std::string password_;
 		std::string protocol_;
 		std::string server_;
-		std::map<std::string, std::string> attributes_;
+	//	std::map<std::string, std::string> attributes_;
 	};
 	typedef boost::weak_ptr<Credentials> CredentialsWeakPtr;
 	

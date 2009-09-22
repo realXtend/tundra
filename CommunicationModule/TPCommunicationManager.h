@@ -78,36 +78,6 @@
  */ 
 namespace TpQt4Communication
 {
-
-
-
-	///**
- //    * IM address holder for exp. jabber addres: "yourname@jabber.org".
-	// * Includes also type of address like: "jabber", "email"
-	// * 		
-	// */
-	//class Address
-	//{
-	//public:
-	//	Address(std::string type, std::string address);
-	//	std::string ToString();
-	//	std::string GetType();
-	//private:
-	//	std::string address_;
-	//	std::string type_;
-	//};
-	//typedef boost::weak_ptr<Address> AddressWeakPtr;
-
-
-
-
-
-
-
-
-
-
-
 	/**
 	 *  Keeps all Connection objects
 	 *  Starts WinDBus id dbus service isn't available on Windows platform
@@ -117,22 +87,32 @@ namespace TpQt4Communication
 	{
 		Q_OBJECT
 		MODULE_LOGGING_FUNCTIONS
-
-		
 	private:
+		//! Default construnctor
+		CommunicationManager();
 		
 	public:
 		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 		enum State {STATE_INITIALIZING, STATE_READY, STATE_ERROR};
-		CommunicationManager();
-		~CommunicationManager();
+
+		//! Static Get singleton object
 		static CommunicationManager* GetInstance();
-		
-		Connection* OpenConnection(const Credentials &credentials);
+
+		//! Get state of ConnectionMnager object
 		State GetState();
 
+		//! Construnctor
+		~CommunicationManager();
+		
+		//! Open a new connection to IM server
+		Connection* OpenConnection(const Credentials &credentials);
+
+		//! Return all Connection objects made by calling OpenConnection
 		ConnectionVector GetAllConnections();
-		ConnectionVector GetConnections(std::string protocol);
+
+		//ConnectionVector GetConnections(std::string protocol);
+
+		//! Close all Connection objects
 		void CloseAllConnections();
 
 	private:
@@ -143,7 +123,7 @@ namespace TpQt4Communication
 		bool IsDBusServiceAvailable(std::string name);
 
 		//! Starts WinDBus process
-		void StartDBusDaemon();
+		void StartDBusDaemon(int port);
 		
 		//! ConnectionManager object from Telepathy-Qt4 library
 		Tp::ConnectionManagerPtr tp_connection_manager_;

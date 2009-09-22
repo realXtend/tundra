@@ -30,7 +30,7 @@ namespace TpQt4Communication
 		Address GetAddress();
 		std::string GetRealName();
 		PresenceStatusWeakPtr GetPresenceStatus();
-		void SetRealName(std::string name);
+		//void SetRealName(std::string name);
 	private:
 		Address address_;
 		std::string real_name_;
@@ -38,7 +38,7 @@ namespace TpQt4Communication
 		Tp::ContactPtr tp_contact_;
 
 	signals:
-		void Changed();
+		void StateChanged();
 
 	private Q_SLOTS:
 		void OnContactChanged();

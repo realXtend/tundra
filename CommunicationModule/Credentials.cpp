@@ -4,6 +4,25 @@ namespace TpQt4Communication
 {
 	Credentials::Credentials()
 	{
+	}
+
+	void Credentials::SetProtocol(std::string protocol)
+	{
+
+	}
+
+	void Credentials::SetUserID(std::string user_id)
+	{
+
+	}
+
+	void Credentials::SetPassword(std::string pwd)
+	{
+
+	}
+
+	void Credentials::SetServer(std::string server)
+	{
 
 	}
 
@@ -23,5 +42,16 @@ namespace TpQt4Communication
 	}
 
 	
+	std::string Credentials::GetUserID() const
+	{
+		return user_id_;
+	}
+
+	std::string Credentials::GetUserPassword() const
+	{
+		return password_;
+	}
+
+
 
 } // end of namespace: TpQt4Communication

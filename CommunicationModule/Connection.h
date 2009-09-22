@@ -19,6 +19,7 @@
 #include "User.h"
 #include "TextChatSession.h"
 #include "FriendRequest.h"
+#include "Contact.h"
 
 namespace TpQt4Communication
 {

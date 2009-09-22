@@ -6,6 +6,7 @@
 namespace TpQt4Communication
 {
 	#define CONNECTION_MANAGER_NAME "gabble"
+	#define DBUS_SESSION_PORT 12434
 	
 	typedef std::string Address;
 	typedef std::string Protocol;
