@@ -78,6 +78,13 @@ macro (configure_python)
         set (PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_PATH})
         #unset (PYTHON_DEBUG_LIBRARIES ${PYTHON_DEBUG_LIBRARY})
     endif ()
+	
+	if (MSVC)
+		set (PYTHON_LIBRARY_DIRS ${ENV_NAALI_DEP_PATH}/Python/lib)
+		set (PYTHON_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/Python/include)
+		set (PYTHON_LIBRARIES python26)
+		set (PYTHON_DEBUG_LIBRARIES python26_d)
+	endif()
     
 endmacro (configure_python)
 
