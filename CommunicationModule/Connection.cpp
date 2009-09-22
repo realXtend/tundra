@@ -45,16 +45,31 @@ namespace TpQt4Communication
 		return protocol_;
 	}
 
-	TextChatSessionPtr Connection::CreateTextChatSession()
+	TextChatSessionPtr Connection::CreateTextChatSession(Contact* contact)
 	{
+		LogInfo("Create TextChatSession object.");
+//		contact->
+//		ReferencedHandles rhs = contactPtr->handle();
+		uint handle = 0; //rhs[0];
+
 		QVariantMap params;
 
-		
-		//tp_connection_->requestHandles(CHANNEL_TYPE_TEXT, const QStringList &names);
-		Tp::PendingChannel* pending_channel = tp_connection_->createChannel(params);
-		Tp::ChannelPtr c = pending_channel->channel();
-		
+		params.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"), QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+		params.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"), Tp::HandleTypeContact);
+		params.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"), handle);
+
+		Tp::PendingChannel* p = tp_connection_->ensureChannel(params);
 		TextChatSession* session = new TextChatSession();
+
+		QObject::connect(p,
+			SIGNAL( finished(Tp::PendingOperation*) ),
+			(QObject*)session,
+			SLOT( OnTextChannelCreated(Tp::PendingOperation*) ) );
+
+		//tp_connection_->requestHandles(CHANNEL_TYPE_TEXT, const QStringList &names);
+		//Tp::PendingChannel* pending_channel = tp_connection_->createChannel(params);
+		//Tp::ChannelPtr c = pending_channel->channel();
+		
 		return TextChatSessionPtr(session);
 	}
 
@@ -148,27 +163,22 @@ namespace TpQt4Communication
                 SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
                 SLOT(OnNewChannels(const Tp::ChannelDetailsList&)));
 
-
-		// Request friend list
 		QObject::connect(tp_connection_->contactManager(),
             SIGNAL(presencePublicationRequested(const Tp::Contacts &)),
             SLOT(OnPresencePublicationRequested(const Tp::Contacts &)));
 
-		//QStringList list;
-		
-		Tp::Contacts contacts  = this->tp_connection_->contactManager()->allKnownContacts();
-		
-		
-		for (Tp::Contacts::iterator i = contacts.begin(); i != contacts.end(); ++i)
-		{
-			Tp::ContactPtr c = *i;
-			std::string id = c->id().toStdString();
-			
-			LogInfo("***");
-			LogInfo(id);
-			//Contact contact = new Contact(address, real_name);
-			
-		}
+		//Tp::Contacts contacts  = this->tp_connection_->contactManager()->allKnownContacts();
+		//
+		//for (Tp::Contacts::iterator i = contacts.begin(); i != contacts.end(); ++i)
+		//{
+		//	Tp::ContactPtr c = *i;
+		//	std::string id = c->id().toStdString();
+		//	
+		//	LogInfo("***");
+		//	LogInfo(id);
+		//	//Contact contact = new Contact(address, real_name);
+		//	
+		//}
 
 //		Tp::PendingContacts *pending_contacts = this->tp_connection_->contactManager()->->contactsForIdentifiers(list);
 //		QObject::connect((QObject*)pending_contacts, SIGNAL(finished(Tp::PendingOperation *)),
@@ -188,9 +198,13 @@ namespace TpQt4Communication
 
 			if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT && !requested)
 			{
+				LogInfo("Text chat request received.");
 				Tp::TextChannelPtr channel = Tp::TextChannel::create(tp_connection_, details.channel.path(), details.properties);
 				//mCallHandler->addIncomingCall(channel);
-				LogInfo("Text channel");
+				TextChatSessionRequest* request = new TextChatSessionRequest(channel);
+				received_text_chat_requests_.push_back(request);
+				
+				emit ReceivedTextChatSessionRequest(request);
 			}
 
 			if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST && !requested)
@@ -212,11 +226,15 @@ namespace TpQt4Communication
 		// TODO: Create Friend request object ?
 		foreach (const Tp::ContactPtr &contact, contacts)
 		{
-			LogInfo("****");
-			//std::string id = contact.id().toStdString();
+			QString id = contact->id();
+			std::string message = "from: ";
+			message.append(id.toStdString());
+			LogInfo(message);
+			//! todo: Create FriendRequest object
 		}
 	}
 
+	// ???
 	void Connection::OnContactRetrieved(Tp::PendingOperation *op)
 	{
 		LogInfo("OnContactRetrieved");
@@ -237,7 +255,6 @@ namespace TpQt4Communication
 			LogInfo("***");
 			LogInfo(id);
 			//Contact contact = new Contact(address, real_name);
-			
 		}
 	}
 
@@ -245,5 +262,18 @@ namespace TpQt4Communication
 	{
 		LogError("Connection::OnConnectionInvalidated");
 		state_ = STATE_ERROR;
+		QString message = "Connection become invalitated.";
+		emit Error(message);
 	}
+
+	
+	TextChatSessionRequestVector Connection::GetTextChatSessionRequests()
+	{
+		TextChatSessionRequestVector requests;
+		requests.assign(received_text_chat_requests_.begin(), received_text_chat_requests_.end());
+		return requests;
+	}
+
+
+
 } // end of namespace: TpQt4Communication

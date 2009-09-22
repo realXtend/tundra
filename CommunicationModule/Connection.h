@@ -58,7 +58,7 @@ namespace TpQt4Communication
 		std::string GetProtocol();
 		State GetState();
 
-		TextChatSessionPtr CreateTextChatSession();
+		TextChatSessionPtr CreateTextChatSession(Contact* contact);
 		void CreateVoipSession();
 		void SendFriendRequest(Address to, std::string message = "");
 
@@ -75,7 +75,8 @@ namespace TpQt4Communication
 		std::string server_;
 		Tp::ConnectionPtr tp_connection_;
 		std::vector<FriendRequest*> received_friend_requests_;
-		std::vector<TextChatSessionRequest*> received_text_chat_requests_;
+		//std::vector<TextChatSessionRequest*> received_text_chat_requests_;
+		TextChatSessionRequestVector received_text_chat_requests_;
 		std::string error_message_;
 
 	public Q_SLOTS:
@@ -87,11 +88,16 @@ namespace TpQt4Communication
 		void OnPresencePublicationRequested(const Tp::Contacts &);
 		void OnNewChannels(const Tp::ChannelDetailsList&);
 
+		//! Triggered when TextChannel object is created
+		//void OnTextChannelCreated(Tp::PendingOperation* op);
+
 	signals:
 		void Connecting(QString &message);
 		void Connected();
 		void Error(QString &reason);
 		void Closed();
+		void ReceivedTextChatSessionRequest(TextChatSessionRequest* request);
+//		void VoipSessionRequest(VoipSessionRequest* request);
 	};
 	typedef boost::weak_ptr<Connection> ConnectionWeakPtr;
 	typedef std::vector<Connection*> ConnectionVector;

@@ -31,7 +31,6 @@ namespace TpQt4Communication
 		void SetPresenceStatus(std::string state, std::string message);
 		PresenceStatus* GetPresenceStatus();
 		ContactVector GetContacts();
-//		PresenceStatusWeakPtr GetPresenceStatus();
 	private:
 
 		//! Add new contacts to contact list
