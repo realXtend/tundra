@@ -41,8 +41,8 @@ namespace CommunicationUI
 		void setAllEnabled(bool enabled);
 
 		QString currentMessage;
-		QLayout *layout_;
-		QWidget *widget_;
+		QWidget *loginWidget_;
+		QWidget *chatWidget_;
 		QTabWidget *tabWidgetCoversations_;
 		QListWidget *listWidgetFriends_;
 		QPushButton *buttonSendMessage_;
@@ -52,6 +52,7 @@ namespace CommunicationUI
 		QComboBox *comboBoxStatus_;
 		QLabel *connectionStatus_;
 
+		
 		Credentials credentials;
 		CommunicationManager* commManager_;
 		Connection* im_connection_;
@@ -75,12 +76,10 @@ namespace CommunicationUI
 		void checkInput(bool clicked);
 
 	private:
-		void initWidget(QString &message);
+		void initWidget(QWidget *parent, QString &message);
 		void connectSignals();
 
 		QLabel *labelStatus;
-		QLayout *layout_;
-		QWidget *widget_;
 		QLineEdit *textEditServer_;
 		QLineEdit *textEditPort_;
 		QLineEdit *textEditUsername_;

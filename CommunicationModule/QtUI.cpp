@@ -16,7 +16,8 @@ namespace CommunicationUI
 	QtUI::QtUI(QWidget *parent, Foundation::Framework* framework)
 		: QWidget(parent)
 	{
-		this->layout_ = new QVBoxLayout(this);
+		this->setLayout(new QVBoxLayout);
+		this->layout()->setMargin(0);
 		loadUserInterface(false);
 	}
 
@@ -27,59 +28,62 @@ namespace CommunicationUI
 
 	void QtUI::loadUserInterface(bool connected)
 	{
-		// Remove widget if there is one
-		if (widget_ != NULL && layout_->count() > 0)
-			layout_->removeWidget(widget_);
-
-		QUiLoader loader;
 		if (connected)
 		{
-			// Init normal GUI
+			if (loginWidget_ != NULL)
+			{
+				this->layout()->removeWidget(loginWidget_);
+				delete loginWidget_;
+			}
+
+			// Init chat GUI
+			QUiLoader loader;
 			QFile uiFile("./data/ui/communications.ui");
-			this->widget_ = loader.load(&uiFile, this);
-			this->widget_->setMinimumSize(472, 284);
-			this->widget_->setMaximumSize(16000, 16000);
+			chatWidget_ = loader.load(&uiFile, this);
+			chatWidget_->layout()->setMargin(9);
 			uiFile.close();
 
 			// Get widgets
-			tabWidgetCoversations_ = this->widget_->findChild<QTabWidget *>("tabWidget_Conversations");
+			tabWidgetCoversations_ = findChild<QTabWidget *>("tabWidget_Conversations");
 			tabWidgetCoversations_->clear();
-			listWidgetFriends_ = this->widget_->findChild<QListWidget *>("listWidget_Friends");
-			buttonSendMessage_ = this->widget_->findChild<QPushButton *>("pushButton_Send");
+			listWidgetFriends_ = findChild<QListWidget *>("listWidget_Friends");
+			buttonSendMessage_ = findChild<QPushButton *>("pushButton_Send");
 			buttonSendMessage_->setIcon(QIcon("./data/ui/images/arrow_right_green_48.png"));
 			buttonSendMessage_->setIconSize(QSize(25,23));
-			lineEditMessage_ = this->widget_->findChild<QLineEdit *>("lineEdit_Message");
+			lineEditMessage_ = findChild<QLineEdit *>("lineEdit_Message");
 			lineEditMessage_->setFocus(Qt::NoFocusReason);
-			labelUsername_ = this->widget_->findChild<QLabel *>("label_UserName");
-			lineEditStatus_ = this->widget_->findChild<QLineEdit *>("lineEdit_Status");
-			comboBoxStatus_ = this->widget_->findChild<QComboBox *>("comboBox_Status");
-			connectionStatus_ = this->widget_->findChild<QLabel *>("label_ConnectionStatus");
+			labelUsername_ = findChild<QLabel *>("label_UserName");
+			lineEditStatus_ = findChild<QLineEdit *>("lineEdit_Status");
+			lineEditStatus_->setText("status message not set..");
+			comboBoxStatus_ = findChild<QComboBox *>("comboBox_Status");
+			connectionStatus_ = findChild<QLabel *>("label_ConnectionStatus");
 			connectionStatus_->setText("Connecting to server...");
-
 			setAllEnabled(false);
+
+			// Add widget to layout
+			this->layout()->addWidget(chatWidget_);
 			this->setWindowTitle("realXtend Communications");
+			this->setMinimumSize(581, 262);
+			this->setMaximumSize(16000, 16000);
 		} 
 		else
 		{
 			// Init login GUI
-			Login *loginWidget_ = new Login(this, this->currentMessage);
-			this->widget_ = loginWidget_->widget_;
-			this->widget_->setMinimumSize(440, 157);
-			this->widget_->setMaximumSize(440, 157);
+			loginWidget_ = new Login(this, currentMessage);
 			QObject::connect(loginWidget_, SIGNAL( userdataSet(QString, int, QString, QString) ), this, SLOT( connectToServer(QString, int, QString, QString) ));
+			
+			// Add widget to layout
+			this->layout()->addWidget(loginWidget_);
 			this->setWindowTitle("realXtend Naali Communications login");
+			this->setMinimumSize(450, 157);
+			this->setMaximumSize(450, 157);
 		}
 
-		this->layout_->setSpacing(0);
-		this->layout_->setMargin(6);
-		this->layout_->addWidget(this->widget_);
-		this->setLayout(this->layout_);
 	}
 
 	void QtUI::loadConnectedUserData(User *userData)
 	{
-		labelUsername_->setText(QString(userData->GetUserID().c_str()));
-
+		//labelUsername_->setText(QString(userData->GetUserID().c_str()));
 		listWidgetFriends_->clear();
 		ContactVector initialContacts = userData->GetContacts();
 		ContactVector::const_iterator itr;
@@ -117,6 +121,7 @@ namespace CommunicationUI
 	{
 		loadUserInterface(true);
 		connectionStatus_->setText("Initializing manager...");
+		labelUsername_->setText(username);
 
 		// Connect to IM server
 		credentials.SetProtocol("jabber");
@@ -134,7 +139,6 @@ namespace CommunicationUI
 		}	
 		else if (commManager_->GetState() == CommunicationManager::STATE_ERROR)
 		{
-			LogWarning("[Communications UI] Comm manager in error state, IM login stopped");
 			connectionStatus_->setText("Initializing manager...");
 			QString message = "Communication manager initialize error."; 
 			connectionFailed(message);
@@ -149,7 +153,6 @@ namespace CommunicationUI
 
 	void QtUI::managerReady()
 	{
-		LogDebug("[Communications UI] Comm manager ready");
 		im_connection_ = commManager_->OpenConnection(credentials);
 
 		QObject::connect((QObject*)im_connection_, SIGNAL( Connected() ), this, SLOT( connectionEstablished() ));
@@ -176,12 +179,9 @@ namespace CommunicationUI
 
 	void QtUI::startNewChat(QListWidgetItem *clickedItem)
 	{
-		LogDebug("[Communications UI] Starting new chat...");
 		ContactListItem *listItem = (ContactListItem *)clickedItem;
 		TextChatSessionPtr chatSession = im_connection_->CreateTextChatSession(listItem->contact_);
-		
 		Conversation *conversation = new Conversation(this->tabWidgetCoversations_, chatSession, listItem->contact_);
-
 		tabWidgetCoversations_->addTab(conversation, QString(listItem->contact_->GetRealName().c_str()));
 	}
 
@@ -192,9 +192,8 @@ namespace CommunicationUI
 	Login::Login(QWidget *parent, QString &message)
 		: QWidget(parent)
 	{
-		initWidget(message);
+		initWidget(parent, message);
 		connectSignals();
-		this->show();
 	}
 
 	Login::~Login()
@@ -202,30 +201,30 @@ namespace CommunicationUI
 
 	}
 
-	void Login::initWidget(QString &message)
+	void Login::initWidget(QWidget *parent, QString &message)
 	{
 		// Init widget from .ui file
 		QUiLoader loader;
 		QFile uiFile("./data/ui/communications_login.ui");
-		this->widget_ = loader.load(&uiFile, this);
+		QWidget(loader.load(&uiFile, this));
 		uiFile.close();
 
 		// Get GUI elements
-		labelStatus = this->widget_->findChild<QLabel *>("label_Status");
+		labelStatus = findChild<QLabel *>("label_Status");
 		if (!message.isEmpty())
 			labelStatus->setText(message);
-		textEditServer_ = this->widget_->findChild<QLineEdit *>("lineEdit_Server");
-		textEditPort_ = this->widget_->findChild<QLineEdit *>("lineEdit_Port");
-		textEditUsername_ = this->widget_->findChild<QLineEdit *>("lineEdit_Username");
-		textEditPassword_ = this->widget_->findChild<QLineEdit *>("lineEdit_Password");
-		buttonConnect_ = this->widget_->findChild<QPushButton *>("pushButton_Connect");
-		buttonCancel_ = this->widget_->findChild<QPushButton *>("pushButton_Cancel");
+		textEditServer_ = findChild<QLineEdit *>("lineEdit_Server");
+		textEditPort_ = findChild<QLineEdit *>("lineEdit_Port");
+		textEditUsername_ = findChild<QLineEdit *>("lineEdit_Username");
+		textEditPassword_ = findChild<QLineEdit *>("lineEdit_Password");
+		buttonConnect_ = findChild<QPushButton *>("pushButton_Connect");
+		buttonCancel_ = findChild<QPushButton *>("pushButton_Cancel");
 	}
 
 	void Login::connectSignals()
 	{
-		QObject::connect(this->buttonConnect_, SIGNAL( clicked(bool) ), this, SLOT ( checkInput(bool) ));
-		QObject::connect(this->buttonCancel_, SIGNAL( clicked() ), this->parent(), SLOT( close() ));
+		QObject::connect(buttonConnect_, SIGNAL( clicked(bool) ), this, SLOT ( checkInput(bool) ));
+		QObject::connect(buttonCancel_, SIGNAL( clicked() ), this->parent(), SLOT( close() ));
 	}
 
 	void Login::checkInput(bool clicked)
@@ -274,6 +273,11 @@ namespace CommunicationUI
 		this->layout_->setMargin(0);
 		this->layout_->addWidget(this->widget_);
 		this->setLayout(this->layout_);
+	
+		QString startMessage("Started chat session with ");
+		startMessage.append(contact_->GetRealName().c_str());
+		startMessage.append("...");
+		this->textEditChat_->appendPlainText(startMessage);
 	}
 
 
