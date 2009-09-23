@@ -16,6 +16,7 @@
 #include <QTreeView>
 #include <QModelIndex>
 #include <QAbstractItemModel>
+#include <QDirModel>
 
 namespace RexLogic
 {
@@ -83,8 +84,10 @@ void InventoryWindow::PopulateInventoryView()
     if (!inventory_.get())
         return;
 
-//    InventoryTreeModel *model = new InventoryTreeModel(inventory_.get());
     QTreeView *treeView = inventoryWidget_->findChild<QTreeView *>("treeView");
+//    QDirModel *model = new QDirModel;
+//    treeView->setModel(model);
+//    treeView->setRootIndex(model->index(QDir::currentPath()));
     treeView->setModel(inventory_.get());
 }
 
@@ -148,9 +151,9 @@ void InventoryWindow::UpdateActions()
 void InsertInventoryItem()
 {}*/
 
-/*
 void InventoryWindow::CreateFolder()
 {
+/*
     QTreeView *treeView = inventoryWidget_->findChild<QTreeView *>("treeView");
     QModelIndex index = treeView->selectionModel()->currentIndex();
     QAbstractItemModel *model = treeView->model();
@@ -175,8 +178,8 @@ void InventoryWindow::CreateFolder()
 
     treeView->selectionModel()->setCurrentIndex(model->index(0, 0, index), QItemSelectionModel::ClearAndSelect);
 //    updateActions();
-}
 */
+}
 
 void InventoryWindow::InsertRow()
 {

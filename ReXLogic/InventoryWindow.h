@@ -50,7 +50,7 @@ namespace RexLogic
         void UpdateActions();
 
     private slots:
-//        void CreateFolder();
+        void CreateFolder();
 //        bool InsertColumn(const QModelIndex &parent = QModelIndex());
         void InsertRow();
 //        bool RemoveColumn(const QModelIndex &parent = QModelIndex());

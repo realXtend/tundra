@@ -61,19 +61,16 @@ namespace OpenSimProtocol
         ///
         bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
-        ///
-        void AddTopLevelFolder(InventoryFolder *folder);
-
-        ///
-        void AddSubfolder(InventoryFolder *top_level_folder, InventoryFolder *folder);
-
         /// @return First folder by the requested name or null if the folder isn't found.
-        InventoryFolder *GetFirstChildFolderByName(const char *name);
+        InventoryFolder *GetFirstChildFolderByName(const char *name) const;
 
-        ///
-        InventoryFolder *GetChildFolderByID(const RexUUID &searchId);
+        /// @return 
+        InventoryFolder *GetChildFolderByID(const RexUUID &searchId) const;
 
-        ///
+        /// @return Pointer to "My Inventory" folder or null if not found.
+        InventoryFolder *GetMyInventoryFolder() const;
+
+        /// @return 
         InventoryFolder *GetOrCreateNewFolder(const RexUUID &id, InventoryFolder &parent);
 
         /// @return Inventory root folder.

@@ -521,12 +521,13 @@ namespace RexLogic
         if (!folder)
         {
             // I doesn't. Create new inventory folder.
+            InventoryFolder *parent = inventory->GetMyInventoryFolder();
             folder_id.Random();
-            InventoryFolder *new_cat = inventory->GetOrCreateNewFolder(folder_id, *inventory->GetRoot());
-            new_cat->SetName(cat_name);
-            
+            InventoryFolder *newFolder = inventory->GetOrCreateNewFolder(folder_id, *inventory->GetRoot());
+            newFolder->SetName(cat_name);
+
             // Notify the server about the new inventory folder.
-            rexserver_connection_->SendCreateInventoryFolder(inventory->GetRoot()->GetID(), folder_id, asset_type, cat_name);
+            rexserver_connection_->SendCreateInventoryFolder(parent->GetID(), folder_id, asset_type, cat_name);
         }
         else
             folder_id = folder->GetID();
@@ -563,6 +564,12 @@ namespace RexLogic
 
     void RexLogicModule::CreateRexInventoryFolders()
     {
+        if (!GetInventory().get())
+        {
+            LogError("Inventory doens't exist yet! Can't create folder to it.");
+            return;
+        }
+
         using namespace RexTypes;
         using namespace OpenSimProtocol;
 
@@ -580,12 +587,13 @@ namespace RexLogic
             if (!folder)
             {
                 // I doesn't. Create new inventory folder.
+                InventoryFolder *parent = inventory->GetMyInventoryFolder();
                 folder_id.Random();
-                InventoryFolder *new_cat = inventory->GetOrCreateNewFolder(folder_id, *inventory->GetRoot());
-                new_cat->SetName(cat_name);
+                InventoryFolder *newFolder = inventory->GetOrCreateNewFolder(folder_id, *parent);
+                newFolder->SetName(cat_name);
                 
                 // Notify the server about the new inventory folder.
-                rexserver_connection_->SendCreateInventoryFolder(inventory->GetRoot()->GetID(), folder_id, asset_type, cat_name);
+                rexserver_connection_->SendCreateInventoryFolder(parent->GetID(), folder_id, asset_type, cat_name);
             }
             else
                 folder_id = folder->GetID();

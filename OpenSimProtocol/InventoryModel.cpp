@@ -144,14 +144,19 @@ bool InventoryModel::setData(const QModelIndex &index, const QVariant &value, in
 */
 }
 
-InventoryFolder *InventoryModel::GetFirstChildFolderByName(const char *searchName)
+InventoryFolder *InventoryModel::GetFirstChildFolderByName(const char *searchName) const
 {
     return inventoryTreeRoot_->GetFirstChildFolderByName(searchName);
 }
 
-InventoryFolder *InventoryModel::GetChildFolderByID(const RexUUID &searchId)
+InventoryFolder *InventoryModel::GetChildFolderByID(const RexUUID &searchId) const
 {
     return inventoryTreeRoot_->GetChildFolderByID(searchId);
+}
+
+InventoryFolder *InventoryModel::GetMyInventoryFolder() const
+{
+    return inventoryTreeRoot_->GetFirstChildFolderByName("My Inventory");
 }
 
 InventoryFolder *InventoryModel::GetOrCreateNewFolder(const RexUUID &id, InventoryFolder &parent)
@@ -162,9 +167,8 @@ InventoryFolder *InventoryModel::GetOrCreateNewFolder(const RexUUID &id, Invento
         return existing;
 
     // Create a new folder.
-
-    InventoryFolder newFolder(id, "New Folder", &parent);
-    return static_cast<InventoryFolder *>(parent.AddChild(&newFolder));
+    InventoryFolder *newFolder = new InventoryFolder(id, "New Folder", &parent);
+    return static_cast<InventoryFolder *>(parent.AddChild(newFolder));
 }
 
 /*
