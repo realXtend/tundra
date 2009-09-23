@@ -2,6 +2,7 @@
 #include "Foundation.h"
 
 #include "QtUI.h"
+#include "User.h"
 
 #include <QtUiTools>
 #include <QFile>
@@ -53,7 +54,7 @@ namespace CommunicationUI
 		else
 		{
 			// Init login GUI
-			Login *loginWidget_ = new Login(this);
+			Login *loginWidget_ = new Login(this, this->currentMessage);
 			this->widget_ = loginWidget_->widget_;
 			this->widget_->setMinimumSize(440, 135);
 			QObject::connect(loginWidget_, SIGNAL( userdataSet(QString, int, QString, QString) ), this, SLOT( connectToServer(QString, int, QString, QString) ));
@@ -84,6 +85,11 @@ namespace CommunicationUI
 		this->layout_->setMargin(6);
 		this->layout_->addWidget(this->widget_);
 		this->setLayout(this->layout_);
+	}
+
+	void QtUI::loadConnectedUserData(User *userData)
+	{
+
 	}
 
 	void QtUI::setAllEnabled(bool enabled)
@@ -145,11 +151,14 @@ namespace CommunicationUI
 	void QtUI::connectionEstablished()
 	{
 		connectionStatus_->setText("Connected");
+		this->loadConnectedUserData(im_connection_->GetUser());
 	}
 
 	void QtUI::connectionFailed(QString &reason)
 	{
-		connectionStatus_->setText("Connecting to server failed: " + reason);
+		connecting_ = false;
+		this->currentMessage = reason;
+		this->loadUserInterface();
 	}
 
 
@@ -158,10 +167,10 @@ namespace CommunicationUI
 	// LOGIN CLASS
 	/////////////////////////////////////////////////////////////////////
 
-	Login::Login(QWidget *parent)
+	Login::Login(QWidget *parent, QString &message)
 		: QWidget(parent)
 	{
-		initWidget();
+		initWidget(message);
 		connectSignals();
 		this->show();
 	}
@@ -171,7 +180,7 @@ namespace CommunicationUI
 
 	}
 
-	void Login::initWidget()
+	void Login::initWidget(QString &message)
 	{
 		// Init widget from .ui file
 		QUiLoader loader;
@@ -180,6 +189,9 @@ namespace CommunicationUI
 		uiFile.close();
 
 		// Get GUI elements
+		labelStatus = this->widget_->findChild<QLabel *>("label_Status");
+		if (!message.isEmpty())
+			labelStatus->setText(message);
 		textEditServer_ = this->widget_->findChild<QLineEdit *>("lineEdit_Server");
 		textEditPort_ = this->widget_->findChild<QLineEdit *>("lineEdit_Port");
 		textEditUsername_ = this->widget_->findChild<QLineEdit *>("lineEdit_Username");

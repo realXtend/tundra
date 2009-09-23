@@ -29,8 +29,10 @@ namespace CommunicationUI
 
 	private:
 		void loadUserInterface();
+		void loadConnectedUserData(User *userData);
 		void setAllEnabled(bool enabled);
 
+		QString currentMessage;
 		QLayout *layout_;
 		QWidget *widget_;
 		QTabWidget *tabWidgetCoversations_;
@@ -58,16 +60,17 @@ namespace CommunicationUI
 	friend class QtUI;
 
 	public:
-		Login(QWidget *parent);
+		Login(QWidget *parent, QString &message);
 		~Login(void);
 
 	public slots:
 		void checkInput(bool clicked);
 
 	private:
-		void initWidget();
+		void initWidget(QString &message);
 		void connectSignals();
 
+		QLabel *labelStatus;
 		QLayout *layout_;
 		QWidget *widget_;
 		QLineEdit *textEditServer_;
