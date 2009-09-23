@@ -120,13 +120,6 @@ macro (use_modules)
     endforeach ()
 endmacro (use_modules)
 
-# include local module libraries
-macro (link_modules)
-    foreach (module_ ${ARGN})
-        target_link_libraries (${TARGET_NAME} ${module_})
-    endforeach ()
-endmacro (link_modules)
-
 # link directories
 macro (link_package PREFIX)
     target_link_libraries (${TARGET_NAME} ${${PREFIX}_LIBRARIES})
@@ -135,6 +128,13 @@ macro (link_package PREFIX)
         target_link_libraries (${TARGET_NAME} debug ${${PREFIX}_DEBUG_LIBRARIES})
     endif ()
 endmacro (link_package)
+
+# include local module libraries
+macro (link_modules)
+    foreach (module_ ${ARGN})
+        target_link_libraries (${TARGET_NAME} ${module_})
+    endforeach ()
+endmacro (link_modules)
 
 # manually find the debug libraries
 macro (find_debug_libraries PREFIX DEBUG_POSTFIX)
