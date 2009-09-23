@@ -51,10 +51,17 @@ namespace TpQt4Communication
 
 	TextChatSessionPtr Connection::CreateTextChatSession(Contact* contact)
 	{
-		LogInfo("Create TextChatSession object.");
-//		contact->
+		if (contact == NULL || contact->tp_contact_.isNull())
+		{
+			QString message = "Try to open text chat session with unvalid contacts.";
+			LogError(message.toStdString());
+			throw message;
+		}
+
+		
+		Tp::ReferencedHandles rhs =	contact->tp_contact_->handle();
 //		ReferencedHandles rhs = contactPtr->handle();
-		uint handle = 0; //rhs[0];
+		uint handle = rhs[0];
 
 		QVariantMap params;
 
@@ -63,6 +70,8 @@ namespace TpQt4Communication
 		params.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"), handle);
 
 		Tp::PendingChannel* p = tp_connection_->ensureChannel(params);
+
+		LogInfo("Create TextChatSession object.");
 		TextChatSession* session = new TextChatSession();
 
 		QObject::connect(p,
@@ -183,6 +192,13 @@ namespace TpQt4Communication
 		{
 			user_->AddContacts(new_contacts);
 		}
+
+		Tp::SimpleStatusSpecMap map = tp_connection_->allowedPresenceStatuses();
+		for (Tp::SimpleStatusSpecMap::iterator i = map.begin(); i != map.end(); ++i)
+		{
+
+		}
+
 		state_ = STATE_OPEN;
 		emit Connected();
 	}
@@ -206,7 +222,8 @@ namespace TpQt4Communication
 		LogInfo(message);
 		LogInfo("Create user.");
 		user_ = new User(tp_connection_);
-		state_ = STATE_OPEN;
+//		state_ = STATE_OPEN;
+		
 
 		QObject::connect(tp_connection_->requestsInterface(),
                 SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),

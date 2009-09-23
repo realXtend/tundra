@@ -56,6 +56,8 @@ namespace TpQt4Communication
 		std::string GetProtocol();
 		State GetState();
 
+		//! Open new text chat session with given contact
+		//! /throws QString object as error message if doesn't success
 		TextChatSessionPtr CreateTextChatSession(Contact* contact);
 		void CreateVoipSession();
 		void SendFriendRequest(Address to, std::string message = "");
