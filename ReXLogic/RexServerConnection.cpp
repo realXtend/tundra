@@ -667,6 +667,33 @@ namespace RexLogic
         FinishMessageBuilding(m);
     }
 
+    void RexServerConnection::SendFetchInventoryDescendents(
+        const RexTypes::RexUUID &folder_id,
+        const RexTypes::RexUUID &owner_id,
+        const int32_t &sort_order,
+        const bool &fetch_folders,
+        const bool &fetch_items)
+    {
+        if (!connected_)
+            return;
+
+        NetOutMessage *m = StartMessageBuilding(RexNetMsgFetchInventoryDescendents);
+        assert(m);
+
+        // AgentData
+        m->AddUUID(myInfo_.agentID);
+        m->AddUUID(myInfo_.sessionID);
+
+        // InventoryData
+        m->AddUUID(folder_id);
+        m->AddUUID(owner_id);
+        m->AddS32(sort_order);
+        m->AddBool(fetch_folders);
+        m->AddBool(fetch_items);
+
+        FinishMessageBuilding(m);
+    }
+
     std::string RexServerConnection::GetCapability(const std::string &name)
     {
         boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();

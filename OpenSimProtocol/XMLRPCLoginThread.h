@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /// @file XMLRPCLoginThread.h
-/// @brief
+/// @brief @brief XML-RPC login worker.
 
 #ifndef incl_XMLRPCLoginThread_h
 #define incl_XMLRPCLoginThread_h
@@ -20,10 +20,10 @@ namespace OpenSimProtocol
     public:
         XMLRPCLoginThread();
         ~XMLRPCLoginThread();
-        
+
         /// Thread entry point.
         void operator()();
-        
+
         /**
          * Sets up the XML-RPC login procedure using authentication server or direct rexserver depending of 
          * given @p callMethod param and @p authentication param. All data which will be got from authentication of
@@ -60,13 +60,13 @@ namespace OpenSimProtocol
 
         /// Change the state of the XML-RPC worker.
         void SetConnectionState(Connection::State state) { threadState_->state = state; }
-        
+
         ///@return State of connection.
         volatile Connection::State GetState() const;
-        
+
         ///@return The client parameters retreived from the XML-RPC reply.
         const ClientParameters &GetClientParameters() const { return threadState_->parameters; }
-        
+
         ///@return True, if the XML-RPC worker is ready.
         const bool IsReady() const { return ready_; }
 
@@ -76,13 +76,13 @@ namespace OpenSimProtocol
 
         /// Triggers the XML-RPC login procedure.
         bool beginLogin_;
-        
+
         /// Indicates that the XML-RPC worker is ready to perform.
         bool ready_;
-        
+
         /// Information which is received via the XML-RPC reply from the server.
         ConnectionThreadState *threadState_;
-        
+
         /// Information needed for the XML-RPC login procedure.
         std::string firstName_;
         std::string lastName_;

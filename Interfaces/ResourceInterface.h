@@ -3,6 +3,7 @@
 #ifndef incl_Interfaces_ResourceInterface_h
 #define incl_Interfaces_ResourceInterface_h
 
+#include "CoreTypes.h"
 #include "EventDataInterface.h"
 
 namespace Foundation

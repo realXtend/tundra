@@ -4,7 +4,7 @@
 namespace RexTypes
 {
 
-asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type)
+const asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type)
 {
     if (asset_type == ASSETTYPENAME_TEXTURE)
         return RexAT_Texture;
@@ -19,7 +19,7 @@ asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type)
     if (asset_type == ASSETTYPENAME_FLASH_ANIMATION)
         return RexAT_FlashAnimation;
 
-    return -1;
+    return RexAT_None;
 }
 
 const std::string& GetTypeNameFromAssetType(asset_type_t asset_type)
@@ -54,6 +54,23 @@ const std::string& GetInventoryTypeString(asset_type_t asset_type)
         return IT_FLASH_ANIMATION;
 
     return IT_UNKNOWN;
+}
+
+const inventory_type_t &GetInventoryTypeFromAssetType(asset_type_t asset_type)
+{
+    if (asset_type == RexTypes::RexAT_Texture)
+        return RexIT_Texture;
+    if (asset_type == RexTypes::RexAT_Mesh)
+        return RexIT_Object;
+    if (asset_type == RexTypes::RexAT_Skeleton)
+        return RexIT_Animation;
+    if (asset_type == RexTypes::RexAT_MaterialScript ||
+        asset_type == RexTypes::RexAT_ParticleScript)
+        return RexIT_OgreScript;
+    if (asset_type == RexTypes::RexAT_FlashAnimation)
+        return RexIT_FlashAnimation;
+
+    return RexIT_None;
 }
 
 const std::string& GetAssetTypeString(asset_type_t asset_type)

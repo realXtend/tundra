@@ -47,10 +47,9 @@
 
 #include "QtUtils.h"
 #include "AssetUploader.h"
-#include "Inventory.h"
+#include "InventoryModel.h"
+#include "InventoryWindow.h"
 #include "RexTypes.h"
-
-#include <QFileDialog>
 
 namespace RexLogic
 {
@@ -215,10 +214,13 @@ namespace RexLogic
         // Create the login window.
         loginWindow_ = new RexLoginWindow(framework_, this);
         connectionState_ = OpenSimProtocol::Connection::STATE_DISCONNECTED;
+
+        ///\note This won't be staying here.
+//        inventoryWindow_ = new InventoryWindow(framework_, this);
     }
 
     void RexLogicModule::DeleteScene(const std::string &name)
-    {        
+    {
         if (!framework_->HasScene(name))
         {
             LogWarning("Tried to delete scene, but it didn't exist!");
@@ -258,6 +260,8 @@ namespace RexLogic
         SAFE_DELETE (framework_handler_);
 
         SAFE_DELETE(loginWindow_);
+        ///\note This won't be staying here.
+//        SAFE_DELETE(inventoryWindow_);
 
         LogInfo("Module " + Name() + " uninitialized.");
     }
@@ -299,10 +303,10 @@ namespace RexLogic
 
             // interpolate & animate objects
             UpdateObjects(frametime);
-                
+
             // update avatar stuff (download requests etc.)
             avatar_->Update(frametime);
-                
+
             // Poll the connection state and update the info to the UI.
             /// \todo Move this to the Login UI class.
             OpenSimProtocol::Connection::State cur_state = rexserver_connection_->GetConnectionState();
@@ -311,14 +315,14 @@ namespace RexLogic
                 loginWindow_->UpdateConnectionStateToUI(cur_state);
                 connectionState_ = cur_state;
             }
-            
+
             /// \todo Move this to OpenSimProtocolModule.
             if (!rexserver_connection_->IsConnected() &&
                 rexserver_connection_->GetConnectionState() == OpenSimProtocol::Connection::STATE_INIT_UDP)
             {
                 rexserver_connection_->CreateUDPConnection();
             }
-            
+
             if (send_input_state_)
             {
                 send_input_state_ = false;
@@ -330,20 +334,20 @@ namespace RexLogic
                 else
                     GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
             }
-            
+
             if (rexserver_connection_->IsConnected())
             {
                 avatar_controllable_->AddTime(frametime);
                 camera_controllable_->AddTime(frametime);
-                    
+
                 // Update avatar name overlay positions.
                 GetAvatarHandler()->UpdateAvatarNameOverlayPositions();
-                
+
                 // Update environment-spesific visual effects.
                 GetEnvironmentHandler()->UpdateVisualEffects(frametime);
             }
         }
-        
+
         RESETPROFILER;
     }
 
@@ -470,6 +474,7 @@ namespace RexLogic
     Console::CommandResult RexLogicModule::UploadAsset(const Core::StringVector &params)
     {
         using namespace RexTypes;
+        using namespace OpenSimProtocol;
 
         std::string name = "(No Name)";
         std::string description = "(No Description)";
@@ -505,26 +510,26 @@ namespace RexLogic
             asset_uploader_->SetUploadCapability(upload_url);
         }
 
-        boost::shared_ptr<Inventory> inventory = rexserver_connection_->GetInfo().inventory;
+        InventoryPtr inventory = GetInventory();
 
         // Get the category name for this asset type.
         std::string cat_name = GetCategoryNameForAssetType(asset_type);
         RexUUID folder_id;
 
         // Check out if this inventory category exists.
-        InventoryFolder *folder = inventory->GetFirstSubFolderByName(cat_name.c_str());
+        InventoryFolder *folder = inventory->GetFirstChildFolderByName(cat_name.c_str());
         if (!folder)
         {
             // I doesn't. Create new inventory folder.
             folder_id.Random();
-            InventoryFolder *new_cat = inventory->GetOrCreateNewFolder(folder_id, inventory->root);
-            new_cat->name = cat_name;
+            InventoryFolder *new_cat = inventory->GetOrCreateNewFolder(folder_id, *inventory->GetRoot());
+            new_cat->SetName(cat_name);
             
             // Notify the server about the new inventory folder.
-            rexserver_connection_->SendCreateInventoryFolder(inventory->root.id, folder_id, asset_type, cat_name);
+            rexserver_connection_->SendCreateInventoryFolder(inventory->GetRoot()->GetID(), folder_id, asset_type, cat_name);
         }
         else
-            folder_id = folder->id;
+            folder_id = folder->GetID();
 
         // Upload.
         Core::Thread thread(boost::bind(&AssetUploader::UploadFile, asset_uploader_,
@@ -550,10 +555,8 @@ namespace RexLogic
             asset_uploader_->SetUploadCapability(upload_url);
         }
 
-        boost::shared_ptr<Inventory> inventory = rexserver_connection_->GetInfo().inventory;
-
         // Multiupload.
-        Core::Thread thread(boost::bind(&AssetUploader::UploadFiles, asset_uploader_, filenames, inventory.get()));
+        Core::Thread thread(boost::bind(&AssetUploader::UploadFiles, asset_uploader_, filenames, GetInventory().get()));
 
         return Console::ResultSuccess();
     }
@@ -561,6 +564,7 @@ namespace RexLogic
     void RexLogicModule::CreateRexInventoryFolders()
     {
         using namespace RexTypes;
+        using namespace OpenSimProtocol;
 
         const char *asset_types[] = { "Texture", "Mesh", "Skeleton", "MaterialScript", "ParticleScript", "FlashAnimation" };
         asset_type_t asset_type;
@@ -571,20 +575,20 @@ namespace RexLogic
             RexUUID folder_id;
 
             // Check out if this inventory category exists.
-            boost::shared_ptr<Inventory> inventory = rexserver_connection_->GetInfo().inventory;
-            InventoryFolder *folder = inventory->GetFirstSubFolderByName(cat_name.c_str());
+            InventoryPtr inventory = GetInventory();
+            InventoryFolder *folder = inventory->GetFirstChildFolderByName(cat_name.c_str());
             if (!folder)
             {
                 // I doesn't. Create new inventory folder.
                 folder_id.Random();
-                InventoryFolder *new_cat = inventory->GetOrCreateNewFolder(folder_id, inventory->root);
-                new_cat->name = cat_name;
+                InventoryFolder *new_cat = inventory->GetOrCreateNewFolder(folder_id, *inventory->GetRoot());
+                new_cat->SetName(cat_name);
                 
                 // Notify the server about the new inventory folder.
-                rexserver_connection_->SendCreateInventoryFolder(inventory->root.id, folder_id, asset_type, cat_name);
+                rexserver_connection_->SendCreateInventoryFolder(inventory->GetRoot()->GetID(), folder_id, asset_type, cat_name);
             }
             else
-                folder_id = folder->id;
+                folder_id = folder->GetID();
         }
     }
 
@@ -668,6 +672,11 @@ namespace RexLogic
         return environment_;
     }
 
+    InventoryPtr RexLogicModule::GetInventory() const
+    {
+        return rexserver_connection_->GetInfo().inventory;
+    }
+
     void RexLogicModule::SetCurrentActiveScene(Scene::ScenePtr scene)
     {
         activeScene_ = scene;
@@ -705,7 +714,7 @@ namespace RexLogic
 
         return GetCurrentActiveScene();
     }
-    
+
     Scene::EntityPtr RexLogicModule::GetEntityWithComponent(Core::entity_id_t entityid, const std::string &requiredcomponent)
     {
         if (!activeScene_)
@@ -715,8 +724,8 @@ namespace RexLogic
         if(entity && entity->GetComponent(requiredcomponent))
             return entity;
         else
-            return Scene::EntityPtr();            
-    }    
+            return Scene::EntityPtr();
+    }
 
     Scene::EntityPtr RexLogicModule::GetPrimEntity(const RexUUID &entityuuid)
     {
@@ -747,7 +756,7 @@ namespace RexLogic
         if (iter != UUIDs_.end())
             UUIDs_.erase(iter);
     }
-    
+
     void RexLogicModule::UpdateObjects(Core::f64 frametime)
     {
         //! \todo probably should not be directly in RexLogicModule
@@ -766,8 +775,8 @@ namespace RexLogic
         {
             Scene::Entity &entity = **iter;
             
-            Foundation::ComponentPtr ogrepos_ptr = entity.GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());              
-            Foundation::ComponentPtr netpos_ptr = entity.GetComponent(EC_NetworkPosition::NameStatic());              
+            Foundation::ComponentPtr ogrepos_ptr = entity.GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+            Foundation::ComponentPtr netpos_ptr = entity.GetComponent(EC_NetworkPosition::NameStatic());
             if (ogrepos_ptr && netpos_ptr)
             {
                 OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(ogrepos_ptr.get()); 
@@ -782,7 +791,7 @@ namespace RexLogic
                     // acceleration disabled until figured out what goes wrong. possibly mostly irrelevant with OpenSim server
                     // netpos.velocity_ += netpos.accel_ * frametime;
                     
-                    netpos.position_ += netpos.velocity_ * frametime;            
+                    netpos.position_ += netpos.velocity_ * frametime;
                     
                     // Interpolate rotation
                     
@@ -796,9 +805,9 @@ namespace RexLogic
                         rot_quat2.fromAngleAxis(netpos.rotvel_.y * 0.5 * frametime, Core::Vector3df(0,1,0));
                         rot_quat3.fromAngleAxis(netpos.rotvel_.z * 0.5 * frametime, Core::Vector3df(0,0,1));
                         
-                        netpos.rotation_ *= rot_quat1;                  
-                        netpos.rotation_ *= rot_quat2; 
-                        netpos.rotation_ *= rot_quat3;                   
+                        netpos.rotation_ *= rot_quat1;
+                        netpos.rotation_ *= rot_quat2;
+                        netpos.rotation_ *= rot_quat3;
                     }
                     
                     // Dampened (smooth) movement

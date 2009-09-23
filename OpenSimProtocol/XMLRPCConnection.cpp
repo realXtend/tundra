@@ -8,21 +8,6 @@
 
 #include "HttpRequest.h"
 
-namespace
-{
-/// The writer callback function used by cURL.
-size_t WriteCallback(char *data, size_t size, size_t nmemb, std::vector<char> *buffer)  
-{  
-	if (buffer)
-	{
-		buffer->insert(buffer->end(), data, data + size * nmemb);
-		return size * nmemb;
-	}
-	else
-        return 0;
-}
-}
-
 XMLRPCConnection::XMLRPCConnection(const std::string& address, const std::string& port)
 {
     SetServerAddress(address, port);

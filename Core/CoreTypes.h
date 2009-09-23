@@ -17,6 +17,12 @@ template <class T> inline bool _isnan(T f) { return f != f; }
 
 #endif 
 
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/condition.hpp>
+
 namespace Core
 {
     typedef unsigned char u8;

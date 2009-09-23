@@ -17,8 +17,6 @@ This project has the following dependencies:
 
 - PythonQt 1.1 or newer: http://sourceforge.net/projects/pythonqt/
 
-- MD5 using C++ 2005-02-15, http://www.md5hashing.com/c++/. This project is used by building the project source files as part of the main project build. Contains the following four files: md5.h, md5.c, md5wrapper.h, md5wrapper.c that are located in OpenSimProtocol/.
-
 - XMLRPC-EPI 2008-04-16, http://xmlrpc-epi.sourceforge.net/main.php?t=summary is used as a dynamic library.  XMLRPC-EPI depends on LibIconv and eXpat. To build this, first build the expat project.
 
 - eXpat 2.0.1: http://expat.sourceforge.net/ . This is used as a dynamic library, and is located in the directory Expat 2.0.1/ in SVN. 

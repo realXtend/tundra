@@ -23,8 +23,7 @@
 #include "Primitive.h"
 #include "Sky.h"
 #include "Environment.h"
-
-using namespace Core;
+#include "Inventory.h"
 
 namespace
 {
@@ -74,7 +73,6 @@ namespace RexLogic
 
     NetworkEventHandler::~NetworkEventHandler()
     {
-
     }
 
     bool NetworkEventHandler::HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
@@ -83,18 +81,44 @@ namespace RexLogic
         OpenSimProtocol::NetworkEventInboundData *netdata = checked_static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
         switch(event_id)
         {
-            case RexNetMsgRegionHandshake:              return HandleOSNE_RegionHandshake(netdata); break;
-            case RexNetMsgAgentMovementComplete:        return HandleOSNE_AgentMovementComplete(netdata); break;
-            case RexNetMsgAvatarAnimation:              return rexlogicmodule_->GetAvatarHandler()->HandleOSNE_AvatarAnimation(netdata); break;
-            case RexNetMsgGenericMessage:               return HandleOSNE_GenericMessage(netdata); break;
-            case RexNetMsgLogoutReply:                  return HandleOSNE_LogoutReply(netdata); break;
-            case RexNetMsgImprovedTerseObjectUpdate:    return HandleOSNE_ImprovedTerseObjectUpdate(netdata); break;
-            case RexNetMsgKillObject:                   return HandleOSNE_KillObject(netdata); break;               
-            case RexNetMsgObjectUpdate:                 return HandleOSNE_ObjectUpdate(netdata); break;
-            case RexNetMsgObjectProperties:             return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_ObjectProperties(netdata); break;
-            case RexNetMsgLayerData:                    return rexlogicmodule_->GetTerrainHandler()->HandleOSNE_LayerData(netdata); break;
-            case RexNetMsgSimulatorViewerTimeMessage:   return rexlogicmodule_->GetEnvironmentHandler()->HandleOSNE_SimulatorViewerTimeMessage(netdata); break;
-            default:                                    return false; break;
+        case RexNetMsgRegionHandshake:
+            return HandleOSNE_RegionHandshake(netdata);
+
+        case RexNetMsgAgentMovementComplete:
+            return HandleOSNE_AgentMovementComplete(netdata);
+
+        case RexNetMsgAvatarAnimation:
+            return rexlogicmodule_->GetAvatarHandler()->HandleOSNE_AvatarAnimation(netdata);
+
+        case RexNetMsgGenericMessage:
+            return HandleOSNE_GenericMessage(netdata);
+
+        case RexNetMsgLogoutReply:
+            return HandleOSNE_LogoutReply(netdata);
+
+        case RexNetMsgImprovedTerseObjectUpdate:
+            return HandleOSNE_ImprovedTerseObjectUpdate(netdata);
+
+        case RexNetMsgKillObject:
+            return HandleOSNE_KillObject(netdata);
+
+        case RexNetMsgObjectUpdate:
+            return HandleOSNE_ObjectUpdate(netdata);
+
+        case RexNetMsgObjectProperties:
+            return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_ObjectProperties(netdata);
+
+        case RexNetMsgLayerData:
+            return rexlogicmodule_->GetTerrainHandler()->HandleOSNE_LayerData(netdata);
+
+        case RexNetMsgSimulatorViewerTimeMessage:
+            return rexlogicmodule_->GetEnvironmentHandler()->HandleOSNE_SimulatorViewerTimeMessage(netdata);
+
+        case RexNetMsgInventoryDescendents:
+            return HandleOSNE_InventoryDescendents(netdata);
+
+        default:
+            break;
         }
         
         return false;
@@ -117,18 +141,22 @@ namespace RexLogic
         if (instance_count > 0)
         {
             data->message->SkipToFirstVariableByName("PCode");
-
             uint8_t pcode = data->message->ReadU8();
             switch(pcode)
             {
-                case 0x09: result = rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_ObjectUpdate(data); break;
-                case 0x2f: result = rexlogicmodule_->GetAvatarHandler()->HandleOSNE_ObjectUpdate(data); break;
+            case 0x09:
+                result = rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_ObjectUpdate(data);
+                break;
+            
+            case 0x2f:
+                result = rexlogicmodule_->GetAvatarHandler()->HandleOSNE_ObjectUpdate(data);
+                break;
             }
         }
         
         return result;
     }
-    
+
     bool NetworkEventHandler::HandleOSNE_GenericMessage(OpenSimProtocol::NetworkEventInboundData* data)
     {        
         data->message->ResetReading();    
@@ -148,8 +176,8 @@ namespace RexLogic
         else
             return false;    
     }
-    
-    bool NetworkEventHandler::HandleOSNE_RegionHandshake(OpenSimProtocol::NetworkEventInboundData* data)    
+
+    bool NetworkEventHandler::HandleOSNE_RegionHandshake(OpenSimProtocol::NetworkEventInboundData* data)
     {
         size_t bytesRead = 0;
 
@@ -187,11 +215,11 @@ namespace RexLogic
         terrainHandler->SetTerrainTextures(terrain);
 
         const OpenSimProtocol::ClientParameters& client = sp->GetClientParameters();
-        rexlogicmodule_->GetServerConnection()->SendRegionHandshakeReplyPacket(client.agentID, client.sessionID, 0);   
-        return false;  
+        rexlogicmodule_->GetServerConnection()->SendRegionHandshakeReplyPacket(client.agentID, client.sessionID, 0);
+        return false;
     } 
 
-    bool NetworkEventHandler::HandleOSNE_LogoutReply(OpenSimProtocol::NetworkEventInboundData* data)   
+    bool NetworkEventHandler::HandleOSNE_LogoutReply(OpenSimProtocol::NetworkEventInboundData* data)
     {
         data->message->ResetReading();
         RexUUID aID = data->message->ReadUUID();
@@ -205,8 +233,8 @@ namespace RexLogic
             rexlogicmodule_->DeleteScene("World");
         }
         
-        return false;   
-    } 
+        return false;
+    }
   
     bool NetworkEventHandler::HandleOSNE_AgentMovementComplete(OpenSimProtocol::NetworkEventInboundData* data)
     {
@@ -261,9 +289,9 @@ namespace RexLogic
                 case 60:
                     localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[0]); 
                     if (rexlogicmodule_->GetPrimEntity(localid)) 
-                        rexlogicmodule_->GetPrimitiveHandler()->HandleTerseObjectUpdateForPrim_60bytes(bytes); 
+                        rexlogicmodule_->GetPrimitiveHandler()->HandleTerseObjectUpdateForPrim_60bytes(bytes);
                     else if (rexlogicmodule_->GetAvatarEntity(localid))
-                        rexlogicmodule_->GetAvatarHandler()->HandleTerseObjectUpdateForAvatar_60bytes(bytes);                            
+                        rexlogicmodule_->GetAvatarHandler()->HandleTerseObjectUpdateForAvatar_60bytes(bytes);
                     break;
                 default:    
                     std::stringstream ss; 
@@ -280,19 +308,113 @@ namespace RexLogic
     bool NetworkEventHandler::HandleOSNE_KillObject(OpenSimProtocol::NetworkEventInboundData* data)
     {
         data->message->ResetReading();
-        
+
         // Variable block
         size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
         for(size_t i = 0; i < instance_count; ++i)
         {
             uint32_t killedobjectid = data->message->ReadU32();
 
-            if(rexlogicmodule_->GetPrimEntity(killedobjectid))
+            if (rexlogicmodule_->GetPrimEntity(killedobjectid))
                 return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_KillObject(killedobjectid);
-            else if(rexlogicmodule_->GetAvatarEntity(killedobjectid))    
-                return rexlogicmodule_->GetAvatarHandler()->HandleOSNE_KillObject(killedobjectid);            
+            if (rexlogicmodule_->GetAvatarEntity(killedobjectid))
+                return rexlogicmodule_->GetAvatarHandler()->HandleOSNE_KillObject(killedobjectid);
         }
-        
+
         return false;
+    }
+
+    bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::NetworkEventInboundData* data)
+    {
+        return false;
+/*
+        NetInMessage &msg = *data->message;
+        msg.ResetReading();
+
+        // AgentData
+        RexUUID agent_id = msg.ReadUUID();
+        RexUUID session_id = msg.ReadUUID();
+
+        // Check that this packet is for us.
+        if (agent_id != rexlogicmodule_->GetServerConnection()->GetInfo().agentID && 
+            session_id != rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
+        {
+            RexLogicModule::LogError("Received InventoryDescendents packet with wrong AgentID and/or SessionID.");
+            return false;
+        }
+
+        //Get Inventory pointer.
+        InventoryPtr inventory = rexlogicmodule_->GetInventory();
+
+        msg.ReadUUID(); //OwnerID, owner of the folders creatd.
+        msg.ReadS32(); //Version, version of the folder for caching
+        int32_t descendents = msg.ReadS32(); //Descendents, count to help with caching
+        ///\todo Crashes here sometimes, can't read the instance counts right if they are zero.
+        if (descendents == 0)
+            return false;
+
+        // FolderData, Variable block.
+        // Contains sub-folders that the requested folder contains.
+        size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+        for(size_t i = 0; i < instance_count; ++i)
+        {
+            RexUUID folder_id = msg.ReadUUID();
+            RexUUID parent_id = msg.ReadUUID();
+            int8_t type = msg.ReadS8();
+            std::string folder_name = msg.ReadString();
+
+            InventoryFolder *parent = 0, *folder = 0;
+            parent = inventory->GetFirstSubFolderByID(parent_id);
+            assert(parent && "Received InventoryDescendents with parent id to a non-existing folder");
+
+            folder = inventory->GetOrCreateNewFolder(folder_id, *parent);
+            folder->SetName(folder_name);
+            folder->SetType(type);
+            std::cout << "Folder: " << folder_name << std::endl;
+        }
+
+        // ItemData, Variable block.
+        // Contains items that the requested folder contains.
+        instance_count = msg.ReadCurrentBlockInstanceCount();
+        for(size_t i = 0; i < instance_count; ++i)
+        {
+            RexUUID item_id = msg.ReadUUID();
+            RexUUID folder_id = msg.ReadUUID();
+
+            ///\todo Decide if we want to use these permission related stuff?
+            msg.SkipToNextVariable(); //msg.ReadUUID(); //CreatorID
+            msg.SkipToNextVariable(); //msg.ReadUUID(); //OwnerID
+            msg.SkipToNextVariable(); //msg.ReadUUID(); //GroupID
+            msg.SkipToNextVariable(); //msg.ReadU32(); //BaseMask
+            msg.SkipToNextVariable(); //msg.ReadU32(); //OwnerMask
+            msg.SkipToNextVariable(); //msg.ReadU32(); //GroupMask
+            msg.SkipToNextVariable(); //msg.ReadU32(); //EveryoneMask
+            msg.SkipToNextVariable(); //msg.ReadU32(); //NextOwnerMask
+            msg.SkipToNextVariable(); //msg.ReadBool(); //GroupOwned
+
+            RexUUID asset_id = msg.ReadUUID(); //AssetID
+            asset_type_t at = msg.ReadS8(); //Type (asset type?)
+            inventory_type_t it = msg.ReadS8(); //InvType
+
+            msg.SkipToNextVariable(); //msg.ReadU32(); //Flags (what are these?)
+            msg.SkipToNextVariable(); // SaleType, not interested.
+            msg.SkipToNextVariable(); // SalePrice, not interested.
+
+            std::string item_name = msg.ReadString();
+            std::string item_desc = msg.ReadString();
+            //msg.ReadS32(); //CreationDate
+            //msg.ReadU32(); //CRC
+
+            // Add the new item to the inventory.
+            InventoryItem item(item_id, asset_id, at);
+            std::cout << "Item: " << item_name << std::endl;
+            item.SetName(item_name);
+            item.SetDescription(item_desc);
+            InventoryFolder *folder = inventory->GetFirstSubFolderByID(folder_id);
+            folder->AddItem(item);
+        }
+
+        return false;
+*/
     }
 }
