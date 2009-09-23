@@ -34,7 +34,7 @@
            <property name="font">
             <font>
              <family>Plantagenet Cherokee</family>
-             <pointsize>20</pointsize>
+             <pointsize>16</pointsize>
              <weight>50</weight>
              <bold>false</bold>
             </font>
@@ -67,18 +67,6 @@
              <property name="enabled">
               <bool>true</bool>
              </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>150</width>
-               <height>0</height>
-              </size>
-             </property>
              <property name="font">
               <font>
                <pointsize>10</pointsize>
@@ -86,6 +74,9 @@
              </property>
              <property name="styleSheet">
               <string>color: rgb(80, 129, 223);</string>
+             </property>
+             <property name="text">
+              <string>set status message here...</string>
              </property>
              <property name="frame">
               <bool>false</bool>
@@ -102,7 +93,7 @@
            <property name="sizeHint" stdset="0">
             <size>
              <width>40</width>
-             <height>20</height>
+             <height>5</height>
             </size>
            </property>
           </spacer>
@@ -165,13 +156,13 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,3">
          <item>
           <widget class="QListWidget" name="listWidget_Friends">
-           <property name="maximumSize">
+           <property name="minimumSize">
             <size>
-             <width>100</width>
-             <height>16777215</height>
+             <width>150</width>
+             <height>0</height>
             </size>
            </property>
            <property name="palette">
@@ -217,7 +208,7 @@
           </widget>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
+          <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0">
            <item>
             <widget class="QTabWidget" name="tabWidget_Conversations">
              <property name="palette">

@@ -6,7 +6,11 @@
 
 #include <QtGui>
 #include "CommunicationManager.h"
+
 #include "Connection.h"
+#include "TextChatSession.h"
+#include "User.h"
+#include "Contact.h"
 
 using namespace TpQt4Communication;
 
@@ -29,6 +33,7 @@ namespace CommunicationUI
 		void managerReady();
 		void connectionEstablished();
 		void connectionFailed(QString &reason);
+		void startNewChat(QListWidgetItem *clickedItem);
 
 	private:
 		void loadUserInterface(bool connected);
@@ -98,11 +103,14 @@ namespace CommunicationUI
 	friend class QtUI;
 
 	public:
-		Conversation(QWidget *parent); // Add as inparam also the "conversation object" from mattiku
+		Conversation(QWidget *parent, TextChatSessionPtr chatSession, Contact *contact); // Add as inparam also the "conversation object" from mattiku
 		~Conversation(void);
 
 	private:
 		void initWidget();
+
+		TextChatSessionPtr chatSession_;
+		Contact *contact_;
 
 		QLayout *layout_;
 		QWidget *widget_;
@@ -112,8 +120,10 @@ namespace CommunicationUI
 
 	// CUSTOM QListWidgetItem CLASS
 
-	class ContactListItem : public QListWidgetItem
+	class ContactListItem : public QObject, QListWidgetItem
 	{
+
+	Q_OBJECT
 
 	friend class QtUI;
 
@@ -121,7 +131,12 @@ namespace CommunicationUI
 		ContactListItem(QString &name, QString &status, QString &statusmessage, Contact *contact);
 		~ContactListItem(void);
 
+	public slots:
+		void statusChanged();
+
 	private:
+		void updateItem();
+
 		QString name_;
 		QString status_;
 		QString statusmessage_;
