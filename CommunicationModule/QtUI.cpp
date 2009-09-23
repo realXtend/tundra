@@ -78,12 +78,12 @@ namespace CommunicationUI
 
 	void QtUI::loadConnectedUserData(User *userData)
 	{
-		// USE WHEN THIS RETURNS ACTUAL DATA
-		// labelUsername_->setText(QString(userData->GetUserID().c_str()));
+		labelUsername_->setText(QString(userData->GetUserID().c_str()));
 
 		listWidgetFriends_->clear();
 		ContactVector initialContacts = userData->GetContacts();
 		ContactVector::const_iterator itr;
+
 		for( itr=initialContacts.begin(); itr!=initialContacts.end(); itr++ )
 		{
 			Contact *contact = (*itr);
@@ -92,9 +92,10 @@ namespace CommunicationUI
 																QString(contact->GetPresenceMessage().c_str()), 
 																contact );
 			QObject::connect((QObject *)contact, SIGNAL( StateChanged() ), contactItem, SLOT( statusChanged() ));
-			QObject::connect(listWidgetFriends_, SIGNAL( itemDoubleClicked(QListWidgetItem) ), this, SLOT( startNewChat(QListWidgetItem) )); 
 			listWidgetFriends_->addItem(contactItem);
 		}
+
+		QObject::connect(this->listWidgetFriends_, SIGNAL( itemDoubleClicked(QListWidgetItem *) ), this, SLOT( startNewChat(QListWidgetItem *) )); 
 	}
 
 	void QtUI::setAllEnabled(bool enabled)
@@ -115,7 +116,6 @@ namespace CommunicationUI
 	void QtUI::connectToServer(QString server, int port, QString username, QString password)
 	{
 		loadUserInterface(true);
-		labelUsername_->setText(username + "@" + server); // remove when username getting works
 		connectionStatus_->setText("Initializing manager...");
 
 		// Connect to IM server
@@ -138,13 +138,13 @@ namespace CommunicationUI
 			connectionStatus_->setText("Initializing manager...");
 			QString message = "Communication manager initialize error."; 
 			connectionFailed(message);
-			return;
 		}
 		else
 		{
 			QObject::connect((QObject *)commManager_, SIGNAL( Ready() ), this, SLOT( managerReady() ));
 			QObject::connect((QObject *)commManager_, SIGNAL( Error(QString &) ), this, SLOT( connectionFailed(QString &) ));
 		}
+
 	}
 
 	void QtUI::managerReady()
