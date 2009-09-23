@@ -185,7 +185,9 @@ macro (sagase_configure_package PREFIX)
         set (${PREFIX}_PATH_NAMES ${PKG_NAMES} ".")
 
         # generate a combination of possible search paths
-        sagase_generate_paths (include_paths library_paths NAMES ${${PREFIX}_PATH_NAMES} PREFIXES ${PKG_PREFIXES})
+        sagase_generate_paths (include_paths library_paths 
+            NAMES ${${PREFIX}_PATH_NAMES} 
+            PREFIXES ${PKG_PREFIXES})
 
         # all C and C++ headers
         set (HEADER_POSTFIXES ".h" ".hpp" ".hh" ".hxx")
@@ -207,28 +209,42 @@ macro (sagase_configure_package PREFIX)
             # get header path
             foreach (pathnames_ ${${PREFIX}_PATH_NAMES})
                 foreach (header_extension_ ${HEADER_POSTFIXES})
-                    find_path (${PREFIX}_${component_}_INCLUDE_DIR ${pathnames_}/${component_}${header_extension_} ${include_paths})
+                    find_path (${PREFIX}_${component_}_INCLUDE_DIR 
+                        ${pathnames_}/${component_}${header_extension_} 
+                        ${include_paths})
                     
                     if (${PREFIX}_${component_}_INCLUDE_DIR)
-                        set (${PREFIX}_INCLUDE_DIRS ${${PREFIX}_INCLUDE_DIRS} ${${PREFIX}_${component_}_INCLUDE_DIR})
+                        set (${PREFIX}_INCLUDE_DIRS 
+                            ${${PREFIX}_INCLUDE_DIRS} 
+                            ${${PREFIX}_${component_}_INCLUDE_DIR})
                     endif ()
                 endforeach ()
             endforeach ()
 
             # get library path
             foreach (lib_extension_ ${LIB_POSTFIXES})
-                find_path (${PREFIX}_${component_}_LIBRARY_DIR ${LIB_PREFIX}${component_}${lib_extension_} ${library_paths})
+                find_path (${PREFIX}_${component_}_LIBRARY_DIR 
+                    ${LIB_PREFIX}${component_}${lib_extension_} 
+                    ${library_paths})
 
                 if (${PREFIX}_${component_}_LIBRARY_DIR)
-                    set (${PREFIX}_LIBRARIES ${${PREFIX}_LIBRARIES} ${component_})
-                    set (${PREFIX}_LIBRARY_DIRS ${${PREFIX}_LIBRARY_DIRS} ${${PREFIX}_${component_}_LIBRARY_DIR})
+                    set (${PREFIX}_LIBRARIES 
+                        ${${PREFIX}_LIBRARIES} 
+                        ${component_})
+
+                    set (${PREFIX}_LIBRARY_DIRS 
+                        ${${PREFIX}_LIBRARY_DIRS} 
+                        ${${PREFIX}_${component_}_LIBRARY_DIR})
                 endif ()
             endforeach ()
         endforeach ()
     endif ()
 
     # stop process if nothing is found through any means
-    if (NOT found_ AND NOT ${PREFIX}_INCLUDE_DIRS AND NOT ${PREFIX}_LIBRARY_DIRS AND NOT ${PREFIX}_LIBRARIES)
+    if (NOT found_ 
+            AND NOT ${PREFIX}_INCLUDE_DIRS 
+            AND NOT ${PREFIX}_LIBRARY_DIRS 
+            AND NOT ${PREFIX}_LIBRARIES)
         message (FATAL_ERROR "!! sagase: unable to configure " ${PREFIX}) 
     endif ()
     
