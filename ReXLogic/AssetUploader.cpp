@@ -6,12 +6,13 @@
 #include "StableHeaders.h"
 #include "AssetUploader.h"
 #include "RexLogicModule.h"
-
-#include "curl/curl.h"
-#include "openjpeg.h"
+#include "HttpRequest.h"
+#include "LLSDUtilities.h"
 #include "RexUUID.h"
-#include "Inventory.h"
+#include "InventoryModel.h"
 
+#include "openjpeg.h"
+#include "curl/curl.h"
 #include <QImage>
 
 const unsigned int curlTimeout = 5;
@@ -205,14 +206,14 @@ namespace RexLogic
 
 AssetUploader::AssetUploader()
 {
-    curl_global_init(CURL_GLOBAL_ALL);
-    curl_ = curl_easy_init();
+//    curl_global_init(CURL_GLOBAL_ALL);
+//    curl_ = curl_easy_init();
     uploadCapability_ = "";
 }
 
 AssetUploader::~AssetUploader()
 {
-    curl_easy_cleanup(curl_);
+//    curl_easy_cleanup(curl_);
 }
 
 void AssetUploader::UploadFile(
@@ -234,33 +235,49 @@ void AssetUploader::UploadFile(
     std::string asset_xml = CreateNewFileAgentInventoryXML(at_str, it_str, folder_id.ToString(), name, description);
 
     // Post NewFileAgentInventory message informing the server about upcoming asset upload.
-    std::vector<char> response;
+    HttpUtilities::HttpRequest request;
+    request.SetUrl(uploadCapability_);
+    request.SetMethod(HttpUtilities::HttpRequest::Post);
+    request.SetRequestData("application/xml", asset_xml);
+    request.Perform();
+    
+    if (!request.GetSuccess())
+    {
+        RexLogicModule::LogError(request.GetReason());
+        return;
+    }
+
+    std::vector<Core::u8> response;
+    response = request.GetResponseData();
+
+    if (response.size() == 0)
+    {
+        RexLogicModule::LogError("Size of the response data to \"NewFileAgentInventory\" message was zero.");
+        return;
+    }
+
+/*    std::vector<char> response;
     bool success = HttpPostNewFileAgentInventory(uploadCapability_, &asset_xml[0], asset_xml.size(), &response);
     if (!success)
-        return;
+        return;*/
 
     response.push_back('\0');
-    std::string response_str = &response[0];
+    std::string response_str = (char *)&response[0];
 
-    // Parse the upload caps from the response.    
-    ///\todo Make non-harcoded when the LLSD XML-parser is ready.
-    /* Response XML is something like this:
-     * <llsd><map><key>uploader</key><string>http://192.168.1.144:9000/CAPS/d25ff455-4b93-40d0-8114-f8b5024e5953</string>
-     * <key>state</key><string>upload</string></map></llsd>  
-     */
-    size_t pos = response_str.find("http", 0);
-    if (pos == std::string::npos)
+    // Parse the upload url from the response.
+    std::map<std::string, std::string> llsd_map = RexTypes::ParseLLSDMap(response_str);
+    std::string upload_url = llsd_map["uploader"];
+    if (upload_url == "")
     {
         RexLogicModule::LogError("Invalid response data for uploading an asset.");
         return;
     }
 
-    std::string upload_url = response_str.substr(pos, 67);
-
     // Open the file.
     std::filebuf *pbuf;
     size_t size;
     char *buffer;
+    std::vector<Core::u8> buffer_vec;
 
     // If the file is texture, use QImage and J2k encoding.
     if (asset_type == RexTypes::RexAT_Texture)
@@ -286,9 +303,10 @@ void AssetUploader::UploadFile(
 
         pbuf = file.rdbuf();
         size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
+        buffer_vec.resize(size);
         pbuf->pubseekpos(0, std::ios::in);
-        buffer = new char[size];
-        pbuf->sgetn(buffer, size);
+        //buffer = new char[size];
+        pbuf->sgetn((char *)&buffer_vec[0], size);
         file.close();
     }
 
@@ -296,38 +314,47 @@ void AssetUploader::UploadFile(
     response_str.clear();
 
     // Upload the file.
-    success = HttpPostFileUpload(upload_url, buffer, size, &response);
+/*    success = HttpPostFileUpload(upload_url, buffer, size, &response);
     if (!success)
+        return;*/
+
+    HttpUtilities::HttpRequest request2;
+    request2.SetUrl(upload_url);
+    request2.SetMethod(HttpUtilities::HttpRequest::Post);
+    request2.SetRequestData("application/octet-stream", buffer_vec);
+    request2.Perform();
+    
+    if (!request2.GetSuccess())
+    {
+        RexLogicModule::LogError("HTTP POST asset upload did not succeed. " + request.GetReason());
         return;
+    }
 
-    response_str = &response[0];
+    response = request2.GetResponseData();
 
-    // Extract the asset & inventory id's from the response xml.
-    // <llsd><map><key>new_asset</key><string>2d6c12e7-cdbe-41b5-9870-2cce584aae9a</string><key>new_inventory_item</key>
-    // <uuid>ca74a87a-f028-4106-b2be-31405a2222c1</uuid><key>state</key><string>complete</string></map></llsd>
-    ///\todo Make non-harcoded if/when the LLSD XML-parser is ready.
-    std::string ass = "new_asset";
-    std::string inv = "new_inventory_item";
-    const int uuid_str_len = 36;
-    size_t a_pos = response_str.find(ass, 0);
-    size_t i_pos = response_str.find(inv, 0);
-    if ((a_pos == std::string::npos) || (i_pos == std::string::npos))
+    if (response.size() == 0)
+    {
+        RexLogicModule::LogError("Size of the response data to file upload was zero.");
+        return;
+    }
+
+    response.push_back('\0');
+    response_str = (char *)&response[0];
+    llsd_map.clear();
+
+    llsd_map = RexTypes::ParseLLSDMap(response_str);
+    std::string asset_id = llsd_map["new_asset"];
+    std::string inventory_id = llsd_map["new_inventory_item"];
+    if (asset_id == "" || inventory_id == "")
     {
         RexLogicModule::LogError("Invalid XML response data for uploading an asset.");
         return;
     }
 
-    a_pos = a_pos + ass.length() + 14;
-    i_pos = i_pos + inv.length() + 12;
-    std::string asset_id = response_str.substr(a_pos, uuid_str_len);
-    std::string inv_id = response_str.substr(i_pos, uuid_str_len);
-//    ItemInfo->assetID = RexTypes::RexUUID(asset_id);
-//    ItemInfo->inventoryID = RexTypes::RexUUID(inv_id);
-
-    RexLogicModule::LogInfo("Upload succesfull. Asset id: " + asset_id + ", inventory id: " + inv_id + ".");
+    RexLogicModule::LogInfo("Upload succesfull. Asset id: " + asset_id + ", inventory id: " + inventory_id + ".");
 }
 
-void AssetUploader::UploadFiles(Core::StringList filenames, Inventory *inventory)
+void AssetUploader::UploadFiles(Core::StringList filenames, OpenSimProtocol::InventoryModel *inventory)
 {
     if (uploadCapability_ == "")
     {
@@ -341,7 +368,7 @@ void AssetUploader::UploadFiles(Core::StringList filenames, Inventory *inventory
     {
         std::string filename = *it;
         RexTypes::asset_type_t asset_type = RexTypes::GetAssetTypeFromFilename(filename);
-        if (asset_type == -1)
+        if (asset_type == RexAT_None)
         {
            RexLogicModule::LogError("Invalid file extension. File can't be uploaded: " + filename);
             continue;
@@ -353,15 +380,10 @@ void AssetUploader::UploadFiles(Core::StringList filenames, Inventory *inventory
         std::string cat_name = RexTypes::GetCategoryNameForAssetType(asset_type);
 
         ///\todo User-defined name and desc when we got the UI.
-        std::string name = "asset";
-        size_t name_start_pos = filename.find_last_of('/');
-        size_t name_end_pos = filename.find_last_of('.');
-        if (name_start_pos != std::string::npos && name_end_pos != std::string::npos)
-            name = filename.substr(name_start_pos + 1, name_end_pos - name_start_pos - 1);
-
+        std::string name = CreateNameFromFilename(filename);
         std::string description = "(No Description)";
 
-        RexTypes::RexUUID folder_id = inventory->GetFirstSubFolderByName(cat_name.c_str())->id;
+        RexTypes::RexUUID folder_id = inventory->GetFirstChildFolderByName(cat_name.c_str())->GetID();
         if (folder_id.IsNull())
         {
             RexLogicModule::LogError("Inventory folder for this type of file doesn't exists. File can't be uploaded.");
@@ -371,33 +393,52 @@ void AssetUploader::UploadFiles(Core::StringList filenames, Inventory *inventory
         std::string asset_xml = CreateNewFileAgentInventoryXML(at_str, it_str, folder_id.ToString(), name, description);
 
         // Post NewFileAgentInventory message informing the server about upcoming asset upload.
-        std::vector<char> response;
-        HttpPostNewFileAgentInventory(uploadCapability_.c_str(), &asset_xml[0], asset_xml.size(), &response);
+        HttpUtilities::HttpRequest request;
+        request.SetUrl(uploadCapability_);
+        request.SetMethod(HttpUtilities::HttpRequest::Post);
+        request.SetRequestData("application/xml", asset_xml);
+        request.Perform();
+
+        if (!request.GetSuccess())
+        {
+            RexLogicModule::LogError(request.GetReason());
+            return;
+        }
+
+        std::vector<Core::u8> response;
+        response = request.GetResponseData();
+
+        if (response.size() == 0)
+        {
+            RexLogicModule::LogError("Size of the response data to \"NewFileAgentInventory\" message was zero.");
+            return;
+        }
+
+        /*std::vector<char> response;
+        bool success = HttpPostNewFileAgentInventory(uploadCapability_, &asset_xml[0], asset_xml.size(), &response);
+        if (!success)
+            return;
+        */
 
         // Convert the response data to a string.
         response.push_back('\0');
-        std::string response_str = &response[0];
+        std::string response_str = (char *)&response[0];
 
-        // Parse the upload caps from the response.    
-        ///\todo Make non-harcoded when the LLSD XML-parser is ready.
-        /* Response XML is something like this:
-         * <llsd><map><key>uploader</key><string>http://192.168.1.144:9000/CAPS/d25ff455-4b93-40d0-8114-f8b5024e5953</string>
-         * <key>state</key><string>upload</string></map></llsd>  
-         */
-        size_t pos = response_str.find("http", 0);
-        if (pos == std::string::npos)
+        // Parse the upload url from the response.
+        std::map<std::string, std::string> llsd_map = RexTypes::ParseLLSDMap(response_str);
+        std::string upload_url = llsd_map["uploader"];
+        if (upload_url == "")
         {
             RexLogicModule::LogError("Invalid response data for uploading an asset.");
-            continue;
+            return;
         }
-
-        std::string upload_url = response_str.substr(pos, 67);
-
+        
         // Open the file.
         std::filebuf *pbuf;
         size_t size;
         char *buffer;
-
+        std::vector<Core::u8> buffer_vec;
+    
         // If the file is texture, use QImage and J2k encoding.
         if (asset_type == RexTypes::RexAT_Texture)
         {
@@ -420,49 +461,86 @@ void AssetUploader::UploadFiles(Core::StringList filenames, Inventory *inventory
             }
 
             pbuf = file.rdbuf();
-            size = pbuf->pubseekoff (0, std::ios::end, std::ios::in);
-            pbuf->pubseekpos (0, std::ios::in);
-            buffer = new char[size];
-            pbuf->sgetn (buffer, size);
+            size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
+            pbuf->pubseekpos(0, std::ios::in);
+            //buffer = new char[size];
+            buffer_vec.resize(size);
+            pbuf->sgetn((char *)&buffer_vec[0], size);
             file.close();
         }
 
         // Upload the file.
         response.clear();
-        bool success = HttpPostFileUpload(upload_url, buffer, size, &response);
+
+/*        success = HttpPostFileUpload(upload_url, buffer, size, &response);
         if (!success)
             return;
+*/
+
+        HttpUtilities::HttpRequest request2;
+        request2.SetUrl(upload_url);
+        request2.SetMethod(HttpUtilities::HttpRequest::Post);
+        request2.SetRequestData("application/octet-stream", buffer_vec);
+        request2.Perform();
+        
+        if (!request2.GetSuccess())
+        {
+            RexLogicModule::LogError("HTTP POST asset upload did not succeed. " + request2.GetReason());
+            return;
+        }
+
+        response = request2.GetResponseData();
+
+        if (response.size() == 0)
+        {
+            RexLogicModule::LogError("Size of the response data to file upload was zero.");
+            return;
+        }
 
         // Convert the response data to a string.
         response.push_back('\0');
         response_str.clear();
-        response_str = &response[0];
-        
-        // Extract the asset & inventory id's from the response xml.
-        // <llsd><map><key>new_asset</key><string>2d6c12e7-cdbe-41b5-9870-2cce584aae9a</string><key>new_inventory_item</key>
-        // <uuid>ca74a87a-f028-4106-b2be-31405a2222c1</uuid><key>state</key><string>complete</string></map></llsd>
-        ///\todo Make non-harcoded if/when the LLSD XML-parser is ready.
-        std::string ass = "new_asset";
-        std::string inv = "new_inventory_item";
-        const int uuid_str_len = 36;
-        size_t a_pos = response_str.find(ass, 0);
-        size_t i_pos = response_str.find(inv, 0);
-        if ((a_pos == std::string::npos) || (i_pos == std::string::npos))
+        response_str = (char *)&response[0];
+        llsd_map.clear();
+
+        llsd_map = RexTypes::ParseLLSDMap(response_str);
+        std::string asset_id = llsd_map["new_asset"];
+        std::string inventory_id = llsd_map["new_inventory_item"];
+        if (asset_id == "" || inventory_id == "")
         {
             RexLogicModule::LogError("Invalid XML response data for uploading an asset.");
             return;
         }
 
-        a_pos = a_pos + ass.length() + 14;
-        i_pos = i_pos + inv.length() + 12;
-        std::string asset_id = response_str.substr(a_pos, uuid_str_len);
-        std::string inv_id = response_str.substr(i_pos, uuid_str_len);
-
-    //    ItemInfo->assetID = RexTypes::RexUUID(asset_id);
-    //    ItemInfo->inventoryID = RexTypes::RexUUID(inv_id);
-
-       RexLogicModule::LogInfo("Upload succesfull. Asset id: " + asset_id + ", inventory id: " + inv_id + ".");
+        RexLogicModule::LogInfo("Upload succesfull. Asset id: " + asset_id + ", inventory id: " + inventory_id + ".");
+        ++asset_count;
     }
+
+    RexLogicModule::LogInfo("Multiupload:" + Core::ToString(asset_count) + " assets succesfully uploaded.");
+}
+
+std::string AssetUploader::CreateNameFromFilename(std::string filename)
+{
+    std::string name = "asset";
+    bool no_path = false;
+    size_t name_start_pos = filename.find_last_of('/');
+    // If the filename doens't have the full path, start from index 0.
+    if (name_start_pos == std::string::npos)
+    {
+        name_start_pos = 0;
+        no_path = true;
+    }
+
+    size_t name_end_pos = filename.find_last_of('.');
+    if (name_end_pos != std::string::npos)
+    {
+        if (no_path)
+            name = filename.substr(name_start_pos, name_end_pos - name_start_pos);
+        else
+            name = filename.substr(name_start_pos + 1, name_end_pos - name_start_pos - 1);
+    }
+
+    return name;
 }
 
 std::string AssetUploader::CreateNewFileAgentInventoryXML(
@@ -486,6 +564,7 @@ std::string AssetUploader::CreateNewFileAgentInventoryXML(
     return xml;
 }
 
+/*
 bool AssetUploader::HttpPostNewFileAgentInventory(
     std::string host,
     char* buffer,
@@ -495,7 +574,7 @@ bool AssetUploader::HttpPostNewFileAgentInventory(
     CURLcode result;
     curl_slist *headers = 0;
 
-    headers = curl_slist_append(headers, "Accept: */*");
+    headers = curl_slist_append(headers, "Accept: *//*");
     headers = curl_slist_append(headers, "Accept-Encoding: deflate, gzip");    
     headers = curl_slist_append(headers, "Content-Type: application/xml");    
     headers = curl_slist_append(headers, "Expect: 100-continue");
@@ -525,10 +604,12 @@ bool AssetUploader::HttpPostNewFileAgentInventory(
         RexLogicModule::LogError("Size of the response data to \"NewFileAgentInventory\" message was zero.");
         return false;
     }
-    
+
     return true;
 }
+*/
 
+/*
 bool AssetUploader::HttpPostFileUpload(
     std::string host,
     char* buffer,
@@ -571,5 +652,6 @@ bool AssetUploader::HttpPostFileUpload(
 
     return true;
 }
+*/
 
 } // namespace RexLogic

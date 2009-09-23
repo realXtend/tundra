@@ -5,6 +5,8 @@
 
 #include "ServiceInterface.h"
 
+#include <boost/optional.hpp>
+
 namespace Console
 {
     //! A result from executing a console command.

@@ -6,6 +6,12 @@
 #include "ModuleInterface.h"
 #include "RexServerConnection.h"
 
+
+namespace OpenSimProtocol
+{
+    class InventoryModel;
+}
+
 namespace RexLogic
 {
     class NetworkEventHandler;
@@ -23,6 +29,7 @@ namespace RexLogic
     class AvatarControllable;
     class CameraControllable;
     class AssetUploader;
+    class InventoryWindow;
 
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
     typedef boost::weak_ptr<Terrain> TerrainWeakPtr;
@@ -35,6 +42,7 @@ namespace RexLogic
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<CameraControllable> CameraControllablePtr;
     typedef boost::shared_ptr<AssetUploader> AssetUploaderPtr;
+    typedef boost::shared_ptr<OpenSimProtocol::InventoryModel> InventoryPtr;
 
     //! Camera states handled by rex logic
     enum CameraState
@@ -83,14 +91,17 @@ namespace RexLogic
         //! @return The avatar handler object that manages reX avatar logic.
         AvatarPtr GetAvatarHandler();
 
-        //! @return The primitive handler object that manages reX primitive logic.        
+        //! @return The primitive handler object that manages reX primitive logic.
         PrimitivePtr GetPrimitiveHandler();
 
         //! @return The sky handler object that manages reX sky logic.
         SkyPtr GetSkyHandler();
 
-        //! @return The environment handler object that manages reX sky logic.
+        //! @return The environment handler object that manages reX environment logic.
         EnvironmentPtr GetEnvironmentHandler();
+
+        /// @return Invetory pointer.
+        InventoryPtr GetInventory() const;
 
         //! Returns the camera controllable
         CameraControllablePtr GetCameraControllable() { return camera_controllable_; }
@@ -245,6 +256,9 @@ namespace RexLogic
 
         //! The login window.
         RexLoginWindow *loginWindow_;
+
+        //! The login window.
+        InventoryWindow *inventoryWindow_;
 
         //! The connection state which is shown in the login window.
         OpenSimProtocol::Connection::State connectionState_;

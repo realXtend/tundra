@@ -14,34 +14,34 @@ namespace RexTypes
         /// Constructs an RexUUID from a string in form "1c1bbda2-304b-4cbf-ba3f-75324b044c73" or "1c1bbda2304b4cbfba3f75324b044c73".
         explicit RexUUID(const char *str);
         explicit RexUUID(const std::string &str);
-    
+
         /// Constructs a null RexUUID.
         RexUUID();
 
         /// Sets all 16 bytes of the ID to '00'.
         void SetNull();
-        
+
         /// Checks is the UUID null.
         bool IsNull() const;
-        
+
         /// Random-generates the contents
         void Random();
-    
+
         void FromString(const char *str);
         void FromString(const std::string &str) { FromString(str.c_str()); }
 
         std::string ToString() const;
-        
+
         /// Tests whether a string contains a valid UUID
         static bool IsValid(const char *str);
         static bool IsValid(const std::string &str) { return IsValid(str.c_str()); }
-    
-//        void operator =(const RexUUID &rhs);
-        
+
+        RexUUID &operator =(const RexUUID &rhs);
+
         bool operator ==(const RexUUID &rhs) const;
-        
+
         bool operator !=(const RexUUID &rhs) const;
-                
+
         bool operator <(const RexUUID &rhs) const;
 
         friend std::ostream& operator << ( std::ostream &out, const RexUUID &r )
@@ -51,7 +51,7 @@ namespace RexTypes
         }
 
         static const uint8_t cSizeBytes = 16;
-        
+
         uint8_t data[cSizeBytes];
     };
 

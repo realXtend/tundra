@@ -35,15 +35,16 @@ namespace RexLogic
         bool HandleOSNE_LogoutReply(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
         bool HandleOSNE_RegionHandshake(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleOSNE_InventoryDescendents(OpenSimProtocol::NetworkEventInboundData* data);
 
         //! Handler functions for GenericMessages
 
         void DebugCreateTerrainVisData(const DecodedTerrainPatch &heightData, int patchSize);
 
         Foundation::Framework *framework_;
-        
+
         boost::weak_ptr<OpenSimProtocol::OpenSimProtocolModule> netInterface_;
-        
+
         RexLogicModule *rexlogicmodule_;
     };
 }

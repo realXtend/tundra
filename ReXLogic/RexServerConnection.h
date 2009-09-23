@@ -140,6 +140,20 @@ namespace RexLogic
             const RexTypes::asset_type_t &type,
             const std::string &name);
 
+        /** Sends a packet requesting contents of a inventory folder.
+         *  @param folder_id Folder UUID.
+         *  @param owner_id Owner UUID.
+         *  @param sort_order Sort order, 0 = name, 1 = time.
+         *  @param fetch_folders False will omit folders in query.
+         *  @param fetch_items False will omit items in query.
+         */
+        void SendFetchInventoryDescendents(
+            const RexTypes::RexUUID &folder_id,
+            const RexTypes::RexUUID &owner_id,
+            const int32_t &sort_order,
+            const bool &fetch_folders,
+            const bool &fetch_items);
+
         /// @return Name of the sim we're connected to.
         std::string GetSimName() { return simName_; }
 

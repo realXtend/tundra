@@ -4,6 +4,7 @@
 #define incl_Foundation_Application_h
 
 #include "Framework.h"
+#include "CoreStringUtils.h"
 
 namespace Foundation
 {

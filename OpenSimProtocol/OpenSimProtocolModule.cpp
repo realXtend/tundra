@@ -8,29 +8,11 @@
 
 #include "HttpRequest.h"
 
-namespace
-{
-
-// Writer callback for cURL.
-size_t WriteCallback(char *data, size_t size, size_t nmemb, std::vector<char> *buffer)
-{
-    if (buffer)
-    {
-        buffer->insert(buffer->end(), data, data + size * nmemb);
-        return size * nmemb;
-    }
-    else
-        return 0;
-}
-
-}
-
 namespace OpenSimProtocol
 {
 
 OpenSimProtocolModule::OpenSimProtocolModule() :
-ModuleInterfaceImpl(Foundation::Module::MT_OpenSimProtocol),
-connected_(false)
+    ModuleInterfaceImpl(Foundation::Module::MT_OpenSimProtocol), connected_(false)
 {
 }
 
@@ -119,7 +101,7 @@ void OpenSimProtocolModule::OnNetworkMessageReceived(NetMsgID msgID, NetInMessag
     NetworkEventInboundData data(msgID, msg);
     eventManager_->SendEvent(networkEventInCategory_, msgID, &data);
 }
-    
+
 //virtual
 void OpenSimProtocolModule::OnNetworkMessageSent(const NetOutMessage *msg)
 {
@@ -153,8 +135,8 @@ void OpenSimProtocolModule::LoginToCBServer(
 {
     std::string callMethod = "login_to_simulator";
     loginWorker_.SetupXMLRPCLogin(first_name, last_name, "auth_done", address,
-        boost::lexical_cast<std::string>(port), callMethod, thread_state, "openid", "openid", "openid", true); 
-    
+        boost::lexical_cast<std::string>(port), callMethod, thread_state, "openid", "openid", "openid", true);
+
     // Start the thread.
     boost::thread(boost::ref(loginWorker_));
 }
@@ -183,7 +165,7 @@ bool OpenSimProtocolModule::LoginUsingRexAuthentication(
     }
     else
     {
-        OpenSimProtocolModule::LogInfo("No port defined for the authentication server, using default port (10001).");    
+        OpenSimProtocolModule::LogInfo("No port defined for the authentication server, using default port (10001).");
         auth_port = "10001";
         auth_address = auth_server_address;
     }
@@ -212,9 +194,9 @@ bool OpenSimProtocolModule::CreateUDPConnection(const char *address, int port)
     connected_ = true;
 
     // Request capabilities from the server.
-//    RequestCapabilities(GetClientParameters().seedCapabilities);
     Core::Thread thread(boost::bind(&OpenSimProtocolModule::RequestCapabilities, this,
         GetClientParameters().seedCapabilities));
+
     return true;
 }
 
@@ -324,7 +306,7 @@ void OpenSimProtocolModule::RequestCapabilities(const std::string &seed)
 
     response.push_back('\0');
     std::string response_str = (char *)&response[0];
-    
+
     ExtractCapabilitiesFromXml(response_str);
 }
 
@@ -350,8 +332,6 @@ void OpenSimProtocolModule::ExtractCapabilitiesFromXml(std::string xml)
         url = xml.substr(str_pos + str.length(), str_end_pos - str_pos - str.length());
 
         SetCapability(name, url);
-
-        std::cout << name << std::endl;
 
         if ((xml.find(key, str_end_pos) > xml.length()) ||
             (xml.find(key, str_end_pos) == std::string::npos))

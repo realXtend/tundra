@@ -3,11 +3,31 @@
 #include "StableHeaders.h"
 #include "Inventory.h"
 
+InventoryItem::InventoryItem(
+    const RexUUID &inventory_id,
+    const RexUUID &asset_id,
+    asset_type_t asset_type)
+    :
+    inventoryID_(inventory_id),
+    assetID_(asset_id),
+    assetType_(asset_type),
+    inventoryType_(GetInventoryTypeFromAssetType(asset_type))
+{
+}
+
+RexUUID InventoryFolder ::GetParentID() const
+{
+    if(!parent_)
+        return RexUUID();
+
+    return parent_->GetID();
+}
+
 InventoryFolder *InventoryFolder::GetFirstSubFolderByName(const char *searchName)
 {
-    if (name == searchName)
+    if (name_ == searchName)
         return this;
-    for(FolderList::iterator iter = children.begin(); iter != children.end(); ++iter)
+    for(FolderIter iter = children_.begin(); iter != children_.end(); ++iter)
     {
         InventoryFolder *folder = iter->GetFirstSubFolderByName(searchName);
         if (folder)
@@ -17,14 +37,14 @@ InventoryFolder *InventoryFolder::GetFirstSubFolderByName(const char *searchName
     return 0;
 }
 
-InventoryFolder *InventoryFolder::GetFirstSubFolderByID(const RexTypes::RexUUID &searchId)
+InventoryFolder *InventoryFolder::GetFirstSubFolderByID(const RexUUID &searchId)
 {
-    if (id == searchId)
+    if (id_ == searchId)
         return this;
 
-    for(FolderList::iterator iter = children.begin(); iter != children.end(); ++iter)
+    for(FolderIter iter = children_.begin(); iter != children_.end(); ++iter)
     {
-        InventoryFolder *folder = iter->GetFirstSubFolderByID(id);
+        InventoryFolder *folder = iter->GetFirstSubFolderByID(id_);
         if (folder)
             return folder;
     }
@@ -34,9 +54,68 @@ InventoryFolder *InventoryFolder::GetFirstSubFolderByID(const RexTypes::RexUUID 
 
 InventoryFolder *InventoryFolder::AddSubFolder(const InventoryFolder &folder)
 {
-    children.push_back(folder);
-    children.back().parent = this;
-    return &children.back();
+    children_.push_back(folder);
+    children_.back().parent_ = this;
+    return &children_.back();
+}
+
+void InventoryFolder::AddItem(const InventoryItem &item)
+{
+    if (item.GetAssetID().IsNull())
+    {
+        std::cout << "Inventory item's asset ID is null. Can't add new item to inventory." << std::endl;
+        return;
+    }
+
+    if (item.GetInventoryID().IsNull())
+    {
+        std::cout << "Inventory item's asset ID is null. Can't add new item to inventory." << std::endl;
+        return;
+    }
+
+    for(ItemIter it = items_.begin(); it != items_.end(); ++ it)
+    {
+        if(it->GetInventoryID() == item.GetInventoryID())
+        {
+            std::cout << "Item with the same inventory ID already exists.Can't add new item to inventory." << std::endl;
+            return;
+        }
+    }
+
+    items_.push_back(item);
+}
+
+InventoryItem *InventoryFolder::GetItemByInventoryID(const RexUUID &inventory_id)
+{
+    for(ItemIter it = items_.begin(); it != items_.end(); ++ it)
+    {
+        if (it->GetInventoryID() == inventory_id)
+            return &(*it);
+    }
+
+    return 0;
+}
+
+InventoryItem *InventoryFolder::GetFirstItemByAssetID(const RexUUID &asset_id)
+{
+    for(ItemIter it = items_.begin(); it != items_.end(); ++ it)
+    {
+        if (it->GetAssetID() == asset_id)
+            return &(*it);
+    }
+
+    return 0;
+}
+
+InventoryItem *InventoryFolder::GetItemByBothIDs(const RexUUID &asset_id, const RexUUID &inventory_id)
+{
+    for(ItemIter it = items_.begin(); it != items_.end(); ++ it)
+    {
+        if (it->GetInventoryID() == inventory_id && it->GetAssetID() == asset_id )
+            return &(*it);
+    }
+
+    return 0;
 }
 
 #ifdef _DEBUG
@@ -44,10 +123,13 @@ void InventoryFolder::DebugDumpInventoryFolderStructure(int indentationLevel)
 {
     for(int i = 0; i < indentationLevel; ++i)
         std::cout << " ";
-    std::cout << name << " " << id << std::endl;
+    std::cout << name_ << " " << std::endl;
 
-    for(FolderList::iterator iter = children.begin(); iter != children.end(); ++iter)
+    for(FolderIter iter = children_.begin(); iter != children_.end(); ++iter)
         iter->DebugDumpInventoryFolderStructure(indentationLevel + 3);
+
+    for(ItemIter iter = items_.begin(); iter != items_.end(); ++iter)
+        std::cout << "      " << iter->GetName() << std::endl;
 }
 #endif
 
@@ -56,19 +138,12 @@ InventoryFolder *Inventory::GetFirstSubFolderByName(const char *name)
     return root.GetFirstSubFolderByName(name);
 }
 
-InventoryFolder *Inventory::GetFirstSubFolderByID(const RexTypes::RexUUID &searchId)
+InventoryFolder *Inventory::GetFirstSubFolderByID(const RexUUID &searchId)
 {
     return root.GetFirstSubFolderByID(searchId);
 }
 
-#ifdef _DEBUG
-void Inventory::DebugDumpInventoryFolderStructure()
-{
-    root.DebugDumpInventoryFolderStructure(0);
-}
-#endif
-
-InventoryFolder *Inventory::GetOrCreateNewFolder(const RexTypes::RexUUID &id, InventoryFolder &parent)
+InventoryFolder *Inventory::GetOrCreateNewFolder(const RexUUID &id, InventoryFolder &parent)
 {
     // Return an existing folder if one with the given id is present.
     InventoryFolder *existing = GetFirstSubFolderByID(id);
@@ -77,7 +152,14 @@ InventoryFolder *Inventory::GetOrCreateNewFolder(const RexTypes::RexUUID &id, In
 
     // Create a new folder.
     InventoryFolder newFolder;
-    newFolder.id = id;
-    newFolder.name = "New Folder";
+    newFolder.SetID(id);
+    newFolder.SetName("New Folder");
     return parent.AddSubFolder(newFolder);
 }
+
+#ifdef _DEBUG
+void Inventory::DebugDumpInventoryFolderStructure()
+{
+    root.DebugDumpInventoryFolderStructure(0);
+}
+#endif

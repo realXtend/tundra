@@ -148,12 +148,13 @@ std::string RexUUID::ToString() const
     return str.str();
 }
 
-/*    void RexUUID::operator =(const RexUUID &rhs)
+RexUUID &RexUUID::operator =(const RexUUID &rhs)
 {
     if (this != &rhs)
         for(int i = 0; i < cSizeBytes; ++i)
             data[i] = rhs.data[i];
-}*/
+     return *this;
+}
 
 bool RexUUID::operator ==(const RexUUID &rhs) const
 {

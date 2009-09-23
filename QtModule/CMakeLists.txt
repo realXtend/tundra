@@ -7,7 +7,7 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 file (GLOB UI_FILES ui/*.ui)
 file (GLOB RESOURCE_FILES resource/*.qrc)
-
+    
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap

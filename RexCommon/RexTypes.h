@@ -137,7 +137,9 @@ namespace RexTypes
     };
 
     typedef int asset_type_t;
+    typedef int inventory_type_t;
 
+    ///\note When adding new asset/inventory types, remember also to add them to the functions.
     // UDP Asset types
     const asset_type_t RexAT_Texture = 0;
     const asset_type_t RexAT_Mesh = 43;
@@ -145,6 +147,15 @@ namespace RexTypes
     const asset_type_t RexAT_MaterialScript = 45;
     const asset_type_t RexAT_ParticleScript = 47;
     const asset_type_t RexAT_FlashAnimation = 49;
+    const asset_type_t RexAT_None = -1;
+
+    // UDP Inventory types.
+    const inventory_type_t RexIT_Texture = 0;
+    const inventory_type_t RexIT_Object = 6; // Used for meshes.
+    const inventory_type_t RexIT_Animation = 19; // Used for skeletal animations.
+    const inventory_type_t RexIT_OgreScript = 41;
+    const inventory_type_t RexIT_FlashAnimation = 42;
+    const inventory_type_t RexIT_None = -1;
 
     // Text asset types
     const std::string ASSETTYPENAME_TEXTURE("Texture");
@@ -219,25 +230,31 @@ namespace RexTypes
     /*! \param asset_type Asset type name
         \return non-negative asset type, or -1 if unknown
      */
-    asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type);
+    const asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type);
 
     //! Returns asset type name from ReX/OpenSim asset type
     /*! \param asset_type Asset type
         \return asset type name
      */
-    const std::string& GetTypeNameFromAssetType(asset_type_t asset_type);
+    const std::string &GetTypeNameFromAssetType(asset_type_t asset_type);
 
     /** Returns inventory type name used for uploading from ReX/OpenSim asset type
      *  \param asset_type Asset type
      *  \return inventory name for asset type (8 characters)
      */
-    const std::string& GetInventoryTypeString(asset_type_t asset_type);
+    const std::string &GetInventoryTypeString(asset_type_t asset_type);
+
+    /** Returns inventory type used for ReX/OpenSim inventory actions.
+     *  \param asset_type Asset type
+     *  \return inventory type for asset type.
+     */
+    const inventory_type_t &GetInventoryTypeFromAssetType(asset_type_t asset_type);
 
     /** Returns asset type name used for uploading from ReX/OpenSim asset type
      *  \param asset_type Asset type
      *  \return asset type name for asset type (8 characters)
      */
-    const std::string& GetAssetTypeString(asset_type_t asset_type);
+    const std::string &GetAssetTypeString(asset_type_t asset_type);
 
     /** Returns Inventory category name used for uploading from ReX/OpenSim asset type.
      *  \param asset_type Asset type.
@@ -249,7 +266,7 @@ namespace RexTypes
      *  \param asset_type Asset type
      *  \return asset type inventory name (8 characters)
      */
-    const std::string& GetOpenFileNameFilter(asset_type_t asset_type);
+    const std::string &GetOpenFileNameFilter(asset_type_t asset_type);
 
     /** Returns ReX/OpenSim asset type from filename.
      *  @param filename Filename.

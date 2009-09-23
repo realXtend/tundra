@@ -3,6 +3,8 @@
 #ifndef incl_Interfaces_ServiceInterface_h
 #define incl_Interfaces_ServiceInterface_h
 
+#include "CoreDefines.h"
+
 namespace Foundation
 {
     //! Common interface for all services
@@ -22,4 +24,3 @@ namespace Foundation
 }
 
 #endif
-

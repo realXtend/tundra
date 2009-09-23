@@ -24,8 +24,6 @@
 #include "Terrain.h"
 #include "SceneManager.h"
 
-using namespace Core;
-
 namespace RexLogic
 {
     Terrain::Terrain(RexLogicModule *owner)
@@ -391,7 +389,7 @@ namespace
         PROFILE(HandleOSNE_LayerData);
 
         NetInMessage &msg = *data->message;
-        u8 layerID = msg.ReadU8();
+        Core::u8 layerID = msg.ReadU8();
         size_t sizeBytes = 0;
         const uint8_t *packedData = msg.ReadBuffer(&sizeBytes);
         OpenSimProtocol::BitStream bits(packedData, sizeBytes);

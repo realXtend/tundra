@@ -9,7 +9,10 @@
 #include "RexCommon.h"
 #include "RexUUID.h"
 
-class Inventory;
+namespace OpenSimProtocol
+{
+    class InventoryModel;
+}
 
 namespace RexLogic
 {
@@ -34,8 +37,8 @@ namespace RexLogic
         /// @return Does asset uploader have an upload capability.
         bool HasUploadCapability() const { return uploadCapability_ != ""; }
 
-        /// Sets the upload capability url.
-        /// @param url Capability url.
+        /// Sets the upload capability URL.
+        /// @param url Capability URL.
         void SetUploadCapability(const std::string &url) {uploadCapability_ = url; }
 
         /** Uploads a file using HTTP.
@@ -55,10 +58,15 @@ namespace RexLogic
         /// Uploads multiple files using HTTP.
         /// @param files List of AssetInfo structs.
         /// @param inventory Pointer to the user's inventory.
-        void UploadFiles(Core::StringList filenames, Inventory *inventory);
+        void UploadFiles(Core::StringList filenames, OpenSimProtocol::InventoryModel *inventory);
 
         /// @return The latest cURL error.
-        std::string GetLastCurlError() const { return std::string(curlErrorBuffer_); }
+//        std::string GetLastCurlError() const { return std::string(curlErrorBuffer_); }
+
+        /// Utility function for create name for asset from filename.
+        /// @param filename Filename.
+        /// @return Filename without the file extension.
+        std::string CreateNameFromFilename(std::string filename);
 
     private:
         /// Creates NewFileAgentInventory XML message.
@@ -70,27 +78,27 @@ namespace RexLogic
             const std::string &description);
 
         /// Informs the server about upcoming asset upload (NewFileAgentInventory).
-        bool HttpPostNewFileAgentInventory(
+/*        bool HttpPostNewFileAgentInventory(
             std::string host,
             char* buffer,
             size_t size,
             std::vector<char> *response);
-
+*/
         /// Uploads file using HTTP POST.
-        bool HttpPostFileUpload(
+/*        bool HttpPostFileUpload(
             std::string host,
             char* buffer,
             size_t size,
             std::vector<char> *response);
-
-        ///
+*/
+        /// Upload capability URL.
         std::string uploadCapability_;
 
         /// cURL pointer.
-        void *curl_;
+//        void *curl_;
 
         /// cURL error buffer.
-        char curlErrorBuffer_[256];
+//        char curlErrorBuffer_[256];
     };
 }
 
