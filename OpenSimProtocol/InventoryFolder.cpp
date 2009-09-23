@@ -49,7 +49,6 @@ InventoryFolder &InventoryFolder::operator = (const InventoryFolder &rhs)
 
 InventoryItemBase *InventoryFolder::AddChild(InventoryItemBase *child)
 {
-    std::cout << this->name_ << " " << child->GetName() << std::endl;
     child->SetParent(this);
     childItems_.append(child);
     return childItems_.back();
@@ -111,8 +110,9 @@ InventoryFolder *InventoryFolder::GetFirstChildFolderByName(const char *searchNa
             return folder;
 
         InventoryFolder *folder2 = folder->GetFirstChildFolderByName(searchName);
-        if (folder->GetName() == searchName)
-            return folder2;
+        if (folder2)
+            if (folder2->GetName() == searchName)
+                return folder2;
     }
 
     return 0;
@@ -134,8 +134,9 @@ InventoryFolder *InventoryFolder::GetChildFolderByID(const RexTypes::RexUUID &id
             return folder;
 
         InventoryFolder *folder2 = folder->GetChildFolderByID(id);
-        if (folder2->GetID() == id)
-            return folder2;
+        if (folder2)
+            if (folder2->GetID() == id)
+                return folder2;
     }
 
     return 0;

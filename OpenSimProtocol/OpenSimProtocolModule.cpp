@@ -209,6 +209,7 @@ void OpenSimProtocolModule::DisconnectFromRexServer()
     loginWorker_.SetConnectionState(Connection::STATE_DISCONNECTED);
     connected_ = false;
     capabilities_.clear();
+    clientParameters_.Reset();
 
     eventManager_->SendEvent(networkStateEventCategory_, Events::EVENT_SERVER_DISCONNECTED, NULL);
 }

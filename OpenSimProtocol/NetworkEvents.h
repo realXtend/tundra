@@ -9,13 +9,37 @@
 #include "NetOutMessage.h"
 #include "InventoryModel.h"
 
-class Inventory;
-
 namespace OpenSimProtocol
 {
     /// Info structure used to pass messages between the main thread and the XMLRPC connect thread.
     struct ClientParameters
     {
+    public:
+        /// Default constructor.
+        ClientParameters() :
+            agentID(RexUUID()),
+            sessionID(RexUUID()),
+            regionID(RexUUID()),
+            circuitCode(0),
+            sessionHash(""),
+            gridUrl(""),
+            avatarStorageUrl(""),
+            seedCapabilities("") {}
+
+        /// Resets parameters.
+        void Reset()
+        {
+            agentID = RexUUID();
+            sessionID = RexUUID();
+            regionID = RexUUID();
+            uint32_t circuitCode = 0;
+            std::string sessionHash = "";
+            std::string gridUrl = "";
+            std::string avatarStorageUrl = "";
+            std::string seedCapabilities = "";
+            inventory.reset();
+        }
+
         RexUUID agentID;
         RexUUID sessionID;
         RexUUID regionID;
@@ -26,7 +50,7 @@ namespace OpenSimProtocol
         std::string seedCapabilities;
         boost::shared_ptr<InventoryModel> inventory;
     };
-    
+
     /// Defines the events posted by the OpenSimProtocolModule in category <b>NetworkState</b>.
     /// \ingroup OpenSimProtocolClient 
     namespace Events
@@ -49,8 +73,7 @@ namespace OpenSimProtocol
          */
         static const Core::event_id_t EVENT_CONNECTION_FAILED = 0x03;
     }
-  
-    
+
     /// Enumeration of the network connection states.
     /// When modified, update also the connection_strings table of the NetworkStateToString function.
     namespace Connection
@@ -67,7 +90,7 @@ namespace OpenSimProtocol
             STATE_CONNECTED,
             STATE_ENUM_COUNT
         };
-        
+
         /// Utility function for converting the connection state enum to string.
         ///@param The connection state enum.
         ///@return The login state as a string.
@@ -83,7 +106,7 @@ namespace OpenSimProtocol
             return connection_strings[state];
         }
     }
-    
+
     /// Data struct which is passed to the login thread.
     struct ConnectionThreadState
     {
@@ -91,7 +114,7 @@ namespace OpenSimProtocol
         OpenSimProtocol::ClientParameters parameters;
         std::string errorMessage;
     };
-        
+
     /// Event data interface for inbound messages.
     /// \ingroup OpenSimProtocolClient
     class NetworkEventInboundData : public Foundation::EventDataInterface
@@ -100,7 +123,7 @@ namespace OpenSimProtocol
         NetworkEventInboundData(NetMsgID id, NetInMessage *msg)
         : message(msg), messageID(id) {}
         virtual ~NetworkEventInboundData() {}
-        
+
         NetMsgID messageID;
         NetInMessage *message;
     };
@@ -113,7 +136,7 @@ namespace OpenSimProtocol
         NetworkEventOutboundData(NetMsgID id, const NetOutMessage *msg)
         : message(msg), messageID(id) {}
         virtual ~NetworkEventOutboundData() {}
-        
+
         NetMsgID messageID;
         const NetOutMessage *message;
     };
