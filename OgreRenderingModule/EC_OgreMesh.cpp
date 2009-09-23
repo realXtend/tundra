@@ -191,10 +191,6 @@ namespace OgreRenderer
             return false;
         }
         
-        // When setting with skeleton, use clone always (another entity with same mesh might want to use different skeleton, 
-        // which Ogre does not support)
-        clone = true;
-        
         assert (parent_entity);
         RemoveMesh();
 
@@ -213,7 +209,6 @@ namespace OgreRenderer
             OgreRenderingModule::LogError("Could not set skeleton " + skeleton_name + " to mesh " + mesh_name + ": " + std::string(e.what()));
             return false;
         }
-        
         
         try
         {
@@ -296,7 +291,28 @@ namespace OgreRenderer
         Ogre::Mesh* mesh = PrepareMesh(mesh_name, false);
         if (!mesh)
             return false;
-            
+
+        if (share_skeleton)
+        {
+            // If sharing a skeleton, force the attachment mesh to use the same skeleton
+            // This is theoretically quite a scary operation, for there is possibility for things to go wrong
+            Ogre::SkeletonPtr entity_skel = entity_->getMesh()->getSkeleton();
+            if (entity_skel.isNull())
+            {
+                OgreRenderingModule::LogError("Cannot share skeleton for attachment, not found");
+                return false;
+            }
+            try
+            {
+                mesh->_notifySkeleton(entity_skel);
+            }
+            catch (Ogre::Exception e)
+            {
+                OgreRenderingModule::LogError("Could not set shared skeleton for attachment");
+                return false;
+            }
+        }
+
         try
         {
             attachment_entities_[index] = scene_mgr->createEntity(renderer_->GetUniqueObjectName(), mesh->getName());
