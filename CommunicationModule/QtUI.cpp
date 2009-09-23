@@ -278,8 +278,16 @@ namespace CommunicationUI
 		startMessage.append(contact_->GetRealName().c_str());
 		startMessage.append("...");
 		this->textEditChat_->appendPlainText(startMessage);
+
+		connect((QObject*)chatSession_.get(), SIGNAL( MessageReceived(Message &) ),
+			    SLOT( OnMessageReceived(Message &) ));
 	}
 
+	void Conversation::OnMessageReceived(Message &message)
+	{
+		QString line = message.GetText().c_str();
+		this->textEditChat_->appendPlainText(line);
+	}
 
 	/////////////////////////////////////////////////////////////////////
 	// CUSTOM QListWidgetItem CLASS
