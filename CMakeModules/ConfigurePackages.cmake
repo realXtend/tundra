@@ -116,6 +116,8 @@ macro (configure_python_qt)
         COMPONENTS PythonQt PythonQt_QtAll
         PREFIXES ${ENV_NAALI_DEP_PATH})
 
+    find_debug_libraries (PYTHON_QT "_d")
+
     sagase_configure_report (PYTHON_QT)
 endmacro (configure_python_qt)
 
