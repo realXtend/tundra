@@ -12,17 +12,17 @@ macro (configure_boost)
         COMPONENTS date_time filesystem system thread program_options unit_test_framework
         PREFIXES ${ENV_NAALI_DEP_PATH})
 
+    # boost library naming is complex, and FindBoost.cmake is preferred to 
+    # find the correct names. however on windows it appears to not find the
+    # library directories correctly. find_path cannot be counted on to find
+    # the libraries as component thread -> libboost_thread_vc90-mt.lib (etc.)
+
     if (MSVC)
         set (BOOST_INCLUDE_DIRS ${BOOST_INCLUDE_DIRS} ${ENV_NAALI_DEP_PATH}/Boost/include)
         set (BOOST_LIBRARY_DIRS ${BOOST_LIBRARY_DIRS} ${ENV_NAALI_DEP_PATH}/Boost/lib)
-
-		message (STATUS "== Forced Libarary Directories:")
-		foreach (library_dir ${BOOST_LIBRARY_DIRS})
-			message (STATUS "       " ${library_dir})
-		endforeach()
-		message (STATUS "") #newline for readability
     endif ()
 
+    sagase_configure_report (BOOST)
 endmacro (configure_boost)
 
 macro (configure_poco)
@@ -30,6 +30,8 @@ macro (configure_poco)
         NAMES Poco PoCo poco
         COMPONENTS Poco PocoFoundation PocoNet PocoUtil PocoXML
         PREFIXES ${ENV_NAALI_DEP_PATH})
+
+    sagase_configure_report (POCO)
 endmacro (configure_poco)
 
 macro (configure_qt4)
@@ -43,8 +45,6 @@ macro (configure_qt4)
 	
         include (${QT_USE_FILE})
 		
-		message (STATUS "== CMake Found QT4 with following results:")
-		
         set (QT4_INCLUDE_DIRS 
             ${QT_INCLUDE_DIR}
             ${QT_QTCORE_INCLUDE_DIR}
@@ -57,17 +57,8 @@ macro (configure_qt4)
             ${QT_QTWEBKIT_INCLUDE_DIR}
             ${QT_PHONON_INCLUDE_DIR})
 		
-		message (STATUS "-- Include Directories:")
-		foreach (qt4_include_dir ${QT4_INCLUDE_DIRS})
-			message (STATUS "       " ${qt4_include_dir})
-		endforeach()
-
         set (QT4_LIBRARY_DIR  
             ${QT_LIBRARY_DIR})
-		message (STATUS "-- Libarary Directories:")
-		foreach (qt4_library_dir ${QT4_LIBRARY_DIR})
-			message (STATUS "       " ${qt4_library_dir})
-		endforeach()
 		
         set (QT4_LIBRARIES 
             ${QT_LIBRARIES}
@@ -80,9 +71,9 @@ macro (configure_qt4)
             ${QT_QTSCRIPT_LIBRARY}
             ${QT_QTWEBKIT_LIBRARY}
             ${QT_PHONON_LIBRARY})
-			
-		message (STATUS "") #newline for readability
     endif ()
+    
+    sagase_configure_report (QT4)
 endmacro (configure_qt4)
 
 macro (configure_python)
@@ -98,28 +89,17 @@ macro (configure_python)
         #unset (PYTHON_DEBUG_LIBRARIES ${PYTHON_DEBUG_LIBRARY})
     endif ()
 	
+    # FindPythonLibs.cmake prefers the system-wide Python, which does not
+    # include debug libraries, so we force to NAALI_DEP_PATH.
+
 	if (MSVC)
 		set (PYTHON_LIBRARY_DIRS ${ENV_NAALI_DEP_PATH}/Python/lib)
 		set (PYTHON_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/Python/include)
 		set (PYTHON_LIBRARIES python26)
 		set (PYTHON_DEBUG_LIBRARIES python26_d)
-		
-		message (STATUS "== Forced Include directories:")
-		foreach (include_dir ${PYTHON_INCLUDE_DIRS})
-			message (STATUS "       " ${include_dir})
-		endforeach()
-
-		message (STATUS "== Forced Libarary Directories:")
-		foreach (library_dir ${PYTHON_LIBRARY_DIRS})
-			message (STATUS "       " ${library_dir})
-		endforeach()
-
-		message (STATUS "== Forced Libraries:")
-		message (STATUS "       " python26)
-		message (STATUS "       " python26_d)
-		message (STATUS "") #newline for readability
 	endif()
     
+    sagase_configure_report (PYTHON)
 endmacro (configure_python)
 
 macro (configure_python_qt)
@@ -128,6 +108,7 @@ macro (configure_python_qt)
         COMPONENTS PythonQt PythonQt_QtAll
         PREFIXES ${ENV_NAALI_DEP_PATH})
 
+    sagase_configure_report (PYTHON_QT)
 endmacro (configure_python_qt)
 
 macro (configure_ois)
@@ -138,6 +119,7 @@ macro (configure_ois)
     
     find_debug_libraries (OIS "_d")
 
+    sagase_configure_report (OIS)
 endmacro (configure_ois)
 
 macro (configure_ogre)
@@ -148,6 +130,7 @@ macro (configure_ogre)
 
     find_debug_libraries (OGRE "_d")
 
+    sagase_configure_report (OGRE)
 endmacro (configure_ogre)
 
 macro (configure_caelum)
@@ -158,6 +141,7 @@ macro (configure_caelum)
     
     find_debug_libraries (CAELUM "_d")
 
+    sagase_configure_report (CAELUM)
 endmacro (configure_caelum)
 
 macro (configure_hydrax)
@@ -168,6 +152,7 @@ macro (configure_hydrax)
     
     find_debug_libraries (HYDRAX "_d")
 
+    sagase_configure_report (HYDRAX)
 endmacro (configure_hydrax)
 
 macro (configure_xmlrpc)
@@ -184,6 +169,7 @@ macro (configure_xmlrpc)
 		set (XMLRPC_DEBUG_LIBRARIES xmlrpcepid)
 	endif()
 	
+    sagase_configure_report (XMLRPC)
 endmacro (configure_xmlrpc)
 
 macro (configure_curl)
@@ -199,6 +185,7 @@ macro (configure_curl)
 		set (CURL_DEBUG_LIBRARIES libcurld_imp)
 	endif()
 	
+    sagase_configure_report (CURL)
 endmacro (configure_curl)
 
 macro (configure_openjpeg)
@@ -212,5 +199,6 @@ macro (configure_openjpeg)
     
     find_debug_libraries (OPENJPEG "d")
 
+    sagase_configure_report (OPENJPEG)
 endmacro (configure_openjpeg)
 
