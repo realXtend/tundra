@@ -122,10 +122,10 @@ endmacro (use_modules)
 
 # link directories
 macro (link_package PREFIX)
-    target_link_libraries (${TARGET_NAME} ${${PREFIX}_LIBRARIES})
-
     if (MSVC AND ${PREFIX}_DEBUG_LIBRARIES)
-        target_link_libraries (${TARGET_NAME} debug ${${PREFIX}_DEBUG_LIBRARIES})
+        target_link_libraries (${TARGET_NAME} optimized ${${PREFIX}_LIBRARIES} debug ${${PREFIX}_DEBUG_LIBRARIES})
+    else ()
+        target_link_libraries (${TARGET_NAME} ${${PREFIX}_LIBRARIES})
     endif ()
 endmacro (link_package)
 

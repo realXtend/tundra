@@ -33,6 +33,12 @@ macro (configure_poco)
 
     find_debug_libraries (POCO "d")
 
+    # POCO autolinks on MSVC
+    if (MSVC)
+        set (POCO_LIBRARIES "")
+        set (POCO_DEBUG_LIBRARIES "")
+    endif ()
+
     sagase_configure_report (POCO)
 endmacro (configure_poco)
 
