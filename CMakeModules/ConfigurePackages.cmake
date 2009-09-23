@@ -31,6 +31,8 @@ macro (configure_poco)
         COMPONENTS Poco PocoFoundation PocoNet PocoUtil PocoXML
         PREFIXES ${ENV_NAALI_DEP_PATH})
 
+    find_debug_libraries (POCO "d")
+
     sagase_configure_report (POCO)
 endmacro (configure_poco)
 
