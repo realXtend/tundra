@@ -193,11 +193,11 @@ namespace TpQt4Communication
 			user_->AddContacts(new_contacts);
 		}
 
-		Tp::SimpleStatusSpecMap map = tp_connection_->allowedPresenceStatuses();
-		for (Tp::SimpleStatusSpecMap::iterator i = map.begin(); i != map.end(); ++i)
-		{
+		//Tp::SimpleStatusSpecMap map = tp_connection_->allowedPresenceStatuses();
+		//for (Tp::SimpleStatusSpecMap::iterator i = map.begin(); i != map.end(); ++i)
+		//{
 
-		}
+		//}
 
 		state_ = STATE_OPEN;
 		emit Connected();

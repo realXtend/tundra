@@ -209,8 +209,8 @@ namespace CommunicationUI
 
 		std::string user_id = default_connection_->GetUser()->GetUserID();
 		std::string protocol = default_connection_->GetUser()->GetProtocol();
-		std::string presence_status = default_connection_->GetUser()->GetPresenceStatus()->GetStatusText();
-		std::string presence_message = default_connection_->GetUser()->GetPresenceStatus()->GetMessageText();
+		std::string presence_status = default_connection_->GetUser()->GetPresenceStatus();
+		std::string presence_message = default_connection_->GetUser()->GetPresenceMessage();
 		result.append("user: ");
 		result.append(user_id);
 		result.append("\n");
