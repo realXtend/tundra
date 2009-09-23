@@ -31,11 +31,21 @@ namespace TpQt4Communication
 		FriendRequest(Tp::ContactPtr contact);
 	public:
 		enum State { STATE_PENDING, STATE_ACCEPTED, STATE_REJECTED };
+
+		//!
 		Address GetAddressFrom();
+
+		//!
 		Address GetAddressTo();
+
+		//!
 		State GetState();
 
+		//! Accept friend request
+		//! Friend will be added to friend list
 		void Accecpt();
+
+		//! Reject friend request
 		void Reject();
 	private:
 		State state_;
