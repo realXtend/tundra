@@ -1,5 +1,4 @@
 <config>
 	<entry>CommunicationModule</entry>
 	<dependency>SupportModules</dependency>
-    <dependency>PythonScriptModule</dependency>
 </config>

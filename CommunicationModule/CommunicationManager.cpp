@@ -40,6 +40,9 @@ namespace TpQt4Communication
 		Tp::enableDebug(true);
 		Tp::enableWarnings(true);
 		
+		std::string message = "Create connection manager for: ";
+		message.append(CONNECTION_MANAGER_NAME);
+		LogInfo(message);
 		this->tp_connection_manager_ = Tp::ConnectionManager::create(CONNECTION_MANAGER_NAME);
 
 		Tp::PendingReady* p = this->tp_connection_manager_->becomeReady();
@@ -125,7 +128,7 @@ namespace TpQt4Communication
 			user_name.append("@");
 			user_name.append(server);
 		}
-//		QInt port = 5222;
+//		qint port = credential.GetServerPort();
 
 		params.insert("account", QString(user_name));
 		params.insert("password", QString(password));

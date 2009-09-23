@@ -34,8 +34,8 @@ namespace CommunicationUI
 			console_service->RegisterCommand(Console::CreateCommand("comm message", "Send message to default text chat session", Console::Bind(this, &ConsoleUI::OnCommandMessage)));
 			console_service->RegisterCommand(Console::CreateCommand("comm accept chat", "Accept all chat requests.", Console::Bind(this, &ConsoleUI::OnCommandAcceptTextChatSession)));
 			console_service->RegisterCommand(Console::CreateCommand("comm reject chat", "Reject all chat requests.", Console::Bind(this, &ConsoleUI::OnCommandAcceptTextChatSession)));
-			console_service->RegisterCommand(Console::CreateCommand("comm accept friend", "Accept a friend request.", Console::Bind(this, &ConsoleUI::OnCommandAcceptTextChatSession)));
-			console_service->RegisterCommand(Console::CreateCommand("comm reject friend", "Reject friend request.", Console::Bind(this, &ConsoleUI::OnCommandAcceptTextChatSession)));
+			console_service->RegisterCommand(Console::CreateCommand("comm accept friend", "Accept a friend request.", Console::Bind(this, &ConsoleUI::OnCommandAcceptFriendRequest)));
+			console_service->RegisterCommand(Console::CreateCommand("comm reject friend", "Reject friend request.", Console::Bind(this, &ConsoleUI::OnCommandRejectFriendRequest)));
 		}
 		else
 		{
@@ -251,7 +251,7 @@ namespace CommunicationUI
 			default_chat_session_ = session;
 		}
 
-		std::string result = "Not implemented";
+		std::string result = "";
 		result = "ok.";
 		return Console::ResultSuccess(result);
 	}
@@ -263,7 +263,20 @@ namespace CommunicationUI
 
 	Console::CommandResult ConsoleUI::OnCommandAcceptFriendRequest(const Core::StringVector &params)
 	{
-		return Console::ResultFailure("NOT IMPLEMENTED");
+		if ( default_connection_ == NULL )
+		{
+			result = "You have not logged in.";
+			return Console::ResultSuccess(result);
+		}
+
+		FriendRequestVector requests = default_connection_->GetFriendRequests();
+		for (FriendRequestVector::iterator i = requests.begin(); i != requests.end(); ++i)
+		{
+			(*i)->Accecpt();
+		}
+
+		std::string result = "";
+		return Console::ResultSuccess(result);
 	}
 
 	Console::CommandResult ConsoleUI::OnCommandRejectFriendRequest(const Core::StringVector &params)

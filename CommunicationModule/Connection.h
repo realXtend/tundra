@@ -12,13 +12,12 @@
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingContacts>
 
-//#include "TpCommunicationManager.h"
-
 #include "Communication.h"
 #include "Credentials.h"
 #include "User.h"
 #include "TextChatSession.h"
 #include "FriendRequest.h"
+#include "TextChatSessionRequest.h"
 #include "Contact.h"
 
 namespace TpQt4Communication
