@@ -2,8 +2,6 @@
 #include "Foundation.h"
 
 #include "QtUI.h"
-#include "User.h"
-#include "Contact.h"
 
 #include <QtUiTools>
 #include <QFile>
@@ -20,14 +18,6 @@ namespace CommunicationUI
 	{
 		this->layout_ = new QVBoxLayout(this);
 		loadUserInterface(false);
-
-		//// Test code...
-		//Conversation *mattik = new Conversation(this);
-		//mattik->textEditChat_->appendPlainText("[12:45:21] MattiK: Hello!");
-		//mattik->textEditChat_->appendPlainText("[12:47:03] You: Well hello to you too sir!");
-		//tabWidgetCoversations_->addTab(mattik, "MattiK");
-		//tabWidgetCoversations_->addTab(new Conversation(this), "Sempuki");
-
 	}
 
 	QtUI::~QtUI(void)
@@ -96,11 +86,14 @@ namespace CommunicationUI
 		ContactVector::const_iterator itr;
 		for( itr=initialContacts.begin(); itr!=initialContacts.end(); itr++ )
 		{
-			QString itemString((*itr)->GetRealName().c_str());
-			itemString.append(" (");
-			itemString.append((*itr)->GetPresenceStatus().c_str());
-			itemString.append(")");
-			listWidgetFriends_->addItem(itemString);
+			Contact *contact = (*itr);
+			ContactListItem *contactItem = new ContactListItem( QString(contact->GetRealName().c_str()),
+																QString(contact->GetPresenceStatus().c_str()),
+																QString(contact->GetPresenceMessage().c_str()), 
+																contact );
+			QObject::connect((QObject *)contact, SIGNAL( StateChanged() ), contactItem, SLOT( statusChanged() ));
+			QObject::connect(listWidgetFriends_, SIGNAL( itemDoubleClicked(QListWidgetItem) ), this, SLOT( startNewChat(QListWidgetItem) )); 
+			listWidgetFriends_->addItem(contactItem);
 		}
 	}
 
@@ -181,7 +174,16 @@ namespace CommunicationUI
 		this->loadUserInterface(false);
 	}
 
+	void QtUI::startNewChat(QListWidgetItem *clickedItem)
+	{
+		LogDebug("[Communications UI] Starting new chat...");
+		ContactListItem *listItem = (ContactListItem *)clickedItem;
+		TextChatSessionPtr chatSession = im_connection_->CreateTextChatSession(listItem->contact_);
+		
+		Conversation *conversation = new Conversation(this->tabWidgetCoversations_, chatSession, listItem->contact_);
 
+		tabWidgetCoversations_->addTab(conversation, QString(listItem->contact_->GetRealName().c_str()));
+	}
 
 	/////////////////////////////////////////////////////////////////////
 	// LOGIN CLASS
@@ -245,8 +247,8 @@ namespace CommunicationUI
 	// CONVERSATION CLASS
 	/////////////////////////////////////////////////////////////////////
 
-	Conversation::Conversation(QWidget *parent)
-		: QWidget(parent)
+	Conversation::Conversation(QWidget *parent, TextChatSessionPtr chatSession, Contact *contact)
+		: QWidget(parent), chatSession_(chatSession), contact_(contact)
 	{
 		initWidget();
 		this->show();
@@ -275,17 +277,33 @@ namespace CommunicationUI
 	}
 
 
+	/////////////////////////////////////////////////////////////////////
 	// CUSTOM QListWidgetItem CLASS
+	/////////////////////////////////////////////////////////////////////
 
 	ContactListItem::ContactListItem(QString &name, QString &status, QString &statusmessage, TpQt4Communication::Contact *contact)
-		: QListWidgetItem(0, 0), name_(name), status_(status), statusmessage_(statusmessage), contact_(contact)
+		: QListWidgetItem(0, QListWidgetItem::UserType), name_(name), status_(status), statusmessage_(statusmessage), contact_(contact)
 	{
-
+		status_.append(" - " + statusmessage);
+		this->setText(name_ + " (" + status_ + ")");
 	}
 
 	ContactListItem::~ContactListItem()
 	{
 
+	}
+
+	void ContactListItem::updateItem()
+	{
+		this->setText(name_ + " (" + status_ + ")");
+	}
+
+	void ContactListItem::statusChanged()
+	{
+		status_ = QString(this->contact_->GetPresenceStatus().c_str());
+		status_.append(" - ");
+		status_.append(this->contact_->GetPresenceMessage().c_str());
+		updateItem();
 	}
 
 } //end if namespace: CommunicationUI
