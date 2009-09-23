@@ -3,6 +3,7 @@
 
 #include "QtUI.h"
 #include "User.h"
+#include "Contact.h"
 
 #include <QtUiTools>
 #include <QFile>
@@ -17,10 +18,8 @@ namespace CommunicationUI
 	QtUI::QtUI(QWidget *parent, Foundation::Framework* framework)
 		: QWidget(parent)
 	{
-		connecting_ = false;
 		this->layout_ = new QVBoxLayout(this);
-
-		loadUserInterface();
+		loadUserInterface(false);
 
 		//// Test code...
 		//Conversation *mattik = new Conversation(this);
@@ -36,33 +35,22 @@ namespace CommunicationUI
 
 	}
 
-	void QtUI::loadUserInterface()
+	void QtUI::loadUserInterface(bool connected)
 	{
 		// Remove widget if there is one
 		if (widget_ != NULL && layout_->count() > 0)
 			layout_->removeWidget(widget_);
 
 		QUiLoader loader;
-		if (connecting_)
+		if (connected)
 		{
 			// Init normal GUI
 			QFile uiFile("./data/ui/communications.ui");
 			this->widget_ = loader.load(&uiFile, this);
 			this->widget_->setMinimumSize(472, 284);
+			this->widget_->setMaximumSize(16000, 16000);
 			uiFile.close();
-		} 
-		else
-		{
-			// Init login GUI
-			Login *loginWidget_ = new Login(this, this->currentMessage);
-			this->widget_ = loginWidget_->widget_;
-			this->widget_->setMinimumSize(440, 135);
-			QObject::connect(loginWidget_, SIGNAL( userdataSet(QString, int, QString, QString) ), this, SLOT( connectToServer(QString, int, QString, QString) ));
-			this->setWindowTitle("realXtend Communications login");
-		}
-		
-		if (connecting_) 
-		{
+
 			// Get widgets
 			tabWidgetCoversations_ = this->widget_->findChild<QTabWidget *>("tabWidget_Conversations");
 			tabWidgetCoversations_->clear();
@@ -79,6 +67,16 @@ namespace CommunicationUI
 
 			setAllEnabled(false);
 			this->setWindowTitle("realXtend Communications");
+		} 
+		else
+		{
+			// Init login GUI
+			Login *loginWidget_ = new Login(this, this->currentMessage);
+			this->widget_ = loginWidget_->widget_;
+			this->widget_->setMinimumSize(440, 157);
+			this->widget_->setMinimumSize(440, 157);
+			QObject::connect(loginWidget_, SIGNAL( userdataSet(QString, int, QString, QString) ), this, SLOT( connectToServer(QString, int, QString, QString) ));
+			this->setWindowTitle("realXtend Naali Communications login");
 		}
 
 		this->layout_->setSpacing(0);
@@ -89,7 +87,19 @@ namespace CommunicationUI
 
 	void QtUI::loadConnectedUserData(User *userData)
 	{
+		labelUsername_->setText(QString(userData->GetUserID().c_str()));
+		listWidgetFriends->clear();
 
+		ContactVector initialContacts = userData->GetContacts();
+		ContactVector::const_iterator itr;
+		for( itr=initialContacts.begin(); itr!=initialContacts.end(); itr++ )
+		{
+			QString itemString((*itr)->GetRealName().c_str());
+			itemString.append(" (");
+			itemString.append((*itr)->GetPresenceStatus().c_str());
+			itemString.append(")");
+			listWidgetFriends->addItem(itemString);
+		}
 	}
 
 	void QtUI::setAllEnabled(bool enabled)
@@ -107,8 +117,7 @@ namespace CommunicationUI
 
 	void QtUI::connectToServer(QString server, int port, QString username, QString password)
 	{
-		connecting_ = true;
-		loadUserInterface();
+		loadUserInterface(true);
 
 		// Connecti to IM server
 		credentials.SetProtocol("jabber");
@@ -116,8 +125,6 @@ namespace CommunicationUI
 		credentials.SetPassword(password.toStdString());
 		credentials.SetServer(server.toStdString());
 		credentials.SetServerPort(port);
-
-		labelUsername_->setText(username);
 
 		commManager_ = CommunicationManager::GetInstance();
 		if (commManager_->GetState() == CommunicationManager::STATE_READY)
@@ -151,14 +158,14 @@ namespace CommunicationUI
 	void QtUI::connectionEstablished()
 	{
 		connectionStatus_->setText("Connected");
+		setAllEnabled(true);
 		this->loadConnectedUserData(im_connection_->GetUser());
 	}
 
 	void QtUI::connectionFailed(QString &reason)
 	{
-		connecting_ = false;
 		this->currentMessage = reason;
-		this->loadUserInterface();
+		this->loadUserInterface(false);
 	}
 
 
@@ -243,7 +250,6 @@ namespace CommunicationUI
 		QUiLoader loader;
         QFile uiFile("./data/ui/communications_conversation.ui");
 		this->widget_ = loader.load(&uiFile, this);
-		this->widget_->setMinimumSize(472, 284);
 		uiFile.close();
 
 		textEditChat_ = this->widget_->findChild<QPlainTextEdit *>("textEdit_Chat");

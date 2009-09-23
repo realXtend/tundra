@@ -28,7 +28,7 @@ namespace CommunicationUI
 		void connectionFailed(QString &reason);
 
 	private:
-		void loadUserInterface();
+		void loadUserInterface(bool connected);
 		void loadConnectedUserData(User *userData);
 		void setAllEnabled(bool enabled);
 
@@ -36,6 +36,7 @@ namespace CommunicationUI
 		QLayout *layout_;
 		QWidget *widget_;
 		QTabWidget *tabWidgetCoversations_;
+		QListWidget *listWidgetFriends;
 		QPushButton *buttonSendMessage_;
 		QLineEdit *lineEditMessage_;
 		QLabel *labelUsername_;
@@ -46,7 +47,6 @@ namespace CommunicationUI
 		Credentials credentials;
 		CommunicationManager* commManager_;
 		Connection* im_connection_;
-		bool connecting_;
 
 	};
 

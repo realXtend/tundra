@@ -62,9 +62,14 @@ namespace TpQt4Communication
 		return tp_contact_->alias().toStdString();
 	}
 
-	//PresenceStatusWeakPtr Contact::GetPresenceStatus()
-	//{
-	//	return presence_status_;
-	//}
+	std::string Contact::GetPresenceStatus()
+	{
+		return presence_status_;
+	}
+
+	std::string Contact::GetPresenceMessage()
+	{
+		return presence_message_;
+	}
 
 } // end of namespace: Communication
