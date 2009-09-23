@@ -10,6 +10,8 @@ namespace TpQt4Communication
 	{
 		LogInfo("Create Contact object");
 		tp_contact_ = tp_contact;
+		presence_message_ = tp_contact_->presenceMessage().toStdString();
+		presence_status_ = tp_contact_->presenceStatus().toStdString();
 		ConnectSignals();
 	}
 
