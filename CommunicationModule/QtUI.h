@@ -17,6 +17,9 @@ namespace CommunicationUI
 	
 	Q_OBJECT
 
+	MODULE_LOGGING_FUNCTIONS
+	static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
+
 	public:
 		QtUI(QWidget *parent, Foundation::Framework* framework);
 		~QtUI(void);
@@ -36,7 +39,7 @@ namespace CommunicationUI
 		QLayout *layout_;
 		QWidget *widget_;
 		QTabWidget *tabWidgetCoversations_;
-		QListWidget *listWidgetFriends;
+		QListWidget *listWidgetFriends_;
 		QPushButton *buttonSendMessage_;
 		QLineEdit *lineEditMessage_;
 		QLabel *labelUsername_;
@@ -105,6 +108,25 @@ namespace CommunicationUI
 		QWidget *widget_;
 		QPlainTextEdit *textEditChat_;
 		
+	};
+
+	// CUSTOM QListWidgetItem CLASS
+
+	class ContactListItem : public QListWidgetItem
+	{
+
+	friend class QtUI;
+
+	public:
+		ContactListItem(QString &name, QString &status, QString &statusmessage, Contact *contact);
+		~ContactListItem(void);
+
+	private:
+		QString name_;
+		QString status_;
+		QString statusmessage_;
+		Contact *contact_;
+
 	};
 
 } //end if namespace: CommunicationUI
