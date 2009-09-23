@@ -54,6 +54,7 @@ namespace CommunicationUI
 			// Get widgets
 			tabWidgetCoversations_ = this->widget_->findChild<QTabWidget *>("tabWidget_Conversations");
 			tabWidgetCoversations_->clear();
+			listWidgetFriends_ = this->widget_->findChild<QListWidget *>("listWidget_Friends");
 			buttonSendMessage_ = this->widget_->findChild<QPushButton *>("pushButton_Send");
 			buttonSendMessage_->setIcon(QIcon("./data/ui/images/arrow_right_green_48.png"));
 			buttonSendMessage_->setIconSize(QSize(25,23));
@@ -74,7 +75,7 @@ namespace CommunicationUI
 			Login *loginWidget_ = new Login(this, this->currentMessage);
 			this->widget_ = loginWidget_->widget_;
 			this->widget_->setMinimumSize(440, 157);
-			this->widget_->setMinimumSize(440, 157);
+			this->widget_->setMaximumSize(440, 157);
 			QObject::connect(loginWidget_, SIGNAL( userdataSet(QString, int, QString, QString) ), this, SLOT( connectToServer(QString, int, QString, QString) ));
 			this->setWindowTitle("realXtend Naali Communications login");
 		}
@@ -87,9 +88,10 @@ namespace CommunicationUI
 
 	void QtUI::loadConnectedUserData(User *userData)
 	{
-		labelUsername_->setText(QString(userData->GetUserID().c_str()));
-		listWidgetFriends->clear();
+		// USE WHEN THIS RETURNS ACTUAL DATA
+		// labelUsername_->setText(QString(userData->GetUserID().c_str()));
 
+		listWidgetFriends_->clear();
 		ContactVector initialContacts = userData->GetContacts();
 		ContactVector::const_iterator itr;
 		for( itr=initialContacts.begin(); itr!=initialContacts.end(); itr++ )
@@ -98,12 +100,14 @@ namespace CommunicationUI
 			itemString.append(" (");
 			itemString.append((*itr)->GetPresenceStatus().c_str());
 			itemString.append(")");
-			listWidgetFriends->addItem(itemString);
+			listWidgetFriends_->addItem(itemString);
 		}
 	}
 
 	void QtUI::setAllEnabled(bool enabled)
 	{
+		tabWidgetCoversations_->setEnabled(enabled);
+		listWidgetFriends_->setEnabled(enabled);
 		buttonSendMessage_->setEnabled(enabled);
 		lineEditMessage_->setEnabled(enabled);
 		labelUsername_->setEnabled(enabled);
@@ -118,8 +122,10 @@ namespace CommunicationUI
 	void QtUI::connectToServer(QString server, int port, QString username, QString password)
 	{
 		loadUserInterface(true);
+		labelUsername_->setText(username + "@" + server); // remove when username getting works
+		connectionStatus_->setText("Initializing manager...");
 
-		// Connecti to IM server
+		// Connect to IM server
 		credentials.SetProtocol("jabber");
 		credentials.SetUserID(username.toStdString());
 		credentials.SetPassword(password.toStdString());
@@ -127,28 +133,30 @@ namespace CommunicationUI
 		credentials.SetServerPort(port);
 
 		commManager_ = CommunicationManager::GetInstance();
+
 		if (commManager_->GetState() == CommunicationManager::STATE_READY)
 		{
-			im_connection_ = commManager_->OpenConnection(credentials);
-
-			QObject::connect((QObject *)im_connection_, SIGNAL( Connected() ), this, SLOT( connectionEstablished() ));
-			QObject::connect((QObject *)im_connection_, SIGNAL( Error(String &) ), this, SLOT( connectionFailed(QString &) ));
-			return;
+			connectionStatus_->setText("Connecting...");
+			managerReady();
 		}	
-
-		if (commManager_->GetState() == CommunicationManager::STATE_ERROR)
+		else if (commManager_->GetState() == CommunicationManager::STATE_ERROR)
 		{
+			LogWarning("[Communications UI] Comm manager in error state, IM login stopped");
+			connectionStatus_->setText("Initializing manager...");
 			QString message = "Communication manager initialize error."; 
 			connectionFailed(message);
 			return;
 		}
-			
-		QObject::connect((QObject *)commManager_, SIGNAL( Ready() ), this, SLOT( managerReady() ));
-		QObject::connect((QObject *)commManager_, SIGNAL( Error(QString &) ), this, SLOT( connectionFailed(QString &) ));
+		else
+		{
+			QObject::connect((QObject *)commManager_, SIGNAL( Ready() ), this, SLOT( managerReady() ));
+			QObject::connect((QObject *)commManager_, SIGNAL( Error(QString &) ), this, SLOT( connectionFailed(QString &) ));
+		}
 	}
 
 	void QtUI::managerReady()
 	{
+		LogDebug("[Communications UI] Comm manager ready");
 		im_connection_ = commManager_->OpenConnection(credentials);
 
 		QObject::connect((QObject*)im_connection_, SIGNAL( Connected() ), this, SLOT( connectionEstablished() ));
@@ -159,11 +167,16 @@ namespace CommunicationUI
 	{
 		connectionStatus_->setText("Connected");
 		setAllEnabled(true);
-		this->loadConnectedUserData(im_connection_->GetUser());
+
+		if ( im_connection_ != NULL && im_connection_->GetUser() != NULL)
+		{
+			this->loadConnectedUserData(im_connection_->GetUser());
+		}
 	}
 
 	void QtUI::connectionFailed(QString &reason)
 	{
+		LogDebug("[Communications UI] Connection failed");
 		this->currentMessage = reason;
 		this->loadUserInterface(false);
 	}
@@ -259,6 +272,20 @@ namespace CommunicationUI
 		this->layout_->setMargin(0);
 		this->layout_->addWidget(this->widget_);
 		this->setLayout(this->layout_);
+	}
+
+
+	// CUSTOM QListWidgetItem CLASS
+
+	ContactListItem::ContactListItem(QString &name, QString &status, QString &statusmessage, TpQt4Communication::Contact *contact)
+		: QListWidgetItem(0, 0), name_(name), status_(status), statusmessage_(statusmessage), contact_(contact)
+	{
+
+	}
+
+	ContactListItem::~ContactListItem()
+	{
+
 	}
 
 } //end if namespace: CommunicationUI
