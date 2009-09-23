@@ -5,6 +5,7 @@ namespace TpQt4Communication
 	User::User(Tp::ConnectionPtr tp_connection): user_id_(""), protocol_(""), tp_connection_(tp_connection)
 	{
 		tp_contact_ = tp_connection->selfContact();
+		user_id_ = tp_contact_->id().toStdString();
 	}
 
 	void User::SetPresenceStatus(std::string status, std::string message)
