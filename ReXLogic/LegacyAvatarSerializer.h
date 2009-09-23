@@ -18,7 +18,7 @@ namespace RexLogic
     public:
         //! Reads avatar definition into an EC_AvatarAppearance from an xml document & avatar asset map
         //! \return true if mostly successful
-        static bool ReadAvatarAppearance(EC_AvatarAppearance& dest, const QDomDocument& source, const std::string& appearance_address, const std::map<std::string, std::string>& asset_map);
+        static bool ReadAvatarAppearance(EC_AvatarAppearance& dest, const QDomDocument& source);
         
         //! Reads animation definitions only from an xml document
         //! \return true if successful
@@ -44,7 +44,7 @@ namespace RexLogic
         
         //! Reads an avatar attachment from an xml node, and adds it to the vector
         //! \return true if successful
-        static bool ReadAttachment(AvatarAttachmentVector& dest, const QDomElement& elem, const std::string& appearance_address, const std::map<std::string, std::string>& asset_map);
+        static bool ReadAttachment(AvatarAttachmentVector& dest, const QDomElement& elem);
         
         //! Reads a vector3 from a string, encoded as "x y z"
         static Core::Vector3df ParseVector3(const std::string& text);
@@ -54,9 +54,6 @@ namespace RexLogic
         
         //! Reads an euler angle rotation (degrees) from a string, returns as a quaternion
         static Core::Quaternion ParseEulerAngles(const std::string& text);
-        
-    private:
-        static bool FillAssetId(AvatarAsset& dest, const std::string& appearance_address, const std::map<std::string, std::string>& asset_map);
     };
 }
 

@@ -65,11 +65,15 @@ namespace OgreRenderer
             catch (...) {}
             
             // Assign default materials that won't complain
+            original_materials_.clear();
             for (Core::uint i = 0; i < ogre_mesh_->getNumSubMeshes(); ++i)
             {
                 Ogre::SubMesh* submesh = ogre_mesh_->getSubMesh(i);
                 if (submesh)
+                {
+                    original_materials_.push_back(submesh->getMaterialName());
                     submesh->setMaterialName("UnlitTextured");
+                }
             }
             
         }

@@ -73,7 +73,7 @@ namespace OgreRenderer
         // Make sure type matches
         if (i->second->GetType() != type)
         {
-            OgreRenderingModule::LogWarning("Requested resource " + id + " with mismatching type " + type);
+            OgreRenderingModule::LogWarning("Requested resource " + id + " with mismatching type " + type + ", correct type would be " + i->second->GetType());
             return Foundation::ResourcePtr();
         }
         
