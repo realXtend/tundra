@@ -13,6 +13,10 @@
 #include "OgreMaterialUtils.h"
 #include "Renderer.h"
 #include "OgreConversionUtils.h"
+#include "OgreMeshResource.h"
+#include "OgreSkeletonResource.h"
+#include "OgreMaterialResource.h"
+#include "OgreImageTextureResource.h"
 #include "HttpTask.h"
 #include "HttpUtilities.h"
 #include "LLSDUtilities.h"
@@ -136,31 +140,44 @@ namespace RexLogic
         appearance_doc.setContent(appearance_bytes);
 
         std::map<std::string, std::string>::iterator j = contents.begin();
+        // Build mapping of human-readable asset names to id's
+        std::string host = HttpUtilities::GetHostFromUrl(avatar.GetAppearanceAddress());
+        AvatarAssetMap assets;
         while (j != contents.end())
         {
-            if (j->first != "generic xml")
-                RexLogicModule::LogInfo("Avatar asset content map: " + j->first + " " + j->second);
+            if ((j->first != "generic xml") && (j->first != "name"))
+                assets[j->first] = host + "/item/" + j->second;
             ++j;
         }
+        appearance.SetAssetMap(assets);
         
         // Deserialize appearance from the document into the EC
-        LegacyAvatarSerializer::ReadAvatarAppearance(appearance, appearance_doc, avatar.GetAppearanceAddress(), contents);
-        // If all resources exist, rebuild avatar
-        if (appearance.AreResourcesLoaded())
-            SetupAppearance(entity);
-        else
+        LegacyAvatarSerializer::ReadAvatarAppearance(appearance, appearance_doc);
+        
+        // Request needed avatar resources
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        Core::RequestTagVector tags;
+        AvatarAssetMap::iterator k = assets.begin();
+        Core::uint pending_requests = 0;
+        
+        while (k != assets.end())
         {
-            // Request needed resources
-            boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
-                GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-            Core::RequestTagVector tags;
-            appearance.RequestRendererResources(renderer.get(), tags);
-            // Associate tags with this entity
-            for (Core::uint i = 0; i < tags.size(); ++i)
+            std::string resource_id = k->second;
+            Core::request_tag_t tag = renderer->RequestResource(resource_id, GetResourceTypeFromName(k->first));
+            if (tag)
             {
-                avatar_resource_tags_[tags[i]] = entity->GetId();
+                tags.push_back(tag);
+                avatar_resource_tags_[tag] = entity->GetId();
+                pending_requests++;
             }
+            ++k;
         }
+        avatar_pending_requests_[entity->GetId()] = pending_requests;
+        
+        // In the unlikely case of no requests, rebuild avatar now
+        if (!pending_requests)
+            SetupAppearance(entity);
     }
     
     
@@ -192,9 +209,7 @@ namespace RexLogic
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
         
         // Deserialize appearance from the document into the EC
-        // Note: we have no appearance address or asset map, all assets in the default appearance are local
-        LegacyAvatarSerializer::ReadAvatarAppearance(appearance, *default_appearance_, std::string(), std::map<std::string, std::string>());
-        
+        LegacyAvatarSerializer::ReadAvatarAppearance(appearance, *default_appearance_);
         SetupAppearance(entity);
     }
     
@@ -207,6 +222,12 @@ namespace RexLogic
         Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
         if (!meshptr || !appearanceptr)
             return;
+        
+        // Fix up material/texture references
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        appearance.FixupResources(renderer.get());
         
         // Setup appearance
         SetupMeshAndMaterials(entity);
@@ -320,49 +341,45 @@ namespace RexLogic
         if (need_mesh_clone)
             HideVertices(mesh.GetEntity(), vertices_to_hide);
         
-        // Arbitrary materials would cause problems, because we really would want avatar materials to use the SuperShader style materials for
-        // proper shadowing. For now, we force all materials to be based on LitTextured shader material
         AvatarMaterialVector materials = appearance.GetMaterials();
         for (Core::uint i = 0; i < materials.size(); ++i)
         {
-            //! \todo handle multitextured materials, for now only one used (avatar generator only uses one texture per material)
-            //! \todo use material/texture resources
-            
-            // See if a texture is specified, if not, assume default
-            if (materials[i].textures_.size())
-            {
-                AvatarAsset& texture = materials[i].textures_[0];
-                if (!texture.name_.empty())
-                {
-                    // Create a new temporary material resource for texture override. Should be deleted when the appearance EC is deleted
-                    boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
-                        GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-                    
-                    Ogre::MaterialPtr override_mat = OgreRenderer::GetOrCreateLitTexturedMaterial(renderer->GetUniqueObjectName().c_str());
-                    materials[i].asset_.resource_ = OgreRenderer::CreateResourceFromMaterial(override_mat);
-                    
-                    // Load local texture if not yet loaded
-                    if (texture.resource_id_.empty())
-                    {
-                        Ogre::TextureManager& tex_mgr = Ogre::TextureManager::getSingleton();
-                        Ogre::TexturePtr tex = tex_mgr.getByName(texture.name_);
-                        if (tex.isNull())
-                        {
-                            try
-                            {
-                                tex_mgr.load(texture.name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-                            }
-                            catch (Ogre::Exception& e)
-                            {
-                                RexLogicModule::LogWarning("Local texture load failed: " + std::string(e.what()));
-                            }
-                        }
-                    }
-                    OgreRenderer::SetTextureUnitOnMaterial(override_mat, texture.GetLocalOrResourceName());
-                    
-                    mesh.SetMaterial(i, override_mat->getName());
-                }
-            }
+            mesh.SetMaterial(i, materials[i].asset_.GetLocalOrResourceName());
+            //// See if a texture is specified, if not, assume default
+            //if (materials[i].textures_.size())
+            //{
+            //    AvatarAsset& texture = materials[i].textures_[0];
+            //    if (!texture.name_.empty())
+            //    {
+            //        // Create a new temporary material resource for texture override. Should be deleted when the appearance EC is deleted
+            //        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+            //            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+            //        
+            //        Ogre::MaterialPtr override_mat = OgreRenderer::GetOrCreateLitTexturedMaterial(renderer->GetUniqueObjectName().c_str());
+            //        materials[i].asset_.resource_ = OgreRenderer::CreateResourceFromMaterial(override_mat);
+            //        
+            //        // Load local texture if not yet loaded
+            //        if (!texture.resource_)
+            //        {
+            //            Ogre::TextureManager& tex_mgr = Ogre::TextureManager::getSingleton();
+            //            Ogre::TexturePtr tex = tex_mgr.getByName(texture.name_);
+            //            if (tex.isNull())
+            //            {
+            //                try
+            //                {
+            //                    tex_mgr.load(texture.name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            //                }
+            //                catch (Ogre::Exception& e)
+            //                {
+            //                    RexLogicModule::LogWarning("Local texture load failed: " + std::string(e.what()));
+            //                }
+            //            }
+            //        }
+            //        OgreRenderer::SetTextureUnitOnMaterial(override_mat, texture.GetLocalOrResourceName());
+            //        
+            //        mesh.SetMaterial(i, override_mat->getName());
+            //    }
+            //}
         }
         
         // Store the modified materials vector (with created temp resources) to the EC
@@ -389,9 +406,12 @@ namespace RexLogic
         for (Core::uint i = 0; i < attachments.size(); ++i)
         {
             // Setup attachment meshes
-            //! \todo use mesh resources
-            //! \todo use material & texture resources, force attachments to use shader materials?
             mesh.SetAttachmentMesh(i, attachments[i].mesh_.GetLocalOrResourceName(), attachments[i].bone_name_, attachments[i].link_skeleton_);
+            // Setup attachment mesh materials
+            for (Core::uint j = 0; j < attachments[i].materials_.size(); ++j)
+            {
+                mesh.SetAttachmentMaterial(i, j, attachments[i].materials_[j].asset_.GetLocalOrResourceName());
+            }
             mesh.SetAttachmentPosition(i, attachments[i].transform_.position_);
             mesh.SetAttachmentOrientation(i, attachments[i].transform_.orientation_);
             mesh.SetAttachmentScale(i, attachments[i].transform_.scale_);
@@ -746,15 +766,28 @@ namespace RexLogic
         EC_OpenSimAvatar& avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatarptr.get());
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
         
-        // See if still missing some resource
-        if (!appearance.AreResourcesLoaded())
+        if (avatar_pending_requests_[id])
         {
-            appearance.ResourceLoaded(event_data->resource_);
-            // If this was the last, can update appearance
-            if (appearance.AreResourcesLoaded())
+            appearance.SetResource(event_data->resource_);
+            avatar_pending_requests_[id]--;
+            // If was the last request, rebuild avatar
+            if (avatar_pending_requests_[id] == 0)
                 SetupAppearance(entity);
         }
         
         return true;
+    }
+    
+    const std::string& AvatarAppearance::GetResourceTypeFromName(const std::string& name)
+    {
+        if (name.find(".mesh") != std::string::npos)
+            return OgreRenderer::OgreMeshResource::GetTypeStatic();
+        if (name.find(".skeleton") != std::string::npos)
+            return OgreRenderer::OgreSkeletonResource::GetTypeStatic();
+        if (name.find(".material") != std::string::npos)
+            return OgreRenderer::OgreMaterialResource::GetTypeStatic();
+        
+        // If not any of these, assume a texture image
+        return OgreRenderer::OgreImageTextureResource::GetTypeStatic();
     }
 }

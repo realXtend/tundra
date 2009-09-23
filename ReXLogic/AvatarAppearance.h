@@ -90,6 +90,9 @@ namespace RexLogic
         //! Processes an avatar appearance download result
         void ProcessAppearanceDownload(Scene::EntityPtr entity, const std::vector<Core::u8>& data);
         
+        //! Guesses avatar asset resource type from human-readable asset name
+        static const std::string& GetResourceTypeFromName(const std::string& name);
+        
         //! Gets a bone safely from the avatar skeleton
         /*! \return Pointer to bone, or 0 if does not exist
          */
@@ -106,6 +109,9 @@ namespace RexLogic
         
         //! Avatar resource request tags associated to entity
         std::map<Core::request_tag_t, Core::entity_id_t> avatar_resource_tags_;
+        
+        //! Amount of pending avatar resource requests. When hits 0, should be able to build avatar
+        std::map<Core::entity_id_t, Core::uint> avatar_pending_requests_;
         
         RexLogicModule *rexlogicmodule_;
     };

@@ -153,6 +153,9 @@ namespace OgreRenderer
 
     void SetTextureUnitOnMaterial(Ogre::MaterialPtr material, const std::string& texture_name, Core::uint index)
     {
+        if (material.isNull())
+            return;
+        
         Ogre::TextureManager &tm = Ogre::TextureManager::getSingleton();
         Ogre::TexturePtr tex = tm.getByName(texture_name);
         

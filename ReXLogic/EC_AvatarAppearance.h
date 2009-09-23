@@ -15,6 +15,9 @@ namespace OgreRenderer
 
 namespace RexLogic
 {
+   //! Avatar asset name map (key: human-readable name, value: resource id)
+    typedef std::map<std::string, std::string> AvatarAssetMap;
+    
     //! Defines an asset for an avatar
     class AvatarAsset
     {
@@ -23,16 +26,10 @@ namespace RexLogic
         std::string name_;
         //! Asset resource id
         std::string resource_id_;
-        //! Asset resource type
-        std::string resource_type_;
         //! Resource (once it has been loaded)
         Foundation::ResourcePtr resource_;
         
-        bool IsLoaded() const;
-        
-        void ResourceLoaded(Foundation::ResourcePtr resource);
-        
-        void RequestRendererResource(OgreRenderer::Renderer* renderer, Core::RequestTagVector& tags);
+        void SetResource(Foundation::ResourcePtr resource, const AvatarAssetMap& asset_map);
         
         const std::string& GetLocalOrResourceName() const;
     };
@@ -186,7 +183,7 @@ namespace RexLogic
         AvatarAsset mesh_;
         //! Whether skeleton should be linked (for animations)
         bool link_skeleton_;
-        //! Materials used by the mesh
+        //! Materials used by the attachment mesh
         AvatarMaterialVector materials_;
         //! Transform 
         Transform transform_;
@@ -234,12 +231,16 @@ namespace RexLogic
         bool HasProperty(const std::string& name) const;
         const std::string& GetProperty(const std::string& name) const;
         
-        void ResourceLoaded(Foundation::ResourcePtr resource);
-        void RequestRendererResources(OgreRenderer::Renderer* renderer, Core::RequestTagVector& tags);
-        bool AreResourcesLoaded() const;
+        const AvatarAssetMap& GetAssetMap() const { return asset_map_; }
+        void SetAssetMap(const AvatarAssetMap& map) { asset_map_ = map; }
+        
+        void SetResource(Foundation::ResourcePtr resource);
+        void FixupResources(OgreRenderer::Renderer* renderer);
         
     private:
         EC_AvatarAppearance(Foundation::ModuleInterface* module);
+        
+        void FixupMaterial(AvatarMaterial& mat, OgreRenderer::Renderer* renderer);
         
         //! Avatar mesh
         AvatarAsset mesh_;
@@ -257,6 +258,8 @@ namespace RexLogic
         BoneModifierSetVector bone_modifiers_;
         //! Morph modifiers
         MorphModifierVector morph_modifiers_;
+        //! Avatar asset name map
+        AvatarAssetMap asset_map_;
         //! Miscellaneous properties
         AvatarPropertyMap properties_;
     };

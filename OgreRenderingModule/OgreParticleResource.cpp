@@ -30,6 +30,7 @@ namespace OgreRenderer
 
     bool OgreParticleResource::SetData(Foundation::AssetPtr source)
     {
+        //! \todo fix like OgreMaterialResource::SetData(). Ogre script parser cannot accept url as resource name
         RemoveTemplates();
         references_.clear();
 

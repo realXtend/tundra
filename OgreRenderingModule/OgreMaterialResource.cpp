@@ -36,6 +36,9 @@ namespace OgreRenderer
         // Remove old material if any
         RemoveMaterial();
         references_.clear();
+        original_textures_.clear();
+
+        Ogre::MaterialManager& matmgr = Ogre::MaterialManager::getSingleton(); 
 
         OgreRenderingModule::LogDebug("Parsing material " + source->GetId());
         
@@ -51,6 +54,11 @@ namespace OgreRenderer
         }
 
         Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(const_cast<Core::u8 *>(source->GetData()), source->GetSize()));
+
+        static int tempname_count = 0;
+        tempname_count++;
+        std::string tempname = "TempMat" + Core::ToString<int>(tempname_count);
+        
         try
         {
             int num_materials = 0;
@@ -59,10 +67,12 @@ namespace OgreRenderer
             int skip_brace_level = 0;
             // Parsed/modified material script
             std::ostringstream output;
+            
 
             while (!data->eof())
             {
                 Ogre::String line = data->getLine();
+                
                 // Skip empty lines & comments
                 if ((line.length()) && (line.substr(0, 2) != "//"))
                 {
@@ -74,7 +84,7 @@ namespace OgreRenderer
                         {
                             if (num_materials == 0)
                             {
-                                line = "material " + id_;
+                                line = "material " + tempname;
                                 ++num_materials;
                             }
                             else
@@ -92,6 +102,7 @@ namespace OgreRenderer
                                 // Note: we assume all texture references are asset based. ResourceHandler checks later whether this is true,
                                 // before requesting the reference
                                 references_.push_back(Foundation::ResourceReference(tex_name, OgreTextureResource::GetTypeStatic()));
+                                original_textures_.push_back(tex_name);
                             }
                         }
 
@@ -104,44 +115,43 @@ namespace OgreRenderer
                         // Write line to the modified copy
                         if (!skip_until_next)
                             output << line << std::endl;
-
                         if (brace_level <= skip_brace_level)
                             skip_until_next = false;
                     }
                 }
             }
 
-            /////\todo Poor reading of the material name. Change this
-            ///// The Ogre material name and the OpenSim asset name should coincide, so we need to replace the name we read here with the
-            ///// Rex asset name.
-            //data->seek(0);
-            //char str[512] = {};
-            //char materialName[512] = {};
-            //data->readLine(str, 510);
-            //sscanf(str, "material %s", materialName);
-            //data->seek(0);
-
             std::string output_str = output.str();
             Ogre::DataStreamPtr modified_data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream((Core::u8 *)(&output_str[0]), output_str.size()));
 
-            Ogre::MaterialManager::getSingleton().parseScript(modified_data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-            ogre_material_ = Ogre::MaterialManager::getSingleton().getByName(id_);
-            if (ogre_material_.isNull())
+            matmgr.parseScript(modified_data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            Ogre::MaterialPtr tempmat;
+            tempmat = matmgr.getByName(tempname);
+            if (tempmat.isNull())
             {
-                OgreRenderingModule::LogWarning(std::string("Failed to create an Ogre material from Rex Material asset ") +
+                OgreRenderingModule::LogWarning(std::string("Failed to create an Ogre material from material asset ") +
                     source->GetId());
 
                 return false;
             }
+            
+            // Specular, if defined, mostly gives horrible results under our lighting system (Caelum). Set to black
+            tempmat->setSpecular(0.0f, 0.0f, 0.0f, 0.0f);
+            
+            ogre_material_ = tempmat->clone(id_);
+            tempmat.setNull();
+            matmgr.remove(tempname);
         } catch (Ogre::Exception &e)
         {
             OgreRenderingModule::LogWarning(e.what());
             OgreRenderingModule::LogWarning("Failed to parse Ogre material " + source->GetId() + ".");
-
-            ogre_material_ = Ogre::MaterialManager::getSingleton().getByName(id_);
-            Ogre::ResourcePtr ogre_material = static_cast<Ogre::ResourcePtr>(ogre_material_);
-            //Ogre::MaterialManager::getSingleton().remove(static_cast<Ogre::ResourcePtr>(ogre_material_));
-            Ogre::MaterialManager::getSingleton().remove(ogre_material);
+            try
+            {
+                if (!matmgr.getByName(tempname).isNull())
+                    Ogre::MaterialManager::getSingleton().remove(tempname);
+            }
+            catch (...) {}
+            
             return false;
         }
         return true;
