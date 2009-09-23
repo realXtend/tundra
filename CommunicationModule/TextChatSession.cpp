@@ -16,6 +16,15 @@ namespace TpQt4Communication
 		//				 SLOT( OnIncomingTextChannelReady(Tp::PendingOperation*)) );
 	}
 
+	TextChatSession::~TextChatSession()
+	{
+		for (MessageVector::iterator i = messages_.begin(); i != messages_.end(); ++i)
+		{
+			delete *i;
+		}
+		messages_.clear();
+	}
+
 	void TextChatSession::OnChannelReady(Tp::PendingOperation* op )
 	{
 		if (op->isError())
@@ -74,8 +83,9 @@ namespace TpQt4Communication
 
 	void TextChatSession::OnMessageReceived(const Tp::ReceivedMessage &message)
 	{
+		Message* m = new Message("");
+		messages_.push_back(m);
 		LogInfo("Received text message");
-		
 	}
 
 	void TextChatSession::OnTextChannelCreated(Tp::PendingOperation* op)

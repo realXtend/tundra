@@ -30,6 +30,7 @@ namespace TpQt4Communication
 		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 		
 	public:
+		~TextChatSession();
 		enum State {STATE_INITIALIZING, STATE_READY, STATE_ERROR, STATE_CLOSED};
 		TextChatSession();
 		TextChatSession(Tp::TextChannelPtr tp_text_channel);
@@ -51,6 +52,7 @@ namespace TpQt4Communication
 		void Ready();
 		void Error(QString &reason);
 		void Closed();
+		void MessageReceived(Message &message);
 	};
 	typedef boost::shared_ptr<TextChatSession> TextChatSessionPtr;
 	typedef boost::weak_ptr<TextChatSession> TextChatSessionWeakPtr;

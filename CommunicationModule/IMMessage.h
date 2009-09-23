@@ -15,7 +15,7 @@ namespace TpQt4Communication
 		Message(std::string text);
 		std::string GetText();
 		Address GetAuthor();
-		int GetTimeStamp();
+		QTime GetTimeStamp();
 	private:
 		std::string text_;
 		QTime time_stamp_; 

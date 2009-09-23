@@ -14,4 +14,20 @@ namespace TpQt4Communication
 		time_stamp_ = QTime::currentTime();
 	}
 
+	std::string Message::GetText()
+	{
+		return text_;
+	}
+
+	Address Message::GetAuthor()
+	{
+		return author_;
+	}
+
+	QTime Message::GetTimeStamp()
+	{
+		return time_stamp_;
+	}
+
+
 } // end of namespace: TpQt4Communication

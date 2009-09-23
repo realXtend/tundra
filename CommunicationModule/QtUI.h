@@ -114,7 +114,8 @@ namespace CommunicationUI
 		QLayout *layout_;
 		QWidget *widget_;
 		QPlainTextEdit *textEditChat_;
-		
+	private	slots:
+		void OnMessageReceived(Message &message);
 	};
 
 	// CUSTOM QListWidgetItem CLASS
