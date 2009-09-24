@@ -44,8 +44,8 @@ namespace TpQt4Communication
 		message.append(CONNECTION_MANAGER_NAME);
 		LogInfo(message);
 		this->tp_connection_manager_ = Tp::ConnectionManager::create(CONNECTION_MANAGER_NAME);
-
-		Tp::PendingReady* p = this->tp_connection_manager_->becomeReady();
+		
+		Tp::PendingReady* p = this->tp_connection_manager_->becomeReady(Tp::ConnectionManager::FeatureCore);
 
 		QObject::connect(p,
 				SIGNAL(finished(Tp::PendingOperation *)),

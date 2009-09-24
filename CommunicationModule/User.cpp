@@ -14,7 +14,7 @@ namespace TpQt4Communication
 		presence_status_ = status;
 		QString s = presence_status_.c_str();
 		QString m = presence_message_.c_str();
-		tp_connection_->setSelfPresence(m,s);
+		tp_connection_->setSelfPresence(s,m);
 	}
 
 	void User::SetPresenceMessage(std::string message)
@@ -22,15 +22,13 @@ namespace TpQt4Communication
 		presence_message_ = message;
 		QString s = presence_status_.c_str();
 		QString m = presence_message_.c_str();
-		tp_connection_->setSelfPresence(m,s);
+		tp_connection_->setSelfPresence(s,m);
 	}
-
 
 	std::string User::GetUserID()
 	{
 		return user_id_;
 	}
-
 
 	std::string User::GetProtocol()
 	{
@@ -52,7 +50,6 @@ namespace TpQt4Communication
 	{
 		return presence_message_;
 	}
-
 
 	ContactVector User::GetContacts()
 	{

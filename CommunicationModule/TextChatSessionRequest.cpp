@@ -2,15 +2,14 @@
 
 namespace TpQt4Communication
 {
-	//TextChatSessionRequest::TextChatSessionRequest(TextChatSession* session ): session_(session), message_("")
-	//{
-	//	//tp_text_channel_ = tp_text_channel;
-	//}
-
 	TextChatSessionRequest::TextChatSessionRequest(Tp::TextChannelPtr tp_text_channel):  tp_text_channel_(tp_text_channel)
 	{
 		session_ = new TextChatSession(tp_text_channel);
-		Tp::PendingReady* p =  tp_text_channel->becomeReady(Tp::TextChannel::FeatureMessageQueue);
+		Tp::Features features;
+		features.insert(Tp::TextChannel::FeatureMessageQueue);
+		features.insert(Tp::TextChannel::FeatureCore);
+		features.insert(Tp::TextChannel::FeatureMessageCapabilities);
+		Tp::PendingReady* p =  tp_text_channel->becomeReady(features);
 		QObject::connect(p, SIGNAL(finished(Tp::PendingOperation*)), SLOT( OnTextChatSessionReady() ) );
 	}
 

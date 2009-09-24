@@ -6,12 +6,8 @@
 
 namespace TpQt4Communication
 {
-
-	Message::Message(std::string text)
+	Message::Message(std::string text, Contact* author) : text_(text), author_(author), time_stamp_(QTime::currentTime())
 	{
-		text_ = text;
-		author_ = "";
-		time_stamp_ = QTime::currentTime();
 	}
 
 	std::string Message::GetText()
@@ -19,7 +15,7 @@ namespace TpQt4Communication
 		return text_;
 	}
 
-	Address Message::GetAuthor()
+	Contact* Message::GetAuthor()
 	{
 		return author_;
 	}

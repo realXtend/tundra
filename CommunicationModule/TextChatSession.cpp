@@ -12,7 +12,11 @@ namespace TpQt4Communication
 	TextChatSession::TextChatSession(Tp::TextChannelPtr tp_text_channel): tp_text_channel_(tp_text_channel), state_(STATE_INITIALIZING)
 	{
 		LogInfo("TextChatSession object created (with channel object)");
-		QObject::connect(tp_text_channel_->becomeReady(Tp::TextChannel::FeatureMessageQueue), 
+		Tp::Features features;
+		features.insert(Tp::TextChannel::FeatureMessageQueue);
+		features.insert(Tp::TextChannel::FeatureCore);
+		features.insert(Tp::TextChannel::FeatureMessageCapabilities);
+		QObject::connect(tp_text_channel_->becomeReady(features), 
 					     SIGNAL( finished(Tp::PendingOperation*) ),
 						SLOT( OnChannelReady(Tp::PendingOperation*)) );
 	}
@@ -26,12 +30,6 @@ namespace TpQt4Communication
 		messages_.clear();
 	}
 
-
-	//void TextChatSession::OnTextReceived(uint a, uint b, uint c, uint d, uint e, const QString &text)
-	//{
-	//	LogError("tp_text_channel_->OnTextReceived");
-	//}
-
 	void TextChatSession::Invite(Address a)
 	{
 		LogError("NOT IMPLEMENTED.");
@@ -40,9 +38,8 @@ namespace TpQt4Communication
 	void TextChatSession::SendTextMessage(std::string text)
 	{
 		assert( !tp_text_channel_.isNull() );
-		LogInfo("Try to send a text message.");
 
-		Message* m = new Message(text);
+		Message* m = new Message(text, NULL);
 		messages_.push_back(m);
 
 		Tp::PendingSendMessage* p = tp_text_channel_->send(QString(text.c_str()));
@@ -81,17 +78,8 @@ namespace TpQt4Communication
 
 		Tp::PendingChannel *pChannel = qobject_cast<Tp::PendingChannel *>(op);
 		Tp::ChannelPtr text_channel = pChannel->channel();
-//		text_channel_ = text_channel;
 
-		bool ready1 = text_channel->isReady(Tp::TextChannel::FeatureMessageCapabilities);
-	    bool ready2 = text_channel->isReady(Tp::TextChannel::FeatureMessageQueue);
-	    bool ready3 = text_channel->isReady(Tp::TextChannel::FeatureMessageSentSignal);
-		
-//		Tp::Channel *channel = text_channel.data();  
-//		Tp::TextChannel *textChannel = dynamic_cast<Tp::TextChannel *>(channel);
 		tp_text_channel_ = Tp::TextChannelPtr( dynamic_cast<Tp::TextChannel *>(text_channel.data()) );
-
-//		channel->becomeReady(TextChannel::FeatureMessageQueue
 
 		QObject::connect(tp_text_channel_->becomeReady(Tp::TextChannel::FeatureMessageQueue), 
 			     SIGNAL( finished(Tp::PendingOperation*) ),
@@ -106,11 +94,25 @@ namespace TpQt4Communication
 
 		if (op->isError())
 		{
-			//op->Message();
-			LogError("Cannot initialize text channel");
+			QString e = "Cannot initialize text channel: ";
+			e.append( op->errorMessage() );
+			LogError( e.toStdString() );
+			state_ = STATE_ERROR;
 			return;
 		}
 		LogInfo("Text channel ready.");
+
+		bool ready1 = tp_text_channel_->isReady(Tp::TextChannel::FeatureMessageCapabilities);
+	    bool ready2 = tp_text_channel_->isReady(Tp::TextChannel::FeatureMessageQueue);
+	    bool ready3 = tp_text_channel_->isReady(Tp::TextChannel::FeatureMessageSentSignal);
+
+		QStringList interfaces = tp_text_channel_->interfaces();
+		for (QStringList::iterator i = interfaces.begin(); i != interfaces.end(); ++i)
+		{
+			QString line = "Text channel have interface: ";
+			line.append(*i);
+			LogInfo(line.toStdString());
+		}
 
 		Tp::ContactPtr initiator = tp_text_channel_->initiatorContact();
 		if ( !initiator.isNull() )
@@ -132,16 +134,12 @@ namespace TpQt4Communication
 
 		// Receive pending messages
 	    QDBusPendingReply<Tp::PendingTextMessageList> pending_messages = tp_text_channel_->textInterface()->ListPendingMessages(true);
-//		QDBusPendingReply<Tp::PendingTextMessageList>::ite
 		
 		if( !pending_messages.isFinished() )
-		{
 			pending_messages.waitForFinished();
-		}
-		int count = pending_messages.count();
 		for (Tp::PendingTextMessageList::iterator i = pending_messages.value().begin(); i != pending_messages.value().end(); ++i)
 		{
-			//QString text = (*i).text;
+	//		QString text( (*i).text );
 		}
 
 		//for(int i = 0; i < count; ++i)
@@ -160,7 +158,6 @@ namespace TpQt4Communication
 	void TextChatSession::OnChannelMessageSent(const Tp::Message& message, Tp::MessageSendingFlags flags, const QString &text)
 	{
 		LogInfo("OnChannelMessageSent");
-
 	}
 
 	void TextChatSession::OnChannelPendingMessageRemoved(const Tp::ReceivedMessage &message)
@@ -170,7 +167,9 @@ namespace TpQt4Communication
 
 	void TextChatSession::OnMessageReceived(const Tp::ReceivedMessage &message)
 	{
-		Message* m = new Message(message.text().toStdString());
+		Tp::ContactPtr sender = message.sender();
+		Message* m = new Message(message.text().toStdString(), new Contact(sender));
+//		QDateTime time = message.sent();
 		messages_.push_back(m);
 		emit MessageReceived(*m);
 		LogInfo("Received text message");
@@ -180,6 +179,5 @@ namespace TpQt4Communication
 	{
 		return state_;
 	}
-
 
 } // end of namespace:  TpQt4Communication
