@@ -8,6 +8,7 @@
 #include "CommunicationManager.h"
 #include "ConsoleUI.h"
 #include "QtUI.h"
+#include "UICanvas.h"
 
 
 /**
@@ -48,6 +49,7 @@ namespace Communication
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communication;
 
 	private:
+		boost::shared_ptr<QtUI::UICanvas> canvas_;
 		TpQt4Communication::CommunicationManager* communication_manager_;
 		CommunicationUI::ConsoleUI* console_ui_;
 		CommunicationUI::QtUI* qt_ui_;

@@ -131,26 +131,6 @@ color: rgb(40, 129, 223);</string>
              <property name="frame">
               <bool>true</bool>
              </property>
-             <item>
-              <property name="text">
-               <string>Online</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Busy</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Away</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Offline</string>
-              </property>
-             </item>
             </widget>
            </item>
           </layout>

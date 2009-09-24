@@ -27,7 +27,7 @@ namespace CommunicationUI
 	static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 
 	public:
-		QtUI(QWidget *parent, Foundation::Framework* framework);
+		QtUI(QWidget *parent);
 		~QtUI(void);
 
 	public slots:
@@ -35,6 +35,9 @@ namespace CommunicationUI
 		void managerReady();
 		void connectionEstablished();
 		void connectionFailed(QString &reason);
+
+		void statusChanged(const QString &newStatus);
+		void statusMessageChanged();
 		void startNewChat(QListWidgetItem *clickedItem);
 		void newChatSessionRequest(TextChatSessionRequest *);
 		void sendNewChatMessage();

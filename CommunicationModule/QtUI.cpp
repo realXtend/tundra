@@ -14,7 +14,7 @@ namespace CommunicationUI
 	// QtUI CLASS
 	/////////////////////////////////////////////////////////////////////
 
-	QtUI::QtUI(QWidget *parent, Foundation::Framework* framework)
+	QtUI::QtUI(QWidget *parent)
 		: QWidget(parent)
 	{
 		this->setLayout(new QVBoxLayout);
@@ -88,14 +88,15 @@ namespace CommunicationUI
 
 	void QtUI::loadConnectedUserData(User *userData)
 	{
-		//labelUsername_->setText(QString(userData->GetUserID().c_str()));
+		// debug, use when you get this for real...
+		//labelUsername_->setText(QString(userData->GetUserID().c_str())); 
 		listWidgetFriends_->clear();
 		ContactVector initialContacts = userData->GetContacts();
-		ContactVector::const_iterator itr;
+		ContactVector::const_iterator itrContacts;
 
-		for( itr=initialContacts.begin(); itr!=initialContacts.end(); itr++ )
+		for( itrContacts=initialContacts.begin(); itrContacts!=initialContacts.end(); itrContacts++ )
 		{
-			Contact *contact = (*itr);
+			Contact *contact = (*itrContacts);
 			ContactListItem *contactItem = new ContactListItem( QString(contact->GetRealName().c_str()),
 																QString(contact->GetPresenceStatus().c_str()),
 																QString(contact->GetPresenceMessage().c_str()), 
@@ -104,9 +105,25 @@ namespace CommunicationUI
 			listWidgetFriends_->addItem(contactItem);
 		}
 
-		QObject::connect(this->listWidgetFriends_, SIGNAL( itemDoubleClicked(QListWidgetItem *) ), this, SLOT( startNewChat(QListWidgetItem *) )); 
+		// Get available state options
+		PresenceStatusOptions options = im_connection_->GetAvailablePresenceStatusOptions();
+		PresenceStatusOptions::const_iterator itrStatusOptions;
+		comboBoxStatus_->clear();
 
-		PresenceStatusOptions options =  im_connection_->GetAvailablePresenceStatusOptions();
+		for( itrStatusOptions=options.begin(); itrStatusOptions!=options.end(); itrStatusOptions++ )
+		{
+			comboBoxStatus_->addItem( QString((*itrStatusOptions).c_str()) );
+		}
+
+		// debug testing items, remove when above really sets something to the combobox
+		comboBoxStatus_->addItem("online");
+		comboBoxStatus_->addItem("away");
+		comboBoxStatus_->addItem("afk");
+
+		// Connect signals
+		QObject::connect(listWidgetFriends_, SIGNAL( itemDoubleClicked(QListWidgetItem *) ), this, SLOT( startNewChat(QListWidgetItem *) )); 
+		QObject::connect(comboBoxStatus_, SIGNAL( currentIndexChanged(const QString &) ), this, SLOT( statusChanged(const QString &) ));
+		QObject::connect(lineEditStatus_, SIGNAL( returnPressed() ), this, SLOT( statusMessageChanged() ));
 	}
 
 	void QtUI::setAllEnabled(bool enabled)
@@ -123,6 +140,8 @@ namespace CommunicationUI
 	/////////////
 	//  SLOTS  //
 	/////////////
+
+	// IM CONNECTION RELATED SLOTS //
 
 	void QtUI::connectToServer(QString server, int port, QString username, QString password)
 	{
@@ -174,7 +193,6 @@ namespace CommunicationUI
 		if ( im_connection_ != NULL && im_connection_->GetUser() != NULL)
 		{
 			this->loadConnectedUserData(im_connection_->GetUser());
-			
 			QObject::connect((QObject *)im_connection_, SIGNAL( ReceivedTextChatSessionRequest(TextChatSessionRequest *) ), this, SLOT( newChatSessionRequest(TextChatSessionRequest *) ));
 		}
 		else
@@ -188,6 +206,18 @@ namespace CommunicationUI
 		LogDebug("[Communications UI] Connection failed");
 		this->currentMessage = reason;
 		this->loadUserInterface(false);
+	}
+
+	// GUI RELATED SLOTS //
+
+	void QtUI::statusChanged(const QString &newStatus)
+	{
+		im_connection_->GetUser()->SetPresenceStatus( newStatus.toStdString() );
+	}
+
+	void QtUI::statusMessageChanged()
+	{
+		im_connection_->GetUser()->SetPresenceMessage( lineEditStatus_->text().toStdString() );
 	}
 
 	void QtUI::startNewChat(QListWidgetItem *clickedItem)
@@ -204,8 +234,15 @@ namespace CommunicationUI
 		TextChatSessionPtr chatSession = chatSessionRequest->Accept();
 		if (chatSession.get() != NULL)
 		{
-			Conversation *conversation = new Conversation(this->tabWidgetCoversations_, chatSession, chatSessionRequest->GetOriginatorContact());
-			tabWidgetCoversations_->addTab(conversation, QString(chatSessionRequest->GetOriginatorContact()->GetRealName().c_str()));
+			if (chatSessionRequest->GetOriginatorContact() != NULL )
+			{
+				Conversation *conversation = new Conversation(this->tabWidgetCoversations_, chatSession, chatSessionRequest->GetOriginatorContact());
+				tabWidgetCoversations_->addTab(conversation, QString(chatSessionRequest->GetOriginatorContact()->GetRealName().c_str()));
+			}
+			else
+			{
+				LogWarning("newChatSessionRequest (handled successfully)");
+			}
 		}
 		LogInfo("newChatSessionRequest (handled successfully)");
 	}
