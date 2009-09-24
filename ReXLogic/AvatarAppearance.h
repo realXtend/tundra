@@ -90,6 +90,15 @@ namespace RexLogic
         //! Processes an avatar appearance download result
         void ProcessAppearanceDownload(Scene::EntityPtr entity, const std::vector<Core::u8>& data);
         
+        //! Fixes up avatar resource references after downloading of all avatar assets complete
+        void FixupResources(Scene::EntityPtr entity);
+        
+        //! Fixes up a generic resource, whose type is known
+        void FixupResource(AvatarAsset& asset, const AvatarAssetMap& asset_map, const std::string& resource_type);
+        
+        //! Fixes up avatar material (material script/texture resources)
+        void FixupMaterial(AvatarMaterial& mat, const AvatarAssetMap& asset_map);
+        
         //! Guesses avatar asset resource type from human-readable asset name
         static const std::string& GetResourceTypeFromName(const std::string& name);
         
