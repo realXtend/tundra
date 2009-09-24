@@ -116,11 +116,6 @@ namespace CommunicationUI
 			comboBoxStatus_->addItem( QString((*itrStatusOptions).c_str()) );
 		}
 
-		// debug testing items, remove when above really sets something to the combobox
-		comboBoxStatus_->addItem("online");
-		comboBoxStatus_->addItem("away");
-		comboBoxStatus_->addItem("afk");
-
 		// Connect signals
 		QObject::connect(listWidgetFriends_, SIGNAL( itemDoubleClicked(QListWidgetItem *) ), this, SLOT( startNewChat(QListWidgetItem *) )); 
 		QObject::connect(comboBoxStatus_, SIGNAL( currentIndexChanged(const QString &) ), this, SLOT( statusChanged(const QString &) ));
