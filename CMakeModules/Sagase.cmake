@@ -75,9 +75,8 @@ endfunction (sagase_generate_paths)
 # "NAMES" is a list of names by which the package is known. used by
 # find_package and in constructing search path names.
 # "COMPONENTS" is a list of sub-components that are required. used by
-# find_package and by pkg-config.
+# find_package and by brute-force.
 # "PREFIXES" is a list of path prefixes where the components might be found.
-# "SKIP_FIND_PACKAGE" causes it to bypass find_package
 # results are in ${PREFIX}_INCLUDE_DIRS, ${PREFIX}_LIBRARY_DIRS, 
 # ${PREFIX}_LIBRARIES, ${PREFIX}_DEFINITIONS, or fatal error.
 
@@ -124,7 +123,7 @@ macro (sagase_configure_package PREFIX)
 
         # find_package can't handle packages in all caps.
         # cmake is a macro language, which means it defines global variables,
-        # which it tries to namespace by choosing all caps variable names,
+        # which it tries to namespace by choosing all caps variable names.
         # when searching for a package who's name is all caps, this appears to
         # cause a name collision, and is thus bypassed.
         if (NOT name_ STREQUAL name_upper_)
