@@ -12,7 +12,9 @@ http://dcsoft.com/community_server/blogs/dcsoft/archive/2009/03/06/how-to-setup-
 3. Add C:\Qt\bin to your path
 4. Open VS2008 command prompt, go to C:\Qt and run 
      
-      configure -platform win32-msvc2008
+      configure -platform win32-msvc2008 -opensource -no-qt3support -dbus -I "%NAALI_DEP_PATH%\dbus\include" -L "%NAALI_DEP_PATH%\dbus\lib" -openssl -I "%NAALI_DEP_PATH%\OpenSSL\include" -L "%NAALI_DEP_PATH%\OpenSSL\lib"
+
+        * note: if you encounter a link error in a moc-related object, you can try deleting the mocinclude.tmp file in that directory.
 
 5. In the same directory, run
 
