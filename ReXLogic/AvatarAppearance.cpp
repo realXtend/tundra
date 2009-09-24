@@ -4,9 +4,9 @@
 #include "AvatarAppearance.h"
 #include "LegacyAvatarSerializer.h"
 #include "RexLogicModule.h"
+#include "SceneManager.h"
 #include "EC_AvatarAppearance.h"
 #include "EC_OpenSimAvatar.h"
-#include "SceneManager.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "OgreMaterialResource.h"
@@ -75,112 +75,6 @@ namespace RexLogic
         new_download->AddRequest<HttpUtilities::HttpTaskRequest>(new_request);
     }
     
-    void AvatarAppearance::ProcessAppearanceDownloads()
-    {
-        // Check download results
-        std::map<Core::entity_id_t, HttpUtilities::HttpTaskPtr>::iterator i = appearance_downloaders_.begin();
-        while (i != appearance_downloaders_.end())
-        {
-            bool done = false;
-            
-            if (i->second)
-            {
-                HttpUtilities::HttpTaskResultPtr result = i->second->GetResult<HttpUtilities::HttpTaskResult>();
-                if (result)
-                {
-                    if (result->GetSuccess())
-                    {
-                        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(i->first);
-                        if (entity)
-                            ProcessAppearanceDownload(entity, result->data_);
-                    }
-                    else
-                    {
-                        RexLogicModule::LogInfo("Error downloading avatar appearance for avatar " + Core::ToString<int>(i->first) + ": " + result->reason_);
-                    } 
-                    
-                    done = true;
-                }
-            }
-            
-            if (!done)
-                ++i;
-            else
-                appearance_downloaders_.erase(i++);
-        }
-    }
-    
-    void AvatarAppearance::ProcessAppearanceDownload(Scene::EntityPtr entity, const std::vector<Core::u8>& data)
-    {
-        if (!entity)
-            return;
-        Foundation::ComponentPtr avatarptr = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!avatarptr || !appearanceptr)
-            return;
-        EC_OpenSimAvatar& avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatarptr.get());
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
-        
-        std::string data_str((const char*)&data[0], data.size());
-        std::map<std::string, std::string> contents = RexTypes::ParseLLSDMap(data_str);
-        
-        // Get the avatar appearance description ("generic xml")
-        std::map<std::string, std::string>::iterator i = contents.find("generic xml");
-        if (i == contents.end())
-            return;
-            
-        std::string& appearance_str = i->second;
-
-        // Return to original format by substituting to < >
-        ReplaceSubstring(appearance_str, "&lt;", "<");
-        ReplaceSubstring(appearance_str, "&gt;", ">");
-            
-        QDomDocument appearance_doc("appearance");
-        QByteArray appearance_bytes(appearance_str.c_str());
-        appearance_doc.setContent(appearance_bytes);
-
-        std::map<std::string, std::string>::iterator j = contents.begin();
-        // Build mapping of human-readable asset names to id's
-        std::string host = HttpUtilities::GetHostFromUrl(avatar.GetAppearanceAddress());
-        AvatarAssetMap assets;
-        while (j != contents.end())
-        {
-            if ((j->first != "generic xml") && (j->first != "name"))
-                assets[j->first] = host + "/item/" + j->second;
-            ++j;
-        }
-        appearance.SetAssetMap(assets);
-        
-        // Deserialize appearance from the document into the EC
-        LegacyAvatarSerializer::ReadAvatarAppearance(appearance, appearance_doc);
-        
-        // Request needed avatar resources
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
-            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        Core::RequestTagVector tags;
-        AvatarAssetMap::iterator k = assets.begin();
-        Core::uint pending_requests = 0;
-        
-        while (k != assets.end())
-        {
-            std::string resource_id = k->second;
-            Core::request_tag_t tag = renderer->RequestResource(resource_id, GetResourceTypeFromName(k->first));
-            if (tag)
-            {
-                tags.push_back(tag);
-                avatar_resource_tags_[tag] = entity->GetId();
-                pending_requests++;
-            }
-            ++k;
-        }
-        avatar_pending_requests_[entity->GetId()] = pending_requests;
-        
-        // In the unlikely case of no requests, rebuild avatar now
-        if (!pending_requests)
-            SetupAppearance(entity);
-    }
-    
-    
     void AvatarAppearance::ReadDefaultAppearance(const std::string& filename)
     {
         default_appearance_ = boost::shared_ptr<QDomDocument>(new QDomDocument("defaultappearance"));
@@ -224,10 +118,7 @@ namespace RexLogic
             return;
         
         // Fix up material/texture references
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
-            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        appearance.FixupResources(renderer.get());
+        FixupResources(entity);
         
         // Setup appearance
         SetupMeshAndMaterials(entity);
@@ -345,41 +236,6 @@ namespace RexLogic
         for (Core::uint i = 0; i < materials.size(); ++i)
         {
             mesh.SetMaterial(i, materials[i].asset_.GetLocalOrResourceName());
-            //// See if a texture is specified, if not, assume default
-            //if (materials[i].textures_.size())
-            //{
-            //    AvatarAsset& texture = materials[i].textures_[0];
-            //    if (!texture.name_.empty())
-            //    {
-            //        // Create a new temporary material resource for texture override. Should be deleted when the appearance EC is deleted
-            //        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
-            //            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-            //        
-            //        Ogre::MaterialPtr override_mat = OgreRenderer::GetOrCreateLitTexturedMaterial(renderer->GetUniqueObjectName().c_str());
-            //        materials[i].asset_.resource_ = OgreRenderer::CreateResourceFromMaterial(override_mat);
-            //        
-            //        // Load local texture if not yet loaded
-            //        if (!texture.resource_)
-            //        {
-            //            Ogre::TextureManager& tex_mgr = Ogre::TextureManager::getSingleton();
-            //            Ogre::TexturePtr tex = tex_mgr.getByName(texture.name_);
-            //            if (tex.isNull())
-            //            {
-            //                try
-            //                {
-            //                    tex_mgr.load(texture.name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-            //                }
-            //                catch (Ogre::Exception& e)
-            //                {
-            //                    RexLogicModule::LogWarning("Local texture load failed: " + std::string(e.what()));
-            //                }
-            //            }
-            //        }
-            //        OgreRenderer::SetTextureUnitOnMaterial(override_mat, texture.GetLocalOrResourceName());
-            //        
-            //        mesh.SetMaterial(i, override_mat->getName());
-            //    }
-            //}
         }
         
         // Store the modified materials vector (with created temp resources) to the EC
@@ -742,6 +598,111 @@ namespace RexLogic
         }
     }
     
+    void AvatarAppearance::ProcessAppearanceDownloads()
+    {
+        // Check download results
+        std::map<Core::entity_id_t, HttpUtilities::HttpTaskPtr>::iterator i = appearance_downloaders_.begin();
+        while (i != appearance_downloaders_.end())
+        {
+            bool done = false;
+            
+            if (i->second)
+            {
+                HttpUtilities::HttpTaskResultPtr result = i->second->GetResult<HttpUtilities::HttpTaskResult>();
+                if (result)
+                {
+                    if (result->GetSuccess())
+                    {
+                        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(i->first);
+                        if (entity)
+                            ProcessAppearanceDownload(entity, result->data_);
+                    }
+                    else
+                    {
+                        RexLogicModule::LogInfo("Error downloading avatar appearance for avatar " + Core::ToString<int>(i->first) + ": " + result->reason_);
+                    } 
+                    
+                    done = true;
+                }
+            }
+            
+            if (!done)
+                ++i;
+            else
+                appearance_downloaders_.erase(i++);
+        }
+    }
+    
+    void AvatarAppearance::ProcessAppearanceDownload(Scene::EntityPtr entity, const std::vector<Core::u8>& data)
+    {
+        if (!entity)
+            return;
+        Foundation::ComponentPtr avatarptr = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!avatarptr || !appearanceptr)
+            return;
+        EC_OpenSimAvatar& avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatarptr.get());
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+        
+        std::string data_str((const char*)&data[0], data.size());
+        std::map<std::string, std::string> contents = RexTypes::ParseLLSDMap(data_str);
+        
+        // Get the avatar appearance description ("generic xml")
+        std::map<std::string, std::string>::iterator i = contents.find("generic xml");
+        if (i == contents.end())
+            return;
+            
+        std::string& appearance_str = i->second;
+
+        // Return to original format by substituting to < >
+        ReplaceSubstring(appearance_str, "&lt;", "<");
+        ReplaceSubstring(appearance_str, "&gt;", ">");
+            
+        QDomDocument appearance_doc("appearance");
+        QByteArray appearance_bytes(appearance_str.c_str());
+        appearance_doc.setContent(appearance_bytes);
+
+        std::map<std::string, std::string>::iterator j = contents.begin();
+        // Build mapping of human-readable asset names to id's
+        std::string host = HttpUtilities::GetHostFromUrl(avatar.GetAppearanceAddress());
+        AvatarAssetMap assets;
+        while (j != contents.end())
+        {
+            if ((j->first != "generic xml") && (j->first != "name"))
+                assets[j->first] = host + "/item/" + j->second;
+            ++j;
+        }
+        
+        // Deserialize appearance from the document into the EC
+        LegacyAvatarSerializer::ReadAvatarAppearance(appearance, appearance_doc);
+        appearance.SetAssetMap(assets);
+        
+        // Request needed avatar resources
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        Core::RequestTagVector tags;
+        AvatarAssetMap::iterator k = assets.begin();
+        Core::uint pending_requests = 0;
+        
+        while (k != assets.end())
+        {
+            std::string resource_id = k->second;
+            Core::request_tag_t tag = renderer->RequestResource(resource_id, GetResourceTypeFromName(k->first));
+            if (tag)
+            {
+                tags.push_back(tag);
+                avatar_resource_tags_[tag] = entity->GetId();
+                pending_requests++;
+            }
+            ++k;
+        }
+        avatar_pending_requests_[entity->GetId()] = pending_requests;
+        
+        // In the unlikely case of no requests, rebuild avatar now
+        if (!pending_requests)
+            SetupAppearance(entity);
+    }
+    
     bool AvatarAppearance::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (!event_id == Resource::Events::RESOURCE_READY)
@@ -759,16 +720,13 @@ namespace RexLogic
         if (!entity)
             return true;
         
-        Foundation::ComponentPtr avatarptr = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
         Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!avatarptr || !appearanceptr)
+        if (!appearanceptr)
             return true;
-        EC_OpenSimAvatar& avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatarptr.get());
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
         
         if (avatar_pending_requests_[id])
         {
-            appearance.SetResource(event_data->resource_);
             avatar_pending_requests_[id]--;
             // If was the last request, rebuild avatar
             if (avatar_pending_requests_[id] == 0)
@@ -787,7 +745,137 @@ namespace RexLogic
         if (name.find(".material") != std::string::npos)
             return OgreRenderer::OgreMaterialResource::GetTypeStatic();
         
-        // If not any of these, assume a texture image
+        // If not any of these, assume a texture image (.png, .jpg etc.)
         return OgreRenderer::OgreImageTextureResource::GetTypeStatic();
     }
+    
+    void AvatarAppearance::FixupResources(Scene::EntityPtr entity)
+    {
+        if (!entity)
+            return;
+            
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!appearanceptr)
+            return;
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+        const AvatarAssetMap& asset_map = appearance.GetAssetMap();
+        
+        // Get mesh, skeleton, materials & attachments
+        AvatarAsset mesh = appearance.GetMesh();
+        AvatarAsset skeleton = appearance.GetSkeleton();
+        AvatarMaterialVector materials = appearance.GetMaterials();
+        AvatarAttachmentVector attachments = appearance.GetAttachments();
+        
+        // Fix mesh & skeleton
+        FixupResource(mesh, asset_map, OgreRenderer::OgreMeshResource::GetTypeStatic());
+        FixupResource(skeleton, asset_map, OgreRenderer::OgreSkeletonResource::GetTypeStatic());
+        
+        // Fix avatar mesh materials
+        for (Core::uint i = 0; i < materials.size(); ++i)
+            FixupMaterial(materials[i], asset_map);
+        // Fix attachment meshes & their materials
+        for (Core::uint i = 0; i < attachments.size(); ++i)
+        {
+            FixupResource(attachments[i].mesh_, asset_map, OgreRenderer::OgreMeshResource::GetTypeStatic());
+            
+            if (attachments[i].mesh_.resource_)
+            {
+                OgreRenderer::OgreMeshResource* mesh_res = dynamic_cast<OgreRenderer::OgreMeshResource*>(attachments[i].mesh_.resource_.get());
+                if (mesh_res)
+                {
+                    const Core::StringVector& attach_matnames = mesh_res->GetOriginalMaterialNames();
+                    attachments[i].materials_.clear();
+                    AvatarMaterial attach_newmat;
+                    for (Core::uint j = 0; j < attach_matnames.size(); ++j)
+                    {
+                        attach_newmat.asset_.name_ = attach_matnames[i];
+                        FixupMaterial(attach_newmat, asset_map);
+                        attachments[i].materials_.push_back(attach_newmat);
+                    }
+                }
+            }
+        }
+        
+        // Set modified mesh, skeleton, materials & attachments
+        appearance.SetMesh(mesh);
+        appearance.SetSkeleton(skeleton);
+        appearance.SetMaterials(materials);
+        appearance.SetAttachments(attachments);
+    }
+    
+    void AvatarAppearance::FixupResource(AvatarAsset& asset, const AvatarAssetMap& asset_map, const std::string& resource_type)
+    {
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
+            return;
+        
+        if (!asset.resource_)
+        {
+            AvatarAssetMap::const_iterator i = asset_map.find(asset.name_);
+            if (i != asset_map.end())
+            {
+                asset.resource_id_ = i->second;
+                asset.resource_ = renderer->GetResource(asset.resource_id_, resource_type);
+            }
+        }
+    }
+    
+    void AvatarAppearance::FixupMaterial(AvatarMaterial& mat, const AvatarAssetMap& asset_map)
+    {
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
+            return;
+            
+        // First thing to do: append .material to name if it doesn't exist, because our asset map is based on full asset name
+        std::string fixed_mat_name = mat.asset_.name_;
+        if (fixed_mat_name.find(".material") == std::string::npos)
+            fixed_mat_name.append(".material");
+        
+        // First find resource for the material itself
+        if (!mat.asset_.resource_)
+        {
+            AvatarAssetMap::const_iterator i = asset_map.find(fixed_mat_name);
+            if (i != asset_map.end())
+            {
+                mat.asset_.resource_id_ = i->second;
+                mat.asset_.resource_ = renderer->GetResource(mat.asset_.resource_id_, OgreRenderer::OgreMaterialResource::GetTypeStatic());
+            }
+        }
+        // If couldn't be found, abort
+        if (!mat.asset_.resource_)
+            return;
+        
+        OgreRenderer::OgreMaterialResource* mat_res = dynamic_cast<OgreRenderer::OgreMaterialResource*>(mat.asset_.resource_.get());
+        if (!mat_res)
+            return;
+            
+        const Core::StringVector& orig_textures = mat_res->GetOriginalTextureNames();
+        if (mat.textures_.size() < orig_textures.size())
+            mat.textures_.resize(orig_textures.size());
+        for (Core::uint i = 0; i < mat.textures_.size(); ++i)
+        {
+            if (!mat.textures_[i].resource_)
+            {
+                // Fill in name if not specified
+                if ((mat.textures_[i].name_.empty()) && (i < orig_textures.size()))
+                    mat.textures_[i].name_ = orig_textures[i];
+                    
+                AvatarAssetMap::const_iterator j = asset_map.find(mat.textures_[i].name_);
+                if (j != asset_map.end())
+                {
+                    mat.textures_[i].resource_id_ = j->second;
+                    mat.textures_[i].resource_ = renderer->GetResource(mat.textures_[i].resource_id_, OgreRenderer::OgreImageTextureResource::GetTypeStatic());
+                }
+            }
+            // If we found the texture, modify the material to use it. Note: if there are any resource clashes, should be trivial to clone the material here to allow unique overrides
+            if (mat.textures_[i].resource_)
+            {
+                Ogre::MaterialPtr ogremat = mat_res->GetMaterial();
+                OgreRenderer::SetTextureUnitOnMaterial(ogremat, mat.textures_[i].GetLocalOrResourceName(), i);
+            }
+        }
+    }
+    
 }

@@ -8,11 +8,6 @@
 #include "RexTypes.h"
 #include "RexUUID.h"
 
-namespace OgreRenderer
-{
-    class Renderer;
-}
-
 namespace RexLogic
 {
    //! Avatar asset name map (key: human-readable name, value: resource id)
@@ -28,8 +23,6 @@ namespace RexLogic
         std::string resource_id_;
         //! Resource (once it has been loaded)
         Foundation::ResourcePtr resource_;
-        
-        void SetResource(Foundation::ResourcePtr resource, const AvatarAssetMap& asset_map);
         
         const std::string& GetLocalOrResourceName() const;
     };
@@ -234,13 +227,8 @@ namespace RexLogic
         const AvatarAssetMap& GetAssetMap() const { return asset_map_; }
         void SetAssetMap(const AvatarAssetMap& map) { asset_map_ = map; }
         
-        void SetResource(Foundation::ResourcePtr resource);
-        void FixupResources(OgreRenderer::Renderer* renderer);
-        
     private:
         EC_AvatarAppearance(Foundation::ModuleInterface* module);
-        
-        void FixupMaterial(AvatarMaterial& mat, OgreRenderer::Renderer* renderer);
         
         //! Avatar mesh
         AvatarAsset mesh_;
