@@ -26,55 +26,11 @@ namespace TpQt4Communication
 		messages_.clear();
 	}
 
-	void TextChatSession::OnChannelReady(Tp::PendingOperation* op )
-	{
-		Tp::PendingReady *pr = qobject_cast<Tp::PendingReady *>(op);
-		Tp::TextChannelPtr channel = Tp::TextChannelPtr(qobject_cast<Tp::TextChannel *>(pr->object()));
 
-		if (channel.data() != tp_text_channel_.data() )
-		{
-			LogError(">>>>>>>>>>>>>>>>> Tp:TextChannel object is changed!!!!");
-		}
-
-		if (tp_text_channel_.isNull())
-		{
-			LogError("TextChatSession::OnChannelReady - tp_text_channel_ == NULL");
-			return;
-		}
-
-		if (op->isError())
-		{
-			//op->Message();
-			LogError("Cannot initialize text channel");
-			return;
-		}
-
-		LogInfo("Text channel ready.");
-//		Tp::PendingReady *pr = qobject_cast<Tp::PendingReady *>(op);
-//		Tp::TextChannelPtr tp_text_channel = Tp::TextChannelPtr(qobject_cast<Tp::TextChannel *>(pr->object()));
-//		tp_text_channel_ = tp_text_channel;
-
-		Tp::ContactPtr initiator = tp_text_channel_->initiatorContact();
-		if ( !initiator.isNull() )
-			this->originator_ =	initiator->id().toStdString();
-		else
-			LogError("channel initiator == NULL");
-
-		QObject::connect(tp_text_channel_.data(),
-						 SIGNAL( messageReceived(const Tp::ReceivedMessage &)),
-						 SLOT( OnMessageReceived(const Tp::ReceivedMessage &) ) );
-		//QObject::connect(tp_text_channel_.data(),
-		//				 SIGNAL( onTextReceived(uint a, uint b, uint c, uint d, uint e, const QString &text)),
-		//				 SLOT( OnTextReceived(uint a, uint b, uint c, uint d, uint e, const QString &text) ) );
-		LogInfo("connected signal: tp_text_channel_->OnMessageReceived");
-		state_ = STATE_READY;
-		emit Ready();
-	}
-
-	void TextChatSession::OnTextReceived(uint a, uint b, uint c, uint d, uint e, const QString &text)
-	{
-		LogError("tp_text_channel_->OnTextReceived");
-	}
+	//void TextChatSession::OnTextReceived(uint a, uint b, uint c, uint d, uint e, const QString &text)
+	//{
+	//	LogError("tp_text_channel_->OnTextReceived");
+	//}
 
 	void TextChatSession::Invite(Address a)
 	{
@@ -83,7 +39,7 @@ namespace TpQt4Communication
 
 	void TextChatSession::SendTextMessage(std::string text)
 	{
-		assert( tp_text_channel_.isNull() );
+		assert( !tp_text_channel_.isNull() );
 		LogInfo("Try to send a text message.");
 
 		Message* m = new Message(text);
@@ -112,14 +68,7 @@ namespace TpQt4Communication
 		LogInfo("TextChatSession->OnChannelInvalidated");
 	}
 
-	void TextChatSession::OnMessageReceived(const Tp::ReceivedMessage &message)
-	{
-		Message* m = new Message(message.text().toStdString());
-		messages_.push_back(m);
-		emit MessageReceived(*m);
-		LogInfo("Received text message");
-	}
-
+	// 
 	void TextChatSession::OnTextChannelCreated(Tp::PendingOperation* op)
 	{
 		if ( op->isError() )
@@ -127,11 +76,15 @@ namespace TpQt4Communication
 			LogError("Cannot create TextChannel object");
 			return;
 		}
-
 		LogInfo("TextChannel object created");
 
 		Tp::PendingChannel *pChannel = qobject_cast<Tp::PendingChannel *>(op);
 		Tp::ChannelPtr text_channel = pChannel->channel();
+//		text_channel_ = text_channel;
+
+		bool ready1 = text_channel->isReady(Tp::TextChannel::FeatureMessageCapabilities);
+	    bool ready2 = text_channel->isReady(Tp::TextChannel::FeatureMessageQueue);
+	    bool ready3 = text_channel->isReady(Tp::TextChannel::FeatureMessageSentSignal);
 		
 //		Tp::Channel *channel = text_channel.data();  
 //		Tp::TextChannel *textChannel = dynamic_cast<Tp::TextChannel *>(channel);
@@ -140,26 +93,90 @@ namespace TpQt4Communication
 		QObject::connect(tp_text_channel_->becomeReady(), 
 			     SIGNAL( finished(Tp::PendingOperation*) ),
 				SLOT( OnChannelReady(Tp::PendingOperation*)) );
+	}
 
+	void TextChatSession::OnChannelReady(Tp::PendingOperation* op )
+	{
+		Tp::PendingReady *pr = qobject_cast<Tp::PendingReady *>(op);
+		Tp::TextChannelPtr channel = Tp::TextChannelPtr(qobject_cast<Tp::TextChannel *>(pr->object()));
+		tp_text_channel_ = channel;
+
+		if (op->isError())
+		{
+			//op->Message();
+			LogError("Cannot initialize text channel");
+			return;
+		}
+		LogInfo("Text channel ready.");
+
+		Tp::ContactPtr initiator = tp_text_channel_->initiatorContact();
+		if ( !initiator.isNull() )
+			this->originator_ =	initiator->id().toStdString();
+		else
+			LogError("channel initiator == NULL");
+
+		connect((QObject*)tp_text_channel_.data(), 
+            SIGNAL(messageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &)), 
+            SLOT(OnChannelMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &)));
+
+		QObject::connect(tp_text_channel_.data(),
+						 SIGNAL( messageReceived(const Tp::ReceivedMessage &)),
+						 SLOT( OnMessageReceived(const Tp::ReceivedMessage &) ) );
+
+		connect(tp_text_channel_.data(), 
+				SIGNAL(pendingMessageRemoved(const Tp::ReceivedMessage &)), 
+			    SLOT(OnChannelPendingMessageRemoved(const Tp::ReceivedMessage &)));
+
+		// Receive pending messages
+	    QDBusPendingReply<Tp::PendingTextMessageList> pending_messages = tp_text_channel_->textInterface()->ListPendingMessages(true);
+//		QDBusPendingReply<Tp::PendingTextMessageList>::ite
+		
+		if( !pending_messages.isFinished() )
+		{
+			pending_messages.waitForFinished();
+		}
+		int count = pending_messages.count();
+		for (Tp::PendingTextMessageList::iterator i = pending_messages.value().begin(); i != pending_messages.value().end(); ++i)
+		{
+			//QString text = (*i).text;
+		}
+
+		//for(int i = 0; i < count; ++i)
+		//{
+		//	//Tp::PendingTextMessage m = pending_messages.argumentAt(i);
+		//	Tp::PendingTextMessage m = pending_messages.value()[i];
+		//	uint sender = m.sender;
+		//	QString text = m.text;
+		//}
+
+		LogInfo("TextChatSession object ready.");
+		state_ = STATE_READY;
+		emit Ready();
+	}
+
+	void TextChatSession::OnChannelMessageSent(const Tp::Message& message, Tp::MessageSendingFlags flags, const QString &text)
+	{
+		LogInfo("OnChannelMessageSent");
+
+	}
+
+	void TextChatSession::OnChannelPendingMessageRemoved(const Tp::ReceivedMessage &message)
+	{
+		LogInfo("OnChannelPendingMessageRemoved");
+	}
+
+	void TextChatSession::OnMessageReceived(const Tp::ReceivedMessage &message)
+	{
+		Message* m = new Message(message.text().toStdString());
+		messages_.push_back(m);
+		emit MessageReceived(*m);
+		LogInfo("Received text message");
 	}
 
 	TextChatSession::State TextChatSession::GetState()
 	{
 		return state_;
 	}
-
-	//void TextChatSession::OnTextChannelReady(Tp::PendingOperation *op)
-	//{
-	//	LogInfo("->OnTextChannelReady");
-	//}
-
-
-
-
-
-
-
-
 
 
 } // end of namespace:  TpQt4Communication

@@ -8,7 +8,8 @@ namespace TpQt4Communication
 
 	Connection::~Connection()
 	{
-		tp_connection_->requestDisconnect();
+		if (!tp_connection_.isNull())
+			tp_connection_->requestDisconnect();
 	}
 
 	void Connection::Close()
@@ -57,28 +58,24 @@ namespace TpQt4Communication
 			LogError(message.toStdString());
 			throw message;
 		}
-
 		
 		Tp::ReferencedHandles rhs =	contact->tp_contact_->handle();
-//		ReferencedHandles rhs = contactPtr->handle();
-		uint handle = rhs[0];
+		uint handle = rhs[0]; // we assume the the first 
 
 		QVariantMap params;
-
 		params.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"), QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
 		params.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"), Tp::HandleTypeContact);
 		params.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"), handle);
 
 		Tp::PendingChannel* p = tp_connection_->ensureChannel(params);
+		Tp::PendingOperation *operation = (Tp::PendingOperation*)p;
 
-		LogInfo("Create TextChatSession object.");
 		TextChatSession* session = new TextChatSession();
-
-		QObject::connect(p,
+		
+		QObject::connect(operation,
 			SIGNAL( finished(Tp::PendingOperation*) ),
 			(QObject*)session,
 			SLOT( OnTextChannelCreated(Tp::PendingOperation*) ) );
-
 
 		//tp_connection_->requestHandles(CHANNEL_TYPE_TEXT, const QStringList &names);
 		//Tp::PendingChannel* pending_channel = tp_connection_->createChannel(params);
@@ -189,6 +186,11 @@ namespace TpQt4Communication
 			}
         }
 		
+		QObject::connect(tp_connection_->contactManager(),
+            SIGNAL(presencePublicationRequested(const Tp::Contacts &)),
+            SLOT(OnPresencePublicationRequested(const Tp::Contacts &)));
+
+
 		if (all_known_contacts.count() > 0)
 		{
 			user_->AddContacts(new_contacts);
@@ -216,13 +218,14 @@ namespace TpQt4Communication
 
 		LogInfo(message);
 
-		QObject::connect(tp_connection_->requestsInterface(),
+		if(tp_connection_->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS))
+		{
+			QObject::connect(tp_connection_->requestsInterface(),
                 SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
                 SLOT(OnNewChannels(const Tp::ChannelDetailsList&)));
+		}
 
-		QObject::connect(tp_connection_->contactManager(),
-            SIGNAL(presencePublicationRequested(const Tp::Contacts &)),
-            SLOT(OnPresencePublicationRequested(const Tp::Contacts &)));
+
 	}
 			    
 	void Connection::OnNewChannels(const Tp::ChannelDetailsList& channels)
