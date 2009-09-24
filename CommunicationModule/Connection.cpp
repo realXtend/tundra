@@ -104,12 +104,8 @@ namespace TpQt4Communication
 		std::string message = "Connected to IM server. Start login process";
 		LogInfo(message);
 
-		QObject::connect(tp_connection_->becomeReady(Tp::Connection::FeatureRoster),
-		                 SIGNAL(finished(Tp::PendingOperation *)),
-						 SLOT(OnConnectionReady(Tp::PendingOperation *)));
+		
 
-		//conn->requestsInterface(
-		//conn->gotInterfaces
 		QObject::connect(tp_connection_->requestConnect(),
 					     SIGNAL(finished(Tp::PendingOperation *)),
 						 SLOT(OnConnectionConnected(Tp::PendingOperation *)));
@@ -121,6 +117,41 @@ namespace TpQt4Communication
 		//QObject::connect(tp_connection_->requestsInterface(),
   //              SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
   //              SLOT(OnNewChannels(const Tp::ChannelDetailsList&)));
+	}
+
+
+	void Connection::OnConnectionConnected(Tp::PendingOperation *op)
+	{
+		if (op->isError())
+		{
+			QString reason = "Connection cannot become connected: ";
+			reason.append(op->errorMessage());
+			emit Error(reason);
+			LogError(reason.toStdString());
+			state_ = STATE_ERROR;
+			return;
+		}
+		std::string message = "Connection established successfully to IM server.";
+		LogInfo(message);
+
+		if ( tp_connection_.isNull() )
+			LogDebug("tp_connection_ == NULL");
+
+		Tp::Features features;
+		features.insert(Tp::Connection::FeatureSimplePresence);
+		features.insert(Tp::Connection::FeatureRoster);
+		features.insert(Tp::Connection::FeatureSelfContact);
+		features.insert(Tp::Connection::FeatureCore);
+		QObject::connect(tp_connection_->becomeReady(features),
+		                 SIGNAL(finished(Tp::PendingOperation *)),
+						 SLOT(OnConnectionReady(Tp::PendingOperation *)));
+
+		if(tp_connection_->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS))
+		{
+			QObject::connect(tp_connection_->requestsInterface(),
+                SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
+                SLOT(OnNewChannels(const Tp::ChannelDetailsList&)));
+		}
 	}
 
 	void Connection::OnConnectionReady(Tp::PendingOperation *op)
@@ -201,33 +232,6 @@ namespace TpQt4Communication
 		emit Connected();
 	}
 
-	void Connection::OnConnectionConnected(Tp::PendingOperation *op)
-	{
-		if (op->isError())
-		{
-			QString reason = "Connection cannot become connected: ";
-			reason.append(op->errorMessage());
-			emit Error(reason);
-			LogError(reason.toStdString());
-			state_ = STATE_ERROR;
-			return;
-		}
-		std::string message = "Connection established successfully to IM server.";
-
-		if ( tp_connection_.isNull() )
-			LogDebug("tp_connection_ == NULL");
-
-		LogInfo(message);
-
-		if(tp_connection_->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS))
-		{
-			QObject::connect(tp_connection_->requestsInterface(),
-                SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
-                SLOT(OnNewChannels(const Tp::ChannelDetailsList&)));
-		}
-
-
-	}
 			    
 	void Connection::OnNewChannels(const Tp::ChannelDetailsList& channels)
 	{
@@ -346,6 +350,8 @@ namespace TpQt4Communication
 		for (Tp::SimpleStatusSpecMap::iterator i = map.begin(); i != map.end(); ++i)
 		{
 			QString o = i.key();
+			if ( o.compare("offline") == 0 || o.compare("unknown") == 0 || o.compare("error") == 0 )
+				continue; // HACK: Gabble crash if presence status is set to 'offline', 'unknown' or 'error'
 			options.push_back( o.toStdString() );
 			
 			QString message = "Presence status option: ";
