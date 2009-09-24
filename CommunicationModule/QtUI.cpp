@@ -5,6 +5,7 @@
 
 #include <QtUiTools>
 #include <QFile>
+#include <QTime>
 
 namespace CommunicationUI
 {
@@ -171,6 +172,11 @@ namespace CommunicationUI
 		if ( im_connection_ != NULL && im_connection_->GetUser() != NULL)
 		{
 			this->loadConnectedUserData(im_connection_->GetUser());
+			//QObject::connect((QObject *)im_connection_, SIGNAL( ReceivedTextChatSessionRequest(TextChatSessionRequest *) ), this, SLOT( newChatSessionRequest(TextChatSessionRequest *) ));
+		}
+		else
+		{
+			connectionFailed(QString("Connection lost or userdata could not be retrieved"));
 		}
 	}
 
@@ -189,6 +195,16 @@ namespace CommunicationUI
 		tabWidgetCoversations_->addTab(conversation, QString(listItem->contact_->GetRealName().c_str()));
 	}
 
+	void QtUI::newChatSessionRequest(TextChatSessionRequest *chatSessionRequest)
+	{
+		/*TextChatSessionPtr chatSession = chatSessionRequest->Accept();
+		if (chatSession.get() != NULL)
+		{
+			Conversation *conversation = new Conversation(this->tabWidgetCoversations_, chatSession, chatSessionRequest->get);
+			tabWidgetCoversations_->addTab(conversation, QString(listItem->contact_->GetRealName().c_str()));
+		}*/
+	}
+
 	void QtUI::sendNewChatMessage()
 	{
 		QString message(lineEditMessage_->text());
@@ -198,10 +214,7 @@ namespace CommunicationUI
 		conversation->chatSession_->SendTextMessage(message.toStdString());
 		// TODO: wait for confirmation signal and then put text to own chat widget
 		// now just put it there
-		QString messageWithFormatting(labelUsername_->text());
-		messageWithFormatting.append(": ");
-		messageWithFormatting.append(message);
-		conversation->textEditChat_->appendPlainText(messageWithFormatting);
+		conversation->onMessageSent(message);
 	}
 
 	/////////////////////////////////////////////////////////////////////
@@ -269,7 +282,7 @@ namespace CommunicationUI
 		: QWidget(parent), chatSession_(chatSession), contact_(contact)
 	{
 		initWidget();
-		this->show();
+		connectSignals();
 	}
 
 	Conversation::~Conversation()
@@ -282,30 +295,79 @@ namespace CommunicationUI
 		// Load ui to widget from file
 		QUiLoader loader;
         QFile uiFile("./data/ui/communications_conversation.ui");
-		this->widget_ = loader.load(&uiFile, this);
+		QWidget(loader.load(&uiFile, this));
 		uiFile.close();
 
-		textEditChat_ = this->widget_->findChild<QPlainTextEdit *>("textEdit_Chat");
+		textEditChat_ = findChild<QPlainTextEdit *>("textEdit_Chat");
 
-		this->layout_ = new QVBoxLayout(this);
-		this->layout_->setSpacing(0);
-		this->layout_->setMargin(0);
-		this->layout_->addWidget(this->widget_);
-		this->setLayout(this->layout_);
-	
 		QString startMessage("Started chat session with ");
 		startMessage.append(contact_->GetRealName().c_str());
 		startMessage.append("...");
-		this->textEditChat_->appendPlainText(startMessage);
-
-		connect((QObject*)chatSession_.get(), SIGNAL( MessageReceived(Message &) ), this, SLOT( OnMessageReceived(Message &) ));
+		textEditChat_->appendPlainText(startMessage);
 	}
 
-	void Conversation::OnMessageReceived(Message &message)
+	void Conversation::connectSignals()
 	{
-		QString line = message.GetText().c_str();
-		this->textEditChat_->appendPlainText(line);
+		QObject::connect((QObject*)chatSession_.get(), SIGNAL( MessageReceived(Message &) ), this, SLOT( onMessageReceived(Message &) ));
+		QObject::connect((QObject*)contact_, SIGNAL( StateChanged() ), this, SLOT( contactStateChanged() ));
 	}
+
+	QString Conversation::generateTimeStamp()
+	{
+		QTime time = QTime();
+		LogDebug( time.toString("hh:mm:ss").toStdString() ); // Debug
+		return time.toString("hh:mm:ss");
+		
+	}
+
+
+	void Conversation::appendLineToConversation(QString line)
+	{
+		textEditChat_->appendPlainText(line);
+		
+	}
+
+	void Conversation::appendHTMLToConversation(QString html)
+	{
+		textEditChat_->appendHtml(html);
+	}
+
+	void Conversation::onMessageSent(QString message)
+	{
+		QString timeStamp = generateTimeStamp();
+		QString html("<span style='color:gray;'>");
+		html.append(timeStamp);
+		html.append("</span> <span style='color:blue;'>me");
+		/*html.append(((QtUI *)this->parent()->parent())->labelUsername_->text());*/
+		html.append("</span><span style='color:black;'>: ");
+		html.append(message);
+		html.append("</span>");
+		appendHTMLToConversation(html);
+	}
+
+	void Conversation::onMessageReceived(Message &message)
+	{
+		QString timeStamp = generateTimeStamp();
+		QString html("<span style='color:gray;'>");
+		html.append(timeStamp);
+		html.append("</span> <span style='color:red;'>");
+		html.append(contact_->GetRealName().c_str());
+		html.append("</span><span style='color:black;'>: ");
+		html.append(message.GetText().c_str());
+		html.append("</span>");
+		appendHTMLToConversation(html);
+	}
+
+	void Conversation::contactStateChanged()
+	{
+		QString html("<span style='color:gray;'>");
+		html.append(contact_->GetRealName().c_str());
+		html.append(" changed status to ");
+		html.append(contact_->GetPresenceStatus().c_str());
+		html.append("</span>");
+		appendHTMLToConversation(html);
+	}
+
 
 	/////////////////////////////////////////////////////////////////////
 	// CUSTOM QListWidgetItem CLASS

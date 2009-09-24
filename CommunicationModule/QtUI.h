@@ -9,6 +9,7 @@
 
 #include "Connection.h"
 #include "TextChatSession.h"
+#include "TextChatSessionRequest.h"
 #include "User.h"
 #include "Contact.h"
 
@@ -21,6 +22,7 @@ namespace CommunicationUI
 	
 	Q_OBJECT
 
+	friend class Conversation;
 	MODULE_LOGGING_FUNCTIONS
 	static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 
@@ -34,7 +36,9 @@ namespace CommunicationUI
 		void connectionEstablished();
 		void connectionFailed(QString &reason);
 		void startNewChat(QListWidgetItem *clickedItem);
+		void newChatSessionRequest(TextChatSessionRequest *);
 		void sendNewChatMessage();
+		
 
 	private:
 		void loadUserInterface(bool connected);
@@ -102,21 +106,31 @@ namespace CommunicationUI
 
 	friend class QtUI;
 
+	MODULE_LOGGING_FUNCTIONS
+	static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
+
+
 	public:
 		Conversation(QWidget *parent, TextChatSessionPtr chatSession, Contact *contact); // Add as inparam also the "conversation object" from mattiku
 		~Conversation(void);
 
+		void onMessageSent(QString message);
+
 	private:
 		void initWidget();
+		void connectSignals();
+		QString generateTimeStamp();
+		void appendLineToConversation(QString line);
+		void appendHTMLToConversation(QString html);
 
 		TextChatSessionPtr chatSession_;
 		Contact *contact_;
-
-		QLayout *layout_;
-		QWidget *widget_;
 		QPlainTextEdit *textEditChat_;
+
 	private	slots:
-		void OnMessageReceived(Message &message);
+		void onMessageReceived(Message &message);
+		void contactStateChanged();
+
 	};
 
 	// CUSTOM QListWidgetItem CLASS
