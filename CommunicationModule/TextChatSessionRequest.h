@@ -30,8 +30,8 @@ namespace TpQt4Communication
 		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 
 	protected:
-		TextChatSessionRequest(TextChatSession* session );
-		TextChatSessionRequest(Tp::TextChannelPtr tp_text_channel, Contact* from);
+//		TextChatSessionRequest(TextChatSession* session );
+		TextChatSessionRequest(Tp::TextChannelPtr tp_text_channel);
 	public:
 
 		//! Create a new TextChatSession object and return it
@@ -61,11 +61,16 @@ namespace TpQt4Communication
 		//void OnChannelReady(Tp::PendingOperation*);
 		//void OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &);
 	//slots:
+	private slots:
 		void OnTextChannelClosed(Tp::PendingOperation* op);
+		void OnTextChatSessionReady();
 
 	signals:
 		//! Request was canceled by it's originator
 		void Canceled();
+
+		//! Fired when actual signaling in under a hood is ready
+		void Ready(TextChatSessionRequest*);
 
 	};
 	typedef boost::weak_ptr<TextChatSessionRequest> TextChatSessionRequestWeakPtr;
