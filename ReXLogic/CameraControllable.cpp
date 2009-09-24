@@ -190,19 +190,38 @@ namespace RexLogic
                         if (ent)
                         {
                             Ogre::SkeletonInstance* skel = ent->getSkeleton();
-                            if (skel && skel->hasBone(appearance.GetProperty("headbone")))
+                            
+                            std::string view_bone_name;
+                            Core::Real adjustheight = mesh.GetAdjustPosition().z;
+                            
+                            if (appearance.HasProperty("viewbone"))
                             {
-                                // Hack: force Ogre to update skeleton with current animation state, even if avatar invisible
-                                if (ent->getAllAnimationStates())
-                                    skel->setAnimationState(*ent->getAllAnimationStates());
-                                
-                                Ogre::Bone* bone = skel->getBone(appearance.GetProperty("headbone"));
-                                Ogre::Vector3 headpos = bone->_getDerivedPosition();
-                                Core::Real adjustheight = mesh.GetAdjustPosition().z + 0.15;
-                                Core::Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y + adjustheight);
-                                RexTypes::Vector3 campos = avatar_pos + (avatar_orientation * ourheadpos);
-                                camera->setPosition(campos.x, campos.y, campos.z);
-                                fallback = false;
+                                // This bone property is exclusively for view tracking & assumed to be correct position, no offset
+                                view_bone_name = appearance.GetProperty("viewbone");
+                            }
+                            else if (appearance.HasProperty("headbone"))
+                            {
+                                view_bone_name = appearance.GetProperty("headbone");
+                                // The biped head bone is anchored at the neck usually. Therefore a guessed fixed offset is needed,
+                                // which is not preferable, but necessary
+                                adjustheight += 0.15;
+                            }
+                            
+                            if (!view_bone_name.empty())
+                            {
+                                if (skel && skel->hasBone(view_bone_name))
+                                {
+                                    // Hack: force Ogre to update skeleton with current animation state, even if avatar invisible
+                                    if (ent->getAllAnimationStates())
+                                        skel->setAnimationState(*ent->getAllAnimationStates());
+                                    
+                                    Ogre::Bone* bone = skel->getBone(view_bone_name);
+                                    Ogre::Vector3 headpos = bone->_getDerivedPosition();
+                                    Core::Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y + adjustheight);
+                                    RexTypes::Vector3 campos = avatar_pos + (avatar_orientation * ourheadpos);
+                                    camera->setPosition(campos.x, campos.y, campos.z);
+                                    fallback = false;
+                                }
                             }
                         }
                     }
