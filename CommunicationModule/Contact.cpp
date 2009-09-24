@@ -73,7 +73,10 @@ namespace TpQt4Communication
 
 	std::string Contact::GetRealName()
 	{
-		return tp_contact_->alias().toStdString();
+		if (tp_contact_.isNull())
+			return "NULL";
+		else
+			return tp_contact_->alias().toStdString();
 	}
 
 	std::string Contact::GetPresenceStatus()

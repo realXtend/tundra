@@ -49,12 +49,14 @@ namespace TpQt4Communication
 		Address originator_;
 
 	private Q_SLOTS:
-		void OnChannelReady(Tp::PendingOperation*);
-		void OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &);
-		void OnMessageReceived(const Tp::ReceivedMessage &message);
 		void OnTextChannelCreated(Tp::PendingOperation* op);
-//		void OnTextChannelReady(Tp::PendingOperation *op);
-		void OnTextReceived(uint, uint, uint, uint, uint, const QString &);
+		void OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &);
+		void OnChannelReady(Tp::PendingOperation*);
+		void OnMessageReceived(const Tp::ReceivedMessage &message);
+		void OnChannelMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &);
+//		void OnTextReceived(uint, uint, uint, uint, uint, const QString &);
+		void OnChannelPendingMessageRemoved(const Tp::ReceivedMessage &);
+
 //		void OnChannelMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken);
 		//void onTextMessageSend(Tp::PendingOperation *op);
 	signals:
