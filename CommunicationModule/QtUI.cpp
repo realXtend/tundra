@@ -60,6 +60,10 @@ namespace CommunicationUI
 			connectionStatus_->setText("Connecting to server...");
 			setAllEnabled(false);
 
+			// Connect signals
+			QObject::connect(lineEditMessage_, SIGNAL( returnPressed() ), this, SLOT( sendNewChatMessage() ));
+			QObject::connect(buttonSendMessage_, SIGNAL( clicked() ), this, SLOT ( sendNewChatMessage() ));
+
 			// Add widget to layout
 			this->layout()->addWidget(chatWidget_);
 			this->setWindowTitle("realXtend Communications");
@@ -70,8 +74,8 @@ namespace CommunicationUI
 		{
 			// Init login GUI
 			loginWidget_ = new Login(this, currentMessage);
+			// Connect signals
 			QObject::connect(loginWidget_, SIGNAL( userdataSet(QString, int, QString, QString) ), this, SLOT( connectToServer(QString, int, QString, QString) ));
-			
 			// Add widget to layout
 			this->layout()->addWidget(loginWidget_);
 			this->setWindowTitle("realXtend Naali Communications login");
@@ -185,6 +189,21 @@ namespace CommunicationUI
 		tabWidgetCoversations_->addTab(conversation, QString(listItem->contact_->GetRealName().c_str()));
 	}
 
+	void QtUI::sendNewChatMessage()
+	{
+		QString message(lineEditMessage_->text());
+		lineEditMessage_->clear();
+
+		Conversation *conversation = (Conversation *)tabWidgetCoversations_->currentWidget();
+		conversation->chatSession_->SendTextMessage(message.toStdString());
+		// TODO: wait for confirmation signal and then put text to own chat widget
+		// now just put it there
+		QString messageWithFormatting(labelUsername_->text());
+		messageWithFormatting.append(": ");
+		messageWithFormatting.append(message);
+		conversation->textEditChat_->appendPlainText(messageWithFormatting);
+	}
+
 	/////////////////////////////////////////////////////////////////////
 	// LOGIN CLASS
 	/////////////////////////////////////////////////////////////////////
@@ -279,8 +298,7 @@ namespace CommunicationUI
 		startMessage.append("...");
 		this->textEditChat_->appendPlainText(startMessage);
 
-		connect((QObject*)chatSession_.get(), SIGNAL( MessageReceived(Message &) ),
-			    SLOT( OnMessageReceived(Message &) ));
+		connect((QObject*)chatSession_.get(), SIGNAL( MessageReceived(Message &) ), this, SLOT( OnMessageReceived(Message &) ));
 	}
 
 	void Conversation::OnMessageReceived(Message &message)

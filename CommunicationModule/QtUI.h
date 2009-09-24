@@ -34,6 +34,7 @@ namespace CommunicationUI
 		void connectionEstablished();
 		void connectionFailed(QString &reason);
 		void startNewChat(QListWidgetItem *clickedItem);
+		void sendNewChatMessage();
 
 	private:
 		void loadUserInterface(bool connected);
