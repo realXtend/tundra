@@ -28,15 +28,15 @@ add_definitions (-DCOMMS_MODULE_EXPORTS)
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
+use_modules (QtModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 use_framework_modules (Core Foundation Interfaces SceneManager)
 
+link_modules (QtModule)
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-
-
 
 LINK_TELEPATHY_QT4()
 LINK_GSTREAMER()
