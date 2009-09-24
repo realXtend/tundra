@@ -25,6 +25,7 @@ namespace TpQt4Communication
 
 	#define IM_PROTOCOL "jabber"
 
+	typedef std::vector<std::string> PresenceStatusOptions;
 	/**
 	 *  Connection to IM server like jabber.org. 
 	 *  Connection objects are created by calling CommunicationManager.OpenConnection(credentials);
@@ -55,10 +56,22 @@ namespace TpQt4Communication
 		std::string GetProtocol();
 		State GetState();
 
+		//! Available presence status options
+		
+		PresenceStatusOptions GetAvailablePresenceStatusOptions();
+
 		//! Open new text chat session with given contact
 		//! /throws QString object as error message if doesn't success
 		TextChatSessionPtr CreateTextChatSession(Contact* contact);
+
+		//! 
 		void CreateVoipSession();
+
+		// void JoinChatRoom(ChatRoomAddress address);
+
+
+		//! Send a friend request to given address
+		//! optionam message is send if supported by used IM protocol
 		void SendFriendRequest(Address to, std::string message = "");
 
 		FriendRequestVector GetFriendRequests();

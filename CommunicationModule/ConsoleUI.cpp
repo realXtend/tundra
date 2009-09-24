@@ -247,8 +247,8 @@ namespace CommunicationUI
 		TpQt4Communication::TextChatSessionRequestVector requests = default_connection_->GetTextChatSessionRequests();
 		for (TextChatSessionRequestVector::iterator i = requests.begin(); i != requests.end(); ++i)
 		{
-			TextChatSession* session = (*i)->Accept();
-			default_chat_session_ = session;
+			TextChatSessionPtr session = (*i)->Accept();
+			default_chat_session_ = session.get();
 		}
 
 		std::string result = "";

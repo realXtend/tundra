@@ -105,6 +105,8 @@ namespace CommunicationUI
 		}
 
 		QObject::connect(this->listWidgetFriends_, SIGNAL( itemDoubleClicked(QListWidgetItem *) ), this, SLOT( startNewChat(QListWidgetItem *) )); 
+
+		PresenceStatusOptions options =  im_connection_->GetAvailablePresenceStatusOptions();
 	}
 
 	void QtUI::setAllEnabled(bool enabled)
@@ -172,7 +174,8 @@ namespace CommunicationUI
 		if ( im_connection_ != NULL && im_connection_->GetUser() != NULL)
 		{
 			this->loadConnectedUserData(im_connection_->GetUser());
-			//QObject::connect((QObject *)im_connection_, SIGNAL( ReceivedTextChatSessionRequest(TextChatSessionRequest *) ), this, SLOT( newChatSessionRequest(TextChatSessionRequest *) ));
+			
+			QObject::connect((QObject *)im_connection_, SIGNAL( ReceivedTextChatSessionRequest(TextChatSessionRequest *) ), this, SLOT( newChatSessionRequest(TextChatSessionRequest *) ));
 		}
 		else
 		{
@@ -197,12 +200,14 @@ namespace CommunicationUI
 
 	void QtUI::newChatSessionRequest(TextChatSessionRequest *chatSessionRequest)
 	{
-		/*TextChatSessionPtr chatSession = chatSessionRequest->Accept();
+		LogInfo("newChatSessionRequest --------<-----<-----");
+		TextChatSessionPtr chatSession = chatSessionRequest->Accept();
 		if (chatSession.get() != NULL)
 		{
-			Conversation *conversation = new Conversation(this->tabWidgetCoversations_, chatSession, chatSessionRequest->get);
-			tabWidgetCoversations_->addTab(conversation, QString(listItem->contact_->GetRealName().c_str()));
-		}*/
+			Conversation *conversation = new Conversation(this->tabWidgetCoversations_, chatSession, chatSessionRequest->GetOriginatorContact());
+			tabWidgetCoversations_->addTab(conversation, QString(chatSessionRequest->GetOriginatorContact()->GetRealName().c_str()));
+		}
+		LogInfo("newChatSessionRequest (handled successfully)");
 	}
 
 	void QtUI::sendNewChatMessage()

@@ -79,6 +79,7 @@ namespace TpQt4Communication
 			(QObject*)session,
 			SLOT( OnTextChannelCreated(Tp::PendingOperation*) ) );
 
+
 		//tp_connection_->requestHandles(CHANNEL_TYPE_TEXT, const QStringList &names);
 		//Tp::PendingChannel* pending_channel = tp_connection_->createChannel(params);
 		//Tp::ChannelPtr c = pending_channel->channel();
@@ -126,13 +127,14 @@ namespace TpQt4Communication
 
 	void Connection::OnConnectionReady(Tp::PendingOperation *op)
 	{
-		LogDebug(" Connection::OnConnectionReady");
+		LogInfo(" Connection::OnConnectionReady");
 	    if (op->isError())
 		{
 			QString message = "Connection cannot become ready: ";
 			message.append(op->errorMessage());
 			emit Error(message);
 			LogError(message.toStdString());
+			state_ = STATE_ERROR;
 	        return;
 		}
 
@@ -193,11 +195,6 @@ namespace TpQt4Communication
 			user_->AddContacts(new_contacts);
 		}
 
-		//Tp::SimpleStatusSpecMap map = tp_connection_->allowedPresenceStatuses();
-		//for (Tp::SimpleStatusSpecMap::iterator i = map.begin(); i != map.end(); ++i)
-		//{
-
-		//}
 
 		state_ = STATE_OPEN;
 		emit Connected();
@@ -265,12 +262,15 @@ namespace TpQt4Communication
 			if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT && !requested)
 			{
 				LogInfo("Text chat request received.");
+
 				Tp::TextChannelPtr channel = Tp::TextChannel::create(tp_connection_, details.channel.path(), details.properties);
+				Tp::ContactPtr c =  channel->initiatorContact();
 				//mCallHandler->addIncomingCall(channel);
-				TextChatSessionRequest* request = new TextChatSessionRequest(channel);
+				TextChatSessionRequest* request = new TextChatSessionRequest(channel, new Contact(c)); //! HACK we should not create new object here. We already have one on Connection object.
 				received_text_chat_requests_.push_back(request);
 				
 				emit ReceivedTextChatSessionRequest(request);
+				LogInfo("emit ReceivedTextChatSessionRequest(request)");
 			}
 
 			if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST && !requested)
@@ -351,6 +351,22 @@ namespace TpQt4Communication
 	TextChatSessionVector Connection::GetTextChatSessions()
 	{
 		return TextChatSessionVector(text_chat_sessions_);
+	}
+
+	PresenceStatusOptions Connection::GetAvailablePresenceStatusOptions()
+	{
+		PresenceStatusOptions options;
+		Tp::SimpleStatusSpecMap map = tp_connection_->allowedPresenceStatuses();
+		for (Tp::SimpleStatusSpecMap::iterator i = map.begin(); i != map.end(); ++i)
+		{
+			QString o = i.key();
+			options.push_back( o.toStdString() );
+			
+			QString message = "Presence status option: ";
+			message.append(o);
+			LogInfo(message.toStdString());
+		}
+		return options;
 	}
 
 } // end of namespace: TpQt4Communication

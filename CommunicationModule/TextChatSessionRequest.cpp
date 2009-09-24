@@ -7,26 +7,26 @@ namespace TpQt4Communication
 		//tp_text_channel_ = tp_text_channel;
 	}
 
-	TextChatSessionRequest::TextChatSessionRequest(Tp::TextChannelPtr tp_text_channel)
+	TextChatSessionRequest::TextChatSessionRequest(Tp::TextChannelPtr tp_text_channel, Contact* from): from_(from)
 	{
 		tp_text_channel_ = tp_text_channel;
 		session_ = new TextChatSession(tp_text_channel);
 	}
 
-	TextChatSession* TextChatSessionRequest::Accept()
+	TextChatSessionPtr TextChatSessionRequest::Accept()
 	{
+		LogInfo("Chat session accepted.");
 //		TextChatSession* session = new TextChatSession(tp_text_channel_);
-		return session_;
+		return TextChatSessionPtr(session_);
 	}
 
 	void TextChatSessionRequest::Reject()
 	{
+		LogInfo("Chat session rejected.");
 		Tp::PendingOperation* p = tp_text_channel_->requestClose();
-		//QObject::connect(p,
-		//	SIGNAL( finished(Tp::PendingOperation* ),
-		//	SLOT( OnTextChannelClosed(Tp::PendingOperation* ) );
-		//! todo: close channel
-		//tp_text_channel_
+		QObject::connect(p,
+			SIGNAL( finished(Tp::PendingOperation* ) ),
+			SLOT( OnTextChannelClosed(Tp::PendingOperation* ) ));
 	}
 
 	Address TextChatSessionRequest::GetOriginator()
@@ -42,7 +42,18 @@ namespace TpQt4Communication
 
 	void TextChatSessionRequest::OnTextChannelClosed(Tp::PendingOperation* op)
 	{
-	//	LogInfo("Text channel closed");
+		if ( op->isError())
+		{
+			LogInfo("Cannot close text channel.");
+		}
+		LogInfo("Text channel closed.");
 	}
+
+	Contact* TextChatSessionRequest::GetOriginatorContact()
+	{
+		//Tp::ContactPtr c =  tp_text_channel_->initiatorContact();
+		return from_; 
+	}
+
 
 } // end of namespace: TpQt4Communication

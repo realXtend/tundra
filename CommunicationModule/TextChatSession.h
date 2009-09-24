@@ -8,6 +8,8 @@
 #include <TelepathyQt4/TextChannel>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingChannel>
+#include <TelepathyQt4/ReceivedMessage>
+
 
 #include "Communication.h"
 #include "IMMessage.h"
@@ -43,11 +45,16 @@ namespace TpQt4Communication
 		MessageVector messages_;
 		Tp::TextChannelPtr tp_text_channel_;
 		State state_;
+		Address originator_;
 	private Q_SLOTS:
 		void OnChannelReady(Tp::PendingOperation*);
 		void OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &);
 		void OnMessageReceived(const Tp::ReceivedMessage &message);
 		void OnTextChannelCreated(Tp::PendingOperation* op);
+//		void OnTextChannelReady(Tp::PendingOperation *op);
+		void OnTextReceived(uint, uint, uint, uint, uint, const QString &);
+//		void OnChannelMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken);
+		//void onTextMessageSend(Tp::PendingOperation *op);
 	signals:
 		void Ready();
 		void Error(QString &reason);
