@@ -2,21 +2,21 @@
 
 namespace TpQt4Communication
 {
-	TextChatSessionRequest::TextChatSessionRequest(TextChatSession* session ): session_(session), message_("")
-	{
-		//tp_text_channel_ = tp_text_channel;
-	}
+	//TextChatSessionRequest::TextChatSessionRequest(TextChatSession* session ): session_(session), message_("")
+	//{
+	//	//tp_text_channel_ = tp_text_channel;
+	//}
 
-	TextChatSessionRequest::TextChatSessionRequest(Tp::TextChannelPtr tp_text_channel, Contact* from): from_(from)
+	TextChatSessionRequest::TextChatSessionRequest(Tp::TextChannelPtr tp_text_channel):  tp_text_channel_(tp_text_channel)
 	{
-		tp_text_channel_ = tp_text_channel;
 		session_ = new TextChatSession(tp_text_channel);
+		Tp::PendingReady* p =  tp_text_channel->becomeReady();
+		QObject::connect(p, SIGNAL(finished(Tp::PendingOperation*)), SLOT( OnTextChatSessionReady() ) );
 	}
 
 	TextChatSessionPtr TextChatSessionRequest::Accept()
 	{
 		LogInfo("Chat session accepted.");
-//		TextChatSession* session = new TextChatSession(tp_text_channel_);
 		return TextChatSessionPtr(session_);
 	}
 
@@ -51,9 +51,18 @@ namespace TpQt4Communication
 
 	Contact* TextChatSessionRequest::GetOriginatorContact()
 	{
-		//Tp::ContactPtr c =  tp_text_channel_->initiatorContact();
-		return from_; 
+		LogInfo("TextChatSessionRequest::GetOriginatorContact()");
+		if ( !tp_text_channel_->isReady() )
+		{
+			LogError("tp_text_channel_ == NULL");
+			return NULL;
+		}
+		return new Contact(tp_text_channel_->initiatorContact()); // HACK: We should not create a new Contact object here, we already have one.
 	}
 
+	void TextChatSessionRequest::OnTextChatSessionReady()
+	{
+		emit Ready(this);
+	}
 
 } // end of namespace: TpQt4Communication

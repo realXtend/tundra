@@ -28,6 +28,14 @@ namespace TpQt4Communication
 
 	void TextChatSession::OnChannelReady(Tp::PendingOperation* op )
 	{
+		Tp::PendingReady *pr = qobject_cast<Tp::PendingReady *>(op);
+		Tp::TextChannelPtr channel = Tp::TextChannelPtr(qobject_cast<Tp::TextChannel *>(pr->object()));
+
+		if (channel.data() != tp_text_channel_.data() )
+		{
+			LogError(">>>>>>>>>>>>>>>>> Tp:TextChannel object is changed!!!!");
+		}
+
 		if (tp_text_channel_.isNull())
 		{
 			LogError("TextChatSession::OnChannelReady - tp_text_channel_ == NULL");
@@ -41,7 +49,7 @@ namespace TpQt4Communication
 			return;
 		}
 
-		LogInfo("TextChatSession->OnChannelReady");
+		LogInfo("Text channel ready.");
 //		Tp::PendingReady *pr = qobject_cast<Tp::PendingReady *>(op);
 //		Tp::TextChannelPtr tp_text_channel = Tp::TextChannelPtr(qobject_cast<Tp::TextChannel *>(pr->object()));
 //		tp_text_channel_ = tp_text_channel;
@@ -49,6 +57,8 @@ namespace TpQt4Communication
 		Tp::ContactPtr initiator = tp_text_channel_->initiatorContact();
 		if ( !initiator.isNull() )
 			this->originator_ =	initiator->id().toStdString();
+		else
+			LogError("channel initiator == NULL");
 
 		QObject::connect(tp_text_channel_.data(),
 						 SIGNAL( messageReceived(const Tp::ReceivedMessage &)),

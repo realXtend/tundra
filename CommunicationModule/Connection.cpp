@@ -104,7 +104,7 @@ namespace TpQt4Communication
 		Tp::PendingConnection *c = qobject_cast<Tp::PendingConnection *>(op);
 		tp_connection_ = c->connection();
 
-		std::string message = "Got response from IM server";
+		std::string message = "Connected to IM server. Start login process";
 		LogInfo(message);
 
 		QObject::connect(tp_connection_->becomeReady(Tp::Connection::FeatureRoster),
@@ -138,9 +138,8 @@ namespace TpQt4Communication
 	        return;
 		}
 
-	  //  connect(tp_connection_->contactManager(),
-	  //      SIGNAL(presencePublicationRequested(const Tp::Contacts &)),
-			//SLOT(OnPresencePublicationRequested(const Tp::Contacts &)));
+		LogInfo("Create user.");
+		user_ = new User(tp_connection_);
 
 		// Build Friendlist
 		Tp::Contacts all_known_contacts = tp_connection_->contactManager()->allKnownContacts();
@@ -195,7 +194,6 @@ namespace TpQt4Communication
 			user_->AddContacts(new_contacts);
 		}
 
-
 		state_ = STATE_OPEN;
 		emit Connected();
 	}
@@ -217,10 +215,6 @@ namespace TpQt4Communication
 			LogDebug("tp_connection_ == NULL");
 
 		LogInfo(message);
-		LogInfo("Create user.");
-		user_ = new User(tp_connection_);
-//		state_ = STATE_OPEN;
-		
 
 		QObject::connect(tp_connection_->requestsInterface(),
                 SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
@@ -229,25 +223,7 @@ namespace TpQt4Communication
 		QObject::connect(tp_connection_->contactManager(),
             SIGNAL(presencePublicationRequested(const Tp::Contacts &)),
             SLOT(OnPresencePublicationRequested(const Tp::Contacts &)));
-
-		//Tp::Contacts contacts  = this->tp_connection_->contactManager()->allKnownContacts();
-		//
-		//for (Tp::Contacts::iterator i = contacts.begin(); i != contacts.end(); ++i)
-		//{
-		//	Tp::ContactPtr c = *i;
-		//	std::string id = c->id().toStdString();
-		//	
-		//	LogInfo("***");
-		//	LogInfo(id);
-		//	//Contact contact = new Contact(address, real_name);
-		//	
-		//}
-
-//		Tp::PendingContacts *pending_contacts = this->tp_connection_->contactManager()->->contactsForIdentifiers(list);
-//		QObject::connect((QObject*)pending_contacts, SIGNAL(finished(Tp::PendingOperation *)),
-//			SLOT(OnContactRetrieved(Tp::PendingOperation *)));
 	}
-
 			    
 	void Connection::OnNewChannels(const Tp::ChannelDetailsList& channels)
 	{
@@ -264,13 +240,13 @@ namespace TpQt4Communication
 				LogInfo("Text chat request received.");
 
 				Tp::TextChannelPtr channel = Tp::TextChannel::create(tp_connection_, details.channel.path(), details.properties);
-				Tp::ContactPtr c =  channel->initiatorContact();
+				LogInfo("Text channel object created.");
+				
 				//mCallHandler->addIncomingCall(channel);
-				TextChatSessionRequest* request = new TextChatSessionRequest(channel, new Contact(c)); //! HACK we should not create new object here. We already have one on Connection object.
+				TextChatSessionRequest* request = new TextChatSessionRequest(channel); //! HACK we should not create new object here. We already have one on Connection object.
 				received_text_chat_requests_.push_back(request);
 				
-				emit ReceivedTextChatSessionRequest(request);
-				LogInfo("emit ReceivedTextChatSessionRequest(request)");
+				QObject::connect(request, SIGNAL( Ready(TextChatSessionRequest*) ), SLOT( OnIncomingChatSessionReady(TextChatSessionRequest* ) ) );
 			}
 
 			if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST && !requested)
@@ -284,6 +260,12 @@ namespace TpQt4Communication
 			}
 			
 		}
+	}
+
+	void Connection::OnIncomingChatSessionReady(TextChatSessionRequest* request)
+	{
+		LogInfo("emit ReceivedTextChatSessionRequest(request)");
+		emit ReceivedTextChatSessionRequest(request);
 	}
 
 	void Connection::OnPresencePublicationRequested(const Tp::Contacts &contacts)

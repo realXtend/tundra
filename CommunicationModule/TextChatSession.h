@@ -10,7 +10,6 @@
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/ReceivedMessage>
 
-
 #include "Communication.h"
 #include "IMMessage.h"
 
@@ -26,26 +25,29 @@ namespace TpQt4Communication
 	class TextChatSession : QObject
 	{
 		Q_OBJECT 
-		friend class TextChatSession;
+		friend class Connection;
+		friend class TextChatSessionRequest;
 
 		MODULE_LOGGING_FUNCTIONS
 		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
-		
+		TextChatSession();
+		TextChatSession(Tp::TextChannelPtr tp_text_channel);		
 	public:
 		~TextChatSession();
 		enum State {STATE_INITIALIZING, STATE_READY, STATE_ERROR, STATE_CLOSED};
-		TextChatSession();
-		TextChatSession(Tp::TextChannelPtr tp_text_channel);
+
 		void Invite(Address a);
 		void SendTextMessage(std::string text);
 		void Close();
 		MessageVector GetMessageHistory(); // todo: return value
 		State GetState();
+
 	private:
 		MessageVector messages_;
 		Tp::TextChannelPtr tp_text_channel_;
 		State state_;
 		Address originator_;
+
 	private Q_SLOTS:
 		void OnChannelReady(Tp::PendingOperation*);
 		void OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &);
