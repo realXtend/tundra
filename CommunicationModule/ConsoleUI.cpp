@@ -265,6 +265,7 @@ namespace CommunicationUI
 	{
 		if ( default_connection_ == NULL )
 		{
+			std::string result;
 			result = "You have not logged in.";
 			return Console::ResultSuccess(result);
 		}
