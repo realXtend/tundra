@@ -113,6 +113,7 @@ namespace TpQt4Communication
 		QObject::connect(tp_connection_->requestConnect(),
 					     SIGNAL(finished(Tp::PendingOperation *)),
 						 SLOT(OnConnectionConnected(Tp::PendingOperation *)));
+
 		QObject::connect(tp_connection_.data(),
 			             SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
 						 SLOT(OnConnectionInvalidated(Tp::DBusProxy *, const QString &, const QString &)));

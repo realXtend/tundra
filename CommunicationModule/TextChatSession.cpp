@@ -12,7 +12,7 @@ namespace TpQt4Communication
 	TextChatSession::TextChatSession(Tp::TextChannelPtr tp_text_channel): tp_text_channel_(tp_text_channel), state_(STATE_INITIALIZING)
 	{
 		LogInfo("TextChatSession object created (with channel object)");
-		QObject::connect(tp_text_channel_->becomeReady(), 
+		QObject::connect(tp_text_channel_->becomeReady(Tp::TextChannel::FeatureMessageQueue), 
 					     SIGNAL( finished(Tp::PendingOperation*) ),
 						SLOT( OnChannelReady(Tp::PendingOperation*)) );
 	}
@@ -68,7 +68,8 @@ namespace TpQt4Communication
 		LogInfo("TextChatSession->OnChannelInvalidated");
 	}
 
-	// 
+	//! This method will not be called if session received from IM server this only aplied sessions 
+	//! created by Connection::CreateTextChatSession
 	void TextChatSession::OnTextChannelCreated(Tp::PendingOperation* op)
 	{
 		if ( op->isError() )
@@ -90,7 +91,9 @@ namespace TpQt4Communication
 //		Tp::TextChannel *textChannel = dynamic_cast<Tp::TextChannel *>(channel);
 		tp_text_channel_ = Tp::TextChannelPtr( dynamic_cast<Tp::TextChannel *>(text_channel.data()) );
 
-		QObject::connect(tp_text_channel_->becomeReady(), 
+//		channel->becomeReady(TextChannel::FeatureMessageQueue
+
+		QObject::connect(tp_text_channel_->becomeReady(Tp::TextChannel::FeatureMessageQueue), 
 			     SIGNAL( finished(Tp::PendingOperation*) ),
 				SLOT( OnChannelReady(Tp::PendingOperation*)) );
 	}
