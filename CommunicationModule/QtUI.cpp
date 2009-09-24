@@ -254,10 +254,13 @@ namespace CommunicationUI
 		lineEditMessage_->clear();
 
 		Conversation *conversation = (Conversation *)tabWidgetCoversations_->currentWidget();
-		conversation->chatSession_->SendTextMessage(message.toStdString());
-		// TODO: wait for confirmation signal and then put text to own chat widget
-		// now just put it there
-		conversation->onMessageSent(message);
+		if (conversation != NULL)
+		{
+			conversation->chatSession_->SendTextMessage(message.toStdString());
+			// TODO: wait for confirmation signal and then put text to own chat widget
+			// now just put it there
+			conversation->onMessageSent(message);
+		}
 	}
 
 	/////////////////////////////////////////////////////////////////////

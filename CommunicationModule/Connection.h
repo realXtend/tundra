@@ -102,7 +102,7 @@ namespace TpQt4Communication
 		void OnNewChannels(const Tp::ChannelDetailsList&);
 
 		//! Emits signal ReceivedFriendRequest
-		void OnIncomingChatSessionReady(TextChatSessionRequest* request);
+		void OnIncomingChatSessionRequestReady(TextChatSessionRequest* request);
 
 		//! Triggered when TextChannel object is created
 		//void OnTextChannelCreated(Tp::PendingOperation* op);

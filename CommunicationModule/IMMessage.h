@@ -6,20 +6,32 @@
 
 #include <QTime>
 #include "Communication.h"
+#include "Contact.h"
 
 namespace TpQt4Communication
 {
+	class TextChatSession;
+
+	/**
+     *
+	 *
+	 *
+	 */
+	//! todo: rename to ChatMessage
 	class Message
 	{
+		friend class TextChatSession;
+		Message(std::string text, Contact* author);
 	public:
-		Message(std::string text);
 		std::string GetText();
-		Address GetAuthor();
+
+		//! Return originator of this chat message
+		Contact* GetAuthor();
 		QTime GetTimeStamp();
 	private:
 		std::string text_;
 		QTime time_stamp_; 
-		Address author_;
+		Contact* author_;
 	};
 	typedef std::vector<Message*> MessageVector;
 	

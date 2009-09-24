@@ -247,10 +247,10 @@ namespace TpQt4Communication
 				LogInfo("Text channel object created.");
 				
 				//mCallHandler->addIncomingCall(channel);
-				TextChatSessionRequest* request = new TextChatSessionRequest(channel); //! HACK we should not create new object here. We already have one on Connection object.
+				TextChatSessionRequest* request = new TextChatSessionRequest(channel); 
 				received_text_chat_requests_.push_back(request);
 				
-				QObject::connect(request, SIGNAL( Ready(TextChatSessionRequest*) ), SLOT( OnIncomingChatSessionReady(TextChatSessionRequest* ) ) );
+				QObject::connect(request, SIGNAL( Ready(TextChatSessionRequest*) ), SLOT( OnIncomingChatSessionRequestReady(TextChatSessionRequest* ) ) );
 			}
 
 			if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST && !requested)
@@ -266,7 +266,7 @@ namespace TpQt4Communication
 		}
 	}
 
-	void Connection::OnIncomingChatSessionReady(TextChatSessionRequest* request)
+	void Connection::OnIncomingChatSessionRequestReady(TextChatSessionRequest* request)
 	{
 		LogInfo("emit ReceivedTextChatSessionRequest(request)");
 		emit ReceivedTextChatSessionRequest(request);

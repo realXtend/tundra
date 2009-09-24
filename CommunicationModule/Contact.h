@@ -20,6 +20,7 @@ namespace TpQt4Communication
 
 		friend class Connection;
 		friend class TextChatSessionRequest;
+		friend class TextChatSession;
 
 		MODULE_LOGGING_FUNCTIONS
 		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
