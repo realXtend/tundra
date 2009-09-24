@@ -10,7 +10,7 @@ namespace TpQt4Communication
 	TextChatSessionRequest::TextChatSessionRequest(Tp::TextChannelPtr tp_text_channel):  tp_text_channel_(tp_text_channel)
 	{
 		session_ = new TextChatSession(tp_text_channel);
-		Tp::PendingReady* p =  tp_text_channel->becomeReady();
+		Tp::PendingReady* p =  tp_text_channel->becomeReady(Tp::TextChannel::FeatureMessageQueue);
 		QObject::connect(p, SIGNAL(finished(Tp::PendingOperation*)), SLOT( OnTextChatSessionReady() ) );
 	}
 
