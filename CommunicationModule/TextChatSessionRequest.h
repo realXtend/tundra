@@ -8,10 +8,12 @@
 #include <TelepathyQt4/TextChannel>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingChannel>
+#include <TelepathyQt4/PendingOperation>
 
 #include "Communication.h"
 //#include "Connection.h"
 #include "TextChatSession.h"
+#include "Contact.h"
 
 namespace TpQt4Communication
 {
@@ -22,20 +24,25 @@ namespace TpQt4Communication
 	class TextChatSessionRequest : QObject
 	{
 		Q_OBJECT
-			friend class Connection;
+		friend class Connection;
+
+		MODULE_LOGGING_FUNCTIONS
+		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
+
 	protected:
 		TextChatSessionRequest(TextChatSession* session );
-		TextChatSessionRequest(Tp::TextChannelPtr tp_text_channel);
+		TextChatSessionRequest(Tp::TextChannelPtr tp_text_channel, Contact* from);
 	public:
 
 		//! Create a new TextChatSession object and return it
-		TextChatSession* Accept();
+		TextChatSessionPtr Accept();
 
 		//! Terminates the session request
 		void Reject();
 
 		//! Return IM address of originator of request
 		Address GetOriginator();
+		Contact* GetOriginatorContact();
 
 		//! Return a message if one is attached to request
 		std::string GetMessage();
@@ -48,6 +55,8 @@ namespace TpQt4Communication
 
 		//!
 		Tp::TextChannelPtr tp_text_channel_;
+
+		Contact* from_;
 	//slots:
 		//void OnChannelReady(Tp::PendingOperation*);
 		//void OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &);

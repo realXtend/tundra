@@ -9,6 +9,12 @@ namespace TpQt4Communication
 	Contact::Contact(Tp::ContactPtr tp_contact)
 	{
 		LogInfo("Create Contact object");
+		if (tp_contact.isNull())
+		{
+			LogError("contact == NULL");
+			return;
+		}
+		assert( !tp_contact.isNull() );
 		tp_contact_ = tp_contact;
 		presence_message_ = tp_contact_->presenceMessage().toStdString();
 		presence_status_ = tp_contact_->presenceStatus().toStdString();
@@ -17,6 +23,12 @@ namespace TpQt4Communication
 
 	void Contact::ConnectSignals()
 	{
+		if (tp_contact_.isNull())
+		{
+			LogError("contact == NULL");
+			return;
+		}
+
 		QObject::connect(tp_contact_.data(),
             SIGNAL(simplePresenceChanged(const QString &, uint, const QString &)),
             SLOT(OnContactChanged()));
