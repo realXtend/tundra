@@ -19,6 +19,7 @@ namespace CommunicationUI
 	{
 		this->setLayout(new QVBoxLayout);
 		this->layout()->setMargin(0);
+		this->setStyleSheet(QString("QLineEdit, QListView, QPlainTextEdit {color: rgb(130, 195, 255);background-color: rgb(255, 255, 255);selection-color: white;selection-background-color: rgb(130, 195, 255);border: 2px groove gray;border-color: rgb(19, 33, 95);border-radius: 15px;padding: 5px 10px;}"));
 		loadUserInterface(false);
 	}
 
@@ -224,7 +225,7 @@ namespace CommunicationUI
 	{
 		ContactListItem *listItem = (ContactListItem *)clickedItem;
 		TextChatSessionPtr chatSession = im_connection_->CreateTextChatSession(listItem->contact_);
-		Conversation *conversation = new Conversation(this->tabWidgetCoversations_, chatSession, listItem->contact_);
+		Conversation *conversation = new Conversation(0, chatSession, listItem->contact_);
 		tabWidgetCoversations_->addTab(conversation, QString(listItem->contact_->GetRealName().c_str()));
 	}
 
@@ -236,7 +237,7 @@ namespace CommunicationUI
 		{
 			if (chatSessionRequest->GetOriginatorContact() != NULL )
 			{
-				Conversation *conversation = new Conversation(this->tabWidgetCoversations_, chatSession, chatSessionRequest->GetOriginatorContact());
+				Conversation *conversation = new Conversation(0, chatSession, chatSessionRequest->GetOriginatorContact());
 				tabWidgetCoversations_->addTab(conversation, QString(chatSessionRequest->GetOriginatorContact()->GetRealName().c_str()));
 			}
 			else
@@ -338,6 +339,7 @@ namespace CommunicationUI
 		QUiLoader loader;
         QFile uiFile("./data/ui/communications_conversation.ui");
 		QWidget(loader.load(&uiFile, this));
+		this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		uiFile.close();
 
 		textEditChat_ = findChild<QPlainTextEdit *>("textEdit_Chat");
