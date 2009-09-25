@@ -11,15 +11,13 @@
 namespace OpenSimProtocol
 {
 
-InventoryFolder::InventoryFolder(): InventoryItemBase(Type_Folder, RexTypes::RexUUID(), "New Folder", 0)
+InventoryFolder::InventoryFolder(): InventoryItemBase(Type_Folder, RexUUID(), "New Folder", 0)
 {
 }
 
-InventoryFolder::InventoryFolder(const RexTypes::RexUUID &id, const std::string &name, InventoryFolder *parent) :
+InventoryFolder::InventoryFolder(const RexUUID &id, const std::string &name, InventoryFolder *parent) :
     InventoryItemBase(Type_Folder, id, name, parent)
 {
-    ///\todo if parent == null insert to root or terminate?
- //   itemData_ = data;
     itemData_ << name.c_str();
 }
 
@@ -54,35 +52,40 @@ InventoryItemBase *InventoryFolder::AddChild(InventoryItemBase *child)
     return childItems_.back();
 }
 
-/*
-InventoryFolder *InventoryFolder::AddChildFolder(const InventoryFolder &child)
+void InventoryFolder::DeleteChild(InventoryItemBase *child)
 {
-    std::cout << this->name_ << " " << child.GetName() << std::endl;
-    childItems_.append(child);
-    childItems_.back().SetParent(this);
-    return static_cast<InventoryFolder *>(&childItems_.back());
+    QListIterator<InventoryItemBase *> it(childItems_);
+    while(it.hasNext())
+    {
+        InventoryItemBase *item = it.next();
+        if(item == child)
+            SAFE_DELETE(item);
+    }
 }
 
-InventoryAsset *InventoryFolder::AddChildAsset(const InventoryAsset &child)
+void InventoryFolder::DeleteChild(const RexUUID &id)
 {
-    childItems_.append(child);
-    childItems_.back().SetParent(this);
-    return static_cast<InventoryAsset *>(&childItems_.back());
+    QListIterator<InventoryItemBase *> it(childItems_);
+    while(it.hasNext())
+    {
+        InventoryItemBase *item = it.next();
+        if(item->GetID() == id)
+            SAFE_DELETE(item);
+    }
 }
-*/
 
 const bool InventoryFolder::IsChild(InventoryFolder *child)
 {
-    QList<InventoryItemBase *>::iterator it;
-    for(it = childItems_.begin(); it != childItems_.end(); ++it)
+    QListIterator<InventoryItemBase *> it(childItems_);
+    while(it.hasNext())
     {
-        InventoryItemBase *item = *it;
+        InventoryItemBase *item = it.next();
         InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
         if (folder)
         {
             if (folder == child)
                 return true;
-            else
+            
                 if (folder->IsChild(child))
                     return true;
         }
@@ -96,10 +99,10 @@ InventoryFolder *InventoryFolder::GetFirstChildFolderByName(const char *searchNa
     if (name_ == searchName)
         return this;
 
-    QList<InventoryItemBase *>::iterator it;
-    for(it = childItems_.begin(); it != childItems_.end(); ++it)
+    QListIterator<InventoryItemBase *> it(childItems_);
+    while(it.hasNext())
     {
-        InventoryItemBase *item = *it;
+        InventoryItemBase *item = it.next();
         InventoryFolder *folder = 0;
         if (item->GetInventoryItemType() == Type_Folder)
             folder = static_cast<InventoryFolder *>(item);
@@ -118,12 +121,12 @@ InventoryFolder *InventoryFolder::GetFirstChildFolderByName(const char *searchNa
     return 0;
 }
 
-InventoryFolder *InventoryFolder::GetChildFolderByID(const RexTypes::RexUUID &id)
+InventoryFolder *InventoryFolder::GetChildFolderByID(const RexUUID &id)
 {
-    QList<InventoryItemBase *>::iterator it;
-    for(it = childItems_.begin(); it != childItems_.end(); ++it)
+    QListIterator<InventoryItemBase *> it(childItems_);
+    while(it.hasNext())
     {
-        InventoryItemBase *item = *it;
+        InventoryItemBase *item = it.next();
         InventoryFolder *folder = 0;
         if (item->GetInventoryItemType() == Type_Folder)
             folder = static_cast<InventoryFolder *>(item);

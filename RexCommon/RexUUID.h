@@ -27,6 +27,8 @@ namespace RexTypes
         /// Random-generates the contents
         void Random();
 
+        static RexUUID CreateRandom();
+
         void FromString(const char *str);
         void FromString(const std::string &str) { FromString(str.c_str()); }
 

@@ -19,9 +19,7 @@ namespace OpenSimProtocol
 InventoryModel::InventoryModel()
 {
     // InventoryModel's root item is not the same as inventory's root item ("My Inventory" folder).
-    RexTypes::RexUUID rootItemID;
-    rootItemID.Random();
-    inventoryTreeRoot_ = new InventoryFolder(rootItemID, "Inventory");
+    inventoryTreeRoot_ = new InventoryFolder(RexUUID::CreateRandom(), "Inventory");
 }
 
 InventoryModel::~InventoryModel()
@@ -63,10 +61,11 @@ Qt::ItemFlags InventoryModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
         return 0;
-
-    ///\todo If inventory "core" folder (Textures, Objects etc.) return blaah blaah...
-    //return Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
-
+/*
+    InventoryItemBase *item = GetItem(index);
+    if (item->IsEditable())
+        return Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+*/
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
@@ -99,6 +98,70 @@ QModelIndex InventoryModel::index(int row, int column, const QModelIndex &parent
         return QModelIndex();
 }
 
+bool InventoryModel::insertRows(int position, int rows, const QModelIndex &parent)
+{
+    ///\todo Make work for assets also.
+    InventoryFolder *folder = dynamic_cast<InventoryFolder *>(GetItem(parent));
+    if (!folder)
+        return false;
+
+    beginInsertRows(parent, position, position + rows - 1);
+    InventoryFolder *newFolder = new InventoryFolder(RexUUID::CreateRandom(), "New Folder", folder);
+    folder->AddChild(newFolder);
+    endInsertRows();
+
+    return true;
+}
+int xxx = 0;
+InventoryFolder *InventoryModel::InsertRow(int position, const QModelIndex &parent)
+{
+    ///\todo Make work for assets also.
+    InventoryFolder *folder = dynamic_cast<InventoryFolder *>(GetItem(parent));
+    if (!folder)
+        return 0;
+
+    beginInsertRows(parent, position, position);
+    std::string name = "New Folder";
+    name += Core::ToString(xxx);
+    ++xxx;
+    InventoryFolder *newFolder = new InventoryFolder(RexUUID::CreateRandom(), name, folder);
+    folder->AddChild(newFolder);
+    endInsertRows();
+
+    return newFolder;
+}
+
+bool InventoryModel::removeRows(int position, int rows, const QModelIndex &parent)
+{
+    ///\todo Make work for assets also.
+    InventoryFolder *folder = dynamic_cast<InventoryFolder *>(GetItem(parent));
+    if (!folder)
+        return false;
+
+    beginRemoveRows(parent, position, position + rows - 1);
+    folder->DeleteChild(folder);
+    endRemoveRows();
+
+    return true;
+}
+
+/*
+void InventoryModel::DeleteChild(int position, const QModelIndex &parent)
+{
+    ///\todo Make work for assets also.
+    InventoryFolder *folder = dynamic_cast<InventoryFolder *>(GetItem(parent));
+    if (!folder)
+        return 0;
+
+    beginInsertRows(parent, position, position);
+    InventoryFolder *newFolder = new InventoryFolder(RexUUID::CreateRandom(), "New Folder", folder);
+    folder->AddChild(newFolder);
+    endInsertRows();
+
+    return newFolder;
+}
+*/
+
 QModelIndex InventoryModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
@@ -129,19 +192,18 @@ int InventoryModel::rowCount(const QModelIndex &parent) const
 
 bool InventoryModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    return false;
-/*
     if (role != Qt::EditRole)
         return false;
 
-    TreeItem *item = getItem(index);
-    bool result = item->setData(index.column(), value);
+    InventoryFolder *folder = dynamic_cast<InventoryFolder *>(GetItem(index));
+    if (!folder)
+        return false;
 
-    if (result)
-        emit dataChanged(index, index);
+//    bool result = InventoryItemBase->setData(index.column(), value);
+//    if (result)
+    emit dataChanged(index, index);
 
-    return result;
-*/
+    return true;
 }
 
 InventoryFolder *InventoryModel::GetFirstChildFolderByName(const char *searchName) const
@@ -157,6 +219,11 @@ InventoryFolder *InventoryModel::GetChildFolderByID(const RexUUID &searchId) con
 InventoryFolder *InventoryModel::GetMyInventoryFolder() const
 {
     return inventoryTreeRoot_->GetFirstChildFolderByName("My Inventory");
+}
+
+InventoryFolder *InventoryModel::GetTrashFolder() const
+{
+    return inventoryTreeRoot_->GetFirstChildFolderByName("Trash");
 }
 
 InventoryFolder *InventoryModel::GetOrCreateNewFolder(const RexUUID &id, InventoryFolder &parent)
@@ -199,7 +266,7 @@ void InventoryModel::SetupModelData(Inventory *inventory, InventoryFolder *paren
 }
 */
 
-InventoryItemBase *InventoryModel::getItem(const QModelIndex &index) const
+InventoryItemBase *InventoryModel::GetItem(const QModelIndex &index) const
 {
     if (index.isValid())
     {

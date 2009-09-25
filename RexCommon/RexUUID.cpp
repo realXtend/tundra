@@ -65,11 +65,18 @@ bool RexUUID::IsNull() const
             return false;
     return true;
 }
-    
+
 void RexUUID::Random()
 {
     for (int i = 0; i < cSizeBytes; ++i)
         data[i] = rand() & 0xff;
+}
+
+RexUUID RexUUID::CreateRandom()
+{
+    RexUUID id;
+    id.Random();
+    return id;
 }
 
 bool RexUUID::IsValid(const char *str)

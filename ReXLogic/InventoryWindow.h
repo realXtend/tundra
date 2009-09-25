@@ -36,25 +36,35 @@ namespace RexLogic
 
     public:
         /// Constructor.
-        InventoryWindow(Foundation::Framework *framework, RexLogicModule *module);
+        /// @param framework Framework.pointer.
+        /// @param module RexLogicModule pointer.
+        InventoryWindow(Foundation::Framework *framework, RexLogicModule *rexlogic);
 
         /// Destructor.
         virtual ~InventoryWindow();
 
     public slots:
-        void PopulateInventoryView();
-        void OpenFolder(QTreeWidgetItem* item, int column);
-        void CloseFolder();
-        void OpenItem();
+        ///
+        void InitInventoryTreeView();
+
+        /// Shows the inventory window.
+        void Show();
+
+        /// Hides the inventory window.
+        void Hide();
+
+        ///
         void FetchInventoryDescendents(const QModelIndex &index);
+
+        /// Updates menu actions.
         void UpdateActions();
 
     private slots:
+        /// Creates new folder.
         void CreateFolder();
-//        bool InsertColumn(const QModelIndex &parent = QModelIndex());
-        void InsertRow();
-//        bool RemoveColumn(const QModelIndex &parent = QModelIndex());
-        void RemoveRow();
+
+        /// Deletes folder.
+        void DeleteFolder();
 
     private:
         ///
