@@ -24,10 +24,10 @@ class TestModule(Component):
         
     def update(self, deltatime):
         if self.data == 1:
-            self.data = 0
+            self.data = 2
         else:
             self.data = 1
-        #print self.data, deltatime
+        print self.data, #deltatime
         
     def on_chat(self, frm, msg):
         print "Test Module received chat message:", frm, msg
@@ -39,4 +39,5 @@ class TestModule(Component):
             print inputtests[evid]
             
     def on_mousemove(self, m):
-        print "Mouse move", m
+        pass
+        #print "Mouse move", m
