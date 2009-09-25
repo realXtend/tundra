@@ -1,6 +1,0 @@
-<config>
-	<entry>CommunicationUIModule</entry>
-	<dependency>SupportModules</dependency>
-	<dependency>ScriptModule</dependency>
-	<dependency>GtkmmUI</dependency>
-</config>
