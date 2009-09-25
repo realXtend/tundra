@@ -1,17 +1,17 @@
-#include "TextChatSession.h"
+#include "ChatSession.h"
 
 namespace TpQt4Communication
 {
 
 
-	TextChatSession::TextChatSession(): tp_text_channel_(NULL), state_(STATE_INITIALIZING)
+	ChatSession::ChatSession(): tp_text_channel_(NULL), state_(STATE_INITIALIZING)
 	{
-		LogInfo("TextChatSession object created.");
+		LogInfo("ChatSession object created.");
 	}
 
-	TextChatSession::TextChatSession(Tp::TextChannelPtr tp_text_channel): tp_text_channel_(tp_text_channel), state_(STATE_INITIALIZING)
+	ChatSession::ChatSession(Tp::TextChannelPtr tp_text_channel): tp_text_channel_(tp_text_channel), state_(STATE_INITIALIZING)
 	{
-		LogInfo("TextChatSession object created (with channel object)");
+		LogInfo("ChatSession object created (with channel object)");
 		Tp::Features features;
 		features.insert(Tp::TextChannel::FeatureMessageQueue);
 		features.insert(Tp::TextChannel::FeatureCore);
@@ -21,32 +21,32 @@ namespace TpQt4Communication
 						SLOT( OnChannelReady(Tp::PendingOperation*)) );
 	}
 
-	TextChatSession::~TextChatSession()
+	ChatSession::~ChatSession()
 	{
-		for (MessageVector::iterator i = messages_.begin(); i != messages_.end(); ++i)
+		for (ChatMessageVector::iterator i = messages_.begin(); i != messages_.end(); ++i)
 		{
 			delete *i;
 		}
 		messages_.clear();
 	}
 
-	void TextChatSession::SendTextMessage(std::string text)
+	void ChatSession::SendTextMessage(std::string text)
 	{
 		assert( !tp_text_channel_.isNull() );
 
-		Message* m = new Message(text, NULL);
+		ChatMessage* m = new ChatMessage(text, NULL);
 		messages_.push_back(m);
 
 		Tp::PendingSendMessage* p = tp_text_channel_->send(QString(text.c_str()));
 		//! todo: receive ack when message is send
 	}
 
-	MessageVector TextChatSession::GetMessageHistory()
+	ChatMessageVector ChatSession::GetMessageHistory()
 	{
 		return messages_;
 	}
 
-	void TextChatSession::Close()
+	void ChatSession::Close()
 	{
 		assert( tp_text_channel_.isNull() );
 		LogInfo("Try to close chat sessions.");
@@ -55,14 +55,14 @@ namespace TpQt4Communication
 	}
 
 	
-	void TextChatSession::OnChannelInvalidated(Tp::DBusProxy *p, const QString &me, const QString &er)
+	void ChatSession::OnChannelInvalidated(Tp::DBusProxy *p, const QString &me, const QString &er)
 	{
-		LogInfo("TextChatSession->OnChannelInvalidated");
+		LogInfo("ChatSession->OnChannelInvalidated");
 	}
 
 	//! This method will not be called if session received from IM server this only aplied sessions 
-	//! created by Connection::CreateTextChatSession
-	void TextChatSession::OnTextChannelCreated(Tp::PendingOperation* op)
+	//! created by Connection::CreateChatSession
+	void ChatSession::OnTextChannelCreated(Tp::PendingOperation* op)
 	{
 		if ( op->isError() )
 		{
@@ -81,7 +81,7 @@ namespace TpQt4Communication
 				SLOT( OnChannelReady(Tp::PendingOperation*)) );
 	}
 
-	void TextChatSession::OnChannelReady(Tp::PendingOperation* op )
+	void ChatSession::OnChannelReady(Tp::PendingOperation* op )
 	{
 		Tp::PendingReady *pr = qobject_cast<Tp::PendingReady *>(op);
 		Tp::TextChannelPtr channel = Tp::TextChannelPtr(qobject_cast<Tp::TextChannel *>(pr->object()));
@@ -143,7 +143,7 @@ namespace TpQt4Communication
 				QString text = i->text;
 				Core::uint s = i->sender;
 				Core::uint t = i->unixTimestamp;
-				Message* m = new Message(text.toStdString(), new Contact(tp_text_channel_->initiatorContact()));
+				ChatMessage* m = new ChatMessage(text.toStdString(), new Contact(tp_text_channel_->initiatorContact()));
 				messages_.push_back(m);
 				emit MessageReceived(*m);
 				LogInfo("emited pending message");
@@ -152,31 +152,31 @@ namespace TpQt4Communication
 		else
 			LogError("Received invalid pending message");
 
-		LogInfo("TextChatSession object ready.");
+		LogInfo("ChatSession object ready.");
 		state_ = STATE_READY;
 		emit Ready();
 	}
 
-	void TextChatSession::OnChannelMessageSent(const Tp::Message& message, Tp::MessageSendingFlags flags, const QString &text)
+	void ChatSession::OnChannelMessageSent(const Tp::Message& message, Tp::MessageSendingFlags flags, const QString &text)
 	{
 		LogInfo("OnChannelMessageSent");
 	}
 
-	void TextChatSession::OnChannelPendingMessageRemoved(const Tp::ReceivedMessage &message)
+	void ChatSession::OnChannelPendingMessageRemoved(const Tp::ReceivedMessage &message)
 	{
 		LogInfo("OnChannelPendingMessageRemoved");
 	}
 
-	void TextChatSession::OnMessageReceived(const Tp::ReceivedMessage &message)
+	void ChatSession::OnMessageReceived(const Tp::ReceivedMessage &message)
 	{
 		Tp::ContactPtr sender = message.sender();
-		Message* m = new Message(message.text().toStdString(), new Contact(sender));
+		ChatMessage* m = new ChatMessage(message.text().toStdString(), new Contact(sender));
 		messages_.push_back(m);
 		emit MessageReceived(*m);
 		LogInfo("Received text message");
 	}
 
-	TextChatSession::State TextChatSession::GetState()
+	ChatSession::State ChatSession::GetState()
 	{
 		return state_;
 	}

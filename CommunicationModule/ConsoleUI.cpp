@@ -2,7 +2,7 @@
 #include "Foundation.h"
 
 #include "ConsoleUI.h"
-#include "TextChatSession.h"
+#include "ChatSession.h"
 
 using namespace TpQt4Communication;
 
@@ -32,8 +32,8 @@ namespace CommunicationUI
 			console_service->RegisterCommand(Console::CreateCommand("comm logout", "Logout from jabber server: comm logout()", Console::Bind(this, &ConsoleUI::OnCommandLogout)));
 			console_service->RegisterCommand(Console::CreateCommand("comm user", "Show information about current user", Console::Bind(this, &ConsoleUI::OnCommandUser)));
 			console_service->RegisterCommand(Console::CreateCommand("comm message", "Send message to default text chat session", Console::Bind(this, &ConsoleUI::OnCommandMessage)));
-			console_service->RegisterCommand(Console::CreateCommand("comm accept chat", "Accept all chat requests.", Console::Bind(this, &ConsoleUI::OnCommandAcceptTextChatSession)));
-			console_service->RegisterCommand(Console::CreateCommand("comm reject chat", "Reject all chat requests.", Console::Bind(this, &ConsoleUI::OnCommandAcceptTextChatSession)));
+			console_service->RegisterCommand(Console::CreateCommand("comm accept chat", "Accept all chat requests.", Console::Bind(this, &ConsoleUI::OnCommandAcceptChatSession)));
+			console_service->RegisterCommand(Console::CreateCommand("comm reject chat", "Reject all chat requests.", Console::Bind(this, &ConsoleUI::OnCommandAcceptChatSession)));
 			console_service->RegisterCommand(Console::CreateCommand("comm accept friend", "Accept a friend request.", Console::Bind(this, &ConsoleUI::OnCommandAcceptFriendRequest)));
 			console_service->RegisterCommand(Console::CreateCommand("comm reject friend", "Reject friend request.", Console::Bind(this, &ConsoleUI::OnCommandRejectFriendRequest)));
 		}
@@ -109,10 +109,10 @@ namespace CommunicationUI
 				s << connection->GetFriendRequests().size();
 				s << " friend requests";
 				s << "\n    ";
-				s << connection->GetTextChatSessionRequests().size();
+				s << connection->GetChatSessionRequests().size();
 				s << " text chat requests";
 				s << "\n    ";
-				s << connection->GetTextChatSessions().size();
+				s << connection->GetChatSessions().size();
 				s << " text chat sessions";
 				result.append(s.str());
 				result.append("\n");
@@ -241,13 +241,13 @@ namespace CommunicationUI
 		return Console::ResultSuccess(result);
 	}
 
-	Console::CommandResult ConsoleUI::OnCommandAcceptTextChatSession(const Core::StringVector &params)
+	Console::CommandResult ConsoleUI::OnCommandAcceptChatSession(const Core::StringVector &params)
 	{
-		default_connection_->GetTextChatSessionRequests();
-		TpQt4Communication::TextChatSessionRequestVector requests = default_connection_->GetTextChatSessionRequests();
-		for (TextChatSessionRequestVector::iterator i = requests.begin(); i != requests.end(); ++i)
+		default_connection_->GetChatSessionRequests();
+		TpQt4Communication::ChatSessionRequestVector requests = default_connection_->GetChatSessionRequests();
+		for (ChatSessionRequestVector::iterator i = requests.begin(); i != requests.end(); ++i)
 		{
-			TextChatSessionPtr session = (*i)->Accept();
+			ChatSessionPtr session = (*i)->Accept();
 			default_chat_session_ = session.get();
 		}
 

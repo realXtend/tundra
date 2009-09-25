@@ -46,7 +46,7 @@ namespace TpQt4Communication
 		return protocol_;
 	}
 
-	TextChatSessionPtr Connection::CreateTextChatSession(Contact* contact)
+	ChatSessionPtr Connection::CreateChatSession(Contact* contact)
 	{
 		if (contact == NULL || contact->tp_contact_.isNull())
 		{
@@ -66,14 +66,14 @@ namespace TpQt4Communication
 		Tp::PendingChannel* p = tp_connection_->ensureChannel(params);
 		Tp::PendingOperation *operation = (Tp::PendingOperation*)p;
 
-		TextChatSession* session = new TextChatSession();
+		ChatSession* session = new ChatSession();
 		
 		QObject::connect(operation,
 			SIGNAL( finished(Tp::PendingOperation*) ),
 			(QObject*)session,
 			SLOT( OnTextChannelCreated(Tp::PendingOperation*) ) );
 
-		return TextChatSessionPtr(session);
+		return ChatSessionPtr(session);
 	}
 
 	void Connection::OnConnectionCreated(Tp::PendingOperation *op)
@@ -213,6 +213,8 @@ namespace TpQt4Communication
 			user_->AddContacts(new_contacts);
 		}
 
+		
+
 		state_ = STATE_OPEN;
 		emit Connected();
 	}
@@ -236,10 +238,10 @@ namespace TpQt4Communication
 				LogInfo("Text channel object created.");
 				
 				//mCallHandler->addIncomingCall(channel);
-				TextChatSessionRequest* request = new TextChatSessionRequest(channel); 
+				ChatSessionRequest* request = new ChatSessionRequest(channel); 
 				received_text_chat_requests_.push_back(request);
 				
-				QObject::connect(request, SIGNAL( Ready(TextChatSessionRequest*) ), SLOT( OnIncomingChatSessionRequestReady(TextChatSessionRequest* ) ) );
+				QObject::connect(request, SIGNAL( Ready(ChatSessionRequest*) ), SLOT( OnIncomingChatSessionRequestReady(ChatSessionRequest* ) ) );
 			}
 
 			if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST && !requested)
@@ -255,10 +257,10 @@ namespace TpQt4Communication
 		}
 	}
 
-	void Connection::OnIncomingChatSessionRequestReady(TextChatSessionRequest* request)
+	void Connection::OnIncomingChatSessionRequestReady(ChatSessionRequest* request)
 	{
-		LogInfo("emit ReceivedTextChatSessionRequest(request)");
-		emit ReceivedTextChatSessionRequest(request);
+		LogInfo("emit ReceivedChatSessionRequest(request)");
+		emit ReceivedChatSessionRequest(request);
 	}
 
 	void Connection::OnPresencePublicationRequested(const Tp::Contacts &contacts)
@@ -311,9 +313,9 @@ namespace TpQt4Communication
 	}
 
 	
-	TextChatSessionRequestVector Connection::GetTextChatSessionRequests()
+	ChatSessionRequestVector Connection::GetChatSessionRequests()
 	{
-		TextChatSessionRequestVector requests;
+		ChatSessionRequestVector requests;
 		requests.assign(received_text_chat_requests_.begin(), received_text_chat_requests_.end());
 		return requests;
 	}
@@ -323,9 +325,9 @@ namespace TpQt4Communication
 		return FriendRequestVector(received_friend_requests_);
 	}
 
-	TextChatSessionVector Connection::GetTextChatSessions()
+	ChatSessionVector Connection::GetChatSessions()
 	{
-		return TextChatSessionVector(text_chat_sessions_);
+		return ChatSessionVector(text_chat_sessions_);
 	}
 
 	PresenceStatusOptions Connection::GetAvailablePresenceStatusOptions()

@@ -1,25 +1,25 @@
-#include "TextChatSessionRequest.h"
+#include "ChatSessionRequest.h"
 
 namespace TpQt4Communication
 {
-	TextChatSessionRequest::TextChatSessionRequest(Tp::TextChannelPtr tp_text_channel):  tp_text_channel_(tp_text_channel)
+	ChatSessionRequest::ChatSessionRequest(Tp::TextChannelPtr tp_text_channel):  tp_text_channel_(tp_text_channel)
 	{
-		session_ = new TextChatSession(tp_text_channel);
+		session_ = new ChatSession(tp_text_channel);
 		Tp::Features features;
 		features.insert(Tp::TextChannel::FeatureMessageQueue);
 		features.insert(Tp::TextChannel::FeatureCore);
 		features.insert(Tp::TextChannel::FeatureMessageCapabilities);
 		Tp::PendingReady* p =  tp_text_channel->becomeReady(features);
-		QObject::connect(p, SIGNAL(finished(Tp::PendingOperation*)), SLOT( OnTextChatSessionReady() ) );
+		QObject::connect(p, SIGNAL(finished(Tp::PendingOperation*)), SLOT( OnChatSessionReady() ) );
 	}
 
-	TextChatSessionPtr TextChatSessionRequest::Accept()
+	ChatSessionPtr ChatSessionRequest::Accept()
 	{
 		LogInfo("Chat session accepted.");
-		return TextChatSessionPtr(session_);
+		return ChatSessionPtr(session_);
 	}
 
-	void TextChatSessionRequest::Reject()
+	void ChatSessionRequest::Reject()
 	{
 		LogInfo("Chat session rejected.");
 		Tp::PendingOperation* p = tp_text_channel_->requestClose();
@@ -28,18 +28,18 @@ namespace TpQt4Communication
 			SLOT( OnTextChannelClosed(Tp::PendingOperation* ) ));
 	}
 
-	Address TextChatSessionRequest::GetOriginator()
+	Address ChatSessionRequest::GetOriginator()
 	{
 		//! todo: implement
 		return "NOT IMPLEMENTED."; 
 	}
 
-	std::string TextChatSessionRequest::GetMessage()
+	std::string ChatSessionRequest::GetMessage()
 	{
 		return message_;
 	}
 
-	void TextChatSessionRequest::OnTextChannelClosed(Tp::PendingOperation* op)
+	void ChatSessionRequest::OnTextChannelClosed(Tp::PendingOperation* op)
 	{
 		if ( op->isError())
 		{
@@ -48,9 +48,9 @@ namespace TpQt4Communication
 		LogInfo("Text channel closed.");
 	}
 
-	Contact* TextChatSessionRequest::GetOriginatorContact()
+	Contact* ChatSessionRequest::GetOriginatorContact()
 	{
-		LogInfo("TextChatSessionRequest::GetOriginatorContact()");
+		LogInfo("ChatSessionRequest::GetOriginatorContact()");
 		if ( !tp_text_channel_->isReady() )
 		{
 			LogError("tp_text_channel_ == NULL");
@@ -59,7 +59,7 @@ namespace TpQt4Communication
 		return new Contact(tp_text_channel_->initiatorContact()); // HACK: We should not create a new Contact object here, we already have one.
 	}
 
-	void TextChatSessionRequest::OnTextChatSessionReady()
+	void ChatSessionRequest::OnChatSessionReady()
 	{
 		emit Ready(this);
 	}

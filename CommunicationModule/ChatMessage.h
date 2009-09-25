@@ -10,18 +10,17 @@
 
 namespace TpQt4Communication
 {
-	class TextChatSession;
+	class ChatSession;
 
 	/**
      *
 	 *
 	 *
 	 */
-	//! todo: rename to ChatMessage
-	class Message
+	class ChatMessage
 	{
-		friend class TextChatSession;
-		Message(std::string text, Contact* author);
+		friend class ChatSession;
+		ChatMessage(std::string text, Contact* author);
 	public:
 		std::string GetText();
 
@@ -33,7 +32,7 @@ namespace TpQt4Communication
 		QTime time_stamp_; 
 		Contact* author_;
 	};
-	typedef std::vector<Message*> MessageVector;
+	typedef std::vector<ChatMessage*> ChatMessageVector;
 	
 
 } // end of namespace: TpQt4Communication

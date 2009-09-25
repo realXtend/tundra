@@ -1,5 +1,5 @@
-#ifndef incl_Comm_TextChatSession_h
-#define incl_Comm_TextChatSession_h
+#ifndef incl_Comm_ChatSession_h
+#define incl_Comm_ChatSession_h
 
 #include "StableHeaders.h"
 #include "Foundation.h"
@@ -11,7 +11,7 @@
 #include <TelepathyQt4/ReceivedMessage>
 
 #include "Communication.h"
-#include "IMMessage.h"
+#include "ChatMessage.h"
 
 namespace TpQt4Communication
 {
@@ -20,28 +20,28 @@ namespace TpQt4Communication
 	 *
 	 *
 	 */
-	class TextChatSession : QObject
+	class ChatSession : QObject
 	{
 		Q_OBJECT 
 		friend class Connection;
-		friend class TextChatSessionRequest;
+		friend class ChatSessionRequest;
 
 		MODULE_LOGGING_FUNCTIONS
 		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
-		TextChatSession();
-		TextChatSession(Tp::TextChannelPtr tp_text_channel);		
+		ChatSession();
+		ChatSession(Tp::TextChannelPtr tp_text_channel);		
 	public:
-		~TextChatSession();
+		~ChatSession();
 		enum State {STATE_INITIALIZING, STATE_READY, STATE_ERROR, STATE_CLOSED};
 
 //		void Invite(Address a);
 		void SendTextMessage(std::string text);
 		void Close();
-		MessageVector GetMessageHistory(); 
+		ChatMessageVector GetMessageHistory(); 
 		State GetState();
 
 	private:
-		MessageVector messages_;
+		ChatMessageVector messages_;
 		Tp::TextChannelPtr tp_text_channel_;
 		State state_;
 		Address originator_;
@@ -58,12 +58,12 @@ namespace TpQt4Communication
 		void Ready();
 		void Error(QString &reason);
 		void Closed();
-		void MessageReceived(Message &message);
+		void MessageReceived(ChatMessage &message);
 	};
-	typedef boost::shared_ptr<TextChatSession> TextChatSessionPtr;
-	typedef boost::weak_ptr<TextChatSession> TextChatSessionWeakPtr;
-	typedef std::vector<TextChatSession*> TextChatSessionVector;
+	typedef boost::shared_ptr<ChatSession> ChatSessionPtr;
+	typedef boost::weak_ptr<ChatSession> ChatSessionWeakPtr;
+	typedef std::vector<ChatSession*> ChatSessionVector;
 
 } // end of namespace: TpQt4Communication
 
-#endif // incl_Comm_TextChatSession_h
+#endif // incl_Comm_ChatSession_h

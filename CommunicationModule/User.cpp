@@ -2,12 +2,14 @@
 
 namespace TpQt4Communication
 {
-	User::User(Tp::ConnectionPtr tp_connection): user_id_(""), protocol_(""), tp_connection_(tp_connection)
+	User::User(Tp::ConnectionPtr tp_connection): user_id_(""),name_(""), protocol_(""), tp_connection_(tp_connection)
 	{
 		tp_contact_ = tp_connection->selfContact();
-		//user_id_ = tp_contact_->id().toStdString();
+		user_id_ = tp_contact_->id().toStdString();
+		name_ = tp_contact_->alias().toStdString();
+		presence_status_ = tp_contact_->presenceStatus().toStdString();
+		presence_message_ = tp_contact_->presenceMessage().toStdString();
 	}
-
 
 	void User::SetPresenceStatus(std::string status)
 	{
@@ -28,6 +30,11 @@ namespace TpQt4Communication
 	std::string User::GetUserID()
 	{
 		return user_id_;
+	}
+
+	std::string User::GetName()
+	{
+		return name_;
 	}
 
 	std::string User::GetProtocol()

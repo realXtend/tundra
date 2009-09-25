@@ -47,21 +47,19 @@ namespace TpQt4Communication
 	{
 		LogInfo("Contact state changed");
 
-		QString status =  tp_contact_->presenceStatus();
-		QString message =  tp_contact_->presenceMessage();
-		presence_status_ = status.toStdString();
-		presence_message_ = message.toStdString();
+		presence_status_ = tp_contact_->presenceStatus().toStdString();
+		presence_message_ = tp_contact_->presenceMessage().toStdString();
 
-		switch( tp_contact_->subscriptionState() )
-		{
-			case Tp::Contact::PresenceStateAsk: break;
-			case Tp::Contact::PresenceStateNo: break;
-			case Tp::Contact::PresenceStateYes: break;
-		}
-		
+		//switch( tp_contact_->subscriptionState() )
+		//{
+		//	case Tp::Contact::PresenceStateAsk: break;
+		//	case Tp::Contact::PresenceStateNo: break;
+		//	case Tp::Contact::PresenceStateYes: break;
+		//}
+		//
 		if (tp_contact_->isBlocked())
 		{
-			// User has blocked this contact
+			LogInfo("User is blocked.");
 		}
 		emit StateChanged();
 	}
@@ -71,7 +69,7 @@ namespace TpQt4Communication
 		return tp_contact_->id().toStdString();
 	}
 
-	std::string Contact::GetRealName()
+	std::string Contact::GetName()
 	{
 		if (tp_contact_.isNull())
 			return "NULL";
