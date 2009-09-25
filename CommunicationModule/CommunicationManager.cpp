@@ -128,12 +128,12 @@ namespace TpQt4Communication
 			user_name.append("@");
 			user_name.append(server);
 		}
-//		qint port = credential.GetServerPort();
+		int port = credentials.GetServerPort();
 
 		params.insert("account", QString(user_name));
 		params.insert("password", QString(password));
 		params.insert("server", QString(server));
-//		params.insert("port", QVariant(port));
+		params.insert("port", QVariant((unsigned int)port));
 
 		std::string message = "Try to open connection to IM server: ";
 		message.append( server.toStdString () );
