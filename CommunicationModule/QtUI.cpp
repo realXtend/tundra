@@ -2,6 +2,8 @@
 #include "Foundation.h"
 
 #include "QtUI.h"
+#include "UICanvas.h"
+#include "QtModule.h"
 
 #include <QtUiTools>
 #include <QFile>
@@ -19,7 +21,7 @@ namespace CommunicationUI
 	{
 		this->setLayout(new QVBoxLayout);
 		this->layout()->setMargin(0);
-		this->setStyleSheet(QString("QLineEdit, QListView, QPlainTextEdit {color: rgb(130, 195, 255);background-color: rgb(255, 255, 255);selection-color: white;selection-background-color: rgb(130, 195, 255);border: 2px groove gray;border-color: rgb(19, 33, 95);border-radius: 15px;padding: 5px 10px;}"));
+		this->setStyleSheet(QString("QLineEdit, QListView {color: rgb(130, 195, 255);background-color: rgb(255, 255, 255);selection-color: rgb(57, 87, 255);selection-background-color: rgb(255, 255, 255);border: 2px groove gray;border-color: rgb(19, 33, 95);border-radius: 15px;padding: 5px 10px;}"));
 		loadUserInterface(false);
 	}
 
@@ -220,7 +222,7 @@ namespace CommunicationUI
 	{
 		ContactListItem *listItem = (ContactListItem *)clickedItem;
 		TextChatSessionPtr chatSession = im_connection_->CreateTextChatSession(listItem->contact_);
-		Conversation *conversation = new Conversation(0, chatSession, listItem->contact_);
+		Conversation *conversation = new Conversation(tabWidgetCoversations_, chatSession, listItem->contact_);
 		tabWidgetCoversations_->addTab(conversation, QString(listItem->contact_->GetRealName().c_str()));
 	}
 
@@ -232,7 +234,7 @@ namespace CommunicationUI
 		{
 			if (chatSessionRequest->GetOriginatorContact() != NULL )
 			{
-				Conversation *conversation = new Conversation(0, chatSession, chatSessionRequest->GetOriginatorContact());
+				Conversation *conversation = new Conversation(tabWidgetCoversations_, chatSession, chatSessionRequest->GetOriginatorContact());
 				tabWidgetCoversations_->addTab(conversation, QString(chatSessionRequest->GetOriginatorContact()->GetRealName().c_str()));
 			}
 			else
@@ -322,6 +324,9 @@ namespace CommunicationUI
 	Conversation::Conversation(QWidget *parent, TextChatSessionPtr chatSession, Contact *contact)
 		: QWidget(parent), chatSession_(chatSession), contact_(contact)
 	{
+		this->setLayout(new QVBoxLayout());
+		this->layout()->setMargin(0);
+		this->setStyleSheet(QString("QWidget {color: rgb(130, 195, 255);background-color: rgb(255, 255, 255);selection-color: rgb(57, 87, 255);selection-background-color: rgb(255, 255, 255);border: 2px groove gray;border-color: rgb(19, 33, 95);padding: 5px 5px;}"));
 		initWidget();
 		connectSignals();
 	}
@@ -336,16 +341,16 @@ namespace CommunicationUI
 		// Load ui to widget from file
 		QUiLoader loader;
         QFile uiFile("./data/ui/communications_conversation.ui");
-		QWidget(loader.load(&uiFile, this));
-		this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+		internalWidget = loader.load(&uiFile, this);
+		this->layout()->addWidget(internalWidget);
 		uiFile.close();
-
+		
 		textEditChat_ = findChild<QPlainTextEdit *>("textEdit_Chat");
 
 		QString startMessage("Started chat session with ");
 		startMessage.append(contact_->GetRealName().c_str());
 		startMessage.append("...");
-		textEditChat_->appendPlainText(startMessage);
+		appendLineToConversation(startMessage);
 	}
 
 	void Conversation::connectSignals()
@@ -356,10 +361,7 @@ namespace CommunicationUI
 
 	QString Conversation::generateTimeStamp()
 	{
-		QTime time = QTime();
-		LogDebug( time.toString("hh:mm:ss").toStdString() ); // Debug
-		return time.toString("hh:mm:ss");
-		
+		return QTime::currentTime().toString();
 	}
 
 
@@ -376,10 +378,9 @@ namespace CommunicationUI
 
 	void Conversation::onMessageSent(QString message)
 	{
-		QString timeStamp = generateTimeStamp();
-		QString html("<span style='color:gray;'>");
-		html.append(timeStamp);
-		html.append("</span> <span style='color:blue;'>me");
+		QString html("<span style='color:gray;'>[");
+		html.append(generateTimeStamp());
+		html.append("]</span> <span style='color:blue;'>me");
 		/*html.append(((QtUI *)this->parent()->parent())->labelUsername_->text());*/
 		html.append("</span><span style='color:black;'>: ");
 		html.append(message);
@@ -389,10 +390,9 @@ namespace CommunicationUI
 
 	void Conversation::onMessageReceived(Message &message)
 	{
-		QString timeStamp = generateTimeStamp();
-		QString html("<span style='color:gray;'>");
-		html.append(timeStamp);
-		html.append("</span> <span style='color:red;'>");
+		QString html("<span style='color:gray;'>[");
+		html.append(generateTimeStamp());
+		html.append("]</span> <span style='color:red;'>");
 		html.append(contact_->GetRealName().c_str());
 		html.append("</span><span style='color:black;'>: ");
 		html.append(message.GetText().c_str());
