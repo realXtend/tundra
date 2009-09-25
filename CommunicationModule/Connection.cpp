@@ -35,10 +35,6 @@ namespace TpQt4Communication
 	{
 		return server_;
 	}
-	//std::string Connection::GetID()
-	//{
-	//	return id_;
-	//}
 
 	User* Connection::GetUser()
 	{
@@ -77,10 +73,6 @@ namespace TpQt4Communication
 			(QObject*)session,
 			SLOT( OnTextChannelCreated(Tp::PendingOperation*) ) );
 
-		//tp_connection_->requestHandles(CHANNEL_TYPE_TEXT, const QStringList &names);
-		//Tp::PendingChannel* pending_channel = tp_connection_->createChannel(params);
-		//Tp::ChannelPtr c = pending_channel->channel();
-		
 		return TextChatSessionPtr(session);
 	}
 
@@ -104,8 +96,6 @@ namespace TpQt4Communication
 		std::string message = "Connected to IM server. Start login process";
 		LogInfo(message);
 
-		
-
 		QObject::connect(tp_connection_->requestConnect(),
 					     SIGNAL(finished(Tp::PendingOperation *)),
 						 SLOT(OnConnectionConnected(Tp::PendingOperation *)));
@@ -113,12 +103,7 @@ namespace TpQt4Communication
 		QObject::connect(tp_connection_.data(),
 			             SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
 						 SLOT(OnConnectionInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
-
-		//QObject::connect(tp_connection_->requestsInterface(),
-  //              SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
-  //              SLOT(OnNewChannels(const Tp::ChannelDetailsList&)));
 	}
-
 
 	void Connection::OnConnectionConnected(Tp::PendingOperation *op)
 	{
