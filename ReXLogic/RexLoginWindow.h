@@ -23,17 +23,17 @@ namespace RexLogic
     public:
         RexLoginWindow(Foundation::Framework* framework, RexLogicModule *module);
         virtual ~RexLoginWindow();
-        
+
         /// Initializes the Login window.
         void InitLoginWindow();
-        	
+
         // Shows an error dialog.
-	    //void ShowErrorDialog(std::string message);        
-       
+        //void ShowErrorDialog(std::string message);
+
         /// Updates the UI with a new connection state string.
         /// @param The connection state enum.
         void UpdateConnectionStateToUI(OpenSimProtocol::Connection::State state);
-        
+
         /// Shows the external login dialog and hides the embedded logout buttons.
         void ShowLoginWindow();
 
@@ -44,23 +44,34 @@ namespace RexLogic
         void Connect();
         void Disconnect();
         void DisconnectAndShowLoginWindow();
+        ///\note Inventory funcs are temporarily here
+        void ShowInventory();
+        void HideInventory();
         void Quit();
-		void processCBLogin(QString result);
-        
+        void processCBLogin(QString result);
+
     private:
         /// Hides the login window and shows the logout/quit menu that is embedded to main window.
         void CreateLogoutMenu();
 
         Foundation::Framework *framework_;
+
         ///\todo SharedPtr'ize.
         RexLogicModule *rex_logic_;
+
         QWidget *login_widget_;
+
         QPushButton *logout_button_;
+
         QPushButton *quit_button_;
-		RexWebLogin *webLogin;
+
+        QPushButton *inventory_button_;
+
+        RexWebLogin *webLogin;
+
         boost::shared_ptr<QtUI::UICanvas> canvas_;
+
         boost::shared_ptr<QtUI::UICanvas> screen_canvas_;
-     
     };
 }
 

@@ -175,6 +175,12 @@ namespace RexLogic
         //! logout from server and delete current scene
         void LogoutAndDeleteWorld();
 
+        /// Shows the inventory window.
+        void ShowInventory();
+
+        /// Hides the inventory window.
+        void HideInventory();
+
         //! XXX have linking probs to AvatarController so trying this wrapper
         void SetAvatarYaw(Core::Real newyaw);
         void SetAvatarRotation(Core::Quaternion newrot);

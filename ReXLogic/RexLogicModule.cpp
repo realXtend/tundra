@@ -157,7 +157,7 @@ namespace RexLogic
             event_handlers_[eventcategoryid].push_back(boost::bind(&NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
         else
             LogError("Unable to find event category for OpenSimNetworkIn");
-    
+
         // Input events.
         eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
         if (eventcategoryid != 0)
@@ -167,7 +167,7 @@ namespace RexLogic
             event_handlers_[eventcategoryid].push_back(boost::bind(&InputEventHandler::HandleInputEvent, input_handler_, _1, _2));
         } else
             LogError("Unable to find event category for Input");
-        
+
         // Action events.
         eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Action");
         if (eventcategoryid != 0)
@@ -200,7 +200,7 @@ namespace RexLogic
             event_handlers_[eventcategoryid].push_back(boost::bind(&FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
         else
             LogError("Unable to find event category for Framework");
-        
+
         boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (renderer)
         {
@@ -216,7 +216,7 @@ namespace RexLogic
         connectionState_ = OpenSimProtocol::Connection::STATE_DISCONNECTED;
 
         ///\note This won't be staying here.
-//        inventoryWindow_ = new InventoryWindow(framework_, this);
+        inventoryWindow_ = new InventoryWindow(framework_, this);
     }
 
     void RexLogicModule::DeleteScene(const std::string &name)
@@ -261,7 +261,7 @@ namespace RexLogic
 
         SAFE_DELETE(loginWindow_);
         ///\note This won't be staying here.
-//        SAFE_DELETE(inventoryWindow_);
+        SAFE_DELETE(inventoryWindow_);
 
         LogInfo("Module " + Name() + " uninitialized.");
     }
@@ -373,7 +373,7 @@ namespace RexLogic
         avatar_->HandleResourceEvent(event_id, data);
         // Pass the event to the primitive manager
         primitive_->HandleResourceEvent(event_id, data);
-                
+
         if (event_id == Resource::Events::RESOURCE_READY)
         {
             Resource::Events::ResourceReady *res = dynamic_cast<Resource::Events::ResourceReady*>(data);
@@ -390,7 +390,7 @@ namespace RexLogic
                 sky_->OnTextureReadyEvent(res);
             }
         }
-        
+
         return false;
     }
 
@@ -401,6 +401,16 @@ namespace RexLogic
 
         if (framework_->HasScene("World"))
             DeleteScene("World");
+    }
+
+    void RexLogicModule::ShowInventory()
+    {
+        inventoryWindow_->Show();
+    }
+
+    void RexLogicModule::HideInventory()
+    {
+        inventoryWindow_->Hide();
     }
 
     //XXX temporary workarounds for a linking prob in pymodule, would like to call these directly (if this is the right idea for av / view control to begin with)
@@ -444,7 +454,6 @@ namespace RexLogic
 
         // overwrite the password so it won't stay in-memory
         passwd.replace(0, passwd.size(), passwd.size(), ' ');
-        
 
         if (success)
             return Console::ResultSuccess();
@@ -463,14 +472,14 @@ namespace RexLogic
             return Console::ResultFailure("Not connected to server.");
         }
     }
-    
+
     Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const Core::StringVector &params)
     {
         Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
         GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::TOGGLE_FLYMODE, NULL);
         return Console::ResultSuccess();
     }
-    
+
     Console::CommandResult RexLogicModule::UploadAsset(const Core::StringVector &params)
     {
         using namespace RexTypes;
@@ -527,7 +536,7 @@ namespace RexLogic
             newFolder->SetName(cat_name);
 
             // Notify the server about the new inventory folder.
-            rexserver_connection_->SendCreateInventoryFolder(parent->GetID(), folder_id, asset_type, cat_name);
+            rexserver_connection_->SendCreateInventoryFolderPacket(parent->GetID(), folder_id, asset_type, cat_name);
         }
         else
             folder_id = folder->GetID();
@@ -593,7 +602,7 @@ namespace RexLogic
                 newFolder->SetName(cat_name);
                 
                 // Notify the server about the new inventory folder.
-                rexserver_connection_->SendCreateInventoryFolder(parent->GetID(), folder_id, asset_type, cat_name);
+                rexserver_connection_->SendCreateInventoryFolderPacket(parent->GetID(), folder_id, asset_type, cat_name);
             }
             else
                 folder_id = folder->GetID();
