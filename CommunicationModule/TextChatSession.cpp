@@ -137,18 +137,27 @@ namespace TpQt4Communication
 		
 		if( !pending_messages.isFinished() )
 			pending_messages.waitForFinished();
-		for (Tp::PendingTextMessageList::iterator i = pending_messages.value().begin(); i != pending_messages.value().end(); ++i)
+		if ( pending_messages.isValid() )
 		{
-	//		QString text( (*i).text );
-		}
+			LogInfo("Received pending message");
+			QDBusMessage m = pending_messages.reply();
+			Tp::PendingTextMessageList list = pending_messages.value();
+			
+			for (Tp::PendingTextMessageList::iterator i = list.begin(); i != list.end(); ++i)
+			{
+				QString text = i->text;
+				Core::uint s = i->sender;
+				Core::uint t = i->unixTimestamp;
 
-		//for(int i = 0; i < count; ++i)
-		//{
-		//	//Tp::PendingTextMessage m = pending_messages.argumentAt(i);
-		//	Tp::PendingTextMessage m = pending_messages.value()[i];
-		//	uint sender = m.sender;
-		//	QString text = m.text;
-		//}
+				Tp::ContactPtr sender;  
+				Message* m = new Message(text.toStdString(), new Contact(sender));
+				messages_.push_back(m);
+				emit MessageReceived(*m);
+				LogInfo("emited pending message");
+			}
+		}
+		else
+			LogError("Received invalid pending message");
 
 		LogInfo("TextChatSession object ready.");
 		state_ = STATE_READY;
@@ -169,7 +178,6 @@ namespace TpQt4Communication
 	{
 		Tp::ContactPtr sender = message.sender();
 		Message* m = new Message(message.text().toStdString(), new Contact(sender));
-//		QDateTime time = message.sent();
 		messages_.push_back(m);
 		emit MessageReceived(*m);
 		LogInfo("Received text message");
