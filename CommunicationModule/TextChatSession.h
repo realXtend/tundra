@@ -16,12 +16,10 @@
 namespace TpQt4Communication
 {
 	/**
-	EVENTS:
-		- ParticipantLeft
-		- ParticipantJoined
-		- TextMessageReceived
-		- SessionClosed
-	*/
+	 * 
+	 *
+	 *
+	 */
 	class TextChatSession : QObject
 	{
 		Q_OBJECT 
@@ -36,10 +34,10 @@ namespace TpQt4Communication
 		~TextChatSession();
 		enum State {STATE_INITIALIZING, STATE_READY, STATE_ERROR, STATE_CLOSED};
 
-		void Invite(Address a);
+//		void Invite(Address a);
 		void SendTextMessage(std::string text);
 		void Close();
-		MessageVector GetMessageHistory(); // todo: return value
+		MessageVector GetMessageHistory(); 
 		State GetState();
 
 	private:
@@ -54,10 +52,7 @@ namespace TpQt4Communication
 		void OnChannelReady(Tp::PendingOperation*);
 		void OnMessageReceived(const Tp::ReceivedMessage &message);
 		void OnChannelMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &);
-//		void OnTextReceived(uint, uint, uint, uint, uint, const QString &);
 		void OnChannelPendingMessageRemoved(const Tp::ReceivedMessage &);
-
-//		void OnChannelMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken);
 		//void onTextMessageSend(Tp::PendingOperation *op);
 	signals:
 		void Ready();
@@ -68,7 +63,6 @@ namespace TpQt4Communication
 	typedef boost::shared_ptr<TextChatSession> TextChatSessionPtr;
 	typedef boost::weak_ptr<TextChatSession> TextChatSessionWeakPtr;
 	typedef std::vector<TextChatSession*> TextChatSessionVector;
-
 
 } // end of namespace: TpQt4Communication
 

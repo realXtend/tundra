@@ -66,9 +66,7 @@ namespace TpQt4Communication
 
 		//! 
 		void CreateVoipSession();
-
 		// void JoinChatRoom(ChatRoomAddress address);
-
 
 		//! Send a friend request to given address
 		//! optionam message is send if supported by used IM protocol
@@ -104,9 +102,6 @@ namespace TpQt4Communication
 		//! Emits signal ReceivedFriendRequest
 		void OnIncomingChatSessionRequestReady(TextChatSessionRequest* request);
 
-		//! Triggered when TextChannel object is created
-		//void OnTextChannelCreated(Tp::PendingOperation* op);
-
 	signals:
 		void Connecting(QString &message);
 		void Connected();
@@ -114,7 +109,6 @@ namespace TpQt4Communication
 		void Closed();
 		void ReceivedTextChatSessionRequest(TextChatSessionRequest* request);
 		void ReceivedFriendRequest(FriendRequest* request);
-//		void VoipSessionRequest(VoipSessionRequest* request);
 	};
 	typedef boost::weak_ptr<Connection> ConnectionWeakPtr;
 	typedef std::vector<Connection*> ConnectionVector;
