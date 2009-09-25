@@ -30,11 +30,6 @@ namespace TpQt4Communication
 		messages_.clear();
 	}
 
-	void TextChatSession::Invite(Address a)
-	{
-		LogError("NOT IMPLEMENTED.");
-	}
-
 	void TextChatSession::SendTextMessage(std::string text)
 	{
 		assert( !tp_text_channel_.isNull() );
@@ -148,9 +143,7 @@ namespace TpQt4Communication
 				QString text = i->text;
 				Core::uint s = i->sender;
 				Core::uint t = i->unixTimestamp;
-
-				Tp::ContactPtr sender;  
-				Message* m = new Message(text.toStdString(), new Contact(sender));
+				Message* m = new Message(text.toStdString(), new Contact(tp_text_channel_->initiatorContact()));
 				messages_.push_back(m);
 				emit MessageReceived(*m);
 				LogInfo("emited pending message");
