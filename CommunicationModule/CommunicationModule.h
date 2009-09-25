@@ -7,9 +7,7 @@
 #include "CommunicationModuleApi.h"
 #include "CommunicationManager.h"
 #include "ConsoleUI.h"
-#include "QtUI.h"
-#include "UICanvas.h"
-
+#include "QtGUI.h"
 
 /**
  *  Communication module
@@ -17,7 +15,7 @@
  *  Provides:
  *  - CommunicationManager object for connecting IM servers
  *  - ConsoleUI for text based user interface
- *  - QtUI for Qt based user interface 
+ *  - QtGUI for Qt based user interface 
  *
  *  Instructions:
  * - TODO
@@ -49,10 +47,9 @@ namespace Communication
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communication;
 
 	private:
-		boost::shared_ptr<QtUI::UICanvas> canvas_;
 		TpQt4Communication::CommunicationManager* communication_manager_;
 		CommunicationUI::ConsoleUI* console_ui_;
-		CommunicationUI::QtUI* qt_ui_;
+		CommunicationUI::QtGUI* qt_ui_;
 	};
 }
 

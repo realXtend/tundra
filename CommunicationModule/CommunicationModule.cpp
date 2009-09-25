@@ -1,6 +1,5 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
-#include "QtModule.h"
 
 #include "CommunicationModule.h"
 
@@ -23,23 +22,7 @@ namespace Communication
 		
 		communication_manager_ = TpQt4Communication::CommunicationManager::GetInstance();
 		console_ui_ = new CommunicationUI::ConsoleUI(framework_);
-		
-		// Use QtModule to show our QtUI widget
-		boost::shared_ptr<QtUI::QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
-		if ( qt_module.get() == 0)
-		{	
-			LogWarning("Could not aqquire QtModule and show Comm UI");
-		}
-		else
-		{
-			// Set param to QtUI::UICanvas::Internal to put inside ogre window
-			canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::External).lock();
-			qt_ui_ = new CommunicationUI::QtUI(0);
-			QSize size = qt_ui_->size();
-			canvas_->SetCanvasSize(size.width(), size.height());
-			canvas_->AddWidget(qt_ui_);
-			canvas_->show();
-		}
+		qt_ui_ = new CommunicationUI::QtGUI(framework_);
 
 		LogInfo("Initialized.");
 	}

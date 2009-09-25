@@ -2,30 +2,46 @@
 <ui version="4.0">
  <class>Login</class>
  <widget class="QWidget" name="Login">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>440</width>
-    <height>157</height>
-   </rect>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>440</width>
-    <height>157</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>440</width>
-    <height>157</height>
-   </size>
-  </property>
   <property name="windowTitle">
    <string>realXtend Naali communications login</string>
   </property>
+  <property name="styleSheet">
+   <string>QWidget {
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.676, y2:1, stop:0 rgba(240, 240, 240, 255), stop:1 rgba(188, 212, 255, 255));
+}
+
+QLabel {
+	color: rgb(25, 44, 98);
+	background-color: rgba(255, 255, 255, 0);
+}
+
+QComboBox, QPushButton {
+	color: rgb(25, 44, 98);
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.676, y2:1, stop:0 rgba(240, 240, 240, 255), stop:1 rgba(188, 212, 255, 255));
+	border: 2px groove white;
+	border-color: rgb(86, 128, 255);
+	border-radius: 5px;
+	padding: 2px 5px;
+}
+
+QComboBox::drop-down:!editable { 
+	subcontrol-color: rgb(76, 115, 255);
+	subcontrol-position: center right; 
+	width: 12px; 
+	height: 12px;
+	padding-right: 5px;
+}
+
+QPushButton::pressed{
+	color: rgb(74, 87, 107);
+	background-color: rgba(255, 255, 255, 255);
+}
+</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <property name="margin">
+    <number>10</number>
+   </property>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
@@ -60,6 +76,9 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="styleSheet">
+          <string>color: rgb(0, 0, 0);</string>
+         </property>
          <property name="text">
           <string>Waiting for first time user input</string>
          </property>
@@ -87,6 +106,11 @@
        </item>
        <item>
         <widget class="QLineEdit" name="lineEdit_Server">
+         <property name="styleSheet">
+          <string>padding: 2px 5px 2px 5px;
+background-color: rgb(255, 255, 255);
+</string>
+         </property>
          <property name="text">
           <string>jabber.org</string>
          </property>
@@ -106,6 +130,11 @@
            <width>80</width>
            <height>16777215</height>
           </size>
+         </property>
+         <property name="styleSheet">
+          <string>padding: 2px 5px 2px 5px;
+background-color: rgb(255, 255, 255);
+</string>
          </property>
          <property name="inputMask">
           <string>99999; </string>
@@ -140,8 +169,13 @@
        </item>
        <item>
         <widget class="QLineEdit" name="lineEdit_Username">
+         <property name="styleSheet">
+          <string>padding: 2px 5px 2px 5px;
+background-color: rgb(255, 255, 255);
+</string>
+         </property>
          <property name="text">
-          <string>realxtend</string>
+          <string>jonnenauha</string>
          </property>
         </widget>
        </item>
@@ -167,8 +201,13 @@
        </item>
        <item>
         <widget class="QLineEdit" name="lineEdit_Password">
+         <property name="styleSheet">
+          <string>padding: 2px 5px 2px 5px;
+background-color: rgb(255, 255, 255);
+</string>
+         </property>
          <property name="text">
-          <string>jabber666</string>
+          <string>peeforce</string>
          </property>
          <property name="echoMode">
           <enum>QLineEdit::Password</enum>
@@ -197,6 +236,9 @@
        </item>
        <item>
         <widget class="QComboBox" name="comboBox">
+         <property name="styleSheet">
+          <string>background-color: none;</string>
+         </property>
          <item>
           <property name="text">
            <string>Jabber</string>
@@ -222,6 +264,9 @@
          <property name="text">
           <string>Connect</string>
          </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item>
@@ -232,6 +277,19 @@
         </widget>
        </item>
       </layout>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>

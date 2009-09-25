@@ -1,12 +1,13 @@
-#ifndef incl_QtUI_h
-#define incl_QtUI_h
+#ifndef incl_QtGUI_h
+#define incl_QtGUI_h
 
 #include "StableHeaders.h"
 #include "Foundation.h"
+#include "UICanvas.h"
 
 #include <QtGui>
-#include "CommunicationManager.h"
 
+#include "CommunicationManager.h"
 #include "Connection.h"
 #include "TextChatSession.h"
 #include "TextChatSessionRequest.h"
@@ -14,21 +15,47 @@
 #include "Contact.h"
 
 using namespace TpQt4Communication;
+using namespace QtUI;
 
 namespace CommunicationUI
 {
-	class QtUI : public QWidget
+	// QtGUI CLASS
+
+	class QtGUI : public QObject
+	{
+	
+	Q_OBJECT
+	
+	MODULE_LOGGING_FUNCTIONS
+	static const std::string NameStatic() { return "CommunicationModule::QtGUI"; } // for logging functionality
+
+	public:
+		QtGUI(Foundation::Framework *framework);
+		~QtGUI(void);
+
+	public slots:
+		void setWindowSize(QSize &size);
+
+	private:
+		Foundation::Framework *framework_;
+		boost::shared_ptr<UICanvas> canvas_;
+
+	};
+
+	// UIContainer CLASS
+
+	class UIContainer : public QWidget
 	{
 	
 	Q_OBJECT
 
 	friend class Conversation;
 	MODULE_LOGGING_FUNCTIONS
-	static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
+	static const std::string NameStatic() { return "CommunicationModule::UIController"; } // for logging functionality
 
 	public:
-		QtUI(QWidget *parent);
-		~QtUI(void);
+		UIContainer(QWidget *parent);
+		~UIContainer(void);
 
 	public slots:
 		void connectToServer(QString server, int port, QString username, QString password);
@@ -41,7 +68,7 @@ namespace CommunicationUI
 		void startNewChat(QListWidgetItem *clickedItem);
 		void newChatSessionRequest(TextChatSessionRequest *);
 		void sendNewChatMessage();
-		
+		void closeTab(int index);
 
 	private:
 		void loadUserInterface(bool connected);
@@ -65,6 +92,9 @@ namespace CommunicationUI
 		CommunicationManager* commManager_;
 		Connection* im_connection_;
 
+	signals:
+		void resized(QSize &);
+
 	};
 
 	// LOGIN CLASS
@@ -74,7 +104,7 @@ namespace CommunicationUI
 	
 	Q_OBJECT
 
-	friend class QtUI;
+	friend class UIContainer;
 
 	public:
 		Login(QWidget *parent, QString &message);
@@ -84,9 +114,10 @@ namespace CommunicationUI
 		void checkInput(bool clicked);
 
 	private:
-		void initWidget(QWidget *parent, QString &message);
+		void initWidget(QString &message);
 		void connectSignals();
 
+		QWidget *internalWidget_;
 		QLabel *labelStatus;
 		QLineEdit *textEditServer_;
 		QLineEdit *textEditPort_;
@@ -107,16 +138,17 @@ namespace CommunicationUI
 	
 	Q_OBJECT
 
-	friend class QtUI;
+	friend class UIContainer;
 
 	MODULE_LOGGING_FUNCTIONS
-	static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
+		static const std::string NameStatic() { return "CommunicationModule::Conversation"; } // for logging functionality
 
 	public:
 		Conversation(QWidget *parent, TextChatSessionPtr chatSession, Contact *contact); // Add as inparam also the "conversation object" from mattiku
 		~Conversation(void);
 
 		void onMessageSent(QString message);
+		void showMessageHistory(MessageVector messageHistory);
 
 	private:
 		void initWidget();
@@ -125,10 +157,11 @@ namespace CommunicationUI
 		void appendLineToConversation(QString line);
 		void appendHTMLToConversation(QString html);
 
+		QWidget *internalWidget_;
+		QPlainTextEdit *textEditChat_;
+
 		TextChatSessionPtr chatSession_;
 		Contact *contact_;
-		QPlainTextEdit *textEditChat_;
-		QWidget *internalWidget;
 
 	private	slots:
 		void onMessageReceived(Message &message);
@@ -143,7 +176,7 @@ namespace CommunicationUI
 
 	Q_OBJECT
 
-	friend class QtUI;
+	friend class UIContainer;
 
 	public:
 		ContactListItem(QString &name, QString &status, QString &statusmessage, Contact *contact);
@@ -164,4 +197,4 @@ namespace CommunicationUI
 
 } //end if namespace: CommunicationUI
 
-#endif // incl_QtUI_h
+#endif // incl_QtGUI_h

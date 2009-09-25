@@ -34,6 +34,24 @@
    </property>
    <item>
     <widget class="QPlainTextEdit" name="textEdit_Chat">
+     <property name="styleSheet">
+      <string>.status_update {
+	color: red;
+}
+.message {		
+	color: rgb(0, 0, 0);
+}
+.friends_name {		
+	color: rgb(212, 29, 29);
+}
+.own_name {	
+	color: blue;
+}
+.timestamp {
+	color: green;
+}
+</string>
+     </property>
      <property name="readOnly">
       <bool>true</bool>
      </property>
