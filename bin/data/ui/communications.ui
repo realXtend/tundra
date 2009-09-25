@@ -6,15 +6,28 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>672</width>
-    <height>372</height>
+    <width>732</width>
+    <height>348</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Communications</string>
   </property>
   <property name="styleSheet">
-   <string>background-color: qlineargradient(spread:pad, x1:0.534, y1:1, x2:0.523, y2:0.0340909, stop:0 rgba(0,20, 41, 255), stop:1 rgba(228, 255, 255, 255));</string>
+   <string>QWidget {
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.676, y2:1, stop:0 rgba(240, 240, 240, 255), stop:1 rgba(188, 212, 255, 255));
+}
+
+QLineEdit, QListView {
+color: rgb(130, 195, 255);
+background-color: rgb(255, 255, 255);
+selection-color: rgb(57, 87, 255);
+selection-background-color: rgb(255, 255, 255);
+border: 2px groove white;
+border-color: rgb(86, 128, 255);
+border-radius: 10px;
+padding: 3px 6px;
+}</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_BottomContainer">
    <property name="spacing">
@@ -43,55 +56,7 @@
             <string>color: rgb(40, 129, 223);
 background-color: rgba(255, 255, 255, 0);</string>
            </property>
-           <property name="indent">
-            <number>15</number>
-           </property>
           </widget>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_4">
-           <item>
-            <spacer name="verticalSpacer">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Minimum</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>10</width>
-               <height>5</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="lineEdit_Status">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="styleSheet">
-              <string>background-color: rgba(255, 255, 255, 0);
-color: rgb(40, 129, 223);
-border: 0px;
-border-radius: 15px;
-padding: 5px 10px;</string>
-             </property>
-             <property name="text">
-              <string>set status message here...</string>
-             </property>
-             <property name="frame">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
          </item>
          <item>
           <spacer name="horizontalSpacer">
@@ -128,11 +93,99 @@ padding: 5px 10px;</string>
             <widget class="QComboBox" name="comboBox_Status">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>8</pointsize>
+               <weight>50</weight>
+               <italic>false</italic>
+               <bold>false</bold>
               </font>
              </property>
              <property name="styleSheet">
-              <string>background-color: rgb(240, 240, 240);</string>
+              <string>QComboBox {
+	color: rgb(101, 122, 255);
+	background-color: rgba(255, 255, 255, 100);
+	border: 2px groove white;
+	border-color: rgba(86, 128, 255, 100);
+	border-radius: 5px;
+	padding: 1px 5px;
+	font: 8pt;
+}
+
+QComboBox::drop-down:!editable { 
+	subcontrol-color: rgb(76, 115, 255);
+	subcontrol-position: center right; 
+	width: 12px; 
+	height: 12px;
+	padding-right: 5px;
+}</string>
+             </property>
+             <property name="frame">
+              <bool>true</bool>
+             </property>
+             <item>
+              <property name="text">
+               <string>etetetetet</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <item>
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Minimum</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>10</width>
+               <height>5</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEdit_Status">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>170</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+               <weight>50</weight>
+               <italic>false</italic>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="styleSheet">
+              <string>QLineEdit {
+	background-color: rgba(255, 255, 255, 100);
+	color: rgb(101, 122, 255);
+	border: 2px groove white;
+	border-color: rgba(86, 128, 255, 100);
+	border-radius: 5px;
+	padding: 1px 5px;
+	font: 8pt;
+}</string>
+             </property>
+             <property name="text">
+              <string/>
              </property>
              <property name="frame">
               <bool>true</bool>
@@ -156,11 +209,38 @@ padding: 5px 10px;</string>
            <property name="palette">
             <palette>
              <active>
+              <colorrole role="WindowText">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>130</red>
+                 <green>195</green>
+                 <blue>255</blue>
+                </color>
+               </brush>
+              </colorrole>
               <colorrole role="Button">
                <brush brushstyle="SolidPattern">
                 <color alpha="255">
                  <red>255</red>
                  <green>255</green>
+                 <blue>255</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="Text">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>130</red>
+                 <green>195</green>
+                 <blue>255</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="ButtonText">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>130</red>
+                 <green>195</green>
                  <blue>255</blue>
                 </color>
                </brush>
@@ -179,17 +259,62 @@ padding: 5px 10px;</string>
                 <color alpha="255">
                  <red>255</red>
                  <green>255</green>
+                 <blue>255</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="Highlight">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>255</red>
+                 <green>255</green>
+                 <blue>255</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="HighlightedText">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>57</red>
+                 <green>87</green>
                  <blue>255</blue>
                 </color>
                </brush>
               </colorrole>
              </active>
              <inactive>
+              <colorrole role="WindowText">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>130</red>
+                 <green>195</green>
+                 <blue>255</blue>
+                </color>
+               </brush>
+              </colorrole>
               <colorrole role="Button">
                <brush brushstyle="SolidPattern">
                 <color alpha="255">
                  <red>255</red>
                  <green>255</green>
+                 <blue>255</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="Text">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>130</red>
+                 <green>195</green>
+                 <blue>255</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="ButtonText">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>130</red>
+                 <green>195</green>
                  <blue>255</blue>
                 </color>
                </brush>
@@ -208,17 +333,62 @@ padding: 5px 10px;</string>
                 <color alpha="255">
                  <red>255</red>
                  <green>255</green>
+                 <blue>255</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="Highlight">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>255</red>
+                 <green>255</green>
+                 <blue>255</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="HighlightedText">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>57</red>
+                 <green>87</green>
                  <blue>255</blue>
                 </color>
                </brush>
               </colorrole>
              </inactive>
              <disabled>
+              <colorrole role="WindowText">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>130</red>
+                 <green>195</green>
+                 <blue>255</blue>
+                </color>
+               </brush>
+              </colorrole>
               <colorrole role="Button">
                <brush brushstyle="SolidPattern">
                 <color alpha="255">
                  <red>255</red>
                  <green>255</green>
+                 <blue>255</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="Text">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>130</red>
+                 <green>195</green>
+                 <blue>255</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="ButtonText">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>130</red>
+                 <green>195</green>
                  <blue>255</blue>
                 </color>
                </brush>
@@ -237,6 +407,24 @@ padding: 5px 10px;</string>
                 <color alpha="255">
                  <red>255</red>
                  <green>255</green>
+                 <blue>255</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="Highlight">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>255</red>
+                 <green>255</green>
+                 <blue>255</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="HighlightedText">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>57</red>
+                 <green>87</green>
                  <blue>255</blue>
                 </color>
                </brush>
@@ -280,7 +468,8 @@ padding: 5px 10px;</string>
              <item>
               <widget class="QLineEdit" name="lineEdit_Message">
                <property name="styleSheet">
-                <string>background-color: rgb(255, 255, 255);</string>
+                <string>background-color: rgb(255, 255, 255);
+color: rgb(101, 122, 255);</string>
                </property>
                <property name="text">
                 <string/>
@@ -321,11 +510,7 @@ padding: 5px 10px;</string>
           </sizepolicy>
          </property>
          <property name="styleSheet">
-          <string>background-color: rgba(255, 255, 255, 0);
-color: rgb(255, 255, 255);</string>
-         </property>
-         <property name="indent">
-          <number>15</number>
+          <string>background-color: rgba(255, 255, 255, 0);</string>
          </property>
         </widget>
        </item>

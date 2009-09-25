@@ -1,36 +1,71 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
-
-#include "QtUI.h"
-#include "UICanvas.h"
 #include "QtModule.h"
 
 #include <QtUiTools>
 #include <QFile>
 #include <QTime>
 
+#include "QtGUI.h"
+
 namespace CommunicationUI
 {
 
+	QtGUI::QtGUI(Foundation::Framework *framework)
+		: framework_(framework)
+	{
+		LogInfo("Loading UIController to QtModule UICanvas...");
+		// Use QtModule to show our QtUI widget
+		boost::shared_ptr<QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtModule>(Foundation::Module::MT_Gui).lock();
+		if ( qt_module.get() == 0)
+		{	
+			LogWarning("Could not aqquire QtModule and show Comm UI");
+		}
+		else
+		{
+			// Set param to QtUI::UICanvas::Internal to put inside ogre window
+			canvas_ = qt_module->CreateCanvas(UICanvas::External).lock();
+			UIContainer *UIContainer_ = new UIContainer(0);
+			canvas_->AddWidget(UIContainer_);
+			canvas_->show();
+			// Connect signal for resizing
+			QObject::connect(UIContainer_, SIGNAL( resized(QSize &) ), this, SLOT( setWindowSize(QSize &) ));
+			// Resize
+			setWindowSize(QSize(450, 157));
+			LogInfo("Loading succesfull");
+		}
+	}
+
+	QtGUI::~QtGUI(void)
+	{
+
+	}
+
+	void QtGUI::setWindowSize(QSize &newSize)
+	{
+		canvas_->SetCanvasSize(newSize.width(), newSize.height());
+	}
+
 	/////////////////////////////////////////////////////////////////////
-	// QtUI CLASS
+	// UIContainer CLASS
 	/////////////////////////////////////////////////////////////////////
 
-	QtUI::QtUI(QWidget *parent)
-		: QWidget(parent)
+	UIContainer::UIContainer(QWidget *parent)
+		: QWidget(parent), chatWidget_(0), loginWidget_(0)
 	{
+		LogInfo("Creating UIContainer, initializing with Login widget...");
 		this->setLayout(new QVBoxLayout);
 		this->layout()->setMargin(0);
-		this->setStyleSheet(QString("QLineEdit, QListView {color: rgb(130, 195, 255);background-color: rgb(255, 255, 255);selection-color: rgb(57, 87, 255);selection-background-color: rgb(255, 255, 255);border: 2px groove gray;border-color: rgb(19, 33, 95);border-radius: 15px;padding: 5px 10px;}"));
 		loadUserInterface(false);
+		LogInfo("Loading successfull");
 	}
 
-	QtUI::~QtUI(void)
+	UIContainer::~UIContainer(void)
 	{
 
 	}
 
-	void QtUI::loadUserInterface(bool connected)
+	void UIContainer::loadUserInterface(bool connected)
 	{
 		if (connected)
 		{
@@ -38,6 +73,13 @@ namespace CommunicationUI
 			{
 				this->layout()->removeWidget(loginWidget_);
 				delete loginWidget_;
+				loginWidget_ = 0;
+			}
+			else if (chatWidget_ != NULL)
+			{
+				this->layout()->removeWidget(chatWidget_);
+				delete chatWidget_;
+				chatWidget_ = 0;
 			}
 
 			// Init chat GUI
@@ -58,8 +100,8 @@ namespace CommunicationUI
 			lineEditMessage_->setFocus(Qt::NoFocusReason);
 			labelUsername_ = findChild<QLabel *>("label_UserName");
 			lineEditStatus_ = findChild<QLineEdit *>("lineEdit_Status");
-			lineEditStatus_->setText("status message not set..");
 			comboBoxStatus_ = findChild<QComboBox *>("comboBox_Status");
+			comboBoxStatus_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 			connectionStatus_ = findChild<QLabel *>("label_ConnectionStatus");
 			connectionStatus_->setText("Connecting to server...");
 			setAllEnabled(false);
@@ -67,15 +109,29 @@ namespace CommunicationUI
 			// Connect signals
 			QObject::connect(lineEditMessage_, SIGNAL( returnPressed() ), this, SLOT( sendNewChatMessage() ));
 			QObject::connect(buttonSendMessage_, SIGNAL( clicked() ), this, SLOT ( sendNewChatMessage() ));
+			QObject::connect(tabWidgetCoversations_, SIGNAL( tabCloseRequested(int) ), this, SLOT( closeTab(int) ));
 
 			// Add widget to layout
 			this->layout()->addWidget(chatWidget_);
 			this->setWindowTitle("realXtend Communications");
 			this->setMinimumSize(581, 262);
-			this->setMaximumSize(16000, 16000);
+			emit ( resized(QSize(581, 262)) );
 		} 
 		else
 		{
+			if (chatWidget_ != NULL)
+			{
+				this->layout()->removeWidget(chatWidget_);
+				delete chatWidget_;
+				chatWidget_ = 0;
+			} 
+			else if (loginWidget_ != NULL)
+			{
+				this->layout()->removeWidget(loginWidget_);
+				delete loginWidget_;
+				loginWidget_ = 0;
+			}
+
 			// Init login GUI
 			loginWidget_ = new Login(this, currentMessage);
 			// Connect signals
@@ -84,12 +140,12 @@ namespace CommunicationUI
 			this->layout()->addWidget(loginWidget_);
 			this->setWindowTitle("realXtend Naali Communications login");
 			this->setMinimumSize(450, 157);
-			this->setMaximumSize(450, 157);
+			emit ( resized(QSize(450, 157)) );
 		}
 
 	}
 
-	void QtUI::loadConnectedUserData(User *userData)
+	void UIContainer::loadConnectedUserData(User *userData)
 	{
 		// debug, use when you get this for real...
 		//labelUsername_->setText(QString(userData->GetUserID().c_str())); 
@@ -124,7 +180,7 @@ namespace CommunicationUI
 		QObject::connect(lineEditStatus_, SIGNAL( returnPressed() ), this, SLOT( statusMessageChanged() ));
 	}
 
-	void QtUI::setAllEnabled(bool enabled)
+	void UIContainer::setAllEnabled(bool enabled)
 	{
 		tabWidgetCoversations_->setEnabled(enabled);
 		listWidgetFriends_->setEnabled(enabled);
@@ -141,7 +197,7 @@ namespace CommunicationUI
 
 	// IM CONNECTION RELATED SLOTS //
 
-	void QtUI::connectToServer(QString server, int port, QString username, QString password)
+	void UIContainer::connectToServer(QString server, int port, QString username, QString password)
 	{
 		loadUserInterface(true);
 		connectionStatus_->setText("Initializing manager...");
@@ -175,7 +231,7 @@ namespace CommunicationUI
 
 	}
 
-	void QtUI::managerReady()
+	void UIContainer::managerReady()
 	{
 		im_connection_ = commManager_->OpenConnection(credentials);
 
@@ -183,7 +239,7 @@ namespace CommunicationUI
 		QObject::connect((QObject*)im_connection_, SIGNAL( Error(QString &) ), this, SLOT( connectionFailed(QString &) ));
 	}
 
-	void QtUI::connectionEstablished()
+	void UIContainer::connectionEstablished()
 	{
 		connectionStatus_->setText("Connected");
 		setAllEnabled(true);
@@ -199,7 +255,7 @@ namespace CommunicationUI
 		}
 	}
 
-	void QtUI::connectionFailed(QString &reason)
+	void UIContainer::connectionFailed(QString &reason)
 	{
 		LogDebug("[Communications UI] Connection failed");
 		this->currentMessage = reason;
@@ -208,17 +264,17 @@ namespace CommunicationUI
 
 	// GUI RELATED SLOTS //
 
-	void QtUI::statusChanged(const QString &newStatus)
+	void UIContainer::statusChanged(const QString &newStatus)
 	{
 		im_connection_->GetUser()->SetPresenceStatus( newStatus.toStdString() );
 	}
 
-	void QtUI::statusMessageChanged()
+	void UIContainer::statusMessageChanged()
 	{
 		im_connection_->GetUser()->SetPresenceMessage( lineEditStatus_->text().toStdString() );
 	}
 
-	void QtUI::startNewChat(QListWidgetItem *clickedItem)
+	void UIContainer::startNewChat(QListWidgetItem *clickedItem)
 	{
 		ContactListItem *listItem = (ContactListItem *)clickedItem;
 		TextChatSessionPtr chatSession = im_connection_->CreateTextChatSession(listItem->contact_);
@@ -226,16 +282,17 @@ namespace CommunicationUI
 		tabWidgetCoversations_->addTab(conversation, QString(listItem->contact_->GetRealName().c_str()));
 	}
 
-	void QtUI::newChatSessionRequest(TextChatSessionRequest *chatSessionRequest)
+	void UIContainer::newChatSessionRequest(TextChatSessionRequest *chatSessionRequest)
 	{
-		LogInfo("newChatSessionRequest --------<-----<-----");
 		TextChatSessionPtr chatSession = chatSessionRequest->Accept();
+		
 		if (chatSession.get() != NULL)
 		{
 			if (chatSessionRequest->GetOriginatorContact() != NULL )
 			{
 				Conversation *conversation = new Conversation(tabWidgetCoversations_, chatSession, chatSessionRequest->GetOriginatorContact());
-				tabWidgetCoversations_->addTab(conversation, QString(chatSessionRequest->GetOriginatorContact()->GetRealName().c_str()));
+				conversation->showMessageHistory(chatSession->GetMessageHistory());
+				tabWidgetCoversations_->addTab(conversation, QString(chatSessionRequest->GetOriginatorContact()->GetRealName().c_str()));		
 			}
 			else
 			{
@@ -245,7 +302,7 @@ namespace CommunicationUI
 		LogInfo("newChatSessionRequest (handled successfully)");
 	}
 
-	void QtUI::sendNewChatMessage()
+	void UIContainer::sendNewChatMessage()
 	{
 		QString message(lineEditMessage_->text());
 		lineEditMessage_->clear();
@@ -260,6 +317,12 @@ namespace CommunicationUI
 		}
 	}
 
+	void UIContainer::closeTab(int index)
+	{
+		delete tabWidgetCoversations_->widget(index);
+		tabWidgetCoversations_->removeTab(index);
+	}
+
 	/////////////////////////////////////////////////////////////////////
 	// LOGIN CLASS
 	/////////////////////////////////////////////////////////////////////
@@ -267,7 +330,9 @@ namespace CommunicationUI
 	Login::Login(QWidget *parent, QString &message)
 		: QWidget(parent)
 	{
-		initWidget(parent, message);
+		this->setLayout(new QVBoxLayout());
+		this->layout()->setMargin(0);
+		initWidget(message);
 		connectSignals();
 	}
 
@@ -276,12 +341,14 @@ namespace CommunicationUI
 
 	}
 
-	void Login::initWidget(QWidget *parent, QString &message)
+	void Login::initWidget(QString &message)
 	{
 		// Init widget from .ui file
 		QUiLoader loader;
 		QFile uiFile("./data/ui/communications_login.ui");
-		QWidget(loader.load(&uiFile, this));
+		internalWidget_ = loader.load(&uiFile, this);
+		internalWidget_->layout()->setMargin(9);
+		this->layout()->addWidget(internalWidget_);
 		uiFile.close();
 
 		// Get GUI elements
@@ -326,7 +393,7 @@ namespace CommunicationUI
 	{
 		this->setLayout(new QVBoxLayout());
 		this->layout()->setMargin(0);
-		this->setStyleSheet(QString("QWidget {color: rgb(130, 195, 255);background-color: rgb(255, 255, 255);selection-color: rgb(57, 87, 255);selection-background-color: rgb(255, 255, 255);border: 2px groove gray;border-color: rgb(19, 33, 95);padding: 5px 5px;}"));
+		this->setStyleSheet(QString("QWidget {color: rgb(130, 195, 255);background-color: rgb(255, 255, 255);selection-color: rgb(57, 87, 255);selection-background-color: rgb(255, 255, 255);border: 2px groove white;border-color: rgb(86, 128, 255);padding: 3px 6px;}"));
 		initWidget();
 		connectSignals();
 	}
@@ -341,8 +408,8 @@ namespace CommunicationUI
 		// Load ui to widget from file
 		QUiLoader loader;
         QFile uiFile("./data/ui/communications_conversation.ui");
-		internalWidget = loader.load(&uiFile, this);
-		this->layout()->addWidget(internalWidget);
+		internalWidget_ = loader.load(&uiFile, this);
+		this->layout()->addWidget(internalWidget_);
 		uiFile.close();
 		
 		textEditChat_ = findChild<QPlainTextEdit *>("textEdit_Chat");
@@ -357,6 +424,35 @@ namespace CommunicationUI
 	{
 		QObject::connect((QObject*)chatSession_.get(), SIGNAL( MessageReceived(Message &) ), this, SLOT( onMessageReceived(Message &) ));
 		QObject::connect((QObject*)contact_, SIGNAL( StateChanged() ), this, SLOT( contactStateChanged() ));
+	}
+
+	void Conversation::onMessageSent(QString message)
+	{
+		QString html("<span style='color:gray;'>[");
+		html.append(generateTimeStamp());
+		html.append("]</span> <span style='color:blue;'>me");
+		/*html.append(((UIContainer *)this->parent()->parent())->labelUsername_->text());*/
+		html.append("</span><span style='color:black;'>: ");
+		html.append(message);
+		html.append("</span>");
+		appendHTMLToConversation(html);
+	}
+
+	void Conversation::showMessageHistory(MessageVector messageHistory) 
+	{
+		MessageVector::const_iterator itrHistory;
+		for ( itrHistory = messageHistory.begin(); itrHistory!=messageHistory.end(); itrHistory++ )
+		{
+			Message *msg = (*itrHistory);
+			QString html("<span style='color:gray;'>[");
+			html.append(msg->GetTimeStamp().toString());
+			html.append("]</span> <span style='color:red;'>");
+			html.append(msg->GetAuthor()->GetRealName().c_str());
+			html.append("</span><span style='color:black;'>: ");
+			html.append(msg->GetText().c_str());
+			html.append("</span>");
+			appendHTMLToConversation(html);
+		}
 	}
 
 	QString Conversation::generateTimeStamp()
@@ -374,18 +470,6 @@ namespace CommunicationUI
 	void Conversation::appendHTMLToConversation(QString html)
 	{
 		textEditChat_->appendHtml(html);
-	}
-
-	void Conversation::onMessageSent(QString message)
-	{
-		QString html("<span style='color:gray;'>[");
-		html.append(generateTimeStamp());
-		html.append("]</span> <span style='color:blue;'>me");
-		/*html.append(((QtUI *)this->parent()->parent())->labelUsername_->text());*/
-		html.append("</span><span style='color:black;'>: ");
-		html.append(message);
-		html.append("</span>");
-		appendHTMLToConversation(html);
 	}
 
 	void Conversation::onMessageReceived(Message &message)
