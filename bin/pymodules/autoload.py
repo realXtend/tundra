@@ -33,9 +33,9 @@ import usr.sleeper
 
 modules = [
     #apitest.circuits_testmodule.TestModule,
-    usr.chathandler.ChatHandler,
+    #usr.chathandler.ChatHandler,
     usr.keycommands.KeyCommander,
-    usr.sleeper.Sleeper,
+    #usr.sleeper.Sleeper,
     #editgui.EditGUI,
     #WebServer
     #usr.mousecontrol.MouseControl,
