@@ -67,21 +67,19 @@ namespace CommunicationUI
 		void statusMessageChanged();
 		void startNewChat(QListWidgetItem *clickedItem);
 		void newChatSessionRequest(ChatSessionRequest *);
-		void sendNewChatMessage();
 		void closeTab(int index);
 
 	private:
 		void loadUserInterface(bool connected);
 		void loadConnectedUserData(User *userData);
 		void setAllEnabled(bool enabled);
+		bool doesTabExist(Contact *contact);
 
 		QString currentMessage;
 		QWidget *loginWidget_;
 		QWidget *chatWidget_;
 		QTabWidget *tabWidgetCoversations_;
 		QListWidget *listWidgetFriends_;
-		QPushButton *buttonSendMessage_;
-		QLineEdit *lineEditMessage_;
 		QLabel *labelUsername_;
 		QLineEdit *lineEditStatus_;
 		QComboBox *comboBoxStatus_;
@@ -144,10 +142,9 @@ namespace CommunicationUI
 		static const std::string NameStatic() { return "CommunicationModule::Conversation"; } // for logging functionality
 
 	public:
-		Conversation(QWidget *parent, ChatSessionPtr chatSession, Contact *contact); // Add as inparam also the "conversation object" from mattiku
+		Conversation(QWidget *parent, ChatSessionPtr chatSession, Contact *contact, QString name);
 		~Conversation(void);
 
-		void onMessageSent(QString message);
 		void showMessageHistory(ChatMessageVector messageHistory);
 
 	private:
@@ -159,11 +156,14 @@ namespace CommunicationUI
 
 		QWidget *internalWidget_;
 		QPlainTextEdit *textEditChat_;
+		QLineEdit *lineEditMessage_;
+		QString myName_;
 
 		ChatSessionPtr chatSession_;
 		Contact *contact_;
 
 	private	slots:
+		void onMessageSent();
 		void onMessageReceived(ChatMessage &message);
 		void contactStateChanged();
 

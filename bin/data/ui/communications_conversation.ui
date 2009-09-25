@@ -20,9 +20,18 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string>background-color: rgba(255, 255, 255, 0);</string>
+   <string>QPlainTextEdit, QLineEdit {
+	border-radius: 0px;
+color: rgb(130, 195, 255);
+background-color: rgb(255, 255, 255);
+border: 2px groove white;
+border-color: rgba(86, 128, 255, 200);
+border-radius: 0px;
+padding: 3px 6px;
+
+}</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
     <number>0</number>
    </property>
@@ -33,29 +42,37 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QPlainTextEdit" name="textEdit_Chat">
-     <property name="styleSheet">
-      <string>.status_update {
-	color: red;
-}
-.message {		
-	color: rgb(0, 0, 0);
-}
-.friends_name {		
-	color: rgb(212, 29, 29);
-}
-.own_name {	
-	color: blue;
-}
-.timestamp {
-	color: green;
-}
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QPlainTextEdit" name="textEdit_Chat">
+       <property name="styleSheet">
+        <string/>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit_Message">
+       <property name="styleSheet">
+        <string>background-color: rgb(255, 255, 255);
+color: rgb(101, 122, 255);
+padding: 2px 5px 2px 5px;
+border-top-color: rgba(255, 255, 255, 0);
+selection-color: rgb(255, 255, 255);
+selection-background-color: rgb(101, 122, 255);
 </string>
-     </property>
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-    </widget>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

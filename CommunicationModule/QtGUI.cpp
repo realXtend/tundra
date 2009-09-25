@@ -93,11 +93,6 @@ namespace CommunicationUI
 			tabWidgetCoversations_ = findChild<QTabWidget *>("tabWidget_Conversations");
 			tabWidgetCoversations_->clear();
 			listWidgetFriends_ = findChild<QListWidget *>("listWidget_Friends");
-			buttonSendMessage_ = findChild<QPushButton *>("pushButton_Send");
-			buttonSendMessage_->setIcon(QIcon("./data/ui/images/arrow_right_green_48.png"));
-			buttonSendMessage_->setIconSize(QSize(25,23));
-			lineEditMessage_ = findChild<QLineEdit *>("lineEdit_Message");
-			lineEditMessage_->setFocus(Qt::NoFocusReason);
 			labelUsername_ = findChild<QLabel *>("label_UserName");
 			lineEditStatus_ = findChild<QLineEdit *>("lineEdit_Status");
 			comboBoxStatus_ = findChild<QComboBox *>("comboBox_Status");
@@ -107,8 +102,6 @@ namespace CommunicationUI
 			setAllEnabled(false);
 
 			// Connect signals
-			QObject::connect(lineEditMessage_, SIGNAL( returnPressed() ), this, SLOT( sendNewChatMessage() ));
-			QObject::connect(buttonSendMessage_, SIGNAL( clicked() ), this, SLOT ( sendNewChatMessage() ));
 			QObject::connect(tabWidgetCoversations_, SIGNAL( tabCloseRequested(int) ), this, SLOT( closeTab(int) ));
 
 			// Add widget to layout
@@ -148,7 +141,7 @@ namespace CommunicationUI
 	void UIContainer::loadConnectedUserData(User *userData)
 	{
 		// debug, use when you get this for real...
-		//labelUsername_->setText(QString(userData->GetUserID().c_str())); 
+		labelUsername_->setText(QString(userData->GetUserID().c_str())); 
 		listWidgetFriends_->clear();
 		ContactVector initialContacts = userData->GetContacts();
 		ContactVector::const_iterator itrContacts;
@@ -184,11 +177,22 @@ namespace CommunicationUI
 	{
 		tabWidgetCoversations_->setEnabled(enabled);
 		listWidgetFriends_->setEnabled(enabled);
-		buttonSendMessage_->setEnabled(enabled);
-		lineEditMessage_->setEnabled(enabled);
 		labelUsername_->setEnabled(enabled);
 		lineEditStatus_->setEnabled(enabled);
 		comboBoxStatus_->setEnabled(enabled);
+	}
+
+	bool UIContainer::doesTabExist(Contact *contact)
+	{
+		for (int i=0; i<tabWidgetCoversations_->count(); i++)
+		{
+			if ( QString::compare(tabWidgetCoversations_->tabText(i), QString(contact->GetName().c_str())) == 0 )
+			{
+				tabWidgetCoversations_->setCurrentIndex(i);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/////////////
@@ -247,7 +251,7 @@ namespace CommunicationUI
 		if ( im_connection_ != NULL && im_connection_->GetUser() != NULL)
 		{
 			this->loadConnectedUserData(im_connection_->GetUser());
-			QObject::connect((QObject *)im_connection_, SIGNAL( ReceivedChatSessionRequest(ChatSessionRequest *) ), this, SLOT( newChatSessionRequest(ChatSessionRequest *) ));
+			QObject::connect((QObject *)im_connection_, SIGNAL( ReceivedChatSessionRequest(TextChatSessionRequest *) ), this, SLOT( newChatSessionRequest(TextChatSessionRequest *) ));
 		}
 		else
 		{
@@ -277,9 +281,12 @@ namespace CommunicationUI
 	void UIContainer::startNewChat(QListWidgetItem *clickedItem)
 	{
 		ContactListItem *listItem = (ContactListItem *)clickedItem;
-		ChatSessionPtr chatSession = im_connection_->CreateChatSession(listItem->contact_);
-		Conversation *conversation = new Conversation(tabWidgetCoversations_, chatSession, listItem->contact_);
-		tabWidgetCoversations_->addTab(conversation, QString(listItem->contact_->GetName().c_str()));
+		if ( doesTabExist(listItem->contact_) == false )
+		{
+			ChatSessionPtr chatSession = im_connection_->CreateChatSession(listItem->contact_);
+			Conversation *conversation = new Conversation(tabWidgetCoversations_, chatSession, listItem->contact_, QString(im_connection_->GetUser()->GetName().c_str()));
+			tabWidgetCoversations_->addTab(conversation, QString(listItem->contact_->GetName().c_str()));
+		}
 	}
 
 	void UIContainer::newChatSessionRequest(ChatSessionRequest *chatSessionRequest)
@@ -290,9 +297,12 @@ namespace CommunicationUI
 		{
 			if (chatSessionRequest->GetOriginatorContact() != NULL )
 			{
-				Conversation *conversation = new Conversation(tabWidgetCoversations_, chatSession, chatSessionRequest->GetOriginatorContact());
-				conversation->showMessageHistory(chatSession->GetMessageHistory());
-				tabWidgetCoversations_->addTab(conversation, QString(chatSessionRequest->GetOriginatorContact()->GetName().c_str()));		
+				if ( doesTabExist(chatSessionRequest->GetOriginatorContact()) == false )
+				{
+					Conversation *conversation = new Conversation(tabWidgetCoversations_, chatSession, chatSessionRequest->GetOriginatorContact(), QString(im_connection_->GetUser()->GetName().c_str()));
+					conversation->showMessageHistory(chatSession->GetMessageHistory());
+					tabWidgetCoversations_->addTab(conversation, QString(chatSessionRequest->GetOriginatorContact()->GetName().c_str()));		
+				}
 			}
 			else
 			{
@@ -300,21 +310,6 @@ namespace CommunicationUI
 			}
 		}
 		LogInfo("newChatSessionRequest (handled successfully)");
-	}
-
-	void UIContainer::sendNewChatMessage()
-	{
-		QString message(lineEditMessage_->text());
-		lineEditMessage_->clear();
-
-		Conversation *conversation = (Conversation *)tabWidgetCoversations_->currentWidget();
-		if (conversation != NULL)
-		{
-			conversation->chatSession_->SendTextMessage(message.toStdString());
-			// TODO: wait for confirmation signal and then put text to own chat widget
-			// now just put it there
-			conversation->onMessageSent(message);
-		}
 	}
 
 	void UIContainer::closeTab(int index)
@@ -388,12 +383,11 @@ namespace CommunicationUI
 	// CONVERSATION CLASS
 	/////////////////////////////////////////////////////////////////////
 
-	Conversation::Conversation(QWidget *parent, ChatSessionPtr chatSession, Contact *contact)
-		: QWidget(parent), chatSession_(chatSession), contact_(contact)
+	Conversation::Conversation(QWidget *parent, ChatSessionPtr chatSession, Contact *contact, QString name)
+		: QWidget(parent), chatSession_(chatSession), contact_(contact), myName_(name)
 	{
 		this->setLayout(new QVBoxLayout());
 		this->layout()->setMargin(0);
-		this->setStyleSheet(QString("QWidget {color: rgb(130, 195, 255);background-color: rgb(255, 255, 255);selection-color: rgb(57, 87, 255);selection-background-color: rgb(255, 255, 255);border: 2px groove white;border-color: rgb(86, 128, 255);padding: 3px 6px;}"));
 		initWidget();
 		connectSignals();
 	}
@@ -413,6 +407,8 @@ namespace CommunicationUI
 		uiFile.close();
 		
 		textEditChat_ = findChild<QPlainTextEdit *>("textEdit_Chat");
+		lineEditMessage_ = findChild<QLineEdit *>("lineEdit_Message");
+		lineEditMessage_->setFocus(Qt::NoFocusReason);
 
 		QString startMessage("Started chat session with ");
 		startMessage.append(contact_->GetName().c_str());
@@ -424,14 +420,19 @@ namespace CommunicationUI
 	{
 		QObject::connect((QObject*)chatSession_.get(), SIGNAL( MessageReceived(Message &) ), this, SLOT( onMessageReceived(Message &) ));
 		QObject::connect((QObject*)contact_, SIGNAL( StateChanged() ), this, SLOT( contactStateChanged() ));
+		QObject::connect(lineEditMessage_, SIGNAL( returnPressed() ), this, SLOT( onMessageSent() ));
 	}
 
-	void Conversation::onMessageSent(QString message)
+	void Conversation::onMessageSent()
 	{
+		QString message(lineEditMessage_->text());
+		lineEditMessage_->clear();
+		chatSession_->SendTextMessage(message.toStdString());
+
 		QString html("<span style='color:gray;'>[");
 		html.append(generateTimeStamp());
-		html.append("]</span> <span style='color:blue;'>me");
-		/*html.append(((UIContainer *)this->parent()->parent())->labelUsername_->text());*/
+		html.append("]</span> <span style='color:blue;'>");
+		html.append(myName_);
 		html.append("</span><span style='color:black;'>: ");
 		html.append(message);
 		html.append("</span>");
@@ -464,6 +465,7 @@ namespace CommunicationUI
 	void Conversation::appendLineToConversation(QString line)
 	{
 		textEditChat_->appendPlainText(line);
+		
 	}
 
 	void Conversation::appendHTMLToConversation(QString html)
