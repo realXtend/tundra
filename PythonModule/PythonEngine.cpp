@@ -1,8 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#include "PythonScriptModule.h"
 #include "StableHeaders.h"
 #include "PythonEngine.h"
-#include "PythonScriptModule.h"
 #include "PythonScriptObject.h"
 
 using namespace Foundation;
@@ -28,8 +28,11 @@ namespace PythonScript
 			RunString("import sys; sys.path.append('pymodules\\lib');"); // libraries directory
 			RunString("import sys; sys.path.append('pymodules\\python26_Lib.zip');"); // python modules from folder python26/Lib 
 		}
-		//else
-			//LogWarning("Python already initialized in PythonScriptModule init!");
+		else
+        {
+			//LogWarning() //XXX add module ref here to be able to do logging
+            std::cout << "Python already initialized in PythonScriptModule init!";
+        }
 	}
 
 	/* load modules and get pointers to py functions - used to be in module postinitialize
@@ -61,14 +64,14 @@ namespace PythonScript
 		Py_Finalize();
 	}
 
-	void PythonEngine::Reset()
+	/*void PythonEngine::Reset()
 	{
 		//should clear own internal state etc too i guess XXX
 		Py_Finalize();
 		Py_Initialize();
 		//no ref to mod here now XXX
 		//PythonModule::LogInfo("Python interpreter reseted: all memory and state cleared.");
-	}
+	}*/
 
 	void PythonEngine::RunString(const std::string& codestr)
 	{

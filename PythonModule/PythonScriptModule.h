@@ -3,12 +3,6 @@
 #ifndef incl_PythonScriptingModule_h
 #define incl_PythonScriptingModule_h
 
-#include "Foundation.h"
-#include "StableHeaders.h"
-#include "ModuleInterface.h"
-#include "ComponentRegistrarInterface.h"
-#include "ServiceManager.h"
-
 #ifdef PYTHON_FORCE_RELEASE_VERSION
   #ifdef _DEBUG
     #undef _DEBUG
@@ -21,6 +15,11 @@
     #include "Python.h"
 #endif
 
+#include "Foundation.h"
+#include "StableHeaders.h"
+#include "ModuleInterface.h"
+#include "ComponentRegistrarInterface.h"
+#include "ServiceManager.h"
 
 namespace Foundation
 {
@@ -87,16 +86,16 @@ namespace PythonScript
 		// Category id for incoming messages.
 		Core::event_category_id_t inboundCategoryID_;
 		Core::event_category_id_t inputeventcategoryid;
-
 		
 	private:
 
 		PythonEnginePtr engine_;
+        bool pythonqt_inited;
 
 		//basic feats
 		void RunString(const char* codestr);
 		void RunFile(const std::string &modulename);
-		void Reset();
+		//void Reset();
 
 		//a testing place
 		void x();

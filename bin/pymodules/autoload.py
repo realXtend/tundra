@@ -6,7 +6,15 @@ to have access here to the class, of course, and that can do
 whatever loading that you want (in your module i.e. .py file).
 """
 
-#import apitest.circuits_testmodule
+#reload-on-the fly test - how to make generic for all modules?
+try:
+    apitest.circuits_testmodule
+except: #first run
+    import apitest.circuits_testmodule
+else:
+    print "reloading apitest.circuits_testmodule"
+    apitest.circuits_testmodule = reload(apitest.circuits_testmodule)
+    
 import usr.chathandler
 import usr.keycommands
 #import usr.mousecontrol
@@ -26,8 +34,8 @@ import usr.sleeper
 modules = [
     #apitest.circuits_testmodule.TestModule,
     usr.chathandler.ChatHandler,
-    usr.keycommands.KeyCommander
-    #usr.sleeper.Sleeper,
+    usr.keycommands.KeyCommander,
+    usr.sleeper.Sleeper,
     #editgui.EditGUI,
     #WebServer
     #usr.mousecontrol.MouseControl,
@@ -39,6 +47,7 @@ def load(circuitsmanager):
     for klass in modules:
         #~ modinst = klass()
         #~ circuitsmanager += modinst
+        #print klass
         try:
             modinst = klass()            
         except Exception, exc:

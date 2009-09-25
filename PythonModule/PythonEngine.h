@@ -52,7 +52,7 @@ namespace PythonScript
 													const std::string& objectname, 
 													std::string& error);
 
-		void Reset();
+		//void Reset();
 
 
     private:

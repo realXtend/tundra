@@ -7,10 +7,12 @@ except ImportError: #not running under rex
     import mockviewer as r
 from circuits import Component
 
+OIS_KEY_C = 46 #it might be possible to use pyois from pyogre to get these
+OIS_KEY_UP = 200
+OIS_KEY_PERIOD = 52
+OIS_KEY_BACKSPACE = 14
+
 class KeyCommander(Component):
-    OIS_KEY_C = 46 #it might be possible to use pyois from pyogre to get these
-    OIS_KEY_UP = 200
-    OIS_KEY_PERIOD = 52
     EVENTHANDLED = True
     
     def __init__(self):
@@ -22,11 +24,13 @@ class KeyCommander(Component):
         on the python side.
         """
         self.keymap = {
-            self.OIS_KEY_PERIOD: self.run_commandpy
+            OIS_KEY_PERIOD: self.run_commandpy,
+            OIS_KEY_BACKSPACE: self.restart_modulemanager
         }
         
         """
-        This has the events and overrides different ones... explain better! ;)
+        These are the input events as they have already been translated within Naali internals.
+        For example both 'w' and 'uparrow' keypresses cause a MoveForwardPressed input event.
         """
         self.inputmap = {
             #r.MoveForwardPressed: self.overrideForwardWalking #overrides the moveforward event
@@ -68,6 +72,10 @@ class KeyCommander(Component):
         r.eventhandled = self.EVENTHANDLED
         import command
         command = reload(command)
+        
+    def restart_modulemanager(self):
+        import modulemanager
+        modulemanager.ModuleManager.instance.restart()
         
     def overrideForwardWalking(self):
         print "MoveForward called, STOP, it's Hammer time!"

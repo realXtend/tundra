@@ -1,12 +1,8 @@
-"""drafting and designing a manager for python written modules.
-the current plan is that there'll be a Manager that the PythonScriptModule
-instanciates, and which then loads the python modules that are to be autoloaded,
-and handles their event registrations, passing incoming events to them etc.
-that will be prototyped here in pure py, and perhaps reused in the actual
-impl if it seems that a py written manager makes sense within the c++ framework too.
+"""Circuits using implementation of a Python module (plugin) manager for Naali.
 
-currently here is only test code for modules and handelers that would
-use the manager, nothing of the Manager itself yet.
+here is a Manager that the PythonScriptModule instanciates, 
+and which then loads the python modules that are to be autoloaded.
+This handles their event registrations, passing incoming events to them etc.
 """
 try:
     import rexviewer as r
@@ -36,27 +32,36 @@ class ComponentRunner(Component):
     
     def __init__(self):
         # instanciated from the c++ side, as modulemanager there
-        assert self.instance is None
+        #assert self.instance is None
+        Component.__init__(self)
         ComponentRunner.instance = self #is used as a singleton now
-
+        
+        self.forwardevent = True 
+        r.eventhandled = False #XXX this should be reset always when a new event is handled
+        self.mouseinfo = MouseInfo(0,0,0,0)
+        #m.start() #instead we tick() & flush() in update
+        
+        self.firstrun = True
+        self.start()
+        
+    def start(self):
         # Create a new circuits Manager
         #ignevents = [Update, MouseMove]
         ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated']
         ignchannels = [('*', n) for n in ignchannames]
         self.m = Manager() + Debugger(IgnoreChannels = ignchannels) #IgnoreEvents = ignored)
-
-        Component.__init__(self)
-        
-        m = self.m
         
         #or __all__ in pymodules __init__ ? (i.e. import pymodules would do that)
-        import autoload
-        autoload.load(m)
-        self.forwardevent = True 
-        r.eventhandled = False #XXX this should be reset always when a new event is handled
-        self.mouseinfo = MouseInfo(0,0,0,0)
-        #m.start() #instead we tick() & flush() in update
-            
+        if self.firstrun:
+            import autoload
+            self.firstrun = False
+        else: #reload may cause something strange sometimes, so better not do it always in production use, is just a dev tool.
+            #print "reloading autoload"
+            import autoload
+            autoload = reload(autoload)            
+        #print "Autoload module:", autoload
+        autoload.load(self.m)
+                    
     def run(self, deltatime=0.1):
         #print ".",
         m = self.m
@@ -80,7 +85,6 @@ class ComponentRunner(Component):
         self.m.send(Input(evid), "on_input")
         rvalue = r.eventhandled
         return rvalue
-        
         
     def KEY_INPUT_EVENT(self, evid, keycode, keymod):
         """Handles key inputs, creates a Circuits Key event with the data provided
@@ -123,7 +127,14 @@ class ComponentRunner(Component):
     def exit(self):
         self.m.send(Exit(), "on_exit") #am not running the manager properly so the stop doesn't propagate to components. fix when switch to dev branch of circuits XXX
         print "Circuits manager stopping."
-        self.m.stop() #not going to components now so made the exit event above as a quick fix
+        self.m.stop() #was not going to components now so made the exit event above as a quick fix
+        #XXX now that we are using flush() and tick(), does stop() propagate to components too?
+        
+    def restart(self):
+        print "Restarting python module manager, reloading plugin codes:"
+        self.exit()
+        self.start()
+        print ".. done python restart."
                 
     #~ def retfunc(self, boolvalue):
         #~ #print "Return value:", bool, "-> ", 

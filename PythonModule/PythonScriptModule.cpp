@@ -1,11 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-
-#include "OISKeyboard.h"
-//#include "OISMouse.h"
+#include "PythonScriptModule.h"
 
 #include "StableHeaders.h"
-#include "PythonScriptModule.h"
 //#include "Foundation.h"
 #include "ServiceManager.h"
 #include "ComponentRegistrarInterface.h"
@@ -35,8 +32,11 @@
 #include "CameraControllable.h"
 //now done via logic cameracontrollable #include "Renderer.h" //for setting camera pitch
 //#include "ogrecamera.h"
-#include "../OgreRenderingModule/Renderer.h" //for the screenshot api
+#include "../OgreRenderingModule/Renderer.h" //for the screenshot api XXX add the path to includes, don't do this.
 #include "AvatarControllable.h"
+
+#include "OISKeyboard.h"
+//#include "OISMouse.h"
 
 #include "Entity.h"
 #include "RexPythonQt.h"
@@ -54,6 +54,7 @@ namespace PythonScript
 
 	PythonScriptModule::PythonScriptModule() : ModuleInterfaceImpl(type_static_)
     {
+        pythonqt_inited = false;
     }
 
     PythonScriptModule::~PythonScriptModule()
@@ -95,19 +96,25 @@ namespace PythonScript
     void PythonScriptModule::Initialize()
     {
 		PythonScript::pythonscriptmodule_ = this;
-		engine_ = PythonScript::PythonEnginePtr(new PythonScript::PythonEngine(framework_));
+        if (!engine_)
+        {
+    		engine_ = PythonScript::PythonEnginePtr(new PythonScript::PythonEngine(framework_));
+        }
         engine_->Initialize();
 		
 		PythonScriptModule::engineAccess = dynamic_cast<Foundation::ScriptEventInterface*>(engine_.get());
         
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Scripting, engine_);
-
 		//XXX hack to have a ref to framework for api funcs
 		PythonScript::staticframework = framework_;
 		apiModule = PythonScript::initpymod(); //initializes the rexviewer module to be imported within py
 
 		//init PythonQt, implemented in RexPythonQt.cpp
-		PythonScript::initRexQtPy(apiModule);
+        if (!pythonqt_inited)
+        {
+    		PythonScript::initRexQtPy(apiModule);
+            pythonqt_inited = true;
+        }
 
 		//load the py written module manager using the py c api directly
 		pmmModule = PyImport_ImportModule("modulemanager");
@@ -366,7 +373,10 @@ namespace PythonScript
 
 	Console::CommandResult PythonScriptModule::ConsoleReset(const Core::StringVector &params)
 	{
-		engine_->Reset();
+		//engine_->Reset();
+        Uninitialize(); //does also engine_->Uninitialize();
+        Initialize();
+
 		return Console::ResultSuccess();
 	}	
 
@@ -797,7 +807,6 @@ PyObject* PyLogInfo(PyObject *self, PyObject *args)
 	
 	Py_RETURN_NONE;
 }
-
 /*
 PyObject* GetCameraUp(PyObject *self) 
 {
@@ -1324,5 +1333,6 @@ OgreRenderer::EC_OgrePlaceable PythonScript::GetPlaceable()
 	OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());	
 }
 */
+
 
 
