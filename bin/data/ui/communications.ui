@@ -18,7 +18,7 @@
 	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.676, y2:1, stop:0 rgba(240, 240, 240, 255), stop:1 rgba(188, 212, 255, 255));
 }
 
-QLineEdit, QListView {
+QListView {
 color: rgb(130, 195, 255);
 background-color: rgb(255, 255, 255);
 selection-color: rgb(57, 87, 255);
@@ -111,7 +111,6 @@ background-color: rgba(255, 255, 255, 0);</string>
 }
 
 QComboBox::drop-down:!editable { 
-	subcontrol-color: rgb(76, 115, 255);
 	subcontrol-position: center right; 
 	width: 12px; 
 	height: 12px;
@@ -170,8 +169,10 @@ QComboBox::drop-down:!editable {
              </property>
              <property name="styleSheet">
               <string>QLineEdit {
-	background-color: rgba(255, 255, 255, 100);
 	color: rgb(101, 122, 255);
+	background-color: rgba(255, 255, 255, 100);
+	selection-color: rgb(255, 255, 255);
+	selection-background-color: rgb(101, 122, 255);
 	border: 2px groove white;
 	border-color: rgba(86, 128, 255, 100);
 	border-radius: 5px;
@@ -428,19 +429,20 @@ QComboBox::drop-down:!editable {
             </palette>
            </property>
            <property name="styleSheet">
-            <string>background-color: rgb(255, 255, 255);</string>
+            <string>background-color: rgb(255, 255, 255);
+border-color: rgba(86, 128, 255, 200);</string>
            </property>
           </widget>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0">
+          <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0">
            <item>
             <widget class="QTabWidget" name="tabWidget_Conversations">
              <property name="styleSheet">
-              <string>background-color: rgb(255, 255, 255);</string>
+              <string>background-color: rgba(255, 255, 255, 0);</string>
              </property>
              <property name="tabPosition">
-              <enum>QTabWidget::South</enum>
+              <enum>QTabWidget::North</enum>
              </property>
              <property name="currentIndex">
               <number>0</number>
@@ -457,40 +459,6 @@ QComboBox::drop-down:!editable {
               </attribute>
              </widget>
             </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_4">
-             <item>
-              <widget class="QLineEdit" name="lineEdit_Message">
-               <property name="styleSheet">
-                <string>background-color: rgb(255, 255, 255);
-color: rgb(101, 122, 255);</string>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="pushButton_Send">
-               <property name="minimumSize">
-                <size>
-                 <width>25</width>
-                 <height>23</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>25</width>
-                 <height>23</height>
-                </size>
-               </property>
-               <property name="flat">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
            </item>
           </layout>
          </item>
