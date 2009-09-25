@@ -251,7 +251,7 @@ namespace CommunicationUI
 		if ( im_connection_ != NULL && im_connection_->GetUser() != NULL)
 		{
 			this->loadConnectedUserData(im_connection_->GetUser());
-			QObject::connect((QObject *)im_connection_, SIGNAL( ReceivedChatSessionRequest(TextChatSessionRequest *) ), this, SLOT( newChatSessionRequest(TextChatSessionRequest *) ));
+			QObject::connect((QObject *)im_connection_, SIGNAL( ReceivedChatSessionRequest(ChatSessionRequest *) ), this, SLOT( newChatSessionRequest(ChatSessionRequest *) ));
 		}
 		else
 		{
@@ -418,7 +418,7 @@ namespace CommunicationUI
 
 	void Conversation::connectSignals()
 	{
-		QObject::connect((QObject*)chatSession_.get(), SIGNAL( MessageReceived(Message &) ), this, SLOT( onMessageReceived(Message &) ));
+		QObject::connect((QObject*)chatSession_.get(), SIGNAL( MessageReceived(ChatMessage &) ), this, SLOT( onMessageReceived(ChatMessage &) ));
 		QObject::connect((QObject*)contact_, SIGNAL( StateChanged() ), this, SLOT( contactStateChanged() ));
 		QObject::connect(lineEditMessage_, SIGNAL( returnPressed() ), this, SLOT( onMessageSent() ));
 	}
@@ -429,9 +429,9 @@ namespace CommunicationUI
 		lineEditMessage_->clear();
 		chatSession_->SendTextMessage(message.toStdString());
 
-		QString html("<span style='color:gray;'>[");
+		QString html("<span style='color:#828282;'>[");
 		html.append(generateTimeStamp());
-		html.append("]</span> <span style='color:blue;'>");
+		html.append("]</span> <span style='color:#C21511;'>");
 		html.append(myName_);
 		html.append("</span><span style='color:black;'>: ");
 		html.append(message);
@@ -445,9 +445,9 @@ namespace CommunicationUI
 		for ( itrHistory = messageHistory.begin(); itrHistory!=messageHistory.end(); itrHistory++ )
 		{
 			ChatMessage *msg = (*itrHistory);
-			QString html("<span style='color:gray;'>[");
+			QString html("<span style='color:#828282;'>[");
 			html.append(msg->GetTimeStamp().toString());
-			html.append("]</span> <span style='color:red;'>");
+			html.append("]</span> <span style='color:#2133F0;'>");
 			html.append(msg->GetAuthor()->GetName().c_str());
 			html.append("</span><span style='color:black;'>: ");
 			html.append(msg->GetText().c_str());
@@ -475,9 +475,9 @@ namespace CommunicationUI
 
 	void Conversation::onMessageReceived(ChatMessage &message)
 	{
-		QString html("<span style='color:gray;'>[");
+		QString html("<span style='color:#828282;'>[");
 		html.append(generateTimeStamp());
-		html.append("]</span> <span style='color:red;'>");
+		html.append("]</span> <span style='color:#2133F0;'>");
 		html.append(contact_->GetName().c_str());
 		html.append("</span><span style='color:black;'>: ");
 		html.append(message.GetText().c_str());
@@ -487,7 +487,7 @@ namespace CommunicationUI
 
 	void Conversation::contactStateChanged()
 	{
-		QString html("<span style='color:gray;'>");
+		QString html("<span style='color:#828282;'>");
 		html.append(contact_->GetName().c_str());
 		html.append(" changed status to ");
 		html.append(contact_->GetPresenceStatus().c_str());
@@ -503,7 +503,10 @@ namespace CommunicationUI
 	ContactListItem::ContactListItem(QString &name, QString &status, QString &statusmessage, TpQt4Communication::Contact *contact)
 		: QListWidgetItem(0, QListWidgetItem::UserType), name_(name), status_(status), statusmessage_(statusmessage), contact_(contact)
 	{
-		status_.append(" - " + statusmessage);
+		if (QString::compare(statusmessage, QString("")) != 0 )
+		{
+			status_.append(" - " + statusmessage);	
+		}
 		this->setText(name_ + " (" + status_ + ")");
 	}
 
@@ -520,8 +523,11 @@ namespace CommunicationUI
 	void ContactListItem::statusChanged()
 	{
 		status_ = QString(this->contact_->GetPresenceStatus().c_str());
-		status_.append(" - ");
-		status_.append(this->contact_->GetPresenceMessage().c_str());
+		if (QString::compare(QString(this->contact_->GetPresenceMessage().c_str()), QString("")) != 0 )
+		{
+			status_.append(" - ");
+			status_.append(this->contact_->GetPresenceMessage().c_str());
+		}
 		updateItem();
 	}
 
