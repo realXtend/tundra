@@ -112,7 +112,6 @@ namespace CommunicationUI
 	MODULE_LOGGING_FUNCTIONS
 	static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 
-
 	public:
 		Conversation(QWidget *parent, TextChatSessionPtr chatSession, Contact *contact); // Add as inparam also the "conversation object" from mattiku
 		~Conversation(void);
@@ -129,6 +128,7 @@ namespace CommunicationUI
 		TextChatSessionPtr chatSession_;
 		Contact *contact_;
 		QPlainTextEdit *textEditChat_;
+		QWidget *internalWidget;
 
 	private	slots:
 		void onMessageReceived(Message &message);

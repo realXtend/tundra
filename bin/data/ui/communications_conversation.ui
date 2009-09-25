@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>417</width>
-    <height>194</height>
+    <width>459</width>
+    <height>231</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -34,9 +34,6 @@
    </property>
    <item>
     <widget class="QPlainTextEdit" name="textEdit_Chat">
-     <property name="styleSheet">
-      <string>background-color: rgb(255, 255, 255);</string>
-     </property>
      <property name="readOnly">
       <bool>true</bool>
      </property>
