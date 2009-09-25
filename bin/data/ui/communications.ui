@@ -121,11 +121,6 @@ QComboBox::drop-down:!editable {
              <property name="frame">
               <bool>true</bool>
              </property>
-             <item>
-              <property name="text">
-               <string>etetetetet</string>
-              </property>
-             </item>
             </widget>
            </item>
           </layout>

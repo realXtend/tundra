@@ -175,7 +175,7 @@ background-color: rgb(255, 255, 255);
 </string>
          </property>
          <property name="text">
-          <string>jonnenauha</string>
+          <string>realxtend</string>
          </property>
         </widget>
        </item>
@@ -207,7 +207,7 @@ background-color: rgb(255, 255, 255);
 </string>
          </property>
          <property name="text">
-          <string>peeforce</string>
+          <string>jabber666</string>
          </property>
          <property name="echoMode">
           <enum>QLineEdit::Password</enum>
