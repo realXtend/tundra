@@ -15,9 +15,9 @@
 #include "Communication.h"
 #include "Credentials.h"
 #include "User.h"
-#include "TextChatSession.h"
+#include "ChatSession.h"
 #include "FriendRequest.h"
-#include "TextChatSessionRequest.h"
+#include "ChatSessionRequest.h"
 #include "Contact.h"
 
 namespace TpQt4Communication
@@ -62,7 +62,7 @@ namespace TpQt4Communication
 
 		//! Open new text chat session with given contact
 		//! /throws QString object as error message if doesn't success
-		TextChatSessionPtr CreateTextChatSession(Contact* contact);
+		ChatSessionPtr CreateChatSession(Contact* contact);
 
 		//! 
 		void CreateVoipSession();
@@ -73,8 +73,8 @@ namespace TpQt4Communication
 		void SendFriendRequest(Address to, std::string message = "");
 
 		FriendRequestVector GetFriendRequests();
-		TextChatSessionRequestVector GetTextChatSessionRequests();
-		TextChatSessionVector GetTextChatSessions();
+		ChatSessionRequestVector GetChatSessionRequests();
+		ChatSessionVector GetChatSessions();
 
 	private :
 		void ConnectTpSignals();
@@ -86,8 +86,8 @@ namespace TpQt4Communication
 		std::string server_;
 		Tp::ConnectionPtr tp_connection_;
 		std::vector<FriendRequest*> received_friend_requests_;
-		TextChatSessionVector text_chat_sessions_;
-		TextChatSessionRequestVector received_text_chat_requests_;
+		ChatSessionVector text_chat_sessions_;
+		ChatSessionRequestVector received_text_chat_requests_;
 		std::string error_message_;
 
 	public Q_SLOTS:
@@ -100,14 +100,14 @@ namespace TpQt4Communication
 		void OnNewChannels(const Tp::ChannelDetailsList&);
 
 		//! Emits signal ReceivedFriendRequest
-		void OnIncomingChatSessionRequestReady(TextChatSessionRequest* request);
+		void OnIncomingChatSessionRequestReady(ChatSessionRequest* request);
 
 	signals:
 		void Connecting(QString &message);
 		void Connected();
 		void Error(QString &reason);
 		void Closed();
-		void ReceivedTextChatSessionRequest(TextChatSessionRequest* request);
+		void ReceivedChatSessionRequest(ChatSessionRequest* request);
 		void ReceivedFriendRequest(FriendRequest* request);
 	};
 	typedef boost::weak_ptr<Connection> ConnectionWeakPtr;

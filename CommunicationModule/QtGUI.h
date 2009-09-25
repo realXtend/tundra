@@ -9,8 +9,8 @@
 
 #include "CommunicationManager.h"
 #include "Connection.h"
-#include "TextChatSession.h"
-#include "TextChatSessionRequest.h"
+#include "ChatSession.h"
+#include "ChatSessionRequest.h"
 #include "User.h"
 #include "Contact.h"
 
@@ -66,7 +66,7 @@ namespace CommunicationUI
 		void statusChanged(const QString &newStatus);
 		void statusMessageChanged();
 		void startNewChat(QListWidgetItem *clickedItem);
-		void newChatSessionRequest(TextChatSessionRequest *);
+		void newChatSessionRequest(ChatSessionRequest *);
 		void sendNewChatMessage();
 		void closeTab(int index);
 
@@ -144,11 +144,11 @@ namespace CommunicationUI
 		static const std::string NameStatic() { return "CommunicationModule::Conversation"; } // for logging functionality
 
 	public:
-		Conversation(QWidget *parent, TextChatSessionPtr chatSession, Contact *contact); // Add as inparam also the "conversation object" from mattiku
+		Conversation(QWidget *parent, ChatSessionPtr chatSession, Contact *contact); // Add as inparam also the "conversation object" from mattiku
 		~Conversation(void);
 
 		void onMessageSent(QString message);
-		void showMessageHistory(MessageVector messageHistory);
+		void showMessageHistory(ChatMessageVector messageHistory);
 
 	private:
 		void initWidget();
@@ -160,11 +160,11 @@ namespace CommunicationUI
 		QWidget *internalWidget_;
 		QPlainTextEdit *textEditChat_;
 
-		TextChatSessionPtr chatSession_;
+		ChatSessionPtr chatSession_;
 		Contact *contact_;
 
 	private	slots:
-		void onMessageReceived(Message &message);
+		void onMessageReceived(ChatMessage &message);
 		void contactStateChanged();
 
 	};

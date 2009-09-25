@@ -156,7 +156,7 @@ namespace CommunicationUI
 		for( itrContacts=initialContacts.begin(); itrContacts!=initialContacts.end(); itrContacts++ )
 		{
 			Contact *contact = (*itrContacts);
-			ContactListItem *contactItem = new ContactListItem( QString(contact->GetRealName().c_str()),
+			ContactListItem *contactItem = new ContactListItem( QString(contact->GetName().c_str()),
 																QString(contact->GetPresenceStatus().c_str()),
 																QString(contact->GetPresenceMessage().c_str()), 
 																contact );
@@ -247,7 +247,7 @@ namespace CommunicationUI
 		if ( im_connection_ != NULL && im_connection_->GetUser() != NULL)
 		{
 			this->loadConnectedUserData(im_connection_->GetUser());
-			QObject::connect((QObject *)im_connection_, SIGNAL( ReceivedTextChatSessionRequest(TextChatSessionRequest *) ), this, SLOT( newChatSessionRequest(TextChatSessionRequest *) ));
+			QObject::connect((QObject *)im_connection_, SIGNAL( ReceivedChatSessionRequest(ChatSessionRequest *) ), this, SLOT( newChatSessionRequest(ChatSessionRequest *) ));
 		}
 		else
 		{
@@ -277,14 +277,14 @@ namespace CommunicationUI
 	void UIContainer::startNewChat(QListWidgetItem *clickedItem)
 	{
 		ContactListItem *listItem = (ContactListItem *)clickedItem;
-		TextChatSessionPtr chatSession = im_connection_->CreateTextChatSession(listItem->contact_);
+		ChatSessionPtr chatSession = im_connection_->CreateChatSession(listItem->contact_);
 		Conversation *conversation = new Conversation(tabWidgetCoversations_, chatSession, listItem->contact_);
-		tabWidgetCoversations_->addTab(conversation, QString(listItem->contact_->GetRealName().c_str()));
+		tabWidgetCoversations_->addTab(conversation, QString(listItem->contact_->GetName().c_str()));
 	}
 
-	void UIContainer::newChatSessionRequest(TextChatSessionRequest *chatSessionRequest)
+	void UIContainer::newChatSessionRequest(ChatSessionRequest *chatSessionRequest)
 	{
-		TextChatSessionPtr chatSession = chatSessionRequest->Accept();
+		ChatSessionPtr chatSession = chatSessionRequest->Accept();
 		
 		if (chatSession.get() != NULL)
 		{
@@ -292,7 +292,7 @@ namespace CommunicationUI
 			{
 				Conversation *conversation = new Conversation(tabWidgetCoversations_, chatSession, chatSessionRequest->GetOriginatorContact());
 				conversation->showMessageHistory(chatSession->GetMessageHistory());
-				tabWidgetCoversations_->addTab(conversation, QString(chatSessionRequest->GetOriginatorContact()->GetRealName().c_str()));		
+				tabWidgetCoversations_->addTab(conversation, QString(chatSessionRequest->GetOriginatorContact()->GetName().c_str()));		
 			}
 			else
 			{
@@ -388,7 +388,7 @@ namespace CommunicationUI
 	// CONVERSATION CLASS
 	/////////////////////////////////////////////////////////////////////
 
-	Conversation::Conversation(QWidget *parent, TextChatSessionPtr chatSession, Contact *contact)
+	Conversation::Conversation(QWidget *parent, ChatSessionPtr chatSession, Contact *contact)
 		: QWidget(parent), chatSession_(chatSession), contact_(contact)
 	{
 		this->setLayout(new QVBoxLayout());
@@ -415,7 +415,7 @@ namespace CommunicationUI
 		textEditChat_ = findChild<QPlainTextEdit *>("textEdit_Chat");
 
 		QString startMessage("Started chat session with ");
-		startMessage.append(contact_->GetRealName().c_str());
+		startMessage.append(contact_->GetName().c_str());
 		startMessage.append("...");
 		appendLineToConversation(startMessage);
 	}
@@ -438,16 +438,16 @@ namespace CommunicationUI
 		appendHTMLToConversation(html);
 	}
 
-	void Conversation::showMessageHistory(MessageVector messageHistory) 
+	void Conversation::showMessageHistory(ChatMessageVector messageHistory) 
 	{
-		MessageVector::const_iterator itrHistory;
+		ChatMessageVector::const_iterator itrHistory;
 		for ( itrHistory = messageHistory.begin(); itrHistory!=messageHistory.end(); itrHistory++ )
 		{
-			Message *msg = (*itrHistory);
+			ChatMessage *msg = (*itrHistory);
 			QString html("<span style='color:gray;'>[");
 			html.append(msg->GetTimeStamp().toString());
 			html.append("]</span> <span style='color:red;'>");
-			html.append(msg->GetAuthor()->GetRealName().c_str());
+			html.append(msg->GetAuthor()->GetName().c_str());
 			html.append("</span><span style='color:black;'>: ");
 			html.append(msg->GetText().c_str());
 			html.append("</span>");
@@ -464,7 +464,6 @@ namespace CommunicationUI
 	void Conversation::appendLineToConversation(QString line)
 	{
 		textEditChat_->appendPlainText(line);
-		
 	}
 
 	void Conversation::appendHTMLToConversation(QString html)
@@ -472,12 +471,12 @@ namespace CommunicationUI
 		textEditChat_->appendHtml(html);
 	}
 
-	void Conversation::onMessageReceived(Message &message)
+	void Conversation::onMessageReceived(ChatMessage &message)
 	{
 		QString html("<span style='color:gray;'>[");
 		html.append(generateTimeStamp());
 		html.append("]</span> <span style='color:red;'>");
-		html.append(contact_->GetRealName().c_str());
+		html.append(contact_->GetName().c_str());
 		html.append("</span><span style='color:black;'>: ");
 		html.append(message.GetText().c_str());
 		html.append("</span>");
@@ -487,7 +486,7 @@ namespace CommunicationUI
 	void Conversation::contactStateChanged()
 	{
 		QString html("<span style='color:gray;'>");
-		html.append(contact_->GetRealName().c_str());
+		html.append(contact_->GetName().c_str());
 		html.append(" changed status to ");
 		html.append(contact_->GetPresenceStatus().c_str());
 		html.append("</span>");

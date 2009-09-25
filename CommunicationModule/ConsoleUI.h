@@ -67,7 +67,7 @@ namespace CommunicationUI
 		Console::CommandResult OnCommandRejectFriendRequest(const Core::StringVector &params);
 
 		//! Accept all received text chat sessions on queue
-		Console::CommandResult OnCommandAcceptTextChatSession(const Core::StringVector &params);
+		Console::CommandResult OnCommandAcceptChatSession(const Core::StringVector &params);
 
 		//! Close default session
 		Console::CommandResult OnCommandClose(const Core::StringVector &params);
@@ -79,7 +79,7 @@ namespace CommunicationUI
 		TpQt4Communication::Connection* default_connection_;
 
 		//! There can be multiple chat sessions open but this one is used
-		TpQt4Communication::TextChatSession* default_chat_session_;
+		TpQt4Communication::ChatSession* default_chat_session_;
 	};
 
 } //end if namespace: CommunicationUI

@@ -34,4 +34,4 @@ namespace TpQt4Communication
 
 } // end of namaspace: TpQt4Communication
 
-#endif // incl_Comm_TextChatSession_h
+#endif // incl_Comm_ChatSession_h

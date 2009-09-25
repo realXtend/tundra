@@ -27,6 +27,7 @@ namespace TpQt4Communication
 	public:
 		User(Tp::ConnectionPtr tp_connection);
 		std::string GetUserID();
+		std::string GetName();
 		std::string GetProtocol();
 		void SetPresenceStatus(std::string state);
 		void SetPresenceMessage(std::string message);
@@ -39,6 +40,7 @@ namespace TpQt4Communication
 		void AddContacts(ContactVector &contacts);
 
 		std::string user_id_;
+		std::string name_;
 		std::string protocol_;
 		std::string presence_status_;
 		std::string presence_message_;

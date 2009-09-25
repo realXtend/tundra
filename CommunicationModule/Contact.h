@@ -19,8 +19,8 @@ namespace TpQt4Communication
 		Q_OBJECT
 
 		friend class Connection;
-		friend class TextChatSessionRequest;
-		friend class TextChatSession;
+		friend class ChatSessionRequest;
+		friend class ChatSession;
 
 		MODULE_LOGGING_FUNCTIONS
 		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
@@ -30,7 +30,7 @@ namespace TpQt4Communication
 		void ConnectSignals();
 	public:
 		Address GetAddress();
-		std::string GetRealName();
+		std::string GetName();
 		std::string GetPresenceStatus();
 		std::string GetPresenceMessage();
 

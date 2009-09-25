@@ -1,5 +1,5 @@
-#ifndef incl_Comm_TextChatSessionRequest_h
-#define incl_Comm_TextChatSessionRequest_h
+#ifndef incl_Comm_ChatSessionRequest_h
+#define incl_Comm_ChatSessionRequest_h
 
 #include "StableHeaders.h"
 #include "Foundation.h"
@@ -11,17 +11,16 @@
 #include <TelepathyQt4/PendingOperation>
 
 #include "Communication.h"
-//#include "Connection.h"
-#include "TextChatSession.h"
+#include "ChatSession.h"
 #include "Contact.h"
 
 namespace TpQt4Communication
 {
 	/**
-	 * Holds received TextChannel until user have made decision to accept or reject the request.
-	 *
+	 * Holds received telepathy TextChannel until user have made decision to accept or reject the request.
+	 * 
 	 */
-	class TextChatSessionRequest : QObject
+	class ChatSessionRequest : QObject
 	{
 		Q_OBJECT
 		friend class Connection;
@@ -30,12 +29,12 @@ namespace TpQt4Communication
 		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 
 	protected:
-//		TextChatSessionRequest(TextChatSession* session );
-		TextChatSessionRequest(Tp::TextChannelPtr tp_text_channel);
+//		ChatSessionRequest(ChatSession* session );
+		ChatSessionRequest(Tp::TextChannelPtr tp_text_channel);
 	public:
 
-		//! Create a new TextChatSession object and return it
-		TextChatSessionPtr Accept();
+		//! Create a new ChatSession object and return it
+		ChatSessionPtr Accept();
 
 		//! Terminates the session request
 		void Reject();
@@ -48,7 +47,7 @@ namespace TpQt4Communication
 		std::string GetMessage();
 
 	private:
-		TextChatSession* session_; // NECESSARY ?
+		ChatSession* session_;
 
 		//! 
 		std::string message_;
@@ -63,20 +62,20 @@ namespace TpQt4Communication
 	//slots:
 	private slots:
 		void OnTextChannelClosed(Tp::PendingOperation* op);
-		void OnTextChatSessionReady();
+		void OnChatSessionReady();
 
 	signals:
 		//! Request was canceled by it's originator
 		void Canceled();
 
 		//! Fired when actual signaling in under a hood is ready
-		void Ready(TextChatSessionRequest*);
+		void Ready(ChatSessionRequest*);
 
 	};
-	typedef boost::weak_ptr<TextChatSessionRequest> TextChatSessionRequestWeakPtr;
-	typedef std::vector<TextChatSessionRequest*> TextChatSessionRequestVector;
+	typedef boost::weak_ptr<ChatSessionRequest> ChatSessionRequestWeakPtr;
+	typedef std::vector<ChatSessionRequest*> ChatSessionRequestVector;
 
 
 } // end of namespace: TpQt4Communication
 
-#endif // incl_Comm_TextChatSessionRequest_h
+#endif // incl_Comm_ChatSessionRequest_h
