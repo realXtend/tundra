@@ -89,20 +89,24 @@ namespace CommunicationUI
 			chatWidget_->layout()->setMargin(9);
 			uiFile.close();
 
-			// Get widgets
-			tabWidgetCoversations_ = findChild<QTabWidget *>("tabWidget_Conversations");
+			// Insert custom tab widget
+			tabWidgetCoversations_ = new ConversationsContainer(this);
 			tabWidgetCoversations_->clear();
+			QHBoxLayout *friendsAndTabWidget = findChild<QHBoxLayout *>("horizontalLayout_FriendsAndTabWidget");
+			friendsAndTabWidget->insertWidget(1, tabWidgetCoversations_); 
+			friendsAndTabWidget->setStretch(1,2);
+			
+			// Get widgets
 			listWidgetFriends_ = findChild<QListWidget *>("listWidget_Friends");
+			listWidgetFriends_->setIconSize(QSize(10,10));
 			labelUsername_ = findChild<QLabel *>("label_UserName");
 			lineEditStatus_ = findChild<QLineEdit *>("lineEdit_Status");
 			comboBoxStatus_ = findChild<QComboBox *>("comboBox_Status");
 			comboBoxStatus_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+			comboBoxStatus_->setIconSize(QSize(10,10));
 			connectionStatus_ = findChild<QLabel *>("label_ConnectionStatus");
 			connectionStatus_->setText("Connecting to server...");
 			setAllEnabled(false);
-
-			// Connect signals
-			QObject::connect(tabWidgetCoversations_, SIGNAL( tabCloseRequested(int) ), this, SLOT( closeTab(int) ));
 
 			// Add widget to layout
 			this->layout()->addWidget(chatWidget_);
@@ -160,11 +164,13 @@ namespace CommunicationUI
 		// Get available state options
 		PresenceStatusOptions options = im_connection_->GetAvailablePresenceStatusOptions();
 		PresenceStatusOptions::const_iterator itrStatusOptions;
+		QString status;
 		comboBoxStatus_->clear();
 
 		for( itrStatusOptions=options.begin(); itrStatusOptions!=options.end(); itrStatusOptions++ )
 		{
-			comboBoxStatus_->addItem( QString((*itrStatusOptions).c_str()) );
+			status = QString((*itrStatusOptions).c_str());
+			comboBoxStatus_->addItem(getStatusIcon(status), status);
 		}
 
 		// Connect signals
@@ -182,17 +188,21 @@ namespace CommunicationUI
 		comboBoxStatus_->setEnabled(enabled);
 	}
 
-	bool UIContainer::doesTabExist(Contact *contact)
+	QIcon UIContainer::getStatusIcon(QString status)
 	{
-		for (int i=0; i<tabWidgetCoversations_->count(); i++)
-		{
-			if ( QString::compare(tabWidgetCoversations_->tabText(i), QString(contact->GetName().c_str())) == 0 )
-			{
-				tabWidgetCoversations_->setCurrentIndex(i);
-				return true;
-			}
-		}
-		return false;
+		if ( QString::compare(status, QString("available"), Qt::CaseInsensitive) == 0 )
+			return QIcon(":/images/iconGreen.png");
+		else if ( QString::compare(status, QString("offline"), Qt::CaseInsensitive) == 0 )
+			return QIcon(":/images/iconRed.png");
+		else if ( QString::compare(status, QString("away"), Qt::CaseInsensitive) == 0 ||
+				  QString::compare(status, QString("hidden"), Qt::CaseInsensitive) == 0 )
+			return QIcon(":/images/iconOrange.png");
+		else if ( QString::compare(status, QString("chat"), Qt::CaseInsensitive) == 0 || 
+				  QString::compare(status, QString("dnd"), Qt::CaseInsensitive) == 0 || 
+				  QString::compare(status, QString("xa"), Qt::CaseInsensitive) == 0 )
+			return QIcon(":/images/iconBlue.png");
+		else
+			return QIcon();
 	}
 
 	/////////////
@@ -281,11 +291,11 @@ namespace CommunicationUI
 	void UIContainer::startNewChat(QListWidgetItem *clickedItem)
 	{
 		ContactListItem *listItem = (ContactListItem *)clickedItem;
-		if ( doesTabExist(listItem->contact_) == false )
+		if ( tabWidgetCoversations_->doesTabExist(listItem->contact_) == false )
 		{
 			ChatSessionPtr chatSession = im_connection_->CreateChatSession(listItem->contact_);
 			Conversation *conversation = new Conversation(tabWidgetCoversations_, chatSession, listItem->contact_, QString(im_connection_->GetUser()->GetName().c_str()));
-			tabWidgetCoversations_->addTab(conversation, QString(listItem->contact_->GetName().c_str()));
+			tabWidgetCoversations_->addTab(conversation, clickedItem->icon(), QString(listItem->contact_->GetName().c_str()));
 		}
 	}
 
@@ -297,11 +307,11 @@ namespace CommunicationUI
 		{
 			if (chatSessionRequest->GetOriginatorContact() != NULL )
 			{
-				if ( doesTabExist(chatSessionRequest->GetOriginatorContact()) == false )
+				if ( tabWidgetCoversations_->doesTabExist(chatSessionRequest->GetOriginatorContact()) == false )
 				{
 					Conversation *conversation = new Conversation(tabWidgetCoversations_, chatSession, chatSessionRequest->GetOriginatorContact(), QString(im_connection_->GetUser()->GetName().c_str()));
 					conversation->showMessageHistory(chatSession->GetMessageHistory());
-					tabWidgetCoversations_->addTab(conversation, QString(chatSessionRequest->GetOriginatorContact()->GetName().c_str()));		
+					tabWidgetCoversations_->addTab(conversation, getStatusIcon(QString(chatSessionRequest->GetOriginatorContact()->GetPresenceStatus().c_str())), QString(chatSessionRequest->GetOriginatorContact()->GetName().c_str()));		
 				}
 			}
 			else
@@ -310,12 +320,6 @@ namespace CommunicationUI
 			}
 		}
 		LogInfo("newChatSessionRequest (handled successfully)");
-	}
-
-	void UIContainer::closeTab(int index)
-	{
-		delete tabWidgetCoversations_->widget(index);
-		tabWidgetCoversations_->removeTab(index);
 	}
 
 	/////////////////////////////////////////////////////////////////////
@@ -487,14 +491,79 @@ namespace CommunicationUI
 
 	void Conversation::contactStateChanged()
 	{
-		QString html("<span style='color:#828282;'>");
+		QString status(contact_->GetPresenceStatus().c_str());
+		QString html("<span style='color:#828282;'>[");
+		html.append(generateTimeStamp());
+		html.append("]</span> <span style='color:#828282;'>");
 		html.append(contact_->GetName().c_str());
 		html.append(" changed status to ");
-		html.append(contact_->GetPresenceStatus().c_str());
+		html.append(status);
 		html.append("</span>");
 		appendHTMLToConversation(html);
+
+		QIcon icon;
+		if ( QString::compare(status, QString("available"), Qt::CaseInsensitive) == 0 )
+			icon = QIcon(":/images/iconGreen.png");
+		else if ( QString::compare(status, QString("offline"), Qt::CaseInsensitive) == 0 )
+			icon = QIcon(":/images/iconRed.png");
+		else if ( QString::compare(status, QString("away"), Qt::CaseInsensitive) == 0 ||
+				  QString::compare(status, QString("hidden"), Qt::CaseInsensitive) == 0 )
+			icon = QIcon(":/images/iconOrange.png");
+		else if ( QString::compare(status, QString("chat"), Qt::CaseInsensitive) == 0 || 
+				  QString::compare(status, QString("dnd"), Qt::CaseInsensitive) == 0 || 
+				  QString::compare(status, QString("xa"), Qt::CaseInsensitive) == 0 )
+			icon = QIcon(":/images/iconBlue.png");
+		else
+			icon = QIcon();
+
+		ConversationsContainer *tabWidget = (ConversationsContainer *)this->parent();
+		tabWidget->setTabIcon(tabWidget->indexOf(this), icon);
 	}
 
+
+	/////////////////////////////////////////////////////////////////////
+	// CUSTOM QTabWidget CLASS
+	/////////////////////////////////////////////////////////////////////
+
+	ConversationsContainer::ConversationsContainer(QWidget *parent)
+		: QTabWidget(parent)
+	{
+		// Init widget to wanted state (not drawing QTabWidget or QTabBar background)
+		setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+		setStyleSheet(QString("background-color: rgba(255, 255, 255, 0);"));
+		setDocumentMode(true);
+		setMovable(true);
+		setTabsClosable(true);
+		tabBar()->setDocumentMode(true);
+		tabBar()->setDrawBase(false);
+		tabBar()->setIconSize(QSize(10,10));
+		// Connect signal
+		QObject::connect(this, SIGNAL( tabCloseRequested(int) ), this, SLOT( closeTab(int) ));
+	}
+
+	ConversationsContainer::~ConversationsContainer()
+	{
+
+	}
+
+	void ConversationsContainer::closeTab(int index)
+	{
+		delete this->widget(index);
+		this->removeTab(index);
+	}
+
+	bool ConversationsContainer::doesTabExist(Contact *contact)
+	{
+		for (int i=0; i<this->count(); i++)
+		{
+			if ( QString::compare(this->tabText(i), QString(contact->GetName().c_str())) == 0 )
+			{
+				this->setCurrentIndex(i);
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/////////////////////////////////////////////////////////////////////
 	// CUSTOM QListWidgetItem CLASS
@@ -504,10 +573,8 @@ namespace CommunicationUI
 		: QListWidgetItem(0, QListWidgetItem::UserType), name_(name), status_(status), statusmessage_(statusmessage), contact_(contact)
 	{
 		if (QString::compare(statusmessage, QString("")) != 0 )
-		{
-			status_.append(" - " + statusmessage);	
-		}
-		this->setText(name_ + " (" + status_ + ")");
+			status_.append(" - " + statusmessage);
+		updateItem();
 	}
 
 	ContactListItem::~ContactListItem()
@@ -517,7 +584,21 @@ namespace CommunicationUI
 
 	void ContactListItem::updateItem()
 	{
+		// Update status text
 		this->setText(name_ + " (" + status_ + ")");
+		// Update status icon
+		QString status(this->contact_->GetPresenceStatus().c_str());
+		if ( QString::compare(status, QString("available"), Qt::CaseInsensitive) == 0 )
+			setIcon(QIcon(":/images/iconGreen.png"));
+		else if ( QString::compare(status, QString("offline"), Qt::CaseInsensitive) == 0 )
+			setIcon(QIcon(":/images/iconRed.png"));
+		else if ( QString::compare(status, QString("away"), Qt::CaseInsensitive) == 0 ||
+				  QString::compare(status, QString("hidden"), Qt::CaseInsensitive) == 0 )
+			setIcon(QIcon(":/images/iconOrange.png"));
+		else if ( QString::compare(status, QString("chat"), Qt::CaseInsensitive) == 0 || 
+				  QString::compare(status, QString("dnd"), Qt::CaseInsensitive) == 0 || 
+				  QString::compare(status, QString("xa"), Qt::CaseInsensitive) == 0 )
+			setIcon(QIcon(":/images/iconBlue.png"));
 	}
 
 	void ContactListItem::statusChanged()
