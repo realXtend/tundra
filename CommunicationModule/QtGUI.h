@@ -136,6 +136,11 @@ namespace CommunicationUI
 	Q_OBJECT
 
 	friend class UIContainer;
+	friend class ConversationsContainer;
+
+	MODULE_LOGGING_FUNCTIONS
+	static const std::string NameStatic() { return "CommunicationModule::CONVERSATION"; } // for logging functionality
+
 
 	public:
 		Conversation(QWidget *parent, ChatSessionPtr chatSession, Contact *contact, QString name);
@@ -173,12 +178,15 @@ namespace CommunicationUI
 	Q_OBJECT
 
 	friend class UIContainer;
+	friend class Conversation;
+	friend class ContactListItem;
 
 	public:
 		ConversationsContainer(QWidget *parent);
 		~ConversationsContainer(void);
+		bool changeTabIcon(Contact *contact, QIcon icon);
 		bool doesTabExist(Contact *contact);
-
+		
 	private slots:
 		void closeTab(int index);
 
@@ -192,6 +200,10 @@ namespace CommunicationUI
 	Q_OBJECT
 
 	friend class UIContainer;
+	friend class ConversationsContainer;
+
+	MODULE_LOGGING_FUNCTIONS
+	static const std::string NameStatic() { return "CommunicationModule::ContactListItem"; } // for logging functionality
 
 	public:
 		ContactListItem(QString &name, QString &status, QString &statusmessage, Contact *contact);
