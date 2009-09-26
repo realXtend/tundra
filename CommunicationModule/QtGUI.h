@@ -49,7 +49,8 @@ namespace CommunicationUI
 	
 	Q_OBJECT
 
-	friend class Conversation;
+	friend class ConversationsContainer;
+
 	MODULE_LOGGING_FUNCTIONS
 	static const std::string NameStatic() { return "CommunicationModule::UIController"; } // for logging functionality
 
@@ -67,25 +68,23 @@ namespace CommunicationUI
 		void statusMessageChanged();
 		void startNewChat(QListWidgetItem *clickedItem);
 		void newChatSessionRequest(ChatSessionRequest *);
-		void closeTab(int index);
 
 	private:
 		void loadUserInterface(bool connected);
 		void loadConnectedUserData(User *userData);
 		void setAllEnabled(bool enabled);
-		bool doesTabExist(Contact *contact);
+		QIcon getStatusIcon(QString status);
 
 		QString currentMessage;
 		QWidget *loginWidget_;
 		QWidget *chatWidget_;
-		QTabWidget *tabWidgetCoversations_;
+		ConversationsContainer *tabWidgetCoversations_;
 		QListWidget *listWidgetFriends_;
 		QLabel *labelUsername_;
 		QLineEdit *lineEditStatus_;
 		QComboBox *comboBoxStatus_;
 		QLabel *connectionStatus_;
 
-		
 		Credentials credentials;
 		CommunicationManager* commManager_;
 		Connection* im_connection_;
@@ -138,9 +137,6 @@ namespace CommunicationUI
 
 	friend class UIContainer;
 
-	MODULE_LOGGING_FUNCTIONS
-		static const std::string NameStatic() { return "CommunicationModule::Conversation"; } // for logging functionality
-
 	public:
 		Conversation(QWidget *parent, ChatSessionPtr chatSession, Contact *contact, QString name);
 		~Conversation(void);
@@ -166,6 +162,25 @@ namespace CommunicationUI
 		void onMessageSent();
 		void onMessageReceived(ChatMessage &message);
 		void contactStateChanged();
+
+	};
+
+	// CUSTOM QTabWidget CLASS
+
+	class ConversationsContainer : public QTabWidget
+	{
+
+	Q_OBJECT
+
+	friend class UIContainer;
+
+	public:
+		ConversationsContainer(QWidget *parent);
+		~ConversationsContainer(void);
+		bool doesTabExist(Contact *contact);
+
+	private slots:
+		void closeTab(int index);
 
 	};
 

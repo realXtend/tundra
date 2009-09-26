@@ -2,12 +2,25 @@
 <ui version="4.0">
  <class>Login</class>
  <widget class="QWidget" name="Login">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>418</width>
+    <height>160</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>realXtend Naali communications login</string>
   </property>
   <property name="styleSheet">
    <string>QWidget {
 	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.676, y2:1, stop:0 rgba(240, 240, 240, 255), stop:1 rgba(188, 212, 255, 255));
+}
+
+QLineEdit {
+	padding: 2px 5px 2px 5px;
+	background-color: rgb(255, 255, 255);
 }
 
 QLabel {
@@ -35,6 +48,10 @@ QComboBox::drop-down:!editable {
 QPushButton::pressed{
 	color: rgb(74, 87, 107);
 	background-color: rgba(255, 255, 255, 255);
+}
+
+QMenu {
+	background-color: none;
 }
 </string>
   </property>
@@ -107,9 +124,7 @@ QPushButton::pressed{
        <item>
         <widget class="QLineEdit" name="lineEdit_Server">
          <property name="styleSheet">
-          <string>padding: 2px 5px 2px 5px;
-background-color: rgb(255, 255, 255);
-</string>
+          <string/>
          </property>
          <property name="text">
           <string>jabber.org</string>
@@ -130,11 +145,6 @@ background-color: rgb(255, 255, 255);
            <width>80</width>
            <height>16777215</height>
           </size>
-         </property>
-         <property name="styleSheet">
-          <string>padding: 2px 5px 2px 5px;
-background-color: rgb(255, 255, 255);
-</string>
          </property>
          <property name="inputMask">
           <string>99999; </string>
@@ -169,11 +179,6 @@ background-color: rgb(255, 255, 255);
        </item>
        <item>
         <widget class="QLineEdit" name="lineEdit_Username">
-         <property name="styleSheet">
-          <string>padding: 2px 5px 2px 5px;
-background-color: rgb(255, 255, 255);
-</string>
-         </property>
          <property name="text">
           <string>realxtend</string>
          </property>
@@ -201,11 +206,6 @@ background-color: rgb(255, 255, 255);
        </item>
        <item>
         <widget class="QLineEdit" name="lineEdit_Password">
-         <property name="styleSheet">
-          <string>padding: 2px 5px 2px 5px;
-background-color: rgb(255, 255, 255);
-</string>
-         </property>
          <property name="text">
           <string>jabber666</string>
          </property>

@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="images" >
+    <file alias="iconPen.png" >../../bin/data/ui/images/communications_iconPen.png</file>
+    <file alias="labelContacts.png" >../../bin/data/ui/images/communications_labelContacts.png</file>
+    <file alias="labelChat.png" >../../bin/data/ui/images/communications_labelChat.png</file>
+    <file alias="iconGreen.png" >../../bin/data/ui/images/communications_iconGreen.png</file>
+    <file alias="iconOrange.png" >../../bin/data/ui/images/communications_iconOrange.png</file>
+    <file alias="iconRed.png" >../../bin/data/ui/images/communications_iconRed.png</file>
+	<file alias="iconBlue.png" >../../bin/data/ui/images/communications_iconBlue.png</file>
+  </qresource>
+</RCC>
