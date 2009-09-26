@@ -128,6 +128,25 @@ namespace CommunicationUI
 
 	};
 
+	// CUSTOM QTabWidget CLASS
+
+	class ConversationsContainer : public QTabWidget
+	{
+
+	Q_OBJECT
+
+	friend class UIContainer;
+
+	public:
+		ConversationsContainer(QWidget *parent);
+		~ConversationsContainer(void);
+		bool doesTabExist(Contact *contact);
+		
+	private slots:
+		void closeTab(int index);
+
+	};
+
 	// CONVERSATION CLASS
 
 	class Conversation : public QWidget
@@ -138,12 +157,8 @@ namespace CommunicationUI
 	friend class UIContainer;
 	friend class ConversationsContainer;
 
-	MODULE_LOGGING_FUNCTIONS
-	static const std::string NameStatic() { return "CommunicationModule::CONVERSATION"; } // for logging functionality
-
-
 	public:
-		Conversation(QWidget *parent, ChatSessionPtr chatSession, Contact *contact, QString name);
+		Conversation(ConversationsContainer *parent, ChatSessionPtr chatSession, Contact *contact, QString name);
 		~Conversation(void);
 
 		void showMessageHistory(ChatMessageVector messageHistory);
@@ -160,6 +175,7 @@ namespace CommunicationUI
 		QLineEdit *lineEditMessage_;
 		QString myName_;
 
+		ConversationsContainer *myParent_;
 		ChatSessionPtr chatSession_;
 		Contact *contact_;
 
@@ -167,28 +183,6 @@ namespace CommunicationUI
 		void onMessageSent();
 		void onMessageReceived(ChatMessage &message);
 		void contactStateChanged();
-
-	};
-
-	// CUSTOM QTabWidget CLASS
-
-	class ConversationsContainer : public QTabWidget
-	{
-
-	Q_OBJECT
-
-	friend class UIContainer;
-	friend class Conversation;
-	friend class ContactListItem;
-
-	public:
-		ConversationsContainer(QWidget *parent);
-		~ConversationsContainer(void);
-		bool changeTabIcon(Contact *contact, QIcon icon);
-		bool doesTabExist(Contact *contact);
-		
-	private slots:
-		void closeTab(int index);
 
 	};
 
@@ -200,10 +194,6 @@ namespace CommunicationUI
 	Q_OBJECT
 
 	friend class UIContainer;
-	friend class ConversationsContainer;
-
-	MODULE_LOGGING_FUNCTIONS
-	static const std::string NameStatic() { return "CommunicationModule::ContactListItem"; } // for logging functionality
 
 	public:
 		ContactListItem(QString &name, QString &status, QString &statusmessage, Contact *contact);
