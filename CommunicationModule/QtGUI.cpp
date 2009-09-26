@@ -499,6 +499,11 @@ namespace CommunicationUI
 		html.append(contact_->GetName().c_str());
 		html.append(" changed status to ");
 		html.append(status);
+		if ( QString::compare(QString(contact_->GetPresenceMessage().c_str()), QString("")) != 0 )
+		{
+			html.append(": ");
+			html.append(QString(contact_->GetPresenceMessage().c_str()));
+		}
 		html.append("</span>");
 		appendHTMLToConversation(html);
 
