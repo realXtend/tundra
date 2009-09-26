@@ -387,8 +387,8 @@ namespace CommunicationUI
 	// CONVERSATION CLASS
 	/////////////////////////////////////////////////////////////////////
 
-	Conversation::Conversation(QWidget *parent, ChatSessionPtr chatSession, Contact *contact, QString name)
-		: QWidget(parent), chatSession_(chatSession), contact_(contact), myName_(name)
+	Conversation::Conversation(ConversationsContainer *parent, ChatSessionPtr chatSession, Contact *contact, QString name)
+		: QWidget(parent), myParent_(parent), chatSession_(chatSession), contact_(contact), myName_(name)
 	{
 		this->setLayout(new QVBoxLayout());
 		this->layout()->setMargin(0);
@@ -491,6 +491,7 @@ namespace CommunicationUI
 
 	void Conversation::contactStateChanged()
 	{
+		// Update status as formatted text to chatwidget
 		QString status(contact_->GetPresenceStatus().c_str());
 		QString html("<span style='color:#828282;'>[");
 		html.append(generateTimeStamp());
@@ -501,6 +502,7 @@ namespace CommunicationUI
 		html.append("</span>");
 		appendHTMLToConversation(html);
 
+		// Get icon for the state
 		QIcon icon;
 		if ( QString::compare(status, QString("available"), Qt::CaseInsensitive) == 0 )
 			icon = QIcon(":/images/iconGreen.png");
@@ -516,17 +518,8 @@ namespace CommunicationUI
 		else
 			icon = QIcon();
 
-		// NEW WAY
-		LogInfo("Calling changeTabIcon");
-		ConversationsContainer *tabWidget = (ConversationsContainer *)this->parent();
-		if ( tabWidget->changeTabIcon(contact_, icon) ) // <- check this function whats not working
-			LogInfo("Returned true");
-		else
-			LogInfo("Returned false");
-
-		// OLD WAY, NOT WORKING
-		//LogInfo("Conversation::contactStateChanged() -> updating icon to indexof(this)");
-		//tabWidget->setTabIcon(tabWidget->indexOf(this), icon);
+		// Set the icon to parent QTabbar with this objects index
+		myParent_->setTabIcon(myParent_->indexOf(this), icon);
 	}
 
 
@@ -562,22 +555,6 @@ namespace CommunicationUI
 		delete child;
 	}
 
-	bool ConversationsContainer::changeTabIcon(Contact *contact, QIcon icon)
-	{
-		// Even the top level for loop fails for no apparent reason, works fine on below function
-		//for (int i=0; i<this->count(); i++)
-		//{
-		//  // This seems to fail also even with only the compare in play
-		//	if ( QString::compare(this->tabText(i), QString(contact->GetName().c_str())) == 0 )
-		//	{
-		//		// Comment this out when the top is working, damn
-		//		//this->setTabIcon(i, icon);
-		//		return true;
-		//	}
-		//}
-		return false;
-	}
-
 	bool ConversationsContainer::doesTabExist(Contact *contact)
 	{
 		for (int i=0; i<this->count(); i++)
@@ -610,9 +587,6 @@ namespace CommunicationUI
 
 	void ContactListItem::updateItem()
 	{
-		LogInfo("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-		LogInfo("ContactListItem::updateItem() -> updating icon");
-
 		// Update status text
 		this->setText(name_ + " (" + status_ + ")");
 		// Update status icon
