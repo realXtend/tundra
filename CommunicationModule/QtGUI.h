@@ -68,6 +68,7 @@ namespace CommunicationUI
 		void statusMessageChanged();
 		void startNewChat(QListWidgetItem *clickedItem);
 		void newChatSessionRequest(ChatSessionRequest *);
+		void newFriendRequest(FriendRequest *request);
 
 	private:
 		void loadUserInterface(bool connected);

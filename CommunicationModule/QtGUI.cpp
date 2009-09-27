@@ -262,6 +262,7 @@ namespace CommunicationUI
 		{
 			this->loadConnectedUserData(im_connection_->GetUser());
 			QObject::connect((QObject *)im_connection_, SIGNAL( ReceivedChatSessionRequest(ChatSessionRequest *) ), this, SLOT( newChatSessionRequest(ChatSessionRequest *) ));
+			QObject::connect((QObject *)im_connection_, SIGNAL( ReceivedFriendRequest(FriendRequest *) ), this, SLOT( newFriendRequest(FriendRequest *) ));
 		}
 		else
 		{
@@ -320,6 +321,14 @@ namespace CommunicationUI
 			}
 		}
 		LogInfo("newChatSessionRequest (handled successfully)");
+	}
+
+	void UIContainer::newFriendRequest(FriendRequest *request)
+	{
+		// HACK: automatically accpedted all incoming friend requests
+		// /todo: Show dialog to user 
+		Address originator = request->GetAddressFrom();
+		request->Accecpt();
 	}
 
 	/////////////////////////////////////////////////////////////////////
