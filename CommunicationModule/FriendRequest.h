@@ -43,7 +43,7 @@ namespace TpQt4Communication
 
 		//! Accept friend request
 		//! Friend will be added to friend list
-		void Accecpt();
+		void Accept();
 
 		//! Reject friend request
 		void Reject();

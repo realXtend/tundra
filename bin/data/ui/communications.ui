@@ -30,9 +30,9 @@ QComboBox {
 
 QComboBox::drop-down:!editable { 
 	subcontrol-position: center right; 
-	width: 12px; 
-	height: 12px;
-	padding-right: 5px;
+	width: 0px; 
+	height: 0px;
+	padding-right: 0px;
 }
 
 QLineEdit {
@@ -102,7 +102,7 @@ background-color: rgba(255, 255, 255, 0);</string>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
-             <width>40</width>
+             <width>10</width>
              <height>5</height>
             </size>
            </property>

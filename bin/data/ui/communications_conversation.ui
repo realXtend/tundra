@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>512</width>
-    <height>256</height>
+    <width>506</width>
+    <height>280</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -55,6 +55,11 @@ QLineEdit {
 }
 
 QMenu {
+	background-color: none;
+}
+
+QScrollBar {
+	margin-bottom: 25px;
 	background-color: none;
 }</string>
   </property>
