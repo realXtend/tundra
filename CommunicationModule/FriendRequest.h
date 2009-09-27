@@ -30,12 +30,12 @@ namespace TpQt4Communication
 	protected:
 		FriendRequest(Tp::ContactPtr contact);
 	public:
-		enum State { STATE_PENDING, STATE_ACCEPTED, STATE_REJECTED };
+		enum State { STATE_PENDING, STATE_ACCEPTED, STATE_REJECTED, STATE_ERROR };
 
-		//!
+		//! Returns IM address of originator of friend request
 		Address GetAddressFrom();
 
-		//!
+		//! Returns IM address of target of friend request
 		Address GetAddressTo();
 
 		//!
@@ -52,6 +52,9 @@ namespace TpQt4Communication
 		Address from_;
 		Address to_;
 		Tp::ContactPtr tp_contact_;
+	protected slots:
+		void OnPresencePublicationAuthorized(Tp::PendingOperation* op);
+		void OnPresenceSubscriptionResult(Tp::PendingOperation* op);
 	};
 	typedef boost::weak_ptr<FriendRequest> FriendRequestWeakPtr;
 	typedef std::vector<FriendRequest*> FriendRequestVector;
