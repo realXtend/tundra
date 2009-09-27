@@ -27,11 +27,10 @@ namespace CommunicationUI
 			canvas_ = qt_module->CreateCanvas(UICanvas::External).lock();
 			UIContainer *UIContainer_ = new UIContainer(0);
 			canvas_->AddWidget(UIContainer_);
-			canvas_->show();
+			canvas_->show(); 
 			// Connect signal for resizing
 			QObject::connect(UIContainer_, SIGNAL( resized(QSize &) ), this, SLOT( setWindowSize(QSize &) ));
-			// Resize
-			setWindowSize(QSize(450, 157));
+			setWindowSize(QSize(450, 135));
 			LogInfo("Loading succesfull");
 		}
 	}
@@ -110,9 +109,9 @@ namespace CommunicationUI
 
 			// Add widget to layout
 			this->layout()->addWidget(chatWidget_);
-			this->setWindowTitle("realXtend Communications");
-			this->setMinimumSize(581, 262);
-			emit ( resized(QSize(581, 262)) );
+			this->setWindowTitle("realXtend Naali Communications");
+			this->setMinimumSize(600, 262);
+			emit ( resized(QSize(600, 262)) );
 		} 
 		else
 		{
@@ -136,8 +135,8 @@ namespace CommunicationUI
 			// Add widget to layout
 			this->layout()->addWidget(loginWidget_);
 			this->setWindowTitle("realXtend Naali Communications login");
-			this->setMinimumSize(450, 157);
-			emit ( resized(QSize(450, 157)) );
+			this->setMinimumSize(450, 135);
+			emit ( resized(QSize(450, 135)) );
 		}
 
 	}
@@ -325,10 +324,19 @@ namespace CommunicationUI
 
 	void UIContainer::newFriendRequest(FriendRequest *request)
 	{
-		// HACK: automatically accpedted all incoming friend requests
-		// /todo: Show dialog to user 
 		Address originator = request->GetAddressFrom();
-		request->Accecpt();
+		QString message("You recieved friend request from ");
+		message.append(originator.c_str());
+		message.append(", do you accept?");
+		if ( QMessageBox::question(this, "New Friend Request", message, QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes )
+		{
+			request->Accept();
+			// Need to get just now accepted friends name, status and statusmessage.
+			// More better: signal "usersContactsUpdated()" when user has been added to User::GetContacts(); then i have functionality to update list already
+			// Could give the new friend (Contact) as return value of Accept()?
+		}
+		else
+			request->Reject();
 	}
 
 	/////////////////////////////////////////////////////////////////////

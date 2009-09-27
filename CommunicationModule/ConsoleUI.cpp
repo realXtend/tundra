@@ -273,7 +273,7 @@ namespace CommunicationUI
 		FriendRequestVector requests = default_connection_->GetFriendRequests();
 		for (FriendRequestVector::iterator i = requests.begin(); i != requests.end(); ++i)
 		{
-			(*i)->Accecpt();
+			(*i)->Accept();
 		}
 
 		std::string result = "";

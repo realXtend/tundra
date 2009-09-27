@@ -11,7 +11,7 @@ namespace TpQt4Communication
 		tp_contact_ = contact;
 	}
 
-	void FriendRequest::Accecpt()
+	void FriendRequest::Accept()
 	{
 		LogInfo("Incoming friend request accepted"); 
 		QString message = "";
