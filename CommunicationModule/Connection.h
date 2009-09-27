@@ -48,7 +48,6 @@ namespace TpQt4Communication
 		Connection(const Credentials &credentials);
 		~Connection();
 		enum State{STATE_CONNECTING, STATE_OPEN,  STATE_CLOSED, STATE_ERROR};
-		void SendFriendRequest(const Address &a);
 		User* GetUser();
 //		std::string GetID();
 		std::string GetServer();
@@ -69,8 +68,8 @@ namespace TpQt4Communication
 		// void JoinChatRoom(ChatRoomAddress address);
 
 		//! Send a friend request to given address
-		//! optionam message is send if supported by used IM protocol
-		void SendFriendRequest(Address to, std::string message = "");
+		//! optional message is send if supported by used IM protocol
+		void SendFriendRequest(const Address &to, const std::string &message = "");
 
 		FriendRequestVector GetFriendRequests();
 		ChatSessionRequestVector GetChatSessionRequests();
@@ -89,18 +88,19 @@ namespace TpQt4Communication
 		ChatSessionVector text_chat_sessions_;
 		ChatSessionRequestVector received_text_chat_requests_;
 		std::string error_message_;
-
+//
 	public Q_SLOTS:
 		void OnConnectionCreated(Tp::PendingOperation *op);
 		void OnConnectionReady(Tp::PendingOperation *op);
 		void OnConnectionConnected(Tp::PendingOperation *);
 		void OnConnectionInvalidated(Tp::DBusProxy *proxy, const QString &errorName, const QString &errorMessage);
-		void OnContactRetrieved(Tp::PendingOperation *);
+		void OnContactRetrievedForFriendRequest(Tp::PendingOperation *);
 		void OnPresencePublicationRequested(const Tp::Contacts &);
 		void OnNewChannels(const Tp::ChannelDetailsList&);
 
 		//! Emits signal ReceivedFriendRequest
 		void OnIncomingChatSessionRequestReady(ChatSessionRequest* request);
+		void OnPresenceSubscriptionResult(Tp::PendingOperation* op);
 
 	signals:
 		void Connecting(QString &message);
@@ -109,6 +109,7 @@ namespace TpQt4Communication
 		void Closed();
 		void ReceivedChatSessionRequest(ChatSessionRequest* request);
 		void ReceivedFriendRequest(FriendRequest* request);
+		void FriendRequestRejected(const QString &to) const;
 	};
 	typedef boost::weak_ptr<Connection> ConnectionWeakPtr;
 	typedef std::vector<Connection*> ConnectionVector;

@@ -253,7 +253,6 @@ namespace TpQt4Communication
 			{
 				LogInfo("Streamed media channel");
 			}
-			
 		}
 	}
 
@@ -265,43 +264,67 @@ namespace TpQt4Communication
 
 	void Connection::OnPresencePublicationRequested(const Tp::Contacts &contacts)
 	{
-		LogInfo("OnPresencePublicationRequested");
-		// TODO: Create Friend request object ?
 		foreach (const Tp::ContactPtr &contact, contacts)
 		{
-			QString id = contact->id();
-			std::string message = "from: ";
-			message.append(id.toStdString());
-			LogInfo(message);
-			//! todo: Create FriendRequest object
+			QString message = "OnPresencePublicationRequested from ";
+			message.append( contact->id() );
+			LogInfo(message.toStdString());
+
+			ContactVector current_contacts = this->user_->GetContacts();
+			for (ContactVector::iterator i = current_contacts.begin(); i != current_contacts.end(); ++i)
+			{
+				if ( (*i)->GetAddress().compare( contact->id().toStdString() ) == 0)
+				{
+					// The contact is already in contact list
+				}
+			}
+
 			FriendRequest* request = new FriendRequest(Tp::ContactPtr(contact));
 			received_friend_requests_.push_back(request);
 			emit ReceivedFriendRequest(request);
 		}
 	}
-
-	// For checking status of sent friend request ???
-	void Connection::OnContactRetrieved(Tp::PendingOperation *op)
+	
+	void Connection::OnContactRetrievedForFriendRequest(Tp::PendingOperation *op)
 	{
-		LogInfo("OnContactRetrieved");
 		if (op->isError())
 		{
-			LogError("Failed to receive friendlist.");
+			QString message = "Failed to receive contact: ";
+			message.append(op->errorMessage());
+			LogError(message.toStdString());
 			return;
 		}
-		LogInfo("Friendlist received.");
-		Tp::PendingContacts *pcontacts = qobject_cast<Tp::PendingContacts *>(op);
-		QList<Tp::ContactPtr> contacts = pcontacts->contacts();
+		LogInfo("Contact received.");
+		Tp::PendingContacts *pending_contacts = qobject_cast<Tp::PendingContacts *>(op);
+		QList<Tp::ContactPtr> contacts = pending_contacts->contacts();
 		
-		for (int i = 0; i < contacts.size(); ++i)
+		assert( contacts.size() == 1); // We have request only one contact 
+		Tp::ContactPtr contact = contacts.first();
+		QString message = ""; // todo
+
+		// Do the presence subscription
+		// When we get the answer ?
+		Tp::PendingOperation* p = contact->requestPresenceSubscription(message);
+		connect(p, SIGNAL(finished(Tp::PendingOperation*)), SLOT(OnPresenceSubscriptionResult(Tp::PendingOperation*)));
+	}
+
+	void Connection::OnPresenceSubscriptionResult(Tp::PendingOperation* op)
+	{
+		if (op->isError())
 		{
-			Tp::ContactPtr c = contacts[i];
-			std::string id = c->id().toStdString();
-			
-			LogInfo("***");
-			LogInfo(id);
-			//Contact contact = new Contact(address, real_name);
+			QString message = "Canoot subscribe presence: ";
+			message.append(op->errorMessage());
+			LogInfo(message.toStdString());
+
+			// Presence subscription didn't success, we emit a signal about it
+			QString to = ""; // todo: get the right value
+			emit FriendRequestRejected(to);
 		}
+		LogInfo("Presence subscribed successfully.");
+		// Now it's our turn to publish our status
+		
+		// From where to get contact object ???
+		// todo: move this logic to Contact class..
 	}
 
 	void Connection::OnConnectionInvalidated(Tp::DBusProxy *proxy, const QString &errorName, const QString &errorMessage)
@@ -311,7 +334,6 @@ namespace TpQt4Communication
 		QString message = "Connection become invalitated.";
 		emit Error(message);
 	}
-
 	
 	ChatSessionRequestVector Connection::GetChatSessionRequests()
 	{
@@ -348,4 +370,9 @@ namespace TpQt4Communication
 		return options;
 	}
 
+	void Connection::SendFriendRequest(const Address &to, const std::string &message)
+	{
+		Tp::PendingContacts *pending_contacts = tp_connection_->contactManager()->contactsForIdentifiers(QStringList()<<QString(to.c_str()));
+		connect(pending_contacts, SIGNAL( finished(Tp::PendingOperation *) ), SLOT( OnContactRetrievedForFriendRequest(Tp::PendingOperation *) ));
+	}
 } // end of namespace: TpQt4Communication
