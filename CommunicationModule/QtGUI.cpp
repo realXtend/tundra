@@ -27,7 +27,7 @@ namespace CommunicationUI
 			canvas_ = qt_module->CreateCanvas(UICanvas::External).lock();
 			UIContainer *UIContainer_ = new UIContainer(0);
 			canvas_->AddWidget(UIContainer_);
-			canvas_->show(); 
+			canvas_->Show(); 
 			// Connect signal for resizing
 			QObject::connect(UIContainer_, SIGNAL( resized(QSize &) ), this, SLOT( setWindowSize(QSize &) ));
 			setWindowSize(QSize(450, 135));
@@ -105,6 +105,7 @@ namespace CommunicationUI
 			comboBoxStatus_->setIconSize(QSize(10,10));
 			connectionStatus_ = findChild<QLabel *>("label_ConnectionStatus");
 			connectionStatus_->setText("Connecting to server...");
+			buttonAddFriend_ = findChild<QPushButton *>("pushButton_AddFriend");
 			setAllEnabled(false);
 
 			// Add widget to layout
@@ -176,6 +177,8 @@ namespace CommunicationUI
 		QObject::connect(listWidgetFriends_, SIGNAL( itemDoubleClicked(QListWidgetItem *) ), this, SLOT( startNewChat(QListWidgetItem *) )); 
 		QObject::connect(comboBoxStatus_, SIGNAL( currentIndexChanged(const QString &) ), this, SLOT( statusChanged(const QString &) ));
 		QObject::connect(lineEditStatus_, SIGNAL( returnPressed() ), this, SLOT( statusMessageChanged() ));
+		QObject::connect(buttonAddFriend_, SIGNAL( clicked(bool) ), this, SLOT( addNewFriend(bool) ));
+
 	}
 
 	void UIContainer::setAllEnabled(bool enabled)
@@ -324,20 +327,20 @@ namespace CommunicationUI
 
 	void UIContainer::newFriendRequest(FriendRequest *request)
 	{
-		Address originator = request->GetAddressFrom();
-		QString message("You recieved friend request from ");
-		message.append(originator.c_str());
-		message.append(", do you accept?");
-		if ( QMessageBox::question(this, "New Friend Request", message, QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes )
-		{
-			request->Accept();
-			// Need to get just now accepted friends name, status and statusmessage.
-			// More better: signal "usersContactsUpdated()" when user has been added to User::GetContacts(); then i have functionality to update list already
-			// Could give the new friend (Contact) as return value of Accept()?
-		}
-		else
-			request->Reject();
+		LogInfo("newFriendRequest recieved");
+		FriendRequestUI *friendRequest = new FriendRequestUI(this, request);
+		tabWidgetCoversations_->addTab(friendRequest, QString("New Friend Request"));
+		QObject::connect(friendRequest, SIGNAL( closeThisTab(FriendRequestUI *) ), tabWidgetCoversations_, SLOT( closeFriendRequest(FriendRequestUI *) ));
 	}
+
+	void UIContainer::addNewFriend(bool clicked)
+	{
+		LogInfo("addNewFriend clicked");
+		FriendRequestUI *friendRequest = new FriendRequestUI(this, im_connection_);
+		tabWidgetCoversations_->addTab(friendRequest, QString("Add New Friend"));
+		QObject::connect(friendRequest, SIGNAL( closeThisTab(FriendRequestUI *) ), tabWidgetCoversations_, SLOT( closeFriendRequest(FriendRequestUI *) ));
+	}
+
 
 	/////////////////////////////////////////////////////////////////////
 	// LOGIN CLASS
@@ -570,6 +573,12 @@ namespace CommunicationUI
 
 	}
 
+	void ConversationsContainer::closeFriendRequest(FriendRequestUI *request)
+	{
+		this->removeTab(this->indexOf(request));
+		delete request;
+	}
+
 	void ConversationsContainer::closeTab(int index)
 	{
 		QWidget *child = this->widget(index);
@@ -635,6 +644,85 @@ namespace CommunicationUI
 			status_.append(this->contact_->GetPresenceMessage().c_str());
 		}
 		updateItem();
+	}
+
+	/////////////////////////////////////////////////////////////////////
+	// FRIEND REQUEST CLASS
+	/////////////////////////////////////////////////////////////////////
+
+	FriendRequestUI::FriendRequestUI(QWidget *parent, FriendRequest *request)
+		: QWidget(parent), request_(request), connection_(0)
+	{
+		this->setLayout(new QVBoxLayout());
+		this->layout()->setMargin(0);
+		this->setStyleSheet(QString("border: 2px groove white;	border-color: rgba(86, 128, 255, 200);	background-color: rgb(255, 255, 255);	border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; "));
+		QUiLoader loader;
+        QFile uiFile("./data/ui/communications_friendRequest.ui");
+		internalWidget_ = loader.load(&uiFile, this);
+		this->layout()->addWidget(internalWidget_);
+		uiFile.close();
+
+		originator = findChild<QLabel *>("label_requestOriginator");
+		originator->setText(QString(request->GetAddressFrom().c_str()));
+
+		accept = findChild<QPushButton *>("pushButton_Accept");
+		reject = findChild<QPushButton *>("pushButton_Deny");
+		askLater = findChild<QPushButton *>("pushButton_AskLater");
+
+		QObject::connect(accept, SIGNAL( clicked(bool) ), this, SLOT( buttonHandlerAccept(bool) ));
+		QObject::connect(reject, SIGNAL( clicked(bool) ), this, SLOT( buttonHandlerReject(bool) ));
+		QObject::connect(askLater, SIGNAL( clicked(bool) ), this, SLOT( buttonHandlerCloseWindow(bool) ));
+	}
+
+	FriendRequestUI::FriendRequestUI(QWidget *parent, Connection *connection)
+		: QWidget(parent), connection_(connection), request_(0)
+	{
+		this->setLayout(new QVBoxLayout());
+		this->layout()->setMargin(0);
+		this->setStyleSheet(QString("border: 2px groove white;	border-color: rgba(86, 128, 255, 200);	background-color: rgb(255, 255, 255);	border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; "));
+		QUiLoader loader;
+        QFile uiFile("./data/ui/communications_addFriend.ui");
+		internalWidget_ = loader.load(&uiFile, this);
+		this->layout()->addWidget(internalWidget_);
+		uiFile.close();
+
+		accept = findChild<QPushButton *>("pushButton_Send");
+		reject = findChild<QPushButton *>("pushButton_Cancel");
+		account = findChild<QLineEdit *>("lineEdit_Account");
+		message = findChild<QLineEdit *>("lineEdit_Message");
+
+		QObject::connect(accept, SIGNAL( clicked(bool) ), this, SLOT( sendFriendRequest(bool) ));
+		QObject::connect(reject, SIGNAL( clicked(bool) ), this, SLOT( buttonHandlerCloseWindow(bool) ));
+	}
+
+	FriendRequestUI::~FriendRequestUI()
+	{
+
+	}
+
+	// PRIVATE SLOTS
+
+	void FriendRequestUI::buttonHandlerAccept(bool clicked)
+	{
+		request_->Accept();
+		emit( closeThisTab(this) );
+	}
+
+	void FriendRequestUI::buttonHandlerReject(bool clicked)
+	{
+		request_->Reject();
+		emit( closeThisTab(this) );
+	}
+
+	void FriendRequestUI::buttonHandlerCloseWindow(bool clicked)
+	{
+		emit( closeThisTab(this) );
+	}
+
+	void FriendRequestUI::sendFriendRequest(bool clicked)
+	{
+		connection_->SendFriendRequest(account->text().toStdString(), message->text().toStdString());
+		emit( closeThisTab(this) );
 	}
 
 } //end if namespace: CommunicationUI

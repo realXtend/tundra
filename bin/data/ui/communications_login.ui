@@ -45,6 +45,10 @@ QComboBox::drop-down:!editable {
 	padding-right: 5px;
 }
 
+QPushButton {
+	min-width: 60px;
+}
+
 QPushButton::pressed{
 	color: rgb(74, 87, 107);
 	background-color: rgba(255, 255, 255, 255);
