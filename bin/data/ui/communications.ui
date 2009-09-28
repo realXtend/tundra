@@ -442,17 +442,63 @@ background-color: rgba(255, 255, 255, 0);</string>
         </layout>
        </item>
        <item>
-        <widget class="QLabel" name="label_ConnectionStatus">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="styleSheet">
-          <string>background-color: rgba(255, 255, 255, 0);</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QPushButton" name="pushButton_AddFriend">
+           <property name="styleSheet">
+            <string> QPushButton {
+	color: rgb(25, 44, 98);
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.676, y2:1, stop:0 rgba(240, 240, 240, 255), stop:1 rgba(188, 212, 255, 255));
+	border: 2px groove white;
+	border-color: rgb(86, 128, 255);
+	border-radius: 5px;
+	padding: 2px 5px;
+}
+
+QPushButton::pressed{
+	color: rgb(74, 87, 107);
+	background-color: rgba(255, 255, 255, 255);
+}
+
+QPushButton {
+	min-width: 60px;
+}</string>
+           </property>
+           <property name="text">
+            <string>Add Friend</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_ConnectionStatus">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="styleSheet">
+            <string>background-color: rgba(255, 255, 255, 0);</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
        </item>
       </layout>
      </item>

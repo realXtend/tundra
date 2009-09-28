@@ -69,6 +69,7 @@ namespace CommunicationUI
 		void startNewChat(QListWidgetItem *clickedItem);
 		void newChatSessionRequest(ChatSessionRequest *);
 		void newFriendRequest(FriendRequest *request);
+		void addNewFriend(bool clicked);
 
 	private:
 		void loadUserInterface(bool connected);
@@ -85,6 +86,7 @@ namespace CommunicationUI
 		QLineEdit *lineEditStatus_;
 		QComboBox *comboBoxStatus_;
 		QLabel *connectionStatus_;
+		QPushButton *buttonAddFriend_;
 
 		Credentials credentials;
 		CommunicationManager* commManager_;
@@ -137,12 +139,16 @@ namespace CommunicationUI
 	Q_OBJECT
 
 	friend class UIContainer;
+	friend class FriendRequestUI;
 
 	public:
 		ConversationsContainer(QWidget *parent);
 		~ConversationsContainer(void);
 		bool doesTabExist(Contact *contact);
 		
+	public slots:
+		void closeFriendRequest(FriendRequestUI *request);
+
 	private slots:
 		void closeTab(int index);
 
@@ -210,6 +216,41 @@ namespace CommunicationUI
 		QString status_;
 		QString statusmessage_;
 		Contact *contact_;
+
+	};
+
+	// FRIEND REQUEST CLASS
+
+	class FriendRequestUI : public QWidget
+	{
+
+	Q_OBJECT
+
+	public:
+		FriendRequestUI::FriendRequestUI(QWidget *parent, FriendRequest *request);
+		FriendRequestUI::FriendRequestUI(QWidget *parent, Connection *connection);
+		FriendRequestUI::~FriendRequestUI(void);
+
+	private slots:
+		void buttonHandlerAccept(bool clicked);
+		void buttonHandlerReject(bool clicked);
+		void buttonHandlerCloseWindow(bool clicked);
+		void sendFriendRequest(bool clicked);
+
+	private:
+		FriendRequest *request_;
+		Connection *connection_;
+		
+		QWidget *internalWidget_;
+		QLabel *originator;
+		QPushButton *accept;
+		QPushButton *reject;
+		QPushButton *askLater;
+		QLineEdit *account;
+		QLineEdit *message;
+
+	signals:
+		void closeThisTab(FriendRequestUI *tabWidget);
 
 	};
 
