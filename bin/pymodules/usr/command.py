@@ -419,10 +419,12 @@ if 0: #ogre cam test and vectors
     #print cam.Orientation, cam.DerivedOrientation, cam.getOrientation()
     #~ print "\n"
     #~ print cam.getRight(), cam.getUp()
+
+if 1:
+    canvas = r.c.canvas
     
+    for child in canvas.children():
+        child.delete()
+    canvas.close()
+    #canvas.deleteLater()
     
-if 0:
-    box = r.c.canvas
-    #print dir(box)
-    #box.close()
-    #box.destroy()

@@ -90,8 +90,15 @@ class EditGUI(Component):
         
         self.cam = None
         
-        self.upArrow = None
-        self.rightArrow = None
+        try:
+            self.upArrow = r.arrows[UP]
+        except: 
+            self.upArrow = None
+            
+        try:
+            self.rightArrow = r.arrows[RIGHT]            
+        except:
+            self.rightArrow = None
         
         self.mouse_events = {
             r.LeftMouseClickPressed: self.LeftMouseDown,
@@ -205,6 +212,7 @@ class EditGUI(Component):
         arrow.setVisible(True)
         print "created the manual material"
         arrow.attachObject(mob)
+        r.arrows[direction] = arrow
         return arrow
         
     def showArrow(self, arrow, pos):
@@ -270,4 +278,11 @@ class EditGUI(Component):
             #print "unknown click_id?", self.mouse_events
     
     def on_exit(self):
-        print "EditGUI exiting."
+        r.logInfo("EditGUI exiting.")
+        self.hideArrows()
+        children = self.canvas.children()
+        for child in children:
+            child.delete()
+        self.canvas.close() #not 100% sure of this...
+        #self.canvas.deleteLater()
+

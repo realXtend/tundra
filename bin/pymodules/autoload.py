@@ -35,6 +35,7 @@ else:
 try:
     editgui
 except: #first run
+    r.arrows = {}
     import editgui
 else:
     r.logInfo("   reloading editgui")
@@ -79,7 +80,7 @@ modules = [
     #usr.chathandler.ChatHandler,
     usr.keycommands.KeyCommander,
     #usr.sleeper.Sleeper,
-    #editgui.EditGUI,
+    editgui.EditGUI,
     #WebServer
     #usr.mousecontrol.MouseControl,
 ]
