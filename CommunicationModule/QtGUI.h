@@ -75,6 +75,7 @@ namespace CommunicationUI
 		void newChatSessionRequest(ChatSessionRequest *);
 		void newFriendRequest(FriendRequest *request);
 		void addNewFriend(bool clicked);
+		void removeFriend(bool clicked);
 
 	protected slots:
 		void closeEvent(QCloseEvent *myCloseEvent);
@@ -94,6 +95,7 @@ namespace CommunicationUI
 		QLineEdit *lineEditStatus_;
 		QComboBox *comboBoxStatus_;
 		QPushButton *buttonAddFriend_;
+		QPushButton *buttonRemoveFriend_;
 		ConversationsContainer *tabWidgetCoversations_;
 
 		Credentials credentials;

@@ -64,6 +64,7 @@ namespace CommunicationUI
 		canvas_->SetCanvasSize(newSize.width(), newSize.height());
 	}
 
+
 	/////////////////////////////////////////////////////////////////////
 	// UIContainer CLASS
 	/////////////////////////////////////////////////////////////////////
@@ -126,6 +127,7 @@ namespace CommunicationUI
 			comboBoxStatus_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 			comboBoxStatus_->setIconSize(QSize(10,10));
 			buttonAddFriend_ = findChild<QPushButton *>("pushButton_AddFriend");
+			buttonRemoveFriend_ = findChild<QPushButton *>("pushButton_RemoveFriend");
 
 			// Add widget to layout
 			this->layout()->addWidget(chatWidget_);
@@ -198,6 +200,7 @@ namespace CommunicationUI
 		QObject::connect(comboBoxStatus_, SIGNAL( currentIndexChanged(const QString &) ), this, SLOT( statusChanged(const QString &) ));
 		QObject::connect(lineEditStatus_, SIGNAL( returnPressed() ), this, SLOT( statusMessageChanged() ));
 		QObject::connect(buttonAddFriend_, SIGNAL( clicked(bool) ), this, SLOT( addNewFriend(bool) ));
+		QObject::connect(buttonRemoveFriend_, SIGNAL( clicked(bool) ), this, SLOT( removeFriend(bool) ));
 
 	}
 
@@ -350,6 +353,21 @@ namespace CommunicationUI
 		tabWidgetCoversations_->addTab(friendRequest, QString("Add New Friend"));
 		tabWidgetCoversations_->setCurrentWidget(friendRequest);
 		QObject::connect(friendRequest, SIGNAL( closeThisTab(FriendRequestUI *) ), tabWidgetCoversations_, SLOT( closeFriendRequest(FriendRequestUI *) ));
+	}
+
+	void UIContainer::removeFriend(bool clicked)
+	{
+		if ( listWidgetFriends_->count() > 0 )
+		{
+			ContactListItem *selectedItem = dynamic_cast<ContactListItem *>(listWidgetFriends_->currentItem());
+			if (selectedItem != 0)
+			{
+				// Delete User()->removeFriend
+				listWidgetFriends_->removeItemWidget(selectedItem);
+				delete selectedItem;
+				selectedItem = 0;
+			}
+		}
 	}
 
 	void UIContainer::closeEvent(QCloseEvent *myCloseEvent) 

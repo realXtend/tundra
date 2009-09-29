@@ -53,14 +53,15 @@ QListView#listWidget_Friends {
 	background-repeat: no-repeat;
 	color: rgb(130, 195, 255);
 	background-color: rgb(255, 255, 255);
-	selection-color: rgb(57, 87, 255);
-	selection-background-color: rgba(255, 255, 255, 0);
+	selection-color: rgb(255, 255, 255);
+	selection-background-color: rgba(86, 128, 255, 200);
 	border: 2px groove white;
 	border-radius: 15px;
 	border-top-left-radius: 0px;
 	border-top-right-radius: 3px;
 	border-color: rgba(86, 128, 255, 200);
 	padding: 10px 0px;
+	margin: 0px;
 	margin-bottom: 2px;
 }
 
@@ -73,13 +74,34 @@ QPushButton#pushButton_AddFriend {
 	border-bottom: 0px;
 	border-color: rgba(86, 128, 255, 200);
 	border-radius: 15px;
+	border-top-right-radius: 0px;
 	border-bottom-left-radius: 0px;
 	border-bottom-right-radius: 0px;
 	padding: 2px 5px;
-
 }
 
 QPushButton#pushButton_AddFriend::pressed{
+	color: rgb(74, 87, 107);
+	background-color: rgba(255, 255, 255, 255);
+}
+
+QPushButton#pushButton_RemoveFriend {
+	min-height: 15px;
+	min-width: 60px;
+	color: rgb(25, 44, 98);
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.676, y2:1, stop:0 rgba(240, 240, 240, 255), stop:1 rgba(188, 212, 255, 255));
+	border: 2px groove white;
+	border-bottom: 0px;
+	border-left: 0px;
+	border-color: rgba(86, 128, 255, 200);
+	border-radius: 15px;
+	border-top-left-radius: 0px;
+	border-bottom-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+	padding: 2px 5px;
+}
+
+QPushButton#pushButton_RemoveFriend::pressed{
 	color: rgb(74, 87, 107);
 	background-color: rgba(255, 255, 255, 255);
 }
@@ -251,11 +273,22 @@ background-color: rgba(255, 255, 255, 0);</string>
             <number>0</number>
            </property>
            <item>
-            <widget class="QPushButton" name="pushButton_AddFriend">
-             <property name="text">
-              <string>Add Friend</string>
-             </property>
-            </widget>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QPushButton" name="pushButton_AddFriend">
+               <property name="text">
+                <string>Add Friend</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_RemoveFriend">
+               <property name="text">
+                <string>Remove Friend</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
            <item>
             <widget class="QListWidget" name="listWidget_Friends">
@@ -330,9 +363,9 @@ background-color: rgba(255, 255, 255, 0);</string>
                 </colorrole>
                 <colorrole role="Highlight">
                  <brush brushstyle="SolidPattern">
-                  <color alpha="0">
-                   <red>255</red>
-                   <green>255</green>
+                  <color alpha="200">
+                   <red>86</red>
+                   <green>128</green>
                    <blue>255</blue>
                   </color>
                  </brush>
@@ -340,8 +373,8 @@ background-color: rgba(255, 255, 255, 0);</string>
                 <colorrole role="HighlightedText">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
-                   <red>57</red>
-                   <green>87</green>
+                   <red>255</red>
+                   <green>255</green>
                    <blue>255</blue>
                   </color>
                  </brush>
@@ -404,9 +437,9 @@ background-color: rgba(255, 255, 255, 0);</string>
                 </colorrole>
                 <colorrole role="Highlight">
                  <brush brushstyle="SolidPattern">
-                  <color alpha="0">
-                   <red>255</red>
-                   <green>255</green>
+                  <color alpha="200">
+                   <red>86</red>
+                   <green>128</green>
                    <blue>255</blue>
                   </color>
                  </brush>
@@ -414,8 +447,8 @@ background-color: rgba(255, 255, 255, 0);</string>
                 <colorrole role="HighlightedText">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
-                   <red>57</red>
-                   <green>87</green>
+                   <red>255</red>
+                   <green>255</green>
                    <blue>255</blue>
                   </color>
                  </brush>
@@ -478,9 +511,9 @@ background-color: rgba(255, 255, 255, 0);</string>
                 </colorrole>
                 <colorrole role="Highlight">
                  <brush brushstyle="SolidPattern">
-                  <color alpha="0">
-                   <red>255</red>
-                   <green>255</green>
+                  <color alpha="200">
+                   <red>86</red>
+                   <green>128</green>
                    <blue>255</blue>
                   </color>
                  </brush>
@@ -488,8 +521,8 @@ background-color: rgba(255, 255, 255, 0);</string>
                 <colorrole role="HighlightedText">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
-                   <red>57</red>
-                   <green>87</green>
+                   <red>255</red>
+                   <green>255</green>
                    <blue>255</blue>
                   </color>
                  </brush>
@@ -500,6 +533,21 @@ background-color: rgba(255, 255, 255, 0);</string>
              <property name="horizontalScrollBarPolicy">
               <enum>Qt::ScrollBarAlwaysOff</enum>
              </property>
+             <item>
+              <property name="text">
+               <string>asdasd</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>asdads</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>asdasd</string>
+              </property>
+             </item>
             </widget>
            </item>
           </layout>
