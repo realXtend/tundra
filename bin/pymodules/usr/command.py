@@ -421,4 +421,8 @@ if 0: #ogre cam test and vectors
     #~ print cam.getRight(), cam.getUp()
     
     
-    
+if 0:
+    box = r.c.canvas
+    #print dir(box)
+    #box.close()
+    #box.destroy()
