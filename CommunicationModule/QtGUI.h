@@ -25,6 +25,8 @@ namespace CommunicationUI
 	{
 	
 	Q_OBJECT
+
+	friend class UIContainer;
 	
 	MODULE_LOGGING_FUNCTIONS
 	static const std::string NameStatic() { return "CommunicationModule::QtGUI"; } // for logging functionality
@@ -35,10 +37,13 @@ namespace CommunicationUI
 
 	public slots:
 		void setWindowSize(QSize &size);
+		void destroyThis();
 
 	private:
 		Foundation::Framework *framework_;
+		CommunicationManager* commManager_;
 		boost::shared_ptr<UICanvas> canvas_;
+		UIContainer *UIContainer_;
 
 	};
 
@@ -71,22 +76,25 @@ namespace CommunicationUI
 		void newFriendRequest(FriendRequest *request);
 		void addNewFriend(bool clicked);
 
+	protected slots:
+		void closeEvent(QCloseEvent *myCloseEvent);
+
 	private:
 		void loadUserInterface(bool connected);
 		void loadConnectedUserData(User *userData);
-		void setAllEnabled(bool enabled);
 		QIcon getStatusIcon(QString status);
 
 		QString currentMessage;
 		QWidget *loginWidget_;
 		QWidget *chatWidget_;
-		ConversationsContainer *tabWidgetCoversations_;
 		QListWidget *listWidgetFriends_;
 		QLabel *labelUsername_;
+		QLabel *labelLoginConnectionStatus_;
+		QLabel *connectionStatus_;
 		QLineEdit *lineEditStatus_;
 		QComboBox *comboBoxStatus_;
-		QLabel *connectionStatus_;
 		QPushButton *buttonAddFriend_;
+		ConversationsContainer *tabWidgetCoversations_;
 
 		Credentials credentials;
 		CommunicationManager* commManager_;
@@ -94,6 +102,7 @@ namespace CommunicationUI
 
 	signals:
 		void resized(QSize &);
+		void destroyCanvas();
 
 	};
 
