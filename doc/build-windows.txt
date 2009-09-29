@@ -20,12 +20,13 @@ The easiest method is to check out pre-built binary dependencies from our viewer
 This is by far the easiest option. Use this option when you just need to get Naali compiled, and to focus on developing Naali itself.
 
 # Get the viewer binary dependency repository by doing a SVN checkout of http://dev.realxtend.org/svn/viewerdeps/bin/windows. The following assumes that you checked out the binary dependencies into the folder C:\viewerdeps.
-# After checkout, copy C:\viewerdeps\dist to C:\viewer\bin. 
-#* Alternatively SVN export the C:\viewerdeps\dist folder (right-click on it and select Export) to C:\viewer.
+# Copy viewerdeps\Qt to C:\Qt\build. This directory is hard-coded in our Qt build, and will not work from any other directory.
+# Copy viewerdeps\dist\bin to viewer\bin. 
+#* Alternatively SVN export the viewerdeps\dist\bin folder (right-click on it and select Export) to C:\viewer\bin.
 # Set the following Environment variables:
 #* NAALI_DEP_PATH=C:\viewerdeps
-#* QTDIR=C:\viewerdeps\Qt
 #* OGRE_HOME=C:\viewerdeps\Ogre
+#* QTDIR=C:\Qt\build
 # After getting Qt, continue from Building the Viewer below.
 
 === Preparing the dependency repository from source ===
