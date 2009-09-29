@@ -5,6 +5,7 @@ to the list called 'modules'. you need to import your pymodule
 to have access here to the class, of course, and that can do
 whatever loading that you want (in your module i.e. .py file).
 """
+import rexviewer as r
 
 #reload-on-the fly test - how to make generic for all modules?
 try:
@@ -12,13 +13,56 @@ try:
 except: #first run
     import apitest.circuits_testmodule
 else:
-    print "reloading apitest.circuits_testmodule"
+    r.logInfo("   reloading apitest.circuits_testmodule")
     apitest.circuits_testmodule = reload(apitest.circuits_testmodule)
-    
-import usr.chathandler
-import usr.keycommands
-#import usr.mousecontrol
-import editgui
+
+try:
+    usr.chathandler
+except: #first run
+    import usr.chathandler
+else:
+    r.logInfo("   reloading usr.chathandler")
+    usr.chathandler = reload(usr.chathandler)
+
+try:
+    usr.keycommands
+except: #first run
+    import usr.keycommands
+else:
+    r.logInfo("   reloading usr.keycommands")
+    usr.keycommands = reload(usr.keycommands)
+
+try:
+    editgui
+except: #first run
+    import editgui
+else:
+    r.logInfo("   reloading editgui")
+    editgui = reload(editgui)
+
+#~ try:
+    #~ usr.mousecontrol
+#~ except: #first run
+    #~ import usr.mousecontrol
+#~ else:
+    #~ r.logInfo("   reloading usr.mousecontrol")
+    #~ usr.mousecontrol = reload(usr.mousecontrol)
+
+try:
+    usr.sleeper
+except: #first run
+    import usr.sleeper
+else:
+    r.logInfo("   reloading usr.sleeper")
+    usr.sleeper = reload(usr.sleeper)
+
+#~ try:
+    #~ headtrack.control
+#~ except: #first run
+    #~ import headtrack.control
+#~ else:
+    #~ r.logInfo("   reloading headtrack.control")
+    #~ headtrack.control = reload(headtrack.control)
 
 try:
     import webserver.webcontroller
@@ -28,8 +72,7 @@ except ImportError: #socket not avaible in debugmode
 else:
     from webserver.webcontroller import WebServer
     
-#import headtrack.control
-import usr.sleeper
+
 
 modules = [
     #apitest.circuits_testmodule.TestModule,

@@ -1,3 +1,5 @@
+import rexviewer as r
+
 class ModuleManager:
     #was not calling update to not confuse with the eventhandlers
     def run(self, elapsedtime):
@@ -33,9 +35,11 @@ if USE_CIRCUITS:
     try:
         import core.circuits_manager
     except ImportError:
-        print "circuits_manager not available"
+        #print "circuits_manager not available"
+        r.logInfo("Circuits Manager not available.")
     else:
-        print "Using circuits_manager"
+        #print "Using circuits_manager"
+        r.logInfo("Using Circuits Manager.")
         ModuleManager = core.circuits_manager.ComponentRunner
         
 if __name__ == '__main__': #running from cmdline, testing without viewer

@@ -47,7 +47,7 @@ class ComponentRunner(Component):
     def start(self):
         # Create a new circuits Manager
         #ignevents = [Update, MouseMove]
-        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated']
+        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit']
         ignchannels = [('*', n) for n in ignchannames]
         self.m = Manager() + Debugger(IgnoreChannels = ignchannels) #IgnoreEvents = ignored)
         
@@ -126,15 +126,15 @@ class ComponentRunner(Component):
 
     def exit(self):
         self.m.send(Exit(), "on_exit") #am not running the manager properly so the stop doesn't propagate to components. fix when switch to dev branch of circuits XXX
-        print "Circuits manager stopping."
+        r.logInfo("Circuits manager stopping...")
         self.m.stop() #was not going to components now so made the exit event above as a quick fix
         #XXX now that we are using flush() and tick(), does stop() propagate to components too?
         
     def restart(self):
-        print "Restarting python module manager, reloading plugin codes:"
+        r.logInfo("Restarting python module manager, reloading plugin codes")
         self.exit()
         self.start()
-        print ".. done python restart."
+        r.logInfo("...done python restart.")
                 
     #~ def retfunc(self, boolvalue):
         #~ #print "Return value:", bool, "-> ", 

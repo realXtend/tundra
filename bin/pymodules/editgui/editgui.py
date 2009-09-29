@@ -268,3 +268,6 @@ class EditGUI(Component):
             #print "on_mouseclick", click_id, self.mouse_events[click_id]
         #else:
             #print "unknown click_id?", self.mouse_events
+    
+    def on_exit(self):
+        print "EditGUI exiting."
