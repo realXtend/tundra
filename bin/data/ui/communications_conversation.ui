@@ -34,15 +34,16 @@ QPlainTextEdit, QLineEdit {
 }
 
 QPlainTextEdit {
-	background-image: url(:/images/labelChat.png);
-	background-position: bottom right; 
-	background-repeat: no-repeat;
+	/*background-image: url(:/images/labelChat.png);*/
+	/*background-position: bottom right;*/
+	/*background-repeat: no-repeat;*/
 	border-top-right-radius: 10px;
 	border-bottom-width: 0px;
 	padding: 0px;
 }
 
 QLineEdit {
+	max-height: 15px;
 	background-image: url(:/images/iconPen.png);
 	background-position: center left;
 	background-repeat: no-repeat;

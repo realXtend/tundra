@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>418</width>
-    <height>160</height>
+    <width>504</width>
+    <height>284</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,13 +32,12 @@ QComboBox, QPushButton {
 	color: rgb(25, 44, 98);
 	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.676, y2:1, stop:0 rgba(240, 240, 240, 255), stop:1 rgba(188, 212, 255, 255));
 	border: 2px groove white;
-	border-color: rgb(86, 128, 255);
+	border-color: rgba(86, 128, 255, 100);
 	border-radius: 5px;
 	padding: 2px 5px;
 }
 
 QComboBox::drop-down:!editable { 
-	subcontrol-color: rgb(76, 115, 255);
 	subcontrol-position: center right; 
 	width: 12px; 
 	height: 12px;
@@ -68,40 +67,29 @@ QMenu {
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_5">
        <item>
-        <widget class="QLabel" name="label_Statustitle">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>70</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Status</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QLabel" name="label_Status">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+          </font>
+         </property>
          <property name="styleSheet">
-          <string>color: rgb(0, 0, 0);</string>
+          <string>margin:10px; color: rgb(0,0,0);</string>
          </property>
          <property name="text">
           <string>Waiting for first time user input</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
