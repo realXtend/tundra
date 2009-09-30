@@ -31,10 +31,18 @@ namespace CommunicationUI
 			UIContainer *UIContainer_ = new UIContainer(0);
 			canvas_->AddWidget(UIContainer_);
 			canvas_->Show(); 
+
 			// Connect signal for resizing
 			QObject::connect(UIContainer_, SIGNAL( resized(QSize &) ), this, SLOT( setWindowSize(QSize &) ));
 			QObject::connect(UIContainer_, SIGNAL( destroyCanvas() ), this, SLOT( destroyThis() ));
+			QObject::connect(UIContainer_, SIGNAL( setCanvasTitle(QString &) ), canvas_.get(), SLOT( SetCanvasWindowTitle(QString &) ));
+			QObject::connect(UIContainer_, SIGNAL( setCanvasIcon(QIcon &) ), canvas_.get(), SLOT( SetCanvasWindowIcon(QIcon &) ));
+			
+			// Init title, icon and size
+			canvas_->SetCanvasWindowIcon(QIcon(":/images/iconUsers.png"));
+			canvas_->SetCanvasWindowTitle(QString("realXtend Naali Communications Login"));
 			setWindowSize(QSize(450, 165));
+
 			LogInfo("Loading succesfull");
 		}		
 		else
@@ -54,7 +62,7 @@ namespace CommunicationUI
 		QtUI::QtModule *qt_ui = dynamic_cast<QtModule*>(qt_module.get());
 		if (qt_ui != 0)
 		{
-			canvas_->close();
+			canvas_->Hide();
 			qt_ui->DeleteCanvas(canvas_);
 		}
 	}
@@ -127,11 +135,16 @@ namespace CommunicationUI
 			comboBoxStatus_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 			comboBoxStatus_->setIconSize(QSize(10,10));
 			buttonAddFriend_ = findChild<QPushButton *>("pushButton_AddFriend");
+			buttonAddFriend_->setIcon(QIcon(":/images/iconAdd.png"));
+			buttonAddFriend_->setLayoutDirection(Qt::RightToLeft);
+			buttonAddFriend_->setIconSize(QSize(10,10));
 			buttonRemoveFriend_ = findChild<QPushButton *>("pushButton_RemoveFriend");
+			buttonRemoveFriend_->setIcon(QIcon(":/images/iconRemove.png"));
+			buttonRemoveFriend_->setIconSize(QSize(10,10));
 
 			// Add widget to layout
 			this->layout()->addWidget(chatWidget_);
-			this->setWindowTitle("realXtend Naali Communications");
+			emit( setCanvasTitle(QString("realXtend Naali Communications")) );
 			this->setMinimumSize(600, 262);
 			emit ( resized(QSize(600, 262)) );
 		} 
@@ -158,7 +171,7 @@ namespace CommunicationUI
 			QObject::connect(loginWidget_, SIGNAL( userdataSet(QString, int, QString, QString) ), this, SLOT( connectToServer(QString, int, QString, QString) ));
 			// Add widget to layout
 			this->layout()->addWidget(loginWidget_);
-			this->setWindowTitle("realXtend Naali Communications login");
+			emit( setCanvasTitle(QString("realXtend Naali Communications Login")) );
 			this->setMinimumSize(450, 165);
 			emit ( resized(QSize(450, 165)) );
 		}
@@ -357,21 +370,17 @@ namespace CommunicationUI
 
 	void UIContainer::removeFriend(bool clicked)
 	{
-		if ( listWidgetFriends_->count() > 0 )
-		{
-			ContactListItem *selectedItem = dynamic_cast<ContactListItem *>(listWidgetFriends_->currentItem());
-			if (selectedItem != 0)
-			{
-				// Delete User()->removeFriend
-				listWidgetFriends_->removeItemWidget(selectedItem);
-				delete selectedItem;
-				selectedItem = 0;
-			}
-		}
+		LogInfo("removeFriend clicked");
+		int row = listWidgetFriends_->currentRow();
+		ContactListItem *taken = dynamic_cast<ContactListItem *>(listWidgetFriends_->takeItem(listWidgetFriends_->currentRow()));
+		// Delete User()->removeFriend, Matti do what you need here...
+		delete taken;
+		taken = 0;
 	}
 
 	void UIContainer::closeEvent(QCloseEvent *myCloseEvent) 
 	{
+		LogInfo("CloseEvent catched");
 		emit ( destroyCanvas() );
 		QWidget::closeEvent(myCloseEvent);
 	}
