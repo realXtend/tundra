@@ -123,13 +123,13 @@ namespace QtUI
 
 
         /**
-         * Updates mouse cursor to correct state. 
+         * Updates mouse cursor to correct state. Returns current shape of mouse cursor.
          * @param x is x-axis coordinate of cursor position in render window coordinate system.
          * @param y is y-axis coordiante of cursor position in render window coordinate system.
          * @param index is index to canvas which is below of mouse cursor.
          */
 
-        void UpdateMouseCursor(int x, int y, int index = -1);
+        Qt::CursorShape UpdateMouseCursor(int x, int y, int index = -1);
 
     public slots:
         
@@ -214,6 +214,11 @@ namespace QtUI
 
         // Currently (or last) active canvas id.
         QString active_canvas_;
+
+        // Current mouse cursor shape. (note is not always valid!)
+        Qt::CursorShape mouseCursorShape_;
+
+        bool resize_;
     };
 
 
