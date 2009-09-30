@@ -16,7 +16,7 @@
 namespace QtUI
 {
 
-UIController::UIController() : mouseDown_(false), arrange_(false), responseTimeLimit_(500), keyDown_(false), lastKeyEvent_(QKeyEvent(QEvent::KeyPress,0,Qt::NoModifier)), multipleKeyLimit_(150), keyboard_buffered_(false), active_canvas_("")
+UIController::UIController() : mouseDown_(false), arrange_(false), responseTimeLimit_(500), keyDown_(false), lastKeyEvent_(QKeyEvent(QEvent::KeyPress,0,Qt::NoModifier)), multipleKeyLimit_(150), keyboard_buffered_(false), active_canvas_(""), resize_(false)
 {}
 
 UIController::~UIController()
@@ -145,7 +145,7 @@ void UIController::InjectMouseMove(int x, int y)
     }
     else if ( mouseDown_)
     {
-        // Drag event. 
+        // Drag event or resize 
         
         // Find active canvas, move it to this location (if canvas is not locked.)
         
@@ -153,8 +153,99 @@ void UIController::InjectMouseMove(int x, int y)
         
         if ( index != -1 && !canvases_[index]->IsHidden())
         {
-            if ( !canvases_[index]->IsCanvasPositionLocked() )
+        
+            //if ( !resize_ && mouseCursorShape_ == Qt::SizeVerCursor || 
+            //        mouseCursorShape_ == Qt::SizeHorCursor || 
+            //        mouseCursorShape_ == Qt::SizeBDiagCursor || 
+            //        mouseCursorShape_ == Qt::SizeFDiagCursor )
+            //{
+            //    resize_ = true;
+
+                // Resize canvas.
+                // 1. Pienentäminen, pitää muuttaa overlayin kokoa, ja sitten tekstuurin uv-mäppäystä, lopuksi luo uusi tekstuuri, joka on oikean kokoinen
+                // ja sisältää (ei skaalatun) tekstuurin. Huom! tee boolean, joka estää resize toiminnallisuuden. 
+                // 2. Kasvattaminen tuplaa tekstuurin koko, näytä osa siitä uv-mäppäyksellä. Lopuksi luo oikean kokoinen ja näytä se. 
+             
+            //}
+            if ( resize_)
             {
+                
+                QRect geometry = canvases_[index]->GetCanvasGeometry();
+                int width = geometry.width();
+                int height = geometry.height();
+
+                QPoint position = canvases_[index]->GetPosition().toPoint();
+
+                if ( mouseCursorShape_ == Qt::SizeVerCursor)
+                {
+                    //height changes.
+                    int bottom = position.y() + height;
+                    int top = position.y();
+
+                    // Now search nearest side 
+                    
+                    double bottomDiff = sqrt(double((bottom - y)* (bottom - y)));
+                    double topDiff = sqrt(double((top - y) * (top - y)));
+                    
+                    if ( bottomDiff > topDiff)
+                    {
+                        // Top-side is resizing.
+                        if ( top < y ) 
+                        {
+                            // Smaller
+                            canvases_[index]->Resize(height-int(topDiff), width, UICanvas::Top);
+                        }
+                        else
+                        {
+                            // Growing
+                         
+                        }
+                        
+                    }
+                    else
+                    {
+                        // Bottom-side is resizing.
+                        canvases_[index]->Resize(height-int(bottomDiff), width, UICanvas::Bottom);
+                    }
+
+                }
+                else if ( mouseCursorShape_ == Qt::SizeHorCursor)
+                {
+                    // width changes.
+                    
+                    int left = position.x();
+                    int right = position.x() + width;
+
+                    // Search nearest side
+                    double leftDiff = sqrt(double((left - x)* (left - x)));
+                    double rightDiff = sqrt(double((right - x) * (right - x)));
+                    
+                      if ( leftDiff > rightDiff)
+                      {
+                        // Right side.
+                        canvases_[index]->Resize(height, width-int(rightDiff), UICanvas::Right);
+                        
+                      }
+                      else
+                      {
+                        canvases_[index]->Resize(height, width-int(leftDiff), UICanvas::Left);                        
+                         
+                      }
+        
+
+                      
+
+                }
+              
+                
+                
+                QApplication::setOverrideCursor(QCursor(mouseCursorShape_));
+                
+            }
+            else if (!canvases_[index]->IsCanvasPositionLocked() )
+            {
+                // Drag canvas. 
+
                 QPoint pos = canvases_[index]->GetPosition().toPoint();
 
                 int xPos = point.x()-(lastPosition_.x()-pos.x());
@@ -178,6 +269,8 @@ void UIController::InjectMousePress(int x, int y)
     keyboard_buffered_ = false;
 
     int index = GetCanvas(point);
+    
+    UpdateMouseCursor(x,y,index);
     
     if ( timer_.isNull() )
     {
@@ -255,7 +348,7 @@ void UIController::InjectMousePress(int x, int y)
         canvases_[index]->SetZOrder(2);
         // Request change our internal "order" 
         RequestArrange(canvases_[index]->GetID());
-
+       
         QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);
         
         // Here starts nice HACK: Idea is to check that did press event went to somekind textedit widget. 
@@ -276,15 +369,15 @@ void UIController::InjectMousePress(int x, int y)
             }
             
         }
-
+        
+        if ( mouseCursorShape_ == Qt::SizeVerCursor || 
+             mouseCursorShape_ == Qt::SizeHorCursor || 
+             mouseCursorShape_ == Qt::SizeBDiagCursor || 
+             mouseCursorShape_ == Qt::SizeFDiagCursor )
+                resize_ = true;
+        else
+                resize_ = false;
       
-        QCursor cursor = canvases_[index]->cursor();
-        Qt::CursorShape shape = cursor.shape();
-        if ( shape == Qt::SizeBDiagCursor || shape == Qt::SizeHorCursor || shape == Qt::SizeVerCursor)
-         {
-                    qDebug()<<"We want to resize canvas!";
-         }
-       
         
     }
     lastPosition_ = point;
@@ -322,9 +415,24 @@ void UIController::InjectMouseRelease(int x, int y)
         QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);
     
     }
+    if ( resize_ )
+    {
+       // Here we adjust texture to correspond to possible new state of widget.
+       for ( int i = 0; i < canvases_.size(); ++i)
+       {
+           if ( canvases_[i]->GetID() == active_canvas_)
+           {
+                QSize size = canvases_[i]->GetSize();
+                canvases_[i]->SetCanvasSize(size.width(), size.height());
+                break;
+           }
+       }
+       
+    }
 
     mouseDown_ = false;
     lastPosition_ = point;
+    resize_ = false;
 }
 
 void UIController::InjectDoubleClick(int x, int y)
@@ -427,7 +535,7 @@ void UIController::SetParentWindowSize(const QSize& size)
     emit RenderWindowSizeChanged(size);
 }
 
-void UIController::UpdateMouseCursor(int x, int y, int index)
+Qt::CursorShape UIController::UpdateMouseCursor(int x, int y, int index)
 {
     if ( index != -1)
     {
@@ -462,27 +570,54 @@ void UIController::UpdateMouseCursor(int x, int y, int index)
         QPoint point(x,y);
 
         if ( left_bottom_corner_box.contains(point) )
+        {
             QApplication::setOverrideCursor(QCursor(Qt::SizeBDiagCursor));
+            mouseCursorShape_ = Qt::SizeBDiagCursor;
+        }
         else if ( left_top_corner_box.contains(point) )
+        {
             QApplication::setOverrideCursor(QCursor(Qt::SizeFDiagCursor));
+            mouseCursorShape_ = Qt::SizeFDiagCursor;
+        }
         else if ( right_top_corner_box.contains(point))
+        {
             QApplication::setOverrideCursor(QCursor(Qt::SizeBDiagCursor));
+            mouseCursorShape_ = Qt::SizeBDiagCursor;
+        }
         else if ( right_bottom_corner_box.contains(point) )
+        {
             QApplication::setOverrideCursor(QCursor(Qt::SizeFDiagCursor));
+            mouseCursorShape_ = Qt::SizeFDiagCursor;
+        }
         else if (top_side_box.contains(point))
+        {
             QApplication::setOverrideCursor(QCursor(Qt::SizeVerCursor));
+            mouseCursorShape_ = Qt::SizeVerCursor;
+        }
         else if (bottom_side_box.contains(point) )
+        {
             QApplication::setOverrideCursor(QCursor(Qt::SizeVerCursor));
+            mouseCursorShape_ = Qt::SizeVerCursor;
+        }
         else if (left_side_box.contains(point))
+        {
             QApplication::setOverrideCursor(QCursor(Qt::SizeHorCursor));
+            mouseCursorShape_ = Qt::SizeHorCursor; 
+        }
         else if (right_side_box.contains(point))
+        {
             QApplication::setOverrideCursor(QCursor(Qt::SizeHorCursor));
+            mouseCursorShape_ = Qt::SizeHorCursor;
+        }
         else
+        {
             QApplication::setOverrideCursor(QCursor(Qt::ArrowCursor));
+            mouseCursorShape_ = Qt::ArrowCursor;        
             //QApplication::restoreOverrideCursor();   
-
+        }
     }
 
+    return mouseCursorShape_;
 }
 
 

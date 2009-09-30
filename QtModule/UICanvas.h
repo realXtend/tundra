@@ -40,7 +40,8 @@ namespace QtUI
     public:
         
         enum Mode { External = 0, Internal};
-        
+        enum CanvasSide { Left = 0, Right, Bottom, Top };
+
         UICanvas();
         UICanvas(Mode mode, const QSize& parentWindowSize);
 
@@ -91,6 +92,16 @@ namespace QtUI
          * @todo override widgets own resize?
          */
         void SetCanvasSize(int width, int height);
+        QSize GetSize() const { return this->size(); }
+
+        /** 
+         * Resizes canvas. 
+         * @param height new height
+         * @param width new width
+         * @param side is which side of canvas will be resized.
+         */
+        
+        void Resize(int height, int width, CanvasSide side);
 
         /** 
          * Returns canvas geometry. 

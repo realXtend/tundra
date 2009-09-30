@@ -236,6 +236,7 @@ void UICanvas::SetCanvasSize(int width, int height)
         float relWidth = (float)texture->getWidth()/double(renderWindowSize_.width());
         float relHeight = (float)texture->getHeight()/double(renderWindowSize_.height());
         container_->setDimensions(relWidth, relHeight);
+        
     }
 
     // Repaint canvas. 
@@ -256,6 +257,119 @@ void UICanvas::SetRenderWindowSize(const QSize& size)
     }
 }
 
+
+void UICanvas::Resize(int height, int width, CanvasSide side)
+{
+    if ( mode_ == External)
+    {
+        SetCanvasSize(width, height);
+        return;
+    }
+    
+    QSize current_size = this->size();
+
+    Ogre::PanelOverlayElement* element = static_cast<Ogre::PanelOverlayElement* >(container_);  
+    Ogre::Real u1 = 0, v1 = 0, u2 = 0, v2= 0;
+    Ogre::Real top = element->getTop();
+    Ogre::Real left = element->getLeft();
+    element->getUV(u1,v1,u2,v2);
+    
+    if ( current_size.width() > width || current_size.height() > height)
+    {
+        // Smaller
+        
+
+        if ( current_size.width() > width )
+        {
+            // Change width
+            
+            int diff = current_size.width() - width;
+
+            Ogre::Real ratio = width/Ogre::Real(current_size.width());
+            Ogre::Real current_container_height = element->getHeight();
+            Ogre::Real new_container_width = width/Ogre::Real(renderWindowSize_.width());
+            
+         
+            Ogre::Real xPos = 0.0;
+
+            switch (side)
+            {
+                case Left:
+                {
+                    u1 = Ogre::Real(1.0)-ratio;
+                   
+                    xPos = left + diff/Ogre::Real(renderWindowSize_.width());
+                    element->setPosition(xPos,top);
+             
+                    break;
+                }
+                case Right:
+                {
+                    u2 = ratio;
+                    xPos = left - diff/Ogre::Real(renderWindowSize_.width());
+                    element->setPosition(left,top);
+                    break;
+                }
+
+            }
+            element->setUV(u1,v1,u2,v2);
+           
+            element->setDimensions( new_container_width, current_container_height);
+
+        }
+        else
+        {
+            // height
+
+            int diff = current_size.height() - height;
+            Ogre::Real ratio =height/Ogre::Real(current_size.height());
+            Ogre::Real relHeight = height/Ogre::Real(renderWindowSize_.height());
+            
+            Ogre::Real loc = renderWindowSize_.height() * top;
+        
+            switch ( side )
+            {
+            case Top:
+                {
+                    //v1 = Ogre::Real(1.0) - ratio;
+                    v1 = Ogre::Real(1.0) - ratio;
+                    Ogre::Real yPos = top + diff/Ogre::Real(renderWindowSize_.height());
+                    element->setPosition(left, yPos);
+                    //element->setPosition(left,top);
+                    break;
+                }
+            case Bottom:
+                {
+                    v1 = Ogre::Real(1.0) -  ratio;
+                    element->setPosition(left, top);
+                    break;
+                }
+
+            }
+            
+            
+            Ogre::Real current_container_width = element->getWidth();
+            element->setUV(u1,v1,u2,v2);
+            element->setDimensions( current_container_width, relHeight);
+
+        }
+
+    }
+    else 
+    {
+        // Growing.
+
+    }
+
+    resize(width,height);
+    dirty_ = true;
+    RenderSceneToOgreSurface();
+
+}
+
+
+
+
 void UICanvas::SetCanvasWindowTitle(QString &title) 
 {
 	setWindowTitle(title);
@@ -265,6 +379,7 @@ void UICanvas::SetCanvasWindowIcon(QIcon &icon)
 {
 	setWindowIcon(icon);
 }
+
 
 void UICanvas::ResizeOgreTexture(int width, int height)
 {
