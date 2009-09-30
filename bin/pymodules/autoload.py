@@ -80,7 +80,7 @@ modules = [
     #usr.chathandler.ChatHandler,
     usr.keycommands.KeyCommander,
     #usr.sleeper.Sleeper,
-    editgui.EditGUI,
+    #editgui.EditGUI,
     #WebServer
     #usr.mousecontrol.MouseControl,
 ]
