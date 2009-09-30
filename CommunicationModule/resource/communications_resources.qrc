@@ -7,5 +7,8 @@
     <file alias="iconOrange.png" >../../bin/data/ui/images/communications_iconOrange.png</file>
     <file alias="iconRed.png" >../../bin/data/ui/images/communications_iconRed.png</file>
 	<file alias="iconBlue.png" >../../bin/data/ui/images/communications_iconBlue.png</file>
+	<file alias="iconAdd.png" >../../bin/data/ui/images/communications_iconAdd.png</file>
+    <file alias="iconRemove.png" >../../bin/data/ui/images/communications_iconRemove.png</file>
+	<file alias="iconUsers.png" >../../bin/data/ui/images/communications_iconUsers.png</file>
   </qresource>
 </RCC>

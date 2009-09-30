@@ -66,8 +66,7 @@ QListView#listWidget_Friends {
 }
 
 QPushButton#pushButton_AddFriend {
-	min-height: 15px;
-	min-width: 60px;
+	max-height: 15px;
 	color: rgb(25, 44, 98);
 	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.676, y2:1, stop:0 rgba(240, 240, 240, 255), stop:1 rgba(188, 212, 255, 255));
 	border: 2px groove white;
@@ -86,8 +85,7 @@ QPushButton#pushButton_AddFriend::pressed{
 }
 
 QPushButton#pushButton_RemoveFriend {
-	min-height: 15px;
-	min-width: 60px;
+	max-height: 15px;
 	color: rgb(25, 44, 98);
 	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.676, y2:1, stop:0 rgba(240, 240, 240, 255), stop:1 rgba(188, 212, 255, 255));
 	border: 2px groove white;
@@ -533,21 +531,6 @@ background-color: rgba(255, 255, 255, 0);</string>
              <property name="horizontalScrollBarPolicy">
               <enum>Qt::ScrollBarAlwaysOff</enum>
              </property>
-             <item>
-              <property name="text">
-               <string>asdasd</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>asdads</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>asdasd</string>
-              </property>
-             </item>
             </widget>
            </item>
           </layout>

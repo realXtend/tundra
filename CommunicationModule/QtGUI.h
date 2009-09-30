@@ -105,6 +105,8 @@ namespace CommunicationUI
 	signals:
 		void resized(QSize &);
 		void destroyCanvas();
+		void setCanvasTitle(QString &title);
+		void setCancasIcon(QIcon &icon);
 
 	};
 
