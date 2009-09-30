@@ -110,7 +110,7 @@ add_subdirectory (OpenSimProtocol)
 #add_subdirectory (DebugStats)
 #add_subdirectory (NetTestLogicModule)
 add_subdirectory (PythonModule)
-#add_subdirectory (CommunicationModule)
+add_subdirectory (CommunicationModule)
 #add_subdirectory (OpenALAudioModule)
 #add_subdirectory (RexCBLogin) # RexLogic::RexWebLogin replaces this atm anyways
 #add_subdirectory (RexQtScriptModule)

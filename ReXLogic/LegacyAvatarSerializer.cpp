@@ -5,6 +5,7 @@
 #include "RexLogicModule.h"
 #include "RexTypes.h"
 #include "RexNetworkUtils.h"
+#include "OgreConversionUtils.h"
 #include "OgreImageTextureResource.h"
 #include "OgreMaterialResource.h"
 #include "OgreMeshResource.h"
@@ -16,8 +17,163 @@
 #include <QDomElement>
 #include <QFile>
 
+#include <Ogre.h>
+
 namespace RexLogic
 {
+    std::string modifier_mode[] = {
+        "relative",
+        "absolute",
+        "cumulative"
+    };
+    
+    Core::Vector3df ParseVector3(const std::string& text)
+    {
+        Core::Vector3df vec(0.0f, 0.0f, 0.0f);
+        
+        Core::StringVector components = Core::SplitString(text, ' ');
+        if (components.size() == 3)
+        {
+            try
+            {
+                vec.x = Core::ParseString<Core::Real>(components[0]);
+                vec.y = Core::ParseString<Core::Real>(components[1]);
+                vec.z = Core::ParseString<Core::Real>(components[2]);
+            }
+            catch (boost::bad_lexical_cast)
+            {
+            }
+        }
+        return vec;
+    }
+    
+    Core::Quaternion ParseQuaternion(const std::string& text)
+    {
+        Core::Quaternion quat;
+        
+        Core::StringVector components = Core::SplitString(text, ' ');
+        if (components.size() == 4)
+        {
+            try
+            {
+                quat.w = Core::ParseString<Core::Real>(components[0]);
+                quat.x = Core::ParseString<Core::Real>(components[1]);
+                quat.y = Core::ParseString<Core::Real>(components[2]);
+                quat.z = Core::ParseString<Core::Real>(components[3]);
+            }
+            catch (boost::bad_lexical_cast)
+            {
+            }
+        }
+        return quat;
+    }
+    
+    Core::Quaternion ParseEulerAngles(const std::string& text)
+    {
+        Core::Quaternion quat;
+        
+        Core::StringVector components = Core::SplitString(text, ' ');
+        if (components.size() == 3)
+        {
+            try
+            {
+                Core::Real xrad = Core::degToRad(Core::ParseString<Core::Real>(components[0]));
+                Core::Real yrad = Core::degToRad(Core::ParseString<Core::Real>(components[1]));
+                Core::Real zrad = Core::degToRad(Core::ParseString<Core::Real>(components[2]));
+                
+                Core::Real angle = yrad * 0.5;
+                double cx = cos(angle);
+                double sx = sin(angle);
+
+                angle = zrad * 0.5;
+                double cy = cos(angle);
+                double sy = sin(angle);
+
+                angle = xrad * 0.5;
+                double cz = cos(angle);
+                double sz = sin(angle);
+
+                quat.x = sx * sy * cz + cx * cy * sz;
+                quat.y = sx * cy * cz + cx * sy * sz;
+                quat.z = cx * sy * cz - sx * cy * sz;
+                quat.w = cx * cy * cz - sx * sy * sz;
+                
+                quat.normalize();
+            }
+            catch (boost::bad_lexical_cast)
+            {
+            }
+        }
+        
+        return quat;
+    }
+    
+    std::string WriteBool(bool value)
+    {
+        if (value)
+            return "true";
+        else
+            return "false";
+    }
+    
+    std::string WriteVector3(const Core::Vector3df& vector)
+    {
+        return Core::ToString<Core::Real>(vector.x) + " " +
+            Core::ToString<Core::Real>(vector.y) + " " +
+            Core::ToString<Core::Real>(vector.z);
+    }
+    
+    std::string WriteQuaternion(const Core::Quaternion& quat)
+    {
+        return Core::ToString<Core::Real>(quat.w) + " " +
+            Core::ToString<Core::Real>(quat.x) + " " +
+            Core::ToString<Core::Real>(quat.y) + " " +
+            Core::ToString<Core::Real>(quat.z);
+    }
+    
+    std::string WriteEulerAngles(const Core::Quaternion& quat)
+    {
+        Core::Vector3df radians;
+        quat.toEuler(radians);
+        
+        return Core::ToString<Core::Real>(radians.x * Core::RADTODEG) + " " +
+            Core::ToString<Core::Real>(radians.y * Core::RADTODEG) + " " + 
+            Core::ToString<Core::Real>(radians.z * Core::RADTODEG);
+        
+        //Ogre::Matrix3 rotMatrix;
+        //Ogre::Quaternion value = OgreRenderer::ToOgreQuaternion(quat);
+        //value.ToRotationMatrix(rotMatrix);
+        //Ogre::Radian anglex;
+        //Ogre::Radian angley;
+        //Ogre::Radian anglez;
+        //rotMatrix.ToEulerAnglesXYZ(anglex, angley, anglez);
+
+        //Core::Real angles[3];
+        //angles[0] = anglex.valueDegrees();
+        //angles[1] = angley.valueDegrees();
+        //angles[2] = anglez.valueDegrees();
+        //
+        //return Core::ToString<Core::Real>(angles[0]) + " " +
+        //    Core::ToString<Core::Real>(angles[1]) + " " + 
+        //    Core::ToString<Core::Real>(angles[2]);
+    }
+    
+    void SetAttribute(QDomElement& elem, const std::string& name, const std::string& value)
+    {
+        elem.setAttribute(QString::fromStdString(name), QString::fromStdString(value));
+    }
+    
+    
+    void SetAttribute(QDomElement& elem, const std::string& name, Core::Real value)
+    {
+        elem.setAttribute(QString::fromStdString(name), QString::fromStdString(Core::ToString<Core::Real>(value)));
+    }
+    
+    void SetAttribute(QDomElement& elem, const std::string& name, bool value)
+    {
+        elem.setAttribute(QString::fromStdString(name), QString::fromStdString(WriteBool(value)));
+    }
+    
     bool LegacyAvatarSerializer::ReadAvatarAppearance(RexLogic::EC_AvatarAppearance& dest, const QDomDocument& source)
     {
         dest.Clear();
@@ -400,84 +556,196 @@ namespace RexLogic
         return true;
     }
     
-    Core::Vector3df LegacyAvatarSerializer::ParseVector3(const std::string& text)
+    void LegacyAvatarSerializer::WriteAvatarAppearance(QDomDocument& dest, const EC_AvatarAppearance& source)
     {
-        Core::Vector3df vec(0.0f, 0.0f, 0.0f);
-        
-        Core::StringVector components = Core::SplitString(text, ' ');
-        if (components.size() == 3)
+        // Version element
         {
-            try
+            QDomElement version = dest.createElement("version");
+            QDomText text = dest.createTextNode("0.2");
+            version.appendChild(text);
+            dest.appendChild(version);
+        }
+        
+        // Avatar element
+        QDomElement avatar = dest.createElement("avatar");
+        
+        // Mesh element
+        {
+            QDomElement mesh = dest.createElement("base");
+            mesh.setAttribute("name", "default");
+            SetAttribute(mesh, "mesh", source.GetMesh().name_);
+            avatar.appendChild(mesh);
+        }
+        
+        // Skeleton element
+        {
+            QDomElement skeleton = dest.createElement("skeleton");
+            SetAttribute(skeleton, "name", source.GetSkeleton().name_);
+            avatar.appendChild(skeleton);
+        }
+        
+        // Material elements
+        const AvatarMaterialVector& materials = source.GetMaterials();
+        for (Core::uint i = 0; i < materials.size(); ++i)
+        {
+            // Append elements in submesh order
+            QDomElement material = dest.createElement("material");
+            
+            std::string mat_name = materials[i].asset_.name_;
+            // Strip away the file extension if exists
+            std::size_t idx = (mat_name.find(".material"));
+            if (idx != std::string::npos)
+                mat_name = mat_name.substr(0, idx);
+            
+            SetAttribute(material, "name", mat_name);
+            
+            avatar.appendChild(material);
+        }
+        
+        // Texture override elements
+        // Face
+        if (materials.size() >= 2)
+        {
+            if (materials[1].textures_.size() && (!materials[1].textures_[0].name_.empty()))
             {
-                vec.x = Core::ParseString<Core::Real>(components[0]);
-                vec.y = Core::ParseString<Core::Real>(components[1]);
-                vec.z = Core::ParseString<Core::Real>(components[2]);
-            }
-            catch (boost::bad_lexical_cast)
-            {
+                QDomElement texture_face = dest.createElement("texture_face");
+                SetAttribute(texture_face, "name", materials[1].textures_[0].name_);
+                avatar.appendChild(texture_face);
             }
         }
-        return vec;
+        // Body
+        if (materials.size() >= 1)
+        {
+            if (materials[0].textures_.size() && (!materials[0].textures_[0].name_.empty()))
+            {
+                QDomElement texture_body = dest.createElement("texture_body");
+                SetAttribute(texture_body, "name", materials[0].textures_[0].name_);
+                avatar.appendChild(texture_body);
+            }
+        }
+        
+        // Transformation element
+        {
+            QDomElement transformation = dest.createElement("transformation");
+            const Transform& transform  = source.GetTransform();
+            SetAttribute(transformation, "position", WriteVector3(transform.position_));
+            SetAttribute(transformation, "rotation", WriteQuaternion(transform.orientation_));
+            SetAttribute(transformation, "scale", WriteVector3(transform.scale_));
+            avatar.appendChild(transformation);
+        }
+        
+        // Bone modifiers
+        const BoneModifierSetVector& bone_modifiers = source.GetBoneModifiers();
+        for (Core::uint i = 0; i < bone_modifiers.size(); ++i)
+        {
+            WriteBoneModifierSet(dest, avatar, bone_modifiers[i]);
+        }
+        
+        // Morph modifiers
+        const MorphModifierVector& morph_modifiers = source.GetMorphModifiers();
+        for (Core::uint i = 0; i < morph_modifiers.size(); ++i)
+        {
+            QDomElement morph = WriteMorphModifier(dest, morph_modifiers[i]);
+            avatar.appendChild(morph);
+        }
+        
+        // Animations
+        const AnimationDefinitionMap& animations = source.GetAnimations();
+        AnimationDefinitionMap::const_iterator i = animations.begin();
+        while (i != animations.end())
+        {
+            QDomElement anim = WriteAnimationDefinition(dest, i->second);
+            avatar.appendChild(anim);
+            ++i;
+        }
+        
+        dest.appendChild(avatar);
     }
     
-    Core::Quaternion LegacyAvatarSerializer::ParseQuaternion(const std::string& text)
+    QDomElement LegacyAvatarSerializer::WriteAnimationDefinition(QDomDocument& dest, const AnimationDefinition& anim)
     {
-        Core::Quaternion quat;
+        QDomElement elem = dest.createElement("animation");
         
-        Core::StringVector components = Core::SplitString(text, ' ');
-        if (components.size() == 4)
-        {
-            try
-            {
-                quat.w = Core::ParseString<Core::Real>(components[0]);
-                quat.x = Core::ParseString<Core::Real>(components[1]);
-                quat.y = Core::ParseString<Core::Real>(components[2]);
-                quat.z = Core::ParseString<Core::Real>(components[3]);
-            }
-            catch (boost::bad_lexical_cast)
-            {
-            }
-        }
-        return quat;
+        SetAttribute(elem, "name", anim.name_);
+        SetAttribute(elem, "id", anim.id_);
+        SetAttribute(elem, "internal_name", anim.animation_name_);
+        SetAttribute(elem, "looped", anim.looped_);
+        SetAttribute(elem, "usevelocity", anim.use_velocity_);
+        SetAttribute(elem, "alwaysrestart", anim.always_restart_);
+        SetAttribute(elem, "fadein", anim.fadein_);
+        SetAttribute(elem, "fadeout", anim.fadeout_);
+        SetAttribute(elem, "speedfactor", anim.speedfactor_);
+        SetAttribute(elem, "weightfactor", anim.weightfactor_);
+        
+        return elem;
     }
     
-    Core::Quaternion LegacyAvatarSerializer::ParseEulerAngles(const std::string& text)
+    void LegacyAvatarSerializer::WriteBoneModifierSet(QDomDocument& dest, QDomElement& dest_elem, const BoneModifierSet& bones)
     {
-        Core::Quaternion quat;
+        QDomElement parameter = dest.createElement("dynamic_animation_parameter");
+        QDomElement modifier = dest.createElement("dynamic_animation");
         
-        Core::StringVector components = Core::SplitString(text, ' ');
-        if (components.size() == 3)
+        SetAttribute(parameter, "name", bones.name_);
+        SetAttribute(parameter, "position", bones.value_);
+        SetAttribute(modifier, "name", bones.name_);
+
+        QDomElement base_animations = dest.createElement("base_animations");
+        modifier.appendChild(base_animations);
+        
+        QDomElement bonelist = dest.createElement("bones");
+        for (Core::uint i = 0; i < bones.modifiers_.size(); ++i)
         {
-            try
-            {
-                Core::Real xrad = Core::degToRad(Core::ParseString<Core::Real>(components[0]));
-                Core::Real yrad = Core::degToRad(Core::ParseString<Core::Real>(components[1]));
-                Core::Real zrad = Core::degToRad(Core::ParseString<Core::Real>(components[2]));
-                
-                Core::Real angle = yrad * 0.5;
-                double cx = cos(angle);
-                double sx = sin(angle);
-
-                angle = zrad * 0.5;
-                double cy = cos(angle);
-                double sy = sin(angle);
-
-                angle = xrad * 0.5;
-                double cz = cos(angle);
-                double sz = sin(angle);
-
-                quat.x = sx * sy * cz + cx * cy * sz;
-                quat.y = sx * cy * cz + cx * sy * sz;
-                quat.z = cx * sy * cz - sx * cy * sz;
-                quat.w = cx * cy * cz - sx * sy * sz;
-                
-                quat.normalize();
-            }
-            catch (boost::bad_lexical_cast)
-            {
-            }
+            QDomElement bone = WriteBone(dest, bones.modifiers_[i]);
+            bonelist.appendChild(bone);
         }
+        modifier.appendChild(bonelist);
         
-        return quat;
+        if (!dest_elem.isNull())
+        {
+            dest_elem.appendChild(parameter);
+            dest_elem.appendChild(modifier);
+        }
+        else
+        {
+            dest.appendChild(parameter);
+            dest.appendChild(modifier);
+        }
+    }
+    
+    QDomElement LegacyAvatarSerializer::WriteBone(QDomDocument& dest, const BoneModifier& bone)
+    {
+        QDomElement elem = dest.createElement("bone");
+        SetAttribute(elem, "name", bone.bone_name_);
+        
+        QDomElement rotation = dest.createElement("rotation");
+        SetAttribute(rotation, "start", WriteEulerAngles(bone.start_.orientation_));
+        SetAttribute(rotation, "end", WriteEulerAngles(bone.end_.orientation_));
+        SetAttribute(rotation, "mode", modifier_mode[bone.orientation_mode_]);
+        
+        QDomElement translation = dest.createElement("translation");
+        SetAttribute(translation, "start", WriteVector3(bone.start_.position_));
+        SetAttribute(translation, "end", WriteVector3(bone.end_.position_));
+        SetAttribute(translation, "mode", modifier_mode[bone.position_mode_]);
+
+        QDomElement scale = dest.createElement("scale");
+        SetAttribute(scale, "start", WriteVector3(bone.start_.scale_));
+        SetAttribute(scale, "end", WriteVector3(bone.end_.scale_));
+        
+        elem.appendChild(rotation);
+        elem.appendChild(translation);
+        elem.appendChild(scale);
+
+        return elem;
+    }
+    
+    QDomElement LegacyAvatarSerializer::WriteMorphModifier(QDomDocument& dest, const MorphModifier& morph)
+    {
+        QDomElement elem = dest.createElement("morph_modifier");
+        SetAttribute(elem, "name", morph.name_);
+        SetAttribute(elem, "internal_name", morph.morph_name_);
+        SetAttribute(elem, "influence", morph.value_);
+        
+        return elem;
     }
 }
+

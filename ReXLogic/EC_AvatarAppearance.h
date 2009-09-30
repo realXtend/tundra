@@ -61,7 +61,7 @@ namespace RexLogic
     enum ModifierMode
     {
         //! Relative to the bone's initial transform
-        Relative,
+        Relative = 0,
         //! Absolute, overrides the bone's initial transform
         Absolute,
         //! Cumulative, adds to a previous modifier
