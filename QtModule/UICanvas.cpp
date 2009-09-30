@@ -256,6 +256,16 @@ void UICanvas::SetRenderWindowSize(const QSize& size)
     }
 }
 
+void UICanvas::SetCanvasWindowTitle(QString &title) 
+{
+	setWindowTitle(title);
+}
+
+void UICanvas::SetCanvasWindowIcon(QIcon &icon) 
+{
+	setWindowIcon(icon);
+}
+
 void UICanvas::ResizeOgreTexture(int width, int height)
 {
     Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());

@@ -135,7 +135,7 @@ namespace QtUI
         /** 
          * Returns true if canvas is not shown in window. 
          */
-        bool IsHidden() const; 
+        bool IsHidden() const;
 
      public slots:
     	
@@ -169,8 +169,17 @@ namespace QtUI
          * Add windget into canvas. Canvas will take ownership of the given widget. 
          * @param widget anykind QWidget. 
          */
-        void AddWidget(QWidget* widget);  
+        void AddWidget(QWidget* widget); 
 
+		/**
+		 * Set the window title with QString &title
+		 */
+		void SetCanvasWindowTitle(QString &title);
+
+		/**
+		 * Set the window icon with Qicon &icon
+		 */
+		void SetCanvasWindowIcon(QIcon &icon);
 
     signals:
         
