@@ -18,8 +18,11 @@ namespace OpenSimProtocol
     class XMLRPCLoginThread
     {
     public:
+        /// Default constructor.
         XMLRPCLoginThread();
-        ~XMLRPCLoginThread();
+
+        /// Destructor.
+        virtual ~XMLRPCLoginThread();
 
         /// Thread entry point.
         void operator()();
@@ -42,18 +45,18 @@ namespace OpenSimProtocol
          * @param authentication is a flag which defines is authentication done. 
          */
         void SetupXMLRPCLogin(
-            const std::string& first_name, 
-            const std::string& last_name, 
-            const std::string& password,
-            const std::string& worldAddress,
-            const std::string& worldPort,
-            const std::string& callMethod,
+            const std::string &first_name, 
+            const std::string &last_name, 
+            const std::string &password,
+            const std::string &worldAddress,
+            const std::string &worldPort,
+            const std::string &callMethod,
             ConnectionThreadState *thread_state,
-            const std::string& authentication_login = "",
-            const std::string& authentication_address = "",
-            const std::string& authentication_port = "",
-            bool authentication = false);
-        
+            const std::string &authentication_login = "",
+            const std::string &authentication_address = "",
+            const std::string &authentication_port = "",
+            const bool &authentication = false);
+
         /// Performs the actual XML-RPC login procedure.
         ///@return true if login (or authentication) was successful.
         bool PerformXMLRPCLogin();

@@ -36,14 +36,12 @@ void OpenSimProtocolModule::Unload()
 // virtual
 void OpenSimProtocolModule::Initialize()
 {
-    ///\todo Read the template filename from a config file.
     const char *filename = "./data/message_template.msg";
 
     networkManager_ = boost::shared_ptr<NetMessageManager>(new NetMessageManager(filename));
     assert(networkManager_);
-        
     networkManager_->RegisterNetworkListener(this);
-    
+
     // Register event categories.
     eventManager_ = framework_->GetEventManager();
     networkStateEventCategory_ = eventManager_->RegisterEventCategory("NetworkState");
@@ -56,11 +54,11 @@ void OpenSimProtocolModule::Initialize()
 // virtual 
 void OpenSimProtocolModule::Uninitialize()
 {
-    if(connected_)
+    if (connected_)
         DisconnectFromRexServer();
-    
+
     networkManager_->UnregisterNetworkListener(this);
-  
+
     LogInfo("System " + Name() + " uninitialized.");
 }
 
@@ -117,7 +115,7 @@ void OpenSimProtocolModule::LoginToServer(
     const std::string& address,
     int port,
     ConnectionThreadState *thread_state)
-{   
+{
     std::string callMethod = "login_to_simulator";
     loginWorker_.SetupXMLRPCLogin(first_name, last_name, password, address,
         boost::lexical_cast<std::string>(port), callMethod, thread_state);
@@ -157,7 +155,7 @@ bool OpenSimProtocolModule::LoginUsingRexAuthentication(
     int pos = auth_server_address.rfind(":");
     std::string auth_port = "";
     std::string auth_address = "";
-    
+
     if (pos != std::string::npos)
     {
         auth_port = auth_server_address.substr(pos+1);
@@ -170,12 +168,12 @@ bool OpenSimProtocolModule::LoginUsingRexAuthentication(
         auth_address = auth_server_address;
     }
     
-    loginWorker_.SetupXMLRPCLogin(first_name, last_name, password, address, boost::lexical_cast<std::string>(port), callMethod,
-        thread_state, auth_login, auth_address, auth_port, authentication);
-    
+    loginWorker_.SetupXMLRPCLogin(first_name, last_name, password, address, boost::lexical_cast<std::string>(port),
+        callMethod, thread_state, auth_login, auth_address, auth_port, authentication);
+
     // Start the thread.
     boost::thread(boost::ref(loginWorker_));
-    
+
     return true;
 }
 
@@ -202,7 +200,7 @@ bool OpenSimProtocolModule::CreateUDPConnection(const char *address, int port)
 
 void OpenSimProtocolModule::DisconnectFromRexServer()
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
     networkManager_->Disconnect();
@@ -241,12 +239,9 @@ std::string OpenSimProtocolModule::GetCapability(const std::string &name)
 void OpenSimProtocolModule::SetCapability(const std::string &name, const std::string &url)
 {
     std::pair<caps_map_it_t, bool> ret;
-
     ret = capabilities_.insert(std::pair<std::string, std::string>(name, url)); 
     if (ret.second == false)
-    {
         LogError("Capability " + name + "already exists with an URL " + ret.first->second);
-    }
 }
 
 void OpenSimProtocolModule::RequestCapabilities(const std::string &seed)
@@ -285,13 +280,13 @@ void OpenSimProtocolModule::RequestCapabilities(const std::string &seed)
         "<string>UntrustedSimulatorMessage</string>"
         "<string>ViewerStats</string>"
         "</array></llsd>";
-    
+
     HttpUtilities::HttpRequest request;
     request.SetUrl(seed);
     request.SetMethod(HttpUtilities::HttpRequest::Post);
     request.SetRequestData("application/xml", msg.c_str());
     request.Perform();
-    
+
     if (!request.GetSuccess())
     {
         LogError(request.GetReason());

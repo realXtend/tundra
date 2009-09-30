@@ -27,7 +27,11 @@ namespace OpenSimProtocol
         /// @param id ID.
         /// @param name Name.
         /// @param parent Parent folder.
-        InventoryFolder(const RexUUID &id, const std::string &name = "New Folder", InventoryFolder *parent = 0);
+        InventoryFolder(
+            const RexUUID &id,
+            const std::string &name = "New Folder",
+            const bool &editable = true,
+            InventoryFolder *parent = 0);
 
         /// Destructor.
         virtual ~InventoryFolder();
@@ -42,6 +46,13 @@ namespace OpenSimProtocol
         /// @param child Child to be added.
         /// @return Pointer to the new child.
         InventoryItemBase *AddChild(InventoryItemBase *child);
+
+        /// Deletes child.
+        /// @param position 
+        /// @param count 
+        /// @return True if removing is succesfull, false otherwise.
+        /// @note It's not recommended to use this directly. This function is used by InventoryModel::removeRows().
+        bool RemoveChildren(int position, int count);
 
         /// Deletes child.
         /// @param child Child to be deleted.
@@ -79,14 +90,17 @@ namespace OpenSimProtocol
         ///\todo Probably not needed. Delete?
         int ColumnCount() const;
 
+        ///
+        /// @param column
+        /// @param value
+        /// @return True if succesfull, false otherwise.
+        bool SetData(int column, const QVariant &value);
+
         /// @param column
         QVariant Data(int column) const;
 
         /// @return Row number of the folder.
         int Row() const;
-
-        /// @return Can user edit this folder's name, delete or remove it.
-        const bool IsEditable() const { return editable_; }
 
         ///\todo Find out is this needed?
         int version;
@@ -99,10 +113,9 @@ namespace OpenSimProtocol
         QList<InventoryItemBase *> childItems_;
 
         ///
-        QList<QVariant> itemData_;
 
-        /// Is this folder editable.
-        bool editable_;
+        ///
+        QList<QVariant> itemData_;
     };
 }
 

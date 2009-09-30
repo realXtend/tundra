@@ -37,7 +37,7 @@ namespace OpenSimProtocol
             std::string gridUrl = "";
             std::string avatarStorageUrl = "";
             std::string seedCapabilities = "";
-            inventory.reset();
+            //inventory.reset();
         }
 
         RexUUID agentID;
@@ -60,13 +60,13 @@ namespace OpenSimProtocol
          * @note this event should never send from outside module. Use DisconnectFromServer() or similar method.
          */
         static const Core::event_id_t EVENT_SERVER_DISCONNECTED = 0x01;
-    
+
         /** 
          * Notify event which is send when connection is made to the server. 
          * @note this event should never send from outside module. Use ConnectToServer() or similar method.
          */
         static const Core::event_id_t EVENT_SERVER_CONNECTED = 0x02;
-        
+
         /**
          * Notify event which can be send when connection has failed. 
          * @note this event should never send from outside module. 
@@ -77,7 +77,7 @@ namespace OpenSimProtocol
     /// Enumeration of the network connection states.
     /// When modified, update also the connection_strings table of the NetworkStateToString function.
     namespace Connection
-    {    
+    {
         enum State
         {
             STATE_LOGIN_FAILED = 0,
@@ -120,8 +120,8 @@ namespace OpenSimProtocol
     class NetworkEventInboundData : public Foundation::EventDataInterface
     {
     public:
-        NetworkEventInboundData(NetMsgID id, NetInMessage *msg)
-        : message(msg), messageID(id) {}
+        NetworkEventInboundData(NetMsgID id, NetInMessage *msg) :
+            message(msg), messageID(id) {}
         virtual ~NetworkEventInboundData() {}
 
         NetMsgID messageID;
@@ -133,8 +133,8 @@ namespace OpenSimProtocol
     class NetworkEventOutboundData : public Foundation::EventDataInterface
     {
     public:
-        NetworkEventOutboundData(NetMsgID id, const NetOutMessage *msg)
-        : message(msg), messageID(id) {}
+        NetworkEventOutboundData(NetMsgID id, const NetOutMessage *msg) :
+            message(msg), messageID(id) {}
         virtual ~NetworkEventOutboundData() {}
 
         NetMsgID messageID;

@@ -32,16 +32,21 @@ namespace OpenSimProtocol
 
     public:
         /// Constructor.
-        InventoryModel::InventoryModel();
+        InventoryModel();
 
         /// Destructor
         virtual ~InventoryModel();
+
+        InventoryModel(const InventoryModel &rhs) { inventoryTreeRoot_ = rhs.inventoryTreeRoot_; }
 
         /// QAbstractItemModel override.
         QVariant data(const QModelIndex &index, int role) const;
 
         /// QAbstractItemModel override.
         Qt::ItemFlags flags(const QModelIndex &index) const;
+
+        /// QAbstractItemModel override.
+        Qt::DropActions supportedDropActions() const;
 
         /// QAbstractItemModel override.
         QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;

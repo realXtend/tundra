@@ -34,8 +34,16 @@ namespace OpenSimProtocol
         /// @param type Type (folder or item)
         /// @param id ID.
         /// @param type name Name.
-        InventoryItemBase(const InventoryItemType &type, const RexTypes::RexUUID &id, const std::string &name,
-            InventoryFolder *parent = 0, const QModelIndex &index = QModelIndex());
+        /// @param type parent Parent folder.
+        /// @param type editable Is this item editable.
+        /// @param type index Tree model index.
+        InventoryItemBase(
+            const InventoryItemType &type,
+            const RexTypes::RexUUID &id,
+            const std::string &name,
+            const bool &editable = true,
+            InventoryFolder *parent = 0,
+            const QModelIndex &index = QModelIndex());
 
         /// Destructor.
         virtual ~InventoryItemBase() {}
@@ -45,9 +53,6 @@ namespace OpenSimProtocol
 
         /// Assign operator.
         InventoryItemBase &operator =(const InventoryItemBase &rhs);
-
-        /// Equality operator.
-        bool operator ==(const InventoryItemBase &rhs) const;
 
         /// Sets the name.
         /// @param name Name.
@@ -72,6 +77,12 @@ namespace OpenSimProtocol
         /// @return Parent.
         InventoryFolder *GetParent() const { return parent_; }
 
+        /// @param editable Can this item be edited or not.
+        void SetEditable(const bool &editable) { editable_ = editable; }
+
+        /// @return Can user edit this item.
+        const bool IsEditable() const { return editable_; }
+
     protected:
         /// Type of the tree item.
         InventoryItemType itemType_;
@@ -87,6 +98,11 @@ namespace OpenSimProtocol
 
         ///
         QModelIndex index_;
+
+        /// Is this item editable.
+        bool editable_;
+
+       /// 
     };
 }
 

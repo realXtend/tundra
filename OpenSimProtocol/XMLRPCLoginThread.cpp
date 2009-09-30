@@ -22,6 +22,7 @@ XMLRPCLoginThread::XMLRPCLoginThread() : beginLogin_(false), ready_(false)
 {
 }
 
+// virtual
 XMLRPCLoginThread::~XMLRPCLoginThread()
 {
 }
@@ -29,9 +30,9 @@ XMLRPCLoginThread::~XMLRPCLoginThread()
 void XMLRPCLoginThread::operator()()
 {
     if(beginLogin_)
-    {   
+    {
         threadState_->state = Connection::STATE_WAITING_FOR_XMLRPC_REPLY;
-        
+
         bool success = PerformXMLRPCLogin();
         if (success && !authentication_)
         {
@@ -42,10 +43,10 @@ void XMLRPCLoginThread::operator()()
         {
             // First round of authentication succeeded; sessions hash, grid & avatar url's reveiced.
             threadState_->state = Connection::STATE_XMLRPC_AUTH_REPLY_RECEIVED;
-            
+
             // Perform second round to received the agent, session & region id's.
             callMethod_ = "login_to_simulator";
-            
+
             bool success2 = PerformXMLRPCLogin();
             if (success2)
                 threadState_->state = Connection::STATE_XMLRPC_REPLY_RECEIVED;
@@ -54,7 +55,7 @@ void XMLRPCLoginThread::operator()()
         }
         else
             threadState_->state = Connection::STATE_LOGIN_FAILED;
-        
+
         beginLogin_ = false;
     }
 }
@@ -68,17 +69,17 @@ volatile Connection::State XMLRPCLoginThread::GetState() const
 }
 
 void XMLRPCLoginThread::SetupXMLRPCLogin(
-            const std::string& first_name, 
-            const std::string& last_name, 
-            const std::string& password,
-            const std::string& worldAddress,
-            const std::string& worldPort,
-            const std::string& callMethod,
-            ConnectionThreadState *thread_state,
-            const std::string& authentication_login,
-            const std::string& authentication_address,
-            const std::string& authentication_port,
-            bool authentication)
+    const std::string& first_name,
+    const std::string& last_name,
+    const std::string& password,
+    const std::string& worldAddress,
+    const std::string& worldPort,
+    const std::string& callMethod,
+    ConnectionThreadState *thread_state,
+    const std::string& authentication_login,
+    const std::string& authentication_address,
+    const std::string& authentication_port,
+    const bool &authentication)
 {
     // Save the info for login.
     firstName_ = first_name;
@@ -112,11 +113,32 @@ static std::string ExtractGridAddressFromXMLRPCReply(XMLRPCEPI &call)
     if (port <= 0 || port >= 65536)
         return "";
 
-    std::string s;
     std::stringstream out;
     out << gridUrl << ":" << port;
 
     return out.str();
+}
+
+/// Checks if the name of the folder belongs to the harcoded OpenSim folders.
+/// @param name name of the folder.
+/// @return True if one of the harcoded folders, false if not.
+///\todo Add the World Library folders also here.
+static bool IsHardcodedOpenSimFolder(const char *name)
+{
+    const char *folders[] = { "My Inventory", "Animations", "Body Parts", "Calling Cards", "Clothing", "Gestures",
+        "Landmarks", "Lost And Found", "Notecards", "Objects", "Photo Album", "Scripts", "Sounds", "Textures", "Trash" };
+
+    for(int i = 0; i < NUMELEMS(folders); ++i)
+    {
+#ifdef _MSC_VER
+        if (!_strcmpi(folders[i], name))
+#else
+        if (!strcasecmp(folders[i], name))
+#endif
+            return true;
+    }
+
+    return false;
 }
 
 /// This function reads the inventory tree that was stored in the XMLRPC login_to_simulator reply.
@@ -213,6 +235,7 @@ boost::shared_ptr<InventoryModel> ExtractInventoryFromXMLRPCReply(XMLRPCEPI &cal
         if (iter->second->GetID() == inventoryRootFolderID)
         {
             InventoryFolder *root = inventory->GetRoot();
+            iter->second->SetEditable(false);
             root->AddChild(iter->second);
             folders.erase(iter);
             break;
@@ -234,10 +257,14 @@ boost::shared_ptr<InventoryModel> ExtractInventoryFromXMLRPCReply(XMLRPCEPI &cal
             DetachedInventoryFolderList::iterator next = iter;
             ++next;
 
-            //InventoryFolder *parent = inventory->GetFirstSubFolderByID(iter->first);
             InventoryFolder *parent = inventory->GetChildFolderByID(iter->first);
             if (parent)
             {
+                // Mark harcoded OpenSim folders non-editable (must the children of My Inventory also).
+                if (parent->GetID() == inventoryRootFolderID && 
+                    IsHardcodedOpenSimFolder(iter->second->GetName().c_str()))
+                    iter->second->SetEditable(false);
+
                 parent->AddChild(iter->second);
                 progress = true;
                 folders.erase(iter);
@@ -279,7 +306,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
             call.CreateCall(callMethod_);
         }
     }
-    catch (XMLRPCException& ex)
+    catch(XMLRPCException& ex)
     {
         // Initialisation error.
         OpenSimProtocolModule::LogError(ex.what());
@@ -295,7 +322,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
             call.AddMember("last", lastName_);
             call.AddMember("passwd", password_hash);
          }
-        else if (authentication_ && callMethod_ == std::string("ClientAuthentication"))
+        else if(authentication_ && callMethod_ == std::string("ClientAuthentication"))
         {
             // We're performing an authentication method call to the Rex auth server. This is the first stage of
             // Rex login.
@@ -307,7 +334,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
             loginuri = loginuri+worldAddress_+":"+ worldPort_;
             call.AddMember("loginuri", loginuri);
         }
-        else if (authentication_ && callMethod_ == std::string("login_to_simulator") )
+        else if(authentication_ && callMethod_ == std::string("login_to_simulator") )
         {
             // We're logging in to the sim server after having authenticated with the Rex auth server first.
             // This is the second stage of Rex login.
@@ -329,12 +356,9 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
                 loginuri = "http://";
 
             if ( authenticationLogin_ == std::string("openid") )
-            {
                 loginuri = loginuri + worldAddress_;
-            } else
-            {
+            else
                 loginuri = loginuri + worldAddress_ + ":" + worldPort_;
-            }
 
             call.AddMember("loginuri", loginuri.c_str());
         }

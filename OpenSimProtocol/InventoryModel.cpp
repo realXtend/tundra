@@ -51,22 +51,38 @@ QVariant InventoryModel::data(const QModelIndex &index, int role) const
     //QList<QVariant> data;
 
     return i->Data(index.column());
+//    std::cout << i->Data(index.column()).toString().toStdString() << std::endl;
     //return item->Data(index.column());
     //data << QString(item->GetName().c_str());
     //data << "Ttest" << "123234";
     //return data;
 }
 
+/*Qt::ItemFlags NowPlayingModel::flags(const QModelIndex& index)const
+{
+    if(!index.isValid())
+        return Qt::ItemIsEnabled | Qt::ItemIsDropEnabled;
+    Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled;
+    if(mColumns.at(index.column()).isEditable)
+        flags |= Qt::ItemIsEditable;
+    return flags;
+}*/
+
 Qt::ItemFlags InventoryModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
         return 0;
-/*
+
     InventoryItemBase *item = GetItem(index);
     if (item->IsEditable())
         return Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
-*/
+
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+}
+
+Qt::DropActions InventoryModel::supportedDropActions() const
+{
+    return /*Qt::CopyAction | */ Qt::MoveAction;
 }
 
 QVariant InventoryModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -112,41 +128,8 @@ bool InventoryModel::insertRows(int position, int rows, const QModelIndex &paren
 
     return true;
 }
-int xxx = 0;
+
 InventoryFolder *InventoryModel::InsertRow(int position, const QModelIndex &parent)
-{
-    ///\todo Make work for assets also.
-    InventoryFolder *folder = dynamic_cast<InventoryFolder *>(GetItem(parent));
-    if (!folder)
-        return 0;
-
-    beginInsertRows(parent, position, position);
-    std::string name = "New Folder";
-    name += Core::ToString(xxx);
-    ++xxx;
-    InventoryFolder *newFolder = new InventoryFolder(RexUUID::CreateRandom(), name, folder);
-    folder->AddChild(newFolder);
-    endInsertRows();
-
-    return newFolder;
-}
-
-bool InventoryModel::removeRows(int position, int rows, const QModelIndex &parent)
-{
-    ///\todo Make work for assets also.
-    InventoryFolder *folder = dynamic_cast<InventoryFolder *>(GetItem(parent));
-    if (!folder)
-        return false;
-
-    beginRemoveRows(parent, position, position + rows - 1);
-    folder->DeleteChild(folder);
-    endRemoveRows();
-
-    return true;
-}
-
-/*
-void InventoryModel::DeleteChild(int position, const QModelIndex &parent)
 {
     ///\todo Make work for assets also.
     InventoryFolder *folder = dynamic_cast<InventoryFolder *>(GetItem(parent));
@@ -160,7 +143,28 @@ void InventoryModel::DeleteChild(int position, const QModelIndex &parent)
 
     return newFolder;
 }
-*/
+
+bool InventoryModel::removeRows(int position, int rows, const QModelIndex &parent)
+{
+    ///\todo Make work for assets also.
+    InventoryFolder *parentFolder = dynamic_cast<InventoryFolder *>(GetItem(parent));
+    if (!parentFolder)
+        return false;
+
+    InventoryFolder *childFolder = dynamic_cast<InventoryFolder *>(parentFolder->Child(position));
+    if (!childFolder)
+        return false;
+
+    std::cout << childFolder->GetName() << std::endl;
+    if (!childFolder->IsEditable())
+        return false;
+
+    beginRemoveRows(parent, position, position + rows - 1);
+    bool success = parentFolder->RemoveChildren(position, rows);
+    endRemoveRows();
+
+    return success;
+}
 
 QModelIndex InventoryModel::parent(const QModelIndex &index) const
 {
@@ -195,13 +199,19 @@ bool InventoryModel::setData(const QModelIndex &index, const QVariant &value, in
     if (role != Qt::EditRole)
         return false;
 
-    InventoryFolder *folder = dynamic_cast<InventoryFolder *>(GetItem(index));
+    InventoryItemBase *item = GetItem(index);
+    InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
+    ///\todo Make work also for assets.
     if (!folder)
         return false;
 
-//    bool result = InventoryItemBase->setData(index.column(), value);
-//    if (result)
-    emit dataChanged(index, index);
+    if(!folder->IsEditable())
+        return false;
+
+    bool result = folder->SetData(index.column(), value);
+    //item->setData(index.column(), value);
+    if (result)
+        emit dataChanged(index, index);
 
     return true;
 }
@@ -237,34 +247,6 @@ InventoryFolder *InventoryModel::GetOrCreateNewFolder(const RexUUID &id, Invento
     InventoryFolder *newFolder = new InventoryFolder(id, "New Folder", &parent);
     return static_cast<InventoryFolder *>(parent.AddChild(newFolder));
 }
-
-/*
-void InventoryModel::SetupModelData(Inventory *inventory, InventoryFolder *parent)
-{
-    QList<InventoryFolder *> parents;
-    parents << parent;
-    QList<QVariant> columnData;
-    columnData << "Testing123";
-
-    std::list<InventoryFolder> folders;
-    std::list<InventoryFolder>::iterator it;
-
-    InventoryFolder *root = inventory->GetRoot();
-    if (!root)
-        return;
-
-    ///\todo NEEDS A GENERIC LOGIC!!!
-    // My Inventory
-    InventoryFolder *my_inventory = new InventoryFolder(columnData, root->GetID(), root->GetName(), parents.last());
-    parent->AppendChild(my_inventory);
-
-    // My Inventory's children
-    folders = root->GetChildren();
-    for(it = folders.begin(); it != folders.end(); ++it)
-        my_inventory->AppendChild(new InventoryFolder(columnData, it->GetID(), it->GetName(), my_inventory));
-        //parents.last()->AppendChild(new InventoryFolder(columnData, it->GetID(), it->GetName(), parents.last()));
-}
-*/
 
 InventoryItemBase *InventoryModel::GetItem(const QModelIndex &index) const
 {
