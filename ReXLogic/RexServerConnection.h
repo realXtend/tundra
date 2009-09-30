@@ -153,7 +153,7 @@ namespace RexLogic
         /** Sends a which moves inventory folder and its contains to other folder.
          *  Used when deleting/removing folders to the Trash folder.
          *  @param parent_id The parent folder (folder where we want to move another foldeR) UUID.
-         *  @param folder_id UUID of the folder to be moved..
+         *  @param folder_id UUID of the folder to be moved.
          *  @param re_timestamp Should the server re-timestamp children.
          */
         void SendMoveInventoryFolderPacket(
@@ -199,6 +199,21 @@ namespace RexLogic
         /// @param item_id_list List of ID's of the items to be removed.
         void SendRemoveInventoryItemPacket(std::list<RexTypes::RexUUID> item_id_list);
 
+        /// Sends packet which modifies inventory folder's name and/or type.
+        /// @param parent_id The parent folder ID.
+        /// @param folder_id Folder ID.
+        /// @param type New type.
+        /// @param name New name.
+        void SendUpdateInventoryFolderPacket(
+            const RexTypes::RexUUID &folder_id,
+            const RexTypes::RexUUID &parent_id,
+            const int8_t &type,
+            const std::string &name);
+
+        /// Sends packet which modifies inventory item's name and/or type.
+        ///\todo
+        void SendUpdateInventoryItemPacket();
+
         /** Sends a packet requesting contents of a inventory folder.
          *  @param folder_id Folder UUID.
          *  @param owner_id Owner UUID.
@@ -206,7 +221,7 @@ namespace RexLogic
          *  @param fetch_folders False will omit folders in query.
          *  @param fetch_items False will omit items in query.
          */
-        void SendFetchInventoryDescendents(
+        void SendFetchInventoryDescendentsPacket(
             const RexTypes::RexUUID &folder_id,
             const RexTypes::RexUUID &owner_id,
             const int32_t &sort_order,

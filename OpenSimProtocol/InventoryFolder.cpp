@@ -13,10 +13,15 @@ namespace OpenSimProtocol
 
 InventoryFolder::InventoryFolder(): InventoryItemBase(Type_Folder, RexUUID(), "New Folder", 0)
 {
+    itemData_ << "New Folder";
 }
 
-InventoryFolder::InventoryFolder(const RexUUID &id, const std::string &name, InventoryFolder *parent) :
-    InventoryItemBase(Type_Folder, id, name, parent)
+InventoryFolder::InventoryFolder(
+    const RexUUID &id,
+    const std::string &name,
+    const bool &editable,
+    InventoryFolder *parent) :
+    InventoryItemBase(Type_Folder, id, name, editable, parent)
 {
     itemData_ << name.c_str();
 }
@@ -52,13 +57,24 @@ InventoryItemBase *InventoryFolder::AddChild(InventoryItemBase *child)
     return childItems_.back();
 }
 
+bool InventoryFolder::RemoveChildren(int position, int count)
+{
+    if (position < 0 || position + count > childItems_.size())
+        return false;
+
+    for(int row = 0; row < count; ++row)
+        delete childItems_.takeAt(position);
+
+    return true;
+}
+
 void InventoryFolder::DeleteChild(InventoryItemBase *child)
 {
     QListIterator<InventoryItemBase *> it(childItems_);
     while(it.hasNext())
     {
         InventoryItemBase *item = it.next();
-        if(item == child)
+        if (item == child)
             SAFE_DELETE(item);
     }
 }
@@ -69,7 +85,7 @@ void InventoryFolder::DeleteChild(const RexUUID &id)
     while(it.hasNext())
     {
         InventoryItemBase *item = it.next();
-        if(item->GetID() == id)
+        if (item->GetID() == id)
             SAFE_DELETE(item);
     }
 }
@@ -85,9 +101,9 @@ const bool InventoryFolder::IsChild(InventoryFolder *child)
         {
             if (folder == child)
                 return true;
-            
-                if (folder->IsChild(child))
-                    return true;
+
+            if (folder->IsChild(child))
+                return true;
         }
     }
 
@@ -163,6 +179,21 @@ int InventoryFolder::ChildCount() const
 int InventoryFolder::ColumnCount() const
 {
     return itemData_.count();
+}
+
+bool InventoryFolder::SetData(int column, const QVariant &value)
+{
+    if (column < 0 || column >= itemData_.size())
+        return false;
+
+    if (itemData_[column] == value || value.toString().toStdString() == "")
+        return false;
+
+    if (!IsEditable())
+        return false;
+
+    itemData_[column] = value;
+    return true;
 }
 
 QVariant InventoryFolder::Data(int column) const

@@ -830,7 +830,75 @@ void RexServerConnection::SendRemoveInventoryItemPacket(std::list<RexTypes::RexU
     FinishMessageBuilding(m);
 }
 
-void RexServerConnection::SendFetchInventoryDescendents(
+void RexServerConnection::SendUpdateInventoryFolderPacket(
+    const RexTypes::RexUUID &folder_id,
+    const RexTypes::RexUUID &parent_id,
+    const int8_t &type,
+    const std::string &name)
+{
+    if (!connected_)
+        return;
+
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgUpdateInventoryFolder);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(myInfo_.agentID);
+    m->AddUUID(myInfo_.sessionID);
+
+    // FolderData, variable
+    m->SetVariableBlockCount(1);
+    m->AddUUID(folder_id);
+    m->AddUUID(parent_id);
+    m->AddS8(type);
+    ///\todo if "+1" doesn't exist, last char vanishes from the name, eg. "3D Models" -> "3D Model".
+    m->AddBuffer(name.length() + 1, (uint8_t*)name.c_str());
+
+    FinishMessageBuilding(m);
+}
+
+///\todo
+void RexServerConnection::SendUpdateInventoryItemPacket()
+{
+/*
+UpdateInventoryItem Low 266 NotTrusted Zerocoded
+{
+    AgentData            Single
+    {    AgentID            LLUUID    }
+    {    SessionID        LLUUID    }
+    {    TransactionID    LLUUID    }
+}
+{
+    InventoryData        Variable
+    {    ItemID            LLUUID    }
+    {    FolderID        LLUUID    }
+    {    CallbackID        U32        } // Async Response
+    
+    {    CreatorID        LLUUID    }    // permissions
+    {    OwnerID            LLUUID    }    // permissions
+    {    GroupID            LLUUID    }    // permissions
+    {    BaseMask        U32    }    // permissions
+    {    OwnerMask        U32    }    // permissions
+    {    GroupMask        U32    }    // permissions
+    {    EveryoneMask    U32    }    // permissions
+    {    NextOwnerMask    U32    }    // permissions
+    {    GroupOwned        BOOL    }    // permissions
+
+    {    TransactionID    LLUUID    } // TransactionID: new assets only
+    {    Type            S8    }
+    {    InvType            S8    }
+    {    Flags            U32    }
+    {    SaleType        U8    }
+    {    SalePrice        S32    }
+    {    Name            Variable    1    }
+    {    Description        Variable    1    }
+    {    CreationDate    S32    }
+    {    CRC                U32    }
+}
+*/
+}
+
+void RexServerConnection::SendFetchInventoryDescendentsPacket(
     const RexTypes::RexUUID &folder_id,
     const RexTypes::RexUUID &owner_id,
     const int32_t &sort_order,

@@ -11,14 +11,29 @@
 namespace OpenSimProtocol
 {
 
-InventoryItemBase::InventoryItemBase():
-    itemType_(Type_Unknown), id_(RexTypes::RexUUID()), name_("Unknown"), parent_(0), index_(QModelIndex())
+InventoryItemBase::InventoryItemBase() :
+    itemType_(Type_Unknown),
+    id_(RexTypes::RexUUID()),
+    name_("Unknown"),
+    editable_(true),
+    parent_(0),
+    index_(QModelIndex())
 {
 }
 
-InventoryItemBase::InventoryItemBase(const InventoryItemType &type, const RexTypes::RexUUID &id,
-    const std::string &name, InventoryFolder *parent, const QModelIndex &index) :
-    itemType_(type), id_(id), name_(name), parent_(parent), index_(index)
+InventoryItemBase::InventoryItemBase(
+    const InventoryItemType &type,
+    const RexTypes::RexUUID &id,
+    const std::string &name,
+    const bool &editable,
+    InventoryFolder *parent,
+    const QModelIndex &index) :
+    itemType_(type),
+    id_(id),
+    name_(name),
+    editable_(editable),
+    parent_(parent),
+    index_(index)
 {
 }
 
@@ -39,11 +54,6 @@ InventoryItemBase &InventoryItemBase::operator =(const InventoryItemBase &rhs)
     parent_ = rhs.parent_;
     index_ = rhs.index_;
     return *this;
-}
-
-bool InventoryItemBase::operator ==(const InventoryItemBase &rhs) const
-{
-    return itemType_ == rhs.itemType_ && id_ == rhs.id_ && name_ == rhs.name_ && parent_ == rhs.parent_ && index_ == rhs.index_;
 }
 
 }

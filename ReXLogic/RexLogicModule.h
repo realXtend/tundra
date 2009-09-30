@@ -175,6 +175,12 @@ namespace RexLogic
         //! logout from server and delete current scene
         void LogoutAndDeleteWorld();
 
+        /// Initializes the inventory view/data model
+        void InitInventoryView();
+
+        /// Initializes the inventory view/data model
+        void ResetInventoryView();
+
         /// Shows the inventory window.
         void ShowInventory();
 
@@ -247,7 +253,7 @@ namespace RexLogic
         //! Recreates the sky. Called at startup.
         void CreateSky();
 
-        //! Recreates the environment. Called at startup.        
+        //! Recreates the environment. Called at startup.
         void CreateEnvironment();
 
         //! workaround for not being able to send events during initialization

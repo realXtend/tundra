@@ -403,6 +403,16 @@ namespace RexLogic
             DeleteScene("World");
     }
 
+    void RexLogicModule::InitInventoryView()
+    {
+        inventoryWindow_->InitInventoryTreeView();
+    }
+
+    void RexLogicModule::ResetInventoryView()
+    {
+        inventoryWindow_->ResetInventoryTreeView();
+    }
+
     void RexLogicModule::ShowInventory()
     {
         inventoryWindow_->Show();

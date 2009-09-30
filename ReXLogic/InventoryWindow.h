@@ -1,9 +1,13 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+/**
+ *  @file InventoryWindow.h
+ *  @brief The inventory window.
+ */
+
 #ifndef incl_InventoryWindow_h
 #define incl_InventoryWindow_h
 
-//#include "NetworkEvents.h"
 #include "Foundation.h"
 
 #include <QObject>
@@ -13,7 +17,6 @@ class QWidget;
 class QPushButton;
 class QTreeWidgetItem;
 class QTreeView;
-
 
 namespace QtUI
 {
@@ -44,8 +47,10 @@ namespace RexLogic
         virtual ~InventoryWindow();
 
     public slots:
-        ///
+        /// Initializes the inventory data/view model.
         void InitInventoryTreeView();
+
+        void ResetInventoryTreeView();
 
         /// Shows the inventory window.
         void Show();
@@ -53,21 +58,32 @@ namespace RexLogic
         /// Hides the inventory window.
         void Hide();
 
-        ///
-        void FetchInventoryDescendents(const QModelIndex &index);
-
         /// Updates menu actions.
         void UpdateActions();
 
     private slots:
+        /// Fetchs the inventory folder's descendents.
+        void FetchInventoryDescendents(const QModelIndex &index);
+
         /// Creates new folder.
         void CreateFolder();
 
         /// Deletes folder.
         void DeleteFolder();
 
+        /// Creates new inventory asset.
+        void CreateAsset();
+
+        /// Deletes inventory asset.
+        void DeleteAsset();
+
+        /// Informs the server about change in name of folder or asset.
+        void NameChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+
     private:
-        ///
+        Q_DISABLE_COPY(InventoryWindow);
+
+        /// Initializes the inventory UI.
         void InitInventoryWindow();
 
         /// Pointer to the framework.
@@ -79,18 +95,18 @@ namespace RexLogic
         /// Pointer to QtModule.
         boost::shared_ptr<QtUI::QtModule> qtModule_;
 
-        ///
+        /// Inventory (model) pointer.
         boost::shared_ptr<OpenSimProtocol::InventoryModel> inventory_;
 
-        ///
+        /// Inventory window widget.
         QWidget *inventoryWidget_;
 
-        ///
+        /// Canvas for the inventory window.
         boost::shared_ptr<QtUI::UICanvas> canvas_;
 
         ///
-        boost::shared_ptr<QtUI::UICanvas> screen_canvas_;
+        OpenSimProtocol::InventoryModel *inventoryModel_;
     };
-} // namespace RexLogic
+}
 
 #endif
