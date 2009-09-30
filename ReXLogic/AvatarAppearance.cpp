@@ -104,6 +104,14 @@ namespace RexLogic
         
         // Deserialize appearance from the document into the EC
         LegacyAvatarSerializer::ReadAvatarAppearance(appearance, *default_appearance_);
+        
+        //QDomDocument default_copy;
+        //LegacyAvatarSerializer::WriteAvatarAppearance(default_copy, appearance);
+        //QFile file("your_awsum_default_avatar.xml");
+        //file.open(QIODevice::WriteOnly);
+        //QByteArray content = default_copy.toByteArray();
+        //file.write(content);
+        //file.close();
         SetupAppearance(entity);
     }
     
@@ -209,7 +217,7 @@ namespace RexLogic
         OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()).get());
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(entity->GetComponent(EC_AvatarAppearance::NameStatic()).get());
         
-        // Mesh needs to be cloned if there are attachments which need to hide vertices, or custom skeleton
+        // Mesh needs to be cloned if there are attachments which need to hide vertices
         bool need_mesh_clone = true;
         
         const AvatarAttachmentVector& attachments = appearance.GetAttachments();
@@ -675,6 +683,15 @@ namespace RexLogic
         
         // Deserialize appearance from the document into the EC
         LegacyAvatarSerializer::ReadAvatarAppearance(appearance, appearance_doc);
+        
+        //QDomDocument copy;
+        //LegacyAvatarSerializer::WriteAvatarAppearance(copy, appearance);
+        //QFile file("your_awsum_avatar.xml");
+        //file.open(QIODevice::WriteOnly);
+        //QByteArray content = copy.toByteArray();
+        //file.write(content);
+        //file.close();
+        
         appearance.SetAssetMap(assets);
         
         // Request needed avatar resources

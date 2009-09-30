@@ -16,7 +16,7 @@ namespace RexLogic
     class LegacyAvatarSerializer
     {
     public:
-        //! Reads avatar definition into an EC_AvatarAppearance from an xml document & avatar asset map
+        //! Reads avatar definition into an EC_AvatarAppearance from an xml document
         //! \return true if mostly successful
         static bool ReadAvatarAppearance(EC_AvatarAppearance& dest, const QDomDocument& source);
         
@@ -24,6 +24,10 @@ namespace RexLogic
         //! \return true if successful
         static bool ReadAnimationDefinitions(AnimationDefinitionMap& dest, const QDomDocument& source);
         
+        //! Writes avatar definition from an EC_AvatarAppearance into an xml document
+        static void WriteAvatarAppearance(QDomDocument& dest, const EC_AvatarAppearance& source);
+        
+    private:
         //! Reads a bone modifier set from an xml node, and adds it to the vector
         //! \return true if successful
         static bool ReadBoneModifierSet(BoneModifierSetVector& dest, const QDomElement& elem);
@@ -46,14 +50,20 @@ namespace RexLogic
         //! \return true if successful
         static bool ReadAttachment(AvatarAttachmentVector& dest, const QDomElement& elem);
         
-        //! Reads a vector3 from a string, encoded as "x y z"
-        static Core::Vector3df ParseVector3(const std::string& text);
+        //! Writes bone modifiers to xml document
+        static void WriteBoneModifierSet(QDomDocument& dest, QDomElement& dest_elem, const BoneModifierSet& bones);
         
-        //! Reads a quaternion from a string, encoded as "w x y z"
-        static Core::Quaternion ParseQuaternion(const std::string& text);
+        //! Writes a single bone's parameters to an xml element and returns it
+        static QDomElement WriteBone(QDomDocument& dest, const BoneModifier& bone);
         
-        //! Reads an euler angle rotation (degrees) from a string, returns as a quaternion
-        static Core::Quaternion ParseEulerAngles(const std::string& text);
+        //! Writes a morph modifier to an xml element and returns it
+        static QDomElement WriteMorphModifier(QDomDocument& dest, const MorphModifier& morph);
+        
+        //! Writes an animation definition to an xml element and returns it
+        static QDomElement WriteAnimationDefinition(QDomDocument& dest, const AnimationDefinition& anim);
+        
+        //! Writes an avatar attachment to an xml element
+        static void WriteAttachment(QDomElement& dest, const AvatarAttachment& attachment);
     };
 }
 
