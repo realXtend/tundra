@@ -616,6 +616,7 @@ namespace OgreRenderer
             try
             {
                 mesh = mesh->clone(renderer_->GetUniqueObjectName());
+                mesh->setAutoBuildEdgeLists(false);
             }
             catch (Ogre::Exception& e)
             {

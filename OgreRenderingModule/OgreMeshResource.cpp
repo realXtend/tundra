@@ -43,12 +43,12 @@ namespace OgreRenderer
             {   
                 ogre_mesh_ = Ogre::MeshManager::getSingleton().createManual(
                     id_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-
                 if (ogre_mesh_.isNull())
                 {
                     OgreRenderingModule::LogError("Failed to create mesh " + id_);
                     return false; 
                 }   
+                ogre_mesh_->setAutoBuildEdgeLists(false);
             }
 
             Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)source->GetData(), source->GetSize(), false));
