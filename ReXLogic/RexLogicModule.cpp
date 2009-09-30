@@ -456,7 +456,7 @@ namespace RexLogic
             
             // overwrite the password so it won't stay in-memory
             const_cast<std::string&>(param_pass).replace(0, param_pass.size(), param_pass.size(), ' ');
-        } 
+        }
         if (params.size() > 2)
             server = params[2];
 
@@ -658,7 +658,7 @@ namespace RexLogic
         sky_ = SkyPtr(new Sky(this));
         Scene::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
         entity->AddEntityComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_OgreSky"));
-        
+
         sky_->FindCurrentlyActiveSky();
         //sky_->CreateDefaultSky();
     }

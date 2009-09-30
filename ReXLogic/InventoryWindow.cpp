@@ -108,10 +108,10 @@ void InventoryWindow::InitInventoryTreeView()
     if (!inventory_.get())
         return;
 
-
     ///\todo This is hackish. Refactor InventoryModel class into two different classes.
-    InventoryModel *inventoryModel_ = new InventoryModel(*inventory_.get());
+    inventoryModel_ = new InventoryModel(*inventory_.get());
     QTreeView *treeView = inventoryWidget_->findChild<QTreeView *>("treeView");
+    
     treeView->setModel(inventoryModel_);
 
     ///\todo Not maybe the best place to connect the signal?
@@ -139,6 +139,7 @@ void InventoryWindow::Hide()
 void InventoryWindow::UpdateActions()
 {
     QTreeView *treeView = inventoryWidget_->findChild<QTreeView *>("treeView");
+    QModelIndex index = treeView->selectionModel()->currentIndex();
     bool hasSelection = !treeView->selectionModel()->selection().isEmpty();
 
 //    removeRowAction->setEnabled(hasSelection);
@@ -147,9 +148,11 @@ void InventoryWindow::UpdateActions()
     QAction *actionCreateFolder = inventoryWidget_->findChild<QAction *>("actionCreateFolder");
     QAction *actionDeleteFolder = inventoryWidget_->findChild<QAction *>("actionDeleteFolder");
 
-//    actionDeleteFolder->setEnabled()
+    // Is this item editable?
+    bool editable = inventory_->IsEditable(index);
+    actionDeleteFolder->setEnabled(editable);
+//    actionRename->setEnabled(editable);
 
-    QModelIndex index = treeView->selectionModel()->currentIndex();
     InventoryItemBase *item = inventory_->GetItem(index);
     if (item->IsEditable())
         actionDeleteFolder->setEnabled(true);
@@ -175,15 +178,16 @@ void InventoryWindow::FetchInventoryDescendents(const QModelIndex &index)
     if (!inventory_.get())
         return;
 
+    ///\todo Send FetchInventoryDescendents only if our model is "dirty" (new items are uploaded)
 //    if (!dirty)
 //        return;
 
     ///\todo Use id instead of the name.
-    /*std::string name = index.data().toString().toStdString();
+    std::string name = index.data().toString().toStdString();
     OpenSimProtocol::InventoryFolder *folder  = inventory_->GetFirstChildFolderByName(name.c_str());
+
     rexLogicModule_->GetServerConnection()->SendFetchInventoryDescendentsPacket(folder->GetID(),
         folder->GetParent()->GetID(), 0 , true, true);
-    */
 }
 
 void InventoryWindow::CreateFolder()

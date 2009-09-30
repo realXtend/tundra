@@ -100,6 +100,11 @@ namespace OpenSimProtocol
         /// @return pointer to inventory item.
         InventoryItemBase *GetItem(const QModelIndex &index) const;
 
+        /// Tells if the tree item of spesified index is editable.
+        /// @param index Index of the tree item.
+        /// @return True if editable, false otherwise.
+        bool IsEditable(const QModelIndex &index);
+
     private:
         /// Inventory tree root folder.
         InventoryFolder *inventoryTreeRoot_;

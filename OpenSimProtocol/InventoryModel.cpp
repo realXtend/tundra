@@ -24,7 +24,7 @@ InventoryModel::InventoryModel()
 
 InventoryModel::~InventoryModel()
 {
-    delete inventoryTreeRoot_;
+//    delete inventoryTreeRoot_;
 }
 
 int InventoryModel::columnCount(const QModelIndex &parent) const
@@ -155,7 +155,6 @@ bool InventoryModel::removeRows(int position, int rows, const QModelIndex &paren
     if (!childFolder)
         return false;
 
-    std::cout << childFolder->GetName() << std::endl;
     if (!childFolder->IsEditable())
         return false;
 
@@ -258,6 +257,15 @@ InventoryItemBase *InventoryModel::GetItem(const QModelIndex &index) const
     }
 
     return static_cast<InventoryItemBase *>(inventoryTreeRoot_);
+}
+
+bool InventoryModel::IsEditable(const QModelIndex &index)
+{
+    InventoryFolder *folder = static_cast<InventoryFolder *>(index.internalPointer());
+    if (!folder)
+        return true;
+
+    return folder->IsEditable();
 }
 
 }

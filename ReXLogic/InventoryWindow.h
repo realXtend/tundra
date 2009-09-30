@@ -86,13 +86,13 @@ namespace RexLogic
         /// Initializes the inventory UI.
         void InitInventoryWindow();
 
-        /// Pointer to the framework.
+        /// Framework pointer.
         Foundation::Framework *framework_;
 
-        /// Pointer to RexLogicModule.
+        /// RexLogicModule pointer.
         /*boost::shared_ptr<RexLogicModule>*/ RexLogicModule* rexLogicModule_;
 
-        /// Pointer to QtModule.
+        /// QtModule pointer.
         boost::shared_ptr<QtUI::QtModule> qtModule_;
 
         /// Inventory (model) pointer.
