@@ -62,8 +62,8 @@ namespace RexLogic
         //! Writes an animation definition to an xml element and returns it
         static QDomElement WriteAnimationDefinition(QDomDocument& dest, const AnimationDefinition& anim);
         
-        //! Writes an avatar attachment to an xml element
-        static void WriteAttachment(QDomElement& dest, const AvatarAttachment& attachment);
+        //! Writes an avatar attachment to an xml element and returns it
+        static QDomElement WriteAttachment(QDomDocument& dest, const AvatarAttachment& attachment, const AvatarAsset& mesh);
     };
 }
 
