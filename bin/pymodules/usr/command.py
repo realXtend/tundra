@@ -375,8 +375,6 @@ if 0: #QtUI::UICanvas::External ?! not here...
     canvas.AddWidget(widget)
     canvas.Show()
     
-    
-
 if 0: #collada load testing
     import collada
     print collada.Collada
@@ -420,11 +418,29 @@ if 0: #ogre cam test and vectors
     #~ print "\n"
     #~ print cam.getRight(), cam.getUp()
 
-if 1:
+if 0:
     canvas = r.c.canvas
-    
     for child in canvas.children():
         child.delete()
     canvas.close()
     #canvas.deleteLater()
     
+if 0: #pygame window test
+    try:
+        r.pygame
+    except AttributeError: #first run
+        import pygame
+        r.pygame = pygame
+        s = pygame.display.set_mode((320, 200))
+        print s,
+        r.pygame_s =  s #screen
+        print r.pygame_s
+        
+    else:
+        s = r.pygame_s
+    print s
+    
+    s.fill((64, 95, 73))
+    pygame.display.flip()
+    
+    #works :)=======
