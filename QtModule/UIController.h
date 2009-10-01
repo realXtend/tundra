@@ -18,7 +18,7 @@ namespace QtUI
 {
     /**
      * UIController-class is used to manage OIS inputs and other window events which effect to UICanvases state. 
-     *
+     * This class is a internal class which should not be used outside of QtModule. 
      */
     class UIController : public QObject
     {   
@@ -136,8 +136,21 @@ namespace QtUI
         /**
          * Reques arrange of canvases to new Z-order. 
          */
-        void RequestArrange(const QString& id) { arrange_ = true; active_canvas_ = id; }
+        //void RequestArrange(const QString& id) { arrange_ = true; active_canvas_ = id; }
 
+        /** 
+         * Sets canvas to front of all canvases. 
+         * @param id is a canvas id.
+         */
+
+        void SetTop(const QString& id);
+        
+        /**
+         * Sets canvas to back of all other canvases.
+         * @param id is a canvas id.
+         */
+
+        void SetBack(const QString& id);
 
     signals:
         
@@ -156,13 +169,21 @@ namespace QtUI
          */
         virtual int GetCanvas(const QPoint& point);
     
-        /**
-         * Arrange canvases to Z-order.
-         * @note arrange is done only if some of canvases has request a arrange. 
-         */
-        virtual void Arrange();
+       
 
     private:
+
+        /**
+         * Arrange canvases to so that first canvas in list has highest Z-value, meaning that it is top of everything.
+         * @note arrange is done only if some of canvases has request a arrange. 
+         */
+        void Arrange();
+
+        /**
+         * Searches canvas which id is given. 
+         * @param id is id of canvas which is searched.
+         */
+        int Search(const QString& id) const;
 
         /**
          * Checks that does given canvas contain given point. 
@@ -171,7 +192,7 @@ namespace QtUI
          */
         bool Contains(const boost::shared_ptr<UICanvas>& canvas, const QPoint& point) const;
 
-        // Assumed to be in Z-order. 
+        // Assumed to be in that kind order that top (active) canvas is first.
         QList<boost::shared_ptr<UICanvas> > canvases_;
         
         // Is mouse currently down?
@@ -181,7 +202,7 @@ namespace QtUI
         QPoint mousePress_;
 
         // Is Z-order changed? Should it arrange again.
-        bool arrange_;
+        //bool arrange_;
 
         // Render window size.
         QSize parentWindowSize_;

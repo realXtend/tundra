@@ -129,6 +129,18 @@ namespace QtUI
          */
         QSize GetRenderWindowSize() const { return renderWindowSize_;}
 
+
+        /**
+         * Sets this widget as a top widget on Ogre renderwindow. Note this works only for internal windows.
+         */
+        void SetTop();
+
+        /**
+         * Sets this widget as a back widget on Ogre renderwindow. Note this works only for internal windows.
+         */
+        void SetBack();
+
+
         /**
          * Set Z-order. Changes overlay own "default" z-order value to new value.
          * @note by default overlay z-value is 1
@@ -193,11 +205,17 @@ namespace QtUI
 		void SetCanvasWindowIcon(QIcon &icon);
 
     signals:
-        
-        /** 
-         * Signal is emited if canvas Z-order in Ogre scene might change. 
+                
+        /**
+         * Signal is emited if this canvas need to be top. 
          */
-        void RequestArrange(const QString& id);
+        void ToTop(const QString& id);
+
+        /**
+         * Signal is emited if this canvas need to be behind. 
+         */
+        void ToBack(const QString& id);
+
 
     protected:
         
