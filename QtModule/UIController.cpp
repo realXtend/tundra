@@ -16,7 +16,7 @@
 namespace QtUI
 {
 
-UIController::UIController() : mouseDown_(false), arrange_(false), responseTimeLimit_(500), keyDown_(false), lastKeyEvent_(QKeyEvent(QEvent::KeyPress,0,Qt::NoModifier)), multipleKeyLimit_(150), keyboard_buffered_(false), active_canvas_(""), resize_(false)
+UIController::UIController() : mouseDown_(false), responseTimeLimit_(500), keyDown_(false), lastKeyEvent_(QKeyEvent(QEvent::KeyPress,0,Qt::NoModifier)), multipleKeyLimit_(150), keyboard_buffered_(false), active_canvas_(""), resize_(false)
 {}
 
 UIController::~UIController()
@@ -42,32 +42,29 @@ void UIController::Update()
     for(; iter != canvases_.end(); ++iter)
         (*iter)->Render();
     
-    //Update Z-order if needed.
+   
+}
 
-    Arrange();    
+int UIController::Search(const QString& id) const
+{
+    for ( int i = 0; i < canvases_.size(); ++i)
+        if ( canvases_[i]->GetID() == id)
+            return i;
+
+    
+    return -1;
+   
+        
 }
 
 void UIController::Arrange()
 {
-    if (arrange_)
-    {
-        /// Arrange canvases to somekind Z-order, currently just put latest active canvas to first in list. 
-        
-        for ( int i = 0; i < canvases_.size(); ++i)
-        {
-            if ( canvases_[i]->GetID() == active_canvas_)
-            {
-                boost::shared_ptr<UICanvas> canvas = canvases_.takeAt(i);
-                canvases_.prepend(canvas);
-                break;
-            }
-        }
-       
+    int size = canvases_.size();
+    for ( int i = 0; i < size; ++i)
+        canvases_[i]->SetZOrder(size - i);
 
-    }
-    arrange_ = false;
-        
 }
+
 
 void UIController::RemoveCanvas(const QString& id)
 {
@@ -90,9 +87,12 @@ boost::weak_ptr<UICanvas> UIController::CreateCanvas(UICanvas::Mode mode)
     boost::shared_ptr<UICanvas> canvas(new UICanvas(mode, parentWindowSize_));
     
     QObject::connect(this,SIGNAL(RenderWindowSizeChanged(const QSize&)),canvas.get(), SLOT(SetRenderWindowSize(const QSize&)));
-    QObject::connect(canvas.get(), SIGNAL(RequestArrange(const QString&)), this, SLOT(RequestArrange(const QString&)));
+    QObject::connect(canvas.get(), SIGNAL(ToTop(const QString&)), this, SLOT(SetTop(const QString&)));
+    QObject::connect(canvas.get(), SIGNAL(ToBack(const QString&)), this, SLOT(SetBack(const QString&)));
 
-    canvases_.append(canvas);
+    // Adds automatically and "Z-order". So that last created canvas is top.
+    canvas->SetZOrder(canvases_.size() + 1);
+    canvases_.prepend(canvas);
     return canvas;
 }
 
@@ -169,7 +169,10 @@ void UIController::InjectMouseMove(int x, int y)
             //}
             if ( resize_)
             {
-                
+                index = Search(active_canvas_);
+                if (index == -1)
+                    return;
+
                 QRect geometry = canvases_[index]->GetCanvasGeometry();
                 int width = geometry.width();
                 int height = geometry.height();
@@ -262,6 +265,38 @@ void UIController::InjectMouseMove(int x, int y)
 
 }
 
+void UIController::SetTop(const QString& id ) 
+{
+    int index = Search(id);
+    if ( index == -1)
+        return;
+
+    boost::shared_ptr<UICanvas> canvas = canvases_.takeAt(index);
+    canvases_.prepend(canvas);
+
+    // Assure that it is current active canvas
+    active_canvas_ = id;
+    
+    Arrange();
+    
+
+}
+
+void UIController::SetBack(const QString& id)
+{
+    int index = Search(id);
+    if ( index == -1)
+        return;
+
+    boost::shared_ptr<UICanvas> canvas = canvases_.takeAt(index);
+    canvases_.append(canvas);
+
+    active_canvas_ = "";
+    Arrange();
+
+}
+
+
 void UIController::InjectMousePress(int x, int y)
 {
     
@@ -332,22 +367,14 @@ void UIController::InjectMousePress(int x, int y)
         mouseEvent.setAccepted(false);
         
         // Change last active canvas back to normal state.
+        /*
         if ( active_canvas_ != "")
         {
-            for ( int i = 0; i < canvases_.size(); ++i)
-                if ( canvases_[i]->GetID() == active_canvas_)
-                {
-                    // Z -order value 1 is normal value.
-                    canvases_[i]->SetZOrder(1);
-                    break;
-                }
-                
-        }
+            SetBack(active_canvas_);
 
-        // Change new canvas to a active overlay.
-        canvases_[index]->SetZOrder(2);
-        // Request change our internal "order" 
-        RequestArrange(canvases_[index]->GetID());
+        }
+        */
+       
        
         QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);
         
@@ -378,6 +405,10 @@ void UIController::InjectMousePress(int x, int y)
         else
                 resize_ = false;
       
+        // Change new canvas to a active overlay.
+        active_canvas_ = canvases_[index]->GetID();
+        // Note this call changes internal arrange of canvases_ so index is not anymore valid.
+        SetTop(active_canvas_);
         
     }
     lastPosition_ = point;

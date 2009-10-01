@@ -182,6 +182,16 @@ int UICanvas::GetZOrder() const
     return -1;
 }
 
+void UICanvas::SetTop()
+{
+    emit ToTop(id_);
+}
+
+void UICanvas::SetBack()
+{
+    emit ToBack(id_);
+}
+
 QPoint UICanvas::MapToCanvas(int x, int y)
 {
     if ( mode_ != External)
