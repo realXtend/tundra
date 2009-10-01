@@ -174,6 +174,11 @@ namespace RexLogic
         elem.setAttribute(QString::fromStdString(name), QString::fromStdString(WriteBool(value)));
     }
     
+    void SetAttribute(QDomElement& elem, const std::string& name, int value)
+    {
+        elem.setAttribute(QString::fromStdString(name), QString::fromStdString(Core::ToString<int>(value)));
+    }
+    
     bool LegacyAvatarSerializer::ReadAvatarAppearance(RexLogic::EC_AvatarAppearance& dest, const QDomDocument& source)
     {
         dest.Clear();
@@ -634,6 +639,14 @@ namespace RexLogic
             avatar.appendChild(transformation);
         }
         
+        // Attachments
+        const AvatarAttachmentVector& attachments = source.GetAttachments();
+        for (Core::uint i = 0; i < attachments.size(); ++i)
+        {
+            QDomElement attachment = WriteAttachment(dest, attachments[i], source.GetMesh());
+            avatar.appendChild(attachment);
+        }
+        
         // Bone modifiers
         const BoneModifierSetVector& bone_modifiers = source.GetBoneModifiers();
         for (Core::uint i = 0; i < bone_modifiers.size(); ++i)
@@ -746,6 +759,55 @@ namespace RexLogic
         SetAttribute(elem, "influence", morph.value_);
         
         return elem;
+    }
+    
+    QDomElement LegacyAvatarSerializer::WriteAttachment(QDomDocument& dest, const AvatarAttachment& attachment, const AvatarAsset& mesh)
+    {
+        QDomElement elem = dest.createElement("attachment");
+        
+        QDomElement name_elem = dest.createElement("name");
+        SetAttribute(name_elem, "value", attachment.name_);
+        elem.appendChild(name_elem);
+      
+        QDomElement mesh_elem = dest.createElement("mesh");
+        SetAttribute(mesh_elem, "name", mesh.name_);
+        int link = 0;
+        if (attachment.link_skeleton_) 
+            link = 1;
+        SetAttribute(mesh_elem, "linkskeleton", link);
+        elem.appendChild(mesh_elem);
+        
+        QDomElement category_elem = dest.createElement("category");
+        SetAttribute(category_elem, "name", attachment.category_);
+        elem.appendChild(category_elem);
+        
+        QDomElement avatar_elem = dest.createElement("avatar");
+        SetAttribute(avatar_elem, "name", mesh.name_);
+        
+        {
+            std::string bonename = attachment.bone_name_;
+            if (bonename.empty())
+                bonename = "None";
+            
+            QDomElement bone_elem = dest.createElement("bone");
+            SetAttribute(bone_elem, "name", bonename);
+            SetAttribute(bone_elem, "offset", WriteVector3(attachment.transform_.position_));
+            SetAttribute(bone_elem, "rotation", WriteQuaternion(attachment.transform_.orientation_));
+            SetAttribute(bone_elem, "scale", WriteVector3(attachment.transform_.scale_));
+            
+            avatar_elem.appendChild(bone_elem);
+            
+            for (Core::uint i = 0; i < attachment.vertices_to_hide_.size(); ++i)
+            {
+                QDomElement polygon_elem = dest.createElement("avatar_polygon");
+                SetAttribute(polygon_elem, "idx", (int)attachment.vertices_to_hide_[i]);
+                avatar_elem.appendChild(polygon_elem);
+            }
+        }
+        elem.appendChild(avatar_elem);
+        
+        return elem;
+        
     }
 }
 
