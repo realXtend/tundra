@@ -10,8 +10,6 @@ except ImportError: #not running under rex
     import mockviewer as r
 from circuits import handler, Event, Component, Manager, Debugger
 
-#r.forwardevents = True
-
 #is not identical to the c++ side, where x and y have abs and rel
 #XXX consider making identical and possible wrapping of the c++ type
 #from collections import namedtuple
@@ -26,6 +24,7 @@ class MouseMove(Event): pass
 class MouseClick(Event): pass
 class EntityUpdate(Event): pass
 class Exit(Event): pass
+class LoginInfo(Event): pass
     
 class ComponentRunner(Component):
     instance = None
@@ -36,18 +35,17 @@ class ComponentRunner(Component):
         Component.__init__(self)
         ComponentRunner.instance = self #is used as a singleton now
         
-        self.forwardevent = True 
-        r.eventhandled = False #XXX this should be reset always when a new event is handled
         self.mouseinfo = MouseInfo(0,0,0,0)
         #m.start() #instead we tick() & flush() in update
         
         self.firstrun = True
+        self.eventhandled = False
         self.start()
         
     def start(self):
         # Create a new circuits Manager
         #ignevents = [Update, MouseMove]
-        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit']
+        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login']
         ignchannels = [('*', n) for n in ignchannames]
         self.m = Manager() + Debugger(IgnoreChannels = ignchannels) #IgnoreEvents = ignored)
         
@@ -73,6 +71,9 @@ class ComponentRunner(Component):
     def RexNetMsgChatFromSimulator(self, frm, message):
         self.m.send(Chat(frm, message), "on_chat")
         
+    def callback(self, value):
+        self.eventhandled = value
+        
     def INPUT_EVENT(self, evid):
         """Note: the PygameDriver for circuits has a different design:
         there the event data is Key, and the channel either "keydown" or "keyup",
@@ -81,10 +82,9 @@ class ComponentRunner(Component):
         'cause the c++ internals don't do that apart from the constant name.
         """
         #print "circuits_manager ComponentRunner got input event:", evid       
-        rvalue = False
-        self.m.send(Input(evid), "on_input")
-        rvalue = r.eventhandled
-        return rvalue
+        self.eventhandled = False
+        self.m.send(Input(evid, self.callback), "on_input")
+        return self.eventhandled
         
     def KEY_INPUT_EVENT(self, evid, keycode, keymod):
         """Handles key inputs, creates a Circuits Key event with the data provided
@@ -93,37 +93,39 @@ class ComponentRunner(Component):
         """
         
         #print "CircuitManager received KEY_INPUT (event:", evid, "key:", keycode, "mods:", keymod, ")",
-        rvalue = False
+        self.eventhandled = False
         if evid == r.KeyPressed:
-            self.m.send(Key(keycode, keymod), "on_keydown")
-            #print "pressed."
-            rvalue = r.eventhandled
-        return rvalue
+            self.m.send(Key(keycode, keymod, self.callback), "on_keydown")
+        elif evid == r.KeyReleased:
+            self.m.send(Key(keycode, keymod, self.callback), "on_keyup")
+        return self.eventhandled
             
     def MOUSE_MOVEMENT(self, x_abs, y_abs, x_rel, y_rel):
-        rvalue = False
+        self.eventhandled = False
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
         #print "CircuitsManager got mouse input", self.mouseinfo, self.mouseinfo.x, self.mouseinfo.y
-        self.m.send(MouseMove(self.mouseinfo), "on_mousemove")
-        rvalue = r.eventhandled
-        return rvalue
+        self.m.send(MouseMove(self.mouseinfo, self.callback), "on_mousemove")
+        return self.eventhandled
     
     def MOUSE_CLICK(self, mb_click, x_abs, y_abs, x_rel, y_rel):
         #print "CircuitsManager got mouse click", mb_click 
-        rvalue = False
+        self.eventhandled = False
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
-        self.m.send(MouseClick(mb_click, self.mouseinfo), "on_mouseclick")
-        rvalue = r.eventhandled
-        return rvalue
+        self.m.send(MouseClick(mb_click, self.mouseinfo, self.callback), "on_mouseclick")
+        return self.eventhandled
         
     def ENTITY_UPDATED(self, id):
         #print "Entity updated!", id
-        rvalua = False
-        
-        self.m.send(EntityUpdate(id), "on_entityupdated")
-        rvalue = r.eventhandled
-        return rvalue
+        self.eventhandled = False
+        self.m.send(EntityUpdate(id, self.callback), "on_entityupdated")
+        return self.eventhandled
 
+    def LOGIN_INFO(self, *args): 
+        #print "Login Info", args
+        self.eventhandled = False
+        #self.m.send(LoginInfo(self.callback), "on_login")
+        return self.eventhandled
+        
     def exit(self):
         self.m.send(Exit(), "on_exit") #am not running the manager properly so the stop doesn't propagate to components. fix when switch to dev branch of circuits XXX
         r.logInfo("Circuits manager stopping...")
@@ -136,10 +138,6 @@ class ComponentRunner(Component):
         self.start()
         r.logInfo("...done python restart.")
                 
-    #~ def retfunc(self, boolvalue):
-        #~ #print "Return value:", bool, "-> ", 
-        #~ self.forwardevent = boolvalue
-        
 #TestModule moved to own file (err, module)
 
 """

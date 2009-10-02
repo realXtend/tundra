@@ -11,6 +11,7 @@ OIS_KEY_C = 46 #it might be possible to use pyois from pyogre to get these
 OIS_KEY_UP = 200
 OIS_KEY_PERIOD = 52
 OIS_KEY_BACKSPACE = 14
+OIS_KEY_ALT = 256
 
 class KeyCommander(Component):
     EVENTHANDLED = True
@@ -22,10 +23,12 @@ class KeyCommander(Component):
         This dictionary has the keyboard commands, well the
         event ids for different keys that are currently enabled
         on the python side.
+        
+        (KEY_ID, MOD_ID): methodToCall()
         """
         self.keymap = {
-            OIS_KEY_PERIOD: self.run_commandpy,
-            OIS_KEY_BACKSPACE: self.restart_modulemanager
+            (OIS_KEY_PERIOD, 0): self.run_commandpy,
+            (OIS_KEY_BACKSPACE, OIS_KEY_ALT): self.restart_modulemanager
         }
         
         """
@@ -36,47 +39,51 @@ class KeyCommander(Component):
             #r.MoveForwardPressed: self.overrideForwardWalking #overrides the moveforward event
         }
         
-    def on_keydown(self, key, mods):
-        #print "on_keydown call -> ", key
-        if key in self.keymap:
-            r.eventhandled = self.EVENTHANDLED
-            self.keymap[key]()
+    def on_keydown(self, key, mods, callback):
+        #print "on_keydown call -> ", key, mods, (key, mods), self.keymap.has_key((key, mods))
+        if (key, mods) in self.keymap:
+            eventhandled = self.keymap[(key, mods)]()
+            callback(eventhandled)
         else:
-            r.eventhandled = False
+            callback(False)
 
-    def on_keyup(self, key, mods):
+    def on_keyup(self, key, mods, callback):
         pass
         
-    def on_input(self, evid):
+    def on_input(self, evid, callback):
         #print "Commander got input", evid
         if evid in self.inputmap:
-            r.eventhandled = self.EVENTHANDLED
-            self.inputmap[evid]()
+            eventhandled = self.inputmap[evid]()
+            callback(eventhandled)
         else:
-            r.eventhandled = False
+            callback(False)
     
     #uncomment this for raycasting tests
-    #~ def on_mousemove(self, mouseinfo):
+    #~ def on_mousemove(self, mouseinfo, callback):
         #~ print "MouseMove", mouseinfo.x, mouseinfo.y
         #~ ent = r.rayCast(mouseinfo.x, mouseinfo.y)
         #~ print "Got entity:", ent
         #~ if ent is not None:
             #~ print "Entity position is", ent.pos
     
-    #~ def on_entityupdated(self, id):
+    #~ def on_entityupdated(self, id, callback):
         #~ e = r.getEntity(id)
         #~ print "Entity got touched", id#, "got", e, e.pos
-        
+    
+    #~ def on_login(self, *args):
+        #~ print "THIS WOOORKS!!!"
+
     def run_commandpy(self):
-        #print "Command:"
-        r.eventhandled = self.EVENTHANDLED
         import command
         command = reload(command)
+        return True
         
     def restart_modulemanager(self):
+        print "here" 
         import modulemanager
         modulemanager.ModuleManager.instance.restart()
+        return False
         
     def overrideForwardWalking(self):
-        print "MoveForward called, STOP, it's Hammer time!"
-        r.eventhandled = self.EVENTHANDLED
+        print "MoveForward called, STOP, it's Hammer Time!"
+        return True
