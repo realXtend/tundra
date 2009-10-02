@@ -20,7 +20,6 @@ namespace OgreRenderer
         adjustment_node_(NULL),
         attached_(false),
         cast_shadows_(false),
-        cloned_(false),
         draw_distance_(0.0)
     {
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
@@ -236,29 +235,29 @@ namespace OgreRenderer
     
     void EC_OgreMesh::RemoveMesh()
     {
-        if (!entity_)
-            return;
-
-        RemoveAllAttachments();
-        DetachEntity();
-
-        std::string mesh_name = entity_->getMesh()->getName();
-        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
-        scene_mgr->destroyEntity(entity_);
-        
-        entity_ = NULL;
-        
-        if (cloned_)
+        if (entity_)
         {
-            cloned_ = false;
+            RemoveAllAttachments();
+            DetachEntity();
+
+            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+            scene_mgr->destroyEntity(entity_);
+            
+            entity_ = NULL;
+        }
+        
+        if (!cloned_mesh_name_.empty())
+        {
             try
             {
-                Ogre::MeshManager::getSingleton().remove(mesh_name);
+                Ogre::MeshManager::getSingleton().remove(cloned_mesh_name_);
             }
             catch (Ogre::Exception& e)
             {
                 OgreRenderingModule::LogWarning("Could not remove cloned mesh:" + std::string(e.what()));
             }
+            
+            cloned_mesh_name_ = std::string();
         }
     }
     
@@ -617,6 +616,7 @@ namespace OgreRenderer
             {
                 mesh = mesh->clone(renderer_->GetUniqueObjectName());
                 mesh->setAutoBuildEdgeLists(false);
+                cloned_mesh_name_ = mesh->getName();
             }
             catch (Ogre::Exception& e)
             {
