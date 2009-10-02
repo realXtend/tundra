@@ -221,8 +221,8 @@ namespace OgreRenderer
         //! Attachment nodes
         std::vector<Ogre::Node*> attachment_nodes_;
         
-        //! whether a cloned mesh is being used, and should be removed when mesh is removed
-        bool cloned_;
+        //! non-empty if a cloned mesh is being used; should be removed when mesh is removed
+        std::string cloned_mesh_name_;
         
         //! adjustment scene node (scaling/offset/orientation modifications)
         Ogre::SceneNode* adjustment_node_;
