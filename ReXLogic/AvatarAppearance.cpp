@@ -619,9 +619,7 @@ namespace RexLogic
                             ProcessAppearanceDownload(entity, result->data_);
                     }
                     else
-                    {
                         RexLogicModule::LogInfo("Error downloading avatar appearance for avatar " + Core::ToString<int>(i->first) + ": " + result->reason_);
-                    } 
                     
                     done = true;
                 }
@@ -676,6 +674,7 @@ namespace RexLogic
         AvatarAssetMap assets;
         while (j != contents.end())
         {
+            // Don't add the name field or the avatar description
             if ((j->first != "generic xml") && (j->first != "name"))
                 assets[j->first] = host + "/item/" + j->second;
             ++j;
@@ -870,7 +869,7 @@ namespace RexLogic
                 // Fill in name if not specified
                 if ((mat.textures_[i].name_.empty()) && (i < orig_textures.size()))
                     mat.textures_[i].name_ = orig_textures[i];
-                    
+                
                 AvatarAssetMap::const_iterator j = asset_map.find(mat.textures_[i].name_);
                 if (j != asset_map.end())
                 {
@@ -882,7 +881,7 @@ namespace RexLogic
             if (mat.textures_[i].resource_)
             {
                 Ogre::MaterialPtr ogremat = mat_res->GetMaterial();
-                OgreRenderer::SetTextureUnitOnMaterial(ogremat, mat.textures_[i].GetLocalOrResourceName(), i);
+                OgreRenderer::ReplaceTextureOnMaterial(ogremat, mat.textures_[i].name_, mat.textures_[i].resource_->GetId());
             }
         }
     }
