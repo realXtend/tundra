@@ -1,50 +1,53 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#include "StableHeaders.h"
 #include "CoreStdIncludes.h"
-#include "XMLRPCEPI.h"
-#include "XMLRPCConnection.h"
-#include "XMLRPCCall.h"
+
+#include "XmlRpcEpi.h"
+#include "XmlRpcConnection.h"
+#include "XmlRpcCall.h"
 
 #include <xmlrpc.h>
 
-XMLRPCEPI::XMLRPCEPI() 
+XmlRpcEpi::XmlRpcEpi() 
 : callMethod_(""), call_(0), connection_(0)
-{}
+{
+}
 
-XMLRPCEPI::XMLRPCEPI(const std::string& method) 
+XmlRpcEpi::XmlRpcEpi(const std::string& method) 
 : callMethod_(""), call_(0), connection_(0)
 {
     CreateCall(method);
 }
 
-XMLRPCEPI::XMLRPCEPI(const std::string& method, const std::string& address, const std::string& port) 
+XmlRpcEpi::XmlRpcEpi(const std::string& method, const std::string& address, const std::string& port) 
 : callMethod_(""), call_(0), connection_(0)
 {
     Connect(address, port);
     CreateCall(method);
 }
 
-XMLRPCEPI::~XMLRPCEPI()
+XmlRpcEpi::~XmlRpcEpi()
 {
     delete connection_;
     delete call_;
 }
 
-void XMLRPCEPI::Connect(const std::string& address, const std::string& port) 
+void XmlRpcEpi::Connect(const std::string& address, const std::string& port) 
 {
     if ( connection_ == 0)
-        connection_ = new XMLRPCConnection(address, port);
+		connection_ = new XmlRpcConnection(address, port);
     else
         connection_->SetServerAddress(address, port);
     
 }
 
-XMLRPCCall *XMLRPCEPI::GetXMLRPCCall()
+XmlRpcCall *XmlRpcEpi::GetXMLRPCCall()
 {
     return call_;
 }
 
-void XMLRPCEPI::CreateCall(const std::string& method) 
+void XmlRpcEpi::CreateCall(const std::string& method) 
 {
     delete call_;
     call_ = 0;
@@ -53,22 +56,22 @@ void XMLRPCEPI::CreateCall(const std::string& method)
         callMethod_ = method;
 
     if (callMethod_.size() > 0)
-        call_ = new XMLRPCCall(callMethod_);
+        call_ = new XmlRpcCall(callMethod_);
     else
-        throw XMLRPCException(std::string("XMLRPCEPI exception in XMLRPCEPI::CreateCall() method name was invalid"));
+        throw XmlRpcException(std::string("XmlRpcEpi exception in XmlRpcEpi::CreateCall() method name was invalid"));
 }
 
-void XMLRPCEPI::Send()
+void XmlRpcEpi::Send()
 {
     if (call_ == 0)
-       throw XMLRPCException(std::string("XMLRPCEPI exception in XMLRPCEPI::Send() Call object was zero pointer"));
+       throw XmlRpcException(std::string("XmlRpcEpi exception in XmlRpcEpi::Send() Call object was zero pointer"));
     else if (connection_ == 0)
-       throw XMLRPCException(std::string("XMLRPCEPI exception in XMLRPCEPI::Send() Connection object was zero pointer"));
+       throw XmlRpcException(std::string("XmlRpcEpi exception in XmlRpcEpi::Send() Connection object was zero pointer"));
     
     // We now own xmlData, remember to deallocate using free();
     char *pXmlData = XMLRPC_REQUEST_ToXML(call_->GetRequest(), 0);
     if (pXmlData == 0)
-        throw XMLRPCException(std::string("XMLRPCEPI exception in XMLRPCEPI::Send() xml data was zero pointer"));
+        throw XmlRpcException(std::string("XmlRpcEpi exception in XmlRpcEpi::Send() xml data was zero pointer"));
 
     // If there exist old reply clear it out.
     if (call_->GetReply() != 0)
@@ -82,7 +85,7 @@ void XMLRPCEPI::Send()
     {
         call_->SetReply(connection_->Send(pXmlData));
     }
-    catch(XMLRPCException& ex)
+    catch(XmlRpcException& ex)
     {
         // Free xmlData
         XMLRPC_Free(pXmlData);
@@ -94,13 +97,13 @@ void XMLRPCEPI::Send()
     pXmlData = 0;
 }
 
-void XMLRPCEPI::AddStringToArray(const std::string& name, const char *sstr)
+void XmlRpcEpi::AddStringToArray(const std::string& name, const char *sstr)
 {
     if (call_ != 0)
         call_->AddStringToArray(name, sstr);
 }
 
-void XMLRPCEPI::ClearCall()
+void XmlRpcEpi::ClearCall()
 {
     delete call_;
     call_ = 0;
