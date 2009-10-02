@@ -105,13 +105,6 @@ namespace RexLogic
         // Deserialize appearance from the document into the EC
         LegacyAvatarSerializer::ReadAvatarAppearance(appearance, *default_appearance_);
         
-        //QDomDocument default_copy;
-        //LegacyAvatarSerializer::WriteAvatarAppearance(default_copy, appearance);
-        //QFile file("your_awsum_default_avatar.xml");
-        //file.open(QIODevice::WriteOnly);
-        //QByteArray content = default_copy.toByteArray();
-        //file.write(content);
-        //file.close();
         SetupAppearance(entity);
     }
     
@@ -658,8 +651,15 @@ namespace RexLogic
         // Get the avatar appearance description ("generic xml")
         std::map<std::string, std::string>::iterator i = contents.find("generic xml");
         if (i == contents.end())
+        {
+            // If not found, use default appearance
+            // (at this point, it's nice to just have *some* appearance change, for example
+            // changing back to default human from fish in the fishworld, if no avatar stored)
+            RexLogicModule::LogDebug("No generic xml found, setting default appearance");
+            SetupDefaultAppearance(entity);
             return;
-            
+        }
+        
         std::string& appearance_str = i->second;
 
         // Return to original format by substituting to < >
@@ -683,14 +683,6 @@ namespace RexLogic
         
         // Deserialize appearance from the document into the EC
         LegacyAvatarSerializer::ReadAvatarAppearance(appearance, appearance_doc);
-        
-        //QDomDocument copy;
-        //LegacyAvatarSerializer::WriteAvatarAppearance(copy, appearance);
-        //QFile file("your_awsum_avatar.xml");
-        //file.open(QIODevice::WriteOnly);
-        //QByteArray content = copy.toByteArray();
-        //file.write(content);
-        //file.close();
         
         appearance.SetAssetMap(assets);
         

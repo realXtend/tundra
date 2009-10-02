@@ -19,7 +19,10 @@ namespace RexLogic
         if(overrideappearance)
             avatar_override_address_ = address;
         else
+        {
             avatar_address_ = address;
+            avatar_override_address_ = std::string();
+        }
     }
     
     const std::string& EC_OpenSimAvatar::GetAppearanceAddress() const
