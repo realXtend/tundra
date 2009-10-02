@@ -151,6 +151,8 @@ namespace OgreRenderer
         logfilepath += "/Ogre.log";
 
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
+        //Setting low logging level can potentially make things like mesh/skeleton loading faster
+        //Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_LOW);
         Ogre::LogManager::getSingleton().getDefaultLog()->addListener(log_listener_.get());
         LoadPlugins(plugins_filename_);
         
@@ -182,6 +184,7 @@ namespace OgreRenderer
 
         // GTK's pango/cairo/whatever's font rendering doesn't work if the floating point mode is not set to strict.
         // This however creates undefined behavior for D3D (refrast + D3DX), but we aren't using those anyway.
+        // Note: GTK is currently not used in the main UI, but don't know what gstreamer requires
         Ogre::ConfigOptionMap& map = rendersystem->getConfigOptions();
         if (map.find("Floating-point mode") != map.end())
             rendersystem->setConfigOption("Floating-point mode", "Consistent");

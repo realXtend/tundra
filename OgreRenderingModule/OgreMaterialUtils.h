@@ -55,6 +55,11 @@ namespace OgreRenderer
      */ 
     void OGRE_MODULE_API SetTextureUnitOnMaterial(Ogre::MaterialPtr material, const std::string& texture_name, Core::uint index = 0);
     
+    //! Replaces texture name in all passes, techniques, textureunits with another name
+    /*! If replacement texture cannot actually be found, uses the missing texture texture
+     */ 
+    void OGRE_MODULE_API ReplaceTextureOnMaterial(Ogre::MaterialPtr material, const std::string& original_name, const std::string& texture_name);
+    
     //! Creates a material resource from an Ogre material pointer
     Foundation::ResourcePtr OGRE_MODULE_API CreateResourceFromMaterial(Ogre::MaterialPtr material);
 }

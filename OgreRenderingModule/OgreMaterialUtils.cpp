@@ -188,6 +188,41 @@ namespace OgreRenderer
         }
     }
     
+    void ReplaceTextureOnMaterial(Ogre::MaterialPtr material, const std::string& original_name, const std::string& texture_name)
+    {
+        if (material.isNull())
+            return;
+        
+        Ogre::TextureManager &tm = Ogre::TextureManager::getSingleton();
+        Ogre::TexturePtr tex = tm.getByName(texture_name);
+        
+        Ogre::Material::TechniqueIterator iter = material->getTechniqueIterator();
+        while(iter.hasMoreElements())
+        {
+            Ogre::Technique *tech = iter.getNext();
+            assert(tech);
+            Ogre::Technique::PassIterator passIter = tech->getPassIterator();
+            while(passIter.hasMoreElements())
+            {
+                Ogre::Pass *pass = passIter.getNext();
+                
+                Ogre::Pass::TextureUnitStateIterator texIter = pass->getTextureUnitStateIterator();
+                
+                while(texIter.hasMoreElements())
+                {
+                    Ogre::TextureUnitState *texUnit = texIter.getNext();
+                    if (texUnit->getTextureName() == original_name)
+                    {
+                        if (tex.get())
+                            texUnit->setTextureName(texture_name);
+                        else
+                            texUnit->setTextureName("TextureMissing.png");
+                    }
+                }
+            }
+        }
+    }
+    
     Foundation::ResourcePtr OGRE_MODULE_API CreateResourceFromMaterial(Ogre::MaterialPtr material)
     {
         assert(!material.isNull());
