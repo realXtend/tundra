@@ -1,22 +1,22 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "XMLRPCCall.h"
 #include "StableHeaders.h"
+#include "XmlRpcCall.h"
 
-XMLRPCCall::XMLRPCCall()
+XmlRpcCall::XmlRpcCall()
 :request_(0),paramList_(0), reply_(0)
 {
 	memset(&output_, 0, sizeof(output_));
 }
 
-XMLRPCCall::XMLRPCCall(const std::string& method)
+XmlRpcCall::XmlRpcCall(const std::string& method)
 : request_(0), paramList_(0), reply_(0)
 {
     memset(&output_, 0, sizeof(output_));
     Initialize(method);
 }
 
-XMLRPCCall::~XMLRPCCall()
+XmlRpcCall::~XmlRpcCall()
 {
     
     XMLRPC_RequestFree(request_, 1);
@@ -27,7 +27,7 @@ XMLRPCCall::~XMLRPCCall()
   
 }
 
-void XMLRPCCall::Initialize(const std::string& method)
+void XmlRpcCall::Initialize(const std::string& method)
 {
     assert(method != "");
 	
@@ -66,7 +66,7 @@ void XMLRPCCall::Initialize(const std::string& method)
 }
 
 
-void XMLRPCCall::AddStringToArray(const std::string& name, const char *sstr)
+void XmlRpcCall::AddStringToArray(const std::string& name, const char *sstr)
 {
     // Does this kind array exist in current xmlrpc-call?
     std::map<std::string, XMLRPC_VALUE>::iterator iter = mapArrays_.find(name);

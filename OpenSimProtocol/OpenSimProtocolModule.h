@@ -10,7 +10,7 @@
 #include "NetMessageManager.h"
 #include "NetworkConnection.h"
 #include "INetMessageListener.h"
-#include "XMLRPCLoginThread.h"
+#include "OpenSimLoginThread.h"
 #include "RexUUID.h"
 #include "NetworkEvents.h"
 
@@ -156,7 +156,7 @@ namespace OpenSimProtocol
         Core::Thread thread_;
 
         /// Object which handles the XML-RPC login procedure.
-        XMLRPCLoginThread loginWorker_;
+        OpenSimLoginThread loginWorker_;
 
         /// Handles the UDP communications with the reX server.
         boost::shared_ptr<NetMessageManager> networkManager_;

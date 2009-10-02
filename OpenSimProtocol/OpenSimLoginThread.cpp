@@ -1,10 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-/// @file XMLRPCLoginThread.cpp
+/// @file OpenSimLoginThread.cpp
 /// @brief XML-RPC login worker.
 
 #include "StableHeaders.h"
-#include "XMLRPCLoginThread.h"
+#include "OpenSimLoginThread.h"
 #include "OpenSimProtocolModule.h"
 #include "XMLRPCEPI.h"
 #include "OpenSimAuth.h"
@@ -18,16 +18,16 @@
 namespace OpenSimProtocol
 {
 
-XMLRPCLoginThread::XMLRPCLoginThread() : beginLogin_(false), ready_(false)
+OpenSimLoginThread::OpenSimLoginThread() : beginLogin_(false), ready_(false)
 {
 }
 
 // virtual
-XMLRPCLoginThread::~XMLRPCLoginThread()
+OpenSimLoginThread::~OpenSimLoginThread()
 {
 }
 
-void XMLRPCLoginThread::operator()()
+void OpenSimLoginThread::operator()()
 {
     if(beginLogin_)
     {
@@ -60,7 +60,7 @@ void XMLRPCLoginThread::operator()()
     }
 }
 
-volatile Connection::State XMLRPCLoginThread::GetState() const
+volatile Connection::State OpenSimLoginThread::GetState() const
 {
     if (!ready_)
         return Connection::STATE_DISCONNECTED;
@@ -68,7 +68,7 @@ volatile Connection::State XMLRPCLoginThread::GetState() const
         return threadState_->state;
 }
 
-void XMLRPCLoginThread::SetupXMLRPCLogin(
+void OpenSimLoginThread::SetupXMLRPCLogin(
     const std::string& first_name,
     const std::string& last_name,
     const std::string& password,
@@ -103,7 +103,7 @@ void XMLRPCLoginThread::SetupXMLRPCLogin(
 /// @param call Pass in the object to a XMLRPCEPI call that has already been performed. Only the reply part
 ///     will be read by this function.
 /// @return The ip:port to connect to with the UDP socket, or "" if there was an error.
-static std::string ExtractGridAddressFromXMLRPCReply(XMLRPCEPI &call)
+static std::string ExtractGridAddressFromXMLRPCReply(XmlRpcEpi &call)
 {
     std::string gridUrl = call.GetReply<std::string>("sim_ip");
     if (gridUrl.size() == 0)
@@ -145,25 +145,25 @@ static bool IsHardcodedOpenSimFolder(const char *name)
 /// @param call Pass in the object to a XMLRPCEPI call that has already been performed. Only the reply part
 ///     will be read by this function.
 /// @return The inventory object, or null pointer if an error occurred.
-boost::shared_ptr<InventoryModel> ExtractInventoryFromXMLRPCReply(XMLRPCEPI &call)
+boost::shared_ptr<InventoryModel> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &call)
 {
     boost::shared_ptr<InventoryModel> inventory = boost::shared_ptr<InventoryModel>(new InventoryModel);
 
-    XMLRPCCall *xmlrpcCall = call.GetXMLRPCCall();
+    XmlRpcCall *xmlrpcCall = call.GetXMLRPCCall();
     if (!xmlrpcCall)
-        throw XMLRPCException("Failed to read inventory, no XMLRPC Reply to read!");
+        throw XmlRpcException("Failed to read inventory, no XMLRPC Reply to read!");
     XMLRPC_REQUEST request = xmlrpcCall->GetReply();
     if (!request)
-        throw XMLRPCException("Failed to read inventory, no XMLRPC Reply to read!");
+        throw XmlRpcException("Failed to read inventory, no XMLRPC Reply to read!");
 
     XMLRPC_VALUE result = XMLRPC_RequestGetData(request);
     if (!result)
-        throw XMLRPCException("Failed to read inventory, the XMLRPC Reply did not contain any data!");
+        throw XmlRpcException("Failed to read inventory, the XMLRPC Reply did not contain any data!");
 
     XMLRPC_VALUE inventoryNode = XMLRPC_VectorGetValueWithID(result, "inventory-skeleton");
 
     if (!inventoryNode || XMLRPC_GetValueType(inventoryNode) != xmlrpc_vector)
-        throw XMLRPCException("Failed to read inventory, inventory-skeleton in the reply was not properly formed!");
+        throw XmlRpcException("Failed to read inventory, inventory-skeleton in the reply was not properly formed!");
 
     typedef std::pair<RexUUID, InventoryFolder *> DetachedInventoryFolder;
     typedef std::list<DetachedInventoryFolder> DetachedInventoryFolderList;
@@ -216,18 +216,18 @@ boost::shared_ptr<InventoryModel> ExtractInventoryFromXMLRPCReply(XMLRPCEPI &cal
     // Find and set the inventory root folder.
     XMLRPC_VALUE inventoryRootNode = XMLRPC_VectorGetValueWithID(result, "inventory-root");
     if (!inventoryRootNode)
-        throw XMLRPCException("Failed to read inventory, inventory-root in the reply was not present!");
+        throw XmlRpcException("Failed to read inventory, inventory-root in the reply was not present!");
     if (!inventoryRootNode || XMLRPC_GetValueType(inventoryRootNode) != xmlrpc_vector)
-        throw XMLRPCException("Failed to read inventory, inventory-root in the reply was not properly formed!");
+        throw XmlRpcException("Failed to read inventory, inventory-root in the reply was not properly formed!");
     XMLRPC_VALUE inventoryRootNodeFirstElem = XMLRPC_VectorRewind(inventoryRootNode);
     if (!inventoryRootNodeFirstElem || XMLRPC_GetValueType(inventoryRootNodeFirstElem) != xmlrpc_vector)
-        throw XMLRPCException("Failed to read inventory, inventory-root in the reply was not properly formed!");
+        throw XmlRpcException("Failed to read inventory, inventory-root in the reply was not properly formed!");
     XMLRPC_VALUE val = XMLRPC_VectorGetValueWithID(inventoryRootNodeFirstElem, "folder_id");
     if (!val || XMLRPC_GetValueType(val) != xmlrpc_string)
-        throw XMLRPCException("Failed to read inventory, inventory-root struct value folder_id not present!");
+        throw XmlRpcException("Failed to read inventory, inventory-root struct value folder_id not present!");
     RexUUID inventoryRootFolderID(XMLRPC_GetValueString(val));
     if (inventoryRootFolderID.IsNull())
-        throw XMLRPCException("Failed to read inventory, inventory-root value folder_id was null or unparseable!");
+        throw XmlRpcException("Failed to read inventory, inventory-root value folder_id was null or unparseable!");
 
     // Find the root folder from the list of detached folders, and set it as the root folder to start with.
     for(DetachedInventoryFolderList::iterator iter = folders.begin(); iter != folders.end(); ++iter)
@@ -243,7 +243,7 @@ boost::shared_ptr<InventoryModel> ExtractInventoryFromXMLRPCReply(XMLRPCEPI &cal
     }
 
     if (!inventory->GetRoot()->GetChildFolderByID(inventoryRootFolderID))
-        throw XMLRPCException("Failed to read inventory, inventory-root value folder_id pointed to a nonexisting folder!");
+        throw XmlRpcException("Failed to read inventory, inventory-root value folder_id pointed to a nonexisting folder!");
 
     // Insert the detached folders onto the tree view until all folders have been added or there are orphans left
     // that cannot be added, and quit.
@@ -276,7 +276,7 @@ boost::shared_ptr<InventoryModel> ExtractInventoryFromXMLRPCReply(XMLRPCEPI &cal
     return inventory;
 }
 
-bool XMLRPCLoginThread::PerformXMLRPCLogin()
+bool OpenSimLoginThread::PerformXMLRPCLogin()
 {
     // create a MD5 hash for the password, MAC address and HDD serial number.
     Poco::MD5Engine md5_engine;
@@ -292,7 +292,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
     md5_engine.update(id0.c_str(), id0.size());
     std::string id0_hash = md5_engine.digestToHex(md5_engine.digest());
 
-    XMLRPCEPI call;
+    XmlRpcEpi call;
     try
     {
         if (authentication_ && callMethod_ == "ClientAuthentication" )
@@ -306,7 +306,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
             call.CreateCall(callMethod_);
         }
     }
-    catch(XMLRPCException& ex)
+    catch(XmlRpcException& ex)
     {
         // Initialisation error.
         OpenSimProtocolModule::LogError(ex.what());
@@ -389,7 +389,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
         call.AddStringToArray(arr, "login-flags");
         call.AddStringToArray(arr, "global-textures");
     }
-    catch (XMLRPCException& ex)
+    catch (XmlRpcException& ex)
     {
         // Initialisation error.
         OpenSimProtocolModule::LogError(ex.what());
@@ -400,7 +400,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
     {
         call.Send();
     }
-    catch(XMLRPCException& ex)
+    catch(XmlRpcException& ex)
     {
         //Send error
         OpenSimProtocolModule::LogError(ex.what());
@@ -418,12 +418,12 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
             
             threadState_->parameters.gridUrl = ExtractGridAddressFromXMLRPCReply(call);
             if (threadState_->parameters.gridUrl.size() == 0)
-                throw XMLRPCException("Failed to extract sim_ip and sim_port from login_to_simulator reply!");
+                throw XmlRpcException("Failed to extract sim_ip and sim_port from login_to_simulator reply!");
 
             if (threadState_->parameters.sessionID.ToString() == std::string("") ||
                 threadState_->parameters.agentID.ToString() == std::string("") ||
                 threadState_->parameters.circuitCode == 0)
-                throw XMLRPCException("Failed to receive sessionID, agentID or circuitCode from login_to_simulator reply!");
+                throw XmlRpcException("Failed to receive sessionID, agentID or circuitCode from login_to_simulator reply!");
 
             threadState_->parameters.inventory = ExtractInventoryFromXMLRPCReply(call);
         }
@@ -447,14 +447,14 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
             /// Does this still apply? -jj. Is this a bug in the rex auth server? If so, flag as a workaround or something similar.
             threadState_->parameters.gridUrl = ExtractGridAddressFromXMLRPCReply(call);
             if (threadState_->parameters.gridUrl.size() == 0)
-                throw XMLRPCException("Failed to extract sim_ip and sim_port from login_to_simulator reply!");
+                throw XmlRpcException("Failed to extract sim_ip and sim_port from login_to_simulator reply!");
 
             threadState_->parameters.inventory = ExtractInventoryFromXMLRPCReply(call);
         }
         else
-            throw XMLRPCException(std::string("Undefined login method ") + callMethod_ + " in XMLRPCLoginThread!");
+            throw XmlRpcException(std::string("Undefined login method ") + callMethod_ + " in XMLRPCLoginThread!");
     }
-    catch(XMLRPCException& ex)
+    catch(XmlRpcException& ex)
     {
         OpenSimProtocolModule::LogError(std::string("Login procedure threw a XMLRPCException, reason: \"") + ex.what() + std::string("\"."));
 
@@ -465,7 +465,7 @@ bool XMLRPCLoginThread::PerformXMLRPCLogin()
             threadState_->errorMessage = call.GetReply<std::string>("message");
             OpenSimProtocolModule::LogError(std::string("login_to_simulator reply returned the error message \"") + threadState_->errorMessage + std::string("\"."));
         }
-        catch(XMLRPCException &ex)
+        catch(XmlRpcException &ex)
         {
             OpenSimProtocolModule::LogError(std::string("login_to_simulator reply did not contain an error message (") + ex.what() + std::string(")."));
         }

@@ -1,10 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-/// @file XMLRPCLoginThread.h
+/// @file OpenSimLoginThread.h
 /// @brief @brief XML-RPC login worker.
 
-#ifndef incl_XMLRPCLoginThread_h
-#define incl_XMLRPCLoginThread_h
+#ifndef incl_OpenSimLoginThread_h
+#define incl_OpenSimLoginThread_h
 
 #include "NetworkEvents.h"
 
@@ -15,14 +15,14 @@ namespace Foundation
 
 namespace OpenSimProtocol
 {
-    class XMLRPCLoginThread
+    class OpenSimLoginThread
     {
     public:
         /// Default constructor.
-        XMLRPCLoginThread();
+        OpenSimLoginThread();
 
         /// Destructor.
-        virtual ~XMLRPCLoginThread();
+        virtual ~OpenSimLoginThread();
 
         /// Thread entry point.
         void operator()();
@@ -74,8 +74,8 @@ namespace OpenSimProtocol
         const bool IsReady() const { return ready_; }
 
     private:
-        XMLRPCLoginThread(const XMLRPCLoginThread &);
-        void operator=(const XMLRPCLoginThread &);
+        OpenSimLoginThread(const OpenSimLoginThread &);
+        void operator=(const OpenSimLoginThread &);
 
         /// Triggers the XML-RPC login procedure.
         bool beginLogin_;

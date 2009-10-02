@@ -91,6 +91,7 @@ add_subdirectory (SupportModules)
 add_subdirectory (AssetModule)
 add_subdirectory (QtModule)
 add_subdirectory (HttpUtilities)
+add_subdirectory (RpcUtilities)
 
 # The following are not really core modules,
 # but you can't do anything practical without
