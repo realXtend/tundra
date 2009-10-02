@@ -24,6 +24,8 @@ class ModuleManager:
         print "Manager got mouse click", mb_click, x_abs, y_abs, x_rel, y_rel
     def ENTITY_UPDATED(self, id):
         print "Manager got an entity updated", id
+    def LOGIN_INFO(self, *args):
+        print "Login updated", args
     
     def exit(self):
         print "exiting module manager"

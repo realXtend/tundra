@@ -221,7 +221,7 @@ class EditGUI(Component):
         arrow.setVisible(True)
 
     def hideArrows(self):
-        print "Hiding arrows!"
+        #print "Hiding arrows!"
         
         if self.upArrow is not None:
             self.upArrow.setVisible(False)
@@ -229,20 +229,7 @@ class EditGUI(Component):
         if self.rightArrow is not None:
             self.rightArrow.setVisible(False)
             
-    def on_keydown(self, key, mods):
-        if key == self.OIS_ESC:
-            self.hideArrows()  
-        r.eventhandled = False
-            
-    def on_mousemove(self, mouseinfo):
-        """stub for dragging objects around 
-        - should get the dir of movements relative to the view somehow"""
-        if self.left_button_down and self.sel is not None:
-            print "MouseMove:", mouseinfo.x, mouseinfo.y
 
-        elif self.right_button_down and self.sel is not None:
-            self.rightArrow.setOrientation(self.cam.DerivedOrientation)
-            self.upArrow.setOrientation(self.cam.DerivedOrientation)
             
     def LeftMouseDown(self, mouseinfo):
         self.left_button_down = True
@@ -268,7 +255,7 @@ class EditGUI(Component):
     def RightMouseUp(self, mouseinfo):
         self.right_button_down = False
         
-    def on_mouseclick(self, click_id, mouseinfo):
+    def on_mouseclick(self, click_id, mouseinfo, callback):
         #print "MouseMove", mouseinfo.x, mouseinfo.y
         #print "on_mouseclick", click_id,
         if self.mouse_events.has_key(click_id):
@@ -277,6 +264,21 @@ class EditGUI(Component):
         #else:
             #print "unknown click_id?", self.mouse_events
     
+    def on_keydown(self, key, mods, callback):
+        if key == self.OIS_ESC:
+            self.hideArrows()  
+            callback(True)
+            
+    def on_mousemove(self, mouseinfo, callback):
+        """stub for dragging objects around 
+        - should get the dir of movements relative to the view somehow"""
+        if self.left_button_down and self.sel is not None:
+            print "MouseMove:", mouseinfo.x, mouseinfo.y
+
+        elif self.right_button_down and self.sel is not None:
+            self.rightArrow.setOrientation(self.cam.DerivedOrientation)
+            self.upArrow.setOrientation(self.cam.DerivedOrientation)
+
     def on_exit(self):
         r.logInfo("EditGUI exiting.")
         self.hideArrows()

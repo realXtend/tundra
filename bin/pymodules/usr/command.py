@@ -444,3 +444,9 @@ if 0: #pygame window test
     pygame.display.flip()
     
     #works :)=======
+
+if 0:
+    canvas = r.c.canvas
+    from PythonQt import *
+    print qtmodule
+    qtmodule.Swoot()
