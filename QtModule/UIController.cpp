@@ -294,8 +294,67 @@ void UIController::InjectMouseMove(int x, int y)
                         }
 
                     }
+                  
+                }
+                else if ( mouseCursorShape_ == Qt::SizeFDiagCursor)
+                {
+                    // Corners
+
+                    // Left-top. 
+                    int left_top_x = position.x();
+                    int left_top_y = position.y();
+
+                    // Right-bottom
+                    int right_bottom_x = position.x() + width;
+                    int right_bottom_y = position.y() + height;
+
+                    // Search nearest corner
+                    double dist_left_corner = (left_top_x - x)*(left_top_x - x) + (left_top_y - y)*(left_top_y - y);
+                    double dist_right_corner = (right_bottom_x - x)*(right_bottom_x - x) + (right_bottom_y - y)*(right_bottom_y - y);
+
+                   
+                    geometry.setRect(position.x(), position.y(), geometry.width(), geometry.height());
+                    
+                    if ( dist_right_corner > dist_left_corner)
+                    {
+                         // Nearest corner is left corner.
+                        if (geometry.contains(QPoint(x,y)))
+                        {
+                            // Making smaller.
+                            int diff = x - position.x();
+                            canvases_[index]->Resize(height, width-diff, UICanvas::Left);
+                            diff = y - position.y();
+                            canvases_[index]->Resize(height-diff, canvases_[index]->GetSize().width(), UICanvas::Top);
+                        }
+                        else
+                        {
+                            // Growing.
+
+                        }
+
+                    }
+                    else
+                    {
+                        // Nearest corner is right corner.
+                        if (geometry.contains(QPoint(x,y)))
+                        {
+                            // Making smaller.
+                            int diff = position.x() + width - x ;
+                            canvases_[index]->Resize(height, width-diff, UICanvas::Right);
+                            diff = position.y() + height - y;
+                            canvases_[index]->Resize(height-diff, canvases_[index]->GetSize().width(), UICanvas::Bottom);
+                        }
+                        else
+                        {
+                            // Growing.
+
+                        }
+
+                    }
+
 
                 }
+
               
                 
                 
