@@ -280,7 +280,7 @@ void UICanvas::Resize(int height, int width, CanvasSide side)
 
     // Assure that new size is bigger then canvas minium size. 
     QSize minium = this->minimumSize();
-    if ( height < minium.height() || width < minium.width() )
+    if ( height < minium.height() || width < minium.width() || height <= 0 || width <= 0)
         return;
 
     Ogre::PanelOverlayElement* element = static_cast<Ogre::PanelOverlayElement* >(container_);  
