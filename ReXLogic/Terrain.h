@@ -4,6 +4,7 @@
 #ifndef incl_Terrain_h
 #define incl_Terrain_h
 
+#include "Entity.h"
 #include "EC_Terrain.h"
 
 namespace Resource
@@ -63,7 +64,7 @@ private:
 
     void CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY);
 
-    void GenerateTerrainGeometryForOnePatch(EC_Terrain &terrain, EC_Terrain::Patch &patch);
+    void GenerateTerrainGeometryForOnePatch(Scene::Entity &entity, EC_Terrain &terrain, EC_Terrain::Patch &patch);
     void GenerateTerrainGeometry(EC_Terrain &terrain);
     void GenerateTerrainGeometryForSinglePatch(EC_Terrain &terrain, int patchX, int patchY);
     void DebugGenerateTerrainVisData(Ogre::SceneNode *node, const DecodedTerrainPatch &patch, int patchSize);

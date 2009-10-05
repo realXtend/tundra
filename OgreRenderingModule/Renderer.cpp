@@ -12,6 +12,9 @@
 
 #include <Ogre.h>
 
+///\todo Bring in the D3D9RenderSystem includes to fix Ogre & Qt fighting over SetCursor.
+//#include <OgreD3D9RenderWindow.h>
+
 using namespace Foundation;
 
 namespace OgreRenderer
@@ -116,8 +119,13 @@ namespace OgreRenderer
     
     Renderer::~Renderer()
     {
-        if (ray_query_ && scenemanager_)
-            scenemanager_->destroyQuery(ray_query_);
+        if (ray_query_)
+        {
+            if (scenemanager_)
+                scenemanager_->destroyQuery(ray_query_);
+            else
+                OgreRenderingModule::LogWarning("Could not free Ogre::RaySceneQuery: The scene manager to which it belongs is not present anymore!");
+        }
 
         if (renderwindow_)
         {
@@ -209,6 +217,18 @@ namespace OgreRenderer
         try
         {
             renderwindow_ = root_->createRenderWindow(window_title_, width, height, fullscreen, &params);
+
+            ///\todo To disable Ogre setting the default arrow mouse cursor, use the following: Commented out for now
+            /// since we don't have Ogre D3D9RenderSystem in Ogre deps. Do something similar for other Ogre Render
+            /// Systems as well.
+            /*
+            Ogre::D3D9RenderWindow *renderWnd = dynamic_cast<Ogre::D3D9RenderWindow*>(renderwindow_);
+            if (renderWnd)
+            {
+                HWND mainWnd = renderWnd->getWindowHandle();
+                SetClassLong(mainWnd, GCL_HCURSOR, NULL);
+            }
+            */
         }
         catch (Ogre::Exception e) {}
         
@@ -400,7 +420,7 @@ namespace OgreRenderer
 
     // Get the mesh information for the given mesh.
     // Code found in Wiki: www.ogre3d.org/wiki/index.php/RetrieveVertexData
-    void getMeshInformation(const Ogre::Mesh *mesh,
+    static void getMeshInformation(const Ogre::Mesh *mesh,
                                     size_t &vertex_count,
                                     Ogre::Vector3* &vertices,
                                     size_t &index_count,
@@ -417,6 +437,8 @@ namespace OgreRenderer
 
         vertex_count = index_count = 0;
 
+        ///\todo This is only required because we allocate extra space for the CPU-side mesh VB and IB.
+        /// To optimize, this can be done as a preprocess step.
         // Calculate how many vertices and indices we're going to need
         for (unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
         {
@@ -441,6 +463,8 @@ namespace OgreRenderer
         }
 
 
+        ///\todo Allocation and GPU memory locking produces a costly performance hit. 
+        /// Can optimize and move this to a precomputed offline-cached buffer.
         // Allocate space for the vertices and indices
         vertices = new Ogre::Vector3[vertex_count];
         indices = new unsigned long[index_count];
@@ -448,6 +472,7 @@ namespace OgreRenderer
         added_shared = false;
 
         // Run through the submeshes again, adding the data into the arrays
+        ///\todo None of this is necessary with a proper caching mechanism.
         for ( unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
         {
             Ogre::SubMesh* submesh = mesh->getSubMesh(i);
@@ -468,6 +493,7 @@ namespace OgreRenderer
                 Ogre::HardwareVertexBufferSharedPtr vbuf =
                     vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
 
+                ///\todo Should not lock here.
                 unsigned char* vertex =
                     static_cast<unsigned char*>(vbuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
 
@@ -483,6 +509,7 @@ namespace OgreRenderer
 
                     Ogre::Vector3 pt(pReal[0], pReal[1], pReal[2]);
 
+                    ///\todo Should transform the ray to the VB local space instead of this.
                     vertices[current_offset + j] = (orient * (pt * scale)) + position;
                 }
 
@@ -492,11 +519,13 @@ namespace OgreRenderer
 
 
             Ogre::IndexData* index_data = submesh->indexData;
+            assert(submesh->indexData != 0); ///\todo Nonindiced meshes not supported.
             size_t numTris = index_data->indexCount / 3;
             Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
 
             bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
 
+            ///\todo Should not need to lock here.
             unsigned long*  pLong = static_cast<unsigned long*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
             unsigned short* pShort = reinterpret_cast<unsigned short*>(pLong);
 
@@ -524,7 +553,7 @@ namespace OgreRenderer
             current_offset = next_offset;
         }
     }
-    
+
     Scene::Entity *Renderer::Raycast(int x, int y)
     {
         if (!initialized_) return NULL;
@@ -537,7 +566,11 @@ namespace OgreRenderer
         Ogre::RaySceneQueryResult &results = ray_query_->execute();
 
         Scene::Entity* closest_entity = NULL;
-        int best_priority = -1000000;
+
+        // The minimum priority to use if we're picking an Entity that doesn't have the component that contains priority.
+        const int minimum_priority = -1000000;
+
+        int best_priority = minimum_priority;
         // Prepass: get best available priority for breaking early
         for (size_t i = 0; i < results.size(); ++i)
         {
@@ -569,7 +602,7 @@ namespace OgreRenderer
 
         // Now do the real pass
         Ogre::Real closest_distance = -1.0f;
-        int closest_priority = -1000000;
+        int closest_priority = minimum_priority;
 
         for (size_t i = 0; i < results.size(); ++i)
         {
@@ -598,19 +631,25 @@ namespace OgreRenderer
             {
                 continue;
             }
-            Foundation::ComponentPtr component = entity->GetComponent(EC_OgrePlaceable::NameStatic());
-            if (!component)
-                continue;
                 
-            EC_OgrePlaceable *placeable = checked_static_cast<EC_OgrePlaceable*>(component.get());
-            int current_priority = placeable->GetSelectPriority();
-            if (current_priority < closest_priority)
-                continue;
+            int current_priority = minimum_priority;
+            {
+                Foundation::ComponentPtr component = entity->GetComponent(EC_OgrePlaceable::NameStatic());
+                if (component)
+                {
+                    EC_OgrePlaceable *placeable = checked_static_cast<EC_OgrePlaceable*>(component.get());
+                    if (placeable)
+                        current_priority = placeable->GetSelectPriority();
+//                    if (current_priority < closest_priority)
+//                        continue;
+                }
+            }
 
             // Mesh entity check: triangle intersection
             if (entry.movable->getMovableType().compare("Entity") == 0)
             {
                 Ogre::Entity* ogre_entity = static_cast<Ogre::Entity*>(entry.movable);
+                assert(ogre_entity != 0);
             
                 size_t vertex_count;
                 size_t index_count;

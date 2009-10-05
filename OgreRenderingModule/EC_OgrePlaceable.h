@@ -71,7 +71,7 @@ namespace OgreRenderer
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgrePlaceable(Foundation::ModuleInterface* module);
+        explicit EC_OgrePlaceable(Foundation::ModuleInterface* module);
         
         //! attaches scenenode to parent
         void AttachNode();

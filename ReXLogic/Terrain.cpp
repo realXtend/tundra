@@ -74,11 +74,6 @@ namespace
         Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
         assert(terrainMaterial.get());
         OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName);
-
-//        while(iter->
-//        terrainMaterial->
-//        Ogre::MaterialPtr newMaterial = material->clone(materialName);
-//        newMaterial->setAmbient(r, g, b);
     }
 
     void Terrain::DebugGenerateTerrainVisData(Ogre::SceneNode *node, const DecodedTerrainPatch &patch, int patchSize)
@@ -135,8 +130,12 @@ namespace
 
     /// Creates Ogre geometry data for the single given patch, or updates the geometry for an existing
     /// patch if the associated Ogre resources already exist.
-    void Terrain::GenerateTerrainGeometryForOnePatch(EC_Terrain &terrain, EC_Terrain::Patch &patch)
+    void Terrain::GenerateTerrainGeometryForOnePatch(Scene::Entity &entity, EC_Terrain &terrain, EC_Terrain::Patch &patch)
     {
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
+            return;
+
         Ogre::SceneNode *node = patch.node;
         bool firstTimeFill = (node == 0);
         if (!node)
@@ -145,25 +144,34 @@ namespace
             patch.node = node;
         }
         assert(node);
-        assert(node->numAttachedObjects() == 1);
+//        assert(node->numAttachedObjects() == 1);
 
         Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
 
-        Ogre::ManualObject *manual = dynamic_cast<Ogre::ManualObject*>(node->getAttachedObject(0));
-        if (firstTimeFill)
+        Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
+        Ogre::ManualObject *manual = sceneMgr->createManualObject(renderer->GetUniqueObjectName());
+        manual->setCastShadows(false);
+//        node->attachObject(manual);
+
+//        Ogre::ManualObject *manual = dynamic_cast<Ogre::ManualObject*>(node->getAttachedObject(0));
+//        if (firstTimeFill)
         {
             manual->clear();
             manual->estimateVertexCount(17*17);
             manual->estimateIndexCount(17*17*3*2);
             manual->begin(terrainMaterial->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
+
+            // Save the entity in our scene structure this ManualObject refers to. Used to support scene queries
+            // on terrain objects.
+//            manual->setUserAny(Ogre::Any(&entity));
         }
-        else
+/*        else
         {
-            assert(manual->getNumSections() == 1);    
+            assert(manual->getNumSections() == 1);
             manual->setMaterialName(0, terrainMaterial->getName());
             manual->beginUpdate(0);
         }
-
+*/
         const float vertexSpacingX = 1.f;
         const float vertexSpacingY = 1.f;
         const float patchSpacingX = 16 * vertexSpacingX;
@@ -242,6 +250,14 @@ namespace
 
         manual->end();
 
+        std::string mesh_name = renderer->GetUniqueObjectName();
+        Ogre::MeshPtr terrainMesh = manual->convertToMesh(mesh_name);
+        sceneMgr->destroyManualObject(manual);
+        Ogre::Entity *ogre_entity = sceneMgr->createEntity(renderer->GetUniqueObjectName(), mesh_name);
+        ogre_entity->setUserAny(Ogre::Any(&entity));
+
+        node->detachAllObjects();
+        node->attachObject(ogre_entity);
         patch.patch_geometry_dirty = false;
     }
 
@@ -252,12 +268,8 @@ namespace
         {
             Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
 
-            Ogre::ManualObject *manual = sceneMgr->createManualObject(renderer->GetUniqueObjectName());
-            manual->setCastShadows(false);
-
             node = sceneMgr->createSceneNode();
             sceneMgr->getRootSceneNode()->addChild(node);
-            node->attachObject(manual);
             
             const float vertexSpacingX = 1.f;
             const float vertexSpacingY = 1.f;
@@ -361,7 +373,7 @@ namespace
                 }
 
                 if (neighborsLoaded)
-                    GenerateTerrainGeometryForOnePatch(*terrainComponent, scenePatch);
+                    GenerateTerrainGeometryForOnePatch(*terrain, *terrainComponent, scenePatch);
             }
     }
 
