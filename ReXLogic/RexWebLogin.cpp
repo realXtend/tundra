@@ -14,8 +14,8 @@ namespace RexLogic
 	RexWebLogin::RexWebLogin(QWidget *parent, QString address)
 		: QWidget(parent), address_(address)
 	{
-		initWidget();
-		connectSignals();
+		InitWidget();
+		ConnectSignals();
 	}
 
 	RexWebLogin::~RexWebLogin()
@@ -29,7 +29,7 @@ namespace RexLogic
 		QWidget::showEvent(showEvent);
 	}
 
-	void RexWebLogin::initWidget()
+	void RexWebLogin::InitWidget()
 	{
 		// Load ui to widget from file
 		QUiLoader loader;
@@ -80,45 +80,45 @@ namespace RexLogic
 		this->setWindowIcon(QIcon("./data/ui/images/globe_48.png"));
 	}
 
-	void RexWebLogin::connectSignals()
+	void RexWebLogin::ConnectSignals()
 	{
 		// Buttons
 		QObject::connect(this->backButton, SIGNAL( clicked() ), this->webView_, SLOT( back() ));
 		QObject::connect(this->forwardButton, SIGNAL( clicked() ), this->webView_, SLOT( forward() ));
 		QObject::connect(this->stopButton, SIGNAL( clicked() ), this->webView_, SLOT( stop() ));
 		QObject::connect(this->refreshButton, SIGNAL( clicked() ), this->webView_, SLOT( reload() ));
-		QObject::connect(this->goButton, SIGNAL( clicked(bool) ), this, SLOT( goToUrl(bool) ));
+		QObject::connect(this->goButton, SIGNAL( clicked(bool) ), this, SLOT( GoToUrl(bool) ));
 		// Addressbar
-		QObject::connect(this->comboBoxAddress->lineEdit(), SIGNAL( returnPressed() ), this, SLOT( goToUrl() ));
+		QObject::connect(this->comboBoxAddress->lineEdit(), SIGNAL( returnPressed() ), this, SLOT( GoToUrl() ));
 		// Webview
-		QObject::connect(this->webView_, SIGNAL( loadStarted() ), this, SLOT( loadStarted() ));
-		QObject::connect(this->webView_, SIGNAL( loadProgress(int) ), this, SLOT( updateUi(int) ));
-		QObject::connect(this->webView_, SIGNAL( loadFinished(bool) ), this, SLOT( processPage(bool) ));
+		QObject::connect(this->webView_, SIGNAL( loadStarted() ), this, SLOT( LoadStarted() ));
+		QObject::connect(this->webView_, SIGNAL( loadProgress(int) ), this, SLOT( UpdateUi(int) ));
+		QObject::connect(this->webView_, SIGNAL( loadFinished(bool) ), this, SLOT( ProcessPage(bool) ));
 	}
 
-	void RexWebLogin::goToUrl()
+	void RexWebLogin::GoToUrl()
 	{
-		goToUrl(true);
+		GoToUrl(true);
 	}
 
-	void RexWebLogin::goToUrl(bool checked)
+	void RexWebLogin::GoToUrl(bool checked)
 	{
 		this->webView_->setUrl(QUrl(this->comboBoxAddress->lineEdit()->text()));
 	}
 
-	void RexWebLogin::loadStarted()
+	void RexWebLogin::LoadStarted()
 	{
 		this->stopButton->setEnabled(true);
 		this->statusLabel->setText("Loading page...");
 		this->progressBar->show();
 	}
 
-	void RexWebLogin::updateUi(int progress)
+	void RexWebLogin::UpdateUi(int progress)
 	{
 		this->progressBar->setValue(progress);
 	}
 
-	void RexWebLogin::processPage(bool success)
+	void RexWebLogin::ProcessPage(bool success)
 	{
 		// Update GUI
 		this->stopButton->setEnabled(false);
@@ -139,7 +139,7 @@ namespace RexLogic
 			{
 				QVariant returnValue;
 				returnValue = this->webView_->page()->mainFrame()->evaluateJavaScript("ReturnSuccessValue()");
-				emit( loginProcessed(returnValue.toString()) );
+				emit( LoginProcessed(returnValue.toString()) );
 				this->close();
 			}
 		}

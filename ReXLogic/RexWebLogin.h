@@ -21,16 +21,16 @@ namespace RexLogic
 		virtual ~RexWebLogin();
 
 	public slots:
-		void goToUrl();
-		void goToUrl(bool checked);
-		void loadStarted();
-		void updateUi(int progress);
-		void processPage(bool success);
+		void GoToUrl();
+		void GoToUrl(bool checked);
+		void LoadStarted();
+		void UpdateUi(int progress);
+		void ProcessPage(bool success);
 
 	private:
 		void showEvent(QShowEvent *showEvent);
-		void initWidget();
-		void connectSignals();
+		void InitWidget();
+		void ConnectSignals();
 
 		QWidget *widget_;
 		QWebView *webView_;
@@ -46,7 +46,7 @@ namespace RexLogic
 		QString address_;
 
 	signals:
-		void loginProcessed(QString);
+		void LoginProcessed(QString);
 
 	};
 }
