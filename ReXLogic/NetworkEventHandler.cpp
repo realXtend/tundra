@@ -352,8 +352,8 @@ bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::Netwo
     msg.ReadS32(); //Version, version of the folder for caching
     int32_t descendents = msg.ReadS32(); //Descendents, count to help with caching
     ///\todo Crashes here sometimes, can't read the instance counts right if they are zero.
-    if (descendents == 0)
-        RexLogicModule::LogInfo("InventoryDescendents, variable Descendents is null");
+//    if (descendents == 0)
+//        RexLogicModule::LogInfo("InventoryDescendents, variable Descendents is null");
 
     // FolderData, Variable block.
     // Contains sub-folders that the requested folder contains.
@@ -370,24 +370,26 @@ bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::Netwo
         parent = inventory->GetChildFolderByID(parent_id);
         if (!parent)
         {
-            RexLogicModule::LogInfo("InventoryDescendents: could not get parent. Variable ParentID is " + parent_id.ToString());
+//            RexLogicModule::LogInfo("InventoryDescendents packet: could not get parent."
+//                "Variable ParentID is " + parent_id.ToString());
             continue;
         }
         
         folder = inventory->GetOrCreateNewFolder(folder_id, *parent);
         folder->SetName(folder_name);
         //folder->SetType(type);
-        std::cout << "Folder: " << folder_name << std::endl;
+        //std::cout << "Folder: " << folder_name << std::endl;
         
     }
 
     // ItemData, Variable block.
     // Contains items that the requested folder contains.
     instance_count = msg.ReadCurrentBlockInstanceCount();
-//    std::cout << "InventoryDescendents: Assets, count: " << instance_count << std::endl;
+//    std::cout << "InventoryDescendents packet: Assets, count: " << instance_count << std::endl;
     for(size_t i = 0; i < instance_count; ++i)
     {
-    /*
+        try
+        {
         RexUUID item_id = msg.ReadUUID();
         RexUUID folder_id = msg.ReadUUID();
 
@@ -402,7 +404,13 @@ bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::Netwo
         msg.SkipToNextVariable(); //msg.ReadU32(); //NextOwnerMask
         msg.SkipToNextVariable(); //msg.ReadBool(); //GroupOwned
 
-        RexUUID asset_id = msg.ReadUUID(); //AssetID
+        RexUUID asset_id = msg.ReadUUID();
+        if (item_id.IsNull() || folder_id.IsNull() || asset_id.IsNull())
+        {
+//            RexLogicModule::LogInfo("InventoryDescendents packet: ItemID, FolderID or AssetID is null.");
+            continue;
+        }
+
         asset_type_t at = msg.ReadS8(); //Type (asset type?)
         inventory_type_t it = msg.ReadS8(); //InvType
 
@@ -416,13 +424,15 @@ bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::Netwo
         //msg.ReadU32(); //CRC
 
         // Add the new item to the inventory.
-        InventoryItem item(item_id, asset_id, at);
-        std::cout << "Item: " << item_name << std::endl;
-        item.SetName(item_name);
-        item.SetDescription(item_desc);
-        InventoryFolder *folder = inventory->GetFirstSubFolderByID(folder_id);
-        folder->AddItem(item);
-        */
+        OpenSimProtocol::InventoryFolder *folder = inventory->GetChildFolderByID(folder_id);
+//        std::cout << "Adding item: " << item_name << " to folder " << folder->GetName() << std::endl;
+        OpenSimProtocol::InventoryAsset *asset = inventory->GetOrCreateNewAsset(item_id, asset_id, *folder, item_name);
+        asset->SetDescription(item_desc);
+        }
+        catch (NetMessageException &)
+        {
+            RexLogicModule::LogWarning("Catched NetMessageException, while reading InventoryDescendents packet.");
+        }
     }
 
     return false;

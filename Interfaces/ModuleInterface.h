@@ -43,26 +43,27 @@ namespace Foundation
 
             \ingroup Module_group
         */
-		enum Type 
-		{
-			MT_Renderer = 0,
+        enum Type 
+        {
+            MT_Renderer = 0,
             MT_RendererWindow,
-			MT_Sound,
-			MT_Gui,
-			MT_WorldLogic,
-			MT_OpenSimProtocol,
-			MT_Test,
-			MT_NetTestLogic,
-			MT_PythonScript,
-			MT_QtScript,
+            MT_Sound,
+            MT_Gui,
+            MT_WorldLogic,
+            MT_OpenSimProtocol,
+            MT_Test,
+            MT_NetTestLogic,
+            MT_PythonScript,
+            MT_QtScript,
             MT_Console,
             MT_Asset,
-			MT_Communication,
-			MT_CommunicationUI,
+            MT_Communication,
+            MT_CommunicationUI,
             MT_Input,
             MT_TextureDecoder,
-			MT_Unknown
-		};
+            MT_Inventory,
+            MT_Unknown
+        };
 
         //! Returns string from type enum.
         /*!
@@ -75,7 +76,7 @@ namespace Foundation
             static const std::string type_strings[MT_Unknown] = {
                  "OgreRenderingModule", "OgreGtkWindowModule", "SoundModule", "QtModule", "RexLogicModule", "OpenSimProtocolModule",
                  "TestModule", "NetTestLogicModule", "PythonScriptModule", "QtScriptModule", "ConsoleModule", "AssetModule", "CommunicationModule",
-				 "CommunicationUIModule", "InputModuleOIS", "TextureDecoderModule" };
+                 "CommunicationUIModule", "InputModuleOIS", "TextureDecoderModule", "InventoryModule" };
 
             return type_strings[type];
         }

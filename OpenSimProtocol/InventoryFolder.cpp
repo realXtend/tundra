@@ -137,7 +137,7 @@ InventoryFolder *InventoryFolder::GetFirstChildFolderByName(const char *searchNa
     return 0;
 }
 
-InventoryFolder *InventoryFolder::GetChildFolderByID(const RexUUID &id)
+InventoryFolder *InventoryFolder::GetChildFolderByID(const RexUUID &searchId)
 {
     QListIterator<InventoryItemBase *> it(childItems_);
     while(it.hasNext())
@@ -149,18 +149,44 @@ InventoryFolder *InventoryFolder::GetChildFolderByID(const RexUUID &id)
         else
             continue;
 
-        if (folder->GetID() == id)
+        if (folder->GetID() == searchId)
             return folder;
 
-        InventoryFolder *folder2 = folder->GetChildFolderByID(id);
+        InventoryFolder *folder2 = folder->GetChildFolderByID(searchId);
         if (folder2)
-            if (folder2->GetID() == id)
+            if (folder2->GetID() == searchId)
                 return folder2;
     }
 
     return 0;
 }
 
+InventoryAsset *InventoryFolder::GetChildAssetByID(const RexUUID &searchId)
+{
+    QListIterator<InventoryItemBase *> it(childItems_);
+    while(it.hasNext())
+    {
+        InventoryItemBase *item = it.next();
+        InventoryAsset *asset = 0;
+        if (item->GetInventoryItemType() == Type_Asset)
+            asset = static_cast<InventoryAsset *>(item);
+        else
+            continue;
+
+        if (asset->GetID() == searchId)
+            return asset;
+
+    ///\todo Recursion, if needed.
+    /*
+        InventoryFolder *folder = folder->GetChildFolderByID(searchId);
+        if (folder)
+            if (asset->GetID() == searchId)
+                return folder2;
+    */
+    }
+
+    return 0;
+}
 InventoryItemBase *InventoryFolder::Child(int row)
 {
     return childItems_.value(row);
@@ -193,6 +219,7 @@ bool InventoryFolder::SetData(int column, const QVariant &value)
         return false;
 
     itemData_[column] = value;
+    SetName(value.toString().toStdString());
     return true;
 }
 

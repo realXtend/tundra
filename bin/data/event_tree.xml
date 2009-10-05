@@ -1,13 +1,13 @@
 <subscribers>
-	<subscriber module="AssetModule" priority="90" />
-	<subscriber module="DebugStats" priority="100" />
-	<subscriber module="RexLogicModule" priority="100" />
-	<subscriber module="NetTestLogicModule" priority="100" />
+    <subscriber module="AssetModule" priority="90" />
+    <subscriber module="DebugStats" priority="100" />
+    <subscriber module="RexLogicModule" priority="100" />
+    <subscriber module="NetTestLogicModule" priority="100" />
     <subscriber module="PythonScriptModule" priority="102" />
-	<subscriber module="InputModuleOIS" priority="1" />
-	<subscriber module="ConsoleModule" priority="101" />
-	<subscriber module="OgreRenderingModule" priority="99" />
-	<subscriber module="TextureDecoderModule" priority="98" />
-  <subscriber module="QtModule" priority="100" />
+    <subscriber module="InputModuleOIS" priority="1" />
+    <subscriber module="ConsoleModule" priority="101" />
+    <subscriber module="OgreRenderingModule" priority="99" />
+    <subscriber module="TextureDecoderModule" priority="98" />
+    <subscriber module="QtModule" priority="100" />
 </subscribers>
 

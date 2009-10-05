@@ -240,7 +240,7 @@ void AssetUploader::UploadFile(
     request.SetMethod(HttpUtilities::HttpRequest::Post);
     request.SetRequestData("application/xml", asset_xml);
     request.Perform();
-    
+
     if (!request.GetSuccess())
     {
         RexLogicModule::LogError(request.GetReason());
@@ -432,13 +432,13 @@ void AssetUploader::UploadFiles(Core::StringList filenames, OpenSimProtocol::Inv
             RexLogicModule::LogError("Invalid response data for uploading an asset.");
             return;
         }
-        
+
         // Open the file.
         std::filebuf *pbuf;
         size_t size;
         char *buffer;
         std::vector<Core::u8> buffer_vec;
-    
+
         // If the file is texture, use QImage and J2k encoding.
         if (asset_type == RexTypes::RexAT_Texture)
         {
@@ -476,7 +476,6 @@ void AssetUploader::UploadFiles(Core::StringList filenames, OpenSimProtocol::Inv
         if (!success)
             return;
 */
-
         HttpUtilities::HttpRequest request2;
         request2.SetUrl(upload_url);
         request2.SetMethod(HttpUtilities::HttpRequest::Post);
@@ -514,6 +513,13 @@ void AssetUploader::UploadFiles(Core::StringList filenames, OpenSimProtocol::Inv
 
         RexLogicModule::LogInfo("Upload succesfull. Asset id: " + asset_id + ", inventory id: " + inventory_id + ".");
         ++asset_count;
+
+        // Create the asset to inventory.
+        OpenSimProtocol::InventoryFolder *folder = inventory->GetChildFolderByID(folder_id);
+        OpenSimProtocol::InventoryAsset *asset = inventory->GetOrCreateNewAsset(
+            RexTypes::RexUUID(inventory_id),RexTypes::RexUUID(asset_id), *folder);
+        asset->SetName(name);
+        asset->SetDescription(description);
     }
 
     RexLogicModule::LogInfo("Multiupload:" + Core::ToString(asset_count) + " assets succesfully uploaded.");
