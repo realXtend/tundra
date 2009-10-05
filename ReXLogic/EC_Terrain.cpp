@@ -44,7 +44,7 @@ namespace RexLogic
                     continue;
 
                 sceneMgr->getRootSceneNode()->removeChild(node);
-                sceneMgr->destroyManualObject(dynamic_cast<Ogre::ManualObject*>(node->getAttachedObject(0)));
+//                sceneMgr->destroyManualObject(dynamic_cast<Ogre::ManualObject*>(node->getAttachedObject(0)));
                 node->detachAllObjects();
                 sceneMgr->destroySceneNode(node);
             }
