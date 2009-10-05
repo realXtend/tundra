@@ -68,6 +68,7 @@ namespace CommunicationUI
 		void ManagerReady();
 		void ConnectionEstablished();
 		void ConnectionFailed(QString &reason);
+		void ContactListChanged(ContactVector contacts);
 
 		void StatusChanged(const QString &newStatus);
 		void StatusMessageChanged();
