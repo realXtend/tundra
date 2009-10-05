@@ -33,15 +33,15 @@ namespace CommunicationUI
 			canvas_->Show(); 
 
 			// Connect signal for resizing
-			QObject::connect(UIContainer_, SIGNAL( resized(QSize &) ), this, SLOT( setWindowSize(QSize &) ));
-			QObject::connect(UIContainer_, SIGNAL( destroyCanvas() ), this, SLOT( destroyThis() ));
-			QObject::connect(UIContainer_, SIGNAL( setCanvasTitle(QString &) ), canvas_.get(), SLOT( SetCanvasWindowTitle(QString &) ));
-			QObject::connect(UIContainer_, SIGNAL( setCanvasIcon(QIcon &) ), canvas_.get(), SLOT( SetCanvasWindowIcon(QIcon &) ));
+			QObject::connect(UIContainer_, SIGNAL( Resized(QSize &) ), this, SLOT( SetWindowSize(QSize &) ));
+			QObject::connect(UIContainer_, SIGNAL( DestroyCanvas() ), this, SLOT( DestroyThis() ));
+			QObject::connect(UIContainer_, SIGNAL( SetCanvasTitle(QString &) ), canvas_.get(), SLOT( SetCanvasWindowTitle(QString &) ));
+			QObject::connect(UIContainer_, SIGNAL( SetCanvasIcon(QIcon &) ), canvas_.get(), SLOT( SetCanvasWindowIcon(QIcon &) ));
 			
 			// Init title, icon and size
 			canvas_->SetCanvasWindowIcon(QIcon(":/images/iconUsers.png"));
 			canvas_->SetCanvasWindowTitle(QString("realXtend Naali Communications Login"));
-			setWindowSize(QSize(450, 165));
+			SetWindowSize(QSize(450, 165));
 
 			LogInfo("Loading succesfull");
 		}		
@@ -53,10 +53,10 @@ namespace CommunicationUI
 
 	QtGUI::~QtGUI(void)
 	{
-		destroyThis();
+		DestroyThis();
 	}
 
-	void QtGUI::destroyThis()
+	void QtGUI::DestroyThis()
 	{
 		boost::shared_ptr<QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtModule>(Foundation::Module::MT_Gui).lock();
 		QtUI::QtModule *qt_ui = dynamic_cast<QtModule*>(qt_module.get());
@@ -67,7 +67,7 @@ namespace CommunicationUI
 		}
 	}
 
-	void QtGUI::setWindowSize(QSize &newSize)
+	void QtGUI::SetWindowSize(QSize &newSize)
 	{
 		canvas_->SetCanvasSize(newSize.width(), newSize.height());
 	}
@@ -81,12 +81,12 @@ namespace CommunicationUI
 		: QWidget(parent), chatWidget_(0), loginWidget_(0)
 	{
 		commManager_ = CommunicationManager::GetInstance();
-		QObject::connect((QObject *)commManager_, SIGNAL( Error(QString &) ), this, SLOT( connectionFailed(QString &) ));
+		QObject::connect((QObject *)commManager_, SIGNAL( Error(QString &) ), this, SLOT( ConnectionFailed(QString &) ));
 
 		LogInfo("Creating UIContainer, initializing with Login widget...");
 		this->setLayout(new QVBoxLayout);
 		this->layout()->setMargin(0);
-		loadUserInterface(false);
+		LoadUserInterface(false);
 		LogInfo("Loading successfull");
 	}
 
@@ -95,7 +95,7 @@ namespace CommunicationUI
 		delete this->layout();
 	}
 
-	void UIContainer::loadUserInterface(bool connected)
+	void UIContainer::LoadUserInterface(bool connected)
 	{
 		if (connected)
 		{
@@ -144,9 +144,9 @@ namespace CommunicationUI
 
 			// Add widget to layout
 			this->layout()->addWidget(chatWidget_);
-			emit( setCanvasTitle(QString("realXtend Naali Communications")) );
+			emit( SetCanvasTitle(QString("realXtend Naali Communications")) );
 			this->setMinimumSize(600, 262);
-			emit ( resized(QSize(600, 262)) );
+			emit ( Resized(QSize(600, 262)) );
 		} 
 		else
 		{
@@ -168,17 +168,17 @@ namespace CommunicationUI
 			// Get widgets
 			labelLoginConnectionStatus_ = findChild<QLabel *>("label_Status");
 			// Connect signals
-			QObject::connect(loginWidget_, SIGNAL( userdataSet(QString, int, QString, QString) ), this, SLOT( connectToServer(QString, int, QString, QString) ));
+			QObject::connect(loginWidget_, SIGNAL( UserdataSet(QString, int, QString, QString) ), this, SLOT( ConnectToServer(QString, int, QString, QString) ));
 			// Add widget to layout
 			this->layout()->addWidget(loginWidget_);
-			emit( setCanvasTitle(QString("realXtend Naali Communications Login")) );
+			emit( SetCanvasTitle(QString("realXtend Naali Communications Login")) );
 			this->setMinimumSize(450, 165);
-			emit ( resized(QSize(450, 165)) );
+			emit ( Resized(QSize(450, 165)) );
 		}
 
 	}
 
-	void UIContainer::loadConnectedUserData(User *userData)
+	void UIContainer::LoadConnectedUserData(User *userData)
 	{
 		labelUsername_->setText(QString(userData->GetUserID().c_str())); 
 		listWidgetFriends_->clear();
@@ -192,7 +192,7 @@ namespace CommunicationUI
 																QString(contact->GetPresenceStatus().c_str()),
 																QString(contact->GetPresenceMessage().c_str()), 
 																contact );
-			QObject::connect((QObject *)contact, SIGNAL( StateChanged() ), contactItem, SLOT( statusChanged() ));
+			QObject::connect((QObject *)contact, SIGNAL( StateChanged() ), contactItem, SLOT( StatusChanged() ));
 			listWidgetFriends_->addItem(contactItem);
 		}
 
@@ -205,19 +205,19 @@ namespace CommunicationUI
 		for( itrStatusOptions=options.begin(); itrStatusOptions!=options.end(); itrStatusOptions++ )
 		{
 			status = QString((*itrStatusOptions).c_str());
-			comboBoxStatus_->addItem(getStatusIcon(status), status);
+			comboBoxStatus_->addItem(GetStatusIcon(status), status);
 		}
 
 		// Connect signals
-		QObject::connect(listWidgetFriends_, SIGNAL( itemDoubleClicked(QListWidgetItem *) ), this, SLOT( startNewChat(QListWidgetItem *) )); 
-		QObject::connect(comboBoxStatus_, SIGNAL( currentIndexChanged(const QString &) ), this, SLOT( statusChanged(const QString &) ));
-		QObject::connect(lineEditStatus_, SIGNAL( returnPressed() ), this, SLOT( statusMessageChanged() ));
-		QObject::connect(buttonAddFriend_, SIGNAL( clicked(bool) ), this, SLOT( addNewFriend(bool) ));
-		QObject::connect(buttonRemoveFriend_, SIGNAL( clicked(bool) ), this, SLOT( removeFriend(bool) ));
+		QObject::connect(listWidgetFriends_, SIGNAL( itemDoubleClicked(QListWidgetItem *) ), this, SLOT( StartNewChat(QListWidgetItem *) )); 
+		QObject::connect(comboBoxStatus_, SIGNAL( currentIndexChanged(const QString &) ), this, SLOT( StatusChanged(const QString &) ));
+		QObject::connect(lineEditStatus_, SIGNAL( returnPressed() ), this, SLOT( StatusMessageChanged() ));
+		QObject::connect(buttonAddFriend_, SIGNAL( clicked(bool) ), this, SLOT( AddNewFriend(bool) ));
+		QObject::connect(buttonRemoveFriend_, SIGNAL( clicked(bool) ), this, SLOT( RemoveFriend(bool) ));
 
 	}
 
-	QIcon UIContainer::getStatusIcon(QString status)
+	QIcon UIContainer::GetStatusIcon(QString status)
 	{
 		if ( QString::compare(status, QString("available"), Qt::CaseInsensitive) == 0 )
 			return QIcon(":/images/iconGreen.png");
@@ -240,7 +240,7 @@ namespace CommunicationUI
 
 	// IM CONNECTION RELATED SLOTS //
 
-	void UIContainer::connectToServer(QString server, int port, QString username, QString password)
+	void UIContainer::ConnectToServer(QString server, int port, QString username, QString password)
 	{
 		labelLoginConnectionStatus_->setText("Initializing manager...");
 
@@ -254,70 +254,70 @@ namespace CommunicationUI
 		if (commManager_->GetState() == CommunicationManager::STATE_READY)
 		{
 			labelLoginConnectionStatus_->setText("Connecting...");
-			managerReady();
+			ManagerReady();
 		}	
 		else if (commManager_->GetState() == CommunicationManager::STATE_ERROR)
 		{
 			labelLoginConnectionStatus_->setText("Initializing manager...");
 			QString message = "Communication manager initialize error."; 
-			connectionFailed(message);
+			ConnectionFailed(message);
 		}
 		else
 		{
-			QObject::connect((QObject *)commManager_, SIGNAL( Ready() ), this, SLOT( managerReady() ));
-			QObject::connect((QObject *)commManager_, SIGNAL( Error(QString &) ), this, SLOT( connectionFailed(QString &) ));
+			QObject::connect((QObject *)commManager_, SIGNAL( Ready() ), this, SLOT( ManagerReady() ));
+			QObject::connect((QObject *)commManager_, SIGNAL( Error(QString &) ), this, SLOT( ConnectionFailed(QString &) ));
 		}
 
 	}
 
-	void UIContainer::managerReady()
+	void UIContainer::ManagerReady()
 	{
 		im_connection_ = commManager_->OpenConnection(credentials);
 
-		QObject::connect((QObject*)im_connection_, SIGNAL( Connected() ), this, SLOT( connectionEstablished() ));
-		QObject::connect((QObject*)im_connection_, SIGNAL( Error(QString &) ), this, SLOT( connectionFailed(QString &) ));
+		QObject::connect((QObject*)im_connection_, SIGNAL( Connected() ), this, SLOT( ConnectionEstablished() ));
+		QObject::connect((QObject*)im_connection_, SIGNAL( Error(QString &) ), this, SLOT( ConnectionFailed(QString &) ));
 	}
 
-	void UIContainer::connectionEstablished()
+	void UIContainer::ConnectionEstablished()
 	{
 		labelLoginConnectionStatus_->setText("Connected");
 		
 		if ( im_connection_ != NULL && im_connection_->GetUser() != NULL)
 		{
-			QObject::connect((QObject *)im_connection_, SIGNAL( ReceivedChatSessionRequest(ChatSessionRequest *) ), this, SLOT( newChatSessionRequest(ChatSessionRequest *) ));
-			QObject::connect((QObject *)im_connection_, SIGNAL( ReceivedFriendRequest(FriendRequest *) ), this, SLOT( newFriendRequest(FriendRequest *) ));
-			loadUserInterface(true);
-			loadConnectedUserData(im_connection_->GetUser());
+			QObject::connect((QObject *)im_connection_, SIGNAL( ReceivedChatSessionRequest(ChatSessionRequest *) ), this, SLOT( NewChatSessionRequest(ChatSessionRequest *) ));
+			QObject::connect((QObject *)im_connection_, SIGNAL( ReceivedFriendRequest(FriendRequest *) ), this, SLOT( NewFriendRequest(FriendRequest *) ));
+			LoadUserInterface(true);
+			LoadConnectedUserData(im_connection_->GetUser());
 		}
 		else
 		{
-			connectionFailed(QString("Connection lost or userdata could not be retrieved"));
+			ConnectionFailed(QString("Connection lost or userdata could not be retrieved"));
 		}
 	}
 
-	void UIContainer::connectionFailed(QString &reason)
+	void UIContainer::ConnectionFailed(QString &reason)
 	{
 		LogDebug("[Communications UI] Connection failed");
 		this->currentMessage = reason;
-		this->loadUserInterface(false);
+		this->LoadUserInterface(false);
 	}
 
 	// GUI RELATED SLOTS //
 
-	void UIContainer::statusChanged(const QString &newStatus)
+	void UIContainer::StatusChanged(const QString &newStatus)
 	{
 		im_connection_->GetUser()->SetPresenceStatus( newStatus.toStdString() );
 	}
 
-	void UIContainer::statusMessageChanged()
+	void UIContainer::StatusMessageChanged()
 	{
 		im_connection_->GetUser()->SetPresenceMessage( lineEditStatus_->text().toStdString() );
 	}
 
-	void UIContainer::startNewChat(QListWidgetItem *clickedItem)
+	void UIContainer::StartNewChat(QListWidgetItem *clickedItem)
 	{
 		ContactListItem *listItem = (ContactListItem *)clickedItem;
-		if ( tabWidgetCoversations_->doesTabExist(listItem->contact_) == false )
+		if ( tabWidgetCoversations_->DoesTabExist(listItem->contact_) == false )
 		{
 			ChatSessionPtr chatSession = im_connection_->CreateChatSession(listItem->contact_);
 			Conversation *conversation = new Conversation(tabWidgetCoversations_, chatSession, listItem->contact_, QString(im_connection_->GetUser()->GetName().c_str()));
@@ -326,7 +326,7 @@ namespace CommunicationUI
 		}
 	}
 
-	void UIContainer::newChatSessionRequest(ChatSessionRequest *chatSessionRequest)
+	void UIContainer::NewChatSessionRequest(ChatSessionRequest *chatSessionRequest)
 	{
 		ChatSessionPtr chatSession = chatSessionRequest->Accept();
 		
@@ -334,46 +334,46 @@ namespace CommunicationUI
 		{
 			if (chatSessionRequest->GetOriginatorContact() != NULL )
 			{
-				if ( tabWidgetCoversations_->doesTabExist(chatSessionRequest->GetOriginatorContact()) == false )
+				if ( tabWidgetCoversations_->DoesTabExist(chatSessionRequest->GetOriginatorContact()) == false )
 				{
 					Conversation *conversation = new Conversation(tabWidgetCoversations_, chatSession, chatSessionRequest->GetOriginatorContact(), QString(im_connection_->GetUser()->GetName().c_str()));
-					conversation->showMessageHistory(chatSession->GetMessageHistory());
-					tabWidgetCoversations_->addTab(conversation, getStatusIcon(QString(chatSessionRequest->GetOriginatorContact()->GetPresenceStatus().c_str())), QString(chatSessionRequest->GetOriginatorContact()->GetName().c_str()));		
+					conversation->ShowMessageHistory(chatSession->GetMessageHistory());
+					tabWidgetCoversations_->addTab(conversation, GetStatusIcon(QString(chatSessionRequest->GetOriginatorContact()->GetPresenceStatus().c_str())), QString(chatSessionRequest->GetOriginatorContact()->GetName().c_str()));		
 					tabWidgetCoversations_->setCurrentWidget(conversation);
 				}
 			}
 			else
 			{
-				LogWarning("newChatSessionRequest (handled successfully)");
+				LogWarning("NewChatSessionRequest (handled successfully)");
 			}
 		}
-		LogInfo("newChatSessionRequest (handled successfully)");
+		LogInfo("NewChatSessionRequest (handled successfully)");
 	}
 
-	void UIContainer::newFriendRequest(FriendRequest *request)
+	void UIContainer::NewFriendRequest(FriendRequest *request)
 	{
-		LogInfo("newFriendRequest recieved");
+		LogInfo("NewFriendRequest recieved");
 		FriendRequestUI *friendRequest = new FriendRequestUI(this, request);
 		tabWidgetCoversations_->addTab(friendRequest, QString("New Friend Request"));
 		tabWidgetCoversations_->setCurrentWidget(friendRequest);
-		QObject::connect(friendRequest, SIGNAL( closeThisTab(FriendRequestUI *) ), tabWidgetCoversations_, SLOT( closeFriendRequest(FriendRequestUI *) ));
+		QObject::connect(friendRequest, SIGNAL( CloseThisTab(FriendRequestUI *) ), tabWidgetCoversations_, SLOT( CloseFriendRequest(FriendRequestUI *) ));
 	}
 
-	void UIContainer::addNewFriend(bool clicked)
+	void UIContainer::AddNewFriend(bool clicked)
 	{
-		LogInfo("addNewFriend clicked");
+		LogInfo("AddNewFriend clicked");
 		FriendRequestUI *friendRequest = new FriendRequestUI(this, im_connection_);
 		tabWidgetCoversations_->addTab(friendRequest, QString("Add New Friend"));
 		tabWidgetCoversations_->setCurrentWidget(friendRequest);
-		QObject::connect(friendRequest, SIGNAL( closeThisTab(FriendRequestUI *) ), tabWidgetCoversations_, SLOT( closeFriendRequest(FriendRequestUI *) ));
+		QObject::connect(friendRequest, SIGNAL( CloseThisTab(FriendRequestUI *) ), tabWidgetCoversations_, SLOT( CloseFriendRequest(FriendRequestUI *) ));
 	}
 
-	void UIContainer::removeFriend(bool clicked)
+	void UIContainer::RemoveFriend(bool clicked)
 	{
-		LogInfo("removeFriend clicked");
+		LogInfo("RemoveFriend clicked");
 		int row = listWidgetFriends_->currentRow();
 		ContactListItem *taken = dynamic_cast<ContactListItem *>(listWidgetFriends_->takeItem(listWidgetFriends_->currentRow()));
-		// Delete User()->removeFriend, Matti do what you need here...
+		// Delete User()->RemoveFriend, Matti do what you need here...
 		delete taken;
 		taken = 0;
 	}
@@ -381,7 +381,7 @@ namespace CommunicationUI
 	void UIContainer::closeEvent(QCloseEvent *myCloseEvent) 
 	{
 		LogInfo("CloseEvent catched");
-		emit ( destroyCanvas() );
+		emit ( DestroyCanvas() );
 		QWidget::closeEvent(myCloseEvent);
 	}
 
@@ -395,8 +395,8 @@ namespace CommunicationUI
 	{
 		this->setLayout(new QVBoxLayout());
 		this->layout()->setMargin(0);
-		initWidget(message);
-		connectSignals();
+		InitWidget(message);
+		ConnectSignals();
 	}
 
 	Login::~Login()
@@ -404,7 +404,7 @@ namespace CommunicationUI
 
 	}
 
-	void Login::initWidget(QString &message)
+	void Login::InitWidget(QString &message)
 	{
 		// Init widget from .ui file
 		QUiLoader loader;
@@ -426,13 +426,13 @@ namespace CommunicationUI
 		buttonCancel_ = findChild<QPushButton *>("pushButton_Cancel");
 	}
 
-	void Login::connectSignals()
+	void Login::ConnectSignals()
 	{
-		QObject::connect(buttonConnect_, SIGNAL( clicked(bool) ), this, SLOT ( checkInput(bool) ));
+		QObject::connect(buttonConnect_, SIGNAL( clicked(bool) ), this, SLOT ( CheckInput(bool) ));
 		QObject::connect(buttonCancel_, SIGNAL( clicked() ), this->parent(), SLOT( close() ));
 	}
 
-	void Login::checkInput(bool clicked)
+	void Login::CheckInput(bool clicked)
 	{
 		QString serverUrl(this->textEditServer_->text());
 		bool portSuccess = false;
@@ -442,7 +442,7 @@ namespace CommunicationUI
 
 		if ( !serverUrl.isEmpty() && portSuccess && !username.isEmpty() && !password.isEmpty() )
 		{
-			emit( userdataSet(serverUrl, port, username, password) );
+			emit( UserdataSet(serverUrl, port, username, password) );
 		}
 	}
 
@@ -464,7 +464,7 @@ namespace CommunicationUI
 		tabBar()->setDrawBase(false);
 		tabBar()->setIconSize(QSize(10,10));
 		// Connect signal
-		QObject::connect(this, SIGNAL( tabCloseRequested(int) ), this, SLOT( closeTab(int) ));
+		QObject::connect(this, SIGNAL( tabCloseRequested(int) ), this, SLOT( CloseTab(int) ));
 	}
 
 	ConversationsContainer::~ConversationsContainer()
@@ -472,13 +472,13 @@ namespace CommunicationUI
 
 	}
 
-	void ConversationsContainer::closeFriendRequest(FriendRequestUI *request)
+	void ConversationsContainer::CloseFriendRequest(FriendRequestUI *request)
 	{
 		this->removeTab(this->indexOf(request));
 		delete request;
 	}
 
-	void ConversationsContainer::closeTab(int index)
+	void ConversationsContainer::CloseTab(int index)
 	{
 		QWidget *child = this->widget(index);
 		Conversation *childConversation = dynamic_cast<Conversation *>(child);
@@ -489,7 +489,7 @@ namespace CommunicationUI
 		child = 0;
 	}
 
-	bool ConversationsContainer::doesTabExist(Contact *contact)
+	bool ConversationsContainer::DoesTabExist(Contact *contact)
 	{
 		for (int i=0; i<this->count(); i++)
 		{
@@ -512,8 +512,8 @@ namespace CommunicationUI
 	{
 		this->setLayout(new QVBoxLayout());
 		this->layout()->setMargin(0);
-		initWidget();
-		connectSignals();
+		InitWidget();
+		ConnectSignals();
 	}
 
 	Conversation::~Conversation()
@@ -521,7 +521,7 @@ namespace CommunicationUI
 
 	}
 
-	void Conversation::initWidget()
+	void Conversation::InitWidget()
 	{
 		// Load ui to widget from file
 		QUiLoader loader;
@@ -537,33 +537,33 @@ namespace CommunicationUI
 		QString startMessage("Started chat session with ");
 		startMessage.append(contact_->GetName().c_str());
 		startMessage.append("...");
-		appendLineToConversation(startMessage);
+		AppendLineToConversation(startMessage);
 	}
 
-	void Conversation::connectSignals()
+	void Conversation::ConnectSignals()
 	{
-		QObject::connect((QObject*)chatSession_.get(), SIGNAL( MessageReceived(ChatMessage &) ), this, SLOT( onMessageReceived(ChatMessage &) ));
-		QObject::connect((QObject*)contact_, SIGNAL( StateChanged() ), this, SLOT( contactStateChanged() ));
-		QObject::connect(lineEditMessage_, SIGNAL( returnPressed() ), this, SLOT( onMessageSent() ));
+		QObject::connect((QObject*)chatSession_.get(), SIGNAL( MessageReceived(ChatMessage &) ), this, SLOT( OnMessageReceived(ChatMessage &) ));
+		QObject::connect((QObject*)contact_, SIGNAL( StateChanged() ), this, SLOT( ContactStateChanged() ));
+		QObject::connect(lineEditMessage_, SIGNAL( returnPressed() ), this, SLOT( OnMessageSent() ));
 	}
 
-	void Conversation::onMessageSent()
+	void Conversation::OnMessageSent()
 	{
 		QString message(lineEditMessage_->text());
 		lineEditMessage_->clear();
 		chatSession_->SendTextMessage(message.toStdString());
 
 		QString html("<span style='color:#828282;'>[");
-		html.append(generateTimeStamp());
+		html.append(GenerateTimeStamp());
 		html.append("]</span> <span style='color:#C21511;'>");
 		html.append(myName_);
 		html.append("</span><span style='color:black;'>: ");
 		html.append(message);
 		html.append("</span>");
-		appendHTMLToConversation(html);
+		AppendHTMLToConversation(html);
 	}
 
-	void Conversation::showMessageHistory(ChatMessageVector messageHistory) 
+	void Conversation::ShowMessageHistory(ChatMessageVector messageHistory) 
 	{
 		ChatMessageVector::const_iterator itrHistory;
 		for ( itrHistory = messageHistory.begin(); itrHistory!=messageHistory.end(); itrHistory++ )
@@ -576,45 +576,45 @@ namespace CommunicationUI
 			html.append("</span><span style='color:black;'>: ");
 			html.append(msg->GetText().c_str());
 			html.append("</span>");
-			appendHTMLToConversation(html);
+			AppendHTMLToConversation(html);
 		}
 	}
 
-	QString Conversation::generateTimeStamp()
+	QString Conversation::GenerateTimeStamp()
 	{
 		return QTime::currentTime().toString();
 	}
 
 
-	void Conversation::appendLineToConversation(QString line)
+	void Conversation::AppendLineToConversation(QString line)
 	{
 		textEditChat_->appendPlainText(line);
 		
 	}
 
-	void Conversation::appendHTMLToConversation(QString html)
+	void Conversation::AppendHTMLToConversation(QString html)
 	{
 		textEditChat_->appendHtml(html);
 	}
 
-	void Conversation::onMessageReceived(ChatMessage &message)
+	void Conversation::OnMessageReceived(ChatMessage &message)
 	{
 		QString html("<span style='color:#828282;'>[");
-		html.append(generateTimeStamp());
+		html.append(GenerateTimeStamp());
 		html.append("]</span> <span style='color:#2133F0;'>");
 		html.append(contact_->GetName().c_str());
 		html.append("</span><span style='color:black;'>: ");
 		html.append(message.GetText().c_str());
 		html.append("</span>");
-		appendHTMLToConversation(html);
+		AppendHTMLToConversation(html);
 	}
 
-	void Conversation::contactStateChanged()
+	void Conversation::ContactStateChanged()
 	{
 		// Update status as formatted text to chatwidget
 		QString status(contact_->GetPresenceStatus().c_str());
 		QString html("<span style='color:#828282;'>[");
-		html.append(generateTimeStamp());
+		html.append(GenerateTimeStamp());
 		html.append("]</span> <span style='color:#828282;'>");
 		html.append(contact_->GetName().c_str());
 		html.append(" changed status to ");
@@ -625,7 +625,7 @@ namespace CommunicationUI
 			html.append(QString(contact_->GetPresenceMessage().c_str()));
 		}
 		html.append("</span>");
-		appendHTMLToConversation(html);
+		AppendHTMLToConversation(html);
 
 		// Get icon for the state
 		QIcon icon;
@@ -657,7 +657,7 @@ namespace CommunicationUI
 	{
 		if (QString::compare(statusmessage, QString("")) != 0 )
 			status_.append(" - " + statusmessage);
-		updateItem();
+		UpdateItem();
 	}
 
 	ContactListItem::~ContactListItem()
@@ -665,7 +665,7 @@ namespace CommunicationUI
 
 	}
 
-	void ContactListItem::updateItem()
+	void ContactListItem::UpdateItem()
 	{
 		// Update status text
 		this->setText(name_ + " (" + status_ + ")");
@@ -684,7 +684,7 @@ namespace CommunicationUI
 			setIcon(QIcon(":/images/iconBlue.png"));
 	}
 
-	void ContactListItem::statusChanged()
+	void ContactListItem::StatusChanged()
 	{
 		status_ = QString(this->contact_->GetPresenceStatus().c_str());
 		if (QString::compare(QString(this->contact_->GetPresenceMessage().c_str()), QString("")) != 0 )
@@ -692,7 +692,7 @@ namespace CommunicationUI
 			status_.append(" - ");
 			status_.append(this->contact_->GetPresenceMessage().c_str());
 		}
-		updateItem();
+		UpdateItem();
 	}
 
 	/////////////////////////////////////////////////////////////////////
@@ -717,9 +717,9 @@ namespace CommunicationUI
 		reject = findChild<QPushButton *>("pushButton_Deny");
 		askLater = findChild<QPushButton *>("pushButton_AskLater");
 
-		QObject::connect(accept, SIGNAL( clicked(bool) ), this, SLOT( buttonHandlerAccept(bool) ));
-		QObject::connect(reject, SIGNAL( clicked(bool) ), this, SLOT( buttonHandlerReject(bool) ));
-		QObject::connect(askLater, SIGNAL( clicked(bool) ), this, SLOT( buttonHandlerCloseWindow(bool) ));
+		QObject::connect(accept, SIGNAL( clicked(bool) ), this, SLOT( ButtonHandlerAccept(bool) ));
+		QObject::connect(reject, SIGNAL( clicked(bool) ), this, SLOT( ButtonHandlerReject(bool) ));
+		QObject::connect(askLater, SIGNAL( clicked(bool) ), this, SLOT( ButtonHandlerCloseWindow(bool) ));
 	}
 
 	FriendRequestUI::FriendRequestUI(QWidget *parent, Connection *connection)
@@ -738,8 +738,8 @@ namespace CommunicationUI
 		account = findChild<QLineEdit *>("lineEdit_Account");
 		message = findChild<QLineEdit *>("lineEdit_Message");
 
-		QObject::connect(accept, SIGNAL( clicked(bool) ), this, SLOT( sendFriendRequest(bool) ));
-		QObject::connect(reject, SIGNAL( clicked(bool) ), this, SLOT( buttonHandlerCloseWindow(bool) ));
+		QObject::connect(accept, SIGNAL( clicked(bool) ), this, SLOT( SendFriendRequest(bool) ));
+		QObject::connect(reject, SIGNAL( clicked(bool) ), this, SLOT( ButtonHandlerCloseWindow(bool) ));
 	}
 
 	FriendRequestUI::~FriendRequestUI()
@@ -749,27 +749,27 @@ namespace CommunicationUI
 
 	// PRIVATE SLOTS
 
-	void FriendRequestUI::buttonHandlerAccept(bool clicked)
+	void FriendRequestUI::ButtonHandlerAccept(bool clicked)
 	{
 		request_->Accept();
-		emit( closeThisTab(this) );
+		emit( CloseThisTab(this) );
 	}
 
-	void FriendRequestUI::buttonHandlerReject(bool clicked)
+	void FriendRequestUI::ButtonHandlerReject(bool clicked)
 	{
 		request_->Reject();
-		emit( closeThisTab(this) );
+		emit( CloseThisTab(this) );
 	}
 
-	void FriendRequestUI::buttonHandlerCloseWindow(bool clicked)
+	void FriendRequestUI::ButtonHandlerCloseWindow(bool clicked)
 	{
-		emit( closeThisTab(this) );
+		emit( CloseThisTab(this) );
 	}
 
-	void FriendRequestUI::sendFriendRequest(bool clicked)
+	void FriendRequestUI::SendFriendRequest(bool clicked)
 	{
 		connection_->SendFriendRequest(account->text().toStdString(), message->text().toStdString());
-		emit( closeThisTab(this) );
+		emit( CloseThisTab(this) );
 	}
 
 } //end if namespace: CommunicationUI
