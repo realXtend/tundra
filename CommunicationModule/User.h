@@ -33,7 +33,11 @@ namespace TpQt4Communication
 		void SetPresenceMessage(std::string message);
 		std::string GetPresenceStatus();
 		std::string GetPresenceMessage();
+
+		//! Return all contacts on contact list
 		ContactVector GetContacts();
+
+		void RemoveContact();
 	private:
 
 		//! Add new contacts to contact list

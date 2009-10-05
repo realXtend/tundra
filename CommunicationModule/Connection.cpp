@@ -10,6 +10,17 @@ namespace TpQt4Communication
 	{
 		if (!tp_connection_.isNull())
 			tp_connection_->requestDisconnect();
+
+		for (PendingFriendRequestVector::iterator i = pending_friend_requests_.begin(); i != pending_friend_requests_.end(); ++i)
+		{
+			delete *i;
+			*i = NULL;
+		}
+		pending_friend_requests_.clear();
+
+		//! todo: clean friend requests
+		//! todo: clean chat session requests
+		//! todo: clean chat sessions
 	}
 
 	void Connection::Close()
@@ -25,7 +36,7 @@ namespace TpQt4Communication
 		LogError("Try to disconnect IM server connection.");
 		Tp::PendingOperation* p = tp_connection_->requestDisconnect();
 	}
-	
+
 	Connection::State Connection::GetState()
 	{
 		return state_;
@@ -141,27 +152,46 @@ namespace TpQt4Communication
 
 	void Connection::OnConnectionReady(Tp::PendingOperation *op)
 	{
-		LogInfo(" Connection::OnConnectionReady");
 	    if (op->isError())
 		{
-			QString message = "Connection cannot become ready: ";
+			QString message = "Connection initialization to IM server failed: ";
 			message.append(op->errorMessage());
 			emit Error(message);
 			LogError(message.toStdString());
 			state_ = STATE_ERROR;
 	        return;
 		}
+		LogInfo("Connection to IM server ready.");
 
-		LogInfo("Create user.");
 		user_ = new User(tp_connection_);
+		HandleNewContacts();
 
-		// Build Friendlist
-		Tp::Contacts all_known_contacts = tp_connection_->contactManager()->allKnownContacts();
+		QObject::connect(tp_connection_->contactManager(),
+            SIGNAL(presencePublicationRequested(const Tp::Contacts &)),
+            SLOT(OnPresencePublicationRequested(const Tp::Contacts &)));
+
+
+		state_ = STATE_OPEN;
+		emit Connected();
+	}
+
+	void Connection::HandleNewContacts()
+	{
 		ContactVector new_contacts;
+
+		//! Check every contact on contact list and determinate their nature by state of subscribtionState and publistState values
+		//! There can be:
+		//!                                  subscription:   publish:
+		//! - Normal contact                 YES             YES
+		//! - friend request (sended)        
+		//! - friend requst (received)       ASK             YES
+		//! - banned contact                 NO              *
+		//! - unknow                         (all the other combinations)
 		foreach (const Tp::ContactPtr &contact, tp_connection_->contactManager()->allKnownContacts())
 		{
-			switch (contact->subscriptionState())
-			{
+			LogInfo("Check contact:");
+			switch ( contact->subscriptionState() )
+				{
 			case Tp::Contact::PresenceStateNo:
 				LogInfo("subscriptionState = PresenceStateNo");
 				// User have already make a decicion to not accpet this contact to the friend list..
@@ -169,8 +199,31 @@ namespace TpQt4Communication
 
 			case Tp::Contact::PresenceStateYes:
 				{
-					LogInfo("subscriptionState = PresenceStateYes");
 					// A friend list item
+					switch (contact->publishState())
+					{
+					case Tp::Contact::PresenceStateNo:
+						{
+						//! We have subsribed presence status of this contact
+						//! but we have not published our own presence!
+						//! -> We unsubsribe this contact
+						Tp::PendingOperation* pending_remove_subscription = contact->removePresenceSubscription();
+						//! check result of this
+						}
+						break;
+
+					case Tp::Contact::PresenceStateYes:
+						//! This is a normal state
+						break;
+
+					case Tp::Contact::PresenceStateAsk:
+						//! We have subscribed presence of this contact
+						//! but we don't publish our?
+						//! Publicity level should be same to the both directions
+						Tp::PendingOperation* op = contact->authorizePresencePublication("");
+						//! todo: check the end result of this operation
+						break;
+					}
 					Contact* c = new Contact(contact);
 					new_contacts.push_back(c);
 				}
@@ -187,39 +240,14 @@ namespace TpQt4Communication
 				}
 				break;
 			}
-			switch (contact->publishState())
-			{
-			case Tp::Contact::PresenceStateNo:
-				LogInfo("publishState = PresenceStateNo");
-				break;
-
-			case Tp::Contact::PresenceStateYes:
-				LogInfo("publishState = PresenceStateYes");
-				break;
-
-			case Tp::Contact::PresenceStateAsk:
-				LogInfo("publishState = PresenceStateAsk");
-				break;
-			}
         }
-		
-		QObject::connect(tp_connection_->contactManager(),
-            SIGNAL(presencePublicationRequested(const Tp::Contacts &)),
-            SLOT(OnPresencePublicationRequested(const Tp::Contacts &)));
 
-
-		if (all_known_contacts.count() > 0)
+		if ( new_contacts.size() > 0 )
 		{
 			user_->AddContacts(new_contacts);
 		}
-
-		
-
-		state_ = STATE_OPEN;
-		emit Connected();
 	}
 
-			    
 	void Connection::OnNewChannels(const Tp::ChannelDetailsList& channels)
 	{
 		LogInfo("New channel received.");
@@ -227,8 +255,6 @@ namespace TpQt4Communication
 		{
 			QString channelType = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
 			bool requested = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested")).toBool();
-			// qDebug() << " channelType:" << channelType;
-			//  qDebug() << " requested  :" << requested;
 
 			if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT && !requested)
 			{
@@ -276,7 +302,19 @@ namespace TpQt4Communication
 				if ( (*i)->GetAddress().compare( contact->id().toStdString() ) == 0)
 				{
 					// The contact is already in contact list
+					QString message = "Presence publication was requsted by ";
+					message.append(contact->id());
+					message.append(" but contact is already on contact list.");
+					LogInfo(message.toStdString());
 				}
+			}
+
+			if (contact->subscriptionState() == Tp::Contact::PresenceStateYes)
+			{
+				//! Contact have already authorize user to get subscription
+				//! so we publish our presence 
+				QString message = "";
+				Tp::PendingOperation* p = contact->authorizePresencePublication(message);
 			}
 
 			FriendRequest* request = new FriendRequest(Tp::ContactPtr(contact));
@@ -285,28 +323,28 @@ namespace TpQt4Communication
 		}
 	}
 	
-	void Connection::OnContactRetrievedForFriendRequest(Tp::PendingOperation *op)
-	{
-		if (op->isError())
-		{
-			QString message = "Failed to receive contact: ";
-			message.append(op->errorMessage());
-			LogError(message.toStdString());
-			return;
-		}
-		LogInfo("Contact received.");
-		Tp::PendingContacts *pending_contacts = qobject_cast<Tp::PendingContacts *>(op);
-		QList<Tp::ContactPtr> contacts = pending_contacts->contacts();
-		
-		assert( contacts.size() == 1); // We have request only one contact 
-		Tp::ContactPtr contact = contacts.first();
-		QString message = ""; // todo
+	//void Connection::OnContactRetrievedForFriendRequest(Tp::PendingOperation *op)
+	//{
+	//	if (op->isError())
+	//	{
+	//		QString message = "Failed to receive contact: ";
+	//		message.append(op->errorMessage());
+	//		LogError(message.toStdString());
+	//		return;
+	//	}
+	//	LogInfo("Contact received.");
+	//	Tp::PendingContacts *pending_contacts = qobject_cast<Tp::PendingContacts *>(op);
+	//	QList<Tp::ContactPtr> contacts = pending_contacts->contacts();
+	//	
+	//	assert( contacts.size() == 1); // We have request only one contact 
+	//	Tp::ContactPtr contact = contacts.first();
+	//	QString message = ""; // todo
 
-		// Do the presence subscription
-		// When we get the answer ?
-		Tp::PendingOperation* p = contact->requestPresenceSubscription(message);
-		connect(p, SIGNAL(finished(Tp::PendingOperation*)), SLOT(OnPresenceSubscriptionResult(Tp::PendingOperation*)));
-	}
+	//	// Do the presence subscription
+	//	// When we get the answer ?
+	//	Tp::PendingOperation* p = contact->requestPresenceSubscription(message);
+	//	connect(p, SIGNAL(finished(Tp::PendingOperation*)), SLOT(OnPresenceSubscriptionResult(Tp::PendingOperation*)));
+	//}
 
 	void Connection::OnPresenceSubscriptionResult(Tp::PendingOperation* op)
 	{
@@ -372,7 +410,19 @@ namespace TpQt4Communication
 
 	void Connection::SendFriendRequest(const Address &to, const std::string &message)
 	{
-		Tp::PendingContacts *pending_contacts = tp_connection_->contactManager()->contactsForIdentifiers(QStringList()<<QString(to.c_str()));
-		connect(pending_contacts, SIGNAL( finished(Tp::PendingOperation *) ), SLOT( OnContactRetrievedForFriendRequest(Tp::PendingOperation *) ));
+		PendingFriendRequest* r = new PendingFriendRequest(tp_connection_, to, message);
+		connect( r, SIGNAL(Ready(PendingFriendRequest*, PendingFriendRequest::Result)), SLOT(OnPendingFriendRequestReady(PendingFriendRequest*, PendingFriendRequest::Result )) );
+		pending_friend_requests_.push_back(r);
 	}
+
+	void Connection::OnPendingFriendRequestReady(PendingFriendRequest* request, PendingFriendRequest::Result result)
+	{
+		switch (result)
+		{
+			case PendingFriendRequest::STATE_ACCEPTED: break;
+			case PendingFriendRequest::STATE_REJECTED: break;
+			case PendingFriendRequest::STATE_ERROR: break;
+		}
+	}
+
 } // end of namespace: TpQt4Communication

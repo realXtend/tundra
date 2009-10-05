@@ -65,4 +65,9 @@ namespace TpQt4Communication
 		return contacts;
 	}
 
+	void User::RemoveContact()
+	{
+		//tp_connection_->reve
+	}
+
 } // end of TpQt4Communication: 

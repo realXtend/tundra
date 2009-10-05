@@ -35,7 +35,7 @@ namespace TpQt4Communication
 		state_ = STATE_REJECTED;
 	}
 
-	Address FriendRequest::GetAddressFrom()
+	Address FriendRequest::GetOriginator()
 	{
 		assert(!tp_contact_.isNull());
 		return tp_contact_->id().toStdString();
@@ -65,6 +65,59 @@ namespace TpQt4Communication
 		QString message = "Presence state subscribed successfully with: ";
 		message.append(tp_contact_->id());
 		LogInfo(message.toStdString());
+	}
+
+	PendingFriendRequest::PendingFriendRequest(const Tp::ConnectionPtr tp_connection, const Address &target, const std::string &message): tp_connection_(tp_connection), target_(target), message_(message)
+	{
+		Tp::PendingContacts *pending_contacts = tp_connection_->contactManager()->contactsForIdentifiers(QStringList()<<QString(target.c_str()));
+		connect(pending_contacts, SIGNAL( finished(Tp::PendingOperation *) ), SLOT( OnContactRetrievedForFriendRequest(Tp::PendingOperation *) ));
+	}
+
+	Address PendingFriendRequest::GetTarget()
+	{
+		return target_;
+	}
+
+	void PendingFriendRequest::OnContactRetrievedForFriendRequest(Tp::PendingOperation *op)
+	{
+		if (op->isError())
+		{
+			QString message = "Failed to receive contact: ";
+			message.append(op->errorMessage());
+//			LogError(message.toStdString());
+			return;
+		}
+//		LogInfo("Contact received for friend request.");
+		Tp::PendingContacts *pending_contacts = qobject_cast<Tp::PendingContacts *>(op);
+		QList<Tp::ContactPtr> contacts = pending_contacts->contacts();
+		
+		assert( contacts.size() == 1); // We have request only one contact 
+		Tp::ContactPtr contact = contacts.first();
+
+		// Do the presence subscription
+		Tp::PendingOperation* p = contact->requestPresenceSubscription(message_.c_str());
+		connect(p, SIGNAL(finished(Tp::PendingOperation*)), SLOT(OnPresenceSubscriptionResult(Tp::PendingOperation*)));
+	}
+
+	void PendingFriendRequest::OnPresenceSubscriptionResult(Tp::PendingOperation* op)
+	{
+		if (op->isError())
+		{
+			QString message = "Canoot subscribe presence: ";
+			message.append(op->errorMessage());
+//			LogInfo(message.toStdString());
+
+			// Presence subscription didn't success, we emit a signal about it
+			QString to = ""; // todo: get the right value
+			//emit FriendRequestRejected(to);
+			emit Ready(this, STATE_REJECTED);
+		}
+	//	LogInfo("Presence subscribed successfully.");
+		// Now it's our turn to publish our status
+		
+		// From where to get contact object ???
+		// todo: move this logic to Contact class..
+		emit Ready(this, STATE_ACCEPTED);
 	}
 
 } // end of namespace: TpQt4Communication
