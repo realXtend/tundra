@@ -36,8 +36,8 @@ namespace CommunicationUI
 		~QtGUI(void);
 
 	public slots:
-		void setWindowSize(QSize &size);
-		void destroyThis();
+		void SetWindowSize(QSize &size);
+		void DestroyThis();
 
 	private:
 		Foundation::Framework *framework_;
@@ -64,26 +64,26 @@ namespace CommunicationUI
 		~UIContainer(void);
 
 	public slots:
-		void connectToServer(QString server, int port, QString username, QString password);
-		void managerReady();
-		void connectionEstablished();
-		void connectionFailed(QString &reason);
+		void ConnectToServer(QString server, int port, QString username, QString password);
+		void ManagerReady();
+		void ConnectionEstablished();
+		void ConnectionFailed(QString &reason);
 
-		void statusChanged(const QString &newStatus);
-		void statusMessageChanged();
-		void startNewChat(QListWidgetItem *clickedItem);
-		void newChatSessionRequest(ChatSessionRequest *);
-		void newFriendRequest(FriendRequest *request);
-		void addNewFriend(bool clicked);
-		void removeFriend(bool clicked);
+		void StatusChanged(const QString &newStatus);
+		void StatusMessageChanged();
+		void StartNewChat(QListWidgetItem *clickedItem);
+		void NewChatSessionRequest(ChatSessionRequest *);
+		void NewFriendRequest(FriendRequest *request);
+		void AddNewFriend(bool clicked);
+		void RemoveFriend(bool clicked);
 
 	protected slots:
 		void closeEvent(QCloseEvent *myCloseEvent);
 
 	private:
-		void loadUserInterface(bool connected);
-		void loadConnectedUserData(User *userData);
-		QIcon getStatusIcon(QString status);
+		void LoadUserInterface(bool connected);
+		void LoadConnectedUserData(User *userData);
+		QIcon GetStatusIcon(QString status);
 
 		QString currentMessage;
 		QWidget *loginWidget_;
@@ -103,10 +103,10 @@ namespace CommunicationUI
 		Connection* im_connection_;
 
 	signals:
-		void resized(QSize &);
-		void destroyCanvas();
-		void setCanvasTitle(QString &title);
-		void setCancasIcon(QIcon &icon);
+		void Resized(QSize &);
+		void DestroyCanvas();
+		void SetCanvasTitle(QString &title);
+		void SetCanvasIcon(QIcon &icon);
 
 	};
 
@@ -124,11 +124,11 @@ namespace CommunicationUI
 		~Login(void);
 
 	public slots:
-		void checkInput(bool clicked);
+		void CheckInput(bool clicked);
 
 	private:
-		void initWidget(QString &message);
-		void connectSignals();
+		void InitWidget(QString &message);
+		void ConnectSignals();
 
 		QWidget *internalWidget_;
 		QLabel *labelStatus;
@@ -140,7 +140,7 @@ namespace CommunicationUI
 		QPushButton *buttonCancel_;
 
 	signals:
-		void userdataSet(QString, int, QString, QString);
+		void UserdataSet(QString, int, QString, QString);
 
 	};
 
@@ -157,13 +157,13 @@ namespace CommunicationUI
 	public:
 		ConversationsContainer(QWidget *parent);
 		~ConversationsContainer(void);
-		bool doesTabExist(Contact *contact);
+		bool DoesTabExist(Contact *contact);
 		
 	public slots:
-		void closeFriendRequest(FriendRequestUI *request);
+		void CloseFriendRequest(FriendRequestUI *request);
 
 	private slots:
-		void closeTab(int index);
+		void CloseTab(int index);
 
 	};
 
@@ -181,14 +181,14 @@ namespace CommunicationUI
 		Conversation(ConversationsContainer *parent, ChatSessionPtr chatSession, Contact *contact, QString name);
 		~Conversation(void);
 
-		void showMessageHistory(ChatMessageVector messageHistory);
+		void ShowMessageHistory(ChatMessageVector messageHistory);
 
 	private:
-		void initWidget();
-		void connectSignals();
-		QString generateTimeStamp();
-		void appendLineToConversation(QString line);
-		void appendHTMLToConversation(QString html);
+		void InitWidget();
+		void ConnectSignals();
+		QString GenerateTimeStamp();
+		void AppendLineToConversation(QString line);
+		void AppendHTMLToConversation(QString html);
 
 		QWidget *internalWidget_;
 		QPlainTextEdit *textEditChat_;
@@ -200,9 +200,9 @@ namespace CommunicationUI
 		Contact *contact_;
 
 	private	slots:
-		void onMessageSent();
-		void onMessageReceived(ChatMessage &message);
-		void contactStateChanged();
+		void OnMessageSent();
+		void OnMessageReceived(ChatMessage &message);
+		void ContactStateChanged();
 
 	};
 
@@ -220,10 +220,10 @@ namespace CommunicationUI
 		~ContactListItem(void);
 
 	public slots:
-		void statusChanged();
+		void StatusChanged();
 
 	private:
-		void updateItem();
+		void UpdateItem();
 
 		QString name_;
 		QString status_;
@@ -245,10 +245,10 @@ namespace CommunicationUI
 		FriendRequestUI::~FriendRequestUI(void);
 
 	private slots:
-		void buttonHandlerAccept(bool clicked);
-		void buttonHandlerReject(bool clicked);
-		void buttonHandlerCloseWindow(bool clicked);
-		void sendFriendRequest(bool clicked);
+		void ButtonHandlerAccept(bool clicked);
+		void ButtonHandlerReject(bool clicked);
+		void ButtonHandlerCloseWindow(bool clicked);
+		void SendFriendRequest(bool clicked);
 
 	private:
 		FriendRequest *request_;
@@ -263,7 +263,7 @@ namespace CommunicationUI
 		QLineEdit *message;
 
 	signals:
-		void closeThisTab(FriendRequestUI *tabWidget);
+		void CloseThisTab(FriendRequestUI *tabWidget);
 
 	};
 
