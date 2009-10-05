@@ -181,20 +181,9 @@ namespace CommunicationUI
 	void UIContainer::LoadConnectedUserData(User *userData)
 	{
 		labelUsername_->setText(QString(userData->GetUserID().c_str())); 
-		listWidgetFriends_->clear();
-		ContactVector initialContacts = userData->GetContacts();
-		ContactVector::const_iterator itrContacts;
-
-		for( itrContacts=initialContacts.begin(); itrContacts!=initialContacts.end(); itrContacts++ )
-		{
-			Contact *contact = (*itrContacts);
-			ContactListItem *contactItem = new ContactListItem( QString(contact->GetName().c_str()),
-																QString(contact->GetPresenceStatus().c_str()),
-																QString(contact->GetPresenceMessage().c_str()), 
-																contact );
-			QObject::connect((QObject *)contact, SIGNAL( StateChanged() ), contactItem, SLOT( StatusChanged() ));
-			listWidgetFriends_->addItem(contactItem);
-		}
+		
+		// Update contacts
+		ContactListChanged(userData->GetContacts());
 
 		// Get available state options
 		PresenceStatusOptions options = im_connection_->GetAvailablePresenceStatusOptions();
@@ -209,6 +198,7 @@ namespace CommunicationUI
 		}
 
 		// Connect signals
+		//QObject::connect(im_connection_->GetUser(), SIGNAL ( NAME_THIS(ContactVector) ), this, SLOT( ContactListChanged(ContactVector) ));
 		QObject::connect(listWidgetFriends_, SIGNAL( itemDoubleClicked(QListWidgetItem *) ), this, SLOT( StartNewChat(QListWidgetItem *) )); 
 		QObject::connect(comboBoxStatus_, SIGNAL( currentIndexChanged(const QString &) ), this, SLOT( StatusChanged(const QString &) ));
 		QObject::connect(lineEditStatus_, SIGNAL( returnPressed() ), this, SLOT( StatusMessageChanged() ));
@@ -302,6 +292,23 @@ namespace CommunicationUI
 		this->LoadUserInterface(false);
 	}
 
+	void UIContainer::ContactListChanged(ContactVector contacts)
+	{
+		listWidgetFriends_->clear();
+		ContactVector::const_iterator itrContacts;
+
+		for( itrContacts=contacts.begin(); itrContacts!=contacts.end(); itrContacts++ )
+		{
+			Contact *contact = (*itrContacts);
+			ContactListItem *contactItem = new ContactListItem( QString(contact->GetName().c_str()),
+																QString(contact->GetPresenceStatus().c_str()),
+																QString(contact->GetPresenceMessage().c_str()), 
+																contact );
+			QObject::connect((QObject *)contact, SIGNAL( StateChanged() ), contactItem, SLOT( StatusChanged() ));
+			listWidgetFriends_->addItem(contactItem);
+		}
+	}
+
 	// GUI RELATED SLOTS //
 
 	void UIContainer::StatusChanged(const QString &newStatus)
@@ -373,7 +380,6 @@ namespace CommunicationUI
 		LogInfo("RemoveFriend clicked");
 		int row = listWidgetFriends_->currentRow();
 		ContactListItem *taken = dynamic_cast<ContactListItem *>(listWidgetFriends_->takeItem(listWidgetFriends_->currentRow()));
-		// Delete User()->RemoveFriend, Matti do what you need here...
 		delete taken;
 		taken = 0;
 	}
