@@ -71,10 +71,21 @@ namespace OpenSimProtocol
         /// @return Pointer to requested folder, or null if not found.
         InventoryFolder *GetFirstChildFolderByName(const char *name);
 
-        /// Returns pointer to requested folder, or null if not found.
-        /// @param id Search ID.
-        /// @return Pointer to requested folder, or null if not found.
-        InventoryFolder *GetChildFolderByID(const RexUUID &id);
+        /// Returns pointer to requested folder.
+        /// @param searchId Search ID.
+        /// @return Pointer to the requested folder, or null if not found.
+        InventoryFolder *GetChildFolderByID(const RexUUID &searchId);
+
+        /// Returns pointer to requested asset.
+        /// @param searchId Search ID.
+        /// @return Pointer to the requested asset, or null if not found.
+        InventoryAsset *GetChildAssetByID(const RexUUID &searchId);
+
+        /// Sets the folder dirty.
+        void SetDirty(const bool &dirty) { dirty_ = dirty; }
+
+        /// Is this folder dirty (the descendents haven't been fetched yet or they have been modified).
+        const bool &IsDirty() const { return dirty_; }
 
         /// @param row
         /// @return
@@ -113,9 +124,10 @@ namespace OpenSimProtocol
         QList<InventoryItemBase *> childItems_;
 
         ///
-
-        ///
         QList<QVariant> itemData_;
+
+        /// Is this folder dirty.
+        bool dirty_;
     };
 }
 

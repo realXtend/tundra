@@ -173,23 +173,21 @@ void RexLoginWindow::CreateLogoutMenu()
     logout_button_->setText("Log out");
     logout_button_->move(5, 5);
     QObject::connect(logout_button_, SIGNAL(clicked()), this, SLOT(DisconnectAndShowLoginWindow()));
-
     screen_canvas_->AddWidget(logout_button_);
 
     quit_button_ = new QPushButton();
     quit_button_->setText("Quit");
     quit_button_->move(5, 30);
     QObject::connect(quit_button_, SIGNAL(clicked()), this, SLOT(Quit()));
-
     screen_canvas_->AddWidget(quit_button_);
-    screen_canvas_->Hide();
 
     inventory_button_ = new QPushButton();
     inventory_button_->setText("Inventory");
     inventory_button_->move(5, 55);
     QObject::connect(inventory_button_, SIGNAL(clicked()), this, SLOT(ShowInventory()));
-
     screen_canvas_->AddWidget(inventory_button_);
+
+    screen_canvas_->SetLockPosition(true);
     screen_canvas_->Hide();
 }
 
@@ -203,7 +201,7 @@ void RexLoginWindow::Connect()
     std::string user_name = "";
     std::string server_address = "";
 
-    switch (index)
+    switch(index)
     {
     case 1:
     {
@@ -269,14 +267,10 @@ void RexLoginWindow::Connect()
     case 0:
     {
         // OpenID
-
         /* 
-            ////////////////
-            OLD OPENID LOGIN
-
+            // OLD OPENID LOGIN
             if(cblogin == 0)
                 cblogin = new CBLoginWidget();
-
             cblogin->show();
             QObject::connect(cblogin, SIGNAL( loginProcessed(QString) ), SLOT( processCBLogin(QString) ));
             successful = false;
@@ -344,8 +338,7 @@ void RexLoginWindow::Quit()
 
 void RexLoginWindow::processCBLogin(QString inresult)
 {
-    size_t pos1;
-    size_t pos2;
+    size_t pos1, pos2;
     std::string result = inresult.toStdString();
 
     pos1 = result.find("http://");

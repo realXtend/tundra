@@ -12,11 +12,16 @@
 namespace OpenSimProtocol
 {
 
-InventoryAsset::InventoryAsset(const RexTypes::RexUUID &id, const std::string &name, InventoryFolder *parent) :
-    InventoryItemBase(Type_Asset, id, name, parent)
+InventoryAsset::InventoryAsset(
+    const RexTypes::RexUUID &inventory_id,
+    const RexTypes::RexUUID &asset_id,
+    const std::string &name,
+    InventoryFolder *parent) :
+    InventoryItemBase(Type_Asset, inventory_id, name, parent)
 {
     ///\todo if parent == null insert to root or terminate?
-    itemData_ << "data";
+    itemData_ << name.c_str();
+    ///\ todo emit somekind of signal declaring creation of new asset?
 }
 
 // virtual
@@ -28,6 +33,20 @@ int InventoryAsset::ColumnCount() const
 {
     return itemData_.count();
 }
+
+/*
+bool InventoryAsset::SetData(int column, const QVariant &value)
+{
+    if (column < 0 || column >= itemData_.size())
+        return false;
+
+    if (itemData_[column] == value || value.toString().toStdString() == "")
+        return false;
+
+    itemData_[column] = value;
+    return true;
+}
+*/
 
 QVariant InventoryAsset::Data(int column) const
 {

@@ -5,8 +5,8 @@
  *  @brief The inventory window.
  */
 
-#ifndef incl_InventoryWindow_h
-#define incl_InventoryWindow_h
+#ifndef incl_InventoryModule_InventoryWindow_h
+#define incl_InventoryModule_InventoryWindow_h
 
 #include "Foundation.h"
 
@@ -24,15 +24,18 @@ namespace QtUI
     class UICanvas;
 }
 
-namespace OpenSimProtocol
-{
-    class InventoryModel;
-}
-
 namespace RexLogic
 {
     class RexLogicModule;
+}
 
+/*namespace OpenSimProtocol
+{
+    class InventoryModel;
+}*/
+
+namespace Inventory
+{
     class InventoryWindow : public QObject
     {
         Q_OBJECT
@@ -41,11 +44,11 @@ namespace RexLogic
         /// Constructor.
         /// @param framework Framework.pointer.
         /// @param module RexLogicModule pointer.
-        InventoryWindow(Foundation::Framework *framework, RexLogicModule *rexlogic);
+        InventoryWindow(Foundation::Framework *framework, RexLogic::RexLogicModule *rexlogic);
 
         /// Destructor.
         virtual ~InventoryWindow();
-
+/*
     public slots:
         /// Initializes the inventory data/view model.
         void InitInventoryTreeView();
@@ -61,10 +64,10 @@ namespace RexLogic
 
         /// Updates menu actions.
         void UpdateActions();
-
+*/
 //    protected slots:
 //        void closeEvent(QCloseEvent *myCloseEvent);
-
+/*
     private slots:
         /// Fetchs the inventory folder's descendents.
         void FetchInventoryDescendents(const QModelIndex &index);
@@ -83,7 +86,7 @@ namespace RexLogic
 
         /// Informs the server about change in name of folder or asset.
         void NameChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
-
+*/
     private:
         Q_DISABLE_COPY(InventoryWindow);
 
@@ -94,13 +97,13 @@ namespace RexLogic
         Foundation::Framework *framework_;
 
         /// RexLogicModule pointer.
-        /*boost::shared_ptr<RexLogicModule>*/ RexLogicModule* rexLogicModule_;
+        RexLogic::RexLogicModule* rexLogicModule_;
 
         /// QtModule pointer.
         boost::shared_ptr<QtUI::QtModule> qtModule_;
 
         /// Inventory (model) pointer.
-        boost::shared_ptr<OpenSimProtocol::InventoryModel> inventory_;
+//        boost::shared_ptr<OpenSimProtocol::InventoryModel> inventory_;
 
         /// Inventory window widget.
         QWidget *inventoryWidget_;
@@ -109,7 +112,7 @@ namespace RexLogic
         boost::shared_ptr<QtUI::UICanvas> canvas_;
 
         ///
-        OpenSimProtocol::InventoryModel *inventoryModel_;
+//        OpenSimProtocol::InventoryModel *inventoryModel_;
     };
 }
 

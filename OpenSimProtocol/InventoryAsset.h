@@ -25,9 +25,13 @@ namespace OpenSimProtocol
         /// @param id ID.
         /// @param name Name.
         /// @param parent Parent folder.
-        InventoryAsset(const RexUUID &id, const std::string &name = "New Item", InventoryFolder *parent = 0);
+        InventoryAsset(
+            const RexUUID &inventory_id,
+            const RexUUID &asset_id,
+            const std::string &name = "New Item",
+            InventoryFolder *parent = 0);
 
-        ///
+        /// Destructor.
         virtual ~InventoryAsset();
 
         ///

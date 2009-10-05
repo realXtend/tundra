@@ -39,6 +39,7 @@ POCO_END_MANIFEST
                 \endverbatim
               where CLASS_NAME is the name of the newly created class. The above needs to be outside of any namespace,
               there should only be one manifest section per library!
+              If your your class is in a spesific namespace, add "using namespace YOUR_NAMESPACE" before POCO_BEGIN_MANIFEST.
               Also for the profiler to work correctly, copy the following:
 				\verbatim
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Framework *framework);

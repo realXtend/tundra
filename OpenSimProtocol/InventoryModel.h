@@ -3,7 +3,6 @@
 /**
  *  @file InventoryModel.h
  *  @brief A tree model for showing inventory contains.
- *  @note Code apadted from Qt simpletreemodel demo.
  */
 
 #ifndef InventoryModel_h
@@ -24,6 +23,10 @@ namespace RexTypes
 class QModelIndex;
 class QVariant;
 
+///\todo    Refactor into two different class: Inventory and InventoryModel.
+///         InventoryModel has only functions dealing with indexes and rows etc.
+///         Inventory has has functions with id's, folder pointers etc.
+
 namespace OpenSimProtocol
 {
     class OSPROTO_MODULE_API InventoryModel : public QAbstractItemModel
@@ -37,7 +40,7 @@ namespace OpenSimProtocol
         /// Destructor
         virtual ~InventoryModel();
 
-        InventoryModel(const InventoryModel &rhs) { inventoryTreeRoot_ = rhs.inventoryTreeRoot_; }
+        InventoryModel(const InventoryModel &rhs) { rootFolder_ = rhs.rootFolder_; }
 
         /// QAbstractItemModel override.
         QVariant data(const QModelIndex &index, int role) const;
@@ -58,11 +61,12 @@ namespace OpenSimProtocol
         /// Used for inserting new childs to the inventory tree model.
         bool insertRows(int position, int rows, const QModelIndex &parent);
 
+        ///
         InventoryFolder *InsertRow(int position, const QModelIndex &parent);
 
         /// QAbstractItemModel override.
         /// Used for removing childs to the inventory tree model.
-        bool InventoryModel::removeRows(int position, int rows, const QModelIndex &parent);
+        bool removeRows(int position, int rows, const QModelIndex &parent);
 
         /// QAbstractItemModel override.
         QModelIndex parent(const QModelIndex &index) const;
@@ -88,13 +92,25 @@ namespace OpenSimProtocol
         /// @return Pointer to "Trash" folder or null if not found.
         InventoryFolder *GetTrashFolder() const;
 
+        /// Returns folder by requested id, or creates a new one if the folder doesnt exist.
         /// @param id ID.
         /// @param parent Parent folder.
         /// @return Pointer to the existing or just created folder.
         InventoryFolder *GetOrCreateNewFolder(const RexUUID &id, InventoryFolder &parent);
 
+        /// Returns asset requested id, or creates a new one if the folder doesnt exist.
+        /// @param inventory_id Inventory ID.
+        /// @param asset_id Asset ID.
+        /// @param parent Parent folder.
+        /// @return Pointer to the existing or just created asset.
+        InventoryAsset *GetOrCreateNewAsset(
+            const RexUUID &inventory_id,
+            const RexUUID &asset_id,
+            InventoryFolder &parent,
+            const std::string &name = "New Item");
+
         /// @return Inventory tree model's root folder.
-        InventoryFolder *GetRoot() { return inventoryTreeRoot_; }
+        InventoryFolder *GetRoot() { return rootFolder_; }
 
         /// @param index Index of the wanted item.
         /// @return pointer to inventory item.
@@ -107,7 +123,7 @@ namespace OpenSimProtocol
 
     private:
         /// Inventory tree root folder.
-        InventoryFolder *inventoryTreeRoot_;
+        InventoryFolder *rootFolder_;
     };
 }
 

@@ -1,11 +1,12 @@
 # Define target name and output directory
-init_target (OpenSimProtocolModule OUTPUT modules/core)
+init_target (InventoryModule OUTPUT modules/core)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES InventoryWindow.h InventoryModel.h)
+file (GLOB MOC_FILES AbstractInventoryDataModel.h AbstractInventoryItem.h InventoryAsset.h InventoryFolder.h InventoryViewModel.h
+    InventoryWindow.h OpenSimInventoryDataModel.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap
@@ -13,7 +14,7 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
-add_definitions (-DOSPROTO_MODULE_EXPORTS -DUSE_QT)
+add_definitions (-DUSE_QT)
 
 use_package (BOOST)
 use_package (POCO)
@@ -22,7 +23,7 @@ use_package (QT4)
 use_modules (HttpUtilities RpcUtilities)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
-use_framework_modules (Core Foundation Interfaces SceneManager RexCommon)
+use_framework_modules (Core Foundation Interfaces RexCommon)
 
 link_modules (RexCommon HttpUtilities RpcUtilities)
 link_package (BOOST)

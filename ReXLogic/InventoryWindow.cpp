@@ -24,6 +24,7 @@
 #include <QDirModel>
 #include <QAction>
 #include <QMenu>
+#include <QStatusBar>
 
 namespace RexLogic
 {
@@ -81,9 +82,6 @@ void InventoryWindow::InitInventoryWindow()
 //    QObject::connect(treeView, SIGNAL(entered(const QModelIndex &)), this, SLOT(FetchInventoryDescendents(const QModelIndex &)));
 //    QObject::connect(treeView, SIGNAL(pressed(const QModelIndex &)), this, SLOT(FetchInventoryDescendents(const QModelIndex &)));
 
-    QObject::connect(treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
-        const QItemSelection &)), this, SLOT(UpdateActions()));
-
     QMenu *actionsMenu = inventoryWidget_->findChild<QMenu *>("actionsMenu");
     QObject::connect(actionsMenu, SIGNAL(aboutToShow()), this, SLOT(UpdateActions()));
 
@@ -111,17 +109,21 @@ void InventoryWindow::InitInventoryTreeView()
     ///\todo This is hackish. Refactor InventoryModel class into two different classes.
     inventoryModel_ = new InventoryModel(*inventory_.get());
     QTreeView *treeView = inventoryWidget_->findChild<QTreeView *>("treeView");
-    
     treeView->setModel(inventoryModel_);
 
     ///\todo Not maybe the best place to connect the signal?
-    QObject::connect(inventory_.get(), SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)),
+    QObject::connect(inventoryModel_, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)),
         this, SLOT(NameChanged(const QModelIndex &, const QModelIndex &)));
+
+//    QObject::connect(treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
+//        const QItemSelection &)), this, SLOT(UpdateActions()));
 }
 
 void InventoryWindow::ResetInventoryTreeView()
 {
-    SAFE_DELETE(inventoryModel_);
+    ///\todo Is this ok?
+    inventoryModel_ = 0;
+    //SAFE_DELETE(inventoryModel_);
 }
 
 void InventoryWindow::Show()
@@ -157,6 +159,12 @@ void InventoryWindow::UpdateActions()
     if (item->IsEditable())
         actionDeleteFolder->setEnabled(true);
 
+    if (item->GetInventoryItemType() == Type_Asset)
+    {
+        actionDeleteFolder->setEnabled(false);
+        actionCreateFolder->setEnabled(false);
+    }
+
     bool hasCurrent = treeView->selectionModel()->currentIndex().isValid();
     actionCreateFolder->setEnabled(hasCurrent);
 //    insertColumnAction->setEnabled(hasCurrent);
@@ -164,9 +172,12 @@ void InventoryWindow::UpdateActions()
     if (hasCurrent)
     {
         treeView->closePersistentEditor(treeView->selectionModel()->currentIndex());
-
-        ///\todo Use status bar for showing e.g. inventory item description?
-        //statusBar()->showMessage(tr("Position: (%1,%2) in top level").arg(row).arg(column));
+        /*QStatusBar *statusBar = inventoryWidget_->findChild<QStatusBar *>("statusBar");
+        if (item->GetInventoryItemType() == Type_Folder)
+            statusBar->showMessage(tr("%1").arg("Folder"));
+        else if(item->GetInventoryItemType() == Type_Asset)
+            statusBar->showMessage(tr("%1").arg("Asset"));
+        */
     }
 }
 
@@ -178,16 +189,22 @@ void InventoryWindow::FetchInventoryDescendents(const QModelIndex &index)
     if (!inventory_.get())
         return;
 
-    ///\todo Send FetchInventoryDescendents only if our model is "dirty" (new items are uploaded)
-//    if (!dirty)
-//        return;
-
     ///\todo Use id instead of the name.
     std::string name = index.data().toString().toStdString();
     OpenSimProtocol::InventoryFolder *folder  = inventory_->GetFirstChildFolderByName(name.c_str());
 
+    ///\todo Send FetchInventoryDescendents only if our model is "dirty" (new items are uploaded)
+//    if (!folder->IsDirty())
+//        return;
+
     rexLogicModule_->GetServerConnection()->SendFetchInventoryDescendentsPacket(folder->GetID(),
-        folder->GetParent()->GetID(), 0 , true, true);
+        folder->GetParent()->GetID(), 0 , true, false);
+
+    rexLogicModule_->GetServerConnection()->SendFetchInventoryDescendentsPacket(folder->GetID(),
+        folder->GetParent()->GetID(), 0 , false, true);
+
+//    treeView->selectionModel()->setCurrentIndex(model->index(0, 0, index), QItemSelectionModel::ClearAndSelect);
+    UpdateActions();
 }
 
 void InventoryWindow::CreateFolder()
@@ -214,16 +231,6 @@ void InventoryWindow::CreateFolder()
     // Inform the server.
     rexLogicModule_->GetServerConnection()->SendCreateInventoryFolderPacket(
         newFolder->GetParent()->GetID(), newFolder->GetID(), 255, newFolder->GetName());
-
-/*    for(int column = 0; column < model->columnCount(index); ++column)
-    {
-        QModelIndex child = model->index(0, column, index);
-        model->setData(child, QVariant("[New Folder]"), Qt::EditRole);
-
-        if (!model->headerData(column, Qt::Horizontal).isValid())
-            model->setHeaderData(column, Qt::Horizontal, QVariant("[No header]"), Qt::EditRole);
-    }
-*/
 
     treeView->selectionModel()->setCurrentIndex(model->index(0, 0, index), QItemSelectionModel::ClearAndSelect);
     UpdateActions();
@@ -264,6 +271,27 @@ void InventoryWindow::CreateAsset()
 {
     // Add some handler somewhere which fires an event when  a succesfull asset upload has occured.
     // Use the inventory and asset id's and create new InventoryAsset object.
+    QTreeView *treeView = inventoryWidget_->findChild<QTreeView *>("treeView");
+    QModelIndex index = treeView->selectionModel()->currentIndex();
+    QAbstractItemModel *model = treeView->model();
+
+    InventoryModel *inventoryModel = dynamic_cast<InventoryModel *>(model);
+    if (!inventoryModel)
+        return;
+
+    if (model->columnCount(index) == 0)
+        if (!model->insertColumn(0, index))
+            return;
+
+    // Create new children (row) to the inventory view.
+//    if (!model->insertRow(0, index))
+//        return;
+    InventoryFolder *newFolder = inventoryModel->InsertRow(0, index);
+    if (!newFolder)
+        return;
+
+    treeView->selectionModel()->setCurrentIndex(model->index(0, 0, index), QItemSelectionModel::ClearAndSelect);
+    UpdateActions();
 }
 
 void InventoryWindow::DeleteAsset()
@@ -286,9 +314,9 @@ void InventoryWindow::NameChanged(const QModelIndex &topLeft, const QModelIndex 
 
     std::string new_name = topLeft.data().toString().toStdString();
 
-//    model->setData(topLeft, QVariant(topLeft.data().toString()), Qt::EditRole);
-
     InventoryItemBase *item = inventory_->GetItem(topLeft);
+    std::cout << "item anem " << item->GetName() << std::endl;
+
     if (item->GetInventoryItemType() == Type_Folder)
     {
         InventoryFolder *folder = static_cast<InventoryFolder *>(item);

@@ -3,10 +3,9 @@
 #include "StableHeaders.h"
 #include "OpenSimProtocolModule.h"
 #include "RexProtocolMsgIDs.h"
+#include "HttpRequest.h"
 
 #include "Poco/Net/NetException.h"
-
-#include "HttpRequest.h"
 
 namespace OpenSimProtocol
 {
@@ -241,7 +240,7 @@ void OpenSimProtocolModule::SetCapability(const std::string &name, const std::st
     std::pair<caps_map_it_t, bool> ret;
     ret = capabilities_.insert(std::pair<std::string, std::string>(name, url)); 
     if (ret.second == false)
-        LogError("Capability " + name + "already exists with an URL " + ret.first->second);
+        LogInfo("Capability " + name + "already exists with an URL " + ret.first->second);
 }
 
 void OpenSimProtocolModule::RequestCapabilities(const std::string &seed)

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <entry>InventoryModule</entry>
+    <dependency>RexLogicModule</dependency>
+    <dependency>QtModule</dependency>
+</config>
