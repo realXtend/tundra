@@ -25,5 +25,4 @@ namespace TpQt4Communication
 		return time_stamp_;
 	}
 
-
 } // end of namespace: TpQt4Communication

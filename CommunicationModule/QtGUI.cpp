@@ -717,7 +717,7 @@ namespace CommunicationUI
 		uiFile.close();
 
 		originator = findChild<QLabel *>("label_requestOriginator");
-		originator->setText(QString(request->GetAddressFrom().c_str()));
+		originator->setText(QString(request->GetOriginator().c_str()));
 
 		accept = findChild<QPushButton *>("pushButton_Accept");
 		reject = findChild<QPushButton *>("pushButton_Deny");
