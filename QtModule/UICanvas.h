@@ -8,7 +8,7 @@
 #include <QSize>
 #include <QRect>
 #include <QString>
-
+#include <QTimer>
 #include "QtModuleApi.h"
 
 class QPainter;
@@ -160,6 +160,13 @@ namespace QtUI
          */
         bool IsHidden() const;
 
+        /**
+         * Activates canvas. This is a HACK-way to cheat Qt to think that 
+         * canvas is shown even that it is not actually shown. 
+         * @note this works currently only in windows
+         */
+        void Activate();
+
      public slots:
     	
 	    /** 
@@ -204,6 +211,7 @@ namespace QtUI
 		 */
 		void SetCanvasWindowIcon(QIcon &icon);
 
+
     signals:
                 
         /**
@@ -230,6 +238,7 @@ namespace QtUI
         
         void RenderSceneToOgreSurface();
 
+        
 
     private:
         
@@ -256,6 +265,9 @@ namespace QtUI
       
         QList<QGraphicsProxyWidget* > scene_widgets_;
 
+        int width_;
+        int height_;
+       
     };
 
 

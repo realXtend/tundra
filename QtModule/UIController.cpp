@@ -482,22 +482,19 @@ void UIController::InjectMousePress(int x, int y)
         mouseEvent.setModifiers(0);
         mouseEvent.setAccepted(false);
         
-        // Change last active canvas back to normal state.
-        /*
-        if ( active_canvas_ != "")
-        {
-            SetBack(active_canvas_);
+       
+       
+       if (!canvases_[index]->isActiveWindow())
+            canvases_[index]->Activate();
 
-        }
-        */
-       
-       
-        QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);
+       QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);
         
         // Here starts nice HACK: Idea is to check that did press event went to somekind textedit widget. 
         // if it went we need to set OIS keyboard to buffered mode. 
 
         QGraphicsItem* item = canvases_[index]->itemAt(mouseEvent.pos().toPoint());
+        
+
         if ( item != 0)
         {
             QGraphicsWidget* widget = item->topLevelWidget();
@@ -633,6 +630,9 @@ void UIController::InjectKeyPressed(const QString& text, Qt::Key keyCode, const 
     int index = GetCanvas(mousePress_);
     if ( index != -1 && !canvases_[index]->IsHidden())
     {
+        if (!canvases_[index]->isActiveWindow())
+            canvases_[index]->Activate();
+
          QApplication::sendEvent(canvases_[index]->scene(), &keyEvent);
          keyDown_ = true;
          lastKeyEvent_ = keyEvent;
