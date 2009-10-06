@@ -10,6 +10,7 @@
 
 #include "Foundation.h"
 
+#include <QtGui>
 #include <QObject>
 #include <QModelIndex>
 
@@ -40,11 +41,17 @@ namespace Inventory
     {
         Q_OBJECT
 
+		MODULE_LOGGING_FUNCTIONS
+        //! Returns name of this module. Needed for logging.
+		static const std::string &NameStatic() { return std::string("InventoryModule::UI"); }
+        //! Returns type of this module. Needed for logging.
+        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Inventory;
+
     public:
         /// Constructor.
         /// @param framework Framework.pointer.
         /// @param module RexLogicModule pointer.
-        InventoryWindow(Foundation::Framework *framework, RexLogic::RexLogicModule *rexlogic);
+        InventoryWindow(Foundation::Framework *framework, RexLogic::RexLogicModule *rexLogic);
 
         /// Destructor.
         virtual ~InventoryWindow();
@@ -67,8 +74,11 @@ namespace Inventory
 */
 //    protected slots:
 //        void closeEvent(QCloseEvent *myCloseEvent);
-/*
+
     private slots:
+		/// Close handler
+		void CloseInventoryWindow();
+/*
         /// Fetchs the inventory folder's descendents.
         void FetchInventoryDescendents(const QModelIndex &index);
 
@@ -93,6 +103,8 @@ namespace Inventory
         /// Initializes the inventory UI.
         void InitInventoryWindow();
 
+		
+
         /// Framework pointer.
         Foundation::Framework *framework_;
 
@@ -113,6 +125,11 @@ namespace Inventory
 
         ///
 //        OpenSimProtocol::InventoryModel *inventoryModel_;
+
+		// QWidgets
+		QPushButton *buttonClose_, *buttonDownload_, *buttonUpload_,
+					*buttonAddFolder_, *buttonDeleteFolder_, *buttonRename_;
+		QTreeView *treeView_;
     };
 }
 
