@@ -92,7 +92,7 @@ namespace OpenSimProtocol
         InventoryItemBase *Child(int row);
 
         /// @return List of children.
-        QList<InventoryItemBase *> &Children();
+//        QList<InventoryItemBase *> &Children();
 
         /// @return Number of children.
         int ChildCount() const;
@@ -105,10 +105,10 @@ namespace OpenSimProtocol
         /// @param column
         /// @param value
         /// @return True if succesfull, false otherwise.
-        bool SetData(int column, const QVariant &value);
+//        bool SetData(int column, const QVariant &value);
 
         /// @param column
-        QVariant Data(int column) const;
+//        QVariant Data(int column) const;
 
         /// @return Row number of the folder.
         int Row() const;

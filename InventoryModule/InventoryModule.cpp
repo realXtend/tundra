@@ -1,12 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+// @file InventoryModule.cpp
+// @brief Invetory module.
+
 #include "StableHeaders.h"
 #include "InventoryModule.h"
 
 namespace Inventory
 {
 
-InventoryModule::InventoryModule() : ModuleInterfaceImpl(Foundation::Module::MT_Inventory)
+InventoryModule::InventoryModule() :
+    inventoryEventCategory_(0), inventoryWindow_(0),
+    ModuleInterfaceImpl(Foundation::Module::MT_Inventory)
 {
 }
 
@@ -46,14 +51,31 @@ void InventoryModule::Uninitialize()
 void InventoryModule::Update(Core::f64 frametime)
 {
 }
-/*
-bool HandleEvent(
+
+bool InventoryModule::HandleEvent(
     Core::event_category_id_t category_id,
     Core::event_id_t event_id,
     Foundation::EventDataInterface* data)
 {
+    if (category_id != inventoryEventCategory_)
+        return false;
+
+    switch(event_id)
+    {
+    case Events::EVENT_CREATE_INVENTORY:
+    case Events::EVENT_DELETE_INVENTORY:
+    case Events::EVENT_CREATE_FOLDER:
+    case Events::EVENT_DELETE_FOLDER:
+    case Events::EVENT_MOVE_FOLDER:
+    case Events::EVENT_CREATE_ASSET:
+    case Events::EVENT_DELETE_ASSET:
+    case Events::EVENT_MOVE_ASSET:
+    default:
+       break;
+    }
+
+    return false;
 }
-*/
 
 } // namespace Inventory
 

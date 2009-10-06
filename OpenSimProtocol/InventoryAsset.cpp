@@ -20,7 +20,7 @@ InventoryAsset::InventoryAsset(
     InventoryItemBase(Type_Asset, inventory_id, name, parent)
 {
     ///\todo if parent == null insert to root or terminate?
-    itemData_ << name.c_str();
+//    itemData_ << name.c_str();
     ///\ todo emit somekind of signal declaring creation of new asset?
 }
 
@@ -29,10 +29,12 @@ InventoryAsset::~InventoryAsset()
 {
 }
 
+/*
 int InventoryAsset::ColumnCount() const
 {
     return itemData_.count();
 }
+*/
 
 /*
 bool InventoryAsset::SetData(int column, const QVariant &value)
@@ -48,17 +50,20 @@ bool InventoryAsset::SetData(int column, const QVariant &value)
 }
 */
 
-QVariant InventoryAsset::Data(int column) const
+/*
+Variant InventoryAsset::Data(int column) const
 {
     return itemData_.value(column);
 }
+*/
 
-int InventoryAsset::Row() const
+/*int InventoryAsset::Row() const
 {
     if (GetParent())
         return GetParent()->Children().indexOf(const_cast<InventoryAsset *>(this));
 
     return 0;
 }
+*/
 
 }

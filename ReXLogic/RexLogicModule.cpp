@@ -660,7 +660,7 @@ namespace RexLogic
         entity->AddEntityComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_OgreSky"));
 
         sky_->FindCurrentlyActiveSky();
-        //sky_->CreateDefaultSky();
+//      sky_->CreateDefaultSky();
     }
 
     void RexLogicModule::CreateEnvironment()
@@ -730,13 +730,13 @@ namespace RexLogic
         // since we might have 0-N terrains later on, depending on where we actually connect to. Now of course
         // we just create one default terrain.
         CreateTerrain();
-        
+
         // Also create a default sky to the scene.
         CreateSky();
-        
+
         // Create a water handler.
         CreateWater();
-        
+
         CreateEnvironment();
 
         return GetCurrentActiveScene();
@@ -748,7 +748,7 @@ namespace RexLogic
             return Scene::EntityPtr();
 
         Scene::EntityPtr entity = activeScene_->GetEntity(entityid);
-        if(entity && entity->GetComponent(requiredcomponent))
+        if (entity && entity->GetComponent(requiredcomponent))
             return entity;
         else
             return Scene::EntityPtr();
@@ -787,41 +787,36 @@ namespace RexLogic
     void RexLogicModule::UpdateObjects(Core::f64 frametime)
     {
         //! \todo probably should not be directly in RexLogicModule
-        
         if (!activeScene_)
             return;
-            
+
         // Damping interpolation factor, dependent on frame time
         Core::Real factor = pow(2.0, -frametime * movement_damping_constant_);
         if (factor < 0.0) factor = 0.0;
         if (factor > 1.0) factor = 1.0;
         Core::Real rev_factor = 1.0 - factor;
-                
+
         for(Scene::SceneManager::iterator iter = activeScene_->begin();
             iter != activeScene_->end(); ++iter)
         {
             Scene::Entity &entity = **iter;
-            
             Foundation::ComponentPtr ogrepos_ptr = entity.GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
             Foundation::ComponentPtr netpos_ptr = entity.GetComponent(EC_NetworkPosition::NameStatic());
             if (ogrepos_ptr && netpos_ptr)
             {
                 OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(ogrepos_ptr.get()); 
                 EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(netpos_ptr.get()); 
-                
+
                 if (netpos.time_since_update_ <= dead_reckoning_time_)
-                {            
+                {
                     netpos.time_since_update_ += frametime; 
 
                     // Interpolate motion
-                    
                     // acceleration disabled until figured out what goes wrong. possibly mostly irrelevant with OpenSim server
                     // netpos.velocity_ += netpos.accel_ * frametime;
-                    
                     netpos.position_ += netpos.velocity_ * frametime;
-                    
+
                     // Interpolate rotation
-                    
                     if (netpos.rotvel_.getLengthSQ() > 0.001)
                     {
                         Core::Quaternion rot_quat1;
@@ -836,15 +831,14 @@ namespace RexLogic
                         netpos.rotation_ *= rot_quat2;
                         netpos.rotation_ *= rot_quat3;
                     }
-                    
+
                     // Dampened (smooth) movement
-                    
                     if (netpos.damped_position_ != netpos.position_)
                         netpos.damped_position_ = netpos.position_ * rev_factor + netpos.damped_position_ * factor;
                     
                     if (netpos.damped_rotation_ != netpos.rotation_)
                         netpos.damped_rotation_.slerp(netpos.rotation_, netpos.damped_rotation_, factor);
-        
+
                     ogrepos.SetPosition(netpos.damped_position_);
                     ogrepos.SetOrientation(netpos.damped_rotation_);
                 }

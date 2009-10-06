@@ -79,7 +79,7 @@ Qt::DropActions InventoryModel::supportedDropActions() const
 QVariant InventoryModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-        return rootFolder_->Data(section);
+        return QVariant(rootFolder_->GetName().c_str())/*Data(section)*/;
 
     return QVariant();
 }
@@ -201,10 +201,9 @@ bool InventoryModel::setData(const QModelIndex &index, const QVariant &value, in
     if(!folder->IsEditable())
         return false;
 
-    bool result = folder->SetData(index.column(), value);
-    //item->setData(index.column(), value);
-    if (result)
-        emit dataChanged(index, index);
+    folder->SetName(value.toString().toStdString());
+
+    emit dataChanged(index, index);
 
     return true;
 }

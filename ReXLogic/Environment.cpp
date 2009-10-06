@@ -72,7 +72,7 @@ bool Environment::HandleOSNE_SimulatorViewerTimeMessage(OpenSimProtocol::Network
     ///\note Not needed anymore as we use Caleum now.
     OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
         (component.get());
-//    env.SetSunDirection(-sunDirection_);        
+//    env.SetSunDirection(-sunDirection_);
     
     /** \note
      *  It's not necessary to update the environment time every time SimulatorViewerTimeMessage is received
