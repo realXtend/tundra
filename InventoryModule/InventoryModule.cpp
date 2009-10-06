@@ -33,6 +33,8 @@ void InventoryModule::Unload()
 void InventoryModule::Initialize()
 {
     LogInfo("System " + Name() + " initialized.");
+	inventoryWindow_ = new InventoryWindow(framework_, 0);
+	
 }
 
 void InventoryModule::PostInitialize()
