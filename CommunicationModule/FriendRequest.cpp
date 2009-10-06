@@ -103,21 +103,12 @@ namespace TpQt4Communication
 	{
 		if (op->isError())
 		{
-			QString message = "Canoot subscribe presence: ";
+			// Presence subscription request delivery failed
+			QString message = "Presence subscription request delivery failed: ";
 			message.append(op->errorMessage());
-//			LogInfo(message.toStdString());
-
-			// Presence subscription didn't success, we emit a signal about it
-			QString to = ""; // todo: get the right value
-			//emit FriendRequestRejected(to);
-			emit Ready(this, STATE_REJECTED);
+			emit Ready(this, STATE_ERROR);
 		}
-	//	LogInfo("Presence subscribed successfully.");
-		// Now it's our turn to publish our status
-		
-		// From where to get contact object ???
-		// todo: move this logic to Contact class..
-		emit Ready(this, STATE_ACCEPTED);
+		// Presence subscription request is successfully delivered to target
 	}
 
 } // end of namespace: TpQt4Communication

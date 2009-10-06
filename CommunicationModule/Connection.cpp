@@ -297,6 +297,7 @@ namespace TpQt4Communication
 			LogInfo(message.toStdString());
 
 			ContactVector current_contacts = this->user_->GetContacts();
+			bool from_current_contact = false;
 			for (ContactVector::iterator i = current_contacts.begin(); i != current_contacts.end(); ++i)
 			{
 				if ( (*i)->GetAddress().compare( contact->id().toStdString() ) == 0)
@@ -306,64 +307,61 @@ namespace TpQt4Communication
 					message.append(contact->id());
 					message.append(" but contact is already on contact list.");
 					LogInfo(message.toStdString());
+					from_current_contact = true;
+					break;
 				}
 			}
+
+			if ( from_current_contact )
+				continue;
 
 			if (contact->subscriptionState() == Tp::Contact::PresenceStateYes)
 			{
 				//! Contact have already authorize user to get subscription
 				//! so we publish our presence 
-				QString message = "";
-				Tp::PendingOperation* p = contact->authorizePresencePublication(message);
+				bool from_pending_friend_request = false;
+				for (PendingFriendRequestVector::iterator i = pending_friend_requests_.begin(); i != pending_friend_requests_.end(); ++i)
+				{
+					if ( (*i)->GetTarget().compare( contact->id().toStdString() ) == 0 )
+					{
+						//! Presence subscription was from target of our own friend request
+						//! so we will accept it automatically
+						from_pending_friend_request = true;
+						QString message = "";
+						Tp::PendingOperation* p = contact->authorizePresencePublication(message);
+						OnPendingFriendRequestReady(*i, PendingFriendRequest::STATE_ACCEPTED);
+						break;
+					}
+				}
+				if ( from_pending_friend_request )
+					continue;
 			}
 
+			// Presence subscription was not excepted so it is a new incoming friend request
 			FriendRequest* request = new FriendRequest(Tp::ContactPtr(contact));
 			received_friend_requests_.push_back(request);
 			emit ReceivedFriendRequest(request);
 		}
 	}
-	
-	//void Connection::OnContactRetrievedForFriendRequest(Tp::PendingOperation *op)
+
+	//void Connection::OnPresenceSubscriptionResult(Tp::PendingOperation* op)
 	//{
 	//	if (op->isError())
 	//	{
-	//		QString message = "Failed to receive contact: ";
+	//		QString message = "Canoot subscribe presence: ";
 	//		message.append(op->errorMessage());
-	//		LogError(message.toStdString());
-	//		return;
+	//		LogInfo(message.toStdString());
+
+	//		// Presence subscription didn't success, we emit a signal about it
+	//		QString to = ""; // todo: get the right value
+	//		emit FriendRequestRejected(to);
 	//	}
-	//	LogInfo("Contact received.");
-	//	Tp::PendingContacts *pending_contacts = qobject_cast<Tp::PendingContacts *>(op);
-	//	QList<Tp::ContactPtr> contacts = pending_contacts->contacts();
+	//	LogInfo("Presence subscribed successfully.");
+	//	// Now it's our turn to publish our status
 	//	
-	//	assert( contacts.size() == 1); // We have request only one contact 
-	//	Tp::ContactPtr contact = contacts.first();
-	//	QString message = ""; // todo
-
-	//	// Do the presence subscription
-	//	// When we get the answer ?
-	//	Tp::PendingOperation* p = contact->requestPresenceSubscription(message);
-	//	connect(p, SIGNAL(finished(Tp::PendingOperation*)), SLOT(OnPresenceSubscriptionResult(Tp::PendingOperation*)));
+	//	// From where to get contact object ???
+	//	// todo: move this logic to Contact class..
 	//}
-
-	void Connection::OnPresenceSubscriptionResult(Tp::PendingOperation* op)
-	{
-		if (op->isError())
-		{
-			QString message = "Canoot subscribe presence: ";
-			message.append(op->errorMessage());
-			LogInfo(message.toStdString());
-
-			// Presence subscription didn't success, we emit a signal about it
-			QString to = ""; // todo: get the right value
-			emit FriendRequestRejected(to);
-		}
-		LogInfo("Presence subscribed successfully.");
-		// Now it's our turn to publish our status
-		
-		// From where to get contact object ???
-		// todo: move this logic to Contact class..
-	}
 
 	void Connection::OnConnectionInvalidated(Tp::DBusProxy *proxy, const QString &errorName, const QString &errorMessage)
 	{
