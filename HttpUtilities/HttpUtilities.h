@@ -9,6 +9,12 @@ namespace HttpUtilities
     /*! \param url Url to process
      */
     std::string GetHostFromUrl(const std::string& url);
+    
+    //! Global initialize of http services (Curl initialize)
+    void InitializeHttp();
+    
+    //! Global shutdown of http services (Curl cleanup)
+    void UninitializeHttp();
 }
 
 #endif

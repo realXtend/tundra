@@ -36,14 +36,14 @@ namespace HttpUtilities
     class HttpTaskResult : public Foundation::ThreadTaskResult
     {
     public:
-        //! Status code
-        int status_;
-        //! Reason for status
+        //! Success
+        bool success_;
+        //! Reason for error (if any)
         std::string reason_;
         //! Response data
         std::vector<Core::u8> data_;
         
-        bool GetSuccess() const { return status_ == 200; }
+        bool GetSuccess() const { return success_; }
     };
 
     typedef boost::shared_ptr<HttpTaskResult> HttpTaskResultPtr;

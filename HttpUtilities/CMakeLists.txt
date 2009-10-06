@@ -8,13 +8,14 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 use_package (BOOST)
 use_package (POCO)
+use_package (CURL)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES})
 use_framework_modules (Core Foundation Interfaces)
 
 link_package (BOOST)
 link_package (POCO)
-
+link_package (CURL)
 
 # Precompiled headers on MSVC
 if (MSVC)

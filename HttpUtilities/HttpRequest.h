@@ -68,17 +68,10 @@ namespace HttpUtilities
         //! Returns timeout
         Core::Real GetTimeout() const { return timeout_; }
         
-        //! Returns http status after request has been performed.
-        /*! Will be 0 if request could not be performed (DNS error, no connection etc.) Will be 200 if successful.
-         */
-        int GetStatus() const { return status_; }
+        //! Returns if succeeded
+        bool GetSuccess() const { return success_; }
         
-        //! Returns if status is 200 (OK)
-        bool GetSuccess() const { return status_ == 200; }
-        
-        //! Returns reason string that accompanied the status code. 
-        /*! If status was 0 (connection failed), will contain the network exception string
-         */
+        //! Returns reason string if unsuccessful
         const std::string& GetReason() const { return reason_; }
         
         //! Returns reply data
@@ -97,9 +90,9 @@ namespace HttpUtilities
         std::string content_type_;
         //! Reply data
         std::vector<Core::u8> response_data_;
-        //! Reply status code
-        int status_;
-        //! Reply reason
+        //! Request success
+        bool success_;
+        //! Error reason
         std::string reason_;
     };
 }

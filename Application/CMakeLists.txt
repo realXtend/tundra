@@ -14,13 +14,16 @@ endif (MSVC)
 
 use_package (BOOST)
 use_package (POCO)
-use_modules (SupportModules TestModule)
+use_package (CURL)
+use_modules (HttpUtilities SupportModules TestModule)
 
 build_executable (${TARGET_NAME} ${SOURCE_FILES})
 use_framework_modules (Core Foundation Interfaces)
 
 link_package (BOOST)
 link_package (POCO)
+link_package (CURL)
+link_modules (HttpUtilities)
 
 final_target ()
 

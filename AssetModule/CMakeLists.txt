@@ -11,6 +11,7 @@ add_definitions (-DASSET_MODULE_EXPORTS)
 
 use_package (BOOST)
 use_package (POCO)
+use_package (CURL)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 use_framework_modules (Core Foundation Interfaces)
@@ -19,7 +20,7 @@ use_modules (RexCommon OpenSimProtocol HttpUtilities)
 link_modules (OpenSimProtocolModule RexCommon HttpUtilities)
 link_package (BOOST)
 link_package (POCO)
-
+link_package (CURL)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

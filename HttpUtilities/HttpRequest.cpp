@@ -3,19 +3,26 @@
 #include "StableHeaders.h"
 #include "HttpRequest.h"
 
-#include "Poco/Net/HTTPClientSession.h"
-#include "Poco/Net/HTTPRequest.h"
-#include "Poco/Net/HTTPResponse.h"
-#include "Poco/Path.h"
-#include "Poco/URI.h"
-#include "Poco/Exception.h"
+#include "curl/curl.h"
 
 namespace HttpUtilities
 {
 
+    // Writer callback for cURL.
+    size_t WriteCallback(char *data, size_t size, size_t nmemb, std::vector<Core::u8>* buffer)
+    {  
+        if (buffer)
+        {
+            buffer->insert(buffer->end(), data, data + size * nmemb);
+            return size * nmemb;
+        }
+        else
+            return 0;
+    }
+
     HttpRequest::HttpRequest() :
         method_(Get),
-        status_(0),
+        success_(false),
         timeout_(5.0f)
     {
     }
@@ -73,71 +80,47 @@ namespace HttpUtilities
     
     void HttpRequest::Perform()
     {
-        status_ = 0;
+        success_ = false;
         reason_ = std::string();
         response_data_.clear();
         
-        try
+        CURL* curl = curl_easy_init();
+        if (!curl)
         {
-            Poco::URI uri(url_);
-            Poco::Net::HTTPClientSession session(uri.getHost(), uri.getPort());
-            float seconds = floor(timeout_);
-            float microseconds = (timeout_ - seconds) * 1000000;
-            session.setTimeout(Poco::Timespan((long)seconds, (long)microseconds));
-
-            Poco::Net::HTTPRequest request(Poco::Net::HTTPMessage::HTTP_1_1);
-            if (uri.getPathAndQuery().empty())
-                request.setURI("/");
-            else
-                request.setURI(uri.getPathAndQuery());
-            
-            if (request_data_.size())
-            {
-                request.setContentLength(request_data_.size());
-                request.setContentType(content_type_);
-            }
-            
-            switch(method_)
-            {
-            case Get:
-                request.setMethod(Poco::Net::HTTPRequest::HTTP_GET);
-                break;
-
-            case Put:
-                request.setMethod(Poco::Net::HTTPRequest::HTTP_PUT);
-                break;
-
-           case Post:
-                request.setMethod(Poco::Net::HTTPRequest::HTTP_POST);
-                break;
-            }
-            
-            std::ostream& request_stream = session.sendRequest(request);
-            if (request_data_.size())
-            {
-                std::vector<Core::u8>::const_iterator i = request_data_.begin();
-                while (i != request_data_.end())
-                {
-                    request_stream.put(*i);
-                    ++i;
-                }
-            }
-            
-            Poco::Net::HTTPResponse response;
-            std::istream& response_stream = session.receiveResponse(response);
-            reason_ = response.getReason();
-            status_ = (int)response.getStatus();
-            
-            while (response_stream.good())
-            {
-                int c = response_stream.get();
-                if (response_stream.good())
-                    response_data_.push_back(c);
-            }
+            Foundation::RootLogError("Null curl handle");
+            return;
         }
-        catch (Poco::Exception& e)
+        
+        CURLcode result;
+        curl_slist *headers = 0;
+        char curlerror[256];
+        
+        if (request_data_.size())
         {
-            reason_ = e.displayText();
+            std::string content_type_str = "Content-Type: " + content_type_;
+            headers = curl_slist_append(headers, content_type_str.c_str());
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, &request_data_[0]);
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, request_data_.size());
+            if (method_ == Put)
+                curl_easy_setopt(curl, CURLOPT_PUT, 1);
+            if (method_ == Post)
+                curl_easy_setopt(curl, CURLOPT_POST, 1);
         }
+        
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_URL, url_.c_str());
+        curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, (int)timeout_);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_data_);
+        curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlerror);
+        
+        result = curl_easy_perform(curl);
+        if (result != CURLE_OK)
+            reason_ = std::string(curlerror);
+        else
+            success_ = true;
+
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
     }
 }
