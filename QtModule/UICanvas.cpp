@@ -501,8 +501,7 @@ void UICanvas::Show()
 
         container_->show();
         overlay_->show();
-        // Start a HACK
-        //Activate();
+      
 
         dirty_ = true;
         RenderSceneToOgreSurface();
