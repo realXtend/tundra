@@ -1,7 +1,7 @@
 == Introduction ==
 
 This documentation relates to the currently up-to-date version of SVN trunk. For more information on how to build the latest release,
-see http://wiki.realxtend.org/index.php/Building_Naali_in_Windows.
+see http://wiki.realxtend.org/index.php/Building_Naali_from_source_trunk#WINDOWS.
 
 The Naali viewer codebase uses CMake as its build system, so to generate the project solution files for Microsoft Visual Studio 2008 to use, you need to install CMake from http://www.cmake.org/.
 To be able to build the source repository, the first thing you need to do is to obtain (and possibly compile) the dependencies that are required by Naali. The second step is to configure 
@@ -11,21 +11,20 @@ Microsoft Visual C++ 2005 or earlier versions are not officially supported (but 
 
 == Obtaining the dependencies ==
 
-For getting the dependencies, you have two choices, depending on how much code you want to compile yourself. In the following, it is assumed that the viewer SVN trunk has been checked out to C:\viewer.
+For getting the dependencies, you have two choices, depending on how much code you want to compile yourself. In the following, it is assumed that the viewer SVN trunk has been checked out to C:\Naali_trunk and checked out the binary dependencies into the folder C:\Naali_deps, but you have to option to locate these svn checkouts anywhere you like. Just keep that in mind when reading this document so you'll replace the example paths with your own location.
 
-The easiest method is to check out pre-built binary dependencies from our viewer dependency project: http://dev.realxtend.org/gf/project/viewerdeps/ 
+# First you need to obtain the dependencies from a svn repository
+# Do a svn checkout from http://dev.realxtend.org/gf/project/viewerdeps/ to C:\Naali_deps
 
 === Preparing the dependency repository from SVN ===
 
 This is by far the easiest option. Use this option when you just need to get Naali compiled, and to focus on developing Naali itself.
 
-# Get the viewer binary dependency repository by doing a SVN checkout of http://dev.realxtend.org/svn/viewerdeps/bin/windows. The following assumes that you checked out the binary dependencies into the folder C:\viewerdeps.
-# Copy viewerdeps\Qt to C:\Qt\build. This directory is hard-coded in our Qt build, and will not work from any other directory.
-# Copy viewerdeps\dist\bin to viewer\bin. 
-#* Alternatively SVN export the viewerdeps\dist\bin folder (right-click on it and select Export) to C:\viewer\bin.
-# Set the following Environment variables:
-#* NAALI_DEP_PATH=C:\viewerdeps
-#* OGRE_HOME=C:\viewerdeps\Ogre
+# Copy C:\Naali_deps\bin\win32\build_deps\Qt to C:\Qt\build. This directory is hard-coded in our Qt build, and will not work from any other directory.
+# Copy C:\Naali_deps\bin\win32\runtime_deps to C:\Naali_trunk\bin. 
+#* Alternatively SVN export the C:\Naali_deps\bin\win32\runtime_deps folder (right-click on it and select Export) to C:\viewer\bin.
+# Set the following Environment variables. If you dont know how to accomplish this refer to this page  http://wiki.realxtend.org/index.php/Building_Naali_from_source_trunk#Setting_Windows_environment_variables_for_cmake
+#* NAALI_DEP_PATH=C:\Naali_deps\bin\win32\build_deps
 #* QTDIR=C:\Qt\build
 # After getting Qt, continue from Building the Viewer below.
 
@@ -37,7 +36,7 @@ This process is much more involved, but allows you to have a lot less boundaries
 
 To build Naali using the dependency repository, perform the following:
 
-# Get the viewer dependency repository by executing 'svn checkout http://dev.realxtend.org/svn/viewerdeps/trunk/'. The following assumes that you checked out the dependencies into the folder C:\viewerdeps\src.
+# Get the viewer dependency repository by executing 'svn checkout http://dev.realxtend.org/svn/viewerdeps/trunk/'. The following assumes that you checked out the dependencies into the folder C:\Naali_deps\src.
 # Download, install and build Boost from http://www.boost.org/. Version v1.36.0 or newer is required.
 # Download, install and build Qt from http://www.qtsoftware.com/, or obtain Qt from the precompiled dependency package. Check that the environment variable QTDIR is correct. See \viewer\doc\build-qt-windows.txt for more details. 
 # Download, install and build Ogre from http://www.ogre3d.org/. Alternatively complete this dependency using the precompiled dependency package. Ogre version v1.6.1 or newer is required. Check that OGRE_HOME environment variable points to the installation root folder.
@@ -52,8 +51,8 @@ To build Naali using the dependency repository, perform the following:
 == Building the Viewer ==
 
 # Ensure NAALI_DEP_PATH, QTDIR, OGRE_HOME, or any other environment variables are correctly set, depending on how you satisfied the dependencies.
-# Open up viewer\CMakeLists.txt in your editor, and configure the set of modules that you want to build by commenting out the unnecessary ones. 
-# Make sure that cmake is in your PATH. Start up Visual Studio 2008 Command prompt, navigate to C:\viewer\bin and execute 'cmake.exe .'. If cmake has issues with finding your installation of MSVC9 toolchain, you can try forcing it with 'cmake.exe -G "Visual Studio 9 2008"'.
+# Open up C:\Naali_trunk\CMakeLists.txt in your editor, and configure the set of modules that you want to build by commenting out the unnecessary ones. 
+# Make sure that cmake is in your PATH. Start up Visual Studio 2008 Command prompt, navigate to C:\Naali_trunk\bin and execute 'cmake.exe .'. If cmake has issues with finding your installation of MSVC9 toolchain, you can try forcing it with 'cmake.exe -G "Visual Studio 9 2008"'.
 #* cmake_vs2008.bat is provided as a convenience when using MSVC 2008; you can just double-click this to begin.
 # Open up naali-viewer.sln and build the solution.
 # When compiling for the first time, compile in debug mode and run the exe at least once. Some data files are created in debug mode which are needed when running in release mode. TODO: Clarify on this, sounds like a bug? -jj.
