@@ -130,13 +130,11 @@ namespace TpQt4Communication
 		void OnConnectionReady(Tp::PendingOperation *op);
 		void OnConnectionConnected(Tp::PendingOperation *);
 		void OnConnectionInvalidated(Tp::DBusProxy *proxy, const QString &errorName, const QString &errorMessage);
-//		void OnContactRetrievedForFriendRequest(Tp::PendingOperation *);
 		void OnPresencePublicationRequested(const Tp::Contacts &);
 		void OnNewChannels(const Tp::ChannelDetailsList&);
 
 		//! Emits signal ReceivedFriendRequest
 		void OnIncomingChatSessionRequestReady(ChatSessionRequest* request);
-		void OnPresenceSubscriptionResult(Tp::PendingOperation* op);
 		void OnPendingFriendRequestReady(PendingFriendRequest* request, PendingFriendRequest::Result result);
 
 	signals:

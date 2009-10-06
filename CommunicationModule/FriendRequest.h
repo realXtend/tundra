@@ -92,7 +92,7 @@ namespace TpQt4Communication
 		void OnContactRetrievedForFriendRequest(Tp::PendingOperation *op);
 		void OnPresenceSubscriptionResult(Tp::PendingOperation* op);
 	signals:
-		void Ready(PendingFriendRequest*, Result);
+		void Ready(PendingFriendRequest*, PendingFriendRequest::Result);
 	};
 	typedef std::vector<PendingFriendRequest*> PendingFriendRequestVector;
 
