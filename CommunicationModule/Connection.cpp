@@ -334,7 +334,13 @@ namespace TpQt4Communication
 					}
 				}
 				if ( from_pending_friend_request )
+				{
+					Contact* c = new Contact(contact);
+					ContactVector new_contacts;
+					new_contacts.push_back(c);
+					user_->AddContacts(new_contacts);
 					continue;
+				}
 			}
 
 			// Presence subscription was not excepted so it is a new incoming friend request
