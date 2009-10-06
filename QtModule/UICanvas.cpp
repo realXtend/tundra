@@ -19,6 +19,7 @@
 #include <QGraphicsProxyWidget>
 #include <QDebug>
 #include <Ogre.h>
+#include <QSize>
 
 #include <OgreHardwarePixelBuffer.h>
 #include <OgreTexture.h>
@@ -42,6 +43,7 @@ UICanvas::UICanvas(): overlay_(0),
                       id_(QUuid::createUuid().toString()),
                       widgets_(0),
                       locked_(false)
+                     
                       
 {
     setScene(new QGraphicsScene);
@@ -58,6 +60,7 @@ UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
                                id_(QUuid::createUuid().toString()),
                                widgets_(0),
                                locked_(false)
+                               
                           
 {
     setScene(new QGraphicsScene);
@@ -71,9 +74,10 @@ UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
     {
         setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
         QSize size = this->size();
-
+        
         CreateOgreResources(size.width(), size.height());
         QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(Dirty()));
+        
     }
 }
 
@@ -159,7 +163,7 @@ void UICanvas::SetPosition(int x, int y)
     {
         float relX = x/double(renderWindowSize_.width()), relY = y/double(renderWindowSize_.height());
         container_->setPosition(relX, relY);
-       
+        move(x,y);
         dirty_ = true;
         break;
     }
@@ -190,6 +194,21 @@ void UICanvas::SetTop()
 void UICanvas::SetBack()
 {
     emit ToBack(id_);
+}
+
+void UICanvas::Activate()
+{
+#ifdef Q_WS_WIN
+    QSize current_size = size();
+    //Qt::FramelessWindowHint
+    setWindowFlags(Qt::FramelessWindowHint);
+    SetCanvasSize(1,1);
+    show();
+    WId win_id = effectiveWinId();
+    ShowWindow(static_cast<HWND>(win_id),SW_HIDE);
+    SetCanvasSize(current_size.width(), current_size.height());
+#endif 
+
 }
 
 QPoint UICanvas::MapToCanvas(int x, int y)
@@ -434,7 +453,7 @@ void UICanvas::CreateOgreResources(int width, int height)
 
     container_->setPosition(0,0);
 
-    overlay_->setZOrder(1);
+    //overlay_->setZOrder(1);
 
     // Add container in default overlay
     overlay_->add2D(container_);
@@ -472,14 +491,19 @@ void UICanvas::Show()
 {
     if ( mode_ != External)
     {
+        
+        
         QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
         for (; iter != scene_widgets_.end(); ++iter)
             (*iter)->show();
             
         
+
         container_->show();
         overlay_->show();
-        
+        // Start a HACK
+        //Activate();
+
         dirty_ = true;
         RenderSceneToOgreSurface();
     }
@@ -487,10 +511,13 @@ void UICanvas::Show()
         show();
 }
 
+
 void UICanvas::Hide()
 {
     if ( mode_ != External)
     {
+        hide();
+
         QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
         for (; iter != scene_widgets_.end(); ++iter)
             (*iter)->hide();
