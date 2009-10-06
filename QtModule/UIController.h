@@ -133,10 +133,7 @@ namespace QtUI
 
     public slots:
         
-        /**
-         * Reques arrange of canvases to new Z-order. 
-         */
-        //void RequestArrange(const QString& id) { arrange_ = true; active_canvas_ = id; }
+        
 
         /** 
          * Sets canvas to front of all canvases. 

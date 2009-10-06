@@ -265,8 +265,7 @@ namespace QtUI
       
         QList<QGraphicsProxyWidget* > scene_widgets_;
 
-        int width_;
-        int height_;
+       
        
     };
 
