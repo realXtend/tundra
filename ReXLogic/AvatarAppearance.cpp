@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "AvatarAppearance.h"
+#include "AvatarExporter.h"
 #include "LegacyAvatarSerializer.h"
 #include "RexLogicModule.h"
 #include "SceneManager.h"
@@ -47,6 +48,7 @@ namespace RexLogic
     void AvatarAppearance::Update(Core::f64 frametime)
     {
         ProcessAppearanceDownloads();
+        ProcessAvatarExport();
     }
     
     void AvatarAppearance::DownloadAppearance(Scene::EntityPtr entity)
@@ -706,7 +708,7 @@ namespace RexLogic
         }
         avatar_pending_requests_[entity->GetId()] = pending_requests;
         
-        // In the unlikely case of no requests, rebuild avatar now
+        // In the unlikely case of no requests at all, rebuild avatar now
         if (!pending_requests)
             SetupAppearance(entity);
     }
@@ -796,7 +798,7 @@ namespace RexLogic
                     AvatarMaterial attach_newmat;
                     for (Core::uint j = 0; j < attach_matnames.size(); ++j)
                     {
-                        attach_newmat.asset_.name_ = attach_matnames[i];
+                        attach_newmat.asset_.name_ = attach_matnames[j];
                         FixupMaterial(attach_newmat, asset_map);
                         attachments[i].materials_.push_back(attach_newmat);
                     }
@@ -886,4 +888,56 @@ namespace RexLogic
         }
     }
     
+    void AvatarAppearance::ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password)
+    {
+        Foundation::ComponentPtr avatarptr = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!avatarptr || !appearanceptr)
+            return;
+        EC_OpenSimAvatar& avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatarptr.get());
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+        
+        // Have only one export running at a time
+        if (avatar_exporter_)
+        {
+            RexLogicModule::LogInfo("Avatar export already running");
+            return;
+        }
+        
+        RexLogicModule::LogInfo("Avatar export for user " + account + " @ " + authserver);
+        
+        //! Instantiate new avatar exporter & give it the work request
+        avatar_exporter_ = AvatarExporterPtr(new AvatarExporter());
+        
+        AvatarExporterRequestPtr request(new AvatarExporterRequest());
+        request->account_ = account;
+        request->authserver_ = authserver;
+        request->password_ = password;
+        
+        //! Convert avatar appearance to xml
+        //! Note: the exporter task will convert < > to &lt; &gt; to not confuse the eventual xmlrpc call
+        QDomDocument avatar_export("Avatar");
+        LegacyAvatarSerializer::WriteAvatarAppearance(avatar_export, appearance);
+        std::string avatar_export_str = avatar_export.toString().toStdString();
+        request->avatar_xml_ = avatar_export_str;
+        
+        avatar_exporter_->AddRequest<AvatarExporterRequest>(request);
+    }
+    
+    void AvatarAppearance::ProcessAvatarExport()
+    {
+        if (avatar_exporter_)
+        {
+            AvatarExporterResultPtr result = avatar_exporter_->GetResult<AvatarExporterResult>();
+            if (result)
+            {
+                if (result->success_)
+                    RexLogicModule::LogInfo("Avatar exported successfully");
+                else
+                    RexLogicModule::LogInfo("Avatar export error: " + result->message_);
+                
+                avatar_exporter_.reset();
+            }
+        }
+    }
 }

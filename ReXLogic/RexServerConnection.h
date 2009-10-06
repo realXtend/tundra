@@ -234,10 +234,19 @@ namespace RexLogic
         /// @return A structure of connection spesific information, e.g. AgentID and SessionID.
         OpenSimProtocol::ClientParameters GetInfo() const { return myInfo_; }
 
-        /// @return A structure of connection spesific information, e.g. AgentID and SessionID.
+        /// @return A capability by name
         /// @param name Name of the capability.
         std::string GetCapability(const std::string &name);
 
+        /// @return Last used password
+        const std::string& GetPassword() { return password_; }
+        
+        /// @return Last used username
+        const std::string& GetUsername() { return username_; }
+        
+        /// @return Last used authentication address
+        const std::string& GetAuthAddress() { return auth_server_address_; }
+        
         /// @return True if the client connected to a server.
         const bool IsConnected() const { return connected_; }
 
@@ -275,6 +284,15 @@ namespace RexLogic
         /// Type of the connection.
         ConnectionType connection_type_;
 
+        /// last password used for easy avatar export, probably a bit evil
+        std::string password_;
+        
+        /// last username used for easy avatar export, probably a bit evil
+        std::string username_;
+        
+        /// last auth.server used for easy avatar export, probably a bit evil
+        std::string auth_server_address_;
+        
         /// State of the connection procedure.
         OpenSimProtocol::Connection::State state_;
 

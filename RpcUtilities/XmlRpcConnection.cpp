@@ -8,6 +8,11 @@
 
 #include "HttpRequest.h"
 
+XmlRpcConnection::XmlRpcConnection(const std::string& url)
+{
+    SetServer(url);
+}
+
 XmlRpcConnection::XmlRpcConnection(const std::string& address, const std::string& port)
 {
     SetServerAddress(address, port);
@@ -40,7 +45,7 @@ XMLRPC_REQUEST XmlRpcConnection::Send(const char* data)
 
     if (response_data.size() == 0)
         throw XmlRpcException(std::string("XmlRpcEpi exception in XmlRpcConnection::Send() response data size was zero: "));			
-
+    
     // Convert the XML string to a XMLRPC reply structure.
     return XMLRPC_REQUEST_FromXML((const char*)&response_data[0], (int)(response_data.size()), 0);
 }
