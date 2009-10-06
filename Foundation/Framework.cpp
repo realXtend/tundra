@@ -112,6 +112,7 @@ namespace Foundation
         default_scene_.reset();
         scenes_.clear();
         module_manager_.reset();
+        thread_task_manager_.reset();
 
         Poco::Logger::shutdown();
  

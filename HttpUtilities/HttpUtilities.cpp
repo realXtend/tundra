@@ -5,6 +5,8 @@
 
 #include "Poco/URI.h"
 
+#include "curl/curl.h"
+
 namespace HttpUtilities
 {
     std::string GetHostFromUrl(const std::string& url)
@@ -21,5 +23,15 @@ namespace HttpUtilities
         {
             return std::string();
         }
+    }
+    
+    void InitializeHttp()
+    {
+        curl_global_init(CURL_GLOBAL_ALL);
+    }
+    
+    void UninitializeHttp()
+    {
+        curl_global_cleanup();
     }
 }
