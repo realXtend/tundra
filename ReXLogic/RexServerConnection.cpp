@@ -98,6 +98,10 @@ bool RexServerConnection::ConnectToServer(
     if (auth_server_address != "")
     {
         connection_type_ = AuthenticationConnection;
+        password_ = password;
+        username_ = auth_login;
+        auth_server_address_ = auth_server_address;
+        
         sp->LoginUsingRexAuthentication(first_name,
             last_name, password, serveraddress_noport, port,
             auth_server_address, auth_login, &threadState_);
@@ -105,6 +109,9 @@ bool RexServerConnection::ConnectToServer(
     else
     {
         connection_type_ = DirectConnection;
+        password_ = password;
+        username_ = first_name + " " + last_name;
+        
         sp->LoginToServer(first_name, last_name,password, serveraddress_noport, port, &threadState_);
     }
 

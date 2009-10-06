@@ -44,6 +44,7 @@ class XmlRpcCall;
 		XmlRpcEpi();
 		explicit XmlRpcEpi(const std::string& method);
 		XmlRpcEpi(const std::string& method, const std::string& address, const std::string& port);
+		XmlRpcEpi(const std::string& method, const std::string& url);
 		~XmlRpcEpi();
 
 		/** Initialises connection to given address. This doesn't actually build up a network connection,
@@ -55,6 +56,11 @@ class XmlRpcCall;
 			@param port The port on the server where the connection is made.
 			@throw XMLRPCException if problem arises. */
 		void Connect(const std::string& address, const std::string& port);
+	    
+	    /** Initialises connection to given url
+            @param url Full url to connect to
+	     */
+	    void Connect(const std::string& url);
 	    
 		/**
 		 * Creates new call. Removes old call method from memory. 

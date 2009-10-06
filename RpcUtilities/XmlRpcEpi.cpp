@@ -27,6 +27,13 @@ XmlRpcEpi::XmlRpcEpi(const std::string& method, const std::string& address, cons
     CreateCall(method);
 }
 
+XmlRpcEpi::XmlRpcEpi(const std::string& method, const std::string& url) 
+: callMethod_(""), call_(0), connection_(0)
+{
+    Connect(url);
+    CreateCall(method);
+}
+
 XmlRpcEpi::~XmlRpcEpi()
 {
     delete connection_;
@@ -39,6 +46,15 @@ void XmlRpcEpi::Connect(const std::string& address, const std::string& port)
 		connection_ = new XmlRpcConnection(address, port);
     else
         connection_->SetServerAddress(address, port);
+    
+}
+
+void XmlRpcEpi::Connect(const std::string& url) 
+{
+    if ( connection_ == 0)
+		connection_ = new XmlRpcConnection(url);
+    else
+        connection_->SetServer(url);
     
 }
 

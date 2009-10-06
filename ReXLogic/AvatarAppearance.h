@@ -25,6 +25,8 @@ namespace HttpUtilities
 namespace RexLogic
 {
     class RexLogicModule;
+    class AvatarExporter;
+    typedef boost::shared_ptr<AvatarExporter> AvatarExporterPtr;
     
     //! Handles setting up and updating avatars' appearance. Used internally by RexLogicModule::Avatar.
     class AvatarAppearance
@@ -62,6 +64,9 @@ namespace RexLogic
         //! Handles resource event
         bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
         
+        //! Exports avatar to an authentication/avatar storage server account
+        void ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password);
+        
     private:
         //! Sets up an avatar mesh
         void SetupMeshAndMaterials(Scene::EntityPtr entity);
@@ -86,6 +91,9 @@ namespace RexLogic
         
         //! Processes appearance downloads
         void ProcessAppearanceDownloads();
+        
+        //! Processes avatar export (result from the avatar exporter threadtask)
+        void ProcessAvatarExport();
         
         //! Processes an avatar appearance download result
         void ProcessAppearanceDownload(Scene::EntityPtr entity, const std::vector<Core::u8>& data);
@@ -121,6 +129,9 @@ namespace RexLogic
         
         //! Amount of pending avatar resource requests. When hits 0, should be able to build avatar
         std::map<Core::entity_id_t, Core::uint> avatar_pending_requests_;
+        
+        //! Avatar exporter task
+        AvatarExporterPtr avatar_exporter_;
         
         RexLogicModule *rexlogicmodule_;
     };

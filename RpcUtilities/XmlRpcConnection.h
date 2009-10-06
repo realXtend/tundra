@@ -18,6 +18,13 @@ public:
 	 * @param port is server port.
 	 */
 	XmlRpcConnection(const std::string& address, const std::string& port);
+
+	/** 
+	 * Overrided constructor which creates url where xml-data is send. 
+	 * @param url full url of xmlrpc request
+	 * @param port is server port.
+	 */
+	XmlRpcConnection(const std::string& url);
 	
 	/**
 	 * Sets server address. 

@@ -22,12 +22,13 @@ use_package (QT4)
 use_package (CURL)
 use_package (OPENJPEG)
 use_package (OIS)
-use_modules (OgreRenderingModule OpenSimProtocol RexCommon InputModuleOIS QtModule HttpUtilities)
+use_package (XMLRPC)
+use_modules (OgreRenderingModule OpenSimProtocol RexCommon InputModuleOIS QtModule HttpUtilities RpcUtilities)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
 use_framework_modules (Core Foundation Interfaces SceneManager)
 
-link_modules (OpenSimProtocolModule RexCommon OgreRenderingModule QtModule HttpUtilities)
+link_modules (OpenSimProtocolModule RexCommon OgreRenderingModule QtModule HttpUtilities RpcUtilities)
 link_package (OIS)
 link_package (OGRE)
 
@@ -37,6 +38,7 @@ link_package (OGRE)
 link_package (QT4)
 link_package (CURL)
 link_package (OPENJPEG)
+link_package (XMLRPC)
 
 
 # Copy XML files from source directory to target directory

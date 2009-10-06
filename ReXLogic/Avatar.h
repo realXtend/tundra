@@ -45,6 +45,9 @@ namespace RexLogic
         //! Handles resource event
         bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
         
+        //! Exports user's avatar, if in scene
+        void ExportUserAvatar();
+        
     private:
         RexLogicModule *rexlogicmodule_;
         
