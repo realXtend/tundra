@@ -34,12 +34,6 @@ namespace OpenSimProtocol
         /// Destructor.
         virtual ~InventoryAsset();
 
-        ///
-        int ColumnCount() const;
-
-        ///
-        QVariant Data(int column) const;
-
         /// @return Row number of this inventory asset.
         int Row() const;
 
@@ -60,9 +54,6 @@ namespace OpenSimProtocol
         const inventory_type_t GetInventoryType() const { return inventoryType_; }
 
     private:
-        ///
-        QList<QVariant> itemData_;
-
         /// ID of the asset this inventory item refers to.
         RexUUID assetID_;
 

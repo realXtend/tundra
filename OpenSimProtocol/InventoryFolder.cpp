@@ -191,12 +191,12 @@ InventoryItemBase *InventoryFolder::Child(int row)
 {
     return childItems_.value(row);
 }
-
+/*
 QList<InventoryItemBase *> &InventoryFolder::Children()
 {
     return childItems_;
 }
-
+*/
 int InventoryFolder::ChildCount() const
 {
     return childItems_.count();
@@ -207,6 +207,7 @@ int InventoryFolder::ColumnCount() const
     return itemData_.count();
 }
 
+/*
 bool InventoryFolder::SetData(int column, const QVariant &value)
 {
     if (column < 0 || column >= itemData_.size())
@@ -218,15 +219,17 @@ bool InventoryFolder::SetData(int column, const QVariant &value)
     if (!IsEditable())
         return false;
 
-    itemData_[column] = value;
     SetName(value.toString().toStdString());
     return true;
 }
+*/
 
+/*
 QVariant InventoryFolder::Data(int column) const
 {
     return itemData_.value(column);
 }
+*/
 
 int InventoryFolder::Row() const
 {

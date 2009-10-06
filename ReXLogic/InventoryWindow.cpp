@@ -62,10 +62,6 @@ void InventoryWindow::InitInventoryWindow()
 
     inventoryWidget_ = loader.load(&file); 
 
-    ///\todo Here we have strange and not-so-wanted feature.
-    /// If you first addWidget (in Internal-canvas) and then SetCanvasSize() result: only partial window is seen.
-    /// Must investigate futher that why this happends.
-
     // Set canvas size. 
     QSize size = inventoryWidget_->size();
     canvas_->SetCanvasSize(size.width(), size.height());
@@ -79,8 +75,6 @@ void InventoryWindow::InitInventoryWindow()
     QTreeView *treeView = inventoryWidget_->findChild<QTreeView *>("treeView");
     QObject::connect(treeView, SIGNAL(expanded(const QModelIndex &)), this, SLOT(FetchInventoryDescendents(const QModelIndex &)));
     QObject::connect(treeView, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(FetchInventoryDescendents(const QModelIndex &)));
-//    QObject::connect(treeView, SIGNAL(entered(const QModelIndex &)), this, SLOT(FetchInventoryDescendents(const QModelIndex &)));
-//    QObject::connect(treeView, SIGNAL(pressed(const QModelIndex &)), this, SLOT(FetchInventoryDescendents(const QModelIndex &)));
 
     QMenu *actionsMenu = inventoryWidget_->findChild<QMenu *>("actionsMenu");
     QObject::connect(actionsMenu, SIGNAL(aboutToShow()), this, SLOT(UpdateActions()));
@@ -191,7 +185,7 @@ void InventoryWindow::FetchInventoryDescendents(const QModelIndex &index)
 
     ///\todo Use id instead of the name.
     std::string name = index.data().toString().toStdString();
-    OpenSimProtocol::InventoryFolder *folder  = inventory_->GetFirstChildFolderByName(name.c_str());
+    InventoryFolder *folder  = inventory_->GetFirstChildFolderByName(name.c_str());
 
     ///\todo Send FetchInventoryDescendents only if our model is "dirty" (new items are uploaded)
 //    if (!folder->IsDirty())

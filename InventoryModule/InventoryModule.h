@@ -2,7 +2,7 @@
 
 /**
  *  @file InventoryModule.h
- *  @brief 
+ *  @brief Inventory module.
  */
 
 #ifndef incl_InventoryModule_h
@@ -10,14 +10,12 @@
 
 #include "Foundation.h"
 #include "ModuleInterface.h"
-
-/*
-#include "RexUUID.h"
-#include "InventoryEvents.h"
-*/
+#include "../ReXLogic/InventoryEvents.h"
 
 namespace Inventory
 {
+    class InventoryWindow;
+
     class InventoryModule : public Foundation::ModuleInterfaceImpl
     {
     public:
@@ -34,13 +32,10 @@ namespace Inventory
         void PostInitialize();
         void Uninitialize();
         void Update(Core::f64 frametime);
-
-/*
         bool HandleEvent(
             Core::event_category_id_t category_id,
             Core::event_id_t event_id, 
             Foundation::EventDataInterface* data);
-*/
 
         MODULE_LOGGING_FUNCTIONS
 
@@ -59,6 +54,9 @@ namespace Inventory
 
         /// Network state event category.
         Core::event_category_id_t inventoryEventCategory_;
+
+        ///
+        InventoryWindow *inventoryWindow_;
     };
 }
 

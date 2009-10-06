@@ -45,10 +45,12 @@ Use unnamed namespaces over the C-like <b>static</b> keyword.
 The following identifiers are written in <b>title case</b>:
 \verbatim
 class AvatarNode;
-struct TCPConnectionParameters;
+struct TcpConnectionParameters;
 typedef boost::shared_ptr<AvatarNode> AvatarNodePtr;
 void AvatarNode::WalkForward();
 \endverbatim
+
+Prefer "XmlRpcConnection" naming over "XMLRPCConnection" when class names contain acronyms.
 Interfaces should be postfixed with 'Interface'. ex: MyNewClassInterface.
 
 Local variables and public/protected member variables are written in lower case with an underscore:
@@ -63,7 +65,7 @@ Private member variables should be lower case as well, but with an underscore ap
 int AvatarNode::private_member_var_;
 \endverbatim
 
-In your editor, set the tab key to produce 4 spaces. Do not use the tab character.
+In your editor, set the tab key to produce 4 spaces. Do not use the tab character. In Visual Studio this feature can be found from Tools -> Options -> Text Editor -> C/C++ -> General.
 Parenthesis should use whitespace, and gravitate towards the thing they enclose. ex: if (IsFoo()) Do (bar); not if( IsFoo() ) Do( bar );
 Add extra newline at the end of file for crossplatform compatibility.
 Insert opening braces on a line of their own.
@@ -144,8 +146,7 @@ We're developing under the scrum model (or at least trying), and <b>refactoring<
 sign that something failed previously. There is no need to pretend that any piece of code is final and you should use 
 <b>\\todo</b>s <b>extensively</b> to show what the current status and possible future directions are.
 
-Similarly, use <b>\\bug</b> to indicate a programming error you know to exist, but cannot for some reason fix now (time *is*
-a constraint). Don't feel guilty about marking <b>\\bug</b> items into code you have produced, these comments are worth gold 
+Similarly, use <b>\\bug</b> to indicate a programming error you know to exist, but cannot for some reason fix now (time *is* a constraint). Don't feel guilty about marking <b>\\bug</b> items into code you have produced, these comments are worth gold 
 when the software evolves.
 
 <b>!! Important !!</b>
