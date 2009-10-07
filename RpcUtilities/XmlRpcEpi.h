@@ -103,6 +103,9 @@ class XmlRpcCall;
 		 */
 		void AddStringToArray(const std::string& name, const char *sstr);
 
+        //! Returns if call reply contains a value. May be of any type. Does not throw exceptions
+        bool HasReply(const char* name) const;
+
 		/**
 		 * Returns value from xmlprc call reply, which is linked into given param name. 
 		 * @throw XMLRPCException if there does not exist given key or value conversion was invalid.

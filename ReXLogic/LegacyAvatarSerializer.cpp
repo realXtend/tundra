@@ -563,16 +563,16 @@ namespace RexLogic
     
     void LegacyAvatarSerializer::WriteAvatarAppearance(QDomDocument& dest, const EC_AvatarAppearance& source)
     {
+        // Avatar element
+        QDomElement avatar = dest.createElement("avatar");
+        
         // Version element
         {
             QDomElement version = dest.createElement("version");
             QDomText text = dest.createTextNode("0.2");
             version.appendChild(text);
-            dest.appendChild(version);
+            avatar.appendChild(version);
         }
-        
-        // Avatar element
-        QDomElement avatar = dest.createElement("avatar");
         
         // Mesh element
         {

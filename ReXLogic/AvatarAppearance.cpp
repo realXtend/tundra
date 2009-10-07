@@ -665,11 +665,10 @@ namespace RexLogic
         // Return to original format by substituting to < >
         ReplaceSubstring(appearance_str, "&lt;", "<");
         ReplaceSubstring(appearance_str, "&gt;", ">");
-            
-        QDomDocument appearance_doc("appearance");
-        QByteArray appearance_bytes(appearance_str.c_str());
-        appearance_doc.setContent(appearance_bytes);
-
+        
+        QDomDocument avatar_doc("Avatar");
+        avatar_doc.setContent(QString::fromStdString(appearance_str));
+        
         std::map<std::string, std::string>::iterator j = contents.begin();
         // Build mapping of human-readable asset names to id's
         std::string host = HttpUtilities::GetHostFromUrl(avatar.GetAppearanceAddress());
@@ -683,7 +682,11 @@ namespace RexLogic
         }
         
         // Deserialize appearance from the document into the EC
-        LegacyAvatarSerializer::ReadAvatarAppearance(appearance, appearance_doc);
+        if (!LegacyAvatarSerializer::ReadAvatarAppearance(appearance, avatar_doc))
+        {
+            SetupDefaultAppearance(entity);
+            return;
+        }
         
         appearance.SetAssetMap(assets);
         
@@ -918,6 +921,7 @@ namespace RexLogic
         //! Note: the exporter task will convert < > to &lt; &gt; to not confuse the eventual xmlrpc call
         QDomDocument avatar_export("Avatar");
         LegacyAvatarSerializer::WriteAvatarAppearance(avatar_export, appearance);
+        
         std::string avatar_export_str = avatar_export.toString().toStdString();
         request->avatar_xml_ = avatar_export_str;
         
