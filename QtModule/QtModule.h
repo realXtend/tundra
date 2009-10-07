@@ -54,6 +54,12 @@ public:
 
     void DeleteCanvas(const boost::shared_ptr<UICanvas>& canvas) { controller_->RemoveCanvas(canvas->GetID()); }
 
+    /**
+     * Deletes canvas.
+     * @param is canvas id which we want to delete. 
+     */
+    void DeleteCanvas(const QString& id) { controller_->RemoveCanvas(id); }
+
 private:
 
     void InitializeKeyCodes();
