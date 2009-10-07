@@ -56,10 +56,7 @@ namespace Inventory
             const QString &id,
             const QString &name,
             AbstractInventoryItem *parent = 0) :
-            itemType_(item_type),
-            id_(id),
-            name_(name),
-            parent_(parent) {}
+            itemType_(item_type), id_(id), name_(name), parent_(parent) {}
 
         /// Destructor.
         virtual ~AbstractInventoryItem() {}

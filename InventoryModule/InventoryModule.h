@@ -10,12 +10,12 @@
 
 #include "Foundation.h"
 #include "ModuleInterface.h"
-#include "../ReXLogic/InventoryEvents.h"
-
-#include "InventoryWindow.h"
+#include "EventDataInterface.h"
 
 namespace Inventory
 {
+    class InventoryWindow;
+
     class InventoryModule : public Foundation::ModuleInterfaceImpl
     {
     public:
@@ -53,7 +53,10 @@ namespace Inventory
         Foundation::EventManagerPtr eventManager_;
 
         /// Network state event category.
-        Core::event_category_id_t inventoryEventCategory_;
+        Core::event_category_id_t networkStateEventCategory_;
+
+        /// Network state event category.
+        Core::event_category_id_t assetEventCategory_;
 
         /// Module GUI widget
         InventoryWindow *inventoryWindow_;

@@ -15,22 +15,8 @@
 #include "curl/curl.h"
 #include <QImage>
 
-const unsigned int curlTimeout = 5;
-
 namespace
 {
-
-// Writer callback for cURL.
-size_t WriteCallback(char *data, size_t size, size_t nmemb, std::vector<char> *buffer)
-{  
-    if (buffer)
-    {
-        buffer->insert(buffer->end(), data, data + size * nmemb);
-        return size * nmemb;
-    }
-    else
-        return 0;
-}
 
 void J2kErrorCallback(const char *msg, void *)
 {
@@ -204,16 +190,12 @@ bool J2kEncode(QImage q_image, char *outbuf, size_t *size, bool reversible)
 namespace RexLogic
 {
 
-AssetUploader::AssetUploader()
+AssetUploader::AssetUploader() : uploadCapability_("")
 {
-//    curl_global_init(CURL_GLOBAL_ALL);
-//    curl_ = curl_easy_init();
-    uploadCapability_ = "";
 }
 
 AssetUploader::~AssetUploader()
 {
-//    curl_easy_cleanup(curl_);
 }
 
 void AssetUploader::UploadFile(
@@ -255,11 +237,6 @@ void AssetUploader::UploadFile(
         RexLogicModule::LogError("Size of the response data to \"NewFileAgentInventory\" message was zero.");
         return;
     }
-
-/*    std::vector<char> response;
-    bool success = HttpPostNewFileAgentInventory(uploadCapability_, &asset_xml[0], asset_xml.size(), &response);
-    if (!success)
-        return;*/
 
     response.push_back('\0');
     std::string response_str = (char *)&response[0];
@@ -312,11 +289,6 @@ void AssetUploader::UploadFile(
 
     response.clear();
     response_str.clear();
-
-    // Upload the file.
-/*    success = HttpPostFileUpload(upload_url, buffer, size, &response);
-    if (!success)
-        return;*/
 
     HttpUtilities::HttpRequest request2;
     request2.SetUrl(upload_url);
@@ -414,12 +386,6 @@ void AssetUploader::UploadFiles(Core::StringList filenames, OpenSimProtocol::Inv
             return;
         }
 
-        /*std::vector<char> response;
-        bool success = HttpPostNewFileAgentInventory(uploadCapability_, &asset_xml[0], asset_xml.size(), &response);
-        if (!success)
-            return;
-        */
-
         // Convert the response data to a string.
         response.push_back('\0');
         std::string response_str = (char *)&response[0];
@@ -472,10 +438,6 @@ void AssetUploader::UploadFiles(Core::StringList filenames, OpenSimProtocol::Inv
         // Upload the file.
         response.clear();
 
-/*        success = HttpPostFileUpload(upload_url, buffer, size, &response);
-        if (!success)
-            return;
-*/
         HttpUtilities::HttpRequest request2;
         request2.SetUrl(upload_url);
         request2.SetMethod(HttpUtilities::HttpRequest::Post);
@@ -569,95 +531,5 @@ std::string AssetUploader::CreateNewFileAgentInventoryXML(
     xml += "</string></map></llsd>";
     return xml;
 }
-
-/*
-bool AssetUploader::HttpPostNewFileAgentInventory(
-    std::string host,
-    char* buffer,
-    size_t size,
-    std::vector<char> *response)
-{
-    CURLcode result;
-    curl_slist *headers = 0;
-
-    headers = curl_slist_append(headers, "Accept: *//*");
-    headers = curl_slist_append(headers, "Accept-Encoding: deflate, gzip");    
-    headers = curl_slist_append(headers, "Content-Type: application/xml");    
-    headers = curl_slist_append(headers, "Expect: 100-continue");
-    headers = curl_slist_append(headers, "");
-
-    curl_easy_setopt(curl_, CURLOPT_HTTPHEADER, headers);
-    curl_easy_setopt(curl_, CURLOPT_URL, host.c_str());
-    curl_easy_setopt(curl_, CURLOPT_POSTFIELDS, buffer);
-    curl_easy_setopt(curl_, CURLOPT_POSTFIELDSIZE, size);
-    curl_easy_setopt(curl_, CURLOPT_WRITEFUNCTION, WriteCallback);
-    curl_easy_setopt(curl_, CURLOPT_WRITEDATA, response);
-    curl_easy_setopt(curl_, CURLOPT_ERRORBUFFER, curlErrorBuffer_);
-    curl_easy_setopt(curl_, CURLOPT_CONNECTTIMEOUT, curlTimeout);
-
-    result = curl_easy_perform(curl_);
-
-    curl_slist_free_all(headers);
-
-    if (result != CURLE_OK)
-    {
-        RexLogicModule::LogError(std::string(curlErrorBuffer_));
-        return false;
-    }
-
-    if (response->size() == 0)
-    {
-        RexLogicModule::LogError("Size of the response data to \"NewFileAgentInventory\" message was zero.");
-        return false;
-    }
-
-    return true;
-}
-*/
-
-/*
-bool AssetUploader::HttpPostFileUpload(
-    std::string host,
-    char* buffer,
-    size_t size,
-    std::vector<char> *response)
-{
-    CURLcode result;
-    curl_slist *headers = 0;
-
-    headers = curl_slist_append(headers, "Accept-Encoding: deflate, gzip");
-    headers = curl_slist_append(headers, "Content-Type: application/octet-stream");
-    headers= curl_slist_append(headers, "");
-
-    curl_easy_setopt(curl_, CURLOPT_HTTPHEADER, headers);
-    curl_easy_setopt(curl_, CURLOPT_URL, host.c_str());
-    curl_easy_setopt(curl_, CURLOPT_POST, 1);
-    curl_easy_setopt(curl_, CURLOPT_POSTFIELDS, buffer);
-    curl_easy_setopt(curl_, CURLOPT_POSTFIELDSIZE, size);
-    curl_easy_setopt(curl_, CURLOPT_WRITEFUNCTION, WriteCallback);
-    curl_easy_setopt(curl_, CURLOPT_WRITEDATA, response);
-    curl_easy_setopt(curl_, CURLOPT_ERRORBUFFER, curlErrorBuffer_);
-    curl_easy_setopt(curl_, CURLOPT_CONNECTTIMEOUT, curlTimeout);
-
-    result = curl_easy_perform(curl_);
-
-    free(buffer);
-    curl_slist_free_all(headers);
-
-    if (result != CURLE_OK)
-    {
-        RexLogicModule::LogError(std::string(curlErrorBuffer_));
-        return false;
-    }
-
-    if (response->size() == 0)
-    {
-         RexLogicModule::LogError("Response data size was null. Asset transfer failed.");
-        return false;
-    }
-
-    return true;
-}
-*/
 
 } // namespace RexLogic

@@ -9,5 +9,6 @@
     <subscriber module="OgreRenderingModule" priority="99" />
     <subscriber module="TextureDecoderModule" priority="98" />
     <subscriber module="QtModule" priority="100" />
+    <subscriber module="InventoryModule" priority="100" />
 </subscribers>
 

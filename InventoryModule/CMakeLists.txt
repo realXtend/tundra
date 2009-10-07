@@ -19,8 +19,9 @@ add_definitions (-DUSE_QT)
 use_package (BOOST)
 use_package (POCO)
 use_package (XMLRPC)
+use_package (CURL)
 use_package (QT4)
-use_modules (HttpUtilities RpcUtilities QtModule)
+use_modules (RpcUtilities HttpUtilities QtModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
 use_framework_modules (Core Foundation Interfaces RexCommon)
@@ -29,6 +30,7 @@ link_modules (RexCommon HttpUtilities RpcUtilities QtModule)
 link_package (BOOST)
 link_package (POCO)
 link_package (XMLRPC)
+link_package (CURL)
 link_package (QT4)
 
 # Copy XML files from source directory to target directory

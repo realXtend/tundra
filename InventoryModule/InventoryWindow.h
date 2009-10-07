@@ -30,22 +30,16 @@ namespace RexLogic
     class RexLogicModule;
 }
 
-/*namespace OpenSimProtocol
-{
-    class InventoryModel;
-}*/
-
 namespace Inventory
 {
     class InventoryWindow : public QObject
     {
         Q_OBJECT
 
-		MODULE_LOGGING_FUNCTIONS
+        MODULE_LOGGING_FUNCTIONS
+
         //! Returns name of this module. Needed for logging.
-		static const std::string &NameStatic() { return std::string("InventoryModule::UI"); }
-        //! Returns type of this module. Needed for logging.
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Inventory;
+        static const std::string &NameStatic() { const std::string &name = "InventoryModule::UI"; return name; }
 
     public:
         /// Constructor.
@@ -55,13 +49,16 @@ namespace Inventory
 
         /// Destructor.
         virtual ~InventoryWindow();
-/*
+
     public slots:
         /// Initializes the inventory data/view model.
-        void InitInventoryTreeView();
+//        void InitInventoryTreeView();
 
-        /// Resets the inventory view. Used when user logs out from a world.
-        void ResetInventoryTreeView();
+        /// Initializes the OpenSim inventory data/view model.
+        void InitOpenSimInventoryTreeModel();
+
+        /// Resets the inventory tree model.
+        void ResetInventoryTreeModel();
 
         /// Shows the inventory window.
         void Show();
@@ -70,14 +67,14 @@ namespace Inventory
         void Hide();
 
         /// Updates menu actions.
-        void UpdateActions();
-*/
+//        void UpdateActions();
+
 //    protected slots:
 //        void closeEvent(QCloseEvent *myCloseEvent);
 
     private slots:
-		/// Close handler
-		void CloseInventoryWindow();
+        /// Close handler
+        void CloseInventoryWindow();
 /*
         /// Fetchs the inventory folder's descendents.
         void FetchInventoryDescendents(const QModelIndex &index);
@@ -103,8 +100,6 @@ namespace Inventory
         /// Initializes the inventory UI.
         void InitInventoryWindow();
 
-		
-
         /// Framework pointer.
         Foundation::Framework *framework_;
 
@@ -126,10 +121,12 @@ namespace Inventory
         ///
 //        OpenSimProtocol::InventoryModel *inventoryModel_;
 
-		// QWidgets
-		QPushButton *buttonClose_, *buttonDownload_, *buttonUpload_,
-					*buttonAddFolder_, *buttonDeleteFolder_, *buttonRename_;
-		QTreeView *treeView_;
+        // QWidgets
+        QPushButton *buttonClose_, *buttonDownload_, *buttonUpload_,
+            *buttonAddFolder_, *buttonDeleteFolder_, *buttonRename_;
+
+        ///
+        QTreeView *treeView_;
     };
 }
 

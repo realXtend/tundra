@@ -11,7 +11,9 @@ namespace OpenSimProtocol
 {
 
 OpenSimProtocolModule::OpenSimProtocolModule() :
-    ModuleInterfaceImpl(Foundation::Module::MT_OpenSimProtocol), connected_(false)
+    ModuleInterfaceImpl(Foundation::Module::MT_OpenSimProtocol),
+    connected_(false),
+    authenticationType_(AT_Unknown)
 {
 }
 
@@ -121,6 +123,8 @@ void OpenSimProtocolModule::LoginToServer(
 
     // Start the thread.
     boost::thread(boost::ref(loginWorker_));
+
+    authenticationType_ = AT_OpenSim;
 }
 
 void OpenSimProtocolModule::LoginToCBServer(
@@ -136,6 +140,8 @@ void OpenSimProtocolModule::LoginToCBServer(
 
     // Start the thread.
     boost::thread(boost::ref(loginWorker_));
+
+    authenticationType_ = AT_Taiga;
 }
 
 
@@ -145,7 +151,7 @@ bool OpenSimProtocolModule::LoginUsingRexAuthentication(
     const std::string& password,
     const std::string& address,
     int port,
-    const std::string& auth_server_address, 
+    const std::string& auth_server_address,
     const std::string& auth_login,
     ConnectionThreadState *thread_state)
 {
@@ -166,12 +172,13 @@ bool OpenSimProtocolModule::LoginUsingRexAuthentication(
         auth_port = "10001";
         auth_address = auth_server_address;
     }
-    
+
     loginWorker_.SetupXMLRPCLogin(first_name, last_name, password, address, boost::lexical_cast<std::string>(port),
         callMethod, thread_state, auth_login, auth_address, auth_port, authentication);
 
     // Start the thread.
     boost::thread(boost::ref(loginWorker_));
+    authenticationType_ = AT_RealXtend;
 
     return true;
 }
@@ -187,7 +194,8 @@ bool OpenSimProtocolModule::CreateUDPConnection(const char *address, int port)
     loginWorker_.SetConnectionState(Connection::STATE_CONNECTED);
 
     // Send event indicating a succesfull connection.
-    eventManager_->SendEvent(networkStateEventCategory_, Events::EVENT_SERVER_CONNECTED, NULL);
+    AuthenticationEventData auth_data(authenticationType_);
+    eventManager_->SendEvent(networkStateEventCategory_, Events::EVENT_SERVER_CONNECTED, &auth_data);
     connected_ = true;
 
     // Request capabilities from the server.
@@ -208,7 +216,7 @@ void OpenSimProtocolModule::DisconnectFromRexServer()
     capabilities_.clear();
     clientParameters_.Reset();
 
-    eventManager_->SendEvent(networkStateEventCategory_, Events::EVENT_SERVER_DISCONNECTED, NULL);
+    eventManager_->SendEvent(networkStateEventCategory_, Events::EVENT_SERVER_DISCONNECTED, 0);
 }
 
 void OpenSimProtocolModule::DumpNetworkMessage(NetMsgID id, NetInMessage *msg)
@@ -345,5 +353,5 @@ void SetProfiler(Foundation::Profiler *profiler)
 using namespace OpenSimProtocol;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
-   POCO_EXPORT_CLASS(OpenSimProtocolModule)
+    POCO_EXPORT_CLASS(OpenSimProtocolModule)
 POCO_END_MANIFEST
