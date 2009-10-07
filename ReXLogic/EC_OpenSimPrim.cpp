@@ -6,81 +6,103 @@
 
 namespace RexLogic
 {
-    EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework())
-    {
-        RegionHandle = 0;
-        LocalId = 0;
-        FullId.SetNull();
-        ParentId = 0; 
-        
-        ObjectName = "";
-        Description = "";
-        HoveringText = "";
-        MediaUrl = "";
 
-        Material = 0;
-        ClickAction = 0;
-        UpdateFlags = 0;
+EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
+    Foundation::ComponentInterface(module->GetFramework())
+{
+    RegionHandle = 0;
+    LocalId = 0;
+    FullId.SetNull();
+    ParentId = 0; 
 
-        ServerScriptClass = "";
+    ObjectName = "";
+    Description = "";
+    HoveringText = "";
+    MediaUrl = "";
 
-        SoundID = "";
-        SoundVolume = 0;
-        SoundRadius = 0;
-        
-        SelectPriority = 0;
+    Material = 3;
+    ClickAction = 0;
+    UpdateFlags = 0;
 
-        DrawType = RexTypes::DRAWTYPE_PRIM;
-        IsVisible = true;
-        CastShadows = false;
-        LightCreatesShadows = false;
-        DescriptionTexture = false;
-        ScaleToPrim = true;
-        DrawDistance = 0;
-        LOD = 0;
-        
-        HasPrimShapeData = false;
-        
-        MeshID = "";
-        CollisionMeshID = "";
-        ParticleScriptID = "";
+    ServerScriptClass = "";
 
-        AnimationPackageID = "";
-        AnimationName = "";
-        AnimationRate = 0;
+    SoundID = "";
+    SoundVolume = 0;
+    SoundRadius = 0;
 
-        Materials.clear();
-    }
+    SelectPriority = 0;
 
-    EC_OpenSimPrim::~EC_OpenSimPrim()
-    {
-    }
+    DrawType = RexTypes::DRAWTYPE_PRIM;
+    IsVisible = true;
+    CastShadows = false;
+    LightCreatesShadows = false;
+    DescriptionTexture = false;
+    ScaleToPrim = true;
+    DrawDistance = 0;
+    LOD = 0;
 
-    void EC_OpenSimPrim::PrintDebug()
-    {
-        RexLogicModule::LogInfo("*** EC_OpenSimPrim ***");
-        RexLogicModule::LogInfo("LocalId:" + Core::ToString(LocalId));
-        RexLogicModule::LogInfo("RegionHandle:" + Core::ToString(RegionHandle));    
-        RexLogicModule::LogInfo("LocalId:" + Core::ToString(LocalId));
-        RexLogicModule::LogInfo("FullId:" + FullId.ToString());
-        RexLogicModule::LogInfo("ParentId:" + Core::ToString(ParentId));        
+    HasPrimShapeData = false;
 
-        RexLogicModule::LogInfo("ObjectName:" + ObjectName);
-        RexLogicModule::LogInfo("Description:" + Description);
-        RexLogicModule::LogInfo("HoveringText:" + HoveringText);
-        RexLogicModule::LogInfo("MediaUrl:" + MediaUrl);
-        
-        RexLogicModule::LogInfo("Material:" + Core::ToString((Core::uint)Material));
-        RexLogicModule::LogInfo("ClickAction:" + Core::ToString((Core::uint)ClickAction));
-        RexLogicModule::LogInfo("UpdateFlags:" + Core::ToString(UpdateFlags));
-        
-        RexLogicModule::LogInfo("ServerScriptClass:" + ServerScriptClass);        
-        RexLogicModule::LogInfo("CollisionMeshID:" + CollisionMeshID);
+    MeshID = "";
+    CollisionMeshID = "";
+    ParticleScriptID = "";
 
-        RexLogicModule::LogInfo("SoundID:" + SoundID);        
-        RexLogicModule::LogInfo("SoundVolume:" + Core::ToString(SoundVolume));
-        RexLogicModule::LogInfo("SoundRadius:" + Core::ToString(SoundRadius));        
+    AnimationPackageID = "";
+    AnimationName = "";
+    AnimationRate = 0;
 
-        RexLogicModule::LogInfo("SelectPriority:" + Core::ToString(SelectPriority));    
-    }
+    Materials.clear();
+
+    PathCurve = 16;
+    ProfileCurve = 1;
+    PathBegin = 0;
+    PathEnd = 0;
+    PathScaleX = 1;
+    PathScaleY = 1;
+    PathShearX = 0;
+    PathShearY = 0;
+    PathTwist = 0;
+    PathTwistBegin = 0;
+    PathRadiusOffset = 0;
+    PathTaperX = 0;
+    PathTaperY = 0;
+    PathRevolutions = 1;
+    PathSkew = 0;
+    ProfileBegin = 0;
+    ProfileEnd = 0;
+    ProfileHollow = 0;
 }
+
+EC_OpenSimPrim::~EC_OpenSimPrim()
+{
+}
+
+void EC_OpenSimPrim::PrintDebug()
+{
+    RexLogicModule::LogInfo("*** EC_OpenSimPrim ***");
+    RexLogicModule::LogInfo("LocalId:" + Core::ToString(LocalId));
+    RexLogicModule::LogInfo("RegionHandle:" + Core::ToString(RegionHandle));
+    RexLogicModule::LogInfo("LocalId:" + Core::ToString(LocalId));
+    RexLogicModule::LogInfo("FullId:" + FullId.ToString());
+    RexLogicModule::LogInfo("ParentId:" + Core::ToString(ParentId));
+
+    RexLogicModule::LogInfo("ObjectName:" + ObjectName);
+    RexLogicModule::LogInfo("Description:" + Description);
+    RexLogicModule::LogInfo("HoveringText:" + HoveringText);
+    RexLogicModule::LogInfo("MediaUrl:" + MediaUrl);
+    
+    RexLogicModule::LogInfo("Material:" + Core::ToString((Core::uint)Material));
+    RexLogicModule::LogInfo("ClickAction:" + Core::ToString((Core::uint)ClickAction));
+    RexLogicModule::LogInfo("UpdateFlags:" + Core::ToString(UpdateFlags));
+    
+    RexLogicModule::LogInfo("ServerScriptClass:" + ServerScriptClass);
+    RexLogicModule::LogInfo("CollisionMeshID:" + CollisionMeshID);
+
+    RexLogicModule::LogInfo("SoundID:" + SoundID);
+    RexLogicModule::LogInfo("SoundVolume:" + Core::ToString(SoundVolume));
+    RexLogicModule::LogInfo("SoundRadius:" + Core::ToString(SoundRadius));
+
+    RexLogicModule::LogInfo("SelectPriority:" + Core::ToString(SelectPriority));
+}
+
+} // namespace RexLogic

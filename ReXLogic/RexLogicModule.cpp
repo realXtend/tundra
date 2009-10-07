@@ -511,6 +511,9 @@ namespace RexLogic
         using namespace RexTypes;
         using namespace OpenSimProtocol;
 
+        rexserver_connection_->SendObjectAddPacket(Vector3(124,124,28), Vector3(124,124, 28));
+        return Console::ResultSuccess();
+
         std::string name = "(No Name)";
         std::string description = "(No Description)";
         

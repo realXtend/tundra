@@ -95,6 +95,12 @@ namespace RexLogic
         /// inventory UUIDs after that, but we'll be ignoring those.
         void SendLogoutRequestPacket();
 
+        /// Sends a message which creates a default prim the in world.
+        ///\todo Figure out how to properly use ray_start & ray_end. Seems to be working ok if you use just same pos for both.
+        /// @param ray_start Raycast start position.
+        /// @param ray_end Raycast end position.
+        void SendObjectAddPacket(const Vector3 &ray_start, const Vector3 &ray_end);
+
         // Sends the basic movement message
         void SendAgentUpdatePacket(Core::Quaternion bodyrot, Core::Quaternion headrot, uint8_t state, 
             RexTypes::Vector3 camcenter, RexTypes::Vector3 camataxis, RexTypes::Vector3 camleftaxis, RexTypes::Vector3 camupaxis,

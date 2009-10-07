@@ -14,20 +14,21 @@ namespace RexLogic
     struct MaterialData
     {
         uint8_t Type;
-		RexTypes::RexAssetID asset_id;
+        RexTypes::RexAssetID asset_id;
     }; 
+
     //! Map for holding materials
     typedef std::map<uint8_t, MaterialData> MaterialMap;
 
     //! Map for holding prim textures
     typedef std::map<uint8_t, RexTypes::RexAssetID> TextureMap;
-    
+
     //! Map for holding prim face colors
     typedef std::map<uint8_t, Core::Color> ColorMap;
-    
+
     //! Map for holding prim face material bytes
     typedef std::map<uint8_t, uint8_t> MaterialTypeMap;
-    
+
     //! Each scene entity representing a prim in OpenSim sense has
     //! this component.
     class EC_OpenSimPrim : public Foundation::ComponentInterface
@@ -41,7 +42,7 @@ namespace RexLogic
         uint32_t LocalId;
         RexTypes::RexUUID FullId;
         uint32_t ParentId; 
-        
+
         std::string ObjectName;
         std::string Description;
         std::string HoveringText;
@@ -52,13 +53,13 @@ namespace RexLogic
         uint32_t UpdateFlags;
 
         std::string ServerScriptClass;
-        
-		RexTypes::RexAssetID CollisionMeshID;
-        
-		RexTypes::RexAssetID SoundID;
+
+        RexTypes::RexAssetID CollisionMeshID;
+
+        RexTypes::RexAssetID SoundID;
         float SoundVolume;
         float SoundRadius;
-        
+
         int32_t SelectPriority;
 
         //! Drawing related variables
@@ -71,12 +72,12 @@ namespace RexLogic
         bool ScaleToPrim;
         float DrawDistance;
         float LOD;
-        
-		RexTypes::RexAssetID MeshID;
-		RexTypes::RexAssetID ParticleScriptID;
+
+        RexTypes::RexAssetID MeshID;
+        RexTypes::RexAssetID ParticleScriptID;
 
         //! Animation
-		RexTypes::RexAssetID AnimationPackageID;
+        RexTypes::RexAssetID AnimationPackageID;
         std::string AnimationName;
         float AnimationRate;
 
