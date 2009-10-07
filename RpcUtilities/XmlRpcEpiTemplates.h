@@ -115,6 +115,74 @@ template <typename T> T XmlRpcEpi::GetReply(const char* name) const
 	return value;
 }
 
+template <typename T> std::vector<T> XmlRpcEpi::GetVectorReply(const char* name) const 
+{
+	assert(name && strlen(name) > 0);
+
+    std::vector<T> values;
+    
+	if (call_ == 0)
+		throw XmlRpcException(std::string("XmlRpcEpi exception in GetReply() error: Call object is zero pointer"));
+
+	// I'm probably not understanding the value hierarchy here.. samples use XMLRPC_VectorRewind(XMLRPC_RequestGetData(request))
+	// but it seems to walk into the first element of the vector, after which GetValueWithID doesn't find the correct sibling. wtf?
+
+	XMLRPC_VALUE result = XMLRPC_RequestGetData(call_->GetReply()); //XMLRPC_VectorRewind(XMLRPC_RequestGetData(request));
+	assert(result);
+
+	if (!result)
+		throw XmlRpcException(std::string("XmlRpcEpi exception in GetReply() error: XML reply did not contain any data!"));
+
+	XMLRPC_VALUE resultValue = XMLRPC_VectorGetValueWithID(result, name);
+
+	if (resultValue)
+	{
+		XMLRPC_VALUE_TYPE type = XMLRPC_GetValueType(resultValue);
+
+		try
+		{
+			switch (type)
+			{
+			case xmlrpc_vector:
+			{
+                XMLRPC_VALUE entry = XMLRPC_VectorRewind(resultValue);
+                while (entry)
+                {
+                    const char* entry_str = XMLRPC_GetValueString(entry);
+                    
+                    if (entry_str)
+                    {
+                        T value = boost::lexical_cast<T>(std::string(entry_str));
+                        values.push_back(value);
+                    }
+                    
+                    entry = XMLRPC_VectorNext(resultValue);
+                }
+				break;
+			}
+
+			default:
+			    throw XmlRpcException(std::string("XmlRpcEpi exception in GetReply() error: XML reply did not contain Vector data! (Tried to retrieve reply by ID ") + name);
+				break;
+			}
+		}
+		catch (boost::bad_lexical_cast&)
+		{
+			std::string strName(name);
+			throw XmlRpcException(std::string("XmlRpcEpi exception in GetReply() error: XML reply data was not converted to wanted type! (Tried to retrieve reply by ID ") + strName);
+		}
+	}
+	else
+	{
+		std::string strName(name);
+		throw XmlRpcException(std::string("XmlRpcEpi exception in GetReply() error: XML reply data was not found! (Tried to retrieve reply by ID ") + strName);
+	}
+
+	return values;
+}
+
+
+
 template <typename T> void XmlRpcEpi::AddMember(const char* name, const T& value) 
 {
 	if (call_ == 0)

@@ -6,8 +6,13 @@
 #include "LLSDUtilities.h"
 #include "XMLRPCEPI.h"
 #include "Poco/MD5Engine.h"
+#include "Poco/SHA1Engine.h"
+#include "Poco/Base64Encoder.h"
 
 using namespace RexTypes;
+
+// Time in which to reauthenticate if export has lasted long, in seconds
+static const Core::Real REAUTHENTICATION_TIME = 60.0f;
 
 namespace RexLogic
 {
@@ -40,13 +45,12 @@ namespace RexLogic
             return;
         }
         
+        // Calculate hashes from assets
+        ExportHashMap hashes = CalculateAssetHashes(request->assets_);
+        
         // Replace < > so that xmlrpc call doesn't get confused
         ReplaceSubstring(request->avatar_xml_, "<", "&lt;");
         ReplaceSubstring(request->avatar_xml_, ">", "&gt;");
-
-        std::string sessionhash;
-        std::string avatar_url;
-        std::string error;
         
         std::size_t pos = request->authserver_.rfind(":");
         if (pos != std::string::npos)
@@ -55,6 +59,10 @@ namespace RexLogic
             request->authserver_ = request->authserver_ + ":10001";
 
         // Authenticate first, to get an uptodate sessionhash
+        boost::timer export_timer; // For checking if we should refresh the hash
+        std::string sessionhash;
+        std::string avatar_url;
+        std::string error;
         if (!LoginToAuthentication(request->account_, request->authserver_, request->password_, sessionhash, avatar_url, error))
         {
             result->message_ = "Failed authentication on avatar export: " + error;
@@ -67,31 +75,153 @@ namespace RexLogic
         std::string export_url = avatar_url;
         ReplaceSubstring(export_url, "/avatar/", "/xmlrpc/");
         
-        XmlRpcEpi call;
-        
         try
         {
+            // Export avatar
+            RexLogicModule::LogInfo("Exporting avatar xml");
+            
+            XmlRpcEpi call;
             call.Connect(export_url);
             call.CreateCall("StoreAvatarHash");
             call.AddMember("account", request->account_);
             call.AddMember("UserServer", request->authserver_);
             call.AddMember("sessionhash", sessionhash);
             call.AddMember("generic xml", request->avatar_xml_);
+            
+            ExportHashMap::const_iterator i = hashes.begin();
+            while (i != hashes.end())
+            {
+                //! Here, the hash is the key and asset name is the value
+                call.AddMember(i->second.c_str(), i->first);
+                ++i;
+            }
+            
             call.Send();
             
-            //! \todo handle avatar assets & missing items
-            
-            if (call.HasReply("StoreAvatarHash"))
-            {
-                RexLogicModule::LogInfo("Export: StoreAvatarHash = " + call.GetReply<std::string>("StoreAvatarHash"));
-            }
-            if (call.HasReply("Error"))
-            {
-                RexLogicModule::LogInfo("Export: Error = " + call.GetReply<std::string>("Error"));
-            }
+            // Export assets
+            bool reexport = false;
             if (call.HasReply("MissingItems"))
             {
-                RexLogicModule::LogInfo("Export: Missing items");
+                reexport = true;
+                RexLogicModule::LogInfo("Exporting assets");
+                std::vector<std::string> items = call.GetVectorReply<std::string>("MissingItems");
+                for (Core::uint i = 0; i < items.size(); ++i)
+                {
+                    // Re-login to get a fresh hash if export has lasted long
+                    if (export_timer.elapsed() > REAUTHENTICATION_TIME)
+                    {
+                        export_timer.restart();
+                        std::string temp;
+                        if (!LoginToAuthentication(request->account_, request->authserver_, request->password_, sessionhash, temp, error))
+                        {
+                            result->message_ = "Failed re-authentication on avatar export: " + error;
+                            result->success_ = false;
+                            return;
+                        }
+                    }
+                
+                    std::string name = items[i];
+                    ExportAssetMap::const_iterator asset = request->assets_.find(name);
+                    ExportHashMap::const_iterator hash = hashes.find(name);
+                    if ((asset != request->assets_.end()) && (hash != hashes.end()))
+                    {
+                        XmlRpcEpi asset_call;
+                        asset_call.Connect(export_url);
+                        asset_call.CreateCall("StoreItem");
+                        asset_call.AddMember("account", request->account_);
+                        asset_call.AddMember("UserServer", request->authserver_);
+                        asset_call.AddMember("sessionhash", sessionhash);
+                        asset_call.AddMember("itemname", name);
+                        asset_call.AddMember("hashcode", hash->second);
+                        
+                        const std::vector<Core::u8>& data = asset->second;
+                        XMLRPC_VectorAppendBase64(asset_call.GetXMLRPCCall()->GetParamList(), "binaries", (const char*)&data[0], data.size());
+                        
+                        asset_call.Send();
+                        
+                        std::string status = asset_call.GetReply<std::string>("StoreItem");
+                        if (status != "succeeded")
+                        {
+                            result->message_ = "Failed to store asset " + name;
+                            result->success_ = false;
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        RexLogicModule::LogInfo("Storage requested unknown missing asset");
+                    }
+                }
+            }
+            else
+            {
+                if (call.HasReply("Error"))
+                {
+                    result->message_ = call.GetReply<std::string>("Error");
+                    result->success_ = false;
+                    return;
+                }
+                if (call.HasReply("StoreAvatarHash"))
+                {
+                    result->message_ = call.GetReply<std::string>("StoreAvatarHash");
+                    if (result->message_ != "failed")
+                        result->success_ = true;
+                    else
+                        result->success_ = false;
+                    return;
+                }
+            }
+            
+            if (reexport)
+            {
+                RexLogicModule::LogInfo("Re-exporting avatar xml");
+                
+                // Re-login to get a fresh hash if export has lasted long
+                if (export_timer.elapsed() > REAUTHENTICATION_TIME)
+                {
+                    export_timer.restart();
+                    std::string temp;
+                    if (!LoginToAuthentication(request->account_, request->authserver_, request->password_, sessionhash, temp, error))
+                    {
+                        result->message_ = "Failed re-authentication on avatar export: " + error;
+                        result->success_ = false;
+                        return;
+                    }
+                }
+                
+                // Re-export avatar
+                XmlRpcEpi call;
+                call.Connect(export_url);
+                call.CreateCall("StoreAvatarHash");
+                call.AddMember("account", request->account_);
+                call.AddMember("UserServer", request->authserver_);
+                call.AddMember("sessionhash", sessionhash);
+                call.AddMember("generic xml", request->avatar_xml_);
+                
+                ExportHashMap::const_iterator i = hashes.begin();
+                while (i != hashes.end())
+                {
+                    call.AddMember(i->second.c_str(), i->first);
+                    ++i;
+                }
+                
+                call.Send();
+                
+                if (call.HasReply("Error"))
+                {
+                    result->message_ = call.GetReply<std::string>("Error");
+                    result->success_ = false;
+                    return;
+                }
+                if (call.HasReply("StoreAvatarHash"))
+                {
+                    result->message_ = call.GetReply<std::string>("StoreAvatarHash");
+                    if (result->message_ != "failed")
+                        result->success_ = true;
+                    else
+                        result->success_ = false;
+                    return;
+                }
             }
         }
         catch(XmlRpcException& ex)
@@ -100,8 +230,6 @@ namespace RexLogic
             result->success_ = false;
             return;
         }
-        
-        result->success_ = true;
     }
     
     bool AvatarExporter::LoginToAuthentication(const std::string& account, const std::string& authserver, const std::string& password, std::string& sessionhash, std::string& avatar_url, std::string& error)
@@ -146,4 +274,29 @@ namespace RexLogic
         
         return true;
     }
+    
+    ExportHashMap AvatarExporter::CalculateAssetHashes(const ExportAssetMap& assets)
+    {
+        ExportHashMap hashes;
+        
+        ExportAssetMap::const_iterator i = assets.begin();
+
+        while (i != assets.end())
+        {
+            Poco::SHA1Engine sha1_engine;
+            sha1_engine.update(&i->second[0], i->second.size());
+            const Poco::DigestEngine::Digest& digest = sha1_engine.digest();
+            
+            std::stringstream sstream;
+            Poco::Base64Encoder encoder(sstream);
+            for (Core::uint j = 0; j < digest.size(); ++j)
+                encoder << digest[j];
+            
+            hashes[i->first] = sstream.str();
+            ++i;
+        }
+
+        return hashes;
+    }
+    
 }
