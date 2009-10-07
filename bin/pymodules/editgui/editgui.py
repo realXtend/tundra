@@ -272,19 +272,21 @@ class EditGUI(Component):
     def on_mousemove(self, mouseinfo, callback):
         """stub for dragging objects around 
         - should get the dir of movements relative to the view somehow"""
-        if self.left_button_down and self.sel is not None:
-            print "MouseMove:", mouseinfo.x, mouseinfo.y
+        pass
+        #~ if self.left_button_down and self.sel is not None:
+            #~ print "MouseMove:", mouseinfo.x, mouseinfo.y
 
-        elif self.right_button_down and self.sel is not None:
-            self.rightArrow.setOrientation(self.cam.DerivedOrientation)
-            self.upArrow.setOrientation(self.cam.DerivedOrientation)
+        #~ elif self.right_button_down and self.sel is not None:
+            #~ self.rightArrow.setOrientation(self.cam.DerivedOrientation)
+            #~ self.upArrow.setOrientation(self.cam.DerivedOrientation)
 
     def on_exit(self):
         r.logInfo("EditGUI exiting.")
         self.hideArrows()
-        children = self.canvas.children()
-        for child in children:
-            child.delete()
-        self.canvas.close() #not 100% sure of this...
-        #self.canvas.deleteLater()
+
+        self.canvas.Hide()
+        #modu = r.getQtModule()
+        #modu.DeleteCanvas(self.canvas)
+
+
 

@@ -8,7 +8,14 @@ set (PYTHON_FORCE_RELEASE_VERSION 0) # set if you want to use release version of
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
+file (GLOB MOC_FILES QtModuleWrapper.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
+
+# Qt4 Wrap
+QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
+QT4_WRAP_UI(UI_SRCS ${UI_FILES})
+QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
+
 
 if(PYTHON_FORCE_RELEASE_VERSION)
     add_definitions(-DPYTHON_FORCE_RELEASE_VERSION) 
@@ -23,7 +30,7 @@ use_package (OIS)
 use_package (OGRE)
 use_modules (RexCommon ReXLogic OpenSimProtocol OgreRenderingModule InputModuleOIS QtModule)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 use_framework_modules (Core Foundation Interfaces SceneManager)
 
 link_directories (${PROJECT_BINARY_DIR}/RexLogic/Debug ${PROJECT_BINARY_DIR}/RexLogic/Release)
@@ -37,6 +44,7 @@ link_package (PYTHON)
 link_package (PYTHON_QT)
 link_package (OIS)
 link_package (OGRE)
+link_package (QtModule)
 
 
 # Copy XML files from source directory to target directory

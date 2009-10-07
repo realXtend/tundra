@@ -79,7 +79,6 @@ class KeyCommander(Component):
         return True
         
     def restart_modulemanager(self):
-        print "here" 
         import modulemanager
         modulemanager.ModuleManager.instance.restart()
         return False

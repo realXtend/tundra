@@ -5,8 +5,8 @@
 
 namespace PythonScript
 {
-	void initRexQtPy(PyObject* apimodule);
-	//PyObject* CreateCanvas(PyObject *self, PyObject *args);
+    void initRexQtPy(PyObject* apimodule);
+    //PyObject* CreateCanvas(PyObject *self, PyObject *args);
 }
 
 #endif

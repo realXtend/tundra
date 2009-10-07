@@ -73,8 +73,6 @@ except ImportError: #socket not avaible in debugmode
 else:
     from webserver.webcontroller import WebServer
     
-
-
 modules = [
     #apitest.circuits_testmodule.TestModule,
     #usr.chathandler.ChatHandler,
