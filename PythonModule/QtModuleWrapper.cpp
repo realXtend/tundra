@@ -35,9 +35,10 @@ namespace PythonScript {
         
         if (qt_ui != 0)
         {
-            boost::shared_ptr<QtUI::UICanvas> canvas_(canvas);
-            canvas_->Hide();
-            qt_ui->DeleteCanvas(canvas_);
+            //boost::shared_ptr<QtUI::UICanvas> canvas_(canvas);
+            //canvas_->Hide();
+			canvas->Hide();
+			qt_ui->DeleteCanvas(canvas->GetID());
         }
     }
 }

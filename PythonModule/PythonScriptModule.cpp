@@ -926,7 +926,9 @@ PyObject* CreateCanvas(PyObject *self, PyObject *args)
     //canvas_->AddWidget(widget);
     //canvas_->Show();
     //return PythonQt::self()->wrapQObject(widget); //box); //qcanvas
-    return PythonQt::self()->wrapQObject(qcanvas);
+	PyObject* can = PythonQt::self()->wrapQObject(qcanvas);
+	//PythonQtInstanceWrapperStruct* wrap = (PythonQtInstanceWrapperStruct*) can;
+    return can;
 }
 
 PyObject* GetQtModule(PyObject *self)

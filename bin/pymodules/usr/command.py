@@ -447,6 +447,7 @@ if 0: #pygame window test
 
 if 0:
     canvas = r.c.canvas
-    from PythonQt import *
-    print qtmodule
-    qtmodule.Swoot()
+    print type(canvas), dir(canvas)
+    modu = r.getQtModule()
+    modu.DeleteCanvas(canvas)
+    r.c.canvas = None

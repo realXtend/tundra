@@ -284,9 +284,10 @@ class EditGUI(Component):
         r.logInfo("EditGUI exiting.")
         self.hideArrows()
 
-        self.canvas.Hide()
-        #modu = r.getQtModule()
-        #modu.DeleteCanvas(self.canvas)
+        #self.canvas.Hide()
+        modu = r.getQtModule()
+        if self.canvas is not None:
+            modu.DeleteCanvas(self.canvas)
 
 
 
