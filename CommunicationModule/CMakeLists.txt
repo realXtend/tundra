@@ -10,14 +10,6 @@ file (GLOB RESOURCE_FILES resource/*.qrc)
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-FIND_TELEPATHY_QT4()
-FIND_GSTREAMER()
-FIND_TELEPATHY_FARSIGHT2()
-
-INCLUDE_TELEPATHY_QT4()
-INCLUDE_GSTREAMER()
-INCLUDE_TELEPATHY_FARSIGHT2()
-
 # Qt4 Wrap 
 QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
@@ -28,19 +20,21 @@ add_definitions (-DCOMMS_MODULE_EXPORTS)
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
-use_modules (QtModule)
+use_package (TELEPATHY_QT4)
+#use_package (GSTREAMER) # Not implemented yet
+#use_package (TELEPATHY_FARSIGHT2) # Not implemented yet
+use_modules ( QtModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
-use_framework_modules (Core Foundation Interfaces SceneManager)
+use_framework_modules (Core Foundation Interfaces)
 
-link_modules (QtModule)
+link_modules ( QtModule)
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-
-LINK_TELEPATHY_QT4()
-LINK_GSTREAMER()
-LINK_TELEPATHY_FARSIGHT2()
+link_package (TELEPATHY_QT4)
+#link_package (GSTREAMER) # Not implemented yet
+#link_package (TELEPATHY_FARSIGHT2) # Not implemented yet
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
