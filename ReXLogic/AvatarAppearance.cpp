@@ -925,6 +925,20 @@ namespace RexLogic
         std::string avatar_export_str = avatar_export.toString().toStdString();
         request->avatar_xml_ = avatar_export_str;
         
+        //! \todo export proper assets
+        
+        // Make random assets just for testing
+        //int assets = (rand() & 7) + 1;
+        //for (int i = 0; i < assets; ++i)
+        //{
+        //    std::string name = "mesh" + Core::ToString<int>(rand() & 255) + ".mesh";
+        //    std::vector<Core::u8> data;
+        //    data.resize(((rand() & 32767) + 1) * 10);
+        //    for (int j = 0; j < data.size(); ++j)
+        //        data[j] = rand();
+        //    request->assets_[name] = data;
+        //}
+        
         avatar_exporter_->AddRequest<AvatarExporterRequest>(request);
     }
     

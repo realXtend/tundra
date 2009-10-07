@@ -117,7 +117,19 @@ class XmlRpcCall;
 		 * @endcode
 		 */
 		template <typename T> T GetReply(const char* name) const;
-	    
+		
+		/**
+		 * Returns vector of values from xmlprc call reply, which is linked into given param name. 
+		 * @throw XMLRPCException if there does not exist given key or value conversion was invalid.
+		 *
+		 * @param name is name of key. 
+		 * 
+		 * @code
+		 *  int myKey = ob->GetReply<int>("hashKey");
+		 * @endcode
+		 */
+		template <typename T> std::vector<T> GetVectorReply(const char* name) const;
+		
 		 /**
 		  * Adds a "name=value" parameter to the function call.
 		  * @throw XMLRPCException if there exist any call object. Check out @p CreateCall in that case.  
