@@ -511,19 +511,15 @@ namespace RexLogic
         using namespace RexTypes;
         using namespace OpenSimProtocol;
 
-        rexserver_connection_->SendObjectAddPacket(Vector3(124,124,28), Vector3(124,124, 28));
-        return Console::ResultSuccess();
-
         std::string name = "(No Name)";
         std::string description = "(No Description)";
-        
+
         if (params.size() < 1)
             return Console::ResultFailure("Invalid syntax. Usage: \"upload [asset_type] [name] [description]."
                 "Name and description are optional. Supported asset types:\n"
                 "Texture\nMesh\nSkeleton\nMaterialScript\nParticleScript\nFlashAnimation");
 
         asset_type_t asset_type = GetAssetTypeFromTypeName(params[0]);
-
         if (asset_type == -1)
             return Console::ResultFailure("Invalid asset type. Supported parameters:\n"
                 "Texture\nMesh\nSkeleton\nMaterialScript\nParticleScript\nFlashAnimation");
