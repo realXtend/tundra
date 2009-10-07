@@ -115,6 +115,27 @@ namespace OpenSimProtocol
         std::string errorMessage;
     };
 
+    /// Enumeration of different authentication methods.
+    enum AuthenticationType
+    {
+        AT_Taiga = 0,
+        AT_OpenSim,
+        AT_RealXtend,
+        AT_Unknown
+    };
+
+    /// Event data interface authentication identification.
+    /// \ingroup OpenSimProtocolClient
+    class AuthenticationEventData : public Foundation::EventDataInterface
+    {
+    public:
+        AuthenticationEventData(const AuthenticationType &auth_type, const std::string &identity_url = "") :
+            type(auth_type), identityUrl(identity_url) {}
+        virtual ~AuthenticationEventData() {}
+        AuthenticationType type;
+        std::string identityUrl;
+    };
+
     /// Event data interface for inbound messages.
     /// \ingroup OpenSimProtocolClient
     class NetworkEventInboundData : public Foundation::EventDataInterface

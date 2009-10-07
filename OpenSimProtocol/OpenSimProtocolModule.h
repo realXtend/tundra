@@ -164,6 +164,9 @@ namespace OpenSimProtocol
         /// State of the network connection.
         bool connected_;
 
+        /// Authentication type (Taiga/OpenSim/RealXtend)
+        AuthenticationType authenticationType_;
+
         /// Event manager.
         Foundation::EventManagerPtr eventManager_;
 

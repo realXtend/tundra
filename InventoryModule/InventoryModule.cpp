@@ -5,13 +5,17 @@
 
 #include "StableHeaders.h"
 #include "InventoryModule.h"
+#include "InventoryWindow.h"
+#include "../OpenSimProtocol/NetworkEvents.h"
+#include "../AssetModule/AssetEvents.h"
 
 namespace Inventory
 {
 
 InventoryModule::InventoryModule() :
-    inventoryEventCategory_(0), inventoryWindow_(0),
-    ModuleInterfaceImpl(Foundation::Module::MT_Inventory)
+    networkStateEventCategory_(0), inventoryWindow_(0),
+    ModuleInterfaceImpl(Foundation::Module::MT_Inventory),
+    assetEventCategory_(0)
 {
 }
 
@@ -32,21 +36,25 @@ void InventoryModule::Unload()
 
 void InventoryModule::Initialize()
 {
+    eventManager_ = framework_->GetEventManager();
+    inventoryWindow_ = new InventoryWindow(framework_, 0);
     LogInfo("System " + Name() + " initialized.");
-	inventoryWindow_ = new InventoryWindow(framework_, 0);
-	
 }
 
 void InventoryModule::PostInitialize()
 {
-    eventManager_ = framework_->GetEventManager();
-    inventoryEventCategory_ = eventManager_->QueryEventCategory("Inventory");
-    if (inventoryEventCategory_ == 0)
-        LogError("Failed to query \"Inventory\" event category");
+    networkStateEventCategory_ = eventManager_->QueryEventCategory("NetworkState");
+    if (networkStateEventCategory_ == 0)
+        LogError("Failed to query \"NetworkState\" event category");
+
+    assetEventCategory_ = eventManager_->QueryEventCategory("Asset");
+    if (assetEventCategory_ == 0)
+        LogError("Failed to query \"Asset\" event category");
 }
 
 void InventoryModule::Uninitialize()
 {
+    SAFE_DELETE(inventoryWindow_);
     LogInfo("System " + Name() + " uninitialized.");
 }
 
@@ -59,22 +67,44 @@ bool InventoryModule::HandleEvent(
     Core::event_id_t event_id,
     Foundation::EventDataInterface* data)
 {
-    if (category_id != inventoryEventCategory_)
-        return false;
+    using namespace OpenSimProtocol;
 
-    switch(event_id)
+    if (category_id == networkStateEventCategory_)
     {
-    case Events::EVENT_CREATE_INVENTORY:
-    case Events::EVENT_DELETE_INVENTORY:
-    case Events::EVENT_CREATE_FOLDER:
-    case Events::EVENT_DELETE_FOLDER:
-    case Events::EVENT_MOVE_FOLDER:
-    case Events::EVENT_CREATE_ASSET:
-    case Events::EVENT_DELETE_ASSET:
-    case Events::EVENT_MOVE_ASSET:
-    default:
-       break;
+        if (event_id == Events::EVENT_SERVER_CONNECTED)
+        {
+            AuthenticationEventData *auth_data = dynamic_cast<AuthenticationEventData *>(data);
+            if (!auth_data)
+                return false;
+
+            switch(auth_data->type)
+            {
+            case AT_Taiga:
+                //inventoryWindow_->InitWebDavInventoryTreeModel();
+                break;
+            case AT_OpenSim:
+            case AT_RealXtend:
+                inventoryWindow_->InitOpenSimInventoryTreeModel();
+                inventoryWindow_->Show();
+                break;
+            default:
+                break;
+            }
+
+            return false;
+        }
+
+        if (event_id == Events::EVENT_SERVER_DISCONNECTED)
+        {
+            inventoryWindow_->Hide();
+            inventoryWindow_->ResetInventoryTreeModel();
+        }
+
+        return false;
     }
+
+    ///\todo Handle asset uploaded events.
+    //if (category_id == assetEventCategory_)
 
     return false;
 }

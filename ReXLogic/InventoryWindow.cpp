@@ -50,7 +50,7 @@ void InventoryWindow::InitInventoryWindow()
     if (qtModule_.get() == 0)
         return;
 
-    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::External).lock();
+    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
 
     QUiLoader loader;
     QFile file("./data/ui/inventory.ui");

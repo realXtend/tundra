@@ -2,7 +2,7 @@
 
 /**
  *  @file InventoryAsset.h
- *  @brief 
+ *  @brief A class representing asset in inventory.
  */
 
 #ifndef incl_InventoryModule_InventoryAsset_h

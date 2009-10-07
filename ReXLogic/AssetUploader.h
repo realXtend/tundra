@@ -19,19 +19,10 @@ namespace RexLogic
     class AssetUploader
     {
     public:
-        /*struct AssetInfo
-        {
-            std::string filename;
-            std::string name;
-            std::string description;
-            RexTypes::asset_type_t asset_type;
-            RexTypes::RexUUID folder_id;
-        };*/
-
         /// Default constructor.
         AssetUploader();
 
-        /// Default destructor.
+        /// Destructor.
         virtual ~AssetUploader();
 
         /// @return Does asset uploader have an upload capability.
@@ -60,9 +51,6 @@ namespace RexLogic
         /// @param inventory Pointer to the user's inventory.
         void UploadFiles(Core::StringList filenames, OpenSimProtocol::InventoryModel *inventory);
 
-        /// @return The latest cURL error.
-//        std::string GetLastCurlError() const { return std::string(curlErrorBuffer_); }
-
         /// Utility function for create name for asset from filename.
         /// @param filename Filename.
         /// @return Filename without the file extension.
@@ -77,28 +65,8 @@ namespace RexLogic
             const std::string &name,
             const std::string &description);
 
-        /// Informs the server about upcoming asset upload (NewFileAgentInventory).
-/*        bool HttpPostNewFileAgentInventory(
-            std::string host,
-            char* buffer,
-            size_t size,
-            std::vector<char> *response);
-*/
-        /// Uploads file using HTTP POST.
-/*        bool HttpPostFileUpload(
-            std::string host,
-            char* buffer,
-            size_t size,
-            std::vector<char> *response);
-*/
         /// Upload capability URL.
         std::string uploadCapability_;
-
-        /// cURL pointer.
-//        void *curl_;
-
-        /// cURL error buffer.
-//        char curlErrorBuffer_[256];
     };
 }
 
