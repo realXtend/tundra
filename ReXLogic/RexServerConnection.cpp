@@ -345,6 +345,54 @@ void RexServerConnection::SendChatFromViewerPacket(const std::string &text)
     FinishMessageBuilding(m);
 }
 
+void RexServerConnection::SendObjectAddPacket(const Vector3 &ray_start, const Vector3 &ray_end)
+{
+    if(!connected_)
+        return;
+
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectAdd);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(myInfo_.agentID);
+    m->AddUUID(myInfo_.sessionID);
+    m->AddUUID(RexUUID());      // GroupID
+
+    // ObjectData
+    m->AddU8(0x09);             // PCode: 0x09 - prim
+    m->AddU8(3);                // Material
+    m->AddU32(0x02);            // AddFlags: 0x01 - use physics, 0x02 - create selected
+
+    m->AddU8(16);               // PathCurve
+    m->AddU8(1);                // ProfileCurve
+    m->AddU16(0);               // PathBegin
+    m->AddU16(0);               // PathEnd
+    m->AddU8(100);                // PathScaleX
+    m->AddU8(100);                // PathScaleY
+    m->AddU8(0);                // PathShearX
+    m->AddU8(0);                // PathShearY
+    m->AddS8(0);                // PathTwist
+    m->AddS8(0);                // PathTwistBegin
+    m->AddS8(0);                // PathRadiusOffset
+    m->AddS8(0);                // PathTaperX
+    m->AddS8(0);                // PathTaperY
+    m->AddU8(0);                // PathRevolutions
+    m->AddS8(0);                // PathSkew
+    m->AddU16(0);               // ProfileBegin
+    m->AddU16(0);               // ProfileEnd
+    m->AddU16(0);               // ProfileHollow
+    m->AddU8(1);                // BypassRaycast
+    m->AddVector3(ray_start);   // RayStart
+    m->AddVector3(ray_end);     // RayEnd
+    m->AddUUID(RexUUID());      // RayTargetID
+    m->AddU8(0);                // RayEndIsIntersection
+    m->AddVector3(Vector3(0.5f, 0.5f, 0.5f));   // Scale LLVector3
+    m->AddQuaternion(Core::Quaternion(0, 0, 0, 1));   // Rotation LLQuaternion
+    m->AddU8(0);                 // State U8
+
+    FinishMessageBuilding(m);
+}
+
 void RexServerConnection::SendAgentUpdatePacket(Core::Quaternion bodyrot, Core::Quaternion headrot, uint8_t state, 
     RexTypes::Vector3 camcenter, RexTypes::Vector3 camataxis, RexTypes::Vector3 camleftaxis, RexTypes::Vector3 camupaxis,
     float fardist, uint32_t controlflags, uint8_t flags)
