@@ -212,3 +212,16 @@ macro (configure_openjpeg)
     sagase_configure_report (OPENJPEG)
 endmacro (configure_openjpeg)
 
+macro (configure_telepathy_qt4)
+    sagase_configure_package (TELEPATHY_QT4 
+        NAMES Telepathy-QT4 telepathy-qt4
+        COMPONENTS telepathy-qt4
+        PREFIXES ${ENV_NAALI_DEP_PATH})
+    # sagase magic cannot find include dir    
+    if (MSVC)
+        set (TELEPATHY_QT4_INCLUDE_DIRS ${TELEPATHY_QT4_INCLUDE_DIRS} ${ENV_NAALI_DEP_PATH}/telepathy-qt4/include)
+    endif ()
+        
+    sagase_configure_report (TELEPATHY_QT4)
+endmacro (configure_telepathy_qt4)
+

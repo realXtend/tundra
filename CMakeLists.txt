@@ -17,13 +17,6 @@ include (Sagase)
 include (ModuleSetup)
 include (ConfigurePackages)
 
-# The following CMake modules are optional.
-include (TelepathyQt4)
-include (glib)
-include (GStreamer)
-include (TelepathyFarsight2)
-
-
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
 
@@ -65,6 +58,7 @@ configure_ogre ()
 configure_xmlrpc ()
 configure_curl ()
 configure_openjpeg ()
+configure_telepathy_qt4 ()
 
 if (CAELUM)
     configure_caelum ()
