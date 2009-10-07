@@ -126,7 +126,6 @@ namespace Foundation
                 
             ++i;
         }
-        
         return false;
     }
     
@@ -268,7 +267,7 @@ namespace Foundation
             Foundation::RootLogError("Could not open subscriber tree file " + filename);
             return;
         }
-        QDomDocument doc("subscribertree");
+        QDomDocument doc("Subscribers");
         if (!doc.setContent(&file))
         {
             file.close();

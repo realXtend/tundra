@@ -124,3 +124,20 @@ void XmlRpcEpi::ClearCall()
     delete call_;
     call_ = 0;
 }
+
+bool XmlRpcEpi::HasReply(const char* name) const
+{
+    assert(name && strlen(name) > 0);
+
+    if (call_ == 0)
+        return false;
+    XMLRPC_VALUE result = XMLRPC_RequestGetData(call_->GetReply());
+    if (!result)
+        return false;
+    
+    XMLRPC_VALUE resultValue = XMLRPC_VectorGetValueWithID(result, name);
+    if (!resultValue)
+        return false;
+    else
+        return true;
+}
