@@ -35,7 +35,7 @@ namespace CommunicationUI
 			// Connect signal for resizing
 			QObject::connect(UIContainer_, SIGNAL( Resized(QSize &) ), this, SLOT( SetWindowSize(QSize &) ));
 			QObject::connect(UIContainer_, SIGNAL( DestroyCanvas() ), this, SLOT( DestroyThis() ));
-			QObject::connect(UIContainer_, SIGNAL( SetCanvasTitle(QString &) ), canvas_.get(), SLOT( SetCanvasWindowTitle(QString &) ));
+			QObject::connect(UIContainer_, SIGNAL( SetCanvasTitle(QString) ), canvas_.get(), SLOT( SetCanvasWindowTitle(QString) ));
 			QObject::connect(UIContainer_, SIGNAL( SetCanvasIcon(QIcon &) ), canvas_.get(), SLOT( SetCanvasWindowIcon(QIcon &) ));
 			
 			// Init title, icon and size
