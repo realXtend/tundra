@@ -48,7 +48,7 @@ namespace RexLogic
         void ShowInventory();
         void HideInventory();
         void Quit();
-        void processCBLogin(QString result);
+        void ProcessCBLogin(QString result);
 
     private:
         /// Hides the login window and shows the logout/quit menu that is embedded to main window.
