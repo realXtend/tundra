@@ -32,6 +32,8 @@ namespace RexLogic
 
 namespace Inventory
 {
+    class InventoryViewModel;
+
     class InventoryWindow : public QObject
     {
         Q_OBJECT
@@ -118,15 +120,14 @@ namespace Inventory
         /// Canvas for the inventory window.
         boost::shared_ptr<QtUI::UICanvas> canvas_;
 
-        ///
-//        OpenSimProtocol::InventoryModel *inventoryModel_;
+        /// Inventory view model.
+        InventoryViewModel *viewModel_;
 
         // QWidgets
+        QTreeView *treeView_;
+
         QPushButton *buttonClose_, *buttonDownload_, *buttonUpload_,
             *buttonAddFolder_, *buttonDeleteFolder_, *buttonRename_;
-
-        ///
-        QTreeView *treeView_;
     };
 }
 

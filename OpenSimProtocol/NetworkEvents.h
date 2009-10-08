@@ -7,7 +7,7 @@
 #include "RexUUID.h"
 #include "NetInMessage.h"
 #include "NetOutMessage.h"
-#include "InventoryModel.h"
+#include "Inventory.h"
 
 namespace OpenSimProtocol
 {
@@ -48,7 +48,7 @@ namespace OpenSimProtocol
         std::string gridUrl;
         std::string avatarStorageUrl;
         std::string seedCapabilities;
-        boost::shared_ptr<InventoryModel> inventory;
+        boost::shared_ptr<InventorySkeleton> inventory;
     };
 
     /// Defines the events posted by the OpenSimProtocolModule in category <b>NetworkState</b>.

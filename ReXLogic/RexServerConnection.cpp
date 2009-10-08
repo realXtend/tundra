@@ -1,10 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "OpenSimProtocolModule.h"
 #include "RexServerConnection.h"
 #include "RexLogicModule.h"
 #include "RexProtocolMsgIDs.h"
+#include "OpenSimProtocolModule.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OpenSimPrim.h"
 #include "QuatUtils.h"
@@ -345,7 +345,7 @@ void RexServerConnection::SendChatFromViewerPacket(const std::string &text)
     FinishMessageBuilding(m);
 }
 
-void RexServerConnection::SendObjectAddPacket(const Vector3 &ray_start, const Vector3 &ray_end)
+void RexServerConnection::SendObjectAddPacket(const RexTypes::Vector3 &ray_start, const RexTypes::Vector3 &ray_end)
 {
     if(!connected_)
         return;

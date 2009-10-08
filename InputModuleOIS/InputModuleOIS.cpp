@@ -9,7 +9,7 @@
 namespace Input
 {
     const char *DeviceType[6] = {"OISUnknown", "OISKeyboard", "OISMouse", "OISJoyStick",
-							 "OISTablet", "OISOther"};
+                             "OISTablet", "OISOther"};
 
     InputModuleOIS::InputModuleOIS() : 
         ModuleInterfaceImpl(type_static_)
@@ -44,21 +44,21 @@ namespace Input
     {
         LogInfo("*** Initializing OIS ***");
 
-		Foundation::EventManagerPtr event_manager = framework_->GetEventManager();        
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();        
         event_category_ = event_manager->RegisterEventCategory("Input");
-		//registering these two as a test now.
-		//do we really want to do this for all, or would there be a way for py to reuse the definitions in .h?
-		//i looked at ctypeslib codegenerator and some cppheaderparser etc. but didn't see an easy solution yet. --antont
-		event_manager->RegisterEvent(event_category_, Events::MOVE_FORWARD_PRESSED, "MoveForwardPressed");
-		event_manager->RegisterEvent(event_category_, Events::MOVE_FORWARD_RELEASED, "MoveForwardReleased");
+        //registering these two as a test now.
+        //do we really want to do this for all, or would there be a way for py to reuse the definitions in .h?
+        //i looked at ctypeslib codegenerator and some cppheaderparser etc. but didn't see an easy solution yet. --antont
+        event_manager->RegisterEvent(event_category_, Events::MOVE_FORWARD_PRESSED, "MoveForwardPressed");
+        event_manager->RegisterEvent(event_category_, Events::MOVE_FORWARD_RELEASED, "MoveForwardReleased");
 
-		event_manager->RegisterEvent(event_category_, Events::KEY_PRESSED, "KeyPressed");
-		event_manager->RegisterEvent(event_category_, Events::KEY_RELEASED, "KeyReleased");
+        event_manager->RegisterEvent(event_category_, Events::KEY_PRESSED, "KeyPressed");
+        event_manager->RegisterEvent(event_category_, Events::KEY_RELEASED, "KeyReleased");
 
-		event_manager->RegisterEvent(event_category_, Events::LEFT_MOUSECLICK_PRESSED, "LeftMouseClickPressed");
-		event_manager->RegisterEvent(event_category_, Events::LEFT_MOUSECLICK_RELEASED, "LeftMouseClickReleased");
-		event_manager->RegisterEvent(event_category_, Events::RIGHT_MOUSECLICK_PRESSED, "RightMouseClickPressed");
-		event_manager->RegisterEvent(event_category_, Events::RIGHT_MOUSECLICK_RELEASED, "RightMouseClickReleased");
+        event_manager->RegisterEvent(event_category_, Events::LEFT_MOUSECLICK_PRESSED, "LeftMouseClickPressed");
+        event_manager->RegisterEvent(event_category_, Events::LEFT_MOUSECLICK_RELEASED, "LeftMouseClickReleased");
+        event_manager->RegisterEvent(event_category_, Events::RIGHT_MOUSECLICK_PRESSED, "RightMouseClickPressed");
+        event_manager->RegisterEvent(event_category_, Events::RIGHT_MOUSECLICK_RELEASED, "RightMouseClickReleased");
 
         key_mapping_ = MapperPtr(new Mapper(this));
 
@@ -90,8 +90,8 @@ namespace Input
 #elif defined OIS_LINUX_PLATFORM
         pl.insert(std::make_pair(std::string("x11_mouse_grab"), std::string("false")));
         pl.insert(std::make_pair(std::string("x11_mouse_hide"), std::string("false")));
-	pl.insert(std::make_pair(std::string("x11_keyboard_grab"), std::string("false")));
-	pl.insert(std::make_pair(std::string("XAutoRepeatOn"), std::string("true")));
+    pl.insert(std::make_pair(std::string("x11_keyboard_grab"), std::string("false")));
+    pl.insert(std::make_pair(std::string("XAutoRepeatOn"), std::string("true")));
 
 #endif
 
@@ -120,7 +120,7 @@ namespace Input
         unsigned int v = input_manager_->getVersionNumber();
 
         std::stringstream ss;
-	    ss << "OIS Version: " << (v>>16 ) << "." << ((v>>8) & 0x000000FF) << "." << (v & 0x000000FF);
+        ss << "OIS Version: " << (v>>16 ) << "." << ((v>>8) & 0x000000FF) << "." << (v & 0x000000FF);
         LogInfo(ss.str());
 
 #if defined OIS_WIN32_PLATFORM
@@ -170,8 +170,8 @@ namespace Input
             if( keyboard_ && mouse_ )
             {
                 keyboard_->capture();
-	            mouse_->capture();
-    	        if ( joy_ ) joy_->capture();
+                mouse_->capture();
+                if ( joy_ ) joy_->capture();
 
                 const OIS::MouseState &ms = mouse_->getMouseState();
                 if (ms.Z.rel != 0)

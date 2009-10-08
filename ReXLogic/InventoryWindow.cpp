@@ -96,6 +96,7 @@ void InventoryWindow::InitInventoryWindow()
 
 void InventoryWindow::InitInventoryTreeView()
 {
+/*
     inventory_  =  rexLogicModule_->GetInventory();
     if (!inventory_.get())
         return;
@@ -111,6 +112,7 @@ void InventoryWindow::InitInventoryTreeView()
 
 //    QObject::connect(treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
 //        const QItemSelection &)), this, SLOT(UpdateActions()));
+*/
 }
 
 void InventoryWindow::ResetInventoryTreeView()

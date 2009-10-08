@@ -199,16 +199,16 @@ void QtModule::Update(Core::f64 frametime)
         }
         else if ( change.manhattanLength() >= 1 )
         {
-		    controller_->InjectMouseMove(pos.x(),pos.y());
-        }	
-		lastPos_ = pos.toPoint();
+            controller_->InjectMouseMove(pos.x(),pos.y());
+        }    
+        lastPos_ = pos.toPoint();
 
         PROFILE(QtSceneRender);
 
         ///\todo Optimize to redraw only those rectangles that are dirty.
         
    
-		controller_->Update();
+        controller_->Update();
     }
     RESETPROFILER;
 }

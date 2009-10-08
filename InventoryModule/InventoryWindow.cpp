@@ -2,7 +2,10 @@
 
 #include "StableHeaders.h"
 #include "InventoryWindow.h"
+#include "OpenSimInventoryDataModel.h"
+#include "InventoryViewModel.h"
 #include "QtModule.h"
+#include "RexLogicModule.h"
 
 #include <QtUiTools>
 #include <QFile>
@@ -11,7 +14,8 @@ namespace Inventory
 {
 
 InventoryWindow::InventoryWindow(Foundation::Framework *framework, RexLogic::RexLogicModule *rexLogic) :
-    framework_(framework), rexLogicModule_(rexLogic)
+    framework_(framework), rexLogicModule_(rexLogic), inventoryWidget_(0), viewModel_(0), treeView_(0),
+    buttonClose_(0), buttonDownload_(0), buttonUpload_(0), buttonAddFolder_(0), buttonDeleteFolder_(0), buttonRename_(0)
 {
     // Get QtModule and create canvas
     qtModule_ = framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
@@ -34,6 +38,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework, RexLogic::Rex
 // virtual
 InventoryWindow::~InventoryWindow()
 {
+    SAFE_DELETE(viewModel_);
 }
 
 void InventoryWindow::Show()
@@ -50,10 +55,16 @@ void InventoryWindow::Hide()
 
 void InventoryWindow::InitOpenSimInventoryTreeModel()
 {
+    OpenSimInventoryDataModel dataModel(rexLogicModule_->GetInventory().get());
+//    InventoryFolder *folder = dynamic_cast<InventoryFolder *>(dataModel.GetFirstChildFolderByName("TEST"));
+    //OpenSimInventoryDataModel dataModel = CreateOpenSimDataModel(InventorySkeleton *inventory);
+//    viewModel_ = new InventoryViewModel(dataModel);
+    treeView_->setModel(0);
 }
 
 void InventoryWindow::ResetInventoryTreeModel()
 {
+    SAFE_DELETE(viewModel_);
 }
 
 void InventoryWindow::CloseInventoryWindow()

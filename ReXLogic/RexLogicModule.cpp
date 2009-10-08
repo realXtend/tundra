@@ -511,6 +511,8 @@ namespace RexLogic
         using namespace RexTypes;
         using namespace OpenSimProtocol;
 
+        return Console::ResultSuccess();
+        /*
         std::string name = "(No Name)";
         std::string description = "(No Description)";
 
@@ -571,10 +573,13 @@ namespace RexLogic
             asset_type, filename, name, description, folder_id));
 
         return Console::ResultSuccess();
+        */
     }
 
     Console::CommandResult RexLogicModule::UploadMultipleAssets(const Core::StringVector &params)
     {
+        return Console::ResultSuccess();
+        /*
         CreateRexInventoryFolders();
 
         Core::StringList filenames = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
@@ -594,10 +599,12 @@ namespace RexLogic
         Core::Thread thread(boost::bind(&AssetUploader::UploadFiles, asset_uploader_, filenames, GetInventory().get()));
 
         return Console::ResultSuccess();
+        */
     }
 
     void RexLogicModule::CreateRexInventoryFolders()
     {
+        /*
         if (!GetInventory().get())
         {
             LogError("Inventory doens't exist yet! Can't create folder to it.");
@@ -632,6 +639,7 @@ namespace RexLogic
             else
                 folder_id = folder->GetID();
         }
+        */
     }
 
     void RexLogicModule::SwitchCameraState()

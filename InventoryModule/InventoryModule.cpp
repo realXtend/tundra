@@ -5,6 +5,7 @@
 
 #include "StableHeaders.h"
 #include "InventoryModule.h"
+#include "RexLogicModule.h"
 #include "InventoryWindow.h"
 #include "../OpenSimProtocol/NetworkEvents.h"
 #include "../AssetModule/AssetEvents.h"
@@ -37,7 +38,12 @@ void InventoryModule::Unload()
 void InventoryModule::Initialize()
 {
     eventManager_ = framework_->GetEventManager();
-    inventoryWindow_ = new InventoryWindow(framework_, 0);
+
+    rexLogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(
+        Foundation::Module::MT_WorldLogic).lock().get());
+
+    inventoryWindow_ = new InventoryWindow(framework_, rexLogic_);
+
     LogInfo("System " + Name() + " initialized.");
 }
 

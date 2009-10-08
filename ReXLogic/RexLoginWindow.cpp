@@ -181,11 +181,13 @@ void RexLoginWindow::CreateLogoutMenu()
     QObject::connect(quit_button_, SIGNAL(clicked()), this, SLOT(Quit()));
     screen_canvas_->AddWidget(quit_button_);
 
+/*
     inventory_button_ = new QPushButton();
     inventory_button_->setText("Inventory");
     inventory_button_->move(5, 55);
     QObject::connect(inventory_button_, SIGNAL(clicked()), this, SLOT(ShowInventory()));
     screen_canvas_->AddWidget(inventory_button_);
+*/
 
     screen_canvas_->SetLockPosition(true);
     screen_canvas_->Hide();
