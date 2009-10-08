@@ -183,7 +183,7 @@ namespace RexLogic
         /// Send a packet which deletes inventory folders.
         /// Works when to folder is in the Trash folder.
         /// @param folders List of folders to be deleted.
-        void RexServerConnection::SendRemoveInventoryFolderPacket(
+        void SendRemoveInventoryFolderPacket(
             std::list<OpenSimProtocol::InventoryFolder *> folders);
 
         /// Sends packet which moves an inventory item to another folder.
