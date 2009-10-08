@@ -280,7 +280,7 @@ void RexLoginWindow::Connect()
         QComboBox *comboBoxAddress = login_widget_->findChild<QComboBox* >("comboBox_Address");
         webLogin = new RexWebLogin(0, comboBoxAddress->currentText());
         webLogin->show();
-        QObject::connect(webLogin, SIGNAL( loginProcessed(QString) ), SLOT( processCBLogin(QString) ));
+        QObject::connect(webLogin, SIGNAL( LoginProcessed(QString) ), SLOT( ProcessCBLogin(QString) ));
         successful = false;
         break;
     }
@@ -336,7 +336,7 @@ void RexLoginWindow::Quit()
     framework_->Exit();
 }
 
-void RexLoginWindow::processCBLogin(QString inresult)
+void RexLoginWindow::ProcessCBLogin(QString inresult)
 {
     size_t pos1, pos2;
     std::string result = inresult.toStdString();
