@@ -12,6 +12,11 @@
 #include "ModuleInterface.h"
 #include "EventDataInterface.h"
 
+namespace RexLogic
+{
+    class RexLogicModule;
+}
+
 namespace Inventory
 {
     class InventoryWindow;
@@ -51,6 +56,9 @@ namespace Inventory
 
         /// Event manager pointer.
         Foundation::EventManagerPtr eventManager_;
+
+        /// RexLogicModule pointer.
+        RexLogic::RexLogicModule *rexLogic_;
 
         /// Network state event category.
         Core::event_category_id_t networkStateEventCategory_;

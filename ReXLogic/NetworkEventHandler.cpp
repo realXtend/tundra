@@ -330,6 +330,8 @@ bool NetworkEventHandler::HandleOSNE_KillObject(OpenSimProtocol::NetworkEventInb
 
 bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::NetworkEventInboundData* data)
 {
+    return false;
+    /*
     NetInMessage &msg = *data->message;
     msg.ResetReading();
 
@@ -436,6 +438,7 @@ bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::Netwo
     }
 
     return false;
+    */
 }
 
 } //namespace RexLogic

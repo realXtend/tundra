@@ -1,10 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_RexEntity_h
-#define incl_RexEntity_h
+#ifndef incl_RexServerConnection_h
+#define incl_RexServerConnection_h
 
 #include "NetworkEvents.h"
-#include "RexTypes.h"
+#include "RexUUID.h"
 
 namespace OpenSimProtocol
 {
@@ -99,7 +99,7 @@ namespace RexLogic
         ///\todo Figure out how to properly use ray_start & ray_end. Seems to be working ok if you use just same pos for both.
         /// @param ray_start Raycast start position.
         /// @param ray_end Raycast end position.
-        void SendObjectAddPacket(const Vector3 &ray_start, const Vector3 &ray_end);
+        void SendObjectAddPacket(const RexTypes::Vector3 &ray_start, const RexTypes::Vector3 &ray_end);
 
         // Sends the basic movement message
         void SendAgentUpdatePacket(Core::Quaternion bodyrot, Core::Quaternion headrot, uint8_t state, 
@@ -292,13 +292,13 @@ namespace RexLogic
 
         /// last password used for easy avatar export, probably a bit evil
         std::string password_;
-        
+
         /// last username used for easy avatar export, probably a bit evil
         std::string username_;
-        
+
         /// last auth.server used for easy avatar export, probably a bit evil
         std::string auth_server_address_;
-        
+
         /// State of the connection procedure.
         OpenSimProtocol::Connection::State state_;
 

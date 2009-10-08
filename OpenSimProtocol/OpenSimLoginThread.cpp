@@ -8,7 +8,7 @@
 #include "OpenSimProtocolModule.h"
 #include "XmlRpcEpi.h"
 #include "OpenSimAuth.h"
-#include "InventoryModel.h"
+#include "Inventory.h"
 
 #include <boost/shared_ptr.hpp>
 #include <utility>
@@ -145,9 +145,9 @@ static bool IsHardcodedOpenSimFolder(const char *name)
 /// @param call Pass in the object to a XMLRPCEPI call that has already been performed. Only the reply part
 ///     will be read by this function.
 /// @return The inventory object, or null pointer if an error occurred.
-boost::shared_ptr<InventoryModel> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &call)
+boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &call)
 {
-    boost::shared_ptr<InventoryModel> inventory = boost::shared_ptr<InventoryModel>(new InventoryModel);
+    boost::shared_ptr<InventorySkeleton> inventory = boost::shared_ptr<InventorySkeleton>(new InventorySkeleton);
 
     XmlRpcCall *xmlrpcCall = call.GetXMLRPCCall();
     if (!xmlrpcCall)
@@ -165,7 +165,7 @@ boost::shared_ptr<InventoryModel> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &cal
     if (!inventoryNode || XMLRPC_GetValueType(inventoryNode) != xmlrpc_vector)
         throw XmlRpcException("Failed to read inventory, inventory-skeleton in the reply was not properly formed!");
 
-    typedef std::pair<RexUUID, InventoryFolder *> DetachedInventoryFolder;
+    typedef std::pair<RexUUID, InventoryFolderSkeleton> DetachedInventoryFolder;
     typedef std::list<DetachedInventoryFolder> DetachedInventoryFolderList;
     DetachedInventoryFolderList folders;
 
@@ -175,37 +175,38 @@ boost::shared_ptr<InventoryModel> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &cal
         XMLRPC_VALUE_TYPE type = XMLRPC_GetValueType(item);
         if (type == xmlrpc_vector) // xmlrpc-epi handles structs as arrays.
         {
-            RexUUID parent_id, folder_id;
-            std::string name;
-            int type_default, version;
+            DetachedInventoryFolder folder;
+            //RexUUID parent_id;//, folder_id;
+            //std::string name;
+            //int type_default, version;
 
             XMLRPC_VALUE val = XMLRPC_VectorGetValueWithID(item, "name");
             if (val && XMLRPC_GetValueType(val) == xmlrpc_string)
-                name = XMLRPC_GetValueString(val);
+                folder.second.name = XMLRPC_GetValueString(val);
 
             val = XMLRPC_VectorGetValueWithID(item, "parent_id");
             if (val && XMLRPC_GetValueType(val) == xmlrpc_string)
-                parent_id.FromString(XMLRPC_GetValueString(val));
+                folder.first.FromString(XMLRPC_GetValueString(val));
 
             val = XMLRPC_VectorGetValueWithID(item, "version");
             if (val && XMLRPC_GetValueType(val) == xmlrpc_int)
-                version = XMLRPC_GetValueInt(val);
+                folder.second.version = XMLRPC_GetValueInt(val);
 
             val = XMLRPC_VectorGetValueWithID(item, "type_default");
             if (val && XMLRPC_GetValueType(val) == xmlrpc_int)
-                type_default = XMLRPC_GetValueInt(val);
+                folder.second.type_default = XMLRPC_GetValueInt(val);
 
             val = XMLRPC_VectorGetValueWithID(item, "folder_id");
             if (val && XMLRPC_GetValueType(val) == xmlrpc_string)
-                folder_id.FromString(XMLRPC_GetValueString(val));
+                folder.second.id.FromString(XMLRPC_GetValueString(val));
 
-            InventoryFolder *folderItem = new InventoryFolder(folder_id, name);
+/*            InventoryFolder *folderItem = new InventoryFolder(folder_id, name);
             folderItem->version = version;
             folderItem->type_default = type_default;
-
-            DetachedInventoryFolder folder;
-            folder.first = parent_id;
-            folder.second = folderItem;
+            DetachedInventoryFolder dfolder;
+            dfolder.first = parent_id;
+            dfolder.second = folder;
+*/
 
             folders.push_back(folder);
         }
@@ -232,17 +233,17 @@ boost::shared_ptr<InventoryModel> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &cal
     // Find the root folder from the list of detached folders, and set it as the root folder to start with.
     for(DetachedInventoryFolderList::iterator iter = folders.begin(); iter != folders.end(); ++iter)
     {
-        if (iter->second->GetID() == inventoryRootFolderID)
+        if (iter->second.id == inventoryRootFolderID)
         {
-            InventoryFolder *root = inventory->GetRoot();
-            iter->second->SetEditable(false);
-            root->AddChild(iter->second);
+            InventoryFolderSkeleton *root = inventory->GetRoot();
+            iter->second.editable = false;
+            root->AddChildFolder(iter->second);
             folders.erase(iter);
             break;
         }
     }
 
-    if (!inventory->GetRoot()->GetChildFolderByID(inventoryRootFolderID))
+    if (inventory->GetRoot()->GetFirstChildFolderByName("My Inventory")->id != inventoryRootFolderID)
         throw XmlRpcException("Failed to read inventory, inventory-root value folder_id pointed to a nonexisting folder!");
 
     // Insert the detached folders onto the tree view until all folders have been added or there are orphans left
@@ -257,15 +258,15 @@ boost::shared_ptr<InventoryModel> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &cal
             DetachedInventoryFolderList::iterator next = iter;
             ++next;
 
-            InventoryFolder *parent = inventory->GetChildFolderByID(iter->first);
+            InventoryFolderSkeleton *parent = inventory->GetChildFolderByID(iter->first);
             if (parent)
             {
                 // Mark harcoded OpenSim folders non-editable (must the children of My Inventory also).
-                if (parent->GetID() == inventoryRootFolderID && 
-                    IsHardcodedOpenSimFolder(iter->second->GetName().c_str()))
-                    iter->second->SetEditable(false);
+                if (parent->id == inventoryRootFolderID && 
+                    IsHardcodedOpenSimFolder(iter->second.name.c_str()))
+                    iter->second.editable = false;
 
-                parent->AddChild(iter->second);
+                parent->AddChildFolder(iter->second);
                 progress = true;
                 folders.erase(iter);
             }

@@ -1,204 +1,126 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+
+/// @file Inventory.h
+/// @brief Inventory structure skeleton .
+
 #ifndef incl_OSProto_Inventory_h
 #define incl_OSProto_Inventory_h
 
 #include "OpenSimProtocolModuleApi.h"
 #include "RexUUID.h"
 
-using namespace RexTypes;
-
-class OSPROTO_MODULE_API InventoryItem
+namespace OpenSimProtocol
 {
-public:
-    /// Constructor.
-    /// @param inventory_id Inventory ID.
-    /// @param asset_id Asset ID.
-    /// @param asset_type Asset type.
-    InventoryItem(const RexUUID &inventory_id, const RexUUID &asset_id, asset_type_t asset_type);
+    using namespace RexTypes;
 
-    /// Default destructor.
-    virtual ~InventoryItem() {}
-
-    /// @return Inventory ID.
-    const RexUUID &GetInventoryID() const { return inventoryID_;}
-
-    /// @return Asset ID.
-    const RexUUID &GetAssetID() const { return assetID_; }
-
-    /// @return Asset type.
-    const asset_type_t GetAssetType() const { return assetType_; }
-
-    /// @return Inventory type.
-    const inventory_type_t GetInventoryType() const { return inventoryType_; }
-
-    /// Sets the name.
-    /// @param name New name.
-    void SetName(const std::string &name) { name_ = name; }
-
-    /// @return Name.
-    const std::string &GetName() const { return name_;}
-
-    /// Sets the description.
-    /// @param description New description.
-    void SetDescription(const std::string &description) { description_ = description; }
-
-    /// @return Description.
-    const std::string &GetDescription() const { return description_;}
-
-private:
-    /// Inventory item ID.
-    RexUUID inventoryID_;
-
-    /// Asset ID.
-    RexUUID assetID_;
-
-    /// Asset type.
-    asset_type_t assetType_;
-
-    /// Inventory type.
-    inventory_type_t inventoryType_;
-
-    /// Name.
-    std::string name_;
-
-    /// Description.
-    std::string description_;
-};
-
-class OSPROTO_MODULE_API InventoryFolder
-{
-public:
-    InventoryFolder()
-    :parent_(0), version(0), type_default(0)
+    class OSPROTO_MODULE_API InventoryAssetSkeleton
     {
-    }
+    public:
+        /// Default constructor.
+        InventoryAssetSkeleton() {}
 
-    ///\todo This function should not exist. Set the id from the ctor.
-    void SetID(const RexUUID &id) { id_ = id; }
+        /// Destructor.
+        virtual ~InventoryAssetSkeleton() {}
 
-    /// @return Inventory folder ID.
-    const RexUUID &GetID() const { return id_; }
+        /// Inventory item ID.
+        RexUUID id;
 
-    /// @return Inventory folder ID.
-    RexUUID GetParentID() const;
+        /// Asset ID.
+        RexUUID asset_id;
 
-    /// Sets the name of the folder.
-    /// @param name New name.
-    void SetName(const std::string &name) { name_ = name; }
+        /// Asset type.
+        asset_type_t asset_type;
 
-    /// @return Name of the folder.
-    std::string GetName() const { return name_; }
+        /// Inventory type.
+        inventory_type_t inventory_type;
 
-    /// Sets the type of the folder.
-    void SetType(const inventory_type_t &type){ type_ = type; }
+        /// Name.
+        std::string name;
 
-    /// @return Type of the folder.
-    const inventory_type_t &GetType() const { return type_; }
+        /// Description.
+        std::string description;
+    };
 
-    /// @return First folder by the requested name or null if the folder isn't found.
-    InventoryFolder *GetFirstSubFolderByName(const char *name);
+    class OSPROTO_MODULE_API InventoryFolderSkeleton
+    {
+    public:
+        /// Default constructor.
+        InventoryFolderSkeleton();
 
-    /// @return First folder by the requested id or null if the folder isn't found.
-    InventoryFolder *GetFirstSubFolderByID(const RexUUID &id);
+        /// Constructor overload.
+        /// @param id ID.
+        /// @param name Name.
+        InventoryFolderSkeleton(const RexUUID &newid, const std::string &newname = "New Folder");
 
-    /// @return List of child folder in this folder.
-    std::list<InventoryFolder> &GetChildren() { return children_; }
+        /// Destructor.
+        virtual ~InventoryFolderSkeleton() {}
 
-    /// @return List of items in this folder.
-    std::list<InventoryItem> &GetItems() { return items_; }
+        /// Adds child folder.
+        InventoryFolderSkeleton *AddChildFolder(const InventoryFolderSkeleton &folder);
 
-    /// Creates a new subfolder into this folder.
-    /// Note: Copies the passed InventoryFolder structure to the folder tree - so the object that was passed
-    /// as param doesn't become a part of this folder tree.
-    /// @return The newly added folder.
-    InventoryFolder *AddSubFolder(const InventoryFolder &folder);
+        /// @return First folder by the requested name or null if the folder isn't found.
+        InventoryFolderSkeleton *GetFirstChildFolderByName(const char *searchName);
 
-    /// Adds new item to the folder.
-    /// @param item New item.
-    void AddItem(const InventoryItem &item);
+        /// @return Folder by the requested id or null if the folder isn't found.
+        InventoryFolderSkeleton *GetChildFolderByID(const RexUUID &searchId);
 
-    /// Returns inventory item or null if not found.
-    /// @param id Inventory ID.
-    /// @return Inventory item.
-    InventoryItem *GetItemByInventoryID(const RexUUID &inventory_id);
+        /// Prints out the whole inventory folder tree to stdout.
+        void DebugDumpInventoryFolderStructure(int indentationLevel);
 
-    /// Returns inventory item or null if not found.
-    /// @param id Asset ID.
-    /// @return Inventory item.
-    /// @note Multiple inventory items can share the same asset ID. Returns the fist occurence.
-    InventoryItem *GetFirstItemByAssetID(const RexUUID &asset_id);
+        /// The UUID of this folder.
+        RexUUID id;
 
-    /// Returns inventory item or null if not found.
-    /// @param asset_id Asset ID.
-    /// @param inventory_id Inventory ID.
-    /// @return Inventory item.
-    InventoryItem *GetItemByBothIDs(const RexUUID &asset_id, const RexUUID &inventory_id);
+        /// The human-readable name for this folder.
+        std::string name;
 
-    /// ?
-    int version;
-    /// ?
-    int type_default;
+        /// Type of the inventory.
+        inventory_type_t type;
 
-#ifdef _DEBUG
-    void DebugDumpInventoryFolderStructure(int indentationLevel);
-#endif
+        /// Is this folder editable.
+        bool editable;
 
-private:
-    /// The UUID of this folder.
-    RexUUID id_;
+        /// ?
+        int version;
 
-    /// The human-readable name for this folder.
-    std::string name_;
+        /// ?
+        int type_default;
 
-    /// Type of the inventory.
-    inventory_type_t type_;
+        typedef std::list<InventoryFolderSkeleton> FolderList;
+        typedef std::list<InventoryFolderSkeleton>::iterator FolderIter;
 
-    /// Parent folder. If this node is the root, this is null.
-    InventoryFolder *parent_;
+    private:
+        /// Parent folder. If this node is the root, this is null.
+        InventoryFolderSkeleton *parent_;
 
-    typedef std::list<InventoryFolder> FolderList;
-    typedef std::list<InventoryFolder>::iterator FolderIter;
+        /// List of children.
+        FolderList children_;
+    };
 
-    /// List of child folders.
-    FolderList children_;
+    /// Inventory represents the hierarchy of an OpenSim inventory.
+    class OSPROTO_MODULE_API InventorySkeleton
+    {
+    public:
+        /// Default constructor.
+        InventorySkeleton();
 
-    typedef std::list<InventoryItem> ItemList;
-    typedef std::list<InventoryItem>::iterator ItemIter;
+        /// Destructor.
+        virtual ~InventorySkeleton() {}
 
-    /// List of inventory items in this folder.
-    ItemList items_;
-};
+        /// @return Inventory root folder.
+        InventoryFolderSkeleton *GetRoot() { return &root_; }
 
-/// Inventory represents the hierarchy of an OpenSim inventory.
-class OSPROTO_MODULE_API Inventory
-{
-public:
-    ///\todo This shoul not be public. Set the root from the inventory ctor.
-    void SetRoot(InventoryFolder &r) { root = r; }
+        /// @return First folder by the requested name or null if the folder isn't found.
+        InventoryFolderSkeleton *GetFirstChildFolderByName(const char *searchName);
 
-    /// @return Inventory root folder.
-    InventoryFolder *GetRoot() { return &root; }
+        /// @return Folder by the requested id or null if the folder isn't found.
+        InventoryFolderSkeleton *GetChildFolderByID(const RexUUID &searchId);
 
-    /// @return First subfolder by the requested name, or null if not found.
-    InventoryFolder *GetFirstSubFolderByName(const char *name);
+        /// Prints out the whole inventory folder tree to stdout.
+        void DebugDumpInventoryFolderStructure();
 
-    /// @return First subfolder by the requested id, or null if not found.
-    InventoryFolder *GetFirstSubFolderByID(const RexUUID &id);
-
-    /// @param id The id for the new folder, must be unique.
-    /// @param parent The folder under which this new folder will be created.
-    /// @return An existing folder with the given id, or if it doesn't exist, creates one under the parent folder and returns it.
-    ///     If a new folder was created, the name will be "New Folder", so be sure to change it.
-    InventoryFolder *GetOrCreateNewFolder(const RexUUID &id, InventoryFolder &parent);
-
-#ifdef _DEBUG
-    /// Prints out the whole inventory folder tree to stdout.
-    void DebugDumpInventoryFolderStructure();
-#endif
-
-private:
-    /// The root folder.
-    InventoryFolder root;
-};
+    private:
+        InventoryFolderSkeleton root_;
+    };
+}
 
 #endif

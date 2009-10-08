@@ -6,7 +6,6 @@
 #include "ModuleInterface.h"
 #include "RexServerConnection.h"
 
-
 namespace OpenSimProtocol
 {
     class InventoryModel;
@@ -42,7 +41,7 @@ namespace RexLogic
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<CameraControllable> CameraControllablePtr;
     typedef boost::shared_ptr<AssetUploader> AssetUploaderPtr;
-    typedef boost::shared_ptr<OpenSimProtocol::InventoryModel> InventoryPtr;
+    typedef boost::shared_ptr<OpenSimProtocol::InventorySkeleton> InventoryPtr;
 
     //! Camera states handled by rex logic
     enum CameraState
