@@ -7,10 +7,23 @@
 
 namespace RexLogic
 {
-    //! Assets to export, keyed by filename
-    typedef std::map<std::string, std::vector<Core::u8> > ExportAssetMap;
-    //! Asset hashes for export, keyed by filename
-    typedef std::map<std::string, std::string> ExportHashMap;
+    //! An asset to export.
+    /*! Note: hash has to be calculated before submitting for export, and many assets
+        with duplicate same hash should not exist!
+     */
+    class ExportAsset
+    {
+    public:
+        //! Asset data
+        std::vector<Core::u8> data_;
+        //! Base64-encoded SHA1 hash of data
+        std::string hash_;
+        
+        void CalculateHash();
+    };
+    
+    //! Asset map for export, keyed by filename
+    typedef std::map<std::string, ExportAsset> ExportAssetMap;
     
     //! Request for avatar export
     class AvatarExporterRequest : public Foundation::ThreadTaskRequest
@@ -54,9 +67,6 @@ namespace RexLogic
     private:
         //! Perform the export
         void ProcessRequest(AvatarExporterRequestPtr request, AvatarExporterResultPtr result);
-
-        //! Calculate hashes for assets
-        ExportHashMap CalculateAssetHashes(const ExportAssetMap& assets);
         
         //! Login to authentication & get new sessionhash
         bool LoginToAuthentication(const std::string& account, const std::string& authserver, const std::string& password, std::string& sessionhash, std::string& avatarurl, std::string& error);

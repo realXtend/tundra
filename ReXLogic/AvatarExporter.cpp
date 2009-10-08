@@ -9,6 +9,8 @@
 #include "Poco/SHA1Engine.h"
 #include "Poco/Base64Encoder.h"
 
+#include "QByteArray.h"
+
 using namespace RexTypes;
 
 // Time in which to reauthenticate if export has lasted long, in seconds
@@ -45,9 +47,6 @@ namespace RexLogic
             return;
         }
         
-        // Calculate hashes from assets
-        ExportHashMap hashes = CalculateAssetHashes(request->assets_);
-        
         // Replace < > so that xmlrpc call doesn't get confused
         ReplaceSubstring(request->avatar_xml_, "<", "&lt;");
         ReplaceSubstring(request->avatar_xml_, ">", "&gt;");
@@ -59,7 +58,7 @@ namespace RexLogic
             request->authserver_ = request->authserver_ + ":10001";
 
         // Authenticate first, to get an uptodate sessionhash
-        boost::timer export_timer; // For checking if we should refresh the hash
+        boost::timer export_timer; // For checking if we should refresh the hash further on
         std::string sessionhash;
         std::string avatar_url;
         std::string error;
@@ -88,11 +87,11 @@ namespace RexLogic
             call.AddMember("sessionhash", sessionhash);
             call.AddMember("generic xml", request->avatar_xml_);
             
-            ExportHashMap::const_iterator i = hashes.begin();
-            while (i != hashes.end())
+            ExportAssetMap::const_iterator i = request->assets_.begin();
+            while (i != request->assets_.end())
             {
                 //! Here, the hash is the key and asset name is the value
-                call.AddMember(i->second.c_str(), i->first);
+                call.AddMember(i->second.hash_.c_str(), i->first);
                 ++i;
             }
             
@@ -107,24 +106,23 @@ namespace RexLogic
                 std::vector<std::string> items = call.GetVectorReply<std::string>("MissingItems");
                 for (Core::uint i = 0; i < items.size(); ++i)
                 {
-                    // Re-login to get a fresh hash if export has lasted long
-                    if (export_timer.elapsed() > REAUTHENTICATION_TIME)
-                    {
-                        export_timer.restart();
-                        std::string temp;
-                        if (!LoginToAuthentication(request->account_, request->authserver_, request->password_, sessionhash, temp, error))
-                        {
-                            result->message_ = "Failed re-authentication on avatar export: " + error;
-                            result->success_ = false;
-                            return;
-                        }
-                    }
-                
                     std::string name = items[i];
                     ExportAssetMap::const_iterator asset = request->assets_.find(name);
-                    ExportHashMap::const_iterator hash = hashes.find(name);
-                    if ((asset != request->assets_.end()) && (hash != hashes.end()))
+                    if (asset != request->assets_.end())
                     {
+                        // Re-login to get a fresh hash if export has lasted long
+                        if (export_timer.elapsed() > REAUTHENTICATION_TIME)
+                        {
+                            export_timer.restart();
+                            std::string temp;
+                            if (!LoginToAuthentication(request->account_, request->authserver_, request->password_, sessionhash, temp, error))
+                            {
+                                result->message_ = "Failed re-authentication on avatar export: " + error;
+                                result->success_ = false;
+                                return;
+                            }
+                        }
+                        
                         XmlRpcEpi asset_call;
                         asset_call.Connect(export_url);
                         asset_call.CreateCall("StoreItem");
@@ -132,10 +130,11 @@ namespace RexLogic
                         asset_call.AddMember("UserServer", request->authserver_);
                         asset_call.AddMember("sessionhash", sessionhash);
                         asset_call.AddMember("itemname", name);
-                        asset_call.AddMember("hashcode", hash->second);
+                        asset_call.AddMember("hashcode", asset->second.hash_);
                         
-                        const std::vector<Core::u8>& data = asset->second;
-                        XMLRPC_VectorAppendBase64(asset_call.GetXMLRPCCall()->GetParamList(), "binaries", (const char*)&data[0], data.size());
+                        RexLogicModule::LogDebug("Exporting asset " + name + " hash " + asset->second.hash_ + " datasize " + Core::ToString<int>(asset->second.data_.size()));
+                        
+                        XMLRPC_VectorAppendBase64(asset_call.GetXMLRPCCall()->GetParamList(), "binaries", (const char*)(&asset->second.data_[0]), asset->second.data_.size());
                         
                         asset_call.Send();
                         
@@ -149,7 +148,7 @@ namespace RexLogic
                     }
                     else
                     {
-                        RexLogicModule::LogInfo("Storage requested unknown missing asset");
+                        RexLogicModule::LogInfo("Storage requested unknown missing asset " + name);
                     }
                 }
             }
@@ -189,7 +188,7 @@ namespace RexLogic
                     }
                 }
                 
-                // Re-export avatar
+                // Re-export avatar after exporting assets
                 XmlRpcEpi call;
                 call.Connect(export_url);
                 call.CreateCall("StoreAvatarHash");
@@ -198,10 +197,10 @@ namespace RexLogic
                 call.AddMember("sessionhash", sessionhash);
                 call.AddMember("generic xml", request->avatar_xml_);
                 
-                ExportHashMap::const_iterator i = hashes.begin();
-                while (i != hashes.end())
+                ExportAssetMap::const_iterator i = request->assets_.begin();
+                while (i != request->assets_.end())
                 {
-                    call.AddMember(i->second.c_str(), i->first);
+                    call.AddMember(i->second.hash_.c_str(), i->first);
                     ++i;
                 }
                 
@@ -275,28 +274,14 @@ namespace RexLogic
         return true;
     }
     
-    ExportHashMap AvatarExporter::CalculateAssetHashes(const ExportAssetMap& assets)
+    void ExportAsset::CalculateHash()
     {
-        ExportHashMap hashes;
-        
-        ExportAssetMap::const_iterator i = assets.begin();
+        Poco::SHA1Engine sha1_engine;
+        sha1_engine.update(&data_[0], data_.size());
+        const Poco::DigestEngine::Digest& digest = sha1_engine.digest();
 
-        while (i != assets.end())
-        {
-            Poco::SHA1Engine sha1_engine;
-            sha1_engine.update(&i->second[0], i->second.size());
-            const Poco::DigestEngine::Digest& digest = sha1_engine.digest();
-            
-            std::stringstream sstream;
-            Poco::Base64Encoder encoder(sstream);
-            for (Core::uint j = 0; j < digest.size(); ++j)
-                encoder << digest[j];
-            
-            hashes[i->first] = sstream.str();
-            ++i;
-        }
-
-        return hashes;
+        QByteArray bytes((const char*)&digest[0], digest.size());
+        QByteArray encoded = bytes.toBase64();
+        hash_ = std::string(encoded.constData());
     }
-    
 }

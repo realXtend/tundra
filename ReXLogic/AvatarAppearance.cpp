@@ -677,7 +677,9 @@ namespace RexLogic
         {
             // Don't add the name field or the avatar description
             if ((j->first != "generic xml") && (j->first != "name"))
+            {
                 assets[j->first] = host + "/item/" + j->second;
+            }
             ++j;
         }
         
@@ -841,7 +843,8 @@ namespace RexLogic
         if (!renderer)
             return;
             
-        // First thing to do: append .material to name if it doesn't exist, because our asset map is based on full asset name
+        // First thing to do: append .material to name if it doesn't exist, because our asset map is based on full asset name,
+        // and also the storage kind of does not like if it cannot identify the asset
         std::string fixed_mat_name = mat.asset_.name_;
         if (fixed_mat_name.find(".material") == std::string::npos)
             fixed_mat_name.append(".material");
@@ -925,21 +928,107 @@ namespace RexLogic
         std::string avatar_export_str = avatar_export.toString().toStdString();
         request->avatar_xml_ = avatar_export_str;
         
-        //! \todo export proper assets
-        
-        // Make random assets just for testing
-        //int assets = (rand() & 7) + 1;
-        //for (int i = 0; i < assets; ++i)
-        //{
-        //    std::string name = "mesh" + Core::ToString<int>(rand() & 255) + ".mesh";
-        //    std::vector<Core::u8> data;
-        //    data.resize(((rand() & 32767) + 1) * 10);
-        //    for (int j = 0; j < data.size(); ++j)
-        //        data[j] = rand();
-        //    request->assets_[name] = data;
-        //}
+        GetAvatarAssetsForExport(request, appearance);
         
         avatar_exporter_->AddRequest<AvatarExporterRequest>(request);
+    }
+    
+    void AvatarAppearance::GetAvatarAssetsForExport(AvatarExporterRequestPtr request, EC_AvatarAppearance& appearance)
+    {
+        GetAvatarAssetForExport(request, appearance.GetMesh());
+        GetAvatarAssetForExport(request, appearance.GetSkeleton());
+        
+        AvatarMaterialVector materials = appearance.GetMaterials();
+        for (Core::uint i = 0; i < materials.size(); ++i)
+        {
+            GetAvatarAssetForExport(request, materials[i].asset_, true);
+            for (Core::uint j = 0; j < materials[i].textures_.size(); ++j)
+            {
+                GetAvatarAssetForExport(request, materials[i].textures_[j]);
+            }
+        }
+        
+        AvatarAttachmentVector attachments = appearance.GetAttachments();
+        for (Core::uint i = 0; i < attachments.size(); ++i)
+        {
+            GetAvatarAssetForExport(request, attachments[i].mesh_);
+            for (Core::uint j = 0; j < attachments[i].materials_.size(); ++j)
+            {
+                GetAvatarAssetForExport(request, attachments[i].materials_[j].asset_, true);
+                for (Core::uint k = 0; k < attachments[i].materials_[j].textures_.size(); ++k)
+                {
+                    GetAvatarAssetForExport(request, attachments[i].materials_[j].textures_[k]);
+                }
+            }
+        }
+    }
+    
+    void AvatarAppearance::GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& asset, bool is_material)
+    {
+        std::string export_name = asset.name_;
+        // Add .material to name if necessary
+        if (is_material)
+        {
+            if (export_name.find(".material") == std::string::npos)
+                export_name.append(".material");
+        }
+        
+        // Skip if already exists with this name
+        if (request->assets_.find(export_name) != request->assets_.end())
+            return;
+        
+        ExportAsset new_export_asset;
+        
+        // If it's loaded from resource, we should be able to get at the original raw asset data for export
+        if (asset.resource_)
+        {
+            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
+                rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+            if (!asset_service)
+            {
+                RexLogicModule::LogError("Could not get asset service");
+                return;
+            }
+            // The assettype doesn't matter here
+            Foundation::AssetPtr raw_asset = asset_service->GetAsset(asset.resource_id_, std::string());
+            if (!raw_asset)
+            {
+                RexLogicModule::LogError("Could not get raw asset data for resource " + asset.resource_id_);
+                return;
+            }
+            if (raw_asset->GetSize())
+            {
+                new_export_asset.data_.resize(raw_asset->GetSize());
+                memcpy(&new_export_asset.data_[0], raw_asset->GetData(), raw_asset->GetSize());
+            }
+            else
+            {
+                RexLogicModule::LogError("Zero size asset data");
+                return;
+            }
+        }
+        else
+        {
+            //! \todo get local assets some way
+            RexLogicModule::LogError("Export of local avatar asset " + export_name + " not yet supported!");
+            return;
+        }
+        
+        new_export_asset.CalculateHash();
+        
+        // Check for hash duplicate
+        ExportAssetMap::const_iterator i = request->assets_.begin();
+        while (i != request->assets_.end())
+        {
+            if (new_export_asset.hash_ == i->second.hash_)
+            {
+                RexLogicModule::LogDebug("Skipping export of avatar asset " + export_name + ", has same hash as " + i->first);
+                return;
+            }
+            ++i;
+        }
+        
+        request->assets_[export_name] = new_export_asset;
     }
     
     void AvatarAppearance::ProcessAvatarExport()
@@ -950,9 +1039,17 @@ namespace RexLogic
             if (result)
             {
                 if (result->success_)
+                {
                     RexLogicModule::LogInfo("Avatar exported successfully");
+                    // Send information of appearance change
+                    RexServerConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+                    
+                    std::string method = "RexAppearance";
+                    Core::StringVector strings;
+                    conn->SendGenericMessage(method, strings);
+                }
                 else
-                    RexLogicModule::LogInfo("Avatar export error: " + result->message_);
+                    RexLogicModule::LogInfo("Avatar export failed: " + result->message_);
                 
                 avatar_exporter_.reset();
             }

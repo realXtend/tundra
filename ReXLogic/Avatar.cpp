@@ -279,7 +279,7 @@ namespace RexLogic
 
         assert(i <= 60);                            
     }
-        
+    
     bool Avatar::HandleRexGM_RexAppearance(OpenSimProtocol::NetworkEventInboundData* data)
     {        
         data->message->ResetReading();    
@@ -294,12 +294,12 @@ namespace RexLogic
         {
             std::string avataraddress = data->message->ReadString();
             RexUUID avatarid(data->message->ReadString());
-        
+            
             if (instance_count >= 3)
                 overrideappearance = ParseBool(data->message->ReadString());
-        
+            
             Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
-            if(entity)
+            if (entity)
             {
                 EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());        
                 avatar.SetAppearanceAddress(avataraddress,overrideappearance);

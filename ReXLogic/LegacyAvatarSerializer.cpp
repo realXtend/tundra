@@ -770,7 +770,7 @@ namespace RexLogic
         elem.appendChild(name_elem);
       
         QDomElement mesh_elem = dest.createElement("mesh");
-        SetAttribute(mesh_elem, "name", mesh.name_);
+        SetAttribute(mesh_elem, "name", attachment.mesh_.name_);
         int link = 0;
         if (attachment.link_skeleton_) 
             link = 1;
