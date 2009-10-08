@@ -234,6 +234,12 @@ namespace RexLogic
             const bool &fetch_folders,
             const bool &fetch_items);
 
+        //! Sends a generic message
+        /*! \param method Method name
+            \param strings Vector of data strings to be sent
+         */
+        void SendGenericMessage(const std::string& method, const Core::StringVector& strings);
+
         /// @return Name of the sim we're connected to.
         std::string GetSimName() const { return simName_; }
 

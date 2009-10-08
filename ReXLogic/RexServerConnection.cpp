@@ -1028,4 +1028,39 @@ void RexServerConnection::FinishMessageBuilding(NetOutMessage *msg)
     sp->FinishMessageBuilding(msg);
 }
 
+void RexServerConnection::SendGenericMessage(const std::string& method, const Core::StringVector& strings)
+{
+    if (!connected_)
+        return;
+
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgGenericMessage);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(myInfo_.agentID);
+    m->AddUUID(myInfo_.sessionID);
+    // Transaction ID
+    RexUUID transaction;
+    transaction.Random();
+    m->AddUUID(transaction);
+    
+    // Method
+    m->AddBuffer(method.length(), (uint8_t*)method.c_str());
+    // Invoice
+    RexUUID invoice;
+    invoice.Random();
+    m->AddUUID(invoice);
+    
+    // Variable count of strings
+    m->SetVariableBlockCount(strings.size());
+    
+    // Strings
+    for (Core::uint i = 0; i < strings.size(); ++i)
+    {
+        m->AddBuffer(strings[i].length(), (uint8_t*)strings[i].c_str());
+    }
+
+    FinishMessageBuilding(m);
+}
+
 } // namespace RexLogic

@@ -26,7 +26,9 @@ namespace RexLogic
 {
     class RexLogicModule;
     class AvatarExporter;
+    class AvatarExporterRequest;
     typedef boost::shared_ptr<AvatarExporter> AvatarExporterPtr;
+    typedef boost::shared_ptr<AvatarExporterRequest> AvatarExporterRequestPtr;
     
     //! Handles setting up and updating avatars' appearance. Used internally by RexLogicModule::Avatar.
     class AvatarAppearance
@@ -110,6 +112,12 @@ namespace RexLogic
         //! Guesses avatar asset resource type from human-readable asset name
         static const std::string& GetResourceTypeFromName(const std::string& name);
         
+        //! Adds avatar assets to the export request
+        void GetAvatarAssetsForExport(AvatarExporterRequestPtr request, EC_AvatarAppearance& appearance);
+        
+        //! Adds an avatar asset to the export request
+        void GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& appearance, bool is_material = false);
+            
         //! Gets a bone safely from the avatar skeleton
         /*! \return Pointer to bone, or 0 if does not exist
          */
