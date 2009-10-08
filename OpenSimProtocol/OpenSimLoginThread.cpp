@@ -6,7 +6,7 @@
 #include "StableHeaders.h"
 #include "OpenSimLoginThread.h"
 #include "OpenSimProtocolModule.h"
-#include "XMLRPCEPI.h"
+#include "XmlRpcEpi.h"
 #include "OpenSimAuth.h"
 #include "InventoryModel.h"
 
