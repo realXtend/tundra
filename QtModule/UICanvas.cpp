@@ -404,7 +404,7 @@ void UICanvas::Resize(int height, int width, CanvasSide side)
 
 
 
-void UICanvas::SetCanvasWindowTitle(QString &title) 
+void UICanvas::SetCanvasWindowTitle(QString title) 
 {
 	setWindowTitle(title);
 }

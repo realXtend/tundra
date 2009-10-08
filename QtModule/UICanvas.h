@@ -204,7 +204,7 @@ namespace QtUI
 		/**
 		 * Set the window title with QString &title
 		 */
-		void SetCanvasWindowTitle(QString &title);
+		void SetCanvasWindowTitle(QString title);
 
 		/**
 		 * Set the window icon with Qicon &icon
