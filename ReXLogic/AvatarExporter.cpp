@@ -4,7 +4,7 @@
 #include "AvatarExporter.h"
 #include "RexLogicModule.h"
 #include "LLSDUtilities.h"
-#include "XMLRPCEPI.h"
+#include "XmlRpcEpi.h"
 #include "Poco/MD5Engine.h"
 #include "Poco/SHA1Engine.h"
 #include "Poco/Base64Encoder.h"
