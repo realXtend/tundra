@@ -53,9 +53,6 @@ namespace Inventory
         virtual ~InventoryWindow();
 
     public slots:
-        /// Initializes the inventory data/view model.
-//        void InitInventoryTreeView();
-
         /// Initializes the OpenSim inventory data/view model.
         void InitOpenSimInventoryTreeModel();
 
@@ -68,8 +65,8 @@ namespace Inventory
         /// Hides the inventory window.
         void Hide();
 
-        /// Updates menu actions.
-//        void UpdateActions();
+        /// Updates possible actions depending on the currently active tree view item.
+        void UpdateActions();
 
 //    protected slots:
 //        void closeEvent(QCloseEvent *myCloseEvent);
