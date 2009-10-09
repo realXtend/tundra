@@ -131,6 +131,7 @@ namespace QtUI
 
         Qt::CursorShape UpdateMouseCursor(int x, int y, int index = -1);
 
+        UICanvas *GetCanvasAt(int x, int y);
     public slots:
         
         

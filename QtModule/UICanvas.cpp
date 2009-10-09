@@ -125,11 +125,11 @@ void UICanvas::AddWidget(QWidget* widget)
     case External: 
     {
         ///todo Here lies a desing flaw do it better, this does not work.   
-        if ( widgets_ != 0)
+        if (widgets_ != 0)
         {
            // Possible memory LEAK !!!
             QGraphicsScene* scene = this->scene();
-            if(widgets_ == 1)
+            if (widgets_ == 1)
             {
                 QWidget* viewport = this->viewport();
                 scene_widgets_.append(scene->addWidget(viewport));

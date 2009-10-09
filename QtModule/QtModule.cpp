@@ -12,6 +12,8 @@
 
 #include <QGraphicsScene>
 #include <QDebug>
+#include <QApplication>
+
 #include "InputEvents.h"
 #include "InputModuleOIS.h"
 
@@ -49,24 +51,17 @@ void QtModule::PreInitialize()
 void QtModule::Initialize()
 {
     // Sanity check
-
-    if ( controller_ != 0)
-    {
-        delete controller_;
-        controller_ = 0;
-    }
+    SAFE_DELETE(controller_);
     
     controller_ = new UIController;
 
     boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
         <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
     
-    if ( renderer != 0)
-        controller_->SetParentWindowSize(QSize(renderer->GetWindowWidth(), renderer->GetWindowHeight()));
-    else
-    {
-        // We have a problem deal it somehow?
-    }
+    if (!renderer)
+        throw Core::Exception("Error! Could not find renderer service!");
+
+    controller_->SetParentWindowSize(QSize(renderer->GetWindowWidth(), renderer->GetWindowHeight()));
     
     //Initialize OISKeyCode map. 
     InitializeKeyCodes();
@@ -83,9 +78,7 @@ void QtModule::PostInitialize()
 
 void QtModule::Uninitialize()
 {
-    delete controller_;
-    controller_ = 0;
-
+    SAFE_DELETE(controller_);
 }
 
 bool QtModule::HandleEvent(Core::event_category_id_t category_id,
@@ -102,54 +95,47 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
 
     if (category_id == renderer_event_category_ && event_id == OgreRenderer::Events::WINDOW_RESIZED)
     {
+        // To properly compute the relative overlay sizes and positions for canvases, we need to keep track of the 
+        // absolute size of the render window. Update the render window size on each WINDOW_RESIZED message.
         OgreRenderer::Events::WindowResized *windowResized = checked_static_cast<OgreRenderer::Events::WindowResized *>(data);
         controller_->SetParentWindowSize(QSize(windowResized->width_, windowResized->height_));
-
-        
     }
-    else if ( category_id == input_event_category_ && (event_id == Input::Events::BUFFERED_KEY_PRESSED ||event_id == Input::Events::BUFFERED_KEY_RELEASED))
+    else if (category_id == input_event_category_ && (event_id == Input::Events::BUFFERED_KEY_PRESSED ||event_id == Input::Events::BUFFERED_KEY_RELEASED))
     {
-       
         boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
-        framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
-
+            framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
         boost::shared_ptr<Input::InputModuleOIS> input = inputWeak.lock();
-
-      
-
-        Input::Events::BufferedKey* key = checked_static_cast<Input::Events::BufferedKey* >(data);
-
-        if ( input.get() == 0)
+        if (input.get() == 0)
             return false;
+
+        // Get the key event OIS sent and convert it to a Qt key event.
+        Input::Events::BufferedKey *key = checked_static_cast<Input::Events::BufferedKey* >(data);
+
+        Qt::Key value;
+        if (converterMap_.contains(static_cast<int>(key->code_)))
+            value = converterMap_[static_cast<int>(key->code_)];
         else
-        {
-            
-            
-            Qt::Key value;
-            if ( converterMap_.contains(static_cast<int>(key->code_)) )
-                value = converterMap_[static_cast<int>(key->code_)];
-            else
-                value = Qt::Key_unknown;
-            
-           
-            Qt::KeyboardModifier modifier = Qt::NoModifier;
-            if (event_id == Input::Events::BUFFERED_KEY_PRESSED)
-                controller_->InjectKeyPressed(QString(QChar(key->text_)), value);
-            else
-            {
-                controller_->InjectKeyReleased(QString(QChar(key->text_)), value);
-            }
-            
-         
-        }
-        
+            value = Qt::Key_unknown;
+
+        ///\todo Are we missing the handling of Ctrl,Alt,AltGr,Win,Shift modifiers on keys?
+//        Qt::KeyboardModifier modifier = Qt::NoModifier;
+
+        // Inject the key event to the controller. It will propagate the event to the currently active canvas.
+        if (event_id == Input::Events::BUFFERED_KEY_PRESSED)
+            controller_->InjectKeyPressed(QString(QChar(key->text_)), value);
+        else
+            controller_->InjectKeyReleased(QString(QChar(key->text_)), value);
     }
-  
-    
 
     return false;
 }
 
+boost::weak_ptr<UICanvas> QtModule::CreateCanvas(UICanvas::Mode mode)
+{
+    boost::shared_ptr<UICanvas> canvas = controller_->CreateCanvas(mode).lock();
+//    canvas->setParent(framework_->GetApplicationMainWindowQWidget());
+    return canvas;
+}
 
 
 void QtModule::Update(Core::f64 frametime)
@@ -179,7 +165,8 @@ void QtModule::Update(Core::f64 frametime)
 
         if (input->IsButtonDown(OIS::MB_Left) && !mouse_left_button_down_)
         {
-         
+            if (controller_->GetCanvasAt(pos.x(), pos.y()))
+                framework_->GetQApplication()->setActiveWindow(controller_->GetCanvasAt(pos.x(), pos.y()));
             controller_->InjectMousePress(pos.x(), pos.y());
             
             if ( controller_->IsKeyboardFocus() && input->GetState() != Input::State_Buffered)
@@ -188,14 +175,11 @@ void QtModule::Update(Core::f64 frametime)
                 input->SetState(Input::State_Unknown);
             
             mouse_left_button_down_ = true;
-           
         }
         else if (!input->IsButtonDown(OIS::MB_Left) && mouse_left_button_down_)
         {
-           
             controller_->InjectMouseRelease(pos.x(),pos.y());
             mouse_left_button_down_ = false;
-        
         }
         else if ( change.manhattanLength() >= 1 )
         {
@@ -206,8 +190,7 @@ void QtModule::Update(Core::f64 frametime)
         PROFILE(QtSceneRender);
 
         ///\todo Optimize to redraw only those rectangles that are dirty.
-        
-   
+           
         controller_->Update();
     }
     RESETPROFILER;
@@ -219,14 +202,29 @@ const std::string &QtModule::NameStatic()
 }
 
 
-void  QtModule::InitializeKeyCodes()
+void QtModule::InitializeKeyCodes()
 {
-    // One of the most dirties hack. 
-    // Next keyboard thingies does not work :  Qt::Key_AltGr, Qt::Key_F16 - Qt::Key_F35 all keys between: Qt::Key_Super_L - Qt::Key_Direction_R except Qt::Key_Menu
-    // Qt::Key_Any, Qt::Key_Exclam, Qt::Key_QuoteDbl, Qt::Key_NumberSign, Qt::Key_Dollar, Qt::Key_Percent, Qt::Key_Ampersand, Qt::Key_ParenLeft, Qt::Key_ParenRight
-    // Qt::Key_Less Qt::Key_Greater Qt::Key_Question
+    /* OIS gives us hardware keyboard scan codes, but Qt has its own code system where characters are 
+        represented either in ascii, or if there's no equivalent, using a custom ID. Currently the
+        only way we know of how to handle this is to perform a manual mapping between these two.
 
-
+        The following keys haven't been mapped to any OIS input (see http://doc.trolltech.com/4.5/qt.html#Key-enum):  
+        Qt::Key_AltGr, 
+        Qt::Key_F16 - Qt::Key_F35 
+        All keys between: Qt::Key_Super_L - Qt::Key_Direction_R except Qt::Key_Menu
+        Qt::Key_Any, 
+        Qt::Key_Exclam, 
+        Qt::Key_QuoteDbl, 
+        Qt::Key_NumberSign, 
+        Qt::Key_Dollar, 
+        Qt::Key_Percent, 
+        Qt::Key_Ampersand, 
+        Qt::Key_ParenLeft, 
+        Qt::Key_ParenRight
+        Qt::Key_Less 
+        Qt::Key_Greater 
+        Qt::Key_Question
+    */
 
     converterMap_.insert(OIS::KC_ESCAPE, Qt::Key_Escape);
     converterMap_.insert(OIS::KC_TAB, Qt::Key_Tab);
@@ -317,10 +315,6 @@ void  QtModule::InitializeKeyCodes()
     converterMap_.insert(OIS::KC_Y, Qt::Key_Y);
     converterMap_.insert(OIS::KC_Z , Qt::Key_Z);
     converterMap_.insert(OIS::KC_LBRACKET , Qt::Key_BracketLeft);
-  
-
-
-
 }
 
 }

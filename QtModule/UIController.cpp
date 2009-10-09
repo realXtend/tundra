@@ -483,7 +483,8 @@ void UIController::InjectMousePress(int x, int y)
         mouseEvent.setAccepted(false);
         
        
-       
+//        canvases_[index]->activateWindow();
+
        if (!canvases_[index]->isActiveWindow())
             canvases_[index]->Activate();
 
@@ -767,6 +768,15 @@ Qt::CursorShape UIController::UpdateMouseCursor(int x, int y, int index)
     return mouseCursorShape_;
 }
 
+UICanvas *UIController::GetCanvasAt(int x, int y)
+{
+    const QPoint point(x, y);
+    for(QList<boost::shared_ptr<UICanvas> >::iterator iter = canvases_.begin(); iter != canvases_.end(); ++iter)
+        if ((*iter)->GetMode() == UICanvas::Internal && Contains(*iter, point))
+            return iter->get();
+
+    return 0;
+}
 
 int UIController::GetCanvas(const QPoint& point) 
 {
