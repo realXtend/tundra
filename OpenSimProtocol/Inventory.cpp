@@ -10,20 +10,20 @@ namespace OpenSimProtocol
 {
 
 InventoryFolderSkeleton::InventoryFolderSkeleton() :
-    id(RexUUID()), name(""), type(255), parent_(0), editable(true), version(0), type_default(0)
+    id(RexUUID()), name(""), type(255), parent(0), editable(true), version(0), type_default(0)
 {
 }
 
 InventoryFolderSkeleton::InventoryFolderSkeleton(const RexUUID &newid, const std::string &newname) :
-    id(newid), name(newname), type(255), parent_(0), editable(true), version(0), type_default(0)
+    id(newid), name(newname), type(255), parent(0), editable(true), version(0), type_default(0)
 {
 }
 
 InventoryFolderSkeleton *InventoryFolderSkeleton::AddChildFolder(const InventoryFolderSkeleton &folder)
 {
-    children_.push_back(folder);
-    children_.back().parent_ = this;
-    return &children_.back();
+    children.push_back(folder);
+    children.back().parent = this;
+    return &children.back();
 }
 
 InventoryFolderSkeleton *InventoryFolderSkeleton::GetFirstChildFolderByName(const char *searchName)
@@ -31,7 +31,7 @@ InventoryFolderSkeleton *InventoryFolderSkeleton::GetFirstChildFolderByName(cons
     if (name == searchName)
         return this;
 
-    for(FolderIter iter = children_.begin(); iter != children_.end(); ++iter)
+    for(FolderIter iter = children.begin(); iter != children.end(); ++iter)
     {
         InventoryFolderSkeleton *folder = iter->GetFirstChildFolderByName(searchName);
         if (folder)
@@ -46,7 +46,7 @@ InventoryFolderSkeleton *InventoryFolderSkeleton::GetChildFolderByID(const RexUU
     if (id == searchId)
         return this;
 
-    for(FolderIter iter = children_.begin(); iter != children_.end(); ++iter)
+    for(FolderIter iter = children.begin(); iter != children.end(); ++iter)
     {
         InventoryFolderSkeleton *folder = iter->GetChildFolderByID(searchId);
         if (folder)
@@ -62,7 +62,7 @@ void InventoryFolderSkeleton::DebugDumpInventoryFolderStructure(int indentationL
         std::cout << " ";
     std::cout << name << " " << std::endl;
 
-    for(FolderIter iter = children_.begin(); iter != children_.end(); ++iter)
+    for(FolderIter iter = children.begin(); iter != children.end(); ++iter)
         iter->DebugDumpInventoryFolderStructure(indentationLevel + 3);
 }
 

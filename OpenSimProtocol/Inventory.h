@@ -67,6 +67,9 @@ namespace OpenSimProtocol
         /// Prints out the whole inventory folder tree to stdout.
         void DebugDumpInventoryFolderStructure(int indentationLevel);
 
+        typedef std::list<InventoryFolderSkeleton> FolderList;
+        typedef std::list<InventoryFolderSkeleton>::iterator FolderIter;
+
         /// The UUID of this folder.
         RexUUID id;
 
@@ -79,21 +82,17 @@ namespace OpenSimProtocol
         /// Is this folder editable.
         bool editable;
 
+        /// Parent folder. If this node is the root, this is null.
+        InventoryFolderSkeleton *parent;
+
+        /// List of children.
+        FolderList children;
+
         /// ?
         int version;
 
         /// ?
         int type_default;
-
-        typedef std::list<InventoryFolderSkeleton> FolderList;
-        typedef std::list<InventoryFolderSkeleton>::iterator FolderIter;
-
-    private:
-        /// Parent folder. If this node is the root, this is null.
-        InventoryFolderSkeleton *parent_;
-
-        /// List of children.
-        FolderList children_;
     };
 
     /// Inventory represents the hierarchy of an OpenSim inventory.
@@ -118,7 +117,8 @@ namespace OpenSimProtocol
         /// Prints out the whole inventory folder tree to stdout.
         void DebugDumpInventoryFolderStructure();
 
-    private:
+        private:
+        /// Root folder.
         InventoryFolderSkeleton root_;
     };
 }
