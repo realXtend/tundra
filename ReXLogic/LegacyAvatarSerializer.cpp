@@ -181,6 +181,8 @@ namespace RexLogic
     
     bool LegacyAvatarSerializer::ReadAvatarAppearance(RexLogic::EC_AvatarAppearance& dest, const QDomDocument& source)
     {
+        PROFILE(Avatar_ReadAvatarAppearance);
+        
         dest.Clear();
         
         QDomElement avatar = source.firstChildElement("avatar");
@@ -422,22 +424,21 @@ namespace RexLogic
         
         dest.clear();
         
-        QDomElement elem = source.firstChildElement("animations");
+        QDomElement elem = source.firstChildElement("avatar");
         if (elem.isNull())
         {
-            RexLogicModule::LogError("No avatar animation definitions in xml document");
+            RexLogicModule::LogError("No avatar element");
             return false;
         }
         
-        bool all_success = true;
-        elem = elem.firstChildElement();
+        elem = elem.firstChildElement("animation");
         while (!elem.isNull())
         {
-            all_success = all_success && ReadAnimationDefinition(dest, elem);
-            elem = elem.nextSiblingElement();
+            ReadAnimationDefinition(dest, elem);
+            elem = elem.nextSiblingElement("animation");
         }
         
-        return all_success;
+        return true;
     }
     
     bool LegacyAvatarSerializer::ReadAnimationDefinition(AnimationDefinitionMap& dest, const QDomElement& elem)

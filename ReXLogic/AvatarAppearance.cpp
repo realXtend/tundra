@@ -79,7 +79,7 @@ namespace RexLogic
     
     void AvatarAppearance::ReadDefaultAppearance(const std::string& filename)
     {
-        default_appearance_ = boost::shared_ptr<QDomDocument>(new QDomDocument("defaultappearance"));
+        default_appearance_ = boost::shared_ptr<QDomDocument>(new QDomDocument("Avatar"));
         
         QFile file(filename.c_str());
         if (!file.open(QIODevice::ReadOnly))
@@ -112,6 +112,8 @@ namespace RexLogic
     
     void AvatarAppearance::SetupAppearance(Scene::EntityPtr entity)
     {
+        PROFILE(Avatar_SetupAppearance);
+        
         if (!entity)
             return;
         
@@ -686,8 +688,17 @@ namespace RexLogic
         // Deserialize appearance from the document into the EC
         if (!LegacyAvatarSerializer::ReadAvatarAppearance(appearance, avatar_doc))
         {
+            // If fails badly, setup default instead
             SetupDefaultAppearance(entity);
             return;
+        }
+        
+        // If document contains no animations, use ones from default
+        if (appearance.GetAnimations().empty())
+        {
+            AnimationDefinitionMap animations;
+            LegacyAvatarSerializer::ReadAnimationDefinitions(animations, *default_appearance_);
+            appearance.SetAnimations(animations);
         }
         
         appearance.SetAssetMap(assets);
