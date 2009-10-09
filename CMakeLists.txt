@@ -93,7 +93,7 @@ add_subdirectory (RpcUtilities)
 add_subdirectory (InputModuleOIS)
 add_subdirectory (TextureDecoderModule)
 add_subdirectory (OpenSimProtocol)
-#add_subdirectory (InventoryModule)
+add_subdirectory (InventoryModule)
 
 # The following modules are optional. You may
 # leave out any of these, and the project should

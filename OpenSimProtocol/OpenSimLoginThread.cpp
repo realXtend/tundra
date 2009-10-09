@@ -123,6 +123,8 @@ static std::string ExtractGridAddressFromXMLRPCReply(XmlRpcEpi &call)
 /// @param name name of the folder.
 /// @return True if one of the harcoded folders, false if not.
 ///\todo Add the World Library folders also here.
+///"OpenSim Library", "Animations Library", "BodyParts Library", "Clothing Library", "Gestures Library", "Landmarks Library",
+///"Notecards Library", "Objects Library", "Photos Library", "Scripts Library", "Sounds Library", "Texture Library"
 static bool IsHardcodedOpenSimFolder(const char *name)
 {
     const char *folders[] = { "My Inventory", "Animations", "Body Parts", "Calling Cards", "Clothing", "Gestures",
@@ -165,6 +167,9 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
     if (!inventoryNode || XMLRPC_GetValueType(inventoryNode) != xmlrpc_vector)
         throw XmlRpcException("Failed to read inventory, inventory-skeleton in the reply was not properly formed!");
 
+    ///\todo World Libary
+//    XMLRPC_VALUE inventoryNode = XMLRPC_VectorGetValueWithID(result, "inventory-skel-lib");
+
     typedef std::pair<RexUUID, InventoryFolderSkeleton> DetachedInventoryFolder;
     typedef std::list<DetachedInventoryFolder> DetachedInventoryFolderList;
     DetachedInventoryFolderList folders;
@@ -176,9 +181,6 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
         if (type == xmlrpc_vector) // xmlrpc-epi handles structs as arrays.
         {
             DetachedInventoryFolder folder;
-            //RexUUID parent_id;//, folder_id;
-            //std::string name;
-            //int type_default, version;
 
             XMLRPC_VALUE val = XMLRPC_VectorGetValueWithID(item, "name");
             if (val && XMLRPC_GetValueType(val) == xmlrpc_string)
@@ -199,14 +201,6 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
             val = XMLRPC_VectorGetValueWithID(item, "folder_id");
             if (val && XMLRPC_GetValueType(val) == xmlrpc_string)
                 folder.second.id.FromString(XMLRPC_GetValueString(val));
-
-/*            InventoryFolder *folderItem = new InventoryFolder(folder_id, name);
-            folderItem->version = version;
-            folderItem->type_default = type_default;
-            DetachedInventoryFolder dfolder;
-            dfolder.first = parent_id;
-            dfolder.second = folder;
-*/
 
             folders.push_back(folder);
         }
@@ -270,6 +264,7 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
                 progress = true;
                 folders.erase(iter);
             }
+
             iter = next;
         }
     }

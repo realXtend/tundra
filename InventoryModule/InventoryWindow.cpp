@@ -55,11 +55,9 @@ void InventoryWindow::Hide()
 
 void InventoryWindow::InitOpenSimInventoryTreeModel()
 {
-    OpenSimInventoryDataModel dataModel(rexLogicModule_->GetInventory().get());
-//    InventoryFolder *folder = dynamic_cast<InventoryFolder *>(dataModel.GetFirstChildFolderByName("TEST"));
-    //OpenSimInventoryDataModel dataModel = CreateOpenSimDataModel(InventorySkeleton *inventory);
-//    viewModel_ = new InventoryViewModel(dataModel);
-    treeView_->setModel(0);
+    OpenSimInventoryDataModel *dataModel = new OpenSimInventoryDataModel(rexLogicModule_->GetInventory().get());
+    viewModel_ = new InventoryViewModel(dataModel);
+    treeView_->setModel(viewModel_);
 }
 
 void InventoryWindow::ResetInventoryTreeModel()
