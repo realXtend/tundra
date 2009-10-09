@@ -57,14 +57,20 @@ void InventoryWindow::InitOpenSimInventoryTreeModel()
 {
     if (viewModel_)
     {
-        LogError("Inventory Treeview has already model set!");
+        LogError("Inventory treeview has already view model set!");
         return;
     }
 
     OpenSimInventoryDataModel *dataModel = new OpenSimInventoryDataModel(rexLogicModule_->GetInventory().get());
     viewModel_ = new InventoryViewModel(dataModel);
-    dataModel->DebugDumpInventoryFolderStructure();
     treeView_->setModel(viewModel_);
+    
+    // Connect view model related signals.
+    QObject::connect(viewModel_, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)),
+        dataModel/*this*/, SLOT(NameChanged(const QModelIndex &, const QModelIndex &)));
+
+    QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
+        const QItemSelection &)), this, SLOT(UpdateActions()));
 }
 
 void InventoryWindow::ResetInventoryTreeModel()
@@ -79,6 +85,50 @@ void InventoryWindow::CloseInventoryWindow()
         canvas_->Hide();
         qtModule_.get()->DeleteCanvas(canvas_);
     }
+}
+
+void InventoryWindow::UpdateActions()
+{
+/*
+    QTreeView *treeView = inventoryWidget_->findChild<QTreeView *>("treeView");
+    QModelIndex index = treeView->selectionModel()->currentIndex();
+    bool hasSelection = !treeView->selectionModel()->selection().isEmpty();
+
+//    removeRowAction->setEnabled(hasSelection);
+//    removeColumnAction->setEnabled(hasSelection);
+
+    QAction *actionCreateFolder = inventoryWidget_->findChild<QAction *>("actionCreateFolder");
+    QAction *actionDeleteFolder = inventoryWidget_->findChild<QAction *>("actionDeleteFolder");
+
+    // Is this item editable?
+    bool editable = inventory_->IsEditable(index);
+    actionDeleteFolder->setEnabled(editable);
+//    actionRename->setEnabled(editable);
+
+    InventoryItemBase *item = inventory_->GetItem(index);
+    if (item->IsEditable())
+        actionDeleteFolder->setEnabled(true);
+
+    if (item->GetInventoryItemType() == Type_Asset)
+    {
+        actionDeleteFolder->setEnabled(false);
+        actionCreateFolder->setEnabled(false);
+    }
+
+    bool hasCurrent = treeView->selectionModel()->currentIndex().isValid();
+    actionCreateFolder->setEnabled(hasCurrent);
+//    insertColumnAction->setEnabled(hasCurrent);
+
+    if (hasCurrent)
+    {
+        treeView->closePersistentEditor(treeView->selectionModel()->currentIndex());
+        /*QStatusBar *statusBar = inventoryWidget_->findChild<QStatusBar *>("statusBar");
+        if (item->GetInventoryItemType() == Type_Folder)
+            statusBar->showMessage(tr("%1").arg("Folder"));
+        else if(item->GetInventoryItemType() == Type_Asset)
+            statusBar->showMessage(tr("%1").arg("Asset"));
+        */
+//    }
 }
 
 void InventoryWindow::InitInventoryWindow()
