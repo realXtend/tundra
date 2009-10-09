@@ -109,6 +109,9 @@ namespace RexLogic
         //! Fixes up avatar material (material script/texture resources)
         void FixupMaterial(AvatarMaterial& mat, const AvatarAssetMap& asset_map);
         
+        //! Fixes up local avatar material
+        void FixupLocalMaterial(AvatarMaterial& mat);
+        
         //! Guesses avatar asset resource type from human-readable asset name
         static const std::string& GetResourceTypeFromName(const std::string& name);
         
@@ -116,7 +119,9 @@ namespace RexLogic
         void GetAvatarAssetsForExport(AvatarExporterRequestPtr request, EC_AvatarAppearance& appearance);
         
         //! Adds an avatar asset to the export request
-        void GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& appearance, bool is_material = false);
+        /*! \return true if added successfully
+         */
+        bool GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& appearance, bool is_material = false);
             
         //! Gets a bone safely from the avatar skeleton
         /*! \return Pointer to bone, or 0 if does not exist

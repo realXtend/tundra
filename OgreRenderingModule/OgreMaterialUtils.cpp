@@ -223,6 +223,50 @@ namespace OgreRenderer
         }
     }
     
+    Core::StringVector GetTextureNamesFromMaterial(Ogre::MaterialPtr material)
+    {
+        Core::StringVector textures;
+        
+        if (material.isNull())
+            return textures;
+        
+        // Use a set internally to avoid duplicates
+        std::set<std::string> textures_set;
+        
+        Ogre::Material::TechniqueIterator iter = material->getTechniqueIterator();
+        while(iter.hasMoreElements())
+        {
+            Ogre::Technique *tech = iter.getNext();
+            assert(tech);
+            Ogre::Technique::PassIterator passIter = tech->getPassIterator();
+            while(passIter.hasMoreElements())
+            {
+                Ogre::Pass *pass = passIter.getNext();
+                
+                Ogre::Pass::TextureUnitStateIterator texIter = pass->getTextureUnitStateIterator();
+                
+                while(texIter.hasMoreElements())
+                {
+                    Ogre::TextureUnitState *texUnit = texIter.getNext();
+                    const std::string& texname = texUnit->getTextureName();
+                    
+                    if (!texname.empty())
+                        textures_set.insert(texname);
+                }
+            }
+        }
+        
+        std::set<std::string>::iterator i = textures_set.begin();
+        
+        while (i != textures_set.end())
+        {
+            textures.push_back(*i);
+            ++i;
+        }
+        
+        return textures;
+    }
+    
     Foundation::ResourcePtr OGRE_MODULE_API CreateResourceFromMaterial(Ogre::MaterialPtr material)
     {
         assert(!material.isNull());
