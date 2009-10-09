@@ -165,8 +165,8 @@ void QtModule::Update(Core::f64 frametime)
 
         if (input->IsButtonDown(OIS::MB_Left) && !mouse_left_button_down_)
         {
-            if (controller_->GetCanvasAt(pos.x(), pos.y()))
-                framework_->GetQApplication()->setActiveWindow(controller_->GetCanvasAt(pos.x(), pos.y()));
+//            if (controller_->GetCanvasAt(pos.x(), pos.y()))
+//                framework_->GetQApplication()->setActiveWindow(controller_->GetCanvasAt(pos.x(), pos.y()));
             controller_->InjectMousePress(pos.x(), pos.y());
             
             if ( controller_->IsKeyboardFocus() && input->GetState() != Input::State_Buffered)
