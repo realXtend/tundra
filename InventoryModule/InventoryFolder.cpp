@@ -237,13 +237,17 @@ QVariant InventoryFolder::Data(int column) const
 {
     return itemData_.value(column);
 }
+*/
 
 int InventoryFolder::Row() const
 {
     if (GetParent())
-        return GetParent()->childItems_.indexOf(const_cast<InventoryFolder *>(this));
+    {
+        InventoryFolder *folder = static_cast<InventoryFolder *>(GetParent());
+        return folder->children_.indexOf(const_cast<InventoryFolder *>(this));
+    }
 
     return 0;
-}*/
+}
 
 }

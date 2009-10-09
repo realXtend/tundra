@@ -19,9 +19,6 @@ namespace Inventory
 InventoryViewModel::InventoryViewModel(AbstractInventoryDataModel *dataModel) :
     dataModel_(dataModel)
 {
-    // InventoryViewModel's root item is not the same as inventory's root item ("My Inventory" folder).
-    //rootFolder_ = new InventoryFolder(RexUUID::CreateRandom(), "Inventory");
-    //SetupModelData();
 }
 
 InventoryViewModel::~InventoryViewModel()
@@ -35,23 +32,20 @@ int InventoryViewModel::columnCount(const QModelIndex &parent) const
     //if (parent.isValid())
     //    return static_cast<InventoryAsset *>(parent.internalPointer())->ColumnCount();
 
-//    return rootFolder_->ColumnCount();
+    //return dynamic_cast<InventoryFolder *>(dataModel_->GetRoot())->ColumnCount();
     return 1;
 }
 
 QVariant InventoryViewModel::data(const QModelIndex &index, int role) const
 {
-/*
     if (!index.isValid())
         return QVariant();
 
     if (role != Qt::DisplayRole)
         return QVariant();
 
-    InventoryItemBase *item = GetItem(index);
-    return QVariant(item->GetName().c_str());
-*/
-    return QVariant();
+    AbstractInventoryItem *item = GetItem(index);
+    return QVariant(item->GetName().toStdString().c_str());
 }
 /*
 Qt::ItemFlags InventoryViewModel::flags(const QModelIndex& index)const
@@ -71,23 +65,22 @@ Qt::ItemFlags InventoryViewModel::flags(const QModelIndex &index) const
     if (!index.isValid())
         return 0;
 
-/*
-    InventoryItemBase *item = GetItem(index);
-    if (item->IsEditable())
-        return Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
-*/
+    InventoryFolder *folder = dynamic_cast<InventoryFolder *>(GetItem(index));
+    if (folder)
+        if (folder->IsEditable())
+            return Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
 Qt::DropActions InventoryViewModel::supportedDropActions() const
 {
-    return Qt::MoveAction; // | Qt::CopyAction
+    return Qt::MoveAction;
 }
 
 QVariant InventoryViewModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-//        return rootFolder_->Data(section);
         return QVariant(dynamic_cast<InventoryFolder *>(dataModel_->GetRoot())->GetName()); 
 
     return QVariant();
@@ -160,19 +153,15 @@ bool InventoryViewModel::removeRows(int position, int rows, const QModelIndex &p
 
 QModelIndex InventoryViewModel::parent(const QModelIndex &index) const
 {
-/*
     if (!index.isValid())
         return QModelIndex();
 
-    InventoryItemBase *childItem = static_cast<InventoryItemBase *>(index.internalPointer());
-    InventoryFolder *parentItem = childItem->GetParent();
-
-    if (parentItem == rootFolder_)
+    AbstractInventoryItem *childItem = GetItem(index);//<InventoryItemBase *>(index.internalPointer());
+    InventoryFolder *parentItem = static_cast<InventoryFolder *>(childItem->GetParent());
+    if (parentItem == dynamic_cast<InventoryFolder *>(dataModel_->GetRoot()))
         return QModelIndex();
 
     return createIndex(parentItem->Row(), 0, parentItem);
-*/
-    return QModelIndex();
 }
 
 int InventoryViewModel::rowCount(const QModelIndex &parent) const
