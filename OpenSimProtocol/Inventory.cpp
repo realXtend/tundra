@@ -68,7 +68,7 @@ void InventoryFolderSkeleton::DebugDumpInventoryFolderStructure(int indentationL
 
 InventorySkeleton::InventorySkeleton()
 {
-    root_ = InventoryFolderSkeleton(RexUUID::CreateRandom(), "Inventory Root");
+    root_ = InventoryFolderSkeleton(RexUUID::CreateRandom(), "OpenSim Inventory");
 }
 
 InventoryFolderSkeleton *InventorySkeleton::GetFirstChildFolderByName(const char *searchName)

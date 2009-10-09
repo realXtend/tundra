@@ -108,7 +108,7 @@ namespace Inventory
 
         /// @return Numbve
         ///\todo Probably not needed. Delete?
-        int ColumnCount() const;
+//        int ColumnCount() const;
 
         /// @return Row number of the folder.
         int Row() const;

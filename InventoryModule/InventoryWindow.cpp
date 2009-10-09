@@ -22,7 +22,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework, RexLogic::Rex
     if (!qtModule_.get())
         return;
 
-    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
+    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::External).lock();
 
     // Init Inventory Widget and connect close signal
     InitInventoryWindow();
@@ -55,10 +55,16 @@ void InventoryWindow::Hide()
 
 void InventoryWindow::InitOpenSimInventoryTreeModel()
 {
+    if (viewModel_)
+    {
+        LogError("Inventory Treeview has already model set!");
+        return;
+    }
+
     OpenSimInventoryDataModel *dataModel = new OpenSimInventoryDataModel(rexLogicModule_->GetInventory().get());
     viewModel_ = new InventoryViewModel(dataModel);
-    //dataModel->DebugDumpInventoryFolderStructure();
-    //treeView_->setModel(viewModel_);
+    dataModel->DebugDumpInventoryFolderStructure();
+    treeView_->setModel(viewModel_);
 }
 
 void InventoryWindow::ResetInventoryTreeModel()
