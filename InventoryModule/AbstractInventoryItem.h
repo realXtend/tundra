@@ -25,7 +25,7 @@ namespace Inventory
     public:
         /// Enumeration of inventory data models.
         /// Add your own enum here if you plan making your own inventory data model.
-        ///\todo Is this really needed?
+        ///\todo Is this really needed? Not used at the moment.
         enum InventoryDataModel
         {
             IDM_OpenSim = 0,

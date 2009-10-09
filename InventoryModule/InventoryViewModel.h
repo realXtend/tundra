@@ -66,6 +66,10 @@ namespace Inventory
         bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
     private:
+        /// @param index Index of the wanted item.
+        /// @return pointer to inventory item.
+        AbstractInventoryItem *GetItem(const QModelIndex &index) const;
+
         /// Sets up view from data.
         void SetupModelData();
 

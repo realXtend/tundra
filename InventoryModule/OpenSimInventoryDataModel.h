@@ -67,6 +67,11 @@ namespace Inventory
         /// @return Pointer to "Trash" folder or null if not found.
         AbstractInventoryItem *GetTrashFolder() const;
 
+        void DebugDumpInventoryFolderStructure()
+        {
+            rootFolder_->DebugDumpInventoryFolderStructure(0);
+        }
+
     private:
         Q_DISABLE_COPY(OpenSimInventoryDataModel);
 

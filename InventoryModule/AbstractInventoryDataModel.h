@@ -49,6 +49,9 @@ namespace Inventory
         virtual AbstractInventoryItem *GetOrCreateNewAsset(const QString &inventory_id, const QString &asset_id,
             AbstractInventoryItem &parentFolder, const QString &name) = 0;
 
+        /// @return Inventory root folder.
+        virtual AbstractInventoryItem *GetRoot() const = 0;
+
     private:
         Q_DISABLE_COPY(AbstractInventoryDataModel);
     };
