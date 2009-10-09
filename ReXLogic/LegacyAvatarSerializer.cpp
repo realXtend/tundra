@@ -609,26 +609,26 @@ namespace RexLogic
         }
         
         // Texture override elements
-        // Face
-        if (materials.size() >= 2)
-        {
-            if (materials[1].textures_.size() && (!materials[1].textures_[0].name_.empty()))
-            {
-                QDomElement texture_face = dest.createElement("texture_face");
-                SetAttribute(texture_face, "name", materials[1].textures_[0].name_);
-                avatar.appendChild(texture_face);
-            }
-        }
-        // Body
-        if (materials.size() >= 1)
-        {
-            if (materials[0].textures_.size() && (!materials[0].textures_[0].name_.empty()))
-            {
-                QDomElement texture_body = dest.createElement("texture_body");
-                SetAttribute(texture_body, "name", materials[0].textures_[0].name_);
-                avatar.appendChild(texture_body);
-            }
-        }
+        // Do not write these, they impose limitations on the materials
+        //if (materials.size() >= 2)
+        //{
+        //    if (materials[1].textures_.size() && (!materials[1].textures_[0].name_.empty()))
+        //    {
+        //        QDomElement texture_face = dest.createElement("texture_face");
+        //        SetAttribute(texture_face, "name", materials[1].textures_[0].name_);
+        //        avatar.appendChild(texture_face);
+        //    }
+        //}
+        //// Body
+        //if (materials.size() >= 1)
+        //{
+        //    if (materials[0].textures_.size() && (!materials[0].textures_[0].name_.empty()))
+        //    {
+        //        QDomElement texture_body = dest.createElement("texture_body");
+        //        SetAttribute(texture_body, "name", materials[0].textures_[0].name_);
+        //        avatar.appendChild(texture_body);
+        //    }
+        //}
         
         // Transformation element
         {

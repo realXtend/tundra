@@ -708,6 +708,11 @@ namespace RexLogic
         // Request needed avatar resources
         boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
             GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
+        {
+            RexLogicModule::LogError("Renderer does not exist");
+            return;
+        }
         Core::RequestTagVector tags;
         AvatarAssetMap::iterator k = assets.begin();
         Core::uint pending_requests = 0;
@@ -836,7 +841,10 @@ namespace RexLogic
         boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
             GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (!renderer)
+        {
+            RexLogicModule::LogError("Renderer does not exist");
             return;
+        }
         
         if (!asset.resource_)
         {
@@ -872,11 +880,22 @@ namespace RexLogic
                 mat.asset_.resource_ = renderer->GetResource(mat.asset_.resource_id_, OgreRenderer::OgreMaterialResource::GetTypeStatic());
             }
         }
-        // If couldn't still be found, it's a local resource. Use different fixup code for that.
-        if (!mat.asset_.resource_)
+        // If couldn't still be found, it's a local resource. In that case, fixup the default texture names for eventual export
+        if (!mat.asset_.resource_) 
         {
-            FixupLocalMaterial(mat);
-            return;
+            if (!mat.textures_.size())
+            {
+                Ogre::MaterialPtr ogre_mat = Ogre::MaterialManager::getSingleton().getByName(mat.asset_.name_);
+                if (ogre_mat.isNull())
+                    return;
+                Core::StringVector default_textures = OgreRenderer::GetTextureNamesFromMaterial(ogre_mat);
+                for (Core::uint i = 0; i < default_textures.size(); ++i)
+                {
+                    AvatarAsset new_tex;
+                    new_tex.name_ = default_textures[i];
+                    mat.textures_.push_back(new_tex);
+                }
+            }
         }
         
         OgreRenderer::OgreMaterialResource* mat_res = dynamic_cast<OgreRenderer::OgreMaterialResource*>(mat.asset_.resource_.get());
@@ -901,32 +920,12 @@ namespace RexLogic
                     mat.textures_[i].resource_ = renderer->GetResource(mat.textures_[i].resource_id_, OgreRenderer::OgreImageTextureResource::GetTypeStatic());
                 }
             }
-            // If we found the texture, modify the material to use it. Note: if there are any resource clashes, should be trivial to clone the material here to allow unique overrides
+            // If we found the texture, modify the material to use it.
             if (mat.textures_[i].resource_)
             {
                 Ogre::MaterialPtr ogremat = mat_res->GetMaterial();
                 OgreRenderer::ReplaceTextureOnMaterial(ogremat, mat.textures_[i].name_, mat.textures_[i].resource_->GetId());
             }
-        }
-    }
-    
-    void AvatarAppearance::FixupLocalMaterial(AvatarMaterial& mat)
-    {
-        // If already have texture overrides, do not mess with them
-        if (mat.textures_.size())
-            return;
-        
-        Ogre::MaterialPtr ogre_mat = Ogre::MaterialManager::getSingleton().getByName(mat.asset_.name_);
-        if (ogre_mat.isNull())
-            return;
-        
-        Core::StringVector textures = OgreRenderer::GetTextureNamesFromMaterial(ogre_mat);
-        
-        for (Core::uint i = 0; i < textures.size(); ++i)
-        {
-            AvatarAsset tex;
-            tex.name_ = textures[i];
-            mat.textures_.push_back(tex);
         }
     }
     
@@ -977,11 +976,7 @@ namespace RexLogic
         AvatarMaterialVector materials = appearance.GetMaterials();
         for (Core::uint i = 0; i < materials.size(); ++i)
         {
-            GetAvatarAssetForExport(request, materials[i].asset_, true);
-            for (Core::uint j = 0; j < materials[i].textures_.size(); ++j)
-            {
-                GetAvatarAssetForExport(request, materials[i].textures_[j]);
-            }
+            GetAvatarMaterialForExport(request, materials[i]);
         }
         
         AvatarAttachmentVector attachments = appearance.GetAttachments();
@@ -990,25 +985,150 @@ namespace RexLogic
             GetAvatarAssetForExport(request, attachments[i].mesh_);
             for (Core::uint j = 0; j < attachments[i].materials_.size(); ++j)
             {
-                GetAvatarAssetForExport(request, attachments[i].materials_[j].asset_, true);
-                for (Core::uint k = 0; k < attachments[i].materials_[j].textures_.size(); ++k)
-                {
-                    GetAvatarAssetForExport(request, attachments[i].materials_[j].textures_[k]);
-                }
+                GetAvatarMaterialForExport(request, attachments[i].materials_[j]);
             }
         }
     }
     
-    bool AvatarAppearance::GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& asset, bool is_material)
+    bool AvatarAppearance::GetAvatarMaterialForExport(AvatarExporterRequestPtr request, const AvatarMaterial& material)
     {
-        std::string export_name = asset.name_;
-        // Add .material to name if necessary
-        if (is_material)
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
         {
-            if (export_name.find(".material") == std::string::npos)
-                export_name.append(".material");
+            RexLogicModule::LogError("Renderer does not exist");
+            return false;
         }
         
+        Ogre::MaterialManager& mat_mgr = Ogre::MaterialManager::getSingleton();
+        
+        std::string export_name = material.asset_.name_;
+        if (export_name.find(".material") == std::string::npos)
+            export_name.append(".material");
+
+        Ogre::MaterialPtr clone;
+        Ogre::MaterialPtr ogre_mat;
+
+        // Resource-based or local?
+        if (material.asset_.resource_)
+        {
+            OgreRenderer::OgreMaterialResource* mat_res = dynamic_cast<OgreRenderer::OgreMaterialResource*>(material.asset_.resource_.get());
+            if (!mat_res)
+            {
+                RexLogicModule::LogError("Material resource " + export_name + " was not valid");
+                return false;
+            }
+            ogre_mat = mat_res->GetMaterial();
+            if (ogre_mat.isNull())
+            {
+                RexLogicModule::LogError("Material resource " + export_name + " could not be found");
+                return false;
+            }
+        }
+        else
+        {
+            ogre_mat = mat_mgr.getByName(material.asset_.name_);
+            if (ogre_mat.isNull())
+            {
+                // If null, try to load
+                try
+                {
+                    mat_mgr.load(material.asset_.name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+                    ogre_mat = mat_mgr.getByName(material.asset_.name_);
+                }
+                catch (...) {}
+            }
+            if (ogre_mat.isNull())
+            {
+                RexLogicModule::LogError("Material resource " + export_name + " could not be found");
+                return false;
+            }
+        }
+        
+        // Create a clone of the material to be messed with during export
+        std::string clonename = renderer->GetUniqueObjectName();
+        clone = ogre_mat->clone(clonename);
+        
+        // Now ensure that the material has correct texture names
+        // With non-local assets, we will get errors to Ogre log, but it does not really matter
+        Ogre::Material::TechniqueIterator iter = clone->getTechniqueIterator();
+        while(iter.hasMoreElements())
+        {
+            Ogre::Technique *tech = iter.getNext();
+            assert(tech);
+            Ogre::Technique::PassIterator passIter = tech->getPassIterator();
+            while(passIter.hasMoreElements())
+            {
+                Ogre::Pass *pass = passIter.getNext();
+                
+                Ogre::Pass::TextureUnitStateIterator texIter = pass->getTextureUnitStateIterator();
+                Core::uint index = 0;
+                
+                while(texIter.hasMoreElements())
+                {
+                    Ogre::TextureUnitState *texUnit = texIter.getNext();
+                    // Skip shadow textures
+                    if (texUnit->getContentType() != Ogre::TextureUnitState::CONTENT_SHADOW)
+                    {
+                        if (index < material.textures_.size())
+                            texUnit->setTextureName(material.textures_[index].name_);
+                        index++;
+                    }
+                }
+            }
+        }
+        
+        // Export the clone
+        Ogre::MaterialSerializer serializer;
+        serializer.queueForExport(clone, true, false);
+        const std::string& mat_string = serializer.getQueuedAsString();
+        
+        if (request->assets_.find(export_name) == request->assets_.end())
+        {
+            ExportAsset new_export_asset;
+            new_export_asset.data_.resize(mat_string.length());
+            memcpy(&new_export_asset.data_[0], mat_string.c_str(), mat_string.length());
+            new_export_asset.CalculateHash();
+            // Check for hash duplicate
+            bool duplicate = false;
+            ExportAssetMap::const_iterator i = request->assets_.begin();
+            while (i != request->assets_.end())
+            {
+                if (new_export_asset.hash_ == i->second.hash_)
+                {
+                    RexLogicModule::LogDebug("Skipping export of avatar asset " + export_name + ", has same hash as " + i->first);
+                    duplicate = true;
+                    break;
+                }
+                ++i;
+            }
+            if (!duplicate)
+                request->assets_[export_name] = new_export_asset;
+        }
+        else
+        {
+            RexLogicModule::LogDebug("Skipping export of avatar asset " + export_name + ", same name already exists");
+        }
+        
+        // Remove the clone
+        clone.setNull();
+        try
+        {
+            mat_mgr.remove(clonename);
+        }
+        catch (...) {}
+        
+        // Export textures used by material
+        for (Core::uint i = 0; i < material.textures_.size(); ++i)
+            GetAvatarAssetForExport(request, material.textures_[i]);
+            
+        return true;
+    }
+    
+    bool AvatarAppearance::GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& asset)
+    {
+        std::string export_name = asset.name_;
+
         // Skip if already exists with this name
         if (request->assets_.find(export_name) != request->assets_.end())
         {
@@ -1051,37 +1171,17 @@ namespace RexLogic
             // If it's a local resource, get data directly from Ogre
             try
             {
-                if (!is_material)
+                Ogre::DataStreamPtr data = Ogre::ResourceGroupManager::getSingleton().openResource(asset.name_);
+                Core::uint size = data->size();
+                if (size)
                 {
-                    Ogre::DataStreamPtr data = Ogre::ResourceGroupManager::getSingleton().openResource(asset.name_);
-                    Core::uint size = data->size();
-                    if (size)
-                    {
-                        new_export_asset.data_.resize(size);
-                        data->read(&new_export_asset.data_[0], size);
-                    }
-                    else
-                    {
-                        RexLogicModule::LogError("Zero size data for local avatar asset " + asset.name_);
-                        return false;
-                    }
+                    new_export_asset.data_.resize(size);
+                    data->read(&new_export_asset.data_[0], size);
                 }
                 else
-                // Material files can have multiple materials in them, so can't get the resource file simply, must export the material
                 {
-                    Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(asset.name_);
-                    if (material.isNull())
-                    {
-                        RexLogicModule::LogError("Could not get local avatar material " + asset.name_ + " for export");
-                        return false;
-                    }
-                    
-                    Ogre::MaterialSerializer serializer;
-                    serializer.queueForExport(material, true, false);
-                    const std::string &material_string = serializer.getQueuedAsString();
-                    
-                    new_export_asset.data_.resize(material_string.size());
-                    memcpy(&new_export_asset.data_[0], material_string.c_str(), material_string.size());
+                    RexLogicModule::LogError("Zero size data for local avatar asset " + asset.name_);
+                    return false;
                 }
             }
             catch (Ogre::Exception e)
