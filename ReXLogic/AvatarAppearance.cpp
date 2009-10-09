@@ -27,6 +27,8 @@
 #include <QDomDocument>
 #include <QFile>
 
+#include <Ogre.h>
+
 static const Core::Real FIXED_HEIGHT_OFFSET = -0.87f;
 static const Core::Real OVERLAY_HEIGHT_MULTIPLIER = 1.5f;
 static const Core::uint XMLRPC_ASSET_HASH_LENGTH = 28;
@@ -870,9 +872,12 @@ namespace RexLogic
                 mat.asset_.resource_ = renderer->GetResource(mat.asset_.resource_id_, OgreRenderer::OgreMaterialResource::GetTypeStatic());
             }
         }
-        // If couldn't be found, abort
+        // If couldn't still be found, it's a local resource. Use different fixup code for that.
         if (!mat.asset_.resource_)
+        {
+            FixupLocalMaterial(mat);
             return;
+        }
         
         OgreRenderer::OgreMaterialResource* mat_res = dynamic_cast<OgreRenderer::OgreMaterialResource*>(mat.asset_.resource_.get());
         if (!mat_res)
@@ -902,6 +907,26 @@ namespace RexLogic
                 Ogre::MaterialPtr ogremat = mat_res->GetMaterial();
                 OgreRenderer::ReplaceTextureOnMaterial(ogremat, mat.textures_[i].name_, mat.textures_[i].resource_->GetId());
             }
+        }
+    }
+    
+    void AvatarAppearance::FixupLocalMaterial(AvatarMaterial& mat)
+    {
+        // If already have texture overrides, do not mess with them
+        if (mat.textures_.size())
+            return;
+        
+        Ogre::MaterialPtr ogre_mat = Ogre::MaterialManager::getSingleton().getByName(mat.asset_.name_);
+        if (ogre_mat.isNull())
+            return;
+        
+        Core::StringVector textures = OgreRenderer::GetTextureNamesFromMaterial(ogre_mat);
+        
+        for (Core::uint i = 0; i < textures.size(); ++i)
+        {
+            AvatarAsset tex;
+            tex.name_ = textures[i];
+            mat.textures_.push_back(tex);
         }
     }
     
@@ -974,7 +999,7 @@ namespace RexLogic
         }
     }
     
-    void AvatarAppearance::GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& asset, bool is_material)
+    bool AvatarAppearance::GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& asset, bool is_material)
     {
         std::string export_name = asset.name_;
         // Add .material to name if necessary
@@ -986,7 +1011,10 @@ namespace RexLogic
         
         // Skip if already exists with this name
         if (request->assets_.find(export_name) != request->assets_.end())
-            return;
+        {
+            RexLogicModule::LogDebug("Skipping export of avatar asset " + export_name + ", same name already exists");
+            return true;
+        }
         
         ExportAsset new_export_asset;
         
@@ -998,14 +1026,14 @@ namespace RexLogic
             if (!asset_service)
             {
                 RexLogicModule::LogError("Could not get asset service");
-                return;
+                return false;
             }
             // The assettype doesn't matter here
             Foundation::AssetPtr raw_asset = asset_service->GetAsset(asset.resource_id_, std::string());
             if (!raw_asset)
             {
                 RexLogicModule::LogError("Could not get raw asset data for resource " + asset.resource_id_);
-                return;
+                return false;
             }
             if (raw_asset->GetSize())
             {
@@ -1014,15 +1042,53 @@ namespace RexLogic
             }
             else
             {
-                RexLogicModule::LogError("Zero size asset data");
-                return;
+                RexLogicModule::LogError("Zero size data for avatar asset " + asset.name_);
+                return false;
             }
         }
         else
         {
-            //! \todo get local assets some way
-            RexLogicModule::LogError("Export of local avatar asset " + export_name + " not yet supported!");
-            return;
+            // If it's a local resource, get data directly from Ogre
+            try
+            {
+                if (!is_material)
+                {
+                    Ogre::DataStreamPtr data = Ogre::ResourceGroupManager::getSingleton().openResource(asset.name_);
+                    Core::uint size = data->size();
+                    if (size)
+                    {
+                        new_export_asset.data_.resize(size);
+                        data->read(&new_export_asset.data_[0], size);
+                    }
+                    else
+                    {
+                        RexLogicModule::LogError("Zero size data for local avatar asset " + asset.name_);
+                        return false;
+                    }
+                }
+                else
+                // Material files can have multiple materials in them, so can't get the resource file simply, must export the material
+                {
+                    Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(asset.name_);
+                    if (material.isNull())
+                    {
+                        RexLogicModule::LogError("Could not get local avatar material " + asset.name_ + " for export");
+                        return false;
+                    }
+                    
+                    Ogre::MaterialSerializer serializer;
+                    serializer.queueForExport(material, true, false);
+                    const std::string &material_string = serializer.getQueuedAsString();
+                    
+                    new_export_asset.data_.resize(material_string.size());
+                    memcpy(&new_export_asset.data_[0], material_string.c_str(), material_string.size());
+                }
+            }
+            catch (Ogre::Exception e)
+            {
+                RexLogicModule::LogError("Could not get local avatar asset " + asset.name_ + " for export");
+                return false;
+            }
         }
         
         new_export_asset.CalculateHash();
@@ -1034,12 +1100,13 @@ namespace RexLogic
             if (new_export_asset.hash_ == i->second.hash_)
             {
                 RexLogicModule::LogDebug("Skipping export of avatar asset " + export_name + ", has same hash as " + i->first);
-                return;
+                return true;
             }
             ++i;
         }
         
         request->assets_[export_name] = new_export_asset;
+        return true;
     }
     
     void AvatarAppearance::ProcessAvatarExport()
