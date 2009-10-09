@@ -13,11 +13,11 @@ class QGraphicsScene;
 
 namespace QtUI
 {
-    /// QtModule provides other modules with the ability to load widgets on canvases.
-    /// These canvases can be then shown on the 2D screen or placed into the 3D world
-    /// as textures on world geometry. The bitmap surfaces of each canvas are stored
-    /// as textures residing on the GPU.
-
+    /** QtModule provides other modules with the ability to maintain their own
+        UI canvases, onto which widgets are loaded.
+        These canvases can be then shown on the 2D screen or placed into the 3D world
+        as textures on world geometry. The bitmap surfaces of each canvas are stored
+        as textures residing on the GPU. */
     class QT_MODULE_API QtModule : public Foundation::ModuleInterfaceImpl
     {
     public:
@@ -34,33 +34,32 @@ namespace QtUI
 
         MODULE_LOGGING_FUNCTIONS;
 
-        //! returns name of this module. Needed for logging.
+        /// @return Module name. Needed for logging.
         static const std::string &NameStatic();
 
         bool HandleEvent(Core::event_category_id_t category_id,
             Core::event_id_t event_id, 
             Foundation::EventDataInterface* data);
-       
-        /**
-         * Creates a canvas which is tracked by UIController. 
-         * @return weak_ptr to newly created canvas.
-         */
-        boost::weak_ptr<UICanvas> CreateCanvas(UICanvas::Mode mode) { return controller_->CreateCanvas(mode); }
+          
+        /** Creates a new empty UI canvas.
+            @param mode Pass UICanvas::Internal to have the UI canvas be composited on screen 
+                through Ogre, and to allow it be used as a texture for 3D surfaces. Pass
+                UICanvas::External to use the native OS windowing system to show the canvas.
+            @return A weak_ptr to newly created canvas. In the calling module, store only 
+                this weak_ptr as a member. Do not elevate this to a shared_ptr and store that,
+                since that will lead to incorrect reference counting and problems with deleting
+                canvases. */
+        boost::weak_ptr<UICanvas> CreateCanvas(UICanvas::Mode mode);
 
-        /**
-         * Deletes canvas. Because UICanvas is shared pointer, it actually removes a reference from a controller lists. 
-         * 
-         */
+        /// Deletes the canvas. \todo Do not require the user to pass a shared_ptr. Use a raw ptr or a weak ptr instead.
         void DeleteCanvas(const boost::shared_ptr<UICanvas>& canvas) { controller_->RemoveCanvas(canvas->GetID()); }
 
-        /**
-         * Deletes canvas.
-         * @param is canvas id which we want to delete. 
-         */
+        /** Deletes the canvas. 
+            @param The ID of the canvas to be deleted. */
         void DeleteCanvas(const QString& id) { controller_->RemoveCanvas(id); }
 
     private:
-
+        /// Initializes a mapping table between OIS and Qt keyboard codes.
         void InitializeKeyCodes();
 
         // The event categories this module subscribes to.
