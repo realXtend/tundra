@@ -202,6 +202,7 @@ namespace OgreRenderer
         try
         {
             mesh->_notifySkeleton(skel);
+            OgreRenderingModule::LogDebug("Set skeleton " + skeleton_name + " to mesh " + mesh_name);
         }
         catch (Ogre::Exception& e)
         {
