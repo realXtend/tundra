@@ -8,6 +8,7 @@
 #ifndef incl_InventoryModule_InventoryFolder_h
 #define incl_InventoryModule_InventoryFolder_h
 
+#include "StableHeaders.h"
 #include "AbstractInventoryItem.h"
 
 namespace Inventory
@@ -82,6 +83,21 @@ namespace Inventory
         /// Get/set for the dirty flag.
         bool IsEditable() const { return editable_; }
         void SetEditable(const bool &editable) { editable_ = editable; }
+
+        void DebugDumpInventoryFolderStructure(int indentationLevel)
+        {
+            for(int i = 0; i < indentationLevel; ++i)
+                std::cout << " ";
+            std::cout << GetName().toStdString() << " " << std::endl;
+
+            QListIterator<AbstractInventoryItem *> it(children_);
+            while(it.hasNext())
+            {
+                InventoryFolder *folder = dynamic_cast<InventoryFolder *>(it.next());
+                if (folder)
+                    folder->DebugDumpInventoryFolderStructure(indentationLevel + 3);
+            }
+        }
 
         /// @param row
         /// @return

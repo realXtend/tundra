@@ -57,7 +57,8 @@ void InventoryWindow::InitOpenSimInventoryTreeModel()
 {
     OpenSimInventoryDataModel *dataModel = new OpenSimInventoryDataModel(rexLogicModule_->GetInventory().get());
     viewModel_ = new InventoryViewModel(dataModel);
-    treeView_->setModel(viewModel_);
+    //dataModel->DebugDumpInventoryFolderStructure();
+    //treeView_->setModel(viewModel_);
 }
 
 void InventoryWindow::ResetInventoryTreeModel()

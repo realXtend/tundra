@@ -88,10 +88,15 @@ void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
     InventoryFolder *newFolder= new InventoryFolder(QString(folder_skeleton->id.ToString().c_str()),
         QString(folder_skeleton->name.c_str()), folder_skeleton->editable, parent_folder);
 
+    if (!parent_folder)
+        rootFolder_ = newFolder;
+    else
+        parent_folder->AddChild(newFolder);
+/*
     if (parent_folder)
         std::cout << parent_folder->GetName().toStdString() << std::endl; 
     std::cout << "   " << newFolder->GetName().toStdString() << std::endl;
-
+*/
     InventoryFolderSkeleton::FolderIter iter = folder_skeleton->children.begin();
     while(iter != folder_skeleton->children.end())
     {
@@ -104,7 +109,7 @@ void OpenSimInventoryDataModel::SetupModelData(OpenSimProtocol::InventorySkeleto
 {
     using namespace OpenSimProtocol;
 
-    inventory_skeleton->DebugDumpInventoryFolderStructure();
+//    inventory_skeleton->DebugDumpInventoryFolderStructure();
 
     InventoryFolderSkeleton *root_skel = inventory_skeleton->GetRoot();
     if (!root_skel)
