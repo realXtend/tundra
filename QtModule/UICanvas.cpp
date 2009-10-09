@@ -49,7 +49,7 @@ UICanvas::UICanvas(): overlay_(0),
     setScene(new QGraphicsScene);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
-    QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(Dirty()));
+    QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(SetDirty()));
 }
 
 UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
@@ -76,7 +76,7 @@ UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
         QSize size = this->size();
         
         CreateOgreResources(size.width(), size.height());
-        QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(Dirty()));
+        QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(SetDirty()));
         
     }
 }
