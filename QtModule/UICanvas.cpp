@@ -365,12 +365,12 @@ void UICanvas::Resize(int height, int width, CanvasSide side)
             {
             case Top:
                 {
-                    //v1 = Ogre::Real(1.0) - ratio;
-                    v1 = Ogre::Real(1.0) - ratio;
+                    v2 = ratio;
                     Ogre::Real yPos = top + diff/Ogre::Real(renderWindowSize_.height());
                     element->setPosition(left, yPos);
-                    //element->setPosition(left,top);
                     break;
+                    
+                    
                 }
             case Bottom:
                 {
