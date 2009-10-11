@@ -350,25 +350,6 @@ namespace TpQt4Communication
 		}
 	}
 
-	//void Connection::OnPresenceSubscriptionResult(Tp::PendingOperation* op)
-	//{
-	//	if (op->isError())
-	//	{
-	//		QString message = "Canoot subscribe presence: ";
-	//		message.append(op->errorMessage());
-	//		LogInfo(message.toStdString());
-
-	//		// Presence subscription didn't success, we emit a signal about it
-	//		QString to = ""; // todo: get the right value
-	//		emit FriendRequestRejected(to);
-	//	}
-	//	LogInfo("Presence subscribed successfully.");
-	//	// Now it's our turn to publish our status
-	//	
-	//	// From where to get contact object ???
-	//	// todo: move this logic to Contact class..
-	//}
-
 	void Connection::OnConnectionInvalidated(Tp::DBusProxy *proxy, const QString &errorName, const QString &errorMessage)
 	{
 		LogError("Connection::OnConnectionInvalidated");

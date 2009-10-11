@@ -2,11 +2,12 @@
 #include "Foundation.h"
 
 #include "CommunicationModule.h"
+#include "OpensimIM\ConnectionProvider.h"
 
 namespace Communication
 {
 
-	CommunicationModule::CommunicationModule(void):ModuleInterfaceImpl("CommunicationModule"), communication_manager_(NULL), console_ui_(NULL)
+	CommunicationModule::CommunicationModule(void):ModuleInterfaceImpl("CommunicationModule"), communication_manager_(NULL), console_ui_(NULL), qt_ui_(NULL), communication_service_(NULL)
 	{
 	}
 
@@ -19,16 +20,33 @@ namespace Communication
 
 	void CommunicationModule::Initialize() 
 	{
-		
+		// current way
 		communication_manager_ = TpQt4Communication::CommunicationManager::GetInstance();
 		console_ui_ = new CommunicationUI::ConsoleUI(framework_);
 		qt_ui_ = new CommunicationUI::QtGUI(framework_);
+
+		// new way
+		communication_service_ = CommunicationService::GetInstance();
+		OpensimIM::ConnectionProvider* p = new OpensimIM::ConnectionProvider(framework_);
+		communication_service_->RegisterConnectionProvider(p);
 
 		LogInfo("Initialized.");
 	}
 
 	void CommunicationModule::PostInitialize()
 	{
+		QStringList protocols = communication_service_->GetSupportedProtocols();
+		if (protocols.size() == 0)
+			LogInfo("No IM protocols supported");
+		else
+		{
+			for (QStringList::iterator i = protocols.begin(); i != protocols.end(); ++i)
+			{
+				QString message = "IM protocol support for: ";
+				message.append(*i);
+				LogInfo( message.toStdString() );
+			}
+		}
 	}
 
 	void CommunicationModule::Uninitialize()
