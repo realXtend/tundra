@@ -6,6 +6,8 @@
 
 #include "CommunicationModuleApi.h"
 #include "CommunicationManager.h"
+#include "CommunicationService.h"
+//#include "OpensimIM/Provider.h"
 #include "ConsoleUI.h"
 #include "QtGUI.h"
 
@@ -50,6 +52,7 @@ namespace Communication
 		TpQt4Communication::CommunicationManager* communication_manager_;
 		CommunicationUI::ConsoleUI* console_ui_;
 		CommunicationUI::QtGUI* qt_ui_;
+		CommunicationServiceInterface* communication_service_;
 	};
 }
 

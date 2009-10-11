@@ -1,14 +1,37 @@
+# Add header and source files from given subfolder 
+# to H_FILES and CPP_FILES variables
+#
+# Alose create source groups (filters in Visual Studio)
+# under "Header Files" and "Source Files" 
+#
+# NOTE: This macro must be called after defination
+#       of source files of projecr root folder
+#       and before setting SOURCE_FILES variable
+# TODO: Add support for more deep folder structures. Current
+#       implementation only support folders directly under project folder
+macro (AddSourceFolder folder_name)
+    file (GLOB H_FILES_IN_FOLDER_${folder_name} ${folder_name}/*.h)
+    file (GLOB CPP_FILES_IN_FOLDER_${folder_name} ${folder_name}/*.cpp)
+    source_group ("Header Files\\${folder_name}" FILES ${H_FILES_IN_FOLDER_${folder_name}})
+    source_group ("Source Files\\${folder_name}" FILES ${CPP_FILES_IN_FOLDER_${folder_name}})
+    set (H_FILES ${H_FILES} ${H_FILES_IN_FOLDER_${folder_name}})
+    set (CPP_FILES ${CPP_FILES} ${CPP_FILES_IN_FOLDER_${folder_name}})
+endmacro (AddSourceFolder)
+
 # Define target name and output directory
 init_target (CommunicationModule OUTPUT modules/core)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
-file (GLOB H_FILES *.h)
+file (GLOB H_FILES *.h )
 file (GLOB XML_FILES *.xml)
 file (GLOB UI_FILES *.ui)
 file (GLOB RESOURCE_FILES resource/*.qrc)
 
-set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
+AddSourceFolder(OpensimIM)
+#AddSourceFolder(TelepathyIM)
+
+set (SOURCE_FILES ${SOURCE_FILES} ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap 
 QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
@@ -23,12 +46,12 @@ use_package (QT4)
 use_package (TELEPATHY_QT4)
 #use_package (GSTREAMER) # Not implemented yet
 #use_package (TELEPATHY_FARSIGHT2) # Not implemented yet
-use_modules ( QtModule)
+use_modules (QtModule RexLogic OpenSimProtocol )
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
-use_framework_modules (Core Foundation Interfaces)
+use_framework_modules (Core Foundation Interfaces RexCommon)
 
-link_modules ( QtModule)
+link_modules ( QtModule  RexLogicModule OpenSimProtocolModule)
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)

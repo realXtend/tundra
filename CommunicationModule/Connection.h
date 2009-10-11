@@ -22,7 +22,6 @@
 
 namespace TpQt4Communication
 {
-
 	#define IM_PROTOCOL "jabber"
 
 	typedef std::vector<std::string> PresenceStatusOptions;
