@@ -46,12 +46,12 @@ use_package (QT4)
 use_package (TELEPATHY_QT4)
 #use_package (GSTREAMER) # Not implemented yet
 #use_package (TELEPATHY_FARSIGHT2) # Not implemented yet
-use_modules (QtModule RexLogic OpenSimProtocol )
+use_modules (QtModule RexLogic OpenSimProtocol)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 use_framework_modules (Core Foundation Interfaces RexCommon)
 
-link_modules ( QtModule  RexLogicModule OpenSimProtocolModule)
+link_modules (QtModule RexLogicModule OpenSimProtocolModule)
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
