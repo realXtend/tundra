@@ -2,4 +2,6 @@
 	<entry>CommunicationModule</entry>
 	<dependency>SupportModules</dependency>
 	<dependency>QtModule</dependency>
+    <dependency>RexLogicModule</dependency>
+    <dependency>OpenSimProtocolModule</dependency>
 </config>
