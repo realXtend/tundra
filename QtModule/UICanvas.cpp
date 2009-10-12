@@ -251,7 +251,17 @@ QPointF UICanvas::GetPosition() const
 
 bool UICanvas::IsHidden() const
 {
-    return !overlay_->isVisible(); 
+    if (mode_ != External)
+    {
+        if (overlay_)
+            return !overlay_->isVisible(); 
+        else
+            return true;
+    }
+    else
+    {
+        return !isVisible();
+    }
 }
 
 void UICanvas::SetCanvasSize(int width, int height)

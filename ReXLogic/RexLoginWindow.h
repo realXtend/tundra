@@ -49,6 +49,7 @@ namespace RexLogic
         void HideInventory();
         void Quit();
         void ProcessCBLogin(QString result);
+        void EditAvatar();
 
     private:
         /// Hides the login window and shows the logout/quit menu that is embedded to main window.
@@ -66,6 +67,8 @@ namespace RexLogic
         QPushButton *quit_button_;
 
         QPushButton *inventory_button_;
+        
+        QPushButton *avatar_button_;
 
         RexWebLogin *webLogin;
 
