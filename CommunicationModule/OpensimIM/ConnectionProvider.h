@@ -20,6 +20,9 @@ namespace OpensimIM
 		//! \param framework Framework object 
 		ConnectionProvider(Foundation::Framework* framework);
 
+		//!
+		virtual ~ConnectionProvider();
+
 		//! Provides list of supported protocols by this provider
 		virtual QStringList GetSupportedProtocols() const;
 

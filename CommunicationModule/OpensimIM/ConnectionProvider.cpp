@@ -11,6 +11,16 @@ namespace OpensimIM
 		RegisterConsoleCommands();	
 	}
 
+	ConnectionProvider::~ConnectionProvider()
+	{
+		for ( ConnectionVector::iterator i = connections_.begin(); i != connections_.end(); ++i)
+		{
+			delete *i;
+			*i = NULL;
+		}
+		connections_.clear();
+	}
+
 	QStringList ConnectionProvider::GetSupportedProtocols() const
 	{
 		QStringList protocols;
