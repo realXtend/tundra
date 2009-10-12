@@ -25,7 +25,7 @@ namespace OpensimIM
 	private:
 		Foundation::Framework* framework_;
 	};
-//	typedef boost::shared_ptr<ChatSession> ChatSessionPtr;
+	typedef boost::shared_ptr<ChatSession> ChatSessionPtr;
 	typedef std::vector<ChatSession*> ChatSessionVector;
 
 } // end of namespace: OpensimIM

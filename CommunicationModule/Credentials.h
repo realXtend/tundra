@@ -3,7 +3,7 @@
 
 #include "Foundation.h"
 #include "EventDataInterface.h"
-
+#include "interface.h"
 
 
 namespace TpQt4Communication
@@ -42,5 +42,43 @@ namespace TpQt4Communication
 	
 
 } // end of namespace: TpQt4Communication
+
+
+namespace Communication
+{
+	/**
+	 * 
+	 *
+	 *
+	 */
+	class Credentials : public CredentialsInterface
+	{
+	public:
+		Credentials(const QString& protocol, const QString& user_id, const QString &server, int port );
+
+		//! Define the used protocol eg. "Jabber", "Opensim_UDP_IM", "irc"
+		virtual void SetProtocol(const QString &protocol);
+
+		//! Provides the protocol
+		virtual QString GetProtocol() const;
+
+		virtual void SetUserID(const QString &user_id);
+		virtual QString GetUserID() const;
+
+		virtual void SetServer(const QString &server);
+		virtual QString GetServer() const;
+
+		//! Define port of IM server to connect
+		virtual void SetPort(int port);
+
+		//! Provides the port of IM server
+		virtual int GetPort() const;
+	protected:
+		QString protocol_;
+		QString user_id_;
+		QString server_;
+		int port_;
+	};
+}
 
 #endif // incl_Comm_Credentials_h

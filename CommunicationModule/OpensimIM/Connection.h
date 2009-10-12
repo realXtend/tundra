@@ -20,6 +20,8 @@ namespace OpensimIM
 	 */
 	class Connection : public Communication::ConnectionInterface
 	{
+		MODULE_LOGGING_FUNCTIONS
+		static const std::string NameStatic() { return "Communication(OpensimIM)"; } // for logging functionality
 	public:
 		Connection(Foundation::Framework* framework);
 		virtual ~Connection();
@@ -47,7 +49,11 @@ namespace OpensimIM
 		virtual QStringList GetAvailablePresenceStatusOptions() const;
 
 		//! Open new chat session with given contact
+		//! This is opensim IM chat
 		virtual Communication::ChatSessionPtr OpenChatSession(const Communication::ContactInterface &contact);
+
+		//! Open new chat session to given room
+		virtual Communication::ChatSessionPtr OpenChatSession(const QString &channel);
 
 		//! Send a friend request to target address
 		virtual void SendFriendRequest(const QString &target, const QString &message);
@@ -61,6 +67,13 @@ namespace OpensimIM
 		//! Closes the connection
 		virtual void Close();
 
+	protected:
+		//! Add console commands: 
+		virtual void RegisterConsoleCommands();
+
+
+		virtual void RequestFriendlist();
+
 	private:
 		Foundation::Framework* framework_;
 		QString name_;
@@ -68,7 +81,8 @@ namespace OpensimIM
 		State state_;
 		QString server_;
 		QString reason_;
-		ChatSessionVector chat_sessions_;
+		ChatSessionVector public_chat_sessions_;
+		ChatSessionVector im_chat_sessions_;
 	};
 	typedef std::vector<Connection*> ConnectionVector;
 

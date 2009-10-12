@@ -34,7 +34,7 @@ namespace Communication
 	class CredentialsInterface
 	{
 	public:
-		CredentialsInterface(const QString& protocol, const QString& user_id, const QString &server, const QString &port );
+//		virtual CredentialsInterface(const QString& protocol, const QString& user_id, const QString &server, const QString &port ) = 0;
 
 		//! Define the used protocol eg. "Jabber", "Opensim_UDP_IM", "irc"
 		virtual void SetProtocol(const QString &protocol) = 0;
@@ -237,6 +237,9 @@ namespace Communication
 
 		//! Open new chat session with given contact
 		virtual ChatSessionPtr OpenChatSession(const ContactInterface &contact) = 0;
+
+		//! Open new chat session to given room
+		virtual ChatSessionPtr OpenChatSession(const QString &channel) = 0;
 
 		//! Send a friend request to target address
 		virtual void SendFriendRequest(const QString &target, const QString &message) = 0;
