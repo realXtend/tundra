@@ -13,7 +13,19 @@ namespace OpensimIM
 
 	Connection::~Connection()
 	{
+		for( ChatSessionVector::iterator i =  public_chat_sessions_.begin(); i != public_chat_sessions_.end(); ++i)
+		{
+			delete *i;
+			*i = NULL;
+		}
+		public_chat_sessions_.clear();
 
+		for( ChatSessionVector::iterator i =  im_chat_sessions_.begin(); i != im_chat_sessions_.end(); ++i)
+		{
+			delete *i;
+			*i = NULL;
+		}
+		im_chat_sessions_.clear();
 	}
 	
 	QString Connection::GetName() const
