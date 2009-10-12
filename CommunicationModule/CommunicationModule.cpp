@@ -35,6 +35,11 @@ namespace Communication
 
 	void CommunicationModule::PostInitialize()
 	{
+		if ( communication_service_ == NULL)
+		{
+			return;
+		}
+
 		QStringList protocols = communication_service_->GetSupportedProtocols();
 		if (protocols.size() == 0)
 			LogInfo("No IM protocols supported");

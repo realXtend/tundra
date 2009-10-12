@@ -13,6 +13,9 @@ namespace OpensimIM
 	 */
 	class ConnectionProvider : public  Communication::ConnectionProviderInterface
 	{
+		MODULE_LOGGING_FUNCTIONS
+		static const std::string NameStatic() { return "Communication(OpensimIM)"; } // for logging functionality
+
 	public:
 		//! \param framework Framework object 
 		ConnectionProvider(Foundation::Framework* framework);
@@ -25,6 +28,14 @@ namespace OpensimIM
 
 		//! Provides all Connections objects created with this provider
 		virtual Communication::ConnectionVector GetConnections() const;
+
+	protected:
+		//! commands: "opensimim test"
+		virtual void RegisterConsoleCommands();
+
+		//! Test IM connection vy creating connection, open text chat on public world chat and sent
+		//! a text message
+		virtual Console::CommandResult OnConsoleCommandTest(const Core::StringVector &params);
 
 	private:
 		ConnectionVector connections_;
