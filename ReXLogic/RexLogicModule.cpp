@@ -49,6 +49,7 @@
 #include "AssetUploader.h"
 #include "InventoryModel.h"
 #include "InventoryWindow.h"
+#include "AvatarEditor.h"
 #include "RexTypes.h"
 
 namespace RexLogic
@@ -120,6 +121,7 @@ namespace RexLogic
         // WorldLogic::registerSystem(framework);
         // world_logic_ = new WorldLogic(framework);
         avatar_ = AvatarPtr(new Avatar(this));
+        avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
         primitive_ = PrimitivePtr(new Primitive(this));
         rexserver_connection_ = RexServerConnectionPtr(new RexServerConnection(framework_));
         network_handler_ = new NetworkEventHandler(framework_, this);
@@ -261,6 +263,7 @@ namespace RexLogic
 
         rexserver_connection_.reset();
         avatar_.reset();
+        avatar_editor_.reset();
         primitive_.reset();
         avatar_controllable_.reset();
         camera_controllable_.reset();
@@ -437,6 +440,12 @@ namespace RexLogic
     void RexLogicModule::HideInventory()
     {
         inventoryWindow_->Hide();
+    }
+    
+    void RexLogicModule::ShowAvatarEditor()
+    {
+        if (avatar_editor_)
+            avatar_editor_->Toggle();
     }
 
     //XXX temporary workarounds for a linking prob in pymodule, would like to call these directly (if this is the right idea for av / view control to begin with)

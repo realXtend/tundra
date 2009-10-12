@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "RexLoginWindow.h"
 #include "RexLogicModule.h"
+#include "RexServerConnection.h"
 #include "QtModule.h"
 #include "UICanvas.h"
 #include "InventoryWindow.h"
@@ -42,6 +43,7 @@ RexLoginWindow::~RexLoginWindow()
     login_widget_ = 0;
     logout_button_ = 0;
     quit_button_ = 0;
+    avatar_button_ = 0;
 
     Foundation::ModuleSharedPtr qt_module = framework_->GetModuleManager()->GetModule("QtModule").lock();
     QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
@@ -191,6 +193,14 @@ void RexLoginWindow::CreateLogoutMenu()
 
     screen_canvas_->SetLockPosition(true);
     screen_canvas_->Hide();
+    
+    avatar_button_ = new QPushButton();
+    avatar_button_->setText("Edit Avatar");
+    avatar_button_->move(5, 80);
+    QObject::connect(avatar_button_, SIGNAL(clicked()), this, SLOT(EditAvatar()));
+
+    screen_canvas_->AddWidget(avatar_button_);
+    screen_canvas_->Hide();
 }
 
 void RexLoginWindow::Connect()
@@ -318,6 +328,11 @@ void RexLoginWindow::ShowInventory()
 void RexLoginWindow::HideInventory()
 {
     rex_logic_->HideInventory();
+}
+
+void RexLoginWindow::EditAvatar()
+{
+    rex_logic_->ShowAvatarEditor();
 }
 
 void RexLoginWindow::Disconnect()

@@ -20,6 +20,7 @@ namespace RexLogic
     class FrameworkEventHandler;
     class Terrain;
     class Avatar;
+    class AvatarEditor;
     class Primitive;
     class Sky;
     class Water;
@@ -35,6 +36,7 @@ namespace RexLogic
     typedef boost::shared_ptr<Terrain> TerrainPtr;
     typedef boost::shared_ptr<Water> WaterPtr;
     typedef boost::shared_ptr<Avatar> AvatarPtr;
+    typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
     typedef boost::shared_ptr<Primitive> PrimitivePtr;
     typedef boost::shared_ptr<Sky> SkyPtr;
     typedef boost::shared_ptr<Environment> EnvironmentPtr;
@@ -186,6 +188,9 @@ namespace RexLogic
         /// Hides the inventory window.
         void HideInventory();
 
+        /// Shows (or rather toggles) the avatar editor window.
+        void ShowAvatarEditor();
+        
         //! XXX have linking probs to AvatarController so trying this wrapper
         void SetAvatarYaw(Core::Real newyaw);
         void SetAvatarRotation(Core::Quaternion newrot);
@@ -227,6 +232,8 @@ namespace RexLogic
         TerrainPtr terrain_;
 
         AvatarPtr avatar_;
+        
+        AvatarEditorPtr avatar_editor_;
 
         PrimitivePtr primitive_;
 

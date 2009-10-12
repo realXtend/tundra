@@ -52,11 +52,11 @@ namespace QtUI
         boost::weak_ptr<UICanvas> CreateCanvas(UICanvas::Mode mode);
 
         /// Deletes the canvas. \todo Do not require the user to pass a shared_ptr. Use a raw ptr or a weak ptr instead.
-        void DeleteCanvas(const boost::shared_ptr<UICanvas>& canvas) { controller_->RemoveCanvas(canvas->GetID()); }
+        void DeleteCanvas(const boost::shared_ptr<UICanvas>& canvas) { if (controller_) controller_->RemoveCanvas(canvas->GetID()); }
 
         /** Deletes the canvas. 
             @param The ID of the canvas to be deleted. */
-        void DeleteCanvas(const QString& id) { controller_->RemoveCanvas(id); }
+        void DeleteCanvas(const QString& id) { if  (controller_) controller_->RemoveCanvas(id); }
 
     private:
         /// Initializes a mapping table between OIS and Qt keyboard codes.
