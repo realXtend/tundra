@@ -9,7 +9,7 @@
 #include "Poco/SHA1Engine.h"
 #include "Poco/Base64Encoder.h"
 
-#include "QByteArray.h"
+#include <QbyteArray>
 
 using namespace RexTypes;
 
