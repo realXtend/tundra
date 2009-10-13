@@ -213,6 +213,9 @@ namespace QtUI
         /// Recreates an Ogre texture when the canvas size needs to change.
         void ResizeOgreTexture(int width, int height);
 
+        /// Resizes widgets when canvas size has been changed
+        void ResizeWidgets(int width, int height);
+ 
         /// Tracks whether the Ogre surface associated to this canvas is dirty and should be redrawn.
 	    bool dirty_;
 

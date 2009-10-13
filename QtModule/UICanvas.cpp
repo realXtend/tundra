@@ -277,13 +277,8 @@ void UICanvas::SetCanvasSize(int width, int height)
         container_->setDimensions(relWidth, relHeight);
         Ogre::PanelOverlayElement* element = static_cast<Ogre::PanelOverlayElement* >(container_);  
         element->setUV(0.0f, 0.0f, 1.0f, 1.0f);    
-                
-        for (int i = 0; i < scene_widgets_.size(); ++i)
-        {
-            if ( scene_widgets_[i]->parent() == 0)
-                scene_widgets_[i]->resize(QSizeF(width, height));
-
-        }
+        
+        ResizeWidgets(width, height);
     }
 
     // Repaint canvas. 
@@ -374,16 +369,31 @@ void UICanvas::Resize(int height, int width, CanvasCorner anchor)
 
     resize(width,height);
    
-    for (int i = 0; i < scene_widgets_.size(); ++i)
-    {
-        if ( scene_widgets_[i]->parent() == 0)
-            scene_widgets_[i]->resize(QSizeF(width, height));
-
-    }
+    ResizeWidgets(width, height);
 
     dirty_ = true;
     RenderSceneToOgreSurface();
 
+}
+
+void UICanvas::ResizeWidgets(int width, int height)
+{
+    // Hack for the logout-window: count rootlevel widgets and resize only if there's only one
+    Core::uint root_widgets = 0;
+    for (int i = 0; i < scene_widgets_.size(); ++i)
+    {
+        if ( scene_widgets_[i]->parent() == 0)
+            root_widgets++;
+    }
+    
+    if (root_widgets == 1)
+    {
+        for (int i = 0; i < scene_widgets_.size(); ++i)
+        {
+            if ( scene_widgets_[i]->parent() == 0)
+                scene_widgets_[i]->resize(QSizeF(width, height));
+        }
+    }
 }
 
 
