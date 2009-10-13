@@ -131,7 +131,14 @@ namespace QtUI
 
         Qt::CursorShape UpdateMouseCursor(int x, int y, int index = -1);
 
-        UICanvas *GetCanvasAt(int x, int y);
+        /**
+         * Returns a canvas from a given point. 
+         * @param x is a x-coordinate of canvas. 
+         * @param y is a y-coordinate of canvas. 
+         */
+        
+        UICanvas* GetCanvasAt(int x, int y);
+
     public slots:
         
         

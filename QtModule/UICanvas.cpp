@@ -276,6 +276,12 @@ void UICanvas::SetCanvasSize(int width, int height)
         float relHeight = (float)texture->getHeight()/double(renderWindowSize_.height());
         container_->setDimensions(relWidth, relHeight);
         
+        for (int i = 0; i < scene_widgets_.size(); ++i)
+        {
+            if ( scene_widgets_[i]->parent() == 0)
+                scene_widgets_[i]->resize(QSizeF(width, height));
+
+        }
     }
 
     // Repaint canvas. 
@@ -293,125 +299,92 @@ void UICanvas::SetRenderWindowSize(const QSize& size)
         float relHeight = (float)texture->getHeight()/double(renderWindowSize_.height());
         container_->setDimensions(relWidth, relHeight);
         dirty_ = true;
+
+   
     }
 }
 
-
-void UICanvas::Resize(int height, int width, CanvasSide side)
+void UICanvas::Resize(int height, int width, CanvasCorner anchor)
 {
-    if ( mode_ == External)
+    if ( mode_ == External ) 
     {
         SetCanvasSize(width, height);
         return;
     }
-    
+
     QSize current_size = this->size();
 
-    // Assure that new size is bigger then canvas minium size. 
+    // Assure that new size is bigger then canvas minium size or smaller then maximum size.  
+
     QSize minium = this->minimumSize();
     if ( height < minium.height() || width < minium.width() || height <= 0 || width <= 0)
         return;
+
+    QSize maximum = this->maximumSize();
+    
+    if ( height > maximum.height() || width > maximum.width() )
+        return;
+
 
     Ogre::PanelOverlayElement* element = static_cast<Ogre::PanelOverlayElement* >(container_);  
     Ogre::Real u1 = 0, v1 = 0, u2 = 0, v2= 0;
     Ogre::Real top = element->getTop();
     Ogre::Real left = element->getLeft();
     element->getUV(u1,v1,u2,v2);
+   
+    int diffWidth = current_size.width() - width;
+    int diffHeight = current_size.height() - height;
+   
+
+    // Adjust overlay position and dimension. 
+
+    Ogre::Real xPos = left, yPos = top;
+
+    if ( anchor == TopRight || anchor == BottomRight)
+        xPos = left + diffWidth/Ogre::Real(renderWindowSize_.width());
     
-    if ( current_size.width() > width || current_size.height() > height)
-    {
-        // Smaller
-        
+    
+    if ( anchor == BottomRight || anchor == BottomLeft)
+        yPos = top + diffHeight/Ogre::Real(renderWindowSize_.height());  
+    
+    Ogre::Real new_container_width = width/Ogre::Real(renderWindowSize_.width());
+    Ogre::Real new_container_height = height/Ogre::Real(renderWindowSize_.height());
 
-        if ( current_size.width() > width )
-        {
-            // Change width
-            
-            int diff = current_size.width() - width;
+    element->setDimensions( new_container_width, new_container_height);
+    element->setPosition(xPos,yPos);
 
-            Ogre::Real ratio = width/Ogre::Real(current_size.width());
-            Ogre::Real current_container_height = element->getHeight();
-            Ogre::Real new_container_width = width/Ogre::Real(renderWindowSize_.width());
-            
-         
-            Ogre::Real xPos = 0.0;
+    // Ensure that ogre surface is large enough
 
-            switch (side)
-            {
-                case Left:
-                {
-                    u1 = Ogre::Real(1.0)-ratio;
-                   
-                    xPos = left + diff/Ogre::Real(renderWindowSize_.width());
-                    element->setPosition(xPos,top);
-             
-                    break;
-                }
-                case Right:
-                {
-                    u2 = ratio;
-                    xPos = left - diff/Ogre::Real(renderWindowSize_.width());
-                    element->setPosition(left,top);
-                    break;
-                }
+    Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
+    if ( (texture->getWidth() < width || texture->getHeight() < height) && ( width/2 < 2048 && height/2 < 2048 ))
+          ResizeOgreTexture(2*width, 2*height);         
+      
+     
+    // Update uv-mapping.
 
-            }
-            element->setUV(u1,v1,u2,v2);
-           
-            element->setDimensions( new_container_width, current_container_height);
+    Ogre::Real overlay_width = texture->getWidth();
+    Ogre::Real overlay_height = texture->getHeight();
+    
+    u2 = width/overlay_width;
+    v2 = height/overlay_height;
+   
+    element->setUV(u1,v1,u2,v2);
 
-        }
-        else
-        {
-            // height
-
-            int diff = current_size.height() - height;
-            Ogre::Real ratio =height/Ogre::Real(current_size.height());
-            Ogre::Real relHeight = height/Ogre::Real(renderWindowSize_.height());
-            
-            Ogre::Real loc = renderWindowSize_.height() * top;
-        
-            switch ( side )
-            {
-            case Top:
-                {
-                    v2 = ratio;
-                    Ogre::Real yPos = top + diff/Ogre::Real(renderWindowSize_.height());
-                    element->setPosition(left, yPos);
-                    break;
-                    
-                    
-                }
-            case Bottom:
-                {
-                    v1 = Ogre::Real(1.0) -  ratio;
-                    element->setPosition(left, top);
-                    break;
-                }
-
-            }
-            
-            
-            Ogre::Real current_container_width = element->getWidth();
-            element->setUV(u1,v1,u2,v2);
-            element->setDimensions( current_container_width, relHeight);
-
-        }
-
-    }
-    else 
-    {
-        // Growing.
-
-    }
+    // Ensure Qt-internals
 
     resize(width,height);
+   
+    for (int i = 0; i < scene_widgets_.size(); ++i)
+    {
+        if ( scene_widgets_[i]->parent() == 0)
+            scene_widgets_[i]->resize(QSizeF(width, height));
+
+    }
+
     dirty_ = true;
     RenderSceneToOgreSurface();
 
 }
-
-
 
 
 void UICanvas::SetCanvasWindowTitle(QString title) 
@@ -462,8 +435,6 @@ void UICanvas::CreateOgreResources(int width, int height)
     //container_->setDimensions(1.0,1.0);
 
     container_->setPosition(0,0);
-
-    //overlay_->setZOrder(1);
 
     // Add container in default overlay
     overlay_->add2D(container_);
