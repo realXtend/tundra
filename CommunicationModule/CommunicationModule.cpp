@@ -35,6 +35,9 @@ namespace Communication
 
 	void CommunicationModule::PostInitialize()
 	{
+        inboundcategory_id_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
+		Foundation::EventManagerPtr event_manager = framework_->GetEventManager(); 
+
 		if ( communication_service_ == NULL)
 		{
 			return;
@@ -74,24 +77,25 @@ namespace Communication
 			communication_manager_ = NULL;
 		}
 
-	 //   if (communication_manager_ && communication_manager_->IsInitialized())
-		//{
-  //          framework_->GetServiceManager()->UnregisterService(communication_manager_);
-		//	communication_manager_->UnInitialize();
-		//}
-		// TODO: Uninitialize communication manager
 		LogInfo("Uninitialized.");
 	}
 
 	void CommunicationModule::Update(Core::f64 frametime)
 	{
-		
-		//if done this way, should keep the ref that got in init
-		/*Foundation::ScriptServiceInterface *pyengine = framework_->GetService<Foundation::ScriptServiceInterface>
-			(Foundation::Service::ST_Scripting);
-
-		pyengine->RunString("communication.update()"); //XXX no way to get return val, w.i.p*/
 	}
+
+//	bool                      HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) { return false; }
+    bool CommunicationModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        if ((category_id == inboundcategory_id_))
+        {
+            if (communication_service_)
+				static_cast<CommunicationService*>( communication_service_ )->HandleNetworkEvent(data);
+        }     
+       
+        return false;
+    }    
+
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);

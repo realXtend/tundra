@@ -48,11 +48,18 @@ namespace Communication
 		static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communication;
 
+	    bool CommunicationModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
+
+
 	private:
 		TpQt4Communication::CommunicationManager* communication_manager_;
 		CommunicationUI::ConsoleUI* console_ui_;
 		CommunicationUI::QtGUI* qt_ui_;
 		CommunicationServiceInterface* communication_service_;
+	
+		//! category id for incoming messages
+        Core::event_category_id_t inboundcategory_id_;
+
 	};
 }
 

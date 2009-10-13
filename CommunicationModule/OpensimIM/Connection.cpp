@@ -1,6 +1,7 @@
 #include "Connection.h"
 #include "StableHeaders.h"
-//#include "RexLogicModule.h" // chat
+#include "RexLogicModule.h" // chat
+#include "RexProtocolMsgIDs.h"
 
 namespace OpensimIM
 {
@@ -9,6 +10,7 @@ namespace OpensimIM
 	{
 		RequestFriendlist();
 		RegisterConsoleCommands();
+		OpenWorldChatSession();
 	}
 
 	Connection::~Connection()
@@ -78,7 +80,7 @@ namespace OpensimIM
 		//! \todo check if chat session on given channel already exist
 		//!       and if so then return that session object
 
-		ChatSession* session = new ChatSession(framework_);
+		ChatSession* session = new ChatSession(framework_, channel);
 		public_chat_sessions_.push_back(session);
 		return Communication::ChatSessionPtr(session);
 	}
@@ -114,5 +116,64 @@ namespace OpensimIM
 	{
 		//! \todo async xmplrpc "get_user_friend_list"(owenerID)
 	}
+
+	bool Connection::HandleNetworkEvent(Foundation::EventDataInterface* data)
+	{
+		OpenSimProtocol::NetworkEventInboundData *event_data = dynamic_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
+        if (!event_data)
+            return false;
+            
+        const NetMsgID msgID = event_data->messageID;
+        NetInMessage *msg = event_data->message;
+        switch(msgID)
+        {
+		case RexNetMsgChatFromSimulator: HandleOSNEChatFromSimulator(*msg);
+            return true;
+		}
+
+		return false;
+	}
+
+	bool Connection::HandleOSNEChatFromSimulator(NetInMessage& msg)
+	{
+		try
+		{
+			msg.ResetReading();
+
+			std::size_t size = 0;
+			const boost::uint8_t* buffer = msg.ReadBuffer(&size);
+			std::string from_name = std::string((char*)buffer);
+			RexTypes::RexUUID source = msg.ReadUUID();
+			RexTypes::RexUUID object_owner = msg.ReadUUID();
+			ChatSourceType source_type = static_cast<ChatSourceType>( msg.ReadU8() );
+			ChatType chat_type = static_cast<ChatType>( msg.ReadU8() ); 
+			ChatAudibleLevel audible = static_cast<ChatAudibleLevel>( msg.ReadU8() ); // ?
+			RexTypes::Vector3 position = msg.ReadVector3();
+			std::string message = msg.ReadString();
+			if ( message.size() > 0 )
+			{
+				int test = 0;
+				for (ChatSessionVector::iterator i = public_chat_sessions_.begin(); i != public_chat_sessions_.end(); ++i)
+				{
+					QString uuid = source.ToString().c_str();
+					(*i)->MessageFromServer(QString( from_name.c_str() ), QString( message.c_str() ));
+				}
+
+			}
+		}
+		catch(NetMessageException &e)
+		{
+			return false;
+		}
+		return true;		
+	}
+
+	void Connection::OpenWorldChatSession()
+	{
+		OpenChatSession("0");
+//		if (world_chat_ == NULL)
+//			world_chat_ = new ChatSession(framework_, "0");
+	}
+
 
 } // end of namespace: OpensimIM

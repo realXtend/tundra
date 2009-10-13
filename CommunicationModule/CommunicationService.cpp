@@ -64,4 +64,17 @@ namespace Communication
 		return connections_per_protocol_.value(protocol);
 	}
 
+	bool CommunicationService::HandleNetworkEvent(Foundation::EventDataInterface* data)
+	{
+		//! \todo forward network events to connection providers
+		for (ConnectionProviderVector::iterator i = connection_providers_.begin(); i != connection_providers_.end(); ++i)
+		{
+			NetworkEventHandlerInterface* handler = dynamic_cast<NetworkEventHandlerInterface*>( *i );
+			if ( handler )
+				handler->HandleNetworkEvent( data );
+		}
+
+		return false;
+	}
+
 } // end of namespace: Communication
