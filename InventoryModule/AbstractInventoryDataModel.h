@@ -26,9 +26,6 @@ namespace Inventory
         /// Destructor.
         virtual ~AbstractInventoryDataModel() {}
 
-        ///
-        //virtual void AddFolder(AbstractInventoryItem *newFolder, AbstractInventoryItem *parentFolder) = 0;
-
         /// @return First folder by the requested name or null if the folder isn't found.
         virtual AbstractInventoryItem *GetFirstChildFolderByName(const QString &name) const = 0;
 
@@ -39,7 +36,8 @@ namespace Inventory
         /// @param id ID.
         /// @param parent Parent folder.
         /// @return Pointer to the existing or just created folder.
-        virtual AbstractInventoryItem *GetOrCreateNewFolder(const QString &id, AbstractInventoryItem &parentFolder) = 0;
+        virtual AbstractInventoryItem *GetOrCreateNewFolder(const QString &id, AbstractInventoryItem &parentFolder,
+            const bool &notify_server = true) = 0;
 
         /// Returns asset requested id, or creates a new one if the folder doesnt exist.
         /// @param inventory_id Inventory ID.
@@ -48,6 +46,13 @@ namespace Inventory
         /// @return Pointer to the existing or just created asset.
         virtual AbstractInventoryItem *GetOrCreateNewAsset(const QString &inventory_id, const QString &asset_id,
             AbstractInventoryItem &parentFolder, const QString &name) = 0;
+
+        /// Request inventory descendents for spesific folder from the server.
+        /// @param folder Folder.
+        virtual void FetchInventoryDescendents(AbstractInventoryItem *folder) = 0;
+
+        /// @return Pointer to the existing or just created asset.
+        virtual void NotifyServerAboutFolderRemoval(AbstractInventoryItem *folder) = 0;
 
         /// @return Inventory root folder.
         virtual AbstractInventoryItem *GetRoot() const = 0;

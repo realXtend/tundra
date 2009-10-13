@@ -104,6 +104,16 @@ bool InventoryModule::HandleEvent(
         {
             inventoryWindow_->Hide();
             inventoryWindow_->ResetInventoryTreeModel();
+            return false;
+        }
+
+        if (event_id == InventoryEvents::EVENT_INVENTORY_FOLDER_DESCENDENTS)
+        {
+            InventoryFolderEventData *folder_data = dynamic_cast<InventoryFolderEventData *>(data);
+            if (!folder_data)
+                return false;
+
+            inventoryWindow_->HandleInventoryFolderDescendents(folder_data);
         }
 
         return false;

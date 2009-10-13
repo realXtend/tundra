@@ -30,6 +30,13 @@ namespace RexLogic
     class RexLogicModule;
 }
 
+namespace OpenSimProtocol
+{
+    class InventoryFolderEventData;
+    class InventoryAssetEventData;
+}
+
+
 namespace Inventory
 {
     class InventoryViewModel;
@@ -68,31 +75,35 @@ namespace Inventory
         /// Updates possible actions depending on the currently active tree view item.
         void UpdateActions();
 
+        ///
+        void HandleInventoryFolderDescendents(OpenSimProtocol::InventoryFolderEventData *folder_data);
+
 //    protected slots:
 //        void closeEvent(QCloseEvent *myCloseEvent);
 
     private slots:
         /// Close handler
         void CloseInventoryWindow();
-/*
+
         /// Fetchs the inventory folder's descendents.
         void FetchInventoryDescendents(const QModelIndex &index);
 
-        /// Creates new folder.
-        void CreateFolder();
+        /// Adds new folder.
+        void AddFolder();
 
         /// Deletes folder.
         void DeleteFolder();
 
+/*
         /// Creates new inventory asset.
         void CreateAsset();
 
         /// Deletes inventory asset.
         void DeleteAsset();
-
-        /// Informs the server about change in name of folder or asset.
-        void NameChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
 */
+        /// Informs the server about change in name of folder or asset.
+        void ItemNameChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+
     private:
         Q_DISABLE_COPY(InventoryWindow);
 

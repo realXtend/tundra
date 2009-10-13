@@ -34,26 +34,6 @@ InventoryFolder::~InventoryFolder()
     qDeleteAll(children_);
 }
 
-/*
-InventoryFolder::InventoryFolder(const InventoryFolder &rhs) : InventoryItemBase(rhs)
-{
-    itemData_ = rhs.itemData_;
-    type_default = rhs.type_default;
-    version = rhs.version;
-    childItems_ = rhs.childItems_;
-}
-
-InventoryFolder &InventoryFolder::operator = (const InventoryFolder &rhs)
-{
-    InventoryItemBase::operator=(rhs);
-    itemData_ = rhs.itemData_;
-    type_default = rhs.type_default;
-    version = rhs.version;
-    childItems_ = rhs.childItems_;
-    return *this;
-}
-*/
-
 AbstractInventoryItem *InventoryFolder::AddChild(AbstractInventoryItem *child)
 {
     child->SetParent(this);
@@ -238,6 +218,21 @@ QVariant InventoryFolder::Data(int column) const
     return itemData_.value(column);
 }
 */
+
+void InventoryFolder::DebugDumpInventoryFolderStructure(int indentationLevel)
+{
+    for(int i = 0; i < indentationLevel; ++i)
+        std::cout << " ";
+    std::cout << GetName().toStdString() << " " << std::endl;
+
+    QListIterator<AbstractInventoryItem *> it(children_);
+    while(it.hasNext())
+    {
+        InventoryFolder *folder = dynamic_cast<InventoryFolder *>(it.next());
+        if (folder)
+            folder->DebugDumpInventoryFolderStructure(indentationLevel + 3);
+    }
+}
 
 int InventoryFolder::Row() const
 {

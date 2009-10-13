@@ -23,7 +23,7 @@
 #include "Primitive.h"
 #include "Sky.h"
 #include "Environment.h"
-#include "InventoryModel.h"
+#include "Inventory.h"
 
 namespace
 {
@@ -58,14 +58,14 @@ NetworkEventHandler::NetworkEventHandler(Foundation::Framework *framework, RexLo
     // Get the pointe to the OpenSimModule.
     netInterface_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>
         (Foundation::Module::MT_OpenSimProtocol);
-    
+
     boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
     if (!sp.get())
     {
         RexLogicModule::LogError("NetworkEventHandler: Could not acquire OpenSimProtocolModule!");
         return;
     }
-    
+
     Foundation::ModuleWeakPtr renderer = framework->GetModuleManager()->GetModule(Foundation::Module::MT_Renderer);
     if (renderer.expired() == false)
     {
@@ -124,50 +124,53 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(Core::event_id_t event_id, F
     default:
         break;
     }
-    
+
     return false;
 }
 
 bool NetworkEventHandler::HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data)
 {
-    data->message->ResetReading();
-    data->message->SkipToNextVariable();
-    data->message->SkipToNextVariable();
+    NetInMessage &msg = *data->message;
+    msg.ResetReading();
+    msg.SkipToNextVariable();
+    msg.SkipToNextVariable();
 
-    if (data->message->GetCurrentBlock() >= data->message->GetBlockCount())
+    if (msg.GetCurrentBlock() >= msg.GetBlockCount())
     {
         RexLogicModule::LogDebug("Empty ObjectUpdate packet received, ignoring.");
         return false;
     }
-    
-    size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+
+    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
     bool result = false;
     if (instance_count > 0)
     {
-        data->message->SkipToFirstVariableByName("PCode");
-        uint8_t pcode = data->message->ReadU8();
+        msg.SkipToFirstVariableByName("PCode");
+        uint8_t pcode = msg.ReadU8();
         switch(pcode)
         {
         case 0x09:
             result = rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_ObjectUpdate(data);
             break;
-        
+
         case 0x2f:
             result = rexlogicmodule_->GetAvatarHandler()->HandleOSNE_ObjectUpdate(data);
             break;
         }
     }
-    
+
     return result;
 }
 
 bool NetworkEventHandler::HandleOSNE_GenericMessage(OpenSimProtocol::NetworkEventInboundData* data)
-{        
-    data->message->ResetReading();    
-    data->message->SkipToNextVariable();      // AgentId
-    data->message->SkipToNextVariable();      // SessionId
-    data->message->SkipToNextVariable();      // TransactionId
-    std::string methodname = data->message->ReadString(); 
+{
+    NetInMessage &msg = *data->message;
+    msg.ResetReading();
+
+    msg.SkipToNextVariable(); // AgentId
+    msg.SkipToNextVariable(); // SessionId
+    msg.SkipToNextVariable(); // TransactionId
+    std::string methodname = msg.ReadString();
 
     if (methodname == "RexMediaUrl")
         return rexlogicmodule_->GetPrimitiveHandler()->HandleRexGM_RexMediaUrl(data);
@@ -178,35 +181,35 @@ bool NetworkEventHandler::HandleOSNE_GenericMessage(OpenSimProtocol::NetworkEven
     else if (methodname == "RexSky")
           return rexlogicmodule_->GetSkyHandler()->HandleRexGM_RexSky(data);
     else
-        return false;    
+        return false;
 }
 
 bool NetworkEventHandler::HandleOSNE_RegionHandshake(OpenSimProtocol::NetworkEventInboundData* data)
 {
-    size_t bytesRead = 0;
+    NetInMessage &msg = *data->message;
+    msg.ResetReading();
 
-    data->message->ResetReading();    
-    data->message->SkipToNextVariable(); // RegionFlags U32
-    data->message->SkipToNextVariable(); // SimAccess U8
+    msg.SkipToNextVariable(); // RegionFlags U32
+    msg.SkipToNextVariable(); // SimAccess U8
 
-    std::string sim_name = data->message->ReadString(); // SimName
+    std::string sim_name = msg.ReadString(); // SimName
     rexlogicmodule_->GetServerConnection()->simName_ = sim_name;
-    
-    data->message->SkipToNextVariable(); // SimOwner
-    data->message->SkipToNextVariable(); // IsEstateManager
-    data->message->SkipToNextVariable(); // WaterHeight
-    data->message->SkipToNextVariable(); // BillableFactor
-    data->message->SkipToNextVariable(); // CacheID
+
+    msg.SkipToNextVariable(); // SimOwner
+    msg.SkipToNextVariable(); // IsEstateManager
+    msg.SkipToNextVariable(); // WaterHeight
+    msg.SkipToNextVariable(); // BillableFactor
+    msg.SkipToNextVariable(); // CacheID
     for(int i = 0; i < 4; ++i)
-        data->message->SkipToNextVariable(); // TerrainBase0..3
+        msg.SkipToNextVariable(); // TerrainBase0..3
     RexAssetID terrain[4];
-    terrain[0] = data->message->ReadUUID().ToString();
-    terrain[1] = data->message->ReadUUID().ToString();
-    terrain[2] = data->message->ReadUUID().ToString();
-    terrain[3] = data->message->ReadUUID().ToString();        
+    terrain[0] = msg.ReadUUID().ToString();
+    terrain[1] = msg.ReadUUID().ToString();
+    terrain[2] = msg.ReadUUID().ToString();
+    terrain[3] = msg.ReadUUID().ToString();
 
     RexLogicModule::LogInfo("Joined to the sim \"" + sim_name + "\".");
-    
+
     // Create the "World" scene.
     boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
     if (!sp.get())
@@ -225,9 +228,11 @@ bool NetworkEventHandler::HandleOSNE_RegionHandshake(OpenSimProtocol::NetworkEve
 
 bool NetworkEventHandler::HandleOSNE_LogoutReply(OpenSimProtocol::NetworkEventInboundData* data)
 {
-    data->message->ResetReading();
-    RexUUID aID = data->message->ReadUUID();
-    RexUUID sID = data->message->ReadUUID();
+    NetInMessage &msg = *data->message;
+    msg.ResetReading();
+
+    RexUUID aID = msg.ReadUUID();
+    RexUUID sID = msg.ReadUUID();
 
     if (aID == rexlogicmodule_->GetServerConnection()->GetInfo().agentID &&
         sID == rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
@@ -236,53 +241,55 @@ bool NetworkEventHandler::HandleOSNE_LogoutReply(OpenSimProtocol::NetworkEventIn
         rexlogicmodule_->GetServerConnection()->ForceServerDisconnect();
         rexlogicmodule_->DeleteScene("World");
     }
-    
+
     return false;
 }
 
 bool NetworkEventHandler::HandleOSNE_AgentMovementComplete(OpenSimProtocol::NetworkEventInboundData* data)
 {
-    data->message->ResetReading();
+    NetInMessage &msg = *data->message;
+    msg.ResetReading();
 
-    RexUUID agentid = data->message->ReadUUID();
-    RexUUID sessionid = data->message->ReadUUID();
-    
+    RexUUID agentid = msg.ReadUUID();
+    RexUUID sessionid = msg.ReadUUID();
+
     //if (agentid == rexlogicmodule_->GetServerConnection()->GetInfo().agentID && sessionid == rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
     {
-        Vector3 position = data->message->ReadVector3(); 
-        Vector3 lookat = data->message->ReadVector3();
+        Vector3 position = msg.ReadVector3(); 
+        Vector3 lookat = msg.ReadVector3();
 
         assert (rexlogicmodule_->GetAvatarControllable() && "Handling agent movement complete event before avatar controller is created.");
         rexlogicmodule_->GetAvatarControllable()->HandleAgentMovementComplete(Core::OpenSimToOgreCoordinateAxes(position), Core::OpenSimToOgreCoordinateAxes(lookat));
 
         /// \todo tucofixme, what to do with regionhandle & timestamp?
-        uint64_t regionhandle = data->message->ReadU64();
-        uint32_t timestamp = data->message->ReadU32(); 
+        uint64_t regionhandle = msg.ReadU64();
+        uint32_t timestamp = msg.ReadU32(); 
     }
-    
+
     rexlogicmodule_->GetServerConnection()->SendAgentSetAppearancePacket();
     return false;
 }
 
 bool NetworkEventHandler::HandleOSNE_ImprovedTerseObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data)
 {
-    data->message->ResetReading();   
+    NetInMessage &msg = *data->message;
+    msg.ResetReading();
 
-    uint64_t regionhandle = data->message->ReadU64();    
-    data->message->SkipToNextVariable(); // TimeDilation U16 ///\todo Unhandled inbound variable 'TimeDilation'.
+    uint64_t regionhandle = msg.ReadU64();
+    msg.SkipToNextVariable(); // TimeDilation U16 ///\todo Unhandled inbound variable 'TimeDilation'.
 
-    if (data->message->GetCurrentBlock() >= data->message->GetBlockCount())
+    if (msg.GetCurrentBlock() >= msg.GetBlockCount())
     {
         RexLogicModule::LogDebug("Empty ImprovedTerseObjectUpdate packet received, ignoring.");
         return false;
     }
 
     // Variable block
-    size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
     for(size_t i = 0; i < instance_count; i++)
     {
         size_t bytes_read = 0;
-        const uint8_t *bytes = data->message->ReadBuffer(&bytes_read);
+        const uint8_t *bytes = msg.ReadBuffer(&bytes_read);
 
         uint32_t localid = 0;
         switch(bytes_read)
@@ -297,28 +304,28 @@ bool NetworkEventHandler::HandleOSNE_ImprovedTerseObjectUpdate(OpenSimProtocol::
             else if (rexlogicmodule_->GetAvatarEntity(localid))
                 rexlogicmodule_->GetAvatarHandler()->HandleTerseObjectUpdateForAvatar_60bytes(bytes);
             break;
-        default:    
+        default:
             std::stringstream ss; 
             ss << "Unhandled ImprovedTerseObjectUpdate block of size " << bytes_read << "!";
             RexLogicModule::LogInfo(ss.str());
             break;
         }
-        
-        data->message->SkipToNextVariable(); ///\todo Unhandled inbound variable 'TextureEntry'.
+
+        msg.SkipToNextVariable(); ///\todo Unhandled inbound variable 'TextureEntry'.
     }
     return false;
 }
 
 bool NetworkEventHandler::HandleOSNE_KillObject(OpenSimProtocol::NetworkEventInboundData* data)
 {
-    data->message->ResetReading();
+    NetInMessage &msg = *data->message;
+    msg.ResetReading();
 
     // Variable block
-    size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
     for(size_t i = 0; i < instance_count; ++i)
     {
-        uint32_t killedobjectid = data->message->ReadU32();
-
+        uint32_t killedobjectid = msg.ReadU32();
         if (rexlogicmodule_->GetPrimEntity(killedobjectid))
             return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_KillObject(killedobjectid);
         if (rexlogicmodule_->GetAvatarEntity(killedobjectid))
@@ -330,8 +337,6 @@ bool NetworkEventHandler::HandleOSNE_KillObject(OpenSimProtocol::NetworkEventInb
 
 bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::NetworkEventInboundData* data)
 {
-    return false;
-    /*
     NetInMessage &msg = *data->message;
     msg.ResetReading();
 
@@ -347,43 +352,62 @@ bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::Netwo
         return false;
     }
 
-    //Get Inventory pointer.
-    InventoryPtr inventory = rexlogicmodule_->GetInventory();
+//    InventoryPtr inventory = rexlogicmodule_->GetInventory();
+    Foundation::EventManagerPtr eventManager = framework_->GetEventManager();
+    Core::event_category_id_t event_category = eventManager->QueryEventCategory("NetworkState");
 
     msg.ReadUUID(); //OwnerID, owner of the folders creatd.
     msg.ReadS32(); //Version, version of the folder for caching
     int32_t descendents = msg.ReadS32(); //Descendents, count to help with caching
-    ///\todo Crashes here sometimes, can't read the instance counts right if they are zero.
-//    if (descendents == 0)
-//        RexLogicModule::LogInfo("InventoryDescendents, variable Descendents is null");
+    if (descendents == 0)
+        return false;
 
     // FolderData, Variable block.
     // Contains sub-folders that the requested folder contains.
     size_t instance_count = msg.ReadCurrentBlockInstanceCount();
-//    std::cout << "InventoryDescendents: Folders: " << instance_count << std::endl;
     for(size_t i = 0; i < instance_count; ++i)
     {
-        RexUUID folder_id = msg.ReadUUID();
-        RexUUID parent_id = msg.ReadUUID();
-        int8_t type = msg.ReadS8();
-        std::string folder_name = msg.ReadString();
-
-        OpenSimProtocol::InventoryFolder *parent = 0, *folder = 0;
-        parent = inventory->GetChildFolderByID(parent_id);
-        if (!parent)
+        try
         {
-//            RexLogicModule::LogInfo("InventoryDescendents packet: could not get parent."
-//                "Variable ParentID is " + parent_id.ToString());
-            continue;
+            RexUUID folder_id = msg.ReadUUID();
+            RexUUID parent_id = msg.ReadUUID();
+            int8_t type = msg.ReadS8();
+            std::string folder_name = msg.ReadString();
+
+            OpenSimProtocol::InventoryFolderEventData folder_data;
+            folder_data.folderId = folder_id;
+            folder_data.parentId = parent_id;
+            folder_data.type = type;
+            folder_data.name = folder_name;
+            /*
+            std::cout << "InventoryDescendents" << std::endl;
+            std::cout << folder_id << std::endl;
+            std::cout << parent_id << std::endl;
+            /*
+            OpenSimProtocol::InventoryFolderSkeleton *parent = 0, *folder = 0;
+            parent = inventory->GetChildFolderByID(parent_id);
+            if (!parent)
+            {
+    //            RexLogicModule::LogInfo("InventoryDescendents packet: could not get parent."
+    //                "Variable ParentID is " + parent_id.ToString());
+                continue;
+            }
+            
+            folder = inventory->GetOrCreateNewFolder(folder_id, *parent);
+            folder->SetName(folder_name);
+            //folder->SetType(type);
+            //std::cout << "Folder: " << folder_name << std::endl;
+            */
+            eventManager->SendEvent(event_category, OpenSimProtocol::InventoryEvents::EVENT_INVENTORY_FOLDER_DESCENDENTS,
+                &folder_data);
         }
-        
-        folder = inventory->GetOrCreateNewFolder(folder_id, *parent);
-        folder->SetName(folder_name);
-        //folder->SetType(type);
-        //std::cout << "Folder: " << folder_name << std::endl;
-        
+        catch (NetMessageException &)
+        {
+            RexLogicModule::LogWarning("Catched NetMessageException, while reading InventoryDescendents packet.");
+        }
     }
 
+    /*
     // ItemData, Variable block.
     // Contains items that the requested folder contains.
     instance_count = msg.ReadCurrentBlockInstanceCount();
@@ -435,10 +459,10 @@ bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::Netwo
         {
             RexLogicModule::LogWarning("Catched NetMessageException, while reading InventoryDescendents packet.");
         }
-    }
+    }*/
 
     return false;
-    */
+
 }
 
 } //namespace RexLogic

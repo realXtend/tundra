@@ -10,6 +10,7 @@
 
 #include "InventoryFolder.h"
 #include "InventoryAsset.h"
+#include "NetworkEvents.h"
 
 #include <QAbstractItemModel>
 #include <QModelIndex>
@@ -24,7 +25,7 @@ namespace Inventory
 
     public:
         /// Constructor.
-        /// @param dataModel
+        /// @param dataModel Inventory data model pointer.
         InventoryViewModel(AbstractInventoryDataModel *dataModel);
 
         /// Destructor.
@@ -49,6 +50,10 @@ namespace Inventory
         /// Used for inserting new childs to the inventory tree model.
         bool insertRows(int position, int rows, const QModelIndex &parent);
 
+        /// 
+        bool insertRows(int position, int rows, const QModelIndex &parent,
+            OpenSimProtocol::InventoryFolderEventData *folder_data);
+
         /// QAbstractItemModel override.
         /// Used for removing childs to the inventory tree model.
         bool removeRows(int position, int rows, const QModelIndex &parent);
@@ -64,6 +69,13 @@ namespace Inventory
 
         /// QAbstractItemModel override.
         bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+
+        /// @return Pointer to inventory data model.
+        AbstractInventoryDataModel *GetInventory(){ return dataModel_; }
+
+        /// Requests inventory descendents from server.
+        /// @param index Model index.
+        void FetchInventoryDescendents(const QModelIndex &index);
 
     private:
         /// @param index Index of the wanted item.
