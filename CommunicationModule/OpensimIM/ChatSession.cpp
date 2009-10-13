@@ -3,9 +3,13 @@
 
 namespace OpensimIM
 {
-	ChatSession::ChatSession(Foundation::Framework* framework): framework_(framework)
+	ChatSession::ChatSession(Foundation::Framework* framework, const QString channel_id): framework_(framework), channel_id_(channel_id)
 	{
-		//! \todo catch RexNetMsgChatFromSimulator
+		//! \todo Add support to different channel numbers
+		//!       This requires changes to SendChatFromViewerPacket method or 
+		//!       chat packet must be construaed by hand.
+		if ( channel_id.compare("0") != 0 )
+			throw Core::Exception("Cannot create chat session, channel id now allowed"); 
 	}
 
 	void ChatSession::SendMessage(const QString &text)
@@ -29,6 +33,28 @@ namespace OpensimIM
 	void ChatSession::Close()
 	{
 		//! \todo IMPLEMENT
+	}
+
+	void ChatSession::MessageFromServer(const QString &from, const QString &text)
+	{
+		ChatSessionParticipant* participant = FindParticipant(from);
+		if ( !participant )
+		{
+			ChatSessionParticipant* participant = new ChatSessionParticipant();
+			participants_.push_back(participant);
+		}
+
+		emit MessageReceived(text, *participant);
+	}
+
+	ChatSessionParticipant* ChatSession::FindParticipant(const QString &uuid)
+	{
+		for (ChatSessionParticipantVector::iterator i = participants_.begin(); i != participants_.end(); ++i)
+		{
+			if ( (*i)->GetID().compare(uuid) == 0 )
+				return *i;
+		}
+		return NULL;
 	}
 
 } // end of namespace: OpensimIM

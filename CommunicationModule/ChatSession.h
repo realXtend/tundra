@@ -16,7 +16,7 @@
 namespace TpQt4Communication
 {
 	/**
-	 * 
+	 *  
 	 *
 	 *
 	 */

@@ -4,6 +4,7 @@ namespace TpQt4Communication
 {
 	Connection::Connection(const Credentials &credentials) : user_(NULL), state_(STATE_CONNECTING), id_(""), protocol_( credentials.GetProtocol() ), server_( credentials.GetServer() ) , tp_connection_(NULL)
 	{
+		
 	}
 
 	Connection::~Connection()

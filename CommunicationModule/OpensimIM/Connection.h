@@ -22,6 +22,14 @@ namespace OpensimIM
 	{
 		MODULE_LOGGING_FUNCTIONS
 		static const std::string NameStatic() { return "Communication(OpensimIM)"; } // for logging functionality
+
+		static const int SayDistance = 30;
+		static const int ShoutDistance = 100;
+		static const int WhisperDistance = 10;
+		static enum ChatType { Whisper = 0, Say = 1, Shout = 2, StartTyping = 4, StopTyping = 5, DebugChannel = 6, Region = 7, Owner = 8, Broadcast = 0xFF };
+		static enum ChatAudibleLevel { Not = -1, Barely = 0, Fully = 1 };
+		static enum ChatSourceType { System = 0, Agent = 1, Object = 2 };
+
 	public:
 		Connection(Foundation::Framework* framework);
 		virtual ~Connection();
@@ -67,12 +75,20 @@ namespace OpensimIM
 		//! Closes the connection
 		virtual void Close();
 
+		bool HandleNetworkEvent(Foundation::EventDataInterface* data);
+
 	protected:
 		//! Add console commands: 
 		virtual void RegisterConsoleCommands();
 
-
 		virtual void RequestFriendlist();
+
+		//!
+		virtual bool HandleOSNEChatFromSimulator(NetInMessage& msg);
+
+		//! Opensim based servers have one global chat channel (id = "0")
+		//! We create ChatSession object automatically when connection is established
+		virtual void OpenWorldChatSession();
 
 	private:
 		Foundation::Framework* framework_;

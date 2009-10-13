@@ -28,11 +28,11 @@ namespace OpensimIM
 		return protocols;
 	}
 
-	Communication::ConnectionPtr ConnectionProvider::OpenConnection(const Communication::CredentialsInterface& credentials)
+	Communication::ConnectionInterface* ConnectionProvider::OpenConnection(const Communication::CredentialsInterface& credentials)
 	{
-		Connection* c = new Connection(framework_);
-		connections_.push_back(c);
-		return Communication::ConnectionPtr(c);
+		Connection* connection = new Connection(framework_);
+		connections_.push_back(connection);
+		return connection;
 	}
 
 	Communication::ConnectionVector ConnectionProvider::GetConnections() const
@@ -60,7 +60,7 @@ namespace OpensimIM
 
 	Console::CommandResult ConnectionProvider::OnConsoleCommandTest(const Core::StringVector &params)
 	{
-		Communication::ConnectionPtr conn;
+		Communication::ConnectionInterface* conn;
 		try
 		{
 			Communication::Credentials credentials("", "", "", 0); 
@@ -78,11 +78,21 @@ namespace OpensimIM
 			ret.append( e.what() );
 			return Console::ResultFailure( ret.toStdString() );
 		}
-		if ( conn->GetState() == Communication::ConnectionInterface::STATE_READY )
-			conn->Close();
+//		if ( conn->GetState() == Communication::ConnectionInterface::STATE_READY )
+//			conn->Close();
 
 		QString ret = "";
 		return Console::ResultSuccess( ret.toStdString() );
+	}
+
+	bool ConnectionProvider::HandleNetworkEvent(Foundation::EventDataInterface* data)
+	{
+		for (ConnectionVector::iterator i = connections_.begin(); i != connections_.end(); ++i)
+		{
+			if ( (*i)->HandleNetworkEvent(data) )
+				return true;
+		}
+		return false;
 	}
 
 } // end of namespace: OpensimIM

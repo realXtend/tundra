@@ -10,6 +10,17 @@ namespace Communication
 {
 
 	/**
+	 *
+	 *
+	 */
+	class NetworkEventHandlerInterface
+	{
+	public:
+		//! Handle network event
+		virtual bool HandleNetworkEvent(Foundation::EventDataInterface* data) = 0;
+	};
+
+	/**
 	 *  Implements CommunicationServiceInterface 
 	 *
 	 */
@@ -30,7 +41,6 @@ namespace Communication
 		//! Provides list of all currently supported protocols
 		virtual QStringList GetSupportedProtocols() const;
 
-
 		//! Create new Connection object accordingly given credentials
 		virtual ConnectionPtr OpenConnection(const CredentialsInterface &credentials);
 
@@ -39,6 +49,9 @@ namespace Communication
 
 		//! Provides Connection objects which supports given protocol
 		virtual ConnectionVector GetConnections(const QString &protocol) const;
+
+		//! Handle network events
+		bool CommunicationService::HandleNetworkEvent(Foundation::EventDataInterface* data);
 
 	protected:
 		static CommunicationService* instance_;

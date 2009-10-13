@@ -300,12 +300,11 @@ namespace Communication
 		virtual QStringList GetSupportedProtocols() const = 0;
 
 		//! Open a new connection to IM server woth given credentials
-		virtual ConnectionPtr OpenConnection(const CredentialsInterface& credentials) = 0;
+		virtual ConnectionInterface* OpenConnection(const CredentialsInterface& credentials) = 0;
 
 		//! Provides all Connections objects created with this provider
 		virtual ConnectionVector GetConnections() const = 0;
 	};
-	                                                  
 	typedef std::vector<ConnectionProviderInterface*> ConnectionProviderVector;
 
 	/**

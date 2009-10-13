@@ -115,6 +115,7 @@ namespace TpQt4Communication
 
 		//! All text_chat_sessions
 		ChatSessionVector text_chat_sessions_;
+		ChatSession* world_chat_;
 
 		//! All received chat sessions requests
 		ChatSessionRequestVector received_text_chat_requests_;
