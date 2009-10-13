@@ -50,7 +50,8 @@ namespace QtUI
 
     public:
         enum Mode { External = 0, Internal};
-        enum CanvasSide { Left = 0, Right, Bottom, Top };
+   
+        enum CanvasCorner { TopLeft = 0, BottomLeft, TopRight, BottomRight };
 
         UICanvas();
         UICanvas(Mode mode, const QSize& parentWindowSize);
@@ -84,14 +85,9 @@ namespace QtUI
         /// @return A pair (width, height) containing the absolute size of the canvas.
         QSize GetSize() const { return this->size(); }
 
-        /** Resizes the canvas. \todo The function signature should look like the one below.
-            @param height The new height in absolute pixels.
-            @param width The new width in absolute pixels.
-            @param side This parameter denotes which side of canvas will be resized. */
-        void Resize(int height, int width, CanvasSide side);
 
-        /*  enum CanvasCorner { TopLeft, TopRight, BottomLeft, BottomRight };
 
+        /**
             Resizes the canvas. This function does not just alter the width and the height
             of the canvas, but also repositions the canvas according to the anchor parameter.
             This is to support resizing the way a user expects when dragging a corner or
@@ -101,8 +97,9 @@ namespace QtUI
             @param anchor This parameter denotes which corner of the canvas is kept unmoved.
                 That is, the shrinking or expanding of the canvas will be performed on
                 the two opposing edges of the canvas.
-        void Resize(int width, int height, CanvasCorner anchor);
         */
+        void Resize(int width, int height, CanvasCorner anchor);
+        
 
 
         /// @return (x,y,w,h) containing the absolute position and size of the canvas, relative
