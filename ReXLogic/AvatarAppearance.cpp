@@ -788,7 +788,6 @@ namespace RexLogic
     
     void AvatarAppearance::FixupResources(Scene::EntityPtr entity)
     {
-    /*
         if (!entity)
             return;
             
@@ -839,7 +838,6 @@ namespace RexLogic
         appearance.SetSkeleton(skeleton);
         appearance.SetMaterials(materials);
         appearance.SetAttachments(attachments);
-        */
     }
     
     void AvatarAppearance::FixupResource(AvatarAsset& asset, const AvatarAssetMap& asset_map, const std::string& resource_type)
