@@ -12,6 +12,7 @@
 #include "EC_OgreMovableTextOverlay.h"
 #include "OgreMaterialResource.h"
 #include "OgreMaterialUtils.h"
+#include "OgreLocalResourceUtils.h"
 #include "Renderer.h"
 #include "OgreConversionUtils.h"
 #include "OgreMeshResource.h"
@@ -82,7 +83,7 @@ namespace RexLogic
         appearance_downloaders_[entity->GetId()] = new_download;
         new_download->AddRequest<HttpUtilities::HttpTaskRequest>(new_request);
     }
-    
+        
     void AvatarAppearance::ReadDefaultAppearance(const std::string& filename)
     {
         default_appearance_ = boost::shared_ptr<QDomDocument>(new QDomDocument("Avatar"));
@@ -97,7 +98,7 @@ namespace RexLogic
         if (!default_appearance_->setContent(&file))
         {
             file.close();
-            RexLogicModule::LogError("Could not load avatar default appearance file " + filename);
+            RexLogicModule::LogError("Could not parse avatar default appearance file " + filename);
             return;
         }
         file.close();
@@ -127,8 +128,13 @@ namespace RexLogic
         Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
         if (!meshptr || !appearanceptr)
             return;
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
         
-        // Fix up material/texture references
+        // If mesh name is empty, it would certainly be an epic fail. Do nothing.
+        if (appearance.GetMesh().name_.empty())
+            return;
+                
+        // Fix up resource references
         FixupResources(entity);
         
         // Setup appearance
@@ -235,7 +241,7 @@ namespace RexLogic
             }
         }
         
-        if (appearance.GetSkeleton().resource_)
+        if (!appearance.GetSkeleton().GetLocalOrResourceName().empty())
             mesh.SetMeshWithSkeleton(appearance.GetMesh().GetLocalOrResourceName(), appearance.GetSkeleton().GetLocalOrResourceName(), entity.get(), need_mesh_clone);
         else
             mesh.SetMesh(appearance.GetMesh().GetLocalOrResourceName(), entity.get(), need_mesh_clone);
@@ -805,6 +811,26 @@ namespace RexLogic
         
         // Fix mesh & skeleton
         FixupResource(mesh, asset_map, OgreRenderer::OgreMeshResource::GetTypeStatic());
+        // If mesh is local, need to setup the skeleton & materials
+        if (!mesh.resource_)
+        {
+            Ogre::MeshPtr ogremesh = OgreRenderer::GetLocalMesh(mesh.name_);
+            if (!ogremesh.isNull())
+            {
+                materials.clear();
+                skeleton = AvatarAsset();
+                skeleton.name_ = ogremesh->getSkeletonName();
+                for (Core::uint j = 0; j < ogremesh->getNumSubMeshes(); ++j)
+                {
+                    Ogre::SubMesh* submesh = ogremesh->getSubMesh(j);
+                    AvatarMaterial attach_newmat;
+                    attach_newmat.asset_.name_ = submesh->getMaterialName();
+                    materials.push_back(attach_newmat);                        
+                }    
+            }            
+        }
+        
+        
         FixupResource(skeleton, asset_map, OgreRenderer::OgreSkeletonResource::GetTypeStatic());
         
         // Fix avatar mesh materials
@@ -822,12 +848,29 @@ namespace RexLogic
                 {
                     const Core::StringVector& attach_matnames = mesh_res->GetOriginalMaterialNames();
                     attachments[i].materials_.clear();
-                    AvatarMaterial attach_newmat;
+
                     for (Core::uint j = 0; j < attach_matnames.size(); ++j)
                     {
+                        AvatarMaterial attach_newmat;
                         attach_newmat.asset_.name_ = attach_matnames[j];
                         FixupMaterial(attach_newmat, asset_map);
                         attachments[i].materials_.push_back(attach_newmat);
+                    }
+                }
+            }
+            else
+            {
+                // If attachment mesh is local, get material names directly from the mesh
+                Ogre::MeshPtr ogremesh = OgreRenderer::GetLocalMesh(attachments[i].mesh_.name_);
+                if (!ogremesh.isNull())
+                {
+                    attachments[i].materials_.clear();
+                    for (Core::uint j = 0; j < ogremesh->getNumSubMeshes(); ++j)
+                    {
+                        Ogre::SubMesh* submesh = ogremesh->getSubMesh(j);
+                        AvatarMaterial attach_newmat;
+                        attach_newmat.asset_.name_ = submesh->getMaterialName();
+                        attachments[i].materials_.push_back(attach_newmat);                        
                     }
                 }
             }
@@ -889,10 +932,11 @@ namespace RexLogic
         {
             if (!mat.textures_.size())
             {
-                Ogre::MaterialPtr ogre_mat = Ogre::MaterialManager::getSingleton().getByName(mat.asset_.name_);
-                if (ogre_mat.isNull())
+                Ogre::MaterialPtr ogremat = OgreRenderer::GetLocalMaterial(mat.asset_.name_);
+                if (ogremat.isNull())
                     return;
-                Core::StringVector default_textures = OgreRenderer::GetTextureNamesFromMaterial(ogre_mat);
+                    
+                Core::StringVector default_textures = OgreRenderer::GetTextureNamesFromMaterial(ogremat);
                 for (Core::uint i = 0; i < default_textures.size(); ++i)
                 {
                     AvatarAsset new_tex;
@@ -1031,17 +1075,7 @@ namespace RexLogic
         }
         else
         {
-            ogre_mat = mat_mgr.getByName(material.asset_.name_);
-            if (ogre_mat.isNull())
-            {
-                // If null, try to load
-                try
-                {
-                    mat_mgr.load(material.asset_.name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-                    ogre_mat = mat_mgr.getByName(material.asset_.name_);
-                }
-                catch (...) {}
-            }
+            ogre_mat = OgreRenderer::GetLocalMaterial(material.asset_.name_);
             if (ogre_mat.isNull())
             {
                 RexLogicModule::LogError("Material resource " + export_name + " could not be found");
@@ -1237,4 +1271,47 @@ namespace RexLogic
             }
         }
     }
+    
+    bool AvatarAppearance::LoadAppearance(Scene::EntityPtr entity, const std::string& filename)
+    {
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!appearanceptr)
+            return false;
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+        
+        QFile file(filename.c_str());
+        QDomDocument avatar_doc("Avatar");
+        
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            RexLogicModule::LogError("Could not open avatar appearance file " + filename);
+            return false;
+        }
+        
+        if (!avatar_doc.setContent(&file))
+        {
+            file.close();
+            RexLogicModule::LogError("Could not parse avatar appearance file " + filename);
+            return false;
+        }
+        file.close();
+        
+        if (!LegacyAvatarSerializer::ReadAvatarAppearance(appearance, avatar_doc))
+            return false;
+            
+        AvatarAsset mesh = appearance.GetMesh();
+        // If mesh name is empty, deduce mesh name from filename
+        if (mesh.name_.empty())
+        {
+            RexLogicModule::LogInfo("Empty mesh name in avatar xml. Deducing from filename...");
+            boost::filesystem::path path(filename);
+            std::string meshname = path.leaf();
+            ReplaceSubstring(meshname, ".xml", ".mesh");
+            mesh.name_ = meshname; 
+            appearance.SetMesh(mesh);
+        }
+            
+        SetupAppearance(entity);
+        return true;
+    }    
 }
