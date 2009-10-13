@@ -47,6 +47,13 @@ namespace RexLogic
          */
         void DownloadAppearance(Scene::EntityPtr entity, bool use_default = false);
         
+        //! Reads an avatar's appearance from a file
+        /*! \param entity Avatar entity
+            \param filename Path/filename to load from 
+            \return true if successful
+         */
+        bool LoadAppearance(Scene::EntityPtr entity, const std::string& filename);
+        
         //! Sets up an avatar entity's default appearance.
         void SetupDefaultAppearance(Scene::EntityPtr entity);
         

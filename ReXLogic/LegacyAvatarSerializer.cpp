@@ -183,8 +183,6 @@ namespace RexLogic
     {
         PROFILE(Avatar_ReadAvatarAppearance);
         
-        dest.Clear();
-        
         QDomElement avatar = source.firstChildElement("avatar");
         if (avatar.isNull())
         {
@@ -192,6 +190,8 @@ namespace RexLogic
             return false;
         }
         
+        dest.Clear();
+                
         // Get mesh
         QDomElement base_elem = avatar.firstChildElement("base");
         if (!base_elem.isNull())

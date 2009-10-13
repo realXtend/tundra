@@ -571,14 +571,14 @@ namespace RexLogic
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(agent_id);
         if (!entity)
         {
-            RexLogicModule::LogInfo("User avatar not in scene, cannot export");
+            RexLogicModule::LogError("User avatar not in scene, cannot export");
             return;
         }
         
         RexServerConnectionPtr conn = rexlogicmodule_->GetServerConnection();
         if (conn->GetConnectionType() != RexServerConnection::AuthenticationConnection)
         {
-            RexLogicModule::LogInfo("Not using authentication login, cannot export avatar");
+            RexLogicModule::LogError("Not using authentication login, cannot export avatar");
             return;
         }
         
@@ -591,11 +591,24 @@ namespace RexLogic
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(agent_id);
         if (!entity)
         {
-            RexLogicModule::LogInfo("User avatar not in scene, cannot reload");
+            RexLogicModule::LogError("User avatar not in scene, cannot reload appearance");
             return;
         }
         
         // Revert to default if no storage url
         avatar_appearance_.DownloadAppearance(entity, true);
     }
+    
+    void Avatar::LoadUserAvatarFromFile(const std::string& filename)
+    {
+        RexTypes::RexUUID agent_id = rexlogicmodule_->GetServerConnection()->GetInfo().agentID;
+        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(agent_id);
+        if (!entity)
+        {
+            RexLogicModule::LogInfo("User avatar not in scene, cannot load appearance");
+            return;
+        }      
+        
+        avatar_appearance_.LoadAppearance(entity, filename);
+    }  
 }
