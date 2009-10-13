@@ -53,7 +53,7 @@ namespace RexLogic
         ProcessAvatarExport();
     }
     
-    void AvatarAppearance::DownloadAppearance(Scene::EntityPtr entity)
+    void AvatarAppearance::DownloadAppearance(Scene::EntityPtr entity, bool use_default)
     {
         if (!entity)
             return;
@@ -65,7 +65,11 @@ namespace RexLogic
         
         std::string appearance_address = avatar.GetAppearanceAddress();
         if (appearance_address.empty())
+        {
+            if (use_default)
+                SetupDefaultAppearance(entity);
             return;
+        }
         
         // See if download already exists for this avatar
         if (appearance_downloaders_.find(entity->GetId()) != appearance_downloaders_.end())

@@ -30,6 +30,10 @@ namespace RexLogic
         void ExportAvatar();
         //! Close button press handler
         void Close();
+        //! Load button press handler
+        void LoadAvatar();
+        //! Revert button press handler
+        void RevertAvatar();
         
     private:
         RexLogicModule *rexlogicmodule_;

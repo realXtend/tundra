@@ -30,7 +30,7 @@ namespace RexLogic
     typedef boost::shared_ptr<AvatarExporter> AvatarExporterPtr;
     typedef boost::shared_ptr<AvatarExporterRequest> AvatarExporterRequestPtr;
     
-    //! Handles setting up and updating avatars' appearance. Used internally by RexLogicModule::Avatar.
+    //! Handles setting up and updating avatars' appearance. Owned by RexLogicModule::Avatar.
     class AvatarAppearance
     {
     public:
@@ -42,8 +42,10 @@ namespace RexLogic
         
         //! Reads an avatar's appearance from avatar storage
         /*! The storage address should be set beforehand in the EC_OpensimAvatar component.
+            \param entity Avatar entity
+            \param use_default Whether to reset to default appearance if there is no storage url, default false
          */
-        void DownloadAppearance(Scene::EntityPtr entity);
+        void DownloadAppearance(Scene::EntityPtr entity, bool use_default = false);
         
         //! Sets up an avatar entity's default appearance.
         void SetupDefaultAppearance(Scene::EntityPtr entity);
