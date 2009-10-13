@@ -258,7 +258,7 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
             if (parent)
             {
                 // Mark harcoded OpenSim folders non-editable (must the children of My Inventory or OpenSim Library also).
-                if (parent->id == inventoryRootFolderID && 
+                if (parent->id == inventoryRootFolderID &&
                     IsHardcodedOpenSimFolder(iter->second.name.c_str()))
                     iter->second.editable = false;
 
@@ -365,7 +365,7 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
             if (parent)
             {
                 // Mark harcoded OpenSim folders non-editable (must the children of My Inventory or OpenSim Library also).
-                if (parent->id == inventoryRootFolderID && 
+                if (parent->id == inventoryLibraryRootFolderID &&
                     IsHardcodedOpenSimFolder(iter->second.name.c_str()))
                     iter->second.editable = false;
 

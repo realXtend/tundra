@@ -12,6 +12,11 @@
 #include "InventoryFolder.h"
 #include "InventoryAsset.h"
 
+namespace RexLogic
+{
+    class RexLogicModule;
+}
+
 namespace OpenSimProtocol
 {
     class InventorySkeleton;
@@ -26,13 +31,11 @@ namespace Inventory
 
     public:
         /// Constructor.
-        OpenSimInventoryDataModel(OpenSimProtocol::InventorySkeleton *inventory_skeleton);
+        /// @param rex_logic_module RexLogicModule pointer.
+        OpenSimInventoryDataModel(RexLogic::RexLogicModule *rex_logic_module);
 
         /// Destructor.
         virtual ~OpenSimInventoryDataModel();
-
-        /// AbstractInventoryDataModel override.
-        //void AddFolder(InventoryFolder newFolder, InventoryFolder *parent);
 
         /// AbstractInventoryDataModel override.
         /// @return First folder by the requested name or null if the folder isn't found.
@@ -46,8 +49,10 @@ namespace Inventory
         /// Returns folder by requested id, or creates a new one if the folder doesnt exist.
         /// @param id ID.
         /// @param parent Parent folder.
+        /// @param notify_server Do we want to notify server.
         /// @return Pointer to the existing or just created folder.
-        AbstractInventoryItem *GetOrCreateNewFolder(const QString &id, AbstractInventoryItem &parentFolder);
+        AbstractInventoryItem *GetOrCreateNewFolder(const QString &id, AbstractInventoryItem &parentFolder,
+            const bool &notify_server = true);
 
         /// AbstractInventoryDataModel override.
         /// Returns asset requested id, or creates a new one if the folder doesnt exist.
@@ -58,6 +63,12 @@ namespace Inventory
         AbstractInventoryItem *GetOrCreateNewAsset(const QString &inventory_id, const QString &asset_id,
             AbstractInventoryItem &parenFolder, const QString &name = "New Asset");
 
+        /// AbstractInventoryDataModel override.
+        void FetchInventoryDescendents(AbstractInventoryItem *folder);
+
+        /// AbstractInventoryDataModel override.
+        void NotifyServerAboutFolderRemoval(AbstractInventoryItem * folder);
+
         /// @return Inventory root folder.
         AbstractInventoryItem *GetRoot() const { return rootFolder_; }
 
@@ -67,10 +78,8 @@ namespace Inventory
         /// @return Pointer to "Trash" folder or null if not found.
         AbstractInventoryItem *GetTrashFolder() const;
 
-        void DebugDumpInventoryFolderStructure()
-        {
-            rootFolder_->DebugDumpInventoryFolderStructure(0);
-        }
+        /// Prints the inventory tree structure to std::cout.
+        void DebugDumpInventoryFolderStructure();
 
     private:
         Q_DISABLE_COPY(OpenSimInventoryDataModel);
@@ -85,6 +94,9 @@ namespace Inventory
         /// Creates the tree model data for inventory.
         /// @param inventory_skeleton OpenSim inventory skeleton.
         void SetupModelData(OpenSimProtocol::InventorySkeleton *inventory_skeleton);
+
+        /// RexLogicModule pointer.
+        RexLogic::RexLogicModule *rexLogicModule_;
 
         /// The root folder.
         InventoryFolder *rootFolder_;

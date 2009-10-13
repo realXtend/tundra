@@ -55,11 +55,11 @@ namespace Inventory
 
         /// Deletes child.
         /// @param child Child to be deleted.
-        void DeleteChild(AbstractInventoryItem *child);
+//        void DeleteChild(AbstractInventoryItem *child);
 
         /// Deletes child.
         /// @param id of the child to be deleted.
-        void DeleteChild(const QString &id);
+//        void DeleteChild(const QString &id);
 
         /// @return First folder by the requested name or null if the folder isn't found.
         /// @param name Search name.
@@ -84,20 +84,8 @@ namespace Inventory
         bool IsEditable() const { return editable_; }
         void SetEditable(const bool &editable) { editable_ = editable; }
 
-        void DebugDumpInventoryFolderStructure(int indentationLevel)
-        {
-            for(int i = 0; i < indentationLevel; ++i)
-                std::cout << " ";
-            std::cout << GetName().toStdString() << " " << std::endl;
-
-            QListIterator<AbstractInventoryItem *> it(children_);
-            while(it.hasNext())
-            {
-                InventoryFolder *folder = dynamic_cast<InventoryFolder *>(it.next());
-                if (folder)
-                    folder->DebugDumpInventoryFolderStructure(indentationLevel + 3);
-            }
-        }
+        /// Prints the inventory tree structure to std::cout.
+        void DebugDumpInventoryFolderStructure(int indentationLevel);
 
         /// @param row
         /// @return

@@ -7,7 +7,8 @@
 
 #include "StableHeaders.h"
 #include "InventoryViewModel.h"
-#include "OpenSimInventoryDataModel.h"
+#include "AbstractInventoryDataModel.h"
+#include "RexUUID.h"
 
 #include <QModelIndex>
 #include <QVariant>
@@ -23,7 +24,7 @@ InventoryViewModel::InventoryViewModel(AbstractInventoryDataModel *dataModel) :
 
 InventoryViewModel::~InventoryViewModel()
 {
-    delete dataModel_;
+    SAFE_DELETE(dataModel_);
 }
 
 int InventoryViewModel::columnCount(const QModelIndex &parent) const
@@ -47,6 +48,7 @@ QVariant InventoryViewModel::data(const QModelIndex &index, int role) const
     AbstractInventoryItem *item = GetItem(index);
     return QVariant(item->GetName().toStdString().c_str());
 }
+
 /*
 Qt::ItemFlags InventoryViewModel::flags(const QModelIndex& index)const
 {
@@ -95,7 +97,7 @@ QModelIndex InventoryViewModel::index(int row, int column, const QModelIndex &pa
     InventoryFolder *parentItem;
 
     if (!parent.isValid())
-        parentItem = dynamic_cast<InventoryFolder *>(dataModel_->GetRoot());//rootFolder_;
+        parentItem = dynamic_cast<InventoryFolder *>(dataModel_->GetRoot());
     else
         parentItem = dynamic_cast<InventoryFolder *>((AbstractInventoryItem *)(parent.internalPointer()));
 
@@ -111,25 +113,41 @@ QModelIndex InventoryViewModel::index(int row, int column, const QModelIndex &pa
 
 bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &parent)
 {
-/*
     ///\todo Make work for assets also.
-    InventoryFolder *folder = dynamic_cast<InventoryFolder *>(GetItem(parent));
-    if (!folder)
+    AbstractInventoryItem *parentFolder = GetItem(parent);
+    if (!parentFolder)
         return false;
 
     beginInsertRows(parent, position, position + rows - 1);
-    InventoryFolder *newFolder = new InventoryFolder(RexUUID::CreateRandom(), "New Folder", folder);
-    folder->AddChild(newFolder);
+    dataModel_->GetOrCreateNewFolder(QString(RexTypes::RexUUID::CreateRandom().ToString().c_str()), *parentFolder);
     endInsertRows();
 
     return true;
-*/
-    return false;
+}
+
+bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &parent,
+    OpenSimProtocol::InventoryFolderEventData *folder_data)
+{
+    ///\todo Make work for assets also.
+    //AbstractInventoryItem *parentFolder = GetItem(parent);
+    AbstractInventoryItem *parentFolder = dataModel_->GetChildFolderByID(QString(folder_data->parentId.ToString().c_str()));
+    if (!parentFolder)
+        return false;
+
+    beginInsertRows(parent, position, position + rows - 1);
+    AbstractInventoryItem *newFolder = dataModel_->GetOrCreateNewFolder(QString(folder_data->folderId.ToString().c_str()),
+        *parentFolder, false);
+    endInsertRows();
+
+    newFolder->SetName(QString(folder_data->name.c_str()));
+    ///\todo newFolder->SetType(folder_data->type);
+
+
+    return true;
 }
 
 bool InventoryViewModel::removeRows(int position, int rows, const QModelIndex &parent)
 {
-/*
     ///\todo Make work for assets also.
     InventoryFolder *parentFolder = dynamic_cast<InventoryFolder *>(GetItem(parent));
     if (!parentFolder)
@@ -142,13 +160,13 @@ bool InventoryViewModel::removeRows(int position, int rows, const QModelIndex &p
     if (!childFolder->IsEditable())
         return false;
 
+    dataModel_->NotifyServerAboutFolderRemoval(childFolder);
+
     beginRemoveRows(parent, position, position + rows - 1);
     bool success = parentFolder->RemoveChildren(position, rows);
     endRemoveRows();
 
     return success;
-*/
-    return false;
 }
 
 QModelIndex InventoryViewModel::parent(const QModelIndex &index) const
@@ -156,9 +174,9 @@ QModelIndex InventoryViewModel::parent(const QModelIndex &index) const
     if (!index.isValid())
         return QModelIndex();
 
-    AbstractInventoryItem *childItem = GetItem(index);//<InventoryItemBase *>(index.internalPointer());
+    AbstractInventoryItem *childItem = GetItem(index);
     InventoryFolder *parentItem = static_cast<InventoryFolder *>(childItem->GetParent());
-    if (parentItem == dynamic_cast<InventoryFolder *>(dataModel_->GetRoot()))
+    if (parentItem == static_cast<InventoryFolder *>(dataModel_->GetRoot()))
         return QModelIndex();
 
     return createIndex(parentItem->Row(), 0, parentItem);
@@ -170,7 +188,6 @@ int InventoryViewModel::rowCount(const QModelIndex &parent) const
         return 0;
 
     if (!parent.isValid())
-//        return rootFolder_->ChildCount();
         dynamic_cast<InventoryFolder *>(dataModel_->GetRoot())->ChildCount();
 
     AbstractInventoryItem *item = GetItem(parent);
@@ -185,11 +202,10 @@ int InventoryViewModel::rowCount(const QModelIndex &parent) const
 
 bool InventoryViewModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-/*
     if (role != Qt::EditRole)
         return false;
 
-    InventoryItemBase *item = GetItem(index);
+    AbstractInventoryItem *item = GetItem(index);
     InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
     ///\todo Make work also for assets.
     if (!folder)
@@ -198,14 +214,24 @@ bool InventoryViewModel::setData(const QModelIndex &index, const QVariant &value
     if(!folder->IsEditable())
         return false;
 
-    bool result = folder->SetData(index.column(), value);
-    //item->setData(index.column(), value);
-    if (result)
-        emit dataChanged(index, index);
+    item->SetName(value.toString());
+    emit dataChanged(index, index);
 
     return true;
-*/
-    return false;
+}
+
+void InventoryViewModel::FetchInventoryDescendents(const QModelIndex &index)
+{
+    AbstractInventoryItem *item = GetItem(index);
+    InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
+    if (!folder)
+        return;
+
+    ///\todo Send FetchInventoryDescendents only if our model is "dirty" (new items are uploaded)
+//    if (!folder->IsDirty())
+//        return;
+
+    dataModel_->FetchInventoryDescendents(item);
 }
 
 AbstractInventoryItem *InventoryViewModel::GetItem(const QModelIndex &index) const
@@ -217,7 +243,6 @@ AbstractInventoryItem *InventoryViewModel::GetItem(const QModelIndex &index) con
             return item;
     }
 
-    //return static_cast<InventoryItemBase *>(rootFolder_);
     return dataModel_->GetRoot();
 }
 

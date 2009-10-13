@@ -31,9 +31,6 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(
     {
         // The client has connected to the server. Create a new scene for that.
         rexlogicmodule_->CreateNewActiveScene("World");
-
-        // Initialize the inventory tree view.
-        rexlogicmodule_->InitInventoryView();
         break;
     }
     case OpenSimProtocol::Events::EVENT_SERVER_DISCONNECTED:
@@ -46,8 +43,6 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(
 
         if (framework_->HasScene("World"))
             rexlogicmodule_->DeleteScene("World");
-
-        rexlogicmodule_->ResetInventoryView();
         break;
     }
     default:
