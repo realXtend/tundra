@@ -275,7 +275,9 @@ void UICanvas::SetCanvasSize(int width, int height)
         float relWidth = (float)texture->getWidth()/double(renderWindowSize_.width());
         float relHeight = (float)texture->getHeight()/double(renderWindowSize_.height());
         container_->setDimensions(relWidth, relHeight);
-        
+        Ogre::PanelOverlayElement* element = static_cast<Ogre::PanelOverlayElement* >(container_);  
+        element->setUV(0.0f, 0.0f, 1.0f, 1.0f);    
+                
         for (int i = 0; i < scene_widgets_.size(); ++i)
         {
             if ( scene_widgets_[i]->parent() == 0)
@@ -325,12 +327,16 @@ void UICanvas::Resize(int height, int width, CanvasCorner anchor)
     if ( height > maximum.height() || width > maximum.width() )
         return;
 
+    // Ensure that ogre surface is large enough
 
+    Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
+    if ( (texture->getWidth() < width || texture->getHeight() < height) && ( width/2 < 2048 && height/2 < 2048 ))
+          ResizeOgreTexture(2*width, 2*height);        
+          
     Ogre::PanelOverlayElement* element = static_cast<Ogre::PanelOverlayElement* >(container_);  
-    Ogre::Real u1 = 0, v1 = 0, u2 = 0, v2= 0;
+    Ogre::Real u1 = 0, v1 = 0, u2 = 1, v2 = 1;
     Ogre::Real top = element->getTop();
     Ogre::Real left = element->getLeft();
-    element->getUV(u1,v1,u2,v2);
    
     int diffWidth = current_size.width() - width;
     int diffHeight = current_size.height() - height;
@@ -347,29 +353,23 @@ void UICanvas::Resize(int height, int width, CanvasCorner anchor)
     if ( anchor == BottomRight || anchor == BottomLeft)
         yPos = top + diffHeight/Ogre::Real(renderWindowSize_.height());  
     
-    Ogre::Real new_container_width = width/Ogre::Real(renderWindowSize_.width());
-    Ogre::Real new_container_height = height/Ogre::Real(renderWindowSize_.height());
+    float relWidth = (float)width/double(renderWindowSize_.width());
+    float relHeight = (float)height/double(renderWindowSize_.height());
 
-    element->setDimensions( new_container_width, new_container_height);
+    container_->setDimensions(relWidth, relHeight);  
     element->setPosition(xPos,yPos);
-
-    // Ensure that ogre surface is large enough
-
-    Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
-    if ( (texture->getWidth() < width || texture->getHeight() < height) && ( width/2 < 2048 && height/2 < 2048 ))
-          ResizeOgreTexture(2*width, 2*height);         
-      
-     
+           
     // Update uv-mapping.
-
-    Ogre::Real overlay_width = texture->getWidth();
-    Ogre::Real overlay_height = texture->getHeight();
+    // It seems that Ogre does this itself (even when the texture is larger than what should be displayed),
+    // so don't do it ourselves. Currently the texture will get a bit blurry when dragging.
     
-    u2 = width/overlay_width;
-    v2 = height/overlay_height;
-   
-    element->setUV(u1,v1,u2,v2);
-
+    //Ogre::Real texture_width = texture->getWidth();
+    //Ogre::Real texture_height = texture->getHeight();
+    //
+    //u2 = width/texture_width;
+    //v2 = height/texture_height;  
+    //element->setUV(u1, v1, u2, v2);
+        
     // Ensure Qt-internals
 
     resize(width,height);
