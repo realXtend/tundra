@@ -5,6 +5,7 @@
 #include "Avatar.h"
 #include "RexLogicModule.h"
 #include "QtModule.h"
+#include "QtUtils.h"
 
 #include <QtUiTools>
 #include <QPushButton>
@@ -55,6 +56,18 @@ namespace RexLogic
         rexlogicmodule_->GetAvatarHandler()->ExportUserAvatar();
     }
     
+    void AvatarEditor::LoadAvatar()
+    {
+        const std::string filter = "Avatar XML files (*.xml)";
+        std::string filename = Foundation::QtUtils::GetOpenFileName(filter, "Choose avatar xml", Foundation::QtUtils::GetCurrentPath());        
+    }
+    
+    void AvatarEditor::RevertAvatar()
+    {
+        // Reload avatar from storage, or reload default
+        rexlogicmodule_->GetAvatarHandler()->ReloadUserAvatar();        
+    }
+    
     void AvatarEditor::InitEditorWindow()
     {
         boost::shared_ptr<QtUI::QtModule> qt_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
@@ -86,13 +99,17 @@ namespace RexLogic
         canvas_->AddWidget(avatar_widget_);
         //canvas_->Show();
         
-        // Connect signals    
-        QPushButton *pButton = avatar_widget_->findChild<QPushButton *>("but_export");
-        if (pButton)
-            QObject::connect(pButton, SIGNAL(clicked()), this, SLOT(ExportAvatar()));
+        // Connect signals            
+        QPushButton *button = avatar_widget_->findChild<QPushButton *>("but_export");
+        if (button)
+            QObject::connect(button, SIGNAL(clicked()), this, SLOT(ExportAvatar()));
 
-        pButton = avatar_widget_->findChild<QPushButton *>("but_close");
-        if (pButton)
-            QObject::connect(pButton, SIGNAL(clicked()), this, SLOT(Close()));
+        button = avatar_widget_->findChild<QPushButton *>("but_load");
+        if (button)
+            QObject::connect(button, SIGNAL(clicked()), this, SLOT(LoadAvatar()));
+
+        button = avatar_widget_->findChild<QPushButton *>("but_revert");
+        if (button)
+            QObject::connect(button, SIGNAL(clicked()), this, SLOT(RevertAvatar()));
     }
 }

@@ -571,17 +571,31 @@ namespace RexLogic
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(agent_id);
         if (!entity)
         {
-            RexLogicModule::LogError("User avatar not in scene, cannot export");
+            RexLogicModule::LogInfo("User avatar not in scene, cannot export");
             return;
         }
         
         RexServerConnectionPtr conn = rexlogicmodule_->GetServerConnection();
         if (conn->GetConnectionType() != RexServerConnection::AuthenticationConnection)
         {
-            RexLogicModule::LogError("Not using authentication login, cannot export avatar");
+            RexLogicModule::LogInfo("Not using authentication login, cannot export avatar");
             return;
         }
         
         avatar_appearance_.ExportAvatar(entity, conn->GetUsername(), conn->GetAuthAddress(), conn->GetPassword());
+    }
+
+    void Avatar::ReloadUserAvatar()
+    {
+        RexTypes::RexUUID agent_id = rexlogicmodule_->GetServerConnection()->GetInfo().agentID;
+        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(agent_id);
+        if (!entity)
+        {
+            RexLogicModule::LogInfo("User avatar not in scene, cannot reload");
+            return;
+        }
+        
+        // Revert to default if no storage url
+        avatar_appearance_.DownloadAppearance(entity, true);
     }
 }

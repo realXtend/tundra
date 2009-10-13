@@ -48,6 +48,9 @@ namespace RexLogic
         //! Exports user's avatar, if in scene
         void ExportUserAvatar();
         
+        //! Reloads user's avatar, if in scene
+        void ReloadUserAvatar();
+        
     private:
         RexLogicModule *rexlogicmodule_;
         

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>341</width>
+    <height>41</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,27 +16,40 @@
   <widget class="QPushButton" name="but_export">
    <property name="geometry">
     <rect>
-     <x>214</x>
-     <y>260</y>
+     <x>240</x>
+     <y>10</y>
      <width>81</width>
      <height>21</height>
     </rect>
    </property>
    <property name="text">
-    <string>Export Avatar</string>
+    <string>Save Changes</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="but_close">
+  <widget class="QPushButton" name="but_load">
    <property name="geometry">
     <rect>
-     <x>310</x>
-     <y>260</y>
-     <width>75</width>
+     <x>20</x>
+     <y>10</y>
+     <width>81</width>
      <height>21</height>
     </rect>
    </property>
    <property name="text">
-    <string>Close</string>
+    <string>Choose Avatar</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="but_revert">
+   <property name="geometry">
+    <rect>
+     <x>130</x>
+     <y>10</y>
+     <width>81</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Revert</string>
    </property>
   </widget>
  </widget>
