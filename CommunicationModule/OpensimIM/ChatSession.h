@@ -26,6 +26,12 @@ namespace OpensimIM
 		virtual void Close();
 
 		virtual void MessageFromServer(const QString &from, const QString &text);
+
+		//!
+		virtual Communication::ChatSessionParticipantVector GetParticipants() const;
+
+		//! Provides ID of chat session
+		virtual QString GetID() const;
 	protected:
 		QString channel_id_;
 		ChatSessionParticipant* FindParticipant(const QString &uuid);

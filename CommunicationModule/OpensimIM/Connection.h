@@ -58,10 +58,10 @@ namespace OpensimIM
 
 		//! Open new chat session with given contact
 		//! This is opensim IM chat
-		virtual Communication::ChatSessionPtr OpenChatSession(const Communication::ContactInterface &contact);
+		virtual Communication::ChatSessionInterface* OpenChatSession(const Communication::ContactInterface &contact);
 
 		//! Open new chat session to given room
-		virtual Communication::ChatSessionPtr OpenChatSession(const QString &channel);
+		virtual Communication::ChatSessionInterface* OpenChatSession(const QString &channel);
 
 		//! Send a friend request to target address
 		virtual void SendFriendRequest(const QString &target, const QString &message);

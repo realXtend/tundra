@@ -57,4 +57,16 @@ namespace OpensimIM
 		return NULL;
 	}
 
+	Communication::ChatSessionParticipantVector ChatSession::GetParticipants() const
+	{
+		Communication::ChatSessionParticipantVector participants;
+		//! \todo IMPLEMENT
+		return participants;
+	}
+
+	QString ChatSession::GetID() const
+	{
+		return channel_id_;
+	}
+
 } // end of namespace: OpensimIM

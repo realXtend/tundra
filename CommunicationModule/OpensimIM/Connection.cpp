@@ -17,7 +17,7 @@ namespace OpensimIM
 	{
 		for( ChatSessionVector::iterator i =  public_chat_sessions_.begin(); i != public_chat_sessions_.end(); ++i)
 		{
-			delete *i;
+			delete (*i);
 			*i = NULL;
 		}
 		public_chat_sessions_.clear();
@@ -69,20 +69,25 @@ namespace OpensimIM
 		return QStringList();
 	}
 
-	Communication::ChatSessionPtr Connection::OpenChatSession(const Communication::ContactInterface &contact)
+	Communication::ChatSessionInterface* Connection::OpenChatSession(const Communication::ContactInterface &contact)
 	{
 		//! \todo IMPLEMENT
-		return Communication::ChatSessionPtr();
+		return NULL;
 	}
 
-	Communication::ChatSessionPtr Connection::OpenChatSession(const QString &channel)
+	Communication::ChatSessionInterface* Connection::OpenChatSession(const QString &channel)
 	{
-		//! \todo check if chat session on given channel already exist
-		//!       and if so then return that session object
+		for (ChatSessionVector::iterator i = public_chat_sessions_.begin(); i != public_chat_sessions_.end(); ++i)
+		{
+			if ( (*i)->GetID().compare( channel ) == 0 )
+			{
+				return (*i);
+			}
+		}
 
 		ChatSession* session = new ChatSession(framework_, channel);
 		public_chat_sessions_.push_back(session);
-		return Communication::ChatSessionPtr(session);
+		return session;
 	}
 	
 	void Connection::SendFriendRequest(const QString &target, const QString &message)
