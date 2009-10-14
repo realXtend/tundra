@@ -533,10 +533,7 @@ void NetInMessage::SkipToFirstVariableByName(const std::string &variableName)
     }
 
     if (!bFound)
-    {
-        std::cout << "Variable \"" << variableName << "\" not found in the message info!" << std::endl;
-        throw Core::Exception("Invalid nonexisting variableName input to NetInMessage::SkipToFirstVariableByName");
-    }
+        throw NetMessageException(NetMessageException::ET_InvalidVariableName);
 
     // Skip to the desired variable.
     for(size_t it = 0; it < skip_count; ++it)

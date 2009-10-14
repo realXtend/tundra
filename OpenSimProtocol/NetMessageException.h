@@ -26,6 +26,7 @@ public:
         ET_VariableTypeMismatch,
         ET_BlockInstanceCountNotRead,
         ET_BlockInstanceCountAlreadyRead,
+        ET_InvalidVariableName,
         ET_EnumCount
     };
 
@@ -70,6 +71,7 @@ public:
             "Tried to read wrong variable type",
             "Current block is variable: use ReadCurrentBlockInstanceCount first in order to proceed",
             "This block's instance count is already read",
+            "Invalid nonexisting variableName input to NetInMessage::SkipToFirstVariableByName"
             };
 
         return exception_strings[type_];

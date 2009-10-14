@@ -244,7 +244,7 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
 
     // Insert the detached folders onto the tree view until all folders have been added or there are orphans left
     // that cannot be added, and quit.
-    bool progress = true;
+    bool progress = false;
     while(folders.size() > 0 && progress)
     {
         progress = false;
@@ -351,7 +351,7 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
 
     // Insert the detached folders onto the tree view until all folders have been added or there are orphans left
     // that cannot be added, and quit.
-    progress = true;
+    progress = false;
     while(library_folders.size() > 0 && progress)
     {
         progress = false;

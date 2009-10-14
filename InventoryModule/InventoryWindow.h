@@ -32,8 +32,7 @@ namespace RexLogic
 
 namespace OpenSimProtocol
 {
-    class InventoryFolderEventData;
-    class InventoryAssetEventData;
+    class InventoryItemEventData;
 }
 
 
@@ -76,7 +75,7 @@ namespace Inventory
         void UpdateActions();
 
         ///
-        void HandleInventoryFolderDescendents(OpenSimProtocol::InventoryFolderEventData *folder_data);
+        void HandleInventoryDescendent(OpenSimProtocol::InventoryItemEventData *item_data);
 
 //    protected slots:
 //        void closeEvent(QCloseEvent *myCloseEvent);

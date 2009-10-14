@@ -7,7 +7,8 @@
 #include "InventoryModule.h"
 #include "RexLogicModule.h"
 #include "InventoryWindow.h"
-#include "../OpenSimProtocol/NetworkEvents.h"
+#include "NetworkEvents.h"
+#include "InventoryEvents.h"
 #include "../AssetModule/AssetEvents.h"
 
 namespace Inventory
@@ -102,18 +103,18 @@ bool InventoryModule::HandleEvent(
 
         if (event_id == Events::EVENT_SERVER_DISCONNECTED)
         {
-            inventoryWindow_->Hide();
             inventoryWindow_->ResetInventoryTreeModel();
+            inventoryWindow_->Hide();
             return false;
         }
 
-        if (event_id == InventoryEvents::EVENT_INVENTORY_FOLDER_DESCENDENTS)
+        if (event_id == InventoryEvents::EVENT_INVENTORY_DESCENDENT)
         {
-            InventoryFolderEventData *folder_data = dynamic_cast<InventoryFolderEventData *>(data);
-            if (!folder_data)
+            InventoryItemEventData *item_data = dynamic_cast<InventoryItemEventData *>(data);
+            if (!item_data)
                 return false;
 
-            inventoryWindow_->HandleInventoryFolderDescendents(folder_data);
+            inventoryWindow_->HandleInventoryDescendent(item_data);
         }
 
         return false;

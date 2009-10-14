@@ -126,11 +126,10 @@ bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &p
 }
 
 bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &parent,
-    OpenSimProtocol::InventoryFolderEventData *folder_data)
+    OpenSimProtocol::InventoryItemEventData *item_data)
 {
-    ///\todo Make work for assets also.
     //AbstractInventoryItem *parentFolder = GetItem(parent);
-    AbstractInventoryItem *parentFolder = dataModel_->GetChildFolderByID(QString(folder_data->parentId.ToString().c_str()));
+    AbstractInventoryItem *parentFolder = dataModel_->GetChildFolderByID(QString(item_data->parentId.ToString().c_str()));
     if (!parentFolder)
         return false;
 
@@ -139,10 +138,24 @@ bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &p
     ///    emit layoutChanged();
 
     beginInsertRows(parent, position, position + rows - 1);
-    AbstractInventoryItem *newFolder = dataModel_->GetOrCreateNewFolder(QString(folder_data->folderId.ToString().c_str()),
-        *parentFolder, false);
-    newFolder->SetName(QString(folder_data->name.c_str()));
-    ///\todo newFolder->SetType(folder_data->type);
+
+    if (item_data->item_type == OpenSimProtocol::IIT_Folder)
+    {
+        InventoryFolder *newFolder = static_cast<InventoryFolder *>(dataModel_->GetOrCreateNewFolder(
+            QString(item_data->id.ToString().c_str()), *parentFolder, false));
+        newFolder->SetName(QString(item_data->name.c_str()));
+        ///\todo newFolder->SetType(item_data->type);
+        newFolder->SetDirty(true);
+    }
+    if (item_data->item_type == OpenSimProtocol::IIT_Asset)
+    {
+        InventoryAsset *newAsset = static_cast<InventoryAsset *>(dataModel_->GetOrCreateNewAsset(
+            QString(item_data->id.ToString().c_str()), QString(item_data->assetId.ToString().c_str()),
+            *parentFolder, QString(item_data->name.c_str())));
+        newAsset->SetDescription(QString(item_data->description.c_str()));
+        ///\todo newAsset->SetInventoryType & AssetType
+    }
+
     endInsertRows();
 
     return true;
@@ -234,6 +247,8 @@ void InventoryViewModel::FetchInventoryDescendents(const QModelIndex &index)
         return;
 
     dataModel_->FetchInventoryDescendents(item);
+
+    folder->SetDirty(false);
 }
 
 AbstractInventoryItem *InventoryViewModel::GetItem(const QModelIndex &index) const
