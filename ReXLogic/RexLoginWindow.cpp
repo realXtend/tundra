@@ -51,8 +51,8 @@ RexLoginWindow::~RexLoginWindow()
     // If this occurs, we're most probably operating in headless mode.
     if (qt_ui != 0)
     {
-        qt_ui->DeleteCanvas(canvas_);
-        qt_ui->DeleteCanvas(screen_canvas_);
+        qt_ui->DeleteCanvas(canvas_->GetID());
+        qt_ui->DeleteCanvas(screen_canvas_->GetID());
     }
 
     delete webLogin;
@@ -103,6 +103,8 @@ void RexLoginWindow::InitLoginWindow()
     canvas_->SetCanvasSize(size.width(), size.height());
 
     canvas_->AddWidget(login_widget_);
+
+   
 
     // Create connections.
     QPushButton *pButton = login_widget_->findChild<QPushButton *>("but_connect");

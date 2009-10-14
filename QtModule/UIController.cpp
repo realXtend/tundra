@@ -70,14 +70,24 @@ void UIController::RemoveCanvas(const QString& id)
 {
     QList<boost::shared_ptr<UICanvas> >::iterator iter = canvases_.begin();
     int index = 0;
+    bool found = false;
     for(; iter != canvases_.end(); ++iter, ++index)
     {
         QString canvas_id = (*iter)->GetID();
         if ( canvas_id == id)
         {
+            found = true;
+            canvases_[index]->Hide();
             canvases_.removeAt(index);
             break;
         }
+    }
+
+    if ( !found ) 
+    {
+        QString message("QtModule : There does not exist canvas which id is: ");
+        message += id;
+        throw Core::Exception(message.toStdString().c_str()); 
     }
 }
 

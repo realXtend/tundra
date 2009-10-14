@@ -179,10 +179,8 @@ void InventoryWindow::ItemNameChanged(const QModelIndex &topLeft, const QModelIn
 void InventoryWindow::CloseInventoryWindow()
 {
     if (qtModule_.get() != 0)
-    {
-        canvas_->Hide();
-        qtModule_.get()->DeleteCanvas(canvas_);
-    }
+        qtModule_.get()->DeleteCanvas(canvas_->GetID());
+    
 }
 
 void InventoryWindow::InitInventoryWindow()
