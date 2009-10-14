@@ -70,6 +70,7 @@ endif (HYDRAX)
 
 
 # Add all the subprojects in the rex viewer.
+
 # The following are the core modules that are 
 # required for the project to build. None of
 # these can't be omitted.
@@ -95,19 +96,14 @@ add_subdirectory (TextureDecoderModule)
 add_subdirectory (OpenSimProtocol)
 add_subdirectory (InventoryModule)
 
-# The following modules are optional. You may
-# leave out any of these, and the project should
-# still build and work. If it doesn't, please
-# report it as a bug.
+# If the custom optional modules configuration file does not yet
+# exist, create it from a template.
+if (NOT EXISTS CMakeOptionalModules.txt)
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/CMakeOptionalModulesTemplate.txt ${CMAKE_CURRENT_SOURCE_DIR}/CMakeOptionalModules.txt)
+endif ()
 
-#add_subdirectory (TestModule)
-#add_subdirectory (UnitTests) #TODO: didn't compile on fedora
-#add_subdirectory (GtkmmUI)
-#add_subdirectory (DebugStats)
-#add_subdirectory (NetTestLogicModule)
-add_subdirectory (PythonModule)
-add_subdirectory (CommunicationModule)
-#add_subdirectory (OpenALAudioModule)
-#add_subdirectory (RexCBLogin) # RexLogic::RexWebLogin replaces this atm anyways
-#add_subdirectory (RexQtScriptModule)
-
+# Read the set of optional modules from another file
+# that is kept outside the source control. 
+# To configure the set of optional modules to add to the build,
+# edit CMakeOptionalModules.txt and rerun cmake.
+include (CMakeOptionalModules.txt)

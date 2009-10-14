@@ -1,0 +1,23 @@
+# In CMakeOptionalModules.txt you can configure which additional modules 
+# are added to the build. Do not commit CMakeOptionalModules.txt into the 
+# SVN repository! The idea is that everyone can customize the set of 
+# modules to build using that file, without having to fear about an 
+# accidental commit of these changes.
+
+# CMakeOptionalModulesTemplate.txt is only a template file! Changes to that file
+# do not have any effect on the actual CMake execution.
+
+# The following modules are optional. You may
+# leave out any of these, and the project should
+# still build and work. If it doesn't, please
+# report it as a bug.
+
+#add_subdirectory (TestModule)
+#add_subdirectory (UnitTests) #TODO: didn't compile on fedora
+#add_subdirectory (DebugStats)
+#add_subdirectory (NetTestLogicModule)
+add_subdirectory (PythonModule)
+add_subdirectory (CommunicationModule)
+#add_subdirectory (OpenALAudioModule)
+#add_subdirectory (RexCBLogin) # RexLogic::RexWebLogin replaces this atm anyways
+#add_subdirectory (RexQtScriptModule)
