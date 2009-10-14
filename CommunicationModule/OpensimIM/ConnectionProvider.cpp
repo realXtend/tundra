@@ -15,6 +15,9 @@ namespace OpensimIM
 	{
 		for ( ConnectionVector::iterator i = connections_.begin(); i != connections_.end(); ++i)
 		{
+			if ( (*i)->GetState() == Communication::ConnectionInterface::STATE_READY )
+				(*i)->Close();
+
 			delete *i;
 			*i = NULL;
 		}
@@ -67,7 +70,7 @@ namespace OpensimIM
 			conn = OpenConnection(credentials);
 			
 			QString channel = "0";
-			Communication::ChatSessionPtr chat = conn->OpenChatSession(channel);
+			Communication::ChatSessionInterface* chat = conn->OpenChatSession(channel);
 
 			QString message = "Hello world!";
 			chat->SendMessage(message);

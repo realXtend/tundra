@@ -134,6 +134,7 @@ namespace Communication
 		//! Provides name of this participant
 		virtual QString GetName() const = 0;
 	};
+	typedef std::vector<ChatSessionParticipantInterface*> ChatSessionParticipantVector;
 
 	/**
 	 * A message in chat session.
@@ -160,6 +161,7 @@ namespace Communication
 	public:
 		virtual void SendMessage(const QString &text) = 0;
 		virtual void Close() = 0;
+		virtual ChatSessionParticipantVector GetParticipants() const = 0;
 	signals:
 		void MessageReceived(const QString &text, const ChatSessionParticipantInterface& participant);
 		void ParticipantJoined(const ChatSessionParticipantInterface& participant);
@@ -236,10 +238,10 @@ namespace Communication
 		virtual QStringList GetAvailablePresenceStatusOptions() const = 0;
 
 		//! Open new chat session with given contact
-		virtual ChatSessionPtr OpenChatSession(const ContactInterface &contact) = 0;
+		virtual ChatSessionInterface* OpenChatSession(const ContactInterface &contact) = 0;
 
 		//! Open new chat session to given room
-		virtual ChatSessionPtr OpenChatSession(const QString &channel) = 0;
+		virtual ChatSessionInterface* OpenChatSession(const QString &channel) = 0;
 
 		//! Send a friend request to target address
 		virtual void SendFriendRequest(const QString &target, const QString &message) = 0;
