@@ -441,8 +441,7 @@ void UIController::InjectMousePress(int x, int y)
 {
     
     QPoint point(x,y);
-    keyboard_buffered_ = false;
-
+  
     int index = GetCanvas(point);
     
     UpdateMouseCursor(x,y,index);
@@ -506,14 +505,17 @@ void UIController::InjectMousePress(int x, int y)
         mouseEvent.setModifiers(0);
         mouseEvent.setAccepted(false);
         
-       
-//        canvases_[index]->activateWindow();
+     
 
        if (!canvases_[index]->isActiveWindow())
             canvases_[index]->Activate();
 
        QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);
-        
+       
+
+       if ( !canvases_[index]->hasFocus() )
+            keyboard_buffered_ = false;
+           
         // Here starts nice HACK: Idea is to check that did press event went to somekind textedit widget. 
         // if it went we need to set OIS keyboard to buffered mode. 
 
@@ -547,6 +549,17 @@ void UIController::InjectMousePress(int x, int y)
         active_canvas_ = canvases_[index]->GetID();
         // Note this call changes internal arrange of canvases_ so index is not anymore valid.
         SetTop(active_canvas_);
+        
+    }
+    else
+    {
+        // If press went to outside of widgets. Clear focus. 
+
+        QWidget* focusWidget = QApplication::focusWidget();
+        if ( focusWidget != 0)
+            focusWidget->clearFocus();
+
+        keyboard_buffered_ = false;
         
     }
     lastPosition_ = point;
