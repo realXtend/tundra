@@ -15,7 +15,7 @@ namespace Inventory
 
 InventoryFolder::InventoryFolder() :
     AbstractInventoryItem(Type_Folder, QString(RexTypes::RexUUID().ToString().c_str()), "New Folder", 0),
-    editable_(true)
+    editable_(true), dirty_(false)
 {
 }
 
@@ -24,7 +24,8 @@ InventoryFolder::InventoryFolder(
     const QString &name,
     const bool &editable,
     InventoryFolder *parent) :
-    AbstractInventoryItem(Type_Folder, id, name, parent)
+    AbstractInventoryItem(Type_Folder, id, name, parent),
+    dirty_(false)
 {
 }
 

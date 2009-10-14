@@ -10,6 +10,7 @@
 
 #include <QtUiTools>
 #include <QFile>
+#include <QDebug>
 
 namespace Inventory
 {
@@ -88,20 +89,22 @@ void InventoryWindow::UpdateActions()
 
 void InventoryWindow::HandleInventoryFolderDescendents(OpenSimProtocol::InventoryFolderEventData *folder_data)
 {
-    return;
-
     QModelIndex index = treeView_->selectionModel()->currentIndex();
 
     QAbstractItemModel *model = treeView_->model();
-/*    if (model->columnCount(index) == 0)
+
+    if (model->columnCount(index) == 0)
         if (!model->insertColumn(0, index))
             return;
-*/
-    ///\todo A better way?.
-    if (!viewModel_->insertRows(0, 1, index, folder_data))
+
+//    viewModel_->SetPendingData(folder_data);
+
+    // Create new children (row) to the inventory view.
+    //inline bool QAbstractItemModel::insertRow(int arow, const QModelIndex &aparent) { return insertRows(arow, 1, aparent); }
+    if (!viewModel_->insertRows(index.row(), 1, index, folder_data))
+    //if (!viewModel_->insertRow(0, index))
         return;
 
-//    treeView_->selectionModel()->setCurrentIndex(model->index(0, 0, index), QItemSelectionModel::ClearAndSelect);
     UpdateActions();
 }
 
@@ -112,7 +115,7 @@ void InventoryWindow::FetchInventoryDescendents(const QModelIndex &index)
 
     viewModel_->FetchInventoryDescendents(index);
 
-    treeView_->selectionModel()->setCurrentIndex(viewModel_->index(0, 0, index), QItemSelectionModel::ClearAndSelect);
+    treeView_->selectionModel()->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
     UpdateActions();
 }
 

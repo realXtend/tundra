@@ -825,9 +825,9 @@ namespace RexLogic
                     Ogre::SubMesh* submesh = ogremesh->getSubMesh(j);
                     AvatarMaterial attach_newmat;
                     attach_newmat.asset_.name_ = submesh->getMaterialName();
-                    materials.push_back(attach_newmat);                        
-                }    
-            }            
+                    materials.push_back(attach_newmat);
+                }
+            }
         }
         
         
@@ -870,7 +870,7 @@ namespace RexLogic
                         Ogre::SubMesh* submesh = ogremesh->getSubMesh(j);
                         AvatarMaterial attach_newmat;
                         attach_newmat.asset_.name_ = submesh->getMaterialName();
-                        attachments[i].materials_.push_back(attach_newmat);                        
+                        attachments[i].materials_.push_back(attach_newmat);
                     }
                 }
             }
@@ -935,13 +935,41 @@ namespace RexLogic
                 Ogre::MaterialPtr ogremat = OgreRenderer::GetLocalMaterial(mat.asset_.name_);
                 if (ogremat.isNull())
                     return;
-                    
-                Core::StringVector default_textures = OgreRenderer::GetTextureNamesFromMaterial(ogremat);
-                for (Core::uint i = 0; i < default_textures.size(); ++i)
+                
+                // Use a set to avoid duplicates
+                std::set<std::string> textures_set;
+                
+                Ogre::Material::TechniqueIterator iter = ogremat->getTechniqueIterator();
+                while(iter.hasMoreElements())
+                {
+                    Ogre::Technique *tech = iter.getNext();
+                    assert(tech);
+                    Ogre::Technique::PassIterator passIter = tech->getPassIterator();
+                    while(passIter.hasMoreElements())
+                    {
+                        Ogre::Pass *pass = passIter.getNext();
+                        
+                        Ogre::Pass::TextureUnitStateIterator texIter = pass->getTextureUnitStateIterator();
+                        
+                        while(texIter.hasMoreElements())
+                        {
+                            Ogre::TextureUnitState *texUnit = texIter.getNext();
+                            const std::string& texname = texUnit->getTextureName();
+                            
+                            if (!texname.empty())
+                                textures_set.insert(texname);
+                        }
+                    }
+                }
+                
+                std::set<std::string>::iterator i = textures_set.begin();
+                
+                while (i != textures_set.end())
                 {
                     AvatarAsset new_tex;
-                    new_tex.name_ = default_textures[i];
+                    new_tex.name_ = *i;
                     mat.textures_.push_back(new_tex);
+                    ++i;
                 }
             }
         }
