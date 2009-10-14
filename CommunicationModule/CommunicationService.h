@@ -3,6 +3,7 @@
 
 #include "StableHeaders.h"
 #include "interface.h"
+#include "Foundation.h"
 #include <QMap>
 #include <QStringList>
 
@@ -18,6 +19,7 @@ namespace Communication
 	public:
 		//! Handle network event
 		virtual bool HandleNetworkEvent(Foundation::EventDataInterface* data) = 0;
+		virtual bool HandleNetworkStateEvent(Foundation::EventDataInterface* data) = 0;
 	};
 
 	/**
@@ -26,9 +28,11 @@ namespace Communication
 	 */
 	class CommunicationService : public CommunicationServiceInterface
 	{
+
 	public:
-		CommunicationService(void);
+		CommunicationService(Foundation::Framework* framework);
 		~CommunicationService(void);
+		static void CreateInstance(Foundation::Framework* framework);
 
 		//! Static method to provide singleton CommunicationServiceInterface object 
 		static CommunicationServiceInterface* GetInstance();
@@ -50,14 +54,19 @@ namespace Communication
 		//! Provides Connection objects which supports given protocol
 		virtual ConnectionVector GetConnections(const QString &protocol) const;
 
-		//! Handle network events
-		bool CommunicationService::HandleNetworkEvent(Foundation::EventDataInterface* data);
+		//! Handle events
+		virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
 	protected:
 		static CommunicationService* instance_;
 		ConnectionVector connections_;
 		ConnectionProviderVector connection_providers_;
 		QMap<QString, ConnectionVector> connections_per_protocol_;
+		Foundation::Framework* framework_;
+
+		//! category id for incoming messages
+		Core::event_category_id_t event_category_opensimnetworkin_;
+        Core::event_category_id_t event_category_networkstate_;
 	};
 } // end of namespace: Communication
 

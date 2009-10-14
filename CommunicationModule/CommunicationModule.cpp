@@ -26,6 +26,8 @@ namespace Communication
 		qt_ui_ = new CommunicationUI::QtGUI(framework_);
 
 		// new way
+
+		CommunicationService::CreateInstance(framework_);
 		communication_service_ = CommunicationService::GetInstance();
 		OpensimIM::ConnectionProvider* p = new OpensimIM::ConnectionProvider(framework_);
 		communication_service_->RegisterConnectionProvider(p);
@@ -35,7 +37,6 @@ namespace Communication
 
 	void CommunicationModule::PostInitialize()
 	{
-        inboundcategory_id_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
 		Foundation::EventManagerPtr event_manager = framework_->GetEventManager(); 
 
 		if ( communication_service_ == NULL)
@@ -84,15 +85,10 @@ namespace Communication
 	{
 	}
 
-//	bool                      HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) { return false; }
     bool CommunicationModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        if ((category_id == inboundcategory_id_))
-        {
-            if (communication_service_)
-				static_cast<CommunicationService*>( communication_service_ )->HandleNetworkEvent(data);
-        }     
-       
+		if (communication_service_)
+			return dynamic_cast<CommunicationService*>( communication_service_ )->HandleEvent(category_id, event_id, data);
         return false;
     }    
 

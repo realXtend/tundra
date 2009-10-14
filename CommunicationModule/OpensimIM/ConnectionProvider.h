@@ -36,6 +36,9 @@ namespace OpensimIM
 		//! Handle network event
 		virtual bool HandleNetworkEvent(Foundation::EventDataInterface* data);
 
+		//! Handle network event
+		virtual bool HandleNetworkStateEvent(Foundation::EventDataInterface* data);
+
 	protected:
 		//! commands: "opensimim test"
 		virtual void RegisterConsoleCommands();

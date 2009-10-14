@@ -20,9 +20,11 @@ namespace OpensimIM
 	 */
 	class Connection : public Communication::ConnectionInterface
 	{
+		Q_OBJECT
 		MODULE_LOGGING_FUNCTIONS
 		static const std::string NameStatic() { return "Communication(OpensimIM)"; } // for logging functionality
 
+		static const int GlobalChatChannelID = 0;
 		static const int SayDistance = 30;
 		static const int ShoutDistance = 100;
 		static const int WhisperDistance = 10;
@@ -77,6 +79,8 @@ namespace OpensimIM
 
 		bool HandleNetworkEvent(Foundation::EventDataInterface* data);
 
+		bool HandleNetworkStateEvent(Foundation::EventDataInterface* data);
+
 	protected:
 		//! Add console commands: 
 		virtual void RegisterConsoleCommands();
@@ -99,6 +103,9 @@ namespace OpensimIM
 		QString reason_;
 		ChatSessionVector public_chat_sessions_;
 		ChatSessionVector im_chat_sessions_;
+		QString agent_uuid_; 
+	public slots:
+		void OnWorldChatMessageReceived(const QString& text, const Communication::ChatSessionParticipantInterface& participant);
 	};
 	typedef std::vector<Connection*> ConnectionVector;
 

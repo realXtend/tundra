@@ -25,21 +25,29 @@ namespace OpensimIM
 		//! 
 		virtual void Close();
 
-		virtual void MessageFromServer(const QString &from, const QString &text);
+		//! Report chat session object about text message whitch originator is a avatart.
+		virtual void MessageFromAgent(const QString &avatar_id, const QString &name, const QString &text);
 
-		//!
+		//! Report chat session object about text message whitch origin is the world server 
+		virtual void MessageFromServer(const QString &text);
+
+		//! Report chat session object about text message whitch origin is the object
+		virtual void MessageFromObject(const QString &object_id, const QString &text);
+
+		//! Provides known participants of this chat session
+		//! Only participant who have send at least one text messages are listed here
 		virtual Communication::ChatSessionParticipantVector GetParticipants() const;
 
 		//! Provides ID of chat session
 		virtual QString GetID() const;
 	protected:
 		QString channel_id_;
+		ChatSessionParticipant server_participant_;
 		ChatSessionParticipant* FindParticipant(const QString &uuid);
 
 	private:
 		Foundation::Framework* framework_;
 		ChatSessionParticipantVector participants_;
-
 	};
 	typedef boost::shared_ptr<ChatSession> ChatSessionPtr;
 	typedef std::vector<ChatSession*> ChatSessionVector;

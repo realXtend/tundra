@@ -93,6 +93,12 @@ namespace OpensimIM
 	void Connection::SendFriendRequest(const QString &target, const QString &message)
 	{
 		//! \todo IMPLEMENT
+
+		//! UDP messages:
+		//! + AcceptFriendship
+		//! + DeclineFriendship
+		//! + FormFriendship
+		//! + TerminateFriendship
 	}
 
 	Communication::FriendRequestVector Connection::GetFriendRequests() const
@@ -119,7 +125,12 @@ namespace OpensimIM
 
 	void Connection::RequestFriendlist()
 	{
-		//! \todo async xmplrpc "get_user_friend_list"(owenerID)
+		//! TODO: Parse login response from opensim server
+		//! buddy-list
+		//! + array:  
+		//!     + buddy_id
+		//!     + buddy_rights_given
+		//!     + buddy_rights_has
 	}
 
 	bool Connection::HandleNetworkEvent(Foundation::EventDataInterface* data)
@@ -139,6 +150,12 @@ namespace OpensimIM
 		return false;
 	}
 
+	bool Connection::HandleNetworkStateEvent(Foundation::EventDataInterface* data)
+	{
+		return false;
+	}
+
+
 	bool Connection::HandleOSNEChatFromSimulator(NetInMessage& msg)
 	{
 		try
@@ -152,18 +169,29 @@ namespace OpensimIM
 			RexTypes::RexUUID object_owner = msg.ReadUUID();
 			ChatSourceType source_type = static_cast<ChatSourceType>( msg.ReadU8() );
 			ChatType chat_type = static_cast<ChatType>( msg.ReadU8() ); 
-			ChatAudibleLevel audible = static_cast<ChatAudibleLevel>( msg.ReadU8() ); // ?
+			ChatAudibleLevel audible = static_cast<ChatAudibleLevel>( msg.ReadU8() );
 			RexTypes::Vector3 position = msg.ReadVector3();
 			std::string message = msg.ReadString();
 			if ( message.size() > 0 )
 			{
-				int test = 0;
 				for (ChatSessionVector::iterator i = public_chat_sessions_.begin(); i != public_chat_sessions_.end(); ++i)
 				{
-					QString uuid = source.ToString().c_str();
-					(*i)->MessageFromServer(QString( from_name.c_str() ), QString( message.c_str() ));
-				}
+					if ( (*i)->GetID().compare("0") != 0 )
+						continue;
 
+					QString source_uuid = source.ToString().c_str();
+					QString source_name = from_name.c_str();
+					QString message_text = message.c_str();
+
+					switch (source_type)
+					{
+					case Connection::Agent:
+					case Connection::Object:
+					case Connection::System:
+						(*i)->MessageFromAgent(source_uuid, source_name, message_text);
+						break;
+					}
+				}
 			}
 		}
 		catch(NetMessageException /*&e*/)
@@ -175,10 +203,17 @@ namespace OpensimIM
 
 	void Connection::OpenWorldChatSession()
 	{
-		OpenChatSession("0");
-//		if (world_chat_ == NULL)
-//			world_chat_ = new ChatSession(framework_, "0");
+		Communication::ChatSessionInterface* world_chat = OpenChatSession("0");
+		connect( world_chat, SIGNAL(MessageReceived(const QString&, const Communication::ChatSessionParticipantInterface&)), SLOT(OnWorldChatMessageReceived(const QString&, const Communication::ChatSessionParticipantInterface&)) );
 	}
 
+	void Connection::OnWorldChatMessageReceived(const QString& text, const Communication::ChatSessionParticipantInterface& participant)
+	{
+		QString message = "OpensimIM, public chat: ";
+		message.append( participant.GetName() );
+		message.append(" : ");
+		message.append( text );
+		LogDebug( message.toStdString() );
+	}
 
 } // end of namespace: OpensimIM

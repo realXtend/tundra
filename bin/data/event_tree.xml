@@ -10,5 +10,6 @@
     <subscriber module="TextureDecoderModule" priority="98" />
     <subscriber module="QtModule" priority="100" />
     <subscriber module="InventoryModule" priority="100" />
+    <subscriber module="CommunicationModule" priority="100" />
 </subscribers>
 
