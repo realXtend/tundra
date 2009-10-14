@@ -130,6 +130,14 @@ namespace RexLogic
             return;
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
         
+        // If document contains no animations, use ones from default
+        if (appearance.GetAnimations().empty())
+        {
+            AnimationDefinitionMap animations;
+            LegacyAvatarSerializer::ReadAnimationDefinitions(animations, *default_appearance_);
+            appearance.SetAnimations(animations);
+        }
+        
         // If mesh name is empty, it would certainly be an epic fail. Do nothing.
         if (appearance.GetMesh().name_.empty())
             return;
@@ -703,14 +711,6 @@ namespace RexLogic
             // If fails badly, setup default instead
             SetupDefaultAppearance(entity);
             return;
-        }
-        
-        // If document contains no animations, use ones from default
-        if (appearance.GetAnimations().empty())
-        {
-            AnimationDefinitionMap animations;
-            LegacyAvatarSerializer::ReadAnimationDefinitions(animations, *default_appearance_);
-            appearance.SetAnimations(animations);
         }
         
         appearance.SetAssetMap(assets);
@@ -1302,11 +1302,67 @@ namespace RexLogic
     
     bool AvatarAppearance::LoadAppearance(Scene::EntityPtr entity, const std::string& filename)
     {
+        boost::filesystem::path path(filename);
+        std::string dirname = path.branch_path().string();
+        
         Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
         if (!appearanceptr)
             return false;
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
         
+        if (filename.find(".mesh") != std::string::npos)
+        {
+            if (!PrepareAppearanceFromMesh(entity, filename))
+                return false;
+        }
+        else
+        {
+            if (!PrepareAppearanceFromXml(entity, filename))
+                return false;
+        }
+           
+        // This whole operation is potentially evil
+        try
+        {            
+            // HACK! Add a new temporary Ogre resource group for the avatar directory
+            Ogre::ResourceGroupManager& resgrpmgr = Ogre::ResourceGroupManager::getSingleton();
+
+            // If already exists, destroy first
+            try
+            {
+                resgrpmgr.destroyResourceGroup("Avatar");
+            }
+            catch (...) {}
+            
+            try
+            {
+                resgrpmgr.createResourceGroup("Avatar");
+                resgrpmgr.addResourceLocation(dirname, "FileSystem", "Avatar");
+                resgrpmgr.initialiseResourceGroup("Avatar");
+            }
+            catch (...) {}
+                         
+            SetupAppearance(entity);
+        }
+        catch (Ogre::Exception& e)
+        {
+            RexLogicModule::LogError("Error while loading avatar " + filename + ": " + e.what());
+            return false;
+        }
+        
+        return true;
+    }
+    
+    bool AvatarAppearance::PrepareAppearanceFromXml(Scene::EntityPtr entity, const std::string& filename)
+    {
+        boost::filesystem::path path(filename);
+        std::string leafname = path.leaf();
+        
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!appearanceptr)
+            return false;
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+                   
         QFile file(filename.c_str());
         QDomDocument avatar_doc("Avatar");
         
@@ -1332,14 +1388,49 @@ namespace RexLogic
         if (mesh.name_.empty())
         {
             RexLogicModule::LogInfo("Empty mesh name in avatar xml. Deducing from filename...");
-            boost::filesystem::path path(filename);
-            std::string meshname = path.leaf();
-            ReplaceSubstring(meshname, ".xml", ".mesh");
-            mesh.name_ = meshname; 
+
+            ReplaceSubstring(leafname, ".xml", ".mesh");
+            mesh.name_ = leafname; 
             appearance.SetMesh(mesh);
+        }      
+        
+        return true;    
+    }    
+    
+    bool AvatarAppearance::PrepareAppearanceFromMesh(Scene::EntityPtr entity, const std::string& filename)
+    {   
+        boost::filesystem::path path(filename);
+        std::string leafname = path.leaf();
+        
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!appearanceptr)
+            return false;
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+        
+        appearance.Clear();
+        AvatarAsset mesh;
+        mesh.name_ = leafname;
+        appearance.SetMesh(mesh);
+        
+        std::string xmlname = filename;
+        ReplaceSubstring(xmlname, ".mesh", ".xml");       
+        
+        // Now optionally read parameters from an xml file that perhaps exists, but it's not fatal if it's not found           
+        QFile file(filename.c_str());
+        QDomDocument avatar_doc("Avatar");
+        
+        if (!file.open(QIODevice::ReadOnly))
+            return true;
+        
+        if (!avatar_doc.setContent(&file))
+        {
+            file.close();
+            return true;
         }
-            
-        SetupAppearance(entity);
+        file.close();
+        
+        LegacyAvatarSerializer::ReadAvatarAppearance(appearance, avatar_doc, false);
+    
         return true;
     }    
 }

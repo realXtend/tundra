@@ -63,7 +63,7 @@ namespace CommunicationUI
 		if (qt_ui != 0)
 		{
 			canvas_->Hide();
-			qt_ui->DeleteCanvas(canvas_);
+			qt_ui->DeleteCanvas(canvas_->GetID());
 		}
 	}
 

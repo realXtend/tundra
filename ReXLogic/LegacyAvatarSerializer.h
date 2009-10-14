@@ -17,8 +17,12 @@ namespace RexLogic
     {
     public:
         //! Reads avatar definition into an EC_AvatarAppearance from an xml document
-        //! \return true if mostly successful
-        static bool ReadAvatarAppearance(EC_AvatarAppearance& dest, const QDomDocument& source);
+        /*! \param dest Destination EC_AvatarAppearance
+            \param source Source XML document
+            \param read_mesh Whether to read and overwrite the mesh element, default true
+            \return true if mostly successful
+         */
+        static bool ReadAvatarAppearance(EC_AvatarAppearance& dest, const QDomDocument& source, bool read_mesh = true);
         
         //! Reads animation definitions only from an xml document
         //! \return true if successful

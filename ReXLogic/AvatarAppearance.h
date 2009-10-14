@@ -49,7 +49,7 @@ namespace RexLogic
         
         //! Reads an avatar's appearance from a file
         /*! \param entity Avatar entity
-            \param filename Path/filename to load from 
+            \param filename Path/filename to load from. Note: can either be an xml or mesh file
             \return true if successful
          */
         bool LoadAppearance(Scene::EntityPtr entity, const std::string& filename);
@@ -118,6 +118,12 @@ namespace RexLogic
         //! Fixes up avatar material (material script/texture resources)
         void FixupMaterial(AvatarMaterial& mat, const AvatarAssetMap& asset_map);
         
+        //! Prepares new avatar appearance using xml as the main file
+        bool PrepareAppearanceFromXml(Scene::EntityPtr entity, const std::string& filename);
+
+        //! Prepares new avatar appearance using mesh as the main file, with optional xml file
+        bool PrepareAppearanceFromMesh(Scene::EntityPtr entity, const std::string& filename);
+                
         //! Guesses avatar asset resource type from human-readable asset name
         static const std::string& GetResourceTypeFromName(const std::string& name);
         

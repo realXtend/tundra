@@ -179,7 +179,7 @@ namespace RexLogic
         elem.setAttribute(QString::fromStdString(name), QString::fromStdString(Core::ToString<int>(value)));
     }
     
-    bool LegacyAvatarSerializer::ReadAvatarAppearance(RexLogic::EC_AvatarAppearance& dest, const QDomDocument& source)
+    bool LegacyAvatarSerializer::ReadAvatarAppearance(RexLogic::EC_AvatarAppearance& dest, const QDomDocument& source, bool read_mesh)
     {
         PROFILE(Avatar_ReadAvatarAppearance);
         
@@ -189,27 +189,28 @@ namespace RexLogic
             RexLogicModule::LogError("No avatar element");
             return false;
         }
-        
-        dest.Clear();
-                
-        // Get mesh
-        QDomElement base_elem = avatar.firstChildElement("base");
-        if (!base_elem.isNull())
+
+        // Get mesh & skeleton
+        if (read_mesh)
         {
-            AvatarAsset mesh;
-            mesh.name_ = base_elem.attribute("mesh").toStdString();
-            dest.SetMesh(mesh);
+            dest.Clear();
+            QDomElement base_elem = avatar.firstChildElement("base");
+            if (!base_elem.isNull())
+            {
+                AvatarAsset mesh;
+                mesh.name_ = base_elem.attribute("mesh").toStdString();
+                dest.SetMesh(mesh);
+            }
+            // Get skeleton
+            QDomElement skeleton_elem = avatar.firstChildElement("skeleton");
+            if (!skeleton_elem.isNull())
+            {
+                AvatarAsset skeleton;
+                skeleton.name_ = skeleton_elem.attribute("name").toStdString();
+                dest.SetSkeleton(skeleton);
+            }        
         }
-        
-        // Get skeleton
-        QDomElement skeleton_elem = avatar.firstChildElement("skeleton");
-        if (!skeleton_elem.isNull())
-        {
-            AvatarAsset skeleton;
-            skeleton.name_ = skeleton_elem.attribute("name").toStdString();
-            dest.SetSkeleton(skeleton);
-        }
-        
+               
         // Get materials, should be 2 of them
         Core::uint mat_index = 0;
         QDomElement material_elem = avatar.firstChildElement("material");
