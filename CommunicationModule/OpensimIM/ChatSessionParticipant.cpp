@@ -3,6 +3,11 @@
 
 namespace OpensimIM
 {
+	ChatSessionParticipant::ChatSessionParticipant(const QString &uuid, const QString &name): uuid_(uuid), name_(name)
+	{
+
+	}
+
 	Communication::ContactInterface* ChatSessionParticipant::GetContact() const
 	{
 		//! \todo implement

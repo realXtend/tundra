@@ -1,24 +1,34 @@
 #include "CommunicationService.h"
 #include <QList>
+#include "NetworkEvents.h"
 
 namespace Communication
 {
 	CommunicationService* CommunicationService::instance_ =  NULL; // static member function initialization
 
-	CommunicationService::CommunicationService(void)
+	CommunicationService::CommunicationService(Foundation::Framework* framework) : framework_(framework)
 	{
+		if (framework_ == NULL)
+			throw Core::Exception("Cannot create communication service object, framework pointer is missing."); 
+
+        event_category_opensimnetworkin_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
+        event_category_networkstate_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
 	}
 
 	CommunicationService::~CommunicationService(void)
 	{
 	}
 
+	// static
+	void CommunicationService::CreateInstance(Foundation::Framework* framework)
+	{
+		if (CommunicationService::instance_ == NULL)
+			CommunicationService::instance_ = new CommunicationService(framework);
+	}
+
 	//! static
 	CommunicationServiceInterface* CommunicationService::GetInstance()
 	{
-		if (CommunicationService::instance_ == NULL)
-			CommunicationService::instance_ = new CommunicationService();
-
 		return CommunicationService::instance_;
 	}
 
@@ -64,17 +74,28 @@ namespace Communication
 		return connections_per_protocol_.value(protocol);
 	}
 
-	bool CommunicationService::HandleNetworkEvent(Foundation::EventDataInterface* data)
+	bool CommunicationService::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
 	{
-		//! \todo forward network events to connection providers
 		for (ConnectionProviderVector::iterator i = connection_providers_.begin(); i != connection_providers_.end(); ++i)
 		{
 			NetworkEventHandlerInterface* handler = dynamic_cast<NetworkEventHandlerInterface*>( *i );
 			if ( handler )
-				handler->HandleNetworkEvent( data );
+			{
+		        if ( category_id == event_category_opensimnetworkin_ )
+				{
+					bool ret = handler->HandleNetworkEvent( data );
+					if ( ret )
+						return true;
+				}
+		        if ( category_id == event_category_networkstate_ )
+				{
+					bool ret = handler->HandleNetworkStateEvent( data );
+					if ( ret )
+						return true;
+				}
+			}
+			return false;
 		}
-
-		return false;
 	}
 
 } // end of namespace: Communication

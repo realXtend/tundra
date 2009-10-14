@@ -59,7 +59,7 @@ namespace Communication
 	 * A contact item on ContactList object. Presents a real life person.
 	 *
 	 */
-	class ContactInterface : QObject
+	class ContactInterface : public QObject
 	{
 		Q_OBJECT
 	public:
@@ -155,7 +155,7 @@ namespace Communication
 	 *
 	 */
 	// TextChatSessionInterface ?
-	class ChatSessionInterface: QObject
+	class ChatSessionInterface: public QObject
 	{
 		Q_OBJECT
 	public:
@@ -163,7 +163,7 @@ namespace Communication
 		virtual void Close() = 0;
 		virtual ChatSessionParticipantVector GetParticipants() const = 0;
 	signals:
-		void MessageReceived(const QString &text, const ChatSessionParticipantInterface& participant);
+		void MessageReceived(const QString &text, const Communication::ChatSessionParticipantInterface& participant);
 		void ParticipantJoined(const ChatSessionParticipantInterface& participant);
 		void ParticipantLeft(const ChatSessionParticipantInterface& participant);
 		void Closed(ChatSessionInterface*);
@@ -175,7 +175,7 @@ namespace Communication
 	 *        More information about audio module planning is needed.
 	 *       
 	 */
-	class VoiceSessionInterface: QObject
+	class VoiceSessionInterface: public QObject
 	{
 		Q_OBJECT
 	public:
@@ -204,7 +204,7 @@ namespace Communication
 	 * It also signals about incoming friend request and communication sessions.
 	 *
 	 */
-	class ConnectionInterface : QObject
+	class ConnectionInterface : public QObject
 	{
 		Q_OBJECT
 	public:
@@ -315,7 +315,7 @@ namespace Communication
 	 *                       2) call OpenConnection
 	 *
 	 */
-	class CommunicationServiceInterface :QObject
+	class CommunicationServiceInterface : public QObject
 	{
 		Q_OBJECT
 	public:

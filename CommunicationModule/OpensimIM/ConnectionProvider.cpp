@@ -98,4 +98,9 @@ namespace OpensimIM
 		return false;
 	}
 
+	bool ConnectionProvider::HandleNetworkStateEvent(Foundation::EventDataInterface* data)
+	{
+		return false;
+	}
+
 } // end of namespace: OpensimIM

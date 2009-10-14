@@ -7,7 +7,6 @@
 #include "CommunicationModuleApi.h"
 #include "CommunicationManager.h"
 #include "CommunicationService.h"
-//#include "OpensimIM/Provider.h"
 #include "ConsoleUI.h"
 #include "QtGUI.h"
 
@@ -25,9 +24,6 @@
  */
 namespace Communication
 {
-//	class TpQt4CommunicationManager;
-//	typedef boost::shared_ptr<TpQt4CommunicationManager> TpQt4CommunicationManagerPtr;    
-    
 	class COMMS_MODULE_API CommunicationModule : public Foundation::ModuleInterfaceImpl
 	{
 	public:
@@ -57,9 +53,6 @@ namespace Communication
 		CommunicationUI::QtGUI* qt_ui_;
 		CommunicationServiceInterface* communication_service_;
 	
-		//! category id for incoming messages
-        Core::event_category_id_t inboundcategory_id_;
-
 	};
 }
 

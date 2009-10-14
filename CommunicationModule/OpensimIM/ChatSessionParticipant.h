@@ -10,6 +10,8 @@ namespace OpensimIM
 	{
 	public:
 
+		ChatSessionParticipant(const QString &id, const QString &name);
+
 		//! Return NULL pointer if the participant is not on
 		//! contact list
 		virtual Communication::ContactInterface* GetContact() const;
@@ -19,6 +21,15 @@ namespace OpensimIM
 
 		//! Provides name of this participant
 		virtual QString GetName() const;
+
+		//! NOT IMPLEMENTED
+//		virtual bool IsTyping() const;
+
+		//! NOT IMPLEMENTED
+//		virtual bool HaveLocation() const;
+
+		//! NOT IMPLEMENTED
+//		virtual GetScneneObject() const;
 	protected:
 		QString name_;
 		QString uuid_;

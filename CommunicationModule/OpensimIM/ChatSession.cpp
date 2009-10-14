@@ -3,7 +3,7 @@
 
 namespace OpensimIM
 {
-	ChatSession::ChatSession(Foundation::Framework* framework, const QString channel_id): framework_(framework), channel_id_(channel_id)
+	ChatSession::ChatSession(Foundation::Framework* framework, const QString channel_id): framework_(framework), channel_id_(channel_id), server_participant_("0", "Server")
 	{
 		//! \todo Add support to different channel numbers
 		//!       This requires changes to SendChatFromViewerPacket method or 
@@ -34,13 +34,29 @@ namespace OpensimIM
 	{
 		//! \todo IMPLEMENT
 	}
-
-	void ChatSession::MessageFromServer(const QString &from, const QString &text)
+	void ChatSession::MessageFromAgent(const QString &avatar_id, const QString &name, const QString &text)
 	{
-		ChatSessionParticipant* participant = FindParticipant(from);
+		ChatSessionParticipant* participant = FindParticipant(avatar_id);
 		if ( !participant )
 		{
-			ChatSessionParticipant* participant = new ChatSessionParticipant();
+			participant = new ChatSessionParticipant(avatar_id, name);
+			participants_.push_back(participant);
+		}
+
+		emit MessageReceived(text, *participant);
+	}
+
+	void ChatSession::MessageFromServer(const QString &text)
+	{
+		emit MessageReceived(text, dynamic_cast<Communication::ChatSessionParticipantInterface&>(server_participant_));
+	}
+
+	void ChatSession::MessageFromObject(const QString &object_id, const QString &text)
+	{
+		ChatSessionParticipant* participant = FindParticipant(object_id);
+		if ( !participant )
+		{
+			ChatSessionParticipant* participant = new ChatSessionParticipant(object_id, "(name)");
 			participants_.push_back(participant);
 		}
 
