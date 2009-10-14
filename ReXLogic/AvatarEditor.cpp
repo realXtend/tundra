@@ -29,7 +29,7 @@ namespace RexLogic
         if (qt_ui)
         {
             if (canvas_)
-                qt_ui->DeleteCanvas(canvas_);
+                qt_ui->DeleteCanvas(canvas_->GetID());
         }
     }
 

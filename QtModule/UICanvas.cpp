@@ -547,6 +547,7 @@ void UICanvas::RenderSceneToOgreSurface()
     {
         PROFILE(FillEmpty);
         pixmap.fill(Qt::transparent);
+        
     }
     assert(pixmap.hasAlphaChannel());
     QImage img = pixmap.toImage();
