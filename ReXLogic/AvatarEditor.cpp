@@ -58,8 +58,8 @@ namespace RexLogic
     
     void AvatarEditor::LoadAvatar()
     {
-        const std::string filter = "Avatar XML files (*.xml)";
-        std::string filename = Foundation::QtUtils::GetOpenFileName(filter, "Choose avatar xml", Foundation::QtUtils::GetCurrentPath());        
+        const std::string filter = "Avatar description files (*.xml);;Avatar mesh files (*.mesh)";
+        std::string filename = Foundation::QtUtils::GetOpenFileName(filter, "Choose avatar file", Foundation::QtUtils::GetCurrentPath());        
 
         if (!filename.empty())
             rexlogicmodule_->GetAvatarHandler()->LoadUserAvatarFromFile(filename);                        
