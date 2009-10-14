@@ -119,7 +119,7 @@ bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &p
         return false;
 
     beginInsertRows(parent, position, position + rows - 1);
-    dataModel_->GetOrCreateNewFolder(QString(RexTypes::RexUUID::CreateRandom().ToString().c_str()), *parentFolder);
+    dataModel_->GetOrCreateNewFolder(QString(RexTypes::RexUUID::CreateRandom().ToString().c_str()), *parentFolder, false);
     endInsertRows();
 
     return true;
@@ -134,14 +134,16 @@ bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &p
     if (!parentFolder)
         return false;
 
+    ///\todo Use these signals somewhere?
+    ///    emit layoutAboutToBeChanged();
+    ///    emit layoutChanged();
+
     beginInsertRows(parent, position, position + rows - 1);
     AbstractInventoryItem *newFolder = dataModel_->GetOrCreateNewFolder(QString(folder_data->folderId.ToString().c_str()),
         *parentFolder, false);
-    endInsertRows();
-
     newFolder->SetName(QString(folder_data->name.c_str()));
     ///\todo newFolder->SetType(folder_data->type);
-
+    endInsertRows();
 
     return true;
 }
@@ -227,9 +229,9 @@ void InventoryViewModel::FetchInventoryDescendents(const QModelIndex &index)
     if (!folder)
         return;
 
-    ///\todo Send FetchInventoryDescendents only if our model is "dirty" (new items are uploaded)
-//    if (!folder->IsDirty())
-//        return;
+    // Send FetchInventoryDescendents only if the folder is "dirty".
+    if (!folder->IsDirty())
+        return;
 
     dataModel_->FetchInventoryDescendents(item);
 }

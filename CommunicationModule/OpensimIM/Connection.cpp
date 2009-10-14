@@ -166,7 +166,7 @@ namespace OpensimIM
 
 			}
 		}
-		catch(NetMessageException &e)
+		catch(NetMessageException /*&e*/)
 		{
 			return false;
 		}

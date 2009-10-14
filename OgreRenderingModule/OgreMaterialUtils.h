@@ -61,7 +61,7 @@ namespace OgreRenderer
     void OGRE_MODULE_API ReplaceTextureOnMaterial(Ogre::MaterialPtr material, const std::string& original_name, const std::string& texture_name);
     
     //! Returns texture names used by a material's all techniques, passes & textureunits. Does not return duplicates.
-    Core::StringVector OGRE_MODULE_API GetTextureNamesFromMaterial(Ogre::MaterialPtr material);
+    void OGRE_MODULE_API GetTextureNamesFromMaterial(Ogre::MaterialPtr material, Core::StringVector& textures);
     
     //! Creates a material resource from an Ogre material pointer
     Foundation::ResourcePtr OGRE_MODULE_API CreateResourceFromMaterial(Ogre::MaterialPtr material);

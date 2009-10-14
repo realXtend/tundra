@@ -64,6 +64,9 @@ namespace OpenSimProtocol
         /// @return Folder by the requested id or null if the folder isn't found.
         InventoryFolderSkeleton *GetChildFolderByID(const RexUUID &searchId);
 
+        /// @return Does this folder have children.
+        bool HasChildren() const { return children.size() != 0; }
+
         /// Prints out the whole inventory folder tree to stdout.
         void DebugDumpInventoryFolderStructure(int indentationLevel);
 

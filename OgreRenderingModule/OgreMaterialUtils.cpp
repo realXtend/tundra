@@ -223,12 +223,11 @@ namespace OgreRenderer
         }
     }
     
-    Core::StringVector GetTextureNamesFromMaterial(Ogre::MaterialPtr material)
+    void GetTextureNamesFromMaterial(Ogre::MaterialPtr material, Core::StringVector& textures)
     {
-        Core::StringVector textures;
-        
+        textures.clear();
         if (material.isNull())
-            return textures;
+            return;
         
         // Use a set internally to avoid duplicates
         std::set<std::string> textures_set;
@@ -263,8 +262,6 @@ namespace OgreRenderer
             textures.push_back(*i);
             ++i;
         }
-        
-        return textures;
     }
     
     Foundation::ResourcePtr OGRE_MODULE_API CreateResourceFromMaterial(Ogre::MaterialPtr material)

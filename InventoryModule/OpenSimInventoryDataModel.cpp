@@ -59,8 +59,6 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewFolder(const QSt
 
     // Create a new folder.
     InventoryFolder *parent = static_cast<InventoryFolder *>(&parentFolder);
-//    std::cout << "Create a new folder." << std::endl;
-//    std::cout << parent->GetName().toStdString()  << " " << parent->GetID().toStdString() << std::endl;
     InventoryFolder *newFolder = new InventoryFolder(id, "New Folder", true, parent);
 
     // Inform the server.
@@ -135,6 +133,8 @@ void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
 
     InventoryFolder *newFolder= new InventoryFolder(QString(folder_skeleton->id.ToString().c_str()),
         QString(folder_skeleton->name.c_str()), folder_skeleton->editable, parent_folder);
+    if (!folder_skeleton->HasChildren())
+        newFolder->SetDirty(true);
 
     if (!rootFolder_ && !parent_folder)
         rootFolder_ = newFolder;
