@@ -6,11 +6,10 @@
 #include "InventoryViewModel.h"
 #include "QtModule.h"
 #include "RexLogicModule.h"
-#include "NetworkEvents.h"
+#include "InventoryEvents.h"
 
 #include <QtUiTools>
 #include <QFile>
-#include <QDebug>
 
 namespace Inventory
 {
@@ -69,7 +68,7 @@ void InventoryWindow::InitOpenSimInventoryTreeModel()
     treeView_->setModel(viewModel_);
 
     // Connect view model related signals.
-    QObject::connect(viewModel_, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)),
+    QObject::connect(treeView_->model(), SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)),
         this, SLOT(ItemNameChanged(const QModelIndex &, const QModelIndex &)));
 
     QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
@@ -78,31 +77,27 @@ void InventoryWindow::InitOpenSimInventoryTreeModel()
 
 void InventoryWindow::ResetInventoryTreeModel()
 {
+    ///\todo Crashes here if user quits viewer with "exit" console command.while logged in.
     SAFE_DELETE(viewModel_);
-//    CloseInventoryWindow();
 }
 
 void InventoryWindow::UpdateActions()
 {
-    ///\todo
 }
 
-void InventoryWindow::HandleInventoryFolderDescendents(OpenSimProtocol::InventoryFolderEventData *folder_data)
+void InventoryWindow::HandleInventoryDescendent(OpenSimProtocol::InventoryItemEventData *item_data)
 {
     QModelIndex index = treeView_->selectionModel()->currentIndex();
-
     QAbstractItemModel *model = treeView_->model();
 
     if (model->columnCount(index) == 0)
         if (!model->insertColumn(0, index))
             return;
 
-//    viewModel_->SetPendingData(folder_data);
-
     // Create new children (row) to the inventory view.
     //inline bool QAbstractItemModel::insertRow(int arow, const QModelIndex &aparent) { return insertRows(arow, 1, aparent); }
-    if (!viewModel_->insertRows(index.row(), 1, index, folder_data))
     //if (!viewModel_->insertRow(0, index))
+    if (!viewModel_->insertRows(index.row(), 1, index, item_data))
         return;
 
     UpdateActions();
@@ -180,7 +175,6 @@ void InventoryWindow::CloseInventoryWindow()
 {
     if (qtModule_.get() != 0)
         qtModule_.get()->DeleteCanvas(canvas_->GetID());
-    
 }
 
 void InventoryWindow::InitInventoryWindow()

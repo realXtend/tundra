@@ -11,6 +11,7 @@
 #include "InventoryFolder.h"
 #include "InventoryAsset.h"
 #include "NetworkEvents.h"
+#include "InventoryEvents.h"
 
 #include <QAbstractItemModel>
 #include <QModelIndex>
@@ -53,7 +54,7 @@ namespace Inventory
         /// Used for inserting new childs with spesific data to the inventory tree model.
         /// @param folder_data Data for the new folder.
         bool insertRows(int position, int rows, const QModelIndex &parent,
-            OpenSimProtocol::InventoryFolderEventData *folder_data);
+            OpenSimProtocol::InventoryItemEventData *item_data);
 
         /// QAbstractItemModel override.
         /// Used for removing childs to the inventory tree model.

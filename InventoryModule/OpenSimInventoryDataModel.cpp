@@ -94,10 +94,12 @@ void OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem 
     InventoryFolder *requestedFolder = static_cast<InventoryFolder *>(folder);
 
     rexLogicModule_->GetServerConnection()->SendFetchInventoryDescendentsPacket(RexUUID(folder->GetID().toStdString()),
-        RexUUID(folder->GetParent()->GetID().toStdString()), 0 , true, false);
+        RexUUID(folder->GetParent()->GetID().toStdString()), 0 , true, true);
 
-//    rexLogicModule_->GetServerConnection()->SendFetchInventoryDescendentsPacket(RexUUID(folder->GetID().toStdString()),
-//        RexUUID(folder->GetParent()->GetID()), 0 , false, true);
+/*
+    rexLogicModule_->GetServerConnection()->SendFetchInventoryDescendentsPacket(RexUUID(folder->GetID().toStdString()),
+        RexUUID(folder->GetParent()->GetID().toStdString()), 0 , false, true);
+*/
 }
 
 void OpenSimInventoryDataModel::NotifyServerAboutFolderRemoval(AbstractInventoryItem *folder)

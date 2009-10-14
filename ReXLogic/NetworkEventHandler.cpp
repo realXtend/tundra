@@ -23,7 +23,7 @@
 #include "Primitive.h"
 #include "Sky.h"
 #include "Environment.h"
-#include "Inventory.h"
+#include "InventoryEvents.h"
 
 namespace
 {
@@ -345,7 +345,7 @@ bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::Netwo
     RexUUID session_id = msg.ReadUUID();
 
     // Check that this packet is for us.
-    if (agent_id != rexlogicmodule_->GetServerConnection()->GetInfo().agentID && 
+    if (agent_id != rexlogicmodule_->GetServerConnection()->GetInfo().agentID &&
         session_id != rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
     {
         RexLogicModule::LogError("Received InventoryDescendents packet with wrong AgentID and/or SessionID.");
@@ -356,110 +356,79 @@ bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::Netwo
     Foundation::EventManagerPtr eventManager = framework_->GetEventManager();
     Core::event_category_id_t event_category = eventManager->QueryEventCategory("NetworkState");
 
-    msg.ReadUUID(); //OwnerID, owner of the folders creatd.
-    msg.ReadS32(); //Version, version of the folder for caching
+    msg.SkipToNextVariable(); //msg.ReadUUID(); //OwnerID, owner of the folders creatd.
+    msg.SkipToNextVariable(); //msg.ReadS32(); //Version, version of the folder for caching
     int32_t descendents = msg.ReadS32(); //Descendents, count to help with caching
     if (descendents == 0)
         return false;
 
+    // For hackish protection against weird behaviour of 0.4 server. See below.
+    bool exceptionOccurred = false;
+
     // FolderData, Variable block.
-    // Contains sub-folders that the requested folder contains.
     size_t instance_count = msg.ReadCurrentBlockInstanceCount();
     for(size_t i = 0; i < instance_count; ++i)
     {
         try
         {
-            RexUUID folder_id = msg.ReadUUID();
-            RexUUID parent_id = msg.ReadUUID();
-            int8_t type = msg.ReadS8();
-            std::string folder_name = msg.ReadString();
+            // Gather event data.
+            OpenSimProtocol::InventoryItemEventData folder_data(OpenSimProtocol::IIT_Folder);
+            folder_data.id = msg.ReadUUID();
+            folder_data.parentId = msg.ReadUUID();
+            folder_data.inventoryType = msg.ReadS8();
+            folder_data.name = msg.ReadString();
 
-            OpenSimProtocol::InventoryFolderEventData folder_data;
-            folder_data.folderId = folder_id;
-            folder_data.parentId = parent_id;
-            folder_data.type = type;
-            folder_data.name = folder_name;
-            /*
-            std::cout << "InventoryDescendents" << std::endl;
-            std::cout << folder_id << std::endl;
-            std::cout << parent_id << std::endl;
-            /*
-            OpenSimProtocol::InventoryFolderSkeleton *parent = 0, *folder = 0;
-            parent = inventory->GetChildFolderByID(parent_id);
-            if (!parent)
-            {
-    //            RexLogicModule::LogInfo("InventoryDescendents packet: could not get parent."
-    //                "Variable ParentID is " + parent_id.ToString());
-                continue;
-            }
-            
-            folder = inventory->GetOrCreateNewFolder(folder_id, *parent);
-            folder->SetName(folder_name);
-            //folder->SetType(type);
-            //std::cout << "Folder: " << folder_name << std::endl;
-            */
-            eventManager->SendEvent(event_category, OpenSimProtocol::InventoryEvents::EVENT_INVENTORY_FOLDER_DESCENDENTS,
-                &folder_data);
+            // Send event.
+            eventManager->SendEvent(event_category, OpenSimProtocol::InventoryEvents::EVENT_INVENTORY_DESCENDENT, &folder_data);
         }
         catch (NetMessageException &)
         {
-            RexLogicModule::LogWarning("Catched NetMessageException, while reading InventoryDescendents packet.");
+            exceptionOccurred = true;
         }
     }
 
-    /*
+    ///\note Hackish protection against weird behaviour of 0.4 server. It seems that even if the block instance count
+    /// of FolderData should be 0, we read it as 1. Reset reading and skip first 5 variables. After that start reading
+    /// data from block interpreting it as ItemData block. This problem doesn't happen with 0.5.
+    if (exceptionOccurred)
+    {
+        msg.ResetReading();
+        for(int i = 0; i < 5; ++i)
+            msg.SkipToNextVariable();
+    }
+
     // ItemData, Variable block.
-    // Contains items that the requested folder contains.
     instance_count = msg.ReadCurrentBlockInstanceCount();
-//    std::cout << "InventoryDescendents packet: Assets, count: " << instance_count << std::endl;
     for(size_t i = 0; i < instance_count; ++i)
     {
         try
         {
-        RexUUID item_id = msg.ReadUUID();
-        RexUUID folder_id = msg.ReadUUID();
+            // Gather event data.
+            OpenSimProtocol::InventoryItemEventData asset_data(OpenSimProtocol::IIT_Asset);
+            asset_data.id = msg.ReadUUID();
+            asset_data.parentId = msg.ReadUUID();
 
-        ///\todo Decide if we want to use these permission related stuff?
-        msg.SkipToNextVariable(); //msg.ReadUUID(); //CreatorID
-        msg.SkipToNextVariable(); //msg.ReadUUID(); //OwnerID
-        msg.SkipToNextVariable(); //msg.ReadUUID(); //GroupID
-        msg.SkipToNextVariable(); //msg.ReadU32(); //BaseMask
-        msg.SkipToNextVariable(); //msg.ReadU32(); //OwnerMask
-        msg.SkipToNextVariable(); //msg.ReadU32(); //GroupMask
-        msg.SkipToNextVariable(); //msg.ReadU32(); //EveryoneMask
-        msg.SkipToNextVariable(); //msg.ReadU32(); //NextOwnerMask
-        msg.SkipToNextVariable(); //msg.ReadBool(); //GroupOwned
+            ///\note Skipping all permission & sale related stuff.
+            msg.SkipToFirstVariableByName("AssetID");
+            asset_data.assetId = msg.ReadUUID();
+            asset_data.assetType = msg.ReadS8();
+            asset_data.inventoryType = msg.ReadS8();
+            msg.SkipToFirstVariableByName("Name");
+            asset_data.name = msg.ReadString();
+            asset_data.description = msg.ReadString();
 
-        RexUUID asset_id = msg.ReadUUID();
-        if (item_id.IsNull() || folder_id.IsNull() || asset_id.IsNull())
+            msg.SkipToNextInstanceStart();
+            //msg.ReadS32(); //CreationDate
+            //msg.ReadU32(); //CRC
+
+            // Send event.
+             eventManager->SendEvent(event_category, OpenSimProtocol::InventoryEvents::EVENT_INVENTORY_DESCENDENT, &asset_data);
+        }
+        catch (NetMessageException &e)
         {
-//            RexLogicModule::LogInfo("InventoryDescendents packet: ItemID, FolderID or AssetID is null.");
-            continue;
+            RexLogicModule::LogError("Catched NetMessageException: " + e.What() + " while reading InventoryDescendents packet.");
         }
-
-        asset_type_t at = msg.ReadS8(); //Type (asset type?)
-        inventory_type_t it = msg.ReadS8(); //InvType
-
-        msg.SkipToNextVariable(); //msg.ReadU32(); //Flags (what are these?)
-        msg.SkipToNextVariable(); // SaleType, not interested.
-        msg.SkipToNextVariable(); // SalePrice, not interested.
-
-        std::string item_name = msg.ReadString();
-        std::string item_desc = msg.ReadString();
-        //msg.ReadS32(); //CreationDate
-        //msg.ReadU32(); //CRC
-
-        // Add the new item to the inventory.
-        OpenSimProtocol::InventoryFolder *folder = inventory->GetChildFolderByID(folder_id);
-//        std::cout << "Adding item: " << item_name << " to folder " << folder->GetName() << std::endl;
-        OpenSimProtocol::InventoryAsset *asset = inventory->GetOrCreateNewAsset(item_id, asset_id, *folder, item_name);
-        asset->SetDescription(item_desc);
-        }
-        catch (NetMessageException &)
-        {
-            RexLogicModule::LogWarning("Catched NetMessageException, while reading InventoryDescendents packet.");
-        }
-    }*/
+    }
 
     return false;
 

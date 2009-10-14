@@ -124,35 +124,6 @@ namespace OpenSimProtocol
         AT_Unknown
     };
 
-    ///\todo Move inventory stuff to somewhere else.
-    namespace InventoryEvents
-    {
-        static const Core::event_id_t EVENT_INVENTORY_FOLDER_DESCENDENTS = 0x04;
-        static const Core::event_id_t EVENT_INVENTORY_ASSET_DESCENDENTS = 0x05;
-    }
-
-    /// Event data interface for inventory folders.
-    /// \ingroup OpenSimProtocolClient
-    class InventoryFolderEventData : public Foundation::EventDataInterface
-    {
-    public:
-        InventoryFolderEventData() {}
-        virtual ~InventoryFolderEventData() {}
-        RexUUID folderId;
-        RexUUID parentId;
-        inventory_type_t type;
-        std::string name;
-    };
-
-        /// Event data interface for inventory assets.
-    /// \ingroup OpenSimProtocolClient
-    class InventoryAssetEventData : public Foundation::EventDataInterface
-    {
-    public:
-        InventoryAssetEventData() {}
-        virtual ~InventoryAssetEventData() {}
-    };
-
     /// Event data interface for authentication type identification.
     /// \ingroup OpenSimProtocolClient
     class AuthenticationEventData : public Foundation::EventDataInterface
