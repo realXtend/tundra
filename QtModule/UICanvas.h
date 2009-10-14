@@ -76,6 +76,23 @@ namespace QtUI
             @note This function is only applicable if the canvas is in internal display mode. */
         bool IsCanvasPositionLocked() const { return locked_; }
 
+
+        /**
+         * Locks the canvas so that it cannot be resized. 
+         * @note @p SetCanvasSize() -function works even that canvas resize is locked. 
+         */
+
+        void SetCanvasResizeLock(bool locked) { resize_locked_ = locked; }
+        
+        /**
+         * Returns true if canvas cannot be resized. 
+         * 
+         * @note This function is only applicable if the canvas is in internal display mode
+         */
+
+        bool IsCanvasResizeLocked() const { return resize_locked_;}
+
+
         /** Resizes the UI canvas size and reallocates Qt and Ogre surfaces to new size. 
             @param width is a new width of canvas. 
             @param height is a new height of canvas.
@@ -133,7 +150,6 @@ namespace QtUI
             value. \todo This function is pending to be removed in favor of 'BringToFront()', 
             'PushToBack()' and 'SetAlwaysOnTop()' functions, which are more intuitive and simpler 
             to manage than absolute z values.
-            @note by default overlay z-value is 1
             @param order The new Z order value, in the range [1, 650[. (this comes from Ogre). 
                 The larger the number is, the higher on the z order list this canvas is. */
         void SetZOrder(int order);
@@ -245,6 +261,8 @@ namespace QtUI
         /// mode=Internal.
         bool locked_;
       
+        bool resize_locked_;
+
         /// Contains the widget proxies of all the widgets that have been added to this canvas.
         QList<QGraphicsProxyWidget*> scene_widgets_;
     };

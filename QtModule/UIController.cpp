@@ -154,7 +154,7 @@ void UIController::InjectMouseMove(int x, int y)
         if ( index != -1 && !canvases_[index]->IsHidden())
         {
         
-            if ( resize_)
+            if ( resize_ && !canvases_[index]->IsCanvasResizeLocked())
             {
                 index = Search(active_canvas_);
                 if (index == -1)
@@ -709,7 +709,7 @@ void UIController::SetParentWindowSize(const QSize& size)
 
 Qt::CursorShape UIController::UpdateMouseCursor(int x, int y, int index)
 {
-    if ( index != -1)
+    if ( index != -1 && !canvases_[index]->IsCanvasResizeLocked())
     {
         QRect frame = canvases_[index]->frameGeometry();
         QPointF pos = canvases_[index]->GetPosition();
@@ -787,6 +787,11 @@ Qt::CursorShape UIController::UpdateMouseCursor(int x, int y, int index)
             mouseCursorShape_ = Qt::ArrowCursor;        
             //QApplication::restoreOverrideCursor();   
         }
+    }
+    else
+    {
+        QApplication::setOverrideCursor(QCursor(Qt::ArrowCursor));
+        mouseCursorShape_ = Qt::ArrowCursor;      
     }
 
     return mouseCursorShape_;

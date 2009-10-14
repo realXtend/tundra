@@ -170,7 +170,7 @@ void QtModule::Update(Core::f64 frametime)
             controller_->InjectMousePress(pos.x(), pos.y());
             
             if ( controller_->IsKeyboardFocus() && input->GetState() != Input::State_Buffered)
-                input->SetState(Input::State_Buffered);
+              input->SetState(Input::State_Buffered);
             else  
                 input->SetState(Input::State_Unknown);
             
