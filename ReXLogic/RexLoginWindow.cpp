@@ -167,6 +167,7 @@ void RexLoginWindow::CreateLogoutMenu()
 
     screen_canvas_ = qt_ui->CreateCanvas(QtUI::UICanvas::Internal).lock();
     screen_canvas_->SetCanvasSize(128, 128);
+    screen_canvas_->SetCanvasResizeLock(true);
 
     QSize size = screen_canvas_->GetRenderWindowSize();
     screen_canvas_->SetPosition(size.width()-128, size.height()-150);

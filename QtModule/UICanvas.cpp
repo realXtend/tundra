@@ -42,7 +42,8 @@ UICanvas::UICanvas(): overlay_(0),
                       mode_(External),
                       id_(QUuid::createUuid().toString()),
                       widgets_(0),
-                      locked_(false)
+                      locked_(false), 
+                      resize_locked_(false)
                      
                       
 {
@@ -59,7 +60,8 @@ UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
                                mode_(mode),
                                id_(QUuid::createUuid().toString()),
                                widgets_(0),
-                               locked_(false)
+                               locked_(false),
+                               resize_locked_(false)
                                
                           
 {
@@ -308,6 +310,11 @@ void UICanvas::Resize(int height, int width, CanvasCorner anchor)
         SetCanvasSize(width, height);
         return;
     }
+
+    // Case when canvas resize is locked. 
+
+    if ( resize_locked_ )
+        return;
 
     QSize current_size = this->size();
 
