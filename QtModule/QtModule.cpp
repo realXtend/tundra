@@ -171,7 +171,7 @@ void QtModule::Update(Core::f64 frametime)
             
             if ( controller_->IsKeyboardFocus() && input->GetState() != Input::State_Buffered)
               input->SetState(Input::State_Buffered);
-            else  
+            else if ( !controller_->IsKeyboardFocus())  
                 input->SetState(Input::State_Unknown);
             
             mouse_left_button_down_ = true;
