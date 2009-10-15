@@ -16,7 +16,7 @@
 namespace QtUI
 {
 
-UIController::UIController() : mouseDown_(false), responseTimeLimit_(500), keyDown_(false), lastKeyEvent_(QKeyEvent(QEvent::KeyPress,0,Qt::NoModifier)), multipleKeyLimit_(150), keyboard_buffered_(false), active_canvas_(""), resize_(false)
+UIController::UIController() : mouseDown_(false), responseTimeLimit_(500), keyDown_(false), lastKeyEvent_(QKeyEvent(QEvent::KeyPress,0,Qt::NoModifier)), multipleKeyLimit_(150), keyboard_buffered_(false), active_canvas_(""), resize_(false), drag_(false)
 {}
 
 UIController::~UIController()
@@ -395,7 +395,7 @@ void UIController::InjectMouseMove(int x, int y)
                 QApplication::setOverrideCursor(QCursor(mouseCursorShape_));
                 
             }
-            else if (!canvases_[index]->IsCanvasPositionLocked() )
+            else if (!canvases_[index]->IsCanvasPositionLocked() && drag_)
             {
                 // Drag canvas. 
 
@@ -555,6 +555,28 @@ void UIController::InjectMousePress(int x, int y)
         else
                 resize_ = false;
       
+        if ( !resize_ )
+        {
+            // Check that did mouse press happen in dragging area.
+            QRect frame = canvases_[index]->frameGeometry();
+            QPointF pos = canvases_[index]->GetPosition();
+        
+            // Rectangular sides. 
+        
+            int bottom = pos.y() + frame.height();
+            int bottomLeft = pos.x();
+            int bottomRight = pos.x() + frame.width();
+            int top = pos.y();
+            
+            int corner_margin = 8;
+            int side_margin = 20;
+            QRect top_side_box(QPoint(bottomLeft + corner_margin, top), QPoint(bottomRight - corner_margin, top + side_margin));
+            if ( top_side_box.contains(QPoint(x,y)))
+                drag_ = true;
+
+        }
+
+
         // Change new canvas to a active overlay.
         active_canvas_ = canvases_[index]->GetID();
         // Note this call changes internal arrange of canvases_ so index is not anymore valid.
@@ -581,6 +603,7 @@ void UIController::InjectMouseRelease(int x, int y)
   
     QPoint point(x,y);
     int index = GetCanvas(point);
+    drag_ = false;
 
     if (index != -1 && !canvases_[index]->IsHidden())
     {
