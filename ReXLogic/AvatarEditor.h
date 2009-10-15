@@ -4,10 +4,9 @@
 #define incl_RexLogic_AvatarEditor_h
 
 #include "Foundation.h"
+#include "UICanvas.h"
 
 #include <QObject>
-
-#include "UICanvas.h"
 
 namespace RexLogic
 {
@@ -24,6 +23,8 @@ namespace RexLogic
         
         //! Toggle visibility of editor window
         void Toggle();
+        //! Rebuild edit view, called when user avatar has changed/reloaded
+        void RebuildEditView();
         
     public slots:
         //! Export button press handler
@@ -34,12 +35,17 @@ namespace RexLogic
         void LoadAvatar();
         //! Revert button press handler
         void RevertAvatar();
+        //! Morph scrollbar press handler
+        void MorphValueChanged(int value);
         
     private:
         RexLogicModule *rexlogicmodule_;
         
         //! Create editor window
         void InitEditorWindow();
+        
+        //! Clear a panel
+        void ClearPanel(QWidget* panel);
         
         //! Canvas for avatar editor
         boost::shared_ptr<QtUI::UICanvas> canvas_;
@@ -48,4 +54,5 @@ namespace RexLogic
         QWidget *avatar_widget_;
     };
 }
+
 #endif

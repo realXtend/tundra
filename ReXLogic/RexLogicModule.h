@@ -91,6 +91,9 @@ namespace RexLogic
 
         //! @return The avatar handler object that manages reX avatar logic.
         AvatarPtr GetAvatarHandler();
+        
+        //! @return The avatar editor.
+        AvatarEditorPtr GetAvatarEditor();
 
         //! @return The primitive handler object that manages reX primitive logic.
         PrimitivePtr GetPrimitiveHandler();
