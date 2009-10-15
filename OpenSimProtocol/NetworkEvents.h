@@ -8,6 +8,7 @@
 #include "NetInMessage.h"
 #include "NetOutMessage.h"
 #include "InventorySkeleton.h"
+#include "BuddyList.h"
 
 namespace OpenSimProtocol
 {
@@ -38,6 +39,8 @@ namespace OpenSimProtocol
             std::string avatarStorageUrl = "";
             std::string seedCapabilities = "";
             //inventory.reset();
+			if ( buddy_list )
+				buddy_list->Clear();
         }
 
         RexUUID agentID;
@@ -49,6 +52,7 @@ namespace OpenSimProtocol
         std::string avatarStorageUrl;
         std::string seedCapabilities;
         boost::shared_ptr<InventorySkeleton> inventory;
+		BuddyListPtr buddy_list;
     };
 
     /// Defines the events posted by the OpenSimProtocolModule in category <b>NetworkState</b>.
