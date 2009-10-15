@@ -53,8 +53,7 @@ namespace Inventory
 
         /// Used for inserting new childs with spesific data to the inventory tree model.
         /// @param folder_data Data for the new folder.
-        bool insertRows(int position, int rows, const QModelIndex &parent,
-            OpenSimProtocol::InventoryItemEventData *item_data);
+        bool insertRows(int position, int rows, const QModelIndex &parent, InventoryItemEventData *item_data);
 
         /// QAbstractItemModel override.
         /// Used for removing childs to the inventory tree model.

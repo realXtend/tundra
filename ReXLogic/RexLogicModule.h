@@ -182,15 +182,17 @@ namespace RexLogic
         /// Initializes the inventory view/data model
         void ResetInventoryView();
 
-        /// Shows the inventory window.
+        /// Shows/toggles the inventory window.
+        ///\note Temporarily here.
         void ShowInventory();
 
-        /// Hides the inventory window.
+        /// Hides inventory window.
+        ///\note Temporarily here.
         void HideInventory();
 
         /// Shows (or rather toggles) the avatar editor window.
         void ShowAvatarEditor();
-        
+
         //! XXX have linking probs to AvatarController so trying this wrapper
         void SetAvatarYaw(Core::Real newyaw);
         void SetAvatarRotation(Core::Quaternion newrot);

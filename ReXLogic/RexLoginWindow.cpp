@@ -104,8 +104,6 @@ void RexLoginWindow::InitLoginWindow()
 
     canvas_->AddWidget(login_widget_);
 
-   
-
     // Create connections.
     QPushButton *pButton = login_widget_->findChild<QPushButton *>("but_connect");
     QObject::connect(pButton, SIGNAL(clicked()), this, SLOT(Connect()));
@@ -186,13 +184,11 @@ void RexLoginWindow::CreateLogoutMenu()
     QObject::connect(quit_button_, SIGNAL(clicked()), this, SLOT(Quit()));
     screen_canvas_->AddWidget(quit_button_);
 
-/*
     inventory_button_ = new QPushButton();
     inventory_button_->setText("Inventory");
     inventory_button_->move(5, 55);
     QObject::connect(inventory_button_, SIGNAL(clicked()), this, SLOT(ShowInventory()));
     screen_canvas_->AddWidget(inventory_button_);
-*/
 
     screen_canvas_->SetLockPosition(true);
     screen_canvas_->Hide();
@@ -297,6 +293,7 @@ void RexLoginWindow::Connect()
         webLogin->show();
         QObject::connect(webLogin, SIGNAL( LoginProcessed(QString) ), SLOT( ProcessCBLogin(QString) ));
         successful = false;
+
         break;
     }
     default:

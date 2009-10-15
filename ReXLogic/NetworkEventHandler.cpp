@@ -354,7 +354,7 @@ bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::Netwo
 
 //    InventoryPtr inventory = rexlogicmodule_->GetInventory();
     Foundation::EventManagerPtr eventManager = framework_->GetEventManager();
-    Core::event_category_id_t event_category = eventManager->QueryEventCategory("NetworkState");
+    Core::event_category_id_t event_category = eventManager->QueryEventCategory("Inventory");
 
     msg.SkipToNextVariable(); //msg.ReadUUID(); //OwnerID, owner of the folders creatd.
     msg.SkipToNextVariable(); //msg.ReadS32(); //Version, version of the folder for caching
@@ -372,14 +372,15 @@ bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::Netwo
         try
         {
             // Gather event data.
-            OpenSimProtocol::InventoryItemEventData folder_data(OpenSimProtocol::IIT_Folder);
+            Inventory::InventoryItemEventData folder_data(Inventory::IIT_Folder);
             folder_data.id = msg.ReadUUID();
             folder_data.parentId = msg.ReadUUID();
             folder_data.inventoryType = msg.ReadS8();
             folder_data.name = msg.ReadString();
 
             // Send event.
-            eventManager->SendEvent(event_category, OpenSimProtocol::InventoryEvents::EVENT_INVENTORY_DESCENDENT, &folder_data);
+            if (event_category != 0)
+                eventManager->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &folder_data);
         }
         catch (NetMessageException &)
         {
@@ -404,7 +405,7 @@ bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::Netwo
         try
         {
             // Gather event data.
-            OpenSimProtocol::InventoryItemEventData asset_data(OpenSimProtocol::IIT_Asset);
+            Inventory::InventoryItemEventData asset_data(Inventory::IIT_Asset);
             asset_data.id = msg.ReadUUID();
             asset_data.parentId = msg.ReadUUID();
 
@@ -422,7 +423,8 @@ bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::Netwo
             //msg.ReadU32(); //CRC
 
             // Send event.
-             eventManager->SendEvent(event_category, OpenSimProtocol::InventoryEvents::EVENT_INVENTORY_DESCENDENT, &asset_data);
+            if (event_category != 0)
+                eventManager->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &asset_data);
         }
         catch (NetMessageException &e)
         {

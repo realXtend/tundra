@@ -52,7 +52,7 @@ namespace Inventory
         /// @param notify_server Do we want to notify server.
         /// @return Pointer to the existing or just created folder.
         AbstractInventoryItem *GetOrCreateNewFolder(const QString &id, AbstractInventoryItem &parentFolder,
-            const bool &notify_server = true);
+            const QString &name = "New Folder", const bool &notify_server = true);
 
         /// AbstractInventoryDataModel override.
         /// Returns asset requested id, or creates a new one if the folder doesnt exist.
@@ -61,7 +61,7 @@ namespace Inventory
         /// @param parent Parent folder.
         /// @return Pointer to the existing or just created asset.
         AbstractInventoryItem *GetOrCreateNewAsset(const QString &inventory_id, const QString &asset_id,
-            AbstractInventoryItem &parenFolder, const QString &name = "New Asset");
+            AbstractInventoryItem &parentFolder, const QString &name = "New Asset");
 
         /// AbstractInventoryDataModel override.
         void FetchInventoryDescendents(AbstractInventoryItem *folder);
@@ -94,6 +94,9 @@ namespace Inventory
         /// Creates the tree model data for inventory.
         /// @param inventory_skeleton OpenSim inventory skeleton.
         void SetupModelData(OpenSimProtocol::InventorySkeleton *inventory_skeleton);
+
+        /// Creates reX-spesific folders (3D Models, Materials, etc.).
+        void CreateRexInventoryFolders();
 
         /// RexLogicModule pointer.
         RexLogic::RexLogicModule *rexLogicModule_;

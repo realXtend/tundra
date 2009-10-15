@@ -50,7 +50,7 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetTrashFolder() const
 }
 
 AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewFolder(const QString &id, AbstractInventoryItem &parentFolder,
-    const bool &notify_server)
+    const QString &name, const bool &notify_server)
 {
     // Return an existing folder if one with the given id is present.
     InventoryFolder *existing = dynamic_cast<InventoryFolder *>(GetChildFolderByID(id));
@@ -59,7 +59,7 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewFolder(const QSt
 
     // Create a new folder.
     InventoryFolder *parent = static_cast<InventoryFolder *>(&parentFolder);
-    InventoryFolder *newFolder = new InventoryFolder(id, "New Folder", true, parent);
+    InventoryFolder *newFolder = new InventoryFolder(id, name, true, parent);
 
     // Inform the server.
     // We don't want to notify server if we're creating folders "ordered" by server via InventoryDescecendents packet.
@@ -132,11 +132,11 @@ void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
     OpenSimProtocol::InventoryFolderSkeleton *folder_skeleton)
 {
     using namespace OpenSimProtocol;
-
-    InventoryFolder *newFolder= new InventoryFolder(QString(folder_skeleton->id.ToString().c_str()),
-        QString(folder_skeleton->name.c_str()), folder_skeleton->editable, parent_folder);
-    if (!folder_skeleton->HasChildren())
-        newFolder->SetDirty(true);
+    
+    InventoryFolder *newFolder= new InventoryFolder(STD_TO_QSTRING(folder_skeleton->id.ToString()),
+        STD_TO_QSTRING(folder_skeleton->name), folder_skeleton->editable, parent_folder);
+    //if (!folder_skeleton->HasChildren())
+    newFolder->SetDirty(true);
 
     if (!rootFolder_ && !parent_folder)
         rootFolder_ = newFolder;
@@ -155,11 +155,7 @@ void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
 
 void OpenSimInventoryDataModel::SetupModelData(OpenSimProtocol::InventorySkeleton *inventory_skeleton)
 {
-    using namespace OpenSimProtocol;
-
-//    inventory_skeleton->DebugDumpInventoryFolderStructure();
-
-    InventoryFolderSkeleton *root_skel = inventory_skeleton->GetRoot();
+    OpenSimProtocol::InventoryFolderSkeleton *root_skel = inventory_skeleton->GetRoot();
     if (!root_skel)
     {
         InventoryModule::LogError("Couldn't find inventory root folder skeleton. Can't create OpenSim inventory data model.");
@@ -167,6 +163,33 @@ void OpenSimInventoryDataModel::SetupModelData(OpenSimProtocol::InventorySkeleto
     }
 
     CreateNewFolderFromFolderSkeleton(0, root_skel);
+
+    CreateRexInventoryFolders();
+}
+
+void OpenSimInventoryDataModel::CreateRexInventoryFolders()
+{
+    using namespace RexTypes;
+
+    const char *asset_types[] = { "Texture", "Mesh", "Skeleton", "MaterialScript", "ParticleScript", "FlashAnimation" };
+    asset_type_t asset_type;
+    for(int i = 0; i < NUMELEMS(asset_types); ++i)
+    {
+        asset_type = GetAssetTypeFromTypeName(asset_types[i]);
+        std::string cat_name = GetCategoryNameForAssetType(asset_type);
+        RexUUID folder_id;
+
+        // Check out if this inventory category exists.
+        InventoryFolder *folder = rootFolder_->GetFirstChildFolderByName(cat_name.c_str());
+        if (!folder)
+        {
+            // I doesn't. Create new inventory folder.
+            AbstractInventoryItem *parentFolder = GetMyInventoryFolder();
+            folder_id.Random();
+            AbstractInventoryItem *newFolder = GetOrCreateNewFolder(STD_TO_QSTRING(folder_id.ToString()), *parentFolder,
+                QString(cat_name.c_str()));
+        }
+    }
 }
 
 } // namespace Inventory

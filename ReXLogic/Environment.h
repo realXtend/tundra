@@ -13,52 +13,55 @@ namespace RexLogic
         /// Default constructor.
         /// @param owner The owner module.
         Environment(RexLogicModule *owner);
-        
+
         /// Default destructor.
         virtual ~Environment();
 
         /// Looks through all the entities in RexLogic's currently active scene to find the Water
         /// entity. Caches it internally. Use GetWaterEntity to obtain it afterwards.
         void FindCurrentlyActiveEnvironment();
-        
+
         /// @return The scene entity that represents the terrain in the currently active world.        
         Scene::EntityWeakPtr GetEnvironmentEntity();
-        
+
         /// Creates the environment EC.
         void CreateEnvironment();
-        
+
         /// Handles the "SimulatorViewerTimeMessage" packet.
         /// @param data The network event data pointer.
         bool HandleOSNE_SimulatorViewerTimeMessage(OpenSimProtocol::NetworkEventInboundData* data);
-        
+
         /// Updates the visual effects (fog, skybox etc).
         void UpdateVisualEffects(Core::f64 frametime);
-        
+
+        /// @return True if we use Caelum.
+        bool UseCaelum();
+
     private:
         /// Creates the global sunlight.
         void CreateGlobalLight();
-        
+
         /// Weak pointer to the entity which has the environment component.
         Scene::EntityWeakPtr cachedEnvironmentEntity_;
-        
+
         /// Pointer to the RexLogicModule which owns this class.
         RexLogicModule *owner_;
-        
+
         /// Server's perception of time (UNIX EPOCH).
         time_t usecSinceStart_;
-        
+
         /// Unknown/not needed. \todo delete?
         uint32_t secPerDay_;
-        
+
         /// Unknown/not needed. \todo delete?
         uint32_t secPerYear_;
-        
+
         /// Direction of the sunlight.
         Vector3 sunDirection_;
-        
+
         /// Unknown/not needed. \todo delete?
         float sunPhase_;
-        
+
         /// Sun's angle velocity.
         Vector3 sunAngVelocity_;
     };

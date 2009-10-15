@@ -8,11 +8,13 @@
 #ifndef incl_InventoryEvents_h
 #define incl_InventoryEvents_h
 
-namespace OpenSimProtocol
+namespace Inventory
 {
-    namespace InventoryEvents
+    namespace Events
     {
-        static const Core::event_id_t EVENT_INVENTORY_DESCENDENT = 0x06;
+        static const Core::event_id_t EVENT_SHOW_INVENTORY= 0x01;
+        static const Core::event_id_t EVENT_HIDE_INVENTORY = 0x02;
+        static const Core::event_id_t EVENT_INVENTORY_DESCENDENT = 0x03;
     }
 
     enum ItemType

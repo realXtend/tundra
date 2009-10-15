@@ -30,14 +30,9 @@ namespace RexLogic
     class RexLogicModule;
 }
 
-namespace OpenSimProtocol
-{
-    class InventoryItemEventData;
-}
-
-
 namespace Inventory
 {
+    class InventoryItemEventData;
     class InventoryViewModel;
 
     class InventoryWindow : public QObject
@@ -65,8 +60,8 @@ namespace Inventory
         /// Resets the inventory tree model.
         void ResetInventoryTreeModel();
 
-        /// Shows the inventory window.
-        void Show();
+        /// Shows/toggles the inventory window.
+        void Toggle();
 
         /// Hides the inventory window.
         void Hide();
@@ -75,7 +70,7 @@ namespace Inventory
         void UpdateActions();
 
         ///
-        void HandleInventoryDescendent(OpenSimProtocol::InventoryItemEventData *item_data);
+        void HandleInventoryDescendent(InventoryItemEventData *item_data);
 
 //    protected slots:
 //        void closeEvent(QCloseEvent *myCloseEvent);
