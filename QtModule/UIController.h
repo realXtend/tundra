@@ -245,6 +245,8 @@ namespace QtUI
         Qt::CursorShape mouseCursorShape_;
 
         bool resize_;
+
+        bool drag_;
     };
 
 
