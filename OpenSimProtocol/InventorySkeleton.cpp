@@ -81,6 +81,11 @@ InventoryFolderSkeleton *InventorySkeleton::GetChildFolderByID(const RexUUID &se
     return root_.GetChildFolderByID(searchId);
 }
 
+InventoryFolderSkeleton *InventorySkeleton::GetMyInventoryFolder()
+{
+    return root_.GetFirstChildFolderByName("My Inventory");
+}
+
 void InventorySkeleton::DebugDumpInventoryFolderStructure()
 {
     root_.DebugDumpInventoryFolderStructure(0);

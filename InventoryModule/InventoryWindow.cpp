@@ -24,7 +24,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework, RexLogic::Rex
     if (!qtModule_.get())
         return;
 
-    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::External).lock();
+    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
 
     // Init Inventory Widget and connect close signal
     InitInventoryWindow();
@@ -43,10 +43,15 @@ InventoryWindow::~InventoryWindow()
     SAFE_DELETE(viewModel_);
 }
 
-void InventoryWindow::Show()
+void InventoryWindow::Toggle()
 {
     if (canvas_)
-        canvas_->Show();
+    {
+        if (canvas_->IsHidden())
+            canvas_->Show();
+        else
+            canvas_->Hide();
+    }
 }
 
 void InventoryWindow::Hide()
@@ -85,7 +90,7 @@ void InventoryWindow::UpdateActions()
 {
 }
 
-void InventoryWindow::HandleInventoryDescendent(OpenSimProtocol::InventoryItemEventData *item_data)
+void InventoryWindow::HandleInventoryDescendent(InventoryItemEventData *item_data)
 {
     QModelIndex index = treeView_->selectionModel()->currentIndex();
     QAbstractItemModel *model = treeView_->model();

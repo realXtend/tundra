@@ -12,6 +12,8 @@
 
 #include <QObject>
 
+#define STD_TO_QSTRING(p) QString(p.c_str())
+
 namespace Inventory
 {
     /// Pure virtual class.
@@ -37,7 +39,7 @@ namespace Inventory
         /// @param parent Parent folder.
         /// @return Pointer to the existing or just created folder.
         virtual AbstractInventoryItem *GetOrCreateNewFolder(const QString &id, AbstractInventoryItem &parentFolder,
-            const bool &notify_server = true) = 0;
+            const QString &name = "New Folder", const bool &notify_server = true) = 0;
 
         /// Returns asset requested id, or creates a new one if the folder doesnt exist.
         /// @param inventory_id Inventory ID.

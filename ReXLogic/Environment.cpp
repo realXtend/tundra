@@ -12,8 +12,7 @@
 namespace RexLogic
 {
 
-Environment::Environment(RexLogicModule *owner)
-:owner_(owner)
+Environment::Environment(RexLogicModule *owner) : owner_(owner)
 {
 }
 
@@ -56,24 +55,25 @@ bool Environment::HandleOSNE_SimulatorViewerTimeMessage(OpenSimProtocol::Network
     NetInMessage &msg = *data->message;
     msg.ResetReading();
 
+    ///\ secPerDay,secPerYear, sunPhase seems to be zero, at least with 0.4 server
     usecSinceStart_ = (time_t)msg.ReadU64();
-    secPerDay_ = msg.ReadU32(); // seems to be zero, at least with 0.4 server
-    secPerYear_ = msg.ReadU32(); // seems to be zero, at least with 0.4 server
+    secPerDay_ = msg.ReadU32();
+    secPerYear_ = msg.ReadU32();
     sunDirection_ = msg.ReadVector3();
-    sunPhase_ = msg.ReadF32(); // seems to be zero, at least with 0.4 server
+    sunPhase_ = msg.ReadF32();
     sunAngVelocity_ = msg.ReadVector3();
 
     FindCurrentlyActiveEnvironment();
     Foundation::ComponentPtr component = GetEnvironmentEntity().lock()->GetComponent("EC_OgreEnvironment");
     if (!component)
         return false;
-    
+
     // Update the sunlight direction and angle velocity.
     ///\note Not needed anymore as we use Caleum now.
     OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
         (component.get());
 //    env.SetSunDirection(-sunDirection_);
-    
+
     /** \note
      *  It's not necessary to update the environment time every time SimulatorViewerTimeMessage is received
      *  (about every tenth second that is) because the Caleum system has its own perception of time. But let's
@@ -84,7 +84,7 @@ bool Environment::HandleOSNE_SimulatorViewerTimeMessage(OpenSimProtocol::Network
         env.SetTime(usecSinceStart_);
         test = false;
     }
-    
+
     return false;
 }
 
@@ -94,6 +94,14 @@ void Environment::UpdateVisualEffects(Core::f64 frametime)
     OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
         (GetEnvironmentEntity().lock()->GetComponent("EC_OgreEnvironment").get());
     env.UpdateVisualEffects(frametime);
+}
+
+bool Environment::UseCaelum()
+{
+    FindCurrentlyActiveEnvironment();
+    OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
+        (GetEnvironmentEntity().lock()->GetComponent("EC_OgreEnvironment").get());
+    return env.IsCaleumUsed();
 }
 
 }

@@ -114,7 +114,7 @@ QModelIndex InventoryViewModel::index(int row, int column, const QModelIndex &pa
 bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &parent)
 {
     ///\todo Make work for assets also.
-    AbstractInventoryItem *parentFolder = GetItem(parent);
+    InventoryFolder *parentFolder = dynamic_cast<InventoryFolder *>(GetItem(parent));
     if (!parentFolder)
         return false;
 
@@ -125,8 +125,7 @@ bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &p
     return true;
 }
 
-bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &parent,
-    OpenSimProtocol::InventoryItemEventData *item_data)
+bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &parent, InventoryItemEventData *item_data)
 {
     //AbstractInventoryItem *parentFolder = GetItem(parent);
     AbstractInventoryItem *parentFolder = dataModel_->GetChildFolderByID(QString(item_data->parentId.ToString().c_str()));
@@ -139,7 +138,7 @@ bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &p
 
     beginInsertRows(parent, position, position + rows - 1);
 
-    if (item_data->item_type == OpenSimProtocol::IIT_Folder)
+    if (item_data->item_type == IIT_Folder)
     {
         InventoryFolder *newFolder = static_cast<InventoryFolder *>(dataModel_->GetOrCreateNewFolder(
             QString(item_data->id.ToString().c_str()), *parentFolder, false));
@@ -147,7 +146,7 @@ bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &p
         ///\todo newFolder->SetType(item_data->type);
         newFolder->SetDirty(true);
     }
-    if (item_data->item_type == OpenSimProtocol::IIT_Asset)
+    if (item_data->item_type == IIT_Asset)
     {
         InventoryAsset *newAsset = static_cast<InventoryAsset *>(dataModel_->GetOrCreateNewAsset(
             QString(item_data->id.ToString().c_str()), QString(item_data->assetId.ToString().c_str()),

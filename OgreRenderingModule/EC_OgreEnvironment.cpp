@@ -6,7 +6,6 @@
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "OgreConversionUtils.h"
-
 #include "EC_OgreEnvironment.h"
 
 #include <Ogre.h>
@@ -28,18 +27,18 @@ const float MAX_SUNLIGHT_MULTIPLIER = 1.5f;
 namespace OgreRenderer
 {
 
-EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface* module) :
+EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
     sunlight_(NULL),
-#ifdef CAELUM    
-    caelumSystem_(NULL),
-#endif
+//#ifdef CAELUM
+//    caelumSystem_(NULL),
+//#endif
 #ifdef HYDRAX
     hydraxSystem_(NULL),
     noiseModule_(NULL),
     module_(NULL),
-#endif    
+#endif
     cameraUnderWater_(false),
     attached_(false),
     useCaelum_(false),
@@ -52,12 +51,12 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface* module) :
     fogColor_(),
     waterFogColor_(0.2f, 0.4f, 0.35f),
     cameraNearClip_(0.5f),
-    cameraFarClip_(500.f)     
+    cameraFarClip_(500.f)
 {
 #ifdef CAELUM
     InitCaelum();
     useCaelum_ = true;
-#else    
+#else
     CreateSunlight();
 #endif
 
@@ -65,7 +64,7 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface* module) :
     InitHydrax();
     useHydrax_ = true;
 #endif
-    
+
     InitShadows();
 }
 
@@ -73,15 +72,15 @@ EC_OgreEnvironment::~EC_OgreEnvironment()
 {
     SetBackgoundColor(Core::Color(0, 0, 0));
     DisableFog();
-    
+
     if (sunlight_)
     {
         DetachSunlight();
-        Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();        
+        Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();
         sceneManager->destroyLight(sunlight_);
         sunlight_ = NULL;
     }
-    
+
 #ifdef CAELUM
         ShutdownCaelum();
 #endif
@@ -120,32 +119,32 @@ Core::Color EC_OgreEnvironment::GetAmbientLightColor() const
     return ToCoreColor(sceneManager->getAmbientLight());
 }
 
-void EC_OgreEnvironment::SetSunColor(const Core::Color& color)
+void EC_OgreEnvironment::SetSunColor(const Core::Color &color)
 {
     sunlight_->setDiffuseColour(ToOgreColor(color));
 }
 
-void EC_OgreEnvironment::SetSunDirection(const Core::Vector3df& direction)
+void EC_OgreEnvironment::SetSunDirection(const Core::Vector3df &direction)
 {
     sunlight_->setDirection(ToOgreVector3(direction));
 }
-    
+
 void EC_OgreEnvironment::SetSunCastShadows(const bool &enabled)
 {
     sunlight_->setCastShadows(enabled);
 }
 
-void EC_OgreEnvironment::SetTime(time_t time)
+void EC_OgreEnvironment::SetTime(const time_t &time)
 {
     assert(time);
     tm *ptm = gmtime(&time);
-    
+
     // Calculate the time zone difference for hours and minutes.
     Poco::LocalDateTime *mytime = new Poco::LocalDateTime();
     int hour_diff = mytime->hour() - ptm->tm_hour;
     int min_diff = mytime->minute() - ptm->tm_min;
     SAFE_DELETE(mytime);
-    
+
 #ifdef CAELUM
     caelumSystem_->getUniversalClock()->setGregorianDateTime(
         1900 + ptm->tm_year, 1 + ptm->tm_mon, ptm->tm_mday, ptm->tm_hour + hour_diff,
@@ -161,7 +160,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
     // Seems to be working ok, but feel free to fix if you find better logic and/or values.
     Ogre::ColourValue diffuseMultiplier(sunColorMultiplier_, sunColorMultiplier_, sunColorMultiplier_, 1);
     caelumSystem_->getSun()->setDiffuseMultiplier(diffuseMultiplier);
-    
+
     float sunDirZaxis = caelumSystem_->getSun()->getMainLight()->getDirection().z;
     if (sunDirZaxis > 0)
     {
@@ -175,14 +174,14 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
         if (sunColorMultiplier_ >= MAX_SUNLIGHT_MULTIPLIER)
             sunColorMultiplier_ = MAX_SUNLIGHT_MULTIPLIER;
     }
-    
+
     // Get the sky/sunlight and fog colors from Caelum.
     float julDay = caelumSystem_->getUniversalClock()->getJulianDay();
     float relDayTime = fmod(julDay, 1);
     Ogre::Vector3 sunDir = caelumSystem_->getSunDirection(julDay);
     fogColor_ = caelumSystem_->getGroundFog()->getColour();
 #endif
-    
+
     // Set fogging
     Ogre::Camera *camera = renderer_->GetCurrentCamera();
     Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();
@@ -198,8 +197,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
     {
         // We're above the water.
 #ifdef CAELUM
-        caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_ALL);  
-        caelumSystem_->getCloudSystem()->forceLayerVisibilityFlags(0);
+        caelumSystem_->forceSubcomponentVisibilityFlags(caelumComponents_);
 #endif
         sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001, fogStart_, fogEnd_);
         camera->getViewport()->setBackgroundColour(fogColor_);
@@ -220,9 +218,6 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
     }
 
 #ifdef CAELUM
-    // Force hiding of Caelum clouds, else shadows get messed up.
-    caelumSystem_->getCloudSystem()->forceLayerVisibilityFlags(0);
-
     // Update Caelum system.
     caelumSystem_->notifyCameraChanged(camera);
     caelumSystem_->updateSubcomponents(frametime);
@@ -232,17 +227,17 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
 //    Ogre::Vector3 sunPos = camera->getPosition();
 //    sunPos -= caelumSystem_->getSun()->getLightDirection() * 80000;
 #endif
-    
+
 #ifdef HYDRAX
     // Update Hydrax system.
     hydraxSystem_->update(frametime);
-    
+
     //Ogre::Vector3 origPos(-5000, -5000, 20);
     //hydraxSystem_->setPosition(origPos);
-    
+
     sunPos = camera->getPosition();
     sunPos -= caelumSystem_->getSun()->getLightDirection() * 80000;
-    
+
     //Ogre::Vector3 flippedSunPos(sunPos.y, sunPos.z, sunPos.x);
     hydraxSystem_->setSunPosition(sunPos);
     //hydraxSystem_->setPosition(Ogre::Vector3(-5000, 20, -5000));
@@ -262,7 +257,7 @@ void EC_OgreEnvironment::DisableFog()
 }
 
 #ifdef CAELUM
-void EC_OgreEnvironment::SetTimeScale(float value)
+void EC_OgreEnvironment::SetTimeScale(const float &value)
 {
     caelumSystem_->getUniversalClock()->setTimeScale(value);
 }
@@ -305,21 +300,33 @@ void EC_OgreEnvironment::DetachSunlight()
 #ifdef CAELUM
 void EC_OgreEnvironment::InitCaelum()
 {
-    caelumSystem_ = new Caelum::CaelumSystem(renderer_->GetRoot().get(),
-        renderer_->GetSceneManager(), Caelum::CaelumSystem::CAELUM_COMPONENTS_ALL);
-        
+    using namespace Caelum;
+
+    caelumComponents_ = CaelumSystem::CAELUM_COMPONENTS_NONE;
+    caelumComponents_ = caelumComponents_ |
+        CaelumSystem::CAELUM_COMPONENT_SKY_DOME |
+        CaelumSystem::CAELUM_COMPONENT_MOON |
+        CaelumSystem::CAELUM_COMPONENT_SUN |
+        CaelumSystem::CAELUM_COMPONENT_POINT_STARFIELD |
+        CaelumSystem::CAELUM_COMPONENT_SCREEN_SPACE_FOG |
+        CaelumSystem::CAELUM_COMPONENT_GROUND_FOG;
+    // Caelum clouds are hidden, otherwise shadows get messed up.
+
+    caelumSystem_ = new CaelumSystem(renderer_->GetRoot().get(),
+        renderer_->GetSceneManager(), (CaelumSystem::CaelumComponent)caelumComponents_);
+
     // Flip the Caelum camera and ground node orientations 90 degrees.
     Ogre::Quaternion orientation(Ogre::Degree(90), Ogre::Vector3(1, 0, 0));
     caelumSystem_->getCaelumCameraNode()->setOrientation(orientation);
     caelumSystem_->getCaelumGroundNode()->setOrientation(orientation);
-    
+
     // We want to manage the fog ourself.
     caelumSystem_->setManageSceneFog(false);
-   
+
     // Use just one light (the brightest one) at a time.
     caelumSystem_->setEnsureSingleLightSource(true);
     caelumSystem_->setEnsureSingleShadowSource(true);
-    
+
     caelumSystem_->getMoon()->setDiffuseMultiplier(Ogre::ColourValue(0.25f, 0.25f, 0.25f));
 }
 
@@ -335,10 +342,10 @@ void EC_OgreEnvironment::InitHydrax()
     // Create Hydrax system.
     hydraxSystem_ = new Hydrax::Hydrax(renderer_->GetSceneManager(), renderer_->GetCurrentCamera(),
         renderer_->GetCurrentCamera()->getViewport());
-    
+
     // Create noise module. 
-	noiseModule_ = new Hydrax::Noise::Perlin(Hydrax::Noise::Perlin::Options(8, 1.15f, 0.49f, 1.14f, 1.27f));
-    
+    noiseModule_ = new Hydrax::Noise::Perlin(Hydrax::Noise::Perlin::Options(8, 1.15f, 0.49f, 1.14f, 1.27f));
+
     /*Ogre::Plane(Ogre::Vector3::UNIT_Z, 0)*/
 
     // Create water plane
@@ -347,12 +354,12 @@ void EC_OgreEnvironment::InitHydrax()
         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane,
         5000, 5000, 10, 10, true, 1, 1, 1, Ogre::Vector3::UNIT_X);*/
    
-	// Create our projected grid module  (Rush)
-	/*module_ = new Hydrax::Module::ProjectedGrid(hydraxSystem_,  // Hydrax parent pointer
-	    noiseModule_,											// Noise module
-	   Ogre::Plane(Ogre::Vector3(0,1,0), Ogre::Vector3(0,0,0)), // Base plane
-	    Hydrax::MaterialManager::NM_VERTEX,						// Normal mode
-	    Hydrax::Module::ProjectedGrid::Options(150));			// Projected grid options	
+    // Create our projected grid module  (Rush)
+    /*module_ = new Hydrax::Module::ProjectedGrid(hydraxSystem_,  // Hydrax parent pointer
+        noiseModule_,                                            // Noise module
+       Ogre::Plane(Ogre::Vector3(0,1,0), Ogre::Vector3(0,0,0)), // Base plane
+        Hydrax::MaterialManager::NM_VERTEX,                        // Normal mode
+        Hydrax::Module::ProjectedGrid::Options(150));            // Projected grid options
     */
 
     // Nature
@@ -376,7 +383,7 @@ void EC_OgreEnvironment::InitHydrax()
 //    hydraxSystem_->getMesh()->getSceneNode()->setOrientation(orientation);
 //    hydraxSystem_->getRttManager()->getPlanesSceneNode()->setOrientation(orientation);
         
-//    hydraxSystem_->setPosition(Ogre::Vector3(-5000, -5000, 20));    
+//    hydraxSystem_->setPosition(Ogre::Vector3(-5000, -5000, 20));
     
 //    hydraxSystem_->setPolygonMode(Ogre::PM_WIREFRAME);
     
@@ -410,13 +417,13 @@ void EC_OgreEnvironment::InitShadows()
     unsigned short shadowTextureSize = 2048;
     size_t shadowTextureCount = 1;
     Ogre::ColourValue shadowColor(0.6f, 0.6f, 0.6f);
-    
+
     // This is the default material to use for shadow buffer rendering pass, overridable in script.
     // Note that we use the same single material (vertex program) for each object, so we're relying on
     // that we use Ogre software skinning. Hardware skinning would require us to do different vertex programs
     // for skinned/nonskinned geometry.
     std::string ogreShadowCasterMaterial = "rex/ShadowCaster";
-    
+
     Ogre::SceneManager* sceneManager = renderer_->GetSceneManager();
     sceneManager->setShadowColour(shadowColor);
     sceneManager->setShadowFarDistance(shadowFarDist);
@@ -428,12 +435,12 @@ void EC_OgreEnvironment::InitShadows()
     sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
     sceneManager->setShadowTextureCasterMaterial(ogreShadowCasterMaterial.c_str());
     sceneManager->setShadowTextureSelfShadow(true);
-    
+
     Ogre::ShadowCameraSetupPtr shadowCameraSetup = Ogre::ShadowCameraSetupPtr(new Ogre::FocusedShadowCameraSetup());
     sceneManager->setShadowCameraSetup(shadowCameraSetup);
-    
+
     // If set to true, problems with objects that clip into the ground
     sceneManager->setShadowCasterRenderBackFaces(false);
 }
 
-}
+} // namespace OgreRenderer

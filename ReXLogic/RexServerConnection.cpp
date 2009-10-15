@@ -353,6 +353,9 @@ void RexServerConnection::SendObjectAddPacket(const RexTypes::Vector3 &ray_start
     NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectAdd);
     assert(m);
 
+    Vector3 scale(0.5f, 0.5f, 0.5f);
+    Core::Quaternion rotation(0, 0, 0, 1);
+
     // AgentData
     m->AddUUID(myInfo_.agentID);
     m->AddUUID(myInfo_.sessionID);
@@ -367,8 +370,8 @@ void RexServerConnection::SendObjectAddPacket(const RexTypes::Vector3 &ray_start
     m->AddU8(1);                // ProfileCurve
     m->AddU16(0);               // PathBegin
     m->AddU16(0);               // PathEnd
-    m->AddU8(100);                // PathScaleX
-    m->AddU8(100);                // PathScaleY
+    m->AddU8(100);              // PathScaleX
+    m->AddU8(100);              // PathScaleY
     m->AddU8(0);                // PathShearX
     m->AddU8(0);                // PathShearY
     m->AddS8(0);                // PathTwist
@@ -386,9 +389,9 @@ void RexServerConnection::SendObjectAddPacket(const RexTypes::Vector3 &ray_start
     m->AddVector3(ray_end);     // RayEnd
     m->AddUUID(RexUUID());      // RayTargetID
     m->AddU8(0);                // RayEndIsIntersection
-    m->AddVector3(Vector3(0.5f, 0.5f, 0.5f));   // Scale LLVector3
-    m->AddQuaternion(Core::Quaternion(0, 0, 0, 1));   // Rotation LLQuaternion
-    m->AddU8(0);                 // State U8
+    m->AddVector3(scale);       // Scale
+    m->AddQuaternion(rotation); // Rotation
+    m->AddU8(0);                // State
 
     FinishMessageBuilding(m);
 }

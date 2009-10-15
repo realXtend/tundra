@@ -39,6 +39,7 @@ void InventoryModule::Unload()
 void InventoryModule::Initialize()
 {
     eventManager_ = framework_->GetEventManager();
+    inventoryEventCategory_ = eventManager_->RegisterEventCategory("Inventory");
 
     rexLogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(
         Foundation::Module::MT_WorldLogic).lock().get());
@@ -69,16 +70,14 @@ void InventoryModule::Update(Core::f64 frametime)
 {
 }
 
-bool InventoryModule::HandleEvent(
-    Core::event_category_id_t category_id,
-    Core::event_id_t event_id,
+bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id,
     Foundation::EventDataInterface* data)
 {
-    using namespace OpenSimProtocol;
-
     if (category_id == networkStateEventCategory_)
     {
-        if (event_id == Events::EVENT_SERVER_CONNECTED)
+        using namespace OpenSimProtocol;
+
+        if (event_id == OpenSimProtocol::Events::EVENT_SERVER_CONNECTED)
         {
             AuthenticationEventData *auth_data = dynamic_cast<AuthenticationEventData *>(data);
             if (!auth_data)
@@ -92,7 +91,6 @@ bool InventoryModule::HandleEvent(
             case AT_OpenSim:
             case AT_RealXtend:
                 inventoryWindow_->InitOpenSimInventoryTreeModel();
-                inventoryWindow_->Show();
                 break;
             default:
                 break;
@@ -101,14 +99,24 @@ bool InventoryModule::HandleEvent(
             return false;
         }
 
-        if (event_id == Events::EVENT_SERVER_DISCONNECTED)
+        if (event_id == OpenSimProtocol::Events::EVENT_SERVER_DISCONNECTED)
         {
             inventoryWindow_->ResetInventoryTreeModel();
             inventoryWindow_->Hide();
-            return false;
         }
 
-        if (event_id == InventoryEvents::EVENT_INVENTORY_DESCENDENT)
+        return false;
+    }
+
+    if (category_id == inventoryEventCategory_)
+    {
+        if (event_id == Inventory::Events::EVENT_SHOW_INVENTORY)
+            inventoryWindow_->Toggle();
+
+        if (event_id == Inventory::Events::EVENT_HIDE_INVENTORY)
+            inventoryWindow_->Hide();
+
+        if (event_id == Inventory::Events::EVENT_INVENTORY_DESCENDENT)
         {
             InventoryItemEventData *item_data = dynamic_cast<InventoryItemEventData *>(data);
             if (!item_data)

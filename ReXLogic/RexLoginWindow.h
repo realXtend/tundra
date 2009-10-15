@@ -44,7 +44,7 @@ namespace RexLogic
         void Connect();
         void Disconnect();
         void DisconnectAndShowLoginWindow();
-        ///\note Inventory funcs are temporarily here
+        ///\todo Inventory funcs are temporarily here
         void ShowInventory();
         void HideInventory();
         void Quit();

@@ -37,9 +37,7 @@ namespace Inventory
         void PostInitialize();
         void Uninitialize();
         void Update(Core::f64 frametime);
-        bool HandleEvent(
-            Core::event_category_id_t category_id,
-            Core::event_id_t event_id, 
+        bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id,
             Foundation::EventDataInterface* data);
 
         MODULE_LOGGING_FUNCTIONS
@@ -59,6 +57,9 @@ namespace Inventory
 
         /// RexLogicModule pointer.
         RexLogic::RexLogicModule *rexLogic_;
+
+        /// Inventory event category.
+        Core::event_category_id_t inventoryEventCategory_;
 
         /// Network state event category.
         Core::event_category_id_t networkStateEventCategory_;
