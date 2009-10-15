@@ -564,11 +564,17 @@ namespace RexLogic
     {
         return avatar_appearance_.HandleResourceEvent(event_id, data);
     }
-    
-    void Avatar::ExportUserAvatar()
+
+    Scene::EntityPtr Avatar::GetUserAvatar()
     {
         RexTypes::RexUUID agent_id = rexlogicmodule_->GetServerConnection()->GetInfo().agentID;
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(agent_id);
+        return entity;
+    }
+    
+    void Avatar::ExportUserAvatar()
+    {
+        Scene::EntityPtr entity = GetUserAvatar();
         if (!entity)
         {
             RexLogicModule::LogError("User avatar not in scene, cannot export");
@@ -587,8 +593,7 @@ namespace RexLogic
 
     void Avatar::ReloadUserAvatar()
     {
-        RexTypes::RexUUID agent_id = rexlogicmodule_->GetServerConnection()->GetInfo().agentID;
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(agent_id);
+        Scene::EntityPtr entity = GetUserAvatar();
         if (!entity)
         {
             RexLogicModule::LogError("User avatar not in scene, cannot reload appearance");
@@ -601,8 +606,7 @@ namespace RexLogic
     
     void Avatar::LoadUserAvatarFromFile(const std::string& filename)
     {
-        RexTypes::RexUUID agent_id = rexlogicmodule_->GetServerConnection()->GetInfo().agentID;
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(agent_id);
+        Scene::EntityPtr entity = GetUserAvatar();
         if (!entity)
         {
             RexLogicModule::LogInfo("User avatar not in scene, cannot load appearance");

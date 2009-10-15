@@ -704,6 +704,11 @@ AvatarPtr RexLogicModule::GetAvatarHandler()
     return avatar_;
 }
 
+AvatarEditorPtr RexLogicModule::GetAvatarEditor()
+{
+    return avatar_editor_;
+}
+
 PrimitivePtr RexLogicModule::GetPrimitiveHandler()
 {
     return primitive_;

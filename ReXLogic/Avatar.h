@@ -45,6 +45,9 @@ namespace RexLogic
         //! Handles resource event
         bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
         
+        //! Returns user's avatar
+        Scene::EntityPtr GetUserAvatar();
+        
         //! Exports user's avatar, if in scene
         void ExportUserAvatar();
         
@@ -53,6 +56,9 @@ namespace RexLogic
 
         //! Loads user's avatar from a file
         void LoadUserAvatarFromFile(const std::string& filename);
+        
+        //! Returns the avatar appearance handler
+        AvatarAppearance& GetAppearanceHandler() { return avatar_appearance_; }
         
     private:
         RexLogicModule *rexlogicmodule_;

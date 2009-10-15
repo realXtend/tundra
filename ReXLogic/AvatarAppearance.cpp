@@ -1,13 +1,16 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "Avatar.h"
 #include "AvatarAppearance.h"
+#include "AvatarEditor.h"
 #include "AvatarExporter.h"
 #include "LegacyAvatarSerializer.h"
 #include "RexLogicModule.h"
 #include "SceneManager.h"
 #include "EC_AvatarAppearance.h"
 #include "EC_OpenSimAvatar.h"
+#include "EC_OpenSimPresence.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "OgreMaterialResource.h"
@@ -126,10 +129,11 @@ namespace RexLogic
         
         Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
         Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        
         if (!meshptr || !appearanceptr)
             return;
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
-        
+                   
         // If document contains no animations, use ones from default
         if (appearance.GetAnimations().empty())
         {
@@ -149,6 +153,13 @@ namespace RexLogic
         SetupMeshAndMaterials(entity);
         SetupDynamicAppearance(entity);
         SetupAttachments(entity);
+        
+        // If this is the user's avatar, make the editor refresh its view (morphs, textures etc.)
+        if (entity == rexlogicmodule_->GetAvatarHandler()->GetUserAvatar())
+        {
+            RexLogicModule::LogInfo("User avatar changed, rebuilding editor view");
+            rexlogicmodule_->GetAvatarEditor()->RebuildEditView(); 
+        }  
     }
     
     void AvatarAppearance::SetupDynamicAppearance(Scene::EntityPtr entity)
