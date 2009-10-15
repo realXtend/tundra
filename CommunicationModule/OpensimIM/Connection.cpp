@@ -2,6 +2,7 @@
 #include "StableHeaders.h"
 #include "RexLogicModule.h" // chat
 #include "RexProtocolMsgIDs.h"
+#include "OpensimProtocolModule.h"
 
 namespace OpensimIM
 {
@@ -28,6 +29,13 @@ namespace OpensimIM
 			*i = NULL;
 		}
 		im_chat_sessions_.clear();
+
+		for( ContactVector::iterator i =  contacts_.begin(); i != contacts_.end(); ++i)
+		{
+			delete *i;
+			*i = NULL;
+		}
+		contacts_.clear();
 	}
 	
 	QString Connection::GetName() const
@@ -125,12 +133,17 @@ namespace OpensimIM
 
 	void Connection::RequestFriendlist()
 	{
-		//! TODO: Parse login response from opensim server
-		//! buddy-list
-		//! + array:  
-		//!     + buddy_id
-		//!     + buddy_rights_given
-		//!     + buddy_rights_has
+		OpenSimProtocol::OpenSimProtocolModule *opensim_protocol_ = dynamic_cast<OpenSimProtocol::OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol).lock().get());
+		if ( !opensim_protocol_ )
+			return;
+		OpenSimProtocol::BuddyListPtr buddy_list = opensim_protocol_->GetClientParameters().buddy_list;
+		OpenSimProtocol::BuddyVector buddies = buddy_list->GetBuddies();
+		for (OpenSimProtocol::BuddyVector::iterator i = buddies.begin(); i != buddies.end(); ++i)
+		{
+			//! @todo Fetch name of this buddy 
+			Contact* contact = new Contact(	(*i)->GetID().ToString().c_str(), "" );
+			contacts_.push_back(contact);
+		}
 	}
 
 	bool Connection::HandleNetworkEvent(Foundation::EventDataInterface* data)

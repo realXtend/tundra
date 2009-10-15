@@ -5,6 +5,7 @@
 #include "..\interface.h"
 #include <QStringList>
 #include "ChatSession.h"
+#include "Contact.h"
 
 #define OPENSIM_IM_PROTOCOL "OpensimUDP"
 
@@ -104,6 +105,7 @@ namespace OpensimIM
 		ChatSessionVector public_chat_sessions_;
 		ChatSessionVector im_chat_sessions_;
 		QString agent_uuid_; 
+		ContactVector contacts_;
 	public slots:
 		void OnWorldChatMessageReceived(const QString& text, const Communication::ChatSessionParticipantInterface& participant);
 	};

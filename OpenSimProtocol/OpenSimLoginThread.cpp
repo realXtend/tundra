@@ -9,11 +9,13 @@
 #include "XmlRpcEpi.h"
 #include "OpenSimAuth.h"
 #include "InventorySkeleton.h"
+#include "BuddyList.h"
 
 #include <boost/shared_ptr.hpp>
 #include <utility>
 #include <algorithm>
 #include "Poco/MD5Engine.h"
+
 
 namespace OpenSimProtocol
 {
@@ -381,6 +383,72 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
     return inventory;
 }
 
+/**
+ *  Extracts buddylist from login reply xml data.
+ *  \return BuddlyList object 
+ *
+ *  XML structure:
+ *  "buddy-list"
+ *    array:
+ *      struct:
+ *        string: "buddy_id" 
+ *        i4: "buddy_rights_given"
+ *        i4: "buddy_rights_has"
+ */
+BuddyListPtr ExtractBuddyListFromXMLRPCReply(XmlRpcEpi &call)
+{
+    XmlRpcCall *xmlrpcCall = call.GetXMLRPCCall();
+    if (!xmlrpcCall)
+        throw XmlRpcException("Failed to read buddy list, no XMLRPC Reply to read!");
+
+    XMLRPC_REQUEST request = xmlrpcCall->GetReply();
+    if (!request)
+        throw XmlRpcException("Failed to read buddy list, no XMLRPC Reply to read!");
+
+    XMLRPC_VALUE result = XMLRPC_RequestGetData(request);
+    if (!result)
+        throw XmlRpcException("Failed to read buddy list, the XMLRPC Reply did not contain any data!");
+
+    XMLRPC_VALUE buddy_list_node = XMLRPC_VectorGetValueWithID(result, "buddy-list");
+
+    if (!buddy_list_node || XMLRPC_GetValueType(buddy_list_node) != xmlrpc_vector)
+        throw XmlRpcException("Failed to read buddy list, buddy-list in the reply was not properly formed!");
+
+	BuddyListPtr buddy_list = BuddyListPtr(new BuddyList());
+
+    XMLRPC_VALUE item = XMLRPC_VectorRewind(buddy_list_node);
+
+	while(item)
+    {
+        XMLRPC_VALUE_TYPE type = XMLRPC_GetValueType(item);
+        if (type == xmlrpc_vector) // xmlrpc-epi handles structs as arrays.
+        {
+			RexTypes::RexUUID id;
+			int rights_given = 0;
+			int rights_has = 0;
+
+            XMLRPC_VALUE val = XMLRPC_VectorGetValueWithID(item, "buddy_id");
+            if (val && XMLRPC_GetValueType(val) == xmlrpc_string)
+				id.FromString( XMLRPC_GetValueString(val) );
+
+            val = XMLRPC_VectorGetValueWithID(item, "buddy_rights_given");
+			if (val && XMLRPC_GetValueType(val) == xmlrpc_type_int)
+				rights_given = XMLRPC_GetValueInt(val);
+
+            val = XMLRPC_VectorGetValueWithID(item, "buddy_rights_has");
+            if (val && XMLRPC_GetValueType(val) == xmlrpc_type_int)
+				rights_has = XMLRPC_GetValueInt(val);
+
+			Buddy *buddy = new Buddy(id, rights_given, rights_has);
+			buddy_list->AddBuddy(buddy);
+        }
+
+        item = XMLRPC_VectorNext(buddy_list_node);
+    }
+
+	return buddy_list;
+}
+
 bool OpenSimLoginThread::PerformXMLRPCLogin()
 {
     // create a MD5 hash for the password, MAC address and HDD serial number.
@@ -531,6 +599,7 @@ bool OpenSimLoginThread::PerformXMLRPCLogin()
                 throw XmlRpcException("Failed to receive sessionID, agentID or circuitCode from login_to_simulator reply!");
 
             threadState_->parameters.inventory = ExtractInventoryFromXMLRPCReply(call);
+			threadState_->parameters.buddy_list = ExtractBuddyListFromXMLRPCReply(call);
         }
         else if (authentication_ && callMethod_ != std::string("login_to_simulator")) 
         {
@@ -555,6 +624,7 @@ bool OpenSimLoginThread::PerformXMLRPCLogin()
                 throw XmlRpcException("Failed to extract sim_ip and sim_port from login_to_simulator reply!");
 
             threadState_->parameters.inventory = ExtractInventoryFromXMLRPCReply(call);
+			threadState_->parameters.buddy_list = ExtractBuddyListFromXMLRPCReply(call);
         }
         else
             throw XmlRpcException(std::string("Undefined login method ") + callMethod_ + " in XMLRPCLoginThread!");
