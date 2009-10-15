@@ -49,7 +49,6 @@ class EditGUI(Component):
         Component.__init__(self)
         loader = QUiLoader()
         self.canvas = r.createCanvas(EXTERNAL) #change to internal later, had some rendering problems?
-        
         file = QFile(self.UIFILE)
 
         widget = loader.load(file)
@@ -74,6 +73,20 @@ class EditGUI(Component):
         for i, poswidget in enumerate([widget.xpos, widget.ypos, widget.zpos]):
             #poswidget.connect('valueChanged(double)', lambda v: self.changepos(i, v))
             poswidget.connect('valueChanged(double)', poschanger(i))
+
+        def rotchanger(i):
+            def rot_at_index(v):
+                self.changerot(i, v)
+            return rot_at_index
+        for i, rotwidget in enumerate([widget.rot_x, widget.rot_y, widget.rot_z]):
+            rotwidget.connect('valueChanged(double)', rotchanger(i))
+        
+        def scalechanger(i):
+            def scale_at_index(v):
+                self.changescale(i, v)
+            return scale_at_index
+        for i, scalewidget in enumerate([widget.scalex, widget.scaley, widget.scalez]):
+            scalewidget.connect('valueChanged(double)', scalechanger(i))
         
         self.sel = None
         
@@ -81,7 +94,7 @@ class EditGUI(Component):
         self.right_button_down = False
         self.widget = widget
         self.widget.label.text = "<none>"
-
+        
         r.c = self
         self.widget.treeWidget.connect('clicked()', self.itemActivated)
         #self.widget.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
@@ -127,6 +140,22 @@ class EditGUI(Component):
             pos[i] = v
             ent.pos = pos[0], pos[1], pos[2] #XXX API should accept a list/tuple too .. or perhaps a vector type will help here too
             #print "=>", ent.pos
+    
+    def changescale(self, i, v):
+        ent = self.sel
+        if ent is not None:
+            scale = list(ent.scale)
+            scale[i] = v
+            ent.scale = scale[0], scale[1], scale[2]
+    
+    def changerot(self, i, v):
+        #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
+        #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
+        #print "pos index %i changed to: %f" % (i, v)
+        ent = self.sel
+        if ent is not None:
+            print "sel orientation:", ent.orientation
+            #from euler x,y,z to to quat
             
     def itemClicked(self): #XXX dirty hack to get single click for activating, should we use some qt stylesheet for this, or just listen to click?
         self.itemActivated(self) 
@@ -156,6 +185,19 @@ class EditGUI(Component):
         self.widget.xpos.setValue(x)
         self.widget.ypos.setValue(y)
         self.widget.zpos.setValue(z)
+        
+        x, y, z = ent.scale
+        self.widget.scalex.setValue(x)
+        self.widget.scaley.setValue(y)
+        self.widget.scalez.setValue(z)
+        
+        #from quat to euler x.y,z
+        #self.widget.rot_x.setValue(x)
+        #self.widget.rot_y.setValue(y)
+        #self.widget.rot_z.setValue(z)
+        
+        #self.widget.scale.setValue(ent.scale)
+        
         self.widget.label.text = ent.id
         
         if self.cam is None and ogreroot:
