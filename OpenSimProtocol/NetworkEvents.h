@@ -7,7 +7,7 @@
 #include "RexUUID.h"
 #include "NetInMessage.h"
 #include "NetOutMessage.h"
-#include "Inventory.h"
+#include "InventorySkeleton.h"
 
 namespace OpenSimProtocol
 {

@@ -11,7 +11,7 @@
 #include "ConversionUtils.h"
 #include "SceneManager.h"
 #include "RexNetworkUtils.h"
-#include "InventoryFolder.h"
+//#include "InventoryFolder.h"
 
 namespace RexLogic
 {
@@ -744,6 +744,7 @@ void RexServerConnection::SendMoveInventoryFolderPacket(
 }
 
 ///\todo Test this function.
+/*
 void RexServerConnection::SendMoveInventoryFolderPacket(
     std::list<OpenSimProtocol::InventoryFolder *> folders,
     const bool &re_timestamp)
@@ -771,6 +772,7 @@ void RexServerConnection::SendMoveInventoryFolderPacket(
 
     FinishMessageBuilding(m);
 }
+*/
 
 void RexServerConnection::SendRemoveInventoryFolderPacket(
     const RexTypes::RexUUID &folder_id)
@@ -793,6 +795,7 @@ void RexServerConnection::SendRemoveInventoryFolderPacket(
 }
 
 ///\todo Test this function.
+/*
 void RexServerConnection::SendRemoveInventoryFolderPacket(
     std::list<OpenSimProtocol::InventoryFolder *> folders)
 {
@@ -843,6 +846,7 @@ void RexServerConnection::SendMoveInventoryItemPacket(
 
     FinishMessageBuilding(m);
 }
+*/
 
 void RexServerConnection::SendRemoveInventoryItemPacket(const RexTypes::RexUUID &item_id)
 {

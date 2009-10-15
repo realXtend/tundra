@@ -47,8 +47,8 @@
 
 #include "QtUtils.h"
 #include "AssetUploader.h"
-#include "InventoryModel.h"
-#include "InventoryWindow.h"
+//#include "InventoryModel.h"
+//#include "InventoryWindow.h"
 #include "AvatarEditor.h"
 #include "RexTypes.h"
 
@@ -232,9 +232,6 @@ namespace RexLogic
         // Create the login window.
         loginWindow_ = new RexLoginWindow(framework_, this);
         connectionState_ = OpenSimProtocol::Connection::STATE_DISCONNECTED;
-
-        ///\note This won't be staying here.
-        inventoryWindow_ = new InventoryWindow(framework_, this);
     }
 
     void RexLogicModule::DeleteScene(const std::string &name)
@@ -279,8 +276,6 @@ namespace RexLogic
         SAFE_DELETE (framework_handler_);
 
         SAFE_DELETE(loginWindow_);
-        ///\note This won't be staying here.
-        SAFE_DELETE(inventoryWindow_);
 
         LogInfo("Module " + Name() + " uninitialized.");
     }
@@ -424,22 +419,18 @@ namespace RexLogic
 
     void RexLogicModule::InitInventoryView()
     {
-        inventoryWindow_->InitInventoryTreeView();
     }
 
     void RexLogicModule::ResetInventoryView()
     {
-        inventoryWindow_->ResetInventoryTreeView();
     }
 
     void RexLogicModule::ShowInventory()
     {
-        inventoryWindow_->Show();
     }
 
     void RexLogicModule::HideInventory()
     {
-        inventoryWindow_->Hide();
     }
     
     void RexLogicModule::ShowAvatarEditor()
@@ -588,7 +579,7 @@ namespace RexLogic
     Console::CommandResult RexLogicModule::UploadMultipleAssets(const Core::StringVector &params)
     {
         return Console::ResultSuccess();
-        /*
+/*
         CreateRexInventoryFolders();
 
         Core::StringList filenames = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
@@ -606,7 +597,6 @@ namespace RexLogic
 
         // Multiupload.
         Core::Thread thread(boost::bind(&AssetUploader::UploadFiles, asset_uploader_, filenames, GetInventory().get()));
-
         return Console::ResultSuccess();
         */
     }

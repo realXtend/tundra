@@ -94,10 +94,6 @@ namespace Inventory
         /// @return Number of children.
         int ChildCount() const;
 
-        /// @return Numbve
-        ///\todo Probably not needed. Delete?
-//        int ColumnCount() const;
-
         /// @return Row number of the folder.
         int Row() const;
 

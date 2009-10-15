@@ -9,7 +9,7 @@
 #define incl_InventoryWindow_h
 
 #include "Foundation.h"
-
+/*
 #include <QObject>
 #include <QModelIndex>
 
@@ -94,7 +94,7 @@ namespace RexLogic
         Foundation::Framework *framework_;
 
         /// RexLogicModule pointer.
-        /*boost::shared_ptr<RexLogicModule>*/ RexLogicModule* rexLogicModule_;
+        RexLogicModule* rexLogicModule_;
 
         /// QtModule pointer.
         boost::shared_ptr<QtUI::QtModule> qtModule_;
@@ -112,5 +112,5 @@ namespace RexLogic
         OpenSimProtocol::InventoryModel *inventoryModel_;
     };
 }
-
+*/
 #endif
