@@ -9,7 +9,7 @@
 #include "HttpRequest.h"
 #include "LLSDUtilities.h"
 #include "RexUUID.h"
-#include "InventoryModel.h"
+//#include "InventoryModel.h"
 
 #include "openjpeg.h"
 #include "curl/curl.h"
@@ -326,7 +326,7 @@ void AssetUploader::UploadFile(
     RexLogicModule::LogInfo("Upload succesfull. Asset id: " + asset_id + ", inventory id: " + inventory_id + ".");
 }
 
-void AssetUploader::UploadFiles(Core::StringList filenames, OpenSimProtocol::InventoryModel *inventory)
+void AssetUploader::UploadFiles(Core::StringList filenames, OpenSimProtocol::InventorySkeleton *inventory)
 {
     if (uploadCapability_ == "")
     {
@@ -355,7 +355,7 @@ void AssetUploader::UploadFiles(Core::StringList filenames, OpenSimProtocol::Inv
         std::string name = CreateNameFromFilename(filename);
         std::string description = "(No Description)";
 
-        RexTypes::RexUUID folder_id = inventory->GetFirstChildFolderByName(cat_name.c_str())->GetID();
+        RexTypes::RexUUID folder_id = inventory->GetFirstChildFolderByName(cat_name.c_str())->id;
         if (folder_id.IsNull())
         {
             RexLogicModule::LogError("Inventory folder for this type of file doesn't exists. File can't be uploaded.");
@@ -477,11 +477,13 @@ void AssetUploader::UploadFiles(Core::StringList filenames, OpenSimProtocol::Inv
         ++asset_count;
 
         // Create the asset to inventory.
+        /*
         OpenSimProtocol::InventoryFolder *folder = inventory->GetChildFolderByID(folder_id);
         OpenSimProtocol::InventoryAsset *asset = inventory->GetOrCreateNewAsset(
             RexTypes::RexUUID(inventory_id),RexTypes::RexUUID(asset_id), *folder);
         asset->SetName(name);
         asset->SetDescription(description);
+        */
     }
 
     RexLogicModule::LogInfo("Multiupload:" + Core::ToString(asset_count) + " assets succesfully uploaded.");

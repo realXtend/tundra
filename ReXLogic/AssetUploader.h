@@ -11,7 +11,7 @@
 
 namespace OpenSimProtocol
 {
-    class InventoryModel;
+    class InventorySkeleton;
 }
 
 namespace RexLogic
@@ -49,7 +49,7 @@ namespace RexLogic
         /// Uploads multiple files using HTTP.
         /// @param files List of AssetInfo structs.
         /// @param inventory Pointer to the user's inventory.
-        void UploadFiles(Core::StringList filenames, OpenSimProtocol::InventoryModel *inventory);
+        void UploadFiles(Core::StringList filenames, OpenSimProtocol::InventorySkeleton *inventory);
 
         /// Utility function for create name for asset from filename.
         /// @param filename Filename.

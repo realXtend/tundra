@@ -7,6 +7,7 @@
 
 #include "StableHeaders.h"
 #include "InventoryWindow.h"
+/*
 #include "RexLogicModule.h"
 #include "QtModule.h"
 #include "UICanvas.h"
@@ -96,7 +97,6 @@ void InventoryWindow::InitInventoryWindow()
 
 void InventoryWindow::InitInventoryTreeView()
 {
-/*
     inventory_  =  rexLogicModule_->GetInventory();
     if (!inventory_.get())
         return;
@@ -112,7 +112,6 @@ void InventoryWindow::InitInventoryTreeView()
 
 //    QObject::connect(treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
 //        const QItemSelection &)), this, SLOT(UpdateActions()));
-*/
 }
 
 void InventoryWindow::ResetInventoryTreeView()
@@ -168,12 +167,11 @@ void InventoryWindow::UpdateActions()
     if (hasCurrent)
     {
         treeView->closePersistentEditor(treeView->selectionModel()->currentIndex());
-        /*QStatusBar *statusBar = inventoryWidget_->findChild<QStatusBar *>("statusBar");
-        if (item->GetInventoryItemType() == Type_Folder)
-            statusBar->showMessage(tr("%1").arg("Folder"));
-        else if(item->GetInventoryItemType() == Type_Asset)
-            statusBar->showMessage(tr("%1").arg("Asset"));
-        */
+//      QStatusBar *statusBar = inventoryWidget_->findChild<QStatusBar *>("statusBar");
+//        if (item->GetInventoryItemType() == Type_Folder)
+//            statusBar->showMessage(tr("%1").arg("Folder"));
+//        else if(item->GetInventoryItemType() == Type_Asset)
+//            statusBar->showMessage(tr("%1").arg("Asset"));
     }
 }
 
@@ -292,12 +290,10 @@ void InventoryWindow::CreateAsset()
 
 void InventoryWindow::DeleteAsset()
 {
-/*
-    QTreeView *treeView = inventoryWidget_->findChild<QTreeView *>("treeView");
-    QModelIndex index = treeView->selectionModel()->currentIndex();
-    InventoryAsset *asset = static_cast<InventoryAsset *>(inventoryModel->GetItem(index));
-    rexLogicModule_->GetServerConnection()->SendRemoveInventoryItemPacket(asset->GetID());
-*/
+//    QTreeView *treeView = inventoryWidget_->findChild<QTreeView *>("treeView");
+//    QModelIndex index = treeView->selectionModel()->currentIndex();
+//    InventoryAsset *asset = static_cast<InventoryAsset *>(inventoryModel->GetItem(index));
+//    rexLogicModule_->GetServerConnection()->SendRemoveInventoryItemPacket(asset->GetID());
 }
 
 void InventoryWindow::NameChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
@@ -317,7 +313,7 @@ void InventoryWindow::NameChanged(const QModelIndex &topLeft, const QModelIndex 
     {
         InventoryFolder *folder = static_cast<InventoryFolder *>(item);
         rexLogicModule_->GetServerConnection()->SendUpdateInventoryFolderPacket(
-            folder->GetID(), folder->GetParent()->GetID(), 127/*folder->GetType()*/, new_name);
+            folder->GetID(), folder->GetParent()->GetID(), 127, new_name);
     }
     else if (item->GetInventoryItemType() == Type_Asset)
     {
@@ -327,5 +323,5 @@ void InventoryWindow::NameChanged(const QModelIndex &topLeft, const QModelIndex 
 //            folder->GetID(), folder->GetParent()->GetID(), folder->GetType(), new_name);
     }
 }
-
 } // namespace RexLogic
+*/

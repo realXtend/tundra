@@ -180,45 +180,10 @@ AbstractInventoryItem *InventoryFolder::Child(int row)
     return children_.value(row);
 }
 
-/*
-QList<InventoryItemBase *> &InventoryFolder::Children()
-{
-    return childItems_;
-}
-*/
-
 int InventoryFolder::ChildCount() const
 {
     return children_.count();
 }
-
-/*
-int InventoryFolder::ColumnCount() const
-{
-    return itemData_.count();
-}
-
-bool InventoryFolder::SetData(int column, const QVariant &value)
-{
-    if (column < 0 || column >= itemData_.size())
-        return false;
-
-    if (itemData_[column] == value || value.toString().toStdString() == "")
-        return false;
-
-    if (!IsEditable())
-        return false;
-
-    itemData_[column] = value;
-    SetName(value.toString().toStdString());
-    return true;
-}
-
-QVariant InventoryFolder::Data(int column) const
-{
-    return itemData_.value(column);
-}
-*/
 
 void InventoryFolder::DebugDumpInventoryFolderStructure(int indentationLevel)
 {

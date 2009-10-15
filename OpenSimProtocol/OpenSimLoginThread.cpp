@@ -8,7 +8,7 @@
 #include "OpenSimProtocolModule.h"
 #include "XmlRpcEpi.h"
 #include "OpenSimAuth.h"
-#include "Inventory.h"
+#include "InventorySkeleton.h"
 
 #include <boost/shared_ptr.hpp>
 #include <utility>

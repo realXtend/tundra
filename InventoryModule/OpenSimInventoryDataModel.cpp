@@ -10,7 +10,7 @@
 #include "AbstractInventoryItem.h"
 #include "InventoryModule.h"
 #include "RexLogicModule.h"
-#include "Inventory.h"
+#include "InventorySkeleton.h"
 #include "RexUUID.h"
 
 namespace Inventory

@@ -4,7 +4,7 @@
 /// @brief Inventory structure skeleton .
 
 #include "StableHeaders.h"
-#include "Inventory.h"
+#include "InventorySkeleton.h"
 
 namespace OpenSimProtocol
 {
