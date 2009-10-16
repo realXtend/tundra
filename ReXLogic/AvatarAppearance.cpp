@@ -133,7 +133,8 @@ namespace RexLogic
         if (!meshptr || !appearanceptr)
             return;
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
-                   
+        OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
+                                          
         // If document contains no animations, use ones from default
         if (appearance.GetAnimations().empty())
         {
@@ -153,6 +154,48 @@ namespace RexLogic
         SetupMeshAndMaterials(entity);
         SetupDynamicAppearance(entity);
         SetupAttachments(entity);
+        
+        // If there's no morph controls, interrogate the mesh for them
+        if (!appearance.GetMorphModifiers().size())
+        {
+            MorphModifierVector new_morphs;
+            
+            Ogre::Entity *entity = mesh.GetEntity();
+            if (entity)
+            {
+                // Add all pose animations
+                Ogre::MeshPtr mesh = entity->getMesh();
+                size_t numanims = mesh->getNumAnimations();
+                for (Core::uint i = 0; i < numanims; ++i)
+                {
+                    Ogre::Animation* anim = mesh->getAnimation(i);
+                    Ogre::Animation::VertexTrackIterator it = anim->getVertexTrackIterator();
+                    bool is_pose = false;
+            
+                    while (it.hasMoreElements())
+                    {
+                        Ogre::VertexAnimationTrack* vat = it.getNext();
+                        if (vat->getAnimationType() == Ogre::VAT_POSE) is_pose = true;
+                    }
+
+                    if (is_pose)
+                    {
+                        MorphModifier new_morph;
+                        new_morph.morph_name_ = anim->getName();
+                        new_morph.value_ = 0.0f;
+       
+                        new_morph.name_ = new_morph.morph_name_;
+                        // Strip away "Morph_" from the beginning for nicer human-readable name
+                        if (new_morph.name_.find("Morph_") == 0)
+                        {
+                            new_morph.name_ = new_morph.name_.substr(6, new_morph.name_.length() - 6);
+                        } 
+                        new_morphs.push_back(new_morph);
+                    }
+                }  
+                appearance.SetMorphModifiers(new_morphs);       
+            }
+        }
         
         // If this is the user's avatar, make the editor refresh its view (morphs, textures etc.)
         if (entity == rexlogicmodule_->GetAvatarHandler()->GetUserAvatar())
