@@ -16,7 +16,7 @@ namespace Inventory
 
 InventoryWindow::InventoryWindow(Foundation::Framework *framework, RexLogic::RexLogicModule *rexLogic) :
     framework_(framework), rexLogicModule_(rexLogic), inventoryWidget_(0), viewModel_(0), treeView_(0),
-    buttonClose_(0), buttonDownload_(0), buttonUpload_(0), buttonAddFolder_(0), buttonDeleteFolder_(0),
+    buttonClose_(0), buttonDownload_(0), buttonUpload_(0), buttonAddFolder_(0), buttonDeleteItem_(0),
     buttonRename_(0)
 {
     // Get QtModule and create canvas
@@ -29,7 +29,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework, RexLogic::Rex
     // Init Inventory Widget and connect close signal
     InitInventoryWindow();
 
-    QObject::connect(buttonClose_, SIGNAL(clicked()), this, SLOT(CloseInventoryWindow()));
+    QObject::connect(buttonClose_, SIGNAL(clicked()), this, SLOT(Hide()));
 
     // Add local widget to canvas, setup initial size and title and show canvas
     canvas_->SetCanvasSize(300, 275);
@@ -124,6 +124,7 @@ void InventoryWindow::AddFolder()
     QModelIndex index = treeView_->selectionModel()->currentIndex();
     QAbstractItemModel *model = treeView_->model();
 
+    // Next few lines not probably needed, but saved in case we will have multiple columns in the near future.
     if (model->columnCount(index) == 0)
         if (!model->insertColumn(0, index))
             return;
@@ -136,7 +137,7 @@ void InventoryWindow::AddFolder()
     UpdateActions();
 }
 
-void InventoryWindow::DeleteFolder()
+void InventoryWindow::DeleteItem()
 {
     QModelIndex index = treeView_->selectionModel()->currentIndex();
     QAbstractItemModel *model = treeView_->model();
@@ -195,7 +196,7 @@ void InventoryWindow::InitInventoryWindow()
     buttonDownload_ = inventoryWidget_->findChild<QPushButton*>("pushButton_Download");
     buttonUpload_ = inventoryWidget_->findChild<QPushButton*>("pushButton_Upload");
     buttonAddFolder_ = inventoryWidget_->findChild<QPushButton*>("pushButton_AddFolder");
-    buttonDeleteFolder_ = inventoryWidget_->findChild<QPushButton*>("pushButton_DeleteFolder");
+    buttonDeleteItem_ = inventoryWidget_->findChild<QPushButton*>("pushButton_DeleteItem");
     buttonRename_ = inventoryWidget_->findChild<QPushButton*>("pushButton_Rename");
     treeView_ = inventoryWidget_->findChild<QTreeView*>("treeView");
 
@@ -204,7 +205,7 @@ void InventoryWindow::InitInventoryWindow()
     QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(FetchInventoryDescendents(const QModelIndex &)));
 
     QObject::connect(buttonAddFolder_, SIGNAL(clicked(bool)), this, SLOT(AddFolder()));
-    QObject::connect(buttonDeleteFolder_, SIGNAL(clicked(bool)), this, SLOT(DeleteFolder()));
+    QObject::connect(buttonDeleteItem_, SIGNAL(clicked(bool)), this, SLOT(DeleteItem()));
     QObject::connect(buttonRename_, SIGNAL(clicked(bool)), this, SLOT(RenameItem()));
 }
 

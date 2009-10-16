@@ -823,6 +823,7 @@ void RexServerConnection::SendRemoveInventoryFolderPacket(
 
     FinishMessageBuilding(m);
 }
+*/
 
 void RexServerConnection::SendMoveInventoryItemPacket(
     const RexTypes::RexUUID &item_id,
@@ -845,11 +846,11 @@ void RexServerConnection::SendMoveInventoryItemPacket(
     m->SetVariableBlockCount(1);
     m->AddUUID(item_id);
     m->AddUUID(folder_id);
-    m->AddBuffer(new_name.length(), (uint8_t*)new_name.c_str());
+    ///\todo if "+1" doesn't exist, last char vanishes from the name, eg. "3D Models" -> "3D Model".
+    m->AddBuffer(new_name.length() + 1, (uint8_t*)new_name.c_str());
 
     FinishMessageBuilding(m);
 }
-*/
 
 void RexServerConnection::SendRemoveInventoryItemPacket(const RexTypes::RexUUID &item_id)
 {

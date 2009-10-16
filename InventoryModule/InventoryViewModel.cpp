@@ -119,7 +119,7 @@ bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &p
         return false;
 
     beginInsertRows(parent, position, position + rows - 1);
-    dataModel_->GetOrCreateNewFolder(QString(RexTypes::RexUUID::CreateRandom().ToString().c_str()), *parentFolder, false);
+    dataModel_->GetOrCreateNewFolder(STD_TO_QSTR(RexTypes::RexUUID::CreateRandom().ToString()), *parentFolder, "New Folder");
     endInsertRows();
 
     return true;
@@ -128,7 +128,7 @@ bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &p
 bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &parent, InventoryItemEventData *item_data)
 {
     //AbstractInventoryItem *parentFolder = GetItem(parent);
-    AbstractInventoryItem *parentFolder = dataModel_->GetChildFolderByID(QString(item_data->parentId.ToString().c_str()));
+    AbstractInventoryItem *parentFolder = dataModel_->GetChildFolderByID(STD_TO_QSTR(item_data->parentId.ToString()));
     if (!parentFolder)
         return false;
 
@@ -141,17 +141,17 @@ bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &p
     if (item_data->item_type == IIT_Folder)
     {
         InventoryFolder *newFolder = static_cast<InventoryFolder *>(dataModel_->GetOrCreateNewFolder(
-            QString(item_data->id.ToString().c_str()), *parentFolder, false));
-        newFolder->SetName(QString(item_data->name.c_str()));
+            STD_TO_QSTR(item_data->id.ToString()), *parentFolder, false));
+        newFolder->SetName(STD_TO_QSTR(item_data->name));
         ///\todo newFolder->SetType(item_data->type);
         newFolder->SetDirty(true);
     }
     if (item_data->item_type == IIT_Asset)
     {
         InventoryAsset *newAsset = static_cast<InventoryAsset *>(dataModel_->GetOrCreateNewAsset(
-            QString(item_data->id.ToString().c_str()), QString(item_data->assetId.ToString().c_str()),
-            *parentFolder, QString(item_data->name.c_str())));
-        newAsset->SetDescription(QString(item_data->description.c_str()));
+            STD_TO_QSTR(item_data->id.ToString()), STD_TO_QSTR(item_data->assetId.ToString()),
+            *parentFolder, STD_TO_QSTR(item_data->name)));
+        newAsset->SetDescription(STD_TO_QSTR(item_data->description));
         ///\todo newAsset->SetInventoryType & AssetType
     }
 
@@ -162,19 +162,19 @@ bool InventoryViewModel::insertRows(int position, int rows, const QModelIndex &p
 
 bool InventoryViewModel::removeRows(int position, int rows, const QModelIndex &parent)
 {
-    ///\todo Make work for assets also.
     InventoryFolder *parentFolder = dynamic_cast<InventoryFolder *>(GetItem(parent));
     if (!parentFolder)
         return false;
 
-    InventoryFolder *childFolder = dynamic_cast<InventoryFolder *>(parentFolder->Child(position));
-    if (!childFolder)
+    AbstractInventoryItem *childItem = parentFolder->Child(position);
+    if (!childItem)
         return false;
 
-    if (!childFolder->IsEditable())
-        return false;
+    if (childItem->GetItemType() == AbstractInventoryItem::Type_Folder)
+        if (!static_cast<InventoryFolder *>(childItem)->IsEditable())
+            return false;
 
-    dataModel_->NotifyServerAboutFolderRemoval(childFolder);
+    dataModel_->NotifyServerAboutItemRemoval(childItem);
 
     beginRemoveRows(parent, position, position + rows - 1);
     bool success = parentFolder->RemoveChildren(position, rows);
