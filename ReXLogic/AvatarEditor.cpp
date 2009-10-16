@@ -187,9 +187,31 @@ namespace RexLogic
         
         // Modifiers
         Core::uint y = 0;
-        const MorphModifierVector& modifiers = appearance.GetMorphModifiers();
-        morph_panel->resize(width, itemheight * modifiers.size());
+        const BoneModifierSetVector& bone_modifiers = appearance.GetBoneModifiers();
+        const MorphModifierVector& modifiers = appearance.GetMorphModifiers();  
+        morph_panel->resize(width, itemheight * (modifiers.size() + bone_modifiers.size()));
 
+        for (Core::uint i = 0; i < bone_modifiers.size(); ++i)
+        {
+            QScrollBar* slider = new QScrollBar(Qt::Horizontal, morph_panel);
+            slider->setObjectName(QString::fromStdString(bone_modifiers[i].name_));
+            slider->setMinimum(0);
+            slider->setMaximum(100);
+            slider->setPageStep(10);
+            slider->setValue(bone_modifiers[i].value_ * 100.0f);
+            slider->resize(150, 20);
+            slider->move(width - 150, y*itemheight);  
+            slider->show();          
+            
+            QObject::connect(slider, SIGNAL(sliderMoved(int)), this, SLOT(BoneValueChanged(int)));
+                        
+            QLabel* label = new QLabel(QString::fromStdString(bone_modifiers[i].name_), morph_panel);
+            label->resize(100,20);
+            label->move(0, y*itemheight);
+            label->show();
+            ++y;
+        }            
+      
         for (Core::uint i = 0; i < modifiers.size(); ++i)
         {
             QScrollBar* slider = new QScrollBar(Qt::Horizontal, morph_panel);
@@ -209,7 +231,7 @@ namespace RexLogic
             label->move(0, y*itemheight);
             label->show();
             ++y;
-        }            
+        }   
     }
     
     void AvatarEditor::ClearPanel(QWidget* panel)
@@ -252,6 +274,36 @@ namespace RexLogic
             }
         }                        
     }
+    
+    void AvatarEditor::BoneValueChanged(int value)
+    {
+        QScrollBar* slider = qobject_cast<QScrollBar*>(sender());
+        if (!slider)
+            return;
+        std::string bone_name = slider->objectName().toStdString();
+        if (value < 0) value = 0;
+        if (value > 100) value = 100;
+        
+        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
+        if (!entity)
+            return;
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!appearanceptr)
+            return;
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());    
+        
+        BoneModifierSetVector modifiers = appearance.GetBoneModifiers();
+        for (Core::uint i = 0; i < modifiers.size(); ++i)
+        {
+            if (modifiers[i].name_ == bone_name)
+            {
+                modifiers[i].value_ = value / 100.0f;
+                appearance.SetBoneModifiers(modifiers);
+                rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);
+                break;
+            }
+        }                        
+    }    
     
     void AvatarEditor::ChangeTexture()
     {

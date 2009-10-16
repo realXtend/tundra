@@ -39,7 +39,9 @@ namespace RexLogic
         void ChangeTexture();
         //! Morph scrollbar value handler
         void MorphValueChanged(int value);
-        
+        //! Bone scrollbar value handler
+        void BoneValueChanged(int value);
+                
     private:
         RexLogicModule *rexlogicmodule_;
         

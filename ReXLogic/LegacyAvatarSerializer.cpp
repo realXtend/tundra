@@ -666,12 +666,29 @@ namespace RexLogic
         
         // Animations
         const AnimationDefinitionMap& animations = source.GetAnimations();
-        AnimationDefinitionMap::const_iterator i = animations.begin();
-        while (i != animations.end())
         {
-            QDomElement anim = WriteAnimationDefinition(dest, i->second);
-            avatar.appendChild(anim);
-            ++i;
+            AnimationDefinitionMap::const_iterator i = animations.begin();
+            while (i != animations.end())
+            {
+                QDomElement anim = WriteAnimationDefinition(dest, i->second);
+                avatar.appendChild(anim);
+                ++i;
+            }
+        }
+        
+        // Properties
+        const AvatarPropertyMap& properties = source.GetProperties();
+        {
+            AvatarPropertyMap::const_iterator i = properties.begin();
+            while (i != properties.end())
+            {         
+                QDomElement prop = dest.createElement("property");
+
+                SetAttribute(prop, "name", i->first);
+                SetAttribute(prop, "value", i->second);
+                avatar.appendChild(prop);
+                ++i;
+            }        
         }
         
         dest.appendChild(avatar);
