@@ -1,8 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /**
- *  @file AbstractInventoryDataModel.h
- *  @brief 
+ *  @file   AbstractInventoryDataModel.h
+ *  @brief  Abstract inventory data model, pure virtual class. Inherit this class to create your own inventory
+ *          data models to use in InventoryViewModel.
  */
 
 #ifndef incl_InventoryModule_AbstractInventoryDataModel_h
@@ -12,7 +13,9 @@
 
 #include <QObject>
 
-#define STD_TO_QSTRING(p) QString(p.c_str())
+// Few useful defines.
+#define STD_TO_QSTR(p) QString(p.c_str())
+#define QSTR_TO_UUID(p) RexTypes::RexUUID(p.toStdString())
 
 namespace Inventory
 {
@@ -54,7 +57,7 @@ namespace Inventory
         virtual void FetchInventoryDescendents(AbstractInventoryItem *folder) = 0;
 
         /// @return Pointer to the existing or just created asset.
-        virtual void NotifyServerAboutFolderRemoval(AbstractInventoryItem *folder) = 0;
+        virtual void NotifyServerAboutItemRemoval(AbstractInventoryItem *item) = 0;
 
         /// @return Inventory root folder.
         virtual AbstractInventoryItem *GetRoot() const = 0;

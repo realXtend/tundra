@@ -85,16 +85,9 @@ namespace Inventory
         /// Adds new folder.
         void AddFolder();
 
-        /// Deletes folder.
-        void DeleteFolder();
+        /// Deletes item (folder/asset).
+        void DeleteItem();
 
-/*
-        /// Creates new inventory asset.
-        void CreateAsset();
-
-        /// Deletes inventory asset.
-        void DeleteAsset();
-*/
         /// Informs the server about change in name of folder or asset.
         void ItemNameChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
 
@@ -129,7 +122,7 @@ namespace Inventory
         QTreeView *treeView_;
 
         QPushButton *buttonClose_, *buttonDownload_, *buttonUpload_,
-            *buttonAddFolder_, *buttonDeleteFolder_, *buttonRename_;
+            *buttonAddFolder_, *buttonDeleteItem_, *buttonRename_;
     };
 }
 

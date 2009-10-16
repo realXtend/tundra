@@ -67,7 +67,7 @@ namespace Inventory
         void FetchInventoryDescendents(AbstractInventoryItem *folder);
 
         /// AbstractInventoryDataModel override.
-        void NotifyServerAboutFolderRemoval(AbstractInventoryItem * folder);
+        void NotifyServerAboutItemRemoval(AbstractInventoryItem *item);
 
         /// @return Inventory root folder.
         AbstractInventoryItem *GetRoot() const { return rootFolder_; }

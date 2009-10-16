@@ -102,24 +102,45 @@ void OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem 
 */
 }
 
-void OpenSimInventoryDataModel::NotifyServerAboutFolderRemoval(AbstractInventoryItem *folder)
+void OpenSimInventoryDataModel::NotifyServerAboutItemRemoval(AbstractInventoryItem *item)
 {
-    // When deleting folders, we move them first to the Trash folder.
+    // When deleting items, we move them first to the Trash folder.
     // If the folder is already in the trash folder, delete it for good.
     ///\todo Move the "deleted" folder to the Trash folder and update the view.
-    InventoryFolder *folderToBeRemoved = static_cast<InventoryFolder *>(folder);
     InventoryFolder *trashFolder = static_cast<InventoryFolder *>(GetTrashFolder());
-    if (!trashFolder)
+
+    if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
     {
-        InventoryModule::LogError("Can't find Trash folder. Moving folder to Trash not possible.");
+        if (!trashFolder)
+        {
+            InventoryModule::LogError("Can't find Trash folder. Moving folder to Trash not possible. Deleting folder.");
+            rexLogicModule_->GetServerConnection()->SendRemoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()));
+            return;
+        }
+
+        if (item->GetParent() == trashFolder)
+            rexLogicModule_->GetServerConnection()->SendRemoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()));
+        else
+            rexLogicModule_->GetServerConnection()->SendMoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
+                QSTR_TO_UUID(trashFolder->GetID()));
         return;
     }
 
-    if (folder->GetParent() == trashFolder)
-        rexLogicModule_->GetServerConnection()->SendRemoveInventoryFolderPacket(RexUUID(folderToBeRemoved->GetID().toStdString()));
-    else
-        rexLogicModule_->GetServerConnection()->SendMoveInventoryFolderPacket(RexUUID(folderToBeRemoved->GetID().toStdString()),
-            RexUUID(trashFolder->GetID().toStdString()));
+    if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
+    {
+        if (!trashFolder)
+        {
+            InventoryModule::LogError("Can't find Trash folder. Moving folder to Trash not possible. Deleting asset.");
+            rexLogicModule_->GetServerConnection()->SendRemoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()));
+            return;
+        }
+
+        if (item->GetParent() == trashFolder)
+            rexLogicModule_->GetServerConnection()->SendRemoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()));
+        else
+            rexLogicModule_->GetServerConnection()->SendMoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()),
+                QSTR_TO_UUID(trashFolder->GetID()), item->GetName().toStdString());
+    }
 }
 
 void OpenSimInventoryDataModel::DebugDumpInventoryFolderStructure()
@@ -133,8 +154,8 @@ void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
 {
     using namespace OpenSimProtocol;
     
-    InventoryFolder *newFolder= new InventoryFolder(STD_TO_QSTRING(folder_skeleton->id.ToString()),
-        STD_TO_QSTRING(folder_skeleton->name), folder_skeleton->editable, parent_folder);
+    InventoryFolder *newFolder= new InventoryFolder(STD_TO_QSTR(folder_skeleton->id.ToString()),
+        STD_TO_QSTR(folder_skeleton->name), folder_skeleton->editable, parent_folder);
     //if (!folder_skeleton->HasChildren())
     newFolder->SetDirty(true);
 

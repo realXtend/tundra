@@ -5,9 +5,9 @@
   <property name="geometry">
    <rect>
     <x>0</x>
-    <y>0</y>
+    <y>40</y>
     <width>308</width>
-    <height>275</height>
+    <height>194</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -157,7 +157,7 @@ QPushButton#pushButton_Close {
             <x>0</x>
             <y>0</y>
             <width>90</width>
-            <height>69</height>
+            <height>58</height>
            </rect>
           </property>
           <attribute name="label">
@@ -199,9 +199,9 @@ QPushButton#pushButton_Close {
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_DeleteFolder">
+               <widget class="QPushButton" name="pushButton_DeleteItem">
                 <property name="text">
-                 <string>Delete Folder</string>
+                 <string>Delete Item</string>
                 </property>
                </widget>
               </item>
@@ -235,7 +235,7 @@ QPushButton#pushButton_Close {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>90</width>
+            <width>98</width>
             <height>34</height>
            </rect>
           </property>
