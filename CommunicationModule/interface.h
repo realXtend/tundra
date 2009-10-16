@@ -95,7 +95,7 @@ namespace Communication
 	 *  List of Contact objects eg. a friend list.
 	 *  Contact groups can be include Contact and ContactGroup objects.
 	 *  ContactGroup object is created by Connection object with information from IM server.
-	 *  gorup contect cannot be modified.
+	 *  group contect cannot be modified.
 	 */
 	class ContactGroupInterface;
 	typedef std::vector<ContactGroupInterface*> ContactGroupVector;
@@ -186,13 +186,24 @@ namespace Communication
 	 * A received friend request. This can be accepted or rejected. If Accpet() methos is called1
 	 * then Connection object emits NewContact signal.
 	 */
-	class FriendRequestInterface
+	class FriendRequestInterface : public QObject
 	{
+		Q_OBJECT
 	public:
 		enum State { STATE_PENDING, STATE_ACCEPTED, STATE_REJECTED };
+		virtual QString GetOriginatorName() const = 0;
+		virtual QString GetOriginatorID() const = 0;
 		virtual State GetState() const = 0;
 		virtual void Accept() = 0;
 		virtual void Reject() = 0;
+
+	signals:
+		//! When target have accepted the friend request
+		void FriendRequestAccepted(const FriendRequestInterface* request); 
+
+		//! If the protocol doesn't support this then no
+		//! notification is send back about rejecting the friend request
+		void FriendRequestRejected(const FriendRequestInterface* request); 
 	};
 	typedef std::vector<FriendRequestInterface*> FriendRequestVector;
 
@@ -203,6 +214,7 @@ namespace Communication
 	 *
 	 * It also signals about incoming friend request and communication sessions.
 	 *
+	 * @todo Add methods to remove a friend from friend list
 	 */
 	class ConnectionInterface : public QObject
 	{
@@ -238,6 +250,7 @@ namespace Communication
 		virtual QStringList GetAvailablePresenceStatusOptions() const = 0;
 
 		//! Open new chat session with given contact
+		//! @param contact Chat partner target
 		virtual ChatSessionInterface* OpenChatSession(const ContactInterface &contact) = 0;
 
 		//! Open new chat session to given room

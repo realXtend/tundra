@@ -3,6 +3,7 @@
 #include "RexLogicModule.h" // chat
 #include "RexProtocolMsgIDs.h"
 #include "OpensimProtocolModule.h"
+#include "ConnectionProvider.h"
 
 namespace OpensimIM
 {
@@ -69,11 +70,12 @@ namespace OpensimIM
 		//! \todo IMPELEMENT
 		return NULL;
 	}
-
 		
 	QStringList Connection::GetAvailablePresenceStatusOptions() const
 	{
-		//! \todo IMPLEMENT
+		QStringList options;
+		options.append("online");
+		options.append("offline");
 		return QStringList();
 	}
 
@@ -100,18 +102,23 @@ namespace OpensimIM
 	
 	void Connection::SendFriendRequest(const QString &target, const QString &message)
 	{
-		//! \todo IMPLEMENT
+		RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
-		//! UDP messages:
-		//! + AcceptFriendship
-		//! + DeclineFriendship
-		//! + FormFriendship
-		//! + TerminateFriendship
+		if (rexlogic_ == NULL)
+			throw Core::Exception("Cannot send text message, RexLogicModule is not found");
+		RexLogic::RexServerConnectionPtr connection = rexlogic_->GetServerConnection();
+
+		if ( connection == NULL )
+			throw Core::Exception("Cannot send text message, rex server connection is not found");
+
+		if ( !connection->IsConnected() )
+			throw Core::Exception("Cannot send text message, rex server connection is not established");
+
+		connection->SendFormFriendshipPacket(RexTypes::RexUUID( target.toStdString() ));
 	}
 
 	Communication::FriendRequestVector Connection::GetFriendRequests() const
 	{
-		//! \todo IMPLEMENT
 		return Communication::FriendRequestVector();
 	}
 		
@@ -152,15 +159,59 @@ namespace OpensimIM
         if (!event_data)
             return false;
             
+		
         const NetMsgID msgID = event_data->messageID;
         NetInMessage *msg = event_data->message;
         switch(msgID)
         {
-		case RexNetMsgChatFromSimulator: HandleOSNEChatFromSimulator(*msg);
-            return true;
+		case RexNetMsgChatFromSimulator: return HandleOSNEChatFromSimulator(*msg); break;
+		case RexNetMsgFormFriendship: return true; false;
+		case RexNetMsgImprovedInstantMessage: return HandleRexNetMsgImprovedInstantMessage(*msg); break;
+		case RexNetMsgStartLure: return false; break;
+		case RexNetMsgTerminateFriendship: return false; break;
+		case RexNetMsgDeclineFriendship: return false;
 		}
 
 		return false;
+	}
+
+	bool Connection::HandleRexNetMsgImprovedInstantMessage(NetInMessage& msg)
+	{
+		try
+		{
+			msg.ResetReading();
+
+			RexTypes::RexUUID agent_id = msg.ReadUUID();
+			RexTypes::RexUUID session_id = msg.ReadUUID();
+			bool is_group_message = msg.ReadBool();
+			RexTypes::RexUUID to_agent_id = msg.ReadUUID();
+			msg.SkipToNextVariable(); // ParentEstateID
+			RexTypes::RexUUID region_id = msg.ReadUUID();
+			RexTypes::Vector3 position = msg.ReadVector3();
+			int offline = msg.ReadU8();
+			int dialog_type = msg.ReadU8();
+			RexTypes::RexUUID id = msg.ReadUUID();
+			msg.SkipToNextVariable(); // Timestamp
+			std::string from_agent_name = msg.ReadString();
+			std::string message = msg.ReadString();
+			msg.SkipToNextVariable(); // BinaryBucket
+
+			switch (dialog_type)
+			{
+			case DT_FriendRequest:
+				QString calling_card_folder = ""; //! @todo get the right value
+				QString transaction_id = ""; //! @todo get the right value
+				FriendRequest* request = new FriendRequest(framework_, agent_id.ToString().c_str(), from_agent_name.c_str(), transaction_id, calling_card_folder);
+				friend_requests_.push_back(request);
+				emit FriendRequestReceived(*request);
+				break;
+			}
+		}
+		catch(NetMessageException)
+		{
+			return false;
+		}
+		return true;		
 	}
 
 	bool Connection::HandleNetworkStateEvent(Foundation::EventDataInterface* data)

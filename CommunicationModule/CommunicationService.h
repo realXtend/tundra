@@ -19,7 +19,7 @@ namespace Communication
 	public:
 		//! Handle network event
 		virtual bool HandleNetworkEvent(Foundation::EventDataInterface* data) = 0;
-		virtual bool HandleNetworkStateEvent(Foundation::EventDataInterface* data) = 0;
+		virtual bool HandleNetworkStateEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data) = 0;
 	};
 
 	/**
