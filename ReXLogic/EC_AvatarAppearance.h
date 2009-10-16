@@ -223,6 +223,7 @@ namespace RexLogic
         const Transform& GetTransform() const { return transform_; }
         bool HasProperty(const std::string& name) const;
         const std::string& GetProperty(const std::string& name) const;
+        const AvatarPropertyMap& GetProperties() const { return properties_; }
         
         const AvatarAssetMap& GetAssetMap() const { return asset_map_; }
         void SetAssetMap(const AvatarAssetMap& map) { asset_map_ = map; }

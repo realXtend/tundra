@@ -11,8 +11,8 @@
     <texture_body name="" />
     <appearance height="1.800000" weight="1" />
     <transformation position="0 0 0" rotation="1 0 0 0" scale="1 1 1" />
-    <dynamic_animation_parameter name="Height_Adjust2" position="0.5" />
-    <dynamic_animation name="Height_Adjust2">
+    <dynamic_animation_parameter name="Height_Adjust" position="0.5" />
+    <dynamic_animation name="Height_Adjust">
         <base_animations />
         <bones>
             <bone name="Bip01_Pelvis">
@@ -37,8 +37,8 @@
             </bone>
         </bones>
     </dynamic_animation>
-    <dynamic_animation_parameter name="Widen_Clavicles2" position="0" />
-    <dynamic_animation name="Widen_Clavicles2">
+    <dynamic_animation_parameter name="Widen_Clavicles" position="0" />
+    <dynamic_animation name="Widen_Clavicles">
         <base_animations />
         <bones>
             <bone name="Bip01_L_Clavicle">
@@ -53,8 +53,8 @@
             </bone>
         </bones>
     </dynamic_animation>
-    <dynamic_animation_parameter name="Spine_Posture2" position="0.5" />
-    <dynamic_animation name="Spine_Posture2">
+    <dynamic_animation_parameter name="Spine_Posture" position="0.5" />
+    <dynamic_animation name="Spine_Posture">
         <base_animations />
         <bones>
             <bone name="Bip01_Spine1">
@@ -79,8 +79,8 @@
             </bone>
         </bones>
     </dynamic_animation>
-    <dynamic_animation_parameter name="Leg_Twist2" position="0" />
-    <dynamic_animation name="Leg_Twist2">
+    <dynamic_animation_parameter name="Leg_Twist" position="0" />
+    <dynamic_animation name="Leg_Twist">
         <base_animations />
         <bones>
             <bone name="Bip01_L_Thigh">
@@ -105,8 +105,8 @@
             </bone>
         </bones>
     </dynamic_animation>
-    <dynamic_animation_parameter name="Arm_Twist2" position="0" />
-    <dynamic_animation name="Arm_Twist2">
+    <dynamic_animation_parameter name="Arm_Twist" position="0" />
+    <dynamic_animation name="Arm_Twist">
         <base_animations />
         <bones>
             <bone name="Bip01_L_UpperArm">
