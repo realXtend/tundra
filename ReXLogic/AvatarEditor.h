@@ -35,7 +35,9 @@ namespace RexLogic
         void LoadAvatar();
         //! Revert button press handler
         void RevertAvatar();
-        //! Morph scrollbar press handler
+        //! Change texture press handler
+        void ChangeTexture();
+        //! Morph scrollbar value handler
         void MorphValueChanged(int value);
         
     private:

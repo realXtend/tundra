@@ -603,16 +603,4 @@ namespace RexLogic
         // Revert to default if no storage url
         avatar_appearance_.DownloadAppearance(entity, true);
     }
-    
-    void Avatar::LoadUserAvatarFromFile(const std::string& filename)
-    {
-        Scene::EntityPtr entity = GetUserAvatar();
-        if (!entity)
-        {
-            RexLogicModule::LogInfo("User avatar not in scene, cannot load appearance");
-            return;
-        }      
-        
-        avatar_appearance_.LoadAppearance(entity, filename);
-    }  
 }

@@ -1335,24 +1335,7 @@ namespace RexLogic
         // This whole operation is potentially evil
         try
         {            
-            // HACK! Add a new temporary Ogre resource group for the avatar directory
-            Ogre::ResourceGroupManager& resgrpmgr = Ogre::ResourceGroupManager::getSingleton();
-
-            // If already exists, destroy first
-            try
-            {
-                resgrpmgr.destroyResourceGroup("Avatar");
-            }
-            catch (...) {}
-            
-            try
-            {
-                resgrpmgr.createResourceGroup("Avatar");
-                resgrpmgr.addResourceLocation(dirname, "FileSystem", "Avatar");
-                resgrpmgr.initialiseResourceGroup("Avatar");
-            }
-            catch (...) {}
-                         
+            AddTempResourceDirectory(dirname);
             SetupAppearance(entity);
         }
         catch (Ogre::Exception& e)
@@ -1444,4 +1427,105 @@ namespace RexLogic
     
         return true;
     }    
+    
+    void AvatarAppearance::AddTempResourceDirectory(const std::string& dirname)
+    {
+        // HACK! Add a new temporary Ogre resource group for the avatar directory
+        Ogre::ResourceGroupManager& resgrpmgr = Ogre::ResourceGroupManager::getSingleton();
+
+        // If already exists, destroy first
+        try
+        {
+            resgrpmgr.destroyResourceGroup("Avatar");
+        }
+        catch (...) {}
+        
+        try
+        {
+            resgrpmgr.createResourceGroup("Avatar");
+            resgrpmgr.addResourceLocation(dirname, "FileSystem", "Avatar");
+            resgrpmgr.initialiseResourceGroup("Avatar");
+        }
+        catch (...) {}
+    }    
+    
+    bool AvatarAppearance::ChangeAvatarMaterial(Scene::EntityPtr entity, Core::uint index, const std::string& filename)
+    {
+        boost::filesystem::path path(filename);
+        std::string leafname = path.leaf();
+        std::string dirname = path.branch_path().string();
+                
+        std::string matname;
+        
+        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        
+        if (!meshptr || !appearanceptr)
+            return false;
+        
+        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+        
+        AddTempResourceDirectory(dirname);
+        
+        // New texture from material
+        if (leafname.find(".material") != std::string::npos)
+        {     
+            // Note: we have to scan inside the material script to get the actual material name
+            try
+            {
+                Ogre::DataStreamPtr data = Ogre::ResourceGroupManager::getSingleton().openResource(leafname);    
+                while (!data->eof())
+                {
+                    Ogre::String line = data->getLine();
+                    
+                    // Skip empty lines & comments
+                    if ((!line.length()) || (line.substr(0, 2) == "//"))
+                        continue;
+                        
+                    std::size_t pos = line.find("material ");
+                    if (pos == std::string::npos)
+                        continue;
+                    
+                    // Use the first material name encountered
+                    matname = line.substr(pos+9, line.length()-pos-9);
+                    break;
+                }
+            }
+            catch (...) {}
+
+            if (matname.empty())
+                return false;
+        }
+        // New texture from image
+        else
+        {
+            boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+                GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+            if (!renderer)
+            {
+                RexLogicModule::LogError("Renderer does not exist");
+                return false;
+            }
+            
+            matname = renderer->GetUniqueObjectName();
+            
+            //! \todo this temp texture will not be deleted ever. Should delete it
+            Ogre::MaterialPtr ogremat = OgreRenderer::GetOrCreateLitTexturedMaterial(matname.c_str());
+            OgreRenderer::GetLocalTexture(leafname);
+            OgreRenderer::SetTextureUnitOnMaterial(ogremat, leafname);
+        }
+        
+        mesh.SetMaterial(index, matname);
+        
+        AvatarMaterialVector materials = appearance.GetMaterials();        
+        if (index >= materials.size())
+            return false;
+        materials[index] = AvatarMaterial();
+        materials[index].asset_.name_ = matname; 
+        FixupMaterial(materials[index], AvatarAssetMap());
+        appearance.SetMaterials(materials);
+        
+        return true;
+    }                 
 }

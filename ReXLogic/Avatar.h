@@ -54,9 +54,6 @@ namespace RexLogic
         //! Reloads user's avatar, if in scene
         void ReloadUserAvatar();
 
-        //! Loads user's avatar from a file
-        void LoadUserAvatarFromFile(const std::string& filename);
-        
         //! Returns the avatar appearance handler
         AvatarAppearance& GetAppearanceHandler() { return avatar_appearance_; }
         
