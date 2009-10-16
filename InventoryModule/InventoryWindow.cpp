@@ -24,7 +24,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework, RexLogic::Rex
     if (!qtModule_.get())
         return;
 
-    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
+    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::External).lock();
 
     // Init Inventory Widget and connect close signal
     InitInventoryWindow();

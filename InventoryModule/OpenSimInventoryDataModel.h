@@ -95,9 +95,6 @@ namespace Inventory
         /// @param inventory_skeleton OpenSim inventory skeleton.
         void SetupModelData(OpenSimProtocol::InventorySkeleton *inventory_skeleton);
 
-        /// Creates reX-spesific folders (3D Models, Materials, etc.).
-        void CreateRexInventoryFolders();
-
         /// RexLogicModule pointer.
         RexLogic::RexLogicModule *rexLogicModule_;
 

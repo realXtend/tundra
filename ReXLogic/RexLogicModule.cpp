@@ -131,7 +131,7 @@ void RexLogicModule::Initialize()
     framework_handler_ = new FrameworkEventHandler(rexserver_connection_.get());
     avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
-    asset_uploader_ = AssetUploaderPtr(new AssetUploader());
+    asset_uploader_ = AssetUploaderPtr(new AssetUploader(framework_));
 
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);
@@ -507,8 +507,6 @@ Console::CommandResult RexLogicModule::UploadAsset(const Core::StringVector &par
     using namespace RexTypes;
     using namespace OpenSimProtocol;
 
-    return Console::ResultSuccess();
-    /*
     std::string name = "(No Name)";
     std::string description = "(No Description)";
 
@@ -549,33 +547,32 @@ Console::CommandResult RexLogicModule::UploadAsset(const Core::StringVector &par
     RexUUID folder_id;
 
     // Check out if this inventory category exists.
-    InventoryFolder *folder = inventory->GetFirstChildFolderByName(cat_name.c_str());
+    InventoryFolderSkeleton *folder = inventory->GetFirstChildFolderByName(cat_name.c_str());
     if (!folder)
     {
         // I doesn't. Create new inventory folder.
-        InventoryFolder *parent = inventory->GetMyInventoryFolder();
+        InventoryFolderSkeleton *parentFolder = inventory->GetMyInventoryFolder();
         folder_id.Random();
-        InventoryFolder *newFolder = inventory->GetOrCreateNewFolder(folder_id, *inventory->GetRoot());
-        newFolder->SetName(cat_name);
+
+        // Add folder to inventory skeleton.
+        InventoryFolderSkeleton newFolder(folder_id, cat_name);
+        parentFolder->AddChildFolder(newFolder);
 
         // Notify the server about the new inventory folder.
-        rexserver_connection_->SendCreateInventoryFolderPacket(parent->GetID(), folder_id, asset_type, cat_name);
+        rexserver_connection_->SendCreateInventoryFolderPacket(parentFolder->id, folder_id, asset_type, cat_name);
     }
     else
-        folder_id = folder->GetID();
+        folder_id = folder->id;
 
     // Upload.
     Core::Thread thread(boost::bind(&AssetUploader::UploadFile, asset_uploader_,
         asset_type, filename, name, description, folder_id));
 
     return Console::ResultSuccess();
-    */
 }
 
 Console::CommandResult RexLogicModule::UploadMultipleAssets(const Core::StringVector &params)
 {
-    return Console::ResultSuccess();
-
     CreateRexInventoryFolders();
 
     Core::StringList filenames = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
@@ -599,7 +596,6 @@ Console::CommandResult RexLogicModule::UploadMultipleAssets(const Core::StringVe
 
 void RexLogicModule::CreateRexInventoryFolders()
 {
-/*
     if (!GetInventory().get())
     {
         LogError("Inventory doens't exist yet! Can't create folder to it.");
@@ -615,26 +611,37 @@ void RexLogicModule::CreateRexInventoryFolders()
     {
         asset_type = GetAssetTypeFromTypeName(asset_types[i]);
         std::string cat_name = GetCategoryNameForAssetType(asset_type);
-        RexUUID folder_id;
 
         // Check out if this inventory category exists.
-        InventoryPtr inventory = GetInventory();
-        InventoryFolderSkeleton *folder = inventory->GetFirstChildFolderByName(cat_name.c_str());
+        InventoryFolderSkeleton *folder = GetInventory()->GetFirstChildFolderByName(cat_name.c_str());
         if (!folder)
         {
             // I doesn't. Create new inventory folder.
-            InventoryFolderSkeleton *parent = inventory->GetMyInventoryFolder();
-            folder_id.Random();
-            //InventoryFolderSkeleton *newFolder = inventory->GetOrCreateNewFolder(folder_id, *parent);
-            //newFolder->SetName(cat_name);
-            
+            InventoryFolderSkeleton *parentFolder = GetInventory()->GetMyInventoryFolder();
+            RexUUID folder_id = RexUUID::CreateRandom();
+
+            // Add folder to inventory skeleton.
+            InventoryFolderSkeleton newFolder(folder_id, cat_name);
+            parentFolder->AddChildFolder(newFolder);
+
             // Notify the server about the new inventory folder.
-            rexserver_connection_->SendCreateInventoryFolderPacket(parent->GetID(), folder_id, asset_type, cat_name);
+            rexserver_connection_->SendCreateInventoryFolderPacket(parentFolder->id, folder_id, asset_type, cat_name);
+
+            // Send event to inventory module.
+            Foundation::EventManagerPtr event_mgr = GetFramework()->GetEventManager();
+            Core::event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
+            if (event_category != 0)
+            {
+                Inventory::InventoryItemEventData folder_data(Inventory::IIT_Folder);
+                folder_data.id = folder_id;
+                folder_data.parentId = parentFolder->id;
+                folder_data.inventoryType = GetInventoryTypeFromAssetType(asset_type);
+                folder_data.assetType = asset_type;
+                folder_data.name = cat_name;
+                event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &folder_data);
+            }
         }
-        else
-            folder_id = folder->GetID();
     }
-    */
 }
 
 void RexLogicModule::SwitchCameraState()
