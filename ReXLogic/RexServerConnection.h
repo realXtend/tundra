@@ -234,6 +234,34 @@ namespace RexLogic
             const bool &fetch_folders,
             const bool &fetch_items);
 
+		/**
+		 *  Send a packet to Opensim server to accept friend request
+		 *  @param transaction_id Unknown
+		 *  @param folder_id Folder for calling card for this friend
+		 *  @todo Find out the meaning of transaction_id argument
+		 */
+		void SendAcceptFriendshipPacket(const RexTypes::RexUUID &transaction_id, const RexTypes::RexUUID &folder_id);
+
+		/**
+		 *  Send a packet to Opensim server to decline received friend request
+         *  @param transaction_id Unknown
+		 *  @todo Find out the meaning of transaction_id argument
+		 */
+		void SendDeclineFriendshipPacket(const RexTypes::RexUUID &transaction_id);
+
+		/**
+		 *  Send friend request to Opensim server
+		 *  @param dest_id Target id
+		 */
+		void SendFormFriendshipPacket( const RexTypes::RexUUID &dest_id);
+
+		/**
+		 *  Sends a packet to remove friend from friend list.
+		 *  @param other_id Unknow
+		 *  @todo FInd out meaning of the other_id argument
+		 */
+		void SendTerminateFriendshipPacket(const RexTypes::RexUUID &other_id);
+
         //! Sends a generic message
         /*! \param method Method name
             \param strings Vector of data strings to be sent

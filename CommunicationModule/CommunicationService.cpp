@@ -89,7 +89,7 @@ namespace Communication
 				}
 		        if ( category_id == event_category_networkstate_ )
 				{
-					bool ret = handler->HandleNetworkStateEvent( data );
+					bool ret = handler->HandleNetworkStateEvent( event_id, data );
 					if ( ret )
 						return true;
 				}

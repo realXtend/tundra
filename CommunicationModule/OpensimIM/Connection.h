@@ -6,8 +6,7 @@
 #include <QStringList>
 #include "ChatSession.h"
 #include "Contact.h"
-
-#define OPENSIM_IM_PROTOCOL "OpensimUDP"
+#include "FriendRequest.h"
 
 namespace OpensimIM
 {
@@ -18,6 +17,10 @@ namespace OpensimIM
 	 *  this class just encapsultates the IM functionality of that udp connection
 	 *  Close method of this class does not close the underlaying udp connections
 	 *  but just set this object to logical closed state
+	 *
+	 *  @todo Implement friend request receiving from Opensim server
+	 *  @todo Implement Friend list fetch from Rex authentication server
+	 *  
 	 */
 	class Connection : public Communication::ConnectionInterface
 	{
@@ -32,6 +35,7 @@ namespace OpensimIM
 		static enum ChatType { Whisper = 0, Say = 1, Shout = 2, StartTyping = 4, StopTyping = 5, DebugChannel = 6, Region = 7, Owner = 8, Broadcast = 0xFF };
 		static enum ChatAudibleLevel { Not = -1, Barely = 0, Fully = 1 };
 		static enum ChatSourceType { System = 0, Agent = 1, Object = 2 };
+		static enum IMDialogTypes { DT_FromScript = 19, DT_FriendRequest = 38};
 
 	public:
 		Connection(Foundation::Framework* framework);
@@ -82,6 +86,10 @@ namespace OpensimIM
 
 		bool HandleNetworkStateEvent(Foundation::EventDataInterface* data);
 
+		//! Handle incoming improved instant messages
+		//! this includes instant messages and friend requests and friend requestt responses responses
+		bool HandleRexNetMsgImprovedInstantMessage(NetInMessage& msg);
+	
 	protected:
 		//! Add console commands: 
 		virtual void RegisterConsoleCommands();
@@ -104,8 +112,9 @@ namespace OpensimIM
 		QString reason_;
 		ChatSessionVector public_chat_sessions_;
 		ChatSessionVector im_chat_sessions_;
-		QString agent_uuid_; 
+		QString agent_uuid_; //! UUID of current user 
 		ContactVector contacts_;
+		FriendRequestVector friend_requests_;
 	public slots:
 		void OnWorldChatMessageReceived(const QString& text, const Communication::ChatSessionParticipantInterface& participant);
 	};

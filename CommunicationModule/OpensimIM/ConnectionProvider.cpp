@@ -13,11 +13,9 @@ namespace OpensimIM
 
 	ConnectionProvider::~ConnectionProvider()
 	{
+		CloseConnections();
 		for ( ConnectionVector::iterator i = connections_.begin(); i != connections_.end(); ++i)
 		{
-			if ( (*i)->GetState() == Communication::ConnectionInterface::STATE_READY )
-				(*i)->Close();
-
 			delete *i;
 			*i = NULL;
 		}
@@ -35,6 +33,7 @@ namespace OpensimIM
 	{
 		Connection* connection = new Connection(framework_);
 		connections_.push_back(connection);
+//		connect(connection, SIGNAL(FriendRequestReceived(const FriendRequestInterface& )), SLOT(OnFriendRequestReceived(const FriendRequestInterface& )) );
 		return connection;
 	}
 
@@ -98,9 +97,35 @@ namespace OpensimIM
 		return false;
 	}
 
-	bool ConnectionProvider::HandleNetworkStateEvent(Foundation::EventDataInterface* data)
+	void ConnectionProvider::CloseConnections()
 	{
+		for (ConnectionVector::iterator i = connections_.begin(); i != connections_.end(); ++i)
+		{
+			(*i)->Close();
+		}
+	}
+
+	bool ConnectionProvider::HandleNetworkStateEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+	{
+        if (event_id == OpenSimProtocol::Events::EVENT_SERVER_CONNECTED)
+		{
+			Communication::Credentials credentials(OPENSIM_IM_PROTOCOL, "", "", 0); 
+			Communication::ConnectionInterface* conn = OpenConnection(credentials);
+		}
+
+		if (event_id == OpenSimProtocol::Events::EVENT_SERVER_DISCONNECTED || event_id == OpenSimProtocol::Events::EVENT_CONNECTION_FAILED)
+		{
+			CloseConnections();
+		}
+
 		return false;
+	}
+
+	void ConnectionProvider::OnFriendRequestReceived(const Communication::FriendRequestInterface& request)
+	{
+		QString message = "Friend request from ";
+		message.append(request.GetOriginatorName());
+		LogInfo(message.toStdString());
 	}
 
 } // end of namespace: OpensimIM

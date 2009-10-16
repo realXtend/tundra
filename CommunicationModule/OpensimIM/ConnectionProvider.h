@@ -6,6 +6,9 @@
 #include "..\CommunicationService.h"
 #include "Connection.h"
 
+#define OPENSIM_IM_PROTOCOL "OpensimUDP"
+#define MODREX_IM_PROTOCOL "ModRex"
+
 namespace OpensimIM
 {
 	/**
@@ -37,7 +40,7 @@ namespace OpensimIM
 		virtual bool HandleNetworkEvent(Foundation::EventDataInterface* data);
 
 		//! Handle network event
-		virtual bool HandleNetworkStateEvent(Foundation::EventDataInterface* data);
+		virtual bool HandleNetworkStateEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
 	protected:
 		//! commands: "opensimim test"
@@ -46,6 +49,12 @@ namespace OpensimIM
 		//! Test IM connection vy creating connection, open text chat on public world chat and sent
 		//! a text message
 		virtual Console::CommandResult OnConsoleCommandTest(const Core::StringVector &params);
+
+		virtual void CloseConnections();
+
+		//! Make log entry about friend request
+		void OnFriendRequestReceived(const Communication::FriendRequestInterface& request);
+
 
 	private:
 		ConnectionVector connections_;

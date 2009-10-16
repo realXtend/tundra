@@ -1036,6 +1036,53 @@ void RexServerConnection::FinishMessageBuilding(NetOutMessage *msg)
     sp->FinishMessageBuilding(msg);
 }
 
+void RexServerConnection::SendAcceptFriendshipPacket(const RexTypes::RexUUID &transaction_id, const RexTypes::RexUUID &folder_id)
+{
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgAcceptFriendship);
+    assert(m);
+
+    m->AddUUID(myInfo_.agentID);
+    m->AddUUID(myInfo_.sessionID);
+    m->AddUUID(transaction_id);
+    m->AddUUID(folder_id);
+
+    FinishMessageBuilding(m);
+}
+
+void RexServerConnection::SendDeclineFriendshipPacket(const RexTypes::RexUUID &transaction_id)
+{
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgDeclineFriendship);
+    assert(m);
+
+    m->AddUUID(myInfo_.agentID);
+    m->AddUUID(myInfo_.sessionID);
+    m->AddUUID(transaction_id);
+
+    FinishMessageBuilding(m);
+}
+
+void RexServerConnection::SendFormFriendshipPacket(const RexTypes::RexUUID &dest_id)
+{
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgFormFriendship);
+    assert(m);
+
+    m->AddUUID(myInfo_.agentID);
+    m->AddUUID(dest_id);
+
+    FinishMessageBuilding(m);
+}
+
+void RexServerConnection::SendTerminateFriendshipPacket(const RexTypes::RexUUID &other_id)
+{
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgTerminateFriendship);
+    assert(m);
+
+    m->AddUUID(myInfo_.agentID);
+    m->AddUUID(other_id);
+
+    FinishMessageBuilding(m);
+}
+
 void RexServerConnection::SendGenericMessage(const std::string& method, const Core::StringVector& strings)
 {
     if (!connected_)
