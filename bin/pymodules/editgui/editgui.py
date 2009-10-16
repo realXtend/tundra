@@ -25,6 +25,8 @@ from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile
 from circuits import Component
 
+from conversions import *#for euler - quat -euler
+
 try:
     import ogre.renderer.OGRE as ogre
 except ImportError:
@@ -154,8 +156,14 @@ class EditGUI(Component):
         #print "pos index %i changed to: %f" % (i, v)
         ent = self.sel
         if ent is not None:
-            print "sel orientation:", ent.orientation
+            #print "sel orientation:", ent.orientation
             #from euler x,y,z to to quat
+            euler = list(quat_to_euler(ent.orientation))
+            euler[i] = v
+            ort = euler_to_quat(euler)
+            #print euler, ort
+            #print euler, ort
+            ent.orientation = ort
             
     def itemClicked(self): #XXX dirty hack to get single click for activating, should we use some qt stylesheet for this, or just listen to click?
         self.itemActivated(self) 
@@ -169,44 +177,45 @@ class EditGUI(Component):
             self.select(self.widgetList[text][0])
     
     def select(self, ent):
-        self.sel = ent
-
-        if not self.widgetList.has_key(self.sel.id):
-            tWid = QTreeWidgetItem(self.widget.treeWidget)
-            id = self.sel.id
-            tWid.setText(0, id)
+        if ent.id != 0:
+            self.sel = ent
             
-            self.widgetList[str(id)] = (ent, tWid)
-        
-        print "Selected entity:", self.sel.id, "at", self.sel.pos#, self.sel.name
-        
-        #update the gui vals to show what the newly selected entity has
-        x, y, z = ent.pos
-        self.widget.xpos.setValue(x)
-        self.widget.ypos.setValue(y)
-        self.widget.zpos.setValue(z)
-        
-        x, y, z = ent.scale
-        self.widget.scalex.setValue(x)
-        self.widget.scaley.setValue(y)
-        self.widget.scalez.setValue(z)
-        
-        #from quat to euler x.y,z
-        #self.widget.rot_x.setValue(x)
-        #self.widget.rot_y.setValue(y)
-        #self.widget.rot_z.setValue(z)
-        
-        #self.widget.scale.setValue(ent.scale)
-        
-        self.widget.label.text = ent.id
-        
-        if self.cam is None and ogreroot:
-            rs = root.getRenderSystem()
-            vp = rs._getViewport()
-            self.cam = vp.getCamera()
-            self.drawArrows(ent)
-        elif self.cam is not None and ogreroot: 
-            self.drawArrows(ent)
+            if not self.widgetList.has_key(self.sel.id):
+                tWid = QTreeWidgetItem(self.widget.treeWidget)
+                id = self.sel.id
+                tWid.setText(0, id)
+                
+                self.widgetList[str(id)] = (ent, tWid)
+
+            print "Selected entity:", self.sel.id, "at", self.sel.pos#, self.sel.name
+
+            #update the gui vals to show what the newly selected entity has
+            x, y, z = ent.pos
+            self.widget.xpos.setValue(x)
+            self.widget.ypos.setValue(y)
+            self.widget.zpos.setValue(z)
+            
+            x, y, z = ent.scale
+            self.widget.scalex.setValue(x)
+            self.widget.scaley.setValue(y)
+            self.widget.scalez.setValue(z)
+            
+            #from quat to euler x.y,z
+            euler = quat_to_euler(ent.orientation)
+            #print euler
+            self.widget.rot_x.setValue(euler[0])
+            self.widget.rot_y.setValue(euler[1])
+            self.widget.rot_z.setValue(euler[2])
+            
+            self.widget.label.text = ent.id
+            
+            if self.cam is None and ogreroot:
+                rs = root.getRenderSystem()
+                vp = rs._getViewport()
+                self.cam = vp.getCamera()
+                self.drawArrows(ent)
+            elif self.cam is not None and ogreroot: 
+                self.drawArrows(ent)
     
     def drawArrows(self, ent):
         #~ right = self.cam.getRight().normalisedCopy()
