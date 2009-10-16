@@ -69,11 +69,21 @@ namespace RexLogic
     
     void AvatarEditor::LoadAvatar()
     {
-        const std::string filter = "Avatar description files (*.xml);;Avatar mesh files (*.mesh)";
+        const std::string filter = "Avatar description file (*.xml);;Avatar mesh (*.mesh)";
         std::string filename = Foundation::QtUtils::GetOpenFileName(filter, "Choose avatar file", Foundation::QtUtils::GetCurrentPath());        
 
         if (!filename.empty())
-            rexlogicmodule_->GetAvatarHandler()->LoadUserAvatarFromFile(filename);                        
+        {
+            AvatarPtr avatar_handler = rexlogicmodule_->GetAvatarHandler();
+        
+            Scene::EntityPtr entity = avatar_handler->GetUserAvatar();
+            if (!entity)
+            {
+                RexLogicModule::LogError("User avatar not in scene, cannot load appearance");
+                return;
+            }                  
+            avatar_handler->GetAppearanceHandler().LoadAppearance(entity, filename);                           
+        }
     }
     
     void AvatarEditor::RevertAvatar()
@@ -148,32 +158,39 @@ namespace RexLogic
             return;
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());    
        
-        int width = 275;
+        int width = 270;
         int itemheight = 20;
         
         // Materials
         const AvatarMaterialVector& materials = appearance.GetMaterials();                
         mat_panel->resize(width, itemheight * materials.size());
         
-        for (int y = 0; y < materials.size(); ++y)
+        for (Core::uint y = 0; y < materials.size(); ++y)
         {            
             QPushButton* button = new QPushButton("Change", mat_panel);
+            button->setObjectName(QString::fromStdString(Core::ToString<int>(y))); // Material index
             button->resize(50, 20);
             button->move(width - 50, y*itemheight);  
             button->show();          
             
-            QLabel* label = new QLabel(QString::fromStdString(materials[y].asset_.name_), mat_panel);
+            QObject::connect(button, SIGNAL(clicked()), this, SLOT(ChangeTexture()));
+            // If there's a texture name, use it, because it is probably more understandable than material name
+            std::string texname = materials[y].asset_.name_;
+            if (materials[y].textures_.size())
+                texname = materials[y].textures_[0].name_;
+                            
+            QLabel* label = new QLabel(QString::fromStdString(texname), mat_panel);
             label->resize(200,20);
             label->move(0, y*itemheight);
             label->show();
         }        
         
         // Modifiers
-        int y = 0;
+        Core::uint y = 0;
         const MorphModifierVector& modifiers = appearance.GetMorphModifiers();
         morph_panel->resize(width, itemheight * modifiers.size());
 
-        for (int i = 0; i < modifiers.size(); ++i)
+        for (Core::uint i = 0; i < modifiers.size(); ++i)
         {
             QScrollBar* slider = new QScrollBar(Qt::Horizontal, morph_panel);
             slider->setObjectName(QString::fromStdString(modifiers[i].name_));
@@ -182,7 +199,7 @@ namespace RexLogic
             slider->setPageStep(10);
             slider->setValue(modifiers[i].value_ * 100.0f);
             slider->resize(150, 20);
-            slider->move(width - 160, y*itemheight);  
+            slider->move(width - 150, y*itemheight);  
             slider->show();          
             
             QObject::connect(slider, SIGNAL(sliderMoved(int)), this, SLOT(MorphValueChanged(int)));
@@ -236,4 +253,26 @@ namespace RexLogic
         }                        
     }
     
+    void AvatarEditor::ChangeTexture()
+    {
+        QPushButton* button = qobject_cast<QPushButton*>(sender());
+        if (!button)
+            return;
+        
+        std::string index_str = button->objectName().toStdString();
+        Core::uint index = Core::ParseString<Core::uint>(index_str);
+        std::cout << "Texture index " << index << " change" << std::endl;    
+        
+        const std::string filter = "Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png);;Ogre material (*.material)";
+        std::string filename = Foundation::QtUtils::GetOpenFileName(filter, "Choose texture or material", Foundation::QtUtils::GetCurrentPath());          
+        if (!filename.empty())
+        {
+            Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
+            if (!entity)
+                return;
+                
+            rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().ChangeAvatarMaterial(entity, index, filename);
+            RebuildEditView();
+        }        
+    }
 }

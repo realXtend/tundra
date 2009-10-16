@@ -78,6 +78,9 @@ namespace RexLogic
         //! Exports avatar to an authentication/avatar storage server account
         void ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password);
         
+        //! Changes a material on an avatar. Filename can either be image or material.
+        bool ChangeAvatarMaterial(Scene::EntityPtr entity, Core::uint index, const std::string& filename);
+        
     private:
         //! Sets up an avatar mesh
         void SetupMeshAndMaterials(Scene::EntityPtr entity);
@@ -147,6 +150,11 @@ namespace RexLogic
         
         //! Gets initial derived transform of a bone. This is something Ogre can't give us automatically
         void GetInitialDerivedBonePosition(Ogre::Node* bone, Ogre::Vector3& position);
+        
+        //! Adds a directory as a temporary Ogre resource directory, group name "Avatar"
+        /*! Each time this is called, the previously set temp directory will be removed from the resource system.
+         */
+        void AddTempResourceDirectory(const std::string& dirname);
         
         //! Default avatar appearance xml document
         boost::shared_ptr<QDomDocument> default_appearance_;
