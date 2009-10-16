@@ -22,7 +22,7 @@ def euler_to_quat(euler):
     y =s1*c2*c3 + c1*s2*s3
     z =c1*s2*c3 - s1*c2*s3
     
-    return (w, x, y, z)
+    return (x, y, z, w)
 
 def quat_to_euler(quat):
     q1 = Quat(quat)
@@ -60,10 +60,10 @@ def convert_to_degrees(yaw, pitch, roll):
     
 class Quat:
     def __init__(self, quat):
-        self.x = quat[1]
-        self.y = quat[2]
-        self.z = quat[3]
-        self.w = quat[0]
+        self.x = quat[0]
+        self.y = quat[1]
+        self.z = quat[2]
+        self.w = quat[3]
         
 if __name__ == '__main__': 
     x = 0 #yaw / heading
