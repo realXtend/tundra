@@ -9,7 +9,7 @@
 #include "HttpRequest.h"
 #include "LLSDUtilities.h"
 #include "RexUUID.h"
-//#include "InventoryModel.h"
+#include "InventoryEvents.h"
 
 #include "openjpeg.h"
 #include "curl/curl.h"
@@ -190,7 +190,8 @@ bool J2kEncode(QImage q_image, char *outbuf, size_t *size, bool reversible)
 namespace RexLogic
 {
 
-AssetUploader::AssetUploader() : uploadCapability_("")
+AssetUploader::AssetUploader(Foundation::Framework* framework) :
+    framework_(framework), uploadCapability_("")
 {
 }
 
@@ -321,6 +322,22 @@ void AssetUploader::UploadFile(
     {
         RexLogicModule::LogError("Invalid XML response data for uploading an asset.");
         return;
+    }
+
+    // Send event, if applicable.
+    Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
+    Core::event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
+    if (event_category != 0)
+    {
+        Inventory::InventoryItemEventData asset_data(Inventory::IIT_Asset);
+        asset_data.id = RexTypes::RexUUID(inventory_id);
+        asset_data.parentId = folder_id;
+        asset_data.assetId = RexTypes::RexUUID(asset_id);
+        asset_data.assetType = asset_type;
+        asset_data.inventoryType = RexTypes::GetInventoryTypeFromAssetType(asset_type);
+        asset_data.name = name;
+        asset_data.description = description;
+        event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &asset_data);
     }
 
     RexLogicModule::LogInfo("Upload succesfull. Asset id: " + asset_id + ", inventory id: " + inventory_id + ".");
@@ -476,14 +493,21 @@ void AssetUploader::UploadFiles(Core::StringList filenames, OpenSimProtocol::Inv
         RexLogicModule::LogInfo("Upload succesfull. Asset id: " + asset_id + ", inventory id: " + inventory_id + ".");
         ++asset_count;
 
-        // Create the asset to inventory.
-        /*
-        OpenSimProtocol::InventoryFolder *folder = inventory->GetChildFolderByID(folder_id);
-        OpenSimProtocol::InventoryAsset *asset = inventory->GetOrCreateNewAsset(
-            RexTypes::RexUUID(inventory_id),RexTypes::RexUUID(asset_id), *folder);
-        asset->SetName(name);
-        asset->SetDescription(description);
-        */
+        // Send event, if applicable.
+        Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
+        Core::event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
+        if (event_category != 0)
+        {
+            Inventory::InventoryItemEventData asset_data(Inventory::IIT_Asset);
+            asset_data.id = RexTypes::RexUUID(inventory_id);
+            asset_data.parentId = folder_id;
+            asset_data.assetId = RexTypes::RexUUID(asset_id);
+            asset_data.assetType = asset_type;
+            asset_data.inventoryType = RexTypes::GetInventoryTypeFromAssetType(asset_type);
+            asset_data.name = name;
+            asset_data.description = description;
+            event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &asset_data);
+        }
     }
 
     RexLogicModule::LogInfo("Multiupload:" + Core::ToString(asset_count) + " assets succesfully uploaded.");

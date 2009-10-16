@@ -163,33 +163,6 @@ void OpenSimInventoryDataModel::SetupModelData(OpenSimProtocol::InventorySkeleto
     }
 
     CreateNewFolderFromFolderSkeleton(0, root_skel);
-
-    CreateRexInventoryFolders();
-}
-
-void OpenSimInventoryDataModel::CreateRexInventoryFolders()
-{
-    using namespace RexTypes;
-
-    const char *asset_types[] = { "Texture", "Mesh", "Skeleton", "MaterialScript", "ParticleScript", "FlashAnimation" };
-    asset_type_t asset_type;
-    for(int i = 0; i < NUMELEMS(asset_types); ++i)
-    {
-        asset_type = GetAssetTypeFromTypeName(asset_types[i]);
-        std::string cat_name = GetCategoryNameForAssetType(asset_type);
-        RexUUID folder_id;
-
-        // Check out if this inventory category exists.
-        InventoryFolder *folder = rootFolder_->GetFirstChildFolderByName(cat_name.c_str());
-        if (!folder)
-        {
-            // I doesn't. Create new inventory folder.
-            AbstractInventoryItem *parentFolder = GetMyInventoryFolder();
-            folder_id.Random();
-            AbstractInventoryItem *newFolder = GetOrCreateNewFolder(STD_TO_QSTRING(folder_id.ToString()), *parentFolder,
-                QString(cat_name.c_str()));
-        }
-    }
 }
 
 } // namespace Inventory

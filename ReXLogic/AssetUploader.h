@@ -9,6 +9,11 @@
 #include "RexCommon.h"
 #include "RexUUID.h"
 
+namespace Foundation
+{
+    class Framework;
+}
+
 namespace OpenSimProtocol
 {
     class InventorySkeleton;
@@ -20,7 +25,7 @@ namespace RexLogic
     {
     public:
         /// Default constructor.
-        AssetUploader();
+        AssetUploader(Foundation::Framework* framework);
 
         /// Destructor.
         virtual ~AssetUploader();
@@ -57,6 +62,9 @@ namespace RexLogic
         std::string CreateNameFromFilename(std::string filename);
 
     private:
+        /// Framework pointer. Needed for EventManager.
+        Foundation::Framework* framework_;
+
         /// Creates NewFileAgentInventory XML message.
         std::string CreateNewFileAgentInventoryXML(
             const std::string &asset_type,
