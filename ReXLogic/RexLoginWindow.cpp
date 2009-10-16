@@ -6,7 +6,6 @@
 #include "RexServerConnection.h"
 #include "QtModule.h"
 #include "UICanvas.h"
-#include "InventoryWindow.h"
 
 #include <QFile>
 #include <QPushButton>
