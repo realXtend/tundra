@@ -4,6 +4,7 @@
 #include "StableHeaders.h"
 #include "interface.h"
 #include "Foundation.h"
+#include "ModuleInterface.h" // for logger
 #include <QMap>
 #include <QStringList>
 
@@ -28,7 +29,10 @@ namespace Communication
 	 */
 	class CommunicationService : public CommunicationServiceInterface
 	{
-
+		Q_OBJECT
+		MODULE_LOGGING_FUNCTIONS
+		//! returns name of this module. Needed for logging.
+		static const std::string NameStatic() { return "Communication"; } // for logging functionality
 	public:
 		CommunicationService(Foundation::Framework* framework);
 		~CommunicationService(void);
@@ -58,6 +62,8 @@ namespace Communication
 		virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
 	protected:
+		virtual void CommunicationService::OnNewConnection(Communication::ConnectionInterface*);
+
 		static CommunicationService* instance_;
 		ConnectionVector connections_;
 		ConnectionProviderVector connection_providers_;
@@ -67,6 +73,9 @@ namespace Communication
 		//! category id for incoming messages
 		Core::event_category_id_t event_category_opensimnetworkin_;
         Core::event_category_id_t event_category_networkstate_;
+	protected slots:
+		void OnFriendRequestReceived(const Communication::FriendRequestInterface& request);
+
 	};
 } // end of namespace: Communication
 

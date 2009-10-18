@@ -22,7 +22,7 @@ namespace Communication
 	{
 		// current way
 		communication_manager_ = TpQt4Communication::CommunicationManager::GetInstance();
-		console_ui_ = new CommunicationUI::ConsoleUI(framework_);
+//		console_ui_ = new CommunicationUI::ConsoleUI(framework_);
 		qt_ui_ = new CommunicationUI::QtGUI(framework_);
 
 		// new way

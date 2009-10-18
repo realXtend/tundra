@@ -35,6 +35,7 @@ namespace Communication
 	void CommunicationService::RegisterConnectionProvider( ConnectionProviderInterface* const provider )
 	{
 		connection_providers_.push_back(provider);
+		connect( (QObject*)provider, SLOT( ConnectionOpened(Communication::ConnectionInterface*) ), SIGNAL( OnNewConnection(Communication::ConnectionInterface*) ) );
 	}
 
 	QStringList CommunicationService::GetSupportedProtocols() const
@@ -96,6 +97,18 @@ namespace Communication
 			}
 			return false;
 		}
+	}
+
+	void CommunicationService::OnNewConnection(Communication::ConnectionInterface* connection)
+	{
+		connect(connection, SIGNAL( FriendRequestReceived(const Communication::FriendRequestInterface&) ), SLOT(OnFriendRequestReceived(const Communication::FriendRequestInterface&); )); 
+	}
+
+	void CommunicationService::OnFriendRequestReceived(const Communication::FriendRequestInterface& request)
+	{
+		QString message = "Friend request from ";
+		message.append( request.GetOriginatorName() );
+		LogInfo(message.toStdString());
 	}
 
 } // end of namespace: Communication

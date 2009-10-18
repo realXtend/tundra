@@ -33,7 +33,13 @@ namespace OpensimIM
 	{
 		Connection* connection = new Connection(framework_);
 		connections_.push_back(connection);
-//		connect(connection, SIGNAL(FriendRequestReceived(const FriendRequestInterface& )), SLOT(OnFriendRequestReceived(const FriendRequestInterface& )) );
+		connect(connection, SIGNAL( ConnectionReady(const Communication::ConnectionInterface&) ), SLOT( OnConnectionReady(const Communication::ConnectionInterface&) ));
+		connect(connection, SIGNAL( FriendRequestReceived(const FriendRequestInterface&) ), SLOT( OnFriendRequestReceived(const FriendRequestInterface&) ));
+		if ( connection->GetState() == Communication::ConnectionInterface::STATE_READY )
+		{
+			OnConnectionReady(*connection);
+		}
+
 		return connection;
 	}
 
@@ -119,6 +125,11 @@ namespace OpensimIM
 		}
 
 		return false;
+	}
+
+	void ConnectionProvider::OnConnectionReady(Communication::ConnectionInterface& connection)
+	{
+		emit( ConnectionOpened(connection) );
 	}
 
 	void ConnectionProvider::OnFriendRequestReceived(const Communication::FriendRequestInterface& request)

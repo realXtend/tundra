@@ -271,10 +271,10 @@ namespace Communication
 	signals:
 		//! When connection become state where communication sessions can 
 		//! be opened and contact list is fethed from server.
-		void ConnectionReady(const ConnectionInterface& connection);
+		void ConnectionReady(ConnectionInterface& connection);
 
 		//! When connection is closed by user or server
-		void ConnectionClosed(const ConnectionInterface& connection);
+		void ConnectionClosed(ConnectionInterface& connection);
 
 		//! When a new contact is added to contact list
 		//! Basically this happens when someone accept friend request
@@ -306,8 +306,9 @@ namespace Communication
 	 * 
 	 * This class is only used by ConnectionModule and ConnectionService objects.
 	 */
-	class ConnectionProviderInterface
+	class ConnectionProviderInterface : public QObject
 	{
+		Q_OBJECT
 	public:
 		virtual ~ConnectionProviderInterface() {};
 
@@ -319,6 +320,9 @@ namespace Communication
 
 		//! Provides all Connections objects created with this provider
 		virtual ConnectionVector GetConnections() const = 0;
+	signals:
+		void ConnectionOpened(ConnectionInterface& connection);
+		void ConnectionClosed(ConnectionInterface& connection);
 	};
 	typedef std::vector<ConnectionProviderInterface*> ConnectionProviderVector;
 
