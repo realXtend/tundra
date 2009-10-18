@@ -17,9 +17,10 @@ namespace OpensimIM
 	 */
 	class ConnectionProvider : public  Communication::ConnectionProviderInterface, public Communication::NetworkEventHandlerInterface
 	{
+		Q_OBJECT
 		MODULE_LOGGING_FUNCTIONS
 		static const std::string NameStatic() { return "Communication(OpensimIM)"; } // for logging functionality
-
+		
 	public:
 		//! \param framework Framework object 
 		ConnectionProvider(Foundation::Framework* framework);
@@ -52,13 +53,14 @@ namespace OpensimIM
 
 		virtual void CloseConnections();
 
-		//! Make log entry about friend request
-		void OnFriendRequestReceived(const Communication::FriendRequestInterface& request);
-
-
 	private:
 		ConnectionVector connections_;
 		Foundation::Framework* framework_;
+
+	protected slots:
+		//! Make log entry about friend request
+		void OnFriendRequestReceived(const Communication::FriendRequestInterface& request);
+		void OnConnectionReady(Communication::ConnectionInterface& connection);
 	};
 
 } // end of namespace: OpensimIM

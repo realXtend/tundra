@@ -262,6 +262,12 @@ namespace RexLogic
 		 */
 		void SendTerminateFriendshipPacket(const RexTypes::RexUUID &other_id);
 
+		/**
+		 *
+		 *
+		 */
+		void RexServerConnection::SendImprovedInstantMessagePacket(const RexTypes::RexUUID &target, const std::string &text);
+
         //! Sends a generic message
         /*! \param method Method name
             \param strings Vector of data strings to be sent

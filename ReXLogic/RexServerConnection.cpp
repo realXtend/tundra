@@ -345,6 +345,37 @@ void RexServerConnection::SendChatFromViewerPacket(const std::string &text)
     FinishMessageBuilding(m);
 }
 
+void RexServerConnection::SendImprovedInstantMessagePacket(const RexTypes::RexUUID &target, const std::string &text)
+{
+    if(!connected_)
+        return;
+
+	NetOutMessage *m = StartMessageBuilding(RexNetMsgImprovedInstantMessage);
+    assert(m);
+
+	unsigned int parent_estate_id = 0; //! @todo Find out proper value
+	unsigned int time_stamp = 0; 
+	std::string from_name = username_; //! @todo Find out proper value
+	
+
+    m->AddUUID(myInfo_.agentID);
+    m->AddUUID(myInfo_.sessionID);
+	m->AddBool(false); // from group
+	m->AddUUID(target);
+	m->AddU32(parent_estate_id);
+	m->AddUUID(myInfo_.regionID); //! @todo Find out proper value
+	m->AddVector3(RexTypes::Vector3());//! @todo Find out proper value
+	m->AddU8(0);//! @todo Find out proper value
+	m->AddU8(0); // dialog type
+	m->AddUUID(RexTypes::RexUUID());
+	m->AddU32(time_stamp); // TODO: Timestamp
+	m->AddBuffer( strlen(from_name.c_str()), (uint8_t*)(from_name.c_str()) );
+	m->AddBuffer( strlen(text.c_str()), (uint8_t*)(text.c_str()) );
+	m->AddBuffer(0, NULL); // BinaryBucket
+
+    FinishMessageBuilding(m);
+}
+
 void RexServerConnection::SendObjectAddPacket(const RexTypes::Vector3 &ray_start, const RexTypes::Vector3 &ray_end)
 {
     if(!connected_)

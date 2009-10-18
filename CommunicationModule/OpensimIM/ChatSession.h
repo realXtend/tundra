@@ -17,7 +17,8 @@ namespace OpensimIM
 	class ChatSession : public Communication::ChatSessionInterface
 	{
 	public:
-		ChatSession(Foundation::Framework* framework, const QString channel_id);
+		ChatSession(Foundation::Framework* framework, const QString &channel_id);
+		ChatSession(Foundation::Framework* framework);
 
 		//! \todo support to other range options
 		virtual void SendMessage(const QString &text);
@@ -40,10 +41,19 @@ namespace OpensimIM
 
 		//! Provides ID of chat session
 		virtual QString GetID() const;
+
+		//! Return true if this chat session is private IM chat
+		//! Return false if this is global chat
+		virtual bool IsPrivateIMSession();
 	protected:
+
+		void SendPrivateIMMessage(const QString &text);
+		void SendPublicChatMessage(const QString &text);
+
 		QString channel_id_;
 		ChatSessionParticipant server_participant_;
 		ChatSessionParticipant* FindParticipant(const QString &uuid);
+		bool private_im_session_;
 
 	private:
 		Foundation::Framework* framework_;

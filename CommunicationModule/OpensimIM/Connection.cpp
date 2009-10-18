@@ -13,6 +13,11 @@ namespace OpensimIM
 		RequestFriendlist();
 		RegisterConsoleCommands();
 		OpenWorldChatSession();
+
+		// OpensimIM connection is automatically established when connected to world so 
+		// initial state is READY
+		state_ = STATE_READY;
+		//emit( ConnectionReady(*this) );
 	}
 
 	Connection::~Connection()
@@ -37,13 +42,13 @@ namespace OpensimIM
 			*i = NULL;
 		}
 		contacts_.clear();
+		state_ = STATE_CLOSED;
 	}
 	
 	QString Connection::GetName() const
 	{
 		return name_;
 	}
-
 	
 	QString Connection::GetProtocol() const
 	{
@@ -199,11 +204,19 @@ namespace OpensimIM
 			switch (dialog_type)
 			{
 			case DT_FriendRequest:
-				QString calling_card_folder = ""; //! @todo get the right value
-				QString transaction_id = ""; //! @todo get the right value
-				FriendRequest* request = new FriendRequest(framework_, agent_id.ToString().c_str(), from_agent_name.c_str(), transaction_id, calling_card_folder);
-				friend_requests_.push_back(request);
-				emit FriendRequestReceived(*request);
+				{
+					QString calling_card_folder = ""; //! @todo get the right value
+					QString transaction_id = ""; //! @todo get the right value
+					FriendRequest* request = new FriendRequest(framework_, agent_id.ToString().c_str(), from_agent_name.c_str(), transaction_id, calling_card_folder);
+					friend_requests_.push_back(request);
+					emit FriendRequestReceived(*request);
+				}
+				break;
+			case DT_InstantMessage:
+				{
+					QString from_id = agent_id.ToString().c_str();
+					OnIMMessage( from_id, QString(from_agent_name.c_str()), QString( message.c_str() ) );
+				}
 				break;
 			}
 		}
@@ -278,6 +291,25 @@ namespace OpensimIM
 		message.append(" : ");
 		message.append( text );
 		LogDebug( message.toStdString() );
+	}
+
+	void Connection::OnIMMessage(const QString &from_id, const QString &from_name, const QString &text)
+	{
+		for (ChatSessionVector::iterator i = im_chat_sessions_.begin(); i != im_chat_sessions_.end(); ++i)
+		{
+			Communication::ChatSessionParticipantVector participants = (*i)->GetParticipants();
+			assert( participants.size() == 1); // Opensim IM chat sessions are always between two user
+			Communication::ChatSessionParticipantInterface* participant = participants[0];
+			if ( participant->GetID().compare(from_id) == 0 )
+			{
+				(*i)->MessageFromAgent(from_id, from_name, text);
+				return;
+			}
+		}
+		// This IM message was first from this user
+		ChatSession* session = new ChatSession(framework_);
+		im_chat_sessions_.push_back(session);
+		session->MessageFromAgent(from_id, from_name, text);
 	}
 
 } // end of namespace: OpensimIM
