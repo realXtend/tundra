@@ -50,7 +50,7 @@ namespace Inventory
         /// @param position 
         /// @param count 
         /// @return True if removing is succesfull, false otherwise.
-        /// @note It's not recommended to use this directly. This function is used by InventoryViewModel::removeRows().
+        /// @note It's not recommended to use this directly. This function is used by InventoryItemModel::removeRows().
         bool RemoveChildren(int position, int count);
 
         /// Deletes child.

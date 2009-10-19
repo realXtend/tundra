@@ -69,6 +69,9 @@ namespace Inventory
         /// AbstractInventoryDataModel override.
         void NotifyServerAboutItemRemoval(AbstractInventoryItem *item);
 
+        /// AbstractInventoryDataModel override.
+        void NotifyServerAboutItemUpdate(AbstractInventoryItem *item);
+
         /// @return Inventory root folder.
         AbstractInventoryItem *GetRoot() const { return rootFolder_; }
 

@@ -3,7 +3,7 @@
 /**
  *  @file   AbstractInventoryDataModel.h
  *  @brief  Abstract inventory data model, pure virtual class. Inherit this class to create your own inventory
- *          data models to use in InventoryViewModel.
+ *          data models to use in InventoryItemModel.
  */
 
 #ifndef incl_InventoryModule_AbstractInventoryDataModel_h
@@ -56,8 +56,13 @@ namespace Inventory
         /// @param folder Folder.
         virtual void FetchInventoryDescendents(AbstractInventoryItem *folder) = 0;
 
-        /// @return Pointer to the existing or just created asset.
+        /// Notifies server about item removal.
+        /// @item Inventory item.
         virtual void NotifyServerAboutItemRemoval(AbstractInventoryItem *item) = 0;
+
+        /// Notifies server about item update (e.g. name changed).
+        /// @item Inventory item.
+        virtual void NotifyServerAboutItemUpdate(AbstractInventoryItem *item) = 0;
 
         /// @return Inventory root folder.
         virtual AbstractInventoryItem *GetRoot() const = 0;
