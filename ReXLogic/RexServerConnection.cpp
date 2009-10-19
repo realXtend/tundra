@@ -1038,6 +1038,7 @@ void RexServerConnection::SendAcceptFriendshipPacket(const RexTypes::RexUUID &tr
     m->AddUUID(myInfo_.agentID);
     m->AddUUID(myInfo_.sessionID);
     m->AddUUID(transaction_id);
+	m->SetVariableBlockCount(1);
     m->AddUUID(folder_id);
 
     FinishMessageBuilding(m);
