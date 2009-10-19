@@ -203,16 +203,15 @@ namespace OpensimIM
 
 			switch (dialog_type)
 			{
-			case DT_FriendRequest:
+			case DT_FriendshipOffered:
 				{
 					QString calling_card_folder = ""; //! @todo get the right value
-					QString transaction_id = ""; //! @todo get the right value
-					FriendRequest* request = new FriendRequest(framework_, agent_id.ToString().c_str(), from_agent_name.c_str(), transaction_id, calling_card_folder);
+					FriendRequest* request = new FriendRequest(framework_, agent_id.ToString().c_str(), from_agent_name.c_str(), calling_card_folder);
 					friend_requests_.push_back(request);
 					emit( FriendRequestReceived(*request) );
 				}
 				break;
-			case DT_InstantMessage:
+			case DT_MessageFromAgent:
 				{
 					QString from_id = agent_id.ToString().c_str();
 					OnIMMessage( from_id, QString(from_agent_name.c_str()), QString( message.c_str() ) );

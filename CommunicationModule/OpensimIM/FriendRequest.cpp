@@ -3,7 +3,7 @@
 
 namespace OpensimIM
 {
-	FriendRequest::FriendRequest(Foundation::Framework* framework, const QString &id, const QString &name, const QString &transaction_id, const QString &calling_card_folder_id): framework_(framework), id_(id), name_(name), transaction_id_(transaction_id), calling_card_folder_id_(calling_card_folder_id), state_(STATE_PENDING)
+	FriendRequest::FriendRequest(Foundation::Framework* framework, const QString &id, const QString &name, const QString &calling_card_folder_id): framework_(framework), friend_id_(id), name_(name), calling_card_folder_id_(calling_card_folder_id), state_(STATE_PENDING)
 	{
 	}
 
@@ -14,7 +14,7 @@ namespace OpensimIM
 
 	QString FriendRequest::GetOriginatorID() const
 	{
-		return id_;
+		return friend_id_;
 	}
 
 	Communication::FriendRequestInterface::State FriendRequest::GetState() const
@@ -36,7 +36,7 @@ namespace OpensimIM
 		if ( !connection->IsConnected() )
 			throw Core::Exception("Cannot accept Opensim friend request, rex server connection is not established");
 
-		connection->SendAcceptFriendshipPacket(RexTypes::RexUUID( transaction_id_.toStdString() ), RexTypes::RexUUID( calling_card_folder_id_.toStdString() ));
+		connection->SendAcceptFriendshipPacket(RexTypes::RexUUID( friend_id_.toStdString() ), RexTypes::RexUUID( calling_card_folder_id_.toStdString() ));
 
 		//! @todo Update contact list
 
@@ -58,7 +58,7 @@ namespace OpensimIM
 		if ( !connection->IsConnected() )
 			throw Core::Exception("Cannot reject Opensim friend request, rex server connection is not established");
 
-		connection->SendDeclineFriendshipPacket(RexTypes::RexUUID( transaction_id_.toStdString() ) );
+		connection->SendDeclineFriendshipPacket(RexTypes::RexUUID( friend_id_.toStdString() ) );
 		state_ = STATE_REJECTED;
 		emit FriendRequestRejected(this);
 	}
