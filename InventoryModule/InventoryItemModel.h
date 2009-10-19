@@ -1,12 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /**
- *  @file InventoryViewModel.h
+ *  @file InventoryItemModel.h
  *  @brief Common view for inventory different inventory data models.
  */
 
-#ifndef incl_InventoryModule_InventoryViewModel_h
-#define incl_InventoryModule_InventoryViewModel_h
+#ifndef incl_InventoryModule_InventoryItemModel_h
+#define incl_InventoryModule_InventoryItemModel_h
 
 #include "InventoryFolder.h"
 #include "InventoryAsset.h"
@@ -20,20 +20,23 @@ namespace Inventory
 {
     class AbstractInventoryDataModel;
 
-    class InventoryViewModel : public QAbstractItemModel
+    class InventoryItemModel : public QAbstractItemModel
     {
         Q_OBJECT
 
     public:
         /// Constructor.
         /// @param dataModel Inventory data model pointer.
-        InventoryViewModel(AbstractInventoryDataModel *dataModel);
+        InventoryItemModel(AbstractInventoryDataModel *dataModel);
 
         /// Destructor.
-        virtual ~InventoryViewModel();
+        virtual ~InventoryItemModel();
 
         /// QAbstractItemModel override.
         QVariant data(const QModelIndex &index, int role) const;
+
+        /// QAbstractItemModel override.
+        bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
         /// QAbstractItemModel override.
         Qt::ItemFlags flags(const QModelIndex &index) const;
@@ -67,9 +70,6 @@ namespace Inventory
 
         /// QAbstractItemModel override.
         int columnCount(const QModelIndex &parent = QModelIndex()) const;
-
-        /// QAbstractItemModel override.
-        bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
         /// @return Pointer to inventory data model.
         AbstractInventoryDataModel *GetInventory(){ return dataModel_; }

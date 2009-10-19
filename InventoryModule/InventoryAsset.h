@@ -9,9 +9,12 @@
 #define incl_InventoryModule_InventoryAsset_h
 
 #include "AbstractInventoryItem.h"
+#include "RexTypes.h"
 
 namespace Inventory
 {
+    using namespace RexTypes;
+
     class InventoryFolder;
 
     class InventoryAsset : public AbstractInventoryItem
@@ -19,6 +22,8 @@ namespace Inventory
         Q_OBJECT
         Q_PROPERTY(QString assetReference_ READ GetAssetReference WRITE SetAssetReference)
         Q_PROPERTY(QString description_ READ GetDescription WRITE SetDescription)
+        Q_PROPERTY(asset_type_t assetType_ READ GetAssetType WRITE SetAssetType)
+        Q_PROPERTY(inventory_type_t inventoryType_ READ GetInventoryType WRITE SetInventoryType)
 
     public:
         /// Constructor.
@@ -48,6 +53,14 @@ namespace Inventory
         void SetDescription(const QString &description) { description_ = description; }
         QString GetDescription() const { return description_;}
 
+        /// Get/set for the description.
+        void SetAssetType(const asset_type_t &asset_type) { assetType_ = asset_type; }
+        asset_type_t GetAssetType() const { return assetType_;}
+
+        /// Get/set for the description.
+        void SetInventoryType(const inventory_type_t &inventory_type) { inventoryType_ = inventory_type; }
+        inventory_type_t GetInventoryType() const { return inventoryType_;}
+
     private:
         Q_DISABLE_COPY(InventoryAsset);
 
@@ -56,6 +69,12 @@ namespace Inventory
 
         /// Description of this inventory asset.
         QString description_;
+
+        /// Asset type.
+        asset_type_t assetType_;
+
+        /// Inventory type.
+        inventory_type_t inventoryType_;
     };
 }
 

@@ -25,6 +25,7 @@ InventoryFolder::InventoryFolder(
     const bool &editable,
     InventoryFolder *parent) :
     AbstractInventoryItem(Type_Folder, id, name, parent),
+    editable_(editable),
     dirty_(false)
 {
 }

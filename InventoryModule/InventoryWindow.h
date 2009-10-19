@@ -33,7 +33,7 @@ namespace RexLogic
 namespace Inventory
 {
     class InventoryItemEventData;
-    class InventoryViewModel;
+    class InventoryItemModel;
 
     class InventoryWindow : public QObject
     {
@@ -88,8 +88,8 @@ namespace Inventory
         /// Deletes item (folder/asset).
         void DeleteItem();
 
-        /// Informs the server about change in name of folder or asset.
-        void ItemNameChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+        /// Deletes item (folder/asset).
+        void RenameItem();
 
     private:
         Q_DISABLE_COPY(InventoryWindow);
@@ -106,9 +106,6 @@ namespace Inventory
         /// QtModule pointer.
         boost::shared_ptr<QtUI::QtModule> qtModule_;
 
-        /// Inventory (model) pointer.
-//        boost::shared_ptr<OpenSimProtocol::InventoryModel> inventory_;
-
         /// Inventory window widget.
         QWidget *inventoryWidget_;
 
@@ -116,7 +113,7 @@ namespace Inventory
         boost::shared_ptr<QtUI::UICanvas> canvas_;
 
         /// Inventory view model.
-        InventoryViewModel *viewModel_;
+        InventoryItemModel *inventoryItemModel_;
 
         // QWidgets
         QTreeView *treeView_;

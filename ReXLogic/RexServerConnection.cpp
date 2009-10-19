@@ -350,28 +350,27 @@ void RexServerConnection::SendImprovedInstantMessagePacket(const RexTypes::RexUU
     if(!connected_)
         return;
 
-	NetOutMessage *m = StartMessageBuilding(RexNetMsgImprovedInstantMessage);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgImprovedInstantMessage);
     assert(m);
 
-	unsigned int parent_estate_id = 0; //! @todo Find out proper value
-	unsigned int time_stamp = 0; 
-	std::string from_name = username_; //! @todo Find out proper value
-	
+    unsigned int parent_estate_id = 0; //! @todo Find out proper value
+    unsigned int time_stamp = 0; 
+    std::string from_name = username_; //! @todo Find out proper value
 
     m->AddUUID(myInfo_.agentID);
     m->AddUUID(myInfo_.sessionID);
-	m->AddBool(false); // from group
-	m->AddUUID(target);
-	m->AddU32(parent_estate_id);
-	m->AddUUID(myInfo_.regionID); //! @todo Find out proper value
-	m->AddVector3(RexTypes::Vector3());//! @todo Find out proper value
-	m->AddU8(0);//! @todo Find out proper value
-	m->AddU8(0); // dialog type
-	m->AddUUID(RexTypes::RexUUID());
-	m->AddU32(time_stamp); // TODO: Timestamp
-	m->AddBuffer( strlen(from_name.c_str()), (uint8_t*)(from_name.c_str()) );
-	m->AddBuffer( strlen(text.c_str()), (uint8_t*)(text.c_str()) );
-	m->AddBuffer(0, NULL); // BinaryBucket
+    m->AddBool(false); // from group
+    m->AddUUID(target);
+    m->AddU32(parent_estate_id);
+    m->AddUUID(myInfo_.regionID); //! @todo Find out proper value
+    m->AddVector3(RexTypes::Vector3());//! @todo Find out proper value
+    m->AddU8(0);//! @todo Find out proper value
+    m->AddU8(0); // dialog type
+    m->AddUUID(RexTypes::RexUUID());
+    m->AddU32(time_stamp); // TODO: Timestamp
+    m->AddBuffer( strlen(from_name.c_str()), (uint8_t*)(from_name.c_str()) );
+    m->AddBuffer( strlen(text.c_str()), (uint8_t*)(text.c_str()) );
+    m->AddBuffer(0, NULL); // BinaryBucket
 
     FinishMessageBuilding(m);
 }
@@ -543,7 +542,7 @@ void RexServerConnection::SendMultipleObjectUpdatePacket(std::vector<Scene::Enti
     m->AddUUID(myInfo_.agentID);
     m->AddUUID(myInfo_.sessionID);
 
-    // ObjectData        
+    // ObjectData
     ///\todo Update just the necessary parameters (use update flags) & test with multiple objects.
     size_t offset = 0;
     uint8_t data[2048]; ///\todo What is the max size?
@@ -951,45 +950,57 @@ void RexServerConnection::SendUpdateInventoryFolderPacket(
     FinishMessageBuilding(m);
 }
 
-///\todo
-void RexServerConnection::SendUpdateInventoryItemPacket()
+void RexServerConnection::SendUpdateInventoryItemPacket(
+    const RexTypes::RexUUID item_id,
+    const RexTypes::RexUUID folder_id,
+    const RexTypes::asset_type_t &asset_type,
+    const RexTypes::inventory_type_t &inventory_type,
+    const std::string &name,
+    const std::string description)
 {
-/*
-UpdateInventoryItem Low 266 NotTrusted Zerocoded
-{
-    AgentData            Single
-    {    AgentID            LLUUID    }
-    {    SessionID        LLUUID    }
-    {    TransactionID    LLUUID    }
-}
-{
-    InventoryData        Variable
-    {    ItemID            LLUUID    }
-    {    FolderID        LLUUID    }
-    {    CallbackID        U32        } // Async Response
-    
-    {    CreatorID        LLUUID    }    // permissions
-    {    OwnerID            LLUUID    }    // permissions
-    {    GroupID            LLUUID    }    // permissions
-    {    BaseMask        U32    }    // permissions
-    {    OwnerMask        U32    }    // permissions
-    {    GroupMask        U32    }    // permissions
-    {    EveryoneMask    U32    }    // permissions
-    {    NextOwnerMask    U32    }    // permissions
-    {    GroupOwned        BOOL    }    // permissions
+    if (!connected_)
+        return;
 
-    {    TransactionID    LLUUID    } // TransactionID: new assets only
-    {    Type            S8    }
-    {    InvType            S8    }
-    {    Flags            U32    }
-    {    SaleType        U8    }
-    {    SalePrice        S32    }
-    {    Name            Variable    1    }
-    {    Description        Variable    1    }
-    {    CreationDate    S32    }
-    {    CRC                U32    }
-}
-*/
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgUpdateInventoryItem);
+    assert(m);
+
+    // TransactionID, new items only?
+    RexTypes::RexUUID transaction_id;
+
+    // AgentData
+    m->AddUUID(myInfo_.agentID);
+    m->AddUUID(myInfo_.sessionID);
+    m->AddUUID(transaction_id);
+
+    // InventoryData, Variable
+    m->SetVariableBlockCount(1);
+    m->AddUUID(item_id);
+    m->AddUUID(folder_id);
+    m->AddU32(0);                       // CallbackID
+    m->AddUUID(RexTypes::RexUUID());    // CreatorID
+    m->AddUUID(RexTypes::RexUUID());    // OwnerID
+    m->AddUUID(RexTypes::RexUUID());    // GroupID
+
+    // Permissions-related:
+    m->AddU32(0);                       //BaseMask
+    m->AddU32(0);                       // OwnerMask
+    m->AddU32(0);                       // GroupMask
+    m->AddU32(0);                       // EveryoneMask
+    m->AddU32(0);                       // NextOwnerMask
+    m->AddBool(false);                  // GroupOwned
+
+    m->AddUUID(transaction_id);
+    m->AddS8(asset_type);               // Type
+    m->AddS8(inventory_type);           // InvType
+    m->AddU32(0);                       // Flags
+    m->AddU8(0);                        // SaleType
+    m->AddS32(0);                       // SalePrice
+    m->AddBuffer(name.length() + 1, (uint8_t*)name.c_str());
+    m->AddBuffer(description.length() + 1, (uint8_t*)description.c_str());
+    m->AddS32(0);                       // CreationDAta
+    m->AddU32(0);                       // CRC
+
+    FinishMessageBuilding(m);
 }
 
 void RexServerConnection::SendFetchInventoryDescendentsPacket(
@@ -1017,54 +1028,6 @@ void RexServerConnection::SendFetchInventoryDescendentsPacket(
     m->AddBool(fetch_items);
 
     FinishMessageBuilding(m);
-}
-
-std::string RexServerConnection::GetCapability(const std::string &name)
-{
-    boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
-    if (!sp.get())
-    {
-        RexLogicModule::LogError("Getting network interface did not succeed.");
-        return "";
-    }
-
-    return sp->GetCapability(name);
-}
-
-volatile OpenSimProtocol::Connection::State RexServerConnection::GetConnectionState()
-{
-    boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
-    if (!sp.get())
-    {
-        RexLogicModule::LogError("Getting network interface did not succeed.");
-        return OpenSimProtocol::Connection::STATE_ENUM_COUNT;
-    }
-
-    return sp->GetConnectionState();
-}
-
-NetOutMessage *RexServerConnection::StartMessageBuilding(const NetMsgID &message_id)
-{
-    boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
-    if (!sp.get())
-    {
-        RexLogicModule::LogError("Getting network interface did not succeed.");
-        return 0;
-    }
-
-    return sp->StartMessageBuilding(message_id);
-}
-
-void RexServerConnection::FinishMessageBuilding(NetOutMessage *msg)
-{
-    boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
-    if (!sp.get())
-    {
-        RexLogicModule::LogError("Getting network interface did not succeed.");
-        return;
-    }
-
-    sp->FinishMessageBuilding(msg);
 }
 
 void RexServerConnection::SendAcceptFriendshipPacket(const RexTypes::RexUUID &transaction_id, const RexTypes::RexUUID &folder_id)
@@ -1125,28 +1088,72 @@ void RexServerConnection::SendGenericMessage(const std::string& method, const Co
     // AgentData
     m->AddUUID(myInfo_.agentID);
     m->AddUUID(myInfo_.sessionID);
+
     // Transaction ID
-    RexUUID transaction;
-    transaction.Random();
-    m->AddUUID(transaction);
-    
+    m->AddUUID(RexUUID::CreateRandom());
+
     // Method
     m->AddBuffer(method.length(), (uint8_t*)method.c_str());
-    // Invoice
-    RexUUID invoice;
-    invoice.Random();
-    m->AddUUID(invoice);
-    
+
+    // Invoice ID
+    m->AddUUID(RexUUID::CreateRandom());
+
     // Variable count of strings
     m->SetVariableBlockCount(strings.size());
-    
+
     // Strings
-    for (Core::uint i = 0; i < strings.size(); ++i)
-    {
+    for(Core::uint i = 0; i < strings.size(); ++i)
         m->AddBuffer(strings[i].length(), (uint8_t*)strings[i].c_str());
-    }
 
     FinishMessageBuilding(m);
+}
+
+std::string RexServerConnection::GetCapability(const std::string &name)
+{
+    boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
+    if (!sp.get())
+    {
+        RexLogicModule::LogError("Getting network interface did not succeed.");
+        return "";
+    }
+
+    return sp->GetCapability(name);
+}
+
+volatile OpenSimProtocol::Connection::State RexServerConnection::GetConnectionState()
+{
+    boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
+    if (!sp.get())
+    {
+        RexLogicModule::LogError("Getting network interface did not succeed.");
+        return OpenSimProtocol::Connection::STATE_ENUM_COUNT;
+    }
+
+    return sp->GetConnectionState();
+}
+
+NetOutMessage *RexServerConnection::StartMessageBuilding(const NetMsgID &message_id)
+{
+    boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
+    if (!sp.get())
+    {
+        RexLogicModule::LogError("Getting network interface did not succeed.");
+        return 0;
+    }
+
+    return sp->StartMessageBuilding(message_id);
+}
+
+void RexServerConnection::FinishMessageBuilding(NetOutMessage *msg)
+{
+    boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
+    if (!sp.get())
+    {
+        RexLogicModule::LogError("Getting network interface did not succeed.");
+        return;
+    }
+
+    sp->FinishMessageBuilding(msg);
 }
 
 } // namespace RexLogic

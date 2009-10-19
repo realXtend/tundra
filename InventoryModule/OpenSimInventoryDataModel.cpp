@@ -143,6 +143,21 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemRemoval(AbstractInventoryIt
     }
 }
 
+void OpenSimInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryItem *item)
+{
+    if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
+        rexLogicModule_->GetServerConnection()->SendUpdateInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
+            QSTR_TO_UUID(item->GetParent()->GetID()), 127, item->GetName().toStdString());
+
+    if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
+    {
+        InventoryAsset *asset = static_cast<InventoryAsset *>(item);
+        rexLogicModule_->GetServerConnection()->SendUpdateInventoryItemPacket(QSTR_TO_UUID(asset->GetID()),
+            QSTR_TO_UUID(asset->GetParent()->GetID()), asset->GetAssetType(), asset->GetInventoryType(),
+            asset->GetName().toStdString(), asset->GetDescription().toStdString());
+    }
+}
+
 void OpenSimInventoryDataModel::DebugDumpInventoryFolderStructure()
 {
     rootFolder_->DebugDumpInventoryFolderStructure(0);
