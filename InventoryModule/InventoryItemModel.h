@@ -33,22 +33,25 @@ namespace Inventory
         virtual ~InventoryItemModel();
 
         /// QAbstractItemModel override.
-        QVariant data(const QModelIndex &index, int role) const;
-
-        /// QAbstractItemModel override.
-        bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
-
-        /// QAbstractItemModel override.
         Qt::ItemFlags flags(const QModelIndex &index) const;
 
         /// QAbstractItemModel override.
         Qt::DropActions supportedDropActions() const;
 
         /// QAbstractItemModel override.
-        QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+//        QStringList mimeTypes() const;
 
         /// QAbstractItemModel override.
         QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+
+        /// QAbstractItemModel override.
+        QVariant data(const QModelIndex &index, int role) const;
+
+        /// QAbstractItemModel override.
+        bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+
+        /// QAbstractItemModel override.
+        QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
         /// QAbstractItemModel override.
         /// Used for inserting new childs to the inventory tree model.
