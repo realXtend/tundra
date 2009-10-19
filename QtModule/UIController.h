@@ -197,6 +197,16 @@ namespace QtUI
          */
         bool Contains(const boost::shared_ptr<UICanvas>& canvas, const QPoint& point) const;
 
+
+        /**
+         * Helper function which sends a mouse move event to given canvas. 
+         * @param index is index to canvas. 
+         * @param x is x-axis coordinate in render window coordinate frame. 
+         * @param y is y-axis coordinate in render window coordinate frame.
+         */
+
+        void SendMouseMoveEvent(int index, int x, int y);
+
         // Assumed to be in that kind order that top (active) canvas is first.
         QList<boost::shared_ptr<UICanvas> > canvases_;
         

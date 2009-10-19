@@ -116,42 +116,7 @@ void UIController::InjectMouseMove(int x, int y)
 
     if (index != -1 && !mouseDown_ && !canvases_[index]->IsHidden())
     {
- 
-        // Location of mouse event in scene.
-        QPoint p = canvases_[index]->MapToCanvas(x,y);
-        QPointF pos = canvases_[index]->mapToScene(p);
-          
-        QPoint currentMousePos((int)pos.x(), (int)pos.y());
-
-        QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
-        
-        if (mouseDown_)
-        {
-            mouseEvent.setButtonDownScenePos(Qt::LeftButton, mousePress_);
-            mouseEvent.setButtonDownScreenPos(Qt::LeftButton, mousePress_);
-        }
-        else
-        {
-            mouseEvent.setButtonDownScenePos(Qt::NoButton, currentMousePos);
-            mouseEvent.setButtonDownScreenPos(Qt::NoButton, currentMousePos);
-        }
-        
-        mouseEvent.setScenePos(currentMousePos);
-        mouseEvent.setScreenPos(currentMousePos);
-        mouseEvent.setLastScenePos(currentMousePos);
-        mouseEvent.setLastScreenPos(currentMousePos);
-        mouseEvent.setButtons(mouseDown_ ? Qt::LeftButton : Qt::NoButton);
-        mouseEvent.setButton(mouseDown_ ? Qt::LeftButton : Qt::NoButton);
-        mouseEvent.setModifiers(0);
-        mouseEvent.setAccepted(false);
-    
-       
-        UpdateMouseCursor(x,y,index);
-        QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);   
-        
-        
-       
-  
+        SendMouseMoveEvent(index,x,y);  
     }
     else if ( mouseDown_)
     {
@@ -397,7 +362,7 @@ void UIController::InjectMouseMove(int x, int y)
             }
             else if (!canvases_[index]->IsCanvasPositionLocked() && drag_)
             {
-                // Drag canvas. 
+                // This is our drag canvas implementation. 
 
                 QPoint pos = canvases_[index]->GetPosition().toPoint();
 
@@ -405,6 +370,10 @@ void UIController::InjectMouseMove(int x, int y)
                 int yPos = point.y()-(lastPosition_.y()-pos.y());
               
                 canvases_[index]->SetPosition(xPos, yPos);
+            }
+            else if ( !canvases_[index]->IsHidden() )
+            {
+                SendMouseMoveEvent(index,x,y);
             }
           
         }
@@ -892,6 +861,46 @@ bool UIController::Contains(const boost::shared_ptr<UICanvas>& canvas, const QPo
            pos.y() <= point.y() && 
            (pos.x() + canvas->width()) > point.x() && 
            (pos.y() + canvas->height()) > point.y();
+}
+
+
+
+void UIController::SendMouseMoveEvent(int index, int x, int y)
+{
+    // Location of mouse event in scene.
+    QPoint p = canvases_[index]->MapToCanvas(x,y);
+    QPointF pos = canvases_[index]->mapToScene(p);
+      
+    QPoint currentMousePos((int)pos.x(), (int)pos.y());
+
+    QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
+    
+    if (mouseDown_)
+    {
+        mouseEvent.setButtonDownScenePos(Qt::LeftButton, mousePress_);
+        mouseEvent.setButtonDownScreenPos(Qt::LeftButton, mousePress_);
+    }
+    else
+    {
+        mouseEvent.setButtonDownScenePos(Qt::NoButton, currentMousePos);
+        mouseEvent.setButtonDownScreenPos(Qt::NoButton, currentMousePos);
+    }
+    
+    mouseEvent.setScenePos(currentMousePos);
+    mouseEvent.setScreenPos(currentMousePos);
+    mouseEvent.setLastScenePos(currentMousePos);
+    mouseEvent.setLastScreenPos(currentMousePos);
+    mouseEvent.setButtons(mouseDown_ ? Qt::LeftButton : Qt::NoButton);
+    mouseEvent.setButton(mouseDown_ ? Qt::LeftButton : Qt::NoButton);
+    mouseEvent.setModifiers(0);
+    mouseEvent.setAccepted(false);
+
+   
+    UpdateMouseCursor(x,y,index);
+    QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);   
+        
+
+
 }
 
 }
