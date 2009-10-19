@@ -735,5 +735,49 @@ namespace OgreRenderer
 			//std::cout << "Took a screenshot!" << std::endl;
 		}
 	}
+	
+	void Renderer::AddResourceDirectory(const std::string& groupname, const std::string& directory)
+	{       
+        // Check to not add the same directory more than once
+        for (Core::uint i = 0; i < added_resource_directories_[groupname].size(); ++i)
+        {
+            if (added_resource_directories_[groupname][i] == directory)
+                return;
+        }
+        
+        Ogre::ResourceGroupManager& resgrpmgr = Ogre::ResourceGroupManager::getSingleton();
+
+        // Check if resource group already exists
+        bool exists = false;
+        Ogre::StringVector groups = resgrpmgr.getResourceGroups();
+        for (Core::uint i = 0; i < groups.size(); ++i)
+        {
+            if (groups[i] == groupname)
+            {
+                exists = true;
+                break;
+            }
+        }
+
+        // Create if doesn't exist
+        if (!exists)
+        {
+            try
+            {
+                resgrpmgr.createResourceGroup(groupname);
+            }
+            catch (...) {}
+        }
+        
+        // Add directory as resource location
+        try
+        {
+            resgrpmgr.addResourceLocation(directory, "FileSystem", groupname);
+            resgrpmgr.initialiseResourceGroup("Avatar");
+        }
+        catch (...) {}
+        
+        added_resource_directories_[groupname].push_back(directory);
+    }
 }
 

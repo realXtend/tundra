@@ -313,7 +313,6 @@ namespace RexLogic
         
         std::string index_str = button->objectName().toStdString();
         Core::uint index = Core::ParseString<Core::uint>(index_str);
-        std::cout << "Texture index " << index << " change" << std::endl;    
         
         const std::string filter = "Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png);;Ogre material (*.material)";
         std::string filename = Foundation::QtUtils::GetOpenFileName(filter, "Choose texture or material", Foundation::QtUtils::GetCurrentPath());          

@@ -381,7 +381,7 @@ bool RexLogicModule::HandleEvent(Core::event_category_id_t category_id, Core::ev
 
 bool RexLogicModule::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
 {
-    // Pass the event to the avatar maanger
+    // Pass the event to the avatar manager
     avatar_->HandleResourceEvent(event_id, data);
     // Pass the event to the primitive manager
     primitive_->HandleResourceEvent(event_id, data);

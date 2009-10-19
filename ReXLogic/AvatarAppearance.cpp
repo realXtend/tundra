@@ -289,7 +289,7 @@ namespace RexLogic
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(entity->GetComponent(EC_AvatarAppearance::NameStatic()).get());
         
         // Mesh needs to be cloned if there are attachments which need to hide vertices
-        bool need_mesh_clone = true;
+        bool need_mesh_clone = false;
         
         const AvatarAttachmentVector& attachments = appearance.GetAttachments();
         std::set<Core::uint> vertices_to_hide;
@@ -711,7 +711,7 @@ namespace RexLogic
     }
     
     void AvatarAppearance::ProcessAppearanceDownload(Scene::EntityPtr entity, const std::vector<Core::u8>& data)
-    {
+    {        
         if (!entity)
             return;
         Foundation::ComponentPtr avatarptr = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
@@ -731,7 +731,7 @@ namespace RexLogic
             // If not found, use default appearance
             // (at this point, it's nice to just have *some* appearance change, for example
             // changing back to default human from fish in the fishworld, if no avatar stored)
-            RexLogicModule::LogDebug("No generic xml found, setting default appearance");
+            RexLogicModule::LogInfo("Got empty avatar description from storage, setting default appearance");
             SetupDefaultAppearance(entity);
             return;
         }
@@ -763,6 +763,7 @@ namespace RexLogic
         if (!LegacyAvatarSerializer::ReadAvatarAppearance(appearance, avatar_doc))
         {
             // If fails badly, setup default instead
+            RexLogicModule::LogInfo("Failed to parse avatar description, setting default appearance");
             SetupDefaultAppearance(entity);
             return;
         }
@@ -1100,15 +1101,19 @@ namespace RexLogic
     
     void AvatarAppearance::GetAvatarAssetsForExport(AvatarExporterRequestPtr request, EC_AvatarAppearance& appearance)
     {
+        RexLogicModule::LogDebug("Getting mesh for export");
         GetAvatarAssetForExport(request, appearance.GetMesh());
+        RexLogicModule::LogDebug("Getting skeleton for export");
         GetAvatarAssetForExport(request, appearance.GetSkeleton());
-        
+
+        RexLogicModule::LogDebug("Getting materials for export");        
         AvatarMaterialVector materials = appearance.GetMaterials();
         for (Core::uint i = 0; i < materials.size(); ++i)
         {
             GetAvatarMaterialForExport(request, materials[i]);
         }
         
+        RexLogicModule::LogDebug("Getting attachments for export");
         AvatarAttachmentVector attachments = appearance.GetAttachments();
         for (Core::uint i = 0; i < attachments.size(); ++i)
         {
@@ -1248,6 +1253,12 @@ namespace RexLogic
     bool AvatarAppearance::GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& asset)
     {
         std::string export_name = asset.name_;
+        // If name is empty, skip
+        if (export_name.empty())
+        {
+            RexLogicModule::LogDebug("Skipping unnamed asset");
+            return true;
+        }
 
         // Skip if already exists with this name
         if (request->assets_.find(export_name) != request->assets_.end())
@@ -1325,6 +1336,7 @@ namespace RexLogic
             ++i;
         }
         
+        RexLogicModule::LogDebug("Added export asset " + export_name);
         request->assets_[export_name] = new_export_asset;
         return true;
     }
@@ -1473,23 +1485,15 @@ namespace RexLogic
     
     void AvatarAppearance::AddTempResourceDirectory(const std::string& dirname)
     {
-        // HACK! Add a new temporary Ogre resource group for the avatar directory
-        Ogre::ResourceGroupManager& resgrpmgr = Ogre::ResourceGroupManager::getSingleton();
-
-        // If already exists, destroy first
-        try
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
         {
-            resgrpmgr.destroyResourceGroup("Avatar");
+            RexLogicModule::LogError("Renderer does not exist");
+            return;
         }
-        catch (...) {}
         
-        try
-        {
-            resgrpmgr.createResourceGroup("Avatar");
-            resgrpmgr.addResourceLocation(dirname, "FileSystem", "Avatar");
-            resgrpmgr.initialiseResourceGroup("Avatar");
-        }
-        catch (...) {}
+        renderer->AddResourceDirectory("Avatar", dirname);
     }    
     
     bool AvatarAppearance::ChangeAvatarMaterial(Scene::EntityPtr entity, Core::uint index, const std::string& filename)
