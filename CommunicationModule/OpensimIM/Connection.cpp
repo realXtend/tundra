@@ -209,7 +209,7 @@ namespace OpensimIM
 					QString transaction_id = ""; //! @todo get the right value
 					FriendRequest* request = new FriendRequest(framework_, agent_id.ToString().c_str(), from_agent_name.c_str(), transaction_id, calling_card_folder);
 					friend_requests_.push_back(request);
-					emit FriendRequestReceived(*request);
+					emit( FriendRequestReceived(*request) );
 				}
 				break;
 			case DT_InstantMessage:

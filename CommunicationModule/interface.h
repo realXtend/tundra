@@ -288,7 +288,7 @@ namespace Communication
 		void ContactStatusUpdated(const ContactInterface& contact);
 
 		//! When a friend request is received from IM server
-		void FriendRequestReceived(const FriendRequestInterface& request); 
+		void FriendRequestReceived(const Communication::FriendRequestInterface& request); 
 
 		//! When target have accepted the friend request
 		void FriendRequestAccepted(const QString &target); 
