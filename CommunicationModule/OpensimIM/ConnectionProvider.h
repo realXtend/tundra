@@ -59,7 +59,7 @@ namespace OpensimIM
 
 	protected slots:
 		//! Make log entry about friend request
-		void OnFriendRequestReceived(const Communication::FriendRequestInterface& request);
+		void OnFriendRequestReceived(Communication::FriendRequestInterface& request);
 		void OnConnectionReady(Communication::ConnectionInterface& connection);
 	};
 

@@ -34,7 +34,7 @@ namespace OpensimIM
 		Connection* connection = new Connection(framework_);
 		connections_.push_back(connection);
 		connect(connection, SIGNAL( ConnectionReady(const Communication::ConnectionInterface&) ), SLOT( OnConnectionReady(const Communication::ConnectionInterface&) ));
-		connect(connection, SIGNAL( FriendRequestReceived(const Communication::FriendRequestInterface&) ), SLOT( OnFriendRequestReceived(const Communication::FriendRequestInterface&) ));
+		connect(connection, SIGNAL( FriendRequestReceived(Communication::FriendRequestInterface&) ), SLOT( OnFriendRequestReceived(Communication::FriendRequestInterface&) ));
 		if ( connection->GetState() == Communication::ConnectionInterface::STATE_READY )
 		{
 			OnConnectionReady(*connection);
@@ -132,7 +132,7 @@ namespace OpensimIM
 		emit( ConnectionOpened(connection) );
 	}
 
-	void ConnectionProvider::OnFriendRequestReceived(const Communication::FriendRequestInterface& request)
+	void ConnectionProvider::OnFriendRequestReceived(Communication::FriendRequestInterface& request)
 	{
 		QString message = "Friend request from ";
 		message.append(request.GetOriginatorName());

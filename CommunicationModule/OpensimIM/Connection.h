@@ -35,7 +35,7 @@ namespace OpensimIM
 		static enum ChatType { Whisper = 0, Say = 1, Shout = 2, StartTyping = 4, StopTyping = 5, DebugChannel = 6, Region = 7, Owner = 8, Broadcast = 0xFF };
 		static enum ChatAudibleLevel { Not = -1, Barely = 0, Fully = 1 };
 		static enum ChatSourceType { System = 0, Agent = 1, Object = 2 };
-		static enum IMDialogTypes { DT_InstantMessage = 0, DT_FromScript = 19, DT_FriendRequest = 38};
+		static enum IMDialogTypes { DT_MessageFromAgent = 0, DT_MessageFromObject = 19, DT_FriendshipOffered = 38, DT_FriendshipAccepted = 39, DT_FriendshipDeclined = 40, DT_StartTyping = 41, DT_StopTyping = 42};
 
 	public:
 		Connection(Foundation::Framework* framework);
