@@ -100,6 +100,9 @@ namespace OpensimIM
 
 		//!
 		virtual bool HandleOSNEChatFromSimulator(NetInMessage& msg);
+		virtual bool HandleOnlineNotification(NetInMessage& msg);
+		virtual bool HandleOfflineNotification(NetInMessage& msg);
+
 
 		//! Opensim based servers have one global chat channel (id = "0")
 		//! We create ChatSession object automatically when connection is established

@@ -4,10 +4,13 @@
 #include "Foundation.h"
 #include "NetworkEvents.h"
 #include "..\interface.h"
-//#include "ChatSessionParticipant.h"
 
 namespace OpensimIM
 {
+	/**
+	 *  @todo Initial state of online status is not checked currently.
+	 *        
+	 */ 
 	class Contact : public Communication::ContactInterface
 	{
 	public:
@@ -27,6 +30,9 @@ namespace OpensimIM
 
 		//! Not supported by Opensim
 		virtual QString GetPresenceMessage() const;
+
+		//! Connection object calls this according messages from server
+		virtual void SetOnlineStatus(bool online);
 	private:
 
 		//! UUID of this contact
