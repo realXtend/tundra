@@ -87,6 +87,10 @@ bool RexUUID::IsValid(const char *str)
             
     while (*str)
     {
+        // If it looks anything like a url, can't be UUID
+        if ((*str == '/') || (*str == ':'))
+            return false;
+            
         if (CharToNibble(*str) <= 0xf)
             valid_nibbles++;           
         str++;
