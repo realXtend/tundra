@@ -511,10 +511,20 @@ void UIController::InjectMousePress(int x, int y)
                 Qt::CursorShape shape = cursor.shape();
                 if ( shape == Qt::IBeamCursor)
                     keyboard_buffered_ = true;
-              
+                else
+                {
+                    QWidget* focusWidget = QApplication::focusWidget();
+                    if ( focusWidget != 0)
+                    {
+                        // PENDING how to check that this widget is same as "active canvas" or is it even needed?
+                        keyboard_buffered_ = true;
+                    }
+                }
+
             }
             
         }
+      
         
         if ( mouseCursorShape_ == Qt::SizeVerCursor || 
              mouseCursorShape_ == Qt::SizeHorCursor || 
