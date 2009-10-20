@@ -7,6 +7,7 @@
 #include "ChatSession.h"
 #include "Contact.h"
 #include "FriendRequest.h"
+#include "ContactGroup.h"
 
 namespace OpensimIM
 {
@@ -58,7 +59,7 @@ namespace OpensimIM
 		virtual QString GetReason() const;
 
 		//! Provides contact list associated with this IM server connection
-		virtual Communication::ContactGroupInterface* GetContacts() const;
+		virtual Communication::ContactGroupInterface& GetContacts();
 
 		//! Provides a list of availble presence status options to set
 		virtual QStringList GetAvailablePresenceStatusOptions() const;
@@ -125,6 +126,7 @@ namespace OpensimIM
 		QString agent_uuid_; //! UUID of current user 
 		ContactVector contacts_;
 		FriendRequestVector friend_requests_;
+		ContactGroup friend_list_;
 	public slots:
 		void OnWorldChatMessageReceived(const QString& text, const Communication::ChatSessionParticipantInterface& participant);
 	};

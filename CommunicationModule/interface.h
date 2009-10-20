@@ -95,7 +95,10 @@ namespace Communication
 	 *  List of Contact objects eg. a friend list.
 	 *  Contact groups can be include Contact and ContactGroup objects.
 	 *  ContactGroup object is created by Connection object with information from IM server.
-	 *  group contect cannot be modified.
+	 *
+	 *  Adding or removing items is not allowed. But you can Send a friend request from Connection object
+	 *  and remove contact from Connection object.
+	 *  
 	 */
 	class ContactGroupInterface;
 	typedef std::vector<ContactGroupInterface*> ContactGroupVector;
@@ -106,13 +109,14 @@ namespace Communication
 		virtual QString GetName() const = 0;
 
 		//! Set name for this contact group
+		//! If the protocol supports then the given name is saved on server side.
 		virtual void SetName(const QString &name) = 0;
 
 		//! Provides all Contact objects on this contact group
-		virtual ContactVector GetContacts() const = 0;
+		virtual ContactVector GetContacts() = 0;
 
 		//! Priovides all sub groups of this contact groups
-		virtual ContactGroupVector GetGroups() const = 0;
+		virtual ContactGroupVector GetGroups() = 0;
 	signals:
 	};
 
@@ -270,7 +274,7 @@ namespace Communication
 		virtual QString GetReason() const = 0;
 
 		//! Provides contact list associated with this IM server connection
-		virtual ContactGroupInterface* GetContacts() const = 0;
+		virtual ContactGroupInterface& GetContacts() = 0;
 
 		//! Provides a list of availble presence status options to set
 		virtual QStringList GetAvailablePresenceStatusOptions() const = 0;
