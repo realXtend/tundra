@@ -37,4 +37,9 @@ namespace OpensimIM
 		return "";
 	}
 
+	void Contact::SetOnlineStatus(bool online)
+	{
+		online_ = online;
+	}
+
 } // end of namespace: OpensimIM

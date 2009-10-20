@@ -208,6 +208,8 @@ namespace OpensimIM
 		case RexNetMsgStartLure: return false; break;
 		case RexNetMsgTerminateFriendship: return false; break;
 		case RexNetMsgDeclineFriendship: return false;
+		case RexNetMsgOnlineNotification: return HandleOnlineNotification(*msg);
+		case RexNetMsgOfflineNotification: return HandleOfflineNotification(*msg);
 		}
 
 		return false;
@@ -308,6 +310,38 @@ namespace OpensimIM
 			return false;
 		}
 		return true;		
+	}
+
+	bool Connection::HandleOnlineNotification(NetInMessage& msg)
+	{
+		msg.ResetReading();
+		size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+		for (int i = 0; i < instance_count; ++i)
+		{
+			QString agent_id = msg.ReadUUID().ToString().c_str();
+			for (ContactVector::iterator i = contacts_.begin(); i != contacts_.end(); ++i)
+			{
+				if ((*i)->GetID().compare(agent_id) == 0)
+					(*i)->SetOnlineStatus(true);
+			}
+		}
+		return false;
+	}
+
+	bool Connection::HandleOfflineNotification(NetInMessage& msg)
+	{
+		msg.ResetReading();
+		size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+		for (int i = 0; i < instance_count; ++i)
+		{
+			QString agent_id = msg.ReadUUID().ToString().c_str();
+			for (ContactVector::iterator i = contacts_.begin(); i != contacts_.end(); ++i)
+			{
+				if ((*i)->GetID().compare(agent_id) == 0)
+					(*i)->SetOnlineStatus(false);
+			}
+		}
+		return false;
 	}
 
 	void Connection::OpenWorldChatSession()
