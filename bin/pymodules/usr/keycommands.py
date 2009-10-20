@@ -12,6 +12,7 @@ OIS_KEY_UP = 200
 OIS_KEY_PERIOD = 52
 OIS_KEY_BACKSPACE = 14
 OIS_KEY_ALT = 256
+OIS_KEY_M = 50
 
 class KeyCommander(Component):
     EVENTHANDLED = True
@@ -28,7 +29,8 @@ class KeyCommander(Component):
         """
         self.keymap = {
             (OIS_KEY_PERIOD, 0): self.run_commandpy,
-            (OIS_KEY_BACKSPACE, OIS_KEY_ALT): self.restart_modulemanager
+            (OIS_KEY_BACKSPACE, OIS_KEY_ALT): self.restart_modulemanager,
+            (OIS_KEY_M, OIS_KEY_ALT): self.toggle_editgui
         }
         
         """
@@ -86,3 +88,13 @@ class KeyCommander(Component):
     def overrideForwardWalking(self):
         print "MoveForward called, STOP, it's Hammer Time!"
         return True
+        
+    def toggle_editgui(self):
+        try:
+            if r.c.activated:
+                r.c.deactivate()
+            else:
+                r.c.activate()
+            return True
+        except:
+            print "toggle editgui failed, r.c is missing most liekly."
