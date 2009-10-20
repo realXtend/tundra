@@ -1206,7 +1206,13 @@ namespace RexLogic
         // Export the clone
         Ogre::MaterialSerializer serializer;
         serializer.queueForExport(clone, true, false);
-        const std::string& mat_string = serializer.getQueuedAsString();
+        std::string mat_string = serializer.getQueuedAsString();
+        // Rename the exported material to the original name, so that we don't get lots of duplicates
+        // to the storage with only the name changed
+        std::string new_mat_name = export_name;
+        ReplaceSubstring(new_mat_name, ".material", "");
+        ReplaceSubstring(mat_string, "material " + clone->getName(), "material " + new_mat_name);
+        std::cout << mat_string << std::endl;
         
         if (request->assets_.find(export_name) == request->assets_.end())
         {
