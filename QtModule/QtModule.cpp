@@ -5,6 +5,7 @@
 #include "DebugOperatorNew.h"
 
 #include "QtModule.h"
+#include "UICanvasManager.h"
 
 #include <Ogre.h>
 #include "OgreRenderingModule.h"
@@ -54,6 +55,7 @@ void QtModule::Initialize()
     SAFE_DELETE(controller_);
     
     controller_ = new UIController;
+	canvasManager_ = new UICanvasManager(framework_);
 
     boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
         <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();

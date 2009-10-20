@@ -14,8 +14,9 @@
    <string>Communications</string>
   </property>
   <property name="styleSheet">
-   <string>QWidget {
-	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.676, y2:1, stop:0 rgba(240, 240, 240, 255), stop:1 rgba(188, 212, 255, 255));
+   <string>QWidget#Communications {
+/*	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.676, y2:1, stop:0 rgba(240, 240, 240, 255), stop:1 rgba(188, 212, 255, 255)); */
+	background-color: rgba(255, 255, 255, 0);
 }
 
 QComboBox {

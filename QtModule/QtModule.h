@@ -13,6 +13,7 @@ class QGraphicsScene;
 
 namespace QtUI
 {
+	class UICanvasManager;
     /** QtModule provides other modules with the ability to maintain their own
         UI canvases, onto which widgets are loaded.
         These canvases can be then shown on the 2D screen or placed into the 3D world
@@ -68,6 +69,8 @@ namespace QtUI
          */
         void DeleteCanvas(const UICanvas& canvas) { if (controller_!= 0) controller_->RemoveCanvas(canvas.GetID()); }
 
+		//! Return the CanvasManager for accessing services
+		UICanvasManager* GetCanvasManager() { return canvasManager_; }
 
     private:
         /// Initializes a mapping table between OIS and Qt keyboard codes.
@@ -80,6 +83,7 @@ namespace QtUI
         bool mouse_left_button_down_;
         QPoint lastPos_;
         UIController* controller_;
+		UICanvasManager *canvasManager_;
         QMap<int, Qt::Key> converterMap_;
     };
 }
