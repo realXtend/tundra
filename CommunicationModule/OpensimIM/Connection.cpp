@@ -203,15 +203,12 @@ namespace OpensimIM
         switch(msgID)
         {
 		case RexNetMsgChatFromSimulator: return HandleOSNEChatFromSimulator(*msg); break;
-		case RexNetMsgFormFriendship: return true; false;
 		case RexNetMsgImprovedInstantMessage: return HandleRexNetMsgImprovedInstantMessage(*msg); break;
-		case RexNetMsgStartLure: return false; break;
-		case RexNetMsgTerminateFriendship: return false; break;
-		case RexNetMsgDeclineFriendship: return false;
-		case RexNetMsgOnlineNotification: return HandleOnlineNotification(*msg);
-		case RexNetMsgOfflineNotification: return HandleOfflineNotification(*msg);
+//		case RexNetMsgTerminateFriendship: return false; break;
+//		case RexNetMsgDeclineFriendship: return false;
+		case RexNetMsgOnlineNotification: return HandleOnlineNotification(*msg); break;
+		case RexNetMsgOfflineNotification: return HandleOfflineNotification(*msg); break;
 		}
-
 		return false;
 	}
 
@@ -250,6 +247,19 @@ namespace OpensimIM
 				{
 					QString from_id = agent_id.ToString().c_str();
 					OnIMMessage( from_id, QString(from_agent_name.c_str()), QString( message.c_str() ) );
+				}
+				break;
+			case DT_FriendshipAccepted:
+				{
+					QString from_id = agent_id.ToString().c_str();
+					OnFriendshipAccepted(from_id);
+				}
+				break;
+				
+			case DT_FriendshipDeclined:
+				{
+					QString from_id = agent_id.ToString().c_str();
+					OnFriendshipDeclined(from_id);
 				}
 				break;
 			}
@@ -385,6 +395,20 @@ namespace OpensimIM
 			}
 		}
 		return NULL;
+	}
+
+	void Connection::OnFriendshipAccepted(const QString &from_id)
+	{
+		Contact* contact = new Contact(from_id, "");
+		contacts_.push_back(contact);
+		friend_list_.AddContact(contact);
+
+		emit( FriendRequestAccepted(from_id) );
+	}
+
+	void Connection::OnFriendshipDeclined(const QString &from_id)
+	{
+		emit( FriendRequestRejected(from_id) );
 	}
 
 } // end of namespace: OpensimIM
