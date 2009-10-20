@@ -12,20 +12,26 @@ class ModuleManager:
     core authors know exactly which is which here."""
     def RexNetMsgChatFromSimulator(self, frm, message):
         pass
-        print "Manager got on_chat", frm, message
+        #print "Manager got on_chat", frm, message
         
     def INPUT_EVENT(self, evid):
-        print "Manager got input event:", evid
+        pass
+        #print "Manager got input event:", evid
     def KEY_INPUT_EVENT(self, evid, keycode, keymod):
-        print "Manager got key_input event:", evid, keycode, keymod
+        pass
+        #print "Manager got key_input event:", evid, keycode, keymod
     def MOUSE_MOVEMENT(self, x_abs, y_abs, x_rel, y_rel):
-        print "Manager got mouse movement", x_abs, y_abs, x_rel, y_rel
+        pass
+        #print "Manager got mouse movement", x_abs, y_abs, x_rel, y_rel
     def MOUSE_CLICK(self, mb_click, x_abs, y_abs, x_rel, y_rel):
-        print "Manager got mouse click", mb_click, x_abs, y_abs, x_rel, y_rel
+        pass
+        #print "Manager got mouse click", mb_click, x_abs, y_abs, x_rel, y_rel
     def ENTITY_UPDATED(self, id):
-        print "Manager got an entity updated", id
+        pass
+        #print "Manager got an entity updated", id
     def LOGIN_INFO(self, *args):
-        print "Login updated", args
+        pass
+        #print "Login updated", args
     
     def exit(self):
         print "exiting module manager"
