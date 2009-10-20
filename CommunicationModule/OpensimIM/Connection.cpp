@@ -71,13 +71,12 @@ namespace OpensimIM
 		return reason_;
 	}
 
-	Communication::ContactGroupInterface* Connection::GetContacts() const
+	Communication::ContactGroupInterface& Connection::GetContacts()
 	{
 		if (state_ != STATE_READY)
 			throw Core::Exception("The connection is closed.");
 
-		//! \todo IMPELEMENT
-		return NULL;
+		return friend_list_;
 	}
 		
 	QStringList Connection::GetAvailablePresenceStatusOptions() const
@@ -187,6 +186,7 @@ namespace OpensimIM
 		{
 			//! @todo Fetch name of this buddy 
 			Contact* contact = new Contact(	(*i)->GetID().ToString().c_str(), "" );
+			friend_list_.AddContact(contact);
 			contacts_.push_back(contact);
 		}
 	}

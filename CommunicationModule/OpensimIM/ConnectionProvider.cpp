@@ -137,6 +137,16 @@ namespace OpensimIM
 
 	void ConnectionProvider::OnConnectionReady(Communication::ConnectionInterface& connection)
 	{
+		// Print friend list in debug mode
+		Communication::ContactGroupInterface& friend_list = connection.GetContacts();
+		LogDebug(friend_list.GetName().toStdString());
+
+		Communication::ContactVector contacts = friend_list.GetContacts();
+		for (Communication::ContactVector::iterator i = contacts.begin(); i != contacts.end(); ++i)
+		{
+			QString message = (*i)->GetName().append("(").append((*i)->GetID()).append(")");
+			LogDebug(message.toStdString());
+		}
 		emit( ConnectionOpened(connection) );
 	}
 
