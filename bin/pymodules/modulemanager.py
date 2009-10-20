@@ -45,6 +45,12 @@ if USE_CIRCUITS:
     except ImportError:
         #print "circuits_manager not available"
         r.logInfo("Circuits Manager not available.")
+        try:
+            import os
+        except:
+            r.logInfo("Reason: python stdlib not there. If you are a dev on windows, did you copy Python26.zip from runtime deps pymodules over to bin?")
+        else:
+            r.logInfo("Unknown reason for failing circuits load.")
     else:
         #print "Using circuits_manager"
         r.logInfo("Using Circuits Manager.")
