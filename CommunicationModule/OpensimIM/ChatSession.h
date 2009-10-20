@@ -5,6 +5,7 @@
 #include "NetworkEvents.h"
 #include "..\interface.h"
 #include "ChatSessionParticipant.h"
+#include "ChatMessage.h"
 
 
 namespace OpensimIM
@@ -17,14 +18,20 @@ namespace OpensimIM
 	class ChatSession : public Communication::ChatSessionInterface
 	{
 	public:
-		ChatSession(Foundation::Framework* framework, const QString &channel_id);
-		ChatSession(Foundation::Framework* framework);
+		ChatSession(Foundation::Framework* framework, const QString &channel_id, bool public_chat);
+//		ChatSession(Foundation::Framework* framework);
 
 		//! \todo support to other range options
 		virtual void SendMessage(const QString &text);
 
+		//! @return State of the session
+		virtual State GetState() const;
+
 		//! 
 		virtual void Close();
+
+		//! @return the message history of this chat sessions
+		virtual Communication::ChatMessageVector GetMessageHistory() ;
 
 		//! Report chat session object about text message whitch originator is a avatart.
 		virtual void MessageFromAgent(const QString &avatar_id, const QString &name, const QString &text);
@@ -45,16 +52,20 @@ namespace OpensimIM
 		//! Return true if this chat session is private IM chat
 		//! Return false if this is global chat
 		virtual bool IsPrivateIMSession();
+
 	protected:
 
 		void SendPrivateIMMessage(const QString &text);
 		void SendPublicChatMessage(const QString &text);
 
+		State state_;
 		QString channel_id_;
-		ChatSessionParticipant server_participant_;
+		ChatSessionParticipant server_;
+		ChatSessionParticipant self_;
 		ChatSessionParticipant* FindParticipant(const QString &uuid);
 		bool private_im_session_;
-		
+
+		ChatMessageVector message_history_;
 
 	private:
 		Foundation::Framework* framework_;

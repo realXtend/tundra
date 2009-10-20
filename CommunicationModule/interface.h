@@ -120,12 +120,13 @@ namespace Communication
 	 * A participant of one ChatSession object. A participant can be a contact or
 	 * just a nick on chat room
 	 */
-	class ChatSessionParticipantInterface
+	class ChatSessionParticipantInterface : public QObject
 	{
+		Q_OBJECT
 	public:
 
-		//! Return NULL pointer if the participant is not on
-		//! contact list
+		//! @return contact object if the participant have one
+		//          otherwise return a NULL pointer 
 		virtual ContactInterface* GetContact() const = 0;
 
 		//! @return id of this participant 
@@ -133,6 +134,12 @@ namespace Communication
 
 		//! Provides name of this participant
 		virtual QString GetName() const = 0;
+
+		//! @return Location of the participant if (s)he are at same world with current user
+		//!         Otherwise return NULL
+		//virtual GetLocation() const = 0;
+	signals:
+		 
 	};
 	typedef std::vector<ChatSessionParticipantInterface*> ChatSessionParticipantVector;
 
@@ -141,13 +148,14 @@ namespace Communication
 	 *  @note This interface is not currently used!
 	 *  @todo GetAttachment() method for supporting file attachement feature in future
 	 */
-	class IMMessageInterface
+	class ChatMessageInterface
 	{
 	public:
 		virtual ChatSessionParticipantInterface* GetOriginator() const = 0;
 		virtual QTime GetTimeStamp() const = 0;
 		virtual QString GetText() const = 0;
 	};
+	typedef std::vector<ChatMessageInterface*> ChatMessageVector;
 
 	/**
 	 * Text message based communication session with one or more participants.
@@ -158,16 +166,24 @@ namespace Communication
 	{
 		Q_OBJECT
 	public:
+		enum State { STATE_OPEN, STATE_CLOSED };
+
 		//! Send a text message to chat session
 		//! @param text The message
 		virtual void SendMessage(const QString &text) = 0;
+
+		//! @return State of the session
+		virtual State GetState() const = 0;
 
 		//! Closes the chat session. No more messages can be send or received. 
 		//! Causes Closed signals to be emitted.
 		virtual void Close() = 0;
 
-		//! Provides all known participants of the chat session
+		//! @return all known participants of the chat session
 		virtual ChatSessionParticipantVector GetParticipants() const = 0;
+
+		//! @return the message history of this chat sessions
+		virtual ChatMessageVector GetMessageHistory() = 0;
 
 		//! @return True if the chat session is public like chat room or channel.
 		//!         Otherwise return False

@@ -106,10 +106,12 @@ namespace OpensimIM
 		if (state_ != STATE_READY)
 			throw Core::Exception("The connection is closed.");
 
-		// This IM message was first from this user
-		ChatSession* session = new ChatSession(framework_);
-		im_chat_sessions_.push_back(session);
-		session->MessageFromAgent(user_id, "", "");
+		ChatSession* session = GetPrivateChatSession(user_id);
+		if (!session)
+		{
+			session = new ChatSession(framework_, user_id, false);
+			im_chat_sessions_.push_back(session);
+		}
 		return session;
 	}
 
@@ -126,7 +128,7 @@ namespace OpensimIM
 			}
 		}
 
-		ChatSession* session = new ChatSession(framework_, channel);
+		ChatSession* session = new ChatSession(framework_, channel, true);
 		public_chat_sessions_.push_back(session);
 		return session;
 	}
@@ -325,21 +327,30 @@ namespace OpensimIM
 
 	void Connection::OnIMMessage(const QString &from_id, const QString &from_name, const QString &text)
 	{
+		ChatSession* session = GetPrivateChatSession(from_id);
+		if ( !session )
+		{
+			// This IM message was first from this user
+			session = new ChatSession(framework_, from_id, false);
+			im_chat_sessions_.push_back(session);
+			
+		}
+		session->MessageFromAgent(from_id, from_name, text);
+	}
+
+	ChatSession* Connection::GetPrivateChatSession(const QString &user_id)
+	{
 		for (ChatSessionVector::iterator i = im_chat_sessions_.begin(); i != im_chat_sessions_.end(); ++i)
 		{
 			Communication::ChatSessionParticipantVector participants = (*i)->GetParticipants();
 			assert( participants.size() == 1); // Opensim IM chat sessions are always between two user
 			Communication::ChatSessionParticipantInterface* participant = participants[0];
-			if ( participant->GetID().compare(from_id) == 0 )
+			if ( participant->GetID().compare(user_id) == 0 )
 			{
-				(*i)->MessageFromAgent(from_id, from_name, text);
-				return;
+				return (*i);
 			}
 		}
-		// This IM message was first from this user
-		ChatSession* session = new ChatSession(framework_);
-		im_chat_sessions_.push_back(session);
-		session->MessageFromAgent(from_id, from_name, text);
+		return NULL;
 	}
 
 } // end of namespace: OpensimIM

@@ -8,10 +8,14 @@ namespace OpensimIM
 
 	}
 
+	ChatSessionParticipant::ChatSessionParticipant(Contact *contact): contact_(contact)
+	{
+
+	}
+
 	Communication::ContactInterface* ChatSessionParticipant::GetContact() const
 	{
-		//! \todo implement
-		return NULL;
+		return contact_;
 	}
 
 	QString ChatSessionParticipant::GetID() const
@@ -22,6 +26,11 @@ namespace OpensimIM
 	QString ChatSessionParticipant::GetName() const
 	{
 		return name_;
+	}
+
+	void ChatSessionParticipant::SetName(const QString &name)
+	{
+		name_ = name;
 	}
 
 } // end of namespace: OpensimIM

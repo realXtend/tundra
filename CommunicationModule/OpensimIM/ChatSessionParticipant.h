@@ -3,6 +3,7 @@
 
 #include "Foundation.h"
 #include "..\interface.h"
+#include "Contact.h"
 
 namespace OpensimIM
 {
@@ -10,6 +11,7 @@ namespace OpensimIM
 	{
 	public:
 
+		ChatSessionParticipant(Contact *contact);
 		ChatSessionParticipant(const QString &id, const QString &name);
 
 		//! Return NULL pointer if the participant is not on
@@ -22,6 +24,8 @@ namespace OpensimIM
 		//! Provides name of this participant
 		virtual QString GetName() const;
 
+		virtual void SetName(const QString &name);
+
 		//! NOT IMPLEMENTED
 //		virtual bool IsTyping() const;
 
@@ -33,6 +37,7 @@ namespace OpensimIM
 	protected:
 		QString name_;
 		QString uuid_;
+		Contact* contact_;
 		//RexTypes::RexUUID uuid_;
 	};
 	typedef std::vector<ChatSessionParticipant*> ChatSessionParticipantVector;
