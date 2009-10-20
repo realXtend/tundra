@@ -445,9 +445,9 @@ if 0: #pygame window test
     
     #works :)=======
 
-if 0:
+if 0: #testing the activation and deactivation of the editgui
     canvas = r.c.canvas
-    print type(canvas), dir(canvas)
-    modu = r.getQtModule()
-    modu.DeleteCanvas(canvas)
-    r.c.canvas = None
+    if r.c.activated:
+        r.c.deactivate()
+    else:
+        r.c.activate()

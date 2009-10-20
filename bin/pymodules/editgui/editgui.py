@@ -25,7 +25,7 @@ from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile
 from circuits import Component
 
-from conversions import *#for euler - quat -euler
+from conversions import * #for euler - quat -euler conversions
 
 try:
     import ogre.renderer.OGRE as ogre
@@ -58,8 +58,10 @@ class EditGUI(Component):
         height = widget.size.height()
         self.canvas.resize(width, height)
         self.canvas.AddWidget(widget)
-        self.canvas.Show()
-
+        #self.canvas.Show()
+        
+        self.deactivate()
+        
         #for some reason setRange is not there. is not not a slot of these?
         #"QDoubleSpinBox has no attribute named 'setRange'"
         #apparently they are properties .minimum and .maximum, made in the xml now
@@ -309,36 +311,40 @@ class EditGUI(Component):
     def on_mouseclick(self, click_id, mouseinfo, callback):
         #print "MouseMove", mouseinfo.x, mouseinfo.y
         #print "on_mouseclick", click_id,
-        if self.mouse_events.has_key(click_id):
-            self.mouse_events[click_id](mouseinfo)
-            #print "on_mouseclick", click_id, self.mouse_events[click_id]
-        #else:
-            #print "unknown click_id?", self.mouse_events
-    
-    def on_keydown(self, key, mods, callback):
-        if key == self.OIS_ESC:
-            self.hideArrows()  
-            callback(True)
+        if self.activated:
+            if self.mouse_events.has_key(click_id):
+                self.mouse_events[click_id](mouseinfo)
+                #print "on_mouseclick", click_id, self.mouse_events[click_id]
+            #else:
+                #print "unknown click_id?", self.mouse_events
             
     def on_mousemove(self, mouseinfo, callback):
         """stub for dragging objects around 
         - should get the dir of movements relative to the view somehow"""
-        pass
-        #~ if self.left_button_down and self.sel is not None:
-            #~ print "MouseMove:", mouseinfo.x, mouseinfo.y
+        return
+        if self.activated:
+            if self.left_button_down and self.sel is not None:
+                print "MouseMove:", mouseinfo.x, mouseinfo.y
 
-        #~ elif self.right_button_down and self.sel is not None:
-            #~ self.rightArrow.setOrientation(self.cam.DerivedOrientation)
-            #~ self.upArrow.setOrientation(self.cam.DerivedOrientation)
+            elif self.right_button_down and self.sel is not None:
+                self.rightArrow.setOrientation(self.cam.DerivedOrientation)
+                self.upArrow.setOrientation(self.cam.DerivedOrientation)
 
     def on_exit(self):
         r.logInfo("EditGUI exiting.")
         self.hideArrows()
-
-        #self.canvas.Hide()
+        
         modu = r.getQtModule()
         if self.canvas is not None:
             modu.DeleteCanvas(self.canvas)
+            
+    def activate(self):
+        self.activated = True
+        self.canvas.Show()
+
+    def deactivate(self):
+        self.activated = False
+        self.canvas.Hide()
 
 
 
