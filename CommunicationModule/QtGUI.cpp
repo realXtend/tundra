@@ -1,6 +1,7 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
 #include "QtModule.h"
+#include "UICanvasManager.h"
 
 #include <QtUiTools>
 #include <QFile>
@@ -27,7 +28,7 @@ namespace CommunicationUI
 		else if ( commManager_->GetState() != CommunicationManager::STATE_ERROR )
 		{
 			// Set param to QtUI::UICanvas::Internal to put inside ogre window
-			canvas_ = qt_module->CreateCanvas(UICanvas::External).lock();
+			canvas_ = qt_module->CreateCanvas(UICanvas::Internal).lock();
 			UIContainer *UIContainer_ = new UIContainer(0);
 			canvas_->AddWidget(UIContainer_);
 			canvas_->Show(); 
@@ -41,8 +42,13 @@ namespace CommunicationUI
 			// Init title, icon and size
 			canvas_->SetCanvasWindowIcon(QIcon(":/images/iconUsers.png"));
 			canvas_->SetCanvasWindowTitle(QString("realXtend Naali Communications Login"));
+			canvas_->SetPosition(30,30);
+			canvas_->SetCanvasSize(450, 165);
+			canvas_->SetCanvasResizeLock(true); //! REMOVE LATER WHEN RESIZE WORKS
 			SetWindowSize(QSize(450, 165));
 
+			// Add to control bar
+			qt_module->GetCanvasManager()->AddCanvasToControlBar(canvas_, QString("Communications"));
 			LogInfo("Loading succesfull");
 		}		
 		else
@@ -86,6 +92,8 @@ namespace CommunicationUI
 		LogInfo("Creating UIContainer, initializing with Login widget...");
 		this->setLayout(new QVBoxLayout);
 		this->layout()->setMargin(0);
+		this->setObjectName(QString("containerWidget"));
+		this->setStyleSheet("QWidget#containerWidget { background-color: rgba(255,255,255,0); }");
 		LoadUserInterface(false);
 		LogInfo("Loading successfull");
 	}
