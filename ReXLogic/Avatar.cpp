@@ -169,6 +169,18 @@ namespace RexLogic
                 Scene::Events::EntityEventData event_data;
                 event_data.entity = entity;
                 fw->GetEventManager()->SendEvent(fw->GetEventManager()->QueryEventCategory("Scene"), Scene::Events::EVENT_CONTROLLABLE_ENTITY, &event_data);
+                
+                // If avatar does not have appearance address yet, and the connection info has, then use it
+                EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());  
+                if (avatar.GetAppearanceAddress().empty())
+                {                     
+                    std::string avataraddress = rexlogicmodule_->GetServerConnection()->GetInfo().avatarStorageUrl;
+                    if (!avataraddress.empty())
+                    {                    
+                        avatar.SetAppearanceAddress(avataraddress,false);
+                        avatar_appearance_.DownloadAppearance(entity);
+                    }
+                }        
             }
 
             ShowAvatarNameOverlay(presence.LocalId);
@@ -281,7 +293,7 @@ namespace RexLogic
     }
     
     bool Avatar::HandleRexGM_RexAppearance(OpenSimProtocol::NetworkEventInboundData* data)
-    {        
+    {                
         data->message->ResetReading();    
         data->message->SkipToFirstVariableByName("Parameter");
 
