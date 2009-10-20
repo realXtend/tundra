@@ -208,7 +208,7 @@ namespace RexLogic
         // If this is the user's avatar, make the editor refresh its view (morphs, textures etc.)
         if (entity == rexlogicmodule_->GetAvatarHandler()->GetUserAvatar())
         {
-            RexLogicModule::LogInfo("User avatar changed, rebuilding editor view");
+            RexLogicModule::LogDebug("User avatar changed, rebuilding editor view");
             rexlogicmodule_->GetAvatarEditor()->RebuildEditView(); 
         }  
     }
