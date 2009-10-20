@@ -108,6 +108,8 @@ namespace OpensimIM
 		//! Called when Instant message has been received from Opensim server.
 		virtual void OnIMMessage(const QString &from_id, const QString &from_name, const QString &text);
 
+		virtual ChatSession* GetPrivateChatSession(const QString &user_id);
+
 	private:
 		Foundation::Framework* framework_;
 		QString name_;

@@ -1,20 +1,26 @@
 #include "ChatSession.h"
 #include "RexLogicModule.h" 
 #include "OpensimProtocolModule.h"
+#include <QTime>
 
 namespace OpensimIM
 {
-	ChatSession::ChatSession(Foundation::Framework* framework, const QString &channel_id): framework_(framework), channel_id_(channel_id), server_participant_("0", "Server"), private_im_session_(false)
+	ChatSession::ChatSession(Foundation::Framework* framework, const QString &id, bool public_chat): framework_(framework), server_("0", "Server"), private_im_session_(!public_chat), self_("", "You"), state_(STATE_OPEN)
 	{
 		//! \todo Add support to different channel numbers
 		//!       This requires changes to SendChatFromViewerPacket method or 
 		//!       chat packet must be construaed by hand.
-		if ( channel_id.compare("0") != 0 )
-			throw Core::Exception("Cannot create chat session, channel id now allowed"); 
-	}
-
-	ChatSession::ChatSession(Foundation::Framework* framework): framework_(framework), channel_id_(""), server_participant_("0", "Server"), private_im_session_(true)
-	{
+		if ( public_chat )
+		{
+			channel_id_ = id;
+			if ( channel_id_.compare("0") != 0 )
+				throw Core::Exception("Cannot create chat session, channel id now allowed"); 
+		}
+		else
+		{
+			ChatSessionParticipant* p = new ChatSessionParticipant(id, "");
+			participants_.push_back(p);
+		}
 	}
 
 	void ChatSession::SendMessage(const QString &text)
@@ -23,11 +29,18 @@ namespace OpensimIM
 			SendPrivateIMMessage(text);
 		else
 			SendPublicChatMessage(text);
+	}
 
+	Communication::ChatSessionInterface::State ChatSession::GetState() const
+	{
+		return state_;
 	}
 
 	void ChatSession::SendPrivateIMMessage(const QString &text)
 	{
+		if (state_ != STATE_OPEN)
+			throw Core::Exception("Chat session is closed");
+
 		RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
 		if (rexlogic_ == NULL)
@@ -40,6 +53,8 @@ namespace OpensimIM
 		if ( !connection->IsConnected() )
 			throw Core::Exception("Cannot send IM message, rex server connection is not established");
 
+		ChatMessage* m = new ChatMessage(&self_, QTime::currentTime(), text);
+		message_history_.push_back(m);
 
 		for (ChatSessionParticipantVector::iterator i = participants_.begin(); i != participants_.end(); ++i)
 		{
@@ -61,21 +76,44 @@ namespace OpensimIM
 		if ( !connection->IsConnected() )
 			throw Core::Exception("Cannot send text message, rex server connection is not established");
 
+		ChatMessage* m = new ChatMessage(&self_, QTime::currentTime(), text);
+		message_history_.push_back(m);
+
 		connection->SendChatFromViewerPacket( text.toStdString() );
 	}
 
 	void ChatSession::Close()
 	{
 		//! \todo IMPLEMENT
+		state_ = STATE_CLOSED;
+		emit( Closed(this) );
 	}
-	void ChatSession::MessageFromAgent(const QString &avatar_id, const QString &name, const QString &text)
+
+	Communication::ChatMessageVector ChatSession::GetMessageHistory() 
+	{
+		Communication::ChatMessageVector message_history;
+		for (ChatMessageVector::iterator i = message_history_.begin(); i != message_history_.end(); ++i)
+		{
+			assert( (*i) != NULL );
+			message_history.push_back( (*i) );
+		}
+		return message_history;
+	}
+
+	void ChatSession::MessageFromAgent(const QString &avatar_id, const QString &from_name, const QString &text)
 	{
 		ChatSessionParticipant* participant = FindParticipant(avatar_id);
 		if ( !participant )
 		{
-			participant = new ChatSessionParticipant(avatar_id, name);
+			participant = new ChatSessionParticipant(avatar_id, from_name);
 			participants_.push_back(participant);
 		}
+
+		if (participant->GetName().size() == 0)
+			((ChatSessionParticipant*)participant)->SetName(from_name); //! @HACK We should get the name from some another source!
+
+		ChatMessage* m = new ChatMessage(participant, QTime::currentTime(), text);
+		message_history_.push_back(m);
 
 		emit MessageReceived(text, *participant);
 
@@ -94,7 +132,9 @@ namespace OpensimIM
 
 	void ChatSession::MessageFromServer(const QString &text)
 	{
-		emit MessageReceived(text, dynamic_cast<Communication::ChatSessionParticipantInterface&>(server_participant_));
+		ChatMessage* m = new ChatMessage(&server_, QTime::currentTime(), text);
+		message_history_.push_back(m);
+		emit MessageReceived(text, dynamic_cast<Communication::ChatSessionParticipantInterface&>(server_));
 	}
 
 	void ChatSession::MessageFromObject(const QString &object_id, const QString &text)

@@ -66,15 +66,29 @@ namespace OpensimIM
 		console_service->RegisterCommand(Console::CreateCommand("opensimim test", "Test IM connestion by sending a text message to public chat", Console::Bind(this, &ConnectionProvider::OnConsoleCommandTest)));
 	}
 
+	static Communication::ChatSessionInterface* session = NULL;
 	Console::CommandResult ConnectionProvider::OnConsoleCommandTest(const Core::StringVector &params)
 	{
 		try
 		{
+			assert( connections_.size() == 1 );
 			QString user_id = "8bfe35a2-56a6-49fd-b0ad-c7da0aab5bf9";
-			Communication::ChatSessionInterface* session = connections_[0]->OpenPrivateChatSession(user_id);
+			
+			if (session == NULL)
+				session = connections_[0]->OpenPrivateChatSession(user_id);
 			session->SendMessage("Hello there!");
 			session->SendMessage("How are you");
-			session->Close();
+			LogInfo("Chat history:");
+			Communication::ChatMessageVector history = session->GetMessageHistory();
+			for (Communication::ChatMessageVector::iterator i = history.begin(); i != history.end(); ++i)
+			{
+				QString from = (*i)->GetOriginator()->GetName();
+				QString text = (*i)->GetText();
+				QString time = (*i)->GetTimeStamp().toString();
+				QString note = QString(" ").append(time).append(" - ").append(from).append(": ").append(" ").append(text);
+				LogInfo(note.toStdString());
+			}
+			//session->Close();
 		}
 		catch(std::exception& e)
 		{
