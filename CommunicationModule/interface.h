@@ -128,7 +128,7 @@ namespace Communication
 		//! contact list
 		virtual ContactInterface* GetContact() const = 0;
 
-		//! Provides id of this participant 
+		//! @return id of this participant 
 		virtual QString GetID() const = 0;
 
 		//! Provides name of this participant
@@ -137,9 +137,9 @@ namespace Communication
 	typedef std::vector<ChatSessionParticipantInterface*> ChatSessionParticipantVector;
 
 	/**
-	 * A message in chat session.
-	 *
-	 * \todo GetAttachment() method for supporting file attachements in future
+	 *  A message in chat session.
+	 *  @note This interface is not currently used!
+	 *  @todo GetAttachment() method for supporting file attachement feature in future
 	 */
 	class IMMessageInterface
 	{
@@ -154,14 +154,24 @@ namespace Communication
 	 * This can represents irc channel or jabber conversation.
 	 *
 	 */
-	// TextChatSessionInterface ?
 	class ChatSessionInterface: public QObject
 	{
 		Q_OBJECT
 	public:
+		//! Send a text message to chat session
+		//! @param text The message
 		virtual void SendMessage(const QString &text) = 0;
+
+		//! Closes the chat session. No more messages can be send or received. 
+		//! Causes Closed signals to be emitted.
 		virtual void Close() = 0;
+
+		//! Provides all known participants of the chat session
 		virtual ChatSessionParticipantVector GetParticipants() const = 0;
+
+		//! @return True if the chat session is public like chat room or channel.
+		//!         Otherwise return False
+		//virtual bool IsPublic() = 0;
 	signals:
 		void MessageReceived(const QString &text, const Communication::ChatSessionParticipantInterface& participant);
 		void ParticipantJoined(const ChatSessionParticipantInterface& participant);
@@ -251,7 +261,11 @@ namespace Communication
 
 		//! Open new chat session with given contact
 		//! @param contact Chat partner target
-		virtual ChatSessionInterface* OpenChatSession(const ContactInterface &contact) = 0;
+		virtual ChatSessionInterface* OpenPrivateChatSession(const ContactInterface &contact) = 0;
+
+		//! Open new chat session with given user
+		//! @param user_id The user id of chat partner target
+		virtual ChatSessionInterface* OpenPrivateChatSession(const QString& user_id) = 0;
 
 		//! Open new chat session to given room
 		virtual ChatSessionInterface* OpenChatSession(const QString &channel) = 0;
