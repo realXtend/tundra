@@ -10,13 +10,14 @@ namespace OpensimIM
 
 	Connection::Connection(Foundation::Framework* framework): framework_(framework), name_(""), protocol_(OPENSIM_IM_PROTOCOL), server_(""), reason_("")
 	{
+		// OpensimIM connection is automatically established when connected to world so 
+		// initial state is always STATE_READY
+		state_ = STATE_READY;
+
 		RequestFriendlist();
 		RegisterConsoleCommands();
 		OpenWorldChatSession();
 
-		// OpensimIM connection is automatically established when connected to world so 
-		// initial state is READY
-		state_ = STATE_READY;
 		//emit( ConnectionReady(*this) );
 	}
 
@@ -72,26 +73,51 @@ namespace OpensimIM
 
 	Communication::ContactGroupInterface* Connection::GetContacts() const
 	{
+		if (state_ != STATE_READY)
+			throw Core::Exception("The connection is closed.");
+
 		//! \todo IMPELEMENT
 		return NULL;
 	}
 		
 	QStringList Connection::GetAvailablePresenceStatusOptions() const
 	{
+		if (state_ != STATE_READY)
+			throw Core::Exception("The connection is closed.");
+
 		QStringList options;
+		//! Opensim provides just two online state options
 		options.append("online");
 		options.append("offline");
 		return QStringList();
 	}
 
-	Communication::ChatSessionInterface* Connection::OpenChatSession(const Communication::ContactInterface &contact)
+	Communication::ChatSessionInterface* Connection::OpenPrivateChatSession(const Communication::ContactInterface &contact)
 	{
+		if (state_ != STATE_READY)
+			throw Core::Exception("The connection is closed.");
+
 		//! \todo IMPLEMENT
 		return NULL;
 	}
 
+	Communication::ChatSessionInterface* Connection::OpenPrivateChatSession(const QString &user_id)
+	{
+		if (state_ != STATE_READY)
+			throw Core::Exception("The connection is closed.");
+
+		// This IM message was first from this user
+		ChatSession* session = new ChatSession(framework_);
+		im_chat_sessions_.push_back(session);
+		session->MessageFromAgent(user_id, "", "");
+		return session;
+	}
+
 	Communication::ChatSessionInterface* Connection::OpenChatSession(const QString &channel)
 	{
+		if (state_ != STATE_READY)
+			throw Core::Exception("The connection is closed.");
+
 		for (ChatSessionVector::iterator i = public_chat_sessions_.begin(); i != public_chat_sessions_.end(); ++i)
 		{
 			if ( (*i)->GetID().compare( channel ) == 0 )
@@ -107,6 +133,9 @@ namespace OpensimIM
 	
 	void Connection::SendFriendRequest(const QString &target, const QString &message)
 	{
+		if (state_ != STATE_READY)
+			throw Core::Exception("Cannot send text message, the connection is closed.");
+
 		RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
 		if (rexlogic_ == NULL)
@@ -129,6 +158,8 @@ namespace OpensimIM
 		
 	void Connection::Close()
 	{
+		//! @todo Send information to server
+
 		state_ = STATE_CLOSED;
 		emit ConnectionClosed( *this );
 	}

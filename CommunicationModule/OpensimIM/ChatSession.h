@@ -54,6 +54,7 @@ namespace OpensimIM
 		ChatSessionParticipant server_participant_;
 		ChatSessionParticipant* FindParticipant(const QString &uuid);
 		bool private_im_session_;
+		
 
 	private:
 		Foundation::Framework* framework_;

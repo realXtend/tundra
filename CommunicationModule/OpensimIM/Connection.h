@@ -65,7 +65,7 @@ namespace OpensimIM
 
 		//! Open new chat session with given contact
 		//! This is opensim IM chat
-		virtual Communication::ChatSessionInterface* OpenChatSession(const Communication::ContactInterface &contact);
+		virtual Communication::ChatSessionInterface* OpenPrivateChatSession(const Communication::ContactInterface &contact);
 
 		//! Open new chat session to given room
 		virtual Communication::ChatSessionInterface* OpenChatSession(const QString &channel);
@@ -89,6 +89,8 @@ namespace OpensimIM
 		//! Handle incoming improved instant messages
 		//! this includes instant messages and friend requests and friend requestt responses responses
 		bool HandleRexNetMsgImprovedInstantMessage(NetInMessage& msg);
+
+		virtual Communication::ChatSessionInterface* OpenPrivateChatSession(const QString &user_id);
 	
 	protected:
 		//! Add console commands: 
@@ -103,6 +105,7 @@ namespace OpensimIM
 		//! We create ChatSession object automatically when connection is established
 		virtual void OpenWorldChatSession();
 
+		//! Called when Instant message has been received from Opensim server.
 		virtual void OnIMMessage(const QString &from_id, const QString &from_name, const QString &text);
 
 	private:

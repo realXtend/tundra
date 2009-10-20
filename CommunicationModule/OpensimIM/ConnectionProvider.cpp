@@ -68,17 +68,13 @@ namespace OpensimIM
 
 	Console::CommandResult ConnectionProvider::OnConsoleCommandTest(const Core::StringVector &params)
 	{
-		Communication::ConnectionInterface* conn;
 		try
 		{
-			Communication::Credentials credentials("", "", "", 0); 
-			conn = OpenConnection(credentials);
-			
-			QString channel = "0";
-			Communication::ChatSessionInterface* chat = conn->OpenChatSession(channel);
-
-			QString message = "Hello world!";
-			chat->SendMessage(message);
+			QString user_id = "8bfe35a2-56a6-49fd-b0ad-c7da0aab5bf9";
+			Communication::ChatSessionInterface* session = connections_[0]->OpenPrivateChatSession(user_id);
+			session->SendMessage("Hello there!");
+			session->SendMessage("How are you");
+			session->Close();
 		}
 		catch(std::exception& e)
 		{
@@ -86,8 +82,6 @@ namespace OpensimIM
 			ret.append( e.what() );
 			return Console::ResultFailure( ret.toStdString() );
 		}
-//		if ( conn->GetState() == Communication::ConnectionInterface::STATE_READY )
-//			conn->Close();
 
 		QString ret = "";
 		return Console::ResultSuccess( ret.toStdString() );
