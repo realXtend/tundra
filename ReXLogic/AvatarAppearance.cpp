@@ -39,6 +39,14 @@ static const Core::uint XMLRPC_ASSET_HASH_LENGTH = 28;
 
 namespace RexLogic
 {
+    std::string ReplaceSpaces(const std::string& orig_str)
+    {
+        std::string str = orig_str;
+        for (Core::uint i = 0; i < str.length(); ++i)
+            if (str[i] == ' ') str[i] = '_';
+        return str;
+    }
+    
     AvatarAppearance::AvatarAppearance(RexLogicModule *rexlogicmodule) :
         rexlogicmodule_(rexlogicmodule)
     {
@@ -1078,24 +1086,23 @@ namespace RexLogic
         
         RexLogicModule::LogInfo("Avatar export for user " + account + " @ " + authserver);
         
-        //! Instantiate new avatar exporter & give it the work request
+        // Instantiate new avatar exporter & give it the work request
         avatar_exporter_ = AvatarExporterPtr(new AvatarExporter());
         
         AvatarExporterRequestPtr request(new AvatarExporterRequest());
         request->account_ = account;
         request->authserver_ = authserver;
         request->password_ = password;
-        
-        //! Convert avatar appearance to xml
-        //! Note: the exporter task will convert < > to &lt; &gt; to not confuse the eventual xmlrpc call
+
+        // Convert avatar appearance to xml
         QDomDocument avatar_export("Avatar");
         LegacyAvatarSerializer::WriteAvatarAppearance(avatar_export, appearance);
-        
         std::string avatar_export_str = avatar_export.toString().toStdString();
         request->avatar_xml_ = avatar_export_str;
-        
+
+        // Get assets for export 
         GetAvatarAssetsForExport(request, appearance);
-        
+                                                
         avatar_exporter_->AddRequest<AvatarExporterRequest>(request);
     }
     
@@ -1136,7 +1143,7 @@ namespace RexLogic
         }
         
         Ogre::MaterialManager& mat_mgr = Ogre::MaterialManager::getSingleton();
-        
+                
         std::string export_name = material.asset_.name_;
         if (export_name.find(".material") == std::string::npos)
             export_name.append(".material");
@@ -1196,7 +1203,7 @@ namespace RexLogic
                     if (texUnit->getContentType() != Ogre::TextureUnitState::CONTENT_SHADOW)
                     {
                         if (index < material.textures_.size())
-                            texUnit->setTextureName(material.textures_[index].name_);
+                            texUnit->setTextureName(ReplaceSpaces(material.textures_[index].name_));
                         index++;
                     }
                 }
@@ -1212,7 +1219,6 @@ namespace RexLogic
         std::string new_mat_name = export_name;
         ReplaceSubstring(new_mat_name, ".material", "");
         ReplaceSubstring(mat_string, "material " + clone->getName(), "material " + new_mat_name);
-        std::cout << mat_string << std::endl;
         
         if (request->assets_.find(export_name) == request->assets_.end())
         {
@@ -1251,12 +1257,12 @@ namespace RexLogic
         
         // Export textures used by material
         for (Core::uint i = 0; i < material.textures_.size(); ++i)
-            GetAvatarAssetForExport(request, material.textures_[i]);
+            GetAvatarAssetForExport(request, material.textures_[i], true);
             
         return true;
     }
     
-    bool AvatarAppearance::GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& asset)
+    bool AvatarAppearance::GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& asset, bool replace_spaces)
     {
         std::string export_name = asset.name_;
         // If name is empty, skip
@@ -1265,6 +1271,9 @@ namespace RexLogic
             RexLogicModule::LogDebug("Skipping unnamed asset");
             return true;
         }
+
+        if (replace_spaces)
+            export_name = ReplaceSpaces(export_name);
 
         // Skip if already exists with this name
         if (request->assets_.find(export_name) != request->assets_.end())

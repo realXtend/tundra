@@ -136,7 +136,7 @@ namespace RexLogic
         //! Adds an avatar asset to the export request
         /*! \return true if added successfully
          */
-        bool GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& appearance);
+        bool GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& appearance, bool replace_spaces = false);
         
         //! Adds an avatar asset to the export request
         /*! \return true if added successfully
