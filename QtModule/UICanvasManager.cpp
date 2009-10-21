@@ -25,8 +25,11 @@ namespace QtUI
 	void UICanvasManager::AddCanvasToControlBar(boost::shared_ptr<QtUI::UICanvas> canvas, const QString &buttonTitle)
 	{
 		if (controlBarLayout_)
-		{
-			controlBarLayout_->addWidget(new ControlBarButton(controlBarWidget_, canvas, buttonTitle));
+		{	
+			ControlBarButton *button = new ControlBarButton(controlBarWidget_, canvas, buttonTitle);
+			controlBarLayout_->addWidget(button);
+			QSize widgetSize = controlBarWidget_->size();
+			controlBarCanvas_->SetCanvasSize(widgetSize.width()+button->size().width(), widgetSize.height());
 		}
 	}
 
@@ -48,12 +51,12 @@ namespace QtUI
 			QUiLoader loader;
 			QFile uiFile("./data/ui/controlbar.ui");
 			controlBarWidget_ = loader.load(&uiFile);
-			controlBarWidget_->setGeometry(0,0,200,27);
+			controlBarWidget_->setGeometry(0,0,0,0);
 			controlBarLayout_ = controlBarWidget_->findChild<QHBoxLayout *>("layout_ControlBar");
 
 			controlBarCanvas_ = spQtModule->CreateCanvas(UICanvas::Internal).lock();
 			controlBarCanvas_->SetPosition(0,0);
-			controlBarCanvas_->SetCanvasSize(200,27);
+			controlBarCanvas_->SetCanvasSize(25, 27);
 			controlBarCanvas_->SetLockPosition(true);
 			controlBarCanvas_->SetCanvasResizeLock(true);
 			controlBarCanvas_->SetTop();
@@ -65,8 +68,11 @@ namespace QtUI
 	ControlBarButton::ControlBarButton(QWidget *parent, boost::shared_ptr<QtUI::UICanvas> canvas, const QString &buttonTitle)
 		: QPushButton(buttonTitle, parent), myCanvas_(canvas), myTitle_(buttonTitle)
 	{
-		this->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+		QSizePolicy policy(QSizePolicy::Fixed, QSizePolicy::Fixed, QSizePolicy::PushButton);
+		this->setMinimumSize(QSize(25,15));
+		this->setSizePolicy(policy);
 		this->setFlat(true);
+		this->resize(QSize(70,15));
 		QObject::connect(this, SIGNAL( clicked() ), this, SLOT( toggleShow() )); 
 	}
 
