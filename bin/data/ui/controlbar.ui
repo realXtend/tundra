@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>300</width>
-    <height>27</height>
+    <width>94</width>
+    <height>16</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,6 +27,7 @@ QFrame#ControlBarFrame {
 }
 
 QPushButton {
+	padding: 2px 5px;
 	font-size: 10px;
 	color: rgb(255, 255, 255);
 	background-color: rgba(255, 255, 255, 0);
@@ -69,7 +70,11 @@ QPushButton::pressed {
        <number>0</number>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="layout_ControlBar"/>
+       <layout class="QHBoxLayout" name="layout_ControlBar">
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+       </layout>
       </item>
      </layout>
     </widget>

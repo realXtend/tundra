@@ -31,7 +31,6 @@ namespace CommunicationUI
 			canvas_ = qt_module->CreateCanvas(UICanvas::Internal).lock();
 			UIContainer *UIContainer_ = new UIContainer(0);
 			canvas_->AddWidget(UIContainer_);
-			canvas_->Show(); 
 
 			// Connect signal for resizing
 			QObject::connect(UIContainer_, SIGNAL( Resized(QSize &) ), this, SLOT( SetWindowSize(QSize &) ));
@@ -40,15 +39,19 @@ namespace CommunicationUI
 			QObject::connect(UIContainer_, SIGNAL( SetCanvasIcon(QIcon &) ), canvas_.get(), SLOT( SetCanvasWindowIcon(QIcon &) ));
 			
 			// Init title, icon and size
+			SetWindowSize(QSize(450, 165));
 			canvas_->SetCanvasWindowIcon(QIcon(":/images/iconUsers.png"));
 			canvas_->SetCanvasWindowTitle(QString("realXtend Naali Communications Login"));
 			canvas_->SetPosition(30,30);
 			canvas_->SetCanvasSize(450, 165);
 			canvas_->SetCanvasResizeLock(true); //! REMOVE LATER WHEN RESIZE WORKS
-			SetWindowSize(QSize(450, 165));
+			canvas_->SetTop();
+			canvas_->SetDirty();
+			canvas_->Render();
+			canvas_->Show(); 
 
 			// Add to control bar
-			qt_module->AddCanvasToControlBar(canvas_, QString("Communications"));
+			qt_module->AddCanvasToControlBar(canvas_, QString("Communication"));
 			LogInfo("Loading succesfull");
 		}		
 		else
