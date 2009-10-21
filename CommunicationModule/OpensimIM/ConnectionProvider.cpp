@@ -35,7 +35,7 @@ namespace OpensimIM
 		connections_.push_back(connection);
 		connect(connection, SIGNAL( ConnectionReady(const Communication::ConnectionInterface&) ), SLOT( OnConnectionReady(const Communication::ConnectionInterface&) ));
 		connect(connection, SIGNAL( FriendRequestReceived(Communication::FriendRequestInterface&) ), SLOT( OnFriendRequestReceived(Communication::FriendRequestInterface&) ));
-		if ( connection->GetState() == Communication::ConnectionInterface::STATE_READY )
+		if ( connection->GetState() == Communication::ConnectionInterface::STATE_OPEN )
 		{
 			OnConnectionReady(*connection);
 		}

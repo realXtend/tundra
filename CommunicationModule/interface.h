@@ -175,6 +175,8 @@ namespace Communication
 	public:
 		enum State { STATE_OPEN, STATE_CLOSED };
 
+		virtual ~ChatSessionInterface() {};
+
 		//! Send a text message to chat session
 		//! @param text The message
 		virtual void SendMessage(const QString &text) = 0;
@@ -257,8 +259,8 @@ namespace Communication
 	public:
 		//! The state options of Connection object
 		//! ConnectionReady and ConnectionClosed signals are emited when state
-		//! changes to STATE_READY or STATE_CLOSED
-		enum State {STATE_INITIALIZING, STATE_READY, STATE_CLOSED, STATE_ERROR};
+		//! changes to STATE_OPEN or STATE_CLOSED
+		enum State {STATE_INITIALIZING, STATE_OPEN, STATE_CLOSED, STATE_ERROR};
 
 		virtual ~ConnectionInterface() {};
 

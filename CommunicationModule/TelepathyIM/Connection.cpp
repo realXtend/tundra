@@ -26,7 +26,8 @@ namespace TelepathyIM
 
 	Connection::~Connection()
 	{
-
+		if (!tp_connection_.isNull())
+			tp_connection_->requestDisconnect();
 	}
 	
 	QString Connection::GetName() const
@@ -98,12 +99,23 @@ namespace TelepathyIM
 
 	void Connection::Close()
 	{
-		//! @todo IMPLEMENT
+		if ( tp_connection_.isNull() )
+			return; // nothing to close
+
+		Tp::PendingOperation* op = tp_connection_->requestDisconnect();
+		connect(op, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnConnectionClosed(Tp::PendingOperation*) ));
 	}
 
 	void Connection::OnConnectionCreated(Tp::PendingOperation *op)
 	{
-		//! @todo IMPLEMENT
+		state_ = STATE_OPEN;
+		emit( ConnectionReady(*this) );
+	}
+
+	void Connection::OnConnectionClosed(Tp::PendingOperation *op)
+	{
+		state_ = STATE_CLOSED;
+		emit( ConnectionClosed(*this) );
 	}
 
 } // end of namespace: TelepathyIM

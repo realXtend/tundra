@@ -12,7 +12,7 @@ namespace OpensimIM
 	{
 		// OpensimIM connection is automatically established when connected to world so 
 		// initial state is always STATE_READY
-		state_ = STATE_READY;
+		state_ = STATE_OPEN;
 
 		RequestFriendlist();
 		RegisterConsoleCommands();
@@ -73,7 +73,7 @@ namespace OpensimIM
 
 	Communication::ContactGroupInterface& Connection::GetContacts()
 	{
-		if (state_ != STATE_READY)
+		if (state_ != STATE_OPEN)
 			throw Core::Exception("The connection is closed.");
 
 		return friend_list_;
@@ -81,7 +81,7 @@ namespace OpensimIM
 		
 	QStringList Connection::GetAvailablePresenceStatusOptions() const
 	{
-		if (state_ != STATE_READY)
+		if (state_ != STATE_OPEN)
 			throw Core::Exception("The connection is closed.");
 
 		QStringList options;
@@ -93,7 +93,7 @@ namespace OpensimIM
 
 	Communication::ChatSessionInterface* Connection::OpenPrivateChatSession(const Communication::ContactInterface &contact)
 	{
-		if (state_ != STATE_READY)
+		if (state_ != STATE_OPEN)
 			throw Core::Exception("The connection is closed.");
 
 		//! \todo IMPLEMENT
@@ -102,7 +102,7 @@ namespace OpensimIM
 
 	Communication::ChatSessionInterface* Connection::OpenPrivateChatSession(const QString &user_id)
 	{
-		if (state_ != STATE_READY)
+		if (state_ != STATE_OPEN)
 			throw Core::Exception("The connection is closed.");
 
 		ChatSession* session = GetPrivateChatSession(user_id);
@@ -116,7 +116,7 @@ namespace OpensimIM
 
 	Communication::ChatSessionInterface* Connection::OpenChatSession(const QString &channel)
 	{
-		if (state_ != STATE_READY)
+		if (state_ != STATE_OPEN)
 			throw Core::Exception("The connection is closed.");
 
 		for (ChatSessionVector::iterator i = public_chat_sessions_.begin(); i != public_chat_sessions_.end(); ++i)
@@ -134,7 +134,7 @@ namespace OpensimIM
 	
 	void Connection::SendFriendRequest(const QString &target, const QString &message)
 	{
-		if (state_ != STATE_READY)
+		if (state_ != STATE_OPEN)
 			throw Core::Exception("Cannot send text message, the connection is closed.");
 
 		RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
