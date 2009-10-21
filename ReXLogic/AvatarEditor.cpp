@@ -126,7 +126,10 @@ namespace RexLogic
         // Set canvas scrollbar policy
         canvas_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         canvas_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);   
-           
+   
+	    // Add to control bar
+		qt_module->AddCanvasToControlBar(canvas_, QString("Avatar Editor"));
+			           
         // Connect signals            
         QPushButton *button = avatar_widget_->findChild<QPushButton *>("but_export");
         if (button)
