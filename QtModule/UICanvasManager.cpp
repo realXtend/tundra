@@ -22,7 +22,7 @@ namespace QtUI
 
 	}
 
-	const void UICanvasManager::AddCanvasToControlBar(boost::shared_ptr<QtUI::UICanvas> canvas, QString buttonTitle)
+	void UICanvasManager::AddCanvasToControlBar(boost::shared_ptr<QtUI::UICanvas> canvas, const QString &buttonTitle)
 	{
 		if (controlBarLayout_)
 		{
@@ -30,7 +30,7 @@ namespace QtUI
 		}
 	}
 
-	const bool UICanvasManager::RemoveCanvasFromControlBar(boost::shared_ptr<QtUI::UICanvas> canvas)
+	bool UICanvasManager::RemoveCanvasFromControlBar(boost::shared_ptr<QtUI::UICanvas> canvas)
 	{
 		if (controlBarLayout_)
 		{
@@ -62,7 +62,7 @@ namespace QtUI
 		}
 	}
 
-	ControlBarButton::ControlBarButton(QWidget *parent, boost::shared_ptr<QtUI::UICanvas> canvas, const QString buttonTitle)
+	ControlBarButton::ControlBarButton(QWidget *parent, boost::shared_ptr<QtUI::UICanvas> canvas, const QString &buttonTitle)
 		: QPushButton(buttonTitle, parent), myCanvas_(canvas), myTitle_(buttonTitle)
 	{
 		this->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);

@@ -29,7 +29,7 @@ namespace
 }
 
 QtModule::QtModule()
-:ModuleInterfaceImpl(Foundation::Module::MT_Gui), controller_(0)
+:ModuleInterfaceImpl(Foundation::Module::MT_Gui), controller_(0), canvasManager_(0)
 {
 }
 
@@ -81,6 +81,7 @@ void QtModule::PostInitialize()
 void QtModule::Uninitialize()
 {
     SAFE_DELETE(controller_);
+	SAFE_DELETE(canvasManager_);
 }
 
 bool QtModule::HandleEvent(Core::event_category_id_t category_id,
@@ -137,6 +138,12 @@ boost::weak_ptr<UICanvas> QtModule::CreateCanvas(UICanvas::Mode mode)
     boost::shared_ptr<UICanvas> canvas = controller_->CreateCanvas(mode).lock();
 //    canvas->setParent(framework_->GetApplicationMainWindowQWidget());
     return canvas;
+}
+
+void QtModule::AddCanvasToControlBar(boost::shared_ptr<QtUI::UICanvas> canvas, const QString &buttonTitle)
+{
+	if (canvasManager_)
+		canvasManager_->AddCanvasToControlBar(canvas, buttonTitle);
 }
 
 

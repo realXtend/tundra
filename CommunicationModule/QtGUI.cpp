@@ -48,7 +48,7 @@ namespace CommunicationUI
 			SetWindowSize(QSize(450, 165));
 
 			// Add to control bar
-			qt_module->GetCanvasManager()->AddCanvasToControlBar(canvas_, QString("Communications"));
+			qt_module->AddCanvasToControlBar(canvas_, QString("Communications"));
 			LogInfo("Loading succesfull");
 		}		
 		else
