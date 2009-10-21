@@ -67,7 +67,12 @@ namespace TpQt4Communication
 
 namespace Communication
 {
-	Credentials::Credentials(const QString& protocol, const QString& user_id, const QString &server, int port ): protocol_(protocol), user_id_(user_id), port_(port)
+	Credentials::Credentials() : protocol_(""), user_id_(""), password_(""), server_(""), port_(0)
+	{
+
+	}
+
+	Credentials::Credentials(const QString& protocol, const QString& user_id, const QString &password, const QString &server, int port ): protocol_(protocol), user_id_(user_id), password_(password), server_(server), port_(port)
 	{
 
 	}
@@ -90,6 +95,16 @@ namespace Communication
 	QString Credentials::GetUserID() const
 	{
 		return user_id_;
+	}
+
+	void Credentials::SetPassword(const QString &password)
+	{
+		password_ = password;
+	}
+
+	QString Credentials::GetPassword() const
+	{
+		return password_;
 	}
 
 	void Credentials::SetServer(const QString &server)
