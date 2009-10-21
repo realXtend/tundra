@@ -4,6 +4,7 @@
 #include <QStringList>
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/PendingConnection>
+#include <TelepathyQt4/PendingOperation>
 #include "Foundation.h"
 #include "..\interface.h"
 #include "ContactGroup.h"
@@ -70,8 +71,11 @@ namespace TelepathyIM
 	protected:
 		virtual void CreateTpConnection(const Communication::CredentialsInterface &credentials);
 		virtual void OnConnectionCreated(Tp::PendingOperation *op);
+		virtual void Connection::OnConnectionClosed(Tp::PendingOperation *op);
 
 		Tp::ConnectionManagerPtr &tp_connection_manager_;
+		Tp::ConnectionPtr tp_connection_;
+
 		State state_;
 		QString name_;
 		QString protocol_;
