@@ -117,11 +117,15 @@ namespace RexLogic
             
         // Set canvas size. 
         QSize size = avatar_widget_->size();
-        canvas_->SetCanvasSize(size.width(), size.height());
+        canvas_->SetCanvasSize(size.width() + 1, size.height() + 1);
         canvas_->SetCanvasWindowTitle(QString("Avatar Editor"));
-
+                
         canvas_->AddWidget(avatar_widget_);
         //canvas_->Show();
+   
+        // Set canvas scrollbar policy
+        canvas_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        canvas_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);   
            
         // Connect signals            
         QPushButton *button = avatar_widget_->findChild<QPushButton *>("but_export");
