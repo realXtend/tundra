@@ -69,8 +69,12 @@ namespace QtUI
          */
         void DeleteCanvas(const UICanvas& canvas) { if (controller_!= 0) controller_->RemoveCanvas(canvas.GetID()); }
 
-		//! Return the CanvasManager for accessing services
-		UICanvasManager* GetCanvasManager() { return canvasManager_; }
+		/**
+		 * Adds the canvas to canvasManagers_ ControlBar
+		 * @param boost shared pointer to canvas
+		 * @param qstring button name
+		 */
+		void AddCanvasToControlBar(boost::shared_ptr<QtUI::UICanvas> canvas, const QString &buttonTitle);
 
     private:
         /// Initializes a mapping table between OIS and Qt keyboard codes.

@@ -22,15 +22,15 @@ namespace QtUI
 
 	public:
 		UICanvasManager(Foundation::Framework *framework);
-		virtual ~UICanvasManager(void);
+		virtual ~UICanvasManager();
 
 		//! Adds a canvas to the ControlBar
 		/// @param boost shared pointer to the UICanvas
-		const void AddCanvasToControlBar(boost::shared_ptr<QtUI::UICanvas> canvas, QString buttonTitle);
+		void AddCanvasToControlBar(boost::shared_ptr<QtUI::UICanvas> canvas, const QString &buttonTitle);
 		
 		//! removes a canvas from the ControlBar
 		/// @param boost shared pointer to the UICanvas
-		const bool RemoveCanvasFromControlBar(boost::shared_ptr<QtUI::UICanvas> canvas);
+		bool RemoveCanvasFromControlBar(boost::shared_ptr<QtUI::UICanvas> canvas);
 
 	private:
 		//! Init internal widgets
@@ -51,7 +51,7 @@ namespace QtUI
 	Q_OBJECT
 
 	public:
-		ControlBarButton(QWidget *parent, boost::shared_ptr<QtUI::UICanvas> canvas, const QString buttonTitle);
+		ControlBarButton(QWidget *parent, boost::shared_ptr<QtUI::UICanvas> canvas, const QString &buttonTitle);
 		boost::shared_ptr<QtUI::UICanvas> GetCanvas();
 
 	public slots:
