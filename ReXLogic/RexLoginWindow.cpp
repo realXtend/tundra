@@ -103,6 +103,10 @@ void RexLoginWindow::InitLoginWindow()
 
     canvas_->AddWidget(login_widget_);
 
+    // Set canvas scrollbar policy
+    canvas_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    canvas_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);   
+        
     // Create connections.
     QPushButton *pButton = login_widget_->findChild<QPushButton *>("but_connect");
     QObject::connect(pButton, SIGNAL(clicked()), this, SLOT(Connect()));
