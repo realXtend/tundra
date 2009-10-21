@@ -114,42 +114,10 @@ UICanvas::~UICanvas()
 }
 
 void UICanvas::AddWidget(QWidget* widget)
-{
-    switch(mode_)
-    {
-    case Internal:
-    {
-        QGraphicsScene* scene = this->scene();
-        scene_widgets_.append(scene->addWidget(widget));
-        ++widgets_;
-        break;
-    }
-    case External: 
-    {
-        ///todo Here lies a desing flaw do it better, this does not work.   
-        if (widgets_ != 0)
-        {
-           // Possible memory LEAK !!!
-            QGraphicsScene* scene = this->scene();
-            if (widgets_ == 1)
-            {
-                QWidget* viewport = this->viewport();
-                scene_widgets_.append(scene->addWidget(viewport));
-                scene_widgets_.append(scene->addWidget(widget));
-                setViewport(new QWidget);
-            }
-            else
-                scene_widgets_.append(scene->addWidget(widget));
-        }
-        else
-           setViewport(widget);
-
-        ++widgets_;
-        break;
-    }
-    default:
-        break;
-    }
+{ 
+    QGraphicsScene* scene = this->scene();
+    scene_widgets_.append(scene->addWidget(widget));
+    ++widgets_;
 }
 
 void UICanvas::SetPosition(int x, int y)
@@ -200,6 +168,9 @@ void UICanvas::SetBack()
 
 void UICanvas::Activate()
 {
+    if ( mode_ == External)
+        return;
+
 #ifdef Q_WS_WIN
     QSize current_size = size();
     //Qt::FramelessWindowHint
@@ -490,13 +461,10 @@ void UICanvas::Show()
     if ( mode_ != External)
     {
         
-        
         QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
         for (; iter != scene_widgets_.end(); ++iter)
             (*iter)->show();
             
-        
-
         container_->show();
         overlay_->show();
       
@@ -505,7 +473,16 @@ void UICanvas::Show()
         RenderSceneToOgreSurface();
     }
     else
+    {
+        
+        
+        QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
+        for (; iter != scene_widgets_.end(); ++iter)
+            (*iter)->show();
+
         show();
+    }
+    
 }
 
 
