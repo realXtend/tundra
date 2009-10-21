@@ -5,6 +5,7 @@
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/PendingConnection>
 #include <TelepathyQt4/PendingOperation>
+#include <TelepathyQt4/PendingReady>
 #include "Foundation.h"
 #include "..\interface.h"
 #include "ContactGroup.h"
@@ -71,7 +72,11 @@ namespace TelepathyIM
 	protected:
 		virtual void CreateTpConnection(const Communication::CredentialsInterface &credentials);
 		virtual void OnConnectionCreated(Tp::PendingOperation *op);
-		virtual void Connection::OnConnectionClosed(Tp::PendingOperation *op);
+		virtual void OnConnectionConnected(Tp::PendingOperation *op);
+		virtual void OnNewChannels(const Tp::ChannelDetailsList& details);
+		virtual void OnConnectionInvalidated(Tp::PendingOperation *op);
+		virtual void OnConnectionClosed(Tp::PendingOperation *op);
+		virtual void OnConnectionReady(Tp::PendingOperation *op);
 
 		Tp::ConnectionManagerPtr &tp_connection_manager_;
 		Tp::ConnectionPtr tp_connection_;

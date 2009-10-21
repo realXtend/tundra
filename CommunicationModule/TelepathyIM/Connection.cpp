@@ -108,8 +108,95 @@ namespace TelepathyIM
 
 	void Connection::OnConnectionCreated(Tp::PendingOperation *op)
 	{
+	    if (op->isError())
+		{
+			//std::string message = "Cannot create a connection object: ";
+			//message.append( op->errorMessage().toStdString() );
+			//LogError(message);
+			state_ = STATE_ERROR;
+			throw Core::Exception( op->errorMessage().toStdString().c_str() );
+		}
+		
+		Tp::PendingConnection *c = qobject_cast<Tp::PendingConnection *>(op);
+		tp_connection_ = c->connection();
+
+		//std::string message = "Connection created to IM server.";
+		//LogInfo(message);
+
+		QObject::connect(tp_connection_->requestConnect(),
+					     SIGNAL(finished(Tp::PendingOperation *)),
+						 SLOT(OnConnectionConnected(Tp::PendingOperation *)));
+
+		QObject::connect(tp_connection_.data(),
+			             SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
+						 SLOT(OnConnectionInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
+
+
 		state_ = STATE_OPEN;
 		emit( ConnectionReady(*this) );
+	}
+
+	void Connection::OnConnectionConnected(Tp::PendingOperation *op)
+	{
+		if (op->isError())
+		{
+			//QString reason = "Cannot connect to IM server:: ";
+			//reason.append(op->errorMessage());
+			//LogError(reason.toStdString());
+			state_ = STATE_ERROR;
+			throw Core::Exception( op->errorMessage().toStdString().c_str() );
+		}
+		//std::string message = "Connection established successfully to IM server.";
+		//LogInfo(message);
+
+		Tp::Features features;
+		features.insert(Tp::Connection::FeatureSimplePresence);
+		features.insert(Tp::Connection::FeatureRoster);
+		features.insert(Tp::Connection::FeatureSelfContact);
+		features.insert(Tp::Connection::FeatureCore);
+		QObject::connect(tp_connection_->becomeReady(features),
+		                 SIGNAL(finished(Tp::PendingOperation *)),
+						 SLOT(OnConnectionReady(Tp::PendingOperation *)));
+
+		if( tp_connection_->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS) )
+		{
+			QObject::connect(tp_connection_->requestsInterface(),
+                SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
+                SLOT(OnNewChannels(const Tp::ChannelDetailsList&)));
+		}
+	}
+
+	void Connection::OnConnectionReady(Tp::PendingOperation *op)
+	{
+	    if (op->isError())
+		{
+			//QString message = "Connection initialization to IM server failed: ";
+			//message.append(op->errorMessage());
+			//LogError(message.toStdString());
+			state_ = STATE_ERROR;
+			throw Core::Exception( op->errorMessage().toStdString().c_str() );
+		}
+//		LogInfo("Connection to IM server ready.");
+
+		//user_ = new User(tp_connection_);
+		//HandleNewContacts();
+
+		//QObject::connect(tp_connection_->contactManager(),
+  //          SIGNAL(presencePublicationRequested(const Tp::Contacts &)),
+  //          SLOT(OnPresencePublicationRequested(const Tp::Contacts &)));
+
+		state_ = STATE_OPEN;
+		emit( ConnectionReady(*this) );
+	}
+
+	void Connection::OnNewChannels(const Tp::ChannelDetailsList& details)
+	{
+
+	}
+
+	void Connection::OnConnectionInvalidated(Tp::PendingOperation *op)
+	{
+
 	}
 
 	void Connection::OnConnectionClosed(Tp::PendingOperation *op)
