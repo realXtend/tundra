@@ -123,7 +123,8 @@ namespace OpensimIM
 	{
         if (event_id == OpenSimProtocol::Events::EVENT_SERVER_CONNECTED)
 		{
-			Communication::Credentials credentials(OPENSIM_IM_PROTOCOL, "", "", 0); 
+			//! @todo agent_id to credentials 
+			Communication::Credentials credentials(OPENSIM_IM_PROTOCOL, "", "", "", 0); 
 			Communication::ConnectionInterface* conn = OpenConnection(credentials);
 		}
 

@@ -1,0 +1,31 @@
+#ifndef incl_Communication_TelepathyIM_ContactGroup_h
+#define incl_Communication_TelepathyIM_ContactGroup_h
+
+#include "Foundation.h"
+#include "..\interface.h"
+//#include "Contact.h"
+
+namespace TelepathyIM
+{
+	class ContactGroup : public Communication::ContactGroupInterface
+	{
+	public:
+		//! Provides name of this contact group
+		virtual QString GetName() const;
+
+		//! Set name for this contact group
+		//! If the protocol supports then the given name is saved on server side.
+		virtual void SetName(const QString &name);
+
+		//! Provides all Contact objects on this contact group
+		virtual Communication::ContactVector GetContacts();
+
+		//! Priovides all sub groups of this contact groups
+		virtual Communication::ContactGroupVector GetGroups();
+	protected:
+
+	};
+
+} // end of namespace: TelepathyIM
+
+#endif // incl_Communication_TelepathyIM_ContactGroup_h

@@ -12,6 +12,9 @@
 namespace OpensimIM
 {
 	/**
+     *  This class is only used by CommunicationService object. Do not use this
+	 *  directly!
+     *
 	 *  Offers IM functionaly in Opensim protocol (udp)
 	 *
 	 */

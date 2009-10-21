@@ -17,6 +17,12 @@ namespace Communication
 
 	CommunicationService::~CommunicationService(void)
 	{
+		for (ConnectionProviderVector::iterator i = connection_providers_.begin(); i != connection_providers_.end(); ++i)
+		{
+			delete *i;
+			*i = NULL;
+		}
+		connection_providers_.clear();
 	}
 
 	// static
@@ -97,6 +103,7 @@ namespace Communication
 			}
 			return false;
 		}
+		return false;
 	}
 
 	void CommunicationService::OnNewConnection(Communication::ConnectionInterface* connection)

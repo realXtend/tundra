@@ -45,6 +45,9 @@ namespace Communication
 		virtual void SetUserID(const QString &user_id) = 0;
 		virtual QString GetUserID() const = 0;
 
+		virtual void SetPassword(const QString &password) = 0;
+		virtual QString GetPassword() const = 0;
+
 		virtual void SetServer(const QString &server) = 0;
 		virtual QString GetServer() const = 0;
 
@@ -238,13 +241,15 @@ namespace Communication
 	typedef std::vector<FriendRequestInterface*> FriendRequestVector;
 
 	/**
-	 * A connection to IM server. This class do the most of the work. It provides 
-	 * state information about connection, contact list, allow to set presence status and 
-	 * provides methods to open communication sessions such as chat and voice.
+	 *  A connection to IM server. This class do the most of the work. It provides 
+	 *  state information about connection, contact list, allow to set presence status and 
+	 *  provides methods to open communication sessions such as chat and voice.
 	 *
-	 * It also signals about incoming friend request and communication sessions.
+	 *  It also signals about incoming friend request and communication sessions.
 	 *
-	 * @todo Add methods to remove a friend from friend list
+	 *  @todo Add methods to remove a friend from friend list
+	 *  @todo Add method to open voice session
+	 *  @todo Add method to open video session
 	 */
 	class ConnectionInterface : public QObject
 	{
@@ -253,7 +258,7 @@ namespace Communication
 		//! The state options of Connection object
 		//! ConnectionReady and ConnectionClosed signals are emited when state
 		//! changes to STATE_READY or STATE_CLOSED
-		enum State {STATE_INITIALING, STATE_READY, STATE_CLOSED, STATE_ERROR};
+		enum State {STATE_INITIALIZING, STATE_READY, STATE_CLOSED, STATE_ERROR};
 
 		virtual ~ConnectionInterface() {};
 
@@ -310,6 +315,9 @@ namespace Communication
 		//! When connection is closed by user or server
 		void ConnectionClosed(ConnectionInterface& connection);
 
+		//! When connection state become error
+		void ConnectionError(ConnectionInterface& connection);
+
 		//! When a new contact is added to contact list
 		//! Basically this happens when someone accept friend request
 		void NewContact(const ContactInterface& contact);
@@ -335,6 +343,9 @@ namespace Communication
 	typedef std::vector<ConnectionPtr> ConnectionVector;
 
 	/**
+	 *  This class is only used by CommunicationService object. Do not use this
+	 *  directly!
+     *
 	 * Provides connections to IM servers eg. to jabber server.
 	 * ConnectionProvide object can support multiple protocols same time.
 	 * 
@@ -352,9 +363,10 @@ namespace Communication
 		//! Open a new connection to IM server woth given credentials
 		virtual ConnectionInterface* OpenConnection(const CredentialsInterface& credentials) = 0;
 
-		//! Provides all Connections objects created with this provider
+		//! Provides all Connections objects created by this provider
 		virtual ConnectionVector GetConnections() const = 0;
 	signals:
+		void ProtocolListUpdated(const QStringList &protocols);
 		void ConnectionOpened(ConnectionInterface& connection);
 		void ConnectionClosed(ConnectionInterface& connection);
 	};
@@ -395,6 +407,8 @@ namespace Communication
 	signals:
 		//! When a new protocol is supported
 		void NewProtocolSupported(QString protocol);
+
+		void ProtocolListUpdated(const QStringList &protocols);
 
 		//! When a new connection is opened
 		void ConnectionOpened(ConnectionPtr connection);

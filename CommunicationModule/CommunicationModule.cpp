@@ -3,6 +3,7 @@
 
 #include "CommunicationModule.h"
 #include "OpensimIM\ConnectionProvider.h"
+#include "TelepathyIM\ConnectionProvider.h"
 
 namespace Communication
 {
@@ -20,17 +21,23 @@ namespace Communication
 
 	void CommunicationModule::Initialize() 
 	{
-		// current way
-		communication_manager_ = TpQt4Communication::CommunicationManager::GetInstance();
-//		console_ui_ = new CommunicationUI::ConsoleUI(framework_);
-		qt_ui_ = new CommunicationUI::QtGUI(framework_);
-
 		// new way
 
 		CommunicationService::CreateInstance(framework_);
 		communication_service_ = CommunicationService::GetInstance();
-		OpensimIM::ConnectionProvider* p = new OpensimIM::ConnectionProvider(framework_);
-		communication_service_->RegisterConnectionProvider(p);
+
+		OpensimIM::ConnectionProvider* opensim = new OpensimIM::ConnectionProvider(framework_);
+		communication_service_->RegisterConnectionProvider(opensim);
+
+		//! @note DO NOT use the old and the new way at the same time.
+		//!       DBus service cannot have two instanced.
+//		TelepathyIM::ConnectionProvider* telepathy = new TelepathyIM::ConnectionProvider(framework_);
+//		communication_service_->RegisterConnectionProvider(telepathy);
+
+		// current way
+		communication_manager_ = TpQt4Communication::CommunicationManager::GetInstance();
+//		console_ui_ = new CommunicationUI::ConsoleUI(framework_);
+		qt_ui_ = new CommunicationUI::QtGUI(framework_);
 
 		LogInfo("Initialized.");
 	}

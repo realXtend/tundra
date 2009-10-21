@@ -54,7 +54,8 @@ namespace Communication
 	class Credentials : public CredentialsInterface
 	{
 	public:
-		Credentials(const QString& protocol, const QString& user_id, const QString &server, int port );
+		Credentials();
+		Credentials(const QString &protocol, const QString &user_id, const QString &password, const QString &server, int port );
 
 		//! Define the used protocol eg. "Jabber", "Opensim_UDP_IM", "irc"
 		virtual void SetProtocol(const QString &protocol);
@@ -64,6 +65,9 @@ namespace Communication
 
 		virtual void SetUserID(const QString &user_id);
 		virtual QString GetUserID() const;
+
+		virtual void SetPassword(const QString &password);
+		virtual QString GetPassword() const;
 
 		virtual void SetServer(const QString &server);
 		virtual QString GetServer() const;
@@ -76,6 +80,7 @@ namespace Communication
 	protected:
 		QString protocol_;
 		QString user_id_;
+		QString password_;
 		QString server_;
 		int port_;
 	};
