@@ -52,12 +52,12 @@ namespace QtUI
 			controlBarLayout_ = controlBarWidget_->findChild<QHBoxLayout *>("layout_ControlBar");
 
 			controlBarCanvas_ = spQtModule->CreateCanvas(UICanvas::Internal).lock();
-			controlBarCanvas_->AddWidget(controlBarWidget_);
 			controlBarCanvas_->SetPosition(0,0);
 			controlBarCanvas_->SetCanvasSize(200,27);
 			controlBarCanvas_->SetLockPosition(true);
 			controlBarCanvas_->SetCanvasResizeLock(true);
 			controlBarCanvas_->SetTop();
+			controlBarCanvas_->AddWidget(controlBarWidget_);			
 			controlBarCanvas_->Show();
 		}
 	}

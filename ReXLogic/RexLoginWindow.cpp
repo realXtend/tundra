@@ -196,13 +196,11 @@ void RexLoginWindow::CreateLogoutMenu()
     screen_canvas_->SetLockPosition(true);
     screen_canvas_->Hide();
     
-    avatar_button_ = new QPushButton();
-    avatar_button_->setText("Edit Avatar");
-    avatar_button_->move(5, 80);
-    QObject::connect(avatar_button_, SIGNAL(clicked()), this, SLOT(EditAvatar()));
-
-    screen_canvas_->AddWidget(avatar_button_);
-    screen_canvas_->Hide();
+    //avatar_button_ = new QPushButton();
+    //avatar_button_->setText("Edit Avatar");
+    //avatar_button_->move(5, 80);
+    //QObject::connect(avatar_button_, SIGNAL(clicked()), this, SLOT(EditAvatar()));
+    //screen_canvas_->AddWidget(avatar_button_);
 }
 
 void RexLoginWindow::Connect()
