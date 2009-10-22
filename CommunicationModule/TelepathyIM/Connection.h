@@ -8,6 +8,7 @@
 #include <TelepathyQt4/PendingReady>
 #include "Foundation.h"
 #include "..\interface.h"
+#include "Contact.h"
 #include "ContactGroup.h"
 
 namespace TelepathyIM
@@ -44,8 +45,11 @@ namespace TelepathyIM
 		//! Provides contact list associated with this IM server connection
 		virtual Communication::ContactGroupInterface& GetContacts();
 
-		//! Provides a list of availble presence status options to set
-		virtual QStringList GetAvailablePresenceStatusOptions() const;
+		//! @return list of presence status opstions contacts might have
+		virtual QStringList GetPresenceStatusOptionsForContact() const;
+
+		//! @return list of presence status options user can set
+		virtual QStringList GetPresenceStatusOptionsForSelf() const;
 
 		//! Open new chat session with given contact
 		//! @param contact Chat partner target
@@ -71,12 +75,7 @@ namespace TelepathyIM
 		virtual void Close();
 	protected:
 		virtual void CreateTpConnection(const Communication::CredentialsInterface &credentials);
-		virtual void OnConnectionCreated(Tp::PendingOperation *op);
-		virtual void OnConnectionConnected(Tp::PendingOperation *op);
-		virtual void OnNewChannels(const Tp::ChannelDetailsList& details);
-		virtual void OnConnectionInvalidated(Tp::PendingOperation *op);
-		virtual void OnConnectionClosed(Tp::PendingOperation *op);
-		virtual void OnConnectionReady(Tp::PendingOperation *op);
+		virtual void HandleAllKnownTpContacts();
 
 		Tp::ConnectionManagerPtr &tp_connection_manager_;
 		Tp::ConnectionPtr tp_connection_;
@@ -87,6 +86,16 @@ namespace TelepathyIM
 		QString server_;
 		QString reason_;
 		ContactGroup friend_list_;
+		ContactVector contacts_;
+
+	protected slots:
+		virtual void OnConnectionCreated(Tp::PendingOperation *op);
+		virtual void OnConnectionConnected(Tp::PendingOperation *op);
+		virtual void OnNewChannels(const Tp::ChannelDetailsList& details);
+		virtual void OnConnectionInvalidated(Tp::DBusProxy *proxy, const QString &errorName, const QString &errorMessage);
+		virtual void OnConnectionClosed(Tp::PendingOperation *op);
+		virtual void OnConnectionReady(Tp::PendingOperation *op);
+		virtual	void OnPresencePublicationRequested(const Tp::Contacts &contacts);
 	};
 	typedef std::vector<Connection*> ConnectionVector;
 

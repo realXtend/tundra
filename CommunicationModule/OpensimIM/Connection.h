@@ -61,8 +61,13 @@ namespace OpensimIM
 		//! Provides contact list associated with this IM server connection
 		virtual Communication::ContactGroupInterface& GetContacts();
 
-		//! Provides a list of availble presence status options to set
-		virtual QStringList GetAvailablePresenceStatusOptions() const;
+		//! User cannot set presence status in Opensim
+		//! @return list of presence status opstions contacts might have
+		virtual QStringList GetPresenceStatusOptionsForContact() const;
+
+		//! User cannot set presence status in Opensim
+		//! @return list of presence status options user can set
+		virtual QStringList GetPresenceStatusOptionsForSelf() const;
 
 		//! Open new chat session with given contact
 		//! This is opensim IM chat

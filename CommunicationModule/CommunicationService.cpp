@@ -41,7 +41,9 @@ namespace Communication
 	void CommunicationService::RegisterConnectionProvider( ConnectionProviderInterface* const provider )
 	{
 		connection_providers_.push_back(provider);
-		connect( (QObject*)provider, SLOT( ConnectionOpened(Communication::ConnectionInterface*) ), SIGNAL( OnNewConnection(Communication::ConnectionInterface*) ) );
+		connect( provider, SIGNAL( ProtocolListUpdated(const QStringList&) ), SLOT( OnProtocolListUpdated(const QStringList&) ));
+		connect( provider, SIGNAL( ConnectionOpened(Communication::ConnectionInterface*) ), SLOT( OnConnectionOpened(Communication::ConnectionInterface*) ));
+		connect( provider, SIGNAL( ConnectionClosed(Communication::ConnectionInterface*) ), SLOT( OnConnectionClosed(Communication::ConnectionInterface*) ));
 	}
 
 	QStringList CommunicationService::GetSupportedProtocols() const
@@ -60,15 +62,21 @@ namespace Communication
 		return all_protocols;
 	}
 
-	Communication::ConnectionPtr CommunicationService::OpenConnection(const CredentialsInterface &credentials)
+	Communication::ConnectionInterface* CommunicationService::OpenConnection(const CredentialsInterface &credentials)
 	{
 		QString protocol = credentials.GetProtocol();
-		ConnectionVector connections = GetConnections(protocol);
-		if (connections.size() == 0)
+		//ConnectionVector connections = GetConnections(protocol);
+		//if (connections.size() == 0)
+		//{
+		//	throw Core::Exception("Cannot open connection, protocol is not supported");
+		//}
+		ConnectionProviderVector providers = GetConnectionProviders(protocol);
+		if (providers.size() == 0)
 		{
 			throw Core::Exception("Cannot open connection, protocol is not supported");
 		}
-		return connections[0]; // We return first connection which support the protocol
+		Communication::ConnectionInterface* connection = providers[0]->OpenConnection(credentials);
+		return connection;
 	}
 	
 	ConnectionVector CommunicationService::GetConnections() const
@@ -78,7 +86,25 @@ namespace Communication
 
 	ConnectionVector CommunicationService::GetConnections(const QString &protocol) const
 	{
-		return connections_per_protocol_.value(protocol);
+		ConnectionVector connections;
+		for (ConnectionVector::const_iterator i = connections_.begin(); i != connections_.end(); ++i)
+		{
+			if ( (*i)->GetProtocol().compare( protocol ) == 0 )
+				connections.push_back( *i );
+		}
+		return connections;
+	}
+
+	ConnectionProviderVector CommunicationService::GetConnectionProviders(const QString &protocol) const
+	{
+		ConnectionProviderVector providers;
+		for (ConnectionProviderVector::const_iterator i = connection_providers_.begin(); i != connection_providers_.end(); ++i)
+		{
+			QStringList protocols = (*i)->GetSupportedProtocols();
+			if ( protocols.contains(protocol) )
+				providers.push_back(*i);
+		}
+		return providers;
 	}
 
 	bool CommunicationService::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
@@ -106,16 +132,34 @@ namespace Communication
 		return false;
 	}
 
-	void CommunicationService::OnNewConnection(Communication::ConnectionInterface* connection)
+	void CommunicationService::OnProtocolListUpdated(const QStringList& protocols)
 	{
+		for (QStringList::const_iterator i = protocols.begin(); i != protocols.end(); ++i)
+		{
+			if ( !supported_protocols_.contains(*i) )
+				supported_protocols_.append( *i );
+		}
+	}
+
+	void CommunicationService::OnConnectionOpened(Communication::ConnectionInterface* connection)
+	{
+		//! @todo connect to vital singals of the connection
+		connections_.push_back(connection);
+		emit( ConnectionOpened(connection) );
+
 		connect(connection, SIGNAL( FriendRequestReceived(const Communication::FriendRequestInterface&) ), SLOT(OnFriendRequestReceived(const Communication::FriendRequestInterface&); )); 
+	}
+
+	void CommunicationService::OnConnectionClosed(Communication::ConnectionInterface* connection)
+	{
+		
 	}
 
 	void CommunicationService::OnFriendRequestReceived(const Communication::FriendRequestInterface& request)
 	{
 		QString message = "Friend request from ";
 		message.append( request.GetOriginatorName() );
-		LogInfo(message.toStdString());
+		LogDebug(message.toStdString());
 	}
 
 } // end of namespace: Communication
