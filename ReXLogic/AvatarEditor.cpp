@@ -194,50 +194,82 @@ namespace RexLogic
         
         // Modifiers
         Core::uint y = 0;
-        const BoneModifierSetVector& bone_modifiers = appearance.GetBoneModifiers();
-        const MorphModifierVector& modifiers = appearance.GetMorphModifiers();  
-        morph_panel->resize(width, itemheight * (modifiers.size() + bone_modifiers.size()));
+        
+        const MasterModifierVector& master_modifiers = appearance.GetMasterModifiers();      
+        // If no master modifiers, show the individual morph/bone controls
+        if (!master_modifiers.size())
+        {       
+            const BoneModifierSetVector& bone_modifiers = appearance.GetBoneModifiers();
+            const MorphModifierVector& modifiers = appearance.GetMorphModifiers();  
+            morph_panel->resize(width, itemheight * (modifiers.size() + bone_modifiers.size()));
 
-        for (Core::uint i = 0; i < bone_modifiers.size(); ++i)
+            for (Core::uint i = 0; i < bone_modifiers.size(); ++i)
+            {
+                QScrollBar* slider = new QScrollBar(Qt::Horizontal, morph_panel);
+                slider->setObjectName(QString::fromStdString(bone_modifiers[i].name_));
+                slider->setMinimum(0);
+                slider->setMaximum(100);
+                slider->setPageStep(10);
+                slider->setValue(bone_modifiers[i].value_ * 100.0f);
+                slider->resize(150, 20);
+                slider->move(width - 150, y*itemheight);  
+                slider->show();          
+                
+                QObject::connect(slider, SIGNAL(valueChanged(int)), this, SLOT(BoneModifierValueChanged(int)));
+                            
+                QLabel* label = new QLabel(QString::fromStdString(bone_modifiers[i].name_), morph_panel);
+                label->resize(100,20);
+                label->move(0, y*itemheight);
+                label->show();
+                ++y;
+            }            
+          
+            for (Core::uint i = 0; i < modifiers.size(); ++i)
+            {
+                QScrollBar* slider = new QScrollBar(Qt::Horizontal, morph_panel);
+                slider->setObjectName(QString::fromStdString(modifiers[i].name_));
+                slider->setMinimum(0);
+                slider->setMaximum(100);
+                slider->setPageStep(10);
+                slider->setValue(modifiers[i].value_ * 100.0f);
+                slider->resize(150, 20);
+                slider->move(width - 150, y*itemheight);  
+                slider->show();          
+                
+                QObject::connect(slider, SIGNAL(valueChanged(int)), this, SLOT(MorphModifierValueChanged(int)));
+                            
+                QLabel* label = new QLabel(QString::fromStdString(modifiers[i].name_), morph_panel);
+                label->resize(100,20);
+                label->move(0, y*itemheight);
+                label->show();
+                ++y;
+            } 
+        }
+        // Otherwise show only the master modifier controls
+        else
         {
-            QScrollBar* slider = new QScrollBar(Qt::Horizontal, morph_panel);
-            slider->setObjectName(QString::fromStdString(bone_modifiers[i].name_));
-            slider->setMinimum(0);
-            slider->setMaximum(100);
-            slider->setPageStep(10);
-            slider->setValue(bone_modifiers[i].value_ * 100.0f);
-            slider->resize(150, 20);
-            slider->move(width - 150, y*itemheight);  
-            slider->show();          
-            
-            QObject::connect(slider, SIGNAL(sliderMoved(int)), this, SLOT(BoneValueChanged(int)));
-                        
-            QLabel* label = new QLabel(QString::fromStdString(bone_modifiers[i].name_), morph_panel);
-            label->resize(100,20);
-            label->move(0, y*itemheight);
-            label->show();
-            ++y;
-        }            
-      
-        for (Core::uint i = 0; i < modifiers.size(); ++i)
-        {
-            QScrollBar* slider = new QScrollBar(Qt::Horizontal, morph_panel);
-            slider->setObjectName(QString::fromStdString(modifiers[i].name_));
-            slider->setMinimum(0);
-            slider->setMaximum(100);
-            slider->setPageStep(10);
-            slider->setValue(modifiers[i].value_ * 100.0f);
-            slider->resize(150, 20);
-            slider->move(width - 150, y*itemheight);  
-            slider->show();          
-            
-            QObject::connect(slider, SIGNAL(sliderMoved(int)), this, SLOT(MorphValueChanged(int)));
-                        
-            QLabel* label = new QLabel(QString::fromStdString(modifiers[i].name_), morph_panel);
-            label->resize(100,20);
-            label->move(0, y*itemheight);
-            label->show();
-            ++y;
+            morph_panel->resize(width, itemheight * master_modifiers.size());
+
+            for (Core::uint i = 0; i < master_modifiers.size(); ++i)
+            {
+                QScrollBar* slider = new QScrollBar(Qt::Horizontal, morph_panel);
+                slider->setObjectName(QString::fromStdString(master_modifiers[i].name_));
+                slider->setMinimum(0);
+                slider->setMaximum(100);
+                slider->setPageStep(10);
+                slider->setValue(master_modifiers[i].value_ * 100.0f);
+                slider->resize(150, 20);
+                slider->move(width - 150, y*itemheight);  
+                slider->show();          
+                
+                QObject::connect(slider, SIGNAL(valueChanged(int)), this, SLOT(MasterModifierValueChanged(int)));
+                            
+                QLabel* label = new QLabel(QString::fromStdString(master_modifiers[i].name_), morph_panel);
+                label->resize(100,20);
+                label->move(0, y*itemheight);
+                label->show();
+                ++y;
+            }          
         }   
     }
     
@@ -252,12 +284,12 @@ namespace RexLogic
         }   
     }
     
-    void AvatarEditor::MorphValueChanged(int value)
+    void AvatarEditor::MorphModifierValueChanged(int value)
     {
         QScrollBar* slider = qobject_cast<QScrollBar*>(sender());
         if (!slider)
             return;
-        std::string morph_name = slider->objectName().toStdString();
+        std::string control_name = slider->objectName().toStdString();
         if (value < 0) value = 0;
         if (value > 100) value = 100;
         
@@ -269,25 +301,16 @@ namespace RexLogic
             return;
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());    
         
-        MorphModifierVector modifiers = appearance.GetMorphModifiers();
-        for (Core::uint i = 0; i < modifiers.size(); ++i)
-        {
-            if (modifiers[i].name_ == morph_name)
-            {
-                modifiers[i].value_ = value / 100.0f;
-                appearance.SetMorphModifiers(modifiers);
-                rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);
-                break;
-            }
-        }                        
+        appearance.SetModifierValue(control_name, AppearanceModifier::Morph, value / 100.0f);
+        rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);                       
     }
     
-    void AvatarEditor::BoneValueChanged(int value)
+    void AvatarEditor::BoneModifierValueChanged(int value)
     {
         QScrollBar* slider = qobject_cast<QScrollBar*>(sender());
         if (!slider)
             return;
-        std::string bone_name = slider->objectName().toStdString();
+        std::string control_name = slider->objectName().toStdString();
         if (value < 0) value = 0;
         if (value > 100) value = 100;
         
@@ -299,19 +322,31 @@ namespace RexLogic
             return;
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());    
         
-        BoneModifierSetVector modifiers = appearance.GetBoneModifiers();
-        for (Core::uint i = 0; i < modifiers.size(); ++i)
-        {
-            if (modifiers[i].name_ == bone_name)
-            {
-                modifiers[i].value_ = value / 100.0f;
-                appearance.SetBoneModifiers(modifiers);
-                rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);
-                break;
-            }
-        }                        
+        appearance.SetModifierValue(control_name, AppearanceModifier::Bone, value / 100.0f);
+        rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);                       
     }    
-    
+
+    void AvatarEditor::MasterModifierValueChanged(int value)
+    {
+        QScrollBar* slider = qobject_cast<QScrollBar*>(sender());
+        if (!slider)
+            return;
+        std::string control_name = slider->objectName().toStdString();
+        if (value < 0) value = 0;
+        if (value > 100) value = 100;
+        
+        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
+        if (!entity)
+            return;
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!appearanceptr)
+            return;
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());    
+        
+        appearance.SetMasterModifierValue(control_name, value / 100.0f);
+        rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);                       
+    }
+        
     void AvatarEditor::ChangeTexture()
     {
         QPushButton* button = qobject_cast<QPushButton*>(sender());

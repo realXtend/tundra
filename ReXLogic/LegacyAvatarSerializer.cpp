@@ -27,6 +27,32 @@ namespace RexLogic
         "cumulative"
     };
     
+    Core::Real ParseReal(const std::string& text, Core::Real default_value = 0.0f)
+    {
+        Core::Real ret_value = default_value;
+        try
+        {
+            ret_value = Core::ParseString<Core::Real>(text);
+        }
+        catch (boost::bad_lexical_cast)
+        {
+        }        
+        return ret_value;
+    }
+    
+    int ParseInt(const std::string& text, int default_value = 0)
+    {
+        int ret_value = default_value;
+        try
+        {
+            ret_value = Core::ParseString<int>(text);
+        }
+        catch (boost::bad_lexical_cast)
+        {
+        }        
+        return ret_value;
+    }    
+    
     Core::Vector3df ParseVector3(const std::string& text)
     {
         Core::Vector3df vec(0.0f, 0.0f, 0.0f);
@@ -157,13 +183,17 @@ namespace RexLogic
         //    Core::ToString<Core::Real>(angles[1]) + " " + 
         //    Core::ToString<Core::Real>(angles[2]);
     }
-    
+
+    void SetAttribute(QDomElement& elem, const std::string& name, const char* value)
+    {
+        elem.setAttribute(QString::fromStdString(name), value);
+    }
+        
     void SetAttribute(QDomElement& elem, const std::string& name, const std::string& value)
     {
         elem.setAttribute(QString::fromStdString(name), QString::fromStdString(value));
     }
-    
-    
+     
     void SetAttribute(QDomElement& elem, const std::string& name, Core::Real value)
     {
         elem.setAttribute(QString::fromStdString(name), QString::fromStdString(Core::ToString<Core::Real>(value)));
@@ -278,7 +308,7 @@ namespace RexLogic
         {
             ReadBoneModifierSet(bonemodifiers, bonemodifier_elem);
             bonemodifier_elem = bonemodifier_elem.nextSiblingElement("dynamic_animation");
-        }
+        }        
         // Get bone modifier parameters
         QDomElement bonemodifierparam_elem = avatar.firstChildElement("dynamic_animation_parameter");
         while (!bonemodifierparam_elem.isNull())
@@ -298,6 +328,16 @@ namespace RexLogic
         }
         dest.SetMorphModifiers(morphmodifiers);
         
+        // Get master modifiers
+        QDomElement mastermodifier_elem = avatar.firstChildElement("master_modifier");
+        MasterModifierVector mastermodifiers;
+        while (!mastermodifier_elem.isNull())
+        {
+            ReadMasterModifier(mastermodifiers, mastermodifier_elem);
+            mastermodifier_elem = mastermodifier_elem.nextSiblingElement("master_modifier");
+        }              
+        dest.SetMasterModifiers(mastermodifiers);
+              
         // Get animations
         QDomElement animation_elem = avatar.firstChildElement("animation");
         AnimationDefinitionMap animations;
@@ -352,16 +392,16 @@ namespace RexLogic
                 std::string rot_mode = rotation.attribute("mode").toStdString();
                 
                 if (trans_mode == "absolute")
-                    modifier.position_mode_ = Absolute;
+                    modifier.position_mode_ = BoneModifier::Absolute;
                 if (trans_mode == "relative")
-                    modifier.position_mode_ = Relative;
+                    modifier.position_mode_ = BoneModifier::Relative;
                 
                 if (rot_mode == "absolute")
-                    modifier.orientation_mode_ = Absolute;
+                    modifier.orientation_mode_ = BoneModifier::Absolute;
                 if (rot_mode == "relative")
-                    modifier.orientation_mode_ = Relative;
+                    modifier.orientation_mode_ = BoneModifier::Relative;
                 if (rot_mode == "cumulative")
-                    modifier.orientation_mode_ = Cumulative;
+                    modifier.orientation_mode_ = BoneModifier::Cumulative;
                 
                 modifier_set.modifiers_.push_back(modifier);
                 
@@ -384,15 +424,7 @@ namespace RexLogic
         {
             if (dest[i].name_ == name)
             {
-                try
-                {
-                    dest[i].value_ = Core::ParseString<Core::Real>(source.attribute("position").toStdString());
-                }
-                catch (boost::bad_lexical_cast)
-                {
-                    return false;
-                }
-                
+                dest[i].value_ = ParseReal(source.attribute("position", "0.5").toStdString());
                 return true;
             }
         }
@@ -406,16 +438,55 @@ namespace RexLogic
         
         morph.name_ = source.attribute("name").toStdString();
         morph.morph_name_ = source.attribute("internal_name").toStdString();
-        try
-        {
-            morph.value_ = Core::ParseString<Core::Real>(source.attribute("influence").toStdString());
-        }
-        catch (boost::bad_lexical_cast)
-        {
-            return false;
+        morph.value_ = ParseReal(source.attribute("influence", "0").toStdString());
+
+        dest.push_back(morph);
+        return true;
+    }
+    
+    bool LegacyAvatarSerializer::ReadMasterModifier(MasterModifierVector& dest, const QDomElement& source)
+    {
+        MasterModifier master;
+        
+        master.name_ = source.attribute("name").toStdString();
+        master.category_ = source.attribute("category").toStdString();
+        master.value_ = ParseReal(source.attribute("position", "0").toStdString());
+        
+        QDomElement target = source.firstChildElement("target_modifier");
+        while (!target.isNull())
+        {                
+            SlaveModifier targetmodifier;
+            targetmodifier.name_ = target.attribute("name").toStdString();
+            
+            std::string targettype = target.attribute("type").toStdString();
+            std::string targetmode = target.attribute("mode").toStdString();
+                     
+            if (targettype == "morph")
+                targetmodifier.type_ = AppearanceModifier::Morph;
+            if (targettype == "dynamic_animation")
+                targetmodifier.type_ = AppearanceModifier::Bone;
+                
+            QDomElement mapping = target.firstChildElement("position_mapping");
+            while (!mapping.isNull())
+            {
+                SlaveModifier::ValueMapping new_mapping;
+                new_mapping.master_ = ParseReal(mapping.attribute("master").toStdString());
+                new_mapping.slave_ = ParseReal(mapping.attribute("target").toStdString());
+                targetmodifier.mapping_.push_back(new_mapping);                    
+                mapping = mapping.nextSiblingElement("position_mapping");
+            }
+            
+            if (targetmode == "cumulative")
+                targetmodifier.mode_ = SlaveModifier::Cumulative;
+            else
+                targetmodifier.mode_ = SlaveModifier::Average;
+            
+            master.modifiers_.push_back(targetmodifier);
+            
+            target = target.nextSiblingElement("target_modifier");
         }
         
-        dest.push_back(morph);
+        dest.push_back(master);
         return true;
     }
     
@@ -447,47 +518,39 @@ namespace RexLogic
         if (elem.tagName() != "animation")
             return false;
         
-        try
+        std::string id = elem.attribute("id").toStdString();
+        if (id.empty())
+            id = elem.attribute("uuid").toStdString(); // legacy
+        if (id.empty())
         {
-            std::string id = elem.attribute("id").toStdString();
-            if (id.empty())
-                id = elem.attribute("uuid").toStdString(); // legacy
-            if (id.empty())
-            {
-                RexLogicModule::LogError("Missing animation identifier");
-                return false;
-            }
-            
-            std::string intname = elem.attribute("internal_name").toStdString();
-            if (intname.empty())
-                intname = elem.attribute("ogrename").toStdString(); // legacy
-            if (intname.empty())
-            {
-                RexLogicModule::LogError("Missing mesh animation name");
-                return false;
-            }
-            
-            AnimationDefinition new_def;
-            new_def.id_ = id;
-            new_def.animation_name_ = intname;
-            new_def.name_ = elem.attribute("name").toStdString();
-            
-            new_def.looped_ = ParseBool(elem.attribute("looped", "true").toStdString());
-            new_def.exclusive_ = ParseBool(elem.attribute("exclusive", "false").toStdString());
-            new_def.use_velocity_ = ParseBool(elem.attribute("usevelocity", "false").toStdString());
-            new_def.always_restart_ = ParseBool(elem.attribute("alwaysrestart", "false").toStdString());
-            new_def.fadein_ = Core::ParseString<Core::Real>(elem.attribute("fadein", "0").toStdString());
-            new_def.fadeout_ = Core::ParseString<Core::Real>(elem.attribute("fadeout", "0").toStdString());
-            new_def.speedfactor_ = Core::ParseString<Core::Real>(elem.attribute("speedfactor", "1").toStdString());
-            new_def.weightfactor_ = Core::ParseString<Core::Real>(elem.attribute("weightfactor", "1").toStdString());
-            
-            dest[RexUUID(new_def.id_)] = new_def;
-        }
-        catch(boost::bad_lexical_cast)
-        {
-            RexLogicModule::LogError("Malformed animation definition");
+            RexLogicModule::LogError("Missing animation identifier");
             return false;
         }
+        
+        std::string intname = elem.attribute("internal_name").toStdString();
+        if (intname.empty())
+            intname = elem.attribute("ogrename").toStdString(); // legacy
+        if (intname.empty())
+        {
+            RexLogicModule::LogError("Missing mesh animation name");
+            return false;
+        }
+        
+        AnimationDefinition new_def;
+        new_def.id_ = id;
+        new_def.animation_name_ = intname;
+        new_def.name_ = elem.attribute("name").toStdString();
+        
+        new_def.looped_ = ParseBool(elem.attribute("looped", "true").toStdString());
+        new_def.exclusive_ = ParseBool(elem.attribute("exclusive", "false").toStdString());
+        new_def.use_velocity_ = ParseBool(elem.attribute("usevelocity", "false").toStdString());
+        new_def.always_restart_ = ParseBool(elem.attribute("alwaysrestart", "false").toStdString());
+        new_def.fadein_ = ParseReal(elem.attribute("fadein", "0").toStdString());
+        new_def.fadeout_ = ParseReal(elem.attribute("fadeout", "0").toStdString());
+        new_def.speedfactor_ = ParseReal(elem.attribute("speedfactor", "1").toStdString());
+        new_def.weightfactor_ = ParseReal(elem.attribute("weightfactor", "1").toStdString());
+        
+        dest[RexUUID(new_def.id_)] = new_def;
         
         return true;
     }
@@ -542,14 +605,7 @@ namespace RexLogic
             QDomElement polygon = avatar.firstChildElement("avatar_polygon");
             while (!polygon.isNull())
             {
-                try
-                {
-                    Core::uint idx = Core::ParseString<Core::uint>(polygon.attribute("idx").toStdString());
-                    attachment.vertices_to_hide_.push_back(idx);
-                }
-                catch (boost::bad_lexical_cast)
-                {
-                }
+                Core::uint idx = ParseInt(polygon.attribute("idx").toStdString());
                 polygon = polygon.nextSiblingElement("avatar_polygon");
             }
         }
@@ -663,6 +719,14 @@ namespace RexLogic
             QDomElement morph = WriteMorphModifier(dest, morph_modifiers[i]);
             avatar.appendChild(morph);
         }
+        
+        // Master modifiers
+        const MasterModifierVector& master_modifiers = source.GetMasterModifiers();
+        for (Core::uint i = 0; i < master_modifiers.size(); ++i)
+        {
+            QDomElement master = WriteMasterModifier(dest, master_modifiers[i]);
+            avatar.appendChild(master);
+        }        
         
         // Animations
         const AnimationDefinitionMap& animations = source.GetAnimations();
@@ -780,6 +844,37 @@ namespace RexLogic
         return elem;
     }
     
+    QDomElement LegacyAvatarSerializer::WriteMasterModifier(QDomDocument& dest, const MasterModifier& master)
+    {
+        QDomElement elem = dest.createElement("master_modifier");
+        SetAttribute(elem, "name", master.name_);
+        SetAttribute(elem, "position", master.value_);
+        SetAttribute(elem, "category", master.category_);
+        for (Core::uint i = 0; i < master.modifiers_.size(); ++i)
+        {
+            QDomElement target_elem = dest.createElement("target_modifier");
+            SetAttribute(target_elem, "name", master.modifiers_[i].name_);
+            if (master.modifiers_[i].type_ == AppearanceModifier::Morph)
+                SetAttribute(target_elem, "type", "morph");
+            else
+                SetAttribute(target_elem, "type", "dynamic_animation");
+            if (master.modifiers_[i].mode_ == SlaveModifier::Cumulative)
+                SetAttribute(target_elem, "mode", "cumulative");
+            else
+                SetAttribute(target_elem, "mode", "average");
+            for (Core::uint j = 0; j < master.modifiers_[i].mapping_.size(); ++j)
+            {
+                QDomElement mapping_elem = dest.createElement("position_mapping");
+                SetAttribute(mapping_elem, "master", master.modifiers_[i].mapping_[j].master_);
+                SetAttribute(mapping_elem, "target", master.modifiers_[i].mapping_[j].slave_);
+                target_elem.appendChild(mapping_elem);
+            }            
+            elem.appendChild(target_elem);            
+        }
+        
+        return elem;
+    }    
+        
     QDomElement LegacyAvatarSerializer::WriteAttachment(QDomDocument& dest, const AvatarAttachment& attachment, const AvatarAsset& mesh)
     {
         QDomElement elem = dest.createElement("attachment");

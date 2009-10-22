@@ -46,6 +46,22 @@ namespace RexLogic
     {
         morph_modifiers_ = modifiers;
     }
+
+    void EC_AvatarAppearance::SetMasterModifiers(const MasterModifierVector& modifiers)
+    {
+        master_modifiers_ = modifiers;
+        
+        // Sort the mappings to ascending master position for correct interpolation
+        for (Core::uint i = 0; i < master_modifiers_.size(); ++i)
+        {
+            for (Core::uint j = 0; j < master_modifiers_[i].modifiers_.size(); ++j)
+            {
+                //std::sort(master_modifiers_[i].modifiers_[j].mapping_.begin(), master_modifiers_[i].modifiers_[j].mapping_.end());
+            }
+        }   
+             
+        CalculateMasterModifiers();
+    }
     
     void EC_AvatarAppearance::SetAnimations(const AnimationDefinitionMap& animations)
     {
@@ -66,29 +82,78 @@ namespace RexLogic
     {
         properties_[name] = value;
     }
-    
-    void EC_AvatarAppearance::SetMorphModifierValue(const std::string& name, Core::Real value)
+        
+    void EC_AvatarAppearance::SetMasterModifierValue(const std::string& name, Core::Real value)
     {
-        for (unsigned i = 0; i < morph_modifiers_.size(); ++i)
+        if (value < 0.0) value = 0.0;
+        if (value > 1.0) value = 1.0;
+        
+        for (Core::uint i = 0; i < master_modifiers_.size(); ++i)
         {
-            if (morph_modifiers_[i].name_ == name)
+            if (master_modifiers_[i].name_ == name)
             {
-                morph_modifiers_[i].value_ = value;
-                break;
+                master_modifiers_[i].value_ = value;
+                for (Core::uint j = 0; j < master_modifiers_[i].modifiers_.size(); ++j)
+                {
+                    AppearanceModifier* mod = FindModifier(master_modifiers_[i].modifiers_[j].name_, master_modifiers_[i].modifiers_[j].type_);                
+                    if (mod)
+                        mod->manual_ = false;
+                }
+                CalculateMasterModifiers();
+                return;
             }
+        }                 
+    }
+    
+    void EC_AvatarAppearance::SetModifierValue(const std::string& name, AppearanceModifier::ModifierType type, Core::Real value)
+    {
+        if (value < 0.0) value = 0.0;
+        if (value > 1.0) value = 1.0;
+        
+        AppearanceModifier* mod = FindModifier(name, type);
+        if (mod)
+        {
+            mod->value_ = value;
+            mod->manual_ = true;
         }
     }
     
-    void EC_AvatarAppearance::SetBoneModifierSetValue(const std::string& name, Core::Real value)
+    void EC_AvatarAppearance::CalculateMasterModifiers()
     {
-        for (unsigned i = 0; i < bone_modifiers_.size(); ++i)
+        for (Core::uint i = 0; i < morph_modifiers_.size(); ++i)
+            morph_modifiers_[i].ResetAccumulation();
+
+        for (Core::uint i = 0; i < bone_modifiers_.size(); ++i)
+            bone_modifiers_[i].ResetAccumulation();
+
+        for (Core::uint i = 0; i < master_modifiers_.size(); ++i)
         {
-            if (bone_modifiers_[i].name_ == name)
+            for (Core::uint j = 0; j < master_modifiers_[i].modifiers_.size(); ++j)
             {
-                bone_modifiers_[i].value_ = value;
-                break;
+                AppearanceModifier* mod = FindModifier(master_modifiers_[i].modifiers_[j].name_, master_modifiers_[i].modifiers_[j].type_);
+                if (mod)
+                {
+                    float slave_value = master_modifiers_[i].modifiers_[j].GetMappedValue(master_modifiers_[i].value_);
+                    
+                    mod->AccumulateValue(slave_value, master_modifiers_[i].modifiers_[j].mode_ == SlaveModifier::Average);
+                }
             }
+        }          
+    }    
+    
+    AppearanceModifier* EC_AvatarAppearance::FindModifier(const std::string& name, AppearanceModifier::ModifierType type)
+    {
+        for (Core::uint i = 0; i < morph_modifiers_.size(); ++i)
+        {
+            if ((morph_modifiers_[i].name_ == name) && (morph_modifiers_[i].type_ == type))
+                return &morph_modifiers_[i];
         }
+        for (Core::uint i = 0; i < bone_modifiers_.size(); ++i)
+        {
+            if ((bone_modifiers_[i].name_ == name) && (bone_modifiers_[i].type_ == type))
+                return &bone_modifiers_[i];
+        }
+        return 0;
     }
     
     void EC_AvatarAppearance::ClearProperties()
@@ -108,6 +173,7 @@ namespace RexLogic
         animations_.clear();
         bone_modifiers_.clear();
         morph_modifiers_.clear();
+        master_modifiers_.clear();
         properties_.clear();
         asset_map_.clear();
     }
@@ -130,7 +196,7 @@ namespace RexLogic
         else
             return false;
     }
-    
+        
     const AnimationDefinition& GetAnimationByName(const AnimationDefinitionMap& animations, const std::string& name)
     {
         static AnimationDefinition default_def;
@@ -143,5 +209,84 @@ namespace RexLogic
             ++def;
         }
         return default_def;
+    }
+    
+    void AppearanceModifier::ResetAccumulation()
+    {
+        sum_ = 0.0f;
+        samples_ = 0;
+    }
+    
+    void AppearanceModifier::AccumulateValue(Core::Real value, bool use_average)
+    {
+        sum_ += value;
+        samples_++;
+ 
+        if (manual_)
+            return;
+                    
+        if (!use_average)
+        {
+            value_ = sum_;
+            if (value_ < 0.0f) value_ = 0.0f;
+            if (value_ > 1.0f) value_ = 1.0f;
+        }
+        else
+        {
+            value_ = sum_ / samples_;
+            if (value_ < 0.0f) value_ = 0.0f;
+            if (value_ > 1.0f) value_ = 1.0f;
+        }            
+    }
+                
+    Core::Real SlaveModifier::GetMappedValue(Core::Real master_value)
+    {
+        // If no positions to interpolate, map master slider directly to modifier pos
+        if (mapping_.size() < 2)
+        {
+            return master_value;
+        }
+
+        // Find out the minimum/maximum range of supported master positions
+        float min_value = 1.0f;
+        float max_value = 0.0f;
+        Core::uint i;
+        
+        for (i = 0; i < mapping_.size(); ++i)
+        {
+            if (mapping_[i].master_ < min_value)
+                min_value = mapping_[i].master_;
+            if (mapping_[i].master_ > max_value)
+                max_value = mapping_[i].master_;
+        }
+
+        // Now cap the master position according to what is supported
+        if (master_value < min_value)   
+            master_value = min_value;
+        if (master_value > max_value)
+            master_value = max_value;
+            
+        // Find beginning pos. of interpolation
+        for (i = mapping_.size()-1; i >= 0; --i)
+        {
+            if (mapping_[i].master_ <= master_value)
+                break;
+        }
+
+        // If at the endpoint, simply return the value at end
+        if (i == mapping_.size()-1)
+        {
+            return mapping_[i].slave_;
+        }
+
+        float delta = mapping_[i+1].slave_ - mapping_[i].slave_;
+        float master_delta = mapping_[i+1].master_ - mapping_[i].master_;
+        float weight = 0.0f;
+        if (master_delta > 0.0f)
+        {
+            weight = (master_value - mapping_[i].master_) / master_delta;
+        }
+
+        return mapping_[i].slave_ + weight * delta;
     }
 }

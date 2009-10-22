@@ -34,25 +34,28 @@ namespace RexLogic
     private:
         //! Reads a bone modifier set from an xml node, and adds it to the vector
         //! \return true if successful
-        static bool ReadBoneModifierSet(BoneModifierSetVector& dest, const QDomElement& elem);
+        static bool ReadBoneModifierSet(BoneModifierSetVector& dest, const QDomElement& source);
         
         //! Reads a bone modifier parameter from an xml node
         /*! Actual modifiers should have been read before the parameters; this function expects a filled vector of modifier sets
             \return true if successful
          */
-        static bool ReadBoneModifierParameter(BoneModifierSetVector& dest, const QDomElement& elem);
+        static bool ReadBoneModifierParameter(BoneModifierSetVector& dest, const QDomElement& source);
         
         //! Reads a morph modifier from an xml node, and adds it to the vector
         //! \return true if successful
-        static bool ReadMorphModifier(MorphModifierVector& dest, const QDomElement& elem);
+        static bool ReadMorphModifier(MorphModifierVector& dest, const QDomElement& source);
         
         //! Reads a single animation definition from an xml node, and adds it to the map
         //! \return true if successful
-        static bool ReadAnimationDefinition(AnimationDefinitionMap& dest, const QDomElement& elem);
+        static bool ReadAnimationDefinition(AnimationDefinitionMap& dest, const QDomElement& source);
         
+        //! Reads a master modifier from an xml node, and adds it to the vec
+        static bool ReadMasterModifier(MasterModifierVector& dest, const QDomElement& source);
+         
         //! Reads an avatar attachment from an xml node, and adds it to the vector
         //! \return true if successful
-        static bool ReadAttachment(AvatarAttachmentVector& dest, const QDomElement& elem);
+        static bool ReadAttachment(AvatarAttachmentVector& dest, const QDomElement& source);
         
         //! Writes bone modifiers to xml document
         static void WriteBoneModifierSet(QDomDocument& dest, QDomElement& dest_elem, const BoneModifierSet& bones);
@@ -62,6 +65,9 @@ namespace RexLogic
         
         //! Writes a morph modifier to an xml element and returns it
         static QDomElement WriteMorphModifier(QDomDocument& dest, const MorphModifier& morph);
+
+        //! Writes a master modifier to an xml element and returns it
+        static QDomElement WriteMasterModifier(QDomDocument& dest, const MasterModifier& morph);
         
         //! Writes an animation definition to an xml element and returns it
         static QDomElement WriteAnimationDefinition(QDomDocument& dest, const AnimationDefinition& anim);
