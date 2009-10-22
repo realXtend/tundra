@@ -118,20 +118,14 @@ namespace TelepathyIM
 	{
 	    if (op->isError())
 		{
-			//std::string message = "Cannot create a connection object: ";
-			//message.append( op->errorMessage().toStdString() );
-			//LogError(message);
 			state_ = STATE_ERROR;
 			reason_ = op->errorMessage();
 			emit( ConnectionError(*this) );
-//			throw Core::Exception( op->errorMessage().toStdString().c_str() );
+			return;
 		}
 		
 		Tp::PendingConnection *c = qobject_cast<Tp::PendingConnection *>(op);
 		tp_connection_ = c->connection();
-
-		//std::string message = "Connection created to IM server.";
-		//LogInfo(message);
 
 		QObject::connect(tp_connection_->requestConnect(),
 					     SIGNAL(finished(Tp::PendingOperation *)),
@@ -141,23 +135,17 @@ namespace TelepathyIM
 			             SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
 						 SLOT(OnConnectionInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
 
-
-		state_ = STATE_OPEN;
-		emit( ConnectionReady(*this) );
 	}
 
 	void Connection::OnConnectionConnected(Tp::PendingOperation *op)
 	{
 		if (op->isError())
 		{
-			//QString reason = "Cannot connect to IM server:: ";
-			//reason.append(op->errorMessage());
-			//LogError(reason.toStdString());
 			state_ = STATE_ERROR;
-			throw Core::Exception( op->errorMessage().toStdString().c_str() );
+			reason_ = op->errorMessage();
+			emit( ConnectionError(*this) );
+			return;
 		}
-		//std::string message = "Connection established successfully to IM server.";
-		//LogInfo(message);
 
 		Tp::Features features;
 		features.insert(Tp::Connection::FeatureSimplePresence);
@@ -180,11 +168,10 @@ namespace TelepathyIM
 	{
 	    if (op->isError())
 		{
-			//QString message = "Connection initialization to IM server failed: ";
-			//message.append(op->errorMessage());
-			//LogError(message.toStdString());
 			state_ = STATE_ERROR;
-			throw Core::Exception( op->errorMessage().toStdString().c_str() );
+			reason_ = op->errorMessage();
+			emit( ConnectionError(*this) );
+			return;
 		}
 
 		connect(tp_connection_->contactManager(), SIGNAL( presencePublicationRequested(const Tp::Contacts &) ), SLOT( OnPresencePublicationRequested(const Tp::Contacts &) ));
@@ -296,6 +283,5 @@ namespace TelepathyIM
 	{
 		//! @todo IMPLEMENT
 	}
-
 
 } // end of namespace: TelepathyIM
