@@ -51,12 +51,12 @@ namespace QtUI
 			QUiLoader loader;
 			QFile uiFile("./data/ui/controlbar.ui");
 			controlBarWidget_ = loader.load(&uiFile);
-			controlBarWidget_->setGeometry(0,0,0,0);
+			controlBarWidget_->setGeometry(0,0,0,25);
 			controlBarLayout_ = controlBarWidget_->findChild<QHBoxLayout *>("layout_ControlBar");
 
 			controlBarCanvas_ = spQtModule->CreateCanvas(UICanvas::Internal).lock();
 			controlBarCanvas_->SetPosition(0,0);
-			controlBarCanvas_->SetCanvasSize(25, 27);
+			controlBarCanvas_->SetCanvasSize(25, 25);
 			controlBarCanvas_->SetLockPosition(true);
 			controlBarCanvas_->SetCanvasResizeLock(true);
 			controlBarCanvas_->SetTop();
@@ -72,7 +72,9 @@ namespace QtUI
 		this->setMinimumSize(QSize(25,15));
 		this->setSizePolicy(policy);
 		this->setFlat(true);
-		this->resize(QSize(70,15));
+		// Still having some issue with sizing, should go without a layout maybe... 
+		// Button min width is 100 so looks ungly if title is short like "qt"
+		//this->resize(QSize(70,15)); 
 		QObject::connect(this, SIGNAL( clicked() ), this, SLOT( toggleShow() )); 
 	}
 
