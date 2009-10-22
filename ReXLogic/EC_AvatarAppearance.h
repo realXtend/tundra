@@ -10,7 +10,7 @@
 
 namespace RexLogic
 {
-   //! Avatar asset name map (key: human-readable name, value: resource id)
+    //! Avatar asset name map (key: human-readable name, value: resource id)
     typedef std::map<std::string, std::string> AvatarAssetMap;
     
     //! Defines an asset for an avatar
@@ -56,21 +56,57 @@ namespace RexLogic
         {
         }
     };
+                
+    //! Defines an appearance modifier, possibly under control of a master modifier through position mapping
+    struct AppearanceModifier
+    {             
+        enum ModifierType
+        {
+            Undefined = 0,
+            Morph,
+            Bone
+        };
     
-    //! Possible modes for a bone modification
-    enum ModifierMode
-    {
-        //! Relative to the bone's initial transform
-        Relative = 0,
-        //! Absolute, overrides the bone's initial transform
-        Absolute,
-        //! Cumulative, adds to a previous modifier
-        Cumulative
-    };
-    
+        //! Modifier name
+        std::string name_;
+        //! Modifier type
+        ModifierType type_;
+        //! Manual state. If true, master modifiers have no effect
+        bool manual_;
+        //! Modifier influence value (0.0 - 1.0)
+        Core::Real value_;
+
+        //! Sum of data accumulated so far
+        Core::Real sum_;
+        //! Number of samples accumulated
+        int samples_;
+
+        void ResetAccumulation();
+        void AccumulateValue(Core::Real value, bool use_average);
+                
+        AppearanceModifier(ModifierType type = Undefined) : 
+            manual_(false),
+            type_(type),
+            value_(0.0)
+        {
+            ResetAccumulation();
+        }
+    };  
+            
     //! Defines a bone modifier
     struct BoneModifier
     {
+        //! Possible modes for a bone modification
+        enum BoneModifierMode
+        {
+            //! Relative to the bone's initial transform
+            Relative = 0,
+            //! Absolute, overrides the bone's initial transform
+            Absolute,
+            //! Cumulative, adds to a previous modifier
+            Cumulative
+        };    
+        
         //! Name of bone in avatar skeleton
         std::string bone_name_;
         //! Start transform
@@ -78,11 +114,12 @@ namespace RexLogic
         //! End transform
         Transform end_;
         //! Mode of applying position modification
-        ModifierMode position_mode_;
+        BoneModifierMode position_mode_;
         //! Mode of applying rotation modification
-        ModifierMode orientation_mode_;
+        BoneModifierMode orientation_mode_;
 
-        BoneModifier() : position_mode_(Relative),
+        BoneModifier() : 
+            position_mode_(Relative),
             orientation_mode_(Relative)
         {
         }
@@ -91,16 +128,13 @@ namespace RexLogic
     typedef std::vector<BoneModifier> BoneModifierVector;
     
     //! Defines a set of bone modifiers (also called a dynamic animation)
-    struct BoneModifierSet
+    struct BoneModifierSet : public AppearanceModifier
     {
-        //! Identifying human-readable name, not mandatory and not used directly in code
-        std::string name_;
         //! Individual bone modifiers
         BoneModifierVector modifiers_;
-        //! Interpolation value between start (0.0) and end (1.0) transform of individual modifiers
-        Core::Real value_;
         
-        BoneModifierSet() : value_(0.0f)
+        BoneModifierSet() :
+            AppearanceModifier(Bone)
         {
         }
     };
@@ -108,22 +142,73 @@ namespace RexLogic
     typedef std::vector<BoneModifierSet> BoneModifierSetVector;
     
     //! Defines a morph modifier
-    struct MorphModifier
+    struct MorphModifier : public AppearanceModifier
     {
-        //! Identifying human-readable name, not mandatory and not used directly in code
-        std::string name_;
         //! Name of morph animation
         std::string morph_name_;
-        //! Interpolation value between none (0.0) and full (1.0) influence
-        Core::Real value_;
         
-        MorphModifier() : value_(0.0f)
+        MorphModifier() :
+            AppearanceModifier(Morph)
         {
         }
     };
     
     typedef std::vector<MorphModifier> MorphModifierVector;
+           
+    //! Describes a modifier driven by a master modifier
+    struct SlaveModifier
+    {
+        //! Master value accumulation mode
+        enum AccumulationMode
+        {
+            Average = 0,
+            Cumulative
+        };
+        //! Defines a point in master-slaver modifier value mapping
+        struct ValueMapping
+        {
+            Core::Real master_;
+            Core::Real slave_;
+            
+            bool operator < (const ValueMapping &rhs) const
+            {
+                return (master_ < rhs.master_);
+            }
+        };
+
+        Core::Real GetMappedValue(Core::Real master_value);
+        
+        //! Value accumulation mode
+        AccumulationMode mode_;
+        //! Value mapping table. If empty, identity mapping
+        std::vector<ValueMapping> mapping_;
+        //! Name 
+        std::string name_;
+        //! Type
+        AppearanceModifier::ModifierType type_;
+        
+        SlaveModifier() : mode_(Average)
+        {
+        }
+    };
     
+    typedef std::vector<SlaveModifier> SlaveModifierVector;
+                  
+    //! Defines a master modifier that controls several appearance (slave) modifiers
+    struct MasterModifier
+    {
+        //! Current position value (0.0 - 1.0)
+        Core::Real value_;
+        //! Name
+        std::string name_;
+        //! Category description
+        std::string category_;
+        //! Modifiers controlled 
+        SlaveModifierVector modifiers_;
+    };
+    
+    typedef std::vector<MasterModifier> MasterModifierVector;
+  
     //! Defines an animation for an avatar
     struct AnimationDefinition
     {
@@ -204,12 +289,13 @@ namespace RexLogic
         void SetMaterials(const AvatarMaterialVector& materials);
         void SetBoneModifiers(const BoneModifierSetVector& modifiers);
         void SetMorphModifiers(const MorphModifierVector& modifiers);
+        void SetMasterModifiers(const MasterModifierVector& modifiers);
         void SetAnimations(const AnimationDefinitionMap& animations);
         void SetAttachments(const AvatarAttachmentVector& attachments);
         void SetTransform(const Transform& transform);
         void SetProperty(const std::string& name, const std::string& value);
-        void SetMorphModifierValue(const std::string& name, Core::Real value);
-        void SetBoneModifierSetValue(const std::string& name, Core::Real value);
+        void SetMasterModifierValue(const std::string& name, Core::Real value);
+        void SetModifierValue(const std::string& name, AppearanceModifier::ModifierType, Core::Real value);
         void ClearProperties();
         void Clear();
         
@@ -218,6 +304,7 @@ namespace RexLogic
         const AvatarMaterialVector& GetMaterials() const { return materials_; }
         const BoneModifierSetVector& GetBoneModifiers() const { return bone_modifiers_; }
         const MorphModifierVector& GetMorphModifiers() const { return morph_modifiers_; }
+        const MasterModifierVector& GetMasterModifiers() const { return master_modifiers_; }
         const AnimationDefinitionMap& GetAnimations() const { return animations_; }
         const AvatarAttachmentVector& GetAttachments() const { return attachments_; }
         const Transform& GetTransform() const { return transform_; }
@@ -228,9 +315,15 @@ namespace RexLogic
         const AvatarAssetMap& GetAssetMap() const { return asset_map_; }
         void SetAssetMap(const AvatarAssetMap& map) { asset_map_ = map; }
         
+        //! Recalculate effect of master modifiers
+        /*! Note: modifiers set for manual control will be skipped
+         */ 
+        void CalculateMasterModifiers();
+        
     private:
         EC_AvatarAppearance(Foundation::ModuleInterface* module);
-        
+        AppearanceModifier* FindModifier(const std::string& name, AppearanceModifier::ModifierType type);
+                
         //! Avatar mesh
         AvatarAsset mesh_;
         //! Avatar skeleton
@@ -247,6 +340,8 @@ namespace RexLogic
         BoneModifierSetVector bone_modifiers_;
         //! Morph modifiers
         MorphModifierVector morph_modifiers_;
+        //! Master modifiers
+        MasterModifierVector master_modifiers_; 
         //! Avatar asset name map
         AvatarAssetMap asset_map_;
         //! Miscellaneous properties

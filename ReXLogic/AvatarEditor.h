@@ -37,10 +37,12 @@ namespace RexLogic
         void RevertAvatar();
         //! Change texture press handler
         void ChangeTexture();
-        //! Morph scrollbar value handler
-        void MorphValueChanged(int value);
-        //! Bone scrollbar value handler
-        void BoneValueChanged(int value);
+        //! Bone modifier scrollbar value handler
+        void BoneModifierValueChanged(int value);
+        //! Morph modifier scrollbar value handler
+        void MorphModifierValueChanged(int value);
+        //! Master appearance modifier scrollbar value handler
+        void MasterModifierValueChanged(int value);
                 
     private:
         RexLogicModule *rexlogicmodule_;

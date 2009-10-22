@@ -223,7 +223,7 @@ namespace RexLogic
         
         if (!meshptr || !appearanceptr)
             return;
-
+        
         SetupMorphs(entity);
         SetupBoneModifiers(entity);
         AdjustHeightOffset(entity);
@@ -495,18 +495,18 @@ namespace RexLogic
             
             switch (modifier.orientation_mode_)
             {
-            case Absolute:
+            case BoneModifier::Absolute:
                 bx = 0;
                 by = 0;
                 bz = 0;
                 break;
                 
-            case Relative:
+            case BoneModifier::Relative:
                 orig_bone->getInitialOrientation().ToRotationMatrix(rot_base);
                 rot_base.ToEulerAnglesXYZ(bx, by, bz);
                 break;
                 
-            case Cumulative:
+            case BoneModifier::Cumulative:
                 bone->getInitialOrientation().ToRotationMatrix(rot_base);
                 rot_base.ToEulerAnglesXYZ(bx, by, bz);
                 break;
@@ -538,10 +538,10 @@ namespace RexLogic
             trans = bone->getInitialPosition();
             switch (modifier.position_mode_)
             {
-            case Absolute:
+            case BoneModifier::Absolute:
                 base = Ogre::Vector3(0,0,0);
                 break;
-            case Relative:
+            case BoneModifier::Relative:
                 base = orig_bone->getInitialPosition();
                 break;
             }

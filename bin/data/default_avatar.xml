@@ -160,7 +160,7 @@
     <animation name="Stand" id="2408fe9e-df1d-1d7d-f4ff-1384fa7b350f" internal_name="Stand" looped="1" fadein="0.25" fadeout="0.25" />
     <animation name="Walk" id="6ed24bd8-91aa-4b12-ccc7-c97c857ab4e0" internal_name="Walk" looped="1" speedfactor="1.0" usevelocity="1" fadein="0.25" fadeout="0.25" />
     <master_modifier name="Arms twist" position="0.000000" category="Posture">
-        <target_modifier type="dynamic_animation" name="Arm_Twist2" mode="cumulative" />
+        <target_modifier type="dynamic_animation" name="Arm_Twist" mode="cumulative" />
     </master_modifier>
     <master_modifier name="Body mass" position="0.500000" category="Body">
         <target_modifier type="morph" name="thin-legs-lower" mode="cumulative">
@@ -229,13 +229,13 @@
         </target_modifier>
     </master_modifier>
     <master_modifier name="Height" position="0.500000" category="Body">
-        <target_modifier type="dynamic_animation" name="Height_Adjust2" mode="cumulative" />
+        <target_modifier type="dynamic_animation" name="Height_Adjust" mode="cumulative" />
     </master_modifier>
     <master_modifier name="Leg twist" position="0.000000" category="Posture">
-        <target_modifier type="dynamic_animation" name="Leg_Twist2" mode="cumulative" />
+        <target_modifier type="dynamic_animation" name="Leg_Twist" mode="cumulative" />
     </master_modifier>
     <master_modifier name="Spine back/forward" position="0.500000" category="Posture">
-        <target_modifier type="dynamic_animation" name="Spine_Posture2" mode="cumulative" />
+        <target_modifier type="dynamic_animation" name="Spine_Posture" mode="cumulative" />
     </master_modifier>
     <property name="MovementSpeed" value="1" />
     <property name="attach_Chest" value="Bip01_Spine1" />
