@@ -79,7 +79,7 @@ namespace OpensimIM
 		return friend_list_;
 	}
 		
-	QStringList Connection::GetAvailablePresenceStatusOptions() const
+	QStringList Connection::GetPresenceStatusOptionsForContact() const
 	{
 		if (state_ != STATE_OPEN)
 			throw Core::Exception("The connection is closed.");
@@ -88,6 +88,16 @@ namespace OpensimIM
 		//! Opensim provides just two online state options
 		options.append("online");
 		options.append("offline");
+		return QStringList();
+	}
+
+	QStringList Connection::GetPresenceStatusOptionsForSelf() const
+	{
+		if (state_ != STATE_OPEN)
+			throw Core::Exception("The connection is closed.");
+
+		// In Opensim user cannot set the presence status 
+		QStringList options;
 		return QStringList();
 	}
 

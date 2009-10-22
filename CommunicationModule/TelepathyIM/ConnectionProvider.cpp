@@ -53,18 +53,22 @@ namespace TelepathyIM
 
 		Connection* connection = new Connection(tp_connection_manager_, credentials);
 		connections_.push_back(connection);
+
+		//! @todo FIX THESE
 		connect(connection, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( OnConnectionReady(Communication::ConnectionInterface&) ));
 		connect(connection, SIGNAL( ConnectionClosed(Communication::ConnectionInterface&) ), SLOT( OnConnectionClosed(Communication::ConnectionInterface&) ));
 		connect(connection, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( OnConnectionError(Communication::ConnectionInterface&) ));
 
-		//! @todo IMPLEMENT
-		return NULL;
+		return connection;
 	}
 
 	Communication::ConnectionVector ConnectionProvider::GetConnections() const
 	{
-		//! @todo IMPLEMENT
 		Communication::ConnectionVector v;
+		for (ConnectionVector::const_iterator i = connections_.begin(); i != connections_.end(); ++i)
+		{
+			v.push_back(*i);
+		}
 		return v;
 	}
 

@@ -3,10 +3,17 @@
 
 #include "Foundation.h"
 #include "..\interface.h"
-//#include "Contact.h"
+#include "Contact.h"
 
 namespace TelepathyIM
 {
+	class ContactGroup;
+	typedef std::vector<ContactGroup*> ContactGroupVector;
+
+	/**
+	 *  Do NOT use this class directly. Only classes in TelepathyIM namespace
+	 *  will use this.
+	 */
 	class ContactGroup : public Communication::ContactGroupInterface
 	{
 	public:
@@ -22,8 +29,11 @@ namespace TelepathyIM
 
 		//! Priovides all sub groups of this contact groups
 		virtual Communication::ContactGroupVector GetGroups();
-	protected:
 
+		virtual void AddContact(Contact* contact);
+	protected:
+		ContactVector contacts_;
+		ContactGroupVector groups_;
 	};
 
 } // end of namespace: TelepathyIM

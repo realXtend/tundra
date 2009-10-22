@@ -283,8 +283,11 @@ namespace Communication
 		//! Provides contact list associated with this IM server connection
 		virtual ContactGroupInterface& GetContacts() = 0;
 
-		//! Provides a list of availble presence status options to set
-		virtual QStringList GetAvailablePresenceStatusOptions() const = 0;
+		//! @return list of presence status opstions contacts might have
+		virtual QStringList GetPresenceStatusOptionsForContact() const = 0;
+
+		//! @return list of presence status options user can set
+		virtual QStringList GetPresenceStatusOptionsForSelf() const = 0;
 
 		//! Open new chat session with given contact
 		//! @param contact Chat partner target
@@ -312,13 +315,13 @@ namespace Communication
 	signals:
 		//! When connection become state where communication sessions can 
 		//! be opened and contact list is fethed from server.
-		void ConnectionReady(ConnectionInterface& connection);
+		void ConnectionReady(Communication::ConnectionInterface& connection);
 
 		//! When connection is closed by user or server
-		void ConnectionClosed(ConnectionInterface& connection);
+		void ConnectionClosed(Communication::ConnectionInterface& connection);
 
 		//! When connection state become error
-		void ConnectionError(ConnectionInterface& connection);
+		void ConnectionError(Communication::ConnectionInterface& connection);
 
 		//! When a new contact is added to contact list
 		//! Basically this happens when someone accept friend request
@@ -341,8 +344,7 @@ namespace Communication
 		//! notification is send back about rejecting the friend request
 		void FriendRequestRejected(const QString &target); 
 	};
-	typedef boost::shared_ptr<ConnectionInterface> ConnectionPtr;
-	typedef std::vector<ConnectionPtr> ConnectionVector;
+	typedef std::vector<ConnectionInterface*> ConnectionVector;
 
 	/**
 	 *  This class is only used by CommunicationService object. Do not use this
@@ -369,8 +371,8 @@ namespace Communication
 		virtual ConnectionVector GetConnections() const = 0;
 	signals:
 		void ProtocolListUpdated(const QStringList &protocols);
-		void ConnectionOpened(ConnectionInterface& connection);
-		void ConnectionClosed(ConnectionInterface& connection);
+		void ConnectionOpened(Communication::ConnectionInterface* connection);
+		void ConnectionClosed(Communication::ConnectionInterface* connection);
 	};
 	typedef std::vector<ConnectionProviderInterface*> ConnectionProviderVector;
 
@@ -399,7 +401,7 @@ namespace Communication
 		virtual QStringList GetSupportedProtocols() const = 0;
 
 		//! Create new Connection object accordingly given credentials
-		virtual ConnectionPtr OpenConnection(const CredentialsInterface &credentials) = 0;
+		virtual ConnectionInterface* OpenConnection(const CredentialsInterface &credentials) = 0;
 
 		//! Return all Connection objects
 		virtual ConnectionVector GetConnections() const = 0;
@@ -413,10 +415,10 @@ namespace Communication
 		void ProtocolListUpdated(const QStringList &protocols);
 
 		//! When a new connection is opened
-		void ConnectionOpened(ConnectionPtr connection);
+		void ConnectionOpened(ConnectionInterface* connection);
 
 		//! When connection is closed
-		void ConnectionClosed(ConnectionPtr connection);
+		void ConnectionClosed(ConnectionInterface* connection);
 	};
 
 } // end of namepace: Communication

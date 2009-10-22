@@ -1,4 +1,5 @@
 #include "Connection.h"
+#include <TelepathyQt4/ContactManager>
 
 namespace TelepathyIM
 {
@@ -60,29 +61,36 @@ namespace TelepathyIM
 		return friend_list_;
 	}
 
-	QStringList Connection::GetAvailablePresenceStatusOptions() const
+	QStringList Connection::GetPresenceStatusOptionsForContact() const
 	{
 		//! @todo IMPLEMENT
-		QStringList options;
-		return options;
+		QStringList empty;
+		return empty;
+	}
+
+	QStringList Connection::GetPresenceStatusOptionsForSelf() const
+	{
+		//! @todo IMPLEMENT
+		QStringList empty;
+		return empty;
 	}
 
 	Communication::ChatSessionInterface* Connection::OpenPrivateChatSession(const Communication::ContactInterface &contact)
 	{
 		//! @todo IMPLEMENT
-		return NULL;
+		throw Core::Exception("NOT IMPLEMENTED");
 	}
 
 	Communication::ChatSessionInterface* Connection::OpenPrivateChatSession(const QString& user_id)
 	{
 		//! @todo IMPLEMENT
-		return NULL;
+		throw Core::Exception("NOT IMPLEMENTED");
 	}
 
 	Communication::ChatSessionInterface* Connection::OpenChatSession(const QString &channel)
 	{
 		//! @todo IMPLEMENT
-		return NULL;
+		throw Core::Exception("NOT IMPLEMENTED");
 	}
 
 	void Connection::SendFriendRequest(const QString &target, const QString &message)
@@ -114,7 +122,9 @@ namespace TelepathyIM
 			//message.append( op->errorMessage().toStdString() );
 			//LogError(message);
 			state_ = STATE_ERROR;
-			throw Core::Exception( op->errorMessage().toStdString().c_str() );
+			reason_ = op->errorMessage();
+			emit( ConnectionError(*this) );
+//			throw Core::Exception( op->errorMessage().toStdString().c_str() );
 		}
 		
 		Tp::PendingConnection *c = qobject_cast<Tp::PendingConnection *>(op);
@@ -176,27 +186,104 @@ namespace TelepathyIM
 			state_ = STATE_ERROR;
 			throw Core::Exception( op->errorMessage().toStdString().c_str() );
 		}
-//		LogInfo("Connection to IM server ready.");
 
-		//user_ = new User(tp_connection_);
-		//HandleNewContacts();
-
-		//QObject::connect(tp_connection_->contactManager(),
-  //          SIGNAL(presencePublicationRequested(const Tp::Contacts &)),
-  //          SLOT(OnPresencePublicationRequested(const Tp::Contacts &)));
+		connect(tp_connection_->contactManager(), SIGNAL( presencePublicationRequested(const Tp::Contacts &) ), SLOT( OnPresencePublicationRequested(const Tp::Contacts &) ));
+		HandleAllKnownTpContacts();
 
 		state_ = STATE_OPEN;
 		emit( ConnectionReady(*this) );
 	}
 
-	void Connection::OnNewChannels(const Tp::ChannelDetailsList& details)
+	void Connection::HandleAllKnownTpContacts()
 	{
+		ContactVector new_contacts;
 
+		//! Check every known telepathy contact and determinate their nature by state of subscribtionState and publistState values
+		//! Combinations are:
+		//!                                  subscription:   publish:
+		//! - Normal contact                 YES             YES
+		//! - friend request (sended)        
+		//! - friend request (received)      ASK             YES
+		//! - banned contact                 NO              *
+		//! - unknow                         (all the other combinations)
+		foreach (const Tp::ContactPtr &contact, tp_connection_->contactManager()->allKnownContacts())
+		{
+			switch ( contact->subscriptionState() )
+			{
+			case Tp::Contact::PresenceStateNo:
+				// User have already make a decicion to not accpet this contact to the a part of the friend list..
+				break;
+
+			case Tp::Contact::PresenceStateYes:
+				{
+					// A friend list item
+					switch ( contact->publishState() )
+					{
+					case Tp::Contact::PresenceStateNo:
+						{
+						//! We have subsribed presence status of this contact
+						//! but we have not published our own presence!
+						//! -> We unsubsribe this contact
+						Tp::PendingOperation* pending_remove_subscription = contact->removePresenceSubscription();
+						//! check result of this
+						}
+						break;
+
+					case Tp::Contact::PresenceStateYes:
+						//! This is a normal state 
+						break;
+
+					case Tp::Contact::PresenceStateAsk:
+						//! We have subscribed presence of this contact
+						//! but we don't publish our?
+						//! Publicity level should be same to the both directions
+						Tp::PendingOperation* op = contact->authorizePresencePublication("");
+						//! todo: check the end result of this operation
+						break;
+					}
+
+					Contact* c = new Contact(contact);
+					new_contacts.push_back(c);
+				}
+				break;
+
+			case Tp::Contact::PresenceStateAsk:
+				{
+					// User have not yet made the decision to accept or reject presence subscription 
+					// So we create a FriendRequest obeject
+
+					//! @todo IMPLEMENT
+
+					//FriendRequest* request = new FriendRequest(contact);
+					//received_friend_requests_.push_back(request);
+					//emit ReceivedFriendRequest(request);
+				}
+				break;
+			}
+        }
+
+		if ( new_contacts.size() > 0 )
+		{
+			for (ContactVector::iterator i = new_contacts.begin(); i != new_contacts.end(); ++i)
+			{
+				contacts_.push_back(*i);
+				friend_list_.AddContact(*i);
+			}
+			//! @todo emit signal about contact list change
+		}
 	}
 
-	void Connection::OnConnectionInvalidated(Tp::PendingOperation *op)
+	void Connection::OnNewChannels(const Tp::ChannelDetailsList& details)
 	{
+		//! @todo IMPLEMENT
+	}
 
+	void Connection::OnConnectionInvalidated(Tp::DBusProxy *proxy, const QString &errorName, const QString &errorMessage)
+	{
+		state_ = STATE_ERROR;
+		reason_ = errorMessage;
+		emit( ConnectionError(*this) );
+		//! @todo IMPLEMENT
 	}
 
 	void Connection::OnConnectionClosed(Tp::PendingOperation *op)
@@ -204,5 +291,11 @@ namespace TelepathyIM
 		state_ = STATE_CLOSED;
 		emit( ConnectionClosed(*this) );
 	}
+
+	void Connection::OnPresencePublicationRequested(const Tp::Contacts &contacts)
+	{
+		//! @todo IMPLEMENT
+	}
+
 
 } // end of namespace: TelepathyIM

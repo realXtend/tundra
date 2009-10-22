@@ -31,13 +31,20 @@ namespace Communication
 
 		//! @note DO NOT use the old and the new way at the same time.
 		//!       DBus service cannot have two instanced.
-//		TelepathyIM::ConnectionProvider* telepathy = new TelepathyIM::ConnectionProvider(framework_);
-//		communication_service_->RegisterConnectionProvider(telepathy);
+		TelepathyIM::ConnectionProvider* telepathy = new TelepathyIM::ConnectionProvider(framework_);
+		communication_service_->RegisterConnectionProvider(telepathy);
 
 		// current way
-		communication_manager_ = TpQt4Communication::CommunicationManager::GetInstance();
+
+//		communication_manager_ = TpQt4Communication::CommunicationManager::GetInstance();
 //		console_ui_ = new CommunicationUI::ConsoleUI(framework_);
-		qt_ui_ = new CommunicationUI::QtGUI(framework_);
+//		qt_ui_ = new CommunicationUI::QtGUI(framework_);
+
+		boost::shared_ptr<Console::CommandService> console_service = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
+        if (console_service)
+        {
+			console_service->RegisterCommand(Console::CreateCommand("comm test", "Run a test for communication service", Console::Bind(this, &CommunicationModule::Test)));
+		}
 
 		LogInfo("Initialized.");
 	}
@@ -63,27 +70,68 @@ namespace Communication
 				LogInfo( message.toStdString() );
 			}
 		}
+
+	}
+
+	Console::CommandResult CommunicationModule::Test(const Core::StringVector &params)
+	{
+		// Test Telepathy IM
+		// Login to given jabber server
+		// Fetch contact list 
+		// Send a text message to first contact on the list
+		try
+		{
+			CommunicationServiceInterface* communication_service = CommunicationService::GetInstance();
+			Credentials jabber_credentials;
+			jabber_credentials.SetProtocol("jabber");
+			jabber_credentials.SetUserID("rex_user_1@jabber.org");
+			jabber_credentials.SetServer("jabber.org");
+			jabber_credentials.SetPort(5222);
+			jabber_credentials.SetPassword("");
+			ConnectionInterface* jabber_connection = communication_service->OpenConnection(jabber_credentials);
+			while (jabber_connection->GetState() == Communication::ConnectionInterface::STATE_INITIALIZING)
+			{
+				QTime wait_time = QTime::currentTime().addSecs(0.100);
+				while( QTime::currentTime() < wait_time )
+					QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+			}
+			Communication::ContactGroupInterface& friend_list = jabber_connection->GetContacts();
+			Communication::ContactVector contacts = friend_list.GetContacts();
+			for (Communication::ContactVector::iterator i = contacts.begin(); i != contacts.end(); ++i)
+			{
+				QString name = (*i)->GetName();
+				QString message = QString("Friend: ").append(name);
+				LogInfo(message.toStdString());
+			}
+			if (contacts.size() > 0)
+			{
+				ChatSessionInterface* chat = jabber_connection->OpenPrivateChatSession(*(contacts[0]));
+				chat->SendMessage("Hello world!");
+				chat->Close();
+			}
+			jabber_connection->Close();
+		}
+		catch(Core::Exception &e)
+		{
+			QString message = QString("Test for TelepathyIM failed: ").append(e.what());
+			LogDebug(message.toStdString());
+		}
+		return Console::ResultSuccess("");
 	}
 
 	void CommunicationModule::Uninitialize()
 	{
 		if (console_ui_)
-		{
-			delete console_ui_;
-			console_ui_ = NULL;
-		}
+			SAFE_DELETE(console_ui_)
 
 		if (qt_ui_)
-		{
-			delete qt_ui_;
-			qt_ui_ = NULL;
-		}
+			SAFE_DELETE(qt_ui_);
 
 		if (communication_manager_)
-		{
-			delete communication_manager_;
-			communication_manager_ = NULL;
-		}
+			SAFE_DELETE(communication_manager_);
+
+		if (communication_service_)
+			SAFE_DELETE(communication_service_);
 
 		LogInfo("Uninitialized.");
 	}

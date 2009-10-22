@@ -50,7 +50,7 @@ namespace Communication
 		virtual QStringList GetSupportedProtocols() const;
 
 		//! Create new Connection object accordingly given credentials
-		virtual ConnectionPtr OpenConnection(const CredentialsInterface &credentials);
+		virtual ConnectionInterface* OpenConnection(const CredentialsInterface &credentials);
 
 		//! Return all Connection objects
 		virtual ConnectionVector GetConnections() const;
@@ -62,20 +62,23 @@ namespace Communication
 		virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
 	protected:
-		virtual void CommunicationService::OnNewConnection(Communication::ConnectionInterface*);
+		ConnectionProviderVector GetConnectionProviders(const QString &protocol) const;
 
-		static CommunicationService* instance_;
-		ConnectionVector connections_;
-		ConnectionProviderVector connection_providers_;
-		QMap<QString, ConnectionVector> connections_per_protocol_;
 		Foundation::Framework* framework_;
+		static CommunicationService* instance_;
+		ConnectionProviderVector connection_providers_;
+		ConnectionVector connections_;
+		QMap<QString, ConnectionVector> connections_per_protocol_;
+		QStringList supported_protocols_;
 
 		//! category id for incoming messages
 		Core::event_category_id_t event_category_opensimnetworkin_;
         Core::event_category_id_t event_category_networkstate_;
 	protected slots:
-		void OnFriendRequestReceived(const Communication::FriendRequestInterface& request);
-
+		virtual void OnProtocolListUpdated(const QStringList& protocols);
+		virtual void OnConnectionOpened(Communication::ConnectionInterface*);
+		virtual void OnConnectionClosed(Communication::ConnectionInterface*);
+		virtual void OnFriendRequestReceived(const Communication::FriendRequestInterface& request);
 	};
 } // end of namespace: Communication
 

@@ -49,7 +49,7 @@ namespace OpensimIM
 
 		for ( ConnectionVector::const_iterator i = connections_.begin(); i != connections_.end(); ++i)
 		{
-			vector.push_back(Communication::ConnectionPtr(*i));
+			vector.push_back(*i);
 		}
 		return vector;
 	}
@@ -148,7 +148,7 @@ namespace OpensimIM
 			QString message = (*i)->GetName().append("(").append((*i)->GetID()).append(")");
 			LogDebug(message.toStdString());
 		}
-		emit( ConnectionOpened(connection) );
+		emit( ConnectionOpened(&connection) );
 	}
 
 	void ConnectionProvider::OnFriendRequestReceived(Communication::FriendRequestInterface& request)

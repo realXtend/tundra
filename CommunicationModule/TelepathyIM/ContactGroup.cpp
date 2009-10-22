@@ -27,4 +27,9 @@ namespace TelepathyIM
 		return empty_vector;
 	}
 
+	void ContactGroup::AddContact(Contact* contact)
+	{
+		contacts_.push_back(contact);
+	}
+
 } // end of namespace: TelepathyIM
