@@ -2,6 +2,8 @@
 #define incl_Communication_TelepathyIM_FriendRequest_h
 
 #include "..\interface.h"
+#include <TelepathyQt4/Contact>
+#include <TelepathyQt4/PendingOperation>
 
 namespace TelepathyIM
 {
@@ -18,14 +20,18 @@ namespace TelepathyIM
 	{
 		Q_OBJECT
 	public:
-		FriendRequest();
+		FriendRequest(Tp::ContactPtr contact);
 		virtual QString GetOriginatorName() const;
 		virtual QString GetOriginatorID() const;
 		virtual Communication::FriendRequestInterface::State GetState() const;
 		virtual void Accept();
 		virtual void Reject();
 	protected:
+		virtual void OnPresencePublicationAuthorized(Tp::PendingOperation* op);
+		virtual void OnPresenceSubscriptionResult(Tp::PendingOperation* op);
+
 		State state_;
+		Tp::ContactPtr tp_contact_;
 	};
 
 } // end of namespace: TelepathyIM
