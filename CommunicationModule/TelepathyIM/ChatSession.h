@@ -2,11 +2,14 @@
 #define incl_Communication_TelepathyIM_ChatSession_h
 
 #include <QStringList>
+#include <TelepathyQt4/TextChannel>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/PendingOperation>
+#include <TelepathyQt4/PendingReady>
 #include "Foundation.h"
 #include "..\interface.h"
 #include "ContactGroup.h"
+#include "ChatMessage.h"
 
 namespace TelepathyIM
 {
@@ -20,7 +23,8 @@ namespace TelepathyIM
 	{
 		Q_OBJECT
 	public:
-		ChatSession(Tp::Connection* tp_connection);
+		ChatSession(Tp::TextChannelPtr tp_text_channel);		
+//		ChatSession(Tp::Connection* tp_connection);
 
 		virtual ~ChatSession();
 
@@ -43,7 +47,20 @@ namespace TelepathyIM
 
 	protected:
 		State state_;
+		Tp::TextChannelPtr tp_text_channel_;
 		Tp::Connection* tp_conneciton_;
+		QStringList send_buffer_;
+		ChatMessageVector message_history_;
+		ChatSessionParticipantVector participants_;
+	protected slots:
+		//! This method is called ONLY when session is established by client 
+		//! and it's NOT called when the session is established by server
+		virtual void OnTextChannelCreated(Tp::PendingOperation* op);
+		virtual void OnTextChannelReady(Tp::PendingOperation* op);
+		virtual void ChatSession::OnMessageSendAck(Tp::PendingOperation* op);
+		virtual void OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &); // todo
+
+
 	};
 	
 } // end of namespace: TelepathyIM

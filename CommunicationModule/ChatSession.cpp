@@ -39,6 +39,7 @@ namespace TpQt4Communication
 
 		Tp::PendingSendMessage* p = tp_text_channel_->send(QString(text.c_str()));
 		//! todo: receive ack when message is send
+		
 	}
 
 	ChatMessageVector ChatSession::GetMessageHistory()

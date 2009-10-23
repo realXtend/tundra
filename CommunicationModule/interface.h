@@ -173,7 +173,7 @@ namespace Communication
 	{
 		Q_OBJECT
 	public:
-		enum State { STATE_OPEN, STATE_CLOSED };
+		enum State { STATE_INITIALIZING, STATE_OPEN, STATE_CLOSED };
 
 		virtual ~ChatSessionInterface() {};
 
