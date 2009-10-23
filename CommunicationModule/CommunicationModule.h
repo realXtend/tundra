@@ -9,21 +9,18 @@
 #include "CommunicationService.h"
 #include "ConsoleUI.h"
 #include "QtGUI.h"
+#include "Test.h"
 
-/**
- *  Communication module
- *
- *  Provides:
- *  - CommunicationManager object for connecting IM servers
- *  - ConsoleUI for text based user interface
- *  - QtGUI for Qt based user interface 
- *
- *  Instructions:
- * - TODO
- *
- */
+
 namespace Communication
 {
+	/**
+	 *  Communication module
+	 *
+	 *  Provides:
+	 *  - CommunicationService class 
+	 *
+	 */
 	class COMMS_MODULE_API CommunicationModule : public Foundation::ModuleInterfaceImpl
 	{
 		MODULE_LOGGING_FUNCTIONS
@@ -47,13 +44,14 @@ namespace Communication
 	    bool CommunicationModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
 	protected:
-		//! Run a test: Requires a jabber connection and send a text message
+		// Run given test
 		Console::CommandResult Test(const Core::StringVector &params);
 
 		TpQt4Communication::CommunicationManager* communication_manager_;
 		CommunicationUI::ConsoleUI* console_ui_;
 		CommunicationUI::QtGUI* qt_ui_;
 		CommunicationServiceInterface* communication_service_;
+		CommunicationTest::Test* test_;
 	};
 }
 
