@@ -27,17 +27,17 @@ namespace RexLogic
         void RebuildEditView();
         
     public slots:
-        //! Export button press handler
+        //! Export click handler
         void ExportAvatar();
-        //! Close button press handler
-        void Close();
-        //! Load button press handler
+        //! New avatar click handler
         void LoadAvatar();
-        //! Revert button press handler
+        //! Revert click handler
         void RevertAvatar();
-        //! Change texture press handler
+        //! Change texture click handler
         void ChangeTexture();
-        //! Remove attachment press handler
+        //! New attachment click handler
+        void AddAttachment();
+        //! Remove attachment click handler
         void RemoveAttachment();
         //! Bone modifier scrollbar value handler
         void BoneModifierValueChanged(int value);

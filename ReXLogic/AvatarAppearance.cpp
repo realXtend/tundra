@@ -1589,5 +1589,54 @@ namespace RexLogic
         appearance.SetMaterials(materials);
         
         return true;
-    }                 
+    }        
+    
+    bool AvatarAppearance::AddAttachment(Scene::EntityPtr entity, const std::string& filename)
+    {
+        boost::filesystem::path path(filename);
+        std::string leafname = path.leaf();
+        std::string dirname = path.branch_path().string();
+                
+        std::string matname;
+        
+        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        
+        if (!meshptr || !appearanceptr)
+            return false;
+        
+        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+  
+        QFile file(filename.c_str());
+        QDomDocument attachment_doc("Attachment");
+        
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            RexLogicModule::LogError("Could not open attachment description file " + filename);
+            return false;
+        }
+        
+        if (!attachment_doc.setContent(&file))
+        {
+            file.close();
+            RexLogicModule::LogError("Could not parse attachment description file " + filename);
+            return false;
+        }
+        file.close();  
+        
+        AvatarAttachment new_attachment;
+        if (!LegacyAvatarSerializer::ReadAttachment(new_attachment, attachment_doc, appearance, leafname))
+            return false;
+        
+        AvatarAttachmentVector attachments = appearance.GetAttachments();
+        attachments.push_back(new_attachment);
+        appearance.SetAttachments(attachments);
+         
+        // Assume any resources needed by the attachment are in the same dir as the .xml      
+        AddTempResourceDirectory(dirname);
+        
+        SetupAppearance(entity);
+        return true;
+    }         
 }

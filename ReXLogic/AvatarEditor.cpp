@@ -43,19 +43,10 @@ namespace RexLogic
         if (canvas_)
         {
             if (canvas_->IsHidden())
-            {
                 canvas_->Show();
-            }
             else
                 canvas_->Hide();
         }
-    }
-    
-    void AvatarEditor::Close()
-    {
-        // Actually just hide the canvas
-        if (canvas_)
-            canvas_->Hide();
     }
     
     void AvatarEditor::ExportAvatar()
@@ -138,6 +129,10 @@ namespace RexLogic
         button = avatar_widget_->findChild<QPushButton *>("but_revert");
         if (button)
             QObject::connect(button, SIGNAL(clicked()), this, SLOT(RevertAvatar()));
+
+        button = avatar_widget_->findChild<QPushButton *>("but_attachment");
+        if (button)
+            QObject::connect(button, SIGNAL(clicked()), this, SLOT(AddAttachment()));
     }
     
     void AvatarEditor::RebuildEditView()
@@ -418,5 +413,21 @@ namespace RexLogic
             rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupAppearance(entity);
             RebuildEditView();              
         }
+    }
+    
+    void AvatarEditor::AddAttachment()
+    {
+        const std::string filter = "Attachment description file (*.xml)";
+        std::string filename = Foundation::QtUtils::GetOpenFileName(filter, "Choose attachment file", Foundation::QtUtils::GetCurrentPath());      
+
+        if (!filename.empty())
+        {
+            Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
+            if (!entity)
+                return;
+                
+            rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().AddAttachment(entity, filename);
+            RebuildEditView();
+        }  
     }
 }
