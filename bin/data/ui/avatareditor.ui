@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>313</width>
-    <height>302</height>
+    <width>336</width>
+    <height>373</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -120,6 +120,54 @@
     </widget>
    </item>
    <item>
+    <widget class="QLabel" name="label_attachments">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Attachments</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QScrollArea" name="scroll_attachments">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAsNeeded</enum>
+     </property>
+     <property name="widgetResizable">
+      <bool>false</bool>
+     </property>
+     <widget class="QWidget" name="panel_attachments">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>20</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </widget>
+   </item>
+   <item>
     <widget class="QWidget" name="widget" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
@@ -127,17 +175,24 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0">
-      <property name="spacing">
-       <number>6</number>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="leftMargin">
+       <number>0</number>
       </property>
-      <property name="sizeConstraint">
-       <enum>QLayout::SetNoConstraint</enum>
+      <property name="rightMargin">
+       <number>0</number>
       </property>
       <item>
        <widget class="QPushButton" name="but_load">
         <property name="text">
-         <string>Choose Avatar</string>
+         <string>New Avatar</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="but_attachment">
+        <property name="text">
+         <string>New Attach</string>
         </property>
        </widget>
       </item>
@@ -151,7 +206,7 @@
       <item>
        <widget class="QPushButton" name="but_export">
         <property name="text">
-         <string>Save Changes</string>
+         <string>Save</string>
         </property>
        </widget>
       </item>

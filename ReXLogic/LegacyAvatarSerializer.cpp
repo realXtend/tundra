@@ -606,6 +606,7 @@ namespace RexLogic
             while (!polygon.isNull())
             {
                 Core::uint idx = ParseInt(polygon.attribute("idx").toStdString());
+                attachment.vertices_to_hide_.push_back(idx);
                 polygon = polygon.nextSiblingElement("avatar_polygon");
             }
         }

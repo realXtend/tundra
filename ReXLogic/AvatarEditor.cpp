@@ -20,15 +20,14 @@ namespace RexLogic
 {
 
     AvatarEditor::AvatarEditor(RexLogicModule* rexlogicmodule) :
-        rexlogicmodule_(rexlogicmodule)
+        rexlogicmodule_(rexlogicmodule),
+        avatar_widget_(0)
     {
         InitEditorWindow();
     }
 
     AvatarEditor::~AvatarEditor()
     {
-        avatar_widget_ = 0;
-
         Foundation::ModuleSharedPtr qt_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule("QtModule").lock();
         QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
         
@@ -38,16 +37,13 @@ namespace RexLogic
                 qt_ui->DeleteCanvas(canvas_->GetID());
         }
     }
-
+           
     void AvatarEditor::Toggle()
     {
         if (canvas_)
         {
             if (canvas_->IsHidden())
             {
-                // Sometimes the view isn't rebuilt the first time because the avatar id doesn't match connection id???
-                // In any case, rebuild when making the editor visible
-                RebuildEditView();
                 canvas_->Show();
             }
             else
@@ -145,17 +141,19 @@ namespace RexLogic
     }
     
     void AvatarEditor::RebuildEditView()
-    {
+    {   
         if (!avatar_widget_)
             return;
                                 
         QWidget* mat_panel = avatar_widget_->findChild<QWidget *>("panel_materials");
         QWidget* morph_panel = avatar_widget_->findChild<QWidget *>("panel_morphs");        
-        if (!mat_panel || !morph_panel)    
+        QWidget* attachment_panel = avatar_widget_->findChild<QWidget *>("panel_attachments");        
+        if (!mat_panel || !morph_panel || !attachment_panel)    
             return;
         
         ClearPanel(mat_panel); 
-        ClearPanel(morph_panel);      
+        ClearPanel(morph_panel);
+        ClearPanel(attachment_panel);      
         
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
         if (!entity)
@@ -165,7 +163,7 @@ namespace RexLogic
             return;
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());    
        
-        int width = 270;
+        int width = 300;
         int itemheight = 20;
         
         // Materials
@@ -271,6 +269,32 @@ namespace RexLogic
                 ++y;
             }          
         }   
+        
+        // Attachments
+        const AvatarAttachmentVector& attachments = appearance.GetAttachments();                
+        attachment_panel->resize(width, itemheight * attachments.size());
+        
+        for (Core::uint y = 0; y < attachments.size(); ++y)
+        {            
+            QPushButton* button = new QPushButton("Remove", attachment_panel);
+            button->setObjectName(QString::fromStdString(Core::ToString<int>(y))); // Attachment index
+            button->resize(50, 20);
+            button->move(width - 50, y*itemheight);  
+            button->show();          
+            
+            QObject::connect(button, SIGNAL(clicked()), this, SLOT(RemoveAttachment()));
+                            
+            std::string attachment_name = attachments[y].name_;
+            // Strip away .xml from the attachment name for slightly nicer display
+            std::size_t pos = attachment_name.find(".xml");
+            if (pos != std::string::npos)
+                attachment_name = attachment_name.substr(0, pos);                            
+                            
+            QLabel* label = new QLabel(QString::fromStdString(attachment_name), attachment_panel);
+            label->resize(200,20);
+            label->move(0, y*itemheight);
+            label->show();
+        }                
     }
     
     void AvatarEditor::ClearPanel(QWidget* panel)
@@ -367,5 +391,32 @@ namespace RexLogic
             rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().ChangeAvatarMaterial(entity, index, filename);
             RebuildEditView();
         }        
+    }
+    
+    void AvatarEditor::RemoveAttachment()
+    {
+        QPushButton* button = qobject_cast<QPushButton*>(sender());
+        if (!button)
+            return;
+        
+        std::string index_str = button->objectName().toStdString();
+        Core::uint index = Core::ParseString<Core::uint>(index_str);    
+        
+        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
+        if (!entity)
+            return;
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!appearanceptr)
+            return;
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());    
+        
+        AvatarAttachmentVector attachments = appearance.GetAttachments();
+        if (index < attachments.size())
+        {
+            attachments.erase(attachments.begin() + index);
+            appearance.SetAttachments(attachments);
+            rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupAppearance(entity);
+            RebuildEditView();              
+        }
     }
 }
