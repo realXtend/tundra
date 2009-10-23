@@ -43,7 +43,8 @@ UICanvas::UICanvas(): overlay_(0),
                       id_(QUuid::createUuid().toString()),
                       widgets_(0),
                       locked_(false), 
-                      resize_locked_(false)
+                      resize_locked_(false),
+                      always_top_(false)
                      
                       
 {
@@ -61,7 +62,8 @@ UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
                                id_(QUuid::createUuid().toString()),
                                widgets_(0),
                                locked_(false),
-                               resize_locked_(false)
+                               resize_locked_(false),
+                               always_top_(false)
                                
                           
 {

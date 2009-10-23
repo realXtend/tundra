@@ -93,6 +93,10 @@ namespace QtUI
         bool IsCanvasResizeLocked() const { return resize_locked_;}
 
 
+        bool IsAlwaysOnTop() const { return always_top_; }
+
+        void SetAlwaysOnTop(bool on) { always_top_ = on; }
+
         /** Resizes the UI canvas size and reallocates Qt and Ogre surfaces to new size. 
             @param width is a new width of canvas. 
             @param height is a new height of canvas.
@@ -262,6 +266,8 @@ namespace QtUI
         bool locked_;
       
         bool resize_locked_;
+
+        bool always_top_;
 
         /// Contains the widget proxies of all the widgets that have been added to this canvas.
         QList<QGraphicsProxyWidget*> scene_widgets_;

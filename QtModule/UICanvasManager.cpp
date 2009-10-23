@@ -59,7 +59,7 @@ namespace QtUI
 			controlBarCanvas_->SetCanvasSize(25, 25);
 			controlBarCanvas_->SetLockPosition(true);
 			controlBarCanvas_->SetCanvasResizeLock(true);
-			controlBarCanvas_->SetTop();
+			controlBarCanvas_->SetAlwaysOnTop(true);
 			controlBarCanvas_->AddWidget(controlBarWidget_);			
 			controlBarCanvas_->Show();
 		}
