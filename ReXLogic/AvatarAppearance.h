@@ -81,6 +81,9 @@ namespace RexLogic
         //! Changes a material on an avatar. Filename can either be image or material.
         bool ChangeAvatarMaterial(Scene::EntityPtr entity, Core::uint index, const std::string& filename);
         
+        //! Adds an attachment on the avatar. Filename is the xml attachment description.
+        bool AddAttachment(Scene::EntityPtr entity, const std::string& filename);
+        
     private:
         //! Sets up an avatar mesh
         void SetupMeshAndMaterials(Scene::EntityPtr entity);

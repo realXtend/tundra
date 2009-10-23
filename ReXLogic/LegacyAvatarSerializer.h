@@ -31,6 +31,13 @@ namespace RexLogic
         //! Writes avatar definition from an EC_AvatarAppearance into an xml document
         static void WriteAvatarAppearance(QDomDocument& dest, const EC_AvatarAppearance& source);
         
+        //! Reads an attachment xml document
+        /*! Needs a whole (filled) EC_AvatarAppearance to determine the correct attachment point information
+            for the current avatar mesh. 
+            \return False if important data is missing or if the attachment cannot be attached to the current mesh.
+         */
+        static bool ReadAttachment(AvatarAttachment& dest, const QDomDocument source, const EC_AvatarAppearance& appearance, const std::string& attachment_name);
+        
     private:
         //! Reads a bone modifier set from an xml node, and adds it to the vector
         //! \return true if successful

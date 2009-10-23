@@ -620,6 +620,79 @@ namespace RexLogic
         return true;
     }
     
+    bool LegacyAvatarSerializer::ReadAttachment(AvatarAttachment& dest, const QDomDocument source, const EC_AvatarAppearance& appearance, const std::string& attachment_name)
+    {
+        QDomElement attachment_elem = source.firstChildElement("attachment");
+        if (attachment_elem.isNull())
+        {
+            RexLogicModule::LogError("Attachment without attachment element");
+            return false;
+        }
+
+        dest.name_ = attachment_name;
+        
+        std::string meshname = appearance.GetMesh().name_;
+        std::string basemeshname = appearance.GetProperty("basemesh");
+        
+        bool found = false;
+        QDomElement avatar_elem = attachment_elem.firstChildElement("avatar");
+        while (!avatar_elem.isNull())
+        {
+            std::string name = avatar_elem.attribute("name").toStdString();
+            if ((name == meshname) || (name == basemeshname))
+            {
+                found = true;
+                break;
+            }   
+            avatar_elem = avatar_elem.nextSiblingElement("avatar");
+        }
+        
+        if (!found)
+        {
+            RexLogicModule::LogError("No matching avatar mesh found in attachment. This attachment cannot be used for this avatar mesh");
+            return false;
+        }
+        
+        QDomElement mesh_elem = attachment_elem.firstChildElement("mesh");
+        if (!mesh_elem.isNull())
+        {
+            dest.mesh_.name_ = mesh_elem.attribute("name").toStdString();
+            dest.link_skeleton_ = ParseBool(mesh_elem.attribute("linkskeleton").toStdString());
+        }
+        else
+        {
+            RexLogicModule::LogError("Attachment without mesh element");
+            return false;
+        }
+        
+        QDomElement bone = avatar_elem.firstChildElement("bone");
+        if (!bone.isNull())
+        {
+            dest.bone_name_ = bone.attribute("name").toStdString();
+            if (dest.bone_name_ == "None")
+                dest.bone_name_ = std::string();
+            dest.transform_.position_ = ParseVector3(bone.attribute("offset").toStdString());
+            dest.transform_.orientation_ = ParseQuaternion(bone.attribute("rotation").toStdString());
+            dest.transform_.scale_ = ParseVector3(bone.attribute("scale").toStdString());
+        }
+        
+        QDomElement polygon = avatar_elem.firstChildElement("avatar_polygon");
+        while (!polygon.isNull())
+        {
+            Core::uint idx = ParseInt(polygon.attribute("idx").toStdString());
+            dest.vertices_to_hide_.push_back(idx);
+            polygon = polygon.nextSiblingElement("avatar_polygon");
+        }
+
+        QDomElement category_elem = attachment_elem.firstChildElement("category");
+        if (!category_elem.isNull())
+        {
+            dest.category_ = category_elem.attribute("name").toStdString();
+        }    
+        
+        return true;        
+    }     
+ 
     void LegacyAvatarSerializer::WriteAvatarAppearance(QDomDocument& dest, const EC_AvatarAppearance& source)
     {
         // Avatar element
@@ -922,7 +995,6 @@ namespace RexLogic
         elem.appendChild(avatar_elem);
         
         return elem;
-        
     }
 }
 
