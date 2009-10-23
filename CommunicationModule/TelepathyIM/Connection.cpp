@@ -134,7 +134,6 @@ namespace TelepathyIM
 		QObject::connect(tp_connection_.data(),
 			             SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
 						 SLOT(OnConnectionInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
-
 	}
 
 	void Connection::OnConnectionConnected(Tp::PendingOperation *op)
@@ -267,10 +266,12 @@ namespace TelepathyIM
 
 	void Connection::OnConnectionInvalidated(Tp::DBusProxy *proxy, const QString &errorName, const QString &errorMessage)
 	{
-		state_ = STATE_ERROR;
-		reason_ = errorMessage;
-		emit( ConnectionError(*this) );
-		//! @todo IMPLEMENT
+		//! We don't have to report about error here.
+		//! OnConnectionReady() will be called after this with error information
+
+		//state_ = STATE_ERROR;
+		//reason_ = errorMessage;
+		//emit( ConnectionError(*this) );
 	}
 
 	void Connection::OnConnectionClosed(Tp::PendingOperation *op)

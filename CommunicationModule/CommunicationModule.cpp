@@ -8,7 +8,7 @@
 namespace Communication
 {
 
-	CommunicationModule::CommunicationModule(void):ModuleInterfaceImpl("CommunicationModule"), communication_manager_(NULL), console_ui_(NULL), qt_ui_(NULL), communication_service_(NULL)
+	CommunicationModule::CommunicationModule(void):ModuleInterfaceImpl("CommunicationModule"), communication_manager_(0), console_ui_(0), qt_ui_(0), communication_service_(0), test_(0)
 	{
 	}
 
@@ -33,6 +33,8 @@ namespace Communication
 		//!       DBus service cannot have two instanced.
 		TelepathyIM::ConnectionProvider* telepathy = new TelepathyIM::ConnectionProvider(framework_);
 		communication_service_->RegisterConnectionProvider(telepathy);
+
+		test_ = new CommunicationTest::Test();
 
 		// current way
 
@@ -75,46 +77,15 @@ namespace Communication
 
 	Console::CommandResult CommunicationModule::Test(const Core::StringVector &params)
 	{
-		// Test Telepathy IM
-		// Login to given jabber server
-		// Fetch contact list 
-		// Send a text message to first contact on the list
-		try
+		if (params.size() != 1)
 		{
-			CommunicationServiceInterface* communication_service = CommunicationService::GetInstance();
-			Credentials jabber_credentials;
-			jabber_credentials.SetProtocol("jabber");
-			jabber_credentials.SetUserID("rex_user_1@jabber.org");
-			jabber_credentials.SetServer("jabber.org");
-			jabber_credentials.SetPort(5222);
-			jabber_credentials.SetPassword("");
-			ConnectionInterface* jabber_connection = communication_service->OpenConnection(jabber_credentials);
-			while (jabber_connection->GetState() == Communication::ConnectionInterface::STATE_INITIALIZING)
-			{
-				QTime wait_time = QTime::currentTime().addSecs(0.100);
-				while( QTime::currentTime() < wait_time )
-					QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-			}
-			Communication::ContactGroupInterface& friend_list = jabber_connection->GetContacts();
-			Communication::ContactVector contacts = friend_list.GetContacts();
-			for (Communication::ContactVector::iterator i = contacts.begin(); i != contacts.end(); ++i)
-			{
-				QString name = (*i)->GetName();
-				QString message = QString("Friend: ").append(name);
-				LogInfo(message.toStdString());
-			}
-			if (contacts.size() > 0)
-			{
-				ChatSessionInterface* chat = jabber_connection->OpenPrivateChatSession(*(contacts[0]));
-				chat->SendMessage("Hello world!");
-				chat->Close();
-			}
-			jabber_connection->Close();
+			return Console::ResultFailure("Wrong sumner of arguments!\nUse: comm test(T) where T is the id of the test.");
 		}
-		catch(Core::Exception &e)
+		QString test_id = QString(params[0].c_str());
+		switch( test_id.toInt() )
 		{
-			QString message = QString("Test for TelepathyIM failed: ").append(e.what());
-			LogDebug(message.toStdString());
+			case 1: test_->RunTest1();break;
+			case 2: test_->RunTest2();break;
 		}
 		return Console::ResultSuccess("");
 	}
