@@ -23,7 +23,7 @@ namespace RexLogic
         
         //! Toggle visibility of editor window
         void Toggle();
-        //! Rebuild edit view, called when user avatar has changed/reloaded
+        //! Rebuild edit view
         void RebuildEditView();
         
     public slots:
@@ -37,6 +37,8 @@ namespace RexLogic
         void RevertAvatar();
         //! Change texture press handler
         void ChangeTexture();
+        //! Remove attachment press handler
+        void RemoveAttachment();
         //! Bone modifier scrollbar value handler
         void BoneModifierValueChanged(int value);
         //! Morph modifier scrollbar value handler
