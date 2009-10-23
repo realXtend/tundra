@@ -85,6 +85,11 @@ namespace TelepathyIM
 		//	     SIGNAL( finished(Tp::PendingOperation*) ),
 		//		SLOT( OnChannelReady(Tp::PendingOperation*)) );
 	}
+
+	void ChatSession::OnChannelInvalidated(Tp::DBusProxy *p, const QString &me, const QString &er)
+	{
+		//! @todo IMPLEMENT	
+	}
 	
 	void ChatSession::OnTextChannelReady(Tp::PendingOperation* op)
 	{
