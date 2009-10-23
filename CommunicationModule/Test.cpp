@@ -23,27 +23,52 @@ namespace CommunicationTest
 
 	void Test::RunTest2()
 	{
-		//! @todo IMPLEMENT
-	}
+		Communication::Credentials opensim_credentials;
+		opensim_credentials.SetProtocol("opensim_udp");
 
-	void Test::OpenConnection(Communication::CredentialsInterface& crederntials)
-	{
 		try
 		{
 			Communication::CommunicationServiceInterface* communication_service = Communication::CommunicationService::GetInstance();
-			jabber_connection_ = communication_service->OpenConnection(crederntials);
-			connect(jabber_connection_, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( OnConnectionReady(Communication::ConnectionInterface&) ));
-			connect(jabber_connection_, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( OnConnectionError(Communication::ConnectionInterface&) ));
-			// The test continues on OnConnectionReady function
+			opensim_connection_ = communication_service->OpenConnection(opensim_credentials);
+			switch (opensim_connection_->GetState())
+			{
+			case Communication::ConnectionInterface::STATE_INITIALIZING:
+				connect(opensim_connection_, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( OnOpensimUdpConnectionReady(Communication::ConnectionInterface&) ));
+				connect(opensim_connection_, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( OnOpensimUdpConnectionError(Communication::ConnectionInterface&) ));
+				break;
+			case Communication::ConnectionInterface::STATE_OPEN:
+				OnOpensimUdpConnectionReady(*opensim_connection_);
+				break;
+			case Communication::ConnectionInterface::STATE_ERROR:
+				OnOpensimUdpConnectionError(*opensim_connection_);
+				break;
+			}
 		}
 		catch(Core::Exception &e)
 		{
-			QString message = QString("Cannot create connction object: ").append(e.what());
+			QString message = QString("Cannot create opensim IM connction object: ").append(e.what());
 			LogError(message.toStdString());
 		}
 	}
 
-	void Test::OnConnectionReady(Communication::ConnectionInterface& connection)
+	void Test::OpenConnection(Communication::CredentialsInterface& credentials)
+	{
+		try
+		{
+			Communication::CommunicationServiceInterface* communication_service = Communication::CommunicationService::GetInstance();
+			jabber_connection_ = communication_service->OpenConnection(credentials);
+			connect(jabber_connection_, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( OnJabberConnectionReady(Communication::ConnectionInterface&) ));
+			connect(jabber_connection_, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( OnJabberConnectionError(Communication::ConnectionInterface&) ));
+			// The test continues on OnConnectionReady function
+		}
+		catch(Core::Exception &e)
+		{
+			QString message = QString("Cannot create jabber connction object: ").append(e.what());
+			LogError(message.toStdString());
+		}
+	}
+
+	void Test::OnJabberConnectionReady(Communication::ConnectionInterface& connection)
 	{
 		try
 		{
@@ -70,10 +95,32 @@ namespace CommunicationTest
 		}
 	}
 
-	void Test::OnConnectionError(Communication::ConnectionInterface& connection)
+	void Test::OnJabberConnectionError(Communication::ConnectionInterface& connection)
 	{
 		QString message = QString("Test failed: ").append(connection.GetReason());
 		LogError(message.toStdString());
 	}
+
+	void Test::OnOpensimUdpConnectionReady(Communication::ConnectionInterface& connection)
+	{
+		try
+		{
+			Communication::ChatSessionInterface* public_chat = connection.OpenChatSession("0"); // public chat channel 0
+			public_chat->SendMessage("Hello world");
+			public_chat->Close();
+		}
+		catch (Core::Exception &e)
+		{
+			QString message = QString("Test failed (Cannot send a message): ").append(connection.GetReason());
+			LogError(message.toStdString());
+		}
+	}
+
+	void Test::OnOpensimUdpConnectionError(Communication::ConnectionInterface& connection)
+	{
+		QString message = QString("Test failed (Cannot create connection): ").append(connection.GetReason());
+		LogError(message.toStdString());
+	}
+
 
 } // end of namespace: CommunicationTest

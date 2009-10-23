@@ -6,7 +6,7 @@
 #include "..\CommunicationService.h"
 #include "Connection.h"
 
-#define OPENSIM_IM_PROTOCOL "OpensimUDP"
+#define OPENSIM_IM_PROTOCOL "opensim_udp"
 #define MODREX_IM_PROTOCOL "ModRex"
 
 namespace OpensimIM

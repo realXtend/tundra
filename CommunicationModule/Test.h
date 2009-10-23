@@ -39,8 +39,10 @@ namespace CommunicationTest
 		Communication::ConnectionInterface* opensim_connection_;
 
 	protected slots:
-		void OnConnectionReady(Communication::ConnectionInterface&);
-		void OnConnectionError(Communication::ConnectionInterface&);
+		void OnJabberConnectionReady(Communication::ConnectionInterface&);
+		void OnJabberConnectionError(Communication::ConnectionInterface&);
+		void OnOpensimUdpConnectionReady(Communication::ConnectionInterface&);
+		void OnOpensimUdpConnectionError(Communication::ConnectionInterface&);
 	};
 	
 
