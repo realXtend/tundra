@@ -17,8 +17,6 @@ namespace OpensimIM
 		RequestFriendlist();
 		RegisterConsoleCommands();
 		OpenWorldChatSession();
-
-		//emit( ConnectionReady(*this) );
 	}
 
 	Connection::~Connection()
@@ -106,8 +104,7 @@ namespace OpensimIM
 		if (state_ != STATE_OPEN)
 			throw Core::Exception("The connection is closed.");
 
-		//! \todo IMPLEMENT
-		return NULL;
+		return OpenPrivateChatSession( contact.GetID() );
 	}
 
 	Communication::ChatSessionInterface* Connection::OpenPrivateChatSession(const QString &user_id)
@@ -169,8 +166,6 @@ namespace OpensimIM
 		
 	void Connection::Close()
 	{
-		//! @todo Send information to server
-
 		state_ = STATE_CLOSED;
 		emit ConnectionClosed( *this );
 	}
