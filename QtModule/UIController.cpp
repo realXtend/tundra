@@ -59,10 +59,30 @@ int UIController::Search(const QString& id) const
 
 void UIController::Arrange()
 {
+    
+    // We define now that our canvases get Z-order between [300- if canvas is set top it will get value 
+    // This function arange canvases loozly. Meaning their Z-order is not "diffrence" can be more then 1 even for canvase which are not always top.
+    int magic_value = 300;
     int size = canvases_.size();
-    for ( int i = 0; i < size; ++i)
-        canvases_[i]->SetZOrder(size - i);
 
+    for ( int i = size; i--;)
+    {
+        if (canvases_[i]->IsAlwaysOnTop())
+        {
+            if ( i != 0)
+                canvases_.move(i,0);
+        }
+    }
+
+
+    for ( int i = 0; i < size; ++i)
+    {    
+        if ( !canvases_[i]->IsAlwaysOnTop())
+            canvases_[i]->SetZOrder(size + magic_value  - i - 1);
+        else    
+            canvases_[i]->SetZOrder(size + magic_value);
+         
+    }
 }
 
 
@@ -101,8 +121,13 @@ boost::weak_ptr<UICanvas> UIController::CreateCanvas(UICanvas::Mode mode)
     QObject::connect(canvas.get(), SIGNAL(ToBack(const QString&)), this, SLOT(SetBack(const QString&)));
 
     // Adds automatically and "Z-order". So that last created canvas is top.
-    canvas->SetZOrder(canvases_.size() + 1);
+    // We define that our canvases are over [ 300 - 
+    int magic_value = 300;
+
+    canvas->SetZOrder(canvases_.size() + magic_value + 1);
     canvases_.prepend(canvas);
+    // Adjust Z - order.
+    Arrange();
     return canvas;
 }
 
@@ -390,9 +415,19 @@ void UIController::SetTop(const QString& id )
     if ( index == -1)
         return;
 
-    boost::shared_ptr<UICanvas> canvas = canvases_.takeAt(index);
-    canvases_.prepend(canvas);
-
+    int size = canvases_.size();
+   
+    // Search first canvas which is not always on top.
+    for ( int i = 0; i < canvases_.size(); ++i)
+    {
+        if ( !canvases_[i]->IsAlwaysOnTop())
+        {
+           canvases_.swap(index,i);
+           break;
+        }
+    }
+    
+   
     // Assure that it is current active canvas
     active_canvas_ = id;
     
