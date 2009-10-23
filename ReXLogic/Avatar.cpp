@@ -4,6 +4,7 @@
 #include "RexNetworkUtils.h"
 #include "Avatar.h"
 #include "AvatarAppearance.h"
+#include "AvatarEditor.h"
 #include "RexLogicModule.h"
 #include "EC_OpenSimPresence.h"
 #include "EC_OpenSimAvatar.h"
@@ -180,7 +181,11 @@ namespace RexLogic
                         avatar.SetAppearanceAddress(avataraddress,false);
                         avatar_appearance_.DownloadAppearance(entity);
                     }
-                }        
+                }
+                
+                // For some reason the avatar/connection ID might not be in sync before (when setting the appearance for first time),
+                // which causes the edit view to not be initially rebuilt. Force build now
+                rexlogicmodule_->GetAvatarEditor()->RebuildEditView();         
             }
 
             ShowAvatarNameOverlay(presence.LocalId);
