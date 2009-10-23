@@ -138,6 +138,10 @@ bool RexServerConnection::ConnectToCableBeachServer(
     connection_type_ = DirectConnection;
     sp->LoginToCBServer(firstname, lastname, serveraddress, port, &threadState_);
 
+    // Save the server address and port for later use.
+    serverAddress_ = serveraddress;
+    serverPort_ = port;
+    
     return true;
 }
 
