@@ -119,15 +119,15 @@ namespace TelepathyIM
 	}
 
 	//! @todo support more that one connection manager 
+	//!       current implementation uses only gabble
 	void ConnectionProvider::InitializeTelepathyConnectionManager(const QString &name)
 	{
 		Tp::registerTypes();
 		Tp::enableDebug(true);
 		Tp::enableWarnings(true);
 
-		this->tp_connection_manager_ = Tp::ConnectionManager::create(name);
-		Tp::PendingReady* p = this->tp_connection_manager_->becomeReady(Tp::ConnectionManager::FeatureCore);
-		connect(p, SIGNAL( finished(Tp::PendingOperation *) ), SLOT( OnConnectionManagerReady(Tp::PendingOperation*) ));
+		tp_connection_manager_ = Tp::ConnectionManager::create(name);
+		connect(tp_connection_manager_->becomeReady(Tp::ConnectionManager::FeatureCore), SIGNAL( finished(Tp::PendingOperation *) ), SLOT( OnConnectionManagerReady(Tp::PendingOperation*) ));
 	}
 
 	void ConnectionProvider::OnConnectionManagerReady(Tp::PendingOperation *op)

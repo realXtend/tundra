@@ -5,24 +5,38 @@ namespace TelepathyIM
 
 	Contact::Contact(Tp::ContactPtr tp_contact): tp_contact_(tp_contact)
 	{
-		//! @todo IMPLEMENT
+		if (tp_contact.isNull())
+			return;
+		id_ = tp_contact->id();
+		name_ = tp_contact->alias();
+		QString avatar = tp_contact->avatarToken();
+
+		connect(tp_contact_.data(),
+                SIGNAL( simplePresenceChanged(const QString &, uint, const QString &) ),
+                SLOT( OnSimplePresenceChanged(const QString &, uint, const QString &) ));
+		//connect(tp_contact_.data(),
+  //              SIGNAL( subscriptionStateChanged(Tp::Contact::PresenceState) ),
+  //              SLOT( OnContactChanged() ));
+		//connect(tp_contact_.data(),
+  //              SIGNAL( publishStateChanged(Tp::Contact::PresenceState) ),
+  //              SLOT( OnContactChanged() ));
+		//connect(tp_contact_.data(),
+  //              SIGNAL( blockStatusChanged(bool) ),
+  //              SLOT( OnContactChanged()) );
 	}
 
 	Contact::~Contact()
 	{
-		//! @todo IMPLEMENT
 	}
 
 	QString Contact::GetID() const
 	{
-		//! @todo IMPLEMENT
-		return "";
+		return id_;
 	}
 
 	QString Contact::GetName() const
 	{
-		//! @todo IMPLEMENT
-		return "";
+		return name_;
 	}
 
 	void Contact::SetName(const QString& name)
@@ -32,14 +46,22 @@ namespace TelepathyIM
 
 	QString Contact::GetPresenceStatus() const
 	{
-		//! @todo IMPLEMENT
-		return "";
+		return tp_contact_->presenceStatus();
 	}
 
 	QString Contact::GetPresenceMessage() const
 	{
-		//! @todo IMPLEMENT
-		return "";
+		return tp_contact_->presenceMessage();
+	}
+
+	void Contact::OnSimplePresenceChanged(const QString &status, uint type, const QString &presenceMessage)
+	{
+		emit( PresenceStatusChanged(GetPresenceStatus(), GetPresenceMessage()) ); 
+	}
+
+	Tp::ContactPtr Contact::GetTpContact() const
+	{
+		return tp_contact_;
 	}
 
 } // end of namespace: TelepathyIM

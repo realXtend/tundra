@@ -163,6 +163,16 @@ namespace OpensimIM
 	{
 		return Communication::FriendRequestVector();
 	}
+
+	void Connection::SetPresenceStatus(const QString &status)
+	{
+		//! Not supported by Opensim
+	}
+
+	void Connection::SetPresenceMessage(const QString &message)
+	{
+		//! Not supported by Opensim
+	}
 		
 	void Connection::Close()
 	{

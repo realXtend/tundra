@@ -6,10 +6,13 @@
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/PendingChannel>
+#include <TelepathyQt4/ReceivedMessage>
 #include "Foundation.h"
 #include "..\interface.h"
 #include "ContactGroup.h"
 #include "ChatMessage.h"
+#include "ChatSessionParticipant.h"
 
 namespace TelepathyIM
 {
@@ -22,9 +25,21 @@ namespace TelepathyIM
 	class ChatSession : public Communication::ChatSessionInterface
 	{
 		Q_OBJECT
+		MODULE_LOGGING_FUNCTIONS
+		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
+
 	public:
-		ChatSession(Tp::TextChannelPtr tp_text_channel);		
-//		ChatSession(Tp::Connection* tp_connection);
+		//! Used by TelepathyIM::Connection class
+		//! when user initiates a new chat sessionj
+		ChatSession(Contact& contact, Tp::ConnectionPtr tp_connection);
+
+		//! Used by TelepathyIM:Connection class
+		//! When a chat session is initiated by IM server
+		ChatSession(Contact& initiator, Tp::TextChannelPtr tp_text_channel);	
+
+		//! Used by TelepathyIM:Connection class
+		//! When user open chat room session
+		ChatSession(const QString &channel_id, Tp::ConnectionPtr tp_connection);
 
 		virtual ~ChatSession();
 
@@ -46,22 +61,27 @@ namespace TelepathyIM
 		virtual Communication::ChatMessageVector GetMessageHistory();
 
 	protected:
+		virtual void HandlePendingMessage();
+		virtual ChatSessionParticipant* GetParticipant(Tp::ContactPtr contact);
+
 		State state_;
 		Tp::TextChannelPtr tp_text_channel_;
 		Tp::Connection* tp_conneciton_;
 		QStringList send_buffer_;
 		ChatMessageVector message_history_;
 		ChatSessionParticipantVector participants_;
+		ChatSessionParticipant self_participant_;
 	protected slots:
 		//! This method is called ONLY when session is established by client 
 		//! and it's NOT called when the session is established by server
 		virtual void OnTextChannelCreated(Tp::PendingOperation* op);
 		virtual void OnTextChannelReady(Tp::PendingOperation* op);
-		virtual void ChatSession::OnMessageSendAck(Tp::PendingOperation* op);
-		virtual void OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &); // todo
-
-
+		virtual void OnMessageSendAck(Tp::PendingOperation* op);
+		virtual void OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &);
+		virtual void OnMessageReceived(const Tp::ReceivedMessage &message);
+		virtual	void OnTextChannelClosed(Tp::PendingOperation* op);
 	};
+	typedef std::vector<ChatSession*> ChatSessionVector;
 	
 } // end of namespace: TelepathyIM
 

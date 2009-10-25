@@ -41,8 +41,17 @@ namespace TelepathyIM
 		//! Provides presence message of this contact item.
 		//! This is freely textual information about current state eg. "At lunch, be back in 30 minutes..." 
 		virtual QString GetPresenceMessage() const;
+
+		//! Used by ChatSession class
+		virtual Tp::ContactPtr GetTpContact() const;
 	protected:
 		Tp::ContactPtr tp_contact_;
+		QString id_;
+		QString name_;
+	protected slots:
+	    void OnSimplePresenceChanged(const QString &status, uint type, const QString &presenceMessage);
+
+
 	};
 	typedef std::vector<Contact*> ContactVector;
 

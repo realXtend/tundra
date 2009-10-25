@@ -34,14 +34,15 @@ namespace Communication
 		TelepathyIM::ConnectionProvider* telepathy = new TelepathyIM::ConnectionProvider(framework_);
 		communication_service_->RegisterConnectionProvider(telepathy);
 
-		test_ = new CommunicationTest::Test();
-
 		// current way
 
-//		communication_manager_ = TpQt4Communication::CommunicationManager::GetInstance();
-//		console_ui_ = new CommunicationUI::ConsoleUI(framework_);
-//		qt_ui_ = new CommunicationUI::QtGUI(framework_);
+		//communication_manager_ = TpQt4Communication::CommunicationManager::GetInstance();
+		//console_ui_ = new CommunicationUI::ConsoleUI(framework_);
+		//qt_ui_ = new CommunicationUI::QtGUI(framework_);
 
+		// Test
+
+		test_ = new CommunicationTest::Test();
 		boost::shared_ptr<Console::CommandService> console_service = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
         if (console_service)
         {

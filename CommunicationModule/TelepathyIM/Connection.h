@@ -10,6 +10,7 @@
 #include "..\interface.h"
 #include "Contact.h"
 #include "ContactGroup.h"
+#include "ChatSession.h"
 
 namespace TelepathyIM
 {
@@ -21,6 +22,9 @@ namespace TelepathyIM
 	class Connection : public Communication::ConnectionInterface
 	{
 		Q_OBJECT
+		MODULE_LOGGING_FUNCTIONS
+		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
+
 	public:
 		Connection(Tp::ConnectionManagerPtr tp_connection_manager, const Communication::CredentialsInterface &credentials);
 
@@ -65,6 +69,12 @@ namespace TelepathyIM
 		//! Send a friend request to target address
 		virtual void SendFriendRequest(const QString &target, const QString &message);
 
+		virtual void SetPresenceStatus(const QString &status);
+
+		//! Set presene status message of user
+		//! @param message Any text is accepted
+		virtual void SetPresenceMessage(const QString &message);
+
 		//! Provides all received friend requests with in this connection session
 		//! FriendRequest object state must be checked to find out new ones.
 		//! If friend request is not answered the server will resend it on next 
@@ -76,6 +86,7 @@ namespace TelepathyIM
 	protected:
 		virtual void CreateTpConnection(const Communication::CredentialsInterface &credentials);
 		virtual void HandleAllKnownTpContacts();
+		virtual Contact& GetContact(Tp::ContactPtr tp_contact);
 
 		Tp::ConnectionManagerPtr &tp_connection_manager_;
 		Tp::ConnectionPtr tp_connection_;
@@ -85,8 +96,12 @@ namespace TelepathyIM
 		QString protocol_;
 		QString server_;
 		QString reason_;
+		QString presence_status_;
+		QString presence_message_;
 		ContactGroup friend_list_;
 		ContactVector contacts_;
+		ChatSessionVector public_chat_sessions_;
+		ChatSessionVector private_chat_sessions_;
 
 	protected slots:
 		virtual void OnConnectionCreated(Tp::PendingOperation *op);
@@ -96,6 +111,7 @@ namespace TelepathyIM
 		virtual void OnConnectionClosed(Tp::PendingOperation *op);
 		virtual void OnConnectionReady(Tp::PendingOperation *op);
 		virtual	void OnPresencePublicationRequested(const Tp::Contacts &contacts);
+		virtual void OnTpConnectionStatusChanged(uint newStatus, uint newStatusReason);
 	};
 	typedef std::vector<Connection*> ConnectionVector;
 

@@ -15,9 +15,12 @@ namespace TelepathyIM
 
 	Communication::ContactVector ContactGroup::GetContacts()
 	{
-		//! @todo IMPLEMENT
-		Communication::ContactVector empty_vector;
-		return empty_vector;
+		Communication::ContactVector contacts;
+		for (ContactVector::iterator i = contacts_.begin(); i != contacts_.end(); ++i)
+		{
+			contacts.push_back(*i);
+		}
+		return contacts;
 	}
 
 	Communication::ContactGroupVector ContactGroup::GetGroups()
