@@ -43,6 +43,7 @@ namespace CommunicationTest
 		void OnJabberConnectionError(Communication::ConnectionInterface&);
 		void OnOpensimUdpConnectionReady(Communication::ConnectionInterface&);
 		void OnOpensimUdpConnectionError(Communication::ConnectionInterface&);
+		void OnChatSessionReceived( Communication::ChatSessionInterface& chat);
 	};
 	
 

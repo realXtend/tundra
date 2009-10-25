@@ -142,6 +142,8 @@ namespace Communication
 		//! Provides name of this participant
 		virtual QString GetName() const = 0;
 
+//		virtual bool IsSelf();
+
 		//! @return Location of the participant if (s)he are at same world with current user
 		//!         Otherwise return NULL
 		//virtual GetLocation() const = 0;
@@ -173,7 +175,7 @@ namespace Communication
 	{
 		Q_OBJECT
 	public:
-		enum State { STATE_INITIALIZING, STATE_OPEN, STATE_CLOSED };
+		enum State { STATE_INITIALIZING, STATE_OPEN, STATE_CLOSED, STATE_ERROR };
 
 		virtual ~ChatSessionInterface() {};
 
@@ -189,6 +191,7 @@ namespace Communication
 		virtual void Close() = 0;
 
 		//! @return all known participants of the chat session
+		//!         The user itself is not included
 		virtual ChatSessionParticipantVector GetParticipants() const = 0;
 
 		//! @return the message history of this chat sessions
@@ -198,12 +201,15 @@ namespace Communication
 		//!         Otherwise return False
 		//virtual bool IsPublic() = 0;
 	signals:
+		//! @todo REMOVE THIS METHOD
 		void MessageReceived(const QString &text, const Communication::ChatSessionParticipantInterface& participant);
+		void MessageReceived(const ChatMessageInterface &message);
 		void ParticipantJoined(const ChatSessionParticipantInterface& participant);
 		void ParticipantLeft(const ChatSessionParticipantInterface& participant);
+		void Opened(ChatSessionInterface*);
 		void Closed(ChatSessionInterface*);
 	};
-	typedef boost::shared_ptr<ChatSessionInterface> ChatSessionPtr;
+//	typedef boost::shared_ptr<ChatSessionInterface> ChatSessionPtr;
 
 	/**
 	 *  \NOTE This is interface is under construction
@@ -216,6 +222,20 @@ namespace Communication
 	public:
 		virtual void Close() = 0;
 	};
+
+	///**
+	// *  A chat session request received from IM server.
+	// *  User can accept or reject the request
+	// *  the ChatSession object is given if Accept method is called
+	// */
+	//class ChatSessionRequestInterface : public QObject
+	//{
+	//	Q_OBJECT
+	//public:
+	//	virtual Communication::ChatSessionParticipantInterface* GetOriginator();
+	//	virtual Communication::ChatSessionInterface* Accpet();
+	//	virtual void Reject();
+	//};
 
 	/**
 	 * A received friend request. This can be accepted or rejected. If Accpet() methos is called1
@@ -309,6 +329,14 @@ namespace Communication
 		//! connection
 		virtual FriendRequestVector GetFriendRequests() const = 0;
 
+		//! Set presence status state of user
+		//! @param status Allowed values are returned by GetPresenceStatusOptionsForSelf methos
+		virtual void SetPresenceStatus(const QString &status) = 0;
+
+		//! Set presene status message of user
+		//! @param message Any text is accepted
+		virtual void SetPresenceMessage(const QString &message) = 0;
+
 		//! Closes the connection
 		virtual void Close() = 0;
 
@@ -322,6 +350,9 @@ namespace Communication
 
 		//! When connection state become error
 		void ConnectionError(Communication::ConnectionInterface& connection);
+
+		//! When a chat session is initialized by IM server
+		void ChatSessionReceived(Communication::ChatSessionInterface& chat);
 
 		//! When a new contact is added to contact list
 		//! Basically this happens when someone accept friend request

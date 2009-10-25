@@ -72,6 +72,7 @@ namespace CommunicationTest
 	{
 		try
 		{
+			connect(&connection, SIGNAL( ChatSessionReceived(Communication::ChatSessionInterface&) ), SLOT(OnChatSessionReceived( Communication::ChatSessionInterface&) ));
 			Communication::ContactGroupInterface& friend_list = jabber_connection_->GetContacts();
 			Communication::ContactVector contacts = friend_list.GetContacts();
 			for (Communication::ContactVector::iterator i = contacts.begin(); i != contacts.end(); ++i)
@@ -79,20 +80,33 @@ namespace CommunicationTest
 				QString name = (*i)->GetName();
 				QString message = QString("Friend: ").append(name);
 				LogInfo(message.toStdString());
+				if (name.compare("kuonanoja") != 0)
+					continue;
+
+				//Communication::ChatSessionInterface* chat = jabber_connection_->OpenPrivateChatSession(**i);
+				//chat->SendMessage("Hello world!");
 			}
-			if (contacts.size() > 0)
-			{
-				Communication::ChatSessionInterface* chat = jabber_connection_->OpenPrivateChatSession(*(contacts[0]));
-				chat->SendMessage("Hello world!");
-				chat->Close();
-			}
-			jabber_connection_->Close();
+//			jabber_connection_->Close();
 		}
 		catch(Core::Exception &e)
 		{
 			QString message = QString("Test for TelepathyIM failed: ").append(e.what());
 			LogDebug(message.toStdString());
 		}
+	}
+	
+	void Test::OnChatSessionReceived( Communication::ChatSessionInterface& chat)
+	{
+		;
+		QString message = QString("Chat session from: ").append( chat.GetParticipants()[0]->GetID() );
+		LogInfo(message.toStdString());
+
+		Communication::ChatMessageVector history = chat.GetMessageHistory();
+		for (Communication::ChatMessageVector::iterator i = history.begin(); i != history.end(); ++i)
+		{
+			LogInfo( (*i)->GetText().toStdString() );
+		}
+		chat.SendMessage("Hello world");
 	}
 
 	void Test::OnJabberConnectionError(Communication::ConnectionInterface& connection)

@@ -65,11 +65,7 @@ namespace Communication
 	Communication::ConnectionInterface* CommunicationService::OpenConnection(const CredentialsInterface &credentials)
 	{
 		QString protocol = credentials.GetProtocol();
-		//ConnectionVector connections = GetConnections(protocol);
-		//if (connections.size() == 0)
-		//{
-		//	throw Core::Exception("Cannot open connection, protocol is not supported");
-		//}
+		//! @todo Check if connection already exist with given credentials 
 		ConnectionProviderVector providers = GetConnectionProviders(protocol);
 		if (providers.size() == 0)
 		{
@@ -152,7 +148,6 @@ namespace Communication
 
 	void CommunicationService::OnConnectionClosed(Communication::ConnectionInterface* connection)
 	{
-		
 	}
 
 	void CommunicationService::OnFriendRequestReceived(const Communication::FriendRequestInterface& request)

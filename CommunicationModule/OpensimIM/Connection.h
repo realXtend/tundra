@@ -85,6 +85,14 @@ namespace OpensimIM
 		//! connection
 		virtual Communication::FriendRequestVector GetFriendRequests() const;
 
+		//! Set presence status state of user
+		//! @param status Allowed values are returned by GetPresenceStatusOptionsForSelf methos
+		virtual void SetPresenceStatus(const QString &status);
+
+		//! Set presene status message of user
+		//! @param message Any text is accepted
+		virtual void SetPresenceMessage(const QString &message);
+
 		//! Closes the connection
 		virtual void Close();
 

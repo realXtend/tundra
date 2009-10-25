@@ -85,7 +85,6 @@ namespace TelepathyIM
 		void OnConnectionReady(Communication::ConnectionInterface&);
 		void OnConnectionClosed(Communication::ConnectionInterface&);
 		void OnConnectionError(Communication::ConnectionInterface&);
-
 	};
 
 } // end of namespace: TelepathyIM
