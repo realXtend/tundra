@@ -539,7 +539,7 @@ bool OpenSimLoginThread::PerformXMLRPCLogin()
         }
 
         call.AddMember("start", std::string("last")); // Starting position: last/home
-        call.AddMember("version", std::string("realXtend Naali 0.0.1"));  ///\todo Make build system create versioning information.
+        call.AddMember("version", std::string("realXtend Naali 0.0.2"));  ///\todo Make build system create versioning information.
         call.AddMember("channel", std::string("realXtend"));
         call.AddMember("platform", std::string("Win")); ///\todo.
         call.AddMember("mac", mac_hash);
