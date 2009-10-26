@@ -39,7 +39,7 @@ namespace TelepathyIM
 
 		//! Used by TelepathyIM:Connection class
 		//! When user open chat room session
-		ChatSession(const QString &channel_id, Tp::ConnectionPtr tp_connection);
+		ChatSession(const QString &room_id, Tp::ConnectionPtr tp_connection);
 
 		virtual ~ChatSession();
 
@@ -63,6 +63,7 @@ namespace TelepathyIM
 	protected:
 		virtual void HandlePendingMessage();
 		virtual ChatSessionParticipant* GetParticipant(Tp::ContactPtr contact);
+		virtual ChatSessionParticipant* GetParticipant(uint sender_id);
 
 		State state_;
 		Tp::TextChannelPtr tp_text_channel_;

@@ -161,7 +161,7 @@ namespace Communication
 	{
 	public:
 		virtual ChatSessionParticipantInterface* GetOriginator() const = 0;
-		virtual QTime GetTimeStamp() const = 0;
+		virtual QDateTime GetTimeStamp() const = 0;
 		virtual QString GetText() const = 0;
 	};
 	typedef std::vector<ChatMessageInterface*> ChatMessageVector;
