@@ -2,7 +2,7 @@
 
 namespace TelepathyIM
 {
-	ChatMessage::ChatMessage(ChatSessionParticipant* originator, const QTime& time_stamp, const QString &text) : originator_(originator), time_stamp_(time_stamp), text_(text)
+	ChatMessage::ChatMessage(ChatSessionParticipant* originator, const QDateTime& time_stamp, const QString &text) : originator_(originator), time_stamp_(time_stamp), text_(text)
 	{
 
 	}
@@ -12,7 +12,7 @@ namespace TelepathyIM
 		return originator_;
 	}
 
-	QTime ChatMessage::GetTimeStamp() const
+	QDateTime ChatMessage::GetTimeStamp() const
 	{
 		return time_stamp_;
 	}

@@ -53,7 +53,7 @@ namespace OpensimIM
 		if ( !connection->IsConnected() )
 			throw Core::Exception("Cannot send IM message, rex server connection is not established");
 
-		ChatMessage* m = new ChatMessage(&self_, QTime::currentTime(), text);
+		ChatMessage* m = new ChatMessage(&self_, QDateTime::currentDateTime(), text);
 		message_history_.push_back(m);
 
 		for (ChatSessionParticipantVector::iterator i = participants_.begin(); i != participants_.end(); ++i)
@@ -76,7 +76,7 @@ namespace OpensimIM
 		if ( !connection->IsConnected() )
 			throw Core::Exception("Cannot send text message, rex server connection is not established");
 
-		ChatMessage* m = new ChatMessage(&self_, QTime::currentTime(), text);
+		ChatMessage* m = new ChatMessage(&self_, QDateTime::currentDateTime(), text);
 		message_history_.push_back(m);
 
 		connection->SendChatFromViewerPacket( text.toStdString() );
@@ -112,7 +112,7 @@ namespace OpensimIM
 		if (participant->GetName().size() == 0)
 			((ChatSessionParticipant*)participant)->SetName(from_name); //! @HACK We should get the name from some another source!
 
-		ChatMessage* m = new ChatMessage(participant, QTime::currentTime(), text);
+		ChatMessage* m = new ChatMessage(participant, QDateTime::currentDateTime(), text);
 		message_history_.push_back(m);
 
 		emit MessageReceived(text, *participant);
@@ -132,7 +132,7 @@ namespace OpensimIM
 
 	void ChatSession::MessageFromServer(const QString &text)
 	{
-		ChatMessage* m = new ChatMessage(&server_, QTime::currentTime(), text);
+		ChatMessage* m = new ChatMessage(&server_, QDateTime::currentDateTime(), text);
 		message_history_.push_back(m);
 		emit MessageReceived(text, dynamic_cast<Communication::ChatSessionParticipantInterface&>(server_));
 	}

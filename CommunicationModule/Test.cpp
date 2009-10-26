@@ -80,11 +80,11 @@ namespace CommunicationTest
 				QString name = (*i)->GetName();
 				QString message = QString("Friend: ").append(name);
 				LogInfo(message.toStdString());
-				if (name.compare("kuonanoja") != 0)
-					continue;
-
-				//Communication::ChatSessionInterface* chat = jabber_connection_->OpenPrivateChatSession(**i);
-				//chat->SendMessage("Hello world!");
+				if (name.compare("kuonanoja") == 0)
+				{
+					Communication::ChatSessionInterface* chat = jabber_connection_->OpenPrivateChatSession(**i);
+					chat->SendMessage("Hello world!");
+				}
 			}
 //			jabber_connection_->Close();
 		}
