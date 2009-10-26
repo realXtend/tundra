@@ -8,6 +8,8 @@
 
 #include <QObject>
 
+class QTabWidget;
+    
 namespace RexLogic
 {
     class RexLogicModule;
@@ -54,7 +56,10 @@ namespace RexLogic
         
         //! Clear a panel
         void ClearPanel(QWidget* panel);
-        
+ 
+        //! Create or get a tabbed scrollarea panel
+        QWidget* GetOrCreateTabScrollArea(QTabWidget* tabs, const std::string& name);
+           
         //! Canvas for avatar editor
         boost::shared_ptr<QtUI::UICanvas> canvas_;
         
