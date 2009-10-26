@@ -867,6 +867,20 @@ UICanvas *UIController::GetCanvasAt(int x, int y)
     return 0;
 }
 
+boost::shared_ptr<QtUI::UICanvas> UIController::GetSharedCanvasPtr(const QString& id)
+{
+	QList<boost::shared_ptr<UICanvas> >::iterator iter = canvases_.begin();
+    int index = 0;
+    for(; iter != canvases_.end(); ++iter, ++index)
+    {
+        QString canvas_id = (*iter)->GetID();
+        if ( canvas_id == id)
+        {
+            return canvases_[index];
+        }
+    }
+}
+
 int UIController::GetCanvas(const QPoint& point) 
 {
     QList<boost::shared_ptr<UICanvas> >::iterator iter = canvases_.begin();
