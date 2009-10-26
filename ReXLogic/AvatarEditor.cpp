@@ -158,7 +158,7 @@ namespace RexLogic
             return;
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());    
        
-        int width = 300;
+        int width = 298;
         int itemheight = 20;
         
         // Materials
