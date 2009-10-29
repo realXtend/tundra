@@ -75,7 +75,19 @@ namespace QtUI
 		 * @param qstring button name
 		 */
 		void AddCanvasToControlBar(boost::shared_ptr<QtUI::UICanvas> canvas, const QString &buttonTitle);
-
+		
+		/**
+		 * Adds the canvas to canvasManagers_ ControlBar
+		 * @param id of the canvas
+		 * @param qstring button name
+		 */
+		void AddCanvasToControlBar(const QString& id, const QString &buttonTitle);
+	
+		/**
+		 * Removes the canvas from canvasManagers_ ControlBar
+		 * @param id of the canvas
+		 */
+		bool RemoveCanvasFromControlBar(const QString& id);
         //! Creates an EC_UICanvas to an entity using a UICanvas previously created. UICanvas must be in internal mode.
         /*! If entity already has EC_UICanvas component, just sets the canvas to use.
             @return Pointer to EC_UICanvas component, or null if the component could not be created out of some reason.

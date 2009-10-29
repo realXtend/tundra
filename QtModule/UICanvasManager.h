@@ -32,6 +32,10 @@ namespace QtUI
 		/// @param boost shared pointer to the UICanvas
 		bool RemoveCanvasFromControlBar(boost::shared_ptr<QtUI::UICanvas> canvas);
 
+		//! removes a canvas from the ControlBar
+		/// @param id of the canvas to be removed
+		bool RemoveCanvasFromControlBar(const QString& id);
+
 	private:
 		//! Init internal widgets
 		void InitManagedWidgets();

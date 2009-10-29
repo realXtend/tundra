@@ -127,8 +127,8 @@ class ComponentRunner(Component):
         return self.eventhandled
         
     def exit(self):
-        self.m.send(Exit(), "on_exit") #am not running the manager properly so the stop doesn't propagate to components. fix when switch to dev branch of circuits XXX
         r.logInfo("Circuits manager stopping...")
+        self.m.send(Exit(), "on_exit") #am not running the manager properly so the stop doesn't propagate to components. fix when switch to dev branch of circuits XXX
         self.m.stop() #was not going to components now so made the exit event above as a quick fix
         #XXX now that we are using flush() and tick(), does stop() propagate to components too?
         

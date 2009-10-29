@@ -9,10 +9,12 @@ namespace PythonScript {
 
 
     QtUI::UICanvas* QtModuleWrapper::CreateCanvas(int mode) {
-        boost::shared_ptr<QtUI::QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+        boost::shared_ptr<QtUI::QtModule> qt_module;
+		qt_module = framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
         boost::shared_ptr<QtUI::UICanvas> canvas_;
 
-        QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
+        QtUI::QtModule *qt_ui;
+		qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
         
         if (qt_ui != 0)
         {
@@ -29,8 +31,8 @@ namespace PythonScript {
     }
 
     void QtModuleWrapper::DeleteCanvas(QtUI::UICanvas* canvas) {
-        boost::shared_ptr<QtUI::QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
-      
+        boost::shared_ptr<QtUI::QtModule> qt_module;
+		qt_module = framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
         QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
         
         if (qt_ui != 0)
@@ -41,4 +43,25 @@ namespace PythonScript {
 			qt_ui->DeleteCanvas(canvas->GetID());
         }
     }
+
+	void QtModuleWrapper::AddCanvasToControlBar(QtUI::UICanvas* canvas, const QString buttonTitle)
+	{
+		boost::shared_ptr<QtUI::QtModule> qt_module;
+		qt_module = framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+        QtUI::QtModule *qt_ui;
+		qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
+
+		qt_ui->AddCanvasToControlBar(canvas->GetID(), buttonTitle);
+
+	}
+
+	bool QtModuleWrapper::RemoveCanvasFromControlBar(QtUI::UICanvas* canvas)
+	{
+		boost::shared_ptr<QtUI::QtModule> qt_module;
+		qt_module = framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+        QtUI::QtModule *qt_ui;
+		qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
+
+		return qt_ui->RemoveCanvasFromControlBar(canvas->GetID());
+	}
 }

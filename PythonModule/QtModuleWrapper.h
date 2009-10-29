@@ -25,6 +25,10 @@ namespace PythonScript
 
             void DeleteCanvas(QtUI::UICanvas* canvas);
 
+			void AddCanvasToControlBar(QtUI::UICanvas* canvas, const QString buttonTitle);
+			
+			bool RemoveCanvasFromControlBar(QtUI::UICanvas* canvas);
+
         private:
             Foundation::Framework *framework_;
 
