@@ -56,7 +56,6 @@ namespace CommunicationTest
 
 	protected:
 		virtual void OpenConnection(Communication::CredentialsInterface& crederntials);
-		virtual void ShowContacts(Communication::ConnectionInterface& connection);
 		Foundation::Framework* framework_;
 		Communication::ConnectionInterface* jabber_connection_;
 		Communication::ConnectionInterface* opensim_connection_;
@@ -67,6 +66,7 @@ namespace CommunicationTest
 		void OnOpensimUdpConnectionReady(Communication::ConnectionInterface&);
 		void OnOpensimUdpConnectionError(Communication::ConnectionInterface&);
 		void OnChatSessionReceived( Communication::ChatSessionInterface& chat);
+		void ShowContacts(Communication::ConnectionInterface& connection);
 	};
 
 } // end of namespace: CommunicationTest
