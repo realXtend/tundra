@@ -31,6 +31,7 @@ namespace CommunicationTest
 			case 4: RunTest4();break;
 			case 5: RunTest5();break;
 			case 6: RunTest6();break;
+			case 7: RunTest7();break;
 			case 0: RunTest0();break;
 		}
 		return Console::ResultSuccess("");
@@ -39,12 +40,13 @@ namespace CommunicationTest
 	void Test::ShowHelp()
 	{
 		LogInfo("Test functions for Communication module:");
-		LogInfo("1 .. Login to jabber server, fetch friend list and send a text message to one contact.");
+		LogInfo("1 .. Login to jabber server");
 		LogInfo("2 .. Send a text message to Opensim in-world chat.");
 		LogInfo("3 .. Send a text message to all jabber contacts");
 		LogInfo("4 .. Start voice chat with on contact");
 		LogInfo("5 .. Send a friend request to jabber account");
 		LogInfo("6 .. Send a text message to jabber chat room");
+		LogInfo("7 .. Fetch friend list and show online statuses");
 		LogInfo("0 .. Close jabber connection.");
 		if (jabber_connection_ == 0)
 			LogInfo("* Jabber connection is closed.");
@@ -60,10 +62,10 @@ namespace CommunicationTest
 	{
 		Communication::Credentials jabber_credentials;
 		jabber_credentials.SetProtocol("jabber");
-		jabber_credentials.SetUserID("realxtend@jabber.org");
+		jabber_credentials.SetUserID("kuonanoja@jabber.org");
 		jabber_credentials.SetServer("jabber.org");
 		jabber_credentials.SetPort(5222);
-		jabber_credentials.SetPassword("");
+		jabber_credentials.SetPassword("jabber666");
 
 		OpenConnection(jabber_credentials);
 	}
@@ -80,8 +82,8 @@ namespace CommunicationTest
 			switch (opensim_connection_->GetState())
 			{
 			case Communication::ConnectionInterface::STATE_INITIALIZING:
-				connect(opensim_connection_, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( OnOpensimUdpConnectionReady(Communication::ConnectionInterface&) ));
-				connect(opensim_connection_, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( OnOpensimUdpConnectionError(Communication::ConnectionInterface&) ));
+				connect(opensim_connection_, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( OnOpensimUdpConnectionReady JabberConnectionReady(Communication::ConnectionInterface&) ));
+				connect(opensim_connection_, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( OnOpensimUdpConnectionReady(Communication::ConnectionInterface&) ));
 				break;
 			case Communication::ConnectionInterface::STATE_OPEN:
 				OnOpensimUdpConnectionReady(*opensim_connection_);
@@ -90,6 +92,7 @@ namespace CommunicationTest
 				OnOpensimUdpConnectionError(*opensim_connection_);
 				break;
 			}
+
 		}
 		catch(Core::Exception &e)
 		{
@@ -174,6 +177,35 @@ namespace CommunicationTest
 		}
 	}
 
+	void Test::RunTest7()
+	{
+		if (jabber_connection_ == 0)
+		{
+			LogError("Jabber connection is not open!");
+			return;
+		}
+		try
+		{
+			switch (jabber_connection_->GetState())
+			{
+			case Communication::ConnectionInterface::STATE_INITIALIZING:
+				connect(jabber_connection_, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( ShowContacts(Communication::ConnectionInterface&) ));
+				connect(jabber_connection_, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( ShowContacts(Communication::ConnectionInterface&) ));
+				break;
+			case Communication::ConnectionInterface::STATE_OPEN:
+				ShowContacts(*jabber_connection_);
+				break;
+			case Communication::ConnectionInterface::STATE_ERROR:
+				OnJabberConnectionError(*jabber_connection_);
+				break;
+			}
+		}
+		catch(Core::Exception &e)
+		{
+			LogError(e.what());
+		}
+	}
+
 	void Test::RunTest0()
 	{
 		if (jabber_connection_ == 0)
@@ -197,9 +229,20 @@ namespace CommunicationTest
 		{
 			Communication::CommunicationServiceInterface* communication_service = Communication::CommunicationService::GetInstance();
 			jabber_connection_ = communication_service->OpenConnection(credentials);
-			connect(jabber_connection_, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( OnJabberConnectionReady(Communication::ConnectionInterface&) ));
-			connect(jabber_connection_, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( OnJabberConnectionError(Communication::ConnectionInterface&) ));
-			// The test continues on OnConnectionReady function
+
+			switch (jabber_connection_->GetState())
+			{
+			case Communication::ConnectionInterface::STATE_INITIALIZING:
+				connect(jabber_connection_, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( OnJabberConnectionReady(Communication::ConnectionInterface&) ));
+				connect(jabber_connection_, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( OnJabberConnectionReady(Communication::ConnectionInterface&) ));
+				break;
+			case Communication::ConnectionInterface::STATE_OPEN:
+				OnJabberConnectionReady(*jabber_connection_);
+				break;
+			case Communication::ConnectionInterface::STATE_ERROR:
+				OnJabberConnectionError(*jabber_connection_);
+				break;
+			}
 		}
 		catch(Core::Exception &e)
 		{
@@ -208,22 +251,33 @@ namespace CommunicationTest
 		}
 	}
 
-	void Test::OnJabberConnectionReady(Communication::ConnectionInterface& connection)
+	void Test::ShowContacts(Communication::ConnectionInterface& connection)
 	{
 		try
 		{
-			connect(&connection, SIGNAL( ChatSessionReceived(Communication::ChatSessionInterface&) ), SLOT(OnChatSessionReceived( Communication::ChatSessionInterface&) ));
 			Communication::ContactGroupInterface& friend_list = jabber_connection_->GetContacts();
 			Communication::ContactVector contacts = friend_list.GetContacts();
 			for (Communication::ContactVector::iterator i = contacts.begin(); i != contacts.end(); ++i)
 			{
 				QString name = (*i)->GetName();
-				QString message = QString("Friend: ").append(name);
+				QString id = (*i)->GetID();
+				QString status = (*i)->GetPresenceStatus();
+				QString message = QString("Friend: ").append(name).append(" (").append(id).append(") ").append(status);
 				LogInfo(message.toStdString());
-
-				//Communication::ChatSessionInterface* chat = jabber_connection_->OpenPrivateChatSession(**i);
-				//chat->SendMessage("Hello world!");
 			}
+		}
+		catch(Core::Exception &e)
+		{
+			QString message = QString("Error: ").append(e.what());
+			LogDebug(message.toStdString());
+		}
+	}
+
+	void Test::OnJabberConnectionReady(Communication::ConnectionInterface& connection)
+	{
+		try
+		{
+			connect(&connection, SIGNAL( ChatSessionReceived(Communication::ChatSessionInterface&) ), SLOT(OnChatSessionReceived( Communication::ChatSessionInterface&) ));
 		}
 		catch(Core::Exception &e)
 		{
