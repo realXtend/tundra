@@ -334,15 +334,15 @@ void RexLoginWindow::ProcessCBLogin(QString inresult)
     std::string address = result.substr(pos1, pos2);
     pos1 = result.find("&", pos2);
     std::string firstname = result.substr(pos2+1, pos1-pos2-1);
-    pos2 = result.find("&", pos1+1);
+	pos2 = result.find("&", pos1+1);
     std::string lastname = result.substr(pos1+1, pos2-pos1-1);
-    pos1 = result.find("&", pos2+1);
-    std::string identityUrl = result.substr(pos2+1, result.length());
+	pos1 = result.find("&", pos2+1);
+	std::string identityUrl = result.substr(pos2+1, result.length());
 
     Poco::URI uri = Poco::URI(address);
     int port = uri.getPort();
 
-    rex_logic_->GetServerConnection()->ConnectToCableBeachServer(firstname, lastname, port, address);
+    rex_logic_->GetServerConnection()->ConnectToCableBeachServer(firstname, lastname, identityUrl, port, address);
 }
 
 void RexLoginWindow::UpdateConnectionStateToUI(OpenSimProtocol::Connection::State state)

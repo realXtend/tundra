@@ -3,6 +3,8 @@
 #include "StableHeaders.h"
 #include "InventoryWindow.h"
 #include "OpenSimInventoryDataModel.h"
+#include "WebdavInventoryDataModel.h"
+#include "PythonScriptModule.h"
 #include "InventoryItemModel.h"
 #include "QtModule.h"
 #include "RexLogicModule.h"
@@ -83,6 +85,21 @@ void InventoryWindow::InitOpenSimInventoryTreeModel()
 
     QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
         const QItemSelection &)), this, SLOT(UpdateActions()));
+}
+
+void InventoryWindow::InitWebDavInventoryTreeModel(std::string identityUrl)
+{
+	if (inventoryItemModel_)
+	{
+		LogError("Inventory treeview has already item model set!");
+        return;
+	}
+
+	//boost::weak_ptr<PythonScript::PythonScriptModule> pythonModule = framework_->GetModuleManager()->GetModule<PythonScript::PythonScriptModule>(Foundation::Module::MT_PythonScript);
+
+	//WebdavInventoryDataModel *dataModel = new WebdavInventoryDataModel(pythonModule, (identityUrl.c_str()));
+	//inventoryItemModel_ = new InventoryItemModel(dataModel);
+	//treeView_->setModel(inventoryItemModel_);
 }
 
 void InventoryWindow::ResetInventoryTreeModel()

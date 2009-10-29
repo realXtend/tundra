@@ -130,6 +130,7 @@ void OpenSimProtocolModule::LoginToServer(
 void OpenSimProtocolModule::LoginToCBServer(
     const std::string& first_name,
     const std::string& last_name,
+	const std::string& identityUrl,
     const std::string& address,
     int port,
     ConnectionThreadState *thread_state)
@@ -142,6 +143,7 @@ void OpenSimProtocolModule::LoginToCBServer(
     boost::thread(boost::ref(loginWorker_));
 
     authenticationType_ = AT_Taiga;
+	identityUrl_ = identityUrl;
 }
 
 

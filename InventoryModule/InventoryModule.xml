@@ -3,4 +3,5 @@
     <entry>InventoryModule</entry>
     <dependency>RexLogicModule</dependency>
     <dependency>QtModule</dependency>
+	<dependency>PythonScriptModule</dependency>
 </config>

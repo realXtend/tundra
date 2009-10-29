@@ -79,6 +79,7 @@ namespace OpenSimProtocol
         void LoginToCBServer(
             const std::string& first_name,
             const std::string& last_name,
+			const std::string& identityUrl,
             const std::string& address,
             int port,
             ConnectionThreadState *thread_state);
@@ -166,6 +167,9 @@ namespace OpenSimProtocol
 
         /// Authentication type (Taiga/OpenSim/RealXtend)
         AuthenticationType authenticationType_;
+
+		/// Identity URL
+		std::string identityUrl_;
 
         /// Event manager.
         Foundation::EventManagerPtr eventManager_;
