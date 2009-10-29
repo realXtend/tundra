@@ -620,8 +620,24 @@ bool OpenSimLoginThread::PerformXMLRPCLogin()
                 threadState_->parameters.circuitCode == 0)
                 throw XmlRpcException("Failed to receive sessionID, agentID or circuitCode from login_to_simulator reply!");
 
-            threadState_->parameters.inventory = ExtractInventoryFromXMLRPCReply(call);
-            threadState_->parameters.buddy_list = ExtractBuddyListFromXMLRPCReply(call);
+            try
+            {
+                threadState_->parameters.inventory = ExtractInventoryFromXMLRPCReply(call);
+            }
+            catch(XmlRpcException &e)
+            {
+                OpenSimProtocolModule::LogWarning("Failed to read inventory: " + std::string(e.what()));
+                threadState_->parameters.inventory = boost::shared_ptr<InventorySkeleton>(new InventorySkeleton);
+            }
+            try
+            {
+    		    threadState_->parameters.buddy_list = ExtractBuddyListFromXMLRPCReply(call);
+            }
+            catch(XmlRpcException &e)
+            {
+                OpenSimProtocolModule::LogWarning("Failed to read buddy list: " + std::string(e.what()));
+                threadState_->parameters.buddy_list = BuddyListPtr(new BuddyList());
+            }
         }
         else if (authentication_ && callMethod_ != std::string("login_to_simulator")) 
         {
@@ -646,8 +662,24 @@ bool OpenSimLoginThread::PerformXMLRPCLogin()
             if (threadState_->parameters.gridUrl.size() == 0)
                 throw XmlRpcException("Failed to extract sim_ip and sim_port from login_to_simulator reply!");
 
-            threadState_->parameters.inventory = ExtractInventoryFromXMLRPCReply(call);
-            threadState_->parameters.buddy_list = ExtractBuddyListFromXMLRPCReply(call);
+            try
+            {
+                threadState_->parameters.inventory = ExtractInventoryFromXMLRPCReply(call);
+            }
+            catch(XmlRpcException &e)
+            {
+                OpenSimProtocolModule::LogWarning("Failed to read inventory: " + std::string(e.what()));
+                threadState_->parameters.inventory = boost::shared_ptr<InventorySkeleton>(new InventorySkeleton);
+            }
+            try
+            {
+    		    threadState_->parameters.buddy_list = ExtractBuddyListFromXMLRPCReply(call);
+            }
+            catch(XmlRpcException &e)
+            {
+                OpenSimProtocolModule::LogWarning("Failed to read buddy list: " + std::string(e.what()));
+                threadState_->parameters.buddy_list = BuddyListPtr(new BuddyList());
+            }
         }
         else
             throw XmlRpcException(std::string("Undefined login method ") + callMethod_ + " in XMLRPCLoginThread!");
