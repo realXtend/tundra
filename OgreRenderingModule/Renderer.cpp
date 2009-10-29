@@ -418,11 +418,12 @@ namespace OgreRenderer
         root_->_fireFrameEnded();
     }
 
-    // Get the mesh information for the given mesh.
-    // Code found in Wiki: www.ogre3d.org/wiki/index.php/RetrieveVertexData
-    static void getMeshInformation(const Ogre::Mesh *mesh,
+    // Get the mesh information for the given mesh. Version which supports animation
+    // Retrieved from http://www.ogre3d.org/wiki/index.php/Raycasting_to_the_polygon_level
+    void GetMeshInformation(Ogre::Entity *entity,
                                     size_t &vertex_count,
                                     Ogre::Vector3* &vertices,
+                                    Ogre::Vector2* &texcoords,
                                     size_t &index_count,
                                     unsigned long* &indices,
                                     const Ogre::Vector3 &position,
@@ -434,11 +435,18 @@ namespace OgreRenderer
         size_t shared_offset = 0;
         size_t next_offset = 0;
         size_t index_offset = 0;
-
         vertex_count = index_count = 0;
 
-        ///\todo This is only required because we allocate extra space for the CPU-side mesh VB and IB.
-        /// To optimize, this can be done as a preprocess step.
+       Ogre::MeshPtr mesh = entity->getMesh();
+
+
+       bool useSoftwareBlendingVertices = entity->hasSkeleton();
+
+       if (useSoftwareBlendingVertices)
+       {
+          entity->_updateAnimation();
+       }
+
         // Calculate how many vertices and indices we're going to need
         for (unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
         {
@@ -463,21 +471,33 @@ namespace OgreRenderer
         }
 
 
-        ///\todo Allocation and GPU memory locking produces a costly performance hit. 
-        /// Can optimize and move this to a precomputed offline-cached buffer.
         // Allocate space for the vertices and indices
         vertices = new Ogre::Vector3[vertex_count];
+        texcoords = new Ogre::Vector2[vertex_count];
         indices = new unsigned long[index_count];
-
+        // We might not have texcoords at all, so clear the data beforehand
+        memset(texcoords, 0, sizeof(Ogre::Vector2)*vertex_count);
+   
         added_shared = false;
 
         // Run through the submeshes again, adding the data into the arrays
-        ///\todo None of this is necessary with a proper caching mechanism.
         for ( unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
         {
             Ogre::SubMesh* submesh = mesh->getSubMesh(i);
 
-            Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
+          //----------------------------------------------------------------
+          // GET VERTEXDATA
+          //----------------------------------------------------------------
+
+            //Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
+          Ogre::VertexData* vertex_data;
+
+          //When there is animation:
+          if(useSoftwareBlendingVertices)
+             vertex_data = submesh->useSharedVertices ? entity->_getSkelAnimVertexData() : entity->getSubEntity(i)->_getSkelAnimVertexData();
+          else
+             vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
+
 
             if((!submesh->useSharedVertices)||(submesh->useSharedVertices && !added_shared))
             {
@@ -489,11 +509,12 @@ namespace OgreRenderer
 
                 const Ogre::VertexElement* posElem =
                     vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
-
+                const Ogre::VertexElement *texElem = 
+                    vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_TEXTURE_COORDINATES);
+         
                 Ogre::HardwareVertexBufferSharedPtr vbuf =
                     vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
 
-                ///\todo Should not lock here.
                 unsigned char* vertex =
                     static_cast<unsigned char*>(vbuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
 
@@ -509,8 +530,12 @@ namespace OgreRenderer
 
                     Ogre::Vector3 pt(pReal[0], pReal[1], pReal[2]);
 
-                    ///\todo Should transform the ray to the VB local space instead of this.
                     vertices[current_offset + j] = (orient * (pt * scale)) + position;
+                    if (texElem)
+                    {
+                        texElem->baseVertexPointerToElement(vertex, &pReal);  
+                        texcoords[current_offset + j] = Ogre::Vector2(pReal[0], pReal[1]);
+                    }
                 }
 
                 vbuf->unlock();
@@ -519,13 +544,11 @@ namespace OgreRenderer
 
 
             Ogre::IndexData* index_data = submesh->indexData;
-            assert(submesh->indexData != 0); ///\todo Nonindiced meshes not supported.
             size_t numTris = index_data->indexCount / 3;
             Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
 
             bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
 
-            ///\todo Should not need to lock here.
             unsigned long*  pLong = static_cast<unsigned long*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
             unsigned short* pShort = reinterpret_cast<unsigned short*>(pLong);
 
@@ -549,10 +572,34 @@ namespace OgreRenderer
             }
 
             ibuf->unlock();
-
             current_offset = next_offset;
         }
-    }
+    } 
+    
+    Ogre::Vector2 FindUVs(const Ogre::Ray& ray, float distance, Ogre::Vector3* vertices, Ogre::Vector2* texcoords, unsigned long* indices, unsigned foundindex)
+    {
+        Ogre::Vector3 point = ray.getPoint(distance);
+         
+        Ogre::Vector3 t1 = vertices[indices[foundindex]];
+        Ogre::Vector3 t2 = vertices[indices[foundindex+1]];
+        Ogre::Vector3 t3 = vertices[indices[foundindex+2]];
+         
+        Ogre::Vector3 v1 = point - t1;
+        Ogre::Vector3 v2 = point - t2;
+        Ogre::Vector3 v3 = point - t3;
+        
+        float area1 = (v2.crossProduct(v3)).length() / 2.0f;
+        float area2 = (v1.crossProduct(v3)).length() / 2.0f;
+        float area3 = (v1.crossProduct(v2)).length() / 2.0f;
+        float sum_area = area1 + area2 + area3;
+        if (sum_area == 0.0)
+            return Ogre::Vector2(0.0f, 0.0f);
+        
+        Ogre::Vector3 bary(area1 / sum_area, area2 / sum_area, area3 / sum_area);
+        Ogre::Vector2 t = texcoords[indices[foundindex]] * bary.x + texcoords[indices[foundindex+1]] * bary.y + texcoords[indices[foundindex+2]] * bary.z;  
+
+        return t;
+    }  
 
     Scene::Entity *Renderer::Raycast(int x, int y)
     {
@@ -603,6 +650,7 @@ namespace OgreRenderer
         // Now do the real pass
         Ogre::Real closest_distance = -1.0f;
         int closest_priority = minimum_priority;
+        Ogre::Vector2 closest_uv;
 
         for (size_t i = 0; i < results.size(); ++i)
         {
@@ -654,10 +702,11 @@ namespace OgreRenderer
                 size_t vertex_count;
                 size_t index_count;
                 Ogre::Vector3 *vertices = 0;
+                Ogre::Vector2 *texcoords = 0;
                 unsigned long *indices = 0;
 
                 // get the mesh information
-                getMeshInformation( ogre_entity->getMesh().get(), vertex_count, vertices, index_count, indices,
+                GetMeshInformation( ogre_entity, vertex_count, vertices, texcoords, index_count, indices,
                             ogre_entity->getParentNode()->_getDerivedPosition(),
                             ogre_entity->getParentNode()->_getDerivedOrientation(),
                             ogre_entity->getParentNode()->_getDerivedScale());
@@ -679,6 +728,7 @@ namespace OgreRenderer
                                 closest_distance = hit.second;
                                 closest_priority = current_priority;
                                 closest_entity = entity;
+                                closest_uv = FindUVs(ray, hit.second, vertices, texcoords, indices, j);
                             }
                         }
                     }
@@ -686,6 +736,7 @@ namespace OgreRenderer
                 
                 delete[] vertices;
                 delete[] indices;
+                delete[] texcoords;
             }
             else
             {
@@ -698,11 +749,14 @@ namespace OgreRenderer
                         closest_distance = entry.distance;
                         closest_priority = current_priority;
                         closest_entity = entity;
+                        closest_uv = Ogre::Vector2(0.0f, 0.0f);
                     }
                 }
             }
         }
         
+        //if (closest_entity)
+        //    std::cout << "Pick closest entity " << closest_entity << " distance " << closest_distance << " uv " << closest_uv.x << " " << closest_uv.y << std::endl;
         return closest_entity;
     }
     
