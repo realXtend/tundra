@@ -52,6 +52,7 @@ namespace RexLogic
         bool ConnectToCableBeachServer(
             const std::string& firstname, 
             const std::string& lastname,
+			const std::string& identityUrl,
             int port,
             const std::string& serveraddress);
 

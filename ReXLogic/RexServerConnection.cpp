@@ -125,6 +125,7 @@ bool RexServerConnection::ConnectToServer(
 bool RexServerConnection::ConnectToCableBeachServer(
     const std::string& firstname,
     const std::string& lastname,
+	const std::string& identityUrl,
     int port,
     const std::string& serveraddress)
 {
@@ -136,7 +137,7 @@ bool RexServerConnection::ConnectToCableBeachServer(
     }
 
     connection_type_ = DirectConnection;
-    sp->LoginToCBServer(firstname, lastname, serveraddress, port, &threadState_);
+    sp->LoginToCBServer(firstname, lastname, identityUrl, serveraddress, port, &threadState_);
 
     // Save the server address and port for later use.
     serverAddress_ = serveraddress;
