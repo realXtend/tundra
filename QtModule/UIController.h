@@ -144,7 +144,7 @@ namespace QtUI
          * Returns a canvas with the given id.
 		 * @param id is the id of the canvas
 		 */
-		boost::shared_ptr<QtUI::UICanvas> GetSharedCanvasPtr(const QString& id);
+		boost::shared_ptr<QtUI::UICanvas> GetCanvas(const QString& id);
 
     public slots:
         

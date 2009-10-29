@@ -43,6 +43,30 @@ namespace QtUI
 			return false;
 	}
 
+	bool UICanvasManager::RemoveCanvasFromControlBar(const QString& id)
+	{
+		if (controlBarLayout_)
+		{
+			for(int index = 0; index < controlBarLayout_->count(); index++) //for(int index = children.size(); index--;)
+			{
+				QLayoutItem* temp = controlBarLayout_->itemAt(index);
+				ControlBarButton* button = dynamic_cast<ControlBarButton*>(temp); //(children[index]);
+				
+				if (button)
+				{
+					if (button->GetCanvas()->GetID() == id) 
+					{
+						controlBarLayout_->takeAt(index);
+						delete button;
+						button = 0;
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
 	void UICanvasManager::InitManagedWidgets()
 	{
 		boost::shared_ptr<QtUI::QtModule> spQtModule = qtModule_.lock();

@@ -29,8 +29,8 @@ class KeyCommander(Component):
         """
         self.keymap = {
             (OIS_KEY_PERIOD, 0): self.run_commandpy,
-            (OIS_KEY_BACKSPACE, OIS_KEY_ALT): self.restart_modulemanager,
-            (OIS_KEY_M, OIS_KEY_ALT): self.toggle_editgui
+            (OIS_KEY_BACKSPACE, OIS_KEY_ALT): self.restart_modulemanager
+            #(OIS_KEY_M, OIS_KEY_ALT): self.toggle_editgui
         }
         
         """

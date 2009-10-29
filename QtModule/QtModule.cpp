@@ -156,6 +156,18 @@ void QtModule::AddCanvasToControlBar(boost::shared_ptr<QtUI::UICanvas> canvas, c
 		canvasManager_->AddCanvasToControlBar(canvas, buttonTitle);
 }
 
+void QtModule::AddCanvasToControlBar(const QString& id, const QString &buttonTitle)
+{
+	if (canvasManager_)
+		canvasManager_->AddCanvasToControlBar(controller_->GetCanvas(id), buttonTitle);
+}
+
+bool QtModule::RemoveCanvasFromControlBar(const QString& id)
+{
+	if (canvasManager_)
+		return canvasManager_->RemoveCanvasFromControlBar(id);
+	return false;
+}
 
 void QtModule::Update(Core::f64 frametime)
 {

@@ -162,7 +162,7 @@ namespace QtUI
         int GetZOrder() const;
 
         /// @return True if this canvas is hidden, false otherwise.
-        bool IsHidden() const;
+        //bool IsHidden() const;
 
         /**
          * Activates canvas. This is a HACK-way to cheat Qt to think that 
@@ -172,8 +172,10 @@ namespace QtUI
         void Activate();
 
      public slots:
-    	
-        /// Redraws this internal canvas to an Ogre surface if it has become dirty. 
+    	/// @return True if this canvas is hidden, false otherwise.  
+        bool IsHidden() const;
+        
+		/// Redraws this internal canvas to an Ogre surface if it has become dirty. 
         /// For external canvases, does nothing.
         void Render();
 

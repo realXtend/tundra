@@ -59,8 +59,10 @@ class EditGUI(Component):
         self.canvas.resize(width, height)
         self.canvas.AddWidget(widget)
         #self.canvas.Show()
+        modu = r.getQtModule()
+        modu.AddCanvasToControlBar(self.canvas, "EditGUI")
         
-        self.deactivate()
+        #self.deactivate()
         
         #for some reason setRange is not there. is not not a slot of these?
         #"QDoubleSpinBox has no attribute named 'setRange'"
@@ -75,7 +77,7 @@ class EditGUI(Component):
                 self.changepos(i, v)
             return pos_at_index
         for i, poswidget in enumerate([widget.xpos, widget.ypos, widget.zpos]):
-            #poswidget.connect('valueChanged(double)', lambda v: self.changepos(i, v))
+            #poswidget.connect('valueChanged(double)', lambda v: self.changepos(i, v))  
             poswidget.connect('valueChanged(double)', poschanger(i))
 
         def rotchanger(i):
@@ -309,9 +311,9 @@ class EditGUI(Component):
         self.right_button_down = False
         
     def on_mouseclick(self, click_id, mouseinfo, callback):
-        #print "MouseMove", mouseinfo.x, mouseinfo.y
+        #print "MouseMove", mouseinfo.x, mouseinfo.y, self.canvas.IsHidden()
         #print "on_mouseclick", click_id,
-        if self.activated:
+        if not self.canvas.IsHidden():
             if self.mouse_events.has_key(click_id):
                 self.mouse_events[click_id](mouseinfo)
                 #print "on_mouseclick", click_id, self.mouse_events[click_id]
@@ -322,7 +324,7 @@ class EditGUI(Component):
         """stub for dragging objects around 
         - should get the dir of movements relative to the view somehow"""
         return
-        if self.activated:
+        if not self.canvas.IsHidden():
             if self.left_button_down and self.sel is not None:
                 print "MouseMove:", mouseinfo.x, mouseinfo.y
 
@@ -338,13 +340,13 @@ class EditGUI(Component):
         if self.canvas is not None:
             modu.DeleteCanvas(self.canvas)
             
-    def activate(self):
-        self.activated = True
-        self.canvas.Show()
+    #~ def activate(self):
+        #~ self.activated = True
+        #~ self.canvas.Show()
 
-    def deactivate(self):
-        self.activated = False
-        self.canvas.Hide()
+    #~ def deactivate(self):
+        #~ self.activated = False
+        #~ self.canvas.Hide()
 
 
 
