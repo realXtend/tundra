@@ -288,7 +288,7 @@ namespace RexLogic
          *
          *
          */
-        void RexServerConnection::SendImprovedInstantMessagePacket(const RexTypes::RexUUID &target, const std::string &text);
+        void SendImprovedInstantMessagePacket(const RexTypes::RexUUID &target, const std::string &text);
 
         //! Sends a generic message
         /*! \param method Method name
