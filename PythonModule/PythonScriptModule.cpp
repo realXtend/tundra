@@ -10,6 +10,7 @@
 #include "PythonEngine.h" //is this needed here?
 
 #include "RexLogicModule.h" //much of the api is here
+#include "RexServerConnection.h" //for SendObjectAddPacket
 #include "OpenSimProtocolModule.h" //for handling net events
 #include "NetworkEvents.h"
 #include "RexProtocolMsgIDs.h"
@@ -936,17 +937,24 @@ PyObject* GetQtModule(PyObject *self)
     return PythonQt::self()->wrapQObject(PythonScript::GetWrappedQtModule());
 }
 
-/*
-PyObject* CloseAndDeleteCanvas(PyObject *self, PyObject *args)
+PyObject* SendObjectAddPacket(PyObject *self, PyObject *args)
 {
-    PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
-    boost::shared_ptr<QtUI::QtModule> qt_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
-    QPointer<QObject> _obj;
-    _obj->
-    //QtUI::UICanvas* qcanvas = 
-    Py_RETURN_NONE;
+	RexLogic::RexLogicModule *rexlogic_;
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    if (rexlogic_)
+    {
+		float start_x, start_y, start_z;
+		float end_x, end_y, end_z;
+
+		if(!PyArg_ParseTuple(args, "ffffff", &start_x, &start_y, &start_z, &end_x, &end_y, &end_z)) {
+			PyErr_SetString(PyExc_ValueError, "Value error, need x1, y1, z1, x2, y2 and z2 params");
+            return NULL;   
+		}
+
+		rexlogic_->GetServerConnection()->SendObjectAddPacket(Vector3(start_x, start_y, start_z), Vector3(end_x, end_y, end_z));
+	}
+	Py_RETURN_NONE;
 }
-*/
 
 
 //slider input
@@ -1027,7 +1035,10 @@ static PyMethodDef EmbMethods[] = {
 
      {"getQtModule", (PyCFunction)GetQtModule, METH_VARARGS, 
      "gets the qt module"},
-    
+
+     {"sendObjectAddPacket", (PyCFunction)SendObjectAddPacket, METH_VARARGS, 
+     "Creates a new prim at the given points"},
+
     {NULL, NULL, 0, NULL}
 };
 

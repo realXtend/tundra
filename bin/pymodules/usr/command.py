@@ -451,3 +451,17 @@ if 0: #testing the removal of canvases
     #print dir(modu)
     bool = modu.RemoveCanvasFromControlBar(canvas)
     print bool
+    
+if 0:
+    print "Testing..."
+    e = r.getEntity(8880001)  
+    print e
+    start_x = e.pos[0]
+    start_y = e.pos[1]
+    start_z = e.pos[2]
+    end_x = e.pos[0]
+    end_y = e.pos[1]
+    end_z = e.pos[2]
+    
+    
+    r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
