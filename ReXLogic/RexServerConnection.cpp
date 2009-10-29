@@ -887,6 +887,34 @@ void RexServerConnection::SendMoveInventoryItemPacket(
     FinishMessageBuilding(m);
 }
 
+void RexServerConnection::SendCopyInventoryItemPacket(
+    const RexTypes::RexUUID &old_agent_id,
+    const RexTypes::RexUUID &old_item_id,
+    const RexTypes::RexUUID &new_folder_id,
+    const std::string &new_name)
+{
+    if (!connected_)
+        return;
+
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgMoveInventoryItem);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(myInfo_.agentID);
+    m->AddUUID(myInfo_.sessionID);
+
+    // InventoryData, variable
+    m->SetVariableBlockCount(1);
+    m->AddU32(0);                   // CallbackID
+    m->AddUUID(old_agent_id);
+    m->AddUUID(old_item_id);
+    m->AddUUID(new_folder_id);
+    ///\todo if "+1" doesn't exist, last char vanishes from the name, eg. "3D Models" -> "3D Model".
+    m->AddBuffer(new_name.length() + 1, (uint8_t*)new_name.c_str());
+
+    FinishMessageBuilding(m);
+}
+
 void RexServerConnection::SendRemoveInventoryItemPacket(const RexTypes::RexUUID &item_id)
 {
     if (!connected_)
@@ -1027,7 +1055,10 @@ void RexServerConnection::SendFetchInventoryDescendentsPacket(
 
     // InventoryData
     m->AddUUID(folder_id);
-    m->AddUUID(owner_id);
+    if (owner_id.IsNull())
+        m->AddUUID(myInfo_.agentID);
+    else
+        m->AddUUID(owner_id);
     m->AddS32(sort_order);
     m->AddBool(fetch_folders);
     m->AddBool(fetch_items);

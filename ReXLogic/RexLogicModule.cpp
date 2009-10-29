@@ -93,14 +93,6 @@ void RexLogicModule::Load()
         "Toggle flight mode.",
         Console::Bind(this, &RexLogicModule::ConsoleToggleFlyMode)));
 
-    AutoRegisterConsoleCommand(Console::CreateCommand("Upload",
-        "Upload an asset. Usage: Upload(AssetType, Name, Description)",
-        Console::Bind(this, &RexLogicModule::UploadAsset)));
-
-    AutoRegisterConsoleCommand(Console::CreateCommand("MultiUpload",
-        "Upload multiple assets.",
-        Console::Bind(this, &RexLogicModule::UploadMultipleAssets)));
-
     LogInfo("Module " + Name() + " loaded.");
 }
 
@@ -217,6 +209,16 @@ void RexLogicModule::PostInitialize()
             &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
     else
         LogError("Unable to find event category for Framework");
+
+    // Inventory events (just file uploads for now)
+    /*
+    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Inventory");
+    if (eventcategoryid != 0)
+        event_handlers_[eventcategoryid].push_back(boost::bind(
+            &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
+    else
+        LogError("Unable to find event category for Inventory");
+    */
 
     boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>
         (Foundation::Service::ST_Renderer).lock();
@@ -413,20 +415,6 @@ void RexLogicModule::LogoutAndDeleteWorld()
 
     if (framework_->HasScene("World"))
         DeleteScene("World");
-}
-
-void RexLogicModule::ShowInventory()
-{
-    Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Inventory");
-    if (event_category != 0)
-        GetFramework()->GetEventManager()->SendEvent(event_category, Inventory::Events::EVENT_SHOW_INVENTORY, NULL);
-}
-
-void RexLogicModule::HideInventory()
-{
-    Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Inventory");
-        if (event_category != 0)
-    GetFramework()->GetEventManager()->SendEvent(event_category, Inventory::Events::EVENT_HIDE_INVENTORY, NULL);
 }
 
 void RexLogicModule::ShowAvatarEditor()

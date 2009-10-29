@@ -253,13 +253,15 @@ bool NetworkEventHandler::HandleOSNE_AgentMovementComplete(OpenSimProtocol::Netw
     RexUUID agentid = msg.ReadUUID();
     RexUUID sessionid = msg.ReadUUID();
 
-    //if (agentid == rexlogicmodule_->GetServerConnection()->GetInfo().agentID && sessionid == rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
+//    if (agentid == rexlogicmodule_->GetServerConnection()->GetInfo().agentID &&
+//    sessionid == rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
     {
         Vector3 position = msg.ReadVector3(); 
         Vector3 lookat = msg.ReadVector3();
 
-        assert (rexlogicmodule_->GetAvatarControllable() && "Handling agent movement complete event before avatar controller is created.");
-        rexlogicmodule_->GetAvatarControllable()->HandleAgentMovementComplete(Core::OpenSimToOgreCoordinateAxes(position), Core::OpenSimToOgreCoordinateAxes(lookat));
+        assert(rexlogicmodule_->GetAvatarControllable() && "Handling agent movement complete event before avatar controller is created.");
+        rexlogicmodule_->GetAvatarControllable()->HandleAgentMovementComplete(
+            Core::OpenSimToOgreCoordinateAxes(position), Core::OpenSimToOgreCoordinateAxes(lookat));
 
         /// \todo tucofixme, what to do with regionhandle & timestamp?
         uint64_t regionhandle = msg.ReadU64();
@@ -352,13 +354,12 @@ bool NetworkEventHandler::HandleOSNE_InventoryDescendents(OpenSimProtocol::Netwo
         return false;
     }
 
-//    InventoryPtr inventory = rexlogicmodule_->GetInventory();
     Foundation::EventManagerPtr eventManager = framework_->GetEventManager();
     Core::event_category_id_t event_category = eventManager->QueryEventCategory("Inventory");
 
-    msg.SkipToNextVariable(); //msg.ReadUUID(); //OwnerID, owner of the folders creatd.
-    msg.SkipToNextVariable(); //msg.ReadS32(); //Version, version of the folder for caching
-    int32_t descendents = msg.ReadS32(); //Descendents, count to help with caching
+    msg.SkipToNextVariable();               //OwnerID UUID, owner of the folders creatd.
+    msg.SkipToNextVariable();               //Version S32, version of the folder for caching
+    int32_t descendents = msg.ReadS32();    //Descendents, count to help with caching
     if (descendents == 0)
         return false;
 

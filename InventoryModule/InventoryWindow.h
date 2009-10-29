@@ -72,9 +72,6 @@ namespace Inventory
         ///
         void HandleInventoryDescendent(InventoryItemEventData *item_data);
 
-//    protected slots:
-//        void closeEvent(QCloseEvent *myCloseEvent);
-
     private slots:
         /// Close handler
         void CloseInventoryWindow();
@@ -90,6 +87,9 @@ namespace Inventory
 
         /// Deletes item (folder/asset).
         void RenameItem();
+
+        /// File upload.
+        void Upload();
 
     private:
         Q_DISABLE_COPY(InventoryWindow);

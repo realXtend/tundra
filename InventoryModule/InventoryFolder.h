@@ -18,24 +18,19 @@ namespace Inventory
     class InventoryFolder : public AbstractInventoryItem
     {
         Q_OBJECT
-        Q_PROPERTY(bool editable_ READ IsEditable WRITE SetEditable)
         Q_PROPERTY(bool dirty_ READ IsDirty WRITE SetDirty)
 
     public:
         /// Default constructor.
-        InventoryFolder();
+//        InventoryFolder();
 
         /// Constructor.
         /// @param data_model Data model.
         /// @param id ID.
         /// @param name Name.
         /// @param parent Parent folder pointer.
-        InventoryFolder(
-            //const InventoryDataModel &data_model,
-            const QString &id,
-            const QString &name = "New Folder",
-            const bool &editable = true,
-            InventoryFolder *parent = 0);
+        InventoryFolder(const QString &id, const QString &name = "New Folder", InventoryFolder *parent = 0,
+            const bool &editable = true);
 
         /// Destructor.
         virtual ~InventoryFolder();
@@ -69,26 +64,38 @@ namespace Inventory
         /// Returns pointer to requested folder.
         /// @param searchId Search ID.
         /// @return Pointer to the requested folder, or null if not found.
-        InventoryFolder *GetChildFolderByID(const QString &searchId);
+        InventoryFolder *GetChildFolderById(const QString &searchId);
 
         /// Returns pointer to requested asset.
         /// @param searchId Search ID.
         /// @return Pointer to the requested asset, or null if not found.
-        InventoryAsset *GetChildAssetByID(const QString &searchId);
+        InventoryAsset *GetChildAssetById(const QString &searchId);
+
+        /// Returns pointer to requested child item.
+        /// @param searchId Search ID.
+        /// @return Pointer to the requested item, or null if not found.
+        AbstractInventoryItem *GetChildById(const QString &searchId);
 
         /// Get/set for the dirty flag.
         bool IsDirty() const { return dirty_; }
         void SetDirty(const bool &dirty) { dirty_ = dirty; }
 
-        /// Get/set for the dirty flag.
-        bool IsEditable() const { return editable_; }
-        void SetEditable(const bool &editable) { editable_ = editable; }
+        /// Get/set for the libary asset flag.
+        bool IsLibraryAsset() const { return libraryAsset_; }
+        void SetIsLibraryAsset(const bool &value) { libraryAsset_ = value; }
+
+        /// @return Type of the item.
+        InventoryItemType GetItemType() const { return itemType_; }
 
         /// Prints the inventory tree structure to std::cout.
         void DebugDumpInventoryFolderStructure(int indentationLevel);
 
-        /// @param row
-        /// @return
+        /// Is this folder descendent of spesific folder.
+        /// @param searchFolder Folder to be investigated.
+        bool IsDescendentOf(AbstractInventoryItem *searchFolder);
+
+        /// @param row Row number of wanter child.
+        /// @return Child item.
         AbstractInventoryItem *Child(int row);
 
         /// @return Number of children.
@@ -100,14 +107,17 @@ namespace Inventory
     private:
         Q_DISABLE_COPY(InventoryFolder);
 
+        /// Type of item (folder or asset)
+        InventoryItemType itemType_;
+
         /// List of children.
         QList<AbstractInventoryItem *> children_;
 
         /// Dirty flag.
         bool dirty_;
 
-        /// Editable flag.
-        bool editable_;
+        /// Library asset flag.
+        bool libraryAsset_;
     };
 }
 

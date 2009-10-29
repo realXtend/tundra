@@ -45,7 +45,7 @@ namespace Task
 namespace Foundation
 {
     const char *Framework::DEFAULT_EVENT_SUBSCRIBER_TREE_PATH = "./data/event_tree.xml";
-    
+
     Framework::Framework(int argc, char** argv) : 
         exit_signal_(false),
         argc_(argc),
@@ -66,9 +66,9 @@ namespace Foundation
             PROFILE(FW_Startup);
             application_ = ApplicationPtr(new Application(this));
             platform_ = PlatformPtr(new Platform(this));
-    	
-	        // Create config manager
-	        config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
+        
+            // Create config manager
+            config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
 
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("0.2"));
@@ -80,7 +80,6 @@ namespace Foundation
             Core::uint max_fps_release = config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("max_fps_release"), 60);
             Core::uint max_fps_debug = config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("max_fps_debug"), static_cast<Core::uint>(-1));
 
-            
             max_ticks_ = 1000 / max_fps_release;
     #ifdef _DEBUG
             max_ticks_ = 1000 / max_fps_debug;
@@ -115,10 +114,10 @@ namespace Foundation
         thread_task_manager_.reset();
 
         Poco::Logger::shutdown();
- 
+
         for (size_t i=0 ; i<log_channels_.size() ; ++i)
             log_channels_[i]->release();
-            
+
         log_channels_.clear();
         if (log_formatter_)
             log_formatter_->release();
@@ -155,7 +154,7 @@ namespace Foundation
         log_formatter_->setProperty("pattern","%H:%M:%S [%s] %t");
         log_formatter_->setProperty("times","local");
         Poco::Channel *formatchannel = new Poco::FormattingChannel(log_formatter_,splitterchannel);
-        
+
         try
         {
             Poco::Logger::create("",formatchannel,Poco::Message::PRIO_TRACE);    
@@ -172,8 +171,8 @@ namespace Foundation
         timestring.append(boost::lexical_cast<std::string>(currenttime->hour()) + ":");
         timestring.append(boost::lexical_cast<std::string>(currenttime->minute()) + ":");
         timestring.append(boost::lexical_cast<std::string>(currenttime->second()));
-        
-        try        
+
+        try
         {
             Foundation::RootLogInfo("Log file opened on " + timestring);
         } catch(Poco::OpenFileException)
@@ -188,13 +187,13 @@ namespace Foundation
         std::string log_level = config_manager_->GetSetting<std::string>(Framework::ConfigurationGroup(), "log_level");
         Poco::Logger::get("Foundation").setLevel(log_level);
 #endif
-        
+
         if (consolechannel)
             log_channels_.push_back(consolechannel);
         log_channels_.push_back(filechannel);
         log_channels_.push_back(splitterchannel);
         log_channels_.push_back(formatchannel);
-        
+
         delete currenttime;
         delete loggingfactory;
     }
@@ -214,7 +213,6 @@ namespace Foundation
     void Framework::ParseProgramOptions()
     {
         namespace po = boost::program_options;
-  
         //po::options_description desc;
         cm_descriptions_.add_options()
             //("headless", "run viewer in headless mode without any windows or rendering") //! \todo disabled since doesn't work with Qt -cm
@@ -228,7 +226,7 @@ namespace Foundation
             ;
 
         try
-        {  
+        {
             po::store (po::command_line_parser(argc_, argv_).options(cm_descriptions_).allow_unregistered().run(), cm_options_);
         } catch (std::exception &e)
         {
@@ -253,6 +251,8 @@ namespace Foundation
         //    module_manager_->ExcludeModule(Foundation::Module::MT_CommunicationUI);
         //}
 
+        srand(time(NULL));
+
         LoadModules();
 
         // commands must be registered after modules are loaded and initialized
@@ -265,17 +265,16 @@ namespace Foundation
         event_manager_->SendEvent(framework_events, PROGRAM_OPTIONS, data);
         delete data;
     }
-    
+
     void Framework::ProcessOneFrame()
     {
         if (exit_signal_ == true)
             return; // We've accidentally ended up to update a frame, but we're actually quitting.
-        
+
 #ifdef PROFILING
         // Reset profiling data. Should be outside of any profiling blocks.
         GetProfiler().ThreadedReset();
 #endif
-
         PROFILE(MainLoop);
 
         double frametime = timer.elapsed();
@@ -292,17 +291,17 @@ namespace Foundation
             PROFILE(FW_ProcessThreadTaskResults)
             thread_task_manager_->SendResultEvents();
         }
-        
+
         // process delayed events
         {
             PROFILE(FW_ProcessDelayedEvents);
             event_manager_->ProcessDelayedEvents(frametime);
         }
-        
+
         // if we have a renderer service, render now
         boost::weak_ptr<Foundation::RenderServiceInterface> renderer = 
                     service_manager_->GetService<RenderServiceInterface>(Service::ST_Renderer);
-		
+
         if (renderer.expired() == false)
         {
             PROFILE(FW_Render);
@@ -319,7 +318,7 @@ namespace Foundation
     }
 
     std::string Framework::GetApplicationMainWindowHandle() const
-    { 
+    {
         return q_engine_->GetMainWindowHandle();
     }
 
@@ -332,19 +331,15 @@ namespace Foundation
     {
         PROFILE(FW_Go);
         PostInitialize();
-
         q_engine_->Go();
-
         UnloadModules();
     }
-    
+
     void Framework::Exit()
     {
         exit_signal_ = true;
-
         if (q_engine_)
             q_engine_->SendQAppQuitMessage();
-
     }
 
     void Framework::LoadModules()
@@ -381,11 +376,9 @@ namespace Foundation
     {
         SceneMap::iterator scene = scenes_.find(name);
         if (scene != scenes_.end())
-        {
             scenes_.erase(scene);
-        }
     }
-    
+
     Scene::ScenePtr Framework::GetScene(const std::string &name) const
     {
         SceneMap::const_iterator scene = scenes_.find(name);
@@ -404,13 +397,13 @@ namespace Foundation
         std::string entry = params[0];
         if (params.size() == 2)
             entry = params[1];
-        
+
         bool result = module_manager_->LoadModuleByName(lib, entry);
         event_manager_->ValidateEventSubscriberTree();
 
         if (!result)
             return Console::ResultFailure("Library or module not found.");
-        
+
         return Console::ResultSuccess("Module " + entry + " loaded.");
     }
 
@@ -418,7 +411,7 @@ namespace Foundation
     {
         if (params.size() != 1)
             return Console::ResultInvalidParameters();
-        
+
         bool result = false;
         if (module_manager_->HasModule(params[0]))
         {
@@ -428,7 +421,7 @@ namespace Foundation
 
         if (!result)
             return Console::ResultFailure("Module not found.");
-        
+
         return Console::ResultSuccess("Module " + params[0] + " unloaded.");
     }
 
@@ -439,10 +432,8 @@ namespace Foundation
         {
             console->Print("Loaded modules:");
             const ModuleManager::ModuleVector &modules = module_manager_->GetModuleList();
-            for (size_t i = 0 ; i < modules.size() ; ++i)
-            {
+            for(size_t i = 0 ; i < modules.size() ; ++i)
                 console->Print(modules[i].module_->Name());
-            }
         }
 
         return Console::ResultSuccess();
@@ -455,15 +446,10 @@ namespace Foundation
 
         Core::event_category_id_t event_category = event_manager_->QueryEventCategory(params[0]);
         if (event_category == Core::IllegalEventCategory)
-        {
             return Console::ResultFailure("Event category not found.");
-        } else
+        else
         {
-            event_manager_->SendEvent(
-                event_category,
-                Core::ParseString<Core::event_id_t>(params[1]),
-                NULL);
-
+            event_manager_->SendEvent(event_category, Core::ParseString<Core::event_id_t>(params[1]), NULL);
             return Console::ResultSuccess();
         }
     }
@@ -541,7 +527,7 @@ namespace Foundation
         if (recurseToChildren)
         {
             const ProfilerNodeTree::NodeList &children = node->GetChildren();
-            for (ProfilerNodeTree::NodeList::const_iterator it = children.begin() ; 
+            for (ProfilerNodeTree::NodeList::const_iterator it = children.begin() ;
                  it != children.end() ;
                  ++it)
             {
@@ -549,9 +535,7 @@ namespace Foundation
             }
         }
         if (timings_node)
-        {
             level -= 2;
-        }
     }
 
     Console::CommandResult Framework::ConsoleProfile(const Core::StringVector &params)
@@ -582,7 +566,6 @@ namespace Foundation
 
         return Console::ResultSuccess();
     }
-
 
     void Framework::RegisterConsoleCommands()
     {

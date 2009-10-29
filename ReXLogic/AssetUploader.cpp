@@ -12,25 +12,26 @@
 #include "InventoryEvents.h"
 
 #include "openjpeg.h"
-#include "curl/curl.h"
 #include <Ogre.h>
 
 namespace
 {
 
+using namespace RexLogic;
+
 void J2kErrorCallback(const char *msg, void *)
 {
-    std::cout << "J2kErrorCallback: " << msg << std::endl;
+    RexLogicModule::LogError("J2kErrorCallback: " + std::string(msg));
 }
 
 void J2kWarningCallback(const char *msg, void *)
 {
-    std::cout << "J2kWarningCallback: " << msg << std::endl;
+    RexLogicModule::LogWarning("J2kWarningCallback: " + std::string(msg));
 }
 
 void J2kInfoCallback(const char *msg, void *)
 {
-    std::cout << "J2kInfoCallback: " << msg << std::endl;
+    RexLogicModule::LogInfo("J2kInfoCallback: " + std::string(msg));
 }
 
 bool IsPowerOfTwo(int value)
@@ -58,10 +59,10 @@ int GetClosestPowerOfTwo(int value)
             closest = ptwo;
     }
     return closest;
-}       
-        
+}
+
 // Code adapted from LibOpenJpeg (http://www.openjpeg.org/index.php?menu=download), file image_to_j2k.c.
-bool J2kEncode(Ogre::Image& src_image, std::vector<Core::u8>& outbuf, bool reversible)
+bool J2kEncode(Ogre::Image &src_image, std::vector<Core::u8> &outbuf, bool reversible)
 {
     bool success;
     opj_cparameters_t parameters;   // compression parameters
@@ -73,7 +74,7 @@ bool J2kEncode(Ogre::Image& src_image, std::vector<Core::u8>& outbuf, bool rever
     int height = src_image.getHeight();
     if (!width || !height)
     {
-        RexLogic::RexLogicModule::LogError("Zero image dimensions, cannot encode");
+        RexLogic::RexLogicModule::LogError("Zero image dimensions, cannot encode.");
         return false;
     }
 
@@ -82,19 +83,20 @@ bool J2kEncode(Ogre::Image& src_image, std::vector<Core::u8>& outbuf, bool rever
     if (!IsPowerOfTwo(width) || !IsPowerOfTwo(height))
     {
         int new_w = GetClosestPowerOfTwo(width);
-        int new_h = GetClosestPowerOfTwo(height);    
+        int new_h = GetClosestPowerOfTwo(height);
         RexLogic::RexLogicModule::LogInfo("Scaling image from " + Core::ToString<int>(width) + "x" + Core::ToString<int>(height) + " to " +
             Core::ToString<int>(new_w) + "x" + Core::ToString<int>(new_h));
+
         // Uses bilinear filter
         src_image.resize(new_w, new_h);
         width = src_image.getWidth();
         height = src_image.getHeight();
     }
- 
-    int num_comps = 3;    
+
+    int num_comps = 3;
     if (src_image.getHasAlpha())
         ++num_comps;
-         
+
     // Configure the event callbacks (optional).
     memset(&event_mgr, 0, sizeof(opj_event_mgr_t));
     event_mgr.error_handler = J2kErrorCallback;
@@ -105,7 +107,7 @@ bool J2kEncode(Ogre::Image& src_image, std::vector<Core::u8>& outbuf, bool rever
     opj_set_default_encoder_parameters(&parameters);
     parameters.cod_format = 0; // 0 == J2K_CFMT
     parameters.cp_disto_alloc = 1;
-    
+
     //DELETE?
     if (reversible)
     {
@@ -190,7 +192,6 @@ bool J2kEncode(Ogre::Image& src_image, std::vector<Core::u8>& outbuf, bool rever
     }
             
     // Encode the destination image.
-//    int codestream_length;
     opj_cio_t *cio = 0;
 
     // Get a J2K compressor handle.
@@ -217,8 +218,8 @@ bool J2kEncode(Ogre::Image& src_image, std::vector<Core::u8>& outbuf, bool rever
 
     // Write encoded data to output buffer.
     outbuf.resize(cio_tell(cio));
-    std::cout << "Datastream size: " << outbuf.size() << std::endl;
-            
+    RexLogicModule::LogDebug("J2k datastream size: " + outbuf.size());
+
     memcpy(&outbuf[0], cio->buffer, outbuf.size());
 
     // Close and free the byte stream.
@@ -245,8 +246,7 @@ bool J2kEncode(Ogre::Image& src_image, std::vector<Core::u8>& outbuf, bool rever
 namespace RexLogic
 {
 
-AssetUploader::AssetUploader(Foundation::Framework* framework) :
-    framework_(framework), uploadCapability_("")
+AssetUploader::AssetUploader(Foundation::Framework* framework) : framework_(framework), uploadCapability_("")
 {
 }
 
@@ -327,7 +327,7 @@ bool AssetUploader::UploadFile(
         pbuf->pubseekpos(0, std::ios::in);
         pbuf->sgetn((char *)&src_vec[0], size);
         file.close();
-        
+
         try
         {
             Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)&src_vec[0], size, false));
@@ -368,7 +368,7 @@ bool AssetUploader::UploadFile(
     
     if (!request2.GetSuccess())
     {
-        RexLogicModule::LogError("HTTP POST asset upload did not succeed. " + request.GetReason());
+        RexLogicModule::LogError("HTTP POST asset upload did not succeed: " + request.GetReason());
         return false;
     }
 
@@ -448,7 +448,7 @@ void AssetUploader::UploadFiles(Core::StringList filenames, OpenSimProtocol::Inv
             RexLogicModule::LogError("Inventory folder for this type of file doesn't exists. File can't be uploaded.");
             continue;
         }
-        
+
         if (UploadFile(asset_type, filename, name, description, folder_id))
             ++asset_count;
     }
@@ -461,7 +461,7 @@ std::string AssetUploader::CreateNameFromFilename(std::string filename)
     std::string name = "asset";
     bool no_path = false;
     size_t name_start_pos = filename.find_last_of('/');
-    // If the filename doens't have the full path, start from index 0.
+    // If the filename doesn't have the full path, start from index 0.
     if (name_start_pos == std::string::npos)
     {
         name_start_pos = 0;
