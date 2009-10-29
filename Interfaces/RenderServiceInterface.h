@@ -14,6 +14,21 @@ namespace Scene
 
 namespace Foundation
 {
+    //! Result of a raycast. Other fields are valid only if entity_ is non-null
+    struct RaycastResult
+    {
+        //! Entity that was hit, null if none
+        Scene::Entity* entity_;
+        //! World coordinates of hit position
+        Core::Vector3df pos_;
+        //! Submesh index in entity, starting from 0
+        Core::uint submesh_;
+        //! U coord in entity. 0 if no texture mapping
+        Core::Real u_;
+        //! V coord in entity. 0 if no texture mapping
+        Core::Real v_;
+    };
+    
     //! Render service interface.
     /*!
         \ingroup Services_group
@@ -33,8 +48,9 @@ namespace Foundation
         /*! The coordinates are a position in the render window, not scaled to [0,1].
             \param x Horizontal position for the origin of the ray
             \param y Vertical position for the origin of the ray
+            \return Raycast result structure
         */
-        virtual Scene::Entity *Raycast(int x, int y) = 0;
+        virtual RaycastResult Raycast(int x, int y) = 0;
         //! Resizes the rendering window
         /*! \param width New window width
             \param height New window height

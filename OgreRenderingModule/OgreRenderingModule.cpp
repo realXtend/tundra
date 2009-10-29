@@ -141,10 +141,15 @@ namespace OgreRenderer
         {
             // do raycast into the world when user clicks mouse button
             Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
-            Scene::Entity *entity = renderer_->Raycast(movement->x_.abs_, movement->y_.abs_);
-
+            Foundation::RaycastResult result = renderer_->Raycast(movement->x_.abs_, movement->y_.abs_);
+            
+            Scene::Entity *entity = result.entity_;
+                
             if (entity)
             {
+                //std::cout << "Raycast hit entity " << entity << " pos " << result.pos_.x << " " << result.pos_.y << " " << result.pos_.z
+                //          << " submesh " << result.submesh_ << " uv " << result.u_ << " " << result.v_ << std::endl;
+                             
                 Scene::Events::SceneEventData event_data(entity->GetId());
                 framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_GRAB, &event_data);
             }

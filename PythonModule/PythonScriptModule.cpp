@@ -569,7 +569,7 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
 
     Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
     boost::shared_ptr<Foundation::RenderServiceInterface> render = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
-    Scene::Entity *entity = render->Raycast(x, y);
+    Scene::Entity *entity = render->Raycast(x, y).entity_;
 
     if (entity)
     {
