@@ -503,7 +503,7 @@ void Primitive::HandleDrawType(Core::entity_id_t entityid)
         
         // Attach to placeable if not yet attached
         if (!mesh.GetPlaceable())
-            mesh.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
+            mesh.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()), entity.get());
         
         // Change mesh if yet nonexistent/changed
         // assume name to be UUID of mesh asset, which should be true of OgreRenderer resources
@@ -557,6 +557,11 @@ void Primitive::HandleDrawType(Core::entity_id_t entityid)
         {
             CreatePrimGeometry(rexlogicmodule_->GetFramework(), custom.GetObject(), prim);
             custom.CommitChanges();
+            
+            Scene::Events::EntityEventData event_data;
+            event_data.entity = entity;
+            Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+            event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
         }
     }
 
@@ -878,7 +883,7 @@ void Primitive::HandleMeshReady(Core::entity_id_t entityid, Foundation::Resource
     if (!meshptr) return;
     OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
     
-    mesh.SetMesh(res->GetId(), entity.get());
+    mesh.SetMesh(res->GetId());
 
     // Set adjustment orientation for mesh (a legacy haxor, Ogre meshes usually have Y-axis as vertical)
     Core::Quaternion adjust(Core::PI/2, 0, Core::PI);
@@ -888,6 +893,11 @@ void Primitive::HandleMeshReady(Core::entity_id_t entityid, Foundation::Resource
     
     // Check/set textures now that we have the mesh
     HandleMeshMaterials(entityid); 
+
+    Scene::Events::EntityEventData event_data;
+    event_data.entity = entity;
+    Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+    event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
 }
 
 void Primitive::HandleParticleScriptReady(Core::entity_id_t entityid, Foundation::ResourcePtr res)
@@ -943,6 +953,11 @@ void Primitive::HandleTextureReady(Core::entity_id_t entityid, Foundation::Resou
             {
                 // Use a legacy material with the same name as the texture, created automatically by renderer
                 meshptr->SetMaterial(idx, res->GetId());
+                
+                Scene::Events::EntityEventData event_data;
+                event_data.entity = entity;
+                Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+                event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);            
             }
             ++i;
         }
@@ -974,6 +989,11 @@ void Primitive::HandleMaterialResourceReady(Core::entity_id_t entityid, Foundati
             {
                 CreatePrimGeometry(rexlogicmodule_->GetFramework(), custom.GetObject(), prim);
                 custom.CommitChanges();
+
+                Scene::Events::EntityEventData event_data;
+                event_data.entity = entity;
+                Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+                event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
             }
         }
     }
@@ -1007,6 +1027,12 @@ void Primitive::HandleMaterialResourceReady(Core::entity_id_t entityid, Foundati
                     else
                     {
                         meshptr->SetMaterial(idx, mat->getName());
+                        
+                        Scene::Events::EntityEventData event_data;
+                        event_data.entity = entity;
+                        Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+                        event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
+                                    
                         //std::stringstream ss;
                         //ss << std::string("Set submesh ") << idx << " to use material \"" << mat->getName() << "\"";
                         //RexLogicModule::LogDebug(ss.str());

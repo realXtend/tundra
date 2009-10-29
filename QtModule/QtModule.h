@@ -76,13 +76,24 @@ namespace QtUI
 		 */
 		void AddCanvasToControlBar(boost::shared_ptr<QtUI::UICanvas> canvas, const QString &buttonTitle);
 
+        //! Creates an EC_UICanvas to an entity using a UICanvas previously created. UICanvas must be in internal mode.
+        /*! If entity already has EC_UICanvas component, just sets the canvas to use.
+            @return Pointer to EC_UICanvas component, or null if the component could not be created out of some reason.
+         */
+        Foundation::ComponentPtr CreateEC_UICanvasToEntity(Scene::EntityPtr entity, boost::shared_ptr<QtUI::UICanvas> canvas);
+         
     private:
         /// Initializes a mapping table between OIS and Qt keyboard codes.
         void InitializeKeyCodes();
+        
+        /// Refreshes an entity containing EC_UICanvas, when a scene event telling of its modification is posted
+        void RefreshEC_UICanvas(Foundation::EventDataInterface* data);
 
         // The event categories this module subscribes to.
         Core::event_category_id_t input_event_category_;
         Core::event_category_id_t renderer_event_category_;
+        Core::event_category_id_t scene_event_category_;
+
 
         bool mouse_left_button_down_;
         QPoint lastPos_;

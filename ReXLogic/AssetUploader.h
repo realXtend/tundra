@@ -43,8 +43,9 @@ namespace RexLogic
          *  @param name User-defined name.
          *  @param description User-defined description.
          *  @param folder_id Id of the destination folder for this item.
+         *  @return true if successful
          */
-        void UploadFile(
+        bool UploadFile(
             const RexTypes::asset_type_t &asset_type,
             const std::string &filename,
             const std::string &name,

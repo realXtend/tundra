@@ -455,7 +455,7 @@ namespace RexLogic
             OgreRenderer::EC_OgrePlaceable &placeable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeableptr.get());
             OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
             
-            mesh.SetPlaceable(placeableptr);
+            mesh.SetPlaceable(placeableptr, entity.get());
             avatar_appearance_.SetupDefaultAppearance(entity);
         }
         

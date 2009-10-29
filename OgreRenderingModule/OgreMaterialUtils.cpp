@@ -70,7 +70,7 @@ namespace OgreRenderer
         return MaterialSuffix[variation];
     }
 
-    Ogre::MaterialPtr GetOrCreateLitTexturedMaterial(const char *materialName)
+    Ogre::MaterialPtr GetOrCreateLitTexturedMaterial(const std::string& materialName)
     {
         const char baseMaterialName[] = "LitTextured";
 
@@ -87,7 +87,7 @@ namespace OgreRenderer
         return material;
     }
 
-    Ogre::MaterialPtr GetOrCreateUnlitTexturedMaterial(const char *materialName)
+    Ogre::MaterialPtr GetOrCreateUnlitTexturedMaterial(const std::string& materialName)
     {
         const char baseMaterialName[] = "UnlitTextured";
 
@@ -264,12 +264,30 @@ namespace OgreRenderer
         }
     }
     
-    Foundation::ResourcePtr OGRE_MODULE_API CreateResourceFromMaterial(Ogre::MaterialPtr material)
+    Foundation::ResourcePtr CreateResourceFromMaterial(Ogre::MaterialPtr material)
     {
         assert(!material.isNull());
         OgreMaterialResource* res = new OgreMaterialResource(material->getName());
         res->SetMaterial(material);
         Foundation::ResourcePtr res_ptr(res);
         return res_ptr;
+    }
+    
+    void RemoveMaterial(Ogre::MaterialPtr& material)
+    {
+        if (!material.isNull())
+        {
+            std::string material_name = material->getName();
+            material.setNull();
+
+            try
+            {
+                Ogre::MaterialManager::getSingleton().remove(material_name);
+            }
+            catch (Ogre::Exception& e)
+            {
+                OgreRenderingModule::LogDebug("Failed to remove Ogre material:" + std::string(e.what()));
+            }
+        }
     }
 }

@@ -37,11 +37,11 @@ namespace OgreRenderer
     
     /// Returns an Ogre material with the given name, or creates it if it doesn't exist. The material
     /// is derived from an UnlitTextured material, that's a simple one to use for debugging visualizations.
-    Ogre::MaterialPtr OGRE_MODULE_API GetOrCreateUnlitTexturedMaterial(const char *materialName);
+    Ogre::MaterialPtr OGRE_MODULE_API GetOrCreateUnlitTexturedMaterial(const std::string& materialName);
 
     /// Returns an Ogre material with the given name, or creates it if it doesn't exist. The material
-    /// is derived from an LitTextured material, that's a simple one to use for basic diffuse texture visualizations.
-    Ogre::MaterialPtr OGRE_MODULE_API GetOrCreateLitTexturedMaterial(const char *materialName);
+    /// is derived from the LitTextured material.
+    Ogre::MaterialPtr OGRE_MODULE_API GetOrCreateLitTexturedMaterial(const std::string& materialName);
 
     //! Creates legacy material variations from texture
     /*! @param texture_name texture to use
@@ -65,6 +65,9 @@ namespace OgreRenderer
     
     //! Creates a material resource from an Ogre material pointer
     Foundation::ResourcePtr OGRE_MODULE_API CreateResourceFromMaterial(Ogre::MaterialPtr material);
+    
+    //! Deletes a material. Note: the material pointer passed in will be set to null
+    void OGRE_MODULE_API RemoveMaterial(Ogre::MaterialPtr& material);
 }
 
 #endif
