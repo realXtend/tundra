@@ -10,7 +10,7 @@ namespace TelepathyIM
 	
 	VoiceSession::VoiceSession(Tp::StreamedMediaChannelPtr tp_channel): state_(STATE_INITIALIZING), tp_channel_(tp_channel)
 	{
-	    connect(tp_channel->becomeReady(),
+	    connect(tp_channel->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
                 SIGNAL( finished(Tp::PendingOperation*) ),
                 SLOT( OnIncomingChannelReady(Tp::PendingOperation*) ));
 	}
@@ -42,6 +42,7 @@ namespace TelepathyIM
 
 	void VoiceSession::Close()
 	{
+		//Tp::PendingOperation* op = tp_channel_->requestClose();
 		//! @todo IMPLEMENT
 	}
 
@@ -55,7 +56,7 @@ namespace TelepathyIM
 
 		Tp::PendingChannel *pending_channel = qobject_cast<Tp::PendingChannel *>(op);
 		tp_channel_ = Tp::StreamedMediaChannel::create(pending_channel->connection(),pending_channel->objectPath(), pending_channel->immutableProperties());
-	    connect(tp_channel_->becomeReady(),
+	    connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
                 SIGNAL( finished(Tp::PendingOperation*) ),
                 SLOT( OnOutgoingChannelReady(Tp::PendingOperation*) ));
 	}
@@ -86,6 +87,18 @@ namespace TelepathyIM
 		Tp::ContactManager *cm = tp_channel_->connection()->contactManager();
 		Tp::ContactPtr contact = cm->lookupContactByHandle(tp_channel_->targetHandle());
 		Q_ASSERT(contact);
+
+
+		Tp::MediaStreams streams = tp_channel_->streams();
+		for(Tp::MediaStreams::iterator i = streams.begin(); i != streams.end(); ++i)
+		{
+			Tp::MediaStreamType type = (*i)->type();
+			switch(type)
+			{
+			case Tp::MediaStreamTypeAudio: break;
+			case Tp::MediaStreamTypeVideo: break;
+			}
+		}
 	}
 
 } // end of namespace: TelepathyIM

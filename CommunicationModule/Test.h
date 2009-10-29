@@ -48,11 +48,15 @@ namespace CommunicationTest
 		//! Send a text message to jabber chat room
 		virtual void RunTest6();
 
+		//! Fetch friend list and show online statuses
+		virtual void RunTest7();
+
 		//! Closes the jabber connection
 		virtual void RunTest0();
 
 	protected:
 		virtual void OpenConnection(Communication::CredentialsInterface& crederntials);
+		virtual void ShowContacts(Communication::ConnectionInterface& connection);
 		Foundation::Framework* framework_;
 		Communication::ConnectionInterface* jabber_connection_;
 		Communication::ConnectionInterface* opensim_connection_;
@@ -64,7 +68,6 @@ namespace CommunicationTest
 		void OnOpensimUdpConnectionError(Communication::ConnectionInterface&);
 		void OnChatSessionReceived( Communication::ChatSessionInterface& chat);
 	};
-	
 
 } // end of namespace: CommunicationTest
 
