@@ -16,7 +16,6 @@ namespace OgreRenderer
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         object_(NULL),
         entity_(NULL),
-        parent_entity_(NULL),
         attached_(false),
         cast_shadows_(false),
         draw_distance_(0.0f)
@@ -38,8 +37,14 @@ namespace OgreRenderer
         }
     }
     
-    void EC_OgreCustomObject::SetPlaceable(Foundation::ComponentPtr placeable, Scene::Entity *parent_entity)
+    void EC_OgreCustomObject::SetPlaceable(Foundation::ComponentPtr placeable, Scene::Entity* parent_entity)
     {
+        if (!dynamic_cast<EC_OgrePlaceable*>(placeable.get()))
+        {
+            OgreRenderingModule::LogError("Attempted to set placeable which is not " + EC_OgrePlaceable::NameStatic());
+            return;
+        }
+        
         parent_entity_ = parent_entity;
         
         DetachEntity();
@@ -92,14 +97,59 @@ namespace OgreRenderer
             entity_->setRenderingDistance(draw_distance);
     }
     
-   void EC_OgreCustomObject::SetCastShadows(bool enabled)
+    void EC_OgreCustomObject::SetCastShadows(bool enabled)
     {
         cast_shadows_ = enabled;
         if (entity_)
             entity_->setCastShadows(enabled);
     }
     
-   void EC_OgreCustomObject::AttachEntity()
+    bool EC_OgreCustomObject::SetMaterial(Core::uint index, const std::string& material_name)
+    {
+        if (!entity_)
+            return false;
+        
+        if (index >= entity_->getNumSubEntities())
+        {
+            OgreRenderingModule::LogError("Could not set material " + material_name + ": illegal submesh index " + Core::ToString<Core::uint>(index));
+            return false;
+        }
+        
+        try
+        {
+            entity_->getSubEntity(index)->setMaterialName(material_name);
+        }
+        catch (Ogre::Exception& e)
+        {
+            OgreRenderingModule::LogError("Could not set material " + material_name + ": " + std::string(e.what()));
+            return false;
+        }
+        
+        return true;
+    }
+    
+    Core::uint EC_OgreCustomObject::GetNumMaterials() const
+    {
+        if (!entity_)
+            return 0;
+            
+        return entity_->getNumSubEntities();
+    }
+    
+    const std::string& EC_OgreCustomObject::GetMaterialName(Core::uint index) const
+    {
+        const static std::string empty;
+        
+        if (!entity_)
+            return empty;
+        
+        if (index >= entity_->getNumSubEntities())
+            return empty;
+        
+        return entity_->getSubEntity(index)->getMaterialName();
+    }    
+           
+    void EC_OgreCustomObject::AttachEntity()
     {
         if ((placeable_) && (!attached_) && (entity_))
         {

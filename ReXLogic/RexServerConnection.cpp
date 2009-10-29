@@ -146,7 +146,7 @@ bool RexServerConnection::ConnectToCableBeachServer(
 }
 
 bool RexServerConnection::CreateUDPConnection()
-{
+{    
     boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> sp = netInterface_.lock();
     if (!sp.get())
     {
@@ -157,6 +157,8 @@ bool RexServerConnection::CreateUDPConnection()
     // Get the client-spesific information.
     myInfo_ = sp->GetClientParameters();
 
+    RexLogicModule::LogInfo("Creating UDP connection to grid url " + myInfo_.gridUrl);
+    
     //Get the udp server and port from login response
     bool connect_result;
     if (myInfo_.gridUrl.size() != 0)
@@ -179,7 +181,6 @@ bool RexServerConnection::CreateUDPConnection()
                 return false;
             }
         }
-
         connect_result = sp->CreateUDPConnection(serveraddress_noport.c_str(), port);
     }
     else

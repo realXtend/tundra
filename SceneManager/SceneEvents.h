@@ -38,7 +38,7 @@ namespace Scene
         static const Core::event_id_t EVENT_ENTITY_DESELECT =   0x09;
         /// An action event that can be sent by anyone to cause an entity be grabbed (drag-selected). \todo Distinguish which clicks need to cause a select and which need to cause a grab.
         static const Core::event_id_t EVENT_ENTITY_GRAB =       0x0a;
-        
+               
         // Component-related event id's:
 
     /** \todo For creating events that can be used to alter the scene, events like this might be useful as well:
@@ -54,6 +54,9 @@ namespace Scene
         /// Sent to register a scene entity as a controllable entity (has the Controllable component). Also sets
         /// that entity as the currently controlled entity. 
         static const Core::event_id_t EVENT_CONTROLLABLE_ENTITY = 0x0e;
+
+        /// An internal event telling that an entity's visible geometry or materials has been regenerated or modified.
+        static const Core::event_id_t EVENT_ENTITY_VISUALS_MODIFIED = 0x0f;
         
         /// Event data interface for Scene object related events.
         /*class SceneEventData: public Foundation::EventDataInterface
@@ -142,6 +145,7 @@ namespace Scene
                 event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_DESELECT, "Entity Deselect");
 
                 event_manager->RegisterEvent(scene_event_category, Events::EVENT_CONTROLLABLE_ENTITY, "Controllable Entity Created");
+                event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_VISUALS_MODIFIED, "Entity Visual Appearance Modified");
             }
         }
     }

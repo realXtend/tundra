@@ -33,10 +33,11 @@ namespace OgreRenderer
         virtual ~EC_OgreMesh();
         
         //! sets placeable component
-        /*! set a null placeable to detach the mesh, otherwise will attach
+        /*! set a null placeable to detach the object, otherwise will attach
             \param placeable placeable component
+            \param parent_entity parent entity, needed for raycasting results
          */
-        void SetPlaceable(Foundation::ComponentPtr placeable);
+        void SetPlaceable(Foundation::ComponentPtr placeable, Scene::Entity* parent_entity);
         
         //! sets draw distance
         /*! \param draw_distance New draw distance, 0.0 = draw always (default)
@@ -46,21 +47,19 @@ namespace OgreRenderer
         //! sets mesh
         /*! if mesh already sets, removes the old one
             \param mesh_name mesh to use
-            \param parent_entity parent entity we belong to
             \param clone whether mesh should be cloned for modifying geometry uniquely
             \return true if successful
          */
-        bool SetMesh(const std::string& mesh_name, Scene::Entity *parent_entity, bool clone = false);
+        bool SetMesh(const std::string& mesh_name, bool clone = false);
 
         //! sets mesh with custom skeleton
         /*! if mesh already sets, removes the old one
             \param mesh_name mesh to use
             \param skeleton_name skeleton to use
-            \param parent_entity parent entity we belong to
             \param clone whether mesh should be cloned for modifying geometry uniquely
             \return true if successful
          */
-        bool SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, Scene::Entity *parent_entity, bool clone = false);
+        bool SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, bool clone = false);
 
         //! sets material in mesh
         /*! \param index submesh index
@@ -235,6 +234,9 @@ namespace OgreRenderer
         
         //! draw distance
         float draw_distance_;
+        
+        //! parent entity
+        Scene::Entity* parent_entity_;
     };
 }
 

@@ -8,6 +8,7 @@
 #include "LegacyAvatarSerializer.h"
 #include "RexLogicModule.h"
 #include "SceneManager.h"
+#include "SceneEvents.h"
 #include "EC_AvatarAppearance.h"
 #include "EC_OpenSimAvatar.h"
 #include "EC_OpenSimPresence.h"
@@ -312,9 +313,9 @@ namespace RexLogic
         }
         
         if (!appearance.GetSkeleton().GetLocalOrResourceName().empty())
-            mesh.SetMeshWithSkeleton(appearance.GetMesh().GetLocalOrResourceName(), appearance.GetSkeleton().GetLocalOrResourceName(), entity.get(), need_mesh_clone);
+            mesh.SetMeshWithSkeleton(appearance.GetMesh().GetLocalOrResourceName(), appearance.GetSkeleton().GetLocalOrResourceName(), need_mesh_clone);
         else
-            mesh.SetMesh(appearance.GetMesh().GetLocalOrResourceName(), entity.get(), need_mesh_clone);
+            mesh.SetMesh(appearance.GetMesh().GetLocalOrResourceName(), need_mesh_clone);
             
         if (need_mesh_clone)
             HideVertices(mesh.GetEntity(), vertices_to_hide);
@@ -335,6 +336,11 @@ namespace RexLogic
         // Will be overridden by bone-based height adjust, if available
         mesh.SetAdjustPosition(Core::Vector3df(0.0f, 0.0f, FIXED_HEIGHT_OFFSET));
         mesh.SetCastShadows(true);
+        
+        Scene::Events::EntityEventData event_data;
+        event_data.entity = entity;
+        Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+        event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
     }
     
     void AvatarAppearance::SetupAttachments(Scene::EntityPtr entity)
@@ -1572,8 +1578,8 @@ namespace RexLogic
             
             matname = renderer->GetUniqueObjectName();
             
-            //! \todo this temp texture will not be deleted ever. Should delete it
-            Ogre::MaterialPtr ogremat = OgreRenderer::GetOrCreateLitTexturedMaterial(matname.c_str());
+            //! \todo this temp material will not be deleted ever. Should delete it
+            Ogre::MaterialPtr ogremat = OgreRenderer::GetOrCreateLitTexturedMaterial(matname);
             OgreRenderer::GetLocalTexture(leafname);
             OgreRenderer::SetTextureUnitOnMaterial(ogremat, leafname);
         }
@@ -1588,6 +1594,11 @@ namespace RexLogic
         FixupMaterial(materials[index], AvatarAssetMap());
         appearance.SetMaterials(materials);
         
+        Scene::Events::EntityEventData event_data;
+        event_data.entity = entity;
+        Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+        event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
+                
         return true;
     }        
     

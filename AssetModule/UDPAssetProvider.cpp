@@ -392,7 +392,7 @@ namespace Asset
         UDPAssetTransferMap::iterator i = texture_transfers_.find(asset_id);
         if (i == texture_transfers_.end())
         {
-            AssetModule::LogWarning("Data received for nonexisting texture transfer " + asset_id.ToString());
+            AssetModule::LogDebug("Data received for nonexisting texture transfer " + asset_id.ToString());
             return;
         }
         
@@ -424,7 +424,7 @@ namespace Asset
         UDPAssetTransferMap::iterator i = texture_transfers_.find(asset_id);
         if (i == texture_transfers_.end())
         {
-            AssetModule::LogWarning("Data received for nonexisting texture transfer " + asset_id.ToString());
+            AssetModule::LogDebug("Data received for nonexisting texture transfer " + asset_id.ToString());
             return;
         }
         
@@ -452,7 +452,7 @@ namespace Asset
         UDPAssetTransferMap::iterator i = texture_transfers_.find(asset_id);
         if (i == texture_transfers_.end())
         {
-            AssetModule::LogWarning("Cancel received for nonexisting texture transfer " + asset_id.ToString());
+            AssetModule::LogDebug("Cancel received for nonexisting texture transfer " + asset_id.ToString());
             return;
         }
 
@@ -471,7 +471,7 @@ namespace Asset
         UDPAssetTransferMap::iterator i = asset_transfers_.find(transfer_id);
         if (i == asset_transfers_.end())
         {
-            AssetModule::LogWarning("Data received for nonexisting asset transfer " + transfer_id.ToString());
+            AssetModule::LogDebug("Data received for nonexisting asset transfer " + transfer_id.ToString());
             return;
         }
         
@@ -507,7 +507,7 @@ namespace Asset
         UDPAssetTransferMap::iterator i = asset_transfers_.find(transfer_id);
         if (i == asset_transfers_.end())
         {
-            AssetModule::LogWarning("Data received for nonexisting asset transfer " + transfer_id.ToString());
+            AssetModule::LogDebug("Data received for nonexisting asset transfer " + transfer_id.ToString());
             return;
         }
         
@@ -548,7 +548,7 @@ namespace Asset
         UDPAssetTransferMap::iterator i = asset_transfers_.find(transfer_id);
         if (i == asset_transfers_.end())
         {
-            AssetModule::LogWarning("Cancel received for nonexisting asset transfer " + transfer_id.ToString());
+            AssetModule::LogDebug("Cancel received for nonexisting asset transfer " + transfer_id.ToString());
             return;
         }
         

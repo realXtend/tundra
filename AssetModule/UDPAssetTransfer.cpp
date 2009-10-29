@@ -51,7 +51,7 @@ namespace Asset
         
         if (!size)
         {
-            AssetModule::LogWarning("Trying to store zero bytes of data");
+            AssetModule::LogDebug("Trying to store zero bytes of data");
             return;
         }
         
@@ -63,7 +63,7 @@ namespace Asset
         }
         else
         {
-            AssetModule::LogWarning("Already received asset data packet index " + Core::ToString<Core::uint>(packet_index));
+            AssetModule::LogDebug("Already received asset data packet index " + Core::ToString<Core::uint>(packet_index));
         }
     }
     

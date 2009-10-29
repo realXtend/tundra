@@ -4,6 +4,7 @@
 #include "OgreMaterialResource.h"
 #include "OgreTextureResource.h"
 #include "OgreRenderingModule.h"
+#include "OgreMaterialUtils.h"
 #include "ResourceHandler.h"
 
 #include <Ogre.h>
@@ -171,20 +172,7 @@ namespace OgreRenderer
     
     void OgreMaterialResource::RemoveMaterial()
     {
-        if (!ogre_material_.isNull())
-        {
-            std::string material_name = ogre_material_->getName();
-            ogre_material_.setNull();
-
-            try
-            {
-                Ogre::MaterialManager::getSingleton().remove(material_name);
-            }
-            catch (...)
-            {
-                OgreRenderingModule::LogDebug("Warning: Ogre::MaterialManager::getSingleton().remove(material_name); failed in OgreMaterialResource.cpp.");
-            }
-        }
+        OgreRenderer::RemoveMaterial(ogre_material_);
     }
     
     bool OgreMaterialResource::IsValid() const

@@ -38,8 +38,9 @@ namespace OgreRenderer
         //! sets placeable component
         /*! set a null placeable to detach the object, otherwise will attach
             \param placeable placeable component
+            \param parent_entity parent entity, needed for raycasting results
          */
-        void SetPlaceable(Foundation::ComponentPtr placeable, Scene::Entity *parent_entity = NULL);
+        void SetPlaceable(Foundation::ComponentPtr placeable, Scene::Entity* parent_entity);
         
         //! sets draw distance
         /*! \param draw_distance New draw distance, 0.0 = draw always (default)
@@ -59,6 +60,25 @@ namespace OgreRenderer
             \return true if successful
          */
         bool CommitChanges();
+        
+        //! Sets material on already committed geometry, similar to EC_OgreMesh
+        /*! \param index submesh index
+            \param material_name material name
+            \return true if successful
+         */
+        bool SetMaterial(Core::uint index, const std::string& material_name);
+        
+        //! gets number of materials (submeshes) in committed geometry
+        Core::uint GetNumMaterials() const;
+        
+        //! gets material name from committed geometry
+        /*! \param index submesh index
+            \return name if successful, empty if not committed / illegal index
+         */
+        const std::string& GetMaterialName(Core::uint index) const;
+               
+        //! Returns true if geometry has been committed and mesh entity created
+        bool IsCommitted() { return entity_ != NULL; }   
         
     private:
         //! constructor

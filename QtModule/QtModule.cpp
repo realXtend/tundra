@@ -1,9 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-
+#include "ComponentRegistrarInterface.h"
 #include "DebugOperatorNew.h"
+#include "SceneEvents.h"
+#include "SceneManager.h"
 
+#include "EC_UICanvas.h"
 #include "QtModule.h"
 #include "UICanvasManager.h"
 
@@ -39,6 +42,7 @@ QtModule::~QtModule()
 
 void QtModule::Load()
 {
+    DECLARE_MODULE_EC(EC_UICanvas);
 }
 
 void QtModule::Unload()
@@ -76,6 +80,7 @@ void QtModule::PostInitialize()
     Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
     input_event_category_ = event_manager->QueryEventCategory("Input");
     renderer_event_category_ = event_manager->QueryEventCategory("Renderer");
+    scene_event_category_ = event_manager->QueryEventCategory("Scene");
 }
 
 void QtModule::Uninitialize()
@@ -128,6 +133,11 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
             controller_->InjectKeyPressed(QString(QChar(key->text_)), value);
         else
             controller_->InjectKeyReleased(QString(QChar(key->text_)), value);
+    }
+    else if (category_id == scene_event_category_ && event_id == Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED)
+    {
+        // If entity has changed geometry or materials, and it has EC_UICanvas, make sure the EC_UICanvas refreshes
+        RefreshEC_UICanvas(data);
     }
 
     return false;
@@ -326,6 +336,45 @@ void QtModule::InitializeKeyCodes()
     converterMap_.insert(OIS::KC_LBRACKET , Qt::Key_BracketLeft);
 }
 
+void QtModule::RefreshEC_UICanvas(Foundation::EventDataInterface* data)
+{
+    Scene::Events::EntityEventData *entity_data = dynamic_cast<Scene::Events::EntityEventData*>(data);
+    if (!entity_data)
+        return;
+        
+    Scene::EntityPtr entity = entity_data->entity;
+    if (!entity)
+        return;
+    
+    Foundation::ComponentPtr uicanvasptr = entity->GetComponent(EC_UICanvas::NameStatic());
+    if (!uicanvasptr)
+        return;
+        
+    EC_UICanvas& uicanvas = *checked_static_cast<EC_UICanvas*>(uicanvasptr.get());       
+    uicanvas.Refresh();
+}
+
+Foundation::ComponentPtr QtModule::CreateEC_UICanvasToEntity(Scene::EntityPtr entity, boost::shared_ptr<UICanvas> canvas)
+{
+    if (!canvas || !entity)    
+        return Foundation::ComponentPtr();
+
+    Foundation::ComponentPtr uicanvasptr = entity->GetComponent(EC_UICanvas::NameStatic());
+    if (!uicanvasptr)
+    {
+        uicanvasptr = framework_->GetComponentManager()->CreateComponent(EC_UICanvas::NameStatic());
+        if (!uicanvasptr)
+            return uicanvasptr;
+        entity->AddEntityComponent(uicanvasptr);
+    }
+    
+    EC_UICanvas& uicanvas = *checked_static_cast<EC_UICanvas*>(uicanvasptr.get());    
+    uicanvas.SetCanvas(canvas);
+    uicanvas.SetEntity(entity.get());
+    
+    return uicanvasptr;    
+} 
+       
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);

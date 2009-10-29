@@ -13,7 +13,7 @@
 
 #include "openjpeg.h"
 #include "curl/curl.h"
-#include <QImage>
+#include <Ogre.h>
 
 namespace
 {
@@ -33,15 +33,68 @@ void J2kInfoCallback(const char *msg, void *)
     std::cout << "J2kInfoCallback: " << msg << std::endl;
 }
 
-// Code adapted from LibOpenJpeg (http://www.openjpeg.org/index.php?menu=download), file image_to_j2k.c.
-bool J2kEncode(QImage q_image, char *outbuf, size_t *size, bool reversible)
+bool IsPowerOfTwo(int value)
 {
-//    char *outbuf;
+    int bitcount = 0;
+    for (int i = 0; i < 32; ++i)
+    {
+        if (value & 1)
+            bitcount++;
+        if (bitcount > 1)
+            return false;
+        value >>= 1;
+    }
+    return true;
+}
+
+int GetClosestPowerOfTwo(int value)
+{
+    int closest = 1;
+    // Use 2048 as max. size
+    for (int i = 11; i >= 0; --i)
+    {
+        int ptwo = 1 << i;
+        if (abs(ptwo-value) < abs(closest-value))
+            closest = ptwo;
+    }
+    return closest;
+}       
+        
+// Code adapted from LibOpenJpeg (http://www.openjpeg.org/index.php?menu=download), file image_to_j2k.c.
+bool J2kEncode(Ogre::Image& src_image, std::vector<Core::u8>& outbuf, bool reversible)
+{
     bool success;
     opj_cparameters_t parameters;   // compression parameters
     opj_event_mgr_t event_mgr;      // event manager
     const int cMaxComponents = 5;
 
+    // Check for zero size
+    int width = src_image.getWidth();
+    int height = src_image.getHeight();
+    if (!width || !height)
+    {
+        RexLogic::RexLogicModule::LogError("Zero image dimensions, cannot encode");
+        return false;
+    }
+
+    // Scale the image to next power-of-two size, if necessary
+    // Otherwise old viewer will crash when trying to view the image
+    if (!IsPowerOfTwo(width) || !IsPowerOfTwo(height))
+    {
+        int new_w = GetClosestPowerOfTwo(width);
+        int new_h = GetClosestPowerOfTwo(height);    
+        RexLogic::RexLogicModule::LogInfo("Scaling image from " + Core::ToString<int>(width) + "x" + Core::ToString<int>(height) + " to " +
+            Core::ToString<int>(new_w) + "x" + Core::ToString<int>(new_h));
+        // Uses bilinear filter
+        src_image.resize(new_w, new_h);
+        width = src_image.getWidth();
+        height = src_image.getHeight();
+    }
+ 
+    int num_comps = 3;    
+    if (src_image.getHasAlpha())
+        ++num_comps;
+         
     // Configure the event callbacks (optional).
     memset(&event_mgr, 0, sizeof(opj_event_mgr_t));
     event_mgr.error_handler = J2kErrorCallback;
@@ -86,12 +139,6 @@ bool J2kEncode(QImage q_image, char *outbuf, size_t *size, bool reversible)
     OPJ_COLOR_SPACE color_space = CLRSPC_SRGB;
     opj_image_cmptparm_t cmptparm[cMaxComponents];
     opj_image_t *image = 0;
-    int width = q_image.width();
-    int height = q_image.height();
-    int num_comps = 3;
-
-    if (q_image.hasAlphaChannel())
-        ++num_comps;
 
     memset(&cmptparm[0], 0, cMaxComponents * sizeof(opj_image_cmptparm_t));
     for(int c = 0; c < num_comps; c++)
@@ -115,22 +162,33 @@ bool J2kEncode(QImage q_image, char *outbuf, size_t *size, bool reversible)
     image->y1 = height;
 
     int i = 0;
-    const Core::u8 *bits = q_image.bits();
-    for (int x = height - 1; x >= 0; --x)
+    for (int y = 0; y < height; ++y)
     {
-        for(int y = 0; y < width; ++y)
+        for (int x = 0; x < width; ++x)
         {
-            const Core::u8 *pixel = bits + (x * width + y) * num_comps;
-            for(int c = 0; c < num_comps; ++c)
+            Ogre::ColourValue pixel = src_image.getColourAt(x,y,0);
+            for (int c = 0; c < num_comps; ++c)
             {
-                image->comps[c].data[i] = *pixel;
-                ++pixel;
+                switch (c)
+                {
+                    case 0:
+                    image->comps[c].data[i] = pixel.r * 255.0;
+                    break;
+                    case 1:
+                    image->comps[c].data[i] = pixel.g * 255.0;
+                    break;
+                    case 2:
+                    image->comps[c].data[i] = pixel.b * 255.0;
+                    break;
+                    case 3:
+                    image->comps[c].data[i] = pixel.a * 255.0;
+                    break;
+                }
             }
-            
             ++i;
         }
     }
-
+            
     // Encode the destination image.
 //    int codestream_length;
     opj_cio_t *cio = 0;
@@ -148,22 +206,20 @@ bool J2kEncode(QImage q_image, char *outbuf, size_t *size, bool reversible)
     cio = opj_cio_open((opj_common_ptr)cinfo, NULL, 0);
 
     // Encode the image.
-    success = opj_encode(cinfo, cio, image, parameters.index);
+    success = opj_encode(cinfo, cio, image, NULL);
     if (!success)
     {
         opj_cio_close(cio);
-        std::cerr << "Failed to encode image." << std::endl;
+        opj_image_destroy(image);
+        RexLogic::RexLogicModule::LogInfo("Failed to encode image.");
         return false;
     }
 
     // Write encoded data to output buffer.
-    *size /*codestream_length*/ = cio_tell(cio);
-
-    outbuf = (char*)malloc(*size/*codestream_length*/);
-//    *size_t = codestream_length;
-//outbuf.resize(codestream_length);
-    
-    memcpy(outbuf, cio->buffer, *size/*codestream_length*/);
+    outbuf.resize(cio_tell(cio));
+    std::cout << "Datastream size: " << outbuf.size() << std::endl;
+            
+    memcpy(&outbuf[0], cio->buffer, outbuf.size());
 
     // Close and free the byte stream.
     opj_cio_close(cio);
@@ -181,7 +237,6 @@ bool J2kEncode(QImage q_image, char *outbuf, size_t *size, bool reversible)
     if (parameters.cp_matrice)
         free(parameters.cp_matrice);
 
-    //return outbuf;
     return true;
 }
 
@@ -199,7 +254,7 @@ AssetUploader::~AssetUploader()
 {
 }
 
-void AssetUploader::UploadFile(
+bool AssetUploader::UploadFile(
     const RexTypes::asset_type_t &asset_type,
     const std::string &filename,
     const std::string &name,
@@ -209,7 +264,7 @@ void AssetUploader::UploadFile(
     if (uploadCapability_ == "")
     {
         RexLogicModule::LogError("Upload capability not set! Uploading not possible.");
-        return;
+        return false;
     }
 
     // Create the asset uploading info XML message.
@@ -227,7 +282,7 @@ void AssetUploader::UploadFile(
     if (!request.GetSuccess())
     {
         RexLogicModule::LogError(request.GetReason());
-        return;
+        return false;
     }
 
     std::vector<Core::u8> response;
@@ -236,7 +291,7 @@ void AssetUploader::UploadFile(
     if (response.size() == 0)
     {
         RexLogicModule::LogError("Size of the response data to \"NewFileAgentInventory\" message was zero.");
-        return;
+        return false;
     }
 
     response.push_back('\0');
@@ -248,42 +303,56 @@ void AssetUploader::UploadFile(
     if (upload_url == "")
     {
         RexLogicModule::LogError("Invalid response data for uploading an asset.");
-        return;
+        return false;
     }
 
     // Open the file.
-    std::filebuf *pbuf;
-    size_t size;
-    char *buffer;
+    std::ifstream file(filename.c_str(), std::ios::binary);
+    if (!file.is_open())
+    {
+        RexLogicModule::LogError("Could not open file the file: " + filename + ".");
+        return false;
+    }
+
     std::vector<Core::u8> buffer_vec;
 
-    // If the file is texture, use QImage and J2k encoding.
+    // If the file is texture, use Ogre image and J2k encoding.
     if (asset_type == RexTypes::RexAT_Texture)
     {
-        QImage img(filename.c_str());
-        buffer = (char *)malloc(img.numBytes());
-        bool success = J2kEncode(img, buffer, &size, false);
+        Ogre::Image image;
+        std::vector<Core::u8> src_vec;
+        std::filebuf *pbuf = file.rdbuf();
+        size_t size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
+        src_vec.resize(size);
+        pbuf->pubseekpos(0, std::ios::in);
+        pbuf->sgetn((char *)&src_vec[0], size);
+        file.close();
+        
+        try
+        {
+            Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)&src_vec[0], size, false));
+            image.load(stream);
+        }
+        catch (Ogre::Exception& e)
+        {
+            RexLogicModule::LogError("Error loading image: " + std::string(e.what()));
+            return false;
+        }
+
+        bool success = J2kEncode(image, buffer_vec, false);
         if (!success)
         {
             RexLogicModule::LogError("Could not J2k encode the image file.");
-            return;
+            return false;
         }
     }
     else
     {
         // Other assets can be uploaded as raw data.
-        std::ifstream file(filename.c_str(), std::ios::binary);
-        if (!file.is_open())
-        {
-            RexLogicModule::LogError("Could not open file the file: " + filename + ".");
-            return;
-        }
-
-        pbuf = file.rdbuf();
-        size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
+        std::filebuf *pbuf = file.rdbuf();
+        size_t size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
         buffer_vec.resize(size);
         pbuf->pubseekpos(0, std::ios::in);
-        //buffer = new char[size];
         pbuf->sgetn((char *)&buffer_vec[0], size);
         file.close();
     }
@@ -300,7 +369,7 @@ void AssetUploader::UploadFile(
     if (!request2.GetSuccess())
     {
         RexLogicModule::LogError("HTTP POST asset upload did not succeed. " + request.GetReason());
-        return;
+        return false;
     }
 
     response = request2.GetResponseData();
@@ -308,7 +377,7 @@ void AssetUploader::UploadFile(
     if (response.size() == 0)
     {
         RexLogicModule::LogError("Size of the response data to file upload was zero.");
-        return;
+        return false;
     }
 
     response.push_back('\0');
@@ -321,7 +390,7 @@ void AssetUploader::UploadFile(
     if (asset_id == "" || inventory_id == "")
     {
         RexLogicModule::LogError("Invalid XML response data for uploading an asset.");
-        return;
+        return false;
     }
 
     // Send event, if applicable.
@@ -341,6 +410,7 @@ void AssetUploader::UploadFile(
     }
 
     RexLogicModule::LogInfo("Upload succesfull. Asset id: " + asset_id + ", inventory id: " + inventory_id + ".");
+    return true;
 }
 
 void AssetUploader::UploadFiles(Core::StringList filenames, OpenSimProtocol::InventorySkeleton *inventory)
@@ -359,7 +429,7 @@ void AssetUploader::UploadFiles(Core::StringList filenames, OpenSimProtocol::Inv
         RexTypes::asset_type_t asset_type = RexTypes::GetAssetTypeFromFilename(filename);
         if (asset_type == RexAT_None)
         {
-           RexLogicModule::LogError("Invalid file extension. File can't be uploaded: " + filename);
+            RexLogicModule::LogError("Invalid file extension. File can't be uploaded: " + filename);
             continue;
         }
 
@@ -378,136 +448,9 @@ void AssetUploader::UploadFiles(Core::StringList filenames, OpenSimProtocol::Inv
             RexLogicModule::LogError("Inventory folder for this type of file doesn't exists. File can't be uploaded.");
             continue;
         }
-
-        std::string asset_xml = CreateNewFileAgentInventoryXML(at_str, it_str, folder_id.ToString(), name, description);
-
-        // Post NewFileAgentInventory message informing the server about upcoming asset upload.
-        HttpUtilities::HttpRequest request;
-        request.SetUrl(uploadCapability_);
-        request.SetMethod(HttpUtilities::HttpRequest::Post);
-        request.SetRequestData("application/xml", asset_xml);
-        request.Perform();
-
-        if (!request.GetSuccess())
-        {
-            RexLogicModule::LogError(request.GetReason());
-            return;
-        }
-
-        std::vector<Core::u8> response;
-        response = request.GetResponseData();
-
-        if (response.size() == 0)
-        {
-            RexLogicModule::LogError("Size of the response data to \"NewFileAgentInventory\" message was zero.");
-            return;
-        }
-
-        // Convert the response data to a string.
-        response.push_back('\0');
-        std::string response_str = (char *)&response[0];
-
-        // Parse the upload url from the response.
-        std::map<std::string, std::string> llsd_map = RexTypes::ParseLLSDMap(response_str);
-        std::string upload_url = llsd_map["uploader"];
-        if (upload_url == "")
-        {
-            RexLogicModule::LogError("Invalid response data for uploading an asset.");
-            return;
-        }
-
-        // Open the file.
-        std::filebuf *pbuf;
-        size_t size;
-        char *buffer;
-        std::vector<Core::u8> buffer_vec;
-
-        // If the file is texture, use QImage and J2k encoding.
-        if (asset_type == RexTypes::RexAT_Texture)
-        {
-            QImage img(filename.c_str());
-            buffer = (char *)malloc(img.numBytes());
-            bool success = J2kEncode(img, buffer, &size, false);
-            if (!success)
-            {
-                RexLogicModule::LogError("Could not J2k encode the image file.");
-                continue;
-            }
-        }
-        else
-        {
-            std::ifstream file(filename.c_str(), std::ios::binary);
-            if (!file.is_open())
-            {
-                RexLogicModule::LogError("Could not open file the file: " + filename + ".");
-                continue;
-            }
-
-            pbuf = file.rdbuf();
-            size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
-            pbuf->pubseekpos(0, std::ios::in);
-            //buffer = new char[size];
-            buffer_vec.resize(size);
-            pbuf->sgetn((char *)&buffer_vec[0], size);
-            file.close();
-        }
-
-        // Upload the file.
-        response.clear();
-
-        HttpUtilities::HttpRequest request2;
-        request2.SetUrl(upload_url);
-        request2.SetMethod(HttpUtilities::HttpRequest::Post);
-        request2.SetRequestData("application/octet-stream", buffer_vec);
-        request2.Perform();
         
-        if (!request2.GetSuccess())
-        {
-            RexLogicModule::LogError("HTTP POST asset upload did not succeed. " + request2.GetReason());
-            return;
-        }
-
-        response = request2.GetResponseData();
-
-        if (response.size() == 0)
-        {
-            RexLogicModule::LogError("Size of the response data to file upload was zero.");
-            return;
-        }
-
-        // Convert the response data to a string.
-        response.push_back('\0');
-        response_str.clear();
-        response_str = (char *)&response[0];
-        llsd_map.clear();
-
-        llsd_map = RexTypes::ParseLLSDMap(response_str);
-        std::string asset_id = llsd_map["new_asset"];
-        std::string inventory_id = llsd_map["new_inventory_item"];
-        if (asset_id == "" || inventory_id == "")
-        {
-            RexLogicModule::LogError("Invalid XML response data for uploading an asset.");
-            return;
-        }
-
-        RexLogicModule::LogInfo("Upload succesfull. Asset id: " + asset_id + ", inventory id: " + inventory_id + ".");
-        ++asset_count;
-
-        // Send event, if applicable.
-        Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
-        Core::event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
-        if (event_category != 0)
-        {
-            Inventory::InventoryItemEventData asset_data(Inventory::IIT_Asset);
-            asset_data.id = RexTypes::RexUUID(inventory_id);
-            asset_data.parentId = folder_id;
-            asset_data.assetId = RexTypes::RexUUID(asset_id);
-            asset_data.assetType = asset_type;
-            asset_data.inventoryType = RexTypes::GetInventoryTypeFromAssetType(asset_type);
-            asset_data.name = name;
-            asset_data.description = description;
-            event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &asset_data);
-        }
+        if (UploadFile(asset_type, filename, name, description, folder_id))
+            ++asset_count;
     }
 
     RexLogicModule::LogInfo("Multiupload:" + Core::ToString(asset_count) + " assets succesfully uploaded.");

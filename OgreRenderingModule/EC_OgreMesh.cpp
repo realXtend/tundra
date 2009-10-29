@@ -17,6 +17,7 @@ namespace OgreRenderer
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         entity_(NULL),
+        parent_entity_(NULL),
         adjustment_node_(NULL),
         attached_(false),
         cast_shadows_(false),
@@ -38,13 +39,15 @@ namespace OgreRenderer
         }
     }
     
-    void EC_OgreMesh::SetPlaceable(Foundation::ComponentPtr placeable)
+    void EC_OgreMesh::SetPlaceable(Foundation::ComponentPtr placeable, Scene::Entity* parent_entity)
     {
         if (!dynamic_cast<EC_OgrePlaceable*>(placeable.get()))
         {
-            OgreRenderingModule::LogError("Attempted to set placeable which is not " + NameStatic());
+            OgreRenderingModule::LogError("Attempted to set placeable which is not " + EC_OgrePlaceable::NameStatic());
             return;
         }
+        
+        parent_entity_ = parent_entity;
         
         DetachEntity();
         placeable_ = placeable;
@@ -147,9 +150,8 @@ namespace OgreRenderer
         }
     }
     
-    bool EC_OgreMesh::SetMesh(const std::string& mesh_name, Scene::Entity *parent_entity, bool clone)
+    bool EC_OgreMesh::SetMesh(const std::string& mesh_name, bool clone)
     {
-        assert (parent_entity);
         RemoveMesh();
 
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
@@ -169,7 +171,7 @@ namespace OgreRenderer
             
             entity_->setRenderingDistance(draw_distance_);
             entity_->setCastShadows(cast_shadows_);
-            entity_->setUserAny(Ogre::Any(parent_entity));
+            entity_->setUserAny(Ogre::Any(parent_entity_));
         }
         catch (Ogre::Exception& e)
         {
@@ -181,7 +183,7 @@ namespace OgreRenderer
         return true;
     }
     
-    bool EC_OgreMesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, Scene::Entity *parent_entity, bool clone)
+    bool EC_OgreMesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, bool clone)
     {
         Ogre::SkeletonPtr skel = Ogre::SkeletonManager::getSingleton().getByName(skeleton_name);
         if (skel.isNull())
@@ -190,7 +192,6 @@ namespace OgreRenderer
             return false;
         }
         
-        assert (parent_entity);
         RemoveMesh();
 
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
@@ -221,7 +222,7 @@ namespace OgreRenderer
             
             entity_->setRenderingDistance(draw_distance_);
             entity_->setCastShadows(cast_shadows_);
-            entity_->setUserAny(Ogre::Any(parent_entity));
+            entity_->setUserAny(Ogre::Any(parent_entity_));
         }
         catch (Ogre::Exception& e)
         {
@@ -409,10 +410,7 @@ namespace OgreRenderer
     bool EC_OgreMesh::SetMaterial(Core::uint index, const std::string& material_name)
     {
         if (!entity_)
-        {
-            OgreRenderingModule::LogError("Could not set material " + material_name + ": no mesh");
             return false;
-        }
         
         if (index >= entity_->getNumSubEntities())
         {
@@ -473,8 +471,7 @@ namespace OgreRenderer
                 attachment_entities_[i]->setCastShadows(cast_shadows_);
         }
     }
-    
-    
+       
     Core::uint EC_OgreMesh::GetNumMaterials() const
     {
         if (!entity_)
