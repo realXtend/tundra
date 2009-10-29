@@ -125,6 +125,7 @@ namespace TelepathyIM
 		Tp::registerTypes();
 		Tp::enableDebug(true);
 		Tp::enableWarnings(true);
+//		qRegisterMetaType<Tp::FarsightChannel::Status>(); // for streamed media
 
 		tp_connection_manager_ = Tp::ConnectionManager::create(name);
 		connect(tp_connection_manager_->becomeReady(Tp::ConnectionManager::FeatureCore), SIGNAL( finished(Tp::PendingOperation *) ), SLOT( OnConnectionManagerReady(Tp::PendingOperation*) ));

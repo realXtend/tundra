@@ -2,15 +2,32 @@
 
 namespace TelepathyIM
 {
+	ContactGroup::ContactGroup(const QString &name) : name_(name)
+	{
+
+	}
+
+	ContactGroup::~ContactGroup()
+	{
+		//! This class isn't responsible about dynamic Contact objects
+		//! So we do NOT free momory of those
+
+		for (ContactGroupVector::iterator i = groups_.begin(); i != groups_.end(); ++i)
+		{
+			SAFE_DELETE(*i);
+		}
+	}
+
 	QString ContactGroup::GetName() const
 	{
-		//! @todo IMPLEMENT
-		return "";
+		return name_;
 	}
 
 	void ContactGroup::SetName(const QString &name)
 	{
-		//! @todo IMPLEMENT
+		name_ = name;
+		//! Telepathy doesn't support naming the contact lists
+		//! @todo Check this
 	}
 
 	Communication::ContactVector ContactGroup::GetContacts()
@@ -25,9 +42,12 @@ namespace TelepathyIM
 
 	Communication::ContactGroupVector ContactGroup::GetGroups()
 	{
-		//! @todo IMPLEMENT
-		Communication::ContactGroupVector empty_vector;
-		return empty_vector;
+		Communication::ContactGroupVector groups;
+		for (ContactGroupVector::iterator i = groups_.begin(); i != groups_.end(); ++i)
+		{
+			groups.push_back(*i);
+		}
+		return groups;
 	}
 
 	void ContactGroup::AddContact(Contact* contact)

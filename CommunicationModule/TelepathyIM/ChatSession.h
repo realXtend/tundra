@@ -81,6 +81,7 @@ namespace TelepathyIM
 		virtual void OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &);
 		virtual void OnMessageReceived(const Tp::ReceivedMessage &message);
 		virtual	void OnTextChannelClosed(Tp::PendingOperation* op);
+		virtual void OnChannelPendingMessageRemoved(const Tp::ReceivedMessage &message);
 	};
 	typedef std::vector<ChatSession*> ChatSessionVector;
 	
