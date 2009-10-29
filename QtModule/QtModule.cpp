@@ -70,6 +70,7 @@ void QtModule::Initialize()
     controller_->SetParentWindowSize(QSize(renderer->GetWindowWidth(), renderer->GetWindowHeight()));
     
     //Initialize OISKeyCode map. 
+
     InitializeKeyCodes();
    
     mouse_left_button_down_ = false;
@@ -95,16 +96,62 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
 {
     ///\todo Currently OIS mouse is polled in Update(). Convert all input to come through here.
     /// Requires that we can track when a canvas needs to be redrawn due to visual changes on mouse hover.
-/*  if (category_id == input_event_category_ && event_id == Input::Events::INWORLD_CLICK)
+    
+    if (category_id == input_event_category_ && event_id == Input::Events::INWORLD_CLICK || event_id == Input::Events::INWORLD_CLICK_REL)
     {
-        Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
-        main_view_->InjectMousePress(movement->x_.abs_, movement->y_.abs_);
-    } */
 
-    if (category_id == renderer_event_category_ && event_id == OgreRenderer::Events::WINDOW_RESIZED)
+        boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
+            framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
+
+        boost::shared_ptr<Input::InputModuleOIS> input = inputWeak.lock();
+      
+        if (!input.get())
+            return false;
+
+        Input::Events::Movement* mouse = checked_static_cast<Input::Events::Movement*>(data);
+        QPointF pos = QPointF(mouse->x_.abs_, mouse->y_.abs_);
+        QPoint mousePos = pos.toPoint();
+
+        bool event_handled = false;
+        
+        // GetCanvasAt() - returns canvas which is internal. 
+        
+        if ( controller_->GetCanvasAt(mousePos.x(), mousePos.y()) != 0 && !controller_->GetCanvasAt( mousePos.x(), mousePos.y())->IsHidden())
+            event_handled = true;
+
+        if (input->IsButtonDown(OIS::MB_Left) && !mouse_left_button_down_)
+        {
+            //if (controller_->GetCanvasAt(pos.x(), pos.y()))
+            //    framework_->GetQApplication()->setActiveWindow(controller_->GetCanvasAt(pos.x(), pos.y()));
+            
+            controller_->InjectMousePress(pos.x(), pos.y());
+            
+            if ( controller_->IsKeyboardFocus() && input->GetState() != Input::State_Buffered)
+              input->SetState(Input::State_Buffered);
+            else if ( !controller_->IsKeyboardFocus())  
+                input->SetState(Input::State_Unknown);
+            
+            mouse_left_button_down_ = true;
+           
+        }
+        else if (!input->IsButtonDown(OIS::MB_Left) && mouse_left_button_down_)
+        {
+            controller_->InjectMouseRelease(pos.x(),pos.y());
+            mouse_left_button_down_ = false;
+              
+        }
+        
+        // Is this needed ? 
+        //controller_->Update();     
+
+        return event_handled;    
+
+    } 
+    else if (category_id == renderer_event_category_ && event_id == OgreRenderer::Events::WINDOW_RESIZED)
     {
         // To properly compute the relative overlay sizes and positions for canvases, we need to keep track of the 
         // absolute size of the render window. Update the render window size on each WINDOW_RESIZED message.
+
         OgreRenderer::Events::WindowResized *windowResized = checked_static_cast<OgreRenderer::Events::WindowResized *>(data);
         controller_->SetParentWindowSize(QSize(windowResized->width_, windowResized->height_));
     }
@@ -113,10 +160,12 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
         boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
             framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
         boost::shared_ptr<Input::InputModuleOIS> input = inputWeak.lock();
+        
         if (input.get() == 0)
             return false;
 
         // Get the key event OIS sent and convert it to a Qt key event.
+
         Input::Events::BufferedKey *key = checked_static_cast<Input::Events::BufferedKey* >(data);
 
         Qt::Key value;
@@ -126,7 +175,7 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
             value = Qt::Key_unknown;
 
         ///\todo Are we missing the handling of Ctrl,Alt,AltGr,Win,Shift modifiers on keys?
-//        Qt::KeyboardModifier modifier = Qt::NoModifier;
+        //Qt::KeyboardModifier modifier = Qt::NoModifier;
 
         // Inject the key event to the controller. It will propagate the event to the currently active canvas.
         if (event_id == Input::Events::BUFFERED_KEY_PRESSED)
@@ -146,14 +195,16 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
 boost::weak_ptr<UICanvas> QtModule::CreateCanvas(UICanvas::Mode mode)
 {
     boost::shared_ptr<UICanvas> canvas = controller_->CreateCanvas(mode).lock();
-//    canvas->setParent(framework_->GetApplicationMainWindowQWidget());
+    
+    //canvas->setParent(framework_->GetApplicationMainWindowQWidget());
+    
     return canvas;
 }
 
 void QtModule::AddCanvasToControlBar(boost::shared_ptr<QtUI::UICanvas> canvas, const QString &buttonTitle)
 {
 	if (canvasManager_)
-		canvasManager_->AddCanvasToControlBar(canvas, buttonTitle);
+        canvasManager_->AddCanvasToControlBar(canvas, buttonTitle);
 }
 
 void QtModule::AddCanvasToControlBar(const QString& id, const QString &buttonTitle)
@@ -179,9 +230,10 @@ void QtModule::Update(Core::f64 frametime)
     {
         PROFILE(QtModule_Update);
 
-        // Poll mouse input from OIS. 
+        // Poll mouse move input from OIS. 
     
         ///\todo Remove this in favor of events.
+        
         boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
             framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
 
@@ -194,36 +246,22 @@ void QtModule::Update(Core::f64 frametime)
         QPointF pos = QPointF(mouse.x_.abs_, mouse.y_.abs_);
         QPoint change = lastPos_ - pos.toPoint(); 
 
-        if (input->IsButtonDown(OIS::MB_Left) && !mouse_left_button_down_)
-        {
-//            if (controller_->GetCanvasAt(pos.x(), pos.y()))
-//                framework_->GetQApplication()->setActiveWindow(controller_->GetCanvasAt(pos.x(), pos.y()));
-            controller_->InjectMousePress(pos.x(), pos.y());
-            
-            if ( controller_->IsKeyboardFocus() && input->GetState() != Input::State_Buffered)
-              input->SetState(Input::State_Buffered);
-            else if ( !controller_->IsKeyboardFocus())  
-                input->SetState(Input::State_Unknown);
-            
-            mouse_left_button_down_ = true;
-        }
-        else if (!input->IsButtonDown(OIS::MB_Left) && mouse_left_button_down_)
-        {
-            controller_->InjectMouseRelease(pos.x(),pos.y());
-            mouse_left_button_down_ = false;
-        }
-        else if ( change.manhattanLength() >= 1 )
+        if ( change.manhattanLength() >= 1 )
         {
             controller_->InjectMouseMove(pos.x(),pos.y());
         }    
         lastPos_ = pos.toPoint();
 
+        ///\todo Optimize to redraw only those rectangles that are dirty.
+        controller_->Update();
+        
         PROFILE(QtSceneRender);
 
-        ///\todo Optimize to redraw only those rectangles that are dirty.
+       
            
-        controller_->Update();
+             
     }
+    
     RESETPROFILER;
 }
 

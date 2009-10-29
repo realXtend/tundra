@@ -69,6 +69,12 @@ UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
 {
     setScene(new QGraphicsScene);
 
+    alpha_ = 1.0;
+    current_dur_ = 0.0;
+    fade_ = true;
+    total_dur_ = 0.0;
+
+
     if (mode_ == External) 
     {
         // Deal canvas as normal QWidget. 
@@ -444,9 +450,9 @@ void UICanvas::CreateOgreResources(int width, int height)
     Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(surfaceMaterial.toStdString().c_str(),
                                 Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
-    Ogre::TextureUnitState *state = material->getTechnique(0)->getPass(0)->createTextureUnitState();
+    state_ = material->getTechnique(0)->getPass(0)->createTextureUnitState();
     material->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBF_SOURCE_ALPHA, Ogre::SBF_ONE_MINUS_SOURCE_ALPHA);
-    state->setTextureName(surfaceName_.toStdString().c_str());
+    state_->setTextureName(surfaceName_.toStdString().c_str());
 
     // Generate pixel perfect texture. 
     float relWidth = (float)texture->getWidth()/double(renderWindowSize_.width());
@@ -458,6 +464,35 @@ void UICanvas::CreateOgreResources(int width, int height)
     container_->setColour(Ogre::ColourValue(1,1,1,1));
 }
 
+void UICanvas::Fade(double timeSinceLastFrame )
+{
+    if ( isHidden() && state_ != 0 )
+    {
+      
+       // If fading in increase alpha until it reaches 0.0
+       state_->setAlphaOperation( Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha_);
+       current_dur_ -= timeSinceLastFrame;
+       alpha_ = current_dur_ / total_dur_;
+       if( alpha_ < 0.0 || current_dur_ < 0 )
+       {
+         //overlay_->hide();
+         lastTime_ = 0;
+         fade_ = false;
+       }
+    }
+    else if ( state_ != 0)
+    {
+        // If fading out increase alpha until it reaches 1.0
+        state_->setAlphaOperation( Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha_);
+        current_dur_ += timeSinceLastFrame;
+	    alpha_ = current_dur_ / total_dur_;
+	    if( alpha_ > 1.0 )
+           fade_ = false;
+
+    }
+
+}
+
 void UICanvas::Show()
 {
     if ( mode_ != External)
@@ -467,6 +502,14 @@ void UICanvas::Show()
         for (; iter != scene_widgets_.end(); ++iter)
             (*iter)->show();
             
+        alpha_ = 1.0;
+        total_dur_ = 2.3;
+        current_dur_ = 2.3;
+        //fade_ = true;
+        //state_->setAlphaOperation( Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha_);
+        
+        clock_.start();
+
         container_->show();
         overlay_->show();
       
@@ -519,6 +562,18 @@ void UICanvas::RenderSceneToOgreSurface()
     if (!dirty_ || mode_ == External)
         return;
 
+    if ( fade_ )
+    {
+        int time = clock_.elapsed();
+        double timeSinceLastFrame = (time - lastTime_)/1000.0;
+        lastTime_ = time;
+        Fade(timeSinceLastFrame);
+    }
+  
+       
+
+    
+
     PROFILE(RenderSceneToOgre);
 
     // We draw the GraphicsView area to an offscreen QPixmap and blit that onto the Ogre GPU surface.
@@ -556,6 +611,7 @@ void UICanvas::Render()
 {
     if ( mode_ != External && container_->isVisible())
         RenderSceneToOgreSurface();    
+    
 }
 
 }
