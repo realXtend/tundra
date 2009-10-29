@@ -62,10 +62,10 @@ namespace CommunicationTest
 	{
 		Communication::Credentials jabber_credentials;
 		jabber_credentials.SetProtocol("jabber");
-		jabber_credentials.SetUserID("kuonanoja@jabber.org");
+		jabber_credentials.SetUserID("realxtend@jabber.org");
 		jabber_credentials.SetServer("jabber.org");
 		jabber_credentials.SetPort(5222);
-		jabber_credentials.SetPassword("jabber666");
+		jabber_credentials.SetPassword("");
 
 		OpenConnection(jabber_credentials);
 	}
