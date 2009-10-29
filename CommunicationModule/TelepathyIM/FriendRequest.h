@@ -33,6 +33,7 @@ namespace TelepathyIM
 		State state_;
 		Tp::ContactPtr tp_contact_;
 	};
+	typedef std::vector<FriendRequest*> FriendRequestVector;
 
 } // end of namespace: TelepathyIM
 

@@ -124,8 +124,11 @@ namespace Communication
 	};
 
 	/**
-	 * A participant of one ChatSession object. A participant can be a contact or
-	 * just a nick on chat room
+	 *  A participant of one ChatSession object. A participant can be a contact or
+	 *  just a nick on chat room.
+	 *
+	 *  @todo Add methods to get related scene object if that exist. So that 
+	 *        3D in-world chat UI can be made.
 	 */
 	class ChatSessionParticipantInterface : public QObject
 	{
@@ -141,14 +144,7 @@ namespace Communication
 
 		//! Provides name of this participant
 		virtual QString GetName() const = 0;
-
-//		virtual bool IsSelf();
-
-		//! @return Location of the participant if (s)he are at same world with current user
-		//!         Otherwise return NULL
-		//virtual GetLocation() const = 0;
 	signals:
-		 
 	};
 	typedef std::vector<ChatSessionParticipantInterface*> ChatSessionParticipantVector;
 
@@ -190,16 +186,12 @@ namespace Communication
 		//! Causes Closed signals to be emitted.
 		virtual void Close() = 0;
 
-		//! @return all known participants of the chat session
-		//!         The user itself is not included
+		//! @return all known participants of the chat session inlcuding the user
 		virtual ChatSessionParticipantVector GetParticipants() const = 0;
 
 		//! @return the message history of this chat sessions
 		virtual ChatMessageVector GetMessageHistory() = 0;
 
-		//! @return True if the chat session is public like chat room or channel.
-		//!         Otherwise return False
-		//virtual bool IsPublic() = 0;
 	signals:
 		//! @todo REMOVE THIS METHOD
 		void MessageReceived(const QString &text, const Communication::ChatSessionParticipantInterface& participant);
@@ -209,7 +201,28 @@ namespace Communication
 		void Opened(ChatSessionInterface*);
 		void Closed(ChatSessionInterface*);
 	};
-//	typedef boost::shared_ptr<ChatSessionInterface> ChatSessionPtr;
+
+	/**
+	 * @todo Design issue: Do we need two separaed participant classes?
+	 *
+	 */
+	class VoiceSessionParticipantInterface : public QObject
+	{
+		Q_OBJECT
+	public:
+		//! @return contact object if the participant have one
+		//          otherwise return a NULL pointer 
+		virtual ContactInterface* GetContact() const = 0;
+
+		//! @return id of this participant 
+		virtual QString GetID() const = 0;
+
+		//! Provides name of this participant
+		virtual QString GetName() const = 0;
+	signals:
+
+	};
+	typedef std::vector<VoiceSessionParticipantInterface*> VoiceSessionParticipantVector;
 
 	/**
 	 *  \NOTE This is interface is under construction
@@ -220,22 +233,21 @@ namespace Communication
 	{
 		Q_OBJECT
 	public:
-		virtual void Close() = 0;
-	};
+		enum State { STATE_INITIALIZING, STATE_OPEN, STATE_CLOSED, STATE_ERROR };
 
-	///**
-	// *  A chat session request received from IM server.
-	// *  User can accept or reject the request
-	// *  the ChatSession object is given if Accept method is called
-	// */
-	//class ChatSessionRequestInterface : public QObject
-	//{
-	//	Q_OBJECT
-	//public:
-	//	virtual Communication::ChatSessionParticipantInterface* GetOriginator();
-	//	virtual Communication::ChatSessionInterface* Accpet();
-	//	virtual void Reject();
-	//};
+		//! @return State of the session
+		virtual State GetState() const = 0;
+
+		//! @return all known participants of the chat session inlcuding the user
+		virtual VoiceSessionParticipantVector GetParticipants() const = 0;
+
+		virtual void Close() = 0;
+	signals:
+		void ParticipantJoined(const VoiceSessionParticipantInterface& participant);
+		void ParticipantLeft(const VoiceSessionParticipantInterface& participant);
+		void Opened(ChatSessionInterface*);
+		void Closed(VoiceSessionInterface*);
+	};
 
 	/**
 	 * A received friend request. This can be accepted or rejected. If Accpet() methos is called1
@@ -320,6 +332,10 @@ namespace Communication
 		//! Open new chat session to given room
 		virtual ChatSessionInterface* OpenChatSession(const QString &channel) = 0;
 
+		//! OPen a new voice chat session with given contact
+		//! @param contact Voice chat partner 
+		virtual VoiceSessionInterface* OpenVoiceSession(const ContactInterface &contact) = 0;
+
 		//! Send a friend request to target address
 		virtual void SendFriendRequest(const QString &target, const QString &message) = 0;
 
@@ -352,7 +368,10 @@ namespace Communication
 		void ConnectionError(Communication::ConnectionInterface& connection);
 
 		//! When a chat session is initialized by IM server
-		void ChatSessionReceived(Communication::ChatSessionInterface& chat);
+		void ChatSessionReceived(Communication::ChatSessionInterface& session);
+
+		//! When a voice session is initialized by IM server
+		void VoiceSessionReceived(Communication::VoiceSessionInterface& session);
 
 		//! When a new contact is added to contact list
 		//! Basically this happens when someone accept friend request

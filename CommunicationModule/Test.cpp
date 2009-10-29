@@ -4,9 +4,56 @@
 
 namespace CommunicationTest
 {
-	Test::Test(): jabber_connection_(0), opensim_connection_(0)
+	Test::Test(Foundation::Framework* framework): framework_(framework), jabber_connection_(0), opensim_connection_(0)
 	{
-		
+			boost::shared_ptr<Console::CommandService> console_service = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
+        if (console_service)
+        {
+			console_service->RegisterCommand(Console::CreateCommand("comm test", "Run a test for communication service", Console::Bind(this, &Test::OnConsoleCommand)));
+		}
+	
+	}
+
+	Console::CommandResult Test::OnConsoleCommand(const Core::StringVector &params)
+	{
+		if (params.size() != 1)
+		{
+			ShowHelp();
+			return Console::ResultSuccess("");
+		}
+
+		QString test_id = QString(params[0].c_str());
+		switch( test_id.toInt() )
+		{
+			case 1: RunTest1();break;
+			case 2: RunTest2();break;
+			case 3: RunTest3();break;
+			case 4: RunTest4();break;
+			case 5: RunTest5();break;
+			case 6: RunTest6();break;
+			case 0: RunTest0();break;
+		}
+		return Console::ResultSuccess("");
+	}
+
+	void Test::ShowHelp()
+	{
+		LogInfo("Test functions for Communication module:");
+		LogInfo("1 .. Login to jabber server, fetch friend list and send a text message to one contact.");
+		LogInfo("2 .. Send a text message to Opensim in-world chat.");
+		LogInfo("3 .. Send a text message to all jabber contacts");
+		LogInfo("4 .. Start voice chat with on contact");
+		LogInfo("5 .. Send a friend request to jabber account");
+		LogInfo("6 .. Send a text message to jabber chat room");
+		LogInfo("0 .. Close jabber connection.");
+		if (jabber_connection_ == 0)
+			LogInfo("* Jabber connection is closed.");
+		else
+			LogInfo("* Jabber connection is open");
+		if (opensim_connection_ == 0)
+			LogInfo("* Opensim connection is closed.");
+		else
+			LogInfo("* Opensim connection is open");
 	}
 
 	void Test::RunTest1()
@@ -51,6 +98,99 @@ namespace CommunicationTest
 		}
 	}
 
+	void Test::RunTest3()
+	{
+		if (jabber_connection_ == 0)
+		{
+			LogError("Jabber connection is not open!");
+			return;
+		}
+
+		try
+		{
+			Communication::ContactVector contacts = jabber_connection_->GetContacts().GetContacts();
+			for (Communication::ContactVector::iterator i = contacts.begin(); i != contacts.end(); ++i)
+			{
+				Communication::ChatSessionInterface* chat = jabber_connection_->OpenPrivateChatSession(**i);
+				chat->SendMessage("Hello world");
+			}
+		}
+		catch(Core::Exception &e)
+		{
+			LogError(e.what());
+		}
+	}
+
+	void Test::RunTest4()
+	{
+		if (jabber_connection_ == 0)
+		{
+			LogError("Jabber connection is not open!");
+			return;
+		}
+
+		try
+		{
+			Communication::ContactVector contacts = jabber_connection_->GetContacts().GetContacts();
+			if (contacts.size() == 0)
+			{
+				LogError("The jabber contact list is empty!");
+				return;
+			}
+			Communication::VoiceSessionInterface* voice = jabber_connection_->OpenVoiceSession(*(contacts[0]));
+			voice->Close();
+		}
+		catch(Core::Exception &e)
+		{
+			LogError(e.what());
+		}
+	}
+
+	void Test::RunTest5()
+	{
+		if (jabber_connection_ == 0)
+		{
+			LogError("Jabber connection is not open!");
+			return;
+		}
+		jabber_connection_->SendFriendRequest("rex_user_1@jabber.org", "Test 5");
+	}
+
+	void Test::RunTest6()
+	{
+		if (jabber_connection_ == 0)
+		{
+			LogError("Jabber connection is not open!");
+			return;
+		}
+		try
+		{
+			Communication::ChatSessionInterface* chat = jabber_connection_->OpenChatSession("my_test_123@conference.jabber.org");
+			chat->SendMessage("Hello world!");
+		}
+		catch(Core::Exception &e)
+		{
+			LogError(e.what());
+		}
+	}
+
+	void Test::RunTest0()
+	{
+		if (jabber_connection_ == 0)
+		{
+			LogError("Jabber connection is not open!");
+			return;
+		}
+		try
+		{
+			jabber_connection_->Close();
+		}
+		catch(Core::Exception &e)
+		{
+			LogError(e.what());
+		}
+	}
+
 	void Test::OpenConnection(Communication::CredentialsInterface& credentials)
 	{
 		try
@@ -80,13 +220,10 @@ namespace CommunicationTest
 				QString name = (*i)->GetName();
 				QString message = QString("Friend: ").append(name);
 				LogInfo(message.toStdString());
-				if (name.compare("kuonanoja") == 0)
-				{
-					Communication::ChatSessionInterface* chat = jabber_connection_->OpenPrivateChatSession(**i);
-					chat->SendMessage("Hello world!");
-				}
+
+				//Communication::ChatSessionInterface* chat = jabber_connection_->OpenPrivateChatSession(**i);
+				//chat->SendMessage("Hello world!");
 			}
-//			jabber_connection_->Close();
 		}
 		catch(Core::Exception &e)
 		{

@@ -138,6 +138,12 @@ namespace OpensimIM
 		public_chat_sessions_.push_back(session);
 		return session;
 	}
+
+	Communication::VoiceSessionInterface* Connection::OpenVoiceSession(const Communication::ContactInterface &contact)
+	{
+		//! @todo IMPLEMENT
+		return NULL;
+	}
 	
 	void Connection::SendFriendRequest(const QString &target, const QString &message)
 	{

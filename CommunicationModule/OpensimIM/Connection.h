@@ -76,6 +76,8 @@ namespace OpensimIM
 		//! Open new chat session to given room
 		virtual Communication::ChatSessionInterface* OpenChatSession(const QString &channel);
 
+		virtual Communication::VoiceSessionInterface* OpenVoiceSession(const Communication::ContactInterface &contact);
+
 		//! Send a friend request to target address
 		virtual void SendFriendRequest(const QString &target, const QString &message);
 

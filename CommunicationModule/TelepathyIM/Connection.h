@@ -11,12 +11,17 @@
 #include "Contact.h"
 #include "ContactGroup.h"
 #include "ChatSession.h"
+#include "FriendRequest.h"
+#include "OutgoingFriendRequest.h"
+#include "VoiceSession.h"
 
 namespace TelepathyIM
 {
 	/**
-	 *  Connection to IM server using Telepathy framework
+	 *  Do NOT use this class directly is it used by communication module
 	 *
+	 *  Connection to IM server using Telepathy framework
+	 *  Current implementation uses gabble connection manager and provides jabber protocol
 	 *
 	 */
 	class Connection : public Communication::ConnectionInterface
@@ -66,6 +71,10 @@ namespace TelepathyIM
 		//! Open new chat session to given room
 		virtual Communication::ChatSessionInterface* OpenChatSession(const QString &channel);
 
+		//! OPen a new voice chat session with given contact
+		//! @param contact Voice chat partner 
+		virtual Communication::VoiceSessionInterface* OpenVoiceSession(const Communication::ContactInterface &contact);
+
 		//! Send a friend request to target address
 		virtual void SendFriendRequest(const QString &target, const QString &message);
 
@@ -102,6 +111,9 @@ namespace TelepathyIM
 		ContactVector contacts_;
 		ChatSessionVector public_chat_sessions_;
 		ChatSessionVector private_chat_sessions_;
+		VoiceSessionVector voice_sessions_;
+		FriendRequestVector received_friend_requests_;
+		OutgoingFriendRequestVector sent_friend_requests_;
 
 	protected slots:
 		virtual void OnConnectionCreated(Tp::PendingOperation *op);
@@ -112,6 +124,7 @@ namespace TelepathyIM
 		virtual void OnConnectionReady(Tp::PendingOperation *op);
 		virtual	void OnPresencePublicationRequested(const Tp::Contacts &contacts);
 		virtual void OnTpConnectionStatusChanged(uint newStatus, uint newStatusReason);
+		virtual void OnSendingFriendRequestError(OutgoingFriendRequest*);
 	};
 	typedef std::vector<Connection*> ConnectionVector;
 

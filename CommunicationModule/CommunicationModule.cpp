@@ -42,12 +42,7 @@ namespace Communication
 
 		// Test
 
-		test_ = new CommunicationTest::Test();
-		boost::shared_ptr<Console::CommandService> console_service = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
-        if (console_service)
-        {
-			console_service->RegisterCommand(Console::CreateCommand("comm test", "Run a test for communication service", Console::Bind(this, &CommunicationModule::Test)));
-		}
+		test_ = new CommunicationTest::Test(framework_);
 
 		LogInfo("Initialized.");
 	}
@@ -74,21 +69,6 @@ namespace Communication
 			}
 		}
 
-	}
-
-	Console::CommandResult CommunicationModule::Test(const Core::StringVector &params)
-	{
-		if (params.size() != 1)
-		{
-			return Console::ResultFailure("Wrong sumner of arguments!\nUse: comm test(T) where T is the id of the test.");
-		}
-		QString test_id = QString(params[0].c_str());
-		switch( test_id.toInt() )
-		{
-			case 1: test_->RunTest1();break;
-			case 2: test_->RunTest2();break;
-		}
-		return Console::ResultSuccess("");
 	}
 
 	void CommunicationModule::Uninitialize()

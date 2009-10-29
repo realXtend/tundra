@@ -11,10 +11,9 @@ namespace CommunicationTest
 	/**
 	 *  Place for tests for communication framework
 	 *
-	 *  Current tests:
-	 *  1: Login to jabber server, fetch contact list and send a text message to first contact on list
-	 *  2: Send "Hello world!" to public in-world chat (Opensim)
+	 *  Idea is keep tests in one place and offer examples how to use Communication classes.
 	 *
+	 *  To see current test, type "comm test" in console.
 	 */ 
 	class Test : public QObject
 	{
@@ -23,18 +22,38 @@ namespace CommunicationTest
 		static const std::string NameStatic() { return "Communication"; } // for logging functionality
 
 	public:
-		Test();
-		//! Test Telepathy IM
-		//! Login to given jabber server
-		//! Fetch contact list 
-		//! Send a text message to first contact on the list
+		Test(Foundation::Framework* framework);
+
+		//! Console command handler
+		Console::CommandResult OnConsoleCommand(const Core::StringVector &params);
+
+		//! Show help text to console
+		virtual void ShowHelp();
+
+		//! Connect to jabber server
 		virtual void RunTest1();
 
 		//! Send "Hello world!" to public in-world chat (Opensim)
 		virtual void RunTest2();
+
+		//! Send text message to all jabber contacts
+		virtual void RunTest3();
+
+		//! Start voice chat with first contact
+		virtual void RunTest4();
+
+		//! Send a friend request to jabber account
+		virtual void RunTest5();
+
+		//! Send a text message to jabber chat room
+		virtual void RunTest6();
+
+		//! Closes the jabber connection
+		virtual void RunTest0();
+
 	protected:
 		virtual void OpenConnection(Communication::CredentialsInterface& crederntials);
-
+		Foundation::Framework* framework_;
 		Communication::ConnectionInterface* jabber_connection_;
 		Communication::ConnectionInterface* opensim_connection_;
 

@@ -17,6 +17,10 @@ namespace TelepathyIM
 	class ContactGroup : public Communication::ContactGroupInterface
 	{
 	public:
+		ContactGroup(const QString &name);
+
+		virtual ~ContactGroup();
+
 		//! Provides name of this contact group
 		virtual QString GetName() const;
 
@@ -32,6 +36,7 @@ namespace TelepathyIM
 
 		virtual void AddContact(Contact* contact);
 	protected:
+		QString name_;
 		ContactVector contacts_;
 		ContactGroupVector groups_;
 	};

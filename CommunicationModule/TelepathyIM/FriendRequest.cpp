@@ -8,14 +8,12 @@ namespace TelepathyIM
 	
 	QString FriendRequest::GetOriginatorName() const
 	{
-		//! @todo IMPLEMENT
-		return "";
+		return tp_contact_->alias();
 	}
 
 	QString FriendRequest::GetOriginatorID() const
 	{
-		//! @todo IMPLEMENT
-		return "";
+		return tp_contact_->id();
 	}
 
 	Communication::FriendRequestInterface::State FriendRequest::GetState() const
@@ -49,14 +47,13 @@ namespace TelepathyIM
 	void FriendRequest::OnPresencePublicationAuthorized(Tp::PendingOperation* op)
 	{
 		//! @todo IMPLEMENT
+		//!       * log error messages if operation wasn't success
 	}
 
 	void FriendRequest::OnPresenceSubscriptionResult(Tp::PendingOperation* op)
 	{
 		//! @todo IMPLEMENT
-
-		// Cancel then friendship because the contact doesn't allow to subscipe own presence.
+		//        * Cancel then friendship because the contact doesn't allow to subscipe own presence.
 	}
-
 
 } // end of namespace: TelepathyIM
