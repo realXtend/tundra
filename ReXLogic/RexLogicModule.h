@@ -179,20 +179,6 @@ namespace RexLogic
         //! logout from server and delete current scene
         void LogoutAndDeleteWorld();
 
-        /// Initializes the inventory view/data model
-        void InitInventoryView();
-
-        /// Initializes the inventory view/data model
-        void ResetInventoryView();
-
-        /// Shows/toggles the inventory window.
-        ///\note Temporarily here.
-        void ShowInventory();
-
-        /// Hides inventory window.
-        ///\note Temporarily here.
-        void HideInventory();
-
         /// Shows (or rather toggles) the avatar editor window.
         void ShowAvatarEditor();
 

@@ -12,9 +12,8 @@ namespace Inventory
 {
     namespace Events
     {
-        static const Core::event_id_t EVENT_SHOW_INVENTORY= 0x01;
-        static const Core::event_id_t EVENT_HIDE_INVENTORY = 0x02;
-        static const Core::event_id_t EVENT_INVENTORY_DESCENDENT = 0x03;
+        static const Core::event_id_t EVENT_INVENTORY_DESCENDENT = 0x01;
+        static const Core::event_id_t EVENT_INVENTORY_UPLOAD = 0x02;
     }
 
     enum ItemType
@@ -36,6 +35,14 @@ namespace Inventory
         asset_type_t assetType;
         std::string name;
         std::string description;
+    };
+
+    class InventoryUploadEventData : public Foundation::EventDataInterface
+    {
+    public:
+        InventoryUploadEventData() {}
+        virtual ~InventoryUploadEventData() {}
+        Core::StringList filenames;
     };
 }
 

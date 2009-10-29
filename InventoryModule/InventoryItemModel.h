@@ -2,19 +2,20 @@
 
 /**
  *  @file InventoryItemModel.h
- *  @brief Common view for inventory different inventory data models.
+ *  @brief Common inventory item tree model for different inventory data models.
  */
 
 #ifndef incl_InventoryModule_InventoryItemModel_h
 #define incl_InventoryModule_InventoryItemModel_h
 
-#include "InventoryFolder.h"
-#include "InventoryAsset.h"
+#include "AbstractInventoryItem.h"
 #include "NetworkEvents.h"
 #include "InventoryEvents.h"
 
 #include <QAbstractItemModel>
 #include <QModelIndex>
+
+class QMimeData;
 
 namespace Inventory
 {
@@ -39,7 +40,13 @@ namespace Inventory
         Qt::DropActions supportedDropActions() const;
 
         /// QAbstractItemModel override.
-//        QStringList mimeTypes() const;
+        QStringList mimeTypes() const;
+
+        /// QAbstractItemModel override.
+        QMimeData *mimeData(const QModelIndexList &indexes) const;
+
+        /// QAbstractItemModel override.
+        bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
 
         /// QAbstractItemModel override.
         QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
@@ -54,12 +61,16 @@ namespace Inventory
         QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
         /// QAbstractItemModel override.
-        /// Used for inserting new childs to the inventory tree model.
+        /// Used for inserting new bulk childs ("New Folder") to the inventory tree model.
         bool insertRows(int position, int rows, const QModelIndex &parent);
 
         /// Used for inserting new childs with spesific data to the inventory tree model.
         /// @param folder_data Data for the new folder.
         bool insertRows(int position, int rows, const QModelIndex &parent, InventoryItemEventData *item_data);
+
+        /// Used when moving items in inventory model.
+        /// @param Pointer to the item which is being moved.
+        bool insertRows(int position, int rows, const QModelIndex &parent, AbstractInventoryItem* item);
 
         /// QAbstractItemModel override.
         /// Used for removing childs to the inventory tree model.
@@ -75,7 +86,7 @@ namespace Inventory
         int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
         /// @return Pointer to inventory data model.
-        AbstractInventoryDataModel *GetInventory(){ return dataModel_; }
+        AbstractInventoryDataModel *GetInventory() const { return dataModel_; }
 
         /// Requests inventory descendents from server.
         /// @param index Model index.
@@ -91,6 +102,9 @@ namespace Inventory
 
         /// Data model pointer.
         AbstractInventoryDataModel *dataModel_;
+
+        bool itemMoveFlag_;
+        int movedItemsCount_;
     };
 }
 

@@ -18,7 +18,8 @@ namespace Inventory
 
 OpenSimInventoryDataModel::OpenSimInventoryDataModel(RexLogic::RexLogicModule *rex_logic_module) :
     rexLogicModule_(rex_logic_module),
-    rootFolder_(0)
+    rootFolder_(0),
+    worldLibraryOwnerId_("")
 {
     SetupModelData(rexLogicModule_->GetInventory().get());
 }
@@ -34,17 +35,32 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetFirstChildFolderByName(cons
     return rootFolder_->GetFirstChildFolderByName(searchName);
 }
 
-AbstractInventoryItem *OpenSimInventoryDataModel::GetChildFolderByID(const QString &searchId) const
+AbstractInventoryItem *OpenSimInventoryDataModel::GetChildFolderById(const QString &searchId) const
 {
-    return rootFolder_->GetChildFolderByID(searchId);
+    return rootFolder_->GetChildFolderById(searchId);
 }
 
-AbstractInventoryItem *OpenSimInventoryDataModel::GetMyInventoryFolder() const
+AbstractInventoryItem *OpenSimInventoryDataModel::GetChildAssetById(const QString &searchId) const
+{
+    return rootFolder_->GetChildAssetById(searchId);
+}
+
+AbstractInventoryItem *OpenSimInventoryDataModel::GetChildById(const QString &searchId) const
+{
+    return rootFolder_->GetChildById(searchId);
+}
+
+InventoryFolder *OpenSimInventoryDataModel::GetMyInventoryFolder() const
 {
     return rootFolder_->GetFirstChildFolderByName("My Inventory");
 }
 
-AbstractInventoryItem *OpenSimInventoryDataModel::GetTrashFolder() const
+InventoryFolder *OpenSimInventoryDataModel::GetOpenSimLibraryFolder() const
+{
+    return rootFolder_->GetFirstChildFolderByName("OpenSim Library");
+}
+
+InventoryFolder *OpenSimInventoryDataModel::GetTrashFolder() const
 {
     return rootFolder_->GetFirstChildFolderByName("Trash");
 }
@@ -52,14 +68,21 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetTrashFolder() const
 AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewFolder(const QString &id, AbstractInventoryItem &parentFolder,
     const QString &name, const bool &notify_server)
 {
+    InventoryFolder *parent = dynamic_cast<InventoryFolder *>(&parentFolder);
+    if (!parent)
+        return 0;
+
     // Return an existing folder if one with the given id is present.
-    InventoryFolder *existing = dynamic_cast<InventoryFolder *>(GetChildFolderByID(id));
+    InventoryFolder *existing = dynamic_cast<InventoryFolder *>(parent->GetChildFolderById(id));
     if (existing)
         return existing;
 
     // Create a new folder.
-    InventoryFolder *parent = static_cast<InventoryFolder *>(&parentFolder);
-    InventoryFolder *newFolder = new InventoryFolder(id, name, true, parent);
+    InventoryFolder *newFolder = new InventoryFolder(id, name, parent);
+
+    if (GetOpenSimLibraryFolder())
+        if (parent->IsDescendentOf(GetOpenSimLibraryFolder()))
+            newFolder->SetIsLibraryAsset(true);
 
     // Inform the server.
     // We don't want to notify server if we're creating folders "ordered" by server via InventoryDescecendents packet.
@@ -79,35 +102,55 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewAsset(
 {
     // Return an existing asset if one with the given id is present.
     InventoryFolder *parent = static_cast<InventoryFolder *>(&parentFolder);
-    InventoryAsset *existing = dynamic_cast<InventoryAsset *>(parent->GetChildAssetByID(inventory_id));
+    if (!parent)
+        return 0;
+
+    InventoryAsset *existing = dynamic_cast<InventoryAsset *>(parent->GetChildAssetById(inventory_id));
     if (existing)
         return existing;
 
     // Create a new asset.
     InventoryAsset *newAsset = new InventoryAsset(inventory_id, asset_id, name, parent);
 
+    if (parent->IsDescendentOf(GetOpenSimLibraryFolder()))
+        newAsset->SetIsLibraryAsset(true);
+
     return parent->AddChild(newAsset);
 }
 
 void OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem *folder)
 {
-    InventoryFolder *requestedFolder = static_cast<InventoryFolder *>(folder);
-
-    rexLogicModule_->GetServerConnection()->SendFetchInventoryDescendentsPacket(RexUUID(folder->GetID().toStdString()),
-        RexUUID(folder->GetParent()->GetID().toStdString()), 0 , true, true);
-
-/*
-    rexLogicModule_->GetServerConnection()->SendFetchInventoryDescendentsPacket(RexUUID(folder->GetID().toStdString()),
-        RexUUID(folder->GetParent()->GetID().toStdString()), 0 , false, true);
-*/
+    if (folder->IsDescendentOf(GetOpenSimLibraryFolder()))
+        rexLogicModule_->GetServerConnection()->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(folder->GetID()),
+            QSTR_TO_UUID(worldLibraryOwnerId_));
+    else
+        rexLogicModule_->GetServerConnection()->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(folder->GetID()));
 }
 
-void OpenSimInventoryDataModel::NotifyServerAboutItemRemoval(AbstractInventoryItem *item)
+void OpenSimInventoryDataModel::NotifyServerAboutItemMove(AbstractInventoryItem *item)
+{
+    if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
+        rexLogicModule_->GetServerConnection()->SendMoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
+            QSTR_TO_UUID(item->GetParent()->GetID()));
+
+    if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
+        rexLogicModule_->GetServerConnection()->SendMoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()),
+            QSTR_TO_UUID(item->GetParent()->GetID()), item->GetName().toStdString());
+}
+
+void OpenSimInventoryDataModel::NotifyServerAboutItemCopy(AbstractInventoryItem *item)
+{
+    ///\todo
+    if (item->GetItemType() != AbstractInventoryItem::Type_Asset)
+        return;
+}
+
+void OpenSimInventoryDataModel::NotifyServerAboutItemRemove(AbstractInventoryItem *item)
 {
     // When deleting items, we move them first to the Trash folder.
     // If the folder is already in the trash folder, delete it for good.
     ///\todo Move the "deleted" folder to the Trash folder and update the view.
-    InventoryFolder *trashFolder = static_cast<InventoryFolder *>(GetTrashFolder());
+    InventoryFolder *trashFolder = GetTrashFolder();
 
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
     {
@@ -130,7 +173,7 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemRemoval(AbstractInventoryIt
     {
         if (!trashFolder)
         {
-            InventoryModule::LogError("Can't find Trash folder. Moving folder to Trash not possible. Deleting asset.");
+            InventoryModule::LogError("Can't find Trash folder. Moving asset to Trash not possible. Deleting asset.");
             rexLogicModule_->GetServerConnection()->SendRemoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()));
             return;
         }
@@ -168,9 +211,9 @@ void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
     OpenSimProtocol::InventoryFolderSkeleton *folder_skeleton)
 {
     using namespace OpenSimProtocol;
-    
-    InventoryFolder *newFolder= new InventoryFolder(STD_TO_QSTR(folder_skeleton->id.ToString()),
-        STD_TO_QSTR(folder_skeleton->name), folder_skeleton->editable, parent_folder);
+
+    InventoryFolder *newFolder = new InventoryFolder(STD_TO_QSTR(folder_skeleton->id.ToString()),
+        STD_TO_QSTR(folder_skeleton->name), parent_folder, folder_skeleton->editable);
     //if (!folder_skeleton->HasChildren())
     newFolder->SetDirty(true);
 
@@ -178,7 +221,17 @@ void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
         rootFolder_ = newFolder;
 
     if (parent_folder)
+    {
         parent_folder->AddChild(newFolder);
+
+        if (newFolder == GetOpenSimLibraryFolder())
+            newFolder->SetIsLibraryAsset(true);
+
+        if (GetOpenSimLibraryFolder())
+            if (newFolder->IsDescendentOf(GetOpenSimLibraryFolder()))
+                newFolder->SetIsLibraryAsset(true);
+        // Flag Library folders. They have some special behavior.
+    }
 
     InventoryFolderSkeleton::FolderIter iter = folder_skeleton->children.begin();
     while(iter != folder_skeleton->children.end())
@@ -197,6 +250,8 @@ void OpenSimInventoryDataModel::SetupModelData(OpenSimProtocol::InventorySkeleto
         InventoryModule::LogError("Couldn't find inventory root folder skeleton. Can't create OpenSim inventory data model.");
         return;
     }
+
+    worldLibraryOwnerId_ = STD_TO_QSTR(inventory_skeleton->worldLibraryOwnerId.ToString());
 
     CreateNewFolderFromFolderSkeleton(0, root_skel);
 }

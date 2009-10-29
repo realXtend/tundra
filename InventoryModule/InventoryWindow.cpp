@@ -7,6 +7,7 @@
 #include "QtModule.h"
 #include "RexLogicModule.h"
 #include "InventoryEvents.h"
+#include "QtUtils.h"
 
 #include <QtUiTools>
 #include <QFile>
@@ -33,9 +34,12 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework, RexLogic::Rex
     QObject::connect(buttonClose_, SIGNAL(clicked()), this, SLOT(Hide()));
 
     // Add local widget to canvas, setup initial size and title and show canvas
-    canvas_->SetCanvasSize(300, 275);
+    canvas_->SetCanvasSize(305, 200);
     canvas_->SetCanvasWindowTitle(QString("Inventory"));
     canvas_->AddWidget(inventoryWidget_);
+
+    // Add to control bar
+    qtModule_->AddCanvasToControlBar(canvas_, QString("Inventory"));
 }
 
 // virtual
@@ -83,7 +87,7 @@ void InventoryWindow::InitOpenSimInventoryTreeModel()
 
 void InventoryWindow::ResetInventoryTreeModel()
 {
-    ///\todo Crashes here if user quits viewer with "exit" console command.while logged in.
+    ///\todo Crashes here if user quits viewer with "exit" console command.or clicks main window "X" while logged in.
     SAFE_DELETE(inventoryItemModel_);
 }
 
@@ -110,8 +114,6 @@ void InventoryWindow::HandleInventoryDescendent(InventoryItemEventData *item_dat
             return;
 
     // Create new children (row) to the inventory view.
-    //inline bool QAbstractItemModel::insertRow(int arow, const QModelIndex &aparent) { return insertRows(arow, 1, aparent); }
-    //if (!inventoryItemModel_->insertRow(0, index))
     if (!inventoryItemModel_->insertRows(index.row(), 1, index, item_data))
         return;
 
@@ -133,6 +135,8 @@ void InventoryWindow::AddFolder()
 {
     QModelIndex index = treeView_->selectionModel()->currentIndex();
     QAbstractItemModel *model = treeView_->model();
+
+    FetchInventoryDescendents(index);
 
     // Next few lines not probably needed, but saved in case we will have multiple columns in the near future.
     if (model->columnCount(index) == 0)
@@ -166,6 +170,22 @@ void InventoryWindow::RenameItem()
         treeView_->edit(index);
 }
 
+void InventoryWindow::Upload()
+{
+    Core::StringList filenames = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
+    if (filenames.empty())
+        return;
+
+    InventoryUploadEventData data;
+    data.filenames = filenames;
+
+    Foundation::EventManagerPtr eventManager = framework_->GetEventManager();
+    Core::event_category_id_t event_category = eventManager->QueryEventCategory("Inventory");
+
+    if (event_category != 0)
+        eventManager->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_UPLOAD, &data);
+}
+
 void InventoryWindow::CloseInventoryWindow()
 {
     if (qtModule_.get() != 0)
@@ -190,12 +210,13 @@ void InventoryWindow::InitInventoryWindow()
     treeView_ = inventoryWidget_->findChild<QTreeView*>("treeView");
 
     // Connect signals
-    QObject::connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(FetchInventoryDescendents(const QModelIndex &)));
+    //QObject::connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(FetchInventoryDescendents(const QModelIndex &)));
     QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(FetchInventoryDescendents(const QModelIndex &)));
 
     QObject::connect(buttonAddFolder_, SIGNAL(clicked(bool)), this, SLOT(AddFolder()));
     QObject::connect(buttonDeleteItem_, SIGNAL(clicked(bool)), this, SLOT(DeleteItem()));
     QObject::connect(buttonRename_, SIGNAL(clicked(bool)), this, SLOT(RenameItem()));
+    QObject::connect(buttonUpload_, SIGNAL(clicked(bool)), this, SLOT(Upload()));
 }
 
 } // namespace Inventory

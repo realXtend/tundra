@@ -68,7 +68,7 @@ bool RexUUID::IsNull() const
 
 void RexUUID::Random()
 {
-    for (int i = 0; i < cSizeBytes; ++i)
+    for(int i = 0; i < cSizeBytes; ++i)
         data[i] = rand() & 0xff;
 }
 

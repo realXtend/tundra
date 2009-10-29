@@ -12,19 +12,32 @@
 namespace Inventory
 {
 
-InventoryAsset::InventoryAsset(
-    const QString &id,
-    const QString &asset_reference,
-    const QString &name,
-    InventoryFolder *parent) :
-    AbstractInventoryItem(Type_Asset, id, name, parent),
-    assetReference_(asset_reference)
+InventoryAsset::InventoryAsset(const QString &id, const QString &asset_reference,const QString &name, InventoryFolder *parent) :
+    AbstractInventoryItem(id, name, parent), itemType_(AbstractInventoryItem::Type_Asset), assetReference_(asset_reference),
+    libraryAsset_(false)
 {
 }
 
 // virtual
 InventoryAsset::~InventoryAsset()
 {
+}
+
+bool InventoryAsset::IsDescendentOf(AbstractInventoryItem *searchFolder)
+{
+    forever
+    {
+        AbstractInventoryItem *parent = GetParent();
+        if (parent)
+        {
+            if (parent == searchFolder)
+                return true;
+            else
+                return parent->IsDescendentOf(searchFolder);
+        }
+
+        return false;
+    }
 }
 
 /*

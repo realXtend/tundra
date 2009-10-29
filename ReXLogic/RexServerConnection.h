@@ -158,7 +158,7 @@ namespace RexLogic
 
         /** Sends a which moves inventory folder and its contains to other folder.
          *  Used when deleting/removing folders to the Trash folder.
-         *  @param parent_id The parent folder (folder where we want to move another foldeR) UUID.
+         *  @param parent_id The parent folder (folder where we want to move another folder) UUID.
          *  @param folder_id UUID of the folder to be moved.
          *  @param re_timestamp Should the server re-timestamp children.
          */
@@ -186,7 +186,7 @@ namespace RexLogic
         void SendRemoveInventoryFolderPacket(
             std::list<OpenSimProtocol::InventoryFolder *> folders);
 
-        /// Sends packet which moves an inventory item to another folder.
+        /// Sends packet which moves an inventory item to another folder within My Inventory.
         /// @param item_id ID of the item to be moved.
         /// @param folder_id ID of the destionation folder.
         /// @param new_name New name for the item. Can be the same as before.
@@ -196,6 +196,17 @@ namespace RexLogic
             const RexTypes::RexUUID &folder_id,
             const std::string &new_name,
             const bool &re_timestamp = true);
+
+        /// Sends packet which copies an inventory item from OpenSim Library to My Inventory.
+        /// @param old_agent_id
+        /// @param old_item_id
+        /// @param new_folder_id Detionation folder ID.
+        /// @param new_name New name for the item. Can be the same as before.
+        void SendCopyInventoryItemPacket(
+            const RexTypes::RexUUID &old_agent_id,
+            const RexTypes::RexUUID &old_item_id,
+            const RexTypes::RexUUID &new_folder_id,
+            const std::string &new_name);
 
         /// Sends packet which moves an inventory item to another folder.
         /// @param item_id ID of the item to be moved.
@@ -233,17 +244,17 @@ namespace RexLogic
 
         /** Sends a packet requesting contents of a inventory folder.
          *  @param folder_id Folder UUID.
-         *  @param owner_id Owner UUID.
+         *  @param owner_id Owner UUID. If null, we use agent ID.
          *  @param sort_order Sort order, 0 = name, 1 = time.
          *  @param fetch_folders False will omit folders in query.
          *  @param fetch_items False will omit items in query.
          */
         void SendFetchInventoryDescendentsPacket(
             const RexTypes::RexUUID &folder_id,
-            const RexTypes::RexUUID &owner_id,
-            const int32_t &sort_order,
-            const bool &fetch_folders,
-            const bool &fetch_items);
+            const RexTypes::RexUUID &owner_id = RexTypes::RexUUID(),
+            const int32_t &sort_order = 0,
+            const bool &fetch_folders = true,
+            const bool &fetch_items = true);
 
         /**
          *  Send a packet to Opensim server to accept friend request

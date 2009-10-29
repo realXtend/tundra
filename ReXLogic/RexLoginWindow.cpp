@@ -30,7 +30,6 @@ RexLoginWindow::RexLoginWindow(Foundation::Framework* framework, RexLogicModule 
     login_widget_(0),
     logout_button_(0),
     quit_button_(0),
-    inventory_button_(0),
     webLogin(0)
 {
     InitLoginWindow();
@@ -42,7 +41,6 @@ RexLoginWindow::~RexLoginWindow()
     login_widget_ = 0;
     logout_button_ = 0;
     quit_button_ = 0;
-    avatar_button_ = 0;
 
     Foundation::ModuleSharedPtr qt_module = framework_->GetModuleManager()->GetModule("QtModule").lock();
     QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
@@ -59,10 +57,11 @@ RexLoginWindow::~RexLoginWindow()
 
 void RexLoginWindow::InitLoginWindow()
 {
-    boost::shared_ptr<QtUI::QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+    boost::shared_ptr<QtUI::QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtUI::QtModule>
+        (Foundation::Module::MT_Gui).lock();
 
     // If this occurs, we're most probably operating in headless mode.
-    if ( qt_module.get() == 0)
+    if (qt_module.get() == 0)
         return;
 
     canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::External).lock();
@@ -93,9 +92,11 @@ void RexLoginWindow::InitLoginWindow()
     }
 
     login_widget_ = loader.load(&file); 
+    file.close();
 
-    ///todo - Here we have strange and not-so-wanted feature. If you first addWidget (in Internal-canvas) and then SetCanvasSize() result: only partial window is seen. 
-    // must investigate futher that why this happends.
+    ///\todo Here we have strange and not-so-wanted feature.
+    /// If you first addWidget (in Internal-canvas) and then SetCanvasSize() result:
+    /// only partial window is seen. Must investigate futher that why this happends.
 
     // Set canvas size. 
     QSize size = login_widget_->size();
@@ -105,8 +106,8 @@ void RexLoginWindow::InitLoginWindow()
 
     // Set canvas scrollbar policy
     canvas_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    canvas_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);   
-        
+    canvas_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
     // Create connections.
     QPushButton *pButton = login_widget_->findChild<QPushButton *>("but_connect");
     QObject::connect(pButton, SIGNAL(clicked()), this, SLOT(Connect()));
@@ -146,7 +147,7 @@ void RexLoginWindow::InitLoginWindow()
     // Rex auth: 
     line = login_widget_->findChild<QLineEdit* >("line_login_au");
     line->setText(QString(strText.c_str()));
-     
+
     strKey = "auth_server";
     strText = framework_->GetDefaultConfigPtr()->GetSetting<std::string>(strGroup, strKey);
 
@@ -187,20 +188,8 @@ void RexLoginWindow::CreateLogoutMenu()
     QObject::connect(quit_button_, SIGNAL(clicked()), this, SLOT(Quit()));
     screen_canvas_->AddWidget(quit_button_);
 
-    inventory_button_ = new QPushButton();
-    inventory_button_->setText("Inventory");
-    inventory_button_->move(5, 55);
-    QObject::connect(inventory_button_, SIGNAL(clicked()), this, SLOT(ShowInventory()));
-    screen_canvas_->AddWidget(inventory_button_);
-
     screen_canvas_->SetLockPosition(true);
     screen_canvas_->Hide();
-    
-    //avatar_button_ = new QPushButton();
-    //avatar_button_->setText("Edit Avatar");
-    //avatar_button_->move(5, 80);
-    //QObject::connect(avatar_button_, SIGNAL(clicked()), this, SLOT(EditAvatar()));
-    //screen_canvas_->AddWidget(avatar_button_);
 }
 
 void RexLoginWindow::Connect()
@@ -252,8 +241,8 @@ void RexLoginWindow::Connect()
         line = login_widget_->findChild<QLineEdit* >("line_login_au");
         std::string auth_login = line->text().toStdString();
 
-        // START HACK because some reason authentication server needs a last name when system logs into localhost authentication server
-        // we need to do this. 
+        // START HACK because some reason authentication server needs a last name when system logs into
+        // localhost authentication server so we need to do this. 
         user_name = auth_login + " " + auth_login;
         // END 
 
@@ -321,33 +310,14 @@ void RexLoginWindow::ShowLoginWindow()
     screen_canvas_->Hide();
 }
 
-void RexLoginWindow::ShowInventory()
-{
-    rex_logic_->ShowInventory();
-}
-
-void RexLoginWindow::HideInventory()
-{
-    rex_logic_->HideInventory();
-}
-
-void RexLoginWindow::EditAvatar()
-{
-    rex_logic_->ShowAvatarEditor();
-}
-
 void RexLoginWindow::Disconnect()
 {
-    HideInventory();
-
     // Disconnect from server
     rex_logic_->LogoutAndDeleteWorld();
 }
 
 void RexLoginWindow::Quit()
 {
-    HideInventory();
-
     if (rex_logic_->GetServerConnection()->IsConnected())
         rex_logic_->LogoutAndDeleteWorld();
 

@@ -43,10 +43,21 @@ namespace Inventory
 
         /// AbstractInventoryDataModel override.
         /// @return First folder by the requested id or null if the folder isn't found.
-        AbstractInventoryItem *GetChildFolderByID(const QString &searchId) const;
+        AbstractInventoryItem *GetChildFolderById(const QString &searchId) const;
 
         /// AbstractInventoryDataModel override.
-        /// Returns folder by requested id, or creates a new one if the folder doesnt exist.
+        /// @return First item by the requested id or null if the item isn't found.
+        AbstractInventoryItem *GetChildAssetById(const QString &searchId) const;
+
+        /// AbstractInventoryDataModel override.
+        /// Returns pointer to requested child item.
+        /// @param searchId Search ID.
+        /// @return Pointer to the requested item, or null if not found.
+        AbstractInventoryItem *GetChildById(const QString &searchId) const;
+
+        /// AbstractInventoryDataModel override.
+        /// Returns folder by requested id, or creates a new one if the folder doesnt exist,
+        /// or returns null if the parent folder is invalid.
         /// @param id ID.
         /// @param parent Parent folder.
         /// @param notify_server Do we want to notify server.
@@ -67,7 +78,13 @@ namespace Inventory
         void FetchInventoryDescendents(AbstractInventoryItem *folder);
 
         /// AbstractInventoryDataModel override.
-        void NotifyServerAboutItemRemoval(AbstractInventoryItem *item);
+        void NotifyServerAboutItemMove(AbstractInventoryItem *item);
+
+        /// AbstractInventoryDataModel override.
+        void NotifyServerAboutItemCopy(AbstractInventoryItem *item);
+
+        /// AbstractInventoryDataModel override.
+        void NotifyServerAboutItemRemove(AbstractInventoryItem *item);
 
         /// AbstractInventoryDataModel override.
         void NotifyServerAboutItemUpdate(AbstractInventoryItem *item);
@@ -76,10 +93,13 @@ namespace Inventory
         AbstractInventoryItem *GetRoot() const { return rootFolder_; }
 
         /// @return Pointer to "My Inventory" folder or null if not found.
-        AbstractInventoryItem *GetMyInventoryFolder() const;
+        InventoryFolder  *GetMyInventoryFolder() const;
+
+        /// @return Pointer to "My Inventory" folder or null if not found.
+        InventoryFolder  *GetOpenSimLibraryFolder() const;
 
         /// @return Pointer to "Trash" folder or null if not found.
-        AbstractInventoryItem *GetTrashFolder() const;
+        InventoryFolder  *GetTrashFolder() const;
 
         /// Prints the inventory tree structure to std::cout.
         void DebugDumpInventoryFolderStructure();
@@ -103,6 +123,9 @@ namespace Inventory
 
         /// The root folder.
         InventoryFolder *rootFolder_;
+
+        /// World Library owner id.
+        QString worldLibraryOwnerId_;
     };
 }
 

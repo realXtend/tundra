@@ -64,9 +64,6 @@ namespace Inventory
         /// Network state event category.
         Core::event_category_id_t networkStateEventCategory_;
 
-        /// Network state event category.
-        Core::event_category_id_t assetEventCategory_;
-
         /// Module GUI widget
         InventoryWindow *inventoryWindow_;
     };

@@ -1,7 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-// @file InventoryModule.cpp
-// @brief Invetory module.
+/**
+ *  @file InventoryModule.cpp
+ *  @brief Inventory module.
+ */
 
 #include "StableHeaders.h"
 #include "InventoryModule.h"
@@ -9,15 +11,13 @@
 #include "InventoryWindow.h"
 #include "NetworkEvents.h"
 #include "InventoryEvents.h"
-#include "../AssetModule/AssetEvents.h"
 
 namespace Inventory
 {
 
 InventoryModule::InventoryModule() :
-    networkStateEventCategory_(0), inventoryWindow_(0),
     ModuleInterfaceImpl(Foundation::Module::MT_Inventory),
-    assetEventCategory_(0)
+    networkStateEventCategory_(0), inventoryWindow_(0)
 {
 }
 
@@ -44,6 +44,19 @@ void InventoryModule::Initialize()
     rexLogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(
         Foundation::Module::MT_WorldLogic).lock().get());
 
+    boost::shared_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>
+        (Foundation::Service::ST_ConsoleCommand).lock();
+    if (console)
+    {
+        console->RegisterCommand(Console::CreateCommand("Upload",
+            "Upload an asset. Usage: Upload(AssetType, Name, Description)",
+            Console::Bind(rexLogic_, &RexLogic::RexLogicModule::UploadAsset)));
+
+        console->RegisterCommand(Console::CreateCommand("MultiUpload",
+            "Upload multiple assets.",
+            Console::Bind(rexLogic_, &RexLogic::RexLogicModule::UploadMultipleAssets)));
+    }
+
     inventoryWindow_ = new InventoryWindow(framework_, rexLogic_);
 
     LogInfo("System " + Name() + " initialized.");
@@ -54,10 +67,6 @@ void InventoryModule::PostInitialize()
     networkStateEventCategory_ = eventManager_->QueryEventCategory("NetworkState");
     if (networkStateEventCategory_ == 0)
         LogError("Failed to query \"NetworkState\" event category");
-
-    assetEventCategory_ = eventManager_->QueryEventCategory("Asset");
-    if (assetEventCategory_ == 0)
-        LogError("Failed to query \"Asset\" event category");
 }
 
 void InventoryModule::Uninitialize()
@@ -110,12 +119,6 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
 
     if (category_id == inventoryEventCategory_)
     {
-        if (event_id == Inventory::Events::EVENT_SHOW_INVENTORY)
-            inventoryWindow_->Toggle();
-
-        if (event_id == Inventory::Events::EVENT_HIDE_INVENTORY)
-            inventoryWindow_->Hide();
-
         if (event_id == Inventory::Events::EVENT_INVENTORY_DESCENDENT)
         {
             InventoryItemEventData *item_data = dynamic_cast<InventoryItemEventData *>(data);
@@ -127,9 +130,6 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
 
         return false;
     }
-
-    ///\todo Handle asset uploaded events.
-    //if (category_id == assetEventCategory_)
 
     return false;
 }

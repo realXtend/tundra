@@ -16,7 +16,6 @@
 #include <algorithm>
 #include "Poco/MD5Engine.h"
 
-
 namespace OpenSimProtocol
 {
 
@@ -108,12 +107,10 @@ void OpenSimLoginThread::SetupXMLRPCLogin(
 static std::string ExtractGridAddressFromXMLRPCReply(XmlRpcEpi &call)
 {
     std::string gridUrl = call.GetReply<std::string>("sim_ip");
-   
     if (gridUrl.size() == 0)
         return "";
 
     int port = call.GetReply<int>("sim_port");
-   
     if (port <= 0 || port >= 65536)
         return "";
 
@@ -243,7 +240,8 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
         }
     }
 
-    if (inventory->GetFirstChildFolderByName("My Inventory")->id != inventoryRootFolderID)
+    InventoryFolderSkeleton *myInventory = inventory->GetChildFolderById(inventoryRootFolderID);
+    if (!myInventory)
         throw XmlRpcException("Failed to read inventory, inventory-root value folder_id pointed to a nonexisting folder!");
 
     // Insert the detached folders onto the tree view until all folders have been added or there are orphans left
@@ -258,10 +256,10 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
             DetachedInventoryFolderList::iterator next = iter;
             ++next;
 
-            InventoryFolderSkeleton *parent = inventory->GetChildFolderByID(iter->first);
+            InventoryFolderSkeleton *parent = inventory->GetChildFolderById(iter->first);
             if (parent)
             {
-                // Mark harcoded OpenSim folders non-editable (must the children of My Inventory or OpenSim Library also).
+                // Mark harcoded OpenSim Library folders non-editable.
                 if (parent->id == inventoryRootFolderID &&
                     IsHardcodedOpenSimFolder(iter->second.name.c_str()))
                     iter->second.editable = false;
@@ -276,6 +274,30 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
     }
 
     /********** World Library **********/
+
+    // Find and set the inventory-lib-owner uuid.
+    XMLRPC_VALUE inventoryLibOwnerNode = XMLRPC_VectorGetValueWithID(result, "inventory-lib-owner");
+    if (!inventoryLibOwnerNode)
+        throw XmlRpcException("Failed to read inventory, inventory-lib-owner in the reply was not present!");
+
+    if (XMLRPC_GetValueType(inventoryLibOwnerNode) != xmlrpc_vector)
+        throw XmlRpcException("Failed to read inventory, inventory-lib-owner in the reply was not properly formed!");
+
+    XMLRPC_VALUE inventoryLibOwnerNodeFirstElem = XMLRPC_VectorRewind(inventoryLibOwnerNode);
+    if (!inventoryLibOwnerNodeFirstElem || XMLRPC_GetValueType(inventoryLibOwnerNodeFirstElem) != xmlrpc_vector)
+        throw XmlRpcException("Failed to read inventory,inventory-lib-owner in the reply was not properly formed!");
+
+    val = XMLRPC_VectorGetValueWithID(inventoryLibOwnerNodeFirstElem, "agent_id");
+    if (!val || XMLRPC_GetValueType(val) != xmlrpc_string)
+        throw XmlRpcException("Failed to read inventory, inventory-lib-owner struct value agent_id not present!");
+
+    RexUUID inventoryLibOwnerId(XMLRPC_GetValueString(val));
+    if (inventoryLibOwnerId.IsNull())
+        throw XmlRpcException("Failed to read inventory, inventory-lib-owner value agent_id was null or unparseable!");
+
+    inventory->worldLibraryOwnerId = inventoryLibOwnerId;
+
+    // Find and set the inventory root folder.
     XMLRPC_VALUE inventoryLibraryNode = XMLRPC_VectorGetValueWithID(result, "inventory-skel-lib");
 
     if (!inventoryLibraryNode || XMLRPC_GetValueType(inventoryLibraryNode) != xmlrpc_vector)
@@ -322,7 +344,7 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
     if (!inventoryLibraryRootNode)
         throw XmlRpcException("Failed to read inventory, inventory-lib-root in the reply was not present!");
 
-    if (!inventoryRootNode || XMLRPC_GetValueType(inventoryLibraryRootNode) != xmlrpc_vector)
+    if (!inventoryLibraryRootNode || XMLRPC_GetValueType(inventoryLibraryRootNode) != xmlrpc_vector)
         throw XmlRpcException("Failed to read inventory, inventory-lib--root in the reply was not properly formed!");
 
     XMLRPC_VALUE inventoryLibraryRootNodeFirstElem = XMLRPC_VectorRewind(inventoryLibraryRootNode);
@@ -335,7 +357,7 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
 
     RexUUID inventoryLibraryRootFolderID(XMLRPC_GetValueString(val));
     if (inventoryLibraryRootFolderID.IsNull())
-        throw XmlRpcException("Failed to read inventory, inventory-root value folder_id was null or unparseable!");
+        throw XmlRpcException("Failed to read inventory, inventory-lib-root value folder_id was null or unparseable!");
 
     // Find the root folder from the list of detached folders, and set it as the root folder to start with.
     for(DetachedInventoryFolderList::iterator iter = library_folders.begin(); iter != library_folders.end(); ++iter)
@@ -350,7 +372,8 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
         }
     }
 
-    if (inventory->GetFirstChildFolderByName("OpenSim Library")->id != inventoryLibraryRootFolderID)
+    InventoryFolderSkeleton *worldLibrary = inventory->GetChildFolderById(inventoryLibraryRootFolderID);
+    if (!worldLibrary)
         throw XmlRpcException("Failed to read inventory, inventory-lib-root value folder_id pointed to a nonexisting folder!");
 
     // Insert the detached folders onto the tree view until all folders have been added or there are orphans left
@@ -365,14 +388,11 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
             DetachedInventoryFolderList::iterator next = iter;
             ++next;
 
-            InventoryFolderSkeleton *parent = inventory->GetChildFolderByID(iter->first);
+            InventoryFolderSkeleton *parent = inventory->GetChildFolderById(iter->first);
             if (parent)
             {
-                // Mark harcoded OpenSim folders non-editable (must the children of My Inventory or OpenSim Library also).
-                if (parent->id == inventoryLibraryRootFolderID &&
-                    IsHardcodedOpenSimFolder(iter->second.name.c_str()))
-                    iter->second.editable = false;
-
+                // Mark all World Libary folder descendents non-editable.
+                iter->second.editable = false;
                 parent->AddChildFolder(iter->second);
                 progress = true;
                 library_folders.erase(iter);
@@ -416,39 +436,39 @@ BuddyListPtr ExtractBuddyListFromXMLRPCReply(XmlRpcEpi &call)
     if (!buddy_list_node || XMLRPC_GetValueType(buddy_list_node) != xmlrpc_vector)
         throw XmlRpcException("Failed to read buddy list, buddy-list in the reply was not properly formed!");
 
-	BuddyListPtr buddy_list = BuddyListPtr(new BuddyList());
+    BuddyListPtr buddy_list = BuddyListPtr(new BuddyList());
 
     XMLRPC_VALUE item = XMLRPC_VectorRewind(buddy_list_node);
 
-	while(item)
+    while(item)
     {
         XMLRPC_VALUE_TYPE type = XMLRPC_GetValueType(item);
         if (type == xmlrpc_vector) // xmlrpc-epi handles structs as arrays.
         {
-			RexTypes::RexUUID id;
-			int rights_given = 0;
-			int rights_has = 0;
+            RexTypes::RexUUID id;
+            int rights_given = 0;
+            int rights_has = 0;
 
             XMLRPC_VALUE val = XMLRPC_VectorGetValueWithID(item, "buddy_id");
             if (val && XMLRPC_GetValueType(val) == xmlrpc_string)
-				id.FromString( XMLRPC_GetValueString(val) );
+                id.FromString( XMLRPC_GetValueString(val) );
 
             val = XMLRPC_VectorGetValueWithID(item, "buddy_rights_given");
-			if (val && XMLRPC_GetValueType(val) == xmlrpc_type_int)
-				rights_given = XMLRPC_GetValueInt(val);
+            if (val && XMLRPC_GetValueType(val) == xmlrpc_type_int)
+                rights_given = XMLRPC_GetValueInt(val);
 
             val = XMLRPC_VectorGetValueWithID(item, "buddy_rights_has");
             if (val && XMLRPC_GetValueType(val) == xmlrpc_type_int)
-				rights_has = XMLRPC_GetValueInt(val);
+                rights_has = XMLRPC_GetValueInt(val);
 
-			Buddy *buddy = new Buddy(id, rights_given, rights_has);
-			buddy_list->AddBuddy(buddy);
+            Buddy *buddy = new Buddy(id, rights_given, rights_has);
+            buddy_list->AddBuddy(buddy);
         }
 
         item = XMLRPC_VectorNext(buddy_list_node);
     }
 
-	return buddy_list;
+    return buddy_list;
 }
 
 bool OpenSimLoginThread::PerformXMLRPCLogin()
@@ -539,7 +559,7 @@ bool OpenSimLoginThread::PerformXMLRPCLogin()
         }
 
         call.AddMember("start", std::string("last")); // Starting position: last/home
-        call.AddMember("version", std::string("realXtend Naali 0.0.2"));  ///\todo Make build system create versioning information.
+        call.AddMember("version", std::string("realXtend Naali 0.0.1"));  ///\todo Make build system create versioning information.
         call.AddMember("channel", std::string("realXtend"));
         call.AddMember("platform", std::string("Win")); ///\todo.
         call.AddMember("mac", mac_hash);
@@ -600,31 +620,16 @@ bool OpenSimLoginThread::PerformXMLRPCLogin()
                 threadState_->parameters.circuitCode == 0)
                 throw XmlRpcException("Failed to receive sessionID, agentID or circuitCode from login_to_simulator reply!");
 
-            try
-            {
-                threadState_->parameters.inventory = ExtractInventoryFromXMLRPCReply(call);
-            }
-            catch(XmlRpcException &e)
-            {
-                OpenSimProtocolModule::LogWarning("Failed to read inventory: " + std::string(e.what()));
-                threadState_->parameters.inventory = boost::shared_ptr<InventorySkeleton>(new InventorySkeleton);
-            }
-            try
-            {
-    		    threadState_->parameters.buddy_list = ExtractBuddyListFromXMLRPCReply(call);
-            }
-            catch(XmlRpcException &e)
-            {
-                OpenSimProtocolModule::LogWarning("Failed to read buddy list: " + std::string(e.what()));
-                threadState_->parameters.buddy_list = BuddyListPtr(new BuddyList());
-            }
+            threadState_->parameters.inventory = ExtractInventoryFromXMLRPCReply(call);
+            threadState_->parameters.buddy_list = ExtractBuddyListFromXMLRPCReply(call);
         }
         else if (authentication_ && callMethod_ != std::string("login_to_simulator")) 
         {
             // Authentication results
             threadState_->parameters.sessionHash = call.GetReply<std::string>("sessionHash");
             threadState_->parameters.gridUrl = std::string(call.GetReply<std::string>("gridUrl"));
-            //\bug the grid url provided by authentication server points to tcp port, but the grid url is used in the code to connect to udp port
+            //\bug the grid url provided by authentication server points to tcp port, but the grid url
+            /// is used in the code to connect to udp port
             threadState_->parameters.avatarStorageUrl = std::string(call.GetReply<std::string>("avatarStorageUrl"));
         }
         else if (authentication_ && callMethod_ == std::string("login_to_simulator"))
@@ -641,42 +646,29 @@ bool OpenSimLoginThread::PerformXMLRPCLogin()
             if (threadState_->parameters.gridUrl.size() == 0)
                 throw XmlRpcException("Failed to extract sim_ip and sim_port from login_to_simulator reply!");
 
-            try
-            {
-                threadState_->parameters.inventory = ExtractInventoryFromXMLRPCReply(call);
-            }
-            catch(XmlRpcException &e)
-            {
-                OpenSimProtocolModule::LogWarning("Failed to read inventory: " + std::string(e.what()));
-                threadState_->parameters.inventory = boost::shared_ptr<InventorySkeleton>(new InventorySkeleton);
-            }
-            try
-            {
-    		    threadState_->parameters.buddy_list = ExtractBuddyListFromXMLRPCReply(call);
-            }
-            catch(XmlRpcException &e)
-            {
-                OpenSimProtocolModule::LogWarning("Failed to read buddy list: " + std::string(e.what()));
-                threadState_->parameters.buddy_list = BuddyListPtr(new BuddyList());
-            }
+            threadState_->parameters.inventory = ExtractInventoryFromXMLRPCReply(call);
+            threadState_->parameters.buddy_list = ExtractBuddyListFromXMLRPCReply(call);
         }
         else
             throw XmlRpcException(std::string("Undefined login method ") + callMethod_ + " in XMLRPCLoginThread!");
     }
     catch(XmlRpcException& ex)
     {
-        OpenSimProtocolModule::LogError(std::string("Login procedure threw a XMLRPCException, reason: \"") + ex.what() + std::string("\"."));
+        OpenSimProtocolModule::LogError(std::string("Login procedure threw a XMLRPCException, reason: \"") + ex.what()
+            + std::string("\"."));
 
         // Read error message from reply
         try
         {
-            ///\todo transfer error message to login screen. 
+            ///\todo transfer error message to login screen.
             threadState_->errorMessage = call.GetReply<std::string>("message");
-            OpenSimProtocolModule::LogError(std::string("login_to_simulator reply returned the error message \"") + threadState_->errorMessage + std::string("\"."));
+            OpenSimProtocolModule::LogError(std::string("login_to_simulator reply returned the error message \"") +
+                threadState_->errorMessage + std::string("\"."));
         }
         catch(XmlRpcException &ex)
         {
-            OpenSimProtocolModule::LogError(std::string("login_to_simulator reply did not contain an error message (") + ex.what() + std::string(")."));
+            OpenSimProtocolModule::LogError(std::string("login_to_simulator reply did not contain an error message (") +
+                ex.what() + std::string(")."));
         }
 
         return false;

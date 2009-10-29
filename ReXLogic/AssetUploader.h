@@ -35,7 +35,7 @@ namespace RexLogic
 
         /// Sets the upload capability URL.
         /// @param url Capability URL.
-        void SetUploadCapability(const std::string &url) {uploadCapability_ = url; }
+        void SetUploadCapability(const std::string &url) { uploadCapability_ = url; }
 
         /** Uploads a file using HTTP.
          *  @param asset_type_t Asset type.

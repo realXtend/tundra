@@ -5,8 +5,8 @@
   <property name="geometry">
    <rect>
     <x>0</x>
-    <y>40</y>
-    <width>308</width>
+    <y>103</y>
+    <width>300</width>
     <height>194</height>
    </rect>
   </property>
@@ -18,6 +18,9 @@
   </property>
   <property name="windowTitle">
    <string>Inventory</string>
+  </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
   </property>
   <property name="styleSheet">
    <string>/* Containers */
@@ -76,12 +79,24 @@ QPushButton#pushButton_Close {
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_BottomContainer">
+    <layout class="QHBoxLayout" name="horizontalLayout_BottomContainer" stretch="3,1">
      <property name="spacing">
       <number>0</number>
      </property>
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
      <item>
       <widget class="QTreeView" name="treeView">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="autoFillBackground">
         <bool>false</bool>
        </property>
@@ -92,13 +107,16 @@ QPushButton#pushButton_Close {
         <bool>true</bool>
        </property>
        <property name="dragDropMode">
-        <enum>QAbstractItemView::InternalMove</enum>
+        <enum>QAbstractItemView::DragDrop</enum>
        </property>
        <property name="alternatingRowColors">
         <bool>false</bool>
        </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
        <property name="selectionBehavior">
-        <enum>QAbstractItemView::SelectRows</enum>
+        <enum>QAbstractItemView::SelectItems</enum>
        </property>
        <property name="iconSize">
         <size>
@@ -146,7 +164,7 @@ QPushButton#pushButton_Close {
           </size>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <property name="tabSpacing">
           <number>0</number>
@@ -235,7 +253,7 @@ QPushButton#pushButton_Close {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
+            <width>90</width>
             <height>34</height>
            </rect>
           </property>

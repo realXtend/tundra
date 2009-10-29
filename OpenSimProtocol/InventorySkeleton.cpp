@@ -41,14 +41,14 @@ InventoryFolderSkeleton *InventoryFolderSkeleton::GetFirstChildFolderByName(cons
     return 0;
 }
 
-InventoryFolderSkeleton *InventoryFolderSkeleton::GetChildFolderByID(const RexUUID &searchId)
+InventoryFolderSkeleton *InventoryFolderSkeleton::GetChildFolderById(const RexUUID &searchId)
 {
     if (id == searchId)
         return this;
 
     for(FolderIter iter = children.begin(); iter != children.end(); ++iter)
     {
-        InventoryFolderSkeleton *folder = iter->GetChildFolderByID(searchId);
+        InventoryFolderSkeleton *folder = iter->GetChildFolderById(searchId);
         if (folder)
             return folder;
     }
@@ -69,6 +69,7 @@ void InventoryFolderSkeleton::DebugDumpInventoryFolderStructure(int indentationL
 InventorySkeleton::InventorySkeleton()
 {
     root_ = InventoryFolderSkeleton(RexUUID::CreateRandom(), "OpenSim Inventory");
+    worldLibraryOwnerId = RexUUID();
 }
 
 InventoryFolderSkeleton *InventorySkeleton::GetFirstChildFolderByName(const char *searchName)
@@ -76,9 +77,9 @@ InventoryFolderSkeleton *InventorySkeleton::GetFirstChildFolderByName(const char
     return root_.GetFirstChildFolderByName(searchName);
 }
 
-InventoryFolderSkeleton *InventorySkeleton::GetChildFolderByID(const RexUUID &searchId)
+InventoryFolderSkeleton *InventorySkeleton::GetChildFolderById(const RexUUID &searchId)
 {
-    return root_.GetChildFolderByID(searchId);
+    return root_.GetChildFolderById(searchId);
 }
 
 InventoryFolderSkeleton *InventorySkeleton::GetMyInventoryFolder()

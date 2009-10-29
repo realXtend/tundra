@@ -13,20 +13,17 @@
 namespace Inventory
 {
 
+/*
 InventoryFolder::InventoryFolder() :
-    AbstractInventoryItem(Type_Folder, QString(RexTypes::RexUUID().ToString().c_str()), "New Folder", 0),
-    editable_(true), dirty_(false)
+    AbstractInventoryItem(QString(RexTypes::RexUUID().ToString().c_str()), "New Folder", 0),
+    itemType_(AbstractInventoryItem::Type_Folder), editable_(true), dirty_(false)
 {
 }
+*/
 
-InventoryFolder::InventoryFolder(
-    const QString &id,
-    const QString &name,
-    const bool &editable,
-    InventoryFolder *parent) :
-    AbstractInventoryItem(Type_Folder, id, name, parent),
-    editable_(editable),
-    dirty_(false)
+InventoryFolder::InventoryFolder(const QString &id, const QString &name, InventoryFolder *parent, const bool &editable) :
+    AbstractInventoryItem(id, name, parent, editable), itemType_(AbstractInventoryItem::Type_Folder), dirty_(false),
+    libraryAsset_(false)
 {
 }
 
@@ -125,7 +122,7 @@ InventoryFolder *InventoryFolder::GetFirstChildFolderByName(const QString &searc
     return 0;
 }
 
-InventoryFolder *InventoryFolder::GetChildFolderByID(const QString &searchId)
+InventoryFolder *InventoryFolder::GetChildFolderById(const QString &searchId)
 {
     QListIterator<AbstractInventoryItem *> it(children_);
     while(it.hasNext())
@@ -140,7 +137,7 @@ InventoryFolder *InventoryFolder::GetChildFolderByID(const QString &searchId)
         if (folder->GetID() == searchId)
             return folder;
 
-        InventoryFolder *folder2 = folder->GetChildFolderByID(searchId);
+        InventoryFolder *folder2 = folder->GetChildFolderById(searchId);
         if (folder2)
             if (folder2->GetID() == searchId)
                 return folder2;
@@ -149,7 +146,7 @@ InventoryFolder *InventoryFolder::GetChildFolderByID(const QString &searchId)
     return 0;
 }
 
-InventoryAsset *InventoryFolder::GetChildAssetByID(const QString &searchId)
+InventoryAsset *InventoryFolder::GetChildAssetById(const QString &searchId)
 {
     QListIterator<AbstractInventoryItem *> it(children_);
     while(it.hasNext())
@@ -166,7 +163,7 @@ InventoryAsset *InventoryFolder::GetChildAssetByID(const QString &searchId)
 
     ///\todo Recursion, if needed.
 /*
-        InventoryFolder *folder = folder->GetChildFolderByID(searchId);
+        InventoryFolder *folder = folder->GetChildFolderById(searchId);
         if (folder)
             if (asset->GetID() == searchId)
                 return folder2;
@@ -174,6 +171,46 @@ InventoryAsset *InventoryFolder::GetChildAssetByID(const QString &searchId)
     }
 
     return 0;
+}
+
+AbstractInventoryItem *InventoryFolder::GetChildById(const QString &searchId)
+{
+    QListIterator<AbstractInventoryItem *> it(children_);
+    while(it.hasNext())
+    {
+        AbstractInventoryItem *item = it.next();
+        assert(item);
+        if (item->GetID() == searchId)
+            return item;
+
+        if (item->GetItemType() == Type_Folder)
+        {
+            InventoryFolder *folder = checked_static_cast<InventoryFolder *>(item);
+
+            AbstractInventoryItem *item2 = folder->GetChildById(searchId);
+            if (item2)
+                return item2;
+        }
+    }
+
+    return 0;
+}
+
+bool InventoryFolder::IsDescendentOf(AbstractInventoryItem *searchFolder)
+{
+    forever
+    {
+        AbstractInventoryItem *parent = GetParent();
+        if (parent)
+        {
+            if (parent == searchFolder)
+                return true;
+            else
+                return parent->IsDescendentOf(searchFolder);
+        }
+
+        return false;
+    }
 }
 
 AbstractInventoryItem *InventoryFolder::Child(int row)

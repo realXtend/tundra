@@ -44,12 +44,8 @@ namespace RexLogic
         void Connect();
         void Disconnect();
         void DisconnectAndShowLoginWindow();
-        ///\todo Inventory funcs are temporarily here
-        void ShowInventory();
-        void HideInventory();
         void Quit();
         void ProcessCBLogin(QString result);
-        void EditAvatar();
 
     private:
         /// Hides the login window and shows the logout/quit menu that is embedded to main window.
@@ -66,16 +62,11 @@ namespace RexLogic
 
         QPushButton *quit_button_;
 
-        QPushButton *inventory_button_;
-        
-        QPushButton *avatar_button_;
-
         RexWebLogin *webLogin;
 
         boost::shared_ptr<QtUI::UICanvas> canvas_;
 
         boost::shared_ptr<QtUI::UICanvas> screen_canvas_;
-
     };
 }
 

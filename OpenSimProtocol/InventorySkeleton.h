@@ -62,7 +62,7 @@ namespace OpenSimProtocol
         InventoryFolderSkeleton *GetFirstChildFolderByName(const char *searchName);
 
         /// @return Folder by the requested id or null if the folder isn't found.
-        InventoryFolderSkeleton *GetChildFolderByID(const RexUUID &searchId);
+        InventoryFolderSkeleton *GetChildFolderById(const RexUUID &searchId);
 
         /// @return Does this folder have children.
         bool HasChildren() const { return children.size() != 0; }
@@ -79,7 +79,7 @@ namespace OpenSimProtocol
         /// The human-readable name for this folder.
         std::string name;
 
-        /// Type of the inventory.
+        /// Inventory folder type.
         inventory_type_t type;
 
         /// Is this folder editable.
@@ -115,13 +115,16 @@ namespace OpenSimProtocol
         InventoryFolderSkeleton *GetFirstChildFolderByName(const char *searchName);
 
         /// @return Folder by the requested id or null if the folder isn't found.
-        InventoryFolderSkeleton *GetChildFolderByID(const RexUUID &searchId);
+        InventoryFolderSkeleton *GetChildFolderById(const RexUUID &searchId);
 
         /// @return Pointer to "My Inventory" folder or null if not found.
         InventoryFolderSkeleton *GetMyInventoryFolder();
 
         /// Prints out the whole inventory folder tree to stdout.
         void DebugDumpInventoryFolderStructure();
+
+        /// World Library owner id.
+        RexUUID worldLibraryOwnerId;
 
         private:
         /// Root folder.
