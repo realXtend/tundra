@@ -57,9 +57,9 @@ namespace OgreRenderer
 
             \param x Horizontal position for the origin of the ray
             \param y Vertical position for the origin of the ray
-            \return Entity that the ray hit, or NULL if no entities found.
+            \return Raycast result structure
         */
-        virtual Scene::Entity *Raycast(int x, int y);
+        virtual Foundation::RaycastResult Raycast(int x, int y);
 
         //! Resizes the window
         virtual void Resize(Core::uint width, Core::uint height);
@@ -102,8 +102,7 @@ namespace OgreRenderer
         /*! \param id Resource id
             \param type Resource type
          */
-        virtual void RemoveResource(const std::string& id, const std::string& type);          
-                
+        virtual void RemoveResource(const std::string& id, const std::string& type);                    
         
         //! Callback when renderwindow closed
         /*! Sends event and exits the framework main loop
