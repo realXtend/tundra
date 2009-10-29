@@ -98,7 +98,7 @@ namespace RexLogic
         if (qt_module.get() == 0)
             return;
 
-        canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::Internal).lock();
+        canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::External).lock();
 
         QUiLoader loader;
         QFile file("./data/ui/avatareditor.ui");
