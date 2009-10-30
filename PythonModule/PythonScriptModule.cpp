@@ -22,7 +22,7 @@
 #include "SceneManager.h"
 #include "SceneEvents.h" //sending scene events after (placeable component) manipulation
 
-#include "Avatar.h" //remove?
+#include "Avatar.h"
 #include "EC_OpenSimPresence.h"
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
 //#include "../OgreRenderingModule/EC_OgreMesh.h"
@@ -969,6 +969,21 @@ PyObject* SendObjectAddPacket(PyObject *self, PyObject *args)
 }
 
 
+PyObject* GetUserAvatarPos(PyObject *self)
+{
+
+	RexLogic::RexLogicModule *rexlogic_;
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    if (rexlogic_)
+    {
+        RexTypes::Vector3 pos = rexlogic_->GetUserAvatarPos();
+        return Py_BuildValue("fff", pos.x, pos.y, pos.z);
+    }
+
+	Py_RETURN_NONE;
+}
+
+
 //slider input
 /*    UpdateSliderEvents(input_state_);
     UpdateSliderEvents(Input::State_All);*/
@@ -1040,18 +1055,21 @@ static PyMethodDef EmbMethods[] = {
     //from RexPythonQt.cpp now .. except got the fricken staticframework == null prob!
 
     {"createCanvas", (PyCFunction)CreateCanvas, METH_VARARGS, 
-     "Create a new Qt canvas within the viewer"},
+    "Create a new Qt canvas within the viewer"},
 
     //{"closeAndDeleteCanvas", (PyCFunction)CloseAndDeleteCanvas, METH_VARARGS, 
-     //"closes and deletes the given canvas"},
+    //"closes and deletes the given canvas"},
 
-     {"getQtModule", (PyCFunction)GetQtModule, METH_VARARGS, 
-     "gets the qt module"},
+    {"getQtModule", (PyCFunction)GetQtModule, METH_VARARGS, 
+    "gets the qt module"},
 
-     {"sendObjectAddPacket", (PyCFunction)SendObjectAddPacket, METH_VARARGS, 
-     "Creates a new prim at the given points"},
+    {"sendObjectAddPacket", (PyCFunction)SendObjectAddPacket, METH_VARARGS, 
+    "Creates a new prim at the given points"},
 
-    {NULL, NULL, 0, NULL}
+	{"getUserAvatarPos", (PyCFunction)GetUserAvatarPos, METH_VARARGS, 
+    "Returns the user's avatar's position."},
+
+	{NULL, NULL, 0, NULL}
 };
 
 static PyObject* PythonScript::initpymod()

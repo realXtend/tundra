@@ -19,7 +19,7 @@
      <x>170</x>
      <y>30</y>
      <width>62</width>
-     <height>31</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="minimum">
@@ -35,7 +35,7 @@
      <x>230</x>
      <y>30</y>
      <width>62</width>
-     <height>31</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="minimum">
@@ -51,7 +51,7 @@
      <x>290</x>
      <y>30</y>
      <width>62</width>
-     <height>31</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
@@ -106,7 +106,7 @@
    <property name="geometry">
     <rect>
      <x>130</x>
-     <y>140</y>
+     <y>110</y>
      <width>41</width>
      <height>21</height>
     </rect>
@@ -126,9 +126,9 @@
    <property name="geometry">
     <rect>
      <x>170</x>
-     <y>130</y>
+     <y>110</y>
      <width>62</width>
-     <height>31</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
@@ -136,7 +136,7 @@
    <property name="geometry">
     <rect>
      <x>130</x>
-     <y>90</y>
+     <y>70</y>
      <width>41</width>
      <height>21</height>
     </rect>
@@ -156,9 +156,9 @@
    <property name="geometry">
     <rect>
      <x>170</x>
-     <y>80</y>
+     <y>70</y>
      <width>62</width>
-     <height>31</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="minimum">
@@ -172,9 +172,9 @@
    <property name="geometry">
     <rect>
      <x>290</x>
-     <y>80</y>
+     <y>70</y>
      <width>62</width>
-     <height>31</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="minimum">
@@ -188,9 +188,9 @@
    <property name="geometry">
     <rect>
      <x>230</x>
-     <y>80</y>
+     <y>70</y>
      <width>62</width>
-     <height>31</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="minimum">
@@ -204,9 +204,9 @@
    <property name="geometry">
     <rect>
      <x>230</x>
-     <y>130</y>
+     <y>110</y>
      <width>62</width>
-     <height>31</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
@@ -214,10 +214,23 @@
    <property name="geometry">
     <rect>
      <x>290</x>
-     <y>130</y>
+     <y>110</y>
      <width>62</width>
-     <height>31</height>
+     <height>21</height>
     </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="newObject">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>140</y>
+     <width>75</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>New Object</string>
    </property>
   </widget>
  </widget>

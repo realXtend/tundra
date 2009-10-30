@@ -6,6 +6,19 @@ to have access here to the class, of course, and that can do
 whatever loading that you want (in your module i.e. .py file).
 """
 import rexviewer as r
+import sys
+
+def load_module(modulename):
+    print "Loading", modulename,
+    try:
+        exec(modulename)
+    except NameError, e: 
+        print "- initial import."
+        exec("import %s" % modulename)
+    else:
+        print "- reload."
+        exec("%s = reload(%s)" % (modulename, modulename))
+    return sys.modules[modulename]
 
 #reload-on-the fly test - how to make generic for all modules?
 try:
@@ -32,6 +45,8 @@ else:
     r.logInfo("   reloading usr.keycommands")
     usr.keycommands = reload(usr.keycommands)
 
+#~ usr.keycommands = load_module("usr.keycommands")
+
 try:
     editgui
 except: #first run
@@ -41,13 +56,7 @@ else:
     r.logInfo("   reloading editgui")
     editgui = reload(editgui)
 
-#~ try:
-    #~ usr.mousecontrol
-#~ except: #first run
-    #~ import usr.mousecontrol
-#~ else:
-    #~ r.logInfo("   reloading usr.mousecontrol")
-    #~ usr.mousecontrol = reload(usr.mousecontrol)
+#~ editgui = load_module("editgui")
 
 try:
     usr.sleeper
@@ -57,6 +66,14 @@ else:
     r.logInfo("   reloading usr.sleeper")
     usr.sleeper = reload(usr.sleeper)
 
+#~ try:
+    #~ usr.mousecontrol
+#~ except: #first run
+    #~ import usr.mousecontrol
+#~ else:
+    #~ r.logInfo("   reloading usr.mousecontrol")
+    #~ usr.mousecontrol = reload(usr.mousecontrol)
+    
 #~ try:
     #~ headtrack.control
 #~ except: #first run
