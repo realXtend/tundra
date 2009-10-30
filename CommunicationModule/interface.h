@@ -189,13 +189,17 @@ namespace Communication
 		//! @return all known participants of the chat session inlcuding the user
 		virtual ChatSessionParticipantVector GetParticipants() const = 0;
 
+		//! @return the originator of the chat session if there is one
+		//!         eg. with public chat session this return 0
+//		virtual ChatSessionParticipantInterface* GetOriginator() const = 0;
+
 		//! @return the message history of this chat sessions
 		virtual ChatMessageVector GetMessageHistory() = 0;
 
 	signals:
 		//! @todo REMOVE THIS METHOD
 		void MessageReceived(const QString &text, const Communication::ChatSessionParticipantInterface& participant);
-		void MessageReceived(const ChatMessageInterface &message);
+		void MessageReceived(const Communication::ChatMessageInterface &message);
 		void ParticipantJoined(const ChatSessionParticipantInterface& participant);
 		void ParticipantLeft(const ChatSessionParticipantInterface& participant);
 		void Opened(ChatSessionInterface*);
@@ -308,6 +312,9 @@ namespace Communication
 		//! Provides server address of this IM server connection
 		virtual QString GetServer() const = 0;
 
+		//! @return user id associated with this connection
+		virtual QString GetUserID() const = 0;
+
 		//! Provides textual descriptions about error
 		//! If state is not STATE_ERROR then return empty
 		virtual QString GetReason() const = 0;
@@ -319,7 +326,7 @@ namespace Communication
 		virtual QStringList GetPresenceStatusOptionsForContact() const = 0;
 
 		//! @return list of presence status options user can set
-		virtual QStringList GetPresenceStatusOptionsForSelf() const = 0;
+		virtual QStringList GetPresenceStatusOptionsForUser() const = 0;
 
 		//! Open new chat session with given contact
 		//! @param contact Chat partner target
@@ -346,7 +353,7 @@ namespace Communication
 		virtual FriendRequestVector GetFriendRequests() const = 0;
 
 		//! Set presence status state of user
-		//! @param status Allowed values are returned by GetPresenceStatusOptionsForSelf methos
+		//! @param status Allowed values are returned by GetPresenceStatusOptionsForUser methos
 		virtual void SetPresenceStatus(const QString &status) = 0;
 
 		//! Set presene status message of user

@@ -1,10 +1,11 @@
 #include "ChatSession.h"
 #include <TelepathyQt4/ContactManager>
-//#include <TelepathyQt4/constants.h>
+#include "Connection.h"
+
 
 namespace TelepathyIM
 {
-	ChatSession::ChatSession(Contact& contact, Tp::ConnectionPtr tp_connection) : state_(STATE_INITIALIZING), self_participant_(NULL)
+	ChatSession::ChatSession(Contact& self_contact, Contact& contact, Tp::ConnectionPtr tp_connection) : state_(STATE_INITIALIZING), self_participant_(&self_contact)
 	{
 		ChatSessionParticipant* p = new ChatSessionParticipant(&contact);
 		participants_.push_back(p);
@@ -20,16 +21,12 @@ namespace TelepathyIM
 				SLOT( OnTextChannelCreated(Tp::PendingOperation*) ));
 	}
 
-	ChatSession::ChatSession(Contact& initiator, Tp::TextChannelPtr tp_text_channel) : tp_text_channel_(tp_text_channel), state_(STATE_INITIALIZING), self_participant_(NULL)
+	ChatSession::ChatSession(Contact &self_contact, Tp::TextChannelPtr tp_text_channel) : tp_text_channel_(tp_text_channel), state_(STATE_INITIALIZING), self_participant_(&self_contact)
 	{
-		ChatSessionParticipant* p = new ChatSessionParticipant(&initiator);
-		participants_.push_back(p);
-
 		Tp::Features features;
-//		features.insert(Tp::TextChannel::FeatureMessageQueue);
 		features.insert(Tp::TextChannel::FeatureCore);
 		features.insert(Tp::TextChannel::FeatureMessageCapabilities);
-		connect(tp_text_channel_->becomeReady(features), SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnTextChannelReady(Tp::PendingOperation*)) );
+		connect(tp_text_channel_->becomeReady(features), SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnIncomingTextChannelReady(Tp::PendingOperation*)) );
 	}
 
 	ChatSession::ChatSession(const QString &room_id, Tp::ConnectionPtr tp_connection): state_(STATE_INITIALIZING), self_participant_(NULL)
@@ -146,7 +143,7 @@ namespace TelepathyIM
 		tp_text_channel_ = Tp::TextChannelPtr(dynamic_cast<Tp::TextChannel *>( pending_channel->channel().data() ));
 		connect( tp_text_channel_->becomeReady(),
 			    SIGNAL( finished(Tp::PendingOperation*) ),
-				SLOT( OnTextChannelReady(Tp::PendingOperation*) ));
+				SLOT( OnOutgoingTextChannelReady(Tp::PendingOperation*) ));
 	}
 
 	void ChatSession::OnChannelInvalidated(Tp::DBusProxy *p, const QString &me, const QString &er)
@@ -156,7 +153,38 @@ namespace TelepathyIM
 		//!   * emit error signal
 	}
 	
-	void ChatSession::OnTextChannelReady(Tp::PendingOperation* op)
+	void ChatSession::OnIncomingTextChannelReady(Tp::PendingOperation* op)
+	{
+		if (op->isError())
+		{
+			state_ = STATE_ERROR;
+			return;
+		}
+		Tp::PendingReady *pr = qobject_cast<Tp::PendingReady *>(op);
+		Tp::TextChannelPtr channel = Tp::TextChannelPtr(qobject_cast<Tp::TextChannel *>(pr->object()));
+		tp_text_channel_ = channel;
+
+		connect(tp_text_channel_.data(),
+				SIGNAL( messageReceived(const Tp::ReceivedMessage &) ),
+				SLOT( OnMessageReceived(const Tp::ReceivedMessage &) ));
+
+		connect(tp_text_channel_.data(), 
+				SIGNAL( pendingMessageRemoved(const Tp::ReceivedMessage &) ), 
+			    SLOT( OnChannelPendingMessageRemoved(const Tp::ReceivedMessage &) ));
+
+		//! @HACK and memory leak here. We should have a contact object from Connection object!
+		ChatSessionParticipant* p = new ChatSessionParticipant( new Contact(tp_text_channel_->initiatorContact()) );
+		participants_.push_back(p);
+
+		HandlePendingMessage();
+		state_ = STATE_OPEN;
+		emit Ready(this);
+		emit Opened(this);
+		for (QStringList::iterator i = send_buffer_.begin(); i != send_buffer_.end(); ++i)
+			SendMessage( *i);
+	}
+
+	void ChatSession::OnOutgoingTextChannelReady(Tp::PendingOperation* op)
 	{
 		if (op->isError())
 		{
@@ -168,20 +196,16 @@ namespace TelepathyIM
 		Tp::TextChannelPtr channel = Tp::TextChannelPtr(qobject_cast<Tp::TextChannel *>(pr->object()));
 		tp_text_channel_ = channel;
 
-		QStringList interfaces = tp_text_channel_->interfaces();
-		for (QStringList::iterator i = interfaces.begin(); i != interfaces.end(); ++i)
-		{
-			QString line = "Text channel have interface: ";
-			line.append(*i);
-			LogDebug(line.toStdString());
-		}
+		//QStringList interfaces = tp_text_channel_->interfaces();
+		//for (QStringList::iterator i = interfaces.begin(); i != interfaces.end(); ++i)
+		//{
+		//	QString line = "Text channel have interface: ";
+		//	line.append(*i);
+		//	LogDebug(line.toStdString());
+		//}
 
-		//! @todo Store the value 
-		Tp::ContactPtr initiator = tp_text_channel_->initiatorContact();
+//		Tp::ContactPtr initiator = tp_text_channel_->initiatorContact();
 
-		//connect(tp_text_channel_.data(),
-		//	    SIGNAL( messageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &) ), 
-  //              SLOT( OnChannelMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &) ));
 
 		connect(tp_text_channel_.data(),
 				SIGNAL( messageReceived(const Tp::ReceivedMessage &) ),
@@ -190,7 +214,6 @@ namespace TelepathyIM
 		connect(tp_text_channel_.data(), 
 				SIGNAL( pendingMessageRemoved(const Tp::ReceivedMessage &) ), 
 			    SLOT( OnChannelPendingMessageRemoved(const Tp::ReceivedMessage &) ));
-
 
 		HandlePendingMessage();
 		state_ = STATE_OPEN;

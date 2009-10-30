@@ -64,6 +64,11 @@ namespace OpensimIM
 		return server_;
 	}
 
+	QString Connection::GetUserID() const
+	{
+		return agent_uuid_;
+	}
+
 	QString Connection::GetReason() const
 	{
 		return reason_;
@@ -89,7 +94,7 @@ namespace OpensimIM
 		return QStringList();
 	}
 
-	QStringList Connection::GetPresenceStatusOptionsForSelf() const
+	QStringList Connection::GetPresenceStatusOptionsForUser() const
 	{
 		if (state_ != STATE_OPEN)
 			throw Core::Exception("The connection is closed.");

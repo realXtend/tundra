@@ -54,6 +54,9 @@ namespace OpensimIM
 		//! Provides server address of this IM server connection
 		virtual QString GetServer() const;
 
+		//! @return user id associated with this connection
+		virtual QString GetUserID() const;
+
 		//! Provides textual descriptions about error
 		//! If state is not STATE_ERROR then return empty
 		virtual QString GetReason() const;
@@ -67,7 +70,7 @@ namespace OpensimIM
 
 		//! User cannot set presence status in Opensim
 		//! @return list of presence status options user can set
-		virtual QStringList GetPresenceStatusOptionsForSelf() const;
+		virtual QStringList GetPresenceStatusOptionsForUser() const;
 
 		//! Open new chat session with given contact
 		//! This is opensim IM chat

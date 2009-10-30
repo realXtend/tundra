@@ -47,6 +47,9 @@ namespace TelepathyIM
 		//! Provides server address of this IM server connection
 		virtual QString GetServer() const;
 
+		//! @return user id associated with this connection
+		virtual QString GetUserID() const;
+
 		//! Provides textual descriptions about error
 		//! If state is not STATE_ERROR then return empty
 		virtual QString GetReason() const;
@@ -58,7 +61,7 @@ namespace TelepathyIM
 		virtual QStringList GetPresenceStatusOptionsForContact() const;
 
 		//! @return list of presence status options user can set
-		virtual QStringList GetPresenceStatusOptionsForSelf() const;
+		virtual QStringList GetPresenceStatusOptionsForUser() const;
 
 		//! Open new chat session with given contact
 		//! @param contact Chat partner target
@@ -104,11 +107,13 @@ namespace TelepathyIM
 		QString name_;
 		QString protocol_;
 		QString server_;
+		QString user_id_;
 		QString reason_;
 		QString presence_status_;
 		QString presence_message_;
 		ContactGroup friend_list_;
 		ContactVector contacts_;
+		Contact* self_contact_;
 		ChatSessionVector public_chat_sessions_;
 		ChatSessionVector private_chat_sessions_;
 		VoiceSessionVector voice_sessions_;
@@ -125,6 +130,8 @@ namespace TelepathyIM
 		virtual	void OnPresencePublicationRequested(const Tp::Contacts &contacts);
 		virtual void OnTpConnectionStatusChanged(uint newStatus, uint newStatusReason);
 		virtual void OnSendingFriendRequestError(OutgoingFriendRequest*);
+		virtual void IncomingChatSessionReady(ChatSession* session);
+
 	};
 	typedef std::vector<Connection*> ConnectionVector;
 
