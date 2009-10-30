@@ -187,6 +187,8 @@ namespace RexLogic
         void SetAvatarRotation(Core::Quaternion newrot);
         void SetCameraYawPitch(Core::Real newyaw, Core::Real newpitch);
 
+		RexTypes::Vector3 GetUserAvatarPos();
+
     private:
         //! Event handler for network events.
         NetworkEventHandler *network_handler_;

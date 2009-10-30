@@ -106,6 +106,8 @@ class EditGUI(Component):
         self.widget.treeWidget.connect('clicked()', self.itemActivated)
         #self.widget.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
         
+        self.widget.newObject.connect('clicked()', self.createObject)
+        
         self.widgetList = {}
         
         self.cam = None
@@ -180,6 +182,19 @@ class EditGUI(Component):
         print "Selected:", text
         if self.widgetList.has_key(text):
             self.select(self.widgetList[text][0])
+    
+    def createObject(self, *args):
+        x, y, z = r.getUserAvatarPos()
+
+        start_x = x
+        start_y = y
+        start_z = z
+        end_x = x
+        end_y = y
+        end_z = z
+
+        r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
+
     
     def select(self, ent):
         if ent.id != 0:

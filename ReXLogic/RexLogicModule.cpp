@@ -441,6 +441,15 @@ void RexLogicModule::SetCameraYawPitch(Core::Real newyaw, Core::Real newpitch)
     camera_controllable_->SetYawPitch(newyaw, newpitch);
 }
 
+RexTypes::Vector3 RexLogicModule::GetUserAvatarPos()
+{
+	RexLogic::AvatarPtr avatarPtr = GetAvatarHandler();
+	Scene::EntityPtr entity = avatarPtr->GetUserAvatar();
+	const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
+	OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
+    return placeable->GetPosition();
+}
+
 Console::CommandResult RexLogicModule::ConsoleLogin(const Core::StringVector &params)
 {
     std::string name = "Test User";
