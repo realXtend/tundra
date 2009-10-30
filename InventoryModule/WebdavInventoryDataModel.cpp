@@ -22,8 +22,14 @@ namespace Inventory
 		: identityUrl_(identityUrl), hostUrl_(hostUrl), rootFolder_(0)
 	{
 		if ( InitPythonQt() )
+		{
 			if ( FetchWebdavUrlWithIdentity() )
 				FetchRootFolder();
+			else
+				ErrorOccurredCreateEmptyRootFolder();
+		}
+		else 
+			ErrorOccurredCreateEmptyRootFolder();
 	}
 
 	WebdavInventoryDataModel::~WebdavInventoryDataModel()
@@ -167,7 +173,6 @@ namespace Inventory
 					index++;
 				}
 
-
 				if (!rootFolder_)
 				{
 					rootFolder_ = new InventoryFolder("root", "Webdav Inventory", false, 0);
@@ -180,6 +185,7 @@ namespace Inventory
 				QString path;
 				QString name;
 				QString type;
+
 				for (QMap<QString, QString>::iterator iter = folders.begin(); iter!=folders.end(); ++iter)
 				{
 					path = iter.key();
@@ -197,7 +203,22 @@ namespace Inventory
 				}
 
 			}
+			else
+			{			
+				ErrorOccurredCreateEmptyRootFolder();
+			}
 		}
+		else
+			ErrorOccurredCreateEmptyRootFolder();
 
+	}
+
+	void WebdavInventoryDataModel::ErrorOccurredCreateEmptyRootFolder()
+	{
+		if (!rootFolder_)
+			rootFolder_ = new InventoryFolder("root", "Error while fetching Webdav Inventory", false, 0);
+		InventoryFolder *parentFolder = new InventoryFolder("/", QString("My Inventory"), false, rootFolder_);
+		rootFolder_->AddChild(parentFolder);
+		rootFolder_->SetDirty(true);
 	}
 }

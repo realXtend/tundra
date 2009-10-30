@@ -110,6 +110,9 @@ namespace Inventory
 		/// Fetch initial root folder
 		void FetchRootFolder();
 
+		/// Fallback on error situations
+		void ErrorOccurredCreateEmptyRootFolder();
+
 		/// Related urls to store for fetching webdav url and accessing webdav
 		QString identityUrl_;
 		QString hostUrl_;
