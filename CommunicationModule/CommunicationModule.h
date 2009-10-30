@@ -8,7 +8,7 @@
 #include "CommunicationManager.h"
 #include "CommunicationService.h"
 #include "ConsoleUI.h"
-#include "QtGUI/QtGUI.h"
+#include "CommunicationUI/QtGUI.h"
 #include "Test.h"
 
 
