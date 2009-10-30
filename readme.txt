@@ -42,6 +42,13 @@ APOSTROPHE / SECTION   Toggle console
 You can enter the mouse-look mode by zooming "into" the avatar with mouse wheel. In mouse-look and free-look modes, hold down the right mouse button to look around and, if you are moving simultaneously, to steer the avatar.
 
 
+Avatar editor
+-------------
+
+You can import avatars or attachments from any directory by pressing the New Avatar & New Attach buttons, but you should have all the files needed by a single avatar or attachment (.xml, .mesh, 
+.skeleton, .material and texture files) in the same directory.
+
+
 Console
 -------
 Toggle the console overlay by pressing the button above TAB: apostrophe (´) on US keyboard layout and section sign (§) on scandic layout. Write "help" to get the summary of the available console commands.

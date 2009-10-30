@@ -100,7 +100,7 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
             switch(auth_data->type)
             {
             case AT_Taiga:
-                inventoryWindow_->InitWebDavInventoryTreeModel(auth_data->identityUrl, auth_data->hostUrl);
+                //inventoryWindow_->InitWebDavInventoryTreeModel(auth_data->identityUrl, auth_data->hostUrl);
                 break;
             case AT_OpenSim:
             case AT_RealXtend:
