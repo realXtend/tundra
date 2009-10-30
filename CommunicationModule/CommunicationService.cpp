@@ -35,6 +35,8 @@ namespace Communication
 	//! static
 	CommunicationServiceInterface* CommunicationService::GetInstance()
 	{
+		if (CommunicationService::instance_ == 0)
+			throw Core::Exception("CommunicationService is not initialized properly.");
 		return CommunicationService::instance_;
 	}
 

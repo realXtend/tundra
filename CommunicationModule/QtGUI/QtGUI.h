@@ -7,14 +7,10 @@
 
 #include <QtGui>
 
-#include "CommunicationManager.h"
-#include "Connection.h"
-#include "ChatSession.h"
-#include "ChatSessionRequest.h"
-#include "User.h"
-#include "Contact.h"
+#include "../interface.h"
+#include "../Credentials.h"
+#include "../CommunicationService.h"
 
-using namespace TpQt4Communication;
 using namespace QtUI;
 
 namespace CommunicationUI
@@ -41,7 +37,7 @@ namespace CommunicationUI
 
 	private:
 		Foundation::Framework *framework_;
-		CommunicationManager* commManager_;
+		Communication::CommunicationServiceInterface* communication_service_;
 		boost::shared_ptr<UICanvas> canvas_;
 		UIContainer *UIContainer_;
 
@@ -57,7 +53,7 @@ namespace CommunicationUI
 	friend class ConversationsContainer;
 
 	MODULE_LOGGING_FUNCTIONS
-	static const std::string NameStatic() { return "CommunicationModule::UIController"; } // for logging functionality
+	static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 
 	public:
 		UIContainer(QWidget *parent);
@@ -66,15 +62,15 @@ namespace CommunicationUI
 	public slots:
 		void ConnectToServer(QString server, int port, QString username, QString password);
 		void ManagerReady();
-		void ConnectionEstablished();
-		void ConnectionFailed(QString &reason);
-		void ContactListChanged(ContactVector contacts);
+		void ConnectionEstablished(Communication::ConnectionInterface &connection);
+		void ConnectionFailed(Communication::ConnectionInterface &connection);
+		void ContactListChanged(Communication::ContactVector contacts);
 
 		void StatusChanged(const QString &newStatus);
 		void StatusMessageChanged();
 		void StartNewChat(QListWidgetItem *clickedItem);
-		void NewChatSessionRequest(ChatSessionRequest *);
-		void NewFriendRequest(FriendRequest *request);
+		void NewChatSessionRequest(Communication::ChatSessionInterface &);
+		void NewFriendRequest(Communication::FriendRequestInterface &);
 		void AddNewFriend(bool clicked);
 		void RemoveFriend(bool clicked);
 
@@ -83,7 +79,7 @@ namespace CommunicationUI
 
 	private:
 		void LoadUserInterface(bool connected);
-		void LoadConnectedUserData(User *userData);
+		void LoadConnectedUserData(Communication::ConnectionInterface *connection);
 		QIcon GetStatusIcon(QString status);
 
 		QString currentMessage;
@@ -99,9 +95,10 @@ namespace CommunicationUI
 		QPushButton *buttonRemoveFriend_;
 		ConversationsContainer *tabWidgetCoversations_;
 
-		Credentials credentials;
-		CommunicationManager* commManager_;
-		Connection* im_connection_;
+		Communication::Credentials credentials_;
+		Communication::CommunicationServiceInterface* communication_service_;
+		Communication::ConnectionInterface* im_connection_;
+		Communication::ConnectionInterface* opensim_connection_;
 
 	signals:
 		void Resized(QSize &);
@@ -158,7 +155,7 @@ namespace CommunicationUI
 	public:
 		ConversationsContainer(QWidget *parent);
 		~ConversationsContainer(void);
-		bool DoesTabExist(Contact *contact);
+		bool DoesTabExist(Communication::ContactInterface *contact);
 		
 	public slots:
 		void CloseFriendRequest(FriendRequestUI *request);
@@ -179,10 +176,10 @@ namespace CommunicationUI
 	friend class ConversationsContainer;
 
 	public:
-		Conversation(ConversationsContainer *parent, ChatSessionPtr chatSession, Contact *contact, QString name);
+		Conversation(ConversationsContainer *parent, Communication::ChatSessionInterface &chatSession, Communication::ContactInterface *contact, QString name);
 		~Conversation(void);
 
-		void ShowMessageHistory(ChatMessageVector messageHistory);
+		void ShowMessageHistory(Communication::ChatMessageVector messageHistory);
 
 	private:
 		void InitWidget();
@@ -197,13 +194,13 @@ namespace CommunicationUI
 		QString myName_;
 
 		ConversationsContainer *myParent_;
-		ChatSessionPtr chatSession_;
-		Contact *contact_;
+		Communication::ChatSessionInterface& chat_session_;
+		Communication::ContactInterface* contact_;
 
 	private	slots:
 		void OnMessageSent();
-		void OnMessageReceived(ChatMessage &message);
-		void ContactStateChanged();
+		void OnMessageReceived(const Communication::ChatMessageInterface &message);
+		void ContactStateChanged(const QString &status, const QString &message);
 
 	};
 
@@ -217,11 +214,11 @@ namespace CommunicationUI
 	friend class UIContainer;
 
 	public:
-		ContactListItem(QString &name, QString &status, QString &statusmessage, Contact *contact);
+		ContactListItem(QString &name, QString &status, QString &statusmessage, Communication::ContactInterface *contact);
 		~ContactListItem(void);
 
 	public slots:
-		void StatusChanged();
+		void StatusChanged(const QString &status, const QString &message);
 
 	private:
 		void UpdateItem();
@@ -229,8 +226,7 @@ namespace CommunicationUI
 		QString name_;
 		QString status_;
 		QString statusmessage_;
-		Contact *contact_;
-
+		Communication::ContactInterface* contact_;
 	};
 
 	// FRIEND REQUEST CLASS
@@ -241,8 +237,8 @@ namespace CommunicationUI
 	Q_OBJECT
 
 	public:
-		FriendRequestUI::FriendRequestUI(QWidget *parent, FriendRequest *request);
-		FriendRequestUI::FriendRequestUI(QWidget *parent, Connection *connection);
+		FriendRequestUI::FriendRequestUI(QWidget *parent, Communication::FriendRequestInterface &request);
+		FriendRequestUI::FriendRequestUI(QWidget *parent, Communication::ConnectionInterface *connection);
 		FriendRequestUI::~FriendRequestUI(void);
 
 	private slots:
@@ -252,8 +248,8 @@ namespace CommunicationUI
 		void SendFriendRequest(bool clicked);
 
 	private:
-		FriendRequest *request_;
-		Connection *connection_;
+		Communication::FriendRequestInterface *request_;
+		Communication::ConnectionInterface* connection_;
 		
 		QWidget *internalWidget_;
 		QLabel *originator;

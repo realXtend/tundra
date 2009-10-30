@@ -16,6 +16,7 @@
 
 namespace TelepathyIM
 {
+
 	/**
 	 *  Text message based communication session with one or more participants.
 	 *  This can represents irc channel or jabber conversation.
@@ -31,11 +32,11 @@ namespace TelepathyIM
 	public:
 		//! Used by TelepathyIM::Connection class
 		//! when user initiates a new chat sessionj
-		ChatSession(Contact& contact, Tp::ConnectionPtr tp_connection);
+		ChatSession(Contact& self_contact, Contact& contact, Tp::ConnectionPtr tp_connection);
 
 		//! Used by TelepathyIM:Connection class
 		//! When a chat session is initiated by IM server
-		ChatSession(Contact& initiator, Tp::TextChannelPtr tp_text_channel);	
+		ChatSession(Contact& self_contact, Tp::TextChannelPtr tp_text_channel);	
 
 		//! Used by TelepathyIM:Connection class
 		//! When user open chat room session
@@ -76,12 +77,15 @@ namespace TelepathyIM
 		//! This method is called ONLY when session is established by client 
 		//! and it's NOT called when the session is established by server
 		virtual void OnTextChannelCreated(Tp::PendingOperation* op);
-		virtual void OnTextChannelReady(Tp::PendingOperation* op);
+		virtual void OnIncomingTextChannelReady(Tp::PendingOperation* op);
+		virtual void OnOutgoingTextChannelReady(Tp::PendingOperation* op);
 		virtual void OnMessageSendAck(Tp::PendingOperation* op);
 		virtual void OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &);
 		virtual void OnMessageReceived(const Tp::ReceivedMessage &message);
 		virtual	void OnTextChannelClosed(Tp::PendingOperation* op);
 		virtual void OnChannelPendingMessageRemoved(const Tp::ReceivedMessage &message);
+signals:
+		void Ready(ChatSession* session);
 	};
 	typedef std::vector<ChatSession*> ChatSessionVector;
 	

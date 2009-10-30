@@ -4,7 +4,7 @@
 
 namespace TelepathyIM
 {
-	Connection::Connection(Tp::ConnectionManagerPtr tp_connection_manager, const Communication::CredentialsInterface &credentials) : tp_connection_manager_(tp_connection_manager), name_("Gabble"), protocol_("jabber"), state_(STATE_INITIALIZING), friend_list_("friend list")
+	Connection::Connection(Tp::ConnectionManagerPtr tp_connection_manager, const Communication::CredentialsInterface &credentials) : tp_connection_manager_(tp_connection_manager), name_("Gabble"), protocol_("jabber"), state_(STATE_INITIALIZING), friend_list_("friend list"), self_contact_(0)
 	{
 		CreateTpConnection(credentials);
 	}
@@ -20,7 +20,9 @@ namespace TelepathyIM
 		
 		Tp::PendingConnection *pending_connection = tp_connection_manager_->requestConnection(credentials.GetProtocol(), params);
 		QObject::connect(pending_connection, SIGNAL( finished(Tp::PendingOperation *) ), SLOT( OnConnectionCreated(Tp::PendingOperation *) ));
+
 		server_ = credentials.GetServer();
+		user_id_ = credentials.GetUserID();
 	}
 
 	Connection::~Connection()
@@ -82,6 +84,11 @@ namespace TelepathyIM
 		return server_;
 	}
 
+	QString Connection::GetUserID() const
+	{
+		return user_id_;
+	}
+
 	QString Connection::GetReason() const
 	{
 		return reason_;
@@ -107,7 +114,7 @@ namespace TelepathyIM
 		return options;
 	}
 
-	QStringList Connection::GetPresenceStatusOptionsForSelf() const
+	QStringList Connection::GetPresenceStatusOptionsForUser() const
 	{
 		if (state_ != STATE_OPEN)
 			throw Core::Exception("Connection is not open.");
@@ -129,7 +136,7 @@ namespace TelepathyIM
 		if (state_ != STATE_OPEN)
 			throw Core::Exception("Connection is not open.");
 
-		ChatSession* session = new ChatSession((Contact&)contact, tp_connection_);
+		ChatSession* session = new ChatSession(*self_contact_, (Contact&)contact, tp_connection_);
 		private_chat_sessions_.push_back(session);
 		return session;
 	}
@@ -292,6 +299,8 @@ namespace TelepathyIM
 			return;
 		}
 
+		self_contact_ = new Contact(tp_connection_->selfContact());
+
 		connect(tp_connection_.data(), SIGNAL( statusChanged(uint, uint) ), SLOT( OnTpConnectionStatusChanged(uint, uint) ));
 		connect(tp_connection_->contactManager(), SIGNAL( presencePublicationRequested(const Tp::Contacts &) ), SLOT( OnPresencePublicationRequested(const Tp::Contacts &) ));
 		HandleAllKnownTpContacts();
@@ -411,20 +420,9 @@ namespace TelepathyIM
 				Tp::TextChannelPtr tp_text_channel = Tp::TextChannel::create(tp_connection_, details.channel.path(), details.properties);
 				LogDebug("Text channel object created.");
 				
-				if ( !tp_text_channel->initiatorContact().isNull() )
-				{
-					Contact &initiator = GetContact(tp_text_channel->initiatorContact());
-					ChatSession* session = new ChatSession(initiator, tp_text_channel);
-					private_chat_sessions_.push_back(session);
-					emit( ChatSessionReceived(*session) );
-				}
-				else
-				{
-					Contact* null_contact = new Contact(tp_text_channel->initiatorContact());
-					ChatSession* session = new ChatSession(*null_contact, tp_text_channel);
-					private_chat_sessions_.push_back(session);
-					emit( ChatSessionReceived(*session) );
-				}
+				ChatSession* session = new ChatSession(*self_contact_, tp_text_channel);
+				private_chat_sessions_.push_back(session);
+				connect(session, SIGNAL( Ready(ChatSession*) ), SLOT( IncomingChatSessionReady(ChatSession*) ));
 			}
 
 			if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST && !requested)
@@ -496,6 +494,11 @@ namespace TelepathyIM
 	{
 		QString message = "Cannot send a friend request to ";
 		LogError(message.toStdString());
+	}
+
+	void Connection::IncomingChatSessionReady(ChatSession* session)
+	{
+		emit( ChatSessionReceived(*session) );
 	}
 
 } // end of namespace: TelepathyIM
