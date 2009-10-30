@@ -71,16 +71,7 @@ namespace RexLogic
                 RexLogicModule::LogError("User avatar not in scene, cannot load appearance");
                 return;
             }                  
-            avatar_handler->GetAppearanceHandler().LoadAppearance(entity, filename);             
-            
-/*            Foundation::ModuleSharedPtr qt_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule("QtModule").lock();
-            QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
-            if (qt_ui)
-            {
-                Foundation::ComponentPtr uicanvasptr = qt_ui->CreateEC_UICanvasToEntity(entity, canvas_);
-                QtUI::EC_UICanvas& uicanvas = *checked_static_cast<QtUI::EC_UICanvas*>(uicanvasptr.get());
-                uicanvas.SetSubmeshes(0);
-            }    */                        
+            avatar_handler->GetAppearanceHandler().LoadAppearance(entity, filename);                                  
         }
     }
     
