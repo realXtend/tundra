@@ -22,6 +22,7 @@ use_package (XMLRPC)
 use_package (CURL)
 use_package (QT4)
 use_package (PYTHON)
+use_package (PYTHON_QT)
 use_modules (RexCommon ReXLogic OpenSimProtocol RpcUtilities HttpUtilities QtModule PythonModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
@@ -33,6 +34,8 @@ link_package (POCO)
 link_package (XMLRPC)
 link_package (CURL)
 link_package (QT4)
+link_package (PYTHON)
+link_package (PYTHON_QT)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

@@ -8,12 +8,11 @@
 #ifndef incl_InventoryModule_WebdavInventoryDataModel_h
 #define incl_InventoryModule_WebdavInventoryDataModel_h
 
-#include "PythonScriptModule.h"
-#include "PythonEngine.h"
-
 #include "AbstractInventoryDataModel.h"
 #include "InventoryFolder.h"
 #include "InventoryAsset.h"
+
+#include "PythonQt.h"
 
 namespace RexLogic
 {
@@ -35,7 +34,7 @@ namespace Inventory
 
 	public:
 		/// Constructor
-		WebdavInventoryDataModel(boost::weak_ptr<PythonScript::PythonScriptModule> pythonModule, const QString &identityUrl);
+		WebdavInventoryDataModel(const QString &identityUrl, const QString &hostUrl);
 
 		/// Deconstructor
 		virtual ~WebdavInventoryDataModel();
@@ -98,6 +97,12 @@ namespace Inventory
 	private:
 		Q_DISABLE_COPY(WebdavInventoryDataModel);
 
+		// Init PythonQt for usage
+		bool InitPythonQt();
+
+		/// Debug prints, can only run python in release ;(
+		void PrintQVariantInPython(QVariant result);
+
 		/// Fetch webdav inventory url with users identity
 		/// @return bool true if succeeded otherwise false
 		bool FetchWebdavUrlWithIdentity();
@@ -105,15 +110,18 @@ namespace Inventory
 		/// Fetch initial root folder
 		void FetchRootFolder();
 
-		/// Avatars identityUrl
+		/// Related urls to store for fetching webdav url and accessing webdav
 		QString identityUrl_;
+		QString hostUrl_;
+		QString webdavIdentityUrl_;
+		QString webdavUrl_;
 
 		/// The root folder.
         InventoryFolder *rootFolder_;
 
-		// Python script module
-		boost::weak_ptr<PythonScript::PythonScriptModule> weakPythonModule_;
-		boost::shared_ptr<PythonScript::PythonScriptModule> pythonModule_;
+		// Pointer to PythonQts main module
+		PythonQtObjectPtr pythonQtMainModule_;
+
 	};
 }
 

@@ -13,7 +13,9 @@ namespace OpenSimProtocol
 OpenSimProtocolModule::OpenSimProtocolModule() :
     ModuleInterfaceImpl(Foundation::Module::MT_OpenSimProtocol),
     connected_(false),
-    authenticationType_(AT_Unknown)
+    authenticationType_(AT_Unknown),
+	identityUrl_(""),
+	hostUrl_("")
 {
 }
 
@@ -144,6 +146,7 @@ void OpenSimProtocolModule::LoginToCBServer(
 
     authenticationType_ = AT_Taiga;
 	identityUrl_ = identityUrl;
+	hostUrl_ = address +  boost::lexical_cast<std::string>(port);
 }
 
 
@@ -196,8 +199,13 @@ bool OpenSimProtocolModule::CreateUDPConnection(const char *address, int port)
     loginWorker_.SetConnectionState(Connection::STATE_CONNECTED);
 
     // Send event indicating a succesfull connection.
-    AuthenticationEventData auth_data(authenticationType_);
-    eventManager_->SendEvent(networkStateEventCategory_, Events::EVENT_SERVER_CONNECTED, &auth_data);
+	AuthenticationEventData auth_data(authenticationType_);
+	if (identityUrl_ != "")
+	{
+		auth_data.SetIdentity(identityUrl_);
+		auth_data.SetHost(hostUrl_);
+	}
+	eventManager_->SendEvent(networkStateEventCategory_, Events::EVENT_SERVER_CONNECTED, &auth_data);
     connected_ = true;
 
     // Request capabilities from the server.

@@ -171,6 +171,8 @@ namespace OpenSimProtocol
 		/// Identity URL
 		std::string identityUrl_;
 
+		std::string hostUrl_;
+
         /// Event manager.
         Foundation::EventManagerPtr eventManager_;
 
