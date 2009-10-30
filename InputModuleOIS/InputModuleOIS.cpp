@@ -55,6 +55,9 @@ namespace Input
         event_manager->RegisterEvent(event_category_, Events::KEY_PRESSED, "KeyPressed");
         event_manager->RegisterEvent(event_category_, Events::KEY_RELEASED, "KeyReleased");
 
+		event_manager->RegisterEvent(event_category_, Events::INWORLD_CLICK, "InWorldClick");
+		event_manager->RegisterEvent(event_category_, Events::INWORLD_CLICK_REL, "InWorldClickReleased");
+
         event_manager->RegisterEvent(event_category_, Events::LEFT_MOUSECLICK_PRESSED, "LeftMouseClickPressed");
         event_manager->RegisterEvent(event_category_, Events::LEFT_MOUSECLICK_RELEASED, "LeftMouseClickReleased");
         event_manager->RegisterEvent(event_category_, Events::RIGHT_MOUSECLICK_PRESSED, "RightMouseClickPressed");
