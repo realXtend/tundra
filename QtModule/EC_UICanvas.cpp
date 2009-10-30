@@ -12,7 +12,9 @@
 
 namespace QtUI
 {
-    EC_UICanvas::EC_UICanvas(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework())
+    EC_UICanvas::EC_UICanvas(Foundation::ModuleInterface* module) : 
+        Foundation::ComponentInterface(module->GetFramework()),
+        entity_(0)
     {
         Foundation::Framework* framework = module->GetFramework();
         
@@ -26,8 +28,7 @@ namespace QtUI
     
     EC_UICanvas::~EC_UICanvas()
     {
-        submeshes_.clear();
-        Refresh();
+        ClearSubmeshes();
         
         OgreRenderer::RemoveMaterial(material_);
     }
@@ -77,6 +78,13 @@ namespace QtUI
         submeshes_.clear();
         submeshes_.push_back(submesh);
         
+        Refresh();
+    }
+    
+    void EC_UICanvas::ClearSubmeshes()
+    {
+        submeshes_.clear();
+
         Refresh();
     }
 
