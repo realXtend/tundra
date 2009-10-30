@@ -9,6 +9,7 @@ Works for selecting an object with the mouse, and then changing the position
 using the qt widgets. Is shown immediately in-world and synched over the net.
 
 TODO (most work is in api additions on the c++ side, then simple usage here):
+- local & global movement - select box?
 - (WIP, needs network event refactoring) sync changes from over the net to the gui dialog: listen to scene objectupdates
   (this is needed/nice when someone else is moving the same obj at the same time,
    works correctly in slviewer, i.e. the dialogs there update on net updates)
@@ -50,7 +51,7 @@ class EditGUI(Component):
     def __init__(self):
         Component.__init__(self)
         loader = QUiLoader()
-        self.canvas = r.createCanvas(EXTERNAL) #change to internal later, had some rendering problems?
+        self.canvas = r.createCanvas(INTERNAL) #change to internal later, had some rendering problems?
         file = QFile(self.UIFILE)
 
         widget = loader.load(file)
@@ -297,9 +298,11 @@ class EditGUI(Component):
             #if self.sel is not ent: #XXX wrappers are not reused - there may now be multiple wrappers for same entity
             if self.sel is None or self.sel.id != ent.id: #a diff ent than prev sel was changed
                 self.select(ent)
-        else:
-            self.sel = None
-            self.widget.label.text = "<none>"
+        
+        #out to ease dev now that mouse clicks go 'thru' the qt canvas
+        # else:
+        #     self.sel = None
+        #     self.widget.label.text = "<none>"
             
     def LeftMouseUp(self, mouseinfo):
         self.left_button_down = False
