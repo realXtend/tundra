@@ -59,6 +59,11 @@ void InventoryModule::Initialize()
 
     inventoryWindow_ = new InventoryWindow(framework_, rexLogic_);
 
+	//!REMOVE TEST CODE FOR WEBDAV
+	//std::string idurl("http://world.evocativi.com:8010/jonnenauha");
+	//std::string hosturl("192.168.0.101:8002/");
+	//inventoryWindow_->InitWebDavInventoryTreeModel(idurl, hosturl);
+
     LogInfo("System " + Name() + " initialized.");
 }
 
@@ -95,7 +100,7 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
             switch(auth_data->type)
             {
             case AT_Taiga:
-                inventoryWindow_->InitWebDavInventoryTreeModel(auth_data->identityUrl);
+                inventoryWindow_->InitWebDavInventoryTreeModel(auth_data->identityUrl, auth_data->hostUrl);
                 break;
             case AT_OpenSim:
             case AT_RealXtend:

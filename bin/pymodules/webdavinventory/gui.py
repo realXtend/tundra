@@ -124,6 +124,8 @@ class GuiMain(object):
             for itemName in results:
                 item = QTreeWidgetItem()
                 itemType = results[itemName].getResourceType()
+                if (itemName[0] == "/"):
+                    itemName = itemName[1:]
                 item.setText(NAME, str(itemName))
                 if (itemType == "resource"):
                     item.setText(TYPE, "Resource")
@@ -241,9 +243,11 @@ class GuiMain(object):
             if (results != False):
                 childList = []
                 for childItemName in results:
+                    nameParts = childItemName.split("/")
+                    itemName = nameParts[-1]
                     itemType = results[childItemName].getResourceType()
                     item = QTreeWidgetItem()
-                    item.setText(NAME, childItemName)
+                    item.setText(NAME, itemName)
                     item.setText(TYPE, itemType)
                     if (itemType == "resource"):
                         item.setText(TYPE, "Resource")

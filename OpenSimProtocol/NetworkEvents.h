@@ -133,11 +133,14 @@ namespace OpenSimProtocol
     class AuthenticationEventData : public Foundation::EventDataInterface
     {
     public:
-        AuthenticationEventData(const AuthenticationType &auth_type, const std::string &identity_url = "") :
-            type(auth_type), identityUrl(identity_url) {}
+		AuthenticationEventData(const AuthenticationType &auth_type, const std::string &identity_url = "", const std::string &host_Url = "") 
+			: type(auth_type), identityUrl(identity_url), hostUrl(host_Url) {}
         virtual ~AuthenticationEventData() {}
+		void SetIdentity(const std::string &url) { identityUrl = url; }
+		void SetHost(const std::string &url) { hostUrl = url; }
         AuthenticationType type;
         std::string identityUrl;
+		std::string hostUrl;
     };
 
     /// Event data interface for inbound messages.

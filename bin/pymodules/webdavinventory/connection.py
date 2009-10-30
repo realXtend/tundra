@@ -73,7 +73,7 @@ class WebDavClient(object):
     user = None
     password = None
     
-    def __init__(self, identityurl, webdavurl):
+    def __init__(self, identityurl = None, webdavurl = None):
         self.user = identityurl
         self.url = webdavurl
         
@@ -112,12 +112,12 @@ class WebDavClient(object):
                 raise HTTPException  
             authFailures += 1
         
-    def listResources(self, path):
+    def listResources(self, path = None):
         if (path != None):
             if (self.setCollectionStorerToPath(path)):
                 try:
                     resourceList = self.resource.listResources()
-                    return resourceList
+                    return self.parseResourceList(resourceList)
                 except WebdavError:
                     return False 
             else:
@@ -125,11 +125,20 @@ class WebDavClient(object):
         else:
             try:
                 resourceList = self.resource.listResources()
-                return resourceList
+                return self.parseResourceList(resourceList)
             except WebdavError:
                 return False 
 
-    
+    def parseResourceList(self, resourceList):
+        keyvalues = []
+        for itemPath in resourceList:
+            type = resourceList[itemPath].getResourceType()
+            if (itemPath[0] == "/"):
+                itemPath = itemPath[1:]
+            keyvalues.append(itemPath)
+            keyvalues.append(type)
+        return keyvalues
+
     def setCollectionStorerToPath(self, path):
         try:
             self.resource = WebdavClient.CollectionStorer(self.url + path, self.resource.connection)

@@ -87,7 +87,7 @@ void InventoryWindow::InitOpenSimInventoryTreeModel()
         const QItemSelection &)), this, SLOT(UpdateActions()));
 }
 
-void InventoryWindow::InitWebDavInventoryTreeModel(std::string identityUrl)
+void InventoryWindow::InitWebDavInventoryTreeModel(std::string identityUrl, std::string hostUrl)
 {
 	if (inventoryItemModel_)
 	{
@@ -95,11 +95,9 @@ void InventoryWindow::InitWebDavInventoryTreeModel(std::string identityUrl)
         return;
 	}
 
-	//boost::weak_ptr<PythonScript::PythonScriptModule> pythonModule = framework_->GetModuleManager()->GetModule<PythonScript::PythonScriptModule>(Foundation::Module::MT_PythonScript);
-
-	//WebdavInventoryDataModel *dataModel = new WebdavInventoryDataModel(pythonModule, (identityUrl.c_str()));
-	//inventoryItemModel_ = new InventoryItemModel(dataModel);
-	//treeView_->setModel(inventoryItemModel_);
+	WebdavInventoryDataModel *dataModel = new WebdavInventoryDataModel(QString(identityUrl.c_str()), QString(hostUrl.c_str()));
+	inventoryItemModel_ = new InventoryItemModel(dataModel);
+	treeView_->setModel(inventoryItemModel_);
 }
 
 void InventoryWindow::ResetInventoryTreeModel()
