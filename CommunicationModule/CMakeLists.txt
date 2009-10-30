@@ -30,7 +30,7 @@ file (GLOB RESOURCE_FILES resource/*.qrc)
 
 AddSourceFolder(OpensimIM)
 AddSourceFolder(TelepathyIM)
-AddSourceFolder(QtGUI)
+AddSourceFolder(CommunicationUI)
 
 set (SOURCE_FILES ${SOURCE_FILES} ${CPP_FILES} ${H_FILES})
 
