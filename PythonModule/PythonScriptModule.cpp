@@ -250,6 +250,49 @@ namespace PythonScript
                 
                 value = PyObject_CallMethod(pmmInstance, "KEY_INPUT_EVENT", "iii", event_id, keycode, mods);
             }
+			else if(event_id == Input::Events::INWORLD_CLICK || event_id == Input::Events::INWORLD_CLICK_REL)
+			{
+				
+				boost::weak_ptr<Input::InputModuleOIS> inputWeak;
+				inputWeak = framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
+
+				boost::shared_ptr<Input::InputModuleOIS> input;
+				input = inputWeak.lock();
+		      
+				if (!input.get())
+					return false;
+
+				Input::Events::Movement* mouse;
+				mouse = checked_static_cast<Input::Events::Movement*>(data);
+
+				int x_abs = mouse->x_.abs_;
+                int y_abs = mouse->y_.abs_;
+                int x_rel = mouse->x_.rel_;
+                int y_rel = mouse->y_.rel_;
+
+				if (input->IsButtonDown(OIS::MB_Left) && !mouse_left_button_down_)
+                {
+                    value = PyObject_CallMethod(pmmInstance, "MOUSE_CLICK", "iiiii", Input::Events::LEFT_MOUSECLICK_PRESSED, x_abs, y_abs, x_rel, y_rel);
+                    mouse_left_button_down_ = true;
+                }
+                else if (!input->IsButtonDown(OIS::MB_Left) && mouse_left_button_down_)
+                {
+                    value = PyObject_CallMethod(pmmInstance, "MOUSE_CLICK", "iiiii", Input::Events::LEFT_MOUSECLICK_RELEASED, x_abs, y_abs, x_rel, y_rel);
+                    mouse_left_button_down_ = false;
+                }
+				/*//INWORLD_CLICK is only for left-clicks 
+                else if (input->IsButtonDown(OIS::MB_Right) && !mouse_right_button_down_)
+                {
+                    value = PyObject_CallMethod(pmmInstance, "MOUSE_CLICK", "iiiii", Input::Events::RIGHT_MOUSECLICK_PRESSED, x_abs, y_abs, x_rel, y_rel);
+                    mouse_right_button_down_ = true;
+                }
+                else if (!input->IsButtonDown(OIS::MB_Right) && mouse_right_button_down_)
+                {
+                    value = PyObject_CallMethod(pmmInstance, "MOUSE_CLICK", "iiiii", Input::Events::RIGHT_MOUSECLICK_RELEASED, x_abs, y_abs, x_rel, y_rel);
+                    mouse_right_button_down_ = false;
+                }
+				*/
+			}
 
             else//XXX change to if-else...
             {
@@ -450,42 +493,11 @@ namespace PythonScript
                 int x_rel = movement->x_.rel_;
                 int y_rel = movement->y_.rel_;
 
-                //dragging_ = true;
-                //state->Drag(&*movement);
-
-                if (input->IsButtonDown(OIS::MB_Left) && !mouse_left_button_down_)
-                {
-                    PyObject_CallMethod(pmmInstance, "MOUSE_CLICK", "iiiii", Input::Events::LEFT_MOUSECLICK_PRESSED, x_abs, y_abs, x_rel, y_rel);
-                    mouse_left_button_down_ = true;
-                }
-                else if (!input->IsButtonDown(OIS::MB_Left) && mouse_left_button_down_)
-                {
-                    PyObject_CallMethod(pmmInstance, "MOUSE_CLICK", "iiiii", Input::Events::LEFT_MOUSECLICK_RELEASED, x_abs, y_abs, x_rel, y_rel);
-                    mouse_left_button_down_ = false;
-                }
-
-                else if (input->IsButtonDown(OIS::MB_Right) && !mouse_right_button_down_)
-                {
-                    PyObject_CallMethod(pmmInstance, "MOUSE_CLICK", "iiiii", Input::Events::RIGHT_MOUSECLICK_PRESSED, x_abs, y_abs, x_rel, y_rel);
-                    mouse_right_button_down_ = true;
-                }
-                else if (!input->IsButtonDown(OIS::MB_Right) && mouse_right_button_down_)
-                {
-                    PyObject_CallMethod(pmmInstance, "MOUSE_CLICK", "iiiii", Input::Events::RIGHT_MOUSECLICK_RELEASED, x_abs, y_abs, x_rel, y_rel);
-                    mouse_right_button_down_ = false;
-                }
-                else //do we need this... ?
-                {
-                    PyObject_CallMethod(pmmInstance, "MOUSE_MOVEMENT", "iiii", x_abs, y_abs, x_rel, y_rel);
-                }    
+				//only sending the mouse_movement event if one of the buttons is pressed, XXX change?
+				if (mouse_left_button_down_ || mouse_right_button_down_)
+					PyObject_CallMethod(pmmInstance, "MOUSE_MOVEMENT", "iiii", x_abs, y_abs, x_rel, y_rel);
                 
-
-            } /*else if (dragging_)
-            {
-                dragging_ = false;
-                Input::Events::Movement zero;
-                state->Drag(&zero);
-            }*/
+			}
         }
 
     }

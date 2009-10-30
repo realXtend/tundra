@@ -103,12 +103,12 @@ class ComponentRunner(Component):
     def MOUSE_MOVEMENT(self, x_abs, y_abs, x_rel, y_rel):
         self.eventhandled = False
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
-        #print "CircuitsManager got mouse input", self.mouseinfo, self.mouseinfo.x, self.mouseinfo.y
+        print "CircuitsManager got mouse movement", self.mouseinfo, self.mouseinfo.x, self.mouseinfo.y
         self.m.send(MouseMove(self.mouseinfo, self.callback), "on_mousemove")
         return self.eventhandled
     
     def MOUSE_CLICK(self, mb_click, x_abs, y_abs, x_rel, y_rel):
-        #print "CircuitsManager got mouse click", mb_click 
+        print "CircuitsManager got a mouse click", mb_click 
         self.eventhandled = False
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
         self.m.send(MouseClick(mb_click, self.mouseinfo, self.callback), "on_mouseclick")
