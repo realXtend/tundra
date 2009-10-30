@@ -255,6 +255,7 @@ namespace
         sceneMgr->destroyManualObject(manual);
         Ogre::Entity *ogre_entity = sceneMgr->createEntity(renderer->GetUniqueObjectName(), mesh_name);
         ogre_entity->setUserAny(Ogre::Any(&entity));
+        ogre_entity->setCastShadows(false);
 
         node->detachAllObjects();
         node->attachObject(ogre_entity);
