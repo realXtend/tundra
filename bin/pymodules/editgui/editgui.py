@@ -199,7 +199,7 @@ class EditGUI(Component):
 
     
     def select(self, ent):
-        if ent.id != 0:
+        if ent.id != 0 and ent.id != r.getUserAvatarId():
             self.sel = ent
             
             if not self.widgetList.has_key(self.sel.id):
