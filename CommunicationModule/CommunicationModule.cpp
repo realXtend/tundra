@@ -8,7 +8,7 @@
 namespace Communication
 {
 
-	CommunicationModule::CommunicationModule(void):ModuleInterfaceImpl("CommunicationModule"), communication_manager_(0), console_ui_(0), qt_ui_(0), communication_service_(0), test_(0)
+	CommunicationModule::CommunicationModule(void):ModuleInterfaceImpl("CommunicationModule"), communication_manager_(0), console_ui_(0), qt_ui_(0), opensim_ui_(0), communication_service_(0), test_(0)
 	{
 	}
 
@@ -21,8 +21,13 @@ namespace Communication
 
 	void CommunicationModule::Initialize() 
 	{
-		// new way
 
+		// Query category for NetworkState
+		// Needed for catch 'connected to server' event
+		// - Jonne
+		event_category_networkstate_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
+		
+		// New way
 		CommunicationService::CreateInstance(framework_);
 		communication_service_ = CommunicationService::GetInstance();
 
@@ -79,6 +84,9 @@ namespace Communication
 		if (qt_ui_)
 			SAFE_DELETE(qt_ui_);
 
+		if (opensim_ui_)
+			SAFE_DELETE(opensim_ui_);
+
 		if (communication_manager_)
 			SAFE_DELETE(communication_manager_);
 
@@ -94,9 +102,20 @@ namespace Communication
 
     bool CommunicationModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
+		if ( category_id == event_category_networkstate_  )
+		{
+			if ( event_id == OpenSimProtocol::Events::EVENT_SERVER_CONNECTED )
+				if (opensim_ui_ == 0)
+					opensim_ui_ = new CommunicationUI::OpenSimChat(framework_);
+			if ( event_id == OpenSimProtocol::Events::EVENT_SERVER_DISCONNECTED )
+				if (opensim_ui_ != 0)
+					SAFE_DELETE(opensim_ui_);
+		}
+
 		if (communication_service_)
 			return dynamic_cast<CommunicationService*>( communication_service_ )->HandleEvent(category_id, event_id, data);
-        return false;
+
+		return false;
     }    
 
 }
