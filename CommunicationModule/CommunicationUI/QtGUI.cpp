@@ -323,7 +323,7 @@ namespace CommunicationUI
 		if ( tabWidgetCoversations_->DoesTabExist(listItem->contact_) == false )
 		{
 			Communication::ChatSessionInterface* chatSession = im_connection_->OpenPrivateChatSession(*listItem->contact_);
-			QString user_name = "TODO";
+			QString user_name = im_connection_->GetUserID();
 			Conversation *conversation = new Conversation(tabWidgetCoversations_, *chatSession, listItem->contact_, user_name);
 			tabWidgetCoversations_->addTab(conversation, clickedItem->icon(), QString(listItem->contact_->GetName()));
 			tabWidgetCoversations_->setCurrentWidget(conversation);
@@ -341,7 +341,7 @@ namespace CommunicationUI
 		QString originator_name = originator->GetName();
 		QString originator_presence_status = originator->GetPresenceStatus();
 
-		QString user_name = "user name - TODO this to...";
+		QString user_name = im_connection_->GetUserID();
 		if (originator_name.size() > 0  )
 		{
 			if ( tabWidgetCoversations_->DoesTabExist(originator) == false )
