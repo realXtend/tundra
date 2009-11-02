@@ -9,8 +9,14 @@
 #include "CommunicationService.h"
 #include "ConsoleUI.h"
 #include "CommunicationUI/QtGUI.h"
+#include "CommunicationUI/OpenSimChat.h"
 #include "Test.h"
 
+// Did not compile without this, dunno why?
+namespace CommunicationUI
+{
+	class OpenSimChat;	
+}
 
 namespace Communication
 {
@@ -23,9 +29,6 @@ namespace Communication
 	 */
 	class COMMS_MODULE_API CommunicationModule : public Foundation::ModuleInterfaceImpl
 	{
-		MODULE_LOGGING_FUNCTIONS
-		//! returns name of this module. Needed for logging.
-		static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
 	public:
 		CommunicationModule(void);
@@ -43,6 +46,10 @@ namespace Communication
 
 	    bool CommunicationModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
+		MODULE_LOGGING_FUNCTIONS
+		//! returns name of this module. Needed for logging.
+		static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
+
 	protected:
 		// Run given test
 		Console::CommandResult Test(const Core::StringVector &params);
@@ -50,8 +57,12 @@ namespace Communication
 		TpQt4Communication::CommunicationManager* communication_manager_;
 		CommunicationUI::ConsoleUI* console_ui_;
 		CommunicationUI::QtGUI* qt_ui_;
+		CommunicationUI::OpenSimChat* opensim_ui_;
 		CommunicationServiceInterface* communication_service_;
 		CommunicationTest::Test* test_;
+
+		// Needed for catch 'connected to server' event
+		Core::event_category_id_t event_category_networkstate_;
 	};
 }
 
