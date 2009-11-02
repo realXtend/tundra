@@ -35,8 +35,6 @@ namespace CommunicationUI
 		void MessageRecieved(const Communication::ChatMessageInterface &msg);
 		void MessageRecieved(const QString& text, const Communication::ChatSessionParticipantInterface& participant);
 		void SendMessage();
-		void ParticipantJoined(const Communication::ChatSessionParticipantInterface& participant);
-		void ParticipantLeft(const Communication::ChatSessionParticipantInterface& participant);
 	
 	private:
 		void InitModuleConnections();

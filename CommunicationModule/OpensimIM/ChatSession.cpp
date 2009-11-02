@@ -115,38 +115,28 @@ namespace OpensimIM
 		ChatMessage* m = new ChatMessage(participant, QDateTime::currentDateTime(), text);
 		message_history_.push_back(m);
 
-		emit MessageReceived(text, *participant);
-
-		//! @note For testing...
-		//OpenSimProtocol::OpenSimProtocolModule *opensim_protocol_ = dynamic_cast<OpenSimProtocol::OpenSimProtocolModule*>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol).lock().get());
-		//if ( opensim_protocol_ )
-		//{
-		//	if ( opensim_protocol_->GetClientParameters().agentID.ToString().compare( avatar_id.toStdString() ) != 0 )
-		//	{
-		//		QString message = "ECHO: ";
-		//		message.append(text);
-		//		SendMessage(message);
-		//	}
-		//}
+		emit MessageReceived(*m);
 	}
 
 	void ChatSession::MessageFromServer(const QString &text)
 	{
 		ChatMessage* m = new ChatMessage(&server_, QDateTime::currentDateTime(), text);
 		message_history_.push_back(m);
-		emit MessageReceived(text, dynamic_cast<Communication::ChatSessionParticipantInterface&>(server_));
+		emit MessageReceived(*m);
 	}
 
 	void ChatSession::MessageFromObject(const QString &object_id, const QString &text)
 	{
-		ChatSessionParticipant* participant = FindParticipant(object_id);
-		if ( !participant )
+		ChatSessionParticipant* originator = FindParticipant(object_id);
+		if ( !originator )
 		{
-			ChatSessionParticipant* participant = new ChatSessionParticipant(object_id, "(name)");
-			participants_.push_back(participant);
+			//! @todo Find out the name of this object and give it as argument for participant object constructor
+			ChatSessionParticipant* originator = new ChatSessionParticipant(object_id, object_id);
+			participants_.push_back(originator);
 		}
-
-		emit MessageReceived(text, *participant);
+		ChatMessage* m = new ChatMessage(originator, QDateTime::currentDateTime(), text);
+		message_history_.push_back(m);
+		emit MessageReceived(*m);
 	}
 
 	ChatSessionParticipant* ChatSession::FindParticipant(const QString &uuid)
