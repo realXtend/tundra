@@ -81,8 +81,8 @@ namespace Inventory
         void SetDirty(const bool &dirty) { dirty_ = dirty; }
 
         /// Get/set for the libary asset flag.
-        bool IsLibraryAsset() const { return libraryAsset_; }
-        void SetIsLibraryAsset(const bool &value) { libraryAsset_ = value; }
+        bool IsLibraryItem() const { return libraryAsset_; }
+        void SetIsLibraryItem(const bool &value) { libraryAsset_ = value; }
 
         /// @return Type of the item.
         InventoryItemType GetItemType() const { return itemType_; }

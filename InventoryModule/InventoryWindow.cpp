@@ -89,15 +89,15 @@ void InventoryWindow::InitOpenSimInventoryTreeModel()
 
 void InventoryWindow::InitWebDavInventoryTreeModel(std::string identityUrl, std::string hostUrl)
 {
-	if (inventoryItemModel_)
-	{
-		LogError("Inventory treeview has already item model set!");
+    if (inventoryItemModel_)
+    {
+        LogError("Inventory treeview has already item model set!");
         return;
-	}
+    }
 
-	WebdavInventoryDataModel *dataModel = new WebdavInventoryDataModel(QString(identityUrl.c_str()), QString(hostUrl.c_str()));
-	inventoryItemModel_ = new InventoryItemModel(dataModel);
-	treeView_->setModel(inventoryItemModel_);
+    WebdavInventoryDataModel *dataModel = new WebdavInventoryDataModel(STD_TO_QSTR(identityUrl), STD_TO_QSTR(hostUrl));
+    inventoryItemModel_ = new InventoryItemModel(dataModel);
+    treeView_->setModel(inventoryItemModel_);
 }
 
 void InventoryWindow::ResetInventoryTreeModel()

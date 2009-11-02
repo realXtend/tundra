@@ -64,8 +64,8 @@ namespace Inventory
         virtual InventoryItemType GetItemType() const = 0;
 
         /// Get/set for library asset flag.
-        virtual bool IsLibraryAsset() const = 0;
-        virtual void SetIsLibraryAsset(const bool &value) = 0;
+        virtual bool IsLibraryItem() const = 0;
+        virtual void SetIsLibraryItem(const bool &value) = 0;
 
         /// Is this folder descendent of spesific folder.
         /// @param searchFolder Folder to be investigated.

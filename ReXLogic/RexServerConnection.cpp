@@ -897,7 +897,7 @@ void RexServerConnection::SendCopyInventoryItemPacket(
     if (!connected_)
         return;
 
-    NetOutMessage *m = StartMessageBuilding(RexNetMsgMoveInventoryItem);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgCopyInventoryItem);
     assert(m);
 
     // AgentData
@@ -906,7 +906,7 @@ void RexServerConnection::SendCopyInventoryItemPacket(
 
     // InventoryData, variable
     m->SetVariableBlockCount(1);
-    m->AddU32(0);                   // CallbackID
+    m->AddU32(0); // CallbackID, we don't need this.
     m->AddUUID(old_agent_id);
     m->AddUUID(old_item_id);
     m->AddUUID(new_folder_id);
