@@ -26,6 +26,10 @@ namespace RexLogic
         avatar_widget_(0)
     {
         InitEditorWindow();
+        
+        last_directory_ = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "last_avatar_editor_dir", std::string());
+        if (last_directory_.empty())
+            last_directory_ = Foundation::QtUtils::GetCurrentPath();
     }
 
     AvatarEditor::~AvatarEditor()
@@ -38,6 +42,8 @@ namespace RexLogic
             if (canvas_)
                 qt_ui->DeleteCanvas(canvas_->GetID());
         }
+        
+        rexlogicmodule_->GetFramework()->GetDefaultConfig().SetSetting("RexAvatar", "last_avatar_editor_dir", last_directory_);
     }
            
     void AvatarEditor::Toggle()
@@ -54,31 +60,6 @@ namespace RexLogic
     void AvatarEditor::ExportAvatar()
     {
         rexlogicmodule_->GetAvatarHandler()->ExportUserAvatar();
-    }
-    
-    void AvatarEditor::LoadAvatar()
-    {
-        const std::string filter = "Avatar description file (*.xml);;Avatar mesh (*.mesh)";
-        std::string filename = Foundation::QtUtils::GetOpenFileName(filter, "Choose avatar file", Foundation::QtUtils::GetCurrentPath());        
-
-        if (!filename.empty())
-        {
-            AvatarPtr avatar_handler = rexlogicmodule_->GetAvatarHandler();
-        
-            Scene::EntityPtr entity = avatar_handler->GetUserAvatar();
-            if (!entity)
-            {
-                RexLogicModule::LogError("User avatar not in scene, cannot load appearance");
-                return;
-            }                  
-            avatar_handler->GetAppearanceHandler().LoadAppearance(entity, filename);                                  
-        }
-    }
-    
-    void AvatarEditor::RevertAvatar()
-    {
-        // Reload avatar from storage, or reload default
-        rexlogicmodule_->GetAvatarHandler()->ReloadUserAvatar();        
     }
     
     void AvatarEditor::InitEditorWindow()
@@ -383,7 +364,32 @@ namespace RexLogic
         appearance.SetMasterModifierValue(control_name, value / 100.0f);
         rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);                       
     }
+     
+    void AvatarEditor::LoadAvatar()
+    {
+        const std::string filter = "Avatar description file (*.xml);;Avatar mesh (*.mesh)";
+        std::string filename = GetOpenFileName(filter, "Choose avatar file");
+
+        if (!filename.empty())
+        {
+            AvatarPtr avatar_handler = rexlogicmodule_->GetAvatarHandler();
         
+            Scene::EntityPtr entity = avatar_handler->GetUserAvatar();
+            if (!entity)
+            {
+                RexLogicModule::LogError("User avatar not in scene, cannot load appearance");
+                return;
+            }                  
+            avatar_handler->GetAppearanceHandler().LoadAppearance(entity, filename);                                  
+        }
+    }
+    
+    void AvatarEditor::RevertAvatar()
+    {
+        // Reload avatar from storage, or reload default
+        rexlogicmodule_->GetAvatarHandler()->ReloadUserAvatar();        
+    }
+       
     void AvatarEditor::ChangeTexture()
     {
         QPushButton* button = qobject_cast<QPushButton*>(sender());
@@ -394,7 +400,7 @@ namespace RexLogic
         Core::uint index = Core::ParseString<Core::uint>(index_str);
         
         const std::string filter = "Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png);;Ogre material (*.material)";
-        std::string filename = Foundation::QtUtils::GetOpenFileName(filter, "Choose texture or material", Foundation::QtUtils::GetCurrentPath());          
+        std::string filename = GetOpenFileName(filter, "Choose texture or material");          
         if (!filename.empty())
         {
             Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
@@ -436,7 +442,7 @@ namespace RexLogic
     void AvatarEditor::AddAttachment()
     {
         const std::string filter = "Attachment description file (*.xml)";
-        std::string filename = Foundation::QtUtils::GetOpenFileName(filter, "Choose attachment file", Foundation::QtUtils::GetCurrentPath());      
+        std::string filename = GetOpenFileName(filter, "Choose attachment file");      
 
         if (!filename.empty())
         {
@@ -475,4 +481,16 @@ namespace RexLogic
         tab_panel->show();    
         return tab_panel;
     }   
+    
+    std::string AvatarEditor::GetOpenFileName(const std::string& filter, const std::string& prompt)
+    {
+        std::string filename = Foundation::QtUtils::GetOpenFileName(filter, prompt, last_directory_);
+        if (!filename.empty())
+        {
+            boost::filesystem::path path(filename);
+            std::string dirname = path.branch_path().string();
+            last_directory_ = dirname;
+        }
+        return filename; 
+    }
 }
