@@ -11,6 +11,7 @@
 # for tracking:
 #   $Id: davlib.py 3182 2008-02-22 15:57:55 +0000 (Fr, 22 Feb 2008) schlauch $
 #
+# antont / rex: tried to make so that doesn't use SSL when it't not available
 
 import httplib
 import urllib
@@ -27,8 +28,15 @@ XML_CONTENT_TYPE = 'text/xml; charset="utf-8"'
 # block size for copying files up to the server
 BLOCKSIZE = 16384
 
+try:
+    httplib.HTTPSConnection
+except AttributeError: #probably doesn't have _ssl
+    print "NOTE: davlib not using HTTP*S*, probably due to ssl missing"
+    Connection = httplib.HTTPConnection
+else:
+    Connection = httplib.HTTPSConnection
 
-class HTTPProtocolChooser(httplib.HTTPSConnection):
+class HTTPProtocolChooser(Connection):
     def __init__(self, *args, **kw):
         self.protocol = kw.pop('protocol')
         if self.protocol == "https":
@@ -36,13 +44,13 @@ class HTTPProtocolChooser(httplib.HTTPSConnection):
         else:
             self.default_port = 80
             
-        apply(httplib.HTTPSConnection.__init__, (self,) + args, kw)
+        apply(Connection.__init__, (self,) + args, kw)
 
     def connect(self):
         if self.protocol == "https":
-            httplib.HTTPSConnection.connect(self)
+            Connection.connect(self)
         else:
-            httplib.HTTPConnection.connect(self)
+            Connection.connect(self)
 
 
 class HTTPConnectionAuth(HTTPProtocolChooser):
