@@ -59,12 +59,18 @@ namespace RexLogic
  
         //! Create or get a tabbed scrollarea panel
         QWidget* GetOrCreateTabScrollArea(QTabWidget* tabs, const std::string& name);
-           
+        
+        //! Ask a filename from the user. Store the directory used.
+        std::string GetOpenFileName(const std::string& filter, const std::string& prompt);
+               
         //! Canvas for avatar editor
         boost::shared_ptr<QtUI::UICanvas> canvas_;
         
         //! Main widget for avatar editor
         QWidget *avatar_widget_;
+        
+        //! Last used directory for selecting avatars, attachments, textures
+        std::string last_directory_;
     };
 }
 
