@@ -197,11 +197,9 @@ namespace Communication
 		virtual ChatMessageVector GetMessageHistory() = 0;
 
 	signals:
-		//! @todo REMOVE THIS METHOD
-		void MessageReceived(const QString &text, const Communication::ChatSessionParticipantInterface& participant);
 		void MessageReceived(const Communication::ChatMessageInterface &message);
-		void ParticipantJoined(const ChatSessionParticipantInterface& participant);
-		void ParticipantLeft(const ChatSessionParticipantInterface& participant);
+		void ParticipantJoined(const ChatSessionParticipantInterface& participant); // not implemented by any class currently
+		void ParticipantLeft(const ChatSessionParticipantInterface& participant); // not implemented by any class currently
 		void Opened(ChatSessionInterface*);
 		void Closed(ChatSessionInterface*);
 	};

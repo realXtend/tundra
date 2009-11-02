@@ -41,7 +41,7 @@ namespace CommunicationUI
 		}
 		catch (Core::Exception &e)
 		{
-			QString message = QString("[OpenSimUI] Could not open world chat due to: ").append(connection.GetReason());
+			QString message = QString("[OpenSimUI] Could not open world chat due to: ").append(e.what());
 			Communication::CommunicationModule::LogError(message.toStdString());
 		}
 	}
@@ -56,7 +56,6 @@ namespace CommunicationUI
 
 	void OpenSimChat::MessageRecieved(const QString& text, const Communication::ChatSessionParticipantInterface& participant)
 	{
-		
 		QString who(participant.GetName());
 		QString message(text);
 		QString htmlcontent("");
@@ -81,7 +80,14 @@ namespace CommunicationUI
 		QString timestamp(msg.GetTimeStamp().toString());
 		QString who(msg.GetOriginator()->GetName());
 		QString message(msg.GetText());
-		QString htmlcontent("<span style='color:#828282;'>[");
+		QString htmlcontent("");
+		if ( opensimConnection_->GetUserID() != msg.GetOriginator()->GetID() )
+			htmlcontent.append("<span style='color:#0099FF;'>");
+		else
+		{
+			htmlcontent.append("<span style='color:#F80000;'>");
+			who = "Me";
+		}
 		htmlcontent.append(timestamp);
 		htmlcontent.append("]</span> <span style='color:#0099FF;'>");
 		htmlcontent.append(who);
@@ -101,24 +107,6 @@ namespace CommunicationUI
 		}
 	}
 
-	void OpenSimChat::ParticipantJoined(const Communication::ChatSessionParticipantInterface& participant)
-	{
-		QString who(participant.GetName());
-		QString htmlcontent("<span style='color:#828282;'>");
-		htmlcontent.append(who);
-		htmlcontent.append(" joined the world chat...</span>");
-		chatTextBox_->appendHtml(htmlcontent);
-	}
-
-	void OpenSimChat::ParticipantLeft(const Communication::ChatSessionParticipantInterface& participant)
-	{
-		QString who(participant.GetName());
-		QString htmlcontent("<span style='color:#828282;'>");
-		htmlcontent.append(who);
-		htmlcontent.append(" left the world chat...</span>");
-		chatTextBox_->appendHtml(htmlcontent);
-	}
-	
 	void OpenSimChat::ToggleShow()
 	{
 		if (canvas_)
@@ -247,18 +235,8 @@ namespace CommunicationUI
 
 	void OpenSimChat::ConnectSlotsToChatSession()
 	{
-		// This seems to work
-		QObject::connect(publicChat_, SIGNAL( MessageReceived(const QString&, const Communication::ChatSessionParticipantInterface&) ),
-						 this, SLOT ( MessageRecieved(const QString&, const Communication::ChatSessionParticipantInterface& ) ));
-		// This doesent...
 		QObject::connect(publicChat_, SIGNAL( MessageReceived(const Communication::ChatMessageInterface&) ),
 						 this, SLOT ( MessageRecieved(const Communication::ChatMessageInterface& ) ));
-		// Does not connect
-		QObject::connect(publicChat_, SIGNAL( ParticipantJoined(const Communication::ChatSessionParticipantInterface&) ),
-						 this, SLOT ( ParticipantJoined(const Communication::ChatSessionParticipantInterface&) ));
-		// Does not connect
-		QObject::connect(publicChat_, SIGNAL( ParticipantLeft(const Communication::ChatSessionParticipantInterface&) ),
-						 this, SLOT ( ParticipantLeft(const Communication::ChatSessionParticipantInterface&) ));
 		
 		// internal, works
 		QObject::connect(chatInput_, SIGNAL( returnPressed() ),
