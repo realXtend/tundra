@@ -116,7 +116,7 @@ namespace Foundation
          * Sets a new path. 
          * @param path is a path to folder where settings are exported.
          */
-        void SetPath(const std::string& path) { path_ = boost::filesystem::system_complete(boost::filesystem::path(path)); }
+        void SetPath(const std::string& path) { path_ = boost::filesystem::path(path); }
         std::string GetPath() const { return path_.file_string(); }
 
         /**

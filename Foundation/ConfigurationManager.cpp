@@ -8,7 +8,7 @@ namespace Foundation
 {
     const char* ConfigurationManager::DEFAULT_CONFIG_PATH = "./data/configuration/";
 
-    ConfigurationManager::ConfigurationManager(Framework* framework, const std::string& path) : path_(boost::filesystem::system_complete(boost::filesystem::path(path))), 
+    ConfigurationManager::ConfigurationManager(Framework* framework, const std::string& path) : path_(boost::filesystem::path(path)), 
         framework_(framework), file_name_encoding_(std::string("Rex"))
     {
         Load(path_.file_string());
@@ -27,7 +27,7 @@ namespace Foundation
         
         namespace fs = boost::filesystem;
 
-        fs::path filePath = fs::system_complete( fs::path(path));
+        fs::path filePath(path);
 
         if (fs::is_directory(filePath))
         {   
@@ -40,7 +40,7 @@ namespace Foundation
                 
                 // Get group name (it is encoded to filename)
 
-                fs::path file = fs::system_complete(*iter);
+                fs::path file(*iter);
                 
                 std::string fileName = file.filename();
                 std::string::size_type bPos = fileName.find(file_name_encoding_);
@@ -200,7 +200,7 @@ namespace Foundation
         // Check that given path is exist.
         
         namespace fs = boost::filesystem; 
-        fs::path filePath = fs::system_complete( fs::path(path));        
+        fs::path filePath(path);        
         
         if ( !fs::exists(filePath))
         {
@@ -224,7 +224,7 @@ namespace Foundation
             {
                 // Check that xml file match our encoding. 
                 
-                fs::path file = fs::system_complete(*file_iter);
+                fs::path file(*file_iter);
                 std::string fileName = file.filename();
                 
                 std::string::size_type bPos = fileName.find(file_name_encoding_);
@@ -383,7 +383,7 @@ namespace Foundation
             {
                 // Check that xml file match our encoding. 
                 
-                fs::path file = fs::system_complete(*file_iter);
+                fs::path file(*file_iter);
                 std::string fileName = file.filename();
                 
                 std::string::size_type bPos = fileName.find(file_name_encoding_);
