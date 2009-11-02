@@ -1514,7 +1514,7 @@ namespace RexLogic
             return;
         }
         
-        renderer->AddResourceDirectory("Avatar", dirname);
+        renderer->AddResourceDirectory(dirname);
     }    
     
     bool AvatarAppearance::ChangeAvatarMaterial(Scene::EntityPtr entity, Core::uint index, const std::string& filename)

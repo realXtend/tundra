@@ -157,13 +157,10 @@ namespace OgreRenderer
 		//! Takes a screenshot and saves it to a file.
 		void TakeScreenshot(const std::string& filePath, const std::string& fileName);//const Ogre::String& pyFilePath, const Ogre::String& pyFileName):
 
-        //! Adds a directory into an Ogre resource group, to be able to load local Ogre resources from there
-        /*! Note: do not use the default resource group name "General", but invent your own name.
-            You may call multiple times with same directory with no harm, each directory will only be added once to the same group.
-            \param groupname Resource group name
-            \param directory Directory path to add
+        //! Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
+        /*! \param directory Directory path to add
          */
-        void AddResourceDirectory(const std::string& groupname, const std::string& directory);
+        void AddResourceDirectory(const std::string& directory);
 
     private:
         //! Loads Ogre plugins in a manner which allows individual plugin loading to fail
@@ -212,6 +209,9 @@ namespace OgreRenderer
         //! Counter for unique name creation
         Core::uint object_id_;
 
+        //! Counter for unique resource group creation
+        Core::uint group_id_;
+
         //! External window parameter, to be used when embedding the renderwindow
         std::string external_window_parameter_;
 
@@ -230,8 +230,8 @@ namespace OgreRenderer
         //! window title to be used when creating renderwindow
         std::string window_title_;
         
-        //! added resource directories, per group
-        std::map<std::string, Core::StringVector> added_resource_directories_;
+        //! added resource directories
+        Core::StringVector added_resource_directories_;
     };
 }
 
