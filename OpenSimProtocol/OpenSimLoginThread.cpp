@@ -606,6 +606,10 @@ bool OpenSimLoginThread::PerformXMLRPCLogin()
     {
         if (!authentication_)
         {
+            // Clear authentication results from previous session, if any
+            threadState_->parameters.sessionHash = "";
+            threadState_->parameters.avatarStorageUrl = "";
+            
             threadState_->parameters.sessionID.FromString(call.GetReply<std::string>("session_id"));
             threadState_->parameters.agentID.FromString(call.GetReply<std::string>("agent_id"));
             threadState_->parameters.circuitCode = call.GetReply<int>("circuit_code");
