@@ -968,21 +968,18 @@ PyObject* SendObjectAddPacket(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-
-PyObject* GetUserAvatarPos(PyObject *self)
+PyObject* GetUserAvatarId(PyObject* self)
 {
-
 	RexLogic::RexLogicModule *rexlogic_;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
     {
-        RexTypes::Vector3 pos = rexlogic_->GetUserAvatarPos();
-        return Py_BuildValue("fff", pos.x, pos.y, pos.z);
+        Core::entity_id_t id = rexlogic_->GetUserAvatarId();
+        return Py_BuildValue("i", id);
     }
 
 	Py_RETURN_NONE;
 }
-
 
 //slider input
 /*    UpdateSliderEvents(input_state_);
@@ -1066,8 +1063,8 @@ static PyMethodDef EmbMethods[] = {
     {"sendObjectAddPacket", (PyCFunction)SendObjectAddPacket, METH_VARARGS, 
     "Creates a new prim at the given points"},
 
-	{"getUserAvatarPos", (PyCFunction)GetUserAvatarPos, METH_VARARGS, 
-    "Returns the user's avatar's position."},
+	{"getUserAvatarId", (PyCFunction)GetUserAvatarId, METH_VARARGS, 
+    "Returns the user's avatar's id."},
 
 	{NULL, NULL, 0, NULL}
 };

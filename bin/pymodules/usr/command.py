@@ -462,6 +462,10 @@ if 0:
     end_x = e.pos[0]
     end_y = e.pos[1]
     end_z = e.pos[2]
-    
-    
+        
     r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
+
+if 0: 
+    id = r.getUserAvatarId()
+    ent = r.getEntity(id)
+    print "User's avatar_id:", id, ent.pos
