@@ -254,6 +254,9 @@ namespace QtUI
         
         void ToBack(const QString& id);
 
+        /// Emitted when renderer window size is changed so individual widgets may know this and reposition accordingly
+        void RenderWindowSizeChanges(const QSize& newSize);
+
     protected:        
         
         /// Override Qt's QGraphicsView's background drawing to enable alpha on the empty

@@ -46,6 +46,7 @@ namespace RexLogic
         void DisconnectAndShowLoginWindow();
         void Quit();
         void ProcessCBLogin(QString result);
+		void AdjustInternalWidgets(const QSize& newSize);
 
     private:
         /// Hides the login window and shows the logout/quit menu that is embedded to main window.

@@ -286,8 +286,7 @@ void UICanvas::SetRenderWindowSize(const QSize& size)
         float relHeight = (float)texture->getHeight()/double(renderWindowSize_.height());
         container_->setDimensions(relWidth, relHeight);
         dirty_ = true;
-
-   
+        emit( RenderWindowSizeChanges(renderWindowSize_) );
     }
 }
 

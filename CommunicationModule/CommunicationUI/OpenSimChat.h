@@ -29,6 +29,7 @@ namespace CommunicationUI
 		void ToggleShow();
 		void DestroyThis();
 		void ToggleChatVisibility();
+		void AdjustInternalWidgets(const QSize& newSize);
 		// Connecting
 		void OnOpensimUdpConnectionReady(Communication::ConnectionInterface&);
 		void OnOpensimUdpConnectionError(Communication::ConnectionInterface&);
