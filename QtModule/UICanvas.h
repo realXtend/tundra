@@ -43,6 +43,7 @@ namespace QtUI
         debugging, but can perhaps be useful in other cases as well.
 
         Changing the UICanvas display mode after the UICanvas has been instantiated is not supported. */
+
     class QT_MODULE_API UICanvas : public QGraphicsView
     {
         Q_OBJECT
@@ -130,9 +131,17 @@ namespace QtUI
         void Resize(int width, int height, CanvasCorner anchor);
         
 
+        /**
+         * Enables or disables alpha fading animation. 
+         * @param on is alpha fade on or off. 
+         * @param time is how fast canvas is "animated" default value 13.2 s
+         */
+        
+        void SetAlphaFade(bool on, double time = 13.2) { total_dur_ = time, use_fading_ = on; }
 
         /// @return (x,y,w,h) containing the absolute position and size of the canvas, relative
         /// the upper-left of the main render window.
+
         QRect GetCanvasGeometry() const { return this->geometry(); }
     	
         /** 
@@ -187,56 +196,72 @@ namespace QtUI
         void Activate();
 
      public slots:
-    	/// @return True if this canvas is hidden, false otherwise.  
-        bool IsHidden() const;
+    	
+        /// @return True if this canvas is hidden, false otherwise.  
+        
+         bool IsHidden() const;
         
 		/// Redraws this internal canvas to an Ogre surface if it has become dirty. 
         /// For external canvases, does nothing.
+        
         void Render();
 
         /// Marks the Ogre surface of this canvas to be pending for redraw.
         /// For external canvases, does nothing.
+        
         void SetDirty() { dirty_ = true; }
 
         /// Recalculates the relative normalized canvas overlay position and size values needed 
         /// for Ogre display. Called whenever the main render window size changes.
+        
         void SetRenderWindowSize(const QSize& size); 
 
         /// Shows this canvas.
+        
         void Show();
 
         /// Hides the whole canvas.
+        
         void Hide();
 
         /// Adds a widget into this canvas.
         /** Call this method to add any type of widget into the QGraphicsScene contained in this 
             canvas. This canvas will take the ownership of the widget and free it when appropriate. */
+        
         void AddWidget(QWidget* widget); 
 
         /// Sets the window title. For internal canvases the title is not shown, so this has no effect.
-		void SetCanvasWindowTitle(QString title);
+		
+        void SetCanvasWindowTitle(QString title);
 
         /// Sets the window icon. For internal canvases the title is not shown, so this has no effect.
-		void SetCanvasWindowIcon(QIcon &icon);
+		
+        void SetCanvasWindowIcon(QIcon &icon);
 
 
     signals:                
+        
         /// Emitted when this canvas needs to be brought to top in the Z order. UIController tracks 
         /// this signal and performs the necessary reordering.
+        
         void ToTop(const QString& id);
 
         /// Emitted when this canvas needs to be brought to bottom in the Z order. UIController 
         /// tracks this signal and performs the necessary reordering.
+        
         void ToBack(const QString& id);
 
     protected:        
+        
         /// Override Qt's QGraphicsView's background drawing to enable alpha on the empty
         /// areas of the canvas.
+        
         void drawBackground(QPainter *painter, const QRectF &rect);
 
         /// Call this to render the canvas onto the Ogre surface that is associated to this view.
         /// OgreUIView manages the Ogre overlays by itself so after calling this the new updated
         /// canvas is automatically shown.
+        
         void RenderSceneToOgreSurface();
 
     private:
@@ -246,15 +271,19 @@ namespace QtUI
         /// Marked as private since we don't support changing the display mode after the canvas has 
         /// been instantiated. \todo this function is quite obsolete, remove or implement support for 
         /// changing the mode.
+        
         void SetMode(Mode mode) { mode_ = mode; }
 
         /// Creates an Ogre Overlay and an Ogre Texture surface of the given size.
+
         void CreateOgreResources(int width, int height);
 
         /// Recreates an Ogre texture when the canvas size needs to change.
+        
         void ResizeOgreTexture(int width, int height);
 
         /// Resizes widgets when canvas size has been changed
+        
         void ResizeWidgets(int width, int height);
  
         /// Tracks whether the Ogre surface associated to this canvas is dirty and should be redrawn.
@@ -292,16 +321,20 @@ namespace QtUI
         bool resize_locked_;
 
         bool always_top_;
+       
+        // For alpha fade feature:
 
-        // Overlay alpha value
+        bool fade_;
         double alpha_;
         double current_dur_;
-        bool fade_;
+      
         double total_dur_;
         QTime clock_;
         int lastTime_;
 
-
+        bool fade_on_hiding_;
+        bool use_fading_;
+       
         /// Contains the widget proxies of all the widgets that have been added to this canvas.
         QList<QGraphicsProxyWidget*> scene_widgets_;
     };

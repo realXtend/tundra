@@ -879,6 +879,7 @@ boost::shared_ptr<QtUI::UICanvas> UIController::GetCanvas(const QString& id)
             return canvases_[index];
         }
     }
+    return boost::shared_ptr<QtUI::UICanvas>();
 }
 
 int UIController::GetCanvas(const QPoint& point) 

@@ -203,19 +203,19 @@ boost::weak_ptr<UICanvas> QtModule::CreateCanvas(UICanvas::Mode mode)
 
 void QtModule::AddCanvasToControlBar(boost::shared_ptr<QtUI::UICanvas> canvas, const QString &buttonTitle)
 {
-	if (canvasManager_)
+	if (canvasManager_ != 0)
         canvasManager_->AddCanvasToControlBar(canvas, buttonTitle);
 }
 
 void QtModule::AddCanvasToControlBar(const QString& id, const QString &buttonTitle)
 {
-	if (canvasManager_)
+	if (canvasManager_ != 0)
 		canvasManager_->AddCanvasToControlBar(controller_->GetCanvas(id), buttonTitle);
 }
 
 bool QtModule::RemoveCanvasFromControlBar(const QString& id)
 {
-	if (canvasManager_)
+	if (canvasManager_ != 0)
 		return canvasManager_->RemoveCanvasFromControlBar(id);
 	return false;
 }

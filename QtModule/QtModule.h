@@ -88,6 +88,7 @@ namespace QtUI
 		 * @param id of the canvas
 		 */
 		bool RemoveCanvasFromControlBar(const QString& id);
+        
         //! Creates an EC_UICanvas to an entity using a UICanvas previously created. UICanvas must be in internal mode.
         /*! If entity already has EC_UICanvas component, just sets the canvas to use.
             @return Pointer to EC_UICanvas component, or null if the component could not be created out of some reason.
@@ -95,6 +96,7 @@ namespace QtUI
         Foundation::ComponentPtr CreateEC_UICanvasToEntity(Scene::EntityPtr entity, boost::shared_ptr<QtUI::UICanvas> canvas);
          
     private:
+        
         /// Initializes a mapping table between OIS and Qt keyboard codes.
         void InitializeKeyCodes();
         

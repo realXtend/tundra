@@ -44,7 +44,14 @@ UICanvas::UICanvas(): overlay_(0),
                       widgets_(0),
                       locked_(false), 
                       resize_locked_(false),
-                      always_top_(false)
+                      always_top_(false),
+                      fade_(false),
+                      alpha_(0.0),
+                      current_dur_(0.0),
+                      total_dur_(0.0),
+                      lastTime_(0.0),fade_on_hiding_(false),
+                      use_fading_ (false)
+
                      
                       
 {
@@ -52,6 +59,8 @@ UICanvas::UICanvas(): overlay_(0),
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
     QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(SetDirty()));
+
+
 }
 
 UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
@@ -63,16 +72,19 @@ UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
                                widgets_(0),
                                locked_(false),
                                resize_locked_(false),
-                               always_top_(false)
+                               always_top_(false), 
+                               fade_(false),
+                               alpha_(0.0),
+                               current_dur_(0.0),
+                               total_dur_(0.0),
+                               lastTime_(0.0), fade_on_hiding_(false),
+                               use_fading_ (false)
+
                                
                           
 {
     setScene(new QGraphicsScene);
 
-    alpha_ = 1.0;
-    current_dur_ = 0.0;
-    fade_ = true;
-    total_dur_ = 0.0;
 
 
     if (mode_ == External) 
@@ -466,31 +478,49 @@ void UICanvas::CreateOgreResources(int width, int height)
 
 void UICanvas::Fade(double timeSinceLastFrame )
 {
-    if ( isHidden() && state_ != 0 )
+    
+    if ( !IsHidden() && state_ != 0 && !fade_on_hiding_)
     {
       
-       // If fading in increase alpha until it reaches 0.0
+       // If fading in decrease alpha until it reaches 1.0
        state_->setAlphaOperation( Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha_);
-       current_dur_ -= timeSinceLastFrame;
+       current_dur_ += timeSinceLastFrame;
        alpha_ = current_dur_ / total_dur_;
-       if( alpha_ < 0.0 || current_dur_ < 0 )
+       if ( alpha_ > 1.0)   
        {
-         //overlay_->hide();
+        
          lastTime_ = 0;
+         alpha_ = 1.0;
+         state_->setAlphaOperation( Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha_);
          fade_ = false;
        }
+       
     }
-    else if ( state_ != 0)
+    else if ( state_ != 0 && fade_on_hiding_)
     {
-        // If fading out increase alpha until it reaches 1.0
+        // If fading out increase alpha until it reaches 0.0
         state_->setAlphaOperation( Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha_);
-        current_dur_ += timeSinceLastFrame;
+        current_dur_ -= timeSinceLastFrame;
 	    alpha_ = current_dur_ / total_dur_;
-	    if( alpha_ > 1.0 )
+	    if( alpha_ < 0.0 )
+        {
            fade_ = false;
+           
+           hide();
 
+            QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
+            for (; iter != scene_widgets_.end(); ++iter)
+                (*iter)->hide();
+          
+            container_->hide();
+            overlay_->hide();
+
+            fade_on_hiding_ = false;
+        }
+       
     }
-
+    dirty_ = true;
+   
 }
 
 void UICanvas::Show()
@@ -502,13 +532,15 @@ void UICanvas::Show()
         for (; iter != scene_widgets_.end(); ++iter)
             (*iter)->show();
             
-        alpha_ = 1.0;
-        total_dur_ = 2.3;
-        current_dur_ = 2.3;
-        //fade_ = true;
-        //state_->setAlphaOperation( Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha_);
+        if ( use_fading_ )
+        {
+            alpha_ = 0.0;
+            current_dur_ = 0.0;
+            fade_ = true;
+            state_->setAlphaOperation( Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha_);
         
-        clock_.start();
+            clock_.start();
+        }
 
         container_->show();
         overlay_->show();
@@ -535,6 +567,16 @@ void UICanvas::Hide()
 {
     if ( mode_ != External)
     {
+        
+        if ( use_fading_ )
+        {
+            fade_ = true;
+            fade_on_hiding_ = true;
+            current_dur_ = total_dur_;
+            clock_.restart();
+            return;
+        }
+        
         hide();
 
         QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
@@ -543,8 +585,10 @@ void UICanvas::Hide()
           
         container_->hide();
         overlay_->hide();
+        
         dirty_ = true;
         RenderSceneToOgreSurface();
+        
     }
     else
         hide();
@@ -561,18 +605,6 @@ void UICanvas::RenderSceneToOgreSurface()
     // Render if and only if scene is dirty.
     if (!dirty_ || mode_ == External)
         return;
-
-    if ( fade_ )
-    {
-        int time = clock_.elapsed();
-        double timeSinceLastFrame = (time - lastTime_)/1000.0;
-        lastTime_ = time;
-        Fade(timeSinceLastFrame);
-    }
-  
-       
-
-    
 
     PROFILE(RenderSceneToOgre);
 
@@ -609,9 +641,21 @@ void UICanvas::RenderSceneToOgreSurface()
 
 void UICanvas::Render()
 {
-    if ( mode_ != External && container_->isVisible())
-        RenderSceneToOgreSurface();    
     
+    if ( mode_ != External && container_->isVisible())
+    {
+        if ( fade_ )
+        {
+            int time = clock_.elapsed();
+            if ( time != 0)
+            {
+                double timeSinceLastFrame = double((time - lastTime_))/1000.0;
+                lastTime_ = time;
+                Fade(timeSinceLastFrame);
+            } 
+        }     
+        RenderSceneToOgreSurface();    
+    }
 }
 
 }
