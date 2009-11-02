@@ -135,10 +135,7 @@ namespace OgreRenderer
 
                 return false;
             }
-            
-            // Specular, if defined, mostly gives horrible results under our lighting system (Caelum). Set to black
-            tempmat->setSpecular(0.0f, 0.0f, 0.0f, 0.0f);
-            
+                        
             ogre_material_ = tempmat->clone(id_);
             tempmat.setNull();
             matmgr.remove(tempname);

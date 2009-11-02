@@ -100,6 +100,7 @@ namespace OgreRenderer
         camera_(NULL),
         renderwindow_(NULL),
         object_id_(0),
+        group_id_(0),
         main_window_handle_(0),
         listener_(EventListenerPtr(new EventListener(this))),
         log_listener_(OgreLogListenerPtr(new LogListener)),
@@ -814,18 +815,20 @@ namespace OgreRenderer
 		}
 	}
 	
-	void Renderer::AddResourceDirectory(const std::string& groupname, const std::string& directory)
+	void Renderer::AddResourceDirectory(const std::string& directory)
 	{       
         // Check to not add the same directory more than once
-        for (Core::uint i = 0; i < added_resource_directories_[groupname].size(); ++i)
+        for (Core::uint i = 0; i < added_resource_directories_.size(); ++i)
         {
-            if (added_resource_directories_[groupname][i] == directory)
+            if (added_resource_directories_[i] == directory)
                 return;
         }
         
         Ogre::ResourceGroupManager& resgrpmgr = Ogre::ResourceGroupManager::getSingleton();
 
-        // Check if resource group already exists
+        std::string groupname = "grp" + Core::ToString<Core::uint>(group_id_++);
+        
+        // Check if resource group already exists (should not)        
         bool exists = false;
         Ogre::StringVector groups = resgrpmgr.getResourceGroups();
         for (Core::uint i = 0; i < groups.size(); ++i)
@@ -847,15 +850,15 @@ namespace OgreRenderer
             catch (...) {}
         }
         
-        // Add directory as resource location
+        // Add directory as a resource location, then initialize group
         try
         {
             resgrpmgr.addResourceLocation(directory, "FileSystem", groupname);
-            resgrpmgr.initialiseResourceGroup("Avatar");
+            resgrpmgr.initialiseResourceGroup(groupname);
         }
         catch (...) {}
         
-        added_resource_directories_[groupname].push_back(directory);
+        added_resource_directories_.push_back(directory);
     }
 }
 

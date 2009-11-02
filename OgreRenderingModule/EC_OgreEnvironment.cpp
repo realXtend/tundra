@@ -161,6 +161,9 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
     Ogre::ColourValue diffuseMultiplier(sunColorMultiplier_, sunColorMultiplier_, sunColorMultiplier_, 1);
     caelumSystem_->getSun()->setDiffuseMultiplier(diffuseMultiplier);
 
+    Ogre::Light* sun = caelumSystem_->getSun()->getMainLight();
+    Ogre::Light* moon = caelumSystem_->getMoon()->getMainLight();
+
     float sunDirZaxis = caelumSystem_->getSun()->getMainLight()->getDirection().z;
     if (sunDirZaxis > 0)
     {
@@ -222,6 +225,10 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
     caelumSystem_->notifyCameraChanged(camera);
     caelumSystem_->updateSubcomponents(frametime);
 
+    // Disable specular from the sun & moon for now, because it easily leads to too strong results
+    sun->setSpecularColour(0.0f, 0.0f, 0.0f);
+    moon->setSpecularColour(0.0f, 0.0f, 0.0f);
+    
     // Get the sun's position. The magic number 80000 is from "Nature" demo app, found from OGRE forum.
     // This would be used for Hydrax.
 //    Ogre::Vector3 sunPos = camera->getPosition();
