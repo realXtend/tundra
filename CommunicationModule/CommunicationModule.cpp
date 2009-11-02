@@ -106,7 +106,10 @@ namespace Communication
 		{
 			if ( event_id == OpenSimProtocol::Events::EVENT_SERVER_CONNECTED )
 				if (opensim_ui_ == 0)
-					opensim_ui_ = new CommunicationUI::OpenSimChat(framework_);
+				{
+					OpenSimProtocol::ClientParameters clientParams = framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol).lock().get()->GetClientParameters();
+					opensim_ui_ = new CommunicationUI::OpenSimChat(framework_, clientParams);
+				}
 			if ( event_id == OpenSimProtocol::Events::EVENT_SERVER_DISCONNECTED )
 				if (opensim_ui_ != 0)
 					SAFE_DELETE(opensim_ui_);

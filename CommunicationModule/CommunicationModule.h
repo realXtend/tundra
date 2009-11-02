@@ -3,6 +3,7 @@
 
 #include "Foundation.h"
 #include "ModuleInterface.h"
+#include "OpenSimProtocolModule.h"
 
 #include "CommunicationModuleApi.h"
 #include "CommunicationManager.h"

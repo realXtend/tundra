@@ -12,6 +12,8 @@
 #include "InventoryFolder.h"
 #include "InventoryAsset.h"
 
+#include <QtGui>
+
 #include "PythonQt.h"
 
 namespace RexLogic
@@ -94,6 +96,9 @@ namespace Inventory
         /// @return Inventory root folder.
         AbstractInventoryItem *GetRoot() const { return rootFolder_; }
 
+	public slots:
+		void ItemSelectedFetchContent(AbstractInventoryItem *item);
+
 	private:
 		Q_DISABLE_COPY(WebdavInventoryDataModel);
 
@@ -124,6 +129,7 @@ namespace Inventory
 
 		// Pointer to PythonQts main module
 		PythonQtObjectPtr pythonQtMainModule_;
+		PythonQtObjectPtr webdavclient_;
 
 	};
 }

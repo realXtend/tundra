@@ -5,7 +5,7 @@
   <property name="geometry">
    <rect>
     <x>0</x>
-    <y>103</y>
+    <y>0</y>
     <width>300</width>
     <height>194</height>
    </rect>
@@ -92,7 +92,7 @@ QPushButton#pushButton_Close {
         <bool>true</bool>
        </property>
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -164,7 +164,7 @@ QPushButton#pushButton_Close {
           </size>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <property name="tabSpacing">
           <number>0</number>
@@ -175,7 +175,7 @@ QPushButton#pushButton_Close {
             <x>0</x>
             <y>0</y>
             <width>90</width>
-            <height>58</height>
+            <height>69</height>
            </rect>
           </property>
           <attribute name="label">
