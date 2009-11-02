@@ -82,7 +82,7 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewFolder(const QSt
 
     if (GetOpenSimLibraryFolder())
         if (parent->IsDescendentOf(GetOpenSimLibraryFolder()))
-            newFolder->SetIsLibraryAsset(true);
+            newFolder->SetIsLibraryItem(true);
 
     // Inform the server.
     // We don't want to notify server if we're creating folders "ordered" by server via InventoryDescecendents packet.
@@ -113,7 +113,7 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewAsset(
     InventoryAsset *newAsset = new InventoryAsset(inventory_id, asset_id, name, parent);
 
     if (parent->IsDescendentOf(GetOpenSimLibraryFolder()))
-        newAsset->SetIsLibraryAsset(true);
+        newAsset->SetIsLibraryItem(true);
 
     return parent->AddChild(newAsset);
 }
@@ -140,9 +140,11 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemMove(AbstractInventoryItem 
 
 void OpenSimInventoryDataModel::NotifyServerAboutItemCopy(AbstractInventoryItem *item)
 {
-    ///\todo
     if (item->GetItemType() != AbstractInventoryItem::Type_Asset)
         return;
+
+    rexLogicModule_->GetServerConnection()->SendCopyInventoryItemPacket(QSTR_TO_UUID(worldLibraryOwnerId_),
+        QSTR_TO_UUID(item->GetID()), QSTR_TO_UUID(item->GetParent()->GetID()), item->GetName().toStdString());
 }
 
 void OpenSimInventoryDataModel::NotifyServerAboutItemRemove(AbstractInventoryItem *item)
@@ -225,11 +227,11 @@ void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
         parent_folder->AddChild(newFolder);
 
         if (newFolder == GetOpenSimLibraryFolder())
-            newFolder->SetIsLibraryAsset(true);
+            newFolder->SetIsLibraryItem(true);
 
         if (GetOpenSimLibraryFolder())
             if (newFolder->IsDescendentOf(GetOpenSimLibraryFolder()))
-                newFolder->SetIsLibraryAsset(true);
+                newFolder->SetIsLibraryItem(true);
         // Flag Library folders. They have some special behavior.
     }
 

@@ -90,13 +90,13 @@ Qt::ItemFlags InventoryItemModel::flags(const QModelIndex &index) const
     AbstractInventoryItem *item = GetItem(index);
     if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
     {
-        if (!item->IsLibraryAsset())
+        if (!item->IsLibraryItem())
             flags |= Qt::ItemIsDropEnabled;
         flags |= Qt::ItemIsDragEnabled;
     }
 
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
-        if (!item->IsLibraryAsset())
+        if (!item->IsLibraryItem())
             flags |= Qt::ItemIsDropEnabled;
 
     if (!item->IsEditable())
@@ -170,7 +170,7 @@ bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     int rows = 0;
     while(!stream.atEnd())
     {
-        QString id;
+        QString parent_id, id;
         stream >> id;
         AbstractInventoryItem *item = dataModel_->GetChildById(id);
         assert(item);
@@ -216,6 +216,9 @@ bool InventoryItemModel::insertRows(int position, int rows, const QModelIndex &p
 {
     InventoryFolder *parentFolder = dynamic_cast<InventoryFolder *>(GetItem(parent));
     if (!parentFolder)
+        return false;
+
+    if (parentFolder->IsLibraryItem())
         return false;
 
     beginInsertRows(parent, position, position + rows - 1);
@@ -303,13 +306,25 @@ bool InventoryItemModel::insertRows(int position, int rows, const QModelIndex &p
     if (item->GetItemType()== AbstractInventoryItem::Type_Asset)
     {
         InventoryAsset *oldAsset= static_cast<InventoryAsset *>(item);
-        InventoryAsset *newAsset = static_cast<InventoryAsset *>(dataModel_->GetOrCreateNewAsset(
-            oldAsset->GetID(), oldAsset->GetAssetReference(), *parentFolder, oldAsset->GetName()));
-        newAsset->SetDescription(oldAsset->GetDescription());
-        newAsset->SetInventoryType(oldAsset->GetInventoryType());
-        newAsset->SetAssetType(oldAsset->GetAssetType());
 
-        dataModel_->NotifyServerAboutItemMove(newAsset);
+        if (oldAsset->IsLibraryItem())
+        {
+            // Library asset can only be copied, moving not possible.
+            // Server is authorative for copy operation so we don't create the new asset right here.
+            // If the copy as legal, server sends us packet and we create the asset after that.
+            InventoryAsset newTempAsset(oldAsset->GetID(), oldAsset->GetAssetReference(), oldAsset->GetName(), parentFolder);
+            dataModel_->NotifyServerAboutItemCopy(&newTempAsset);
+        }
+        else
+        {
+            InventoryAsset *newAsset = static_cast<InventoryAsset *>(dataModel_->GetOrCreateNewAsset(
+                oldAsset->GetID(), oldAsset->GetAssetReference(), *parentFolder, oldAsset->GetName()));
+            newAsset->SetDescription(oldAsset->GetDescription());
+            newAsset->SetInventoryType(oldAsset->GetInventoryType());
+            newAsset->SetAssetType(oldAsset->GetAssetType());
+
+            dataModel_->NotifyServerAboutItemMove(newAsset);
+        }
     }
 
     endInsertRows();
