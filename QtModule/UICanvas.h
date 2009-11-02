@@ -129,10 +129,10 @@ namespace QtUI
         /**
          * Enables or disables alpha fading animation. 
          * @param on is alpha fade on or off. 
-         * @param time is how fast canvas is "animated" default value 13.2 s
+         * @param time is how fast canvas is "animated" default value 2 s
          */
         
-        void SetAlphaFade(bool on, double time = 13.2) { total_dur_ = time, use_fading_ = on; }
+        void SetAlphaFade(bool on, double time = 2) { total_dur_ = time, use_fading_ = on; }
 
         /// @return (x,y,w,h) containing the absolute position and size of the canvas, relative
         /// the upper-left of the main render window.
