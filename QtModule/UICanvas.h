@@ -104,12 +104,7 @@ namespace QtUI
 
         void SetAlwaysOnTop(bool on) { always_top_ = on; }
 
-        /** Resizes the UI canvas size and reallocates Qt and Ogre surfaces to new size. 
-            @param width is a new width of canvas. 
-            @param height is a new height of canvas.
-            @todo override widgets own resize? */
-        
-        void SetCanvasSize(int width, int height);
+       
 
         /// @return A pair (width, height) containing the absolute size of the canvas.
         QSize GetSize() const { return this->size(); }
@@ -197,6 +192,14 @@ namespace QtUI
 
      public slots:
     	
+         /** Resizes the UI canvas size and reallocates Qt and Ogre surfaces to new size. 
+            @param width is a new width of canvas. 
+            @param height is a new height of canvas.
+            @todo override widgets own resize? */
+        
+        void SetCanvasSize(int width, int height);
+
+
         /// @return True if this canvas is hidden, false otherwise.  
         
          bool IsHidden() const;
