@@ -4,7 +4,7 @@
 #include "Framework.h"
 #include "ModuleManager.h"
 #include "ConfigurationManager.h"
-
+#include "Poco/UnicodeConverter.h"
 
 namespace fs = boost::filesystem;
 
@@ -333,7 +333,7 @@ namespace Foundation
         if (!library)
         {
             try
-            {
+            {            
                 library = Module::SharedLibraryPtr(new Module::SharedLibrary(path));
 
                 if (!library->sl_.hasSymbol("SetProfiler"))
@@ -487,11 +487,14 @@ namespace Foundation
         Core::StringVectorPtr files(new Core::StringVector);
 
         // Find all xml files recursively
-        fs::path full_path = fs::system_complete(fs::path(DEFAULT_MODULES_PATH));
-        if ( !fs::exists( full_path ) || !fs::is_directory( full_path ))
+        //fs::path full_path = fs::system_complete(fs::path(DEFAULT_MODULES_PATH));
+        //if ( !fs::exists( full_path ) || !fs::is_directory( full_path ))
+        //    throw Core::Exception("Path not found!"); // can be considered fatal
+        fs::path rel_path(path);
+        if ( !fs::exists( rel_path ) || !fs::is_directory( rel_path ))
             throw Core::Exception("Path not found!"); // can be considered fatal
 
-        fs::recursive_directory_iterator iter( full_path );
+        fs::recursive_directory_iterator iter( rel_path );
         fs::recursive_directory_iterator end_iter;
         for ( ; iter != end_iter ; ++iter )
         {
