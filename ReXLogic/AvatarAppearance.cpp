@@ -939,6 +939,7 @@ namespace RexLogic
                         Ogre::SubMesh* submesh = ogremesh->getSubMesh(j);
                         AvatarMaterial attach_newmat;
                         attach_newmat.asset_.name_ = submesh->getMaterialName();
+                        FixupMaterial(attach_newmat, asset_map);
                         attachments[i].materials_.push_back(attach_newmat);
                     }
                 }
