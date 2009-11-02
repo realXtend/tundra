@@ -26,6 +26,7 @@ namespace TelepathyIM
 		Tp::Features features;
 		features.insert(Tp::TextChannel::FeatureCore);
 		features.insert(Tp::TextChannel::FeatureMessageCapabilities);
+		features.insert(Tp::TextChannel::FeatureMessageQueue);
 		connect(tp_text_channel_->becomeReady(features), SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnIncomingTextChannelReady(Tp::PendingOperation*)) );
 	}
 
@@ -141,7 +142,7 @@ namespace TelepathyIM
 		
 		Tp::PendingChannel *pending_channel = qobject_cast<Tp::PendingChannel *>(op);
 		tp_text_channel_ = Tp::TextChannelPtr(dynamic_cast<Tp::TextChannel *>( pending_channel->channel().data() ));
-		connect( tp_text_channel_->becomeReady(),
+		connect( tp_text_channel_->becomeReady(Tp::TextChannel::FeatureMessageQueue),
 			    SIGNAL( finished(Tp::PendingOperation*) ),
 				SLOT( OnOutgoingTextChannelReady(Tp::PendingOperation*) ));
 	}
@@ -228,26 +229,34 @@ namespace TelepathyIM
 		
 		if( !pending_messages.isFinished() )
 			pending_messages.waitForFinished();
-		//if ( pending_messages.isValid() )
-		//{
-		//	LogDebug("Received pending messages:");
-		//	QDBusMessage m = pending_messages.reply();
-		//	Tp::PendingTextMessageList list = pending_messages.value();
-		//	
-		//	for (Tp::PendingTextMessageList::iterator i = list.begin(); i != list.end(); ++i)
-		//	{
-		//		QString note = QString("* Pending message received: ").append(i->text);
-		//		LogDebug(note.toStdString());
+		if ( pending_messages.isValid() )
+		{
+			LogDebug("Received pending messages:");
+			QDBusMessage m = pending_messages.reply();
+			Tp::PendingTextMessageList list = pending_messages.value();
+			
+			for (Tp::PendingTextMessageList::iterator i = list.begin(); i != list.end(); ++i)
+			{
+				QString note = QString("* Pending message received: ").append(i->text);
+				LogDebug(note.toStdString());
 
-		//		Core::uint type = i->messageType; //! @todo Check if we need value of this parameter
+				Core::uint type = i->messageType; //! @todo Check if we need value of this parameter
+				ChatSessionParticipant* originator = GetParticipant(i->sender);
+				if (originator == 0)
+				{
+					//! @HACK and memory leak here. We should have a contact object from Connection object!
+					//! @HACK We should search contact object with given i->sender id value
+					originator = new ChatSessionParticipant(new Contact(tp_text_channel_->initiatorContact()));
+					participants_.push_back(originator);
+				}
 
-		//		ChatMessage* message = new ChatMessage( GetParticipant(i->sender), QDateTime::fromTime_t(i->unixTimestamp), i->text);
-		//		message_history_.push_back(message);
-		//		emit( MessageReceived(*message) );
-		//	}
-		//}
-		//else
-		//	LogError("Received invalid pending messages");
+				ChatMessage* message = new ChatMessage( originator, QDateTime::fromTime_t(i->unixTimestamp), i->text);
+				message_history_.push_back(message);
+				emit( MessageReceived(*message) );
+			}
+		}
+		else
+			LogError("Received invalid pending messages");
 	}
 
 	void ChatSession::OnMessageSendAck(Tp::PendingOperation* op)
