@@ -3,6 +3,7 @@
 
 #include "StableHeaders.h"
 #include "Foundation.h"
+#include "NetworkEvents.h"
 #include "UICanvas.h"
 #include "QtModule.h"
 
@@ -21,19 +22,18 @@ namespace CommunicationUI
 	Q_OBJECT
 
 	public:
-		OpenSimChat(Foundation::Framework *framework);
+		OpenSimChat(Foundation::Framework *framework, OpenSimProtocol::ClientParameters clientParams);
 		virtual ~OpenSimChat();
 
 	public slots:
 		void ToggleShow();
 		void DestroyThis();
 		void ToggleChatVisibility();
-		// Connectiong
+		// Connecting
 		void OnOpensimUdpConnectionReady(Communication::ConnectionInterface&);
 		void OnOpensimUdpConnectionError(Communication::ConnectionInterface&);
 		// ChatSession signal handlers
 		void MessageRecieved(const Communication::ChatMessageInterface &msg);
-		void MessageRecieved(const QString& text, const Communication::ChatSessionParticipantInterface& participant);
 		void SendMessage();
 	
 	private:
@@ -55,6 +55,8 @@ namespace CommunicationUI
 		Foundation::Framework *framework_;
 		boost::shared_ptr<QtUI::QtModule> qtModule_;
 		boost::shared_ptr<QtUI::UICanvas> canvas_;
+
+		OpenSimProtocol::ClientParameters clientParams_;
 
 		bool visible_;
 

@@ -41,59 +41,142 @@ namespace Inventory
 
 	AbstractInventoryItem *WebdavInventoryDataModel::GetFirstChildFolderByName(const QString &searchName) const
 	{
+		InventoryModule::LogInfo("[Webdav Inventory] You are in GetFirstChildFolderByName");
 		return new InventoryAsset("", "");
 	}
 
 	AbstractInventoryItem *WebdavInventoryDataModel::GetChildFolderById(const QString &searchId) const
 	{
+		InventoryModule::LogInfo("[Webdav Inventory] You are in GetChildFolderById");
 		return new InventoryAsset("", "");
 	}
 
 	AbstractInventoryItem *WebdavInventoryDataModel::GetChildAssetById(const QString &searchId) const
 	{
+		InventoryModule::LogInfo("[Webdav Inventory] You are in GetChildAssetById");
 		return new InventoryAsset("", "");
 	}
 
 	AbstractInventoryItem *WebdavInventoryDataModel::GetChildById(const QString &searchId) const
 	{
+		InventoryModule::LogInfo("[Webdav Inventory] You are in GetChildById");
 		return new InventoryAsset("", "");
 	}
 
 	AbstractInventoryItem *WebdavInventoryDataModel::GetOrCreateNewFolder(const QString &id, AbstractInventoryItem &parentFolder,
             const QString &name, const bool &notify_server)
 	{
+		InventoryModule::LogInfo("[Webdav Inventory] You are in GetOrCreateNewFolder");
 		return new InventoryAsset("", "");
 	}
 
 	AbstractInventoryItem *WebdavInventoryDataModel::GetOrCreateNewAsset(const QString &inventory_id, const QString &asset_id,
             AbstractInventoryItem &parentFolder, const QString &name)
 	{
+		InventoryModule::LogInfo("[Webdav Inventory] You are in GetOrCreateNewAsset");
 		return new InventoryAsset("", "");
 	}
 
 	void WebdavInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem *folder)
 	{
-
+		InventoryModule::LogInfo("[Webdav Inventory] You are in FetchInventoryDescendents");
 	}
 
 	void WebdavInventoryDataModel::NotifyServerAboutItemMove(AbstractInventoryItem *item)
 	{
-
+		InventoryModule::LogInfo("[Webdav Inventory] You are in NotifyServerAboutItemMove");
 	}
 	
 	void WebdavInventoryDataModel::NotifyServerAboutItemCopy(AbstractInventoryItem *item)
 	{
-
+		InventoryModule::LogInfo("[Webdav Inventory] You are in NotifyServerAboutItemCopy");
 	}
 
 	void WebdavInventoryDataModel::NotifyServerAboutItemRemove(AbstractInventoryItem *item)
 	{
-
+		InventoryModule::LogInfo("[Webdav Inventory] You are in NotifyServerAboutItemRemove");
 	}
 
 	void WebdavInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryItem *item)
 	{
+		InventoryModule::LogInfo("[Webdav Inventory] You are in NotifyServerAboutItemUpdate");
+	}
 
+	/// PUBLIC SLOTS
+
+	void WebdavInventoryDataModel::ItemSelectedFetchContent(AbstractInventoryItem *item)
+	{
+		if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
+		{
+			InventoryFolder *selected = dynamic_cast<InventoryFolder *>(item);
+			if (item)
+			{
+				// Delete children
+				InventoryModule::LogInfo("Webdav | Deleting all childer from folder\n");
+				//QListIterator<AbstractInventoryItem *> it(selected->GetChildList());
+				//while(it.hasNext())
+				//{
+				//	AbstractInventoryItem *item = it.next();
+				//	if (item)
+				//		delete item;
+				//}
+				selected->GetChildList().clear();
+
+				// Get path
+				QString path = selected->GetID();
+				if (path == "/")
+					path = "";
+				QString debugmsg = QString("Webdav | Fetching folder content for path %1 \n").arg(path);
+				InventoryModule::LogInfo(debugmsg.toStdString());
+				
+				// Get child list
+				QStringList children = webdavclient_.call("listResources", QVariantList() << path).toStringList();
+				
+				if ( children.count() >=1 )
+				{
+					// Process child list to map
+					QMap<QString, QString> childMap;
+					for (int index=0; index<=children.count(); index++)
+					{
+						childMap[children.value(index)] = children.value(index+1);
+						index++;
+					}
+
+					AbstractInventoryItem *newItem;
+					QString path;
+					QString name;
+					QString type;
+
+					// Add items as children
+					for (QMap<QString, QString>::iterator iter = childMap.begin(); iter!=childMap.end(); ++iter)
+					{
+						path = iter.key();
+						name = path.midRef(0, path.lastIndexOf("/")).toString();
+						name = path.midRef(path.lastIndexOf("/")).toString();
+						type = iter.value();
+						if (name != "")
+						{
+							if (type == "resource")
+								newItem = new InventoryAsset(path, "", name, selected);
+							else
+								newItem = new InventoryFolder(path, name, selected, true);
+							QString debugmsg = QString("Webdav | Adding child with path(%1) name(%2) type(%3)\n").arg(path, name, type);
+							InventoryModule::LogInfo(debugmsg.toStdString());
+							selected->AddChild(newItem);
+						}
+					}
+				}
+
+			}
+		}
+		else if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
+		{
+			InventoryAsset *selected = dynamic_cast<InventoryAsset *>(item);
+			if (item)
+			{
+				// Do nothing, cant fetch item content...
+			}
+		}
 	}
 
 	/// WEBDAV RELATED (private)
@@ -103,7 +186,7 @@ namespace Inventory
 		QString myPath = QString("%1/pymodules/webdavinventory").arg(QDir::currentPath());
 
 		pythonQtMainModule_ = PythonQt::self()->getMainModule();
-		pythonQtMainModule_.evalScript("print '[PythonQt] Webdav inventory fetched me...'");
+		pythonQtMainModule_.evalScript(QString("print '[PythonQt] Webdav inventory fetched me...'"));
 		pythonQtMainModule_.evalScript(QString("import sys\n"));
 		pythonQtMainModule_.evalScript(QString("sys.path.append('%1')\n").arg(myPath));
 		pythonQtMainModule_.evalScript(QString("print '[PythonQt] Added %1 to sys.path for imports'").arg(myPath));
@@ -154,15 +237,15 @@ namespace Inventory
 
 	void WebdavInventoryDataModel::FetchRootFolder()
 	{
-		PythonQtObjectPtr webdavclient = pythonQtMainModule_.evalScript("connection.WebDavClient()\n", Py_eval_input);
-		if (webdavclient)
+		webdavclient_ = pythonQtMainModule_.evalScript("connection.WebDavClient()\n", Py_eval_input);
+		if (webdavclient_)
 		{
 			// Set urls
-			webdavclient.call("setHostAndUser", QVariantList() << webdavIdentityUrl_ << webdavUrl_);
+			webdavclient_.call("setHostAndUser", QVariantList() << webdavIdentityUrl_ << webdavUrl_);
 			// Connect to webdav
-			webdavclient.call("setupConnection");
+			webdavclient_.call("setupConnection");
 			// Fetch root resources
-			QStringList rootResources = webdavclient.call("listResources").toStringList();
+			QStringList rootResources = webdavclient_.call("listResources").toStringList();
 			if ( rootResources.count() >=1 )
 			{
 				QMap<QString, QString> folders;

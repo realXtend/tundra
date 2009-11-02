@@ -427,4 +427,9 @@ AbstractInventoryItem *InventoryItemModel::GetItem(const QModelIndex &index) con
     return dataModel_->GetRoot();
 }
 
+void InventoryItemModel::CurrentSelectionChanged(const QModelIndex &index)
+{
+	emit( AbstractInventoryItemSelected(GetItem(index)) );
+}
+
 }

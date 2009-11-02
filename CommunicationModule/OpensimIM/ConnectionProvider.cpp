@@ -31,7 +31,7 @@ namespace OpensimIM
 
 	Communication::ConnectionInterface* ConnectionProvider::OpenConnection(const Communication::CredentialsInterface& credentials)
 	{
-		Connection* connection = new Connection(framework_);
+		Connection* connection = new Connection(framework_, credentials.GetUserID());
 		connections_.push_back(connection);
 		connect(connection, SIGNAL( ConnectionReady(const Communication::ConnectionInterface&) ), SLOT( OnConnectionReady(const Communication::ConnectionInterface&) ));
 		connect(connection, SIGNAL( FriendRequestReceived(Communication::FriendRequestInterface&) ), SLOT( OnFriendRequestReceived(Communication::FriendRequestInterface&) ));

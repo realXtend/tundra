@@ -10,8 +10,8 @@
 
 namespace CommunicationUI
 {
-	OpenSimChat::OpenSimChat(Foundation::Framework *framework)
-		: framework_(framework), internalWidget_(0), visible_(false)
+	OpenSimChat::OpenSimChat(Foundation::Framework *framework, OpenSimProtocol::ClientParameters clientParams)
+		: framework_(framework), clientParams_(clientParams), internalWidget_(0), visible_(false)
 	{
 		try
 		{
@@ -54,44 +54,22 @@ namespace CommunicationUI
 		Communication::CommunicationModule::LogDebug(message.toStdString());
 	}
 
-	void OpenSimChat::MessageRecieved(const QString& text, const Communication::ChatSessionParticipantInterface& participant)
+	void OpenSimChat::MessageRecieved(const Communication::ChatMessageInterface &msg)
 	{
-		QString who(participant.GetName());
-		QString message(text);
-		QString htmlcontent("");
-		// opensimConnection_->GetUserID() returns empty ID string "" 
-		// coloring + 'me' works when its there
-		if ( opensimConnection_->GetUserID() != participant.GetID() )
-			htmlcontent.append("<span style='color:#0099FF;'>");
+		QString timestamp(QString("%1 %2").arg(msg.GetTimeStamp().date().toString("dd.MM.yyyy"),msg.GetTimeStamp().time().toString("hh:mm:ss")));
+		QString who(msg.GetOriginator()->GetName());
+		QString message(msg.GetText());
+		QString htmlcontent("<span style='color:#C1D1FF;'>[");
+		htmlcontent.append(timestamp);
+		if ( opensimConnection_->GetUserID() != msg.GetOriginator()->GetID() )
+			htmlcontent.append("]</span> <span style='color:#0099FF;'>");
 		else
 		{
-			htmlcontent.append("<span style='color:#F80000;'>");
+			htmlcontent.append("]</span> <span style='color:#FF3330;'>");
 			who = "Me";
 		}
 		htmlcontent.append(who);
 		htmlcontent.append(": </span><span style='color:white;'>");
-		htmlcontent.append(message);
-		htmlcontent.append("</span>");
-		chatTextBox_->appendHtml(htmlcontent);
-	}
-
-	void OpenSimChat::MessageRecieved(const Communication::ChatMessageInterface &msg)
-	{
-		QString timestamp(msg.GetTimeStamp().toString());
-		QString who(msg.GetOriginator()->GetName());
-		QString message(msg.GetText());
-		QString htmlcontent("");
-		if ( opensimConnection_->GetUserID() != msg.GetOriginator()->GetID() )
-			htmlcontent.append("<span style='color:#0099FF;'>");
-		else
-		{
-			htmlcontent.append("<span style='color:#F80000;'>");
-			who = "Me";
-		}
-		htmlcontent.append(timestamp);
-		htmlcontent.append("]</span> <span style='color:#0099FF;'>");
-		htmlcontent.append(who);
-		htmlcontent.append(" :</span><span style='color:white;'>");
 		htmlcontent.append(message);
 		htmlcontent.append("</span>");
 		chatTextBox_->appendHtml(htmlcontent);
@@ -120,6 +98,8 @@ namespace CommunicationUI
 
 	void OpenSimChat::DestroyThis()
 	{
+		opensimConnection_->Close();
+		publicChat_->Close();
 		if (qtModule_.get())
 			qtModule_->DeleteCanvas(canvas_->GetID());
 	}
@@ -141,9 +121,9 @@ namespace CommunicationUI
 		else
 		{
 			// Position and resize for widget and canvas
-			internalWidget_->resize(500, 100);
-			canvas_->SetCanvasSize(500, 100);
-			canvas_->SetPosition(0, canvas_->GetRenderWindowSize().height()-100);
+			internalWidget_->resize(500, 107);
+			canvas_->SetCanvasSize(500, 107);
+			canvas_->SetPosition(0, canvas_->GetRenderWindowSize().height()-107);
 			// Show
 			chatInput_->show();
 			chatTextBox_->show();
@@ -165,6 +145,7 @@ namespace CommunicationUI
 			else
 			{
 				canvas_->SetPosition(0, canvas_->GetRenderWindowSize().height()-20);
+				//canvas_->SetAlphaFade(true); // Does not work yet...
 				canvas_->SetCanvasResizeLock(true);
 				canvas_->SetLockPosition(true);
 				canvas_->SetAlwaysOnTop(true);
@@ -183,6 +164,7 @@ namespace CommunicationUI
 		{
 			Communication::Credentials opensimCredentials;
 			opensimCredentials.SetProtocol("opensim_udp");
+			opensimCredentials.SetUserID(QString(clientParams_.agentID.ToString().c_str()));
 			opensimConnection_ = communicationService_->OpenConnection(opensimCredentials);
 			
 			switch ( opensimConnection_->GetState() )
@@ -237,8 +219,6 @@ namespace CommunicationUI
 	{
 		QObject::connect(publicChat_, SIGNAL( MessageReceived(const Communication::ChatMessageInterface&) ),
 						 this, SLOT ( MessageRecieved(const Communication::ChatMessageInterface& ) ));
-		
-		// internal, works
 		QObject::connect(chatInput_, SIGNAL( returnPressed() ),
 						 this, SLOT( SendMessage() ));
 		QObject::connect(buttonHide_, SIGNAL( clicked() ),

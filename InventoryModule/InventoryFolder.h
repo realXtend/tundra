@@ -104,6 +104,9 @@ namespace Inventory
         /// @return Row number of the folder.
         int Row() const;
 
+		/// @return folders child list 
+		QList<AbstractInventoryItem *> GetChildList() { return children_; }
+
     private:
         Q_DISABLE_COPY(InventoryFolder);
 

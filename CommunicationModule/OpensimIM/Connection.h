@@ -39,7 +39,7 @@ namespace OpensimIM
 		static enum IMDialogTypes { DT_MessageFromAgent = 0, DT_MessageFromObject = 19, DT_FriendshipOffered = 38, DT_FriendshipAccepted = 39, DT_FriendshipDeclined = 40, DT_StartTyping = 41, DT_StopTyping = 42};
 
 	public:
-		Connection(Foundation::Framework* framework);
+		Connection(Foundation::Framework* framework, const QString &agentID);
 		virtual ~Connection();
 
 		//! Provides name of the connection

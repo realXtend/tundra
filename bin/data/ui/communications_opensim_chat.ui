@@ -36,7 +36,12 @@ QPlainTextEdit#chatTextEdit {
 }
 
 QLineEdit#chatInput {
-
+	min-height: 20px;
+	background-image: url(:/images/iconPen.png);
+	background-position: bottom left;
+	background-repeat: no-repeat;
+	background-color: rgba(255, 255, 255, 255);
+	padding-left: 23px;
 }
 
 QPushButton {
@@ -51,12 +56,11 @@ QPushButton::hover {
 }
 
 QPushButton::!hover {
-	color: rgb(61, 80, 255);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton::pressed {
-	color: rgba(85, 170, 255, 100);
-	background-color: rgba(255, 255, 255, 0);
+	color: rgba(85, 170, 255, 200);
 	border: 0px;
 }</string>
   </property>
@@ -79,7 +83,8 @@ QPushButton::pressed {
        </property>
        <property name="styleSheet">
         <string>font-size: 16px;
-color: rgb(61, 80, 255);
+font: bold;
+color: rgb(255, 255, 255);
 margin-right: 10px;
 margin-left: 10px;</string>
        </property>
@@ -136,6 +141,9 @@ margin-left: 10px;</string>
       </property>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QPlainTextEdit" name="chatTextEdit">
           <property name="minimumSize">

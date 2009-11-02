@@ -50,9 +50,7 @@ namespace CommunicationUI
 			canvas_->SetCanvasSize(450, 165);
 			//canvas_->SetCanvasResizeLock(true); //! REMOVE LATER WHEN RESIZE WORKS
 			canvas_->SetTop();
-			canvas_->SetDirty();
-			canvas_->Render();
-			canvas_->Show(); 
+			canvas_->Hide();
 
 			// Add to control bar
 			qt_module->AddCanvasToControlBar(canvas_, QString("Communication"));
@@ -237,6 +235,8 @@ namespace CommunicationUI
 	{
 		// Connect to IM server
 		credentials_.SetProtocol("jabber");
+		if (!username.contains("@"))
+			username.append(QString("@%1").arg(server));
 		credentials_.SetUserID(username);
 		credentials_.SetPassword(password);
 		credentials_.SetServer(server);

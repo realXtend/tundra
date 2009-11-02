@@ -98,12 +98,19 @@ void InventoryWindow::InitWebDavInventoryTreeModel(std::string identityUrl, std:
     WebdavInventoryDataModel *dataModel = new WebdavInventoryDataModel(STD_TO_QSTR(identityUrl), STD_TO_QSTR(hostUrl));
     inventoryItemModel_ = new InventoryItemModel(dataModel);
     treeView_->setModel(inventoryItemModel_);
+
+	QObject::connect(treeView_, SIGNAL( doubleClicked(const QModelIndex &) ), 
+                     inventoryItemModel_, SLOT( CurrentSelectionChanged(const QModelIndex &) ));
+
+	QObject::connect(inventoryItemModel_, SIGNAL( AbstractInventoryItemSelected(AbstractInventoryItem *) ),
+		             dataModel, SLOT( ItemSelectedFetchContent(AbstractInventoryItem *) ));
 }
 
 void InventoryWindow::ResetInventoryTreeModel()
 {
     ///\todo Crashes here if user quits viewer with "exit" console command.or clicks main window "X" while logged in.
-    SAFE_DELETE(inventoryItemModel_);
+	if (inventoryItemModel_) // quick fix for the annoying crash - Jonne
+		SAFE_DELETE(inventoryItemModel_);
 }
 
 void InventoryWindow::UpdateActions()

@@ -92,6 +92,12 @@ namespace Inventory
         /// @param index Model index.
         void FetchInventoryDescendents(const QModelIndex &index);
 
+	public slots:
+		void CurrentSelectionChanged(const QModelIndex &index);
+
+	signals:
+		void AbstractInventoryItemSelected(AbstractInventoryItem *item);
+
     private:
         /// @param index Index of the wanted item.
         /// @return pointer to inventory item.

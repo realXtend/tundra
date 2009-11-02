@@ -8,7 +8,8 @@
 namespace OpensimIM
 {
 
-	Connection::Connection(Foundation::Framework* framework): framework_(framework), name_(""), protocol_(OPENSIM_IM_PROTOCOL), server_(""), reason_("")
+	Connection::Connection(Foundation::Framework* framework, const QString &agentID) 
+		: framework_(framework), agent_uuid_(agentID), name_(""), protocol_(OPENSIM_IM_PROTOCOL), server_(""), reason_("")
 	{
 		// OpensimIM connection is automatically established when connected to world so 
 		// initial state is always STATE_READY
