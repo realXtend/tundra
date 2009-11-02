@@ -41,7 +41,6 @@ UICanvas::UICanvas(): overlay_(0),
                       surfaceName_(""),
                       mode_(External),
                       id_(QUuid::createUuid().toString()),
-                      widgets_(0),
                       locked_(false), 
                       resize_locked_(false),
                       always_top_(false),
@@ -69,7 +68,6 @@ UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
                                renderWindowSize_(parentWindowSize),
                                mode_(mode),
                                id_(QUuid::createUuid().toString()),
-                               widgets_(0),
                                locked_(false),
                                resize_locked_(false),
                                always_top_(false), 
@@ -137,7 +135,6 @@ void UICanvas::AddWidget(QWidget* widget)
 { 
     QGraphicsScene* scene = this->scene();
     scene_widgets_.append(scene->addWidget(widget));
-    ++widgets_;
 }
 
 void UICanvas::SetPosition(int x, int y)
@@ -373,6 +370,16 @@ void UICanvas::Resize(int height, int width, CanvasCorner anchor)
     RenderSceneToOgreSurface();
 
 }
+
+void UICanvas::resizeEvent(QResizeEvent* event)
+{
+    if ( mode_ != External || scene_widgets_.size() != 1)
+        return;
+
+    scene_widgets_[0]->resize(event->size());
+
+}
+
 
 void UICanvas::ResizeWidgets(int width, int height)
 {

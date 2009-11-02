@@ -267,6 +267,14 @@ namespace QtUI
         
         void RenderSceneToOgreSurface();
 
+        /** 
+         * Overloaded function which is used only for External canvases. 
+         * function resizes scene widget if there exist only one widget. 
+         * @param event is QResizeEvent. 
+         *
+         */
+        void resizeEvent(QResizeEvent* event);
+
     private:
 
         void Fade(double timeSinceLastFrame);
@@ -314,9 +322,7 @@ namespace QtUI
         /// The unique canvas ID of this canvas.
         QString id_;
 
-        /// The number of widgets that have been added to this canvas.
-        int widgets_;
-        
+    
         /// If true, this canvas cannot be moved by dragging the mouse on the window title. Only functional if
         /// mode=Internal.
         bool locked_;
