@@ -184,7 +184,9 @@ class EditGUI(Component):
             self.select(self.widgetList[text][0])
     
     def createObject(self, *args):
-        x, y, z = r.getUserAvatarPos()
+        ent_id = r.getUserAvatarId()
+        ent = r.getEntity(ent_id)
+        x, y, z = ent.pos#r.getUserAvatarPos()
 
         start_x = x
         start_y = y
