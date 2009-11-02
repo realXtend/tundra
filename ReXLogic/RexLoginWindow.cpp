@@ -162,34 +162,45 @@ void RexLoginWindow::InitLoginWindow()
 
 void RexLoginWindow::CreateLogoutMenu()
 {
+	// Get QtModule
     Foundation::ModuleSharedPtr qt_module = framework_->GetModuleManager()->GetModule("QtModule").lock();
     QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
+	// Load ui file
+	QUiLoader loader;
+    QFile uiFile("./data/ui/inworld_controls.ui");
 
-    // If this occurs, we're most probably operating in headless mode.
-    if (!qt_ui)
+    if (!uiFile.exists() || !qt_ui)
         return;
 
+	// Load ui to widget from file and get buttons
+    QWidget *inworldControls = loader.load(&uiFile);
+	inworldControls->resize(150, 25);
+	logout_button_ = inworldControls->findChild<QPushButton *>("pushButton_Logout");
+	quit_button_ = inworldControls->findChild<QPushButton *>("pushButton_Quit");
+    uiFile.close();
+
+	// Create UICanvas
     screen_canvas_ = qt_ui->CreateCanvas(QtUI::UICanvas::Internal).lock();
-    screen_canvas_->SetCanvasSize(128, 128);
+	QSize parentWindowSize = screen_canvas_->GetRenderWindowSize();
+	screen_canvas_->SetPosition(parentWindowSize.width()-95, 0);
+    screen_canvas_->SetCanvasSize(95, 25);
     screen_canvas_->SetCanvasResizeLock(true);
+	screen_canvas_->SetLockPosition(true);
+	screen_canvas_->SetAlwaysOnTop(true);
 
-    QSize size = screen_canvas_->GetRenderWindowSize();
-    screen_canvas_->SetPosition(size.width()-128, size.height()-150);
-
-    logout_button_ = new QPushButton();
-    logout_button_->setText("Log out");
-    logout_button_->move(5, 5);
+	// Connect signals
+	QObject::connect(screen_canvas_.get(), SIGNAL( RenderWindowSizeChanges(const QSize&) ), this, SLOT( AdjustInternalWidgets(const QSize&) ));
     QObject::connect(logout_button_, SIGNAL(clicked()), this, SLOT(DisconnectAndShowLoginWindow()));
-    screen_canvas_->AddWidget(logout_button_);
-
-    quit_button_ = new QPushButton();
-    quit_button_->setText("Quit");
-    quit_button_->move(5, 30);
     QObject::connect(quit_button_, SIGNAL(clicked()), this, SLOT(Quit()));
-    screen_canvas_->AddWidget(quit_button_);
-
-    screen_canvas_->SetLockPosition(true);
+    
+	// Add widget to canvas and hide it as long as we are inworld
+	screen_canvas_->AddWidget(inworldControls);
     screen_canvas_->Hide();
+}
+
+void RexLoginWindow::AdjustInternalWidgets(const QSize& newSize)
+{
+	screen_canvas_->SetPosition(newSize.width()-95, 0);
 }
 
 void RexLoginWindow::Connect()

@@ -132,6 +132,14 @@ namespace CommunicationUI
 		}
 	}
 
+	void OpenSimChat::AdjustInternalWidgets(const QSize& newSize)
+	{
+		if (visible_)
+			canvas_->SetPosition(0, newSize.height()-107);
+		else
+			canvas_->SetPosition(0, newSize.height()-20);
+	}
+
 	/// PRIVATE METHODS ///
 
 	void OpenSimChat::InitModuleConnections()
@@ -144,8 +152,10 @@ namespace CommunicationUI
 				throw Core::Exception("Could not create new UICanvas");
 			else
 			{
+				// Connect resize notification signal
+				QObject::connect(canvas_.get(), SIGNAL( RenderWindowSizeChanges(const QSize&) ), this, SLOT( AdjustInternalWidgets(const QSize&) ));
+				// Set canvas properties
 				canvas_->SetPosition(0, canvas_->GetRenderWindowSize().height()-20);
-				//canvas_->SetAlphaFade(true); // Does not work yet...
 				canvas_->SetCanvasResizeLock(true);
 				canvas_->SetLockPosition(true);
 				canvas_->SetAlwaysOnTop(true);
