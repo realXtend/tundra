@@ -150,21 +150,22 @@ void UIController::InjectMouseMove(int x, int y)
         // Find active canvas, move it to this location (if canvas is not locked.)
         
         index = GetCanvas(lastPosition_);
+        int active_canvas_index = Search(active_canvas_);
         
         if ( index != -1 && !canvases_[index]->IsHidden())
         {
         
             if ( resize_ && !canvases_[index]->IsCanvasResizeLocked())
             {
-                index = Search(active_canvas_);
-                if (index == -1)
+                //index = Search(active_canvas_);
+                if (active_canvas_index == -1)
                     return;
 
-                QRect geometry = canvases_[index]->GetCanvasGeometry();
+                QRect geometry = canvases_[active_canvas_index]->GetCanvasGeometry();
                 int width = geometry.width();
                 int height = geometry.height();
 
-                QPoint position = canvases_[index]->GetPosition().toPoint();
+                QPoint position = canvases_[active_canvas_index]->GetPosition().toPoint();
 
                 if ( mouseCursorShape_ == Qt::SizeVerCursor)
                 {
@@ -183,12 +184,12 @@ void UIController::InjectMouseMove(int x, int y)
                         if ( top < y ) 
                         {
                             // Smaller
-                            canvases_[index]->Resize(height-int(topDiff), width, UICanvas::BottomLeft);
+                            canvases_[active_canvas_index]->Resize(height-int(topDiff), width, UICanvas::BottomLeft);
                         }
                         else
                         {
                             // Growing
-                            canvases_[index]->Resize(height+int(topDiff+1), width, UICanvas::BottomLeft);
+                            canvases_[active_canvas_index]->Resize(height+int(topDiff+1), width, UICanvas::BottomLeft);
                          
                         }
                         
@@ -197,10 +198,10 @@ void UIController::InjectMouseMove(int x, int y)
                     {
                         // Bottom-side is resizing.
                         if ( bottom > y )
-                            canvases_[index]->Resize(height-int(bottomDiff), width, UICanvas::TopLeft);
+                            canvases_[active_canvas_index]->Resize(height-int(bottomDiff), width, UICanvas::TopLeft);
                         else
                         {
-                            canvases_[index]->Resize(height+int(bottomDiff+1), width, UICanvas::TopLeft);
+                            canvases_[active_canvas_index]->Resize(height+int(bottomDiff+1), width, UICanvas::TopLeft);
                         }
                     }
 
@@ -385,16 +386,16 @@ void UIController::InjectMouseMove(int x, int y)
                 QApplication::setOverrideCursor(QCursor(mouseCursorShape_));
                 
             }
-            else if (!canvases_[index]->IsCanvasPositionLocked() && drag_)
+            else if ( active_canvas_index != -1 && !canvases_[active_canvas_index]->IsCanvasPositionLocked() && drag_)
             {
                 // This is our drag canvas implementation. 
 
-                QPoint pos = canvases_[index]->GetPosition().toPoint();
+                QPoint pos = canvases_[active_canvas_index]->GetPosition().toPoint();
 
                 int xPos = point.x()-(lastPosition_.x()-pos.x());
                 int yPos = point.y()-(lastPosition_.y()-pos.y());
               
-                canvases_[index]->SetPosition(xPos, yPos);
+                canvases_[active_canvas_index]->SetPosition(xPos, yPos);
             }
             else if ( !canvases_[index]->IsHidden() )
             {
