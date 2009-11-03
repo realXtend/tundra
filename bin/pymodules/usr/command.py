@@ -117,7 +117,7 @@ if 0: #push an event, input and/or chat
     #previous pyglet stuff, was an ncoming chat msg event
     #m.dispatch_event('on_chat', "input", "testing")
     #print viewer._event_stack
-    
+
 if 0: #create entity
     #not safe now:
     """
@@ -133,7 +133,7 @@ st/shared_ptr.hpp, line 419
     ent = r.createEntity(meshname)
     #print "New entity created:", ent, ent.pos
     ent.pos = avatar.pos
-    ent.scale = 0.5, 0.5, 0.5
+    ent.scale = 0.0, 0.0, 0.0
     #print "new pos", ent.pos, ent.scale
 
 if 0: #placeable and text tests

@@ -59,6 +59,7 @@ class EditGUI(Component):
         height = widget.size.height()
 
         self.canvas.SetCanvasSize(width, height)
+        self.canvas.SetPosition(30, 30)
 
         widget.resize(width, height)
         
@@ -116,15 +117,7 @@ class EditGUI(Component):
         
         self.cam = None
         
-        try:
-            self.upArrow = r.arrows[UP]
-        except: 
-            self.upArrow = None
-            
-        try:
-            self.rightArrow = r.arrows[RIGHT]            
-        except:
-            self.rightArrow = None
+        self.arrows = None
         
         self.mouse_events = {
             r.LeftMouseClickPressed: self.LeftMouseDown,
@@ -235,76 +228,50 @@ class EditGUI(Component):
             
             self.widget.label.text = ent.id
             
-            if self.cam is None and ogreroot:
-                rs = root.getRenderSystem()
-                vp = rs._getViewport()
-                self.cam = vp.getCamera()
-                self.drawArrows(ent)
-            elif self.cam is not None and ogreroot: 
-                self.drawArrows(ent)
+            #~ if self.cam is None and ogreroot:
+                #~ rs = root.getRenderSystem()
+                #~ vp = rs._getViewport()
+                #~ self.cam = vp.getCamera()
+                #~ self.drawArrows(ent)
+            #~ elif self.cam is not None and ogreroot: 
+                #~ self.drawArrows(ent)
+            #~ else:
+            
+            #self.drawArrows(ent) #causes crash at quit, so disabled for now, uncomment for testing
     
     def drawArrows(self, ent):
-        #~ right = self.cam.getRight().normalisedCopy()
-        #~ up = self.cam.getUp().normalisedCopy()
-        #~ #print right, up, ent.pos
+        #print "drawArrows", self.arrows
         x, y, z = ent.pos
-        pos = V3(x, y, z)
+        pos = x, y, z
         
-        #~ rightArrowEnd = pos + right *5 
-        #~ upArrowEnd = pos + up *5 
-        #~ #print "Directions", rightDir, upDir
-        #~ #print "Arrow end positions:", rightArrowEnd, upArrowEnd
+        sx, sy, sz = ent.scale
+        scale = sx, sy, sz
         
-        if self.upArrow is None: #creating the upArrow for the first time, well only time it should be created really
-            self.upArrow = self.createArrow(UP, V3(0, 0, 0), V3(0, 5, 0))
+        if self.arrows is None:
+            self.arrows = self.createArrows(pos)
         
-        if self.rightArrow is None:
-            self.rightArrow = self.createArrow(RIGHT, V3(0, 0, 0), V3(5, 0, 0))
-    
-        #print self.upArrow, type(self.upArrow), "\n"
-        #print self.rightArrow, type(self.rightArrow)
+        self.showArrow(pos, scale)
         
-        self.showArrow(self.upArrow, pos)
-        self.showArrow(self.rightArrow, pos)
+    def createArrows(self, pos):
+        #print "\nCreating arrows!\n"
+        ent = r.createEntity("axes.mesh")
+        ent.pos = pos
+        return ent
         
-    def createArrow(self, direction, start, end):
-        sm = root.getSceneManager("SceneManager")
-        mob =  sm.createManualObject("arrow_EditGui_MOB_%d" % direction)
-        arrow = sm.getRootSceneNode().createChildSceneNode("arrow_EditGui_NODE_%d" % direction)
-
-        material = ogre.MaterialManager.getSingleton().create("manual1Material","debugger")
-        material.setReceiveShadows(False)
-        tech = material.getTechnique(0)
-        tech.setLightingEnabled(True)
-        pass0 = tech.getPass(0)
-        pass0.setDiffuse(0, 0, 1, 0)
-        pass0.setAmbient(0, 0, 1)
-        pass0.setSelfIllumination(0, 0, 1)
+    def showArrow(self, pos, scale):
+        #print "Showing arrows!"
+        if self.arrows is not None:
+            self.arrows.pos = pos
+            self.arrows.scale = 0.2, 0.2, 0.2
+            #self.arrow.setOrientation(self.cam.DerivedOrientation)
+            #self.arrows.orientation = self.cam.DerivedOrientation
         
-        mob.begin("manual1Material", ogre.RenderOperation.OT_LINE_LIST)
-        mob.position(start)
-        mob.position(end)
-        mob.end()
-        mob.setVisible(True)
-        arrow.setVisible(True)
-        print "created the manual material"
-        arrow.attachObject(mob)
-        r.arrows[direction] = arrow
-        return arrow
-        
-    def showArrow(self, arrow, pos):
-        arrow.setPosition(pos)
-        arrow.setOrientation(self.cam.DerivedOrientation)
-        arrow.setVisible(True)
-
     def hideArrows(self):
         #print "Hiding arrows!"
-        
-        if self.upArrow is not None:
-            self.upArrow.setVisible(False)
-    
-        if self.rightArrow is not None:
-            self.rightArrow.setVisible(False)
+        if self.arrows is not None:
+            self.arrows.scale = 0.0, 0.0, 0.0 #ugly hack
+            self.arrows.pos = 0.0, 0.0, 0.0 #another ugly hack
+            #XXX todo: change these after theres a ent.hide type way
 
     def LeftMouseDown(self, mouseinfo):
         self.left_button_down = True
@@ -336,6 +303,7 @@ class EditGUI(Component):
         #print "MouseMove", mouseinfo.x, mouseinfo.y, self.canvas.IsHidden()
         #print "on_mouseclick", click_id,
         if not self.canvas.IsHidden():
+            #print "Point!"
             if self.mouse_events.has_key(click_id):
                 self.mouse_events[click_id](mouseinfo)
                 #print "on_mouseclick", click_id, self.mouse_events[click_id]
