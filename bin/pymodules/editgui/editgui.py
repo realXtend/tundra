@@ -57,12 +57,16 @@ class EditGUI(Component):
         widget = loader.load(file)
         width = widget.size.width()
         height = widget.size.height()
-        self.canvas.resize(width, height)
+
+        self.canvas.SetCanvasSize(width, height)
+
+        widget.resize(width, height)
+        
         self.canvas.AddWidget(widget)
         #self.canvas.Show()
         modu = r.getQtModule()
         modu.AddCanvasToControlBar(self.canvas, "EditGUI")
-        
+
         #self.deactivate()
         
         #for some reason setRange is not there. is not not a slot of these?
@@ -301,9 +305,7 @@ class EditGUI(Component):
     
         if self.rightArrow is not None:
             self.rightArrow.setVisible(False)
-            
 
-            
     def LeftMouseDown(self, mouseinfo):
         self.left_button_down = True
         ent = r.rayCast(mouseinfo.x, mouseinfo.y)

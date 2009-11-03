@@ -27,6 +27,7 @@
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
 //#include "../OgreRenderingModule/EC_OgreMesh.h"
 #include "EC_OgrePlaceable.h"
+#include "EC_OgreMesh.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "RexNetworkUtils.h" //debugboundingbox in CreateEntity
 
@@ -697,60 +698,50 @@ PyObject* GetEntity(PyObject *self, PyObject *args)
     }
 }
 
-PyObject* CreateEntity(PyObject *self, PyObject *args)
+PyObject* CreateEntity(PyObject *self, PyObject *value)
 {
     Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
     RexLogic::RexLogicModule *rexlogic_;
 
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
-    unsigned int ent_id_int;
-    Core::entity_id_t ent_id;
+	std::string meshname;
+	const char* c_text;
 
-    if(!PyArg_ParseTuple(args, "i", &ent_id_int))
-    {
-        PyErr_SetString(PyExc_ValueError, "param should be an integer"); //XXX change the exception
-        return NULL;   
-    }
-
-    ent_id = (Core::entity_id_t) ent_id_int;
+	if(!PyArg_ParseTuple(value, "s", &c_text))
+	{
+        PyErr_SetString(PyExc_ValueError, "mesh name is a string"); //XXX change the exception
+        return NULL;
+	}
+	
+	meshname = std::string(c_text);
 
     Scene::ScenePtr scene = PythonScript::GetScene();
         
-    if (!scene) //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::NameStatic()))
-    {
+    if (!scene){ //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::NameStatic()))
         PyErr_SetString(PyExc_ValueError, "Scene is none."); //XXX change the exception
         return NULL;   
     }
 
+	Core::entity_id_t ent_id = scene->GetNextFreeId(); //instead of using the id given
+
     Core::StringVector defaultcomponents;
     defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
     //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
-    //defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::NameStatic());
+    defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::NameStatic());
     //defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::NameStatic());
         
     Scene::EntityPtr entity = scene->CreateEntity(ent_id, defaultcomponents);
 
     Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+	Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
     if (placeable)
     {
         OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
+		OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
+		ogremesh.SetPlaceable(placeable, entity.get());
+		ogremesh.SetMesh(meshname, true);
 
-        //DebugCreateOgreBoundingBox(rexlogic_,
-        //    entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()), "AmbientGreen", Vector3(0.5,0.5,1.5));
-            
-        /* CreateNameOverlay(ogrepos, entityid);
-                Foundation::ComponentPtr overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
-        EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());
-        if (overlay)
-        {
-            OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
-            name_overlay.SetText(avatar.GetFullName());
-            name_overlay.SetParentNode(placeable.GetSceneNode());
-        }*/
-
-        //CreateDefaultAvatarMesh(entityid);
-        
         return entity_create(ent_id); //return the py wrapper for the new entity
     }
     
@@ -1221,6 +1212,19 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
         std::string text = name_overlay->GetText();
         return PyString_FromString(text.c_str());
     }
+	else if (s_name.compare("mesh") == 0)
+	{
+		Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+		Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+		if (placeable)
+		{
+			OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
+			
+			std::string text = ogremesh.GetMeshName();
+			return PyString_FromString(text.c_str());
+		}
+	    
+	}
 
     std::cout << "unknown component type."  << std::endl;
     return NULL;
@@ -1393,6 +1397,31 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 
         return 0;
     }
+	else if (s_name.compare("mesh") == 0)
+	{
+		if (PyString_Check(value)) 
+        {
+			//NOTE: This is stricly done locally only for now, nothing is sent to the server.
+			const char* c_text = PyString_AsString(value);
+			std::string text = std::string(c_text);
+			Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+			Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+			if (placeable)
+			{
+				OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
+				
+				ogremesh.SetMesh(text);
+
+				PythonScript::self()->LogInfo("Entity's mesh changed locally.");
+				return NULL;
+			}
+	    }
+        else
+        {
+            PyErr_SetString(PyExc_ValueError, "text is a string"); //XXX change the exception
+            return NULL;
+        }
+	}
 
     std::cout << "unknown component type."  << std::endl;
     return -1; //the way for setattr to report a failure
