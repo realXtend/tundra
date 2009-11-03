@@ -101,6 +101,7 @@ void RexLoginWindow::InitLoginWindow()
     // Set canvas size. 
     QSize size = login_widget_->size();
     canvas_->SetCanvasSize(size.width(), size.height());
+    canvas_->SetCanvasWindowTitle(QString("Login"));
 
     canvas_->AddWidget(login_widget_);
 
