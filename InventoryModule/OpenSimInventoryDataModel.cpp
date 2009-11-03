@@ -129,6 +129,8 @@ void OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem 
 
 void OpenSimInventoryDataModel::NotifyServerAboutItemMove(AbstractInventoryItem *item)
 {
+    std::cout << "Moving " << item->GetName().toStdString() << " to " << item->GetParent()->GetName().toStdString() << std::endl;
+
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
         rexLogicModule_->GetServerConnection()->SendMoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
             QSTR_TO_UUID(item->GetParent()->GetID()));

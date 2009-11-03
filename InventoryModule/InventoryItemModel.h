@@ -66,11 +66,14 @@ namespace Inventory
 
         /// Used for inserting new childs with spesific data to the inventory tree model.
         /// @param folder_data Data for the new folder.
-        bool insertRows(int position, int rows, const QModelIndex &parent, InventoryItemEventData *item_data);
+        bool insertRows(int position, int rows, const QModelIndex &parent,
+            InventoryItemEventData *item_data);
 
         /// Used when moving items in inventory model.
-        /// @param Pointer to the item which is being moved.
-        bool insertRows(int position, int rows, const QModelIndex &parent, AbstractInventoryItem* item);
+        /// @param position
+        /// @param new_parent
+        /// @param item
+        bool insertRows(int position, AbstractInventoryItem *new_parent, AbstractInventoryItem* item);
 
         /// QAbstractItemModel override.
         /// Used for removing childs to the inventory tree model.
@@ -92,11 +95,11 @@ namespace Inventory
         /// @param index Model index.
         void FetchInventoryDescendents(const QModelIndex &index);
 
-	public slots:
-		void CurrentSelectionChanged(const QModelIndex &index);
+    public slots:
+        void CurrentSelectionChanged(const QModelIndex &index);
 
-	signals:
-		void AbstractInventoryItemSelected(AbstractInventoryItem *item);
+    signals:
+        void AbstractInventoryItemSelected(AbstractInventoryItem *item);
 
     private:
         /// @param index Index of the wanted item.
@@ -109,7 +112,10 @@ namespace Inventory
         /// Data model pointer.
         AbstractInventoryDataModel *dataModel_;
 
+        /// Item move flag.
         bool itemMoveFlag_;
+
+        /// Number of items to be moved.
         int movedItemsCount_;
     };
 }

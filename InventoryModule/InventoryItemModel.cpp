@@ -19,6 +19,7 @@
 #include <QStringList>
 #include <QMimeData>
 #include <QDataStream>
+#include <QPointer>
 
 namespace Inventory
 {
@@ -128,14 +129,19 @@ QMimeData *InventoryItemModel::mimeData(const QModelIndexList &indexes) const
 {
     QMimeData *mimeData = new QMimeData();
     QByteArray encodedData;
-
     QDataStream stream(&encodedData, QIODevice::WriteOnly);
+
     foreach(QModelIndex index, indexes)
     {
         if (index.isValid())
         {
             AbstractInventoryItem *item = GetItem(index);
             stream << item->GetID();
+
+            InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
+            if (folder)
+                foreach(QString id, folder->GetDescendentIds())
+                    stream << id;
         }
     }
 
@@ -170,7 +176,7 @@ bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     int rows = 0;
     while(!stream.atEnd())
     {
-        QString parent_id, id;
+        QString id;
         stream >> id;
         AbstractInventoryItem *item = dataModel_->GetChildById(id);
         assert(item);
@@ -178,9 +184,19 @@ bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
         ++rows;
     }
 
+    AbstractInventoryItem *newParent = GetItem(parent);
+    ///\todo This is bit hackish. Make nicer.
+    bool first_time = true;
     foreach(AbstractInventoryItem *item, itemList)
     {
-        insertRows(beginRow, 1, parent, item);
+        AbstractInventoryItem *parentItem = item->GetParent();
+        if (first_time)
+        {
+            insertRows(beginRow, newParent, item);
+            first_time = false;
+        }
+        else
+            insertRows(beginRow, parentItem, item);
         ++beginRow;
     }
 
@@ -199,9 +215,9 @@ QModelIndex InventoryItemModel::index(int row, int column, const QModelIndex &pa
     InventoryFolder *parentItem = 0;
 
     if (!parent.isValid())
-        parentItem = dynamic_cast<InventoryFolder *>(dataModel_->GetRoot());
+        parentItem = static_cast<InventoryFolder *>(dataModel_->GetRoot());
     else
-        parentItem = dynamic_cast<InventoryFolder *>((AbstractInventoryItem *)(parent.internalPointer()));
+        parentItem = static_cast<InventoryFolder *>((AbstractInventoryItem *)(parent.internalPointer()));
 
     AbstractInventoryItem *childItem = parentItem->Child(row);
     if (childItem)
@@ -248,7 +264,6 @@ bool InventoryItemModel::insertRows(int position, int rows, const QModelIndex &p
 
 bool InventoryItemModel::insertRows(int position, int rows, const QModelIndex &parent, InventoryItemEventData *item_data)
 {
-    //AbstractInventoryItem *parentFolder = GetItem(parent);
     AbstractInventoryItem *parentFolder = dataModel_->GetChildFolderById(STD_TO_QSTR(item_data->parentId.ToString()));
     if (!parentFolder)
         return false;
@@ -285,22 +300,27 @@ bool InventoryItemModel::insertRows(int position, int rows, const QModelIndex &p
     return true;
 }
 
-bool InventoryItemModel::insertRows(int position, int rows, const QModelIndex &parent, AbstractInventoryItem* item)
+bool InventoryItemModel::insertRows(int position, AbstractInventoryItem *new_parent, AbstractInventoryItem *item)
 {
-    InventoryFolder *parentFolder = dynamic_cast<InventoryFolder *>(GetItem(parent));
-    if (!parentFolder)
+    InventoryFolder *newParentFolder = dynamic_cast<InventoryFolder *>(new_parent);
+    if (!newParentFolder)
         return false;
 
-    beginInsertRows(parent, position, position + rows - 1);
+    //beginInsertRows(parent, position, position);
 
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
     {
-        dataModel_->GetOrCreateNewFolder(item->GetID(), *parentFolder, item->GetName(), false);
+        dataModel_->GetOrCreateNewFolder(item->GetID(), *newParentFolder, item->GetName(), false);
 
         InventoryFolder *newFolder = static_cast<InventoryFolder *>(dataModel_->GetOrCreateNewFolder(
-            item->GetID(), *parentFolder, item->GetName(), false));
+            item->GetID(), *newParentFolder, item->GetName(), false));
         //newFolder->SetDirty(true);
-        dataModel_->NotifyServerAboutItemMove(newFolder);
+
+        // When moving folders with descendents, we don't need to notify server about every descendent,
+        // just the root item we're moving i.e. when the current parent is different from the new parent.
+        InventoryFolder *currentParent = static_cast<InventoryFolder *>(item->GetParent());
+        if (currentParent != newParentFolder)
+            dataModel_->NotifyServerAboutItemMove(newFolder);
     }
 
     if (item->GetItemType()== AbstractInventoryItem::Type_Asset)
@@ -312,22 +332,27 @@ bool InventoryItemModel::insertRows(int position, int rows, const QModelIndex &p
             // Library asset can only be copied, moving not possible.
             // Server is authorative for copy operation so we don't create the new asset right here.
             // If the copy as legal, server sends us packet and we create the asset after that.
-            InventoryAsset newTempAsset(oldAsset->GetID(), oldAsset->GetAssetReference(), oldAsset->GetName(), parentFolder);
+            InventoryAsset newTempAsset(oldAsset->GetID(), oldAsset->GetAssetReference(), oldAsset->GetName(),
+                newParentFolder);
             dataModel_->NotifyServerAboutItemCopy(&newTempAsset);
         }
         else
         {
             InventoryAsset *newAsset = static_cast<InventoryAsset *>(dataModel_->GetOrCreateNewAsset(
-                oldAsset->GetID(), oldAsset->GetAssetReference(), *parentFolder, oldAsset->GetName()));
+                oldAsset->GetID(), oldAsset->GetAssetReference(), *newParentFolder, oldAsset->GetName()));
             newAsset->SetDescription(oldAsset->GetDescription());
             newAsset->SetInventoryType(oldAsset->GetInventoryType());
             newAsset->SetAssetType(oldAsset->GetAssetType());
 
-            dataModel_->NotifyServerAboutItemMove(newAsset);
+            // When moving folders with descendents, we don't need to notify server about every descendent,
+            // just the root item we're moving i.e. when the current parent is different from the new parent.
+            InventoryFolder *currentParent = static_cast<InventoryFolder *>(item->GetParent());
+            if (currentParent != newParentFolder)
+                dataModel_->NotifyServerAboutItemMove(newAsset);
         }
     }
 
-    endInsertRows();
+    //endInsertRows();
 
     return true;
 }
@@ -398,8 +423,8 @@ int InventoryItemModel::columnCount(const QModelIndex &parent) const
     ///\note We probably won't have more than one column.
     //if (parent.isValid())
     //    return static_cast<InventoryAsset *>(parent.internalPointer())->ColumnCount();
-
     //return dynamic_cast<InventoryFolder *>(dataModel_->GetRoot())->ColumnCount();
+
     return 1;
 }
 
@@ -419,17 +444,17 @@ void InventoryItemModel::FetchInventoryDescendents(const QModelIndex &index)
     folder->SetDirty(true);
 }
 
+void InventoryItemModel::CurrentSelectionChanged(const QModelIndex &index)
+{
+    emit( AbstractInventoryItemSelected(GetItem(index)));
+}
+
 AbstractInventoryItem *InventoryItemModel::GetItem(const QModelIndex &index) const
 {
     if (index.isValid())
         return static_cast<AbstractInventoryItem *>(index.internalPointer());
 
     return dataModel_->GetRoot();
-}
-
-void InventoryItemModel::CurrentSelectionChanged(const QModelIndex &index)
-{
-	emit( AbstractInventoryItemSelected(GetItem(index)) );
 }
 
 }

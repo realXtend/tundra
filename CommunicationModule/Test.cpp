@@ -314,7 +314,7 @@ namespace CommunicationTest
 			public_chat->SendMessage("Hello world");
 			public_chat->Close();
 		}
-		catch (Core::Exception &e)
+		catch (Core::Exception /*&e*/)
 		{
 			QString message = QString("Test failed (Cannot send a message): ").append(connection.GetReason());
 			LogError(message.toStdString());

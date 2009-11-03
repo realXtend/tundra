@@ -2,7 +2,7 @@
 
 /**
  *  @file InventoryFolder.h
- *  @brief 
+ *  @brief A class representing folder in the inventory item tre model.
  */
 
 #ifndef incl_InventoryModule_InventoryFolder_h
@@ -21,9 +21,6 @@ namespace Inventory
         Q_PROPERTY(bool dirty_ READ IsDirty WRITE SetDirty)
 
     public:
-        /// Default constructor.
-//        InventoryFolder();
-
         /// Constructor.
         /// @param data_model Data model.
         /// @param id ID.
@@ -87,14 +84,14 @@ namespace Inventory
         /// @return Type of the item.
         InventoryItemType GetItemType() const { return itemType_; }
 
-        /// Prints the inventory tree structure to std::cout.
-        void DebugDumpInventoryFolderStructure(int indentationLevel);
-
         /// Is this folder descendent of spesific folder.
         /// @param searchFolder Folder to be investigated.
         bool IsDescendentOf(AbstractInventoryItem *searchFolder);
 
-        /// @param row Row number of wanter child.
+        /// @return List of all the id's of the descendents of this folder.
+        QList<QString> GetDescendentIds();
+
+        /// @param row Row number of wanted child.
         /// @return Child item.
         AbstractInventoryItem *Child(int row);
 
@@ -104,8 +101,11 @@ namespace Inventory
         /// @return Row number of the folder.
         int Row() const;
 
-		/// @return folders child list 
-		QList<AbstractInventoryItem *> GetChildList() { return children_; }
+        /// @return folders child list 
+        QList<AbstractInventoryItem *> &GetChildList() { return children_; }
+
+        /// Prints the inventory tree structure to std::cout.
+        void DebugDumpInventoryFolderStructure(int indentationLevel);
 
     private:
         Q_DISABLE_COPY(InventoryFolder);

@@ -79,10 +79,6 @@ void InventoryWindow::InitOpenSimInventoryTreeModel()
     inventoryItemModel_ = new InventoryItemModel(dataModel);
     treeView_->setModel(inventoryItemModel_);
 
-    // Connect view model related signals.
-//    QObject::connect(treeView_->model(), SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)),
-//        this, SLOT(ItemNameChanged(const QModelIndex &, const QModelIndex &)));
-
     QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
         const QItemSelection &)), this, SLOT(UpdateActions()));
 }
@@ -99,18 +95,16 @@ void InventoryWindow::InitWebDavInventoryTreeModel(std::string identityUrl, std:
     inventoryItemModel_ = new InventoryItemModel(dataModel);
     treeView_->setModel(inventoryItemModel_);
 
-	QObject::connect(treeView_, SIGNAL( doubleClicked(const QModelIndex &) ), 
-                     inventoryItemModel_, SLOT( CurrentSelectionChanged(const QModelIndex &) ));
+    QObject::connect(treeView_, SIGNAL( doubleClicked(const QModelIndex &) ), 
+        inventoryItemModel_, SLOT( CurrentSelectionChanged(const QModelIndex &) ));
 
-	QObject::connect(inventoryItemModel_, SIGNAL( AbstractInventoryItemSelected(AbstractInventoryItem *) ),
-		             dataModel, SLOT( ItemSelectedFetchContent(AbstractInventoryItem *) ));
+    QObject::connect(inventoryItemModel_, SIGNAL( AbstractInventoryItemSelected(AbstractInventoryItem *) ),
+        dataModel, SLOT( ItemSelectedFetchContent(AbstractInventoryItem *) ));
 }
 
 void InventoryWindow::ResetInventoryTreeModel()
 {
-    ///\todo Crashes here if user quits viewer with "exit" console command.or clicks main window "X" while logged in.
-	if (inventoryItemModel_) // quick fix for the annoying crash - Jonne
-		SAFE_DELETE(inventoryItemModel_);
+    SAFE_DELETE(inventoryItemModel_);
 }
 
 void InventoryWindow::UpdateActions()
@@ -186,9 +180,8 @@ void InventoryWindow::DeleteItem()
 void InventoryWindow::RenameItem()
 {
     QModelIndex index = treeView_->selectionModel()->currentIndex();
-    QAbstractItemModel *model = treeView_->model();
 
-    if (model->flags(index) & Qt::ItemIsEditable)
+    if (treeView_->model()->flags(index) & Qt::ItemIsEditable)
         treeView_->edit(index);
 }
 

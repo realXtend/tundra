@@ -108,8 +108,8 @@ namespace Inventory
         Q_DISABLE_COPY(OpenSimInventoryDataModel);
 
         /// Utility function for creating new folders from the folder skeletons. Used recursively.
-        /// parent_folder Parent folder.
-        /// folder_skeleton Folder skeleton for the folder to be created.
+        /// @param parent_folder Parent folder.
+        /// @param folder_skeleton Folder skeleton for the folder to be created.
         void CreateNewFolderFromFolderSkeleton(
             InventoryFolder *parent_folder,
             OpenSimProtocol::InventoryFolderSkeleton *folder_skeleton);
