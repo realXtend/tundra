@@ -448,6 +448,21 @@ Core::entity_id_t RexLogicModule::GetUserAvatarId()
 	return entity->GetId();
 }
 
+
+Core::Vector3df RexLogicModule::GetCameraUp(){
+	boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+	Ogre::Camera *camera = renderer->GetCurrentCamera();
+	Ogre::Vector3 up = camera->getUp();
+	return Core::Vector3df(up.x, up.y, up.z);
+}
+
+Core::Vector3df RexLogicModule::GetCameraRight(){
+	boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+	Ogre::Camera *camera = renderer->GetCurrentCamera();
+	Ogre::Vector3 right = camera->getRight();
+	return Core::Vector3df(right.x, right.y, right.z);
+}
+
 Console::CommandResult RexLogicModule::ConsoleLogin(const Core::StringVector &params)
 {
     std::string name = "Test User";

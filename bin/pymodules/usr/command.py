@@ -478,3 +478,7 @@ if 0:
     print "User's avatar_id:", id
     print "Avatar's mesh_name:", ent.mesh
     ent.mesh = "cruncah1.mesh"
+    
+if 0:
+    print r.getCameraUp()
+    print r.getCameraRight()
