@@ -108,7 +108,8 @@ class EditGUI(Component):
         self.widget.label.text = "<none>"
         
         r.c = self
-        self.widget.treeWidget.connect('clicked()', self.itemActivated)
+
+        self.widget.treeWidget.connect('clicked(QModelIndex)', self.itemActivated)
         #self.widget.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
         
         self.widget.newObject.connect('clicked()', self.createObject)
@@ -174,15 +175,11 @@ class EditGUI(Component):
             if self.arrows is not None:
                 self.arrows.orientation = ort
             
-            
-    def itemClicked(self): #XXX dirty hack to get single click for activating, should we use some qt stylesheet for this, or just listen to click?
-        self.itemActivated(self) 
-    
     def itemActivated(self, item=None): #the item from signal is not used, same impl used by click
         #print "Got the following item index...", item, dir(item), item.data, dir(item.data) #we has index, now what? WIP
         current = self.widget.treeWidget.currentItem()
         text = current.text(0)
-        print "Selected:", text
+        #print "Selected:", text
         if self.widgetList.has_key(text):
             self.select(self.widgetList[text][0])
     
@@ -200,9 +197,16 @@ class EditGUI(Component):
 
         r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
 
-    
     def select(self, ent):
-        if ent.id != 0 and ent.id != r.getUserAvatarId():
+        arrows = False
+        alreadyinlist = False
+        if self.arrows is not None and self.arrows.id == ent.id:
+            arrows = True
+            
+        if self.widgetList.has_key(ent.id):
+            alreadyinlist = True
+            
+        if ent.id != 0 and ent.id != r.getUserAvatarId() and not arrows and not alreadyinlist:
             self.sel = ent
             
             if not self.widgetList.has_key(self.sel.id):
@@ -294,9 +298,10 @@ class EditGUI(Component):
                 self.select(ent)
         
         #out to ease dev now that mouse clicks go 'thru' the qt canvas
-        # else:
-        #     self.sel = None
-        #     self.widget.label.text = "<none>"
+        else:
+            self.sel = None
+            self.widget.label.text = "<none>"
+            self.hideArrows()
             
     def LeftMouseUp(self, mouseinfo):
         self.left_button_down = False
@@ -321,14 +326,9 @@ class EditGUI(Component):
     def on_mousemove(self, mouseinfo, callback):
         """stub for dragging objects around 
         - should get the dir of movements relative to the view somehow"""
-        return
         if not self.canvas.IsHidden():
             if self.left_button_down and self.sel is not None:
-                print "MouseMove:", mouseinfo.x, mouseinfo.y
-
-            elif self.right_button_down and self.sel is not None:
-                self.rightArrow.setOrientation(self.cam.DerivedOrientation)
-                self.upArrow.setOrientation(self.cam.DerivedOrientation)
+                print "MouseMove:", mouseinfo.x, mouseinfo.y, r.getCameraUp(), r.getCameraRight()
 
     def on_exit(self):
         r.logInfo("EditGUI exiting.")
