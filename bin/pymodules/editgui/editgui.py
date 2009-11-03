@@ -199,17 +199,13 @@ class EditGUI(Component):
 
     def select(self, ent):
         arrows = False
-        alreadyinlist = False
         if self.arrows is not None and self.arrows.id == ent.id:
             arrows = True
             
-        if self.widgetList.has_key(ent.id):
-            alreadyinlist = True
-            
-        if ent.id != 0 and ent.id != r.getUserAvatarId() and not arrows and not alreadyinlist:
+        if ent.id != 0 and ent.id != r.getUserAvatarId() and not arrows:
             self.sel = ent
             
-            if not self.widgetList.has_key(self.sel.id):
+            if not self.widgetList.has_key(str(self.sel.id)):
                 tWid = QTreeWidgetItem(self.widget.treeWidget)
                 id = self.sel.id
                 tWid.setText(0, id)
