@@ -189,6 +189,9 @@ namespace RexLogic
 
 		Core::entity_id_t GetUserAvatarId();
 
+		Core::Vector3df GetCameraUp();
+		Core::Vector3df GetCameraRight();
+
     private:
         //! Event handler for network events.
         NetworkEventHandler *network_handler_;

@@ -146,6 +146,8 @@ class EditGUI(Component):
             pos[i] = v
             ent.pos = pos[0], pos[1], pos[2] #XXX API should accept a list/tuple too .. or perhaps a vector type will help here too
             #print "=>", ent.pos
+            if self.arrows is not None:
+                self.arrows.pos = pos[0], pos[1], pos[2]
     
     def changescale(self, i, v):
         ent = self.sel
@@ -168,6 +170,10 @@ class EditGUI(Component):
             #print euler, ort
             #print euler, ort
             ent.orientation = ort
+            
+            if self.arrows is not None:
+                self.arrows.orientation = ort
+            
             
     def itemClicked(self): #XXX dirty hack to get single click for activating, should we use some qt stylesheet for this, or just listen to click?
         self.itemActivated(self) 
@@ -247,24 +253,26 @@ class EditGUI(Component):
         sx, sy, sz = ent.scale
         scale = sx, sy, sz
         
+        ox, oy, oz, ow = ent.orientation
+        ort = ox, oy, oz, ow
+        
         if self.arrows is None:
-            self.arrows = self.createArrows(pos)
+            self.arrows = self.createArrows()
         
-        self.showArrow(pos, scale)
+        self.showArrow(pos, scale, ort)
         
-    def createArrows(self, pos):
+    def createArrows(self):
         #print "\nCreating arrows!\n"
         ent = r.createEntity("axes.mesh")
-        ent.pos = pos
         return ent
         
-    def showArrow(self, pos, scale):
+    def showArrow(self, pos, scale, ort):
         #print "Showing arrows!"
         if self.arrows is not None:
             self.arrows.pos = pos
             self.arrows.scale = 0.2, 0.2, 0.2
             #self.arrow.setOrientation(self.cam.DerivedOrientation)
-            #self.arrows.orientation = self.cam.DerivedOrientation
+            self.arrows.orientation = ort
         
     def hideArrows(self):
         #print "Hiding arrows!"

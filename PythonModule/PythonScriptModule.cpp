@@ -826,37 +826,7 @@ PyObject* PyLogInfo(PyObject *self, PyObject *args)
     
     Py_RETURN_NONE;
 }
-/*
-PyObject* GetCameraUp(PyObject *self) 
-{
-    //RexTypes::Vector3 up;
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-    if (rexlogic_)
-    {
-        boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
-        RexTypes::Vector3 up = cam->GetCameraUp();
-        
-        return Py_BuildValue("fff", up.x, up.y, up.z);
-    }
-    return NULL;
-}
 
-PyObject* GetCameraRight(PyObject *self) 
-{
-    RexTypes::Vector3 right;
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-    if (rexlogic_)
-    {
-        boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
-        right = cam->GetCameraRight();
-        
-        return Py_BuildValue("fff", right.x, right.y, right.z);
-    }
-    return NULL;
-}
-*/
 PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 {
     Core::Real newyaw;
@@ -909,7 +879,6 @@ PyObject* CreateCanvas(PyObject *self, PyObject *args)
         return NULL;   
     }
     
-
     boost::shared_ptr<QtUI::QtModule> qt_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
     boost::shared_ptr<QtUI::UICanvas> canvas_;
     
@@ -921,17 +890,8 @@ PyObject* CreateCanvas(PyObject *self, PyObject *args)
 
     QtUI::UICanvas* qcanvas = canvas_.get();
     
-    //these can be done on the py side too, so decoupled from this:
-    //QWidget *widget;
-    //QUiLoader loader;
-    //QFile file("pymodules/editgui/editobject.ui");
-    //widget = loader.load(&file); 
-    
-    //canvas_->AddWidget(widget);
-    //canvas_->Show();
-    //return PythonQt::self()->wrapQObject(widget); //box); //qcanvas
 	PyObject* can = PythonQt::self()->wrapQObject(qcanvas);
-	//PythonQtInstanceWrapperStruct* wrap = (PythonQtInstanceWrapperStruct*) can;
+
     return can;
 }
 
@@ -970,6 +930,46 @@ PyObject* GetUserAvatarId(PyObject* self)
     }
 
 	Py_RETURN_NONE;
+}
+
+/*
+PyObject* GetCamera(PyObject* self)
+{
+	RexLogic::RexLogicModule *rexlogic_;
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    if (rexlogic_)
+    {
+        boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();   
+        return cam;
+    }
+    Py_RETURN_NONE;
+}
+*/
+
+PyObject* GetCameraUp(PyObject *self) 
+{
+    Core::Vector3df up;
+    RexLogic::RexLogicModule *rexlogic_;
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    if (rexlogic_)
+    {
+        up = rexlogic_->GetCameraUp();
+        return Py_BuildValue("fff", up.x, up.y, up.z);
+    }
+    return NULL;
+}
+
+PyObject* GetCameraRight(PyObject *self) 
+{
+    Core::Vector3df right;
+    RexLogic::RexLogicModule *rexlogic_;
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    if (rexlogic_)
+    {
+        right = rexlogic_->GetCameraRight();
+        return Py_BuildValue("fff", right.x, right.y, right.z);
+    }
+    return NULL;
 }
 
 //slider input
@@ -1033,13 +1033,13 @@ static PyMethodDef EmbMethods[] = {
     {"logInfo", (PyCFunction)PyLogInfo, METH_VARARGS,
     "Prints a text using the LogInfo-method."},
 
-    /*
+
     {"getCameraRight", (PyCFunction)GetCameraRight, METH_VARARGS, 
     "Get the right-vector for the camera."},
     
     {"getCameraUp", (PyCFunction)GetCameraUp, METH_VARARGS, 
     "Get the up-vector for the camera."},
-    */
+
     //from RexPythonQt.cpp now .. except got the fricken staticframework == null prob!
 
     {"createCanvas", (PyCFunction)CreateCanvas, METH_VARARGS, 
