@@ -65,7 +65,10 @@ void UIController::Arrange()
     int magic_value = 300;
     int size = canvases_.size();
 
-    for ( int i = size; i--;)
+    if (!size)
+        return;
+        
+    for ( int i = size-1; i--;)
     {
         if (canvases_[i]->IsAlwaysOnTop())
         {
@@ -862,7 +865,7 @@ UICanvas *UIController::GetCanvasAt(int x, int y)
 {
     const QPoint point(x, y);
     for(QList<boost::shared_ptr<UICanvas> >::iterator iter = canvases_.begin(); iter != canvases_.end(); ++iter)
-        if ((*iter)->GetMode() == UICanvas::Internal && Contains(*iter, point))
+        if ((*iter)->GetMode() == UICanvas::Internal && !(*iter)->IsHidden() && Contains(*iter, point))
             return iter->get();
 
     return 0;
@@ -889,25 +892,14 @@ int UIController::GetCanvas(const QPoint& point)
     int index = 0;
     for (; iter != canvases_.end(); ++iter, ++index)
     {
-        UICanvas::Mode mode = (*iter)->GetMode();
+        // If mode is external we let the Qt own window manager to things. 
+        if ((*iter)->GetMode() == UICanvas::External)
+            continue;
+        if ((*iter)->IsHidden())
+            continue;     
         
-        switch(mode)
-        {
-            // If mode is external we let the Qt own window manager to things. 
-            case UICanvas::External:
-                break;
-            case UICanvas::Internal:
-                {
-                   if (Contains(*iter, point))
-                        return index;
-                    break;
-                }
-           
-            default:
-                break;  
-
-        }
-
+        if (Contains(*iter, point))
+            return index;
     }
 
     // Did not find any canvases so let's return -1.
