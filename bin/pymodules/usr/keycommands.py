@@ -29,8 +29,8 @@ class KeyCommander(Component):
         """
         self.keymap = {
             (OIS_KEY_PERIOD, 0): self.run_commandpy,
+            (OIS_KEY_M, OIS_KEY_ALT): self.toggle_editgui,
             (OIS_KEY_BACKSPACE, OIS_KEY_ALT): self.restart_modulemanager
-            #(OIS_KEY_M, OIS_KEY_ALT): self.toggle_editgui
         }
         
         """
@@ -91,10 +91,10 @@ class KeyCommander(Component):
         
     def toggle_editgui(self):
         try:
-            if r.c.activated:
-                r.c.deactivate()
+            if not r.c.canvas.IsHidden():
+                r.c.canvas.Hide()
             else:
-                r.c.activate()
+                r.c.canvas.Show()
             return True
         except:
             print "toggle editgui failed, r.c is missing most liekly."

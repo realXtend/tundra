@@ -63,12 +63,6 @@ namespace QtUI
 
         Mode GetMode() const { return mode_; }
     
-        /** Sets the canvas position relative to the parent window. If the canvas is in internal mode,
-            the parent is the main render window, otherwise the it is the desktop. (0,0) denotes the upper
-            left corner. */
-        
-        void SetPosition(int x, int y);
-        
         /** @return The position of the canvas relative to the parent window. @see SetPosition. */
         
         QPointF GetPosition() const;
@@ -199,7 +193,12 @@ namespace QtUI
         
         void SetCanvasSize(int width, int height);
 
-
+        /** Sets the canvas position relative to the parent window. If the canvas is in internal mode,
+            the parent is the main render window, otherwise the it is the desktop. (0,0) denotes the upper
+            left corner. */
+        
+        void SetPosition(int x, int y);
+        
         /// @return True if this canvas is hidden, false otherwise.  
         
          bool IsHidden() const;
