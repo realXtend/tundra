@@ -119,7 +119,6 @@ if 0: #push an event, input and/or chat
     #print viewer._event_stack
     
 if 0: #create entity
-    pass
     #not safe now:
     """
     New entity created:16:39:22 [Foundation] Error: Can't create entity with given i
@@ -127,7 +126,15 @@ d because it's already used: 9999999
 Assertion failed: px != 0, file D:\k2\rex\viewer\trunk\external_libs\include\boo
 st/shared_ptr.hpp, line 419
     """
-    #print "New entity created:", r.createEntity(new_id)
+    print "Testing entity creation"
+    meshname = "axes.mesh"
+    
+    avatar = r.getEntity(r.getUserAvatarId())
+    ent = r.createEntity(meshname)
+    #print "New entity created:", ent, ent.pos
+    ent.pos = avatar.pos
+    ent.scale = 0.5, 0.5, 0.5
+    #print "new pos", ent.pos, ent.scale
 
 if 0: #placeable and text tests
     print "Testing..."
@@ -468,4 +475,6 @@ if 0:
 if 0: 
     id = r.getUserAvatarId()
     ent = r.getEntity(id)
-    print "User's avatar_id:", id, ent.pos
+    print "User's avatar_id:", id
+    print "Avatar's mesh_name:", ent.mesh
+    ent.mesh = "cruncah1.mesh"
