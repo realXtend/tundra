@@ -116,7 +116,7 @@ namespace Inventory
         boost::shared_ptr<QtUI::UICanvas> canvas_;
 
         /// Inventory view model.
-        InventoryItemModel *inventoryItemModel_;
+        QPointer<InventoryItemModel> inventoryItemModel_;
 
         // QWidgets
         QTreeView *treeView_;

@@ -198,10 +198,10 @@ namespace RexLogic
             const std::string &new_name,
             const bool &re_timestamp = true);
 
-        /// Sends packet which copies an inventory item from OpenSim Library to My Inventory.
-        /// @param old_agent_id
-        /// @param old_item_id
-        /// @param new_folder_id Detionation folder ID.
+        /// Sends packet which requests an inventory item copy.
+        /// @param old_agent_id Agent ID.
+        /// @param old_item_id Item ID.
+        /// @param new_folder_id Destionation folder ID.
         /// @param new_name New name for the item. Can be the same as before.
         void SendCopyInventoryItemPacket(
             const RexTypes::RexUUID &old_agent_id,

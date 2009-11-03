@@ -163,39 +163,39 @@ void RexLoginWindow::InitLoginWindow()
 
 void RexLoginWindow::CreateLogoutMenu()
 {
-	// Get QtModule
+    // Get QtModule
     Foundation::ModuleSharedPtr qt_module = framework_->GetModuleManager()->GetModule("QtModule").lock();
     QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
-	// Load ui file
-	QUiLoader loader;
+    // Load ui file
+    QUiLoader loader;
     QFile uiFile("./data/ui/inworld_controls.ui");
 
     if (!uiFile.exists() || !qt_ui)
         return;
 
-	// Load ui to widget from file and get buttons
+    // Load ui to widget from file and get buttons
     QWidget *inworldControls = loader.load(&uiFile);
-	inworldControls->resize(150, 25);
-	logout_button_ = inworldControls->findChild<QPushButton *>("pushButton_Logout");
-	quit_button_ = inworldControls->findChild<QPushButton *>("pushButton_Quit");
+    inworldControls->resize(150, 25);
+    logout_button_ = inworldControls->findChild<QPushButton *>("pushButton_Logout");
+    quit_button_ = inworldControls->findChild<QPushButton *>("pushButton_Quit");
     uiFile.close();
 
-	// Create UICanvas
+    // Create UICanvas
     screen_canvas_ = qt_ui->CreateCanvas(QtUI::UICanvas::Internal).lock();
-	QSize parentWindowSize = screen_canvas_->GetRenderWindowSize();
-	screen_canvas_->SetPosition(parentWindowSize.width()-95, 0);
+    QSize parentWindowSize = screen_canvas_->GetRenderWindowSize();
+    screen_canvas_->SetPosition(parentWindowSize.width()-95, 0);
     screen_canvas_->SetCanvasSize(95, 25);
     screen_canvas_->SetCanvasResizeLock(true);
-	screen_canvas_->SetLockPosition(true);
-	screen_canvas_->SetAlwaysOnTop(true);
+    screen_canvas_->SetLockPosition(true);
+    screen_canvas_->SetAlwaysOnTop(true);
 
-	// Connect signals
-	QObject::connect(screen_canvas_.get(), SIGNAL( RenderWindowSizeChanges(const QSize&) ), this, SLOT( AdjustInternalWidgets(const QSize&) ));
+    // Connect signals
+    QObject::connect(screen_canvas_.get(), SIGNAL( RenderWindowSizeChanges(const QSize&) ), this, SLOT( AdjustInternalWidgets(const QSize&) ));
     QObject::connect(logout_button_, SIGNAL(clicked()), this, SLOT(DisconnectAndShowLoginWindow()));
     QObject::connect(quit_button_, SIGNAL(clicked()), this, SLOT(Quit()));
-    
-	// Add widget to canvas and hide it as long as we are inworld
-	screen_canvas_->AddWidget(inworldControls);
+
+    // Add widget to canvas and hide it as long as we are inworld
+    screen_canvas_->AddWidget(inworldControls);
     screen_canvas_->Hide();
 }
 
@@ -346,10 +346,10 @@ void RexLoginWindow::ProcessCBLogin(QString inresult)
     std::string address = result.substr(pos1, pos2);
     pos1 = result.find("&", pos2);
     std::string firstname = result.substr(pos2+1, pos1-pos2-1);
-	pos2 = result.find("&", pos1+1);
+    pos2 = result.find("&", pos1+1);
     std::string lastname = result.substr(pos1+1, pos2-pos1-1);
-	pos1 = result.find("&", pos2+1);
-	std::string identityUrl = result.substr(pos2+1, result.length());
+    pos1 = result.find("&", pos2+1);
+    std::string identityUrl = result.substr(pos2+1, result.length());
 
     Poco::URI uri = Poco::URI(address);
     int port = uri.getPort();

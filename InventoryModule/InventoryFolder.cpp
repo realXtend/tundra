@@ -2,7 +2,7 @@
 
 /**
  *  @file InventoryFolder.cpp
- *  @brief A class representing inventory folder.
+ *  @brief  A class representing folder in the inventory item tre model.
  */
 
 #include "StableHeaders.h"
@@ -12,14 +12,6 @@
 
 namespace Inventory
 {
-
-/*
-InventoryFolder::InventoryFolder() :
-    AbstractInventoryItem(QString(RexTypes::RexUUID().ToString().c_str()), "New Folder", 0),
-    itemType_(AbstractInventoryItem::Type_Folder), editable_(true), dirty_(false)
-{
-}
-*/
 
 InventoryFolder::InventoryFolder(const QString &id, const QString &name, InventoryFolder *parent, const bool &editable) :
     AbstractInventoryItem(id, name, parent, editable), itemType_(AbstractInventoryItem::Type_Folder), dirty_(false),
@@ -213,6 +205,27 @@ bool InventoryFolder::IsDescendentOf(AbstractInventoryItem *searchFolder)
     }
 }
 
+QList<QString> InventoryFolder::GetDescendentIds()
+{
+    QList<QString> id_list;
+
+    QListIterator<AbstractInventoryItem *> it(children_);
+    while(it.hasNext())
+    {
+        AbstractInventoryItem *child = it.next();
+        id_list << child->GetID();
+
+        InventoryFolder *child_folder = dynamic_cast<InventoryFolder *>(child);
+        if (child_folder)
+        {
+            QList<QString> id_list2;
+            id_list2 = child_folder->GetDescendentIds();
+            id_list.append(id_list2);
+        }
+    }
+    return id_list;
+}
+
 AbstractInventoryItem *InventoryFolder::Child(int row)
 {
     return children_.value(row);
@@ -221,6 +234,17 @@ AbstractInventoryItem *InventoryFolder::Child(int row)
 int InventoryFolder::ChildCount() const
 {
     return children_.count();
+}
+
+int InventoryFolder::Row() const
+{
+    if (GetParent())
+    {
+        InventoryFolder *folder = static_cast<InventoryFolder *>(GetParent());
+        return folder->children_.indexOf(const_cast<InventoryFolder *>(this));
+    }
+
+    return 0;
 }
 
 void InventoryFolder::DebugDumpInventoryFolderStructure(int indentationLevel)
@@ -236,17 +260,6 @@ void InventoryFolder::DebugDumpInventoryFolderStructure(int indentationLevel)
         if (folder)
             folder->DebugDumpInventoryFolderStructure(indentationLevel + 3);
     }
-}
-
-int InventoryFolder::Row() const
-{
-    if (GetParent())
-    {
-        InventoryFolder *folder = static_cast<InventoryFolder *>(GetParent());
-        return folder->children_.indexOf(const_cast<InventoryFolder *>(this));
-    }
-
-    return 0;
 }
 
 }
