@@ -211,6 +211,7 @@ bool RexServerConnection::CreateUDPConnection()
         SendCompleteAgentMovementPacket();
         SendAgentThrottlePacket();
         SendAgentWearablesRequestPacket();
+        SendRexStartupPacket("started");
 
         RexLogicModule::LogInfo("Connected to server " + serverAddress_ + ".");
     }
@@ -1143,7 +1144,18 @@ void RexServerConnection::SendGenericMessage(const std::string& method, const Co
     for(Core::uint i = 0; i < strings.size(); ++i)
         m->AddBuffer(strings[i].length(), (uint8_t*)strings[i].c_str());
 
+    m->MarkReliable();
+    
     FinishMessageBuilding(m);
+}
+
+void RexServerConnection::SendRexStartupPacket(const std::string& state)
+{
+    Core::StringVector strings;
+    
+    strings.push_back(myInfo_.agentID.ToString());
+    strings.push_back(state);
+    SendGenericMessage("RexStartup", strings);
 }
 
 std::string RexServerConnection::GetCapability(const std::string &name)
