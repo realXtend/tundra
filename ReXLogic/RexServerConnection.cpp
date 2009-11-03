@@ -1142,7 +1142,7 @@ void RexServerConnection::SendGenericMessage(const std::string& method, const Co
 
     // Strings
     for(Core::uint i = 0; i < strings.size(); ++i)
-        m->AddBuffer(strings[i].length(), (uint8_t*)strings[i].c_str());
+        m->AddBuffer(strings[i].length()+1, (uint8_t*)strings[i].c_str());
 
     m->MarkReliable();
     
