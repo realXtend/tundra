@@ -168,7 +168,7 @@ namespace Asset
             if ((*i) == asset_provider)
             {
                 providers_.erase(i);
-                AssetModule::LogWarning("Asset provider " + asset_provider->Name()  + " unregistered");
+                AssetModule::LogInfo("Asset provider " + asset_provider->Name()  + " unregistered");
                 return true;
             }            
             ++i;

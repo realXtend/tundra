@@ -65,10 +65,7 @@ void UIController::Arrange()
     int magic_value = 300;
     int size = canvases_.size();
 
-    if (!size)
-        return;
-        
-    for ( int i = size-1; i--;)
+    for ( int i = size; i--;)
     {
         if (canvases_[i]->IsAlwaysOnTop())
         {
