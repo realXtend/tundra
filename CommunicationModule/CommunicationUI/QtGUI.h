@@ -32,13 +32,14 @@ namespace CommunicationUI
 		~QtGUI(void);
 
 	public slots:
-		void SetWindowSize(QSize &size);
+		void ChangeToolBarButton(QString oldID, QString newID);
 		void DestroyThis();
 
 	private:
 		Foundation::Framework *framework_;
 		Communication::CommunicationServiceInterface* communication_service_;
-		boost::shared_ptr<UICanvas> canvas_;
+		boost::shared_ptr<UICanvas> canvas_login_;
+        boost::shared_ptr<UICanvas> canvas_chat_;
 		UIContainer *UIContainer_;
 
 	};
@@ -56,7 +57,8 @@ namespace CommunicationUI
 	static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 
 	public:
-		UIContainer(QWidget *parent, Foundation::Framework *framework);
+		UIContainer(QWidget *parent, Foundation::Framework *framework,
+            boost::shared_ptr<UICanvas> canvas_login, boost::shared_ptr<UICanvas> canvas_chat);
 		~UIContainer(void);
 
 	public slots:
@@ -104,8 +106,11 @@ namespace CommunicationUI
 		Communication::ConnectionInterface* opensim_connection_;
 
         Foundation::Framework *framework_;
+        boost::shared_ptr<UICanvas> canvas_login_;
+        boost::shared_ptr<UICanvas> canvas_chat_;
 
 	signals:
+        void ChangeToolBarButton(QString, QString);
 		void Resized(QSize &);
 		void DestroyCanvas();
 		void SetCanvasTitle(QString title);
@@ -128,7 +133,7 @@ namespace CommunicationUI
         void SaveConfig();
 
 	public slots:
-		void CheckInput(bool clicked);
+		void CheckInput(bool clicked = false);
 
 	private:
 		void InitWidget(QString &message);

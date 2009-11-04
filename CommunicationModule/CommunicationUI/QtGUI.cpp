@@ -32,26 +32,26 @@ namespace CommunicationUI
 		else 
 		{
 			// Set param to QtUI::UICanvas::Internal to put inside ogre window
-			canvas_ = qt_module->CreateCanvas(UICanvas::External).lock();
-			UIContainer *UIContainer_ = new UIContainer(0, framework_);
+			canvas_login_ = qt_module->CreateCanvas(UICanvas::Internal).lock();
+            canvas_login_->Hide();
+            canvas_chat_ = qt_module->CreateCanvas(UICanvas::Internal).lock();
+            canvas_chat_->Hide();
+
+			UIContainer *UIContainer_ = new UIContainer(0, framework_, canvas_login_, canvas_chat_);
 
 			// Connect signal for resizing
-			QObject::connect(UIContainer_, SIGNAL( Resized(QSize &) ), this, SLOT( SetWindowSize(QSize &) ));
+			QObject::connect(UIContainer_, SIGNAL( ChangeToolBarButton(QString, QString) ), this, SLOT( ChangeToolBarButton(QString, QString) ));
 			QObject::connect(UIContainer_, SIGNAL( DestroyCanvas() ), this, SLOT( DestroyThis() ));
-			QObject::connect(UIContainer_, SIGNAL( SetCanvasTitle(QString) ), canvas_.get(), SLOT( SetCanvasWindowTitle(QString) ));
-			QObject::connect(UIContainer_, SIGNAL( SetCanvasIcon(QIcon &) ), canvas_.get(), SLOT( SetCanvasWindowIcon(QIcon &) ));
 			
+            //QObject::connect(UIContainer_, SIGNAL( SetCanvasTitle(QString) ), canvas_.get(), SLOT( SetCanvasWindowTitle(QString) ));
+			//QObject::connect(UIContainer_, SIGNAL( SetCanvasIcon(QIcon &) ), canvas_.get(), SLOT( SetCanvasWindowIcon(QIcon &) ));
 			// Init title, icon and size
-            UIContainer_->resize(400, 185);
-			canvas_->SetCanvasWindowIcon(QIcon(":/images/iconUsers.png"));
-			canvas_->SetCanvasWindowTitle(QString("realXtend Naali Jabber IM Login"));
-			canvas_->SetPosition(30,30);
-			canvas_->SetCanvasSize(400, 185);
-            canvas_->AddWidget(UIContainer_);
-			canvas_->Hide();
+            //UIContainer_->resize(400, 185);
+			//canvas_login_->SetCanvasWindowIcon(QIcon(":/images/iconUsers.png"));
+			//canvas_login_->SetCanvasWindowTitle(QString("realXtend Naali Jabber IM Login"));
 
 			// Add to control bar
-			qt_module->AddCanvasToControlBar(canvas_, QString("Communication"));
+			qt_module->AddCanvasToControlBar(canvas_login_->GetID(), QString("IM Login"));
 			LogInfo("Loading succesfull");
 		}		
 	}
@@ -64,35 +64,39 @@ namespace CommunicationUI
 	void QtGUI::DestroyThis()
 	{
 		boost::shared_ptr<QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtModule>(Foundation::Module::MT_Gui).lock();
-		QtUI::QtModule *qt_ui = dynamic_cast<QtModule*>(qt_module.get());
-		if (qt_ui != 0)
+		if (qt_module.get())
 		{
-            if (canvas_)
-			    qt_ui->DeleteCanvas(canvas_->GetID());
+            if (canvas_login_)
+			    qt_module->DeleteCanvas(canvas_login_->GetID());
+            if (canvas_chat_)
+                qt_module->DeleteCanvas(canvas_chat_->GetID());
 		}
 	}
 
-	void QtGUI::SetWindowSize(QSize &newSize)
+	void QtGUI::ChangeToolBarButton(QString oldID, QString newID)
 	{
-		canvas_->SetCanvasSize(newSize.width(), newSize.height());
+        boost::shared_ptr<QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtModule>(Foundation::Module::MT_Gui).lock();
+		if (qt_module.get())
+        {
+            qt_module->RemoveCanvasFromControlBar(oldID);
+            qt_module->AddCanvasToControlBar(newID, QString("IM"));
+        }
 	}
-
 
 	/////////////////////////////////////////////////////////////////////
 	// UIContainer CLASS
 	/////////////////////////////////////////////////////////////////////
 
-    UIContainer::UIContainer(QWidget *parent, Foundation::Framework *framework)
-		: QWidget(parent), chatWidget_(0), loginWidget_(0), framework_(framework)
+    UIContainer::UIContainer(QWidget *parent, Foundation::Framework *framework, boost::shared_ptr<UICanvas> canvas_login, boost::shared_ptr<UICanvas> canvas_chat)
+		: QWidget(parent), chatWidget_(0), loginWidget_(0), framework_(framework), canvas_login_(canvas_login), canvas_chat_(canvas_chat)
 	{
 		communication_service_ = Communication::CommunicationService::GetInstance();
-//		QObject::connect((QObject *)commManager_, SIGNAL( Error(QString &) ), this, SLOT( ConnectionFailed(QString &) ));
 
 		LogInfo("Creating UIContainer, initializing with Login widget...");
 		this->setLayout(new QVBoxLayout);
 		this->layout()->setMargin(0);
 		this->setObjectName(QString("containerWidget"));
-		this->setStyleSheet("QWidget#containerWidget { background-color: rgba(255,255,255,0); }");
+        this->setStyleSheet("QWidget#containerWidget { background-color: rgba(0,0,0,0); padding: 0px; margin: 0px; }");
 		LoadUserInterface(false);
 		LogInfo("Loading successfull");
 	}
@@ -104,85 +108,72 @@ namespace CommunicationUI
 
 	void UIContainer::LoadUserInterface(bool connected)
 	{
-		if (connected)
+		if (connected && chatWidget_ == 0)
 		{
-			if (loginWidget_ != NULL)
-			{
-                ((Login *)loginWidget_)->SaveConfig();
-				this->layout()->removeWidget(loginWidget_);
-				delete loginWidget_;
-				loginWidget_ = 0;
-			}
-			else if (chatWidget_ != NULL)
-			{
-				this->layout()->removeWidget(chatWidget_);
-				delete chatWidget_;
-				chatWidget_ = 0;
-			}
-
-			// Init chat GUI
+            // Init chat GUI
 			QUiLoader loader;
 			QFile uiFile("./data/ui/communications.ui");
-			chatWidget_ = loader.load(&uiFile, this);
-			chatWidget_->layout()->setMargin(9);
+			chatWidget_ = loader.load(&uiFile, 0);
+			//chatWidget_->layout()->setMargin(0);
+            chatWidget_->resize(720, 350);
 			uiFile.close();
 
 			// Insert custom tab widget
-			tabWidgetCoversations_ = new ConversationsContainer(this);
+			tabWidgetCoversations_ = new ConversationsContainer(chatWidget_);
 			tabWidgetCoversations_->clear();
-			QHBoxLayout *friendsAndTabWidget = findChild<QHBoxLayout *>("horizontalLayout_FriendsAndTabWidget");
+			QHBoxLayout *friendsAndTabWidget = chatWidget_->findChild<QHBoxLayout *>("horizontalLayout_FriendsAndTabWidget");
 			friendsAndTabWidget->insertWidget(1, tabWidgetCoversations_); 
 			friendsAndTabWidget->setStretch(1,2);
 			
 			// Get widgets
-			listWidgetFriends_ = findChild<QListWidget *>("listWidget_Friends");
+			listWidgetFriends_ = chatWidget_->findChild<QListWidget *>("listWidget_Friends");
 			listWidgetFriends_->setIconSize(QSize(10,10));
-			labelUsername_ = findChild<QLabel *>("label_UserName");
-			lineEditStatus_ = findChild<QLineEdit *>("lineEdit_Status");
-			comboBoxStatus_ = findChild<QComboBox *>("comboBox_Status");
+			labelUsername_ = chatWidget_->findChild<QLabel *>("label_UserName");
+			lineEditStatus_ = chatWidget_->findChild<QLineEdit *>("lineEdit_Status");
+			comboBoxStatus_ = chatWidget_->findChild<QComboBox *>("comboBox_Status");
 			comboBoxStatus_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 			comboBoxStatus_->setIconSize(QSize(10,10));
-			buttonAddFriend_ = findChild<QPushButton *>("pushButton_AddFriend");
+			buttonAddFriend_ = chatWidget_->findChild<QPushButton *>("pushButton_AddFriend");
 			buttonAddFriend_->setIcon(QIcon(":/images/iconAdd.png"));
 			buttonAddFriend_->setLayoutDirection(Qt::RightToLeft);
 			buttonAddFriend_->setIconSize(QSize(10,10));
-			buttonRemoveFriend_ = findChild<QPushButton *>("pushButton_RemoveFriend");
+			buttonRemoveFriend_ = chatWidget_->findChild<QPushButton *>("pushButton_RemoveFriend");
 			buttonRemoveFriend_->setIcon(QIcon(":/images/iconRemove.png"));
 			buttonRemoveFriend_->setIconSize(QSize(10,10));
-
+            
+			canvas_chat_->SetCanvasResizeLock(true);
+            canvas_chat_->SetPosition(20,20);
+		    canvas_chat_->SetCanvasSize(720, 350);
+            canvas_chat_->AddWidget(chatWidget_);
+            canvas_login_->Hide();
+            canvas_chat_->Show();
+            emit( ChangeToolBarButton(canvas_login_->GetID(), canvas_chat_->GetID()) );
 			// Add widget to layout
-			this->layout()->addWidget(chatWidget_);
-			emit( SetCanvasTitle(QString("realXtend Naali Communications")) );
-			this->setMinimumSize(600, 262);
-			emit ( Resized(QSize(600, 262)) );
+            //this->layout()->addWidget(chatWidget_);
+            //emit ( Resized(QSize(720, 350)) );
+            //emit ( SetCanvasTitle(QString("realXtend Naali Jabber IM")) );
 		} 
 		else
 		{
-			if (chatWidget_ != NULL)
-			{
-				this->layout()->removeWidget(chatWidget_);
-				delete chatWidget_;
-				chatWidget_ = 0;
-			} 
-			else if (loginWidget_ != NULL)
-			{
-				this->layout()->removeWidget(loginWidget_);
-				delete loginWidget_;
-				loginWidget_ = 0;
-			}
-
-			// Init login GUI
-			loginWidget_ = new Login(this, currentMessage, framework_);
-			// Get widgets
-			labelLoginConnectionStatus_ = findChild<QLabel *>("label_Status");
-			// Connect signals
-			QObject::connect(loginWidget_, SIGNAL( UserdataSet(QString, int, QString, QString) ), this, SLOT( ConnectToServer(QString, int, QString, QString) ));
-			// Add widget to layout
-            loginWidget_->resize(400, 185);
-			this->layout()->addWidget(loginWidget_);
-			emit( SetCanvasTitle(QString("realXtend Naali Communications Login")) );
-			this->resize(400, 185);
-			emit ( Resized(QSize(400, 185)) );
+            if (loginWidget_ == 0)
+			{			
+			    // Init login GUI
+			    loginWidget_ = new Login(0, currentMessage, framework_);
+                loginWidget_->setObjectName(QString("containerMiddleChat"));
+                loginWidget_->setStyleSheet("QWidget#containerMiddleChat { background-color: rgba(0,0,0,0); padding: 0px; margin: 0px; }");
+			    // Get widgets
+			    labelLoginConnectionStatus_ = loginWidget_->findChild<QLabel *>("label_Status");
+			    // Connect signals
+			    QObject::connect(loginWidget_, SIGNAL( UserdataSet(QString, int, QString, QString) ), this, SLOT( ConnectToServer(QString, int, QString, QString) ));
+			    
+    			canvas_login_->SetCanvasResizeLock(true);
+                canvas_login_->SetPosition(20,20);
+			    canvas_login_->SetCanvasSize(400, 185);
+                canvas_login_->AddWidget(loginWidget_);
+                // Add widget to layout
+			    /*this->layout()->addWidget(loginWidget_);*/
+			    //emit( SetCanvasTitle(QString("realXtend Naali Communications Login")) );
+            }
 		}
 
 	}
@@ -436,7 +427,7 @@ namespace CommunicationUI
 		QUiLoader loader;
 		QFile uiFile("./data/ui/communications_login.ui");
 		internalWidget_ = loader.load(&uiFile, this);
-		internalWidget_->layout()->setMargin(9);
+		internalWidget_->layout()->setMargin(0);
 		this->layout()->addWidget(internalWidget_);
 		uiFile.close();
 
@@ -449,6 +440,7 @@ namespace CommunicationUI
 		textEditUsername_ = findChild<QLineEdit *>("lineEdit_Username");
 		textEditPassword_ = findChild<QLineEdit *>("lineEdit_Password");
 		buttonConnect_ = findChild<QPushButton *>("pushButton_Connect");
+        buttonConnect_->setEnabled(true);
 		buttonCancel_ = findChild<QPushButton *>("pushButton_Cancel");
 	}
 
@@ -488,6 +480,7 @@ namespace CommunicationUI
 	void Login::ConnectSignals()
 	{
 		QObject::connect(buttonConnect_, SIGNAL( clicked(bool) ), this, SLOT ( CheckInput(bool) ));
+        QObject::connect(textEditPassword_, SIGNAL( returnPressed() ), this, SLOT ( CheckInput() ));
 		QObject::connect(buttonCancel_, SIGNAL( clicked() ), this->parent(), SLOT( close() ));
 	}
 
@@ -501,6 +494,8 @@ namespace CommunicationUI
 
 		if ( !serverUrl.isEmpty() && portSuccess && !username.isEmpty() && !password.isEmpty() )
 		{
+            buttonConnect_->setText("Connecting");
+            buttonConnect_->setEnabled(false);
 			emit( UserdataSet(serverUrl, port, username, password) );
 		}
 	}
