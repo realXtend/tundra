@@ -638,14 +638,15 @@ namespace CommunicationUI
 
 	QString Conversation::GenerateTimeStamp()
 	{
-		return QTime::currentTime().toString();
-	}
+        QDateTime time_stamp = QDateTime::currentDateTime();
 
+        QString timestamp(QString("%1 %2").arg(time_stamp.date().toString("dd.MM.yyyy"),time_stamp.time().toString("hh:mm:ss")));
+		return timestamp;
+	}
 
 	void Conversation::AppendLineToConversation(QString line)
 	{
 		textEditChat_->appendPlainText(line);
-		
 	}
 
 	void Conversation::AppendHTMLToConversation(QString html)
@@ -655,8 +656,9 @@ namespace CommunicationUI
 
 	void Conversation::OnMessageReceived(const Communication::ChatMessageInterface &message)
 	{
+        QString timestamp(QString("%1 %2").arg(message.GetTimeStamp().date().toString("dd.MM.yyyy"),message.GetTimeStamp().time().toString("hh:mm:ss")));
 		QString html("<span style='color:#828282;'>[");
-		html.append(GenerateTimeStamp());
+		html.append(timestamp);
 		html.append("]</span> <span style='color:#2133F0;'>");
 		html.append(contact_->GetName());
 		html.append("</span><span style='color:black;'>: ");
