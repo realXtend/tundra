@@ -95,6 +95,7 @@ namespace TelepathyIM
 			LogError("Cannot start dbus daemon process.");
 			throw Core::Exception("Cannot start up dbus daemon process.");
 		}
+        LogDebug("DBus daemon is started.");
 
 		// wait some time so that dbus daemon have a time to start up properly
 		QTime wait_time = QTime::currentTime().addSecs(1);
@@ -154,12 +155,13 @@ namespace TelepathyIM
 
 	void ConnectionProvider::OnDBusDaemonStdout()
 	{
-		//! ???
+        QString output = QString(dbus_daemon_->readAllStandardOutput());
+        LogDebug(QString("DBus daemon: ").append(output).toStdString());
 	}
 
 	void ConnectionProvider::OnDBusDaemonExited( int )
 	{
-		// ???
+        LogDebug("DBus daemon is exited.");
 	}
 
 	void ConnectionProvider::OnConnectionReady(Communication::ConnectionInterface &connection)
