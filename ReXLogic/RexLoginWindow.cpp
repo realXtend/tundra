@@ -64,7 +64,7 @@ void RexLoginWindow::InitLoginWindow()
     if (qt_module.get() == 0)
         return;
 
-    canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::External).lock();
+    canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::Internal).lock();
     
     /** \todo Just instantiating a QUiLoader on the next code line below causes 
           11 memory leaks to show up, like the following:
@@ -102,8 +102,8 @@ void RexLoginWindow::InitLoginWindow()
     QSize size = login_widget_->size();
     canvas_->SetCanvasSize(size.width(), size.height());
     canvas_->SetCanvasWindowTitle(QString("Login"));
-
     canvas_->AddWidget(login_widget_);
+    canvas_->SetPosition(300,300);
 
     // Set canvas scrollbar policy
     canvas_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -190,7 +190,7 @@ void RexLoginWindow::CreateLogoutMenu()
     screen_canvas_->SetAlwaysOnTop(true);
 
     // Connect signals
-    QObject::connect(screen_canvas_.get(), SIGNAL( RenderWindowSizeChanges(const QSize&) ), this, SLOT( AdjustInternalWidgets(const QSize&) ));
+    QObject::connect(screen_canvas_.get(), SIGNAL( RenderWindowSizeChanged(const QSize&) ), this, SLOT( AdjustInternalWidgets(const QSize&) ));
     QObject::connect(logout_button_, SIGNAL(clicked()), this, SLOT(DisconnectAndShowLoginWindow()));
     QObject::connect(quit_button_, SIGNAL(clicked()), this, SLOT(Quit()));
 

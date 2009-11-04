@@ -137,6 +137,7 @@ void UIController::InjectMouseMove(int x, int y)
     QPoint point(x,y);
     int index = GetCanvas(point);
     
+    
     // Normal move. 
 
     if (index != -1 && !mouseDown_ && !canvases_[index]->IsHidden())
@@ -157,7 +158,7 @@ void UIController::InjectMouseMove(int x, int y)
         
             if ( resize_ && !canvases_[index]->IsCanvasResizeLocked())
             {
-                //index = Search(active_canvas_);
+               
                 if (active_canvas_index == -1)
                     return;
 
@@ -405,6 +406,15 @@ void UIController::InjectMouseMove(int x, int y)
         }
 
     }
+    else
+    {
+        // Check that has mouse just moved away from a canvas, and deactivate old canvas.
+
+        int loc = GetCanvas(lastPosition_);
+        if ( loc != -1)
+            Deactivate(canvases_[loc]->GetID(),MouseMove,loc);
+
+    }
     
     lastPosition_ = point;
 
@@ -428,9 +438,14 @@ void UIController::SetTop(const QString& id )
         }
     }
     
-   
-    // Assure that it is current active canvas
-    active_canvas_ = id;
+   if ( id != active_canvas_ )
+   {
+        // Deactivate 
+        Deactivate(active_canvas_, MouseMove);
+        // Assure that it is current active canvas
+        active_canvas_ = id;
+   }
+  
     
     Arrange();
     
@@ -446,6 +461,7 @@ void UIController::SetBack(const QString& id)
     boost::shared_ptr<UICanvas> canvas = canvases_.takeAt(index);
     canvases_.append(canvas);
 
+    Deactivate(active_canvas_, MouseMove);
     active_canvas_ = "";
     Arrange();
 
@@ -592,8 +608,14 @@ void UIController::InjectMousePress(int x, int y)
         }
 
 
-        // Change new canvas to a active overlay.
-        active_canvas_ = canvases_[index]->GetID();
+        // Change new canvas to a active overlay and deactivate old-one.
+        
+        QString id = canvases_[index]->GetID();
+        
+        if ( id != active_canvas_ )
+            Deactivate(active_canvas_, MouseMove);
+
+        active_canvas_ = id;
         // Note this call changes internal arrange of canvases_ so index is not anymore valid.
         SetTop(active_canvas_);
         
@@ -607,7 +629,7 @@ void UIController::InjectMousePress(int x, int y)
             focusWidget->clearFocus();
 
         keyboard_buffered_ = false;
-        
+     
     }
     lastPosition_ = point;
 }
@@ -731,6 +753,8 @@ void UIController::InjectKeyPressed(const QString& text, Qt::Key keyCode, const 
     }
 
 }
+
+
 
 void UIController::InjectKeyReleased(const QString& text, Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
 {
@@ -856,6 +880,53 @@ Qt::CursorShape UIController::UpdateMouseCursor(int x, int y, int index)
     }
 
     return mouseCursorShape_;
+}
+
+void UIController::Deactivate(const QString& id, DeactivationType type, int index)
+{
+    int canvas_index = -1;
+    
+    if ( index != -1)
+        canvas_index = index;
+    else
+        canvas_index = Search(id);
+    
+    if ( canvas_index == -1 )
+        return;
+
+    // Safe location is assumed to be canvas top-left corner.
+
+    QPoint pos = canvases_[canvas_index]->GetPosition().toPoint();
+
+    switch ( type ) 
+    {
+    case MouseMove:
+        {
+            SendMouseMoveEvent(canvas_index, pos.x(), pos.y());
+            break;
+        }
+    case MousePress:
+        {
+            ///todo send mouse press
+            break;
+        }
+    case MouseRelease:
+        {
+            ///todo send mouse release
+            break;
+        }
+    case All:
+        {
+            ///todo send mouse press and release
+            SendMouseMoveEvent(canvas_index, pos.x(), pos.y());
+            break;
+        }
+
+    }
+    
+    
+   
+
 }
 
 UICanvas *UIController::GetCanvasAt(int x, int y)
