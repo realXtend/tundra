@@ -114,7 +114,7 @@ QMenu {
              <string>color: rgb(255,255,255);font: 16px bold;</string>
             </property>
             <property name="text">
-             <string>Waiting for first time user input</string>
+             <string>Give Jabber Credentials</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
