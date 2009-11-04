@@ -481,4 +481,4 @@ namespace Communication
 
 } // end of namepace: Communication
 
-#endif incl_Comm_interface_h
+#endif // incl_Comm_interface_h
