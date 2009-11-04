@@ -92,7 +92,7 @@ namespace QtUI
 	ControlBarButton::ControlBarButton(QWidget *parent, boost::shared_ptr<QtUI::UICanvas> canvas, const QString &buttonTitle)
 		: QPushButton(buttonTitle, parent), myCanvas_(canvas), myTitle_(buttonTitle)
 	{
-		QSizePolicy policy(QSizePolicy::Fixed, QSizePolicy::Fixed, QSizePolicy::PushButton);
+        QSizePolicy policy(QSizePolicy::Minimum, QSizePolicy::Fixed, QSizePolicy::PushButton);
 		this->setMinimumSize(QSize(25,15));
 		this->setSizePolicy(policy);
 		this->setFlat(true);
