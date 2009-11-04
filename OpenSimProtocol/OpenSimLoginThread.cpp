@@ -280,18 +280,29 @@ boost::shared_ptr<InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &
     if (!inventoryLibOwnerNode)
         throw XmlRpcException("Failed to read inventory, inventory-lib-owner in the reply was not present!");
 
+    RexUUID inventoryLibOwnerId;
     if (XMLRPC_GetValueType(inventoryLibOwnerNode) != xmlrpc_vector)
-        throw XmlRpcException("Failed to read inventory, inventory-lib-owner in the reply was not properly formed!");
+    {
+        // In Taiga inventory-lib-owner isn't array, just single value.
+        if (XMLRPC_GetValueType(inventoryLibOwnerNode) == xmlrpc_string)
+            inventoryLibOwnerId.FromString(XMLRPC_GetValueString(inventoryLibOwnerNode));
+        else
+            throw XmlRpcException("Failed to read inventory, inventory-lib-owner in the reply was not properly formed!");
+    }
+    else
+    {
+        // In legacy servers inventory-lib-owner is array.
+        XMLRPC_VALUE inventoryLibOwnerNodeFirstElem = XMLRPC_VectorRewind(inventoryLibOwnerNode);
+        if (!inventoryLibOwnerNodeFirstElem || XMLRPC_GetValueType(inventoryLibOwnerNodeFirstElem) != xmlrpc_vector)
+            throw XmlRpcException("Failed to read inventory,inventory-lib-owner in the reply was not properly formed!");
 
-    XMLRPC_VALUE inventoryLibOwnerNodeFirstElem = XMLRPC_VectorRewind(inventoryLibOwnerNode);
-    if (!inventoryLibOwnerNodeFirstElem || XMLRPC_GetValueType(inventoryLibOwnerNodeFirstElem) != xmlrpc_vector)
-        throw XmlRpcException("Failed to read inventory,inventory-lib-owner in the reply was not properly formed!");
+        val = XMLRPC_VectorGetValueWithID(inventoryLibOwnerNodeFirstElem, "agent_id");
+        if (!val || XMLRPC_GetValueType(val) != xmlrpc_string)
+            throw XmlRpcException("Failed to read inventory, inventory-lib-owner struct value agent_id not present!");
 
-    val = XMLRPC_VectorGetValueWithID(inventoryLibOwnerNodeFirstElem, "agent_id");
-    if (!val || XMLRPC_GetValueType(val) != xmlrpc_string)
-        throw XmlRpcException("Failed to read inventory, inventory-lib-owner struct value agent_id not present!");
+        inventoryLibOwnerId.FromString(XMLRPC_GetValueString(val));
+    }
 
-    RexUUID inventoryLibOwnerId(XMLRPC_GetValueString(val));
     if (inventoryLibOwnerId.IsNull())
         throw XmlRpcException("Failed to read inventory, inventory-lib-owner value agent_id was null or unparseable!");
 
@@ -632,10 +643,16 @@ bool OpenSimLoginThread::PerformXMLRPCLogin()
             {
                 OpenSimProtocolModule::LogWarning("Failed to read inventory: " + std::string(e.what()));
                 threadState_->parameters.inventory = boost::shared_ptr<InventorySkeleton>(new InventorySkeleton);
+
+                // Add dummy folder with name indicating error to inventory.
+                InventoryFolderSkeleton *root = threadState_->parameters.inventory->GetRoot();
+                InventoryFolderSkeleton errorFolder;
+                errorFolder.name = "Inventory parsing failed. Check log for reason.";
+                root->AddChildFolder(errorFolder);
             }
             try
             {
-    		    threadState_->parameters.buddy_list = ExtractBuddyListFromXMLRPCReply(call);
+                threadState_->parameters.buddy_list = ExtractBuddyListFromXMLRPCReply(call);
             }
             catch(XmlRpcException &e)
             {
@@ -677,7 +694,7 @@ bool OpenSimLoginThread::PerformXMLRPCLogin()
             }
             try
             {
-    		    threadState_->parameters.buddy_list = ExtractBuddyListFromXMLRPCReply(call);
+                threadState_->parameters.buddy_list = ExtractBuddyListFromXMLRPCReply(call);
             }
             catch(XmlRpcException &e)
             {
