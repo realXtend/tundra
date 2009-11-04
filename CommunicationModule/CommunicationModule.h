@@ -6,9 +6,7 @@
 #include "OpenSimProtocolModule.h"
 
 #include "CommunicationModuleApi.h"
-#include "CommunicationManager.h"
 #include "CommunicationService.h"
-#include "ConsoleUI.h"
 #include "CommunicationUI/QtGUI.h"
 #include "CommunicationUI/OpenSimChat.h"
 #include "Test.h"
@@ -55,8 +53,6 @@ namespace Communication
 		// Run given test
 		Console::CommandResult Test(const Core::StringVector &params);
 
-		TpQt4Communication::CommunicationManager* communication_manager_;
-		CommunicationUI::ConsoleUI* console_ui_;
 		CommunicationUI::QtGUI* qt_ui_;
 		CommunicationUI::OpenSimChat* opensim_ui_;
 		CommunicationServiceInterface* communication_service_;

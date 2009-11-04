@@ -4,7 +4,6 @@
 #include <QObject>
 #include "Foundation.h"
 #include "interface.h"
-#include "Contact.h"
 
 namespace CommunicationTest
 {
