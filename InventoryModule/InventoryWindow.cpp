@@ -28,7 +28,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework, RexLogic::Rex
     if (!qtModule_.get())
         return;
 
-    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::External).lock();
+    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
 
     // Init Inventory Widget and connect close signal
     InitInventoryWindow();
@@ -36,7 +36,10 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework, RexLogic::Rex
     QObject::connect(buttonClose_, SIGNAL(clicked()), this, SLOT(Hide()));
 
     // Add local widget to canvas, setup initial size and title and show canvas
-    canvas_->SetCanvasSize(305, 200);
+    canvas_->SetCanvasSize(300, 350);
+    canvas_->SetLockPosition(false);
+    canvas_->SetCanvasResizeLock(true);
+    canvas_->SetPosition(canvas_->GetRenderWindowSize().width()-350,35);
     canvas_->SetCanvasWindowTitle(QString("Inventory"));
     canvas_->AddWidget(inventoryWidget_);
 
@@ -81,6 +84,8 @@ void InventoryWindow::InitOpenSimInventoryTreeModel()
 
     QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
         const QItemSelection &)), this, SLOT(UpdateActions()));
+
+    inventoryType_ = "OpenSim";
 }
 
 void InventoryWindow::InitWebDavInventoryTreeModel(std::string identityUrl, std::string hostUrl)
@@ -91,15 +96,20 @@ void InventoryWindow::InitWebDavInventoryTreeModel(std::string identityUrl, std:
         return;
     }
 
+    // Create webdav inventory model
     WebdavInventoryDataModel *dataModel = new WebdavInventoryDataModel(STD_TO_QSTR(identityUrl), STD_TO_QSTR(hostUrl));
     inventoryItemModel_ = new InventoryItemModel(dataModel);
     treeView_->setModel(inventoryItemModel_);
 
+    // Connect signals
     QObject::connect(treeView_, SIGNAL( doubleClicked(const QModelIndex &) ), 
         inventoryItemModel_, SLOT( CurrentSelectionChanged(const QModelIndex &) ));
 
     QObject::connect(inventoryItemModel_, SIGNAL( AbstractInventoryItemSelected(AbstractInventoryItem *) ),
         dataModel, SLOT( ItemSelectedFetchContent(AbstractInventoryItem *) ));
+
+    // Set inventory type
+    inventoryType_ = "Webdav";
 }
 
 void InventoryWindow::ResetInventoryTreeModel()
@@ -187,18 +197,51 @@ void InventoryWindow::RenameItem()
 
 void InventoryWindow::Upload()
 {
-    Core::StringList filenames = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
-    if (filenames.empty())
-        return;
+    if (inventoryType_ == "OpenSim")
+    {
+        Core::StringList filenames = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
+        if (filenames.empty())
+            return;
+        InventoryUploadEventData data;
+        data.filenames = filenames;
 
-    InventoryUploadEventData data;
-    data.filenames = filenames;
+        Foundation::EventManagerPtr eventManager = framework_->GetEventManager();
+        Core::event_category_id_t event_category = eventManager->QueryEventCategory("Inventory");
 
-    Foundation::EventManagerPtr eventManager = framework_->GetEventManager();
-    Core::event_category_id_t event_category = eventManager->QueryEventCategory("Inventory");
+        if (event_category != 0)
+            eventManager->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_UPLOAD, &data);
+    }
+    else if (inventoryType_ == "Webdav")
+    {
+        QString filename(Foundation::QtUtils::GetOpenFileName("All Files (*.*)", "Select file for upload", Foundation::QtUtils::GetCurrentPath()).c_str());
+        QModelIndex index = treeView_->selectionModel()->currentIndex();
+        AbstractInventoryItem *parentItem = inventoryItemModel_->GetItem(index);
+        if (!filename.isEmpty() && !filename.isNull() && parentItem)
+        {
+            WebdavInventoryDataModel *webdavDataModel = dynamic_cast<WebdavInventoryDataModel *>(inventoryItemModel_->GetInventory());
+            if (webdavDataModel)
+                webdavDataModel->UploadFile(filename, parentItem);
+        }
+    }
+}
 
-    if (event_category != 0)
-        eventManager->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_UPLOAD, &data);
+void InventoryWindow::Download()
+{
+    if (inventoryType_ == "OpenSim")
+    {
+
+    }
+    else if (inventoryType_ == "Webdav")
+    {
+        QString storePath = QFileDialog::getExistingDirectory(inventoryWidget_, "Select location for file download", QString(Foundation::QtUtils::GetCurrentPath().c_str()));
+        QModelIndex index = treeView_->selectionModel()->currentIndex();
+        AbstractInventoryItem *selectedItem = inventoryItemModel_->GetItem(index);
+        WebdavInventoryDataModel *webdavDataModel = dynamic_cast<WebdavInventoryDataModel *>(inventoryItemModel_->GetInventory());
+        if (selectedItem && webdavDataModel && !storePath.isNull() && !storePath.isEmpty())
+        {
+            webdavDataModel->DownloadFile(storePath, selectedItem);
+        }
+    }
 }
 
 void InventoryWindow::CloseInventoryWindow()
@@ -213,6 +256,7 @@ void InventoryWindow::InitInventoryWindow()
     QUiLoader loader;
     QFile uiFile("./data/ui/inventory_main.ui");
     inventoryWidget_ = loader.load(&uiFile, 0);
+    inventoryWidget_->resize(300, 350);
     uiFile.close();
 
     // Get controls
@@ -232,6 +276,7 @@ void InventoryWindow::InitInventoryWindow()
     QObject::connect(buttonDeleteItem_, SIGNAL(clicked(bool)), this, SLOT(DeleteItem()));
     QObject::connect(buttonRename_, SIGNAL(clicked(bool)), this, SLOT(RenameItem()));
     QObject::connect(buttonUpload_, SIGNAL(clicked(bool)), this, SLOT(Upload()));
+    QObject::connect(buttonDownload_, SIGNAL(clicked(bool)), this, SLOT(Download()));
 }
 
 } // namespace Inventory

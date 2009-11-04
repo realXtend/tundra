@@ -77,7 +77,7 @@ namespace Inventory
 
         /// Notifies server about item update operation(e.g. name changed).
         /// @item Inventory item.
-        virtual void NotifyServerAboutItemUpdate(AbstractInventoryItem *item) = 0;
+        virtual void NotifyServerAboutItemUpdate(AbstractInventoryItem *item, const QString &old_name) = 0;
 
         /// @return Inventory root folder.
         virtual AbstractInventoryItem *GetRoot() const = 0;

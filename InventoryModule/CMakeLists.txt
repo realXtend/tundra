@@ -7,6 +7,7 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 file (GLOB MOC_FILES AbstractInventoryDataModel.h AbstractInventoryItem.h InventoryAsset.h InventoryFolder.h InventoryItemModel.h
     InventoryWindow.h OpenSimInventoryDataModel.h WebdavInventoryDataModel.h)
+file (GLOB RESOURCE_FILES resource/*.qrc)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap
@@ -25,7 +26,7 @@ use_package (PYTHON)
 use_package (PYTHON_QT)
 use_modules (RexCommon ReXLogic OpenSimProtocol RpcUtilities HttpUtilities QtModule PythonModule)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 use_framework_modules (Core Foundation Interfaces RexCommon)
 
 link_modules (RexCommon RexLogicModule OpenSimProtocolModule HttpUtilities RpcUtilities QtModule PythonScriptModule)

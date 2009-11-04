@@ -239,7 +239,9 @@ class _DigestAuthenticationInfo(object):
         self.incrementNC()
         
         # username, realm, password, uri, method, qop are required
-        
+        if (self.uri != None and self.uri != "/"):
+            self.uri = _urlEncode(self.uri)
+
         A1 = "%s:%s:%s" % (self.user, self.realm, self.password)
         HA1 = md5.new(A1).hexdigest()
 

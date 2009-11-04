@@ -60,7 +60,7 @@ void InventoryModule::Initialize()
     inventoryWindow_ = new InventoryWindow(framework_, rexLogic_);
 
 	//!REMOVE TEST CODE FOR WEBDAV
-	//std::string idurl("http://192.168.0.199:8010/d");
+	//std::string idurl("http://192.168.0.199:8010/test");
 	//std::string hosturl("192.168.0.199:8002");
 	//inventoryWindow_->InitWebDavInventoryTreeModel(idurl, hosturl);
 
