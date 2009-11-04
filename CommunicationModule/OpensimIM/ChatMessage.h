@@ -28,4 +28,4 @@ namespace OpensimIM
 	
 } // end of namespace: OpensimIM 
 
-#endif incl_Communication_OpensimIM_ChatMessage_h
+#endif // incl_Communication_OpensimIM_ChatMessage_h

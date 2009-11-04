@@ -45,4 +45,4 @@ namespace OpenSimProtocol
 
 } // end of namespace: OpenSimProtocol
 
-#endif incl_RexLogic_BuddyList_h
+#endif // incl_RexLogic_BuddyList_h

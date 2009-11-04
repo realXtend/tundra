@@ -27,4 +27,4 @@ namespace TelepathyIM
 	
 } // end of namespace: TelepathyIM 
 
-#endif incl_Communication_TelepathyIM_ChatMessage_h
+#endif // incl_Communication_TelepathyIM_ChatMessage_h

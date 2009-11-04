@@ -84,6 +84,6 @@ namespace Communication
 		QString server_;
 		int port_;
 	};
-}
+} // end of namespace: Communication
 
 #endif // incl_Comm_Credentials_h
