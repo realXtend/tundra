@@ -60,16 +60,17 @@ namespace TelepathyIM
 		if (state_ == STATE_CLOSED)
 			throw Core::Exception("Channel closed");
 
-		if (state_ == STATE_INITIALIZING)
-		{
-			send_buffer_.push_back(text);
-			return;
-		}
+        if (tp_text_channel_.isNull())
+        {
+            send_buffer_.push_back(text);
+            return;
+        }
 
 		ChatMessage* m = new ChatMessage(&self_participant_, QDateTime::currentDateTime(), text);
 		message_history_.push_back(m);
 
 		Tp::PendingSendMessage* p = tp_text_channel_->send( text );
+        LogInfo(QString("Text message send to IM server: \n").append(text).append("\"").toStdString());
 
 		//! @todo Connect this signal to actual message object
 		connect(p, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnMessageSendAck(Tp::PendingOperation*) ));
@@ -87,8 +88,10 @@ namespace TelepathyIM
 			state_ = STATE_CLOSED; 
 			return;
 		}
+
 		Tp::PendingOperation* op = tp_text_channel_->requestClose(); 
-		connect(op, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnTextChannelClosed(Tp::PendingOperation*) ));
+        LogDebug("Text channel is closed.");
+		//connect(op, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnTextChannelClosed(Tp::PendingOperation*) ));
 	}
 
 	Communication::ChatSessionParticipantVector ChatSession::GetParticipants() const
@@ -139,10 +142,19 @@ namespace TelepathyIM
 			state_ = STATE_ERROR;	
 			return;
 		}
-		
+        LogDebug("Text channel created.");
 		Tp::PendingChannel *pending_channel = qobject_cast<Tp::PendingChannel *>(op);
-		tp_text_channel_ = Tp::TextChannelPtr(dynamic_cast<Tp::TextChannel *>( pending_channel->channel().data() ));
-		connect( tp_text_channel_->becomeReady(Tp::TextChannel::FeatureMessageQueue),
+        Tp::ChannelPtr text_channel = pending_channel->channel();
+        tp_text_channel_ = Tp::TextChannelPtr( dynamic_cast<Tp::TextChannel *>(text_channel.data()) );
+		//tp_text_channel_ = Tp::TextChannel::create(pending_channel->connection(), pending_channel->objectPath(), pending_channel->immutableProperties());
+//		tp_text_channel_ = Tp::TextChannelPtr(dynamic_cast<Tp::TextChannel *>( pending_channel->channel().data() ));
+
+		Tp::Features features;
+		features.insert(Tp::TextChannel::FeatureMessageQueue);
+		//features.insert(Tp::TextChannel::FeatureCore);
+//		features.insert(Tp::TextChannel::FeatureMessageCapabilities);
+
+		connect( tp_text_channel_->becomeReady(features),
 			    SIGNAL( finished(Tp::PendingOperation*) ),
 				SLOT( OnOutgoingTextChannelReady(Tp::PendingOperation*) ));
 	}
@@ -150,8 +162,7 @@ namespace TelepathyIM
 	void ChatSession::OnChannelInvalidated(Tp::DBusProxy *p, const QString &me, const QString &er)
 	{
 		state_ = STATE_ERROR;
-		//! @todo IMPLEMENT	
-		//!   * emit error signal
+        LogError("Text channel become invalid!");
 	}
 	
 	void ChatSession::OnIncomingTextChannelReady(Tp::PendingOperation* op)
@@ -159,8 +170,10 @@ namespace TelepathyIM
 		if (op->isError())
 		{
 			state_ = STATE_ERROR;
+            LogError("Incoming text channel cannot become ready state");
 			return;
 		}
+        LogDebug("Incoming text channel ready.");
 		Tp::PendingReady *pr = qobject_cast<Tp::PendingReady *>(op);
 		Tp::TextChannelPtr channel = Tp::TextChannelPtr(qobject_cast<Tp::TextChannel *>(pr->object()));
 		tp_text_channel_ = channel;
@@ -190,23 +203,35 @@ namespace TelepathyIM
 		if (op->isError())
 		{
 			state_ = STATE_ERROR;
+			QString message = "Text channel cannot become ready for ChatSession object.";
+			LogError(message.toStdString());
 			return;
 		}
+        LogDebug("Outgoing text channel is ready.");
 
 		Tp::PendingReady *pr = qobject_cast<Tp::PendingReady *>(op);
 		Tp::TextChannelPtr channel = Tp::TextChannelPtr(qobject_cast<Tp::TextChannel *>(pr->object()));
 		tp_text_channel_ = channel;
 
-		//QStringList interfaces = tp_text_channel_->interfaces();
-		//for (QStringList::iterator i = interfaces.begin(); i != interfaces.end(); ++i)
-		//{
-		//	QString line = "Text channel have interface: ";
-		//	line.append(*i);
-		//	LogDebug(line.toStdString());
-		//}
+		QStringList interfaces = tp_text_channel_->interfaces();
+		for (QStringList::iterator i = interfaces.begin(); i != interfaces.end(); ++i)
+		{
+			QString line = "Text channel have interface: ";
+			line.append(*i);
+			LogDebug(line.toStdString());
+		}
 
 //		Tp::ContactPtr initiator = tp_text_channel_->initiatorContact();
 
+		bool have_message_capabilities = tp_text_channel_->isReady(Tp::TextChannel::FeatureMessageCapabilities);
+	    bool have_message_queue = tp_text_channel_->isReady(Tp::TextChannel::FeatureMessageQueue);
+	    bool have_message_sent_signal = tp_text_channel_->isReady(Tp::TextChannel::FeatureMessageSentSignal);
+        //if (!have_message_capabilities)
+        //{
+        //    LogError("Text channel doesn't have the message capabilities!");
+        //    state_ = STATE_ERROR;
+        //    return;
+        //}
 
 		connect(tp_text_channel_.data(),
 				SIGNAL( messageReceived(const Tp::ReceivedMessage &) ),
@@ -220,7 +245,10 @@ namespace TelepathyIM
 		state_ = STATE_OPEN;
 		emit Opened(this);
 		for (QStringList::iterator i = send_buffer_.begin(); i != send_buffer_.end(); ++i)
-			SendMessage( *i);
+        {
+            QString text = *i;
+			SendMessage(text);
+        }
 	}
 
 	void ChatSession::HandlePendingMessage()
@@ -234,26 +262,33 @@ namespace TelepathyIM
 			LogDebug("Received pending messages:");
 			QDBusMessage m = pending_messages.reply();
 			Tp::PendingTextMessageList list = pending_messages.value();
-			
-			for (Tp::PendingTextMessageList::iterator i = list.begin(); i != list.end(); ++i)
-			{
-				QString note = QString("* Pending message received: ").append(i->text);
-				LogDebug(note.toStdString());
+            if (list.size() == 0)
+            {
+                LogDebug("There is no pending messages.");
+            }
+            else
+            {
+                LogDebug(QString("There is ").append(QString::number(list.size())).append(" pending messages.").toStdString());
+			    for (Tp::PendingTextMessageList::iterator i = list.begin(); i != list.end(); ++i)
+			    {
+				    QString note = QString("* Pending message received: ").append(i->text);
+				    LogDebug(note.toStdString());
 
-				Core::uint type = i->messageType; //! @todo Check if we need value of this parameter
-				ChatSessionParticipant* originator = GetParticipant(i->sender);
-				if (originator == 0)
-				{
-					//! @HACK and memory leak here. We should have a contact object from Connection object!
-					//! @HACK We should search contact object with given i->sender id value
-					originator = new ChatSessionParticipant(new Contact(tp_text_channel_->initiatorContact()));
-					participants_.push_back(originator);
-				}
+				    Core::uint type = i->messageType; //! @todo Check if we need value of this parameter
+				    ChatSessionParticipant* originator = GetParticipant(i->sender);
+				    if (originator == 0)
+				    {
+					    //! @HACK and memory leak here. We should have a contact object from Connection object!
+					    //! @HACK We should search contact object with given i->sender id value
+					    originator = new ChatSessionParticipant(new Contact(tp_text_channel_->initiatorContact()));
+					    participants_.push_back(originator);
+				    }
 
-				ChatMessage* message = new ChatMessage( originator, QDateTime::fromTime_t(i->unixTimestamp), i->text);
-				message_history_.push_back(message);
-				emit( MessageReceived(*message) );
-			}
+				    ChatMessage* message = new ChatMessage( originator, QDateTime::fromTime_t(i->unixTimestamp), i->text);
+				    message_history_.push_back(message);
+				    emit( MessageReceived(*message) );
+			    }
+            }
 		}
 		else
 			LogError("Received invalid pending messages");

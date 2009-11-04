@@ -14,15 +14,16 @@ namespace TelepathyIM
 		connect(tp_contact_.data(),
                 SIGNAL( simplePresenceChanged(const QString &, uint, const QString &) ),
                 SLOT( OnSimplePresenceChanged(const QString &, uint, const QString &) ));
-		//connect(tp_contact_.data(),
-  //              SIGNAL( subscriptionStateChanged(Tp::Contact::PresenceState) ),
-  //              SLOT( OnContactChanged() ));
-		//connect(tp_contact_.data(),
-  //              SIGNAL( publishStateChanged(Tp::Contact::PresenceState) ),
-  //              SLOT( OnContactChanged() ));
-		//connect(tp_contact_.data(),
-  //              SIGNAL( blockStatusChanged(bool) ),
-  //              SLOT( OnContactChanged()) );
+
+		connect(tp_contact_.data(),
+                SIGNAL( subscriptionStateChanged(Tp::Contact::PresenceState) ),
+                SLOT( OnContactChanged() ));
+		connect(tp_contact_.data(),
+                SIGNAL( publishStateChanged(Tp::Contact::PresenceState) ),
+                SLOT( OnContactChanged() ));
+		connect(tp_contact_.data(),
+                SIGNAL( blockStatusChanged(bool) ),
+                SLOT( OnContactChanged()) );
 	}
 
 	Contact::~Contact()
@@ -63,6 +64,15 @@ namespace TelepathyIM
 	{
 		return tp_contact_;
 	}
+
+    void Contact::OnContactChanged()
+    {
+        if (tp_contact_->subscriptionState() == Tp::Contact::PresenceStateNo)
+        {
+            // This contact doesn't allow to subscribe the presence status
+            emit PresenceSubscriptionCanceled(this);
+        }
+    }
 
 } // end of namespace: TelepathyIM
 	

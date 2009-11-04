@@ -50,7 +50,9 @@ namespace TelepathyIM
 		QString name_;
 	protected slots:
 	    void OnSimplePresenceChanged(const QString &status, uint type, const QString &presenceMessage);
-
+        void OnContactChanged();
+    signals:
+        void PresenceSubscriptionCanceled(Contact* contact);
 
 	};
 	typedef std::vector<Contact*> ContactVector;

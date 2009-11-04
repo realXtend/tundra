@@ -19,7 +19,8 @@ namespace OpensimIM
 	{
 	public:
 		ChatSession(Foundation::Framework* framework, const QString &channel_id, bool public_chat);
-//		ChatSession(Foundation::Framework* framework);
+
+        virtual ~ChatSession();
 
 		//! \todo support to other range options
 		virtual void SendMessage(const QString &text);

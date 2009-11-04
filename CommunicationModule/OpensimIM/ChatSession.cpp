@@ -23,6 +23,15 @@ namespace OpensimIM
 		}
 	}
 
+    ChatSession::~ChatSession()
+    {
+        for (ChatSessionParticipantVector::iterator i = participants_.begin(); i != participants_.end(); ++i)
+        {
+            delete *i;
+        }
+        participants_.clear();
+    }
+
 	void ChatSession::SendMessage(const QString &text)
 	{
 		if (private_im_session_)

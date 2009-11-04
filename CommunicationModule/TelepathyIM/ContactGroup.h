@@ -35,6 +35,8 @@ namespace TelepathyIM
 		virtual Communication::ContactGroupVector GetGroups();
 
 		virtual void AddContact(Contact* contact);
+
+        virtual void RemoveContact(Contact* contact);
 	protected:
 		QString name_;
 		ContactVector contacts_;

@@ -84,7 +84,7 @@ namespace TelepathyIM
 		virtual void OnMessageReceived(const Tp::ReceivedMessage &message);
 		virtual	void OnTextChannelClosed(Tp::PendingOperation* op);
 		virtual void OnChannelPendingMessageRemoved(const Tp::ReceivedMessage &message);
-signals:
+    signals:
 		void Ready(ChatSession* session);
 	};
 	typedef std::vector<ChatSession*> ChatSessionVector;

@@ -350,6 +350,9 @@ namespace Communication
 		//! connection
 		virtual FriendRequestVector GetFriendRequests() const = 0;
 
+        //! Removed given contact from friend list 
+        //virtual void RemoveContact(const Communication::ContactInterface &contact) = 0;
+
 		//! Set presence status state of user
 		//! @param status Allowed values are returned by GetPresenceStatusOptionsForUser methos
 		virtual void SetPresenceStatus(const QString &status) = 0;

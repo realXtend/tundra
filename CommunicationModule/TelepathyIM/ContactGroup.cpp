@@ -55,4 +55,17 @@ namespace TelepathyIM
 		contacts_.push_back(contact);
 	}
 
+    void ContactGroup::RemoveContact(Contact* contact)
+    {
+        for (ContactVector::iterator i = contacts_.begin(); i != contacts_.end(); ++i)
+        {
+            Contact* c = *i;
+            if (c->GetID().compare(contact->GetID()) == 0)
+            {
+                contacts_.erase(i);
+                return;
+            }
+        }
+    }
+
 } // end of namespace: TelepathyIM
