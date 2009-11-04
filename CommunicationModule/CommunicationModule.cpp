@@ -8,7 +8,7 @@
 namespace Communication
 {
 
-	CommunicationModule::CommunicationModule(void):ModuleInterfaceImpl("CommunicationModule"), communication_manager_(0), console_ui_(0), qt_ui_(0), opensim_ui_(0), communication_service_(0), test_(0)
+	CommunicationModule::CommunicationModule(void):ModuleInterfaceImpl("CommunicationModule"), qt_ui_(0), opensim_ui_(0), communication_service_(0), test_(0)
 	{
 	}
 
@@ -66,20 +66,17 @@ namespace Communication
 
 	void CommunicationModule::Uninitialize()
 	{
-		if (console_ui_)
-			SAFE_DELETE(console_ui_)
-
 		if (qt_ui_)
 			SAFE_DELETE(qt_ui_);
 
 		if (opensim_ui_)
 			SAFE_DELETE(opensim_ui_);
 
-		if (communication_manager_)
-			SAFE_DELETE(communication_manager_);
-
 		if (communication_service_)
 			SAFE_DELETE(communication_service_);
+
+        if (test_)
+            SAFE_DELETE(test_);
 
 		LogInfo("Uninitialized.");
 	}
