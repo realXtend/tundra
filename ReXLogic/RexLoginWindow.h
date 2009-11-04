@@ -68,6 +68,7 @@ namespace RexLogic
         boost::shared_ptr<QtUI::UICanvas> canvas_;
 
         boost::shared_ptr<QtUI::UICanvas> screen_canvas_;
+
     };
 }
 

@@ -214,6 +214,9 @@ namespace QtUI
 
         void SendMouseMoveEvent(int index, int x, int y);
 
+        enum DeactivationType { MouseMove, MousePress, MouseRelease, All };
+        void Deactivate(const QString& id, DeactivationType type = All, int index = -1);
+
         // Assumed to be in that kind order that top (active) canvas is first.
         QList<boost::shared_ptr<UICanvas> > canvases_;
         

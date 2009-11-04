@@ -278,15 +278,19 @@ void UICanvas::SetCanvasSize(int width, int height)
 
 void UICanvas::SetRenderWindowSize(const QSize& size)
 {
+    
     renderWindowSize_ = size;
+   
     if ( mode_ != External)
     {
+        
         Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
         float relWidth = (float)texture->getWidth()/double(renderWindowSize_.width());
         float relHeight = (float)texture->getHeight()/double(renderWindowSize_.height());
         container_->setDimensions(relWidth, relHeight);
         dirty_ = true;
-        emit( RenderWindowSizeChanges(renderWindowSize_) );
+       
+        emit( RenderWindowSizeChanged(renderWindowSize_) );
     }
 }
 
