@@ -90,6 +90,8 @@ namespace OpensimIM
 		//! connection
 		virtual Communication::FriendRequestVector GetFriendRequests() const;
 
+        void RemoveContact(const Communication::ContactInterface &contact);
+
 		//! Set presence status state of user
 		//! @param status Allowed values are returned by GetPresenceStatusOptionsForSelf methos
 		virtual void SetPresenceStatus(const QString &status);

@@ -55,7 +55,7 @@ namespace TelepathyIM
 		contacts_.push_back(contact);
 	}
 
-    void ContactGroup::RemoveContact(Contact* contact)
+    void ContactGroup::RemoveContact(const Contact* contact)
     {
         for (ContactVector::iterator i = contacts_.begin(); i != contacts_.end(); ++i)
         {

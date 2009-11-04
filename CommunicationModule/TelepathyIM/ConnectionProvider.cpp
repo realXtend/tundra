@@ -10,10 +10,12 @@ namespace TelepathyIM
 	{
 		// We want to start dbus daemon only on Windows platform
 #ifdef WIN32
-		StartDBusDaemon();
+        //! Ensures that gabble and dbus daemon processes are not running 
+        //! and start new dbus daemon process
+		ClearGabble();
+#else
+      	InitializeTelepathyConnectionManager("gabble");
 #endif
-
-		InitializeTelepathyConnectionManager("gabble");
 	}
 
 	ConnectionProvider::~ConnectionProvider()
@@ -101,7 +103,21 @@ namespace TelepathyIM
 		QTime wait_time = QTime::currentTime().addSecs(1);
 		while( QTime::currentTime() < wait_time )
 			QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+
+        InitializeTelepathyConnectionManager("gabble");
 	}
+
+    void ConnectionProvider::ClearGabble()
+    {
+        connect(&kill_old_gabble_, SIGNAL( finished(int, QProcess::ExitStatus) ), SLOT(ClearDBusDaemon() ));
+        kill_old_gabble_.start("taskkill /F /FI \"IMAGENAME eq gabble.exe");
+    }
+
+    void ConnectionProvider::ClearDBusDaemon()
+    {
+        connect(&kill_old_dbusdaemon_, SIGNAL( finished(int, QProcess::ExitStatus) ), SLOT(StartDBusDaemon() ));
+        kill_old_dbusdaemon_.start("taskkill /F /FI \"IMAGENAME eq dbus-daemon.exe");
+    }
 
 	void ConnectionProvider::StopDBusDaemon()
 	{

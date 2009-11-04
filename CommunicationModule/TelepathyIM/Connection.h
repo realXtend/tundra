@@ -78,6 +78,8 @@ namespace TelepathyIM
 		//! @param contact Voice chat partner 
 		virtual Communication::VoiceSessionInterface* OpenVoiceSession(const Communication::ContactInterface &contact);
 
+        virtual void RemoveContact(const Communication::ContactInterface &contact);
+
 		//! Send a friend request to target address
 		virtual void SendFriendRequest(const QString &target, const QString &message);
 

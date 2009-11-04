@@ -36,7 +36,7 @@ namespace TelepathyIM
 
 		virtual void AddContact(Contact* contact);
 
-        virtual void RemoveContact(Contact* contact);
+        virtual void RemoveContact(const Contact* contact);
 	protected:
 		QString name_;
 		ContactVector contacts_;

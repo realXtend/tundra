@@ -150,7 +150,7 @@ namespace OpensimIM
 		//! @todo IMPLEMENT
 		return NULL;
 	}
-	
+
 	void Connection::SendFriendRequest(const QString &target, const QString &message)
 	{
 		if (state_ != STATE_OPEN)
@@ -170,6 +170,12 @@ namespace OpensimIM
 
 		connection->SendFormFriendshipPacket(RexTypes::RexUUID( target.toStdString() ));
 	}
+
+    void Connection::RemoveContact(const Communication::ContactInterface &contact)
+    {
+        //! @todo IMPLEMENT
+        throw Core::Exception("Not implemented.");
+    }
 
 	Communication::FriendRequestVector Connection::GetFriendRequests() const
 	{

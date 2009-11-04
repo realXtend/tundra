@@ -147,6 +147,8 @@ namespace TelepathyIM
 	Communication::ChatSessionInterface* Connection::OpenPrivateChatSession(const QString& user_id)
 	{
 		//! @todo IMPLEMENT
+        //! - Request Tp::Contact object from Tp::Connection
+        //! - Create ChatSession object and return it
 		throw Core::Exception("NOT IMPLEMENTED");
 	}
 
@@ -166,6 +168,15 @@ namespace TelepathyIM
 		voice_sessions_.push_back(session);
 		return session;
 	}
+
+    void Connection::RemoveContact(const Communication::ContactInterface &contact)
+    {
+        const Contact* c =  dynamic_cast<const Contact*>(&contact);
+        friend_list_.RemoveContact(c);
+        c->GetTpContact()->removePresencePublication();
+        c->GetTpContact()->removePresenceSubscription();
+        emit ContactRemoved(contact);
+    }
 
 	void Connection::SendFriendRequest(const QString &target, const QString &message)
 	{
