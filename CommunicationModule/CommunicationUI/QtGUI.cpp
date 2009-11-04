@@ -382,9 +382,18 @@ namespace CommunicationUI
 	{
 		LogInfo("RemoveFriend clicked");
 		int row = listWidgetFriends_->currentRow();
-		ContactListItem *taken = dynamic_cast<ContactListItem *>(listWidgetFriends_->takeItem(listWidgetFriends_->currentRow()));
-		delete taken;
-		taken = 0;
+        
+        int count = listWidgetFriends_->count();
+        QListWidgetItem* item = listWidgetFriends_->item(row);
+        ContactListItem* contact_item =  dynamic_cast<ContactListItem *>(item);
+        if (contact_item == 0)
+            return;
+        im_connection_->RemoveContact( *contact_item->GetContact() );
+        // The friend list widget will be upted when it get ContactRemoved signal from Connection object
+
+		//ContactListItem *taken = dynamic_cast<ContactListItem *>(listWidgetFriends_->takeItem(listWidgetFriends_->currentRow()));
+		//delete taken;
+		//taken = 0;
 	}
 
     void UIContainer::OnNewContact(const Communication::ContactInterface& contact)

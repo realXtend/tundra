@@ -351,7 +351,7 @@ namespace Communication
 		virtual FriendRequestVector GetFriendRequests() const = 0;
 
         //! Removed given contact from friend list 
-        //virtual void RemoveContact(const Communication::ContactInterface &contact) = 0;
+        virtual void RemoveContact(const Communication::ContactInterface &contact) = 0;
 
 		//! Set presence status state of user
 		//! @param status Allowed values are returned by GetPresenceStatusOptionsForUser methos

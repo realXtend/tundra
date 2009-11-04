@@ -45,13 +45,10 @@ namespace TelepathyIM
 		virtual Communication::ConnectionVector GetConnections() const;
 
 	private:
-		//! Start the WinDBus in a QProcess.
-		//! We call this only on Windows platform where are no native dbus daemon service
-		void StartDBusDaemon();
-
 		//! Stop the WinDBus QProcess
 		//! We call this only on Windows platform where are no native dbus daemon service
 		void StopDBusDaemon();
+
 
 		//! Do all initialize steps for Telepathy connection manager
 		//! and start waiting for OnConnectionManagerReady signal
@@ -62,6 +59,11 @@ namespace TelepathyIM
 		void DeleteConnections();
 
     private:
+        //! Used ONLY in Windows environment
+        //! Ensure that gabble process isn't running 
+        //! Calls ClearDBusDaemon()
+        void ClearGabble();
+
 		State state_;
 
 		Foundation::Framework* framework_;
@@ -71,6 +73,12 @@ namespace TelepathyIM
 
 		//! dbus daemon and gabble process for Windows platform
 		QProcess* dbus_daemon_;
+
+        //! Process for killing old gabble process
+        QProcess kill_old_gabble_;
+
+        //! Process for killing old dbus daemon process
+        QProcess kill_old_dbusdaemon_;
 
         //! All connections (open and closed ones)
 		ConnectionVector connections_;
@@ -86,6 +94,15 @@ namespace TelepathyIM
 		void OnConnectionReady(Communication::ConnectionInterface&);
 		void OnConnectionClosed(Communication::ConnectionInterface&);
 		void OnConnectionError(Communication::ConnectionInterface&);
+
+        //! Used ONLY in Windows environment
+        //! Ensure that dbus daeomon process isn't running 
+        //! Calls StartDBusDaemon when finished
+        void ClearDBusDaemon();
+
+		//! Start the WinDBus in a QProcess.
+		//! We call this only on Windows platform where are no native dbus daemon service
+		void StartDBusDaemon();
 	};
 
 } // end of namespace: TelepathyIM
