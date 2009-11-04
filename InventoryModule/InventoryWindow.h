@@ -10,8 +10,8 @@
 
 #include "Foundation.h"
 
-#include <QtGui>
 #include <QObject>
+#include <QPointer>
 #include <QModelIndex>
 
 class QWidget;
@@ -32,6 +32,7 @@ namespace RexLogic
 
 namespace Inventory
 {
+    class InventoryModule;
     class InventoryItemEventData;
     class InventoryItemModel;
 
@@ -55,7 +56,7 @@ namespace Inventory
 
     public slots:
         /// Initializes the OpenSim inventory data/view model.
-        void InitOpenSimInventoryTreeModel();
+        void InitOpenSimInventoryTreeModel(InventoryModule *inventory_module);
 
         /// Initialize the Taiga webdav data/view model.
         void InitWebDavInventoryTreeModel(const std::string &identityUrl, const std::string &hostUrl);
@@ -88,7 +89,7 @@ namespace Inventory
         /// Deletes item (folder/asset).
         void DeleteItem();
 
-        /// Deletes item (folder/asset).
+        /// Renames item (folder/asset).
         void RenameItem();
 
         /// File upload.
@@ -96,6 +97,9 @@ namespace Inventory
 
         /// File download.
         void Download();
+
+    signals:
+        void FileUpload(Core::StringList filenames);
 
     private:
         Q_DISABLE_COPY(InventoryWindow);

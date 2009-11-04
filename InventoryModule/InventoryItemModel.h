@@ -28,7 +28,7 @@ namespace Inventory
     public:
         /// Constructor.
         /// @param dataModel Inventory data model pointer.
-        InventoryItemModel(AbstractInventoryDataModel *dataModel);
+        InventoryItemModel(AbstractInventoryDataModel *data_model);
 
         /// Destructor.
         virtual ~InventoryItemModel();
@@ -118,7 +118,7 @@ namespace Inventory
         /// Data model pointer.
         AbstractInventoryDataModel *dataModel_;
 
-        ///
+        /// Does this model use trash folder.
         bool useTrash_;
 
         /// Item move flag.

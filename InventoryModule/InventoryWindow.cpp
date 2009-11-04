@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "InventoryWindow.h"
+#include "InventoryModule.h"
 #include "OpenSimInventoryDataModel.h"
 #include "WebdavInventoryDataModel.h"
 #include "PythonScriptModule.h"
@@ -70,7 +71,7 @@ void InventoryWindow::Hide()
         canvas_->Hide();
 }
 
-void InventoryWindow::InitOpenSimInventoryTreeModel()
+void InventoryWindow::InitOpenSimInventoryTreeModel(InventoryModule *inventory_module)
 {
     if (inventoryItemModel_)
     {
@@ -85,6 +86,9 @@ void InventoryWindow::InitOpenSimInventoryTreeModel()
 
     QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
         const QItemSelection &)), this, SLOT(UpdateActions()));
+
+    QObject::connect(this, SIGNAL(FileUpload(Core::StringList)), inventory_module->GetAssetUploader().get(),
+        SLOT(UploadFiles(Core::StringList)));
 
     inventoryType_ = "OpenSim";
 }
@@ -213,19 +217,13 @@ void InventoryWindow::Upload()
         Core::StringList filenames = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
         if (filenames.empty())
             return;
-        InventoryUploadEventData data;
-        data.filenames = filenames;
 
-        Foundation::EventManagerPtr eventManager = framework_->GetEventManager();
-        Core::event_category_id_t event_category = eventManager->QueryEventCategory("Inventory");
-
-        if (event_category != 0)
-            eventManager->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_UPLOAD, &data);
-//        boost::bind(&RexLogic::RexLogicModule::UploadMultipleAssets, rexLogicModule_, filenames);
+        emit FileUpload(filenames);
     }
     else if (inventoryType_ == "Webdav")
     {
-        QString filename(Foundation::QtUtils::GetOpenFileName("All Files (*.*)", "Select file for upload", Foundation::QtUtils::GetCurrentPath()).c_str());
+        QString filename(Foundation::QtUtils::GetOpenFileName("All Files (*.*)", "Select file for upload",
+            Foundation::QtUtils::GetCurrentPath()).c_str());
         QModelIndex index = treeView_->selectionModel()->currentIndex();
         AbstractInventoryItem *parentItem = inventoryItemModel_->GetItem(index);
         if (!filename.isEmpty() && !filename.isNull() && parentItem)
@@ -241,11 +239,13 @@ void InventoryWindow::Download()
 {
     if (inventoryType_ == "OpenSim")
     {
-
+        QMessageBox::information(0, "Download", "Download not yet supported for OpenSim inventory model.");
     }
     else if (inventoryType_ == "Webdav")
     {
-        QString storePath = QFileDialog::getExistingDirectory(inventoryWidget_, "Select location for file download", QString(Foundation::QtUtils::GetCurrentPath().c_str()));
+        QString storePath = QFileDialog::getExistingDirectory(inventoryWidget_, "Select location for file download",
+            QString(Foundation::QtUtils::GetCurrentPath().c_str()));
+
         QModelIndex index = treeView_->selectionModel()->currentIndex();
         AbstractInventoryItem *selectedItem = inventoryItemModel_->GetItem(index);
         WebdavInventoryDataModel *webdavDataModel = dynamic_cast<WebdavInventoryDataModel *>(inventoryItemModel_->GetInventory());

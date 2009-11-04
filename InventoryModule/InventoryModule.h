@@ -11,6 +11,7 @@
 #include "Foundation.h"
 #include "ModuleInterface.h"
 #include "EventDataInterface.h"
+#include "AssetUploader.h"
 
 namespace RexLogic
 {
@@ -20,6 +21,8 @@ namespace RexLogic
 namespace Inventory
 {
     class InventoryWindow;
+
+    typedef boost::shared_ptr<AssetUploader> AssetUploaderPtr;
 
     class InventoryModule : public Foundation::ModuleInterfaceImpl
     {
@@ -42,11 +45,20 @@ namespace Inventory
 
         MODULE_LOGGING_FUNCTIONS
 
-        //! Returns name of this module. Needed for logging.
+        /// Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
-        //! Returns type of this module. Needed for logging.
+        /// Returns type of this module. Needed for logging.
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Inventory;
+
+        /// Upload an asset.
+        Console::CommandResult UploadAsset(const Core::StringVector &params);
+
+        /// Upload multiple assets.
+        Console::CommandResult UploadMultipleAssets(const Core::StringVector &params);
+
+        /// @return Asset uploader pointer.
+        AssetUploaderPtr GetAssetUploader() const { return assetUploader_; }
 
     private:
         InventoryModule(const InventoryModule &);
@@ -66,6 +78,9 @@ namespace Inventory
 
         /// Module GUI widget
         InventoryWindow *inventoryWindow_;
+
+        /// Asset uploader.
+        AssetUploaderPtr assetUploader_;
     };
 }
 

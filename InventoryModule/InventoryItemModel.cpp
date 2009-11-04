@@ -24,8 +24,8 @@
 namespace Inventory
 {
 
-InventoryItemModel::InventoryItemModel(AbstractInventoryDataModel *dataModel) :
-    dataModel_(dataModel), useTrash_(false), itemMoveFlag_(false), movedItemsCount_(0)
+InventoryItemModel::InventoryItemModel(AbstractInventoryDataModel *data_model) :
+    dataModel_(data_model), useTrash_(false), itemMoveFlag_(false), movedItemsCount_(0)
 {
 }
 
@@ -317,6 +317,10 @@ bool InventoryItemModel::InsertItem(int position, const QModelIndex &parent, Inv
 {
     AbstractInventoryItem *parentFolder = dataModel_->GetChildFolderById(STD_TO_QSTR(item_data->parentId.ToString()));
     if (!parentFolder)
+        return false;
+
+    AbstractInventoryItem *existing = dataModel_->GetChildById(STD_TO_QSTR(item_data->id.ToString()));
+    if (existing)
         return false;
 
     // If the inventory is not visible the index might be non-valid.
