@@ -219,6 +219,7 @@ namespace CommunicationUI
 	public:
 		ContactListItem(QString &name, QString &status, QString &statusmessage, Communication::ContactInterface *contact);
 		~ContactListItem(void);
+        Communication::ContactInterface* GetContact() {return contact_;};
 
 	public slots:
 		void StatusChanged(const QString &status, const QString &message);
