@@ -51,12 +51,9 @@ class EditGUI(Component):
     def __init__(self):
         Component.__init__(self)
         loader = QUiLoader()
-        if r.restart and r.canvas is not None:
-            self.canvas = r.canvas
-            self.arrows = r.arrows
-        else:
-            self.canvas = r.createCanvas(INTERNAL) #change to internal later, had some rendering problems?
-            self.arrows = None
+            
+        self.canvas = r.createCanvas(INTERNAL) #change to internal later, had some rendering problems?
+        self.arrows = None
         
         file = QFile(self.UIFILE)
 
@@ -73,8 +70,7 @@ class EditGUI(Component):
         #self.canvas.Show()
         modu = r.getQtModule()
         
-        if not r.restart:
-            modu.AddCanvasToControlBar(self.canvas, "EditGUI")
+        modu.AddCanvasToControlBar(self.canvas, "EditGUI")
 
         #self.deactivate()
         
@@ -338,8 +334,6 @@ class EditGUI(Component):
         if r.restart:
             #r.logDebug("...restarting...")
             self.hideArrows()
-            r.canvas = self.canvas
-            r.arrows = self.arrows
         
         modu = r.getQtModule()
         if self.canvas is not None:
