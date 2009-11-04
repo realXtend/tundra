@@ -152,7 +152,7 @@ asset_type_t GetAssetTypeFromFilename(const std::string &filename)
     return -1;
 }
 
-bool IsNull(RexAssetID id)
+bool IsNull(const RexAssetID& id)
 {
     if (id.size() == 0)
         return true;
@@ -163,7 +163,7 @@ bool IsNull(RexAssetID id)
     return false;
 }
 
-bool IsUrlBased(RexAssetID id)
+bool IsUrlBased(const RexAssetID& id)
 {
     if (id.size() == 0)
         return false;
