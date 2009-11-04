@@ -324,6 +324,7 @@ void Primitive::SendRexPrimData(Core::entity_id_t entityid)
     std::vector<uint8_t> buffer;
     buffer.resize(4096);
     int idx = 0;
+    bool send_asset_urls = false;
     
     // graphical values
     WriteUInt8ToBytes(prim.DrawType, &buffer[0], idx);
@@ -339,6 +340,9 @@ void Primitive::SendRexPrimData(Core::entity_id_t entityid)
     // Note: if the EC contains asset urls that can not be encoded as UUIDs, we still have to send
     // invalid (null) UUIDs to retain binary compatibility with the rexprimdatablob
     
+    if (IsUrlBased(prim.MeshID) || IsUrlBased(prim.CollisionMeshID) || IsUrlBased(prim.ParticleScriptID) || IsUrlBased(prim.AnimationPackageID))
+        send_asset_urls = true;
+        
     WriteUUIDToBytes(RexUUID(prim.MeshID), &buffer[0], idx);
     WriteUUIDToBytes(RexUUID(prim.CollisionMeshID), &buffer[0], idx);
     WriteUUIDToBytes(RexUUID(prim.ParticleScriptID), &buffer[0], idx);
@@ -355,22 +359,41 @@ void Primitive::SendRexPrimData(Core::entity_id_t entityid)
     while (i != prim.Materials.end())
     {
         // Write assettype, uuid, index for each
+        if (IsUrlBased(i->second.asset_id))
+            send_asset_urls = true;
         WriteUInt8ToBytes(i->second.Type, &buffer[0], idx);
         WriteUUIDToBytes(RexUUID(i->second.asset_id), &buffer[0], idx);
         WriteUInt8ToBytes(i->first, &buffer[0], idx);
+        ++i;
     }
 
     WriteNullTerminatedStringToBytes(prim.ServerScriptClass, &buffer[0], idx);
 
     // Sound
+    if (IsUrlBased(prim.SoundID))
+        send_asset_urls = true;
     WriteUUIDToBytes(RexUUID(prim.SoundID), &buffer[0], idx);
     WriteFloatToBytes(prim.SoundVolume, &buffer[0], idx);
     WriteFloatToBytes(prim.SoundRadius, &buffer[0], idx);
     
     WriteUInt32ToBytes(prim.SelectPriority, &buffer[0], idx);
 
-    //! \todo Support the asset url replacements for uuids, which come at this point 
-    
+    // Extension: url based asset id's
+    if (send_asset_urls)
+    {
+        WriteNullTerminatedStringToBytes(prim.MeshID, &buffer[0], idx);
+        WriteNullTerminatedStringToBytes(prim.CollisionMeshID, &buffer[0], idx);
+        WriteNullTerminatedStringToBytes(prim.ParticleScriptID, &buffer[0], idx);
+        WriteNullTerminatedStringToBytes(prim.AnimationPackageID, &buffer[0], idx);
+        WriteNullTerminatedStringToBytes(prim.SoundID, &buffer[0], idx);
+        i = prim.Materials.begin();
+        while (i != prim.Materials.end())        
+        {
+            WriteNullTerminatedStringToBytes(i->second.asset_id, &buffer[0], idx);
+            ++i;
+        }
+    }  
+          
     buffer.resize(idx);
 
     RexServerConnectionPtr conn = rexlogicmodule_->GetServerConnection();

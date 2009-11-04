@@ -333,6 +333,9 @@ namespace RexTypes
     }
 
     bool IsNull(RexAssetID id);
+    
+    //! \return true if asset id is non-null (not empty) and url-based
+    bool IsUrlBased(RexAssetID id);
 
 } // end of namespace: RexTypes
 
