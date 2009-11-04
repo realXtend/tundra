@@ -1149,6 +1149,68 @@ void RexServerConnection::SendGenericMessage(const std::string& method, const Co
     FinishMessageBuilding(m);
 }
 
+
+void RexServerConnection::SendGenericMessageBinary(const std::string& method, const Core::StringVector& strings, const std::vector<uint8_t>& binary)
+{
+    if (!connected_)
+        return;
+
+    const size_t max_string_size = 200;
+    
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgGenericMessage);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(myInfo_.agentID);
+    m->AddUUID(myInfo_.sessionID);
+
+    // Transaction ID
+    m->AddUUID(RexUUID::CreateRandom());
+
+    // Method
+    m->AddBuffer(method.length(), (uint8_t*)method.c_str());
+
+    // Invoice ID
+    m->AddUUID(RexUUID::CreateRandom());
+
+    // See how many binary strings 
+    size_t binarystrings = 0;
+    size_t count = binary.size();
+    while (count)
+    {
+        if (count > max_string_size)
+            count -= max_string_size;
+        else
+            count -= count;
+        binarystrings++;
+    }
+    
+    // Variable count of strings
+    m->SetVariableBlockCount(strings.size() + binarystrings);
+
+    // Strings
+    for(Core::uint i = 0; i < strings.size(); ++i)
+        m->AddBuffer(strings[i].length()+1, (uint8_t*)strings[i].c_str());
+    
+    // Binary strings
+    size_t idx = 0;
+    count = binary.size();   
+    for(Core::uint i = 0; i < binarystrings; ++i)
+    {
+        size_t size = count;
+        if (size > max_string_size)
+            size = max_string_size;
+            
+        m->AddBuffer(size, (uint8_t*)&binary[idx]);
+        idx += size;
+        count -= size;
+    }
+
+    m->MarkReliable();
+    
+    FinishMessageBuilding(m);
+}
+
 void RexServerConnection::SendRexStartupPacket(const std::string& state)
 {
     Core::StringVector strings;

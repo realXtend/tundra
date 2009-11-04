@@ -260,6 +260,12 @@ namespace RexLogic
         return result;
     }    
 
+    void WriteBoolToBytes(bool value, uint8_t* bytes, int& idx)
+    {
+        bytes[idx] = (uint8_t)value;
+        idx++;
+    }
+
     void WriteUInt8ToBytes(uint8_t value, uint8_t* bytes, int& idx)
     {
         bytes[idx] = value;
@@ -290,6 +296,13 @@ namespace RexLogic
         idx += sizeof(RexTypes::RexUUID);
     }    
     
+    void WriteNullTerminatedStringToBytes(const std::string& value, uint8_t* bytes, int& idx)
+    {
+        const char* c_str = value.c_str();
+        
+        memcpy(bytes, c_str, value.length() + 1);
+        idx += value.length() + 1;
+    }
     
     NameValueMap ParseNameValueMap(const std::string& namevalue)
     {

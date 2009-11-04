@@ -300,6 +300,13 @@ namespace RexLogic
          */
         void SendGenericMessage(const std::string& method, const Core::StringVector& strings);
 
+        //! Sends a generic message with binary data packed to the end
+        /*! \param method Method name
+            \param strings Vector of data strings to be sent
+            \param binary Vector of binary data. Will be split into smaller chunks as necessary
+         */
+        void SendGenericMessageBinary(const std::string& method, const Core::StringVector& strings, const std::vector<uint8_t>& binary);
+
         /// @return Name of the sim we're connected to.
         std::string GetSimName() const { return simName_; }
 

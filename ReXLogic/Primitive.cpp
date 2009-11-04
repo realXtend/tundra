@@ -311,6 +311,77 @@ void Primitive::CheckPendingRexPrimData(Core::entity_id_t entityid)
     }
 }
 
+void Primitive::SendRexPrimData(Core::entity_id_t entityid)
+{
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+    if (!entity)
+        return;
+
+    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+    
+    RexUUID fullid = prim.FullId;
+    
+    std::vector<uint8_t> buffer;
+    buffer.resize(4096);
+    int idx = 0;
+    
+    // graphical values
+    WriteUInt8ToBytes(prim.DrawType, &buffer[0], idx);
+    WriteBoolToBytes(prim.IsVisible, &buffer[0], idx);
+    WriteBoolToBytes(prim.CastShadows, &buffer[0], idx);
+    WriteBoolToBytes(prim.LightCreatesShadows, &buffer[0], idx);
+    WriteBoolToBytes(prim.DescriptionTexture, &buffer[0], idx);
+    WriteBoolToBytes(prim.ScaleToPrim, &buffer[0], idx);
+    WriteFloatToBytes(prim.DrawDistance, &buffer[0], idx);
+    WriteFloatToBytes(prim.LOD, &buffer[0], idx);   
+
+    // UUIDs
+    // Note: if the EC contains asset urls that can not be encoded as UUIDs, we still have to send
+    // invalid (null) UUIDs to retain binary compatibility with the rexprimdatablob
+    
+    WriteUUIDToBytes(RexUUID(prim.MeshID), &buffer[0], idx);
+    WriteUUIDToBytes(RexUUID(prim.CollisionMeshID), &buffer[0], idx);
+    WriteUUIDToBytes(RexUUID(prim.ParticleScriptID), &buffer[0], idx);
+
+    // Animation
+    WriteUUIDToBytes(RexUUID(prim.AnimationPackageID), &buffer[0], idx);
+    WriteNullTerminatedStringToBytes(prim.AnimationName, &buffer[0], idx);
+    WriteFloatToBytes(prim.AnimationRate, &buffer[0], idx);
+
+    // Materials
+    size_t mat_count = prim.Materials.size();
+    MaterialMap::const_iterator i = prim.Materials.begin();
+    WriteUInt8ToBytes((uint8_t)mat_count, &buffer[0], idx); 
+    while (i != prim.Materials.end())
+    {
+        // Write assettype, uuid, index for each
+        WriteUInt8ToBytes(i->second.Type, &buffer[0], idx);
+        WriteUUIDToBytes(RexUUID(i->second.asset_id), &buffer[0], idx);
+        WriteUInt8ToBytes(i->first, &buffer[0], idx);
+    }
+
+    WriteNullTerminatedStringToBytes(prim.ServerScriptClass, &buffer[0], idx);
+
+    // Sound
+    WriteUUIDToBytes(RexUUID(prim.SoundID), &buffer[0], idx);
+    WriteFloatToBytes(prim.SoundVolume, &buffer[0], idx);
+    WriteFloatToBytes(prim.SoundRadius, &buffer[0], idx);
+    
+    WriteUInt32ToBytes(prim.SelectPriority, &buffer[0], idx);
+
+    //! \todo Support the asset url replacements for uuids, which come at this point 
+    
+    buffer.resize(idx);
+
+    RexServerConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+    if (!conn)
+        return;
+    Core::StringVector strings;
+    strings.push_back(fullid.ToString());
+    conn->SendGenericMessageBinary("RexPrimData", strings, buffer);
+    
+}
+    
 void Primitive::HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t* primdata, const int primdata_size)
 {
     int idx = 0;
@@ -332,8 +403,7 @@ void Primitive::HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t*
     prim.LOD = ReadFloatFromBytes(primdata,idx);
 
     prim.MeshID = ReadUUIDFromBytes(primdata,idx).ToString();
-    prim.CollisionMeshID = ReadUUIDFromBytes(primdata,idx).ToString();
-    
+    prim.CollisionMeshID = ReadUUIDFromBytes(primdata,idx).ToString();    
     prim.ParticleScriptID = ReadUUIDFromBytes(primdata,idx).ToString();
 
     // animation
