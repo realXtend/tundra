@@ -305,7 +305,7 @@ void EC_OgreMovableTextOverlay::CreateOverlay(const Core::Vector3df& offset)
     else
         overlay_->hide();
     
-    overlay_->setZOrder(500);
+    overlay_->setZOrder(100);
 }
 
 Ogre::Vector2 EC_OgreMovableTextOverlay::GetTextDimensions(const std::string &text)
