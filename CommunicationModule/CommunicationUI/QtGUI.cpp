@@ -33,8 +33,7 @@ namespace CommunicationUI
 		{
 			// Set param to QtUI::UICanvas::Internal to put inside ogre window
 			canvas_ = qt_module->CreateCanvas(UICanvas::External).lock();
-			UIContainer *UIContainer_ = new UIContainer(0);
-			
+			UIContainer *UIContainer_ = new UIContainer(0, framework_);
 
 			// Connect signal for resizing
 			QObject::connect(UIContainer_, SIGNAL( Resized(QSize &) ), this, SLOT( SetWindowSize(QSize &) ));
@@ -68,8 +67,8 @@ namespace CommunicationUI
 		QtUI::QtModule *qt_ui = dynamic_cast<QtModule*>(qt_module.get());
 		if (qt_ui != 0)
 		{
-			canvas_->Hide();
-			qt_ui->DeleteCanvas(canvas_->GetID());
+            if (canvas_)
+			    qt_ui->DeleteCanvas(canvas_->GetID());
 		}
 	}
 
@@ -83,8 +82,8 @@ namespace CommunicationUI
 	// UIContainer CLASS
 	/////////////////////////////////////////////////////////////////////
 
-	UIContainer::UIContainer(QWidget *parent)
-		: QWidget(parent), chatWidget_(0), loginWidget_(0)
+    UIContainer::UIContainer(QWidget *parent, Foundation::Framework *framework)
+		: QWidget(parent), chatWidget_(0), loginWidget_(0), framework_(framework)
 	{
 		communication_service_ = Communication::CommunicationService::GetInstance();
 //		QObject::connect((QObject *)commManager_, SIGNAL( Error(QString &) ), this, SLOT( ConnectionFailed(QString &) ));
@@ -109,6 +108,7 @@ namespace CommunicationUI
 		{
 			if (loginWidget_ != NULL)
 			{
+                ((Login *)loginWidget_)->SaveConfig();
 				this->layout()->removeWidget(loginWidget_);
 				delete loginWidget_;
 				loginWidget_ = 0;
@@ -172,7 +172,7 @@ namespace CommunicationUI
 			}
 
 			// Init login GUI
-			loginWidget_ = new Login(this, currentMessage);
+			loginWidget_ = new Login(this, currentMessage, framework_);
 			// Get widgets
 			labelLoginConnectionStatus_ = findChild<QLabel *>("label_Status");
 			// Connect signals
@@ -415,12 +415,13 @@ namespace CommunicationUI
 	// LOGIN CLASS
 	/////////////////////////////////////////////////////////////////////
 
-	Login::Login(QWidget *parent, QString &message)
-		: QWidget(parent)
+	Login::Login(QWidget *parent, QString &message, Foundation::Framework *framework)
+		: QWidget(parent), framework_(framework)
 	{
 		this->setLayout(new QVBoxLayout());
 		this->layout()->setMargin(0);
 		InitWidget(message);
+        ReadConfig();
 		ConnectSignals();
 	}
 
@@ -450,6 +451,39 @@ namespace CommunicationUI
 		buttonConnect_ = findChild<QPushButton *>("pushButton_Connect");
 		buttonCancel_ = findChild<QPushButton *>("pushButton_Cancel");
 	}
+
+    void Login::ReadConfig()
+    {
+        QString value, configKey;
+        QString server, username, port;
+		QString configGroup("InstantMessagingLogin");
+        bool ok = false;
+
+		configKey = QString("server");
+		server = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
+		configKey = QString("username");
+		username = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
+		configKey = QString("port");
+		port = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
+
+        if (!server.isNull() && !server.isEmpty())
+            textEditServer_->setText(server);
+        if (!username.isNull() && !username.isEmpty())
+            textEditUsername_->setText(username);
+        port.toInt(&ok);
+        if (ok)
+            textEditPort_->setText(port);
+        
+    }
+
+    void Login::SaveConfig()
+    {
+        // Save config
+        framework_->GetConfigManager()->SetSetting<std::string>(std::string("InstantMessagingLogin"), std::string("server"), textEditServer_->text().toStdString());
+        framework_->GetConfigManager()->SetSetting<std::string>(std::string("InstantMessagingLogin"), std::string("username"), textEditUsername_->text().toStdString());
+        framework_->GetConfigManager()->SetSetting<std::string>(std::string("InstantMessagingLogin"), std::string("port"), textEditPort_->text().toStdString());
+        framework_->GetConfigManager()->Export();
+    }
 
 	void Login::ConnectSignals()
 	{

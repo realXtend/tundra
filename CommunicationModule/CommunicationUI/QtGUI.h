@@ -56,7 +56,7 @@ namespace CommunicationUI
 	static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 
 	public:
-		UIContainer(QWidget *parent);
+		UIContainer(QWidget *parent, Foundation::Framework *framework);
 		~UIContainer(void);
 
 	public slots:
@@ -103,6 +103,8 @@ namespace CommunicationUI
 		Communication::ConnectionInterface* im_connection_;
 		Communication::ConnectionInterface* opensim_connection_;
 
+        Foundation::Framework *framework_;
+
 	signals:
 		void Resized(QSize &);
 		void DestroyCanvas();
@@ -121,14 +123,16 @@ namespace CommunicationUI
 	friend class UIContainer;
 
 	public:
-		Login(QWidget *parent, QString &message);
+		Login(QWidget *parent, QString &message, Foundation::Framework *framework);
 		~Login(void);
+        void SaveConfig();
 
 	public slots:
 		void CheckInput(bool clicked);
 
 	private:
 		void InitWidget(QString &message);
+        void ReadConfig();
 		void ConnectSignals();
 
 		QWidget *internalWidget_;
@@ -139,6 +143,8 @@ namespace CommunicationUI
 		QLineEdit *textEditPassword_;
 		QPushButton *buttonConnect_;
 		QPushButton *buttonCancel_;
+
+        Foundation::Framework *framework_;
 
 	signals:
 		void UserdataSet(QString, int, QString, QString);
