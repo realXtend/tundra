@@ -126,6 +126,7 @@ class Connection(DAV):
             
             # identify authentication CODE_UNAUTHORIZED, throw appropriate exception
             if status == Constants.CODE_UNAUTHORIZED:
+                self.logger.debug("EXEPTION: raise AuthorizationError")
                 raise AuthorizationError(reason, status, response.msg["www-authenticate"])
             
             response.close()

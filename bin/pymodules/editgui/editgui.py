@@ -77,7 +77,7 @@ class EditGUI(Component):
         #for some reason setRange is not there. is not not a slot of these?
         #"QDoubleSpinBox has no attribute named 'setRange'"
         #apparently they are properties .minimum and .maximum, made in the xml now
-        #~ for p in [widget.xpos, widget.ypos]:
+        #~ for p in [widget.MainFrame.xpos, widget.MainFrame.ypos]:
             #~ p.setRange(0, 256)
         #~ widget.zpos.setRange(0, 100)
         
@@ -86,7 +86,7 @@ class EditGUI(Component):
             def pos_at_index(v):
                 self.changepos(i, v)
             return pos_at_index
-        for i, poswidget in enumerate([widget.xpos, widget.ypos, widget.zpos]):
+        for i, poswidget in enumerate([widget.MainFrame.xpos, widget.MainFrame.ypos, widget.MainFrame.zpos]):
             #poswidget.connect('valueChanged(double)', lambda v: self.changepos(i, v))  
             poswidget.connect('valueChanged(double)', poschanger(i))
 
@@ -94,21 +94,21 @@ class EditGUI(Component):
             def rot_at_index(v):
                 self.changerot(i, v)
             return rot_at_index
-        for i, rotwidget in enumerate([widget.rot_x, widget.rot_y, widget.rot_z]):
+        for i, rotwidget in enumerate([widget.MainFrame.rot_x, widget.MainFrame.rot_y, widget.MainFrame.rot_z]):
             rotwidget.connect('valueChanged(double)', rotchanger(i))
         
         def scalechanger(i):
             def scale_at_index(v):
                 self.changescale(i, v)
             return scale_at_index
-        for i, scalewidget in enumerate([widget.scalex, widget.scaley, widget.scalez]):
+        for i, scalewidget in enumerate([widget.MainFrame.scalex, widget.MainFrame.scaley, widget.MainFrame.scalez]):
             scalewidget.connect('valueChanged(double)', scalechanger(i))
         
         self.sel = None
         
         self.left_button_down = False
         self.right_button_down = False
-        self.widget = widget
+        self.widget = widget.MainFrame
         self.widget.label.text = "<none>"
         
         r.c = self
