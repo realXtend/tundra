@@ -73,6 +73,9 @@ namespace CommunicationUI
 		void NewFriendRequest(Communication::FriendRequestInterface &);
 		void AddNewFriend(bool clicked);
 		void RemoveFriend(bool clicked);
+        void OnNewContact(const Communication::ContactInterface& contact);
+        void OnContactRemoved(const Communication::ContactInterface& contact);
+        
 
 	protected slots:
 		void closeEvent(QCloseEvent *myCloseEvent);

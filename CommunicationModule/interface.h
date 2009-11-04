@@ -383,11 +383,11 @@ namespace Communication
 
 		//! When a new contact is added to contact list
 		//! Basically this happens when someone accept friend request
-		void NewContact(const ContactInterface& contact);
+        void NewContact(const Communication::ContactInterface& contact);
 
 		//! When contact on contact list removes user from his/her contact list
 		//! then that contact will be automatically removed from user's contact list
-		void ContactRemoved(const ContactInterface& contact);
+        void ContactRemoved(const Communication::ContactInterface& contact);
 
 		//! When contact status changes
 		void ContactStatusUpdated(const ContactInterface& contact);
