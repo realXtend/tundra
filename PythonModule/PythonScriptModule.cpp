@@ -32,6 +32,7 @@
 #include "RexNetworkUtils.h" //debugboundingbox in CreateEntity
 
 #include "RexLogicModule.h" 
+#include "Primitive.h"
 #include "CameraControllable.h"
 //now done via logic cameracontrollable #include "Renderer.h" //for setting camera pitch
 //#include "ogrecamera.h"
@@ -315,6 +316,8 @@ namespace PythonScript
                 if (ent_id != 0)
                     value = PyObject_CallMethod(pmmInstance, "ENTITY_UPDATED", "I", ent_id);
             }
+
+			//todo: add EVENT_ENTITY_DELETED so that e.g. editgui can keep on track in collaborative editing when objs it keeps refs disappear
             
         }
         else if (category_id == networkstate_category_id) // if (category_id == "NETWORK?") 
@@ -494,10 +497,9 @@ namespace PythonScript
                 int x_rel = movement->x_.rel_;
                 int y_rel = movement->y_.rel_;
 
-				//only sending the mouse_movement event if one of the buttons is pressed, XXX change?
-				if (mouse_left_button_down_ || mouse_right_button_down_)
-					PyObject_CallMethod(pmmInstance, "MOUSE_MOVEMENT", "iiii", x_abs, y_abs, x_rel, y_rel);
-                
+			    //was only sending the mouse_movement event if one of the buttons is pressed, XXX change?
+			    //if (mouse_left_button_down_ || mouse_right_button_down_)
+                PyObject_CallMethod(pmmInstance, "MOUSE_MOVEMENT", "iiii", x_abs, y_abs, x_rel, y_rel);                
 			}
         }
 
@@ -664,7 +666,7 @@ PyObject* GetEntity(PyObject *self, PyObject *args)
     unsigned int ent_id_int;
     Core::entity_id_t ent_id;
 
-    if(!PyArg_ParseTuple(args, "i", &ent_id_int))
+    if(!PyArg_ParseTuple(args, "I", &ent_id_int))
     {
         PyErr_SetString(PyExc_ValueError, "Getting an entity failed, param should be an integer.");
         return NULL;   
@@ -716,10 +718,9 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
 	
 	meshname = std::string(c_text);
 
-    Scene::ScenePtr scene = PythonScript::GetScene();
-        
+    Scene::ScenePtr scene = PythonScript::GetScene();        
     if (!scene){ //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::NameStatic()))
-        PyErr_SetString(PyExc_ValueError, "Scene is none."); //XXX change the exception
+        PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in CreateEntity.");
         return NULL;   
     }
 
@@ -931,6 +932,28 @@ PyObject* SendObjectAddPacket(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+PyObject* SendRexPrimData(PyObject *self, PyObject *args)
+{
+	RexLogic::RexLogicModule *rexlogic_;
+    rexviewer_EntityObject* py_ent;
+    //Scene::EntityPtr entity;
+
+    if(!PyArg_ParseTuple(args, "O!", rexviewer_EntityType, &py_ent))
+    {
+        return NULL;   
+    }
+
+    //entity = scene->GetEntity(py_ent->ent_id);
+
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    if (rexlogic_)
+    {
+        rexlogic_->SendRexPrimData(py_ent->ent_id);
+	}
+
+	Py_RETURN_NONE;
+}
+
 PyObject* GetUserAvatarId(PyObject* self)
 {
 	RexLogic::RexLogicModule *rexlogic_;
@@ -1068,6 +1091,9 @@ static PyMethodDef EmbMethods[] = {
     {"sendObjectAddPacket", (PyCFunction)SendObjectAddPacket, METH_VARARGS, 
     "Creates a new prim at the given points"},
 
+    {"sendRexPrimData", (PyCFunction)SendRexPrimData, METH_VARARGS,
+    "updates prim data to the server - now for applying a mesh to an object"},
+
 	{"getUserAvatarId", (PyCFunction)GetUserAvatarId, METH_VARARGS, 
     "Returns the user's avatar's id."},
 
@@ -1085,7 +1111,7 @@ static PyObject* PythonScript::initpymod()
 
     entity_init(m); 
     /* this is planned to be vice versa: 
-       the implementing modules, like here scene for Entity,
+       the implementing modules, like here scene§ for Entity,
        would call something here to get a ref to the module, or something?
     */
 
@@ -1125,6 +1151,12 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
        is copy-paste from PythonScriptModule GetEntity 
        but to be removed when that map is used above.*/
     Scene::ScenePtr scene = PythonScript::GetScene();
+    if (!scene)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
+        return NULL;
+    }
+
     rexviewer_EntityObject *eob = (rexviewer_EntityObject *)self;
     Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
 
@@ -1226,9 +1258,22 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
         std::string text = name_overlay->GetText();
         return PyString_FromString(text.c_str());
     }
-	else if (s_name.compare("mesh") == 0)
+
+    else if (s_name.compare("mesh") == 0)
 	{
-		Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+        std::cout << ".. getting prim in mesh getting" << std::endl;
+        const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
+        if (!prim_component)
+        {
+            PyErr_SetString(PyExc_AttributeError, "prim not found.");
+            return NULL;   
+        }
+        RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
+            
+        return PyString_FromString(prim->MeshID.c_str());	
+        
+        /* was a test thing, just changes what ogre shows locally
+        Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
 		Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
 		if (placeable)
 		{
@@ -1236,9 +1281,8 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 			
 			std::string text = ogremesh.GetMeshName();
 			return PyString_FromString(text.c_str());
-		}
-	    
-	}
+		}*/
+    }
 
     std::cout << "unknown component type."  << std::endl;
     return NULL;
@@ -1270,6 +1314,12 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
        is copy-paste from PythonScriptModule GetEntity 
        but to be removed when that map is used above.*/
     Scene::ScenePtr scene = PythonScript::GetScene();
+    if (!scene)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
+        return NULL;
+    }
+
     Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
     
     /*if (s_name.compare("prim") == 0)
@@ -1418,7 +1468,24 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 			//NOTE: This is stricly done locally only for now, nothing is sent to the server.
 			const char* c_text = PyString_AsString(value);
 			std::string text = std::string(c_text);
-			Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+
+            std::cout << ".. getting prim in mesh setting" << std::endl;
+            const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
+            if (!prim_component)
+            {
+                PyErr_SetString(PyExc_AttributeError, "prim not found.");
+                return NULL;   
+            }
+            RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
+            prim->MeshID = text;
+
+            return 0;
+        }
+        
+        /* was a test thing, just changes what ogre shows locally
+
+			
+            /*Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
 			Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
 			if (placeable)
 			{
@@ -1428,8 +1495,8 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 
 				PythonScript::self()->LogInfo("Entity's mesh changed locally.");
 				return NULL;
-			}
-	    }
+			}*/
+
         else
         {
             PyErr_SetString(PyExc_ValueError, "text is a string"); //XXX change the exception
