@@ -82,6 +82,9 @@ namespace Inventory
         /// @return Inventory root folder.
         virtual AbstractInventoryItem *GetRoot() const = 0;
 
+        /// @return Inventory trash folder.
+        virtual AbstractInventoryItem *GetTrashFolder() const = 0;
+
     private:
         Q_DISABLE_COPY(AbstractInventoryDataModel);
     };

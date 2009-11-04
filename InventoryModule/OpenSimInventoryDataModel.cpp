@@ -50,6 +50,11 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetChildById(const QString &se
     return rootFolder_->GetChildById(searchId);
 }
 
+AbstractInventoryItem *OpenSimInventoryDataModel::GetTrashFolder() const
+{
+    return rootFolder_->GetFirstChildFolderByName("Trash");
+}
+
 InventoryFolder *OpenSimInventoryDataModel::GetMyInventoryFolder() const
 {
     return rootFolder_->GetFirstChildFolderByName("My Inventory");
@@ -58,11 +63,6 @@ InventoryFolder *OpenSimInventoryDataModel::GetMyInventoryFolder() const
 InventoryFolder *OpenSimInventoryDataModel::GetOpenSimLibraryFolder() const
 {
     return rootFolder_->GetFirstChildFolderByName("OpenSim Library");
-}
-
-InventoryFolder *OpenSimInventoryDataModel::GetTrashFolder() const
-{
-    return rootFolder_->GetFirstChildFolderByName("Trash");
 }
 
 AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewFolder(const QString &id, AbstractInventoryItem &parentFolder,
@@ -151,10 +151,16 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemCopy(AbstractInventoryItem 
 
 void OpenSimInventoryDataModel::NotifyServerAboutItemRemove(AbstractInventoryItem *item)
 {
+    if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
+        rexLogicModule_->GetServerConnection()->SendRemoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()));
+
+    if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
+        rexLogicModule_->GetServerConnection()->SendRemoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()));
+
     // When deleting items, we move them first to the Trash folder.
     // If the folder is already in the trash folder, delete it for good.
     ///\todo Move the "deleted" folder to the Trash folder and update the view.
-    InventoryFolder *trashFolder = GetTrashFolder();
+    /*InventoryFolder *trashFolder = GetTrashFolder();
 
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
     {
@@ -188,6 +194,7 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemRemove(AbstractInventoryIte
             rexLogicModule_->GetServerConnection()->SendMoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()),
                 QSTR_TO_UUID(trashFolder->GetID()), item->GetName().toStdString());
     }
+    */
 }
 
 void OpenSimInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryItem *item, const QString &old_name)

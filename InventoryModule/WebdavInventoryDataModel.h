@@ -18,28 +18,22 @@
 
 namespace RexLogic
 {
-	class RexLogicModule;
-}
-
-namespace OpenSimProtocol
-{
-	class InventorySkeleton;
-	class InventoryFolderSkeleton;
+    class RexLogicModule;
 }
 
 namespace Inventory
 {
-	class WebdavInventoryDataModel : public AbstractInventoryDataModel
-	{
+    class WebdavInventoryDataModel : public AbstractInventoryDataModel
+    {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		/// Constructor
-		WebdavInventoryDataModel(const QString &identityUrl, const QString &hostUrl);
+    public:
+        /// Constructor
+        WebdavInventoryDataModel(const QString &identityUrl, const QString &hostUrl);
 
-		/// Deconstructor
-		virtual ~WebdavInventoryDataModel();
+        /// Deconstructor
+        virtual ~WebdavInventoryDataModel();
 
         /// AbstractInventoryDataModel override.
         /// @return First folder by the requested name or null if the folder isn't found.
@@ -93,47 +87,50 @@ namespace Inventory
         /// AbstractInventoryDataModel override.
         void NotifyServerAboutItemUpdate(AbstractInventoryItem *item, const QString &old_name);
 
-        /// @return Inventory root folder.
+        /// AbstractInventoryDataModel override.
         AbstractInventoryItem *GetRoot() const { return rootFolder_; }
 
-	public slots:
-		void ItemSelectedFetchContent(AbstractInventoryItem *item);
+        /// AbstractInventoryDataModel override.
+        AbstractInventoryItem *GetTrashFolder() const { return 0; };
+
+    public slots:
+        void ItemSelectedFetchContent(AbstractInventoryItem *item);
         void UploadFile(const QString &file_path, AbstractInventoryItem *parent_folder);
         void DownloadFile(const QString &store_folder, AbstractInventoryItem *selected_item);
 
-	private:
-		Q_DISABLE_COPY(WebdavInventoryDataModel);
+    private:
+        Q_DISABLE_COPY(WebdavInventoryDataModel);
 
-		// Init PythonQt for usage
-		bool InitPythonQt();
+        // Init PythonQt for usage
+        bool InitPythonQt();
 
-		/// Fetch webdav inventory url with users identity
-		/// @return bool true if succeeded otherwise false
-		bool FetchWebdavUrlWithIdentity();
+        /// Fetch webdav inventory url with users identity
+        /// @return bool true if succeeded otherwise false
+        bool FetchWebdavUrlWithIdentity();
 
-		/// Fetch initial root folder
-		void FetchRootFolder();
+        /// Fetch initial root folder
+        void FetchRootFolder();
 
-		/// Fallback on error situations
-		void ErrorOccurredCreateEmptyRootFolder();
+        /// Fallback on error situations
+        void ErrorOccurredCreateEmptyRootFolder();
 
         /// Validate folder path, prepares it for pthon webdav library usage
         QString ValidateFolderPath(const QString &path);
 
-		/// Related urls to store for fetching webdav url and accessing webdav
-		QString identityUrl_;
-		QString hostUrl_;
-		QString webdavIdentityUrl_;
-		QString webdavUrl_;
+        /// Related urls to store for fetching webdav url and accessing webdav
+        QString identityUrl_;
+        QString hostUrl_;
+        QString webdavIdentityUrl_;
+        QString webdavUrl_;
 
-		/// The root folder.
+        /// The root folder.
         InventoryFolder *rootFolder_;
 
-		// Pointer to PythonQts main module
-		PythonQtObjectPtr pythonQtMainModule_;
-		PythonQtObjectPtr webdavclient_;
+        // Pointer to PythonQts main module
+        PythonQtObjectPtr pythonQtMainModule_;
+        PythonQtObjectPtr webdavclient_;
 
-	};
+    };
 }
 
 #endif // incl_InventoryModule_WebdavInventoryDataModel_h

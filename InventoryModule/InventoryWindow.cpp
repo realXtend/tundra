@@ -80,6 +80,7 @@ void InventoryWindow::InitOpenSimInventoryTreeModel()
 
     OpenSimInventoryDataModel *dataModel = new OpenSimInventoryDataModel(rexLogicModule_);
     inventoryItemModel_ = new InventoryItemModel(dataModel);
+    inventoryItemModel_->SetUseTrash(true);
     treeView_->setModel(inventoryItemModel_);
 
     QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
@@ -88,7 +89,7 @@ void InventoryWindow::InitOpenSimInventoryTreeModel()
     inventoryType_ = "OpenSim";
 }
 
-void InventoryWindow::InitWebDavInventoryTreeModel(std::string identityUrl, std::string hostUrl)
+void InventoryWindow::InitWebDavInventoryTreeModel(const std::string &identityUrl, const std::string &hostUrl)
 {
     if (inventoryItemModel_)
     {
@@ -105,8 +106,8 @@ void InventoryWindow::InitWebDavInventoryTreeModel(std::string identityUrl, std:
     QObject::connect(treeView_, SIGNAL( doubleClicked(const QModelIndex &) ), 
         inventoryItemModel_, SLOT( CurrentSelectionChanged(const QModelIndex &) ));
 
-    QObject::connect(inventoryItemModel_, SIGNAL( AbstractInventoryItemSelected(AbstractInventoryItem *) ),
-        dataModel, SLOT( ItemSelectedFetchContent(AbstractInventoryItem *) ));
+    QObject::connect(inventoryItemModel_, SIGNAL( AbstractInventoryItemSelected(AbstractInventoryItem *)),
+        dataModel, SLOT(ItemSelectedFetchContent(AbstractInventoryItem *)));
 
     // Set inventory type
     inventoryType_ = "Webdav";
@@ -140,7 +141,7 @@ void InventoryWindow::HandleInventoryDescendent(InventoryItemEventData *item_dat
             return;
 
     // Create new children (row) to the inventory view.
-    if (!inventoryItemModel_->insertRows(index.row(), 1, index, item_data))
+    if (!inventoryItemModel_->InsertItem(index.row(), index, item_data))
         return;
 
     UpdateActions();
@@ -169,8 +170,18 @@ void InventoryWindow::AddFolder()
         if (!model->insertColumn(0, index))
             return;
 
+    bool ok = false;
+    QString newFolderName = QInputDialog::getText(0/*inventoryWidget_*/, "Create New Folder", "Please give name of the new folder",
+        QLineEdit::Normal, "", &ok);
+    if (!ok)
+        return;
+
+    if (newFolderName.isEmpty())
+        newFolderName = "New Folder";
+
     // Create new children (row) to the inventory view.
-    if (!model->insertRow(0, index))
+//    if (!model->insertRow(0, index))
+    if (!inventoryItemModel_->InsertFolder(index.row(), index, newFolderName))
         return;
 
     treeView_->selectionModel()->setCurrentIndex(model->index(0, 0, index), QItemSelectionModel::ClearAndSelect);
@@ -242,6 +253,8 @@ void InventoryWindow::Download()
             webdavDataModel->DownloadFile(storePath, selectedItem);
         }
     }
+
+//    boost::bind(&RexLogic::RexLogicModule::UploadMultipleAssets, rexLogicModule_, filenames);
 }
 
 void InventoryWindow::CloseInventoryWindow()

@@ -58,7 +58,7 @@ namespace Inventory
         void InitOpenSimInventoryTreeModel();
 
         /// Initialize the Taiga webdav data/view model.
-        void InitWebDavInventoryTreeModel(std::string identityUrl, std::string hostUrl);
+        void InitWebDavInventoryTreeModel(const std::string &identityUrl, const std::string &hostUrl);
 
         /// Resets the inventory tree model.
         void ResetInventoryTreeModel();

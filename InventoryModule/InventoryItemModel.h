@@ -61,22 +61,6 @@ namespace Inventory
         QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
         /// QAbstractItemModel override.
-        /// Used for inserting new bulk childs ("New Folder") to the inventory tree model.
-        bool insertRows(int position, int rows, const QModelIndex &parent);
-
-        /// Used for inserting new childs with spesific data to the inventory tree model.
-        /// @param folder_data Data for the new folder.
-        bool insertRows(int position, int rows, const QModelIndex &parent,
-            InventoryItemEventData *item_data);
-
-        /// Used when moving items in inventory model.
-        /// @param position
-        /// @param new_parent
-        /// @param item
-        bool insertRows(int position, AbstractInventoryItem *new_parent, AbstractInventoryItem* item);
-
-        /// QAbstractItemModel override.
-        /// Used for removing childs to the inventory tree model.
         bool removeRows(int position, int rows, const QModelIndex &parent);
 
         /// QAbstractItemModel override.
@@ -88,16 +72,38 @@ namespace Inventory
         /// QAbstractItemModel override.
         int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
-        /// @return Pointer to inventory data model.
-        AbstractInventoryDataModel *GetInventory() const { return dataModel_; }
+        /// Inserts new empty folder to the model.
+        /// @param position
+        /// @param parent Index of the parent folder.
+        /// @param name Name.
+        bool InsertFolder(int position, const QModelIndex &parent, const QString &name);
+
+        /// Used for inserting new item with spesific data to the inventory tree model.
+        /// @param folder_data Data for the new folder.
+        bool InsertItem(int position, const QModelIndex &parent, InventoryItemEventData *item_data);
+
+        /// Used when moving items in inventory model.
+        /// @param position
+        /// @param new_parent
+        /// @param item
+        bool InsertExistingItem(int position, AbstractInventoryItem *new_parent, AbstractInventoryItem* item);
 
         /// Requests inventory descendents from server.
         /// @param index Model index.
         void FetchInventoryDescendents(const QModelIndex &index);
 
+        /// @return Inventory data model pointer.
+        AbstractInventoryDataModel *GetInventory() const { return dataModel_; }
+
         /// @param index Index of the wanted item.
         /// @return pointer to inventory item.
         AbstractInventoryItem *GetItem(const QModelIndex &index) const;
+
+        /// @return Does this model use trash folder.
+        bool GetUseTrash() const { return useTrash_; }
+
+        /// Sets if this model use trash folder or not.
+        void SetUseTrash(const bool &value) { useTrash_ = value; }
 
     public slots:
         void CurrentSelectionChanged(const QModelIndex &index);
@@ -111,6 +117,9 @@ namespace Inventory
 
         /// Data model pointer.
         AbstractInventoryDataModel *dataModel_;
+
+        ///
+        bool useTrash_;
 
         /// Item move flag.
         bool itemMoveFlag_;
