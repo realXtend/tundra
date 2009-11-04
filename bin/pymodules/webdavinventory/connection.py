@@ -114,6 +114,10 @@ class WebDavClient(object):
             authFailures += 1
             
     def resendAuthorization(self, AuthError):
+        print ''
+        print '---------------------------------------------------------'
+        print 'AuthorizationError was raised, trying to resend auth data'
+        print '---------------------------------------------------------'
         if AuthError.authType == "Basic":
             self.resource.connection.addBasicAuthorization(self.user, str(self.password))
         elif AuthError.authType == "Digest":
@@ -121,31 +125,36 @@ class WebDavClient(object):
             self.resource.connection.addDigestAuthorization(self.user, self.password, realm=info["realm"], qop=info["qop"], nonce=info["nonce"])
         else:
             raise WebdavError
+        try:
+            self.resource.getCollectionContents()
+            print "----------- RE-AUTHENTICATION SUCCESFULL ------------\n"
+        except AuthorizationError as e:
+            print "-------- TRIED TO RE-AUTHENTICATE BUT FAILED --------\n"
+            print "Please restart your viewer and reconnect to fix,"
+            print "webdav inventory is in early dev state and "
+            print "reauthentication is not fully working."
         
     def listResources(self, path = None):
-        try:
-            if (path != None):
-                if (self.setCollectionStorerToPath(path)):
-                    try:
-                        resourceList = self.resource.listResources()
-                        return self.parseResourceList(resourceList)
-                    except WebdavError:
-                        return WebdavError.__str__
-                else:
-                    return 'False'
-            else:
+        if (path != None):
+            if (self.setCollectionStorerToPath(path)):
                 try:
                     resourceList = self.resource.listResources()
                     return self.parseResourceList(resourceList)
+                except AuthorizationError as AuthError:
+                    self.resendAuthorization(AuthError)
                 except WebdavError:
                     return WebdavError.__str__
-        except AuthorizationError as e:
-            print ''
-            print '---------------------------------------------------------'
-            print 'AuthorizationError was raised, trying to resend auth data'
-            print '---------------------------------------------------------'
-            print ''
-            self.resendAuthorization(e)
+            else:
+                return 'False'
+        else:
+            try:
+                resourceList = self.resource.listResources()
+                return self.parseResourceList(resourceList)
+            except AuthorizationError as AuthError:
+                self.resendAuthorization(AuthError)
+            except WebdavError:
+                return WebdavError.__str__
+ 
 
     def parseResourceList(self, resourceList):
         keyvalues = []
@@ -161,6 +170,8 @@ class WebDavClient(object):
         try:
             self.resource = WebdavClient.CollectionStorer(self.url + path, self.resource.connection)
             return True
+        except AuthorizationError as AuthError:
+            self.resendAuthorization(AuthError)
         except WebdavError:
             return False
     
@@ -199,6 +210,8 @@ class WebDavClient(object):
             try:
                 self.resource.addCollection(directoryName)
                 return 'True'
+            except AuthorizationError as AuthError:
+                self.resendAuthorization(AuthError)
             except WebdavError:
                 return WebdavError.__str__
         else:
@@ -210,6 +223,8 @@ class WebDavClient(object):
                 webdavResource = self.resource.getResourceStorer(resourceWebDavName)
                 webdavResource.delete()
                 return 'True'
+            except AuthorizationError as AuthError:
+                self.resendAuthorization(AuthError)
             except WebdavError:
                 return WebdavError.__str__
         else:
@@ -220,6 +235,8 @@ class WebDavClient(object):
             try:
                 self.resource.deleteResource(collectionName)
                 return 'True'
+            except AuthorizationError as AuthError:
+                self.resendAuthorization(AuthError)
             except WebdavError:
                 return WebdavError.__str__
         else:
@@ -234,7 +251,6 @@ class WebDavClient(object):
                     infinity = False
                 newPath = self.url + newPath
                 print 'COPY DIRECTORY ==============='
-                print 'DOES NOT WORK FOR DIRECTORYS WITH TAIGA, YET'
                 print 'Item         : ' + itemName
                 print 'Current path : ' + currentPath
                 print 'New path     : ' + newPath
@@ -257,8 +273,23 @@ class WebDavClient(object):
                 webdavResource = self.resource.getResourceStorer(oldName)
                 webdavResource.move(newName)
                 return 'True'
+            except AuthorizationError as AuthError:
+                self.resendAuthorization(AuthError)
             except WebdavError:
                 return WebdavError.__str__
         else:
             return 'False'
             
+    def moveResource(self, currentPath, newPath, resourceName):
+        if (self.setCollectionStorerToPath(currentPath)):
+            try:
+                newPath = self.url + urllib.quote(newPath + resourceName)
+                webdavResource = self.resource.getResourceStorer(resourceName)
+                webdavResource.move(newName)
+                return 'True'
+            except AuthorizationError as AuthError:
+                self.resendAuthorization(AuthError)
+            except WebdavError:
+                return WebdavError.__str__
+        else:
+            return 'False'

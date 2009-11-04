@@ -105,7 +105,7 @@ namespace Inventory
                             QString deepCopy = "False";
                             if (currentFolder->GetChildList().count() > 0)
                                 deepCopy = "True";
-                            QStringList result = webdavclient_.call("copyDirectory", QVariantList() << currentPath << newPath << folderName << deepCopy).toStringList();
+                            QStringList result = webdavclient_.call("moveResource", QVariantList() << currentPath << newPath << folderName).toStringList();
                             if (result.count() >= 1)
                                 if (result[0] == "True")
                                 {
