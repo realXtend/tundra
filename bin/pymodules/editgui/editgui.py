@@ -63,14 +63,14 @@ class EditGUI(Component):
 
         self.canvas.SetCanvasSize(width, height)
         self.canvas.SetPosition(30, 30)
+        self.canvas.SetCanvasResizeLock(True)
 
         widget.resize(width, height)
-        
+
         self.canvas.AddWidget(widget)
         #self.canvas.Show()
         modu = r.getQtModule()
-        
-        modu.AddCanvasToControlBar(self.canvas, "EditGUI")
+        modu.AddCanvasToControlBar(self.canvas, "World Edit")
 
         #self.deactivate()
         

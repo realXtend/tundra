@@ -67,23 +67,10 @@ namespace QtUI
         
         QPointF GetPosition() const;
 
-        /** Locks the canvas position so that it cannot be moved.
-            @note This function is only applicable if the canvas is in internal display mode. */
-        
-        void SetLockPosition(bool locked) { locked_ = locked; }
-
         /** @return True if the canvas position has been locked.
             @note This function is only applicable if the canvas is in internal display mode. */
         
         bool IsCanvasPositionLocked() const { return locked_; }
-
-
-        /**
-         * Locks the canvas so that it cannot be resized. 
-         * @note @p SetCanvasSize() -function works even that canvas resize is locked. 
-         */
-
-        void SetCanvasResizeLock(bool locked) { resize_locked_ = locked; }
         
         /**
          * Returns true if canvas cannot be resized. 
@@ -93,17 +80,12 @@ namespace QtUI
 
         bool IsCanvasResizeLocked() const { return resize_locked_;}
 
-
         bool IsAlwaysOnTop() const { return always_top_; }
 
         void SetAlwaysOnTop(bool on) { always_top_ = on; }
 
-       
-
         /// @return A pair (width, height) containing the absolute size of the canvas.
         QSize GetSize() const { return this->size(); }
-
-
 
         /**
             Resizes the canvas. This function does not just alter the width and the height
@@ -118,7 +100,6 @@ namespace QtUI
         */
         
         void Resize(int width, int height, CanvasCorner anchor);
-        
 
         /**
          * Enables or disables alpha fading animation. 
@@ -198,10 +179,22 @@ namespace QtUI
             left corner. */
         
         void SetPosition(int x, int y);
+
+        /** Locks the canvas position so that it cannot be moved.
+            @note This function is only applicable if the canvas is in internal display mode. */
         
+        void SetLockPosition(bool locked) { locked_ = locked; }
+
+        /**
+         * Locks the canvas so that it cannot be resized. 
+         * @note @p SetCanvasSize() -function works even that canvas resize is locked. 
+         */
+
+        void SetCanvasResizeLock(bool locked) { resize_locked_ = locked; }
+
         /// @return True if this canvas is hidden, false otherwise.  
         
-         bool IsHidden() const;
+        bool IsHidden() const;
         
 		/// Redraws this internal canvas to an Ogre surface if it has become dirty. 
         /// For external canvases, does nothing.
