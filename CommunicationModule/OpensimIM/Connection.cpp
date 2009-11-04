@@ -295,7 +295,7 @@ namespace OpensimIM
 		{
 			return false;
 		}
-		return true;		
+		return false;		
 	}
 
 	bool Connection::HandleNetworkStateEvent(Foundation::EventDataInterface* data)
@@ -346,7 +346,7 @@ namespace OpensimIM
 		{
 			return false;
 		}
-		return true;		
+		return false;		
 	}
 
 	bool Connection::HandleOnlineNotification(NetInMessage& msg)
