@@ -332,10 +332,10 @@ namespace RexTypes
         typedef std::map<Core::event_id_t, int> ActionInputMap;
     }
 
-    bool IsNull(RexAssetID id);
+    bool IsNull(const RexAssetID& id);
     
-    //! \return true if asset id is non-null (not empty) and url-based
-    bool IsUrlBased(RexAssetID id);
+    //! \return true if asset id is non-null (not empty) and can not be construed as an UUID
+    bool IsUrlBased(const RexAssetID& id);
 
 } // end of namespace: RexTypes
 
