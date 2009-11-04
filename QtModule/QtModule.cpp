@@ -182,6 +182,12 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
             controller_->InjectKeyPressed(QString(QChar(key->text_)), value);
         else
             controller_->InjectKeyReleased(QString(QChar(key->text_)), value);
+    
+        if ( controller_->IsKeyboardFocus() )
+        {
+            // Some of our widget has keyboard focus, so we will supress event. 
+            return true;
+        }
     }
     else if (category_id == scene_event_category_ && event_id == Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED)
     {
