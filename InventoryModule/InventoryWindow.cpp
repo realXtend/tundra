@@ -221,6 +221,7 @@ void InventoryWindow::Upload()
 
         if (event_category != 0)
             eventManager->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_UPLOAD, &data);
+//        boost::bind(&RexLogic::RexLogicModule::UploadMultipleAssets, rexLogicModule_, filenames);
     }
     else if (inventoryType_ == "Webdav")
     {
@@ -253,8 +254,6 @@ void InventoryWindow::Download()
             webdavDataModel->DownloadFile(storePath, selectedItem);
         }
     }
-
-//    boost::bind(&RexLogic::RexLogicModule::UploadMultipleAssets, rexLogicModule_, filenames);
 }
 
 void InventoryWindow::CloseInventoryWindow()
