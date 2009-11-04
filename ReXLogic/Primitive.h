@@ -30,6 +30,9 @@ namespace RexLogic
 
         typedef std::map<std::pair<Core::request_tag_t, RexTypes::asset_type_t>, Core::entity_id_t> EntityResourceRequestMap;
 
+        // Send RexPrimData of a prim entity to server
+        void SendRexPrimData(Core::entity_id_t entityid);
+
     private:
         //! The owning module.
         RexLogicModule *rexlogicmodule_;
