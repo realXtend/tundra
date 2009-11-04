@@ -34,7 +34,7 @@ namespace CommunicationUI
 			// Set param to QtUI::UICanvas::Internal to put inside ogre window
 			canvas_ = qt_module->CreateCanvas(UICanvas::External).lock();
 			UIContainer *UIContainer_ = new UIContainer(0);
-			canvas_->AddWidget(UIContainer_);
+			
 
 			// Connect signal for resizing
 			QObject::connect(UIContainer_, SIGNAL( Resized(QSize &) ), this, SLOT( SetWindowSize(QSize &) ));
@@ -43,13 +43,12 @@ namespace CommunicationUI
 			QObject::connect(UIContainer_, SIGNAL( SetCanvasIcon(QIcon &) ), canvas_.get(), SLOT( SetCanvasWindowIcon(QIcon &) ));
 			
 			// Init title, icon and size
-			SetWindowSize(QSize(450, 165));
+            UIContainer_->resize(400, 185);
 			canvas_->SetCanvasWindowIcon(QIcon(":/images/iconUsers.png"));
-			canvas_->SetCanvasWindowTitle(QString("realXtend Naali Communications Login"));
+			canvas_->SetCanvasWindowTitle(QString("realXtend Naali Jabber IM Login"));
 			canvas_->SetPosition(30,30);
-			canvas_->SetCanvasSize(450, 165);
-			//canvas_->SetCanvasResizeLock(true); //! REMOVE LATER WHEN RESIZE WORKS
-			canvas_->SetTop();
+			canvas_->SetCanvasSize(400, 185);
+            canvas_->AddWidget(UIContainer_);
 			canvas_->Hide();
 
 			// Add to control bar
@@ -179,10 +178,11 @@ namespace CommunicationUI
 			// Connect signals
 			QObject::connect(loginWidget_, SIGNAL( UserdataSet(QString, int, QString, QString) ), this, SLOT( ConnectToServer(QString, int, QString, QString) ));
 			// Add widget to layout
+            loginWidget_->resize(400, 185);
 			this->layout()->addWidget(loginWidget_);
 			emit( SetCanvasTitle(QString("realXtend Naali Communications Login")) );
-			this->setMinimumSize(450, 165);
-			emit ( Resized(QSize(450, 165)) );
+			this->resize(400, 185);
+			emit ( Resized(QSize(400, 185)) );
 		}
 
 	}
