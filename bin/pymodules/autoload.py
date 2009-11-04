@@ -26,7 +26,7 @@ try:
 except: #first run
     import apitest.circuits_testmodule
 else:
-    r.logInfo("   reloading apitest.circuits_testmodule")
+    r.logDebug("   reloading apitest.circuits_testmodule")
     apitest.circuits_testmodule = reload(apitest.circuits_testmodule)
 
 try:
@@ -34,7 +34,7 @@ try:
 except: #first run
     import usr.chathandler
 else:
-    r.logInfo("   reloading usr.chathandler")
+    r.logDebug("   reloading usr.chathandler")
     usr.chathandler = reload(usr.chathandler)
 
 try:
@@ -42,7 +42,7 @@ try:
 except: #first run
     import usr.keycommands
 else:
-    r.logInfo("   reloading usr.keycommands")
+    r.logDebug("   reloading usr.keycommands")
     usr.keycommands = reload(usr.keycommands)
 
 #~ usr.keycommands = load_module("usr.keycommands")
@@ -50,10 +50,9 @@ else:
 try:
     editgui
 except: #first run
-    r.arrows = {}
     import editgui
 else:
-    r.logInfo("   reloading editgui")
+    r.logDebug("   reloading editgui")
     editgui = reload(editgui)
 
 #~ editgui = load_module("editgui")
@@ -63,7 +62,7 @@ try:
 except: #first run
     import usr.sleeper
 else:
-    r.logInfo("   reloading usr.sleeper")
+    r.logDebug("   reloading usr.sleeper")
     usr.sleeper = reload(usr.sleeper)
 
 #~ try:
@@ -71,7 +70,7 @@ else:
 #~ except: #first run
     #~ import usr.mousecontrol
 #~ else:
-    #~ r.logInfo("   reloading usr.mousecontrol")
+    #~ r.logDebug("   reloading usr.mousecontrol")
     #~ usr.mousecontrol = reload(usr.mousecontrol)
     
 #~ try:
@@ -79,7 +78,7 @@ else:
 #~ except: #first run
     #~ import headtrack.control
 #~ else:
-    #~ r.logInfo("   reloading headtrack.control")
+    #~ r.logDebug("   reloading headtrack.control")
     #~ headtrack.control = reload(headtrack.control)
 
 try:

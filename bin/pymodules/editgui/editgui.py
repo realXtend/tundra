@@ -51,7 +51,13 @@ class EditGUI(Component):
     def __init__(self):
         Component.__init__(self)
         loader = QUiLoader()
-        self.canvas = r.createCanvas(INTERNAL) #change to internal later, had some rendering problems?
+        if r.restart and r.canvas is not None:
+            self.canvas = r.canvas
+            self.arrows = r.arrows
+        else:
+            self.canvas = r.createCanvas(INTERNAL) #change to internal later, had some rendering problems?
+            self.arrows = None
+        
         file = QFile(self.UIFILE)
 
         widget = loader.load(file)
@@ -66,7 +72,9 @@ class EditGUI(Component):
         self.canvas.AddWidget(widget)
         #self.canvas.Show()
         modu = r.getQtModule()
-        modu.AddCanvasToControlBar(self.canvas, "EditGUI")
+        
+        if not r.restart:
+            modu.AddCanvasToControlBar(self.canvas, "EditGUI")
 
         #self.deactivate()
         
@@ -117,8 +125,6 @@ class EditGUI(Component):
         self.widgetList = {}
         
         self.cam = None
-        
-        self.arrows = None
         
         self.mouse_events = {
             r.LeftMouseClickPressed: self.LeftMouseDown,
@@ -243,7 +249,7 @@ class EditGUI(Component):
                 #~ self.drawArrows(ent)
             #~ else:
             
-            #self.drawArrows(ent) #causes crash at quit, so disabled for now, uncomment for testing
+            self.drawArrows(ent) #causes crash at quit, so disabled for now, uncomment for testing
     
     def drawArrows(self, ent):
         #print "drawArrows", self.arrows
@@ -327,20 +333,19 @@ class EditGUI(Component):
                 print "MouseMove:", mouseinfo.x, mouseinfo.y, r.getCameraUp(), r.getCameraRight()
 
     def on_exit(self):
-        r.logInfo("EditGUI exiting.")
-        self.hideArrows()
+        r.logDebug("EditGUI exiting...")
+        
+        if r.restart:
+            #r.logDebug("...restarting...")
+            self.hideArrows()
+            r.canvas = self.canvas
+            r.arrows = self.arrows
         
         modu = r.getQtModule()
         if self.canvas is not None:
             modu.DeleteCanvas(self.canvas)
-            
-    #~ def activate(self):
-        #~ self.activated = True
-        #~ self.canvas.Show()
 
-    #~ def deactivate(self):
-        #~ self.activated = False
-        #~ self.canvas.Hide()
+        r.logDebug("   ...exit done.")
 
 
 

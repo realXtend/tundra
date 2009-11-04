@@ -827,6 +827,18 @@ PyObject* PyLogInfo(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+PyObject* PyLogDebug(PyObject *self, PyObject *args) 
+{
+    const char* message;
+    if(!PyArg_ParseTuple(args, "s", &message))
+    {
+        PyErr_SetString(PyExc_ValueError, "Needs a string.");
+        return NULL;
+    }
+    PythonScript::self()->LogDebug(message);
+    
+    Py_RETURN_NONE;
+}
 PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 {
     Core::Real newyaw;
@@ -1033,6 +1045,8 @@ static PyMethodDef EmbMethods[] = {
     {"logInfo", (PyCFunction)PyLogInfo, METH_VARARGS,
     "Prints a text using the LogInfo-method."},
 
+	{"logDebug", (PyCFunction)PyLogDebug, METH_VARARGS,
+    "Prints a debug text using the LogDebug-method."},
 
     {"getCameraRight", (PyCFunction)GetCameraRight, METH_VARARGS, 
     "Get the right-vector for the camera."},
@@ -1423,7 +1437,8 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
         }
 	}
 
-    std::cout << "unknown component type."  << std::endl;
+    //std::cout << "unknown component type."  << std::endl;
+	PythonScript::self()->LogDebug("Unknown component type.");
     return -1; //the way for setattr to report a failure
 }
 
