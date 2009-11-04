@@ -40,6 +40,7 @@ class ComponentRunner(Component):
         
         self.firstrun = True
         self.eventhandled = False
+        r.restart = False
         self.start()
         
     def start(self):
@@ -133,10 +134,12 @@ class ComponentRunner(Component):
         #XXX now that we are using flush() and tick(), does stop() propagate to components too?
         
     def restart(self):
+        r.restart = True
         r.logInfo("Restarting python module manager, reloading plugin codes")
         self.exit()
         self.start()
         r.logInfo("...done python restart.")
+        r.restart = False
                 
 #TestModule moved to own file (err, module)
 
