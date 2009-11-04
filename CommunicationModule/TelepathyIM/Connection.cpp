@@ -415,6 +415,7 @@ namespace TelepathyIM
 			{
 			case Tp::Contact::PresenceStateNo:
                 // The user doesn't subscribe presence status of this contact
+
 				break;
 
 			case Tp::Contact::PresenceStateYes:
@@ -437,8 +438,10 @@ namespace TelepathyIM
                         //! presence statuses.
                         Contact* contact = GetContact(tp_contact);
                         if (contact == 0)
+                        {
                             contact = new Contact(tp_contact);
-                        new_contacts.push_back(contact);
+                            new_contacts.push_back(contact);
+                        }
 						break;
                         }
 
@@ -459,7 +462,7 @@ namespace TelepathyIM
 					}
 				}
 				break;
-
+                           
 			case Tp::Contact::PresenceStateAsk:
                 //! The user have not yet decided if (s)he wants to subscribe presence of this contact
                 //! 
@@ -480,11 +483,9 @@ namespace TelepathyIM
 					// User have not yet made the decision to accept or reject presence subscription 
 					// So we create a FriendRequest obeject
 
-					//! @todo IMPLEMENT
-
-					//FriendRequest* request = new FriendRequest(contact);
-					//received_friend_requests_.push_back(request);
-					//emit ReceivedFriendRequest(request);
+					FriendRequest* request = new FriendRequest(tp_contact);
+					received_friend_requests_.push_back(request);
+					emit FriendRequestReceived(*request);
 				}
 				break;
 			}
