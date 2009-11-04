@@ -163,4 +163,13 @@ bool IsNull(RexAssetID id)
     return false;
 }
 
+bool IsUrlBased(RexAssetID id)
+{
+    if (id.size() == 0)
+        return false;
+    if (RexUUID::IsValid(id))
+        return false;
+    return true;
+}
+
 }
