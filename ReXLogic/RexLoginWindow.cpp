@@ -104,6 +104,7 @@ void RexLoginWindow::InitLoginWindow()
     canvas_->SetCanvasWindowTitle(QString("Login"));
     canvas_->AddWidget(login_widget_);
     canvas_->SetPosition(300,300);
+    canvas_->SetCanvasResizeLock(true);
 
     // Set canvas scrollbar policy
     canvas_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
