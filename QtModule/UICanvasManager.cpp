@@ -47,20 +47,24 @@ namespace QtUI
 	{
 		if (controlBarLayout_)
 		{
-			for(int index = 0; index < controlBarLayout_->count(); index++) //for(int index = children.size(); index--;)
+			for(int index = 0; index < controlBarLayout_->count(); index++)
 			{
 				QLayoutItem* temp = controlBarLayout_->itemAt(index);
-				ControlBarButton* button = dynamic_cast<ControlBarButton*>(temp); //(children[index]);
+				ControlBarButton* button = (ControlBarButton *)temp->widget();
 				
 				if (button)
 				{
-					if (button->GetCanvas()->GetID() == id) 
-					{
-						controlBarLayout_->takeAt(index);
-						delete button;
-						button = 0;
-						return true;
-					}
+                    if (button->GetCanvas())
+                    {
+					    if (button->GetCanvas()->GetID() == id) 
+					    {
+						    controlBarLayout_->takeAt(index);
+						    controlBarCanvas_->SetCanvasSize(controlBarCanvas_->GetSize().width()-button->size().width(), controlBarCanvas_->GetSize().height());
+                            delete button;
+						    button = 0;
+						    return true;
+					    }
+                    }
 				}
 			}
 		}
