@@ -205,8 +205,10 @@ class EditGUI(Component):
         meshUUID = QInputDialog.getText(None, "Mesh asset UUID", "Please give mesh asset UUID", QLineEdit.Normal, "")
         if meshUUID != "" and meshUUID != None:
             print "User gave mesh asset UUID of " + meshUUID
-            # Toni do your thing from here onwards, if cancel is pressed you never get here
             # validate UUID somehow and get selected item from listview -> put mesh to it with id :)
+            #XXX validate
+            self.sel.mesh = meshUUID
+            r.sendRexPrimData(self.sel.id)
 
     def select(self, ent):
         arrows = False
