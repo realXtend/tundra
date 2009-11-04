@@ -28,8 +28,6 @@ namespace RexLogic
     class RexLoginWindow;
     class AvatarControllable;
     class CameraControllable;
-    class AssetUploader;
-    class InventoryWindow;
 
     typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
     typedef boost::weak_ptr<Terrain> TerrainWeakPtr;
@@ -42,7 +40,6 @@ namespace RexLogic
     typedef boost::shared_ptr<Environment> EnvironmentPtr;
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<CameraControllable> CameraControllablePtr;
-    typedef boost::shared_ptr<AssetUploader> AssetUploaderPtr;
     typedef boost::shared_ptr<OpenSimProtocol::InventorySkeleton> InventoryPtr;
 
     //! Camera states handled by rex logic
@@ -166,16 +163,6 @@ namespace RexLogic
         //! toggle fly mode through console
         Console::CommandResult ConsoleToggleFlyMode(const Core::StringVector &params);
 
-        //! Upload an asset.
-        Console::CommandResult UploadAsset(const Core::StringVector &params);
-
-        //! Upload multiple assets.
-        Console::CommandResult UploadMultipleAssets(const Core::StringVector &params);
-
-        /// Temporary function for creating all the reX-spesific asset folder to the inventory.
-        /// Will be removed somewhere else.
-        void CreateRexInventoryFolders();
-
         //! logout from server and delete current scene
         void LogoutAndDeleteWorld();
 
@@ -187,10 +174,10 @@ namespace RexLogic
         void SetAvatarRotation(Core::Quaternion newrot);
         void SetCameraYawPitch(Core::Real newyaw, Core::Real newpitch);
 
-		Core::entity_id_t GetUserAvatarId();
+        Core::entity_id_t GetUserAvatarId();
 
-		Core::Vector3df GetCameraUp();
-		Core::Vector3df GetCameraRight();
+        Core::Vector3df GetCameraUp();
+        Core::Vector3df GetCameraRight();
 
         void SendRexPrimData(Core::entity_id_t entityid);
 
@@ -239,7 +226,7 @@ namespace RexLogic
 
         EnvironmentPtr environment_;
 
-        AssetUploaderPtr asset_uploader_;
+//        AssetUploaderPtr asset_uploader_;
 
         Scene::ScenePtr activeScene_;
 
@@ -272,9 +259,6 @@ namespace RexLogic
 
         //! The login window.
         RexLoginWindow *loginWindow_;
-
-        //! The login window.
-        InventoryWindow *inventoryWindow_;
 
         //! The connection state which is shown in the login window.
         OpenSimProtocol::Connection::State connectionState_;

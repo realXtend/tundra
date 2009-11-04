@@ -9,33 +9,37 @@
 #include "RexCommon.h"
 #include "RexUUID.h"
 
+#include <QObject>
+
 namespace Foundation
 {
     class Framework;
 }
 
-namespace OpenSimProtocol
-{
-    class InventorySkeleton;
-}
-
 namespace RexLogic
 {
-    class AssetUploader
+    class RexLogicModule;
+}
+
+namespace Inventory
+{
+    class AssetUploader : public QObject
     {
+        Q_OBJECT
+
     public:
-        /// Default constructor.
-        AssetUploader(Foundation::Framework* framework);
+        /// Constructor.
+        /// @param framework Framework pointer.
+        AssetUploader(Foundation::Framework* framework, RexLogic::RexLogicModule *rexlogic);
 
         /// Destructor.
-        virtual ~AssetUploader();
+        ~AssetUploader();
 
-        /// @return Does asset uploader have an upload capability.
-        bool HasUploadCapability() const { return uploadCapability_ != ""; }
-
-        /// Sets the upload capability URL.
-        /// @param url Capability URL.
-        void SetUploadCapability(const std::string &url) { uploadCapability_ = url; }
+    public slots:
+        /// Uploads multiple files using HTTP.
+        /// @param files List of AssetInfo structs.
+        /// @param inventory Pointer to the user's inventory.
+        void UploadFiles(Core::StringList filenames);
 
         /** Uploads a file using HTTP.
          *  @param asset_type_t Asset type.
@@ -52,10 +56,12 @@ namespace RexLogic
             const std::string &description,
             const RexTypes::RexUUID &folder_id);
 
-        /// Uploads multiple files using HTTP.
-        /// @param files List of AssetInfo structs.
-        /// @param inventory Pointer to the user's inventory.
-        void UploadFiles(Core::StringList filenames, OpenSimProtocol::InventorySkeleton *inventory);
+        /// @return Does asset uploader have upload capability set.
+        bool HasUploadCapability() const { return uploadCapability_ != ""; }
+
+        /// Sets the upload capability URL.
+        /// @param url Capability URL.
+        void SetUploadCapability(const std::string &url) { uploadCapability_ = url; }
 
         /// Utility function for create name for asset from filename.
         /// @param filename Filename.
@@ -63,8 +69,20 @@ namespace RexLogic
         std::string CreateNameFromFilename(std::string filename);
 
     private:
-        /// Framework pointer. Needed for EventManager.
-        Foundation::Framework* framework_;
+        Q_DISABLE_COPY(AssetUploader);
+
+        ///
+        /*
+        bool ThreadedUploadFile(
+            const RexTypes::asset_type_t &asset_type,
+            const std::string &filename,
+            const std::string &name,
+            const std::string &description,
+            const RexTypes::RexUUID &folder_id);
+        */
+
+        /// Used by UploadFiles.
+        void ThreadedUploadFiles(Core::StringList filenames);
 
         /// Creates NewFileAgentInventory XML message.
         std::string CreateNewFileAgentInventoryXML(
@@ -73,6 +91,15 @@ namespace RexLogic
             const std::string &folder_id,
             const std::string &name,
             const std::string &description);
+
+        /// Creates all the reX-spesific asset folders to the inventory.
+        void CreateRexInventoryFolders();
+
+        /// Framework pointer. Needed for EventManager.
+        Foundation::Framework* framework_;
+
+        /// RexLogicModule pointer. 
+        RexLogic::RexLogicModule *rexLogicModule_;
 
         /// Upload capability URL.
         std::string uploadCapability_;

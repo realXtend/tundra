@@ -11,6 +11,8 @@
 #include "InventoryWindow.h"
 #include "NetworkEvents.h"
 #include "InventoryEvents.h"
+#include "AssetUploader.h"
+#include "QtUtils.h"
 
 namespace Inventory
 {
@@ -50,12 +52,13 @@ void InventoryModule::Initialize()
     {
         console->RegisterCommand(Console::CreateCommand("Upload",
             "Upload an asset. Usage: Upload(AssetType, Name, Description)",
-            Console::Bind(rexLogic_, &RexLogic::RexLogicModule::UploadAsset)));
+            Console::Bind(this, &Inventory::InventoryModule::UploadAsset)));
 
-        console->RegisterCommand(Console::CreateCommand("MultiUpload",
-            "Upload multiple assets.",
-            Console::Bind(rexLogic_, &RexLogic::RexLogicModule::UploadMultipleAssets)));
+        console->RegisterCommand(Console::CreateCommand("MultiUpload", "Upload multiple assets.",
+            Console::Bind(this, &Inventory::InventoryModule::UploadMultipleAssets)));
     }
+
+    assetUploader_ = AssetUploaderPtr(new AssetUploader(framework_, rexLogic_));
 
     inventoryWindow_ = new InventoryWindow(framework_, rexLogic_);
 
@@ -76,6 +79,7 @@ void InventoryModule::PostInitialize()
 
 void InventoryModule::Uninitialize()
 {
+    assetUploader_.reset();
     SAFE_DELETE(inventoryWindow_);
     LogInfo("System " + Name() + " uninitialized.");
 }
@@ -104,7 +108,7 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
                 break;
             case AT_OpenSim:
             case AT_RealXtend:
-                inventoryWindow_->InitOpenSimInventoryTreeModel();
+                inventoryWindow_->InitOpenSimInventoryTreeModel(this);
                 break;
             default:
                 break;
@@ -140,6 +144,54 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
     }
 
     return false;
+}
+
+Console::CommandResult InventoryModule::UploadAsset(const Core::StringVector &params)
+{
+    return Console::ResultFailure("Single upload disabled for now.");
+/*
+    using namespace RexTypes;
+    using namespace OpenSimProtocol;
+
+    std::string name = "(No Name)";
+    std::string description = "(No Description)";
+
+    if (params.size() < 1)
+        return Console::ResultFailure("Invalid syntax. Usage: \"upload [asset_type] [name] [description]."
+            "Name and description are optional. Supported asset types:\n"
+            "Texture\nMesh\nSkeleton\nMaterialScript\nParticleScript\nFlashAnimation");
+
+    asset_type_t asset_type = GetAssetTypeFromTypeName(params[0]);
+    if (asset_type == -1)
+        return Console::ResultFailure("Invalid asset type. Supported parameters:\n"
+            "Texture\nMesh\nSkeleton\nMaterialScript\nParticleScript\nFlashAnimation");
+
+    if (params.size() > 1)
+        name = params[1];
+
+    if (params.size() > 2)
+        description = params[2];
+
+    std::string filter = GetOpenFileNameFilter(asset_type);
+    std::string filename = Foundation::QtUtils::GetOpenFileName(filter, "Open", Foundation::QtUtils::GetCurrentPath());
+    if (filename == "")
+        return Console::ResultFailure("No file chosen.");
+
+    assetUploader_->UploadFile(asset_type, filename, name, description, folder_id)
+
+    return Console::ResultSuccess();
+*/
+}
+
+Console::CommandResult InventoryModule::UploadMultipleAssets(const Core::StringVector &params)
+{
+    Core::StringList filenames = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
+    if (filenames.empty())
+        return Console::ResultFailure("No files chosen.");
+
+    assetUploader_->UploadFiles(filenames);
+
+    return Console::ResultSuccess();
 }
 
 } // namespace Inventory

@@ -47,7 +47,7 @@
 #include "Environment.h"
 
 #include "QtUtils.h"
-#include "AssetUploader.h"
+//#include "AssetUploader.h"
 #include "AvatarEditor.h"
 #include "RexTypes.h"
 
@@ -123,7 +123,6 @@ void RexLogicModule::Initialize()
     framework_handler_ = new FrameworkEventHandler(rexserver_connection_.get());
     avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
-    asset_uploader_ = AssetUploaderPtr(new AssetUploader(framework_));
 
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);
@@ -210,16 +209,6 @@ void RexLogicModule::PostInitialize()
     else
         LogError("Unable to find event category for Framework");
 
-    // Inventory events (just file uploads for now)
-    /*
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Inventory");
-    if (eventcategoryid != 0)
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
-    else
-        LogError("Unable to find event category for Inventory");
-    */
-
     boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>
         (Foundation::Service::ST_Renderer).lock();
     if (renderer)
@@ -267,7 +256,6 @@ void RexLogicModule::Uninitialize()
     avatar_controllable_.reset();
     camera_controllable_.reset();
     environment_.reset();
-    asset_uploader_.reset();
 
     event_handlers_.clear();
 
@@ -442,23 +430,23 @@ void RexLogicModule::SetCameraYawPitch(Core::Real newyaw, Core::Real newpitch)
 
 Core::entity_id_t RexLogicModule::GetUserAvatarId()
 {
-	RexLogic::AvatarPtr avatarPtr = GetAvatarHandler();
-	Scene::EntityPtr entity = avatarPtr->GetUserAvatar();
-	return entity->GetId();
+    RexLogic::AvatarPtr avatarPtr = GetAvatarHandler();
+    Scene::EntityPtr entity = avatarPtr->GetUserAvatar();
+    return entity->GetId();
 }
 
 Core::Vector3df RexLogicModule::GetCameraUp(){
-	boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-	Ogre::Camera *camera = renderer->GetCurrentCamera();
-	Ogre::Vector3 up = camera->getUp();
-	return Core::Vector3df(up.x, up.y, up.z);
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    Ogre::Camera *camera = renderer->GetCurrentCamera();
+    Ogre::Vector3 up = camera->getUp();
+    return Core::Vector3df(up.x, up.y, up.z);
 }
 
 Core::Vector3df RexLogicModule::GetCameraRight(){
-	boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-	Ogre::Camera *camera = renderer->GetCurrentCamera();
-	Ogre::Vector3 right = camera->getRight();
-	return Core::Vector3df(right.x, right.y, right.z);
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    Ogre::Camera *camera = renderer->GetCurrentCamera();
+    Ogre::Vector3 right = camera->getRight();
+    return Core::Vector3df(right.x, right.y, right.z);
 }
 
 void RexLogicModule::SendRexPrimData(Core::entity_id_t entityid)
@@ -514,148 +502,6 @@ Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const Core::StringVe
     Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
     GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::TOGGLE_FLYMODE, NULL);
     return Console::ResultSuccess();
-}
-
-Console::CommandResult RexLogicModule::UploadAsset(const Core::StringVector &params)
-{
-    using namespace RexTypes;
-    using namespace OpenSimProtocol;
-
-    std::string name = "(No Name)";
-    std::string description = "(No Description)";
-
-    if (params.size() < 1)
-        return Console::ResultFailure("Invalid syntax. Usage: \"upload [asset_type] [name] [description]."
-            "Name and description are optional. Supported asset types:\n"
-            "Texture\nMesh\nSkeleton\nMaterialScript\nParticleScript\nFlashAnimation");
-
-    asset_type_t asset_type = GetAssetTypeFromTypeName(params[0]);
-    if (asset_type == -1)
-        return Console::ResultFailure("Invalid asset type. Supported parameters:\n"
-            "Texture\nMesh\nSkeleton\nMaterialScript\nParticleScript\nFlashAnimation");
-
-    if (params.size() > 1)
-        name = params[1];
-
-    if (params.size() > 2)
-        description = params[2];
-
-    std::string filter = GetOpenFileNameFilter(asset_type);
-    std::string filename = Foundation::QtUtils::GetOpenFileName(filter, "Open", Foundation::QtUtils::GetCurrentPath());
-    if (filename == "")
-        return Console::ResultFailure("No file chosen.");
-
-    if (!asset_uploader_->HasUploadCapability())
-    {
-        std::string upload_url = rexserver_connection_->GetCapability("NewFileAgentInventory");
-        if (upload_url == "")
-            return Console::ResultFailure("Could not set upload capability for asset uploader.");
-
-        asset_uploader_->SetUploadCapability(upload_url);
-    }
-
-    InventoryPtr inventory = GetInventory();
-
-    // Get the category name for this asset type.
-    std::string cat_name = GetCategoryNameForAssetType(asset_type);
-    RexUUID folder_id;
-
-    // Check out if this inventory category exists.
-    InventoryFolderSkeleton *folder = inventory->GetFirstChildFolderByName(cat_name.c_str());
-    if (!folder)
-    {
-        // I doesn't. Create new inventory folder.
-        InventoryFolderSkeleton *parentFolder = inventory->GetMyInventoryFolder();
-        folder_id.Random();
-
-        // Add folder to inventory skeleton.
-        InventoryFolderSkeleton newFolder(folder_id, cat_name);
-        parentFolder->AddChildFolder(newFolder);
-
-        // Notify the server about the new inventory folder.
-        rexserver_connection_->SendCreateInventoryFolderPacket(parentFolder->id, folder_id, asset_type, cat_name);
-    }
-    else
-        folder_id = folder->id;
-
-    // Upload.
-    Core::Thread thread(boost::bind(&AssetUploader::UploadFile, asset_uploader_,
-        asset_type, filename, name, description, folder_id));
-
-    return Console::ResultSuccess();
-}
-
-Console::CommandResult RexLogicModule::UploadMultipleAssets(const Core::StringVector &params)
-{
-    CreateRexInventoryFolders();
-
-    Core::StringList filenames = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
-    if (filenames.empty())
-        return Console::ResultFailure("No files chosen.");
-
-    if (!asset_uploader_->HasUploadCapability())
-    {
-        std::string upload_url = rexserver_connection_->GetCapability("NewFileAgentInventory");
-        if (upload_url == "")
-            return Console::ResultFailure("Could not set upload capability for asset uploader.");
-
-        asset_uploader_->SetUploadCapability(upload_url);
-    }
-
-    // Multiupload.
-    Core::Thread thread(boost::bind(&AssetUploader::UploadFiles, asset_uploader_, filenames, GetInventory().get()));
-
-    return Console::ResultSuccess();
-}
-
-void RexLogicModule::CreateRexInventoryFolders()
-{
-    if (!GetInventory().get())
-    {
-        LogError("Inventory doens't exist yet! Can't create folder to it.");
-        return;
-    }
-
-    using namespace RexTypes;
-    using namespace OpenSimProtocol;
-
-    const char *asset_types[] = { "Texture", "Mesh", "Skeleton", "MaterialScript", "ParticleScript", "FlashAnimation" };
-    asset_type_t asset_type;
-    for(int i = 0; i < NUMELEMS(asset_types); ++i)
-    {
-        asset_type = GetAssetTypeFromTypeName(asset_types[i]);
-        std::string cat_name = GetCategoryNameForAssetType(asset_type);
-
-        // Check out if this inventory category exists.
-        InventoryFolderSkeleton *folder = GetInventory()->GetFirstChildFolderByName(cat_name.c_str());
-        if (!folder)
-        {
-            // I doesn't. Create new inventory folder.
-            InventoryFolderSkeleton *parentFolder = GetInventory()->GetMyInventoryFolder();
-            RexUUID folder_id = RexUUID::CreateRandom();
-
-            // Add folder to inventory skeleton.
-            InventoryFolderSkeleton newFolder(folder_id, cat_name);
-            parentFolder->AddChildFolder(newFolder);
-
-            // Notify the server about the new inventory folder.
-            rexserver_connection_->SendCreateInventoryFolderPacket(parentFolder->id, folder_id, asset_type, cat_name);
-
-            // Send event to inventory module.
-            Foundation::EventManagerPtr event_mgr = GetFramework()->GetEventManager();
-            Core::event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
-            if (event_category != 0)
-            {
-                Inventory::InventoryItemEventData folder_data(Inventory::IIT_Folder);
-                folder_data.id = folder_id;
-                folder_data.parentId = parentFolder->id;
-                folder_data.inventoryType = GetInventoryTypeFromAssetType(asset_type);
-                folder_data.assetType = asset_type;
-                folder_data.name = cat_name;
-                event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &folder_data);
-            }
-        }
-    }
 }
 
 void RexLogicModule::SwitchCameraState()
