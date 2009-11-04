@@ -27,6 +27,7 @@ from PythonQt.QtCore import QFile
 from circuits import Component
 
 from conversions import * #for euler - quat -euler conversions
+from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
 
 try:
     import ogre.renderer.OGRE as ogre
@@ -228,24 +229,26 @@ class EditGUI(Component):
             print "Selected entity:", self.sel.id, "at", self.sel.pos#, self.sel.name
 
             #update the gui vals to show what the newly selected entity has
-            x, y, z = ent.pos
-            self.widget.xpos.setValue(x)
-            self.widget.ypos.setValue(y)
-            self.widget.zpos.setValue(z)
-            
-            x, y, z = ent.scale
-            self.widget.scalex.setValue(x)
-            self.widget.scaley.setValue(y)
-            self.widget.scalez.setValue(z)
-            
-            #from quat to euler x.y,z
-            euler = quat_to_euler(ent.orientation)
-            #print euler
-            self.widget.rot_x.setValue(euler[0])
-            self.widget.rot_y.setValue(euler[1])
-            self.widget.rot_z.setValue(euler[2])
-            
+            self.update_guivals()
             self.widget.label.text = ent.id
+
+    def update_guivals(self):
+        x, y, z = self.sel.pos
+        self.widget.xpos.setValue(x)
+        self.widget.ypos.setValue(y)
+        self.widget.zpos.setValue(z)
+            
+        x, y, z = self.sel.scale
+        self.widget.scalex.setValue(x)
+        self.widget.scaley.setValue(y)
+        self.widget.scalez.setValue(z)
+            
+        #from quat to euler x.y,z
+        euler = quat_to_euler(self.sel.orientation)
+        #print euler
+        self.widget.rot_x.setValue(euler[0])
+        self.widget.rot_y.setValue(euler[1])
+        self.widget.rot_z.setValue(euler[2])        
             
             #~ if self.cam is None and ogreroot:
                 #~ rs = root.getRenderSystem()
@@ -256,7 +259,7 @@ class EditGUI(Component):
                 #~ self.drawArrows(ent)
             #~ else:
             
-            self.drawArrows(ent) #causes crash at quit, so disabled for now, uncomment for testing
+        self.drawArrows(self.sel) #causes crash at quit, so disabled for now, uncomment for testing
     
     def drawArrows(self, ent):
         #print "drawArrows", self.arrows
@@ -306,7 +309,6 @@ class EditGUI(Component):
             if self.sel is None or self.sel.id != ent.id: #a diff ent than prev sel was changed
                 self.select(ent)
         
-        #out to ease dev now that mouse clicks go 'thru' the qt canvas
         else:
             self.sel = None
             self.widget.label.text = "<none>"
@@ -333,11 +335,20 @@ class EditGUI(Component):
                 #print "unknown click_id?", self.mouse_events
             
     def on_mousemove(self, mouseinfo, callback):
-        """stub for dragging objects around 
-        - should get the dir of movements relative to the view somehow"""
+        """dragging objects around - now free movement based on view,
+        dragging different axis etc in the manipulator to be added."""
+
         if not self.canvas.IsHidden():
             if self.left_button_down and self.sel is not None:
-                print "MouseMove:", mouseinfo.x, mouseinfo.y, r.getCameraUp(), r.getCameraRight()
+                #print "MouseMove:", mouseinfo.x, mouseinfo.y, r.getCameraUp(), r.getCameraRight()
+                n = 0.1 #is not doing correct raycasting to plane to see pos, this is a multiplier for the crude movement method here now
+                oldvec = Vector3(self.sel.pos)
+                upvec = Vector3(r.getCameraUp())
+                rightvec = Vector3(r.getCameraRight())
+                newvec = oldvec - (upvec * mouseinfo.rel_y * n) + (rightvec * mouseinfo.rel_x * n)
+                self.sel.pos = newvec.x, newvec.y, newvec.z
+                #XXX also here the immediate network sync is not good,
+                #refactor out from pos setter to a separate network_update() call
 
     def on_exit(self):
         r.logDebug("EditGUI exiting...")
