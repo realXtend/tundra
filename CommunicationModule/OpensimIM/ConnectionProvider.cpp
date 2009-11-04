@@ -103,7 +103,7 @@ namespace OpensimIM
 
 	bool ConnectionProvider::HandleNetworkEvent(Foundation::EventDataInterface* data)
 	{
-		for (ConnectionVector::iterator i = connections_.begin(); i != connections_.end(); ++i)
+    	for (ConnectionVector::iterator i = connections_.begin(); i != connections_.end(); ++i)
 		{
 			if ( (*i)->HandleNetworkEvent(data) )
 				return true;

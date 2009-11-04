@@ -271,6 +271,8 @@ namespace CommunicationUI
 		{
 			connect(im_connection_, SIGNAL( ChatSessionReceived(Communication::ChatSessionInterface& ) ), this, SLOT( NewChatSessionRequest(Communication::ChatSessionInterface&) ));
 			connect(im_connection_, SIGNAL( FriendRequestReceived(Communication::FriendRequestInterface&) ), this, SLOT( NewFriendRequest(Communication::FriendRequestInterface&) ));
+            connect(im_connection_, SIGNAL( NewContact(const Communication::ContactInterface&) ), this, SLOT( OnNewContact(const Communication::ContactInterface&) ));
+            connect(im_connection_, SIGNAL( NewContact(const Communication::ContactInterface&) ), this, SLOT( OnNewContact(const Communication::ContactInterface&) ));
 			LoadUserInterface(true);
 			LoadConnectedUserData(im_connection_);
 		}
@@ -385,6 +387,16 @@ namespace CommunicationUI
 		taken = 0;
 	}
 
+    void UIContainer::OnNewContact(const Communication::ContactInterface& contact)
+    {
+        ContactListChanged(im_connection_->GetContacts().GetContacts());
+    }
+
+    void UIContainer::OnContactRemoved(const Communication::ContactInterface& contact)
+    {
+        ContactListChanged(im_connection_->GetContacts().GetContacts());
+    }
+
 	void UIContainer::closeEvent(QCloseEvent *myCloseEvent) 
 	{
 		LogInfo("CloseEvent catched");
@@ -481,8 +493,9 @@ namespace CommunicationUI
 
 	void ConversationsContainer::CloseFriendRequest(FriendRequestUI *request)
 	{
-//		this->removeTab(this->indexOf(request));
-//        SAFE_DELETE(request);
+		this->removeTab(this->indexOf(request));
+        //! @todo Check if here is memory leak.
+  //      SAFE_DELETE(request);
 	}
 
 	void ConversationsContainer::CloseTab(int index)
