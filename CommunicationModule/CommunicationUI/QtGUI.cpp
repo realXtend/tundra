@@ -272,7 +272,7 @@ namespace CommunicationUI
 			connect(im_connection_, SIGNAL( ChatSessionReceived(Communication::ChatSessionInterface& ) ), this, SLOT( NewChatSessionRequest(Communication::ChatSessionInterface&) ));
 			connect(im_connection_, SIGNAL( FriendRequestReceived(Communication::FriendRequestInterface&) ), this, SLOT( NewFriendRequest(Communication::FriendRequestInterface&) ));
             connect(im_connection_, SIGNAL( NewContact(const Communication::ContactInterface&) ), this, SLOT( OnNewContact(const Communication::ContactInterface&) ));
-            connect(im_connection_, SIGNAL( NewContact(const Communication::ContactInterface&) ), this, SLOT( OnNewContact(const Communication::ContactInterface&) ));
+            connect(im_connection_, SIGNAL( ContactRemoved(const Communication::ContactInterface&) ), this, SLOT( OnContactRemoved(const Communication::ContactInterface&) ));
 			LoadUserInterface(true);
 			LoadConnectedUserData(im_connection_);
 		}
@@ -380,20 +380,17 @@ namespace CommunicationUI
 
 	void UIContainer::RemoveFriend(bool clicked)
 	{
-		LogInfo("RemoveFriend clicked");
-		int row = listWidgetFriends_->currentRow();
-        
-        int count = listWidgetFriends_->count();
-        QListWidgetItem* item = listWidgetFriends_->item(row);
-        ContactListItem* contact_item =  dynamic_cast<ContactListItem *>(item);
+		LogDebug("RemoveFriend clicked");
+        QListWidgetItem* item = listWidgetFriends_->currentItem();
+        if (item == 0)
+            return;
+
+        QString contact_id = item->text();
+        ContactListItem* contact_item =  (ContactListItem *)(item);
         if (contact_item == 0)
             return;
         im_connection_->RemoveContact( *contact_item->GetContact() );
         // The friend list widget will be upted when it get ContactRemoved signal from Connection object
-
-		//ContactListItem *taken = dynamic_cast<ContactListItem *>(listWidgetFriends_->takeItem(listWidgetFriends_->currentRow()));
-		//delete taken;
-		//taken = 0;
 	}
 
     void UIContainer::OnNewContact(const Communication::ContactInterface& contact)
