@@ -97,8 +97,9 @@ namespace TelepathyIM
 		virtual void Close();
 	protected:
 		virtual void CreateTpConnection(const Communication::CredentialsInterface &credentials);
-		virtual void HandleAllKnownTpContacts();
-		virtual Contact& GetContact(Tp::ContactPtr tp_contact);
+		virtual ContactVector HandleAllKnownTpContacts();
+		virtual Contact* GetContact(Tp::ContactPtr tp_contact);
+        virtual void AddContact(Contact* contact);
 
 		Tp::ConnectionManagerPtr &tp_connection_manager_;
 		Tp::ConnectionPtr tp_connection_;
@@ -131,6 +132,9 @@ namespace TelepathyIM
 		virtual void OnTpConnectionStatusChanged(uint newStatus, uint newStatusReason);
 		virtual void OnSendingFriendRequestError(OutgoingFriendRequest*);
 		virtual void IncomingChatSessionReady(ChatSession* session);
+        virtual void IncomingFriendRequestAccepted(FriendRequest *request);
+        virtual void PresencePublicationFinished(Tp::PendingOperation* op);
+        virtual void OnPresenceSubscriptionCanceled(Contact* contact);
 
 	};
 	typedef std::vector<Connection*> ConnectionVector;

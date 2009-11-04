@@ -481,8 +481,8 @@ namespace CommunicationUI
 
 	void ConversationsContainer::CloseFriendRequest(FriendRequestUI *request)
 	{
-		this->removeTab(this->indexOf(request));
-		delete request;
+//		this->removeTab(this->indexOf(request));
+//        SAFE_DELETE(request);
 	}
 
 	void ConversationsContainer::CloseTab(int index)

@@ -6,7 +6,7 @@
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/PendingOperation>
 #include "Foundation.h"
-#include "..\interface.h"
+#include "../interface.h"
 #include "Connection.h"
 
 namespace TelepathyIM
@@ -17,7 +17,7 @@ namespace TelepathyIM
 	 *
 	 *  Offers IM functionaly using Telepathy framework
 	 *
-     *  CURRENT IMPLEMENTATION ONLY SUPPORTS GABBLE AND JABBER PROTOCOLS
+     *  CURRENT IMPLEMENTATION ONLY SUPPORTS GABBLE CONNECTION MANAGER AND JABBER PROTOCOL
 	 *  @todo Add support to all protocols Telepathy framework offers through dbus
 	 *
 	 */
@@ -61,7 +61,7 @@ namespace TelepathyIM
 		//! Delete all connection objects
 		void DeleteConnections();
 
-	private:
+    private:
 		State state_;
 
 		Foundation::Framework* framework_;
@@ -72,6 +72,7 @@ namespace TelepathyIM
 		//! dbus daemon and gabble process for Windows platform
 		QProcess* dbus_daemon_;
 
+        //! All connections (open and closed ones)
 		ConnectionVector connections_;
 
 		//! The port for dbus daemon service to run
@@ -81,7 +82,7 @@ namespace TelepathyIM
 	private slots:
 		void OnConnectionManagerReady(Tp::PendingOperation *op);
 		void OnDBusDaemonStdout();
-		void OnDBusDaemonExited( int );
+		void OnDBusDaemonExited(int);
 		void OnConnectionReady(Communication::ConnectionInterface&);
 		void OnConnectionClosed(Communication::ConnectionInterface&);
 		void OnConnectionError(Communication::ConnectionInterface&);

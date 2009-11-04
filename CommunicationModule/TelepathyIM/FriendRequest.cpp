@@ -30,9 +30,16 @@ namespace TelepathyIM
 
 		// Request presence subscription from friend request originator so that
 		// publicity is on the same level to both directions
-		message = ""; // we don't want to send any particular message at this point
-		Tp::PendingOperation* op = tp_contact_->requestPresenceSubscription(message);
-		connect(op, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnPresenceSubscriptionResult(Tp::PendingOperation*) ) );
+        if (tp_contact_->subscriptionState() == Tp::Contact::PresenceStateYes )
+        {
+            emit Accepted(this);
+        }
+        else
+        {
+		    message = ""; // we don't want to send any particular message at this point
+		    Tp::PendingOperation* op = tp_contact_->requestPresenceSubscription(message);
+		    connect(op, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnPresenceSubscriptionResult(Tp::PendingOperation*) ) );
+        }
 		state_ = STATE_ACCEPTED;
 	}	
 
@@ -46,14 +53,45 @@ namespace TelepathyIM
 
 	void FriendRequest::OnPresencePublicationAuthorized(Tp::PendingOperation* op)
 	{
-		//! @todo IMPLEMENT
-		//!       * log error messages if operation wasn't success
+        if (op->isError())
+        {
+            LogError("Cannot publish presence for a friend contact.");
+        }
 	}
 
 	void FriendRequest::OnPresenceSubscriptionResult(Tp::PendingOperation* op)
 	{
-		//! @todo IMPLEMENT
-		//        * Cancel then friendship because the contact doesn't allow to subscipe own presence.
+        if (op->isError())
+        {
+            //! If the contact doesn't allow presence subscription of the presence 
+            //! then we don't want to publish our.
+            tp_contact_->removePresencePublication();
+            emit Canceled(this);
+            return;
+        }
+        connect(tp_contact_.data(), SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState) ), SLOT( OnPresenceSubscriptionChanged(Tp::Contact::PresenceState) ));
 	}
+
+    void FriendRequest::OnPresenceSubscriptionChanged(Tp::Contact::PresenceState state)
+    {
+        switch (state)
+        {
+        case Tp::Contact::PresenceStateYes:
+            emit Accepted(this);
+            break;
+
+        case Tp::Contact::PresenceStateNo: break;
+            emit Canceled(this);
+            break;
+        case Tp::Contact::PresenceStateAsk:
+            break;
+        }
+    }
+
+    Tp::ContactPtr FriendRequest::GetOriginatorTpContact()
+    {
+        return tp_contact_;
+    }
+
 
 } // end of namespace: TelepathyIM
