@@ -21,7 +21,7 @@ TODO (most work is in api additions on the c++ side, then simple usage here):
 
 import rexviewer as r
 import PythonQt
-from PythonQt.QtGui import QTreeWidgetItem
+from PythonQt.QtGui import QTreeWidgetItem, QInputDialog, QLineEdit
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile
 from circuits import Component
@@ -117,6 +117,7 @@ class EditGUI(Component):
         #self.widget.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
         
         self.widget.newObject.connect('clicked()', self.createObject)
+        self.widget.setMesh.connect('clicked()', self.setMesh)
         
         self.widgetList = {}
         
@@ -198,6 +199,14 @@ class EditGUI(Component):
         end_z = z
 
         r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
+
+    def setMesh(self, *args):
+        meshUUID = None
+        meshUUID = QInputDialog.getText(None, "Mesh asset UUID", "Please give mesh asset UUID", QLineEdit.Normal, "")
+        if meshUUID != "" and meshUUID != None:
+            print "User gave mesh asset UUID of " + meshUUID
+            # Toni do your thing from here onwards, if cancel is pressed you never get here
+            # validate UUID somehow and get selected item from listview -> put mesh to it with id :)
 
     def select(self, ent):
         arrows = False
