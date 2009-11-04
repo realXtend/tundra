@@ -10,7 +10,12 @@ and WSGI compliant.
 
 from utils import url
 from loggers import Logger
-from sessions import Sessions
+
+try:
+    from sessions import Sessions
+except ImportError:
+    print "couldn't load circuits.web.sessions, missing libs probably (uuid?), continuing without"
+
 from core import expose, Controller
 from events import Request, Response
 from servers import BaseServer, Server

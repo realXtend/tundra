@@ -12,7 +12,7 @@ from circuits.web import Controller, Server, Static
 import datetime
 import os
 
-PORT = 8000
+PORT = 28008
 
 #__file__ doesn't work in embedded context, but os.getcwd() helps
 PATH = os.getcwd() + "/pymodules/webserver" + "/screenshot/"
@@ -21,7 +21,7 @@ PATH = os.getcwd() + "/pymodules/webserver" + "/screenshot/"
 class WebServer(Server):
     """this is the component that autoload registers to the viewer"""
     def __init__(self):
-        Server.__init__(self, PORT)
+        Server.__init__(self, PORT) #"localhost", PORT)
         self + WebController() + Static(docroot=PATH)
 
 class WebController(Controller):                        

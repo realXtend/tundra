@@ -16,7 +16,7 @@ namespace PythonScript
 
     void entity_init(PyObject* m)
     {
-         rexviewer_EntityType.tp_new = PyType_GenericNew;
+        rexviewer_EntityType.tp_new = PyType_GenericNew;
         if (PyType_Ready(&rexviewer_EntityType) < 0)
         {
             //std::cout << "PythonScriptModule: EntityType not ready?" << std::endl;
@@ -41,7 +41,7 @@ namespace PythonScript
         //entity_ptrs[ent_id] = entity;
 
         //std::cout << "storing the entity id in the wrapper object:" << ent_id << std::endl;
-		PythonScript::self()->LogDebug("Storing the entity id in the wrapper object:" + ent_id);
+        PythonScript::self()->LogDebug("Storing the entity id in the wrapper object:" + QString::number(ent_id).toStdString());
         eob->ent_id = ent_id;
         return (PyObject*) eob;
     }

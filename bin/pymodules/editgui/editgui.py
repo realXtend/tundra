@@ -350,5 +350,8 @@ class EditGUI(Component):
 
         r.logDebug("   ...exit done.")
 
+#barrel on 0.5 in viila: 
+# Upload succesfull. Asset id: 35da6174-8743-4026-a83e-18b23984120d, 
+# inventory id: 12c3df2d-ef3b-490e-8615-2f89abb7375d.
 
 

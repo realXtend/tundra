@@ -423,13 +423,12 @@ void RexLogicModule::ShowAvatarEditor()
         avatar_editor_->Toggle();
 }
 
-//XXX temporary workarounds for a linking prob in pymodule, would like to call these directly (if this is the right idea for av / view control to begin with)
+//wrappers for calling stuff elsewhere in logic module from outside (python api module)
 void RexLogicModule::SetAvatarYaw(Core::Real newyaw)
 {
     avatar_controllable_->SetYaw(newyaw);
 }
 
-//XXX another temporary workarounds for a linking prob in pymodule
 void RexLogicModule::SetAvatarRotation(Core::Quaternion newrot)
 {
     std::cout << "RexLogicModule::SetAvatarRotation" << std::endl;
@@ -448,7 +447,6 @@ Core::entity_id_t RexLogicModule::GetUserAvatarId()
 	return entity->GetId();
 }
 
-
 Core::Vector3df RexLogicModule::GetCameraUp(){
 	boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
 	Ogre::Camera *camera = renderer->GetCurrentCamera();
@@ -462,6 +460,12 @@ Core::Vector3df RexLogicModule::GetCameraRight(){
 	Ogre::Vector3 right = camera->getRight();
 	return Core::Vector3df(right.x, right.y, right.z);
 }
+
+void RexLogicModule::SendRexPrimData(Core::entity_id_t entityid)
+{
+    GetPrimitiveHandler()->SendRexPrimData(entityid);
+}
+
 
 Console::CommandResult RexLogicModule::ConsoleLogin(const Core::StringVector &params)
 {

@@ -466,3 +466,13 @@ if 0:
 if 0:
     print r.getCameraUp()
     print r.getCameraRight()
+
+if 0: #test changing the mesh asset a prim is using
+    arkku_id = 2461025163
+    #print arkku_id, type(arkku_id)
+    arkku = r.getEntity(arkku_id)
+    print arkku.prim
+    print arkku.mesh
+    arkku.mesh = "35da6174-8743-4026-a83e-18b23984120d"
+    print "new mesh for arkku:", arkku.mesh
+    #r.sendRexPrimData(arkku)
