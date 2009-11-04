@@ -25,7 +25,7 @@ namespace Inventory
 {
 
 InventoryItemModel::InventoryItemModel(AbstractInventoryDataModel *dataModel) :
-    dataModel_(dataModel), itemMoveFlag_(false), movedItemsCount_(0)
+    dataModel_(dataModel), useTrash_(false), itemMoveFlag_(false), movedItemsCount_(0)
 {
 }
 
@@ -173,7 +173,7 @@ bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     QDataStream stream(&encodedData, QIODevice::ReadOnly);
 
     QList<AbstractInventoryItem *> itemList;
-    int rows = 0;
+    int items = 0;
     while(!stream.atEnd())
     {
         QString id;
@@ -181,26 +181,27 @@ bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
         AbstractInventoryItem *item = dataModel_->GetChildById(id);
         assert(item);
         itemList << item;
-        ++rows;
+        ++items;
     }
 
     AbstractInventoryItem *newParent = GetItem(parent);
-    ///\todo This is bit hackish. Make nicer.
+    ///\todo This is hackish. Make better.
     bool first_time = true;
     foreach(AbstractInventoryItem *item, itemList)
     {
         AbstractInventoryItem *parentItem = item->GetParent();
         if (first_time)
         {
-            insertRows(beginRow, newParent, item);
             first_time = false;
+            InsertExistingItem(beginRow, newParent, item);
         }
         else
-            insertRows(beginRow, parentItem, item);
+            InsertExistingItem(beginRow, parentItem, item);
+
         ++beginRow;
     }
 
-    movedItemsCount_ = rows;
+    movedItemsCount_ = items;
     itemMoveFlag_ = true;
 
     return true;
@@ -228,7 +229,57 @@ QModelIndex InventoryItemModel::index(int row, int column, const QModelIndex &pa
     return QModelIndex();
 }
 
-bool InventoryItemModel::insertRows(int position, int rows, const QModelIndex &parent)
+bool InventoryItemModel::removeRows(int position, int rows, const QModelIndex &parent)
+{
+    InventoryFolder *parentFolder = dynamic_cast<InventoryFolder *>(GetItem(parent));
+    if (!parentFolder)
+        return false;
+
+    AbstractInventoryItem *childItem = parentFolder->Child(position);
+    if (!childItem)
+        return false;
+
+    if (childItem->GetItemType() == AbstractInventoryItem::Type_Folder)
+        if (!static_cast<InventoryFolder *>(childItem)->IsEditable())
+            return false;
+
+    if (itemMoveFlag_ && movedItemsCount_ != 0)
+    {
+        // We don't want to notify server if we're just moving (deleting temporarily).
+        --movedItemsCount_;
+        if (movedItemsCount_ <= 0)
+            itemMoveFlag_ = false;
+    }
+    else
+    {
+        if(useTrash_)
+        {
+            // When deleting items, we move them first to the Trash folder.
+            InventoryFolder *trashFolder = static_cast<InventoryFolder *>(dataModel_->GetTrashFolder());
+            if (parentFolder == trashFolder)
+            {
+                // If the folder is already in the trash folder, delete it for good.
+                dataModel_->NotifyServerAboutItemRemove(childItem);
+            }
+            else
+            {
+                // Move to the Trash folder.
+                dataModel_->NotifyServerAboutItemMove(childItem);
+                InsertExistingItem(position, trashFolder, childItem);
+            }
+        }
+        else
+            dataModel_->NotifyServerAboutItemRemove(childItem);
+    }
+
+    beginRemoveRows(parent, position, position + rows - 1);
+    bool success = parentFolder->RemoveChildren(position, rows);
+    endRemoveRows();
+
+    return success;
+}
+
+bool InventoryItemModel::InsertFolder(int position, const QModelIndex &parent, const QString &name)
 {
     InventoryFolder *parentFolder = dynamic_cast<InventoryFolder *>(GetItem(parent));
     if (!parentFolder)
@@ -237,7 +288,7 @@ bool InventoryItemModel::insertRows(int position, int rows, const QModelIndex &p
     if (parentFolder->IsLibraryItem())
         return false;
 
-    beginInsertRows(parent, position, position + rows - 1);
+    beginInsertRows(parent, position, position /*+ rows - 1*/);
 
 #ifdef _DEBUG
     RexUUID id;
@@ -252,9 +303,9 @@ bool InventoryItemModel::insertRows(int position, int rows, const QModelIndex &p
             InventoryModule::LogWarning("While creating new inventory folder generated an UUID that already exists! Generating a new one...");
     }
 
-    dataModel_->GetOrCreateNewFolder(STD_TO_QSTR(id.ToString()), *parentFolder, "New Folder");
+    dataModel_->GetOrCreateNewFolder(STD_TO_QSTR(id.ToString()), *parentFolder, name);
 #else
-    dataModel_->GetOrCreateNewFolder(STD_TO_QSTR(RexUUID::CreateRandom().ToString()), *parentFolder, "New Folder");
+    dataModel_->GetOrCreateNewFolder(STD_TO_QSTR(RexUUID::CreateRandom().ToString()), *parentFolder, name);
 #endif
 
     endInsertRows();
@@ -262,7 +313,7 @@ bool InventoryItemModel::insertRows(int position, int rows, const QModelIndex &p
     return true;
 }
 
-bool InventoryItemModel::insertRows(int position, int rows, const QModelIndex &parent, InventoryItemEventData *item_data)
+bool InventoryItemModel::InsertItem(int position, const QModelIndex &parent, InventoryItemEventData *item_data)
 {
     AbstractInventoryItem *parentFolder = dataModel_->GetChildFolderById(STD_TO_QSTR(item_data->parentId.ToString()));
     if (!parentFolder)
@@ -272,7 +323,7 @@ bool InventoryItemModel::insertRows(int position, int rows, const QModelIndex &p
     // Happens e.g. when you upload with console command.
     ///\todo This is maybe a bit hackish. Find a better way.
     if (parent.isValid())
-        beginInsertRows(parent, position, position + rows - 1);
+        beginInsertRows(parent, position, position /*+ rows - 1*/);
 
     if (item_data->item_type == IIT_Folder)
     {
@@ -300,7 +351,7 @@ bool InventoryItemModel::insertRows(int position, int rows, const QModelIndex &p
     return true;
 }
 
-bool InventoryItemModel::insertRows(int position, AbstractInventoryItem *new_parent, AbstractInventoryItem *item)
+bool InventoryItemModel::InsertExistingItem(int position, AbstractInventoryItem *new_parent, AbstractInventoryItem *item)
 {
     InventoryFolder *newParentFolder = dynamic_cast<InventoryFolder *>(new_parent);
     if (!newParentFolder)
@@ -355,36 +406,6 @@ bool InventoryItemModel::insertRows(int position, AbstractInventoryItem *new_par
     //endInsertRows();
 
     return true;
-}
-
-bool InventoryItemModel::removeRows(int position, int rows, const QModelIndex &parent)
-{
-    InventoryFolder *parentFolder = dynamic_cast<InventoryFolder *>(GetItem(parent));
-    if (!parentFolder)
-        return false;
-
-    AbstractInventoryItem *childItem = parentFolder->Child(position);
-    if (!childItem)
-        return false;
-
-    if (childItem->GetItemType() == AbstractInventoryItem::Type_Folder)
-        if (!static_cast<InventoryFolder *>(childItem)->IsEditable())
-            return false;
-
-    if (itemMoveFlag_ && movedItemsCount_ != 0)
-    {
-        --movedItemsCount_;
-        if (movedItemsCount_ <= 0)
-            itemMoveFlag_ = false;
-    }
-    else
-        dataModel_->NotifyServerAboutItemRemove(childItem);
-
-    beginRemoveRows(parent, position, position + rows - 1);
-    bool success = parentFolder->RemoveChildren(position, rows);
-    endRemoveRows();
-
-    return success;
 }
 
 QModelIndex InventoryItemModel::parent(const QModelIndex &index) const
@@ -446,7 +467,7 @@ void InventoryItemModel::FetchInventoryDescendents(const QModelIndex &index)
 
 void InventoryItemModel::CurrentSelectionChanged(const QModelIndex &index)
 {
-    emit( AbstractInventoryItemSelected(GetItem(index)));
+    emit(AbstractInventoryItemSelected(GetItem(index)));
 }
 
 AbstractInventoryItem *InventoryItemModel::GetItem(const QModelIndex &index) const

@@ -89,17 +89,17 @@ namespace Inventory
         /// AbstractInventoryDataModel override.
         void NotifyServerAboutItemUpdate(AbstractInventoryItem *item, const QString &old_name);
 
-        /// @return Inventory root folder.
+        /// AbstractInventoryDataModel override.
         AbstractInventoryItem *GetRoot() const { return rootFolder_; }
+
+        /// AbstractInventoryDataModel override.
+        AbstractInventoryItem *GetTrashFolder() const;
 
         /// @return Pointer to "My Inventory" folder or null if not found.
         InventoryFolder  *GetMyInventoryFolder() const;
 
         /// @return Pointer to "My Inventory" folder or null if not found.
         InventoryFolder  *GetOpenSimLibraryFolder() const;
-
-        /// @return Pointer to "Trash" folder or null if not found.
-        InventoryFolder  *GetTrashFolder() const;
 
         /// Prints the inventory tree structure to std::cout.
         void DebugDumpInventoryFolderStructure();
