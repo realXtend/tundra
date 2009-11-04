@@ -935,20 +935,28 @@ PyObject* SendObjectAddPacket(PyObject *self, PyObject *args)
 PyObject* SendRexPrimData(PyObject *self, PyObject *args)
 {
 	RexLogic::RexLogicModule *rexlogic_;
-    rexviewer_EntityObject* py_ent;
-    //Scene::EntityPtr entity;
-
+    
+    /*rexviewer_EntityObject* py_ent;
     if(!PyArg_ParseTuple(args, "O!", rexviewer_EntityType, &py_ent))
     {
         return NULL;   
+    }*/
+
+    unsigned int ent_id_int;
+    Core::entity_id_t ent_id;
+
+    if(!PyArg_ParseTuple(args, "I", &ent_id_int))
+    {
+        PyErr_SetString(PyExc_ValueError, "Getting an entity failed, param should be an integer.");
+        return NULL;   
     }
 
-    //entity = scene->GetEntity(py_ent->ent_id);
+    ent_id = (Core::entity_id_t) ent_id_int;
 
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
     {
-        rexlogic_->SendRexPrimData(py_ent->ent_id);
+        rexlogic_->SendRexPrimData(ent_id); //py_ent->ent_id);
 	}
 
 	Py_RETURN_NONE;

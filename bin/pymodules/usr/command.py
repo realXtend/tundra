@@ -475,4 +475,8 @@ if 0: #test changing the mesh asset a prim is using
     print arkku.mesh
     arkku.mesh = "35da6174-8743-4026-a83e-18b23984120d"
     print "new mesh for arkku:", arkku.mesh
-    #r.sendRexPrimData(arkku)
+    
+    print "sending prim data update to server"
+    r.sendRexPrimData(arkku.id) #arkku
+    print "..done"
+    
