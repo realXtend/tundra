@@ -94,11 +94,17 @@ namespace Inventory
         /// File upload.
         void Upload();
 
+        /// File download.
+        void Download();
+
     private:
         Q_DISABLE_COPY(InventoryWindow);
 
         /// Initializes the inventory UI.
         void InitInventoryWindow();
+
+        /// Type of the present inventory model
+        QString inventoryType_;
 
         /// Framework pointer.
         Foundation::Framework *framework_;

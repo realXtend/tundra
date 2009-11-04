@@ -91,22 +91,21 @@ namespace Inventory
         void NotifyServerAboutItemRemove(AbstractInventoryItem *item);
 
         /// AbstractInventoryDataModel override.
-        void NotifyServerAboutItemUpdate(AbstractInventoryItem *item);
+        void NotifyServerAboutItemUpdate(AbstractInventoryItem *item, const QString &old_name);
 
         /// @return Inventory root folder.
         AbstractInventoryItem *GetRoot() const { return rootFolder_; }
 
 	public slots:
 		void ItemSelectedFetchContent(AbstractInventoryItem *item);
+        void UploadFile(const QString &file_path, AbstractInventoryItem *parent_folder);
+        void DownloadFile(const QString &store_folder, AbstractInventoryItem *selected_item);
 
 	private:
 		Q_DISABLE_COPY(WebdavInventoryDataModel);
 
 		// Init PythonQt for usage
 		bool InitPythonQt();
-
-		/// Debug prints, can only run python in release ;(
-		void PrintQVariantInPython(QVariant result);
 
 		/// Fetch webdav inventory url with users identity
 		/// @return bool true if succeeded otherwise false
@@ -117,6 +116,9 @@ namespace Inventory
 
 		/// Fallback on error situations
 		void ErrorOccurredCreateEmptyRootFolder();
+
+        /// Validate folder path, prepares it for pthon webdav library usage
+        QString ValidateFolderPath(const QString &path);
 
 		/// Related urls to store for fetching webdav url and accessing webdav
 		QString identityUrl_;

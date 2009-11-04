@@ -5,6 +5,7 @@ Created on 8.9.2009
 '''
 
 import httplib
+import urllib
 
 from httplib import HTTPConnection, HTTPException
 from webdav import WebdavClient
@@ -109,25 +110,42 @@ class WebDavClient(object):
                 else:
                     raise WebdavError
             except HTTPException:
-                raise HTTPException  
+                raise HTTPException
             authFailures += 1
+            
+    def resendAuthorization(self, AuthError):
+        if AuthError.authType == "Basic":
+            self.resource.connection.addBasicAuthorization(self.user, str(self.password))
+        elif AuthError.authType == "Digest":
+            info = WebdavClient.parseDigestAuthInfo(AuthError.authInfo)
+            self.resource.connection.addDigestAuthorization(self.user, self.password, realm=info["realm"], qop=info["qop"], nonce=info["nonce"])
+        else:
+            raise WebdavError
         
     def listResources(self, path = None):
-        if (path != None):
-            if (self.setCollectionStorerToPath(path)):
+        try:
+            if (path != None):
+                if (self.setCollectionStorerToPath(path)):
+                    try:
+                        resourceList = self.resource.listResources()
+                        return self.parseResourceList(resourceList)
+                    except WebdavError:
+                        return WebdavError.__str__
+                else:
+                    return 'False'
+            else:
                 try:
                     resourceList = self.resource.listResources()
                     return self.parseResourceList(resourceList)
                 except WebdavError:
-                    return False 
-            else:
-                return False
-        else:
-            try:
-                resourceList = self.resource.listResources()
-                return self.parseResourceList(resourceList)
-            except WebdavError:
-                return False 
+                    return WebdavError.__str__
+        except AuthorizationError as e:
+            print ''
+            print '---------------------------------------------------------'
+            print 'AuthorizationError was raised, trying to resend auth data'
+            print '---------------------------------------------------------'
+            print ''
+            self.resendAuthorization(e)
 
     def parseResourceList(self, resourceList):
         keyvalues = []
@@ -151,52 +169,96 @@ class WebDavClient(object):
             try:
                 webdavResource = self.resource.getResourceStorer(resourceWebDavName)
                 webdavResource.downloadFile(filePath + "/" + resourceWebDavName)
-                return True
+                return 'True'
             except Exception:
-                return False
+                return 'False'
         else:
-            return False
+            return 'False'
         
     def uploadFile(self, filePath, collectionWebDavPath, resourceWebDavName):
         dataFile = None
         try:
             dataFile = open(filePath, 'rb')
         except IOError:
-            return False
+            dataFile.close()
+            return 'False'
         if ( self.setCollectionStorerToPath(collectionWebDavPath) ):
             try:
                 self.resource.addResource(resourceWebDavName, dataFile.read())
                 dataFile.close()
-                return True
+                return 'True'
             except WebdavError, IOError:
                 dataFile.close()
-                return False
+                return WebdavError.__str__
         else:
-            return False
+            dataFile.close()
+            return 'False'
         
     def createDirectory(self, collectionWebDavPath, directoryName):
         if ( self.setCollectionStorerToPath(collectionWebDavPath) ):
             try:
                 self.resource.addCollection(directoryName)
-                return True
+                return 'True'
             except WebdavError:
-                return False
+                return WebdavError.__str__
+        else:
+            return 'False'
             
     def deleteResource(self, collectionWebDavPath, resourceWebDavName):
         if (self.setCollectionStorerToPath(collectionWebDavPath)):
             try:
                 webdavResource = self.resource.getResourceStorer(resourceWebDavName)
                 webdavResource.delete()
-                return True
+                return 'True'
             except WebdavError:
-                return False
+                return WebdavError.__str__
         else:
-            return False
+            return 'False'
         
     def deleteDirectory(self, collectionWebDavPath, collectionName):
         if (self.setCollectionStorerToPath(collectionWebDavPath)):
             try:
                 self.resource.deleteResource(collectionName)
-                return True
+                return 'True'
             except WebdavError:
-                return False
+                return WebdavError.__str__
+        else:
+            return 'False'
+
+    def copyDirectory(self, currentPath, newPath, itemName, deepCopy = 'False'):
+        if (self.setCollectionStorerToPath(currentPath)):
+            try:
+                if (deepCopy == 'True'):
+                    infinity = True
+                else:
+                    infinity = False
+                newPath = self.url + newPath
+                print 'COPY DIRECTORY ==============='
+                print 'DOES NOT WORK FOR DIRECTORYS WITH TAIGA, YET'
+                print 'Item         : ' + itemName
+                print 'Current path : ' + currentPath
+                print 'New path     : ' + newPath
+                print 'Deep copy    : ' + deepCopy
+
+                webdavResource = self.resource.getResourceStorer(itemName)
+                webdavResource.copy(newPath, infinity)
+                # try also
+                # webdavResource.move(newPath)
+                return 'True'
+            except WebdavError:
+                return WebdavError.__str__
+        else:
+            return 'False'
+            
+    def renameResource(self, currentPath, newName, oldName):
+        if (self.setCollectionStorerToPath(currentPath)):
+            try:
+                newName = self.url + urllib.quote(currentPath + newName)
+                webdavResource = self.resource.getResourceStorer(oldName)
+                webdavResource.move(newName)
+                return 'True'
+            except WebdavError:
+                return WebdavError.__str__
+        else:
+            return 'False'
+            

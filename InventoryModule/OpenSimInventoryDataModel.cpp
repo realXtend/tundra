@@ -190,7 +190,7 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemRemove(AbstractInventoryIte
     }
 }
 
-void OpenSimInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryItem *item)
+void OpenSimInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryItem *item, const QString &old_name)
 {
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
         rexLogicModule_->GetServerConnection()->SendUpdateInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
