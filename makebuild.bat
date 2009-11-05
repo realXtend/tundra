@@ -9,6 +9,7 @@ xcopy bin\*.* build /S /C /Y
 del build\*.dll
 del build\viewerd.exe
 del build\modules\core\*d.dll
+del build\pymodules\DLLs\*_d.pyd
 xcopy ..\viewerbuilddlls\*.* build /S /C /Y
 del build\pymodules\*.pyc
 del build\pymodules\apitest\*.pyc
