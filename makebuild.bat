@@ -9,7 +9,6 @@ xcopy bin\*.* build /S /C /Y
 del build\*.dll
 del build\viewerd.exe
 del build\modules\core\*d.dll
-del build\pymodules\DLLs\*_d.pyd
 xcopy ..\viewerbuilddlls\*.* build /S /C /Y
 del build\pymodules\*.pyc
 del build\pymodules\apitest\*.pyc
@@ -26,6 +25,7 @@ del build\pymodules\lib\webdav\acp\*.pyc
 del build\pymodules\usr\*.pyc
 del build\pymodules\webdavinventory\*.pyc
 del build\pymodules\webserver\*.pyc
+del build\pymodules\DLLs\*_d.pyd
 cd build\data
 rmdir configuration /S /Q
 mkdir configuration
