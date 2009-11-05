@@ -70,8 +70,8 @@ namespace Foundation
             // Create config manager
             config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
 
-            config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
-            config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("0.2"));
+            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
+            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("0.2"));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("application_name"), std::string("realXtend"));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("window_title"), std::string("realXtend Naali"));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));

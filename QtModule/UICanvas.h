@@ -303,6 +303,8 @@ namespace QtUI
  
         /// Tracks whether the Ogre surface associated to this canvas is dirty and should be redrawn.
 	    bool dirty_;
+	    /// Renderwindow size changed-flag. On next frame, textures may still be garbled, so we rerender canvas twice.
+	    bool renderwindow_changed_;
 
         /// The name of the Ogre texture associated with this canvas. Not used if mode_=External.
         QString surfaceName_;

@@ -38,6 +38,7 @@ namespace QtUI
 UICanvas::UICanvas(): overlay_(0),
                       container_(0),
                       dirty_(true),
+                      renderwindow_changed_(false),
                       surfaceName_(""),
                       mode_(External),
                       id_(QUuid::createUuid().toString()),
@@ -65,6 +66,7 @@ UICanvas::UICanvas(): overlay_(0),
 UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
                                container_(0),
                                dirty_(true),
+                               renderwindow_changed_(false),
                                renderWindowSize_(parentWindowSize),
                                mode_(mode),
                                id_(QUuid::createUuid().toString()),
@@ -288,7 +290,7 @@ void UICanvas::SetRenderWindowSize(const QSize& size)
         float relWidth = (float)texture->getWidth()/double(renderWindowSize_.width());
         float relHeight = (float)texture->getHeight()/double(renderWindowSize_.height());
         container_->setDimensions(relWidth, relHeight);
-        dirty_ = true;
+        renderwindow_changed_ = true;
        
         emit( RenderWindowSizeChanged(renderWindowSize_) );
     }
@@ -618,7 +620,7 @@ void UICanvas::drawBackground(QPainter *painter, const QRectF &rect)
 void UICanvas::RenderSceneToOgreSurface()
 {
     // Render if and only if scene is dirty.
-    if (!dirty_ || mode_ == External)
+    if (((!dirty_) && (!renderwindow_changed_)) || mode_ == External)
         return;
 
     PROFILE(RenderSceneToOgre);
@@ -651,7 +653,15 @@ void UICanvas::RenderSceneToOgreSurface()
         texture->getBuffer()->blitFromMemory(pixel_box);
     }
 
-    dirty_ = false;
+    if (renderwindow_changed_)
+    {
+        renderwindow_changed_ = false;
+        dirty_ = true;
+    }
+    else
+    {
+        dirty_ = false;
+    }
 }
 
 void UICanvas::Render()

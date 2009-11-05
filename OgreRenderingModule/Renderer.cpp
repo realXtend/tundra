@@ -387,10 +387,10 @@ namespace OgreRenderer
             if (camera_)
             {
                 camera_->setAspectRatio(Ogre::Real(renderwindow_->getWidth() / Ogre::Real(renderwindow_->getHeight())));
-
-                Events::WindowResized data(renderwindow_->getWidth(), renderwindow_->getHeight()); 
-                framework_->GetEventManager()->SendEvent(renderercategory_id_, Events::WINDOW_RESIZED, &data);
-            }       
+            } 
+            
+            Events::WindowResized data(renderwindow_->getWidth(), renderwindow_->getHeight()); 
+            framework_->GetEventManager()->SendEvent(renderercategory_id_, Events::WINDOW_RESIZED, &data);       
         }
     }
 
