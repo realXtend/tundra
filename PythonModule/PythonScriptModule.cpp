@@ -1491,6 +1491,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
             }
             RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
             prim->MeshID = text;
+            prim->DrawType = RexTypes::DRAWTYPE_MESH;
 
             return 0;
         }
