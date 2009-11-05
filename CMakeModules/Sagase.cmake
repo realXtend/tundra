@@ -1,5 +1,3 @@
-# -- Ryan McDougall, realXtend -- 2009
-
 # parse a keyword delimited list of arguments into single list
 # results are in OUT
 function (sagase_parse_arguments BEGIN END ARGS)
