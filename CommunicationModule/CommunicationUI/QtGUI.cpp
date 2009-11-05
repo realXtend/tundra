@@ -256,6 +256,9 @@ namespace CommunicationUI
 
 	void UIContainer::ConnectionEstablished(Communication::ConnectionInterface &connection)
 	{
+		if (loginWidget_ != 0)
+			((Login *)loginWidget_)->SaveConfig();
+
 		labelLoginConnectionStatus_->setText("Connected");
 		
 		if ( im_connection_ != NULL )
