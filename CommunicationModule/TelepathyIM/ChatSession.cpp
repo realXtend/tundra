@@ -275,6 +275,8 @@ namespace TelepathyIM
 				    LogDebug(note.toStdString());
 
 				    Core::uint type = i->messageType; //! @todo Check if we need value of this parameter
+					if (type != Tp::ChannelTextMessageTypeNormal)
+						continue;
 				    ChatSessionParticipant* originator = GetParticipant(i->sender);
 				    if (originator == 0)
 				    {
@@ -302,6 +304,10 @@ namespace TelepathyIM
 
 	void ChatSession::OnMessageReceived(const Tp::ReceivedMessage &message)
 	{
+		QList<Tp::ReceivedMessage> messages;
+		messages.append(message);
+		tp_text_channel_->acknowledge(messages);
+
 		ChatSessionParticipant* from = GetParticipant(message.sender());
 		ChatMessage* m = new ChatMessage(from, message.received(), message.text());
 		message_history_.push_back(m);
