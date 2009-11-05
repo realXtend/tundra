@@ -5,5 +5,6 @@
     <file alias="iconBranchEnd.png" >../../bin/data/ui/images/branch-end.png</file>
     <file alias="iconBranchMore.png" >../../bin/data/ui/images/branch-more.png</file>
 	<file alias="iconBranchVLine.png" >../../bin/data/ui/images/branch-vline.png</file>
+	<file alias="iconResource.png" >../../bin/data/ui/images/resource.png</file>
   </qresource>
 </RCC>
