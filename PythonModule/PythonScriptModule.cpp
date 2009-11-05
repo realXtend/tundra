@@ -817,7 +817,7 @@ PyObject* GetCameraYawPitch(PyObject *self, PyObject *args)
 }
 PyObject* PyLogInfo(PyObject *self, PyObject *args) 
 {
-    const char* message;
+    const char* message;    
     if(!PyArg_ParseTuple(args, "s", &message))
     {
         PyErr_SetString(PyExc_ValueError, "Needs a string.");
@@ -1019,6 +1019,34 @@ PyObject* GetCameraRight(PyObject *self)
 /*    UpdateSliderEvents(input_state_);
     UpdateSliderEvents(Input::State_All);*/
 
+PyObject* NetworkUpdate(PyObject *self, PyObject *args)
+{   
+    unsigned int ent_id_int;
+    Core::entity_id_t ent_id;
+
+    if(!PyArg_ParseTuple(args, "I", &ent_id_int))
+    {
+        PyErr_SetString(PyExc_ValueError, "Getting an entity failed, param should be an integer.");
+        return NULL;   
+    }
+
+    ent_id = (Core::entity_id_t) ent_id_int;
+    
+
+    Scene::ScenePtr scene = PythonScript::GetScene();
+    if (!scene)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
+        return NULL;
+    }
+
+    Scene::EntityPtr entity = scene->GetEntity(ent_id);
+    Scene::Events::SceneEventData event_data(ent_id);
+    event_data.entity_ptr_list.push_back(entity);
+    PythonScript::self()->GetFramework()->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
+
+    Py_RETURN_NONE;
+}
 
 PyObject* PyEventCallback(PyObject *self, PyObject *args){
     std::cout << "PyEventCallback" << std::endl;
@@ -1104,6 +1132,9 @@ static PyMethodDef EmbMethods[] = {
 
 	{"getUserAvatarId", (PyCFunction)GetUserAvatarId, METH_VARARGS, 
     "Returns the user's avatar's id."},
+
+    {"networkUpdate", (PyCFunction)NetworkUpdate, METH_VARARGS, 
+    "Does a network update for the Scene."},
 
 	{NULL, NULL, 0, NULL}
 };
@@ -1329,6 +1360,14 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
     }
 
     Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
+
+    const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
+    if (!ogre_component)
+    {
+        PyErr_SetString(PyExc_AttributeError, "placeable not found.");
+        return NULL;
+    }    
+    OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
     
     /*if (s_name.compare("prim") == 0)
     {
@@ -1346,14 +1385,6 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
     //else 
     if (s_name.compare("pos") == 0)
     {
-        const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
-        if (!ogre_component)
-        {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return NULL;   
-        }
-        
-        OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
         /* this must probably return a new object, a 'Place' instance, that has these.
            or do we wanna hide the E-C system in the api and have these directly on entity? 
            probably not a good idea to hide the actual system that much. or? */
@@ -1375,23 +1406,11 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
         /* sending a scene updated event to trigger network synch,
            copy-paste from DebugStats, 
            perhaps there'll be some MoveEntity thing in logic that can reuse for this? */
-        Scene::Events::SceneEventData event_data(eob->ent_id);
-        event_data.entity_ptr_list.push_back(entity);
-        PythonScript::self()->GetFramework()->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
-
         return 0; //success.
     }
 
     else if (s_name.compare("scale") == 0)
     {
-        const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
-        if (!ogre_component)
-        {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return NULL;
-        }
-        OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
-        
         float x, y, z;
         if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
         {
@@ -1401,24 +1420,12 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
             
         // Set the new values.
         placeable->SetScale(Vector3(x, y, z));
-        
-        Scene::Events::SceneEventData event_data(eob->ent_id);
-        event_data.entity_ptr_list.push_back(entity);
-        PythonScript::self()->GetFramework()->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
-
+ 
         return 0; //success.
     }
     
     else if (s_name.compare("orientation") == 0)
     {
-        const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
-        if (!ogre_component)
-        {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return NULL;
-        }    
-        OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
-        
         float x, y, z, w;
         if(!PyArg_ParseTuple(value, "ffff", &x, &y, &z, &w))
         {
@@ -1429,10 +1436,6 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
         // Set the new values.
         placeable->SetOrientation(Core::Quaternion(x, y, z, w));
         
-        Scene::Events::SceneEventData event_data(eob->ent_id);
-        event_data.entity_ptr_list.push_back(entity);
-        PythonScript::self()->GetFramework()->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
-
         return 0; //success.
     }
 

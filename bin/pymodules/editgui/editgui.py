@@ -69,6 +69,7 @@ class EditGUI(Component):
         widget.resize(width, height)
 
         self.canvas.AddWidget(widget)
+        #~ self.canvas.connect('Hidden', on_hide)
         #self.canvas.Show()
         modu = r.getQtModule()
         modu.AddCanvasToControlBar(self.canvas, "World Edit")
@@ -150,6 +151,7 @@ class EditGUI(Component):
             #converted to list to have it mutable
             pos[i] = v
             ent.pos = pos[0], pos[1], pos[2] #XXX API should accept a list/tuple too .. or perhaps a vector type will help here too
+            r.networkUpdate(ent.id)
             #print "=>", ent.pos
             if self.arrows is not None:
                 self.arrows.pos = pos[0], pos[1], pos[2]
@@ -160,6 +162,7 @@ class EditGUI(Component):
             scale = list(ent.scale)
             scale[i] = v
             ent.scale = scale[0], scale[1], scale[2]
+            r.networkUpdate(ent.id)
     
     def changerot(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
@@ -175,6 +178,7 @@ class EditGUI(Component):
             #print euler, ort
             #print euler, ort
             ent.orientation = ort
+            r.networkUpdate(ent.id)
             
             if self.arrows is not None:
                 self.arrows.orientation = ort
@@ -316,6 +320,8 @@ class EditGUI(Component):
             
     def LeftMouseUp(self, mouseinfo):
         self.left_button_down = False
+        #~ if self.sel:
+            #~ r.networkUpdate(self.sel.id)
         
     def RightMouseDown(self, mouseinfo):
         self.right_button_down = True
@@ -346,7 +352,10 @@ class EditGUI(Component):
                 upvec = Vector3(r.getCameraUp())
                 rightvec = Vector3(r.getCameraRight())
                 newvec = oldvec - (upvec * mouseinfo.rel_y * n) + (rightvec * mouseinfo.rel_x * n)
+                
+                self.arrows.pos = newvec.x, newvec.y, newvec.z
                 self.sel.pos = newvec.x, newvec.y, newvec.z
+                r.networkUpdate(self.sel.id)
                 #XXX also here the immediate network sync is not good,
                 #refactor out from pos setter to a separate network_update() call
 
@@ -363,6 +372,10 @@ class EditGUI(Component):
 
         r.logDebug("   ...exit done.")
 
+
+    #~ def on_hide(self):
+        #~ print "on_hide"
+        
 #barrel on 0.5 in viila: 
 # Upload succesfull. Asset id: 35da6174-8743-4026-a83e-18b23984120d, 
 # inventory id: 12c3df2d-ef3b-490e-8615-2f89abb7375d.
