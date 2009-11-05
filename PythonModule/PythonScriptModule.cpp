@@ -465,11 +465,9 @@ namespace PythonScript
         //XXX remove when/as the core has the fps limitter
         //engine_->RunString("import time; time.sleep(0.01);"); //a hack to save cpu now.
 
-        #ifndef WINDOWS_APP 
         // Somehow this causes extreme lag in consoleless mode         
         if (pmmInstance != NULL)
             PyObject_CallMethod(pmmInstance, "run", "f", frametime);
-        #endif
         
         /*char** args = new char*[2]; //is this 2 'cause the latter terminates?
         std::string methodname = "run";
