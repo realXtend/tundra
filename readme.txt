@@ -59,6 +59,10 @@ Python
 ------
 It is possible to run arbitary Python code within the viewer. A way is to put the code to bin/pymodules/usr/command.py and then press the period key (.) in the viewer window. See bin/pymodules/readme.txt for info about how to make own modules, bind arbitary keys etc.
 
+IM communication
+----------------
+Naali viewer supports jabber protocol for IM communication. You can use any jabber provider or Google Talk accounts.
+
 
 Compiling
 ---------
