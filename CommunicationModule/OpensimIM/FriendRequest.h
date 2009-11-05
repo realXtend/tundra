@@ -2,7 +2,7 @@
 #define incl_Communication_OpensimIM_FriendRequest_h
 
 #include "Foundation.h"
-#include "..\interface.h"
+#include "../interface.h"
 
 namespace OpensimIM
 {

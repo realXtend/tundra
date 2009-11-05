@@ -2,7 +2,7 @@
 #define incl_Communication_OpensimIM_ChatSessionParticipant_h
 
 #include "Foundation.h"
-#include "..\interface.h"
+#include "../interface.h"
 #include "Contact.h"
 
 namespace OpensimIM

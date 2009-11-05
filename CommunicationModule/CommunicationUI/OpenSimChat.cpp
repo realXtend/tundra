@@ -80,7 +80,7 @@ namespace CommunicationUI
 		if (!chatInput_->text().isEmpty())
 		{
 			QString message(chatInput_->text());
-			publicChat_->SendMessageW(message);
+			publicChat_->SendMessage(message);
 			chatInput_->clear();
 		}
 	}

@@ -1,7 +1,7 @@
 #include "ConnectionProvider.h"
 #include <QtCore>
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/Debug__>
+// #include <TelepathyQt4/Debug__>
 #include <TelepathyQt4/PendingReady>
 
 namespace TelepathyIM
@@ -140,8 +140,8 @@ namespace TelepathyIM
 	void ConnectionProvider::InitializeTelepathyConnectionManager(const QString &name)
 	{
 		Tp::registerTypes();
-		Tp::enableDebug(true);
-		Tp::enableWarnings(true);
+		// Tp::enableDebug(true);
+		// Tp::enableWarnings(true);
 //		qRegisterMetaType<Tp::FarsightChannel::Status>(); // for streamed media
 
 		tp_connection_manager_ = Tp::ConnectionManager::create(name);

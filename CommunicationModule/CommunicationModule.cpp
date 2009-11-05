@@ -2,8 +2,8 @@
 #include "Foundation.h"
 
 #include "CommunicationModule.h"
-#include "OpensimIM\ConnectionProvider.h"
-#include "TelepathyIM\ConnectionProvider.h"
+#include "OpensimIM/ConnectionProvider.h"
+#include "TelepathyIM/ConnectionProvider.h"
 
 namespace Communication
 {

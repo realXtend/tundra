@@ -43,7 +43,7 @@ namespace Communication
 
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communication;
 
-	    bool CommunicationModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
+	    bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
 		MODULE_LOGGING_FUNCTIONS
 		//! returns name of this module. Needed for logging.
