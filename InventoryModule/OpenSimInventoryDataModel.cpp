@@ -100,11 +100,11 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewAsset(
     AbstractInventoryItem &parentFolder,
     const QString &name)
 {
-    // Return an existing asset if one with the given id is present.
     InventoryFolder *parent = static_cast<InventoryFolder *>(&parentFolder);
     if (!parent)
         return 0;
 
+    // Return an existing asset if one with the given id is present.
     InventoryAsset *existing = dynamic_cast<InventoryAsset *>(parent->GetChildAssetById(inventory_id));
     if (existing)
         return existing;
@@ -129,8 +129,6 @@ void OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem 
 
 void OpenSimInventoryDataModel::NotifyServerAboutItemMove(AbstractInventoryItem *item)
 {
-    std::cout << "Moving " << item->GetName().toStdString() << " to " << item->GetParent()->GetName().toStdString() << std::endl;
-
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
         rexLogicModule_->GetServerConnection()->SendMoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
             QSTR_TO_UUID(item->GetParent()->GetID()));
@@ -238,10 +236,10 @@ void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
         if (newFolder == GetOpenSimLibraryFolder())
             newFolder->SetIsLibraryItem(true);
 
+        // Flag Library folders. They have some special behavior.
         if (GetOpenSimLibraryFolder())
             if (newFolder->IsDescendentOf(GetOpenSimLibraryFolder()))
                 newFolder->SetIsLibraryItem(true);
-        // Flag Library folders. They have some special behavior.
     }
 
     InventoryFolderSkeleton::FolderIter iter = folder_skeleton->children.begin();

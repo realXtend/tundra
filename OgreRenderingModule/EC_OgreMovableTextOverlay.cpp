@@ -19,7 +19,7 @@ static const float MAX_VISIBILITY_DISTANCE = 50.f;
 namespace OgreRenderer
 {
 
-EC_OgreMovableTextOverlay::EC_OgreMovableTextOverlay(Foundation::ModuleInterface* module) : 
+EC_OgreMovableTextOverlay::EC_OgreMovableTextOverlay(Foundation::ModuleInterface* module) :
     Foundation::ComponentInterface(module->GetFramework()),
     text_element_(NULL),
     container_(NULL),
@@ -32,11 +32,10 @@ EC_OgreMovableTextOverlay::EC_OgreMovableTextOverlay(Foundation::ModuleInterface
     visible_(false),
     overlayName_(""),
     containerName_(""),
-    baseMaterialName_("RedTransparent"),
+    baseMaterialName_("BlueTransparent"),
     materialHasAlpha_(false),
     text_(""),
     attached_(false)
-    
 {
     camera_ = renderer_.lock()->GetCurrentCamera();
     windowWidth_ = camera_->getViewport()->getActualWidth();
@@ -48,19 +47,19 @@ EC_OgreMovableTextOverlay::~EC_OgreMovableTextOverlay()
 {
     if (renderer_.expired())
         return;
-        
+
     if (overlay_)
     {
         overlay_->hide();
         container_->removeChild(overlayName_);
         overlay_->remove2D(container_);
 
-        Ogre::OverlayManager *overlayManager = Ogre::OverlayManager::getSingletonPtr();    	    
+        Ogre::OverlayManager *overlayManager = Ogre::OverlayManager::getSingletonPtr();
         overlayManager->destroyOverlayElement(text_element_);
         overlayManager->destroyOverlayElement(container_);
         overlayManager->destroy(overlay_);
     }
-    
+
     if (node_)
     {
         DetachNode();
@@ -77,8 +76,8 @@ void EC_OgreMovableTextOverlay::Update()
 
     if(!node_->isInSceneGraph())
     {
-	    overlay_->hide();
-	    return;
+        overlay_->hide();
+        return;
     }
     
     // This is possibly an evil thing to do but gets rid of overlay stuttering.
@@ -90,8 +89,8 @@ void EC_OgreMovableTextOverlay::Update()
     Ogre::Plane cameraPlane = Ogre::Plane(Ogre::Vector3(camera_->getDerivedOrientation().zAxis()), camera_->getDerivedPosition());
     if(cameraPlane.getSide(point) != Ogre::Plane::NEGATIVE_SIDE)
     {
-	    overlay_->hide();
-	    return;
+        overlay_->hide();
+        return;
     }
 
     // Hide the overlay if it's too far.
@@ -145,9 +144,9 @@ void EC_OgreMovableTextOverlay::SetVisible(bool visible)
         
     visible_ = visible;
     if (visible)
-	    overlay_->show();
+        overlay_->show();
     else
-	    overlay_->hide();
+        overlay_->hide();
 }
 
 void EC_OgreMovableTextOverlay::SetPlaceable(Foundation::ComponentPtr placeable)
@@ -227,20 +226,20 @@ void EC_OgreMovableTextOverlay::SetMaterial(const std::string& new_base_material
         else
             materialHasAlpha_ = false;
                 
-        // Set the max alpha for the material.                            
+        // Set the max alpha for the material.
         materialMaxAlpha_ = blend.alphaArg1;
            
         container_->setMaterialName(materialName_);
     }
     else
-        OgreRenderingModule::LogError("Invalid material name!");    
+        OgreRenderingModule::LogError("Invalid material name!");
 }
 
 void EC_OgreMovableTextOverlay::SetOffset(const Core::Vector3df& offset)
 {
     if (!node_)
         return;
-        
+
     node_->setPosition(ToOgreVector3(offset));
 }
 
@@ -248,39 +247,39 @@ void EC_OgreMovableTextOverlay::CreateOverlay(const Core::Vector3df& offset)
 {
     if (renderer_.expired())
         return;
-    
+
     // Return if already created
     if (node_)
         return;
-    
+
     // Create SceneNode
     Ogre::SceneManager *scene_mgr = renderer_.lock()->GetSceneManager();
     node_ = scene_mgr->createSceneNode();
-    
+
     // Set the node position to an user-specified offset
     node_->setPosition(ToOgreVector3(offset));
-    
+
     // Overlay
     overlayName_ = renderer_.lock()->GetUniqueObjectName();
     overlay_ = Ogre::OverlayManager::getSingleton().create(overlayName_);
-    
+
     // Container
     containerName_ = renderer_.lock()->GetUniqueObjectName();
     container_ = static_cast<Ogre::OverlayContainer*>
         (Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", containerName_));
     overlay_->add2D(container_);
-    
+
     // Font
     ///\todo user-defined font
     std::string fontName = "Console";
     Ogre::FontManager::getSingleton().load(fontName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
     font_ = (Ogre::Font*)Ogre::FontManager::getSingleton().getByName(fontName).getPointer();
     font_->setParameter("size", "16");
-    
+
     // Overlay text
     text_element_ = checked_static_cast<Ogre::TextAreaOverlayElement*>
         (Ogre::OverlayManager::getSingleton().createOverlayElement("TextArea", overlayName_));
-//	    text_element_ = Ogre::OverlayManager::getSingleton().createOverlayElement("TextArea", "shapeNameText");
+//        text_element_ = Ogre::OverlayManager::getSingleton().createOverlayElement("TextArea", "shapeNameText");
     text_element_->setDimensions(0.8, 0.8);
     text_element_->setMetricsMode(Ogre::GMM_PIXELS);
     text_element_->setPosition(1, 2);
@@ -291,20 +290,20 @@ void EC_OgreMovableTextOverlay::CreateOverlay(const Core::Vector3df& offset)
     fontColor_ = Core::Color(0, 0, 0, 1);
     text_element_->setColour(Ogre::ColourValue::Black);
     container_->addChild(text_element_);
-    
+
     if(text_ != "")
     {
         textDim_ = GetTextDimensions(text_);
         container_->setDimensions(textDim_.x, textDim_.y);
     }
-    
-    SetMaterial("RedTransparent"/*baseMaterialName_*/);
-    
+
+    SetMaterial("BlueTransparent"/*baseMaterialName_*/);
+
     if (visible_)
         overlay_->show();
     else
         overlay_->hide();
-    
+
     overlay_->setZOrder(100);
 }
 
@@ -315,10 +314,10 @@ Ogre::Vector2 EC_OgreMovableTextOverlay::GetTextDimensions(const std::string &te
     
     for(std::string::const_iterator it = text.begin(); it < text.end(); ++it)
     {
-	    if (*it == 0x0020)
-		    result.x += font_->getGlyphAspectRatio(0x0030);
-	    else
-		    result.x += font_->getGlyphAspectRatio(*it);
+        if (*it == 0x0020)
+            result.x += font_->getGlyphAspectRatio(0x0030);
+        else
+            result.x += font_->getGlyphAspectRatio(*it);
     }
     
     result.x = (result.x * charHeight) / (float)camera_->getViewport()->getActualWidth();
@@ -330,18 +329,18 @@ Ogre::Vector2 EC_OgreMovableTextOverlay::GetTextDimensions(const std::string &te
 void EC_OgreMovableTextOverlay::SetAlphaChannelIntensity(const float &distance)
 {
     float materialAlpha, textAlpha;
-    
+
     textAlpha = (MAX_VISIBILITY_DISTANCE - distance) / MAX_VISIBILITY_DISTANCE;
     materialAlpha = (MAX_VISIBILITY_DISTANCE - distance) / MAX_VISIBILITY_DISTANCE;
     if (materialAlpha > materialMaxAlpha_)
         materialAlpha = materialMaxAlpha_;
-    
+
     Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
     Ogre::MaterialPtr material = mm.getByName(materialName_);
     if (material.get())
         material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(
             Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, materialAlpha, materialAlpha, 0);
-               
+
     text_element_->setColour(Ogre::ColourValue(fontColor_.r, fontColor_.g, fontColor_.b, textAlpha));
 }
 
