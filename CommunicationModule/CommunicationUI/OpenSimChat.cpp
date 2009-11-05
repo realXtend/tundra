@@ -153,7 +153,7 @@ namespace CommunicationUI
 			else
 			{
 				// Connect resize notification signal
-				QObject::connect(canvas_.get(), SIGNAL( RenderWindowSizeChanges(const QSize&) ), this, SLOT( AdjustInternalWidgets(const QSize&) ));
+				QObject::connect(canvas_.get(), SIGNAL( RenderWindowSizeChanged(const QSize&) ), this, SLOT( AdjustInternalWidgets(const QSize&) ));
 				// Set canvas properties
 				canvas_->SetPosition(0, canvas_->GetRenderWindowSize().height()-20);
 				canvas_->SetCanvasResizeLock(true);
