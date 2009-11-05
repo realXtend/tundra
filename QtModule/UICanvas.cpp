@@ -526,6 +526,7 @@ void UICanvas::Fade(double timeSinceLastFrame )
             overlay_->hide();
 
             fade_on_hiding_ = false;
+            emit Hidden();
         }
        
     }
@@ -597,11 +598,15 @@ void UICanvas::Hide()
         overlay_->hide();
         
         dirty_ = true;
+        emit Hidden();
         RenderSceneToOgreSurface();
         
     }
     else
+    {
         hide();
+        emit Hidden();
+    }
 }
 
 void UICanvas::drawBackground(QPainter *painter, const QRectF &rect)

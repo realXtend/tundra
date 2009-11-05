@@ -252,6 +252,12 @@ namespace QtUI
          */
         void RenderWindowSizeChanged(const QSize& size);
 
+        /**
+         * Signal is emited after when canvas is hidden. 
+         */
+        void Hidden();
+        
+
     protected:        
         
         /// Override Qt's QGraphicsView's background drawing to enable alpha on the empty
