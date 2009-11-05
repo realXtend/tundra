@@ -9,7 +9,7 @@
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/ReceivedMessage>
 #include "Foundation.h"
-#include "..\interface.h"
+#include "../interface.h"
 #include "ContactGroup.h"
 #include "ChatMessage.h"
 #include "ChatSessionParticipant.h"

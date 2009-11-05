@@ -15,34 +15,104 @@ using namespace QtUI;
 
 namespace CommunicationUI
 {
-	// QtGUI CLASS
+	// FRIEND REQUEST CLASS
 
-	class QtGUI : public QObject
+	class FriendRequestUI : public QWidget
+	{
+
+	Q_OBJECT
+
+	public:
+		FriendRequestUI(QWidget *parent, Communication::FriendRequestInterface &request);
+		FriendRequestUI(QWidget *parent, Communication::ConnectionInterface *connection);
+		~FriendRequestUI(void);
+
+	private slots:
+		void ButtonHandlerAccept(bool clicked);
+		void ButtonHandlerReject(bool clicked);
+		void ButtonHandlerCloseWindow(bool clicked);
+		void SendFriendRequest(bool clicked);
+
+	private:
+		Communication::FriendRequestInterface *request_;
+		Communication::ConnectionInterface* connection_;
+		
+		QWidget *internalWidget_;
+		QLabel *originator;
+		QPushButton *accept;
+		QPushButton *reject;
+		QPushButton *askLater;
+		QLineEdit *account;
+		QLineEdit *message;
+
+	signals:
+		void CloseThisTab(FriendRequestUI *tabWidget);
+
+	};
+
+	// CUSTOM QTabWidget CLASS
+
+	class ConversationsContainer : public QTabWidget
+	{
+
+	Q_OBJECT
+
+	friend class UIContainer;
+	friend class FriendRequestUI;
+
+	public:
+		ConversationsContainer(QWidget *parent);
+		~ConversationsContainer(void);
+		bool DoesTabExist(Communication::ContactInterface *contact);
+		
+	public slots:
+		void CloseFriendRequest(FriendRequestUI *request);
+
+	private slots:
+		void CloseTab(int index);
+
+	};
+
+	// CONVERSATION CLASS
+
+	class Conversation : public QWidget
 	{
 	
 	Q_OBJECT
 
 	friend class UIContainer;
-	
-	MODULE_LOGGING_FUNCTIONS
-	static const std::string NameStatic() { return "CommunicationModule::QtGUI"; } // for logging functionality
+	friend class ConversationsContainer;
 
 	public:
-		QtGUI(Foundation::Framework *framework);
-		~QtGUI(void);
+		Conversation(ConversationsContainer *parent, Communication::ChatSessionInterface &chatSession, Communication::ContactInterface *contact, QString name);
+		~Conversation(void);
 
-	public slots:
-		void ChangeToolBarButton(QString oldID, QString newID);
-		void DestroyThis();
+		void ShowMessageHistory(Communication::ChatMessageVector messageHistory);
 
 	private:
-		Foundation::Framework *framework_;
-		Communication::CommunicationServiceInterface* communication_service_;
-		boost::shared_ptr<UICanvas> canvas_login_;
-        boost::shared_ptr<UICanvas> canvas_chat_;
-		UIContainer *UIContainer_;
+		void InitWidget();
+		void ConnectSignals();
+		QString GenerateTimeStamp();
+		void AppendLineToConversation(QString line);
+		void AppendHTMLToConversation(QString html);
+
+		QWidget *internalWidget_;
+		QPlainTextEdit *textEditChat_;
+		QLineEdit *lineEditMessage_;
+		QString myName_;
+
+		ConversationsContainer *myParent_;
+		Communication::ChatSessionInterface& chat_session_;
+		Communication::ContactInterface* contact_;
+
+	private	slots:
+		void OnMessageSent();
+		void OnMessageReceived(const Communication::ChatMessageInterface &message);
+		void ContactStateChanged(const QString &status, const QString &message);
 
 	};
+
+	// CUSTOM QListWidgetItem CLASS
 
 	// UIContainer CLASS
 
@@ -156,69 +226,6 @@ namespace CommunicationUI
 
 	};
 
-	// CUSTOM QTabWidget CLASS
-
-	class ConversationsContainer : public QTabWidget
-	{
-
-	Q_OBJECT
-
-	friend class UIContainer;
-	friend class FriendRequestUI;
-
-	public:
-		ConversationsContainer(QWidget *parent);
-		~ConversationsContainer(void);
-		bool DoesTabExist(Communication::ContactInterface *contact);
-		
-	public slots:
-		void CloseFriendRequest(FriendRequestUI *request);
-
-	private slots:
-		void CloseTab(int index);
-
-	};
-
-	// CONVERSATION CLASS
-
-	class Conversation : public QWidget
-	{
-	
-	Q_OBJECT
-
-	friend class UIContainer;
-	friend class ConversationsContainer;
-
-	public:
-		Conversation(ConversationsContainer *parent, Communication::ChatSessionInterface &chatSession, Communication::ContactInterface *contact, QString name);
-		~Conversation(void);
-
-		void ShowMessageHistory(Communication::ChatMessageVector messageHistory);
-
-	private:
-		void InitWidget();
-		void ConnectSignals();
-		QString GenerateTimeStamp();
-		void AppendLineToConversation(QString line);
-		void AppendHTMLToConversation(QString html);
-
-		QWidget *internalWidget_;
-		QPlainTextEdit *textEditChat_;
-		QLineEdit *lineEditMessage_;
-		QString myName_;
-
-		ConversationsContainer *myParent_;
-		Communication::ChatSessionInterface& chat_session_;
-		Communication::ContactInterface* contact_;
-
-	private	slots:
-		void OnMessageSent();
-		void OnMessageReceived(const Communication::ChatMessageInterface &message);
-		void ContactStateChanged(const QString &status, const QString &message);
-
-	};
-
-	// CUSTOM QListWidgetItem CLASS
 
 	class ContactListItem : public QObject, QListWidgetItem
 	{
@@ -244,40 +251,35 @@ namespace CommunicationUI
 		Communication::ContactInterface* contact_;
 	};
 
-	// FRIEND REQUEST CLASS
+	// QtGUI CLASS
 
-	class FriendRequestUI : public QWidget
+	class QtGUI : public QObject
 	{
-
+	
 	Q_OBJECT
 
-	public:
-		FriendRequestUI::FriendRequestUI(QWidget *parent, Communication::FriendRequestInterface &request);
-		FriendRequestUI::FriendRequestUI(QWidget *parent, Communication::ConnectionInterface *connection);
-		FriendRequestUI::~FriendRequestUI(void);
+	friend class UIContainer;
+	
+	MODULE_LOGGING_FUNCTIONS
+	static const std::string NameStatic() { return "CommunicationModule::QtGUI"; } // for logging functionality
 
-	private slots:
-		void ButtonHandlerAccept(bool clicked);
-		void ButtonHandlerReject(bool clicked);
-		void ButtonHandlerCloseWindow(bool clicked);
-		void SendFriendRequest(bool clicked);
+	public:
+		QtGUI(Foundation::Framework *framework);
+		~QtGUI(void);
+
+	public slots:
+		void ChangeToolBarButton(QString oldID, QString newID);
+		void DestroyThis();
 
 	private:
-		Communication::FriendRequestInterface *request_;
-		Communication::ConnectionInterface* connection_;
-		
-		QWidget *internalWidget_;
-		QLabel *originator;
-		QPushButton *accept;
-		QPushButton *reject;
-		QPushButton *askLater;
-		QLineEdit *account;
-		QLineEdit *message;
-
-	signals:
-		void CloseThisTab(FriendRequestUI *tabWidget);
+		Foundation::Framework *framework_;
+		Communication::CommunicationServiceInterface* communication_service_;
+		boost::shared_ptr<UICanvas> canvas_login_;
+        boost::shared_ptr<UICanvas> canvas_chat_;
+		UIContainer *UIContainer_;
 
 	};
+
 
 } //end if namespace: CommunicationUI
 

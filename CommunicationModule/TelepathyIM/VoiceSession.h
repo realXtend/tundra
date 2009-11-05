@@ -6,7 +6,7 @@
 #include <TelepathyQt4/StreamedMediaChannel>
 #include <TelepathyQt4/PendingReady>
 
-#include "..\interface.h"
+#include "../interface.h"
 #include "Contact.h"
 
 namespace TelepathyIM

@@ -292,10 +292,9 @@ namespace CommunicationUI
 		for( itrContacts=contacts.begin(); itrContacts!=contacts.end(); itrContacts++ )
 		{
 			Communication::ContactInterface *contact = (*itrContacts);
-			ContactListItem *contactItem = new ContactListItem( contact->GetName(),
-																contact->GetPresenceStatus(),
-																contact->GetPresenceMessage(), 
-																contact );
+		        QString pstatus = contact->GetPresenceStatus(), pmessage = contact -> GetPresenceMessage(),
+                                cname = contact->GetName();
+			ContactListItem *contactItem = new ContactListItem(cname, pstatus, pmessage, contact);
 			connect(contact, SIGNAL( PresenceStatusChanged(const QString &, const QString &) ), contactItem, SLOT( StatusChanged(const QString &, const QString &) ));
 			listWidgetFriends_->addItem(contactItem);
 		}

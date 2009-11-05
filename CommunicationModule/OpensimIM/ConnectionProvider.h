@@ -2,8 +2,8 @@
 #define incl_Communication_OpensimIM_Provider_h
 
 #include "Foundation.h"
-#include "..\interface.h"
-#include "..\CommunicationService.h"
+#include "../interface.h"
+#include "../CommunicationService.h"
 #include "Connection.h"
 
 #define OPENSIM_IM_PROTOCOL "opensim_udp"
