@@ -45,8 +45,9 @@ You can enter the mouse-look mode by zooming "into" the avatar with mouse wheel.
 Avatar editor
 -------------
 
-You can import avatars or attachments from any directory by pressing the New Avatar & New Attach buttons, but you should have all the files needed by a single avatar or attachment (.xml, .mesh, 
-.skeleton, .material and texture files) in the same directory.
+You can load avatars or attachments from any directory by pressing the New Avatar & New Attach buttons, but you should have all the files needed by a single avatar or attachment (.xml, .mesh, .skeleton, .material and texture files) in the same directory.
+
+Note that currently saving the avatar (and thus making it visible to others) works only when used with the legacy reX authentication & reX avatarstorage servers. 
 
 
 Console
