@@ -57,7 +57,7 @@ Toggle the console overlay by pressing the button above TAB: apostrophe (´) on U
 
 Python
 ------
-It is possible to run arbitary Python code within the viewer. A way is to put the code to bin/pymodules/usr/command.py and then press the period key (.) in the viewer window. See bin/pymodules/readme.txt for info about how to make own modules, bind arbitary keys etc.
+It is possible to run arbitary Python code within the viewer. A way is to put the code to bin/pymodules/usr/command.py and then press the alt and the period key (alt-.) in the viewer window. See bin/pymodules/readme.txt for info about how to make own modules, bind arbitary keys etc.
 
 IM communication
 ----------------
