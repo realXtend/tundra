@@ -80,8 +80,9 @@ namespace Inventory
         /// Close handler
         void CloseInventoryWindow();
 
-        /// Fetchs the inventory folder's descendents.
-        void FetchInventoryDescendents(const QModelIndex &index);
+        /// Expands the inventory folder in the treeview
+        /// @param index Index of folder to be expanded.
+        void ExpandFolder(const QModelIndex &index);
 
         /// Adds new folder.
         void AddFolder();

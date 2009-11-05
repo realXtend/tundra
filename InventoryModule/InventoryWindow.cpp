@@ -151,7 +151,7 @@ void InventoryWindow::HandleInventoryDescendent(InventoryItemEventData *item_dat
     UpdateActions();
 }
 
-void InventoryWindow::FetchInventoryDescendents(const QModelIndex &index)
+void InventoryWindow::ExpandFolder(const QModelIndex &index)
 {
     if (!index.isValid())
         return;
@@ -167,7 +167,7 @@ void InventoryWindow::AddFolder()
     QModelIndex index = treeView_->selectionModel()->currentIndex();
     QAbstractItemModel *model = treeView_->model();
 
-    FetchInventoryDescendents(index);
+    inventoryItemModel_->FetchInventoryDescendents(index);
 
     // Next few lines not probably needed, but saved in case we will have multiple columns in the near future.
     if (model->columnCount(index) == 0)
@@ -175,7 +175,7 @@ void InventoryWindow::AddFolder()
             return;
 
     bool ok = false;
-    QString newFolderName = QInputDialog::getText(0/*inventoryWidget_*/, "Create New Folder", "Please give name of the new folder",
+    QString newFolderName = QInputDialog::getText(canvas_.get(), "Create New Folder", "Please give name of the new folder",
         QLineEdit::Normal, "", &ok);
     if (!ok)
         return;
@@ -281,8 +281,8 @@ void InventoryWindow::InitInventoryWindow()
     treeView_ = inventoryWidget_->findChild<QTreeView*>("treeView");
 
     // Connect signals
-    //QObject::connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(FetchInventoryDescendents(const QModelIndex &)));
-    QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(FetchInventoryDescendents(const QModelIndex &)));
+    QObject::connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
+    QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
 
     QObject::connect(buttonAddFolder_, SIGNAL(clicked(bool)), this, SLOT(AddFolder()));
     QObject::connect(buttonDeleteItem_, SIGNAL(clicked(bool)), this, SLOT(DeleteItem()));
