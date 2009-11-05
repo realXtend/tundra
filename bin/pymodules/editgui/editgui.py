@@ -69,7 +69,9 @@ class EditGUI(Component):
         widget.resize(width, height)
 
         self.canvas.AddWidget(widget)
-        #~ self.canvas.connect('Hidden', on_hide)
+        
+        self.canvas.connect('Hidden()', self.on_hide)
+        
         #self.canvas.Show()
         modu = r.getQtModule()
         modu.AddCanvasToControlBar(self.canvas, "World Edit")
@@ -373,8 +375,9 @@ class EditGUI(Component):
         r.logDebug("   ...exit done.")
 
 
-    #~ def on_hide(self):
-        #~ print "on_hide"
+    def on_hide(self):
+        self.hideArrows()
+        self.sel = None
         
 #barrel on 0.5 in viila: 
 # Upload succesfull. Asset id: 35da6174-8743-4026-a83e-18b23984120d, 
