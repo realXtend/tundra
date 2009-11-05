@@ -10,6 +10,7 @@ namespace Console
 {
     void NativeInput::operator()()
     {
+        #ifndef WINDOWS_APP    
         assert (command_service_);
 
         while (true)
@@ -21,14 +22,13 @@ namespace Console
 
             if (std::cin.fail())
             {
-                #ifndef WINDOWS_APP
                 framework_->Exit();
-                #endif
                 break;
             }
 
             command_service_->QueueCommand(command_line);
         }
+        #endif        
     }
 
 
