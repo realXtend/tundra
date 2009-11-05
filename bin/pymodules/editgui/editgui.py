@@ -222,7 +222,7 @@ class EditGUI(Component):
         if self.arrows is not None and self.arrows.id == ent.id:
             arrows = True
             
-        if ent.id != 0 and ent.id != r.getUserAvatarId() and not arrows:
+        if ent.id != 0 and ent.id > 10 and ent.id != r.getUserAvatarId() and not arrows: #terrain seems to be 3 and scene objects always big numbers, so > 10 should be good
             self.sel = ent
             
             if not self.widgetList.has_key(str(self.sel.id)):
