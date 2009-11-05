@@ -61,6 +61,8 @@ namespace TelepathyIM
 		//! @return the message history of this chat sessions
 		virtual Communication::ChatMessageVector GetMessageHistory();
 
+		virtual Tp::TextChannelPtr GetTpTextChannel() {return tp_text_channel_;}
+
 	protected:
 		virtual void HandlePendingMessage();
 		virtual ChatSessionParticipant* GetParticipant(Tp::ContactPtr contact);
