@@ -1,14 +1,30 @@
 /*
     Basic ambient lighting vertex program usable with overlays
 */
-void overlay_vp(float4 position : POSITION,
-						  
-						  out float4 oPosition : POSITION,
-						  out float4 oColour : COLOR,
-
-						  uniform float4x4 worldViewProj,
-						  uniform float4 colour)
+void overlay_vp(
+    float4 position : POSITION,
+    out float4 oPosition : POSITION,
+    out float4 oColour : TEXCOORD0,
+    out float4 oPosAsTex : TEXCOORD1,
+    uniform float4x4 worldViewProj,
+    uniform float4 colour)
 {
-	oPosition = mul(worldViewProj, position);
-	oColour = colour;
+    oPosition = mul(worldViewProj, position);
+    oPosAsTex = oPosition;
+    oColour = colour;
+}
+
+/*
+    Fragment program used for fading out console overlay's bottom border.
+*/
+void console_overlay_fp(
+    float4 position : TEXCOORD1,
+    float4 color : TEXCOORD0,
+    out float4 oColour : COLOR)
+{
+    float i = step(0.25, position.y);
+    float alpha = i + (1 - i) * sin(31.4 * position.y - 18.85);
+    
+//    float alpha = 5 * position.y - 0.75;
+    oColour = float4(color.r, color.g, color.b, 0.8 * saturate(alpha));
 }

@@ -13,6 +13,10 @@ material Console
             vertex_program_ref OverlayShaderVP
             {
             }
+
+            fragment_program_ref ConsoleOverlayShaderFP
+            {
+            }
         }
     }
 }

@@ -79,12 +79,12 @@ void EC_OgreMovableTextOverlay::Update()
         overlay_->hide();
         return;
     }
-    
+
     // This is possibly an evil thing to do but gets rid of overlay stuttering.
     node_->_update(true, true);
-    
+
     Ogre::Vector3 point = node_->_getDerivedPosition();
-    
+
     // Is the camera facing that point? If not, hide the overlay and return.
     Ogre::Plane cameraPlane = Ogre::Plane(Ogre::Vector3(camera_->getDerivedOrientation().zAxis()), camera_->getDerivedPosition());
     if(cameraPlane.getSide(point) != Ogre::Plane::NEGATIVE_SIDE)
@@ -96,7 +96,7 @@ void EC_OgreMovableTextOverlay::Update()
     // Hide the overlay if it's too far.
     Ogre::Vector3 res = camera_->getPosition() - point;
     float distance = sqrt(res.x * res.x + res.y * res.y + res.z * res.z);
-    
+
     if (distance > MAX_VISIBILITY_DISTANCE)
     {
         overlay_->hide();
@@ -106,17 +106,17 @@ void EC_OgreMovableTextOverlay::Update()
     // Set the alpha channel for the overlay.
     if (materialHasAlpha_)
         SetAlphaChannelIntensity(distance);
-    
+
     // Derive the 2D screen-space coordinates for node point.
     point = camera_->getProjectionMatrix() * (camera_->getViewMatrix() * point);
-    
+
     // Transform from coordinate space [-1, 1] to [0, 1]
     float x = (point.x / 2) + 0.5f;
     float y = 1 - ((point.y / 2) + 0.5f);
 
     // Update the position (centering the text)
     container_->setPosition(x - (textDim_.x / 2), y);
-    
+
     // Update the dimensions also if the window is resized.
     if (windowWidth_ != camera_->getViewport()->getActualWidth() ||
         windowHeight_ != camera_->getViewport()->getActualHeight())
@@ -127,13 +127,13 @@ void EC_OgreMovableTextOverlay::Update()
         textDim_ = GetTextDimensions(text_);
         container_->setDimensions(textDim_.x, textDim_.y);
     }
-    
+
     ///\todo Scale the text and width and height of the container?
 //        text_element_->setMetricsMode(Ogre::GMM_RELATIVE);
 //        text_element_->setPosition(textDim_.x, textDim_.y);
 //        text_element_->setPosition(textDim_.x / 10, 0.01);
 //        text_element_->setCharHeight(max_x - min_x/*2*0.0175f*///);
-   
+
     overlay_->show();
 }
 
@@ -141,7 +141,7 @@ void EC_OgreMovableTextOverlay::SetVisible(bool visible)
 {
     if (!node_)
         return;
-        
+
     visible_ = visible;
     if (visible)
         overlay_->show();
@@ -153,20 +153,20 @@ void EC_OgreMovableTextOverlay::SetPlaceable(Foundation::ComponentPtr placeable)
 {
     if (!node_)
         return;
-        
+
     if (!placeable)
     {
         OgreRenderingModule::LogError("Null placeable for overlay");
         return;
     }
-    
+
     EC_OgrePlaceable* placeableptr = dynamic_cast<EC_OgrePlaceable*>(placeable.get());
     if (!placeableptr)
     {
         OgreRenderingModule::LogError("Placeable is not" + EC_OgrePlaceable::NameStatic());
         return;
     }
-    
+
     DetachNode();
     placeable_  = placeable;
     AttachNode();
@@ -187,8 +187,7 @@ void EC_OgreMovableTextOverlay::DetachNode()
 {
     if ((node_) && (attached_) && (placeable_))
     {
-        Ogre::SceneNode* parent =
-            checked_static_cast<EC_OgrePlaceable*>(placeable_.get())->GetSceneNode();
+        Ogre::SceneNode* parent = checked_static_cast<EC_OgrePlaceable*>(placeable_.get())->GetSceneNode();
         parent->removeChild(node_);
         attached_ = false;
     }
@@ -198,7 +197,7 @@ void EC_OgreMovableTextOverlay::SetText(const std::string& text)
 {
     if (!node_)
         return;
-        
+
     text_ = text;
     text_element_->setCaption(text_);
     textDim_ = GetTextDimensions(text_);
@@ -217,18 +216,17 @@ void EC_OgreMovableTextOverlay::SetMaterial(const std::string& new_base_material
         Ogre::MaterialPtr baseMaterial = mm.getByName(baseMaterialName_);
         materialName_ = renderer_.lock()->GetUniqueObjectName();
         material = baseMaterial->clone(materialName_);
-        
+
         //todo Check that the the material alpha channel?
-        const Ogre::LayerBlendModeEx &blend = 
-                    baseMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getAlphaBlendMode();
+        const Ogre::LayerBlendModeEx &blend = baseMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getAlphaBlendMode();
         if (blend.alphaArg1 > 0)
             materialHasAlpha_ = true;
         else
             materialHasAlpha_ = false;
-                
+
         // Set the max alpha for the material.
         materialMaxAlpha_ = blend.alphaArg1;
-           
+
         container_->setMaterialName(materialName_);
     }
     else

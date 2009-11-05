@@ -481,7 +481,7 @@ void InventoryItemModel::FetchInventoryDescendents(const QModelIndex &index)
 
     dataModel_->FetchInventoryDescendents(item);
 
-    folder->SetDirty(true);
+    folder->SetDirty(false);
 }
 
 void InventoryItemModel::CurrentSelectionChanged(const QModelIndex &index)
