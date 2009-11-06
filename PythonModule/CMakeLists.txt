@@ -34,9 +34,7 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 use_framework_modules (Core Foundation Interfaces SceneManager)
 
 link_directories (${PROJECT_BINARY_DIR}/RexLogic/Debug ${PROJECT_BINARY_DIR}/RexLogic/Release)
-link_modules (OpenSimProtocolModule RexCommon RexLogicModule) # OgreRenderingModule)
-link_package (OIS)
-link_package (OGRE)
+link_modules (OpenSimProtocolModule RexCommon RexLogicModule QtModule) # OgreRenderingModule)
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
@@ -44,7 +42,6 @@ link_package (PYTHON)
 link_package (PYTHON_QT)
 link_package (OIS)
 link_package (OGRE)
-link_package (QtModule)
 
 
 # Copy XML files from source directory to target directory

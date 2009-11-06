@@ -31,8 +31,6 @@ macro (configure_poco)
         COMPONENTS Poco PocoFoundation PocoNet PocoUtil PocoXML
         PREFIXES ${ENV_NAALI_DEP_PATH})
 
-    find_debug_libraries (POCO "d")
-
     # POCO autolinks on MSVC
     if (MSVC)
         set (POCO_LIBRARIES "")
@@ -62,8 +60,8 @@ macro (configure_qt4)
             ${QT_QTNETWORK_INCLUDE_DIR}
             ${QT_QTXML_INCLUDE_DIR}
             ${QT_QTSCRIPT_INCLUDE_DIR}
-            ${QT_QTWEBKIT_INCLUDE_DIR}
-            ${QT_PHONON_INCLUDE_DIR})
+            ${QT_QTWEBKIT_INCLUDE_DIR})
+            #${QT_PHONON_INCLUDE_DIR})
 		
         set (QT4_LIBRARY_DIR  
             ${QT_LIBRARY_DIR})
@@ -116,8 +114,6 @@ macro (configure_python_qt)
         COMPONENTS PythonQt PythonQt_QtAll
         PREFIXES ${ENV_NAALI_DEP_PATH})
 
-    find_debug_libraries (PYTHON_QT "_d")
-
     sagase_configure_report (PYTHON_QT)
 endmacro (configure_python_qt)
 
@@ -127,8 +123,6 @@ macro (configure_ois)
         COMPONENTS OIS
         PREFIXES ${ENV_NAALI_DEP_PATH})
     
-    find_debug_libraries (OIS "_d")
-
     sagase_configure_report (OIS)
 endmacro (configure_ois)
 
@@ -137,8 +131,6 @@ macro (configure_ogre)
         NAMES Ogre OgreSDK ogre OGRE
         COMPONENTS Ogre ogre OGRE OgreMain 
         PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_OGRE_HOME})
-
-    find_debug_libraries (OGRE "_d")
 
     sagase_configure_report (OGRE)
 endmacro (configure_ogre)
@@ -149,8 +141,6 @@ macro (configure_caelum)
         COMPONENTS Caelum caelum CAELUM
         PREFIXES ${ENV_NAALI_DEP_PATH})
     
-    find_debug_libraries (CAELUM "_d")
-
     sagase_configure_report (CAELUM)
 endmacro (configure_caelum)
 
@@ -160,8 +150,6 @@ macro (configure_hydrax)
         COMPONENTS Hydrax
         PREFIXES ${ENV_NAALI_DEP_PATH})
     
-    find_debug_libraries (HYDRAX "_d")
-
     sagase_configure_report (HYDRAX)
 endmacro (configure_hydrax)
 
@@ -207,8 +195,6 @@ macro (configure_openjpeg)
         ${ENV_NAALI_DEP_PATH}/OpenJpeg/Debug
         ${ENV_NAALI_DEP_PATH}/OpenJpeg/Release)
     
-    find_debug_libraries (OPENJPEG "d")
-
     sagase_configure_report (OPENJPEG)
 endmacro (configure_openjpeg)
 

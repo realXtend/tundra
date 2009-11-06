@@ -122,7 +122,7 @@ endmacro (use_modules)
 
 # link directories
 macro (link_package PREFIX)
-    if (MSVC AND ${PREFIX}_DEBUG_LIBRARIES)
+    if (${PREFIX}_DEBUG_LIBRARIES)
         foreach (releaselib_  ${${PREFIX}_LIBRARIES})
             target_link_libraries (${TARGET_NAME} optimized ${releaselib_})
         endforeach ()
