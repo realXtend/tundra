@@ -1,15 +1,20 @@
 @rem Makes a build directory of the viewer, so that you can run the NSIS install script
-@rem You should have a directory ..\viewerbuilddlls which has release versions of
-@rem all dependency dlls, and also VS2008 redistributable (vcredist_x86.exe) 
+@rem You should have VS2008 redistributable (vcredist_x86.exe) in your viewer trunk root
 @echo off
 rmdir build /S /Q
 md build
 copy readme.txt build
+copy vcredist_x86.exe build
 xcopy bin\*.* build /S /C /Y
-del build\*.dll
+del build\*d4.dll
+del build\*_d.dll
+del build\Poco*d.dll
+del build\dbus-1d.dll
+del build\libcurld.dll
+del build\OpenJPEGd.dll
+del build\xmlrpcepid.dll
 del build\viewerd.exe
 del build\modules\core\*d.dll
-xcopy ..\viewerbuilddlls\*.* build /S /C /Y
 del build\pymodules\*.pyc
 del build\pymodules\apitest\*.pyc
 del build\pymodules\circuits\*.pyc
