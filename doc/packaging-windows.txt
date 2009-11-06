@@ -6,21 +6,18 @@ Prerequisites:
 - Have an up-to-date MS Visual Studio 2008 Runtime Redistributable (vcredist_x86.exe) from
   http://www.microsoft.com/downloads/details.aspx?familyid=A5C84275-3B97-4AB7-A40D-3802B2AF5FC2&displaylang=en
 - Have up-to-date Naali binary runtime dependencies from the dependency svn (the "runtime_deps" directory)
+  copied to your viewer "bin" directory.
 
 Steps:
-1) Create a directory named "viewerbuilddlls" parallel to your Naali source checkout.
-   Ie. if Naali source checkout is in D:\Dev\viewer then it would be D:\Dev\viewerbuilddlls
-2) Copy all *release mode* DLLs from Naali binary dependencies "runtime_deps" to the "viewerbuilddlls" directory.
-   Also copy the subdirectories with dbus, gstreamer etc. stuff. Do not copy .svn directories.
-3) Copy the VS2008 redistributable (vcredist_x86.exe) to "viewerbuilddlls" directory
-4) Ensure that you do not have unnecessary files in your naali "bin" directory. Own configuration files and
+1) Copy the VS2008 redistributable (vcredist_x86.exe) to your viewer checkout root directory
+2) Ensure that you do not have unnecessary files in your viewer "bin" directory. Own configuration files and
    compiled Python (.pyc) files are OK, they will be deleted by makebuild.bat
-5) Execute the makebuild.bat from the root of Naali source checkout. This creates a "build" directory for NSIS
+3) Execute the makebuild.bat from the root of Naali source checkout. This creates a "build" directory for NSIS
    to work from, with everything copied
-6) Execute the NSIS script (viewer-installer.nsi) and let it package the Naali installer
-7) Done, enjoy your new Naali package
+4) Execute the NSIS script (viewer-installer.nsi) and let it package the Naali installer
+5) Done, enjoy your new Naali package
 
-When you make builds repeatedly, only steps 5) & 6) have to be repeated, unless dependencies change.
+When you make builds repeatedly, only steps 3) & 4) have to be repeated, unless dependencies change.
 
 
 
