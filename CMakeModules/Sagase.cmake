@@ -200,6 +200,9 @@ macro (sagase_configure_package PREFIX)
             message (FATAL_ERROR "sagase: " ${PREFIX} ": Unable to detect OS type")
         endif ()
 
+        # debug library tags
+        set (LIB_DEBUG_TAGS "d" "_d")
+
         # try using "COMPONENTS" as possible file names (without prefix or extension)
         foreach (component_ ${PKG_COMPONENTS})
             
@@ -232,6 +235,19 @@ macro (sagase_configure_package PREFIX)
                     set (${PREFIX}_LIBRARY_DIRS 
                         ${${PREFIX}_LIBRARY_DIRS} 
                         ${${PREFIX}_${component_}_LIBRARY_DIR})
+
+                    # look for associated debug version
+                    foreach (debug_tag_ ${LIB_DEBUG_TAGS})
+                        find_path (${PREFIX}_${component_}${debug_tag_}_DEBUG_LIBRARY
+                            ${LIB_PREFIX}${component_}${debug_tag_}${lib_extension_} 
+                            ${library_paths})
+
+                        if (${PREFIX}_${component_}${debug_tag_}_DEBUG_LIBRARY)
+                            set (${PREFIX}_DEBUG_LIBRARIES 
+                                ${${PREFIX}_DEBUG_LIBRARIES} 
+                                ${component_}${debug_tag_})
+                        endif ()
+                    endforeach ()
                 endif ()
             endforeach ()
         endforeach ()
@@ -256,6 +272,10 @@ macro (sagase_configure_package PREFIX)
 
     if (${PREFIX}_LIBRARIES)
         list (REMOVE_DUPLICATES ${PREFIX}_LIBRARIES)
+    endif ()
+
+    if (${PREFIX}_DEBUG_LIBRARIES)
+        list (REMOVE_DUPLICATES ${PREFIX}_DEBUG_LIBRARIES)
     endif ()
 
 endmacro (sagase_configure_package)
