@@ -110,12 +110,14 @@ namespace TelepathyIM
     void ConnectionProvider::ClearGabble()
     {
         connect(&kill_old_gabble_, SIGNAL( finished(int, QProcess::ExitStatus) ), SLOT(ClearDBusDaemon() ));
+        connect(&kill_old_gabble_, SIGNAL( error(QProcess::ProcessError) ), SLOT(ClearDBusDaemon() ));
         kill_old_gabble_.start("taskkill /F /FI \"IMAGENAME eq gabble.exe");
     }
 
     void ConnectionProvider::ClearDBusDaemon()
     {
         connect(&kill_old_dbusdaemon_, SIGNAL( finished(int, QProcess::ExitStatus) ), SLOT(StartDBusDaemon() ));
+        connect(&kill_old_gabble_, SIGNAL( error(QProcess::ProcessError) ), SLOT(ClearDBusDaemon() ));
         kill_old_dbusdaemon_.start("taskkill /F /FI \"IMAGENAME eq dbus-daemon.exe");
     }
 
