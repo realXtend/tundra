@@ -52,7 +52,7 @@
 #include "QtModule.h"
 #include "UICanvas.h"
 
-#include "Vector3Wrapper.h"
+//not in svn yet #include "Vector3Wrapper.h"
 
 namespace PythonScript
 {
@@ -124,10 +124,11 @@ namespace PythonScript
             //mainModule.addObject("qtmodule", wrappedModule); 
             pythonqt_inited = true;
 
+            /* disabled 'cause the wrapper qobject not in svn yet
 			PythonQt::self()->registerCPPClass("Vector3", "","", PythonQtCreateObject<Vector3Wrapper>);
 			//PythonQt::self()->registerCPPClass("CustomObject", "","", PythonQtCreateObject<CustomObjectWrapper>);
 			Core::Vector3df* vec = new Core::Vector3df();
-			vec->x = 0.0;
+			vec->x = 0.0;*/
         }
 
         //load the py written module manager using the py c api directly
