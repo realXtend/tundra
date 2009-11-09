@@ -142,16 +142,34 @@ namespace OgreRenderer
             // do raycast into the world when user clicks mouse button
             Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
             Foundation::RaycastResult result = renderer_->Raycast(movement->x_.abs_, movement->y_.abs_);
-            
+
             Scene::Entity *entity = result.entity_;
-                
+
             if (entity)
             {
                 //std::cout << "Raycast hit entity " << entity << " pos " << result.pos_.x << " " << result.pos_.y << " " << result.pos_.z
                 //          << " submesh " << result.submesh_ << " uv " << result.u_ << " " << result.v_ << std::endl;
-                             
+
                 Scene::Events::SceneEventData event_data(entity->GetId());
                 framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_GRAB, &event_data);
+            }
+        }
+
+        if (category_id == input_event_category_ && event_id == Input::Events::INWORLD_CLICK_BUILD)
+        {
+            // do raycast into the world when user clicks mouse button
+            Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
+            Foundation::RaycastResult result = renderer_->Raycast(movement->x_.abs_, movement->y_.abs_);
+
+            Scene::Entity *entity = result.entity_;
+
+            if (entity)
+            {
+//                std::cout << "Raycast hit entity " << entity << " pos " << result.pos_.x << " " << result.pos_.y << " " << result.pos_.z
+//                          << " submesh " << result.submesh_ << " uv " << result.u_ << " " << result.v_ << std::endl;
+
+                Scene::Events::CreateEntityEventData event_data(result.pos_);
+                framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_CREATE, &event_data);
             }
         }
 
@@ -160,7 +178,7 @@ namespace OgreRenderer
 
     // virtual 
     void OgreRenderingModule::Uninitialize()
-    {        
+    {
         framework_->GetServiceManager()->UnregisterService(renderer_);
         renderer_.reset();
         
@@ -172,7 +190,7 @@ namespace OgreRenderer
     {
         {
             PROFILE(OgreRenderingModule_Update);
-        
+
             renderer_->Update(frametime);
         }
         RESETPROFILER;
@@ -189,7 +207,6 @@ namespace OgreRenderer
                 console->Print("Average FPS: " + Core::ToString(stats.avgFPS));
                 console->Print("Worst FPS: " + Core::ToString(stats.worstFPS));
                 console->Print("Best FPS: " + Core::ToString(stats.bestFPS));
-
                 console->Print("Triangles: " + Core::ToString(stats.triangleCount));
                 console->Print("Batches: " + Core::ToString(stats.batchCount));
 
@@ -212,6 +229,5 @@ using namespace OgreRenderer;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
    POCO_EXPORT_CLASS(OgreRenderingModule)
-   //POCO_EXPORT_CLASS(OgreGtkWindowModule)
 POCO_END_MANIFEST
 

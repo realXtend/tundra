@@ -44,7 +44,7 @@ namespace Input
     {
         LogInfo("*** Initializing OIS ***");
 
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();        
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         event_category_ = event_manager->RegisterEventCategory("Input");
         //registering these two as a test now.
         //do we really want to do this for all, or would there be a way for py to reuse the definitions in .h?
@@ -55,13 +55,16 @@ namespace Input
         event_manager->RegisterEvent(event_category_, Events::KEY_PRESSED, "KeyPressed");
         event_manager->RegisterEvent(event_category_, Events::KEY_RELEASED, "KeyReleased");
 
-		event_manager->RegisterEvent(event_category_, Events::INWORLD_CLICK, "InWorldClick");
-		event_manager->RegisterEvent(event_category_, Events::INWORLD_CLICK_REL, "InWorldClickReleased");
+        event_manager->RegisterEvent(event_category_, Events::INWORLD_CLICK, "InWorldClick");
+        event_manager->RegisterEvent(event_category_, Events::INWORLD_CLICK_REL, "InWorldClickReleased");
 
         event_manager->RegisterEvent(event_category_, Events::LEFT_MOUSECLICK_PRESSED, "LeftMouseClickPressed");
         event_manager->RegisterEvent(event_category_, Events::LEFT_MOUSECLICK_RELEASED, "LeftMouseClickReleased");
         event_manager->RegisterEvent(event_category_, Events::RIGHT_MOUSECLICK_PRESSED, "RightMouseClickPressed");
         event_manager->RegisterEvent(event_category_, Events::RIGHT_MOUSECLICK_RELEASED, "RightMouseClickReleased");
+
+        event_manager->RegisterEvent(event_category_, Events::INWORLD_CLICK, "InWorldClickBuild");
+        event_manager->RegisterEvent(event_category_, Events::INWORLD_CLICK_REL, "InWorldClickBuildReleased");
 
         key_mapping_ = MapperPtr(new Mapper(this));
 

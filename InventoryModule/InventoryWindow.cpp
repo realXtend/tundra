@@ -29,7 +29,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework, RexLogic::Rex
     if (!qtModule_.get())
         return;
 
-    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
+    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::External).lock();
 
     // Init Inventory Widget and connect close signal
     InitInventoryWindow();
@@ -107,8 +107,8 @@ void InventoryWindow::InitWebDavInventoryTreeModel(const std::string &identityUr
     treeView_->setModel(inventoryItemModel_);
 
     // Connect signals
-    QObject::connect(treeView_, SIGNAL( doubleClicked(const QModelIndex &) ), 
-        inventoryItemModel_, SLOT( CurrentSelectionChanged(const QModelIndex &) ));
+    QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &) ),
+        inventoryItemModel_, SLOT(CurrentSelectionChanged(const QModelIndex &)));
 
     QObject::connect(inventoryItemModel_, SIGNAL( AbstractInventoryItemSelected(AbstractInventoryItem *)),
         dataModel, SLOT(ItemSelectedFetchContent(AbstractInventoryItem *)));

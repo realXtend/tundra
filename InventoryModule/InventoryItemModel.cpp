@@ -20,6 +20,7 @@
 #include <QMimeData>
 #include <QDataStream>
 #include <QPointer>
+#include <QFileIconProvider>
 
 namespace Inventory
 {
@@ -39,11 +40,26 @@ QVariant InventoryItemModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
+    AbstractInventoryItem *item = GetItem(index);
+/*
+    if (role == Qt::DecorationRole)
+    {
+        QFileIconProvider provider;
+        if (item->GetItemType() == AbstractInventoryItem::Type_Folder && item->GetName() == "Trash")
+            return provider.icon(QFileIconProvider::Trashcan);
+
+        if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
+            return provider.icon(QFileIconProvider::Folder);
+
+        if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
+            return provider.icon(QFileIconProvider::File);
+    }
+*/
+
     if (role != Qt::DisplayRole)
         return QVariant();
 
-    AbstractInventoryItem *item = GetItem(index);
-    return QVariant(item->GetName().toStdString().c_str());
+    return QVariant(item->GetName());
 }
 
 bool InventoryItemModel::setData(const QModelIndex &index, const QVariant &value, int role)
@@ -60,6 +76,7 @@ bool InventoryItemModel::setData(const QModelIndex &index, const QVariant &value
 
     if (item->GetName() == value.toString())
         return false;
+
     QString oldName = item->GetName();
     item->SetName(value.toString());
 
