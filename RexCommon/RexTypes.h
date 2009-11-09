@@ -145,6 +145,7 @@ namespace RexTypes
     const asset_type_t RexAT_Mesh = 43;
     const asset_type_t RexAT_Skeleton = 44;
     const asset_type_t RexAT_MaterialScript = 45;
+    const asset_type_t RexAT_GenericAvatarXml = 46;
     const asset_type_t RexAT_ParticleScript = 47;
     const asset_type_t RexAT_FlashAnimation = 49;
     const asset_type_t RexAT_None = -1;
@@ -152,6 +153,7 @@ namespace RexTypes
     // UDP Inventory types.
     const inventory_type_t RexIT_Texture = 0;
     const inventory_type_t RexIT_Object = 6; // Used for meshes.
+    const inventory_type_t RexIT_Wearable = 18;
     const inventory_type_t RexIT_Animation = 19; // Used for skeletal animations.
     const inventory_type_t RexIT_OgreScript = 41;
     const inventory_type_t RexIT_FlashAnimation = 42;
@@ -164,10 +166,12 @@ namespace RexTypes
     const std::string ASSETTYPENAME_MATERIAL_SCRIPT("MaterialScript");
     const std::string ASSETTYPENAME_PARTICLE_SCRIPT("ParticleScript");
     const std::string ASSETTYPENAME_FLASH_ANIMATION("FlashAnimation");
+    const std::string ASSETTYPENAME_GENERIC_AVATAR_XML("GenericAvatarXml");
     const std::string ASSETTYPENAME_IMAGE("Image"); // Avatar asset. No UDP equivalent
     const std::string ASSETTYPENAME_UNKNOWN("Unknown");
 
     // Inventory category names.
+    const std::string CATEGORY_AVATAR("Avatar");
     const std::string CATEGORY_TEXTURE("Textures");
     const std::string CATEGORY_MESH("3D Models");
     const std::string CATEGORY_SKELETON("Skeletal Animations");
@@ -183,7 +187,8 @@ namespace RexTypes
     const std::string AT_MATERIAL_SCRIPT("ogremate");
     const std::string AT_PARTICLE_SCRIPT("ogrepart");
     const std::string AT_FLASH_ANIMATION("flashani");
-    const std::string AT_UNKNOWN("unknown");
+    const std::string AT_UNKNOWN("unknown");    
+    const std::string AT_GENERIC_AVATAR_XML("g.avatar"); 
 
     // Text inventory types used for uploading assets.
     const std::string IT_TEXTURE("texture");
@@ -193,6 +198,7 @@ namespace RexTypes
     const std::string IT_PARTICLE_SCRIPT("ogrescript");
     const std::string IT_FLASH_ANIMATION("flashanim");
     const std::string IT_UNKNOWN("unknown");
+    const std::string IT_WEARABLE("wearable");
 
     // Filters for Open File Name dialog.
     const std::string IMAGE_FILTER("Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png)");

@@ -18,7 +18,9 @@ const asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type)
         return RexAT_MaterialScript;
     if (asset_type == ASSETTYPENAME_FLASH_ANIMATION)
         return RexAT_FlashAnimation;
-
+    if (asset_type == ASSETTYPENAME_GENERIC_AVATAR_XML)
+        return RexAT_GenericAvatarXml;
+        
     return RexAT_None;
 }
 
@@ -34,6 +36,8 @@ const std::string& GetTypeNameFromAssetType(asset_type_t asset_type)
         return ASSETTYPENAME_PARTICLE_SCRIPT;
     if (asset_type == RexAT_MaterialScript)
         return ASSETTYPENAME_MATERIAL_SCRIPT;
+    if (asset_type == RexAT_GenericAvatarXml)
+        return ASSETTYPENAME_GENERIC_AVATAR_XML;
     
     return ASSETTYPENAME_UNKNOWN;
 }
@@ -52,6 +56,8 @@ const std::string& GetInventoryTypeString(asset_type_t asset_type)
         return IT_PARTICLE_SCRIPT;
     if (asset_type == RexTypes::RexAT_FlashAnimation)
         return IT_FLASH_ANIMATION;
+    if (asset_type == RexTypes::RexAT_GenericAvatarXml)
+        return IT_WEARABLE;
 
     return IT_UNKNOWN;
 }
@@ -69,6 +75,8 @@ const inventory_type_t &GetInventoryTypeFromAssetType(asset_type_t asset_type)
         return RexIT_OgreScript;
     if (asset_type == RexTypes::RexAT_FlashAnimation)
         return RexIT_FlashAnimation;
+    if (asset_type == RexTypes::RexAT_GenericAvatarXml)
+        return RexIT_Wearable;
 
     return RexIT_None;
 }
@@ -87,6 +95,8 @@ const std::string& GetAssetTypeString(asset_type_t asset_type)
         return AT_PARTICLE_SCRIPT;
     if (asset_type == RexTypes::RexAT_FlashAnimation)
         return AT_FLASH_ANIMATION;
+    if (asset_type == RexTypes::RexAT_GenericAvatarXml)
+        return AT_GENERIC_AVATAR_XML;
 
     return AT_UNKNOWN;
 }
@@ -105,6 +115,8 @@ const std::string& GetCategoryNameForAssetType(asset_type_t asset_type)
         return CATEGORY_PARTICLE_SCRIPT;
     if (asset_type == RexTypes::RexAT_FlashAnimation)
         return CATEGORY_FLASH_ANIMATION;
+    if (asset_type == RexTypes::RexAT_GenericAvatarXml)
+        return CATEGORY_AVATAR;
 
     return CATEGORY_UNKNOWN;
 }
