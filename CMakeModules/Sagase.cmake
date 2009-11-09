@@ -85,7 +85,7 @@ endfunction (sagase_generate_paths)
 # 3. find_path 
 
 # "NAMES" and "COMPONENTS" mean slightly different things depending on the
-# seach methond. For find_package, consult the cmake documentation. For
+# search method. For find_package, consult the cmake documentation. For
 # pkg-config, only the "NAMES" are used. For find_path/brute force, "NAMES"
 # are possible directory names, and "COMPONENTS" are the possible header or
 # library filenames.
