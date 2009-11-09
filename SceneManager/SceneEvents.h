@@ -15,30 +15,49 @@ namespace Scene
     {
         // Scene-related event id's:
 
-        /// Sent as a notification whenever a new scene was added to the system. \todo Not yet used. \todo Event data object not defined.
+        /// Sent as a notification whenever a new scene was added to the system.
+        ///\todo Not yet used. \todo Event data object not defined.
         static const Core::event_id_t EVENT_SCENE_ADDED =       0x01;
-        /// Sent as a notification whenever a scene was deleted from the system. \todo Not yet used. \todo Event data object not defined.
+
+        /// Sent as a notification whenever a scene was deleted from the system.
+        ///\todo Not yet used. \todo Event data object not defined.
         static const Core::event_id_t EVENT_SCENE_DELETED =     0x02;
-        /// Sent as a notification whenever a clone of an existing scene was made. \todo Not yet used. \todo Event data object not defined. \todo This might never be supported if not useful/necessary.. remove?
+
+        /// Sent as a notification whenever a clone of an existing scene was made.
+        ///\todo Not yet used. \todo Event data object not defined.
+        ///\todo This might never be supported if not useful/necessary.. remove?
         static const Core::event_id_t EVENT_SCENE_CLONED =      0x03;
 
         // Entity-related event id's:
 
-        /// Sent as a notification whenever a new entity was added to a scene. \todo Not yet used.
+        /// Sent as a notification whenever a new entity was added to a scene.
+        ///\todo Not yet used.
         static const Core::event_id_t EVENT_ENTITY_ADDED =      0x04;
-        /// Sent as a notification whenever an attribute in a component of an entity was modified. \todo Not yet used. \todo Event data object not defined. \todo Might be too general? Break down into component-specific events?
+
+        /// Sent as a notification whenever an attribute in a component of an entity was modified.
+        ///\todo Not yet used.
+        ///\todo Event data object not defined.
+        ///\todo Might be too general? Break down into component-specific events?
         static const Core::event_id_t EVENT_ENTITY_UPDATED =    0x05;
+
         /// Sent by the SceneManager::DeleteEntity as a notification whenever an entity was deleted from a scene.
         static const Core::event_id_t EVENT_ENTITY_DELETED =    0x06;
-        /// An action event that can be sent by anyone to cause the RexLogic module change the currently selected objects and fetch their properties from the server. \todo Not yet used.
+
+        /// An action event that can be sent by anyone to cause the RexLogic module change the currently selected
+        /// objects and fetch their properties from the server. \todo Not yet used.
         static const Core::event_id_t EVENT_ENTITY_SELECT =     0x07;
-        /// Sent by the RexLogic primitive handler as a notification whenever the current selection was changed and the object properties have been fetched from the server.
+
+        /// Sent by the RexLogic primitive handler as a notification whenever the current selection was changed 
+        /// and the object properties have been fetched from the server.
         static const Core::event_id_t EVENT_ENTITY_SELECTED =   0x08;
+
         /// An action event that can be sent by anyone to cause the current selection to be cleared. \todo Not yet used.
         static const Core::event_id_t EVENT_ENTITY_DESELECT =   0x09;
-        /// An action event that can be sent by anyone to cause an entity be grabbed (drag-selected). \todo Distinguish which clicks need to cause a select and which need to cause a grab.
+
+        /// An action event that can be sent by anyone to cause an entity be grabbed (drag-selected).
+        ///\todo Distinguish which clicks need to cause a select and which need to cause a grab.
         static const Core::event_id_t EVENT_ENTITY_GRAB =       0x0a;
-               
+
         // Component-related event id's:
 
     /** \todo For creating events that can be used to alter the scene, events like this might be useful as well:
@@ -57,7 +76,9 @@ namespace Scene
 
         /// An internal event telling that an entity's visible geometry or materials has been regenerated or modified.
         static const Core::event_id_t EVENT_ENTITY_VISUALS_MODIFIED = 0x0f;
-        
+
+        static const Core::event_id_t EVENT_ENTITY_CREATE = 0x10;
+
         /// Event data interface for Scene object related events.
         /*class SceneEventData: public Foundation::EventDataInterface
         {
@@ -127,6 +148,14 @@ namespace Scene
         {
         public:
             Scene::EntityPtr entity;
+        };
+
+        class CreateEntityEventData : public Foundation::EventDataInterface
+        {
+        public:
+            CreateEntityEventData(Core::Vector3df pos) : position(pos){}
+            virtual ~CreateEntityEventData() {}
+            Core::Vector3df position;
         };
 
         namespace

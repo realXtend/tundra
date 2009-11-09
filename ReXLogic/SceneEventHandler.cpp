@@ -8,45 +8,50 @@
 
 namespace RexLogic
 {
-    SceneEventHandler::SceneEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule)
+SceneEventHandler::SceneEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule) :
+    framework_(framework), rexlogicmodule_(rexlogicmodule)
+{
+}
+
+SceneEventHandler::~SceneEventHandler()
+{
+}
+
+bool SceneEventHandler::HandleSceneEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+{
+    Scene::Events::SceneEventData *event_data = dynamic_cast<Scene::Events::SceneEventData *>(data);
+
+    switch(event_id)
     {
-        framework_ = framework;
-        rexlogicmodule_ = rexlogicmodule;    
+    case Scene::Events::EVENT_ENTITY_SELECT:
+        rexlogicmodule_->GetServerConnection()->SendObjectSelectPacket(event_data->localID);
+        break;
+    case Scene::Events::EVENT_ENTITY_DESELECT:
+        rexlogicmodule_->GetServerConnection()->SendObjectDeselectPacket(event_data->localID);
+        break;
+    case Scene::Events::EVENT_ENTITY_UPDATED:
+        rexlogicmodule_->GetServerConnection()->SendMultipleObjectUpdatePacket(event_data->entity_ptr_list);
+        break;
+    case Scene::Events::EVENT_ENTITY_GRAB:
+        rexlogicmodule_->GetServerConnection()->SendObjectGrabPacket(event_data->localID);
+        break;
+    case Scene::Events::EVENT_ENTITY_DELETED:
+        HandleEntityDeletedEvent(event_data->localID);
+        break;
+        case Scene::Events::EVENT_ENTITY_CREATE:
+        {
+            Scene::Events::CreateEntityEventData *pos_data = dynamic_cast<Scene::Events::CreateEntityEventData *>(data);
+            rexlogicmodule_->GetServerConnection()->SendObjectAddPacket(pos_data->position, pos_data->position);
+        }
+    default:
+        break;
     }
 
-    SceneEventHandler::~SceneEventHandler()
-    {
-    }
-    
-    bool SceneEventHandler::HandleSceneEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
-    {
-        Scene::Events::SceneEventData *event_data = dynamic_cast<Scene::Events::SceneEventData *>(data);        
-        
-        switch(event_id)
-        {
-            case Scene::Events::EVENT_ENTITY_SELECT:
-                rexlogicmodule_->GetServerConnection()->SendObjectSelectPacket(event_data->localID);
-                break;
-            case Scene::Events::EVENT_ENTITY_DESELECT:
-                rexlogicmodule_->GetServerConnection()->SendObjectDeselectPacket(event_data->localID);
-                break;
-            case Scene::Events::EVENT_ENTITY_UPDATED:
-                rexlogicmodule_->GetServerConnection()->SendMultipleObjectUpdatePacket(event_data->entity_ptr_list);
-                break;
-            case Scene::Events::EVENT_ENTITY_GRAB:
-                rexlogicmodule_->GetServerConnection()->SendObjectGrabPacket(event_data->localID);
-                break;
-            case Scene::Events::EVENT_ENTITY_DELETED:
-                HandleEntityDeletedEvent(event_data->localID);
-                break;
-            default:
-                break;
-        }
- 
-        return false;
-    }
-    
-    void SceneEventHandler::HandleEntityDeletedEvent(Core::event_id_t entityid)    
-    {
-    }
+    return false;
+}
+
+void SceneEventHandler::HandleEntityDeletedEvent(Core::event_id_t entityid)
+{
+}
+
 }
