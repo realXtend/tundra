@@ -52,6 +52,8 @@
 #include "QtModule.h"
 #include "UICanvas.h"
 
+#include "Vector3Wrapper.h"
+
 namespace PythonScript
 {
     Foundation::ScriptEventInterface* PythonScriptModule::engineAccess;// for reaching engine from static method
@@ -121,6 +123,11 @@ namespace PythonScript
             //PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
             //mainModule.addObject("qtmodule", wrappedModule); 
             pythonqt_inited = true;
+
+			PythonQt::self()->registerCPPClass("Vector3", "","", PythonQtCreateObject<Vector3Wrapper>);
+			//PythonQt::self()->registerCPPClass("CustomObject", "","", PythonQtCreateObject<CustomObjectWrapper>);
+			Core::Vector3df* vec = new Core::Vector3df();
+			vec->x = 0.0;
         }
 
         //load the py written module manager using the py c api directly
@@ -929,7 +936,7 @@ PyObject* SendObjectAddPacket(PyObject *self, PyObject *args)
             return NULL;   
 		}
 
-		rexlogic_->GetServerConnection()->SendObjectAddPacket(Vector3(start_x, start_y, start_z), Vector3(end_x, end_y, end_z));
+		rexlogic_->GetServerConnection()->SendObjectAddPacket(Core::Vector3df(start_x, start_y, start_z), Core::Vector3df(end_x, end_y, end_z));
 	}
 	Py_RETURN_NONE;
 }
@@ -976,20 +983,6 @@ PyObject* GetUserAvatarId(PyObject* self)
 
 	Py_RETURN_NONE;
 }
-
-/*
-PyObject* GetCamera(PyObject* self)
-{
-	RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-    if (rexlogic_)
-    {
-        boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();   
-        return cam;
-    }
-    Py_RETURN_NONE;
-}
-*/
 
 PyObject* GetCameraUp(PyObject *self) 
 {
@@ -1248,7 +1241,7 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
         /* this must probably return a new object, a 'Place' instance, that has these.
            or do we wanna hide the E-C system in the api and have these directly on entity? 
            probably not a good idea to hide the actual system that much. or? */
-        RexTypes::Vector3 pos = placeable->GetPosition();
+        Core::Vector3df pos = placeable->GetPosition();
         //RexTypes::Vector3 scale = ogre_pos->GetScale();
         //RexTypes::Vector3 rot = Core::PackQuaternionToFloat3(ogre_pos->GetOrientation());
         /* .. i guess best to wrap the Rex Vector and other types soon,
@@ -1267,7 +1260,7 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
         }     
         OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
         
-        RexTypes::Vector3 scale = placeable->GetScale();
+		Core::Vector3df scale = placeable->GetScale();
 
         return Py_BuildValue("fff", scale.x, scale.y, scale.z);
     }
@@ -1398,7 +1391,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
             return NULL;
         }
         // Set the new values.
-        placeable->SetPosition(Vector3(x, y, z));
+        placeable->SetPosition(Core::Vector3df(x, y, z));
         //ogre_pos->SetScale(Core::OpenSimToOgreCoordinateAxes(scale));
         //ogre_pos->SetOrientation(Core::OpenSimToOgreQuaternion(quat));
         /* .. i guess best to wrap the Rex Vector and other types soon,
@@ -1421,7 +1414,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
         }
             
         // Set the new values.
-        placeable->SetScale(Vector3(x, y, z));
+        placeable->SetScale(Core::Vector3df(x, y, z));
  
         return 0; //success.
     }
@@ -1522,19 +1515,3 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 	PythonScript::self()->LogDebug("Unknown component type.");
     return -1; //the way for setattr to report a failure
 }
-
-/*
-OgreRenderer::EC_OgrePlaceable PythonScript::GetPlaceable() 
-{
-    rexviewer_EntityObject *eob = (rexviewer_EntityObject *)self;
-    Scene::ScenePtr scene = PythonScript::GetScene();
-    Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
-    const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
-    if (!ogre_component)
-        return NULL; //XXX report AttributeError        
-    OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());    
-}
-*/
-
-
-

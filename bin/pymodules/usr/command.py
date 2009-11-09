@@ -480,3 +480,25 @@ if 0: #test changing the mesh asset a prim is using
     r.sendRexPrimData(arkku.id) #arkku
     print "..done"
     
+if 1: #testing vector3/quat wrapping 
+    import PythonQt
+    print dir(PythonQt)
+    print dir(PythonQt.Vector3)
+    from PythonQt import *
+    
+    #~ print "testing the CustomObject"
+    #~ # create a new object
+    #~ custom = CustomObject("John","Doe")
+    #~ # print the object (to see how it is wrapped)
+    #~ print custom
+    #~ # print the methods available
+    #~ print dir(custom)
+    #~ # set a name
+    #~ custom.setFirstName("Mike")
+    #~ custom.setLastName("Michels")
+    #~ # get the name
+    #~ print custom.firstName() + " " + custom.lastName();
+    print "Creating Vector:", 
+    vec = Vector3(0, 0, 0)
+    print vec, dir(vec)
+    print "Vector3 is", vec.x(), vec.y(), vec.z()
