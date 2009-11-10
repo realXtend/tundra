@@ -211,11 +211,13 @@ class EditGUI(Component):
         meshUUID = None
         meshUUID = QInputDialog.getText(None, "Mesh asset UUID", "Please give mesh asset UUID", QLineEdit.Normal, "")
         if meshUUID != "" and meshUUID != None:
-            print "User gave mesh asset UUID of " + meshUUID
+            r.logDebug("User gave mesh asset UUID %s" % meshUUID)
             # validate UUID somehow and get selected item from listview -> put mesh to it with id :)
             #XXX validate
             self.sel.mesh = meshUUID
             r.sendRexPrimData(self.sel.id)
+            r.logDebug("Mesh asset UUID after prim data sent to server: %s" % self.sel.mesh)
+            
 
     def select(self, ent):
         arrows = False
@@ -322,8 +324,8 @@ class EditGUI(Component):
             
     def LeftMouseUp(self, mouseinfo):
         self.left_button_down = False
-        #~ if self.sel:
-            #~ r.networkUpdate(self.sel.id)
+        if self.sel:
+            r.networkUpdate(self.sel.id)
         
     def RightMouseDown(self, mouseinfo):
         self.right_button_down = True
@@ -357,7 +359,7 @@ class EditGUI(Component):
                 
                 self.arrows.pos = newvec.x, newvec.y, newvec.z
                 self.sel.pos = newvec.x, newvec.y, newvec.z
-                r.networkUpdate(self.sel.id)
+                #r.networkUpdate(self.sel.id)
                 #XXX also here the immediate network sync is not good,
                 #refactor out from pos setter to a separate network_update() call
 
