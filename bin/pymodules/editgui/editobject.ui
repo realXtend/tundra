@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>385</width>
-    <height>184</height>
+    <height>210</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -75,7 +75,7 @@ QPushButton::pressed{
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>130</y>
+        <y>160</y>
         <width>111</width>
         <height>21</height>
        </rect>
@@ -218,7 +218,7 @@ border: 1px solid grey;</string>
         <x>10</x>
         <y>30</y>
         <width>111</width>
-        <height>101</height>
+        <height>131</height>
        </rect>
       </property>
       <property name="styleSheet">
@@ -348,9 +348,9 @@ background-color: rgba(255, 255, 255, 0);</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>150</y>
+        <y>180</y>
         <width>111</width>
-        <height>21</height>
+        <height>20</height>
        </rect>
       </property>
       <property name="styleSheet">
@@ -361,6 +361,26 @@ border: 1px solid grey;</string>
       </property>
       <property name="text">
        <string>Set Mesh</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_scale_3">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>180</y>
+        <width>41</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Mesh</string>
       </property>
      </widget>
     </widget>
