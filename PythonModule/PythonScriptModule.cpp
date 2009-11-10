@@ -54,6 +54,7 @@
 #include "UICanvas.h"
 
 #include "Vector3Wrapper.h"
+#include "QuaternionWrapper.h"
 
 namespace PythonScript
 {
@@ -124,10 +125,9 @@ namespace PythonScript
             //PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
             //mainModule.addObject("qtmodule", wrappedModule); 
             pythonqt_inited = true;
-
             
-			PythonQt::self()->registerCPPClass("Vector3", "","", PythonQtCreateObject<Vector3Wrapper>);
-			//PythonQt::self()->registerCPPClass("CustomObject", "","", PythonQtCreateObject<CustomObjectWrapper>);
+            PythonQt::self()->registerCPPClass("Vector3df", "","", PythonQtCreateObject<Vector3Wrapper>);
+            PythonQt::self()->registerCPPClass("Quaternion", "","", PythonQtCreateObject<QuaternionWrapper>);
         }
 
         //load the py written module manager using the py c api directly
