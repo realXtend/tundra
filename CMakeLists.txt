@@ -60,6 +60,7 @@ configure_curl ()
 configure_openjpeg ()
 configure_telepathy_qt4 ()
 configure_gstreamer ()
+configure_dbus ()
 
 if (CAELUM)
     configure_caelum ()
