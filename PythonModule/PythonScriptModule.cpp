@@ -935,7 +935,7 @@ PyObject* SendObjectAddPacket(PyObject *self, PyObject *args)
             return NULL;   
 		}
 
-		rexlogic_->GetServerConnection()->SendObjectAddPacket(Core::Vector3df(start_x, start_y, start_z), Core::Vector3df(end_x, end_y, end_z));
+		rexlogic_->GetServerConnection()->SendObjectAddPacket(Core::Vector3df(start_x, start_y, start_z));
 	}
 	Py_RETURN_NONE;
 }

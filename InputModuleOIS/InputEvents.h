@@ -98,6 +98,7 @@ namespace Input
         static const Core::event_id_t RIGHT_MOUSECLICK_PRESSED = 45;
         static const Core::event_id_t RIGHT_MOUSECLICK_RELEASED = 46;
 
+        /// Test events for rezzing prims.
         static const Core::event_id_t INWORLD_CLICK_BUILD = 47;
         static const Core::event_id_t INWORLD_CLICK_BUILD_REL = 48;
 

@@ -77,6 +77,7 @@ namespace Scene
         /// An internal event telling that an entity's visible geometry or materials has been regenerated or modified.
         static const Core::event_id_t EVENT_ENTITY_VISUALS_MODIFIED = 0x0f;
 
+        /// An action event that can be sent by anyone to create a new entity.
         static const Core::event_id_t EVENT_ENTITY_CREATE = 0x10;
 
         /// Event data interface for Scene object related events.

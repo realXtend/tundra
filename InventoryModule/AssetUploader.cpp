@@ -372,7 +372,6 @@ void AssetUploader::CreateRexInventoryFolders()
             rexLogicModule_->GetServerConnection()->SendCreateInventoryFolderPacket(parentFolder->id, folder_id, asset_type, cat_name);
 
             // Send event to inventory module.
-            /*
             Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
             Core::event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
             if (event_category != 0)
@@ -385,7 +384,6 @@ void AssetUploader::CreateRexInventoryFolders()
                 folder_data.name = cat_name;
                 event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &folder_data);
             }
-            */
         }
     }
 }
