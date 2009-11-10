@@ -59,6 +59,7 @@ configure_xmlrpc ()
 configure_curl ()
 configure_openjpeg ()
 configure_telepathy_qt4 ()
+configure_gstreamer ()
 
 if (CAELUM)
     configure_caelum ()
