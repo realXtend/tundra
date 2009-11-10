@@ -245,3 +245,12 @@ macro (configure_telepathy_farsight)
         PREFIXES ${ENV_NAALI_DEP_PATH})
     sagase_configure_report (TELEPATHY_FARSIGHT)
 endmacro (configure_telepathy_farsight)
+
+macro (configure_farsight2)
+    sagase_configure_package (FARSIGHT2
+        NAMES farsight2 
+        COMPONENTS gstfarsight fs-interfaces # fs-interfaces added to help sagese to find include folder with fs-interfaces.h file
+        PREFIXES ${ENV_NAALI_DEP_PATH}/farsight2)
+    sagase_configure_report (FARSIGHT2)
+endmacro (configure_farsight2)
+

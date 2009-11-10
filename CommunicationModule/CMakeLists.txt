@@ -24,6 +24,7 @@ configure_dbus ()
 configure_glib ()
 configure_telepathy_glib ()
 configure_telepathy_farsight ()
+configure_farsight2 ()
 
 # Define target name and output directory
 init_target (CommunicationModule OUTPUT modules/core)
@@ -58,7 +59,7 @@ use_package (TELEPATHY_QT4)
 use_package (TELEPATHY_GLIB)
 use_package (TELEPATHY_FARSIGHT)
 use_package (GSTREAMER) 
-#use_package (TELEPATHY_FARSIGHT2) # Not implemented yet
+use_package (FARSIGHT2)
 
 use_modules (QtModule RexLogic OpenSimProtocol)
 
@@ -77,7 +78,7 @@ link_package (TELEPATHY_QT4)
 link_package (DBUS)
 link_package (GLIB)
 link_package (GSTREAMER)
-#link_package (TELEPATHY_FARSIGHT2) # Not implemented yet
+link_package (FARSIGHT2)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
