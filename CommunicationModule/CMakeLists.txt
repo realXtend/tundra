@@ -50,7 +50,7 @@ use_package (QT4)
 use_package (TELEPATHY_QT4)
 #use_package (TELEPATHY_GLIB)
 #use_package (TELEPATHY_FARSIGHT)
-#use_package (GSTREAMER) 
+use_package (GSTREAMER) 
 #use_package (TELEPATHY_FARSIGHT2) # Not implemented yet
 
 use_modules (QtModule RexLogic OpenSimProtocol)
@@ -69,7 +69,7 @@ link_package (TELEPATHY_QT4)
 #link_package (DBUS_GLIB)
 #link_package (DBUS)
 #link_package (GLIB)
-#link_package (GSTREAMER)
+link_package (GSTREAMER)
 #link_package (TELEPATHY_FARSIGHT2) # Not implemented yet
 
 # Copy XML files from source directory to target directory
