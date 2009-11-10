@@ -1,11 +1,11 @@
 #ifndef incl_Communication_TelepathyIM_OutgoingFriendRequest_h
 #define incl_Communication_TelepathyIM_OutgoingFriendRequest_h
 
-#include "../interface.h"
 #include <QObject>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContacts>
+#include "../interface.h"
 
 namespace TelepathyIM
 {

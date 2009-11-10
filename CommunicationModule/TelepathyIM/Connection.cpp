@@ -1,6 +1,6 @@
-#include "Connection.h"
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/StreamedMediaChannel>
+#include "Connection.h"
 
 namespace TelepathyIM
 {

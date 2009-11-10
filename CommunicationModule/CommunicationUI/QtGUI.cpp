@@ -1,12 +1,9 @@
-#include "StableHeaders.h"
-#include "Foundation.h"
-#include "QtModule.h"
-#include "UICanvasManager.h"
-
+#include <StableHeaders.h>
+#include <QtModule.h>
+#include <UICanvasManager.h>
 #include <QtUiTools>
 #include <QFile>
 #include <QTime>
-
 #include "QtGUI.h"
 
 namespace CommunicationUI

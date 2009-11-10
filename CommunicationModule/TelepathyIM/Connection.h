@@ -6,7 +6,7 @@
 #include <TelepathyQt4/PendingConnection>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
-#include "Foundation.h"
+#include <Foundation.h>
 #include "../interface.h"
 #include "Contact.h"
 #include "ContactGroup.h"

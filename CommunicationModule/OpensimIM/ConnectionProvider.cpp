@@ -1,5 +1,5 @@
-#include "ConnectionProvider.h"
 #include <QStringList>
+#include "ConnectionProvider.h"
 #include "Connection.h"
 #include "../Credentials.h"
 

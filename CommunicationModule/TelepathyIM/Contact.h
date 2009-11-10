@@ -3,7 +3,7 @@
 
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Contact>
-#include "Foundation.h"
+#include <Foundation.h>
 #include "../interface.h"
 
 namespace TelepathyIM

@@ -1,21 +1,15 @@
 #ifndef incl_Comm_CommunicationModule_h
 #define incl_Comm_CommunicationModule_h
 
-#include "Foundation.h"
-#include "ModuleInterface.h"
-#include "OpenSimProtocolModule.h"
+#include <StableHeaders.h>
+#include <ModuleInterface.h>
+#include <OpenSimProtocolModule.h>
 
 #include "CommunicationModuleApi.h"
 #include "CommunicationService.h"
 #include "CommunicationUI/QtGUI.h"
 #include "CommunicationUI/OpenSimChat.h"
 #include "Test.h"
-
-// Did not compile without this, dunno why?
-namespace CommunicationUI
-{
-	class OpenSimChat;	
-}
 
 namespace Communication
 {

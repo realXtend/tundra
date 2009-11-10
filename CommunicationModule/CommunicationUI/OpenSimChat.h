@@ -1,18 +1,15 @@
 #ifndef incl_OpenSimChat_h
 #define incl_OpenSimChat_h
 
-#include "StableHeaders.h"
-#include "Foundation.h"
-#include "NetworkEvents.h"
-#include "UICanvas.h"
-#include "QtModule.h"
-
+#include <StableHeaders.h>
+#include <NetworkEvents.h>
+#include <UICanvas.h>
+#include <QtModule.h>
 #include <QtGui>
 
 #include "../interface.h"
 #include "../Credentials.h"
 #include "../CommunicationService.h"
-#include "../CommunicationModule.h"
 
 namespace CommunicationUI
 {
@@ -20,6 +17,8 @@ namespace CommunicationUI
 	{
 
 	Q_OBJECT
+		MODULE_LOGGING_FUNCTIONS
+		static const std::string NameStatic() { return "OpensimChat"; } // for logging functionality
 
 	public:
 		OpenSimChat(Foundation::Framework *framework, OpenSimProtocol::ClientParameters clientParams);

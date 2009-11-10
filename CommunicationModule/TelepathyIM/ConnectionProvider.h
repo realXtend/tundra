@@ -5,7 +5,7 @@
 #include <QStringList>
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/PendingOperation>
-#include "Foundation.h"
+#include <Foundation.h>
 #include "../interface.h"
 #include "Connection.h"
 

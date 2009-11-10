@@ -1,10 +1,10 @@
 #ifndef incl_Comm_interface_h
 #define incl_Comm_interface_h
 
-#include "Foundation.h"
 #include <QObject>
 #include <QTime>
 #include <exception>
+#include <Foundation.h>
 
 /**
  * Naali viewer's communication framework

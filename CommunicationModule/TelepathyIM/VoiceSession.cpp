@@ -1,9 +1,9 @@
-#include "VoiceSession.h"
 #include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingChannel>
+#include "VoiceSession.h"
 
 namespace TelepathyIM
 {

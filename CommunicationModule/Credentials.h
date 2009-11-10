@@ -1,8 +1,8 @@
 #ifndef incl_Comm_Credentials_h
 #define incl_Comm_Credentials_h
 
-#include "Foundation.h"
-#include "EventDataInterface.h"
+#include <Foundation.h>
+#include <EventDataInterface.h>
 #include "interface.h"
 
 

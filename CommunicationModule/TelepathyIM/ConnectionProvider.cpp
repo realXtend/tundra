@@ -1,8 +1,8 @@
-#include "ConnectionProvider.h"
 #include <QtCore>
 #include <TelepathyQt4/Types>
-// #include <TelepathyQt4/Debug__>
 #include <TelepathyQt4/PendingReady>
+#include "ConnectionProvider.h"
+// #include <TelepathyQt4/Debug__> // disabled because header not found on Linux
 
 namespace TelepathyIM
 {

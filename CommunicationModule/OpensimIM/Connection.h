@@ -1,9 +1,9 @@
 #ifndef incl_Communication_OSIMConnection_h
 #define incl_Communication_OSIMConnection_h
 
-#include "Foundation.h"
-#include "../interface.h"
+#include <Foundation.h>
 #include <QStringList>
+#include "../interface.h"
 #include "ChatSession.h"
 #include "Contact.h"
 #include "FriendRequest.h"

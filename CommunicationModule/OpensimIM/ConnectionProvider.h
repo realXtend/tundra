@@ -1,7 +1,7 @@
 #ifndef incl_Communication_OpensimIM_Provider_h
 #define incl_Communication_OpensimIM_Provider_h
 
-#include "Foundation.h"
+#include <Foundation.h>
 #include "../interface.h"
 #include "../CommunicationService.h"
 #include "Connection.h"

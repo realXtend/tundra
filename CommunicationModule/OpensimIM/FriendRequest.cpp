@@ -1,6 +1,5 @@
+#include <RexLogicModule.h>
 #include "FriendRequest.h"
-#include "../../ReXLogic/RexLogicModule.h" 
-
 
 namespace OpensimIM
 {

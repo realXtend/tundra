@@ -1,6 +1,4 @@
-#include "StableHeaders.h"
-#include "Foundation.h"
-
+#include <StableHeaders.h>
 #include "CommunicationModule.h"
 #include "OpensimIM/ConnectionProvider.h"
 #include "TelepathyIM/ConnectionProvider.h"
