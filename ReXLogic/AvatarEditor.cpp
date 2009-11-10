@@ -70,7 +70,7 @@ namespace RexLogic
         if (qt_module.get() == 0)
             return;
 
-        canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::External).lock();
+        canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::Internal).lock();
 
         QUiLoader loader;
         QFile file("./data/ui/avatareditor.ui");
@@ -89,12 +89,14 @@ namespace RexLogic
         QSize size = avatar_widget_->size();
         canvas_->SetCanvasSize(size.width() + 1, size.height() + 1);
         canvas_->SetCanvasWindowTitle(QString("Avatar Editor"));
-                
+        canvas_->SetPosition(40,40);
+                        
         canvas_->AddWidget(avatar_widget_);
    
         // Set canvas scrollbar policy
         canvas_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        canvas_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);   
+        canvas_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff); 
+
    
 	    // Add to control bar
 		qt_module->AddCanvasToControlBar(canvas_, QString("Avatar Editor"));
@@ -136,8 +138,8 @@ namespace RexLogic
             return;
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());    
        
-        int width = 298;
-        int tab_width = 292;
+        int width = 308;
+        int tab_width = 302;
         int itemheight = 20;
         
         // Materials
@@ -471,14 +473,12 @@ namespace RexLogic
                
         QScrollArea* tab_scroll = new QScrollArea();
         QWidget* tab_panel = new QWidget();
+        tab_scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
         tab_scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-        tab_scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tab_scroll->setWidgetResizable(false);
         tab_scroll->resize(tabs->contentsRect().size());            
         tab_scroll->setWidget(tab_panel);    
         tabs->addTab(tab_scroll, QString::fromStdString(name));
-        tab_scroll->show();
-        tab_panel->show();    
         return tab_panel;
     }   
     
