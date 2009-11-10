@@ -214,9 +214,12 @@ class EditGUI(Component):
             r.logDebug("User gave mesh asset UUID %s" % meshUUID)
             # validate UUID somehow and get selected item from listview -> put mesh to it with id :)
             #XXX validate
-            self.sel.mesh = meshUUID
-            r.sendRexPrimData(self.sel.id)
-            r.logDebug("Mesh asset UUID after prim data sent to server: %s" % self.sel.mesh)
+            #print "Type of meshUUID:", type(meshUUID)
+            ent = self.sel
+            ent.mesh = meshUUID
+            #r.logDebug("Mesh asset UUID after before sending to server: %s" % ent.mesh)
+            r.sendRexPrimData(ent.id)
+            r.logDebug("Mesh asset UUID after prim data sent to server: %s" % ent.mesh)
             
 
     def select(self, ent):

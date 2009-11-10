@@ -468,19 +468,22 @@ if 0:
     print r.getCameraRight()
 
 if 0: #test changing the mesh asset a prim is using
-    arkku_id = 2461025163
+    ent_id = 1659586053 #penkki, arkku was: 2461025163
     #print arkku_id, type(arkku_id)
-    arkku = r.getEntity(arkku_id)
-    print arkku.prim
-    print arkku.mesh
-    arkku.mesh = "35da6174-8743-4026-a83e-18b23984120d"
-    print "new mesh for arkku:", arkku.mesh
+    ent = r.getEntity(ent_id)
+    print "Test entity:", ent
+    print ent.mesh
+    ent.mesh = 1 #should raise an exception
+    ruukku = "681b1680-fab5-4203-83a7-c567571c6acf"
+    penkki = "04d335b6-8f0c-480e-a941-33517bf438d8"
+    ent.mesh = penkki #"35da6174-8743-4026-a83e-18b23984120d"
+    print "new mesh set:", ent.mesh
     
     print "sending prim data update to server"
-    r.sendRexPrimData(arkku.id) #arkku
-    print "..done"
+    r.sendRexPrimData(ent.id) #arkku
+    print "..done", ent.mesh
     
-if 1: #testing vector3/quat wrapping 
+if 0: #testing vector3/quat wrapping 
     import PythonQt
     print dir(PythonQt)
     print dir(PythonQt.Vector3)
