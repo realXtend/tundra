@@ -1459,7 +1459,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 
     else if (s_name.compare("text") == 0)
     {
-        if (PyString_Check(value)) 
+        if (PyString_Check(value) || PyUnicode_Check(value)) 
         {
             const Foundation::ComponentPtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
             const char* c_text = PyString_AsString(value);
@@ -1492,14 +1492,14 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
     }
 	else if (s_name.compare("mesh") == 0)
 	{
-	    std::cout << "Setting mesh" << std::endl;
-		if (PyString_Check(value)) 
+	    //std::cout << "Setting mesh" << std::endl;
+		if (PyString_Check(value) || PyUnicode_Check(value))
         {
 			//NOTE: This is stricly done locally only for now, nothing is sent to the server.
 			const char* c_text = PyString_AsString(value);
 			std::string text = std::string(c_text);
 
-            std::cout << ".. getting prim in mesh setting" << std::endl;
+            //std::cout << ".. getting prim in mesh setting" << std::endl;
             const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
             if (!prim_component)
             {
