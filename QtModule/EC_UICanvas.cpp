@@ -28,8 +28,8 @@ namespace QtUI
     
     EC_UICanvas::~EC_UICanvas()
     {
-        ClearSubmeshes();
-        
+        // Note: entity may no longer be valid at this point, we don't know really since we only have a raw pointer
+        // so can't restore the original submesh materials
         OgreRenderer::RemoveMaterial(material_);
     }
     

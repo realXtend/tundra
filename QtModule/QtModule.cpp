@@ -23,6 +23,9 @@
 
 #include "MemoryLeakCheck.h"
 
+#include "EC_OgreMesh.h"
+#include "EC_OgreCustomObject.h"
+
 namespace QtUI
 {
 
@@ -189,6 +192,59 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
             return true;
         }
     }
+    else if (category_id == input_event_category_ && event_id == Input::Events::KEY_PRESSED)
+    {
+        // Hack to test making EC_UICanvases
+        //Input::Events::Key* key = checked_static_cast<Input::Events::Key *>(data);
+        //int keycode = key->code_;
+        //if (keycode == OIS::KC_RETURN)
+        //{
+        //    boost::shared_ptr<Foundation::RenderServiceInterface> render = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+        //    boost::shared_ptr<Input::InputModuleOIS> input = framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
+        //    if (input && render)
+        //    {
+        //        const Input::Events::Movement &mouse = input->GetMouseMovement();
+        //        Foundation::RaycastResult result = render->Raycast(mouse.x_.abs_, mouse.y_.abs_);            
+        //        if (result.entity_)
+        //        {
+        //            Scene::Entity* entity = result.entity_;
+        //            std::cout << "Hit entity " << entity << " submesh " << result.submesh_ << std::endl;
+        //            // Entity must have either mesh or customobject
+        //            if (entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()) ||
+        //                entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic()))
+        //            {
+        //                std::cout << "Can make EC_UICanvas" << std::endl;
+        //                const QList<boost::shared_ptr<UICanvas> >& canvases = controller_->GetCanvases();
+        //                static Core::uint index = 0;
+        //                if (canvases.size())
+        //                {
+        //                    index %= canvases.size();
+        //                    for (Core::uint i = 0; i < canvases.size(); ++i)
+        //                    {
+        //                        if (canvases[index]->GetDisplayMode() == UICanvas::Internal)
+        //                        {
+        //                            Foundation::ComponentPtr ecptr = CreateEC_UICanvasToEntity(entity, canvases[index]);
+        //                            if (ecptr)
+        //                            {
+        //                                EC_UICanvas& ec = *checked_static_cast<EC_UICanvas*>(ecptr.get());
+        //                                if (ec.GetSubmeshes().empty())
+        //                                    ec.SetSubmeshes(result.submesh_);
+        //                                else
+        //                                    ec.ClearSubmeshes();
+        //                            }
+        //                            index++;
+        //                            index %= canvases.size();
+        //                            break;
+        //                        } 
+        //                        index++;
+        //                        index %= canvases.size();                                  
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //}                
+    }    
     else if (category_id == scene_event_category_ && event_id == Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED)
     {
         // If entity has changed geometry or materials, and it has EC_UICanvas, make sure the EC_UICanvas refreshes
@@ -410,7 +466,7 @@ void QtModule::RefreshEC_UICanvas(Foundation::EventDataInterface* data)
     uicanvas.Refresh();
 }
 
-Foundation::ComponentPtr QtModule::CreateEC_UICanvasToEntity(Scene::EntityPtr entity, boost::shared_ptr<UICanvas> canvas)
+Foundation::ComponentPtr QtModule::CreateEC_UICanvasToEntity(Scene::Entity* entity, boost::shared_ptr<UICanvas> canvas)
 {
     if (!canvas || !entity)    
         return Foundation::ComponentPtr();
@@ -426,7 +482,7 @@ Foundation::ComponentPtr QtModule::CreateEC_UICanvasToEntity(Scene::EntityPtr en
     
     EC_UICanvas& uicanvas = *checked_static_cast<EC_UICanvas*>(uicanvasptr.get());    
     uicanvas.SetCanvas(canvas);
-    uicanvas.SetEntity(entity.get());
+    uicanvas.SetEntity(entity);
     
     return uicanvasptr;    
 } 
