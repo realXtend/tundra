@@ -110,7 +110,7 @@ namespace CommunicationUI
 		{
 			// Position and resize for widget and canvas
 			internalWidget_->resize(500, 20);
-			canvas_->SetCanvasSize(500, 20);
+			canvas_->SetSize(500, 20);
 			canvas_->SetPosition(0, canvas_->GetRenderWindowSize().height()-20);
 			// Hide
 			chatInput_->hide();
@@ -122,7 +122,7 @@ namespace CommunicationUI
 		{
 			// Position and resize for widget and canvas
 			internalWidget_->resize(500, 107);
-			canvas_->SetCanvasSize(500, 107);
+			canvas_->SetSize(500, 107);
 			canvas_->SetPosition(0, canvas_->GetRenderWindowSize().height()-107);
 			// Show
 			chatInput_->show();
@@ -156,8 +156,8 @@ namespace CommunicationUI
 				QObject::connect(canvas_.get(), SIGNAL( RenderWindowSizeChanged(const QSize&) ), this, SLOT( AdjustInternalWidgets(const QSize&) ));
 				// Set canvas properties
 				canvas_->SetPosition(0, canvas_->GetRenderWindowSize().height()-20);
-				canvas_->SetCanvasResizeLock(true);
-				canvas_->SetLockPosition(true);
+				canvas_->SetResizable(false);
+				canvas_->SetStationary(true);
 				canvas_->SetAlwaysOnTop(true);
 				canvas_->Hide();
 			}
@@ -215,7 +215,7 @@ namespace CommunicationUI
 			chatInput_->hide();
 			chatTextBox_->hide();
 			internalWidget_->resize(500, 20);
-			canvas_->SetCanvasSize(500, 20);
+			canvas_->SetSize(500, 20);
 			canvas_->AddWidget(internalWidget_);
 			canvas_->Show();
 		}

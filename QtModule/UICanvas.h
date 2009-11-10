@@ -10,11 +10,16 @@
 #include <QString>
 #include <QTimer>
 #include <QTime>
+//#include "UIController.h"
+#include "UILocationPolicy.h"
+#include "UIAppearPolicy.h"
 #include "QtModuleApi.h"
 
 class QPainter;
 class QWidget;
 class QGraphicsProxyWidget;
+
+
 
 namespace Ogre
 {
@@ -25,68 +30,119 @@ namespace Ogre
 
 namespace QtUI
 {
-    /** UICanvas represents a rectangular-shaped 2D canvas on which Qt widges can be placed. To support 
-        proper headless execution mode and canvas compositing effects, clients should always use these 
-        canvases as containers for their own widgets and never instantiate QWidgets as standalone windows.
+  
+    /**
+     * UICanvas represents a rectangular-shaped 2D canvas on which Qt widges can be placed. To support 
+     * proper headless execution mode and canvas compositing effects, clients should always use these 
+     * canvases as containers for their own widgets and never instantiate QWidgets as standalone windows.
+     *  
+     * To add a widget to a canvas, allocate it dynamically and call UICanvas::AddWidget. UICanvas takes
+     * ownership of the widget memory and stores it to a QGraphicsScene.
+     *   
+     * There are two main display modes a UICanvas can be initialized in: UICanvas::Internal and 
+     * UICanvas::External. In Internal mode, the canvas creates and maintains its own render surface to 
+     * which the canvas widgets are drawn on. This surface can then be shown in 2D with desktop 
+     * compositing effects (e.g. alpha fade), or used as a texture for a 3D object in the scene.
+     * 
+     * In External mode, the canvas doesn't create a 3D texture surface, but just creates an external
+     * window that contains a QGraphicsView widget that displays the internal QGraphicsScene containing
+     * all the widgets that have been added to the UICanvas. This functionality is mostly intended for
+     * debugging, but can perhaps be useful in other cases as well.
+     *
+     * Currently changing the UICanvas display mode after the UICanvas has been instantiated is not supported. 
+     **/
 
-        To add a widget to a canvas, allocate it dynamically and call UICanvas::AddWidget. UICanvas takes
-        ownership of the widget memory and stores it to a QGraphicsScene.
-        
-        There are two main display modes a UICanvas can be initialized in: UICanvas::Internal and 
-        UICanvas::External. In Internal mode, the canvas creates and maintains its own render surface to 
-        which the canvas widgets are drawn on. This surface can then be shown in 2D with desktop 
-        compositing effects (e.g. alpha fade), or used as a texture for a 3D object in the scene.
-
-        In External mode, the canvas doesn't create a 3D texture surface, but just creates an external
-        window that contains a QGraphicsView widget that displays the internal QGraphicsScene containing
-        all the widgets that have been added to the UICanvas. This functionality is mostly intended for
-        debugging, but can perhaps be useful in other cases as well.
-
-        Changing the UICanvas display mode after the UICanvas has been instantiated is not supported. */
-
-    class QT_MODULE_API UICanvas : public QGraphicsView
+    class QT_MODULE_API UICanvas :  public QObject
     {
         Q_OBJECT
-        Q_PROPERTY(Mode mode READ GetMode WRITE SetMode)
-        Q_ENUMS(Mode)
+        Q_PROPERTY(DisplayMode mode READ GetDisplayMode WRITE SetDisplayMode)
+        Q_ENUMS(DisplayMode)
 
 
     public:
-        enum Mode { External = 0, Internal};
+
+        /**
+         *  Display mode defines how canvas is displayed to user.
+         */
+
+        enum DisplayMode { External = 0, Internal};
    
-        enum CanvasCorner { TopLeft = 0, BottomLeft, TopRight, BottomRight };
-
+        /**
+         * Default constructor, creates by default widget which works on external display mode.
+         */
+        
         UICanvas();
-        UICanvas(Mode mode, const QSize& parentWindowSize);
 
+        /**
+         * Overloaded constructor which can be used to create as internal display mode widgets as external display mode widgets. 
+         * @param mode is a display mode which is used. 
+         * @param parentWindowSize is a parent window size, normally same as Ogre render window size. 
+         **/
+        
+        UICanvas(DisplayMode mode, const QSize& parentWindowSize);
+
+        /** 
+         * Destructor, removes when it called also all Ogre related stuff like texture in case if widget has been used 
+         * in internal mode. 
+         */
+        
         virtual ~UICanvas();
+        
+        /**
+         * Changes display mode to given mode. 
+         * @see GetDisplayMode() for getting current display mode. 
+         * @param mode a new display mode. 
+         */
 
-        Mode GetMode() const { return mode_; }
-    
-        /** @return The position of the canvas relative to the parent window. @see SetPosition. */
+        void SetDisplayMode(DisplayMode mode) { mode_ = mode; }
+
+        /**
+         * Reveals current display mode which is used to show canvas to user. 
+         * @see SetDisplayMode()
+         * @return current display mode.
+         */
+        
+        DisplayMode GetDisplayMode() const { return mode_; }
+
+        /**
+         * Reveals current position of canvas relative to parent window.
+         * @see SetPosition() for changing canvas position. 
+         * @return The position of the canvas relative to the parent window. 
+         */
         
         QPointF GetPosition() const;
 
-        /** @return True if the canvas position has been locked.
-            @note This function is only applicable if the canvas is in internal display mode. */
-        
-        bool IsCanvasPositionLocked() const { return locked_; }
-        
         /**
-         * Returns true if canvas cannot be resized. 
-         * 
+         * Reveals that is canvas position kept same always. 
+         * @return true if the canvas position is kept same always
+         * @see SetLocationPolicy() for changing canvas location behaviour. 
+         * @note This function is only applicable if the canvas is in internal display mode. 
+         */
+        
+        bool IsPositionStationary() const { return locationPolicy_->IsStationary(); } 
+       
+        /**
+         * Returns true if canvas can be resized. 
          * @note This function is only applicable if the canvas is in internal display mode
          */
+        
+        bool IsResizable() const { return appearPolicy_->IsResizable(); }
+        
+        /**
+         * Reveals that is canvas hold always as top canvas. 
+         * @see SetAlwaysOnTop() for changing current behaviour. 
+         * @return true if canvas is always on top. 
+         */
+        bool IsAlwaysOnTop() const { return locationPolicy_->IsAlwaysOnTop(); }
 
-        bool IsCanvasResizeLocked() const { return resize_locked_;}
 
-        bool IsAlwaysOnTop() const { return always_top_; }
+        /** 
+         * Corner is a enum which is used to explicity declare which corner is held stationary when,
+         * widget is resized. 
+         */
 
-        void SetAlwaysOnTop(bool on) { always_top_ = on; }
-
-        /// @return A pair (width, height) containing the absolute size of the canvas.
-        QSize GetSize() const { return this->size(); }
-
+        enum Corner { TopLeft = 0, BottomLeft, TopRight, BottomRight };
+        
         /**
             Resizes the canvas. This function does not just alter the width and the height
             of the canvas, but also repositions the canvas according to the anchor parameter.
@@ -95,25 +151,13 @@ namespace QtUI
             @param width The new width in absolute pixels.
             @param height The new height in absolute pixels.
             @param anchor This parameter denotes which corner of the canvas is kept unmoved.
-                That is, the shrinking or expanding of the canvas will be performed on
-                the two opposing edges of the canvas.
+            That is, the shrinking or expanding of the canvas will be performed on
+            the two opposing edges of the canvas.
         */
         
-        void Resize(int width, int height, CanvasCorner anchor);
+        void Resize(int width, int height, Corner anchor = TopLeft);
 
-        /**
-         * Enables or disables alpha fading animation. 
-         * @param on is alpha fade on or off. 
-         * @param time is how fast canvas is "animated" default value 2 s
-         */
-        
-        void SetAlphaFade(bool on, double time = 2) { total_dur_ = time, use_fading_ = on; }
 
-        /// @return (x,y,w,h) containing the absolute position and size of the canvas, relative
-        /// the upper-left of the main render window.
-
-        QRect GetCanvasGeometry() const { return this->geometry(); }
-    	
         /** 
          *   The Ogre resources associated to this canvas have the following names: 
          *   Texture: "tex" + id.
@@ -123,41 +167,34 @@ namespace QtUI
          */
         
         QString GetID() const { return id_;}
-       
-        /** Maps the given point (assumes that it really is inside this canvas area) from render 
-            window coordinates to canvas local coordinates.
-            @return (x,y) coordinates of the given point relative to the canvas upper-left. */
+
+     
+        /** 
+         * Maps the given point (assumes that it really is inside this canvas area) from render 
+         * window coordinates to canvas local coordinates.
+         * @return (x,y) coordinates of the given point relative to the canvas upper-left. 
+         */
+        
+        //QPoint MapToCanvas(int x, int y);
+
+        /**
+         * Maps the given point (assumes that it really is inside this canvas area) from 
+         * render window coordinates to local scene coordinates. 
+         * @return (x,y) coordinates of the given point relative to canvas scene. 
+         */
         
         QPoint MapToCanvas(int x, int y);
+
+        bool IsActiveWindow() const { return view_->isActiveWindow(); }
+
+        bool HasFocus() const { return view_->hasFocus(); }
+
 
         /// @return The size of the main render window, in absolute pixel units.
         
         QSize GetRenderWindowSize() const { return renderWindowSize_;}
 
-        /// Brings this canvas to the front in the Z order of the internal canvases. Note that 
-        /// this works only for internal canvases.
-        
-        void SetTop();
-
-        /// Pushes this canvas to last in the Z order of the internal canvases. Note that this 
-        /// works only for internal canvases.
-        
-        void SetBack();
-
-        /** 
-         *   Sets the Z order of this canvas. Changes overlay own "default" z-order value to new 
-         *   value. \todo This function is pending to be removed in favor of 'BringToFront()', 
-         *   'PushToBack()' and 'SetAlwaysOnTop()' functions, which are more intuitive and simpler 
-         *   to manage than absolute z values.
-         *   @param order The new Z order value, in the range [1, 650[. (this comes from Ogre). 
-         *   The larger the number is, the higher on the z order list this canvas is. 
-         */
-        
-        void SetZOrder(int order);
-        
-        /// @return The z order value of this canvas, or -1 if this canvas is in External mode.
-        int GetZOrder() const;
-
+      
         /**
          * Activates canvas. This is a HACK-way to cheat Qt to think that 
          * canvas is shown even that it is not actually shown. 
@@ -165,32 +202,67 @@ namespace QtUI
          */
         void Activate();
 
+        void SetLocationPolicy(UILocationPolicy* policy);
+        UILocationPolicy* GetLocationPolicy() { return locationPolicy_; }
+       
+
+        void SetAppearPolicy(UIAppearPolicy* policy); 
+        UIAppearPolicy* GetAppearPolicy() { return appearPolicy_; }
+        
+
+        QGraphicsView* GetView() { return view_; }
+
+        /// @return A pair (width, height) containing the absolute size of the canvas.
+        QSize GetSize() const { return view_->size(); }
+
+
+        /// @return (x,y,w,h) containing the absolute position and size of the canvas, relative
+        /// the upper-left of the main render window.
+
+        QRect GetCanvasGeometry() const { return view_->geometry(); }
+    	
+       
      public slots:
     	
-         /** Resizes the UI canvas size and reallocates Qt and Ogre surfaces to new size. 
-            @param width is a new width of canvas. 
-            @param height is a new height of canvas.
-            @todo override widgets own resize? */
+        /// Brings this canvas to the front in the Z order of the internal canvases. Note that 
+        /// this works only for internal canvases.
         
-        void SetCanvasSize(int width, int height);
+        void BringToTop();
 
-        /** Sets the canvas position relative to the parent window. If the canvas is in internal mode,
-            the parent is the main render window, otherwise the it is the desktop. (0,0) denotes the upper
-            left corner. */
+        /// Pushes this canvas to last in the Z order of the internal canvases. Note that this 
+        /// works only for internal canvases.
+        
+        void PushToBack(); 
+
+         /**
+          * Resizes the UI canvas size and reallocates Qt and Ogre surfaces to new size. 
+          * @param width is a new width of canvas. 
+          * @param height is a new height of canvas.
+          * @todo override widgets own resize? 
+          */
+        
+        void SetSize(int width, int height);
+
+        /** 
+         * Sets the canvas position relative to the parent window. If the canvas is in internal mode,
+         * the parent is the main render window, otherwise the it is the desktop. (0,0) denotes the upper
+         * left corner. 
+         */
         
         void SetPosition(int x, int y);
 
-        /** Locks the canvas position so that it cannot be moved.
-            @note This function is only applicable if the canvas is in internal display mode. */
-        
-        void SetLockPosition(bool locked) { locked_ = locked; }
+        /**
+         * Adjusts canvas position so that it is stationary or not.
+         * @note This function is only applicable if the canvas is in internal display mode. 
+         */
+        void SetStationary(bool enable) { locationPolicy_->SetStationary(enable); }
 
         /**
-         * Locks the canvas so that it cannot be resized. 
+         * Sets canvas resizable or disables it. 
          * @note @p SetCanvasSize() -function works even that canvas resize is locked. 
          */
 
-        void SetCanvasResizeLock(bool locked) { resize_locked_ = locked; }
+        void SetResizable(bool enable) { appearPolicy_->SetResizable(enable); }
 
         /// @return True if this canvas is hidden, false otherwise.  
         
@@ -204,7 +276,7 @@ namespace QtUI
         /// Marks the Ogre surface of this canvas to be pending for redraw.
         /// For external canvases, does nothing.
         
-        void SetDirty() { dirty_ = true; }
+        void Redraw() { dirty_ = true; }
 
         /// Recalculates the relative normalized canvas overlay position and size values needed 
         /// for Ogre display. Called whenever the main render window size changes.
@@ -227,22 +299,21 @@ namespace QtUI
 
         /// Sets the window title. For internal canvases the title is not shown, so this has no effect.
 		
-        void SetCanvasWindowTitle(QString title);
+        void SetWindowTitle(const QString& title);
 
         /// Sets the window icon. For internal canvases the title is not shown, so this has no effect.
 		
-        void SetCanvasWindowIcon(QIcon &icon);
+        void SetWindowIcon(const QIcon &icon);
 
+        void SetAlwaysOnTop(bool on) { locationPolicy_->SetAlwaysOnTop(on); }
 
     signals:                
         
-        /// Emitted when this canvas needs to be brought to top in the Z order. UIController tracks 
-        /// this signal and performs the necessary reordering.
-        
-        void ToTop(const QString& id);
+        /// Emitted when this canvas moves to top in the Z order. 
+     
+         void ToTop(const QString& id);
 
-        /// Emitted when this canvas needs to be brought to bottom in the Z order. UIController 
-        /// tracks this signal and performs the necessary reordering.
+        /// Emitted when this canvas moves to bottom in the Z order. 
         
         void ToBack(const QString& id);
 
@@ -277,17 +348,20 @@ namespace QtUI
          * @param event is QResizeEvent. 
          *
          */
-        void resizeEvent(QResizeEvent* event);
+        //void resizeEvent(QResizeEvent* event);
 
     private:
 
-        void Fade(double timeSinceLastFrame);
+       
+        friend class UIController;
+
+        //void Fade(double timeSinceLastFrame);
 
         /// Marked as private since we don't support changing the display mode after the canvas has 
         /// been instantiated. \todo this function is quite obsolete, remove or implement support for 
         /// changing the mode.
         
-        void SetMode(Mode mode) { mode_ = mode; }
+        //void SetMode(Mode mode) { mode_ = mode; }
 
         /// Creates an Ogre Overlay and an Ogre Texture surface of the given size.
 
@@ -297,13 +371,30 @@ namespace QtUI
         
         void ResizeOgreTexture(int width, int height);
 
-        /// Resizes widgets when canvas size has been changed
+        /// Resizes scene widgets when canvas size has been changed
         
         void ResizeWidgets(int width, int height);
  
+        
+        /** 
+         *   Sets the Z order of this canvas. Changes overlay own "default" z-order value to new 
+         *   value. \todo This function is pending to be removed in favor of 'BringToFront()', 
+         *   'PushToBack()' and 'SetAlwaysOnTop()' functions, which are more intuitive and simpler 
+         *   to manage than absolute z values.
+         *   @param order The new Z order value, in the range [1, 650[. (this comes from Ogre). 
+         *   The larger the number is, the higher on the z order list this canvas is. 
+         */
+        
+        void SetZOrder(int order);
+        
+         
+        /// @return The z order value of this canvas, or -1 if this canvas is in External mode.
+        int GetZOrder() const;
+
         /// Tracks whether the Ogre surface associated to this canvas is dirty and should be redrawn.
 	    bool dirty_;
-	    /// Renderwindow size changed-flag. On next frame, textures may still be garbled, so we rerender canvas twice.
+	    
+        /// Renderwindow size changed-flag. On next frame, textures may still be garbled, so we rerender canvas twice.
 	    bool renderwindow_changed_;
 
         /// The name of the Ogre texture associated with this canvas. Not used if mode_=External.
@@ -323,33 +414,15 @@ namespace QtUI
 
         /// Denotes whether this canvas is composited using Ogre overlays (Internal mode), or the OS
         /// windowing system (External mode).
-        Mode mode_;
+        DisplayMode mode_;
         
         /// The unique canvas ID of this canvas.
         QString id_;
+        
+        UILocationPolicy* locationPolicy_;
+        UIAppearPolicy* appearPolicy_;
 
-    
-        /// If true, this canvas cannot be moved by dragging the mouse on the window title. Only functional if
-        /// mode=Internal.
-        bool locked_;
-      
-        bool resize_locked_;
-
-        bool always_top_;
-       
-        // For alpha fade feature:
-
-        bool fade_;
-        double alpha_;
-        double current_dur_;
-      
-        double total_dur_;
-        QTime clock_;
-        int lastTime_;
-
-        bool fade_on_hiding_;
-        bool use_fading_;
-       
+        QGraphicsView* view_;
         /// Contains the widget proxies of all the widgets that have been added to this canvas.
         QList<QGraphicsProxyWidget*> scene_widgets_;
     };

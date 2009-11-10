@@ -112,7 +112,7 @@ void UIController::RemoveCanvas(const QString& id)
 }
 
 
-boost::weak_ptr<UICanvas> UIController::CreateCanvas(UICanvas::Mode mode)
+boost::weak_ptr<UICanvas> UIController::CreateCanvas(UICanvas::DisplayMode mode)
 {
     boost::shared_ptr<UICanvas> canvas(new UICanvas(mode, parentWindowSize_));
     
@@ -156,7 +156,7 @@ void UIController::InjectMouseMove(int x, int y)
         if ( index != -1 && !canvases_[index]->IsHidden())
         {
         
-            if ( resize_ && !canvases_[index]->IsCanvasResizeLocked())
+            if ( resize_ && !canvases_[index]->IsResizable())
             {
                
                 if (active_canvas_index == -1)
@@ -387,7 +387,7 @@ void UIController::InjectMouseMove(int x, int y)
                 QApplication::setOverrideCursor(QCursor(mouseCursorShape_));
                 
             }
-            else if ( active_canvas_index != -1 && !canvases_[active_canvas_index]->IsCanvasPositionLocked() && drag_)
+            else if ( active_canvas_index != -1 && !canvases_[active_canvas_index]->IsPositionStationary() && drag_)
             {
                 // This is our drag canvas implementation. 
 
@@ -514,9 +514,9 @@ void UIController::InjectMousePress(int x, int y)
     
         // Translate the mouse position from QGraphicsView coordinate frame onto
         // the QGraphicsScene coordinate frame.
-        QPoint p = canvases_[index]->MapToCanvas(x,y);
-        QPointF pos = canvases_[index]->mapToScene(p);
-        QPoint currentMousePos((int)pos.x(), (int)pos.y());
+        QPoint pos = canvases_[index]->MapToCanvas(x,y);
+        //QPointF pos = canvases_[index]->mapToScene(p);
+        QPoint currentMousePos(pos.x(),pos.y());
 
         // For future use save press state. 
       
@@ -538,19 +538,19 @@ void UIController::InjectMousePress(int x, int y)
         
      
 
-       if (!canvases_[index]->isActiveWindow())
+       if (!canvases_[index]->IsActiveWindow())
             canvases_[index]->Activate();
 
-       QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);
+       QApplication::sendEvent(canvases_[index]->view_->scene(), &mouseEvent);
        
 
-       if ( !canvases_[index]->hasFocus() )
+       if ( !canvases_[index]->HasFocus() )
             keyboard_buffered_ = false;
            
         // Here starts nice HACK: Idea is to check that did press event went to somekind textedit widget. 
         // if it went we need to set OIS keyboard to buffered mode. 
 
-        QGraphicsItem* item = canvases_[index]->itemAt(mouseEvent.pos().toPoint());
+        QGraphicsItem* item = canvases_[index]->view_->itemAt(mouseEvent.pos().toPoint());
         
 
         if ( item != 0)
@@ -589,7 +589,7 @@ void UIController::InjectMousePress(int x, int y)
         if ( !resize_ )
         {
             // Check that did mouse press happen in dragging area.
-            QRect frame = canvases_[index]->frameGeometry();
+            QRect frame = canvases_[index]->view_->frameGeometry();
             QPointF pos = canvases_[index]->GetPosition();
         
             // Rectangular sides. 
@@ -647,9 +647,9 @@ void UIController::InjectMouseRelease(int x, int y)
         
         // Translate the mouse position from QGraphicsView coordinate frame onto
         // the QGraphicsScene coordinate frame.
-        QPoint p = canvases_[index]->MapToCanvas(x,y);
-        QPointF pos = canvases_[index]->mapToScene(p);
-        QPoint currentMousePos((int)pos.x(), (int)pos.y());
+        QPoint pos = canvases_[index]->MapToCanvas(x,y);
+        //QPointF pos = canvases_[index]->mapToScene(p);
+        QPoint currentMousePos(pos.x(), pos.y());
 
         QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseRelease);
         mouseEvent.setButtonDownScenePos(Qt::NoButton, currentMousePos);
@@ -664,7 +664,7 @@ void UIController::InjectMouseRelease(int x, int y)
         mouseEvent.setAccepted(false);
     
 
-        QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);
+        QApplication::sendEvent(canvases_[index]->view_->scene(), &mouseEvent);
     
     }
     if ( resize_ )
@@ -675,7 +675,7 @@ void UIController::InjectMouseRelease(int x, int y)
            if ( canvases_[i]->GetID() == active_canvas_)
            {
                 QSize size = canvases_[i]->GetSize();
-                canvases_[i]->SetCanvasSize(size.width(), size.height());
+                canvases_[i]->SetSize(size.width(), size.height());
                 break;
            }
        }
@@ -698,9 +698,9 @@ void UIController::InjectDoubleClick(int x, int y)
     
         // Translate the mouse position from QGraphicsView coordinate frame onto
         // the QGraphicsScene coordinate frame.
-        QPoint p = canvases_[index]->MapToCanvas(x,y);
-        QPointF pos = canvases_[index]->mapToScene(p);
-        QPoint currentMousePos((int)pos.x(), (int)pos.y());
+        QPoint pos = canvases_[index]->MapToCanvas(x,y);
+        //QPointF pos = canvases_[index]->mapToScene(p);
+        QPoint currentMousePos(pos.x(), pos.y());
 
         mouseDown_ = false;
         
@@ -720,7 +720,7 @@ void UIController::InjectDoubleClick(int x, int y)
         mouseEvent.setModifiers(0);
         mouseEvent.setAccepted(false);
      
-        QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);
+        QApplication::sendEvent(canvases_[index]->view_->scene(), &mouseEvent);
     
     }
  
@@ -738,10 +738,10 @@ void UIController::InjectKeyPressed(const QString& text, Qt::Key keyCode, const 
     int index = GetCanvas(mousePress_);
     if ( index != -1 && !canvases_[index]->IsHidden())
     {
-        if (!canvases_[index]->isActiveWindow())
+        if (!canvases_[index]->IsActiveWindow())
             canvases_[index]->Activate();
 
-         QApplication::sendEvent(canvases_[index]->scene(), &keyEvent);
+         QApplication::sendEvent(canvases_[index]->view_->scene(), &keyEvent);
          keyDown_ = true;
          lastKeyEvent_ = keyEvent;
          keyTimer_.start();
@@ -769,7 +769,7 @@ void UIController::InjectKeyReleased(const QString& text, Qt::Key keyCode, const
     int index = GetCanvas(mousePress_);
     if ( index != -1 && !canvases_[index]->IsHidden() )
     {
-         QApplication::sendEvent(canvases_[index]->scene(), &keyEvent);
+         QApplication::sendEvent(canvases_[index]->view_->scene(), &keyEvent);
          keyTimer_ = QTime();
     }
 
@@ -794,9 +794,9 @@ void UIController::SetParentWindowSize(const QSize& size)
 
 Qt::CursorShape UIController::UpdateMouseCursor(int x, int y, int index)
 {
-    if ( index != -1 && !canvases_[index]->IsCanvasResizeLocked())
+    if ( index != -1 && !canvases_[index]->IsResizable())
     {
-        QRect frame = canvases_[index]->frameGeometry();
+        QRect frame = canvases_[index]->view_->frameGeometry();
         QPointF pos = canvases_[index]->GetPosition();
         
         // Rectangular sides. 
@@ -933,7 +933,7 @@ UICanvas *UIController::GetCanvasAt(int x, int y)
 {
     const QPoint point(x, y);
     for(QList<boost::shared_ptr<UICanvas> >::iterator iter = canvases_.begin(); iter != canvases_.end(); ++iter)
-        if ((*iter)->GetMode() == UICanvas::Internal && !(*iter)->IsHidden() && Contains(*iter, point))
+        if ((*iter)->GetDisplayMode() == UICanvas::Internal && !(*iter)->IsHidden() && Contains(*iter, point))
             return iter->get();
 
     return 0;
@@ -961,7 +961,7 @@ int UIController::GetCanvas(const QPoint& point)
     for (; iter != canvases_.end(); ++iter, ++index)
     {
         // If mode is external we let the Qt own window manager to things. 
-        if ((*iter)->GetMode() == UICanvas::External)
+        if ((*iter)->GetDisplayMode() == UICanvas::External)
             continue;
         if ((*iter)->IsHidden())
             continue;     
@@ -980,8 +980,8 @@ bool UIController::Contains(const boost::shared_ptr<UICanvas>& canvas, const QPo
     QPoint pos = canvas->GetPosition().toPoint();
     return pos.x() <= point.x() && 
            pos.y() <= point.y() && 
-           (pos.x() + canvas->width()) > point.x() && 
-           (pos.y() + canvas->height()) > point.y();
+           (pos.x() + canvas->view_->width()) > point.x() && 
+           (pos.y() + canvas->view_->height()) > point.y();
 }
 
 
@@ -989,10 +989,10 @@ bool UIController::Contains(const boost::shared_ptr<UICanvas>& canvas, const QPo
 void UIController::SendMouseMoveEvent(int index, int x, int y)
 {
     // Location of mouse event in scene.
-    QPoint p = canvases_[index]->MapToCanvas(x,y);
-    QPointF pos = canvases_[index]->mapToScene(p);
+    QPoint pos = canvases_[index]->MapToCanvas(x,y);
+    //QPointF pos = canvases_[index]->mapToScene(p);
       
-    QPoint currentMousePos((int)pos.x(), (int)pos.y());
+    QPoint currentMousePos(pos.x(), pos.y());
 
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
     
@@ -1018,7 +1018,7 @@ void UIController::SendMouseMoveEvent(int index, int x, int y)
 
    
     UpdateMouseCursor(x,y,index);
-    QApplication::sendEvent(canvases_[index]->scene(), &mouseEvent);   
+    QApplication::sendEvent(canvases_[index]->view_->scene(), &mouseEvent);   
         
 
 

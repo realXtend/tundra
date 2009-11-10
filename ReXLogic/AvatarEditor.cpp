@@ -87,15 +87,16 @@ namespace RexLogic
             
         // Set canvas size. 
         QSize size = avatar_widget_->size();
-        canvas_->SetCanvasSize(size.width() + 1, size.height() + 1);
-        canvas_->SetCanvasWindowTitle(QString("Avatar Editor"));
+        canvas_->SetSize(size.width() + 1, size.height() + 1);
+        canvas_->SetWindowTitle(QString("Avatar Editor"));
         canvas_->SetPosition(40,40);
                         
         canvas_->AddWidget(avatar_widget_);
    
         // Set canvas scrollbar policy
-        canvas_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        canvas_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff); 
+        QGraphicsView* view = canvas_->GetView();
+        view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff); 
 
    
 	    // Add to control bar

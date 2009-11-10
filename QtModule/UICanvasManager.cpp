@@ -29,7 +29,7 @@ namespace QtUI
 			ControlBarButton *button = new ControlBarButton(controlBarWidget_, canvas, buttonTitle);
 			controlBarLayout_->addWidget(button);
 			QSize widgetSize = controlBarWidget_->size();
-			controlBarCanvas_->SetCanvasSize(widgetSize.width()+button->size().width(), widgetSize.height());
+			controlBarCanvas_->SetSize(widgetSize.width()+button->size().width(), widgetSize.height());
 		}
 	}
 
@@ -59,7 +59,7 @@ namespace QtUI
 					    if (button->GetCanvas()->GetID() == id) 
 					    {
 						    controlBarLayout_->takeAt(index);
-						    controlBarCanvas_->SetCanvasSize(controlBarCanvas_->GetSize().width()-button->size().width(), controlBarCanvas_->GetSize().height());
+						    controlBarCanvas_->SetSize(controlBarCanvas_->GetSize().width()-button->size().width(), controlBarCanvas_->GetSize().height());
                             delete button;
 						    button = 0;
 						    return true;
@@ -84,9 +84,9 @@ namespace QtUI
 
 			controlBarCanvas_ = spQtModule->CreateCanvas(UICanvas::Internal).lock();
 			controlBarCanvas_->SetPosition(0,0);
-			controlBarCanvas_->SetCanvasSize(25, 25);
-			controlBarCanvas_->SetLockPosition(true);
-			controlBarCanvas_->SetCanvasResizeLock(true);
+			controlBarCanvas_->SetSize(25, 25);
+			controlBarCanvas_->SetStationary(true);
+			controlBarCanvas_->SetResizable(false);
 			controlBarCanvas_->SetAlwaysOnTop(true);
 			controlBarCanvas_->AddWidget(controlBarWidget_);
 			controlBarCanvas_->Show();

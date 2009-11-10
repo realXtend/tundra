@@ -141,9 +141,9 @@ namespace CommunicationUI
 			buttonRemoveFriend_->setIcon(QIcon(":/images/iconRemove.png"));
 			buttonRemoveFriend_->setIconSize(QSize(10,10));
             
-			canvas_chat_->SetCanvasResizeLock(true);
+			canvas_chat_->SetResizable(false);
             canvas_chat_->SetPosition(20,30);
-		    canvas_chat_->SetCanvasSize(720, 350);
+		    canvas_chat_->SetSize(720, 350);
             canvas_chat_->AddWidget(chatWidget_);
             canvas_login_->Hide();
             canvas_chat_->Show();
@@ -166,9 +166,9 @@ namespace CommunicationUI
 			    // Connect signals
 			    QObject::connect(loginWidget_, SIGNAL( UserdataSet(QString, int, QString, QString) ), this, SLOT( ConnectToServer(QString, int, QString, QString) ));
 			    
-    			canvas_login_->SetCanvasResizeLock(true);
+    			canvas_login_->SetResizable(false);
                 canvas_login_->SetPosition(20,30);
-			    canvas_login_->SetCanvasSize(400, 185);
+			    canvas_login_->SetSize(400, 185);
                 canvas_login_->AddWidget(loginWidget_);
                 // Add widget to layout
 			    /*this->layout()->addWidget(loginWidget_);*/
