@@ -214,3 +214,11 @@ macro (configure_gstreamer)
     sagase_configure_report (GSTREAMER)
 endmacro (configure_gstreamer)
 
+macro (configure_dbus)
+    sagase_configure_package (DBUS
+        NAMES dbus 
+        COMPONENTS dbus-1 dbus # dbus added to help sagese to find include folder with dbus.h file
+        PREFIXES ${ENV_NAALI_DEP_PATH})
+    sagase_configure_report (DBUS)
+endmacro (configure_dbus)
+
