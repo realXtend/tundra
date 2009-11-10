@@ -233,8 +233,15 @@ endmacro (configure_glib)
 macro (configure_telepathy_glib)
     sagase_configure_package (TELEPATHY_GLIB
         NAMES telepathy-glib Telepathy-Glib
-        COMPONENTS telepathy-glib connection # connection added to help sagese to find include folder with glib.h file
+        COMPONENTS telepathy-glib connection # connection added to help sagese to find include folder with connection.h file
         PREFIXES ${ENV_NAALI_DEP_PATH})
     sagase_configure_report (TELEPATHY_GLIB)
 endmacro (configure_telepathy_glib)
 
+macro (configure_telepathy_farsight)
+    sagase_configure_package (TELEPATHY_FARSIGHT 
+        NAMES telepathy-farsight Telepathy-Farsight
+        COMPONENTS telepathy-farsight stream # stream added to help sagese to find include folder with stream.h file
+        PREFIXES ${ENV_NAALI_DEP_PATH})
+    sagase_configure_report (TELEPATHY_FARSIGHT)
+endmacro (configure_telepathy_farsight)
