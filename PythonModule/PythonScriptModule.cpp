@@ -406,25 +406,29 @@ namespace PythonScript
         }
     }
 
-    void PythonScriptModule::x()
-    {
-        RexLogic::RexLogicModule *rexlogic_;
-        rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    //void PythonScriptModule::x()
+    //{
+    //    Core::Vector3df v1 = Core::Vector3df();
+    //    using Core;
+    //    v2 = Vector3df();
+    //    
+    //    RexLogic::RexLogicModule *rexlogic_;
+    //    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
-        rexlogic_->GetServerConnection()->SendChatFromViewerPacket("x");
-        //rexlogic_->GetAvatarHandler()->UpdateAvatarNameOverlayPositions();
+    //    rexlogic_->GetServerConnection()->SendChatFromViewerPacket("x");
+    //    //rexlogic_->GetAvatarHandler()->UpdateAvatarNameOverlayPositions();
 
-        rexlogic_->GetServerConnection()->IsConnected();
-        rexlogic_->GetCameraControllable()->GetPitch();
-        
-        Core::Real newyaw = 0.1;
-        //rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
-        rexlogic_->SetAvatarYaw(newyaw);
-        //rexlogic_->GetAvatarControllable()->AddTime(0.1);
-        //rexlogic_->GetAvatarControllable()->HandleInputEvent(0, NULL);
-        
-        //rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
-    }
+    //    rexlogic_->GetServerConnection()->IsConnected();
+    //    rexlogic_->GetCameraControllable()->GetPitch();
+    //    
+    //    Core::Real newyaw = 0.1;
+    //    //rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
+    //    rexlogic_->SetAvatarYaw(newyaw);
+    //    //rexlogic_->GetAvatarControllable()->AddTime(0.1);
+    //    //rexlogic_->GetAvatarControllable()->HandleInputEvent(0, NULL);
+    //    
+    //    //rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
+    //}
 
     Console::CommandResult PythonScriptModule::ConsoleRunFile(const Core::StringVector &params)
     {        
@@ -1505,7 +1509,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 
         else
         {
-            PyErr_SetString(PyExc_ValueError, "text is a string"); //XXX change the exception
+            PyErr_SetString(PyExc_ValueError, "Mesh asset id is expected as a string"); //XXX change the exception
             return NULL;
         }
 	}
