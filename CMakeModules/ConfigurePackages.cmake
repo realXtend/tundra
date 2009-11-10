@@ -222,3 +222,11 @@ macro (configure_dbus)
     sagase_configure_report (DBUS)
 endmacro (configure_dbus)
 
+macro (configure_glib)
+    sagase_configure_package (GLIB
+        NAMES glib Glib
+        COMPONENTS glib-2.0 gobject-2.0 glib # glib added to help sagese to find include folder with glib.h file
+        PREFIXES ${ENV_NAALI_DEP_PATH})
+    sagase_configure_report (GLIB)
+endmacro (configure_glib)
+
