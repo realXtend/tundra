@@ -63,6 +63,7 @@ configure_gstreamer ()
 configure_dbus ()
 configure_glib ()
 configure_telepathy_glib ()
+configure_telepathy_farsight ()
 
 if (CAELUM)
     configure_caelum ()
