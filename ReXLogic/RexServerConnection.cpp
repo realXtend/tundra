@@ -1138,7 +1138,7 @@ void RexServerConnection::SendGenericMessage(const std::string& method, const Co
     m->AddUUID(RexUUID::CreateRandom());
 
     // Method
-    m->AddBuffer(method.length(), (uint8_t*)method.c_str());
+    m->AddBuffer(method.length()+1, (uint8_t*)method.c_str());
 
     // Invoice ID
     m->AddUUID(RexUUID::CreateRandom());
@@ -1174,7 +1174,7 @@ void RexServerConnection::SendGenericMessageBinary(const std::string& method, co
     m->AddUUID(RexUUID::CreateRandom());
 
     // Method
-    m->AddBuffer(method.length(), (uint8_t*)method.c_str());
+    m->AddBuffer(method.length()+1, (uint8_t*)method.c_str());
 
     // Invoice ID
     m->AddUUID(RexUUID::CreateRandom());

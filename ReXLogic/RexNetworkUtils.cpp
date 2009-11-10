@@ -300,7 +300,7 @@ namespace RexLogic
     {
         const char* c_str = value.c_str();
         
-        memcpy(bytes, c_str, value.length() + 1);
+        memcpy(&bytes[idx], c_str, value.length() + 1);
         idx += value.length() + 1;
     }
     

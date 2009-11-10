@@ -335,7 +335,7 @@ void Primitive::SendRexPrimData(Core::entity_id_t entityid)
     WriteBoolToBytes(prim.ScaleToPrim, &buffer[0], idx);
     WriteFloatToBytes(prim.DrawDistance, &buffer[0], idx);
     WriteFloatToBytes(prim.LOD, &buffer[0], idx);   
-
+    
     // UUIDs
     // Note: if the EC contains asset urls that can not be encoded as UUIDs, we still have to send
     // invalid (null) UUIDs to retain binary compatibility with the rexprimdatablob
@@ -500,7 +500,7 @@ void Primitive::HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t*
         }
         prim.Materials = materials;
     }
-
+    
     // Handle any change in the drawtype of the prim. Also, 
     // the Ogre materials on this prim have possibly changed. Issue requests of the new materials 
     // from the asset provider and bind the new materials to this prim.
