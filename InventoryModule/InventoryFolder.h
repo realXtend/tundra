@@ -93,10 +93,13 @@ namespace Inventory
 
         /// @param row Row number of wanted child.
         /// @return Child item.
-        AbstractInventoryItem *Child(int row);
+        AbstractInventoryItem *Child(int row) { return children_.value(row); }
 
         /// @return Number of children.
-        int ChildCount() const;
+        int ChildCount() const { return children_.count(); }
+
+        /// @return Does this folder have children.
+        bool HasChildren() { return ChildCount() > 0; }
 
         /// @return Row number of the folder.
         int Row() const;
