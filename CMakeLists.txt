@@ -62,6 +62,7 @@ configure_telepathy_qt4 ()
 configure_gstreamer ()
 configure_dbus ()
 configure_glib ()
+configure_telepathy_glib ()
 
 if (CAELUM)
     configure_caelum ()
