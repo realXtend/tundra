@@ -1,8 +1,8 @@
+#include <StableHeaders.h>
+#include <RexLogicModule.h> // chat
+#include <RexProtocolMsgIDs.h>
+#include <OpenSimProtocolModule.h>
 #include "Connection.h"
-#include "StableHeaders.h"
-#include "../../ReXLogic/RexLogicModule.h" // chat
-#include "RexProtocolMsgIDs.h"
-#include "OpenSimProtocolModule.h"
 #include "ConnectionProvider.h"
 
 namespace OpensimIM

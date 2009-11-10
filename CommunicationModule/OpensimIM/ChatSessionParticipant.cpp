@@ -1,6 +1,6 @@
+#include <RexLogicModule.h>
 #include "ChatSessionParticipant.h"
-#include "../../ReXLogic/RexLogicModule.h" 
-
+                           
 namespace OpensimIM
 {
 	ChatSessionParticipant::ChatSessionParticipant(const QString &uuid, const QString &name): uuid_(uuid), name_(name)

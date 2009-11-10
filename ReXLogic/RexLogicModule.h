@@ -3,6 +3,7 @@
 #ifndef incl_RexLogicModule_h
 #define incl_RexLogicModule_h
 
+#include <Foundation.h>
 #include "ModuleInterface.h"
 #include "RexServerConnection.h"
 

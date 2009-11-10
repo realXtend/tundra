@@ -1,5 +1,5 @@
-#include "ChatSession.h"
 #include <TelepathyQt4/ContactManager>
+#include "ChatSession.h"
 #include "Connection.h"
 
 

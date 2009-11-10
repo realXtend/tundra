@@ -1,9 +1,9 @@
 #ifndef incl_Communication_TelepathyIM_FriendRequest_h
 #define incl_Communication_TelepathyIM_FriendRequest_h
 
-#include "../interface.h"
 #include <TelepathyQt4/Contact>
 #include <TelepathyQt4/PendingOperation>
+#include "../interface.h"
 
 namespace TelepathyIM
 {

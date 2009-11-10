@@ -1,7 +1,7 @@
-#include "ChatSession.h"
-#include "../../ReXLogic/RexLogicModule.h" 
-#include "OpenSimProtocolModule.h"
+#include <RexLogicModule.h> 
+#include <OpenSimProtocolModule.h>
 #include <QTime>
+#include "ChatSession.h"
 
 namespace OpensimIM
 {

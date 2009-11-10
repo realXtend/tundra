@@ -1,10 +1,8 @@
 #ifndef incl_QtGUI_h
 #define incl_QtGUI_h
 
-#include "StableHeaders.h"
-#include "Foundation.h"
-#include "UICanvas.h"
-
+#include <StableHeaders.h>
+#include <UICanvas.h>
 #include <QtGui>
 
 #include "../interface.h"

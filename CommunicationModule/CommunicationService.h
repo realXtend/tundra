@@ -1,12 +1,11 @@
 #ifndef incl_Comm_CommunicationService_h
 #define incl_Comm_CommunicationService_h
 
-#include "StableHeaders.h"
-#include "interface.h"
-#include "Foundation.h"
-#include "ModuleInterface.h" // for logger
+#include <StableHeaders.h>
+#include <ModuleInterface.h> // for logger
 #include <QMap>
 #include <QStringList>
+#include "interface.h"
 
 namespace Communication
 {

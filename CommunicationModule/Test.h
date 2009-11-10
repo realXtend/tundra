@@ -2,7 +2,7 @@
 #define incl_Communication_Test_h
 
 #include <QObject>
-#include "Foundation.h"
+#include <Foundation.h>
 #include "interface.h"
 
 namespace CommunicationTest

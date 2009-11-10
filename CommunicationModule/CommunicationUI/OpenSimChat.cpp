@@ -1,11 +1,7 @@
-
-#include "StableHeaders.h"
-#include "Foundation.h"
-#include "UICanvasManager.h"
-
+#include <StableHeaders.h>
+#include <UICanvasManager.h>
 #include <QtUiTools>
 #include <QFile>
-
 #include "OpenSimChat.h"
 
 namespace CommunicationUI
@@ -18,12 +14,12 @@ namespace CommunicationUI
 			InitModuleConnections();
 			InitUserInterface();
 			InitCommConnections();
-			Communication::CommunicationModule::LogInfo("[OpenSimUI] Initialisation succesfull...");
+			LogInfo("Initialisation succesfull...");
 		}
 		catch (Core::Exception e)
 		{
-			QString msg( QString("[OpenSimUI] Initialisations threw an exteption: %1").arg(e.what()));
-			Communication::CommunicationModule::LogInfo(msg.toStdString());
+			QString msg( QString("Initialisations threw an exteption: %1").arg(e.what()));
+			LogInfo(msg.toStdString());
 		}
 	}
 
@@ -41,8 +37,8 @@ namespace CommunicationUI
 		}
 		catch (Core::Exception &e)
 		{
-			QString message = QString("[OpenSimUI] Could not open world chat due to: ").append(e.what());
-			Communication::CommunicationModule::LogError(message.toStdString());
+			QString message = QString("Could not open world chat due to: ").append(e.what());
+			LogError(message.toStdString());
 		}
 	}
 
@@ -50,8 +46,8 @@ namespace CommunicationUI
 
 	void OpenSimChat::OnOpensimUdpConnectionError(Communication::ConnectionInterface& connection)
 	{
-		QString message = QString("[OpenSimUI] OpenSim udp connect went to a error state");
-		Communication::CommunicationModule::LogDebug(message.toStdString());
+		QString message = QString("OpenSim udp connect went to a error state");
+		LogDebug(message.toStdString());
 	}
 
 	void OpenSimChat::MessageRecieved(const Communication::ChatMessageInterface &msg)
@@ -147,7 +143,7 @@ namespace CommunicationUI
 		qtModule_ = framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
 		if (qtModule_.get())
 		{
-			canvas_ = qtModule_->CreateCanvas(UICanvas::Internal).lock();
+            canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
 			if (!canvas_.get())
 				throw Core::Exception("Could not create new UICanvas");
 			else
