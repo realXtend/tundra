@@ -24,6 +24,7 @@
 
 #include "Avatar.h"
 #include "EC_OpenSimPresence.h"
+#include "EC_NetworkPosition.h"
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
 //#include "../OgreRenderingModule/EC_OgreMesh.h"
 #include "EC_OgrePlaceable.h"
@@ -946,6 +947,8 @@ PyObject* SendObjectAddPacket(PyObject *self, PyObject *args)
 
 PyObject* SendRexPrimData(PyObject *self, PyObject *args)
 {
+    std::cout << "Sending rexprimdata" << std::endl;
+    
 	RexLogic::RexLogicModule *rexlogic_;
     
     /*rexviewer_EntityObject* py_ent;
@@ -1359,13 +1362,15 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 
     Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
 
-    const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
+    const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
     if (!ogre_component)
     {
         PyErr_SetString(PyExc_AttributeError, "placeable not found.");
         return NULL;
     }    
     OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
+
+    RexLogic::EC_NetworkPosition* networkpos = dynamic_cast<RexLogic::EC_NetworkPosition*>(entity->GetComponent(RexLogic::EC_NetworkPosition::NameStatic()).get());
     
     /*if (s_name.compare("prim") == 0)
     {
@@ -1395,6 +1400,14 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
         }
         // Set the new values.
         placeable->SetPosition(Core::Vector3df(x, y, z));
+        if (networkpos)
+        {
+            // Hard work to override the dead reckoning system...
+            networkpos->position_ = placeable->GetPosition();
+            networkpos->damped_position_ = networkpos->position_;
+            networkpos->velocity_ = Core::Vector3df(0,0,0);
+        }
+            
         //ogre_pos->SetScale(Core::OpenSimToOgreCoordinateAxes(scale));
         //ogre_pos->SetOrientation(Core::OpenSimToOgreQuaternion(quat));
         /* .. i guess best to wrap the Rex Vector and other types soon,
@@ -1433,7 +1446,14 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
         
         // Set the new values.
         placeable->SetOrientation(Core::Quaternion(x, y, z, w));
-        
+        if (networkpos)
+        {
+            // Hard work to override the dead reckoning system...
+            networkpos->rotation_ = placeable->GetPosition();
+            networkpos->damped_rotation_ = networkpos->rotation_;
+            networkpos->rotvel_ = Core::Vector3df(0,0,0);
+        }
+                    
         return 0; //success.
     }
 
@@ -1472,6 +1492,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
     }
 	else if (s_name.compare("mesh") == 0)
 	{
+	    std::cout << "Setting mesh" << std::endl;
 		if (PyString_Check(value)) 
         {
 			//NOTE: This is stricly done locally only for now, nothing is sent to the server.
