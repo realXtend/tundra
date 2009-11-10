@@ -62,9 +62,9 @@ class EditGUI(Component):
         width = widget.size.width()
         height = widget.size.height()
 
-        self.canvas.SetCanvasSize(width, height)
+        self.canvas.SetSize(width, height)
         self.canvas.SetPosition(30, 30)
-        self.canvas.SetCanvasResizeLock(True)
+        self.canvas.SetResizable(False)
 
         widget.resize(width, height)
 
