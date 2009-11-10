@@ -26,7 +26,7 @@ namespace Inventory
 {
 
 InventoryItemModel::InventoryItemModel(AbstractInventoryDataModel *data_model) :
-    dataModel_(data_model), useTrash_(false), itemMoveFlag_(false), movedItemsCount_(0)
+    dataModel_(data_model), useTrash_(false), itemMoveFlag_(false)
 {
 }
 
@@ -124,7 +124,7 @@ Qt::ItemFlags InventoryItemModel::flags(const QModelIndex &index) const
 }
 
 /*
-bool InventoryItemModel::canFetchMore(const QModelIndex & parent) const
+bool InventoryItemModel::canFetchMore(const QModelIndex &parent) const
 {
     AbstractInventoryItem *parentItem = GetItem(parent);
     if (parentItem->GetItemType() == AbstractInventoryItem::Type_Folder)
@@ -133,7 +133,7 @@ bool InventoryItemModel::canFetchMore(const QModelIndex & parent) const
         return false;
 }
 
-void InventoryItemModel::fetchMore ( const QModelIndex & parent )
+void InventoryItemModel::fetchMore (const QModelIndex &parent)
 {
 }
 */
@@ -165,10 +165,12 @@ QMimeData *InventoryItemModel::mimeData(const QModelIndexList &indexes) const
             AbstractInventoryItem *item = GetItem(index);
             stream << item->GetID();
 
+/*
             InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
             if (folder)
                 foreach(QString id, folder->GetDescendentIds())
                     stream << id;
+*/
         }
     }
 
@@ -200,7 +202,6 @@ bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     QDataStream stream(&encodedData, QIODevice::ReadOnly);
 
     QList<AbstractInventoryItem *> itemList;
-    int items = 0;
     while(!stream.atEnd())
     {
         QString id;
@@ -208,27 +209,19 @@ bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
         AbstractInventoryItem *item = dataModel_->GetChildById(id);
         assert(item);
         itemList << item;
-        ++items;
     }
 
     AbstractInventoryItem *newParent = GetItem(parent);
-    ///\todo This is hackish. Make better.
-    bool first_time = true;
+
     foreach(AbstractInventoryItem *item, itemList)
     {
-        AbstractInventoryItem *parentItem = item->GetParent();
-        if (first_time)
+        if (InsertExistingItem(beginRow, newParent, item))
         {
-            first_time = false;
-            InsertExistingItem(beginRow, newParent, item);
+            ++beginRow;
+            itemsToBeMoved_ << item->GetID();
         }
-        else
-            InsertExistingItem(beginRow, parentItem, item);
-
-        ++beginRow;
     }
 
-    movedItemsCount_ = items;
     itemMoveFlag_ = true;
 
     return true;
@@ -270,15 +263,21 @@ bool InventoryItemModel::removeRows(int position, int rows, const QModelIndex &p
         if (!static_cast<InventoryFolder *>(childItem)->IsEditable())
             return false;
 
-    if (itemMoveFlag_ && movedItemsCount_ != 0)
+    bool removeRow = false;
+    if (itemMoveFlag_)
     {
-        // We don't want to notify server if we're just moving (deleting temporarily).
-        --movedItemsCount_;
-        if (movedItemsCount_ <= 0)
-            itemMoveFlag_ = false;
+        // We don't want to notify server if we're just moving (i.e. deleting temporarily from one location).
+        int idx = itemsToBeMoved_.indexOf(childItem->GetID());
+        if (idx != -1)
+        {
+            removeRow = true;
+            itemsToBeMoved_.remove(idx);
+        }
     }
     else
     {
+        removeRow = true;
+
         if(useTrash_)
         {
             // When deleting items, we move them first to the Trash folder.
@@ -299,11 +298,18 @@ bool InventoryItemModel::removeRows(int position, int rows, const QModelIndex &p
             dataModel_->NotifyServerAboutItemRemove(childItem);
     }
 
-    beginRemoveRows(parent, position, position + rows - 1);
-    bool success = parentFolder->RemoveChildren(position, rows);
-    endRemoveRows();
+    if (itemsToBeMoved_.size() <= 0)
+        itemMoveFlag_ = false;
 
-    return success;
+    if (removeRow)
+    {
+        beginRemoveRows(parent, position, position + rows - 1);
+        bool success = parentFolder->RemoveChildren(position, rows);
+        endRemoveRows();
+        return success;
+    }
+
+    return false;
 }
 
 bool InventoryItemModel::InsertFolder(int position, const QModelIndex &parent, const QString &name)
@@ -384,6 +390,9 @@ bool InventoryItemModel::InsertItem(int position, const QModelIndex &parent, Inv
 
 bool InventoryItemModel::InsertExistingItem(int position, AbstractInventoryItem *new_parent, AbstractInventoryItem *item)
 {
+    if (new_parent == item->GetParent())
+        return false;
+
     InventoryFolder *newParentFolder = dynamic_cast<InventoryFolder *>(new_parent);
     if (!newParentFolder)
         return false;
@@ -403,6 +412,14 @@ bool InventoryItemModel::InsertExistingItem(int position, AbstractInventoryItem 
         InventoryFolder *currentParent = static_cast<InventoryFolder *>(item->GetParent());
         if (currentParent != newParentFolder)
             dataModel_->NotifyServerAboutItemMove(newFolder);
+
+        /*
+        if (newFolder->HasChildren())
+        {
+            AbstractInventoryItem childItem = newFolder->Child(0);
+            InsertExistingItem(0, newFolder, item);
+        }
+        */
     }
 
     if (item->GetItemType()== AbstractInventoryItem::Type_Asset)
@@ -416,6 +433,7 @@ bool InventoryItemModel::InsertExistingItem(int position, AbstractInventoryItem 
             // If the copy as legal, server sends us packet and we create the asset after that.
             InventoryAsset newTempAsset(oldAsset->GetID(), oldAsset->GetAssetReference(), oldAsset->GetName(),
                 newParentFolder);
+
             dataModel_->NotifyServerAboutItemCopy(&newTempAsset);
         }
         else
@@ -487,9 +505,9 @@ void InventoryItemModel::FetchInventoryDescendents(const QModelIndex &index)
     if (!folder)
         return;
 
-    // Send FetchInventoryDescendents only if the folder is "dirty".
-    if (!folder->IsDirty())
-        return;
+    // Fetch inventory descendents only if the folder is "dirty".
+//    if (!folder->IsDirty())
+//        return;
 
     dataModel_->FetchInventoryDescendents(item);
 

@@ -2,7 +2,7 @@
 
 /**
  *  @file AbstractInventoryItem.h
- *  @brief 
+ *  @brief Abstract inventory item. Subclass your inventory items from this class.
  */
 
 #ifndef incl_InventoryModule_AbstractInventoryItem_h
@@ -54,8 +54,10 @@ namespace Inventory
         /// @param id New ID.
         void SetID(const QString &id) { id_ = id; }
 
-        /// Set/get for parent.
+        /// @return Parent pointer.
         AbstractInventoryItem *GetParent() const { return parent_; }
+
+        /// @param parent New parent pointer.
         void SetParent(AbstractInventoryItem *parent) { parent_ = parent; }
 
         /// @return Is this item editable.
@@ -67,7 +69,7 @@ namespace Inventory
         /// @return Type of the item (folder/asset).
         virtual InventoryItemType GetItemType() const = 0;
 
-        /// Is this item library asset.
+        /// @return Is this item library asset.
         virtual bool IsLibraryItem() const = 0;
 
         /// @param value Is this item library asset.

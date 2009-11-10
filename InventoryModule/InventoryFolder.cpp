@@ -226,16 +226,6 @@ QList<QString> InventoryFolder::GetDescendentIds()
     return id_list;
 }
 
-AbstractInventoryItem *InventoryFolder::Child(int row)
-{
-    return children_.value(row);
-}
-
-int InventoryFolder::ChildCount() const
-{
-    return children_.count();
-}
-
 int InventoryFolder::Row() const
 {
     if (GetParent())

@@ -37,28 +37,36 @@ namespace Inventory
         /// Destructor.
         virtual ~InventoryAsset();
 
-        /// Get/set for asset reference.
+        /// @return asset reference.
         QString GetAssetReference() const { return assetReference_; }
-        void SetAssetReference(const QString &assetReference) { assetReference_ = assetReference; }
 
-        /// Get/set for the description.
-        void SetDescription(const QString &description) { description_ = description; }
+        /// @param asset_reference New asset reference.
+        void SetAssetReference(const QString &asset_reference) { assetReference_ = asset_reference; }
+
+        /// @return Description.
         QString GetDescription() const { return description_;}
+
+        /// @param description New description.
+        void SetDescription(const QString &description) { description_ = description; }
 
         /// Get/set for the description.
         void SetAssetType(const asset_type_t &asset_type) { assetType_ = asset_type; }
         asset_type_t GetAssetType() const { return assetType_;}
 
-        /// Get/set for the description.
-        void SetInventoryType(const inventory_type_t &inventory_type) { inventoryType_ = inventory_type; }
+        /// @return Inventory type (see RexTypes.h).
         inventory_type_t GetInventoryType() const { return inventoryType_;}
+
+        /// @param inventory_type New inventory type (see RexTypes.h).
+        void SetInventoryType(const inventory_type_t &inventory_type) { inventoryType_ = inventory_type; }
 
         /// Is this folder descendent of spesific folder.
         /// @param searchFolder Folder to be investigated.
         bool IsDescendentOf(AbstractInventoryItem *searchFolder);
 
-        /// Get/set for the libary asset flag.
+        /// @return Is this item library asset.
         bool IsLibraryItem() const { return libraryAsset_; }
+
+        /// @param value Is this item library asset.
         void SetIsLibraryItem(const bool &value) { libraryAsset_ = value; }
 
         /// @return Type of the item.

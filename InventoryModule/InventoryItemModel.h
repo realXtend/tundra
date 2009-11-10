@@ -8,17 +8,18 @@
 #ifndef incl_InventoryModule_InventoryItemModel_h
 #define incl_InventoryModule_InventoryItemModel_h
 
-#include "AbstractInventoryItem.h"
 #include "NetworkEvents.h"
 #include "InventoryEvents.h"
 
 #include <QAbstractItemModel>
 #include <QModelIndex>
+#include <QVector>
 
 class QMimeData;
 
 namespace Inventory
 {
+    class AbstractInventoryItem;
     class AbstractInventoryDataModel;
 
     class InventoryItemModel : public QAbstractItemModel
@@ -40,7 +41,7 @@ namespace Inventory
 //        bool canFetchMore(const QModelIndex & parent) const;
 
         /// QAbstractItemModel override.
-//        void fetchMore(const QModelIndex &parent)
+//        void fetchMore(const QModelIndex &parent);
 
         /// QAbstractItemModel override.
         Qt::DropActions supportedDropActions() const;
@@ -130,8 +131,8 @@ namespace Inventory
         /// Item move flag.
         bool itemMoveFlag_;
 
-        /// Number of items to be moved.
-        int movedItemsCount_;
+        /// List used temporarily id's of items to be moved in the inventory model.
+        QVector<QString> itemsToBeMoved_;
     };
 }
 
