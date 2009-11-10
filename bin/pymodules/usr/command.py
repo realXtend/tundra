@@ -2,6 +2,7 @@
 used for quick testing of py commands."""
 
 import rexviewer as r
+import math
 
 print "--- *** ---"
 
@@ -484,24 +485,69 @@ if 0: #test changing the mesh asset a prim is using
     print "..done", ent.mesh
     
 if 0: #testing vector3/quat wrapping 
-    import PythonQt
-    print dir(PythonQt)
-    print dir(PythonQt.Vector3)
+    #import PythonQt
+    #print PythonQt.__dict__.has_key("Core::Vector3df")
+    #Vector3 = PythonQt.__dict__["Core::Vector3df"]
     from PythonQt import *
+    from editgui.conversions import *
     
-    #~ print "testing the CustomObject"
-    #~ # create a new object
-    #~ custom = CustomObject("John","Doe")
-    #~ # print the object (to see how it is wrapped)
-    #~ print custom
-    #~ # print the methods available
-    #~ print dir(custom)
-    #~ # set a name
-    #~ custom.setFirstName("Mike")
-    #~ custom.setLastName("Michels")
-    #~ # get the name
-    #~ print custom.firstName() + " " + custom.lastName();
-    print "Creating Vector:", 
-    vec = Vector3(0, 0, 0)
-    print vec, dir(vec)
-    print "Vector3 is", vec.x(), vec.y(), vec.z()
+    print "Creating Vectors:"
+    vec = Vector3df(0, 0, 0)
+    print "vec1 (%.1f, %.1f, %.1f)" % (vec.x(), vec.y(), vec.z())
+    
+    vec2 = Vector3df(1, 1, 1)
+    print "vec2 (%.1f, %.1f, %.1f)" % (vec2.x(), vec2.y(), vec2.z())
+    
+    print "distance between the two", vec.getDistanceFrom(vec2)
+    
+    vec.setx(1.0)
+    vec.sety(1.0)
+    vec.setz(1.0)
+    
+    print "changed vec1 (%.1f, %.1f, %.1f)" % (vec.x(), vec.y(), vec.z())
+    print "new distance between the two", vec.getDistanceFrom(vec2)
+    
+    vec.setx(4.0)
+    vec.sety(4.0)
+    vec.setz(4.0)
+    print "changed vec1 (%.1f, %.1f, %.1f)" % (vec.x(), vec.y(), vec.z())
+    print "another new distance between the two", vec.getDistanceFrom(vec2)
+    
+    print "Creating quats:"
+    quat = Quaternion(0, 0, 0, 0)
+    print "quat (%.4f, %.4f, %.4f, %.4f)" % (quat.x(), quat.y(), quat.z(), quat.w())
+    
+    quat.setx(2.0)
+    quat.sety(2.0)
+    quat.setz(3.0)
+    quat.setw(2.0)
+    print "changed quat (%.4f, %.4f, %.4f, %.4f)" % (quat.x(), quat.y(), quat.z(), quat.w())
+    
+    print "Quat to Euler:"
+    x = 0.707
+    y = 0
+    z = 0
+    w = 0.707
+    quat = Quaternion(x, y, z, w)
+    euls = Vector3df(0,0,0)
+    quat.toEuler(euls)
+    euls2 = quat_to_euler((x, y, z, w))
+    print "eulers (%.1f, %.1f, %.1f)" % (math.degrees(euls.x()), math.degrees(euls.y()), math.degrees(euls.z()))
+    print "eulers2", euls2
+    
+    print "Euler to Quat:"
+    x = math.radians(0)
+    y = math.radians(90)
+    z = math.radians(0)
+    
+    euler = Vector3df(x, y, z)
+    #~ quat_from_euler = Quaternion(euler)
+    #~ print "quat from eulers (%.4f, %.4f, %.4f, %.4f)" % (quat_from_euler.x(), quat_from_euler.y(), quat_from_euler.z(), quat_from_euler.w())
+
+    quat_from_euler = Quaternion(x, y, z)
+    print "quat from eulers (%.4f, %.4f, %.4f, %.4f)" % (quat_from_euler.x(), quat_from_euler.y(), quat_from_euler.z(), quat_from_euler.w())
+    
+    
+    from editgui.conversions import *
+    euler = euler_to_quat((0, 90, 0))
+    print "quat from eulers", euler

@@ -6,8 +6,6 @@
 #include "QtModule.h"
 #include "UICanvas.h"
 
-#include "Foundation.h"
-
 namespace PythonScript 
 {
     class QtModuleWrapper : public QObject
