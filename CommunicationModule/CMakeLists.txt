@@ -18,6 +18,13 @@ macro (AddSourceFolder folder_name)
     set (CPP_FILES ${CPP_FILES} ${CPP_FILES_IN_FOLDER_${folder_name}})
 endmacro (AddSourceFolder)
 
+configure_telepathy_qt4 ()
+configure_gstreamer ()
+configure_dbus ()
+configure_glib ()
+configure_telepathy_glib ()
+configure_telepathy_farsight ()
+
 # Define target name and output directory
 init_target (CommunicationModule OUTPUT modules/core)
 
