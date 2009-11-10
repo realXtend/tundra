@@ -44,6 +44,29 @@ EXTERNAL = 0
 UP = 0
 RIGHT = 1
 
+class MeshAssetidEditline(QLineEdit):
+    def __init__(self, mainedit, *args):
+        self.mainedit = mainedit #to be able to query the selected entity at drop
+        QLineEdit.__init__(self, *args)
+
+    def dropEvent(self, ev):
+    #    print "Got meshid_drop:", self, ev
+        text = ev.mimeData().text()
+        r.logDebug("EDITGUI: Mesh asset id got drag drop: %s" % text)
+        ent = self.mainedit.sel #is public so no need for getter, can be changed to a property if needs a getter at some point
+        #XXX validate input for being a valid mesh asset UUID somehow
+        if ent is not None:
+            applymesh(ent, text)
+            self.text = text
+        else:
+            self.text = "(no scene entity selected)"
+
+def applymesh(ent, meshuuid):
+    ent.mesh = meshuuid
+    #r.logDebug("Mesh asset UUID after before sending to server: %s" % ent.mesh)
+    r.sendRexPrimData(ent.id)
+    r.logDebug("Mesh asset UUID after prim data sent to server: %s" % ent.mesh)
+
 class EditGUI(Component):
     EVENTHANDLED = False
     OIS_ESC = 1
@@ -53,31 +76,40 @@ class EditGUI(Component):
         Component.__init__(self)
         loader = QUiLoader()
             
-        self.canvas = r.createCanvas(INTERNAL) #change to internal later, had some rendering problems?
+        self.canvas = r.createCanvas(EXTERNAL) #now for drag&drop dev
         self.arrows = None
         
-        file = QFile(self.UIFILE)
+        uifile = QFile(self.UIFILE)
 
-        widget = loader.load(file)
-        width = widget.size.width()
-        height = widget.size.height()
+        ui = loader.load(uifile)
+        width = ui.size.width()
+        height = ui.size.height()
 
         self.canvas.SetSize(width, height)
         self.canvas.SetPosition(30, 30)
         self.canvas.SetResizable(False)
 
-        widget.resize(width, height)
+        ui.resize(width, height)
 
-        self.canvas.AddWidget(widget)
+        self.canvas.AddWidget(ui)
+        self.widget = ui.MainFrame
+        self.widget.label.text = "<none>"
+
+        #print dir(ui)
+        meshassetedit = MeshAssetidEditline(self) #ui) #ui.MainFrame) - crashes :o
+        """<x>190</x>
+        <y>180</y>
+        <width>151</width>
+        <height>20</height>"""
+        meshassetedit.show()
+        meshassetedit.move(190, 180)
+        self.canvas.AddWidget(meshassetedit)
         
         self.canvas.connect('Hidden()', self.on_hide)
-        
         #self.canvas.Show()
         modu = r.getQtModule()
         modu.AddCanvasToControlBar(self.canvas, "World Edit")
 
-        #self.deactivate()
-        
         #for some reason setRange is not there. is not not a slot of these?
         #"QDoubleSpinBox has no attribute named 'setRange'"
         #apparently they are properties .minimum and .maximum, made in the xml now
@@ -90,7 +122,7 @@ class EditGUI(Component):
             def pos_at_index(v):
                 self.changepos(i, v)
             return pos_at_index
-        for i, poswidget in enumerate([widget.MainFrame.xpos, widget.MainFrame.ypos, widget.MainFrame.zpos]):
+        for i, poswidget in enumerate([ui.MainFrame.xpos, ui.MainFrame.ypos, ui.MainFrame.zpos]):
             #poswidget.connect('valueChanged(double)', lambda v: self.changepos(i, v))  
             poswidget.connect('valueChanged(double)', poschanger(i))
 
@@ -98,25 +130,21 @@ class EditGUI(Component):
             def rot_at_index(v):
                 self.changerot(i, v)
             return rot_at_index
-        for i, rotwidget in enumerate([widget.MainFrame.rot_x, widget.MainFrame.rot_y, widget.MainFrame.rot_z]):
+        for i, rotwidget in enumerate([ui.MainFrame.rot_x, ui.MainFrame.rot_y, ui.MainFrame.rot_z]):
             rotwidget.connect('valueChanged(double)', rotchanger(i))
         
         def scalechanger(i):
             def scale_at_index(v):
                 self.changescale(i, v)
             return scale_at_index
-        for i, scalewidget in enumerate([widget.MainFrame.scalex, widget.MainFrame.scaley, widget.MainFrame.scalez]):
+        for i, scalewidget in enumerate([ui.MainFrame.scalex, ui.MainFrame.scaley, ui.MainFrame.scalez]):
             scalewidget.connect('valueChanged(double)', scalechanger(i))
         
         self.sel = None
         
         self.left_button_down = False
         self.right_button_down = False
-        self.widget = widget.MainFrame
-        self.widget.label.text = "<none>"
-        
-        r.c = self
-
+                
         self.widget.treeWidget.connect('clicked(QModelIndex)', self.itemActivated)
         #self.widget.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
         
@@ -133,14 +161,6 @@ class EditGUI(Component):
             r.RightMouseClickPressed: self.RightMouseDown,
             r.RightMouseClickReleased: self.RightMouseUp
         }
-        
-    #~ def changed_x(self, v):
-        #~ print "x changed to: %f" % v
-        #~ ent = self.sel
-        #~ if ent is not None:
-            #~ print "sel pos is:", ent.pos
-            #~ _, y, z = ent.pos #should probably wrap Vector3, see test_move.py for refactoring notes        
-            #~ ent.pos = v, y, z
                         
     def changepos(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
@@ -208,6 +228,7 @@ class EditGUI(Component):
         r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
 
     def setMesh(self, *args):
+        """callback for the original set mesh button, going away."""
         meshUUID = None
         meshUUID = QInputDialog.getText(None, "Mesh asset UUID", "Please give mesh asset UUID", QLineEdit.Normal, "")
         if meshUUID != "" and meshUUID != None:
@@ -215,12 +236,7 @@ class EditGUI(Component):
             # validate UUID somehow and get selected item from listview -> put mesh to it with id :)
             #XXX validate
             #print "Type of meshUUID:", type(meshUUID)
-            ent = self.sel
-            ent.mesh = meshUUID
-            #r.logDebug("Mesh asset UUID after before sending to server: %s" % ent.mesh)
-            r.sendRexPrimData(ent.id)
-            r.logDebug("Mesh asset UUID after prim data sent to server: %s" % ent.mesh)
-            
+            applymesh(self.sel, meshUUID)
 
     def select(self, ent):
         arrows = False
