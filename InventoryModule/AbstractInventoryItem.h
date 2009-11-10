@@ -10,7 +10,6 @@
 
 #include <QObject>
 #include <QString>
-#include <QDataStream>
 
 namespace Inventory
 {
@@ -21,7 +20,6 @@ namespace Inventory
         Q_PROPERTY(QString name_ READ GetName WRITE SetName)
         Q_PROPERTY(AbstractInventoryItem *parent_ READ GetParent WRITE SetParent)
         Q_PROPERTY(bool editable_ READ IsEditable WRITE SetEditable)
-        Q_ENUMS(InventoryDataModel)
         Q_ENUMS(InventoryItemType)
 
     public:
@@ -44,27 +42,35 @@ namespace Inventory
         /// Destructor.
         virtual ~AbstractInventoryItem() {}
 
-        /// Set/get for name.
+        /// @return Name.
         QString GetName() const {return name_; }
+
+        /// @param name New name.
         void SetName(const QString &name) { name_ = name; }
 
-        /// Set/get for ID.
+        /// @return ID.
         QString GetID() const { return id_; }
+
+        /// @param id New ID.
         void SetID(const QString &id) { id_ = id; }
 
         /// Set/get for parent.
         AbstractInventoryItem *GetParent() const { return parent_; }
         void SetParent(AbstractInventoryItem *parent) { parent_ = parent; }
 
-        /// Get/set for the editable flag.
+        /// @return Is this item editable.
         bool IsEditable() const { return editable_; }
+
+        /// @param editable Is this item editable.
         void SetEditable(const bool &editable) { editable_ = editable; }
 
         /// @return Type of the item (folder/asset).
         virtual InventoryItemType GetItemType() const = 0;
 
-        /// Get/set for library asset flag.
+        /// Is this item library asset.
         virtual bool IsLibraryItem() const = 0;
+
+        /// @param value Is this item library asset.
         virtual void SetIsLibraryItem(const bool &value) = 0;
 
         /// Is this folder descendent of spesific folder.
@@ -83,7 +89,7 @@ namespace Inventory
         /// Parent pointer.
         AbstractInventoryItem *parent_;
 
-        /// Read-only flag.
+        /// Editable flag.
         bool editable_;
     };
 }

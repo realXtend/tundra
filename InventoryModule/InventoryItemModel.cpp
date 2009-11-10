@@ -20,7 +20,7 @@
 #include <QMimeData>
 #include <QDataStream>
 #include <QPointer>
-#include <QFileIconProvider>
+#include <QIcon>
 
 namespace Inventory
 {
@@ -41,20 +41,15 @@ QVariant InventoryItemModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     AbstractInventoryItem *item = GetItem(index);
-/*
+
     if (role == Qt::DecorationRole)
     {
-        QFileIconProvider provider;
-        if (item->GetItemType() == AbstractInventoryItem::Type_Folder && item->GetName() == "Trash")
-            return provider.icon(QFileIconProvider::Trashcan);
-
         if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
-            return provider.icon(QFileIconProvider::Folder);
+            return QIcon(":images/iconFolderClosed.png");
 
         if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
-            return provider.icon(QFileIconProvider::File);
+            return QIcon(":images/iconResource.png");
     }
-*/
 
     if (role != Qt::DisplayRole)
         return QVariant();

@@ -23,100 +23,90 @@
    <bool>false</bool>
   </property>
   <property name="styleSheet">
-   <string>/* Containers */
-QWidget#inventorymain {
-	background-color: rgba(255, 255, 255, 0);
-}
+   <string>
+    /* Containers */
+    QWidget#inventorymain {
+        background-color: rgba(255, 255, 255, 0);
+    }
 
-QFrame#MainFrame {
-	background-color: rgba(85, 170, 255, 175);
-	border: 2px solid rgba(85, 170, 255, 200);
-	padding: 5px;
-	border-radius:15px;
-}
+    QFrame#MainFrame {
+        background-color: rgba(85, 170, 255, 175);
+        border: 2px solid rgba(85, 170, 255, 200);
+        padding: 5px;
+        border-radius:15px;
+    }
 
-QFrame {
-	background-color: rgb(234, 234, 234);
-}
+    QFrame {
+        background-color: rgb(234, 234, 234);
+    }
 
-/* QToolBox */
-QToolBox::tab {
-	font-size: 10px;
-	border-color: rgba(255, 255, 255, 0);
-	border-bottom: 1px solid grey;
-	border-top: 1px solid grey;
-}
+    /* QToolBox */
+    QToolBox::tab {
+        font-size: 10px;
+        border-color: rgba(255, 255, 255, 0);
+        border-bottom: 1px solid grey;
+        border-top: 1px solid grey;
+    }
 
-QToolBox::tab:hover {
-	background-color: rgb(191, 191, 191);
-}
+    QToolBox::tab:hover {
+        background-color: rgb(191, 191, 191);
+    }
 
-QToolBox::tab:selected {
-	font: bold;
-	background-color: none;
-}
+    QToolBox::tab:selected {
+        font: bold;
+        background-color: none;
+    }
+    
+    /* QTreeView */
+    QTreeView::branch:has-siblings:!adjoins-item
+    {
+        border-image: url(:/images/iconBranchVLine.png) 0;
+    }
 
-/* QTreeView */
-QTreeView#treeView {
-	background-color: rgb(255, 255, 255);
-	border: 1px solid grey;
-	border-top-left-radius:15px;
-	border-bottom-left-radius:15px;
-}
-QTreeView::item {
-    border: 0px;
-}
-QTreeView::item:selected {
-	color: rgb(23, 65, 255);
-}
-QTreeView::item:selected:hover {
-	color: rgb(23, 65, 255);
-}
-QTreeView::item:hover {
-	color: rgb(61, 122, 255);
-}
-QTreeView::branch:has-siblings:!adjoins-item {
-    border-image: url(:/images/iconBranchVLine.png) 0;
-}
-QTreeView::branch:has-siblings:adjoins-item {
-    border-image: url(:/images/iconBranchMore.png) 0;
-}
-QTreeView::branch:!has-children:!has-siblings:adjoins-item {
-    border-image: url(:/images/iconBranchEnd.png) 0;
-}
-QTreeView::branch:has-children:!has-siblings:closed,
-QTreeView::branch:closed:has-children:has-siblings {
+    QTreeView::branch:has-siblings:adjoins-item
+    {
+        border-image: url(:/images/iconBranchMore.png) 0;
+    }
+
+    QTreeView::branch:!has-children:!has-siblings:adjoins-item
+    {
+        border-image: url(:/images/iconBranchEnd.png) 0;
+    }
+
+    QTreeView::branch:has-children:!has-siblings:closed,
+    QTreeView::branch:closed:has-children:has-siblings
+    {
         border-image: none;
-        image: url(:/images/iconFolderClosed.png);
-}
-QTreeView::branch:open:has-children:!has-siblings,
-QTreeView::branch:open:has-children:has-siblings  {
+        image: url(:/images/iconBranchClosed.png);
+    }
+
+    QTreeView::branch:open:has-children:!has-siblings,
+    QTreeView::branch:open:has-children:has-siblings
+    {
         border-image: none;
-        image: url(:/images/iconFolderOpen.png);
-}
+        image: url(:/images/iconBranchOpen.png);
+    }
 
-/* QPushButton */
-QPushButton {
-	font-size: 10px;
-	color: rgb(11, 11, 11);
-	background-color: rgb(234, 234, 234);
-	border: rgba(255, 255, 255, 0);
-	padding: 2px;
-}
-QPushButton:hover {
-	color: rgb(255, 255, 255);
-	background-color: rgb(149, 149, 149);
-}
-QPushButton:hover::pressed {
-	color: rgb(0, 0, 0);
-	background-color: rgb(202, 202, 202);
-}
-QPushButton#pushButton_Close {
-	border-top: 1px solid grey;
-}
-
-
-</string>
+    /* QPushButton */
+    QPushButton {
+        font-size: 10px;
+        color: rgb(11, 11, 11);
+        background-color: rgb(234, 234, 234);
+        border: rgba(255, 255, 255, 0);
+        padding: 2px;
+    }
+    QPushButton:hover {
+        color: rgb(255, 255, 255);
+        background-color: rgb(149, 149, 149);
+    }
+    QPushButton:hover::pressed {
+        color: rgb(0, 0, 0);
+        background-color: rgb(202, 202, 202);
+    }
+    QPushButton#pushButton_Close {
+        border-top: 1px solid grey;
+    }
+   </string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
