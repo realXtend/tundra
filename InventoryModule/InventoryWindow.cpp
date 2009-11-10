@@ -29,7 +29,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework, RexLogic::Rex
     if (!qtModule_.get())
         return;
 
-    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::External).lock();
+    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
 
     // Init Inventory Widget and connect close signal
     InitInventoryWindow();
@@ -37,11 +37,11 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework, RexLogic::Rex
     QObject::connect(buttonClose_, SIGNAL(clicked()), this, SLOT(Hide()));
 
     // Add local widget to canvas, setup initial size and title and show canvas
-    canvas_->SetCanvasSize(300, 350);
-    canvas_->SetLockPosition(false);
-    canvas_->SetCanvasResizeLock(true);
+    canvas_->SetSize(300, 350);
+    canvas_->SetStationary(false);
+    canvas_->SetResizable(false);
     canvas_->SetPosition(canvas_->GetRenderWindowSize().width()-350,35);
-    canvas_->SetCanvasWindowTitle(QString("Inventory"));
+    canvas_->SetWindowTitle(QString("Inventory"));
     canvas_->AddWidget(inventoryWidget_);
 
     // Add to control bar
@@ -175,7 +175,8 @@ void InventoryWindow::AddFolder()
             return;
 
     bool ok = false;
-    QString newFolderName = QInputDialog::getText(canvas_.get(), "Create New Folder", "Please give name of the new folder",
+
+    QString newFolderName = QInputDialog::getText(canvas_->GetView(), "Create New Folder", "Please give name of the new folder",
         QLineEdit::Normal, "", &ok);
     if (!ok)
         return;

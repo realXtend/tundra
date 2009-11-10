@@ -50,7 +50,7 @@ namespace QtUI
                 this weak_ptr as a member. Do not elevate this to a shared_ptr and store that,
                 since that will lead to incorrect reference counting and problems with deleting
                 canvases. */
-        boost::weak_ptr<UICanvas> CreateCanvas(UICanvas::Mode mode);
+        boost::weak_ptr<UICanvas> CreateCanvas(UICanvas::DisplayMode mode);
 
       
         /** 

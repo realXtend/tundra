@@ -51,7 +51,7 @@ namespace QtUI
             QtModule::LogError("Null UI canvas");
             return;
         }
-        if (canvasptr->GetMode() == UICanvas::External)
+        if (canvasptr->GetDisplayMode() == UICanvas::External)
         {
             QtModule::LogError("Can not use an external canvas for EC_UICanvas");
             return;

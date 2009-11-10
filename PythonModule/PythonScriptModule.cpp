@@ -906,7 +906,7 @@ PyObject* CreateCanvas(PyObject *self, PyObject *args)
     if ( qt_module.get() == 0)
         return NULL;
     
-    QtUI::UICanvas::Mode rMode = (QtUI::UICanvas::Mode) imode;
+    QtUI::UICanvas::DisplayMode rMode = (QtUI::UICanvas::DisplayMode) imode;
     canvas_ = qt_module->CreateCanvas(rMode).lock();
 
     QtUI::UICanvas* qcanvas = canvas_.get();

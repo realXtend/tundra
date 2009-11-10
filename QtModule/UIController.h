@@ -34,7 +34,7 @@ namespace QtUI
          * @param canvas is canvas which state we want to manage through controller. 
          */
 
-        void AddCanvas(UICanvas* canvas) {}
+        //void AddCanvas(UICanvas* canvas) {}
         
         /**
          * Draws/Updates canvases, after update canvases internal Z-order is calculated. 
@@ -48,7 +48,7 @@ namespace QtUI
          * @param mode is canvas mode @see UICanvas 
          * @note default mode is Internal (so it is rendered by OGRE).
          */
-        boost::weak_ptr<UICanvas> CreateCanvas(UICanvas::Mode mode = UICanvas::Internal);
+        boost::weak_ptr<UICanvas> CreateCanvas(UICanvas::DisplayMode mode = UICanvas::Internal);
 
         /**
          * Sends a mouse move event to correct canvas. 

@@ -21,6 +21,9 @@
 #include <Ogre.h>
 #include <QSize>
 
+#include "UILocationPolicy.h"
+#include "UIAppearPolicy.h"
+
 #include <OgreHardwarePixelBuffer.h>
 #include <OgreTexture.h>
 #include <OgreMaterial.h>
@@ -35,70 +38,62 @@
 namespace QtUI
 {
 
-UICanvas::UICanvas(): overlay_(0),
-                      container_(0),
-                      dirty_(true),
+UICanvas::UICanvas(): dirty_(true),
                       renderwindow_changed_(false),
                       surfaceName_(""),
+                      overlay_(0),
+                      container_(0),
+                      state_(0),
+                      renderWindowSize_(QSize()),
                       mode_(External),
                       id_(QUuid::createUuid().toString()),
-                      locked_(false), 
-                      resize_locked_(false),
-                      always_top_(false),
-                      fade_(false),
-                      alpha_(0.0),
-                      current_dur_(0.0),
-                      total_dur_(0.0),
-                      lastTime_(0.0),fade_on_hiding_(false),
-                      use_fading_ (false)
+                      locationPolicy_(new UILocationPolicy),
+                      appearPolicy_(new UIAppearPolicy),
+                      view_(new QGraphicsView)
+                   
 
                      
                       
 {
-    setScene(new QGraphicsScene);
-    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+ 
+    view_->setScene(new QGraphicsScene);
+    view_->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
-    QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(SetDirty()));
-
+    QObject::connect(view_->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(Redraw()));
 
 }
 
-UICanvas::UICanvas(Mode mode, const QSize& parentWindowSize): overlay_(0),
-                               container_(0),
-                               dirty_(true),
-                               renderwindow_changed_(false),
-                               renderWindowSize_(parentWindowSize),
-                               mode_(mode),
-                               id_(QUuid::createUuid().toString()),
-                               locked_(false),
-                               resize_locked_(false),
-                               always_top_(false), 
-                               fade_(false),
-                               alpha_(0.0),
-                               current_dur_(0.0),
-                               total_dur_(0.0),
-                               lastTime_(0.0), fade_on_hiding_(false),
-                               use_fading_ (false)
-
-                               
-                          
+UICanvas::UICanvas(DisplayMode mode, const QSize& parentWindowSize): 
+    dirty_(true),
+    renderwindow_changed_(false),
+    surfaceName_(""),
+    overlay_(0),
+    container_(0),
+    state_(0),
+    renderWindowSize_(parentWindowSize),
+    mode_(mode),
+    id_(QUuid::createUuid().toString()),
+    locationPolicy_(new UILocationPolicy),
+    appearPolicy_(new UIAppearPolicy),
+    view_(new QGraphicsView)
 {
-    setScene(new QGraphicsScene);
-
-
-
+    
+    view_->setScene(new QGraphicsScene);
+    view_->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    
     if (mode_ == External) 
     {
         // Deal canvas as normal QWidget. 
         // Currently do nothing
+       
     }
     else if (mode_ == Internal)
     {
-        setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-        QSize size = this->size();
+       
+        QSize size = view_->size();
         
         CreateOgreResources(size.width(), size.height());
-        QObject::connect(this->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(SetDirty()));
+        QObject::connect(view_->scene(),SIGNAL(changed(const QList<QRectF>&)),this,SLOT(Redraw()));
         
     }
 }
@@ -112,7 +107,10 @@ UICanvas::~UICanvas()
         delete widget;
     }
 
-    if (mode_ != External) 
+    if (mode_ != External || 
+        container_ != 0 ||
+        overlay_ != 0 ||
+        state_ != 0) 
     {
         Ogre::TextureManager::getSingleton().remove(surfaceName_.toStdString().c_str());
         QString surfaceMaterial = QString("mat") + id_;
@@ -127,90 +125,18 @@ UICanvas::~UICanvas()
 
     container_ = 0;
     overlay_ = 0;
-
-    QGraphicsScene* scene = this->scene();
+    
+    delete locationPolicy_;
+    locationPolicy_ = 0;
+    delete appearPolicy_;
+    appearPolicy_ = 0;
+    delete view_;
+    view_ = 0;
+    /*
+    QGraphicsScene* scene = view_->scene();
     delete scene;
     scene = 0;
-}
-
-void UICanvas::AddWidget(QWidget* widget)
-{ 
-    QGraphicsScene* scene = this->scene();
-    scene_widgets_.append(scene->addWidget(widget));
-}
-
-void UICanvas::SetPosition(int x, int y)
-{
-    switch (mode_)
-    {
-    case External:
-    {
-        move(x,y);
-        break;
-    }
-    case Internal:
-    {
-        float relX = x/double(renderWindowSize_.width()), relY = y/double(renderWindowSize_.height());
-        container_->setPosition(relX, relY);
-        move(x,y);
-        dirty_ = true;
-        break;
-    }
-    default:
-        break;
-    }
-}
-
-void UICanvas::SetZOrder(int order)
-{
-    if ( mode_ != External)
-        overlay_->setZOrder(order);
-}
-
-int UICanvas::GetZOrder() const
-{
-    if (mode_ != External)
-        return overlay_->getZOrder();
-
-    return -1;
-}
-
-void UICanvas::SetTop()
-{
-    emit ToTop(id_);
-}
-
-void UICanvas::SetBack()
-{
-    emit ToBack(id_);
-}
-
-void UICanvas::Activate()
-{
-    if ( mode_ == External)
-        return;
-
-#ifdef Q_WS_WIN
-    QSize current_size = size();
-    //Qt::FramelessWindowHint
-    setWindowFlags(Qt::FramelessWindowHint);
-    SetCanvasSize(1,1);
-    show();
-    WId win_id = effectiveWinId();
-    ShowWindow(static_cast<HWND>(win_id),SW_HIDE);
-    SetCanvasSize(current_size.width(), current_size.height());
-#endif 
-
-}
-
-QPoint UICanvas::MapToCanvas(int x, int y)
-{
-    if ( mode_ != External)
-    {
-        x -= container_->getLeft() * renderWindowSize_.width();
-        y -= container_->getTop() * renderWindowSize_.height();
-    }
-     return QPoint(x,y);
+    */
 }
 
 QPointF UICanvas::GetPosition() const
@@ -221,7 +147,7 @@ QPointF UICanvas::GetPosition() const
     {
     case External:
     {
-        position = pos();
+        position = view_->pos();
         break;
     }
     case Internal:
@@ -241,86 +167,28 @@ QPointF UICanvas::GetPosition() const
     return position;
 }
 
-bool UICanvas::IsHidden() const
-{
-    if (mode_ != External)
-    {
-        if (overlay_)
-            return !overlay_->isVisible(); 
-        else
-            return true;
-    }
-    else
-    {
-        return !isVisible();
-    }
-}
-
-void UICanvas::SetCanvasSize(int width, int height)
-{
-    resize(width, height);
-
-    if ( mode_ != External)
-    {
-        CreateOgreResources(width, height);
-        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
-        float relWidth = (float)texture->getWidth()/double(renderWindowSize_.width());
-        float relHeight = (float)texture->getHeight()/double(renderWindowSize_.height());
-        container_->setDimensions(relWidth, relHeight);
-        Ogre::PanelOverlayElement* element = static_cast<Ogre::PanelOverlayElement* >(container_);  
-        element->setUV(0.0f, 0.0f, 1.0f, 1.0f);    
-        
-        ResizeWidgets(width, height);
-    }
-
-    // Repaint canvas. 
-    dirty_ = true;
-    RenderSceneToOgreSurface();
-}
-
-void UICanvas::SetRenderWindowSize(const QSize& size)
-{
-    QPoint oldpos = pos();
-    
-    renderWindowSize_ = size;
-   
-    if ( mode_ != External)
-    {  
-        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
-        float relWidth = (float)texture->getWidth()/double(renderWindowSize_.width());
-        float relHeight = (float)texture->getHeight()/double(renderWindowSize_.height());
-        container_->setDimensions(relWidth, relHeight);
-     
-        // Reset position so that canvas stays pixel-perfect
-        SetPosition(oldpos.x(), oldpos.y());
-
-        renderwindow_changed_ = true;          
-        emit( RenderWindowSizeChanged(renderWindowSize_) );
-    }
-}
-
-void UICanvas::Resize(int height, int width, CanvasCorner anchor)
+void UICanvas::Resize(int height, int width, Corner anchor)
 {
     if ( mode_ == External ) 
     {
-        SetCanvasSize(width, height);
+        SetSize(width, height);
         return;
     }
 
     // Case when canvas resize is locked. 
 
-    if ( resize_locked_ )
+    if ( appearPolicy_->IsResizable())
         return;
 
-    QSize current_size = this->size();
+    QSize current_size = view_->size();
 
     // Assure that new size is bigger then canvas minium size or smaller then maximum size.  
 
-    QSize minium = this->minimumSize();
+    QSize minium = view_->minimumSize();
     if ( height < minium.height() || width < minium.width() || height <= 0 || width <= 0)
         return;
 
-    QSize maximum = this->maximumSize();
+    QSize maximum = view_->maximumSize();
     
     if ( height > maximum.height() || width > maximum.width() )
         return;
@@ -370,7 +238,7 @@ void UICanvas::Resize(int height, int width, CanvasCorner anchor)
         
     // Ensure Qt-internals
 
-    resize(width,height);
+    view_->resize(width,height);
    
     ResizeWidgets(width, height);
 
@@ -379,6 +247,333 @@ void UICanvas::Resize(int height, int width, CanvasCorner anchor)
 
 }
 
+QPoint UICanvas::MapToCanvas(int x, int y)
+{
+    QPoint pos(x,y);
+    
+    if ( mode_ != External)
+    {
+        x -= container_->getLeft() * renderWindowSize_.width();
+        y -= container_->getTop() * renderWindowSize_.height();
+        pos = view_->mapToScene(QPoint(x,y)).toPoint();
+    }
+ 
+    return pos;
+
+}
+
+/*
+QPoint UICanvas::MapToCanvas(int x, int y)
+{
+    if ( mode_ != External)
+    {
+        x -= container_->getLeft() * renderWindowSize_.width();
+        y -= container_->getTop() * renderWindowSize_.height();
+    }
+ 
+    return QPoint(x,y);
+}
+*/
+
+void UICanvas::Activate()
+{
+    if ( mode_ == External)
+        return;
+
+#ifdef Q_WS_WIN
+    QSize current_size = view_->size();
+    //Qt::FramelessWindowHint
+    view_->setWindowFlags(Qt::FramelessWindowHint);
+    SetSize(1,1);
+    view_->show();
+    WId win_id = view_->effectiveWinId();
+    ShowWindow(static_cast<HWND>(win_id),SW_HIDE);
+    SetSize(current_size.width(), current_size.height());
+#endif 
+
+}
+
+void UICanvas::BringToTop()
+{
+    emit ToTop(id_);
+}
+
+void UICanvas::PushToBack()
+{
+    emit ToBack(id_);
+}
+
+void UICanvas::SetSize(int width, int height)
+{
+    view_->resize(width, height);
+
+    if ( mode_ != External)
+    {
+        CreateOgreResources(width, height);
+        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
+        float relWidth = (float)texture->getWidth()/double(renderWindowSize_.width());
+        float relHeight = (float)texture->getHeight()/double(renderWindowSize_.height());
+        container_->setDimensions(relWidth, relHeight);
+        Ogre::PanelOverlayElement* element = static_cast<Ogre::PanelOverlayElement* >(container_);  
+        element->setUV(0.0f, 0.0f, 1.0f, 1.0f);    
+        
+        ResizeWidgets(width, height);
+    }
+
+    // Repaint canvas. 
+    dirty_ = true;
+    RenderSceneToOgreSurface();
+}
+
+void UICanvas::SetPosition(int x, int y)
+{
+    switch (mode_)
+    {
+    case External:
+    {
+        view_->move(x,y);
+        break;
+    }
+    case Internal:
+    {
+        float relX = x/double(renderWindowSize_.width()), relY = y/double(renderWindowSize_.height());
+        container_->setPosition(relX, relY);
+        // todo BUG ?
+        view_->move(x,y);
+        dirty_ = true;
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+bool UICanvas::IsHidden() const
+{
+    //todo Refactor so that it uses AppearPolicy.. so that it resolves hidden state depending animation state.
+    if (mode_ != External)
+    {
+        if (overlay_)
+            return !overlay_->isVisible(); 
+        else
+            return true;
+    }
+    else
+    {
+        return !view_->isVisible();
+    }
+}
+
+void UICanvas::Render()
+{
+    
+    if ( mode_ != External && container_->isVisible())
+    {
+        //todo use AppearPolycy
+        /*
+        if ( fade_ )
+        {
+            int time = clock_.elapsed();
+            if ( time != 0)
+            {
+                double timeSinceLastFrame = double((time - lastTime_))/1000.0;
+                lastTime_ = time;
+                Fade(timeSinceLastFrame);
+            }
+         
+        }
+        */
+
+        RenderSceneToOgreSurface();    
+    }
+}
+
+void UICanvas::SetRenderWindowSize(const QSize& size)
+{
+    QPoint oldpos = view_->pos();
+    
+    renderWindowSize_ = size;
+   
+    if ( mode_ != External)
+    {  
+        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
+        float relWidth = (float)texture->getWidth()/double(renderWindowSize_.width());
+        float relHeight = (float)texture->getHeight()/double(renderWindowSize_.height());
+        container_->setDimensions(relWidth, relHeight);
+     
+        // Reset position so that canvas stays pixel-perfect
+        SetPosition(oldpos.x(), oldpos.y());
+
+        renderwindow_changed_ = true;          
+        emit( RenderWindowSizeChanged(renderWindowSize_) );
+    }
+}
+
+void UICanvas::Show()
+{
+    if ( mode_ != External)
+    {
+        
+        QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
+        for (; iter != scene_widgets_.end(); ++iter)
+            (*iter)->show();
+        
+        //todo use appearpolicy here.
+        /*
+        if ( use_fading_ )
+        {
+            alpha_ = 0.0;
+            current_dur_ = 0.0;
+            fade_ = true;
+            state_->setAlphaOperation( Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha_);
+        
+            clock_.start();
+        }
+        */
+        container_->show();
+        overlay_->show();
+      
+
+        dirty_ = true;
+        RenderSceneToOgreSurface();
+    }
+    else
+    {
+        
+        
+        QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
+        for (; iter != scene_widgets_.end(); ++iter)
+            (*iter)->show();
+
+        view_->show();
+    }
+    
+}
+
+void UICanvas::Hide()
+{
+    if ( mode_ != External)
+    {
+        //todo use appearpolicy here.
+        /*
+        if ( use_fading_ )
+        {
+            fade_ = true;
+            fade_on_hiding_ = true;
+            current_dur_ = total_dur_;
+            clock_.restart();
+            return;
+        }
+        */
+        view_->hide();
+
+        QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
+        for (; iter != scene_widgets_.end(); ++iter)
+            (*iter)->hide();
+          
+        container_->hide();
+        overlay_->hide();
+        
+        dirty_ = true;
+        emit Hidden();
+        RenderSceneToOgreSurface();
+        
+    }
+    else
+    {
+        view_->hide();
+        emit Hidden();
+    }
+}
+
+void UICanvas::AddWidget(QWidget* widget)
+{ 
+    QGraphicsScene* scene = view_->scene();
+    scene_widgets_.append(scene->addWidget(widget));
+}
+
+void UICanvas::SetWindowTitle(const QString& title) 
+{
+	view_->setWindowTitle(title);
+}
+
+void UICanvas::SetWindowIcon(const QIcon& icon) 
+{
+	view_->setWindowIcon(icon);
+}
+
+
+
+void UICanvas::SetZOrder(int order)
+{
+    if ( mode_ != External)
+        overlay_->setZOrder(order);
+}
+
+int UICanvas::GetZOrder() const
+{
+    if (mode_ != External)
+        return overlay_->getZOrder();
+
+    return -1;
+}
+
+
+
+
+void UICanvas::drawBackground(QPainter* painter, const QRectF &rect)
+{
+    QBrush black(Qt::transparent);
+    painter->fillRect(rect, black);
+}
+
+void UICanvas::RenderSceneToOgreSurface()
+{
+    // Render if and only if scene is dirty.
+    if (((!dirty_) && (!renderwindow_changed_)) || mode_ == External)
+        return;
+
+    PROFILE(RenderSceneToOgre);
+
+    // We draw the GraphicsView area to an offscreen QPixmap and blit that onto the Ogre GPU surface.
+    QPixmap pixmap(view_->size());
+    {
+        PROFILE(FillEmpty);
+        pixmap.fill(Qt::transparent);
+        
+    }
+    assert(pixmap.hasAlphaChannel());
+    QImage img = pixmap.toImage();
+
+    QPainter painter(&img);
+    QRectF destRect(0, 0, pixmap.width(), pixmap.height());
+    QRect sourceRect(0, 0, pixmap.width(), pixmap.height());
+    {
+        PROFILE(RenderUI);
+        view_->render(&painter, destRect, sourceRect);
+    }
+    assert(img.hasAlphaChannel());
+
+    ///\todo Can optimize an extra blit away if we paint directly onto the GPU surface.
+    Ogre::Box dimensions(0,0, img.rect().width(), img.rect().height());
+    Ogre::PixelBox pixel_box(dimensions, Ogre::PF_A8R8G8B8, (void*)img.bits());
+    {
+        PROFILE(UIToOgreBlit);
+        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
+        texture->getBuffer()->blitFromMemory(pixel_box);
+    }
+
+    if (renderwindow_changed_)
+    {
+        renderwindow_changed_ = false;
+        dirty_ = true;
+    }
+    else
+    {
+        dirty_ = false;
+    }
+}
+/*
 void UICanvas::resizeEvent(QResizeEvent* event)
 {
     if ( mode_ != External || scene_widgets_.size() != 1)
@@ -387,7 +582,7 @@ void UICanvas::resizeEvent(QResizeEvent* event)
     scene_widgets_[0]->resize(event->size());
 
 }
-
+*/
 
 void UICanvas::ResizeWidgets(int width, int height)
 {
@@ -409,16 +604,6 @@ void UICanvas::ResizeWidgets(int width, int height)
     }
 }
 
-
-void UICanvas::SetCanvasWindowTitle(QString title) 
-{
-	setWindowTitle(title);
-}
-
-void UICanvas::SetCanvasWindowIcon(QIcon &icon) 
-{
-	setWindowIcon(icon);
-}
 
 
 void UICanvas::ResizeOgreTexture(int width, int height)
@@ -490,7 +675,7 @@ void UICanvas::CreateOgreResources(int width, int height)
     container_->setEnabled(true);
     container_->setColour(Ogre::ColourValue(1,1,1,1));
 }
-
+/*
 void UICanvas::Fade(double timeSinceLastFrame )
 {
     
@@ -538,152 +723,6 @@ void UICanvas::Fade(double timeSinceLastFrame )
     dirty_ = true;
    
 }
-
-void UICanvas::Show()
-{
-    if ( mode_ != External)
-    {
-        
-        QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
-        for (; iter != scene_widgets_.end(); ++iter)
-            (*iter)->show();
-            
-        if ( use_fading_ )
-        {
-            alpha_ = 0.0;
-            current_dur_ = 0.0;
-            fade_ = true;
-            state_->setAlphaOperation( Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha_);
-        
-            clock_.start();
-        }
-
-        container_->show();
-        overlay_->show();
-      
-
-        dirty_ = true;
-        RenderSceneToOgreSurface();
-    }
-    else
-    {
-        
-        
-        QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
-        for (; iter != scene_widgets_.end(); ++iter)
-            (*iter)->show();
-
-        show();
-    }
-    
-}
-
-
-void UICanvas::Hide()
-{
-    if ( mode_ != External)
-    {
-        
-        if ( use_fading_ )
-        {
-            fade_ = true;
-            fade_on_hiding_ = true;
-            current_dur_ = total_dur_;
-            clock_.restart();
-            return;
-        }
-        
-        hide();
-
-        QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
-        for (; iter != scene_widgets_.end(); ++iter)
-            (*iter)->hide();
-          
-        container_->hide();
-        overlay_->hide();
-        
-        dirty_ = true;
-        emit Hidden();
-        RenderSceneToOgreSurface();
-        
-    }
-    else
-    {
-        hide();
-        emit Hidden();
-    }
-}
-
-void UICanvas::drawBackground(QPainter *painter, const QRectF &rect)
-{
-    QBrush black(Qt::transparent);
-    painter->fillRect(rect, black);
-}
-
-void UICanvas::RenderSceneToOgreSurface()
-{
-    // Render if and only if scene is dirty.
-    if (((!dirty_) && (!renderwindow_changed_)) || mode_ == External)
-        return;
-
-    PROFILE(RenderSceneToOgre);
-
-    // We draw the GraphicsView area to an offscreen QPixmap and blit that onto the Ogre GPU surface.
-    QPixmap pixmap(this->size());
-    {
-        PROFILE(FillEmpty);
-        pixmap.fill(Qt::transparent);
-        
-    }
-    assert(pixmap.hasAlphaChannel());
-    QImage img = pixmap.toImage();
-
-    QPainter painter(&img);
-    QRectF destRect(0, 0, pixmap.width(), pixmap.height());
-    QRect sourceRect(0, 0, pixmap.width(), pixmap.height());
-    {
-        PROFILE(RenderUI);
-        this->render(&painter, destRect, sourceRect);
-    }
-    assert(img.hasAlphaChannel());
-
-    ///\todo Can optimize an extra blit away if we paint directly onto the GPU surface.
-    Ogre::Box dimensions(0,0, img.rect().width(), img.rect().height());
-    Ogre::PixelBox pixel_box(dimensions, Ogre::PF_A8R8G8B8, (void*)img.bits());
-    {
-        PROFILE(UIToOgreBlit);
-        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(surfaceName_.toStdString().c_str());
-        texture->getBuffer()->blitFromMemory(pixel_box);
-    }
-
-    if (renderwindow_changed_)
-    {
-        renderwindow_changed_ = false;
-        dirty_ = true;
-    }
-    else
-    {
-        dirty_ = false;
-    }
-}
-
-void UICanvas::Render()
-{
-    
-    if ( mode_ != External && container_->isVisible())
-    {
-        if ( fade_ )
-        {
-            int time = clock_.elapsed();
-            if ( time != 0)
-            {
-                double timeSinceLastFrame = double((time - lastTime_))/1000.0;
-                lastTime_ = time;
-                Fade(timeSinceLastFrame);
-            } 
-        }     
-        RenderSceneToOgreSurface();    
-    }
-}
+*/
 
 }

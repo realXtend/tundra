@@ -100,15 +100,16 @@ void RexLoginWindow::InitLoginWindow()
 
     // Set canvas size. 
     QSize size = login_widget_->size();
-    canvas_->SetCanvasSize(size.width(), size.height());
-    canvas_->SetCanvasWindowTitle(QString("Login"));
+    canvas_->SetSize(size.width(), size.height());
+    canvas_->SetWindowTitle(QString("Login"));
     canvas_->AddWidget(login_widget_);
     canvas_->SetPosition(300,300);
-    canvas_->SetCanvasResizeLock(true);
+    canvas_->SetResizable(false);
 
     // Set canvas scrollbar policy
-    canvas_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    canvas_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    QGraphicsView* view = canvas_->GetView();
+    view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     // Create connections.
     QPushButton *pButton = login_widget_->findChild<QPushButton *>("but_connect");
@@ -185,9 +186,9 @@ void RexLoginWindow::CreateLogoutMenu()
     screen_canvas_ = qt_ui->CreateCanvas(QtUI::UICanvas::Internal).lock();
     QSize parentWindowSize = screen_canvas_->GetRenderWindowSize();
     screen_canvas_->SetPosition(parentWindowSize.width()-95, 0);
-    screen_canvas_->SetCanvasSize(95, 25);
-    screen_canvas_->SetCanvasResizeLock(true);
-    screen_canvas_->SetLockPosition(true);
+    screen_canvas_->SetSize(95, 25);
+    screen_canvas_->SetResizable(false);
+    screen_canvas_->SetStationary(true);
     screen_canvas_->SetAlwaysOnTop(true);
 
     // Connect signals

@@ -198,7 +198,7 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
     return false;
 }
 
-boost::weak_ptr<UICanvas> QtModule::CreateCanvas(UICanvas::Mode mode)
+boost::weak_ptr<UICanvas> QtModule::CreateCanvas(UICanvas::DisplayMode mode)
 {
     boost::shared_ptr<UICanvas> canvas = controller_->CreateCanvas(mode).lock();
     
