@@ -146,6 +146,9 @@ namespace QtUI
 		 */
 		boost::shared_ptr<QtUI::UICanvas> GetCanvas(const QString& id);
 
+        //! Returns list of canvases. Do not misuse!
+        const QList<boost::shared_ptr<UICanvas> >& GetCanvases() { return canvases_; }
+        
     public slots:
         
         

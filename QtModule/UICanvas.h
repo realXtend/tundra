@@ -220,7 +220,6 @@ namespace QtUI
         /// the upper-left of the main render window.
 
         QRect GetCanvasGeometry() const { return view_->geometry(); }
-    	
        
      public slots:
     	

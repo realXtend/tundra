@@ -93,7 +93,7 @@ namespace QtUI
         /*! If entity already has EC_UICanvas component, just sets the canvas to use.
             @return Pointer to EC_UICanvas component, or null if the component could not be created out of some reason.
          */
-        Foundation::ComponentPtr CreateEC_UICanvasToEntity(Scene::EntityPtr entity, boost::shared_ptr<QtUI::UICanvas> canvas);
+        Foundation::ComponentPtr CreateEC_UICanvasToEntity(Scene::Entity* entity, boost::shared_ptr<QtUI::UICanvas> canvas);
          
     private:
         
