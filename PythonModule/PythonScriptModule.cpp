@@ -1357,7 +1357,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
     if (!scene)
     {
         PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
-        return NULL;
+        return -1;
     }
 
     Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
@@ -1366,7 +1366,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
     if (!ogre_component)
     {
         PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-        return NULL;
+        return -1;
     }    
     OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
 
@@ -1396,7 +1396,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
         {
             //std::cout << "...parse error" << std::endl;
             PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float).");
-            return NULL;
+            return -1;
         }
         // Set the new values.
         placeable->SetPosition(Core::Vector3df(x, y, z));
