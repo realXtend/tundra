@@ -98,7 +98,6 @@ bool J2kEncode(Ogre::Image &src_image, std::vector<Core::u8> &outbuf, bool rever
     parameters.cod_format = 0; // 0 == J2K_CFMT
     parameters.cp_disto_alloc = 1;
 
-    //DELETE?
     if (reversible)
     {
         parameters.tcp_numlayers = 1;
@@ -113,7 +112,6 @@ bool J2kEncode(Ogre::Image &src_image, std::vector<Core::u8> &outbuf, bool rever
         parameters.tcp_rates[3] = 30.0f;
         parameters.tcp_rates[4] = 10.0f;
     }
-    //END DELETE
 
     // Create comment for codestream.
     ///\todo Custom comments / no comments at all?

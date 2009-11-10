@@ -107,7 +107,7 @@ void InventoryWindow::InitWebDavInventoryTreeModel(const std::string &identityUr
     treeView_->setModel(inventoryItemModel_);
 
     // Connect signals
-    QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &) ),
+    QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)),
         inventoryItemModel_, SLOT(CurrentSelectionChanged(const QModelIndex &)));
 
     QObject::connect(inventoryItemModel_, SIGNAL( AbstractInventoryItemSelected(AbstractInventoryItem *)),
@@ -176,8 +176,8 @@ void InventoryWindow::AddFolder()
 
     bool ok = false;
 
-    QString newFolderName = QInputDialog::getText(canvas_->GetView(), "Create New Folder", "Please give name of the new folder",
-        QLineEdit::Normal, "", &ok);
+    QString newFolderName = QInputDialog::getText(canvas_->GetView(), "Create New Folder",
+        "Please give name of the new folder", QLineEdit::Normal, "", &ok);
     if (!ok)
         return;
 

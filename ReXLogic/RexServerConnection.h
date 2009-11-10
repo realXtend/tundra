@@ -52,7 +52,7 @@ namespace RexLogic
         bool ConnectToCableBeachServer(
             const std::string& firstname, 
             const std::string& lastname,
-			const std::string& identityUrl,
+            const std::string& identityUrl,
             int port,
             const std::string& serveraddress);
 
@@ -100,10 +100,8 @@ namespace RexLogic
         void SendLogoutRequestPacket();
 
         /// Sends a message which creates a default prim the in world.
-        ///\todo Figure out how to properly use ray_start & ray_end. Seems to be working ok if you use just same pos for both.
-        /// @param ray_start Raycast start position.
-        /// @param ray_end Raycast end position.
-        void SendObjectAddPacket(const RexTypes::Vector3 &ray_start, const RexTypes::Vector3 &ray_end);
+        /// @param position Position in the world.
+        void SendObjectAddPacket(const RexTypes::Vector3 &position);
 
         // Sends the basic movement message
         void SendAgentUpdatePacket(Core::Quaternion bodyrot, Core::Quaternion headrot, uint8_t state, 
@@ -244,7 +242,7 @@ namespace RexLogic
             const RexTypes::asset_type_t &asset_type,
             const RexTypes::inventory_type_t &inventory_type,
             const std::string &name,
-            const std::string description);
+            const std::string &description);
 
         /** Sends a packet requesting contents of a inventory folder.
          *  @param folder_id Folder UUID.

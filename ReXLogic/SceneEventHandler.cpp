@@ -38,11 +38,12 @@ bool SceneEventHandler::HandleSceneEvent(Core::event_id_t event_id, Foundation::
     case Scene::Events::EVENT_ENTITY_DELETED:
         HandleEntityDeletedEvent(event_data->localID);
         break;
-        case Scene::Events::EVENT_ENTITY_CREATE:
-        {
-            Scene::Events::CreateEntityEventData *pos_data = dynamic_cast<Scene::Events::CreateEntityEventData *>(data);
-            rexlogicmodule_->GetServerConnection()->SendObjectAddPacket(pos_data->position, pos_data->position);
-        }
+    case Scene::Events::EVENT_ENTITY_CREATE:
+    {
+        Scene::Events::CreateEntityEventData *pos_data = dynamic_cast<Scene::Events::CreateEntityEventData *>(data);
+        if (pos_data)
+            rexlogicmodule_->GetServerConnection()->SendObjectAddPacket(pos_data->position);
+    }
     default:
         break;
     }

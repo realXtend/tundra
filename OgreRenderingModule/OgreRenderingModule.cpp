@@ -89,12 +89,11 @@ namespace OgreRenderer
 
     // virtual
     void OgreRenderingModule::Initialize()
-    { 
+    {
         assert (renderer_);
-
         assert (!renderer_->IsInitialized());
         renderer_->Initialize();
-        
+
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Renderer, renderer_);
 
         LogInfo("Module " + Name() + " initialized.");
@@ -106,7 +105,6 @@ namespace OgreRenderer
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
 
         asset_event_category_ = event_manager->QueryEventCategory("Asset");
-        
         if (asset_event_category_ == 0 )
             LogWarning("Unable to find event category for Asset events!");
 
@@ -157,17 +155,12 @@ namespace OgreRenderer
 
         if (category_id == input_event_category_ && event_id == Input::Events::INWORLD_CLICK_BUILD)
         {
-            // do raycast into the world when user clicks mouse button
             Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
             Foundation::RaycastResult result = renderer_->Raycast(movement->x_.abs_, movement->y_.abs_);
 
             Scene::Entity *entity = result.entity_;
-
             if (entity)
             {
-//                std::cout << "Raycast hit entity " << entity << " pos " << result.pos_.x << " " << result.pos_.y << " " << result.pos_.z
-//                          << " submesh " << result.submesh_ << " uv " << result.u_ << " " << result.v_ << std::endl;
-
                 Scene::Events::CreateEntityEventData event_data(result.pos_);
                 framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_CREATE, &event_data);
             }
@@ -190,7 +183,6 @@ namespace OgreRenderer
     {
         {
             PROFILE(OgreRenderingModule_Update);
-
             renderer_->Update(frametime);
         }
         RESETPROFILER;

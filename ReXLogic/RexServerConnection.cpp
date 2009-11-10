@@ -125,7 +125,7 @@ bool RexServerConnection::ConnectToServer(
 bool RexServerConnection::ConnectToCableBeachServer(
     const std::string& firstname,
     const std::string& lastname,
-	const std::string& identityUrl,
+    const std::string& identityUrl,
     int port,
     const std::string& serveraddress)
 {
@@ -382,7 +382,7 @@ void RexServerConnection::SendImprovedInstantMessagePacket(const RexTypes::RexUU
     FinishMessageBuilding(m);
 }
 
-void RexServerConnection::SendObjectAddPacket(const RexTypes::Vector3 &ray_start, const RexTypes::Vector3 &ray_end)
+void RexServerConnection::SendObjectAddPacket(const RexTypes::Vector3 &position)
 {
     if(!connected_)
         return;
@@ -422,8 +422,8 @@ void RexServerConnection::SendObjectAddPacket(const RexTypes::Vector3 &ray_start
     m->AddU16(0);               // ProfileEnd
     m->AddU16(0);               // ProfileHollow
     m->AddU8(1);                // BypassRaycast
-    m->AddVector3(ray_start);   // RayStart
-    m->AddVector3(ray_end);     // RayEnd
+    m->AddVector3(position);    // RayStart     ///\note We use same position for both RayStart and RayEnd.
+    m->AddVector3(position);    // RayEnd
     m->AddUUID(RexUUID());      // RayTargetID
     m->AddU8(0);                // RayEndIsIntersection
     m->AddVector3(scale);       // Scale
@@ -997,7 +997,7 @@ void RexServerConnection::SendUpdateInventoryItemPacket(
     const RexTypes::asset_type_t &asset_type,
     const RexTypes::inventory_type_t &inventory_type,
     const std::string &name,
-    const std::string description)
+    const std::string &description)
 {
     if (!connected_)
         return;
@@ -1082,7 +1082,7 @@ void RexServerConnection::SendAcceptFriendshipPacket(const RexTypes::RexUUID &tr
     m->AddUUID(myInfo_.agentID);
     m->AddUUID(myInfo_.sessionID);
     m->AddUUID(transaction_id);
-	m->SetVariableBlockCount(1);
+    m->SetVariableBlockCount(1);
     m->AddUUID(folder_id);
 
     FinishMessageBuilding(m);
