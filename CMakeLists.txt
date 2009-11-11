@@ -18,7 +18,7 @@ include (ModuleSetup)
 include (ConfigurePackages)
 
 # Disable unnecessary build types
-set (CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Configurations" FORCE)
+set (CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
 
 # Use Caelum, but not Hydrax for now.
 SET (CAELUM 1)
