@@ -11,7 +11,6 @@ namespace Foundation
     ConfigurationManager::ConfigurationManager(Framework* framework, const std::string& path) : path_(boost::filesystem::path(path)), 
         framework_(framework), file_name_encoding_(std::string("Rex"))
     {
-        Load(path_.file_string());
     }
 
     ConfigurationManager::~ConfigurationManager()
@@ -22,13 +21,21 @@ namespace Foundation
 	    framework_ = 0;
     }
 
+    void ConfigurationManager::SetPath(const std::string& path)
+    {
+        path_ = boost::filesystem::path(path);
+    }
+    
     void ConfigurationManager::Load(const std::string& path)
     {
-        
         namespace fs = boost::filesystem;
 
-        fs::path filePath(path);
-
+        fs::path filePath;
+        if (path.empty())
+            filePath = path_;
+        else
+            filePath = fs::path(path);     
+     
         if (fs::is_directory(filePath))
         {   
             // Search all xml files from path. 
@@ -197,11 +204,17 @@ namespace Foundation
 
     void ConfigurationManager::Export(const std::string& path, const std::string& group)
     {
-        // Check that given path is exist.
-        
+                    
         namespace fs = boost::filesystem; 
-        fs::path filePath(path);        
+        fs::path filePath;
+        if (path.empty())
+            filePath = path_;
+        else
+            filePath = fs::path(path);     
+     
         
+     
+        // Check that given path is exist.        
         if ( !fs::exists(filePath))
         {
             ///todo Should we write here error message into Log if given path does not exist?         
@@ -298,7 +311,7 @@ namespace Foundation
                     
                     /// \todo HACK assure that path end has separator.
 
-                    std::string c = path.substr(path.size()-1);
+                    std::string c = filePath.string().substr(filePath.string().size()-1);
                     if ( c != std::string("/") && c != std::string("\\"))
                     {
 #ifdef _UNIX
