@@ -31,9 +31,3 @@ del build\pymodules\usr\*.pyc
 del build\pymodules\webdavinventory\*.pyc
 del build\pymodules\webserver\*.pyc
 del build\pymodules\DLLs\*_d.pyd
-cd build\data
-rmdir configuration /S /Q
-mkdir configuration
-cd ..\..
-
-

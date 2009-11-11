@@ -70,13 +70,11 @@ namespace Foundation
             // Create config manager
             config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
 
-            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
-            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("0.2"));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("application_name"), std::string("realXtend"));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("window_title"), std::string("realXtend Naali"));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_level"), std::string("information"));
-
+            
             Core::uint max_fps_release = config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("max_fps_release"), 60);
             Core::uint max_fps_debug = config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("max_fps_debug"), static_cast<Core::uint>(-1));
 
@@ -87,6 +85,14 @@ namespace Foundation
 
             platform_->PrepareApplicationDataDirectory(); // depends on config
 
+            // Now set proper path for config (one that also non-privileged users can write to)
+            config_manager_->SetPath(platform_->GetApplicationDataDirectory());
+            config_manager_->Load();
+
+            // Set config values we explicitly always want to override
+            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
+            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("0.2"));
+                        
             CreateLoggingSystem(); // depends on config and platform
 
             // create managers

@@ -62,6 +62,8 @@ namespace Foundation
         /**
          * Default constructor. 
          * 
+         * Note: does not load configuration files by default.
+         *
          * @param framework is pointer to current framework (currently not used). 
          * @param path is value which represents path to location where configuration xml files are found. 
          * @note @p path is platform independ (means that it can be given with M$ -style or Unix-style separator)
@@ -75,6 +77,12 @@ namespace Foundation
          * be found from location which is defined in path variable. Default path is viewer/data/configuration/. 
          */
         ~ConfigurationManager();
+    
+        /**
+         * Sets new path to be used for both loading and saving.
+         * @param path New path for configuration xml files
+         */
+        void SetPath(const std::string& path);
 
         /**
          *  Loads xml files from given path and sets found group-key value pairs into configuration manager memory for futher use. If given path is a file
@@ -83,11 +91,11 @@ namespace Foundation
          *  @note Load() will only read those files which name encoding match to defined file encoding. See @p SetFileEncoding().
          *  @note Load() will always replace existing group-key value pairs, with new value which are found from xml files. 
          *  
-         *  @param path is path to folder where configuration files are. 
+         *  @param path is path to folder where configuration files are. If blank, uses one stored in constructor or SetPath().
          *  @throw CoreException if problem arises. 
          */
 
-        void Load(const std::string& path);
+        void Load(const std::string& path = std::string());
 
         /**
          * Exports settings into xml data files. XML-files are created in given path. If @p group is other then empty string, 
@@ -107,16 +115,11 @@ namespace Foundation
          * config_manager_->Export(myFolderPath, std::string("myGroup")); 
          * @endcode
          * 
-         * @param path where xml files will be stored (folder). 
+         * @param path where xml files will be stored (folder). If empty, stored to the path set with SetPath().
          * @param group is group which will be exported. If empty string is given method will export all setting from value map to given path. 
          */
-        void Export(const std::string& path = std::string(DEFAULT_CONFIG_PATH), const std::string& group = std::string(""));
-
-        /**
-         * Sets a new path. 
-         * @param path is a path to folder where settings are exported.
-         */
-        void SetPath(const std::string& path) { path_ = boost::filesystem::path(path); }
+        void Export(const std::string& path = std::string(), const std::string& group = std::string());
+        
         std::string GetPath() const { return path_.file_string(); }
 
         /**
