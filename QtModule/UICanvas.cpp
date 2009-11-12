@@ -177,7 +177,7 @@ void UICanvas::Resize(int height, int width, Corner anchor)
 
     // Case when canvas resize is locked. 
 
-    if ( appearPolicy_->IsResizable())
+    if ( !appearPolicy_->IsResizable())
         return;
 
     QSize current_size = view_->size();
