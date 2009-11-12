@@ -149,6 +149,7 @@ class EditGUI(Component):
         #self.widget.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
         
         self.widget.newObject.connect('clicked()', self.createObject)
+        self.widget.deleteObject.connect('clicked()', self.deleteObject)
         self.widget.setMesh.connect('clicked()', self.setMesh)
         
         self.widgetList = {}
@@ -213,7 +214,7 @@ class EditGUI(Component):
         if self.widgetList.has_key(text):
             self.select(self.widgetList[text][0])
     
-    def createObject(self, *args):
+    def createObject(self):
         ent_id = r.getUserAvatarId()
         ent = r.getEntity(ent_id)
         x, y, z = ent.pos#r.getUserAvatarPos()
@@ -227,7 +228,13 @@ class EditGUI(Component):
 
         r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
 
-    def setMesh(self, *args):
+    def deleteObject(self):
+        pass #not implemented yet, this is a stub waiting for impl
+        #ent = self.sel
+        #if ent is not None:
+        #    r.sendObjectRemovePacket(ent.id)
+
+    def setMesh(self):
         """callback for the original set mesh button, going away."""
         meshUUID = None
         meshUUID = QInputDialog.getText(None, "Mesh asset UUID", "Please give mesh asset UUID", QLineEdit.Normal, "")
