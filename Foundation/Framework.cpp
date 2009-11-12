@@ -7,6 +7,7 @@
 #include <Poco/FormattingChannel.h>
 #include <Poco/SplitterChannel.h>
 #include <Poco/LocalDateTime.h>
+#include "Poco/Path.h"
 #include "Poco/UnicodeConverter.h"
 
 #include "Foundation.h"
@@ -87,10 +88,15 @@ namespace Foundation
 
             // Now set proper path for config (one that also non-privileged users can write to)
             {
-                std::wstring app_data_w = platform_->GetApplicationDataDirectoryW();
-                std::string app_data;
-                Poco::UnicodeConverter::toUTF8(app_data_w, app_data);            
-                config_manager_->SetPath(app_data);
+                const char *CONFIG_PATH = "/configuration";
+
+                // Create config directory
+                std::string config_path = GetPlatform()->GetApplicationDataDirectory() + CONFIG_PATH;
+                if (boost::filesystem::exists(config_path) == false)
+                {
+                    boost::filesystem::create_directory(config_path);
+                }            
+                config_manager_->SetPath(config_path);
             }
             config_manager_->Load();
 

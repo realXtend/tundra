@@ -120,7 +120,7 @@ namespace Foundation
          */
         void Export(const std::string& path = std::string(), const std::string& group = std::string());
         
-        std::string GetPath() const { return path_.file_string(); }
+        std::string GetPath() const { return path_.string(); }
 
         /**
          * Sets a file name encoding. Default encoding is "Rex", so created configuration files starts with letters "Rex". This setting also

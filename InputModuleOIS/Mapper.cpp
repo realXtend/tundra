@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 
-#include <Poco/UnicodeConverter.h>
+#include <Poco/Path.h>
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/DOM/Element.h>
 #include <Poco/DOM/Attr.h>
@@ -23,14 +23,10 @@ namespace Input
 
         const Foundation::ConfigurationManager &config = module_->GetFramework()->GetDefaultConfig();
             
-        std::wstring input_mappings_w = Core::ToWString(config.DeclareSetting("Input", "input_mappings_file", std::string("input_map.xml")));
-        std::wstring app_data = module_->GetFramework()->GetPlatform()->GetApplicationDataDirectoryW();
+        std::string input_mappings = config.DeclareSetting("Input", "input_mappings_file", std::string("input_map.xml"));
+        std::string app_data = module_->GetFramework()->GetPlatform()->GetApplicationDataDirectory();
 
-        input_mappings_w = app_data + L"/" + input_mappings_w;
-        
-
-        std::string input_mappings;
-        Poco::UnicodeConverter::toUTF8(input_mappings_w, input_mappings);
+        input_mappings = app_data + "/" + input_mappings;
 
         SetDefaultMappings();
         LoadInputMappings(input_mappings);
