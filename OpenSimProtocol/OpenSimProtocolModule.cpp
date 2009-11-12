@@ -39,6 +39,8 @@ void OpenSimProtocolModule::Unload()
 // virtual
 void OpenSimProtocolModule::Initialize()
 {
+    loginWorker_.SetFramework(GetFramework());
+    
     const char *filename = "./data/message_template.msg";
 
     networkManager_ = boost::shared_ptr<NetMessageManager>(new NetMessageManager(filename));

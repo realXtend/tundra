@@ -50,9 +50,6 @@ namespace Asset
             Core::event_id_t event_id, 
             Foundation::EventDataInterface* data);
 
-        //! returns framework
-        Foundation::Framework *GetFramework() { return framework_; }
-
         MODULE_LOGGING_FUNCTIONS
 
         //! callback for console command
