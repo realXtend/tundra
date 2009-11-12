@@ -86,7 +86,12 @@ namespace Foundation
             platform_->PrepareApplicationDataDirectory(); // depends on config
 
             // Now set proper path for config (one that also non-privileged users can write to)
-            config_manager_->SetPath(platform_->GetApplicationDataDirectory());
+            {
+                std::wstring app_data_w = platform_->GetApplicationDataDirectoryW();
+                std::string app_data;
+                Poco::UnicodeConverter::toUTF8(app_data_w, app_data);            
+                config_manager_->SetPath(app_data);
+            }
             config_manager_->Load();
 
             // Set config values we explicitly always want to override
