@@ -72,7 +72,9 @@ namespace Foundation
                 
                try
                 {
-                   pConfiguration = new Poco::Util::XMLConfiguration(*iter);
+                   pConfiguration = new Poco::Util::XMLConfiguration();
+                   std::fstream stream(iter->c_str(), std::ios::in);
+                   pConfiguration->load(stream);
                 } catch ( std::exception& /*ex*/)
                 {
                     // XML file was not valid (not so beatiful way to check validity)
@@ -116,7 +118,9 @@ namespace Foundation
             
             try
             {
-                pConfiguration = new Poco::Util::XMLConfiguration(path);
+                   pConfiguration = new Poco::Util::XMLConfiguration();
+                   std::fstream stream(filePath.file_string().c_str(), std::ios::in);
+                   pConfiguration->load(stream);
             } catch ( std::exception& /*ex*/)
             {
                 // XML file was not valid (not so beatiful way to check it validity)
@@ -257,7 +261,9 @@ namespace Foundation
             
                 try
                 {
-                    pConfiguration = new Poco::Util::XMLConfiguration(file.file_string());
+                   pConfiguration = new Poco::Util::XMLConfiguration();
+                   std::fstream stream(file.file_string().c_str(), std::ios::in);
+                   pConfiguration->load(stream);                    
                 } catch ( std::exception& /*ex*/)
                 {
                     // XML file was not valid (not so beatiful way to check it validity)
@@ -290,7 +296,10 @@ namespace Foundation
                 }
                 
                 // Now save it into file.
-                pConfiguration->save(file.file_string());
+                {
+                    std::fstream stream(file.file_string().c_str(), std::ios::out);
+                    pConfiguration->save(stream);
+                }
             }
 
             Poco::AutoPtr<Poco::Util::XMLConfiguration> pConfiguration;
@@ -357,7 +366,10 @@ namespace Foundation
                         val_key = next;
                     }
                   
-                    pConfiguration->save(new_configuration_file.file_string());
+                    {
+                        std::fstream stream(new_configuration_file.file_string().c_str(), std::ios::out);
+                        pConfiguration->save(stream);
+                    }
                     
                     // HACK
 
@@ -420,7 +432,9 @@ namespace Foundation
 
                 try
                 {
-                    pConfiguration = new Poco::Util::XMLConfiguration(file.file_string());
+                   pConfiguration = new Poco::Util::XMLConfiguration();
+                   std::fstream stream(file.file_string().c_str(), std::ios::in);
+                   pConfiguration->load(stream);
                 } catch ( std::exception& /*ex*/)
                 {
                     // XML file was not valid (not so beatiful way to check it validity)
@@ -453,7 +467,10 @@ namespace Foundation
                 }
                 
                 // Now save it into file.
-                pConfiguration->save(file.file_string());
+                {
+                    std::fstream stream(file.file_string().c_str(), std::ios::out);
+                    pConfiguration->save(stream);
+                }
                 
                 // Break because we found a file.
                 break;
@@ -524,7 +541,10 @@ namespace Foundation
                         val_key = next;
                     }
                   
-                    pConfiguration->save(new_configuration_file.file_string());
+                    {
+                        std::fstream stream(new_configuration_file.file_string().c_str(), std::ios::out);
+                        pConfiguration->save(stream);
+                    }
                                     
                 }
 
@@ -584,8 +604,11 @@ namespace Foundation
                     }
                     val_key = next;
                 }
-              
-                pConfiguration->save(new_configuration_file.file_string());
+          
+                {
+                    std::fstream stream(new_configuration_file.file_string().c_str(), std::ios::out);
+                    pConfiguration->save(stream);
+                }
                                 
             }
 
