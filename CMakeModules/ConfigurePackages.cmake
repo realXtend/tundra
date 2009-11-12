@@ -257,8 +257,7 @@ endmacro (configure_farsight2)
 macro (configure_dbus_glib)
     sagase_configure_package (DBUS_GLIB
         NAMES dbus-glib dbus
-        COMPONENTS dbus-glib # dbus-glib added to help sagese to find include folder with dbus-glib.h file
-        # TODO: Add real components
+        COMPONENTS dbus-glib
         PREFIXES ${ENV_NAALI_DEP_PATH}/dbus-glib)
     sagase_configure_report (DBUS_GLIB)
 endmacro (configure_dbus_glib)
