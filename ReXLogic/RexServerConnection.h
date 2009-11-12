@@ -103,6 +103,16 @@ namespace RexLogic
         /// @param position Position in the world.
         void SendObjectAddPacket(const RexTypes::Vector3 &position);
 
+        /// Sends a message which requests object removal.
+        /// @param local_id Local ID.
+        /// @param force God trying to force delete.
+        void SendObjectDeletePacket(const uint32_t &local_id, const bool &force = false);
+
+        /// Sends a message which requests object removal.
+        /// @param local_id_list List of Local ID's.
+        /// @param force God trying to force delete.
+        void SendObjectDeletePacket(const std::vector<uint32_t> &local_id_list, const bool &force = false);
+
         // Sends the basic movement message
         void SendAgentUpdatePacket(Core::Quaternion bodyrot, Core::Quaternion headrot, uint8_t state, 
             RexTypes::Vector3 camcenter, RexTypes::Vector3 camataxis, RexTypes::Vector3 camleftaxis, RexTypes::Vector3 camupaxis,

@@ -433,6 +433,47 @@ void RexServerConnection::SendObjectAddPacket(const RexTypes::Vector3 &position)
     FinishMessageBuilding(m);
 }
 
+void RexServerConnection::SendObjectDeletePacket(const uint32_t &local_id, const bool &force)
+{
+    if(!connected_)
+        return;
+
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDelete);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(myInfo_.agentID);
+    m->AddUUID(myInfo_.sessionID);
+    m->AddBool(force);
+
+    // ObjectData
+    m->SetVariableBlockCount(1);
+    m->AddU32(local_id);
+
+    FinishMessageBuilding(m);
+}
+
+void RexServerConnection::SendObjectDeletePacket(const std::vector<uint32_t> &local_id_list, const bool &force)
+{
+    if(!connected_)
+        return;
+
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDelete);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(myInfo_.agentID);
+    m->AddUUID(myInfo_.sessionID);
+    m->AddBool(force);
+
+    // ObjectData
+    m->SetVariableBlockCount(local_id_list.size());
+    for(size_t i = 0; i < local_id_list.size(); ++i)
+        m->AddU32(local_id_list[i]);
+
+    FinishMessageBuilding(m);
+}
+
 void RexServerConnection::SendAgentUpdatePacket(Core::Quaternion bodyrot, Core::Quaternion headrot, uint8_t state, 
     RexTypes::Vector3 camcenter, RexTypes::Vector3 camataxis, RexTypes::Vector3 camleftaxis, RexTypes::Vector3 camupaxis,
     float fardist, uint32_t controlflags, uint8_t flags)
