@@ -208,7 +208,7 @@ endmacro (configure_telepathy_qt4)
 
 macro (configure_gstreamer)
     sagase_configure_package (GSTREAMER
-        NAMES gstreamer gst
+        NAMES gstreamer gst gstreamer-0.10
         COMPONENTS libavcodec libavformat libavutil libgstapp-0.10 libgstaudio-0.10 libgstbase-0.10 libgstcontroller-0.10 ibgstdataprotocol-0.10 libgstdshow-0.10 libgstinterfaces-0.10 libgstnet-0.10 libgstnetbuffer-0.10 libgstpbutils-0.10 libgstriff-0.10 libgstreamer-0.10 libgstrtp-0.10 libgstrtsp-0.10 libgstsdp-0.10 libgsttag-0.10 libgstvideo-0.10 libjpeg-static libjpeg gst # gst added to help sagese to find include folder with gst.h file
         PREFIXES ${ENV_NAALI_DEP_PATH})
     sagase_configure_report (GSTREAMER)
@@ -216,7 +216,7 @@ endmacro (configure_gstreamer)
 
 macro (configure_dbus)
     sagase_configure_package (DBUS
-        NAMES dbus 
+        NAMES dbus dbus-1
         COMPONENTS dbus-1 dbus # dbus added to help sagese to find include folder with dbus.h file
         PREFIXES ${ENV_NAALI_DEP_PATH})
     sagase_configure_report (DBUS)
@@ -248,7 +248,7 @@ endmacro (configure_telepathy_farsight)
 
 macro (configure_farsight2)
     sagase_configure_package (FARSIGHT2
-        NAMES farsight2 
+        NAMES farsight2 farsight2-0.10
         COMPONENTS gstfarsight fs-interfaces # fs-interfaces added to help sagese to find include folder with fs-interfaces.h file
         PREFIXES ${ENV_NAALI_DEP_PATH}/farsight2)
     sagase_configure_report (FARSIGHT2)
