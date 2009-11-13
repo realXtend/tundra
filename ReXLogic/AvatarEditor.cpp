@@ -98,6 +98,21 @@ namespace RexLogic
         view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff); 
 
+        // Set scrollbar steps on controls
+        QScrollArea* scroll = avatar_widget_->findChild<QScrollArea*>("scroll_attachments");
+        if (scroll)
+        {
+            scroll->verticalScrollBar()->setSingleStep(20);
+            scroll->verticalScrollBar()->setPageStep(40);
+            QObject::connect(scroll->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(QuantizeScrollBar(int)));
+        }
+        scroll = avatar_widget_->findChild<QScrollArea*>("scroll_materials");
+        if (scroll)
+        {
+            scroll->verticalScrollBar()->setSingleStep(20);
+            scroll->verticalScrollBar()->setPageStep(40);
+            QObject::connect(scroll->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(QuantizeScrollBar(int)));
+        }
    
 	    // Add to control bar
 		qt_module->AddCanvasToControlBar(canvas_, QString("Avatar Editor"));
@@ -120,6 +135,21 @@ namespace RexLogic
             QObject::connect(button, SIGNAL(clicked()), this, SLOT(AddAttachment()));
     }
     
+    void AvatarEditor::QuantizeScrollBar(int value)
+    {
+        QScrollBar* scroll = qobject_cast<QScrollBar*>(sender());
+        if (!scroll)
+            return;
+        // Do nothing if already quantized
+        if ((value % 20) == 0)
+            return;
+            
+        int quantized_value = (value + 10 / 20) * 20;
+        if (quantized_value > scroll->maximum())
+            quantized_value = (value / 20) * 20;
+        scroll->setValue(quantized_value);
+    }
+                
     void AvatarEditor::RebuildEditView()
     {   
         if (!avatar_widget_)
@@ -146,7 +176,7 @@ namespace RexLogic
         // Materials
         ClearPanel(mat_panel); 
         const AvatarMaterialVector& materials = appearance.GetMaterials();                
-        mat_panel->resize(width, itemheight * materials.size());
+        mat_panel->resize(width, itemheight * (materials.size() + 1));
         
         for (Core::uint y = 0; y < materials.size(); ++y)
         {            
@@ -171,7 +201,7 @@ namespace RexLogic
         // Attachments
         ClearPanel(attachment_panel);          
         const AvatarAttachmentVector& attachments = appearance.GetAttachments();                
-        attachment_panel->resize(width, itemheight * attachments.size());
+        attachment_panel->resize(width, itemheight * (attachments.size() + 1));
         
         for (Core::uint y = 0; y < attachments.size(); ++y)
         {            
@@ -212,8 +242,8 @@ namespace RexLogic
                 
             const BoneModifierSetVector& bone_modifiers = appearance.GetBoneModifiers();
             const MorphModifierVector& morph_modifiers = appearance.GetMorphModifiers();  
-            morph_panel->resize(tab_width, itemheight * morph_modifiers.size());
-            bone_panel->resize(tab_width, itemheight * bone_modifiers.size());
+            morph_panel->resize(tab_width, itemheight * (morph_modifiers.size() + 1));
+            bone_panel->resize(tab_width, itemheight * (bone_modifiers.size() + 1));
                                                       
             for (Core::uint i = 0; i < bone_modifiers.size(); ++i)
             {
@@ -289,7 +319,7 @@ namespace RexLogic
                 label->show();
                 
                 item_count[category_name]++;
-                panel->resize(tab_width, item_count[category_name] * itemheight);
+                panel->resize(tab_width, (item_count[category_name] + 1) * itemheight);
             }        
         }   
     }
@@ -476,6 +506,9 @@ namespace RexLogic
         QWidget* tab_panel = new QWidget();
         tab_scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
         tab_scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        tab_scroll->verticalScrollBar()->setSingleStep(20);
+        tab_scroll->verticalScrollBar()->setPageStep(20);
+        QObject::connect(tab_scroll->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(QuantizeScrollBar(int)));        
         tab_scroll->setWidgetResizable(false);
         tab_scroll->resize(tabs->contentsRect().size());            
         tab_scroll->setWidget(tab_panel);    
