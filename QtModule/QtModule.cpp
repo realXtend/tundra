@@ -127,14 +127,13 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
             //    framework_->GetQApplication()->setActiveWindow(controller_->GetCanvasAt(pos.x(), pos.y()));
             
             controller_->InjectMousePress(pos.x(), pos.y());
-            
+                        
+            mouse_left_button_down_ = true;
+         
             if (controller_->IsKeyboardFocus() && input->GetState() != Input::State_Buffered)
               input->SetState(Input::State_Buffered);
             else if (!controller_->IsKeyboardFocus())
                 input->SetState(Input::State_Unknown);
-            
-            mouse_left_button_down_ = true;
-           
         }
         else if (!oisLMBDown && mouse_left_button_down_)
         {
@@ -184,7 +183,7 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
             controller_->InjectKeyPressed(QString(QChar(key->text_)), value);
         else
             controller_->InjectKeyReleased(QString(QChar(key->text_)), value);
-    
+
         if ( controller_->IsKeyboardFocus() )
         {
             // Some of our widget has keyboard focus, so we will supress event. 

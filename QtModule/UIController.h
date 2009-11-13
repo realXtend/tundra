@@ -135,7 +135,7 @@ namespace QtUI
         /** Sets the given canvas to receive the keyboard focus. If this focus is a result of a mouse click,
             pass in the click position (x,y) in main render window coordinates to have a widget in the canvas
             receive the keyboard focus as well (instead of just the canvas having it). */
-        void ActivateKeyboardFocus(UICanvas &canvas, int x, int y);
+        void ActivateKeyboardFocus(UICanvas *canvas, int x, int y);
 
         /** Refreshes the mouse cursor to show what the widget below the mouse cursor requests.
             @param canvas The canvas that currently has the mouse hover active, i.e. the canvas below the 
@@ -230,6 +230,10 @@ namespace QtUI
 
         /// This is the canvas that currently has all keyboard focus. If 0, no canvas has the keyboard focus.
         UICanvas *keyboardFocusCanvas;
+
+        /** Tells the last widget we know that received keyboard focus. Used to force a clearing of the focus once the
+            user clicks outside a canvas. Otherwise we could have several canvases have the keyboard focus simultaneously. */ 
+        QGraphicsItem *lastKnownKeyboardFocusItem;
 
         /** The size of the main render window. Needed to be able to compute proper normalized [0,1]-sizes and coordinates
             for positioning Ogre overlays. */ 

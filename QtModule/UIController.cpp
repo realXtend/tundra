@@ -29,7 +29,8 @@ multipleKeyLimit_(150),
 currentMouseAction(MouseActionNone),
 mouseActionCanvas(0),
 mouseHoverCanvas(0),
-keyboardFocusCanvas(0)
+keyboardFocusCanvas(0),
+lastKnownKeyboardFocusItem(0)
 {}
 
 UIController::~UIController()
@@ -265,12 +266,8 @@ void UIController::InjectMousePress(int x, int y)
         mouseActionCanvas = 0;
         currentMouseAction = MouseActionNone;
 
-        QWidget* focusWidget = QApplication::focusWidget();
-        if (focusWidget != 0)
-            focusWidget->clearFocus();
-
-        keyboardFocusCanvas = 0;
-
+        // Disable the keyboard focus from all canvases altogether.
+        ActivateKeyboardFocus(0, 0, 0);
         return;
     }
 
@@ -281,7 +278,8 @@ void UIController::InjectMousePress(int x, int y)
     {
         doubleClickTimer_ = QTime();
         
-        QPoint clickDelta = point - lastMousePressPoint_;
+        QPoint pointOnCanvas = currentCanvas->MapToCanvas(point.x(), point.y());
+        QPoint clickDelta = pointOnCanvas - lastMousePressPoint_;
         if (clickDelta.manhattanLength() < 2)
         {
             InjectDoubleClick(x,y);
@@ -299,7 +297,7 @@ void UIController::InjectMousePress(int x, int y)
     SendMouseLeftButtonPressEvent(*currentCanvas, x, y);
 
     // Activate the keyboard focus on this canvas as well.
-    ActivateKeyboardFocus(*currentCanvas, x, y);
+    ActivateKeyboardFocus(currentCanvas, x, y);
 
     // Reset the mouse cursor, for some reason it seems to get lost after sending the LMB click message.
     ///\todo Possibly set Ogre to set a null cursor to the main window so we can handle this at will.
@@ -331,39 +329,28 @@ void UIController::InjectMousePress(Core::Real u, Core::Real v, const boost::sha
 
 }
 
-void UIController::ActivateKeyboardFocus(UICanvas &canvas, int x, int y)
+void UIController::ActivateKeyboardFocus(UICanvas *canvas, int x, int y)
 {
-    assert(&canvas);
-
-    QPoint pos = canvas.MapToCanvas(x, y);
-
-    if (!canvas.HasFocus())
+    if (canvas != keyboardFocusCanvas)
     {
-        keyboardFocusCanvas = 0;
-        return;
-    }
+        if (lastKnownKeyboardFocusItem)
+            lastKnownKeyboardFocusItem->clearFocus();
+        lastKnownKeyboardFocusItem = 0;
 
-    QGraphicsItem *item = canvas.view_->scene()->itemAt(pos);
-    if (!item)
-    {
-        keyboardFocusCanvas = 0;
-        return;
-    }
-
-    QGraphicsWidget* widget = item->topLevelWidget();
-    
-    if (widget->hasCursor())
-    {            
-        QCursor cursor = widget->cursor();
-        Qt::CursorShape shape = cursor.shape();
         QWidget *focusWidget = QApplication::focusWidget();
-
-        // PENDING how to check that this widget is same as "active canvas" or is it even needed?
-        if (shape == Qt::IBeamCursor || focusWidget)
-            keyboardFocusCanvas = &canvas;
-        else
-            keyboardFocusCanvas = 0;
+        if (focusWidget != 0)
+            focusWidget->clearFocus();
     }
+
+    keyboardFocusCanvas = canvas;
+
+    if (!canvas)
+        return;
+
+    QPoint pos = canvas->MapToCanvas(x, y);
+
+    // Remember which widget got the keyboard focus.
+    lastKnownKeyboardFocusItem = canvas->view_->scene()->itemAt(pos);
 }
 
 void UIController::InjectMouseRelease(int x, int y)
@@ -407,7 +394,6 @@ void UIController::InjectMouseRelease(int x, int y)
 void UIController::InjectDoubleClick(int x, int y)
 {
     QPoint point(x,y);
-//    lastPosition_ = point;
     int index = GetCanvasIndexAt(point);
     
     if (index != -1 && !canvases_[index]->IsHidden())
@@ -415,11 +401,9 @@ void UIController::InjectDoubleClick(int x, int y)
         // Translate the mouse position from QGraphicsView coordinate frame onto
         // the QGraphicsScene coordinate frame.
         QPoint pos = canvases_[index]->MapToCanvas(x,y);
-        //QPointF pos = canvases_[index]->mapToScene(p);
         QPoint currentMousePos(pos.x(), pos.y());
 
         currentMouseAction = MouseActionNone;
-//        mouseDown_ = false;
         
         // In case of double click we set that left button generated click -> so it is set down. 
         QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseDoubleClick);
