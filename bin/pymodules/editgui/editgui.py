@@ -77,8 +77,10 @@ class EditGUI(Component):
     def __init__(self):
         Component.__init__(self)
         loader = QUiLoader()
-            
-        self.canvas = r.createCanvas(EXTERNAL) #now for drag&drop dev
+        mode = INTERNAL
+        if DEV:
+            mode = EXTERNAL
+        self.canvas = r.createCanvas(mode) #now for drag&drop dev
         self.arrows = None
         
         uifile = QFile(self.UIFILE)
