@@ -434,19 +434,19 @@ class EditGUI(Component):
                         self.sel.pos = pos[0], pos[1], pos[2]
                         self.arrows.pos = pos[0], pos[1], pos[2]
 
-                    #~ else:
-                        #~ oldvec = Vector3(self.sel.pos)
-                        #~ upvec = Vector3(r.getCameraUp())
-                        #~ rightvec = Vector3(r.getCameraRight())
-                        #~ #print "MouseMove:", mouseinfo.x, mouseinfo.y, r.getCameraUp(), r.getCameraRight()
-                        #~ n = 0.1 #is not doing correct raycasting to plane to see pos, this is a multiplier for the crude movement method here now
-                        #~ newvec = oldvec - (upvec * mouseinfo.rel_y * n) + (rightvec * mouseinfo.rel_x * n)
+                    else:
+                        oldvec = Vector3(self.sel.pos)
+                        upvec = Vector3(r.getCameraUp())
+                        rightvec = Vector3(r.getCameraRight())
+                        #print "MouseMove:", mouseinfo.x, mouseinfo.y, r.getCameraUp(), r.getCameraRight()
+                        n = 0.1 #is not doing correct raycasting to plane to see pos, this is a multiplier for the crude movement method here now
+                        newvec = oldvec - (upvec * mouseinfo.rel_y * n) + (rightvec * mouseinfo.rel_x * n)
                         
-                        #~ self.arrows.pos = newvec.x, newvec.y, newvec.z
-                        #~ self.sel.pos = newvec.x, newvec.y, newvec.z
-                        #~ #r.networkUpdate(self.sel.id)
-                        #~ #XXX also here the immediate network sync is not good,
-                        #~ #refactor out from pos setter to a separate network_update() call
+                        self.arrows.pos = newvec.x, newvec.y, newvec.z
+                        self.sel.pos = newvec.x, newvec.y, newvec.z
+                        #r.networkUpdate(self.sel.id)
+                        #XXX also here the immediate network sync is not good,
+                        #refactor out from pos setter to a separate network_update() call
 
     def on_exit(self):
         r.logDebug("EditGUI exiting...")
