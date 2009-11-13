@@ -22,6 +22,17 @@ namespace QtUI
 
 	}
 
+    void UICanvasManager::SetVisible(bool show)
+    {
+        if (controlBarCanvas_.get())
+        {
+            if (show)
+                controlBarCanvas_->Show();
+            else
+                controlBarCanvas_->Hide();
+        }
+    }
+
 	void UICanvasManager::AddCanvasToControlBar(boost::shared_ptr<QtUI::UICanvas> canvas, const QString &buttonTitle)
 	{
 		if (controlBarLayout_)
@@ -89,7 +100,7 @@ namespace QtUI
 			controlBarCanvas_->SetResizable(false);
 			controlBarCanvas_->SetAlwaysOnTop(true);
 			controlBarCanvas_->AddWidget(controlBarWidget_);
-			controlBarCanvas_->Show();
+			controlBarCanvas_->Hide();
 		}
 	}
 

@@ -50,9 +50,9 @@ void Environment::CreateEnvironment()
 ///\todo Remove this when Caelum is working ok.
 bool test = true;
 
-bool Environment::HandleOSNE_SimulatorViewerTimeMessage(OpenSimProtocol::NetworkEventInboundData *data)
+bool Environment::HandleOSNE_SimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData *data)
 {
-    NetInMessage &msg = *data->message;
+    ProtocolUtilities::NetInMessage &msg = *data->message;
     msg.ResetReading();
 
     ///\ secPerDay,secPerYear, sunPhase seems to be zero, at least with 0.4 server

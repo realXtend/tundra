@@ -26,12 +26,13 @@ use_package (OGRE)
 use_package (QT4)
 use_package (PYTHON)
 use_package (PYTHON_QT)
-use_modules (RexCommon ReXLogic OpenSimProtocol RpcUtilities HttpUtilities QtModule PythonModule)
+# remove ProtocolModuleOpenSim ProtocolModuleTaiga if its not needed anymore in RexServerConnection.h
+use_modules (RexCommon ReXLogic ProtocolUtilities RpcUtilities HttpUtilities QtModule ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 use_framework_modules (Core Foundation Interfaces RexCommon)
 
-link_modules (RexCommon RexLogicModule OpenSimProtocolModule HttpUtilities RpcUtilities QtModule PythonScriptModule)
+link_modules (RexCommon RexLogicModule ProtocolUtilities HttpUtilities RpcUtilities QtModule)
 link_package (BOOST)
 link_package (POCO)
 link_package (XMLRPC)
@@ -39,7 +40,6 @@ link_package (CURL)
 link_package (OPENJPEG)
 link_package (OGRE)
 link_package (QT4)
-link_package (PYTHON)
 link_package (PYTHON_QT)
 
 # Copy XML files from source directory to target directory

@@ -11,9 +11,8 @@
 
 #include "RexLogicModule.h" //much of the api is here
 #include "RexServerConnection.h" //for SendObjectAddPacket
-#include "OpenSimProtocolModule.h" //for handling net events
 #include "NetworkEvents.h"
-#include "RexProtocolMsgIDs.h"
+#include "RealXtend/RexProtocolMsgIDs.h"
 #include "InputEvents.h" //handling input events
 #include "InputServiceInterface.h" //for getting mouse info from the input service, prolly not used anymore ?
 #include "InputModuleOIS.h" //for getting mouse info from the input module
@@ -63,6 +62,10 @@ namespace PythonScript
     PythonScriptModule::PythonScriptModule() : ModuleInterfaceImpl(type_static_)
     {
         pythonqt_inited = false;
+        inboundCategoryID_ = 0;
+        inputeventcategoryid = 0;
+        networkstate_category_id = 0;
+        framework_category_id = 0;
     }
 
     PythonScriptModule::~PythonScriptModule()
@@ -160,27 +163,24 @@ namespace PythonScript
 
     void PythonScriptModule::PostInitialize()
     {
-        Foundation::EventManagerPtr em = framework_->GetEventManager();        
+        em_ = framework_->GetEventManager();        
 
-        /* get the category IDs of event types that pass on to the modulemanager */
-        //(was) for onChat
-        inboundCategoryID_ = em->QueryEventCategory("OpenSimNetworkIn");
-        if (inboundCategoryID_ == 0)
-            LogWarning("Unable to find event category for incoming OpenSimNetwork events!");
+        // Get Framework category, so we can listen to its event about protocol module ready,
+        // then we can subscribe to the other networking categories
+        framework_category_id = em_->QueryEventCategory("Framework");
+        if (framework_category_id == 0)
+            LogWarning("Unable to find event category for incoming Framework events!");
 
-        //for notifying placeable movement
-        PythonScript::scene_event_category_ = em->QueryEventCategory("Scene");
-        if (PythonScript::scene_event_category_ == 0)
-            LogWarning("Unable to find event category for Scene events!");
-
-        inputeventcategoryid = em->QueryEventCategory("Input");
+        // Input (OIS)
+        inputeventcategoryid = em_->QueryEventCategory("Input");
         if (inputeventcategoryid == 0)
             LogError("Unable to find event category for Input");
-        
-        networkstate_category_id = em->QueryEventCategory("NetworkState");
-        if (networkstate_category_id == 0)
-            LogError("Unable to find event category for Network");
 
+        // Scene (SceneManager)
+        PythonScript::scene_event_category_ = em_->QueryEventCategory("Scene");
+        if (PythonScript::scene_event_category_ == 0)
+            LogWarning("Unable to find event category for Scene events!");
+        
         /* add events constants - now just the input events */
         //XXX move these to some submodule ('input'? .. better than 'constants'?)
         /*PyModule_AddIntConstant(apiModule, "MOVE_FORWARD_PRESSED", Input::Events::MOVE_FORWARD_PRESSED);
@@ -190,7 +190,7 @@ namespace PythonScript
         /* TODO: add other categories and expose the hierarchy as py submodules or something,
         add registrating those (it's not (currently) mandatory),
         to the modules themselves, e.g. InputModule (currently the OIS thing but that is to change) */
-        const Foundation::EventManager::EventMap &evmap = em->GetEventMap();
+        const Foundation::EventManager::EventMap &evmap = em_->GetEventMap();
         Foundation::EventManager::EventMap::const_iterator cat_iter = evmap.find(inputeventcategoryid);
         if (cat_iter != evmap.end())
         {
@@ -234,6 +234,25 @@ namespace PythonScript
             LogError("Unable to create instance from class ModuleManager");
         }
 
+    }
+
+    void PythonScriptModule::SubscribeToNetworkEvents()
+    {
+        // Network In
+        if (inboundCategoryID_ == 0)
+        {
+            inboundCategoryID_ = em_->QueryEventCategory("NetworkIn");
+            if (inboundCategoryID_ == 0)
+                LogWarning("Unable to find event category for incoming OpenSimNetwork events!");
+            else
+                LogInfo("Subscribed to [NetworkIn] events");
+        }
+        // Network State
+        networkstate_category_id = em_->QueryEventCategory("NetworkState");
+        if (networkstate_category_id == 0)
+            LogError("Unable to find event category for Network");
+        else
+            LogInfo("Subscribed to [NetworkState] events");
     }
 
     bool PythonScriptModule::HandleEvent(
@@ -329,10 +348,14 @@ namespace PythonScript
         }
         else if (category_id == networkstate_category_id) // if (category_id == "NETWORK?") 
         {
-            if (event_id == OpenSimProtocol::Events::EVENT_SERVER_CONNECTED)
+            if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
             {
                 value = PyObject_CallMethod(pmmInstance, "LOGIN_INFO", "i", event_id);
             }
+        }
+        else if (category_id == framework_category_id && event_id == Foundation::NETWORKING_REGISTERED)
+        {
+            SubscribeToNetworkEvents();
         }
 
         if (value)
@@ -355,7 +378,7 @@ namespace PythonScript
            this has always behaved correctly till now though (since march). --antont june 12th 
         if (category_id == inboundCategoryID_)
         {
-            OpenSimProtocol::NetworkEventInboundData *event_data = static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
+            ProtocolUtilities::NetworkEventInboundData *event_data = static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
             const NetMsgID msgID = event_data->messageID;
             NetInMessage *msg = event_data->message;
             const NetMessageInfo *info = event_data->message->GetMessageInfo();

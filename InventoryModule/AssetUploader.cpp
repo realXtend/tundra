@@ -10,7 +10,8 @@
 #include "HttpRequest.h"
 #include "LLSDUtilities.h"
 #include "RexUUID.h"
-#include "InventoryEvents.h"
+#include "Inventory/InventoryEvents.h"
+#include "Inventory/InventorySkeleton.h"
 #include "J2kEncoder.h"
 
 namespace Inventory
@@ -347,7 +348,6 @@ void AssetUploader::CreateRexInventoryFolders()
     }
 
     using namespace RexTypes;
-    using namespace OpenSimProtocol;
 
     const char *asset_types[] = { "Texture", "Mesh", "Skeleton", "MaterialScript", "ParticleScript", "FlashAnimation" };
     asset_type_t asset_type;
@@ -357,15 +357,15 @@ void AssetUploader::CreateRexInventoryFolders()
         std::string cat_name = GetCategoryNameForAssetType(asset_type);
 
         // Check out if this inventory category exists.
-        InventoryFolderSkeleton *folder = inventory->GetFirstChildFolderByName(cat_name.c_str());
+        ProtocolUtilities::InventoryFolderSkeleton *folder = inventory->GetFirstChildFolderByName(cat_name.c_str());
         if (!folder)
         {
             // I doesn't. Create new inventory folder.
-            InventoryFolderSkeleton *parentFolder = inventory->GetMyInventoryFolder();
+            ProtocolUtilities::InventoryFolderSkeleton *parentFolder = inventory->GetMyInventoryFolder();
             RexUUID folder_id = RexUUID::CreateRandom();
 
             // Add folder to inventory skeleton.
-            InventoryFolderSkeleton newFolder(folder_id, cat_name);
+            ProtocolUtilities::InventoryFolderSkeleton newFolder(folder_id, cat_name);
             parentFolder->AddChildFolder(newFolder);
 
             // Notify the server about the new inventory folder.

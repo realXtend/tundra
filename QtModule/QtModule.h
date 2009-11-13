@@ -94,7 +94,13 @@ namespace QtUI
             @return Pointer to EC_UICanvas component, or null if the component could not be created out of some reason.
          */
         Foundation::ComponentPtr CreateEC_UICanvasToEntity(Scene::Entity* entity, boost::shared_ptr<QtUI::UICanvas> canvas);
-         
+
+        /**
+         * Show/hide for the control bar with widget buttons
+         * @param true if you want to show, false otherwise
+         */
+        void SetShowControlBar(bool show);
+
     private:
         
         /// Initializes a mapping table between OIS and Qt keyboard codes.
@@ -107,7 +113,6 @@ namespace QtUI
         Core::event_category_id_t input_event_category_;
         Core::event_category_id_t renderer_event_category_;
         Core::event_category_id_t scene_event_category_;
-
 
         bool mouse_left_button_down_;
         QPoint lastPos_;

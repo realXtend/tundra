@@ -6,7 +6,7 @@
 
 namespace CommunicationUI
 {
-	OpenSimChat::OpenSimChat(Foundation::Framework *framework, OpenSimProtocol::ClientParameters clientParams)
+	OpenSimChat::OpenSimChat(Foundation::Framework *framework, ProtocolUtilities::ClientParameters clientParams)
 		: framework_(framework), clientParams_(clientParams), internalWidget_(0), visible_(false)
 	{
 		try

@@ -46,7 +46,7 @@ namespace RexLogic
 		QString address_;
 
 	signals:
-		void LoginProcessed(QString);
+		void WebLoginInfoRecieved(QWebFrame *);
 
 	};
 }

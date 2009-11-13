@@ -29,7 +29,7 @@ namespace RexLogic
 
         /// Handles the "SimulatorViewerTimeMessage" packet.
         /// @param data The network event data pointer.
-        bool HandleOSNE_SimulatorViewerTimeMessage(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleOSNE_SimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData* data);
 
         /// Updates the visual effects (fog, skybox etc).
         void UpdateVisualEffects(Core::f64 frametime);

@@ -6,7 +6,6 @@
 #include "AssetCache.h"
 #include "RexAsset.h"
 
-using namespace OpenSimProtocol;
 using namespace RexTypes;
 
 namespace Asset

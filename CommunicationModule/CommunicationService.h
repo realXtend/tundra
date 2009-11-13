@@ -71,7 +71,7 @@ namespace Communication
 		QStringList supported_protocols_;
 
 		//! category id for incoming messages
-		Core::event_category_id_t event_category_opensimnetworkin_;
+		Core::event_category_id_t event_category_networkinin_;
         Core::event_category_id_t event_category_networkstate_;
 	protected slots:
 		virtual void OnProtocolListUpdated(const QStringList& protocols);

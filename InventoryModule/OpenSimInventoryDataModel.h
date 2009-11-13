@@ -17,7 +17,7 @@ namespace RexLogic
     class RexLogicModule;
 }
 
-namespace OpenSimProtocol
+namespace ProtocolUtilities
 {
     class InventorySkeleton;
     class InventoryFolderSkeleton;
@@ -112,11 +112,11 @@ namespace Inventory
         /// @param folder_skeleton Folder skeleton for the folder to be created.
         void CreateNewFolderFromFolderSkeleton(
             InventoryFolder *parent_folder,
-            OpenSimProtocol::InventoryFolderSkeleton *folder_skeleton);
+            ProtocolUtilities::InventoryFolderSkeleton *folder_skeleton);
 
         /// Creates the tree model data for inventory.
         /// @param inventory_skeleton OpenSim inventory skeleton.
-        void SetupModelData(OpenSimProtocol::InventorySkeleton *inventory_skeleton);
+        void SetupModelData(ProtocolUtilities::InventorySkeleton *inventory_skeleton);
 
         /// RexLogicModule pointer.
         RexLogic::RexLogicModule *rexLogicModule_;

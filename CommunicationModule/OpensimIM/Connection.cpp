@@ -1,7 +1,7 @@
 #include <StableHeaders.h>
 #include <RexLogicModule.h> // chat
-#include <RexProtocolMsgIDs.h>
-#include <OpenSimProtocolModule.h>
+#include <RealXtend/RexProtocolMsgIDs.h>
+//#include <OpenSimProtocolModule.h>
 #include "Connection.h"
 #include "ConnectionProvider.h"
 
@@ -210,29 +210,30 @@ namespace OpensimIM
 
 	void Connection::RequestFriendlist()
 	{
-		OpenSimProtocol::OpenSimProtocolModule *opensim_protocol_ = dynamic_cast<OpenSimProtocol::OpenSimProtocolModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_OpenSimProtocol).lock().get());
-		if ( !opensim_protocol_ )
-			return;
-		OpenSimProtocol::BuddyListPtr buddy_list = opensim_protocol_->GetClientParameters().buddy_list;
-		OpenSimProtocol::BuddyVector buddies = buddy_list->GetBuddies();
-		for (OpenSimProtocol::BuddyVector::iterator i = buddies.begin(); i != buddies.end(); ++i)
-		{
-			//! @todo Fetch name of this buddy 
-			Contact* contact = new Contact(	(*i)->GetID().ToString().c_str(), "" );
-			friend_list_.AddContact(contact);
-			contacts_.push_back(contact);
-		}
+        boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule = framework_->GetModuleManager()->GetModule<RexLogic::RexLogicModule>(Foundation::Module::MT_WorldLogic).lock().get()->GetServerConnection()->GetCurrentProtocolModuleWeakPointer();
+		if (currentProtocolModule.lock().get())
+        {
+		    ProtocolUtilities::BuddyListPtr buddy_list = currentProtocolModule.lock()->GetClientParameters().buddy_list;
+		    ProtocolUtilities::BuddyVector buddies = buddy_list->GetBuddies();
+		    for (ProtocolUtilities::BuddyVector::iterator i = buddies.begin(); i != buddies.end(); ++i)
+		    {
+			    //! @todo Fetch name of this buddy 
+			    Contact* contact = new Contact(	(*i)->GetID().ToString().c_str(), "" );
+			    friend_list_.AddContact(contact);
+			    contacts_.push_back(contact);
+		    }
+        }
 	}
 
 	bool Connection::HandleNetworkEvent(Foundation::EventDataInterface* data)
 	{
-		OpenSimProtocol::NetworkEventInboundData *event_data = dynamic_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
+		ProtocolUtilities::NetworkEventInboundData *event_data = dynamic_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
         if (!event_data)
             return false;
             
 		
-        const NetMsgID msgID = event_data->messageID;
-        NetInMessage *msg = event_data->message;
+        const ProtocolUtilities::NetMsgID msgID = event_data->messageID;
+        ProtocolUtilities::NetInMessage *msg = event_data->message;
         switch(msgID)
         {
 		case RexNetMsgChatFromSimulator: return HandleOSNEChatFromSimulator(*msg); break;
@@ -245,7 +246,7 @@ namespace OpensimIM
 		return false;
 	}
 
-	bool Connection::HandleRexNetMsgImprovedInstantMessage(NetInMessage& msg)
+	bool Connection::HandleRexNetMsgImprovedInstantMessage(ProtocolUtilities::NetInMessage& msg)
 	{
 		try
 		{
@@ -310,7 +311,7 @@ namespace OpensimIM
 	}
 
 
-	bool Connection::HandleOSNEChatFromSimulator(NetInMessage& msg)
+	bool Connection::HandleOSNEChatFromSimulator(ProtocolUtilities::NetInMessage& msg)
 	{
 		try
 		{
@@ -355,7 +356,7 @@ namespace OpensimIM
 		return false;		
 	}
 
-	bool Connection::HandleOnlineNotification(NetInMessage& msg)
+	bool Connection::HandleOnlineNotification(ProtocolUtilities::NetInMessage& msg)
 	{
 		msg.ResetReading();
 		size_t instance_count = msg.ReadCurrentBlockInstanceCount();
@@ -371,7 +372,7 @@ namespace OpensimIM
 		return false;
 	}
 
-	bool Connection::HandleOfflineNotification(NetInMessage& msg)
+	bool Connection::HandleOfflineNotification(ProtocolUtilities::NetInMessage& msg)
 	{
 		msg.ResetReading();
 		size_t instance_count = msg.ReadCurrentBlockInstanceCount();

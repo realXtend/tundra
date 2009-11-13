@@ -9,7 +9,7 @@
 #define incl_InventoryModule_InventoryItemModel_h
 
 #include "NetworkEvents.h"
-#include "InventoryEvents.h"
+#include "Inventory/InventoryEvents.h"
 
 #include <QAbstractItemModel>
 #include <QModelIndex>

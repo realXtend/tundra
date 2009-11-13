@@ -6,11 +6,10 @@
 #include "NetworkEvents.h"
 #include "RexUUID.h"
 
-namespace OpenSimProtocol
-{
-    class OpenSimProtocolModule;
-    class InventoryFolder;
-}
+#include "Interfaces/ProtocolModuleInterface.h"
+#include "Inventory/InventorySkeleton.h"
+#include "ProtocolModuleOpenSim.h"
+#include "ProtocolModuleTaiga.h"
 
 namespace RexLogic
 {
@@ -32,29 +31,6 @@ namespace RexLogic
 
         /// Destructor.
         virtual ~RexServerConnection();
-
-        /// Connects to a reX server.
-        /** @param username Username (Firstname Lastname).
-          * @param password Password.
-          * @param serveraddress Simulator server address and port.
-          * @param auth_server_address Authentication server address and port.
-          * @param auth_login Authentication server username.
-          * @return True if the connection was succesfull. False otherwise.
-          */
-        bool ConnectToServer(
-            const std::string& username,
-            const std::string& password,
-            const std::string& serveraddress,
-            const std::string& auth_server_address = "",
-            const std::string& auth_login = "");
-
-        /// Connect to a rex server with cablebeach/openid
-        bool ConnectToCableBeachServer(
-            const std::string& firstname, 
-            const std::string& lastname,
-            const std::string& identityUrl,
-            int port,
-            const std::string& serveraddress);
 
         /// Creates the UDP connection after a succesfull XML-RPC login.
         /// @return True, if success.
@@ -184,7 +160,7 @@ namespace RexLogic
          *  @param re_timestamp Should the server re-timestamp children.
          */
         void SendMoveInventoryFolderPacket(
-            std::list<OpenSimProtocol::InventoryFolder *> folders,
+            std::list<ProtocolUtilities::InventoryFolderSkeleton *> folders,
             const bool &re_timestamp = true);
 
         /// Send a packet which deletes inventory folder.
@@ -196,7 +172,7 @@ namespace RexLogic
         /// Works when to folder is in the Trash folder.
         /// @param folders List of folders to be deleted.
         void SendRemoveInventoryFolderPacket(
-            std::list<OpenSimProtocol::InventoryFolder *> folders);
+            std::list<ProtocolUtilities::InventoryFolderSkeleton *> folders);
 
         /// Sends packet which moves an inventory item to another folder within My Inventory.
         /// @param item_id ID of the item to be moved.
@@ -319,7 +295,7 @@ namespace RexLogic
         std::string GetSimName() const { return simName_; }
 
         /// @return A structure of connection spesific information, e.g. AgentID and SessionID.
-        OpenSimProtocol::ClientParameters GetInfo() const { return myInfo_; }
+        ProtocolUtilities::ClientParameters GetInfo() const { return myInfo_; }
 
         /// @return A capability by name
         /// @param name Name of the capability.
@@ -338,23 +314,47 @@ namespace RexLogic
         const bool IsConnected() const { return connected_; }
 
         /// @return The state of the connection.
-        volatile OpenSimProtocol::Connection::State GetConnectionState();
+        volatile ProtocolUtilities::Connection::State GetConnectionState();
+
+		/// @param protocol type
+		const void SetCurrentProtocolType(ProtocolUtilities::ProtocolType newType);
+
+		/// @return The current Protocol Module type
+		const boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> GetCurrentProtocolModule();
+
+		/// Get boost::weak_ptr to current Protocol Module
+		/// @return boost::weak_ptr to current Protocol Module
+		const boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> GetCurrentProtocolModuleWeakPointer();
+
+		/// Prepares the network events of current module
+		/// @return boolean value if preparations succeeded
+		const bool PrepareCurrentProtocolModule();
+
+		/// Unregisters the eventmanager from current Protocol Module
+		const void UnregisterCurrentProtocolModule();
+
 
     private:
         /// Convenience function to get the weak pointer when building messages.
-        NetOutMessage *StartMessageBuilding(const NetMsgID &message_id);
+		ProtocolUtilities::NetOutMessage *StartMessageBuilding(const ProtocolUtilities::NetMsgID &message_id);
 
         /// Convenience function to get the weak pointer when sending messages.
-        void FinishMessageBuilding(NetOutMessage *msg);
+        void FinishMessageBuilding(ProtocolUtilities::NetOutMessage *msg);
 
         /// The framework we belong to.
         Foundation::Framework *framework_;
 
-        /// Pointer to the network interface.
-        boost::weak_ptr<OpenSimProtocol::OpenSimProtocolModule> netInterface_;
+        /// Pointer for OpenSim protocol module.
+        boost::weak_ptr<TaigaProtocol::ProtocolModuleTaiga> netInterfaceTaiga_;
+
+        /// Pointer for Taiga protocol module.
+        boost::weak_ptr<OpenSimProtocol::ProtocolModuleOpenSim> netInterfaceOpenSim_;
+
+		/// Pointer to ModuleImplementation, used in ProtocolModule getter
+		boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
 
         /// Server-spesific info for this client.
-        OpenSimProtocol::ClientParameters myInfo_;
+        ProtocolUtilities::ClientParameters myInfo_;
 
         /// Address of the sim we're connected.
         std::string serverAddress_;
@@ -367,6 +367,7 @@ namespace RexLogic
 
         /// Is client connected to a server.
         bool connected_;
+		bool connecting_;
 
         /// Type of the connection.
         ConnectionType connection_type_;
@@ -381,10 +382,13 @@ namespace RexLogic
         std::string auth_server_address_;
 
         /// State of the connection procedure.
-        OpenSimProtocol::Connection::State state_;
+        ProtocolUtilities::Connection::State state_;
 
         /// State of the connection procedure thread.
-        OpenSimProtocol::ConnectionThreadState threadState_;
+        ProtocolUtilities::ConnectionThreadState threadState_;
+
+		/// Current ProtocolModule type
+		ProtocolUtilities::ProtocolType currentProtocolType_;
     };
 }
 

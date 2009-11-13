@@ -3,14 +3,14 @@
 #include "StableHeaders.h"
 #include "AssetManager.h"
 #include "AssetModule.h"
-#include "OpenSimProtocolModule.h"
-#include "RexProtocolMsgIDs.h"
+
 #include "RexUUID.h"
 #include "UDPAssetProvider.h"
 #include "XMLRPCAssetProvider.h"
 #include "HttpAssetProvider.h"
 
-using namespace OpenSimProtocol;
+#include "RealXtend/RexProtocolMsgIDs.h"
+
 using namespace RexTypes;
 
 namespace Asset
@@ -57,11 +57,13 @@ namespace Asset
         {
     		http_asset_provider_ = Foundation::AssetProviderPtr(new HttpAssetProvider(framework_));
             manager_->RegisterAssetProvider(http_asset_provider_);
-        } catch (Core::Exception)
+        } 
+        catch (Core::Exception)
         {
             AssetModule::LogWarning("Failed to create HTTP asset provider.");
         }
-		
+
+        framework_category_id_ = framework_->GetEventManager()->QueryEventCategory("Framework");
         
         LogInfo("Module " + Name() + " initialized.");
     }
@@ -69,11 +71,24 @@ namespace Asset
     // virtual
     void AssetModule::PostInitialize()
     {
-        inboundcategory_id_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
-        
+
+    }
+
+    void AssetModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
+	{
+		protocolModule_ = currentProtocolModule;
+		udp_asset_provider_->SetCurrentProtocolModule(protocolModule_);
+        inboundcategory_id_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
         if (inboundcategory_id_ == 0 )
             LogWarning("Unable to find event category for OpenSimNetwork events!");
-    }
+		else
+			LogInfo("System " + Name() + " subscribed to network events [NetworkIn]");
+	}
+
+	void AssetModule::UnsubscribeNetworkEvents()
+	{
+
+	}
 
     // virtual
     void AssetModule::Update(Core::f64 frametime)
@@ -120,7 +135,14 @@ namespace Asset
         {
             if (udp_asset_provider_)
                 return checked_static_cast<UDPAssetProvider*>(udp_asset_provider_.get())->HandleNetworkEvent(data);
-        }     
+        }
+        else if (category_id == framework_category_id_ && event_id == Foundation::NETWORKING_REGISTERED)
+        {
+            Foundation::NetworkingRegisteredEvent *event_data = dynamic_cast<Foundation::NetworkingRegisteredEvent *>(data);
+            if (event_data)
+                SubscribeToNetworkEvents(event_data->currentProtocolModule);
+            return false;
+        }
        
         return false;
     }    

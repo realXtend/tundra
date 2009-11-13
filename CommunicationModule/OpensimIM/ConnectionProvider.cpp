@@ -121,14 +121,14 @@ namespace OpensimIM
 
 	bool ConnectionProvider::HandleNetworkStateEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
 	{
-        if (event_id == OpenSimProtocol::Events::EVENT_SERVER_CONNECTED)
+        if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
 		{
 			//! @todo agent_id to credentials 
 			Communication::Credentials credentials(OPENSIM_IM_PROTOCOL, "", "", "", 0); 
 			Communication::ConnectionInterface* conn = OpenConnection(credentials);
 		}
 
-		if (event_id == OpenSimProtocol::Events::EVENT_SERVER_DISCONNECTED || event_id == OpenSimProtocol::Events::EVENT_CONNECTION_FAILED)
+		if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED || event_id == ProtocolUtilities::Events::EVENT_CONNECTION_FAILED)
 		{
 			CloseConnections();
 		}

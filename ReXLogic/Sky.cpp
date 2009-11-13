@@ -20,9 +20,11 @@ Sky::~Sky()
 {
 }
 
-bool Sky::HandleRexGM_RexSky(OpenSimProtocol::NetworkEventInboundData* data)
+bool Sky::HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data)
 {
-    NetInMessage &msg = *data->message;
+	// HACK ON REX MODE, return false if you have problems
+	// return false;
+    ProtocolUtilities::NetInMessage &msg = *data->message;
     msg.ResetReading();
     msg.SkipToFirstVariableByName("Parameter");
 

@@ -24,11 +24,11 @@ namespace RexLogic
         Avatar(RexLogicModule *rexlogicmodule);
         ~Avatar();
 
-        bool HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data);
         bool HandleOSNE_KillObject(uint32_t objectid);
-        bool HandleOSNE_AvatarAnimation(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleOSNE_AvatarAnimation(ProtocolUtilities::NetworkEventInboundData* data);
 
-        bool HandleRexGM_RexAppearance(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleRexGM_RexAppearance(ProtocolUtilities::NetworkEventInboundData* data);
 
         void HandleTerseObjectUpdate_30bytes(const uint8_t* bytes);
         void HandleTerseObjectUpdateForAvatar_60bytes(const uint8_t* bytes);

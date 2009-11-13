@@ -106,9 +106,9 @@ namespace RexLogic
         return entity;
     } 
 
-    bool Avatar::HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data)
+    bool Avatar::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data)
     {
-        NetInMessage *msg = data->message;
+        ProtocolUtilities::NetInMessage *msg = data->message;
  
         msg->ResetReading();
         uint64_t regionhandle = msg->ReadU64();
@@ -297,8 +297,8 @@ namespace RexLogic
         assert(i <= 60);                            
     }
     
-    bool Avatar::HandleRexGM_RexAppearance(OpenSimProtocol::NetworkEventInboundData* data)
-    {                
+    bool Avatar::HandleRexGM_RexAppearance(ProtocolUtilities::NetworkEventInboundData* data)
+    {        
         data->message->ResetReading();    
         data->message->SkipToFirstVariableByName("Parameter");
 
@@ -351,7 +351,7 @@ namespace RexLogic
         return false;
     }
    
-    bool Avatar::HandleOSNE_AvatarAnimation(OpenSimProtocol::NetworkEventInboundData* data)   
+    bool Avatar::HandleOSNE_AvatarAnimation(ProtocolUtilities::NetworkEventInboundData* data)   
     {        
         data->message->ResetReading();
         RexUUID avatarid = data->message->ReadUUID();

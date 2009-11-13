@@ -7,9 +7,9 @@
 #include "Foundation.h"
 #include "NetworkEvents.h"
 
-namespace OpenSimProtocol
+namespace ProtocolUtilities
 {
-    class OpenSimProtocolModule;
+    class ProtocolModuleInterface;
 }
 
 namespace RexLogic
@@ -28,14 +28,14 @@ namespace RexLogic
         bool HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
     private:
         // !Handler functions for Opensim network events
-        bool HandleOSNE_AgentMovementComplete(OpenSimProtocol::NetworkEventInboundData* data);
-        bool HandleOSNE_GenericMessage(OpenSimProtocol::NetworkEventInboundData* data);
-        bool HandleOSNE_ImprovedTerseObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
-        bool HandleOSNE_KillObject(OpenSimProtocol::NetworkEventInboundData* data);
-        bool HandleOSNE_LogoutReply(OpenSimProtocol::NetworkEventInboundData* data);
-        bool HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
-        bool HandleOSNE_RegionHandshake(OpenSimProtocol::NetworkEventInboundData* data);
-        bool HandleOSNE_InventoryDescendents(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleOSNE_AgentMovementComplete(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleOSNE_GenericMessage(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleOSNE_ImprovedTerseObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleOSNE_KillObject(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleOSNE_LogoutReply(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleOSNE_InventoryDescendents(ProtocolUtilities::NetworkEventInboundData* data);
 
         //! Handler functions for GenericMessages
 
@@ -43,7 +43,7 @@ namespace RexLogic
 
         Foundation::Framework *framework_;
 
-        boost::weak_ptr<OpenSimProtocol::OpenSimProtocolModule> netInterface_;
+		boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
 
         RexLogicModule *rexlogicmodule_;
     };

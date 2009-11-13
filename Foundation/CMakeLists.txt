@@ -17,7 +17,7 @@ add_definitions (-DUSE_QT)
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
-use_modules (RexCommon ReXLogic OpenSimProtocol OgreRenderingModule)
+use_modules (RexCommon ReXLogic ProtocolUtilities ProtocolModuleOpenSim OgreRenderingModule)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 use_framework_modules (Core Foundation Interfaces SceneManager)

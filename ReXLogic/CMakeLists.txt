@@ -5,7 +5,7 @@ init_target (RexLogicModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES RexLoginWindow.h RexWebLogin.h InventoryWindow.h AvatarEditor.h)
+file (GLOB MOC_FILES RexLoginWindow.h RexWebLogin.h InventoryWindow.h AvatarEditor.h LoginUI.h LoginHandler.h LoginCredentials.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap
@@ -23,12 +23,12 @@ use_package (CURL)
 use_package (OPENJPEG)
 use_package (OIS)
 use_package (XMLRPC)
-use_modules (OgreRenderingModule OpenSimProtocol RexCommon InputModuleOIS QtModule HttpUtilities RpcUtilities)
+use_modules (OgreRenderingModule AssetModule RexCommon QtModule HttpUtilities RpcUtilities ProtocolUtilities InputModuleOIS ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
 use_framework_modules (Core Foundation Interfaces SceneManager)
 
-link_modules (OpenSimProtocolModule RexCommon OgreRenderingModule QtModule HttpUtilities RpcUtilities)
+link_modules (OgreRenderingModule AssetModule RexCommon QtModule HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 link_package (OIS)
 link_package (OGRE)
 link_package (BOOST)

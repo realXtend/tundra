@@ -10,7 +10,7 @@
 #include "AbstractInventoryItem.h"
 #include "InventoryModule.h"
 #include "RexLogicModule.h"
-#include "InventorySkeleton.h"
+#include "Inventory/InventorySkeleton.h"
 #include "RexUUID.h"
 
 #include <QDir>
@@ -295,6 +295,7 @@ void WebdavInventoryDataModel::DownloadFile(const QString &store_folder, Abstrac
 
 bool WebdavInventoryDataModel::InitPythonQt()
 {
+    
     QString myPath = QString("%1/pymodules/webdavinventory").arg(QDir::currentPath());
 
     pythonQtMainModule_ = PythonQt::self()->getMainModule();

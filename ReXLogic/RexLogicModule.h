@@ -26,7 +26,8 @@ namespace RexLogic
     class Sky;
     class Water;
     class Environment;
-    class RexLoginWindow;
+    //class RexLoginWindow;
+	class Login;
     class AvatarControllable;
     class CameraControllable;
 
@@ -41,7 +42,7 @@ namespace RexLogic
     typedef boost::shared_ptr<Environment> EnvironmentPtr;
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<CameraControllable> CameraControllablePtr;
-    typedef boost::shared_ptr<OpenSimProtocol::InventorySkeleton> InventoryPtr;
+    typedef boost::shared_ptr<ProtocolUtilities::InventorySkeleton> InventoryPtr;
 
     //! Camera states handled by rex logic
     enum CameraState
@@ -64,6 +65,7 @@ namespace RexLogic
         virtual void Initialize();
         virtual void PostInitialize();
         virtual void Uninitialize();
+		virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
 
         virtual void Update(Core::f64 frametime);
 
@@ -104,6 +106,9 @@ namespace RexLogic
 
         /// @return Invetory pointer.
         InventoryPtr GetInventory() const;
+
+        /// @return Login UI
+        Login *GetLoginUI() { return loginUI_; }
 
         //! Returns the camera controllable
         CameraControllablePtr GetCameraControllable() { return camera_controllable_; }
@@ -259,10 +264,13 @@ namespace RexLogic
         IDMap UUIDs_;
 
         //! The login window.
-        RexLoginWindow *loginWindow_;
+        //RexLoginWindow *loginWindow_;
+
+		//! The new login window
+		Login *loginUI_;
 
         //! The connection state which is shown in the login window.
-        OpenSimProtocol::Connection::State connectionState_;
+        ProtocolUtilities::Connection::State connectionState_;
 
         //! An avatar controllable
         AvatarControllablePtr avatar_controllable_;

@@ -230,7 +230,7 @@ void RexLoginWindow::Connect()
         line = login_widget_->findChild<QLineEdit* >("line_password");
         std::string password = line->text().toStdString();
 
-        successful = rex_logic_->GetServerConnection()->ConnectToServer(user_name, password, server_address);
+        //successful = rex_logic_->GetServerConnection()->ConnectToServer(user_name, password, server_address);
         if (successful)
         {
             // Save login and server settings for future use. 
@@ -263,7 +263,7 @@ void RexLoginWindow::Connect()
         line = login_widget_->findChild<QLineEdit* >("line_auth_server");
         std::string auth_server = line->text().toStdString();
 
-        successful = rex_logic_->GetServerConnection()->ConnectToServer(user_name, password, server_address, auth_server, auth_login);
+        //successful = rex_logic_->GetServerConnection()->ConnectToServer(user_name, password, server_address, auth_server, auth_login);
         // Because hack we clear this, just in case.
         user_name="";
 
@@ -356,22 +356,22 @@ void RexLoginWindow::ProcessCBLogin(QString inresult)
     Poco::URI uri = Poco::URI(address);
     int port = uri.getPort();
 
-    rex_logic_->GetServerConnection()->ConnectToCableBeachServer(firstname, lastname, identityUrl, port, address);
+    //rex_logic_->GetServerConnection()->ConnectToCableBeachServer(firstname, lastname, identityUrl, port, address);
 }
 
-void RexLoginWindow::UpdateConnectionStateToUI(OpenSimProtocol::Connection::State state)
-{
-    ///\todo Perhaps this state change should come from above instead of this function.
-    if (state == OpenSimProtocol::Connection::STATE_CONNECTED)
-        HideLoginWindow();
-    else
-        ShowLoginWindow();
-
-    if (login_widget_ != 0)
-    {
-        QLabel *pLabel = login_widget_->findChild<QLabel* >("lab_state");
-        pLabel->setText(QString(OpenSimProtocol::Connection::NetworkStateToString(state).c_str()));
-    }
-}
+//void RexLoginWindow::UpdateConnectionStateToUI(OpenSimProtocol::Connection::State state)
+//{
+//    ///\todo Perhaps this state change should come from above instead of this function.
+//    if (state == OpenSimProtocol::Connection::STATE_CONNECTED)
+//        HideLoginWindow();
+//    else
+//        ShowLoginWindow();
+//
+//    if (login_widget_ != 0)
+//    {
+//        QLabel *pLabel = login_widget_->findChild<QLabel* >("lab_state");
+//        pLabel->setText(QString(OpenSimProtocol::Connection::NetworkStateToString(state).c_str()));
+//    }
+//}
 
 }

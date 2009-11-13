@@ -3,7 +3,9 @@
 #ifndef incl_AssetModule_h
 #define incl_AssetModule_h
 
+#include "Foundation.h"
 #include "ModuleInterface.h"
+
 #include "ConsoleCommandServiceInterface.h"
 #include "AssetProviderInterface.h"
 #include "AssetModuleApi.h"
@@ -13,9 +15,9 @@ namespace Foundation
     class Framework;
 }
 
-namespace OpenSimProtocol
+namespace ProtocolUtilities
 {
-    class OpenSimProtocolModule;
+	class ProtocolModuleInterface;
 }
 
 namespace Asset
@@ -50,6 +52,9 @@ namespace Asset
             Core::event_id_t event_id, 
             Foundation::EventDataInterface* data);
 
+		virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
+		void UnsubscribeNetworkEvents();
+
         MODULE_LOGGING_FUNCTIONS
 
         //! callback for console command
@@ -75,6 +80,12 @@ namespace Asset
         
         //! category id for incoming messages
         Core::event_category_id_t inboundcategory_id_;
+
+        //! framework id for internal events
+        Core::event_category_id_t framework_category_id_;
+
+		//! Pointer to current ProtocolModule
+		boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
     };
 }
 

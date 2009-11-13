@@ -9,6 +9,8 @@
 #include "FriendRequest.h"
 #include "ContactGroup.h"
 
+#include "NetworkMessages/NetInMessage.h"
+
 namespace OpensimIM
 {
 
@@ -109,7 +111,7 @@ namespace OpensimIM
 
 		//! Handle incoming improved instant messages
 		//! this includes instant messages and friend requests and friend requestt responses responses
-		bool HandleRexNetMsgImprovedInstantMessage(NetInMessage& msg);
+        bool HandleRexNetMsgImprovedInstantMessage(ProtocolUtilities::NetInMessage& msg);
 
 		virtual Communication::ChatSessionInterface* OpenPrivateChatSession(const QString &user_id);
 	
@@ -120,9 +122,9 @@ namespace OpensimIM
 		virtual void RequestFriendlist();
 
 		//!
-		virtual bool HandleOSNEChatFromSimulator(NetInMessage& msg);
-		virtual bool HandleOnlineNotification(NetInMessage& msg);
-		virtual bool HandleOfflineNotification(NetInMessage& msg);
+		virtual bool HandleOSNEChatFromSimulator(ProtocolUtilities::NetInMessage& msg);
+		virtual bool HandleOnlineNotification(ProtocolUtilities::NetInMessage& msg);
+		virtual bool HandleOfflineNotification(ProtocolUtilities::NetInMessage& msg);
 
 
 		//! Opensim based servers have one global chat channel (id = "0")

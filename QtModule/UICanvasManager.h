@@ -36,6 +36,9 @@ namespace QtUI
 		/// @param id of the canvas to be removed
 		bool RemoveCanvasFromControlBar(const QString& id);
 
+        // Toggle show/hide
+        void SetVisible(bool show);
+
 	private:
 		//! Init internal widgets
 		void InitManagedWidgets();

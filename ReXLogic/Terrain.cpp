@@ -397,15 +397,15 @@ namespace
     }
 
     /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
-    bool Terrain::HandleOSNE_LayerData(OpenSimProtocol::NetworkEventInboundData* data)
+    bool Terrain::HandleOSNE_LayerData(ProtocolUtilities::NetworkEventInboundData* data)
     {
         PROFILE(HandleOSNE_LayerData);
 
-        NetInMessage &msg = *data->message;
+        ProtocolUtilities::NetInMessage &msg = *data->message;
         Core::u8 layerID = msg.ReadU8();
         size_t sizeBytes = 0;
         const uint8_t *packedData = msg.ReadBuffer(&sizeBytes);
-        OpenSimProtocol::BitStream bits(packedData, sizeBytes);
+        ProtocolUtilities::BitStream bits(packedData, sizeBytes);
         TerrainPatchGroupHeader header;
 
         header.stride = bits.ReadBits(16);

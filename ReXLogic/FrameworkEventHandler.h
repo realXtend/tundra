@@ -13,13 +13,16 @@ namespace RexLogic
     class FrameworkEventHandler
     {
     public:
-        FrameworkEventHandler(RexServerConnection *connection) : connection_(connection) {}
+        FrameworkEventHandler(RexServerConnection *connection, Foundation::Framework *framework, RexLogicModule *rexLogic)
+            : connection_(connection), framework_(framework), rexLogic_(rexLogic) {}
 
         //! handle framework event
         bool HandleFrameworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
     private:
         //! server connection
         RexServerConnection *connection_;
+        RexLogicModule *rexLogic_;
+        Foundation::Framework *framework_;
     };
 }
 

@@ -32,7 +32,7 @@ namespace RexLogic
 
         /// Updates the UI with a new connection state string.
         /// @param The connection state enum.
-        void UpdateConnectionStateToUI(OpenSimProtocol::Connection::State state);
+        //void UpdateConnectionStateToUI(OpenSimProtocol::Connection::State state);
 
         /// Shows the external login dialog and hides the embedded logout buttons.
         void ShowLoginWindow();
