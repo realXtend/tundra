@@ -44,6 +44,8 @@ EXTERNAL = 0
 UP = 0
 RIGHT = 1
 
+DEV = True #if this is false, the canvas is added to the controlbar
+
 class MeshAssetidEditline(QLineEdit):
     def __init__(self, mainedit, *args):
         self.mainedit = mainedit #to be able to query the selected entity at drop
@@ -106,10 +108,11 @@ class EditGUI(Component):
         self.canvas.AddWidget(meshassetedit)
         
         self.canvas.connect('Hidden()', self.on_hide)
-        #self.canvas.Show()
         modu = r.getQtModule()
-        modu.AddCanvasToControlBar(self.canvas, "World Edit")
-
+        if not DEV:
+            modu.AddCanvasToControlBar(self.canvas, "World Edit")
+        else:
+            self.canvas.Show()
         #for some reason setRange is not there. is not not a slot of these?
         #"QDoubleSpinBox has no attribute named 'setRange'"
         #apparently they are properties .minimum and .maximum, made in the xml now
@@ -162,7 +165,12 @@ class EditGUI(Component):
             r.RightMouseClickPressed: self.RightMouseDown,
             r.RightMouseClickReleased: self.RightMouseUp
         }
-                        
+        
+        self.arrow_grabbed = False
+        self.arrow_grabbed_axis = None
+
+    #r.c = self
+
     def changepos(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
@@ -249,7 +257,7 @@ class EditGUI(Component):
         arrows = False
         if self.arrows is not None and self.arrows.id == ent.id:
             arrows = True
-            
+
         if ent.id != 0 and ent.id > 10 and ent.id != r.getUserAvatarId() and not arrows: #terrain seems to be 3 and scene objects always big numbers, so > 10 should be good
             self.sel = ent
             
@@ -260,7 +268,7 @@ class EditGUI(Component):
                 
                 self.widgetList[str(id)] = (ent, tWid)
 
-            print "Selected entity:", self.sel.id, "at", self.sel.pos#, self.sel.name
+            #print "Selected entity:", self.sel.id, "at", self.sel.pos#, self.sel.name
 
             #update the gui vals to show what the newly selected entity has
             self.update_guivals()
@@ -323,23 +331,52 @@ class EditGUI(Component):
             self.arrows.scale = 0.2, 0.2, 0.2
             #self.arrow.setOrientation(self.cam.DerivedOrientation)
             self.arrows.orientation = ort
-        
+      
     def hideArrows(self):
         #print "Hiding arrows!"
         if self.arrows is not None:
             self.arrows.scale = 0.0, 0.0, 0.0 #ugly hack
             self.arrows.pos = 0.0, 0.0, 0.0 #another ugly hack
+            self.arrow_grabbed_axis = None
+            self.arrow_grabbed = False
             #XXX todo: change these after theres a ent.hide type way
 
     def LeftMouseDown(self, mouseinfo):
         self.left_button_down = True
-        ent = r.rayCast(mouseinfo.x, mouseinfo.y)
+        #ent = r.rayCast(mouseinfo.x, mouseinfo.y)
+        results = []
+        results = r.rayCast(mouseinfo.x, mouseinfo.y)
+        ent = None
+        
+        if results is not None and results[0] != 0:
+            id = results[0]
+            ent = r.getEntity(id)
+
         #print "Got entity:", ent
         if ent is not None:
             r.eventhandled = self.EVENTHANDLED
             #print "Entity position is", ent.pos
             #print "Entity id is", ent.id
             #if self.sel is not ent: #XXX wrappers are not reused - there may now be multiple wrappers for same entity
+            if self.arrows is not None and ent.id == self.arrows.id:
+                u = results[-2]
+                v = results[-1]
+                #print "ARROW and UV", u, v
+                self.arrow_grabbed = True
+                if u < 0.421875:
+                    #print "arrow is blue / z"
+                    self.arrow_grabbed_axis = 2
+                elif u < 0.70703125:
+                    #print "arrow is green / y"
+                    self.arrow_grabbed_axis = 1
+                elif u <= 1.0:
+                    #print "arrow is red / x"
+                    self.arrow_grabbed_axis = 0
+                else:
+                    print "arrow got screwed..."
+                    self.arrow_grabbed_axis = None
+                    self.arrow_grabbed = False
+                
             if self.sel is None or self.sel.id != ent.id: #a diff ent than prev sel was changed
                 self.select(ent)
         
@@ -375,19 +412,41 @@ class EditGUI(Component):
         dragging different axis etc in the manipulator to be added."""
 
         if not self.canvas.IsHidden():
-            if self.left_button_down and self.sel is not None:
-                #print "MouseMove:", mouseinfo.x, mouseinfo.y, r.getCameraUp(), r.getCameraRight()
-                n = 0.1 #is not doing correct raycasting to plane to see pos, this is a multiplier for the crude movement method here now
-                oldvec = Vector3(self.sel.pos)
-                upvec = Vector3(r.getCameraUp())
-                rightvec = Vector3(r.getCameraRight())
-                newvec = oldvec - (upvec * mouseinfo.rel_y * n) + (rightvec * mouseinfo.rel_x * n)
+            if self.left_button_down :
+                if self.sel is not None:
+                    if self.arrow_grabbed:
+                        pos = [self.sel.pos[0], self.sel.pos[1], self.sel.pos[2]]
+                        rightvec = r.getCameraRight()
+                        upvec = r.getCameraUp()
+                        
+                        #print "arrow grabbed by",  self.arrow_grabbed_axisx
+
+                    
+                        mov = mouseinfo.rel_x + mouseinfo.rel_y
+                        mov /= 7.0
+                        
+                        if self.arrow_grabbed_axis == 2:
+                            pos[self.arrow_grabbed_axis] -= mov
+                        else:
+                            mov *= rightvec[self.arrow_grabbed_axis]/abs(rightvec[self.arrow_grabbed_axis])
+                            pos[self.arrow_grabbed_axis] += mov
                 
-                self.arrows.pos = newvec.x, newvec.y, newvec.z
-                self.sel.pos = newvec.x, newvec.y, newvec.z
-                #r.networkUpdate(self.sel.id)
-                #XXX also here the immediate network sync is not good,
-                #refactor out from pos setter to a separate network_update() call
+                        self.sel.pos = pos[0], pos[1], pos[2]
+                        self.arrows.pos = pos[0], pos[1], pos[2]
+
+                    #~ else:
+                        #~ oldvec = Vector3(self.sel.pos)
+                        #~ upvec = Vector3(r.getCameraUp())
+                        #~ rightvec = Vector3(r.getCameraRight())
+                        #~ #print "MouseMove:", mouseinfo.x, mouseinfo.y, r.getCameraUp(), r.getCameraRight()
+                        #~ n = 0.1 #is not doing correct raycasting to plane to see pos, this is a multiplier for the crude movement method here now
+                        #~ newvec = oldvec - (upvec * mouseinfo.rel_y * n) + (rightvec * mouseinfo.rel_x * n)
+                        
+                        #~ self.arrows.pos = newvec.x, newvec.y, newvec.z
+                        #~ self.sel.pos = newvec.x, newvec.y, newvec.z
+                        #~ #r.networkUpdate(self.sel.id)
+                        #~ #XXX also here the immediate network sync is not good,
+                        #~ #refactor out from pos setter to a separate network_update() call
 
     def on_exit(self):
         r.logDebug("EditGUI exiting...")

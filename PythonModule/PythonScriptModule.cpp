@@ -597,9 +597,14 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
 
     Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
     boost::shared_ptr<Foundation::RenderServiceInterface> render = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
-    Scene::Entity *entity = render->Raycast(x, y).entity_;
-
-    if (entity)
+	//Scene::Entity *entity = render->Raycast(x, y).entity_;
+	Foundation::RaycastResult result = render->Raycast(x, y);
+	if (result.entity_)
+		return Py_BuildValue("IfffIff", result.entity_->GetId(), result.pos_.x, result.pos_.y, result.pos_.z, result.submesh_, float(result.u_), float(result.v_));
+	else
+		Py_RETURN_NONE;
+	/*
+    if (result)
     {
         //Scene::Events::SceneEventData event_data(entity->GetId());
         //framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_GRAB, &event_data);
@@ -607,6 +612,7 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
     }
     else 
         Py_RETURN_NONE;
+	*/
 }
 static PyObject* TakeScreenshot(PyObject *self, PyObject *args)
 {
@@ -984,7 +990,7 @@ PyObject* GetUserAvatarId(PyObject* self)
     if (rexlogic_)
     {
         Core::entity_id_t id = rexlogic_->GetUserAvatarId();
-        return Py_BuildValue("i", id);
+        return Py_BuildValue("I", id);
     }
 
 	Py_RETURN_NONE;
@@ -1392,12 +1398,18 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
            or do we wanna hide the E-C system in the api and have these directly on entity? 
            probably not a good idea to hide the actual system that much. or? */
         float x, y, z;
-        if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
+
+		int parsing;
+		parsing = PyArg_ParseTuple(value, "fff", &x, &y, &z);
+
+        if(!parsing)
         {
             //std::cout << "...parse error" << std::endl;
             PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float).");
             return -1;
         }
+
+
         // Set the new values.
         placeable->SetPosition(Core::Vector3df(x, y, z));
         if (networkpos)
