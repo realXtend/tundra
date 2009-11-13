@@ -551,3 +551,8 @@ if 0: #testing vector3/quat wrapping
     from editgui.conversions import *
     euler = euler_to_quat((0, 90, 0))
     print "quat from eulers", euler
+    
+if 1:
+    ent = r.getEntity(1794663346)
+    print ent.name, ent.pos, ent.scale, ent.orientation, ent.prim
+    
