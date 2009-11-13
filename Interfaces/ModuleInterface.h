@@ -6,6 +6,8 @@
 #include <Poco/ClassLibrary.h>
 #include <Poco/Logger.h>
 
+#include <Framework.h>
+
 #include "ComponentRegistrarInterface.h"
 #include "CoreTypes.h"
 #include "ForwardDefines.h"

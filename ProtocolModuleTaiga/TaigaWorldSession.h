@@ -4,7 +4,7 @@
 #define incl_ProtocolUtilities_TaigaWorldSession_h
 
 #include "Foundation.h"
-#include "LoginCredentials.h"
+#include "../ReXLogic/LoginCredentials.h"
 
 #include "ProtocolModuleTaigaApi.h"
 #include "Interfaces/WorldSessionInterface.h"

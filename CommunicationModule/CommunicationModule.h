@@ -3,7 +3,7 @@
 
 #include <StableHeaders.h>
 #include <ModuleInterface.h>
-#include <RexLogicModule.h>
+#include "../ReXLogic/RexLogicModule.h"
 
 #include "CommunicationModuleApi.h"
 #include "CommunicationService.h"

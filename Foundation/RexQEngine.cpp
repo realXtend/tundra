@@ -61,7 +61,8 @@ std::string RexQEngine::GetMainWindowHandle() const
   std::stringstream windowHandle;
 
 #ifndef Q_WS_WIN
- 
+
+/* 
     QX11Info info = ogre_host_widget_->x11Info();
     windowHandle << (unsigned long)(info.display());
     windowHandle << ":";
@@ -73,6 +74,7 @@ std::string RexQEngine::GetMainWindowHandle() const
     windowHandle << static_cast<unsigned long>(ogre_host_widget_->effectiveWinId());
   else
     windowHandle << static_cast<unsigned long>(ogre_host_widget_->winId());
+*/
 
  #else
  
