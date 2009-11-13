@@ -44,7 +44,7 @@ EXTERNAL = 0
 UP = 0
 RIGHT = 1
 
-DEV = True #if this is false, the canvas is added to the controlbar
+DEV = False #if this is false, the canvas is added to the controlbar
 
 class MeshAssetidEditline(QLineEdit):
     def __init__(self, mainedit, *args):
@@ -176,24 +176,38 @@ class EditGUI(Component):
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
         #print "pos index %i changed to: %f" % (i, v)
         ent = self.sel
+        
         if ent is not None:
             #print "sel pos:", ent.pos,
             pos = list(ent.pos) #should probably wrap Vector3, see test_move.py for refactoring notes. 
-            #converted to list to have it mutable
             pos[i] = v
+            #converted to list to have it mutable
             ent.pos = pos[0], pos[1], pos[2] #XXX API should accept a list/tuple too .. or perhaps a vector type will help here too
             r.networkUpdate(ent.id)
             #print "=>", ent.pos
+        
             if self.arrows is not None:
                 self.arrows.pos = pos[0], pos[1], pos[2]
     
     def changescale(self, i, v):
         ent = self.sel
         if ent is not None:
+            oldscale = list(ent.scale)
             scale = list(ent.scale)
             scale[i] = v
+            if self.widget.scale_lock.checked:
+                diff = scale[i] - oldscale[i]
+                for index in range(len(scale)):
+                    #print index, scale[index], index == i
+                    if index != i:
+                        scale[index] += diff
+            
             ent.scale = scale[0], scale[1], scale[2]
             r.networkUpdate(ent.id)
+            x, y, z = self.sel.scale
+            self.widget.scalex.setValue(x)
+            self.widget.scaley.setValue(y)
+            self.widget.scalez.setValue(z)
     
     def changerot(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
