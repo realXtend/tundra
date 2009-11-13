@@ -29,11 +29,9 @@ namespace TaigaProtocol
 		bool StartSession(ProtocolUtilities::LoginCredentialsInterface *credentials, QUrl *serverEntryPointUrl);
 
         //! Cable Beach style login, setting authentication done unlike normal LoginToServer
-        bool LoginToServer(const std::string& first_name,
-						   const std::string& last_name,
-						   const std::string& address,
-						   const std::string& port,
-                           const std::string& identityUrl,
+        bool LoginToServer(const QString& address,
+						   const QString& port,
+                           const QString& identityUrl,
 						   ProtocolUtilities::ConnectionThreadState *thread_state);
 
 		//! Make Url validation according to type

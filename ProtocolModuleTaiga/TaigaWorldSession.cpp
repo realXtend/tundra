@@ -30,11 +30,9 @@ namespace TaigaProtocol
 				serverEntryPointUrl = &serverEntryPointUrl_;
 				credentials_ = testCredentials;
 
-				success = LoginToServer("NoFirstNameNeededAuthDone", 
-									    "NoLastNameNeededAuthDone",
-									    serverEntryPointUrl_.toString().toStdString(),
-									    boost::lexical_cast<std::string>(serverEntryPointUrl_.port()),
-                                        credentials_->GetIdentity().toStdString(),
+				success = LoginToServer(serverEntryPointUrl_.toString(),
+                                        QString::number(serverEntryPointUrl_.port()),
+                                        credentials_->GetIdentity(),
 									    &threadState_);
 		}
 		else
@@ -46,11 +44,9 @@ namespace TaigaProtocol
 		return success;
 	}
 
-	bool TaigaWorldSession::LoginToServer(const std::string& first_name,
-					                      const std::string& last_name,
-					                      const std::string& address,
-					                      const std::string& port,
-                                          const std::string& identityUrl,
+	bool TaigaWorldSession::LoginToServer(const QString& address,
+					                      const QString& port,
+                                          const QString& identityUrl,
 					                      ProtocolUtilities::ConnectionThreadState *thread_state)
 	{
 		// Get ProtocolModuleTaiga
@@ -58,9 +54,7 @@ namespace TaigaProtocol
 
 		if (spTaiga.get())
 		{
-			std::string callMethod = "login_to_simulator";
-			spTaiga->GetLoginWorker()->SetupXMLRPCLogin(first_name, last_name, "auth_done", address,
-														port, callMethod, thread_state, "openid", "openid", "openid", true);
+			spTaiga->GetLoginWorker()->SetupXMLRPCLogin(address, port, thread_state);
 			spTaiga->SetAuthenticationType(ProtocolUtilities::AT_Taiga);
             spTaiga->SetIdentityUrl(identityUrl);
             spTaiga->SetHostUrl(address + port);

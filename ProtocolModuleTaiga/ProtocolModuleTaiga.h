@@ -104,11 +104,11 @@ namespace TaigaProtocol
 
         /// Set Identity Url
         /// @param new identity url as std::string
-        virtual void SetIdentityUrl(const std::string &newUrl) { identityUrl_ = newUrl; }
+        virtual void SetIdentityUrl(const QString &newUrl) { identityUrl_ = newUrl.toStdString(); }
 
         /// Set Host Url
         /// @param new host url as std::string
-        virtual void SetHostUrl(const std::string &newUrl) { hostUrl_ = newUrl; }
+        virtual void SetHostUrl(const QString &newUrl) { hostUrl_ = newUrl.toStdString(); }
 
         ///@return True if connection exists.
         virtual bool IsConnected() const { return connected_; }
