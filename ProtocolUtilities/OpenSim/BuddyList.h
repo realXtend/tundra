@@ -45,4 +45,4 @@ namespace ProtocolUtilities
 
 } // end of namespace: OpenSimProtocol
 
-#endif incl_OpenSimProtocolModule_BuddyList_h
+#endif // incl_OpenSimProtocolModule_BuddyList_h

@@ -1,4 +1,4 @@
-#include <RexLogicModule.h>
+#include "../../ReXLogic/RexLogicModule.h"
 #include "ChatSessionParticipant.h"
                            
 namespace OpensimIM

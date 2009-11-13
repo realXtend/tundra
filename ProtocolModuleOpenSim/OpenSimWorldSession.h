@@ -4,7 +4,7 @@
 #define incl_Protocol_OpenSimWorldSession_h
 
 #include "Foundation.h"
-#include "LoginCredentials.h"
+#include "../ReXLogic/LoginCredentials.h"
 
 #include "ProtocolModuleOpenSimApi.h"
 #include "Interfaces/WorldSessionInterface.h"

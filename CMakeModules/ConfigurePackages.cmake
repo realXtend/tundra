@@ -6,7 +6,12 @@
 # remain generic.
 
 macro (configure_boost)
-    set (Boost_USE_STATIC_LIBS ON)
+    if (MSVC)
+        set (Boost_USE_STATIC_LIBS ON)
+    else ()
+        set (Boost_USE_STATIC_LIBS OFF)
+    endif ()
+
     sagase_configure_package (BOOST 
         NAMES Boost boost
         COMPONENTS date_time filesystem system thread program_options unit_test_framework

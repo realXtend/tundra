@@ -1,5 +1,6 @@
 #include <StableHeaders.h>
 #include "CommunicationModule.h"
+#include "../ReXLogic/RexLogicModule.h"
 #include "OpensimIM/ConnectionProvider.h"
 #include "TelepathyIM/ConnectionProvider.h"
 
