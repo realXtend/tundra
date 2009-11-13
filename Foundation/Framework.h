@@ -8,6 +8,7 @@
 #include "ServiceManager.h"
 #include "Profiler.h"
 
+class QApplication;
 class QWidget;
 
 namespace Poco
@@ -189,6 +190,8 @@ namespace Foundation
         std::string GetApplicationMainWindowHandle() const;
 
         QWidget *GetApplicationMainWindowQWidget() const;
+        QApplication *GetQApplication() const;
+
     private:
         //! Registers framework specific console commands
         //! Should be called after modules are loaded and initialized

@@ -136,16 +136,7 @@ NetMessageManager::NetMessageManager(const char *messageListFilename)
 
 NetMessageManager::~NetMessageManager()
 {
-	for(std::list<NetOutMessage*>::iterator iter = unusedMessagePool.begin(); iter != unusedMessagePool.end(); ++iter)
-		delete *iter;
-
-	// We're supposed to free up all of our memory, but someone's using it!
-	assert(usedMessagePool.size() == 0 && "Warning! Unsafe teardown of NetMessageManager detected!");
-	for(std::list<NetOutMessage*>::iterator iter = usedMessagePool.begin(); iter != usedMessagePool.end(); ++iter)
-		delete *iter;
-
-	for(MessageResendList::iterator iter = messageResendQueue.begin(); iter != messageResendQueue.end(); ++iter)
-		delete iter->second;
+    ClearMessagePoolMemory();
 		
     receivedSequenceNumbers.clear();
 }
@@ -300,11 +291,15 @@ bool NetMessageManager::ConnectTo(const char *serverAddress, int port)
 void NetMessageManager::Disconnect()
 {
     connection->Close();
+    ClearMessagePoolMemory();
     receivedSequenceNumbers.clear();
 }
 
 NetOutMessage *NetMessageManager::StartNewMessage(NetMsgID id)
 {
+    // There should exist a message 'template' with the given ID in the message info list. If not,
+    // we can't start crafting a new message and must fail. See message_template.msg file for a list
+    // of all the protocol messages supported by the system.
 	const NetMessageInfo *info = messageList->GetMessageInfoByID(id);
 	if (!info) 
 		return 0;
@@ -312,20 +307,24 @@ NetOutMessage *NetMessageManager::StartNewMessage(NetMsgID id)
 	NetOutMessage *newMsg = 0;
     if (unusedMessagePool.size() > 0)
     {
+        newMsg = unusedMessagePool.front();
+        unusedMessagePool.pop_front();
+        newMsg->ResetWriting();
+//        existing->SetMessageInfo(info);
         // Search if there exist allready created message in pool. 
-		for(std::list<NetOutMessage*>::iterator iter = unusedMessagePool.begin(); iter != unusedMessagePool.end(); ++iter)
-		    if ((*iter)->GetMessageID() == id) 
-			{	
+//		for(std::list<NetOutMessage*>::iterator iter = unusedMessagePool.begin(); iter != unusedMessagePool.end(); ++iter)
+//		    if ((*iter)->GetMessageID() == id) 
+//			{	
 			    // If there exist use allready created and remove it from unusedMessagePool. 
-                newMsg = *iter;
-                newMsg->ResetWriting();
-                unusedMessagePool.erase(iter);
-                break;
-			}
+  //              newMsg = *iter;
+//                newMsg->ResetWriting();
+//                unusedMessagePool.erase(iter);
+                //break;
+//			}
 
 	    // If there were any message with current id, create new message.
-		if (newMsg == 0)
-            newMsg = new NetOutMessage();
+//		if (newMsg == 0)
+//            newMsg = new NetOutMessage();
 	}
 	else
 		newMsg = new NetOutMessage();
@@ -402,6 +401,24 @@ void NetMessageManager::SendProcessedMessage(NetOutMessage *msg)
 void NetMessageManager::QueuePacketACK(uint32_t packetID)
 {
     pendingACKs.insert(packetID);
+}
+
+void NetMessageManager::ClearMessagePoolMemory()
+{
+	for(std::list<NetOutMessage*>::iterator iter = unusedMessagePool.begin(); iter != unusedMessagePool.end(); ++iter)
+		delete *iter;
+
+	// We're supposed to free up all of our memory, but someone's using it!
+	assert(usedMessagePool.size() == 0 && "Warning! Unsafe teardown of NetMessageManager detected!");
+	for(std::list<NetOutMessage*>::iterator iter = usedMessagePool.begin(); iter != usedMessagePool.end(); ++iter)
+		delete *iter;
+
+	for(MessageResendList::iterator iter = messageResendQueue.begin(); iter != messageResendQueue.end(); ++iter)
+		delete iter->second;
+
+    unusedMessagePool.clear();
+    usedMessagePool.clear();
+    messageResendQueue.clear();
 }
 
 ///\todo Have better delay method for pending ACKs, currently sends everything accumulated just over one frame

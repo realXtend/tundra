@@ -13,10 +13,23 @@
 #include <QGraphicsWidget>
 #include "MemoryLeakCheck.h"
 
+namespace
+{
+    /// This is the minimum Z order value the Qt canvases are given in the Ogre overlay order. (smaller number: farther away. max: ~600)
+    const int minimumCanvasZValue = 300;
+}
+
 namespace QtUI
 {
 
-UIController::UIController() : mouseDown_(false), responseTimeLimit_(500), keyDown_(false), lastKeyEvent_(QKeyEvent(QEvent::KeyPress,0,Qt::NoModifier)), multipleKeyLimit_(150), keyboard_buffered_(false), active_canvas_(""), resize_(false), drag_(false)
+UIController::UIController()
+:responseTimeLimit_(500), 
+keyDown_(false), 
+multipleKeyLimit_(150), 
+currentMouseAction(MouseActionNone),
+mouseActionCanvas(0),
+mouseHoverCanvas(0),
+keyboardFocusCanvas(0)
 {}
 
 UIController::~UIController()
@@ -24,93 +37,94 @@ UIController::~UIController()
 
 void UIController::Update()
 {
-    
-    if ( keyDown_ && keyTimer_.elapsed() > multipleKeyLimit_ )
+    ///\todo Remove and move to OIS.
+    // If a key-press repeat period has elapsed, trigger a keypress event.
+    if (keyDown_ && keyTimer_.elapsed() > multipleKeyLimit_)
     {
-        //HACK
+        // Restart the timer.
         keyTimer_ = QTime();
         keyTimer_.start();
     
-        for ( QList<QPair<Qt::Key, QString> >::iterator iter = pressedKeys_.begin(); iter != pressedKeys_.end(); ++iter)
+        for (QList<QPair<Qt::Key, QString> >::iterator iter = pressedKeys_.begin(); iter != pressedKeys_.end(); ++iter)
             InjectKeyPressed((*iter).second, (*iter).first);
-        
-
     }
-    
 
+    // Redraw any dirty canvases.
     QList<boost::shared_ptr<UICanvas> >::iterator iter = canvases_.begin();
     for(; iter != canvases_.end(); ++iter)
         (*iter)->Render();
-    
-   
 }
 
-int UIController::Search(const QString& id) const
+int UIController::GetCanvasIndexByID(const QString& id) const
 {
-    for ( int i = 0; i < canvases_.size(); ++i)
-        if ( canvases_[i]->GetID() == id)
+    for(int i = 0; i < canvases_.size(); ++i)
+        if (canvases_[i]->GetID() == id)
             return i;
 
-    
     return -1;
-   
-        
 }
 
+/** This function rearranges the Ogre overlay Z values to reflect the current UI canvas orders.
+    Invalidates all existing canvas indices. */
 void UIController::Arrange()
 {
-    
-    // We define now that our canvases get Z-order between [300- if canvas is set top it will get value 
-    // This function arange canvases loozly. Meaning their Z-order is not "diffrence" can be more then 1 even for canvase which are not always top.
-    int magic_value = 300;
-    int size = canvases_.size();
+    // This is the biggest Z value given to a canvas. The always-on-top canvases get the biggest Z values.
+    const int maximumCanvasZValue = minimumCanvasZValue + canvases_.size();
 
-    for ( int i = size; i--;)
-    {
+    // Move all the always-on-top canvases to front, while retaining their relative ordering.
+    // Important to keep the reordering stable.
+    int nAlwaysOnTopCanvases = 0;
+    for(int i = 0; i < canvases_.size(); ++i)
         if (canvases_[i]->IsAlwaysOnTop())
-        {
-            if ( i != 0)
-                canvases_.move(i,0);
-        }
-    }
+            canvases_.move(i, nAlwaysOnTopCanvases++);
 
-
-    for ( int i = 0; i < size; ++i)
-    {    
-        if ( !canvases_[i]->IsAlwaysOnTop())
-            canvases_[i]->SetZOrder(size + magic_value  - i - 1);
-        else    
-            canvases_[i]->SetZOrder(size + magic_value);
-         
-    }
+    // Re-count new Z values for the canvas Ogre overlays. canvases[0] is frontmost, canvases[size-1] is last.
+    for(int i = 0; i < canvases_.size(); ++i)
+        canvases_[i]->SetZOrder(maximumCanvasZValue - i);
 }
 
+void UIController::HideCanvas(UICanvas &canvas)
+{
+    assert(&canvas);
+
+    if (&canvas == mouseActionCanvas)
+    {
+        Deactivate(*mouseActionCanvas);
+        mouseActionCanvas = 0;
+    }
+    if (&canvas == mouseHoverCanvas)
+    {
+        Deactivate(*mouseHoverCanvas);
+        mouseHoverCanvas = 0;
+    }
+    if (&canvas == keyboardFocusCanvas)
+    {
+        Deactivate(*keyboardFocusCanvas);
+        keyboardFocusCanvas = 0;
+    }
+
+    canvas.Hide();
+}
 
 void UIController::RemoveCanvas(const QString& id)
 {
     QList<boost::shared_ptr<UICanvas> >::iterator iter = canvases_.begin();
-    int index = 0;
-    bool found = false;
-    for(; iter != canvases_.end(); ++iter, ++index)
+    for(; iter != canvases_.end(); ++iter)
     {
         QString canvas_id = (*iter)->GetID();
-        if ( canvas_id == id)
+        if (canvas_id == id)
         {
-            found = true;
-            canvases_[index]->Hide();
-            canvases_.removeAt(index);
-            break;
+            HideCanvas(**iter);
+            // This *should* cause a deletion of the canvas, as long as no
+            // client module has attached a shared_ptr to it. 
+            canvases_.erase(iter);
+            return;
         }
     }
 
-    if ( !found ) 
-    {
-        QString message("QtModule : There does not exist canvas which id is: ");
-        message += id;
-        throw Core::Exception(message.toStdString().c_str()); 
-    }
+    QString message = QString("QtModule: There does not exist a canvas with id ") + id + "!";
+    throw Core::Exception(message.toStdString().c_str()); 
 }
-
 
 boost::weak_ptr<UICanvas> UIController::CreateCanvas(UICanvas::DisplayMode mode)
 {
@@ -120,592 +134,281 @@ boost::weak_ptr<UICanvas> UIController::CreateCanvas(UICanvas::DisplayMode mode)
     QObject::connect(canvas.get(), SIGNAL(ToTop(const QString&)), this, SLOT(SetTop(const QString&)));
     QObject::connect(canvas.get(), SIGNAL(ToBack(const QString&)), this, SLOT(SetBack(const QString&)));
 
-    // Adds automatically and "Z-order". So that last created canvas is top.
-    // We define that our canvases are over [ 300 - 
-    int magic_value = 300;
-
-    canvas->SetZOrder(canvases_.size() + magic_value + 1);
+    // Add the new canvas to be the first on the list so that it will get the highest Z order when rearranging (it'll be topmost).
     canvases_.prepend(canvas);
-    // Adjust Z - order.
     Arrange();
+
     return canvas;
 }
 
-void UIController::InjectMouseMove(int x, int y)
+void UIController::InjectMouseMove(int x, int y, int deltaX, int deltaY)
 {
-   
     QPoint point(x,y);
-    int index = GetCanvas(point);
-    
-    
-    // Normal move. 
+    int index = GetCanvasIndexAt(point);
+    UICanvas *currentCanvas = (index == -1 ? 0 : canvases_[index].get());
 
-    if (index != -1 && !mouseDown_ && !canvases_[index]->IsHidden())
+    // If we've lost our target action canvas, stop the action.
+    if (!mouseActionCanvas)
+        currentMouseAction = MouseActionNone;
+
+    const int canvasWidth = (mouseActionCanvas ? mouseActionCanvas->GetSize().width() : 0);
+    const int canvasHeight = (mouseActionCanvas ? mouseActionCanvas->GetSize().height() : 0);
+
+    switch(currentMouseAction)
     {
-        SendMouseMoveEvent(index,x,y);  
-    }
-    else if ( mouseDown_)
-    {
-        // Drag event or resize 
-        
-        // Find active canvas, move it to this location (if canvas is not locked.)
-        
-        index = GetCanvas(lastPosition_);
-        int active_canvas_index = Search(active_canvas_);
-        
-        if ( index != -1 && !canvases_[index]->IsHidden())
+    case MouseActionNone:
+        // If the mouse hover canvas has changed, deactivate the old canvas from any old mouse hover events, and save the new one.
+        if (mouseHoverCanvas != currentCanvas)
         {
-        
-            if ( resize_ && !canvases_[index]->IsResizable())
-            {
-               
-                if (active_canvas_index == -1)
-                    return;
+            if (mouseHoverCanvas)
+                Deactivate(*mouseHoverCanvas, MouseMove);
 
-                QRect geometry = canvases_[active_canvas_index]->GetCanvasGeometry();
-                int width = geometry.width();
-                int height = geometry.height();
-
-                QPoint position = canvases_[active_canvas_index]->GetPosition().toPoint();
-
-                if ( mouseCursorShape_ == Qt::SizeVerCursor)
-                {
-                    //height changes.
-                    int bottom = position.y() + height;
-                    int top = position.y();
-
-                    // Now search nearest side 
-                    
-                    double bottomDiff = sqrt(double((bottom - y)* (bottom - y)));
-                    double topDiff = sqrt(double((top - y) * (top - y)));
-                    
-                    if ( bottomDiff > topDiff)
-                    {
-                        // Top-side is resizing.
-                        if ( top < y ) 
-                        {
-                            // Smaller
-                            canvases_[active_canvas_index]->Resize(height-int(topDiff), width, UICanvas::BottomLeft);
-                        }
-                        else
-                        {
-                            // Growing
-                            canvases_[active_canvas_index]->Resize(height+int(topDiff+1), width, UICanvas::BottomLeft);
-                         
-                        }
-                        
-                    }
-                    else
-                    {
-                        // Bottom-side is resizing.
-                        if ( bottom > y )
-                            canvases_[active_canvas_index]->Resize(height-int(bottomDiff), width, UICanvas::TopLeft);
-                        else
-                        {
-                            canvases_[active_canvas_index]->Resize(height+int(bottomDiff+1), width, UICanvas::TopLeft);
-                        }
-                    }
-
-                }
-                else if ( mouseCursorShape_ == Qt::SizeHorCursor)
-                {
-                    // Width changes.
-                    
-                    int left = position.x();
-                    int right = position.x() + width;
-
-                    // Search nearest side
-                    
-                    double leftDiff = sqrt(double((left - x)* (left - x)));
-                    double rightDiff = sqrt(double((right - x) * (right - x)));
-                    
-                    QSize size = canvases_[index]->GetSize();
-                    
-                      if ( leftDiff > rightDiff)
-                      {
-                        // Right side.
-
-                        if ( x < right )
-                            canvases_[index]->Resize(height, width-int(rightDiff), UICanvas::TopLeft);
-                        else
-                        {
-                          // Growing.
-                          canvases_[index]->Resize(height, width+int(rightDiff+1), UICanvas::TopLeft);
-                        }
-                          
-
-                      }
-                      else
-                      {
-                        if( x > left && x < right )
-                            canvases_[index]->Resize(height, width-int(leftDiff), UICanvas::TopRight);                        
-                        else
-                        {
-                            // Growing.
-                            canvases_[index]->Resize(height, width+int(leftDiff+1), UICanvas::TopRight);       
-                        }
-                      }
-        
-
-                      
-
-                }
-                else if ( mouseCursorShape_ == Qt::SizeBDiagCursor)
-                {
-                   
-                    // Corners
-
-                    // Left-bottom. 
-                    int left_bottom_x = position.x();
-                    int left_bottom_y = position.y()+height;
-
-                    // Right-top
-                    int right_top_x = position.x() + width;
-                    int right_top_y = position.y();
-
-                    // Search nearest corner
-                    double dist_right_corner = (right_top_x - x)*(right_top_x - x) + (right_top_y - y)*(right_top_y - y);
-                    double dist_left_corner = (left_bottom_x - x)*(left_bottom_x - x) + (left_bottom_y - y)*(left_bottom_y - y);
-
-                   
-                    geometry.setRect(position.x(), position.y(), geometry.width(), geometry.height());
-                    if ( dist_right_corner > dist_left_corner)
-                    {
-                         // Nearest corner is left corner.
-                        if (geometry.contains(QPoint(x,y)))
-                        {
-                            // Making smaller.
-                            int diff = x - position.x();
-                            canvases_[index]->Resize(height, width-diff, UICanvas::TopRight);
-                            diff = position.y() + height - y;
-                            canvases_[index]->Resize(height-diff, canvases_[index]->GetSize().width(), UICanvas::TopRight);
-                        }
-                        else
-                        {
-                            // Growing.
-                            int diff = x - position.x();
-                            canvases_[index]->Resize(height, width+diff, UICanvas::TopRight);
-                            diff = position.y() + height - y;
-                            canvases_[index]->Resize(height+diff+1, canvases_[index]->GetSize().width(), UICanvas::TopRight);
-
-                        }
-
-                    }
-                    else
-                    {
-                        // Nearest corner is right corner.
-                        if (geometry.contains(QPoint(x,y)))
-                        {
-                            // Making smaller.
-                            int diff = position.x() + width - x;
-                            canvases_[index]->Resize(height, width-diff, UICanvas::BottomLeft);
-                            diff = y - position.y();
-                            canvases_[index]->Resize(height-diff, canvases_[index]->GetSize().width(), UICanvas::BottomLeft);
-                        }
-                        else
-                        {
-                            // Growing.
-                           
-                            int diff = position.x() + width - x;
-                            canvases_[index]->Resize(height, width+diff, UICanvas::BottomLeft);
-                            diff = y - position.y();
-                            canvases_[index]->Resize(height+diff+1, canvases_[index]->GetSize().width(), UICanvas::BottomLeft);
-                        }
-
-                    }
-                  
-                }
-                else if ( mouseCursorShape_ == Qt::SizeFDiagCursor)
-                {
-                    // Corners
-
-                    // Left-top. 
-                    int left_top_x = position.x();
-                    int left_top_y = position.y();
-
-                    // Right-bottom
-                    int right_bottom_x = position.x() + width;
-                    int right_bottom_y = position.y() + height;
-
-                    // Search nearest corner
-                    double dist_left_corner = (left_top_x - x)*(left_top_x - x) + (left_top_y - y)*(left_top_y - y);
-                    double dist_right_corner = (right_bottom_x - x)*(right_bottom_x - x) + (right_bottom_y - y)*(right_bottom_y - y);
-
-                   
-                    geometry.setRect(position.x(), position.y(), geometry.width(), geometry.height());
-                    
-                    if ( dist_right_corner > dist_left_corner)
-                    {
-                         // Nearest corner is left (upper) corner.
-                        if (geometry.contains(QPoint(x,y)))
-                        {
-                            // Making smaller.
-                            int diff = x - position.x();
-                            canvases_[index]->Resize(height, width-diff, UICanvas::BottomRight);
-                            diff = y - position.y();
-                            canvases_[index]->Resize(height-diff, canvases_[index]->GetSize().width(), UICanvas::BottomRight);
-                        }
-                        else
-                        {
-                            // Growing.
-                            int diff = x - position.x();
-                            canvases_[index]->Resize(height, width+diff, UICanvas::BottomRight);
-                            diff = y - position.y();
-                            canvases_[index]->Resize(height+diff+1, canvases_[index]->GetSize().width(), UICanvas::BottomRight);
-                        }
-
-                    }
-                    else
-                    {
-                        // Nearest corner is right (down) corner.
-                        if (geometry.contains(QPoint(x,y)))
-                        {
-                            // Making smaller.
-                            int diff = position.x() + width - x ;
-                            canvases_[index]->Resize(height, width-diff, UICanvas::TopLeft);
-                            diff = position.y() + height - y;
-                            canvases_[index]->Resize(height-diff, canvases_[index]->GetSize().width(), UICanvas::TopLeft);
-                        }
-                        else
-                        {
-                            // Growing.
-                           
-                            int diff = position.x() + width - x ;
-                            canvases_[index]->Resize(height, width+diff, UICanvas::TopLeft);
-                            diff = position.y() + height - y;
-                            canvases_[index]->Resize(height+diff+1, canvases_[index]->GetSize().width(), UICanvas::TopLeft);
-                        }
-
-                    }
-
-
-                }
-
-              
-                
-                
-                QApplication::setOverrideCursor(QCursor(mouseCursorShape_));
-                
-            }
-            else if ( active_canvas_index != -1 && !canvases_[active_canvas_index]->IsPositionStationary() && drag_)
-            {
-                // This is our drag canvas implementation. 
-
-                QPoint pos = canvases_[active_canvas_index]->GetPosition().toPoint();
-
-                int xPos = point.x()-(lastPosition_.x()-pos.x());
-                int yPos = point.y()-(lastPosition_.y()-pos.y());
-              
-                canvases_[active_canvas_index]->SetPosition(xPos, yPos);
-            }
-            else if ( !canvases_[index]->IsHidden() )
-            {
-                SendMouseMoveEvent(index,x,y);
-            }
-          
+            mouseHoverCanvas = currentCanvas;
         }
 
+        // If currentCanvas == 0, this will default to the arrow cursor.
+        UpdateMouseCursor(currentCanvas, x, y);
+
+        if (currentCanvas)
+            SendMouseMoveEvent(*currentCanvas, x, y);
+        break;
+
+    case MouseActionCanvasInternal:
+        // There is a mouse drag or similar occurring in the canvas. That canvas steals the mouse focus
+        // so send the mouse event to it.
+        SendMouseMoveEvent(*mouseActionCanvas, x, y);
+        break;
+
+    case MouseActionCanvasMove:
+        {
+            QPointF pos = mouseActionCanvas->GetPosition();
+            QPoint p = pos.toPoint();
+            pos.setX(p.x() + deltaX);
+            pos.setY(p.y() + deltaY);
+            
+            mouseActionCanvas->SetPosition(pos.x(), pos.y());
+        }
+        break;
+    case MouseActionCanvasResizeTopLeft:
+        mouseActionCanvas->Resize(canvasWidth - deltaX, canvasHeight - deltaY, UICanvas::BottomRight);
+        break;
+    case MouseActionCanvasResizeTop:
+        mouseActionCanvas->Resize(canvasWidth, canvasHeight - deltaY, UICanvas::BottomRight);
+        break;
+    case MouseActionCanvasResizeTopRight:
+        mouseActionCanvas->Resize(canvasWidth + deltaX, canvasHeight - deltaY, UICanvas::BottomLeft);
+        break;
+    case MouseActionCanvasResizeLeft:
+        mouseActionCanvas->Resize(canvasWidth - deltaX, canvasHeight, UICanvas::BottomRight);
+        break;
+    case MouseActionCanvasResizeRight:
+        mouseActionCanvas->Resize(canvasWidth + deltaX, canvasHeight, UICanvas::BottomLeft);
+        break;
+    case MouseActionCanvasResizeBottomLeft:
+        mouseActionCanvas->Resize(canvasWidth - deltaX, canvasHeight + deltaY, UICanvas::TopRight);
+        break;
+    case MouseActionCanvasResizeBottom:
+        mouseActionCanvas->Resize(canvasWidth, canvasHeight + deltaY, UICanvas::TopRight);
+        break;
+    case MouseActionCanvasResizeBottomRight:
+        mouseActionCanvas->Resize(canvasWidth + deltaX, canvasHeight + deltaY, UICanvas::TopLeft);
+        break;
     }
-    else
-    {
-        // Check that has mouse just moved away from a canvas, and deactivate old canvas.
-
-        int loc = GetCanvas(lastPosition_);
-        if ( loc != -1)
-            Deactivate(canvases_[loc]->GetID(),MouseMove,loc);
-
-    }
-    
-    lastPosition_ = point;
-
 }
 
-void UIController::SetTop(const QString& id ) 
+void UIController::SetTop(const QString& id) 
 {
-    int index = Search(id);
-    if ( index == -1)
+    int index = GetCanvasIndexByID(id);
+    if (index == -1)
         return;
 
-    int size = canvases_.size();
-   
-    // Search first canvas which is not always on top.
-    for ( int i = 0; i < canvases_.size(); ++i)
-    {
-        if ( !canvases_[i]->IsAlwaysOnTop())
-        {
-           canvases_.swap(index,i);
-           break;
-        }
-    }
-    
-   if ( id != active_canvas_ )
-   {
-        // Deactivate 
-        Deactivate(active_canvas_, MouseMove);
-        // Assure that it is current active canvas
-        active_canvas_ = id;
-   }
-  
-    
-    Arrange();
-    
-
+    // Bring the canvas topmost and rearrange Z orders.
+    // Arrange will guarantee that always-on-top canvases retake their position on top.
+    canvases_.swap(index, 0);
+    Arrange(); 
 }
 
 void UIController::SetBack(const QString& id)
 {
-    int index = Search(id);
-    if ( index == -1)
+    int index = GetCanvasIndexByID(id);
+    if (index == -1)
         return;
 
-    boost::shared_ptr<UICanvas> canvas = canvases_.takeAt(index);
-    canvases_.append(canvas);
-
-    Deactivate(active_canvas_, MouseMove);
-    active_canvas_ = "";
+    // Move this canvas to back and rearrange Z orders.
+    canvases_.swap(index, canvases_.size()-1);
     Arrange();
-
 }
 
 
 void UIController::InjectMousePress(int x, int y)
 {
-    
     QPoint point(x,y);
   
-    int index = GetCanvas(point);
+    int index = GetCanvasIndexAt(point);
     
-    UpdateMouseCursor(x,y,index);
-    
-    if ( timer_.isNull() )
+    UICanvas *currentCanvas = (index == -1 ? 0 : canvases_[index].get());
+
+    // Update the current mouse hover canvas to be the current one, if not so yet.
+    if (mouseHoverCanvas != currentCanvas)
     {
-        // First press. 
-        timer_.start();
+        if (mouseHoverCanvas)
+            Deactivate(*mouseHoverCanvas, MouseMove);
+
+        mouseHoverCanvas = currentCanvas;
     }
-    else if ( timer_.elapsed() <= responseTimeLimit_)
+
+    if (!currentCanvas)
     {
-        // Double click has happen.
-       
-        // Restart to zero.
-        timer_ = QTime();
+        // Clicked on top of an empty area - clear all mouse action status and return.
+        doubleClickTimer_ = QTime(); 
+
+        mouseActionCanvas = 0;
+        currentMouseAction = MouseActionNone;
+
+        QWidget* focusWidget = QApplication::focusWidget();
+        if (focusWidget != 0)
+            focusWidget->clearFocus();
+
+        keyboardFocusCanvas = 0;
+
+        return;
+    }
+
+    assert(!currentCanvas->IsHidden());
+
+    // See if this click triggered a double-click instead.
+    if (!doubleClickTimer_.isNull() && doubleClickTimer_.elapsed() <= responseTimeLimit_)
+    {
+        doubleClickTimer_ = QTime();
         
-        QPoint loc = lastPosition_ - point;
-        lastPosition_ = point;
-        if ( loc.manhattanLength() < 2)
+        QPoint clickDelta = point - lastMousePressPoint_;
+        if (clickDelta.manhattanLength() < 2)
         {
             InjectDoubleClick(x,y);
             return;
         }
-      
-        
     }
     else 
     {
-        // Restart to zero.
-        timer_ = QTime();
-        // And start again.    
-        timer_.start();
+        // If not, start a new double-click timer.
+        doubleClickTimer_ = QTime();
+        doubleClickTimer_.start();
     }
-    
-    mouseDown_ = true;
 
-    if (index != -1 && !canvases_[index]->IsHidden())
+    // Inject this mouse press to Qt.
+    SendMouseLeftButtonPressEvent(*currentCanvas, x, y);
+
+    // Activate the keyboard focus on this canvas as well.
+    ActivateKeyboardFocus(*currentCanvas, x, y);
+
+    // Reset the mouse cursor, for some reason it seems to get lost after sending the LMB click message.
+    ///\todo Possibly set Ogre to set a null cursor to the main window so we can handle this at will.
+    /// This should become redundant after that.
+    UpdateMouseCursor(currentCanvas, x, y);
+
+    // Check if this mouse press should start a mouse action on the canvas (drag or resize).
+    mouseActionCanvas = currentCanvas;
+    SetTop(currentCanvas->GetID());
+
+    // We are either performing an action on the canvas, or in the canvas.
+    MouseAction hotSpotAction = DetectCanvasHotSpot(*currentCanvas, x, y);
+    if (hotSpotAction != MouseActionNone)
+        currentMouseAction = hotSpotAction;
+    else // Mouse action inside the canvas.
+        currentMouseAction = MouseActionCanvasInternal;
+}
+
+void UIController::ActivateKeyboardFocus(UICanvas &canvas, int x, int y)
+{
+    assert(&canvas);
+
+    QPoint pos = canvas.MapToCanvas(x, y);
+
+    if (!canvas.HasFocus())
     {
+        keyboardFocusCanvas = 0;
+        return;
+    }
+
+    QGraphicsItem *item = canvas.view_->scene()->itemAt(pos);
+    if (!item)
+    {
+        keyboardFocusCanvas = 0;
+        return;
+    }
+
+    QGraphicsWidget* widget = item->topLevelWidget();
     
-        // Translate the mouse position from QGraphicsView coordinate frame onto
-        // the QGraphicsScene coordinate frame.
-        QPoint pos = canvases_[index]->MapToCanvas(x,y);
-        //QPointF pos = canvases_[index]->mapToScene(p);
-        QPoint currentMousePos(pos.x(),pos.y());
+    if (widget->hasCursor())
+    {            
+        QCursor cursor = widget->cursor();
+        Qt::CursorShape shape = cursor.shape();
+        QWidget *focusWidget = QApplication::focusWidget();
 
-        // For future use save press state. 
-      
-        mousePress_ = point;
-
-        QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMousePress);
-        
-        mouseEvent.setButtonDownScenePos(Qt::LeftButton, currentMousePos);
-        mouseEvent.setButtonDownScreenPos(Qt::LeftButton, currentMousePos);
-        mouseEvent.setScenePos(currentMousePos);
-        mouseEvent.setScreenPos(currentMousePos);
-        mouseEvent.setLastScenePos(currentMousePos);
-        mouseEvent.setLastScreenPos(currentMousePos);
-        mouseEvent.setButtons(Qt::LeftButton);
-        mouseEvent.setButton(Qt::LeftButton);
-
-        mouseEvent.setModifiers(0);
-        mouseEvent.setAccepted(false);
-        
-     
-
-       if (!canvases_[index]->IsActiveWindow())
-            canvases_[index]->Activate();
-
-       QApplication::sendEvent(canvases_[index]->view_->scene(), &mouseEvent);
-       
-
-       if ( !canvases_[index]->HasFocus() )
-            keyboard_buffered_ = false;
-           
-        // Here starts nice HACK: Idea is to check that did press event went to somekind textedit widget. 
-        // if it went we need to set OIS keyboard to buffered mode. 
-
-        QGraphicsItem* item = canvases_[index]->view_->itemAt(mouseEvent.pos().toPoint());
-        
-
-        if ( item != 0)
-        {
-            QGraphicsWidget* widget = item->topLevelWidget();
-            
-            if ( widget->hasCursor() )
-            {            
-                QCursor cursor = widget->cursor();
-                Qt::CursorShape shape = cursor.shape();
-                if ( shape == Qt::IBeamCursor)
-                    keyboard_buffered_ = true;
-                else
-                {
-                    QWidget* focusWidget = QApplication::focusWidget();
-                    if ( focusWidget != 0)
-                    {
-                        // PENDING how to check that this widget is same as "active canvas" or is it even needed?
-                        keyboard_buffered_ = true;
-                    }
-                }
-
-            }
-            
-        }
-      
-        
-        if ( mouseCursorShape_ == Qt::SizeVerCursor || 
-             mouseCursorShape_ == Qt::SizeHorCursor || 
-             mouseCursorShape_ == Qt::SizeBDiagCursor || 
-             mouseCursorShape_ == Qt::SizeFDiagCursor )
-                resize_ = true;
+        // PENDING how to check that this widget is same as "active canvas" or is it even needed?
+        if (shape == Qt::IBeamCursor || focusWidget)
+            keyboardFocusCanvas = &canvas;
         else
-                resize_ = false;
-      
-        if ( !resize_ )
-        {
-            // Check that did mouse press happen in dragging area.
-            QRect frame = canvases_[index]->view_->frameGeometry();
-            QPointF pos = canvases_[index]->GetPosition();
-        
-            // Rectangular sides. 
-        
-            int bottom = pos.y() + frame.height();
-            int bottomLeft = pos.x();
-            int bottomRight = pos.x() + frame.width();
-            int top = pos.y();
-            
-            int corner_margin = 8;
-            int side_margin = 20;
-            QRect top_side_box(QPoint(bottomLeft + corner_margin, top), QPoint(bottomRight - corner_margin, top + side_margin));
-            if ( top_side_box.contains(QPoint(x,y)))
-                drag_ = true;
-
-        }
-
-
-        // Change new canvas to a active overlay and deactivate old-one.
-        
-        QString id = canvases_[index]->GetID();
-        
-        if ( id != active_canvas_ )
-            Deactivate(active_canvas_, MouseMove);
-
-        active_canvas_ = id;
-        // Note this call changes internal arrange of canvases_ so index is not anymore valid.
-        SetTop(active_canvas_);
-        
+            keyboardFocusCanvas = 0;
     }
-    else
-    {
-        // If press went to outside of widgets. Clear focus. 
-
-        QWidget* focusWidget = QApplication::focusWidget();
-        if ( focusWidget != 0)
-            focusWidget->clearFocus();
-
-        keyboard_buffered_ = false;
-     
-    }
-    lastPosition_ = point;
 }
 
 void UIController::InjectMouseRelease(int x, int y)
 {
     ////todo what to do release after double click?
-  
+
+    currentMouseAction = MouseActionNone;
+
+    if (mouseActionCanvas == 0)
+        return;
+
+    // Translate the mouse position from QGraphicsView coordinate frame onto
+    // the QGraphicsScene coordinate frame.
     QPoint point(x,y);
-    int index = GetCanvas(point);
-    drag_ = false;
 
-    if (index != -1 && !canvases_[index]->IsHidden())
-    {
-        
-        // Translate the mouse position from QGraphicsView coordinate frame onto
-        // the QGraphicsScene coordinate frame.
-        QPoint pos = canvases_[index]->MapToCanvas(x,y);
-        //QPointF pos = canvases_[index]->mapToScene(p);
-        QPoint currentMousePos(pos.x(), pos.y());
+    QPoint pos = mouseActionCanvas->MapToCanvas(x,y);
+    QPoint currentMousePos(pos.x(), pos.y());
 
-        QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseRelease);
-        mouseEvent.setButtonDownScenePos(Qt::NoButton, currentMousePos);
-        mouseEvent.setButtonDownScreenPos(Qt::NoButton, currentMousePos);
-        mouseEvent.setScenePos(currentMousePos);
-        mouseEvent.setScreenPos(currentMousePos);
-        mouseEvent.setLastScenePos(currentMousePos);
-        mouseEvent.setLastScreenPos(currentMousePos);
-        mouseEvent.setButtons(Qt::NoButton);
-        mouseEvent.setButton(Qt::LeftButton);
-        mouseEvent.setModifiers(0);
-        mouseEvent.setAccepted(false);
-    
+    QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseRelease);
+    mouseEvent.setButtonDownScenePos(Qt::NoButton, currentMousePos);
+    mouseEvent.setButtonDownScreenPos(Qt::NoButton, currentMousePos);
+    mouseEvent.setScenePos(currentMousePos);
+    mouseEvent.setScreenPos(currentMousePos);
+    mouseEvent.setLastScenePos(currentMousePos);
+    mouseEvent.setLastScreenPos(currentMousePos);
+    mouseEvent.setButtons(Qt::NoButton);
+    mouseEvent.setButton(Qt::LeftButton);
+    mouseEvent.setModifiers(0);
+    mouseEvent.setAccepted(false);
 
-        QApplication::sendEvent(canvases_[index]->view_->scene(), &mouseEvent);
-    
-    }
-    if ( resize_ )
-    {
-       // Here we adjust texture to correspond to possible new state of widget.
-       for ( int i = 0; i < canvases_.size(); ++i)
-       {
-           if ( canvases_[i]->GetID() == active_canvas_)
-           {
-                QSize size = canvases_[i]->GetSize();
-                canvases_[i]->SetSize(size.width(), size.height());
-                break;
-           }
-       }
-       
-    }
+    QApplication::sendEvent(mouseActionCanvas->view_->scene(), &mouseEvent);
 
-    mouseDown_ = false;
-    lastPosition_ = point;
-    resize_ = false;
+    // Reset the mouse cursor, for some reason it seems to get lost after sending the LMB release message.
+    ///\todo Possibly set Ogre to set a null cursor to the main window so we can handle this at will.
+    /// This should become redundant after that.
+    UpdateMouseCursor(mouseActionCanvas, x, y);
+
+    mouseActionCanvas = 0;
 }
 
 void UIController::InjectDoubleClick(int x, int y)
 {
     QPoint point(x,y);
-    lastPosition_ = point;
-    int index = GetCanvas(point);
+//    lastPosition_ = point;
+    int index = GetCanvasIndexAt(point);
     
     if (index != -1 && !canvases_[index]->IsHidden())
     {
-    
         // Translate the mouse position from QGraphicsView coordinate frame onto
         // the QGraphicsScene coordinate frame.
         QPoint pos = canvases_[index]->MapToCanvas(x,y);
         //QPointF pos = canvases_[index]->mapToScene(p);
         QPoint currentMousePos(pos.x(), pos.y());
 
-        mouseDown_ = false;
+        currentMouseAction = MouseActionNone;
+//        mouseDown_ = false;
         
         // In case of double click we set that left button generated click -> so it is set down. 
-
         QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseDoubleClick);
 
         mouseEvent.setButtonDownScenePos(Qt::LeftButton, currentMousePos);
@@ -721,67 +424,51 @@ void UIController::InjectDoubleClick(int x, int y)
         mouseEvent.setAccepted(false);
      
         QApplication::sendEvent(canvases_[index]->view_->scene(), &mouseEvent);
-    
     }
- 
 }
 
 void UIController::InjectKeyPressed(const QString& text, Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
 {
-   
-   
+    if (!keyboardFocusCanvas)
+        return;
+
+    ///\todo Check invariant: keyboardFocusCanvas should be at the top in Z order, and not hidden.
+
     QKeyEvent keyEvent(QEvent::KeyPress, keyCode, modifier, text);
     keyEvent.setAccepted(false);
     
-    // Take a location of last known mouse press and send it to that canvas. 
-    
-    int index = GetCanvas(mousePress_);
-    if ( index != -1 && !canvases_[index]->IsHidden())
-    {
-        if (!canvases_[index]->IsActiveWindow())
-            canvases_[index]->Activate();
+    // Check that the canvas is ready to take the input.
+    if (!keyboardFocusCanvas->IsActiveWindow())
+        keyboardFocusCanvas->Activate();
 
-         QApplication::sendEvent(canvases_[index]->view_->scene(), &keyEvent);
-         keyDown_ = true;
-         lastKeyEvent_ = keyEvent;
-         keyTimer_.start();
+     QApplication::sendEvent(keyboardFocusCanvas->view_->scene(), &keyEvent);
+     keyDown_ = true;
+     keyTimer_.start();
 
-         // Add key into list (if it is unique).
-        
-         if ( !pressedKeys_.contains(qMakePair(keyCode, text)))
-              pressedKeys_.append(qMakePair(keyCode, text));
-    }
-
+     // Add key into list (if it is unique).
+     if (!pressedKeys_.contains(qMakePair(keyCode, text)))
+          pressedKeys_.append(qMakePair(keyCode, text));
 }
-
-
 
 void UIController::InjectKeyReleased(const QString& text, Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
 {
- 
+    if (!keyboardFocusCanvas)
+        return;
+
     QKeySequence sequence(keyCode);  
 
     QKeyEvent keyEvent(QEvent::KeyRelease, keyCode, modifier, sequence.toString().toLower());
     keyEvent.setAccepted(false);
     
-    // Take a location of last known mouse press and send it to that canvas. 
-    
-    int index = GetCanvas(mousePress_);
-    if ( index != -1 && !canvases_[index]->IsHidden() )
-    {
-         QApplication::sendEvent(canvases_[index]->view_->scene(), &keyEvent);
-         keyTimer_ = QTime();
-    }
-
+    QApplication::sendEvent(keyboardFocusCanvas->view_->scene(), &keyEvent);
+    keyTimer_ = QTime();
   
-    int size = pressedKeys_.size();
-    for (int i = size; i--;)
+    int size = pressedKeys_.size()-1;
+    for(int i = size; i > 0; --i)
     {
         if (pressedKeys_[i].first == keyCode)
             pressedKeys_.removeAt(i);
     }
-    
-   
     
     keyDown_ = false;
 }
@@ -792,246 +479,253 @@ void UIController::SetParentWindowSize(const QSize& size)
     emit RenderWindowSizeChanged(size);
 }
 
-Qt::CursorShape UIController::UpdateMouseCursor(int x, int y, int index)
+UIController::MouseAction UIController::DetectCanvasHotSpot(UICanvas &canvas, int x, int y)
 {
-    if ( index != -1 && !canvases_[index]->IsResizable())
+    assert(&canvas);
+
+    QRect frame = canvas.view_->frameGeometry();
+    QPointF pos = canvas.GetPosition();
+    
+    // Rectangular sides.
+    int bottom = pos.y() + frame.height();
+    int bottomLeft = pos.x();
+    int bottomRight = pos.x() + frame.width();
+    int top = pos.y();
+    
+    int side_margin = 4;
+    int corner_margin = 4;
+    
+    // Corners.
+    QRect left_bottom_corner_box(QPoint(bottomLeft,bottom-corner_margin),QPoint(bottomLeft+corner_margin, bottom));
+    QRect left_top_corner_box(QPoint(bottomLeft, top), QPoint(bottomLeft + corner_margin, top + corner_margin));
+    
+    QRect right_top_corner_box(QPoint(bottomRight, top), QPoint(bottomRight - corner_margin, top + corner_margin));
+    QRect right_bottom_corner_box(QPoint(bottomRight - corner_margin, bottom - corner_margin), QPoint(bottomRight,bottom));
+    
+    // Sides
+    QRect top_side_box(QPoint(bottomLeft + corner_margin, top), QPoint(bottomRight - corner_margin, top + side_margin));
+    QRect bottom_side_box(QPoint(bottomLeft - corner_margin, bottom - side_margin), QPoint(bottomRight - corner_margin, bottom));
+
+    QRect left_side_box(QPoint(bottomLeft, top + corner_margin), QPoint(bottomLeft + side_margin, bottom - corner_margin));
+    QRect right_side_box(QPoint(bottomRight-corner_margin, top + side_margin), QPoint(bottomRight, bottom - corner_margin));
+
+    QPoint point(x,y);
+
+    // Check all the eight rectangles for the canvas resize.
+    if (canvas.appearPolicy_->IsResizable())
     {
-        QRect frame = canvases_[index]->view_->frameGeometry();
-        QPointF pos = canvases_[index]->GetPosition();
-        
-        // Rectangular sides. 
-        
-        int bottom = pos.y() + frame.height();
-        int bottomLeft = pos.x();
-        int bottomRight = pos.x() + frame.width();
-        int top = pos.y();
-        
-        int side_margin = 4;
-        int corner_margin = 4;
-        
-        // Corners.
-        QRect left_bottom_corner_box(QPoint(bottomLeft,bottom-corner_margin),QPoint(bottomLeft+corner_margin, bottom));
-        QRect left_top_corner_box(QPoint(bottomLeft, top), QPoint(bottomLeft + corner_margin, top + corner_margin));
-        
-        QRect right_top_corner_box(QPoint(bottomRight, top), QPoint(bottomRight - corner_margin, top + corner_margin));
-        QRect right_bottom_corner_box(QPoint(bottomRight - corner_margin, bottom - corner_margin), QPoint(bottomRight,bottom));
-        
-        // Sides
-
-        QRect top_side_box(QPoint(bottomLeft + corner_margin, top), QPoint(bottomRight - corner_margin, top + side_margin));
-        QRect bottom_side_box(QPoint(bottomLeft - corner_margin, bottom - side_margin), QPoint(bottomRight - corner_margin, bottom));
-
-        QRect left_side_box(QPoint(bottomLeft, top + corner_margin), QPoint(bottomLeft + side_margin, bottom - corner_margin));
-        QRect right_side_box(QPoint(bottomRight-corner_margin, top + side_margin), QPoint(bottomRight, bottom - corner_margin));
-
-        QPoint point(x,y);
-
-        if ( left_bottom_corner_box.contains(point) )
-        {
-            QApplication::setOverrideCursor(QCursor(Qt::SizeBDiagCursor));
-            mouseCursorShape_ = Qt::SizeBDiagCursor;
-        }
-        else if ( left_top_corner_box.contains(point) )
-        {
-            QApplication::setOverrideCursor(QCursor(Qt::SizeFDiagCursor));
-            mouseCursorShape_ = Qt::SizeFDiagCursor;
-        }
-        else if ( right_top_corner_box.contains(point))
-        {
-            QApplication::setOverrideCursor(QCursor(Qt::SizeBDiagCursor));
-            mouseCursorShape_ = Qt::SizeBDiagCursor;
-        }
-        else if ( right_bottom_corner_box.contains(point) )
-        {
-            QApplication::setOverrideCursor(QCursor(Qt::SizeFDiagCursor));
-            mouseCursorShape_ = Qt::SizeFDiagCursor;
-        }
-        else if (top_side_box.contains(point))
-        {
-            QApplication::setOverrideCursor(QCursor(Qt::SizeVerCursor));
-            mouseCursorShape_ = Qt::SizeVerCursor;
-        }
-        else if (bottom_side_box.contains(point) )
-        {
-            QApplication::setOverrideCursor(QCursor(Qt::SizeVerCursor));
-            mouseCursorShape_ = Qt::SizeVerCursor;
-        }
-        else if (left_side_box.contains(point))
-        {
-            QApplication::setOverrideCursor(QCursor(Qt::SizeHorCursor));
-            mouseCursorShape_ = Qt::SizeHorCursor; 
-        }
-        else if (right_side_box.contains(point))
-        {
-            QApplication::setOverrideCursor(QCursor(Qt::SizeHorCursor));
-            mouseCursorShape_ = Qt::SizeHorCursor;
-        }
-        else
-        {
-            QApplication::setOverrideCursor(QCursor(Qt::ArrowCursor));
-            mouseCursorShape_ = Qt::ArrowCursor;        
-            //QApplication::restoreOverrideCursor();   
-        }
-    }
-    else
-    {
-        QApplication::setOverrideCursor(QCursor(Qt::ArrowCursor));
-        mouseCursorShape_ = Qt::ArrowCursor;      
+        if (left_bottom_corner_box.contains(point))  return MouseActionCanvasResizeBottomLeft;
+        if (left_top_corner_box.contains(point))     return MouseActionCanvasResizeTopLeft;
+        if (right_top_corner_box.contains(point))    return MouseActionCanvasResizeTopRight;
+        if (right_bottom_corner_box.contains(point)) return MouseActionCanvasResizeBottomRight;
+        if (top_side_box.contains(point))    return MouseActionCanvasResizeTop;
+        if (bottom_side_box.contains(point)) return MouseActionCanvasResizeBottom;
+        if (left_side_box.contains(point))   return MouseActionCanvasResizeLeft;
+        if (right_side_box.contains(point))  return MouseActionCanvasResizeRight;
     }
 
-    return mouseCursorShape_;
+    if (!canvas.IsPositionStationary())
+    {
+        int drag_corner_margin = 8;
+        int drag_side_margin = 20;
+
+        // Check the top title bar for the canvas move.
+        QRect drag_top_side_box(QPoint(bottomLeft + drag_corner_margin, top), QPoint(bottomRight - drag_corner_margin, top + drag_side_margin));
+        if (drag_top_side_box.contains(QPoint(x,y)))
+            return MouseActionCanvasMove;
+    }
+
+    return MouseActionNone;
 }
 
-void UIController::Deactivate(const QString& id, DeactivationType type, int index)
+void UIController::UpdateMouseCursor(UICanvas *canvas, int x, int y)
 {
-    int canvas_index = -1;
-    
-    if ( index != -1)
-        canvas_index = index;
-    else
-        canvas_index = Search(id);
-    
-    if ( canvas_index == -1 )
-        return;
+    Qt::CursorShape shape = Qt::ArrowCursor;
+    MouseAction action = (canvas == 0 ? MouseActionNone : DetectCanvasHotSpot(*canvas, x, y));
+    switch(action)
+    {
+    case MouseActionCanvasResizeTopLeft: 
+    case MouseActionCanvasResizeBottomRight:
+        shape = Qt::SizeFDiagCursor;
+        break;
 
-    // Safe location is assumed to be canvas top-left corner.
+    case MouseActionCanvasResizeTop:
+    case MouseActionCanvasResizeBottom:
+        shape = Qt::SizeVerCursor;
+        break;
 
-    QPoint pos = canvases_[canvas_index]->GetPosition().toPoint();
+    case MouseActionCanvasResizeTopRight:
+    case MouseActionCanvasResizeBottomLeft:
+        shape = Qt::SizeBDiagCursor;
+        break;
 
-    switch ( type ) 
+    case MouseActionCanvasResizeLeft:
+    case MouseActionCanvasResizeRight:
+        shape = Qt::SizeHorCursor;
+        break;
+
+    default:
+        if (canvas)
+        {
+            QPoint pos = canvas->MapToCanvas(x, y);
+
+            QGraphicsItem *item = canvas->view_->scene()->itemAt(pos);
+            QGraphicsWidget *widget = (item ? item->topLevelWidget() : 0);
+            QWidget *focusWidget = QApplication::focusWidget();
+
+            if (item && item->hasCursor())
+                shape = item->cursor().shape();
+            else if (widget && widget->hasCursor())
+                shape = widget->cursor().shape();
+            else if (focusWidget)
+                shape = focusWidget->cursor().shape();
+            else    
+                shape = Qt::ArrowCursor;
+        }
+        break;
+    }
+
+    QApplication::setOverrideCursor(QCursor(shape));
+}
+
+void UIController::Deactivate(UICanvas &canvas, DeactivationType type)
+{
+    assert(&canvas);
+
+    // We assume that the upper-left corner of a canvas is the safe location to post a mouse move event 
+    // so that it clears any previous hover visual animation.
+    QPoint pos = canvas.GetPosition().toPoint();
+
+    switch(type)
     {
     case MouseMove:
-        {
-            SendMouseMoveEvent(canvas_index, pos.x(), pos.y());
-            break;
-        }
+        SendMouseMoveEvent(canvas, pos.x(), pos.y());
+        break;
     case MousePress:
-        {
-            ///todo send mouse press
-            break;
-        }
+        ///todo send mouse press
+        break;
     case MouseRelease:
-        {
-            ///todo send mouse release
-            break;
-        }
+        ///todo send mouse release
+        break;
     case All:
-        {
-            ///todo send mouse press and release
-            SendMouseMoveEvent(canvas_index, pos.x(), pos.y());
-            break;
-        }
-
+        ///todo send mouse press and release
+        SendMouseMoveEvent(canvas, pos.x(), pos.y());
+        break;
     }
-    
-    
-   
-
 }
 
 UICanvas *UIController::GetCanvasAt(int x, int y)
 {
     const QPoint point(x, y);
     for(QList<boost::shared_ptr<UICanvas> >::iterator iter = canvases_.begin(); iter != canvases_.end(); ++iter)
-        if ((*iter)->GetDisplayMode() == UICanvas::Internal && !(*iter)->IsHidden() && Contains(*iter, point))
+        if ((*iter)->GetDisplayMode() == UICanvas::Internal && !(*iter)->IsHidden() && Contains(**iter, point))
             return iter->get();
 
     return 0;
 }
 
-boost::shared_ptr<QtUI::UICanvas> UIController::GetCanvas(const QString& id)
+boost::weak_ptr<QtUI::UICanvas> UIController::GetCanvasByID(const QString& id)
 {
-	QList<boost::shared_ptr<UICanvas> >::iterator iter = canvases_.begin();
-    int index = 0;
-    for(; iter != canvases_.end(); ++iter, ++index)
-    {
-        QString canvas_id = (*iter)->GetID();
-        if ( canvas_id == id)
-        {
-            return canvases_[index];
-        }
-    }
-    return boost::shared_ptr<QtUI::UICanvas>();
+    for(QList<boost::shared_ptr<UICanvas> >::iterator iter = canvases_.begin(); 
+        iter != canvases_.end(); ++iter)
+        if ((*iter)->GetID() == id)
+            return *iter;
+
+    return boost::weak_ptr<UICanvas>();
 }
 
-int UIController::GetCanvas(const QPoint& point) 
+int UIController::GetCanvasIndexAt(const QPoint& point) 
 {
-    QList<boost::shared_ptr<UICanvas> >::iterator iter = canvases_.begin();
     int index = 0;
-    for (; iter != canvases_.end(); ++iter, ++index)
+
+    QList<boost::shared_ptr<UICanvas> >::iterator iter = canvases_.begin();
+    for(; iter != canvases_.end(); ++iter, ++index)
     {
         // If mode is external we let the Qt own window manager to things. 
         if ((*iter)->GetDisplayMode() == UICanvas::External)
             continue;
         if ((*iter)->IsHidden())
-            continue;     
+            continue;
         
-        if (Contains(*iter, point))
+        if (Contains(**iter, point))
             return index;
     }
 
     // Did not find any canvases so let's return -1.
-
     return -1;
 }
 
-bool UIController::Contains(const boost::shared_ptr<UICanvas>& canvas, const QPoint& point) const
+bool UIController::Contains(const UICanvas &canvas, const QPoint& point) const
 {
-    QPoint pos = canvas->GetPosition().toPoint();
-    return pos.x() <= point.x() && 
-           pos.y() <= point.y() && 
-           (pos.x() + canvas->view_->width()) > point.x() && 
-           (pos.y() + canvas->view_->height()) > point.y();
+    assert(&canvas);
+
+    const QPoint pos = canvas.GetPosition().toPoint();
+
+    return pos.x() <= point.x() && pos.y() <= point.y() && 
+           pos.x() + canvas.view_->width() > point.x() && 
+           pos.y() + canvas.view_->height() > point.y();
 }
 
-
-
-void UIController::SendMouseMoveEvent(int index, int x, int y)
+void UIController::SendMouseMoveEvent(UICanvas &canvas, int x, int y)
 {
-    // Location of mouse event in scene.
-    QPoint pos = canvases_[index]->MapToCanvas(x,y);
-    //QPointF pos = canvases_[index]->mapToScene(p);
-      
-    QPoint currentMousePos(pos.x(), pos.y());
+    assert(&canvas);
+
+    // Map the mouse coordinate to the scene of the canvas.
+    QPoint pos = canvas.MapToCanvas(x,y);
 
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
-    
-    if (mouseDown_)
+
+    bool mouseLeftButtonDown = (currentMouseAction != MouseActionNone);
+    if (mouseLeftButtonDown)
     {
-        mouseEvent.setButtonDownScenePos(Qt::LeftButton, mousePress_);
-        mouseEvent.setButtonDownScreenPos(Qt::LeftButton, mousePress_);
+        mouseEvent.setButtonDownScenePos(Qt::LeftButton, lastMousePressPoint_);
+        mouseEvent.setButtonDownScreenPos(Qt::LeftButton, lastMousePressPoint_);
     }
     else
     {
-        mouseEvent.setButtonDownScenePos(Qt::NoButton, currentMousePos);
-        mouseEvent.setButtonDownScreenPos(Qt::NoButton, currentMousePos);
+        mouseEvent.setButtonDownScenePos(Qt::NoButton, pos);
+        mouseEvent.setButtonDownScreenPos(Qt::NoButton, pos);
     }
     
-    mouseEvent.setScenePos(currentMousePos);
-    mouseEvent.setScreenPos(currentMousePos);
-    mouseEvent.setLastScenePos(currentMousePos);
-    mouseEvent.setLastScreenPos(currentMousePos);
-    mouseEvent.setButtons(mouseDown_ ? Qt::LeftButton : Qt::NoButton);
-    mouseEvent.setButton(mouseDown_ ? Qt::LeftButton : Qt::NoButton);
+    mouseEvent.setScenePos(pos);
+    mouseEvent.setScreenPos(pos);
+    mouseEvent.setLastScenePos(pos);
+    mouseEvent.setLastScreenPos(pos);
+    mouseEvent.setButtons(mouseLeftButtonDown ? Qt::LeftButton : Qt::NoButton);
+    mouseEvent.setButton(mouseLeftButtonDown ? Qt::LeftButton : Qt::NoButton);
     mouseEvent.setModifiers(0);
     mouseEvent.setAccepted(false);
 
-   
-    UpdateMouseCursor(x,y,index);
-    QApplication::sendEvent(canvases_[index]->view_->scene(), &mouseEvent);   
-        
+    QApplication::sendEvent(canvas.view_->scene(), &mouseEvent);   
+}
 
+void UIController::SendMouseLeftButtonPressEvent(UICanvas &canvas, int x, int y)
+{
+    assert(&canvas);
 
+    QPoint pos = canvas.MapToCanvas(x, y);
+
+    lastMousePressPoint_ = pos;
+
+    QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMousePress);
+    
+    mouseEvent.setButtonDownScenePos(Qt::LeftButton, pos);
+    mouseEvent.setButtonDownScreenPos(Qt::LeftButton, pos);
+    mouseEvent.setScenePos(pos);
+    mouseEvent.setScreenPos(pos);
+    mouseEvent.setLastScenePos(pos);
+    mouseEvent.setLastScreenPos(pos);
+    mouseEvent.setButtons(Qt::LeftButton);
+    mouseEvent.setButton(Qt::LeftButton);
+
+    mouseEvent.setModifiers(0);
+    mouseEvent.setAccepted(false);
+
+    // Make this canvas the current active canvas for the OS so that it is properly prepared to take our input.
+    if (!canvas.IsActiveWindow())
+        canvas.Activate();
+
+    QApplication::sendEvent(canvas.view_->scene(), &mouseEvent);
 }
 
 }
-        
-     
-     
-   
-
-      
-       
-
-     
-      

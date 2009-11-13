@@ -27,13 +27,16 @@ RexQEngine::RexQEngine(Framework *owner, int &argc, char** argv)
 {
     app_ = new QApplication(argc, argv);
 
-//    ogre_host_widget_ = new QWidget();
+    // The following code creates a new QWidget as the main window to host the Ogre frame.
+    // Not using this method currently due to composition problems. 
+    // (render window & widget client area cannot safely overlap)
+/*
+    ogre_host_widget_ = new QWidget();
 
     int width = owner->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_width", 800);
     int height = owner->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_height", 600);
-//    ogre_host_widget_->resize(width, height);
+    ogre_host_widget_->resize(width, height);
 
-/*
     ogre_host_widget_->setWindowTitle("Ogre3D Window");
 #ifndef Q_WS_WIN 
     // At the begin render window and widget should be same size.  
@@ -41,26 +44,6 @@ RexQEngine::RexQEngine(Framework *owner, int &argc, char** argv)
  
 #endif
     ogre_host_widget_->show();
-
-//    box_layout_ = new QHBoxLayout(ogre_host_widget_);
-//    ogre_frame_ = new QWidget(ogre_host_widget_);
-//    ogre_frame_ = new QWidget();
-
-//    QWidget widget(ogre_host_widget_);
-//    widget.setWindowTitle("Start window");
-//    widget.show();
-//    QHBoxLayout layOut; 
-//    QPushButton* pButton = new QPushButton("&Start our awesome application", ogre_host_widget_);
-
-//    layOut.addWidget(pButton);
-//    widget.setLayout(&layOut);
-//    box_layout_->addWidget(ogre_frame_);
-//    box_layout_->addWidget(pButton);
-//    ogre_host_widget_->setLayout(box_layout_);
-    
-
-//    ogre_frame_ = new QFrame(ogre_host_widget_);
-//    ogre_frame_->
 */
 }
 
@@ -72,9 +55,9 @@ RexQEngine::~RexQEngine()
 
 std::string RexQEngine::GetMainWindowHandle() const
 {
-    assert(false);
-    return "";
-/*
+//    assert(false);
+//    return "";
+
   std::stringstream windowHandle;
 
 #ifndef Q_WS_WIN
@@ -93,19 +76,24 @@ std::string RexQEngine::GetMainWindowHandle() const
 
  #else
  
-    windowHandle << (size_t)(HWND)ogre_host_widget_->winId();
+//    windowHandle << (size_t)(HWND)ogre_host_widget_->winId();
 //    windowHandle << (size_t)(HWND)ogre_frame_->winId();
 #endif
  
    return windowHandle.str();   
-*/
+
 }
 
 QWidget *RexQEngine::GetMainWindowQWidget() const
 {
     assert(false);
     return 0;
-//    return ogre_host_widget_;
+//   return ogre_host_widget_;
+}
+
+QApplication *RexQEngine::GetQApplication() const
+{
+    return app_;
 }
 
 void RexQEngine::UpdateFrame()
@@ -130,8 +118,6 @@ void RexQEngine::Go()
     QObject::connect(&frame_update_timer_, SIGNAL(timeout()), this, SLOT(UpdateFrame()));
     frame_update_timer_.setSingleShot(true);
     frame_update_timer_.start(0);
-  
-   //    QObject::connect(pButton, SIGNAL(clicked()), this, SLOT(UpdateFrame()));
 
 //    QObject::connect(app, SIGNAL(guiThreadAwake()), this, SLOT(UpdateFrame()));
 

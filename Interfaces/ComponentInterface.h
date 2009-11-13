@@ -3,6 +3,8 @@
 #ifndef incl_Interfaces_ComponentInterface_h
 #define incl_Interfaces_ComponentInterface_h
 
+#include <QObject>
+
 #include "ComponentFactoryInterface.h"
 #include "ComponentRegistrarInterface.h"
 
@@ -17,6 +19,7 @@ namespace Foundation
 
         \ingroup Scene_group
     */
+/*
     class MODULE_API ComponentInterfaceAbstract
     {
     public:
@@ -25,22 +28,35 @@ namespace Foundation
         
         virtual const std::string &Name() const = 0;
     };
-
+*/
     //! Base class for all components. Inherit from this class when creating new components.
     /*! Use the ComponentInterface typedef to refer to the abstract component type.
     */
-    class MODULE_API ComponentInterfaceImpl : public ComponentInterfaceAbstract
+    class MODULE_API ComponentInterface : public QObject
     {
-        ComponentInterfaceImpl();
+        ComponentInterface();
     public:
-        ComponentInterfaceImpl(Foundation::Framework *framework) : ComponentInterfaceAbstract(), framework_(framework) {}
-        ComponentInterfaceImpl(const ComponentInterfaceImpl &rhs) : framework_(rhs.framework_) {}
-        virtual ~ComponentInterfaceImpl() { framework_->GetComponentManager()->RemoveExpiredComponents(); }
+        explicit ComponentInterface(const Foundation::Framework *framework)
+        :framework_(framework)
+        {
+        }
+
+        ComponentInterface(const ComponentInterface &rhs)
+        :QObject(), framework_(rhs.framework_)
+        {
+        }
+
+        virtual ~ComponentInterface()
+        {
+            assert(framework_);
+            framework_->GetComponentManager()->RemoveExpiredComponents();
+        }
         
+        virtual const std::string &Name() const = 0;
+
     private:
         const Foundation::Framework * const framework_;
     };
-    typedef ComponentInterfaceImpl ComponentInterface;
 }
 
 #endif
