@@ -4,6 +4,7 @@
 #define incl_QtModule_UIController_h
 
 #include "UICanvas.h"
+#include "Core.h"
 
 #include <QList>
 #include <QPoint>
@@ -92,6 +93,13 @@ namespace QtUI
             @note UIController expects that a corresponding mouse release message will be sent afterwards. */
         void InjectMousePress(int x, int y);
     
+        /**
+         * Sends a mouse left button press event to canvas which is embed in 3D-mode. 
+         * @param u is texture u coordinate, which is result from raycast. 
+         * @param v is texture v coordinate, which is result from raycast. 
+         */
+        void InjectMousePress(Core::Real u, Core::Real v, const boost::shared_ptr<UICanvas>& canvas);
+
         /** Sends a mouse release event to correct canvas. 
             @param x The x-coordinate in the main render window where the mouse was when the LMB was released.
             @param y The y-coordinate. */

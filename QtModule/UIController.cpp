@@ -318,6 +318,19 @@ void UIController::InjectMousePress(int x, int y)
         currentMouseAction = MouseActionCanvasInternal;
 }
 
+void UIController::InjectMousePress(Core::Real u, Core::Real v, const boost::shared_ptr<UICanvas>& canvas)
+{
+   QPointF pos = canvas->GetPosition();
+   QSize size = canvas->GetSize();
+   int x = u * size.width() + pos.x();
+   int y = v * size.height() + pos.y();
+   SendMouseLeftButtonPressEvent(*canvas.get(), x, y);
+   // Now be brutal and make canvas to redraw it. 
+   canvas->dirty_ = true;
+   canvas->RenderSceneToOgreSurface();
+
+}
+
 void UIController::ActivateKeyboardFocus(UICanvas &canvas, int x, int y)
 {
     assert(&canvas);
