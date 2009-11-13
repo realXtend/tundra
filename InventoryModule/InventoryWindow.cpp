@@ -39,7 +39,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework, RexLogic::Rex
     // Add local widget to canvas, setup initial size and title and show canvas
     canvas_->SetSize(300, 350);
     canvas_->SetStationary(false);
-    canvas_->SetResizable(false);
+//    canvas_->SetResizable(false);
     canvas_->SetPosition(canvas_->GetRenderWindowSize().width()-350,35);
     canvas_->SetWindowTitle(QString("Inventory"));
     canvas_->AddWidget(inventoryWidget_);

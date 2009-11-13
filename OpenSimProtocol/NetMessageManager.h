@@ -54,6 +54,9 @@ public:
 	void UnregisterNetworkListener(INetMessageListener *listener) { messageListener = 0; }
 
 private:
+    /// Deallocates all memory used for outbound message structs.
+    void ClearMessagePoolMemory();
+
 	/// @return A new sequence number for outbound UDP messages.
 	size_t GetNewSequenceNumber() { return sequenceNumber++; }
 

@@ -108,7 +108,7 @@ namespace QtUI
 
 	void ControlBarButton::toggleShow()
 	{
-		myCanvas_->Render();
+//		myCanvas_->Render();
 		if (myCanvas_->IsHidden())
 			myCanvas_->Show();
 		else

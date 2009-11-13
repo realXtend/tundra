@@ -102,7 +102,6 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
     
     if (category_id == input_event_category_ && event_id == Input::Events::INWORLD_CLICK || event_id == Input::Events::INWORLD_CLICK_REL)
     {
-
         boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
             framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
 
@@ -117,27 +116,27 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
 
         bool event_handled = false;
         
-        // GetCanvasAt() - returns canvas which is internal. 
-        
-        if ( controller_->GetCanvasAt(mousePos.x(), mousePos.y()) != 0 && !controller_->GetCanvasAt( mousePos.x(), mousePos.y())->IsHidden())
+        UICanvas *canvas = controller_->GetCanvasAt(mousePos.x(), mousePos.y());
+        if (canvas && !canvas->IsHidden())
             event_handled = true;
 
-        if (input->IsButtonDown(OIS::MB_Left) && !mouse_left_button_down_)
+        bool oisLMBDown = input->IsButtonDown(OIS::MB_Left);
+        if (oisLMBDown && !mouse_left_button_down_)
         {
             //if (controller_->GetCanvasAt(pos.x(), pos.y()))
             //    framework_->GetQApplication()->setActiveWindow(controller_->GetCanvasAt(pos.x(), pos.y()));
             
             controller_->InjectMousePress(pos.x(), pos.y());
             
-            if ( controller_->IsKeyboardFocus() && input->GetState() != Input::State_Buffered)
+            if (controller_->IsKeyboardFocus() && input->GetState() != Input::State_Buffered)
               input->SetState(Input::State_Buffered);
-            else if ( !controller_->IsKeyboardFocus())  
+            else if (!controller_->IsKeyboardFocus())
                 input->SetState(Input::State_Unknown);
             
             mouse_left_button_down_ = true;
            
         }
-        else if (!input->IsButtonDown(OIS::MB_Left) && mouse_left_button_down_)
+        else if (!oisLMBDown && mouse_left_button_down_)
         {
             controller_->InjectMouseRelease(pos.x(),pos.y());
             mouse_left_button_down_ = false;
@@ -147,7 +146,7 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
         // Is this needed ? 
         //controller_->Update();     
 
-        return event_handled;    
+        return event_handled;
 
     } 
     else if (category_id == renderer_event_category_ && event_id == OgreRenderer::Events::WINDOW_RESIZED)
@@ -272,7 +271,7 @@ void QtModule::AddCanvasToControlBar(boost::shared_ptr<QtUI::UICanvas> canvas, c
 void QtModule::AddCanvasToControlBar(const QString& id, const QString &buttonTitle)
 {
 	if (canvasManager_ != 0)
-		canvasManager_->AddCanvasToControlBar(controller_->GetCanvas(id), buttonTitle);
+		canvasManager_->AddCanvasToControlBar(controller_->GetCanvasByID(id).lock(), buttonTitle);
 }
 
 bool QtModule::RemoveCanvasFromControlBar(const QString& id)
@@ -306,22 +305,18 @@ void QtModule::Update(Core::f64 frametime)
         
         const Input::Events::Movement &mouse = input->GetMouseMovement();
         QPointF pos = QPointF(mouse.x_.abs_, mouse.y_.abs_);
-        QPoint change = lastPos_ - pos.toPoint(); 
+        QPoint change =  pos.toPoint() - lastPos_; 
 
-        if ( change.manhattanLength() >= 1 )
+        if (change.manhattanLength() >= 1)
         {
-            controller_->InjectMouseMove(pos.x(),pos.y());
-        }    
-        lastPos_ = pos.toPoint();
+            controller_->InjectMouseMove(pos.x(),pos.y(), change.x(), change.y());
+            lastPos_ = pos.toPoint();
+        }
 
         ///\todo Optimize to redraw only those rectangles that are dirty.
         controller_->Update();
         
         PROFILE(QtSceneRender);
-
-       
-           
-             
     }
     
     RESETPROFILER;

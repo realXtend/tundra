@@ -347,6 +347,9 @@ void NetOutMessage::ResetWriting()
 	currentBlock = 0;
 	currentVariable = 0;
 	blockQuantityCounter = 0;
+
+    ///\todo This shouldn't be necessary, as bytesFilled is properly set to zero. I'd be inclined to remove this
+    /// for optimization purposes. -jj.
 	for(size_t i = 0; i < maxMessageSize; ++i)
 	    messageData[i] = 0;
 }
@@ -378,7 +381,9 @@ void NetOutMessage::AddBytesUnchecked(size_t count, const void *data)
 
 void NetOutMessage::AddMessageHeader()
 {	
-	if(!messageInfo) return;
+	if (!messageInfo) 
+        return;
+
 	NetMsgID id = messageInfo->id;
 	bytesFilled = 0;
 	
@@ -447,7 +452,7 @@ void NetOutMessage::SetMessageInfo(const NetMessageInfo *info)
 	// Variable type counter will be defined by the user and single sized
 	// don't need the counter.
 	size_t size = messageInfo->blocks.size();
-	for(size_t i = 0; i< size ; ++i)
+	for(size_t i = 0; i < size; ++i)
 	{
 		const NetMessageBlock &block = messageInfo->blocks[i];
 		if (block.type == NetBlockMultiple)
@@ -456,5 +461,10 @@ void NetOutMessage::SetMessageInfo(const NetMessageInfo *info)
 			blockQuantityCounter = block.repeatCount;
 		}
 	}	
+
+    ///\bug Something must be wrong here. In the above code, blockQuantityCounter ends up being
+    /// initialized to the repeat count of the repeat count of the last block with type 'multiple'
+    /// in the format. Apparently the above code is redundant and we don't even care what value it 
+    /// gets initialized to, since it is SetVariableBlockCount that initializes this to the proper value.
 
 }

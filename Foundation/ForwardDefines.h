@@ -28,7 +28,7 @@ namespace Foundation
     class Platform;
     class Application;
     class ConfigurationManager;
-    class ComponentInterfaceAbstract;
+    class ComponentInterface;
     class ThreadTaskManager;
 
     typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
@@ -41,9 +41,9 @@ namespace Foundation
     typedef boost::shared_ptr<Application> ApplicationPtr;
     typedef boost::shared_ptr<ThreadTaskManager> ThreadTaskManagerPtr;
 
-    typedef boost::shared_ptr<ComponentInterfaceAbstract> ComponentInterfacePtr;
-    typedef boost::shared_ptr<ComponentInterfaceAbstract> ComponentPtr;
-    typedef boost::weak_ptr<ComponentInterfaceAbstract> ComponentWeakPtr;
+    typedef boost::shared_ptr<ComponentInterface> ComponentInterfacePtr;
+    typedef boost::shared_ptr<ComponentInterface> ComponentPtr;
+    typedef boost::weak_ptr<ComponentInterface> ComponentWeakPtr;
     
     //! Use root logging only in foundation classes.
     static void RootLogFatal(const std::string &msg)

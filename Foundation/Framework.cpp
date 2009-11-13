@@ -10,6 +10,8 @@
 #include "Poco/Path.h"
 #include "Poco/UnicodeConverter.h"
 
+#include <QApplication>
+
 #include "Foundation.h"
 #include "SceneManager.h"
 #include "SceneEvents.h"
@@ -342,6 +344,11 @@ namespace Foundation
     QWidget *Framework::GetApplicationMainWindowQWidget() const
     {
         return q_engine_->GetMainWindowQWidget();
+    }
+
+    QApplication *Framework::GetQApplication() const
+    {
+        return q_engine_->GetQApplication();
     }
 
     void Framework::Go()

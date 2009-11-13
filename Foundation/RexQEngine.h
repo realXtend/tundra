@@ -36,6 +36,8 @@ public:
 
     QWidget *GetMainWindowQWidget() const;
 
+    QApplication *GetQApplication() const;
+
     void SendQAppQuitMessage();
 
 public slots:
@@ -52,14 +54,13 @@ private:
     Framework *owner_;
     QTimer frame_update_timer_;
 
-    QWidget *ogre_host_widget_;
+//    QWidget *ogre_host_widget_;
 
-    QWidget *ogre_frame_;
-    QHBoxLayout *box_layout_;
+//    QWidget *ogre_frame_;
+//    QHBoxLayout *box_layout_;
 
     /// Transitions to true when the QApplication is being torn down and the application
     /// is about to quit.
-
     bool exit_signalled_;
 };
 

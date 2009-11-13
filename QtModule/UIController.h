@@ -16,263 +16,240 @@
 
 namespace QtUI
 {
-    /**
-     * UIController-class is used to manage OIS inputs and other window events which effect to UICanvases state. 
-     * This class is a internal class which should not be used outside of QtModule. 
-     */
+    class QtModule;
+
+    /** UIController owns all the UICanvases and manages the injection of mouse and keyboard 
+        inputs into those. It also handles the compositing logic (Z-ordering, show/hide)
+        needed to manage the distinct canvases on the 2D screen. This class is internal
+        to the QtModule and should not be instantiated elsewhere. */
     class UIController : public QObject
     {   
         Q_OBJECT
-       
     
     public:
         UIController();
-        virtual ~UIController();
+        ~UIController();
 
-        /**
-         * Registers canvas to controller. 
-         * @param canvas is canvas which state we want to manage through controller. 
-         */
-
-        //void AddCanvas(UICanvas* canvas) {}
-        
-        /**
-         * Draws/Updates canvases, after update canvases internal Z-order is calculated. 
-         * @note this update only draws those canvases which has gone to dirty state. 
-         */
-        
-        void Update();
-
-        /**
-         * Creates a new UICanvas which is managed by controller.
-         * @param mode is canvas mode @see UICanvas 
-         * @note default mode is Internal (so it is rendered by OGRE).
-         */
+        /** Creates a new UICanvas. The UICanvas owns a QGraphicsScene in which Qt widgets 
+            can be added to.
+            @param mode The canvas compositing mode to be used with the new canvas. */
         boost::weak_ptr<UICanvas> CreateCanvas(UICanvas::DisplayMode mode = UICanvas::Internal);
 
-        /**
-         * Sends a mouse move event to correct canvas. 
-         * @param x is a event position on x-axis. 
-         * @param y is a event position on y-axis.
-         * @note This function is for both hover and drag messages. 
-         **/
-        void InjectMouseMove(int x, int y);
-
-     
-        /** 
-         * Sends a mouse press event to correct canvas.
-         * @param x is a event position on x-axis. 
-         * @param y is a event position on y-axis. 
-         * @note A corresponing mouse release needs to be sent afterwards. 
-         */
-        void InjectMousePress(int x, int y);
-
-    
-        /**
-         * Sends a mouse release event to correct canvas. 
-         * @param x is a event position on x-axis.
-         * @param y is a event position on y-axis. 
-         */
-        void InjectMouseRelease(int x, int y);
-
-        /**
-         * Sends a mouse double click event to correct canvas. 
-         * @param x is a event position on x-axis. 
-         * @param y is a event position on y-axis.
-         */
-        void InjectDoubleClick(int x, int y);
-
-        /**
-         * Sends a key pressed event to correct canvas. 
-         * @param text is a key which was pressed (letter). 
-         * @param keyCode is a code of key
-         * @param modifier is a value which defines that was alt or shift down. 
-         */
-
-        void InjectKeyPressed(const QString& text, Qt::Key keyCode = Qt::Key_unknown, const Qt::KeyboardModifiers& modifier = Qt::NoModifier);
-
-        /**
-         * Sends a key released event to correct canvas. 
-         * @param text is a key which was pressed (letter). 
-         * @param keyCode is a code of key
-         * @param modifier is a value which defines that was alt or shift down. 
-         */
-
-        void InjectKeyReleased(const QString& text, Qt::Key keyCode = Qt::Key_unknown , const Qt::KeyboardModifiers& modifier = Qt::NoModifier);
-      
-        /**
-         * Sets a new size of Ogre-render window. 
-         * @param size is new size of Ogre-render window. 
-         */
-
-        void SetParentWindowSize(const QSize& size);
+        /// @return The size of the main render window in which all the 2D composited windows lie.
         QSize GetParentWindowSize() const { return parentWindowSize_;}
 
-
-        /**
-         * Removes canvas from internal list. 
-         * @param id is a canvas id. 
-         */
+        /** Removes the canvas with the given ID from the internal list of canvases. This will cause a
+            destruction of the UICanvas if the refcount drops to zero. Make sure that you do not
+            keep a shared_ptr to a canvas that has already been removed, but only store weak_ptrs to
+            be able to check when a canvas has died. */
         void RemoveCanvas(const QString& id);
 
-        /**
-         * Returns information about that should OIS keyboard to be in buffered state or not. 
-         * @return true if keyboard should set to bufferd false if not.
-         */
-        bool IsKeyboardFocus() const { return keyboard_buffered_; }
+        /// @return True if UIController expects that the OIS keyboard system should now be in buffered mode.
+        bool IsKeyboardFocus() const { return keyboardFocusCanvas != 0; }
 
-
-        /**
-         * Updates mouse cursor to correct state. Returns current shape of mouse cursor.
-         * @param x is x-axis coordinate of cursor position in render window coordinate system.
-         * @param y is y-axis coordiante of cursor position in render window coordinate system.
-         * @param index is index to canvas which is below of mouse cursor.
-         */
-
-        Qt::CursorShape UpdateMouseCursor(int x, int y, int index = -1);
-
-        /**
-         * Returns a canvas from a given point. 
-         * @param x is a x-coordinate of canvas. 
-         * @param y is a y-coordinate of canvas. 
-         */
-        
-        UICanvas* GetCanvasAt(int x, int y);
+        /** Checks if the given canvas contains the given point.
+            @param point An (x,y) pair in main render window coordinates.
+            @return True if the given point is inside the surface area of the given canvas. */
+        bool Contains(const UICanvas &canvas, const QPoint &point) const;
 		
+		/** @return A pointer to a canvas with the given id, or a null pointer if no canvas with that id exists.
+            Do not upcast this to a shared_ptr and then store it in a client module memory area. Always save the
+            weak_ptrs and only upcast when needed. */
+		boost::weak_ptr<QtUI::UICanvas> GetCanvasByID(const QString& id);
 
-		/**
-         * Returns a canvas with the given id.
-		 * @param id is the id of the canvas
-		 */
-		boost::shared_ptr<QtUI::UICanvas> GetCanvas(const QString& id);
+        /// @return The internal list of all canvases. Do not misuse!
+        const QList<boost::shared_ptr<UICanvas> > &GetCanvases() const { return canvases_; }
+             
+        /** Hides the given canvas, also removing all mouse and keyboard focus from it. Prefer this
+            to the canvas->Hide version. Do not pass in 0. */
+        void HideCanvas(UICanvas &canvas);
 
-        //! Returns list of canvases. Do not misuse!
-        const QList<boost::shared_ptr<UICanvas> >& GetCanvases() { return canvases_; }
-        
     public slots:
-        
-        
-
-        /** 
-         * Sets canvas to front of all canvases. 
-         * @param id is a canvas id.
-         */
-
+        /// Brings the canvas with the given id to topmost in the window drawing order.
         void SetTop(const QString& id);
-        
-        /**
-         * Sets canvas to back of all other canvases.
-         * @param id is a canvas id.
-         */
 
+        /// Pushes the canvas with the given id farthers in the window drawing order.
         void SetBack(const QString& id);
 
-    signals:
-        
-        /**
-         * Signal which is emited when Ogre render window has size has changed. 
-         * @param size is a new size of window. 
-         */
+    signals:        
+        /** This signal is emitted whenever the main render window size has changed.
+            @param size The size of the new render window, in pixels. */
         void RenderWindowSizeChanged(const QSize& size);
 
-    protected:
-        
-        /**
-         * Returns index to canvas which is on given position. 
-         * if there does not exist any it will negative index -1. 
-         * @return index of canvas if there is any it will return negative index -1
-         */
-        virtual int GetCanvas(const QPoint& point);
-    
-       
-
     private:
+        friend class QtModule;
 
-        /**
-         * Arrange canvases to so that first canvas in list has highest Z-value, meaning that it is top of everything.
-         * @note arrange is done only if some of canvases has request a arrange. 
-         */
+        /** Evaluates the given mouse movement over the 2D main window and propagates that forward to the canvases.
+            @param x The new mouse x-coordinate in the main render window, in pixels.
+            @param y The new y-coordinate. Window top size is 0 and the coordinates progress downwards.
+            @param deltaX The delta of the X coordinate in pixels since the last position of the mouse (last call to this function).
+            @param deltaY The delta of the Y coordinate. */
+        void InjectMouseMove(int x, int y, int deltaX, int deltaY);
+     
+        /** Sends a mouse left button press event to correct canvas.
+            @param x The x-coordinate in the main render window where the LMB click occurred.
+            @param y The y-coordinate.
+            @note UIController expects that a corresponding mouse release message will be sent afterwards. */
+        void InjectMousePress(int x, int y);
+    
+        /** Sends a mouse release event to correct canvas. 
+            @param x The x-coordinate in the main render window where the mouse was when the LMB was released.
+            @param y The y-coordinate. */
+        void InjectMouseRelease(int x, int y);
+
+        /** Sends a mouse double click event to correct canvas. 
+            @param x The x-coordinate in the main render window where the double click occurred.
+            @param y The y-coordinate.
+            For the double click, there is no corresponding mouse release message that needs to be sent. */
+        void InjectDoubleClick(int x, int y);
+
+        /** Sends a key-press event to the canvas that currently has the active keyboard focus.
+            @param text The textual representation of the key that was pressed.
+            @param keyCode A Qt key code corresponding to that same key.
+            @param modifier Denotes whether there were any keyboard modifiers down (Alt, Shift, Ctrl, Win).
+            @note UIController expects that a corresponding key-release event is sent afterwards. */
+        void InjectKeyPressed(const QString& text, Qt::Key keyCode = Qt::Key_unknown, const Qt::KeyboardModifiers& modifier = Qt::NoModifier);
+
+        /** Sends a key-release event to the canvas that received the previous key-press event.
+            @param text The textual representation of the key that was pressed.
+            @param keyCode A Qt key code corresponding to that same key.
+            @param modifier Denotes whether there were any keyboard modifiers down (Alt, Shift, Ctrl, Win). */
+        void InjectKeyReleased(const QString& text, Qt::Key keyCode = Qt::Key_unknown , const Qt::KeyboardModifiers& modifier = Qt::NoModifier);
+      
+        /** Call to specify the new size of the main render window into which the canvases are composited.
+            @param size The new size of the main render window, in pixels. */
+        void SetParentWindowSize(const QSize& size);
+
+        /** Runs the render logic of all canvases and manages other time-dependent animation related logic. 
+            \todo Pass in frame deltatime to be able to properly compute the animations. */
+        void Update();
+
+        /** Sets the given canvas to receive the keyboard focus. If this focus is a result of a mouse click,
+            pass in the click position (x,y) in main render window coordinates to have a widget in the canvas
+            receive the keyboard focus as well (instead of just the canvas having it). */
+        void ActivateKeyboardFocus(UICanvas &canvas, int x, int y);
+
+        /** Refreshes the mouse cursor to show what the widget below the mouse cursor requests.
+            @param canvas The canvas that currently has the mouse hover active, i.e. the canvas below the 
+                mouse cursor, or 0 if there is no canvas below the mouse.
+            @param x The mouse x-coordinate in the the main render window.
+            @param y The y-coordinate. */
+        void UpdateMouseCursor(UICanvas *canvas, int x, int y);
+
+        /** @return The topmost visible UICanvas that contains the given point, which is passed in main 
+            render window coordinates, or 0 if no such canvas exists. */
+        UICanvas *GetCanvasAt(int x, int y);
+
+        /** @return The index (to the internal list of canvases) of the topmost visible canvas that 
+            contains the given point in render window coordinates, or -1 if no such canvas exists. */
+        int GetCanvasIndexAt(const QPoint& point);
+
+        /** @return The index (to the internal list of canvases) of the canvas with the given ID,
+            or -1 if no such canvas exists. */
+        int GetCanvasIndexByID(const QString& id) const;
+
+        /** Recomputes the Z-values used to render the Ogre overlays, and maintains the invariant that
+            always-on-top canvases are first on the list. Calling Arrange() invalidates all existing
+            canvas indices received by calls to functions GetCanvasIndexAt and GetCanvasIndexByID. */
         void Arrange();
 
-        /**
-         * Searches canvas which id is given. 
-         * @param id is id of canvas which is searched.
-         */
-        int Search(const QString& id) const;
+        /** Sends a mouse move event to the given canvas.
+            @param x The mouse x-coordinate in the main render window coordinates. 
+            @param y The y-coordinate. */
+        void SendMouseMoveEvent(UICanvas &canvas, int x, int y);
 
-        /**
-         * Checks that does given canvas contain given point. 
-         * @param canvas (assumed rectangle geometry).
-         * @param point is point which we want to check.
-         */
-        bool Contains(const boost::shared_ptr<UICanvas>& canvas, const QPoint& point) const;
-
-
-        /**
-         * Helper function which sends a mouse move event to given canvas. 
-         * @param index is index to canvas. 
-         * @param x is x-axis coordinate in render window coordinate frame. 
-         * @param y is y-axis coordinate in render window coordinate frame.
-         */
-
-        void SendMouseMoveEvent(int index, int x, int y);
+        /** Sends a mouse left button press event to the given canvas.
+            @param x The mouse x-coordinate in the main render window coordinates where the press occurred.
+            @param y The y-coordinate. */
+        void SendMouseLeftButtonPressEvent(UICanvas &canvas, int x, int y);
 
         enum DeactivationType { MouseMove, MousePress, MouseRelease, All };
-        void Deactivate(const QString& id, DeactivationType type = All, int index = -1);
 
-        // Assumed to be in that kind order that top (active) canvas is first.
+        /** Sends the necessary mouse release and/or move messages to clear any hover activation visuals
+            from the given canvas. */
+        void Deactivate(UICanvas &canvas, DeactivationType type = All);
+
+        /// Defines the possible mouse left button actions that might be going on.
+        enum MouseAction
+        {
+            /// There is no current mouse action being performed.
+            MouseActionNone,
+
+            /// The user is dragging a canvas from its title bar.
+            MouseActionCanvasMove,  
+
+            // The user is resizing the canvas from some direction.
+            MouseActionCanvasResizeTopLeft, 
+            MouseActionCanvasResizeTop,
+            MouseActionCanvasResizeTopRight,
+            MouseActionCanvasResizeLeft,
+            MouseActionCanvasResizeRight,
+            MouseActionCanvasResizeBottomLeft,
+            MouseActionCanvasResizeBottom,
+            MouseActionCanvasResizeBottomRight,
+
+            /// The user is performing a mouse action inside the canvas - the action is just passed on to Qt.
+            MouseActionCanvasInternal,
+        };
+
+        /** This function examines the given coordinates over the passed canvas and returns whether the coordinates
+            lie in some resize or drag hotspot area.
+            @return An element of the MouseAction enum that specifies which of the hotpot areas the given coordinates
+                satisfy, or MouseActionNone if the coordinates do not lie in any hotspot. */
+        MouseAction DetectCanvasHotSpot(UICanvas &canvas, int x, int y);
+
+        /** The list of canvases owned by this UIController. The topmost canvas (in the drawing order) is stored
+            first, and the bottommost is at the back. */
         QList<boost::shared_ptr<UICanvas> > canvases_;
         
-        // Is mouse currently down?
-        bool mouseDown_;
-       
-        // Last location of mouse press down.
-        QPoint mousePress_;
+        /// The location on the QGraphicsScene of the canvas where mouse LMB was last time pressed.
+        /// @note that This is not in main window render coordinates.
+        QPoint lastMousePressPoint_;
 
-        // Is Z-order changed? Should it arrange again.
-        //bool arrange_;
+        /// Specifies what kind of mouse action is currently being performed.
+        MouseAction currentMouseAction;
 
-        // Render window size.
+        /** If currentMouseAction != None, specifies which UICanvas is the target canvas for that action.
+            There may only be one canvas that is the recipient of a mouse action at any time, and this canvas
+            steals all mouse input until the action is finished (mouse is released). This is 0 when there is 
+            no mouse action going on. */
+        UICanvas *mouseActionCanvas;
+
+        /** Specifies the canvas that was mouse-hover active during the previous frame. This is stored here
+            so that we can properly track when the currently hover-active canvas changes and any possible old
+            visuals need to be cleared from the old canvas. This is 0 when the mouse is not on top of any canvas. */
+        UICanvas *mouseHoverCanvas;
+
+        /// This is the canvas that currently has all keyboard focus. If 0, no canvas has the keyboard focus.
+        UICanvas *keyboardFocusCanvas;
+
+        /** The size of the main render window. Needed to be able to compute proper normalized [0,1]-sizes and coordinates
+            for positioning Ogre overlays. */ 
         QSize parentWindowSize_;
 
-        // Last mouse position.
-        QPoint lastPosition_;
+        /// Tracks time elapsed since LMB presses - used to detect double click events.
+        /// \todo Move away from here to OIS.
+        QTime doubleClickTimer_;
 
-        // Timer which is used to detect double click events. 
-        QTime timer_;
-
-        // Time which defines how soon two mouse press down events are assumed as double click.  
+        /// Time which defines how soon two mouse press down events are assumed as double click.
+        /// \todo Move away from here to OIS.
         int responseTimeLimit_;
 
-        // Is some key hold down. 
+        /// Is some key hold down. 
+        /// \todo Move away from here to OIS.
         bool keyDown_;
 
-        // Last key event. 
-        QKeyEvent lastKeyEvent_;
-
+        /// \todo Move away from here to OIS.
         QTime keyTimer_;
         
-        // Time when key press down event is though as a multiple key press event. 
+        /// Time when key press down event is though as a multiple key press event. 
+        /// \todo Move away from here to OIS.
         int multipleKeyLimit_;
 
-        // Current pressed keys
+        /// Current pressed keys
+        /// \todo Move away from here to OIS.
         QList<QPair<Qt::Key, QString> > pressedKeys_;
-
-        // Should keyboard to put buffered state?
-        bool keyboard_buffered_;
-
-        // Currently (or last) active canvas id.
-        QString active_canvas_;
-
-        // Current mouse cursor shape. (note is not always valid!)
-        Qt::CursorShape mouseCursorShape_;
-
-        bool resize_;
-
-        bool drag_;
     };
-
-
 }
 
 #endif 

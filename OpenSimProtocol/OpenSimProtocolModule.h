@@ -111,7 +111,7 @@ namespace OpenSimProtocol
         bool CreateUDPConnection(const char *address, int port);
 
         /// Disconnects from a reX server.
-           void DisconnectFromRexServer();
+        void DisconnectFromRexServer();
 
         /// Dumps network message to the console.
         void DumpNetworkMessage(NetMsgID id, NetInMessage *msg);

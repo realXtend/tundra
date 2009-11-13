@@ -5,7 +5,7 @@
 
 namespace Foundation
 {
-    class ComponentInterfaceAbstract;
+    class ComponentInterface;
 
     //! A class implements this interface to provide factory functionality for generating one type of entity-components.
     /*! Each EC has its own factory for creating the component.
@@ -18,8 +18,8 @@ namespace Foundation
         ComponentFactoryInterface() {}
         virtual ~ComponentFactoryInterface() {}
 
-        virtual boost::shared_ptr<ComponentInterfaceAbstract> operator()() = 0;
-        virtual boost::shared_ptr<ComponentInterfaceAbstract> operator()(const boost::shared_ptr<ComponentInterfaceAbstract> &) = 0;
+        virtual boost::shared_ptr<ComponentInterface> operator()() = 0;
+        virtual boost::shared_ptr<ComponentInterface> operator()(const boost::shared_ptr<ComponentInterface> &) = 0;
     };
 }
 
