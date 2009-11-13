@@ -26,6 +26,7 @@ This is by far the easiest option. Use this option when you just need to get Naa
 # Set the following Environment variables. If you dont know how to accomplish this refer to this page  http://wiki.realxtend.org/index.php/Building_Naali_from_source_trunk#Setting_Windows_environment_variables_for_cmake
 #* NAALI_DEP_PATH=C:\Naali_deps\bin\win32\build_deps
 #* QTDIR=C:\Qt\build
+#* QMAKESPEC=win32-msvc2008
 # After getting Qt, continue from Building the Viewer below.
 
 === Preparing the dependency repository from source ===
