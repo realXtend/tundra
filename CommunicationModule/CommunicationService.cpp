@@ -11,7 +11,7 @@ namespace Communication
 		if (framework_ == NULL)
 			throw Core::Exception("Cannot create communication service object, framework pointer is missing."); 
 
-        event_category_opensimnetworkin_ = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
+        event_category_networkinin_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
         event_category_networkstate_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
 	}
 
@@ -112,7 +112,7 @@ namespace Communication
 			NetworkEventHandlerInterface* handler = dynamic_cast<NetworkEventHandlerInterface*>( *i );
 			if ( handler )
 			{
-		        if ( category_id == event_category_opensimnetworkin_ )
+		        if ( category_id == event_category_networkinin_ )
 				{
 					bool ret = handler->HandleNetworkEvent( data );
 					if ( ret )

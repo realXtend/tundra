@@ -10,7 +10,7 @@
 #include "AbstractInventoryItem.h"
 #include "InventoryModule.h"
 #include "RexLogicModule.h"
-#include "InventorySkeleton.h"
+#include "Inventory/InventorySkeleton.h"
 #include "RexUUID.h"
 
 namespace Inventory
@@ -217,9 +217,9 @@ void OpenSimInventoryDataModel::DebugDumpInventoryFolderStructure()
 
 void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
     InventoryFolder *parent_folder,
-    OpenSimProtocol::InventoryFolderSkeleton *folder_skeleton)
+    ProtocolUtilities::InventoryFolderSkeleton *folder_skeleton)
 {
-    using namespace OpenSimProtocol;
+    using namespace ProtocolUtilities;
 
     InventoryFolder *newFolder = new InventoryFolder(STD_TO_QSTR(folder_skeleton->id.ToString()),
         STD_TO_QSTR(folder_skeleton->name), parent_folder, folder_skeleton->editable);
@@ -251,9 +251,9 @@ void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
     }
 }
 
-void OpenSimInventoryDataModel::SetupModelData(OpenSimProtocol::InventorySkeleton *inventory_skeleton)
+void OpenSimInventoryDataModel::SetupModelData(ProtocolUtilities::InventorySkeleton *inventory_skeleton)
 {
-    OpenSimProtocol::InventoryFolderSkeleton *root_skel = inventory_skeleton->GetRoot();
+    ProtocolUtilities::InventoryFolderSkeleton *root_skel = inventory_skeleton->GetRoot();
     if (!root_skel)
     {
         InventoryModule::LogError("Couldn't find inventory root folder skeleton. Can't create OpenSim inventory data model.");

@@ -12,7 +12,8 @@
 #include "EventDataInterface.h"
 #include "TextureInterface.h"
 #include "SceneManager.h"
-#include "RexLoginWindow.h"
+//#include "RexLoginWindow.h"
+#include "LoginUI.h"
 #include "AvatarControllable.h"
 #include "CameraControllable.h"
 
@@ -27,7 +28,7 @@
 #include "EC_Controllable.h"
 #include "EC_AvatarAppearance.h"
 #include "InputEvents.h"
-#include "InventoryEvents.h"
+#include "Inventory/InventoryEvents.h"
 
 // Ogre -specific
 #include "Renderer.h"
@@ -120,7 +121,7 @@ void RexLogicModule::Initialize()
     network_state_handler_ = new NetworkStateEventHandler(framework_, this);
     input_handler_ = new InputEventHandler(framework_, this);
     scene_handler_ = new SceneEventHandler(framework_, this);
-    framework_handler_ = new FrameworkEventHandler(rexserver_connection_.get());
+    framework_handler_ = new FrameworkEventHandler(rexserver_connection_.get(), framework_, this);
     avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
 
@@ -139,25 +140,8 @@ void RexLogicModule::Initialize()
 // virtual
 void RexLogicModule::PostInitialize()
 {
-    // Get the event category id's.
-    // NetworkState events.
-    Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkState");
-    if (eventcategoryid != 0)
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
-    else
-        LogError("Unable to find event category for NetworkState");
-
-    // OpenSimNetworkIn events.
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("OpenSimNetworkIn");
-    if (eventcategoryid != 0)
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
-    else
-        LogError("Unable to find event category for OpenSimNetworkIn");
-
     // Input events.
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
+    Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
     if (eventcategoryid != 0)
     {
         event_handlers_[eventcategoryid].push_back(boost::bind(
@@ -169,60 +153,103 @@ void RexLogicModule::PostInitialize()
     } else
         LogError("Unable to find event category for Input");
 
-    // Action events.
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Action");
-    if (eventcategoryid != 0)
-    {
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &AvatarControllable::HandleActionEvent, avatar_controllable_.get(), _1, _2));
-        event_handlers_[eventcategoryid].push_back(
-            boost::bind(&CameraControllable::HandleActionEvent, camera_controllable_.get(), _1, _2));
-    } else
-        LogError("Unable to find event category for Action");
+	// Action events.
+	eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Action");
+	if (eventcategoryid != 0)
+	{
+		event_handlers_[eventcategoryid].push_back(boost::bind(
+			&AvatarControllable::HandleActionEvent, avatar_controllable_.get(), _1, _2));
+		event_handlers_[eventcategoryid].push_back(
+			boost::bind(&CameraControllable::HandleActionEvent, camera_controllable_.get(), _1, _2));
+	} else
+		LogError("Unable to find event category for Action");
 
-    // Scene events.
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Scene");
-    if (eventcategoryid != 0)
-    {
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &SceneEventHandler::HandleSceneEvent, scene_handler_, _1, _2));
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &AvatarControllable::HandleSceneEvent, avatar_controllable_.get(), _1, _2));
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &CameraControllable::HandleSceneEvent, camera_controllable_.get(), _1, _2));
-    } else
-        LogError("Unable to find event category for Scene");
+	// Scene events.
+	eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Scene");
+	if (eventcategoryid != 0)
+	{
+		event_handlers_[eventcategoryid].push_back(boost::bind(
+			&SceneEventHandler::HandleSceneEvent, scene_handler_, _1, _2));
+		event_handlers_[eventcategoryid].push_back(boost::bind(
+			&AvatarControllable::HandleSceneEvent, avatar_controllable_.get(), _1, _2));
+		event_handlers_[eventcategoryid].push_back(boost::bind(
+			&CameraControllable::HandleSceneEvent, camera_controllable_.get(), _1, _2));
+	} else
+		LogError("Unable to find event category for Scene");
 
-    // Resource events
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Resource");
+	// Resource events
+	eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Resource");
+	if (eventcategoryid != 0)
+		event_handlers_[eventcategoryid].push_back(
+			boost::bind(&RexLogicModule::HandleResourceEvent, this, _1, _2));
+	else
+		LogError("Unable to find event category for Resource");
+
+	// Framework events
+	eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Framework");
+	if (eventcategoryid != 0)
+		event_handlers_[eventcategoryid].push_back(boost::bind(
+			&FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
+	else
+		LogError("Unable to find event category for Framework");
+
+	boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>
+		(Foundation::Service::ST_Renderer).lock();
+	if (renderer)
+	{
+		Ogre::Camera *cam = renderer->GetCurrentCamera();
+		cam->setPosition(-10, -10, -10);
+		cam->lookAt(0,0,0);
+	}
+
+	send_input_state_ = true;
+
+	// Create the login window.
+	//loginWindow_ = new RexLoginWindow(framework_, this);
+	loginUI_ = new Login(framework_, this);
+	connectionState_ = ProtocolUtilities::Connection::STATE_DISCONNECTED;
+}
+
+void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
+{
+    // NetworkState events
+	LogicEventHandlerMap::iterator i;
+    Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkState");
     if (eventcategoryid != 0)
-        event_handlers_[eventcategoryid].push_back(
-            boost::bind(&RexLogicModule::HandleResourceEvent, this, _1, _2));
+	{
+		i = event_handlers_.find(eventcategoryid);
+		if (i == event_handlers_.end())
+		{
+			event_handlers_[eventcategoryid].push_back(boost::bind(
+				&NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
+			LogInfo("System " + Name() + " subscribed to network events [NetworkState] and added to LogicEventHandlerMap");
+		}
+		else
+		{
+			LogInfo("System " + Name() + " had already added [NetworkState] event to LogicEventHandlerMap");
+		}
+	}
     else
-        LogError("Unable to find event category for Resource");
+        LogError("Unable to find event category for NetworkState");
 
-    // Framework events
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Framework");
+    // NetworkIn events
+    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
     if (eventcategoryid != 0)
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
+	{
+		i = event_handlers_.find(eventcategoryid);
+		if (i == event_handlers_.end())
+		{
+			event_handlers_[eventcategoryid].push_back(boost::bind(
+				&NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
+			LogInfo("System " + Name() + " subscribed to network events [NetworkIn]");
+		}
+		else
+		{
+			LogInfo("System " + Name() + " had already added [NetworkIn] event to LogicEventHandlerMap");
+		}
+	}
     else
-        LogError("Unable to find event category for Framework");
-
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>
-        (Foundation::Service::ST_Renderer).lock();
-    if (renderer)
-    {
-        Ogre::Camera *cam = renderer->GetCurrentCamera();
-        cam->setPosition(-10, -10, -10);
-        cam->lookAt(0,0,0);
-    }
-
-    send_input_state_ = true;
-
-    // Create the login window.
-    loginWindow_ = new RexLoginWindow(framework_, this);
-    connectionState_ = OpenSimProtocol::Connection::STATE_DISCONNECTED;
+        LogError("Unable to find event category for NetworkIn");
 }
 
 void RexLogicModule::DeleteScene(const std::string &name)
@@ -265,7 +292,8 @@ void RexLogicModule::Uninitialize()
     SAFE_DELETE (network_state_handler_);
     SAFE_DELETE (framework_handler_);
 
-    SAFE_DELETE(loginWindow_);
+	//SAFE_DELETE(loginWindow_);
+	SAFE_DELETE(loginUI_);
 
     LogInfo("Module " + Name() + " uninitialized.");
 }
@@ -311,18 +339,18 @@ void RexLogicModule::Update(Core::f64 frametime)
         // update avatar stuff (download requests etc.)
         avatar_->Update(frametime);
 
-        // Poll the connection state and update the info to the UI.
-        /// \todo Move this to the Login UI class.
-        OpenSimProtocol::Connection::State cur_state = rexserver_connection_->GetConnectionState();
-        if (cur_state != connectionState_)
-        {
-            loginWindow_->UpdateConnectionStateToUI(cur_state);
-            connectionState_ = cur_state;
-        }
+            // Poll the connection state and update the info to the UI.
+            /// \todo Move this to the Login UI class.
+            ProtocolUtilities::Connection::State cur_state = rexserver_connection_->GetConnectionState();
+            if (cur_state != connectionState_)
+            {
+                //loginWindow_->UpdateConnectionStateToUI(cur_state);
+                connectionState_ = cur_state;
+            }
 
         /// \todo Move this to OpenSimProtocolModule.
         if (!rexserver_connection_->IsConnected() &&
-            rexserver_connection_->GetConnectionState() == OpenSimProtocol::Connection::STATE_INIT_UDP)
+            rexserver_connection_->GetConnectionState() == ProtocolUtilities::Connection::STATE_INIT_UDP)
             rexserver_connection_->CreateUDPConnection();
 
         if (send_input_state_)
@@ -474,15 +502,17 @@ Console::CommandResult RexLogicModule::ConsoleLogin(const Core::StringVector &pa
     if (params.size() > 2)
         server = params[2];
 
-    bool success = rexserver_connection_->ConnectToServer(name, passwd, server);
+	//! REMOVE
+    //bool success = rexserver_connection_->ConnectToServer(name, passwd, server);
 
     // overwrite the password so it won't stay in-memory
-    passwd.replace(0, passwd.size(), passwd.size(), ' ');
+    //passwd.replace(0, passwd.size(), passwd.size(), ' ');
 
-    if (success)
-        return Console::ResultSuccess();
-    else
-        return Console::ResultFailure("Failed to connect to server.");
+    //if (success)
+    //    return Console::ResultSuccess();
+    //else
+    //    return Console::ResultFailure("Failed to connect to server.");
+	return Console::ResultFailure("Cannot login from console no more");
 }
 
 Console::CommandResult RexLogicModule::ConsoleLogout(const Core::StringVector &params)

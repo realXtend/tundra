@@ -42,6 +42,7 @@ namespace Inventory
         void Update(Core::f64 frametime);
         bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id,
             Foundation::EventDataInterface* data);
+        virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
 
         MODULE_LOGGING_FUNCTIONS
 
@@ -75,6 +76,9 @@ namespace Inventory
 
         /// Network state event category.
         Core::event_category_id_t networkStateEventCategory_;
+
+        /// Framework event category
+        Core::event_category_id_t frameworkEventCategory_;
 
         /// Module GUI widget
         InventoryWindow *inventoryWindow_;

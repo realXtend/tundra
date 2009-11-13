@@ -1,5 +1,4 @@
 #include <RexLogicModule.h> 
-#include <OpenSimProtocolModule.h>
 #include <QTime>
 #include "ChatSession.h"
 

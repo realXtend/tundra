@@ -10,7 +10,7 @@
 #include "RexLogicModule.h"
 #include "InventoryWindow.h"
 #include "NetworkEvents.h"
-#include "InventoryEvents.h"
+#include "Inventory/InventoryEvents.h"
 #include "AssetUploader.h"
 #include "QtUtils.h"
 
@@ -19,7 +19,7 @@ namespace Inventory
 
 InventoryModule::InventoryModule() :
     ModuleInterfaceImpl(Foundation::Module::MT_Inventory),
-    networkStateEventCategory_(0), inventoryWindow_(0)
+    networkStateEventCategory_(0), frameworkEventCategory_(0), inventoryWindow_(0)
 {
 }
 
@@ -45,7 +45,7 @@ void InventoryModule::Initialize()
 
     rexLogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(
         Foundation::Module::MT_WorldLogic).lock().get());
-
+  
     boost::shared_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>
         (Foundation::Service::ST_ConsoleCommand).lock();
     if (console)
@@ -72,9 +72,10 @@ void InventoryModule::Initialize()
 
 void InventoryModule::PostInitialize()
 {
-    networkStateEventCategory_ = eventManager_->QueryEventCategory("NetworkState");
-    if (networkStateEventCategory_ == 0)
-        LogError("Failed to query \"NetworkState\" event category");
+    frameworkEventCategory_ = eventManager_->QueryEventCategory("Framework");
+    if (frameworkEventCategory_ == 0)
+        LogError("Failed to query \"Framework\" event category");
+
 }
 
 void InventoryModule::Uninitialize()
@@ -82,6 +83,15 @@ void InventoryModule::Uninitialize()
     assetUploader_.reset();
     SAFE_DELETE(inventoryWindow_);
     LogInfo("System " + Name() + " uninitialized.");
+}
+
+void InventoryModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
+{
+    networkStateEventCategory_ = eventManager_->QueryEventCategory("NetworkState");
+    if (networkStateEventCategory_ == 0)
+        LogError("Failed to query \"NetworkState\" event category");
+    else
+        LogInfo("System " + Name() + " subscribed to [NetworkIn]");
 }
 
 void InventoryModule::Update(Core::f64 frametime)
@@ -93,21 +103,21 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
 {
     if (category_id == networkStateEventCategory_)
     {
-        using namespace OpenSimProtocol;
-
-        if (event_id == OpenSimProtocol::Events::EVENT_SERVER_CONNECTED)
+        if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
         {
-            AuthenticationEventData *auth_data = dynamic_cast<AuthenticationEventData *>(data);
+            ProtocolUtilities::AuthenticationEventData *auth_data = dynamic_cast<ProtocolUtilities::AuthenticationEventData *>(data);
             if (!auth_data)
                 return false;
 
             switch(auth_data->type)
             {
-            case AT_Taiga:
-                inventoryWindow_->InitWebDavInventoryTreeModel(auth_data->identityUrl, auth_data->hostUrl);
+            case ProtocolUtilities::AT_Taiga:
+                // Check if python module is loaded and has taken care of PythonQt::init()
+                if (framework_->GetModuleManager()->HasModule(Foundation::Module::MT_PythonScript))
+                    inventoryWindow_->InitWebDavInventoryTreeModel(auth_data->identityUrl, auth_data->hostUrl);
                 break;
-            case AT_OpenSim:
-            case AT_RealXtend:
+            case ProtocolUtilities::AT_OpenSim:
+            case ProtocolUtilities::AT_RealXtend:
                 inventoryWindow_->InitOpenSimInventoryTreeModel(this);
                 break;
             default:
@@ -117,7 +127,7 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
             return false;
         }
 
-        if (event_id == OpenSimProtocol::Events::EVENT_SERVER_DISCONNECTED)
+        if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
         {
             if (inventoryWindow_)
             {
@@ -140,6 +150,14 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
             inventoryWindow_->HandleInventoryDescendent(item_data);
         }
 
+        return false;
+    }
+
+    if (category_id == frameworkEventCategory_ && event_id == Foundation::NETWORKING_REGISTERED)
+    {
+        Foundation::NetworkingRegisteredEvent *event_data = dynamic_cast<Foundation::NetworkingRegisteredEvent *>(data);
+        if (event_data)
+            SubscribeToNetworkEvents(event_data->currentProtocolModule);
         return false;
     }
 

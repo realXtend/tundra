@@ -15,9 +15,9 @@ use_package (CURL)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 use_framework_modules (Core Foundation Interfaces)
-use_modules (RexCommon OpenSimProtocol HttpUtilities)
+use_modules (RexCommon ProtocolUtilities HttpUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 
-link_modules (OpenSimProtocolModule RexCommon HttpUtilities)
+link_modules (RexCommon ProtocolUtilities HttpUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 link_package (BOOST)
 link_package (POCO)
 link_package (CURL)

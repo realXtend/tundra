@@ -6,7 +6,7 @@
 #ifndef RexLogic_Terrain_h
 #define RexLogic_Terrain_h 
 
-#include "../OpenSimProtocol/BitStream.h"
+#include "BitStream.h"
 
 namespace RexLogic
 {
@@ -50,7 +50,7 @@ struct DecodedTerrainPatch
 /// @param patches [out] The resulting patch data will be output here.
 /// @param bits [in] The LayerData packet, of which the Patch Group Header has already been read.
 /// @param groupHeader 
-void DecompressLand(std::vector<DecodedTerrainPatch> &patches, OpenSimProtocol::BitStream &bits, const TerrainPatchGroupHeader &groupHeader);
+void DecompressLand(std::vector<DecodedTerrainPatch> &patches, ProtocolUtilities::BitStream &bits, const TerrainPatchGroupHeader &groupHeader);
 
 }
 

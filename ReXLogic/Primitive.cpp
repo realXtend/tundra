@@ -85,9 +85,9 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(Core::entity_id_t entityid)
     return entity;
 }
 
-bool Primitive::HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data)
+bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data)
 {
-    NetInMessage *msg = data->message;
+    ProtocolUtilities::NetInMessage *msg = data->message;
 
     msg->ResetReading();
     uint64_t regionhandle = msg->ReadU64();
@@ -244,13 +244,13 @@ void Primitive::HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes)
     assert(i <= 60);
 }
 
-bool Primitive::HandleRexGM_RexMediaUrl(OpenSimProtocol::NetworkEventInboundData* data)
+bool Primitive::HandleRexGM_RexMediaUrl(ProtocolUtilities::NetworkEventInboundData* data)
 {
     /// \todo tucofixme
     return false;
 }
 
-bool Primitive::HandleRexGM_RexPrimData(OpenSimProtocol::NetworkEventInboundData* data)
+bool Primitive::HandleRexGM_RexPrimData(ProtocolUtilities::NetworkEventInboundData* data)
 {
     std::vector<Core::u8> fulldata;
     RexUUID primuuid;
@@ -532,9 +532,9 @@ bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
     return false;
 }
 
-bool Primitive::HandleOSNE_ObjectProperties(OpenSimProtocol::NetworkEventInboundData* data)
+bool Primitive::HandleOSNE_ObjectProperties(ProtocolUtilities::NetworkEventInboundData* data)
 {
-    NetInMessage *msg = data->message;
+    ProtocolUtilities::NetInMessage *msg = data->message;
     msg->ResetReading();
     
     RexUUID full_id = msg->ReadUUID();

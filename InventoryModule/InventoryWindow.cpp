@@ -5,11 +5,10 @@
 #include "InventoryModule.h"
 #include "OpenSimInventoryDataModel.h"
 #include "WebdavInventoryDataModel.h"
-#include "PythonScriptModule.h"
 #include "InventoryItemModel.h"
 #include "QtModule.h"
 #include "RexLogicModule.h"
-#include "InventoryEvents.h"
+#include "Inventory/InventoryEvents.h"
 #include "QtUtils.h"
 
 #include <QtUiTools>

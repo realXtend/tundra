@@ -1,0 +1,4 @@
+<config>
+	<entry>ProtocolModuleOpenSim</entry>
+	<dependency>SupportModules</dependency>
+</config>

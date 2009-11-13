@@ -3,6 +3,12 @@
 #ifndef incl_Interfaces_AssetProviderInterface_h
 #define incl_Interfaces_AssetProviderInterface_h
 
+namespace ProtocolUtilities
+{
+	class ProtocolModuleInterface;
+	class NetInMessage;
+}
+
 namespace Foundation
 {
     class AssetProviderInterface;
@@ -75,6 +81,9 @@ namespace Foundation
          */
         virtual AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received) = 0;   
         
+		//! Sets current protocolmodule
+		virtual void SetCurrentProtocolModule(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule) {};
+
         //! Performs time-based update of asset provider, to for example handle timeouts
         /*! The asset service will call this periodically for all registered asset providers, so
             it does not need to be called manually.

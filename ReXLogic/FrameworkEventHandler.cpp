@@ -3,6 +3,9 @@
 #include "StableHeaders.h"
 #include "FrameworkEventHandler.h"
 #include "RexServerConnection.h"
+#include "LoginHandler.h"
+
+#include <QMap>
 
 namespace RexLogic
 {
@@ -19,21 +22,33 @@ namespace RexLogic
                 options.count("server") &&
                 options.count("login"))
             {
-                const std::string &user = options["user"].as<std::string>();
-                const std::string &passwd = options["passwd"].as<std::string>();
-                const std::string &server = options["server"].as<std::string>();
+                QMap<QString, QString> map;
+			    map["WorldAddress"] = QString(options["server"].as<std::string>().c_str());
+			    map["Username"] = QString(options["user"].as<std::string>().c_str());
+			    map["Password"] = QString(options["passwd"].as<std::string>().c_str());
 
-                std::string auth_server;
-                std::string auth_login;
+                //std::string auth_login; // Whats this for??
                 if (options.count("auth_server") &&
                     options.count("auth_login"))
                 {
-                    auth_server = options["auth_server"].as<std::string>();
-                    auth_login = options["auth_login"].as<std::string>();
+                    map["AuthenticationAddress"] = QString(options["auth_server"].as<std::string>().c_str());
+                    //auth_login = options["auth_login"].as<std::string>();
                 }
 
-                bool succesful = connection_->ConnectToServer(user, passwd, server, auth_server, auth_login);
+                OpenSimLoginHandler *loginHandler = new OpenSimLoginHandler(framework_, rexLogic_);
+                if (options.count("auth_server"))
+                    loginHandler->ProcessRealXtendLogin(map);
+                else
+                    loginHandler->ProcessOpenSimLogin(map);
+
+                //bool succesful = connection_->ConnectToServer(user, passwd, server, auth_server, auth_login);
             }
+        }
+        else if (event_id == Foundation::NETWORKING_REGISTERED)
+        {
+            Foundation::NetworkingRegisteredEvent *event_data = dynamic_cast<Foundation::NetworkingRegisteredEvent *>(data);
+            if (event_data)
+                rexLogic_->SubscribeToNetworkEvents(event_data->currentProtocolModule);
         }
 
         return false;

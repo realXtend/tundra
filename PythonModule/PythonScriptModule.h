@@ -74,6 +74,9 @@ namespace PythonScript
         Console::CommandResult ConsoleRunString(const Core::StringVector &params);
         Console::CommandResult ConsoleRunFile(const Core::StringVector &params);
         Console::CommandResult ConsoleReset(const Core::StringVector &params);
+
+        // Subscribing to network categories
+        void SubscribeToNetworkEvents();
         
         MODULE_LOGGING_FUNCTIONS
 
@@ -89,6 +92,7 @@ namespace PythonScript
         Core::event_category_id_t inboundCategoryID_;
         Core::event_category_id_t inputeventcategoryid;
         Core::event_category_id_t networkstate_category_id;
+        Core::event_category_id_t framework_category_id;
         
     private:
         
@@ -119,6 +123,9 @@ namespace PythonScript
         
         bool mouse_left_button_down_;
         bool mouse_right_button_down_;
+
+        // EventManager to member variable to be accessed from SubscribeNetworkEvents()
+        Foundation::EventManagerPtr em_;
 
     };
 

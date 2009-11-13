@@ -3,13 +3,18 @@
 
 #include <StableHeaders.h>
 #include <ModuleInterface.h>
-#include <OpenSimProtocolModule.h>
+#include <RexLogicModule.h>
 
 #include "CommunicationModuleApi.h"
 #include "CommunicationService.h"
 #include "CommunicationUI/QtGUI.h"
 #include "CommunicationUI/OpenSimChat.h"
 #include "Test.h"
+
+namespace ProtocolUtilities
+{
+    class ProtocolModuleInterface;
+}
 
 namespace Communication
 {
@@ -31,11 +36,12 @@ namespace Communication
 		void Unload();
 		void Initialize();
 		void PostInitialize();
+        void RuntimeInitialize();
 		void Uninitialize();
 
 		void Update(Core::f64 frametime);
-
-		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communication;
+		
+        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communication;
 
 	    bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
@@ -52,8 +58,9 @@ namespace Communication
 		CommunicationServiceInterface* communication_service_;
 		CommunicationTest::Test* test_;
 
-		// Needed for catch 'connected to server' event
+		// Event category IDs
 		Core::event_category_id_t event_category_networkstate_;
+        Core::event_category_id_t event_category_framework_;
 	};
 }
 

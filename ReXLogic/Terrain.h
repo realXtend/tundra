@@ -28,7 +28,7 @@ public:
 
     //! Called to handle an OpenSim LayerData packet.
     //! Decodes terrain data from a LayerData packet and generates terrain patches accordingly.
-    bool HandleOSNE_LayerData(OpenSimProtocol::NetworkEventInboundData* data);
+    bool HandleOSNE_LayerData(ProtocolUtilities::NetworkEventInboundData* data);
 
     //! The OpenSim terrain has a hardcoded size of four textures. When/if we lift that, change the amount here or remove altogether if dynamic.
     static const int num_terrain_textures = 4;

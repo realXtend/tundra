@@ -480,7 +480,12 @@ Foundation::ComponentPtr QtModule::CreateEC_UICanvasToEntity(Scene::Entity* enti
     uicanvas.SetEntity(entity);
     
     return uicanvasptr;    
-} 
+}
+
+void QtModule::SetShowControlBar(bool show)
+{
+    canvasManager_->SetVisible(show);
+}
        
 }
 

@@ -6,11 +6,6 @@
 #include "UDPAssetTransfer.h"
 #include "AssetProviderInterface.h"
 
-namespace OpensimProtocol
-{
-    class OpenSimProtocolModule;
-}
-
 namespace Asset
 {    
     //! UDP asset provider
@@ -66,6 +61,8 @@ namespace Asset
          */
         virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received);   
         
+		virtual void SetCurrentProtocolModule(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule);
+
         //! Performs time-based update 
         /*! \param frametime Seconds since last frame
          */
@@ -91,19 +88,19 @@ namespace Asset
         //! Sends pending UDP asset requests
         /*! \param net Connected network interface
          */
-        void SendPendingRequests(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net);
+        void SendPendingRequests(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net);
 
         //! Handles texture timeouts
         /*! \param net Connected network interface
             \param frametime Time since last frame
          */
-        void HandleTextureTimeouts(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net, Core::f64 frametime);
+        void HandleTextureTimeouts(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, Core::f64 frametime);
 
         //! Handles other asset timeouts
         /*! \param net Connected network interface
             \param frametime Time since last frame
          */
-        void HandleAssetTimeouts(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net, Core::f64 frametime);
+        void HandleAssetTimeouts(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, Core::f64 frametime);
         
         //! Makes current transfers into pending requests & clears transfers.
         /*! Called when connection lost.
@@ -116,32 +113,32 @@ namespace Asset
         //! Handles texture header message
         /*! \param msg Message
          */
-        void HandleTextureHeader(NetInMessage* msg);
+        void HandleTextureHeader(ProtocolUtilities::NetInMessage* msg);
         
         //! Handles texture data message
         /*! \param msg Message
          */
-        void HandleTextureData(NetInMessage* msg);
+        void HandleTextureData(ProtocolUtilities::NetInMessage* msg);
         
         //! Handles texture transfer abort message
         /*! \param msg Message
          */
-        void HandleTextureCancel(NetInMessage* msg);
+        void HandleTextureCancel(ProtocolUtilities::NetInMessage* msg);
         
         //! Handles other asset transfer header message
         /*! \param msg Message
          */
-        void HandleAssetHeader(NetInMessage* msg);
+        void HandleAssetHeader(ProtocolUtilities::NetInMessage* msg);
         
         //! Handles other asset transfer data message
         /*! \param msg Message
          */
-        void HandleAssetData(NetInMessage* msg);
+        void HandleAssetData(ProtocolUtilities::NetInMessage* msg);
         
         //! Handles other asset transfer abort message
         /*! \param msg Message
          */
-        void HandleAssetCancel(NetInMessage* msg);
+        void HandleAssetCancel(ProtocolUtilities::NetInMessage* msg);
             
        //! Gets asset transfer if it's in progress
         /*! \param asset_id Asset ID
@@ -154,7 +151,7 @@ namespace Asset
             \param asset_id Asset UUID
             \param tags Asset request tag(s)
          */
-        void RequestTexture(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net, 
+        void RequestTexture(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, 
             const RexTypes::RexUUID& asset_id, const Core::RequestTagVector& tags);
         
         //! Requests an other asset from network
@@ -162,7 +159,7 @@ namespace Asset
             \param asset_id Asset UUID
             \param tags Asset request tag(s)        
          */
-        void RequestOtherAsset(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net,
+        void RequestOtherAsset(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net,
             const RexTypes::RexUUID& asset_id, Core::uint asset_type, const Core::RequestTagVector& tags);
         
         //! Sends progress event of asset transfer
@@ -197,7 +194,10 @@ namespace Asset
         
         //! Pending asset requests
         typedef std::vector<AssetRequest> AssetRequestVector;
-        AssetRequestVector pending_requests_;              
+        AssetRequestVector pending_requests_;
+
+		//! Current Protocol Module
+		boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
     };
 }
 

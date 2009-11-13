@@ -21,7 +21,7 @@ namespace CommunicationUI
 		static const std::string NameStatic() { return "OpensimChat"; } // for logging functionality
 
 	public:
-		OpenSimChat(Foundation::Framework *framework, OpenSimProtocol::ClientParameters clientParams);
+        OpenSimChat(Foundation::Framework *framework, ProtocolUtilities::ClientParameters clientParams);
 		virtual ~OpenSimChat();
 
 	public slots:
@@ -56,7 +56,7 @@ namespace CommunicationUI
 		boost::shared_ptr<QtUI::QtModule> qtModule_;
 		boost::shared_ptr<QtUI::UICanvas> canvas_;
 
-		OpenSimProtocol::ClientParameters clientParams_;
+		ProtocolUtilities::ClientParameters clientParams_;
 
 		bool visible_;
 

@@ -25,7 +25,6 @@ namespace RexLogic
 
 	void RexWebLogin::showEvent(QShowEvent *showEvent)
 	{
-		this->webView_->setUrl(QUrl(address_));
 		QWidget::showEvent(showEvent);
 	}
 
@@ -46,6 +45,7 @@ namespace RexLogic
 		// Add webview by hand, the QFormBuilder cannot do this (custom widget)
 		QVBoxLayout *centerLayout = this->widget_->layout()->findChild<QVBoxLayout *>("verticalLayout_Container");
 		this->webView_ = new QWebView(this->widget_);
+		this->webView_->setMinimumSize(100,100);
 		centerLayout->insertWidget(2, this->webView_);
 
 		// Get comboBox and set url to it
@@ -94,6 +94,8 @@ namespace RexLogic
 		QObject::connect(this->webView_, SIGNAL( loadStarted() ), this, SLOT( LoadStarted() ));
 		QObject::connect(this->webView_, SIGNAL( loadProgress(int) ), this, SLOT( UpdateUi(int) ));
 		QObject::connect(this->webView_, SIGNAL( loadFinished(bool) ), this, SLOT( ProcessPage(bool) ));
+
+        this->webView_->setUrl(QUrl(address_));
 	}
 
 	void RexWebLogin::GoToUrl()
@@ -136,12 +138,7 @@ namespace RexLogic
 		{
 			QString pageTitle = this->webView_->page()->mainFrame()->title();
 			if ( pageTitle == "LoginSuccess") 
-			{
-				QVariant returnValue;
-				returnValue = this->webView_->page()->mainFrame()->evaluateJavaScript("ReturnSuccessValue()");
-				emit( LoginProcessed(returnValue.toString()) );
-				this->close();
-			}
+				emit( WebLoginInfoRecieved(webView_->page()->mainFrame()) );
 		}
 	}
 

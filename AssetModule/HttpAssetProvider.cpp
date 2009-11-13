@@ -7,8 +7,8 @@
 #include <iostream>
 
 #include "NetworkEvents.h"
-#include "OpenSimProtocolModule.h"
-#include "RexProtocolMsgIDs.h"
+#include "RealXtend/RexProtocolMsgIDs.h"
+#include "ProtocolModuleOpenSim.h"
 #include "AssetEvents.h"
 #include "AssetManager.h"
 #include "AssetModule.h"

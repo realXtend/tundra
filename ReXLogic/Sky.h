@@ -29,7 +29,7 @@ namespace RexLogic
 
         /// Handler for the "RexSky" generic message.
         /// @param data Event data pointer.
-        bool HandleRexGM_RexSky(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data);
 
         /** Update sky info.
          * @param type Type of the sky: box, dome, plane or none. 

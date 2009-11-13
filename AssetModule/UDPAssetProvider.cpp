@@ -2,8 +2,8 @@
 
 #include "StableHeaders.h"
 #include "NetworkEvents.h"
-#include "OpenSimProtocolModule.h"
-#include "RexProtocolMsgIDs.h"
+#include "RealXtend/RexProtocolMsgIDs.h"
+#include "ProtocolModuleOpenSim.h"
 #include "AssetEvents.h"
 #include "AssetManager.h"
 #include "AssetModule.h"
@@ -98,6 +98,15 @@ namespace Asset
         
         return Foundation::AssetPtr();
     }
+
+	void UDPAssetProvider::SetCurrentProtocolModule(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule)
+	{
+		protocolModule_ = protocolModule;
+		if (protocolModule_.lock().get())
+			AssetModule::LogWarning("Current ProtocolModule set succesfully");
+		else
+			AssetModule::LogWarning("Could not accuire handle to current protocol module");
+	}
     
     bool UDPAssetProvider::QueryAssetStatus(const std::string& asset_id, Core::uint& size, Core::uint& received, Core::uint& received_continuous)    
     {
@@ -118,8 +127,7 @@ namespace Asset
     void UDPAssetProvider::Update(Core::f64 frametime)
     {          
         // Get network interface
-        boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net = 
-            (framework_->GetModuleManager()->GetModule<OpenSimProtocol::OpenSimProtocolModule>(Foundation::Module::MT_OpenSimProtocol)).lock();
+        boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net = protocolModule_.lock();
 
         if ((!net) || (!net->IsConnected()))
         {
@@ -167,7 +175,7 @@ namespace Asset
         asset_transfers_.clear();
     }       
 
-    void UDPAssetProvider::HandleTextureTimeouts(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net, Core::f64 frametime)
+    void UDPAssetProvider::HandleTextureTimeouts(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, Core::f64 frametime)
     {
         UDPAssetTransferMap::iterator i = texture_transfers_.begin();
         std::vector<RexUUID> erase_tex;       
@@ -184,8 +192,8 @@ namespace Asset
                     AssetModule::LogInfo("Texture transfer " + transfer.GetAssetId() + " timed out.");
 
                     // Send cancel message
-                    const OpenSimProtocol::ClientParameters& client = net->GetClientParameters();
-                    NetOutMessage *m = net->StartMessageBuilding(RexNetMsgRequestImage);
+                    const ProtocolUtilities::ClientParameters& client = net->GetClientParameters();
+                    ProtocolUtilities::NetOutMessage *m = net->StartMessageBuilding(RexNetMsgRequestImage);
                     assert(m);
                     
                     m->AddUUID(client.agentID);
@@ -214,7 +222,7 @@ namespace Asset
             texture_transfers_.erase(erase_tex[j]);
     }
 
-    void UDPAssetProvider::HandleAssetTimeouts(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net, Core::f64 frametime)
+    void UDPAssetProvider::HandleAssetTimeouts(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, Core::f64 frametime)
     {        
         UDPAssetTransferMap::iterator i = asset_transfers_.begin();
         std::vector<RexUUID> erase_asset;   
@@ -231,7 +239,7 @@ namespace Asset
                     AssetModule::LogInfo("Asset transfer " + transfer.GetAssetId() + " timed out.");
 
                     // Send cancel message
-                    NetOutMessage *m = net->StartMessageBuilding(RexNetMsgTransferAbort);
+                    ProtocolUtilities::NetOutMessage *m = net->StartMessageBuilding(RexNetMsgTransferAbort);
                     assert(m);
                     m->AddUUID(i->first); // Transfer ID
                     m->AddS32(RexAC_Asset); // Asset channel type
@@ -252,7 +260,7 @@ namespace Asset
             asset_transfers_.erase(erase_asset[j]);        
     }
              
-    void UDPAssetProvider::SendPendingRequests(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net)
+    void UDPAssetProvider::SendPendingRequests(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net)
     {    
         AssetRequestVector::iterator i = pending_requests_.begin();
         while (i != pending_requests_.end())
@@ -267,7 +275,7 @@ namespace Asset
         }
     }    
     
-    void UDPAssetProvider::RequestTexture(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net, 
+    void UDPAssetProvider::RequestTexture(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, 
         const RexUUID& asset_id, const Core::RequestTagVector& tags)
     {
         // If request already exists, just append the new tag(s)
@@ -279,7 +287,7 @@ namespace Asset
             return;
         }
                    
-        const OpenSimProtocol::ClientParameters& client = net->GetClientParameters();
+        const ProtocolUtilities::ClientParameters& client = net->GetClientParameters();
                 
         UDPAssetTransfer new_transfer;
         new_transfer.SetAssetId(asset_id.ToString());
@@ -289,7 +297,7 @@ namespace Asset
     
         AssetModule::LogDebug("Requesting texture " + asset_id.ToString());
 
-        NetOutMessage *m = net->StartMessageBuilding(RexNetMsgRequestImage);
+        ProtocolUtilities::NetOutMessage *m = net->StartMessageBuilding(RexNetMsgRequestImage);
         assert(m);
         
         m->AddUUID(client.agentID);
@@ -305,7 +313,7 @@ namespace Asset
         net->FinishMessageBuilding(m);
     }
     
-    void UDPAssetProvider::RequestOtherAsset(boost::shared_ptr<OpenSimProtocol::OpenSimProtocolModule> net,
+    void UDPAssetProvider::RequestOtherAsset(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net,
         const RexUUID& asset_id, Core::uint asset_type, const Core::RequestTagVector& tags)
     {
         // If request already exists, just append the new tag(s)
@@ -328,7 +336,7 @@ namespace Asset
         
         AssetModule::LogDebug("Requesting asset " + asset_id_str);
         
-        NetOutMessage *m = net->StartMessageBuilding(RexNetMsgTransferRequest);
+        ProtocolUtilities::NetOutMessage *m = net->StartMessageBuilding(RexNetMsgTransferRequest);
         assert(m);
         
         m->AddUUID(transfer_id); // Transfer ID
@@ -348,12 +356,12 @@ namespace Asset
     
     bool UDPAssetProvider::HandleNetworkEvent(Foundation::EventDataInterface* data)
     {
-        NetworkEventInboundData *event_data = dynamic_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
+		ProtocolUtilities::NetworkEventInboundData *event_data = dynamic_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
         if (!event_data)
             return false;
             
-        const NetMsgID msgID = event_data->messageID;
-        NetInMessage *msg = event_data->message;
+        const ProtocolUtilities::NetMsgID msgID = event_data->messageID;
+        ProtocolUtilities::NetInMessage *msg = event_data->message;
             
         switch(msgID)
         {
@@ -386,7 +394,7 @@ namespace Asset
     }
 
     
-    void UDPAssetProvider::HandleTextureHeader(NetInMessage* msg)
+    void UDPAssetProvider::HandleTextureHeader(ProtocolUtilities::NetInMessage* msg)
     {
         RexUUID asset_id = msg->ReadUUID();
         UDPAssetTransferMap::iterator i = texture_transfers_.find(asset_id);
@@ -418,7 +426,7 @@ namespace Asset
         }
     }
     
-    void UDPAssetProvider::HandleTextureData(NetInMessage* msg)
+    void UDPAssetProvider::HandleTextureData(ProtocolUtilities::NetInMessage* msg)
     {
         RexUUID asset_id = msg->ReadUUID();
         UDPAssetTransferMap::iterator i = texture_transfers_.find(asset_id);
@@ -446,7 +454,7 @@ namespace Asset
         }
     }
     
-    void UDPAssetProvider::HandleTextureCancel(NetInMessage* msg)
+    void UDPAssetProvider::HandleTextureCancel(ProtocolUtilities::NetInMessage* msg)
     {
         RexUUID asset_id = msg->ReadUUID();
         UDPAssetTransferMap::iterator i = texture_transfers_.find(asset_id);
@@ -465,7 +473,7 @@ namespace Asset
         texture_transfers_.erase(i);
     }
     
-    void UDPAssetProvider::HandleAssetHeader(NetInMessage* msg)
+    void UDPAssetProvider::HandleAssetHeader(ProtocolUtilities::NetInMessage* msg)
     {
         RexUUID transfer_id = msg->ReadUUID();
         UDPAssetTransferMap::iterator i = asset_transfers_.find(transfer_id);
@@ -501,7 +509,7 @@ namespace Asset
         }
     }
     
-    void UDPAssetProvider::HandleAssetData(NetInMessage* msg)
+    void UDPAssetProvider::HandleAssetData(ProtocolUtilities::NetInMessage* msg)
     {
         RexUUID transfer_id = msg->ReadUUID();
         UDPAssetTransferMap::iterator i = asset_transfers_.find(transfer_id);
@@ -542,7 +550,7 @@ namespace Asset
         }
     }
     
-    void UDPAssetProvider::HandleAssetCancel(NetInMessage* msg)
+    void UDPAssetProvider::HandleAssetCancel(ProtocolUtilities::NetInMessage* msg)
     {
         RexUUID transfer_id = msg->ReadUUID();
         UDPAssetTransferMap::iterator i = asset_transfers_.find(transfer_id);

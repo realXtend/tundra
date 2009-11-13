@@ -86,13 +86,15 @@ add_subdirectory (AssetModule)
 add_subdirectory (QtModule)
 add_subdirectory (HttpUtilities)
 add_subdirectory (RpcUtilities)
+add_subdirectory (ProtocolUtilities)
 
 # The following are not really core modules,
 # but you can't do anything practical without
 # having them so, they're effectively required.
 add_subdirectory (InputModuleOIS)
 add_subdirectory (TextureDecoderModule)
-add_subdirectory (OpenSimProtocol)
+add_subdirectory (ProtocolModuleOpenSim)
+add_subdirectory (ProtocolModuleTaiga)
 add_subdirectory (InventoryModule)
 
 # If the custom optional modules configuration file does not yet

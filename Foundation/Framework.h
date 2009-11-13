@@ -16,6 +16,11 @@ namespace Poco
     class SplitterChannel;
 }
 
+namespace ProtocolUtilities
+{
+    class ProtocolModuleInterface;
+}
+
 namespace Foundation
 {
     class RexQEngine;
@@ -259,6 +264,7 @@ namespace Foundation
     namespace
     {
         const Core::event_id_t PROGRAM_OPTIONS = 1;
+        const Core::event_id_t NETWORKING_REGISTERED = 2;
     }
 
     //! Contains pre-parsed program options and non-parsed command line arguments.
@@ -276,6 +282,16 @@ namespace Foundation
         //! command line arguments as supplied by the operating system
         int argc;
         char **argv;
+    };
+
+    class NetworkingRegisteredEvent : public EventDataInterface
+    {
+    public:
+        NetworkingRegisteredEvent(const boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> pModule)
+            : currentProtocolModule(pModule) {}
+        virtual ~NetworkingRegisteredEvent() {}
+        // boost weak pointer to the changed protocolmodule
+        boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule;
     };
 }
 

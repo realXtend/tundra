@@ -17,12 +17,12 @@ namespace RexLogic
         Primitive(RexLogicModule *rexlogicmodule);
         ~Primitive();
         
-        bool HandleOSNE_ObjectUpdate(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data);
         bool HandleOSNE_KillObject(uint32_t objectid); 
-        bool HandleOSNE_ObjectProperties(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleOSNE_ObjectProperties(ProtocolUtilities::NetworkEventInboundData* data);
                 
-        bool HandleRexGM_RexMediaUrl(OpenSimProtocol::NetworkEventInboundData* data);
-        bool HandleRexGM_RexPrimData(OpenSimProtocol::NetworkEventInboundData* data);
+        bool HandleRexGM_RexMediaUrl(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleRexGM_RexPrimData(ProtocolUtilities::NetworkEventInboundData* data);
         
         void HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes);
                         
