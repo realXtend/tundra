@@ -4,15 +4,15 @@
 #define incl_QtModule_UICanvas_h
 
 
-#include <QGraphicsView>
+
 #include <QSize>
 #include <QRect>
 #include <QString>
 #include <QTimer>
 #include <QTime>
-//#include "UIController.h"
 #include "UILocationPolicy.h"
 #include "UIAppearPolicy.h"
+#include "UIGraphicsView.h"
 #include "QtModuleApi.h"
 
 class QPainter;
@@ -123,9 +123,9 @@ namespace QtUI
             Overlay container: "con" + id. */
         QString GetID() const { return id_;}
      
-        /** @return The QGraphicsView associated to this canvas. This view is used
+        /** @return The UIGraphicsView associated to this canvas. This view is used
             to render the contents of the QGraphicsScene. */
-        QGraphicsView* GetView() { return view_; }
+        UIGraphicsView* GetView() { return view_; }
 
         /** Maps the given point from render window coordinates to canvas local coordinates.
             This function assumes that these coordinates do lie inside this canvas.
@@ -230,6 +230,12 @@ namespace QtUI
             for Ogre display. Called whenever the main render window size changes. */
         void SetRenderWindowSize(const QSize& size); 
 
+        /**
+         * Used to resize widgets inside of scene in case of external display mode. 
+         * @param event is resize event. 
+         */
+        void ResizeEvent(QResizeEvent* event);
+
     private:
         UICanvas(const UICanvas &); ///< UICanvas is noncopyable.
         void operator=(UICanvas &); ///< UICanvas is noncopyable.
@@ -300,7 +306,7 @@ namespace QtUI
         UILocationPolicy* locationPolicy_;
         UIAppearPolicy* appearPolicy_;
 
-        QGraphicsView* view_;
+        UIGraphicsView* view_;
 
         /// Contains the widget proxies of all the widgets that have been added to this canvas.
         QList<QGraphicsProxyWidget*> scene_widgets_;
