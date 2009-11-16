@@ -54,7 +54,7 @@ namespace TaigaProtocol
 
 		if (spTaiga.get())
 		{
-			spTaiga->GetLoginWorker()->SetupXMLRPCLogin(address, port, thread_state);
+			spTaiga->GetLoginWorker()->PrepareTaigaLogin(address, port, thread_state);
 			spTaiga->SetAuthenticationType(ProtocolUtilities::AT_Taiga);
             spTaiga->SetIdentityUrl(identityUrl);
             spTaiga->SetHostUrl(address + port);

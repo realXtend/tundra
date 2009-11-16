@@ -41,16 +41,13 @@ namespace OpenSimProtocol
          * @return true if login was successfull false if not. 
          *
          * */
-        bool LoginToServer(
-			const std::string& first_name,
-			const std::string& last_name,
-			const std::string& password,
-			const std::string& address,
-			const std::string& port,
-			const std::string& auth_server_address_noport,
-			const std::string& auth_server_port,
-			const std::string& auth_login,
-			ProtocolUtilities::ConnectionThreadState *thread_state);
+        bool LoginToServer(const QString& password,
+			               const QString& address,
+			               const QString& port,
+			               const QString& auth_server_address_noport,
+			               const QString& auth_server_port,
+			               const QString& auth_login,
+			               ProtocolUtilities::ConnectionThreadState *thread_state);
 
 		//! Make Url validation according to type
 		QUrl ValidateUrl(const QString urlString, const UrlType urlType);

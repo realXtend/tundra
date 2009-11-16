@@ -185,10 +185,7 @@ namespace RexLogic
 
 	void AbstractLoginUI::LoginDone(bool success)
 	{
-		//if (success)
-		//	controller_->Hide();
-		//else
-        //  QMessageBox::critical(0, "Login failed", "Login failed, try again");
+        // Do something if needed, canvas hides/shows are already handled
 	}
 
     /////////////////////////////////////////
@@ -252,7 +249,8 @@ namespace RexLogic
 
 		configKey = QString("username");
 		opensim_username_ = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
-		
+		lineEdit_username_->setText(opensim_username_);
+
 		configKey = QString("auth_name");
 		realXtend_username_ = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
 
@@ -276,21 +274,18 @@ namespace RexLogic
 		if (radioButton_openSim_->isChecked() == true)
 		{
 			hide = false;
-			if (lineEdit_username_->text().length() == 0)
-            {
+			if (lineEdit_username_->text() == realXtend_username_)
 			    lineEdit_username_->setText(opensim_username_);
+            if (lineEdit_worldAddress_->text() == realXtend_server_)
 			    lineEdit_worldAddress_->setText(opensim_server_);
-            }
 		}
 		else if (radioButton_realXtend_->isChecked() == true)
 		{
 			hide = true;
-			if (lineEdit_username_->text().length() == 0)
-            {
+			if (lineEdit_username_->text() == opensim_username_)
 			    lineEdit_username_->setText(realXtend_username_);
+            if (lineEdit_worldAddress_->text() == opensim_server_)
 			    lineEdit_worldAddress_->setText(realXtend_server_);
-			    lineEdit_authAddress_->setText(realXtend_authserver_);
-            }
 		}
 		label_authAddress_->setVisible(hide);
 		lineEdit_authAddress_->setVisible(hide);

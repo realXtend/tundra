@@ -209,7 +209,7 @@ QPushButton#pushButton_Connect, QPushButton#pushButton_Close {
           <item>
            <widget class="QGroupBox" name="groupBox_2">
             <property name="title">
-             <string>Login Information</string>
+             <string>Login Credentials</string>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_3">
              <item>

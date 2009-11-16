@@ -295,4 +295,12 @@ namespace ProtocolUtilities
 
         return inventory;
     }
+
+    // STATIC
+    void InventoryParser::SetErrorFolder(ProtocolUtilities::InventoryFolderSkeleton *root)
+    {
+        ProtocolUtilities::InventoryFolderSkeleton errorFolder;
+        errorFolder.name = "Inventory parsing failed";
+        root->AddChildFolder(errorFolder);
+    }
 }

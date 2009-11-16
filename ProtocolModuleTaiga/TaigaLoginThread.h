@@ -37,9 +37,9 @@ namespace TaigaProtocol
          * @param worldAddress is a address of world (sim) server without port value. 
          * @param worldPort is a port of world (sim) server. 
          */
-        void SetupXMLRPCLogin(const QString &worldAddress,
-                              const QString &worldPort,
-			                  ProtocolUtilities::ConnectionThreadState *thread_state);
+        void PrepareTaigaLogin(const QString &worldAddress,
+                               const QString &worldPort,
+			                   ProtocolUtilities::ConnectionThreadState *thread_state);
 
         /// Performs the actual XML-RPC login procedure.
         ///@return true if login (or authentication) was successful.
