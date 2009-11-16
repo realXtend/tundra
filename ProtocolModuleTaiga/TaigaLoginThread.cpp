@@ -184,16 +184,16 @@ namespace TaigaProtocol
         }
         catch(XmlRpcException& ex)
         {
-            ProtocolModuleTaiga::LogError(QString("Login procedure threw a XMLRPCException \nReason: %1").arg(ex.what()).toStdString());
+            ProtocolModuleTaiga::LogError(QString("Login procedure threw a XMLRPCException >>> Reason: %1").arg(ex.what()).toStdString());
             try
             {
                 // TODO: transfer error message to login screen
                 threadState_->errorMessage = call.GetReply<std::string>("message");
-                ProtocolModuleTaiga::LogError(QString("\nMessage: %1").arg(QString(threadState_->errorMessage.c_str())).toStdString());
+                ProtocolModuleTaiga::LogError(QString(">>> Message: %1").arg(QString(threadState_->errorMessage.c_str())).toStdString());
             }
             catch (XmlRpcException &ex)
             {
-                ProtocolModuleTaiga::LogError(QString("\nMessage: <No Message Recieved>").toStdString());
+                ProtocolModuleTaiga::LogError(QString(">>> Message: <No Message Recieved>").toStdString());
             }
             return false;
         }

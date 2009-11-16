@@ -339,14 +339,11 @@ void RexLogicModule::Update(Core::f64 frametime)
         // update avatar stuff (download requests etc.)
         avatar_->Update(frametime);
 
-            // Poll the connection state and update the info to the UI.
-            /// \todo Move this to the Login UI class.
-            ProtocolUtilities::Connection::State cur_state = rexserver_connection_->GetConnectionState();
-            if (cur_state != connectionState_)
-            {
-                //loginWindow_->UpdateConnectionStateToUI(cur_state);
-                connectionState_ = cur_state;
-            }
+        // Poll the connection state and update the info to the UI.
+        /// \todo Move this to the Login UI class.
+        ProtocolUtilities::Connection::State cur_state = rexserver_connection_->GetConnectionState();
+        if (cur_state != connectionState_)
+            connectionState_ = cur_state;
 
         /// \todo Move this to OpenSimProtocolModule.
         if (!rexserver_connection_->IsConnected() &&
