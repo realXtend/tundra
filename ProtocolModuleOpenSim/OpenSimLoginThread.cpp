@@ -7,10 +7,14 @@
 #include "OpenSimLoginThread.h"
 #include "ProtocolModuleOpenSim.h"
 #include "XmlRpcEpi.h"
-#include "OpenSim/OpenSimAuth.h"
-#include "Inventory/InventorySkeleton.h"
-#include "OpenSim/BuddyList.h"
 
+// ProtocolUtilities includes
+#include "OpenSim/OpenSimAuth.h"
+#include "OpenSim/Grid.h"
+#include "OpenSim/BuddyListParser.h"
+#include "Inventory/InventoryParser.h"
+
+// Extenal lib includes
 #include <boost/shared_ptr.hpp>
 #include <utility>
 #include <algorithm>
@@ -18,715 +22,326 @@
 
 namespace OpenSimProtocol
 {
+    std::string OpenSimLoginThread::LOGIN_TO_SIMULATOR = "login_to_simulator";
+    std::string OpenSimLoginThread::CLIENT_AUTHENTICATION = "ClientAuthentication";
+    std::string OpenSimLoginThread::OPTIONS = "options";
+    std::string OpenSimLoginThread::REALXTEND_AUTHENTICATION = "realxtend_authentication";
+    std::string OpenSimLoginThread::OPENSIM_AUTHENTICATION = "opensim_authentication";
 
-OpenSimLoginThread::OpenSimLoginThread() : beginLogin_(false), ready_(false)
-{
-}
-
-// virtual
-OpenSimLoginThread::~OpenSimLoginThread()
-{
-}
-
-void OpenSimLoginThread::operator()()
-{
-    if(beginLogin_)
+    OpenSimLoginThread::OpenSimLoginThread() 
+        : start_login_(false), ready_(false)
     {
-        threadState_->state = ProtocolUtilities::Connection::STATE_WAITING_FOR_XMLRPC_REPLY;
+    }
 
-        bool success = PerformXMLRPCLogin();
-        if (success && !authentication_)
+    OpenSimLoginThread::~OpenSimLoginThread()
+    {
+    }
+
+    void OpenSimLoginThread::operator()()
+    {
+        if (start_login_)
         {
-            // Login without authentication succeeded.
-            threadState_->state = ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED;
-        }
-        else if (success && authentication_)
-        {
-            // First round of authentication succeeded; sessions hash, grid & avatar url's reveiced.
-            threadState_->state = ProtocolUtilities::Connection::STATE_XMLRPC_AUTH_REPLY_RECEIVED;
+            threadState_->state = ProtocolUtilities::Connection::STATE_WAITING_FOR_XMLRPC_REPLY;
+            if ( PerformXMLRPCLogin() )
+            {
+                if ( authentication_ == OPENSIM_AUTHENTICATION )
+                    threadState_->state = ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED;
 
-            // Perform second round to received the agent, session & region id's.
-            callMethod_ = "login_to_simulator";
-
-            bool success2 = PerformXMLRPCLogin();
-            if (success2)
-                threadState_->state = ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED;
+                if ( authentication_ == REALXTEND_AUTHENTICATION )
+                {
+                        threadState_->state = ProtocolUtilities::Connection::STATE_XMLRPC_AUTH_REPLY_RECEIVED;
+                        callMethod_ = LOGIN_TO_SIMULATOR;
+                        if ( PerformXMLRPCLogin() )
+                            threadState_->state = ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED;
+                        else
+                            threadState_->state = ProtocolUtilities::Connection::STATE_LOGIN_FAILED;
+                }
+            }
             else
                 threadState_->state = ProtocolUtilities::Connection::STATE_LOGIN_FAILED;
-        }
-        else
-            threadState_->state = ProtocolUtilities::Connection::STATE_LOGIN_FAILED;
 
-        beginLogin_ = false;
-    }
-}
-
-volatile ProtocolUtilities::Connection::State OpenSimLoginThread::GetState() const
-{
-    if (!ready_)
-		return ProtocolUtilities::Connection::STATE_DISCONNECTED;
-    else
-        return threadState_->state;
-}
-
-void OpenSimLoginThread::SetupXMLRPCLogin(
-    const std::string& first_name,
-    const std::string& last_name,
-    const std::string& password,
-    const std::string& worldAddress,
-    const std::string& worldPort,
-    const std::string& callMethod,
-    ProtocolUtilities::ConnectionThreadState *thread_state,
-    const std::string& authentication_login,
-    const std::string& authentication_address,
-    const std::string& authentication_port,
-    const bool &authentication)
-{
-    // Save the info for login.
-    firstName_ = first_name;
-    lastName_ = last_name;
-    password_ = password;
-    worldAddress_ = worldAddress;
-    worldPort_ = worldPort;
-    callMethod_ = callMethod;
-    authenticationLogin_ = authentication_login;
-    authenticationAddress_ = authentication_address;
-    authenticationPort_ = authentication_port;
-    authentication_ = authentication,
-    threadState_ = thread_state;
-
-    ready_ = true;
-    threadState_->state = ProtocolUtilities::Connection::STATE_INIT_XMLRPC;
-    beginLogin_ = true;
-}
-
-/// This function reads the address to connect to for the simulation UDP connection.
-/// @param call Pass in the object to a XMLRPCEPI call that has already been performed. Only the reply part
-///     will be read by this function.
-/// @return The ip:port to connect to with the UDP socket, or "" if there was an error.
-static std::string ExtractGridAddressFromXMLRPCReply(XmlRpcEpi &call)
-{
-    std::string gridUrl = call.GetReply<std::string>("sim_ip");
-    if (gridUrl.size() == 0)
-        return "";
-
-    int port = call.GetReply<int>("sim_port");
-    if (port <= 0 || port >= 65536)
-        return "";
-
-    std::stringstream out;
-    out << gridUrl << ":" << port;
-
-    return out.str();
-}
-
-/// Checks if the name of the folder belongs to the harcoded OpenSim folders.
-/// @param name name of the folder.
-/// @return True if one of the harcoded folders, false if not.
-static bool IsHardcodedOpenSimFolder(const char *name)
-{
-    const char *folders[] = { "My Inventory", "Animations", "Body Parts", "Calling Cards", "Clothing", "Gestures",
-        "Landmarks", "Lost And Found", "Notecards", "Objects", "Photo Album", "Scripts", "Sounds", "Textures", "Trash",
-        "OpenSim Library", "Animations Library", "BodyParts Library", "Clothing Library", "Gestures Library", "Landmarks Library",
-        "Notecards Library", "Objects Library", "Photos Library", "Scripts Library", "Sounds Library", "Texture Library" };
-
-    for(int i = 0; i < NUMELEMS(folders); ++i)
-    {
-#ifdef _MSC_VER
-        if (!_strcmpi(folders[i], name))
-#else
-        if (!strcasecmp(folders[i], name))
-#endif
-            return true;
-    }
-
-    return false;
-}
-
-/// This function reads the inventory tree that was stored in the XMLRPC login_to_simulator reply.
-/// @param call Pass in the object to a XMLRPCEPI call that has already been performed. Only the reply part
-///     will be read by this function.
-/// @return The inventory object, or null pointer if an error occurred.
-boost::shared_ptr<ProtocolUtilities::InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &call)
-{
-	boost::shared_ptr<ProtocolUtilities::InventorySkeleton> inventory = boost::shared_ptr<ProtocolUtilities::InventorySkeleton>(new ProtocolUtilities::InventorySkeleton);
-
-    XmlRpcCall *xmlrpcCall = call.GetXMLRPCCall();
-    if (!xmlrpcCall)
-        throw XmlRpcException("Failed to read inventory, no XMLRPC Reply to read!");
-
-    XMLRPC_REQUEST request = xmlrpcCall->GetReply();
-    if (!request)
-        throw XmlRpcException("Failed to read inventory, no XMLRPC Reply to read!");
-
-    XMLRPC_VALUE result = XMLRPC_RequestGetData(request);
-    if (!result)
-        throw XmlRpcException("Failed to read inventory, the XMLRPC Reply did not contain any data!");
-
-    /********** My Inventory **********/
-    XMLRPC_VALUE inventoryNode = XMLRPC_VectorGetValueWithID(result, "inventory-skeleton");
-
-    if (!inventoryNode || XMLRPC_GetValueType(inventoryNode) != xmlrpc_vector)
-        throw XmlRpcException("Failed to read inventory, inventory-skeleton in the reply was not properly formed!");
-
-    typedef std::pair<RexUUID, ProtocolUtilities::InventoryFolderSkeleton> DetachedInventoryFolder;
-    typedef std::list<DetachedInventoryFolder> DetachedInventoryFolderList;
-    DetachedInventoryFolderList folders;
-
-    XMLRPC_VALUE item = XMLRPC_VectorRewind(inventoryNode);
-    while(item)
-    {
-        XMLRPC_VALUE_TYPE type = XMLRPC_GetValueType(item);
-        if (type == xmlrpc_vector) // xmlrpc-epi handles structs as arrays.
-        {
-            DetachedInventoryFolder folder;
-
-            XMLRPC_VALUE val = XMLRPC_VectorGetValueWithID(item, "name");
-            if (val && XMLRPC_GetValueType(val) == xmlrpc_string)
-                folder.second.name = XMLRPC_GetValueString(val);
-
-            val = XMLRPC_VectorGetValueWithID(item, "parent_id");
-            if (val && XMLRPC_GetValueType(val) == xmlrpc_string)
-                folder.first.FromString(XMLRPC_GetValueString(val));
-
-            val = XMLRPC_VectorGetValueWithID(item, "version");
-            if (val && XMLRPC_GetValueType(val) == xmlrpc_int)
-                folder.second.version = XMLRPC_GetValueInt(val);
-
-            val = XMLRPC_VectorGetValueWithID(item, "type_default");
-            if (val && XMLRPC_GetValueType(val) == xmlrpc_int)
-                folder.second.type_default = XMLRPC_GetValueInt(val);
-
-            val = XMLRPC_VectorGetValueWithID(item, "folder_id");
-            if (val && XMLRPC_GetValueType(val) == xmlrpc_string)
-                folder.second.id.FromString(XMLRPC_GetValueString(val));
-
-            folders.push_back(folder);
-        }
-
-        item = XMLRPC_VectorNext(inventoryNode);
-    }
-
-    // Find and set the inventory root folder.
-    XMLRPC_VALUE inventoryRootNode = XMLRPC_VectorGetValueWithID(result, "inventory-root");
-    if (!inventoryRootNode)
-        throw XmlRpcException("Failed to read inventory, inventory-root in the reply was not present!");
-
-    if (!inventoryRootNode || XMLRPC_GetValueType(inventoryRootNode) != xmlrpc_vector)
-        throw XmlRpcException("Failed to read inventory, inventory-root in the reply was not properly formed!");
-
-    XMLRPC_VALUE inventoryRootNodeFirstElem = XMLRPC_VectorRewind(inventoryRootNode);
-    if (!inventoryRootNodeFirstElem || XMLRPC_GetValueType(inventoryRootNodeFirstElem) != xmlrpc_vector)
-        throw XmlRpcException("Failed to read inventory, inventory-root in the reply was not properly formed!");
-
-    XMLRPC_VALUE val = XMLRPC_VectorGetValueWithID(inventoryRootNodeFirstElem, "folder_id");
-    if (!val || XMLRPC_GetValueType(val) != xmlrpc_string)
-        throw XmlRpcException("Failed to read inventory, inventory-root struct value folder_id not present!");
-
-    RexUUID inventoryRootFolderID(XMLRPC_GetValueString(val));
-    if (inventoryRootFolderID.IsNull())
-        throw XmlRpcException("Failed to read inventory, inventory-root value folder_id was null or unparseable!");
-
-    // Find the root folder from the list of detached folders, and set it as the root folder to start with.
-    for(DetachedInventoryFolderList::iterator iter = folders.begin(); iter != folders.end(); ++iter)
-    {
-        if (iter->second.id == inventoryRootFolderID)
-        {
-            ProtocolUtilities::InventoryFolderSkeleton *root = inventory->GetRoot();
-            iter->second.editable = false;
-            root->AddChildFolder(iter->second);
-            folders.erase(iter);
-            break;
+            start_login_ = false;
         }
     }
 
-    if (inventory->GetFirstChildFolderByName("My Inventory")->id != inventoryRootFolderID)
-        throw XmlRpcException("Failed to read inventory, inventory-root value folder_id pointed to a nonexisting folder!");
-
-    // Insert the detached folders onto the tree view until all folders have been added or there are orphans left
-    // that cannot be added, and quit.
-    bool progress = true;
-    while(folders.size() > 0 && progress)
+    void OpenSimLoginThread::PrepareOpenSimLogin(const QString &first_name,
+                                                 const QString &last_name,
+                                                 const QString &password,
+                                                 const QString &worldAddress,
+                                                 const QString &worldPort,
+                                                 ProtocolUtilities::ConnectionThreadState *thread_state)
     {
-        progress = false;
-        DetachedInventoryFolderList::iterator iter = folders.begin();
-        while(iter != folders.end())
-        {
-            DetachedInventoryFolderList::iterator next = iter;
-            ++next;
+        firstName_ = first_name.toStdString();
+        lastName_ = last_name.toStdString();
+        password_ = password.toStdString();
+        worldAddress_ = worldAddress.toStdString();
+        worldPort_ = worldPort.toStdString();
 
-            ProtocolUtilities::InventoryFolderSkeleton *parent = inventory->GetChildFolderById(iter->first);
-            if (parent)
-            {
-                // Mark harcoded OpenSim Library folders non-editable.
-                if (parent->id == inventoryRootFolderID &&
-                    IsHardcodedOpenSimFolder(iter->second.name.c_str()))
-                    iter->second.editable = false;
+        authentication_ = OPENSIM_AUTHENTICATION;
+        callMethod_ = LOGIN_TO_SIMULATOR;
+        threadState_ = thread_state;
 
-                parent->AddChildFolder(iter->second);
-                progress = true;
-                folders.erase(iter);
-            }
-
-            iter = next;
-        }
+        ready_ = true;
+        threadState_->state = ProtocolUtilities::Connection::STATE_INIT_XMLRPC;
+        start_login_ = true;
     }
 
-    /********** World Library **********/
-
-    // Find and set the inventory-lib-owner uuid.
-    XMLRPC_VALUE inventoryLibOwnerNode = XMLRPC_VectorGetValueWithID(result, "inventory-lib-owner");
-    if (!inventoryLibOwnerNode)
-        throw XmlRpcException("Failed to read inventory, inventory-lib-owner in the reply was not present!");
-
-    RexUUID inventoryLibOwnerId;
-    if (XMLRPC_GetValueType(inventoryLibOwnerNode) != xmlrpc_vector)
+    void OpenSimLoginThread::PrepareRealXtendLogin(const QString& password,
+                                                   const QString& worldAddress,
+                                                   const QString& worldPort,
+                                                   ProtocolUtilities::ConnectionThreadState *thread_state,
+                                                   const QString& authentication_login,
+                                                   const QString& authentication_address,
+                                                   const QString& authentication_port)
     {
-        // In Taiga inventory-lib-owner isn't array, just single value.
-        if (XMLRPC_GetValueType(inventoryLibOwnerNode) == xmlrpc_string)
-            inventoryLibOwnerId.FromString(XMLRPC_GetValueString(inventoryLibOwnerNode));
-        else
-            throw XmlRpcException("Failed to read inventory, inventory-lib-owner in the reply was not properly formed!");
-    }
-    else
-    {
-        // In legacy servers inventory-lib-owner is array.
-        XMLRPC_VALUE inventoryLibOwnerNodeFirstElem = XMLRPC_VectorRewind(inventoryLibOwnerNode);
-        if (!inventoryLibOwnerNodeFirstElem || XMLRPC_GetValueType(inventoryLibOwnerNodeFirstElem) != xmlrpc_vector)
-            throw XmlRpcException("Failed to read inventory,inventory-lib-owner in the reply was not properly formed!");
+        password_ = password.toStdString();
+        worldAddress_ = worldAddress.toStdString();
+        worldPort_ = worldPort.toStdString();
+        authenticationLogin_ = authentication_login.toStdString();
+        authenticationAddress_ = authentication_address.toStdString();
+        authenticationPort_ = authentication_port.toStdString();
 
-        val = XMLRPC_VectorGetValueWithID(inventoryLibOwnerNodeFirstElem, "agent_id");
-        if (!val || XMLRPC_GetValueType(val) != xmlrpc_string)
-            throw XmlRpcException("Failed to read inventory, inventory-lib-owner struct value agent_id not present!");
+        authentication_ = REALXTEND_AUTHENTICATION;
+        callMethod_ = CLIENT_AUTHENTICATION;
+        threadState_ = thread_state;
 
-        inventoryLibOwnerId.FromString(XMLRPC_GetValueString(val));
+        ready_ = true;
+        threadState_->state = ProtocolUtilities::Connection::STATE_INIT_XMLRPC;
+        start_login_ = true;
     }
 
-    if (inventoryLibOwnerId.IsNull())
-        throw XmlRpcException("Failed to read inventory, inventory-lib-owner value agent_id was null or unparseable!");
-
-    inventory->worldLibraryOwnerId = inventoryLibOwnerId;
-
-    // Find and set the inventory root folder.
-    XMLRPC_VALUE inventoryLibraryNode = XMLRPC_VectorGetValueWithID(result, "inventory-skel-lib");
-
-    if (!inventoryLibraryNode || XMLRPC_GetValueType(inventoryLibraryNode) != xmlrpc_vector)
-        throw XmlRpcException("Failed to read world inventory, inventory in the reply was not properly formed!");
-
-    DetachedInventoryFolderList library_folders;
-
-    item = XMLRPC_VectorRewind(inventoryLibraryNode);
-    while(item)
+    bool OpenSimLoginThread::PerformXMLRPCLogin()
     {
-        XMLRPC_VALUE_TYPE type = XMLRPC_GetValueType(item);
-        if (type == xmlrpc_vector) // xmlrpc-epi handles structs as arrays.
-        {
-            DetachedInventoryFolder folder;
+        /////////////////////////////////////
+        //           INIT CALL             //
+        /////////////////////////////////////
 
-            XMLRPC_VALUE val = XMLRPC_VectorGetValueWithID(item, "name");
-            if (val && XMLRPC_GetValueType(val) == xmlrpc_string)
-                folder.second.name = XMLRPC_GetValueString(val);
-
-            val = XMLRPC_VectorGetValueWithID(item, "parent_id");
-            if (val && XMLRPC_GetValueType(val) == xmlrpc_string)
-                folder.first.FromString(XMLRPC_GetValueString(val));
-
-            val = XMLRPC_VectorGetValueWithID(item, "version");
-            if (val && XMLRPC_GetValueType(val) == xmlrpc_int)
-                folder.second.version = XMLRPC_GetValueInt(val);
-
-            val = XMLRPC_VectorGetValueWithID(item, "type_default");
-            if (val && XMLRPC_GetValueType(val) == xmlrpc_int)
-                folder.second.type_default = XMLRPC_GetValueInt(val);
-
-            val = XMLRPC_VectorGetValueWithID(item, "folder_id");
-            if (val && XMLRPC_GetValueType(val) == xmlrpc_string)
-                folder.second.id.FromString(XMLRPC_GetValueString(val));
-
-            library_folders.push_back(folder);
-        }
-
-        item = XMLRPC_VectorNext(inventoryLibraryNode);
-    }
-
-    // Find and set the world library root folder.
-    XMLRPC_VALUE inventoryLibraryRootNode = XMLRPC_VectorGetValueWithID(result, "inventory-lib-root");
-    if (!inventoryLibraryRootNode)
-        throw XmlRpcException("Failed to read inventory, inventory-lib-root in the reply was not present!");
-
-    if (!inventoryLibraryRootNode || XMLRPC_GetValueType(inventoryLibraryRootNode) != xmlrpc_vector)
-        throw XmlRpcException("Failed to read inventory, inventory-lib--root in the reply was not properly formed!");
-
-    XMLRPC_VALUE inventoryLibraryRootNodeFirstElem = XMLRPC_VectorRewind(inventoryLibraryRootNode);
-    if (!inventoryLibraryRootNodeFirstElem || XMLRPC_GetValueType(inventoryRootNodeFirstElem) != xmlrpc_vector)
-        throw XmlRpcException("Failed to read inventory, inventory-lib-root in the reply was not properly formed!");
-
-    val = XMLRPC_VectorGetValueWithID(inventoryLibraryRootNodeFirstElem, "folder_id");
-    if (!val || XMLRPC_GetValueType(val) != xmlrpc_string)
-        throw XmlRpcException("Failed to read inventory, inventory-lib-root struct value folder_id not present!");
-
-    RexUUID inventoryLibraryRootFolderID(XMLRPC_GetValueString(val));
-    if (inventoryLibraryRootFolderID.IsNull())
-        throw XmlRpcException("Failed to read inventory, inventory-lib-root value folder_id was null or unparseable!");
-
-    // Find the root folder from the list of detached folders, and set it as the root folder to start with.
-    for(DetachedInventoryFolderList::iterator iter = library_folders.begin(); iter != library_folders.end(); ++iter)
-    {
-        if (iter->second.id == inventoryLibraryRootFolderID)
-        {
-            ProtocolUtilities::InventoryFolderSkeleton *root = inventory->GetRoot();
-            iter->second.editable = false;
-            root->AddChildFolder(iter->second);
-            library_folders.erase(iter);
-            break;
-        }
-    }
-
-    ProtocolUtilities::InventoryFolderSkeleton *worldLibrary = inventory->GetChildFolderById(inventoryLibraryRootFolderID);
-    if (!worldLibrary)
-        throw XmlRpcException("Failed to read inventory, inventory-lib-root value folder_id pointed to a nonexisting folder!");
-
-    // Insert the detached folders onto the tree view until all folders have been added or there are orphans left
-    // that cannot be added, and quit.
-    progress = true;
-    while(library_folders.size() > 0 && progress)
-    {
-        progress = false;
-        DetachedInventoryFolderList::iterator iter = library_folders.begin();
-        while(iter != library_folders.end())
-        {
-            DetachedInventoryFolderList::iterator next = iter;
-            ++next;
-
-            ProtocolUtilities::InventoryFolderSkeleton *parent = inventory->GetChildFolderById(iter->first);
-            if (parent)
-            {
-                // Mark all World Libary folder descendents non-editable.
-                iter->second.editable = false;
-                parent->AddChildFolder(iter->second);
-                progress = true;
-                library_folders.erase(iter);
-            }
-
-            iter = next;
-        }
-    }
-
-    return inventory;
-}
-
-/**
- *  Extracts buddylist from login reply xml data.
- *  \return BuddlyList object 
- *
- *  XML structure:
- *  "buddy-list"
- *    array:
- *      struct:
- *        string: "buddy_id" 
- *        i4: "buddy_rights_given"
- *        i4: "buddy_rights_has"
- */
-ProtocolUtilities::BuddyListPtr ExtractBuddyListFromXMLRPCReply(XmlRpcEpi &call)
-{
-    XmlRpcCall *xmlrpcCall = call.GetXMLRPCCall();
-    if (!xmlrpcCall)
-        throw XmlRpcException("Failed to read buddy list, no XMLRPC Reply to read!");
-
-    XMLRPC_REQUEST request = xmlrpcCall->GetReply();
-    if (!request)
-        throw XmlRpcException("Failed to read buddy list, no XMLRPC Reply to read!");
-
-    XMLRPC_VALUE result = XMLRPC_RequestGetData(request);
-    if (!result)
-        throw XmlRpcException("Failed to read buddy list, the XMLRPC Reply did not contain any data!");
-
-    XMLRPC_VALUE buddy_list_node = XMLRPC_VectorGetValueWithID(result, "buddy-list");
-
-    if (!buddy_list_node || XMLRPC_GetValueType(buddy_list_node) != xmlrpc_vector)
-        throw XmlRpcException("Failed to read buddy list, buddy-list in the reply was not properly formed!");
-
-    ProtocolUtilities::BuddyListPtr buddy_list = ProtocolUtilities::BuddyListPtr(new ProtocolUtilities::BuddyList());
-
-    XMLRPC_VALUE item = XMLRPC_VectorRewind(buddy_list_node);
-
-    while(item)
-    {
-        XMLRPC_VALUE_TYPE type = XMLRPC_GetValueType(item);
-        if (type == xmlrpc_vector) // xmlrpc-epi handles structs as arrays.
-        {
-            RexTypes::RexUUID id;
-            int rights_given = 0;
-            int rights_has = 0;
-
-            XMLRPC_VALUE val = XMLRPC_VectorGetValueWithID(item, "buddy_id");
-            if (val && XMLRPC_GetValueType(val) == xmlrpc_string)
-                id.FromString( XMLRPC_GetValueString(val) );
-
-            val = XMLRPC_VectorGetValueWithID(item, "buddy_rights_given");
-            if (val && XMLRPC_GetValueType(val) == xmlrpc_type_int)
-                rights_given = XMLRPC_GetValueInt(val);
-
-            val = XMLRPC_VectorGetValueWithID(item, "buddy_rights_has");
-            if (val && XMLRPC_GetValueType(val) == xmlrpc_type_int)
-                rights_has = XMLRPC_GetValueInt(val);
-
-            ProtocolUtilities::Buddy *buddy = new ProtocolUtilities::Buddy(id, rights_given, rights_has);
-            buddy_list->AddBuddy(buddy);
-        }
-
-        item = XMLRPC_VectorNext(buddy_list_node);
-    }
-
-    return buddy_list;
-}
-
-bool OpenSimLoginThread::PerformXMLRPCLogin()
-{
-    // create a MD5 hash for the password, MAC address and HDD serial number.
-    Poco::MD5Engine md5_engine;
-
-    md5_engine.update(password_.c_str(), password_.size());
-    std::string password_hash = "$1$" + md5_engine.digestToHex(md5_engine.digest());
-
-	std::string mac_addr = ProtocolUtilities::GetMACaddressString();
-    md5_engine.update(mac_addr.c_str(), mac_addr.size());
-    std::string mac_hash = md5_engine.digestToHex(md5_engine.digest());
-
-	std::string id0 = ProtocolUtilities::GetId0String();
-    md5_engine.update(id0.c_str(), id0.size());
-    std::string id0_hash = md5_engine.digestToHex(md5_engine.digest());
-
-    XmlRpcEpi call;
-    try
-    {
-        if (authentication_ && callMethod_ == "ClientAuthentication" )
-        {
-            call.Connect(authenticationAddress_, authenticationPort_);
-            call.CreateCall(callMethod_);
-        }
-        else
-        {
-            call.Connect(worldAddress_, worldPort_);
-            call.CreateCall(callMethod_);
-        }
-    }
-    catch(XmlRpcException& ex)
-    {
-        // Initialisation error.
-        ProtocolModuleOpenSim::LogError(ex.what());
-        return false;
-    }
-
-    try
-    {
-        if (!authentication_ && callMethod_ == std::string("login_to_simulator"))
-        {
-            // We're performing a login in OpenSim style, no external authentication server of any kind.
-            call.AddMember("first", firstName_);
-            call.AddMember("last", lastName_);
-            call.AddMember("passwd", password_hash);
-         }
-        else if(authentication_ && callMethod_ == std::string("ClientAuthentication"))
-        {
-            // We're performing an authentication method call to the Rex auth server. This is the first stage of
-            // Rex login.
-            std::string account = authenticationLogin_ + "@" + authenticationAddress_ + ":" +authenticationPort_; 
-            call.AddMember("account", account);
-            call.AddMember("passwd", password_hash);
-            std::string loginuri = "";
-
-            loginuri = loginuri+worldAddress_+":"+ worldPort_;
-            call.AddMember("loginuri", loginuri);
-        }
-        else if(authentication_ && callMethod_ == std::string("login_to_simulator") )
-        {
-            // We're logging in to the sim server after having authenticated with the Rex auth server first.
-            // This is the second stage of Rex login.
-            call.AddMember("sessionhash", threadState_->parameters.sessionHash);
-
-            std::string account = authenticationLogin_ + "@" + authenticationAddress_ + ":" + authenticationPort_; 
-            call.AddMember("account", account);
-            
-            // It seems that when connecting to a local authentication grid, firstname, lastname and password are
-            // needed, even though they were not supposed to.
-            call.AddMember("first", firstName_);
-            call.AddMember("last", lastName_);
-            call.AddMember("passwd", password_hash);
-
-            std::string address = authenticationAddress_ + ":" + authenticationPort_;
-            call.AddMember("AuthenticationAddress", address);
-            std::string loginuri = "";
-            if (!worldAddress_.find("http") != std::string::npos )
-                loginuri = "http://";
-
-            if ( authenticationLogin_ == std::string("openid") )
-                loginuri = loginuri + worldAddress_;
-            else
-                loginuri = loginuri + worldAddress_ + ":" + worldPort_;
-
-            call.AddMember("loginuri", loginuri.c_str());
-        }
-
-        call.AddMember("start", std::string("last")); // Starting position: last/home
-        call.AddMember("version", std::string("realXtend Naali 0.0.2"));  ///\todo Make build system create versioning information.
-        call.AddMember("channel", std::string("realXtend"));
-        call.AddMember("platform", std::string("Win")); ///\todo.
-        call.AddMember("mac", mac_hash);
-        call.AddMember("id0", id0_hash);
-        call.AddMember("last_exec_event", int(0)); // ?
-
-        // The contents of 'options' array unknown. ///\todo Go through them and identify what they really affect.
-        std::string arr = "options";
-        call.AddStringToArray(arr, "inventory-root");
-        call.AddStringToArray(arr, "inventory-skeleton");
-        call.AddStringToArray(arr, "inventory-lib-root");
-        call.AddStringToArray(arr, "inventory-lib-owner");
-        call.AddStringToArray(arr, "inventory-skel-lib");
-        call.AddStringToArray(arr, "initial-outfit");
-        call.AddStringToArray(arr, "gestures");
-        call.AddStringToArray(arr, "event_categories");
-        call.AddStringToArray(arr, "event_notifications");
-        call.AddStringToArray(arr, "classified_categories");
-        call.AddStringToArray(arr, "buddy-list");
-        call.AddStringToArray(arr, "ui-config");
-        call.AddStringToArray(arr, "tutorial_setting");
-        call.AddStringToArray(arr, "login-flags");
-        call.AddStringToArray(arr, "global-textures");
-    }
-    catch (XmlRpcException& ex)
-    {
-        // Initialisation error.
-        ProtocolModuleOpenSim::LogError(ex.what());
-        return false;
-    }
-
-    try
-    {
-        call.Send();
-    }
-    catch(XmlRpcException& ex)
-    {
-        //Send error
-        ProtocolModuleOpenSim::LogError(ex.what());
-        return false;
-    }
-
-    try
-    {
-        if (!authentication_)
-        {
-            // Clear authentication results from previous session, if any
-            threadState_->parameters.sessionHash = "";
-            threadState_->parameters.avatarStorageUrl = "";
-            
-            threadState_->parameters.sessionID.FromString(call.GetReply<std::string>("session_id"));
-            threadState_->parameters.agentID.FromString(call.GetReply<std::string>("agent_id"));
-            threadState_->parameters.circuitCode = call.GetReply<int>("circuit_code");
-            threadState_->parameters.seedCapabilities = call.GetReply<std::string>("seed_capability");
-            
-            threadState_->parameters.gridUrl = ExtractGridAddressFromXMLRPCReply(call);
-            if (threadState_->parameters.gridUrl.size() == 0)
-                throw XmlRpcException("Failed to extract sim_ip and sim_port from login_to_simulator reply!");
-
-            if (threadState_->parameters.sessionID.ToString() == std::string("") ||
-                threadState_->parameters.agentID.ToString() == std::string("") ||
-                threadState_->parameters.circuitCode == 0)
-                throw XmlRpcException("Failed to receive sessionID, agentID or circuitCode from login_to_simulator reply!");
-
-            try
-            {
-                threadState_->parameters.inventory = ExtractInventoryFromXMLRPCReply(call);
-            }
-            catch(XmlRpcException &e)
-            {
-                ProtocolModuleOpenSim::LogWarning("Failed to read inventory: " + std::string(e.what()));
-                threadState_->parameters.inventory = boost::shared_ptr<ProtocolUtilities::InventorySkeleton>(new ProtocolUtilities::InventorySkeleton);
-
-                // Add dummy folder with name indicating error to inventory.
-                ProtocolUtilities::InventoryFolderSkeleton *root = threadState_->parameters.inventory->GetRoot();
-                ProtocolUtilities::InventoryFolderSkeleton errorFolder;
-                errorFolder.name = "Inventory parsing failed. Check log for reason.";
-                root->AddChildFolder(errorFolder);
-            }
-            try
-            {
-                threadState_->parameters.buddy_list = ExtractBuddyListFromXMLRPCReply(call);
-            }
-            catch(XmlRpcException &e)
-            {
-                ProtocolModuleOpenSim::LogWarning("Failed to read buddy list: " + std::string(e.what()));
-                threadState_->parameters.buddy_list = ProtocolUtilities::BuddyListPtr(new ProtocolUtilities::BuddyList());
-            }
-        }
-        else if (authentication_ && callMethod_ != std::string("login_to_simulator")) 
-        {
-            // Authentication results
-            threadState_->parameters.sessionHash = call.GetReply<std::string>("sessionHash");
-            threadState_->parameters.gridUrl = std::string(call.GetReply<std::string>("gridUrl"));
-            //\bug the grid url provided by authentication server points to tcp port, but the grid url
-            /// is used in the code to connect to udp port
-            threadState_->parameters.avatarStorageUrl = std::string(call.GetReply<std::string>("avatarStorageUrl"));
-        }
-        else if (authentication_ && callMethod_ == std::string("login_to_simulator"))
-        {
-            threadState_->parameters.sessionID.FromString(call.GetReply<std::string>("session_id"));
-            threadState_->parameters.agentID.FromString(call.GetReply<std::string>("agent_id"));
-            threadState_->parameters.circuitCode = call.GetReply<int>("circuit_code");
-            threadState_->parameters.seedCapabilities = call.GetReply<std::string>("seed_capability");
-
-            ///\bug related to one 10 lines above. instead of using port defined in authentication server, 
-            /// use the one given by simulator.
-            /// Does this still apply? -jj. Is this a bug in the rex auth server? If so, flag as a workaround or something similar.
-            threadState_->parameters.gridUrl = ExtractGridAddressFromXMLRPCReply(call);
-            if (threadState_->parameters.gridUrl.size() == 0)
-                throw XmlRpcException("Failed to extract sim_ip and sim_port from login_to_simulator reply!");
-
-            try
-            {
-                threadState_->parameters.inventory = ExtractInventoryFromXMLRPCReply(call);
-            }
-            catch(XmlRpcException &e)
-            {
-                ProtocolModuleOpenSim::LogWarning("Failed to read inventory: " + std::string(e.what()));
-                threadState_->parameters.inventory = boost::shared_ptr<ProtocolUtilities::InventorySkeleton>(new ProtocolUtilities::InventorySkeleton);
-            }
-            try
-            {
-                threadState_->parameters.buddy_list = ExtractBuddyListFromXMLRPCReply(call);
-            }
-            catch(XmlRpcException &e)
-            {
-                ProtocolModuleOpenSim::LogWarning("Failed to read buddy list: " + std::string(e.what()));
-                threadState_->parameters.buddy_list = ProtocolUtilities::BuddyListPtr(new ProtocolUtilities::BuddyList());
-            }
-        }
-        else
-            throw XmlRpcException(std::string("Undefined login method ") + callMethod_ + " in XMLRPCLoginThread!");
-    }
-    catch(XmlRpcException& ex)
-    {
-        ProtocolModuleOpenSim::LogError(std::string("Login procedure threw a XMLRPCException, reason: \"") + ex.what()
-            + std::string("\"."));
-
-        // Read error message from reply
+        XmlRpcEpi call;
         try
         {
-            ///\todo transfer error message to login screen.
-            threadState_->errorMessage = call.GetReply<std::string>("message");
-            ProtocolModuleOpenSim::LogError(std::string("login_to_simulator reply returned the error message \"") +
-                threadState_->errorMessage + std::string("\"."));
+            if (callMethod_ == CLIENT_AUTHENTICATION )
+            {
+                call.Connect(authenticationAddress_, authenticationPort_);
+                call.CreateCall(callMethod_);
+            }
+            else if (callMethod_ == LOGIN_TO_SIMULATOR )
+            {
+                call.Connect(worldAddress_, worldPort_);
+                call.CreateCall(callMethod_);
+            }
         }
-        catch(XmlRpcException &ex)
+        catch(XmlRpcException& ex)
         {
-            ProtocolModuleOpenSim::LogError(std::string("login_to_simulator reply did not contain an error message (") +
-                ex.what() + std::string(")."));
+            ProtocolModuleOpenSim::LogError(ex.what());
+            return false;
         }
 
-        return false;
+        try
+        {
+            // CREATE MD5 HASHES
+            Poco::MD5Engine md5_engine;
+            // for PASSWORD
+            md5_engine.update(password_.c_str(), password_.size());
+            std::string password_hash = "$1$" + md5_engine.digestToHex(md5_engine.digest());
+	        // for MAC
+            std::string mac_addr = ProtocolUtilities::GetMACaddressString();
+            md5_engine.update(mac_addr.c_str(), mac_addr.size());
+            std::string mac_hash = md5_engine.digestToHex(md5_engine.digest());
+            // for ID0
+	        std::string id0 = ProtocolUtilities::GetId0String();
+            md5_engine.update(id0.c_str(), id0.size());
+            std::string id0_hash = md5_engine.digestToHex(md5_engine.digest());
+
+            // OPENSIM LOGIN, 1st and only iteration
+            if ( authentication_ == OPENSIM_AUTHENTICATION && callMethod_ == LOGIN_TO_SIMULATOR )
+            {
+                call.AddMember("first", firstName_);
+                call.AddMember("last", lastName_);
+                call.AddMember("passwd", password_hash);
+            }
+            // REALXTEND LOGIN, 1st iteration
+            else if (authentication_ == REALXTEND_AUTHENTICATION && callMethod_ == CLIENT_AUTHENTICATION)
+            {
+                call.AddMember("account", QString("%1@%2:%3").arg(authenticationLogin_.c_str(), authenticationAddress_.c_str(), authenticationPort_.c_str()).toStdString());
+                call.AddMember("passwd", password_hash);
+                call.AddMember("loginuri", QString("%1:%2").arg(worldAddress_.c_str(), worldPort_.c_str()).toStdString());
+            }
+            // REALXTEND LOGIN, 2nd iteration
+            else if (authentication_ == REALXTEND_AUTHENTICATION && callMethod_ == LOGIN_TO_SIMULATOR )
+            {
+                call.AddMember("sessionhash", threadState_->parameters.sessionHash);
+                call.AddMember("account", QString("%1@%2:%3").arg(authenticationLogin_.c_str(), authenticationAddress_.c_str(), authenticationPort_.c_str()).toStdString());
+                call.AddMember("first", "NotReallyNeeded");
+                call.AddMember("last", "NotReallyNeeded");
+                call.AddMember("passwd", password_hash);
+                call.AddMember("AuthenticationAddress", QString("%1:%2").arg(authenticationAddress_.c_str(), authenticationPort_.c_str()).toStdString());
+                call.AddMember("loginuri", QString("%1:%2").arg(worldAddress_.c_str(), worldPort_.c_str()).toStdString());
+            }
+
+            call.AddMember("start", QString("last").toStdString());
+            // TODO: Get version from config manager
+            call.AddMember("version", QString("realXtend Naali 0.0.2").toStdString());
+            call.AddMember("channel", QString("realXtend").toStdString());
+            // TODO: Get platform from OS
+            call.AddMember("platform", QString("Win").toStdString());
+            call.AddMember("mac", mac_hash);
+            call.AddMember("id0", id0_hash);
+            call.AddMember("last_exec_event", int(0));
+
+            // TODO: Go through them and identify what they really affect.
+            call.AddStringToArray(OPTIONS, "inventory-root");
+            call.AddStringToArray(OPTIONS, "inventory-skeleton");
+            call.AddStringToArray(OPTIONS, "inventory-lib-root");
+            call.AddStringToArray(OPTIONS, "inventory-lib-owner");
+            call.AddStringToArray(OPTIONS, "inventory-skel-lib");
+            call.AddStringToArray(OPTIONS, "initial-outfit");
+            call.AddStringToArray(OPTIONS, "gestures");
+            call.AddStringToArray(OPTIONS, "event_categories");
+            call.AddStringToArray(OPTIONS, "event_notifications");
+            call.AddStringToArray(OPTIONS, "classified_categories");
+            call.AddStringToArray(OPTIONS, "buddy-list");
+            call.AddStringToArray(OPTIONS, "ui-config");
+            call.AddStringToArray(OPTIONS, "tutorial_setting");
+            call.AddStringToArray(OPTIONS, "login-flags");
+            call.AddStringToArray(OPTIONS, "global-textures");
+        }
+        catch (XmlRpcException& ex)
+        {
+            ProtocolModuleOpenSim::LogError(ex.what());
+            return false;
+        }
+
+        /////////////////////////////////////
+        //           SEND CALL             //
+        /////////////////////////////////////
+
+        try
+        {
+            call.Send();
+        }
+        catch(XmlRpcException& ex)
+        {
+            ProtocolModuleOpenSim::LogError(ex.what());
+            return false;
+        }
+
+        /////////////////////////////////////
+        //          PARSE RESULTS          //
+        /////////////////////////////////////
+
+        try
+        {
+            if (authentication_ == OPENSIM_AUTHENTICATION && callMethod_ == LOGIN_TO_SIMULATOR)
+            {
+                // Grid url, Session ID, Agent ID, Cirtuit Code, Seed Caps
+                threadState_->parameters.sessionID.FromString(call.GetReply<std::string>("session_id"));
+                threadState_->parameters.agentID.FromString(call.GetReply<std::string>("agent_id"));
+                threadState_->parameters.circuitCode = call.GetReply<int>("circuit_code");
+                threadState_->parameters.seedCapabilities = call.GetReply<std::string>("seed_capability");
+                threadState_->parameters.gridUrl = ProtocolUtilities::GridParser::ExtractGridAddressFromXMLRPCReply(call);
+                
+                if (threadState_->parameters.gridUrl.size() == 0)
+                    throw XmlRpcException("Failed to extract sim_ip and sim_port from login_to_simulator reply!");
+                if (threadState_->parameters.sessionID.ToString() == std::string("") || 
+                    threadState_->parameters.agentID.ToString() == std::string("") || 
+                    threadState_->parameters.circuitCode == 0)
+                    throw XmlRpcException("Failed to receive sessionID, agentID or circuitCode from login_to_simulator reply!");
+
+                // Inventory
+                try
+                {
+                    threadState_->parameters.inventory = ProtocolUtilities::InventoryParser::ExtractInventoryFromXMLRPCReply(call);
+                }
+                catch (XmlRpcException &e)
+                {
+                    ProtocolModuleOpenSim::LogWarning(QString("Failed to read inventory: %1").arg(e.what()).toStdString());
+                    threadState_->parameters.inventory = boost::shared_ptr<ProtocolUtilities::InventorySkeleton>(new ProtocolUtilities::InventorySkeleton);
+                    ProtocolUtilities::InventoryParser::SetErrorFolder(threadState_->parameters.inventory->GetRoot());
+                }
+
+                // Buddy List
+                try
+                {
+                    threadState_->parameters.buddy_list = ProtocolUtilities::BuddyListParser::ExtractBuddyListFromXMLRPCReply(call);
+                }
+                catch (XmlRpcException &e)
+                {
+                    ProtocolModuleOpenSim::LogWarning(QString("Failed to read buddy list: %1").arg(e.what()).toStdString());
+                    threadState_->parameters.buddy_list = ProtocolUtilities::BuddyListPtr(new ProtocolUtilities::BuddyList());
+                }
+            }
+            else if (authentication_ == REALXTEND_AUTHENTICATION && callMethod_ == CLIENT_AUTHENTICATION) 
+            {
+                threadState_->parameters.sessionHash = "";
+                threadState_->parameters.avatarStorageUrl = "";
+                threadState_->parameters.sessionHash = call.GetReply<std::string>("sessionHash");
+                threadState_->parameters.gridUrl = std::string(call.GetReply<std::string>("gridUrl"));
+                //\bug the grid url provided by authentication server points to tcp port, but the grid url is used in the code to connect to udp port
+                threadState_->parameters.avatarStorageUrl = std::string(call.GetReply<std::string>("avatarStorageUrl"));
+            }
+            else if (authentication_ == REALXTEND_AUTHENTICATION && callMethod_ == LOGIN_TO_SIMULATOR)
+            {
+                // Grid url, Session ID, Agent ID, Cirtuit Code, Seed Caps
+                threadState_->parameters.sessionID.FromString(call.GetReply<std::string>("session_id"));
+                threadState_->parameters.agentID.FromString(call.GetReply<std::string>("agent_id"));
+                threadState_->parameters.circuitCode = call.GetReply<int>("circuit_code");
+                threadState_->parameters.seedCapabilities = call.GetReply<std::string>("seed_capability");
+                ///\bug related to one 10 lines above. instead of using port defined in authentication server, 
+                /// use the one given by simulator.
+                /// Does this still apply? -jj. Is this a bug in the rex auth server? If so, flag as a workaround or something similar.
+                threadState_->parameters.gridUrl = ProtocolUtilities::GridParser::ExtractGridAddressFromXMLRPCReply(call);
+                if (threadState_->parameters.gridUrl.size() == 0)
+                    throw XmlRpcException("Failed to extract sim_ip and sim_port from login_to_simulator reply!");
+
+                // Inventory
+                try
+                {
+                    threadState_->parameters.inventory = ProtocolUtilities::InventoryParser::ExtractInventoryFromXMLRPCReply(call);
+                }
+                catch(XmlRpcException &e)
+                {
+                    ProtocolModuleOpenSim::LogWarning(QString("Failed to read inventory: %1").arg(e.what()).toStdString());
+                    threadState_->parameters.inventory = boost::shared_ptr<ProtocolUtilities::InventorySkeleton>(new ProtocolUtilities::InventorySkeleton);
+                    ProtocolUtilities::InventoryParser::SetErrorFolder(threadState_->parameters.inventory->GetRoot());
+                }
+
+                // Buddy List
+                try
+                {
+                    threadState_->parameters.buddy_list = ProtocolUtilities::BuddyListParser::ExtractBuddyListFromXMLRPCReply(call);
+                }
+                catch(XmlRpcException &e)
+                {
+                    ProtocolModuleOpenSim::LogWarning(QString("Failed to read buddy list: %1").arg(e.what()).toStdString());
+                    threadState_->parameters.buddy_list = ProtocolUtilities::BuddyListPtr(new ProtocolUtilities::BuddyList());
+                }
+            }
+            else
+                throw XmlRpcException(QString("Undefined login method %1 at parsing call results in PerformXMLRPCLogin()").arg(callMethod_.c_str()).toStdString());
+        }
+        catch(XmlRpcException& ex)
+        {
+            ProtocolModuleOpenSim::LogError(QString("Login procedure threw a XMLRPCException \nReason: %1").arg(ex.what()).toStdString());
+            try
+            {
+                // TODO: transfer error message to login screen
+                threadState_->errorMessage = call.GetReply<std::string>("message");
+                ProtocolModuleOpenSim::LogError(QString("\nMessage: %1").arg(QString(threadState_->errorMessage.c_str())).toStdString());
+            }
+            catch (XmlRpcException &ex)
+            {
+                ProtocolModuleOpenSim::LogError(QString("\nMessage: <No Message Recieved>").toStdString());
+            }
+            return false;
+        }
+        return true;
     }
 
-    return true;
-}
-
+    volatile ProtocolUtilities::Connection::State OpenSimLoginThread::GetState() const
+    {
+        if (!ready_)
+		    return ProtocolUtilities::Connection::STATE_DISCONNECTED;
+        else
+            return threadState_->state;
+    }
 }

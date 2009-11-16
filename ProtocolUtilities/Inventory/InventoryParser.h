@@ -18,6 +18,8 @@ namespace ProtocolUtilities
         /// @param call Pass in the object to a XMLRPCEPI call that has already been performed. Only the reply part will be read by this function.
         /// @return The inventory object, or null pointer if an error occurred.
         static boost::shared_ptr<ProtocolUtilities::InventorySkeleton> ExtractInventoryFromXMLRPCReply(XmlRpcEpi &call);
+        
+        static void SetErrorFolder(ProtocolUtilities::InventoryFolderSkeleton *root);
     
     private:
         /// Checks if the name of the folder belongs to the harcoded OpenSim folders.

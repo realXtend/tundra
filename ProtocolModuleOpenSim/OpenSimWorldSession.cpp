@@ -31,11 +31,11 @@ namespace OpenSimProtocol
 			credentials_ = testCredentials;
 
 			// Try do OpenSim login with ProtocolModuleOpenSim
-			success = LoginToServer(credentials_->GetFirstName().toStdString(), 
-								    credentials_->GetLastName().toStdString(), 
-								    credentials_->GetPassword().toStdString(), 
-								    serverEntryPointUrl_.host().toStdString(), 
-								    boost::lexical_cast<std::string>( serverEntryPointUrl_.port() ), 
+			success = LoginToServer(credentials_->GetFirstName(), 
+								    credentials_->GetLastName(), 
+								    credentials_->GetPassword(), 
+								    serverEntryPointUrl_.host(), 
+                                    QString::number(serverEntryPointUrl_.port()), 
 								    &threadState_);
 		}
 		else
@@ -47,21 +47,19 @@ namespace OpenSimProtocol
 		return success;
 	}
 
-	bool OpenSimWorldSession::LoginToServer( const std::string& first_name,
-											   const std::string& last_name,
-											   const std::string& password,
-											   const std::string& address,
-											   const std::string& port,
-											   ProtocolUtilities::ConnectionThreadState *thread_state )
+	bool OpenSimWorldSession::LoginToServer(const QString& first_name,
+											const QString& last_name,
+											const QString& password,
+											const QString& address,
+											const QString& port,
+											ProtocolUtilities::ConnectionThreadState *thread_state )
 	{
 		// Get ProtocolModuleOpenSim
 		boost::shared_ptr<OpenSimProtocol::ProtocolModuleOpenSim> spOpenSim = networkOpensim_.lock();
 
 		if (spOpenSim.get())
 		{
-			std::string callMethod = "login_to_simulator";
-			spOpenSim->GetLoginWorker()->SetupXMLRPCLogin(first_name, last_name, password, address,
-														  port, callMethod, thread_state);
+			spOpenSim->GetLoginWorker()->PrepareOpenSimLogin(first_name, last_name, password, address, port, thread_state);
 			spOpenSim->SetAuthenticationType(ProtocolUtilities::AT_OpenSim);
 			// Start the thread.
 			boost::thread(boost::ref( *spOpenSim->GetLoginWorker() ));

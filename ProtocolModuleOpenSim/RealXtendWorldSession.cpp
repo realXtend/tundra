@@ -32,14 +32,12 @@ namespace OpenSimProtocol
 			credentials_->SetAuthenticationUrl( ValidateUrl(credentials_->GetAuthenticationUrl().toString(), WorldSessionInterface::RealXtendAuthenticationServer) );
 
 			// Try do RealXtend auth based login with ProtocolModuleOpenSim
-			success = LoginToServer(std::string("realXtend"),
-									std::string("realXtend"),
-									credentials_->GetPassword().toStdString(),
-									serverEntryPointUrl_.host().toStdString(),
-									boost::lexical_cast<std::string>( serverEntryPointUrl_.port() ),
-									credentials_->GetAuthenticationUrl().host().toStdString(),
-									boost::lexical_cast<std::string>( credentials_->GetAuthenticationUrl().port() ),
-									credentials_->GetIdentity().toStdString(),
+			success = LoginToServer(credentials_->GetPassword(),
+									serverEntryPointUrl_.host(),
+                                    QString::number(serverEntryPointUrl_.port()),
+									credentials_->GetAuthenticationUrl().host(),
+									QString::number(credentials_->GetAuthenticationUrl().port()),
+									credentials_->GetIdentity(),
 									&threadState_);
 		}
 		else
@@ -51,25 +49,21 @@ namespace OpenSimProtocol
 		return success;
 	}
 
-	bool RealXtendWorldSession::LoginToServer( const std::string& first_name,
-											   const std::string& last_name,
-											   const std::string& password,
-											   const std::string& address,
-											   const std::string& port,
-											   const std::string& auth_server_address_noport,
-											   const std::string& auth_server_port,
-											   const std::string& auth_login,
-											   ProtocolUtilities::ConnectionThreadState *thread_state )
+	bool RealXtendWorldSession::LoginToServer(const QString& password,
+											  const QString& address,
+											  const QString& port,
+											  const QString& auth_server_address_noport,
+											  const QString& auth_server_port,
+											  const QString& auth_login,
+											  ProtocolUtilities::ConnectionThreadState *thread_state )
 	{
 		// Get ProtocolModuleOpenSim
 		boost::shared_ptr<OpenSimProtocol::ProtocolModuleOpenSim> spOpenSim = networkOpensim_.lock();
 
 		if (spOpenSim.get())
 		{
-
-			std::string callMethod = "ClientAuthentication";
-			spOpenSim->GetLoginWorker()->SetupXMLRPCLogin(first_name, last_name, password, address, port, callMethod, 
-														  thread_state, auth_login, auth_server_address_noport, auth_server_port, true);
+			spOpenSim->GetLoginWorker()->PrepareRealXtendLogin(password, address, port, thread_state, auth_login, 
+                                                               auth_server_address_noport, auth_server_port);
 			spOpenSim->SetAuthenticationType(ProtocolUtilities::AT_RealXtend);
 			// Start the login thread.
 			boost::thread(boost::ref( *spOpenSim->GetLoginWorker() ));
