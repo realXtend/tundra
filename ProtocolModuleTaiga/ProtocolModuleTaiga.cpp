@@ -160,8 +160,7 @@ namespace TaigaProtocol
 		connected_ = true;
 
 		// Request capabilities from the server.
-		Core::Thread thread(boost::bind(&ProtocolModuleTaiga::RequestCapabilities, this,
-			GetClientParameters().seedCapabilities));
+		Core::Thread thread(boost::bind(&ProtocolModuleTaiga::RequestCapabilities, this, GetClientParameters().seedCapabilities));
 
 		return true;
 	}

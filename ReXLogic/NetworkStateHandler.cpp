@@ -9,7 +9,7 @@
 namespace RexLogic
 {
     NetworkStateEventHandler::NetworkStateEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule)
-    : framework_(framework), rexlogicmodule_(rexlogicmodule)
+        : framework_(framework), rexlogicmodule_(rexlogicmodule)
     {
     }
 
@@ -22,24 +22,24 @@ namespace RexLogic
         switch(event_id)
         {
             case ProtocolUtilities::Events::EVENT_SERVER_CONNECTED:
-                {   
-                    // The client has connected to the server. Create a new scene for that.
-                    rexlogicmodule_->CreateNewActiveScene("World");
-                    rexlogicmodule_->GetLoginUI()->Connected();
-                    break;
-                }
+            {   
+                // The client has connected to the server. Create a new scene for that.
+                rexlogicmodule_->CreateNewActiveScene("World");
+                rexlogicmodule_->GetLoginUI()->Connected();
+                break;
+            }
             case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
-                {
-                    // Might be user quitting or server dropping connection.
-                    // This event occurs when OpenSimProtocolModule has already closed connection. 
-                    // Make sure the rexlogic also thinks connection is closed.
-                    if(rexlogicmodule_->GetServerConnection()->IsConnected())
-                        rexlogicmodule_->GetServerConnection()->ForceServerDisconnect();
-                        
-                    if(framework_->HasScene("World"))
-                        rexlogicmodule_->DeleteScene("World");
-                    break;
-                }
+            {
+                // Might be user quitting or server dropping connection.
+                // This event occurs when OpenSimProtocolModule has already closed connection. 
+                // Make sure the rexlogic also thinks connection is closed.
+                if (rexlogicmodule_->GetServerConnection()->IsConnected())
+                    rexlogicmodule_->GetServerConnection()->ForceServerDisconnect();
+                    
+                if (framework_->HasScene("World"))
+                    rexlogicmodule_->DeleteScene("World");
+                break;
+            }
             default:
                 break;
         }

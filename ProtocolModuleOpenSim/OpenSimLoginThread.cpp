@@ -321,16 +321,16 @@ namespace OpenSimProtocol
         }
         catch(XmlRpcException& ex)
         {
-            ProtocolModuleOpenSim::LogError(QString("Login procedure threw a XMLRPCException \nReason: %1").arg(ex.what()).toStdString());
+            ProtocolModuleOpenSim::LogError(QString("Login procedure threw a XMLRPCException >>> Reason: %1").arg(ex.what()).toStdString());
             try
             {
                 // TODO: transfer error message to login screen
                 threadState_->errorMessage = call.GetReply<std::string>("message");
-                ProtocolModuleOpenSim::LogError(QString("\nMessage: %1").arg(QString(threadState_->errorMessage.c_str())).toStdString());
+                ProtocolModuleOpenSim::LogError(QString(">>> Message: %1").arg(QString(threadState_->errorMessage.c_str())).toStdString());
             }
             catch (XmlRpcException &ex)
             {
-                ProtocolModuleOpenSim::LogError(QString("\nMessage: <No Message Recieved>").toStdString());
+                ProtocolModuleOpenSim::LogError(QString(">>> Message: <No Message Recieved>").toStdString());
             }
             return false;
         }
