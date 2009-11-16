@@ -644,6 +644,7 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
     }
 
     activeScene_ = framework_->CreateScene(name);
+    framework_->SetDefaultWorldScene(activeScene_);
 
     // Also create a default terrain to the Scene. This is done here dynamically instead of fixed in RexLogic,
     // since we might have 0-N terrains later on, depending on where we actually connect to. Now of course
