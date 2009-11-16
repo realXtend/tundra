@@ -38,6 +38,7 @@ namespace OpenSimProtocol
 	// virtual
 	void ProtocolModuleOpenSim::Initialize()
 	{
+        loginWorker_.SetFramework(GetFramework());
 		LogInfo("System " + Name() + " initialized.");
 	}
 

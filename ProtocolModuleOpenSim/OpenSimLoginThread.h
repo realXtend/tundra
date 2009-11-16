@@ -25,6 +25,9 @@ namespace OpenSimProtocol
         /// Destructor.
         virtual ~OpenSimLoginThread();
 
+        /// Set framework
+        void SetFramework(Foundation::Framework* framework) { framework_  = framework; }
+
         /// Thread entry point.
         void operator()();
 
@@ -94,6 +97,9 @@ namespace OpenSimProtocol
 
         /// Information which is received via the XML-RPC reply from the server.
 		ProtocolUtilities::ConnectionThreadState *threadState_;
+
+        /// Framework pointer
+        Foundation::Framework* framework_;
 
         /// Information needed for the XML-RPC login procedure.
         std::string firstName_;
