@@ -46,13 +46,6 @@ namespace ProtocolUtilities
 
 		//! Set server entry point url
 		virtual void SetServerEntryPointUrl(const QUrl &newUrl) = 0;
-
-		//! Logging functionality
-		MODULE_LOGGING_FUNCTIONS;
-        //! returns name of this module. Needed for logging.
-		static const std::string &NameStatic() { return std::string("ProtocolUtilities"); }
-		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Unknown;
-
 	};
 
 }
