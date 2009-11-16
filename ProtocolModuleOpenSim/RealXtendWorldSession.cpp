@@ -76,7 +76,7 @@ namespace OpenSimProtocol
 		}
 		else
 		{
-			LogInfo("Could not lock ProtocolModuleOpenSim");
+			ProtocolModuleOpenSim::LogInfo("Could not lock ProtocolModuleOpenSim");
 			return false;
 		}
 
