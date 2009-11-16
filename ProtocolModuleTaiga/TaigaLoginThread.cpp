@@ -13,6 +13,7 @@
 #include "OpenSim/Grid.h"
 #include "OpenSim/BuddyListParser.h"
 #include "Inventory/InventoryParser.h"
+#include "Platform.h"
 
 // Extenal lib includes
 #include <boost/shared_ptr.hpp>
@@ -96,17 +97,7 @@ namespace TaigaProtocol
             const std::string &group = Foundation::Framework::ConfigurationGroup();
             call.AddMember("version", QString("realXtend Naali %1.%2").arg(framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_major").c_str(), framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_minor").c_str()).toStdString());
             call.AddMember("channel", QString("realXtend").toStdString());
-            QString platform;
-            #ifdef Q_WS_WIN
-            platform = "Win";
-            #endif
-            #ifdef Q_WS_X11
-            platform = "X11";
-            #endif
-            #ifdef Q_WS_MAC
-            platform = "Mac";
-            #endif
-            call.AddMember("platform", platform.toStdString());
+            call.AddMember("platform", ProtocolUtilities::GetPlatform().toStdString());
             call.AddMember("mac", mac_hash);
             call.AddMember("id0", id0_hash);
             call.AddMember("last_exec_event", int(0));

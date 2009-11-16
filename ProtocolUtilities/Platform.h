@@ -2,8 +2,9 @@
 #ifndef incl_Protocol_Platform_h
 #define incl_Protocol_Platform_h
 
-#ifdef WIN32
+#include <QString>
 
+#ifdef WIN32
 #include <Windows.h>
 
 // The following macros set and clear, respectively, given bits
@@ -40,5 +41,23 @@ void HeapDebug(_CrtMemState *s1, _CrtMemState *s2)
 }
 
 #endif
+
+namespace ProtocolUtilities
+{
+    static QString GetPlatform()
+    {
+        QString platform;
+        #ifdef Q_WS_WIN
+        platform = "Win";
+        #endif
+        #ifdef Q_WS_X11
+        platform = "X11";
+        #endif
+        #ifdef Q_WS_MAC
+        platform = "Mac";
+        #endif
+        return platform;
+    }
+}
 
 #endif // incl_Protocol_Platform_h
