@@ -49,12 +49,12 @@ namespace OpenSimProtocol
 
                 if ( authentication_ == REALXTEND_AUTHENTICATION )
                 {
-                        threadState_->state = ProtocolUtilities::Connection::STATE_XMLRPC_AUTH_REPLY_RECEIVED;
-                        callMethod_ = LOGIN_TO_SIMULATOR;
-                        if ( PerformXMLRPCLogin() )
-                            threadState_->state = ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED;
-                        else
-                            threadState_->state = ProtocolUtilities::Connection::STATE_LOGIN_FAILED;
+                    threadState_->state = ProtocolUtilities::Connection::STATE_XMLRPC_AUTH_REPLY_RECEIVED;
+                    callMethod_ = LOGIN_TO_SIMULATOR;
+                    if ( PerformXMLRPCLogin() )
+                        threadState_->state = ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED;
+                    else
+                        threadState_->state = ProtocolUtilities::Connection::STATE_LOGIN_FAILED;
                 }
             }
             else
@@ -179,11 +179,20 @@ namespace OpenSimProtocol
             }
 
             call.AddMember("start", QString("last").toStdString());
-            // TODO: Get version from config manager
-            call.AddMember("version", QString("realXtend Naali 0.0.2").toStdString());
+            const std::string &group = Foundation::Framework::ConfigurationGroup();
+            call.AddMember("version", QString("realXtend Naali %1.%2").arg(framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_major").c_str(), framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_minor").c_str()).toStdString());
             call.AddMember("channel", QString("realXtend").toStdString());
-            // TODO: Get platform from OS
-            call.AddMember("platform", QString("Win").toStdString());
+            QString platform;
+            #ifdef Q_WS_WIN
+            platform = "Win";
+            #endif
+            #ifdef Q_WS_X11
+            platform = "X11";
+            #endif
+            #ifdef Q_WS_MAC
+            platform = "Mac";
+            #endif
+            call.AddMember("platform", platform.toStdString());
             call.AddMember("mac", mac_hash);
             call.AddMember("id0", id0_hash);
             call.AddMember("last_exec_event", int(0));
