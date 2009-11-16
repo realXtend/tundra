@@ -104,13 +104,10 @@ UICanvas::~UICanvas()
     locationPolicy_ = 0;
     delete appearPolicy_;
     appearPolicy_ = 0;
+    delete view_->scene();
     delete view_;
     view_ = 0;
-    /*
-    QGraphicsScene* scene = view_->scene();
-    delete scene;
-    scene = 0;
-    */
+  
 }
 
 QPointF UICanvas::GetPosition() const
