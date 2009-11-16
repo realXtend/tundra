@@ -138,7 +138,7 @@ namespace OpenSimProtocol
 		eventManager_->SendEvent(networkEventOutCategory_, msg->GetMessageID(), &data);
 	}
 
-	bool ProtocolModuleOpenSim::CreateUDPConnection(const char *address, int port)
+	bool ProtocolModuleOpenSim::CreateUdpConnection(const char *address, int port)
 	{
 		loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_INIT_UDP);
 

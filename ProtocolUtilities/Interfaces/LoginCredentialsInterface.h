@@ -9,13 +9,13 @@
 
 namespace ProtocolUtilities
 {
-	class LoginCredentialsInterface
-	{
+    class LoginCredentialsInterface
+    {
 
-	public:
-		virtual QString GetIdentity() = 0;
+    public:
+        virtual QString GetIdentity() = 0;
 
-	};
+    };
 
 }
 

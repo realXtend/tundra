@@ -13,13 +13,13 @@
 namespace ProtocolUtilities
 {
 
-  	/// Protocol type enumeration.
-	enum ProtocolType
-	{
-		NotSet = 0,
-		OpenSim,
-		Taiga
-	};
+      /// Protocol type enumeration.
+    enum ProtocolType
+    {
+        NotSet = 0,
+        OpenSim,
+        Taiga
+    };
 
     /// Info structure used to pass messages between the main thread and the XMLRPC connect thread.
     struct ClientParameters
@@ -48,8 +48,8 @@ namespace ProtocolUtilities
             std::string avatarStorageUrl = "";
             std::string seedCapabilities = "";
             //inventory.reset();
-			if ( buddy_list )
-				buddy_list->Clear();
+            if ( buddy_list )
+                buddy_list->Clear();
         }
 
         RexUUID agentID;
@@ -60,8 +60,8 @@ namespace ProtocolUtilities
         std::string gridUrl;
         std::string avatarStorageUrl;
         std::string seedCapabilities;
-		boost::shared_ptr<InventorySkeleton> inventory;
-		BuddyListPtr buddy_list;
+        boost::shared_ptr<InventorySkeleton> inventory;
+        BuddyListPtr buddy_list;
     };
 
     /// Defines the events posted by the OpenSimProtocolModule in category <b>NetworkState</b>.
@@ -148,14 +148,14 @@ namespace ProtocolUtilities
     class AuthenticationEventData : public Foundation::EventDataInterface
     {
     public:
-		AuthenticationEventData(const AuthenticationType &auth_type, const std::string &identity_url = "", const std::string &host_Url = "") 
-			: type(auth_type), identityUrl(identity_url), hostUrl(host_Url) {}
+        AuthenticationEventData(const AuthenticationType &auth_type, const std::string &identity_url = "", const std::string &host_Url = "") 
+            : type(auth_type), identityUrl(identity_url), hostUrl(host_Url) {}
         virtual ~AuthenticationEventData() {}
-		void SetIdentity(const std::string &url) { identityUrl = url; }
-		void SetHost(const std::string &url) { hostUrl = url; }
+        void SetIdentity(const std::string &url) { identityUrl = url; }
+        void SetHost(const std::string &url) { hostUrl = url; }
         AuthenticationType type;
         std::string identityUrl;
-		std::string hostUrl;
+        std::string hostUrl;
     };
 
     /// Event data interface for inbound messages.
@@ -167,7 +167,7 @@ namespace ProtocolUtilities
             message(msg), messageID(id) {}
         virtual ~NetworkEventInboundData() {}
 
-		NetMsgID messageID;
+        NetMsgID messageID;
         NetInMessage *message;
     };
 
@@ -176,7 +176,7 @@ namespace ProtocolUtilities
     class NetworkEventOutboundData : public Foundation::EventDataInterface
     {
     public:
-		NetworkEventOutboundData(NetMsgID id, const NetOutMessage *msg) :
+        NetworkEventOutboundData(NetMsgID id, const NetOutMessage *msg) :
             message(msg), messageID(id) {}
         virtual ~NetworkEventOutboundData() {}
 

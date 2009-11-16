@@ -22,22 +22,22 @@
 // This routine place comments at the head of a section of debug output
 void OutputHeading(const char *explanation)
 {
-	_RPT1( _CRT_WARN, "\n\n%s:\n**************************************************************************\n", explanation );
+    _RPT1( _CRT_WARN, "\n\n%s:\n**************************************************************************\n", explanation );
 }
 
 void HeapDebug(_CrtMemState *s1, _CrtMemState *s2)
 {
-	_CrtMemState s3;
-	// Now all the request memory is unnecessary.
+    _CrtMemState s3;
+    // Now all the request memory is unnecessary.
 #ifndef _DEBUG
-	printf("Skipping memory heap checking in non-debug mode.\n");
-	return;
+    printf("Skipping memory heap checking in non-debug mode.\n");
+    return;
 #endif
-	if (_CrtMemDifference(&s3, s1, s2))
-	{
-		OutputHeading("There are memory leaks. Changes between two memory checkpoints");
-		_CrtMemDumpStatistics(&s3);
-	}
+    if (_CrtMemDifference(&s3, s1, s2))
+    {
+        OutputHeading("There are memory leaks. Changes between two memory checkpoints");
+        _CrtMemDumpStatistics(&s3);
+    }
 }
 
 #endif

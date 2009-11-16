@@ -348,7 +348,7 @@ void RexLogicModule::Update(Core::f64 frametime)
         /// \todo Move this to OpenSimProtocolModule.
         if (!rexserver_connection_->IsConnected() &&
             rexserver_connection_->GetConnectionState() == ProtocolUtilities::Connection::STATE_INIT_UDP)
-            rexserver_connection_->CreateUDPConnection();
+            rexserver_connection_->CreateUdpConnection();
 
         if (send_input_state_)
         {

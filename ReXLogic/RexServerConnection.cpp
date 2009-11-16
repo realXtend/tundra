@@ -19,26 +19,26 @@ namespace RexLogic
 RexServerConnection::RexServerConnection(Foundation::Framework *framework) :
     framework_(framework),
     connected_(false),
-	connecting_(false),
+    connecting_(false),
     state_(ProtocolUtilities::Connection::STATE_DISCONNECTED),
     serverAddress_(""),
     serverPort_(0),
-    connection_type_(DirectConnection)
+    connection_type_(DirectConnection),
+    clienBlockSerialNumber_(0)
 {
     myInfo_.Reset();
-	SetCurrentProtocolType(ProtocolUtilities::NotSet);
+    SetCurrentProtocolType(ProtocolUtilities::NotSet);
 }
 
 RexServerConnection::~RexServerConnection()
 {
-
 }
 
-bool RexServerConnection::CreateUDPConnection()
+bool RexServerConnection::CreateUdpConnection()
 {
-	protocolModule_ = GetCurrentProtocolModule();
+    protocolModule_ = GetCurrentProtocolModule();
 
-	// Try to get the Protocol Interface
+    // Try to get the Protocol Interface
     if (!protocolModule_.get())
     {
         RexLogicModule::LogError("Getting network interface did not succeed.");
@@ -71,10 +71,10 @@ bool RexServerConnection::CreateUDPConnection()
             }
         }
 
-        connect_result = protocolModule_->CreateUDPConnection(serveraddress_noport.c_str(), port);
+        connect_result = protocolModule_->CreateUdpConnection(serveraddress_noport.c_str(), port);
     }
     else
-        connect_result = protocolModule_->CreateUDPConnection(serverAddress_.c_str(), serverPort_);
+        connect_result = protocolModule_->CreateUdpConnection(serverAddress_.c_str(), serverPort_);
 
     if (connect_result)
     {
@@ -112,7 +112,7 @@ bool RexServerConnection::CreateUDPConnection()
 
 void RexServerConnection::RequestLogout()
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
     SendLogoutRequestPacket();
@@ -120,22 +120,22 @@ void RexServerConnection::RequestLogout()
 
 void RexServerConnection::ForceServerDisconnect()
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
-	protocolModule_ = GetCurrentProtocolModule();
-	if (protocolModule_.get())
-	{
-		protocolModule_->DisconnectFromServer();
-		connected_ = false;
-	}
-	else
-		RexLogicModule::LogWarning("Could not force disconnect, can't get a handle to network interface");
+    protocolModule_ = GetCurrentProtocolModule();
+    if (protocolModule_.get())
+    {
+        protocolModule_->DisconnectFromServer();
+        connected_ = false;
+    }
+    else
+        RexLogicModule::LogWarning("Could not force disconnect, can't get a handle to network interface");
 }
 
 void RexServerConnection::SendUseCircuitCodePacket()
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
     ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgUseCircuitCode);
@@ -151,12 +151,12 @@ void RexServerConnection::SendUseCircuitCodePacket()
 
 void RexServerConnection::SendAgentWearablesRequestPacket()
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
     ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentWearablesRequest);
     assert(m);
-    
+
     m->AddUUID(myInfo_.agentID);
     m->AddUUID(myInfo_.sessionID);
     m->MarkReliable();
@@ -166,7 +166,7 @@ void RexServerConnection::SendAgentWearablesRequestPacket()
 
 void RexServerConnection::SendCompleteAgentMovementPacket()
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
     ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgCompleteAgentMovement);
@@ -182,7 +182,7 @@ void RexServerConnection::SendCompleteAgentMovementPacket()
 
 void RexServerConnection::SendAgentThrottlePacket()
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
     Core::Real max_bits_per_second = framework_->GetDefaultConfig().DeclareSetting("RexLogicModule", "max_bits_per_second", 1000000.0f);
@@ -212,9 +212,18 @@ void RexServerConnection::SendAgentThrottlePacket()
     FinishMessageBuilding(m);
 }
 
+void RexServerConnection::SendRexStartupPacket(const std::string& state)
+{
+    Core::StringVector strings;
+
+    strings.push_back(myInfo_.agentID.ToString());
+    strings.push_back(state);
+    SendGenericMessage("RexStartup", strings);
+}
+
 void RexServerConnection::SendLogoutRequestPacket()
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
     ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgLogoutRequest);
@@ -230,7 +239,7 @@ void RexServerConnection::SendLogoutRequestPacket()
 
 void RexServerConnection::SendChatFromViewerPacket(const std::string &text)
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
     ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgChatFromViewer);
@@ -247,7 +256,7 @@ void RexServerConnection::SendChatFromViewerPacket(const std::string &text)
 
 void RexServerConnection::SendImprovedInstantMessagePacket(const RexTypes::RexUUID &target, const std::string &text)
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
     ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgImprovedInstantMessage);
@@ -277,7 +286,7 @@ void RexServerConnection::SendImprovedInstantMessagePacket(const RexTypes::RexUU
 
 void RexServerConnection::SendObjectAddPacket(const RexTypes::Vector3 &position)
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
     ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectAdd);
@@ -315,7 +324,10 @@ void RexServerConnection::SendObjectAddPacket(const RexTypes::Vector3 &position)
     m->AddU16(0);               // ProfileEnd
     m->AddU16(0);               // ProfileHollow
     m->AddU8(1);                // BypassRaycast
-    m->AddVector3(position);    // RayStart     ///\note We use same position for both RayStart and RayEnd.
+    ///\note We use same position for both RayStart and RayEnd.
+    /// These params are probably meant to use that RayStart is the camera position and 
+    /// RayEnd the actual raycast result position.
+    m->AddVector3(position);    // RayStart
     m->AddVector3(position);    // RayEnd
     m->AddUUID(RexUUID());      // RayTargetID
     m->AddU8(0);                // RayEndIsIntersection
@@ -328,7 +340,7 @@ void RexServerConnection::SendObjectAddPacket(const RexTypes::Vector3 &position)
 
 void RexServerConnection::SendObjectDeletePacket(const uint32_t &local_id, const bool &force)
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
     ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDelete);
@@ -348,7 +360,7 @@ void RexServerConnection::SendObjectDeletePacket(const uint32_t &local_id, const
 
 void RexServerConnection::SendObjectDeletePacket(const std::vector<uint32_t> &local_id_list, const bool &force)
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
     ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDelete);
@@ -371,7 +383,7 @@ void RexServerConnection::SendAgentUpdatePacket(Core::Quaternion bodyrot, Core::
     RexTypes::Vector3 camcenter, RexTypes::Vector3 camataxis, RexTypes::Vector3 camleftaxis, RexTypes::Vector3 camupaxis,
     float fardist, uint32_t controlflags, uint8_t flags)
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
     ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentUpdate);
@@ -1151,13 +1163,26 @@ void RexServerConnection::SendGenericMessageBinary(const std::string& method, co
     FinishMessageBuilding(m);
 }
 
-void RexServerConnection::SendRexStartupPacket(const std::string& state)
+void RexServerConnection::SendAgentPausePacket()
 {
-    Core::StringVector strings;
-    
-    strings.push_back(myInfo_.agentID.ToString());
-    strings.push_back(state);
-    SendGenericMessage("RexStartup", strings);
+    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentPause);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(myInfo_.agentID);
+    m->AddUUID(myInfo_.sessionID);
+    m->AddU32(GetNextClienBlockSerialNumber());
+}
+
+void RexServerConnection::SendAgentResumePacket()
+{
+    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentResume);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(myInfo_.agentID);
+    m->AddUUID(myInfo_.sessionID);
+    m->AddU32(GetNextClienBlockSerialNumber());
 }
 
 std::string RexServerConnection::GetCapability(const std::string &name)
@@ -1174,12 +1199,12 @@ std::string RexServerConnection::GetCapability(const std::string &name)
 
 volatile ProtocolUtilities::Connection::State RexServerConnection::GetConnectionState()
 {
-	protocolModule_ = GetCurrentProtocolModule();
-	if (!protocolModule_.get())
-	{
-		return ProtocolUtilities::Connection::STATE_ENUM_COUNT;
-	}
-	return protocolModule_->GetConnectionState();
+    protocolModule_ = GetCurrentProtocolModule();
+    if (!protocolModule_.get())
+    {
+        return ProtocolUtilities::Connection::STATE_ENUM_COUNT;
+    }
+    return protocolModule_->GetConnectionState();
 }
 
 ProtocolUtilities::NetOutMessage *RexServerConnection::StartMessageBuilding(const ProtocolUtilities::NetMsgID &message_id)
@@ -1208,90 +1233,90 @@ void RexServerConnection::FinishMessageBuilding(ProtocolUtilities::NetOutMessage
 
 const void RexServerConnection::SetCurrentProtocolType(ProtocolUtilities::ProtocolType newType)
 {
-	currentProtocolType_ = newType;
-	if ( currentProtocolType_ == ProtocolUtilities::OpenSim )
-	{
-		netInterfaceTaiga_ = boost::shared_ptr<TaigaProtocol::ProtocolModuleTaiga>();
-		netInterfaceOpenSim_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::ProtocolModuleOpenSim>(Foundation::Module::MT_OpenSimProtocol);
-		connecting_ = true;
-		boost::shared_ptr<OpenSimProtocol::ProtocolModuleOpenSim> sp = netInterfaceOpenSim_.lock();
-		if ( !sp.get() )
-		{
-			RexLogicModule::LogError("Getting ProtocolModuleOpenSim network interface did not succeed");
-			connecting_ = false;
-		}
-	}
-	else if (currentProtocolType_ == ProtocolUtilities::Taiga)
-	{
-		netInterfaceOpenSim_ = boost::shared_ptr<OpenSimProtocol::ProtocolModuleOpenSim>();
-		netInterfaceTaiga_ = framework_->GetModuleManager()->GetModule<TaigaProtocol::ProtocolModuleTaiga>(Foundation::Module::MT_TaigaProtocol);
-		connecting_ = true;
-		boost::shared_ptr<TaigaProtocol::ProtocolModuleTaiga> sp = netInterfaceTaiga_.lock();
-		if ( !sp.get() )
-		{
-			RexLogicModule::LogError("Getting ProtocolModuleTaiga network interface did not succeed");
-			connecting_ = false;
-		}
-	}
-	else if (currentProtocolType_ == ProtocolUtilities::NotSet)
-	{
-		RexLogicModule::LogError("Setting ProtocolType to NotSet");
-		connecting_ = false;
-	}
+    currentProtocolType_ = newType;
+    if ( currentProtocolType_ == ProtocolUtilities::OpenSim )
+    {
+        netInterfaceTaiga_ = boost::shared_ptr<TaigaProtocol::ProtocolModuleTaiga>();
+        netInterfaceOpenSim_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::ProtocolModuleOpenSim>(Foundation::Module::MT_OpenSimProtocol);
+        connecting_ = true;
+        boost::shared_ptr<OpenSimProtocol::ProtocolModuleOpenSim> sp = netInterfaceOpenSim_.lock();
+        if ( !sp.get() )
+        {
+            RexLogicModule::LogError("Getting ProtocolModuleOpenSim network interface did not succeed");
+            connecting_ = false;
+        }
+    }
+    else if (currentProtocolType_ == ProtocolUtilities::Taiga)
+    {
+        netInterfaceOpenSim_ = boost::shared_ptr<OpenSimProtocol::ProtocolModuleOpenSim>();
+        netInterfaceTaiga_ = framework_->GetModuleManager()->GetModule<TaigaProtocol::ProtocolModuleTaiga>(Foundation::Module::MT_TaigaProtocol);
+        connecting_ = true;
+        boost::shared_ptr<TaigaProtocol::ProtocolModuleTaiga> sp = netInterfaceTaiga_.lock();
+        if ( !sp.get() )
+        {
+            RexLogicModule::LogError("Getting ProtocolModuleTaiga network interface did not succeed");
+            connecting_ = false;
+        }
+    }
+    else if (currentProtocolType_ == ProtocolUtilities::NotSet)
+    {
+        RexLogicModule::LogError("Setting ProtocolType to NotSet");
+        connecting_ = false;
+    }
 }
 
 const boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> RexServerConnection::GetCurrentProtocolModule()
 {
-	if ( currentProtocolType_ == ProtocolUtilities::OpenSim )
-		return netInterfaceOpenSim_.lock();
-	else if ( currentProtocolType_ == ProtocolUtilities::Taiga )
-		return netInterfaceTaiga_.lock();
-	else if ( currentProtocolType_ == ProtocolUtilities::NotSet )
-	{
-		return boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface>();
-	}
-	else
-		return boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface>();
+    if ( currentProtocolType_ == ProtocolUtilities::OpenSim )
+        return netInterfaceOpenSim_.lock();
+    else if ( currentProtocolType_ == ProtocolUtilities::Taiga )
+        return netInterfaceTaiga_.lock();
+    else if ( currentProtocolType_ == ProtocolUtilities::NotSet )
+    {
+        return boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface>();
+    }
+    else
+        return boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface>();
 }
 
 const boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> RexServerConnection::GetCurrentProtocolModuleWeakPointer()
 {
-	if ( currentProtocolType_ == ProtocolUtilities::OpenSim )
-		return netInterfaceOpenSim_;
-	else if ( currentProtocolType_ == ProtocolUtilities::Taiga )
-		return netInterfaceTaiga_;
-	else if ( currentProtocolType_ == ProtocolUtilities::NotSet )
-	{
-		connecting_ = false;
-		return boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface>();
-	}
-	else
-	{
-		connecting_ = false;
-		return boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface>();
-	}
+    if ( currentProtocolType_ == ProtocolUtilities::OpenSim )
+        return netInterfaceOpenSim_;
+    else if ( currentProtocolType_ == ProtocolUtilities::Taiga )
+        return netInterfaceTaiga_;
+    else if ( currentProtocolType_ == ProtocolUtilities::NotSet )
+    {
+        connecting_ = false;
+        return boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface>();
+    }
+    else
+    {
+        connecting_ = false;
+        return boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface>();
+    }
 }
 
 const bool RexServerConnection::PrepareCurrentProtocolModule()
 {
-	protocolModule_ = GetCurrentProtocolModule();
-	if (protocolModule_.get())
-	{
-		protocolModule_->RegisterNetworkEvents();
-		return true;
-	}
-	else
-	{
-		RexLogicModule::LogWarning("Could not prepare current Protocol Modules for login");
-		return false;
-	}
+    protocolModule_ = GetCurrentProtocolModule();
+    if (protocolModule_.get())
+    {
+        protocolModule_->RegisterNetworkEvents();
+        return true;
+    }
+    else
+    {
+        RexLogicModule::LogWarning("Could not prepare current Protocol Modules for login");
+        return false;
+    }
 }
 
 const void RexServerConnection::UnregisterCurrentProtocolModule()
 {
-	protocolModule_ = GetCurrentProtocolModule();
-	if (protocolModule_.get())
-		protocolModule_->UnregisterNetworkEvents();
+    protocolModule_ = GetCurrentProtocolModule();
+    if (protocolModule_.get())
+        protocolModule_->UnregisterNetworkEvents();
 }
 
 } // namespace RexLogic
