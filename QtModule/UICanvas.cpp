@@ -50,10 +50,11 @@ UICanvas::UICanvas(DisplayMode mode, const QSize& parentWindowSize):
     id_(QUuid::createUuid().toString()),
     locationPolicy_(new UILocationPolicy),
     appearPolicy_(new UIAppearPolicy),
-    view_(new QGraphicsView)
+    view_(new UIGraphicsView)
 {
     view_->setScene(new QGraphicsScene);
     view_->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    QObject::connect(view_, SIGNAL(ViewResized(QResizeEvent*)),this, SLOT(ResizeEvent(QResizeEvent*)));
     
     if (mode_ == Internal)
     {
@@ -516,8 +517,8 @@ void UICanvas::RenderSceneToOgreSurface()
         dirty_ = false;
     }
 }
-/*
-void UICanvas::resizeEvent(QResizeEvent* event)
+
+void UICanvas::ResizeEvent(QResizeEvent* event)
 {
     if ( mode_ != External || scene_widgets_.size() != 1)
         return;
@@ -525,7 +526,7 @@ void UICanvas::resizeEvent(QResizeEvent* event)
     scene_widgets_[0]->resize(event->size());
 
 }
-*/
+
 
 /** This function resizes the root level widget of the scene to cover the whole QGraphicsView.
     If there are more than one root level widget, this function does nothing. */
