@@ -151,6 +151,24 @@ namespace Scene
             Scene::EntityPtr entity;
         };
 
+        class RaycastEventData : public SceneEventData
+        {
+        public:
+
+            RaycastEventData(Core::entity_id_t id) : SceneEventData(id) {}
+            virtual ~RaycastEventData() {}
+            
+             //! World coordinates of hit position
+            Core::Vector3df pos;
+            //! Submesh index in entity, starting from 0
+            Core::uint submesh;
+            //! U coord in entity. 0 if no texture mapping
+            Core::Real u;
+            //! V coord in entity. 0 if no texture mapping
+            Core::Real v;
+
+        };
+
         class CreateEntityEventData : public Foundation::EventDataInterface
         {
         public:
