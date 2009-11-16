@@ -127,6 +127,10 @@ namespace RexLogic
 				if (serverEntryPointUrl_.isValid())
 					InstantiateWorldSession();
 			}
+			else
+			{
+			    rexLogicModule_->LogInfo("Username was not in form firstname lastname, could not perform login");
+		    }		
 		}
 	}
 
