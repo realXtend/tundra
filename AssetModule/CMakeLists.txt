@@ -7,11 +7,12 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-add_definitions (-DASSET_MODULE_EXPORTS)
+add_definitions (-DUSE_QT -DASSET_MODULE_EXPORTS)
 
 use_package (BOOST)
 use_package (POCO)
 use_package (CURL)
+use_package (QT4)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 use_framework_modules (Core Foundation Interfaces)
@@ -21,6 +22,7 @@ link_modules (RexCommon ProtocolUtilities HttpUtilities ProtocolModuleOpenSim Pr
 link_package (BOOST)
 link_package (POCO)
 link_package (CURL)
+link_package (QT4)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

@@ -34,7 +34,7 @@ namespace RexLogic
 
         /// Creates the UDP connection after a succesfull XML-RPC login.
         /// @return True, if success.
-        bool CreateUDPConnection();
+        bool CreateUdpConnection();
 
         /// Request logout from the server.
         void RequestLogout();
@@ -70,7 +70,7 @@ namespace RexLogic
 
         /// Sends a RexStartup state generic message
         void SendRexStartupPacket(const std::string& state);
-        
+
         /// Sends a message requesting logout from the server. The server is then going to flood us with some
         /// inventory UUIDs after that, but we'll be ignoring those.
         void SendLogoutRequestPacket();
@@ -291,6 +291,12 @@ namespace RexLogic
          */
         void SendGenericMessageBinary(const std::string& method, const Core::StringVector& strings, const std::vector<uint8_t>& binary);
 
+        /// Sends a packet which tells the server that viewer is blocked (e.g. Open File dialog is activated).
+        void SendAgentPausePacket();
+
+        /// Sends a packet which tells the server that viewer is unblocked.
+        void SendAgentResumePacket();
+
         /// @return Name of the sim we're connected to.
         std::string GetSimName() const { return simName_; }
 
@@ -316,30 +322,32 @@ namespace RexLogic
         /// @return The state of the connection.
         volatile ProtocolUtilities::Connection::State GetConnectionState();
 
-		/// @param protocol type
-		const void SetCurrentProtocolType(ProtocolUtilities::ProtocolType newType);
+        /// @param protocol type
+        const void SetCurrentProtocolType(ProtocolUtilities::ProtocolType newType);
 
-		/// @return The current Protocol Module type
-		const boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> GetCurrentProtocolModule();
+        /// @return The current Protocol Module type
+        const boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> GetCurrentProtocolModule();
 
-		/// Get boost::weak_ptr to current Protocol Module
-		/// @return boost::weak_ptr to current Protocol Module
-		const boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> GetCurrentProtocolModuleWeakPointer();
+        /// Get boost::weak_ptr to current Protocol Module
+        /// @return boost::weak_ptr to current Protocol Module
+        const boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> GetCurrentProtocolModuleWeakPointer();
 
-		/// Prepares the network events of current module
-		/// @return boolean value if preparations succeeded
-		const bool PrepareCurrentProtocolModule();
+        /// Prepares the network events of current module
+        /// @return boolean value if preparations succeeded
+        const bool PrepareCurrentProtocolModule();
 
-		/// Unregisters the eventmanager from current Protocol Module
-		const void UnregisterCurrentProtocolModule();
-
+        /// Unregisters the eventmanager from current Protocol Module
+        const void UnregisterCurrentProtocolModule();
 
     private:
         /// Convenience function to get the weak pointer when building messages.
-		ProtocolUtilities::NetOutMessage *StartMessageBuilding(const ProtocolUtilities::NetMsgID &message_id);
+        ProtocolUtilities::NetOutMessage *StartMessageBuilding(const ProtocolUtilities::NetMsgID &message_id);
 
         /// Convenience function to get the weak pointer when sending messages.
         void FinishMessageBuilding(ProtocolUtilities::NetOutMessage *msg);
+
+        /// @return Next serial number to be used with 
+        uint32_t GetNextClienBlockSerialNumber() { return ++clienBlockSerialNumber_; }
 
         /// The framework we belong to.
         Foundation::Framework *framework_;
@@ -350,8 +358,8 @@ namespace RexLogic
         /// Pointer for Taiga protocol module.
         boost::weak_ptr<OpenSimProtocol::ProtocolModuleOpenSim> netInterfaceOpenSim_;
 
-		/// Pointer to ModuleImplementation, used in ProtocolModule getter
-		boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
+        /// Pointer to ModuleImplementation, used in ProtocolModule getter
+        boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
 
         /// Server-spesific info for this client.
         ProtocolUtilities::ClientParameters myInfo_;
@@ -367,7 +375,7 @@ namespace RexLogic
 
         /// Is client connected to a server.
         bool connected_;
-		bool connecting_;
+        bool connecting_;
 
         /// Type of the connection.
         ConnectionType connection_type_;
@@ -387,8 +395,14 @@ namespace RexLogic
         /// State of the connection procedure thread.
         ProtocolUtilities::ConnectionThreadState threadState_;
 
-		/// Current ProtocolModule type
-		ProtocolUtilities::ProtocolType currentProtocolType_;
+        /// Current ProtocolModule type
+        ProtocolUtilities::ProtocolType currentProtocolType_;
+
+        ///
+        bool clientBlocked_;
+        
+        ///
+        uint32_t clienBlockSerialNumber_;
     };
 }
 

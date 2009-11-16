@@ -139,7 +139,7 @@ namespace TaigaProtocol
 		eventManager_->SendEvent(networkEventOutCategory_, msg->GetMessageID(), &data);
 	}
 
-	bool ProtocolModuleTaiga::CreateUDPConnection(const char *address, int port)
+	bool ProtocolModuleTaiga::CreateUdpConnection(const char *address, int port)
 	{
 		loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_INIT_UDP);
 

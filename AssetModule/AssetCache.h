@@ -3,7 +3,7 @@
 #ifndef incl_Asset_AssetCache_h
 #define incl_Asset_AssetCache_h
 
-#include "Poco/MD5Engine.h"
+class QCryptographicHash;
 
 namespace Asset
 {
@@ -36,11 +36,10 @@ namespace Asset
         //! Check contents of disk cache
         void CheckDiskCache();
 
-		//! Calculates hash from given asset id
-		//! Used for file name generation
-		std::string GetHash(const std::string &asset_id);
+        //! Calculates hash from given asset id
+        //! Used for file name generation
+        std::string GetHash(const std::string &asset_id);
 
-        
         //! Asset memory cache
         typedef std::map<std::string, Foundation::AssetPtr> AssetMap;
         AssetMap assets_;
@@ -52,14 +51,14 @@ namespace Asset
         static const char *DEFAULT_ASSET_CACHE_PATH;
 
         //! Assets known to be in disk cache
-		//! Values are hash values from asset id's
+        //! Values are hash values from asset id's
         std::set<std::string> disk_cache_contents_;
-        
+
         //! Framework
         Foundation::Framework* framework_;
 
-		//! MD5 Engine
-		Poco::MD5Engine md5_engine_;
+        //! MD5 Engine
+        QCryptographicHash *md5_engine_;
     };
 }
 

@@ -80,7 +80,7 @@ namespace TaigaProtocol
 
         /// Creates the UDP connection to the server.
         ///@ return True, if the connection was succesfull, false otherwise.
-        virtual bool CreateUDPConnection(const char *address, int port);
+        virtual bool CreateUdpConnection(const char *address, int port);
 
         ///@return Connection::State enum of the connection state.
 		virtual ProtocolUtilities::Connection::State GetConnectionState() const { return loginWorker_.GetState(); }

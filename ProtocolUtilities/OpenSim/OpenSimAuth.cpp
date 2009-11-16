@@ -20,35 +20,35 @@ namespace ProtocolUtilities
 std::string GetMACaddressString()
 {
 //#ifdef WIN32
-//	IP_ADAPTER_INFO AdapterInfo[16];
-//	
-//	DWORD dwBufLen = sizeof(AdapterInfo);
+//    IP_ADAPTER_INFO AdapterInfo[16];
+//    
+//    DWORD dwBufLen = sizeof(AdapterInfo);
 //
-//	DWORD dwStatus = GetAdaptersInfo(AdapterInfo, &dwBufLen);
-//	if (dwStatus != ERROR_SUCCESS)
-//	{
-//		///\todo Log error.
-//		assert(false && "GetAdaptersInfo failed!");
-//		return "";
-//	}
+//    DWORD dwStatus = GetAdaptersInfo(AdapterInfo, &dwBufLen);
+//    if (dwStatus != ERROR_SUCCESS)
+//    {
+//        ///\todo Log error.
+//        assert(false && "GetAdaptersInfo failed!");
+//        return "";
+//    }
 //
-//	PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;
-//	
-//	std::stringstream ss;
-//	while(pAdapterInfo)
-//	{
-//		ss << hex << pAdapterInfo->Address[0] <<
-//			hex << pAdapterInfo->Address[1] <<
-//			hex << pAdapterInfo->Address[2] <<
-//			hex << pAdapterInfo->Address[3] <<
-//			hex << pAdapterInfo->Address[4] <<
-//			hex << pAdapterInfo->Address[5];
-//		pAdapterInfo = pAdapterInfo->Next;
-//	}
+//    PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;
+//    
+//    std::stringstream ss;
+//    while(pAdapterInfo)
+//    {
+//        ss << hex << pAdapterInfo->Address[0] <<
+//            hex << pAdapterInfo->Address[1] <<
+//            hex << pAdapterInfo->Address[2] <<
+//            hex << pAdapterInfo->Address[3] <<
+//            hex << pAdapterInfo->Address[4] <<
+//            hex << pAdapterInfo->Address[5];
+//        pAdapterInfo = pAdapterInfo->Next;
+//    }
 //
-//	return ss.str();
+//    return ss.str();
 //#else
-	return "01234567";
+    return "01234567";
 //#endif
 }
 
@@ -57,22 +57,22 @@ std::string GetMACaddressString()
 std::string GetId0String()
 {
 #ifdef WIN32
-	std::stringstream serial;
-	DWORD dwVolSerial;
-	BOOL bIsRetrieved;
-	bIsRetrieved = GetVolumeInformation(L"C:\\", NULL, NULL, &dwVolSerial, NULL, NULL, NULL, NULL);
-	if (bIsRetrieved)
-	{
-		serial << std::hex << dwVolSerial;
-		return serial.str();
-	}
-	else
-	{
-		printf("Error: Could not retrieve serial number of the HDD!");
-		return std::string("");
-	}
+    std::stringstream serial;
+    DWORD dwVolSerial;
+    BOOL bIsRetrieved;
+    bIsRetrieved = GetVolumeInformation(L"C:\\", NULL, NULL, &dwVolSerial, NULL, NULL, NULL, NULL);
+    if (bIsRetrieved)
+    {
+        serial << std::hex << dwVolSerial;
+        return serial.str();
+    }
+    else
+    {
+        printf("Error: Could not retrieve serial number of the HDD!");
+        return std::string("");
+    }
 #else
-	return "76543210";
+    return "76543210";
 #endif
 }
 

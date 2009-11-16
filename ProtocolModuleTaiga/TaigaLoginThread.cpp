@@ -13,13 +13,13 @@
 #include "OpenSim/Grid.h"
 #include "OpenSim/BuddyListParser.h"
 #include "Inventory/InventoryParser.h"
+#include "Md5.h"
 #include "Platform.h"
 
 // Extenal lib includes
 #include <boost/shared_ptr.hpp>
 #include <utility>
 #include <algorithm>
-#include "Poco/MD5Engine.h"
 
 namespace TaigaProtocol
 {
@@ -39,7 +39,7 @@ namespace TaigaProtocol
     {
         if (start_login_)
         {
-		    threadState_->state = ProtocolUtilities::Connection::STATE_WAITING_FOR_XMLRPC_REPLY;
+            threadState_->state = ProtocolUtilities::Connection::STATE_WAITING_FOR_XMLRPC_REPLY;
             if ( PerformXMLRPCLogin() )
                 threadState_->state =  ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED;
             else
@@ -63,6 +63,8 @@ namespace TaigaProtocol
 
     bool TaigaLoginThread::PerformXMLRPCLogin()
     {
+        using namespace ProtocolUtilities;
+
         /////////////////////////////////////
         //           INIT CALL             //
         /////////////////////////////////////
@@ -81,23 +83,20 @@ namespace TaigaProtocol
 
         try
         {
-            // CREATE MD5 HASHES
-            Poco::MD5Engine md5_engine;
-            // for MAC
-	        std::string mac_addr = ProtocolUtilities::GetMACaddressString();
-            md5_engine.update(mac_addr.c_str(), mac_addr.size());
-            std::string mac_hash = md5_engine.digestToHex(md5_engine.digest());
-            // for ID0
-	        std::string id0 = ProtocolUtilities::GetId0String();
-            md5_engine.update(id0.c_str(), id0.size());
-            std::string id0_hash = md5_engine.digestToHex(md5_engine.digest());
+            // Create MD5 hashes.
+            std::string mac_hash = GetMd5Hash(GetMACaddressString());
+            std::string id0_hash = GetMd5Hash(GetId0String());
+
+            // Gather version information.
+            const std::string &group = Foundation::Framework::ConfigurationGroup();
+            const char *major = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_major").c_str();
+            const char *minor = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_minor").c_str();
 
             call.AddMember("loginuri", worldAddress_.c_str());
             call.AddMember("start", QString("last").toStdString());
-            const std::string &group = Foundation::Framework::ConfigurationGroup();
-            call.AddMember("version", QString("realXtend Naali %1.%2").arg(framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_major").c_str(), framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_minor").c_str()).toStdString());
+            call.AddMember("version", QString("realXtend Naali %1.%2").arg(major, minor).toStdString());
             call.AddMember("channel", QString("realXtend").toStdString());
-            call.AddMember("platform", ProtocolUtilities::GetPlatform().toStdString());
+            call.AddMember("platform", GetPlatform().toStdString());
             call.AddMember("mac", mac_hash);
             call.AddMember("id0", id0_hash);
             call.AddMember("last_exec_event", int(0));
@@ -150,7 +149,7 @@ namespace TaigaProtocol
             threadState_->parameters.agentID.FromString(call.GetReply<std::string>("agent_id"));
             threadState_->parameters.circuitCode = call.GetReply<int>("circuit_code");
             threadState_->parameters.seedCapabilities = call.GetReply<std::string>("seed_capability");
-            threadState_->parameters.gridUrl = ProtocolUtilities::GridParser::ExtractGridAddressFromXMLRPCReply(call);
+            threadState_->parameters.gridUrl = GridParser::ExtractGridAddressFromXMLRPCReply(call);
 
             if (threadState_->parameters.gridUrl.size() == 0)
                 throw XmlRpcException("Failed to extract sim_ip and sim_port from login_to_simulator reply!");
@@ -162,24 +161,24 @@ namespace TaigaProtocol
             // Inventory
             try
             {
-                threadState_->parameters.inventory = ProtocolUtilities::InventoryParser::ExtractInventoryFromXMLRPCReply(call);
+                threadState_->parameters.inventory = InventoryParser::ExtractInventoryFromXMLRPCReply(call);
             }
             catch (XmlRpcException &e)
             {
                 ProtocolModuleTaiga::LogWarning(QString("Failed to read inventory: %1").arg(e.what()).toStdString());
-                threadState_->parameters.inventory = boost::shared_ptr<ProtocolUtilities::InventorySkeleton>(new ProtocolUtilities::InventorySkeleton);
-                ProtocolUtilities::InventoryParser::SetErrorFolder(threadState_->parameters.inventory->GetRoot());
+                threadState_->parameters.inventory = boost::shared_ptr<InventorySkeleton>(new InventorySkeleton);
+                InventoryParser::SetErrorFolder(threadState_->parameters.inventory->GetRoot());
             }
 
             // Buddy List
             try
             {
-                threadState_->parameters.buddy_list = ProtocolUtilities::BuddyListParser::ExtractBuddyListFromXMLRPCReply(call);
+                threadState_->parameters.buddy_list = BuddyListParser::ExtractBuddyListFromXMLRPCReply(call);
             }
             catch (XmlRpcException &e)
             {
                 ProtocolModuleTaiga::LogWarning(QString("Failed to read buddy list: %1").arg(e.what()).toStdString());
-                threadState_->parameters.buddy_list = ProtocolUtilities::BuddyListPtr(new ProtocolUtilities::BuddyList());
+                threadState_->parameters.buddy_list = BuddyListPtr(new BuddyList());
             }
         }
         catch(XmlRpcException& ex)
@@ -191,7 +190,7 @@ namespace TaigaProtocol
                 threadState_->errorMessage = call.GetReply<std::string>("message");
                 ProtocolModuleTaiga::LogError(QString(">>> Message: %1").arg(QString(threadState_->errorMessage.c_str())).toStdString());
             }
-            catch (XmlRpcException &ex)
+            catch (XmlRpcException &/*ex*/)
             {
                 ProtocolModuleTaiga::LogError(QString(">>> Message: <No Message Recieved>").toStdString());
             }
