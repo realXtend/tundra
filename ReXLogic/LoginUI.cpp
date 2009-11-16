@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "QtModule.h"
-#include "OgreRenderingModule.h"
+#include "RexLogicModule.h"
 
 #include <QtUiTools>
 #include <QFile>
