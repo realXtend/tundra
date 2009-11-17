@@ -100,14 +100,18 @@ namespace Foundation
             Foundation::RootLogWarning("Attempted to send delayed event with illegal category");
             return;
         }    
-           
-        DelayedEvent new_delayed_event;
-        new_delayed_event.category_id_ = category_id;
-        new_delayed_event.event_id_ = event_id;
-        new_delayed_event.data_ = data;
-        new_delayed_event.delay_ = delay;
         
-        new_delayed_events_.push_back(new_delayed_event);
+        {   
+            Core::MutexLock lock(delayed_events_mutex_);
+               
+            DelayedEvent new_delayed_event;
+            new_delayed_event.category_id_ = category_id;
+            new_delayed_event.event_id_ = event_id;
+            new_delayed_event.data_ = data;
+            new_delayed_event.delay_ = delay;
+            
+            new_delayed_events_.push_back(new_delayed_event);
+        }
     }  
     
     bool EventManager::SendEvent(EventSubscriber* node, Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const

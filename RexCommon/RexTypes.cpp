@@ -160,7 +160,9 @@ asset_type_t GetAssetTypeFromFilename(const std::string &filename)
         return RexAT_MaterialScript;
     if (file_ext == "swf")
         return RexAT_FlashAnimation;
-
+    if (file_ext == "xml")
+        return RexAT_GenericAvatarXml;
+        
     return -1;
 }
 
