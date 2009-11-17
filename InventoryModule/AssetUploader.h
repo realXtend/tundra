@@ -8,6 +8,7 @@
 
 #include "RexCommon.h"
 #include "RexUUID.h"
+#include "WorldStream.h"
 
 #include <QObject>
 
@@ -34,6 +35,8 @@ namespace Inventory
 
         /// Destructor.
         ~AssetUploader();
+
+        void SetWorldStream(ProtocolUtilities::WorldStreamPtr world_stream);
 
     public slots:
         /// Uploads multiple files using HTTP.
@@ -128,6 +131,9 @@ namespace Inventory
 
         /// Upload capability URL.
         std::string uploadCapability_;
+
+        /// WorldStream pointer
+        ProtocolUtilities::WorldStreamPtr CurrentWorldStream;
     };
 }
 

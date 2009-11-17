@@ -38,7 +38,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework, RexLogic::Rex
     // Add local widget to canvas, setup initial size and title and show canvas
     canvas_->SetSize(300, 350);
     canvas_->SetStationary(false);
-//    canvas_->SetResizable(false);
+    //canvas_->SetResizable(false);
     canvas_->SetPosition(canvas_->GetRenderWindowSize().width()-350,35);
     canvas_->SetWindowTitle(QString("Inventory"));
     canvas_->AddWidget(inventoryWidget_);
@@ -70,7 +70,15 @@ void InventoryWindow::Hide()
         canvas_->Hide();
 }
 
-void InventoryWindow::InitOpenSimInventoryTreeModel(InventoryModule *inventory_module)
+void InventoryWindow::SetWorldStreamToDataModel(ProtocolUtilities::WorldStreamPtr world_stream)
+{
+    if (inventoryItemModel_)
+    {
+        inventoryItemModel_->GetInventory()->SetWorldStream(world_stream);
+    }
+}
+
+void InventoryWindow::InitOpenSimInventoryTreeModel(InventoryModule *inventory_module, ProtocolUtilities::WorldStreamPtr world_stream)
 {
     if (inventoryItemModel_)
     {
@@ -79,6 +87,7 @@ void InventoryWindow::InitOpenSimInventoryTreeModel(InventoryModule *inventory_m
     }
 
     OpenSimInventoryDataModel *dataModel = new OpenSimInventoryDataModel(rexLogicModule_);
+    dataModel->SetWorldStream(world_stream);
     inventoryItemModel_ = new InventoryItemModel(dataModel);
     inventoryItemModel_->SetUseTrash(true);
     treeView_->setModel(inventoryItemModel_);

@@ -192,7 +192,7 @@ namespace RexLogic
         msg.SkipToNextVariable(); // SimAccess U8
 
         std::string sim_name = msg.ReadString(); // SimName
-        rexlogicmodule_->GetServerConnection()->simName_ = sim_name;
+        rexlogicmodule_->GetServerConnection()->SetSimName(sim_name);
 
         msg.SkipToNextVariable(); // SimOwner
         msg.SkipToNextVariable(); // IsEstateManager
@@ -207,7 +207,7 @@ namespace RexLogic
         terrain[2] = msg.ReadUUID().ToString();
         terrain[3] = msg.ReadUUID().ToString();
 
-        RexLogicModule::LogInfo("Joined to the sim \"" + sim_name + "\".");
+        RexLogicModule::LogInfo("Joined to sim " + sim_name);
 
         // Create the "World" scene.
 		boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> sp = rexlogicmodule_->GetServerConnection()->GetCurrentProtocolModuleWeakPointer().lock();

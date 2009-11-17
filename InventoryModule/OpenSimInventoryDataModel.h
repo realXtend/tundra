@@ -11,6 +11,7 @@
 #include "AbstractInventoryDataModel.h"
 #include "InventoryFolder.h"
 #include "InventoryAsset.h"
+#include "WorldStream.h"
 
 namespace RexLogic
 {
@@ -95,6 +96,9 @@ namespace Inventory
         /// AbstractInventoryDataModel override.
         AbstractInventoryItem *GetTrashFolder() const;
 
+        /// Set World Stream to current
+        void SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream);
+
         /// @return Pointer to "My Inventory" folder or null if not found.
         InventoryFolder  *GetMyInventoryFolder() const;
 
@@ -126,6 +130,9 @@ namespace Inventory
 
         /// World Library owner id.
         QString worldLibraryOwnerId_;
+
+        /// Pointer to WorldStream
+        ProtocolUtilities::WorldStreamPtr CurrentWorldStream;
     };
 }
 

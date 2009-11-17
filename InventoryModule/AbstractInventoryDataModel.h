@@ -10,6 +10,7 @@
 #define incl_InventoryModule_AbstractInventoryDataModel_h
 
 #include "AbstractInventoryItem.h"
+#include "WorldStream.h"
 
 #include <QObject>
 
@@ -85,8 +86,12 @@ namespace Inventory
         /// @return Inventory trash folder.
         virtual AbstractInventoryItem *GetTrashFolder() const = 0;
 
+        /// Set World Stream to current
+        virtual void SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream) = 0;
+
     private:
         Q_DISABLE_COPY(AbstractInventoryDataModel);
+
     };
 }
 #endif

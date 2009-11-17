@@ -15,8 +15,7 @@
 
 namespace Inventory
 {
-
-OpenSimInventoryDataModel::OpenSimInventoryDataModel(RexLogic::RexLogicModule *rex_logic_module) :
+    OpenSimInventoryDataModel::OpenSimInventoryDataModel(RexLogic::RexLogicModule *rex_logic_module) :
     rexLogicModule_(rex_logic_module),
     rootFolder_(0),
     worldLibraryOwnerId_("")
@@ -25,6 +24,11 @@ OpenSimInventoryDataModel::OpenSimInventoryDataModel(RexLogic::RexLogicModule *r
 }
 
 // virtual
+void OpenSimInventoryDataModel::SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream)
+{
+    CurrentWorldStream = world_stream;
+}
+
 OpenSimInventoryDataModel::~OpenSimInventoryDataModel()
 {
     delete rootFolder_;
@@ -87,7 +91,7 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewFolder(const QSt
     // Inform the server.
     // We don't want to notify server if we're creating folders "ordered" by server via InventoryDescecendents packet.
     if (notify_server)
-        rexLogicModule_->GetServerConnection()->SendCreateInventoryFolderPacket(
+        CurrentWorldStream->SendCreateInventoryFolderPacket(
             RexUUID(parent->GetID().toStdString()), RexUUID(newFolder->GetID().toStdString()),
             255, newFolder->GetName().toStdString().c_str());
 
@@ -121,20 +125,20 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewAsset(
 void OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem *folder)
 {
     if (folder->IsDescendentOf(GetOpenSimLibraryFolder()))
-        rexLogicModule_->GetServerConnection()->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(folder->GetID()),
+        CurrentWorldStream->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(folder->GetID()),
             QSTR_TO_UUID(worldLibraryOwnerId_));
     else
-        rexLogicModule_->GetServerConnection()->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(folder->GetID()));
+        CurrentWorldStream->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(folder->GetID()));
 }
 
 void OpenSimInventoryDataModel::NotifyServerAboutItemMove(AbstractInventoryItem *item)
 {
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
-        rexLogicModule_->GetServerConnection()->SendMoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
+        CurrentWorldStream->SendMoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
             QSTR_TO_UUID(item->GetParent()->GetID()));
 
     if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
-        rexLogicModule_->GetServerConnection()->SendMoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()),
+        CurrentWorldStream->SendMoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()),
             QSTR_TO_UUID(item->GetParent()->GetID()), item->GetName().toStdString());
 }
 
@@ -143,17 +147,17 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemCopy(AbstractInventoryItem 
     if (item->GetItemType() != AbstractInventoryItem::Type_Asset)
         return;
 
-    rexLogicModule_->GetServerConnection()->SendCopyInventoryItemPacket(QSTR_TO_UUID(worldLibraryOwnerId_),
+    CurrentWorldStream->SendCopyInventoryItemPacket(QSTR_TO_UUID(worldLibraryOwnerId_),
         QSTR_TO_UUID(item->GetID()), QSTR_TO_UUID(item->GetParent()->GetID()), item->GetName().toStdString());
 }
 
 void OpenSimInventoryDataModel::NotifyServerAboutItemRemove(AbstractInventoryItem *item)
 {
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
-        rexLogicModule_->GetServerConnection()->SendRemoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()));
+        CurrentWorldStream->SendRemoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()));
 
     if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
-        rexLogicModule_->GetServerConnection()->SendRemoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()));
+        CurrentWorldStream->SendRemoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()));
 
     // When deleting items, we move them first to the Trash folder.
     // If the folder is already in the trash folder, delete it for good.
@@ -165,14 +169,14 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemRemove(AbstractInventoryIte
         if (!trashFolder)
         {
             InventoryModule::LogError("Can't find Trash folder. Moving folder to Trash not possible. Deleting folder.");
-            rexLogicModule_->GetServerConnection()->SendRemoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()));
+            CurrentWorldStream->SendRemoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()));
             return;
         }
 
         if (item->GetParent() == trashFolder)
-            rexLogicModule_->GetServerConnection()->SendRemoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()));
+            CurrentWorldStream->SendRemoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()));
         else
-            rexLogicModule_->GetServerConnection()->SendMoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
+            CurrentWorldStream->SendMoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
                 QSTR_TO_UUID(trashFolder->GetID()));
         return;
     }
@@ -182,14 +186,14 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemRemove(AbstractInventoryIte
         if (!trashFolder)
         {
             InventoryModule::LogError("Can't find Trash folder. Moving asset to Trash not possible. Deleting asset.");
-            rexLogicModule_->GetServerConnection()->SendRemoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()));
+            CurrentWorldStream->SendRemoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()));
             return;
         }
 
         if (item->GetParent() == trashFolder)
-            rexLogicModule_->GetServerConnection()->SendRemoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()));
+            CurrentWorldStream->SendRemoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()));
         else
-            rexLogicModule_->GetServerConnection()->SendMoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()),
+            CurrentWorldStream->SendMoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()),
                 QSTR_TO_UUID(trashFolder->GetID()), item->GetName().toStdString());
     }
     */
@@ -198,13 +202,13 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemRemove(AbstractInventoryIte
 void OpenSimInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryItem *item, const QString &old_name)
 {
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
-        rexLogicModule_->GetServerConnection()->SendUpdateInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
+        CurrentWorldStream->SendUpdateInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
             QSTR_TO_UUID(item->GetParent()->GetID()), 127, item->GetName().toStdString());
 
     if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
     {
         InventoryAsset *asset = static_cast<InventoryAsset *>(item);
-        rexLogicModule_->GetServerConnection()->SendUpdateInventoryItemPacket(QSTR_TO_UUID(asset->GetID()),
+        CurrentWorldStream->SendUpdateInventoryItemPacket(QSTR_TO_UUID(asset->GetID()),
             QSTR_TO_UUID(asset->GetParent()->GetID()), asset->GetAssetType(), asset->GetInventoryType(),
             asset->GetName().toStdString(), asset->GetDescription().toStdString());
     }

@@ -26,6 +26,12 @@ namespace RexLogic
                 // The client has connected to the server. Create a new scene for that.
                 rexlogicmodule_->CreateNewActiveScene("World");
                 rexlogicmodule_->GetLoginUI()->Connected();
+
+                // Send WorldStream as internal event
+                Core::event_category_id_t framework_category_id = framework_->GetEventManager()->QueryEventCategory("Framework");
+                Foundation::WorldStreamReadyEvent event_data(rexlogicmodule_->GetServerConnection());
+                framework_->GetEventManager()->SendEvent(framework_category_id, Foundation::WORLD_STREAM_READY, &event_data);
+
                 break;
             }
             case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:

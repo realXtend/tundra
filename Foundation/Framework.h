@@ -19,6 +19,7 @@ namespace Poco
 namespace ProtocolUtilities
 {
     class ProtocolModuleInterface;
+    class WorldStream;
 }
 
 namespace Foundation
@@ -265,6 +266,7 @@ namespace Foundation
     {
         const Core::event_id_t PROGRAM_OPTIONS = 1;
         const Core::event_id_t NETWORKING_REGISTERED = 2;
+        const Core::event_id_t WORLD_STREAM_READY = 3;
     }
 
     //! Contains pre-parsed program options and non-parsed command line arguments.
@@ -292,6 +294,16 @@ namespace Foundation
         virtual ~NetworkingRegisteredEvent() {}
         // boost weak pointer to the changed protocolmodule
         boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule;
+    };
+
+    class WorldStreamReadyEvent : public EventDataInterface
+    {
+    public:
+        WorldStreamReadyEvent(const boost::shared_ptr<ProtocolUtilities::WorldStream> currentWorldStream)
+            : WorldStream(currentWorldStream) {}
+        virtual ~WorldStreamReadyEvent() {}
+        // Pointer to the current WorldStream
+        boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStream;
     };
 }
 

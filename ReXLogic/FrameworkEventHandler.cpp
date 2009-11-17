@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "FrameworkEventHandler.h"
-#include "RexServerConnection.h"
+#include "WorldStream.h"
 #include "LoginHandler.h"
 
 #include <QMap>

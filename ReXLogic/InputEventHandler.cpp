@@ -5,7 +5,7 @@
 #include "InputEvents.h"
 #include "RexLogicModule.h"
 #include "InputServiceInterface.h"
-#include "RexServerConnection.h"
+#include "WorldStream.h"
 
 namespace RexLogic
 {
@@ -23,7 +23,7 @@ namespace RexLogic
     {
         if (event_id == Input::Events::SWITCH_CAMERA_STATE)
         {
-            RexServerConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+            WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
             // Only switch if connected
             if (conn->IsConnected())
                 rexlogicmodule_->SwitchCameraState();

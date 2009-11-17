@@ -5,7 +5,9 @@
 
 #include <Foundation.h>
 #include "ModuleInterface.h"
-#include "RexServerConnection.h"
+
+// ProtocolUtilities inludes
+#include "WorldStream.h"
 
 namespace OpenSimProtocol
 {
@@ -26,12 +28,11 @@ namespace RexLogic
     class Sky;
     class Water;
     class Environment;
-    //class RexLoginWindow;
 	class Login;
     class AvatarControllable;
     class CameraControllable;
 
-    typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
+    typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamConnectionPtr;
     typedef boost::weak_ptr<Terrain> TerrainWeakPtr;
     typedef boost::shared_ptr<Terrain> TerrainPtr;
     typedef boost::shared_ptr<Water> WaterPtr;
@@ -78,7 +79,7 @@ namespace RexLogic
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
 
-        RexServerConnectionPtr GetServerConnection() const { return rexserver_connection_; }
+        WorldStreamConnectionPtr GetServerConnection() const { return world_stream_; }
 
         //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
         void SwitchCameraState();
@@ -204,7 +205,7 @@ namespace RexLogic
         FrameworkEventHandler *framework_handler_;
 
         //! Server connection
-        RexServerConnectionPtr rexserver_connection_;
+        WorldStreamConnectionPtr world_stream_;
 
         //! Movement damping constant
         Core::Real movement_damping_constant_;

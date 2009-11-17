@@ -598,8 +598,8 @@ namespace RexLogic
             return;
         }
         
-        RexServerConnectionPtr conn = rexlogicmodule_->GetServerConnection();
-        if (conn->GetConnectionType() == RexServerConnection::AuthenticationConnection)
+        WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+        if (conn->GetConnectionType() != ProtocolUtilities::AuthenticationConnection)
         {
             avatar_appearance_.ExportAvatar(entity, conn->GetUsername(), conn->GetAuthAddress(), conn->GetPassword());
         }

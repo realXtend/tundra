@@ -1404,7 +1404,7 @@ namespace RexLogic
                 {
                     RexLogicModule::LogInfo("Avatar exported successfully");
                     // Send information of appearance change
-                    RexServerConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+                    WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
                     
                     std::string method = "RexAppearance";
                     Core::StringVector strings;

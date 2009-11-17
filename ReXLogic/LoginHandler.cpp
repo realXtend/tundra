@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "RexServerConnection.h"
+#include "WorldStream.h"
 
 #include "LoginHandler.h"
 
@@ -55,7 +55,7 @@ namespace RexLogic
 		{
 			rexLogicModule_->GetServerConnection()->UnregisterCurrentProtocolModule();
 			rexLogicModule_->GetServerConnection()->SetCurrentProtocolType(ProtocolUtilities::OpenSim);
-			rexLogicModule_->GetServerConnection()->SetConnectionType(RexServerConnection::DirectConnection);
+			rexLogicModule_->GetServerConnection()->SetConnectionType(ProtocolUtilities::DirectConnection);
 			if ( rexLogicModule_->GetServerConnection()->PrepareCurrentProtocolModule() )
 			{	
 				openSimWorldSession_ = new OpenSimProtocol::OpenSimWorldSession(framework_);
@@ -82,7 +82,7 @@ namespace RexLogic
 			{
 				rexLogicModule_->GetServerConnection()->UnregisterCurrentProtocolModule();
 				rexLogicModule_->GetServerConnection()->SetCurrentProtocolType(ProtocolUtilities::OpenSim);
-				rexLogicModule_->GetServerConnection()->SetConnectionType(RexServerConnection::AuthenticationConnection);
+				rexLogicModule_->GetServerConnection()->SetConnectionType(ProtocolUtilities::AuthenticationConnection);
 				if ( rexLogicModule_->GetServerConnection()->PrepareCurrentProtocolModule() )
 				{	
 					realXtendWorldSession_ = new OpenSimProtocol::RealXtendWorldSession(framework_);
@@ -169,7 +169,7 @@ namespace RexLogic
 
 		rexLogicModule_->GetServerConnection()->UnregisterCurrentProtocolModule();
 		rexLogicModule_->GetServerConnection()->SetCurrentProtocolType(ProtocolUtilities::Taiga);
-		rexLogicModule_->GetServerConnection()->SetConnectionType(RexServerConnection::DirectConnection);
+		rexLogicModule_->GetServerConnection()->SetConnectionType(ProtocolUtilities::DirectConnection);
         if ( rexLogicModule_->GetServerConnection()->PrepareCurrentProtocolModule() )
 		{
 			taigaWorldSession_ = new TaigaProtocol::TaigaWorldSession(framework_);
