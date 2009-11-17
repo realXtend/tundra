@@ -41,6 +41,11 @@ namespace Inventory
         /// @param inventory Pointer to the user's inventory.
         void UploadFiles(Core::StringList filenames);
 
+        /// Uploads multiple assets using HTTP.
+        /// @param files List of filenames (determines asset type & folder to use)
+        /// @param data List of asset data buffers
+        void UploadBuffers(Core::StringList filenames, std::vector<std::vector<Core::u8> >& buffers);
+
         /** Uploads a file using HTTP.
          *  @param asset_type_t Asset type.
          *  @param filename Filename.
@@ -50,11 +55,28 @@ namespace Inventory
          *  @return true if successful
          */
         bool UploadFile(
-            const RexTypes::asset_type_t &asset_type,
+            const RexTypes::asset_type_t asset_type,
             const std::string &filename,
             const std::string &name,
             const std::string &description,
             const RexTypes::RexUUID &folder_id);
+
+        /** Uploads a buffer using HTTP.
+         *  @param asset_type_t Asset type.
+         *  @param filename Filename (used to decide asset type)
+         *  @param name User-defined name.
+         *  @param description User-defined description.
+         *  @param folder_id Id of the destination folder for this item.
+         *  @param data buffer
+         *  @return true if successful
+         */
+        bool UploadBuffer(
+            const RexTypes::asset_type_t asset_type,
+            const std::string &filename,
+            const std::string &name,
+            const std::string &description,
+            const RexTypes::RexUUID &folder_id,
+            const std::vector<Core::u8>& buffer);
 
         /// @return Does asset uploader have upload capability set.
         bool HasUploadCapability() const { return uploadCapability_ != ""; }
@@ -83,6 +105,9 @@ namespace Inventory
 
         /// Used by UploadFiles.
         void ThreadedUploadFiles(Core::StringList filenames);
+
+        /// Used by UploadFiles.
+        void ThreadedUploadBuffers(Core::StringList filenames, std::vector<std::vector<Core::u8> > buffers);
 
         /// Creates NewFileAgentInventory XML message.
         std::string CreateNewFileAgentInventoryXML(

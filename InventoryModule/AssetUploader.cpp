@@ -45,6 +45,26 @@ void AssetUploader::UploadFiles(Core::StringList filenames)
     Core::Thread thread(boost::bind(&AssetUploader::ThreadedUploadFiles, this, filenames));
 }
 
+void AssetUploader::UploadBuffers(Core::StringList filenames, std::vector<std::vector<Core::u8> >& buffers)
+{
+    CreateRexInventoryFolders();
+
+    if (!HasUploadCapability())
+    {
+        std::string upload_url = rexLogicModule_->GetServerConnection()->GetCapability("NewFileAgentInventory");
+        if (upload_url == "")
+        {
+            InventoryModule::LogError("Could not get upload capability for asset uploader. Uploading not possible");
+            return;
+        }
+
+        SetUploadCapability(upload_url);
+    }
+
+    Core::Thread thread(boost::bind(&AssetUploader::ThreadedUploadBuffers, this, filenames, buffers));
+}
+
+
 /*
 bool AssetUploader::UploadFile(
     const RexTypes::asset_type_t &asset_type,
@@ -96,12 +116,13 @@ bool AssetUploader::UploadFile(
 }
 */
 
-bool AssetUploader::UploadFile(
-    const RexTypes::asset_type_t &asset_type,
-    const std::string &filename,
-    const std::string &name,
-    const std::string &description,
-    const RexTypes::RexUUID &folder_id)
+bool AssetUploader::UploadBuffer(
+    const RexTypes::asset_type_t asset_type,
+    const std::string& filename,
+    const std::string& name,
+    const std::string& description,
+    const RexTypes::RexUUID& folder_id,
+    const std::vector<Core::u8>& buffer)
 {
     if (uploadCapability_ == "")
     {
@@ -148,31 +169,18 @@ bool AssetUploader::UploadFile(
         return false;
     }
 
-    // Open the file.
-    std::ifstream file(filename.c_str(), std::ios::binary);
-    if (!file.is_open())
-    {
-        InventoryModule::LogError("Could not open file the file: " + filename + ".");
-        return false;
-    }
-
-    std::vector<Core::u8> buffer_vec;
+    HttpUtilities::HttpRequest request2;
+    request2.SetUrl(upload_url);
+    request2.SetMethod(HttpUtilities::HttpRequest::Post);
 
     // If the file is texture, use Ogre image and J2k encoding.
     if (asset_type == RexTypes::RexAT_Texture)
     {
         Ogre::Image image;
-        std::vector<Core::u8> src_vec;
-        std::filebuf *pbuf = file.rdbuf();
-        size_t size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
-        src_vec.resize(size);
-        pbuf->pubseekpos(0, std::ios::in);
-        pbuf->sgetn((char *)&src_vec[0], size);
-        file.close();
-
+        
         try
         {
-            Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)&src_vec[0], size, false));
+            Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)&buffer[0], buffer.size(), false));
             image.load(stream);
         }
         catch (Ogre::Exception &e)
@@ -181,31 +189,26 @@ bool AssetUploader::UploadFile(
             return false;
         }
 
-        bool success = J2k::J2kEncode(image, buffer_vec, false);
+        std::vector<Core::u8> encoded_buffer;
+        
+        bool success = J2k::J2kEncode(image, encoded_buffer, false);
         if (!success)
         {
             InventoryModule::LogError("Could not J2k encode the image file.");
             return false;
         }
+        
+        request2.SetRequestData("application/octet-stream", encoded_buffer);
     }
     else
     {
         // Other assets can be uploaded as raw data.
-        std::filebuf *pbuf = file.rdbuf();
-        size_t size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
-        buffer_vec.resize(size);
-        pbuf->pubseekpos(0, std::ios::in);
-        pbuf->sgetn((char *)&buffer_vec[0], size);
-        file.close();
+        request2.SetRequestData("application/octet-stream", buffer);
     }
 
     response.clear();
     response_str.clear();
 
-    HttpUtilities::HttpRequest request2;
-    request2.SetUrl(upload_url);
-    request2.SetMethod(HttpUtilities::HttpRequest::Post);
-    request2.SetRequestData("application/octet-stream", buffer_vec);
     request2.Perform();
     
     if (!request2.GetSuccess())
@@ -236,23 +239,53 @@ bool AssetUploader::UploadFile(
     }
 
     // Send event, if applicable.
+    // Note: sent as delayed, to be thread-safe
     Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
     Core::event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
     if (event_category != 0)
     {
-        Inventory::InventoryItemEventData asset_data(Inventory::IIT_Asset);
-        asset_data.id = RexTypes::RexUUID(inventory_id);
-        asset_data.parentId = folder_id;
-        asset_data.assetId = RexTypes::RexUUID(asset_id);
-        asset_data.assetType = asset_type;
-        asset_data.inventoryType = RexTypes::GetInventoryTypeFromAssetType(asset_type);
-        asset_data.name = name;
-        asset_data.description = description;
-        event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &asset_data);
+        boost::shared_ptr<Inventory::InventoryItemEventData> asset_data(new Inventory::InventoryItemEventData(Inventory::IIT_Asset));
+        
+        asset_data->id = RexTypes::RexUUID(inventory_id);
+        asset_data->parentId = folder_id;
+        asset_data->assetId = RexTypes::RexUUID(asset_id);
+        asset_data->assetType = asset_type;
+        asset_data->inventoryType = RexTypes::GetInventoryTypeFromAssetType(asset_type);
+        asset_data->name = name;
+        asset_data->description = description;
+        
+        event_mgr->SendDelayedEvent<Inventory::InventoryItemEventData>(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, asset_data);
     }
 
     InventoryModule::LogInfo("Upload succesfull. Asset id: " + asset_id + ", inventory id: " + inventory_id + ".");
     return true;
+}
+    
+bool AssetUploader::UploadFile(
+    const RexTypes::asset_type_t asset_type,
+    const std::string &filename,
+    const std::string &name,
+    const std::string &description,
+    const RexTypes::RexUUID &folder_id)
+{
+    // Open the file.
+    std::ifstream file(filename.c_str(), std::ios::binary);
+    if (!file.is_open())
+    {
+        InventoryModule::LogError("Could not open file the file: " + filename + ".");
+        return false;
+    }
+    
+    std::vector<Core::u8> buffer;
+    
+    std::filebuf *pbuf = file.rdbuf();
+    size_t size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
+    buffer.resize(size);
+    pbuf->pubseekpos(0, std::ios::in);
+    pbuf->sgetn((char *)&buffer[0], size);
+    file.close();
+       
+    return UploadBuffer(asset_type, filename, name, description, folder_id, buffer);
 }
 
 
@@ -317,6 +350,52 @@ void AssetUploader::ThreadedUploadFiles(Core::StringList filenames)
     InventoryModule::LogInfo("Multiupload:" + Core::ToString(asset_count) + " assets succesfully uploaded.");
 }
 
+void AssetUploader::ThreadedUploadBuffers(Core::StringList filenames, std::vector<std::vector<Core::u8> > buffers)
+{
+    if (filenames.size() != buffers.size())
+    {
+        InventoryModule::LogError("Not as many data buffers as filenames!");
+        return;
+    }
+    
+    // Iterate trought every asset.
+    int asset_count = 0;
+    std::vector<std::vector<Core::u8> >::iterator it2 = buffers.begin();
+    
+    for(Core::StringList::iterator it = filenames.begin(); it != filenames.end(); ++it, ++it2 )
+    {
+        std::string filename = *it;
+        RexTypes::asset_type_t asset_type = RexTypes::GetAssetTypeFromFilename(filename);
+        if (asset_type == RexAT_None)
+        {
+            InventoryModule::LogError("Invalid file extension. File can't be uploaded: " + filename);
+            continue;
+        }
+
+        // Create the asset uploading info XML message.
+        std::string it_str = RexTypes::GetInventoryTypeString(asset_type);
+        std::string at_str = RexTypes::GetAssetTypeString(asset_type);
+        std::string cat_name = RexTypes::GetCategoryNameForAssetType(asset_type);
+
+        ///\todo User-defined name and desc when we got the UI.
+        std::string name = CreateNameFromFilename(filename);
+        std::string description = "(No Description)";
+
+        RexTypes::RexUUID folder_id = rexLogicModule_->GetInventory()->GetFirstChildFolderByName(cat_name.c_str())->id;
+        if (folder_id.IsNull())
+        {
+            InventoryModule::LogError("Inventory folder for this type of file doesn't exists. File can't be uploaded.");
+            continue;
+        }
+
+        if (UploadBuffer(asset_type, filename, name, description, folder_id, (*it2)))
+            ++asset_count;
+    }
+
+    InventoryModule::LogInfo("Multiupload:" + Core::ToString(asset_count) + " assets succesfully uploaded.");
+}
+
+
 std::string AssetUploader::CreateNewFileAgentInventoryXML(
     const std::string &asset_type,
     const std::string &inventory_type,
@@ -349,7 +428,7 @@ void AssetUploader::CreateRexInventoryFolders()
 
     using namespace RexTypes;
 
-    const char *asset_types[] = { "Texture", "Mesh", "Skeleton", "MaterialScript", "ParticleScript", "FlashAnimation" };
+    const char *asset_types[] = { "Texture", "Mesh", "Skeleton", "MaterialScript", "ParticleScript", "FlashAnimation", "GenericAvatarXml" };
     asset_type_t asset_type;
     for(int i = 0; i < NUMELEMS(asset_types); ++i)
     {
