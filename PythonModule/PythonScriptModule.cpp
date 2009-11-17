@@ -21,9 +21,9 @@
 #include "SceneManager.h"
 #include "SceneEvents.h" //sending scene events after (placeable component) manipulation
 
-#include "Avatar.h"
-#include "EC_OpenSimPresence.h"
-#include "EC_NetworkPosition.h"
+#include "Avatar/Avatar.h"
+#include "EntityComponent/EC_OpenSimPresence.h"
+#include "EntityComponent/EC_NetworkPosition.h"
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
 //#include "../OgreRenderingModule/EC_OgreMesh.h"
 #include "EC_OgrePlaceable.h"
@@ -32,12 +32,12 @@
 #include "RexNetworkUtils.h" //debugboundingbox in CreateEntity
 
 #include "RexLogicModule.h" 
-#include "Primitive.h"
+#include "Environment/Primitive.h"
 #include "CameraControllable.h"
 //now done via logic cameracontrollable #include "Renderer.h" //for setting camera pitch
 //#include "ogrecamera.h"
 #include "../OgreRenderingModule/Renderer.h" //for the screenshot api XXX add the path to includes, don't do this.
-#include "AvatarControllable.h"
+#include "Avatar/AvatarControllable.h"
 
 #include "OISKeyboard.h"
 //#include "OISMouse.h"

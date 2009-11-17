@@ -4,7 +4,7 @@
 #define incl_Protocol_RealXtendWorldSession_h
 
 #include "Foundation.h"
-#include "../ReXLogic/LoginCredentials.h"
+#include "Login/LoginCredentials.h"
 
 #include "ProtocolModuleOpenSimApi.h"
 #include "Interfaces/WorldSessionInterface.h"
