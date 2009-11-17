@@ -7,7 +7,7 @@
 #include "RealXtend/RexProtocolMsgIDs.h"
 
 #include "EC_OgrePlaceable.h"
-#include "EC_OpenSimPrim.h"
+#include "EntityComponent/EC_OpenSimPrim.h"
 #include "QuatUtils.h"
 #include "ConversionUtils.h"
 #include "SceneManager.h"

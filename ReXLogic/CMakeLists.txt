@@ -1,3 +1,19 @@
+macro (AddSourceFolder folder_name)
+    file (GLOB H_FILES_IN_FOLDER_${folder_name} ${folder_name}/*.h)
+    file (GLOB CPP_FILES_IN_FOLDER_${folder_name} ${folder_name}/*.cpp)
+    source_group ("Header Files\\${folder_name}" FILES ${H_FILES_IN_FOLDER_${folder_name}})
+    source_group ("Source Files\\${folder_name}" FILES ${CPP_FILES_IN_FOLDER_${folder_name}})
+    set (H_FILES ${H_FILES} ${H_FILES_IN_FOLDER_${folder_name}})
+    set (CPP_FILES ${CPP_FILES} ${CPP_FILES_IN_FOLDER_${folder_name}})
+endmacro (AddSourceFolder)
+
+macro (MocFolder)
+    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx)
+    source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
+endmacro (MocFolder)
+
+#############################################################################################
+
 # Define target name and output directory
 init_target (RexLogicModule OUTPUT modules/core)
 
@@ -5,7 +21,18 @@ init_target (RexLogicModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES RexLoginWindow.h RexWebLogin.h InventoryWindow.h AvatarEditor.h LoginUI.h LoginHandler.h LoginCredentials.h)
+file (GLOB MOC_FILES Avatar/AvatarEditor.h Login/*.h)
+
+# SubFolders to project with filtering
+AddSourceFolder (Avatar)
+AddSourceFolder (EntityComponent)
+AddSourceFolder (EventHandlers)
+AddSourceFolder (Environment)
+AddSourceFolder (Login)
+
+# Qt4 Moc files to subgroup "CMake Moc"
+MocFolder ()
+
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap
@@ -23,7 +50,7 @@ use_package (CURL)
 use_package (OPENJPEG)
 use_package (OIS)
 use_package (XMLRPC)
-use_modules (OgreRenderingModule AssetModule RexCommon QtModule HttpUtilities RpcUtilities ProtocolUtilities InputModuleOIS ProtocolModuleOpenSim ProtocolModuleTaiga)
+use_modules (RexLogic OgreRenderingModule AssetModule RexCommon QtModule HttpUtilities RpcUtilities ProtocolUtilities InputModuleOIS ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
 use_framework_modules (Core Foundation Interfaces SceneManager)
@@ -37,7 +64,6 @@ link_package (QT4)
 link_package (CURL)
 link_package (OPENJPEG)
 link_package (XMLRPC)
-
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
