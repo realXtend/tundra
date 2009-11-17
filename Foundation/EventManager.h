@@ -89,6 +89,7 @@ namespace Foundation
        //! Sends a delayed event
         /*! Use with judgement. Note that you will not get to know whether event was handled. The event data object
             will be retained until event sent, so it should be allocated with new and wrapped inside a shared pointer.
+            Delayed events are also the only safe way to send events from threads other than main thread!
             \param category_id Event category ID
             \param event_id Event ID
             \param data Shared pointer to event data structure (event-specific), can be NULL if not needed
@@ -104,7 +105,7 @@ namespace Foundation
          */
         template <class T> void SendDelayedEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, boost::shared_ptr<T> data, Core::f64 delay = 0.0)
         {
-            SendDelayedEvent(category_id, event_id, boost::dynamic_pointer_cast<EventDataPtr>(data), delay);
+            SendDelayedEvent(category_id, event_id, boost::dynamic_pointer_cast<EventDataInterface>(data), delay);
         }
 
         //! Registers a module to the event subscriber tree
@@ -212,6 +213,9 @@ namespace Foundation
         DelayedEventVector new_delayed_events_;
         DelayedEventVector delayed_events_;
         
+        //! Mutex for new delayed events
+        Core::Mutex delayed_events_mutex_;
+                
         //! Framework
         Framework *framework_;
     };

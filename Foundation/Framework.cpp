@@ -127,8 +127,6 @@ namespace Foundation
 
     Framework::~Framework()
     {
-        default_scene_.reset();
-        scenes_.clear();
         module_manager_.reset();
         thread_task_manager_.reset();
 
@@ -356,6 +354,8 @@ namespace Foundation
         PROFILE(FW_Go);
         PostInitialize();
         q_engine_->Go();
+        default_scene_.reset();
+        scenes_.clear();        
         UnloadModules();
     }
 
