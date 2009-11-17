@@ -95,8 +95,8 @@ void InventoryWindow::InitOpenSimInventoryTreeModel(InventoryModule *inventory_m
     QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
         const QItemSelection &)), this, SLOT(UpdateActions()));
 
-    QObject::connect(this, SIGNAL(FileUpload(Core::StringList)), inventory_module->GetAssetUploader().get(),
-        SLOT(UploadFiles(Core::StringList)));
+    QObject::connect(this, SIGNAL(FileUpload(Core::StringList&)), inventory_module->GetAssetUploader().get(),
+        SLOT(UploadFiles(Core::StringList&)));
 
     inventoryType_ = "OpenSim";
 }

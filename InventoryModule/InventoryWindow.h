@@ -104,7 +104,7 @@ namespace Inventory
         void Download();
 
     signals:
-        void FileUpload(Core::StringList filenames);
+        void FileUpload(Core::StringList &filenames);
 
     private:
         Q_DISABLE_COPY(InventoryWindow);
