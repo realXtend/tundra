@@ -42,6 +42,9 @@ void InventoryModule::Initialize()
 {
     eventManager_ = framework_->GetEventManager();
     inventoryEventCategory_ = eventManager_->RegisterEventCategory("Inventory");
+    eventManager_->RegisterEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_DESCENDENT, "InventoryDescendent");
+    eventManager_->RegisterEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_UPLOAD, "InventoryUpload");
+    eventManager_->RegisterEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, "InventoryUploadBuffer");
 
     rexLogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(
         Foundation::Module::MT_WorldLogic).lock().get());
@@ -152,6 +155,7 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
 
         if (event_id == Inventory::Events::EVENT_INVENTORY_UPLOAD)
         {
+            LogInfo("Got EventInventoryUpload");
             InventoryUploadEventData *upload_data = dynamic_cast<InventoryUploadEventData *>(data);
             if (!upload_data)
                 return false;
@@ -161,6 +165,7 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
 
         if (event_id == Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER)
         {
+            LogInfo("Got EventInventoryUploadBuffer");
             InventoryUploadBufferEventData *upload_data = dynamic_cast<InventoryUploadBufferEventData *>(data);
             if (!upload_data)
                 return false;

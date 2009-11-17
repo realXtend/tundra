@@ -599,13 +599,14 @@ namespace RexLogic
         }
         
         RexServerConnectionPtr conn = rexlogicmodule_->GetServerConnection();
-        if (conn->GetConnectionType() != RexServerConnection::AuthenticationConnection)
+        if (conn->GetConnectionType() == RexServerConnection::AuthenticationConnection)
         {
-            RexLogicModule::LogError("Not using authentication login, cannot export avatar");
-            return;
+            avatar_appearance_.ExportAvatar(entity, conn->GetUsername(), conn->GetAuthAddress(), conn->GetPassword());
         }
-        
-        avatar_appearance_.ExportAvatar(entity, conn->GetUsername(), conn->GetAuthAddress(), conn->GetPassword());
+        else
+        {
+            avatar_appearance_.ExportAvatar(entity);
+        }       
     }
 
     void Avatar::ReloadUserAvatar()
