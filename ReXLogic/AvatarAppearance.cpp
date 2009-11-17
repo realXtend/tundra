@@ -26,6 +26,7 @@
 #include "HttpTask.h"
 #include "HttpUtilities.h"
 #include "LLSDUtilities.h"
+#include "Inventory/InventoryEvents.h"
 
 #include "Poco/URI.h"
 
@@ -1073,6 +1074,35 @@ namespace RexLogic
                 OgreRenderer::ReplaceTextureOnMaterial(ogremat, mat.textures_[i].name_, mat.textures_[i].resource_->GetId());
             }
         }
+    }
+    
+    void AvatarAppearance::ExportAvatar(Scene::EntityPtr entity)
+    {
+        Foundation::ComponentPtr avatarptr = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!avatarptr || !appearanceptr)
+            return;
+        EC_OpenSimAvatar& avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatarptr.get());
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+
+        // Convert avatar appearance to xml
+        QDomDocument avatar_export("Avatar");
+        LegacyAvatarSerializer::WriteAvatarAppearance(avatar_export, appearance);
+        std::string avatar_export_str = avatar_export.toString().toStdString();
+        
+        std::vector<Core::u8> data_buffer;
+        data_buffer.resize(avatar_export_str.length());
+        memcpy(&data_buffer[0], avatar_export_str.c_str(), data_buffer.size());
+        
+        // Upload appearance as inventory asset
+        // (send request as event)
+        Foundation::EventManagerPtr eventmgr = rexlogicmodule_->GetFramework()->GetEventManager();
+        Inventory::InventoryUploadBufferEventData event_data;
+        event_data.filenames.push_back("Avatar.xml");
+        event_data.buffers.push_back(data_buffer);
+        RexLogicModule::LogInfo("Sent buffer upload event");
+        eventmgr->SendEvent(eventmgr->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);
+        
     }
     
     void AvatarAppearance::ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password)

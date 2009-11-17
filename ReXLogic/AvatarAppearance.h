@@ -78,6 +78,9 @@ namespace RexLogic
         //! Exports avatar to an authentication/avatar storage server account
         void ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password);
         
+        //! Exports avatar to inventory
+        void ExportAvatar(Scene::EntityPtr entity);
+        
         //! Changes a material on an avatar. Filename can either be image or material.
         bool ChangeAvatarMaterial(Scene::EntityPtr entity, Core::uint index, const std::string& filename);
         

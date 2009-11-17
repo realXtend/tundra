@@ -14,7 +14,7 @@ namespace Inventory
     {
         static const Core::event_id_t EVENT_INVENTORY_DESCENDENT = 0x01;
         static const Core::event_id_t EVENT_INVENTORY_UPLOAD = 0x02;
-        static const Core::event_id_t EVENT_INVENTORY_UPLOAD_BUFFER = 0x02;
+        static const Core::event_id_t EVENT_INVENTORY_UPLOAD_BUFFER = 0x03;
     }
 
     enum ItemType
