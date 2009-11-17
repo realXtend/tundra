@@ -39,12 +39,12 @@ namespace Inventory
         /// Uploads multiple files using HTTP.
         /// @param files List of AssetInfo structs.
         /// @param inventory Pointer to the user's inventory.
-        void UploadFiles(Core::StringList filenames);
+        void UploadFiles(Core::StringList& filenames);
 
         /// Uploads multiple assets using HTTP.
         /// @param files List of filenames (determines asset type & folder to use)
         /// @param data List of asset data buffers
-        void UploadBuffers(Core::StringList filenames, std::vector<std::vector<Core::u8> >& buffers);
+        void UploadBuffers(Core::StringList& filenames, std::vector<std::vector<Core::u8> >& buffers);
 
         /** Uploads a file using HTTP.
          *  @param asset_type_t Asset type.
@@ -106,7 +106,7 @@ namespace Inventory
         /// Used by UploadFiles.
         void ThreadedUploadFiles(Core::StringList filenames);
 
-        /// Used by UploadFiles.
+        /// Used by UploadBuffers.
         void ThreadedUploadBuffers(Core::StringList filenames, std::vector<std::vector<Core::u8> > buffers);
 
         /// Creates NewFileAgentInventory XML message.
