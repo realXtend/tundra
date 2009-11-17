@@ -150,6 +150,24 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
             inventoryWindow_->HandleInventoryDescendent(item_data);
         }
 
+        if (event_id == Inventory::Events::EVENT_INVENTORY_UPLOAD)
+        {
+            InventoryUploadEventData *upload_data = dynamic_cast<InventoryUploadEventData *>(data);
+            if (!upload_data)
+                return false;
+            //! \todo HACK handle both webdav & opensim upload through the abstract inventory model, and remove this hack
+            assetUploader_->UploadFiles(upload_data->filenames);
+        }
+
+        if (event_id == Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER)
+        {
+            InventoryUploadBufferEventData *upload_data = dynamic_cast<InventoryUploadBufferEventData *>(data);
+            if (!upload_data)
+                return false;
+            //! \todo HACK handle both webdav & opensim upload through the abstract inventory model, and remove this hack
+            assetUploader_->UploadBuffers(upload_data->filenames, upload_data->buffers);
+        }
+
         return false;
     }
 

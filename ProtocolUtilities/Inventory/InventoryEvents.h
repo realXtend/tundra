@@ -14,6 +14,7 @@ namespace Inventory
     {
         static const Core::event_id_t EVENT_INVENTORY_DESCENDENT = 0x01;
         static const Core::event_id_t EVENT_INVENTORY_UPLOAD = 0x02;
+        static const Core::event_id_t EVENT_INVENTORY_UPLOAD_BUFFER = 0x02;
     }
 
     enum ItemType
@@ -44,6 +45,15 @@ namespace Inventory
         virtual ~InventoryUploadEventData() {}
         Core::StringList filenames;
     };
+    
+    class InventoryUploadBufferEventData : public Foundation::EventDataInterface
+    {
+    public:
+        InventoryUploadBufferEventData() {}
+        virtual ~InventoryUploadBufferEventData() {}
+        Core::StringList filenames;
+        std::vector<std::vector<Core::u8> > buffers;
+    };    
 }
 
 #endif // incl_Protocol_InventoryEvents_h

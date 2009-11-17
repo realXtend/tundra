@@ -26,7 +26,7 @@ AssetUploader::~AssetUploader()
 {
 }
 
-void AssetUploader::UploadFiles(Core::StringList filenames)
+void AssetUploader::UploadFiles(Core::StringList& filenames)
 {
     CreateRexInventoryFolders();
 
@@ -45,7 +45,7 @@ void AssetUploader::UploadFiles(Core::StringList filenames)
     Core::Thread thread(boost::bind(&AssetUploader::ThreadedUploadFiles, this, filenames));
 }
 
-void AssetUploader::UploadBuffers(Core::StringList filenames, std::vector<std::vector<Core::u8> >& buffers)
+void AssetUploader::UploadBuffers(Core::StringList& filenames, std::vector<std::vector<Core::u8> >& buffers)
 {
     CreateRexInventoryFolders();
 
