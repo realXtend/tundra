@@ -582,6 +582,11 @@ namespace RexLogic
         return avatar_appearance_.HandleResourceEvent(event_id, data);
     }
 
+    bool Avatar::HandleInventoryEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        return avatar_appearance_.HandleInventoryEvent(event_id, data);
+    }
+
     Scene::EntityPtr Avatar::GetUserAvatar()
     {
         RexTypes::RexUUID agent_id = rexlogicmodule_->GetServerConnection()->GetInfo().agentID;

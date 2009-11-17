@@ -75,6 +75,9 @@ namespace RexLogic
         //! Handles resource event
         bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
         
+        //! Handles inventory event
+        bool HandleInventoryEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);        
+        
         //! Exports avatar to an authentication/avatar storage server account
         void ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password);
         

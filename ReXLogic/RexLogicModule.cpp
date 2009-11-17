@@ -185,6 +185,14 @@ void RexLogicModule::PostInitialize()
 	else
 		LogError("Unable to find event category for Resource");
 
+    // Inventory events
+	eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Inventory");
+	if (eventcategoryid != 0)
+		event_handlers_[eventcategoryid].push_back(
+			boost::bind(&RexLogicModule::HandleInventoryEvent, this, _1, _2));
+	else
+		LogError("Unable to find event category for Inventory");
+    
 	// Framework events
 	eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Framework");
 	if (eventcategoryid != 0)
@@ -416,6 +424,14 @@ bool RexLogicModule::HandleResourceEvent(Core::event_id_t event_id, Foundation::
             sky_->OnTextureReadyEvent(res);
         }
     }
+
+    return false;
+}
+
+bool RexLogicModule::HandleInventoryEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+{
+    // Pass the event to the avatar manager
+    avatar_->HandleInventoryEvent(event_id, data);
 
     return false;
 }
