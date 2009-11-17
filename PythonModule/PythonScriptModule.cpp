@@ -10,7 +10,7 @@
 #include "PythonEngine.h" //is this needed here?
 
 #include "RexLogicModule.h" //much of the api is here
-#include "RexServerConnection.h" //for SendObjectAddPacket
+#include "WorldStream.h" //for SendObjectAddPacket
 #include "NetworkEvents.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "InputEvents.h" //handling input events

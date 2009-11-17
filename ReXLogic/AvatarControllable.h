@@ -6,12 +6,15 @@
 #include "EC_Controllable.h"
 #include "RexTypes.h"
 
+namespace ProtocolUtilities
+{
+    class WorldStream;
+}
+
 namespace RexLogic
 {
     class RexLogicModule;
-
-    class RexServerConnection;
-    typedef boost::shared_ptr<RexServerConnection> RexServerConnectionPtr;
+    typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamConnectionPtr;
 
     //! A controller for avatar.
     /*! For more information about controllables, see EC_Controllable.
@@ -102,7 +105,7 @@ namespace RexLogic
         ActionControlFlagMap control_flags_;
 
         //! Rex server connection used to send updates
-        RexServerConnectionPtr connection_;
+        WorldStreamConnectionPtr connection_;
 
         //! default speed for avatar rotation
         Core::Real rotation_sensitivity_;

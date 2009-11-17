@@ -396,7 +396,7 @@ void Primitive::SendRexPrimData(Core::entity_id_t entityid)
           
     buffer.resize(idx);
 
-    RexServerConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+    WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
     if (!conn)
         return;
     Core::StringVector strings;

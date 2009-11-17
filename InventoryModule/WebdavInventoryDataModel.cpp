@@ -39,7 +39,10 @@ WebdavInventoryDataModel::~WebdavInventoryDataModel()
 }
 
 /// AbstractInventoryDataModel INTERFACE
+void WebdavInventoryDataModel::SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream)
+{
 
+}
 AbstractInventoryItem *WebdavInventoryDataModel::GetFirstChildFolderByName(const QString &searchName) const
 {
     InventoryModule::LogInfo("Webdav | You are in GetFirstChildFolderByName() that is not implemented yet");

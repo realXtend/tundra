@@ -26,13 +26,18 @@ AssetUploader::~AssetUploader()
 {
 }
 
-void AssetUploader::UploadFiles(Core::StringList& filenames)
+void AssetUploader::SetWorldStream(ProtocolUtilities::WorldStreamPtr world_stream)
+{
+    CurrentWorldStream = world_stream;
+}
+
+void AssetUploader::UploadFiles(Core::StringList &filenames)
 {
     CreateRexInventoryFolders();
 
     if (!HasUploadCapability())
     {
-        std::string upload_url = rexLogicModule_->GetServerConnection()->GetCapability("NewFileAgentInventory");
+        std::string upload_url = CurrentWorldStream->GetCapability("NewFileAgentInventory");
         if (upload_url == "")
         {
             InventoryModule::LogError("Could not get upload capability for asset uploader. Uploading not possible");
@@ -51,7 +56,7 @@ void AssetUploader::UploadBuffers(Core::StringList& filenames, std::vector<std::
 
     if (!HasUploadCapability())
     {
-        std::string upload_url = rexLogicModule_->GetServerConnection()->GetCapability("NewFileAgentInventory");
+        std::string upload_url = CurrentWorldStream->GetCapability("NewFileAgentInventory");
         if (upload_url == "")
         {
             InventoryModule::LogError("Could not get upload capability for asset uploader. Uploading not possible");
@@ -77,7 +82,7 @@ bool AssetUploader::UploadFile(
 
     if (!HasUploadCapability())
     {
-        std::string upload_url = rexLogicModule_->GetServerConnection()->GetCapability("NewFileAgentInventory");
+        std::string upload_url = CurrentWorldStream->GetCapability("NewFileAgentInventory");
         if (upload_url == "")
         {
             InventoryModule::LogError("Could not get upload capability for asset uploader. Uploading not possible");
@@ -106,7 +111,7 @@ bool AssetUploader::UploadFile(
         parentFolder->AddChildFolder(newFolder);
 
         // Notify the server about the new inventory folder.
-        rexLogicModule_->GetServerConnection()->SendCreateInventoryFolderPacket(parentFolder->id, folder_id, asset_type, cat_name);
+        CurrentWorldStream->SendCreateInventoryFolderPacket(parentFolder->id, folder_id, asset_type, cat_name);
     }
     else
         folder_id = folder->id;
@@ -448,7 +453,7 @@ void AssetUploader::CreateRexInventoryFolders()
             parentFolder->AddChildFolder(newFolder);
 
             // Notify the server about the new inventory folder.
-            rexLogicModule_->GetServerConnection()->SendCreateInventoryFolderPacket(parentFolder->id, folder_id, asset_type, cat_name);
+            CurrentWorldStream->SendCreateInventoryFolderPacket(parentFolder->id, folder_id, asset_type, cat_name);
 
             // Send event to inventory module.
             Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();

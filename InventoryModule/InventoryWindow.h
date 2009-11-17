@@ -9,6 +9,7 @@
 #define incl_InventoryModule_InventoryWindow_h
 
 #include "Foundation.h"
+#include "WorldStream.h"
 
 #include <QObject>
 #include <QPointer>
@@ -56,7 +57,7 @@ namespace Inventory
 
     public slots:
         /// Initializes the OpenSim inventory data/view model.
-        void InitOpenSimInventoryTreeModel(InventoryModule *inventory_module);
+        void InitOpenSimInventoryTreeModel(InventoryModule *inventory_module, ProtocolUtilities::WorldStreamPtr world_stream);
 
         /// Initialize the Taiga webdav data/view model.
         void InitWebDavInventoryTreeModel(const std::string &identityUrl, const std::string &hostUrl);
@@ -75,6 +76,9 @@ namespace Inventory
 
         ///
         void HandleInventoryDescendent(InventoryItemEventData *item_data);
+
+        /// Set World Stream
+        void SetWorldStreamToDataModel(ProtocolUtilities::WorldStreamPtr world_stream);
 
     private slots:
         /// Close handler

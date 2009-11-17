@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "RexLoginWindow.h"
 #include "RexLogicModule.h"
-#include "RexServerConnection.h"
+#include "WorldStream.h"
 #include "QtModule.h"
 #include "UICanvas.h"
 

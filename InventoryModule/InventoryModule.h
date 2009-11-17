@@ -12,6 +12,7 @@
 #include "ModuleInterface.h"
 #include "EventDataInterface.h"
 #include "AssetUploader.h"
+#include "WorldStream.h"
 
 namespace RexLogic
 {
@@ -40,8 +41,7 @@ namespace Inventory
         void PostInitialize();
         void Uninitialize();
         void Update(Core::f64 frametime);
-        bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id,
-            Foundation::EventDataInterface* data);
+        bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
         virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
 
         MODULE_LOGGING_FUNCTIONS
@@ -60,6 +60,9 @@ namespace Inventory
 
         /// @return Asset uploader pointer.
         AssetUploaderPtr GetAssetUploader() const { return assetUploader_; }
+
+        /// Get the current WorldStream
+        ProtocolUtilities::WorldStreamPtr GetCurrentWorldStream() { return CurrentWorldStream; }
 
     private:
         InventoryModule(const InventoryModule &);
@@ -85,6 +88,9 @@ namespace Inventory
 
         /// Asset uploader.
         AssetUploaderPtr assetUploader_;
+
+        /// WorldStream pointer
+        ProtocolUtilities::WorldStreamPtr CurrentWorldStream;
     };
 }
 

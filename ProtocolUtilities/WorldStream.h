@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_RexServerConnection_h
-#define incl_RexServerConnection_h
+#ifndef incl_ProtocolUtilities_WorldStream_h
+#define incl_ProtocolUtilities_WorldStream_h
 
 #include "NetworkEvents.h"
 #include "RexUUID.h"
@@ -11,26 +11,44 @@
 #include "ProtocolModuleOpenSim.h"
 #include "ProtocolModuleTaiga.h"
 
-namespace RexLogic
+#include <QObject>
+#include <QString>
+#include <QUrl>
+
+namespace ProtocolUtilities
 {
-    class MODULE_API RexServerConnection
+
+    typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamPtr;
+
+    /// Connection type enumeration.
+    enum ConnectionType
     {
-        friend class NetworkEventHandler;
+        DirectConnection = 0,
+        AuthenticationConnection
+    };
+
+    class WorldStream : public QObject
+    {
+
+    Q_OBJECT
+    
+    friend class NetworkEventHandler;
+
     public:
 
-        /// Connection type enumeration.
-        enum ConnectionType
-        {
-            DirectConnection = 0,
-            AuthenticationConnection
-        };
+        MODULE_LOGGING_FUNCTIONS;
+        //! returns name of this module. Needed for logging.
+        static const std::string &NameStatic() { return LoggerName; }
+        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
 
         /// Constructor.
         /// @param framework Pointer to framework.
-        RexServerConnection(Foundation::Framework *framework);
+        WorldStream(Foundation::Framework *framework);
 
         /// Destructor.
-        virtual ~RexServerConnection();
+        virtual ~WorldStream();
+
+    public slots:
 
         /// Creates the UDP connection after a succesfull XML-RPC login.
         /// @return True, if success.
@@ -70,7 +88,7 @@ namespace RexLogic
 
         /// Sends a RexStartup state generic message
         void SendRexStartupPacket(const std::string& state);
-
+        
         /// Sends a message requesting logout from the server. The server is then going to flood us with some
         /// inventory UUIDs after that, but we'll be ignoring those.
         void SendLogoutRequestPacket();
@@ -159,9 +177,9 @@ namespace RexLogic
          *  @param folders List of new folders.
          *  @param re_timestamp Should the server re-timestamp children.
          */
-        void SendMoveInventoryFolderPacket(
-            std::list<ProtocolUtilities::InventoryFolderSkeleton *> folders,
-            const bool &re_timestamp = true);
+        //void SendMoveInventoryFolderPacket(
+        //    std::list<ProtocolUtilities::InventoryFolderSkeleton *> folders,
+        //    const bool &re_timestamp = true);
 
         /// Send a packet which deletes inventory folder.
         /// Works when to folder is in the Trash folder.
@@ -171,8 +189,8 @@ namespace RexLogic
         /// Send a packet which deletes inventory folders.
         /// Works when to folder is in the Trash folder.
         /// @param folders List of folders to be deleted.
-        void SendRemoveInventoryFolderPacket(
-            std::list<ProtocolUtilities::InventoryFolderSkeleton *> folders);
+        //void SendRemoveInventoryFolderPacket(
+        //    std::list<ProtocolUtilities::InventoryFolderSkeleton *> folders);
 
         /// Sends packet which moves an inventory item to another folder within My Inventory.
         /// @param item_id ID of the item to be moved.
@@ -291,17 +309,14 @@ namespace RexLogic
          */
         void SendGenericMessageBinary(const std::string& method, const Core::StringVector& strings, const std::vector<uint8_t>& binary);
 
-        /// Sends a packet which tells the server that viewer is blocked (e.g. Open File dialog is activated).
-        void SendAgentPausePacket();
-
-        /// Sends a packet which tells the server that viewer is unblocked.
-        void SendAgentResumePacket();
-
         /// @return Name of the sim we're connected to.
         std::string GetSimName() const { return simName_; }
 
+        /// Set sim name
+        void SetSimName(const std::string &newSimName) { simName_ = newSimName; } 
+
         /// @return A structure of connection spesific information, e.g. AgentID and SessionID.
-        ProtocolUtilities::ClientParameters GetInfo() const { return myInfo_; }
+        ProtocolUtilities::ClientParameters GetInfo() const { return clientParameters_; }
 
         /// @return A capability by name
         /// @param name Name of the capability.
@@ -322,32 +337,36 @@ namespace RexLogic
         /// @return The state of the connection.
         volatile ProtocolUtilities::Connection::State GetConnectionState();
 
-        /// @param protocol type
-        const void SetCurrentProtocolType(ProtocolUtilities::ProtocolType newType);
+		/// @param protocol type
+		const void SetCurrentProtocolType(ProtocolType newType);
 
-        /// @return The current Protocol Module type
-        const boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> GetCurrentProtocolModule();
+		/// @return The current Protocol Module type
+		boost::shared_ptr<ProtocolModuleInterface> GetCurrentProtocolModule();
 
-        /// Get boost::weak_ptr to current Protocol Module
-        /// @return boost::weak_ptr to current Protocol Module
-        const boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> GetCurrentProtocolModuleWeakPointer();
+		/// Get boost::weak_ptr to current Protocol Module
+		/// @return boost::weak_ptr to current Protocol Module
+		boost::weak_ptr<ProtocolModuleInterface> GetCurrentProtocolModuleWeakPointer();
 
-        /// Prepares the network events of current module
-        /// @return boolean value if preparations succeeded
-        const bool PrepareCurrentProtocolModule();
+		/// Prepares the network events of current module
+		/// @return boolean value if preparations succeeded
+		const bool PrepareCurrentProtocolModule();
 
-        /// Unregisters the eventmanager from current Protocol Module
-        const void UnregisterCurrentProtocolModule();
+		/// Unregisters the eventmanager from current Protocol Module
+		const void UnregisterCurrentProtocolModule();
 
     private:
+
+        /// Sends all the needed packets to server when connection successfull
+        void SendLoginSuccessfullPackets();
+
+        /// WriteFloatToBytes
+        void WriteFloatToBytes(float value, uint8_t* bytes, int& idx);
+
         /// Convenience function to get the weak pointer when building messages.
-        ProtocolUtilities::NetOutMessage *StartMessageBuilding(const ProtocolUtilities::NetMsgID &message_id);
+		ProtocolUtilities::NetOutMessage *StartMessageBuilding(const ProtocolUtilities::NetMsgID &message_id);
 
         /// Convenience function to get the weak pointer when sending messages.
         void FinishMessageBuilding(ProtocolUtilities::NetOutMessage *msg);
-
-        /// @return Next serial number to be used with 
-        uint32_t GetNextClienBlockSerialNumber() { return ++clienBlockSerialNumber_; }
 
         /// The framework we belong to.
         Foundation::Framework *framework_;
@@ -358,11 +377,11 @@ namespace RexLogic
         /// Pointer for Taiga protocol module.
         boost::weak_ptr<OpenSimProtocol::ProtocolModuleOpenSim> netInterfaceOpenSim_;
 
-        /// Pointer to ModuleImplementation, used in ProtocolModule getter
-        boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
+		/// Pointer to ModuleImplementation, used in ProtocolModule getter
+		boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
 
         /// Server-spesific info for this client.
-        ProtocolUtilities::ClientParameters myInfo_;
+        ProtocolUtilities::ClientParameters clientParameters_;
 
         /// Address of the sim we're connected.
         std::string serverAddress_;
@@ -375,7 +394,6 @@ namespace RexLogic
 
         /// Is client connected to a server.
         bool connected_;
-        bool connecting_;
 
         /// Type of the connection.
         ConnectionType connection_type_;
@@ -395,15 +413,11 @@ namespace RexLogic
         /// State of the connection procedure thread.
         ProtocolUtilities::ConnectionThreadState threadState_;
 
-        /// Current ProtocolModule type
-        ProtocolUtilities::ProtocolType currentProtocolType_;
+		/// Current ProtocolModule type
+		ProtocolUtilities::ProtocolType currentProtocolType_;
 
-        ///
-        bool clientBlocked_;
-        
-        ///
-        uint32_t clienBlockSerialNumber_;
+        static std::string LoggerName;
     };
 }
 
-#endif
+#endif // incl_ProtocolUtilities_WorldStream_h

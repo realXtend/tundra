@@ -62,13 +62,7 @@ void InventoryModule::Initialize()
     }
 
     assetUploader_ = AssetUploaderPtr(new AssetUploader(framework_, rexLogic_));
-
     inventoryWindow_ = new InventoryWindow(framework_, rexLogic_);
-
-    //!REMOVE TEST CODE FOR WEBDAV
-    //std::string idurl("http://192.168.0.199:8010/test");
-    //std::string hosturl("192.168.0.199:8002");
-    //inventoryWindow_->InitWebDavInventoryTreeModel(idurl, hosturl);
 
     LogInfo("System " + Name() + " initialized.");
 }
@@ -78,7 +72,6 @@ void InventoryModule::PostInitialize()
     frameworkEventCategory_ = eventManager_->QueryEventCategory("Framework");
     if (frameworkEventCategory_ == 0)
         LogError("Failed to query \"Framework\" event category");
-
 }
 
 void InventoryModule::Uninitialize()
@@ -121,7 +114,7 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
                 break;
             case ProtocolUtilities::AT_OpenSim:
             case ProtocolUtilities::AT_RealXtend:
-                inventoryWindow_->InitOpenSimInventoryTreeModel(this);
+                inventoryWindow_->InitOpenSimInventoryTreeModel(this, GetCurrentWorldStream());
                 break;
             default:
                 break;
@@ -149,7 +142,6 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
             InventoryItemEventData *item_data = dynamic_cast<InventoryItemEventData *>(data);
             if (!item_data)
                 return false;
-
             inventoryWindow_->HandleInventoryDescendent(item_data);
         }
 
@@ -176,12 +168,26 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
         return false;
     }
 
-    if (category_id == frameworkEventCategory_ && event_id == Foundation::NETWORKING_REGISTERED)
+    if (category_id == frameworkEventCategory_)
     {
-        Foundation::NetworkingRegisteredEvent *event_data = dynamic_cast<Foundation::NetworkingRegisteredEvent *>(data);
-        if (event_data)
-            SubscribeToNetworkEvents(event_data->currentProtocolModule);
-        return false;
+        if (event_id == Foundation::NETWORKING_REGISTERED)
+        {
+            Foundation::NetworkingRegisteredEvent *event_data = dynamic_cast<Foundation::NetworkingRegisteredEvent *>(data);
+            if (event_data)
+                SubscribeToNetworkEvents(event_data->currentProtocolModule);
+            return false;
+        }
+        else if (event_id == Foundation::WORLD_STREAM_READY)
+        {
+            Foundation::WorldStreamReadyEvent *event_data = dynamic_cast<Foundation::WorldStreamReadyEvent *>(data);
+            if (event_data)
+            {
+                CurrentWorldStream = event_data->WorldStream;
+                assetUploader_->SetWorldStream(CurrentWorldStream);
+                inventoryWindow_->SetWorldStreamToDataModel(CurrentWorldStream);
+            }
+            return false;
+        }
     }
 
     return false;

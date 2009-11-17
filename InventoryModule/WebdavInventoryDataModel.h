@@ -93,6 +93,9 @@ namespace Inventory
         /// AbstractInventoryDataModel override.
         AbstractInventoryItem *GetTrashFolder() const { return 0; };
 
+        /// Set World Stream to current
+        void SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream);
+
     public slots:
         void ItemSelectedFetchContent(AbstractInventoryItem *item);
         void UploadFile(const QString &file_path, AbstractInventoryItem *parent_folder);

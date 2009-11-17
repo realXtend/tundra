@@ -116,12 +116,12 @@ void RexLogicModule::Initialize()
     avatar_ = AvatarPtr(new Avatar(this));
     avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
     primitive_ = PrimitivePtr(new Primitive(this));
-    rexserver_connection_ = RexServerConnectionPtr(new RexServerConnection(framework_));
+    world_stream_ = WorldStreamConnectionPtr(new ProtocolUtilities::WorldStream(framework_));
     network_handler_ = new NetworkEventHandler(framework_, this);
     network_state_handler_ = new NetworkStateEventHandler(framework_, this);
     input_handler_ = new InputEventHandler(framework_, this);
     scene_handler_ = new SceneEventHandler(framework_, this);
-    framework_handler_ = new FrameworkEventHandler(rexserver_connection_.get(), framework_, this);
+    framework_handler_ = new FrameworkEventHandler(world_stream_.get(), framework_, this);
     avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
 
@@ -273,10 +273,10 @@ void RexLogicModule::Uninitialize()
     // Hackish fix for crash at exit because EC_OgreEnvironment remains
     DeleteScene("World");
 
-    if (rexserver_connection_->IsConnected())
+    if (world_stream_->IsConnected())
         LogoutAndDeleteWorld();
 
-    rexserver_connection_.reset();
+    world_stream_.reset();
     avatar_.reset();
     avatar_editor_.reset();
     primitive_.reset();
@@ -341,14 +341,13 @@ void RexLogicModule::Update(Core::f64 frametime)
 
         // Poll the connection state and update the info to the UI.
         /// \todo Move this to the Login UI class.
-        ProtocolUtilities::Connection::State cur_state = rexserver_connection_->GetConnectionState();
+        ProtocolUtilities::Connection::State cur_state = world_stream_->GetConnectionState();
         if (cur_state != connectionState_)
             connectionState_ = cur_state;
 
         /// \todo Move this to OpenSimProtocolModule.
-        if (!rexserver_connection_->IsConnected() &&
-            rexserver_connection_->GetConnectionState() == ProtocolUtilities::Connection::STATE_INIT_UDP)
-            rexserver_connection_->CreateUdpConnection();
+        if (!world_stream_->IsConnected() && world_stream_->GetConnectionState() == ProtocolUtilities::Connection::STATE_INIT_UDP)
+            world_stream_->CreateUdpConnection();
 
         if (send_input_state_)
         {
@@ -362,7 +361,7 @@ void RexLogicModule::Update(Core::f64 frametime)
                 GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
         }
 
-        if (rexserver_connection_->IsConnected())
+        if (world_stream_->IsConnected())
         {
             avatar_controllable_->AddTime(frametime);
             camera_controllable_->AddTime(frametime);
@@ -423,8 +422,8 @@ bool RexLogicModule::HandleResourceEvent(Core::event_id_t event_id, Foundation::
 
 void RexLogicModule::LogoutAndDeleteWorld()
 {
-    rexserver_connection_->RequestLogout();
-    rexserver_connection_->ForceServerDisconnect(); // Because the current server doesn't send a logoutreplypacket.
+    world_stream_->RequestLogout();
+    world_stream_->ForceServerDisconnect(); // Because the current server doesn't send a logoutreplypacket.
 
     if (framework_->HasScene("World"))
         DeleteScene("World");
@@ -500,7 +499,7 @@ Console::CommandResult RexLogicModule::ConsoleLogin(const Core::StringVector &pa
         server = params[2];
 
 	//! REMOVE
-    //bool success = rexserver_connection_->ConnectToServer(name, passwd, server);
+    //bool success = world_stream_->ConnectToServer(name, passwd, server);
 
     // overwrite the password so it won't stay in-memory
     //passwd.replace(0, passwd.size(), passwd.size(), ' ');
@@ -514,7 +513,7 @@ Console::CommandResult RexLogicModule::ConsoleLogin(const Core::StringVector &pa
 
 Console::CommandResult RexLogicModule::ConsoleLogout(const Core::StringVector &params)
 {
-    if (rexserver_connection_->IsConnected())
+    if (world_stream_->IsConnected())
     {
         LogoutAndDeleteWorld();
         return Console::ResultSuccess();
@@ -620,7 +619,7 @@ EnvironmentPtr RexLogicModule::GetEnvironmentHandler()
 
 InventoryPtr RexLogicModule::GetInventory() const
 {
-    return rexserver_connection_->GetInfo().inventory;
+    return world_stream_->GetInfo().inventory;
 }
 
 void RexLogicModule::SetCurrentActiveScene(Scene::ScenePtr scene)
