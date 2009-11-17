@@ -816,6 +816,25 @@ namespace RexLogic
             SetupAppearance(entity);
     }
     
+    bool AvatarAppearance::HandleInventoryEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        if (event_id == Inventory::Events::EVENT_INVENTORY_DESCENDENT)
+        {
+            Inventory::InventoryItemEventData* event_data = dynamic_cast<Inventory::InventoryItemEventData*>(data);
+            if (event_data)
+            {
+                if (event_data->assetType == RexTypes::RexAT_GenericAvatarXml)
+                {
+                    RexLogicModule::LogInfo("Is avatar generic xml");
+                    RexLogicModule::LogInfo("Asset type: " + Core::ToString<int>(event_data->assetType) + " id: " + event_data->assetId.ToString());
+                    //! \todo: set as new inventory-based appearance
+                }
+            }
+        }
+        
+        return false;
+    }
+    
     bool AvatarAppearance::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (!event_id == Resource::Events::RESOURCE_READY)
@@ -1100,7 +1119,6 @@ namespace RexLogic
         Inventory::InventoryUploadBufferEventData event_data;
         event_data.filenames.push_back("Avatar.xml");
         event_data.buffers.push_back(data_buffer);
-        RexLogicModule::LogInfo("Sent buffer upload event");
         eventmgr->SendEvent(eventmgr->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);
         
     }

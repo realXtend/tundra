@@ -147,7 +147,6 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
 
         if (event_id == Inventory::Events::EVENT_INVENTORY_UPLOAD)
         {
-            LogInfo("Got EventInventoryUpload");
             InventoryUploadEventData *upload_data = dynamic_cast<InventoryUploadEventData *>(data);
             if (!upload_data)
                 return false;
@@ -157,7 +156,6 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
 
         if (event_id == Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER)
         {
-            LogInfo("Got EventInventoryUploadBuffer");
             InventoryUploadBufferEventData *upload_data = dynamic_cast<InventoryUploadBufferEventData *>(data);
             if (!upload_data)
                 return false;
