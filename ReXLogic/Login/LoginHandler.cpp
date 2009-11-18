@@ -56,6 +56,11 @@ namespace RexLogic
 			rexLogicModule_->GetServerConnection()->UnregisterCurrentProtocolModule();
 			rexLogicModule_->GetServerConnection()->SetCurrentProtocolType(ProtocolUtilities::OpenSim);
 			rexLogicModule_->GetServerConnection()->SetConnectionType(ProtocolUtilities::DirectConnection);
+			rexLogicModule_->GetServerConnection()->StoreCredentials(
+			    osCredentials->GetIdentity().toStdString(),
+			    osCredentials->GetPassword().toStdString(),
+			    "");
+			    
 			if ( rexLogicModule_->GetServerConnection()->PrepareCurrentProtocolModule() )
 			{	
 				openSimWorldSession_ = new OpenSimProtocol::OpenSimWorldSession(framework_);
@@ -83,6 +88,11 @@ namespace RexLogic
 				rexLogicModule_->GetServerConnection()->UnregisterCurrentProtocolModule();
 				rexLogicModule_->GetServerConnection()->SetCurrentProtocolType(ProtocolUtilities::OpenSim);
 				rexLogicModule_->GetServerConnection()->SetConnectionType(ProtocolUtilities::AuthenticationConnection);
+			    rexLogicModule_->GetServerConnection()->StoreCredentials(
+			        rexCredentials->GetIdentity().toStdString(),
+			        rexCredentials->GetPassword().toStdString(),
+			        rexCredentials->GetAuthenticationUrl().toString().toStdString());
+			    
 				if ( rexLogicModule_->GetServerConnection()->PrepareCurrentProtocolModule() )
 				{	
 					realXtendWorldSession_ = new OpenSimProtocol::RealXtendWorldSession(framework_);
@@ -170,6 +180,14 @@ namespace RexLogic
 		rexLogicModule_->GetServerConnection()->UnregisterCurrentProtocolModule();
 		rexLogicModule_->GetServerConnection()->SetCurrentProtocolType(ProtocolUtilities::Taiga);
 		rexLogicModule_->GetServerConnection()->SetConnectionType(ProtocolUtilities::DirectConnection);
+		RexLogic::TaigaCredentials *tgCredentials = dynamic_cast<RexLogic::TaigaCredentials *>(credentials_);	
+		if (tgCredentials)	    
+    	{
+    		rexLogicModule_->GetServerConnection()->StoreCredentials(
+    		    tgCredentials->GetIdentity().toStdString(),
+    		    "",
+    		    "");
+        }
         if ( rexLogicModule_->GetServerConnection()->PrepareCurrentProtocolModule() )
 		{
 			taigaWorldSession_ = new TaigaProtocol::TaigaWorldSession(framework_);

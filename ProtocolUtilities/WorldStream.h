@@ -64,6 +64,17 @@ namespace ProtocolUtilities
         /// @param ConnectionType enum.
         void SetConnectionType(const ConnectionType &type) { connection_type_ = type; }
 
+        /// Set credential info
+        /// @param identity Identity
+        /// @param password Password (if known)
+        /// @param authentication Authentication url (if known)
+        void StoreCredentials(const std::string& identity, const std::string& password, const std::string& authentication)
+        {
+            username_ = identity;
+            password_ = password;
+            auth_server_address_ = authentication;
+        }
+        
         /// Get the connection type.
         /// @return ConnectionType enum.
         ConnectionType GetConnectionType() const { return connection_type_; }
