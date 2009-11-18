@@ -3,6 +3,7 @@
 
 #include <StableHeaders.h>
 #include <ModuleInterface.h>
+#include <QObject>
 #include "../ReXLogic/RexLogicModule.h"
 
 #include "CommunicationModuleApi.h"
@@ -22,12 +23,16 @@ namespace Communication
 	 *  Communication module
 	 *
 	 *  Provides:
-	 *  - CommunicationService class 
+	 *  - CommunicationService class which implements Communication::CommunicationServiceInterface
+     *  - Tests available from debug console (command "comm test" to see all available tests)
 	 *
+     *  Enables IM GUI if jabber protocol is usable
+     *  Enables world chat GUI when connected to opensim based world server. 
+     *
 	 */
-	class COMMS_MODULE_API CommunicationModule : public Foundation::ModuleInterfaceImpl
+	class COMMS_MODULE_API CommunicationModule : public QObject, public Foundation::ModuleInterfaceImpl
 	{
-
+        Q_OBJECT
 	public:
 		CommunicationModule(void);
 		virtual ~CommunicationModule(void);
@@ -36,7 +41,6 @@ namespace Communication
 		void Unload();
 		void Initialize();
 		void PostInitialize();
-        void RuntimeInitialize();
 		void Uninitialize();
 
 		void Update(Core::f64 frametime);
@@ -53,6 +57,7 @@ namespace Communication
 		// Run given test
 		Console::CommandResult Test(const Core::StringVector &params);
 
+
 		CommunicationUI::QtGUI* qt_ui_;
 		CommunicationUI::OpenSimChat* opensim_ui_;
 		CommunicationServiceInterface* communication_service_;
@@ -61,6 +66,11 @@ namespace Communication
 		// Event category IDs
 		Core::event_category_id_t event_category_networkstate_;
         Core::event_category_id_t event_category_framework_;
+    private slots:
+        void OnNewProtocol(QString &protocol);
+        void OnProtocolSupportEnded(QString &protocol);
+        void OnConnectionOpened(Communication::ConnectionInterface* connection);
+        void OnConnectionClosed(Communication::ConnectionInterface* connection);
 	};
 }
 

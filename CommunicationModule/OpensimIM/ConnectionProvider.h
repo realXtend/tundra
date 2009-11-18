@@ -28,7 +28,7 @@ namespace OpensimIM
 		//! \param framework Framework object 
 		ConnectionProvider(Foundation::Framework* framework);
 
-		//!
+		//! Deconstructor 
 		virtual ~ConnectionProvider();
 
 		//! Provides list of supported protocols by this provider
@@ -46,24 +46,19 @@ namespace OpensimIM
 		//! Handle network event
 		virtual bool HandleNetworkStateEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
-	protected:
-		//! commands: "opensimim test"
-		virtual void RegisterConsoleCommands();
+       //! @return true if connection provoder does support given protocol.
+       virtual bool SupportProtocol(QString &protocol) const;
 
-		//! Test IM connection vy creating connection, open text chat on public world chat and sent
-		//! a text message
-		virtual Console::CommandResult OnConsoleCommandTest(const Core::StringVector &params);
+	protected:
+		virtual void RegisterConsoleCommands();
 
 		virtual void CloseConnections();
 
 	private:
 		ConnectionVector connections_;
 		Foundation::Framework* framework_;
-
-	protected slots:
-		//! Make log entry about friend request
-		void OnFriendRequestReceived(Communication::FriendRequestInterface& request);
-		void OnConnectionReady(Communication::ConnectionInterface& connection);
+    protected slots:
+      	void ConnectionProvider::OnConnectionReady(Communication::ConnectionInterface& connection);
 	};
 
 } // end of namespace: OpensimIM

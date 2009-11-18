@@ -44,6 +44,9 @@ namespace TelepathyIM
 		//! Provides all Connections objects created by this provider
 		virtual Communication::ConnectionVector GetConnections() const;
 
+       //! @return true if connection provoder does support given protocol.
+       virtual bool SupportProtocol(QString &protocol) const;
+
 	private:
 		//! Stop the WinDBus QProcess
 		//! We call this only on Windows platform where are no native dbus daemon service

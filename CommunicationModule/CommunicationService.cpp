@@ -12,15 +12,13 @@ namespace Communication
 			throw Core::Exception("Cannot create communication service object, framework pointer is missing."); 
 
         event_category_networkinin_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
-        event_category_networkstate_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
 	}
 
 	CommunicationService::~CommunicationService(void)
 	{
 		for (ConnectionProviderVector::iterator i = connection_providers_.begin(); i != connection_providers_.end(); ++i)
 		{
-			delete *i;
-			*i = NULL;
+            SAFE_DELETE(*i);
 		}
 		connection_providers_.clear();
 	}
@@ -44,8 +42,8 @@ namespace Communication
 	{
 		connection_providers_.push_back(provider);
 		connect( provider, SIGNAL( ProtocolListUpdated(const QStringList&) ), SLOT( OnProtocolListUpdated(const QStringList&) ));
-		connect( provider, SIGNAL( ConnectionOpened(Communication::ConnectionInterface*) ), SLOT( OnConnectionOpened(Communication::ConnectionInterface*) ));
-		connect( provider, SIGNAL( ConnectionClosed(Communication::ConnectionInterface*) ), SLOT( OnConnectionClosed(Communication::ConnectionInterface*) ));
+		QObject::connect( provider, SIGNAL( ConnectionOpened(Communication::ConnectionInterface*) ), this, SLOT( OnConnectionOpened(Communication::ConnectionInterface*) ));
+		QObject::connect( provider, SIGNAL( ConnectionClosed(Communication::ConnectionInterface*) ), this, SLOT( OnConnectionClosed(Communication::ConnectionInterface*) ));
 	}
 
 	QStringList CommunicationService::GetSupportedProtocols() const
@@ -79,7 +77,14 @@ namespace Communication
 	
 	ConnectionVector CommunicationService::GetConnections() const
 	{
-		return connections_;
+        Communication::ConnectionVector connections;
+        for (ConnectionVector::const_iterator i = connections_.begin(); i != connections_.end(); ++i)
+        {
+            Communication::ConnectionInterface* connection = *i;
+            if (connection->GetState() == Communication::ConnectionInterface::STATE_OPEN)
+                connections.push_back(connection);
+        }
+		return connections;
 	}
 
 	ConnectionVector CommunicationService::GetConnections(const QString &protocol) const
@@ -107,6 +112,9 @@ namespace Communication
 
 	bool CommunicationService::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
 	{
+        event_category_networkstate_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
+        event_category_networkinin_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
+
 		for (ConnectionProviderVector::iterator i = connection_providers_.begin(); i != connection_providers_.end(); ++i)
 		{
 			NetworkEventHandlerInterface* handler = dynamic_cast<NetworkEventHandlerInterface*>( *i );
@@ -134,25 +142,51 @@ namespace Communication
 	{
 		for (QStringList::const_iterator i = protocols.begin(); i != protocols.end(); ++i)
 		{
-			if ( !supported_protocols_.contains(*i) )
-				supported_protocols_.append( *i );
+            QString protocol = *i;
+			if ( !supported_protocols_.contains(protocol) )
+            {
+				supported_protocols_.append(protocol);
+                emit( NewProtocolSupported(protocol) );
+            }
 		}
+
+		for (QStringList::iterator i = supported_protocols_.begin(); i != supported_protocols_.end(); ++i)
+		{
+            QString protocol;
+            bool protocol_supported = false;
+       		for (ConnectionProviderVector::iterator i = connection_providers_.begin(); i != connection_providers_.end(); ++i)
+	    	{
+                Communication::ConnectionProviderInterface* provider = *i;
+                if (provider->SupportProtocol(protocol))
+                {
+                    protocol_supported = true;
+                    break;
+                }
+            }
+            if (!protocol_supported)
+            {
+                supported_protocols_.erase(i); // Check this!
+                emit (ProtocolSupportEnded(protocol) );
+            }
+        }
+        
+        emit ( ProtocolSupportEnded(QString("") ));
 	}
 
 	void CommunicationService::OnConnectionOpened(Communication::ConnectionInterface* connection)
 	{
-		//! @todo connect to vital singals of the connection
 		connections_.push_back(connection);
-		emit( ConnectionOpened(connection) );
-
-		connect(connection, SIGNAL( FriendRequestReceived(const Communication::FriendRequestInterface&) ), SLOT(OnFriendRequestReceived(const Communication::FriendRequestInterface&); )); 
+		//! @todo connect to vital singals of the connection
+		connect(connection, SIGNAL( FriendRequestReceived(Communication::FriendRequestInterface&) ), SLOT(OnFriendRequestReceived(Communication::FriendRequestInterface&) )); 
+        emit( ConnectionOpened(connection) );
 	}
 
 	void CommunicationService::OnConnectionClosed(Communication::ConnectionInterface* connection)
 	{
+        emit( ConnectionClosed(connection) );
 	}
 
-	void CommunicationService::OnFriendRequestReceived(const Communication::FriendRequestInterface& request)
+	void CommunicationService::OnFriendRequestReceived(Communication::FriendRequestInterface& request)
 	{
 		QString message = "Friend request from ";
 		message.append( request.GetOriginatorName() );

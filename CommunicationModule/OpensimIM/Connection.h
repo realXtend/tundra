@@ -153,7 +153,7 @@ namespace OpensimIM
 		FriendRequestVector friend_requests_;
 		ContactGroup friend_list_;
 	public slots:
-		void OnWorldChatMessageReceived(const QString& text, const Communication::ChatSessionParticipantInterface& participant);
+		void OnWorldChatMessageReceived(const Communication::ChatMessageInterface &message);
 	};
 	typedef std::vector<Connection*> ConnectionVector;
 

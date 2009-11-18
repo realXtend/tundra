@@ -26,9 +26,17 @@ namespace OpensimIM
     {
         for (ChatSessionParticipantVector::iterator i = participants_.begin(); i != participants_.end(); ++i)
         {
-            delete *i;
+            ChatSessionParticipant* participant = *i;
+            SAFE_DELETE(participant);
         }
         participants_.clear();
+
+        for (ChatMessageVector::iterator i = message_history_.begin(); i != message_history_.end(); ++i)
+        {
+            ChatMessage* message = *i;
+            SAFE_DELETE(message);
+        }
+        message_history_.clear();
     }
 
 	void ChatSession::SendMessage(const QString &text)

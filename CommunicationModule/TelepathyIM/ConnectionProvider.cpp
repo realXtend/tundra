@@ -74,6 +74,12 @@ namespace TelepathyIM
 		return v;
 	}
 
+    //! @return true if connection provoder does support given protocol.
+    bool ConnectionProvider::SupportProtocol(QString &protocol) const
+    {
+        return supported_protocols_.contains(protocol);
+    }
+
 	void ConnectionProvider::StartDBusDaemon()
 	{
 		QString path = "dbus\\dbus-daemon.exe";
