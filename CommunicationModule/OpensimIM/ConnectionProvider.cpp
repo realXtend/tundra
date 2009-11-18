@@ -16,8 +16,8 @@ namespace OpensimIM
 		CloseConnections();
 		for ( ConnectionVector::iterator i = connections_.begin(); i != connections_.end(); ++i)
 		{
-			delete *i;
-			*i = NULL;
+            Connection* connection = *i;
+            SAFE_DELETE(connection);
 		}
 		connections_.clear();
 	}
@@ -33,8 +33,7 @@ namespace OpensimIM
 	{
 		Connection* connection = new Connection(framework_, credentials.GetUserID());
 		connections_.push_back(connection);
-		connect(connection, SIGNAL( ConnectionReady(const Communication::ConnectionInterface&) ), SLOT( OnConnectionReady(const Communication::ConnectionInterface&) ));
-		connect(connection, SIGNAL( FriendRequestReceived(Communication::FriendRequestInterface&) ), SLOT( OnFriendRequestReceived(Communication::FriendRequestInterface&) ));
+        connect(connection, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( OnConnectionReady(Communication::ConnectionInterface&) )); // Isn't in use currently
 		if ( connection->GetState() == Communication::ConnectionInterface::STATE_OPEN )
 		{
 			OnConnectionReady(*connection);
@@ -62,50 +61,14 @@ namespace OpensimIM
 			LogError("Cannot register console commands :command service not found.");
 			return;
 		}
-
-		console_service->RegisterCommand(Console::CreateCommand("opensimim test", "Test IM connestion by sending a text message to public chat", Console::Bind(this, &ConnectionProvider::OnConsoleCommandTest)));
-	}
-
-	static Communication::ChatSessionInterface* session = NULL;
-	Console::CommandResult ConnectionProvider::OnConsoleCommandTest(const Core::StringVector &params)
-	{
-		try
-		{
-			assert( connections_.size() == 1 );
-			QString user_id = "8bfe35a2-56a6-49fd-b0ad-c7da0aab5bf9";
-			
-			if (session == NULL)
-				session = connections_[0]->OpenPrivateChatSession(user_id);
-			session->SendMessage("Hello there!");
-			session->SendMessage("How are you");
-			LogInfo("Chat history:");
-			Communication::ChatMessageVector history = session->GetMessageHistory();
-			for (Communication::ChatMessageVector::iterator i = history.begin(); i != history.end(); ++i)
-			{
-				QString from = (*i)->GetOriginator()->GetName();
-				QString text = (*i)->GetText();
-				QString time = (*i)->GetTimeStamp().toString();
-				QString note = QString(" ").append(time).append(" - ").append(from).append(": ").append(" ").append(text);
-				LogInfo(note.toStdString());
-			}
-			//session->Close();
-		}
-		catch(std::exception& e)
-		{
-			QString ret = "OpensimIM test failed: ";
-			ret.append( e.what() );
-			return Console::ResultFailure( ret.toStdString() );
-		}
-
-		QString ret = "";
-		return Console::ResultSuccess( ret.toStdString() );
 	}
 
 	bool ConnectionProvider::HandleNetworkEvent(Foundation::EventDataInterface* data)
 	{
     	for (ConnectionVector::iterator i = connections_.begin(); i != connections_.end(); ++i)
 		{
-			if ( (*i)->HandleNetworkEvent(data) )
+            Connection* connection = *i;
+			if ( connection->HandleNetworkEvent(data) )
 				return true;
 		}
 		return false;
@@ -115,17 +78,26 @@ namespace OpensimIM
 	{
 		for (ConnectionVector::iterator i = connections_.begin(); i != connections_.end(); ++i)
 		{
-			(*i)->Close();
+            Connection* connection = *i;
+			connection->Close();
 		}
+        connections_.clear();
 	}
+
+    bool ConnectionProvider::SupportProtocol(QString &protocol) const
+    {
+        return protocol.compare(OPENSIM_IM_PROTOCOL) == 0;
+    }
 
 	bool ConnectionProvider::HandleNetworkStateEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
 	{
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
 		{
 			//! @todo agent_id to credentials 
-			Communication::Credentials credentials(OPENSIM_IM_PROTOCOL, "", "", "", 0); 
-			Communication::ConnectionInterface* conn = OpenConnection(credentials);
+
+            //! TODO: CHECK THIS
+//			Communication::Credentials credentials(OPENSIM_IM_PROTOCOL, "", "", "", 0); 
+//			Communication::ConnectionInterface* conn = OpenConnection(credentials);
 		}
 
 		if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED || event_id == ProtocolUtilities::Events::EVENT_CONNECTION_FAILED)
@@ -138,24 +110,7 @@ namespace OpensimIM
 
 	void ConnectionProvider::OnConnectionReady(Communication::ConnectionInterface& connection)
 	{
-		// Print friend list in debug mode
-		Communication::ContactGroupInterface& friend_list = connection.GetContacts();
-		LogDebug(friend_list.GetName().toStdString());
-
-		Communication::ContactVector contacts = friend_list.GetContacts();
-		for (Communication::ContactVector::iterator i = contacts.begin(); i != contacts.end(); ++i)
-		{
-			QString message = (*i)->GetName().append("(").append((*i)->GetID()).append(")");
-			LogDebug(message.toStdString());
-		}
 		emit( ConnectionOpened(&connection) );
-	}
-
-	void ConnectionProvider::OnFriendRequestReceived(Communication::FriendRequestInterface& request)
-	{
-		QString message = "Friend request from ";
-		message.append(request.GetOriginatorName());
-		LogInfo(message.toStdString());
 	}
 
 } // end of namespace: OpensimIM

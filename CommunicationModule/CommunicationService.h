@@ -77,7 +77,7 @@ namespace Communication
 		virtual void OnProtocolListUpdated(const QStringList& protocols);
 		virtual void OnConnectionOpened(Communication::ConnectionInterface*);
 		virtual void OnConnectionClosed(Communication::ConnectionInterface*);
-		virtual void OnFriendRequestReceived(const Communication::FriendRequestInterface& request);
+		virtual void OnFriendRequestReceived(Communication::FriendRequestInterface& request);
 	};
 } // end of namespace: Communication
 

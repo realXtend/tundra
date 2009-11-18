@@ -427,6 +427,10 @@ namespace Communication
 
 		//! Provides all Connections objects created by this provider
 		virtual ConnectionVector GetConnections() const = 0;
+
+        //! @return true if connection provoder does support given protocol.
+        virtual bool SupportProtocol(QString &protocol) const = 0;
+
 	signals:
 		void ProtocolListUpdated(const QStringList &protocols);
 		void ConnectionOpened(Communication::ConnectionInterface* connection);
@@ -452,6 +456,8 @@ namespace Communication
 		//! Register a ConnectionProvider object to communication service
 		//! Without any connection provider communication service cannot provide
 		//! any communication protocols.
+        //! Note: ConnectionProvider objects are deleted by CommunicationService object!
+        //!
 		virtual void RegisterConnectionProvider( ConnectionProviderInterface* const provider) = 0;
 
 		//! Provides list of all currently supported protocols
@@ -468,15 +474,18 @@ namespace Communication
 		virtual ConnectionVector GetConnections(const QString &protocol) const = 0;
 	signals:
 		//! When a new protocol is supported
-		void NewProtocolSupported(QString protocol);
+		void NewProtocolSupported(QString &protocol);
+
+        //! When support for a protocol is ened becouse ConnectionProvider object is unregistered or have problems etc.
+        void ProtocolSupportEnded(QString &protocol);
 
 		void ProtocolListUpdated(const QStringList &protocols);
 
 		//! When a new connection is opened
-		void ConnectionOpened(ConnectionInterface* connection);
+        void ConnectionOpened(Communication::ConnectionInterface* connection);
 
 		//! When connection is closed
-		void ConnectionClosed(ConnectionInterface* connection);
+		void ConnectionClosed(Communication::ConnectionInterface* connection);
 	};
 
 } // end of namepace: Communication

@@ -1,7 +1,6 @@
 #include <StableHeaders.h>
 #include "../../ReXLogic/RexLogicModule.h" // chat
 #include <RealXtend/RexProtocolMsgIDs.h>
-//#include <OpenSimProtocolModule.h>
 #include "Connection.h"
 #include "ConnectionProvider.h"
 
@@ -24,24 +23,31 @@ namespace OpensimIM
 	{
 		for( ChatSessionVector::iterator i =  public_chat_sessions_.begin(); i != public_chat_sessions_.end(); ++i)
 		{
-			delete (*i);
-			*i = NULL;
+            ChatSession* session = *i;
+            SAFE_DELETE(session);
 		}
 		public_chat_sessions_.clear();
 
 		for( ChatSessionVector::iterator i =  im_chat_sessions_.begin(); i != im_chat_sessions_.end(); ++i)
 		{
-			delete *i;
-			*i = NULL;
+            ChatSession* session = *i;
+            SAFE_DELETE(session);
 		}
 		im_chat_sessions_.clear();
 
 		for( ContactVector::iterator i =  contacts_.begin(); i != contacts_.end(); ++i)
 		{
-			delete *i;
-			*i = NULL;
+            Contact* contact = *i;
+            SAFE_DELETE(contact);
 		}
 		contacts_.clear();
+
+        for( FriendRequestVector::iterator i = friend_requests_.begin(); i != friend_requests_.end(); ++i)
+        {
+            FriendRequest* request = *i;
+            SAFE_DELETE(request);
+        }
+
 		state_ = STATE_CLOSED;
 	}
 	
@@ -134,9 +140,11 @@ namespace OpensimIM
 
 		for (ChatSessionVector::iterator i = public_chat_sessions_.begin(); i != public_chat_sessions_.end(); ++i)
 		{
-			if ( (*i)->GetID().compare( channel ) == 0 )
+            ChatSession* chat_session = *i;
+
+			if ( chat_session->GetID().compare( channel ) == 0 )
 			{
-				return (*i);
+				return chat_session;
 			}
 		}
 
@@ -391,16 +399,16 @@ namespace OpensimIM
 	void Connection::OpenWorldChatSession()
 	{
 		Communication::ChatSessionInterface* world_chat = OpenChatSession("0");
-		connect( world_chat, SIGNAL(MessageReceived(const QString&, const Communication::ChatSessionParticipantInterface&)), SLOT(OnWorldChatMessageReceived(const QString&, const Communication::ChatSessionParticipantInterface&)) );
+        connect( world_chat, SIGNAL( MessageReceived(const Communication::ChatMessageInterface &) ), SLOT( OnWorldChatMessageReceived(const Communication::ChatMessageInterface &) ));
 	}
 
-	void Connection::OnWorldChatMessageReceived(const QString& text, const Communication::ChatSessionParticipantInterface& participant)
+    void Connection::OnWorldChatMessageReceived(const Communication::ChatMessageInterface &message)
 	{
-		QString message = "OpensimIM, public chat: ";
-		message.append( participant.GetName() );
-		message.append(" : ");
-		message.append( text );
-		LogDebug( message.toStdString() );
+		QString text = "OpensimIM, public chat: ";
+        text.append( message.GetOriginator()->GetName() );
+		text.append(" : ");
+        text.append( message.GetText() );
+		LogDebug( text.toStdString() );
 	}
 
 	void Connection::OnIMMessage(const QString &from_id, const QString &from_name, const QString &text)
