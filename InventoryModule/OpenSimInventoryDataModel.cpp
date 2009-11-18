@@ -8,15 +8,24 @@
 #include "StableHeaders.h"
 #include "OpenSimInventoryDataModel.h"
 #include "AbstractInventoryItem.h"
+#include "InventoryFolder.h"
+#include "InventoryAsset.h"
 #include "InventoryModule.h"
 #include "RexLogicModule.h"
 #include "Inventory/InventorySkeleton.h"
 #include "RexUUID.h"
+#include "AssetEvents.h"
+#include "ResourceInterface.h"
+#include "TextureResource.h"
+
+#include <QFile>
+#include <QImage>
 
 namespace Inventory
 {
-    OpenSimInventoryDataModel::OpenSimInventoryDataModel(RexLogic::RexLogicModule *rex_logic_module) :
-    rexLogicModule_(rex_logic_module),
+
+OpenSimInventoryDataModel::OpenSimInventoryDataModel(RexLogic::RexLogicModule *rexlogicmodule) :
+    rexLogicModule_(rexlogicmodule),
     rootFolder_(0),
     worldLibraryOwnerId_("")
 {
@@ -69,8 +78,11 @@ InventoryFolder *OpenSimInventoryDataModel::GetOpenSimLibraryFolder() const
     return rootFolder_->GetFirstChildFolderByName("OpenSim Library");
 }
 
-AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewFolder(const QString &id, AbstractInventoryItem &parentFolder,
-    const QString &name, const bool &notify_server)
+AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewFolder(
+    const QString &id,
+    AbstractInventoryItem &parentFolder,
+    const QString &name,
+    const bool &notify_server)
 {
     InventoryFolder *parent = dynamic_cast<InventoryFolder *>(&parentFolder);
     if (!parent)
@@ -122,13 +134,16 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewAsset(
     return parent->AddChild(newAsset);
 }
 
-void OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem *folder)
+void OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem *item)
 {
-    if (folder->IsDescendentOf(GetOpenSimLibraryFolder()))
-        CurrentWorldStream->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(folder->GetID()),
+    if(item->GetItemType() != AbstractInventoryItem::Type_Folder)
+        return;
+
+    if (item->IsDescendentOf(GetOpenSimLibraryFolder()))
+        CurrentWorldStream->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()),
             QSTR_TO_UUID(worldLibraryOwnerId_));
     else
-        CurrentWorldStream->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(folder->GetID()));
+        CurrentWorldStream->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()));
 }
 
 void OpenSimInventoryDataModel::NotifyServerAboutItemMove(AbstractInventoryItem *item)
@@ -158,45 +173,6 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemRemove(AbstractInventoryIte
 
     if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
         CurrentWorldStream->SendRemoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()));
-
-    // When deleting items, we move them first to the Trash folder.
-    // If the folder is already in the trash folder, delete it for good.
-    ///\todo Move the "deleted" folder to the Trash folder and update the view.
-    /*InventoryFolder *trashFolder = GetTrashFolder();
-
-    if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
-    {
-        if (!trashFolder)
-        {
-            InventoryModule::LogError("Can't find Trash folder. Moving folder to Trash not possible. Deleting folder.");
-            CurrentWorldStream->SendRemoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()));
-            return;
-        }
-
-        if (item->GetParent() == trashFolder)
-            CurrentWorldStream->SendRemoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()));
-        else
-            CurrentWorldStream->SendMoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
-                QSTR_TO_UUID(trashFolder->GetID()));
-        return;
-    }
-
-    if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
-    {
-        if (!trashFolder)
-        {
-            InventoryModule::LogError("Can't find Trash folder. Moving asset to Trash not possible. Deleting asset.");
-            CurrentWorldStream->SendRemoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()));
-            return;
-        }
-
-        if (item->GetParent() == trashFolder)
-            CurrentWorldStream->SendRemoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()));
-        else
-            CurrentWorldStream->SendMoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()),
-                QSTR_TO_UUID(trashFolder->GetID()), item->GetName().toStdString());
-    }
-    */
 }
 
 void OpenSimInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryItem *item, const QString &old_name)
@@ -214,10 +190,154 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryIte
     }
 }
 
+void OpenSimInventoryDataModel::UploadFile(const QString &filename, AbstractInventoryItem *parent_folder)
+{
+}
+
+void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, AbstractInventoryItem *selected_item)
+{
+    using namespace Foundation;
+
+    InventoryAsset *asset = dynamic_cast<InventoryAsset *>(selected_item);
+    if (!asset)
+        return;
+
+//    assetDownloadRequests_[asset->GetAssetReference()] = asset->GetName();
+
+    std::string id = asset->GetAssetReference().toStdString();
+    asset_type_t asset_type = asset->GetAssetType();
+
+    // Create full filename.
+    QString fullFilename = store_folder; 
+    fullFilename += "/";
+    fullFilename += asset->GetName();
+    fullFilename += QString(RexTypes::GetFileExtensionFromAssetType(asset_type).c_str());
+
+    ServiceManagerPtr service_manager = rexLogicModule_->GetFramework()->GetServiceManager();
+    switch(asset_type)
+    {
+    case RexAT_Texture:
+    {
+        // Request textures from texture decoder.
+        if (service_manager->IsRegistered(Service::ST_Texture))
+        {
+            boost::shared_ptr<TextureServiceInterface> texture_service =
+                service_manager->GetService<TextureServiceInterface>(Service::ST_Texture).lock();
+
+            //if (requestTags_.find(id) == requestTags_.end())
+            {
+                Core::request_tag_t tag = texture_service->RequestTexture(id);
+                if (tag)
+                    downloadRequests_[qMakePair(tag, asset_type)] = fullFilename;
+            }
+        }
+    }
+    case RexAT_Mesh:
+    case RexAT_Skeleton:
+    case RexAT_MaterialScript:
+    case RexAT_ParticleScript:
+    {
+        // Request other assets from asset system.
+        if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
+        {
+            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
+                service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+
+            // Perform the actual asset request only once, for the first request
+            //if (request_tags_.find(id) == request_tags_.end())
+            {
+                Core::request_tag_t tag = asset_service->RequestAsset(id, GetTypeNameFromAssetType(asset_type));
+                if (tag) 
+                    downloadRequests_[qMakePair(tag, asset_type)] = fullFilename;
+            }
+        }
+        break;
+    }
+    case RexAT_GenericAvatarXml:
+    case RexAT_FlashAnimation:
+        InventoryModule::LogError("Non-supported asset type for download: " + GetTypeNameFromAssetType(asset_type));
+        break;
+    case RexAT_None:
+    default:
+        InventoryModule::LogError("Invalid asset type for download.");
+        break;
+    }
+}
+
+AbstractInventoryItem *OpenSimInventoryDataModel::GetRoot() const
+{
+    return rootFolder_;
+}
+
+void OpenSimInventoryDataModel::SaveAssetToDisk(Foundation::EventDataInterface *data)
+{
+    RexTypes::asset_type_t asset_type = RexAT_None;
+    Core::request_tag_t tag = 0;
+    Foundation::AssetPtr asset;
+
+    Resource::Events::ResourceReady* resourceEventData = dynamic_cast<Resource::Events::ResourceReady*>(data);
+    if (resourceEventData)
+    {
+        tag = resourceEventData->tag_;
+        asset_type = RexAT_Texture;
+    }
+    else
+    {
+        Asset::Events::AssetReady *assetEventData = dynamic_cast<Asset::Events::AssetReady *>(data);
+        if (assetEventData)
+        {
+            Asset::Events::AssetReady *assetEventData = checked_static_cast<Asset::Events::AssetReady *>(data);
+            tag = assetEventData->tag_;
+            asset_type = RexTypes::GetAssetTypeFromTypeName(assetEventData->asset_type_);
+            asset = assetEventData->asset_;
+        }
+    }
+
+    AssetRequestMap::iterator i = downloadRequests_.find(qMakePair(tag, asset_type));
+    if (i == downloadRequests_.end())
+        return;
+
+    const QString &filename = i.value();
+    if (resourceEventData && asset_type == RexTypes::RexAT_Texture)
+    {
+        TextureDecoder::TextureResource *tex = checked_static_cast<TextureDecoder::TextureResource *>(resourceEventData->resource_.get());
+        if (tex->GetLevel() != 0)
+            return;
+
+        size_t size = tex->GetWidth() * tex->GetHeight() * tex->GetComponents();
+        QImage img = QImage::fromData(tex->GetData(), size);
+        img.save(filename);
+    }
+    else
+    {
+        QFile file(filename);
+        file.open(QIODevice::WriteOnly);
+        file.write((const char*)asset->GetData(), asset->GetSize());
+        file.close();
+    }
+
+    InventoryModule::LogInfo("File " + filename.toStdString() + " succesfully saved.");
+
+    downloadRequests_.erase(i);
+}
+
+/*
+bool OpenSimInventoryDataModel::HasPendingDownloadRequest(const QString &asset_reference)
+{
+    QMap<QString, QString>::iterator i = assetDownloadRequests_.find(asset_reference);
+    if (i != assetDownloadRequests_.end())
+        return true;
+
+    return false;
+}
+*/
+
+#ifdef _DEBUG
 void OpenSimInventoryDataModel::DebugDumpInventoryFolderStructure()
 {
     rootFolder_->DebugDumpInventoryFolderStructure(0);
 }
+#endif
 
 void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
     InventoryFolder *parent_folder,

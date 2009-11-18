@@ -13,13 +13,20 @@
 #include "Inventory/InventoryEvents.h"
 #include "AssetUploader.h"
 #include "QtUtils.h"
+//#include "ResourceInterface.h"
+#include "AssetEvents.h"
 
 namespace Inventory
 {
 
 InventoryModule::InventoryModule() :
     ModuleInterfaceImpl(Foundation::Module::MT_Inventory),
-    networkStateEventCategory_(0), frameworkEventCategory_(0), inventoryWindow_(0)
+    inventoryEventCategory_(0),
+    networkStateEventCategory_(0),
+    assetEventCategory_(0),
+    resourceEventCategory_(0),
+    frameworkEventCategory_(0),
+    inventoryWindow_(0)
 {
 }
 
@@ -72,6 +79,13 @@ void InventoryModule::PostInitialize()
     frameworkEventCategory_ = eventManager_->QueryEventCategory("Framework");
     if (frameworkEventCategory_ == 0)
         LogError("Failed to query \"Framework\" event category");
+    assetEventCategory_ = eventManager_->QueryEventCategory("Asset");
+    if (assetEventCategory_ == 0)
+        LogError("Failed to query \"Asset\" event category");
+
+    resourceEventCategory_ = eventManager_->QueryEventCategory("Resource");
+    if (resourceEventCategory_ == 0)
+        LogError("Failed to query \"Resource\" event category");
 }
 
 void InventoryModule::Uninitialize()
@@ -188,6 +202,18 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
         }
     }
 
+    if (category_id == assetEventCategory_ && event_id == Asset::Events::ASSET_READY)
+    {
+        inventoryWindow_->HandleResourceReady(false, data);
+        return false;
+    }
+
+    if (category_id == resourceEventCategory_ && event_id == Resource::Events::RESOURCE_READY)
+    {
+        inventoryWindow_->HandleResourceReady(true, data);
+        return false;
+    }
+
     return false;
 }
 
@@ -226,6 +252,11 @@ Console::CommandResult InventoryModule::UploadAsset(const Core::StringVector &pa
 
     return Console::ResultSuccess();
 */
+}
+
+AssetUploaderPtr InventoryModule::GetAssetUploader() const
+{
+    return assetUploader_;
 }
 
 Console::CommandResult InventoryModule::UploadMultipleAssets(const Core::StringVector &params)

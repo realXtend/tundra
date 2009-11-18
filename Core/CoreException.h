@@ -5,6 +5,7 @@
 
 #include <exception>
 #include <cstring>
+
 namespace Core
 {
     //! Generic exception class.
@@ -87,6 +88,5 @@ namespace Core
         int do_free_;
     };
 }
+
 #endif
-
-

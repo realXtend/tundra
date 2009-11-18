@@ -9,9 +9,17 @@
 #define incl_InventoryModule_OpenSimInventoryDataModel_h
 
 #include "AbstractInventoryDataModel.h"
-#include "InventoryFolder.h"
-#include "InventoryAsset.h"
+#include "CoreTypes.h"
+#include "RexTypes.h"
 #include "WorldStream.h"
+
+#include <QMap>
+#include <QPair>
+
+namespace Foundation
+{
+    class EventDataInterface;
+}
 
 namespace RexLogic
 {
@@ -26,57 +34,42 @@ namespace ProtocolUtilities
 
 namespace Inventory
 {
+    class InventoryFolder;
+
     class OpenSimInventoryDataModel : public AbstractInventoryDataModel
     {
         Q_OBJECT
 
     public:
         /// Constructor.
-        /// @param rex_logic_module RexLogicModule pointer.
-        OpenSimInventoryDataModel(RexLogic::RexLogicModule *rex_logic_module);
+        /// @param rexlogicmodule RexLogicModule pointer.
+        OpenSimInventoryDataModel(RexLogic::RexLogicModule *rexlogicmodule);
 
         /// Destructor.
         virtual ~OpenSimInventoryDataModel();
 
         /// AbstractInventoryDataModel override.
-        /// @return First folder by the requested name or null if the folder isn't found.
         AbstractInventoryItem *GetFirstChildFolderByName(const QString &searchName) const;
 
         /// AbstractInventoryDataModel override.
-        /// @return First folder by the requested id or null if the folder isn't found.
         AbstractInventoryItem *GetChildFolderById(const QString &searchId) const;
 
         /// AbstractInventoryDataModel override.
-        /// @return First item by the requested id or null if the item isn't found.
         AbstractInventoryItem *GetChildAssetById(const QString &searchId) const;
 
         /// AbstractInventoryDataModel override.
-        /// Returns pointer to requested child item.
-        /// @param searchId Search ID.
-        /// @return Pointer to the requested item, or null if not found.
         AbstractInventoryItem *GetChildById(const QString &searchId) const;
 
         /// AbstractInventoryDataModel override.
-        /// Returns folder by requested id, or creates a new one if the folder doesnt exist,
-        /// or returns null if the parent folder is invalid.
-        /// @param id ID.
-        /// @param parent Parent folder.
-        /// @param notify_server Do we want to notify server.
-        /// @return Pointer to the existing or just created folder.
         AbstractInventoryItem *GetOrCreateNewFolder(const QString &id, AbstractInventoryItem &parentFolder,
             const QString &name = "New Folder", const bool &notify_server = true);
 
         /// AbstractInventoryDataModel override.
-        /// Returns asset requested id, or creates a new one if the folder doesnt exist.
-        /// @param inventory_id Inventory ID.
-        /// @param asset_id Asset ID.
-        /// @param parent Parent folder.
-        /// @return Pointer to the existing or just created asset.
         AbstractInventoryItem *GetOrCreateNewAsset(const QString &inventory_id, const QString &asset_id,
             AbstractInventoryItem &parentFolder, const QString &name = "New Asset");
 
         /// AbstractInventoryDataModel override.
-        void FetchInventoryDescendents(AbstractInventoryItem *folder);
+        void FetchInventoryDescendents(AbstractInventoryItem *item);
 
         /// AbstractInventoryDataModel override.
         void NotifyServerAboutItemMove(AbstractInventoryItem *item);
@@ -91,7 +84,17 @@ namespace Inventory
         void NotifyServerAboutItemUpdate(AbstractInventoryItem *item, const QString &old_name);
 
         /// AbstractInventoryDataModel override.
-        AbstractInventoryItem *GetRoot() const { return rootFolder_; }
+        void UploadFile(const QString &filename, AbstractInventoryItem *parent_folder);
+
+        /// AbstractInventoryDataModel override.
+        /// In OpesimInventoryDataModel this function doesn't perform the actual download.
+        /// This just request the asset from server using texture and asset services.
+        /// @param store_folder
+        /// @param selected_item
+        void DownloadFile(const QString &store_folder, AbstractInventoryItem *selected_item);
+
+        /// AbstractInventoryDataModel override.
+        AbstractInventoryItem *GetRoot() const;
 
         /// AbstractInventoryDataModel override.
         AbstractInventoryItem *GetTrashFolder() const;
@@ -100,13 +103,24 @@ namespace Inventory
         void SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream);
 
         /// @return Pointer to "My Inventory" folder or null if not found.
-        InventoryFolder  *GetMyInventoryFolder() const;
+        InventoryFolder *GetMyInventoryFolder() const;
 
         /// @return Pointer to "My Inventory" folder or null if not found.
-        InventoryFolder  *GetOpenSimLibraryFolder() const;
+        InventoryFolder *GetOpenSimLibraryFolder() const;
 
+        /// Saves asset to disk.
+        /// @param data Event data. Can be ResourceReady for textures and AssetReady for other assets.
+        void SaveAssetToDisk(Foundation::EventDataInterface *data);
+
+        ///
+        bool HasPendingDownloadRequests() const { return downloadRequests_.size() > 0; }
+
+#ifdef _DEBUG
         /// Prints the inventory tree structure to std::cout.
         void DebugDumpInventoryFolderStructure();
+#endif
+
+        typedef QMap<QPair<Core::request_tag_t, RexTypes::asset_type_t>, QString> AssetRequestMap;
 
     private:
         Q_DISABLE_COPY(OpenSimInventoryDataModel);
@@ -133,6 +147,10 @@ namespace Inventory
 
         /// Pointer to WorldStream
         ProtocolUtilities::WorldStreamPtr CurrentWorldStream;
+//        QMap<Qstring, Core::RequestTagVector> requestTags_;
+
+        /// Download request map.
+        AssetRequestMap downloadRequests_;
     };
 }
 

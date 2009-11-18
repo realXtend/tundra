@@ -73,7 +73,7 @@ namespace Inventory
             AbstractInventoryItem &parentFolder, const QString &name = "New Asset");
 
         /// AbstractInventoryDataModel override.
-        void FetchInventoryDescendents(AbstractInventoryItem *folder);
+        void FetchInventoryDescendents(AbstractInventoryItem *item);
 
         /// AbstractInventoryDataModel override.
         void NotifyServerAboutItemMove(AbstractInventoryItem *item);
@@ -97,8 +97,12 @@ namespace Inventory
         void SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream);
 
     public slots:
-        void ItemSelectedFetchContent(AbstractInventoryItem *item);
-        void UploadFile(const QString &file_path, AbstractInventoryItem *parent_folder);
+//        void ItemSelectedFetchContent(AbstractInventoryItem *item);
+
+        /// AbstractInventoryDataModel override.
+        void UploadFile(const QString &filename, AbstractInventoryItem *parent_folder);
+
+        /// AbstractInventoryDataModel override.
         void DownloadFile(const QString &store_folder, AbstractInventoryItem *selected_item);
 
     private:

@@ -226,6 +226,14 @@ QList<QString> InventoryFolder::GetDescendentIds()
     return id_list;
 }
 
+AbstractInventoryItem *InventoryFolder::Child(int row)
+{
+    if (row < 0 || row > children_.size() - 1)
+        return 0;
+
+    return children_.value(row);
+}
+
 int InventoryFolder::Row() const
 {
     if (GetParent())
@@ -237,6 +245,7 @@ int InventoryFolder::Row() const
     return 0;
 }
 
+#ifdef _DEBUG
 void InventoryFolder::DebugDumpInventoryFolderStructure(int indentationLevel)
 {
     for(int i = 0; i < indentationLevel; ++i)
@@ -251,5 +260,6 @@ void InventoryFolder::DebugDumpInventoryFolderStructure(int indentationLevel)
             folder->DebugDumpInventoryFolderStructure(indentationLevel + 3);
     }
 }
+#endif
 
 }

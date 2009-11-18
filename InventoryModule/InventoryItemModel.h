@@ -14,8 +14,10 @@
 #include <QAbstractItemModel>
 #include <QModelIndex>
 #include <QVector>
+#include <QStringList>
 
 class QMimeData;
+class QItemSelection;
 
 namespace Inventory
 {
@@ -102,21 +104,31 @@ namespace Inventory
         /// @return Inventory data model pointer.
         AbstractInventoryDataModel *GetInventory() const { return dataModel_; }
 
-        /// @param index Index of the wanted item.
-        /// @return pointer to inventory item.
-        AbstractInventoryItem *GetItem(const QModelIndex &index) const;
-
         /// @return Does this model use trash folder.
         bool GetUseTrash() const { return useTrash_; }
 
         /// Sets if this model use trash folder or not.
         void SetUseTrash(const bool &value) { useTrash_ = value; }
 
-    public slots:
-        void CurrentSelectionChanged(const QModelIndex &index);
+        /// @return True if has pending download request for matching asset reference.
+        ///\note Erases the asset if true.
+        bool HasPendingDownloadRequest(const QString &asset_reference);
 
-    signals:
-        void AbstractInventoryItemSelected(AbstractInventoryItem *item);
+    public slots:
+        /// Downloads assets.
+        /// @param index store_path Store path for the downloaded files.
+        /// @param selection Selected assets.
+        void Download(const QString &store_path, const QItemSelection &selection);
+
+        /// Uploads an asset.
+        /// @param index Upload destination index.
+        /// @param filenames List of filenames.
+        void Upload(const QModelIndex &index, QStringList filenames);
+
+//        void CurrentSelectionChanged(const QModelIndex &index);
+
+//    signals:
+//        void AbstractInventoryItemSelected(AbstractInventoryItem *item);
 
     private:
         /// Sets up view from data.
@@ -124,6 +136,10 @@ namespace Inventory
 
         /// Data model pointer.
         AbstractInventoryDataModel *dataModel_;
+
+        /// @param index Index of the wanted item.
+        /// @return pointer to inventory item.
+        AbstractInventoryItem *GetItem(const QModelIndex &index) const;
 
         /// Does this model use trash folder.
         bool useTrash_;
@@ -133,6 +149,9 @@ namespace Inventory
 
         /// List used temporarily id's of items to be moved in the inventory model.
         QVector<QString> itemsToBeMoved_;
+
+        ///
+        QMap<QString, QString> assetDownloadRequests_;
     };
 }
 
