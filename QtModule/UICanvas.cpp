@@ -108,7 +108,6 @@ UICanvas::~UICanvas()
     delete view_->scene();
     delete view_;
     view_ = 0;
-  
 }
 
 QPointF UICanvas::GetPosition() const
@@ -234,9 +233,10 @@ void UICanvas::Activate()
     view_->show();
     WId win_id = view_->effectiveWinId();
     ShowWindow(static_cast<HWND>(win_id),SW_HIDE);
-    SetSize(current_size.width(), current_size.height());
+    SetSize(current_size.width(), current_size.height());   
 #endif 
-    ///\todo Figure out what is needed on Linux and Mac.
+    ///\todo Figure out what is needed on Linux and Mac. 
+    /// Can someone confirm if nothing like this is necessary in those platforms?
 }
 
 void UICanvas::BringToTop()
@@ -409,20 +409,22 @@ void UICanvas::Hide()
             clock_.restart();
             return;
         }
-        */
-
-        QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
-        for(; iter != scene_widgets_.end(); ++iter)
-            (*iter)->hide();
-          
+        */          
         container_->hide();
         overlay_->hide();
         
-        dirty_ = true;
-        RenderSceneToOgreSurface();
+//        dirty_ = true;
+//        RenderSceneToOgreSurface();
+    }
+    else // External
+    {
+        QList<QGraphicsProxyWidget* >::iterator iter = scene_widgets_.begin();
+        for(; iter != scene_widgets_.end(); ++iter)
+            (*iter)->hide();
+
+        view_->hide();
     }
 
-    view_->hide();
     emit Hidden();
 }
 
@@ -469,23 +471,14 @@ void UICanvas::RenderSceneToOgreSurface()
         return;
 
     PROFILE(RenderSceneToOgre);
-/*
-    // We draw the GraphicsView area to an offscreen QPixmap and blit that onto the Ogre GPU surface.
-    QPixmap pixmap(view_->size());
-    {
-        PROFILE(FillEmpty);
-        pixmap.fill(Qt::transparent);        
-    }
-    assert(pixmap.hasAlphaChannel());
-    QImage img = pixmap.toImage();
-*/
+
     const QSize canvasSize = view_->size();
     /// \todo Note the '!=' and '<' are deliberate. Want '<' || '<' but can't until we have proper subsurface blits.
     if (scratchSurface.width() != canvasSize.width() || scratchSurface.height() < canvasSize.height())
         scratchSurface = QImage(canvasSize, QImage::Format_ARGB32);
 
     scratchSurface.fill(Qt::transparent);
-//    assert(scratchSurface.hasAlphaChannel());
+    assert(scratchSurface.hasAlphaChannel());
 
     QPainter painter(&scratchSurface);
     QRectF destRect(0, 0, canvasSize.width(), canvasSize.height());
