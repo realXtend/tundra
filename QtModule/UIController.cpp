@@ -293,11 +293,14 @@ void UIController::InjectMousePress(int x, int y)
         doubleClickTimer_.start();
     }
 
+    // Activate the keyboard focus on this canvas as well.
+    // Important! This event must be sent BEFORE sending the keypress, because otherwise ActivateKeyboardFocus
+    // will trigger the sending of focusOutEvent on the widget that was just pressed, which will cause
+    // the press to be immediately drowned!
+    ActivateKeyboardFocus(currentCanvas, x, y);
+
     // Inject this mouse press to Qt.
     SendMouseLeftButtonPressEvent(*currentCanvas, x, y);
-
-    // Activate the keyboard focus on this canvas as well.
-    ActivateKeyboardFocus(currentCanvas, x, y);
 
     // Reset the mouse cursor, for some reason it seems to get lost after sending the LMB click message.
     ///\todo Possibly set Ogre to set a null cursor to the main window so we can handle this at will.
@@ -364,8 +367,6 @@ void UIController::InjectMouseRelease(int x, int y)
 
     // Translate the mouse position from QGraphicsView coordinate frame onto
     // the QGraphicsScene coordinate frame.
-    QPoint point(x,y);
-
     QPoint pos = mouseActionCanvas->MapToCanvas(x,y);
     QPoint currentMousePos(pos.x(), pos.y());
 
@@ -408,8 +409,8 @@ void UIController::InjectDoubleClick(int x, int y)
         // In case of double click we set that left button generated click -> so it is set down. 
         QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseDoubleClick);
 
-        mouseEvent.setButtonDownScenePos(Qt::LeftButton, currentMousePos);
-        mouseEvent.setButtonDownScreenPos(Qt::LeftButton, currentMousePos);
+        mouseEvent.setButtonDownScenePos(Qt::LeftButton, lastMousePressPoint_);
+        mouseEvent.setButtonDownScreenPos(Qt::LeftButton, lastMousePressPoint_);
         mouseEvent.setScenePos(currentMousePos);
         mouseEvent.setScreenPos(currentMousePos);
         mouseEvent.setLastScenePos(currentMousePos);
