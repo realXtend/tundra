@@ -353,9 +353,7 @@ namespace Foundation
     {
         PROFILE(FW_Go);
         PostInitialize();
-        q_engine_->Go();
-        default_scene_.reset();
-        scenes_.clear();        
+        q_engine_->Go();     
         UnloadModules();
     }
 
@@ -380,8 +378,10 @@ namespace Foundation
 
     void Framework::UnloadModules()
     {
+        default_scene_.reset();
+        scenes_.clear();            
+            
         module_manager_->UninitializeModules();
-        scenes_.clear();
         module_manager_->UnloadModules();
     }
 

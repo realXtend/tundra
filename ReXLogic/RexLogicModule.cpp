@@ -276,9 +276,6 @@ void RexLogicModule::DeleteScene(const std::string &name)
 // virtual
 void RexLogicModule::Uninitialize()
 {
-    // Hackish fix for crash at exit because EC_OgreEnvironment remains
-    DeleteScene("World");
-
     if (world_stream_->IsConnected())
         LogoutAndDeleteWorld();
 
