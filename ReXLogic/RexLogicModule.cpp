@@ -212,7 +212,6 @@ void RexLogicModule::PostInitialize()
 	send_input_state_ = true;
 
 	// Create the login window.
-	//loginWindow_ = new RexLoginWindow(framework_, this);
 	loginUI_ = new Login(framework_, this);
 	connectionState_ = ProtocolUtilities::Connection::STATE_DISCONNECTED;
 }
@@ -298,9 +297,7 @@ void RexLogicModule::Uninitialize()
     SAFE_DELETE (scene_handler_);
     SAFE_DELETE (network_state_handler_);
     SAFE_DELETE (framework_handler_);
-
-	//SAFE_DELETE(loginWindow_);
-	SAFE_DELETE(loginUI_);
+	SAFE_DELETE (loginUI_);
 
     LogInfo("Module " + Name() + " uninitialized.");
 }

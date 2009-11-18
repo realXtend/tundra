@@ -28,7 +28,6 @@ namespace RexLogic
 		void ProcessPage(bool success);
 
 	private:
-		void showEvent(QShowEvent *showEvent);
 		void InitWidget();
 		void ConnectSignals();
 

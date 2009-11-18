@@ -15,7 +15,7 @@ namespace RexLogic
 
 	public:
 		TaigaCredentials();
-		virtual ~TaigaCredentials(void);
+		virtual ~TaigaCredentials();
 
 		virtual QString GetIdentity();
 		virtual void SetIdentityUrl(QString identityUrl);
@@ -30,7 +30,7 @@ namespace RexLogic
 
 	public:
 		OpenSimCredentials();
-		virtual ~OpenSimCredentials(void);
+		virtual ~OpenSimCredentials();
 
 		virtual QString GetIdentity();
 		virtual QString GetFirstName();
