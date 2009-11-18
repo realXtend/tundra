@@ -144,34 +144,18 @@ namespace
             patch.node = node;
         }
         assert(node);
-//        assert(node->numAttachedObjects() == 1);
 
         Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
 
         Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
         Ogre::ManualObject *manual = sceneMgr->createManualObject(renderer->GetUniqueObjectName());
         manual->setCastShadows(false);
-//        node->attachObject(manual);
 
-//        Ogre::ManualObject *manual = dynamic_cast<Ogre::ManualObject*>(node->getAttachedObject(0));
-//        if (firstTimeFill)
-        {
-            manual->clear();
-            manual->estimateVertexCount(17*17);
-            manual->estimateIndexCount(17*17*3*2);
-            manual->begin(terrainMaterial->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
+        manual->clear();
+        manual->estimateVertexCount(17*17);
+        manual->estimateIndexCount(17*17*3*2);
+        manual->begin(terrainMaterial->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
 
-            // Save the entity in our scene structure this ManualObject refers to. Used to support scene queries
-            // on terrain objects.
-//            manual->setUserAny(Ogre::Any(&entity));
-        }
-/*        else
-        {
-            assert(manual->getNumSections() == 1);
-            manual->setMaterialName(0, terrainMaterial->getName());
-            manual->beginUpdate(0);
-        }
-*/
         const float vertexSpacingX = 1.f;
         const float vertexSpacingY = 1.f;
         const float patchSpacingX = 16 * vertexSpacingX;
@@ -252,13 +236,26 @@ namespace
 
         std::string mesh_name = renderer->GetUniqueObjectName();
         Ogre::MeshPtr terrainMesh = manual->convertToMesh(mesh_name);
+
+        // Odd: destroyManualObject seems to leave behind a memory leak if we don't call manualObject->clear first.
+        manual->clear();
         sceneMgr->destroyManualObject(manual);
+
         Ogre::Entity *ogre_entity = sceneMgr->createEntity(renderer->GetUniqueObjectName(), mesh_name);
         ogre_entity->setUserAny(Ogre::Any(&entity));
         ogre_entity->setCastShadows(false);
 
+        // Explicitly destroy all attached MovableObjects previously bound to this terrain node.
+        Ogre::SceneNode::ObjectIterator iter = node->getAttachedObjectIterator();
+        while(iter.hasMoreElements())
+        {
+            Ogre::MovableObject *obj = iter.getNext();
+            sceneMgr->destroyMovableObject(obj);
+        }
         node->detachAllObjects();
+        // Now attach the new built terrain mesh.
         node->attachObject(ogre_entity);
+
         patch.patch_geometry_dirty = false;
     }
 
