@@ -93,7 +93,7 @@ namespace Inventory
 
         /// @param row Row number of wanted child.
         /// @return Child item.
-        AbstractInventoryItem *Child(int row) { return children_.value(row); }
+        AbstractInventoryItem *Child(int row);
 
         /// @return Number of children.
         int ChildCount() const { return children_.count(); }
@@ -107,8 +107,10 @@ namespace Inventory
         /// @return folders child list 
         QList<AbstractInventoryItem *> &GetChildList() { return children_; }
 
+#ifdef _DEBUG
         /// Prints the inventory tree structure to std::cout.
         void DebugDumpInventoryFolderStructure(int indentationLevel);
+#endif
 
     private:
         Q_DISABLE_COPY(InventoryFolder);

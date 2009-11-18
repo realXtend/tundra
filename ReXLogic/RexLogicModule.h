@@ -28,7 +28,7 @@ namespace RexLogic
     class Sky;
     class Water;
     class Environment;
-	class Login;
+    class Login;
     class AvatarControllable;
     class CameraControllable;
 
@@ -66,8 +66,7 @@ namespace RexLogic
         virtual void Initialize();
         virtual void PostInitialize();
         virtual void Uninitialize();
-		virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
-
+        virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
         virtual void Update(Core::f64 frametime);
 
         virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
@@ -92,7 +91,7 @@ namespace RexLogic
 
         //! @return The avatar handler object that manages reX avatar logic.
         AvatarPtr GetAvatarHandler();
-        
+
         //! @return The avatar editor.
         AvatarEditorPtr GetAvatarEditor();
 
@@ -116,7 +115,7 @@ namespace RexLogic
 
         //! Returns the avatar controllable
         AvatarControllablePtr GetAvatarControllable() { return avatar_controllable_; }
-        
+
         //! The scene system can store multiple scenes. Only one scene is active at a time, that is the one
         //! that is currently being rendered. You may pass a null pointer to erase the currently active scene.
         void SetCurrentActiveScene(Scene::ScenePtr scene);
@@ -220,24 +219,31 @@ namespace RexLogic
         typedef std::vector<LogicEventHandlerFunction> EventHandlerVector;
         typedef std::map<Core::event_category_id_t, EventHandlerVector> LogicEventHandlerMap;
 
+        //! Event handler map.
         LogicEventHandlerMap event_handlers_;
 
+        //! Water pointer.
         WaterPtr water_;
 
+        //! Terrain pointer.
         TerrainPtr terrain_;
 
+        //! Avatar pointer.
         AvatarPtr avatar_;
-        
+
+        //! Avatar editor pointer.
         AvatarEditorPtr avatar_editor_;
 
+        //! Primitive pointer.
         PrimitivePtr primitive_;
 
+        //! Sky pointer.
         SkyPtr sky_;
 
+        //! Environment pointer.
         EnvironmentPtr environment_;
 
-//        AssetUploaderPtr asset_uploader_;
-
+        //! Active scene pointer.
         Scene::ScenePtr activeScene_;
 
 #ifdef _DEBUG
@@ -246,6 +252,7 @@ namespace RexLogic
         void DebugSanityCheckOgreCameraTransform();
 #endif
 
+        //! Recreates the water. Called at startup.
         void CreateWater();
 
         //! Recreates the terrain. Called at startup.
@@ -270,8 +277,8 @@ namespace RexLogic
         //! The login window.
         //RexLoginWindow *loginWindow_;
 
-		//! The new login window
-		Login *loginUI_;
+        //! The new login window
+        Login *loginUI_;
 
         //! The connection state which is shown in the login window.
         ProtocolUtilities::Connection::State connectionState_;

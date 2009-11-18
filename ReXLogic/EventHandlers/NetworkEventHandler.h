@@ -25,25 +25,26 @@ namespace RexLogic
         virtual ~NetworkEventHandler();
 
         // !Handle network events coming from OpenSimProtocolModule
-        bool HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface *data);
     private:
         // !Handler functions for Opensim network events
-        bool HandleOSNE_AgentMovementComplete(ProtocolUtilities::NetworkEventInboundData* data);
-        bool HandleOSNE_GenericMessage(ProtocolUtilities::NetworkEventInboundData* data);
-        bool HandleOSNE_ImprovedTerseObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data);
-        bool HandleOSNE_KillObject(ProtocolUtilities::NetworkEventInboundData* data);
-        bool HandleOSNE_LogoutReply(ProtocolUtilities::NetworkEventInboundData* data);
-        bool HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data);
-        bool HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkEventInboundData* data);
-        bool HandleOSNE_InventoryDescendents(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleOSNE_AgentMovementComplete(ProtocolUtilities::NetworkEventInboundData *data);
+        bool HandleOSNE_ImprovedTerseObjectUpdate(ProtocolUtilities::NetworkEventInboundData *data);
+        bool HandleOSNE_KillObject(ProtocolUtilities::NetworkEventInboundData *data);
+        bool HandleOSNE_LogoutReply(ProtocolUtilities::NetworkEventInboundData *data);
+        bool HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData *data);
+        bool HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkEventInboundData *data);
+        bool HandleOSNE_InventoryDescendents(ProtocolUtilities::NetworkEventInboundData *data);
+        bool HandleOSNE_UpdateCreateInventoryItem(ProtocolUtilities::NetworkEventInboundData *data);
 
         //! Handler functions for GenericMessages
+        bool HandleOSNE_GenericMessage(ProtocolUtilities::NetworkEventInboundData *data);
 
         void DebugCreateTerrainVisData(const DecodedTerrainPatch &heightData, int patchSize);
 
         Foundation::Framework *framework_;
 
-		boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
+        boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
 
         RexLogicModule *rexlogicmodule_;
     };

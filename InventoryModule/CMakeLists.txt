@@ -1,3 +1,10 @@
+macro (MocFolder)
+    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx)
+    source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
+endmacro (MocFolder)
+
+#############################################################################################
+
 # Define target name and output directory
 init_target (InventoryModule OUTPUT modules/core)
 
@@ -9,6 +16,9 @@ file (GLOB MOC_FILES AbstractInventoryDataModel.h AbstractInventoryItem.h AssetU
     InventoryFolder.h InventoryItemModel.h InventoryWindow.h OpenSimInventoryDataModel.h WebdavInventoryDataModel.h)
 file (GLOB RESOURCE_FILES resource/*.qrc)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
+
+# Qt4 Moc files to subgroup "CMake Moc"
+MocFolder ()
 
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
@@ -26,8 +36,10 @@ use_package (OGRE)
 use_package (QT4)
 use_package (PYTHON)
 use_package (PYTHON_QT)
-# remove ProtocolModuleOpenSim ProtocolModuleTaiga if its not needed anymore in RexServerConnection.h
-use_modules (RexCommon ReXLogic ProtocolUtilities RpcUtilities HttpUtilities QtModule ProtocolModuleOpenSim ProtocolModuleTaiga)
+
+# remove ProtocolModuleOpenSim ProtocolModuleTaiga if it's not needed anymore in RexServerConnection.h
+use_modules (RexCommon ReXLogic ProtocolUtilities RpcUtilities HttpUtilities QtModule ProtocolModuleOpenSim ProtocolModuleTaiga
+    AssetModule TextureDecoderModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 use_framework_modules (Core Foundation Interfaces RexCommon)

@@ -20,7 +20,7 @@ const asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type)
         return RexAT_FlashAnimation;
     if (asset_type == ASSETTYPENAME_GENERIC_AVATAR_XML)
         return RexAT_GenericAvatarXml;
-        
+
     return RexAT_None;
 }
 
@@ -38,7 +38,7 @@ const std::string& GetTypeNameFromAssetType(asset_type_t asset_type)
         return ASSETTYPENAME_MATERIAL_SCRIPT;
     if (asset_type == RexAT_GenericAvatarXml)
         return ASSETTYPENAME_GENERIC_AVATAR_XML;
-    
+
     return ASSETTYPENAME_UNKNOWN;
 }
 
@@ -135,7 +135,7 @@ const std::string& GetOpenFileNameFilter(asset_type_t asset_type)
         return PARTICLE_FILTER;
     if (asset_type == RexTypes::RexAT_FlashAnimation)
         return FLASHANIMATION_FILTER;
-        
+
     return ALLFILES_FILTER;
 }
 
@@ -162,8 +162,32 @@ asset_type_t GetAssetTypeFromFilename(const std::string &filename)
         return RexAT_FlashAnimation;
     if (file_ext == "xml")
         return RexAT_GenericAvatarXml;
-        
+
     return -1;
+}
+
+std::string GetFileExtensionFromAssetType(const asset_type_t &asset_type)
+{
+    switch(asset_type)
+    {
+    case RexAT_Texture:
+        return ".png";
+    case RexAT_Mesh:
+        return ".mesh";
+    case RexAT_Skeleton:
+        return ".skeleton";
+    case RexAT_ParticleScript:
+        return ".particle";
+    case RexAT_MaterialScript:
+        return ".material";
+    case RexAT_FlashAnimation:
+        return ".swf";
+    case RexAT_GenericAvatarXml:
+        return ".xml";
+    case RexAT_None:
+    default:
+        return ".unknown";
+    }
 }
 
 bool IsNull(const RexAssetID& id)

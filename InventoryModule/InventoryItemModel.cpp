@@ -21,6 +21,7 @@
 #include <QDataStream>
 #include <QPointer>
 #include <QIcon>
+#include <QItemSelection>
 
 namespace Inventory
 {
@@ -501,9 +502,9 @@ int InventoryItemModel::columnCount(const QModelIndex &parent) const
 void InventoryItemModel::FetchInventoryDescendents(const QModelIndex &index)
 {
     AbstractInventoryItem *item = GetItem(index);
-    InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
-    if (!folder)
-        return;
+    //InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
+    //if (!folder)
+//        return;
 
     // Fetch inventory descendents only if the folder is "dirty".
 //    if (!folder->IsDirty())
@@ -511,13 +512,48 @@ void InventoryItemModel::FetchInventoryDescendents(const QModelIndex &index)
 
     dataModel_->FetchInventoryDescendents(item);
 
-    folder->SetDirty(false);
+//    folder->SetDirty(false);
 }
 
+void InventoryItemModel::Download(const QString &store_path, const QItemSelection &selection)
+{
+    QListIterator<QModelIndex> it(selection.indexes());
+    while(it.hasNext())
+    {
+        QModelIndex index = it.next();
+        InventoryAsset *asset = dynamic_cast<InventoryAsset *>(GetItem(index));
+        if (asset)
+        {
+            InventoryModule::LogInfo("Requesting item " + asset->GetName().toStdString() + " for storage from the server");
+//            assetDownloadRequests_[asset->GetAssetReference()] = asset->GetName();
+            dataModel_->DownloadFile(store_path, asset);
+        }
+    }
+}
+
+void InventoryItemModel::Upload(const QModelIndex &index, QStringList filenames)
+{
+    if(!index.isValid())
+        return;
+
+    AbstractInventoryItem *parentItem = GetItem(index);
+    assert(parentItem);
+
+    QStringListIterator it(filenames);
+    while(it.hasNext())
+    {
+        QString filename = it.next();
+        if (!filename.isEmpty())
+            dataModel_->UploadFile(filename, parentItem);
+    }
+}
+
+/*
 void InventoryItemModel::CurrentSelectionChanged(const QModelIndex &index)
 {
     emit(AbstractInventoryItemSelected(GetItem(index)));
 }
+*/
 
 AbstractInventoryItem *InventoryItemModel::GetItem(const QModelIndex &index) const
 {

@@ -11,7 +11,6 @@
 #include "Foundation.h"
 #include "ModuleInterface.h"
 #include "EventDataInterface.h"
-#include "AssetUploader.h"
 #include "WorldStream.h"
 
 namespace RexLogic
@@ -22,6 +21,7 @@ namespace RexLogic
 namespace Inventory
 {
     class InventoryWindow;
+    class AssetUploader;
 
     typedef boost::shared_ptr<AssetUploader> AssetUploaderPtr;
 
@@ -59,7 +59,7 @@ namespace Inventory
         Console::CommandResult UploadMultipleAssets(const Core::StringVector &params);
 
         /// @return Asset uploader pointer.
-        AssetUploaderPtr GetAssetUploader() const { return assetUploader_; }
+        AssetUploaderPtr GetAssetUploader() const;
 
         /// Get the current WorldStream
         ProtocolUtilities::WorldStreamPtr GetCurrentWorldStream() { return CurrentWorldStream; }
@@ -82,6 +82,12 @@ namespace Inventory
 
         /// Framework event category
         Core::event_category_id_t frameworkEventCategory_;
+
+        /// Asset event category.
+        Core::event_category_id_t assetEventCategory_ ;
+
+        /// Resource event category.
+        Core::event_category_id_t resourceEventCategory_;
 
         /// Module GUI widget
         InventoryWindow *inventoryWindow_;

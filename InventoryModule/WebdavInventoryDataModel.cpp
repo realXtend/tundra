@@ -41,8 +41,8 @@ WebdavInventoryDataModel::~WebdavInventoryDataModel()
 /// AbstractInventoryDataModel INTERFACE
 void WebdavInventoryDataModel::SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream)
 {
-
 }
+
 AbstractInventoryItem *WebdavInventoryDataModel::GetFirstChildFolderByName(const QString &searchName) const
 {
     InventoryModule::LogInfo("Webdav | You are in GetFirstChildFolderByName() that is not implemented yet");
@@ -86,7 +86,8 @@ AbstractInventoryItem *WebdavInventoryDataModel::GetOrCreateNewFolder(const QStr
                 if (result.count() >= 1)
                     if (result[0] == "True")
                     {
-                        ItemSelectedFetchContent(&parentFolder);
+                        //ItemSelectedFetchContent(&parentFolder);
+                        FetchInventoryDescendents(&parentFolder);
                         InventoryModule::LogInfo(QString("Webdav | Created folder named %1 to path %2\n").arg(newFolderName, parentPath).toStdString());
                     }
                     else
@@ -115,7 +116,8 @@ AbstractInventoryItem *WebdavInventoryDataModel::GetOrCreateNewFolder(const QStr
                             if (result.count() >= 1)
                                 if (result[0] == "True")
                                 {
-                                    ItemSelectedFetchContent(&parentFolder);
+                                    //ItemSelectedFetchContent(&parentFolder);
+                                    FetchInventoryDescendents(&parentFolder);
                                     InventoryModule::LogInfo(QString("Webdav | Moved folder %1 from %2 to %3\nNote: This fucntionality is experimental,").append( 
                                                                      "dont assume it went succesfull\n").arg(folderName, currentPath, newPath).toStdString());
                                 }
@@ -141,9 +143,55 @@ AbstractInventoryItem *WebdavInventoryDataModel::GetOrCreateNewAsset(const QStri
     return 0;
 }
 
-void WebdavInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem *folder)
+void WebdavInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem *item)
 {
-    InventoryModule::LogInfo("Webdav | You are in FetchInventoryDescendents() that is not implemented yet");
+    //InventoryModule::LogInfo("Webdav | You are in FetchInventoryDescendents() that is not implemented yet");
+
+    InventoryFolder *selected = dynamic_cast<InventoryFolder *>(item);
+    if (!selected)
+        return;
+
+    // Delete children
+    selected->GetChildList().clear();
+    //QListIterator<AbstractInventoryItem *> it(selected->GetChildList());
+    //while(it.hasNext())
+    //{
+    //    AbstractInventoryItem *item = it.next();
+    //    if (item)
+    //        delete item;
+    //}
+
+    QString itemPath = selected->GetID();
+    QStringList children = webdavclient_.call("listResources", QVariantList() << itemPath).toStringList();
+    if ( children.count() >=1 )
+    {
+        // Process child list to map
+        QMap<QString, QString> childMap;
+        for (int index=0; index<=children.count(); index++)
+        {
+            childMap[children.value(index)] = children.value(index+1);
+            index++;
+        }
+
+        AbstractInventoryItem *newItem = 0;
+        QString path, name, type;
+        for (QMap<QString, QString>::iterator iter = childMap.begin(); iter!=childMap.end(); ++iter)
+        {
+            path = iter.key();
+            name = path.midRef(path.lastIndexOf("/")+1).toString();
+            type = iter.value();
+            if (name != "")
+            {
+                if (type == "resource")
+                    newItem = new InventoryAsset(path, "", name, selected);
+                else
+                    newItem = new InventoryFolder(path, name, selected, true);
+                selected->AddChild(newItem);
+            }
+        }
+
+        InventoryModule::LogInfo(QString("Webdav | Fetched %1 children to path /%2").arg(QString::number(childMap.count()), itemPath).toStdString());
+    }
 }
 
 void WebdavInventoryDataModel::NotifyServerAboutItemMove(AbstractInventoryItem *item)
@@ -175,7 +223,8 @@ void WebdavInventoryDataModel::NotifyServerAboutItemRemove(AbstractInventoryItem
         if (result[0] == "True")
         {
             InventoryModule::LogInfo(QString("Webdav | Removed item from %1\n").arg(item->GetID()).toStdString());
-            ItemSelectedFetchContent(item->GetParent());
+            //ItemSelectedFetchContent(item->GetParent());
+            FetchInventoryDescendents(item->GetParent());
         }
         else
             InventoryModule::LogInfo(QString("Webdav | Could not remove item from %1\n").arg(item->GetID()).toStdString());
@@ -191,7 +240,8 @@ void WebdavInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryItem
     if (result.count() >= 1)
         if (result[0] == "True")
         {
-            ItemSelectedFetchContent(item->GetParent());
+            //ItemSelectedFetchContent(item->GetParent());
+            FetchInventoryDescendents(item->GetParent());
             InventoryModule::LogInfo(QString("Webdav | Renamed folder from %0 to %1 in path %3\n").arg(oldName, newName, parentPath).toStdString());
         }
         else
@@ -199,7 +249,7 @@ void WebdavInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryItem
 }
 
 /// PUBLIC SLOTS
-
+/*
 void WebdavInventoryDataModel::ItemSelectedFetchContent(AbstractInventoryItem *item)
 {
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
@@ -250,6 +300,7 @@ void WebdavInventoryDataModel::ItemSelectedFetchContent(AbstractInventoryItem *i
         }
     }
 }
+*/
 
 void WebdavInventoryDataModel::UploadFile(const QString &file_path, AbstractInventoryItem *parent_folder)
 {
@@ -265,7 +316,8 @@ void WebdavInventoryDataModel::UploadFile(const QString &file_path, AbstractInve
             if (result.count() >= 1)
                 if (result[0] == "True")
                 {
-                    ItemSelectedFetchContent(parent_folder);
+                    //ItemSelectedFetchContent(parent_folder);
+                    FetchInventoryDescendents(parent_folder);
                     InventoryModule::LogInfo(QString("Webdav | Upload of file %1 to path %2%3 succeeded\n").arg(filePath, parentPath, filename).toStdString());
                 }
                 else
@@ -298,7 +350,6 @@ void WebdavInventoryDataModel::DownloadFile(const QString &store_folder, Abstrac
 
 bool WebdavInventoryDataModel::InitPythonQt()
 {
-    
     QString myPath = QString("%1/pymodules/webdavinventory").arg(QDir::currentPath());
 
     pythonQtMainModule_ = PythonQt::self()->getMainModule();
@@ -368,7 +419,7 @@ void WebdavInventoryDataModel::FetchRootFolder()
                 rootFolder_->SetDirty(true);
             }
 
-            AbstractInventoryItem *newItem;
+            AbstractInventoryItem *newItem = 0;
             QString path;
             QString name;
             QString type;
@@ -390,13 +441,12 @@ void WebdavInventoryDataModel::FetchRootFolder()
             }
         }
         else
-        {            
+        {
             ErrorOccurredCreateEmptyRootFolder();
         }
     }
     else
         ErrorOccurredCreateEmptyRootFolder();
-
 }
 
 void WebdavInventoryDataModel::ErrorOccurredCreateEmptyRootFolder()

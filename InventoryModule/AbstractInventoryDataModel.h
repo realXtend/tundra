@@ -61,8 +61,8 @@ namespace Inventory
             AbstractInventoryItem &parentFolder, const QString &name) = 0;
 
         /// Request inventory descendents for spesific folder from the server.
-        /// @param folder Folder.
-        virtual void FetchInventoryDescendents(AbstractInventoryItem *folder) = 0;
+        /// @param item Folder.
+        virtual void FetchInventoryDescendents(AbstractInventoryItem *item) = 0;
 
         /// Notifies server about item move operation.
         /// @item Inventory item.
@@ -79,6 +79,12 @@ namespace Inventory
         /// Notifies server about item update operation(e.g. name changed).
         /// @item Inventory item.
         virtual void NotifyServerAboutItemUpdate(AbstractInventoryItem *item, const QString &old_name) = 0;
+
+        ///
+        virtual void UploadFile(const QString &filename, AbstractInventoryItem *parent_folder) = 0;
+
+        ///
+        virtual void DownloadFile(const QString &store_folder, AbstractInventoryItem *selected_item) = 0;
 
         /// @return Inventory root folder.
         virtual AbstractInventoryItem *GetRoot() const = 0;

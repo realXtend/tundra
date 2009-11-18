@@ -7,7 +7,13 @@
 #include "CoreCompileConfig.h"
 #include "CoreDefines.h"
 #include "CoreTypes.h"
+
+///\todo C4996 warnings caused by strcpy disabled for now. Fix usage of strcpy in CoreException.h.
+#pragma warning( push )
+#pragma warning( disable : 4996 )
 #include "CoreException.h"
+#pragma warning( pop )
+
 #include "CoreAnyIterator.h"
 
 #include "CoreMath.h"

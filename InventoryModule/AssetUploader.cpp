@@ -245,6 +245,7 @@ bool AssetUploader::UploadBuffer(
 
     // Send event, if applicable.
     // Note: sent as delayed, to be thread-safe
+    /*
     Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
     Core::event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
     if (event_category != 0)
@@ -261,6 +262,7 @@ bool AssetUploader::UploadBuffer(
         
         event_mgr->SendDelayedEvent<Inventory::InventoryItemEventData>(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, asset_data);
     }
+    */
 
     InventoryModule::LogInfo("Upload succesfull. Asset id: " + asset_id + ", inventory id: " + inventory_id + ".");
     return true;

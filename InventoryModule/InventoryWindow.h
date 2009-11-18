@@ -10,6 +10,7 @@
 
 #include "Foundation.h"
 #include "WorldStream.h"
+#include "RexTypes.h"
 
 #include <QObject>
 #include <QPointer>
@@ -19,6 +20,7 @@ class QWidget;
 class QPushButton;
 class QTreeWidgetItem;
 class QTreeView;
+class QItemSelection;
 
 namespace QtUI
 {
@@ -29,6 +31,11 @@ namespace QtUI
 namespace RexLogic
 {
     class RexLogicModule;
+}
+
+namespace Foundation
+{
+    class EventDataInterface;
 }
 
 namespace Inventory
@@ -65,25 +72,22 @@ namespace Inventory
         /// Resets the inventory tree model.
         void ResetInventoryTreeModel();
 
-        /// Shows/toggles the inventory window.
+        /// Toggles the inventory window.
         void Toggle();
 
         /// Hides the inventory window.
         void Hide();
 
-        /// Updates possible actions depending on the currently active tree view item.
-        void UpdateActions();
-
-        ///
+        /// Handles data from InventoryDescendent packet.
         void HandleInventoryDescendent(InventoryItemEventData *item_data);
 
         /// Set World Stream
         void SetWorldStreamToDataModel(ProtocolUtilities::WorldStreamPtr world_stream);
 
-    private slots:
-        /// Close handler
-        void CloseInventoryWindow();
+        ///
+        void HandleResourceReady(const bool &resource, Foundation::EventDataInterface *data);
 
+    private slots:
         /// Expands the inventory folder in the treeview
         /// @param index Index of folder to be expanded.
         void ExpandFolder(const QModelIndex &index);
@@ -103,8 +107,12 @@ namespace Inventory
         /// File download.
         void Download();
 
+        /// Updates possible actions depending on the currently active tree view item.
+        void UpdateActions();
+
     signals:
         void FileUpload(Core::StringList &filenames);
+        void FileDownload(const QString &store_path, const QItemSelection &selection);
 
     private:
         Q_DISABLE_COPY(InventoryWindow);
@@ -124,20 +132,38 @@ namespace Inventory
         /// QtModule pointer.
         boost::shared_ptr<QtUI::QtModule> qtModule_;
 
-        /// Inventory window widget.
-        QWidget *inventoryWidget_;
-
         /// Canvas for the inventory window.
         boost::shared_ptr<QtUI::UICanvas> canvas_;
 
         /// Inventory view model.
         QPointer<InventoryItemModel> inventoryItemModel_;
 
-        // QWidgets
+        ///
+        QMap<Core::request_tag_t, RexTypes::asset_type_t> resourceRequests_;
+
+        /// Inventory window widget.
+        QWidget *inventoryWidget_;
+
+        /// Treeview widget.
         QTreeView *treeView_;
 
-        QPushButton *buttonClose_, *buttonDownload_, *buttonUpload_,
-            *buttonAddFolder_, *buttonDeleteItem_, *buttonRename_;
+        /// Close button.
+        QPushButton *buttonClose_;
+
+        /// Download button.
+        QPushButton *buttonDownload_;
+
+        /// Upload button.
+        QPushButton *buttonUpload_;
+
+        /// Add folder button.
+        QPushButton *buttonAddFolder_;
+
+        /// Delete item button.
+        QPushButton *buttonDeleteItem_;
+
+        /// Rename button.
+        QPushButton *buttonRename_;
     };
 }
 

@@ -187,7 +187,7 @@ namespace RexTypes
     const std::string AT_MATERIAL_SCRIPT("ogremate");
     const std::string AT_PARTICLE_SCRIPT("ogrepart");
     const std::string AT_FLASH_ANIMATION("flashani");
-    const std::string AT_UNKNOWN("unknown");    
+    const std::string AT_UNKNOWN("unknown");
     const std::string AT_GENERIC_AVATAR_XML("g.avatar"); 
 
     // Text inventory types used for uploading assets.
@@ -279,6 +279,12 @@ namespace RexTypes
      *  @return Non-negative asset type, or -1 if unknown.
      */
     asset_type_t GetAssetTypeFromFilename(const std::string &filename);
+
+    /** Returns file extension for ReX/OpenSim asset type.
+     *  @param asset_type Asset type.
+     *  @return File extension.
+     */
+    std::string GetFileExtensionFromAssetType(const asset_type_t &asset_type);
 
     // Prim drawtypes
     const int DRAWTYPE_PRIM = 0;

@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "InventoryWindow.h"
 #include "InventoryModule.h"
+#include "AssetUploader.h"
 #include "OpenSimInventoryDataModel.h"
 #include "WebdavInventoryDataModel.h"
 #include "InventoryItemModel.h"
@@ -10,10 +11,13 @@
 #include "RexLogicModule.h"
 #include "Inventory/InventoryEvents.h"
 #include "QtUtils.h"
+#include "AssetEvents.h"
+#include "TextureInterface.h"
 
 #include <QtUiTools>
 #include <QFile>
 #include <QAbstractItemView>
+#include <QModelIndex>
 
 namespace Inventory
 {
@@ -30,16 +34,14 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework, RexLogic::Rex
 
     canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
 
-    // Init Inventory Widget and connect close signal
+    // Init Inventory widget and connect close signal
     InitInventoryWindow();
-
-    QObject::connect(buttonClose_, SIGNAL(clicked()), this, SLOT(Hide()));
 
     // Add local widget to canvas, setup initial size and title and show canvas
     canvas_->SetSize(300, 350);
     canvas_->SetStationary(false);
     //canvas_->SetResizable(false);
-    canvas_->SetPosition(canvas_->GetRenderWindowSize().width()-350,35);
+    canvas_->SetPosition(canvas_->GetRenderWindowSize().width() - 350, 35);
     canvas_->SetWindowTitle(QString("Inventory"));
     canvas_->AddWidget(inventoryWidget_);
 
@@ -73,12 +75,10 @@ void InventoryWindow::Hide()
 void InventoryWindow::SetWorldStreamToDataModel(ProtocolUtilities::WorldStreamPtr world_stream)
 {
     if (inventoryItemModel_)
-    {
         inventoryItemModel_->GetInventory()->SetWorldStream(world_stream);
-    }
 }
 
-void InventoryWindow::InitOpenSimInventoryTreeModel(InventoryModule *inventory_module, ProtocolUtilities::WorldStreamPtr world_stream)
+void InventoryWindow::InitOpenSimInventoryTreeModel(InventoryModule *inventory_module,ProtocolUtilities::WorldStreamPtr world_stream)
 {
     if (inventoryItemModel_)
     {
@@ -115,11 +115,14 @@ void InventoryWindow::InitWebDavInventoryTreeModel(const std::string &identityUr
     treeView_->setModel(inventoryItemModel_);
 
     // Connect signals
-    QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)),
-        inventoryItemModel_, SLOT(CurrentSelectionChanged(const QModelIndex &)));
+    QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
+        const QItemSelection &)), this, SLOT(UpdateActions()));
 
-    QObject::connect(inventoryItemModel_, SIGNAL( AbstractInventoryItemSelected(AbstractInventoryItem *)),
-        dataModel, SLOT(ItemSelectedFetchContent(AbstractInventoryItem *)));
+//    QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)),
+//        inventoryItemModel_, SLOT(CurrentSelectionChanged(const QModelIndex &)));
+
+//    QObject::connect(inventoryItemModel_, SIGNAL(AbstractInventoryItemSelected(AbstractInventoryItem *)),
+//        dataModel, SLOT(ItemSelectedFetchContent(AbstractInventoryItem *)));
 
     // Set inventory type
     inventoryType_ = "Webdav";
@@ -128,19 +131,6 @@ void InventoryWindow::InitWebDavInventoryTreeModel(const std::string &identityUr
 void InventoryWindow::ResetInventoryTreeModel()
 {
     SAFE_DELETE(inventoryItemModel_);
-}
-
-void InventoryWindow::UpdateActions()
-{
-//    bool hasSelection = !view->selectionModel()->selection().isEmpty();
-    //removeRowAction->setEnabled(hasSelection);
-    //removeColumnAction->setEnabled(hasSelection);
-
-    bool hasCurrent = treeView_->selectionModel()->currentIndex().isValid();
-    //insertRowAction->setEnabled(hasCurrent);
-
-    if (hasCurrent)
-        treeView_->closePersistentEditor(treeView_->selectionModel()->currentIndex());
 }
 
 void InventoryWindow::HandleInventoryDescendent(InventoryItemEventData *item_data)
@@ -157,6 +147,31 @@ void InventoryWindow::HandleInventoryDescendent(InventoryItemEventData *item_dat
         return;
 
     UpdateActions();
+}
+
+void InventoryWindow::HandleResourceReady(const bool &resource, Foundation::EventDataInterface *data)
+{
+    if (inventoryType_ != "OpenSim")
+        return;
+
+    QString asset_id;
+    if (resource)
+    {
+        Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady *>(data);
+        asset_id = event_data->id_.c_str();
+    }
+    else
+    {
+        Asset::Events::AssetReady *event_data = checked_static_cast<Asset::Events::AssetReady*>(data);
+        asset_id = event_data->asset_->GetId().c_str();
+    }
+
+    OpenSimInventoryDataModel *dataModel = dynamic_cast<OpenSimInventoryDataModel *>(inventoryItemModel_->GetInventory());
+    if (!dataModel)
+        return;
+
+    if (dataModel->HasPendingDownloadRequests())
+        dataModel->SaveAssetToDisk(data);
 }
 
 void InventoryWindow::ExpandFolder(const QModelIndex &index)
@@ -183,7 +198,6 @@ void InventoryWindow::AddFolder()
             return;
 
     bool ok = false;
-
     QString newFolderName = QInputDialog::getText(canvas_->GetView(), "Create New Folder",
         "Please give name of the new folder", QLineEdit::Normal, "", &ok);
     if (!ok)
@@ -192,8 +206,6 @@ void InventoryWindow::AddFolder()
     if (newFolderName.isEmpty())
         newFolderName = "New Folder";
 
-    // Create new children (row) to the inventory view.
-//    if (!model->insertRow(0, index))
     if (!inventoryItemModel_->InsertFolder(index.row(), index, newFolderName))
         return;
 
@@ -206,7 +218,6 @@ void InventoryWindow::DeleteItem()
     QModelIndex index = treeView_->selectionModel()->currentIndex();
     QAbstractItemModel *model = treeView_->model();
 
-    // Delete row from the inventory view model.
     if (model->removeRow(index.row(), index.parent()))
         UpdateActions();
 }
@@ -221,6 +232,7 @@ void InventoryWindow::RenameItem()
 
 void InventoryWindow::Upload()
 {
+    ///\todo make uploads for both models trough the same interface.
     if (inventoryType_ == "OpenSim")
     {
         Core::StringList filenames = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
@@ -229,46 +241,44 @@ void InventoryWindow::Upload()
 
         emit FileUpload(filenames);
     }
-    else if (inventoryType_ == "Webdav")
+    if(inventoryType_ == "Webdav")
     {
         QString filename(Foundation::QtUtils::GetOpenFileName("All Files (*.*)", "Select file for upload",
             Foundation::QtUtils::GetCurrentPath()).c_str());
+
         QModelIndex index = treeView_->selectionModel()->currentIndex();
-        AbstractInventoryItem *parentItem = inventoryItemModel_->GetItem(index);
-        if (!filename.isEmpty() && !filename.isNull() && parentItem)
-        {
-            WebdavInventoryDataModel *webdavDataModel = dynamic_cast<WebdavInventoryDataModel *>(inventoryItemModel_->GetInventory());
-            if (webdavDataModel)
-                webdavDataModel->UploadFile(filename, parentItem);
-        }
+        QStringList filenames;
+        filenames << filename;
+
+        inventoryItemModel_->Upload(index, filenames);
     }
 }
 
 void InventoryWindow::Download()
 {
-    if (inventoryType_ == "OpenSim")
-    {
-        QMessageBox::information(0, "Download", "Download not yet supported for OpenSim inventory model.");
-    }
-    else if (inventoryType_ == "Webdav")
-    {
-        QString storePath = QFileDialog::getExistingDirectory(inventoryWidget_, "Select location for file download",
-            QString(Foundation::QtUtils::GetCurrentPath().c_str()));
+    const QItemSelection &selection = treeView_->selectionModel()->selection();
+    if (selection.isEmpty())
+        return;
 
-        QModelIndex index = treeView_->selectionModel()->currentIndex();
-        AbstractInventoryItem *selectedItem = inventoryItemModel_->GetItem(index);
-        WebdavInventoryDataModel *webdavDataModel = dynamic_cast<WebdavInventoryDataModel *>(inventoryItemModel_->GetInventory());
-        if (selectedItem && webdavDataModel && !storePath.isNull() && !storePath.isEmpty())
-        {
-            webdavDataModel->DownloadFile(storePath, selectedItem);
-        }
-    }
+    QString storePath = QFileDialog::getExistingDirectory(inventoryWidget_, "Select location for file download",
+        QString(Foundation::QtUtils::GetCurrentPath().c_str()));
+    if (storePath.isEmpty())
+        return;
+
+    inventoryItemModel_->Download(storePath, selection);
 }
 
-void InventoryWindow::CloseInventoryWindow()
+void InventoryWindow::UpdateActions()
 {
-    if (qtModule_.get() != 0)
-        qtModule_.get()->DeleteCanvas(canvas_->GetID());
+//    bool hasSelection = !view->selectionModel()->selection().isEmpty();
+    //removeRowAction->setEnabled(hasSelection);
+    //removeColumnAction->setEnabled(hasSelection);
+
+    bool hasCurrent = treeView_->selectionModel()->currentIndex().isValid();
+    //insertRowAction->setEnabled(hasCurrent);
+
+    if (hasCurrent)
+        treeView_->closePersistentEditor(treeView_->selectionModel()->currentIndex());
 }
 
 void InventoryWindow::InitInventoryWindow()
@@ -281,18 +291,20 @@ void InventoryWindow::InitInventoryWindow()
     uiFile.close();
 
     // Get controls
-    buttonClose_ = inventoryWidget_->findChild<QPushButton*>("pushButton_Close");
-    buttonDownload_ = inventoryWidget_->findChild<QPushButton*>("pushButton_Download");
-    buttonUpload_ = inventoryWidget_->findChild<QPushButton*>("pushButton_Upload");
-    buttonAddFolder_ = inventoryWidget_->findChild<QPushButton*>("pushButton_AddFolder");
-    buttonDeleteItem_ = inventoryWidget_->findChild<QPushButton*>("pushButton_DeleteItem");
-    buttonRename_ = inventoryWidget_->findChild<QPushButton*>("pushButton_Rename");
-    treeView_ = inventoryWidget_->findChild<QTreeView*>("treeView");
+    buttonClose_ = inventoryWidget_->findChild<QPushButton *>("pushButton_Close");
+    buttonDownload_ = inventoryWidget_->findChild<QPushButton *>("pushButton_Download");
+    buttonUpload_ = inventoryWidget_->findChild<QPushButton *>("pushButton_Upload");
+    buttonAddFolder_ = inventoryWidget_->findChild<QPushButton *>("pushButton_AddFolder");
+    buttonDeleteItem_ = inventoryWidget_->findChild<QPushButton *>("pushButton_DeleteItem");
+    buttonRename_ = inventoryWidget_->findChild<QPushButton *>("pushButton_Rename");
+    treeView_ = inventoryWidget_->findChild<QTreeView *>("treeView");
 
     // Connect signals
-    QObject::connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
+    ///\todo Connecting both these signals causes WebDav inventory to work incorrectly.
+//    QObject::connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
     QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
 
+    QObject::connect(buttonClose_, SIGNAL(clicked()), this, SLOT(Hide()));
     QObject::connect(buttonAddFolder_, SIGNAL(clicked(bool)), this, SLOT(AddFolder()));
     QObject::connect(buttonDeleteItem_, SIGNAL(clicked(bool)), this, SLOT(DeleteItem()));
     QObject::connect(buttonRename_, SIGNAL(clicked(bool)), this, SLOT(RenameItem()));
