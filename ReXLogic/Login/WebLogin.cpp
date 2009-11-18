@@ -20,12 +20,7 @@ namespace RexLogic
 
 	WebLogin::~WebLogin()
 	{
-
-	}
-
-	void WebLogin::showEvent(QShowEvent *showEvent)
-	{
-		QWidget::showEvent(showEvent);
+        delete widget_;
 	}
 
 	void WebLogin::InitWidget()
@@ -33,69 +28,69 @@ namespace RexLogic
 		// Load ui to widget from file
 		QUiLoader loader;
         QFile uiFile("./data/ui/weblogin.ui");
-		this->widget_ = loader.load(&uiFile, this);
-		this->widget_->setMinimumSize(750, 550);
+		widget_ = loader.load(&uiFile, this);
+		widget_->setMinimumSize(750, 550);
 		uiFile.close();
 
 		// Get ui elements we want to update in signal processing
-		progressBar = this->widget_->findChild<QProgressBar *>("progressBar_Status");
+		progressBar = widget_->findChild<QProgressBar *>("progressBar_Status");
 		progressBar->hide();
-		statusLabel = this->widget_->findChild<QLabel *>("label_Status");
+		statusLabel = widget_->findChild<QLabel *>("label_Status");
 
 		// Add webview by hand, the QFormBuilder cannot do this (custom widget)
-		QVBoxLayout *centerLayout = this->widget_->layout()->findChild<QVBoxLayout *>("verticalLayout_Container");
-		this->webView_ = new QWebView(this->widget_);
-		this->webView_->setMinimumSize(100,100);
-		centerLayout->insertWidget(2, this->webView_);
+		QVBoxLayout *centerLayout = widget_->layout()->findChild<QVBoxLayout *>("verticalLayout_Container");
+		webView_ = new QWebView(widget_);
+		webView_->setMinimumSize(100,100);
+		centerLayout->insertWidget(2, webView_);
 
 		// Get comboBox and set url to it
-		comboBoxAddress = this->widget_->findChild<QComboBox *>("comboBox_Address");
+		comboBoxAddress = widget_->findChild<QComboBox *>("comboBox_Address");
 		comboBoxAddress->setEditText(address_);
 
 		// Get buttons and add image to them
-		backButton = this->widget_->findChild<QPushButton *>("pushButton_Back");
+		backButton = widget_->findChild<QPushButton *>("pushButton_Back");
 		backButton->setIcon(QIcon("./data/ui/images/arrow_left_48.png"));
 		backButton->setIconSize(QSize(20, 20));
-		forwardButton = this->widget_->findChild<QPushButton *>("pushButton_Forward");
+		forwardButton = widget_->findChild<QPushButton *>("pushButton_Forward");
 		forwardButton->setIcon(QIcon("./data/ui/images/arrow_right_48.png"));
 		forwardButton->setIconSize(QSize(20, 20));
-		stopButton = this->widget_->findChild<QPushButton *>("pushButton_Stop");
+		stopButton = widget_->findChild<QPushButton *>("pushButton_Stop");
 		stopButton->setIcon(QIcon("./data/ui/images/cross_48.png"));
 		stopButton->setIconSize(QSize(20, 20));
 		stopButton->setEnabled(false);
-		refreshButton = this->widget_->findChild<QPushButton *>("pushButton_Refresh");
+		refreshButton = widget_->findChild<QPushButton *>("pushButton_Refresh");
 		refreshButton->setIcon(QIcon("./data/ui/images/refresh_48.png"));
 		refreshButton->setIconSize(QSize(20, 20));
-		goButton = this->widget_->findChild<QPushButton *>("pushButton_Go");
+		goButton = widget_->findChild<QPushButton *>("pushButton_Go");
 		goButton->setIcon(QIcon("./data/ui/images/arrow_right_green_48.png"));
 		goButton->setIconSize(QSize(20, 20));
 		
 		// But widget to layout, set layout to this
-		this->layout_ = new QVBoxLayout(this);
-		this->layout_->setSpacing(0);
-		this->layout_->setMargin(0);
-		this->layout_->addWidget(this->widget_);
-		this->setLayout(this->layout_);
-		this->setWindowTitle("realXtend Naali web browser");
-		this->setWindowIcon(QIcon("./data/ui/images/globe_48.png"));
+		layout_ = new QVBoxLayout(this);
+		layout_->setSpacing(0);
+		layout_->setMargin(0);
+		layout_->addWidget(widget_);
+		setLayout(layout_);
+		setWindowTitle("realXtend Naali web browser");
+		setWindowIcon(QIcon("./data/ui/images/globe_48.png"));
 	}
 
 	void WebLogin::ConnectSignals()
 	{
 		// Buttons
-		QObject::connect(this->backButton, SIGNAL( clicked() ), this->webView_, SLOT( back() ));
-		QObject::connect(this->forwardButton, SIGNAL( clicked() ), this->webView_, SLOT( forward() ));
-		QObject::connect(this->stopButton, SIGNAL( clicked() ), this->webView_, SLOT( stop() ));
-		QObject::connect(this->refreshButton, SIGNAL( clicked() ), this->webView_, SLOT( reload() ));
-		QObject::connect(this->goButton, SIGNAL( clicked(bool) ), this, SLOT( GoToUrl(bool) ));
+		QObject::connect(backButton, SIGNAL( clicked() ), webView_, SLOT( back() ));
+		QObject::connect(forwardButton, SIGNAL( clicked() ), webView_, SLOT( forward() ));
+		QObject::connect(stopButton, SIGNAL( clicked() ), webView_, SLOT( stop() ));
+		QObject::connect(refreshButton, SIGNAL( clicked() ), webView_, SLOT( reload() ));
+		QObject::connect(goButton, SIGNAL( clicked(bool) ), this, SLOT( GoToUrl(bool) ));
 		// Addressbar
-		QObject::connect(this->comboBoxAddress->lineEdit(), SIGNAL( returnPressed() ), this, SLOT( GoToUrl() ));
+		QObject::connect(comboBoxAddress->lineEdit(), SIGNAL( returnPressed() ), this, SLOT( GoToUrl() ));
 		// Webview
-		QObject::connect(this->webView_, SIGNAL( loadStarted() ), this, SLOT( LoadStarted() ));
-		QObject::connect(this->webView_, SIGNAL( loadProgress(int) ), this, SLOT( UpdateUi(int) ));
-		QObject::connect(this->webView_, SIGNAL( loadFinished(bool) ), this, SLOT( ProcessPage(bool) ));
+		QObject::connect(webView_, SIGNAL( loadStarted() ), this, SLOT( LoadStarted() ));
+		QObject::connect(webView_, SIGNAL( loadProgress(int) ), this, SLOT( UpdateUi(int) ));
+		QObject::connect(webView_, SIGNAL( loadFinished(bool) ), this, SLOT( ProcessPage(bool) ));
 
-        this->webView_->setUrl(QUrl(address_));
+        webView_->setUrl(QUrl(address_));
 	}
 
 	void WebLogin::GoToUrl()
@@ -105,38 +100,38 @@ namespace RexLogic
 
 	void WebLogin::GoToUrl(bool checked)
 	{
-		this->webView_->setUrl(QUrl(this->comboBoxAddress->lineEdit()->text()));
+		webView_->setUrl(QUrl(comboBoxAddress->lineEdit()->text()));
 	}
 
 	void WebLogin::LoadStarted()
 	{
-		this->stopButton->setEnabled(true);
-		this->statusLabel->setText("Loading page...");
-		this->progressBar->show();
+		stopButton->setEnabled(true);
+		statusLabel->setText("Loading page...");
+		progressBar->show();
 	}
 
 	void WebLogin::UpdateUi(int progress)
 	{
-		this->progressBar->setValue(progress);
+		progressBar->setValue(progress);
 	}
 
 	void WebLogin::ProcessPage(bool success)
 	{
 		// Update GUI
-		this->stopButton->setEnabled(false);
-		address_ = this->webView_->url().toString();
-		this->comboBoxAddress->lineEdit()->setText(address_);
-		QString title(this->webView_->page()->mainFrame()->title());
+		stopButton->setEnabled(false);
+		address_ = webView_->url().toString();
+		comboBoxAddress->lineEdit()->setText(address_);
+		QString title(webView_->page()->mainFrame()->title());
 		title.append(" - realXtend Naali web browser");
-		this->setWindowTitle(title);
-		if ( this->comboBoxAddress->findText(address_, Qt::MatchFixedString) == -1 )
-			this->comboBoxAddress->addItem(address_);
-		this->statusLabel->setText("Done");
-		this->progressBar->hide();
+		setWindowTitle(title);
+		if ( comboBoxAddress->findText(address_, Qt::MatchFixedString) == -1 )
+			comboBoxAddress->addItem(address_);
+		statusLabel->setText("Done");
+		progressBar->hide();
 		// Do actual HTML page processing...
 		if ( success )
 		{
-			QString pageTitle = this->webView_->page()->mainFrame()->title();
+			QString pageTitle = webView_->page()->mainFrame()->title();
 			if ( pageTitle == "LoginSuccess") 
 				emit( WebLoginInfoRecieved(webView_->page()->mainFrame()) );
 		}

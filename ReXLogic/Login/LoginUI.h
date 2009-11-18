@@ -130,8 +130,7 @@ namespace RexLogic
         boost::shared_ptr<QtUI::UICanvas> canvas_login_;
         boost::shared_ptr<QtUI::UICanvas> canvas_logout_;
         
-        QWidget *containerWidget_;
-        QVBoxLayout *layout_;
+        QWidget *inworldControls_;
         QTabWidget *tabWidget_;
         QPushButton *logout_button_;
         QPushButton *quit_button_;

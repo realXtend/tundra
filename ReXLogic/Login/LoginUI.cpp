@@ -89,7 +89,7 @@ namespace RexLogic
 
     void Login::InitLoginUI()
     {
-        tabWidget_ = new QTabWidget(0);
+        tabWidget_ = new QTabWidget();
         tabWidget_->addTab((QWidget*)new WebUI(tabWidget_, this, framework_, rexLogicModule_), QString("Web Login"));
         tabWidget_->addTab((QWidget*)new NaaliUI(tabWidget_, this, framework_, rexLogicModule_), QString("Traditional Login"));
 
@@ -114,10 +114,10 @@ namespace RexLogic
         if ( uiFile.exists() )
         {
             // Load ui to widget from file and get buttons
-            QWidget *inworldControls = loader.load(&uiFile);
-            inworldControls->resize(150, 25);
-            logout_button_ = inworldControls->findChild<QPushButton *>("pushButton_Logout");
-            quit_button_ = inworldControls->findChild<QPushButton *>("pushButton_Quit");
+            inworldControls_ = loader.load(&uiFile);
+            inworldControls_->resize(150, 25);
+            logout_button_ = inworldControls_->findChild<QPushButton *>("pushButton_Logout");
+            quit_button_ = inworldControls_->findChild<QPushButton *>("pushButton_Quit");
             uiFile.close();
 
             // Create UICanvas
@@ -134,7 +134,7 @@ namespace RexLogic
             QObject::connect(quit_button_, SIGNAL( clicked() ), this, SLOT( QuitApplication() ));
 
             // Add widget to canvas and hide it as long as we are inworld
-            canvas_logout_->AddWidget(inworldControls);
+            canvas_logout_->AddWidget(inworldControls_);
             canvas_logout_->Hide();
         }
     }
@@ -169,7 +169,7 @@ namespace RexLogic
 
 	void AbstractLoginUI::SetLayout()
 	{
-		this->setLayout(new QVBoxLayout());
+		this->setLayout(new QVBoxLayout(this));
 		this->layout()->setMargin(0);
 	}
 
@@ -330,6 +330,7 @@ namespace RexLogic
 
 	WebUI::~WebUI()
 	{
+        delete webLogin_;
 		delete loginHandler_;
 	}
 
