@@ -32,10 +32,10 @@ namespace TelepathyIM
 	{
 		for (ConnectionVector::iterator i = connections_.begin(); i != connections_.end(); ++i)
 		{
+            Connection* connection = *i;
 			//! @todo Check that there is enough time to actual close the connection to servers
-			(*i)->Close();
-			delete *i;
-			*i = NULL;
+			connection->Close();
+            SAFE_DELETE(connection);
 		}
 		connections_.clear();
 	}
@@ -74,7 +74,6 @@ namespace TelepathyIM
 		return v;
 	}
 
-    //! @return true if connection provoder does support given protocol.
     bool ConnectionProvider::SupportProtocol(QString &protocol) const
     {
         return supported_protocols_.contains(protocol);
@@ -138,8 +137,7 @@ namespace TelepathyIM
 				LogError("Cannot terminate dbus daemon process.");
 				return;
 			}
-			delete dbus_daemon_;
-			dbus_daemon_ = NULL;
+            SAFE_DELETE(dbus_daemon_);
 		}
 	}
 

@@ -37,6 +37,9 @@ namespace Communication
 		~CommunicationService(void);
 		static void CreateInstance(Foundation::Framework* framework);
 
+        //! Deletes static object instance
+        static void CleanUp();
+
 		//! Static method to provide singleton CommunicationServiceInterface object 
 		static CommunicationServiceInterface* GetInstance();
 
