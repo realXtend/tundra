@@ -67,8 +67,10 @@ namespace Communication
 	{
 		SAFE_DELETE(qt_ui_);
 		SAFE_DELETE(opensim_ui_);
-		SAFE_DELETE(communication_service_);
         SAFE_DELETE(test_);
+
+        CommunicationService::CleanUp();
+        communication_service_ = NULL;
 
 		LogInfo("Uninitialized.");   
 	}

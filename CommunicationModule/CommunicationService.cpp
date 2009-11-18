@@ -18,7 +18,8 @@ namespace Communication
 	{
 		for (ConnectionProviderVector::iterator i = connection_providers_.begin(); i != connection_providers_.end(); ++i)
 		{
-            SAFE_DELETE(*i);
+            Communication::ConnectionProviderInterface* provider = *i;
+            SAFE_DELETE(provider);
 		}
 		connection_providers_.clear();
 	}
@@ -29,6 +30,12 @@ namespace Communication
 		if (CommunicationService::instance_ == NULL)
 			CommunicationService::instance_ = new CommunicationService(framework);
 	}
+
+    // static
+    void CommunicationService::CleanUp()
+    {
+        SAFE_DELETE(CommunicationService::instance_);
+    }
 
 	//! static
 	CommunicationServiceInterface* CommunicationService::GetInstance()
@@ -154,9 +161,9 @@ namespace Communication
 		{
             QString protocol;
             bool protocol_supported = false;
-       		for (ConnectionProviderVector::iterator i = connection_providers_.begin(); i != connection_providers_.end(); ++i)
+       		for (ConnectionProviderVector::iterator p = connection_providers_.begin(); p != connection_providers_.end(); ++p)
 	    	{
-                Communication::ConnectionProviderInterface* provider = *i;
+                Communication::ConnectionProviderInterface* provider = *p;
                 if (provider->SupportProtocol(protocol))
                 {
                     protocol_supported = true;

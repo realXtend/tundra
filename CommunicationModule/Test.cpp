@@ -6,12 +6,11 @@ namespace CommunicationTest
 {
 	Test::Test(Foundation::Framework* framework): framework_(framework), jabber_connection_(0), opensim_connection_(0)
 	{
-			boost::shared_ptr<Console::CommandService> console_service = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
+		boost::shared_ptr<Console::CommandService> console_service = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
         if (console_service)
         {
 			console_service->RegisterCommand(Console::CreateCommand("comm test", "Run a test for communication service", Console::Bind(this, &Test::OnConsoleCommand)));
 		}
-	
 	}
 
 	Console::CommandResult Test::OnConsoleCommand(const Core::StringVector &params)
@@ -259,9 +258,10 @@ namespace CommunicationTest
 			Communication::ContactVector contacts = friend_list.GetContacts();
 			for (Communication::ContactVector::iterator i = contacts.begin(); i != contacts.end(); ++i)
 			{
-				QString name = (*i)->GetName();
-				QString id = (*i)->GetID();
-				QString status = (*i)->GetPresenceStatus();
+                Communication::ContactInterface* contact = *i;
+				QString name = contact->GetName();
+				QString id = contact->GetID();
+				QString status = contact->GetPresenceStatus();
 				QString message = QString("Friend: ").append(name).append(" (").append(id).append(") ").append(status);
 				LogInfo(message.toStdString());
 			}
