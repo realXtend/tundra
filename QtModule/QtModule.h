@@ -8,6 +8,7 @@
 #include "QtModuleApi.h"
 #include "UIController.h"
 #include <QMap>
+#include <QPoint>
 
 class QGraphicsScene;
 
@@ -109,6 +110,8 @@ namespace QtUI
         /// Refreshes an entity containing EC_UICanvas, when a scene event telling of its modification is posted
         void RefreshEC_UICanvas(Foundation::EventDataInterface* data);
 
+        boost::shared_ptr<UICanvas> GetCanvas(const Foundation::RaycastResult& result);
+
         // The event categories this module subscribes to.
         Core::event_category_id_t input_event_category_;
         Core::event_category_id_t renderer_event_category_;
@@ -119,6 +122,7 @@ namespace QtUI
         UIController* controller_;
 		UICanvasManager *canvasManager_;
         QMap<int, Qt::Key> converterMap_;
+        QPoint lastLocation_;
     };
 }
 
