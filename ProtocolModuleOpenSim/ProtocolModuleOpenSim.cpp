@@ -142,22 +142,24 @@ namespace OpenSimProtocol
 	{
 		loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_INIT_UDP);
 
-		bool udp_success = networkManager_->ConnectTo(address, port);
-		if (!udp_success)
-			return false;
+		if (networkManager_->ConnectTo(address, port))
+        {
+		    loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_CONNECTED);
+            connected_ = true;
 
-		loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_CONNECTED);
+		    // Send event indicating a succesfull connection.
+		    ProtocolUtilities::AuthenticationEventData auth_data(authenticationType_);
+            eventManager_->SendEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_SERVER_CONNECTED, &auth_data);
 
-		// Send event indicating a succesfull connection.
-		ProtocolUtilities::AuthenticationEventData auth_data(authenticationType_);
-        eventManager_->SendEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_SERVER_CONNECTED, &auth_data);
-        connected_ = true;
-
-		// Request capabilities from the server.
-		Core::Thread thread(boost::bind(&ProtocolModuleOpenSim::RequestCapabilities, this,
-			GetClientParameters().seedCapabilities));
-
-		return true;
+		    // Request capabilities from the server.
+		    Core::Thread thread(boost::bind(&ProtocolModuleOpenSim::RequestCapabilities, this, GetClientParameters().seedCapabilities));
+		    return true;
+        }
+        else
+        {
+            LogError("Network Manager could not establish UDP connection");
+            return false;
+        }
 	}
 
 	void ProtocolModuleOpenSim::DisconnectFromServer()

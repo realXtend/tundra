@@ -38,7 +38,7 @@ namespace OpenSimProtocol
 									credentials_->GetAuthenticationUrl().host(),
 									QString::number(credentials_->GetAuthenticationUrl().port()),
 									credentials_->GetIdentity(),
-									&threadState_);
+									GetConnectionThreadState());
 		}
 		else
 		{

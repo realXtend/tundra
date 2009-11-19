@@ -33,7 +33,7 @@ namespace TaigaProtocol
 				success = LoginToServer(serverEntryPointUrl_.toString(),
                                         QString::number(serverEntryPointUrl_.port()),
                                         credentials_->GetIdentity(),
-									    &threadState_);
+									    GetConnectionThreadState());
 		}
 		else
 		{

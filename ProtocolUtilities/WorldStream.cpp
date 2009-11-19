@@ -64,24 +64,6 @@ bool WorldStream::CreateUdpConnection()
             serverAddress_ = gridUrl.toString().toStdString();
             connected_successfully = protocolModule_->CreateUdpConnection(host.toStdString().c_str(), port);
         }
-        /*size_t pos = clientParameters_.gridUrl.rfind(":");
-        std::string serveraddress_noport;
-        if (pos == std::string::npos)
-            serveraddress_noport = clientParameters_.gridUrl;
-        else
-        {
-            serveraddress_noport = clientParameters_.gridUrl.substr(0, pos);
-            try
-            {
-                port = boost::lexical_cast<int>(clientParameters_.gridUrl.substr(pos + 1));
-            }
-            catch(std::exception)
-            {
-                LogError("Invalid port number, only numbers are allowed.");
-                return false;
-            }
-        }*/
-
     }
     else
     {
@@ -1218,6 +1200,15 @@ volatile ProtocolUtilities::Connection::State WorldStream::GetConnectionState()
         return ProtocolUtilities::Connection::STATE_ENUM_COUNT;
 
     return protocolModule_->GetConnectionState();
+}
+
+std::string WorldStream::GetConnectionErrorMessage()
+{
+    protocolModule_ = GetCurrentProtocolModule();
+    if (!protocolModule_.get())
+        return std::string("Could not accuire current protocol module");
+
+    return protocolModule_->GetConnectionErrorMessage();
 }
 
 void WorldStream::SetCurrentProtocolType(ProtocolUtilities::ProtocolType newType)

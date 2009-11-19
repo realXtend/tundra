@@ -77,6 +77,7 @@ namespace TaigaProtocol
         }
         catch (XmlRpcException& ex)
         {
+            threadState_->errorMessage = ex.what();
             ProtocolModuleTaiga::LogError(ex.what());
             return false;
         }
@@ -120,6 +121,7 @@ namespace TaigaProtocol
         }
         catch (XmlRpcException& ex)
         {
+            threadState_->errorMessage = ex.what();
             ProtocolModuleTaiga::LogError(ex.what());
             return false;
         }
@@ -134,6 +136,7 @@ namespace TaigaProtocol
         }
         catch (XmlRpcException& ex)
         {
+            threadState_->errorMessage = QString("Login failed to %1, please check your World address and port.").arg(worldAddress_.c_str()).toStdString();
             ProtocolModuleTaiga::LogError(ex.what());
             return false;
         }
@@ -186,12 +189,12 @@ namespace TaigaProtocol
             ProtocolModuleTaiga::LogError(QString("Login procedure threw a XMLRPCException >>> Reason: %1").arg(ex.what()).toStdString());
             try
             {
-                // TODO: transfer error message to login screen
                 threadState_->errorMessage = call.GetReply<std::string>("message");
                 ProtocolModuleTaiga::LogError(QString(">>> Message: %1").arg(QString(threadState_->errorMessage.c_str())).toStdString());
             }
             catch (XmlRpcException &/*ex*/)
             {
+                threadState_->errorMessage = std::string("Connecting failed, reason unknown. World address propably not valid.");
                 ProtocolModuleTaiga::LogError(QString(">>> Message: <No Message Recieved>").toStdString());
             }
             return false;
@@ -207,4 +210,8 @@ namespace TaigaProtocol
             return threadState_->state;
     }
 
+    std::string &TaigaLoginThread::GetErrorMessage() const
+    {
+        return threadState_->errorMessage;
+    }
 }

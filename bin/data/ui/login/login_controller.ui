@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>771</width>
+    <height>510</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QFrame" name="messageFrame">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string>background-color: rgb(0, 150, 255);</string>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="spacing">
+           <number>10</number>
+          </property>
+          <property name="leftMargin">
+           <number>9</number>
+          </property>
+          <property name="rightMargin">
+           <number>9</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="messageLabel">
+            <property name="font">
+             <font>
+              <family>Estrangelo Edessa</family>
+              <pointsize>14</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string>QLabel#messageLabel {
+	color: rgb(255, 255, 255);
+}</string>
+            </property>
+            <property name="text">
+             <string>Message</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="autohideLabel">
+            <property name="styleSheet">
+             <string>color: rgb(230,230,230);</string>
+            </property>
+            <property name="text">
+             <string>Autohide in 5</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="hideButton">
+            <property name="styleSheet">
+             <string>/* QPUSHBUTTON */
+
+QPushButton {
+	color: rgb(255, 255, 255);
+	min-width: 60px;
+	font-size: 12px;
+	border: 1px solid black;
+	border-color: rgba(0, 0, 0, 100);
+	border-radius: 10px;
+	padding: 2px 5px;
+	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 0, 0, 10), stop:1 rgba(207, 207, 207, 100));
+}
+
+QPushButton:hover {
+	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(207, 207, 207, 150), stop:1 rgba(0, 0, 0, 35));
+}</string>
+            </property>
+            <property name="text">
+             <string>Hide</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="tab">
+        <attribute name="title">
+         <string>Tab 1</string>
+        </attribute>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

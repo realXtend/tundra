@@ -5,6 +5,7 @@
 
 #include "Foundation.h"
 #include "LoginCredentialsInterface.h"
+#include "NetworkEvents.h"
 
 #include <QObject>
 #include <QUrl>
@@ -41,11 +42,19 @@ namespace ProtocolUtilities
         //! Get created WorldStream: void -> WorldStreamInterface when implemented
         virtual void GetWorldStream() const = 0;
 
+        //! Get connection thread state
+        virtual ProtocolUtilities::ConnectionThreadState *GetConnectionThreadState() { return &threadState_; }
+
         //! Set login credentials
         virtual void SetCredentials(LoginCredentialsInterface *newCredentials) = 0;
 
         //! Set server entry point url
         virtual void SetServerEntryPointUrl(const QUrl &newUrl) = 0;
+
+    private:
+        //! State of the connection procedure thread.
+		ProtocolUtilities::ConnectionThreadState threadState_;
+
     };
 
 }

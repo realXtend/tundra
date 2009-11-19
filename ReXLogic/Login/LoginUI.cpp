@@ -18,15 +18,17 @@ namespace RexLogic
     /////////////////////////////////////////
 
     Login::Login(Foundation::Framework *framework, RexLogicModule *rexLogicModule)
-        : framework_(framework), rexLogicModule_(rexLogicModule), progressBarTimer_(0)
+        : framework_(framework), rexLogicModule_(rexLogicModule), loginWidget_(0), loginProgressWidget_(0), inworldControls_(0), progressBarTimer_(0), autohideTimer_(0), loginProgressBar_(0), loginStatus_(0)
     {
-        InitUICanvas();
-        InitLoginUI();
-        InitLogoutUI();
+        if ( InitUICanvases() )
+        {
+            InitLoginUI();
+            InitLogoutUI();
+        }
     }
 
     Login::~Login(void)
-    {    
+    {
 		if (qtModule_.get() && canvas_login_.get() && canvas_logout_.get())
         {
             qtModule_->DeleteCanvas(canvas_login_->GetID());
@@ -80,36 +82,58 @@ namespace RexLogic
         }
 	}
 
-    void Login::InitUICanvas()
+    bool Login::InitUICanvases()
     {
-        // Get QtModule and create canvas
         qtModule_ = framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
-        if (!qtModule_.get())
-            return;
-        canvas_login_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
-        canvas_logout_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
+        if (qtModule_.get())
+        {
+            canvas_login_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
+            canvas_logout_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
+            return true;
+        }
+        else
+            return false;
         
     }
 
     void Login::InitLoginUI()
     {
-        tabWidget_ = new QTabWidget();
-        tabWidget_->addTab((QWidget*)new WebUI(tabWidget_, this, framework_, rexLogicModule_), QString("Web Login"));
-        tabWidget_->addTab((QWidget*)new NaaliUI(tabWidget_, this, framework_, rexLogicModule_), QString("Traditional Login"));
+        QUiLoader loader;
+        QFile uiFile("./data/ui/login/login_controller.ui");
 
-        QSize rendererWindowSize = canvas_login_->GetRenderWindowSize();
-        tabWidget_->resize(rendererWindowSize.width(), rendererWindowSize.height());
-		canvas_login_->SetSize(rendererWindowSize.width(), rendererWindowSize.height());
-        canvas_login_->SetPosition(0, 0);
-        canvas_login_->AddWidget(tabWidget_);
-        canvas_login_->SetAlwaysOnTop(true);
-        canvas_login_->SetStationary(true);
-        canvas_login_->SetResizable(false);
-		canvas_login_->Show();
+        if ( uiFile.exists() )
+        {
+            loginWidget_ = loader.load(&uiFile);
+            
+            messageFrame_ = loginWidget_->findChild<QFrame *>("messageFrame");
+            hide_message_button_ = loginWidget_->findChild<QPushButton *>("hideButton");
+            messageLabel_ = loginWidget_->findChild<QLabel *>("messageLabel");
+            autohideLabel_ = loginWidget_->findChild<QLabel *>("autohideLabel");
+            QTabWidget *tabWidget_ = loginWidget_->findChild<QTabWidget *>("tabWidget");
+            
+            messageFrame_->hide();
+            messageLabel_->setText("");
+            autohideLabel_->setText("");
 
-        loginInProgress_ = false;
+            tabWidget_->clear();
+            tabWidget_->addTab((QWidget*)new WebUI(tabWidget_, this, framework_, rexLogicModule_), QString("Web Login"));
+            tabWidget_->addTab((QWidget*)new NaaliUI(tabWidget_, this, framework_, rexLogicModule_), QString("Traditional Login"));
 
-        QObject::connect(canvas_login_.get(), SIGNAL( RenderWindowSizeChanged(const QSize&) ), this, SLOT( AdjustWindowSize(const QSize&) ));
+            QSize rendererWindowSize = canvas_login_->GetRenderWindowSize();
+            loginWidget_->resize(rendererWindowSize.width(), rendererWindowSize.height());
+		    canvas_login_->SetSize(rendererWindowSize.width(), rendererWindowSize.height());
+            canvas_login_->SetPosition(0, 0);
+            canvas_login_->AddWidget(loginWidget_);
+            canvas_login_->SetAlwaysOnTop(true);
+            canvas_login_->SetStationary(true);
+            canvas_login_->SetResizable(false);
+		    canvas_login_->Show();
+
+            loginInProgress_ = false;
+
+            QObject::connect(canvas_login_.get(), SIGNAL( RenderWindowSizeChanged(const QSize&) ), this, SLOT( AdjustWindowSize(const QSize&) ));
+            QObject::connect(hide_message_button_, SIGNAL( clicked() ), this, SLOT( HideMessageFromUser() ));
+        }
     }
 
     void Login::InitLogoutUI()
@@ -154,7 +178,7 @@ namespace RexLogic
             canvas_login_progress_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
 
             QUiLoader loader;
-            QFile uiFile("./data/ui/login_progress.ui");
+            QFile uiFile("./data/ui/login/login_progress.ui");
 
             if ( uiFile.exists() )
             {
@@ -179,6 +203,26 @@ namespace RexLogic
         }
     }
 
+    void Login::HideLoginProgressUI()
+    {
+        if (qtModule_.get())
+        {
+            if (progressBarTimer_)
+            {
+                progressBarTimer_->stop();
+                SAFE_DELETE(progressBarTimer_);
+            }
+            SAFE_DELETE(loginProgressBar_);
+            SAFE_DELETE(loginStatus_);
+
+            if (canvas_login_progress_.get())
+            {
+                qtModule_->DeleteCanvas(canvas_login_progress_->GetID());
+                canvas_login_progress_.reset();
+            }
+        }
+    }
+
     void Login::UpdateLoginProgressUI(const QString &status, int progress, const ProtocolUtilities::Connection::State connectionState)
     {
         if (canvas_login_progress_.get())
@@ -188,33 +232,32 @@ namespace RexLogic
                 if (connectionState == ProtocolUtilities::Connection::STATE_INIT_XMLRPC)
                 {
                     loginStatus_->setText("Initialising connection");
-                    AnimateProgressBar(15);
+                    AnimateProgressBar(5);
                 }
                 else if (connectionState == ProtocolUtilities::Connection::STATE_XMLRPC_AUTH_REPLY_RECEIVED)
                 {
                     loginStatus_->setText("Authentication reply received");
-                    AnimateProgressBar(27);
+                    AnimateProgressBar(13);
                 }
                 else if (connectionState == ProtocolUtilities::Connection::STATE_WAITING_FOR_XMLRPC_REPLY)
                 {
-                    loginStatus_->setText("Waiting for server response...");
-                    AnimateProgressBar(34);
+                    loginStatus_->setText("Waiting for servers response...");
+                    AnimateProgressBar(26);
                 }
                 else if (connectionState == ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED)
                 {
                     loginStatus_->setText("Login response received");
-                    AnimateProgressBar(72);
+                    AnimateProgressBar(50);
                 }
                 else if (connectionState == ProtocolUtilities::Connection::STATE_INIT_UDP)
                 {
                     loginStatus_->setText("Creating World Stream...");
-                    AnimateProgressBar(93);
+                    AnimateProgressBar(50); 
                 }
+                CreateProgressTimer(250);
             }
             else
             {
-                loginStatus_->setText(status);
-                AnimateProgressBar(progress);
                 if (progress == 100 && qtModule_.get())
                 {
                     progressBarTimer_->stop();
@@ -224,27 +267,53 @@ namespace RexLogic
 
                     qtModule_->DeleteCanvas(canvas_login_progress_->GetID());
                     canvas_login_progress_.reset();
+
+                    Connected();
+                    return;
                 }
+                loginStatus_->setText(status);
+                AnimateProgressBar(progress);
+                CreateProgressTimer(500);
             }
         }
     }
 
     void Login::AnimateProgressBar(int newValue)
     {
-        if (loginProgressBar_->value() < newValue)
-        {
+        if (newValue > loginProgressBar_->value() && newValue != 100)
             for (int i=loginProgressBar_->value(); i<=newValue; i++)
                 loginProgressBar_->setValue(i);
-            progressBarTimer_ = new QTimer();
-            QObject::connect(progressBarTimer_, SIGNAL( timeout() ), this, SLOT( UpdateProgressBar() ));
-            progressBarTimer_->start(250);
-        }
     }
 
     void Login::UpdateProgressBar()
     {
         if (loginProgressBar_)
-            loginProgressBar_->setValue(loginProgressBar_->value()+1);
+        {
+            int oldvalue = loginProgressBar_->value();
+            if (oldvalue < 99)
+            {
+                if (oldvalue > 79 && progressBarTimer_->interval() != 1000)
+                {
+                    loginStatus_->setText("Downloading world objects...");
+                    CreateProgressTimer(1000);
+                }
+                else if (oldvalue > 90 && progressBarTimer_->interval() != 3500)
+                {
+                    CreateProgressTimer(3500);
+                }
+                loginProgressBar_->setValue(++oldvalue);
+            }
+        }
+    }
+
+    void Login::CreateProgressTimer(int interval)
+    {
+        if (progressBarTimer_)
+            progressBarTimer_->stop();
+        SAFE_DELETE(progressBarTimer_);
+        progressBarTimer_ = new QTimer();
+        QObject::connect(progressBarTimer_, SIGNAL( timeout() ), this, SLOT( UpdateProgressBar() ));
+        progressBarTimer_->start(interval);
     }
 
 	void Login::AdjustWindowSize(const QSize &newSize)
@@ -273,6 +342,40 @@ namespace RexLogic
         }
 	}
 
+    void Login::ShowMessageToUser(QString message, int autohideSeconds)
+    {
+        HideLoginProgressUI();
+        messageLabel_->setText(message);
+        messageFrame_->show();
+
+        if (autohideTimer_)
+            autohideTimer_->stop();
+        autohideTimer_ = new QTimer(this);
+        QObject::connect(autohideTimer_, SIGNAL( timeout() ), this, SLOT( UpdateAutoHide() ));
+        autoHideCount_ = autohideSeconds;
+        autohideTimer_->start(1000);
+    }
+
+    void Login::HideMessageFromUser()
+    {
+        autohideTimer_->stop();
+        messageFrame_->hide();
+        messageLabel_->setText("");
+        autohideLabel_->setText("");
+        autoHideCount_ = 0;
+    }
+
+    void Login::UpdateAutoHide()
+    {
+        if ( autoHideCount_ > 0 )
+        {
+            autohideLabel_->setText(QString("Autohide in %1").arg(QString::number(autoHideCount_)));
+            --autoHideCount_;
+        }
+        else
+            HideMessageFromUser();
+    }
+
     /////////////////////////////////////////
     // ABSTRACT AbstractLoginUI CLASS
     /////////////////////////////////////////
@@ -285,23 +388,14 @@ namespace RexLogic
 
 	void AbstractLoginUI::SetLayout()
 	{
-		this->setLayout(new QVBoxLayout(this));
-		this->layout()->setMargin(0);
+		setLayout(new QVBoxLayout(this));
+		layout()->setMargin(0);
 	}
 
-	void AbstractLoginUI::Show()
+	void AbstractLoginUI::LoginDone(bool success, QString &errorMessage)
 	{
-		this->show();
-	}
-
-	void AbstractLoginUI::Hide()
-	{
-		this->Hide();
-	}
-
-	void AbstractLoginUI::LoginDone(bool success)
-	{
-        // Do something if needed, canvas hides/shows are already handled
+        // Does pretty much nothing, its always true due actual login 
+        // is made in a thread and cant get return value straight away from it...
 	}
 
     /////////////////////////////////////////
@@ -327,34 +421,38 @@ namespace RexLogic
 	{
 		loginHandler_ = new OpenSimLoginHandler(framework_, rexLogicModule_);
         QObject::connect(loginHandler_, SIGNAL( LoginStarted() ), controller_, SLOT( StartLoginProgressUI() ));
-		QObject::connect(loginHandler_, SIGNAL( LoginDone(bool) ), this, SLOT( LoginDone(bool) ));
+		QObject::connect(loginHandler_, SIGNAL( LoginDone(bool, QString&) ), this, SLOT( LoginDone(bool, QString&) ));
 	}
 
 	void NaaliUI::InitWidget()
 	{
 		QUiLoader loader;
-        QFile uiFile("./data/ui/login_new.ui");
-		internalWidget_ = loader.load(&uiFile, this);
-		uiFile.close();
+        QFile uiFile("./data/ui/login/login_traditional.ui");
 
-		radioButton_openSim_ = findChild<QRadioButton *>("radioButton_OpenSim");
-		radioButton_realXtend_ = findChild<QRadioButton *>("radioButton_realXtend");
-		pushButton_connect_ = findChild<QPushButton *>("pushButton_Connect");
-		pushButton_close_ = findChild<QPushButton *>("pushButton_Close");
-		label_authAddress_ = findChild<QLabel *>("label_AuthenticationServer");
-		lineEdit_authAddress_ = findChild<QLineEdit *>("lineEdit_AuthenticationAddress");
-		lineEdit_worldAddress_ = findChild<QLineEdit *>("lineEdit_WorldAddress");
-		lineEdit_username_ = findChild<QLineEdit *>("lineEdit_Username");
-		lineEdit_password_ = findChild<QLineEdit *>("lineEdit_Password");
+        if ( uiFile.exists() )
+        {
+		    internalWidget_ = loader.load(&uiFile, this);
+		    uiFile.close();
 
-		QObject::connect(radioButton_openSim_, SIGNAL( clicked() ), this, SLOT( ShowSelectedMode() ));
-		QObject::connect(radioButton_realXtend_, SIGNAL( clicked() ), this, SLOT( ShowSelectedMode() ));
-		QObject::connect(pushButton_connect_, SIGNAL( clicked() ), this, SLOT( ParseInputAndConnect() ));
-		QObject::connect(pushButton_close_, SIGNAL( clicked() ), controller_, SLOT( QuitApplication() ));
-		QObject::connect(this, SIGNAL( ConnectOpenSim(QMap<QString, QString>) ), loginHandler_, SLOT( ProcessOpenSimLogin(QMap<QString, QString>) ));
-		QObject::connect(this, SIGNAL( ConnectRealXtend(QMap<QString, QString>) ), loginHandler_, SLOT( ProcessRealXtendLogin(QMap<QString, QString>) ));
+		    radioButton_openSim_ = findChild<QRadioButton *>("radioButton_OpenSim");
+		    radioButton_realXtend_ = findChild<QRadioButton *>("radioButton_realXtend");
+		    pushButton_connect_ = findChild<QPushButton *>("pushButton_Connect");
+		    pushButton_close_ = findChild<QPushButton *>("pushButton_Close");
+		    label_authAddress_ = findChild<QLabel *>("label_AuthenticationServer");
+		    lineEdit_authAddress_ = findChild<QLineEdit *>("lineEdit_AuthenticationAddress");
+		    lineEdit_worldAddress_ = findChild<QLineEdit *>("lineEdit_WorldAddress");
+		    lineEdit_username_ = findChild<QLineEdit *>("lineEdit_Username");
+		    lineEdit_password_ = findChild<QLineEdit *>("lineEdit_Password");
 
-		this->layout()->addWidget(internalWidget_);
+		    QObject::connect(radioButton_openSim_, SIGNAL( clicked() ), this, SLOT( ShowSelectedMode() ));
+		    QObject::connect(radioButton_realXtend_, SIGNAL( clicked() ), this, SLOT( ShowSelectedMode() ));
+		    QObject::connect(pushButton_connect_, SIGNAL( clicked() ), this, SLOT( ParseInputAndConnect() ));
+		    QObject::connect(pushButton_close_, SIGNAL( clicked() ), controller_, SLOT( QuitApplication() ));
+		    QObject::connect(this, SIGNAL( ConnectOpenSim(QMap<QString, QString>) ), loginHandler_, SLOT( ProcessOpenSimLogin(QMap<QString, QString>) ));
+		    QObject::connect(this, SIGNAL( ConnectRealXtend(QMap<QString, QString>) ), loginHandler_, SLOT( ProcessRealXtendLogin(QMap<QString, QString>) ));
+
+		    this->layout()->addWidget(internalWidget_);
+        }
 	}
 
 	void NaaliUI::ReadConfig()
@@ -411,6 +509,10 @@ namespace RexLogic
 
 	void NaaliUI::ParseInputAndConnect()
 	{
+        int fieldMissingCount = 0;
+        QStringList missingFields;
+        QString errorMessage;
+
 		if ( !lineEdit_worldAddress_->text().isEmpty() &&
 			 !lineEdit_username_->text().isEmpty() &&
 			 !lineEdit_password_->text().isEmpty() )
@@ -423,15 +525,65 @@ namespace RexLogic
 			map["Password"] = lineEdit_password_->text();
 			if (radioButton_openSim_->isChecked() == true)
 			{
-				emit( ConnectOpenSim(map) );
+                if (map["Username"].count(" ") == 1 && !map["Username"].endsWith(" "))
+				    emit( ConnectOpenSim(map) );
+                else
+                    controller_->ShowMessageToUser(QString("Your OpenSim username must be 'Firstname Lastname', you gave '%1'").arg(map["Username"]), 7);
+                return;
 			}
 			else if (radioButton_realXtend_->isChecked() == true && 
 					 !lineEdit_authAddress_->text().isEmpty() )
 			{
 				map["AuthenticationAddress"] = lineEdit_authAddress_->text();
 				emit( ConnectRealXtend(map) );
+                return;
 			}
 		}
+
+        if (lineEdit_username_->text().isEmpty())
+        {
+            missingFields.append("Username");
+        }
+        if (lineEdit_password_->text().isEmpty())
+        {
+            missingFields.append("Password");
+        }
+        if (lineEdit_worldAddress_->text().isEmpty())
+        {
+            missingFields.append("World address");
+        }
+        if (lineEdit_authAddress_->text().isEmpty())
+        {
+            missingFields.append("Authentication address");
+        }
+
+        if (missingFields.count() >= 3)
+        {
+            errorMessage = QString("Please input the required fields ");
+            int beforeAnd = missingFields.count() - 2;
+            for (int i=0; i<beforeAnd; ++i)
+            {
+                errorMessage.append(missingFields.value(i));
+                errorMessage.append(", ");
+            }
+            errorMessage.append(missingFields.value(beforeAnd));
+            errorMessage.append(" and ");
+            errorMessage.append(missingFields.value(++beforeAnd));
+        }
+        else if (missingFields.count() == 2)
+        {
+            errorMessage = QString("Please input the required fields ");
+            errorMessage.append(missingFields.value(0));
+            errorMessage.append(" and ");
+            errorMessage.append(missingFields.value(1));
+        }
+        else if (missingFields.count() == 1)
+        {
+            errorMessage = QString("Please input the required field ");
+            errorMessage.append(missingFields.value(0));
+        }
+
+        controller_->ShowMessageToUser(errorMessage, 7);
 	}
 
 

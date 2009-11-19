@@ -77,9 +77,6 @@ namespace OpenSimProtocol
 		//! Pointer to the opensim network interface.
         boost::weak_ptr<OpenSimProtocol::ProtocolModuleOpenSim> networkOpensim_;
 
-		//! State of the connection procedure thread.
-		ProtocolUtilities::ConnectionThreadState threadState_;
-
 	};
 }
 

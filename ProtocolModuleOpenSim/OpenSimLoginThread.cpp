@@ -138,6 +138,7 @@ namespace OpenSimProtocol
         }
         catch(XmlRpcException& ex)
         {
+            threadState_->errorMessage = ex.what();
             ProtocolModuleOpenSim::LogError(ex.what());
             return false;
         }
@@ -208,6 +209,7 @@ namespace OpenSimProtocol
         catch (XmlRpcException& ex)
         {
             ProtocolModuleOpenSim::LogError(ex.what());
+            threadState_->errorMessage = ex.what();
             return false;
         }
 
@@ -221,6 +223,10 @@ namespace OpenSimProtocol
         }
         catch(XmlRpcException& ex)
         {
+            if (callMethod_ == CLIENT_AUTHENTICATION )
+                threadState_->errorMessage = QString("Authentication failed to %1:%2, please check your Authentication address and port.").arg(authenticationAddress_.c_str(), authenticationPort_.c_str()).toStdString();
+            else if (callMethod_ == LOGIN_TO_SIMULATOR )
+                threadState_->errorMessage = QString("Login failed to %1:%2, please check your World address and port.").arg(worldAddress_.c_str(), worldPort_.c_str()).toStdString();
             ProtocolModuleOpenSim::LogError(ex.what());
             return false;
         }
@@ -324,12 +330,12 @@ namespace OpenSimProtocol
             ProtocolModuleOpenSim::LogError(QString("Login procedure threw a XMLRPCException >>> Reason: %1").arg(ex.what()).toStdString());
             try
             {
-                // TODO: transfer error message to login screen
                 threadState_->errorMessage = call.GetReply<std::string>("message");
                 ProtocolModuleOpenSim::LogError(QString(">>> Message: %1").arg(QString(threadState_->errorMessage.c_str())).toStdString());
             }
             catch (XmlRpcException &/*ex*/)
             {
+                threadState_->errorMessage = std::string("Connecting failed, reason unknown. World address propably not valid.");
                 ProtocolModuleOpenSim::LogError(QString(">>> Message: <No Message Recieved>").toStdString());
             }
             return false;
@@ -344,6 +350,10 @@ namespace OpenSimProtocol
         else
             return threadState_->state;
     }
-    
+
+    std::string &OpenSimLoginThread::GetErrorMessage() const
+    {
+        return threadState_->errorMessage;
+    }
     
 }

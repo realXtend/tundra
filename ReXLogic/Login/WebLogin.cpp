@@ -29,52 +29,56 @@ namespace RexLogic
 	{
 		// Load ui to widget from file
 		QUiLoader loader;
-        QFile uiFile("./data/ui/weblogin.ui");
-		widget_ = loader.load(&uiFile, this);
-		widget_->setMinimumSize(750, 550);
-		uiFile.close();
+        QFile uiFile("./data/ui/login/login_web.ui");
 
-		// Get ui elements we want to update in signal processing
-		progressBar = widget_->findChild<QProgressBar *>("progressBar_Status");
-		progressBar->hide();
-		statusLabel = widget_->findChild<QLabel *>("label_Status");
+        if ( uiFile.exists() )
+        {
+		    widget_ = loader.load(&uiFile, this);
+		    widget_->setMinimumSize(750, 550);
+		    uiFile.close();
 
-		// Add webview by hand, the QFormBuilder cannot do this (custom widget)
-		QVBoxLayout *centerLayout = widget_->layout()->findChild<QVBoxLayout *>("verticalLayout_Container");
-		webView_ = new QWebView(widget_);
-		webView_->setMinimumSize(100,100);
-		centerLayout->insertWidget(2, webView_);
+		    // Get ui elements we want to update in signal processing
+		    progressBar = widget_->findChild<QProgressBar *>("progressBar_Status");
+		    progressBar->hide();
+		    statusLabel = widget_->findChild<QLabel *>("label_Status");
 
-		// Get comboBox and set url to it
-		comboBoxAddress = widget_->findChild<QComboBox *>("comboBox_Address");
-		comboBoxAddress->setEditText(address_);
+		    // Add webview by hand, the QFormBuilder cannot do this (custom widget)
+		    QVBoxLayout *centerLayout = widget_->layout()->findChild<QVBoxLayout *>("verticalLayout_Container");
+		    webView_ = new QWebView(widget_);
+		    webView_->setMinimumSize(100,100);
+		    centerLayout->insertWidget(2, webView_);
 
-		// Get buttons and add image to them
-		backButton = widget_->findChild<QPushButton *>("pushButton_Back");
-		backButton->setIcon(QIcon("./data/ui/images/arrow_left_48.png"));
-		backButton->setIconSize(QSize(20, 20));
-		forwardButton = widget_->findChild<QPushButton *>("pushButton_Forward");
-		forwardButton->setIcon(QIcon("./data/ui/images/arrow_right_48.png"));
-		forwardButton->setIconSize(QSize(20, 20));
-		stopButton = widget_->findChild<QPushButton *>("pushButton_Stop");
-		stopButton->setIcon(QIcon("./data/ui/images/cross_48.png"));
-		stopButton->setIconSize(QSize(20, 20));
-		stopButton->setEnabled(false);
-		refreshButton = widget_->findChild<QPushButton *>("pushButton_Refresh");
-		refreshButton->setIcon(QIcon("./data/ui/images/refresh_48.png"));
-		refreshButton->setIconSize(QSize(20, 20));
-		goButton = widget_->findChild<QPushButton *>("pushButton_Go");
-		goButton->setIcon(QIcon("./data/ui/images/arrow_right_green_48.png"));
-		goButton->setIconSize(QSize(20, 20));
-		
-		// But widget to layout, set layout to this
-		layout_ = new QVBoxLayout(this);
-		layout_->setSpacing(0);
-		layout_->setMargin(0);
-		layout_->addWidget(widget_);
-		setLayout(layout_);
-		setWindowTitle("realXtend Naali web browser");
-		setWindowIcon(QIcon("./data/ui/images/globe_48.png"));
+		    // Get comboBox and set url to it
+		    comboBoxAddress = widget_->findChild<QComboBox *>("comboBox_Address");
+		    comboBoxAddress->setEditText(address_);
+
+		    // Get buttons and add image to them
+		    backButton = widget_->findChild<QPushButton *>("pushButton_Back");
+		    backButton->setIcon(QIcon("./data/ui/images/arrow_left_48.png"));
+		    backButton->setIconSize(QSize(20, 20));
+		    forwardButton = widget_->findChild<QPushButton *>("pushButton_Forward");
+		    forwardButton->setIcon(QIcon("./data/ui/images/arrow_right_48.png"));
+		    forwardButton->setIconSize(QSize(20, 20));
+		    stopButton = widget_->findChild<QPushButton *>("pushButton_Stop");
+		    stopButton->setIcon(QIcon("./data/ui/images/cross_48.png"));
+		    stopButton->setIconSize(QSize(20, 20));
+		    stopButton->setEnabled(false);
+		    refreshButton = widget_->findChild<QPushButton *>("pushButton_Refresh");
+		    refreshButton->setIcon(QIcon("./data/ui/images/refresh_48.png"));
+		    refreshButton->setIconSize(QSize(20, 20));
+		    goButton = widget_->findChild<QPushButton *>("pushButton_Go");
+		    goButton->setIcon(QIcon("./data/ui/images/arrow_right_green_48.png"));
+		    goButton->setIconSize(QSize(20, 20));
+    		
+		    // But widget to layout, set layout to this
+		    layout_ = new QVBoxLayout(this);
+		    layout_->setSpacing(0);
+		    layout_->setMargin(0);
+		    layout_->addWidget(widget_);
+		    setLayout(layout_);
+		    setWindowTitle("realXtend Naali web browser");
+		    setWindowIcon(QIcon("./data/ui/images/globe_48.png"));
+        }
 	}
 
 	void WebLogin::ConnectSignals()

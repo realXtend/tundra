@@ -49,6 +49,7 @@ namespace RexLogic
 	void OpenSimLoginHandler::InstantiateWorldSession()
 	{
 		bool success = false;
+        QString errorMessage = "";
 
 		OpenSimCredentials *osCredentials = dynamic_cast<OpenSimCredentials *>(credentials_);
 		if (osCredentials)
@@ -76,6 +77,8 @@ namespace RexLogic
 					else
 						framework_->GetConfigManager()->DeclareSetting<std::string>(std::string("Login"), std::string("username"), osCredentials->GetIdentity().toStdString());
 				}
+                else
+                    errorMessage = QString(openSimWorldSession_->GetConnectionThreadState()->errorMessage.c_str());
 			}
 		}
 		else
@@ -111,11 +114,13 @@ namespace RexLogic
 						else
 							framework_->GetConfigManager()->DeclareSetting<std::string>(std::string("Login"), std::string("auth_name"), rexCredentials->GetIdentity().toStdString());
 					}
+                    else
+                        errorMessage = QString(realXtendWorldSession_->GetConnectionThreadState()->errorMessage.c_str());
 				}
 			}
 		}
 
-		emit( LoginDone(success) );
+		emit( LoginDone(success, errorMessage) );
 	}
 
 	void OpenSimLoginHandler::ProcessOpenSimLogin(QMap<QString,QString> map)
@@ -180,6 +185,7 @@ namespace RexLogic
 	void TaigaLoginHandler::InstantiateWorldSession()
 	{
 		bool success = false;
+        QString errorMessage = "";
 
 		rexLogicModule_->GetServerConnection()->UnregisterCurrentProtocolModule();
 		rexLogicModule_->GetServerConnection()->SetCurrentProtocolType(ProtocolUtilities::Taiga);
@@ -196,9 +202,11 @@ namespace RexLogic
 		{
 			taigaWorldSession_ = new TaigaProtocol::TaigaWorldSession(framework_);
 			success = taigaWorldSession_->StartSession(credentials_, &serverEntryPointUrl_);
+            if (!success)
+                errorMessage = QString(taigaWorldSession_->GetConnectionThreadState()->errorMessage.c_str());
 		}
 
-		emit( LoginDone(success) );
+		emit( LoginDone(success, errorMessage) );
 	}
 
 	void TaigaLoginHandler::ProcessWebLogin(QWebFrame *webFrame)

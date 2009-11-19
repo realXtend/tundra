@@ -6,6 +6,9 @@
 #include "RexLogicModule.h"
 #include "SceneManager.h"
 
+// Login class pointer being used, can this be done somehow prettier?
+#include "Login/LoginUI.h" 
+
 namespace RexLogic
 {
 SceneEventHandler::SceneEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule) :
@@ -43,6 +46,12 @@ bool SceneEventHandler::HandleSceneEvent(Core::event_id_t event_id, Foundation::
         Scene::Events::CreateEntityEventData *pos_data = dynamic_cast<Scene::Events::CreateEntityEventData *>(data);
         if (pos_data)
             rexlogicmodule_->GetServerConnection()->SendObjectAddPacket(pos_data->position);
+        break;
+    }
+    case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
+    {
+        rexlogicmodule_->GetLoginUI()->UpdateLoginProgressUI(QString("Downloading of terrain and avatar completed"), 100, ProtocolUtilities::Connection::STATE_ENUM_COUNT);
+        break;
     }
     default:
         break;

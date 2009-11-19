@@ -365,6 +365,9 @@ namespace ProtocolUtilities
         /// @return The state of the connection.
         volatile ProtocolUtilities::Connection::State GetConnectionState();
 
+        /// @return Error message of the connection.
+        std::string GetConnectionErrorMessage();
+
         /// @param protocol type
         void SetCurrentProtocolType(ProtocolType newType);
 

@@ -47,7 +47,6 @@
 #include "Environment/Environment.h"
 
 #include "QtUtils.h"
-//#include "AssetUploader.h"
 #include "Avatar/AvatarEditor.h"
 #include "RexTypes.h"
 
@@ -56,6 +55,7 @@ namespace RexLogic
 
 RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_),
     send_input_state_(false),
+    login_failed_showed_(false),
     movement_damping_constant_(10.0f),
     camera_state_(CS_Follow)
 {
@@ -341,10 +341,21 @@ void RexLogicModule::Update(Core::f64 frametime)
 
         // Poll the connection state and update the info to the UI.
         ProtocolUtilities::Connection::State present_state = world_stream_->GetConnectionState();
-        if ( present_state != ProtocolUtilities::Connection::STATE_CONNECTED && 
-             present_state != ProtocolUtilities::Connection::STATE_DISCONNECTED &&
-             present_state != ProtocolUtilities::Connection::STATE_ENUM_COUNT)
+        if (present_state == ProtocolUtilities::Connection::STATE_LOGIN_FAILED)
+        {
+            if (!login_failed_showed_)
+            {
+                login_failed_showed_ = true;
+                GetLoginUI()->ShowMessageToUser(QString(world_stream_->GetConnectionErrorMessage().c_str()), 10);
+            }
+        }
+        else if ( present_state != ProtocolUtilities::Connection::STATE_CONNECTED && 
+                  present_state != ProtocolUtilities::Connection::STATE_DISCONNECTED &&
+                  present_state != ProtocolUtilities::Connection::STATE_ENUM_COUNT)
+        {
+            login_failed_showed_ = false;
             GetLoginUI()->UpdateLoginProgressUI(QString(""), 0, present_state);
+        }
 
         /// \todo Move this to OpenSimProtocolModule.
         if (!world_stream_->IsConnected() && world_stream_->GetConnectionState() == ProtocolUtilities::Connection::STATE_INIT_UDP)

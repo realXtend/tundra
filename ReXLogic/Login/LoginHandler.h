@@ -47,7 +47,7 @@ namespace RexLogic
 
 	signals:
         void LoginStarted();
-		void LoginDone(bool success);
+		void LoginDone(bool success, QString &errorMessage);
 
 	};
 

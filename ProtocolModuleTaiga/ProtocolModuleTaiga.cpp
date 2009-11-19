@@ -143,26 +143,29 @@ namespace TaigaProtocol
 	{
 		loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_INIT_UDP);
 
-		bool udp_success = networkManager_->ConnectTo(address, port);
-		if (!udp_success)
-			return false;
-
-		loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_CONNECTED);
-
-		// Send event indicating a succesfull connection.
-		ProtocolUtilities::AuthenticationEventData auth_data(authenticationType_);
-        if (identityUrl_ != "")
+        if ( networkManager_->ConnectTo(address, port) )
         {
-            auth_data.SetIdentity(identityUrl_);
-            auth_data.SetHost(hostUrl_);
+		    loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_CONNECTED);
+            connected_ = true;
+
+		    // Send event indicating a succesfull connection.
+		    ProtocolUtilities::AuthenticationEventData auth_data(authenticationType_);
+            if (identityUrl_ != "" && hostUrl_ != "")
+            {
+                auth_data.SetIdentity(identityUrl_);
+                auth_data.SetHost(hostUrl_);
+            }
+		    eventManager_->SendEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_SERVER_CONNECTED, &auth_data);
+		    
+		    // Request capabilities from the server.
+		    Core::Thread thread(boost::bind(&ProtocolModuleTaiga::RequestCapabilities, this, GetClientParameters().seedCapabilities));
+		    return true;
         }
-		eventManager_->SendEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_SERVER_CONNECTED, &auth_data);
-		connected_ = true;
-
-		// Request capabilities from the server.
-		Core::Thread thread(boost::bind(&ProtocolModuleTaiga::RequestCapabilities, this, GetClientParameters().seedCapabilities));
-
-		return true;
+        else
+        {
+            LogError("Network Manager could not establish UDP connection");
+            return false;
+        }
 	}
 
 	void ProtocolModuleTaiga::DisconnectFromServer()
