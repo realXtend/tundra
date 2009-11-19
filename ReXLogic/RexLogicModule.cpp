@@ -213,7 +213,6 @@ void RexLogicModule::PostInitialize()
 
 	// Create the login window.
 	loginUI_ = new Login(framework_, this);
-	connectionState_ = ProtocolUtilities::Connection::STATE_DISCONNECTED;
 }
 
 void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
@@ -341,14 +340,17 @@ void RexLogicModule::Update(Core::f64 frametime)
         avatar_->Update(frametime);
 
         // Poll the connection state and update the info to the UI.
-        /// \todo Move this to the Login UI class.
-        ProtocolUtilities::Connection::State cur_state = world_stream_->GetConnectionState();
-        if (cur_state != connectionState_)
-            connectionState_ = cur_state;
+        ProtocolUtilities::Connection::State present_state = world_stream_->GetConnectionState();
+        if ( present_state != ProtocolUtilities::Connection::STATE_CONNECTED && 
+             present_state != ProtocolUtilities::Connection::STATE_DISCONNECTED &&
+             present_state != ProtocolUtilities::Connection::STATE_ENUM_COUNT)
+            GetLoginUI()->UpdateLoginProgressUI(QString(""), 0, present_state);
 
         /// \todo Move this to OpenSimProtocolModule.
         if (!world_stream_->IsConnected() && world_stream_->GetConnectionState() == ProtocolUtilities::Connection::STATE_INIT_UDP)
+        {
             world_stream_->CreateUdpConnection();
+        }
 
         if (send_input_state_)
         {

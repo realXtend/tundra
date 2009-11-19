@@ -22,6 +22,11 @@
 
 namespace RexLogic
 {
+    class Login;
+}
+
+namespace RexLogic
+{
 	class AbstractLoginHandler : public QObject
 	{
 	
@@ -41,6 +46,7 @@ namespace RexLogic
 		RexLogicModule *rexLogicModule_;
 
 	signals:
+        void LoginStarted();
 		void LoginDone(bool success);
 
 	};

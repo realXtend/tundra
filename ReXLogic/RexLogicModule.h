@@ -280,9 +280,6 @@ namespace RexLogic
         //! The new login window
         Login *loginUI_;
 
-        //! The connection state which is shown in the login window.
-        ProtocolUtilities::Connection::State connectionState_;
-
         //! An avatar controllable
         AvatarControllablePtr avatar_controllable_;
 
