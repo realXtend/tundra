@@ -58,6 +58,7 @@ configure_ogre ()
 configure_xmlrpc ()
 configure_curl ()
 configure_openjpeg ()
+configure_propertyeditor ()
 
 if (CAELUM)
     configure_caelum ()

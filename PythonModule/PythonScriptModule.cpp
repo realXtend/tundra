@@ -49,11 +49,14 @@
 #include "PythonQt.h"
 #include <QGroupBox> //just for testing addObject
 #include <QtUiTools> //for .ui loading in testing
+#include <QApplication>
 #include "QtModule.h"
 #include "UICanvas.h"
 
 #include "Vector3Wrapper.h"
 #include "QuaternionWrapper.h"
+
+#include "propertyeditor.h"
 
 namespace PythonScript
 {
@@ -129,8 +132,9 @@ namespace PythonScript
             //mainModule.addObject("qtmodule", wrappedModule); 
             pythonqt_inited = true;
             
-            PythonQt::self()->registerCPPClass("Vector3df", "","", PythonQtCreateObject<Vector3Wrapper>);
-            PythonQt::self()->registerCPPClass("Quaternion", "","", PythonQtCreateObject<QuaternionWrapper>);
+            //PythonQt::self()->registerCPPClass("Vector3df", "","", PythonQtCreateObject<Vector3Wrapper>);
+            //PythonQt::self()->registerCPPClass("Quaternion", "","", PythonQtCreateObject<QuaternionWrapper>);
+			//PythonQt::self()->registerClass(&Vector3::staticMetaObject);
         }
 
         //load the py written module manager using the py c api directly
@@ -950,6 +954,14 @@ PyObject* CreateCanvas(PyObject *self, PyObject *args)
     return can;
 }
 
+PyObject* GetPropertyEditor(PyObject *self)
+{
+	
+	QApplication* qapp = PythonScript::self()->GetFramework()->GetQApplication();
+	PropertyEditor::PropertyEditor* pe = new PropertyEditor::PropertyEditor(qapp);
+	return PythonQt::self()->wrapQObject(pe); 
+}
+
 PyObject* GetQtModule(PyObject *self)
 {
     return PythonQt::self()->wrapQObject(PythonScript::GetWrappedQtModule());
@@ -1166,6 +1178,8 @@ static PyMethodDef EmbMethods[] = {
     {"networkUpdate", (PyCFunction)NetworkUpdate, METH_VARARGS, 
     "Does a network update for the Scene."},
 
+    {"getPropertyEditor", (PyCFunction)GetPropertyEditor, METH_VARARGS, 
+    "get property editor"},
 	{NULL, NULL, 0, NULL}
 };
 
@@ -1415,20 +1429,32 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
            or do we wanna hide the E-C system in the api and have these directly on entity? 
            probably not a good idea to hide the actual system that much. or? */
         float x, y, z;
-
+		
 		int parsing;
-		parsing = PyArg_ParseTuple(value, "fff", &x, &y, &z);
 
+		parsing = PyArg_ParseTuple(value, "fff", &x, &y, &z);
+		/*
+		PyObject* pos;
+		if(!parsing) {
+			parsing = PyArg_ParseTuple(value, "O", &pos);
+			if (parsing != 0)
+			{
+				PyErr_SetString(PyExc_ValueError, "it worked.");
+				return -1;
+			}
+		}
+		*/
         if(!parsing)
         {
             //std::cout << "...parse error" << std::endl;
             PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float).");
             return -1;
         }
+		
         if (!placeable)
         {
             PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return NULL;   
+            return NULL;
         }  
 
         // Set the new values.
