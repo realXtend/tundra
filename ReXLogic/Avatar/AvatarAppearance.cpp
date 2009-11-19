@@ -32,6 +32,7 @@
 
 #include <QDomDocument>
 #include <QFile>
+#include <QTime>
 
 #include <Ogre.h>
 
@@ -85,6 +86,16 @@ namespace RexLogic
             return;
         }
         
+        // See if it's NOT legacy avatar storage based address
+        //! \todo once we get webdav urls, see that they don't contain that string. Possibly check for right index in path
+        if (appearance_address.find("/avatar/") == std::string::npos)
+        {
+            RexLogicModule::LogInfo("Inventory based avatar address received for avatar entity " + Core::ToString<int>(entity->GetId()) + ": " +
+                appearance_address);
+            //! \todo: handle download through asset service  
+            return;         
+        } 
+           
         // See if download already exists for this avatar
         if (appearance_downloaders_.find(entity->GetId()) != appearance_downloaders_.end())
             return;
@@ -857,9 +868,20 @@ namespace RexLogic
             {
                 if (event_data->assetType == RexTypes::RexAT_GenericAvatarXml)
                 {
-                    RexLogicModule::LogInfo("Is avatar generic xml");
-                    RexLogicModule::LogInfo("Asset type: " + Core::ToString<int>(event_data->assetType) + " id: " + event_data->assetId.ToString());
-                    //! \todo: set as new inventory-based appearance
+                    // See that the asset is actually an avatar description we uploaded
+                    if (event_data->name.find("Avatar") != std::string::npos)
+                    {                   
+                        WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+                        if (conn)
+                        {
+                            RexLogicModule::LogInfo("Sending info about new inventory appearance " + event_data->assetId.ToString());
+                            Core::StringVector strings;
+                            std::string method = "RexSetAppearance";
+                            strings.push_back(conn->GetInfo().agentID.ToString());
+                            strings.push_back(event_data->assetId.ToString());
+                            conn->SendGenericMessage(method, strings);                                                            
+                        }
+                    }
                 }
             }
         }
@@ -1112,11 +1134,16 @@ namespace RexLogic
         data_buffer.resize(avatar_export_str.length());
         memcpy(&data_buffer[0], avatar_export_str.c_str(), data_buffer.size());
         
+        // Get current time/date to "version" the avatar inventory item
+        QDateTime time = QDateTime::currentDateTime();
+        std::string avatarfilename = "Avatar" + time.toString(" yyyy.MM.dd hh:mm:ss").toStdString() + ".xml";
+        RexLogicModule::LogInfo(avatarfilename);
+                
         // Upload appearance as inventory asset
         // (send request as event)
         Foundation::EventManagerPtr eventmgr = rexlogicmodule_->GetFramework()->GetEventManager();
         Inventory::InventoryUploadBufferEventData event_data;
-        event_data.filenames.push_back("Avatar.xml");
+        event_data.filenames.push_back(avatarfilename);
         event_data.buffers.push_back(data_buffer);
         eventmgr->SendEvent(eventmgr->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);
         
@@ -1422,10 +1449,12 @@ namespace RexLogic
                     RexLogicModule::LogInfo("Avatar exported successfully");
                     // Send information of appearance change
                     WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
-                    
-                    std::string method = "RexAppearance";
-                    Core::StringVector strings;
-                    conn->SendGenericMessage(method, strings);
+                    if (conn)
+                    {                    
+                        std::string method = "RexAppearance";
+                        Core::StringVector strings;
+                        conn->SendGenericMessage(method, strings);
+                    }
                 }
                 else
                     RexLogicModule::LogInfo("Avatar export failed: " + result->message_);
