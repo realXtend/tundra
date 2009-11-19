@@ -28,6 +28,7 @@ use_package (PYTHON)
 use_package (PYTHON_QT)
 use_package (OIS)
 use_package (OGRE)
+use_package(PROPERTYEDITOR)
 use_modules (RexCommon ReXLogic ProtocolUtilities OgreRenderingModule InputModuleOIS QtModule ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
@@ -42,6 +43,7 @@ link_package (PYTHON)
 link_package (PYTHON_QT)
 link_package (OIS)
 link_package (OGRE)
+link_package(PROPERTYEDITOR)
 
 
 # Copy XML files from source directory to target directory

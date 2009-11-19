@@ -267,3 +267,10 @@ macro (configure_dbus_glib)
     sagase_configure_report (DBUS_GLIB)
 endmacro (configure_dbus_glib)
 
+macro (configure_propertyeditor)
+    sagase_configure_package(PROPERTYEDITOR
+        NAMES propertyeditor
+        COMPONENTS propertyeditor
+        PREFIXES ${ENV_NAALI_DEP_PATH}/propertyeditor)
+    sagase_configure_report (PROPERTYEDITOR)
+endmacro (configure_propertyeditor)

@@ -552,7 +552,21 @@ if 0: #testing vector3/quat wrapping
     euler = euler_to_quat((0, 90, 0))
     print "quat from eulers", euler
     
-if 1:
-    ent = r.getEntity(1794663346)
+if 0:
+    avatar = r.getEntity(r.getUserAvatarId())
+    avatar.text = "Swoot"
+    import PythonQt as qt
+    ent = r.getEntity(1392229722)
     print ent.name, ent.pos, ent.scale, ent.orientation, ent.prim
+    pos = qt.Vector3df(ent.pos[0], ent.pos[1], ent.pos[2])
+    print pos, pos.x(), pos.y(), pos.z()
+    ent.pos = pos
+    
+if 0: #property editor tests
+    #print r.c
+    #print r, dir(r)
+    pe = r.getPropertyEditor()
+    #print pe, pe.setObject, pe.show
+    pe.setObject(r.c.widget.scalex)
+    pe.show()
     
