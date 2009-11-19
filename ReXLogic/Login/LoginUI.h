@@ -39,11 +39,9 @@ namespace RexLogic
 		virtual void InitWidget() = 0;        
         virtual void SetLoginHandler() = 0;
         virtual void SetLayout();
-		virtual void Show();
-        virtual void Hide();
 
 	public slots:
-		virtual void LoginDone(bool success);
+		virtual void LoginDone(bool success, QString &errorMessage);
 		
     };
 
@@ -122,9 +120,10 @@ namespace RexLogic
         virtual ~Login(void);
 
     private:
-        void InitUICanvas();
+        bool InitUICanvases();
         void InitLoginUI();
         void InitLogoutUI();
+        void CreateProgressTimer(int interval);
 
         Foundation::Framework *framework_;
         RexLogicModule *rexLogicModule_;
@@ -135,18 +134,26 @@ namespace RexLogic
         
         QWidget *inworldControls_;
         QWidget *loginProgressWidget_;
-        QTabWidget *tabWidget_;
+        QWidget *loginWidget_;
+        QFrame *messageFrame_;
         QPushButton *logout_button_;
         QPushButton *quit_button_;
+        QPushButton *hide_message_button_;
         QLabel *loginStatus_;
+        QLabel *messageLabel_;
+        QLabel *autohideLabel_;
         QProgressBar *loginProgressBar_;
-        bool loginInProgress_;
         QTimer *progressBarTimer_;
+        QTimer *autohideTimer_;
+        bool loginInProgress_;
+        int autoHideCount_;
 
 	private slots:
 		void AdjustWindowSize(const QSize &newSize);
         void AnimateProgressBar(int newValue);
         void UpdateProgressBar();
+        void UpdateAutoHide();
+        void HideMessageFromUser();
 
 	public slots:
 		void Show();
@@ -154,7 +161,9 @@ namespace RexLogic
 		void Disconnect();
         void Connected();
         void StartLoginProgressUI();
+        void HideLoginProgressUI();
         void UpdateLoginProgressUI(const QString &status, int progress, const ProtocolUtilities::Connection::State connectionState);
+        void ShowMessageToUser(QString message, int autohideSeconds);
 		void QuitApplication();
 
     };

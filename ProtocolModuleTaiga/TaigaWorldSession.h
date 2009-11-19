@@ -61,9 +61,6 @@ namespace TaigaProtocol
 
 		//! Pointer to the opensim network interface.
 		boost::weak_ptr<TaigaProtocol::ProtocolModuleTaiga> networkTaiga_;
-
-		//! State of the connection procedure thread.
-		ProtocolUtilities::ConnectionThreadState threadState_;
 	};
 }
 

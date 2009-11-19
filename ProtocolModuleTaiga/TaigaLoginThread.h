@@ -54,6 +54,9 @@ namespace TaigaProtocol
         ///@return State of connection.
         volatile ProtocolUtilities::Connection::State GetState() const;
 
+        ///@return error message as std::string
+        std::string &GetErrorMessage() const;
+
         ///@return The client parameters retreived from the XML-RPC reply.
         const ProtocolUtilities::ClientParameters &GetClientParameters() const { return threadState_->parameters; }
 
