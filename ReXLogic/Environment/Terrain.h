@@ -9,10 +9,10 @@
 
 namespace Resource
 {
-namespace Events
-{
-class ResourceReady;
-}
+    namespace Events
+    {
+        class ResourceReady;
+    }
 }
 
 namespace RexLogic
