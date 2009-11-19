@@ -4,7 +4,6 @@
 #include "InventoryWindow.h"
 #include "InventoryModule.h"
 #include "Foundation.h"
-#include "AssetUploader.h"
 #include "OpenSimInventoryDataModel.h"
 #include "WebdavInventoryDataModel.h"
 #include "InventoryItemModel.h"
@@ -15,8 +14,10 @@
 #include "AssetEvents.h"
 #include "TextureInterface.h"
 
-#include <QtUiTools>
+#include <QUiLoader>
 #include <QFile>
+#include <QPushButton>
+#include <QModelIndex>
 #include <QAbstractItemView>
 #include <QModelIndex>
 
@@ -40,7 +41,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     if (!qtModule_.get())
         return;
 
-    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::External).lock();
+    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
 
     InitInventoryWindow();
 
@@ -60,13 +61,6 @@ InventoryWindow::~InventoryWindow()
 {
     SAFE_DELETE(inventoryItemModel_);
 }
-
-/*
-AbstractInventoryDataModel *InventoryWindow::GetDataModel() const
-{
-    return inventoryItemModel_->GetInventory();
-}
-*/
 
 void InventoryWindow::Toggle()
 {
@@ -91,9 +85,7 @@ void InventoryWindow::SetWorldStreamToDataModel(ProtocolUtilities::WorldStreamPt
         inventoryItemModel_->GetInventory()->SetWorldStream(world_stream);
 }
 
-AbstractInventoryDataModel *InventoryWindow::InitOpenSimInventoryTreeModel(
-    InventoryModule *inventory_module,
-    ProtocolUtilities::WorldStreamPtr world_stream)
+AbstractInventoryDataModel *InventoryWindow::InitOpenSimInventoryTreeModel(ProtocolUtilities::WorldStreamPtr world_stream)
 {
     if (inventoryItemModel_)
     {
@@ -118,10 +110,7 @@ AbstractInventoryDataModel *InventoryWindow::InitOpenSimInventoryTreeModel(
     return dataModel;
 }
 
-AbstractInventoryDataModel *InventoryWindow::InitWebDavInventoryTreeModel(
-    InventoryModule *inventory_module,
-    const std::string &identityUrl,
-    const std::string &hostUrl)
+AbstractInventoryDataModel *InventoryWindow::InitWebDavInventoryTreeModel(const std::string &identityUrl, const std::string &hostUrl)
 {
     if (inventoryItemModel_)
     {
@@ -270,8 +259,6 @@ void InventoryWindow::Upload()
     QStringList filenames;
     for (Core::StringList::iterator it = names.begin(); it != names.end(); ++it)
         filenames << QString((*it).c_str());
-
-    //emit FileUpload(fileNames);
 
     inventoryItemModel_->Upload(index, filenames);
 }

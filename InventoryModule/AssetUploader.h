@@ -6,8 +6,6 @@
 #ifndef incl_AssetUploader_h
 #define incl_AssetUploader_h
 
-#include "RexCommon.h"
-#include "RexUUID.h"
 #include "WorldStream.h"
 
 #include <QObject>
@@ -17,13 +15,10 @@ namespace Foundation
     class Framework;
 }
 
-namespace RexLogic
-{
-    class RexLogicModule;
-}
-
 namespace Inventory
 {
+    class OpenSimInventoryDataModel;
+
     class AssetUploader : public QObject
     {
         Q_OBJECT
@@ -31,11 +26,13 @@ namespace Inventory
     public:
         /// Constructor.
         /// @param framework Framework pointer.
-        AssetUploader(Foundation::Framework* framework, RexLogic::RexLogicModule *rexlogic);
+        /// @param data_model OpenSim inventory data model pointer.
+        AssetUploader(Foundation::Framework* framework, OpenSimInventoryDataModel *data_model);
 
         /// Destructor.
         ~AssetUploader();
 
+        /// Sets world stream pointer.
         void SetWorldStream(ProtocolUtilities::WorldStreamPtr world_stream);
 
     public slots:
@@ -59,7 +56,7 @@ namespace Inventory
          *  @return true if successful
          */
         bool UploadFile(
-            const RexTypes::asset_type_t asset_type,
+            const RexTypes::asset_type_t &asset_type,
             const std::string &filename,
             const std::string &name,
             const std::string &description,
@@ -75,7 +72,7 @@ namespace Inventory
          *  @return true if successful
          */
         bool UploadBuffer(
-            const RexTypes::asset_type_t asset_type,
+            const RexTypes::asset_type_t &asset_type,
             const std::string &filename,
             const std::string &name,
             const std::string &description,
@@ -129,14 +126,14 @@ namespace Inventory
         /// Framework pointer. Needed for EventManager.
         Foundation::Framework* framework_;
 
-        /// RexLogicModule pointer. 
-        RexLogic::RexLogicModule *rexLogicModule_;
-
         /// Upload capability URL.
         std::string uploadCapability_;
 
         /// WorldStream pointer
         ProtocolUtilities::WorldStreamPtr currentWorldStream_;
+
+        /// Inventory data model pointer.
+        OpenSimInventoryDataModel *dataModel_;
     };
 }
 

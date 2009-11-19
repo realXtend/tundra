@@ -5,13 +5,13 @@
 
 #include "StableHeaders.h"
 #include "AssetUploader.h"
-#include "RexLogicModule.h"
 #include "InventoryModule.h"
+#include "OpenSimInventoryDataModel.h"
 #include "HttpRequest.h"
 #include "LLSDUtilities.h"
 #include "RexUUID.h"
 #include "Inventory/InventoryEvents.h"
-#include "Inventory/InventorySkeleton.h"
+#include "InventoryFolder.h"
 #include "J2kEncoder.h"
 
 #include <QStringList>
@@ -20,10 +20,9 @@
 namespace Inventory
 {
 
-AssetUploader::AssetUploader(Foundation::Framework* framework, RexLogic::RexLogicModule *rexlogic) :
-    framework_(framework), rexLogicModule_(rexlogic), uploadCapability_("")
+AssetUploader::AssetUploader(Foundation::Framework* framework, OpenSimInventoryDataModel *data_model) :
+    framework_(framework), dataModel_(data_model), uploadCapability_("")
 {
-    ///\todo Get rid of rexlogic dependecy?
 }
 
 AssetUploader::~AssetUploader()
@@ -135,7 +134,7 @@ bool AssetUploader::UploadFile(
 */
 
 bool AssetUploader::UploadBuffer(
-    const RexTypes::asset_type_t asset_type,
+    const RexTypes::asset_type_t &asset_type,
     const std::string& filename,
     const std::string& name,
     const std::string& description,
@@ -283,12 +282,24 @@ bool AssetUploader::UploadBuffer(
 }
 
 bool AssetUploader::UploadFile(
-    const RexTypes::asset_type_t asset_type,
+    const RexTypes::asset_type_t &asset_type,
     const std::string &filename,
     const std::string &name,
     const std::string &description,
     const RexTypes::RexUUID &folder_id)
 {
+    if (!HasUploadCapability())
+    {
+        std::string upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
+        if (upload_url == "")
+        {
+            InventoryModule::LogError("Could not get upload capability for asset uploader. Uploading not possible");
+            return false;
+        }
+
+        SetUploadCapability(upload_url);
+    }
+
     // Open the file.
     std::ifstream file(filename.c_str(), std::ios::binary);
     if (!file.is_open())
@@ -357,7 +368,7 @@ void AssetUploader::ThreadedUploadFiles(Core::StringList filenames)
         std::string name = CreateNameFromFilename(filename);
         std::string description = "(No Description)";
 
-        RexTypes::RexUUID folder_id = rexLogicModule_->GetInventory()->GetFirstChildFolderByName(cat_name.c_str())->id;
+        RexTypes::RexUUID folder_id(dataModel_->GetFirstChildFolderByName(cat_name.c_str())->GetID().toStdString());
         if (folder_id.IsNull())
         {
             InventoryModule::LogError("Inventory folder for this type of file doesn't exists. File can't be uploaded.");
@@ -407,7 +418,7 @@ void AssetUploader::ThreadedUploadBuffers(QStringList filenames, QVector<QVector
         std::string name = CreateNameFromFilename(filename);
         std::string description = "(No Description)";
 
-        RexTypes::RexUUID folder_id = rexLogicModule_->GetInventory()->GetFirstChildFolderByName(cat_name.c_str())->id;
+        RexTypes::RexUUID folder_id(dataModel_->GetFirstChildFolderByName(cat_name.c_str())->GetID().toStdString());
         if (folder_id.IsNull())
         {
             InventoryModule::LogError("Inventory folder for this type of file doesn't exists. File can't be uploaded.");
@@ -447,8 +458,7 @@ std::string AssetUploader::CreateNewFileAgentInventoryXML(
 
 void AssetUploader::CreateRexInventoryFolders()
 {
-    RexLogic::InventoryPtr inventory = rexLogicModule_->GetInventory();
-    if (!inventory.get())
+    if (!dataModel_)
     {
         InventoryModule::LogError("Inventory doens't exist yet! Can't create folder to it.");
         return;
@@ -464,33 +474,14 @@ void AssetUploader::CreateRexInventoryFolders()
         std::string cat_name = GetCategoryNameForAssetType(asset_type);
 
         // Check out if this inventory category exists.
-        ProtocolUtilities::InventoryFolderSkeleton *folder = inventory->GetFirstChildFolderByName(cat_name.c_str());
-        if (!folder)
+        //ProtocolUtilities::InventoryFolderSkeleton *folder = inventory->GetFirstChildFolderByName(cat_name.c_str());
+        AbstractInventoryItem *existing = dataModel_->GetFirstChildFolderByName(STD_TO_QSTR(cat_name));
+        if (!existing)
         {
             // I doesn't. Create new inventory folder.
-            ProtocolUtilities::InventoryFolderSkeleton *parentFolder = inventory->GetMyInventoryFolder();
-            RexUUID folder_id = RexUUID::CreateRandom();
-
-            // Add folder to inventory skeleton.
-            ProtocolUtilities::InventoryFolderSkeleton newFolder(folder_id, cat_name);
-            parentFolder->AddChildFolder(newFolder);
-
-            // Notify the server about the new inventory folder.
-            currentWorldStream_->SendCreateInventoryFolderPacket(parentFolder->id, folder_id, asset_type, cat_name);
-
-            // Send event to inventory module.
-            Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
-            Core::event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
-            if (event_category != 0)
-            {
-                Inventory::InventoryItemEventData folder_data(Inventory::IIT_Folder);
-                folder_data.id = folder_id;
-                folder_data.parentId = parentFolder->id;
-                folder_data.inventoryType = GetInventoryTypeFromAssetType(asset_type);
-                folder_data.assetType = asset_type;
-                folder_data.name = cat_name;
-                event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &folder_data);
-            }
+            InventoryFolder *myInventory = dataModel_->GetMyInventoryFolder();
+            AbstractInventoryItem *newFolder = dataModel_->GetOrCreateNewFolder(
+                QString(RexUUID::CreateRandom().ToString().c_str()), *myInventory, STD_TO_QSTR(cat_name));
         }
     }
 }

@@ -16,10 +16,7 @@
 namespace Inventory
 {
     class InventoryWindow;
-    class AssetUploader;
     class AbstractInventoryDataModel;
-
-    typedef boost::shared_ptr<AssetUploader> AssetUploaderPtr;
 
     class InventoryModule : public Foundation::ModuleInterfaceImpl
     {
@@ -54,9 +51,6 @@ namespace Inventory
         /// Upload multiple assets.
         Console::CommandResult UploadMultipleAssets(const Core::StringVector &params);
 
-        /// @return Asset uploader pointer.
-//        AssetUploaderPtr GetAssetUploader() const;
-
         /// Get the current WorldStream
         ProtocolUtilities::WorldStreamPtr GetCurrentWorldStream() const { return currentWorldStream_ ; }
 
@@ -84,9 +78,6 @@ namespace Inventory
 
         /// Module GUI widget
         InventoryWindow *inventoryWindow_;
-
-        /// Asset uploader.
-//        AssetUploaderPtr assetUploader_;
 
         /// WorldStream pointer
         ProtocolUtilities::WorldStreamPtr currentWorldStream_ ;

@@ -13,13 +13,13 @@
 
 #include <QObject>
 #include <QPointer>
-#include <QModelIndex>
 
 class QWidget;
 class QPushButton;
 class QTreeWidgetItem;
 class QTreeView;
 class QItemSelection;
+class QModelIndex;
 
 namespace QtUI
 {
@@ -35,7 +35,6 @@ namespace Foundation
 
 namespace Inventory
 {
-    class InventoryModule;
     class InventoryItemEventData;
     class InventoryItemModel;
     class AbstractInventoryDataModel;
@@ -57,27 +56,18 @@ namespace Inventory
         /// Destructor.
         virtual ~InventoryWindow();
 
-        ///
-//        AbstractInventoryDataModel *GetDataModel() const;
-
     public slots:
         /// Initializes the OpenSim inventory data/view model.
-        /// @param inventory_module
         /// @param world_stream
         /// @return Pointer to inventory data model.
-        AbstractInventoryDataModel *InitOpenSimInventoryTreeModel(
-            InventoryModule *inventory_module,
-            ProtocolUtilities::WorldStreamPtr world_stream);
+        AbstractInventoryDataModel *InitOpenSimInventoryTreeModel(ProtocolUtilities::WorldStreamPtr world_stream);
 
         /// Initialize the Taiga webdav data/view model.
         /// @param inventory_module
         /// @param identityUrl
         /// @param hostUrl
         /// @return Pointer to inventory data model.
-        AbstractInventoryDataModel *InitWebDavInventoryTreeModel(
-            InventoryModule *inventory_module,
-            const std::string &identityUrl,
-            const std::string &hostUrl);
+        AbstractInventoryDataModel *InitWebDavInventoryTreeModel(const std::string &identityUrl, const std::string &hostUrl);
 
         /// Resets the inventory tree model.
         void ResetInventoryTreeModel();
@@ -122,12 +112,6 @@ namespace Inventory
         /// Updates possible actions depending on the currently active tree view item.
         void UpdateActions();
 
-/*
-    signals:
-        void FileUpload(Core::StringList &filenames);
-        void FileDownload(const QString &store_path, const QItemSelection &selection);
-*/
-
     private:
         Q_DISABLE_COPY(InventoryWindow);
 
@@ -150,7 +134,7 @@ namespace Inventory
         QPointer<InventoryItemModel> inventoryItemModel_;
 
         ///
-        QMap<Core::request_tag_t, RexTypes::asset_type_t> resourceRequests_;
+//        QMap<Core::request_tag_t, RexTypes::asset_type_t> resourceRequests_;
 
         /// Inventory window widget.
         QWidget *inventoryWidget_;
