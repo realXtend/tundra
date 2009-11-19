@@ -525,7 +525,7 @@ namespace Foundation
                     recurseToChildren = false;
                 else
                 {
-                    sprintf(str, "%s: called total: %d, elapsed total: %s, called: %d, elapsed: %s, avg: %s",
+                    sprintf(str, "%s: called total: %lu, elapsed total: %s, called: %lu, elapsed: %s, avg: %s",
                         timings_node->Name().c_str(), timings_node->num_called_total_,
                         FormatTime(timings_node->total_).c_str(), timings_node->num_called_,
                         FormatTime(timings_node->elapsed_).c_str(), FormatTime(average).c_str());
