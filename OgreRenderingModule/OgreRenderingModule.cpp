@@ -175,6 +175,12 @@ namespace OgreRenderer
     void OgreRenderingModule::Uninitialize()
     {
         framework_->GetServiceManager()->UnregisterService(renderer_);
+
+        // Explicitly remove log listener now, because the service has been
+        // unregistered now, and no-one can get at the renderer to remove themselves
+        if (renderer_)
+            renderer_->RemoveLogListener();
+
         renderer_.reset();
         
         LogInfo("Module " + Name() + " uninitialized.");

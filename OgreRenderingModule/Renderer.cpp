@@ -103,7 +103,6 @@ namespace OgreRenderer
         group_id_(0),
         main_window_handle_(0),
         listener_(EventListenerPtr(new EventListener(this))),
-        log_listener_(OgreLogListenerPtr(new LogListener)),
         resource_handler_(ResourceHandlerPtr(new ResourceHandler(framework))),
         config_filename_ (config),
         plugins_filename_ (plugins),
@@ -120,6 +119,8 @@ namespace OgreRenderer
     
     Renderer::~Renderer()
     {
+        RemoveLogListener();
+        
         if (ray_query_)
         {
             if (scenemanager_)
@@ -141,14 +142,21 @@ namespace OgreRenderer
 
         if (initialized_)
         {
-            Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
             Ogre::WindowEventUtilities::removeWindowEventListener(renderwindow_, listener_.get());
         }
-        log_listener_.reset();
 
         resource_handler_.reset();
 
         root_.reset();
+    }
+    
+    void Renderer::RemoveLogListener()
+    {
+        if (log_listener_.get())
+        {
+            Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
+            log_listener_.reset();
+        }        
     }
     
     void Renderer::Initialize()
@@ -162,7 +170,10 @@ namespace OgreRenderer
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
         //Setting low logging level can potentially make things like mesh/skeleton loading faster
         //Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_LOW);
+
+        log_listener_ = OgreLogListenerPtr(new LogListener);   
         Ogre::LogManager::getSingleton().getDefaultLog()->addListener(log_listener_.get());
+
         LoadPlugins(plugins_filename_);
         
 #ifdef _WINDOWS

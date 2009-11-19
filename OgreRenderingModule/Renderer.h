@@ -139,6 +139,9 @@ namespace OgreRenderer
         //! Returns resource handler
         ResourceHandlerPtr GetResourceHandler() const { return resource_handler_; }
         
+        //! Removes log listener
+        void RemoveLogListener();
+        
         //! Initializes renderer. Called by OgreRenderingModule
         /*! Creates render window. If render window is to be embedded, call SetExternalWindowParameter() before.
          */
