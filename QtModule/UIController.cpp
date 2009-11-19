@@ -142,11 +142,14 @@ boost::weak_ptr<UICanvas> UIController::CreateCanvas(UICanvas::DisplayMode mode)
     return canvas;
 }
 
-void UIController::InjectMouseMove(int x, int y, int deltaX, int deltaY)
+void UIController::InjectMouseMove(int x, int y, int deltaX, int deltaY, UICanvas* canvas)
 {
     QPoint point(x,y);
     int index = GetCanvasIndexAt(point);
     UICanvas *currentCanvas = (index == -1 ? 0 : canvases_[index].get());
+
+    if ( currentCanvas == 0 && canvas != 0)
+        currentCanvas = canvas;
 
     // If we've lost our target action canvas, stop the action.
     if (!mouseActionCanvas)
@@ -241,13 +244,18 @@ void UIController::SetBack(const QString& id)
 }
 
 
-void UIController::InjectMousePress(int x, int y)
+void UIController::InjectMousePress(int x, int y, UICanvas* canvas)
 {
     QPoint point(x,y);
   
-    int index = GetCanvasIndexAt(point);
+    UICanvas* currentCanvas = canvas;
     
+    /*
+    int index = GetCanvasIndexAt(point);
     UICanvas *currentCanvas = (index == -1 ? 0 : canvases_[index].get());
+    if ( currentCanvas == 0 && canvas != 0)
+        currentCanvas = canvas;
+    */
 
     // Update the current mouse hover canvas to be the current one, if not so yet.
     if (mouseHoverCanvas != currentCanvas)
@@ -271,7 +279,6 @@ void UIController::InjectMousePress(int x, int y)
         return;
     }
 
-    assert(!currentCanvas->IsHidden());
 
     // See if this click triggered a double-click instead.
     if (!doubleClickTimer_.isNull() && doubleClickTimer_.elapsed() <= responseTimeLimit_)
@@ -282,7 +289,7 @@ void UIController::InjectMousePress(int x, int y)
         QPoint clickDelta = pointOnCanvas - lastMousePressPoint_;
         if (clickDelta.manhattanLength() < 2)
         {
-            InjectDoubleClick(x,y);
+            InjectDoubleClick(x,y, currentCanvas);
             return;
         }
     }
@@ -319,18 +326,7 @@ void UIController::InjectMousePress(int x, int y)
         currentMouseAction = MouseActionCanvasInternal;
 }
 
-void UIController::InjectMousePress(Core::Real u, Core::Real v, const boost::shared_ptr<UICanvas>& canvas)
-{
-   QPointF pos = canvas->GetPosition();
-   QSize size = canvas->GetSize();
-   int x = u * size.width() + pos.x();
-   int y = v * size.height() + pos.y();
-   SendMouseLeftButtonPressEvent(*canvas.get(), x, y);
-   // Now be brutal and make canvas to redraw it. 
-   canvas->dirty_ = true;
-   canvas->RenderSceneToOgreSurface();
 
-}
 
 void UIController::ActivateKeyboardFocus(UICanvas *canvas, int x, int y)
 {
@@ -356,14 +352,22 @@ void UIController::ActivateKeyboardFocus(UICanvas *canvas, int x, int y)
     lastKnownKeyboardFocusItem = canvas->view_->scene()->itemAt(pos);
 }
 
-void UIController::InjectMouseRelease(int x, int y)
+void UIController::InjectMouseRelease(int x, int y, UICanvas* canvas)
 {
     ////todo what to do release after double click?
 
     currentMouseAction = MouseActionNone;
 
-    if (mouseActionCanvas == 0)
+    if ( mouseActionCanvas == 0)
         return;
+
+    /*
+    if (mouseActionCanvas == 0)
+        if ( canvas != 0)
+            mouseActionCanvas = canvas;
+        else
+            return;
+    */
 
     // Translate the mouse position from QGraphicsView coordinate frame onto
     // the QGraphicsScene coordinate frame.
@@ -392,37 +396,39 @@ void UIController::InjectMouseRelease(int x, int y)
     mouseActionCanvas = 0;
 }
 
-void UIController::InjectDoubleClick(int x, int y)
+void UIController::InjectDoubleClick(int x, int y, UICanvas* canvas)
 {
-    QPoint point(x,y);
-    int index = GetCanvasIndexAt(point);
+   
+    if ( canvas == 0)
+        return;
+    //int index = GetCanvasIndexAt(point);
     
-    if (index != -1 && !canvases_[index]->IsHidden())
-    {
+    //if (index != -1 && !canvases_[index]->IsHidden())
+    //{
         // Translate the mouse position from QGraphicsView coordinate frame onto
         // the QGraphicsScene coordinate frame.
-        QPoint pos = canvases_[index]->MapToCanvas(x,y);
-        QPoint currentMousePos(pos.x(), pos.y());
+        //QPoint pos = canvases_[index]->MapToCanvas(x,y);
+    QPoint pos = canvas->MapToCanvas(x,y);    
+    QPoint currentMousePos(pos.x(), pos.y());
 
-        currentMouseAction = MouseActionNone;
-        
-        // In case of double click we set that left button generated click -> so it is set down. 
-        QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseDoubleClick);
+    currentMouseAction = MouseActionNone;
+    
+    // In case of double click we set that left button generated click -> so it is set down. 
+    QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseDoubleClick);
 
-        mouseEvent.setButtonDownScenePos(Qt::LeftButton, lastMousePressPoint_);
-        mouseEvent.setButtonDownScreenPos(Qt::LeftButton, lastMousePressPoint_);
-        mouseEvent.setScenePos(currentMousePos);
-        mouseEvent.setScreenPos(currentMousePos);
-        mouseEvent.setLastScenePos(currentMousePos);
-        mouseEvent.setLastScreenPos(currentMousePos);
-        mouseEvent.setButtons(Qt::LeftButton);
-        mouseEvent.setButton(Qt::LeftButton);
- 
-        mouseEvent.setModifiers(0);
-        mouseEvent.setAccepted(false);
-     
-        QApplication::sendEvent(canvases_[index]->view_->scene(), &mouseEvent);
-    }
+    mouseEvent.setButtonDownScenePos(Qt::LeftButton, lastMousePressPoint_);
+    mouseEvent.setButtonDownScreenPos(Qt::LeftButton, lastMousePressPoint_);
+    mouseEvent.setScenePos(currentMousePos);
+    mouseEvent.setScreenPos(currentMousePos);
+    mouseEvent.setLastScenePos(currentMousePos);
+    mouseEvent.setLastScreenPos(currentMousePos);
+    mouseEvent.setButtons(Qt::LeftButton);
+    mouseEvent.setButton(Qt::LeftButton);
+    mouseEvent.setModifiers(0);
+    mouseEvent.setAccepted(false);
+
+    QApplication::sendEvent(canvas->view_->scene(), &mouseEvent);
+    
 }
 
 void UIController::InjectKeyPressed(const QString& text, Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
@@ -612,6 +618,12 @@ void UIController::Deactivate(UICanvas &canvas, DeactivationType type)
     }
 }
 
+void UIController::Redraw(const boost::shared_ptr<UICanvas>& canvas)
+{
+    canvas->dirty_ = true;
+    canvas->RenderSceneToOgreSurface();
+}
+
 UICanvas *UIController::GetCanvasAt(int x, int y)
 {
     const QPoint point(x, y);
@@ -621,6 +633,7 @@ UICanvas *UIController::GetCanvasAt(int x, int y)
 
     return 0;
 }
+
 
 boost::weak_ptr<QtUI::UICanvas> UIController::GetCanvasByID(const QString& id)
 {

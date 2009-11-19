@@ -49,8 +49,7 @@ void QtModule::Load()
 }
 
 void QtModule::Unload()
-{
-}
+{}
 
 void QtModule::PreInitialize()
 {
@@ -58,6 +57,7 @@ void QtModule::PreInitialize()
 
 void QtModule::Initialize()
 {
+
     // Sanity check
     SAFE_DELETE(controller_);
     
@@ -115,35 +115,67 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
         QPoint mousePos = pos.toPoint();
 
         bool event_handled = false;
-        
+    
         UICanvas *canvas = controller_->GetCanvasAt(mousePos.x(), mousePos.y());
-        if (canvas && !canvas->IsHidden())
-            event_handled = true;
 
         bool oisLMBDown = input->IsButtonDown(OIS::MB_Left);
+        
         if (oisLMBDown && !mouse_left_button_down_)
         {
             //if (controller_->GetCanvasAt(pos.x(), pos.y()))
             //    framework_->GetQApplication()->setActiveWindow(controller_->GetCanvasAt(pos.x(), pos.y()));
             
-            controller_->InjectMousePress(pos.x(), pos.y());
-                        
+          
+            controller_->InjectMousePress(pos.x(), pos.y(), canvas);
+            
+            if ( canvas )
+                event_handled = true;
+           
+            // In world click, to a inworld canvas is handled through event : EVENT_ENTITY_GRAB (currently)
+        
             mouse_left_button_down_ = true;
          
             if (controller_->IsKeyboardFocus() && input->GetState() != Input::State_Buffered)
               input->SetState(Input::State_Buffered);
             else if (!controller_->IsKeyboardFocus())
-                input->SetState(Input::State_Unknown);
+              input->SetState(Input::State_Unknown);
         }
         else if (!oisLMBDown && mouse_left_button_down_)
         {
-            controller_->InjectMouseRelease(pos.x(),pos.y());
+            if ( canvas != 0) 
+            {
+                controller_->InjectMouseRelease(pos.x(),pos.y(), canvas);
+                event_handled = true;
+            }
+            else
+            {
+               // Generate mouse release for inworld canvas 
+               boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
+                <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+               
+                Foundation::RaycastResult result = renderer->Raycast(pos.x(), pos.y());
+              
+                // Has a entity a EC_CANVAS ?
+                boost::shared_ptr<UICanvas> in_world_canvas = GetCanvas(result);
+                if ( in_world_canvas.get() != 0)
+                {
+                    // Note here coordinate system looks quite strange, but there happends inside of InjectMousePress "counter" fix for coordinates. 
+                    QPoint pos = in_world_canvas->GetPosition().toPoint();
+                    QSize size = in_world_canvas->GetSize();
+                    QPoint location = QPoint(size.width() * result.u_ + pos.x(), size.height() * result.v_ + pos.y());
+                    controller_->InjectMouseRelease(location.x(), location.y(), in_world_canvas.get()); 
+                    event_handled = true;
+                }
+                else
+                 controller_->InjectMouseRelease(pos.x(),pos.y(), canvas);
+
+              
+            }
+           
             mouse_left_button_down_ = false;
               
         }
         
-        // Is this needed ? 
-        //controller_->Update();     
 
         return event_handled;
 
@@ -192,7 +224,7 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
     }
     else if (category_id == input_event_category_ && event_id == Input::Events::KEY_PRESSED)
     {
-        // Hack to test making EC_UICanvases
+        //Hack to test making EC_UICanvases
         //Input::Events::Key* key = checked_static_cast<Input::Events::Key *>(data);
         //int keycode = key->code_;
         //if (keycode == OIS::KC_RETURN)
@@ -247,6 +279,41 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
     {
         // If entity has changed geometry or materials, and it has EC_UICanvas, make sure the EC_UICanvas refreshes
         RefreshEC_UICanvas(data);
+    }
+    else if ( category_id == scene_event_category_ && event_id == Scene::Events::EVENT_ENTITY_GRAB)
+    {
+        // Check that has corresponding entity a canvas.
+        Scene::Events::RaycastEventData* raycast_data = dynamic_cast<Scene::Events::RaycastEventData*>(data);
+        if (raycast_data != 0)
+        {
+            Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+            if ( scene.get() != 0)
+            {
+                Scene::EntityPtr entity = scene->GetEntity(raycast_data->localID);
+                if ( entity.get() != 0)
+                {
+                    Foundation::ComponentPtr obj = entity->GetComponent(EC_UICanvas::NameStatic());
+                    if ( obj.get() != 0)
+                    {
+                        // Has canvas.
+                        EC_UICanvas& ui_canvas = *checked_static_cast<EC_UICanvas*>(obj.get()); 
+                        boost::shared_ptr<UICanvas> canvas = ui_canvas.GetCanvas();
+                
+                        // Note here coordinate system looks quite strange, but there happends inside of InjectMousePress "counter" fix for coordinates. 
+                        QPoint pos = canvas->GetPosition().toPoint();
+                        QSize size = canvas->GetSize();
+                        QPoint position = QPoint(size.width() * raycast_data->u + pos.x(), size.height() * raycast_data->v + pos.y());
+                        controller_->InjectMousePress(position.x(), position.y(), canvas.get());
+                        mouse_left_button_down_ = true;
+                        // Forced redraw (needed?)
+                        controller_->Redraw(canvas);
+                        return true;
+                    }
+                }
+            }
+        }
+        
+
     }
 
     return false;
@@ -308,7 +375,28 @@ void QtModule::Update(Core::f64 frametime)
 
         if (change.manhattanLength() >= 1)
         {
-            controller_->InjectMouseMove(pos.x(),pos.y(), change.x(), change.y());
+            UICanvas* canvas = controller_->GetCanvasAt(pos.x(), pos.y());
+
+            if ( canvas != 0 && !canvas->IsHidden())
+             controller_->InjectMouseMove(pos.x(),pos.y(), change.x(), change.y(), canvas);        
+            else 
+            {
+                //Do raycast, generate mouse move to result of entity if it has a EC_CANVAS. 
+                Foundation::RaycastResult result = renderer->Raycast(pos.x(), pos.y());
+                boost::shared_ptr<UICanvas> in_world_canvas = GetCanvas(result);
+                if ( in_world_canvas.get() != 0)
+                {
+                     // Note here coordinate system looks quite strange, but there happends inside of InjectMousePress "counter" fix for coordinates. 
+                    QPoint pos = canvas->GetPosition().toPoint();
+                    QSize size = canvas->GetSize();
+                    QPoint location = QPoint(size.width() * result.u_ + pos.x(), size.height() * result.v_ + pos.y());
+                    change = location - lastLocation_;
+                    controller_->InjectMouseMove(location.x(), location.y(), change.x(), change.y(), in_world_canvas.get());  
+                    lastLocation_ = location;
+                }
+                
+            }
+            
             lastPos_ = pos.toPoint();
         }
 
@@ -479,6 +567,23 @@ Foundation::ComponentPtr QtModule::CreateEC_UICanvasToEntity(Scene::Entity* enti
     uicanvas.SetEntity(entity);
     
     return uicanvasptr;    
+}
+
+boost::shared_ptr<UICanvas> QtModule::GetCanvas(const Foundation::RaycastResult& result)
+{
+    if ( result.entity_ != 0 )
+    {
+        Foundation::ComponentPtr obj = result.entity_->GetComponent(EC_UICanvas::NameStatic());
+        if ( obj.get() != 0)
+        {
+            // Has canvas.
+            EC_UICanvas& ui_canvas = *checked_static_cast<EC_UICanvas*>(obj.get()); 
+            boost::shared_ptr<UICanvas> canvas = ui_canvas.GetCanvas();
+            return canvas;
+        }
+    }
+
+    return boost::shared_ptr<UICanvas>();
 }
 
 void QtModule::SetShowControlBar(bool show)

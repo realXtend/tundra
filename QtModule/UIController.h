@@ -85,31 +85,25 @@ namespace QtUI
             @param y The new y-coordinate. Window top size is 0 and the coordinates progress downwards.
             @param deltaX The delta of the X coordinate in pixels since the last position of the mouse (last call to this function).
             @param deltaY The delta of the Y coordinate. */
-        void InjectMouseMove(int x, int y, int deltaX, int deltaY);
+        void InjectMouseMove(int x, int y, int deltaX, int deltaY, UICanvas* canvas);
      
         /** Sends a mouse left button press event to correct canvas.
             @param x The x-coordinate in the main render window where the LMB click occurred.
             @param y The y-coordinate.
             @note UIController expects that a corresponding mouse release message will be sent afterwards. */
-        void InjectMousePress(int x, int y);
+        void InjectMousePress(int x, int y, UICanvas* canvas);
     
-        /**
-         * Sends a mouse left button press event to canvas which is embed in 3D-mode. 
-         * @param u is texture u coordinate, which is result from raycast. 
-         * @param v is texture v coordinate, which is result from raycast. 
-         */
-        void InjectMousePress(Core::Real u, Core::Real v, const boost::shared_ptr<UICanvas>& canvas);
 
         /** Sends a mouse release event to correct canvas. 
             @param x The x-coordinate in the main render window where the mouse was when the LMB was released.
             @param y The y-coordinate. */
-        void InjectMouseRelease(int x, int y);
+        void InjectMouseRelease(int x, int y, UICanvas* canvas);
 
         /** Sends a mouse double click event to correct canvas. 
             @param x The x-coordinate in the main render window where the double click occurred.
             @param y The y-coordinate.
             For the double click, there is no corresponding mouse release message that needs to be sent. */
-        void InjectDoubleClick(int x, int y);
+        void InjectDoubleClick(int x, int y, UICanvas* canvas);
 
         /** Sends a key-press event to the canvas that currently has the active keyboard focus.
             @param text The textual representation of the key that was pressed.
@@ -147,6 +141,7 @@ namespace QtUI
         /** @return The topmost visible UICanvas that contains the given point, which is passed in main 
             render window coordinates, or 0 if no such canvas exists. */
         UICanvas *GetCanvasAt(int x, int y);
+       
 
         /** @return The index (to the internal list of canvases) of the topmost visible canvas that 
             contains the given point in render window coordinates, or -1 if no such canvas exists. */
@@ -170,6 +165,8 @@ namespace QtUI
             @param x The mouse x-coordinate in the main render window coordinates where the press occurred.
             @param y The y-coordinate. */
         void SendMouseLeftButtonPressEvent(UICanvas &canvas, int x, int y);
+
+        void Redraw(const boost::shared_ptr<UICanvas>& canvas);
 
         enum DeactivationType { MouseMove, MousePress, MouseRelease, All };
 
