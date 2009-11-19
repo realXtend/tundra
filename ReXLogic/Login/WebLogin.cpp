@@ -20,6 +20,8 @@ namespace RexLogic
 
 	WebLogin::~WebLogin()
 	{
+        SAFE_DELETE(progressBar);
+        SAFE_DELETE(statusLabel);
         delete widget_;
 	}
 
@@ -112,7 +114,8 @@ namespace RexLogic
 
 	void WebLogin::UpdateUi(int progress)
 	{
-		progressBar->setValue(progress);
+        if (progressBar != 0)
+		    progressBar->setValue(progress);
 	}
 
 	void WebLogin::ProcessPage(bool success)

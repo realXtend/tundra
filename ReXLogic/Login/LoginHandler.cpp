@@ -56,10 +56,9 @@ namespace RexLogic
 			rexLogicModule_->GetServerConnection()->UnregisterCurrentProtocolModule();
 			rexLogicModule_->GetServerConnection()->SetCurrentProtocolType(ProtocolUtilities::OpenSim);
 			rexLogicModule_->GetServerConnection()->SetConnectionType(ProtocolUtilities::DirectConnection);
-			rexLogicModule_->GetServerConnection()->StoreCredentials(
-			    osCredentials->GetIdentity().toStdString(),
-			    osCredentials->GetPassword().toStdString(),
-			    "");
+			rexLogicModule_->GetServerConnection()->StoreCredentials(osCredentials->GetIdentity().toStdString(),
+			                                                         osCredentials->GetPassword().toStdString(),
+			                                                         "");
 			    
 			if ( rexLogicModule_->GetServerConnection()->PrepareCurrentProtocolModule() )
 			{	
@@ -88,10 +87,9 @@ namespace RexLogic
 				rexLogicModule_->GetServerConnection()->UnregisterCurrentProtocolModule();
 				rexLogicModule_->GetServerConnection()->SetCurrentProtocolType(ProtocolUtilities::OpenSim);
 				rexLogicModule_->GetServerConnection()->SetConnectionType(ProtocolUtilities::AuthenticationConnection);
-			    rexLogicModule_->GetServerConnection()->StoreCredentials(
-			        rexCredentials->GetIdentity().toStdString(),
-			        rexCredentials->GetPassword().toStdString(),
-			        rexCredentials->GetAuthenticationUrl().toString().toStdString());
+			    rexLogicModule_->GetServerConnection()->StoreCredentials(rexCredentials->GetIdentity().toStdString(),
+			                                                             rexCredentials->GetPassword().toStdString(),
+			                                                             rexCredentials->GetAuthenticationUrl().toString().toStdString());
 			    
 				if ( rexLogicModule_->GetServerConnection()->PrepareCurrentProtocolModule() )
 				{	
@@ -135,7 +133,10 @@ namespace RexLogic
 				osCredentials->SetPassword(map["Password"]);
 				serverEntryPointUrl_ = ValidateServerUrl(map["WorldAddress"]);
 				if (serverEntryPointUrl_.isValid())
+                {
+                    emit( LoginStarted() );
 					InstantiateWorldSession();
+                }
 			}
 			else
 			{
@@ -155,7 +156,10 @@ namespace RexLogic
 			rexCredentials->SetAuthenticationUrl(ValidateServerUrl(map["AuthenticationAddress"]));
 			serverEntryPointUrl_ = ValidateServerUrl(map["WorldAddress"]);
 			if (serverEntryPointUrl_.isValid())
+            {
+                emit( LoginStarted() );
 				InstantiateWorldSession();
+            }
 		}
 	}
 
@@ -213,6 +217,9 @@ namespace RexLogic
 		dynamic_cast<TaigaCredentials *>(credentials_)->SetIdentityUrl(identityUrl);
 		serverEntryPointUrl_ = ValidateServerUrl(entryPointUrl);
 		if (serverEntryPointUrl_.isValid())
+        {
+            emit( LoginStarted() );
 			InstantiateWorldSession();
+        }
 	}
 }

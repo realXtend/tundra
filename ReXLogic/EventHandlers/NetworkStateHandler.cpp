@@ -25,6 +25,7 @@ namespace RexLogic
             {   
                 // The client has connected to the server. Create a new scene for that.
                 rexlogicmodule_->CreateNewActiveScene("World");
+                rexlogicmodule_->GetLoginUI()->UpdateLoginProgressUI(QString("Completed"), 100, ProtocolUtilities::Connection::STATE_ENUM_COUNT);
                 rexlogicmodule_->GetLoginUI()->Connected();
 
                 // Send WorldStream as internal event

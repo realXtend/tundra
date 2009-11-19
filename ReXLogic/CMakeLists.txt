@@ -38,7 +38,7 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
-QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
+#QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DUSE_QT)
 
@@ -52,7 +52,7 @@ use_package (OIS)
 use_package (XMLRPC)
 use_modules (RexLogic OgreRenderingModule AssetModule RexCommon QtModule HttpUtilities RpcUtilities ProtocolUtilities InputModuleOIS ProtocolModuleOpenSim ProtocolModuleTaiga)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 use_framework_modules (Core Foundation Interfaces SceneManager)
 
 link_modules (OgreRenderingModule AssetModule RexCommon QtModule HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)

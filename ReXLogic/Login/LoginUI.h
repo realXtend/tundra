@@ -4,6 +4,7 @@
 #define incl_RexLogic_AbstractLoginUI_h
 
 #include "StableHeaders.h"
+#include "NetworkEvents.h"
 #include "UICanvas.h"
 #include "RexLogicModule.h"
 
@@ -84,6 +85,7 @@ namespace RexLogic
 		void ParseInputAndConnect();
 
 	signals:
+        void Connecting();
 		void ConnectOpenSim(QMap<QString, QString>);
 		void ConnectRealXtend(QMap<QString, QString>);
 
@@ -129,20 +131,30 @@ namespace RexLogic
         boost::shared_ptr<QtUI::QtModule> qtModule_;
         boost::shared_ptr<QtUI::UICanvas> canvas_login_;
         boost::shared_ptr<QtUI::UICanvas> canvas_logout_;
+        boost::shared_ptr<QtUI::UICanvas> canvas_login_progress_;
         
         QWidget *inworldControls_;
+        QWidget *loginProgressWidget_;
         QTabWidget *tabWidget_;
         QPushButton *logout_button_;
         QPushButton *quit_button_;
+        QLabel *loginStatus_;
+        QProgressBar *loginProgressBar_;
+        bool loginInProgress_;
+        QTimer *progressBarTimer_;
 
 	private slots:
 		void AdjustWindowSize(const QSize &newSize);
+        void AnimateProgressBar(int newValue);
+        void UpdateProgressBar();
 
 	public slots:
 		void Show();
 		void Hide();
 		void Disconnect();
         void Connected();
+        void StartLoginProgressUI();
+        void UpdateLoginProgressUI(const QString &status, int progress, const ProtocolUtilities::Connection::State connectionState);
 		void QuitApplication();
 
     };

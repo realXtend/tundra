@@ -18,7 +18,7 @@ namespace RexLogic
     /////////////////////////////////////////
 
     Login::Login(Foundation::Framework *framework, RexLogicModule *rexLogicModule)
-        : framework_(framework), rexLogicModule_(rexLogicModule)
+        : framework_(framework), rexLogicModule_(rexLogicModule), progressBarTimer_(0)
     {
         InitUICanvas();
         InitLoginUI();
@@ -31,6 +31,8 @@ namespace RexLogic
         {
             qtModule_->DeleteCanvas(canvas_login_->GetID());
             qtModule_->DeleteCanvas(canvas_logout_->GetID());
+            if (canvas_login_progress_.get())
+                qtModule_->DeleteCanvas(canvas_login_progress_->GetID());
         }
     }
 
@@ -57,6 +59,7 @@ namespace RexLogic
     {
         canvas_login_->Hide();
         canvas_logout_->Show();
+        loginInProgress_ = false;
         AdjustWindowSize(canvas_login_->GetRenderWindowSize());
 
         if (qtModule_.get())
@@ -85,6 +88,7 @@ namespace RexLogic
             return;
         canvas_login_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
         canvas_logout_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
+        
     }
 
     void Login::InitLoginUI()
@@ -102,6 +106,8 @@ namespace RexLogic
         canvas_login_->SetStationary(true);
         canvas_login_->SetResizable(false);
 		canvas_login_->Show();
+
+        loginInProgress_ = false;
 
         QObject::connect(canvas_login_.get(), SIGNAL( RenderWindowSizeChanged(const QSize&) ), this, SLOT( AdjustWindowSize(const QSize&) ));
     }
@@ -136,7 +142,109 @@ namespace RexLogic
             // Add widget to canvas and hide it as long as we are inworld
             canvas_logout_->AddWidget(inworldControls_);
             canvas_logout_->Hide();
+
+            loginInProgress_ = false;
         }
+    }
+
+    void Login::StartLoginProgressUI()
+    {
+        if (qtModule_.get())
+        {
+            canvas_login_progress_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
+
+            QUiLoader loader;
+            QFile uiFile("./data/ui/login_progress.ui");
+
+            if ( uiFile.exists() )
+            {
+                loginProgressWidget_ = loader.load(&uiFile);
+                loginStatus_ = loginProgressWidget_->findChild<QLabel *>("statusLabel");
+                loginProgressBar_ = loginProgressWidget_->findChild<QProgressBar *>("progressBar");
+                uiFile.close();
+
+                QSize parentWindowSize = canvas_login_progress_->GetRenderWindowSize();
+                loginProgressWidget_->resize(parentWindowSize.width(), parentWindowSize.height());
+                canvas_login_progress_->SetSize(parentWindowSize.width(), parentWindowSize.height());
+                canvas_login_progress_->SetPosition(0, 0);
+                canvas_login_progress_->SetResizable(false);
+                canvas_login_progress_->SetStationary(true);
+                canvas_login_progress_->SetAlwaysOnTop(true);
+                canvas_login_progress_->AddWidget(loginProgressWidget_);
+                canvas_login_progress_->Show();
+                canvas_login_progress_->BringToTop();
+
+                loginInProgress_ = true;
+            }
+        }
+    }
+
+    void Login::UpdateLoginProgressUI(const QString &status, int progress, const ProtocolUtilities::Connection::State connectionState)
+    {
+        if (canvas_login_progress_.get())
+        {
+            if (connectionState != ProtocolUtilities::Connection::STATE_ENUM_COUNT)
+            {
+                if (connectionState == ProtocolUtilities::Connection::STATE_INIT_XMLRPC)
+                {
+                    loginStatus_->setText("Initialising connection");
+                    AnimateProgressBar(15);
+                }
+                else if (connectionState == ProtocolUtilities::Connection::STATE_XMLRPC_AUTH_REPLY_RECEIVED)
+                {
+                    loginStatus_->setText("Authentication reply received");
+                    AnimateProgressBar(27);
+                }
+                else if (connectionState == ProtocolUtilities::Connection::STATE_WAITING_FOR_XMLRPC_REPLY)
+                {
+                    loginStatus_->setText("Waiting for server response...");
+                    AnimateProgressBar(34);
+                }
+                else if (connectionState == ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED)
+                {
+                    loginStatus_->setText("Login response received");
+                    AnimateProgressBar(72);
+                }
+                else if (connectionState == ProtocolUtilities::Connection::STATE_INIT_UDP)
+                {
+                    loginStatus_->setText("Creating World Stream...");
+                    AnimateProgressBar(93);
+                }
+            }
+            else
+            {
+                loginStatus_->setText(status);
+                AnimateProgressBar(progress);
+                if (progress == 100 && qtModule_.get())
+                {
+                    progressBarTimer_->stop();
+                    SAFE_DELETE(progressBarTimer_);
+                    SAFE_DELETE(loginProgressBar_);
+                    SAFE_DELETE(loginStatus_);
+
+                    qtModule_->DeleteCanvas(canvas_login_progress_->GetID());
+                    canvas_login_progress_.reset();
+                }
+            }
+        }
+    }
+
+    void Login::AnimateProgressBar(int newValue)
+    {
+        if (loginProgressBar_->value() < newValue)
+        {
+            for (int i=loginProgressBar_->value(); i<=newValue; i++)
+                loginProgressBar_->setValue(i);
+            progressBarTimer_ = new QTimer();
+            QObject::connect(progressBarTimer_, SIGNAL( timeout() ), this, SLOT( UpdateProgressBar() ));
+            progressBarTimer_->start(250);
+        }
+    }
+
+    void Login::UpdateProgressBar()
+    {
+        if (loginProgressBar_)
+            loginProgressBar_->setValue(loginProgressBar_->value()+1);
     }
 
 	void Login::AdjustWindowSize(const QSize &newSize)
@@ -154,6 +262,14 @@ namespace RexLogic
             canvas_logout_->SetPosition(newSize.width()-95, 0);
             canvas_logout_->BringToTop();
             canvas_logout_->Redraw();
+        }
+
+        if ( loginInProgress_ )
+        {
+		    canvas_login_progress_->SetSize(newSize.width(), newSize.height());
+            canvas_login_progress_->SetPosition(0,0);
+            canvas_login_progress_->BringToTop();
+            canvas_login_progress_->Redraw();
         }
 	}
 
@@ -210,6 +326,7 @@ namespace RexLogic
 	void NaaliUI::SetLoginHandler()
 	{
 		loginHandler_ = new OpenSimLoginHandler(framework_, rexLogicModule_);
+        QObject::connect(loginHandler_, SIGNAL( LoginStarted() ), controller_, SLOT( StartLoginProgressUI() ));
 		QObject::connect(loginHandler_, SIGNAL( LoginDone(bool) ), this, SLOT( LoginDone(bool) ));
 	}
 
@@ -298,6 +415,8 @@ namespace RexLogic
 			 !lineEdit_username_->text().isEmpty() &&
 			 !lineEdit_password_->text().isEmpty() )
 		{
+            controller_->UpdateLoginProgressUI(QString("Checking credentials"), 10, ProtocolUtilities::Connection::STATE_ENUM_COUNT);
+
 			QMap<QString, QString> map;
 			map["WorldAddress"] = lineEdit_worldAddress_->text();
 			map["Username"] = lineEdit_username_->text();
@@ -337,6 +456,7 @@ namespace RexLogic
 	void WebUI::SetLoginHandler()
 	{
 		loginHandler_ = new TaigaLoginHandler(framework_, rexLogicModule_);
+        QObject::connect(loginHandler_, SIGNAL( LoginStarted() ), controller_, SLOT( StartLoginProgressUI() ));
 		QObject::connect(loginHandler_, SIGNAL( LoginDone(bool) ), this, SLOT( LoginDone(bool) ));
 	}
 
