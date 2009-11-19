@@ -93,7 +93,6 @@ void InventoryModule::PostInitialize()
 
 void InventoryModule::Uninitialize()
 {
-//    assetUploader_.reset();
     SAFE_DELETE(inventoryWindow_);
     LogInfo("System " + Name() + " uninitialized.");
 }
@@ -130,12 +129,12 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
                 if (!framework_->GetModuleManager()->HasModule(Foundation::Module::MT_PythonScript))
                     LogError("Python module not in use. WebDav inventory can't be used!");
                 else
-                    dataModel_ = inventoryWindow_->InitWebDavInventoryTreeModel(0, auth_data->identityUrl, auth_data->hostUrl);
+                    dataModel_ = inventoryWindow_->InitWebDavInventoryTreeModel(auth_data->identityUrl, auth_data->hostUrl);
                 break;
             case ProtocolUtilities::AT_OpenSim:
             case ProtocolUtilities::AT_RealXtend:
             {
-                dataModel_ = inventoryWindow_->InitOpenSimInventoryTreeModel(this, GetCurrentWorldStream());
+                dataModel_ = inventoryWindow_->InitOpenSimInventoryTreeModel(GetCurrentWorldStream());
                 OpenSimInventoryDataModel *osmodel = static_cast<OpenSimInventoryDataModel *>(dataModel_);
                 osmodel->GetAssetUploader()->SetWorldStream(currentWorldStream_);
                 break;
@@ -247,10 +246,21 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
 
 Console::CommandResult InventoryModule::UploadAsset(const Core::StringVector &params)
 {
-    return Console::ResultFailure("Single upload disabled for now.");
-/*
     using namespace RexTypes;
-    using namespace OpenSimProtocol;
+
+    if (!currentWorldStream_.get())
+        return Console::ResultFailure("Not connected to server.");
+
+    if (!dataModel_)
+        return Console::ResultFailure("Inventory doesn't exist. Can't upload!.");
+
+    OpenSimInventoryDataModel *osmodel = dynamic_cast<OpenSimInventoryDataModel *>(dataModel_);
+    if (!osmodel)
+        return Console::ResultFailure("Console upload supported only for classic OpenSim inventory.");
+
+    AssetUploader *uploader = osmodel->GetAssetUploader();
+    if (!uploader)
+        return Console::ResultFailure("Asset uploader not initialized. Can't upload.");
 
     std::string name = "(No Name)";
     std::string description = "(No Description)";
@@ -272,27 +282,40 @@ Console::CommandResult InventoryModule::UploadAsset(const Core::StringVector &pa
         description = params[2];
 
     std::string filter = GetOpenFileNameFilter(asset_type);
+    std::string cat_name = GetCategoryNameForAssetType(asset_type);
+
+    RexUUID folder_id = RexUUID(dataModel_->GetFirstChildFolderByName(cat_name.c_str())->GetID().toStdString());
+    if (folder_id.IsNull())
+         return Console::ResultFailure("Inventory folder for this type of file doesn't exists. File can't be uploaded.");
+
+    currentWorldStream_->SendAgentPausePacket();
+
     std::string filename = Foundation::QtUtils::GetOpenFileName(filter, "Open", Foundation::QtUtils::GetCurrentPath());
     if (filename == "")
         return Console::ResultFailure("No file chosen.");
 
-    assetUploader_->UploadFile(asset_type, filename, name, description, folder_id)
+    currentWorldStream_->SendAgentResumePacket();
+
+    uploader->UploadFile(asset_type, filename, name, description, folder_id);
 
     return Console::ResultSuccess();
-*/
 }
-
-/*
-AssetUploaderPtr InventoryModule::GetAssetUploader() const
-{
-    return assetUploader_;
-}
-*/
 
 Console::CommandResult InventoryModule::UploadMultipleAssets(const Core::StringVector &params)
 {
     if (!currentWorldStream_.get())
         return Console::ResultFailure("Not connected to server.");
+
+    if (!dataModel_)
+        return Console::ResultFailure("Inventory doesn't exist. Can't upload!.");
+
+    OpenSimInventoryDataModel *osmodel = dynamic_cast<OpenSimInventoryDataModel *>(dataModel_);
+    if (!osmodel)
+        return Console::ResultFailure("Console upload supported only for classic OpenSim inventory.");
+
+    AssetUploader *uploader = osmodel->GetAssetUploader();
+    if (!uploader)
+        return Console::ResultFailure("Asset uploader not initialized. Can't upload.");
 
     currentWorldStream_->SendAgentPausePacket();
 
@@ -302,17 +325,7 @@ Console::CommandResult InventoryModule::UploadMultipleAssets(const Core::StringV
 
     currentWorldStream_->SendAgentResumePacket();
 
-    OpenSimInventoryDataModel *osmodel = dynamic_cast<OpenSimInventoryDataModel *>(dataModel_);
-    if (osmodel)
-    {
-        AssetUploader *au = osmodel->GetAssetUploader();
-        if (!au)
-            return Console::ResultFailure("Asset uploader not initialized. Can't upload.");
-
-        au->UploadFiles(filenames);
-    }
-    else
-        return Console::ResultFailure("Console upload supported only for classic OpenSim inventory.");
+    uploader->UploadFiles(filenames);
 
     return Console::ResultSuccess();
 }

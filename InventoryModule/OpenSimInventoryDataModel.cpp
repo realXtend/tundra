@@ -35,10 +35,7 @@ OpenSimInventoryDataModel::OpenSimInventoryDataModel(
     assetUploader_(0)
 {
     SetupModelData(inventory_skeleton);
-
-    RexLogic::RexLogicModule *rexLogic = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(
-        Foundation::Module::MT_WorldLogic).lock().get());
-    assetUploader_ = new AssetUploader(framework_, rexLogic);
+    assetUploader_ = new AssetUploader(framework_, this);
 }
 
 OpenSimInventoryDataModel::~OpenSimInventoryDataModel()
