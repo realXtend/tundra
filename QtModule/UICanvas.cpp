@@ -320,7 +320,7 @@ void UICanvas::Render()
 {
     ///\todo The 'container_->isVisible()' will have to be removed at some point since the canvas may be hidden from 2D, 
     /// but be visible on a surface in 3D.
-    if (mode_ == Internal && container_->isVisible())
+    if (mode_ == Internal) //&& container_->isVisible())
     {
         ///\todo use AppearPolycy
         /*

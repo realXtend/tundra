@@ -307,6 +307,17 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
                         mouse_left_button_down_ = true;
                         // Forced redraw (needed?)
                         controller_->Redraw(canvas);
+
+                        boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
+                            framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
+
+                        boost::shared_ptr<Input::InputModuleOIS> input = inputWeak.lock();
+                        
+                        if (controller_->IsKeyboardFocus() && input->GetState() != Input::State_Buffered)
+                            input->SetState(Input::State_Buffered);
+                        else if (!controller_->IsKeyboardFocus())
+                            input->SetState(Input::State_Unknown);
+
                         return true;
                     }
                 }
@@ -387,8 +398,8 @@ void QtModule::Update(Core::f64 frametime)
                 if ( in_world_canvas.get() != 0)
                 {
                      // Note here coordinate system looks quite strange, but there happends inside of InjectMousePress "counter" fix for coordinates. 
-                    QPoint pos = canvas->GetPosition().toPoint();
-                    QSize size = canvas->GetSize();
+                    QPoint pos = in_world_canvas->GetPosition().toPoint();
+                    QSize size = in_world_canvas->GetSize();
                     QPoint location = QPoint(size.width() * result.u_ + pos.x(), size.height() * result.v_ + pos.y());
                     change = location - lastLocation_;
                     controller_->InjectMouseMove(location.x(), location.y(), change.x(), change.y(), in_world_canvas.get());  
