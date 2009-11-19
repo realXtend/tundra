@@ -155,7 +155,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (argv.size())
         return main(argv.size(), (char**)&argv[0]);
     else
-        return main(0, NULL);
+        return main(0, 0);
 }
 #endif
 
@@ -180,7 +180,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     GetTempPathW( dwBufferSize, szPath );
 
     StringCchPrintf( szFileName, MAX_PATH, L"%s%s", szPath, szAppName );
-    CreateDirectoryW( szFileName, NULL );
+    CreateDirectoryW( szFileName, 0 );
     StringCchPrintf( szFileName, MAX_PATH, L"%s%s\\%s-%04d%02d%02d-%02d%02d%02d-%ld-%ld.dmp", 
                szPath, szAppName, szVersion, 
                stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay, 
@@ -195,7 +195,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     ExpParam.ClientPointers = TRUE;
 
     bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
-                    hDumpFile, MiniDumpWithDataSegs, &ExpParam, NULL, NULL);
+                    hDumpFile, MiniDumpWithDataSegs, &ExpParam, 0, 0);
    
     std::wstring message(L"Program ");
     message += szAppName;

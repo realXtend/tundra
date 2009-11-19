@@ -54,8 +54,8 @@ namespace Foundation
         argc_(argc),
         argv_(argv),
         initialized_(false),
-        log_formatter_(NULL),
-        splitterchannel(NULL)
+        log_formatter_(0),
+        splitterchannel(0)
     {
         ParseProgramOptions();
         if (cm_options_.count("help")) 
@@ -145,7 +145,7 @@ namespace Foundation
         PROFILE(FW_CreateLoggingSystem);
         Poco::LoggingFactory *loggingfactory = new Poco::LoggingFactory();
 
-        Poco::Channel *consolechannel = NULL;
+        Poco::Channel *consolechannel = 0;
         if (config_manager_->GetSetting<bool>(Framework::ConfigurationGroup(), "log_console"))
             consolechannel = loggingfactory->createChannel("ConsoleChannel");
 
@@ -268,7 +268,7 @@ namespace Foundation
         //    module_manager_->ExcludeModule(Foundation::Module::MT_CommunicationUI);
         //}
 
-        srand(time(NULL));
+        srand(time(0));
 
         LoadModules();
 
@@ -473,7 +473,7 @@ namespace Foundation
             return Console::ResultFailure("Event category not found.");
         else
         {
-            event_manager_->SendEvent(event_category, Core::ParseString<Core::event_id_t>(params[1]), NULL);
+            event_manager_->SendEvent(event_category, Core::ParseString<Core::event_id_t>(params[1]), 0);
             return Console::ResultSuccess();
         }
     }

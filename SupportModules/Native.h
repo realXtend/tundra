@@ -17,7 +17,7 @@ namespace Console
     {
     public:
         //! constructor
-        NativeInput() : command_service_(NULL) { }
+        NativeInput() : command_service_(0) { }
         //! destructor
         ~NativeInput() {}
         //! (thread) entry point

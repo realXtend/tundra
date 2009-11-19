@@ -13,19 +13,19 @@ namespace Foundation
 {
     void PlatformWin::Message(const std::string& title, const std::string& text)
     {
-        MessageBoxA( NULL, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
+        MessageBoxA(0, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
     }
 
     void PlatformWin::Message(const std::wstring& title, const std::wstring& text)
     {
-        MessageBoxW( NULL, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
+        MessageBoxW(0, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
     }
 
     std::string PlatformWin::GetApplicationDataDirectory()
     {
         LPITEMIDLIST pidl;
 
-        if (SHGetFolderLocation(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, &pidl) == S_OK)
+        if (SHGetFolderLocation(0, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, &pidl) == S_OK)
         {
             char cpath[MAX_PATH];
             SHGetPathFromIDListA( pidl, cpath );
@@ -40,7 +40,7 @@ namespace Foundation
     {
         LPITEMIDLIST pidl;
 
-        if (SHGetFolderLocation(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, &pidl) == S_OK)
+        if (SHGetFolderLocation(0, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, &pidl) == S_OK)
         {
             wchar_t cpath[MAX_PATH];
             SHGetPathFromIDListW( pidl, cpath );
@@ -55,7 +55,7 @@ namespace Foundation
     {
         LPITEMIDLIST pidl;
 
-        if (SHGetFolderLocation(NULL, CSIDL_PERSONAL | CSIDL_FLAG_CREATE, NULL, 0, &pidl) == S_OK)
+        if (SHGetFolderLocation(0, CSIDL_PERSONAL | CSIDL_FLAG_CREATE, NULL, 0, &pidl) == S_OK)
         {
             char cpath[MAX_PATH];
             SHGetPathFromIDListA( pidl, cpath );
@@ -71,7 +71,7 @@ namespace Foundation
     {
         LPITEMIDLIST pidl;
 
-        if (SHGetFolderLocation(NULL, CSIDL_PERSONAL | CSIDL_FLAG_CREATE, NULL, 0, &pidl) == S_OK)
+        if (SHGetFolderLocation(0, CSIDL_PERSONAL | CSIDL_FLAG_CREATE, NULL, 0, &pidl) == S_OK)
         {
             wchar_t cpath[MAX_PATH];
             SHGetPathFromIDListW( pidl, cpath );

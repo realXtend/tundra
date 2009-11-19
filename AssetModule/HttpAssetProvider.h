@@ -76,19 +76,19 @@ namespace Asset
         bool HandleNetworkEvent(Foundation::EventDataInterface* data);
         
     private:
-		
-		std::string SerializeToJSON(Foundation::AssetPtr asset) const;
+        
+        std::string SerializeToJSON(Foundation::AssetPtr asset) const;
         
         //! Stores completed asset to asset service's cache
         void StoreAsset(HttpAssetTransfer& transfer);
         
         //! Gets asset transfer if it's in progress
         /*! \param asset_id Asset ID
-            \return Pointer to transfer, or NULL if no transfer
+            \return Pointer to transfer, or 0 if no transfer
          */
         HttpAssetTransfer* GetTransfer(const std::string& asset_url);
         
-		//! Sends progress event of asset transfer
+        //! Sends progress event of asset transfer
         /*! \param transfer Asset transfer
          */
         void SendAssetProgress(HttpAssetTransfer& transfer);
@@ -96,11 +96,11 @@ namespace Asset
         //! Sends asset transfer canceled event
         /*! \param transfer Asset transfer
          */
-        void SendAssetCanceled(HttpAssetTransfer& transfer);    
+        void SendAssetCanceled(HttpAssetTransfer& transfer);
            
-		typedef boost::shared_ptr<HttpAssetTransfer> HttpAssetTransferPtr;
-		typedef std::map<std::string, HttpAssetTransferPtr> HttpAssetTransferMap;
-		typedef std::pair<std::string, HttpAssetTransfer> HttpAssetTransferEntry;
+        typedef boost::shared_ptr<HttpAssetTransfer> HttpAssetTransferPtr;
+        typedef std::map<std::string, HttpAssetTransferPtr> HttpAssetTransferMap;
+        typedef std::pair<std::string, HttpAssetTransfer> HttpAssetTransferEntry;
                 
         //! Ongoing Http asset transfers, keyed by transfer url
         HttpAssetTransferMap asset_transfers_;

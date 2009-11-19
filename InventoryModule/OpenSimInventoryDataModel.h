@@ -18,12 +18,8 @@
 
 namespace Foundation
 {
+    class Framework;
     class EventDataInterface;
-}
-
-namespace RexLogic
-{
-    class RexLogicModule;
 }
 
 namespace ProtocolUtilities
@@ -35,6 +31,7 @@ namespace ProtocolUtilities
 namespace Inventory
 {
     class InventoryFolder;
+    class AssetUploader;
 
     class OpenSimInventoryDataModel : public AbstractInventoryDataModel
     {
@@ -42,11 +39,17 @@ namespace Inventory
 
     public:
         /// Constructor.
-        /// @param rexlogicmodule RexLogicModule pointer.
-        OpenSimInventoryDataModel(RexLogic::RexLogicModule *rexlogicmodule);
+        /// @param framework Framework pointer.
+        /// @inventory_skeleton Inventory skeleton pointer.
+        OpenSimInventoryDataModel(
+            Foundation::Framework *framework,
+            ProtocolUtilities::InventorySkeleton *inventory_skeleton);
 
         /// Destructor.
         virtual ~OpenSimInventoryDataModel();
+
+        /// Set World Stream to current
+        void SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream);
 
         /// AbstractInventoryDataModel override.
         AbstractInventoryItem *GetFirstChildFolderByName(const QString &searchName) const;
@@ -87,10 +90,15 @@ namespace Inventory
         void UploadFile(const QString &filename, AbstractInventoryItem *parent_folder);
 
         /// AbstractInventoryDataModel override.
+        void UploadFiles(QStringList &filenames, AbstractInventoryItem *parent_folder);
+
+        /// AbstractInventoryDataModel override.
+        void UploadFilesFromBuffer(QStringList &filenames, QVector<QVector<uchar> > &buffers,
+            AbstractInventoryItem *parent_folder);
+
+        /// AbstractInventoryDataModel override.
         /// In OpesimInventoryDataModel this function doesn't perform the actual download.
         /// This just request the asset from server using texture and asset services.
-        /// @param store_folder
-        /// @param selected_item
         void DownloadFile(const QString &store_folder, AbstractInventoryItem *selected_item);
 
         /// AbstractInventoryDataModel override.
@@ -98,9 +106,6 @@ namespace Inventory
 
         /// AbstractInventoryDataModel override.
         AbstractInventoryItem *GetTrashFolder() const;
-
-        /// Set World Stream to current
-        void SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream);
 
         /// @return Pointer to "My Inventory" folder or null if not found.
         InventoryFolder *GetMyInventoryFolder() const;
@@ -114,6 +119,9 @@ namespace Inventory
 
         ///
         bool HasPendingDownloadRequests() const { return downloadRequests_.size() > 0; }
+
+        ///
+        AssetUploader *GetAssetUploader() const {return assetUploader_; }
 
 #ifdef _DEBUG
         /// Prints the inventory tree structure to std::cout.
@@ -136,8 +144,8 @@ namespace Inventory
         /// @param inventory_skeleton OpenSim inventory skeleton.
         void SetupModelData(ProtocolUtilities::InventorySkeleton *inventory_skeleton);
 
-        /// RexLogicModule pointer.
-        RexLogic::RexLogicModule *rexLogicModule_;
+        /// Framework pointer
+        Foundation::Framework *framework_;
 
         /// The root folder.
         InventoryFolder *rootFolder_;
@@ -146,11 +154,14 @@ namespace Inventory
         QString worldLibraryOwnerId_;
 
         /// Pointer to WorldStream
-        ProtocolUtilities::WorldStreamPtr CurrentWorldStream;
+        ProtocolUtilities::WorldStreamPtr currentWorldStream_;
 //        QMap<Qstring, Core::RequestTagVector> requestTags_;
 
         /// Download request map.
         AssetRequestMap downloadRequests_;
+
+        /// Asset uploader.
+        AssetUploader *assetUploader_;
     };
 }
 

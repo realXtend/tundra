@@ -3,21 +3,24 @@
 #ifndef incl_ProtocolUtilities_WorldStream_h
 #define incl_ProtocolUtilities_WorldStream_h
 
+#include "Interfaces/ProtocolModuleInterface.h"
 #include "NetworkEvents.h"
 #include "RexUUID.h"
 
-#include "Interfaces/ProtocolModuleInterface.h"
-#include "Inventory/InventorySkeleton.h"
-#include "ProtocolModuleOpenSim.h"
-#include "ProtocolModuleTaiga.h"
-
 #include <QObject>
-#include <QString>
-#include <QUrl>
+
+namespace OpenSimProtocol
+{
+    class ProtocolModuleOpenSim;
+}
+
+namespace TaigaProtocol
+{
+    class ProtocolModuleTaiga;
+}
 
 namespace ProtocolUtilities
 {
-
     typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamPtr;
 
     /// Connection type enumeration.
@@ -29,13 +32,11 @@ namespace ProtocolUtilities
 
     class WorldStream : public QObject
     {
+        friend class NetworkEventHandler;
 
-    Q_OBJECT
-    
-    friend class NetworkEventHandler;
+        Q_OBJECT
 
     public:
-
         MODULE_LOGGING_FUNCTIONS;
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return LoggerName; }
@@ -49,7 +50,6 @@ namespace ProtocolUtilities
         virtual ~WorldStream();
 
     public slots:
-
         /// Creates the UDP connection after a succesfull XML-RPC login.
         /// @return True, if success.
         bool CreateUdpConnection();
@@ -74,7 +74,7 @@ namespace ProtocolUtilities
             password_ = password;
             auth_server_address_ = authentication;
         }
-        
+
         /// Get the connection type.
         /// @return ConnectionType enum.
         ConnectionType GetConnectionType() const { return connection_type_; }
@@ -99,7 +99,7 @@ namespace ProtocolUtilities
 
         /// Sends a RexStartup state generic message
         void SendRexStartupPacket(const std::string& state);
-        
+
         /// Sends a message requesting logout from the server. The server is then going to flood us with some
         /// inventory UUIDs after that, but we'll be ignoring those.
         void SendLogoutRequestPacket();
@@ -119,9 +119,17 @@ namespace ProtocolUtilities
         void SendObjectDeletePacket(const std::vector<uint32_t> &local_id_list, const bool &force = false);
 
         // Sends the basic movement message
-        void SendAgentUpdatePacket(Core::Quaternion bodyrot, Core::Quaternion headrot, uint8_t state, 
-            RexTypes::Vector3 camcenter, RexTypes::Vector3 camataxis, RexTypes::Vector3 camleftaxis, RexTypes::Vector3 camupaxis,
-            float far, uint32_t controlflags, uint8_t flags);
+        void SendAgentUpdatePacket(
+            Core::Quaternion bodyrot,
+            Core::Quaternion headrot,
+            uint8_t state,
+            RexTypes::Vector3 camcenter,
+            RexTypes::Vector3 camataxis,
+            RexTypes::Vector3 camleftaxis,
+            RexTypes::Vector3 camupaxis,
+            float far,
+            uint32_t controlflags,
+            uint8_t flags);
 
         /// Sends a packet which indicates selection of a group of prims.
         /// @param Local ID of the object which is selected.
@@ -318,7 +326,16 @@ namespace ProtocolUtilities
             \param strings Vector of data strings to be sent
             \param binary Vector of binary data. Will be split into smaller chunks as necessary
          */
-        void SendGenericMessageBinary(const std::string& method, const Core::StringVector& strings, const std::vector<uint8_t>& binary);
+        void SendGenericMessageBinary(
+            const std::string& method,
+            const Core::StringVector& strings,
+            const std::vector<uint8_t>& binary);
+
+        /// Sends a packet informing server that client is blocked (e.g. modal File Open window is blocking main thread).
+        void SendAgentPausePacket();
+
+        /// Sends a packet informing server that client is running normal again.
+        void SendAgentResumePacket();
 
         /// @return Name of the sim we're connected to.
         std::string GetSimName() const { return simName_; }
@@ -335,49 +352,52 @@ namespace ProtocolUtilities
 
         /// @return Last used password
         const std::string& GetPassword() { return password_; }
-        
+
         /// @return Last used username
         const std::string& GetUsername() { return username_; }
-        
+
         /// @return Last used authentication address
         const std::string& GetAuthAddress() { return auth_server_address_; }
-        
+
         /// @return True if the client connected to a server.
-        const bool IsConnected() const { return connected_; }
+        const bool &IsConnected() const { return connected_; }
 
         /// @return The state of the connection.
         volatile ProtocolUtilities::Connection::State GetConnectionState();
 
-		/// @param protocol type
-		const void SetCurrentProtocolType(ProtocolType newType);
+        /// @param protocol type
+        void SetCurrentProtocolType(ProtocolType newType);
 
-		/// @return The current Protocol Module type
-		boost::shared_ptr<ProtocolModuleInterface> GetCurrentProtocolModule();
+        /// @return The current Protocol Module type
+        boost::shared_ptr<ProtocolModuleInterface> GetCurrentProtocolModule();
 
-		/// Get boost::weak_ptr to current Protocol Module
-		/// @return boost::weak_ptr to current Protocol Module
-		boost::weak_ptr<ProtocolModuleInterface> GetCurrentProtocolModuleWeakPointer();
+        /// Get boost::weak_ptr to current Protocol Module
+        /// @return boost::weak_ptr to current Protocol Module
+        boost::weak_ptr<ProtocolModuleInterface> GetCurrentProtocolModuleWeakPointer();
 
-		/// Prepares the network events of current module
-		/// @return boolean value if preparations succeeded
-		const bool PrepareCurrentProtocolModule();
+        /// Prepares the network events of current module
+        /// @return True if preparations succeeded
+        bool PrepareCurrentProtocolModule();
 
-		/// Unregisters the eventmanager from current Protocol Module
-		const void UnregisterCurrentProtocolModule();
+        /// Unregisters the eventmanager from current Protocol Module
+        void UnregisterCurrentProtocolModule();
+
+    public:
+        /// Name used for logging.
+        static const std::string &LoggerName;
 
     private:
-
         /// Sends all the needed packets to server when connection successfull
         void SendLoginSuccessfullPackets();
 
-        /// WriteFloatToBytes
-        void WriteFloatToBytes(float value, uint8_t* bytes, int& idx);
-
         /// Convenience function to get the weak pointer when building messages.
-		ProtocolUtilities::NetOutMessage *StartMessageBuilding(const ProtocolUtilities::NetMsgID &message_id);
+        ProtocolUtilities::NetOutMessage *StartMessageBuilding(const ProtocolUtilities::NetMsgID &message_id);
 
         /// Convenience function to get the weak pointer when sending messages.
         void FinishMessageBuilding(ProtocolUtilities::NetOutMessage *msg);
+
+        /// WriteFloatToBytes
+        void WriteFloatToBytes(float value, uint8_t* bytes, int& idx);
 
         /// The framework we belong to.
         Foundation::Framework *framework_;
@@ -388,8 +408,8 @@ namespace ProtocolUtilities
         /// Pointer for Taiga protocol module.
         boost::weak_ptr<OpenSimProtocol::ProtocolModuleOpenSim> netInterfaceOpenSim_;
 
-		/// Pointer to ModuleImplementation, used in ProtocolModule getter
-		boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
+        /// Pointer to ModuleImplementation, used in ProtocolModule getter
+        boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
 
         /// Server-spesific info for this client.
         ProtocolUtilities::ClientParameters clientParameters_;
@@ -424,10 +444,11 @@ namespace ProtocolUtilities
         /// State of the connection procedure thread.
         ProtocolUtilities::ConnectionThreadState threadState_;
 
-		/// Current ProtocolModule type
-		ProtocolUtilities::ProtocolType currentProtocolType_;
+        /// Current ProtocolModule type
+        ProtocolUtilities::ProtocolType currentProtocolType_;
 
-        static std::string LoggerName;
+        /// Block serial number used for AgentPause and AgentResume messages.
+        uint32_t blockSerialNumber_;
     };
 }
 

@@ -156,7 +156,7 @@ namespace Foundation
 
             \param category_id Category id of the event
             \param event_id Id of the event
-            \param data Event data, or NULL if no data passed.
+            \param data Event data, or 0 if no data passed.
          */
         virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) = 0;
 
@@ -227,7 +227,7 @@ namespace Foundation
         typedef std::vector<Console::Command> CommandVector;
     public:
     
-        explicit ModuleInterfaceImpl(const std::string &name) : name_(name), type_(Module::MT_Unknown), state_(Module::MS_Unloaded), framework_(NULL)
+        explicit ModuleInterfaceImpl(const std::string &name) : name_(name), type_(Module::MT_Unknown), state_(Module::MS_Unloaded), framework_(0)
         { 
             try
             {
@@ -239,7 +239,7 @@ namespace Foundation
             }
         }
 
-        explicit ModuleInterfaceImpl(Module::Type type) : type_(type), state_(Module::MS_Unloaded), framework_(NULL)
+        explicit ModuleInterfaceImpl(Module::Type type) : type_(type), state_(Module::MS_Unloaded), framework_(0)
         { 
             try
             {
@@ -328,7 +328,7 @@ namespace Foundation
         //! Registers all declared components
         virtual void InitializeInternal()
         {
-            assert(framework_ != NULL);
+            assert(framework_ != 0);
             assert (state_ == Module::MS_Loaded);
 
             //! Register components
@@ -362,7 +362,7 @@ namespace Foundation
         //! Unregisters all declared components
         virtual void UninitializeInternal()
         {
-            assert(framework_ != NULL);
+            assert(framework_ != 0);
             assert (state_ == Module::MS_Initialized);
 
             for (size_t n=0 ; n<component_registrars_.size() ; ++n)

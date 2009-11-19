@@ -8,7 +8,6 @@
 #ifndef incl_InventoryModule_InventoryWindow_h
 #define incl_InventoryModule_InventoryWindow_h
 
-#include "Foundation.h"
 #include "WorldStream.h"
 #include "RexTypes.h"
 
@@ -28,13 +27,9 @@ namespace QtUI
     class UICanvas;
 }
 
-namespace RexLogic
-{
-    class RexLogicModule;
-}
-
 namespace Foundation
 {
+    class Framework;
     class EventDataInterface;
 }
 
@@ -43,6 +38,7 @@ namespace Inventory
     class InventoryModule;
     class InventoryItemEventData;
     class InventoryItemModel;
+    class AbstractInventoryDataModel;
 
     class InventoryWindow : public QObject
     {
@@ -56,18 +52,32 @@ namespace Inventory
     public:
         /// Constructor.
         /// @param framework Framework.pointer.
-        /// @param module RexLogicModule pointer.
-        InventoryWindow(Foundation::Framework *framework, RexLogic::RexLogicModule *rexLogic);
+        InventoryWindow(Foundation::Framework *framework);
 
         /// Destructor.
         virtual ~InventoryWindow();
 
+        ///
+//        AbstractInventoryDataModel *GetDataModel() const;
+
     public slots:
         /// Initializes the OpenSim inventory data/view model.
-        void InitOpenSimInventoryTreeModel(InventoryModule *inventory_module, ProtocolUtilities::WorldStreamPtr world_stream);
+        /// @param inventory_module
+        /// @param world_stream
+        /// @return Pointer to inventory data model.
+        AbstractInventoryDataModel *InitOpenSimInventoryTreeModel(
+            InventoryModule *inventory_module,
+            ProtocolUtilities::WorldStreamPtr world_stream);
 
         /// Initialize the Taiga webdav data/view model.
-        void InitWebDavInventoryTreeModel(const std::string &identityUrl, const std::string &hostUrl);
+        /// @param inventory_module
+        /// @param identityUrl
+        /// @param hostUrl
+        /// @return Pointer to inventory data model.
+        AbstractInventoryDataModel *InitWebDavInventoryTreeModel(
+            InventoryModule *inventory_module,
+            const std::string &identityUrl,
+            const std::string &hostUrl);
 
         /// Resets the inventory tree model.
         void ResetInventoryTreeModel();
@@ -85,6 +95,8 @@ namespace Inventory
         void SetWorldStreamToDataModel(ProtocolUtilities::WorldStreamPtr world_stream);
 
         ///
+        /// @param resource
+        /// @param data
         void HandleResourceReady(const bool &resource, Foundation::EventDataInterface *data);
 
     private slots:
@@ -110,9 +122,11 @@ namespace Inventory
         /// Updates possible actions depending on the currently active tree view item.
         void UpdateActions();
 
+/*
     signals:
         void FileUpload(Core::StringList &filenames);
         void FileDownload(const QString &store_path, const QItemSelection &selection);
+*/
 
     private:
         Q_DISABLE_COPY(InventoryWindow);
@@ -125,9 +139,6 @@ namespace Inventory
 
         /// Framework pointer.
         Foundation::Framework *framework_;
-
-        /// RexLogicModule pointer.
-        RexLogic::RexLogicModule* rexLogicModule_;
 
         /// QtModule pointer.
         boost::shared_ptr<QtUI::QtModule> qtModule_;

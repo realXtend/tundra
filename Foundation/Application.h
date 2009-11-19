@@ -19,7 +19,7 @@ namespace Foundation
         Application(Framework *framework) { framework_ = framework; }
 
         //! destructor
-        ~Application() { framework_ = NULL; }
+        ~Application() { framework_ = 0; }
 
         //! shortcut for application name
         static std::string Name()

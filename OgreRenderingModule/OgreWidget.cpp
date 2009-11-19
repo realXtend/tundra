@@ -61,7 +61,7 @@ namespace OgreRenderer
         }
       
         renderer_->Resize(allocation.get_width(), allocation.get_height());   
-        on_expose_event(NULL);
+        on_expose_event(0);
     }
 
     void OgreWidget::on_map()

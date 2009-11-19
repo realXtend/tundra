@@ -10,9 +10,9 @@ namespace Foundation
 {
     std::string PlatformNix::GetApplicationDataDirectory()
     {
-        char *ppath = NULL;
+        char *ppath = 0;
         ppath = getenv("HOME");
-        if (ppath == NULL)
+        if (ppath == 0)
             throw Core::Exception("Failed to get HOME environment variable.");
 
         std::string path(ppath);

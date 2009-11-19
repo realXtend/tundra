@@ -131,10 +131,10 @@ namespace TextureDecoder
             return;
         }
 
-        opj_dinfo_t* dinfo = NULL; // decoder
-        opj_image_t *image = NULL; // decoded image
+        opj_dinfo_t* dinfo = 0; // decoder
+        opj_image_t *image = 0; // decoded image
         opj_dparameters_t parameters; // decoder parameters
-        opj_cio_t *cio = NULL; // decode stream
+        opj_cio_t *cio = 0; // decode stream
         opj_codestream_info_t cstr_info;  // codestream info
         memset(&cstr_info, 0, sizeof(opj_codestream_info_t));
        

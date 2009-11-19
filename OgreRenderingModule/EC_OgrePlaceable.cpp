@@ -13,7 +13,7 @@ namespace OgreRenderer
     EC_OgrePlaceable::EC_OgrePlaceable(Foundation::ModuleInterface* module) :
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
-        scene_node_(NULL),
+        scene_node_(0),
         attached_(false),
         select_priority_(-1000000)
     {
@@ -29,7 +29,7 @@ namespace OgreRenderer
             
             Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
             scene_mgr->destroySceneNode(scene_node_);
-            scene_node_ = NULL;
+            scene_node_ = 0;
         }
     }
     

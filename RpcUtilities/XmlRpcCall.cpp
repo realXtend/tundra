@@ -59,7 +59,7 @@ void XmlRpcCall::Initialize(const std::string& method)
 
 	// Create a parameter list vector
 	
-    paramList_ = XMLRPC_CreateVector(NULL, xmlrpc_vector_struct);
+    paramList_ = XMLRPC_CreateVector(0, xmlrpc_vector_struct);
 	assert(paramList_);
 	XMLRPC_RequestSetData(request_, paramList_);
 

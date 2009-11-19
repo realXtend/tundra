@@ -135,7 +135,7 @@ namespace Foundation
         typedef std::list<boost::shared_ptr<ProfilerNodeTree> > NodeList;
 
         //! constructor that takes a name for the node
-        explicit ProfilerNodeTree(const std::string &name) : name_(name), parent_(NULL), recursion_(0)
+        explicit ProfilerNodeTree(const std::string &name) : name_(name), parent_(0), recursion_(0)
         { }
 
         //! destructor
@@ -177,7 +177,7 @@ namespace Foundation
         //! Returns a child node
         /*!
             \param name Name of the child node
-            \return Child node or NULL if the node was not child
+            \return Child node or 0 if the node was not child
         */
         ProfilerNodeTree* GetChild(const std::string &name)
         {
@@ -193,7 +193,7 @@ namespace Foundation
                 }
             }
 
-            return NULL;
+            return 0;
         }
         //! Returns the name of this node
         const std::string &Name() const { return name_; }

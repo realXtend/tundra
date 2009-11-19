@@ -91,11 +91,11 @@ namespace RexLogic
             entity_ = checked_static_cast<Scene::Events::EntityEventData*>(data)->entity;
             Scene::EntityPtr entity = entity_.lock();
 
-            assert (entity && "Received event EVENT_CONTROLLABLE_ENTITY with NULL entity.");
+            assert (entity && "Received event EVENT_CONTROLLABLE_ENTITY with null entity.");
             component_ = entity->GetComponent(EC_Controllable::NameStatic());
             Foundation::ComponentPtr component = component_.lock();
 
-            assert (component && "Received event EVENT_CONTROLLABLE_ENTITY with NULL controllable component.");
+            assert (component && "Received event EVENT_CONTROLLABLE_ENTITY with null controllable component.");
             EC_Controllable *controllable = checked_static_cast<EC_Controllable*>(component.get());
 
             /// \bug Aren't we supposed to be able to post the ControllableEntity multiple times for the same entity to set the currently

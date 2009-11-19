@@ -5,5 +5,5 @@
 
 namespace Foundation
 {
-    Framework *Application::framework_ = NULL;
+    Framework *Application::framework_ = 0;
 }

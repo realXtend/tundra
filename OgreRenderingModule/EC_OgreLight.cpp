@@ -15,7 +15,7 @@ namespace OgreRenderer
     EC_OgreLight::EC_OgreLight(Foundation::ModuleInterface* module) :
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
-        light_(NULL),
+        light_(0),
         attached_(false)
     {
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
@@ -29,7 +29,7 @@ namespace OgreRenderer
             DetachLight();
             Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
             scene_mgr->destroyLight(light_);
-            light_ = NULL;
+            light_ = 0;
         }
     }
     

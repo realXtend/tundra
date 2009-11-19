@@ -60,7 +60,7 @@ std::string GetId0String()
     std::stringstream serial;
     DWORD dwVolSerial;
     BOOL bIsRetrieved;
-    bIsRetrieved = GetVolumeInformation(L"C:\\", NULL, NULL, &dwVolSerial, NULL, NULL, NULL, NULL);
+    bIsRetrieved = GetVolumeInformation(L"C:\\", 0, 0, &dwVolSerial, 0, 0, 0, 0);
     if (bIsRetrieved)
     {
         serial << std::hex << dwVolSerial;

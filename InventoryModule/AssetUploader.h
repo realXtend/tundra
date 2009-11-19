@@ -40,14 +40,15 @@ namespace Inventory
 
     public slots:
         /// Uploads multiple files using HTTP.
-        /// @param files List of AssetInfo structs.
-        /// @param inventory Pointer to the user's inventory.
-        void UploadFiles(Core::StringList& filenames);
+        /// @param filenames list of filenames.
+        void UploadFiles(Core::StringList &filenames);
+        void UploadFiles(QStringList &filenames);
 
         /// Uploads multiple assets using HTTP.
         /// @param files List of filenames (determines asset type & folder to use)
         /// @param data List of asset data buffers
-        void UploadBuffers(Core::StringList& filenames, std::vector<std::vector<Core::u8> >& buffers);
+//        void UploadBuffers(Core::StringList& filenames, std::vector<std::vector<Core::u8> >& buffers);
+        void UploadBuffers(QStringList &filenames, QVector<QVector<uchar> > &buffers);
 
         /** Uploads a file using HTTP.
          *  @param asset_type_t Asset type.
@@ -79,7 +80,8 @@ namespace Inventory
             const std::string &name,
             const std::string &description,
             const RexTypes::RexUUID &folder_id,
-            const std::vector<Core::u8>& buffer);
+            //const std::vector<Core::u8>& buffer);
+        const QVector<uchar>& buffer);
 
         /// @return Does asset uploader have upload capability set.
         bool HasUploadCapability() const { return uploadCapability_ != ""; }
@@ -110,7 +112,8 @@ namespace Inventory
         void ThreadedUploadFiles(Core::StringList filenames);
 
         /// Used by UploadBuffers.
-        void ThreadedUploadBuffers(Core::StringList filenames, std::vector<std::vector<Core::u8> > buffers);
+        //void ThreadedUploadBuffers(Core::StringList filenames, std::vector<std::vector<Core::u8> > buffers);
+        void ThreadedUploadBuffers(QStringList filenames, QVector<QVector<uchar> > buffers);
 
         /// Creates NewFileAgentInventory XML message.
         std::string CreateNewFileAgentInventoryXML(
@@ -133,7 +136,7 @@ namespace Inventory
         std::string uploadCapability_;
 
         /// WorldStream pointer
-        ProtocolUtilities::WorldStreamPtr CurrentWorldStream;
+        ProtocolUtilities::WorldStreamPtr currentWorldStream_;
     };
 }
 

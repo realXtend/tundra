@@ -142,7 +142,7 @@ namespace Asset
             
        //! Gets asset transfer if it's in progress
         /*! \param asset_id Asset ID
-            \return Pointer to transfer, or NULL if no transfer
+            \return Pointer to transfer, or 0 if no transfer
          */
         UDPAssetTransfer* GetTransfer(const std::string& asset_id);
         

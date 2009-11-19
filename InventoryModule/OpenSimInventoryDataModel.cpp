@@ -11,36 +11,45 @@
 #include "InventoryFolder.h"
 #include "InventoryAsset.h"
 #include "InventoryModule.h"
-#include "RexLogicModule.h"
 #include "Inventory/InventorySkeleton.h"
 #include "RexUUID.h"
 #include "AssetEvents.h"
 #include "ResourceInterface.h"
 #include "TextureResource.h"
+#include "RexLogicModule.h"
+#include "AssetUploader.h"
 
 #include <QFile>
 #include <QImage>
+#include <QStringList>
 
 namespace Inventory
 {
 
-OpenSimInventoryDataModel::OpenSimInventoryDataModel(RexLogic::RexLogicModule *rexlogicmodule) :
-    rexLogicModule_(rexlogicmodule),
+OpenSimInventoryDataModel::OpenSimInventoryDataModel(
+    Foundation::Framework *framework,
+    ProtocolUtilities::InventorySkeleton *inventory_skeleton) :
+    framework_(framework),
     rootFolder_(0),
-    worldLibraryOwnerId_("")
+    worldLibraryOwnerId_(""),
+    assetUploader_(0)
 {
-    SetupModelData(rexLogicModule_->GetInventory().get());
-}
+    SetupModelData(inventory_skeleton);
 
-// virtual
-void OpenSimInventoryDataModel::SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream)
-{
-    CurrentWorldStream = world_stream;
+    RexLogic::RexLogicModule *rexLogic = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(
+        Foundation::Module::MT_WorldLogic).lock().get());
+    assetUploader_ = new AssetUploader(framework_, rexLogic);
 }
 
 OpenSimInventoryDataModel::~OpenSimInventoryDataModel()
 {
-    delete rootFolder_;
+    SAFE_DELETE(rootFolder_);
+    SAFE_DELETE(assetUploader_);
+}
+
+void OpenSimInventoryDataModel::SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream)
+{
+    currentWorldStream_ = world_stream;
 }
 
 AbstractInventoryItem *OpenSimInventoryDataModel::GetFirstChildFolderByName(const QString &searchName) const
@@ -103,7 +112,7 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewFolder(
     // Inform the server.
     // We don't want to notify server if we're creating folders "ordered" by server via InventoryDescecendents packet.
     if (notify_server)
-        CurrentWorldStream->SendCreateInventoryFolderPacket(
+        currentWorldStream_->SendCreateInventoryFolderPacket(
             RexUUID(parent->GetID().toStdString()), RexUUID(newFolder->GetID().toStdString()),
             255, newFolder->GetName().toStdString().c_str());
 
@@ -140,20 +149,20 @@ void OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem 
         return;
 
     if (item->IsDescendentOf(GetOpenSimLibraryFolder()))
-        CurrentWorldStream->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()),
+        currentWorldStream_->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()),
             QSTR_TO_UUID(worldLibraryOwnerId_));
     else
-        CurrentWorldStream->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()));
+        currentWorldStream_->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()));
 }
 
 void OpenSimInventoryDataModel::NotifyServerAboutItemMove(AbstractInventoryItem *item)
 {
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
-        CurrentWorldStream->SendMoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
+        currentWorldStream_->SendMoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
             QSTR_TO_UUID(item->GetParent()->GetID()));
 
     if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
-        CurrentWorldStream->SendMoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()),
+        currentWorldStream_->SendMoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()),
             QSTR_TO_UUID(item->GetParent()->GetID()), item->GetName().toStdString());
 }
 
@@ -162,29 +171,29 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemCopy(AbstractInventoryItem 
     if (item->GetItemType() != AbstractInventoryItem::Type_Asset)
         return;
 
-    CurrentWorldStream->SendCopyInventoryItemPacket(QSTR_TO_UUID(worldLibraryOwnerId_),
+    currentWorldStream_->SendCopyInventoryItemPacket(QSTR_TO_UUID(worldLibraryOwnerId_),
         QSTR_TO_UUID(item->GetID()), QSTR_TO_UUID(item->GetParent()->GetID()), item->GetName().toStdString());
 }
 
 void OpenSimInventoryDataModel::NotifyServerAboutItemRemove(AbstractInventoryItem *item)
 {
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
-        CurrentWorldStream->SendRemoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()));
+        currentWorldStream_->SendRemoveInventoryFolderPacket(QSTR_TO_UUID(item->GetID()));
 
     if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
-        CurrentWorldStream->SendRemoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()));
+        currentWorldStream_->SendRemoveInventoryItemPacket(QSTR_TO_UUID(item->GetID()));
 }
 
 void OpenSimInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryItem *item, const QString &old_name)
 {
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
-        CurrentWorldStream->SendUpdateInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
+        currentWorldStream_->SendUpdateInventoryFolderPacket(QSTR_TO_UUID(item->GetID()),
             QSTR_TO_UUID(item->GetParent()->GetID()), 127, item->GetName().toStdString());
 
     if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
     {
         InventoryAsset *asset = static_cast<InventoryAsset *>(item);
-        CurrentWorldStream->SendUpdateInventoryItemPacket(QSTR_TO_UUID(asset->GetID()),
+        currentWorldStream_->SendUpdateInventoryItemPacket(QSTR_TO_UUID(asset->GetID()),
             QSTR_TO_UUID(asset->GetParent()->GetID()), asset->GetAssetType(), asset->GetInventoryType(),
             asset->GetName().toStdString(), asset->GetDescription().toStdString());
     }
@@ -192,6 +201,27 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryIte
 
 void OpenSimInventoryDataModel::UploadFile(const QString &filename, AbstractInventoryItem *parent_folder)
 {
+    if (!assetUploader_)
+    {
+        InventoryModule::LogError("Asset uploader not set. Can't upload.");
+        return;
+    }
+
+    ///\note For now, we're not interested about destination folder as they're hardcoded.
+    QStringList list;
+    list << filename;
+    assetUploader_->UploadFiles(list);
+}
+
+void OpenSimInventoryDataModel::UploadFiles(QStringList &filenames, AbstractInventoryItem *parent_folder)
+{
+    assetUploader_->UploadFiles(filenames);
+}
+
+void OpenSimInventoryDataModel::UploadFilesFromBuffer(QStringList &filenames, QVector<QVector<uchar> > &buffers,
+    AbstractInventoryItem *parent_folder)
+{
+    assetUploader_->UploadBuffers(filenames, buffers);
 }
 
 void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, AbstractInventoryItem *selected_item)
@@ -213,7 +243,7 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
     fullFilename += asset->GetName();
     fullFilename += QString(RexTypes::GetFileExtensionFromAssetType(asset_type).c_str());
 
-    ServiceManagerPtr service_manager = rexLogicModule_->GetFramework()->GetServiceManager();
+    ServiceManagerPtr service_manager = framework_->GetServiceManager();
     switch(asset_type)
     {
     case RexAT_Texture:
@@ -225,11 +255,11 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
                 service_manager->GetService<TextureServiceInterface>(Service::ST_Texture).lock();
 
             //if (requestTags_.find(id) == requestTags_.end())
-            {
-                Core::request_tag_t tag = texture_service->RequestTexture(id);
-                if (tag)
-                    downloadRequests_[qMakePair(tag, asset_type)] = fullFilename;
-            }
+            //{
+            Core::request_tag_t tag = texture_service->RequestTexture(id);
+            if (tag)
+                downloadRequests_[qMakePair(tag, asset_type)] = fullFilename;
+            //}
         }
     }
     case RexAT_Mesh:
@@ -245,11 +275,11 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
 
             // Perform the actual asset request only once, for the first request
             //if (request_tags_.find(id) == request_tags_.end())
-            {
-                Core::request_tag_t tag = asset_service->RequestAsset(id, GetTypeNameFromAssetType(asset_type));
-                if (tag) 
-                    downloadRequests_[qMakePair(tag, asset_type)] = fullFilename;
-            }
+            //{
+            Core::request_tag_t tag = asset_service->RequestAsset(id, GetTypeNameFromAssetType(asset_type));
+            if (tag) 
+                downloadRequests_[qMakePair(tag, asset_type)] = fullFilename;
+            //}
         }
         break;
     }

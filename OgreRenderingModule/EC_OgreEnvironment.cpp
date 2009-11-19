@@ -30,14 +30,14 @@ namespace OgreRenderer
 EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
-    sunlight_(NULL),
+    sunlight_(0),
 //#ifdef CAELUM
-//    caelumSystem_(NULL),
+//    caelumSystem_(0),
 //#endif
 #ifdef HYDRAX
-    hydraxSystem_(NULL),
-    noiseModule_(NULL),
-    module_(NULL),
+    hydraxSystem_(0),
+    noiseModule_(0),
+    module_(0),
 #endif
     cameraUnderWater_(false),
     attached_(false),
@@ -78,7 +78,7 @@ EC_OgreEnvironment::~EC_OgreEnvironment()
         DetachSunlight();
         Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();
         sceneManager->destroyLight(sunlight_);
-        sunlight_ = NULL;
+        sunlight_ = 0;
     }
 
 #ifdef CAELUM

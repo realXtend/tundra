@@ -115,7 +115,7 @@ bool J2kEncode(Ogre::Image &src_image, std::vector<Core::u8> &outbuf, bool rever
 
     // Create comment for codestream.
     ///\todo Custom comments / no comments at all?
-    if(parameters.cp_comment == NULL)
+    if(parameters.cp_comment == 0)
     {
         const char comment[] = "Created by OpenJPEG version ";
         const size_t clen = strlen(comment);
@@ -192,10 +192,10 @@ bool J2kEncode(Ogre::Image &src_image, std::vector<Core::u8> &outbuf, bool rever
     opj_setup_encoder(cinfo, &parameters, image);
 
     // Open a byte stream for writing. Allocate memory for all tiles.
-    cio = opj_cio_open((opj_common_ptr)cinfo, NULL, 0);
+    cio = opj_cio_open((opj_common_ptr)cinfo, 0, 0);
 
     // Encode the image.
-    success = opj_encode(cinfo, cio, image, NULL);
+    success = opj_encode(cinfo, cio, image, 0);
     if (!success)
     {
         opj_cio_close(cio);

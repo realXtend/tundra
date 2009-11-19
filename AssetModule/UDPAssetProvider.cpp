@@ -76,7 +76,7 @@ namespace Asset
     bool UDPAssetProvider::InProgress(const std::string& asset_id)
     {
         UDPAssetTransfer* transfer = GetTransfer(asset_id);
-        return (transfer != NULL);
+        return (transfer != 0);
     }
     
     Foundation::AssetPtr UDPAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received)
@@ -599,7 +599,7 @@ namespace Asset
             ++j;
         }
         
-        return NULL;
+        return 0;
     }       
     
     void UDPAssetProvider::StoreAsset(UDPAssetTransfer& transfer)

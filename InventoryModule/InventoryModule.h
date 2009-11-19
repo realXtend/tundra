@@ -13,15 +13,11 @@
 #include "EventDataInterface.h"
 #include "WorldStream.h"
 
-namespace RexLogic
-{
-    class RexLogicModule;
-}
-
 namespace Inventory
 {
     class InventoryWindow;
     class AssetUploader;
+    class AbstractInventoryDataModel;
 
     typedef boost::shared_ptr<AssetUploader> AssetUploaderPtr;
 
@@ -42,7 +38,7 @@ namespace Inventory
         void Uninitialize();
         void Update(Core::f64 frametime);
         bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
-        virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
+        void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
 
         MODULE_LOGGING_FUNCTIONS
 
@@ -59,10 +55,10 @@ namespace Inventory
         Console::CommandResult UploadMultipleAssets(const Core::StringVector &params);
 
         /// @return Asset uploader pointer.
-        AssetUploaderPtr GetAssetUploader() const;
+//        AssetUploaderPtr GetAssetUploader() const;
 
         /// Get the current WorldStream
-        ProtocolUtilities::WorldStreamPtr GetCurrentWorldStream() { return CurrentWorldStream; }
+        ProtocolUtilities::WorldStreamPtr GetCurrentWorldStream() const { return currentWorldStream_ ; }
 
     private:
         InventoryModule(const InventoryModule &);
@@ -70,9 +66,6 @@ namespace Inventory
 
         /// Event manager pointer.
         Foundation::EventManagerPtr eventManager_;
-
-        /// RexLogicModule pointer.
-        RexLogic::RexLogicModule *rexLogic_;
 
         /// Inventory event category.
         Core::event_category_id_t inventoryEventCategory_;
@@ -93,10 +86,13 @@ namespace Inventory
         InventoryWindow *inventoryWindow_;
 
         /// Asset uploader.
-        AssetUploaderPtr assetUploader_;
+//        AssetUploaderPtr assetUploader_;
 
         /// WorldStream pointer
-        ProtocolUtilities::WorldStreamPtr CurrentWorldStream;
+        ProtocolUtilities::WorldStreamPtr currentWorldStream_ ;
+
+        /// Inventory data model.
+        AbstractInventoryDataModel *dataModel_;
     };
 }
 

@@ -13,9 +13,9 @@ namespace OgreRenderer
 
 EC_OgreConsoleOverlay::EC_OgreConsoleOverlay(Foundation::ModuleInterface* module) :
     EC_OgreConsoleOverlayInterface(module->GetFramework()),
-    overlay_element_(NULL),
-    container_(NULL),
-    overlay_(NULL),
+    overlay_element_(0),
+    container_(0),
+    overlay_(0),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
     height_(module->GetFramework()->GetDefaultConfig().DeclareSetting("DebugConsole", "height", 0.4f)),
 //        , char_height_(0.0175f),

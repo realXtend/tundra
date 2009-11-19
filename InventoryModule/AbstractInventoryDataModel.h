@@ -32,6 +32,10 @@ namespace Inventory
         /// Destructor.
         virtual ~AbstractInventoryDataModel() {}
 
+        /// Set World Stream.
+        /// @param world_stream WorldStream pointer.
+        virtual void SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream) = 0;
+
         /// @return First folder by the requested name or null if the folder isn't found.
         virtual AbstractInventoryItem *GetFirstChildFolderByName(const QString &name) const = 0;
 
@@ -80,10 +84,25 @@ namespace Inventory
         /// @item Inventory item.
         virtual void NotifyServerAboutItemUpdate(AbstractInventoryItem *item, const QString &old_name) = 0;
 
-        ///
+        /// Uploads file.
+        /// @param filename Filename.
+        /// @param parent_folder Destination folder in inventory for upload.
         virtual void UploadFile(const QString &filename, AbstractInventoryItem *parent_folder) = 0;
 
-        ///
+        /// Uploads multiple files.
+        /// @param filenames List of filenames.
+        /// @param parent_folder Destination folder in inventory for upload.
+        virtual void UploadFiles(QStringList &filenames, AbstractInventoryItem *parent_folder) = 0;
+
+        /// Uploads multiple files, uses data buffers.
+        /// @param filenames List of filenames.
+        /// @param parent_folder Destination folder in inventory for upload.
+        virtual void UploadFilesFromBuffer(QStringList &filenames, QVector<QVector<uchar> > &buffers,
+            AbstractInventoryItem *parent_folder) = 0;
+
+        /// Downloads asset/file from inventory.
+        /// @param store_folder Store folder.
+        /// @param selected_item Selected item in inventory.
         virtual void DownloadFile(const QString &store_folder, AbstractInventoryItem *selected_item) = 0;
 
         /// @return Inventory root folder.
@@ -91,9 +110,6 @@ namespace Inventory
 
         /// @return Inventory trash folder.
         virtual AbstractInventoryItem *GetTrashFolder() const = 0;
-
-        /// Set World Stream to current
-        virtual void SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream) = 0;
 
     private:
         Q_DISABLE_COPY(AbstractInventoryDataModel);

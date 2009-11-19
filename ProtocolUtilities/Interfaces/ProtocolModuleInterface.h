@@ -5,6 +5,7 @@
 
 #include "Foundation.h"
 #include "CoreDefines.h"
+#include "NetworkEvents.h"
 
 namespace ProtocolUtilities
 {
