@@ -78,7 +78,7 @@ namespace OgreRenderer
         const std::string& GetMaterialName(Core::uint index) const;
                
         //! Returns true if geometry has been committed and mesh entity created
-        bool IsCommitted() { return entity_ != NULL; }   
+        bool IsCommitted() { return entity_ != 0; }
         
     private:
         //! constructor

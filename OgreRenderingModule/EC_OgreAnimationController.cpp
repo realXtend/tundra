@@ -136,12 +136,12 @@ namespace OgreRenderer
     Ogre::Entity* EC_OgreAnimationController::GetEntity()
     {
         if (!mesh_entity_)
-            return NULL;
+            return 0;
         
         OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh_entity_.get());
         Ogre::Entity* entity = mesh.GetEntity();
         if (!entity)
-            return NULL;
+            return 0;
         
         if (entity->getMesh()->getName() != mesh_name_)
         {
@@ -160,16 +160,16 @@ namespace OgreRenderer
     Ogre::AnimationState* EC_OgreAnimationController::GetAnimationState(Ogre::Entity* entity, const std::string& name)
     {
         if (!entity)
-            return NULL;
+            return 0;
             
         Ogre::AnimationStateSet* anims = entity->getAllAnimationStates();
         if (!anims)
-            return NULL;
+            return 0;
             
         if (anims->hasAnimationState(name))
             return anims->getAnimationState(name);
         else
-            return NULL;
+            return 0;
     }
     
     //! Enable an exclusive animation (fades out all other animations of same priority with fadeOut parameter)

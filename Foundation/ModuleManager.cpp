@@ -373,7 +373,7 @@ namespace Foundation
             Foundation::RootLogInfo("Attempting to load module: " + *it + ".");
 
 
-            if (library->cl_.findClass(*it) == NULL)
+            if (library->cl_.findClass(*it) == 0)
             {
                 throw Core::Exception("Entry class not found from module.");
             }

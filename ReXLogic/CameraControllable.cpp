@@ -264,7 +264,7 @@ namespace RexLogic
                 {
                     current_state_ = ThirdPerson;
                     Core::event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                    framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
+                    framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
                     
                     firstperson_pitch_ = 0.0f;
                 }
@@ -275,7 +275,7 @@ namespace RexLogic
                 if (camera_distance_ == camera_min_distance_)
                 {
                     Core::event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                    framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FIRSTPERSON, NULL);
+                    framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FIRSTPERSON, 0);
                     current_state_ = FirstPerson;
                     
                     firstperson_pitch_ = 0.0f;

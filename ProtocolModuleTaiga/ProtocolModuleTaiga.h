@@ -33,10 +33,10 @@ namespace TaigaProtocol
     /// TaigaProtocolModule exposes other modules with the funtionality of
     /// communicating with the OpenSim server using the SLUDP protocol. It
     /// also handles the XMLRPC handshakes with the server.
-	class TAIGAPROTO_MODULE_API ProtocolModuleTaiga 
-		: public Foundation::ModuleInterfaceImpl, 
-		  public ProtocolUtilities::INetMessageListener, 
-		  public ProtocolUtilities::ProtocolModuleInterface
+    class TAIGAPROTO_MODULE_API ProtocolModuleTaiga 
+        : public Foundation::ModuleInterfaceImpl, 
+          public ProtocolUtilities::INetMessageListener, 
+          public ProtocolUtilities::ProtocolModuleInterface
     {
     public: 
         ProtocolModuleTaiga();
@@ -63,32 +63,32 @@ namespace TaigaProtocol
         virtual void OnNetworkMessageSent(const ProtocolUtilities::NetOutMessage *msg);
 
         /// Dumps network message to the console.
-		void DumpNetworkMessage(ProtocolUtilities::NetMsgID id, ProtocolUtilities::NetInMessage *msg);
+        void DumpNetworkMessage(ProtocolUtilities::NetMsgID id, ProtocolUtilities::NetInMessage *msg);
 
-		/// Gets the modules loginworker
-		/// @return loginworker_
-		TaigaLoginThread* GetLoginWorker() { return &loginWorker_; }
+        /// Gets the modules loginworker
+        /// @return loginworker_
+        TaigaLoginThread* GetLoginWorker() { return &loginWorker_; }
 
-		////////////////////////////////////////////////
-		/*** ProtocolModuleInterface implementation ***/
-		
-		//! Function for registering network event
-		virtual void RegisterNetworkEvents();
-		
-		//! Function for uniregistering networking
-		virtual void UnregisterNetworkEvents();
+        ////////////////////////////////////////////////
+        /*** ProtocolModuleInterface implementation ***/
+        
+        //! Function for registering network event
+        virtual void RegisterNetworkEvents();
+        
+        //! Function for uniregistering networking
+        virtual void UnregisterNetworkEvents();
 
         /// Creates the UDP connection to the server.
         ///@ return True, if the connection was succesfull, false otherwise.
         virtual bool CreateUdpConnection(const char *address, int port);
 
         ///@return Connection::State enum of the connection state.
-		virtual ProtocolUtilities::Connection::State GetConnectionState() const { return loginWorker_.GetState(); }
+        virtual ProtocolUtilities::Connection::State GetConnectionState() const { return loginWorker_.GetState(); }
        
-		/// Returns client parameters of current connection
-		virtual const ProtocolUtilities::ClientParameters& GetClientParameters() const { return clientParameters_; }
+        /// Returns client parameters of current connection
+        virtual const ProtocolUtilities::ClientParameters& GetClientParameters() const { return clientParameters_; }
 
-		/// Sets new capability.
+        /// Sets new capability.
         /// @param name Name of capability.
         /// @param url URL of the capability.
         virtual void SetCapability(const std::string &name, const std::string &url);
@@ -97,10 +97,10 @@ namespace TaigaProtocol
         /// @param name Name of the capability.
         /// @return Capability URL.
         virtual std::string GetCapability(const std::string &name);
-		
-		/// Sets Authentication type
-		/// @params authentivation type ProtocolUtilities::AuthenticationType
-		virtual void SetAuthenticationType(ProtocolUtilities::AuthenticationType aType) { authenticationType_ = aType; }
+        
+        /// Sets Authentication type
+        /// @params authentivation type ProtocolUtilities::AuthenticationType
+        virtual void SetAuthenticationType(ProtocolUtilities::AuthenticationType aType) { authenticationType_ = aType; }
 
         /// Set Identity Url
         /// @param new identity url as std::string
@@ -116,9 +116,9 @@ namespace TaigaProtocol
         /// Disconnects from a reX server.
         virtual void DisconnectFromServer();
         
-		/// Start building a new outbound message.
+        /// Start building a new outbound message.
         /// @return An empty message holder where the message can be built.
-		virtual ProtocolUtilities::NetOutMessage *StartMessageBuilding(ProtocolUtilities::NetMsgID msgId);
+        virtual ProtocolUtilities::NetOutMessage *StartMessageBuilding(ProtocolUtilities::NetMsgID msgId);
 
         /// Finishes (sends) the message. The passed msg pointer will be invalidated after calling this, so don't
         /// access it or hold on to it afterwards. The user doesn't have to do any deallocation, it is all managed by
@@ -147,7 +147,7 @@ namespace TaigaProtocol
         bool connected_;
 
         /// Authentication type (Taiga/OpenSim/RealXtend)
-		ProtocolUtilities::AuthenticationType authenticationType_;
+        ProtocolUtilities::AuthenticationType authenticationType_;
 
         /// Identity url for inventory event
         std::string identityUrl_;

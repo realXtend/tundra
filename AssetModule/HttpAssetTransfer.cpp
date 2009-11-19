@@ -14,7 +14,7 @@
 namespace Asset
 {
     HttpAssetTransfer::HttpAssetTransfer() :
-		buffer_(NULL),
+		buffer_(0),
 		asset_id_(""),
 		asset_data_uri_(""),
 		asset_metadata_uri_(""),
@@ -22,7 +22,7 @@ namespace Asset
 		response_size_(0),
 		received_count_(0),
         time_(0.0),
-		response_stream_(NULL),
+		response_stream_(0),
 		failed_(false),
 		metadata_fetched_(false),
 		data_fetched_(false),
@@ -41,7 +41,7 @@ namespace Asset
 		if (buffer_)
 		{
 			delete [] buffer_;
-			buffer_ = NULL;
+			buffer_ = 0;
 		}
     }
 

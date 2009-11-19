@@ -15,7 +15,7 @@ namespace OgreRenderer
     EC_OgreParticleSystem::EC_OgreParticleSystem(Foundation::ModuleInterface* module) :
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
-        adjustment_node_(NULL),
+        adjustment_node_(0),
         attached_(false),
         draw_distance_(0.0)
     {
@@ -32,7 +32,7 @@ namespace OgreRenderer
         {
             Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
             scene_mgr->destroySceneNode(adjustment_node_);
-            adjustment_node_ = NULL;
+            adjustment_node_ = 0;
         }
     }
     

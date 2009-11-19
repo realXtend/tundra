@@ -21,12 +21,12 @@ namespace OgreRenderer
 
 EC_OgreMovableTextOverlay::EC_OgreMovableTextOverlay(Foundation::ModuleInterface* module) :
     Foundation::ComponentInterface(module->GetFramework()),
-    text_element_(NULL),
-    container_(NULL),
-    overlay_(NULL),
-    camera_(NULL),
-    font_(NULL),
-    node_(NULL),
+    text_element_(0),
+    container_(0),
+    overlay_(0),
+    camera_(0),
+    font_(0),
+    node_(0),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
 //        char_height_(2*0.0175f),
     visible_(false),
@@ -65,7 +65,7 @@ EC_OgreMovableTextOverlay::~EC_OgreMovableTextOverlay()
         DetachNode();
         Ogre::SceneManager *scene_mgr = renderer_.lock()->GetSceneManager();
         scene_mgr->destroySceneNode(node_);
-        node_ = NULL;
+        node_ = 0;
     }
 }
 

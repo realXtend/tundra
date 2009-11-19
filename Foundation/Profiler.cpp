@@ -12,7 +12,7 @@ namespace Foundation
     LARGE_INTEGER ProfilerBlock::api_overhead_;
 #endif
 
-    Profiler *ProfilerSection::profiler_ = NULL;
+    Profiler *ProfilerSection::profiler_ = 0;
 
     bool ProfilerBlock::QueryCapability()
     {

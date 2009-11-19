@@ -73,7 +73,7 @@ namespace Foundation
         }
         
         //! Gets final result from a completed (stopped) work thread.
-        /*! \return Result, or NULL if thread still running or has not produced a result
+        /*! \return Result, or 0 if thread still running or has not produced a result
          */
         ThreadTaskResultPtr GetResult() const;
         
@@ -106,7 +106,7 @@ namespace Foundation
          */
         bool WaitForRequests();
         
-        //! Gets the next request from the request queue. Returns NULL if queue empty
+        //! Gets the next request from the request queue. Returns 0 if queue empty
         ThreadTaskRequestPtr GetNextRequest();
         
         //! Template version of getting next request. Performs dynamic_pointer_cast to the type specified.

@@ -81,7 +81,7 @@ namespace Foundation
         //! Sends an event
         /*! \param category_id Event category ID
             \param event_id Event ID
-            \param data Pointer to event data structure (event-specific), can be NULL if not needed
+            \param data Pointer to event data structure (event-specific), can be 0 if not needed
             \return true if event was handled by some event handler
          */
         bool SendEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const;
@@ -92,7 +92,7 @@ namespace Foundation
             Delayed events are also the only safe way to send events from threads other than main thread!
             \param category_id Event category ID
             \param event_id Event ID
-            \param data Shared pointer to event data structure (event-specific), can be NULL if not needed
+            \param data Shared pointer to event data structure (event-specific), can be 0 if not needed
             \param delay Delay in seconds until sending event, 0 to send during next framework update
          */
         void SendDelayedEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataPtr data, Core::f64 delay = 0.0);
@@ -100,7 +100,7 @@ namespace Foundation
         //! Template version of sending a delayed event. Will perform dynamic_pointer_cast from specified type to EventDataPtr
         /*! \param category_id Event category ID
             \param event_id Event ID
-            \param data Shared pointer to event data structure (event-specific), can be NULL if not needed
+            \param data Shared pointer to event data structure (event-specific), can be 0 if not needed
             \param delay Delay in seconds until sending event, 0 to send during next framework update
          */
         template <class T> void SendDelayedEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, boost::shared_ptr<T> data, Core::f64 delay = 0.0)
@@ -112,7 +112,7 @@ namespace Foundation
         /*! Do not call while responding to an event!
             \param module Module to register
             \param priority Priority among siblings, higher priority = gets called first
-            \param parent Subscriber module to use as a parent, NULL to place into the tree root
+            \param parent Subscriber module to use as a parent, 0 to place into the tree root
             \return true if successfully subscribed
          */
         bool RegisterEventSubscriber(ModuleWeakPtr module, int priority, ModuleWeakPtr parent);

@@ -220,6 +220,7 @@ void WebdavInventoryDataModel::NotifyServerAboutItemRemove(AbstractInventoryItem
 
     result = webdavclient_.call(methodName, QVariantList() << parentPath << itemName).toStringList();
     if (result.count() >= 1)
+    {
         if (result[0] == "True")
         {
             InventoryModule::LogInfo(QString("Webdav | Removed item from %1\n").arg(item->GetID()).toStdString());
@@ -228,6 +229,7 @@ void WebdavInventoryDataModel::NotifyServerAboutItemRemove(AbstractInventoryItem
         }
         else
             InventoryModule::LogInfo(QString("Webdav | Could not remove item from %1\n").arg(item->GetID()).toStdString());
+    }
 }
 
 void WebdavInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryItem *item, const QString &old_name)
@@ -238,6 +240,7 @@ void WebdavInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryItem
 
     QStringList result = webdavclient_.call("renameResource", QVariantList() << parentPath << newName << oldName).toStringList();
     if (result.count() >= 1)
+    {
         if (result[0] == "True")
         {
             //ItemSelectedFetchContent(item->GetParent());
@@ -246,6 +249,7 @@ void WebdavInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryItem
         }
         else
             InventoryModule::LogInfo(QString("Webdav | Could not rename folder from %0 to %1 in path %3\n").arg(oldName, newName, parentPath).toStdString());
+    }
 }
 
 /// PUBLIC SLOTS
@@ -304,45 +308,58 @@ void WebdavInventoryDataModel::ItemSelectedFetchContent(AbstractInventoryItem *i
 
 void WebdavInventoryDataModel::UploadFile(const QString &file_path, AbstractInventoryItem *parent_folder)
 {
-    if (parent_folder->GetItemType() == AbstractInventoryItem::Type_Folder)
+    if (parent_folder->GetItemType() != AbstractInventoryItem::Type_Folder)
+        return;
+
+    InventoryFolder *parentFolder = static_cast<InventoryFolder *>(parent_folder);
+    assert(parentFolder);
+
+    QString filePath = file_path;
+    QString filename = filePath.split("/").last();
+    QString parentPath = ValidateFolderPath(parentFolder->GetID());
+    QStringList result = webdavclient_.call("uploadFile", QVariantList() << filePath << parentPath << filename).toStringList();
+    if (result.count() >= 1)
     {
-        InventoryFolder *parentFolder = dynamic_cast<InventoryFolder *>(parent_folder);
-        if (parentFolder)
+        if (result[0] == "True")
         {
-            QString filePath = file_path;
-            QString filename = filePath.split("/").last();
-            QString parentPath = ValidateFolderPath(parentFolder->GetID());
-            QStringList result = webdavclient_.call("uploadFile", QVariantList() << filePath << parentPath << filename).toStringList();
-            if (result.count() >= 1)
-                if (result[0] == "True")
-                {
-                    //ItemSelectedFetchContent(parent_folder);
-                    FetchInventoryDescendents(parent_folder);
-                    InventoryModule::LogInfo(QString("Webdav | Upload of file %1 to path %2%3 succeeded\n").arg(filePath, parentPath, filename).toStdString());
-                }
-                else
-                    InventoryModule::LogInfo(QString("Webdav | Upload of file %1 to path %2%3 failed\n").arg(filePath, parentPath, filename).toStdString());
+            //ItemSelectedFetchContent(parent_folder);
+            FetchInventoryDescendents(parent_folder);
+            InventoryModule::LogInfo(QString("Webdav | Upload of file %1 to path %2%3 succeeded\n").arg(filePath, parentPath, filename).toStdString());
         }
+        else
+            InventoryModule::LogInfo(QString("Webdav | Upload of file %1 to path %2%3 failed\n").arg(filePath, parentPath, filename).toStdString());
     }
+}
+
+void WebdavInventoryDataModel::UploadFiles(QStringList &filenames, AbstractInventoryItem *parent_folder)
+{
+    InventoryModule::LogInfo("Webdav | You are in UploadFiles() that is not implemented yet");
+}
+
+void WebdavInventoryDataModel::UploadFilesFromBuffer(QStringList &filenames, QVector<QVector<uchar> > &buffers,
+    AbstractInventoryItem *parent_folder)
+{
+    InventoryModule::LogInfo("Webdav | You are in UploadFilesFromBuffer() that is not implemented yet");
 }
 
 void WebdavInventoryDataModel::DownloadFile(const QString &store_folder, AbstractInventoryItem *selected_item)
 {
-    if (selected_item->GetItemType() == AbstractInventoryItem::Type_Asset)
+    if (selected_item->GetItemType() != AbstractInventoryItem::Type_Asset)
+        return;
+
+    InventoryAsset *item = dynamic_cast<InventoryAsset *>(selected_item);
+    assert(item);
+
+    QString storePath = store_folder;
+    QString parentPath = ValidateFolderPath(item->GetParent()->GetID());
+    QString filename = item->GetName();
+    QStringList result = webdavclient_.call("downloadFile", QVariantList() << storePath << parentPath << filename).toStringList();
+    if (result.count() >= 1)
     {
-        InventoryAsset *item = dynamic_cast<InventoryAsset *>(selected_item);
-        if (item)
-        {
-            QString storePath = store_folder;
-            QString parentPath = ValidateFolderPath(item->GetParent()->GetID());
-            QString filename = item->GetName();
-            QStringList result = webdavclient_.call("downloadFile", QVariantList() << storePath << parentPath << filename).toStringList();
-            if (result.count() >= 1)
-                if (result[0] == "True")
-                    InventoryModule::LogInfo(QString("Webdav | Downloaded file %1%2 to path %3\n").arg(parentPath, filename, storePath).toStdString());
-                else
-                    InventoryModule::LogInfo(QString("Webdav | Downloaded of file %1%2 to path %3 failed\n").arg(parentPath, filename, storePath).toStdString());
-        }
+        if (result[0] == "True")
+            InventoryModule::LogInfo(QString("Webdav | Downloaded file %1%2 to path %3\n").arg(parentPath, filename, storePath).toStdString());
+        else
+            InventoryModule::LogInfo(QString("Webdav | Downloaded of file %1%2 to path %3 failed\n").arg(parentPath, filename, storePath).toStdString());
     }
 }
 

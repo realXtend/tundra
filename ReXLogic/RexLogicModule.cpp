@@ -359,9 +359,9 @@ void RexLogicModule::Update(Core::f64 frametime)
             // can't send events during initalization, so workaround
             Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
             if (camera_state_ == CS_Follow)
-                GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
+                GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
             else
-                GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
+                GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
         }
 
         if (world_stream_->IsConnected())
@@ -537,7 +537,7 @@ Console::CommandResult RexLogicModule::ConsoleLogout(const Core::StringVector &p
 Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const Core::StringVector &params)
 {
     Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-    GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::TOGGLE_FLYMODE, NULL);
+    GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::TOGGLE_FLYMODE, 0);
     return Console::ResultSuccess();
 }
 
@@ -548,14 +548,14 @@ void RexLogicModule::SwitchCameraState()
         camera_state_ = CS_Free;
 
         Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, NULL);
+        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
     }
     else
     {
         camera_state_ = CS_Follow;
 
         Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, NULL);
+        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
     }
 }
 

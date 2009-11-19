@@ -53,7 +53,7 @@ namespace Inventory
         virtual ~InventoryUploadBufferEventData() {}
         Core::StringList filenames;
         std::vector<std::vector<Core::u8> > buffers;
-    };    
+    };
 }
 
 #endif // incl_Protocol_InventoryEvents_h

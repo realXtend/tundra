@@ -122,7 +122,7 @@ namespace OgreRenderer
         bool SetAttachmentMaterial(Core::uint index, Core::uint submesh_index, const std::string& material_name);
         
         //! returns if mesh exists
-        bool HasMesh() const { return entity_ != NULL; }
+        bool HasMesh() const { return entity_ != 0; }
         
         //! returns number of attachments
         /*! note: returns just the size of attachment vector, so check individually that attachments actually exist

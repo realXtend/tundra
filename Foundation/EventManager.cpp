@@ -200,7 +200,7 @@ namespace Foundation
     {
         assert (module);
         
-        return (FindNodeWithChild(event_subscriber_root_.get(), module) != NULL);
+        return (FindNodeWithChild(event_subscriber_root_.get(), module) != 0);
     }
 
     void EventManager::ValidateEventSubscriberTree()

@@ -14,8 +14,8 @@ namespace OgreRenderer
     EC_OgreCustomObject::EC_OgreCustomObject(Foundation::ModuleInterface* module) :
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
-        object_(NULL),
-        entity_(NULL),
+        object_(0),
+        entity_(0),
         attached_(false),
         cast_shadows_(false),
         draw_distance_(0.0f)
@@ -33,7 +33,7 @@ namespace OgreRenderer
         if (object_)
         {
             scene_mgr->destroyManualObject(object_);
-            object_ = NULL;
+            object_ = 0;
         }
     }
     
@@ -180,7 +180,7 @@ namespace OgreRenderer
             DetachEntity();
             std::string mesh_name = entity_->getMesh()->getName();
             scene_mgr->destroyEntity(entity_);
-            entity_ = NULL;
+            entity_ = 0;
             try
             {
                 Ogre::MeshManager::getSingleton().remove(mesh_name);

@@ -96,9 +96,9 @@ namespace OgreRenderer
     Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title) :
         initialized_(false),
         framework_(framework),
-        scenemanager_(NULL),
-        camera_(NULL),
-        renderwindow_(NULL),
+        scenemanager_(0),
+        camera_(0),
+        renderwindow_(0),
         object_id_(0),
         group_id_(0),
         main_window_handle_(0),
@@ -106,7 +106,7 @@ namespace OgreRenderer
         resource_handler_(ResourceHandlerPtr(new ResourceHandler(framework))),
         config_filename_ (config),
         plugins_filename_ (plugins),
-        ray_query_(NULL),
+        ray_query_(0),
         window_title_(window_title)
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
@@ -238,7 +238,7 @@ namespace OgreRenderer
             if (renderWnd)
             {
                 HWND mainWnd = renderWnd->getWindowHandle();
-                SetClassLong(mainWnd, GCL_HCURSOR, NULL);
+                SetClassLong(mainWnd, GCL_HCURSOR, 0);
             }
             */
         }
@@ -394,21 +394,19 @@ namespace OgreRenderer
         {
             renderwindow_->resize(width, height);
             renderwindow_->windowMovedOrResized();
-            
+
             if (camera_)
-            {
                 camera_->setAspectRatio(Ogre::Real(renderwindow_->getWidth() / Ogre::Real(renderwindow_->getHeight())));
-            } 
-            
+
             Events::WindowResized data(renderwindow_->getWidth(), renderwindow_->getHeight()); 
-            framework_->GetEventManager()->SendEvent(renderercategory_id_, Events::WINDOW_RESIZED, &data);       
+            framework_->GetEventManager()->SendEvent(renderercategory_id_, Events::WINDOW_RESIZED, &data);
         }
     }
 
     void Renderer::OnWindowClosed()
     {
         framework_->Exit();
-        framework_->GetEventManager()->SendEvent(renderercategory_id_, Events::WINDOW_CLOSED, NULL);
+        framework_->GetEventManager()->SendEvent(renderercategory_id_, Events::WINDOW_CLOSED, 0);
     }
 
     void Renderer::Render()
@@ -423,7 +421,7 @@ namespace OgreRenderer
         renderer->_updateAllRenderTargets(false);
         root_->_fireFrameRenderingQueued();
         // Send postrender event, so that custom rendering may be added
-        framework_->GetEventManager()->SendEvent(renderercategory_id_, Events::POST_RENDER, NULL);
+        framework_->GetEventManager()->SendEvent(renderercategory_id_, Events::POST_RENDER, 0);
         // Swap buffers now
         renderer->_swapAllRenderTargetBuffers(renderer->getWaitForVerticalBlank());
 
@@ -660,7 +658,7 @@ namespace OgreRenderer
             if (any.isEmpty())
                 continue;
 
-            Scene::Entity *entity = NULL;
+            Scene::Entity *entity = 0;
             try
             {
                 entity = Ogre::any_cast<Scene::Entity*>(any);
@@ -707,7 +705,7 @@ namespace OgreRenderer
                 continue;
                 
             
-            Scene::Entity *entity = NULL;
+            Scene::Entity *entity = 0;
             try
             {
                 entity = Ogre::any_cast<Scene::Entity*>(any);

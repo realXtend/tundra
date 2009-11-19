@@ -30,8 +30,10 @@ namespace Console
 
         virtual void LogMessage(const std::string &message)
         {
+        /*
             if (console_)
                 console_->Print(message);
+                */
         }
 
         OgreOverlay *console_;

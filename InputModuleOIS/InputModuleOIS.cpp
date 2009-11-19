@@ -310,8 +310,8 @@ namespace Input
         const bool shift = keyboard_->isModifierDown(OIS::Keyboard::Shift);
 
         const OIS::MouseState &ms = mouse_->getMouseState();
-        const OIS::JoyStickState *js = NULL;
-        if (joy_) js = &joy_->getJoyStickState();        
+        const OIS::JoyStickState *js = 0;
+        if (joy_) js = &joy_->getJoyStickState();
 
         bool key_pressed = false;
         OIS::KeyCode code = static_cast<OIS::KeyCode>(info.key_);

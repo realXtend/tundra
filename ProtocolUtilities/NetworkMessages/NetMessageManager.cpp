@@ -506,7 +506,7 @@ namespace ProtocolUtilities
         if (it != messageResendQueue.end())
             return;
 
-        messageResendQueue.push_back(std::make_pair(time(NULL), msg));
+        messageResendQueue.push_back(std::make_pair(time(0), msg));
     }
 
     void NetMessageManager::RemoveMessageFromResendQueue(uint32_t packetID)
@@ -522,7 +522,7 @@ namespace ProtocolUtilities
         PROFILE(NetMessageManager_ProcessResendQueue);
         const int cTimeoutSeconds = 5;
 
-        const time_t timeNow = time(NULL);
+        const time_t timeNow = time(0);
         for(MessageResendList::iterator it = messageResendQueue.begin(); it != messageResendQueue.end(); ++it)
         {
             if (timeNow - it->first >= cTimeoutSeconds)

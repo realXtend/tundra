@@ -85,7 +85,7 @@ namespace Asset
     bool HttpAssetProvider::InProgress(const std::string& asset_id)
     {
         HttpAssetTransfer* transfer = GetTransfer(asset_id);
-        return (transfer != NULL);
+        return (transfer != 0);
 		return false;
     }
 
@@ -184,7 +184,7 @@ namespace Asset
             ++j;
         }
         
-        return NULL;
+        return 0;
     }       
 
 	void HttpAssetProvider::SendAssetProgress(HttpAssetTransfer& transfer)

@@ -41,7 +41,7 @@ namespace ProtocolUtilities
         for(BuddyVector::iterator i = buddies_.begin(); i != buddies_.end(); ++i)
         {
             delete *i;
-            *i = NULL;
+            *i = 0;
         }
         buddies_.clear();
         

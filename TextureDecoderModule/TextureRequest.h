@@ -32,7 +32,7 @@ namespace TextureDecoder
         //! Texture asset id
         std::string id_;
         
-        //! Pointer to resulting raw texture, NULL if decode failed
+        //! Pointer to resulting raw texture, null if decode failed
         Foundation::ResourcePtr texture_;
 
         //! Decoded quality level, -1 if decode failed

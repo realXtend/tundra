@@ -16,9 +16,9 @@ namespace OgreRenderer
     EC_OgreMesh::EC_OgreMesh(Foundation::ModuleInterface* module) :
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
-        entity_(NULL),
-        parent_entity_(NULL),
-        adjustment_node_(NULL),
+        entity_(0),
+        parent_entity_(0),
+        adjustment_node_(0),
         attached_(false),
         cast_shadows_(false),
         draw_distance_(0.0)
@@ -35,7 +35,7 @@ namespace OgreRenderer
         {
             Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
             scene_mgr->destroySceneNode(adjustment_node_);
-            adjustment_node_ = NULL;
+            adjustment_node_ = 0;
         }
     }
     
@@ -245,7 +245,7 @@ namespace OgreRenderer
             Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
             scene_mgr->destroyEntity(entity_);
             
-            entity_ = NULL;
+            entity_ = 0;
         }
         
         if (!cloned_mesh_name_.empty())

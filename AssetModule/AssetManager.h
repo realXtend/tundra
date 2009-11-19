@@ -33,7 +33,7 @@ namespace Asset
         //! Gets asset
         /*! \param asset_id Asset ID, UUID for legacy UDP assets
             \param asset_type Asset type
-            \return Pointer to asset, NULL if not found
+            \return Pointer to asset, 0 if not found
          */
         virtual Foundation::AssetPtr GetAsset(const std::string& asset_id, const std::string& asset_type);
 
@@ -44,7 +44,7 @@ namespace Asset
             \param asset_id Asset ID, UUID for legacy UDP assets
             \param asset_type Asset type
             \param received Minimum continuous bytes received from the start
-            \return Pointer to asset, NULL if not found or not enough bytes
+            \return Pointer to asset, 0 if not found or not enough bytes
            
          */
         virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received);
