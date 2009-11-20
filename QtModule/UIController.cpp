@@ -101,6 +101,7 @@ void UIController::HideCanvas(UICanvas &canvas)
     if (&canvas == keyboardFocusCanvas)
     {
         Deactivate(*keyboardFocusCanvas);
+        lastKnownKeyboardFocusItem = 0;
         keyboardFocusCanvas = 0;
     }
 
