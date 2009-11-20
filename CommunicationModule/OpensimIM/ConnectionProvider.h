@@ -58,7 +58,7 @@ namespace OpensimIM
 		ConnectionVector connections_;
 		Foundation::Framework* framework_;
     protected slots:
-      	void ConnectionProvider::OnConnectionReady(Communication::ConnectionInterface& connection);
+      	void OnConnectionReady(Communication::ConnectionInterface& connection);
 	};
 
 } // end of namespace: OpensimIM
