@@ -50,7 +50,7 @@ use_package (CURL)
 use_package (OPENJPEG)
 use_package (OIS)
 use_package (XMLRPC)
-use_modules (RexLogic OgreRenderingModule AssetModule RexCommon QtModule HttpUtilities RpcUtilities ProtocolUtilities InputModuleOIS ProtocolModuleOpenSim ProtocolModuleTaiga)
+use_modules (ReXLogic OgreRenderingModule AssetModule RexCommon QtModule HttpUtilities RpcUtilities ProtocolUtilities InputModuleOIS ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 use_framework_modules (Core Foundation Interfaces SceneManager)

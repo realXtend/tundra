@@ -62,7 +62,7 @@ use_package (TELEPATHY_FARSIGHT)
 use_package (GSTREAMER) 
 use_package (FARSIGHT2)
 
-use_modules (QtModule RexLogic ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
+use_modules (QtModule ReXLogic ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 use_framework_modules (Core Foundation Interfaces RexCommon) 
