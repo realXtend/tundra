@@ -125,7 +125,7 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
             //if (controller_->GetCanvasAt(pos.x(), pos.y()))
             //    framework_->GetQApplication()->setActiveWindow(controller_->GetCanvasAt(pos.x(), pos.y()));
             
-          
+            controller_->SetCurrentModifier(GetCurrentModifier(input));
             controller_->InjectMousePress(pos.x(), pos.y(), canvas);
             
             if ( canvas )
@@ -224,6 +224,7 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
     }
     else if (category_id == input_event_category_ && event_id == Input::Events::KEY_PRESSED)
     {
+        
         //Hack to test making EC_UICanvases
         //Input::Events::Key* key = checked_static_cast<Input::Events::Key *>(data);
         //int keycode = key->code_;
@@ -274,7 +275,7 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
         //        }
         //    }
         //}                
-    }    
+    }
     else if (category_id == scene_event_category_ && event_id == Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED)
     {
         // If entity has changed geometry or materials, and it has EC_UICanvas, make sure the EC_UICanvas refreshes
@@ -303,16 +304,21 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
                         QPoint pos = canvas->GetPosition().toPoint();
                         QSize size = canvas->GetSize();
                         QPoint position = QPoint(size.width() * raycast_data->u + pos.x(), size.height() * raycast_data->v + pos.y());
-                        controller_->InjectMousePress(position.x(), position.y(), canvas.get());
-                        mouse_left_button_down_ = true;
-                        // Forced redraw (needed?)
-                        controller_->Redraw(canvas);
+                    
+                        // Poll from OIS which modifiers are on.
 
-                        boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
+                         boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
                             framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
 
                         boost::shared_ptr<Input::InputModuleOIS> input = inputWeak.lock();
+
+                        controller_->SetCurrentModifier(GetCurrentModifier(input));
+                        controller_->InjectMousePress(position.x(), position.y(), canvas.get());
+                        mouse_left_button_down_ = true;
                         
+                        // Forced redraw (needed?)
+                        controller_->Redraw(canvas);
+
                         if (controller_->IsKeyboardFocus() && input->GetState() != Input::State_Buffered)
                             input->SetState(Input::State_Buffered);
                         else if (!controller_->IsKeyboardFocus())
@@ -322,8 +328,14 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
                     }
                 }
             }
+
         }
-        
+        boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
+        framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
+
+        boost::shared_ptr<Input::InputModuleOIS> input = inputWeak.lock();
+        // Clear keyboard.
+        input->SetState(Input::State_Unknown);
 
     }
 
@@ -337,6 +349,26 @@ boost::weak_ptr<UICanvas> QtModule::CreateCanvas(UICanvas::DisplayMode mode)
     //canvas->setParent(framework_->GetApplicationMainWindowQWidget());
     
     return canvas;
+}
+
+Qt::KeyboardModifier QtModule::GetCurrentModifier(const boost::shared_ptr<Input::InputModuleOIS>& input) const
+{
+    Qt::KeyboardModifier modifier = Qt::NoModifier;
+
+    if ( input->IsKeyDown(OIS::KC_LMENU) || input->IsKeyDown(OIS::KC_RMENU ) )
+    {
+        modifier = Qt::AltModifier;
+
+    } else if ( input->IsKeyDown(OIS::KC_LSHIFT) || input->IsKeyDown(OIS::KC_RSHIFT) )
+    {
+        modifier = Qt::ShiftModifier;
+
+    } else if ( input->IsKeyDown(OIS::KC_LCONTROL) || input->IsKeyDown(OIS::KC_RCONTROL ) )
+    {
+        modifier = Qt::ControlModifier;
+    }
+    
+    return modifier;
 }
 
 void QtModule::AddCanvasToControlBar(boost::shared_ptr<QtUI::UICanvas> canvas, const QString &buttonTitle)
@@ -386,10 +418,14 @@ void QtModule::Update(Core::f64 frametime)
 
         if (change.manhattanLength() >= 1)
         {
+            bool handled = false;
             UICanvas* canvas = controller_->GetCanvasAt(pos.x(), pos.y());
 
             if ( canvas != 0 && !canvas->IsHidden())
-             controller_->InjectMouseMove(pos.x(),pos.y(), change.x(), change.y(), canvas);        
+            {
+                controller_->InjectMouseMove(pos.x(),pos.y(), change.x(), change.y(), canvas);        
+                handled = true;
+            }
             else 
             {
                 //Do raycast, generate mouse move to result of entity if it has a EC_CANVAS. 
@@ -404,10 +440,16 @@ void QtModule::Update(Core::f64 frametime)
                     change = location - lastLocation_;
                     controller_->InjectMouseMove(location.x(), location.y(), change.x(), change.y(), in_world_canvas.get());  
                     lastLocation_ = location;
+                    handled = true;
                 }
                 
             }
             
+            if ( !handled )
+            {
+                // Check that was this a mouse move event?
+                controller_->InjectMouseMove(pos.x(),pos.y(), change.x(), change.y(), 0);
+            }
             lastPos_ = pos.toPoint();
         }
 

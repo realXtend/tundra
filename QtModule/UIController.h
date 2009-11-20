@@ -65,6 +65,13 @@ namespace QtUI
             to the canvas->Hide version. Do not pass in 0. */
         void HideCanvas(UICanvas &canvas);
 
+        /**
+         * Sets a current modifier. 
+         * @param modifier is a current modifier.
+         */
+        void SetCurrentModifier(const Qt::KeyboardModifier& modifier) { currentModifier_ = modifier; }
+
+
     public slots:
         /// Brings the canvas with the given id to topmost in the window drawing order.
         void SetTop(const QString& id);
@@ -258,6 +265,8 @@ namespace QtUI
         /// Current pressed keys
         /// \todo Move away from here to OIS.
         QList<QPair<Qt::Key, QString> > pressedKeys_;
+
+        Qt::KeyboardModifier currentModifier_;
     };
 }
 

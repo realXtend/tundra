@@ -12,6 +12,11 @@
 
 class QGraphicsScene;
 
+namespace Input
+{
+    class InputModuleOIS;
+}
+
 namespace QtUI
 {
 	class UICanvasManager;
@@ -109,6 +114,8 @@ namespace QtUI
         
         /// Refreshes an entity containing EC_UICanvas, when a scene event telling of its modification is posted
         void RefreshEC_UICanvas(Foundation::EventDataInterface* data);
+
+        Qt::KeyboardModifier GetCurrentModifier(const boost::shared_ptr<Input::InputModuleOIS>& input) const;
 
         boost::shared_ptr<UICanvas> GetCanvas(const Foundation::RaycastResult& result);
 

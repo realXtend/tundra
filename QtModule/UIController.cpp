@@ -30,7 +30,8 @@ currentMouseAction(MouseActionNone),
 mouseActionCanvas(0),
 mouseHoverCanvas(0),
 keyboardFocusCanvas(0),
-lastKnownKeyboardFocusItem(0)
+lastKnownKeyboardFocusItem(0),
+currentModifier_(Qt::NoModifier)
 {}
 
 UIController::~UIController()
@@ -146,8 +147,10 @@ boost::weak_ptr<UICanvas> UIController::CreateCanvas(UICanvas::DisplayMode mode)
 void UIController::InjectMouseMove(int x, int y, int deltaX, int deltaY, UICanvas* canvas)
 {
     QPoint point(x,y);
+    
     int index = GetCanvasIndexAt(point);
     UICanvas *currentCanvas = (index == -1 ? 0 : canvases_[index].get());
+    
 
     if ( currentCanvas == 0 && canvas != 0)
         currentCanvas = canvas;
@@ -730,7 +733,7 @@ void UIController::SendMouseLeftButtonPressEvent(UICanvas &canvas, int x, int y)
     mouseEvent.setButtons(Qt::LeftButton);
     mouseEvent.setButton(Qt::LeftButton);
 
-    mouseEvent.setModifiers(0);
+    mouseEvent.setModifiers(currentModifier_);
     mouseEvent.setAccepted(false);
 
     // Make this canvas the current active canvas for the OS so that it is properly prepared to take our input.
