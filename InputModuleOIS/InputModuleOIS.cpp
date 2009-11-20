@@ -63,8 +63,8 @@ namespace Input
         event_manager->RegisterEvent(event_category_, Events::RIGHT_MOUSECLICK_PRESSED, "RightMouseClickPressed");
         event_manager->RegisterEvent(event_category_, Events::RIGHT_MOUSECLICK_RELEASED, "RightMouseClickReleased");
 
-        event_manager->RegisterEvent(event_category_, Events::INWORLD_CLICK, "InWorldClickBuild");
-        event_manager->RegisterEvent(event_category_, Events::INWORLD_CLICK_REL, "InWorldClickBuildReleased");
+        event_manager->RegisterEvent(event_category_, Events::INWORLD_CLICK_BUILD, "InWorldClickBuild");
+        event_manager->RegisterEvent(event_category_, Events::INWORLD_CLICK_BUILD_REL, "InWorldClickBuildReleased");
 
         key_mapping_ = MapperPtr(new Mapper(this));
 
