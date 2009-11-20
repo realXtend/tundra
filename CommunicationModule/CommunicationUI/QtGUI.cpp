@@ -85,13 +85,12 @@ namespace CommunicationUI
 	{
 		communication_service_ = Communication::CommunicationService::GetInstance();
 
-		LogInfo("Creating UIContainer, initializing with Login widget...");
-		this->setLayout(new QVBoxLayout());
+		LogInfo("Creating Login UI");
+		this->setLayout(new QVBoxLayout(this));
 		this->layout()->setMargin(0);
 		this->setObjectName(QString("containerWidget"));
         this->setStyleSheet("QWidget#containerWidget { background-color: rgba(0,0,0,0); padding: 0px; margin: 0px; }");
 		LoadUserInterface(false);
-		LogInfo("Loading successfull");
 	}
 
 	UIContainer::~UIContainer(void)
@@ -120,7 +119,7 @@ namespace CommunicationUI
             // Init chat GUI
 			QUiLoader loader;
 			QFile uiFile("./data/ui/communications.ui");
-			chatWidget_ = loader.load(&uiFile, this);
+			chatWidget_ = loader.load(&uiFile, 0);
             chatWidget_->resize(720, 350);
 			uiFile.close();
 
@@ -155,14 +154,13 @@ namespace CommunicationUI
             canvas_chat_->Show();
             emit( ChangeToolBarButton(canvas_login_->GetID(), canvas_chat_->GetID()) );
 
-            SAFE_DELETE(friendsAndTabWidget);
 		} 
 		else
 		{
             if (loginWidget_ == 0)
 			{			
 			    // Init login GUI
-			    loginWidget_ = new Login(this, currentMessage, framework_);
+			    loginWidget_ = new Login(0, currentMessage, framework_);
                 loginWidget_->setObjectName(QString("containerMiddleChat"));
                 loginWidget_->setStyleSheet("QWidget#containerMiddleChat { background-color: rgba(0,0,0,0); padding: 0px; margin: 0px; }");
 			    // Get widgets
@@ -412,7 +410,7 @@ namespace CommunicationUI
 	Login::Login(QWidget *parent, QString &message, Foundation::Framework *framework)
 		: QWidget(parent), framework_(framework)
 	{
-		this->setLayout(new QVBoxLayout());
+		this->setLayout(new QVBoxLayout(this));
 		this->layout()->setMargin(0);
 		InitWidget(message);
         ReadConfig();
@@ -575,7 +573,7 @@ namespace CommunicationUI
 	Conversation::Conversation(ConversationsContainer *parent, Communication::ChatSessionInterface &chatSession, Communication::ContactInterface *contact, QString name)
 		: QWidget(parent), myParent_(parent), chat_session_(chatSession), contact_(contact), myName_(name)
 	{
-		this->setLayout(new QVBoxLayout());
+		this->setLayout(new QVBoxLayout(this));
 		this->layout()->setMargin(0);
 		InitWidget();
 		ConnectSignals();
@@ -585,8 +583,6 @@ namespace CommunicationUI
 	{
         delete layout();
         SAFE_DELETE(internalWidget_);
-        SAFE_DELETE(textEditChat_);
-        SAFE_DELETE(lineEditMessage_);
 	}
 
 	void Conversation::InitWidget()

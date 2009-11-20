@@ -259,7 +259,7 @@ namespace CommunicationUI
 	friend class UIContainer;
 	
 	MODULE_LOGGING_FUNCTIONS
-	static const std::string NameStatic() { return "CommunicationModule::QtGUI"; } // for logging functionality
+	static const std::string NameStatic() { return "Communication IM UI"; } // for logging functionality
 
 	public:
 		QtGUI(Foundation::Framework *framework);
