@@ -36,17 +36,17 @@ if lsb_release -c | grep -q karmic; then
 	 libopenjpeg-dev libcurl4-gnutls-dev libexpat1-dev libphonon-dev \
 	 build-essential g++ libglib libogre-dev libois-dev libceguiogre-dev \
 	 python-gtk2-dev libdbus-glib-1-dev ccache libqt4-dev python-dev \
-	 libxmlrpc-epi-dev bison flex libxml2-dev liboil-dev
+	 libxmlrpc-epi-dev bison flex libxml2-dev liboil-dev cmake
 	sudo apt-get install 'libboost1.40.*-dev'
 	
 fi
 
 if lsb_release -c | grep -q jaunty; then
 	sudo aptitude -y install build-essential libboost1.37-dev \
-	 libopenjpeg-dev lbxmlrpc-epi-dev libcurl4-gnutls-dev libqt4-dev \
+	 libopenjpeg-dev libxmlrpc-epi-dev libcurl4-gnutls-dev libqt4-dev \
 	 libexpat1-dev libphonon-dev python-dev scons g++ python-gtk2-dev \
 	 libdbus-glib-1-dev ccache bison flex libxml2-dev liboil-dev
-	sudo apt-get install 'libboost1.37.*-dev'
+	sudo apt-get install 'libboost1.37.*-dev' cmake
 	 
 fi
 
