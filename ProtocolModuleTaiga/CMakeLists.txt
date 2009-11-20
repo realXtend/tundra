@@ -20,7 +20,7 @@ use_package (POCO)
 use_package (XMLRPC)
 use_package (QT4)
 use_package (CURL)
-use_modules (ReXLogic HttpUtilities RpcUtilities ProtocolUtilities)
+use_modules (RexLogicModule HttpUtilities RpcUtilities ProtocolUtilities)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
 use_framework_modules (Core Foundation Interfaces SceneManager RexCommon)

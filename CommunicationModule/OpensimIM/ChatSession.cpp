@@ -1,4 +1,4 @@
-#include "../../ReXLogic/RexLogicModule.h"
+#include "../../RexLogicModule/RexLogicModule.h"
 #include <QTime>
 #include "ChatSession.h"
 

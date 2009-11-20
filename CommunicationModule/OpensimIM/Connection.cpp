@@ -1,5 +1,5 @@
 #include <StableHeaders.h>
-#include "../../ReXLogic/RexLogicModule.h" // chat
+#include "../../RexLogicModule/RexLogicModule.h" // chat
 #include <RealXtend/RexProtocolMsgIDs.h>
 #include "Connection.h"
 #include "ConnectionProvider.h"

@@ -36,7 +36,7 @@ use_package (QT4)
 use_package (PYTHON)
 use_package (PYTHON_QT)
 
-use_modules (RexCommon ReXLogic ProtocolUtilities QtModule HttpUtilities AssetModule TextureDecoderModule)
+use_modules (RexCommon RexLogicModule ProtocolUtilities QtModule HttpUtilities AssetModule TextureDecoderModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 use_framework_modules (Core Foundation Interfaces RexCommon)
