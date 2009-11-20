@@ -8,7 +8,7 @@
 #ifndef incl_InventoryModule_InventoryWindow_h
 #define incl_InventoryModule_InventoryWindow_h
 
-#include "WorldStream.h"
+#include "InventoryModule.h"
 #include "RexTypes.h"
 
 #include <QObject>
@@ -60,19 +60,18 @@ namespace Inventory
         /// Initializes the OpenSim inventory data/view model.
         /// @param world_stream
         /// @return Pointer to inventory data model.
-        AbstractInventoryDataModel *InitOpenSimInventoryTreeModel(ProtocolUtilities::WorldStreamPtr world_stream);
+        InventoryPtr InitOpenSimInventoryTreeModel(ProtocolUtilities::WorldStreamPtr world_stream);
 
-        /// Initialize the Taiga webdav data/view model.
-        /// @param inventory_module
+        /// Initializes the Taiga WebDAV data/view model.
         /// @param identityUrl
         /// @param hostUrl
         /// @return Pointer to inventory data model.
-        AbstractInventoryDataModel *InitWebDavInventoryTreeModel(const std::string &identityUrl, const std::string &hostUrl);
+        InventoryPtr InitWebDavInventoryTreeModel(const std::string &identityUrl, const std::string &hostUrl);
 
         /// Resets the inventory tree model.
         void ResetInventoryTreeModel();
 
-        /// Toggles the inventory window.
+        /// Toggles inventory window visibility.
         void Toggle();
 
         /// Hides the inventory window.
@@ -80,14 +79,6 @@ namespace Inventory
 
         /// Handles data from InventoryDescendent packet.
         void HandleInventoryDescendent(InventoryItemEventData *item_data);
-
-        /// Set World Stream
-        void SetWorldStreamToDataModel(ProtocolUtilities::WorldStreamPtr world_stream);
-
-        ///
-        /// @param resource
-        /// @param data
-        void HandleResourceReady(const bool &resource, Foundation::EventDataInterface *data);
 
     private slots:
         /// Expands the inventory folder in the treeview
@@ -119,7 +110,7 @@ namespace Inventory
         void InitInventoryWindow();
 
         /// Type of the present inventory model
-        QString inventoryType_;
+        InventoryModule::InventoryDataModelType inventoryType_;
 
         /// Framework pointer.
         Foundation::Framework *framework_;
@@ -132,9 +123,6 @@ namespace Inventory
 
         /// Inventory view model.
         QPointer<InventoryItemModel> inventoryItemModel_;
-
-        ///
-//        QMap<Core::request_tag_t, RexTypes::asset_type_t> resourceRequests_;
 
         /// Inventory window widget.
         QWidget *inventoryWidget_;

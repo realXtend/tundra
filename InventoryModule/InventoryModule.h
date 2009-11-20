@@ -18,9 +18,19 @@ namespace Inventory
     class InventoryWindow;
     class AbstractInventoryDataModel;
 
+    typedef boost::shared_ptr<AbstractInventoryDataModel> InventoryPtr;
+
     class InventoryModule : public Foundation::ModuleInterfaceImpl
     {
     public:
+        /// Enumeration of inventory data models.
+        enum InventoryDataModelType
+        {
+            IDMT_OpenSim,
+            IDMT_WebDav,
+            IDMT_Unknown
+        };
+
         /// Default constructor.
         InventoryModule();
 
@@ -83,7 +93,10 @@ namespace Inventory
         ProtocolUtilities::WorldStreamPtr currentWorldStream_ ;
 
         /// Inventory data model.
-        AbstractInventoryDataModel *dataModel_;
+        InventoryPtr inventory_;
+
+        /// Inventory data model.type.
+        InventoryDataModelType inventoryType_;
     };
 }
 

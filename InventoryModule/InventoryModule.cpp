@@ -29,7 +29,8 @@ InventoryModule::InventoryModule() :
     assetEventCategory_(0),
     resourceEventCategory_(0),
     frameworkEventCategory_(0),
-    inventoryWindow_(0)
+    inventoryWindow_(0),
+    inventoryType_(IDMT_Unknown)
 {
 }
 
@@ -70,7 +71,7 @@ void InventoryModule::Initialize()
             Console::Bind(this, &Inventory::InventoryModule::UploadMultipleAssets)));
     }
 
-    // Create inventory window.
+    // Create inventory_ window.
     inventoryWindow_ = new InventoryWindow(framework_);
 
     LogInfo("System " + Name() + " initialized.");
@@ -115,7 +116,7 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
 {
     if (category_id == networkStateEventCategory_)
     {
-        // Connected to server. Initialize inventory tree model.
+        // Connected to server. Initialize inventory_ tree model.
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
         {
             ProtocolUtilities::AuthenticationEventData *auth_data = dynamic_cast<ProtocolUtilities::AuthenticationEventData *>(data);
@@ -127,26 +128,32 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
             case ProtocolUtilities::AT_Taiga:
                 // Check if python module is loaded and has taken care of PythonQt::init()
                 if (!framework_->GetModuleManager()->HasModule(Foundation::Module::MT_PythonScript))
-                    LogError("Python module not in use. WebDav inventory can't be used!");
+                    LogError("Python module not in use. WebDav inventory_ can't be used!");
                 else
-                    dataModel_ = inventoryWindow_->InitWebDavInventoryTreeModel(auth_data->identityUrl, auth_data->hostUrl);
+                {
+                    inventory_ = inventoryWindow_->InitWebDavInventoryTreeModel(auth_data->identityUrl, auth_data->hostUrl);
+                    inventoryType_ = IDMT_WebDav;
+                }
                 break;
             case ProtocolUtilities::AT_OpenSim:
             case ProtocolUtilities::AT_RealXtend:
             {
-                dataModel_ = inventoryWindow_->InitOpenSimInventoryTreeModel(GetCurrentWorldStream());
-                OpenSimInventoryDataModel *osmodel = static_cast<OpenSimInventoryDataModel *>(dataModel_);
+                inventory_ = inventoryWindow_->InitOpenSimInventoryTreeModel(GetCurrentWorldStream());
+                OpenSimInventoryDataModel *osmodel = static_cast<OpenSimInventoryDataModel *>(inventory_.get());
                 osmodel->GetAssetUploader()->SetWorldStream(currentWorldStream_);
+                inventoryType_ = IDMT_OpenSim;
                 break;
             }
+            case ProtocolUtilities::AT_Unknown:
             default:
+                inventoryType_ = IDMT_Unknown;
                 break;
             }
 
             return false;
         }
 
-        // Disconnected from server. Hide inventory and reset tree model.
+        // Disconnected from server. Hide inventory_ and reset tree model.
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
         {
             if (inventoryWindow_)
@@ -161,7 +168,7 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
 
     if (category_id == inventoryEventCategory_)
     {
-        // Add new items to inventory.
+        // Add new items to inventory_.
         if (event_id == Inventory::Events::EVENT_INVENTORY_DESCENDENT)
         {
             InventoryItemEventData *item_data = dynamic_cast<InventoryItemEventData *>(data);
@@ -177,14 +184,7 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
             if (!upload_data)
                 return false;
 
-            // Convert to QStringList
-            ///\todo Use QStringList all the way...
-            QStringList filenames;
-            Core::StringList list = upload_data->filenames;
-            for (Core::StringList::iterator it = list.begin(); it != list.end(); ++it)
-                filenames << QString((*it).c_str());
-
-            dataModel_->UploadFiles(filenames, 0);
+            inventory_->UploadFiles(upload_data->filenames, 0);
         }
 
         // Upload request from other modules, using buffers.
@@ -194,20 +194,7 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
             if (!upload_data)
                 return false;
 
-            // Convert to QList and QVector
-            ///\todo Use Qt types all the way...
-            QStringList filenames;
-            QVector<QVector<Core::u8>> buffers;
-
-            Core::StringList::iterator it;
-            for(it = upload_data->filenames.begin(); it != upload_data->filenames.end(); ++it)
-                filenames << QString((*it).c_str());
-
-            std::vector<std::vector<Core::u8>>::iterator iter;
-            for(iter = upload_data->buffers.begin(); iter != upload_data->buffers.end(); ++iter)
-                buffers << QVector<uchar>::fromStdVector(*iter);
-
-            dataModel_->UploadFilesFromBuffer(filenames, buffers, 0);
+            inventory_->UploadFilesFromBuffer(upload_data->filenames, upload_data->buffers, 0);
         }
 
         return false;
@@ -222,24 +209,32 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
                 SubscribeToNetworkEvents(event_data->currentProtocolModule);
             return false;
         }
-        else if (event_id == Foundation::WORLD_STREAM_READY)
+
+        if(event_id == Foundation::WORLD_STREAM_READY)
         {
             Foundation::WorldStreamReadyEvent *event_data = dynamic_cast<Foundation::WorldStreamReadyEvent *>(data);
             if (event_data)
-            {
                 currentWorldStream_ = event_data->WorldStream;
-                inventoryWindow_->SetWorldStreamToDataModel(currentWorldStream_);
-            }
 
             return false;
         }
     }
 
-    if (category_id == assetEventCategory_ && event_id == Asset::Events::ASSET_READY)
-        inventoryWindow_->HandleResourceReady(false, data);
+    if (inventoryType_ == IDMT_OpenSim)
+    {
+        if(!inventory_.get())
+        return false;
 
-    if (category_id == resourceEventCategory_ && event_id == Resource::Events::RESOURCE_READY)
-        inventoryWindow_->HandleResourceReady(true, data);
+        OpenSimInventoryDataModel *osmodel = checked_static_cast<OpenSimInventoryDataModel *>(inventory_.get());
+        if (osmodel->HasPendingDownloadRequests())
+        {
+            if (category_id == assetEventCategory_ && event_id == Asset::Events::ASSET_READY)
+                osmodel->HandleAssetReady(data);
+
+            if (category_id == resourceEventCategory_ && event_id == Resource::Events::RESOURCE_READY)
+                osmodel->HandleResourceReady(data);
+        }
+    }
 
     return false;
 }
@@ -251,12 +246,12 @@ Console::CommandResult InventoryModule::UploadAsset(const Core::StringVector &pa
     if (!currentWorldStream_.get())
         return Console::ResultFailure("Not connected to server.");
 
-    if (!dataModel_)
+    if (!inventory_.get())
         return Console::ResultFailure("Inventory doesn't exist. Can't upload!.");
 
-    OpenSimInventoryDataModel *osmodel = dynamic_cast<OpenSimInventoryDataModel *>(dataModel_);
+    OpenSimInventoryDataModel *osmodel = dynamic_cast<OpenSimInventoryDataModel *>(inventory_.get());
     if (!osmodel)
-        return Console::ResultFailure("Console upload supported only for classic OpenSim inventory.");
+        return Console::ResultFailure("Console upload supported only for classic OpenSim inventory_.");
 
     AssetUploader *uploader = osmodel->GetAssetUploader();
     if (!uploader)
@@ -284,7 +279,7 @@ Console::CommandResult InventoryModule::UploadAsset(const Core::StringVector &pa
     std::string filter = GetOpenFileNameFilter(asset_type);
     std::string cat_name = GetCategoryNameForAssetType(asset_type);
 
-    RexUUID folder_id = RexUUID(dataModel_->GetFirstChildFolderByName(cat_name.c_str())->GetID().toStdString());
+    RexUUID folder_id = RexUUID(inventory_->GetFirstChildFolderByName(cat_name.c_str())->GetID().toStdString());
     if (folder_id.IsNull())
          return Console::ResultFailure("Inventory folder for this type of file doesn't exists. File can't be uploaded.");
 
@@ -306,12 +301,12 @@ Console::CommandResult InventoryModule::UploadMultipleAssets(const Core::StringV
     if (!currentWorldStream_.get())
         return Console::ResultFailure("Not connected to server.");
 
-    if (!dataModel_)
+    if (!inventory_.get())
         return Console::ResultFailure("Inventory doesn't exist. Can't upload!.");
 
-    OpenSimInventoryDataModel *osmodel = dynamic_cast<OpenSimInventoryDataModel *>(dataModel_);
+    OpenSimInventoryDataModel *osmodel = dynamic_cast<OpenSimInventoryDataModel *>(inventory_.get());
     if (!osmodel)
-        return Console::ResultFailure("Console upload supported only for classic OpenSim inventory.");
+        return Console::ResultFailure("Console upload supported only for classic OpenSim inventory_.");
 
     AssetUploader *uploader = osmodel->GetAssetUploader();
     if (!uploader)

@@ -44,11 +44,6 @@ OpenSimInventoryDataModel::~OpenSimInventoryDataModel()
     SAFE_DELETE(assetUploader_);
 }
 
-void OpenSimInventoryDataModel::SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream)
-{
-    currentWorldStream_ = world_stream;
-}
-
 AbstractInventoryItem *OpenSimInventoryDataModel::GetFirstChildFolderByName(const QString &searchName) const
 {
     return rootFolder_->GetFirstChildFolderByName(searchName);
@@ -229,8 +224,6 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
     if (!asset)
         return;
 
-//    assetDownloadRequests_[asset->GetAssetReference()] = asset->GetName();
-
     std::string id = asset->GetAssetReference().toStdString();
     asset_type_t asset_type = asset->GetAssetType();
 
@@ -251,12 +244,9 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
             boost::shared_ptr<TextureServiceInterface> texture_service =
                 service_manager->GetService<TextureServiceInterface>(Service::ST_Texture).lock();
 
-            //if (requestTags_.find(id) == requestTags_.end())
-            //{
             Core::request_tag_t tag = texture_service->RequestTexture(id);
             if (tag)
                 downloadRequests_[qMakePair(tag, asset_type)] = fullFilename;
-            //}
         }
     }
     case RexAT_Mesh:
@@ -270,13 +260,9 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
                 service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
 
-            // Perform the actual asset request only once, for the first request
-            //if (request_tags_.find(id) == request_tags_.end())
-            //{
             Core::request_tag_t tag = asset_service->RequestAsset(id, GetTypeNameFromAssetType(asset_type));
             if (tag) 
                 downloadRequests_[qMakePair(tag, asset_type)] = fullFilename;
-            //}
         }
         break;
     }
@@ -296,68 +282,60 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetRoot() const
     return rootFolder_;
 }
 
-void OpenSimInventoryDataModel::SaveAssetToDisk(Foundation::EventDataInterface *data)
+void OpenSimInventoryDataModel::SetWorldStream(ProtocolUtilities::WorldStreamPtr world_stream)
 {
-    RexTypes::asset_type_t asset_type = RexAT_None;
-    Core::request_tag_t tag = 0;
-    Foundation::AssetPtr asset;
+    currentWorldStream_ = world_stream;
+}
 
-    Resource::Events::ResourceReady* resourceEventData = dynamic_cast<Resource::Events::ResourceReady*>(data);
-    if (resourceEventData)
-    {
-        tag = resourceEventData->tag_;
-        asset_type = RexAT_Texture;
-    }
-    else
-    {
-        Asset::Events::AssetReady *assetEventData = dynamic_cast<Asset::Events::AssetReady *>(data);
-        if (assetEventData)
-        {
-            Asset::Events::AssetReady *assetEventData = checked_static_cast<Asset::Events::AssetReady *>(data);
-            tag = assetEventData->tag_;
-            asset_type = RexTypes::GetAssetTypeFromTypeName(assetEventData->asset_type_);
-            asset = assetEventData->asset_;
-        }
-    }
+void OpenSimInventoryDataModel::HandleResourceReady(Foundation::EventDataInterface *data)
+{
+    Resource::Events::ResourceReady* resourceReady = checked_static_cast<Resource::Events::ResourceReady *>(data);
+    RexTypes::asset_type_t asset_type = RexAT_Texture;
+    Core::request_tag_t tag = resourceReady->tag_;
+//    QString asset_id = resourceReady->id_.c_str();
 
     AssetRequestMap::iterator i = downloadRequests_.find(qMakePair(tag, asset_type));
     if (i == downloadRequests_.end())
         return;
 
-    const QString &filename = i.value();
-    if (resourceEventData && asset_type == RexTypes::RexAT_Texture)
-    {
-        TextureDecoder::TextureResource *tex = checked_static_cast<TextureDecoder::TextureResource *>(resourceEventData->resource_.get());
-        if (tex->GetLevel() != 0)
-            return;
+    TextureDecoder::TextureResource *tex = checked_static_cast<TextureDecoder::TextureResource *>(resourceReady->resource_.get());
+    if (tex->GetLevel() != 0)
+        return;
 
-        size_t size = tex->GetWidth() * tex->GetHeight() * tex->GetComponents();
-        QImage img = QImage::fromData(tex->GetData(), size);
-        img.save(filename);
-    }
-    else
-    {
-        QFile file(filename);
-        file.open(QIODevice::WriteOnly);
-        file.write((const char*)asset->GetData(), asset->GetSize());
-        file.close();
-    }
+    uint size = tex->GetWidth() * tex->GetHeight() * tex->GetComponents();
+    QImage img = QImage::fromData(tex->GetData(), size);
+    img.save(i.value());
 
-    InventoryModule::LogInfo("File " + filename.toStdString() + " succesfully saved.");
+    InventoryModule::LogInfo("File " + i.value().toStdString() + " succesfully saved.");
 
     downloadRequests_.erase(i);
 }
 
-/*
-bool OpenSimInventoryDataModel::HasPendingDownloadRequest(const QString &asset_reference)
+void OpenSimInventoryDataModel::HandleAssetReady(Foundation::EventDataInterface *data)
 {
-    QMap<QString, QString>::iterator i = assetDownloadRequests_.find(asset_reference);
-    if (i != assetDownloadRequests_.end())
-        return true;
+    Asset::Events::AssetReady *assetReady = checked_static_cast<Asset::Events::AssetReady*>(data);
+    Core::request_tag_t tag = assetReady->tag_;
+    asset_type_t asset_type = RexTypes::GetAssetTypeFromTypeName(assetReady->asset_type_);
+//    QString asset_id = assetReady->asset_->GetId().c_str();
 
-    return false;
+    // Don't handle AssetReady's for textures. We're interested in ResourceReady event for textures;
+    if (asset_type == RexAT_Texture)
+        return;
+
+    AssetRequestMap::iterator i = downloadRequests_.find(qMakePair(tag, asset_type));
+    if (i == downloadRequests_.end())
+        return;
+
+    Foundation::AssetPtr asset = assetReady->asset_;
+    QFile file(i.value());
+    file.open(QIODevice::WriteOnly);
+    file.write((const char*)asset->GetData(), asset->GetSize());
+    file.close();
+
+    InventoryModule::LogInfo("File " + i.value().toStdString() + " succesfully saved.");
+
+    downloadRequests_.erase(i);
 }
-*/
 
 #ifdef _DEBUG
 void OpenSimInventoryDataModel::DebugDumpInventoryFolderStructure()
@@ -404,8 +382,7 @@ void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
 
 void OpenSimInventoryDataModel::SetupModelData(ProtocolUtilities::InventorySkeleton *inventory_skeleton)
 {
-    ProtocolUtilities::InventoryFolderSkeleton *root_skel = inventory_skeleton->GetRoot();
-    if (!root_skel)
+    if (!inventory_skeleton->GetRoot())
     {
         InventoryModule::LogError("Couldn't find inventory root folder skeleton. Can't create OpenSim inventory data model.");
         return;
@@ -413,7 +390,7 @@ void OpenSimInventoryDataModel::SetupModelData(ProtocolUtilities::InventorySkele
 
     worldLibraryOwnerId_ = STD_TO_QSTR(inventory_skeleton->worldLibraryOwnerId.ToString());
 
-    CreateNewFolderFromFolderSkeleton(0, root_skel);
+    CreateNewFolderFromFolderSkeleton(0, inventory_skeleton->GetRoot());
 }
 
 } // namespace Inventory

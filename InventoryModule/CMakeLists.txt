@@ -29,7 +29,6 @@ add_definitions (-DUSE_QT)
 
 use_package (BOOST)
 use_package (POCO)
-use_package (XMLRPC)
 use_package (CURL)
 use_package (OPENJPEG)
 use_package (OGRE)
@@ -37,17 +36,14 @@ use_package (QT4)
 use_package (PYTHON)
 use_package (PYTHON_QT)
 
-# remove ProtocolModuleOpenSim ProtocolModuleTaiga if it's not needed anymore in RexServerConnection.h
-use_modules (RexCommon ReXLogic ProtocolUtilities RpcUtilities HttpUtilities QtModule ProtocolModuleOpenSim ProtocolModuleTaiga
-    AssetModule TextureDecoderModule)
+use_modules (RexCommon ReXLogic ProtocolUtilities QtModule HttpUtilities AssetModule TextureDecoderModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 use_framework_modules (Core Foundation Interfaces RexCommon)
 
-link_modules (RexCommon RexLogicModule ProtocolUtilities HttpUtilities RpcUtilities QtModule)
+link_modules (RexCommon RexLogicModule ProtocolUtilities HttpUtilities QtModule)
 link_package (BOOST)
 link_package (POCO)
-link_package (XMLRPC)
 link_package (CURL)
 link_package (OPENJPEG)
 link_package (OGRE)

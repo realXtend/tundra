@@ -40,12 +40,6 @@ namespace Inventory
         Qt::ItemFlags flags(const QModelIndex &index) const;
 
         /// QAbstractItemModel override.
-//        bool canFetchMore(const QModelIndex & parent) const;
-
-        /// QAbstractItemModel override.
-//        void fetchMore(const QModelIndex &parent);
-
-        /// QAbstractItemModel override.
         Qt::DropActions supportedDropActions() const;
 
         /// QAbstractItemModel override.
