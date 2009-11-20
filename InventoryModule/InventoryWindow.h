@@ -11,10 +11,9 @@
 #include "InventoryModule.h"
 #include "RexTypes.h"
 
-#include <QObject>
 #include <QPointer>
+#include <QObject>
 
-class QWidget;
 class QPushButton;
 class QTreeWidgetItem;
 class QTreeView;
@@ -23,7 +22,6 @@ class QModelIndex;
 
 namespace QtUI
 {
-    class QtModule;
     class UICanvas;
 }
 
@@ -42,11 +40,6 @@ namespace Inventory
     class InventoryWindow : public QObject
     {
         Q_OBJECT
-
-        MODULE_LOGGING_FUNCTIONS
-
-        //! Returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { const std::string &name = "InventoryModule::UI"; return name; }
 
     public:
         /// Constructor.
@@ -114,9 +107,6 @@ namespace Inventory
 
         /// Framework pointer.
         Foundation::Framework *framework_;
-
-        /// QtModule pointer.
-        boost::shared_ptr<QtUI::QtModule> qtModule_;
 
         /// Canvas for the inventory window.
         boost::shared_ptr<QtUI::UICanvas> canvas_;

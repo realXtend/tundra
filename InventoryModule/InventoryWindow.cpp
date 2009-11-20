@@ -41,11 +41,12 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     inventoryType_(InventoryModule::IDMT_Unknown)
 {
     // Get QtModule and create canvas
-    qtModule_ = framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
-    if (!qtModule_.get())
+     boost::shared_ptr<QtUI::QtModule> qtModule =
+        framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+    if (!qtModule.get())
         return;
 
-    canvas_ = qtModule_->CreateCanvas(QtUI::UICanvas::Internal).lock();
+    canvas_ = qtModule->CreateCanvas(QtUI::UICanvas::Internal).lock();
 
     InitInventoryWindow();
 
@@ -57,7 +58,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     canvas_->AddWidget(inventoryWidget_);
 
     // Add to control bar
-    qtModule_->AddCanvasToControlBar(canvas_, QString("Inventory"));
+    qtModule->AddCanvasToControlBar(canvas_, QString("Inventory"));
 }
 
 // virtual
@@ -87,18 +88,20 @@ InventoryPtr InventoryWindow::InitOpenSimInventoryTreeModel(ProtocolUtilities::W
 {
     if (inventoryItemModel_)
     {
-        LogError("Inventory treeview has already item model set!");
-        //return 0;
+        InventoryModule::LogError("Inventory treeview has already item model set!");
+        return InventoryPtr();
     }
 
+    // Create OpenSim inventory model.
     RexLogic::RexLogicModule *rexLogic = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(
         Foundation::Module::MT_WorldLogic).lock().get());
 
-    boost::shared_ptr<OpenSimInventoryDataModel> dataModel = boost::shared_ptr<OpenSimInventoryDataModel>(
-        new OpenSimInventoryDataModel(framework_, rexLogic->GetInventory().get()));
+    InventoryPtr dataModel = InventoryPtr(new OpenSimInventoryDataModel(framework_, rexLogic->GetInventory().get()));
 
-//    OpenSimInventoryDataModel *dataModel = new OpenSimInventoryDataModel(framework_, rexLogic->GetInventory().get());
-    dataModel->SetWorldStream(world_stream);
+    // Set world stream used for sending udp packets.
+    static_cast<OpenSimInventoryDataModel *>(dataModel.get())->SetWorldStream(world_stream);
+
+    // Create inventory item model.
     inventoryItemModel_ = new InventoryItemModel(dataModel.get());
     inventoryItemModel_->SetUseTrash(true);
     treeView_->setModel(inventoryItemModel_);
@@ -115,15 +118,14 @@ InventoryPtr InventoryWindow::InitWebDavInventoryTreeModel(const std::string &id
 {
     if (inventoryItemModel_)
     {
-        LogError("Inventory treeview has already item model set!");
-        //return 0;
+        InventoryModule::LogError("Inventory treeview has already item model set!");
+        return InventoryPtr();
     }
 
-    // Create webdav inventory model
-    boost::shared_ptr<WebDavInventoryDataModel> dataModel = boost::shared_ptr<WebDavInventoryDataModel>(
-        new WebDavInventoryDataModel(STD_TO_QSTR(identityUrl), STD_TO_QSTR(hostUrl)));
+    // Create WebDAV inventory model
+    InventoryPtr dataModel = InventoryPtr(new WebDavInventoryDataModel(STD_TO_QSTR(identityUrl), STD_TO_QSTR(hostUrl)));
 
-//    WebDavInventoryDataModel *dataModel = new WebDavInventoryDataModel(STD_TO_QSTR(identityUrl), STD_TO_QSTR(hostUrl));
+    // Create inventory item model.
     inventoryItemModel_ = new InventoryItemModel(dataModel.get());
     treeView_->setModel(inventoryItemModel_);
 
