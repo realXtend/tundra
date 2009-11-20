@@ -5,7 +5,7 @@
 #include "InventoryModule.h"
 #include "Foundation.h"
 #include "OpenSimInventoryDataModel.h"
-#include "WebdavInventoryDataModel.h"
+#include "WebDavInventoryDataModel.h"
 #include "InventoryItemModel.h"
 #include "QtModule.h"
 #include "RexLogicModule.h"
@@ -16,10 +16,13 @@
 
 #include <QUiLoader>
 #include <QFile>
+#include <QTreeView>
 #include <QPushButton>
 #include <QModelIndex>
 #include <QAbstractItemView>
 #include <QModelIndex>
+#include <QInputDialog>
+#include <QFileDialog>
 
 namespace Inventory
 {
@@ -34,7 +37,8 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     buttonUpload_(0),
     buttonAddFolder_(0),
     buttonDeleteItem_(0),
-    buttonRename_(0)
+    buttonRename_(0),
+    inventoryType_(InventoryModule::IDMT_Unknown)
 {
     // Get QtModule and create canvas
     qtModule_ = framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
@@ -79,48 +83,48 @@ void InventoryWindow::Hide()
         canvas_->Hide();
 }
 
-void InventoryWindow::SetWorldStreamToDataModel(ProtocolUtilities::WorldStreamPtr world_stream)
-{
-    if (inventoryItemModel_)
-        inventoryItemModel_->GetInventory()->SetWorldStream(world_stream);
-}
-
-AbstractInventoryDataModel *InventoryWindow::InitOpenSimInventoryTreeModel(ProtocolUtilities::WorldStreamPtr world_stream)
+InventoryPtr InventoryWindow::InitOpenSimInventoryTreeModel(ProtocolUtilities::WorldStreamPtr world_stream)
 {
     if (inventoryItemModel_)
     {
         LogError("Inventory treeview has already item model set!");
-        return 0;
+        //return 0;
     }
 
     RexLogic::RexLogicModule *rexLogic = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(
         Foundation::Module::MT_WorldLogic).lock().get());
 
-    OpenSimInventoryDataModel *dataModel = new OpenSimInventoryDataModel(framework_, rexLogic->GetInventory().get());
+    boost::shared_ptr<OpenSimInventoryDataModel> dataModel = boost::shared_ptr<OpenSimInventoryDataModel>(
+        new OpenSimInventoryDataModel(framework_, rexLogic->GetInventory().get()));
+
+//    OpenSimInventoryDataModel *dataModel = new OpenSimInventoryDataModel(framework_, rexLogic->GetInventory().get());
     dataModel->SetWorldStream(world_stream);
-    inventoryItemModel_ = new InventoryItemModel(dataModel);
+    inventoryItemModel_ = new InventoryItemModel(dataModel.get());
     inventoryItemModel_->SetUseTrash(true);
     treeView_->setModel(inventoryItemModel_);
 
     QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
         const QItemSelection &)), this, SLOT(UpdateActions()));
 
-    inventoryType_ = "OpenSim";
+    inventoryType_ =  InventoryModule::IDMT_OpenSim;
 
     return dataModel;
 }
 
-AbstractInventoryDataModel *InventoryWindow::InitWebDavInventoryTreeModel(const std::string &identityUrl, const std::string &hostUrl)
+InventoryPtr InventoryWindow::InitWebDavInventoryTreeModel(const std::string &identityUrl, const std::string &hostUrl)
 {
     if (inventoryItemModel_)
     {
         LogError("Inventory treeview has already item model set!");
-        return 0;
+        //return 0;
     }
 
     // Create webdav inventory model
-    WebdavInventoryDataModel *dataModel = new WebdavInventoryDataModel(STD_TO_QSTR(identityUrl), STD_TO_QSTR(hostUrl));
-    inventoryItemModel_ = new InventoryItemModel(dataModel);
+    boost::shared_ptr<WebDavInventoryDataModel> dataModel = boost::shared_ptr<WebDavInventoryDataModel>(
+        new WebDavInventoryDataModel(STD_TO_QSTR(identityUrl), STD_TO_QSTR(hostUrl)));
+
+//    WebDavInventoryDataModel *dataModel = new WebDavInventoryDataModel(STD_TO_QSTR(identityUrl), STD_TO_QSTR(hostUrl));
+    inventoryItemModel_ = new InventoryItemModel(dataModel.get());
     treeView_->setModel(inventoryItemModel_);
 
     // Connect signals
@@ -133,7 +137,7 @@ AbstractInventoryDataModel *InventoryWindow::InitWebDavInventoryTreeModel(const 
 //    QObject::connect(inventoryItemModel_, SIGNAL(AbstractInventoryItemSelected(AbstractInventoryItem *)),
 //        dataModel, SLOT(ItemSelectedFetchContent(AbstractInventoryItem *)));
 
-    inventoryType_ = "Webdav";
+    inventoryType_ =  InventoryModule::IDMT_WebDav;
 
     return dataModel;
 }
@@ -159,31 +163,6 @@ void InventoryWindow::HandleInventoryDescendent(InventoryItemEventData *item_dat
     UpdateActions();
 }
 
-void InventoryWindow::HandleResourceReady(const bool &resource, Foundation::EventDataInterface *data)
-{
-    if (inventoryType_ != "OpenSim")
-        return;
-
-    QString asset_id;
-    if (resource)
-    {
-        Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady *>(data);
-        asset_id = event_data->id_.c_str();
-    }
-    else
-    {
-        Asset::Events::AssetReady *event_data = checked_static_cast<Asset::Events::AssetReady*>(data);
-        asset_id = event_data->asset_->GetId().c_str();
-    }
-
-    OpenSimInventoryDataModel *dataModel = dynamic_cast<OpenSimInventoryDataModel *>(inventoryItemModel_->GetInventory());
-    if (!dataModel)
-        return;
-
-    if (dataModel->HasPendingDownloadRequests())
-        dataModel->SaveAssetToDisk(data);
-}
-
 void InventoryWindow::ExpandFolder(const QModelIndex &index)
 {
     if (!index.isValid())
@@ -207,6 +186,8 @@ void InventoryWindow::AddFolder()
         if (!model->insertColumn(0, index))
             return;
 
+    ///\todo    Change the functionality so that new user Add Folder it creates new folder but doesn't notify
+    ///         server until the name has been given.
     bool ok = false;
     QString newFolderName = QInputDialog::getText(canvas_->GetView(), "Create New Folder",
         "Please give name of the new folder", QLineEdit::Normal, "", &ok);
@@ -245,17 +226,16 @@ void InventoryWindow::Upload()
     QModelIndex index = treeView_->selectionModel()->currentIndex();
     Core::StringList names;
 
-    if (inventoryType_ == "OpenSim")
+    if (inventoryType_ == InventoryModule::IDMT_OpenSim)
         names = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
-    if (inventoryType_ == "Webdav")
+    if (inventoryType_ == InventoryModule::IDMT_WebDav)
         names = Foundation::QtUtils::GetOpenFileNames("All Files (*.*)", "Select file for upload",
             Foundation::QtUtils::GetCurrentPath());
 
     if (names.empty())
         return;
 
-    // Convert to QStringList
-    ///\todo Use QStringList all the way...
+    // Convert to QStringList ///\todo Use QStringList all the way...
     QStringList filenames;
     for (Core::StringList::iterator it = names.begin(); it != names.end(); ++it)
         filenames << QString((*it).c_str());

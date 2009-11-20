@@ -48,9 +48,6 @@ namespace Inventory
         /// Destructor.
         virtual ~OpenSimInventoryDataModel();
 
-        /// Set World Stream to current
-        void SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream);
-
         /// AbstractInventoryDataModel override.
         AbstractInventoryItem *GetFirstChildFolderByName(const QString &searchName) const;
 
@@ -113,15 +110,23 @@ namespace Inventory
         /// @return Pointer to "My Inventory" folder or null if not found.
         InventoryFolder *GetOpenSimLibraryFolder() const;
 
-        /// Saves asset to disk.
-        /// @param data Event data. Can be ResourceReady for textures and AssetReady for other assets.
-        void SaveAssetToDisk(Foundation::EventDataInterface *data);
+        /// Set World Stream.
+        /// @param world_stream WorldStream pointer.
+        void SetWorldStream(ProtocolUtilities::WorldStreamPtr world_stream);
 
-        ///
+        ///@return True if inventory has pending downloads.
         bool HasPendingDownloadRequests() const { return downloadRequests_.size() > 0; }
 
-        ///
+        /// @return Asset uploader.
         AssetUploader *GetAssetUploader() const {return assetUploader_; }
+
+        /// Handles RESOURCE_READY event.
+        /// @param data Event data.
+        void HandleResourceReady(Foundation::EventDataInterface *data);
+
+        /// Handles ASSET_READY event.
+        /// @param data Event data.
+        void HandleAssetReady(Foundation::EventDataInterface *data);
 
 #ifdef _DEBUG
         /// Prints the inventory tree structure to std::cout.
@@ -155,7 +160,6 @@ namespace Inventory
 
         /// Pointer to WorldStream
         ProtocolUtilities::WorldStreamPtr currentWorldStream_;
-//        QMap<Qstring, Core::RequestTagVector> requestTags_;
 
         /// Download request map.
         AssetRequestMap downloadRequests_;

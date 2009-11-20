@@ -32,10 +32,6 @@ namespace Inventory
         /// Destructor.
         virtual ~AbstractInventoryDataModel() {}
 
-        /// Set World Stream.
-        /// @param world_stream WorldStream pointer.
-        virtual void SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream) = 0;
-
         /// @return First folder by the requested name or null if the folder isn't found.
         virtual AbstractInventoryItem *GetFirstChildFolderByName(const QString &name) const = 0;
 

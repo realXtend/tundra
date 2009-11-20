@@ -1129,8 +1129,9 @@ namespace RexLogic
         QDomDocument avatar_export("Avatar");
         LegacyAvatarSerializer::WriteAvatarAppearance(avatar_export, appearance);
         std::string avatar_export_str = avatar_export.toString().toStdString();
-        
-        std::vector<Core::u8> data_buffer;
+
+        //std::vector<Core::u8> data_buffer;
+        QVector<Core::u8> data_buffer;
         data_buffer.resize(avatar_export_str.length());
         memcpy(&data_buffer[0], avatar_export_str.c_str(), data_buffer.size());
         
@@ -1143,7 +1144,7 @@ namespace RexLogic
         // (send request as event)
         Foundation::EventManagerPtr eventmgr = rexlogicmodule_->GetFramework()->GetEventManager();
         Inventory::InventoryUploadBufferEventData event_data;
-        event_data.filenames.push_back(avatarfilename);
+        event_data.filenames.push_back(QString(avatarfilename.c_str()));
         event_data.buffers.push_back(data_buffer);
         eventmgr->SendEvent(eventmgr->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);
         

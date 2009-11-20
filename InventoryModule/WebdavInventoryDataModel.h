@@ -1,29 +1,21 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /**
- *  @file WebdavInventoryDataModel.h
- *  @brief Data model representing the webdav model
+ *  @file WebDavInventoryDataModel.h
+ *  @brief Data model representing the WebDAV inventory model.
  */
 
-#ifndef incl_InventoryModule_WebdavInventoryDataModel_h
-#define incl_InventoryModule_WebdavInventoryDataModel_h
+#ifndef incl_InventoryModule_WebDavInventoryDataModel_h
+#define incl_InventoryModule_WebDavInventoryDataModel_h
 
 #include "AbstractInventoryDataModel.h"
 #include "InventoryFolder.h"
-#include "InventoryAsset.h"
-
-#include <QtGui>
 
 #include "PythonQt.h"
 
-namespace RexLogic
-{
-    class RexLogicModule;
-}
-
 namespace Inventory
 {
-    class WebdavInventoryDataModel : public AbstractInventoryDataModel
+    class WebDavInventoryDataModel : public AbstractInventoryDataModel
     {
         Q_OBJECT
 
@@ -31,13 +23,10 @@ namespace Inventory
         /// Constructor
         /// @param identityUrl
         /// @param hostUrl
-        WebdavInventoryDataModel(const QString &identityUrl, const QString &hostUrl);
+        WebDavInventoryDataModel(const QString &identityUrl, const QString &hostUrl);
 
         /// Destructor.
-        virtual ~WebdavInventoryDataModel();
-
-        /// AbstractInventoryDataModel override.
-        void SetWorldStream(const ProtocolUtilities::WorldStreamPtr world_stream);
+        virtual ~WebDavInventoryDataModel();
 
         /// AbstractInventoryDataModel override.
         AbstractInventoryItem *GetFirstChildFolderByName(const QString &searchName) const;
@@ -97,7 +86,7 @@ namespace Inventory
 //        void ItemSelectedFetchContent(AbstractInventoryItem *item);
 
     private:
-        Q_DISABLE_COPY(WebdavInventoryDataModel);
+        Q_DISABLE_COPY(WebDavInventoryDataModel);
 
         // Init PythonQt for usage
         bool InitPythonQt();
@@ -113,7 +102,8 @@ namespace Inventory
         void ErrorOccurredCreateEmptyRootFolder();
 
         /// Validate folder path, prepares it for pthon webdav library usage
-        QString ValidateFolderPath(const QString &path);
+        /// @param path Path to be validated.
+        QString ValidateFolderPath(QString path);
 
         /// Related urls to store for fetching webdav url and accessing webdav
         QString identityUrl_;
@@ -124,11 +114,13 @@ namespace Inventory
         /// The root folder.
         InventoryFolder *rootFolder_;
 
-        // Pointer to PythonQts main module
+        /// Pointer to PythonQt main module
         PythonQtObjectPtr pythonQtMainModule_;
+
+        /// WebDAV client pointer.
         PythonQtObjectPtr webdavclient_;
 
     };
 }
 
-#endif // incl_InventoryModule_WebdavInventoryDataModel_h
+#endif // incl_InventoryModule_WebDavInventoryDataModel_h

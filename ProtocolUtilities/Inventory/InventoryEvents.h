@@ -8,6 +8,9 @@
 #ifndef incl_Protocol_InventoryEvents_h
 #define incl_Protocol_InventoryEvents_h
 
+#include <QStringList>
+#include <QVector>
+
 namespace Inventory
 {
     namespace Events
@@ -43,7 +46,7 @@ namespace Inventory
     public:
         InventoryUploadEventData() {}
         virtual ~InventoryUploadEventData() {}
-        Core::StringList filenames;
+        QStringList filenames;
     };
     
     class InventoryUploadBufferEventData : public Foundation::EventDataInterface
@@ -51,8 +54,8 @@ namespace Inventory
     public:
         InventoryUploadBufferEventData() {}
         virtual ~InventoryUploadBufferEventData() {}
-        Core::StringList filenames;
-        std::vector<std::vector<Core::u8> > buffers;
+        QStringList filenames;
+        QVector<QVector<Core::u8> > buffers;
     };
 }
 

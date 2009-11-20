@@ -33,7 +33,7 @@ InventoryItemModel::InventoryItemModel(AbstractInventoryDataModel *data_model) :
 
 InventoryItemModel::~InventoryItemModel()
 {
-    SAFE_DELETE(dataModel_);
+//    SAFE_DELETE(dataModel_);
 }
 
 QVariant InventoryItemModel::data(const QModelIndex &index, int role) const
@@ -123,21 +123,6 @@ Qt::ItemFlags InventoryItemModel::flags(const QModelIndex &index) const
 
     return flags;
 }
-
-/*
-bool InventoryItemModel::canFetchMore(const QModelIndex &parent) const
-{
-    AbstractInventoryItem *parentItem = GetItem(parent);
-    if (parentItem->GetItemType() == AbstractInventoryItem::Type_Folder)
-        return true;
-    else
-        return false;
-}
-
-void InventoryItemModel::fetchMore (const QModelIndex &parent)
-{
-}
-*/
 
 Qt::DropActions InventoryItemModel::supportedDropActions() const
 {
