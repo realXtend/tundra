@@ -177,7 +177,8 @@ namespace Communication
             }
         }
         
-        emit ( ProtocolSupportEnded(QString("") ));
+        QString empty("");
+        emit ( ProtocolSupportEnded(empty));
 	}
 
 	void CommunicationService::OnConnectionOpened(Communication::ConnectionInterface* connection)

@@ -6,7 +6,7 @@
  */
 
 #include "StableHeaders.h"
-#include "WebDavInventoryDataModel.h"
+#include "WebdavInventoryDataModel.h"
 #include "InventoryAsset.h"
 #include "InventoryModule.h"
 #include "RexUUID.h"

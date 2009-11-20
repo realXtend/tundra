@@ -5,7 +5,7 @@
 #include "InventoryModule.h"
 #include "Foundation.h"
 #include "OpenSimInventoryDataModel.h"
-#include "WebDavInventoryDataModel.h"
+#include "WebdavInventoryDataModel.h"
 #include "InventoryItemModel.h"
 #include "QtModule.h"
 #include "RexLogicModule.h"
