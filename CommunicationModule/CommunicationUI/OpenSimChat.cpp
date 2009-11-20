@@ -98,6 +98,9 @@ namespace CommunicationUI
 		publicChat_->Close();
 		if (qtModule_.get())
 			qtModule_->DeleteCanvas(canvas_->GetID());
+    
+        SAFE_DELETE(mainFrame_);
+		SAFE_DELETE(buttonHide_);
 	}
 
 	void OpenSimChat::ToggleChatVisibility()

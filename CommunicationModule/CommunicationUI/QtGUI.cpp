@@ -10,7 +10,7 @@ namespace CommunicationUI
 {
 
 	QtGUI::QtGUI(Foundation::Framework *framework)
-		: framework_(framework)
+		: framework_(framework), UIContainer_(0)
 	{
 		LogInfo("Loading UIController to QtModule UICanvas...");
 		// Get comm manager to check state
@@ -34,18 +34,11 @@ namespace CommunicationUI
             canvas_chat_ = qt_module->CreateCanvas(UICanvas::Internal).lock();
             canvas_chat_->Hide();
 
-			UIContainer *UIContainer_ = new UIContainer(0, framework_, canvas_login_, canvas_chat_);
+			UIContainer_ = new UIContainer(0, framework_, canvas_login_, canvas_chat_);
 
 			// Connect signal for resizing
 			QObject::connect(UIContainer_, SIGNAL( ChangeToolBarButton(QString, QString) ), this, SLOT( ChangeToolBarButton(QString, QString) ));
 			QObject::connect(UIContainer_, SIGNAL( DestroyCanvas() ), this, SLOT( DestroyThis() ));
-			
-            //QObject::connect(UIContainer_, SIGNAL( SetCanvasTitle(QString) ), canvas_.get(), SLOT( SetCanvasWindowTitle(QString) ));
-			//QObject::connect(UIContainer_, SIGNAL( SetCanvasIcon(QIcon &) ), canvas_.get(), SLOT( SetCanvasWindowIcon(QIcon &) ));
-			// Init title, icon and size
-            //UIContainer_->resize(400, 185);
-			//canvas_login_->SetCanvasWindowIcon(QIcon(":/images/iconUsers.png"));
-			//canvas_login_->SetCanvasWindowTitle(QString("realXtend Naali Jabber IM Login"));
 
 			// Add to control bar
 			qt_module->AddCanvasToControlBar(canvas_login_->GetID(), QString("IM Login"));
@@ -68,6 +61,9 @@ namespace CommunicationUI
             if (canvas_chat_)
                 qt_module->DeleteCanvas(canvas_chat_->GetID());
 		}
+
+        if (UIContainer_)
+            SAFE_DELETE(UIContainer_);
 	}
 
 	void QtGUI::ChangeToolBarButton(QString oldID, QString newID)
@@ -85,12 +81,12 @@ namespace CommunicationUI
 	/////////////////////////////////////////////////////////////////////
 
     UIContainer::UIContainer(QWidget *parent, Foundation::Framework *framework, boost::shared_ptr<UICanvas> canvas_login, boost::shared_ptr<UICanvas> canvas_chat)
-		: QWidget(parent), chatWidget_(0), loginWidget_(0), framework_(framework), canvas_login_(canvas_login), canvas_chat_(canvas_chat)
+		: QWidget(parent), chatWidget_(0), loginWidget_(0), framework_(framework), canvas_login_(canvas_login), canvas_chat_(canvas_chat), labelLoginConnectionStatus_(0)
 	{
 		communication_service_ = Communication::CommunicationService::GetInstance();
 
 		LogInfo("Creating UIContainer, initializing with Login widget...");
-		this->setLayout(new QVBoxLayout);
+		this->setLayout(new QVBoxLayout());
 		this->layout()->setMargin(0);
 		this->setObjectName(QString("containerWidget"));
         this->setStyleSheet("QWidget#containerWidget { background-color: rgba(0,0,0,0); padding: 0px; margin: 0px; }");
@@ -100,7 +96,21 @@ namespace CommunicationUI
 
 	UIContainer::~UIContainer(void)
 	{
-		delete this->layout();
+		delete layout();
+        if (chatWidget_)
+        {
+            SAFE_DELETE(tabWidgetCoversations_);
+            SAFE_DELETE(listWidgetFriends_);
+            SAFE_DELETE(labelUsername_);
+            SAFE_DELETE(lineEditStatus_);
+            SAFE_DELETE(comboBoxStatus_);
+            SAFE_DELETE(buttonAddFriend_);
+            SAFE_DELETE(buttonRemoveFriend_);
+        }
+        if (loginWidget_)
+        {
+            SAFE_DELETE(labelLoginConnectionStatus_);
+        }
 	}
 
 	void UIContainer::LoadUserInterface(bool connected)
@@ -110,8 +120,7 @@ namespace CommunicationUI
             // Init chat GUI
 			QUiLoader loader;
 			QFile uiFile("./data/ui/communications.ui");
-			chatWidget_ = loader.load(&uiFile, 0);
-			//chatWidget_->layout()->setMargin(0);
+			chatWidget_ = loader.load(&uiFile, this);
             chatWidget_->resize(720, 350);
 			uiFile.close();
 
@@ -145,17 +154,15 @@ namespace CommunicationUI
             canvas_login_->Hide();
             canvas_chat_->Show();
             emit( ChangeToolBarButton(canvas_login_->GetID(), canvas_chat_->GetID()) );
-			// Add widget to layout
-            //this->layout()->addWidget(chatWidget_);
-            //emit ( Resized(QSize(720, 350)) );
-            //emit ( SetCanvasTitle(QString("realXtend Naali Jabber IM")) );
+
+            SAFE_DELETE(friendsAndTabWidget);
 		} 
 		else
 		{
             if (loginWidget_ == 0)
 			{			
 			    // Init login GUI
-			    loginWidget_ = new Login(0, currentMessage, framework_);
+			    loginWidget_ = new Login(this, currentMessage, framework_);
                 loginWidget_->setObjectName(QString("containerMiddleChat"));
                 loginWidget_->setStyleSheet("QWidget#containerMiddleChat { background-color: rgba(0,0,0,0); padding: 0px; margin: 0px; }");
 			    // Get widgets
@@ -167,9 +174,6 @@ namespace CommunicationUI
                 canvas_login_->SetPosition(20,30);
 			    canvas_login_->SetSize(400, 185);
                 canvas_login_->AddWidget(loginWidget_);
-                // Add widget to layout
-			    /*this->layout()->addWidget(loginWidget_);*/
-			    //emit( SetCanvasTitle(QString("realXtend Naali Communications Login")) );
             }
 		}
 
@@ -417,7 +421,14 @@ namespace CommunicationUI
 
 	Login::~Login()
 	{
-
+        SAFE_DELETE(textEditServer_);
+        SAFE_DELETE(textEditPort_);
+        SAFE_DELETE(textEditUsername_);
+        SAFE_DELETE(textEditPassword_);
+        SAFE_DELETE(buttonConnect_);
+        SAFE_DELETE(buttonCancel_);
+        SAFE_DELETE(internalWidget_);
+        delete layout();
 	}
 
 	void Login::InitWidget(QString &message)
@@ -522,14 +533,14 @@ namespace CommunicationUI
 
 	ConversationsContainer::~ConversationsContainer()
 	{
-
+        // go trough count() and delete widgets
 	}
 
 	void ConversationsContainer::CloseFriendRequest(FriendRequestUI *request)
 	{
 		this->removeTab(this->indexOf(request));
         //! @todo Check if here is memory leak.
-  //      SAFE_DELETE(request);
+        //SAFE_DELETE(request);
 	}
 
 	void ConversationsContainer::CloseTab(int index)
@@ -572,7 +583,10 @@ namespace CommunicationUI
 
 	Conversation::~Conversation()
 	{
-
+        delete layout();
+        SAFE_DELETE(internalWidget_);
+        SAFE_DELETE(textEditChat_);
+        SAFE_DELETE(lineEditMessage_);
 	}
 
 	void Conversation::InitWidget()
@@ -800,7 +814,7 @@ namespace CommunicationUI
 
 	FriendRequestUI::~FriendRequestUI()
 	{
-
+        delete layout();
 	}
 
 	// PRIVATE SLOTS

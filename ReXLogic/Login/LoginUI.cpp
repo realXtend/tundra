@@ -609,7 +609,7 @@ namespace RexLogic
 	{
 		loginHandler_ = new TaigaLoginHandler(framework_, rexLogicModule_);
         QObject::connect(loginHandler_, SIGNAL( LoginStarted() ), controller_, SLOT( StartLoginProgressUI() ));
-		QObject::connect(loginHandler_, SIGNAL( LoginDone(bool) ), this, SLOT( LoginDone(bool) ));
+		QObject::connect(loginHandler_, SIGNAL( LoginDone(bool, QString&) ), this, SLOT( LoginDone(bool, QString&) ));
 	}
 
 	void WebUI::InitWidget()
