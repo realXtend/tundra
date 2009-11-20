@@ -12,7 +12,7 @@
 namespace RexLogic
 {
 	WebLogin::WebLogin(QWidget *parent, QString address)
-		: QWidget(parent), address_(address)
+		: QWidget(parent), address_(address), widget_(0)
 	{
 		InitWidget();
 		ConnectSignals();
@@ -22,7 +22,15 @@ namespace RexLogic
 	{
         SAFE_DELETE(progressBar);
         SAFE_DELETE(statusLabel);
-        delete widget_;
+        SAFE_DELETE(comboBoxAddress);
+		SAFE_DELETE(refreshButton);
+		SAFE_DELETE(backButton);
+		SAFE_DELETE(forwardButton);
+		SAFE_DELETE(stopButton);
+		SAFE_DELETE(goButton);
+		SAFE_DELETE(layout_);
+        SAFE_DELETE(webView_);
+        SAFE_DELETE(widget_);
 	}
 
 	void WebLogin::InitWidget()
@@ -111,9 +119,12 @@ namespace RexLogic
 
 	void WebLogin::LoadStarted()
 	{
-		stopButton->setEnabled(true);
-		statusLabel->setText("Loading page...");
-		progressBar->show();
+        if (widget_)
+        {
+		    stopButton->setEnabled(true);
+		    statusLabel->setText("Loading page...");
+		    progressBar->show();
+        }
 	}
 
 	void WebLogin::UpdateUi(int progress)
@@ -124,24 +135,27 @@ namespace RexLogic
 
 	void WebLogin::ProcessPage(bool success)
 	{
-		// Update GUI
-		stopButton->setEnabled(false);
-		address_ = webView_->url().toString();
-		comboBoxAddress->lineEdit()->setText(address_);
-		QString title(webView_->page()->mainFrame()->title());
-		title.append(" - realXtend Naali web browser");
-		setWindowTitle(title);
-		if ( comboBoxAddress->findText(address_, Qt::MatchFixedString) == -1 )
-			comboBoxAddress->addItem(address_);
-		statusLabel->setText("Done");
-		progressBar->hide();
-		// Do actual HTML page processing...
-		if ( success )
-		{
-			QString pageTitle = webView_->page()->mainFrame()->title();
-			if ( pageTitle == "LoginSuccess") 
-				emit( WebLoginInfoRecieved(webView_->page()->mainFrame()) );
-		}
+        if (widget_)
+        {
+		    // Update GUI
+		    stopButton->setEnabled(false);
+		    address_ = webView_->url().toString();
+		    comboBoxAddress->lineEdit()->setText(address_);
+		    QString title(webView_->page()->mainFrame()->title());
+		    title.append(" - realXtend Naali web browser");
+		    setWindowTitle(title);
+		    if ( comboBoxAddress->findText(address_, Qt::MatchFixedString) == -1 )
+			    comboBoxAddress->addItem(address_);
+		    statusLabel->setText("Done");
+		    progressBar->hide();
+		    // Do actual HTML page processing...
+		    if ( success )
+		    {
+			    QString pageTitle = webView_->page()->mainFrame()->title();
+			    if ( pageTitle == "LoginSuccess") 
+				    emit( WebLoginInfoRecieved(webView_->page()->mainFrame()) );
+		    }
+        }
 	}
 
 }
