@@ -6,7 +6,7 @@ cmake_minimum_required (VERSION 2.4)
 
 # Set CMake library search policy
 if (COMMAND cmake_policy)
-	cmake_policy (SET CMP0003 NEW)
+    cmake_policy (SET CMP0003 NEW)
 endif (COMMAND cmake_policy)
 
 # Set CMake custom module path & include them
@@ -34,12 +34,12 @@ endif (MSVC)
 
 # In Visual Studio, use unicode character set
 if (MSVC)
-	add_definitions (-DUNICODE -D_UNICODE)
+    add_definitions (-DUNICODE -D_UNICODE)
 endif (MSVC)
 
 # Generate profiling data. Currently disabled because of threadsafety issues.
 if (MSVC)
-#	add_definitions (-DPROFILING)
+#   add_definitions (-DPROFILING)
 endif (MSVC)
 
 # Set normalized path for common environment variables
@@ -65,7 +65,7 @@ if (CAELUM)
 endif (CAELUM)
 
 if (HYDRAX)
-	configure_hydrax ()
+    configure_hydrax ()
 endif (HYDRAX)
 
 
@@ -81,7 +81,7 @@ add_subdirectory (RexCommon)
 add_subdirectory (SceneManager)
 add_subdirectory (OgreRenderingModule)
 add_subdirectory (Application)
-add_subdirectory (ReXLogic)
+add_subdirectory (RexLogicModule)
 add_subdirectory (SupportModules)
 add_subdirectory (AssetModule)
 add_subdirectory (QtModule)

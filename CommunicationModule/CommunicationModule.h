@@ -4,7 +4,7 @@
 #include <StableHeaders.h>
 #include <ModuleInterface.h>
 #include <QObject>
-#include "../ReXLogic/RexLogicModule.h"
+#include "../RexLogicModule/RexLogicModule.h"
 
 #include "CommunicationModuleApi.h"
 #include "CommunicationService.h"

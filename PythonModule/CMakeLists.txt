@@ -29,12 +29,12 @@ use_package (PYTHON_QT)
 use_package (OIS)
 use_package (OGRE)
 use_package(PROPERTYEDITOR)
-use_modules (RexCommon ReXLogic ProtocolUtilities OgreRenderingModule InputModuleOIS QtModule ProtocolModuleOpenSim ProtocolModuleTaiga)
+use_modules (RexCommon RexLogicModule ProtocolUtilities OgreRenderingModule InputModuleOIS QtModule ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 use_framework_modules (Core Foundation Interfaces SceneManager)
 
-link_directories (${PROJECT_BINARY_DIR}/RexLogic/Debug ${PROJECT_BINARY_DIR}/RexLogic/Release)
+link_directories (${PROJECT_BINARY_DIR}/RexLogicModule/Debug ${PROJECT_BINARY_DIR}/RexLogicModule/Release)
 link_modules (RexCommon RexLogicModule ProtocolUtilities QtModule) # OgreRenderingModule)
 link_package (BOOST)
 link_package (POCO)
@@ -48,7 +48,7 @@ link_package(PROPERTYEDITOR)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
+    add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
 endforeach (XML_FILE)
 
 final_target ()
