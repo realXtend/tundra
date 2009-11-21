@@ -8,8 +8,9 @@
 #ifndef incl_InventoryModule_InventoryWindow_h
 #define incl_InventoryModule_InventoryWindow_h
 
-#include "InventoryModule.h"
 #include "RexTypes.h"
+
+#include <boost/shared_ptr.hpp>
 
 #include <QPointer>
 #include <QObject>
@@ -31,11 +32,19 @@ namespace Foundation
     class EventDataInterface;
 }
 
+namespace ProtocolUtilities
+{
+    class WorldStream;
+    typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
+}
+
 namespace Inventory
 {
     class InventoryItemEventData;
     class InventoryItemModel;
     class AbstractInventoryDataModel;
+
+    typedef boost::shared_ptr<AbstractInventoryDataModel> InventoryPtr;
 
     class InventoryWindow : public QObject
     {
@@ -50,16 +59,9 @@ namespace Inventory
         virtual ~InventoryWindow();
 
     public slots:
-        /// Initializes the OpenSim inventory data/view model.
-        /// @param world_stream
-        /// @return Pointer to inventory data model.
-        InventoryPtr InitOpenSimInventoryTreeModel(ProtocolUtilities::WorldStreamPtr world_stream);
-
-        /// Initializes the Taiga WebDAV data/view model.
-        /// @param identityUrl
-        /// @param hostUrl
-        /// @return Pointer to inventory data model.
-        InventoryPtr InitWebDavInventoryTreeModel(const std::string &identityUrl, const std::string &hostUrl);
+        /// Initializes the inventory data/view model.
+        /// @param inventory_model Inventory data model pointer.
+        void InitInventoryTreeModel(InventoryPtr inventory_model);
 
         /// Resets the inventory tree model.
         void ResetInventoryTreeModel();
@@ -101,9 +103,6 @@ namespace Inventory
 
         /// Initializes the inventory UI.
         void InitInventoryWindow();
-
-        /// Type of the present inventory model
-        InventoryModule::InventoryDataModelType inventoryType_;
 
         /// Framework pointer.
         Foundation::Framework *framework_;

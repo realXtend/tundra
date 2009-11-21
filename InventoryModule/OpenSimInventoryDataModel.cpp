@@ -285,6 +285,7 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetRoot() const
 void OpenSimInventoryDataModel::SetWorldStream(ProtocolUtilities::WorldStreamPtr world_stream)
 {
     currentWorldStream_ = world_stream;
+    assetUploader_->SetWorldStream(world_stream);
 }
 
 void OpenSimInventoryDataModel::HandleResourceReady(Foundation::EventDataInterface *data)

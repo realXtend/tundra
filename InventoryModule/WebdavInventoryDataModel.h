@@ -82,6 +82,9 @@ namespace Inventory
         /// AbstractInventoryDataModel override.
         void DownloadFile(const QString &store_folder, AbstractInventoryItem *selected_item);
 
+        /// AbstractInventoryDataModel override.
+        bool GetUseTrashFolder() const { return false; }
+
 //    public slots:
 //        void ItemSelectedFetchContent(AbstractInventoryItem *item);
 
