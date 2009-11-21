@@ -16,7 +16,6 @@ namespace ProtocolUtilities
 {
 
 ///\todo Find a way for other OS's.
-/// Fetches the MAC address.
 std::string GetMACaddressString()
 {
 //#ifdef WIN32
@@ -53,7 +52,6 @@ std::string GetMACaddressString()
 }
 
 ///\todo Find a way for other OS's
-/// Returns serial number of the HDD.
 std::string GetId0String()
 {
 #ifdef WIN32
@@ -74,6 +72,20 @@ std::string GetId0String()
 #else
     return "76543210";
 #endif
+}
+
+std::string GetPlatform()
+{
+#ifdef Q_WS_WIN
+    return "Win";
+#endif
+#ifdef Q_WS_X11
+    return "X11";
+#endif
+#ifdef Q_WS_MAC
+    return "Mac";
+#endif
+    return "";
 }
 
 }

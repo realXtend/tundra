@@ -1,18 +1,20 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+/**
+ *  @file InventoryWindow.cpp
+ *  @brief The inventory window.
+ */
+
 #include "StableHeaders.h"
 #include "InventoryWindow.h"
 #include "InventoryModule.h"
-#include "Foundation.h"
-#include "OpenSimInventoryDataModel.h"
-#include "WebdavInventoryDataModel.h"
+#include "Framework.h"
 #include "InventoryItemModel.h"
+#include "AbstractInventoryDataModel.h"
 #include "QtModule.h"
 #include "RexLogicModule.h"
 #include "Inventory/InventoryEvents.h"
 #include "QtUtils.h"
-#include "AssetEvents.h"
-#include "TextureInterface.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -37,8 +39,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     buttonUpload_(0),
     buttonAddFolder_(0),
     buttonDeleteItem_(0),
-    buttonRename_(0),
-    inventoryType_(InventoryModule::IDMT_Unknown)
+    buttonRename_(0)
 {
     // Get QtModule and create canvas
      boost::shared_ptr<QtUI::QtModule> qtModule =
@@ -84,64 +85,20 @@ void InventoryWindow::Hide()
         canvas_->Hide();
 }
 
-InventoryPtr InventoryWindow::InitOpenSimInventoryTreeModel(ProtocolUtilities::WorldStreamPtr world_stream)
+void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
 {
     if (inventoryItemModel_)
     {
         InventoryModule::LogError("Inventory treeview has already item model set!");
-        return InventoryPtr();
+        return;
     }
 
-    // Create OpenSim inventory model.
-    RexLogic::RexLogicModule *rexLogic = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(
-        Foundation::Module::MT_WorldLogic).lock().get());
-
-    InventoryPtr dataModel = InventoryPtr(new OpenSimInventoryDataModel(framework_, rexLogic->GetInventory().get()));
-
-    // Set world stream used for sending udp packets.
-    static_cast<OpenSimInventoryDataModel *>(dataModel.get())->SetWorldStream(world_stream);
-
     // Create inventory item model.
-    inventoryItemModel_ = new InventoryItemModel(dataModel.get());
-    inventoryItemModel_->SetUseTrash(true);
+    inventoryItemModel_ = new InventoryItemModel(inventory_model.get());
     treeView_->setModel(inventoryItemModel_);
 
     QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
         const QItemSelection &)), this, SLOT(UpdateActions()));
-
-    inventoryType_ =  InventoryModule::IDMT_OpenSim;
-
-    return dataModel;
-}
-
-InventoryPtr InventoryWindow::InitWebDavInventoryTreeModel(const std::string &identityUrl, const std::string &hostUrl)
-{
-    if (inventoryItemModel_)
-    {
-        InventoryModule::LogError("Inventory treeview has already item model set!");
-        return InventoryPtr();
-    }
-
-    // Create WebDAV inventory model
-    InventoryPtr dataModel = InventoryPtr(new WebDavInventoryDataModel(STD_TO_QSTR(identityUrl), STD_TO_QSTR(hostUrl)));
-
-    // Create inventory item model.
-    inventoryItemModel_ = new InventoryItemModel(dataModel.get());
-    treeView_->setModel(inventoryItemModel_);
-
-    // Connect signals
-    QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
-        const QItemSelection &)), this, SLOT(UpdateActions()));
-
-//    QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)),
-//        inventoryItemModel_, SLOT(CurrentSelectionChanged(const QModelIndex &)));
-
-//    QObject::connect(inventoryItemModel_, SIGNAL(AbstractInventoryItemSelected(AbstractInventoryItem *)),
-//        dataModel, SLOT(ItemSelectedFetchContent(AbstractInventoryItem *)));
-
-    inventoryType_ =  InventoryModule::IDMT_WebDav;
-
-    return dataModel;
 }
 
 void InventoryWindow::ResetInventoryTreeModel()
@@ -226,14 +183,7 @@ void InventoryWindow::RenameItem()
 void InventoryWindow::Upload()
 {
     QModelIndex index = treeView_->selectionModel()->currentIndex();
-    Core::StringList names;
-
-    if (inventoryType_ == InventoryModule::IDMT_OpenSim)
-        names = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
-    if (inventoryType_ == InventoryModule::IDMT_WebDav)
-        names = Foundation::QtUtils::GetOpenFileNames("All Files (*.*)", "Select file for upload",
-            Foundation::QtUtils::GetCurrentPath());
-
+    Core::StringList names = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
     if (names.empty())
         return;
 
@@ -261,6 +211,7 @@ void InventoryWindow::Download()
 
 void InventoryWindow::UpdateActions()
 {
+    ///\todo Utilize this function properly.
 //    bool hasSelection = !view->selectionModel()->selection().isEmpty();
     //removeRowAction->setEnabled(hasSelection);
     //removeColumnAction->setEnabled(hasSelection);

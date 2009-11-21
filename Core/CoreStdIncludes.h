@@ -43,7 +43,17 @@
 #include <Poco/Foundation.h>
 #include <Poco/DirectoryIterator.h>
 #include <Poco/ClassLibrary.h>
+
+// Disable annoying C4805 warning caused by Poco/Mutex_WIN32.h
+#if defined(_WINDOWS)
+#pragma warning( push )
+#pragma warning( disable : 4805 )
+#endif
 #include <Poco/ClassLoader.h>
+#if defined(_WINDOWS)
+#pragma warning( pop )
+#endif
+
 #include <Poco/Util/XMLConfiguration.h>
 #include <Poco/XML/XMLWriter.h>
 

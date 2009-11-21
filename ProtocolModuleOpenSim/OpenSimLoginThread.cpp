@@ -14,7 +14,7 @@
 #include "OpenSim/BuddyListParser.h"
 #include "Inventory/InventoryParser.h"
 #include "Md5.h"
-#include "Platform.h"
+//#include "Platform.h"
 
 // Extenal lib includes
 #include <boost/shared_ptr.hpp>
@@ -184,7 +184,7 @@ namespace OpenSimProtocol
             call.AddMember("start", QString("last").toStdString());
             call.AddMember("version", QString("realXtend Naali %1.%2").arg(major, minor).toStdString());
             call.AddMember("channel", QString("realXtend").toStdString());
-            call.AddMember("platform", GetPlatform().toStdString());
+            call.AddMember("platform", GetPlatform());
             call.AddMember("mac", mac_hash);
             call.AddMember("id0", id0_hash);
             call.AddMember("last_exec_event", int(0));

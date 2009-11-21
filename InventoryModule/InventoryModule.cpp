@@ -15,6 +15,7 @@
 #include "QtUtils.h"
 #include "AssetEvents.h"
 #include "OpenSimInventoryDataModel.h"
+#include "WebdavInventoryDataModel.h"
 
 #include <QStringList>
 #include <QVector>
@@ -128,19 +129,31 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
             case ProtocolUtilities::AT_Taiga:
                 // Check if python module is loaded and has taken care of PythonQt::init()
                 if (!framework_->GetModuleManager()->HasModule(Foundation::Module::MT_PythonScript))
+                {
                     LogError("Python module not in use. WebDav inventory_ can't be used!");
+                    inventoryType_ = IDMT_Unknown;
+                }
                 else
                 {
-                    inventory_ = inventoryWindow_->InitWebDavInventoryTreeModel(auth_data->identityUrl, auth_data->hostUrl);
+                    // Create WebDAV inventory model.
+                    inventory_ = InventoryPtr(new WebDavInventoryDataModel(STD_TO_QSTR(auth_data->identityUrl), STD_TO_QSTR(auth_data->hostUrl)));
+                    inventoryWindow_->InitInventoryTreeModel(inventory_);
                     inventoryType_ = IDMT_WebDav;
                 }
                 break;
             case ProtocolUtilities::AT_OpenSim:
             case ProtocolUtilities::AT_RealXtend:
             {
-                inventory_ = inventoryWindow_->InitOpenSimInventoryTreeModel(GetCurrentWorldStream());
-                OpenSimInventoryDataModel *osmodel = static_cast<OpenSimInventoryDataModel *>(inventory_.get());
-                osmodel->GetAssetUploader()->SetWorldStream(currentWorldStream_);
+                // Create OpenSim inventory model.
+                RexLogic::RexLogicModule *rexLogic = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(
+                    Foundation::Module::MT_WorldLogic).lock().get());
+
+                inventory_ = InventoryPtr(new OpenSimInventoryDataModel(framework_, rexLogic->GetInventory().get()));
+
+                // Set world stream used for sending udp packets.
+                static_cast<OpenSimInventoryDataModel *>(inventory_.get())->SetWorldStream(currentWorldStream_);
+
+                inventoryWindow_->InitInventoryTreeModel(inventory_);
                 inventoryType_ = IDMT_OpenSim;
                 break;
             }

@@ -27,7 +27,9 @@ namespace Inventory
 {
 
 InventoryItemModel::InventoryItemModel(AbstractInventoryDataModel *data_model) :
-    dataModel_(data_model), useTrash_(false), itemMoveFlag_(false)
+    dataModel_(data_model),
+    useTrash_(data_model->GetUseTrashFolder()),
+    itemMoveFlag_(false)
 {
 }
 
@@ -99,8 +101,6 @@ Qt::ItemFlags InventoryItemModel::flags(const QModelIndex &index) const
     if (!index.isValid())
         return flags;
 
-    flags |= Qt::ItemIsSelectable;
-
     AbstractInventoryItem *item = GetItem(index);
     if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
     {
@@ -115,6 +115,8 @@ Qt::ItemFlags InventoryItemModel::flags(const QModelIndex &index) const
 
     if (!item->IsEditable())
         return flags;
+
+    flags |= Qt::ItemIsSelectable;
 
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
         flags |= Qt::ItemIsDragEnabled;

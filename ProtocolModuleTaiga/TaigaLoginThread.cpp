@@ -97,7 +97,7 @@ namespace TaigaProtocol
             call.AddMember("start", QString("last").toStdString());
             call.AddMember("version", QString("realXtend Naali %1.%2").arg(major, minor).toStdString());
             call.AddMember("channel", QString("realXtend").toStdString());
-            call.AddMember("platform", GetPlatform().toStdString());
+            call.AddMember("platform", GetPlatform());
             call.AddMember("mac", mac_hash);
             call.AddMember("id0", id0_hash);
             call.AddMember("last_exec_event", int(0));

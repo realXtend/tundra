@@ -110,6 +110,9 @@ namespace Inventory
         /// @return Pointer to "My Inventory" folder or null if not found.
         InventoryFolder *GetOpenSimLibraryFolder() const;
 
+        /// OpenSim inventory uses trash folder. Returns true.
+        bool GetUseTrashFolder() const { return true; }
+
         /// Set World Stream.
         /// @param world_stream WorldStream pointer.
         void SetWorldStream(ProtocolUtilities::WorldStreamPtr world_stream);
