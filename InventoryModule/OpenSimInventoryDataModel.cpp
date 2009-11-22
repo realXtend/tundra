@@ -2,21 +2,19 @@
 
 /**
  *  @file OpenSimInventoryDataModel.cpp
- *  @brief Data model representing the hierarchy of an OpenSim inventory.
+ *  @brief Data model providing logic for working with the hierarchy of an OpenSim inventory.
  */
 
 #include "StableHeaders.h"
 #include "OpenSimInventoryDataModel.h"
-#include "AbstractInventoryItem.h"
+#include "InventoryModule.h"
 #include "InventoryFolder.h"
 #include "InventoryAsset.h"
-#include "InventoryModule.h"
 #include "Inventory/InventorySkeleton.h"
-#include "RexUUID.h"
+#include "Inventory/InventoryEvents.h"
 #include "AssetEvents.h"
 #include "ResourceInterface.h"
 #include "TextureResource.h"
-#include "RexLogicModule.h"
 #include "AssetUploader.h"
 
 #include <QFile>
@@ -336,6 +334,40 @@ void OpenSimInventoryDataModel::HandleAssetReady(Foundation::EventDataInterface 
     InventoryModule::LogInfo("File " + i.value().toStdString() + " succesfully saved.");
 
     downloadRequests_.erase(i);
+}
+
+void OpenSimInventoryDataModel::HandleInventoryDescendents(Foundation::EventDataInterface *data)
+{
+
+    InventoryItemEventData *item_data = checked_static_cast<InventoryItemEventData *>(data);
+
+    AbstractInventoryItem *parentFolder = GetChildFolderById(STD_TO_QSTR(item_data->parentId.ToString()));
+    if (!parentFolder)
+        return;
+
+    AbstractInventoryItem *existing = GetChildById(STD_TO_QSTR(item_data->id.ToString()));
+    if (existing)
+        return;
+
+    if (item_data->item_type == IIT_Folder)
+    {
+        InventoryFolder *newFolder = static_cast<InventoryFolder *>(GetOrCreateNewFolder(
+            STD_TO_QSTR(item_data->id.ToString()), *parentFolder, false));
+
+        newFolder->SetName(STD_TO_QSTR(item_data->name));
+        ///\todo newFolder->SetType(item_data->type);
+        newFolder->SetDirty(true);
+    }
+    if (item_data->item_type == IIT_Asset)
+    {
+        InventoryAsset *newAsset = static_cast<InventoryAsset *>(GetOrCreateNewAsset(
+            STD_TO_QSTR(item_data->id.ToString()), STD_TO_QSTR(item_data->assetId.ToString()),
+            *parentFolder, STD_TO_QSTR(item_data->name)));
+
+        newAsset->SetDescription(STD_TO_QSTR(item_data->description));
+        newAsset->SetInventoryType(item_data->inventoryType);
+        newAsset->SetAssetType(item_data->assetType);
+    }
 }
 
 #ifdef _DEBUG

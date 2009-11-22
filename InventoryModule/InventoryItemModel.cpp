@@ -1,18 +1,16 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /**
- *  @file InventoryItemModel.cpp
- *  @brief Common inventory item tree model for different inventory data models.
+ *  @file   InventoryItemModel.cpp
+ *  @brief  Common inventory item tree model for different inventory data models.
  */
 
 #include "StableHeaders.h"
-#include "InventoryModule.h"
 #include "InventoryItemModel.h"
+#include "InventoryModule.h"
 #include "AbstractInventoryDataModel.h"
-#include "OpenSimInventoryDataModel.h"
 #include "InventoryFolder.h"
 #include "InventoryAsset.h"
-#include "RexUUID.h"
 
 #include <QModelIndex>
 #include <QVariant>
@@ -35,7 +33,6 @@ InventoryItemModel::InventoryItemModel(AbstractInventoryDataModel *data_model) :
 
 InventoryItemModel::~InventoryItemModel()
 {
-//    SAFE_DELETE(dataModel_);
 }
 
 QVariant InventoryItemModel::data(const QModelIndex &index, int role) const
@@ -334,48 +331,6 @@ bool InventoryItemModel::InsertFolder(int position, const QModelIndex &parent, c
     return true;
 }
 
-bool InventoryItemModel::InsertItem(int position, const QModelIndex &parent, InventoryItemEventData *item_data)
-{
-    AbstractInventoryItem *parentFolder = dataModel_->GetChildFolderById(STD_TO_QSTR(item_data->parentId.ToString()));
-    if (!parentFolder)
-        return false;
-
-    AbstractInventoryItem *existing = dataModel_->GetChildById(STD_TO_QSTR(item_data->id.ToString()));
-    if (existing)
-        return false;
-
-    // If the inventory is not visible the index might be non-valid.
-    // Happens e.g. when you upload with console command.
-    ///\todo This is maybe a bit hackish. Find a better way.
-    if (parent.isValid())
-        beginInsertRows(parent, position, position /*+ rows - 1*/);
-
-    if (item_data->item_type == IIT_Folder)
-    {
-        InventoryFolder *newFolder = static_cast<InventoryFolder *>(dataModel_->GetOrCreateNewFolder(
-            STD_TO_QSTR(item_data->id.ToString()), *parentFolder, false));
-
-        newFolder->SetName(STD_TO_QSTR(item_data->name));
-        ///\todo newFolder->SetType(item_data->type);
-        newFolder->SetDirty(true);
-    }
-    if (item_data->item_type == IIT_Asset)
-    {
-        InventoryAsset *newAsset = static_cast<InventoryAsset *>(dataModel_->GetOrCreateNewAsset(
-            STD_TO_QSTR(item_data->id.ToString()), STD_TO_QSTR(item_data->assetId.ToString()),
-            *parentFolder, STD_TO_QSTR(item_data->name)));
-
-        newAsset->SetDescription(STD_TO_QSTR(item_data->description));
-        newAsset->SetInventoryType(item_data->inventoryType);
-        newAsset->SetAssetType(item_data->assetType);
-    }
-
-    if (parent.isValid())
-        endInsertRows();
-
-    return true;
-}
-
 bool InventoryItemModel::InsertExistingItem(int position, AbstractInventoryItem *new_parent, AbstractInventoryItem *item)
 {
     if (new_parent == item->GetParent())
@@ -512,7 +467,6 @@ void InventoryItemModel::Download(const QString &store_path, const QItemSelectio
         if (asset)
         {
             InventoryModule::LogInfo("Requesting item " + asset->GetName().toStdString() + " for storage from the server");
-//            assetDownloadRequests_[asset->GetAssetReference()] = asset->GetName();
             dataModel_->DownloadFile(store_path, asset);
         }
     }

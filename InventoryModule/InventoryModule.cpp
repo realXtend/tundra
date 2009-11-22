@@ -1,8 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /**
- *  @file InventoryModule.cpp
- *  @brief Inventory module.
+ *  @file   InventoryModule.cpp
+ *  @brief  Inventory module. Inventory module is the owner of the inventory data model.
+ *          Implement data model -spesific event handling etc. here, not in InventoryWindow
+ *          or InventoryItemModel classes.
  */
 
 #include "StableHeaders.h"
@@ -183,12 +185,8 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
     {
         // Add new items to inventory_.
         if (event_id == Inventory::Events::EVENT_INVENTORY_DESCENDENT)
-        {
-            InventoryItemEventData *item_data = dynamic_cast<InventoryItemEventData *>(data);
-            if (!item_data)
-                return false;
-            inventoryWindow_->HandleInventoryDescendent(item_data);
-        }
+            if (inventoryType_ == IDMT_OpenSim)
+                checked_static_cast<OpenSimInventoryDataModel *>(inventory_.get())->HandleInventoryDescendents(data);
 
         // Upload request from other modules.
         if (event_id == Inventory::Events::EVENT_INVENTORY_UPLOAD)
@@ -262,11 +260,10 @@ Console::CommandResult InventoryModule::UploadAsset(const Core::StringVector &pa
     if (!inventory_.get())
         return Console::ResultFailure("Inventory doesn't exist. Can't upload!.");
 
-    OpenSimInventoryDataModel *osmodel = dynamic_cast<OpenSimInventoryDataModel *>(inventory_.get());
-    if (!osmodel)
+    if (!inventoryType_ != IDMT_OpenSim)
         return Console::ResultFailure("Console upload supported only for classic OpenSim inventory_.");
 
-    AssetUploader *uploader = osmodel->GetAssetUploader();
+    AssetUploader *uploader = static_cast<OpenSimInventoryDataModel *>(inventory_.get())->GetAssetUploader();
     if (!uploader)
         return Console::ResultFailure("Asset uploader not initialized. Can't upload.");
 
@@ -317,11 +314,10 @@ Console::CommandResult InventoryModule::UploadMultipleAssets(const Core::StringV
     if (!inventory_.get())
         return Console::ResultFailure("Inventory doesn't exist. Can't upload!.");
 
-    OpenSimInventoryDataModel *osmodel = dynamic_cast<OpenSimInventoryDataModel *>(inventory_.get());
-    if (!osmodel)
+    if (!inventoryType_ != IDMT_OpenSim)
         return Console::ResultFailure("Console upload supported only for classic OpenSim inventory_.");
 
-    AssetUploader *uploader = osmodel->GetAssetUploader();
+    AssetUploader *uploader = static_cast<OpenSimInventoryDataModel *>(inventory_.get())->GetAssetUploader();
     if (!uploader)
         return Console::ResultFailure("Asset uploader not initialized. Can't upload.");
 

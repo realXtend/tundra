@@ -62,7 +62,6 @@ void AssetUploader::UploadFiles(QStringList &filenames)
     UploadFiles(files);
 }
 
-//void AssetUploader::UploadBuffers(Core::StringList& filenames, std::vector<std::vector<Core::u8> >& buffers)
 void AssetUploader::UploadBuffers(QStringList &filenames, QVector<QVector<uchar> > &buffers)
 {
     CreateRexInventoryFolders();
@@ -139,7 +138,6 @@ bool AssetUploader::UploadBuffer(
     const std::string& name,
     const std::string& description,
     const RexTypes::RexUUID& folder_id,
-//    const std::vector<Core::u8>& buffer)
     const QVector<uchar>& buffer)
 {
     if (uploadCapability_ == "")
@@ -272,7 +270,7 @@ bool AssetUploader::UploadBuffer(
         asset_data->inventoryType = RexTypes::GetInventoryTypeFromAssetType(asset_type);
         asset_data->name = name;
         asset_data->description = description;
-        
+
         event_mgr->SendDelayedEvent<Inventory::InventoryItemEventData>(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, asset_data);
     }
     
@@ -308,7 +306,6 @@ bool AssetUploader::UploadFile(
         return false;
     }
 
-//    std::vector<Core::u8> buffer;
     QVector<uchar> buffer;
 
     std::filebuf *pbuf = file.rdbuf();
@@ -382,7 +379,6 @@ void AssetUploader::ThreadedUploadFiles(Core::StringList filenames)
     InventoryModule::LogInfo("Multiupload:" + Core::ToString(asset_count) + " assets succesfully uploaded.");
 }
 
-//void AssetUploader::ThreadedUploadBuffers(Core::StringList filenames, std::vector<std::vector<Core::u8> > buffers)
 void AssetUploader::ThreadedUploadBuffers(QStringList filenames, QVector<QVector<uchar> > buffers)
 {
     if (filenames.size() != buffers.size())
@@ -393,14 +389,11 @@ void AssetUploader::ThreadedUploadBuffers(QStringList filenames, QVector<QVector
 
     // Iterate trought every asset.
     int asset_count = 0;
-//    std::vector<std::vector<Core::u8> >::iterator it2 = buffers.begin();
     QVector<QVector<uchar> >::iterator it2 = buffers.begin();
 
-//    for(Core::StringList::iterator it = filenames.begin(); it != filenames.end(); ++it, ++it2 )
     QStringListIterator it(filenames);
     while(it.hasNext())
     {
-        //std::string filename = *it;
         std::string filename = it.next().toStdString();
         RexTypes::asset_type_t asset_type = RexTypes::GetAssetTypeFromFilename(filename);
         if (asset_type == RexAT_None)
@@ -474,7 +467,6 @@ void AssetUploader::CreateRexInventoryFolders()
         std::string cat_name = GetCategoryNameForAssetType(asset_type);
 
         // Check out if this inventory category exists.
-        //ProtocolUtilities::InventoryFolderSkeleton *folder = inventory->GetFirstChildFolderByName(cat_name.c_str());
         AbstractInventoryItem *existing = dataModel_->GetFirstChildFolderByName(STD_TO_QSTR(cat_name));
         if (!existing)
         {
