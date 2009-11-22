@@ -1,15 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /**
- *  @file InventoryItemModel.h
- *  @brief Common inventory item tree model for different inventory data models.
+ *  @file   InventoryItemModel.h
+ *  @brief  Common inventory item tree model for different inventory data models.
  */
 
 #ifndef incl_InventoryModule_InventoryItemModel_h
 #define incl_InventoryModule_InventoryItemModel_h
-
-#include "NetworkEvents.h"
-#include "Inventory/InventoryEvents.h"
 
 #include <QAbstractItemModel>
 #include <QModelIndex>
@@ -81,14 +78,10 @@ namespace Inventory
         /// @param name Name.
         bool InsertFolder(int position, const QModelIndex &parent, const QString &name);
 
-        /// Used for inserting new item with spesific data to the inventory tree model.
-        /// @param folder_data Data for the new folder.
-        bool InsertItem(int position, const QModelIndex &parent, InventoryItemEventData *item_data);
-
         /// Used when moving items in inventory model.
-        /// @param position
-        /// @param new_parent
-        /// @param item
+        /// @param position Position (row) in new parent destination index.
+        /// @param new_parent New parent for the item.
+        /// @param item Item to be moved.
         bool InsertExistingItem(int position, AbstractInventoryItem *new_parent, AbstractInventoryItem* item);
 
         /// Requests inventory descendents from server.
@@ -143,9 +136,6 @@ namespace Inventory
 
         /// List used temporarily id's of items to be moved in the inventory model.
         QVector<QString> itemsToBeMoved_;
-
-        ///
-        QMap<QString, QString> assetDownloadRequests_;
     };
 }
 

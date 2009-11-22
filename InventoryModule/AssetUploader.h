@@ -44,7 +44,6 @@ namespace Inventory
         /// Uploads multiple assets using HTTP.
         /// @param files List of filenames (determines asset type & folder to use)
         /// @param data List of asset data buffers
-//        void UploadBuffers(Core::StringList& filenames, std::vector<std::vector<Core::u8> >& buffers);
         void UploadBuffers(QStringList &filenames, QVector<QVector<uchar> > &buffers);
 
         /** Uploads a file using HTTP.
@@ -77,8 +76,7 @@ namespace Inventory
             const std::string &name,
             const std::string &description,
             const RexTypes::RexUUID &folder_id,
-            //const std::vector<Core::u8>& buffer);
-        const QVector<uchar>& buffer);
+            const QVector<uchar>& buffer);
 
         /// @return Does asset uploader have upload capability set.
         bool HasUploadCapability() const { return uploadCapability_ != ""; }

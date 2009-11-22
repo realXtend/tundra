@@ -106,6 +106,7 @@ void InventoryWindow::ResetInventoryTreeModel()
     SAFE_DELETE(inventoryItemModel_);
 }
 
+/*
 void InventoryWindow::HandleInventoryDescendent(InventoryItemEventData *item_data)
 {
     QModelIndex index = treeView_->selectionModel()->currentIndex();
@@ -121,6 +122,7 @@ void InventoryWindow::HandleInventoryDescendent(InventoryItemEventData *item_dat
 
     UpdateActions();
 }
+*/
 
 void InventoryWindow::ExpandFolder(const QModelIndex &index)
 {

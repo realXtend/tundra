@@ -1,8 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /**
- *  @file InventoryModule.h
- *  @brief Inventory module.
+ *  @file   InventoryModule.h
+ *  @brief  Inventory module. Inventory module is the owner of the inventory data model.
+ *          Implement data model -spesific event handling etc. here, not in InventoryWindow
+ *          or InventoryItemModel classes.
  */
 
 #ifndef incl_InventoryModule_h
@@ -55,10 +57,10 @@ namespace Inventory
         /// Returns type of this module. Needed for logging.
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Inventory;
 
-        /// Upload an asset.
+        /// Console command for uploading an asset, non-threaded.
         Console::CommandResult UploadAsset(const Core::StringVector &params);
 
-        /// Upload multiple assets.
+        /// Console command for uploading multiple assets, threaded.
         Console::CommandResult UploadMultipleAssets(const Core::StringVector &params);
 
         /// Get the current WorldStream

@@ -2,7 +2,7 @@
 
 /**
  *  @file OpenSimInventoryDataModel.h
- *  @brief Data model representing the hierarchy of an OpenSim inventory.
+ *  @brief Data model providing logic for working with the hierarchy of an OpenSim inventory.
  */
 
 #ifndef incl_InventoryModule_OpenSimInventoryDataModel_h
@@ -122,6 +122,10 @@ namespace Inventory
 
         /// @return Asset uploader.
         AssetUploader *GetAssetUploader() const {return assetUploader_; }
+
+        /// Handles INVENTORY_DESCENDENTS event.
+        /// @param data Event data.
+        void HandleInventoryDescendents(Foundation::EventDataInterface *data);
 
         /// Handles RESOURCE_READY event.
         /// @param data Event data.

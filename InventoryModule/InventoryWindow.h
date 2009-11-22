@@ -73,7 +73,7 @@ namespace Inventory
         void Hide();
 
         /// Handles data from InventoryDescendent packet.
-        void HandleInventoryDescendent(InventoryItemEventData *item_data);
+//        void HandleInventoryDescendent(InventoryItemEventData *item_data);
 
     private slots:
         /// Expands the inventory folder in the treeview
