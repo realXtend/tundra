@@ -270,6 +270,7 @@ bool AssetUploader::UploadBuffer(
         asset_data->inventoryType = RexTypes::GetInventoryTypeFromAssetType(asset_type);
         asset_data->name = name;
         asset_data->description = description;
+        asset_data->fileName = filename;
 
         event_mgr->SendDelayedEvent<Inventory::InventoryItemEventData>(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, asset_data);
     }

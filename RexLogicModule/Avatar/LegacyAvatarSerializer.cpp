@@ -359,6 +359,23 @@ namespace RexLogic
             
             property_elem = property_elem.nextSiblingElement("property");
         }
+        
+        // Get assetmap (optional, inventory based avatars only)
+        QDomElement assetmap_elem = avatar.firstChildElement("assetmap");
+        if (!assetmap_elem.isNull())
+        {
+            AvatarAssetMap new_map;
+            QDomElement asset_elem = assetmap_elem.firstChildElement("asset");
+            while (!asset_elem.isNull())
+            {
+                std::string name = asset_elem.attribute("name").toStdString();
+                std::string id = asset_elem.attribute("id").toStdString();
+                new_map[name] = id;
+                asset_elem = asset_elem.nextSiblingElement("asset");
+            }
+            dest.SetAssetMap(new_map);
+        }                 
+        
         return true;
     }
     
@@ -693,7 +710,7 @@ namespace RexLogic
         return true;        
     }     
  
-    void LegacyAvatarSerializer::WriteAvatarAppearance(QDomDocument& dest, const EC_AvatarAppearance& source)
+    void LegacyAvatarSerializer::WriteAvatarAppearance(QDomDocument& dest, const EC_AvatarAppearance& source, bool write_assetmap)
     {
         // Avatar element
         QDomElement avatar = dest.createElement("avatar");
@@ -829,6 +846,28 @@ namespace RexLogic
             }        
         }
         
+        // Asset map
+        if (write_assetmap)
+        {
+            const AvatarAssetMap& assets = source.GetAssetMap();
+            {
+                QDomElement map_elem = dest.createElement("assetmap");
+                
+                AvatarAssetMap::const_iterator i = assets.begin();
+                while (i != assets.end())
+                {         
+                    QDomElement asset_elem = dest.createElement("asset");
+
+                    SetAttribute(asset_elem, "name", i->first);
+                    SetAttribute(asset_elem, "id", i->second);
+                    map_elem.appendChild(asset_elem);
+                    ++i;
+                }        
+                
+                avatar.appendChild(map_elem);
+            }   
+        }     
+            
         dest.appendChild(avatar);
     }
     

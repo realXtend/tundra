@@ -23,9 +23,11 @@
 #include "OgreSkeletonResource.h"
 #include "OgreMaterialResource.h"
 #include "OgreImageTextureResource.h"
+#include "OgreTextureResource.h"
 #include "HttpTask.h"
 #include "HttpUtilities.h"
 #include "LLSDUtilities.h"
+#include "AssetEvents.h"
 #include "Inventory/InventoryEvents.h"
 
 #include "Poco/URI.h"
@@ -51,7 +53,8 @@ namespace RexLogic
     }
     
     AvatarAppearance::AvatarAppearance(RexLogicModule *rexlogicmodule) :
-        rexlogicmodule_(rexlogicmodule)
+        rexlogicmodule_(rexlogicmodule),
+        inv_export_state_(Idle)
     {
         std::string default_avatar_path = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "default_avatar_file", std::string("./data/default_avatar.xml"));
         
@@ -90,9 +93,20 @@ namespace RexLogic
         //! \todo once we get webdav urls, see that they don't contain that string. Possibly check for right index in path
         if (appearance_address.find("/avatar/") == std::string::npos)
         {
-            RexLogicModule::LogInfo("Inventory based avatar address received for avatar entity " + Core::ToString<int>(entity->GetId()) + ": " +
+            RexLogicModule::LogDebug("Inventory based avatar address received for avatar entity " + Core::ToString<int>(entity->GetId()) + ": " +
                 appearance_address);
-            //! \todo: handle download through asset service  
+            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
+                rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+            if (!asset_service)
+            {
+                RexLogicModule::LogError("Could not get asset service");
+                return;
+            }      
+            Core::request_tag_t tag = asset_service->RequestAsset(appearance_address, ASSETTYPENAME_GENERIC_AVATAR_XML);
+            // Remember the request
+            if (tag)
+                avatar_appearance_tags_[tag] = entity->GetId();            
+              
             return;         
         } 
            
@@ -720,7 +734,7 @@ namespace RexLogic
                     {
                         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(i->first);
                         if (entity)
-                            ProcessAppearanceDownload(entity, result->data_);
+                            ProcessAppearanceDownload(entity, &result->data_[0], result->data_.size());
                     }
                     else
                         RexLogicModule::LogInfo("Error downloading avatar appearance for avatar " + Core::ToString<int>(i->first) + ": " + result->reason_);
@@ -736,7 +750,66 @@ namespace RexLogic
         }
     }
     
-    void AvatarAppearance::ProcessAppearanceDownload(Scene::EntityPtr entity, const std::vector<Core::u8>& data)
+    void AvatarAppearance::ProcessAppearanceAsset(Scene::EntityPtr entity, const Core::u8* data, Core::uint size)
+    {       
+        if (!entity)
+            return;
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!appearanceptr)
+            return;
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+        
+        std::string data_str((const char*)data, size);
+
+        QDomDocument avatar_doc("Avatar");
+        avatar_doc.setContent(QString::fromStdString(data_str));
+
+        // Deserialize appearance from the document into the EC
+        if (!LegacyAvatarSerializer::ReadAvatarAppearance(appearance, avatar_doc))
+        {
+            // If fails badly, setup default instead
+            RexLogicModule::LogInfo("Failed to parse avatar description, setting default appearance");
+            SetupDefaultAppearance(entity);
+            return;
+        }
+                
+        // Request needed avatar resources
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
+        {
+            RexLogicModule::LogError("Renderer does not exist");
+            return;
+        }
+        
+        const AvatarAssetMap& assets = appearance.GetAssetMap(); 
+        Core::RequestTagVector tags;
+        AvatarAssetMap::const_iterator k = assets.begin();
+        Core::uint pending_requests = 0;
+        
+        while (k != assets.end())
+        {
+            RexLogicModule::LogDebug("Requesting inventory based avatar asset " + k->second + " type " + GetResourceTypeFromName(k->first, true));
+            std::string resource_id = k->second;
+            Core::request_tag_t tag = renderer->RequestResource(resource_id, GetResourceTypeFromName(k->first, true));
+            if (tag)
+            {
+                tags.push_back(tag);
+                avatar_resource_tags_[tag] = entity->GetId();
+                pending_requests++;
+            }
+            ++k;
+        }
+        avatar_pending_requests_[entity->GetId()] = pending_requests;
+        
+        // In the unlikely case of no requests at all, rebuild avatar now
+        if (!pending_requests)
+            SetupAppearance(entity);
+    }
+        
+    
+    
+    void AvatarAppearance::ProcessAppearanceDownload(Scene::EntityPtr entity, const Core::u8* data, Core::uint size)
     {        
         if (!entity)
             return;
@@ -747,7 +820,7 @@ namespace RexLogic
         EC_OpenSimAvatar& avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatarptr.get());
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
         
-        std::string data_str((const char*)&data[0], data.size());
+        std::string data_str((const char*)data, size);
         std::map<std::string, std::string> contents = RexTypes::ParseLLSDMap(data_str);
         
         // Get the avatar appearance description ("generic xml")
@@ -805,7 +878,7 @@ namespace RexLogic
             return;
         }
         Core::RequestTagVector tags;
-        AvatarAssetMap::iterator k = assets.begin();
+        AvatarAssetMap::const_iterator k = assets.begin();
         Core::uint pending_requests = 0;
         
         while (k != assets.end())
@@ -838,6 +911,9 @@ namespace RexLogic
         std::map<Core::request_tag_t, Core::entity_id_t>::iterator i = avatar_resource_tags_.find(event_data->tag_);
         if (i == avatar_resource_tags_.end())
             return false;
+           
+        // Now we know it is our request, can erase it and don't need to propagate this event      
+        RexLogicModule::LogDebug("Got avatar resource " + event_data->id_ + " type " + event_data->resource_->GetType());      
         Core::entity_id_t id = i->second;
         avatar_resource_tags_.erase(i);
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(id);
@@ -854,11 +930,40 @@ namespace RexLogic
             avatar_pending_requests_[id]--;
             // If was the last request, rebuild avatar
             if (avatar_pending_requests_[id] == 0)
+            {
+                RexLogicModule::LogDebug("All resources received, rebuilding avatar");
                 SetupAppearance(entity);
+            }
         }
         
         return true;
     }
+    
+    bool AvatarAppearance::HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        if (event_id != Asset::Events::ASSET_READY)
+            return false;
+            
+        Asset::Events::AssetReady *event_data = checked_static_cast<Asset::Events::AssetReady*>(data); 
+        // See that tag matches
+        std::map<Core::request_tag_t, Core::entity_id_t>::iterator i = avatar_appearance_tags_.find(event_data->tag_);
+        if (i == avatar_appearance_tags_.end())
+            return false;
+            
+        // Now we know it is our request, can erase it and don't need to propagate this event
+        Core::entity_id_t id = i->second;
+        avatar_appearance_tags_.erase(i);
+        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(id);
+        if (!entity)
+            return true;
+
+        Foundation::AssetPtr asset = event_data->asset_;
+        if (!asset) 
+            return true;
+        ProcessAppearanceAsset(entity, asset->GetData(), asset->GetSize());
+        return true;
+    }
+    
     bool AvatarAppearance::HandleInventoryEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (event_id == Inventory::Events::EVENT_INVENTORY_DESCENDENT)
@@ -866,7 +971,7 @@ namespace RexLogic
             Inventory::InventoryItemEventData* event_data = dynamic_cast<Inventory::InventoryItemEventData*>(data);
             if (event_data)
             {
-                if (event_data->assetType == RexTypes::RexAT_GenericAvatarXml)
+                if (event_data->assetType == RexTypes::RexAT_GenericAvatarXml && inv_export_state_ == Avatar)                
                 {
                     // See that the asset is actually an avatar description we uploaded
                     if (event_data->name.find("Avatar") != std::string::npos)
@@ -874,13 +979,37 @@ namespace RexLogic
                         WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
                         if (conn)
                         {
-                            RexLogicModule::LogInfo("Sending info about new inventory appearance " + event_data->assetId.ToString());
+                            RexLogicModule::LogDebug("Sending info about new inventory based appearance " + event_data->assetId.ToString());
                             Core::StringVector strings;
                             std::string method = "RexSetAppearance";
                             strings.push_back(conn->GetInfo().agentID.ToString());
                             strings.push_back(event_data->assetId.ToString());
                             conn->SendGenericMessage(method, strings);                                                            
                         }
+                        
+                        // Inventory based export done!
+                        inv_export_state_ = Idle;
+                    }
+                }
+                
+                if ((inv_export_state_ == Assets) && (inv_export_request_))
+                {
+                    // Check if asset is one from our upload request
+                    ExportAssetMap::const_iterator i = inv_export_request_->assets_.begin();
+                    while (i != inv_export_request_->assets_.end())
+                    {
+                        if (i->first == event_data->fileName)
+                        {
+                            // Store the asset ID to assetmap 
+                            inv_export_assetmap_[i->first] = event_data->assetId.ToString();
+                            // If it was the last, now we can export avatar itself
+                            if (inv_export_assetmap_.size() == inv_export_request_->assets_.size())
+                            {
+                                InventoryExportAvatarFinalize(inv_export_entity_.lock());
+                            }
+                            break;
+                        }
+                        ++i;
                     }
                 }
             }
@@ -889,7 +1018,7 @@ namespace RexLogic
         return false;
     }   
 
-    const std::string& AvatarAppearance::GetResourceTypeFromName(const std::string& name)
+    const std::string& AvatarAppearance::GetResourceTypeFromName(const std::string& name, bool inventorymode)
     {
         if (name.find(".mesh") != std::string::npos)
             return OgreRenderer::OgreMeshResource::GetTypeStatic();
@@ -899,7 +1028,11 @@ namespace RexLogic
             return OgreRenderer::OgreMaterialResource::GetTypeStatic();
         
         // If not any of these, assume a texture image (.png, .jpg etc.)
-        return OgreRenderer::OgreImageTextureResource::GetTypeStatic();
+        if (!inventorymode)
+            return OgreRenderer::OgreImageTextureResource::GetTypeStatic();
+        // In inventory mode, we first have no option but to j2k-decode everything (no general image asset)
+        else
+            return OgreRenderer::OgreTextureResource::GetTypeStatic();        
     }
     
     void AvatarAppearance::FixupResources(Scene::EntityPtr entity)
@@ -1116,21 +1249,77 @@ namespace RexLogic
         }
     }
     
-    void AvatarAppearance::ExportAvatar(Scene::EntityPtr entity)
+    void AvatarAppearance::InventoryExportAvatar(Scene::EntityPtr entity)
     {
-        Foundation::ComponentPtr avatarptr = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
         Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!avatarptr || !appearanceptr)
+        if (!appearanceptr)
             return;
-        EC_OpenSimAvatar& avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatarptr.get());
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
 
+        if (inv_export_state_ != Idle)
+        {
+            RexLogicModule::LogInfo("Avatar export already running");
+            return;
+        }
+
+        // Get assets for export, inventory mode, using a dummy export request
+        inv_export_entity_ = entity;
+        inv_export_assetmap_ = AvatarAssetMap();
+        inv_export_request_ = AvatarExporterRequestPtr(new AvatarExporterRequest());
+        GetAvatarAssetsForExport(inv_export_request_, appearance, true);   
+        
+        // Check if there were any assets, if not, we can go to final phase directly
+        if (inv_export_request_->assets_.empty())
+        {
+            InventoryExportAvatarFinalize(entity);
+            return;
+        }
+         
+        // If there are assets, stuff them all
+        inv_export_state_ = Assets;
+        Foundation::EventManagerPtr eventmgr = rexlogicmodule_->GetFramework()->GetEventManager();
+        Inventory::InventoryUploadBufferEventData event_data;
+        
+        ExportAssetMap::const_iterator i = inv_export_request_->assets_.begin();
+        while (i != inv_export_request_->assets_.end())
+        {
+            QVector<Core::u8> data_buffer;
+            data_buffer.resize(i->second.data_.size());
+            memcpy(&data_buffer[0], &i->second.data_[0], i->second.data_.size());
+                        
+            event_data.filenames.push_back(QString::fromStdString(i->first));
+            event_data.buffers.push_back(data_buffer);
+            ++i;
+        }
+
+        eventmgr->SendEvent(eventmgr->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);                   
+    }                 
+    
+    void AvatarAppearance::InventoryExportAvatarFinalize(Scene::EntityPtr entity)
+    {
+        // Inventory based export, final phase
+        inv_export_state_ = Idle;
+        inv_export_request_.reset();  
+        inv_export_entity_.reset();
+                
+        if (!entity)
+            return;
+                             
+        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!appearanceptr)
+            return;
+        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+            
         // Convert avatar appearance to xml
+        inv_export_state_ = Avatar;
+        EC_AvatarAppearance temp_appearance = appearance;
+        temp_appearance.SetAssetMap(inv_export_assetmap_);
+        inv_export_assetmap_ = AvatarAssetMap();           
+                
         QDomDocument avatar_export("Avatar");
-        LegacyAvatarSerializer::WriteAvatarAppearance(avatar_export, appearance);
+        LegacyAvatarSerializer::WriteAvatarAppearance(avatar_export, temp_appearance, true);
         std::string avatar_export_str = avatar_export.toString().toStdString();
 
-        //std::vector<Core::u8> data_buffer;
         QVector<Core::u8> data_buffer;
         data_buffer.resize(avatar_export_str.length());
         memcpy(&data_buffer[0], avatar_export_str.c_str(), data_buffer.size());
@@ -1138,18 +1327,23 @@ namespace RexLogic
         // Get current time/date to "version" the avatar inventory item
         QDateTime time = QDateTime::currentDateTime();
         std::string avatarfilename = "Avatar" + time.toString(" yyyy.MM.dd hh:mm:ss").toStdString() + ".xml";
-        RexLogicModule::LogInfo(avatarfilename);
                 
-        // Upload appearance as inventory asset
-        // (send request as event)
+        // Upload appearance as inventory asset. 
         Foundation::EventManagerPtr eventmgr = rexlogicmodule_->GetFramework()->GetEventManager();
         Inventory::InventoryUploadBufferEventData event_data;
         event_data.filenames.push_back(QString(avatarfilename.c_str()));
         event_data.buffers.push_back(data_buffer);
-        eventmgr->SendEvent(eventmgr->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);
-        
+        eventmgr->SendEvent(eventmgr->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);       
     }
-    
+
+    void AvatarAppearance::InventoryExportReset()
+    {
+        inv_export_state_ = Idle;
+        inv_export_request_.reset();  
+        inv_export_entity_.reset();
+        inv_export_assetmap_ = AvatarAssetMap();        
+    }
+        
     void AvatarAppearance::ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password)
     {
         Foundation::ComponentPtr avatarptr = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
@@ -1188,18 +1382,18 @@ namespace RexLogic
         avatar_exporter_->AddRequest<AvatarExporterRequest>(request);
     }
     
-    void AvatarAppearance::GetAvatarAssetsForExport(AvatarExporterRequestPtr request, EC_AvatarAppearance& appearance)
+    void AvatarAppearance::GetAvatarAssetsForExport(AvatarExporterRequestPtr request, EC_AvatarAppearance& appearance, bool inventorymode)
     {
         RexLogicModule::LogDebug("Getting mesh for export");
-        GetAvatarAssetForExport(request, appearance.GetMesh());
+        GetAvatarAssetForExport(request, appearance.GetMesh(), false, inventorymode);
         RexLogicModule::LogDebug("Getting skeleton for export");
-        GetAvatarAssetForExport(request, appearance.GetSkeleton());
+        GetAvatarAssetForExport(request, appearance.GetSkeleton(), false, inventorymode);
 
         RexLogicModule::LogDebug("Getting materials for export");        
         AvatarMaterialVector materials = appearance.GetMaterials();
         for (Core::uint i = 0; i < materials.size(); ++i)
         {
-            GetAvatarMaterialForExport(request, materials[i]);
+            GetAvatarMaterialForExport(request, materials[i], inventorymode);
         }
         
         RexLogicModule::LogDebug("Getting attachments for export");
@@ -1214,7 +1408,7 @@ namespace RexLogic
         }
     }
     
-    bool AvatarAppearance::GetAvatarMaterialForExport(AvatarExporterRequestPtr request, const AvatarMaterial& material)
+    bool AvatarAppearance::GetAvatarMaterialForExport(AvatarExporterRequestPtr request, const AvatarMaterial& material, bool inventorymode)
     {
         boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
             GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -1236,6 +1430,10 @@ namespace RexLogic
         // Resource-based or local?
         if (material.asset_.resource_)
         {
+            // In inventory mode, being resource based means it already exists on the server, do not store again
+            if (inventorymode)
+                return true;
+            
             OgreRenderer::OgreMaterialResource* mat_res = dynamic_cast<OgreRenderer::OgreMaterialResource*>(material.asset_.resource_.get());
             if (!mat_res)
             {
@@ -1310,17 +1508,23 @@ namespace RexLogic
             new_export_asset.CalculateHash();
             // Check for hash duplicate
             bool duplicate = false;
-            ExportAssetMap::const_iterator i = request->assets_.begin();
-            while (i != request->assets_.end())
+            
+            // In inventory mode, hashes are not used. No need to check
+            if (!inventorymode)
             {
-                if (new_export_asset.hash_ == i->second.hash_)
+                ExportAssetMap::const_iterator i = request->assets_.begin();
+                while (i != request->assets_.end())
                 {
-                    RexLogicModule::LogDebug("Skipping export of avatar asset " + export_name + ", has same hash as " + i->first);
-                    duplicate = true;
-                    break;
+                    if (new_export_asset.hash_ == i->second.hash_)
+                    {
+                        RexLogicModule::LogDebug("Skipping export of avatar asset " + export_name + ", has same hash as " + i->first);
+                        duplicate = true;
+                        break;
+                    }
+                    ++i;
                 }
-                ++i;
             }
+            
             if (!duplicate)
                 request->assets_[export_name] = new_export_asset;
         }
@@ -1344,7 +1548,7 @@ namespace RexLogic
         return true;
     }
     
-    bool AvatarAppearance::GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& asset, bool replace_spaces)
+    bool AvatarAppearance::GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& asset, bool replace_spaces, bool inventorymode)
     {
         std::string export_name = asset.name_;
         // If name is empty, skip
@@ -1369,6 +1573,10 @@ namespace RexLogic
         // If it's loaded from resource, we should be able to get at the original raw asset data for export
         if (asset.resource_)
         {
+            // In inventory mode, being resource based means it already exists on the server, do not store again
+            if (inventorymode)
+                return true;        
+        
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
                 rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
             if (!asset_service)
@@ -1421,17 +1629,20 @@ namespace RexLogic
         
         new_export_asset.CalculateHash();
         
-        // Check for hash duplicate
-        ExportAssetMap::const_iterator i = request->assets_.begin();
-        while (i != request->assets_.end())
+        // Check for hash duplicate, only when not in inventory mode
+        if (!inventorymode)
         {
-            if (new_export_asset.hash_ == i->second.hash_)
+            ExportAssetMap::const_iterator i = request->assets_.begin();
+            while (i != request->assets_.end())
             {
-                RexLogicModule::LogDebug("Skipping export of avatar asset " + export_name + ", has same hash as " + i->first);
-                return true;
+                if (new_export_asset.hash_ == i->second.hash_)
+                {
+                    RexLogicModule::LogDebug("Skipping export of avatar asset " + export_name + ", has same hash as " + i->first);
+                    return true;
+                }
+                ++i;
             }
-            ++i;
-        }
+        } 
         
         RexLogicModule::LogDebug("Added export asset " + export_name);
         request->assets_[export_name] = new_export_asset;

@@ -48,6 +48,12 @@ namespace RexLogic
         //! Handles inventory event
         bool HandleInventoryEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
+        //! Handles asset event
+        bool HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+
+        //! Handles logout
+        void HandleLogout();
+        
         //! Returns user's avatar
         Scene::EntityPtr GetUserAvatar();
         
