@@ -171,7 +171,9 @@ class EditGUI(Component):
         self.arrow_grabbed = False
         self.arrow_grabbed_axis = None
 
-	#r.c = self
+        #r.c = self
+        
+        self.sel_activated = False #to prevent the selection to be moved on the intial click
 
     def changepos(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
@@ -276,6 +278,7 @@ class EditGUI(Component):
 
         if ent.id != 0 and ent.id > 10 and ent.id != r.getUserAvatarId() and not arrows: #terrain seems to be 3 and scene objects always big numbers, so > 10 should be good
             self.sel = ent
+            self.sel_activated = False
             
             if not self.widgetList.has_key(str(self.sel.id)):
                 tWid = QTreeWidgetItem(self.widget.treeWidget)
@@ -405,6 +408,7 @@ class EditGUI(Component):
         self.left_button_down = False
         if self.sel:
             r.networkUpdate(self.sel.id)
+            self.sel_activated = True
         
     def RightMouseDown(self, mouseinfo):
         self.right_button_down = True
@@ -429,7 +433,7 @@ class EditGUI(Component):
 
         if not self.canvas.IsHidden():
             if self.left_button_down :
-                if self.sel is not None:
+                if self.sel is not None and self.sel_activated:
                     if self.arrow_grabbed:
                         pos = [self.sel.pos[0], self.sel.pos[1], self.sel.pos[2]]
                         rightvec = r.getCameraRight()
