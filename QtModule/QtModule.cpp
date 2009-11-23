@@ -211,10 +211,11 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
         //Qt::KeyboardModifier modifier = Qt::NoModifier;
 
         // Inject the key event to the controller. It will propagate the event to the currently active canvas.
+        QString text(QChar(key->text_));
         if (event_id == Input::Events::BUFFERED_KEY_PRESSED)
-            controller_->InjectKeyPressed(QString(QChar(key->text_)), value);
+            controller_->InjectKeyPressed(text, value);
         else
-            controller_->InjectKeyReleased(QString(QChar(key->text_)), value);
+            controller_->InjectKeyReleased(text, value);
 
         if ( controller_->IsKeyboardFocus() )
         {
