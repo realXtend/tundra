@@ -435,10 +435,36 @@ void UIController::InjectDoubleClick(int x, int y, UICanvas* canvas)
     
 }
 
-void UIController::InjectKeyPressed(const QString& text, Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
+void UIController::InjectKeyPressed(QString& text, Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
 {
     if (!keyboardFocusCanvas)
         return;
+
+    if ( text == QString(QChar(0)) && keyCode != Qt::Key_unknown )
+    {
+        // Match text using Qt:s keycode. 
+        
+        QKeySequence sequence(keyCode);
+        text = sequence.toString().toLower();
+
+        switch  (modifier)
+        {
+            case Qt::ShiftModifier:
+            {
+                text = text.toUpper();
+                break;
+            }
+            case Qt::ControlModifier:
+            {
+                text = text.toUpper();
+                break;
+            }
+            default:
+                break;
+        }
+
+    }
+
 
     ///\todo Check invariant: keyboardFocusCanvas should be at the top in Z order, and not hidden.
 
@@ -708,7 +734,7 @@ void UIController::SendMouseMoveEvent(UICanvas &canvas, int x, int y)
     mouseEvent.setLastScreenPos(pos);
     mouseEvent.setButtons(mouseLeftButtonDown ? Qt::LeftButton : Qt::NoButton);
     mouseEvent.setButton(mouseLeftButtonDown ? Qt::LeftButton : Qt::NoButton);
-    mouseEvent.setModifiers(0);
+    mouseEvent.setModifiers(currentModifier_);
     mouseEvent.setAccepted(false);
 
     QApplication::sendEvent(canvas.view_->scene(), &mouseEvent);   

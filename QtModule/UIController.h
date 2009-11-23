@@ -117,7 +117,7 @@ namespace QtUI
             @param keyCode A Qt key code corresponding to that same key.
             @param modifier Denotes whether there were any keyboard modifiers down (Alt, Shift, Ctrl, Win).
             @note UIController expects that a corresponding key-release event is sent afterwards. */
-        void InjectKeyPressed(const QString& text, Qt::Key keyCode = Qt::Key_unknown, const Qt::KeyboardModifiers& modifier = Qt::NoModifier);
+        void InjectKeyPressed(QString& text, Qt::Key keyCode = Qt::Key_unknown, const Qt::KeyboardModifiers& modifier = Qt::NoModifier);
 
         /** Sends a key-release event to the canvas that received the previous key-press event.
             @param text The textual representation of the key that was pressed.
