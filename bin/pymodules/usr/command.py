@@ -567,6 +567,13 @@ if 0: #property editor tests
     #print r, dir(r)
     pe = r.getPropertyEditor()
     #print pe, pe.setObject, pe.show
-    pe.setObject(r.c.widget.scalex)
+    pe.setObject(r.c.meshassetedit)
     pe.show()
+    
+if 0:
+    #print r.c.widget.move_button, dir(r.c.widget.move_button)
+    #r.c.canvas.Show()
+    print r.c.widget.move_button.isChecked(), r.c.widget.rotate_button.isChecked(), r.c.widget.scale_button.isChecked()
+    #print  dir(r.c.widget.move_button)
+    r.c.widget.move_button.setChecked(False)
     

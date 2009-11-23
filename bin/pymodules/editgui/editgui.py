@@ -44,7 +44,7 @@ EXTERNAL = 0
 UP = 0
 RIGHT = 1
 
-DEV = False #if this is false, the canvas is added to the controlbar
+DEV =False #if this is false, the canvas is added to the controlbar
 
 class MeshAssetidEditline(QLineEdit):
     def __init__(self, mainedit, *args):
@@ -74,6 +74,15 @@ class EditGUI(Component):
     OIS_ESC = 1
     UIFILE = "pymodules/editgui/editobject.ui"
     
+    MANIPULATE_NONE = 0
+    MANIPULATE_MOVE = 1
+    MANIPULATE_ROTATE = 2
+    MANIPULATE_SCALE = 3
+    
+    AXIS_X = 0
+    AXIS_Y = 1
+    AXIS_Z = 2
+    
     def __init__(self):
         Component.__init__(self)
         loader = QUiLoader()
@@ -81,8 +90,8 @@ class EditGUI(Component):
         if DEV:
             mode = EXTERNAL
         self.canvas = r.createCanvas(mode) #now for drag&drop dev
-        self.arrows = None
         
+        self.move_arrows = None
         uifile = QFile(self.UIFILE)
 
         ui = loader.load(uifile)
@@ -99,15 +108,16 @@ class EditGUI(Component):
         self.widget = ui.MainFrame
         self.widget.label.text = "<none>"
 
-        #print dir(ui)
-        meshassetedit = MeshAssetidEditline(self) #ui) #ui.MainFrame) - crashes :o
-        """<x>190</x>
-        <y>180</y>
-        <width>151</width>
-        <height>20</height>"""
-        meshassetedit.show()
-        meshassetedit.move(190, 180)
-        self.canvas.AddWidget(meshassetedit)
+        #~ #print dir(ui)
+        #~ meshassetedit = MeshAssetidEditline(self) #ui) #ui.MainFrame) - crashes :o
+        #~ """<x>190</x>
+        #~ <y>180</y>
+        #~ <width>151</width>
+        #~ <height>20</height>"""
+        #~ meshassetedit.show()
+        #~ meshassetedit.move(200, 177)
+        #~ self.canvas.AddWidget(meshassetedit)
+        
         
         self.canvas.connect('Hidden()', self.on_hide)
         modu = r.getQtModule()
@@ -157,6 +167,10 @@ class EditGUI(Component):
         self.widget.deleteObject.connect('clicked()', self.deleteObject)
         self.widget.setMesh.connect('clicked()', self.setMesh)
         
+        self.widget.move_button.connect('clicked()', self.manipulator_move)
+        self.widget.scale_button.connect('clicked()', self.manipulator_scale)
+        self.widget.rotate_button.connect('clicked()', self.manipulator_rotate)
+        
         self.widgetList = {}
         
         self.cam = None
@@ -171,10 +185,52 @@ class EditGUI(Component):
         self.arrow_grabbed = False
         self.arrow_grabbed_axis = None
 
-        #r.c = self
+        r.c = self
         
         self.sel_activated = False #to prevent the selection to be moved on the intial click
+        
+        self.manipulator_state = self.MANIPULATE_NONE
+    
+    def manipulator_move(self):
+        if not self.widget.move_button.isChecked():
+            self.hideArrows()
+        else: #activated
+            if self.sel is not None:
+                self.drawMoveArrows(self.sel)
+                self.manipulator_state = self.MANIPULATE_MOVE
+                self.widget.scale_button.setChecked(False)
+                self.widget.rotate_button.setChecked(False)
+            else:
+                self.manipulator_state = self.MANIPULATE_NONE
+                self.widget.move_button.setChecked(False)
+        
+    def manipulator_scale(self):
+        if not self.widget.scale_button.isChecked():
+            self.hideArrows()
+        else: #activated
+            #self.widget.move_button.toggle()
+            if self.sel is not None:
+                self.manipulator_state = self.MANIPULATE_SCALE
+                self.drawMoveArrows(self.sel)
+                self.widget.move_button.setChecked(False)
+                self.widget.rotate_button.setChecked(False)
+            else:
+                self.widget.scale_button.setChecked(False)
+                self.manipulator_state = self.MANIPULATE_NONE
 
+    def manipulator_rotate(self):
+        if not self.widget.rotate_button.isChecked():
+            self.hideArrows()
+        else: #activated
+            if self.sel is not None:
+                self.hideArrows() #remove this when we have the arrows for rotating
+                self.manipulator_state = self.MANIPULATE_ROTATE
+                self.widget.scale_button.setChecked(False)
+                self.widget.move_button.setChecked(False)
+            else:
+                self.widget.rotate_button.setChecked(False) 
+                self.manipulator_state = self.MANIPULATE_NONE
+        
     def changepos(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
@@ -189,9 +245,7 @@ class EditGUI(Component):
             ent.pos = pos[0], pos[1], pos[2] #XXX API should accept a list/tuple too .. or perhaps a vector type will help here too
             r.networkUpdate(ent.id)
             #print "=>", ent.pos
-        
-            if self.arrows is not None:
-                self.arrows.pos = pos[0], pos[1], pos[2]
+            self.move_arrows.pos = pos[0], pos[1], pos[2]
     
     def changescale(self, i, v):
         ent = self.sel
@@ -229,8 +283,7 @@ class EditGUI(Component):
             ent.orientation = ort
             r.networkUpdate(ent.id)
             
-            if self.arrows is not None:
-                self.arrows.orientation = ort
+            self.move_arrows.orientation = ort
             
     def itemActivated(self, item=None): #the item from signal is not used, same impl used by click
         #print "Got the following item index...", item, dir(item), item.data, dir(item.data) #we has index, now what? WIP
@@ -273,7 +326,7 @@ class EditGUI(Component):
 
     def select(self, ent):
         arrows = False
-        if self.arrows is not None and self.arrows.id == ent.id:
+        if self.move_arrows.id == ent.id:
             arrows = True
 
         if ent.id != 0 and ent.id > 10 and ent.id != r.getUserAvatarId() and not arrows: #terrain seems to be 3 and scene objects always big numbers, so > 10 should be good
@@ -315,15 +368,13 @@ class EditGUI(Component):
                 #~ rs = root.getRenderSystem()
                 #~ vp = rs._getViewport()
                 #~ self.cam = vp.getCamera()
-                #~ self.drawArrows(ent)
+                #~ self.drawMoveArrows(ent)
             #~ elif self.cam is not None and ogreroot: 
-                #~ self.drawArrows(ent)
+                #~ self.drawMoveArrows(ent)
             #~ else:
-            
-        self.drawArrows(self.sel) #causes crash at quit, so disabled for now, uncomment for testing
     
-    def drawArrows(self, ent):
-        #print "drawArrows", self.arrows
+    def drawMoveArrows(self, ent):
+        #print "drawMoveArrows", self.move_arrows
         x, y, z = ent.pos
         pos = x, y, z
         
@@ -332,9 +383,6 @@ class EditGUI(Component):
         
         ox, oy, oz, ow = ent.orientation
         ort = ox, oy, oz, ow
-        
-        if self.arrows is None:
-            self.arrows = self.createArrows()
         
         self.showArrow(pos, scale, ort)
         
@@ -345,20 +393,26 @@ class EditGUI(Component):
         
     def showArrow(self, pos, scale, ort):
         #print "Showing arrows!"
-        if self.arrows is not None:
-            self.arrows.pos = pos
-            self.arrows.scale = 0.2, 0.2, 0.2
-            #self.arrow.setOrientation(self.cam.DerivedOrientation)
-            self.arrows.orientation = ort
-      
+        #if self.move_arrows is not None:
+        self.move_arrows.pos = pos
+        self.move_arrows.scale = 0.2, 0.2, 0.2
+        #self.arrow.setOrientation(self.cam.DerivedOrientation)
+        self.move_arrows.orientation = ort
+  
     def hideArrows(self):
         #print "Hiding arrows!"
-        if self.arrows is not None:
-            self.arrows.scale = 0.0, 0.0, 0.0 #ugly hack
-            self.arrows.pos = 0.0, 0.0, 0.0 #another ugly hack
-            self.arrow_grabbed_axis = None
-            self.arrow_grabbed = False
-            #XXX todo: change these after theres a ent.hide type way
+        if self.move_arrows is not None:
+            self.move_arrows.scale = 0.0, 0.0, 0.0 #ugly hack
+            self.move_arrows.pos = 0.0, 0.0, 0.0 #another ugly hack
+        
+        self.arrow_grabbed_axis = None
+        self.arrow_grabbed = False
+        self.manipulator_state = self.MANIPULATE_NONE
+        
+        self.widget.move_button.setChecked(False)
+        self.widget.rotate_button.setChecked(False)
+        self.widget.scale_button.setChecked(False)
+        #XXX todo: change these after theres a ent.hide type way
 
     def LeftMouseDown(self, mouseinfo):
         self.left_button_down = True
@@ -377,20 +431,25 @@ class EditGUI(Component):
             #print "Entity position is", ent.pos
             #print "Entity id is", ent.id
             #if self.sel is not ent: #XXX wrappers are not reused - there may now be multiple wrappers for same entity
-            if self.arrows is not None and ent.id == self.arrows.id:
+            
+            if self.move_arrows is None:
+                self.move_arrows = self.createArrows()
+                self.hideArrows()
+            
+            if ent.id == self.move_arrows.id:
                 u = results[-2]
                 v = results[-1]
                 #print "ARROW and UV", u, v
                 self.arrow_grabbed = True
                 if u < 0.421875:
                     #print "arrow is blue / z"
-                    self.arrow_grabbed_axis = 2
+                    self.arrow_grabbed_axis = self.AXIS_Z
                 elif u < 0.70703125:
                     #print "arrow is green / y"
-                    self.arrow_grabbed_axis = 1
+                    self.arrow_grabbed_axis = self.AXIS_Y
                 elif u <= 1.0:
                     #print "arrow is red / x"
-                    self.arrow_grabbed_axis = 0
+                    self.arrow_grabbed_axis = self.AXIS_X
                 else:
                     print "arrow got screwed..."
                     self.arrow_grabbed_axis = None
@@ -435,24 +494,37 @@ class EditGUI(Component):
             if self.left_button_down :
                 if self.sel is not None and self.sel_activated:
                     if self.arrow_grabbed:
-                        pos = [self.sel.pos[0], self.sel.pos[1], self.sel.pos[2]]
                         rightvec = r.getCameraRight()
                         upvec = r.getCameraUp()
-                        
-                        #print "arrow grabbed by",  self.arrow_grabbed_axisx
-
-                    
                         mov = mouseinfo.rel_x + mouseinfo.rel_y
-                        mov /= 7.0
                         
-                        if self.arrow_grabbed_axis == 2:
-                            pos[self.arrow_grabbed_axis] -= mov
-                        else:
-                            mov *= rightvec[self.arrow_grabbed_axis]/abs(rightvec[self.arrow_grabbed_axis])
-                            pos[self.arrow_grabbed_axis] += mov
-                
-                        self.sel.pos = pos[0], pos[1], pos[2]
-                        self.arrows.pos = pos[0], pos[1], pos[2]
+                        if self.manipulator_state == self.MANIPULATE_MOVE:
+                            pos = list(self.sel.pos)#[self.sel.pos[0], self.sel.pos[1], self.sel.pos[2]]
+                            
+                            mov /= 7.0
+                            
+                            if self.arrow_grabbed_axis == 2:
+                                pos[self.arrow_grabbed_axis] -= mov
+                            else:
+                                mov *= rightvec[self.arrow_grabbed_axis]/abs(rightvec[self.arrow_grabbed_axis])
+                                pos[self.arrow_grabbed_axis] += mov
+                    
+                            self.sel.pos = pos[0], pos[1], pos[2]
+                            self.move_arrows.pos = pos[0], pos[1], pos[2]
+                                
+                        elif self.manipulator_state == self.MANIPULATE_SCALE:
+                            #print "should change scale!"
+                            scale = list(self.sel.scale)
+
+                            mov /= 9.0
+                            
+                            if self.arrow_grabbed_axis == 2:
+                                scale[self.arrow_grabbed_axis] -= mov
+                            else:
+                                mov *= rightvec[self.arrow_grabbed_axis]/abs(rightvec[self.arrow_grabbed_axis])
+                                scale[self.arrow_grabbed_axis] += mov
+                    
+                            self.sel.scale = scale[0], scale[1],scale[2]
 
                     else:
                         oldvec = Vector3(self.sel.pos)
@@ -462,7 +534,7 @@ class EditGUI(Component):
                         n = 0.1 #is not doing correct raycasting to plane to see pos, this is a multiplier for the crude movement method here now
                         newvec = oldvec - (upvec * mouseinfo.rel_y * n) + (rightvec * mouseinfo.rel_x * n)
                         
-                        self.arrows.pos = newvec.x, newvec.y, newvec.z
+                        self.move_arrows.pos = newvec.x, newvec.y, newvec.z
                         self.sel.pos = newvec.x, newvec.y, newvec.z
                         #r.networkUpdate(self.sel.id)
                         #XXX also here the immediate network sync is not good,

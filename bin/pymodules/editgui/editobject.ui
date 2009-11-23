@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>385</width>
-    <height>210</height>
+    <width>415</width>
+    <height>212</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -62,6 +62,9 @@ QPushButton::pressed{
    </property>
    <item>
     <widget class="QFrame" name="MainFrame">
+     <property name="cursor">
+      <cursorShape>ArrowCursor</cursorShape>
+     </property>
      <property name="styleSheet">
       <string/>
      </property>
@@ -91,7 +94,7 @@ border: 1px solid grey;</string>
      <widget class="QDoubleSpinBox" name="scalex">
       <property name="geometry">
        <rect>
-        <x>170</x>
+        <x>200</x>
         <y>140</y>
         <width>62</width>
         <height>21</height>
@@ -101,7 +104,7 @@ border: 1px solid grey;</string>
      <widget class="QDoubleSpinBox" name="xpos">
       <property name="geometry">
        <rect>
-        <x>170</x>
+        <x>200</x>
         <y>60</y>
         <width>62</width>
         <height>21</height>
@@ -117,7 +120,7 @@ border: 1px solid grey;</string>
      <widget class="QDoubleSpinBox" name="rot_z">
       <property name="geometry">
        <rect>
-        <x>290</x>
+        <x>320</x>
         <y>100</y>
         <width>62</width>
         <height>21</height>
@@ -133,7 +136,7 @@ border: 1px solid grey;</string>
      <widget class="QDoubleSpinBox" name="rot_x">
       <property name="geometry">
        <rect>
-        <x>170</x>
+        <x>200</x>
         <y>100</y>
         <width>62</width>
         <height>21</height>
@@ -146,60 +149,20 @@ border: 1px solid grey;</string>
        <double>360.000000000000000</double>
       </property>
      </widget>
-     <widget class="QLabel" name="label_scale">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>140</y>
-        <width>41</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Scale</string>
-      </property>
-     </widget>
      <widget class="QDoubleSpinBox" name="zpos">
       <property name="geometry">
        <rect>
-        <x>290</x>
+        <x>320</x>
         <y>60</y>
         <width>62</width>
         <height>21</height>
        </rect>
       </property>
      </widget>
-     <widget class="QLabel" name="label_rot">
-      <property name="geometry">
-       <rect>
-        <x>140</x>
-        <y>100</y>
-        <width>41</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Rot</string>
-      </property>
-     </widget>
      <widget class="QDoubleSpinBox" name="rot_y">
       <property name="geometry">
        <rect>
-        <x>230</x>
+        <x>260</x>
         <y>100</y>
         <width>62</width>
         <height>21</height>
@@ -230,26 +193,6 @@ border: 1px solid grey;</string>
        </property>
       </column>
      </widget>
-     <widget class="QLabel" name="label_X">
-      <property name="geometry">
-       <rect>
-        <x>140</x>
-        <y>60</y>
-        <width>51</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Pos</string>
-      </property>
-     </widget>
      <widget class="QLabel" name="label">
       <property name="geometry">
        <rect>
@@ -271,7 +214,7 @@ border: 1px solid grey;</string>
      <widget class="QDoubleSpinBox" name="scalez">
       <property name="geometry">
        <rect>
-        <x>290</x>
+        <x>320</x>
         <y>140</y>
         <width>62</width>
         <height>21</height>
@@ -281,7 +224,7 @@ border: 1px solid grey;</string>
      <widget class="QDoubleSpinBox" name="scaley">
       <property name="geometry">
        <rect>
-        <x>230</x>
+        <x>260</x>
         <y>140</y>
         <width>62</width>
         <height>21</height>
@@ -291,7 +234,7 @@ border: 1px solid grey;</string>
      <widget class="QDoubleSpinBox" name="ypos">
       <property name="geometry">
        <rect>
-        <x>230</x>
+        <x>260</x>
         <y>60</y>
         <width>62</width>
         <height>21</height>
@@ -363,30 +306,10 @@ border: 1px solid grey;</string>
        <string>Delete Object</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_scale_3">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>180</y>
-        <width>41</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Mesh</string>
-      </property>
-     </widget>
      <widget class="QPushButton" name="setMesh">
       <property name="geometry">
        <rect>
-        <x>290</x>
+        <x>319</x>
         <y>180</y>
         <width>61</width>
         <height>21</height>
@@ -406,7 +329,7 @@ border: 1px solid grey;</string>
       </property>
       <property name="geometry">
        <rect>
-        <x>360</x>
+        <x>390</x>
         <y>135</y>
         <width>16</width>
         <height>31</height>
@@ -426,6 +349,66 @@ border: 1px solid grey;</string>
         <width>20</width>
         <height>20</height>
        </size>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QToolButton" name="move_button">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>60</y>
+        <width>61</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Move</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QToolButton" name="scale_button">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>140</y>
+        <width>61</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Scale</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QToolButton" name="rotate_button">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>100</y>
+        <width>61</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Rotate</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
       </property>
       <property name="checked">
        <bool>false</bool>
