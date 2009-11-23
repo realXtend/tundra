@@ -29,7 +29,11 @@ namespace RexLogic
         static bool ReadAnimationDefinitions(AnimationDefinitionMap& dest, const QDomDocument& source);
         
         //! Writes avatar definition from an EC_AvatarAppearance into an xml document
-        static void WriteAvatarAppearance(QDomDocument& dest, const EC_AvatarAppearance& source);
+        /*! \param dest Destination document
+            \param source Source document
+            \param write_assetmap Whether to write assetmap. Default false (for legacy storage)
+         */
+        static void WriteAvatarAppearance(QDomDocument& dest, const EC_AvatarAppearance& source, bool write_assetmap = false);
         
         //! Reads an attachment xml document
         /*! Needs a whole (filled) EC_AvatarAppearance to determine the correct attachment point information

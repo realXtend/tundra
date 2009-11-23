@@ -56,7 +56,7 @@ namespace RexLogic
         {
             for (Core::uint j = 0; j < master_modifiers_[i].modifiers_.size(); ++j)
             {
-                //std::sort(master_modifiers_[i].modifiers_[j].mapping_.begin(), master_modifiers_[i].modifiers_[j].mapping_.end());
+                std::sort(master_modifiers_[i].modifiers_[j].mapping_.begin(), master_modifiers_[i].modifiers_[j].mapping_.end());
             }
         }   
              

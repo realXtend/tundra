@@ -73,6 +73,13 @@ namespace OgreRenderer
         // Make sure type matches
         if (i->second->GetType() != type)
         {
+            // If it's OgreTexture instead of OgreImageTexture, allow that
+            if ((i->second->GetType() == OgreTextureResource::GetTypeStatic()) && (type == OgreImageTextureResource::GetTypeStatic()))
+                return i->second;
+            // If it's OgreImageTexture instead of OgreTexture, allow that
+            if ((i->second->GetType() == OgreImageTextureResource::GetTypeStatic()) && (type == OgreTextureResource::GetTypeStatic()))
+                return i->second;
+                
             OgreRenderingModule::LogWarning("Requested resource " + id + " with mismatching type " + type + ", correct type would be " + i->second->GetType());
             return Foundation::ResourcePtr();
         }

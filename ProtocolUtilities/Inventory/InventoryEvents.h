@@ -39,6 +39,8 @@ namespace Inventory
         asset_type_t assetType;
         std::string name;
         std::string description;
+        //! Original filename of upload, if applicable
+        std::string fileName;
     };
 
     class InventoryUploadEventData : public Foundation::EventDataInterface

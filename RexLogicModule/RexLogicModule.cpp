@@ -191,6 +191,14 @@ void RexLogicModule::PostInitialize()
 			boost::bind(&RexLogicModule::HandleInventoryEvent, this, _1, _2));
 	else
 		LogError("Unable to find event category for Inventory");
+
+    // Asset events
+	eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Asset");
+	if (eventcategoryid != 0)
+		event_handlers_[eventcategoryid].push_back(
+			boost::bind(&RexLogicModule::HandleAssetEvent, this, _1, _2));
+	else
+		LogError("Unable to find event category for Asset");
     
 	// Framework events
 	eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Framework");
@@ -437,9 +445,13 @@ bool RexLogicModule::HandleResourceEvent(Core::event_id_t event_id, Foundation::
 bool RexLogicModule::HandleInventoryEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
 {
     // Pass the event to the avatar manager
-    avatar_->HandleInventoryEvent(event_id, data);
+    return avatar_->HandleInventoryEvent(event_id, data);
+}
 
-    return false;
+bool RexLogicModule::HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+{
+    // Pass the event to the avatar manager
+    return avatar_->HandleAssetEvent(event_id, data);
 }
 
 void RexLogicModule::LogoutAndDeleteWorld()
@@ -447,6 +459,9 @@ void RexLogicModule::LogoutAndDeleteWorld()
     world_stream_->RequestLogout();
     world_stream_->ForceServerDisconnect(); // Because the current server doesn't send a logoutreplypacket.
 
+    if (avatar_)
+        avatar_->HandleLogout();
+    
     if (framework_->HasScene("World"))
         DeleteScene("World");
 }

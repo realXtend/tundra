@@ -33,6 +33,14 @@ namespace RexLogic
     //! Handles setting up and updating avatars' appearance. Owned by RexLogicModule::Avatar.
     class AvatarAppearance
     {
+        //! States of inventory-based export. Must go input-first
+        enum InventoryExportState
+        {
+            Idle = 0,
+            Assets,
+            Avatar
+        };
+        
     public:
         AvatarAppearance(RexLogicModule *rexlogicmodule);
         ~AvatarAppearance();
@@ -74,7 +82,8 @@ namespace RexLogic
         
         //! Handles resource event
         bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
-        
+        //! Handles asset event
+        bool HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
         //! Handles inventory event
         bool HandleInventoryEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);        
         
@@ -82,7 +91,13 @@ namespace RexLogic
         void ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password);
         
         //! Exports avatar to inventory
-        void ExportAvatar(Scene::EntityPtr entity);
+        void InventoryExportAvatar(Scene::EntityPtr entity);
+
+        //! Exports avatar to inventory, finalization (after assets uploaded)
+        void InventoryExportAvatarFinalize(Scene::EntityPtr entity);
+        
+        //! Resets avatar export state
+        void InventoryExportReset();
         
         //! Changes a material on an avatar. Filename can either be image or material.
         bool ChangeAvatarMaterial(Scene::EntityPtr entity, Core::uint index, const std::string& filename);
@@ -119,7 +134,10 @@ namespace RexLogic
         void ProcessAvatarExport();
         
         //! Processes an avatar appearance download result
-        void ProcessAppearanceDownload(Scene::EntityPtr entity, const std::vector<Core::u8>& data);
+        void ProcessAppearanceDownload(Scene::EntityPtr entity, const Core::u8* data, Core::uint size);
+
+        //! Processes an avatar appearance asset (inventory based avatar)
+        void ProcessAppearanceAsset(Scene::EntityPtr entity, const Core::u8* data, Core::uint size);
         
         //! Fixes up avatar resource references after downloading of all avatar assets complete
         void FixupResources(Scene::EntityPtr entity);
@@ -137,20 +155,20 @@ namespace RexLogic
         bool PrepareAppearanceFromMesh(Scene::EntityPtr entity, const std::string& filename);
                 
         //! Guesses avatar asset resource type from human-readable asset name
-        static const std::string& GetResourceTypeFromName(const std::string& name);
+        static const std::string& GetResourceTypeFromName(const std::string& name, bool inventorymode = false);
         
         //! Adds avatar assets to the export request
-        void GetAvatarAssetsForExport(AvatarExporterRequestPtr request, EC_AvatarAppearance& appearance);
+        void GetAvatarAssetsForExport(AvatarExporterRequestPtr request, EC_AvatarAppearance& appearance, bool inventorymode = false);
         
         //! Adds an avatar asset to the export request
         /*! \return true if added successfully
          */
-        bool GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& appearance, bool replace_spaces = false);
+        bool GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& appearance, bool replace_spaces = false, bool inventorymode = false);
         
         //! Adds an avatar asset to the export request
         /*! \return true if added successfully
          */
-        bool GetAvatarMaterialForExport(AvatarExporterRequestPtr request, const AvatarMaterial& material);
+        bool GetAvatarMaterialForExport(AvatarExporterRequestPtr request, const AvatarMaterial& material, bool inventorymode = false);
         
         //! Gets a bone safely from the avatar skeleton
         /*! \return Pointer to bone, or 0 if does not exist
@@ -173,12 +191,24 @@ namespace RexLogic
         
         //! Avatar resource request tags associated to entity
         std::map<Core::request_tag_t, Core::entity_id_t> avatar_resource_tags_;
+
+        //! Avatar appearance xml asset request tags associated to entity, for inventory based appearance
+        std::map<Core::request_tag_t, Core::entity_id_t> avatar_appearance_tags_;
         
         //! Amount of pending avatar resource requests. When hits 0, should be able to build avatar
         std::map<Core::entity_id_t, Core::uint> avatar_pending_requests_;
         
-        //! Avatar exporter task
+        //! Legacy storage avatar exporter task
         AvatarExporterPtr avatar_exporter_;
+        
+        //! Progress of inventory based export
+        InventoryExportState inv_export_state_;
+        //! Temp assetmap for inventory based export
+        AvatarAssetMap inv_export_assetmap_;
+        //! Dummy request to collect assets for inventory based export
+        AvatarExporterRequestPtr inv_export_request_;
+        //! Entity that is being used for inventory based export
+        Scene::EntityWeakPtr inv_export_entity_;
         
         RexLogicModule *rexlogicmodule_;
     };
