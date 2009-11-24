@@ -750,7 +750,7 @@ namespace RexLogic
         }
     }
     
-    void AvatarAppearance::ProcessAppearanceAsset(Scene::EntityPtr entity, const Core::u8* data, Core::uint size)
+    void AvatarAppearance::ProcessInventoryAppearance(Scene::EntityPtr entity, const Core::u8* data, Core::uint size)
     {       
         if (!entity)
             return;
@@ -775,7 +775,7 @@ namespace RexLogic
         
         const AvatarAssetMap& assets = appearance.GetAssetMap(); 
                 
-        Core::uint pending_requests = RequestAvatarResources(entity, assets);
+        Core::uint pending_requests = RequestAvatarResources(entity, assets, true);
         
         // In the unlikely case of no requests at all, rebuild avatar now
         if (!pending_requests)
@@ -955,7 +955,7 @@ namespace RexLogic
         Foundation::AssetPtr asset = event_data->asset_;
         if (!asset) 
             return true;
-        ProcessAppearanceAsset(entity, asset->GetData(), asset->GetSize());
+        ProcessInventoryAppearance(entity, asset->GetData(), asset->GetSize());
         return true;
     }
     
