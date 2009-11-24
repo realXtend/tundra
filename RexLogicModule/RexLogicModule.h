@@ -195,6 +195,11 @@ namespace RexLogic
 
         Core::Vector3df GetCameraUp();
         Core::Vector3df GetCameraRight();
+		Core::Vector3df GetCameraPosition();
+		Core::Real GetCameraViewportWidth();
+		Core::Real GetCameraViewportHeight();
+
+		Core::Real GetCameraFOV();
 
         void SendRexPrimData(Core::entity_id_t entityid);
 
