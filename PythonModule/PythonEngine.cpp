@@ -3,7 +3,6 @@
 #include "PythonScriptModule.h"
 #include "StableHeaders.h"
 #include "PythonEngine.h"
-#include "PythonScriptObject.h"
 
 using namespace Foundation;
 
@@ -94,6 +93,7 @@ namespace PythonScript
     //                                    //
     //         "GENERIC INTERFACE"        //
     //                                    //
+    /* deprecated - PythonQt does this too
 
     Foundation::ScriptObject* PythonEngine::LoadScript(const std::string& scriptname, std::string& error)
     {
@@ -182,5 +182,6 @@ namespace PythonScript
     }
 
     //===============================================================================================//
+    */
 }
 

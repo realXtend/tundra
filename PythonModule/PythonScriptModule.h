@@ -85,7 +85,7 @@ namespace PythonScript
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_PythonScript;
 
         //Foundation::Framework* GetFramework() { return frameworkptr;  };//this still returns null or 0... WHY?
-        static Foundation::ScriptEventInterface* engineAccess;
+        //static Foundation::ScriptEventInterface* engineAccess;
 
         //api code is outside the module now, but reuses these .. err, but can't see 'cause dont have a ref to the instance?
         // Category id for incoming messages.
