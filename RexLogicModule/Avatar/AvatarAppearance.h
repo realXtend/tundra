@@ -139,6 +139,9 @@ namespace RexLogic
         //! Processes an avatar appearance asset (inventory based avatar)
         void ProcessAppearanceAsset(Scene::EntityPtr entity, const Core::u8* data, Core::uint size);
         
+        //! Requests needed avatar resouces
+        Core::uint RequestAvatarResources(Scene::EntityPtr entity, const AvatarAssetMap& assets, bool inventorymode = false);
+            
         //! Fixes up avatar resource references after downloading of all avatar assets complete
         void FixupResources(Scene::EntityPtr entity);
         
