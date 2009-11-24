@@ -101,15 +101,15 @@ namespace QtUI
             @param deltaY The delta of the Y coordinate. */
         void InjectMouseMove(int x, int y, int deltaX, int deltaY, UICanvas* canvas);
      
-        /** Sends a mouse left button press event to correct canvas.
-            @param x The x-coordinate in the main render window where the LMB click occurred.
+        /** Sends a mouse button press event to correct canvas.
+            @param x The x-coordinate in the main render window where the click occurred.
             @param y The y-coordinate.
             @note UIController expects that a corresponding mouse release message will be sent afterwards. */
         void InjectMousePress(int x, int y, UICanvas* canvas);
     
 
         /** Sends a mouse release event to correct canvas. 
-            @param x The x-coordinate in the main render window where the mouse was when the LMB was released.
+            @param x The x-coordinate in the main render window where the mouse was when the mouse was released.
             @param y The y-coordinate. */
         void InjectMouseRelease(int x, int y, UICanvas* canvas);
 
@@ -175,10 +175,10 @@ namespace QtUI
             @param y The y-coordinate. */
         void SendMouseMoveEvent(UICanvas &canvas, int x, int y);
 
-        /** Sends a mouse left button press event to the given canvas.
+        /** Sends a mouse button press event to the given canvas.
             @param x The mouse x-coordinate in the main render window coordinates where the press occurred.
             @param y The y-coordinate. */
-        void SendMouseLeftButtonPressEvent(UICanvas &canvas, int x, int y);
+        void SendMouseButtonPressEvent(UICanvas &canvas, int x, int y);
 
         void Redraw(const boost::shared_ptr<UICanvas>& canvas);
 
@@ -188,7 +188,7 @@ namespace QtUI
             from the given canvas. */
         void Deactivate(UICanvas &canvas, DeactivationType type = All);
 
-        /// Defines the possible mouse left button actions that might be going on.
+        /// Defines the possible mouse button actions that might be going on.
         enum MouseAction
         {
             /// There is no current mouse action being performed.
@@ -221,7 +221,7 @@ namespace QtUI
             first, and the bottommost is at the back. */
         QList<boost::shared_ptr<UICanvas> > canvases_;
         
-        /// The location on the QGraphicsScene of the canvas where mouse LMB was last time pressed.
+        /// The location on the QGraphicsScene of the canvas where mouse mouse click was last time pressed.
         /// @note that This is not in main window render coordinates.
         QPoint lastMousePressPoint_;
 
@@ -250,7 +250,7 @@ namespace QtUI
             for positioning Ogre overlays. */ 
         QSize parentWindowSize_;
 
-        /// Tracks time elapsed since LMB presses - used to detect double click events.
+        /// Tracks time elapsed since mouse click presses - used to detect double click events.
         /// \todo Move away from here to OIS.
         QTime doubleClickTimer_;
 
