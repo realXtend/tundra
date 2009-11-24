@@ -71,6 +71,13 @@ namespace QtUI
          */
         void SetCurrentModifier(const Qt::KeyboardModifier& modifier) { currentModifier_ = modifier; }
 
+        /**
+         * Sets a active mouse button.
+         * @param button is a active mousebutton. 
+         */
+        void SetActiveMouseButton(const Qt::MouseButton& button) { button_ = button; }
+
+
 
     public slots:
         /// Brings the canvas with the given id to topmost in the window drawing order.
@@ -267,6 +274,8 @@ namespace QtUI
         QList<QPair<Qt::Key, QString> > pressedKeys_;
 
         Qt::KeyboardModifier currentModifier_;
+        Qt::MouseButton button_;
+        
     };
 }
 

@@ -100,6 +100,65 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
     ///\todo Currently OIS mouse is polled in Update(). Convert all input to come through here.
     /// Requires that we can track when a canvas needs to be redrawn due to visual changes on mouse hover.
     
+    if ( category_id == input_event_category_ && event_id == Input::Events::RIGHT_MOUSECLICK_PRESSED || event_id == Input::Events::RIGHT_MOUSECLICK_RELEASED)
+    {
+ 
+        bool event_handled = false;
+        
+        boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
+            framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
+
+        boost::shared_ptr<Input::InputModuleOIS> input = inputWeak.lock();
+      
+        if (!input.get())
+            return false;
+
+        Input::Events::Movement* mouse = checked_static_cast<Input::Events::Movement*>(data);
+        QPointF pos = QPointF(mouse->x_.abs_, mouse->y_.abs_);
+        QPoint mousePos = pos.toPoint();
+
+        UICanvas *canvas = controller_->GetCanvasAt(mousePos.x(), mousePos.y());
+        controller_->SetCurrentModifier(GetCurrentModifier(input));
+
+        if ( event_id == Input::Events::RIGHT_MOUSECLICK_PRESSED )
+        {
+          
+            controller_->SetActiveMouseButton(Qt::RightButton);
+            controller_->InjectMousePress(pos.x(), pos.y(), canvas);
+            
+            if ( canvas )
+                event_handled = true;
+            else
+            {
+                // Deal inworld canvas.
+
+            }
+
+            if (controller_->IsKeyboardFocus() && input->GetState() != Input::State_Buffered)
+              input->SetState(Input::State_Buffered);
+            else if (!controller_->IsKeyboardFocus())
+              input->SetState(Input::State_Unknown);
+        }
+        else 
+        {
+            if ( canvas != 0) 
+            {
+                controller_->SetActiveMouseButton(Qt::RightButton);
+                controller_->InjectMouseRelease(pos.x(),pos.y(), canvas);
+                event_handled = true;
+            }
+            else
+            {
+                // Deal inworld canvas..
+        
+            }
+        }
+
+        return event_handled;
+        
+    }
+
+
     if (category_id == input_event_category_ && event_id == Input::Events::INWORLD_CLICK || event_id == Input::Events::INWORLD_CLICK_REL)
     {
         boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
@@ -126,6 +185,7 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
             //    framework_->GetQApplication()->setActiveWindow(controller_->GetCanvasAt(pos.x(), pos.y()));
             
             controller_->SetCurrentModifier(GetCurrentModifier(input));
+            controller_->SetActiveMouseButton(Qt::LeftButton);
             controller_->InjectMousePress(pos.x(), pos.y(), canvas);
             
             if ( canvas )
@@ -144,6 +204,7 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
         {
             if ( canvas != 0) 
             {
+                controller_->SetActiveMouseButton(Qt::LeftButton);
                 controller_->InjectMouseRelease(pos.x(),pos.y(), canvas);
                 event_handled = true;
             }
@@ -163,12 +224,15 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
                     QPoint pos = in_world_canvas->GetPosition().toPoint();
                     QSize size = in_world_canvas->GetSize();
                     QPoint location = QPoint(size.width() * result.u_ + pos.x(), size.height() * result.v_ + pos.y());
+                    controller_->SetActiveMouseButton(Qt::LeftButton);
                     controller_->InjectMouseRelease(location.x(), location.y(), in_world_canvas.get()); 
                     event_handled = true;
                 }
                 else
-                 controller_->InjectMouseRelease(pos.x(),pos.y(), canvas);
-
+                {
+                    controller_->SetActiveMouseButton(Qt::LeftButton);
+                    controller_->InjectMouseRelease(pos.x(),pos.y(), canvas);
+                }
               
             }
            

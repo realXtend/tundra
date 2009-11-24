@@ -31,7 +31,8 @@ mouseActionCanvas(0),
 mouseHoverCanvas(0),
 keyboardFocusCanvas(0),
 lastKnownKeyboardFocusItem(0),
-currentModifier_(Qt::NoModifier)
+currentModifier_(Qt::NoModifier),
+button_(Qt::LeftButton)
 {}
 
 UIController::~UIController()
@@ -189,37 +190,48 @@ void UIController::InjectMouseMove(int x, int y, int deltaX, int deltaY, UICanva
 
     case MouseActionCanvasMove:
         {
-            QPointF pos = mouseActionCanvas->GetPosition();
-            QPoint p = pos.toPoint();
-            pos.setX(p.x() + deltaX);
-            pos.setY(p.y() + deltaY);
-            
-            mouseActionCanvas->SetPosition(pos.x(), pos.y());
+            if ( button_ != Qt::RightButton)
+            {
+                QPointF pos = mouseActionCanvas->GetPosition();
+                QPoint p = pos.toPoint();
+                pos.setX(p.x() + deltaX);
+                pos.setY(p.y() + deltaY);
+                
+                mouseActionCanvas->SetPosition(pos.x(), pos.y());
+            }
         }
         break;
     case MouseActionCanvasResizeTopLeft:
-        mouseActionCanvas->Resize(canvasWidth - deltaX, canvasHeight - deltaY, UICanvas::BottomRight);
+        if ( button_ != Qt::RightButton)
+            mouseActionCanvas->Resize(canvasWidth - deltaX, canvasHeight - deltaY, UICanvas::BottomRight);
         break;
     case MouseActionCanvasResizeTop:
-        mouseActionCanvas->Resize(canvasWidth, canvasHeight - deltaY, UICanvas::BottomRight);
+        if ( button_ != Qt::RightButton)
+            mouseActionCanvas->Resize(canvasWidth, canvasHeight - deltaY, UICanvas::BottomRight);
         break;
     case MouseActionCanvasResizeTopRight:
-        mouseActionCanvas->Resize(canvasWidth + deltaX, canvasHeight - deltaY, UICanvas::BottomLeft);
+        if ( button_ != Qt::RightButton)
+            mouseActionCanvas->Resize(canvasWidth + deltaX, canvasHeight - deltaY, UICanvas::BottomLeft);
         break;
     case MouseActionCanvasResizeLeft:
-        mouseActionCanvas->Resize(canvasWidth - deltaX, canvasHeight, UICanvas::BottomRight);
+        if ( button_ != Qt::RightButton)
+            mouseActionCanvas->Resize(canvasWidth - deltaX, canvasHeight, UICanvas::BottomRight);
         break;
     case MouseActionCanvasResizeRight:
-        mouseActionCanvas->Resize(canvasWidth + deltaX, canvasHeight, UICanvas::BottomLeft);
+        if ( button_ != Qt::RightButton)
+            mouseActionCanvas->Resize(canvasWidth + deltaX, canvasHeight, UICanvas::BottomLeft);
         break;
     case MouseActionCanvasResizeBottomLeft:
-        mouseActionCanvas->Resize(canvasWidth - deltaX, canvasHeight + deltaY, UICanvas::TopRight);
+        if ( button_ != Qt::RightButton)
+            mouseActionCanvas->Resize(canvasWidth - deltaX, canvasHeight + deltaY, UICanvas::TopRight);
         break;
     case MouseActionCanvasResizeBottom:
-        mouseActionCanvas->Resize(canvasWidth, canvasHeight + deltaY, UICanvas::TopRight);
+        if ( button_ != Qt::RightButton)
+            mouseActionCanvas->Resize(canvasWidth, canvasHeight + deltaY, UICanvas::TopRight);
         break;
     case MouseActionCanvasResizeBottomRight:
-        mouseActionCanvas->Resize(canvasWidth + deltaX, canvasHeight + deltaY, UICanvas::TopLeft);
+        if ( button_ != Qt::RightButton)
+            mouseActionCanvas->Resize(canvasWidth + deltaX, canvasHeight + deltaY, UICanvas::TopLeft);
         break;
     }
 }
@@ -716,11 +728,13 @@ void UIController::SendMouseMoveEvent(UICanvas &canvas, int x, int y)
 
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
 
-    bool mouseLeftButtonDown = (currentMouseAction != MouseActionNone);
-    if (mouseLeftButtonDown)
+    bool mouseButtonDown = (currentMouseAction != MouseActionNone);
+    
+    if (mouseButtonDown)
     {
-        mouseEvent.setButtonDownScenePos(Qt::LeftButton, lastMousePressPoint_);
-        mouseEvent.setButtonDownScreenPos(Qt::LeftButton, lastMousePressPoint_);
+        mouseEvent.setButtonDownScenePos(button_, lastMousePressPoint_);
+        mouseEvent.setButtonDownScreenPos(button_, lastMousePressPoint_);
+       
     }
     else
     {
@@ -732,8 +746,9 @@ void UIController::SendMouseMoveEvent(UICanvas &canvas, int x, int y)
     mouseEvent.setScreenPos(pos);
     mouseEvent.setLastScenePos(pos);
     mouseEvent.setLastScreenPos(pos);
-    mouseEvent.setButtons(mouseLeftButtonDown ? Qt::LeftButton : Qt::NoButton);
-    mouseEvent.setButton(mouseLeftButtonDown ? Qt::LeftButton : Qt::NoButton);
+    mouseEvent.setButtons(mouseButtonDown ? button_ : Qt::NoButton);
+    mouseEvent.setButton(mouseButtonDown ? button_ : Qt::NoButton);
+
     mouseEvent.setModifiers(currentModifier_);
     mouseEvent.setAccepted(false);
 
@@ -749,15 +764,23 @@ void UIController::SendMouseLeftButtonPressEvent(UICanvas &canvas, int x, int y)
     lastMousePressPoint_ = pos;
 
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMousePress);
-    
+    /*
     mouseEvent.setButtonDownScenePos(Qt::LeftButton, pos);
     mouseEvent.setButtonDownScreenPos(Qt::LeftButton, pos);
+    */
+    mouseEvent.setButtonDownScenePos(button_,pos);
+    mouseEvent.setButtonDownScreenPos(button_,pos);
+
     mouseEvent.setScenePos(pos);
     mouseEvent.setScreenPos(pos);
     mouseEvent.setLastScenePos(pos);
     mouseEvent.setLastScreenPos(pos);
+    mouseEvent.setButton(button_);
+    mouseEvent.setButtons(button_);
+    /*
     mouseEvent.setButtons(Qt::LeftButton);
     mouseEvent.setButton(Qt::LeftButton);
+    */
 
     mouseEvent.setModifiers(currentModifier_);
     mouseEvent.setAccepted(false);
